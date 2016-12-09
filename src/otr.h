@@ -10,5 +10,6 @@ typedef struct {
 otr *otr_malloc(void);
 
 int otr_start(otr *otr);
+void otr_build_query_message(char * query_message, otr *otr, char *message);
 
 void otr_free(otr *otr);

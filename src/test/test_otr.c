@@ -16,9 +16,26 @@ test_otr_starts_protocol() {
   otr_free(otr);
 }
 
+void
+test_otr_builds_query_message() {
+  otr *otr = otr_malloc();
+  otr_start(otr);
+  char *message = "And some random invitation text.";
+
+  char query_message[41];
+  otr_build_query_message(query_message, otr, message);
+
+  char *expected_qm = "?OTRv4? And some random invitation text.";
+  g_assert_cmpstr(query_message, ==, expected_qm);
+
+  otr_free(otr);
+}
+
 int
 main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
+
   g_test_add_func("/otr_starts_protocol", test_otr_starts_protocol);
+  g_test_add_func("/otr_builds_query_message", test_otr_builds_query_message);
   return g_test_run();
 }
