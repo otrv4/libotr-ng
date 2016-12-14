@@ -1,7 +1,9 @@
 #include <glib.h>
+
 #include <stdio.h>
 
 #include "../otr.h"
+#include "otr_assert.h"
 
 void
 test_otr_starts_protocol() {
@@ -9,8 +11,10 @@ test_otr_starts_protocol() {
 
   int started = otr_start(otr);
 
-  g_assert_cmpint(started, ==, 1);
+  int expected_supported_versions[2] = { OTR_V3, OTR_V4 };
+  g_assert_cmpint(started, ==, 0);
   g_assert_cmpint(otr->version, ==, OTR_V4);
+  otr_assert_contains(otr->supported_versions, expected_supported_versions, 2);
   g_assert_cmpstr(otr->state, ==, OTRSTATE_START);
 
   otr_free(otr);

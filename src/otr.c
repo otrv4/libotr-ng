@@ -13,7 +13,7 @@ otr_start(otr *otr) {
   otr->version = OTR_V4;
   otr->state = OTRSTATE_START;
   
-  return 1;
+  return 0;
 }
 
 void
