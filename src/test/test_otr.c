@@ -1,6 +1,7 @@
 #include <glib.h>
 
 #include <stdio.h>
+#include <string.h>
 
 #include "../otr.h"
 #include "otr_assert.h"
@@ -35,11 +36,47 @@ test_otr_builds_query_message() {
   otr_free(otr);
 }
 
+void
+test_otr_builds_whitespace_tag() {
+  otr *otr = otr_malloc();
+  otr_start(otr);
+
+  char *expected_tag = " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
+  char *message = "And some random invitation text.";
+
+char whitespace_tag[strlen(expected_tag)];
+  otr_build_whitespace_tag(whitespace_tag, otr, message);
+
+  g_assert_cmpstr(whitespace_tag, ==, expected_tag);
+
+  otr_free(otr);
+}
+
+void
+test_otr_builds_whitespace_tag_v3() {
+  otr *otr = otr_malloc();
+  otr_start(otr);
+otr_version_downgrade(otr);
+
+  char *expected_tag = " \t  \t\t\t\t \t \t \t    \t\t  \t\tAnd some random invitation text.";
+  char *message = "And some random invitation text.";
+
+char whitespace_tag[strlen(expected_tag)];
+  otr_build_whitespace_tag(whitespace_tag, otr, message);
+
+  g_assert_cmpstr(whitespace_tag, ==, expected_tag);
+
+  otr_free(otr);
+}
+
 int
 main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
 
   g_test_add_func("/otr_starts_protocol", test_otr_starts_protocol);
   g_test_add_func("/otr_builds_query_message", test_otr_builds_query_message);
+  g_test_add_func("/otr_builds_whitespace_tag", test_otr_builds_whitespace_tag);
+  g_test_add_func("/otr_builds_whitespace_tag_v3", test_otr_builds_whitespace_tag_v3);
+
   return g_test_run();
 }
