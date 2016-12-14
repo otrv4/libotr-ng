@@ -1,0 +1,8 @@
+*.o
+TAGS
+
+*~
+*#*#
+
+src/test/test_libotr
+

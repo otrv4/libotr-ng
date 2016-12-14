@@ -7,7 +7,7 @@ SRC_TEST = $(SRC)/test
 
 #Target objects
 OBJECTS = $(SRC)/otr.o
-TEST_OBJECTS = $(SRC_TEST)/otr_assert.o $(SRC_TEST)/test_otr.o
+TEST_OBJECTS = $(SRC_TEST)/test_otr.o
 
 #Compilation and linkage flags
 CFLAGS = -g -Wall `pkg-config --cflags glib-2.0`
@@ -18,7 +18,7 @@ CC = c99
 TESTS = $(SRC_TEST)/test_$(P)
 
 #Targets
-default: clean $(P) test
+default: $(P) test
 
 $(P): $(OBJECTS)
 

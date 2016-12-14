@@ -1,10 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "otr.h"
-
-static int OTR_SUPPORTED_VERSIONS[2] = { OTR_V3, OTR_V4 };
-
+ 
 otr *
 otr_malloc(void) {
   return (otr *) malloc(sizeof(otr));
@@ -14,7 +13,7 @@ int
 otr_start(otr *otr) {
   otr->version = OTR_V4;
   otr->state = OTRSTATE_START;
-  otr->supported_versions = OTR_SUPPORTED_VERSIONS;
+  otr->supported_versions = OTR_ALLOW_V4;
   
   return 0;
 }
@@ -25,7 +24,9 @@ otr_build_query_message(char *query_message, const otr *otr, const char *message
   sprintf(query_message, query, otr->version, message);
 }
 
-void
+//TODO: should this care about UTF8?
+//TODO: should this deal with buffer overflows?
+int
 otr_build_whitespace_tag(char *whitespace_tag, const otr *otr, const char *message) {
   const char tag_base[] = {
     '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
@@ -41,17 +42,24 @@ otr_build_whitespace_tag(char *whitespace_tag, const otr *otr, const char *messa
     '\0'
   };
 
-  if (otr->version == OTR_V4) {
-    sprintf(whitespace_tag, "%s%s%s", tag_base, tag_version_v4, message);
+  strcpy(whitespace_tag, tag_base);
+  
+  if (otr->supported_versions & OTR_ALLOW_V4) {
+    strcat(whitespace_tag, tag_version_v4);
   }
-  if (otr->version == OTR_V3) {
-    sprintf(whitespace_tag, "%s%s%s", tag_base, tag_version_v3, message);
+
+  if (otr->supported_versions & OTR_ALLOW_V3) {
+    strcat(whitespace_tag, tag_version_v3);
   }
+
+  strcat(whitespace_tag, message);
+
+  return 0;
 }
 
 void
-otr_version_downgrade(otr *otr) {
-  otr->version = OTR_V3;
+otr_version_support_v3(otr *otr) {
+  otr->supported_versions |= OTR_ALLOW_V3;
 }
 
 void
