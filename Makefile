@@ -35,4 +35,4 @@ clean:
 				$(RM) $(OBJECTS) $(TEST_OBJECTS) $(TESTS)
 
 install-tools:
-				apt-get install valgrind
+				sudo apt-get install valgrind
