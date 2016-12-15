@@ -34,6 +34,3 @@ mem-check:
 clean:
 	$(RM) $(OBJECTS) $(TEST_OBJECTS) $(TESTS)
 
-install-tools:
-	apt-get update --quiet --assume-yes
-	apt-get install valgrind --quiet --assume-yes
