@@ -20,13 +20,16 @@ TESTS = $(SRC_TEST)/test_$(P)
 #Targets
 default: $(P) test
 
-ci: $(P) test
+ci: $(P) test mem-check
 
 $(P): $(OBJECTS)
 
 test: $(TEST_OBJECTS)
 			$(CC) $(CFLAGS) -o $(TESTS) $(OBJECTS) $(TEST_OBJECTS) $(LDLIBS)
 			./$(TESTS)
+
+mem-check:
+						valgrind --leak-check=full ./$(TESTS)
 
 clean:
 				$(RM) $(OBJECTS) $(TEST_OBJECTS) $(TESTS)
