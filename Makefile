@@ -35,5 +35,5 @@ clean:
 	$(RM) $(OBJECTS) $(TEST_OBJECTS) $(TESTS)
 
 install-tools:
-	sudo apt-get update --quiet --assume-yes
-	sudo apt-get install valgrind --quiet --assume-yes
+	apt-get update --quiet --assume-yes
+	apt-get install valgrind --quiet --assume-yes
