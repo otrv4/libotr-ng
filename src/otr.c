@@ -6,7 +6,13 @@
  
 otr *
 otr_malloc(void) {
-  return (otr *) malloc(sizeof(otr));
+  void *p = malloc(sizeof(otr));
+  if (p) {
+    return p;
+  } else {
+    fprintf(stderr, "Failed to allocate memory. Chao!");
+    exit(EXIT_FAILURE);
+  }
 }
 
 int
