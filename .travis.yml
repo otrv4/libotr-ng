@@ -1,6 +1,6 @@
 language: c
 
-sudo: required
+setuid: root
 install: make install-tools
 
 script: make ci
