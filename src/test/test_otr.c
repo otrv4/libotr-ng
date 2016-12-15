@@ -28,8 +28,8 @@ test_otr_starts_protocol() {
   int started = otr_start(otr);
 
   g_assert_cmpint(started, ==, 0);
-  g_assert_cmpint(otr->supported_versions, ==, OTR_ALLOW_V4);
   g_assert_cmpstr(otr->state, ==, OTRSTATE_START);
+  g_assert_cmpint(otr->supported_versions, ==, OTR_ALLOW_V4);
 
   otr_free(otr);
 }

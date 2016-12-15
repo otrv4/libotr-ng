@@ -24,6 +24,11 @@ otr_start(otr *otr) {
 }
 
 void
+otr_version_support_v3(otr *otr) {
+  otr->supported_versions |= OTR_ALLOW_V3;
+}
+
+void
 otr_build_query_message(char *query_message, const otr *otr, const char *message) {
   const char *query = "?OTRv";
 
@@ -72,11 +77,6 @@ otr_build_whitespace_tag(char *whitespace_tag, const otr *otr, const char *messa
   strcat(whitespace_tag, message);
 
   return 0;
-}
-
-void
-otr_version_support_v3(otr *otr) {
-  otr->supported_versions |= OTR_ALLOW_V3;
 }
 
 void
