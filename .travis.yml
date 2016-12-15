@@ -2,8 +2,8 @@ language: c
 
 sudo: required
 
-before-install:
-	- sudo apt-get update --quiet --assume-yes
-	- sudo apt-get install valgrind --quiet --assume-yes
+before_install:
+  - sudo apt-get update --quiet --assume-yes
+  - sudo apt-get install valgrind --quiet --assume-yes
 
 script: make ci
