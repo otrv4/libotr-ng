@@ -35,7 +35,7 @@ test_otr_starts_protocol() {
 }
 
 void
-test_otr_version_support_v34(otr_fixture *otr_fixture, gconstpointer data) {
+test_otr_version_supports_v34(otr_fixture *otr_fixture, gconstpointer data) {
   otr_version_support_v3(otr_fixture->otr);
 
   g_assert_cmpint(otr_fixture->otr->supported_versions, ==, OTR_ALLOW_V3 | OTR_ALLOW_V4);
@@ -70,8 +70,7 @@ test_otr_builds_whitespace_tag(otr_fixture *otr_fixture, gconstpointer data) {
   char *message = "And some random invitation text.";
 
   char whitespace_tag[strlen(expected_tag)];
-  int error = otr_build_whitespace_tag(whitespace_tag, otr_fixture->otr, message);
-  g_assert_false(error);
+  otr_build_whitespace_tag(whitespace_tag, otr_fixture->otr, message);
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
 }
 
@@ -82,8 +81,7 @@ test_otr_builds_whitespace_tag_v34(otr_fixture *otr_fixture, gconstpointer data)
   char *message = "And some random invitation text";
 
   char whitespace_tag[strlen(expected_tag)];
-  int error = otr_build_whitespace_tag(whitespace_tag, otr_fixture->otr, message);
-  g_assert_false(error);
+  otr_build_whitespace_tag(whitespace_tag, otr_fixture->otr, message);
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
 }
 
@@ -92,9 +90,9 @@ main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
 
   g_test_add_func("/otr_starts_protocol", test_otr_starts_protocol);
-  g_test_add("/otr_version_support_v34", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_version_support_v34);
+  g_test_add("/otr_version_supports_v34", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_version_supports_v34);
   g_test_add("/otr_builds_query_message", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_query_message);
-  g_test_add("/otr_builds_query_message_34", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_query_message_v34);
+  g_test_add("/otr_builds_query_message_v34", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_query_message_v34);
   g_test_add("/otr_builds_whitespace_tag", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_whitespace_tag);
   g_test_add("/otr_builds_whitespace_tag_v34", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_whitespace_tag_v34);
 
