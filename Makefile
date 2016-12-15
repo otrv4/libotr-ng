@@ -20,6 +20,8 @@ TESTS = $(SRC_TEST)/test_$(P)
 #Targets
 default: $(P) test
 
+ci: $(P) test
+
 $(P): $(OBJECTS)
 
 test: $(TEST_OBJECTS)
