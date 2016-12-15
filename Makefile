@@ -28,6 +28,9 @@ test: $(TEST_OBJECTS)
 	$(CC) $(CFLAGS) -o $(TESTS) $(OBJECTS) $(TEST_OBJECTS) $(LDLIBS)
 	./$(TESTS)
 
+code-check:
+	splint src/*.h src/**.c `pkg-config --cflags glib-2.0`
+
 mem-check:
 	valgrind --leak-check=full ./$(TESTS)
 
