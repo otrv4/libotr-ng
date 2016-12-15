@@ -12,7 +12,7 @@ TEST_OBJECTS = $(SRC_TEST)/test_otr.o
 #Compilation and linkage flags
 CFLAGS = -g -Wall `pkg-config --cflags glib-2.0`
 LDLIBS = `pkg-config --libs glib-2.0`
-CC = c99
+CC = gcc
 
 #Executables
 TESTS = $(SRC_TEST)/test_$(P)
