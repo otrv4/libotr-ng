@@ -20,7 +20,7 @@ TESTS = $(SRC_TEST)/test_$(P)
 #Targets
 default: $(P) test
 
-ci: $(P) test mem-check
+ci: $(P) test code-check mem-check
 
 $(P): $(OBJECTS)
 
