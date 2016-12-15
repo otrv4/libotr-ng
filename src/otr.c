@@ -11,7 +11,6 @@ otr_malloc(void) {
 
 int
 otr_start(otr *otr) {
-  otr->version = OTR_V4;
   otr->state = OTRSTATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
   
@@ -20,8 +19,20 @@ otr_start(otr *otr) {
 
 void
 otr_build_query_message(char *query_message, const otr *otr, const char *message) {
-  const char *query ="?OTRv%i? %s";
-  sprintf(query_message, query, otr->version, message);
+  const char *query = "?OTRv";
+
+  strcpy(query_message, query);
+
+  if (otr->supported_versions & OTR_ALLOW_V3) {
+    strcat(query_message, "3");
+  }
+
+  if (otr->supported_versions & OTR_ALLOW_V4) {
+    strcat(query_message, "4");
+  }
+
+  strcat(query_message, "? ");
+  strcat(query_message, message);
 }
 
 //TODO: should this care about UTF8?

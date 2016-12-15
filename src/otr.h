@@ -1,13 +1,9 @@
-#define OTR_V3 3
-#define OTR_V4 4
-
 #define OTR_ALLOW_V3 1
 #define OTR_ALLOW_V4 2
 
 #define OTRSTATE_START "OTR_STATE_START"
 
 typedef struct {
-  int version;
   char *state;
   char supported_versions;
 } otr;
