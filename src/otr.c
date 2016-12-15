@@ -8,7 +8,10 @@ otr *
 otr_malloc(void) {
   void *p = malloc(sizeof(otr));
   if (p) {
-    return p;
+    otr *otr = p;
+    otr->supported_versions = '\0';
+
+    return otr;
   } else {
     fprintf(stderr, "Failed to allocate memory. Chao!");
     exit(EXIT_FAILURE);
@@ -17,7 +20,7 @@ otr_malloc(void) {
 
 int
 otr_start(otr *otr) {
-  otr->state = OTRSTATE_START;
+  otr->state = OTR_STATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
   
   return 0;

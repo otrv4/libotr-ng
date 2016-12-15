@@ -1,7 +1,7 @@
 #define OTR_ALLOW_V3 1
 #define OTR_ALLOW_V4 2
 
-#define OTRSTATE_START "OTR_STATE_START"
+#define OTR_STATE_START "OTR_STATE_START"
 
 typedef struct {
   char *state;
