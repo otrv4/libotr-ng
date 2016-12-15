@@ -25,14 +25,15 @@ ci: $(P) test mem-check
 $(P): $(OBJECTS)
 
 test: $(TEST_OBJECTS)
-			$(CC) $(CFLAGS) -o $(TESTS) $(OBJECTS) $(TEST_OBJECTS) $(LDLIBS)
-			./$(TESTS)
+	$(CC) $(CFLAGS) -o $(TESTS) $(OBJECTS) $(TEST_OBJECTS) $(LDLIBS)
+	./$(TESTS)
 
 mem-check:
-						valgrind --leak-check=full ./$(TESTS)
+	valgrind --leak-check=full ./$(TESTS)
 
 clean:
-				$(RM) $(OBJECTS) $(TEST_OBJECTS) $(TESTS)
+	$(RM) $(OBJECTS) $(TEST_OBJECTS) $(TESTS)
 
 install-tools:
-				sudo apt-get install valgrind
+	sudo apt-get update --quiet --assume-yes
+	sudo apt-get install valgrind --quiet --assume-yes
