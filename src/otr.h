@@ -1,14 +1,14 @@
 #define OTR_ALLOW_V3 1
 #define OTR_ALLOW_V4 2
 
-#define OTR_STATE_START "OTR_STATE_START"
+#define OTR_STATE_START 1
 
 typedef struct {
-  char *state;
-  char supported_versions;
+  int *state;
+  int *supported_versions;
 } otr;
 
-otr *otr_malloc(void);
+otr *otr_new(void);
 
 int otr_start(otr *otr);
 void otr_build_query_message(char * query_message, const otr *otr, const char *message);

@@ -3,32 +3,39 @@
 #include <string.h>
 
 #include "otr.h"
- 
-otr *
-otr_malloc(void) {
-  void *p = malloc(sizeof(otr));
-  if (p) {
-    otr *otr = p;
-    otr->supported_versions = '\0';
 
-    return otr;
-  } else {
-    fprintf(stderr, "Failed to allocate memory. Chao!");
-    exit(EXIT_FAILURE);
+void *
+otr_malloc(size_t size) {
+  void *p = malloc(size);
+
+  if (p) {
+    return p;
   }
+
+  fprintf(stderr, "Failed to allocate memory. Chao!\n");
+  exit(EXIT_FAILURE);
+}
+
+otr *
+otr_new(void) {
+  otr *otr = otr_malloc(sizeof(otr));
+  otr->state = otr_malloc(sizeof(int));
+  otr->supported_versions = otr_malloc(sizeof(int));
+
+  return otr;
 }
 
 int
 otr_start(otr *otr) {
-  otr->state = OTR_STATE_START;
-  otr->supported_versions = OTR_ALLOW_V4;
-  
+  *otr->state = OTR_STATE_START;
+  *otr->supported_versions = OTR_ALLOW_V4;
+
   return 0;
 }
 
 void
 otr_version_support_v3(otr *otr) {
-  otr->supported_versions |= OTR_ALLOW_V3;
+  *otr->supported_versions |= OTR_ALLOW_V3;
 }
 
 void
@@ -37,11 +44,11 @@ otr_build_query_message(char *query_message, const otr *otr, const char *message
 
   strcpy(query_message, query);
 
-  if (otr->supported_versions & OTR_ALLOW_V3) {
+  if (*otr->supported_versions & OTR_ALLOW_V3) {
     strcat(query_message, "3");
   }
 
-  if (otr->supported_versions & OTR_ALLOW_V4) {
+  if (*otr->supported_versions & OTR_ALLOW_V4) {
     strcat(query_message, "4");
   }
 
@@ -69,11 +76,11 @@ otr_build_whitespace_tag(char *whitespace_tag, const otr *otr, const char *messa
 
   strcpy(whitespace_tag, tag_base);
   
-  if (otr->supported_versions & OTR_ALLOW_V4) {
+  if (*otr->supported_versions & OTR_ALLOW_V4) {
     strcat(whitespace_tag, tag_version_v4);
   }
 
-  if (otr->supported_versions & OTR_ALLOW_V3) {
+  if (*otr->supported_versions & OTR_ALLOW_V3) {
     strcat(whitespace_tag, tag_version_v3);
   }
 
@@ -84,5 +91,6 @@ otr_build_whitespace_tag(char *whitespace_tag, const otr *otr, const char *messa
 
 void
 otr_free(otr *otr) {
+  free(otr->state);
   free(otr);
 }

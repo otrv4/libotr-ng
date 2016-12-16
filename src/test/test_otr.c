@@ -1,6 +1,4 @@
 #include <glib.h>
-
-#include <stdio.h>
 #include <string.h>
 
 #include "../otr.h"
@@ -11,7 +9,7 @@ typedef struct {
 
 void
 otr_fixture_set_up(otr_fixture *otr_fixture, gconstpointer data) {
-  otr *otr = otr_malloc();
+  otr *otr = otr_new();
   otr_start(otr);
   otr_fixture->otr = otr;
 }
@@ -23,13 +21,13 @@ otr_fixture_teardown(otr_fixture *otr_fixture, gconstpointer data) {
 
 void
 test_otr_starts_protocol() {
-  otr *otr = otr_malloc();
+  otr *otr = otr_new();
 
   int started = otr_start(otr);
 
   g_assert_cmpint(started, ==, 0);
-  g_assert_cmpstr(otr->state, ==, OTR_STATE_START);
-  g_assert_cmpint(otr->supported_versions, ==, OTR_ALLOW_V4);
+  g_assert_cmpint(*otr->state, ==, OTR_STATE_START);
+  g_assert_cmpint(*otr->supported_versions, ==, OTR_ALLOW_V4);
 
   otr_free(otr);
 }
@@ -38,7 +36,7 @@ void
 test_otr_version_supports_v34(otr_fixture *otr_fixture, gconstpointer data) {
   otr_version_support_v3(otr_fixture->otr);
 
-  g_assert_cmpint(otr_fixture->otr->supported_versions, ==, OTR_ALLOW_V3 | OTR_ALLOW_V4);
+  g_assert_cmpint(*otr_fixture->otr->supported_versions, ==, OTR_ALLOW_V3 | OTR_ALLOW_V4);
 }
 
 void
