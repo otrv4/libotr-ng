@@ -4,7 +4,7 @@
 
 #include "otr.h"
 
-void *
+static void *
 otr_malloc(size_t size) {
   void *p = malloc(size);
 
@@ -44,11 +44,11 @@ otr_build_query_message(char *query_message, const otr *otr, const char *message
 
   strcpy(query_message, query);
 
-  if (*otr->supported_versions & OTR_ALLOW_V3) {
+  if ((*otr->supported_versions & OTR_ALLOW_V3) > 0) {
     strcat(query_message, "3");
   }
 
-  if (*otr->supported_versions & OTR_ALLOW_V4) {
+  if ((*otr->supported_versions & OTR_ALLOW_V4) > 0) {
     strcat(query_message, "4");
   }
 
@@ -76,11 +76,11 @@ otr_build_whitespace_tag(char *whitespace_tag, const otr *otr, const char *messa
 
   strcpy(whitespace_tag, tag_base);
   
-  if (*otr->supported_versions & OTR_ALLOW_V4) {
+  if ((*otr->supported_versions & OTR_ALLOW_V4) > 0) {
     strcat(whitespace_tag, tag_version_v4);
   }
 
-  if (*otr->supported_versions & OTR_ALLOW_V3) {
+  if ((*otr->supported_versions & OTR_ALLOW_V3) > 0) {
     strcat(whitespace_tag, tag_version_v3);
   }
 
