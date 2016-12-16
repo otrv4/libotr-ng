@@ -20,7 +20,7 @@ TESTS = $(SRC_TEST)/test_$(P)
 #Targets
 default: $(P) test
 
-ci: $(P) test code-check mem-check
+ci: $(P) test mem-check
 
 $(P): $(OBJECTS)
 
@@ -29,7 +29,7 @@ test: $(TEST_OBJECTS)
 	./$(TESTS)
 
 code-check:
-	splint src/*.h src/**.c `pkg-config --cflags glib-2.0`
+	splint +trytorecover src/*.h src/**.c `pkg-config --cflags glib-2.0`
 
 mem-check:
 	valgrind --leak-check=full ./$(TESTS)
