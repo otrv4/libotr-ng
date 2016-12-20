@@ -26,7 +26,7 @@ test_otr_starts_protocol() {
   int started = otr_start(otr);
 
   g_assert_cmpint(started, ==, 0);
-  g_assert_cmpmem(otr->state, sizeof(int), &OTR_STATE_START, sizeof(int));
+  g_assert_cmpint(*otr->state, ==, OTR_STATE_START);
   g_assert_cmpint(*otr->supported_versions, ==, OTR_ALLOW_V4);
 
   otr_free(otr);
@@ -96,7 +96,7 @@ test_otr_receives_plaintext_with_ws_tag(otr_fixture_t *otr_fixture, gconstpointe
   otr_receive_message(otr_fixture->otr, " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.");
 
   g_assert_cmpstr(otr_fixture->otr->message_to_display, ==, "And some random invitation text.");
-  g_assert_cmpmem(otr_fixture->otr->state, sizeof(int), &OTR_STATE_AKE_IN_PROGRESS, sizeof(int));
+  g_assert_cmpint(*otr_fixture->otr->state, ==, OTR_STATE_AKE_IN_PROGRESS);
   //TODO: assert on the pre-key message
 }
 
