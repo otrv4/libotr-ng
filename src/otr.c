@@ -5,19 +5,19 @@
 #include "otr.h"
 #include "otr_string.h"
 
-  const char tag_base[] = {
-    '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
-    '\x20', '\x09', '\x20', '\x09', '\x20', '\x09', '\x20', '\x20',
-    '\0'
-  };
-  const char tag_version_v4[] = {
-    '\x20', '\x20', '\x09', '\x09', '\x20', '\x09', '\x20', '\x20',
-    '\0'
-  };
-  const char tag_version_v3[] = {
-    '\x20', '\x20', '\x09', '\x09', '\x20', '\x20', '\x09', '\x09',
-    '\0'
-  };
+static const char tag_base[] = {
+  '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
+  '\x20', '\x09', '\x20', '\x09', '\x20', '\x09', '\x20', '\x20',
+  '\0'
+};
+static const char tag_version_v4[] = {
+  '\x20', '\x20', '\x09', '\x09', '\x20', '\x09', '\x20', '\x20',
+  '\0'
+};
+static const char tag_version_v3[] = {
+  '\x20', '\x20', '\x09', '\x09', '\x20', '\x20', '\x09', '\x09',
+  '\0'
+};
 
 static void *
 otr_malloc(size_t size) {
@@ -31,26 +31,30 @@ otr_malloc(size_t size) {
   exit(EXIT_FAILURE);
 }
 
+void
+otr_free(otr *otr) {
+  free(otr);
+}
+
 otr *
 otr_new(void) {
   otr *otr = otr_malloc(sizeof(otr));
-  otr->state = otr_malloc(sizeof(int));
   otr->supported_versions = otr_malloc(sizeof(int));
 
   return otr;
 }
 
-int
-otr_start(otr *otr) {
-  *otr->state = OTR_STATE_START;
-  *otr->supported_versions = OTR_ALLOW_V4;
-
-  return 0;
-}
-
 void
 otr_version_support_v3(otr *otr) {
   *otr->supported_versions |= OTR_ALLOW_V3;
+}
+
+int
+otr_start(otr *otr) {
+  otr->state = &OTR_STATE_START;
+  *otr->supported_versions = OTR_ALLOW_V4;
+
+  return 0;
 }
 
 void
@@ -92,12 +96,6 @@ otr_build_whitespace_tag(char *whitespace_tag, const otr *otr, const char *messa
 }
 
 void
-otr_free(otr *otr) {
-  free(otr->state);
-  free(otr);
-}
-
-void
 otr_receive_message(otr *otr, const char *message) {
   char *tag;
   tag = strstr(message, tag_base);
@@ -105,9 +103,11 @@ otr_receive_message(otr *otr, const char *message) {
   int msg_lenght = strlen(message);
   if (tag) {
     int tag_lenght = strlen(tag_base) + strlen(tag_version_v4);
-    int chars = msg_lenght - tag_lenght + 1;
+    int chars = msg_lenght - tag_lenght;
     otr->message_to_display = otr_malloc(chars);
     otr_string_cpy(otr->message_to_display, message, tag_lenght, chars);
+
+    otr->state = &OTR_STATE_AKE_IN_PROGRESS;
   } else {
     char to_display[msg_lenght];
     otr->message_to_display = to_display;
