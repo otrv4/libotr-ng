@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "otr.h"
+#include "otr_string.h"
 
   const char tag_base[] = {
     '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
@@ -104,16 +105,9 @@ otr_receive_message(otr *otr, const char *message) {
   int msg_lenght = strlen(message);
   if (tag) {
     int tag_lenght = strlen(tag_base) + strlen(tag_version_v4);
-    int chars = msg_lenght - tag_lenght;
-    char to_display[chars];
-    int char_at = 0;
-    for (int i = tag_lenght; i < msg_lenght; i++) {
-      to_display[char_at] = message[i];
-      char_at++;
-    }
-    to_display[char_at] = '\0';
-    otr->message_to_display = otr_malloc(sizeof(to_display));
-    strcpy(otr->message_to_display, to_display);
+    int chars = msg_lenght - tag_lenght + 1;
+    otr->message_to_display = otr_malloc(chars);
+    otr_string_cpy(otr->message_to_display, message, tag_lenght, chars);
   } else {
     char to_display[msg_lenght];
     otr->message_to_display = to_display;

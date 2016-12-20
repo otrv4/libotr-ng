@@ -6,7 +6,7 @@ SRC = src
 SRC_TEST = $(SRC)/test
 
 #Target objects
-OBJECTS = $(SRC)/otr.o
+OBJECTS = $(SRC)/otr.o $(SRC)/otr_string.o
 TEST_OBJECTS = $(SRC_TEST)/test_otr.o
 
 #Compilation and linkage flags
