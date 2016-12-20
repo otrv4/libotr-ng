@@ -32,25 +32,25 @@ otr_malloc(size_t size) {
 }
 
 void
-otr_free(otr *otr) {
+otr_free(otr_t *otr) {
   free(otr);
 }
 
-otr *
+otr_t *
 otr_new(void) {
-  otr *otr = otr_malloc(sizeof(otr));
+  otr_t *otr = otr_malloc(sizeof(otr));
   otr->supported_versions = otr_malloc(sizeof(int));
 
   return otr;
 }
 
 void
-otr_version_support_v3(otr *otr) {
+otr_version_support_v3(otr_t *otr) {
   *otr->supported_versions |= OTR_ALLOW_V3;
 }
 
 int
-otr_start(otr *otr) {
+otr_start(otr_t *otr) {
   otr->state = &OTR_STATE_START;
   *otr->supported_versions = OTR_ALLOW_V4;
 
@@ -58,7 +58,7 @@ otr_start(otr *otr) {
 }
 
 void
-otr_build_query_message(char *query_message, const otr *otr, const char *message) {
+otr_build_query_message(char *query_message, const otr_t *otr, const char *message) {
   const char *query = "?OTRv";
 
   strcpy(query_message, query);
@@ -78,7 +78,7 @@ otr_build_query_message(char *query_message, const otr *otr, const char *message
 //TODO: should this care about UTF8?
 //TODO: should this deal with buffer overflows?
 int
-otr_build_whitespace_tag(char *whitespace_tag, const otr *otr, const char *message) {
+otr_build_whitespace_tag(char *whitespace_tag, const otr_t *otr, const char *message) {
 
   strcpy(whitespace_tag, tag_base);
   
@@ -96,7 +96,7 @@ otr_build_whitespace_tag(char *whitespace_tag, const otr *otr, const char *messa
 }
 
 void
-otr_receive_message(otr *otr, const char *message) {
+otr_receive_message(otr_t *otr, const char *message) {
   char *tag;
   tag = strstr(message, tag_base);
 

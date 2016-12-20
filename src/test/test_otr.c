@@ -4,24 +4,24 @@
 #include "../otr.h"
 
 typedef struct {
-  otr *otr;
-} otr_fixture;
+  otr_t *otr;
+} otr_fixture_t;
 
 void
-otr_fixture_set_up(otr_fixture *otr_fixture, gconstpointer data) {
-  otr *otr = otr_new();
+otr_fixture_set_up(otr_fixture_t *otr_fixture, gconstpointer data) {
+  otr_t *otr = otr_new();
   otr_start(otr);
   otr_fixture->otr = otr;
 }
 
 void
-otr_fixture_teardown(otr_fixture *otr_fixture, gconstpointer data) {
+otr_fixture_teardown(otr_fixture_t *otr_fixture, gconstpointer data) {
   otr_free(otr_fixture->otr);
 }
 
 void
 test_otr_starts_protocol() {
-  otr *otr = otr_new();
+  otr_t *otr = otr_new();
 
   int started = otr_start(otr);
 
@@ -33,14 +33,14 @@ test_otr_starts_protocol() {
 }
 
 void
-test_otr_version_supports_v34(otr_fixture *otr_fixture, gconstpointer data) {
+test_otr_version_supports_v34(otr_fixture_t *otr_fixture, gconstpointer data) {
   otr_version_support_v3(otr_fixture->otr);
 
   g_assert_cmpint(*otr_fixture->otr->supported_versions, ==, OTR_ALLOW_V3 | OTR_ALLOW_V4);
 }
 
 void
-test_otr_builds_query_message(otr_fixture *otr_fixture, gconstpointer data) {
+test_otr_builds_query_message(otr_fixture_t *otr_fixture, gconstpointer data) {
   char *message = "And some random invitation text.";
 
   char query_message[41];
@@ -51,7 +51,7 @@ test_otr_builds_query_message(otr_fixture *otr_fixture, gconstpointer data) {
 }
 
 void
-test_otr_builds_query_message_v34(otr_fixture *otr_fixture, gconstpointer data) {
+test_otr_builds_query_message_v34(otr_fixture_t *otr_fixture, gconstpointer data) {
   otr_version_support_v3(otr_fixture->otr);
   char *message = "And some random invitation text.";
 
@@ -63,7 +63,7 @@ test_otr_builds_query_message_v34(otr_fixture *otr_fixture, gconstpointer data) 
 }
 
 void
-test_otr_builds_whitespace_tag(otr_fixture *otr_fixture, gconstpointer data) {
+test_otr_builds_whitespace_tag(otr_fixture_t *otr_fixture, gconstpointer data) {
   char *expected_tag = " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
   char *message = "And some random invitation text.";
 
@@ -73,7 +73,7 @@ test_otr_builds_whitespace_tag(otr_fixture *otr_fixture, gconstpointer data) {
 }
 
 void
-test_otr_builds_whitespace_tag_v34(otr_fixture *otr_fixture, gconstpointer data) {
+test_otr_builds_whitespace_tag_v34(otr_fixture_t *otr_fixture, gconstpointer data) {
   otr_version_support_v3(otr_fixture->otr);
   char *expected_tag = " \t  \t\t\t\t \t \t \t    \t\t \t    \t\t  \t\tAnd some random invitation text";
   char *message = "And some random invitation text";
@@ -84,14 +84,14 @@ test_otr_builds_whitespace_tag_v34(otr_fixture *otr_fixture, gconstpointer data)
 }
 
 void
-test_otr_receives_plaintext_without_ws_tag_on_start(otr_fixture *otr_fixture, gconstpointer data) {
+test_otr_receives_plaintext_without_ws_tag_on_start(otr_fixture_t *otr_fixture, gconstpointer data) {
   otr_receive_message(otr_fixture->otr, "Some random text.");
 
   g_assert_cmpstr(otr_fixture->otr->message_to_display, ==, "Some random text.");
 }
 
 void
-test_otr_receives_plaintext_with_ws_tag(otr_fixture *otr_fixture, gconstpointer data) {
+test_otr_receives_plaintext_with_ws_tag(otr_fixture_t *otr_fixture, gconstpointer data) {
 
   otr_receive_message(otr_fixture->otr, " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.");
 
@@ -105,13 +105,13 @@ main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
 
   g_test_add_func("/otr_starts_protocol", test_otr_starts_protocol);
-  g_test_add("/otr_version_supports_v34", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_version_supports_v34);
-  g_test_add("/otr_builds_query_message", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_query_message);
-  g_test_add("/otr_builds_query_message_v34", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_query_message_v34);
-  g_test_add("/otr_builds_whitespace_tag", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_whitespace_tag);
-  g_test_add("/otr_builds_whitespace_tag_v34", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_whitespace_tag_v34);
-  g_test_add("/otr_receives_plaintext_without_ws_tag_on_start", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_receives_plaintext_without_ws_tag_on_start);
-  g_test_add("/otr_receives_plaintext_with_ws_tag", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_receives_plaintext_with_ws_tag);
+  g_test_add("/otr_version_supports_v34", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_version_supports_v34);
+  g_test_add("/otr_builds_query_message", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_query_message);
+  g_test_add("/otr_builds_query_message_v34", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_query_message_v34);
+  g_test_add("/otr_builds_whitespace_tag", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_whitespace_tag);
+  g_test_add("/otr_builds_whitespace_tag_v34", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_whitespace_tag_v34);
+  g_test_add("/otr_receives_plaintext_without_ws_tag_on_start", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_receives_plaintext_without_ws_tag_on_start);
+  g_test_add("/otr_receives_plaintext_with_ws_tag", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_receives_plaintext_with_ws_tag);
 
   return g_test_run();
 }
