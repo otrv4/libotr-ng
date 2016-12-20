@@ -4,6 +4,20 @@
 
 #include "otr.h"
 
+  const char tag_base[] = {
+    '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
+    '\x20', '\x09', '\x20', '\x09', '\x20', '\x09', '\x20', '\x20',
+    '\0'
+  };
+  const char tag_version_v4[] = {
+    '\x20', '\x20', '\x09', '\x09', '\x20', '\x09', '\x20', '\x20',
+    '\0'
+  };
+  const char tag_version_v3[] = {
+    '\x20', '\x20', '\x09', '\x09', '\x20', '\x20', '\x09', '\x09',
+    '\0'
+  };
+
 static void *
 otr_malloc(size_t size) {
   void *p = malloc(size);
@@ -60,19 +74,6 @@ otr_build_query_message(char *query_message, const otr *otr, const char *message
 //TODO: should this deal with buffer overflows?
 int
 otr_build_whitespace_tag(char *whitespace_tag, const otr *otr, const char *message) {
-  const char tag_base[] = {
-    '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
-    '\x20', '\x09', '\x20', '\x09', '\x20', '\x09', '\x20', '\x20',
-    '\0'
-  };
-  const char tag_version_v4[] = {
-    '\x20', '\x20', '\x09', '\x09', '\x20', '\x09', '\x20', '\x20',
-    '\0'
-  };
-  const char tag_version_v3[] = {
-    '\x20', '\x20', '\x09', '\x09', '\x20', '\x20', '\x09', '\x09',
-    '\0'
-  };
 
   strcpy(whitespace_tag, tag_base);
   
@@ -93,4 +94,29 @@ void
 otr_free(otr *otr) {
   free(otr->state);
   free(otr);
+}
+
+void
+otr_receive_message(otr *otr, const char *message) {
+  char *tag;
+  tag = strstr(message, tag_base);
+
+  int msg_lenght = strlen(message);
+  if (tag) {
+    int tag_lenght = strlen(tag_base) + strlen(tag_version_v4);
+    int chars = msg_lenght - tag_lenght;
+    char to_display[chars];
+    int char_at = 0;
+    for (int i = tag_lenght; i < msg_lenght; i++) {
+      to_display[char_at] = message[i];
+      char_at++;
+    }
+    to_display[char_at] = '\0';
+    otr->message_to_display = otr_malloc(sizeof(to_display));
+    strcpy(otr->message_to_display, to_display);
+  } else {
+    char to_display[msg_lenght];
+    otr->message_to_display = to_display;
+    strcpy(otr->message_to_display, message);
+  }
 }

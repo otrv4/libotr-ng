@@ -83,6 +83,24 @@ test_otr_builds_whitespace_tag_v34(otr_fixture *otr_fixture, gconstpointer data)
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
 }
 
+void
+test_otr_receives_plaintext_without_ws_tag_on_start(otr_fixture *otr_fixture, gconstpointer data) {
+  otr_receive_message(otr_fixture->otr, "Some random text.");
+
+  g_assert_cmpstr(otr_fixture->otr->message_to_display, ==, "Some random text.");
+}
+
+void
+test_otr_receives_plaintext_with_ws_tag(otr_fixture *otr_fixture, gconstpointer data) {
+  char *plaintext = " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
+
+  otr_receive_message(otr_fixture->otr, plaintext);
+
+  g_assert_cmpstr(otr_fixture->otr->message_to_display, ==, "And some random invitation text.");
+  //g_assert_cmpstr(otr_fixture->otr->state, ==, "DAKE_IN_PROGRESS");
+  //TODO: assert on the pre-key message
+}
+
 int
 main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
@@ -93,6 +111,8 @@ main(int argc, char **argv) {
   g_test_add("/otr_builds_query_message_v34", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_query_message_v34);
   g_test_add("/otr_builds_whitespace_tag", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_whitespace_tag);
   g_test_add("/otr_builds_whitespace_tag_v34", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_whitespace_tag_v34);
+  g_test_add("/otr_receives_plaintext_without_ws_tag_on_start", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_receives_plaintext_without_ws_tag_on_start);
+  g_test_add("/otr_receives_plaintext_with_ws_tag", otr_fixture, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_receives_plaintext_with_ws_tag);
 
   return g_test_run();
 }
