@@ -26,8 +26,8 @@ test_otr_starts_protocol() {
   int started = otr_start(otr);
 
   g_assert_cmpint(started, ==, 0);
-  g_assert_cmpint(*otr->state, ==, OTR_STATE_START);
-  g_assert_cmpint(*otr->supported_versions, ==, OTR_ALLOW_V4);
+  g_assert_cmpint(otr->state, ==, OTR_STATE_START);
+  g_assert_cmpint(otr->supported_versions, ==, OTR_ALLOW_V4);
 
   otr_free(otr);
 }
@@ -36,7 +36,7 @@ void
 test_otr_version_supports_v34(otr_fixture_t *otr_fixture, gconstpointer data) {
   otr_version_support_v3(otr_fixture->otr);
 
-  g_assert_cmpint(*otr_fixture->otr->supported_versions, ==, OTR_ALLOW_V3 | OTR_ALLOW_V4);
+  g_assert_cmpint(otr_fixture->otr->supported_versions, ==, OTR_ALLOW_V3 | OTR_ALLOW_V4);
 }
 
 void
@@ -96,7 +96,7 @@ test_otr_receives_plaintext_with_ws_tag(otr_fixture_t *otr_fixture, gconstpointe
   otr_receive_message(otr_fixture->otr, " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.");
 
   g_assert_cmpstr(otr_fixture->otr->message_to_display, ==, "And some random invitation text.");
-  g_assert_cmpint(*otr_fixture->otr->state, ==, OTR_STATE_AKE_IN_PROGRESS);
+  g_assert_cmpint(otr_fixture->otr->state, ==, OTR_STATE_AKE_IN_PROGRESS);
   //TODO: assert on the pre-key message
 }
 
@@ -105,13 +105,13 @@ main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
 
   g_test_add_func("/otr_starts_protocol", test_otr_starts_protocol);
-  g_test_add("/otr_version_supports_v34", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_version_supports_v34);
-  g_test_add("/otr_builds_query_message", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_query_message);
-  g_test_add("/otr_builds_query_message_v34", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_query_message_v34);
-  g_test_add("/otr_builds_whitespace_tag", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_whitespace_tag);
-  g_test_add("/otr_builds_whitespace_tag_v34", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_builds_whitespace_tag_v34);
-  g_test_add("/otr_receives_plaintext_without_ws_tag_on_start", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_receives_plaintext_without_ws_tag_on_start);
-  g_test_add("/otr_receives_plaintext_with_ws_tag", otr_fixture_t, NULL, otr_fixture_set_up, otr_fixture_teardown, test_otr_receives_plaintext_with_ws_tag);
+  g_test_add("/otr_version_supports_v34", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_version_supports_v34, otr_fixture_teardown );
+  g_test_add("/otr_builds_query_message", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_builds_query_message, otr_fixture_teardown );
+  g_test_add("/otr_builds_query_message_v34", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_builds_query_message_v34, otr_fixture_teardown );
+  g_test_add("/otr_builds_whitespace_tag", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_builds_whitespace_tag, otr_fixture_teardown );
+  g_test_add("/otr_builds_whitespace_tag_v34", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_builds_whitespace_tag_v34, otr_fixture_teardown );
+  g_test_add("/otr_receives_plaintext_without_ws_tag_on_start", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_receives_plaintext_without_ws_tag_on_start, otr_fixture_teardown );
+  g_test_add("/otr_receives_plaintext_with_ws_tag", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_receives_plaintext_with_ws_tag, otr_fixture_teardown );
 
   return g_test_run();
 }

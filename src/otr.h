@@ -1,12 +1,16 @@
-#define OTR_ALLOW_V3 1
-#define OTR_ALLOW_V4 2
+typedef enum {
+  OTR_STATE_START = 1,
+  OTR_STATE_AKE_IN_PROGRESS = 2
+} stateFlag ;
 
-static const int OTR_STATE_START = 1;
-static const int OTR_STATE_AKE_IN_PROGRESS = 2;
+typedef enum {
+  OTR_ALLOW_V3 = 1,
+  OTR_ALLOW_V4 = 2
+} supportVersion ;
 
 typedef struct {
-  const int *state;
-  int *supported_versions;
+  stateFlag state;
+  int supported_versions;
   char *message_to_display;
 } otr_t;
 

@@ -38,21 +38,20 @@ otr_free(otr_t *otr) {
 
 otr_t *
 otr_new(void) {
-  otr_t *otr = otr_malloc(sizeof(otr));
-  otr->supported_versions = otr_malloc(sizeof(int));
+  otr_t *otr = otr_malloc(sizeof(otr_t));
 
   return otr;
 }
 
 void
 otr_version_support_v3(otr_t *otr) {
-  *otr->supported_versions |= OTR_ALLOW_V3;
+  otr->supported_versions |= OTR_ALLOW_V3;
 }
 
 int
 otr_start(otr_t *otr) {
-  otr->state = &OTR_STATE_START;
-  *otr->supported_versions = OTR_ALLOW_V4;
+  otr->state = OTR_STATE_START;
+  otr->supported_versions = OTR_ALLOW_V4;
 
   return 0;
 }
@@ -63,11 +62,11 @@ otr_build_query_message(char *query_message, const otr_t *otr, const char *messa
 
   strcpy(query_message, query);
 
-  if ((*otr->supported_versions & OTR_ALLOW_V3) > 0) {
+  if ((otr->supported_versions & OTR_ALLOW_V3) > 0) {
     strcat(query_message, "3");
   }
 
-  if ((*otr->supported_versions & OTR_ALLOW_V4) > 0) {
+  if ((otr->supported_versions & OTR_ALLOW_V4) > 0) {
     strcat(query_message, "4");
   }
 
@@ -81,12 +80,12 @@ int
 otr_build_whitespace_tag(char *whitespace_tag, const otr_t *otr, const char *message) {
 
   strcpy(whitespace_tag, tag_base);
-  
-  if ((*otr->supported_versions & OTR_ALLOW_V4) > 0) {
+
+  if ((otr->supported_versions & OTR_ALLOW_V4) > 0) {
     strcat(whitespace_tag, tag_version_v4);
   }
 
-  if ((*otr->supported_versions & OTR_ALLOW_V3) > 0) {
+  if ((otr->supported_versions & OTR_ALLOW_V3) > 0) {
     strcat(whitespace_tag, tag_version_v3);
   }
 
@@ -100,16 +99,15 @@ otr_receive_message(otr_t *otr, const char *message) {
   char *tag;
   tag = strstr(message, tag_base);
 
-  int msg_lenght = strlen(message);
+  int msg_length = strlen(message);
   if (tag) {
-    int tag_lenght = strlen(tag_base) + strlen(tag_version_v4);
-    int chars = msg_lenght - tag_lenght;
+    int tag_length = strlen(tag_base) + strlen(tag_version_v4);
+    int chars = msg_length - tag_length;
     otr->message_to_display = otr_malloc(chars);
-    otr_string_cpy(otr->message_to_display, message, tag_lenght, chars);
-
-    otr->state = &OTR_STATE_AKE_IN_PROGRESS;
+    strncpy(otr->message_to_display, message+tag_length, chars+1);
+    otr->state = OTR_STATE_AKE_IN_PROGRESS;
   } else {
-    char to_display[msg_lenght];
+    char to_display[msg_length];
     otr->message_to_display = to_display;
     strcpy(otr->message_to_display, message);
   }
