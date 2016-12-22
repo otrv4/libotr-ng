@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "otr.h"
-#include "otr_string.h"
 
 static const char tag_base[] = {
   '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
