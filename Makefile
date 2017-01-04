@@ -1,5 +1,5 @@
 #Library
-P = libotr
+P = libotrv4
 
 #Paths
 SRC = src
