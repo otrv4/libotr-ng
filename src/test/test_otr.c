@@ -109,6 +109,16 @@ test_otr_receives_plaintext_with_ws_tag(otr_fixture_t *otr_fixture, gconstpointe
   g_assert_nonnull(otr_fixture->otr->pre_key);
 }
 
+void
+test_otr_receives_plaintext_with_ws_tag_v3(otr_fixture_t *otr_fixture, gconstpointer data) {
+
+  otr_receive_message(otr_fixture->otr, " \t  \t\t\t\t \t \t \t    \t\t  \t\tAnd some random invitation text.");
+
+  g_assert_cmpstr(otr_fixture->otr->message_to_display, ==, "And some random invitation text.");
+  g_assert_cmpint(otr_fixture->otr->state, ==, OTR_STATE_AKE_IN_PROGRESS);
+  //TODO: assert this is delegated to the v3 part of the library
+}
+
 int
 main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
@@ -122,6 +132,7 @@ main(int argc, char **argv) {
   g_test_add("/otr_receives_plaintext_without_ws_tag_on_start", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_receives_plaintext_without_ws_tag_on_start, otr_fixture_teardown );
   g_test_add("/otr_receives_plaintext_without_ws_tag_not_on_start", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_receives_plaintext_without_ws_tag_not_on_start, otr_fixture_teardown );
   g_test_add("/otr_receives_plaintext_with_ws_tag", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_receives_plaintext_with_ws_tag, otr_fixture_teardown );
+  g_test_add("/otr_receives_plaintext_with_ws_tag_v3", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_receives_plaintext_with_ws_tag_v3, otr_fixture_teardown );
 
   return g_test_run();
 }
