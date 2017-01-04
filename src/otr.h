@@ -1,3 +1,5 @@
+#include "dake.h"
+
 typedef enum {
   OTR_STATE_START = 1,
   OTR_STATE_AKE_IN_PROGRESS = 2
@@ -13,6 +15,7 @@ typedef struct {
   int supported_versions;
   char *message_to_display;
   char *warning;
+  dake_pre_key_t *pre_key;
 } otr_t;
 
 otr_t *otr_new(void);

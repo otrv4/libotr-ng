@@ -106,7 +106,7 @@ test_otr_receives_plaintext_with_ws_tag(otr_fixture_t *otr_fixture, gconstpointe
 
   g_assert_cmpstr(otr_fixture->otr->message_to_display, ==, "And some random invitation text.");
   g_assert_cmpint(otr_fixture->otr->state, ==, OTR_STATE_AKE_IN_PROGRESS);
-  //TODO: assert on the pre-key message
+  g_assert_nonnull(otr_fixture->otr->pre_key);
 }
 
 int

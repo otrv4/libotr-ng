@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "mem.h"
 #include "otr.h"
 
 static const char tag_base[] = {
@@ -18,28 +19,16 @@ static const char tag_version_v3[] = {
   '\0'
 };
 
-static void *
-otr_malloc(size_t size) {
-  void *p = malloc(size);
+otr_t *
+otr_new(void) {
+  otr_t *otr = mem_alloc(sizeof(otr_t));
 
-  if (p) {
-    return p;
-  }
-
-  fprintf(stderr, "Failed to allocate memory. Chao!\n");
-  exit(EXIT_FAILURE);
+  return otr;
 }
 
 void
 otr_free(otr_t *otr) {
   free(otr);
-}
-
-otr_t *
-otr_new(void) {
-  otr_t *otr = otr_malloc(sizeof(otr_t));
-
-  return otr;
 }
 
 void
@@ -102,9 +91,10 @@ otr_receive_message(otr_t *otr, const char *message) {
   if (tag) {
     int tag_length = strlen(tag_base) + strlen(tag_version_v4);
     int chars = msg_length - tag_length;
-    otr->message_to_display = otr_malloc(chars);
+    otr->message_to_display = mem_alloc(chars);
     strncpy(otr->message_to_display, message+tag_length, chars+1);
     otr->state = OTR_STATE_AKE_IN_PROGRESS;
+    otr->pre_key = dake_compute_pre_key();
   } else {
     char to_display[msg_length];
     otr->message_to_display = to_display;
