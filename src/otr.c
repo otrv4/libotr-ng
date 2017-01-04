@@ -22,6 +22,8 @@ static const char tag_version_v3[] = {
 otr_t *
 otr_new(void) {
   otr_t *otr = mem_alloc(sizeof(otr_t));
+  otr->running_version = 0;
+  otr->pre_key = NULL;
 
   return otr;
 }
@@ -82,23 +84,72 @@ otr_build_whitespace_tag(char *whitespace_tag, const otr_t *otr, const char *mes
   return 0;
 }
 
+static int
+otr_message_contains_tag(const char *message) {
+  char *tag;
+  if (strstr(message, tag_base)) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+static void
+otr_message_to_display_without_tag(otr_t *otr, const char *message, const char *tag_version) {
+  int msg_length = strlen(message);
+  int tag_length = strlen(tag_base) + strlen(tag_version);
+  int chars = msg_length - tag_length;
+  char m[chars];
+  otr->message_to_display = mem_alloc(chars);
+  strncpy(otr->message_to_display, message+tag_length, chars + 1);
+}
+
+static void
+otr_message_to_display_set(otr_t *otr, const char *message) {
+  char to_display[strlen(message)];
+  otr->message_to_display = to_display;
+  strcpy(otr->message_to_display, message);
+}
+
+static void
+otr_state_set(otr_t *otr, stateFlag target) {
+    otr->state = target;
+}
+
+static void
+otr_running_version_set(otr_t *otr, const char *message) {
+    char *tag_v4;
+    tag_v4 = strstr(message, tag_version_v4);
+    if (tag_v4) {
+      otr->running_version = V4;
+      return;
+    }
+    char *tag_v3;
+    tag_v3 = strstr(message, tag_version_v3);
+    if (tag_v3) {
+      otr->running_version = V3;
+      return;
+    }
+}
+
 void
 otr_receive_message(otr_t *otr, const char *message) {
-  char *tag;
-  tag = strstr(message, tag_base);
+  if (otr_message_contains_tag(message)) {
+    otr_running_version_set(otr, message);
+    otr_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
 
-  int msg_length = strlen(message);
-  if (tag) {
-    int tag_length = strlen(tag_base) + strlen(tag_version_v4);
-    int chars = msg_length - tag_length;
-    otr->message_to_display = mem_alloc(chars);
-    strncpy(otr->message_to_display, message+tag_length, chars+1);
-    otr->state = OTR_STATE_AKE_IN_PROGRESS;
-    otr->pre_key = dake_compute_pre_key();
+    switch (otr->running_version) {
+    case V4:
+      otr_message_to_display_without_tag(otr, message, tag_version_v4);
+      otr->pre_key = dake_compute_pre_key();
+      break;
+    case V3:
+      otr_message_to_display_without_tag(otr, message, tag_version_v3);
+      break;
+    }
+
   } else {
-    char to_display[msg_length];
-    otr->message_to_display = to_display;
-    strcpy(otr->message_to_display, message);
+    otr_message_to_display_set(otr, message);
     if (otr->state > OTR_STATE_START) {
       otr->warning = "The above message was received unencrypted.";
     }

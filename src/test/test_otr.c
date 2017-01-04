@@ -106,7 +106,9 @@ test_otr_receives_plaintext_with_ws_tag(otr_fixture_t *otr_fixture, gconstpointe
 
   g_assert_cmpstr(otr_fixture->otr->message_to_display, ==, "And some random invitation text.");
   g_assert_cmpint(otr_fixture->otr->state, ==, OTR_STATE_AKE_IN_PROGRESS);
-  g_assert_cmpint(&otr_fixture->otr->pre_key, >, 0);
+  //TODO: How to assert the pointer is not null without g_assert_nonnull?
+  //g_assert_cmpint(otr_fixture->otr->pre_key, >, 0);
+  g_assert_cmpint(otr_fixture->otr->running_version, ==, V4);
 }
 
 void
@@ -117,6 +119,7 @@ test_otr_receives_plaintext_with_ws_tag_v3(otr_fixture_t *otr_fixture, gconstpoi
   g_assert_cmpstr(otr_fixture->otr->message_to_display, ==, "And some random invitation text.");
   g_assert_cmpint(otr_fixture->otr->state, ==, OTR_STATE_AKE_IN_PROGRESS);
   //TODO: assert this is delegated to the v3 part of the library
+  g_assert_cmpint(otr_fixture->otr->running_version, ==, V3);
 }
 
 int
