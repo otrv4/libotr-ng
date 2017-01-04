@@ -12,6 +12,7 @@ typedef struct {
   stateFlag state;
   int supported_versions;
   char *message_to_display;
+  char *warning;
 } otr_t;
 
 otr_t *otr_new(void);

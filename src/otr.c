@@ -109,5 +109,8 @@ otr_receive_message(otr_t *otr, const char *message) {
     char to_display[msg_length];
     otr->message_to_display = to_display;
     strcpy(otr->message_to_display, message);
+    if (otr->state > OTR_STATE_START) {
+      otr->warning = "The above message was received unencrypted.";
+    }
   }
 }
