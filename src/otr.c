@@ -105,7 +105,10 @@ otr_message_to_display_without_tag(otr_t *otr, const char *message, const char *
   int msg_length = strlen(message);
   int tag_length = strlen(tag_base) + strlen(tag_version);
   int chars = msg_length - tag_length;
-  otr->message_to_display = mem_alloc(chars + 1);
+  if(otr->message_to_display != NULL) {
+    free(otr->message_to_display);
+  }
+  otr->message_to_display = malloc(chars+1);
   strncpy(otr->message_to_display, message+tag_length, chars);
   otr->message_to_display[chars] = 0;
 }
