@@ -72,8 +72,6 @@ otr_start(otr_t *otr) {
 
 void
 otr_build_query_message(/*@unique@*/ char *query_message, const otr_t *otr, const char *message) {
-  const char *query = "?OTRv";
-
   strcpy(query_message, query);
 
   if ((otr->supported_versions & OTR_ALLOW_V3) > 0) {
