@@ -4,7 +4,7 @@
 #include "mem.h"
 
 void
-otrv3_receive_message(char *response, const char *message) {
-  response = mem_alloc(strlen(message));
-  strcpy(response, message);
+otrv3_receive_message(char **response, const char *message) {
+  *response = mem_alloc(strlen(message));
+  strcpy(*response, message);
 }
