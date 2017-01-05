@@ -40,7 +40,7 @@ otr_new(void) {
 }
 
 void
-otr_free(otr_t *otr) {
+otr_free(/*@only@*/ otr_t *otr) {
     if(otr == NULL) {
         return;
     }
@@ -53,7 +53,7 @@ otr_free(otr_t *otr) {
 
     free(otr->pre_key);
     otr->pre_key = NULL;
-    
+
     free(otr);
 }
 
@@ -71,7 +71,9 @@ otr_start(otr_t *otr) {
 }
 
 void
-otr_build_query_message(char *query_message, const otr_t *otr, const char *message) {
+otr_build_query_message(/*@unique@*/ char *query_message, const otr_t *otr, const char *message) {
+  const char *query = "?OTRv";
+
   strcpy(query_message, query);
 
   if ((otr->supported_versions & OTR_ALLOW_V3) > 0) {
@@ -89,7 +91,7 @@ otr_build_query_message(char *query_message, const otr_t *otr, const char *messa
 //TODO: should this care about UTF8?
 //TODO: should this deal with buffer overflows?
 int
-otr_build_whitespace_tag(char *whitespace_tag, const otr_t *otr, const char *message) {
+otr_build_whitespace_tag(/*@unique@*/ char *whitespace_tag, const otr_t *otr, const char *message) {
 
   strcpy(whitespace_tag, tag_base);
 

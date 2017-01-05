@@ -25,12 +25,12 @@ typedef struct {
 } otr_t;
 
 otr_t *otr_new(void);
-void otr_free(otr_t *otr);
+void otr_free(/*@only@*/ otr_t *otr);
 
 int otr_start(otr_t *otr);
 void otr_version_support_v3(otr_t *otr);
 
-void otr_build_query_message(char * query_message, const otr_t *otr, const char *message);
-int otr_build_whitespace_tag(char * whitespace_tag, const otr_t *otr, const char *message);
+void otr_build_query_message(/*@unique@*/ char * query_message, const otr_t *otr, const char *message);
+int otr_build_whitespace_tag(/*@unique@*/ char * whitespace_tag, const otr_t *otr, const char *message);
 
 void otr_receive_message(otr_t *otr, const char *message);

@@ -29,7 +29,7 @@ test: $(TEST_OBJECTS)
 	./$(TESTS)
 
 code-check:
-	splint +trytorecover src/*.h src/**.c `pkg-config --cflags glib-2.0`
+	splint +trytorecover -unrecog src/*.h src/**.c `pkg-config --cflags glib-2.0`
 
 mem-check:
 	valgrind --leak-check=full ./$(TESTS)
