@@ -19,6 +19,7 @@ static const char tag_version_v3[] = {
   '\x20', '\x20', '\x09', '\x09', '\x20', '\x20', '\x09', '\x09',
   '\0'
 };
+static const char *query = "?OTRv";
 
 otr_t *
 otr_new(void) {
@@ -29,6 +30,7 @@ otr_new(void) {
   }
 
   otr->state = OTR_STATE_START;
+  otr->supported_versions = OTR_ALLOW_V4;
   otr->running_version = 0;
   otr->message_to_display = NULL;
   otr->warning = NULL;
@@ -70,8 +72,6 @@ otr_start(otr_t *otr) {
 
 void
 otr_build_query_message(char *query_message, const otr_t *otr, const char *message) {
-  const char *query = "?OTRv";
-
   strcpy(query_message, query);
 
   if ((otr->supported_versions & OTR_ALLOW_V3) > 0) {
@@ -146,7 +146,7 @@ otr_state_set(otr_t *otr, stateFlag target) {
 }
 
 static void
-otr_running_version_set(otr_t *otr, const char *message) {
+otr_running_version_set_from_tag(otr_t *otr, const char *message) {
     char *tag_v4;
     char *tag_v3;
     tag_v4 = strstr(message, tag_version_v4);
@@ -161,22 +161,49 @@ otr_running_version_set(otr_t *otr, const char *message) {
     }
 }
 
+static int
+otr_message_is_query(const char *message) {
+  if (strstr(message, query)) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+static int
+otr_running_version_set_query(otr_t *otr, const char *message) {
+  char *v4;
+  v4 = strstr(message, "4");
+    if (v4) {
+      otr->running_version = V4;
+      return;
+    }
+}
+
+static void
+otr_pre_key_set(otr_t *otr, dake_pre_key_t *pre_key) {
+      if(otr->pre_key != NULL) {
+          free(otr->pre_key);
+      }
+      otr->pre_key = pre_key;
+}
+
 void
 otr_receive_message(otr_t *otr, const char *message) {
   if (otr_message_contains_tag(message) != 0) {
-    otr_running_version_set(otr, message);
+    otr_running_version_set_from_tag(otr, message);
     otr_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
 
     switch (otr->running_version) {
     case V4:
       otr_message_to_display_without_tag(otr, message, tag_version_v4);
-      if(otr->pre_key != NULL) {
-          free(otr->pre_key);
-      }
-      otr->pre_key = dake_compute_pre_key();
+      otr_pre_key_set(otr, dake_compute_pre_key());
       break;
     case V3:
       otrv3_receive_message(&otr->message_to_display, message);
+      break;
+    default:
+      //TODO Do we exit(1)?
       break;
     }
 
@@ -188,5 +215,11 @@ otr_receive_message(otr_t *otr, const char *message) {
       }
       otr->warning = strdup("The above message was received unencrypted.");
     }
+  }
+
+  if (otr_message_is_query(message) != 0) {
+    otr_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
+    otr_running_version_set_query(otr, message);
+    otr_pre_key_set(otr, dake_compute_pre_key());
   }
 }
