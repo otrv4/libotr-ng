@@ -183,7 +183,7 @@ otr_running_version_set_from_query(otr_t *otr, const char *message) {
 }
 
 static void
-otr_pre_key_set(otr_t *otr, dake_pre_key_t *pre_key) {
+otr_pre_key_set(otr_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
       if(otr->pre_key != NULL) {
           free(otr->pre_key);
       }
