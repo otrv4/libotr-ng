@@ -160,7 +160,7 @@ otr_receive_message(otr_t *otr, const char *message) {
 
   } else {
     otr_message_to_display_set(otr, message);
-    if (otr->state > OTR_STATE_START) {
+    if (otr->state != OTR_STATE_START) {
       if(otr->warning != NULL) {
           free(otr->warning);
       }
