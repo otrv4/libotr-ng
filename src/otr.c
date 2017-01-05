@@ -172,8 +172,8 @@ otr_message_is_query(const char *message) {
   }
 }
 
-static int
-otr_running_version_set_query(otr_t *otr, const char *message) {
+static void
+otr_running_version_set_from_query(otr_t *otr, const char *message) {
   char *v4;
   v4 = strstr(message, "4");
     if (v4) {
@@ -221,7 +221,7 @@ otr_receive_message(otr_t *otr, const char *message) {
 
   if (otr_message_is_query(message) != 0) {
     otr_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
-    otr_running_version_set_query(otr, message);
+    otr_running_version_set_from_query(otr, message);
     otr_pre_key_set(otr, dake_compute_pre_key());
   }
 }
