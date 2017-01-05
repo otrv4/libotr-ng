@@ -4,6 +4,7 @@
 
 #include "mem.h"
 #include "otr.h"
+#include "otrv3.h"
 
 static const char tag_base[] = {
   '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
@@ -104,7 +105,7 @@ otr_message_to_display_without_tag(otr_t *otr, const char *message, const char *
   int msg_length = strlen(message);
   int tag_length = strlen(tag_base) + strlen(tag_version);
   int chars = msg_length - tag_length;
-  otr->message_to_display = malloc(chars+1);
+  otr->message_to_display = mem_alloc(chars + 1);
   strncpy(otr->message_to_display, message+tag_length, chars);
   otr->message_to_display[chars] = 0;
 }
@@ -153,7 +154,7 @@ otr_receive_message(otr_t *otr, const char *message) {
       otr->pre_key = dake_compute_pre_key();
       break;
     case V3:
-      otr_message_to_display_without_tag(otr, message, tag_version_v3);
+      otrv3_receive_message(otr->message_to_display, message);
       break;
     }
 
