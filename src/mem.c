@@ -3,7 +3,7 @@
 
 #include "mem.h"
 
-void *
+/*@out@*/ void *
 mem_alloc(size_t size) {
   void *p = malloc(size);
 

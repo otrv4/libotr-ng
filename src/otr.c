@@ -42,9 +42,16 @@ otr_free(otr_t *otr) {
     if(otr == NULL) {
         return;
     }
+
     free(otr->message_to_display);
+    otr->message_to_display = NULL;
+
     free(otr->warning);
+    otr->warning = NULL;
+
     free(otr->pre_key);
+    otr->pre_key = NULL;
+    
     free(otr);
 }
 

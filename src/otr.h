@@ -19,9 +19,9 @@ typedef struct {
   stateFlag state;
   int supported_versions;
   otr_version running_version;
-  char *message_to_display;
-  char *warning;
-  dake_pre_key_t *pre_key;
+  /*@null@*/ char *message_to_display;
+  /*@null@*/ char *warning;
+  /*@null@*/ dake_pre_key_t *pre_key;
 } otr_t;
 
 otr_t *otr_new(void);
