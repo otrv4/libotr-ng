@@ -201,7 +201,7 @@ otr_receive_message(otr_t *otr, const char *message) {
       otr_pre_key_set(otr, dake_compute_pre_key());
       break;
     case V3:
-      otrv3_receive_message(&otr->message_to_display, message);
+      otrv3_receive_message(message);
       break;
     default:
       //TODO Do we exit(1)?

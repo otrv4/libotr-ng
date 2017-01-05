@@ -1,2 +1,2 @@
 void
-otrv3_receive_message(char **response, const char *message);
+otrv3_receive_message(const char *message);
