@@ -5,6 +5,7 @@
 #include "mem.h"
 #include "otr.h"
 #include "otrv3.h"
+#include "str.h"
 
 static const char tag_base[] = {
   '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
@@ -137,7 +138,7 @@ otr_message_to_display_set(otr_t *otr, const char *message) {
   if(otr->message_to_display != NULL) {
       free(otr->message_to_display);
   }
-  otr->message_to_display = strdup(message);
+  otr->message_to_display = otrv4_strdup(message);
 }
 
 static void
@@ -213,7 +214,7 @@ otr_receive_message(otr_t *otr, const char *message) {
       if(otr->warning != NULL) {
           free(otr->warning);
       }
-      otr->warning = strdup("The above message was received unencrypted.");
+      otr->warning = otrv4_strdup("The above message was received unencrypted.");
     }
   }
 

@@ -6,7 +6,7 @@ SRC = src
 SRC_TEST = $(SRC)/test
 
 #Target objects
-OBJECTS = $(SRC)/otr.o $(SRC)/dake.o $(SRC)/mem.o $(SRC)/otrv3.o
+OBJECTS = $(SRC)/otr.o $(SRC)/dake.o $(SRC)/mem.o $(SRC)/otrv3.o $(SRC)/str.o
 TEST_OBJECTS = $(SRC_TEST)/test_otr.o
 
 #Compilation and linkage flags
@@ -29,7 +29,7 @@ test: $(TEST_OBJECTS)
 	./$(TESTS)
 
 code-check:
-	splint +trytorecover -unrecog src/*.h src/**.c `pkg-config --cflags glib-2.0`
+	splint +trytorecover src/*.h src/**.c `pkg-config --cflags glib-2.0`
 
 mem-check:
 	valgrind --leak-check=full ./$(TESTS)

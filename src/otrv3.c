@@ -8,8 +8,9 @@
  * 3. Include libotr in the Makefile as a dependency
  */
 #include "otrv3.h"
+#include "str.h"
 
 void
 otrv3_receive_message(char **response, const char *message) {
-  *response = strdup(message);
+  *response = otrv4_strdup(message);
 }
