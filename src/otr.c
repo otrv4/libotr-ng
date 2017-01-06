@@ -22,9 +22,9 @@ static const char tag_version_v3[] = {
 };
 static const char *query = "?OTRv";
 
-otr_t *
-otr_new(void) {
-  otr_t *otr = malloc(sizeof(otr_t));
+otrv4_t *
+otrv4_new(void) {
+  otrv4_t *otr = malloc(sizeof(otrv4_t));
   if(otr == NULL) {
     fprintf(stderr, "Failed to allocate memory. Chao!\n");
     exit(EXIT_FAILURE);
@@ -41,7 +41,7 @@ otr_new(void) {
 }
 
 void
-otr_free(/*@only@*/ otr_t *otr) {
+otrv4_free(/*@only@*/ otrv4_t *otr) {
     if(otr == NULL) {
         return;
     }
@@ -59,12 +59,12 @@ otr_free(/*@only@*/ otr_t *otr) {
 }
 
 void
-otr_version_support_v3(otr_t *otr) {
+otrv4_version_support_v3(otrv4_t *otr) {
   otr->supported_versions |= OTR_ALLOW_V3;
 }
 
 int
-otr_start(otr_t *otr) {
+otrv4_start(otrv4_t *otr) {
   otr->state = OTR_STATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
 
@@ -72,7 +72,7 @@ otr_start(otr_t *otr) {
 }
 
 void
-otr_build_query_message(/*@unique@*/ char *query_message, const otr_t *otr, const char *message) {
+otrv4_build_query_message(/*@unique@*/ char *query_message, const otrv4_t *otr, const char *message) {
   strcpy(query_message, query);
 
   if ((otr->supported_versions & OTR_ALLOW_V3) > 0) {
@@ -90,7 +90,7 @@ otr_build_query_message(/*@unique@*/ char *query_message, const otr_t *otr, cons
 //TODO: should this care about UTF8?
 //TODO: should this deal with buffer overflows?
 int
-otr_build_whitespace_tag(/*@unique@*/ char *whitespace_tag, const otr_t *otr, const char *message) {
+otrv4_build_whitespace_tag(/*@unique@*/ char *whitespace_tag, const otrv4_t *otr, const char *message) {
 
   strcpy(whitespace_tag, tag_base);
 
@@ -108,7 +108,7 @@ otr_build_whitespace_tag(/*@unique@*/ char *whitespace_tag, const otr_t *otr, co
 }
 
 static int
-otr_message_contains_tag(const char *message) {
+otrv4_message_contains_tag(const char *message) {
   if (strstr(message, tag_base)) {
     return 1;
   } else {
@@ -117,7 +117,7 @@ otr_message_contains_tag(const char *message) {
 }
 
 static void
-otr_message_to_display_without_tag(otr_t *otr, const char *message, const char *tag_version) {
+otrv4_message_to_display_without_tag(otrv4_t *otr, const char *message, const char *tag_version) {
   size_t msg_length = strlen(message);
   size_t tag_length = strlen(tag_base) + strlen(tag_version);
   size_t chars = msg_length - tag_length;
@@ -134,7 +134,7 @@ otr_message_to_display_without_tag(otr_t *otr, const char *message, const char *
 }
 
 static void
-otr_message_to_display_set(otr_t *otr, const char *message) {
+otrv4_message_to_display_set(otrv4_t *otr, const char *message) {
   if(otr->message_to_display != NULL) {
       free(otr->message_to_display);
   }
@@ -142,12 +142,12 @@ otr_message_to_display_set(otr_t *otr, const char *message) {
 }
 
 static void
-otr_state_set(otr_t *otr, stateFlag target) {
+otrv4_state_set(otrv4_t *otr, stateFlag target) {
   otr->state = target;
 }
 
 static void
-otr_running_version_set_from_tag(otr_t *otr, const char *message) {
+otrv4_running_version_set_from_tag(otrv4_t *otr, const char *message) {
     char *tag_v4;
     char *tag_v3;
     tag_v4 = strstr(message, tag_version_v4);
@@ -163,7 +163,7 @@ otr_running_version_set_from_tag(otr_t *otr, const char *message) {
 }
 
 static int
-otr_message_is_query(const char *message) {
+otrv4_message_is_query(const char *message) {
   if (strstr(message, query)) {
     return 1;
   } else {
@@ -172,7 +172,7 @@ otr_message_is_query(const char *message) {
 }
 
 static void
-otr_running_version_set_from_query(otr_t *otr, const char *message) {
+otrv4_running_version_set_from_query(otrv4_t *otr, const char *message) {
   char *v4;
   char *v3;
   v4 = strstr(message, "4");
@@ -188,7 +188,7 @@ otr_running_version_set_from_query(otr_t *otr, const char *message) {
 }
 
 static void
-otr_pre_key_set(otr_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
+otrv4_pre_key_set(otrv4_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
   if(otr->pre_key != NULL) {
     free(otr->pre_key);
   }
@@ -196,10 +196,10 @@ otr_pre_key_set(otr_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
 }
 
 static void
-otr_in_message_parse(otr_in_message_t *target, const char *message) {
-  if (otr_message_contains_tag(message) != 0) {
+otrv4_in_message_parse(otrv4_in_message_t *target, const char *message) {
+  if (otrv4_message_contains_tag(message) != 0) {
     target->type = IN_MSG_TAGGED_PLAINTEXT;
-  } else if (otr_message_is_query(message) != 0) {
+  } else if (otrv4_message_is_query(message) != 0) {
     target->type = IN_MSG_QUERY_STRING;
   } else {
     target->type = IN_MSG_PLAINTEXT;
@@ -212,12 +212,12 @@ otr_in_message_parse(otr_in_message_t *target, const char *message) {
 }
 
 static void
-otr_receive_plaintext(otr_t *otr, const otr_in_message_t *message) {
+otrv4_receive_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
   if (message->raw_text == NULL) {
     return;
   }
 
-  otr_message_to_display_set(otr, message->raw_text);
+  otrv4_message_to_display_set(otr, message->raw_text);
   if (otr->state != OTR_STATE_START) {
     if(otr->warning != NULL) {
       free(otr->warning);
@@ -227,17 +227,17 @@ otr_receive_plaintext(otr_t *otr, const otr_in_message_t *message) {
 }
 
 static void
-otr_receive_tagged_plaintext(otr_t *otr, const otr_in_message_t *message) {
+otrv4_receive_tagged_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
   if (message->raw_text == NULL) {
     return;
   }
-  otr_running_version_set_from_tag(otr, message->raw_text);
-  otr_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
+  otrv4_running_version_set_from_tag(otr, message->raw_text);
+  otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
 
   switch (otr->running_version) {
   case V4:
-    otr_message_to_display_without_tag(otr, message->raw_text, tag_version_v4);
-    otr_pre_key_set(otr, dake_compute_pre_key());
+    otrv4_message_to_display_without_tag(otr, message->raw_text, tag_version_v4);
+    otrv4_pre_key_set(otr, dake_compute_pre_key());
     break;
   case V3:
     otrv3_receive_message(message->raw_text);
@@ -249,16 +249,16 @@ otr_receive_tagged_plaintext(otr_t *otr, const otr_in_message_t *message) {
 }
 
 static void
-otr_receive_query_string(otr_t *otr, otr_in_message_t *message) {
+otrv4_receive_query_string(otrv4_t *otr, otrv4_in_message_t *message) {
   if (message->raw_text == NULL) {
     return;
   }
-  otr_running_version_set_from_query(otr, message->raw_text);
-  otr_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
+  otrv4_running_version_set_from_query(otr, message->raw_text);
+  otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
 
   switch (otr->running_version) {
   case V4:
-    otr_pre_key_set(otr, dake_compute_pre_key());
+    otrv4_pre_key_set(otr, dake_compute_pre_key());
     break;
   case V3:
     otrv3_receive_message(message->raw_text);
@@ -269,9 +269,9 @@ otr_receive_query_string(otr_t *otr, otr_in_message_t *message) {
   }
 }
 
-static otr_in_message_t *
-otr_in_message_new() {
-  otr_in_message_t *input = malloc(sizeof(otr_in_message_t));
+static otrv4_in_message_t *
+otrv4_in_message_new() {
+  otrv4_in_message_t *input = malloc(sizeof(otrv4_in_message_t));
 
   if(input == NULL) {
     fprintf(stderr, "Failed to allocate memory. Chao!\n");
@@ -285,21 +285,21 @@ otr_in_message_new() {
 }
 
 void
-otr_receive_message(otr_t *otr, const char *message) {
-  otr_in_message_t *input = otr_in_message_new();
-  otr_in_message_parse(input, message);
+otrv4_receive_message(otrv4_t *otr, const char *message) {
+  otrv4_in_message_t *input = otrv4_in_message_new();
+  otrv4_in_message_parse(input, message);
 
   switch (input->type) {
   case IN_MSG_PLAINTEXT:
-    otr_receive_plaintext(otr, input);
+    otrv4_receive_plaintext(otr, input);
     break;
 
   case IN_MSG_TAGGED_PLAINTEXT:
-    otr_receive_tagged_plaintext(otr, input);
+    otrv4_receive_tagged_plaintext(otr, input);
     break;
 
   case IN_MSG_QUERY_STRING:
-    otr_receive_query_string(otr, input);
+    otrv4_receive_query_string(otr, input);
     break;
   }
 

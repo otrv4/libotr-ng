@@ -13,35 +13,35 @@ typedef enum {
 typedef enum {
   V3 = 3,
   V4 = 4
-} otr_version;
+} otrv4_version;
 
 typedef struct {
   stateFlag state;
   int supported_versions;
-  otr_version running_version;
+  otrv4_version running_version;
   /*@null@*/ char *message_to_display;
   /*@null@*/ char *warning;
   /*@null@*/ dake_pre_key_t *pre_key;
-} otr_t;
+} otrv4_t;
 
 typedef enum {
   IN_MSG_PLAINTEXT = 1,
   IN_MSG_TAGGED_PLAINTEXT = 2,
   IN_MSG_QUERY_STRING = 3
-} otr_in_message_type;
+} otrv4_in_message_type;
 
 typedef struct {
-  otr_in_message_type type;
+  otrv4_in_message_type type;
   /*@null@*/ char *raw_text;
-} otr_in_message_t;
+} otrv4_in_message_t;
 
-otr_t *otr_new(void);
-void otr_free(/*@only@*/ otr_t *otr);
+otrv4_t *otrv4_new(void);
+void otrv4_free(/*@only@*/ otrv4_t *otr);
 
-int otr_start(otr_t *otr);
-void otr_version_support_v3(otr_t *otr);
+int otrv4_start(otrv4_t *otr);
+void otrv4_version_support_v3(otrv4_t *otr);
 
-void otr_build_query_message(/*@unique@*/ char * query_message, const otr_t *otr, const char *message);
-int otr_build_whitespace_tag(/*@unique@*/ char * whitespace_tag, const otr_t *otr, const char *message);
+void otrv4_build_query_message(/*@unique@*/ char * query_message, const otrv4_t *otr, const char *message);
+int otrv4_build_whitespace_tag(/*@unique@*/ char * whitespace_tag, const otrv4_t *otr, const char *message);
 
-void otr_receive_message(otr_t *otr, const char *message);
+void otrv4_receive_message(otrv4_t *otr, const char *message);
