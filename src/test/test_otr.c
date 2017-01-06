@@ -130,6 +130,15 @@ test_otr_receives_query_message(otr_fixture_t *otr_fixture, gconstpointer data) 
   g_assert_cmpint(otr_fixture->otr->running_version, ==, V4);
 }
 
+void
+test_otr_receives_query_message_v3(otr_fixture_t *otr_fixture, gconstpointer data) {
+  otr_receive_message(otr_fixture->otr, "?OTRv3? And some random invitation text.");
+
+  //TODO: How to assert the pointer is not null without g_assert_nonnull?
+  g_assert_cmpint(otr_fixture->otr->state, ==, OTR_STATE_AKE_IN_PROGRESS);
+  g_assert_cmpint(otr_fixture->otr->running_version, ==, V3);
+}
+
 int
 main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
@@ -145,6 +154,7 @@ main(int argc, char **argv) {
   g_test_add("/otr_receives_plaintext_with_ws_tag", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_receives_plaintext_with_ws_tag, otr_fixture_teardown );
   g_test_add("/otr_receives_plaintext_with_ws_tag_v3", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_receives_plaintext_with_ws_tag_v3, otr_fixture_teardown );
   g_test_add("/otr_receives_query_message", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_receives_query_message, otr_fixture_teardown);
+  g_test_add("/otr_receives_query_message_v3", otr_fixture_t, NULL, otr_fixture_set_up, test_otr_receives_query_message_v3, otr_fixture_teardown);
 
   return g_test_run();
 }
