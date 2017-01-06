@@ -1,7 +1,7 @@
 #include <glib.h>
 #include <string.h>
 
-#include "../otr.h"
+#include "../otrv4.h"
 
 typedef struct {
   otrv4_t *otr;

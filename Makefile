@@ -6,8 +6,8 @@ SRC = src
 SRC_TEST = $(SRC)/test
 
 #Target objects
-OBJECTS = $(SRC)/otr.o $(SRC)/dake.o $(SRC)/mem.o $(SRC)/otrv3.o $(SRC)/str.o
-TEST_OBJECTS = $(SRC_TEST)/test_otr.o
+OBJECTS = $(SRC)/otrv4.o $(SRC)/dake.o $(SRC)/mem.o $(SRC)/otrv3.o $(SRC)/str.o
+TEST_OBJECTS = $(SRC_TEST)/test_otrv4.o
 
 #Compilation and linkage flags
 CFLAGS = -std=c99 -g -Wall `pkg-config --cflags glib-2.0`
