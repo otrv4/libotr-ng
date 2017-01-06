@@ -272,12 +272,12 @@ otr_receive_query_string(otr_t *otr, otr_in_message_t *message) {
 static otr_in_message_t *
 otr_in_message_new() {
   otr_in_message_t *input = malloc(sizeof(otr_in_message_t));
-  
+
   if(input == NULL) {
     fprintf(stderr, "Failed to allocate memory. Chao!\n");
     exit(EXIT_FAILURE);
   }
-  
+
   input->type = 0;
   input->raw_text = NULL;
 
@@ -293,7 +293,7 @@ otr_receive_message(otr_t *otr, const char *message) {
   case IN_MSG_PLAINTEXT:
     otr_receive_plaintext(otr, input);
     break;
-    
+
   case IN_MSG_TAGGED_PLAINTEXT:
     otr_receive_tagged_plaintext(otr, input);
     break;
