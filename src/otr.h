@@ -24,6 +24,17 @@ typedef struct {
   /*@null@*/ dake_pre_key_t *pre_key;
 } otr_t;
 
+typedef enum {
+  IN_MSG_PLAINTEXT = 1,
+  IN_MSG_TAGGED_PLAINTEXT = 2,
+  IN_MSG_QUERY_STRING = 3
+} otr_in_message_type;
+
+typedef struct {
+  otr_in_message_type type;
+  /*@null@*/ char *raw_text;
+} otr_in_message_t;
+
 otr_t *otr_new(void);
 void otr_free(/*@only@*/ otr_t *otr);
 
