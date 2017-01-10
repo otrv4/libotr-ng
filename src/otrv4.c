@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mem.h"
 #include "otrv4.h"
 #include "otrv3.h"
 #include "str.h"

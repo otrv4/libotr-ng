@@ -6,7 +6,7 @@ SRC = src
 SRC_TEST = $(SRC)/test
 
 #Target objects
-OBJECTS = $(SRC)/otrv4.o $(SRC)/dake.o $(SRC)/mem.o $(SRC)/otrv3.o $(SRC)/str.o
+OBJECTS = $(SRC)/otrv4.o $(SRC)/dake.o $(SRC)/otrv3.o $(SRC)/str.o
 TEST_OBJECTS = $(SRC_TEST)/test_otrv4.o
 
 #Compilation and linkage flags
