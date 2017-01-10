@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "otrv4.h"
@@ -106,12 +107,12 @@ otrv4_build_whitespace_tag(/*@unique@*/ char *whitespace_tag, const otrv4_t *otr
   return 0;
 }
 
-static int
+static bool
 otrv4_message_contains_tag(const char *message) {
   if (strstr(message, tag_base)) {
-    return 1;
+    return true;
   } else {
-    return 0;
+    return false;
   }
 }
 
@@ -161,12 +162,12 @@ otrv4_running_version_set_from_tag(otrv4_t *otr, const char *message) {
     }
 }
 
-static int
+static bool
 otrv4_message_is_query(const char *message) {
   if (strstr(message, query)) {
-    return 1;
+    return true;
   } else {
-    return 0;
+    return false;
   }
 }
 
@@ -196,9 +197,9 @@ otrv4_pre_key_set(otrv4_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
 
 static void
 otrv4_in_message_parse(otrv4_in_message_t *target, const char *message) {
-  if (otrv4_message_contains_tag(message) != 0) {
+  if (otrv4_message_contains_tag(message)) {
     target->type = IN_MSG_TAGGED_PLAINTEXT;
-  } else if (otrv4_message_is_query(message) != 0) {
+  } else if (otrv4_message_is_query(message)) {
     target->type = IN_MSG_QUERY_STRING;
   } else {
     target->type = IN_MSG_PLAINTEXT;
