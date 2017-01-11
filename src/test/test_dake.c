@@ -2,10 +2,6 @@
 
 #include "../dake.h"
 
-typedef struct {
-  dake_pre_key_t *pre_key;
-} dake_pre_key_fixture_t;
-
 void
 test_dake_pre_key_new() {
   dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");

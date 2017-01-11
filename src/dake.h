@@ -1,4 +1,4 @@
-#include "data_types.c"
+#include "data_types.h"
 #include "user_profile.h"
 
 typedef struct {
