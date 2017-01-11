@@ -8,7 +8,7 @@ typedef struct {
   int receiver_instance_tag;
   user_profile_t *sender_profile;
   ed448_point_t *Y;
-  char B[80];
+  unsigned char B[80];
 } dake_pre_key_t;
 
 dake_pre_key_t *
