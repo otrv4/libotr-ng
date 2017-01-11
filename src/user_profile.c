@@ -44,5 +44,7 @@ user_profile_get_or_create_for(const char *handler) {
 void
 user_profile_free(user_profile_t *profile) {
   free(profile->pub_key);
+  profile->pub_key = NULL;
+
   free(profile);
 }

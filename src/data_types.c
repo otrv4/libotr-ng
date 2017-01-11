@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 typedef struct {
-  unsigned char data[56];
+  uint8_t data[56];
 } ed448_point_t;

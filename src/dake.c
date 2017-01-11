@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "dake.h"
 
@@ -16,9 +17,8 @@ dake_pre_key_new(const char *sender) {
   pre_key->sender_instance_tag = 1; // TODO: actually compute this value.
   pre_key->receiver_instance_tag = 0;
   pre_key->sender_profile = user_profile_get_or_create_for(sender);
-  ed448_point_t y = { 0 };
-  pre_key->Y = &y;
-  pre_key->B[0] = '\0';
+  pre_key->Y = malloc(sizeof(ed448_point_t));
+  memset(pre_key->B, 0, 56);
 
   return pre_key;
 }
@@ -27,6 +27,9 @@ void
 dake_pre_key_free(dake_pre_key_t *pre_key) {
   user_profile_free(pre_key->sender_profile);
   pre_key->sender_profile = NULL;
+
+  free(pre_key->Y);
+  pre_key->Y = NULL;
 
   free(pre_key);
 }
