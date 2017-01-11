@@ -52,8 +52,10 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
     free(otr->warning);
     otr->warning = NULL;
 
-    free(otr->pre_key);
-    otr->pre_key = NULL;
+    if (otr->pre_key != NULL) {
+      dake_pre_key_free(otr->pre_key);
+      otr->pre_key = NULL;
+    }
 
     free(otr);
 }
