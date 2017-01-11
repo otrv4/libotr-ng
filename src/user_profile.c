@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "user_profile.h"
 
@@ -35,7 +36,7 @@ user_profile_get_or_create_for(const char *handler) {
   profile->pub_key = pub_key;
   profile->version = 0x0004;
   profile->expires = time_get_three_months_from_now();
-  profile->signature[0] = '\0';
+  memset(profile->signature, 0, 112);
   // TODO: Add transitional signature
 
   return profile;
