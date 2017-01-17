@@ -46,9 +46,9 @@ code-check:
 	splint +trytorecover src/*.h src/**.c `pkg-config --cflags glib-2.0`
 
 mem-check: default
-	valgrind --leak-check=full ./$(TESTS_OTRV4)
-	valgrind --leak-check=full ./$(TESTS_DAKE)
-	valgrind --leak-check=full ./$(TESTS_USER_PROFILE)
+	valgrind --quiet --leak-check=full ./$(TESTS_OTRV4)
+	valgrind --quiet --leak-check=full ./$(TESTS_DAKE)
+	valgrind --quiet --leak-check=full ./$(TESTS_USER_PROFILE)
 
 clean:
 	$(RM) $(OBJECTS)

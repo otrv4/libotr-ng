@@ -12,13 +12,12 @@ typedef struct {
   /// ??? Spec does not keep relationship between profile and handler.
   /// ??? Should keep it or this would leak information?
   cramer_shoup_pub_key_t *pub_key;
-  uint8_t num_versions;
-  uint8_t *versions;
+  char *versions;
   /// ??? Spec defines profile expiration as '8 bytes signed value'. time_t
   /// casts to long. Define new type and make convertions?
   time_t expires;
   uint8_t signature[112];
-  uint32_t transitional_signature;
+  uint8_t *transitional_signature;
 } user_profile_t;
 
 user_profile_t *

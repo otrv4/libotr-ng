@@ -3,6 +3,8 @@
 #include <string.h>
 
 #include "dake.h"
+#include "str.h"
+#include "serialize.h"
 
 dake_pre_key_t *
 dake_pre_key_new(const char *sender) {
@@ -32,6 +34,17 @@ dake_pre_key_free(dake_pre_key_t *pre_key) {
   pre_key->Y = NULL;
 
   free(pre_key);
+}
+
+void
+dake_pre_key_serialize(uint8_t *target, const dake_pre_key_t *pre_key) {
+  target += serialize_uint16(target, pre_key->protocol_version);
+  target += serialize_uint8(target, pre_key->message_type);
+  target += serialize_uint32(target, pre_key->sender_instance_tag);
+  target += serialize_uint32(target, pre_key->receiver_instance_tag);
+  target += user_profile_serialize(target, pre_key->sender_profile);
+  target += serialize_ed448_point(target, pre_key->Y);
+  target += serialize_mpi(target, pre_key->B, 56);
 }
 
 dake_pre_key_t *
