@@ -6,7 +6,7 @@ SRC = src
 SRC_TEST = $(SRC)/test
 
 #Target objects
-OBJECTS = $(SRC)/otrv4.o $(SRC)/dake.o $(SRC)/otrv3.o $(SRC)/str.o $(SRC)/user_profile.o $(SRC)/data_types.o
+OBJECTS = $(SRC)/otrv4.o $(SRC)/dake.o $(SRC)/otrv3.o $(SRC)/str.o $(SRC)/user_profile.o $(SRC)/data_types.o $(SRC)/serialize.o
 TEST_OBJECTS_OTRV4 = $(SRC_TEST)/test_otrv4.o
 TEST_OBJECTS_DAKE = $(SRC_TEST)/test_dake.o
 TEST_OBJECTS_USER_PROFILE = $(SRC_TEST)/test_user_profile.o

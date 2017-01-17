@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "user_profile.h"
+#include "serialize.h"
 
 // TODO: Completely arbitrary expiration date. Should come from configuration.
 static time_t
@@ -31,13 +32,18 @@ user_profile_get_or_create_for(const char *handler) {
     fprintf(stderr, "Failed to allocate memory. Chao!\n");
     exit(EXIT_FAILURE);
   }
-  pub_key->type = 0x0010;
+  pub_key->type = 0x10;
+  memset(pub_key->c, 0, 56);
+  memset(pub_key->d, 0, 56);
+  memset(pub_key->h, 0, 56);
 
   profile->pub_key = pub_key;
-  profile->version = 0x0004;
+  profile->num_versions = 1;
+  profile->versions = malloc(sizeof(uint8_t));
+  profile->versions[0] = 4;
   profile->expires = time_get_three_months_from_now();
   memset(profile->signature, 0, 112);
-  // TODO: Add transitional signature
+  profile->transitional_signature = 0;
 
   return profile;
 }
@@ -47,5 +53,29 @@ user_profile_free(user_profile_t *profile) {
   free(profile->pub_key);
   profile->pub_key = NULL;
 
+  free(profile->versions);
   free(profile);
+}
+
+static int
+serialize_bytes_array(uint8_t *target, const uint8_t data[], int len) {
+  memcpy(target, data, len);
+  return len;
+}
+
+int
+user_profile_serialize(uint8_t *dst, const user_profile_t *profile) {
+  uint8_t *target = dst;
+
+  target += serialize_uint16(target, profile->pub_key->type);
+  target += serialize_bytes_array(target, profile->pub_key->c, 56);
+  target += serialize_bytes_array(target, profile->pub_key->d, 56);
+  target += serialize_bytes_array(target, profile->pub_key->h, 56);
+  target += serialize_uint8(target, profile->num_versions);
+  target += serialize_bytes_array(target, profile->versions, profile->num_versions);
+  target += serialize_uint64(target, profile->expires);
+  target += serialize_bytes_array(target, profile->signature, 112);
+  target += serialize_uint32(target, profile->transitional_signature);
+
+  return target - dst;
 }
