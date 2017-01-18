@@ -1,6 +1,9 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
+# Needed for autoconf 2.68
+m4_pattern_allow([AC_CHECK_HEADER_STDBOOL])
+
 AC_PREREQ([2.68])
 AC_INIT([libotr4], [0.0.1], [strike@thoughtworks.com])
 AC_CONFIG_SRCDIR([src/otrv4.c])
