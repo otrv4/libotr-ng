@@ -1,12 +1,29 @@
 *.o
+*.la
+*.lo
 TAGS
 
 *~
 *#*#
 
-src/test/test_libotrv4
-src/test/test_dake
-src/test/test_user_profile
-
+# autotools
+Makefile
+Makefile.in
+aclocal.m4
+ar-lib
+autom4te.cache/
 autoscan.log
-autom4te.cache
+compile
+config.guess
+config.h
+config.h.in
+config.log
+config.status
+config.sub
+configure
+depcomp
+install-sh
+libtool
+ltmain.sh
+missing
+stamp-h1

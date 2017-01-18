@@ -1,0 +1,8 @@
+.deps
+.dirstamp
+Makefile
+Makefile.in
+
+test_otrv4
+test_dake
+test_user_profile

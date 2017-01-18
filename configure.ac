@@ -2,14 +2,23 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([libotrv4], [0.0.1], [strike@thoughtworks.com])
+AC_INIT([libotr4], [0.0.1], [strike@thoughtworks.com])
 AC_CONFIG_SRCDIR([src/otrv4.c])
-AC_CONFIG_HEADERS([config.h])
+
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
+
+AM_PROG_AR
+
+LT_INIT
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_RANLIB
+AC_PROG_LIBTOOL
 
 # Checks for libraries.
+PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.2])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
@@ -26,6 +35,9 @@ AC_TYPE_UINT8_T
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([memset strstr])
 
-AC_CONFIG_FILES([Makefile])
+AC_CACHE_SAVE
+
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_FILES([Makefile src/Makefile src/test/Makefile])
 AC_OUTPUT
 
