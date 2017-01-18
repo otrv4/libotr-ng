@@ -86,12 +86,3 @@ test_user_profile_serializes() {
   user_profile_free(profile);
 }
 
-int
-main(int argc, char **argv) {
-  g_test_init(&argc, &argv, NULL);
-
-  g_test_add_func("/user_profile_create", test_user_profile_create);
-  g_test_add_func("/user_profile_serialize", test_user_profile_serializes);
-
-  return g_test_run();
-}

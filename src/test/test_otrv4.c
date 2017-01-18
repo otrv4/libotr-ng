@@ -139,22 +139,3 @@ test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture, gconstpoint
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, V3);
 }
 
-int
-main(int argc, char **argv) {
-  g_test_init(&argc, &argv, NULL);
-
-  g_test_add_func("/otrv4_starts_protocol", test_otrv4_starts_protocol);
-  g_test_add("/otrv4_version_supports_v34", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_version_supports_v34, otrv4_fixture_teardown );
-  g_test_add("/otrv4_builds_query_message", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_builds_query_message, otrv4_fixture_teardown );
-  g_test_add("/otrv4_builds_query_message_v34", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_builds_query_message_v34, otrv4_fixture_teardown );
-  g_test_add("/otrv4_builds_whitespace_tag", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_builds_whitespace_tag, otrv4_fixture_teardown );
-  g_test_add("/otrv4_builds_whitespace_tag_v34", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_builds_whitespace_tag_v34, otrv4_fixture_teardown );
-  g_test_add("/otrv4_receives_plaintext_without_ws_tag_on_start", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_plaintext_without_ws_tag_on_start, otrv4_fixture_teardown );
-  g_test_add("/otrv4_receives_plaintext_without_ws_tag_not_on_start", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_plaintext_without_ws_tag_not_on_start, otrv4_fixture_teardown );
-  g_test_add("/otrv4_receives_plaintext_with_ws_tag", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_plaintext_with_ws_tag, otrv4_fixture_teardown );
-  g_test_add("/otrv4_receives_plaintext_with_ws_tag_v3", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_plaintext_with_ws_tag_v3, otrv4_fixture_teardown );
-  g_test_add("/otrv4_receives_query_message", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_query_message, otrv4_fixture_teardown);
-  g_test_add("/otrv4_receives_query_message_v3", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_query_message_v3, otrv4_fixture_teardown);
-
-  return g_test_run();
-}

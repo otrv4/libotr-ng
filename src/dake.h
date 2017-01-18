@@ -1,3 +1,6 @@
+#ifndef DAKE_H
+#define DAKE_H
+
 #include "data_types.h"
 #include "user_profile.h"
 
@@ -22,3 +25,5 @@ dake_pre_key_serialize(uint8_t *target, const dake_pre_key_t *pre_key);
 
 dake_pre_key_t *
 dake_compute_pre_key();
+
+#endif

@@ -68,12 +68,4 @@ test_dake_pre_key_serializes() {
 
   dake_pre_key_free(pre_key);
 }
-int
-main(int argc, char **argv) {
-  g_test_init(&argc, &argv, NULL);
 
-  g_test_add_func("/dake_pre_key_new", test_dake_pre_key_new);
-  g_test_add_func("/dake_pre_key_serializes", test_dake_pre_key_serializes);
-
-  return g_test_run();
-}

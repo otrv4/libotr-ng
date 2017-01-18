@@ -1,3 +1,6 @@
+#ifndef USER_PROFILE_H
+#define USER_PROFILE_H
+
 #include <time.h>
 #include <stdint.h>
 
@@ -28,3 +31,5 @@ user_profile_free(user_profile_t *profile);
 
 int
 user_profile_serialize(uint8_t *target, const user_profile_t *profile);
+
+#endif

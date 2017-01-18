@@ -1,7 +1,7 @@
 #include <stdint.h>
 
-#ifndef __DATA_TYPES__
-#define __DATA_TYPES__
+#ifndef DATA_TYPES_H
+#define DATA_TYPES_H
 
 typedef struct {
   uint8_t data[56];
