@@ -7,4 +7,4 @@ before_install:
   - sudo apt-get install splint --quiet --assume-yes
   - sudo apt-get install valgrind --quiet --assume-yes
 
-script: make ci
+script: ./autogen && ./configure && make ci
