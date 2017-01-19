@@ -6,5 +6,6 @@ before_install:
   - sudo apt-get update --quiet --assume-yes
   - sudo apt-get install splint --quiet --assume-yes
   - sudo apt-get install valgrind --quiet --assume-yes
+  - mkdir .deps && git clone https://github.com/twstrike/ed448goldilocks-decaf.git .deps/decaf && cd .deps/decaf && autoreconf --install && ./configure && make && make install
 
 script: ./autogen.sh && ./configure && make ci
