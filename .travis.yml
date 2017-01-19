@@ -9,6 +9,6 @@ before_install:
 
 before_script: 
   - mkdir .deps && git clone https://github.com/twstrike/ed448goldilocks-decaf.git .deps/decaf
-  - cd .deps/decaf && autoreconf --install && ./configure && make && make install
+  - cd .deps/decaf && autoreconf --install --force && ./configure && make && make install
 
 script: ./autogen.sh && ./configure && make ci
