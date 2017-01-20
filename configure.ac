@@ -23,7 +23,7 @@ AC_PROG_LIBTOOL
 # Checks for libraries.
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.2])
 PKG_CHECK_MODULES([LIBDECAF], [libdecaf >= 0.0.1])
-PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 1.0.11])
+PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 1.0.0])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
