@@ -30,6 +30,12 @@ ecdh_shared_secret(
   return 0;
 }
 
+
+void
+ec_public_key_serialize(uint8_t *dst, size_t dst_bytes, const ec_public_key_t pub) {
+    memcpy(dst, pub, dst_bytes);
+}
+
 ed448_point_t *
 ed448_point_new() {
   ed448_point_t *p = malloc(sizeof(ed448_point_t));

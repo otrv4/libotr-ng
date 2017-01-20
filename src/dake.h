@@ -10,7 +10,7 @@ typedef struct {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
   user_profile_t *sender_profile;
-  ed448_point_t *Y;
+  ec_public_key_t Y;
   uint8_t B[80];
 } dake_pre_key_t;
 

@@ -59,7 +59,7 @@ test_dake_pre_key_serializes() {
   g_assert_cmpint(memcmp(serialized+11, user_profile_serialized, user_profile_len), ==, 0);
 
   uint8_t serialized_y[56] = {0};
-  serialize_ed448_point(serialized_y, pre_key->Y);
+  ec_public_key_serialize(serialized_y, 56, pre_key->Y);
   g_assert_cmpint(memcmp(serialized+11+user_profile_len, serialized_y, 56), ==, 0);
 
   uint8_t serialized_b[60] = {0};

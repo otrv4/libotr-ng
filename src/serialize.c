@@ -56,9 +56,8 @@ serialize_mpi(uint8_t *dst, const uint8_t *data, uint32_t len) {
 }
 
 int
-serialize_ed448_point(uint8_t *dst, const ed448_point_t *point) {
-  //TODO: this should call decaf_serialize()
-  memset(dst, 0, 56);
-  return 56;
+serialize_ec_public_key(uint8_t *dst, const ec_public_key_t pub) {
+  ec_public_key_serialize(dst, sizeof(ec_public_key_t), pub);
+  return sizeof(ec_public_key_t);
 }
 

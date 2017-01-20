@@ -28,6 +28,8 @@ ecdh_shared_secret(uint8_t *shared, size_t shared_bytes, const ec_keypair_t our_
 void
 ec_keypair_destroy(ec_keypair_t keypair);
 
+void
+ec_public_key_serialize(uint8_t *dst, size_t dst_bytes, const ec_public_key_t pub);
 
 ed448_point_t *
 ed448_point_new();

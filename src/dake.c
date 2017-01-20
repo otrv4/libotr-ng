@@ -14,14 +14,12 @@ dake_pre_key_new(const char *sender) {
     exit(EXIT_FAILURE);
   }
 
-
-
   pre_key->protocol_version = 4;
   pre_key->message_type = 0x0f;
   pre_key->sender_instance_tag = 1; // TODO: actually compute this value.
   pre_key->receiver_instance_tag = 0;
   pre_key->sender_profile = user_profile_get_or_create_for(sender);
-  pre_key->Y = ed448_point_new();
+
   memset(pre_key->B, 0, 56);
 
   return pre_key;
@@ -31,9 +29,6 @@ void
 dake_pre_key_free(dake_pre_key_t *pre_key) {
   user_profile_free(pre_key->sender_profile);
   pre_key->sender_profile = NULL;
-
-  ed448_point_free(pre_key->Y);
-  pre_key->Y = NULL;
 
   free(pre_key);
 }
@@ -45,7 +40,8 @@ dake_pre_key_serialize(uint8_t *target, const dake_pre_key_t *pre_key) {
   target += serialize_uint32(target, pre_key->sender_instance_tag);
   target += serialize_uint32(target, pre_key->receiver_instance_tag);
   target += user_profile_serialize(target, pre_key->sender_profile);
-  target += serialize_ed448_point(target, pre_key->Y);
+
+  target += serialize_ec_public_key(target, pre_key->Y);
   target += serialize_mpi(target, pre_key->B, 56);
 }
 
