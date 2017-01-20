@@ -32,7 +32,7 @@ test_dake_pre_key_serializes() {
   dh_gen_keypair(dh);
 
   dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
-  memcpy(pre_key->Y, ecdh->pub, sizeof(ec_public_key_t));
+  ec_public_key_copy(pre_key->Y, ecdh->pub);
   pre_key->B = dh->pub;
 
   uint8_t serialized[1000] = { 0 };
@@ -71,3 +71,34 @@ test_dake_pre_key_serializes() {
   dake_pre_key_free(pre_key);
 }
 
+void
+test_dake_protocol() {
+  dh_init();
+
+  //alice_cramer_shoup, bob_cramer_shoup;
+  ec_keypair_t alice_ecdh, bob_ecdh;
+  dh_keypair_t alice_dh, bob_dh;
+
+  // Alice
+  ec_gen_keypair(alice_ecdh);
+  dh_gen_keypair(alice_dh);
+
+  // Bob
+  ec_gen_keypair(bob_ecdh);
+  dh_gen_keypair(bob_dh);
+
+  // Alice send pre key
+  dake_pre_key_t *pre_key = dake_pre_key_new("");
+  ec_public_key_copy(pre_key->Y, alice_ecdh->pub);
+  pre_key->B = alice_dh->pub;
+
+  //TODO: continue
+  // Bob receives pre key
+  // Bob sends DRE-auth
+  // Alice receives DRE-auth
+
+  dh_keypair_destroy(bob_dh);
+  ec_keypair_destroy(bob_ecdh);
+  dh_keypair_destroy(alice_dh);
+  ec_keypair_destroy(alice_ecdh);
+}

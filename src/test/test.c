@@ -23,15 +23,17 @@ main(int argc, char **argv) {
   g_test_add("/otrv4/receives_query_message", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_query_message, otrv4_fixture_teardown);
   g_test_add("/otrv4/receives_query_message_v3", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_query_message_v3, otrv4_fixture_teardown);
 
-  g_test_add_func("/dake/pre_key_new", test_dake_pre_key_new);
-  g_test_add_func("/dake/pre_key_serializes", test_dake_pre_key_serializes);
+  g_test_add_func("/dake/pre_key/new", test_dake_pre_key_new);
+  g_test_add_func("/dake/pre_key/serializes", test_dake_pre_key_serializes);
+  g_test_add_func("/dake/protocol", test_dake_protocol);
 
   g_test_add_func("/user_profile/create", test_user_profile_create);
   g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
 
-  g_test_add_func("/ed448/test_ecdh_api", ed448_test_ecdh);
-  g_test_add_func("/dh/test_dh_api", dh_test_api);
-  g_test_add_func("/dh/test_serialize", dh_test_serialize);
+  g_test_add_func("/ed448/api", ed448_test_ecdh);
+
+  g_test_add_func("/dh/api", dh_test_api);
+  g_test_add_func("/dh/serialize", dh_test_serialize);
 
   return g_test_run();
 }
