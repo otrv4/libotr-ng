@@ -6,10 +6,12 @@ before_install:
   - sudo apt-get update --quiet --assume-yes
   - sudo apt-get install splint --quiet --assume-yes
   - sudo apt-get install valgrind --quiet --assume-yes
-  - sudo apt-get install libsodium-dev --quiet --assume-yes
 
 before_script: 
-  - mkdir .deps && git clone https://github.com/twstrike/ed448goldilocks-decaf.git .deps/decaf
+  - mkdir .deps
+  - git clone https://github.com/twstrike/ed448goldilocks-decaf.git .deps/decaf
   - pushd .deps/decaf && autoreconf --install --force && ./configure && make && sudo make install && popd
+  - curl https://download.libsodium.org/libsodium/releases/libsodium-1.0.10.tar.gz | tar xzf - -C .deps
+  - pushd .deps/libsodium-1.0.10 && ./configure && make && sudo make install && popd
 
 script: ./autogen.sh && ./configure && make ci
