@@ -31,6 +31,7 @@ main(int argc, char **argv) {
 
   g_test_add_func("/ed448/test_ecdh_api", ed448_test_ecdh);
   g_test_add_func("/dh/test_dh_api", dh_test_api);
+  g_test_add_func("/dh/test_serialize", dh_test_serialize);
 
   return g_test_run();
 }

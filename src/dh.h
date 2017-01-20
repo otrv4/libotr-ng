@@ -47,6 +47,9 @@ dh_gen_keypair(dh_keypair_t keypair);
 void
 dh_keypair_destroy(dh_keypair_t keypair);
 
+size_t
+dh_mpi_serialize(uint8_t *dst, size_t dst_len, const dh_mpi_t src);
+
 int
 dh_shared_secret(
     uint8_t *shared,

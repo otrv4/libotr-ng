@@ -55,3 +55,10 @@ dh_shared_secret(
 
   return 0;
 }
+
+size_t
+dh_mpi_serialize(uint8_t *dst, size_t dst_len, const dh_mpi_t src) {
+  size_t nwritten = 0;
+  gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, &nwritten, src); //TODO: fail?
+  return nwritten;
+}

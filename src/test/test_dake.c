@@ -23,7 +23,18 @@ test_dake_pre_key_new() {
 
 void
 test_dake_pre_key_serializes() {
+  dh_init();
+
+  ec_keypair_t ecdh;
+  dh_keypair_t dh;
+
+  ec_gen_keypair(ecdh);
+  dh_gen_keypair(dh);
+
   dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
+  memcpy(pre_key->Y, ecdh->pub, sizeof(ec_public_key_t));
+  pre_key->B = dh->pub;
+
   uint8_t serialized[1000] = { 0 };
   
   dake_pre_key_serialize(serialized, pre_key);
@@ -33,39 +44,30 @@ test_dake_pre_key_serializes() {
     0x0f,      //message type
     0x0, 0x0, 0x0, 0x1, // sender instance tag
     0x0, 0x0, 0x0, 0x0, // receiver instance tag
-    // user profile will be verified but not in expected
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,// Y
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x38,                   // B
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
   };
 
-  int comp = memcmp(serialized, expected, 11); //sizeof(expected));
+  uint8_t *cursor = serialized;
+  int comp = memcmp(cursor, expected, 11); //sizeof(expected));
   g_assert_cmpint(comp, ==, 0);
+  cursor += 11;
 
   uint8_t user_profile_serialized[340] = {0};
   int user_profile_len = user_profile_serialize(user_profile_serialized, pre_key->sender_profile);
-  g_assert_cmpint(memcmp(serialized+11, user_profile_serialized, user_profile_len), ==, 0);
+  g_assert_cmpint(memcmp(cursor, user_profile_serialized, user_profile_len), ==, 0);
+  cursor += user_profile_len;
 
-  uint8_t serialized_y[56] = {0};
-  ec_public_key_serialize(serialized_y, 56, pre_key->Y);
-  g_assert_cmpint(memcmp(serialized+11+user_profile_len, serialized_y, 56), ==, 0);
+  uint8_t serialized_y[sizeof(ec_public_key_t)] = {0};
+  ec_public_key_serialize(serialized_y, sizeof(ec_public_key_t), pre_key->Y);
+  g_assert_cmpint(memcmp(cursor, serialized_y, sizeof(ec_public_key_t)), ==, 0);
+  cursor += sizeof(ec_public_key_t);
 
-  uint8_t serialized_b[60] = {0};
-  serialize_mpi(serialized_b, pre_key->B, 56);
-  g_assert_cmpint(memcmp(serialized+11+user_profile_len+56, serialized_b, 60), ==, 0);
+  uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
+  size_t mpi_len = dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES, pre_key->B);
+  //Skip first 4 because they are the size (mpi_len)
+  g_assert_cmpint(memcmp(cursor+4, serialized_b, mpi_len), ==, 0);
 
+  dh_keypair_destroy(dh);
+  ec_keypair_destroy(ecdh);
   dake_pre_key_free(pre_key);
 }
 

@@ -1,8 +1,9 @@
-#ifndef DAKE_H
-#define DAKE_H
-
+#include "dh.h"
 #include "ed448.h"
 #include "user_profile.h"
+
+#ifndef DAKE_H
+#define DAKE_H
 
 typedef struct {
   uint16_t protocol_version;
@@ -11,7 +12,7 @@ typedef struct {
   uint32_t receiver_instance_tag;
   user_profile_t *sender_profile;
   ec_public_key_t Y;
-  uint8_t B[80];
+  dh_public_key_t B;
 } dake_pre_key_t;
 
 dake_pre_key_t *

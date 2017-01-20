@@ -20,7 +20,7 @@ dake_pre_key_new(const char *sender) {
   pre_key->receiver_instance_tag = 0;
   pre_key->sender_profile = user_profile_get_or_create_for(sender);
 
-  memset(pre_key->B, 0, 56);
+  memset(pre_key->Y, 0, sizeof(ec_public_key_t));
 
   return pre_key;
 }
@@ -40,9 +40,8 @@ dake_pre_key_serialize(uint8_t *target, const dake_pre_key_t *pre_key) {
   target += serialize_uint32(target, pre_key->sender_instance_tag);
   target += serialize_uint32(target, pre_key->receiver_instance_tag);
   target += user_profile_serialize(target, pre_key->sender_profile);
-
   target += serialize_ec_public_key(target, pre_key->Y);
-  target += serialize_mpi(target, pre_key->B, 56);
+  target += serialize_dh_public_key(target, pre_key->B);
 }
 
 dake_pre_key_t *

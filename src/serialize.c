@@ -61,3 +61,9 @@ serialize_ec_public_key(uint8_t *dst, const ec_public_key_t pub) {
   return sizeof(ec_public_key_t);
 }
 
+int
+serialize_dh_public_key(uint8_t *dst, const dh_public_key_t pub) {
+  uint8_t buf[DH3072_MOD_LEN_BYTES] = {0}; //TODO: should this be cleared?
+  size_t written = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, pub);
+  return serialize_mpi(dst, buf, written);
+}
