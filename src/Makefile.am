@@ -2,6 +2,7 @@ lib_LTLIBRARIES = libotr4.la
 
 libotr4_la_SOURCES = dake.c \
 										 data_types.c \
+										 dh.c \
 										 ed448.c \
 										 otrv3.c \
 										 otrv4.c \
@@ -9,8 +10,8 @@ libotr4_la_SOURCES = dake.c \
 										 str.c \
 										 user_profile.c
 
-libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBSODIUM_CFLAGS@ @LIBDECAF_CFLAGS@
-libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBSODIUM_LIBS@ @LIBDECAF_LIBS@
+libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBSODIUM_CFLAGS@ @LIBDECAF_CFLAGS@ @LIBGCRYPT_CFLAGS@
+libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBSODIUM_LIBS@ @LIBDECAF_LIBS@ @LIBGCRYPT_LIBS@
 
 #libotr4_includedir = $(includedir)/otr4
 #libotr4_include_HEADERS = \

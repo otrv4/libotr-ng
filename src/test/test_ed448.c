@@ -1,5 +1,3 @@
-#include <sodium.h>
-
 #include "../ed448.h"
 
 void
