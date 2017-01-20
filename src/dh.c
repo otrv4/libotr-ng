@@ -1,6 +1,5 @@
-#include <sodium.h>
-
 #include "dh.h"
+#include "random.h"
 
 void
 dh_init(void) {
@@ -18,7 +17,7 @@ dh_gen_keypair(dh_keypair_t keypair) {
       return -1;
   }
 
-  randombytes_buf(secbuf, DH_KEY_SIZE);
+  random_bytes(secbuf, DH_KEY_SIZE);
   gcry_error_t err = gcry_mpi_scan(&keypair->priv, GCRYMPI_FMT_USG, secbuf, DH_KEY_SIZE, NULL);
   gcry_free(secbuf);
 

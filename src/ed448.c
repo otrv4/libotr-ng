@@ -1,13 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sodium.h>
 
 #include "ed448.h"
+#include "random.h"
 
 void
 ec_gen_keypair(ec_keypair_t keypair) {
-  randombytes_buf(keypair->sym, DECAF_448_SYMMETRIC_KEY_BYTES);
+  random_bytes(keypair->sym, DECAF_448_SYMMETRIC_KEY_BYTES);
   decaf_448_derive_private_key(keypair, keypair->sym);
 }
 
