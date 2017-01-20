@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <gcrypt.h>
 
 #ifndef DH_H

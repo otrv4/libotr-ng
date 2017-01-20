@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <libdecaf/decaf_crypto.h>
 
 #ifndef ED448_H
