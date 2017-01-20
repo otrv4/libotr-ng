@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "data_types.h"
+#include "ed448.h"
 
 int
 serialize_uint64(uint8_t *dst, const uint64_t data);

@@ -14,6 +14,8 @@ dake_pre_key_new(const char *sender) {
     exit(EXIT_FAILURE);
   }
 
+
+
   pre_key->protocol_version = 4;
   pre_key->message_type = 0x0f;
   pre_key->sender_instance_tag = 1; // TODO: actually compute this value.

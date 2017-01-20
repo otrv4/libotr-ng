@@ -3,6 +3,7 @@
 #include "test_otrv4.c"
 #include "test_dake.c"
 #include "test_user_profile.c"
+#include "test_ed448.c"
 
 int
 main(int argc, char **argv) {
@@ -26,6 +27,8 @@ main(int argc, char **argv) {
 
   g_test_add_func("/user_profile/create", test_user_profile_create);
   g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
+
+  g_test_add_func("/ed448/generate_ecdh_keypair", ed448_test_ecdh);
 
   return g_test_run();
 }

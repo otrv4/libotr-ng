@@ -1,7 +1,7 @@
 check_PROGRAMS = test
 
 test_SOURCES = test.c
-test_CFLAGS = $(GLIB_CFLAGS) 
-test_LDFLAGS= $(GLIB_LIBS)
+test_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) @LIBSODIUM_CFLAGS@ @LIBDECAF_CFLAGS@
+test_LDFLAGS = $(AM_LDFLAGS) $(GLIB_LIBS) @LIBSODIUM_LIBS@ @LIBDECAF_LIBS@
 test_LDADD = $(top_srcdir)/src/libotr4.la
 

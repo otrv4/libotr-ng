@@ -1,7 +1,7 @@
 #ifndef DAKE_H
 #define DAKE_H
 
-#include "data_types.h"
+#include "ed448.h"
 #include "user_profile.h"
 
 typedef struct {
