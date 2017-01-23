@@ -44,6 +44,11 @@ dake_pre_key_serialize(uint8_t *target, const dake_pre_key_t *pre_key) {
   target += serialize_dh_public_key(target, pre_key->B);
 }
 
+void
+dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len) {
+    //TODO
+}
+
 dake_pre_key_t *
 dake_compute_pre_key() {
   return  dake_pre_key_new("handler@service.net");

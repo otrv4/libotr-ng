@@ -72,6 +72,40 @@ test_dake_pre_key_serializes() {
 }
 
 void
+test_dake_pre_key_deserializes() {
+  dh_init();
+
+  ec_keypair_t ecdh;
+  dh_keypair_t dh;
+
+  ec_gen_keypair(ecdh);
+  dh_gen_keypair(dh);
+
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
+  ec_public_key_copy(pre_key->Y, ecdh->pub);
+  pre_key->B = dh->pub;
+
+  uint8_t serialized[755] = { 0 };
+  dake_pre_key_serialize(serialized, pre_key);
+
+  dake_pre_key_t *deserialized = malloc(sizeof(dake_pre_key_t));
+  dake_pre_key_deserialize(deserialized, serialized, sizeof(serialized));
+
+  g_assert_cmpuint(deserialized->protocol_version, ==, pre_key->protocol_version);
+  g_assert_cmpuint(deserialized->message_type, ==, pre_key->message_type);
+  g_assert_cmpuint(deserialized->sender_instance_tag, ==, pre_key->sender_instance_tag);
+  g_assert_cmpuint(deserialized->receiver_instance_tag, ==, pre_key->receiver_instance_tag);
+  //TODO: USER PROFILE
+  //TODO: Y
+  //TODO: B
+
+  dh_keypair_destroy(dh);
+  ec_keypair_destroy(ecdh);
+  dake_pre_key_free(pre_key);
+  dake_pre_key_free(deserialized);
+}
+
+void
 test_dake_protocol() {
   dh_init();
 
