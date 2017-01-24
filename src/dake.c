@@ -49,6 +49,28 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
     //TODO
 }
 
+dake_dre_auth_t *
+dake_dre_auth_new() {
+}
+
+void
+dake_dre_auth_free(dake_dre_auth_t *dre_auth) {
+}
+
+int
+dake_dre_auth_serialize(uint8_t target, const dake_dre_auth_t *dre_auth) {
+}
+
+void
+dake_dre_auth_deserialize(dake_dre_auth_t *target, uint8_t *data) {
+  
+}
+
+int
+dake_pre_key_validate(const dake_pre_key_t *pre_key) {
+  return user_profile_signature_validate(pre_key->sender_profile->signature);
+}
+
 dake_pre_key_t *
 dake_compute_pre_key() {
   return  dake_pre_key_new("handler@service.net");

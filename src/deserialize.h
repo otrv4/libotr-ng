@@ -5,6 +5,9 @@ int
 deserialize_uint64(uint64_t *n, const uint8_t serialized[8]);
 
 int
+deserialize_uint32(uint32_t *n, const uint8_t serialized[4]);
+
+int
 deserialize_uint16(uint16_t *n, const uint8_t serialized[2]);
 
 int

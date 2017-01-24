@@ -2,7 +2,8 @@
 
 typedef enum {
   OTR_STATE_START = 1,
-  OTR_STATE_AKE_IN_PROGRESS = 2
+  OTR_STATE_AKE_IN_PROGRESS = 2,
+  OTR_STATE_ENCRYPTED_MESSAGES = 3
 } stateFlag ;
 
 typedef enum {
@@ -20,6 +21,7 @@ typedef struct {
   int supported_versions;
   otrv4_version running_version;
   /*@null@*/ char *message_to_display;
+  char *message_to_respond;
   /*@null@*/ char *warning;
   /*@null@*/ dake_pre_key_t *pre_key;
 } otrv4_t;
@@ -27,7 +29,8 @@ typedef struct {
 typedef enum {
   IN_MSG_PLAINTEXT = 1,
   IN_MSG_TAGGED_PLAINTEXT = 2,
-  IN_MSG_QUERY_STRING = 3
+  IN_MSG_QUERY_STRING = 3,
+  IN_MSG_CYPHERTEXT = 4
 } otrv4_in_message_type;
 
 typedef struct {

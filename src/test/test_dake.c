@@ -136,3 +136,74 @@ test_dake_protocol() {
   dh_keypair_destroy(alice_dh);
   ec_keypair_destroy(alice_ecdh);
 }
+
+test_dake_pre_key_valid() {
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
+
+  int valid = dake_pre_key_validate(pre_key);
+
+  g_assert_cmpint(valid, ==, 0);
+
+  dake_pre_key_free(pre_key);
+}
+
+void
+test_dake_pre_key_Y_doesnt_belong_to_curve() {
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
+
+  int valid = dake_pre_key_validate(pre_key);
+
+  g_assert_cmpint(valid, ==, 0);
+
+  dake_pre_key_free(pre_key);
+}
+
+void
+test_dake_dre_auth_new() {
+  dake_dre_auth_t *dre_auth = dake_dre_auth_new();
+}
+
+void
+test_dake_dre_auth_serialize() {
+  dake_dre_auth_t *dre_auth = dake_dre_auth_new();
+  uint8_t serialized[1000] = { 0 };
+
+  dake_dre_auth_serialize(serialized, dre_auth);
+
+  uint8_t expected[] = {
+    0x0, 0x04, // protocol version
+    0x0, // message type
+    0x0, 0x0, 0x0, 0x0, // sender instance tag
+    0x0, 0x0, 0x0, 0x0, // receiver instance tag
+    //user profile goes here
+    
+  };
+
+  int comp = memcmp(serialized, expected, 11); //sizeof(expected));
+  g_assert_cmpint(comp, ==, 0);
+  
+  dake_dre_auth_free(dre_auth);
+}
+
+void
+test_dake_dre_auth_deserialize() {
+  dake_dre_auth_t *dre_auth = dake_dre_auth_new();
+  uint8_t ser_dre[1000];
+  dake_dre_auth_serialize(ser_dre, dre_auth);
+
+  dake_dre_auth_t *des_dre = malloc(sizeof(dake_dre_auth_t));
+  dake_dre_auth_deserialize(des_dre, ser_dre);
+
+  g_assert_cmpuint(des_dre->version_protocol, ==, dre_auth->version_protocol);
+  g_assert_cmpuint(des_dre->type, ==, dre_auth->type);
+  g_assert_cmpuint(des_dre->sender_instance_tag, ==, dre_auth->sender_instance_tag);
+  g_assert_cmpuint(des_dre->receiver_instance_tag, ==, dre_auth->receiver_instance_tag);
+  // g_assert_cmpuint(des_dre->sender_profile, ==, dre_auth->sender_profile);
+  // g_assert_cmpint(des_dre->X, ==, dre_auth->X);
+  // g_assert_cmpint(des_dre->A, ==, dre_auth->A);
+  // g_assert_cmpint(des_dre->gamma, ==, dre_auth->gamma);
+  // g_assert_cmpint(des_dre->sigma, ==, dre_auth->sigma);
+
+  dake_dre_auth_free(dre_auth);
+  dake_dre_auth_free(des_dre);
+}

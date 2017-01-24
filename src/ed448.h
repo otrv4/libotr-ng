@@ -4,9 +4,12 @@
 #ifndef ED448_H
 #define ED448_H
 
+#define EC_SIGNATURE_BYTES DECAF_448_SER_BYTES + DECAF_448_SCALAR_BYTES
+
 typedef decaf_448_private_key_t     ec_keypair_t;
 typedef decaf_448_public_key_t      ec_public_key_t;
 //typedef decaf_448_symmetric_key_t   ec_symmetric_key_t;
+typedef decaf_448_signature_t ec_signature_t;
 
 //typedef struct {
 //  //TODO should we really have these 3 or storing only the symmetric is enough?
@@ -14,9 +17,7 @@ typedef decaf_448_public_key_t      ec_public_key_t;
 //  ec_public_key_t pub;
 //} ec_keypair_t[1];
 
-typedef struct {
-  uint8_t data[56];
-} ed448_point_t;
+typedef decaf_448_point_t ec_point_t;
 
 
 void
@@ -34,11 +35,10 @@ ec_public_key_serialize(uint8_t *dst, size_t dst_bytes, const ec_public_key_t pu
 void
 ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src);
 
-ed448_point_t *
-ed448_point_new();
-
 void
-ed448_point_free(ed448_point_t *point);
+ec_point_serialize(uint8_t *dst, size_t dst_len, const ec_point_t point);
 
+int
+ec_point_deserialize(ec_point_t point, const uint8_t *serialized);
 
 #endif

@@ -21,6 +21,7 @@ static const char tag_version_v3[] = {
   '\0'
 };
 static const char *query = "?OTRv";
+static const char *otrv4 = "?OTR:";
 
 otrv4_t *
 otrv4_new(void) {
@@ -34,6 +35,7 @@ otrv4_new(void) {
   otr->supported_versions = OTR_ALLOW_V4;
   otr->running_version = 0;
   otr->message_to_display = NULL;
+  otr->message_to_respond = NULL;
   otr->warning = NULL;
   otr->pre_key = NULL;
 
@@ -48,6 +50,9 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
 
     free(otr->message_to_display);
     otr->message_to_display = NULL;
+
+    free(otr->message_to_respond = NULL);
+    otr->message_to_respond = NULL;
 
     free(otr->warning);
     otr->warning = NULL;
@@ -197,12 +202,24 @@ otrv4_pre_key_set(otrv4_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
   otr->pre_key = pre_key;
 }
 
+static bool
+otrv4_message_is_data(const char *message) {
+  printf("raw = %s\ndata = %s\n", message, strstr(message, otrv4));
+  if (strstr(message, otrv4)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 static void
 otrv4_in_message_parse(otrv4_in_message_t *target, const char *message) {
   if (otrv4_message_contains_tag(message)) {
     target->type = IN_MSG_TAGGED_PLAINTEXT;
   } else if (otrv4_message_is_query(message)) {
     target->type = IN_MSG_QUERY_STRING;
+  } else if (otrv4_message_is_data(message)) {
+    target->type = IN_MSG_CYPHERTEXT;
   } else {
     target->type = IN_MSG_PLAINTEXT;
   }
@@ -271,6 +288,21 @@ otrv4_receive_query_string(otrv4_t *otr, otrv4_in_message_t *message) {
   }
 }
 
+static void
+otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
+  if (message->raw_text == NULL) {
+    // ??? is it heartbeat?
+    return;
+  }
+
+  otrv4_state_set(otr, OTR_STATE_ENCRYPTED_MESSAGES);
+  otr->running_version = V4;
+  if (otr->message_to_respond == NULL) {
+    otr->message_to_respond = malloc(1000);
+  }
+  otr->message_to_respond = otrv4_strdup("tenga su dre-auth msg\n");
+}
+
 static otrv4_in_message_t *
 otrv4_in_message_new() {
   otrv4_in_message_t *input = malloc(sizeof(otrv4_in_message_t));
@@ -302,6 +334,10 @@ otrv4_receive_message(otrv4_t *otr, const char *message) {
 
   case IN_MSG_QUERY_STRING:
     otrv4_receive_query_string(otr, input);
+    break;
+
+  case IN_MSG_CYPHERTEXT:
+    otrv4_receive_data_message(otr, input);
     break;
   }
 

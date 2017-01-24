@@ -41,20 +41,16 @@ ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src) {
   memcpy(dst, src, sizeof(ec_public_key_t));
 }
 
-ed448_point_t *
-ed448_point_new() {
-  ed448_point_t *p = malloc(sizeof(ed448_point_t));
-  if (p == NULL) {
-    fprintf(stderr, "Failed to allocate memory. Chao!\n");
-    exit(EXIT_FAILURE);
-  }
-
-  memset(p->data, 0, 56);
-
-  return p;
+void
+ec_point_serialize(uint8_t *dst, size_t dst_len, const ec_point_t point) {
+  decaf_448_point_encode(dst, point);
 }
 
-void
-ed448_point_free(ed448_point_t *point) {
-  free(point);
+int
+ec_point_deserialize(ec_point_t point, const uint8_t *serialized) {
+  if (!decaf_448_point_decode (point, serialized, DECAF_FALSE)) {
+    return 1;
+  }
+  
+  return 0;
 }

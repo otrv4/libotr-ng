@@ -1,10 +1,24 @@
 #include <glib.h>
+#include <string.h>
+#include <libdecaf/decaf.h>
+#include "../ed448.h"
+
+static inline void
+otrv4_assert_cmpmem(const void* expected, const void *actual, size_t len) {
+  g_assert_cmpint(memcmp(expected, actual, len), ==, 0);
+}
+
+static inline void
+otrv4_assert_point_equals(const ec_point_t expected, const ec_point_t actual) {
+  g_assert_cmpint(decaf_448_point_eq(expected, actual), !=, 0);
+}
 
 #include "test_otrv4.c"
 #include "test_dake.c"
 #include "test_user_profile.c"
 #include "test_ed448.c"
 #include "test_dh.c"
+#include "test_serialize.c"
 
 int
 main(int argc, char **argv) {
@@ -27,14 +41,18 @@ main(int argc, char **argv) {
   g_test_add_func("/dake/pre_key/new", test_dake_pre_key_new);
   g_test_add_func("/dake/pre_key/serializes", test_dake_pre_key_serializes);
   g_test_add_func("/dake/pre_key/deserializes", test_dake_pre_key_deserializes);
+  g_test_add_func("/dake/pre_key/valid", test_dake_pre_key_valid);
 
   g_test_add_func("/user_profile/create", test_user_profile_create);
   g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
+  g_test_add_func("/user_profile/deserializes", test_user_profile_deserializes);
 
   g_test_add_func("/ed448/api", ed448_test_ecdh);
 
   g_test_add_func("/dh/api", dh_test_api);
   g_test_add_func("/dh/serialize", dh_test_serialize);
+
+  g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
 
   return g_test_run();
 }
