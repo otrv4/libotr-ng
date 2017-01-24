@@ -2,6 +2,7 @@
 
 #include "dh.h"
 #include "ed448.h"
+#include "cramer_shoup.h"
 
 int
 serialize_uint64(uint8_t *dst, const uint64_t data);
@@ -26,4 +27,11 @@ int
 serialize_ec_public_key(uint8_t *dst, const ec_public_key_t pub);
 
 int
+serialize_ec_point(uint8_t *dst, const ec_point_t point);
+
+int
 serialize_dh_public_key(uint8_t *dst, const dh_public_key_t pub);
+
+
+int
+serialize_cs_public_key(uint8_t *dst, const cs_public_key_t *pub);

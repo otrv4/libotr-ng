@@ -5,11 +5,11 @@
 static int
 serialize_int(uint8_t *target, const uint64_t data, const int offset) {
   int i;
-  int shift = offset * 8;
+  int shift = offset;
 
   for(i = 0; i < offset; i++) {
-    shift -= 8;
-    target[i] = data >> shift;
+    shift--;
+    target[i] = (data >> shift*8) & 0xFF;
   }
 
   return offset;
@@ -62,8 +62,26 @@ serialize_ec_public_key(uint8_t *dst, const ec_public_key_t pub) {
 }
 
 int
+serialize_ec_point(uint8_t *dst, const ec_point_t point) {
+  ec_point_serialize(dst, 56, point);
+  return 56;
+}
+
+
+int
 serialize_dh_public_key(uint8_t *dst, const dh_public_key_t pub) {
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0}; //TODO: should this be cleared?
   size_t written = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, pub);
   return serialize_mpi(dst, buf, written);
+}
+
+int
+serialize_cs_public_key(uint8_t *dst, const cs_public_key_t *pub) {
+  uint8_t *cursor = dst;
+  cursor += serialize_uint16(cursor, CRAMER_SHOUP_PUBKEY_TYPE);
+  cursor += serialize_ec_point(cursor, pub->c);
+  cursor += serialize_ec_point(cursor, pub->d);
+  cursor += serialize_ec_point(cursor, pub->h);
+
+  return cursor - dst;
 }
