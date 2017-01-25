@@ -2,16 +2,16 @@
 #include "ed448.h"
 
 bool
-deserialize_uint64(uint64_t *n, const uint8_t serialized[8]);
+deserialize_uint64(uint64_t *n, const uint8_t *buffer, size_t buflen, size_t *nread);
 
 bool
-deserialize_uint32(uint32_t *n, const uint8_t serialized[4]);
+deserialize_uint32(uint32_t *n, const uint8_t *buffer, size_t buflen, size_t *nread);
 
 bool
-deserialize_uint16(uint16_t *n, const uint8_t serialized[2]);
+deserialize_uint16(uint16_t *n, const uint8_t *buffer, size_t buflen, size_t *nread);
 
 bool
-deserialize_uint8(uint8_t *n, const uint8_t serialized[1]);
+deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t buflen, size_t *nread);
 
 bool
 deserialize_bytes_array(uint8_t *target, const uint8_t data[], size_t len);

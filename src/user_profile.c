@@ -70,6 +70,7 @@ user_profile_serialize(uint8_t *dst, const user_profile_t *profile) {
 
 bool
 user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size_t ser_len) {
+  size_t read = 0;
   int walked = 0;
 
   //TODO error
@@ -95,16 +96,18 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size
     return false;
   }
   
-  deserialize_uint64(&target->expires, serialized + walked);
-  walked += sizeof(uint64_t);
+  if (!deserialize_uint64(&target->expires, serialized+walked, ser_len, &read)) {
+      return false;
+  }
+  walked += read;
 
   if (sizeof(uint32_t) > ser_len - walked) {
     return false;
   }
 
   uint32_t sig_len = 0;
-  deserialize_uint32(&sig_len, serialized+walked);
-  walked += sizeof(uint32_t);
+  deserialize_uint32(&sig_len, serialized+walked, ser_len, &read);
+  walked += read;
   
   if (sig_len != EC_SIGNATURE_BYTES) {
     return false;
@@ -122,8 +125,8 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size
   }
   
   uint32_t trans_sig_len = 0;
-  deserialize_uint32(&trans_sig_len, serialized+walked);
-  walked += sizeof(uint32_t);
+  deserialize_uint32(&trans_sig_len, serialized+walked, ser_len, &read);
+  walked += read;
 
   if (trans_sig_len > ser_len - walked) {
     return false;
