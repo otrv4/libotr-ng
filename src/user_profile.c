@@ -38,7 +38,7 @@ user_profile_get_or_create_for(const char *handler) {
   profile->pub_key = pub_key;
   profile->versions = otrv4_strdup("4");
   profile->expires = time_get_three_months_from_now();
-  memset(profile->signature, 0, EC_SIGNATURE_BYTES);
+  memset(profile->signature, 0, sizeof(ec_signature_t));
   profile->transitional_signature = NULL;
 
   return profile;
@@ -96,49 +96,32 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size
     return false;
   }
   
-  if (!deserialize_uint64(&target->expires, serialized+walked, ser_len, &read)) {
+  if (!deserialize_uint64(&target->expires, serialized+walked, ser_len-walked, &read)) {
       return false;
   }
+  walked += read;
+
+  uint8_t *signature = NULL;
+  if (!deserialize_mpi(&signature, serialized+walked, ser_len-walked, &read)) {
+      return false;
+  }
+
+  size_t signature_len = read-sizeof(uint32_t);
+  if (signature_len > sizeof(ec_signature_t)) {
+    free(signature);
+    return false;
+  }
+
+  memcpy(target->signature, signature, signature_len);
+  free(signature);
   walked += read;
 
   if (sizeof(uint32_t) > ser_len - walked) {
     return false;
   }
-
-  uint32_t sig_len = 0;
-  deserialize_uint32(&sig_len, serialized+walked, ser_len, &read);
-  walked += read;
   
-  if (sig_len != EC_SIGNATURE_BYTES) {
-    return false;
-  }
-
-  if (sig_len > ser_len - walked) {
-    return false;
-  }
-  
-  memcpy(target->signature, serialized+walked, EC_SIGNATURE_BYTES);
-  walked += EC_SIGNATURE_BYTES;
-
-  if (sizeof(uint32_t) > ser_len - walked) {
-    return false;
-  }
-  
-  uint32_t trans_sig_len = 0;
-  deserialize_uint32(&trans_sig_len, serialized+walked, ser_len, &read);
-  walked += read;
-
-  if (trans_sig_len > ser_len - walked) {
-    return false;
-  }
-
-  target->transitional_signature = NULL;
-  if (trans_sig_len > 0) {
-    target->transitional_signature = malloc(trans_sig_len);
-    if (target->transitional_signature == NULL) {
+  if (!deserialize_mpi(&target->transitional_signature, serialized+walked, ser_len-walked, &read)) {
       return false;
-    }
-    memcpy(target->transitional_signature, serialized+walked, trans_sig_len);
   }
 
   return true;

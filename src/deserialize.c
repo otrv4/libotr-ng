@@ -49,26 +49,38 @@ deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t buflen, size_t *nrea
   return true;
 }
 
+//This will malloc because it knows how much bytes are needed
 bool
-deserialize_bytes_array(uint8_t *target, const uint8_t data[], size_t len) {
-  memcpy(target, data, len);
-  return true;
-}
+deserialize_mpi(uint8_t **target, const uint8_t *data, uint32_t len, size_t *read) {
+  size_t r = 0;
+  const uint8_t *cursor = data;
 
-bool
-deserialize_mpi(uint8_t *target, const uint8_t *data, uint32_t len) {
-  size_t read = 0;
   uint32_t data_len = 0;
-  
-  if(!deserialize_uint32(&data_len, data, len, &read)) {
+  if(!deserialize_uint32(&data_len, cursor, len, &r)) {
     return false;
   }
 
-  if (data_len != len) {
+  if (data_len == 0) {
+    *target = NULL;
+    goto done;
+  }
+
+  cursor += r;
+
+  if (data_len > len) {
     return false;
   }
 
-  return deserialize_bytes_array(target+read, data, len);
+  *target = malloc(data_len);
+  if (*target == NULL) {
+      return false;
+  }
+
+  memcpy(*target, cursor, data_len);
+
+done:
+  if (read != NULL) { *read = r + data_len; }
+  return true;
 }
 
 bool

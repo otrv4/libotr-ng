@@ -9,16 +9,8 @@
 
 typedef decaf_448_private_key_t     ec_keypair_t;
 typedef decaf_448_public_key_t      ec_public_key_t;
-//typedef decaf_448_symmetric_key_t   ec_symmetric_key_t;
-typedef decaf_448_signature_t ec_signature_t;
-
-//typedef struct {
-//  //TODO should we really have these 3 or storing only the symmetric is enough?
-//  ec_private_key_t priv;
-//  ec_public_key_t pub;
-//} ec_keypair_t[1];
-
-typedef decaf_448_point_t ec_point_t;
+typedef decaf_448_signature_t       ec_signature_t;
+typedef decaf_448_point_t           ec_point_t;
 
 
 void
