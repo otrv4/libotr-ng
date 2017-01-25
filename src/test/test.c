@@ -3,10 +3,14 @@
 #include <libdecaf/decaf.h>
 #include "../ed448.h"
 
-static inline void
-otrv4_assert_cmpmem(const void* expected, const void *actual, size_t len) {
-  g_assert_cmpint(memcmp(expected, actual, len), ==, 0);
-}
+#define otrv4_assert_cmpmem(s1, s2, len) do { \
+        if (memcmp(s1, s2, len) == 0); else \
+        g_assertion_message_cmpstr (G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, \
+        #s1 " ==  " #s2, "memcmp(s1, s2, len)", "!=", "0"); } while (0)
+
+#define otrv4_assert(expr)  do { if G_LIKELY (expr) ; else \
+                        g_assertion_message_expr (G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, \
+                        #expr); } while (0)
 
 static inline void
 otrv4_assert_point_equals(const ec_point_t expected, const ec_point_t actual) {
@@ -53,6 +57,7 @@ main(int argc, char **argv) {
   g_test_add_func("/dh/serialize", dh_test_serialize);
 
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
+  g_test_add_func("/serialize_and_deserialize/cramer-shoup", test_ser_des_cs_public_key);
 
   return g_test_run();
 }

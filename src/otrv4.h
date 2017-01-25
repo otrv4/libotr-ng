@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include "dake.h"
 
 typedef enum {
@@ -41,10 +43,10 @@ typedef struct {
 otrv4_t *otrv4_new(void);
 void otrv4_free(/*@only@*/ otrv4_t *otr);
 
-int otrv4_start(otrv4_t *otr);
+bool otrv4_start(otrv4_t *otr);
 void otrv4_version_support_v3(otrv4_t *otr);
 
 void otrv4_build_query_message(/*@unique@*/ char * query_message, const otrv4_t *otr, const char *message);
-int otrv4_build_whitespace_tag(/*@unique@*/ char * whitespace_tag, const otrv4_t *otr, const char *message);
+bool otrv4_build_whitespace_tag(/*@unique@*/ char * whitespace_tag, const otrv4_t *otr, const char *message);
 
 void otrv4_receive_message(otrv4_t *otr, const char *message);

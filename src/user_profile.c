@@ -68,38 +68,38 @@ user_profile_serialize(uint8_t *dst, const user_profile_t *profile) {
   return target - dst;
 }
 
-int
+bool
 user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size_t ser_len) {
   int walked = 0;
 
   //TODO error
   if (!deserialize_cs_public_key(target->pub_key, serialized, ser_len) ) {
-    return 1;
+    return false;
   }
   walked += 2+3*56; //TODO
 
   size_t versions_len = strlen((const char*) serialized+walked);
   if (versions_len > ser_len - walked) {
-    return 1; //TODO error
+    return false; //TODO error
   }
 
   target->versions = malloc(versions_len+1);
   if (target->versions == NULL) {
-    return 1;
+    return false;
   }
   
   memcpy(target->versions, serialized+walked, versions_len+1);
   walked += versions_len+1;
 
   if (sizeof(uint64_t) > ser_len - walked) {
-    return 1;
+    return false;
   }
   
   deserialize_uint64(&target->expires, serialized + walked);
   walked += sizeof(uint64_t);
 
   if (sizeof(uint32_t) > ser_len - walked) {
-    return 1;
+    return false;
   }
 
   uint32_t sig_len = 0;
@@ -107,18 +107,18 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size
   walked += sizeof(uint32_t);
   
   if (sig_len != EC_SIGNATURE_BYTES) {
-    return 1;
+    return false;
   }
 
   if (sig_len > ser_len - walked) {
-    return 1;
+    return false;
   }
   
   memcpy(target->signature, serialized+walked, EC_SIGNATURE_BYTES);
   walked += EC_SIGNATURE_BYTES;
 
   if (sizeof(uint32_t) > ser_len - walked) {
-    return 1;
+    return false;
   }
   
   uint32_t trans_sig_len = 0;
@@ -126,23 +126,23 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size
   walked += sizeof(uint32_t);
 
   if (trans_sig_len > ser_len - walked) {
-    return 1;
+    return false;
   }
 
   target->transitional_signature = NULL;
   if (trans_sig_len > 0) {
     target->transitional_signature = malloc(trans_sig_len);
     if (target->transitional_signature == NULL) {
-      return 1;
+      return false;
     }
     memcpy(target->transitional_signature, serialized+walked, trans_sig_len);
   }
 
-  return 0;
+  return true;
 }
 
 // TODO: implement signature validation.
-int
+bool
 user_profile_signature_validate(const uint8_t signature[112]) {
-  return 0;
+  return false;
 }

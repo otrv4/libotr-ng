@@ -25,7 +25,7 @@ test_otrv4_starts_protocol() {
 
   int started = otrv4_start(otr);
 
-  g_assert_cmpint(started, ==, 0);
+  g_assert_cmpint(started, ==, true);
   g_assert_cmpint(otr->state, ==, OTR_STATE_START);
   g_assert_cmpint(otr->supported_versions, ==, OTR_ALLOW_V4);
 

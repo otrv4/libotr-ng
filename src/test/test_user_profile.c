@@ -87,7 +87,8 @@ test_user_profile_deserializes() {
   
   user_profile_t *deserialized = malloc(sizeof(user_profile_t));
   deserialized->pub_key = malloc(sizeof(cs_public_key_t));
-  g_assert_cmpint(user_profile_deserialize(deserialized, serialized, sizeof(serialized)), ==, 0);
+
+  otrv4_assert(user_profile_deserialize(deserialized, serialized, sizeof(serialized)) == true);
 
   otrv4_assert_point_equals(deserialized->pub_key->c, profile->pub_key->c);
   otrv4_assert_point_equals(deserialized->pub_key->d, profile->pub_key->d);

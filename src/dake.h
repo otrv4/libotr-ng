@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "dh.h"
 #include "ed448.h"
 #include "user_profile.h"
@@ -68,7 +69,7 @@ dake_dre_auth_new();
 void
 dake_dre_auth_free(dake_dre_auth_t *dre_auth);
 
-int
+bool
 dake_dre_auth_serialize(uint8_t *target, const dake_dre_auth_t *dre_auth);
 
 void

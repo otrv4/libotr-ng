@@ -10,11 +10,11 @@ dh_init(void) {
     (const unsigned char *)DH3072_GENERATOR_S, 0, NULL);
 }
 
-int
+bool
 dh_gen_keypair(dh_keypair_t keypair) {
   uint8_t *secbuf = malloc(DH_KEY_SIZE);
   if (secbuf == NULL) {
-      return -1;
+      return false;
   }
 
   random_bytes(secbuf, DH_KEY_SIZE);
@@ -22,13 +22,13 @@ dh_gen_keypair(dh_keypair_t keypair) {
   gcry_free(secbuf);
 
   if (err) {
-    return -1;
+    return false;
   }
 
   keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
   gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, keypair->priv, DH3072_MODULUS);
 
-  return 0;
+  return true;
 }
 
 void
@@ -37,7 +37,7 @@ dh_keypair_destroy(dh_keypair_t keypair) {
   gcry_mpi_release(keypair->pub);
 }
 
-int
+bool
 dh_shared_secret(
     uint8_t *shared,
     size_t shared_bytes,
@@ -50,10 +50,10 @@ dh_shared_secret(
   gcry_mpi_release(secret);
 
   if (err) {
-      return -1;
+      return false;
   }
 
-  return 0;
+  return true;
 }
 
 size_t

@@ -28,10 +28,10 @@ user_profile_free(user_profile_t *profile);
 int
 user_profile_serialize(uint8_t *target, const user_profile_t *profile);
 
-int
+bool
 user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size_t ser_len);
 
-int
+bool
 user_profile_signature_validate(const uint8_t signature[112]);
 
 #endif

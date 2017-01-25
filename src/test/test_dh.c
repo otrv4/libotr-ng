@@ -10,13 +10,10 @@ dh_test_api() {
 
   uint8_t shared1[DH3072_MOD_LEN_BYTES], shared2[DH3072_MOD_LEN_BYTES];
 
-  int ok = dh_shared_secret(shared1, sizeof(shared1), alice->priv, bob->pub);
-  g_assert_cmpint(ok, ==, 0);
+  otrv4_assert(dh_shared_secret(shared1, sizeof(shared1), alice->priv, bob->pub));
+  otrv4_assert(dh_shared_secret(shared2, sizeof(shared2), bob->priv, alice->pub));
 
-  ok = dh_shared_secret(shared2, sizeof(shared2), bob->priv, alice->pub);
-  g_assert_cmpint(ok, ==, 0);
-
-  ok = memcmp(shared1, shared2, sizeof(shared1));
+  int ok = memcmp(shared1, shared2, sizeof(shared1));
   g_assert_cmpint(ok, ==, 0);
 
   dh_keypair_destroy(alice);

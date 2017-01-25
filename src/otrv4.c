@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 
 #include "otrv4.h"
@@ -70,12 +69,12 @@ otrv4_version_support_v3(otrv4_t *otr) {
   otr->supported_versions |= OTR_ALLOW_V3;
 }
 
-int
+bool
 otrv4_start(otrv4_t *otr) {
   otr->state = OTR_STATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
 
-  return 0;
+  return true;
 }
 
 void
@@ -96,7 +95,7 @@ otrv4_build_query_message(/*@unique@*/ char *query_message, const otrv4_t *otr, 
 
 //TODO: should this care about UTF8?
 //TODO: should this deal with buffer overflows?
-int
+bool
 otrv4_build_whitespace_tag(/*@unique@*/ char *whitespace_tag, const otrv4_t *otr, const char *message) {
 
   strcpy(whitespace_tag, tag_base);
@@ -111,7 +110,7 @@ otrv4_build_whitespace_tag(/*@unique@*/ char *whitespace_tag, const otrv4_t *otr
 
   strcat(whitespace_tag, message);
 
-  return 0;
+  return true;
 }
 
 static bool

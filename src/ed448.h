@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <libdecaf/decaf_crypto.h>
 
@@ -23,7 +24,7 @@ typedef decaf_448_point_t ec_point_t;
 void
 ec_gen_keypair(ec_keypair_t keypair);
 
-int
+bool
 ecdh_shared_secret(uint8_t *shared, size_t shared_bytes, const ec_keypair_t our_priv, const ec_public_key_t their_pub);
 
 void
@@ -38,7 +39,7 @@ ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src);
 void
 ec_point_serialize(uint8_t *dst, size_t dst_len, const ec_point_t point);
 
-int
-ec_point_deserialize(ec_point_t point, const uint8_t *serialized);
+bool
+ec_point_deserialize(ec_point_t point, const uint8_t serialized[DECAF_448_SER_BYTES]);
 
 #endif

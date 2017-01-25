@@ -10,7 +10,7 @@ test_ser_deser_uint() {
   otrv4_assert_cmpmem(buf, ser, 1);
   
   uint8_t uint8_des = 0;
-  g_assert_cmpint(deserialize_uint8(&uint8_des, ser), ==, 0);
+  otrv4_assert(deserialize_uint8(&uint8_des, ser));
   g_assert_cmpuint(uint8_des, ==, 0x12);
 
   memset(buf, 0, sizeof(buf));
@@ -18,7 +18,7 @@ test_ser_deser_uint() {
   otrv4_assert_cmpmem(buf, ser, 2);
   
   uint16_t uint16_des = 0;
-  g_assert_cmpint(deserialize_uint16(&uint16_des, ser), ==, 0);
+  otrv4_assert(deserialize_uint16(&uint16_des, ser));
   g_assert_cmpuint(uint16_des, ==, 0x1234);
 
   memset(buf, 0, sizeof(buf));
@@ -26,7 +26,7 @@ test_ser_deser_uint() {
   otrv4_assert_cmpmem(buf, ser, 4);
   
   uint32_t uint32_des = 0;
-  g_assert_cmpint(deserialize_uint32(&uint32_des, ser), ==, 0);
+  otrv4_assert(deserialize_uint32(&uint32_des, ser));
   g_assert_cmpuint(uint32_des, ==, 0x12345678);
 
   memset(buf, 0, sizeof(buf));
@@ -34,6 +34,25 @@ test_ser_deser_uint() {
   otrv4_assert_cmpmem(buf, ser, 8);
   
   uint64_t uint64_des = 0;
-  g_assert_cmpint(deserialize_uint64(&uint64_des, ser), ==, 0);
+  otrv4_assert(deserialize_uint64(&uint64_des, ser));
   g_assert_cmpuint(uint64_des, ==, 0x123456789ABCDEF0);
 }
+
+void
+test_ser_des_cs_public_key() {
+  cs_keypair_t keypair, deserialized;
+  cs_generate_keypair(keypair);
+
+  uint8_t serialized[170] = { 0 };
+  g_assert_cmpint(serialize_cs_public_key(serialized, keypair->pub), ==, 170);
+  g_assert_cmpint(deserialize_cs_public_key(deserialized->pub, serialized, 170), ==, 1);
+
+  otrv4_assert(DECAF_TRUE == decaf_448_point_valid(deserialized->pub->c));
+  otrv4_assert(DECAF_TRUE == decaf_448_point_valid(deserialized->pub->d));
+  otrv4_assert(DECAF_TRUE == decaf_448_point_valid(deserialized->pub->h));
+
+  otrv4_assert(decaf_448_point_eq(deserialized->pub->c, keypair->pub->c) == DECAF_TRUE);
+  otrv4_assert(decaf_448_point_eq(deserialized->pub->d, keypair->pub->d) == DECAF_TRUE);
+  otrv4_assert(decaf_448_point_eq(deserialized->pub->h, keypair->pub->h) == DECAF_TRUE);
+}
+

@@ -58,9 +58,9 @@ void
 dake_dre_auth_free(dake_dre_auth_t *dre_auth) {
 }
 
-int
+bool
 dake_dre_auth_serialize(uint8_t *target, const dake_dre_auth_t *dre_auth) {
-    return 0;
+    return false;
 }
 
 void
