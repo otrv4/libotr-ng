@@ -39,6 +39,10 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
+AX_CFLAGS_GCC_OPTION([-Wall])
+AX_CFLAGS_GCC_OPTION([-Werror])
+AX_CFLAGS_GCC_OPTION([-Wfatal-errors])
+
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([memset strstr])
