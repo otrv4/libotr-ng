@@ -78,7 +78,7 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size
   }
   walked += 2+3*56; //TODO
 
-  size_t versions_len = strlen(serialized+walked);
+  size_t versions_len = strlen((const char*) serialized+walked);
   if (versions_len > ser_len - walked) {
     return 1; //TODO error
   }

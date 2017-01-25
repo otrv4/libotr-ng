@@ -51,6 +51,7 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
 
 dake_dre_auth_t *
 dake_dre_auth_new() {
+    return NULL;
 }
 
 void
@@ -58,12 +59,12 @@ dake_dre_auth_free(dake_dre_auth_t *dre_auth) {
 }
 
 int
-dake_dre_auth_serialize(uint8_t target, const dake_dre_auth_t *dre_auth) {
+dake_dre_auth_serialize(uint8_t *target, const dake_dre_auth_t *dre_auth) {
+    return 0;
 }
 
 void
 dake_dre_auth_deserialize(dake_dre_auth_t *target, uint8_t *data) {
-  
 }
 
 int

@@ -137,6 +137,7 @@ test_dake_protocol() {
   ec_keypair_destroy(alice_ecdh);
 }
 
+void
 test_dake_pre_key_valid() {
   dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
 
@@ -160,7 +161,7 @@ test_dake_pre_key_Y_doesnt_belong_to_curve() {
 
 void
 test_dake_dre_auth_new() {
-  dake_dre_auth_t *dre_auth = dake_dre_auth_new();
+  //dake_dre_auth_t *dre_auth = dake_dre_auth_new();
 }
 
 void

@@ -2,38 +2,35 @@
 
 #include "deserialize.h"
 
-static int
-deserialize_int(uint64_t *n, const uint8_t *data, size_t offset) {
-  int i;
-  int shift = offset;
-
-  for (i=0; i < offset; i++) {
-    shift--;
-    uint64_t p = data[i];
-    *n = *n | (p << shift*8);
-  }
-
+int
+deserialize_uint64(uint64_t *n, const uint8_t serialized[8]) {
+  *n = ((uint64_t) serialized[7]) |
+       ((uint64_t) serialized[6])<<8 |
+       ((uint64_t) serialized[5])<<16 |
+       ((uint64_t) serialized[4])<<24 |
+       ((uint64_t) serialized[3])<<32 | 
+       ((uint64_t) serialized[2])<<40 |
+       ((uint64_t) serialized[1])<<48 |
+       ((uint64_t) serialized[0])<<56;
   return 0;
 }
 
 int
-deserialize_uint64(uint64_t *n, const uint8_t serialized[8]) {
-  return deserialize_int(n, serialized, sizeof(uint64_t));
-}
-
-int
 deserialize_uint32(uint32_t *n, const uint8_t serialized[4]) {
-  return deserialize_int(n, serialized, sizeof(uint32_t));
+  *n = serialized[3] | serialized[2]<<8 | serialized[1]<<16 | serialized[0]<<24;
+  return 0;
 }
 
 int
 deserialize_uint16(uint16_t *n, const uint8_t serialized[2]) {
-  return deserialize_int(n, serialized, sizeof(uint16_t));
+  *n = serialized[1] | serialized[0]<<8;
+  return 0;
 }
 
 int
 deserialize_uint8(uint8_t *n, const uint8_t serialized[1]) {
-  return deserialize_int(n, serialized, sizeof(uint8_t));
+  *n = serialized[0];
+  return 0;
 }
 
 int
@@ -44,7 +41,7 @@ deserialize_bytes_array(uint8_t *target, const uint8_t data[], int len) {
 
 int
 deserialize_mpi(uint8_t *target, const uint8_t *data, uint32_t len) {
-  int data_len = 0;
+  uint32_t data_len = 0;
   deserialize_uint32(&data_len, data);
 
   if (data_len != len) {
