@@ -46,24 +46,23 @@ test_dake_pre_key_serializes() {
   };
 
   uint8_t *cursor = serialized;
-  int comp = memcmp(cursor, expected, 11); //sizeof(expected));
-  g_assert_cmpint(comp, ==, 0);
+  otrv4_assert_cmpmem(cursor, expected, 11); //sizeof(expected));
   cursor += 11;
 
   uint8_t user_profile_serialized[340] = {0};
   int user_profile_len = user_profile_serialize(user_profile_serialized, pre_key->sender_profile);
-  g_assert_cmpint(memcmp(cursor, user_profile_serialized, user_profile_len), ==, 0);
+  otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
   cursor += user_profile_len;
 
-  uint8_t serialized_y[sizeof(ec_public_key_t)] = {0};
+  uint8_t serialized_y[sizeof(ec_public_key_t)+2] = {0};
   ec_public_key_serialize(serialized_y, sizeof(ec_public_key_t), pre_key->Y);
-  g_assert_cmpint(memcmp(cursor, serialized_y, sizeof(ec_public_key_t)), ==, 0);
+  otrv4_assert_cmpmem(cursor, serialized_y, sizeof(ec_public_key_t));
   cursor += sizeof(ec_public_key_t);
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
   size_t mpi_len = dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES, pre_key->B);
   //Skip first 4 because they are the size (mpi_len)
-  g_assert_cmpint(memcmp(cursor+4, serialized_b, mpi_len), ==, 0);
+  otrv4_assert_cmpmem(cursor+4, serialized_b, mpi_len);
 
   dh_keypair_destroy(dh);
   ec_keypair_destroy(ecdh);
@@ -108,7 +107,7 @@ test_dake_pre_key_deserializes() {
   dh_keypair_destroy(dh);
   ec_keypair_destroy(ecdh);
   dake_pre_key_free(pre_key);
-  //dake_pre_key_free(deserialized);
+  dake_pre_key_free(deserialized);
   user_profile_free(profile);
 }
 
@@ -187,8 +186,7 @@ test_dake_dre_auth_serialize() {
     
   };
 
-  int comp = memcmp(serialized, expected, 11); //sizeof(expected));
-  g_assert_cmpint(comp, ==, 0);
+  otrv4_assert_cmpmem(serialized, expected, 11); //sizeof(expected));
   
   dake_dre_auth_free(dre_auth);
 }

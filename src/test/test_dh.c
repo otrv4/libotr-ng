@@ -13,8 +13,7 @@ dh_test_api() {
   otrv4_assert(dh_shared_secret(shared1, sizeof(shared1), alice->priv, bob->pub));
   otrv4_assert(dh_shared_secret(shared2, sizeof(shared2), bob->priv, alice->pub));
 
-  int ok = memcmp(shared1, shared2, sizeof(shared1));
-  g_assert_cmpint(ok, ==, 0);
+  otrv4_assert_cmpmem(shared1, shared2, sizeof(shared1));
 
   dh_keypair_destroy(alice);
   dh_keypair_destroy(bob);
