@@ -2,6 +2,7 @@
 #include src/include.am
 
 SUBDIRS = src src/test
+ACLOCAL_AMFLAGS = -I m4
 
 #Compilation and linkage flags
 #CFLAGS = -std=c99 -g -Wall `pkg-config --cflags glib-2.0`
