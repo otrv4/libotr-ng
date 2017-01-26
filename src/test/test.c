@@ -1,22 +1,6 @@
 #include <glib.h>
-#include <string.h>
-#include <libdecaf/decaf.h>
-#include "../ed448.h"
 
-#define otrv4_assert_cmpmem(s1, s2, len) do { \
-        if (memcmp(s1, s2, len) == 0); else \
-        g_assertion_message_cmpstr (G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, \
-        #s1 " ==  " #s2, "memcmp(s1, s2, len)", "!=", "0"); } while (0)
-
-#define otrv4_assert(expr)  do { if G_LIKELY (expr) ; else \
-                        g_assertion_message_expr (G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, \
-                        #expr); } while (0)
-
-static inline void
-otrv4_assert_point_equals(const ec_point_t expected, const ec_point_t actual) {
-  g_assert_cmpint(decaf_448_point_eq(expected, actual), !=, 0);
-}
-
+#include "test_helpers.h"
 #include "test_otrv4.c"
 #include "test_dake.c"
 #include "test_user_profile.c"

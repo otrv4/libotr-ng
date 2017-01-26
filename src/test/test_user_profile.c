@@ -62,9 +62,7 @@ test_user_profile_serializes() {
 
   g_assert_cmpint(memcmp(serialized, expected_pubkey, sizeof(expected_pubkey)), ==, 0);
   
-  //HERE Is where it fails
-  int comp = memcmp(serialized+sizeof(expected_pubkey), expected, sizeof(expected));
-  g_assert_cmpint(comp, ==, 0);
+  otrv4_assert_cmpmem(serialized+sizeof(expected_pubkey), expected, sizeof(expected));
 
   user_profile_free(profile);
 }
