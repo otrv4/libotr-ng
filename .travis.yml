@@ -6,10 +6,13 @@ before_install:
   - sudo apt-get update --quiet --assume-yes
   - sudo apt-get install splint --quiet --assume-yes
   - sudo apt-get install valgrind --quiet --assume-yes
-  - sudo apt-get install libgcrypt-dev --quiet --assume-yes
 
 before_script: 
   - mkdir .deps
+  - curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
+  - pushd .deps/libgpg-error-1.26 && ./configure && make && sudo make install && popd
+  - curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.7.6.tar.bz2 | tar xjf - -C .deps
+  - pushd .deps/libgcrypt-1.7.6 && ./configure && make && sudo make install && popd
   - git clone https://github.com/twstrike/ed448goldilocks-decaf.git .deps/decaf
   - pushd .deps/decaf && ./autogen.sh && ./configure && make && sudo make install && popd
   - curl https://download.libsodium.org/libsodium/releases/libsodium-1.0.11.tar.gz | tar xzf - -C .deps
