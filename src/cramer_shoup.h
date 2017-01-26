@@ -2,6 +2,7 @@
 #define CRAMER_SHOUP_H
 
 #include <cramershoup.h>
+#include "ed448.h"
 
 #define CRAMER_SHOUP_PUBKEY_TYPE 0x0010
 
@@ -14,5 +15,8 @@ typedef struct {
 
 void
 cs_generate_keypair(cs_keypair_t key_par);
+
+void
+cs_public_key_copy(cs_public_key_t *dst, const cs_public_key_t *src);
 
 #endif

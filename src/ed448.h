@@ -12,6 +12,8 @@ typedef decaf_448_public_key_t      ec_public_key_t;
 typedef decaf_448_signature_t       ec_signature_t;
 typedef decaf_448_point_t           ec_point_t;
 
+void
+ec_point_copy(ec_point_t dst, const ec_point_t src);
 
 void
 ec_gen_keypair(ec_keypair_t keypair);

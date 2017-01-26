@@ -3,22 +3,14 @@
 
 #include "../dake.h"
 #include "../serialize.h"
+#include "../cramer_shoup.h"
+#include "../str.h"
 
 void
 test_dake_pre_key_new() {
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
-
-  g_assert_cmpint(pre_key->protocol_version, ==, 4);
-  g_assert_cmpint(pre_key->message_type, ==, 15);
-  g_assert_cmpint(pre_key->sender_instance_tag, >, 0);
-  g_assert_cmpint(pre_key->receiver_instance_tag, ==, 0);
-  // TODO: How to assert a pointer was set without using nonnull?
-  // Comparing to 0 fires a warning on making a int from a pointer
-  // even when NULL is a representation of 0
-  // g_assert_cmpint(pre_key->Y, >, 0);
-  // g_assert_cmpint(pre_key->B, >, 0);
-
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", NULL);
   dake_pre_key_free(pre_key);
+  pre_key = NULL;
 }
 
 void
@@ -27,16 +19,23 @@ test_dake_pre_key_serializes() {
 
   ec_keypair_t ecdh;
   dh_keypair_t dh;
+  cs_keypair_t cs;
 
   ec_gen_keypair(ecdh);
   dh_gen_keypair(dh);
+  cs_generate_keypair(cs);
 
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
+  user_profile_t *profile = user_profile_new();
+  cs_public_key_copy(profile->pub_key, cs->pub);
+  profile->versions = otrv4_strdup("4");
+
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", profile);
+  pre_key->sender_instance_tag = 1;
   ec_public_key_copy(pre_key->Y, ecdh->pub);
   pre_key->B = dh->pub;
 
   uint8_t serialized[1000] = { 0 };
-  
+
   dake_pre_key_serialize(serialized, pre_key);
 
   char expected[] = {
@@ -69,6 +68,7 @@ test_dake_pre_key_serializes() {
   dh_keypair_destroy(dh);
   ec_keypair_destroy(ecdh);
   dake_pre_key_free(pre_key);
+  user_profile_free(profile);
 }
 
 void
@@ -77,11 +77,17 @@ test_dake_pre_key_deserializes() {
 
   ec_keypair_t ecdh;
   dh_keypair_t dh;
+  cs_keypair_t cs;
 
   ec_gen_keypair(ecdh);
   dh_gen_keypair(dh);
+  cs_generate_keypair(cs);
 
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
+  user_profile_t *profile = user_profile_new();
+  cs_public_key_copy(profile->pub_key, cs->pub);
+  profile->versions = otrv4_strdup("4");
+
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", profile);
   ec_public_key_copy(pre_key->Y, ecdh->pub);
   pre_key->B = dh->pub;
 
@@ -92,8 +98,6 @@ test_dake_pre_key_deserializes() {
   memset(deserialized, 0, sizeof(dake_pre_key_t));
   otrv4_assert(dake_pre_key_deserialize(deserialized, serialized, sizeof(serialized)));
 
-  g_assert_cmpuint(deserialized->protocol_version, ==, pre_key->protocol_version);
-  g_assert_cmpuint(deserialized->message_type, ==, pre_key->message_type);
   g_assert_cmpuint(deserialized->sender_instance_tag, ==, pre_key->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==, pre_key->receiver_instance_tag);
 
@@ -105,6 +109,7 @@ test_dake_pre_key_deserializes() {
   ec_keypair_destroy(ecdh);
   dake_pre_key_free(pre_key);
   //dake_pre_key_free(deserialized);
+  user_profile_free(profile);
 }
 
 void
@@ -124,7 +129,7 @@ test_dake_protocol() {
   dh_gen_keypair(bob_dh);
 
   // Alice send pre key
-  dake_pre_key_t *pre_key = dake_pre_key_new("");
+  dake_pre_key_t *pre_key = dake_pre_key_new("", NULL);
   ec_public_key_copy(pre_key->Y, alice_ecdh->pub);
   pre_key->B = alice_dh->pub;
 
@@ -141,7 +146,7 @@ test_dake_protocol() {
 
 void
 test_dake_pre_key_valid() {
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", NULL);
 
   int valid = dake_pre_key_validate(pre_key);
 
@@ -152,7 +157,7 @@ test_dake_pre_key_valid() {
 
 void
 test_dake_pre_key_Y_doesnt_belong_to_curve() {
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", NULL);
 
   int valid = dake_pre_key_validate(pre_key);
 

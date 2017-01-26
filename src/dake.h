@@ -3,15 +3,16 @@
 #include "ed448.h"
 #include "user_profile.h"
 
+#define OTR_VERSION 4 //TODO: move
+#define PRE_KEY_MSG_TYPE 0x0F
+
 #ifndef DAKE_H
 #define DAKE_H
 
 typedef struct {
-  uint16_t protocol_version;
-  uint8_t message_type;
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  user_profile_t *sender_profile;
+  user_profile_t sender_profile[1];
   ec_public_key_t Y;
   dh_public_key_t B;
 } dake_pre_key_t;
@@ -52,7 +53,7 @@ typedef struct {
 } dake_dre_auth_t;
 
 dake_pre_key_t *
-dake_pre_key_new();
+dake_pre_key_new(const char *sender, const user_profile_t *profile);
 
 void
 dake_pre_key_free(dake_pre_key_t *pre_key);

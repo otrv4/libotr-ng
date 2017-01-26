@@ -7,28 +7,22 @@
 
 void
 test_user_profile_create() {
-  const char *handler = "handler@service.net";
-  
-  user_profile_t *profile = user_profile_get_or_create_for(handler);
-
-  g_assert_cmpstr(profile->versions, ==, "4");
-  g_assert_cmpint(profile->expires, >=, time(NULL) + 2592000);
-  char signature[112] = { 0 };
-  g_assert_cmpint(memcmp(profile->signature, signature, 112), ==, 0);
-
+  user_profile_t *profile = user_profile_new();
   user_profile_free(profile);
 }
 
 void
 test_user_profile_serializes() {
-  user_profile_t *profile = user_profile_get_or_create_for("h@c.com");
-  profile->expires = 15;
-  profile->transitional_signature = malloc(40);
-  memset(profile->transitional_signature, 0, 40);
-
   cs_keypair_t keypair;
   cs_generate_keypair(keypair);
-  profile->pub_key = keypair->pub;
+
+  user_profile_t *profile = user_profile_new();
+  profile->versions = otrv4_strdup("4");
+  profile->expires = 15;
+  profile->transitional_signature = malloc(40);
+  otrv4_assert(profile->transitional_signature != NULL);
+  memset(profile->transitional_signature, 0, 40);
+  cs_public_key_copy(profile->pub_key, keypair->pub);
   
   uint8_t expected_pubkey[170] = { 0 };
   serialize_cs_public_key(expected_pubkey, keypair->pub);
@@ -68,6 +62,7 @@ test_user_profile_serializes() {
 
   g_assert_cmpint(memcmp(serialized, expected_pubkey, sizeof(expected_pubkey)), ==, 0);
   
+  //HERE Is where it fails
   int comp = memcmp(serialized+sizeof(expected_pubkey), expected, sizeof(expected));
   g_assert_cmpint(comp, ==, 0);
 
@@ -76,17 +71,17 @@ test_user_profile_serializes() {
 
 void
 test_user_profile_deserializes() {
-  user_profile_t *profile = user_profile_get_or_create_for("h@c.com");
-  uint8_t serialized[1000] = { 0 };
-
   cs_keypair_t keypair;
   cs_generate_keypair(keypair);
-  profile->pub_key = keypair->pub; 
+
+  user_profile_t *profile = user_profile_new();
+  profile->versions = otrv4_strdup("4");
+  cs_public_key_copy(profile->pub_key, keypair->pub);
   
+  uint8_t serialized[1000] = { 0 };
   user_profile_serialize(serialized, profile);
   
   user_profile_t *deserialized = malloc(sizeof(user_profile_t));
-  deserialized->pub_key = malloc(sizeof(cs_public_key_t));
 
   otrv4_assert(user_profile_deserialize(deserialized, serialized, sizeof(serialized)) == true);
 

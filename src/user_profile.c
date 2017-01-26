@@ -7,15 +7,21 @@
 #include "deserialize.h"
 #include "str.h"
 
-// TODO: Completely arbitrary expiration date. Should come from configuration.
-static time_t
-time_get_three_months_from_now() {
-  time_t today = time(NULL);
-  time_t secs_to_three_monts = 60 * 60 * 24 * 30;
-  return today + secs_to_three_monts;
+user_profile_t*
+user_profile_new() {
+  user_profile_t *profile = malloc(sizeof(user_profile_t));
+  if (profile == NULL) {
+      return NULL;
+  }
+
+  profile->versions = NULL;
+  profile->transitional_signature = NULL;
+
+  return profile;
 }
 
 // TODO: need to review errors on this function.
+// TODO: remove in a moment
 user_profile_t *
 user_profile_get_or_create_for(const char *handler) {
   if (handler == NULL) {
@@ -23,25 +29,25 @@ user_profile_get_or_create_for(const char *handler) {
     exit(EXIT_FAILURE);
   }
 
-  user_profile_t *profile = malloc(sizeof(user_profile_t));
-  if (profile == NULL) {
-    fprintf(stderr, "Failed to allocate memory. Chao!\n");
-    exit(EXIT_FAILURE);
+  return user_profile_new();
+}
+
+void
+user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
+  if (src == NULL) {
+      return;
   }
 
-  cs_public_key_t *pub_key = malloc(sizeof(cs_public_key_t));
-  if (pub_key == NULL) {
-    fprintf(stderr, "Failed to allocate memory. Chao!\n");
-    exit(EXIT_FAILURE);
+  cs_public_key_copy(dst->pub_key, src->pub_key);
+  dst->versions = otrv4_strdup(src->versions);
+  dst->expires = src->expires;
+
+  memcpy(dst->signature, src->signature, sizeof(ec_signature_t));
+
+  //TODO: this should be an MPI and there should be no need to check this
+  if (src->transitional_signature != NULL) {
+    memcpy(dst->transitional_signature, src->transitional_signature,  40); // TODO
   }
-
-  profile->pub_key = pub_key;
-  profile->versions = otrv4_strdup("4");
-  profile->expires = time_get_three_months_from_now();
-  memset(profile->signature, 0, sizeof(ec_signature_t));
-  profile->transitional_signature = NULL;
-
-  return profile;
 }
 
 void

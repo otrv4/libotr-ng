@@ -101,7 +101,6 @@ test_otrv4_receives_plaintext_without_ws_tag_not_on_start(otrv4_fixture_t *otrv4
 
 void
 test_otrv4_receives_plaintext_with_ws_tag(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-
   otrv4_receive_message(otrv4_fixture->otr, " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.");
 
   g_assert_cmpstr(otrv4_fixture->otr->message_to_display, ==, "And some random invitation text.");
@@ -141,7 +140,7 @@ test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture, gconstpoint
 
 void
 test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net");
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", NULL);
   uint8_t serialized[500] = { 0 };
   dake_pre_key_serialize(serialized, pre_key);
   char message[1000];
@@ -155,6 +154,7 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpoint
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, V4);
   g_assert_cmpstr(otrv4_fixture->otr->message_to_display, ==, NULL);
   dake_dre_auth_t *dre_auth = malloc(sizeof(dake_dre_auth_t));
+
   //TODO: should base64 decode the message to respond after ?OTR and then
   //deserialize
   dake_dre_auth_deserialize(dre_auth, (uint8_t*) otrv4_fixture->otr->message_to_respond);
