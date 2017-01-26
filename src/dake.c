@@ -5,6 +5,8 @@
 #include "dake.h"
 #include "str.h"
 #include "serialize.h"
+#include "deserialize.h"
+#include "user_profile.h"
 
 dake_pre_key_t *
 dake_pre_key_new(const char *sender) {
@@ -44,9 +46,50 @@ dake_pre_key_serialize(uint8_t *target, const dake_pre_key_t *pre_key) {
   target += serialize_dh_public_key(target, pre_key->B);
 }
 
-void
+bool
 dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len) {
-    //TODO
+    const uint8_t *cursor = src;
+    int64_t len = src_len;
+    size_t read = 0;
+
+    if(!deserialize_uint16(&dst->protocol_version, cursor, len, &read)) {
+      return false;
+    }
+
+    cursor += read;
+    len -= read;
+
+    if(!deserialize_uint8(&dst->message_type, cursor, len, &read)) {
+      return false;
+    }
+
+    cursor += read;
+    len -= read;
+
+    if(!deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
+      return false;
+    }
+
+    cursor += read;
+    len -= read;
+
+    if(!deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
+      return false;
+    }
+
+    cursor += read;
+    len -= read;
+
+    //dst->sender_profile = malloc(sizeof(user_profile_t));
+    //if (dst->sender_profile == NULL) {
+    //    return false;
+    //}
+
+    //if (!user_profile_deserialize(dst->sender_profile, cursor, len)) {
+    //  return false;
+    //}
+
+    return true;
 }
 
 dake_dre_auth_t *

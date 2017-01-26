@@ -60,7 +60,7 @@ dake_pre_key_free(dake_pre_key_t *pre_key);
 void
 dake_pre_key_serialize(uint8_t *target, const dake_pre_key_t *pre_key);
 
-void
+bool
 dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len);
 
 dake_dre_auth_t *

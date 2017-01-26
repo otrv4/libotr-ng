@@ -73,7 +73,6 @@ test_dake_pre_key_serializes() {
 
 void
 test_dake_pre_key_deserializes() {
-    return;
   dh_init();
 
   ec_keypair_t ecdh;
@@ -86,16 +85,18 @@ test_dake_pre_key_deserializes() {
   ec_public_key_copy(pre_key->Y, ecdh->pub);
   pre_key->B = dh->pub;
 
-  uint8_t serialized[755] = { 0 };
+  uint8_t serialized[10000] = { 0 };
   dake_pre_key_serialize(serialized, pre_key);
 
   dake_pre_key_t *deserialized = malloc(sizeof(dake_pre_key_t));
-  dake_pre_key_deserialize(deserialized, serialized, sizeof(serialized));
+  memset(deserialized, 0, sizeof(dake_pre_key_t));
+  otrv4_assert(dake_pre_key_deserialize(deserialized, serialized, sizeof(serialized)));
 
   g_assert_cmpuint(deserialized->protocol_version, ==, pre_key->protocol_version);
   g_assert_cmpuint(deserialized->message_type, ==, pre_key->message_type);
   g_assert_cmpuint(deserialized->sender_instance_tag, ==, pre_key->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==, pre_key->receiver_instance_tag);
+
   //TODO: USER PROFILE
   //TODO: Y
   //TODO: B
@@ -103,7 +104,7 @@ test_dake_pre_key_deserializes() {
   dh_keypair_destroy(dh);
   ec_keypair_destroy(ecdh);
   dake_pre_key_free(pre_key);
-  dake_pre_key_free(deserialized);
+  //dake_pre_key_free(deserialized);
 }
 
 void
