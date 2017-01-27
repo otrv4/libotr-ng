@@ -36,28 +36,28 @@ serialize_uint8(uint8_t *dst, const uint8_t data) {
 }
 
 int
-serialize_bytes_array(uint8_t *target, const uint8_t data[], int len) {
+serialize_bytes_array(uint8_t *target, const uint8_t *data, int len) {
+  //this is just a memcpy thar returns the ammount copied for convenience
   memcpy(target, data, len);
   return len;
 }
 
 int
-serialize_mpi(uint8_t *dst, const uint8_t *data, uint32_t len) {
+serialize_mpi(uint8_t *dst, const otr_mpi_t mpi) {
   uint8_t *cursor = dst;
 
-  if (data == NULL) {
-    len = 0;
-  }
-
-  cursor += serialize_uint32(cursor, len);
-  cursor += serialize_bytes_array(cursor, data, len);
+  cursor += serialize_uint32(cursor, mpi->len);
+  cursor += serialize_bytes_array(cursor, mpi->data, mpi->len);
 
   return cursor - dst;
 }
 
 int
 serialize_ec_public_key(uint8_t *dst, const ec_public_key_t pub) {
-  ec_public_key_serialize(dst, sizeof(ec_public_key_t), pub);
+  if (!ec_public_key_serialize(dst, sizeof(ec_public_key_t), pub)) {
+    return 0;
+  }
+
   return sizeof(ec_public_key_t);
 }
 
@@ -70,9 +70,16 @@ serialize_ec_point(uint8_t *dst, const ec_point_t point) {
 
 int
 serialize_dh_public_key(uint8_t *dst, const dh_public_key_t pub) {
+  //From gcrypt MPI
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0}; //TODO: should this be cleared?
   size_t written = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, pub);
-  return serialize_mpi(dst, buf, written);
+
+  //To OTR MPI
+  //TODO: Maybe gcrypt MPI already has some API for this.
+  //gcry_mpi_print with a different format, maybe?
+  otr_mpi_t mpi;
+  otr_mpi_set(mpi, buf, written);
+  return serialize_mpi(dst, mpi);
 }
 
 int

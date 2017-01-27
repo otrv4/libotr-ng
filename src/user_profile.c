@@ -5,6 +5,7 @@
 #include "user_profile.h"
 #include "serialize.h"
 #include "deserialize.h"
+#include "mpi.h"
 #include "str.h"
 
 user_profile_t*
@@ -15,7 +16,7 @@ user_profile_new() {
   }
 
   profile->versions = NULL;
-  profile->transitional_signature = NULL;
+  otr_mpi_init(profile->transitional_signature);
 
   return profile;
 }
@@ -43,11 +44,7 @@ user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
   dst->expires = src->expires;
 
   memcpy(dst->signature, src->signature, sizeof(ec_signature_t));
-
-  //TODO: this should be an MPI and there should be no need to check this
-  if (src->transitional_signature != NULL) {
-    memcpy(dst->transitional_signature, src->transitional_signature,  40); // TODO
-  }
+  otr_mpi_copy(dst->transitional_signature, src->transitional_signature);
 }
 
 void
@@ -55,12 +52,12 @@ user_profile_free(user_profile_t *profile) {
   free(profile->versions);
   profile->versions = NULL;
 
-  free(profile->transitional_signature);
-  profile->transitional_signature = NULL;
+  otr_mpi_free(profile->transitional_signature);
 
   free(profile);
 }
 
+//TODO this can overflow because serialize doesnt know how much it can write
 int
 user_profile_serialize(uint8_t *dst, const user_profile_t *profile) {
   uint8_t *target = dst;
@@ -68,8 +65,12 @@ user_profile_serialize(uint8_t *dst, const user_profile_t *profile) {
   target += serialize_cs_public_key(target, profile->pub_key);  
   target += serialize_bytes_array(target, (uint8_t*) profile->versions, strlen(profile->versions)+1);
   target += serialize_uint64(target, profile->expires);
-  target += serialize_mpi(target, profile->signature, 112);
-  target += serialize_mpi(target, profile->transitional_signature, 40);
+
+  otr_mpi_t signature_mpi;
+  otr_mpi_set(signature_mpi, profile->signature, sizeof(ec_signature_t));
+  target += serialize_mpi(target, signature_mpi);
+
+  target += serialize_mpi(target, profile->transitional_signature);
 
   return target - dst;
 }
@@ -98,36 +99,23 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size
   memcpy(target->versions, serialized+walked, versions_len+1);
   walked += versions_len+1;
 
-  if (sizeof(uint64_t) > ser_len - walked) {
-    return false;
-  }
-  
   if (!deserialize_uint64(&target->expires, serialized+walked, ser_len-walked, &read)) {
-      return false;
+    return false;
   }
   walked += read;
 
-  uint8_t *signature = NULL;
-  if (!deserialize_mpi(&signature, serialized+walked, ser_len-walked, &read)) {
-      return false;
-  }
-
-  size_t signature_len = read-sizeof(uint32_t);
-  if (signature_len > sizeof(ec_signature_t)) {
-    free(signature);
+  otr_mpi_t signature_mpi;
+  if (!otr_mpi_deserialize(signature_mpi, serialized+walked, ser_len-walked, &read)) {
     return false;
   }
-
-  memcpy(target->signature, signature, signature_len);
-  free(signature);
   walked += read;
 
-  if (sizeof(uint32_t) > ser_len - walked) {
+  //TODO this could be an otr_mpi_memcpy
+  memcpy(target->signature, signature_mpi->data, signature_mpi->len);
+  otr_mpi_free(signature_mpi);
+
+  if (!otr_mpi_deserialize(target->transitional_signature, serialized+walked, ser_len-walked, &read)) {
     return false;
-  }
-  
-  if (!deserialize_mpi(&target->transitional_signature, serialized+walked, ser_len-walked, &read)) {
-      return false;
   }
 
   return true;

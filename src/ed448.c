@@ -34,9 +34,14 @@ ecdh_shared_secret(
   return true;
 }
 
-void
+bool
 ec_public_key_serialize(uint8_t *dst, size_t dst_bytes, const ec_public_key_t pub) {
-  memcpy(dst, pub, dst_bytes);
+  if (sizeof(ec_public_key_t) > dst_bytes) {
+    return false;
+  }
+
+  memcpy(dst, pub, sizeof(ec_public_key_t));
+  return true;
 }
 
 void

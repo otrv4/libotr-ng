@@ -4,6 +4,7 @@
 #include <time.h>
 #include <stdint.h>
 
+#include "mpi.h"
 #include "ed448.h"
 #include "cramer_shoup.h"
 
@@ -16,7 +17,7 @@ typedef struct {
   /// casts to long. Define new type and make convertions?
   uint64_t expires;
   ec_signature_t signature;
-  uint8_t *transitional_signature; //TODO: this should be an MPI type
+  otr_mpi_t transitional_signature;
 } user_profile_t;
 
 user_profile_t*

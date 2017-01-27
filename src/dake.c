@@ -18,7 +18,6 @@ dake_pre_key_new(const char *sender, const user_profile_t *profile) {
 
   pre_key->sender_instance_tag = 0;
   pre_key->receiver_instance_tag = 0;
-
   user_profile_copy(pre_key->sender_profile, profile);
 
   return pre_key;
@@ -45,7 +44,7 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
     const uint8_t *cursor = src;
     int64_t len = src_len;
     size_t read = 0;
-
+    
     uint16_t protocol_version = 0;
     if(!deserialize_uint16(&protocol_version, cursor, len, &read)) {
       return false;
@@ -55,7 +54,7 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
     len -= read;
 
     if (protocol_version != OTR_VERSION) {
-        return false;
+      return false;
     }
 
     uint8_t message_type = 0;
@@ -67,7 +66,7 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
     len -= read;
 
     if (message_type != PRE_KEY_MSG_TYPE) {
-        return false;
+      return false;
     }
 
     if(!deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {

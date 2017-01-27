@@ -3,6 +3,7 @@
 #include "dh.h"
 #include "ed448.h"
 #include "cramer_shoup.h"
+#include "mpi.h"
 
 int
 serialize_uint64(uint8_t *dst, const uint64_t data);
@@ -21,7 +22,7 @@ int
 serialize_bytes_array(uint8_t *target, const uint8_t data[], int len);
 
 int
-serialize_mpi(uint8_t *dst, const uint8_t *data, uint32_t len);
+serialize_mpi(uint8_t *dst, const otr_mpi_t mpi);
 
 int
 serialize_ec_public_key(uint8_t *dst, const ec_public_key_t pub);

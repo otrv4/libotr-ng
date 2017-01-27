@@ -6,6 +6,8 @@
 #include "../cramer_shoup.h"
 #include "../str.h"
 
+#define PREKEY_BEFORE_PROFILE_BYTES 2+1+4+4
+
 void
 test_dake_pre_key_new() {
   dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", NULL);
@@ -35,14 +37,13 @@ test_dake_pre_key_serializes() {
   pre_key->B = dh->pub;
 
   uint8_t serialized[1000] = { 0 };
-
   dake_pre_key_serialize(serialized, pre_key);
 
   char expected[] = {
-    0x0, 0x04, // version
-    0x0f,      //message type
-    0x0, 0x0, 0x0, 0x1, // sender instance tag
-    0x0, 0x0, 0x0, 0x0, // receiver instance tag
+    0x0, 0x04,              // version
+    0x0f,                   //message type
+    0x0, 0x0, 0x0, 0x1,     // sender instance tag
+    0x0, 0x0, 0x0, 0x0,     // receiver instance tag
   };
 
   uint8_t *cursor = serialized;
@@ -89,6 +90,7 @@ test_dake_pre_key_deserializes() {
   dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", profile);
   ec_public_key_copy(pre_key->Y, ecdh->pub);
   pre_key->B = dh->pub;
+  user_profile_free(profile);
 
   uint8_t serialized[10000] = { 0 };
   dake_pre_key_serialize(serialized, pre_key);
@@ -107,8 +109,7 @@ test_dake_pre_key_deserializes() {
   dh_keypair_destroy(dh);
   ec_keypair_destroy(ecdh);
   dake_pre_key_free(pre_key);
-  dake_pre_key_free(deserialized);
-  user_profile_free(profile);
+  free(deserialized);
 }
 
 void
