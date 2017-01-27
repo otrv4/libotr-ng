@@ -37,7 +37,7 @@ int
 user_profile_serialize(uint8_t *target, const user_profile_t *profile);
 
 bool
-user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size_t ser_len);
+user_profile_deserialize(user_profile_t *target, const uint8_t *buffer, size_t buflen, size_t *nread);
 
 bool
 user_profile_signature_validate(const uint8_t signature[112]);

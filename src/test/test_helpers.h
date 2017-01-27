@@ -55,6 +55,14 @@ otrv4_memdump(const uint8_t *src, size_t len) {
   otrv4_assert_mpi_eq(p1->transitional_signature, p2->transitional_signature); \
 } while (0)
 
+#define otrv4_assert_ec_public_key_eq(pk1, pk2) do { \
+  otrv4_assert_cmpmem(pk1, pk2, sizeof(ec_public_key_t)); \
+} while (0)
+
+#define otrv4_assert_dh_public_key_eq(pk1, pk2) do { \
+  g_assert_cmpint(dh_mpi_cmp(pk1, pk2), ==, 0); \
+} while (0)
+
 static inline void
 otrv4_assert_point_equals(const ec_point_t expected, const ec_point_t actual) {
   g_assert_cmpint(decaf_448_point_eq(expected, actual), !=, 0);

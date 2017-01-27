@@ -86,7 +86,7 @@ test_user_profile_deserializes() {
 
   user_profile_t *deserialized = malloc(sizeof(user_profile_t));
 
-  otrv4_assert(user_profile_deserialize(deserialized, serialized, sizeof(serialized)));
+  otrv4_assert(user_profile_deserialize(deserialized, serialized, sizeof(serialized), NULL));
   otrv4_assert_user_profile_eq(deserialized, profile);
 
   user_profile_free(profile);

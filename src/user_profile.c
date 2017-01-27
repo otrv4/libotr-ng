@@ -86,37 +86,37 @@ user_profile_serialize(uint8_t *dst, const user_profile_t *profile) {
 }
 
 bool
-user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size_t ser_len) {
+user_profile_deserialize(user_profile_t *target, const uint8_t *buffer, size_t buflen, size_t *nread) {
   size_t read = 0;
   int walked = 0;
 
-  //TODO error
-  if (!deserialize_cs_public_key(target->pub_key, serialized, ser_len) ) {
-    return false;
+  if (!deserialize_cs_public_key(target->pub_key, buffer, buflen) ) {
+    goto deserialize_error;
   }
+
   walked += 2+3*56; //TODO
 
-  size_t versions_len = strlen((const char*) serialized+walked);
-  if (versions_len > ser_len - walked) {
-    return false; //TODO error
+  size_t versions_len = strlen((const char*) buffer+walked);
+  if (versions_len > buflen - walked) {
+    goto deserialize_error;
   }
 
   target->versions = malloc(versions_len+1);
   if (target->versions == NULL) {
-    return false;
+    goto deserialize_error;
   }
   
-  memcpy(target->versions, serialized+walked, versions_len+1);
+  memcpy(target->versions, buffer+walked, versions_len+1);
   walked += versions_len+1;
 
-  if (!deserialize_uint64(&target->expires, serialized+walked, ser_len-walked, &read)) {
-    return false;
+  if (!deserialize_uint64(&target->expires, buffer+walked, buflen-walked, &read)) {
+    goto deserialize_error;
   }
   walked += read;
 
   otr_mpi_t signature_mpi;
-  if (!otr_mpi_deserialize(signature_mpi, serialized+walked, ser_len-walked, &read)) {
-    return false;
+  if (!otr_mpi_deserialize(signature_mpi, buffer+walked, buflen-walked, &read)) {
+    goto deserialize_error;
   }
   walked += read;
 
@@ -124,11 +124,18 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *serialized, size
   memcpy(target->signature, signature_mpi->data, signature_mpi->len);
   otr_mpi_free(signature_mpi);
 
-  if (!otr_mpi_deserialize(target->transitional_signature, serialized+walked, ser_len-walked, &read)) {
-    return false;
+  if (!otr_mpi_deserialize(target->transitional_signature, buffer+walked, buflen-walked, &read)) {
+    goto deserialize_error;
   }
 
+  walked += read;
+
+  if (nread != NULL) { *nread = walked; }
   return true;
+
+deserialize_error:
+  if (nread != NULL) { *nread = walked; }
+  return false;
 }
 
 // TODO: implement signature validation.

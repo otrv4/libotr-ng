@@ -83,12 +83,17 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
     cursor += read;
     len -= read;
 
-    if (!user_profile_deserialize(dst->sender_profile, cursor, len)) {
+    if (!user_profile_deserialize(dst->sender_profile, cursor, len, &read)) {
       return false;
     }
 
-    //cursor += read;
-    //len -= read;
+    cursor += read;
+    len -= read;
+
+    //TODO deserialize_ec_public_key()
+    ec_public_key_copy(dst->Y, cursor);
+    cursor += sizeof(ec_public_key_t);
+    len -= sizeof(ec_public_key_t);
 
     return true;
 }

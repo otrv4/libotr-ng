@@ -36,4 +36,9 @@ dh_shared_secret(
     const dh_public_key_t their_pub
 );
 
+static inline int
+dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
+  return gcry_mpi_cmp(m1, m2);
+}
+
 #endif
