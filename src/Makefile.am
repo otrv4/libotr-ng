@@ -18,10 +18,9 @@ libotr4_la_SOURCES = \
 libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBDECAF_CFLAGS@ @LIBGCRYPT_CFLAGS@ @LIBCRAMERSHOUP_CFLAGS@
 libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ @LIBGCRYPT_LIBS@ @LIBCRAMERSHOUP_LIBS@
 
-#libotr4_includedir = $(includedir)/otr4
-#libotr4_include_HEADERS = \
-#		src/otrv3.h \
-#		src/otrv4.h
+otrincdir = $(includedir)/libotr4
+# otrinc_HEADERS =
+
 
 #pkgconfigdir = $(libdir)/pkgconfig
 #pkgconfig_DATA = otr4.pc
