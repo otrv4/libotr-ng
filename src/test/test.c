@@ -2,6 +2,7 @@
 
 #include "test_helpers.h"
 #include "test_otrv4.c"
+#include "test_prekey.c"
 #include "test_dake.c"
 #include "test_user_profile.c"
 #include "test_ed448.c"

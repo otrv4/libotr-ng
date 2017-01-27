@@ -3,7 +3,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "../str.h"
 #include "../user_profile.h"
+#include "../serialize.h"
 
 void
 test_user_profile_create() {
