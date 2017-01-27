@@ -1,11 +1,9 @@
 #ifndef USER_PROFILE_H
 #define USER_PROFILE_H
 
-#include <time.h>
 #include <stdint.h>
 
 #include "mpi.h"
-#include "ed448.h"
 #include "cramer_shoup.h"
 
 typedef struct {
