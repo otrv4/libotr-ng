@@ -9,28 +9,22 @@
 #include "str.h"
 
 user_profile_t*
-user_profile_new() {
-  user_profile_t *profile = malloc(sizeof(user_profile_t));
-  if (profile == NULL) {
-      return NULL;
+user_profile_new(const cs_public_key_t *pub, const char* versions) {
+  if (versions == NULL) {
+    return NULL;
   }
 
-  profile->versions = NULL;
+  user_profile_t *profile = malloc(sizeof(user_profile_t));
+  if (profile == NULL) {
+    return NULL;
+  }
+
+  profile->versions = otrv4_strdup(versions);
+  cs_public_key_copy(profile->pub_key, pub);
+
   otr_mpi_init(profile->transitional_signature);
 
   return profile;
-}
-
-// TODO: need to review errors on this function.
-// TODO: remove in a moment
-user_profile_t *
-user_profile_get_or_create_for(const char *handler) {
-  if (handler == NULL) {
-    fprintf(stderr, "Handler is required to create a profile");
-    exit(EXIT_FAILURE);
-  }
-
-  return user_profile_new();
 }
 
 void

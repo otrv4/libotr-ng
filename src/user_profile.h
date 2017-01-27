@@ -19,13 +19,10 @@ typedef struct {
 } user_profile_t;
 
 user_profile_t*
-user_profile_new();
+user_profile_new(const cs_public_key_t *pub, const char* versions);
 
 void
 user_profile_copy(user_profile_t *dst, const user_profile_t *src);
-
-user_profile_t *
-user_profile_get_or_create_for(const char *handler);
 
 void
 user_profile_free(user_profile_t *profile);

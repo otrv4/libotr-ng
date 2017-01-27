@@ -9,7 +9,11 @@
 
 void
 test_user_profile_create() {
-  user_profile_t *profile = user_profile_new();
+  cs_keypair_t keypair;
+  cs_generate_keypair(keypair);
+
+  user_profile_t *profile = user_profile_new(keypair->pub, "4");
+  otrv4_assert(profile != NULL);
   user_profile_free(profile);
 }
 
@@ -18,11 +22,11 @@ test_user_profile_serializes() {
   cs_keypair_t keypair;
   cs_generate_keypair(keypair);
 
-  user_profile_t *profile = user_profile_new();
-  profile->versions = otrv4_strdup("4");
+  user_profile_t *profile = user_profile_new(keypair->pub, "4");
+  otrv4_assert(profile != NULL);
+
   profile->expires = 15;
-  memset(profile->signature, 1, sizeof(ec_signature_t));
-  cs_public_key_copy(profile->pub_key, keypair->pub);
+  memset(profile->signature, 1, sizeof(ec_signature_t)); //TODO: remove
 
   const uint8_t transitional_signature[40] = { 0 };
   otr_mpi_set(profile->transitional_signature, transitional_signature, sizeof(transitional_signature));
@@ -74,9 +78,8 @@ test_user_profile_deserializes() {
   cs_keypair_t keypair;
   cs_generate_keypair(keypair);
 
-  user_profile_t *profile = user_profile_new();
-  profile->versions = otrv4_strdup("4");
-  cs_public_key_copy(profile->pub_key, keypair->pub);
+  user_profile_t *profile = user_profile_new(keypair->pub, "4");
+  otrv4_assert(profile != NULL);
 
   uint8_t serialized[1000] = { 0 };
   user_profile_serialize(serialized, profile);
