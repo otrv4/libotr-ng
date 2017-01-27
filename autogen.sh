@@ -2,5 +2,5 @@
 
 set -e
 
-autoreconf --install --force
+autoreconf --install
 
