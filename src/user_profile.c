@@ -31,7 +31,8 @@ user_profile_new(const char* versions) {
 void
 user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
   if (src == NULL) {
-      return;
+    //TODO should we set dst to a valid (but empty) profile?
+    return;
   }
 
   cs_public_key_copy(dst->pub_key, src->pub_key);

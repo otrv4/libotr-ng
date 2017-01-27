@@ -1,6 +1,8 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+#include "test_fixtures.h"
+
 #include "test_otrv4.c"
 #include "test_prekey.c"
 #include "test_dake.c"
@@ -27,10 +29,10 @@ main(int argc, char **argv) {
   g_test_add("/otrv4/receives_query_message_v3", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_query_message_v3, otrv4_fixture_teardown);
 
   g_test_add_func("/dake/protocol", test_dake_protocol);
-  g_test_add_func("/dake/pre_key/new", test_dake_pre_key_new);
-  g_test_add_func("/dake/pre_key/serializes", test_dake_pre_key_serializes);
-  g_test_add_func("/dake/pre_key/deserializes", test_dake_pre_key_deserializes);
-  g_test_add_func("/dake/pre_key/valid", test_dake_pre_key_valid);
+  WITH_FIXTURE("/dake/pre_key/new", test_dake_pre_key_new, pre_key_fixture_t, pre_key_fixture);
+  WITH_FIXTURE("/dake/pre_key/serializes", test_dake_pre_key_serializes, pre_key_fixture_t, pre_key_fixture);
+  WITH_FIXTURE("/dake/pre_key/deserializes", test_dake_pre_key_deserializes, pre_key_fixture_t, pre_key_fixture);
+  WITH_FIXTURE("/dake/pre_key/valid", test_dake_pre_key_valid, pre_key_fixture_t, pre_key_fixture);
 
   g_test_add_func("/user_profile/create", test_user_profile_create);
   g_test_add_func("/user_profile/serialize", test_user_profile_serializes);

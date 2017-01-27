@@ -5,6 +5,9 @@
 
 #include "../ed448.h"
 
+#define WITH_FIXTURE(_p, _c, _t, _f) \
+  do { g_test_add(_p, _t, NULL, _f##_setup, _c, _f##_teardown); } while(0);
+
 static char*
 otrv4_memdump(const uint8_t *src, size_t len) {
   //each char is represented by 0x00,

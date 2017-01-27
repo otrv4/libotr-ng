@@ -76,7 +76,7 @@ dake_dre_auth_serialize(uint8_t *target, const dake_dre_auth_t *dre_auth);
 void
 dake_dre_auth_deserialize(dake_dre_auth_t *target, uint8_t *data);
 
-int
+bool
 dake_pre_key_validate(const dake_pre_key_t *pre_key);
 
 dake_pre_key_t *

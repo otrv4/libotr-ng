@@ -4,14 +4,14 @@
 #define PREKEY_BEFORE_PROFILE_BYTES 2+1+4+4
 
 void
-test_dake_pre_key_new() {
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", NULL);
+test_dake_pre_key_new(pre_key_fixture_t *f, gconstpointer data) {
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", f->profile);
   dake_pre_key_free(pre_key);
   pre_key = NULL;
 }
 
 void
-test_dake_pre_key_serializes() {
+test_dake_pre_key_serializes(pre_key_fixture_t *f, gconstpointer data) {
   dh_init();
 
   ec_keypair_t ecdh;
@@ -22,11 +22,7 @@ test_dake_pre_key_serializes() {
   dh_gen_keypair(dh);
   cs_generate_keypair(cs);
 
-  user_profile_t *profile = user_profile_new("4");
-  otrv4_assert(profile != NULL);
-  user_profile_sign(profile, cs); 
-
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", profile);
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", f->profile);
   pre_key->sender_instance_tag = 1;
   ec_public_key_copy(pre_key->Y, ecdh->pub);
   pre_key->B = dh->pub;
@@ -63,11 +59,10 @@ test_dake_pre_key_serializes() {
   dh_keypair_destroy(dh);
   ec_keypair_destroy(ecdh);
   dake_pre_key_free(pre_key);
-  user_profile_free(profile);
 }
 
 void
-test_dake_pre_key_deserializes() {
+test_dake_pre_key_deserializes(pre_key_fixture_t *f, gconstpointer data) {
   dh_init();
 
   ec_keypair_t ecdh;
@@ -78,14 +73,10 @@ test_dake_pre_key_deserializes() {
   dh_gen_keypair(dh);
   cs_generate_keypair(cs);
 
-  user_profile_t *profile = user_profile_new("4");
-  otrv4_assert(profile != NULL);
-  user_profile_sign(profile, cs); 
 
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", profile);
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", f->profile);
   ec_public_key_copy(pre_key->Y, ecdh->pub);
   pre_key->B = dh->pub;
-  user_profile_free(profile);
 
   uint8_t serialized[10000] = { 0 };
   dake_pre_key_serialize(serialized, pre_key);
@@ -108,19 +99,15 @@ test_dake_pre_key_deserializes() {
 }
 
 void
-test_dake_pre_key_valid() {
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", NULL);
-
-  int valid = dake_pre_key_validate(pre_key);
-
-  g_assert_cmpint(valid, ==, 0);
-
+test_dake_pre_key_valid(pre_key_fixture_t *f, gconstpointer data) {
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", f->profile);
+  otrv4_assert(dake_pre_key_validate(pre_key)); //TODO: boolean?
   dake_pre_key_free(pre_key);
 }
 
 void
-test_dake_pre_key_Y_doesnt_belong_to_curve() {
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", NULL);
+test_dake_pre_key_Y_doesnt_belong_to_curve(pre_key_fixture_t *f, gconstpointer data) {
+  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", f->profile);
 
   int valid = dake_pre_key_validate(pre_key);
 

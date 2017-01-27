@@ -10,25 +10,34 @@ void
 test_dake_protocol() {
   dh_init();
 
-  //alice_cramer_shoup, bob_cramer_shoup;
+  cs_keypair_t alice_cramer_shoup, bob_cramer_shoup;
   ec_keypair_t alice_ecdh, bob_ecdh;
   dh_keypair_t alice_dh, bob_dh;
 
   // Alice
+  cs_generate_keypair(alice_cramer_shoup);
   ec_gen_keypair(alice_ecdh);
   dh_gen_keypair(alice_dh);
 
   // Bob
+  cs_generate_keypair(bob_cramer_shoup);
   ec_gen_keypair(bob_ecdh);
   dh_gen_keypair(bob_dh);
 
   // Alice send pre key
-  dake_pre_key_t *pre_key = dake_pre_key_new("", NULL);
+  user_profile_t *alice_profile = user_profile_new("4");
+  user_profile_sign(alice_profile, alice_cramer_shoup);
+  dake_pre_key_t *pre_key = dake_pre_key_new("", alice_profile);
+
   ec_public_key_copy(pre_key->Y, alice_ecdh->pub);
   pre_key->B = alice_dh->pub;
 
+  //dake_pre_key_serialize()
+
   //TODO: continue
   // Bob receives pre key
+  // dake_pre_key_deserialize()
+
   // Bob sends DRE-auth
   // Alice receives DRE-auth
 
@@ -36,6 +45,8 @@ test_dake_protocol() {
   ec_keypair_destroy(bob_ecdh);
   dh_keypair_destroy(alice_dh);
   ec_keypair_destroy(alice_ecdh);
+  //cs_keypair_desctroy(alice_cramer_shoup);
+  //cs_keypair_desctroy(bob_cramer_shoup);
 }
 
 void

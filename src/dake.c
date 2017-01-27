@@ -10,6 +10,10 @@
 
 dake_pre_key_t *
 dake_pre_key_new(const char *sender, const user_profile_t *profile) {
+  if (profile == NULL) {
+    return NULL;
+  }
+
   dake_pre_key_t *pre_key = malloc(sizeof(dake_pre_key_t));
   if (pre_key == NULL) {
     fprintf(stderr, "Failed to allocate memory. Chao!\n");
@@ -128,13 +132,12 @@ void
 dake_dre_auth_deserialize(dake_dre_auth_t *target, uint8_t *data) {
 }
 
-int
+bool
 dake_pre_key_validate(const dake_pre_key_t *pre_key) {
   return user_profile_verify_signature(pre_key->sender_profile);
 }
 
 dake_pre_key_t *
 dake_compute_pre_key() {
-    //TODO
-  return  dake_pre_key_new("handler@service.net", NULL);
+  return NULL; //TODO
 }
