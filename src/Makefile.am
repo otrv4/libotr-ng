@@ -4,12 +4,13 @@ libotr4_la_SOURCES = \
                      cramer_shoup.c \
                      dake.c \
 										 data_types.c \
+										 deserialize.c \
 										 dh.c \
 										 ed448.c \
+										 mpi.c \
 										 otrv3.c \
 										 otrv4.c \
 										 serialize.c \
-										 deserialize.c \
 										 str.c \
 										 user_profile.c
 
