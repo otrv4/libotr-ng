@@ -85,3 +85,13 @@ dh_mpi_serialize(uint8_t *dst, size_t dst_len, const dh_mpi_t src) {
   gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, &nwritten, src); //TODO: fail?
   return nwritten;
 }
+
+bool
+dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer, size_t buflen, size_t *nread) {
+  gcry_error_t err = gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread);
+  if (err) {
+    return false;
+  }
+
+  return true;
+}

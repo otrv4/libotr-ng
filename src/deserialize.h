@@ -14,7 +14,7 @@ bool
 deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t buflen, size_t *nread);
 
 bool
-deserialize_mpi(uint8_t **target, const uint8_t *data, uint32_t len, size_t *read);
+deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer, size_t buflen, size_t *read);
 
 bool
 deserialize_ec_point(ec_point_t point, const uint8_t *serialized);

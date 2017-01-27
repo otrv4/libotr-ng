@@ -28,4 +28,10 @@ otr_mpi_serialize(uint8_t *dst, size_t len, const otr_mpi_t src);
 bool
 otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src, size_t src_len, size_t *read);
 
+bool
+otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t *src, size_t src_len, size_t *read);
+
+size_t
+otr_mpi_memcpy(uint8_t *dst, const otr_mpi_t mpi);
+
 #endif

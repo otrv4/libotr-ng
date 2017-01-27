@@ -51,8 +51,8 @@ otr_mpi_serialize(uint8_t *dst, size_t len, const otr_mpi_t src) {
   return cursor - dst;
 }
 
-bool
-otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src, size_t src_len, size_t *read) {
+static bool
+otr_mpi_read_len(otr_mpi_t dst, const uint8_t *src, size_t src_len, size_t *read) {
   size_t r = 0;
   if (!deserialize_uint32(&dst->len, src, src_len, &r)) {
     return false;
@@ -60,13 +60,22 @@ otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src, size_t src_len, size_t *r
 
   if (read != NULL) { *read = r; }
 
+  if (dst->len > src_len - r) {
+    return false;
+  }
+
+  return true;
+}
+
+bool
+otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src, size_t src_len, size_t *read) {
+  if (!otr_mpi_read_len(dst, src, src_len, read)) {
+    return false;
+  }
+
   if (dst->len == 0) {
     dst->data = NULL;
     return true;
-  }
-
-  if (dst->len > src_len - r) {
-    return false;
   }
 
   dst->data = malloc(dst->len);
@@ -74,9 +83,30 @@ otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src, size_t src_len, size_t *r
     return false;
   }
 
-  memcpy(dst->data, src+r, dst->len);
+  memcpy(dst->data, src + *read, dst->len);
 
   if (read != NULL) { *read += dst->len; }
   return true;
 }
 
+bool
+otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t *src, size_t src_len, size_t *read) {
+  if (!otr_mpi_read_len(dst, src, src_len, read)) {
+    return false;
+  }
+
+  if (dst->len == 0) {
+    dst->data = NULL;
+    return true;
+  }
+
+  //points to original buffer without copying
+  dst->data = (uint8_t*) src + *read;
+  return true;
+}
+
+size_t
+otr_mpi_memcpy(uint8_t *dst, const otr_mpi_t mpi) {
+  memcpy(dst, mpi->data, mpi->len);
+  return mpi->len;
+}

@@ -95,6 +95,18 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
     cursor += sizeof(ec_public_key_t);
     len -= sizeof(ec_public_key_t);
 
+    otr_mpi_t b_mpi; // no need to free, because nothing is copied now
+    if (!otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
+      return false;
+    }
+
+    cursor += read;
+    len -= read;
+
+    if (!dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read)) {
+      return false;
+    }
+
     return true;
 }
 

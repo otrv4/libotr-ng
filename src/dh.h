@@ -29,6 +29,9 @@ size_t
 dh_mpi_serialize(uint8_t *dst, size_t dst_len, const dh_mpi_t src);
 
 bool
+dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer, size_t buflen, size_t *nread);
+
+bool
 dh_shared_secret(
     uint8_t *shared,
     size_t shared_bytes,

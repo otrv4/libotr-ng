@@ -114,15 +114,13 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *buffer, size_t b
   }
   walked += read;
 
-  otr_mpi_t signature_mpi;
-  if (!otr_mpi_deserialize(signature_mpi, buffer+walked, buflen-walked, &read)) {
+  otr_mpi_t signature_mpi; // no need to free, because nothing is copied now
+  if (!otr_mpi_deserialize_no_copy(signature_mpi, buffer+walked, buflen-walked, &read)) {
     goto deserialize_error;
   }
-  walked += read;
 
-  //TODO this could be an otr_mpi_memcpy
-  memcpy(target->signature, signature_mpi->data, signature_mpi->len);
-  otr_mpi_free(signature_mpi);
+  walked += read;
+  walked += otr_mpi_memcpy(target->signature, signature_mpi);
 
   if (!otr_mpi_deserialize(target->transitional_signature, buffer+walked, buflen-walked, &read)) {
     goto deserialize_error;

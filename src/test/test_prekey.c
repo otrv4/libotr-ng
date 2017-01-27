@@ -99,7 +99,7 @@ test_dake_pre_key_deserializes() {
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==, pre_key->receiver_instance_tag);
   otrv4_assert_user_profile_eq(deserialized->sender_profile, pre_key->sender_profile);
   otrv4_assert_ec_public_key_eq(deserialized->Y, pre_key->Y);
-  //otrv4_assert_dh_public_key_eq(deserialized->B, pre_key->B); //TODO
+  otrv4_assert_dh_public_key_eq(deserialized->B, pre_key->B);
 
   dh_keypair_destroy(dh);
   ec_keypair_destroy(ecdh);

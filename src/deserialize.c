@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "deserialize.h"
+#include "mpi.h"
 
 bool
 deserialize_uint64(uint64_t *n, const uint8_t *buffer, size_t buflen, size_t *nread) {
@@ -49,37 +50,16 @@ deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t buflen, size_t *nrea
   return true;
 }
 
-//This will malloc because it knows how much bytes are needed
 bool
-deserialize_mpi(uint8_t **target, const uint8_t *data, uint32_t len, size_t *read) {
-  size_t r = 0;
-  const uint8_t *cursor = data;
+deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer, size_t buflen, size_t *read) {
+  otr_mpi_t mpi; // no need to free, because nothing is copied now
 
-  uint32_t data_len = 0;
-  if(!deserialize_uint32(&data_len, cursor, len, &r)) {
-    return false;
+  if (!otr_mpi_deserialize_no_copy(mpi, buffer, buflen, read)) {
+    return false; // only mpi len has been read
   }
 
-  if (data_len == 0) {
-    *target = NULL;
-    goto done;
-  }
-
-  cursor += r;
-
-  if (data_len > len) {
-    return false;
-  }
-
-  *target = malloc(data_len);
-  if (*target == NULL) {
-      return false;
-  }
-
-  memcpy(*target, cursor, data_len);
-
-done:
-  if (read != NULL) { *read = r + data_len; }
+  size_t r = otr_mpi_memcpy(dst, mpi);
+  if (read != NULL) { *read += r; }
   return true;
 }
 
