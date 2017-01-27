@@ -16,7 +16,7 @@ before_script:
   - git clone https://github.com/twstrike/ed448goldilocks-decaf.git .deps/decaf
   - pushd .deps/decaf && ./autogen.sh && ./configure && make && sudo make install && popd
   - git clone https://github.com/twstrike/cramershoup.git .deps/cramershoup
-  - pushd .deps/cramershoup && ./autogen.sh && ./configure && make && sudo make install && popd
+  - pushd .deps/cramershoup && ./autogen.sh && ./configure CFLAGS="-DFAST_RANDOM" && make && sudo make install && popd
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 script: ./autogen.sh && ./configure && make ci
