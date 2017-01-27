@@ -7,6 +7,7 @@
 #include "deserialize.h"
 #include "mpi.h"
 #include "str.h"
+#include "random.h"
 
 user_profile_t*
 user_profile_new(const char* versions) {
@@ -25,22 +26,6 @@ user_profile_new(const char* versions) {
   otr_mpi_init(profile->transitional_signature);
 
   return profile;
-}
-
-void
-user_profile_sign(user_profile_t *profile, const cs_keypair_t keypair) {
-  // Cant be done like in the spec.
-  // decaf_448_sign needs a private key (sym, secret_scalar and public) in
-  // order to sign.
-  cs_public_key_copy(profile->pub_key, keypair->pub);
-
-  //TODO: actually sign and remove this
-  memset(profile->signature, 0xFF, sizeof(ec_signature_t));
-}
-
-void
-user_profile_verify_signature(const cs_public_key_t *pub, const ec_signature_t sig) {
-    //TODO
 }
 
 void
@@ -67,14 +52,22 @@ user_profile_free(user_profile_t *profile) {
   free(profile);
 }
 
-//TODO this can overflow because serialize doesnt know how much it can write
-int
-user_profile_serialize(uint8_t *dst, const user_profile_t *profile) {
+static int
+user_profile_serialize_body(uint8_t *dst, const user_profile_t *profile) {
   uint8_t *target = dst;
 
   target += serialize_cs_public_key(target, profile->pub_key);  
   target += serialize_bytes_array(target, (uint8_t*) profile->versions, strlen(profile->versions)+1);
   target += serialize_uint64(target, profile->expires);
+
+  return target - dst;
+}
+
+//TODO this can overflow because serialize doesnt know how much it can write
+int
+user_profile_serialize(uint8_t *dst, const user_profile_t *profile) {
+  uint8_t *target = dst;
+  target += user_profile_serialize_body(dst, profile); //TODO: this could be cached in the data structure
 
   otr_mpi_t signature_mpi;
   otr_mpi_set(signature_mpi, profile->signature, sizeof(ec_signature_t));
@@ -136,8 +129,38 @@ deserialize_error:
   return false;
 }
 
-// TODO: implement signature validation.
-bool
-user_profile_signature_validate(const uint8_t signature[112]) {
-  return false;
+void
+user_profile_sign(user_profile_t *profile, const cs_keypair_t keypair) {
+  cs_public_key_copy(profile->pub_key, keypair->pub);
+
+  size_t profile_body_len = 170+10+8;
+  uint8_t *profile_body = malloc(profile_body_len);
+  if (profile_body == NULL) { return; } //TODO: error
+  user_profile_serialize_body(profile_body, profile);
+
+  //unlike the decaf spec, we take a random symm for each signature
+  ec_keypair_t sig_key;
+  random_bytes(sig_key->sym, sizeof(ec_symmetric_key_t)); // TODO: use the "symmetric nonce"
+  ec_scalar_copy(sig_key->secret_scalar, keypair->priv->z);
+  ec_point_serialize(sig_key->pub, sizeof(ec_public_key_t), keypair->pub->h);
+
+  ec_sign(profile->signature, sig_key, profile_body, profile_body_len);
+  ec_keypair_destroy(sig_key);
+  free(profile_body);
 }
+
+bool
+user_profile_verify_signature(const user_profile_t *profile) {
+  size_t profile_body_len = 170+10+8;
+  uint8_t *profile_body = malloc(profile_body_len);
+  if (profile_body == NULL) { return false; }
+  user_profile_serialize_body(profile_body, profile);
+
+  ec_public_key_t sign_pub_key;
+  ec_point_serialize(sign_pub_key, sizeof(ec_public_key_t), profile->pub_key->h);
+  bool ok = ec_verify(profile->signature, sign_pub_key, profile_body, profile_body_len);
+  free(profile_body);
+
+  return ok;
+}
+

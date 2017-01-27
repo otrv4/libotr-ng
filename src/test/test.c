@@ -35,6 +35,7 @@ main(int argc, char **argv) {
   g_test_add_func("/user_profile/create", test_user_profile_create);
   g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
   g_test_add_func("/user_profile/deserializes", test_user_profile_deserializes);
+  g_test_add_func("/user_profile/sign_and_verifies", test_user_profile_signs_and_verify);
 
   g_test_add_func("/ed448/api", ed448_test_ecdh);
 

@@ -8,6 +8,7 @@
 
 typedef cramershoup_448_public_key_t cs_public_key_t;
 typedef cramershoup_448_private_key_t cs_private_key_t;
+
 typedef struct {
   cs_public_key_t pub[1];
   cs_private_key_t priv[1];

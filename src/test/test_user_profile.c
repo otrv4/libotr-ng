@@ -67,7 +67,10 @@ test_user_profile_serializes() {
 
   // pubkey
   otrv4_assert_cmpmem(expected_pubkey, serialized, sizeof(expected_pubkey));
-  otrv4_assert_cmpmem(expected, serialized+sizeof(expected_pubkey), sizeof(expected));
+  otrv4_assert_cmpmem(expected, serialized+sizeof(expected_pubkey), 14);
+  //skip signature (112 bytes)
+  //transitional signature
+  otrv4_assert_cmpmem(expected+14+112, serialized+sizeof(expected_pubkey)+14+112, sizeof(expected)-112-14);
 
   user_profile_free(profile);
 }
@@ -95,13 +98,14 @@ test_user_profile_deserializes() {
 
 void
 test_user_profile_signs_and_verify() {
-  //TODO: This is not really signing anything
   cs_keypair_t keypair;
   cs_generate_keypair(keypair);
 
   user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);
   user_profile_sign(profile, keypair);
+
+  otrv4_assert(user_profile_verify_signature(profile));
 
   user_profile_free(profile);
 }

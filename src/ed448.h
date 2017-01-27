@@ -10,7 +10,9 @@
 typedef decaf_448_private_key_t     ec_keypair_t;
 typedef decaf_448_public_key_t      ec_public_key_t;
 typedef decaf_448_signature_t       ec_signature_t;
+typedef decaf_448_scalar_t          ec_scalar_t;
 typedef decaf_448_point_t           ec_point_t;
+typedef decaf_448_symmetric_key_t   ec_symmetric_key_t;
 
 void
 ec_gen_keypair(ec_keypair_t keypair);
@@ -36,7 +38,23 @@ ec_point_deserialize(ec_point_t point, const uint8_t serialized[DECAF_448_SER_BY
 bool
 ecdh_shared_secret(uint8_t *shared, size_t shared_bytes, const ec_keypair_t our_priv, const ec_public_key_t their_pub);
 
-void
-ec_sign(ec_signature_t dst, const ec_keypair_t keypair, const uint8_t *msg, size_t msg_len);
+static inline void
+ec_sign(ec_signature_t dst, const ec_keypair_t keypair, const uint8_t *msg, size_t msg_len) {
+  decaf_448_sign(dst, keypair, msg, msg_len);
+};
+
+static inline bool
+ec_verify(const ec_signature_t sig, const ec_public_key_t pub, const uint8_t *msg, size_t msg_len) {
+  if (DECAF_TRUE == decaf_448_verify(sig, pub, msg, msg_len)) {
+    return true;
+  }
+
+  return false;
+};
+
+static inline void
+ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t src) {
+  decaf_448_scalar_copy(dst, src);
+}
 
 #endif

@@ -130,7 +130,7 @@ dake_dre_auth_deserialize(dake_dre_auth_t *target, uint8_t *data) {
 
 int
 dake_pre_key_validate(const dake_pre_key_t *pre_key) {
-  return user_profile_signature_validate(pre_key->sender_profile->signature);
+  return user_profile_verify_signature(pre_key->sender_profile);
 }
 
 dake_pre_key_t *

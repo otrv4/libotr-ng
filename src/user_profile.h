@@ -24,8 +24,8 @@ user_profile_new(const char* versions);
 void
 user_profile_sign(user_profile_t *profile, const cs_keypair_t keypair);
 
-void
-user_profile_verify_signature(const cs_public_key_t *pub, const ec_signature_t sig);
+bool
+user_profile_verify_signature(const user_profile_t *profile);
 
 void
 user_profile_copy(user_profile_t *dst, const user_profile_t *src);
@@ -38,8 +38,5 @@ user_profile_serialize(uint8_t *target, const user_profile_t *profile);
 
 bool
 user_profile_deserialize(user_profile_t *target, const uint8_t *buffer, size_t buflen, size_t *nread);
-
-bool
-user_profile_signature_validate(const uint8_t signature[112]);
 
 #endif
