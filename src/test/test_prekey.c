@@ -22,8 +22,9 @@ test_dake_pre_key_serializes() {
   dh_gen_keypair(dh);
   cs_generate_keypair(cs);
 
-  user_profile_t *profile = user_profile_new(cs->pub, "4");
+  user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);
+  user_profile_sign(profile, cs); 
 
   dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", profile);
   pre_key->sender_instance_tag = 1;
@@ -77,8 +78,9 @@ test_dake_pre_key_deserializes() {
   dh_gen_keypair(dh);
   cs_generate_keypair(cs);
 
-  user_profile_t *profile = user_profile_new(cs->pub, "4");
+  user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);
+  user_profile_sign(profile, cs); 
 
   dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", profile);
   ec_public_key_copy(pre_key->Y, ecdh->pub);

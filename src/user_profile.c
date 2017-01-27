@@ -9,7 +9,7 @@
 #include "str.h"
 
 user_profile_t*
-user_profile_new(const cs_public_key_t *pub, const char* versions) {
+user_profile_new(const char* versions) {
   if (versions == NULL) {
     return NULL;
   }
@@ -20,11 +20,27 @@ user_profile_new(const cs_public_key_t *pub, const char* versions) {
   }
 
   profile->versions = otrv4_strdup(versions);
-  cs_public_key_copy(profile->pub_key, pub);
 
+  memset(profile->signature, 0, sizeof(ec_signature_t));
   otr_mpi_init(profile->transitional_signature);
 
   return profile;
+}
+
+void
+user_profile_sign(user_profile_t *profile, const cs_keypair_t keypair) {
+  // Cant be done like in the spec.
+  // decaf_448_sign needs a private key (sym, secret_scalar and public) in
+  // order to sign.
+  cs_public_key_copy(profile->pub_key, keypair->pub);
+
+  //TODO: actually sign and remove this
+  memset(profile->signature, 0xFF, sizeof(ec_signature_t));
+}
+
+void
+user_profile_verify_signature(const cs_public_key_t *pub, const ec_signature_t sig) {
+    //TODO
 }
 
 void

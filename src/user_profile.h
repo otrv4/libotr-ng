@@ -19,7 +19,13 @@ typedef struct {
 } user_profile_t;
 
 user_profile_t*
-user_profile_new(const cs_public_key_t *pub, const char* versions);
+user_profile_new(const char* versions);
+
+void
+user_profile_sign(user_profile_t *profile, const cs_keypair_t keypair);
+
+void
+user_profile_verify_signature(const cs_public_key_t *pub, const ec_signature_t sig);
 
 void
 user_profile_copy(user_profile_t *dst, const user_profile_t *src);

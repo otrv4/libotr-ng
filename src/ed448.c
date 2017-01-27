@@ -63,3 +63,7 @@ ec_point_deserialize(ec_point_t point, const uint8_t serialized[DECAF_448_SER_BY
   return true;
 }
 
+void
+ec_sign(ec_signature_t dst, const ec_keypair_t keypair, const uint8_t *msg, size_t msg_len) {
+  decaf_448_sign(dst, keypair, msg, msg_len);
+}
