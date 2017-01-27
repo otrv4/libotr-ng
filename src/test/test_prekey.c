@@ -97,7 +97,9 @@ test_dake_pre_key_deserializes() {
   g_assert_cmpuint(deserialized->sender_instance_tag, ==, pre_key->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==, pre_key->receiver_instance_tag);
 
-  //TODO: USER PROFILE
+  //user profile
+  otrv4_assert_user_profile_eq(deserialized->sender_profile, pre_key->sender_profile);
+
   //TODO: Y
   //TODO: B
 

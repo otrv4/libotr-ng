@@ -77,23 +77,14 @@ test_user_profile_deserializes() {
   user_profile_t *profile = user_profile_new();
   profile->versions = otrv4_strdup("4");
   cs_public_key_copy(profile->pub_key, keypair->pub);
-  
+
   uint8_t serialized[1000] = { 0 };
   user_profile_serialize(serialized, profile);
-  
+
   user_profile_t *deserialized = malloc(sizeof(user_profile_t));
 
-  otrv4_assert(user_profile_deserialize(deserialized, serialized, sizeof(serialized)) == true);
-
-  otrv4_assert_point_equals(deserialized->pub_key->c, profile->pub_key->c);
-  otrv4_assert_point_equals(deserialized->pub_key->d, profile->pub_key->d);
-  otrv4_assert_point_equals(deserialized->pub_key->h, profile->pub_key->h);
-
-  otrv4_assert_cmpmem(deserialized->versions, profile->versions, strlen(profile->versions));
-
-  g_assert_cmpuint(deserialized->expires, ==, profile->expires);
-
-  otrv4_assert_cmpmem(deserialized->signature, profile->signature, EC_SIGNATURE_BYTES);
+  otrv4_assert(user_profile_deserialize(deserialized, serialized, sizeof(serialized)));
+  otrv4_assert_user_profile_eq(deserialized, profile);
 
   user_profile_free(profile);
   user_profile_free(deserialized);
