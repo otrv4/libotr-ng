@@ -33,7 +33,6 @@ otr_mpi_set(otr_mpi_t dst, const uint8_t *src, size_t len) {
 
 void
 otr_mpi_copy(otr_mpi_t dst, const otr_mpi_t src) {
-  otr_mpi_free(dst);
   otr_mpi_set(dst, src->data, src->len);
 }
 

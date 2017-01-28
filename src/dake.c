@@ -16,8 +16,7 @@ dake_pre_key_new(const char *sender, const user_profile_t *profile) {
 
   dake_pre_key_t *pre_key = malloc(sizeof(dake_pre_key_t));
   if (pre_key == NULL) {
-    fprintf(stderr, "Failed to allocate memory. Chao!\n");
-    exit(EXIT_FAILURE);
+    return NULL;
   }
 
   pre_key->sender_instance_tag = 0;

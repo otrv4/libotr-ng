@@ -101,6 +101,8 @@ test_dake_pre_key_deserializes(pre_key_fixture_t *f, gconstpointer data) {
 void
 test_dake_pre_key_valid(pre_key_fixture_t *f, gconstpointer data) {
   dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", f->profile);
+  otrv4_assert(pre_key != NULL);
+
   otrv4_assert(dake_pre_key_validate(pre_key)); //TODO: boolean?
   dake_pre_key_free(pre_key);
 }

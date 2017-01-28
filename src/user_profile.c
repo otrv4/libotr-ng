@@ -84,6 +84,10 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *buffer, size_t b
   size_t read = 0;
   int walked = 0;
 
+  if (target == NULL) {
+    return false;
+  }
+
   if (!deserialize_cs_public_key(target->pub_key, buffer, buflen) ) {
     goto deserialize_error;
   }
