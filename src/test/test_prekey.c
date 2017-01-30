@@ -110,11 +110,9 @@ test_dake_pre_key_valid(pre_key_fixture_t *f, gconstpointer data) {
 void
 test_dake_pre_key_Y_doesnt_belong_to_curve(pre_key_fixture_t *f, gconstpointer data) {
   dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", f->profile);
+  otrv4_assert(pre_key != NULL);
 
-  int valid = dake_pre_key_validate(pre_key);
-
-  g_assert_cmpint(valid, ==, 0);
-
+  otrv4_assert(dake_pre_key_validate(pre_key)); //TODO: boolean?
   dake_pre_key_free(pre_key);
 }
 

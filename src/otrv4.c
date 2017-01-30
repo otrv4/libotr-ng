@@ -78,19 +78,24 @@ otrv4_start(otrv4_t *otr) {
 }
 
 void
-otrv4_build_query_message(/*@unique@*/ char *query_message, const otrv4_t *otr, const char *message) {
-  strcpy(query_message, query);
+otrv4_build_query_message(/*@unique@*/ char **query_message, const otrv4_t *otr, const char *message) {
+  *query_message = malloc(strlen(query)+strlen(message)+4);
+  if (*query_message == NULL) {
+    return; //error
+  }
+
+  strcpy(*query_message, query);
 
   if ((otr->supported_versions & OTR_ALLOW_V3) > 0) {
-    strcat(query_message, "3");
+    strcat(*query_message, "3");
   }
 
   if ((otr->supported_versions & OTR_ALLOW_V4) > 0) {
-    strcat(query_message, "4");
+    strcat(*query_message, "4");
   }
 
-  strcat(query_message, "? ");
-  strcat(query_message, message);
+  strcat(*query_message, "? ");
+  strcat(*query_message, message);
 }
 
 //TODO: should this care about UTF8?

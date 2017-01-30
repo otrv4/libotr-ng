@@ -1,17 +1,19 @@
 #include <stdbool.h>
-
 #include "dake.h"
+
+#ifndef OTRV4_H
+#define OTRV4_H
 
 typedef enum {
   OTR_STATE_START = 1,
   OTR_STATE_AKE_IN_PROGRESS = 2,
   OTR_STATE_ENCRYPTED_MESSAGES = 3
-} stateFlag ;
+} stateFlag;
 
 typedef enum {
   OTR_ALLOW_V3 = 1,
   OTR_ALLOW_V4 = 2
-} supportVersion ;
+} supportVersion;
 
 typedef enum {
   V3 = 3,
@@ -46,7 +48,9 @@ void otrv4_free(/*@only@*/ otrv4_t *otr);
 bool otrv4_start(otrv4_t *otr);
 void otrv4_version_support_v3(otrv4_t *otr);
 
-void otrv4_build_query_message(/*@unique@*/ char * query_message, const otrv4_t *otr, const char *message);
+void otrv4_build_query_message(/*@unique@*/ char **dst, const otrv4_t *otr, const char *message);
 bool otrv4_build_whitespace_tag(/*@unique@*/ char * whitespace_tag, const otrv4_t *otr, const char *message);
 
 void otrv4_receive_message(otrv4_t *otr, const char *message);
+
+#endif

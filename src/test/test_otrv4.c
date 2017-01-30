@@ -43,11 +43,13 @@ void
 test_otrv4_builds_query_message(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   char *message = "And some random invitation text.";
 
-  char query_message[41];
-  otrv4_build_query_message(query_message, otrv4_fixture->otr, message);
+  char *query_message = NULL;
+  otrv4_build_query_message(&query_message, otrv4_fixture->otr, message);
 
   char *expected_qm = "?OTRv4? And some random invitation text.";
   g_assert_cmpstr(query_message, ==, expected_qm);
+
+  free(query_message);
 }
 
 void
@@ -55,11 +57,13 @@ test_otrv4_builds_query_message_v34(otrv4_fixture_t *otrv4_fixture, gconstpointe
   otrv4_version_support_v3(otrv4_fixture->otr);
   char *message = "And some random invitation text.";
 
-  char query_message[41];
-  otrv4_build_query_message(query_message, otrv4_fixture->otr, message);
+  char *query_message = NULL;
+  otrv4_build_query_message(&query_message, otrv4_fixture->otr, message);
 
   char *expected_qm = "?OTRv34? And some random invitation text.";
   g_assert_cmpstr(query_message, ==, expected_qm);
+
+  free(query_message);
 }
 
 void
