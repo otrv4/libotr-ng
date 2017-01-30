@@ -32,7 +32,7 @@ otrv4_new(void) {
 
   otr->state = OTR_STATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
-  otr->running_version = 0;
+  otr->running_version = OTR_VERSION_NONE;
   otr->message_to_display = NULL;
   otr->message_to_respond = NULL;
   otr->warning = NULL;
@@ -64,6 +64,11 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
     free(otr);
 }
 
+static int
+otrv4_allow_version(const otrv4_t *otr, supportVersion version) {
+  return (otr->supported_versions & version);
+}
+
 void
 otrv4_version_support_v3(otrv4_t *otr) {
   otr->supported_versions |= OTR_ALLOW_V3;
@@ -86,11 +91,11 @@ otrv4_build_query_message(/*@unique@*/ char **query_message, const otrv4_t *otr,
 
   strcpy(*query_message, query);
 
-  if ((otr->supported_versions & OTR_ALLOW_V3) > 0) {
+  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
     strcat(*query_message, "3");
   }
 
-  if ((otr->supported_versions & OTR_ALLOW_V4) > 0) {
+  if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
     strcat(*query_message, "4");
   }
 
@@ -105,11 +110,11 @@ otrv4_build_whitespace_tag(/*@unique@*/ char *whitespace_tag, const otrv4_t *otr
 
   strcpy(whitespace_tag, tag_base);
 
-  if ((otr->supported_versions & OTR_ALLOW_V4) > 0) {
+  if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
     strcat(whitespace_tag, tag_version_v4);
   }
 
-  if ((otr->supported_versions & OTR_ALLOW_V3) > 0) {
+  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
     strcat(whitespace_tag, tag_version_v3);
   }
 
@@ -159,18 +164,19 @@ otrv4_state_set(otrv4_t *otr, stateFlag target) {
 
 static void
 otrv4_running_version_set_from_tag(otrv4_t *otr, const char *message) {
-    char *tag_v4;
-    char *tag_v3;
-    tag_v4 = strstr(message, tag_version_v4);
-    if (tag_v4) {
-      otr->running_version = V4;
+  if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
+    if (strstr(message, tag_version_v4)) {
+      otr->running_version = OTR_VERSION_4;
       return;
     }
-    tag_v3 = strstr(message, tag_version_v3);
-    if (tag_v3) {
-      otr->running_version = V3;
+  }
+
+  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
+    if (strstr(message, tag_version_v3)) {
+      otr->running_version = OTR_VERSION_3;
       return;
     }
+  }
 }
 
 static bool
@@ -184,18 +190,21 @@ otrv4_message_is_query(const char *message) {
 
 static void
 otrv4_running_version_set_from_query(otrv4_t *otr, const char *message) {
-  char *v4;
-  char *v3;
-  v4 = strstr(message, "4");
-    if (v4) {
-      otr->running_version = V4;
+  if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
+      if (strstr(message, "4")) {
+        otr->running_version = OTR_VERSION_4;
+        return;
+      }
+  }
+
+  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
+    if (strstr(message, "3")) {
+      otr->running_version = OTR_VERSION_3;
       return;
     }
-  v3 = strstr(message, "3");
-    if (v3) {
-      otr->running_version = V3;
-      return;
-    }
+  }
+
+  //Version offered is not allowed
 }
 
 static void
@@ -255,39 +264,42 @@ otrv4_receive_tagged_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) 
     return;
   }
   otrv4_running_version_set_from_tag(otr, message->raw_text);
-  otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
+  //remove tag from message
 
   switch (otr->running_version) {
-  case V4:
+  case OTR_VERSION_4:
+    otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
     otrv4_message_to_display_without_tag(otr, message->raw_text, tag_version_v4);
     otrv4_pre_key_set(otr, dake_compute_pre_key());
     break;
-  case V3:
+  case OTR_VERSION_3:
     otrv3_receive_message(message->raw_text);
     break;
   default:
-      //TODO Do we exit(1)?
+    //otrv4_message_to_display_without_tag(otr, message->raw_text, tag_version_v4);
+    //TODO Do we exit(1)?
     break;
   }
 }
 
 static void
-otrv4_receive_query_string(otrv4_t *otr, otrv4_in_message_t *message) {
+otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
   if (message->raw_text == NULL) {
     return;
   }
+
   otrv4_running_version_set_from_query(otr, message->raw_text);
-  otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
 
   switch (otr->running_version) {
-  case V4:
+  case OTR_VERSION_4:
+    otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
     otrv4_pre_key_set(otr, dake_compute_pre_key());
     break;
-  case V3:
+  case OTR_VERSION_3:
     otrv3_receive_message(message->raw_text);
     break;
   default:
-      //TODO Do we exit(1)?
+    //nothing to do
     break;
   }
 }
@@ -300,7 +312,7 @@ otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
   }
 
   otrv4_state_set(otr, OTR_STATE_ENCRYPTED_MESSAGES);
-  otr->running_version = V4;
+  otr->running_version = OTR_VERSION_4;
   if (otr->message_to_respond == NULL) {
     otr->message_to_respond = malloc(1000);
   }
