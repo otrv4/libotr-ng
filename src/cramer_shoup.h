@@ -12,7 +12,7 @@ typedef cramershoup_448_private_key_t cs_private_key_t;
 typedef struct {
   cs_public_key_t pub[1];
   cs_private_key_t priv[1];
-} cs_keypair_t[1];
+} cs_keypair_s, cs_keypair_t[1];
 
 void
 cs_generate_keypair(cs_keypair_t key_par);

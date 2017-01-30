@@ -53,7 +53,7 @@ typedef struct {
 } dake_dre_auth_t;
 
 dake_pre_key_t *
-dake_pre_key_new(const char *sender, const user_profile_t *profile);
+dake_pre_key_new(const user_profile_t *profile);
 
 void
 dake_pre_key_free(dake_pre_key_t *pre_key);
@@ -78,8 +78,5 @@ dake_dre_auth_deserialize(dake_dre_auth_t *target, uint8_t *data);
 
 bool
 dake_pre_key_validate(const dake_pre_key_t *pre_key);
-
-dake_pre_key_t *
-dake_compute_pre_key();
 
 #endif

@@ -19,8 +19,7 @@ libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBDECAF_CFLAGS@ @LIBGCRYPT_CFLAGS@ @LIBCRAMER
 libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ @LIBGCRYPT_LIBS@ @LIBCRAMERSHOUP_LIBS@
 
 otrincdir = $(includedir)/libotr4
-# otrinc_HEADERS =
-
+otrinc_HEADERS = protocol.h
 
 #pkgconfigdir = $(libdir)/pkgconfig
 #pkgconfig_DATA = otr4.pc

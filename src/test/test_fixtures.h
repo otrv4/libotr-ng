@@ -1,5 +1,27 @@
+#include "../otrv4.h"
 #include "../cramer_shoup.h"
 #include "../user_profile.h"
+
+typedef struct {
+  otrv4_t *otr;
+  cs_keypair_t keypair;
+} otrv4_fixture_t;
+
+void
+otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
+  cs_generate_keypair(otrv4_fixture->keypair);
+  otrv4_t *otr = otrv4_new(otrv4_fixture->keypair);
+  otrv4_start(otr);
+  otrv4_fixture->otr = otr;
+}
+
+void
+otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
+  //cs_keypair_destroy();
+  otrv4_free(otrv4_fixture->otr);
+}
+
+
 
 typedef struct {
   cs_keypair_t keypair;

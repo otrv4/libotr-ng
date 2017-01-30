@@ -3,25 +3,9 @@
 #include <stdio.h>
 #include "../otrv4.h"
 
-typedef struct {
-  otrv4_t *otr;
-} otrv4_fixture_t;
-
-void
-otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  otrv4_t *otr = otrv4_new();
-  otrv4_start(otr);
-  otrv4_fixture->otr = otr;
-}
-
-void
-otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  otrv4_free(otrv4_fixture->otr);
-}
-
 void
 test_otrv4_starts_protocol() {
-  otrv4_t *otr = otrv4_new();
+  otrv4_t *otr = otrv4_new(NULL);
 
   int started = otrv4_start(otr);
 
@@ -60,7 +44,7 @@ test_otrv4_builds_query_message_v34(otrv4_fixture_t *otrv4_fixture, gconstpointe
   char *query_message = NULL;
   otrv4_build_query_message(&query_message, otrv4_fixture->otr, message);
 
-  char *expected_qm = "?OTRv34? And some random invitation text.";
+  char *expected_qm = "?OTRv43? And some random invitation text.";
   g_assert_cmpstr(query_message, ==, expected_qm);
 
   free(query_message);
@@ -145,7 +129,7 @@ test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture, gconstpoint
 
 void
 test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  dake_pre_key_t *pre_key = dake_pre_key_new("handler@service.net", NULL);
+  dake_pre_key_t *pre_key = dake_pre_key_new(NULL);
   uint8_t serialized[500] = { 0 };
   dake_pre_key_serialize(serialized, pre_key);
   char message[1000];

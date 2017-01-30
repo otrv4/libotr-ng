@@ -27,7 +27,7 @@ test_dake_protocol() {
   // Alice send pre key
   user_profile_t *alice_profile = user_profile_new("4");
   user_profile_sign(alice_profile, alice_cramer_shoup);
-  dake_pre_key_t *pre_key = dake_pre_key_new("", alice_profile);
+  dake_pre_key_t *pre_key = dake_pre_key_new(alice_profile);
 
   ec_public_key_copy(pre_key->Y, alice_ecdh->pub);
   pre_key->B = alice_dh->pub;

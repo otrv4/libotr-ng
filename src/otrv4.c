@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "otrv4.h"
 #include "otrv3.h"
@@ -23,13 +24,13 @@ static const char *query = "?OTRv";
 static const char *otrv4 = "?OTR:";
 
 otrv4_t *
-otrv4_new(void) {
+otrv4_new(cs_keypair_s *keypair) {
   otrv4_t *otr = malloc(sizeof(otrv4_t));
   if(otr == NULL) {
-    fprintf(stderr, "Failed to allocate memory. Chao!\n");
-    exit(EXIT_FAILURE);
+    return NULL;
   }
 
+  otr->keypair = keypair;
   otr->state = OTR_STATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
   otr->running_version = OTR_VERSION_NONE;
@@ -82,6 +83,25 @@ otrv4_start(otrv4_t *otr) {
   return true;
 }
 
+static void
+allowed_versions(char **dst, const otrv4_t *otr) { //generate a string with all versions allowed
+  *dst = malloc(3*sizeof(char));
+  if (*dst == NULL) {
+    return;
+  }
+
+  memset(*dst, 0, 3*sizeof(char));
+  if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
+    strcat(*dst, "4");
+  }
+
+  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
+    strcat(*dst, "3");
+  }
+
+  return;
+}
+
 void
 otrv4_build_query_message(/*@unique@*/ char **query_message, const otrv4_t *otr, const char *message) {
   *query_message = malloc(strlen(query)+strlen(message)+4);
@@ -91,12 +111,13 @@ otrv4_build_query_message(/*@unique@*/ char **query_message, const otrv4_t *otr,
 
   strcpy(*query_message, query);
 
-  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
-    strcat(*query_message, "3");
-  }
-
+  //TODO: how to use allowed_versions here?
   if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
     strcat(*query_message, "4");
+  }
+
+  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
+    strcat(*query_message, "3");
   }
 
   strcat(*query_message, "? ");
@@ -203,8 +224,6 @@ otrv4_running_version_set_from_query(otrv4_t *otr, const char *message) {
       return;
     }
   }
-
-  //Version offered is not allowed
 }
 
 static void
@@ -270,7 +289,7 @@ otrv4_receive_tagged_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) 
   case OTR_VERSION_4:
     otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
     otrv4_message_to_display_without_tag(otr, message->raw_text, tag_version_v4);
-    otrv4_pre_key_set(otr, dake_compute_pre_key());
+    otrv4_pre_key_set(otr, dake_pre_key_new(NULL));
     break;
   case OTR_VERSION_3:
     otrv3_receive_message(message->raw_text);
@@ -282,18 +301,58 @@ otrv4_receive_tagged_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) 
   }
 }
 
-static void
+static user_profile_t*
+get_my_user_profile(const otrv4_t *otr) {
+  char *versions = NULL;
+  allowed_versions(&versions, otr);
+
+  user_profile_t *profile = user_profile_new(versions);
+
+  #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; //2 weeks
+  time_t expires = time(NULL);
+  profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
+  user_profile_sign(profile, otr->keypair);
+
+  free(versions);
+  return profile;
+}
+
+static response_t* response_new(void) {
+  response_t *response = malloc(sizeof(response_t));
+  if (response == NULL) {
+    return NULL;
+  }
+
+  response->to_display = NULL;
+  response->to_send = NULL;
+  response->warning = OTR_WARN_NONE;
+
+  return response;
+}
+
+static response_t*
 otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
+  user_profile_t *profile = NULL;
+
+  response_t *response = response_new();
+  if (response == NULL) {
+    return NULL;
+  }
+
   if (message->raw_text == NULL) {
-    return;
+    return NULL;
   }
 
   otrv4_running_version_set_from_query(otr, message->raw_text);
 
   switch (otr->running_version) {
   case OTR_VERSION_4:
+    profile = get_my_user_profile(otr);
     otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
-    otrv4_pre_key_set(otr, dake_compute_pre_key());
+    otrv4_pre_key_set(otr, dake_pre_key_new(profile));
+
+    response->to_display = NULL;
+
     break;
   case OTR_VERSION_3:
     otrv3_receive_message(message->raw_text);
@@ -302,6 +361,9 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
     //nothing to do
     break;
   }
+
+  user_profile_free(profile);
+  return response;
 }
 
 static void
@@ -323,9 +385,8 @@ static otrv4_in_message_t *
 otrv4_in_message_new() {
   otrv4_in_message_t *input = malloc(sizeof(otrv4_in_message_t));
 
-  if(input == NULL) {
-    fprintf(stderr, "Failed to allocate memory. Chao!\n");
-    exit(EXIT_FAILURE);
+  if (input == NULL) {
+    return NULL;
   }
 
   input->type = 0;
@@ -334,11 +395,16 @@ otrv4_in_message_new() {
   return input;
 }
 
-void
+response_t*
 otrv4_receive_message(otrv4_t *otr, const char *message) {
   otrv4_in_message_t *input = otrv4_in_message_new();
+  if (input == NULL) {
+      return NULL;
+  }
+
   otrv4_in_message_parse(input, message);
 
+  response_t *response = NULL;
   switch (input->type) {
   case IN_MSG_PLAINTEXT:
     otrv4_receive_plaintext(otr, input);
@@ -349,7 +415,7 @@ otrv4_receive_message(otrv4_t *otr, const char *message) {
     break;
 
   case IN_MSG_QUERY_STRING:
-    otrv4_receive_query_string(otr, input);
+    response = otrv4_receive_query_string(otr, input);
     break;
 
   case IN_MSG_CYPHERTEXT:
@@ -359,4 +425,6 @@ otrv4_receive_message(otrv4_t *otr, const char *message) {
 
   free(input->raw_text);
   free(input);
+
+  return response;
 }

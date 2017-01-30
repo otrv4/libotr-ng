@@ -3,6 +3,7 @@
 #include "test_helpers.h"
 #include "test_fixtures.h"
 
+#include "test_api.c"
 #include "test_otrv4.c"
 #include "test_prekey.c"
 #include "test_dake.c"
@@ -14,6 +15,8 @@
 int
 main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
+
+  g_test_add_func("/api/conversation", test_api_conversation);
 
   g_test_add_func("/otrv4/starts_protocol", test_otrv4_starts_protocol);
   g_test_add("/otrv4/version_supports_v34", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_version_supports_v34, otrv4_fixture_teardown );

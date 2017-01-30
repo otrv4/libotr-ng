@@ -22,6 +22,7 @@ typedef enum {
 } otrv4_version;
 
 typedef struct {
+  cs_keypair_s *keypair;
   stateFlag state;
   int supported_versions;
   otrv4_version running_version;
@@ -43,7 +44,18 @@ typedef struct {
   /*@null@*/ char *raw_text;
 } otrv4_in_message_t;
 
-otrv4_t *otrv4_new(void);
+typedef enum {
+  OTR_WARN_NONE = 0
+} otrv4_warning_t;
+
+typedef char *string_t;
+typedef struct {
+  string_t to_display;
+  string_t to_send;
+  otrv4_warning_t warning;
+} response_t;
+
+otrv4_t* otrv4_new(cs_keypair_s *keypair);
 void otrv4_free(/*@only@*/ otrv4_t *otr);
 
 bool otrv4_start(otrv4_t *otr);
@@ -52,6 +64,7 @@ void otrv4_version_support_v3(otrv4_t *otr);
 void otrv4_build_query_message(/*@unique@*/ char **dst, const otrv4_t *otr, const char *message);
 bool otrv4_build_whitespace_tag(/*@unique@*/ char * whitespace_tag, const otrv4_t *otr, const char *message);
 
-void otrv4_receive_message(otrv4_t *otr, const char *message);
+response_t*
+otrv4_receive_message(otrv4_t *otr, const char *message);
 
 #endif

@@ -9,7 +9,7 @@
 #include "user_profile.h"
 
 dake_pre_key_t *
-dake_pre_key_new(const char *sender, const user_profile_t *profile) {
+dake_pre_key_new(const user_profile_t *profile) {
   if (profile == NULL) {
     return NULL;
   }
@@ -136,7 +136,3 @@ dake_pre_key_validate(const dake_pre_key_t *pre_key) {
   return user_profile_verify_signature(pre_key->sender_profile);
 }
 
-dake_pre_key_t *
-dake_compute_pre_key() {
-  return NULL; //TODO
-}
