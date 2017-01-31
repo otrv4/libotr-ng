@@ -38,6 +38,7 @@ main(int argc, char **argv) {
   WITH_FIXTURE("/dake/pre_key/valid", test_dake_pre_key_valid, pre_key_fixture_t, pre_key_fixture);
 
   g_test_add_func("/user_profile/create", test_user_profile_create);
+  g_test_add_func("/user_profile/serialize_body", test_user_profile_serializes_body);
   g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
   g_test_add_func("/user_profile/deserializes", test_user_profile_deserializes);
   g_test_add_func("/user_profile/sign_and_verifies", test_user_profile_signs_and_verify);

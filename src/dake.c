@@ -31,15 +31,34 @@ dake_pre_key_free(dake_pre_key_t *pre_key) {
   free(pre_key);
 }
 
-void
-dake_pre_key_serialize(uint8_t *target, const dake_pre_key_t *pre_key) {
+bool
+dake_pre_key_aprint(uint8_t **dst, size_t *nbytes, const dake_pre_key_t *pre_key) {
+  size_t profile_len = 0;
+  uint8_t *profile = NULL;
+  if (!user_profile_aprint(&profile, &profile_len, pre_key->sender_profile)) {
+    return false;
+  }
+
+  size_t s = PRE_KEY_MIN_BYTES+profile_len;
+  *dst = malloc(s);
+  if (*dst == NULL) {
+    free(profile);
+    return false;
+  }
+
+  if (nbytes != NULL) { *nbytes = s; }
+
+  uint8_t *target = *dst;
   target += serialize_uint16(target, OTR_VERSION);
   target += serialize_uint8(target, PRE_KEY_MSG_TYPE);
   target += serialize_uint32(target, pre_key->sender_instance_tag);
   target += serialize_uint32(target, pre_key->receiver_instance_tag);
-  target += user_profile_serialize(target, pre_key->sender_profile);
+  target += serialize_bytes_array(target, profile, profile_len);
   target += serialize_ec_public_key(target, pre_key->Y);
   target += serialize_dh_public_key(target, pre_key->B);
+
+  free(profile);
+  return true;
 }
 
 bool

@@ -27,8 +27,8 @@ test_dake_pre_key_serializes(pre_key_fixture_t *f, gconstpointer data) {
   ec_public_key_copy(pre_key->Y, ecdh->pub);
   pre_key->B = dh->pub;
 
-  uint8_t serialized[1000] = { 0 };
-  dake_pre_key_serialize(serialized, pre_key);
+  uint8_t *serialized = NULL;
+  otrv4_assert(dake_pre_key_aprint(&serialized, NULL, pre_key));
 
   char expected[] = {
     0x0, 0x04,              // version
@@ -41,9 +41,11 @@ test_dake_pre_key_serializes(pre_key_fixture_t *f, gconstpointer data) {
   otrv4_assert_cmpmem(cursor, expected, 11); //sizeof(expected));
   cursor += 11;
 
-  uint8_t user_profile_serialized[340] = {0};
-  int user_profile_len = user_profile_serialize(user_profile_serialized, pre_key->sender_profile);
+  size_t user_profile_len = 0;
+  uint8_t *user_profile_serialized = NULL;
+  otrv4_assert(user_profile_aprint(&user_profile_serialized, &user_profile_len, pre_key->sender_profile));
   otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
+  free(user_profile_serialized);
   cursor += user_profile_len;
 
   uint8_t serialized_y[sizeof(ec_public_key_t)+2] = {0};
@@ -59,6 +61,7 @@ test_dake_pre_key_serializes(pre_key_fixture_t *f, gconstpointer data) {
   dh_keypair_destroy(dh);
   ec_keypair_destroy(ecdh);
   dake_pre_key_free(pre_key);
+  free(serialized);
 }
 
 void
@@ -73,17 +76,17 @@ test_dake_pre_key_deserializes(pre_key_fixture_t *f, gconstpointer data) {
   dh_gen_keypair(dh);
   cs_generate_keypair(cs);
 
-
   dake_pre_key_t *pre_key = dake_pre_key_new(f->profile);
   ec_public_key_copy(pre_key->Y, ecdh->pub);
   pre_key->B = dh->pub;
 
-  uint8_t serialized[10000] = { 0 };
-  dake_pre_key_serialize(serialized, pre_key);
+  size_t serialized_len = 0;
+  uint8_t *serialized = NULL;
+  otrv4_assert(dake_pre_key_aprint(&serialized, &serialized_len, pre_key));
 
   dake_pre_key_t *deserialized = malloc(sizeof(dake_pre_key_t));
   memset(deserialized, 0, sizeof(dake_pre_key_t));
-  otrv4_assert(dake_pre_key_deserialize(deserialized, serialized, sizeof(serialized)));
+  otrv4_assert(dake_pre_key_deserialize(deserialized, serialized, serialized_len));
 
   //assert prekey eq
   g_assert_cmpuint(deserialized->sender_instance_tag, ==, pre_key->sender_instance_tag);
@@ -96,6 +99,7 @@ test_dake_pre_key_deserializes(pre_key_fixture_t *f, gconstpointer data) {
   ec_keypair_destroy(ecdh);
   dake_pre_key_free(pre_key);
   free(deserialized);
+  free(serialized);
 }
 
 void

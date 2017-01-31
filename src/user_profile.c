@@ -21,7 +21,6 @@ user_profile_new(const char* versions) {
   }
 
   profile->versions = otrv4_strdup(versions);
-
   memset(profile->signature, 0, sizeof(ec_signature_t));
   otr_mpi_init(profile->transitional_signature);
 
@@ -51,14 +50,13 @@ user_profile_free(user_profile_t *profile) {
 
   free(profile->versions);
   profile->versions = NULL;
-
   otr_mpi_free(profile->transitional_signature);
 
   free(profile);
 }
 
 static int
-user_profile_serialize_body(uint8_t *dst, const user_profile_t *profile) {
+user_profile_body_serialize(uint8_t *dst, const user_profile_t *profile) {
   uint8_t *target = dst;
 
   target += serialize_cs_public_key(target, profile->pub_key);  
@@ -68,19 +66,50 @@ user_profile_serialize_body(uint8_t *dst, const user_profile_t *profile) {
   return target - dst;
 }
 
-//TODO this can overflow because serialize doesnt know how much it can write
-int
-user_profile_serialize(uint8_t *dst, const user_profile_t *profile) {
-  uint8_t *target = dst;
-  target += user_profile_serialize_body(dst, profile); //TODO: this could be cached in the data structure
+#define EC_PUBLIC_KEY_BYTES 2+3*56
+
+bool
+user_profile_body_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *profile) {
+  size_t s = EC_PUBLIC_KEY_BYTES + strlen(profile->versions)+1 + 8;
+
+  *dst = malloc(s);
+  if (*dst == NULL) {
+    return false;
+  }
+
+  if (nbytes != NULL) { *nbytes = s; }
+  user_profile_body_serialize(*dst, profile);
+
+  return true;
+}
+
+bool
+user_profile_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *profile) {
+  //TODO: should it check if the profile is signed?
 
   otr_mpi_t signature_mpi;
   otr_mpi_set(signature_mpi, profile->signature, sizeof(ec_signature_t));
-  target += serialize_mpi(target, signature_mpi);
 
+  size_t body_len = 0;
+  uint8_t *body = NULL;
+  if (!user_profile_body_aprint(&body, &body_len, profile)) {
+    return false;
+  }
+
+  size_t s = body_len + 4+signature_mpi->len + 4+profile->transitional_signature->len;
+  *dst = malloc(s);
+  if (*dst == NULL) {
+    return false;
+  }
+
+  if (nbytes != NULL) { *nbytes = s; }
+
+  uint8_t *target = *dst;
+  target += serialize_bytes_array(target, body, body_len);
+  target += serialize_mpi(target, signature_mpi);
   target += serialize_mpi(target, profile->transitional_signature);
 
-  return target - dst;
+  return true;
 }
 
 bool
@@ -138,14 +167,15 @@ deserialize_error:
   return false;
 }
 
-void
+bool
 user_profile_sign(user_profile_t *profile, const cs_keypair_t keypair) {
   cs_public_key_copy(profile->pub_key, keypair->pub);
 
-  size_t profile_body_len = 170+10+8;
-  uint8_t *profile_body = malloc(profile_body_len);
-  if (profile_body == NULL) { return; } //TODO: error
-  user_profile_serialize_body(profile_body, profile);
+  size_t body_len = 0;
+  uint8_t *body = NULL;
+  if (!user_profile_body_aprint(&body, &body_len, profile)) {
+    return false;
+  }
 
   //unlike the decaf spec, we take a random symm for each signature
   ec_keypair_t sig_key;
@@ -153,22 +183,27 @@ user_profile_sign(user_profile_t *profile, const cs_keypair_t keypair) {
   ec_scalar_copy(sig_key->secret_scalar, keypair->priv->z);
   ec_point_serialize(sig_key->pub, sizeof(ec_public_key_t), keypair->pub->h);
 
-  ec_sign(profile->signature, sig_key, profile_body, profile_body_len);
+  ec_sign(profile->signature, sig_key, body, body_len);
   ec_keypair_destroy(sig_key);
-  free(profile_body);
+
+  return true;
 }
 
+//TODO: I dont think this needs the data structure. Could verify from the
+//deserialized bytes.
 bool
 user_profile_verify_signature(const user_profile_t *profile) {
-  size_t profile_body_len = 170+10+8;
-  uint8_t *profile_body = malloc(profile_body_len);
-  if (profile_body == NULL) { return false; }
-  user_profile_serialize_body(profile_body, profile);
+  size_t body_len = 0;
+  uint8_t *body = NULL;
+  if (!user_profile_body_aprint(&body, &body_len, profile)){
+    return false;
+  }
 
   ec_public_key_t sign_pub_key;
   ec_point_serialize(sign_pub_key, sizeof(ec_public_key_t), profile->pub_key->h);
-  bool ok = ec_verify(profile->signature, sign_pub_key, profile_body, profile_body_len);
-  free(profile_body);
+  bool ok = ec_verify(profile->signature, sign_pub_key, body, body_len);
+
+  free(body);
 
   return ok;
 }

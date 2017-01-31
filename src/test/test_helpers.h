@@ -15,6 +15,11 @@ otrv4_memdump(const uint8_t *src, size_t len) {
   char *cursor = buff;
   int i = 0;
 
+  if (src == NULL) {
+    sprintf(buff, "(NULL)");
+    return buff;
+  }
+
   for (i = 0; i < len; i++) {
     if (i % 8 == 0) { cursor += sprintf(cursor, "\n"); }
     cursor += sprintf(cursor, "0x%02x, ", src[i]);

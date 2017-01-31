@@ -6,6 +6,10 @@
 #define OTR_VERSION 4 //TODO: move
 #define PRE_KEY_MSG_TYPE 0x0F
 
+#define PRE_KEY_MIN_BYTES 2+1+4+4 \
+                          + sizeof(ec_point_t) \
+                          + 4+DH3072_MOD_LEN_BYTES
+
 #ifndef DAKE_H
 #define DAKE_H
 
@@ -58,11 +62,11 @@ dake_pre_key_new(const user_profile_t *profile);
 void
 dake_pre_key_free(dake_pre_key_t *pre_key);
 
-void
-dake_pre_key_serialize(uint8_t *target, const dake_pre_key_t *pre_key);
-
 bool
 dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len);
+
+bool
+dake_pre_key_aprint(uint8_t **dst, size_t *nbytes, const dake_pre_key_t *pre_key);
 
 dake_dre_auth_t *
 dake_dre_auth_new();

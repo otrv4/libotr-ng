@@ -236,7 +236,6 @@ otrv4_pre_key_set(otrv4_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
 
 static bool
 otrv4_message_is_data(const char *message) {
-  printf("raw = %s\ndata = %s\n", message, strstr(message, otrv4));
   if (strstr(message, otrv4)) {
     return true;
   } else {

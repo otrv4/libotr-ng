@@ -130,11 +130,12 @@ test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture, gconstpoint
 void
 test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   dake_pre_key_t *pre_key = dake_pre_key_new(NULL);
-  uint8_t serialized[500] = { 0 };
-  dake_pre_key_serialize(serialized, pre_key);
+
+  uint8_t *serialized = NULL;
+  otrv4_assert(dake_pre_key_aprint(&serialized, NULL, pre_key));
+
   char message[1000];
   strcpy(message, "?OTR:");
-  printf("\nmsg = %s\nser = %lu\n", message, strlen((const char*)serialized));
   memcpy(message + 5, serialized, strlen((const char*)serialized) + 1);
 
   otrv4_receive_message(otrv4_fixture->otr, message);
@@ -149,6 +150,8 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpoint
   dake_dre_auth_deserialize(dre_auth, (uint8_t*) otrv4_fixture->otr->message_to_respond);
   //TODO: How to assert the pointer is not null without g_assert_nonnull?
   //g_assert_cmpuint(dre_auth, >, 0);
+
+  free(serialized);
 }
 
 void
