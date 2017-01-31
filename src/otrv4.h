@@ -28,7 +28,6 @@ typedef struct {
   stateFlag state;
   int supported_versions;
   otrv4_version running_version;
-  /*@null@*/ string_t message_to_display;
   /*@null@*/ dake_pre_key_t *pre_key;
 } otrv4_t;
 

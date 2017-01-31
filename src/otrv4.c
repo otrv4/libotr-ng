@@ -35,7 +35,6 @@ otrv4_new(cs_keypair_s *keypair) {
   otr->state = OTR_STATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
   otr->running_version = OTR_VERSION_NONE;
-  otr->message_to_display = NULL;
   otr->pre_key = NULL;
 
   return otr;
@@ -46,9 +45,6 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
     if(otr == NULL) {
         return;
     }
-
-    free(otr->message_to_display);
-    otr->message_to_display = NULL;
 
     if (otr->pre_key != NULL) {
       dake_pre_key_free(otr->pre_key);
@@ -147,28 +143,27 @@ otrv4_message_contains_tag(const string_t message) {
 }
 
 static void
-otrv4_message_to_display_without_tag(otrv4_t *otr, const string_t message, const char *tag_version) {
+otrv4_message_to_display_without_tag(response_t *response, const string_t message, const char *tag_version) {
   size_t msg_length = strlen(message);
   size_t tag_length = strlen(tag_base) + strlen(tag_version);
   size_t chars = msg_length - tag_length;
-  if(otr->message_to_display != NULL) {
-    free(otr->message_to_display);
-  }
-  otr->message_to_display = malloc(chars+1);
-  if(otr->message_to_display == NULL) {
+
+  //assert(response->to_display == NULL);
+  response->to_display = malloc(chars+1);
+  if(response->to_display == NULL) {
     fprintf(stderr, "Failed to allocate memory. Chao!\n");
     exit(EXIT_FAILURE);
   }
-  strncpy(otr->message_to_display, message+tag_length, chars);
-  otr->message_to_display[chars] = '\0';
+  strncpy(response->to_display, message+tag_length, chars);
+  response->to_display[chars] = '\0';
 }
 
 static void
-otrv4_message_to_display_set(otrv4_t *otr, const string_t message) {
-  if(otr->message_to_display != NULL) {
-      free(otr->message_to_display);
+otrv4_message_to_display_set(response_t *response, const string_t message) {
+  if(response->to_display != NULL) {
+      free(response->to_display);
   }
-  otr->message_to_display = otrv4_strdup(message);
+  response->to_display = otrv4_strdup(message);
 }
 
 static void
@@ -285,8 +280,11 @@ static response_t* response_new(void) {
 void
 otrv4_response_free(response_t * response) {
 
-  free(response->to_send = NULL);
+  free(response->to_send);
   response->to_send = NULL;
+
+  free(response->to_display);
+  response->to_display = NULL;
 
   free(response);
 }
@@ -298,14 +296,11 @@ otrv4_receive_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
     return NULL;
   }
 
-  response->to_display = NULL;
-  response->to_send = NULL;
-
   if (message->raw_text == NULL) {
     return response;
   }
 
-  otrv4_message_to_display_set(otr, message->raw_text);
+  otrv4_message_to_display_set(response, message->raw_text);
   if (otr->state != OTR_STATE_START) {
     response->warning = OTR_WARN_RECEIVED_UNENCRYPTED;
   }
@@ -313,18 +308,25 @@ otrv4_receive_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
   return response;
 }
 
-static void
+static response_t *
 otrv4_receive_tagged_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
-  if (message->raw_text == NULL) {
-    return;
+  response_t *response = response_new();
+  if (response == NULL) {
+    return NULL;
   }
+
+  if (message->raw_text == NULL) {
+    //TODO: this is an error.
+    return response;
+  }
+
   otrv4_running_version_set_from_tag(otr, message->raw_text);
   //remove tag from message
 
   switch (otr->running_version) {
   case OTR_VERSION_4:
     otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
-    otrv4_message_to_display_without_tag(otr, message->raw_text, tag_version_v4);
+    otrv4_message_to_display_without_tag(response, message->raw_text, tag_version_v4);
     otrv4_pre_key_set(otr, dake_pre_key_new(NULL));
     break;
   case OTR_VERSION_3:
@@ -335,6 +337,8 @@ otrv4_receive_tagged_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) 
     //TODO Do we exit(1)?
     break;
   }
+
+  return response;
 }
 
 static user_profile_t*
@@ -403,9 +407,6 @@ otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
     return NULL;
   }
 
-  response->to_display = NULL;
-  response->to_send = NULL;
-
   if (message->raw_text == NULL) {
     // ??? is it heartbeat?
     return response;
@@ -450,7 +451,7 @@ otrv4_receive_message(otrv4_t *otr, const string_t message) {
     break;
 
   case IN_MSG_TAGGED_PLAINTEXT:
-    otrv4_receive_tagged_plaintext(otr, input);
+   response =  otrv4_receive_tagged_plaintext(otr, input);
     break;
 
   case IN_MSG_QUERY_STRING:
