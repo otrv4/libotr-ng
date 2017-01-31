@@ -357,6 +357,21 @@ get_my_user_profile(const otrv4_t *otr) {
   return profile;
 }
 
+static inline string_t
+serialize_and_encode_pre_key(const dake_pre_key_t* pre_key) {
+    size_t ser_len = 0;
+    uint8_t *serialized = NULL;
+    if (!dake_pre_key_aprint(&serialized, &ser_len, pre_key)) {
+      //TODO: error
+      return NULL;
+    }
+
+    string_t encoded = otrl_base64_otr_encode(serialized, ser_len);
+    free(serialized);
+
+    return encoded;
+}
+
 static response_t*
 otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
   user_profile_t *profile = NULL;
@@ -378,16 +393,15 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
     otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
     otrv4_pre_key_set(otr, dake_pre_key_new(profile));
 
+    //generate ephmeral ECDH and DH keys
+    ec_gen_keypair(otr->our_ecdh);
+    dh_gen_keypair(otr->our_dh);
+
+    ec_public_key_copy(otr->pre_key->Y, otr->our_ecdh->pub);
+    otr->pre_key->B = otr->our_dh->pub; //TODO: make a copy?
+
     response->to_display = NULL;
-    size_t ser_len = 0;
-    uint8_t  *serialized;
-    if (!user_profile_aprint(&serialized, &ser_len, profile)) {
-      //TODO: error
-      return NULL;
-    }
-
-    response->to_send = otrl_base64_otr_encode(serialized, ser_len);
-
+    response->to_send = serialize_and_encode_pre_key(otr->pre_key);
     break;
   case OTR_VERSION_3:
     otrv3_receive_message(message->raw_text);

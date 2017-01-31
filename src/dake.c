@@ -23,6 +23,8 @@ dake_pre_key_new(const user_profile_t *profile) {
   pre_key->receiver_instance_tag = 0;
   user_profile_copy(pre_key->sender_profile, profile);
 
+  //TODO: initialize ephemeral keys
+  
   return pre_key;
 }
 

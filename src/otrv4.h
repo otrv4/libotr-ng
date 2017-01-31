@@ -28,6 +28,9 @@ typedef struct {
   stateFlag state;
   int supported_versions;
   otrv4_version running_version;
+
+  ec_keypair_t our_ecdh;
+  dh_keypair_t our_dh;
   /*@null@*/ dake_pre_key_t *pre_key;
 } otrv4_t;
 

@@ -23,7 +23,7 @@ test_api_conversation(void) {
 
   otrv4_assert(response_to_alice);
   otrv4_assert(response_to_alice->to_display == NULL);
-  otrv4_assert(response_to_alice->to_send != NULL);
+  otrv4_assert_cmpmem("?OTR:AAQP", response_to_alice->to_send, 9);
 
   response_to_bob = otrv4_receive_message(alice, response_to_alice->to_send);
 

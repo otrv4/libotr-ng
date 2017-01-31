@@ -7,7 +7,7 @@
 #define PRE_KEY_MSG_TYPE 0x0F
 
 #define PRE_KEY_MIN_BYTES 2+1+4+4 \
-                          + sizeof(ec_point_t) \
+                          + DECAF_448_SER_BYTES \
                           + 4+DH3072_MOD_LEN_BYTES
 
 #ifndef DAKE_H
