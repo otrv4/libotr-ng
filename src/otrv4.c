@@ -36,7 +36,6 @@ otrv4_new(cs_keypair_s *keypair) {
   otr->supported_versions = OTR_ALLOW_V4;
   otr->running_version = OTR_VERSION_NONE;
   otr->message_to_display = NULL;
-  otr->message_to_respond = NULL;
   otr->pre_key = NULL;
 
   return otr;
@@ -50,9 +49,6 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
 
     free(otr->message_to_display);
     otr->message_to_display = NULL;
-
-    free(otr->message_to_respond = NULL);
-    otr->message_to_respond = NULL;
 
     if (otr->pre_key != NULL) {
       dake_pre_key_free(otr->pre_key);
@@ -286,6 +282,15 @@ static response_t* response_new(void) {
   return response;
 }
 
+void
+otrv4_response_free(response_t * response) {
+
+  free(response->to_send = NULL);
+  response->to_send = NULL;
+
+  free(response);
+}
+
 static response_t *
 otrv4_receive_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
   response_t *response = response_new();
@@ -408,11 +413,7 @@ otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
 
   otrv4_state_set(otr, OTR_STATE_ENCRYPTED_MESSAGES);
   otr->running_version = OTR_VERSION_4;
-  if (otr->message_to_respond == NULL) {
-    otr->message_to_respond = malloc(1000);
-  }
-  //TODO: the response structure is duplicated in the otr structure
-  otr->message_to_respond = otrv4_strdup("tenga su dre-auth msg\n");
+
   //TODO: compute dake, serialize it and encode it.
   response->to_send = "tenga su dre-auth\n";
 

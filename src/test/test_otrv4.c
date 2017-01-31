@@ -142,7 +142,8 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpoint
   strcpy(message, "?OTR:");
   memcpy(message + 5, serialized, strlen((const char*)serialized) + 1);
 
-  otrv4_receive_message(otrv4_fixture->otr, message);
+  response_t *response;
+  response = otrv4_receive_message(otrv4_fixture->otr, message);
 
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTR_STATE_ENCRYPTED_MESSAGES);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTR_VERSION_4);
@@ -151,22 +152,24 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpoint
 
   //TODO: should base64 decode the message to respond after ?OTR and then
   //deserialize
-  dake_dre_auth_deserialize(dre_auth, (uint8_t*) otrv4_fixture->otr->message_to_respond);
+  dake_dre_auth_deserialize(dre_auth, (uint8_t*) response->to_send);
   //TODO: How to assert the pointer is not null without g_assert_nonnull?
   //g_assert_cmpuint(dre_auth, >, 0);
 
   free(serialized);
+  otrv4_response_free(response);
 }
 
 void
 test_otrv4_receives_pre_key_invalid_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   char *pre_key = "?OTR:";
 
-  otrv4_receive_message(otrv4_fixture->otr, pre_key);
+  response_t *response;
+  response = otrv4_receive_message(otrv4_fixture->otr, pre_key);
 
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTR_STATE_START);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTR_VERSION_4);
   g_assert_cmpstr(otrv4_fixture->otr->message_to_display, ==, NULL);
-  g_assert_cmpstr(otrv4_fixture->otr->message_to_respond, ==, NULL);
+  g_assert_cmpstr(response->to_send, ==, NULL);
 }
 

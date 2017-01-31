@@ -29,7 +29,6 @@ typedef struct {
   int supported_versions;
   otrv4_version running_version;
   /*@null@*/ string_t message_to_display;
-  string_t message_to_respond;
   /*@null@*/ dake_pre_key_t *pre_key;
 } otrv4_t;
 
@@ -64,6 +63,9 @@ void otrv4_version_support_v3(otrv4_t *otr);
 
 void otrv4_build_query_message(/*@unique@*/ string_t *dst, const otrv4_t *otr, const string_t message);
 bool otrv4_build_whitespace_tag(/*@unique@*/ string_t whitespace_tag, const otrv4_t *otr, const string_t message);
+
+void
+otrv4_response_free(response_t *response);
 
 response_t*
 otrv4_receive_message(otrv4_t *otr, const string_t message);
