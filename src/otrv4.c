@@ -252,6 +252,21 @@ otrv4_in_message_parse(otrv4_in_message_t *target, const string_t message) {
     target->type = IN_MSG_QUERY_STRING;
   } else if (otrv4_message_is_data(message)) {
     target->type = IN_MSG_CYPHERTEXT;
+    char *end = strchr(message, '.');
+    size_t dec_len = end - message -5 + 1;
+    uint8_t *decoded;
+    int res = otrl_base64_otr_decode(message, &decoded, &dec_len);
+    if (res != 0) {
+      // TODO: handle error
+      printf("result is %d\n", res);
+      return;
+    }
+
+    if (target->raw_text != NULL) {
+      free(target->raw_text);
+    }
+    target->raw_text = otrv4_strdup((char *) decoded);
+    return;
   } else {
     target->type = IN_MSG_PLAINTEXT;
   }
@@ -358,9 +373,7 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
       return NULL;
     }
 
-    uint8_t encoded[sizeof(serialized) + 1] = { 0 };
-    otrl_base64_encode((char *) encoded, serialized, sizeof(serialized) + 1);
-    response->to_send = strdup((char *) encoded);
+    response->to_send = strdup(otrl_base64_otr_encode(serialized, sizeof(serialized) + 1));
 
     break;
   case OTR_VERSION_3:
@@ -375,11 +388,19 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
   return response;
 }
 
-static void
+static response_t *
 otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
+  response_t *response = response_new();
+  if (response == NULL) {
+    return NULL;
+  }
+
+  response->to_display = NULL;
+  response->to_send = NULL;
+
   if (message->raw_text == NULL) {
     // ??? is it heartbeat?
-    return;
+    return response;
   }
 
   otrv4_state_set(otr, OTR_STATE_ENCRYPTED_MESSAGES);
@@ -387,7 +408,12 @@ otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
   if (otr->message_to_respond == NULL) {
     otr->message_to_respond = malloc(1000);
   }
+  //TODO: the response structure is duplicated in the otr structure
   otr->message_to_respond = otrv4_strdup("tenga su dre-auth msg\n");
+  //TODO: compute dake, serialize it and encode it.
+  response->to_send = "tenga su dre-auth\n";
+
+  return response;
 }
 
 static otrv4_in_message_t *
@@ -428,7 +454,7 @@ otrv4_receive_message(otrv4_t *otr, const string_t message) {
     break;
 
   case IN_MSG_CYPHERTEXT:
-    otrv4_receive_data_message(otr, input);
+    response = otrv4_receive_data_message(otr, input);
     break;
   }
 
