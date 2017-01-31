@@ -379,13 +379,14 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
     otrv4_pre_key_set(otr, dake_pre_key_new(profile));
 
     response->to_display = NULL;
+    size_t ser_len = 0;
     uint8_t  *serialized;
-    if (!user_profile_aprint(&serialized, NULL, profile)) {
+    if (!user_profile_aprint(&serialized, &ser_len, profile)) {
       //TODO: error
       return NULL;
     }
 
-    response->to_send = strdup(otrl_base64_otr_encode(serialized, sizeof(serialized) + 1));
+    response->to_send = otrl_base64_otr_encode(serialized, ser_len);
 
     break;
   case OTR_VERSION_3:
@@ -416,6 +417,7 @@ otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
   otr->running_version = OTR_VERSION_4;
 
   //TODO: compute dake, serialize it and encode it.
+
   response->to_send = "tenga su dre-auth\n";
 
   return response;
