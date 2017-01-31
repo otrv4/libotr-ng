@@ -81,10 +81,14 @@ test_otrv4_receives_plaintext_without_ws_tag_on_start(otrv4_fixture_t *otrv4_fix
 void
 test_otrv4_receives_plaintext_without_ws_tag_not_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_fixture->otr->state = OTR_STATE_AKE_IN_PROGRESS;
-  otrv4_receive_message(otrv4_fixture->otr, "Some random text.");
+
+  response_t *response;
+  response = otrv4_receive_message(otrv4_fixture->otr, "Some random text.");
 
   g_assert_cmpstr(otrv4_fixture->otr->message_to_display, ==, "Some random text.");
-  g_assert_cmpstr(otrv4_fixture->otr->warning, ==, "The above message was received unencrypted.");
+  g_assert_cmpint(response->warning, ==, OTR_WARN_RECEIVED_UNENCRYPTED);
+
+  free(response);
 }
 
 void

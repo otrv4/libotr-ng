@@ -37,7 +37,6 @@ otrv4_new(cs_keypair_s *keypair) {
   otr->running_version = OTR_VERSION_NONE;
   otr->message_to_display = NULL;
   otr->message_to_respond = NULL;
-  otr->warning = NULL;
   otr->pre_key = NULL;
 
   return otr;
@@ -54,9 +53,6 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
 
     free(otr->message_to_respond = NULL);
     otr->message_to_respond = NULL;
-
-    free(otr->warning);
-    otr->warning = NULL;
 
     if (otr->pre_key != NULL) {
       dake_pre_key_free(otr->pre_key);
@@ -277,19 +273,39 @@ otrv4_in_message_parse(otrv4_in_message_t *target, const string_t message) {
   target->raw_text = otrv4_strdup(message);
 }
 
-static void
+static response_t* response_new(void) {
+  response_t *response = malloc(sizeof(response_t));
+  if (response == NULL) {
+    return NULL;
+  }
+
+  response->to_display = NULL;
+  response->to_send = NULL;
+  response->warning = OTR_WARN_NONE;
+
+  return response;
+}
+
+static response_t *
 otrv4_receive_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
+  response_t *response = response_new();
+  if (response == NULL) {
+    return NULL;
+  }
+
+  response->to_display = NULL;
+  response->to_send = NULL;
+
   if (message->raw_text == NULL) {
-    return;
+    return response;
   }
 
   otrv4_message_to_display_set(otr, message->raw_text);
   if (otr->state != OTR_STATE_START) {
-    if(otr->warning != NULL) {
-      free(otr->warning);
-    }
-    otr->warning = otrv4_strdup("The above message was received unencrypted.");
+    response->warning = OTR_WARN_RECEIVED_UNENCRYPTED;
   }
+
+  return response;
 }
 
 static void
@@ -330,19 +346,6 @@ get_my_user_profile(const otrv4_t *otr) {
 
   free(versions);
   return profile;
-}
-
-static response_t* response_new(void) {
-  response_t *response = malloc(sizeof(response_t));
-  if (response == NULL) {
-    return NULL;
-  }
-
-  response->to_display = NULL;
-  response->to_send = NULL;
-  response->warning = OTR_WARN_NONE;
-
-  return response;
 }
 
 static response_t*
@@ -442,7 +445,7 @@ otrv4_receive_message(otrv4_t *otr, const string_t message) {
   response_t *response = NULL;
   switch (input->type) {
   case IN_MSG_PLAINTEXT:
-    otrv4_receive_plaintext(otr, input);
+    response = otrv4_receive_plaintext(otr, input);
     break;
 
   case IN_MSG_TAGGED_PLAINTEXT:

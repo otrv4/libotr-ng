@@ -30,7 +30,6 @@ typedef struct {
   otrv4_version running_version;
   /*@null@*/ string_t message_to_display;
   string_t message_to_respond;
-  /*@null@*/ string_t warning;
   /*@null@*/ dake_pre_key_t *pre_key;
 } otrv4_t;
 
@@ -47,7 +46,8 @@ typedef struct {
 } otrv4_in_message_t;
 
 typedef enum {
-  OTR_WARN_NONE = 0
+  OTR_WARN_NONE = 0,
+  OTR_WARN_RECEIVED_UNENCRYPTED
 } otrv4_warning_t;
 
 typedef struct {
