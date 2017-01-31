@@ -20,7 +20,7 @@ test_api_conversation(void) {
 
   otrv4_assert(response);
   otrv4_assert(response->to_display == NULL);
-  //otrv4_assert(response->to_send != NULL);
+  otrv4_assert(response->to_send != NULL);
 
   otrv4_free(alice);
   otrv4_free(bob);

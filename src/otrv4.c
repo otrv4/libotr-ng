@@ -6,6 +6,7 @@
 #include "otrv4.h"
 #include "otrv3.h"
 #include "str.h"
+#include "b64.h"
 
 static const char tag_base[] = {
   '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
@@ -351,11 +352,14 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
     otrv4_pre_key_set(otr, dake_pre_key_new(profile));
 
     response->to_display = NULL;
-    //TODO: should base64 serialize
-    if (!user_profile_aprint((uint8_t **) &response->to_send, NULL, profile)) {
+    uint8_t  *serialized;
+    if (!user_profile_aprint(&serialized, NULL, profile)) {
       //TODO: error
       return NULL;
     }
+    uint8_t encoded[sizeof(serialized)] = { 0 };
+    otrl_base64_encode((char *) encoded, serialized, sizeof(serialized));
+    response->to_send = strdup((char *) encoded);
 
     break;
   case OTR_VERSION_3:
