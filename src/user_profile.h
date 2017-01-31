@@ -5,17 +5,18 @@
 
 #include "mpi.h"
 #include "cramer_shoup.h"
+#include "str.h"
 
 typedef struct {
   cs_public_key_t pub_key[1];
-  char *versions;
+  string_t versions;
   uint64_t expires;
   ec_signature_t signature;
   otr_mpi_t transitional_signature;
 } user_profile_t;
 
 user_profile_t*
-user_profile_new(const char* versions);
+user_profile_new(const string_t versions);
 
 bool
 user_profile_sign(user_profile_t *profile, const cs_keypair_t keypair);

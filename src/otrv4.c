@@ -20,8 +20,8 @@ static const char tag_version_v3[] = {
   '\x20', '\x20', '\x09', '\x09', '\x20', '\x20', '\x09', '\x09',
   '\0'
 };
-static const char *query = "?OTRv";
-static const char *otrv4 = "?OTR:";
+static const string_t query = "?OTRv";
+static const string_t otrv4 = "?OTR:";
 
 otrv4_t *
 otrv4_new(cs_keypair_s *keypair) {
@@ -84,7 +84,7 @@ otrv4_start(otrv4_t *otr) {
 }
 
 static void
-allowed_versions(char **dst, const otrv4_t *otr) { //generate a string with all versions allowed
+allowed_versions(string_t *dst, const otrv4_t *otr) { //generate a string with all versions allowed
   *dst = malloc(3*sizeof(char));
   if (*dst == NULL) {
     return;
@@ -103,7 +103,7 @@ allowed_versions(char **dst, const otrv4_t *otr) { //generate a string with all 
 }
 
 void
-otrv4_build_query_message(/*@unique@*/ char **query_message, const otrv4_t *otr, const char *message) {
+otrv4_build_query_message(/*@unique@*/ string_t *query_message, const otrv4_t *otr, const string_t message) {
   *query_message = malloc(strlen(query)+strlen(message)+4);
   if (*query_message == NULL) {
     return; //error
@@ -127,7 +127,7 @@ otrv4_build_query_message(/*@unique@*/ char **query_message, const otrv4_t *otr,
 //TODO: should this care about UTF8?
 //TODO: should this deal with buffer overflows?
 bool
-otrv4_build_whitespace_tag(/*@unique@*/ char *whitespace_tag, const otrv4_t *otr, const char *message) {
+otrv4_build_whitespace_tag(/*@unique@*/ string_t whitespace_tag, const otrv4_t *otr, const string_t message) {
 
   strcpy(whitespace_tag, tag_base);
 
@@ -145,7 +145,7 @@ otrv4_build_whitespace_tag(/*@unique@*/ char *whitespace_tag, const otrv4_t *otr
 }
 
 static bool
-otrv4_message_contains_tag(const char *message) {
+otrv4_message_contains_tag(const string_t message) {
   if (strstr(message, tag_base)) {
     return true;
   } else {
@@ -154,7 +154,7 @@ otrv4_message_contains_tag(const char *message) {
 }
 
 static void
-otrv4_message_to_display_without_tag(otrv4_t *otr, const char *message, const char *tag_version) {
+otrv4_message_to_display_without_tag(otrv4_t *otr, const string_t message, const char *tag_version) {
   size_t msg_length = strlen(message);
   size_t tag_length = strlen(tag_base) + strlen(tag_version);
   size_t chars = msg_length - tag_length;
@@ -171,7 +171,7 @@ otrv4_message_to_display_without_tag(otrv4_t *otr, const char *message, const ch
 }
 
 static void
-otrv4_message_to_display_set(otrv4_t *otr, const char *message) {
+otrv4_message_to_display_set(otrv4_t *otr, const string_t message) {
   if(otr->message_to_display != NULL) {
       free(otr->message_to_display);
   }
@@ -184,7 +184,7 @@ otrv4_state_set(otrv4_t *otr, stateFlag target) {
 }
 
 static void
-otrv4_running_version_set_from_tag(otrv4_t *otr, const char *message) {
+otrv4_running_version_set_from_tag(otrv4_t *otr, const string_t message) {
   if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
     if (strstr(message, tag_version_v4)) {
       otr->running_version = OTR_VERSION_4;
@@ -201,7 +201,7 @@ otrv4_running_version_set_from_tag(otrv4_t *otr, const char *message) {
 }
 
 static bool
-otrv4_message_is_query(const char *message) {
+otrv4_message_is_query(const string_t message) {
   if (strstr(message, query)) {
     return true;
   } else {
@@ -210,7 +210,7 @@ otrv4_message_is_query(const char *message) {
 }
 
 static void
-otrv4_running_version_set_from_query(otrv4_t *otr, const char *message) {
+otrv4_running_version_set_from_query(otrv4_t *otr, const string_t message) {
   if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
       if (strstr(message, "4")) {
         otr->running_version = OTR_VERSION_4;
@@ -235,7 +235,7 @@ otrv4_pre_key_set(otrv4_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
 }
 
 static bool
-otrv4_message_is_data(const char *message) {
+otrv4_message_is_data(const string_t message) {
   if (strstr(message, otrv4)) {
     return true;
   } else {
@@ -244,7 +244,7 @@ otrv4_message_is_data(const char *message) {
 }
 
 static void
-otrv4_in_message_parse(otrv4_in_message_t *target, const char *message) {
+otrv4_in_message_parse(otrv4_in_message_t *target, const string_t message) {
   if (otrv4_message_contains_tag(message)) {
     target->type = IN_MSG_TAGGED_PLAINTEXT;
   } else if (otrv4_message_is_query(message)) {
@@ -302,7 +302,7 @@ otrv4_receive_tagged_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) 
 
 static user_profile_t*
 get_my_user_profile(const otrv4_t *otr) {
-  char *versions = NULL;
+  string_t versions = NULL;
   allowed_versions(&versions, otr);
 
   user_profile_t *profile = user_profile_new(versions);
@@ -400,7 +400,7 @@ otrv4_in_message_new() {
 }
 
 response_t*
-otrv4_receive_message(otrv4_t *otr, const char *message) {
+otrv4_receive_message(otrv4_t *otr, const string_t message) {
   otrv4_in_message_t *input = otrv4_in_message_new();
   if (input == NULL) {
       return NULL;

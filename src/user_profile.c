@@ -10,7 +10,7 @@
 #include "random.h"
 
 user_profile_t*
-user_profile_new(const char* versions) {
+user_profile_new(const string_t versions) {
   if (versions == NULL) {
     return NULL;
   }

@@ -1,5 +1,7 @@
 #include <stdbool.h>
+
 #include "dake.h"
+#include "str.h"
 
 #ifndef OTRV4_H
 #define OTRV4_H
@@ -26,9 +28,9 @@ typedef struct {
   stateFlag state;
   int supported_versions;
   otrv4_version running_version;
-  /*@null@*/ char *message_to_display;
-  char *message_to_respond;
-  /*@null@*/ char *warning;
+  /*@null@*/ string_t message_to_display;
+  string_t message_to_respond;
+  /*@null@*/ string_t warning;
   /*@null@*/ dake_pre_key_t *pre_key;
 } otrv4_t;
 
@@ -41,14 +43,13 @@ typedef enum {
 
 typedef struct {
   otrv4_in_message_type type;
-  /*@null@*/ char *raw_text;
+  /*@null@*/ string_t raw_text;
 } otrv4_in_message_t;
 
 typedef enum {
   OTR_WARN_NONE = 0
 } otrv4_warning_t;
 
-typedef char *string_t;
 typedef struct {
   string_t to_display;
   string_t to_send;
@@ -61,10 +62,10 @@ void otrv4_free(/*@only@*/ otrv4_t *otr);
 bool otrv4_start(otrv4_t *otr);
 void otrv4_version_support_v3(otrv4_t *otr);
 
-void otrv4_build_query_message(/*@unique@*/ char **dst, const otrv4_t *otr, const char *message);
-bool otrv4_build_whitespace_tag(/*@unique@*/ char * whitespace_tag, const otrv4_t *otr, const char *message);
+void otrv4_build_query_message(/*@unique@*/ string_t *dst, const otrv4_t *otr, const string_t message);
+bool otrv4_build_whitespace_tag(/*@unique@*/ string_t whitespace_tag, const otrv4_t *otr, const string_t message);
 
 response_t*
-otrv4_receive_message(otrv4_t *otr, const char *message);
+otrv4_receive_message(otrv4_t *otr, const string_t message);
 
 #endif
