@@ -357,7 +357,7 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
       //TODO: error
       return NULL;
     }
-    uint8_t encoded[sizeof(serialized)] = { 0 };
+    uint8_t encoded[sizeof(serialized) + 1 ] = { 0 };
     otrl_base64_encode((char *) encoded, serialized, sizeof(serialized));
     response->to_send = strdup((char *) encoded);
 
