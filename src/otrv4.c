@@ -351,6 +351,11 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
     otrv4_pre_key_set(otr, dake_pre_key_new(profile));
 
     response->to_display = NULL;
+    //TODO: should base64 serialize
+    if (!user_profile_aprint((uint8_t **) &response->to_send, NULL, profile)) {
+      //TODO: error
+      return NULL;
+    }
 
     break;
   case OTR_VERSION_3:
