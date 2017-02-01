@@ -11,6 +11,7 @@
 #include "test_ed448.c"
 #include "test_dh.c"
 #include "test_serialize.c"
+#include "test_key_management.c"
 
 int
 main(int argc, char **argv) {
@@ -50,6 +51,7 @@ main(int argc, char **argv) {
 
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
   g_test_add_func("/serialize_and_deserialize/cramer-shoup", test_ser_des_cs_public_key);
+  g_test_add_func("/key_management/derive_ratchet_keys", test_derive_ratchet_keys);
 
   return g_test_run();
 }

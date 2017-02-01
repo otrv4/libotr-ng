@@ -13,7 +13,8 @@ libotr4_la_SOURCES = \
 										 otrv4.c \
 										 serialize.c \
 										 str.c \
-										 user_profile.c
+										 user_profile.c \
+										 key_management.c
 
 libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBDECAF_CFLAGS@ @LIBGCRYPT_CFLAGS@ @LIBCRAMERSHOUP_CFLAGS@
 libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ @LIBGCRYPT_LIBS@ @LIBCRAMERSHOUP_LIBS@
