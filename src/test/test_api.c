@@ -18,7 +18,7 @@ test_api_conversation(void) {
   string_t query_message = NULL;
   otrv4_build_query_message(&query_message, alice, "");
 
-  response_t *response_to_bob, *response_to_alice;
+  otrv4_response_t *response_to_bob, *response_to_alice;
   response_to_alice = otrv4_receive_message(bob, query_message);
 
   otrv4_assert(response_to_alice);

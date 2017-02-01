@@ -143,7 +143,7 @@ otrv4_message_contains_tag(const string_t message) {
 }
 
 static void
-otrv4_message_to_display_without_tag(response_t *response, const string_t message, const char *tag_version) {
+otrv4_message_to_display_without_tag(otrv4_response_t *response, const string_t message, const char *tag_version) {
   size_t msg_length = strlen(message);
   size_t tag_length = strlen(tag_base) + strlen(tag_version);
   size_t chars = msg_length - tag_length;
@@ -159,7 +159,7 @@ otrv4_message_to_display_without_tag(response_t *response, const string_t messag
 }
 
 static void
-otrv4_message_to_display_set(response_t *response, const string_t message) {
+otrv4_message_to_display_set(otrv4_response_t *response, const string_t message) {
   if(response->to_display != NULL) {
       free(response->to_display);
   }
@@ -264,8 +264,8 @@ otrv4_in_message_parse(otrv4_in_message_t *target, const string_t message) {
   target->raw_text = otrv4_strdup(message);
 }
 
-static response_t* response_new(void) {
-  response_t *response = malloc(sizeof(response_t));
+static otrv4_response_t* response_new(void) {
+  otrv4_response_t *response = malloc(sizeof(otrv4_response_t));
   if (response == NULL) {
     return NULL;
   }
@@ -278,7 +278,7 @@ static response_t* response_new(void) {
 }
 
 void
-otrv4_response_free(response_t * response) {
+otrv4_response_free(otrv4_response_t * response) {
 
   free(response->to_send);
   response->to_send = NULL;
@@ -289,9 +289,9 @@ otrv4_response_free(response_t * response) {
   free(response);
 }
 
-static response_t *
+static otrv4_response_t *
 otrv4_receive_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
-  response_t *response = response_new();
+  otrv4_response_t *response = response_new();
   if (response == NULL) {
     return NULL;
   }
@@ -308,9 +308,9 @@ otrv4_receive_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
   return response;
 }
 
-static response_t *
+static otrv4_response_t *
 otrv4_receive_tagged_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
-  response_t *response = response_new();
+  otrv4_response_t *response = response_new();
   if (response == NULL) {
     return NULL;
   }
@@ -372,11 +372,11 @@ serialize_and_encode_pre_key(const dake_pre_key_t* pre_key) {
     return encoded;
 }
 
-static response_t*
+static otrv4_response_t*
 otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
   user_profile_t *profile = NULL;
 
-  response_t *response = response_new();
+  otrv4_response_t *response = response_new();
   if (response == NULL) {
     return NULL;
   }
@@ -415,9 +415,9 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
   return response;
 }
 
-static response_t *
+static otrv4_response_t *
 otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
-  response_t *response = response_new();
+  otrv4_response_t *response = response_new();
   if (response == NULL) {
     return NULL;
   }
@@ -451,7 +451,7 @@ otrv4_in_message_new() {
   return input;
 }
 
-response_t*
+otrv4_response_t*
 otrv4_receive_message(otrv4_t *otr, const string_t message) {
   otrv4_in_message_t *input = otrv4_in_message_new();
   if (input == NULL) {
@@ -460,7 +460,7 @@ otrv4_receive_message(otrv4_t *otr, const string_t message) {
 
   otrv4_in_message_parse(input, message);
 
-  response_t *response = NULL;
+  otrv4_response_t *response = NULL;
   switch (input->type) {
   case IN_MSG_PLAINTEXT:
     response = otrv4_receive_plaintext(otr, input);

@@ -55,7 +55,7 @@ typedef struct {
   string_t to_display;
   string_t to_send;
   otrv4_warning_t warning;
-} response_t;
+} otrv4_response_t;
 
 otrv4_t* otrv4_new(cs_keypair_s *keypair);
 void otrv4_free(/*@only@*/ otrv4_t *otr);
@@ -67,9 +67,9 @@ void otrv4_build_query_message(/*@unique@*/ string_t *dst, const otrv4_t *otr, c
 bool otrv4_build_whitespace_tag(/*@unique@*/ string_t whitespace_tag, const otrv4_t *otr, const string_t message);
 
 void
-otrv4_response_free(response_t *response);
+otrv4_response_free(otrv4_response_t *response);
 
-response_t*
+otrv4_response_t*
 otrv4_receive_message(otrv4_t *otr, const string_t message);
 
 #endif
