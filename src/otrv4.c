@@ -465,10 +465,11 @@ otrv4_receive_pre_key(otrv4_response_t *response, uint8_t *buff, size_t buflen, 
     otr->their_dh = dh_mpi_copy(pre_key.B);
 
     //TODO get our profile and replace
-    dake_dre_auth_t dre_auth = dake_dre_auth_new(pre_key.sender_profile, pre_key.sender_profile);
-    uint8_t *ser_dre_aut = {0};
+    //dake_dre_auth_t *dre_auth = dake_dre_auth_new(pre_key.sender_profile);
+    //uint8_t *ser_dre_aut = {0};
     //dake_dre_auth_aprint(uint8_t **dst, size_t *nbytes, const dake_dre_auth_t *dre_auth);
-    otr->state = OTR_STATE_ENCRYPTED_MSG;
+
+    otr->state = OTR_STATE_ENCRYPTED_MESSAGES;
   }
 
   return true;

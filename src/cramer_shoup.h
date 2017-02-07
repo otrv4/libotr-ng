@@ -30,7 +30,10 @@ dr_cs_generate_symmetric_key(dr_cs_symmetric_key_t k) {
 }
 
 static inline bool
-dr_cs_encrypt(dr_cs_encrypted_symmetric_key_t gamma, const dr_cs_symmetric_key_t k, const cs_public_key_t *our_pub, const cs_public_key_t *their_pub) {
+dr_cs_encrypt(dr_cs_encrypted_symmetric_key_t gamma,
+              const dr_cs_symmetric_key_t k,
+              const cs_public_key_t *our_pub,
+              const cs_public_key_t *their_pub) {
   if (dr_cramershoup_448_enc(gamma, k, our_pub, their_pub) == 0) {
     return true;
   }
