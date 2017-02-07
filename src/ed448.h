@@ -57,4 +57,13 @@ ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t src) {
   decaf_448_scalar_copy(dst, src);
 }
 
+static inline bool
+ec_point_valid(ec_point_t point) {
+  if (DECAF_TRUE == decaf_448_point_valid(point)){
+    return true;
+  }
+
+  return false;
+}
+
 #endif

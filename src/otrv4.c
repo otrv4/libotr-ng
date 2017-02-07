@@ -7,6 +7,7 @@
 #include "otrv3.h"
 #include "str.h"
 #include "b64.h"
+#include "deserialize.h"
 
 static const char tag_base[] = {
   '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
@@ -239,9 +240,9 @@ otrv4_in_message_parse(otrv4_in_message_t *target, const string_t message) {
     target->type = IN_MSG_QUERY_STRING;
   } else if (otrv4_message_is_data(message)) {
     target->type = IN_MSG_CYPHERTEXT;
-    char *end = strchr(message, '.');
-    size_t dec_len = end - message -5 + 1;
-    uint8_t *decoded;
+  printf("message type is cypher text\n");
+    size_t dec_len = 0;
+    uint8_t *decoded = NULL;
     int res = otrl_base64_otr_decode(message, &decoded, &dec_len);
     if (res != 0) {
       // TODO: handle error
@@ -252,7 +253,7 @@ otrv4_in_message_parse(otrv4_in_message_t *target, const string_t message) {
     if (target->raw_text != NULL) {
       free(target->raw_text);
     }
-    target->raw_text = otrv4_strdup((char *) decoded);
+    target->raw_text = (string_t) decoded;
     return;
   } else {
     target->type = IN_MSG_PLAINTEXT;
@@ -415,6 +416,64 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
   return response;
 }
 
+typedef struct {
+  supportVersion version;
+  uint8_t type;
+} otrv4_header_t;
+
+static bool
+extract_header(otrv4_header_t *dst, const uint8_t *buffer, const size_t bufflen) {
+  //TODO: check the length
+
+  size_t read = 0;
+  uint16_t version = 0;
+  uint8_t type = 0;
+  if (!deserialize_uint16(&version, buffer, bufflen, &read)) {
+    return false;
+  }
+
+  buffer += read;
+  
+  if (!deserialize_uint8(&type, buffer, bufflen - read, &read)) {
+    return false;
+  }
+
+  dst->version = OTR_ALLOW_NONE;
+  if (version == 0x04) {
+    dst->version = OTR_ALLOW_V4;
+  } else if (version == 0x03) {
+    dst->version = OTR_ALLOW_V3;
+  }
+  dst->type = type;
+
+  return true;
+}
+
+static bool
+otrv4_receive_pre_key(otrv4_response_t *response, uint8_t *buff, size_t buflen, otrv4_t *otr) {
+  dake_pre_key_t pre_key;
+  if (!dake_pre_key_deserialize(&pre_key, buff, buflen)) {
+    return false;
+  }
+  
+  if (otr->state == OTR_STATE_START) {
+    if (!dake_pre_key_validate(&pre_key)) {
+      return false;
+    }
+
+    ec_public_key_copy(otr->their_ecdh, pre_key.Y);
+    otr->their_dh = dh_mpi_copy(pre_key.B);
+
+    //TODO get our profile and replace
+    dake_dre_auth_t dre_auth = dake_dre_auth_new(pre_key.sender_profile, pre_key.sender_profile);
+    uint8_t *ser_dre_aut = {0};
+    //dake_dre_auth_aprint(uint8_t **dst, size_t *nbytes, const dake_dre_auth_t *dre_auth);
+    otr->state = OTR_STATE_ENCRYPTED_MSG;
+  }
+
+  return true;
+}
+
 static otrv4_response_t *
 otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
   otrv4_response_t *response = response_new();
@@ -424,15 +483,33 @@ otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
 
   if (message->raw_text == NULL) {
     // ??? is it heartbeat?
-    return response;
+    return NULL;
+  }
+  
+  otrv4_header_t header;
+  if (!extract_header(&header, (const uint8_t*) message->raw_text, 3)) { //TODO: we need the len of raw_text
+    return NULL;
   }
 
-  otrv4_state_set(otr, OTR_STATE_ENCRYPTED_MESSAGES);
-  otr->running_version = OTR_VERSION_4;
+  if (!otrv4_allow_version(otr, header.version)) {
+    return NULL; //ignore this message
+  }
 
-  //TODO: compute dake, serialize it and encode it.
-
-  response->to_send = "tenga su dre-auth\n";
+  switch (header.type) {
+  case OTR_PRE_KEY_MSG_TYPE:
+    //we received a pre key
+    if (!otrv4_receive_pre_key(response, (uint8_t*) message->raw_text, 1000, otr)) {
+      return NULL;
+    }
+    break;
+  case OTR_DRE_AUTH_MSG_TYPE:
+    break;
+  case OTR_DATA_MSG_TYPE:
+    break;
+  default:
+    //errror. bad message type
+    break;
+  }
 
   return response;
 }

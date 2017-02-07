@@ -1,14 +1,28 @@
 #include <stdbool.h>
+#include <sodium.h>
+
 #include "dh.h"
 #include "ed448.h"
 #include "user_profile.h"
+#include "cramer_shoup.h"
 
 #define OTR_VERSION 4 //TODO: move
-#define PRE_KEY_MSG_TYPE 0x0F
+#define OTR_PRE_KEY_MSG_TYPE 0x0F
+#define OTR_DRE_AUTH_MSG_TYPE 0x00
+#define OTR_DATA_MSG_TYPE 0x03
+
+#define NONCE_BYTES crypto_secretbox_NONCEBYTES
+
+#define AUTH_BYTES 6*DECAF_448_SCALAR_BYTES
 
 #define PRE_KEY_MIN_BYTES 2+1+4+4 \
                           + DECAF_448_SER_BYTES \
                           + 4+DH3072_MOD_LEN_BYTES
+
+#define DRE_AUTH_MIN_BYTES PRE_KEY_MIN_BYTES \
+                           + sizeof(dr_cs_encrypted_symmetric_key_t) \
+                           + AUTH_BYTES \
+                           + NONCE_BYTES
 
 #ifndef DAKE_H
 #define DAKE_H
@@ -22,38 +36,17 @@ typedef struct {
 } dake_pre_key_t;
 
 typedef struct {
-  ec_point_t U11;
-  ec_point_t U21;
-  ec_point_t E1;
-  ec_point_t V1;
-  ec_point_t U12;
-  ec_point_t U22;
-  ec_point_t E2;
-  ec_point_t V2;
-  //l
-  //n1
-  //n2
-} dake_dre_message_t;
-
-typedef struct {
-  // c1
-  // r1
-  // c2
-  // r2
-  // c3
-  // r3
-} dake_dre_authentication_t;
-
-typedef struct {
   uint8_t version_protocol;
   uint8_t type;
   uint8_t sender_instance_tag;
   uint8_t receiver_instance_tag;
-  user_profile_t sender_profile[1];
-  ec_point_t X;
-  uint8_t A[80];
-  dake_dre_message_t gamma;
-  dake_dre_authentication_t sigma;
+  user_profile_t sender_profile[1], our_profile[1];
+  ec_public_key_t X;
+  dh_public_key_t A;
+
+  dr_cs_encrypted_symmetric_key_t gamma;
+  rs_auth_t sigma;
+  uint8_t nonce[NONCE_BYTES];
 } dake_dre_auth_t;
 
 dake_pre_key_t *
@@ -75,7 +68,7 @@ void
 dake_dre_auth_free(dake_dre_auth_t *dre_auth);
 
 bool
-dake_dre_auth_serialize(uint8_t *target, const dake_dre_auth_t *dre_auth);
+dake_dre_auth_aprint(uint8_t **dst, size_t *nbytes, const dake_dre_auth_t *dre_auth);
 
 void
 dake_dre_auth_deserialize(dake_dre_auth_t *target, uint8_t *data);

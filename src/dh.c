@@ -20,7 +20,7 @@ static const char* DH3072_MODULUS_S = "0x"
   "43DB5BFCE0FD108E4B82D120A93AD2CAFFFFFFFFFFFFFFFF";
 
 static gcry_mpi_t DH3072_MODULUS = NULL;
-
+static gcry_mpi_t DH3072_MODULUS_MINUS_2 = NULL;
 static const char *DH3072_GENERATOR_S = "0x02";
 static gcry_mpi_t DH3072_GENERATOR = NULL;
 
@@ -31,6 +31,9 @@ dh_init(void) {
 
   gcry_mpi_scan(&DH3072_GENERATOR, GCRYMPI_FMT_HEX,
     (const unsigned char *)DH3072_GENERATOR_S, 0, NULL);
+
+  DH3072_MODULUS_MINUS_2 = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  gcry_mpi_sub_ui(DH3072_MODULUS_MINUS_2, DH3072_MODULUS, 2);
 }
 
 bool
@@ -90,6 +93,17 @@ bool
 dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer, size_t buflen, size_t *nread) {
   gcry_error_t err = gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread);
   if (err) {
+    return false;
+  }
+
+  return true;
+}
+
+bool
+dh_mpi_valid(dh_mpi_t mpi) {
+  /* Check that their_pub is in range */
+  if (gcry_mpi_cmp_ui(mpi, 2) < 0 ||
+	    gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0) {
     return false;
   }
 

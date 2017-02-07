@@ -13,6 +13,7 @@ typedef enum {
 } stateFlag;
 
 typedef enum {
+  OTR_ALLOW_NONE = 0,
   OTR_ALLOW_V3 = 1,
   OTR_ALLOW_V4 = 2
 } supportVersion;
@@ -21,16 +22,20 @@ typedef enum {
   OTR_VERSION_NONE = 0,
   OTR_VERSION_3 = 3,
   OTR_VERSION_4 = 4
-} otrv4_version;
+} otrv4_version_t;
 
 typedef struct {
   cs_keypair_s *keypair;
   stateFlag state;
   int supported_versions;
-  otrv4_version running_version;
+  otrv4_version_t running_version;
 
   ec_keypair_t our_ecdh;
   dh_keypair_t our_dh;
+
+  ec_public_key_t their_ecdh;
+  dh_public_key_t their_dh;
+  
   /*@null@*/ dake_pre_key_t *pre_key;
 } otrv4_t;
 
