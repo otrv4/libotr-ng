@@ -81,11 +81,9 @@ test_dake_generate_gamma_phi_sigma() {
 
   //Generate DRE-AUTH to be serialized
   dake_dre_auth_t *dre_auth = dake_dre_auth_new(profile_alice);
-  ec_public_key_copy(dre_auth->X, ecdh_alice->pub);
-  dre_auth->A = dh_mpi_copy(dh_alice->pub);
 
   //Alice generates gamma, sigma and phi
-  ok = dake_dre_auth_generate_gamma_phi_sigma(cs_alice,
+  ok = dake_dre_auth_generate_gamma_phi_sigma(cs_alice, ecdh_alice->pub, dh_alice->pub,
       cs_bob->pub, profile_bob, ecdh_bob->pub, dh_bob->pub, dre_auth);
   otrv4_assert(ok);
 
@@ -118,16 +116,15 @@ test_dake_dre_auth_serialize() {
   dake_dre_auth_t *dre_auth = dake_dre_auth_new(our_profile);
   dre_auth->sender_instance_tag = 1;
   dre_auth->receiver_instance_tag = 2;
-  ec_public_key_copy(dre_auth->X, our_ecdh->pub);
-  dre_auth->A = dh_mpi_copy(our_dh->pub);
 
   memset(dre_auth->nonce, 0xA, NONCE_BYTES);
   memset(dre_auth->gamma, 0xB, sizeof(dr_cs_encrypted_symmetric_key_t));
   memset(dre_auth->sigma, 0xC, sizeof(rs_auth_t));
 
-  uint8_t phi[] = {1, 2, 3, 4, 5};
-  dre_auth->phi = phi;
+  uint8_t expected_phi[] = {1, 2, 3, 4, 5};
+  dre_auth->phi = malloc(5);
   dre_auth->phi_len = 5;
+  memcpy(dre_auth->phi, expected_phi, 5);
 
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
@@ -159,20 +156,6 @@ test_dake_dre_auth_serialize() {
   free(user_profile_serialized);
   cursor += user_profile_len;
 
-  //assert X
-  ec_public_key_t expected_x = { 0 };
-  ok = ec_public_key_serialize(expected_x, sizeof(ec_public_key_t), dre_auth->X);
-  otrv4_assert(ok);
-  otrv4_assert_cmpmem(expected_x, cursor, sizeof(ec_public_key_t));
-  cursor += sizeof(ec_public_key_t);
-
-  //assert A
-  uint8_t expected_a[DH3072_MOD_LEN_BYTES] = { 0 };
-  size_t mpi_len = dh_mpi_serialize(expected_a, DH3072_MOD_LEN_BYTES, dre_auth->A);
-  //Skip first 4 because they are the size (mpi_len)
-  otrv4_assert_cmpmem(expected_a, cursor+4, mpi_len);
-  cursor += mpi_len+4;
-
   //assert gamma
   otrv4_assert_cmpmem(dre_auth->gamma, cursor, sizeof(dr_cs_encrypted_symmetric_key_t));
   cursor += sizeof(dr_cs_encrypted_symmetric_key_t);
@@ -186,7 +169,7 @@ test_dake_dre_auth_serialize() {
   cursor += NONCE_BYTES;
 
   //assert phi
-  otrv4_assert_cmpmem(phi, cursor, dre_auth->phi_len);
+  otrv4_assert_cmpmem(expected_phi, cursor, dre_auth->phi_len);
 
   dake_dre_auth_free(dre_auth);
   free(serialized);
