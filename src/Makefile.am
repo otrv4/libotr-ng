@@ -16,8 +16,15 @@ libotr4_la_SOURCES = \
 										 user_profile.c \
 										 key_management.c
 
-libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBDECAF_CFLAGS@ @LIBGCRYPT_CFLAGS@ @LIBCRAMERSHOUP_CFLAGS@
-libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ @LIBGCRYPT_LIBS@ @LIBCRAMERSHOUP_LIBS@
+libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBDECAF_CFLAGS@ \
+                                 @LIBSODIUM_CFLAGS@ \
+                                 @LIBGCRYPT_CFLAGS@ \
+                                 @LIBCRAMERSHOUP_CFLAGS@
+
+libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
+                                   @LIBSODIUM_LIBS@ \
+                                   @LIBGCRYPT_LIBS@ \
+                                   @LIBCRAMERSHOUP_LIBS@
 
 otrincdir = $(includedir)/libotr4
 otrinc_HEADERS = protocol.h

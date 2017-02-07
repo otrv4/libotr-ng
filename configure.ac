@@ -22,6 +22,7 @@ AC_PROG_LIBTOOL
 # Checks for libraries.
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.18])
 PKG_CHECK_MODULES([LIBDECAF], [libdecaf >= 0.0.1])
+PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 1.0.0])
 PKG_CHECK_MODULES([LIBCRAMERSHOUP], [libcramershoup])
 AM_PATH_LIBGCRYPT(1:1.7.6,,AC_MSG_ERROR(libgcrypt 1.7.6 or newer is required.))
 
