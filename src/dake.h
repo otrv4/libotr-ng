@@ -91,4 +91,11 @@ dake_dre_auth_generate_gamma_phi_sigma(const cs_keypair_t our_keypair,
                                        const dh_mpi_t their_dh,
                                        dake_dre_auth_t *dre_auth);
 
+bool
+dake_dre_auth_validate(const user_profile_t *our_profile,
+                       const cs_keypair_t our_cs_keypair,
+                       const ec_public_key_t our_ecdh_pub,
+                       const dh_mpi_t our_dh_pub,
+                       const dake_dre_auth_t *dre_auth);
+
 #endif

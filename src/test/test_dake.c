@@ -60,36 +60,39 @@ test_dake_generate_gamma_phi_sigma() {
 
   dh_init();
 
-  cs_keypair_t their_cramer_shoup, our_cramer_shoup;
-  cs_generate_keypair(our_cramer_shoup);
-  cs_generate_keypair(their_cramer_shoup);
+  cs_keypair_t cs_alice, cs_bob;
+  cs_generate_keypair(cs_alice);
+  cs_generate_keypair(cs_bob);
 
-  ec_keypair_t our_ecdh, their_ecdh;
-  ec_gen_keypair(our_ecdh);
-  ec_gen_keypair(their_ecdh);
+  ec_keypair_t ecdh_alice, ecdh_bob;
+  ec_gen_keypair(ecdh_alice);
+  ec_gen_keypair(ecdh_bob);
 
-  dh_keypair_t our_dh, their_dh;
-  dh_gen_keypair(our_dh);
-  dh_gen_keypair(their_dh);
+  dh_keypair_t dh_alice, dh_bob;
+  dh_gen_keypair(dh_alice);
+  dh_gen_keypair(dh_bob);
   
-  user_profile_t *our_profile = user_profile_new("4");
-  user_profile_sign(our_profile, our_cramer_shoup);
+  user_profile_t *profile_alice = user_profile_new("4");
+  profile_alice->expires = time(NULL) + 1;
+  otrv4_assert(user_profile_sign(profile_alice, cs_alice));
 
-  user_profile_t *their_profile = user_profile_new("4");
-  user_profile_sign(their_profile, their_cramer_shoup);
+  user_profile_t *profile_bob = user_profile_new("4");
+  otrv4_assert(user_profile_sign(profile_bob, cs_bob));
 
   //Generate DRE-AUTH to be serialized
-  dake_dre_auth_t *dre_auth = dake_dre_auth_new(our_profile);
-  ec_public_key_copy(dre_auth->X, our_ecdh->pub);
-  dre_auth->A = dh_mpi_copy(our_dh->pub);
+  dake_dre_auth_t *dre_auth = dake_dre_auth_new(profile_alice);
+  ec_public_key_copy(dre_auth->X, ecdh_alice->pub);
+  dre_auth->A = dh_mpi_copy(dh_alice->pub);
 
-  //Generate gamma, sigma and phi
-  ok = dake_dre_auth_generate_gamma_phi_sigma(our_cramer_shoup,
-      their_cramer_shoup->pub, their_profile, their_ecdh->pub, their_dh->pub, dre_auth);
+  //Alice generates gamma, sigma and phi
+  ok = dake_dre_auth_generate_gamma_phi_sigma(cs_alice,
+      cs_bob->pub, profile_bob, ecdh_bob->pub, dh_bob->pub, dre_auth);
   otrv4_assert(ok);
 
-  //1. validate sigma
-  //2. check if gamma and phi can be decrypted
+  // Bob will validate Alice's profile, ephemeral keys from DRE-AUTH, gamma,
+  // sigma and phi
+  ok = dake_dre_auth_validate(profile_bob, cs_bob, ecdh_bob->pub, dh_bob->pub, dre_auth);
+  otrv4_assert(ok);
 }
 
 void

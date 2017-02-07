@@ -41,6 +41,21 @@ dr_cs_encrypt(dr_cs_encrypted_symmetric_key_t gamma,
   return false;
 }
 
+static inline bool
+dr_cs_decrypt(dr_cs_symmetric_key_t k,
+              const dr_cs_encrypted_symmetric_key_t gamma,
+              const cs_keypair_t our_keypair,
+              const cs_public_key_t *their_pub) {
+
+  //FIXME: the public keys must be in this specific order because this is the
+  //order used when encrypting
+  if (0 != dr_cramershoup_448_dec(k, gamma, their_pub, our_keypair->pub, our_keypair->priv, 2)) {
+    return false;
+  }
+
+  return true;
+}
+
 static inline void
 ring_signature_auth(rs_auth_t dst,
                     const uint8_t *msg,
@@ -51,6 +66,20 @@ ring_signature_auth(rs_auth_t dst,
   rs_448_auth(dst, (char*) msg,
               keypair->priv->z, keypair->pub->h,
               their_pub->h, their_ephemeral);
+}
+
+static inline bool
+ring_signature_auth_valid(const rs_auth_t auth,
+                    const uint8_t *msg,
+                    const cs_public_key_t *our_pub,
+                    const cs_public_key_t *their_pub,
+                    const ec_point_t their_ephemeral
+                    ) {
+  if (0 != rs_448_verify(auth, (char*)msg, our_pub->h, their_pub->h, their_ephemeral)) {
+      return false;
+  }
+
+  return true;
 }
 
 #endif
