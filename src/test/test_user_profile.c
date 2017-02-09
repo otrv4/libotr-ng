@@ -10,7 +10,7 @@
 void
 test_user_profile_create() {
   cs_keypair_t keypair;
-  cs_generate_keypair(keypair);
+  cs_keypair_generate(keypair);
 
   user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);
@@ -20,7 +20,7 @@ test_user_profile_create() {
 void
 test_user_profile_serializes_body() {
   cs_keypair_t keypair;
-  cs_generate_keypair(keypair);
+  cs_keypair_generate(keypair);
 
   user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);
@@ -53,7 +53,7 @@ test_user_profile_serializes_body() {
 void
 test_user_profile_serializes() {
   cs_keypair_t keypair;
-  cs_generate_keypair(keypair);
+  cs_keypair_generate(keypair);
 
   user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);
@@ -97,7 +97,7 @@ test_user_profile_serializes() {
 void
 test_user_profile_deserializes() {
   cs_keypair_t keypair;
-  cs_generate_keypair(keypair);
+  cs_keypair_generate(keypair);
 
   user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);
@@ -119,7 +119,7 @@ test_user_profile_deserializes() {
 void
 test_user_profile_signs_and_verify() {
   cs_keypair_t keypair;
-  cs_generate_keypair(keypair);
+  cs_keypair_generate(keypair);
 
   user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);

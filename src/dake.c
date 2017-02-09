@@ -147,6 +147,7 @@ bool
 dake_pre_key_validate(const dake_pre_key_t *pre_key) {
   ec_point_t y;
   if (!ec_point_deserialize(y, pre_key->Y)) {
+    printf("could not deserialize Y\n");
     return false;
   }
 

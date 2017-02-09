@@ -20,7 +20,7 @@ test_dake_pre_key_serializes(pre_key_fixture_t *f, gconstpointer data) {
 
   ec_gen_keypair(ecdh);
   dh_gen_keypair(dh);
-  cs_generate_keypair(cs);
+  cs_keypair_generate(cs);
 
   dake_pre_key_t *pre_key = dake_pre_key_new(f->profile);
   pre_key->sender_instance_tag = 1;
@@ -70,11 +70,9 @@ test_dake_pre_key_deserializes(pre_key_fixture_t *f, gconstpointer data) {
 
   ec_keypair_t ecdh;
   dh_keypair_t dh;
-  cs_keypair_t cs;
 
   ec_gen_keypair(ecdh);
   dh_gen_keypair(dh);
-  cs_generate_keypair(cs);
 
   dake_pre_key_t *pre_key = dake_pre_key_new(f->profile);
   ec_public_key_copy(pre_key->Y, ecdh->pub);
@@ -104,8 +102,18 @@ test_dake_pre_key_deserializes(pre_key_fixture_t *f, gconstpointer data) {
 
 void
 test_dake_pre_key_valid(pre_key_fixture_t *f, gconstpointer data) {
+  dh_init();
+
+  ec_keypair_t ecdh;
+  dh_keypair_t dh;
+  ec_gen_keypair(ecdh);
+  dh_gen_keypair(dh);
+
   dake_pre_key_t *pre_key = dake_pre_key_new(f->profile);
   otrv4_assert(pre_key != NULL);
+
+  ec_public_key_copy(pre_key->Y, ecdh->pub);
+  pre_key->B = dh_mpi_copy(dh->pub);
 
   otrv4_assert(dake_pre_key_validate(pre_key)); //TODO: boolean?
   dake_pre_key_free(pre_key);

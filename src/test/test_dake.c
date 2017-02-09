@@ -15,12 +15,12 @@ test_dake_protocol() {
   dh_keypair_t alice_dh, bob_dh;
 
   // Alice
-  cs_generate_keypair(alice_cramer_shoup);
+  cs_keypair_generate(alice_cramer_shoup);
   ec_gen_keypair(alice_ecdh);
   dh_gen_keypair(alice_dh);
 
   // Bob
-  cs_generate_keypair(bob_cramer_shoup);
+  cs_keypair_generate(bob_cramer_shoup);
   ec_gen_keypair(bob_ecdh);
   dh_gen_keypair(bob_dh);
 
@@ -61,8 +61,8 @@ test_dake_generate_gamma_phi_sigma() {
   dh_init();
 
   cs_keypair_t cs_alice, cs_bob;
-  cs_generate_keypair(cs_alice);
-  cs_generate_keypair(cs_bob);
+  cs_keypair_generate(cs_alice);
+  cs_keypair_generate(cs_bob);
 
   ec_keypair_t ecdh_alice, ecdh_bob;
   ec_gen_keypair(ecdh_alice);
@@ -101,7 +101,7 @@ test_dake_dre_auth_serialize() {
   dh_init();
 
   cs_keypair_t our_cramer_shoup;
-  cs_generate_keypair(our_cramer_shoup);
+  cs_keypair_generate(our_cramer_shoup);
 
   ec_keypair_t our_ecdh;
   ec_gen_keypair(our_ecdh);
@@ -180,7 +180,7 @@ test_dake_dre_auth_deserialize() {
   dh_init();
 
   cs_keypair_t our_cramer_shoup;
-  cs_generate_keypair(our_cramer_shoup);
+  cs_keypair_generate(our_cramer_shoup);
 
   user_profile_t *our_profile = user_profile_new("4");
   user_profile_sign(our_profile, our_cramer_shoup);

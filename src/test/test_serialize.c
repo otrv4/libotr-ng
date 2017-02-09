@@ -46,7 +46,7 @@ test_ser_deser_uint() {
 void
 test_ser_des_cs_public_key() {
   cs_keypair_t keypair, deserialized;
-  cs_generate_keypair(keypair);
+  cs_keypair_generate(keypair);
 
   uint8_t serialized[170] = { 0 };
   g_assert_cmpint(serialize_cs_public_key(serialized, keypair->pub), ==, 170);

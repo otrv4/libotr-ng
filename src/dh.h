@@ -52,4 +52,9 @@ dh_mpi_copy(const dh_mpi_t src) {
   return gcry_mpi_copy(src);
 }
 
+static inline void
+dh_mpi_release(dh_mpi_t mpi) {
+  gcry_mpi_release(mpi);
+}
+
 #endif

@@ -48,6 +48,8 @@ user_profile_free(user_profile_t *profile) {
     return;
   }
 
+  //free the pubkey
+
   free(profile->versions);
   profile->versions = NULL;
   otr_mpi_free(profile->transitional_signature);

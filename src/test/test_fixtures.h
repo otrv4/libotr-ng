@@ -9,7 +9,7 @@ typedef struct {
 
 void
 otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  cs_generate_keypair(otrv4_fixture->keypair);
+  cs_keypair_generate(otrv4_fixture->keypair);
   otrv4_t *otr = otrv4_new(otrv4_fixture->keypair);
   otrv4_start(otr);
   otrv4_fixture->otr = otr;
@@ -30,7 +30,7 @@ typedef struct {
 
 static void
 pre_key_fixture_setup(pre_key_fixture_t *fixture, gconstpointer user_data) {
-  cs_generate_keypair(fixture->keypair);
+  cs_keypair_generate(fixture->keypair);
   fixture->profile = user_profile_new("4");
   otrv4_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 1;
@@ -39,8 +39,8 @@ pre_key_fixture_setup(pre_key_fixture_t *fixture, gconstpointer user_data) {
 
 static void
 pre_key_fixture_teardown(pre_key_fixture_t *fixture, gconstpointer user_data) {
-    //cs_keypair_destroy();
-    user_profile_free(fixture->profile);
-    fixture->profile = NULL;
+  cs_keypair_destroy(fixture->keypair);
+  user_profile_free(fixture->profile);
+  fixture->profile = NULL;
 }
 

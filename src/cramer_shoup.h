@@ -2,6 +2,8 @@
 #define CRAMER_SHOUP_H
 
 #include <cramershoup.h>
+#include <string.h>
+
 #include "ed448.h"
 
 //TODO: rename and keep consistent cramershoup naming (no underscore)
@@ -18,11 +20,23 @@ typedef struct {
   cs_private_key_t priv[1];
 } cs_keypair_s, cs_keypair_t[1];
 
-void
-cs_generate_keypair(cs_keypair_t key_par);
+static inline void
+cs_keypair_generate(cs_keypair_t key_pair) {
+  cramershoup_448_derive_keys(key_pair->priv, key_pair->pub);
+}
 
-void
-cs_public_key_copy(cs_public_key_t *dst, const cs_public_key_t *src);
+static inline void
+cs_keypair_destroy(cs_keypair_t key_par) {
+  memset(key_par->pub, 0, sizeof(cs_public_key_t));
+  memset(key_par->priv, 0, sizeof(cs_private_key_t));
+}
+
+static inline void
+cs_public_key_copy(cs_public_key_t *dst, const cs_public_key_t *src) {
+  ec_point_copy(dst->c, src->c);
+  ec_point_copy(dst->d, src->d);
+  ec_point_copy(dst->h, src->h);
+}
 
 static inline void
 dr_cs_generate_symmetric_key(dr_cs_symmetric_key_t k) {

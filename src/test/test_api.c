@@ -8,8 +8,8 @@ test_api_conversation(void) {
   OTR4_INIT;
 
   cs_keypair_t cs_alice, cs_bob;
-  cs_generate_keypair(cs_alice);
-  cs_generate_keypair(cs_bob);
+  cs_keypair_generate(cs_alice);
+  cs_keypair_generate(cs_bob);
 
   otrv4_t *alice = otrv4_new(cs_alice);
   otrv4_t *bob = otrv4_new(cs_bob);
