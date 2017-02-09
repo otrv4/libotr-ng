@@ -34,7 +34,7 @@
 typedef struct {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  user_profile_t sender_profile[1];
+  user_profile_t profile[1];
   ec_public_key_t Y;
   dh_public_key_t B;
 } dake_pre_key_t;

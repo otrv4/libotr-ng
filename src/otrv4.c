@@ -500,7 +500,7 @@ otrv4_receive_pre_key(otrv4_response_t *response, uint8_t *buff, size_t buflen, 
 
     dake_dre_auth_t *dre_auth = NULL;
     otrv4_generate_ephemeral_keys(otr);
-    if (!otrv4_generate_dre_auth(&dre_auth, pre_key.sender_profile, otr)) {
+    if (!otrv4_generate_dre_auth(&dre_auth, pre_key.profile, otr)) {
       return false;
     }
 

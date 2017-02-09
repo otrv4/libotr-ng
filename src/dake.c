@@ -22,7 +22,7 @@ dake_pre_key_new(const user_profile_t *profile) {
 
   pre_key->sender_instance_tag = 0;
   pre_key->receiver_instance_tag = 0;
-  user_profile_copy(pre_key->sender_profile, profile);
+  user_profile_copy(pre_key->profile, profile);
 
   return pre_key;
 }
@@ -36,7 +36,7 @@ bool
 dake_pre_key_aprint(uint8_t **dst, size_t *nbytes, const dake_pre_key_t *pre_key) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
-  if (!user_profile_aprint(&profile, &profile_len, pre_key->sender_profile)) {
+  if (!user_profile_aprint(&profile, &profile_len, pre_key->profile)) {
     return false;
   }
 
@@ -106,7 +106,7 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
     cursor += read;
     len -= read;
 
-    if (!user_profile_deserialize(dst->sender_profile, cursor, len, &read)) {
+    if (!user_profile_deserialize(dst->profile, cursor, len, &read)) {
       return false;
     }
 
@@ -149,8 +149,8 @@ dake_pre_key_validate(const dake_pre_key_t *pre_key) {
     return false;
   }
 
-  bool valid = user_profile_verify_signature(pre_key->sender_profile);
-  valid &= not_expired(pre_key->sender_profile->expires);
+  bool valid = user_profile_verify_signature(pre_key->profile);
+  valid &= not_expired(pre_key->profile->expires);
   valid &= ec_point_valid(y);
   valid &= dh_mpi_valid(pre_key->B);
 

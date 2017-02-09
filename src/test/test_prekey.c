@@ -43,7 +43,7 @@ test_dake_pre_key_serializes(pre_key_fixture_t *f, gconstpointer data) {
 
   size_t user_profile_len = 0;
   uint8_t *user_profile_serialized = NULL;
-  otrv4_assert(user_profile_aprint(&user_profile_serialized, &user_profile_len, pre_key->sender_profile));
+  otrv4_assert(user_profile_aprint(&user_profile_serialized, &user_profile_len, pre_key->profile));
   otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
   free(user_profile_serialized);
   cursor += user_profile_len;
@@ -91,7 +91,7 @@ test_dake_pre_key_deserializes(pre_key_fixture_t *f, gconstpointer data) {
   //assert prekey eq
   g_assert_cmpuint(deserialized->sender_instance_tag, ==, pre_key->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==, pre_key->receiver_instance_tag);
-  otrv4_assert_user_profile_eq(deserialized->sender_profile, pre_key->sender_profile);
+  otrv4_assert_user_profile_eq(deserialized->profile, pre_key->profile);
   otrv4_assert_ec_public_key_eq(deserialized->Y, pre_key->Y);
   otrv4_assert_dh_public_key_eq(deserialized->B, pre_key->B);
 
