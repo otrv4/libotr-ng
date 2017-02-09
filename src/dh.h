@@ -20,7 +20,7 @@ void
 dh_init(void);
 
 bool
-dh_gen_keypair(dh_keypair_t keypair);
+dh_keypair_generate(dh_keypair_t keypair);
 
 void
 dh_keypair_destroy(dh_keypair_t keypair);

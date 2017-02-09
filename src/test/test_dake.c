@@ -17,12 +17,12 @@ test_dake_protocol() {
   // Alice
   cs_keypair_generate(alice_cramer_shoup);
   ec_keypair_generate(alice_ecdh);
-  dh_gen_keypair(alice_dh);
+  dh_keypair_generate(alice_dh);
 
   // Bob
   cs_keypair_generate(bob_cramer_shoup);
   ec_keypair_generate(bob_ecdh);
-  dh_gen_keypair(bob_dh);
+  dh_keypair_generate(bob_dh);
 
   // Alice send pre key
   user_profile_t *alice_profile = user_profile_new("4");
@@ -69,8 +69,8 @@ test_dake_generate_gamma_phi_sigma() {
   ec_keypair_generate(ecdh_bob);
 
   dh_keypair_t dh_alice, dh_bob;
-  dh_gen_keypair(dh_alice);
-  dh_gen_keypair(dh_bob);
+  dh_keypair_generate(dh_alice);
+  dh_keypair_generate(dh_bob);
   
   user_profile_t *profile_alice = user_profile_new("4");
   profile_alice->expires = time(NULL) + 1;
@@ -107,7 +107,7 @@ test_dake_dre_auth_serialize() {
   ec_keypair_generate(our_ecdh);
 
   dh_keypair_t our_dh;
-  dh_gen_keypair(our_dh);
+  dh_keypair_generate(our_dh);
   
   user_profile_t *our_profile = user_profile_new("4");
   user_profile_sign(our_profile, our_cramer_shoup);

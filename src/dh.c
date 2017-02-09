@@ -37,7 +37,7 @@ dh_init(void) {
 }
 
 bool
-dh_gen_keypair(dh_keypair_t keypair) {
+dh_keypair_generate(dh_keypair_t keypair) {
   uint8_t *secbuf = malloc(DH_KEY_SIZE);
   if (secbuf == NULL) {
       return false;

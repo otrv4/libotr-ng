@@ -5,8 +5,8 @@ dh_test_api() {
   dh_init();
 
   dh_keypair_t alice, bob; 
-  dh_gen_keypair(alice);
-  dh_gen_keypair(bob);
+  dh_keypair_generate(alice);
+  dh_keypair_generate(bob);
 
   uint8_t shared1[DH3072_MOD_LEN_BYTES], shared2[DH3072_MOD_LEN_BYTES];
 
