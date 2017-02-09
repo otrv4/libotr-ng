@@ -15,6 +15,9 @@ before_install:
   - sudo apt-get install valgrind --quiet --assume-yes
 
 before_script: 
+  - export CFLAGS="-g -ggdb3 -O0"
+  - export CXXFLAGS="-g -ggdb3 -O0"
+  - export LDFLAGS="-g -ggdb3 -O0"
   - mkdir .deps
   - curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
   - pushd .deps/libgpg-error-1.26 && ./configure && make && sudo make install && popd
@@ -28,4 +31,4 @@ before_script:
   - pushd .deps/cramershoup && ./autogen.sh && ./configure CFLAGS="-DFAST_RANDOM" && make && sudo make install && popd
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-script: ./autogen.sh && ./configure && make ci
+script: ./autogen.sh && ./configure --disable-shared && make ci
