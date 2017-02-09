@@ -348,7 +348,6 @@ dake_dre_auth_generate_sigma(const user_profile_t *their_profile,
                              const ec_public_key_t their_ecdh,
                              const dh_mpi_t their_dh,
                              const cs_keypair_t our_keypair,
-                             const cs_public_key_t *their_pub,
                              dake_dre_auth_t *dre_auth) {
   uint8_t *sigma_msg = NULL;
 
@@ -364,7 +363,7 @@ dake_dre_auth_generate_sigma(const user_profile_t *their_profile,
   }
 
   ring_signature_auth(dre_auth->sigma,
-                      sigma_msg, our_keypair, their_pub, their_ephemeral);
+                      sigma_msg, our_keypair, their_profile->pub_key, their_ephemeral);
 
   free(sigma_msg);
   return true;
@@ -397,7 +396,7 @@ dake_dre_auth_generate_gamma_phi_sigma(const cs_keypair_t our_keypair,
   }
   free(phi_msg);
 
-  if (!dake_dre_auth_generate_sigma(their_profile, their_ecdh, their_dh, our_keypair, their_profile->pub_key, dre_auth)) {
+  if (!dake_dre_auth_generate_sigma(their_profile, their_ecdh, their_dh, our_keypair, dre_auth)) {
     return false;
   }
 
