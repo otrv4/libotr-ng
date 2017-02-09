@@ -401,7 +401,7 @@ otrv4_receive_query_message(otrv4_t *otr, const otrv4_in_message_t *message) {
 
     otrv4_generate_ephemeral_keys(otr);
     ec_public_key_copy(otr->pre_key->Y, otr->our_ecdh->pub);
-    otr->pre_key->B = otr->our_dh->pub; //TODO: make a copy?
+    otr->pre_key->B = dh_mpi_copy(otr->our_dh->pub);
 
     response->to_display = NULL;
     response->to_send = serialize_and_encode_pre_key(otr->pre_key);

@@ -109,3 +109,4 @@ dh_mpi_valid(dh_mpi_t mpi) {
 
   return true;
 }
+

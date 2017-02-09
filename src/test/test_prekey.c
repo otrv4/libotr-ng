@@ -25,7 +25,7 @@ test_dake_pre_key_serializes(pre_key_fixture_t *f, gconstpointer data) {
   dake_pre_key_t *pre_key = dake_pre_key_new(f->profile);
   pre_key->sender_instance_tag = 1;
   ec_public_key_copy(pre_key->Y, ecdh->pub);
-  pre_key->B = dh->pub;
+  pre_key->B = dh_mpi_copy(dh->pub);
 
   uint8_t *serialized = NULL;
   otrv4_assert(dake_pre_key_aprint(&serialized, NULL, pre_key));
@@ -78,7 +78,7 @@ test_dake_pre_key_deserializes(pre_key_fixture_t *f, gconstpointer data) {
 
   dake_pre_key_t *pre_key = dake_pre_key_new(f->profile);
   ec_public_key_copy(pre_key->Y, ecdh->pub);
-  pre_key->B = dh->pub;
+  pre_key->B = dh_mpi_copy(dh->pub);
 
   size_t serialized_len = 0;
   uint8_t *serialized = NULL;

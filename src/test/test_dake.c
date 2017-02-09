@@ -30,7 +30,7 @@ test_dake_protocol() {
   dake_pre_key_t *pre_key = dake_pre_key_new(alice_profile);
 
   ec_public_key_copy(pre_key->Y, alice_ecdh->pub);
-  pre_key->B = alice_dh->pub;
+  pre_key->B = dh_mpi_copy(alice_dh->pub);
 
   //dake_pre_key_serialize()
 
