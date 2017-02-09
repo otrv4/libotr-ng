@@ -96,7 +96,6 @@ bool
 dake_dre_auth_generate_gamma_phi_sigma(const cs_keypair_t our_keypair,
                                        const ec_public_key_t our_ecdh,
                                        const dh_mpi_t our_dh,
-                                       const cs_public_key_t *their_pub,
                                        const user_profile_t *their_profile,
                                        const ec_public_key_t their_ecdh,
                                        const dh_mpi_t their_dh,

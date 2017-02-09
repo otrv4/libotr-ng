@@ -240,7 +240,6 @@ otrv4_in_message_parse(otrv4_in_message_t *target, const string_t message) {
     target->type = IN_MSG_QUERY_STRING;
   } else if (otrv4_message_is_data(message)) {
     target->type = IN_MSG_CYPHERTEXT;
-  printf("message type is cypher text\n");
     size_t dec_len = 0;
     uint8_t *decoded = NULL;
     int res = otrl_base64_otr_decode(message, &decoded, &dec_len);
@@ -373,8 +372,14 @@ serialize_and_encode_pre_key(const dake_pre_key_t* pre_key) {
     return encoded;
 }
 
+static void
+otrv4_generate_ephemeral_keys(otrv4_t *otr) {
+  ec_gen_keypair(otr->our_ecdh);
+  dh_gen_keypair(otr->our_dh);
+}
+
 static otrv4_response_t*
-otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
+otrv4_receive_query_message(otrv4_t *otr, const otrv4_in_message_t *message) {
   user_profile_t *profile = NULL;
 
   otrv4_response_t *response = response_new();
@@ -392,12 +397,9 @@ otrv4_receive_query_string(otrv4_t *otr, const otrv4_in_message_t *message) {
   case OTR_VERSION_4:
     profile = get_my_user_profile(otr);
     otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
-    otrv4_pre_key_set(otr, dake_pre_key_new(profile));
+    otrv4_pre_key_set(otr, dake_pre_key_new(profile)); //TODO: remove
 
-    //generate ephmeral ECDH and DH keys
-    ec_gen_keypair(otr->our_ecdh);
-    dh_gen_keypair(otr->our_dh);
-
+    otrv4_generate_ephemeral_keys(otr);
     ec_public_key_copy(otr->pre_key->Y, otr->our_ecdh->pub);
     otr->pre_key->B = otr->our_dh->pub; //TODO: make a copy?
 
@@ -450,12 +452,44 @@ extract_header(otrv4_header_t *dst, const uint8_t *buffer, const size_t bufflen)
 }
 
 static bool
+otrv4_generate_dre_auth(dake_dre_auth_t **dst, const user_profile_t *sender_profile, const otrv4_t *otr) {
+  user_profile_t *my_profile = get_my_user_profile(otr);
+  dake_dre_auth_t *dre_auth = dake_dre_auth_new(my_profile);
+  free(my_profile);
+
+  if (!dake_dre_auth_generate_gamma_phi_sigma(
+      otr->keypair, otr->our_ecdh->pub, otr->our_dh->pub,
+      sender_profile, otr->their_ecdh, otr->their_dh, dre_auth
+      )) {
+    free(dre_auth);
+    return false;
+  }
+
+  *dst = dre_auth;
+  return true;
+}
+
+static inline bool
+serialize_and_encode_dre_auth(string_t *dst, const dake_dre_auth_t *dre_auth) {
+  size_t ser_len = 0;
+  uint8_t *serialized = NULL;
+  if (!dake_dre_auth_aprint(&serialized, &ser_len, dre_auth)) {
+    return false;
+  }
+
+  *dst = otrl_base64_otr_encode(serialized, ser_len);
+  free(serialized);
+
+  return true;
+}
+
+static bool
 otrv4_receive_pre_key(otrv4_response_t *response, uint8_t *buff, size_t buflen, otrv4_t *otr) {
   dake_pre_key_t pre_key;
   if (!dake_pre_key_deserialize(&pre_key, buff, buflen)) {
     return false;
   }
-  
+
   if (otr->state == OTR_STATE_START) {
     if (!dake_pre_key_validate(&pre_key)) {
       return false;
@@ -464,12 +498,19 @@ otrv4_receive_pre_key(otrv4_response_t *response, uint8_t *buff, size_t buflen, 
     ec_public_key_copy(otr->their_ecdh, pre_key.Y);
     otr->their_dh = dh_mpi_copy(pre_key.B);
 
-    //TODO get our profile and replace
-    //dake_dre_auth_t *dre_auth = dake_dre_auth_new(pre_key.sender_profile);
-    //uint8_t *ser_dre_aut = {0};
-    //dake_dre_auth_aprint(uint8_t **dst, size_t *nbytes, const dake_dre_auth_t *dre_auth);
+    dake_dre_auth_t *dre_auth = NULL;
+    otrv4_generate_ephemeral_keys(otr);
+    if (!otrv4_generate_dre_auth(&dre_auth, pre_key.sender_profile, otr)) {
+      return false;
+    }
 
+    if (!serialize_and_encode_dre_auth(&(response->to_send), dre_auth)) {
+      return false;
+    }
+    response->to_display = NULL;
     otr->state = OTR_STATE_ENCRYPTED_MESSAGES;
+
+    free(dre_auth);
   }
 
   return true;
@@ -496,9 +537,12 @@ otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
     return NULL; //ignore this message
   }
 
+  //TODO: how to prevent version rollback?
+
   switch (header.type) {
   case OTR_PRE_KEY_MSG_TYPE:
     //we received a pre key
+    //TODO: Add size for the raw_text
     if (!otrv4_receive_pre_key(response, (uint8_t*) message->raw_text, 1000, otr)) {
       return NULL;
     }
@@ -533,7 +577,7 @@ otrv4_response_t*
 otrv4_receive_message(otrv4_t *otr, const string_t message) {
   otrv4_in_message_t *input = otrv4_in_message_new();
   if (input == NULL) {
-      return NULL;
+    return NULL;
   }
 
   otrv4_in_message_parse(input, message);
@@ -549,7 +593,7 @@ otrv4_receive_message(otrv4_t *otr, const string_t message) {
     break;
 
   case IN_MSG_QUERY_STRING:
-    response = otrv4_receive_query_string(otr, input);
+    response = otrv4_receive_query_message(otr, input);
     break;
 
   case IN_MSG_CYPHERTEXT:

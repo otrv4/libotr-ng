@@ -84,7 +84,7 @@ test_dake_generate_gamma_phi_sigma() {
 
   //Alice generates gamma, sigma and phi
   ok = dake_dre_auth_generate_gamma_phi_sigma(cs_alice, ecdh_alice->pub, dh_alice->pub,
-      cs_bob->pub, profile_bob, ecdh_bob->pub, dh_bob->pub, dre_auth);
+      profile_bob, ecdh_bob->pub, dh_bob->pub, dre_auth);
   otrv4_assert(ok);
 
   // Bob will validate Alice's profile, ephemeral keys from DRE-AUTH, gamma,

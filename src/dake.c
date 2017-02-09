@@ -374,13 +374,12 @@ bool
 dake_dre_auth_generate_gamma_phi_sigma(const cs_keypair_t our_keypair,
                                        const ec_public_key_t our_ecdh,
                                        const dh_mpi_t our_dh,
-                                       const cs_public_key_t *their_pub,
                                        const user_profile_t *their_profile,
                                        const ec_public_key_t their_ecdh,
                                        const dh_mpi_t their_dh,
                                        dake_dre_auth_t *dre_auth) {
   dr_cs_symmetric_key_t k;
-  if (!dake_dre_auth_generate_gamma(k, their_pub, dre_auth)){
+  if (!dake_dre_auth_generate_gamma(k, their_profile->pub_key, dre_auth)){
     return false;
   }
 
@@ -398,7 +397,7 @@ dake_dre_auth_generate_gamma_phi_sigma(const cs_keypair_t our_keypair,
   }
   free(phi_msg);
 
-  if (!dake_dre_auth_generate_sigma(their_profile, their_ecdh, their_dh, our_keypair, their_pub, dre_auth)) {
+  if (!dake_dre_auth_generate_sigma(their_profile, their_ecdh, their_dh, our_keypair, their_profile->pub_key, dre_auth)) {
     return false;
   }
 
