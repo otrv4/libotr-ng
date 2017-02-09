@@ -147,7 +147,6 @@ bool
 dake_pre_key_validate(const dake_pre_key_t *pre_key) {
   ec_point_t y;
   if (!ec_point_deserialize(y, pre_key->Y)) {
-    printf("could not deserialize Y\n");
     return false;
   }
 
@@ -355,13 +354,12 @@ dake_dre_auth_generate_sigma(const user_profile_t *their_profile,
 
   if (!dake_dre_auth_generate_sigma_message(&sigma_msg, NULL,
       their_profile, their_ecdh, their_dh, dre_auth)) {
-    return false;
+    goto dake_dre_auth_generate_sigma_error;
   }
 
   ec_point_t their_ephemeral;
   if(!ec_point_deserialize(their_ephemeral, their_ecdh)) {
-    free(sigma_msg);
-    return false;
+    goto dake_dre_auth_generate_sigma_error;
   }
 
   ring_signature_auth(dre_auth->sigma,
@@ -369,6 +367,10 @@ dake_dre_auth_generate_sigma(const user_profile_t *their_profile,
 
   free(sigma_msg);
   return true;
+
+dake_dre_auth_generate_sigma_error:
+  free(sigma_msg);
+  return false;
 }
 
 bool
@@ -387,8 +389,7 @@ dake_dre_auth_generate_gamma_phi_sigma(const cs_keypair_t our_keypair,
   uint8_t *phi_msg = NULL;
   size_t phi_msg_len = 0;
   if (!dake_dre_auth_generate_phi_message(&phi_msg, &phi_msg_len,
-      dre_auth->profile, our_ecdh, our_dh,
-      their_profile, their_ecdh, their_dh)) {
+      dre_auth->profile, our_ecdh, our_dh, their_profile, their_ecdh, their_dh)) {
     return false;
   }
 

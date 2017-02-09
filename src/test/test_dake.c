@@ -26,6 +26,7 @@ test_dake_protocol() {
 
   // Alice send pre key
   user_profile_t *alice_profile = user_profile_new("4");
+  alice_profile->expires = time(NULL) + 60 * 60;
   user_profile_sign(alice_profile, alice_cramer_shoup);
   dake_pre_key_t *pre_key = dake_pre_key_new(alice_profile);
 
@@ -73,10 +74,11 @@ test_dake_generate_gamma_phi_sigma() {
   dh_keypair_generate(dh_bob);
   
   user_profile_t *profile_alice = user_profile_new("4");
-  profile_alice->expires = time(NULL) + 1;
+  profile_alice->expires = time(NULL) + 60 * 60;
   otrv4_assert(user_profile_sign(profile_alice, cs_alice));
 
   user_profile_t *profile_bob = user_profile_new("4");
+  profile_bob->expires = time(NULL) + 60 * 60;
   otrv4_assert(user_profile_sign(profile_bob, cs_bob));
 
   //Generate DRE-AUTH to be serialized
@@ -110,6 +112,7 @@ test_dake_dre_auth_serialize() {
   dh_keypair_generate(our_dh);
   
   user_profile_t *our_profile = user_profile_new("4");
+  our_profile->expires = time(NULL) + 60 * 60;
   user_profile_sign(our_profile, our_cramer_shoup);
 
   //Generate DRE-AUTH to be serialized
@@ -183,6 +186,7 @@ test_dake_dre_auth_deserialize() {
   cs_keypair_generate(our_cramer_shoup);
 
   user_profile_t *our_profile = user_profile_new("4");
+  our_profile->expires = time(NULL) + 60 * 60;
   user_profile_sign(our_profile, our_cramer_shoup);
   dake_dre_auth_t *dre_auth = dake_dre_auth_new(our_profile);
 

@@ -17,8 +17,8 @@ otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
 
 void
 otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  //cs_keypair_destroy();
   otrv4_free(otrv4_fixture->otr);
+  cs_keypair_destroy(otrv4_fixture->keypair);
 }
 
 
@@ -33,7 +33,7 @@ pre_key_fixture_setup(pre_key_fixture_t *fixture, gconstpointer user_data) {
   cs_keypair_generate(fixture->keypair);
   fixture->profile = user_profile_new("4");
   otrv4_assert(fixture->profile != NULL);
-  fixture->profile->expires = time(NULL) + 1;
+  fixture->profile->expires = time(NULL) + 60 * 60;
   otrv4_assert(user_profile_sign(fixture->profile, fixture->keypair));
 }
 
