@@ -3,8 +3,8 @@
 void
 ed448_test_ecdh() {
   ec_keypair_t alice, bob; 
-  ec_gen_keypair(alice);
-  ec_gen_keypair(bob);
+  ec_keypair_generate(alice);
+  ec_keypair_generate(bob);
 
   uint8_t shared1[1234],shared2[1234];
 

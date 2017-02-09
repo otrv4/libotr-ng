@@ -374,7 +374,7 @@ serialize_and_encode_pre_key(const dake_pre_key_t* pre_key) {
 
 static void
 otrv4_generate_ephemeral_keys(otrv4_t *otr) {
-  ec_gen_keypair(otr->our_ecdh);
+  ec_keypair_generate(otr->our_ecdh);
   dh_gen_keypair(otr->our_dh);
 }
 

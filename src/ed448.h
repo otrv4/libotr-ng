@@ -22,7 +22,7 @@ ec_point_copy(ec_point_t dst, const ec_point_t src) {
 }
 
 static inline void
-ec_gen_keypair(ec_keypair_t keypair) {
+ec_keypair_generate(ec_keypair_t keypair) {
   random_bytes(keypair->sym, DECAF_448_SYMMETRIC_KEY_BYTES);
   decaf_448_derive_private_key(keypair, keypair->sym);
 }

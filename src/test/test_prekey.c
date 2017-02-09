@@ -18,7 +18,7 @@ test_dake_pre_key_serializes(pre_key_fixture_t *f, gconstpointer data) {
   dh_keypair_t dh;
   cs_keypair_t cs;
 
-  ec_gen_keypair(ecdh);
+  ec_keypair_generate(ecdh);
   dh_gen_keypair(dh);
   cs_keypair_generate(cs);
 
@@ -71,7 +71,7 @@ test_dake_pre_key_deserializes(pre_key_fixture_t *f, gconstpointer data) {
   ec_keypair_t ecdh;
   dh_keypair_t dh;
 
-  ec_gen_keypair(ecdh);
+  ec_keypair_generate(ecdh);
   dh_gen_keypair(dh);
 
   dake_pre_key_t *pre_key = dake_pre_key_new(f->profile);
@@ -106,7 +106,7 @@ test_dake_pre_key_valid(pre_key_fixture_t *f, gconstpointer data) {
 
   ec_keypair_t ecdh;
   dh_keypair_t dh;
-  ec_gen_keypair(ecdh);
+  ec_keypair_generate(ecdh);
   dh_gen_keypair(dh);
 
   dake_pre_key_t *pre_key = dake_pre_key_new(f->profile);

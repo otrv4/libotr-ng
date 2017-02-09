@@ -16,12 +16,12 @@ test_dake_protocol() {
 
   // Alice
   cs_keypair_generate(alice_cramer_shoup);
-  ec_gen_keypair(alice_ecdh);
+  ec_keypair_generate(alice_ecdh);
   dh_gen_keypair(alice_dh);
 
   // Bob
   cs_keypair_generate(bob_cramer_shoup);
-  ec_gen_keypair(bob_ecdh);
+  ec_keypair_generate(bob_ecdh);
   dh_gen_keypair(bob_dh);
 
   // Alice send pre key
@@ -65,8 +65,8 @@ test_dake_generate_gamma_phi_sigma() {
   cs_keypair_generate(cs_bob);
 
   ec_keypair_t ecdh_alice, ecdh_bob;
-  ec_gen_keypair(ecdh_alice);
-  ec_gen_keypair(ecdh_bob);
+  ec_keypair_generate(ecdh_alice);
+  ec_keypair_generate(ecdh_bob);
 
   dh_keypair_t dh_alice, dh_bob;
   dh_gen_keypair(dh_alice);
@@ -104,7 +104,7 @@ test_dake_dre_auth_serialize() {
   cs_keypair_generate(our_cramer_shoup);
 
   ec_keypair_t our_ecdh;
-  ec_gen_keypair(our_ecdh);
+  ec_keypair_generate(our_ecdh);
 
   dh_keypair_t our_dh;
   dh_gen_keypair(our_dh);
