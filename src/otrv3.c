@@ -11,7 +11,7 @@
 
 #include "otrv3.h"
 
-void
+bool
 otrv3_receive_message(const string_t message) {
-  return; // TODO
+  return true;
 }

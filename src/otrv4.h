@@ -40,16 +40,12 @@ typedef struct {
 } otrv4_t;
 
 typedef enum {
+  IN_MSG_NONE = 0,
   IN_MSG_PLAINTEXT = 1,
   IN_MSG_TAGGED_PLAINTEXT = 2,
   IN_MSG_QUERY_STRING = 3,
   IN_MSG_CYPHERTEXT = 4
-} otrv4_in_message_type;
-
-typedef struct {
-  otrv4_in_message_type type;
-  /*@null@*/ string_t raw_text;
-} otrv4_in_message_t;
+} otrv4_in_message_type_t;
 
 typedef enum {
   OTR_WARN_NONE = 0,
@@ -71,10 +67,13 @@ void otrv4_version_support_v3(otrv4_t *otr);
 void otrv4_build_query_message(/*@unique@*/ string_t *dst, const otrv4_t *otr, const string_t message);
 bool otrv4_build_whitespace_tag(/*@unique@*/ string_t whitespace_tag, const otrv4_t *otr, const string_t message);
 
-void
-otrv4_response_free(otrv4_response_t *response);
-
 otrv4_response_t*
-otrv4_receive_message(otrv4_t *otr, const string_t message);
+otrv4_response_new(void);
+
+void
+otrv4_response_free(otrv4_response_t * response);
+
+bool
+otrv4_receive_message(otrv4_response_t* response, otrv4_t *otr, const string_t received);
 
 #endif

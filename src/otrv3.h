@@ -1,4 +1,6 @@
+#include <stdbool.h>
+
 #include "str.h"
 
-void
+bool
 otrv3_receive_message(const string_t message);

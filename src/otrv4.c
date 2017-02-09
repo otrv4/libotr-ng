@@ -55,7 +55,7 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
     free(otr);
 }
 
-static int
+int
 otrv4_allow_version(const otrv4_t *otr, supportVersion version) {
   return (otr->supported_versions & version);
 }
@@ -73,7 +73,7 @@ otrv4_start(otrv4_t *otr) {
   return true;
 }
 
-static void
+void
 allowed_versions(string_t *dst, const otrv4_t *otr) { //generate a string with all versions allowed
   *dst = malloc(3*sizeof(char));
   if (*dst == NULL) {
@@ -134,7 +134,7 @@ otrv4_build_whitespace_tag(/*@unique@*/ string_t whitespace_tag, const otrv4_t *
   return true;
 }
 
-static bool
+bool
 otrv4_message_contains_tag(const string_t message) {
   if (strstr(message, tag_base)) {
     return true;
@@ -143,36 +143,42 @@ otrv4_message_contains_tag(const string_t message) {
   }
 }
 
-static void
+void
+otrv4_message_to_display_set(otrv4_response_t *response, const string_t message) {
+  response->to_display = otrv4_strdup(message);
+}
+
+bool
 otrv4_message_to_display_without_tag(otrv4_response_t *response, const string_t message, const char *tag_version) {
+  //TODO: this does not remove ALL tags
   size_t msg_length = strlen(message);
   size_t tag_length = strlen(tag_base) + strlen(tag_version);
   size_t chars = msg_length - tag_length;
 
-  //assert(response->to_display == NULL);
-  response->to_display = malloc(chars+1);
-  if(response->to_display == NULL) {
-    fprintf(stderr, "Failed to allocate memory. Chao!\n");
-    exit(EXIT_FAILURE);
+  if (msg_length < tag_length) {
+    return false;
   }
-  strncpy(response->to_display, message+tag_length, chars);
-  response->to_display[chars] = '\0';
+
+  string_t buff = malloc(chars+1);
+  if(buff == NULL) {
+    return false;
+  }
+
+  strncpy(buff, message+tag_length, chars);
+  buff[chars] = '\0';
+
+  otrv4_message_to_display_set(response, buff);
+
+  free(buff);
+  return true;
 }
 
-static void
-otrv4_message_to_display_set(otrv4_response_t *response, const string_t message) {
-  if(response->to_display != NULL) {
-      free(response->to_display);
-  }
-  response->to_display = otrv4_strdup(message);
-}
-
-static void
+void
 otrv4_state_set(otrv4_t *otr, stateFlag target) {
   otr->state = target;
 }
 
-static void
+void
 otrv4_running_version_set_from_tag(otrv4_t *otr, const string_t message) {
   if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
     if (strstr(message, tag_version_v4)) {
@@ -189,7 +195,7 @@ otrv4_running_version_set_from_tag(otrv4_t *otr, const string_t message) {
   }
 }
 
-static bool
+bool
 otrv4_message_is_query(const string_t message) {
   if (strstr(message, query)) {
     return true;
@@ -198,7 +204,7 @@ otrv4_message_is_query(const string_t message) {
   }
 }
 
-static void
+void
 otrv4_running_version_set_from_query(otrv4_t *otr, const string_t message) {
   if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
       if (strstr(message, "4")) {
@@ -215,7 +221,7 @@ otrv4_running_version_set_from_query(otrv4_t *otr, const string_t message) {
   }
 }
 
-static void
+void
 otrv4_pre_key_set(otrv4_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
   if(otr->pre_key != NULL) {
     free(otr->pre_key);
@@ -223,7 +229,7 @@ otrv4_pre_key_set(otrv4_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
   otr->pre_key = pre_key;
 }
 
-static bool
+bool
 otrv4_message_is_data(const string_t message) {
   if (strstr(message, otrv4)) {
     return true;
@@ -232,39 +238,8 @@ otrv4_message_is_data(const string_t message) {
   }
 }
 
-static void
-otrv4_in_message_parse(otrv4_in_message_t *target, const string_t message) {
-  if (otrv4_message_contains_tag(message)) {
-    target->type = IN_MSG_TAGGED_PLAINTEXT;
-  } else if (otrv4_message_is_query(message)) {
-    target->type = IN_MSG_QUERY_STRING;
-  } else if (otrv4_message_is_data(message)) {
-    target->type = IN_MSG_CYPHERTEXT;
-    size_t dec_len = 0;
-    uint8_t *decoded = NULL;
-    int res = otrl_base64_otr_decode(message, &decoded, &dec_len);
-    if (res != 0) {
-      // TODO: handle error
-      printf("result is %d\n", res);
-      return;
-    }
-
-    if (target->raw_text != NULL) {
-      free(target->raw_text);
-    }
-    target->raw_text = (string_t) decoded;
-    return;
-  } else {
-    target->type = IN_MSG_PLAINTEXT;
-  }
-
-  if (target->raw_text != NULL) {
-    free(target->raw_text);
-  }
-  target->raw_text = otrv4_strdup(message);
-}
-
-static otrv4_response_t* response_new(void) {
+otrv4_response_t*
+otrv4_response_new(void) {
   otrv4_response_t *response = malloc(sizeof(otrv4_response_t));
   if (response == NULL) {
     return NULL;
@@ -279,6 +254,9 @@ static otrv4_response_t* response_new(void) {
 
 void
 otrv4_response_free(otrv4_response_t * response) {
+  if (response == NULL) {
+    return;
+  }
 
   free(response->to_send);
   response->to_send = NULL;
@@ -289,48 +267,103 @@ otrv4_response_free(otrv4_response_t * response) {
   free(response);
 }
 
-static otrv4_response_t *
-otrv4_receive_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
-  otrv4_response_t *response = response_new();
-  if (response == NULL) {
-    return NULL;
-  }
+//TODO: Is not receiving a plaintext a problem?
+bool
+otrv4_receive_plaintext(otrv4_response_t *response, const string_t message, const otrv4_t *otr) {
+  otrv4_message_to_display_set(response, message);
 
-  if (message->raw_text == NULL) {
-    return response;
-  }
-
-  otrv4_message_to_display_set(response, message->raw_text);
   if (otr->state != OTR_STATE_START) {
     response->warning = OTR_WARN_RECEIVED_UNENCRYPTED;
   }
 
-  return response;
+  return true;
 }
 
-static otrv4_response_t *
-otrv4_receive_tagged_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) {
-  otrv4_response_t *response = response_new();
-  if (response == NULL) {
+user_profile_t*
+get_my_user_profile(const otrv4_t *otr) {
+  string_t versions = NULL;
+  allowed_versions(&versions, otr);
+
+  user_profile_t *profile = user_profile_new(versions);
+  if (profile == NULL) {
     return NULL;
   }
 
-  if (message->raw_text == NULL) {
-    //TODO: this is an error.
-    return response;
+  free(versions);
+
+  #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; //2 weeks
+  time_t expires = time(NULL);
+  profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
+  user_profile_sign(profile, otr->keypair);
+
+  return profile;
+}
+
+bool
+serialize_and_encode_pre_key(string_t *dst, const dake_pre_key_t* pre_key) {
+  size_t ser_len = 0;
+  uint8_t *serialized = NULL;
+  if (!dake_pre_key_aprint(&serialized, &ser_len, pre_key)) {
+    return false;
   }
 
-  otrv4_running_version_set_from_tag(otr, message->raw_text);
+  *dst = otrl_base64_otr_encode(serialized, ser_len);
+  free(serialized);
+
+  return true;
+}
+
+bool
+otrv4_reply_with_pre_key(otrv4_response_t *response, const otrv4_t *otr) {
+  user_profile_t *profile = get_my_user_profile(otr);
+  if (profile == NULL) {
+    return false;
+  }
+
+  dake_pre_key_t *pre_key = dake_pre_key_new(profile);
+  if (pre_key == NULL) {
+    user_profile_free(profile);
+    return false;
+  }
+
+  ec_public_key_copy(pre_key->Y, otr->our_ecdh->pub);
+  pre_key->B = dh_mpi_copy(otr->our_dh->pub);
+
+  bool ret = serialize_and_encode_pre_key(&response->to_send, pre_key);
+  dake_pre_key_free(pre_key);
+
+  return ret;
+}
+
+void
+otrv4_generate_ephemeral_keys(otrv4_t *otr) {
+  ec_keypair_generate(otr->our_ecdh);
+  dh_keypair_generate(otr->our_dh);
+}
+
+bool
+otrv4_start_dake(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
+  otrv4_generate_ephemeral_keys(otr);
+  otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
+
+  return otrv4_reply_with_pre_key(response, otr);
+}
+
+bool
+otrv4_receive_tagged_plaintext(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
+  otrv4_running_version_set_from_tag(otr, message);
   //remove tag from message
 
   switch (otr->running_version) {
   case OTR_VERSION_4:
-    otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
-    otrv4_message_to_display_without_tag(response, message->raw_text, tag_version_v4);
-    otrv4_pre_key_set(otr, dake_pre_key_new(NULL));
+    if (!otrv4_message_to_display_without_tag(response, message, tag_version_v4)) {
+      return false;
+    }
+
+    return otrv4_start_dake(response, message, otr);
     break;
   case OTR_VERSION_3:
-    otrv3_receive_message(message->raw_text);
+    return otrv3_receive_message(message);
     break;
   default:
     //otrv4_message_to_display_without_tag(otr, message->raw_text, tag_version_v4);
@@ -338,84 +371,26 @@ otrv4_receive_tagged_plaintext(otrv4_t *otr, const otrv4_in_message_t *message) 
     break;
   }
 
-  return response;
+  return false;
 }
 
-static user_profile_t*
-get_my_user_profile(const otrv4_t *otr) {
-  string_t versions = NULL;
-  allowed_versions(&versions, otr);
-
-  user_profile_t *profile = user_profile_new(versions);
-
-  #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; //2 weeks
-  time_t expires = time(NULL);
-  profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
-  user_profile_sign(profile, otr->keypair);
-
-  free(versions);
-  return profile;
-}
-
-static inline string_t
-serialize_and_encode_pre_key(const dake_pre_key_t* pre_key) {
-    size_t ser_len = 0;
-    uint8_t *serialized = NULL;
-    if (!dake_pre_key_aprint(&serialized, &ser_len, pre_key)) {
-      //TODO: error
-      return NULL;
-    }
-
-    string_t encoded = otrl_base64_otr_encode(serialized, ser_len);
-    free(serialized);
-
-    return encoded;
-}
-
-static void
-otrv4_generate_ephemeral_keys(otrv4_t *otr) {
-  ec_keypair_generate(otr->our_ecdh);
-  dh_keypair_generate(otr->our_dh);
-}
-
-static otrv4_response_t*
-otrv4_receive_query_message(otrv4_t *otr, const otrv4_in_message_t *message) {
-  user_profile_t *profile = NULL;
-
-  otrv4_response_t *response = response_new();
-  if (response == NULL) {
-    return NULL;
-  }
-
-  if (message->raw_text == NULL) {
-    return NULL;
-  }
-
-  otrv4_running_version_set_from_query(otr, message->raw_text);
+bool
+otrv4_receive_query_message(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
+  otrv4_running_version_set_from_query(otr, message);
 
   switch (otr->running_version) {
   case OTR_VERSION_4:
-    profile = get_my_user_profile(otr);
-    otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
-    otrv4_pre_key_set(otr, dake_pre_key_new(profile)); //TODO: remove
-
-    otrv4_generate_ephemeral_keys(otr);
-    ec_public_key_copy(otr->pre_key->Y, otr->our_ecdh->pub);
-    otr->pre_key->B = dh_mpi_copy(otr->our_dh->pub);
-
-    response->to_display = NULL;
-    response->to_send = serialize_and_encode_pre_key(otr->pre_key);
+    return otrv4_start_dake(response, message, otr);
     break;
   case OTR_VERSION_3:
-    otrv3_receive_message(message->raw_text);
+    return otrv3_receive_message(message);
     break;
   default:
     //nothing to do
     break;
   }
 
-  user_profile_free(profile);
-  return response;
+  return false;
 }
 
 typedef struct {
@@ -423,7 +398,7 @@ typedef struct {
   uint8_t type;
 } otrv4_header_t;
 
-static bool
+bool
 extract_header(otrv4_header_t *dst, const uint8_t *buffer, const size_t bufflen) {
   //TODO: check the length
 
@@ -451,17 +426,17 @@ extract_header(otrv4_header_t *dst, const uint8_t *buffer, const size_t bufflen)
   return true;
 }
 
-static bool
+bool
 otrv4_generate_dre_auth(dake_dre_auth_t **dst, const user_profile_t *sender_profile, const otrv4_t *otr) {
   user_profile_t *my_profile = get_my_user_profile(otr);
   dake_dre_auth_t *dre_auth = dake_dre_auth_new(my_profile);
-  free(my_profile);
+  user_profile_free(my_profile);
 
   if (!dake_dre_auth_generate_gamma_phi_sigma(
       otr->keypair, otr->our_ecdh->pub, otr->our_dh->pub,
       sender_profile, otr->their_ecdh, otr->their_dh, dre_auth
       )) {
-    free(dre_auth);
+    dake_dre_auth_free(dre_auth);
     return false;
   }
 
@@ -469,7 +444,7 @@ otrv4_generate_dre_auth(dake_dre_auth_t **dst, const user_profile_t *sender_prof
   return true;
 }
 
-static inline bool
+bool
 serialize_and_encode_dre_auth(string_t *dst, const dake_dre_auth_t *dre_auth) {
   size_t ser_len = 0;
   uint8_t *serialized = NULL;
@@ -483,8 +458,8 @@ serialize_and_encode_dre_auth(string_t *dst, const dake_dre_auth_t *dre_auth) {
   return true;
 }
 
-static bool
-otrv4_receive_pre_key(otrv4_response_t *response, uint8_t *buff, size_t buflen, otrv4_t *otr) {
+bool
+otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr) {
   dake_pre_key_t pre_key;
   if (!dake_pre_key_deserialize(&pre_key, buff, buflen)) {
     return false;
@@ -504,47 +479,46 @@ otrv4_receive_pre_key(otrv4_response_t *response, uint8_t *buff, size_t buflen, 
       return false;
     }
 
-    if (!serialize_and_encode_dre_auth(&(response->to_send), dre_auth)) {
+    if (!serialize_and_encode_dre_auth(dst, dre_auth)) {
+      dake_dre_auth_free(dre_auth);
       return false;
     }
-    response->to_display = NULL;
-    otr->state = OTR_STATE_ENCRYPTED_MESSAGES;
 
-    free(dre_auth);
+    otr->state = OTR_STATE_ENCRYPTED_MESSAGES;
+    dake_dre_auth_free(dre_auth);
   }
 
   return true;
 }
 
-static otrv4_response_t *
-otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
-  otrv4_response_t *response = response_new();
-  if (response == NULL) {
-    return NULL;
+bool
+otrv4_receive_data_message(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
+  size_t dec_len = 0;
+  uint8_t *decoded = NULL;
+  int err = otrl_base64_otr_decode(message, &decoded, &dec_len);
+  if (err) {
+    return false;
   }
 
-  if (message->raw_text == NULL) {
-    // ??? is it heartbeat?
-    return NULL;
-  }
-  
   otrv4_header_t header;
-  if (!extract_header(&header, (const uint8_t*) message->raw_text, 3)) { //TODO: we need the len of raw_text
-    return NULL;
+  if (!extract_header(&header, decoded, dec_len)) {
+    free(decoded);
+    return false;
   }
 
   if (!otrv4_allow_version(otr, header.version)) {
-    return NULL; //ignore this message
+    free(decoded);
+    return false;
   }
 
   //TODO: how to prevent version rollback?
+  //TODO: where should we ignore messages to a different instance tag?
 
   switch (header.type) {
   case OTR_PRE_KEY_MSG_TYPE:
-    //we received a pre key
-    //TODO: Add size for the raw_text
-    if (!otrv4_receive_pre_key(response, (uint8_t*) message->raw_text, 1000, otr)) {
-      return NULL;
+    if (!otrv4_receive_pre_key(&response->to_send, decoded, dec_len, otr)) {
+      free(decoded);
+      return false;
     }
     break;
   case OTR_DRE_AUTH_MSG_TYPE:
@@ -553,56 +527,57 @@ otrv4_receive_data_message(otrv4_t *otr, otrv4_in_message_t *message) {
     break;
   default:
     //errror. bad message type
+    return false;
     break;
   }
 
-  return response;
+  free(decoded);
+  return true;
 }
 
-static otrv4_in_message_t *
-otrv4_in_message_new() {
-  otrv4_in_message_t *input = malloc(sizeof(otrv4_in_message_t));
-
-  if (input == NULL) {
-    return NULL;
+otrv4_in_message_type_t
+get_message_type(const string_t message) {
+  if (otrv4_message_contains_tag(message)) {
+    return IN_MSG_TAGGED_PLAINTEXT;
+  } else if (otrv4_message_is_query(message)) {
+    return IN_MSG_QUERY_STRING;
+  } else if (otrv4_message_is_data(message)) { //TODO: not only data, but also DAKE
+    return IN_MSG_CYPHERTEXT;
   }
 
-  input->type = 0;
-  input->raw_text = NULL;
-
-  return input;
+  return IN_MSG_PLAINTEXT;
 }
 
-otrv4_response_t*
-otrv4_receive_message(otrv4_t *otr, const string_t message) {
-  otrv4_in_message_t *input = otrv4_in_message_new();
-  if (input == NULL) {
-    return NULL;
+// Receive a possibly OTR message.
+bool
+otrv4_receive_message(otrv4_response_t* response, otrv4_t *otr, const string_t message) {
+  if (message == NULL) {
+    return false;
   }
+ 
+  otrv4_message_to_display_set(response, NULL);
+  response->to_send = NULL;
 
-  otrv4_in_message_parse(input, message);
-
-  otrv4_response_t *response = NULL;
-  switch (input->type) {
+  switch (get_message_type(message)) {
+  case IN_MSG_NONE:
+    return false;
   case IN_MSG_PLAINTEXT:
-    response = otrv4_receive_plaintext(otr, input);
+    return otrv4_receive_plaintext(response, message, otr);
     break;
 
   case IN_MSG_TAGGED_PLAINTEXT:
-   response =  otrv4_receive_tagged_plaintext(otr, input);
+    return otrv4_receive_tagged_plaintext(response, message, otr);
     break;
 
   case IN_MSG_QUERY_STRING:
-    response = otrv4_receive_query_message(otr, input);
+    return otrv4_receive_query_message(response, message, otr);
     break;
 
   case IN_MSG_CYPHERTEXT:
-    response = otrv4_receive_data_message(otr, input);
+    return otrv4_receive_data_message(response, message, otr);
     break;
   }
 
-  free(input->raw_text);
-  free(input);
-
-  return response;
+  return true;
 }
+
