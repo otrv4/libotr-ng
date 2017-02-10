@@ -132,10 +132,10 @@ test_dake_dre_auth_serialize() {
   memset(dre_auth->gamma, 0xB, sizeof(dr_cs_encrypted_symmetric_key_t));
   memset(dre_auth->sigma, 0xC, sizeof(rs_auth_t));
 
-  uint8_t expected_phi[] = {1, 2, 3, 4, 5};
+  uint8_t expected_phi[] = {0, 0, 0, 5, 1, 2, 3, 4, 5};
   dre_auth->phi = malloc(5);
   dre_auth->phi_len = 5;
-  memcpy(dre_auth->phi, expected_phi, 5);
+  memcpy(dre_auth->phi, expected_phi+4, 5);
 
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;

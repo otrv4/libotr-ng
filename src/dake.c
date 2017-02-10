@@ -442,7 +442,7 @@ dake_dre_auth_aprint(uint8_t **dst, size_t *nbytes, const dake_dre_auth_t *dre_a
   cursor += serialize_bytes_array(cursor, dre_auth->gamma, sizeof(dr_cs_encrypted_symmetric_key_t));
   cursor += serialize_bytes_array(cursor, dre_auth->sigma, sizeof(rs_auth_t));
   cursor += serialize_bytes_array(cursor, dre_auth->nonce, NONCE_BYTES);
-  cursor += serialize_bytes_array(cursor, dre_auth->phi, dre_auth->phi_len);
+  cursor += serialize_data(cursor, dre_auth->phi, dre_auth->phi_len);
 
   free(our_profile);
   return true;
