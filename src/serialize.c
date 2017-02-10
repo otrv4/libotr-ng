@@ -43,13 +43,18 @@ serialize_bytes_array(uint8_t *target, const uint8_t *data, int len) {
 }
 
 int
-serialize_mpi(uint8_t *dst, const otr_mpi_t mpi) {
+serialize_data(uint8_t *dst, const uint8_t *data, int len) {
   uint8_t *cursor = dst;
 
-  cursor += serialize_uint32(cursor, mpi->len);
-  cursor += serialize_bytes_array(cursor, mpi->data, mpi->len);
+  cursor += serialize_uint32(cursor, len);
+  cursor += serialize_bytes_array(cursor, data, len);
 
   return cursor - dst;
+}
+
+int
+serialize_mpi(uint8_t *dst, const otr_mpi_t mpi) {
+  return serialize_data(dst, mpi->data, mpi->len);
 }
 
 int

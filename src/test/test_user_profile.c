@@ -36,12 +36,13 @@ test_user_profile_serializes_body() {
   size_t written = 0;
   uint8_t *serialized = NULL;
   otrv4_assert(user_profile_body_aprint(&serialized, &written, profile));
-  g_assert_cmpint(180, ==, written);
+  g_assert_cmpint(184, ==, written);
 
   otrv4_assert_cmpmem(expected_pubkey, serialized, 170);
 
   char expected[] = {
-    0x34, 0x0,                                      // versions supported
+    0x0, 0x0, 0x0, 0x2,                             // versions len
+    0x34, 0x0,                                      // versions data
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0F,        // expires
   };
 

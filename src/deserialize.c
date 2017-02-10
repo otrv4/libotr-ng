@@ -51,6 +51,35 @@ deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t buflen, size_t *nrea
 }
 
 bool
+deserialize_data(uint8_t **dst, const uint8_t *buffer, size_t buflen, size_t *read) {
+  size_t r = 0;
+  uint32_t s = 0;
+
+  //4 bytes len
+  if (!deserialize_uint32(&s, buffer, buflen, &r)) {
+    if (read != NULL) { *read = r; }
+    return false;
+  }
+
+  if (read != NULL) { *read = r; }
+  buflen -= r;
+  if (buflen < s) {
+    return false;
+  }
+
+  uint8_t *t = malloc(s);
+  if (t == NULL) {
+    return false;
+  }
+
+  memcpy(t, buffer+r, s);
+
+  *dst = t;
+  if (read != NULL) { *read += s; }
+  return true; 
+}
+
+bool
 deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer, size_t buflen, size_t *read) {
   otr_mpi_t mpi; // no need to free, because nothing is copied now
 

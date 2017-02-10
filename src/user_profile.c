@@ -67,7 +67,7 @@ user_profile_body_serialize(uint8_t *dst, const user_profile_t *profile) {
   uint8_t *target = dst;
 
   target += serialize_cs_public_key(target, profile->pub_key);  
-  target += serialize_bytes_array(target, (uint8_t*) profile->versions, strlen(profile->versions)+1);
+  target += serialize_data(target, (uint8_t*) profile->versions, strlen(profile->versions)+1);
   target += serialize_uint64(target, profile->expires);
 
   return target - dst;
@@ -77,7 +77,7 @@ user_profile_body_serialize(uint8_t *dst, const user_profile_t *profile) {
 
 bool
 user_profile_body_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *profile) {
-  size_t s = EC_PUBLIC_KEY_BYTES + strlen(profile->versions)+1 + 8;
+  size_t s = EC_PUBLIC_KEY_BYTES + strlen(profile->versions)+1+4 + 8;
 
   uint8_t *buff = malloc(s);
   if (buff == NULL) {
@@ -141,18 +141,11 @@ user_profile_deserialize(user_profile_t *target, const uint8_t *buffer, size_t b
 
   walked += 2+3*56; //TODO
 
-  size_t versions_len = strlen((const char*) buffer+walked);
-  if (versions_len > buflen - walked) {
+  if (!deserialize_data((uint8_t**) &target->versions, buffer+walked, buflen, &read)) {
     goto deserialize_error;
   }
 
-  target->versions = malloc(versions_len+1);
-  if (target->versions == NULL) {
-    goto deserialize_error;
-  }
-  
-  memcpy(target->versions, buffer+walked, versions_len+1);
-  walked += versions_len+1;
+  walked += read;
 
   if (!deserialize_uint64(&target->expires, buffer+walked, buflen-walked, &read)) {
     goto deserialize_error;
