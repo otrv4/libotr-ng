@@ -94,24 +94,27 @@ allowed_versions(string_t *dst, const otrv4_t *otr) { //generate a string with a
 
 void
 otrv4_build_query_message(/*@unique@*/ string_t *query_message, const otrv4_t *otr, const string_t message) {
-  *query_message = malloc(strlen(query)+strlen(message)+4);
-  if (*query_message == NULL) {
+  size_t s = strlen(query)+strlen(message)+4+1;
+  string_t buff = malloc(s);
+  if (buff == NULL) {
     return; //error
   }
 
-  strcpy(*query_message, query);
+  string_t cursor = stpcpy(buff, query);
 
   //TODO: how to use allowed_versions here?
   if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
-    strcat(*query_message, "4");
+    *cursor++ = '4';
   }
 
   if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
-    strcat(*query_message, "3");
+    *cursor++ = '3';
   }
 
-  strcat(*query_message, "? ");
-  strcat(*query_message, message);
+  cursor = stpcpy(cursor, "? ");
+  stpcpy(cursor, message);
+
+  *query_message = buff;
 }
 
 //TODO: should this care about UTF8?

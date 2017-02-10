@@ -134,7 +134,7 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
     return true;
 }
 
-static bool
+bool
 not_expired(time_t expires) {
   if (difftime(expires, time(NULL)) > 0) {
     return true;
@@ -192,7 +192,7 @@ dake_dre_auth_free(dake_dre_auth_t *dre_auth) {
   dre_auth->phi_len = 0;
 }
 
-static bool
+bool
 dake_dre_auth_generate_gamma(dr_cs_symmetric_key_t k,
                              const cs_public_key_t *their_pub,
                              dake_dre_auth_t *dre_auth) {
@@ -204,7 +204,7 @@ dake_dre_auth_generate_gamma(dr_cs_symmetric_key_t k,
   return true;
 }
 
-static bool
+bool
 dake_dre_auth_generate_phi_message(uint8_t **dst, size_t *dst_len,
                                    const user_profile_t *our_profile,
                                    const ec_public_key_t our_ecdh,
@@ -213,7 +213,7 @@ dake_dre_auth_generate_phi_message(uint8_t **dst, size_t *dst_len,
                                    const ec_public_key_t their_ecdh,
                                    const dh_mpi_t their_dh) {
 
-  *dst = NULL;
+  uint8_t *buff = NULL;
   size_t our_profile_len = 0, their_profile_len = 0;
   uint8_t *our_profile_buff = NULL, *their_profile_buff = NULL;
 
@@ -230,14 +230,12 @@ dake_dre_auth_generate_phi_message(uint8_t **dst, size_t *dst_len,
                    + 2*sizeof(ec_public_key_t) \
                    + 2*DH3072_MOD_LEN_BYTES;
 
-  *dst = malloc(msg_len);
-  if (*dst == NULL) {
+  buff = malloc(msg_len);
+  if (buff == NULL) {
     goto generate_phi_message_error;
   }
 
-  if (dst_len != NULL) { *dst_len = msg_len; }
-
-  uint8_t *cursor = *dst;
+  uint8_t *cursor = buff;
   cursor += serialize_bytes_array(cursor, their_profile_buff, their_profile_len);
   cursor += serialize_bytes_array(cursor, our_profile_buff, our_profile_len);
   cursor += serialize_ec_public_key(cursor, their_ecdh);
@@ -245,16 +243,21 @@ dake_dre_auth_generate_phi_message(uint8_t **dst, size_t *dst_len,
   cursor += serialize_dh_public_key(cursor, their_dh);
   cursor += serialize_dh_public_key(cursor, our_dh);
 
+  free(our_profile_buff);
+  free(their_profile_buff);
+
+  *dst = buff;
+  if (dst_len != NULL) { *dst_len = msg_len; }
   return true;
 
 generate_phi_message_error:
-    free(our_profile_buff);
-    free(their_profile_buff);
-    free(*dst);
-    return false;
+  free(buff);
+  free(our_profile_buff);
+  free(their_profile_buff);
+  return false;
 }
 
-static bool
+bool
 sha3_256(uint8_t *dst, size_t dst_len, const uint8_t *src, size_t src_len) {
   if (gcry_md_get_algo_dlen(GCRY_MD_SHA3_256) != dst_len) {
     return false;
@@ -264,18 +267,12 @@ sha3_256(uint8_t *dst, size_t dst_len, const uint8_t *src, size_t src_len) {
   return true;
 }
 
-static bool
+bool
 dake_dre_auth_generate_phi(const uint8_t *phi_msg, const size_t phi_msg_len,
                            const dr_cs_symmetric_key_t k,
                            dake_dre_auth_t *dre_auth) {
-
-  size_t s = crypto_secretbox_MACBYTES + phi_msg_len;
-  dre_auth->phi = malloc(s);
-  if (dre_auth->phi == NULL) {
-    return false;
-  }
-
-  dre_auth->phi_len = s;
+  dre_auth->phi = NULL;
+  dre_auth->phi_len = 0;
 
   uint8_t enc_key[crypto_secretbox_KEYBYTES];
   memset(enc_key, 0, crypto_secretbox_KEYBYTES);
@@ -283,28 +280,33 @@ dake_dre_auth_generate_phi(const uint8_t *phi_msg, const size_t phi_msg_len,
     return false;
   }
 
-  random_bytes(dre_auth->nonce, NONCE_BYTES);
-  if(-1 == crypto_secretbox_easy(dre_auth->phi, phi_msg, phi_msg_len, dre_auth->nonce, (unsigned char*) enc_key)) {
-    free(dre_auth->phi);
-    dre_auth->phi = NULL;
-    dre_auth->phi_len = 0;
+  size_t s = crypto_secretbox_MACBYTES + phi_msg_len;
+  uint8_t *buff = malloc(s);
+  if (buff == NULL) {
+    return false;
+  }
 
+  random_bytes(dre_auth->nonce, NONCE_BYTES);
+  if(-1 == crypto_secretbox_easy(buff, phi_msg, phi_msg_len, dre_auth->nonce, (unsigned char*) enc_key)) {
+    free(buff);
     memset(enc_key, 0, crypto_secretbox_KEYBYTES);
     return false;
   }
 
+  dre_auth->phi = buff;
+  dre_auth->phi_len = s;
   memset(enc_key, 0, crypto_secretbox_KEYBYTES);
   return true;
 }
 
-static bool
+bool
 dake_dre_auth_generate_sigma_message(uint8_t **dst, size_t *dst_len,
                                      const user_profile_t *their_profile,
                                      const ec_public_key_t their_ecdh,
                                      const dh_mpi_t their_dh,
                                      const dake_dre_auth_t *dre_auth) {
   size_t our_profile_len = 0, their_profile_len = 0;
-  uint8_t *our_profile_buff = NULL, *their_profile_buff = NULL;
+  uint8_t *our_profile_buff = NULL, *their_profile_buff = NULL, *buff = NULL;
 
   if (!user_profile_aprint(&our_profile_buff, &our_profile_len, dre_auth->profile)) {
     goto generate_sigma_message_error;
@@ -320,14 +322,15 @@ dake_dre_auth_generate_sigma_message(uint8_t **dst, size_t *dst_len,
              + DH3072_MOD_LEN_BYTES \
              + sizeof(dre_auth->gamma);
 
-  *dst = malloc(s);
-  if (*dst == NULL) {
+  buff = malloc(s);
+  if (buff == NULL) {
     goto generate_sigma_message_error;
   }
 
+  *dst = buff;
   if (dst_len != NULL) { *dst_len = s; }
 
-  uint8_t *cursor = *dst;
+  uint8_t *cursor = buff;
   cursor += serialize_bytes_array(cursor, their_profile_buff, their_profile_len);
   cursor += serialize_bytes_array(cursor, our_profile_buff, our_profile_len);
   cursor += serialize_ec_public_key(cursor, their_ecdh);
@@ -341,10 +344,11 @@ dake_dre_auth_generate_sigma_message(uint8_t **dst, size_t *dst_len,
 generate_sigma_message_error:
   free(our_profile_buff);
   free(their_profile_buff);
+  free(buff);
   return false;
 }
 
-static bool
+bool
 dake_dre_auth_generate_sigma(const user_profile_t *their_profile,
                              const ec_public_key_t their_ecdh,
                              const dh_mpi_t their_dh,
@@ -447,7 +451,7 @@ dake_dre_auth_deserialize(dake_dre_auth_t *target, uint8_t *data) {
     return;
 }
 
-static bool
+bool
 dake_dre_auth_verify_sigma(const user_profile_t *their_profile,
                            const user_profile_t *our_profile,
                            const ec_public_key_t our_ecdh_pub,
@@ -496,6 +500,7 @@ dake_dre_auth_validate(const user_profile_t *our_profile,
   }
 
   if (crypto_secretbox_open_easy(phi_msg, dre_auth->phi, dre_auth->phi_len, dre_auth->nonce, enc_key) != 0) {
+    free(phi_msg);
     return false; 
   }
 

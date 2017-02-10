@@ -3,9 +3,10 @@
 
 void
 test_ser_deser_uint() {
-  size_t read = 0;
-  uint8_t buf[8] = { 0 };
   const uint8_t ser[8] = { 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0 };
+
+  size_t read = 0;
+  uint8_t buf[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
   serialize_uint8(buf, 0x12);
   otrv4_assert_cmpmem(buf, ser, 1);

@@ -20,6 +20,7 @@ user_profile_new(const string_t versions) {
     return NULL;
   }
 
+  profile->expires = 0;
   profile->versions = otrv4_strdup(versions);
   memset(profile->signature, 0, sizeof(ec_signature_t));
   otr_mpi_init(profile->transitional_signature);
@@ -68,19 +69,21 @@ user_profile_body_serialize(uint8_t *dst, const user_profile_t *profile) {
   return target - dst;
 }
 
-#define EC_PUBLIC_KEY_BYTES 2+3*56
+#define EC_PUBLIC_KEY_BYTES (2+3*56)
 
 bool
 user_profile_body_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *profile) {
   size_t s = EC_PUBLIC_KEY_BYTES + strlen(profile->versions)+1 + 8;
 
-  *dst = malloc(s);
-  if (*dst == NULL) {
+  uint8_t *buff = malloc(s);
+  if (buff == NULL) {
     return false;
   }
 
+  user_profile_body_serialize(buff, profile);
+
+  *dst = buff;
   if (nbytes != NULL) { *nbytes = s; }
-  user_profile_body_serialize(*dst, profile);
 
   return true;
 }
@@ -88,6 +91,7 @@ user_profile_body_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *pr
 bool
 user_profile_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *profile) {
   //TODO: should it check if the profile is signed?
+  uint8_t *buff = NULL;
 
   otr_mpi_t signature_mpi;
   otr_mpi_set(signature_mpi, profile->signature, sizeof(ec_signature_t));
@@ -99,18 +103,21 @@ user_profile_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *profile
   }
 
   size_t s = body_len + 4+signature_mpi->len + 4+profile->transitional_signature->len;
-  *dst = malloc(s);
-  if (*dst == NULL) {
+  buff = malloc(s);
+  if (buff == NULL) {
+    free(body);
     return false;
   }
 
+  uint8_t *cursor = buff;
+  cursor += serialize_bytes_array(cursor, body, body_len);
+  cursor += serialize_mpi(cursor, signature_mpi);
+  cursor += serialize_mpi(cursor, profile->transitional_signature);
+
+  *dst = buff;
   if (nbytes != NULL) { *nbytes = s; }
 
-  uint8_t *target = *dst;
-  target += serialize_bytes_array(target, body, body_len);
-  target += serialize_mpi(target, signature_mpi);
-  target += serialize_mpi(target, profile->transitional_signature);
-
+  free(body);
   return true;
 }
 

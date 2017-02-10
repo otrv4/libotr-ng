@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <libdecaf/decaf.h>
 
+#include "../str.h"
 #include "../ed448.h"
 
 #define WITH_FIXTURE(_p, _c, _t, _f) \
@@ -10,15 +11,15 @@
 
 static char*
 otrv4_memdump(const uint8_t *src, size_t len) {
-  //each char is represented by 0x00,
-  char *buff = malloc(len*6+1 + len/8);
+  if (src == NULL) {
+    return otrv4_strdup("(NULL)");
+  }
+
+  //each char is represented by "0x00, "
+  size_t s = len*6 + len/8 + 1;
+  char *buff = malloc(s);
   char *cursor = buff;
   int i = 0;
-
-  if (src == NULL) {
-    sprintf(buff, "(NULL)");
-    return buff;
-  }
 
   for (i = 0; i < len-1; i++) {
     if (i % 8 == 0) { cursor += sprintf(cursor, "\n"); }
