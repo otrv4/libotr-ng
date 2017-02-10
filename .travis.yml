@@ -32,4 +32,4 @@ script:
   - export CXXFLAGS="-g -ggdb3 -O0"
   - export LDFLAGS="-g -ggdb3 -O0"
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-  - ./autogen.sh && ./configure --disable-shared && make ci
+  - ./autogen.sh && ./configure && make ci
