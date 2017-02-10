@@ -228,7 +228,7 @@ dake_dre_auth_generate_phi_message(uint8_t **dst, size_t *dst_len,
   size_t msg_len = our_profile_len \
                    + their_profile_len \
                    + 2*sizeof(ec_public_key_t) \
-                   + 2*DH3072_MOD_LEN_BYTES;
+                   + 2*DH_MPI_BYTES;
 
   buff = malloc(msg_len);
   if (buff == NULL) {
@@ -319,7 +319,7 @@ dake_dre_auth_generate_sigma_message(uint8_t **dst, size_t *dst_len,
   size_t s = our_profile_len      \
              + their_profile_len  \
              + sizeof(ec_public_key_t) \
-             + DH3072_MOD_LEN_BYTES \
+             + DH_MPI_BYTES \
              + sizeof(dre_auth->gamma);
 
   buff = malloc(s);

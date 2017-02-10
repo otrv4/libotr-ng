@@ -8,6 +8,7 @@
 #define DH_KEY_SIZE 80
 #define DH3072_MOD_LEN_BITS 3072
 #define DH3072_MOD_LEN_BYTES 384
+#define DH_MPI_BYTES (4+DH3072_MOD_LEN_BYTES)
 
 typedef gcry_mpi_t dh_mpi_t;
 typedef dh_mpi_t dh_private_key_t, dh_public_key_t;

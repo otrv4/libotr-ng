@@ -13,9 +13,9 @@
 
 #define NONCE_BYTES crypto_secretbox_NONCEBYTES
 
-#define AUTH_BYTES 6*DECAF_448_SCALAR_BYTES
+#define AUTH_BYTES (6*DECAF_448_SCALAR_BYTES)
 
-#define DAKE_HEADER_BYTES 2+1+4+4
+#define DAKE_HEADER_BYTES (2+1+4+4)
 
 //size of PRE_KEY_MESSAGE without user_profile
 #define PRE_KEY_MIN_BYTES DAKE_HEADER_BYTES \
