@@ -80,7 +80,9 @@ serialize_dh_public_key(uint8_t *dst, const dh_public_key_t pub) {
   //gcry_mpi_print with a different format, maybe?
   otr_mpi_t mpi;
   otr_mpi_set(mpi, buf, written);
-  return serialize_mpi(dst, mpi);
+  int s = serialize_mpi(dst, mpi);
+  otr_mpi_free(mpi);
+  return s;
 }
 
 int

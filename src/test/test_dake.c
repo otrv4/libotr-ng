@@ -83,6 +83,7 @@ test_dake_generate_gamma_phi_sigma() {
 
   //Generate DRE-AUTH to be serialized
   dake_dre_auth_t *dre_auth = dake_dre_auth_new(profile_alice);
+  otrv4_assert(dre_auth);
 
   //Alice generates gamma, sigma and phi
   ok = dake_dre_auth_generate_gamma_phi_sigma(cs_alice, ecdh_alice->pub, dh_alice->pub,
@@ -93,6 +94,12 @@ test_dake_generate_gamma_phi_sigma() {
   // sigma and phi
   ok = dake_dre_auth_validate(profile_bob, cs_bob, ecdh_bob->pub, dh_bob->pub, dre_auth);
   otrv4_assert(ok);
+
+  user_profile_free(profile_alice);
+  user_profile_free(profile_bob);
+  dake_dre_auth_free(dre_auth);
+  dh_keypair_destroy(dh_alice);
+  dh_keypair_destroy(dh_bob);
 }
 
 void
@@ -117,6 +124,7 @@ test_dake_dre_auth_serialize() {
 
   //Generate DRE-AUTH to be serialized
   dake_dre_auth_t *dre_auth = dake_dre_auth_new(our_profile);
+  user_profile_free(our_profile);
   dre_auth->sender_instance_tag = 1;
   dre_auth->receiver_instance_tag = 2;
 

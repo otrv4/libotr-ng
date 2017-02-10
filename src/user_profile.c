@@ -44,17 +44,21 @@ user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
 }
 
 void
-user_profile_free(user_profile_t *profile) {
+user_profile_destroy(user_profile_t *profile) {
   if (profile == NULL) {
     return;
   }
 
   //free the pubkey
-
   free(profile->versions);
   profile->versions = NULL;
-  otr_mpi_free(profile->transitional_signature);
 
+  otr_mpi_free(profile->transitional_signature);
+}
+
+void
+user_profile_free(user_profile_t *profile) {
+  user_profile_destroy(profile);
   free(profile);
 }
 
@@ -92,19 +96,19 @@ bool
 user_profile_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *profile) {
   //TODO: should it check if the profile is signed?
   uint8_t *buff = NULL;
-
-  otr_mpi_t signature_mpi;
-  otr_mpi_set(signature_mpi, profile->signature, sizeof(ec_signature_t));
-
   size_t body_len = 0;
   uint8_t *body = NULL;
   if (!user_profile_body_aprint(&body, &body_len, profile)) {
     return false;
   }
 
+  otr_mpi_t signature_mpi;
+  otr_mpi_set(signature_mpi, profile->signature, sizeof(ec_signature_t));
+
   size_t s = body_len + 4+signature_mpi->len + 4+profile->transitional_signature->len;
   buff = malloc(s);
   if (buff == NULL) {
+    otr_mpi_free(signature_mpi);
     free(body);
     return false;
   }
@@ -117,6 +121,7 @@ user_profile_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *profile
   *dst = buff;
   if (nbytes != NULL) { *nbytes = s; }
 
+  otr_mpi_free(signature_mpi);
   free(body);
   return true;
 }
@@ -195,6 +200,7 @@ user_profile_sign(user_profile_t *profile, const cs_keypair_t keypair) {
   ec_sign(profile->signature, sig_key, body, body_len);
   ec_keypair_destroy(sig_key);
 
+  free(body);
   return true;
 }
 

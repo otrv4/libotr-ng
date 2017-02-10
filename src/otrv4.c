@@ -335,6 +335,7 @@ otrv4_reply_with_pre_key(otrv4_response_t *response, const otrv4_t *otr) {
   bool ret = serialize_and_encode_pre_key(&response->to_send, pre_key);
   dake_pre_key_free(pre_key);
 
+  user_profile_free(profile);
   return ret;
 }
 

@@ -183,6 +183,8 @@ dake_dre_auth_new(const user_profile_t *profile) {
 
 void
 dake_dre_auth_free(dake_dre_auth_t *dre_auth) {
+  user_profile_destroy(dre_auth->profile);
+
   memset(dre_auth->nonce, 0, NONCE_BYTES);
   memset(dre_auth->gamma, 0, sizeof(dr_cs_encrypted_symmetric_key_t));
   memset(dre_auth->sigma, 0, sizeof(rs_auth_t));
@@ -190,6 +192,8 @@ dake_dre_auth_free(dake_dre_auth_t *dre_auth) {
   free(dre_auth->phi);
   dre_auth->phi = NULL;
   dre_auth->phi_len = 0;
+
+  free(dre_auth);
 }
 
 bool

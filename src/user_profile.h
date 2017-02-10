@@ -28,6 +28,9 @@ void
 user_profile_copy(user_profile_t *dst, const user_profile_t *src);
 
 void
+user_profile_destroy(user_profile_t *profile);
+
+void
 user_profile_free(user_profile_t *profile);
 
 bool
