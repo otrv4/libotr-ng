@@ -423,7 +423,7 @@ dake_dre_auth_aprint(uint8_t **dst, size_t *nbytes, const dake_dre_auth_t *dre_a
     return false;
   }
 
-  size_t s = DRE_AUTH_MIN_BYTES + our_profile_len + dre_auth->phi_len;
+  size_t s = DRE_AUTH_MIN_BYTES + our_profile_len + dre_auth->phi_len + 4;
   *dst = malloc(s);
   if (*dst == NULL) {
     free(our_profile);

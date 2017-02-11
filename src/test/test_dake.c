@@ -147,7 +147,7 @@ test_dake_dre_auth_serialize() {
   ok = user_profile_aprint(&user_profile_serialized, &user_profile_len, dre_auth->profile);
   otrv4_assert(ok);
 
-  size_t expected_len = DRE_AUTH_MIN_BYTES+user_profile_len+dre_auth->phi_len;
+  size_t expected_len = DRE_AUTH_MIN_BYTES+user_profile_len+dre_auth->phi_len+4;
   g_assert_cmpint(expected_len, ==, serialized_len);
 
   uint8_t expected_header[] = {
