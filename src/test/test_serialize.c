@@ -45,6 +45,14 @@ test_ser_deser_uint() {
 }
 
 void
+test_serialize_deserialize_data() {
+  uint8_t src[5] = {1, 2 ,3, 4, 5};  
+  uint8_t *dst = malloc(9);
+  otrv4_assert(dst);
+  g_assert_cmpint(9, ==, serialize_data(dst, src, 5));
+}
+
+void
 test_ser_des_cs_public_key() {
   cs_keypair_t keypair, deserialized;
   cs_keypair_generate(keypair);

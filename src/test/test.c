@@ -22,6 +22,7 @@ main(int argc, char **argv) {
   g_test_add_func("/dh/serialize", dh_test_serialize);
 
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
+  g_test_add_func("/serialize_and_deserialize/data", test_serialize_deserialize_data);
   g_test_add_func("/serialize_and_deserialize/cramer-shoup", test_ser_des_cs_public_key);
 
   g_test_add_func("/user_profile/create", test_user_profile_create);
