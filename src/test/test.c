@@ -17,7 +17,29 @@ int
 main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
 
-  g_test_add_func("/api/conversation", test_api_conversation);
+  g_test_add_func("/ed448/api", ed448_test_ecdh);
+  g_test_add_func("/dh/api", dh_test_api);
+  g_test_add_func("/dh/serialize", dh_test_serialize);
+
+  g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
+  g_test_add_func("/serialize_and_deserialize/cramer-shoup", test_ser_des_cs_public_key);
+
+  g_test_add_func("/user_profile/create", test_user_profile_create);
+  g_test_add_func("/user_profile/serialize_body", test_user_profile_serializes_body);
+  g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
+  g_test_add_func("/user_profile/deserializes", test_user_profile_deserializes);
+  g_test_add_func("/user_profile/sign_and_verifies", test_user_profile_signs_and_verify);
+
+  WITH_FIXTURE("/dake/pre_key/new", test_dake_pre_key_new, pre_key_fixture_t, pre_key_fixture);
+  WITH_FIXTURE("/dake/pre_key/serializes", test_dake_pre_key_serializes, pre_key_fixture_t, pre_key_fixture);
+  WITH_FIXTURE("/dake/pre_key/deserializes", test_dake_pre_key_deserializes, pre_key_fixture_t, pre_key_fixture);
+  WITH_FIXTURE("/dake/pre_key/valid", test_dake_pre_key_valid, pre_key_fixture_t, pre_key_fixture);
+
+  g_test_add_func("/dake/dre_auth/generate_gamma_phi_sigma", test_dake_generate_gamma_phi_sigma);
+  g_test_add_func("/dake/dre_auth/serialize", test_dake_dre_auth_serialize);
+  g_test_add_func("/dake/protocol", test_dake_protocol);
+
+  g_test_add_func("/key_management/derive_ratchet_keys", test_derive_ratchet_keys);
 
   g_test_add_func("/otrv4/starts_protocol", test_otrv4_starts_protocol);
   g_test_add("/otrv4/version_supports_v34", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_version_supports_v34, otrv4_fixture_teardown );
@@ -32,30 +54,7 @@ main(int argc, char **argv) {
   g_test_add("/otrv4/receives_query_message", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_query_message, otrv4_fixture_teardown);
   g_test_add("/otrv4/receives_query_message_v3", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_query_message_v3, otrv4_fixture_teardown);
 
-  g_test_add_func("/dake/protocol", test_dake_protocol);
-  WITH_FIXTURE("/dake/pre_key/new", test_dake_pre_key_new, pre_key_fixture_t, pre_key_fixture);
-  WITH_FIXTURE("/dake/pre_key/serializes", test_dake_pre_key_serializes, pre_key_fixture_t, pre_key_fixture);
-  WITH_FIXTURE("/dake/pre_key/deserializes", test_dake_pre_key_deserializes, pre_key_fixture_t, pre_key_fixture);
-  WITH_FIXTURE("/dake/pre_key/valid", test_dake_pre_key_valid, pre_key_fixture_t, pre_key_fixture);
-
-  g_test_add_func("/dake/dre_auth/generate_gamma_phi_sigma", test_dake_generate_gamma_phi_sigma);
-  g_test_add_func("/dake/dre_auth/serialize", test_dake_dre_auth_serialize);
-
-
-  g_test_add_func("/user_profile/create", test_user_profile_create);
-  g_test_add_func("/user_profile/serialize_body", test_user_profile_serializes_body);
-  g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
-  g_test_add_func("/user_profile/deserializes", test_user_profile_deserializes);
-  g_test_add_func("/user_profile/sign_and_verifies", test_user_profile_signs_and_verify);
-
-  g_test_add_func("/ed448/api", ed448_test_ecdh);
-
-  g_test_add_func("/dh/api", dh_test_api);
-  g_test_add_func("/dh/serialize", dh_test_serialize);
-
-  g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
-  g_test_add_func("/serialize_and_deserialize/cramer-shoup", test_ser_des_cs_public_key);
-  g_test_add_func("/key_management/derive_ratchet_keys", test_derive_ratchet_keys);
+  g_test_add_func("/api/conversation", test_api_conversation);
 
   return g_test_run();
 }
