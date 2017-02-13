@@ -72,6 +72,9 @@ test_dake_generate_gamma_phi_sigma() {
   dh_keypair_t dh_alice, dh_bob;
   dh_keypair_generate(dh_alice);
   dh_keypair_generate(dh_bob);
+
+  ec_public_key_t received_ecdh_alice;
+  dh_public_key_t received_dh_alice = dh_mpi_new();
   
   user_profile_t *profile_alice = user_profile_new("4");
   profile_alice->expires = time(NULL) + 60 * 60;
@@ -92,9 +95,14 @@ test_dake_generate_gamma_phi_sigma() {
 
   // Bob will validate Alice's profile, ephemeral keys from DRE-AUTH, gamma,
   // sigma and phi
-  ok = dake_dre_auth_validate(profile_bob, cs_bob, ecdh_bob->pub, dh_bob->pub, dre_auth);
+  ok = dake_dre_auth_validate(received_ecdh_alice, &received_dh_alice,
+      profile_bob, cs_bob, ecdh_bob->pub, dh_bob->pub, dre_auth);
   otrv4_assert(ok);
 
+  otrv4_assert_ec_public_key_eq(received_ecdh_alice, ecdh_alice->pub);
+  otrv4_assert_dh_public_key_eq(received_dh_alice, dh_alice->pub);
+
+  dh_mpi_release(received_dh_alice);
   user_profile_free(profile_alice);
   user_profile_free(profile_bob);
   dake_dre_auth_free(dre_auth);
@@ -202,7 +210,7 @@ test_dake_dre_auth_deserialize() {
   otrv4_assert(dake_dre_auth_aprint(&serialized, NULL, dre_auth));
 
   dake_dre_auth_t *des_dre = malloc(sizeof(dake_dre_auth_t));
-  dake_dre_auth_deserialize(des_dre, serialized);
+  dake_dre_auth_deserialize(des_dre, serialized, 0);
 
   g_assert_cmpuint(des_dre->sender_instance_tag, ==, dre_auth->sender_instance_tag);
   g_assert_cmpuint(des_dre->receiver_instance_tag, ==, dre_auth->receiver_instance_tag);

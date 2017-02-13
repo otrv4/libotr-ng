@@ -25,52 +25,9 @@ static const char tag_version_v3[] = {
 static const string_t query = "?OTRv";
 static const string_t otrv4 = "?OTR:";
 
-otrv4_t *
-otrv4_new(cs_keypair_s *keypair) {
-  otrv4_t *otr = malloc(sizeof(otrv4_t));
-  if(otr == NULL) {
-    return NULL;
-  }
-
-  otr->keypair = keypair;
-  otr->state = OTR_STATE_START;
-  otr->supported_versions = OTR_ALLOW_V4;
-  otr->running_version = OTR_VERSION_NONE;
-  otr->pre_key = NULL;
-
-  return otr;
-}
-
-void
-otrv4_free(/*@only@*/ otrv4_t *otr) {
-    if(otr == NULL) {
-        return;
-    }
-
-    if (otr->pre_key != NULL) {
-      dake_pre_key_free(otr->pre_key);
-      otr->pre_key = NULL;
-    }
-
-    free(otr);
-}
-
 int
 otrv4_allow_version(const otrv4_t *otr, supportVersion version) {
   return (otr->supported_versions & version);
-}
-
-void
-otrv4_version_support_v3(otrv4_t *otr) {
-  otr->supported_versions |= OTR_ALLOW_V3;
-}
-
-bool
-otrv4_start(otrv4_t *otr) {
-  otr->state = OTR_STATE_START;
-  otr->supported_versions = OTR_ALLOW_V4;
-
-  return true;
 }
 
 void
@@ -91,6 +48,66 @@ allowed_versions(string_t *dst, const otrv4_t *otr) { //generate a string with a
 
   return;
 }
+
+user_profile_t*
+get_my_user_profile(const otrv4_t *otr) {
+  string_t versions = NULL;
+  allowed_versions(&versions, otr);
+
+  user_profile_t *profile = user_profile_new(versions);
+  if (profile == NULL) {
+    free(versions);
+    return NULL;
+  }
+
+  free(versions);
+
+  #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; //2 weeks
+  time_t expires = time(NULL);
+  profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
+  user_profile_sign(profile, otr->keypair);
+
+  return profile;
+}
+
+otrv4_t *
+otrv4_new(cs_keypair_s *keypair) {
+  otrv4_t *otr = malloc(sizeof(otrv4_t));
+  if(otr == NULL) {
+    return NULL;
+  }
+
+  otr->keypair = keypair;
+  otr->state = OTR_STATE_START;
+  otr->supported_versions = OTR_ALLOW_V4;
+  otr->running_version = OTR_VERSION_NONE;
+  otr->profile = get_my_user_profile(otr);
+
+  return otr;
+}
+
+void
+otrv4_free(/*@only@*/ otrv4_t *otr) {
+  if(otr == NULL) {
+    return;
+  }
+
+  free(otr);
+}
+
+void
+otrv4_version_support_v3(otrv4_t *otr) {
+  otr->supported_versions |= OTR_ALLOW_V3;
+}
+
+bool
+otrv4_start(otrv4_t *otr) {
+  otr->state = OTR_STATE_START;
+  otr->supported_versions = OTR_ALLOW_V4;
+
+  return true;
+}
+
 
 void
 otrv4_build_query_message(/*@unique@*/ string_t *query_message, const otrv4_t *otr, const string_t message) {
@@ -224,14 +241,6 @@ otrv4_running_version_set_from_query(otrv4_t *otr, const string_t message) {
   }
 }
 
-void
-otrv4_pre_key_set(otrv4_t *otr, /*@only@*/ dake_pre_key_t *pre_key) {
-  if(otr->pre_key != NULL) {
-    free(otr->pre_key);
-  }
-  otr->pre_key = pre_key;
-}
-
 bool
 otrv4_message_is_data(const string_t message) {
   if (strstr(message, otrv4)) {
@@ -282,26 +291,6 @@ otrv4_receive_plaintext(otrv4_response_t *response, const string_t message, cons
   return true;
 }
 
-user_profile_t*
-get_my_user_profile(const otrv4_t *otr) {
-  string_t versions = NULL;
-  allowed_versions(&versions, otr);
-
-  user_profile_t *profile = user_profile_new(versions);
-  if (profile == NULL) {
-    return NULL;
-  }
-
-  free(versions);
-
-  #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; //2 weeks
-  time_t expires = time(NULL);
-  profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
-  user_profile_sign(profile, otr->keypair);
-
-  return profile;
-}
-
 bool
 serialize_and_encode_pre_key(string_t *dst, const dake_pre_key_t* pre_key) {
   size_t ser_len = 0;
@@ -318,14 +307,8 @@ serialize_and_encode_pre_key(string_t *dst, const dake_pre_key_t* pre_key) {
 
 bool
 otrv4_reply_with_pre_key(otrv4_response_t *response, const otrv4_t *otr) {
-  user_profile_t *profile = get_my_user_profile(otr);
-  if (profile == NULL) {
-    return false;
-  }
-
-  dake_pre_key_t *pre_key = dake_pre_key_new(profile);
+  dake_pre_key_t *pre_key = dake_pre_key_new(otr->profile);
   if (pre_key == NULL) {
-    user_profile_free(profile);
     return false;
   }
 
@@ -335,7 +318,6 @@ otrv4_reply_with_pre_key(otrv4_response_t *response, const otrv4_t *otr) {
   bool ret = serialize_and_encode_pre_key(&response->to_send, pre_key);
   dake_pre_key_free(pre_key);
 
-  user_profile_free(profile);
   return ret;
 }
 
@@ -432,9 +414,7 @@ extract_header(otrv4_header_t *dst, const uint8_t *buffer, const size_t bufflen)
 
 bool
 otrv4_generate_dre_auth(dake_dre_auth_t **dst, const user_profile_t *sender_profile, const otrv4_t *otr) {
-  user_profile_t *my_profile = get_my_user_profile(otr);
-  dake_dre_auth_t *dre_auth = dake_dre_auth_new(my_profile);
-  user_profile_free(my_profile);
+  dake_dre_auth_t *dre_auth = dake_dre_auth_new(otr->profile);
 
   if (!dake_dre_auth_generate_gamma_phi_sigma(
       otr->keypair, otr->our_ecdh->pub, otr->our_dh->pub,
@@ -496,6 +476,30 @@ otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr)
 }
 
 bool
+otrv4_receive_dre_auth(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr) {
+  if (otr->state != OTR_STATE_AKE_IN_PROGRESS) {
+    return true;
+  }
+
+  dake_dre_auth_t dre_auth;
+  if (!dake_dre_auth_deserialize(&dre_auth, buff, buflen)) {
+    return false;
+  }
+
+  if (!dake_dre_auth_validate(otr->their_ecdh, &otr->their_dh,
+      otr->profile, otr->keypair, otr->our_ecdh->pub,
+      otr->our_dh->pub, &dre_auth)) {
+      printf("validate failed\n");
+    return false;
+  }
+
+  otr->state = OTR_STATE_ENCRYPTED_MESSAGES;
+  *dst = NULL;
+
+  return true;
+}
+
+bool
 otrv4_receive_data_message(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
   size_t dec_len = 0;
   uint8_t *decoded = NULL;
@@ -526,6 +530,10 @@ otrv4_receive_data_message(otrv4_response_t *response, const string_t message, o
     }
     break;
   case OTR_DRE_AUTH_MSG_TYPE:
+    if (!otrv4_receive_dre_auth(&response->to_send, decoded, dec_len, otr)) {
+      free(decoded);
+      return false;
+    }
     break;
   case OTR_DATA_MSG_TYPE:
     break;

@@ -5,7 +5,9 @@
 
 void
 test_otrv4_starts_protocol() {
-  otrv4_t *otr = otrv4_new(NULL);
+  cs_keypair_t keypair;
+  cs_keypair_generate(keypair);
+  otrv4_t *otr = otrv4_new(keypair);
 
   int started = otrv4_start(otr);
 
@@ -13,6 +15,7 @@ test_otrv4_starts_protocol() {
   g_assert_cmpint(otr->state, ==, OTR_STATE_START);
   g_assert_cmpint(otr->supported_versions, ==, OTR_ALLOW_V4);
 
+  cs_keypair_destroy(keypair);
   otrv4_free(otr);
 }
 
@@ -169,7 +172,7 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpoint
 
   //TODO: should base64 decode the message to respond after ?OTR and then
   //deserialize
-  dake_dre_auth_deserialize(dre_auth, (uint8_t*) response->to_send);
+  dake_dre_auth_deserialize(dre_auth, (uint8_t*) response->to_send, 0);
   //TODO: How to assert the pointer is not null without g_assert_nonnull?
   //g_assert_cmpuint(dre_auth, >, 0);
 

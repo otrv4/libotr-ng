@@ -20,6 +20,11 @@ typedef struct {
 void
 dh_init(void);
 
+static inline dh_mpi_t
+dh_mpi_new() {
+  return gcry_mpi_new(DH3072_MOD_LEN_BITS);
+}
+
 bool
 dh_keypair_generate(dh_keypair_t keypair);
 

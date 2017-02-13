@@ -25,7 +25,7 @@ test_api_conversation(void) {
   otrv4_assert(otrv4_receive_message(response_to_alice, bob, query_message));
 
   //Should reply with a pre-key
-  otrv4_assert(response_to_alice);
+  otrv4_assert(bob->state == OTR_STATE_AKE_IN_PROGRESS);
   otrv4_assert(response_to_alice->to_display == NULL);
   otrv4_assert(response_to_alice->to_send);
   otrv4_assert_cmpmem("?OTR:AAQP", response_to_alice->to_send, 9);
@@ -38,10 +38,22 @@ test_api_conversation(void) {
   otrv4_assert_dh_public_key_eq(alice->their_dh, bob->our_dh->pub);
 
   //Should reply with a dre-auth
-  otrv4_assert(response_to_bob);
+  otrv4_assert(alice->state == OTR_STATE_ENCRYPTED_MESSAGES);
   otrv4_assert(response_to_bob->to_display == NULL);
   otrv4_assert(response_to_bob->to_send);
   otrv4_assert_cmpmem("?OTR:AAQA", response_to_bob->to_send, 9);
+
+  //Bob receives DRE-auth
+  otrv4_assert(otrv4_receive_message(response_to_alice, bob, response_to_bob->to_send));
+
+  //Bob has Alice's ephemeral keys
+  otrv4_assert_ec_public_key_eq(bob->their_ecdh, alice->our_ecdh->pub);
+  otrv4_assert_dh_public_key_eq(bob->their_dh, alice->our_dh->pub);
+
+  //There is no reply
+  otrv4_assert(bob->state == OTR_STATE_ENCRYPTED_MESSAGES);
+  otrv4_assert(response_to_alice->to_display == NULL);
+  otrv4_assert(response_to_alice->to_send == NULL);
 
   otrv4_response_free(response_to_alice);
   otrv4_response_free(response_to_bob);

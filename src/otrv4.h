@@ -25,6 +25,7 @@ typedef enum {
 } otrv4_version_t;
 
 typedef struct {
+  user_profile_t *profile;
   cs_keypair_s *keypair;
   stateFlag state;
   int supported_versions;
@@ -35,8 +36,6 @@ typedef struct {
 
   ec_public_key_t their_ecdh;
   dh_public_key_t their_dh;
-  
-  /*@null@*/ dake_pre_key_t *pre_key;
 } otrv4_t;
 
 typedef enum {

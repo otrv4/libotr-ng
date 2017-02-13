@@ -23,6 +23,7 @@ dake_pre_key_new(const user_profile_t *profile) {
 
   pre_key->sender_instance_tag = 0;
   pre_key->receiver_instance_tag = 0;
+  pre_key->profile->versions = NULL;
   user_profile_copy(pre_key->profile, profile);
 
   return pre_key;
@@ -114,10 +115,12 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
     cursor += read;
     len -= read;
 
-    //TODO deserialize_ec_public_key()
-    ec_public_key_copy(dst->Y, cursor);
-    cursor += sizeof(ec_public_key_t);
-    len -= sizeof(ec_public_key_t);
+    if (!deserialize_ec_public_key(dst->Y, cursor, len, &read)) {
+      return false;
+    }
+
+    cursor += read;
+    len -= read;
 
     otr_mpi_t b_mpi; // no need to free, because nothing is copied now
     if (!otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
@@ -449,10 +452,88 @@ dake_dre_auth_aprint(uint8_t **dst, size_t *nbytes, const dake_dre_auth_t *dre_a
 }
 
 
-void
-dake_dre_auth_deserialize(dake_dre_auth_t *target, uint8_t *data) {
-    //TODO
-    return;
+bool
+dake_dre_auth_deserialize(dake_dre_auth_t *dst, uint8_t *buffer, size_t buflen) {
+  const uint8_t *cursor = buffer;
+  int64_t len = buflen;
+  size_t read = 0;
+  
+  uint16_t protocol_version = 0;
+  if(!deserialize_uint16(&protocol_version, cursor, len, &read)) {
+    return false;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (protocol_version != OTR_VERSION) {
+    return false;
+  }
+
+  uint8_t message_type = 0;
+  if(!deserialize_uint8(&message_type, cursor, len, &read)) {
+    return false;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (message_type != OTR_DRE_AUTH_MSG_TYPE) {
+    return false;
+  }
+
+  if(!deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
+    return false;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if(!deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
+    return false;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (!user_profile_deserialize(dst->profile, cursor, len, &read)) {
+    return false;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (!deserialize_bytes_array(dst->gamma, sizeof(dr_cs_encrypted_symmetric_key_t), cursor, len)) {
+    return false;
+  }
+
+  read = sizeof(dr_cs_encrypted_symmetric_key_t);
+  cursor += read;
+  len -= read;
+
+  if (!deserialize_bytes_array(dst->sigma, sizeof(rs_auth_t), cursor, len)) {
+    return false;
+  }
+
+  read = sizeof(rs_auth_t);
+  cursor += read;
+  len -= read;
+
+  if (!deserialize_bytes_array(dst->nonce, NONCE_BYTES, cursor, len)) {
+    return false;
+  }
+
+  read = NONCE_BYTES;
+  cursor += read;
+  len -= read;
+
+  if (!deserialize_data(&dst->phi, cursor, len, &read)) {
+    return false;
+  }
+
+  dst->phi_len = read-4;
+
+  return true;
 }
 
 bool
@@ -474,21 +555,24 @@ dake_dre_auth_verify_sigma(const user_profile_t *their_profile,
   return valid;
 }
 
+//TODO: refactor this
 bool
-dake_dre_auth_validate(const user_profile_t *our_profile,
+dake_dre_auth_validate(ec_public_key_t their_ecdh,
+                       dh_public_key_t *their_dh,
+                       const user_profile_t *our_profile,
                        const cs_keypair_t our_cs_keypair,
                        const ec_public_key_t our_ecdh_pub,
                        const dh_mpi_t our_dh_pub,
                        const dake_dre_auth_t *dre_auth) {
-  bool valid = user_profile_verify_signature(dre_auth->profile);
-  valid &= not_expired(dre_auth->profile->expires);
-
-  // TODO: something Nick said about degenerated keys
-
   //TODO: these validations could be part of otr_t
   dr_cs_symmetric_key_t k;
-  valid &= dake_dre_auth_verify_sigma(dre_auth->profile, our_profile, our_ecdh_pub, our_dh_pub, dre_auth);
-  valid &= dr_cs_decrypt(k, dre_auth->gamma, our_cs_keypair, dre_auth->profile->pub_key);
+  if (!dake_dre_auth_verify_sigma(dre_auth->profile, our_profile, our_ecdh_pub, our_dh_pub, dre_auth)) {
+    return false;
+  }
+
+  if (!dr_cs_decrypt(k, dre_auth->gamma, our_cs_keypair, dre_auth->profile->pub_key)) {
+    return false;
+  }
 
   uint8_t enc_key[crypto_secretbox_KEYBYTES];
   memset(enc_key, 0, crypto_secretbox_KEYBYTES);
@@ -510,32 +594,133 @@ dake_dre_auth_validate(const user_profile_t *our_profile,
 
   memset(enc_key, 0, crypto_secretbox_KEYBYTES);
 
-  //I. deserialize dake_dre_auth_phi_msg_t from phi_msg
-  //- our_profile
-  //- their_profile
-  //- our_ecdh
-  //- their_ecdh
-  //- our_dh
-  //- their_dh
+  //Validate the received encrypted message
 
-  //II. Check if their_ecdh and their_dh are valid
-  //III. Check if our_profile matches with what we have sent.
-  //IV. Check if their_profile matches the one in the DRE-AUTH body
-  //V. Check if our_ecdh matches and has not been used.
-  //VI. Check if our_dh matches and has not been used.
+  uint8_t *cursor = phi_msg;
+  size_t read = 0, len = msg_len;
 
-  //Verify the decripted message
-  //a. Is X ok? are they the same?
-  //b. Is A ok? are they the same?
+  uint8_t *profile_buffer = NULL;
+  size_t profile_len = 0;
 
-  //ec_point_t x;
-  //if (!ec_point_deserialize(x, dre_auth->X)) {
-  //  return false;
-  //}
+  //1) Verify if our_profile is the first in the message.
+  if (!user_profile_aprint(&profile_buffer, &profile_len, our_profile)) {
+    return false;
+  }
 
-  //valid &= ec_point_valid(x);
-  //valid &= dh_mpi_valid(dre_auth->A);
+  if (len < profile_len) {
+    free(phi_msg);
+    free(profile_buffer);
+    return false;
+  }
 
+  if (0 != memcmp(cursor, profile_buffer, profile_len)) {
+    free(phi_msg);
+    free(profile_buffer);
+    return false;
+  }
+
+  cursor += profile_len;
+  len -= profile_len;
+  free(profile_buffer);
+
+  //2) Verify their profile matches the profile transmitted outside of phi
+  if (!user_profile_aprint(&profile_buffer, &profile_len, dre_auth->profile)) {
+    return false;
+  }
+
+  if (len < profile_len) {
+    free(phi_msg);
+    free(profile_buffer);
+    return false;
+  }
+
+  if (0 != memcmp(cursor, profile_buffer, profile_len)) {
+    free(phi_msg);
+    free(profile_buffer);
+    return false;
+  }
+
+  cursor += profile_len;
+  len -= profile_len;
+  free(profile_buffer);
+
+  dh_public_key_t our_dh;
+
+  //3) Verify that Y matches the value previously sent.
+  if (len < sizeof(ec_public_key_t)) {
+    free(phi_msg);
+    return false;
+  }
+
+  if (0 != memcmp(our_ecdh_pub, cursor, sizeof(ec_public_key_t))) {
+    free(phi_msg);
+    return false;
+  }
+
+  cursor += sizeof(ec_public_key_t);
+  len -= sizeof(ec_public_key_t);
+  
+  if (!deserialize_ec_public_key(their_ecdh, cursor, len, &read)) {
+    free(phi_msg);
+    return false;
+  }
+
+  cursor += read;
+  len -= read;
+
+  otr_mpi_t tmp_mpi; // no need to free, because nothing is copied now
+  if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
+    free(phi_msg);
+    return false;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (!dh_mpi_deserialize(&our_dh, tmp_mpi->data, tmp_mpi->len, &read)) {
+    free(phi_msg);
+    return false;
+  }
+
+  cursor += read;
+  len -= read;
+
+  //4) Verify that B matches the value previously sent.
+  if (0 != dh_mpi_cmp(our_dh, our_dh_pub)) {
+    free(phi_msg);
+    dh_mpi_release(our_dh);
+    return false;
+  }
+  dh_mpi_release(our_dh);
+
+  if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
+    free(phi_msg);
+    return false;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (!dh_mpi_deserialize(their_dh, tmp_mpi->data, tmp_mpi->len, &read)) {
+    free(phi_msg);
+    return false;
+  }
   free(phi_msg);
+
+  bool valid = true;
+
+  //5) Verify that the point X received is on curve 448
+  ec_point_t ec_point;
+  valid &= ec_point_deserialize(ec_point, their_ecdh);
+  valid &= ec_point_valid(ec_point);
+
+  //6) Verify that the DH public key A is from the correct group.
+  valid &= dh_mpi_valid(*their_dh);
+
+  //7) Verify their profile is valid (and not expired).
+  valid &= user_profile_verify_signature(dre_auth->profile);
+  valid &= not_expired(dre_auth->profile->expires);
+
+  // TODO: validate something Nick said about degenerated keys
   return valid;
 }

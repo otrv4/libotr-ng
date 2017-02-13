@@ -89,8 +89,8 @@ dake_dre_auth_free(dake_dre_auth_t *dre_auth);
 bool
 dake_dre_auth_aprint(uint8_t **dst, size_t *nbytes, const dake_dre_auth_t *dre_auth);
 
-void
-dake_dre_auth_deserialize(dake_dre_auth_t *target, uint8_t *data);
+bool
+dake_dre_auth_deserialize(dake_dre_auth_t *dst, uint8_t *buffer, size_t buflen);
 
 bool
 dake_dre_auth_generate_gamma_phi_sigma(const cs_keypair_t our_keypair,
@@ -102,7 +102,9 @@ dake_dre_auth_generate_gamma_phi_sigma(const cs_keypair_t our_keypair,
                                        dake_dre_auth_t *dre_auth);
 
 bool
-dake_dre_auth_validate(const user_profile_t *our_profile,
+dake_dre_auth_validate(ec_public_key_t their_ecdh,
+                       dh_public_key_t *their_dh,
+                       const user_profile_t *our_profile,
                        const cs_keypair_t our_cs_keypair,
                        const ec_public_key_t our_ecdh_pub,
                        const dh_mpi_t our_dh_pub,
