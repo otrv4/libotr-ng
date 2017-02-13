@@ -20,8 +20,8 @@ typedef struct _ratchet {
 
 typedef struct {
   int i, j;
-  ratchet_s *head;
   ratchet_s *current;
+  ratchet_s *previous;
 } key_manager_t[1];
 
 void

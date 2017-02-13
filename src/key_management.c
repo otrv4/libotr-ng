@@ -15,8 +15,8 @@ void
 key_manager_init(key_manager_t manager){
   manager->i = 0;
   manager->j = 0;
-  manager->head = NULL;
   manager->current = NULL;
+  manager->previous = NULL;
 }
 
 void
@@ -80,7 +80,6 @@ key_manager_init_ratchet(key_manager_t manager, const shared_secret_t shared) {
   if (!derive_ratchet_keys(ratchet, shared))
     return false;
 
-  manager->head = ratchet;
   manager->current = ratchet;
 
   return true;
