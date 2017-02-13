@@ -2,9 +2,8 @@
 
 void
 test_derive_ratchet_keys() {
-    key_manager_t km;
-    init_key_manager(km);
-    uint8_t shared[56] = {
+    shared_secret_t shared = {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -13,20 +12,19 @@ test_derive_ratchet_keys() {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
-    derive_ratchet_keys(km, shared, sizeof(shared));
-    derive_ratchet_keys(km, shared, sizeof(shared));
+
+    ratchet_t ratchet;
+    derive_ratchet_keys(ratchet, shared);
+
+    root_key_t expected_root_key;
 
     gcry_md_hd_t sha3_512;
-    ratchet_t next_ratchet;
-    uint8_t magic[3] = {0x00, 0x01, 0x02};
+    uint8_t magic[3] = {0x01, 0x02, 0x03};
     gcry_md_open(&sha3_512, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-    gcry_md_write(sha3_512, shared, 56);
     gcry_md_write(sha3_512, &magic[0], 1);
-    memcpy(next_ratchet->root_key, gcry_md_read(sha3_512, 0), sizeof(root_key_t));
+    gcry_md_write(sha3_512, shared, sizeof(shared_secret_t));
+    memcpy(expected_root_key, gcry_md_read(sha3_512, 0), sizeof(root_key_t));
     gcry_md_close(sha3_512);
 
-    otrv4_assert_cmpmem(next_ratchet->root_key, km->current->root_key, sizeof(root_key_t));
-    otrv4_assert_cmpmem(next_ratchet->root_key, km->head->next->next->root_key, sizeof(root_key_t));
-    otrv4_assert(km->current == km->head->next->next);
-    otrv4_assert(km->current != km->head->next);
+    otrv4_assert_cmpmem(expected_root_key, ratchet->root_key, sizeof(root_key_t));
 }

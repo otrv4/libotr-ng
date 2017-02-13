@@ -83,7 +83,7 @@ otrv4_new(cs_keypair_s *keypair) {
   otr->supported_versions = OTR_ALLOW_V4;
   otr->running_version = OTR_VERSION_NONE;
   otr->profile = get_my_user_profile(otr);
-  init_key_manager(otr->keys);
+  key_manager_init(otr->keys);
 
   return otr;
 }
@@ -470,7 +470,9 @@ double_ratcheting_init(int j, otrv4_t *otr) {
     return false;
   }
 
-  derive_ratchet_keys(otr->keys, shared, sizeof(shared_secret_t));
+  if (!key_manager_init_ratchet(otr->keys, shared)) {
+    return false;
+  }
 
   otr->state = OTR_STATE_ENCRYPTED_MESSAGES;
   return true;

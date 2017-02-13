@@ -12,10 +12,10 @@ typedef uint8_t m_enc_key_t[32];
 typedef uint8_t m_mac_key_t[64];
 
 typedef struct _ratchet {
-    chain_key_t chain_keys_a;
-    chain_key_t chain_keys_b;
-    root_key_t  root_key;
-    struct _ratchet *next;
+  chain_key_t chain_key_a;
+  chain_key_t chain_key_b;
+  root_key_t  root_key;
+  struct _ratchet *next;
 } ratchet_s, ratchet_t[1];
 
 typedef struct {
@@ -25,16 +25,20 @@ typedef struct {
 } key_manager_t[1];
 
 void
-init_key_manager(key_manager_t manager);
+key_manager_init(key_manager_t manager);
 
 void
 key_manager_destroy(key_manager_t manager);
 
-void
-derive_ratchet_keys(key_manager_t manager, const uint8_t *shared, size_t size);
+bool
+derive_ratchet_keys(ratchet_s *ratchet, const shared_secret_t shared);
+
+bool
+key_manager_init_ratchet(key_manager_t manager, const shared_secret_t shared);
 
 void
 derive_chain_keys(key_manager_t manager, int i, int j);
+
 
 void
 retrive_chain_keys(chain_key_t ck, key_manager_t manager, int i, int j);
