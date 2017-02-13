@@ -2,6 +2,7 @@
 
 #include "dake.h"
 #include "str.h"
+#include "key_management.h"
 
 #ifndef OTRV4_H
 #define OTRV4_H
@@ -9,7 +10,8 @@
 typedef enum {
   OTR_STATE_START = 1,
   OTR_STATE_AKE_IN_PROGRESS = 2,
-  OTR_STATE_ENCRYPTED_MESSAGES = 3
+  OTR_STATE_ENCRYPTED_MESSAGES = 3,
+  OTR_STATE_FINISHED = 4
 } stateFlag;
 
 typedef enum {
@@ -31,11 +33,15 @@ typedef struct {
   int supported_versions;
   otrv4_version_t running_version;
 
+  //AKE context
   ec_keypair_t our_ecdh;
   dh_keypair_t our_dh;
 
   ec_public_key_t their_ecdh;
   dh_public_key_t their_dh;
+
+  //Data messages context
+  key_manager_t keys;
 } otrv4_t;
 
 typedef enum {

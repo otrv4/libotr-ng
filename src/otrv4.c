@@ -8,6 +8,7 @@
 #include "str.h"
 #include "b64.h"
 #include "deserialize.h"
+#include "sha3.h"
 
 static const char tag_base[] = {
   '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
@@ -82,6 +83,7 @@ otrv4_new(cs_keypair_s *keypair) {
   otr->supported_versions = OTR_ALLOW_V4;
   otr->running_version = OTR_VERSION_NONE;
   otr->profile = get_my_user_profile(otr);
+  init_key_manager(otr->keys);
 
   return otr;
 }
@@ -92,6 +94,7 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
     return;
   }
 
+  key_manager_destroy(otr->keys);
   free(otr);
 }
 
@@ -443,6 +446,37 @@ serialize_and_encode_dre_auth(string_t *dst, const dake_dre_auth_t *dre_auth) {
 }
 
 bool
+double_ratcheting_init(int j, otrv4_t *otr) {
+  otr->keys->i = 0;
+  otr->keys->j = j;
+
+  k_ecdh_t k_ecdh;
+  if (!ecdh_shared_secret(k_ecdh, sizeof(k_ecdh_t), otr->our_ecdh, otr->their_ecdh)) {
+    return false;
+  }
+
+  k_dh_t k_dh;
+  if (!dh_shared_secret(k_dh, sizeof(k_dh_t), otr->our_dh->priv, otr->their_dh)) {
+    return false;
+  }
+
+  mix_key_t mix_key;
+  if (!sha3_256(mix_key, sizeof(mix_key_t), k_dh, sizeof(k_dh_t))) {
+    return false;
+  }
+
+  shared_secret_t shared;
+  if (!calculate_shared_secret(shared, k_ecdh, mix_key)) {
+    return false;
+  }
+
+  derive_ratchet_keys(otr->keys, shared, sizeof(shared_secret_t));
+
+  otr->state = OTR_STATE_ENCRYPTED_MESSAGES;
+  return true;
+}
+
+bool
 otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr) {
   dake_pre_key_t pre_key;
   if (!dake_pre_key_deserialize(&pre_key, buff, buflen)) {
@@ -467,12 +501,12 @@ otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr)
       dake_dre_auth_free(dre_auth);
       return false;
     }
-
-    otr->state = OTR_STATE_ENCRYPTED_MESSAGES;
     dake_dre_auth_free(dre_auth);
+
+    return double_ratcheting_init(0, otr);
   }
 
-  return true;
+  return false;
 }
 
 bool
@@ -489,14 +523,11 @@ otrv4_receive_dre_auth(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr
   if (!dake_dre_auth_validate(otr->their_ecdh, &otr->their_dh,
       otr->profile, otr->keypair, otr->our_ecdh->pub,
       otr->our_dh->pub, &dre_auth)) {
-      printf("validate failed\n");
     return false;
   }
 
-  otr->state = OTR_STATE_ENCRYPTED_MESSAGES;
   *dst = NULL;
-
-  return true;
+  return double_ratcheting_init(1, otr);
 }
 
 bool

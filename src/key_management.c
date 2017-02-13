@@ -13,9 +13,19 @@ append_ratchet(key_manager_t manager, ratchet_t r){
 
 void
 init_key_manager(key_manager_t manager){
-    ratchet_t *head = malloc( sizeof(ratchet_t) );
-    manager->head = *head;
-    manager->current = *head;
+    ratchet_s *head = malloc( sizeof(ratchet_s) );
+    if (head == NULL) {
+      return; //error
+    }
+
+    memset(head, 0, sizeof(ratchet_s));
+    manager->head = head;
+    manager->current = head;
+}
+
+void
+key_manager_destroy(key_manager_t manager) {
+  //TODO: should walk all the hierarchy and free.
 }
 
 void
