@@ -95,11 +95,6 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
   }
 
   key_manager_destroy(otr->keys);
-  user_profile_free(otr->profile);
-  dh_keypair_destroy(otr->our_dh);
-  ec_keypair_destroy(otr->our_ecdh);
-
-  dh_mpi_release(otr->their_dh);
   free(otr);
 }
 

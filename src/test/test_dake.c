@@ -42,8 +42,6 @@ test_dake_protocol() {
   // Bob sends DRE-auth
   // Alice receives DRE-auth
 
-  user_profile_free(alice_profile);
-  dake_pre_key_free(pre_key);
   dh_keypair_destroy(bob_dh);
   ec_keypair_destroy(bob_ecdh);
   dh_keypair_destroy(alice_dh);
@@ -193,9 +191,6 @@ test_dake_dre_auth_serialize() {
   otrv4_assert_cmpmem(expected_phi, cursor, dre_auth->phi_len);
 
   dake_dre_auth_free(dre_auth);
-  dh_keypair_destroy(our_dh);
-  ec_keypair_destroy(our_ecdh);
-  cs_keypair_destroy(our_cramer_shoup);
   free(serialized);
 }
 
