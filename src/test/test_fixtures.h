@@ -12,6 +12,7 @@ otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   cs_keypair_generate(otrv4_fixture->keypair);
   otrv4_t *otr = otrv4_new(otrv4_fixture->keypair);
   otrv4_start(otr);
+  dh_init();
   otrv4_fixture->otr = otr;
 }
 
