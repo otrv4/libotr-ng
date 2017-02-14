@@ -9,6 +9,8 @@
 #include "b64.h"
 #include "deserialize.h"
 #include "sha3.h"
+#include "data_message.h"
+#include "constants.h"
 
 static const char tag_base[] = {
   '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
@@ -626,3 +628,100 @@ otrv4_receive_message(otrv4_response_t* response, otrv4_t *otr, const string_t m
   return true;
 }
 
+int
+retrieve_sending_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key, const otrv4_t *otr) {
+  chain_key_t sending;
+  int message_id = key_manager_get_sending_chain_key(sending, otr->keys, otr->our_ecdh->pub, otr->their_ecdh);
+
+  uint8_t magic1[1] = {0x1};
+  if(!sha3_256_kdf(enc_key, sizeof(m_enc_key_t), magic1, sending, sizeof(chain_key_t))) {
+    return -1;
+  }
+
+  uint8_t magic2[1] = {0x2};
+  if(!sha3_512_kdf(mac_key, sizeof(m_mac_key_t), magic2, sending, sizeof(chain_key_t))) {
+    return -1;
+  }
+
+  return message_id;
+}
+
+bool
+otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t message_len, otrv4_t *otr) {
+  //ratchet_if_need_to()
+
+  data_message_t *data_msg = data_message_new();
+  if (data_msg == NULL)
+    return false;
+
+  m_enc_key_t enc_key;
+  m_mac_key_t mac_key;
+
+  int message_id = retrieve_sending_message_keys(enc_key, mac_key, otr);
+  if (message_id < 0) {
+    return false;
+  }
+
+  data_msg->sender_instance_tag = otr->our_instance_tag;
+  data_msg->receiver_instance_tag = otr->their_instance_tag;
+  data_msg->ratchet_id = otr->keys->current->id;
+  data_msg->message_id = message_id;
+  ec_public_key_copy(data_msg->our_ecdh, otr->our_ecdh->pub);
+  data_msg->our_dh = dh_mpi_copy(otr->our_dh->pub);
+
+  random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
+  uint8_t *c = malloc(message_len);
+  if (c == NULL)
+    return false;
+
+  if (0 != crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key)) {
+    free(c);
+    return false;
+  }
+
+  data_msg->enc_msg = c;
+  data_msg->enc_msg_len = message_len;
+
+  uint8_t *body = NULL;
+  size_t bodylen = 0;
+  if (!data_message_body_aprint(&body, &bodylen, data_msg)) {
+    return false;
+  }
+
+  data_message_free(data_msg);
+
+  //TODO: append old mac keys to be revealed
+  size_t serlen = bodylen + DATA_MSG_MAC_BYTES;
+  uint8_t *ser = malloc(serlen);
+  if (ser == NULL) {
+    free(body);
+    return false;
+  }
+
+  memcpy(ser, body, bodylen);
+  if (!sha3_512_mac(ser+bodylen, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t), body, bodylen)) {
+    free(body);
+    free(ser);
+    return false;
+  }
+
+  free(body);
+
+  *to_send = (uint8_t*) otrl_base64_otr_encode(ser, serlen);
+  free(ser);
+  return true;
+}
+
+bool
+otrv4_send_message(uint8_t **to_send, const uint8_t *message, size_t message_len, otrv4_t *otr) {
+  if (otr->state == OTR_STATE_FINISHED) {
+    return false; //Should restart
+  }
+
+  if (otr->state != OTR_STATE_ENCRYPTED_MESSAGES) {
+    //TODO: queue message
+    return false;
+  }
+
+  return otrv4_send_data_message(to_send, message, message_len, otr);
+}

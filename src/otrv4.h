@@ -1,11 +1,11 @@
+#ifndef OTRV4_H
+#define OTRV4_H
+
 #include <stdbool.h>
 
 #include "dake.h"
 #include "str.h"
 #include "key_management.h"
-
-#ifndef OTRV4_H
-#define OTRV4_H
 
 typedef enum {
   OTR_STATE_START = 1,
@@ -27,6 +27,9 @@ typedef enum {
 } otrv4_version_t;
 
 typedef struct {
+  int our_instance_tag;
+  int their_instance_tag;
+
   user_profile_t *profile;
   cs_keypair_s *keypair;
   stateFlag state;
@@ -80,5 +83,8 @@ otrv4_response_free(otrv4_response_t * response);
 
 bool
 otrv4_receive_message(otrv4_response_t* response, otrv4_t *otr, const string_t received);
+
+bool
+otrv4_send_message(uint8_t **to_send, const uint8_t *message, size_t message_len, otrv4_t *otr);
 
 #endif

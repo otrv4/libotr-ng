@@ -14,7 +14,7 @@ test_derive_ratchet_keys() {
     };
 
     ratchet_t ratchet;
-    derive_ratchet_keys(ratchet, shared);
+    derive_ratchet_keys(&ratchet, shared);
 
     root_key_t expected_root_key;
 
@@ -26,5 +26,5 @@ test_derive_ratchet_keys() {
     memcpy(expected_root_key, gcry_md_read(sha3_512, 0), sizeof(root_key_t));
     gcry_md_close(sha3_512);
 
-    otrv4_assert_cmpmem(expected_root_key, ratchet->root_key, sizeof(root_key_t));
+    otrv4_assert_cmpmem(expected_root_key, ratchet.root_key, sizeof(root_key_t));
 }

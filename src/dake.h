@@ -6,15 +6,8 @@
 #include "user_profile.h"
 #include "cramer_shoup.h"
 
-#define OTR_VERSION 4 //TODO: move
-#define OTR_PRE_KEY_MSG_TYPE 0x0F
-#define OTR_DRE_AUTH_MSG_TYPE 0x00
-#define OTR_DATA_MSG_TYPE 0x03
-
 #define NONCE_BYTES crypto_secretbox_NONCEBYTES
-
 #define AUTH_BYTES (6*DECAF_448_SCALAR_BYTES)
-
 #define DAKE_HEADER_BYTES (2+1+4+4)
 
 //size of PRE_KEY_MESSAGE without user_profile

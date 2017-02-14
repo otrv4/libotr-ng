@@ -1,0 +1,9 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#define OTR_VERSION 4
+#define OTR_PRE_KEY_MSG_TYPE 0x0F
+#define OTR_DRE_AUTH_MSG_TYPE 0x00
+#define OTR_DATA_MSG_TYPE 0x03
+
+#endif

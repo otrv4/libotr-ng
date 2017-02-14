@@ -4,6 +4,7 @@ libotr4_la_SOURCES = \
                      b64.c \
                      dake.c \
 										 data_types.c \
+										 data_message.c \
 										 deserialize.c \
 										 dh.c \
 										 mpi.c \

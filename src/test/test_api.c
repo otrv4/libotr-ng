@@ -65,6 +65,22 @@ test_api_conversation(void) {
 
   otrv4_assert_cmpmem(alice->keys->current->root_key, bob->keys->current->root_key, sizeof(root_key_t));
 
+  //AKE HAS FINISHED.
+
+  //Bob sends a data message
+  uint8_t *to_send = NULL;
+  otrv4_assert(otrv4_send_message(&to_send, (uint8_t*) "hi", 3, bob));
+  otrv4_assert(to_send);
+  otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+return;
+
+  //Alice receives a data message
+  otrv4_assert(otrv4_receive_message(response_to_bob, alice, (string_t) to_send));
+  free(to_send);
+
+  otrv4_assert_cmpmem(response_to_bob->to_display, "hi", 3);
+  otrv4_assert(response_to_bob->to_send == NULL);
+
   otrv4_response_free(response_to_alice);
   otrv4_response_free(response_to_bob);
   otrv4_free(alice);

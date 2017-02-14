@@ -4,12 +4,13 @@
 #include <time.h>
 
 #include "dake.h"
-#include "str.h"
 #include "serialize.h"
 #include "deserialize.h"
 #include "user_profile.h"
+#include "str.h"
 #include "random.h"
 #include "sha3.h"
+#include "constants.h"
 
 dake_pre_key_t *
 dake_pre_key_new(const user_profile_t *profile) {
