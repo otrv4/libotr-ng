@@ -100,6 +100,7 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
   }
 
   key_manager_destroy(otr->keys);
+  user_profile_free(otr->profile);
   free(otr);
 }
 
@@ -414,7 +415,7 @@ extract_header(otrv4_header_t *dst, const uint8_t *buffer, const size_t bufflen)
   }
 
   buffer += read;
-  
+
   if (!deserialize_uint8(&type, buffer, bufflen - read, &read)) {
     return false;
   }
@@ -714,7 +715,7 @@ otrv4_receive_message(otrv4_response_t* response, otrv4_t *otr, const string_t m
   if (message == NULL) {
     return false;
   }
- 
+
   otrv4_message_to_display_set(response, NULL);
   response->to_send = NULL;
 

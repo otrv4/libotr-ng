@@ -33,6 +33,8 @@ dake_pre_key_new(const user_profile_t *profile) {
 
 void
 dake_pre_key_free(dake_pre_key_t *pre_key) {
+  user_profile_destroy(pre_key->profile);
+
   free(pre_key);
 }
 
@@ -71,7 +73,7 @@ dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len
     const uint8_t *cursor = src;
     int64_t len = src_len;
     size_t read = 0;
-    
+
     uint16_t protocol_version = 0;
     if(!deserialize_uint16(&protocol_version, cursor, len, &read)) {
       return false;
@@ -314,7 +316,7 @@ dake_dre_auth_generate_sigma_message(uint8_t **dst, size_t *dst_len,
   if (!user_profile_aprint(&their_profile_buff, &their_profile_len, their_profile)) {
     goto generate_sigma_message_error;
   }
-  
+
   size_t s = our_profile_len      \
              + their_profile_len  \
              + sizeof(ec_public_key_t) \
@@ -449,7 +451,7 @@ dake_dre_auth_deserialize(dake_dre_auth_t *dst, uint8_t *buffer, size_t buflen) 
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
   size_t read = 0;
-  
+
   uint16_t protocol_version = 0;
   if(!deserialize_uint16(&protocol_version, cursor, len, &read)) {
     return false;
@@ -581,7 +583,7 @@ dake_dre_auth_validate(ec_public_key_t their_ecdh,
 
   if (crypto_secretbox_open_easy(phi_msg, dre_auth->phi, dre_auth->phi_len, dre_auth->nonce, enc_key) != 0) {
     free(phi_msg);
-    return false; 
+    return false;
   }
 
   memset(enc_key, 0, crypto_secretbox_KEYBYTES);
@@ -651,7 +653,7 @@ dake_dre_auth_validate(ec_public_key_t their_ecdh,
 
   cursor += sizeof(ec_public_key_t);
   len -= sizeof(ec_public_key_t);
-  
+
   if (!deserialize_ec_public_key(their_ecdh, cursor, len, &read)) {
     free(phi_msg);
     return false;

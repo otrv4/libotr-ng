@@ -25,11 +25,11 @@ test_user_profile_serializes_body() {
   user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);
   profile->expires = 15;
-  otrv4_assert(user_profile_sign(profile, keypair)); 
+  otrv4_assert(user_profile_sign(profile, keypair));
 
   const uint8_t transitional_signature[40] = { 0 };
   otr_mpi_set(profile->transitional_signature, transitional_signature, sizeof(transitional_signature));
-  
+
   uint8_t expected_pubkey[170] = { 0 };
   serialize_cs_public_key(expected_pubkey, keypair->pub);
 
@@ -49,6 +49,7 @@ test_user_profile_serializes_body() {
   otrv4_assert_cmpmem(expected, serialized+170, sizeof(expected));
 
   free(serialized);
+  user_profile_free(profile);
 }
 
 void
@@ -60,7 +61,7 @@ test_user_profile_serializes() {
   otrv4_assert(profile != NULL);
   profile->expires = 15;
 
-  user_profile_sign(profile, keypair); 
+  user_profile_sign(profile, keypair);
   const uint8_t transitional_signature[40] = { 0 };
   otr_mpi_set(profile->transitional_signature, transitional_signature, sizeof(transitional_signature));
 
@@ -92,6 +93,7 @@ test_user_profile_serializes() {
       sizeof(expected_transitional_signature));
 
   user_profile_free(profile);
+  free(body);
   free(serialized);
 }
 
@@ -102,7 +104,7 @@ test_user_profile_deserializes() {
 
   user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);
-  user_profile_sign(profile, keypair); 
+  user_profile_sign(profile, keypair);
 
   size_t written = 0;
   uint8_t *serialized = NULL;
