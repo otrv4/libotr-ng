@@ -76,7 +76,8 @@ deserialize_data(uint8_t **dst, const uint8_t *buffer, size_t buflen, size_t *re
 
   *dst = t;
   if (read != NULL) { *read += s; }
-  return true; 
+  free(t);
+  return true;
 }
 
 bool

@@ -48,6 +48,7 @@ test_user_profile_serializes_body() {
 
   otrv4_assert_cmpmem(expected, serialized+170, sizeof(expected));
 
+  user_profile_free(profile);
   free(serialized);
 }
 
@@ -92,6 +93,7 @@ test_user_profile_serializes() {
       sizeof(expected_transitional_signature));
 
   user_profile_free(profile);
+  free(body);
   free(serialized);
 }
 
