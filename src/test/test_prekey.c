@@ -117,6 +117,7 @@ test_dake_pre_key_valid(pre_key_fixture_t *f, gconstpointer data) {
 
   otrv4_assert(dake_pre_key_validate(pre_key));
   dake_pre_key_free(pre_key);
+  dh_keypair_destroy(dh);
 }
 
 void

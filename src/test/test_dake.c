@@ -43,9 +43,9 @@ test_dake_protocol() {
   // Alice receives DRE-auth
 
   dake_pre_key_free(pre_key);
-  user_profile_free(alice_profile);
   dh_keypair_destroy(bob_dh);
   ec_keypair_destroy(bob_ecdh);
+  user_profile_free(alice_profile);
   dh_keypair_destroy(alice_dh);
   ec_keypair_destroy(alice_ecdh);
 }
@@ -75,7 +75,7 @@ test_dake_generate_gamma_phi_sigma() {
 
   ec_public_key_t received_ecdh_alice;
   dh_public_key_t received_dh_alice = dh_mpi_new();
-  
+
   user_profile_t *profile_alice = user_profile_new("4");
   profile_alice->expires = time(NULL) + 60 * 60;
   otrv4_assert(user_profile_sign(profile_alice, cs_alice));
@@ -125,7 +125,7 @@ test_dake_dre_auth_serialize() {
 
   dh_keypair_t our_dh;
   dh_keypair_generate(our_dh);
-  
+
   user_profile_t *our_profile = user_profile_new("4");
   our_profile->expires = time(NULL) + 60 * 60;
   user_profile_sign(our_profile, our_cramershoup);
@@ -191,6 +191,7 @@ test_dake_dre_auth_serialize() {
   otrv4_assert_cmpmem(expected_phi, cursor, dre_auth->phi_len);
 
   dake_dre_auth_free(dre_auth);
+  dh_keypair_destroy(our_dh);
   free(serialized);
 }
 

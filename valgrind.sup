@@ -1,0 +1,33 @@
+{
+   mais_memoria_vazando
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:do_malloc
+   ...
+   fun:dh_init
+   ...
+   fun:test_case_run
+   ...
+   fun:g_test_run_suite
+}
+{
+   ignore_this_b46_next
+   Memcheck:Leak
+   fun:malloc
+   fun:otrl_base64_otr_encode
+   ...
+   fun:test_case_run
+   ...
+   fun:main
+}
+{
+   ignore_this_b46_2
+   Memcheck:Value8
+   fun:encodeblock
+   fun:otrl_base64_encode
+   ...
+   fun:g_test_run
+   fun:main
+}
+

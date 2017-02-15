@@ -86,6 +86,8 @@ otrv4_new(cs_keypair_s *keypair) {
   }
 
   otr->keypair = keypair;
+  otr->our_dh->priv = dh_mpi_new();
+  otr->our_dh->pub = dh_mpi_new();
   otr->state = OTR_STATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
   otr->running_version = OTR_VERSION_NONE;
@@ -96,14 +98,20 @@ otrv4_new(cs_keypair_s *keypair) {
 }
 
 void
+otrv4_destroy(/*@only@*/ otrv4_t *otr) {
+  dh_keypair_destroy(otr->our_dh);
+  key_manager_destroy(otr->keys);
+  user_profile_free(otr->profile);
+  otr->profile = NULL;
+}
+
+void
 otrv4_free(/*@only@*/ otrv4_t *otr) {
   if(otr == NULL) {
     return;
   }
 
-  key_manager_destroy(otr->keys);
-  user_profile_free(otr->profile);
-  otr->profile = NULL;
+  otrv4_destroy(otr);
   free(otr);
 }
 
