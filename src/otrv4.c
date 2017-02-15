@@ -450,12 +450,12 @@ extract_header(otrv4_header_t *dst, const uint8_t *buffer, const size_t bufflen)
 }
 
 bool
-otrv4_generate_dre_auth(dake_dre_auth_t **dst, const otrv4_t *otr) {
+otrv4_generate_dre_auth(dake_dre_auth_t **dst, const user_profile_t *their_profile, const otrv4_t *otr) {
   dake_dre_auth_t *dre_auth = dake_dre_auth_new(otr->profile);
 
   if (!dake_dre_auth_generate_gamma_phi_sigma(
       otr->keypair, otr->our_ecdh->pub, otr->our_dh->pub,
-      otr->profile, otr->their_ecdh, otr->their_dh, dre_auth
+      their_profile, otr->their_ecdh, otr->their_dh, dre_auth
       )) {
     dake_dre_auth_free(dre_auth);
     return false;
@@ -541,7 +541,7 @@ otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr)
     //TODO: why not use dake_dre_auth_new(otr->profile);
     dake_dre_auth_t *dre_auth = NULL;
     otrv4_generate_ephemeral_keys(otr);
-    if (!otrv4_generate_dre_auth(&dre_auth, otr)) {
+    if (!otrv4_generate_dre_auth(&dre_auth, pre_key->profile, otr)) {
       dake_pre_key_destroy(pre_key);
       return false;
     }
