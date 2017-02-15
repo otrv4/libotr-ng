@@ -2,7 +2,7 @@
 
 #include "dh.h"
 #include "ed448.h"
-#include "cramer_shoup.h"
+#include "cramershoup_interface.h"
 #include "mpi.h"
 
 int

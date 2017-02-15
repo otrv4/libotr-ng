@@ -1,4 +1,4 @@
-#include "cramer_shoup.h"
+#include "cramershoup_interface.h"
 #include "ed448.h"
 
 bool

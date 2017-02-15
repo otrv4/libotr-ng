@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "mpi.h"
-#include "cramer_shoup.h"
+#include "cramershoup_interface.h"
 #include "str.h"
 
 typedef struct {

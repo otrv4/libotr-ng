@@ -1,5 +1,5 @@
 #include "../otrv4.h"
-#include "../cramer_shoup.h"
+#include "../cramershoup_interface.h"
 #include "../user_profile.h"
 
 typedef struct {

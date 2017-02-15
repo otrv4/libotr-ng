@@ -4,7 +4,7 @@
 #include "dh.h"
 #include "ed448.h"
 #include "user_profile.h"
-#include "cramer_shoup.h"
+#include "cramershoup_interface.h"
 
 #define NONCE_BYTES crypto_secretbox_NONCEBYTES
 #define AUTH_BYTES (6*DECAF_448_SCALAR_BYTES)
