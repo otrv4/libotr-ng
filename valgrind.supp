@@ -1,0 +1,20 @@
+{
+   ignore_problems_in_g_test
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_test_create_case
+   fun:g_test_add_vtable
+   fun:main
+}
+
+{
+   ignore_problems_with_dh_init
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:dh_init
+   ...
+   fun:g_test_run_suite
+}
