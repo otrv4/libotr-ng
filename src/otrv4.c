@@ -14,6 +14,8 @@
 #include "debug.h"
 
 #define QUERY_MESSAGE_TAG_BYTES 5
+#define WHITESPACE_TAG_BASE_BYTES 16
+#define WHITESPACE_TAG_VERSION_BYTES WHITESPACE_TAG_BASE_BYTES + 8
 
 static const char tag_base[] = {
   '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
@@ -154,21 +156,31 @@ otrv4_build_query_message(string_t *query_message,
 }
 
 //TODO: should this care about UTF8?
-//TODO: should this deal with buffer overflows?
 bool
-otrv4_build_whitespace_tag(/*@unique@*/ string_t whitespace_tag, const otrv4_t *otr, const string_t message) {
+otrv4_build_whitespace_tag(string_t *whitespace_tag,
+                           const otrv4_t *otr,
+                           const string_t message,
+                           size_t message_len) {
+  size_t m_len = WHITESPACE_TAG_VERSION_BYTES + message_len + 1;
+  string_t buff = malloc(m_len);
+  if (buff == NULL) {
+    return false; //TODO: error
+  }
 
-  strcpy(whitespace_tag, tag_base);
+  char *cursor = stpcpy(buff, tag_base);
 
   if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
-    strcat(whitespace_tag, tag_version_v4);
+    cursor = stpcpy(cursor, tag_version_v4);
   }
 
   if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
-    strcat(whitespace_tag, tag_version_v3);
+    cursor = stpcpy(cursor, tag_version_v3);
   }
 
-  strcat(whitespace_tag, message);
+  //TODO: stpncpy will return cursor + n, where n > 0 is an error
+  stpncpy(cursor, message, message_len + 1);
+
+  *whitespace_tag = buff;
 
   return true;
 }

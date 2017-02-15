@@ -58,8 +58,8 @@ test_otrv4_builds_whitespace_tag(otrv4_fixture_t *otrv4_fixture, gconstpointer d
   char *expected_tag = " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
   char *message = "And some random invitation text.";
 
-  char whitespace_tag[strlen(expected_tag)];
-  otrv4_build_whitespace_tag(whitespace_tag, otrv4_fixture->otr, message);
+  char *whitespace_tag = NULL;
+  otrv4_build_whitespace_tag(&whitespace_tag, otrv4_fixture->otr, message, strlen(message));
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
 }
 
@@ -69,8 +69,8 @@ test_otrv4_builds_whitespace_tag_v34(otrv4_fixture_t *otrv4_fixture, gconstpoint
   char *expected_tag = " \t  \t\t\t\t \t \t \t    \t\t \t    \t\t  \t\tAnd some random invitation text";
   char *message = "And some random invitation text";
 
-  char whitespace_tag[strlen(expected_tag)];
-  otrv4_build_whitespace_tag(whitespace_tag, otrv4_fixture->otr, message);
+  char *whitespace_tag = NULL;
+  otrv4_build_whitespace_tag(&whitespace_tag, otrv4_fixture->otr, message, strlen(message));
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
 }
 
