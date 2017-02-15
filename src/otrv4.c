@@ -12,6 +12,8 @@
 #include "data_message.h"
 #include "constants.h"
 
+#define QUERY_MESSAGE_TAG_BYTES 5
+
 static const char tag_base[] = {
   '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
   '\x20', '\x09', '\x20', '\x09', '\x20', '\x09', '\x20', '\x20',
@@ -113,28 +115,38 @@ otrv4_start(otrv4_t *otr) {
   return true;
 }
 
-
 void
-otrv4_build_query_message(/*@unique@*/ string_t *query_message, const otrv4_t *otr, const string_t message) {
-  size_t s = strlen(query)+strlen(message)+4+1;
-  string_t buff = malloc(s);
+otrv4_build_query_message(string_t *query_message,
+                          const otrv4_t *otr,
+                          const string_t message,
+                          size_t message_len) {
+  //size = qm tag + msg length + versions + question mark + whitespace + null byte
+  int qm_size = QUERY_MESSAGE_TAG_BYTES + message_len + 2 + 1;
+  int allows_v4 = otrv4_allow_version(otr, OTR_ALLOW_V4);
+  int allows_v3 = otrv4_allow_version(otr, OTR_ALLOW_V3);
+  if (allows_v4) qm_size++;
+  if (allows_v3) qm_size++;
+
+  string_t buff = malloc(qm_size);
   if (buff == NULL) {
     return; //error
   }
 
-  string_t cursor = stpcpy(buff, query);
+  char *cursor = stpcpy(buff, query);
 
   //TODO: how to use allowed_versions here?
-  if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
+  if (allows_v4) {
     *cursor++ = '4';
   }
 
-  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
+  if (allows_v3) {
     *cursor++ = '3';
   }
 
   cursor = stpcpy(cursor, "? ");
-  stpcpy(cursor, message);
+
+  //TODO: stpncpy will return cursor + n, where n > 0 is an error
+  stpncpy(cursor, message, message_len + 1);
 
   *query_message = buff;
 }

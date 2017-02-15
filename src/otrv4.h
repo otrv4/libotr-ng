@@ -72,7 +72,9 @@ void otrv4_free(/*@only@*/ otrv4_t *otr);
 bool otrv4_start(otrv4_t *otr);
 void otrv4_version_support_v3(otrv4_t *otr);
 
-void otrv4_build_query_message(/*@unique@*/ string_t *dst, const otrv4_t *otr, const string_t message);
+void
+otrv4_build_query_message
+(string_t *dst, const otrv4_t *otr, const string_t message, size_t message_len);
 bool otrv4_build_whitespace_tag(/*@unique@*/ string_t whitespace_tag, const otrv4_t *otr, const string_t message);
 
 otrv4_response_t*
