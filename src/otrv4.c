@@ -15,7 +15,7 @@
 
 #define QUERY_MESSAGE_TAG_BYTES 5
 #define WHITESPACE_TAG_BASE_BYTES 16
-#define WHITESPACE_TAG_VERSION_BYTES WHITESPACE_TAG_BASE_BYTES + 8
+#define WHITESPACE_TAG_VERSION_BYTES 8
 
 static const char tag_base[] = {
   '\x20', '\x09', '\x20', '\x20', '\x09', '\x09', '\x09', '\x09',
@@ -161,19 +161,24 @@ otrv4_build_whitespace_tag(string_t *whitespace_tag,
                            const otrv4_t *otr,
                            const string_t message,
                            size_t message_len) {
-  size_t m_len = WHITESPACE_TAG_VERSION_BYTES + message_len + 1;
-  string_t buff = malloc(m_len);
+  size_t m_size = WHITESPACE_TAG_BASE_BYTES + message_len + 1;
+  int allows_v4 = otrv4_allow_version(otr, OTR_ALLOW_V4);
+  int allows_v3 = otrv4_allow_version(otr, OTR_ALLOW_V3);
+  if (allows_v4) m_size += WHITESPACE_TAG_VERSION_BYTES;
+  if (allows_v3) m_size += WHITESPACE_TAG_VERSION_BYTES;
+
+  string_t buff = malloc(m_size);
   if (buff == NULL) {
     return false; //TODO: error
   }
 
   char *cursor = stpcpy(buff, tag_base);
 
-  if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
+  if (allows_v4) {
     cursor = stpcpy(cursor, tag_version_v4);
   }
 
-  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
+  if (allows_v3) {
     cursor = stpcpy(cursor, tag_version_v3);
   }
 
