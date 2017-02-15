@@ -103,6 +103,7 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
 
   key_manager_destroy(otr->keys);
   user_profile_free(otr->profile);
+  otr->profile = NULL;
   free(otr);
 }
 

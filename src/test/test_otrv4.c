@@ -61,6 +61,7 @@ test_otrv4_builds_whitespace_tag(otrv4_fixture_t *otrv4_fixture, gconstpointer d
   char *whitespace_tag = NULL;
   otrv4_build_whitespace_tag(&whitespace_tag, otrv4_fixture->otr, message, strlen(message));
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
+  free(whitespace_tag);
 }
 
 void
@@ -72,6 +73,7 @@ test_otrv4_builds_whitespace_tag_v34(otrv4_fixture_t *otrv4_fixture, gconstpoint
   char *whitespace_tag = NULL;
   otrv4_build_whitespace_tag(&whitespace_tag, otrv4_fixture->otr, message, strlen(message));
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
+  free(whitespace_tag);
 }
 
 void

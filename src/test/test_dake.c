@@ -42,6 +42,7 @@ test_dake_protocol() {
   // Bob sends DRE-auth
   // Alice receives DRE-auth
 
+  dake_pre_key_free(pre_key);
   dh_keypair_destroy(bob_dh);
   ec_keypair_destroy(bob_ecdh);
   dh_keypair_destroy(alice_dh);
