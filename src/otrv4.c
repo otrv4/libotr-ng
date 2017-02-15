@@ -450,12 +450,12 @@ extract_header(otrv4_header_t *dst, const uint8_t *buffer, const size_t bufflen)
 }
 
 bool
-otrv4_generate_dre_auth(dake_dre_auth_t **dst, const user_profile_t *sender_profile, const otrv4_t *otr) {
+otrv4_generate_dre_auth(dake_dre_auth_t **dst, const otrv4_t *otr) {
   dake_dre_auth_t *dre_auth = dake_dre_auth_new(otr->profile);
 
   if (!dake_dre_auth_generate_gamma_phi_sigma(
       otr->keypair, otr->our_ecdh->pub, otr->our_dh->pub,
-      sender_profile, otr->their_ecdh, otr->their_dh, dre_auth
+      otr->profile, otr->their_ecdh, otr->their_dh, dre_auth
       )) {
     dake_dre_auth_free(dre_auth);
     return false;
@@ -524,22 +524,25 @@ double_ratcheting_init(int j, otrv4_t *otr) {
 
 bool
 otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr) {
-  dake_pre_key_t pre_key;
-  if (!dake_pre_key_deserialize(&pre_key, buff, buflen)) {
+  dake_pre_key_t pre_key[1];
+  if (!dake_pre_key_deserialize(pre_key, buff, buflen)) {
     return false;
   }
 
   if (otr->state == OTR_STATE_START) {
-    if (!dake_pre_key_validate(&pre_key)) {
+    if (!dake_pre_key_validate(pre_key)) {
+      dake_pre_key_destroy(pre_key);
       return false;
     }
 
-    ec_public_key_copy(otr->their_ecdh, pre_key.Y);
-    otr->their_dh = dh_mpi_copy(pre_key.B);
+    ec_public_key_copy(otr->their_ecdh, pre_key->Y);
+    otr->their_dh = dh_mpi_copy(pre_key->B);
 
+    //TODO: why not use dake_dre_auth_new(otr->profile);
     dake_dre_auth_t *dre_auth = NULL;
     otrv4_generate_ephemeral_keys(otr);
-    if (!otrv4_generate_dre_auth(&dre_auth, pre_key.profile, otr)) {
+    if (!otrv4_generate_dre_auth(&dre_auth, otr)) {
+      dake_pre_key_destroy(pre_key);
       return false;
     }
 
@@ -561,18 +564,20 @@ otrv4_receive_dre_auth(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr
     return true;
   }
 
-  dake_dre_auth_t dre_auth;
-  if (!dake_dre_auth_deserialize(&dre_auth, buff, buflen)) {
+  dake_dre_auth_t dre_auth[1];
+  if (!dake_dre_auth_deserialize(dre_auth, buff, buflen)) {
     return false;
   }
 
   if (!dake_dre_auth_validate(otr->their_ecdh, &otr->their_dh,
       otr->profile, otr->keypair, otr->our_ecdh->pub,
-      otr->our_dh->pub, &dre_auth)) {
+      otr->our_dh->pub, dre_auth)) {
+    dake_dre_auth_destroy(dre_auth);
     return false;
   }
 
   *dst = NULL;
+  dake_dre_auth_destroy(dre_auth);
   return double_ratcheting_init(1, otr);
 }
 

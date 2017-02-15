@@ -62,6 +62,9 @@ dake_pre_key_new(const user_profile_t *profile);
 void
 dake_pre_key_free(dake_pre_key_t *pre_key);
 
+void
+dake_pre_key_destroy(dake_pre_key_t *pre_key);
+
 bool
 dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len);
 
@@ -78,6 +81,9 @@ dake_dre_auth_new(const user_profile_t *profile);
 
 void
 dake_dre_auth_free(dake_dre_auth_t *dre_auth);
+
+void
+dake_dre_auth_destroy(dake_dre_auth_t *dre_auth);
 
 bool
 dake_dre_auth_aprint(uint8_t **dst, size_t *nbytes, const dake_dre_auth_t *dre_auth);

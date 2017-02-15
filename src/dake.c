@@ -33,9 +33,16 @@ dake_pre_key_new(const user_profile_t *profile) {
 
 void
 dake_pre_key_free(dake_pre_key_t *pre_key) {
-  user_profile_destroy(pre_key->profile);
+  if (pre_key == NULL)
+    return;
 
+  dake_pre_key_destroy(pre_key);
   free(pre_key);
+}
+
+void
+dake_pre_key_destroy(dake_pre_key_t *pre_key) {
+  user_profile_destroy(pre_key->profile);
 }
 
 bool
@@ -190,6 +197,12 @@ dake_dre_auth_new(const user_profile_t *profile) {
 
 void
 dake_dre_auth_free(dake_dre_auth_t *dre_auth) {
+  dake_dre_auth_destroy(dre_auth);
+  free(dre_auth);
+}
+
+void
+dake_dre_auth_destroy(dake_dre_auth_t *dre_auth) {
   user_profile_destroy(dre_auth->profile);
 
   memset(dre_auth->nonce, 0, NONCE_BYTES);
@@ -199,8 +212,6 @@ dake_dre_auth_free(dake_dre_auth_t *dre_auth) {
   free(dre_auth->phi);
   dre_auth->phi = NULL;
   dre_auth->phi_len = 0;
-
-  free(dre_auth);
 }
 
 bool

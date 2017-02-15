@@ -1,9 +1,7 @@
 {
    ignore_problems_in_g_test
    Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_strdup
+   ...
    fun:g_test_create_case
    fun:g_test_add_vtable
    fun:main

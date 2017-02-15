@@ -43,12 +43,11 @@ test_dake_protocol() {
   // Alice receives DRE-auth
 
   dake_pre_key_free(pre_key);
+  user_profile_free(alice_profile);
   dh_keypair_destroy(bob_dh);
   ec_keypair_destroy(bob_ecdh);
   dh_keypair_destroy(alice_dh);
   ec_keypair_destroy(alice_ecdh);
-  //cs_keypair_desctroy(alice_cramershoup);
-  //cs_keypair_desctroy(bob_cramershoup);
 }
 
 void

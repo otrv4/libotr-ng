@@ -96,7 +96,7 @@ test_dake_pre_key_deserializes(pre_key_fixture_t *f, gconstpointer data) {
   dh_keypair_destroy(dh);
   ec_keypair_destroy(ecdh);
   dake_pre_key_free(pre_key);
-  free(deserialized);
+  dake_pre_key_free(deserialized);
   free(serialized);
 }
 

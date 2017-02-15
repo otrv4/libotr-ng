@@ -93,7 +93,11 @@ key_manager_init_ratchet(key_manager_t manager, const shared_secret_t shared) {
 
   ratchet->id = 0;
   ratchet->chain_a->id = 0;
+  ratchet->chain_a->next = NULL;
+
   ratchet->chain_b->id = 0;
+  ratchet->chain_b->next = NULL;
+
   if (!derive_ratchet_keys(ratchet, shared))
     return false;
 
