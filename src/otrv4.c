@@ -463,8 +463,7 @@ otrv4_generate_dre_auth(dake_dre_auth_t **dst, const user_profile_t *their_profi
 
   if (!dake_dre_auth_generate_gamma_phi_sigma(
       otr->keypair, otr->our_ecdh->pub, otr->our_dh->pub,
-      their_profile, otr->their_ecdh, otr->their_dh, dre_auth
-      )) {
+      their_profile, otr->their_ecdh, otr->their_dh, dre_auth)) {
     dake_dre_auth_free(dre_auth);
     return false;
   }
@@ -789,10 +788,6 @@ bool
 otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t message_len, otrv4_t *otr) {
   //ratchet_if_need_to()
 
-  data_message_t *data_msg = data_message_new();
-  if (data_msg == NULL)
-    return false;
-
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
 
@@ -809,6 +804,10 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
   otrv4_memdump(mac_key, sizeof(m_mac_key_t));
 #endif
 
+  data_message_t *data_msg = data_message_new();
+  if (data_msg == NULL)
+    return false;
+
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
   data_msg->ratchet_id = otr->keys->current->id;
@@ -818,11 +817,14 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
 
   random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
   uint8_t *c = malloc(message_len);
-  if (c == NULL)
+  if (c == NULL) {
+    data_message_free(data_msg);
     return false;
+  }
 
   if (0 != crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key)) {
     free(c);
+    data_message_free(data_msg);
     return false;
   }
 
@@ -841,6 +843,7 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
   uint8_t *body = NULL;
   size_t bodylen = 0;
   if (!data_message_body_aprint(&body, &bodylen, data_msg)) {
+    data_message_free(data_msg);
     return false;
   }
 

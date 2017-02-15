@@ -29,6 +29,10 @@ data_message_free(data_message_t *data_msg) {
   data_msg->old_mac_keys = 0;
   free(data_msg->old_mac_keys);
   data_msg->old_mac_keys = NULL;
+
+  dh_mpi_release(data_msg->our_dh);
+
+  free(data_msg);
 }
 
 bool
