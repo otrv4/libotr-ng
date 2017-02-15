@@ -59,6 +59,9 @@ int
 key_manager_get_sending_chain_key(chain_key_t sending, const key_manager_t manager, const ec_public_key_t our_ecdh, const ec_public_key_t their_ecdh);
 
 bool
+key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int ratchet_id, int message_id, const ec_public_key_t our_ecdh, const ec_public_key_t their_ecdh, const key_manager_t manager);
+
+bool
 calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh, const mix_key_t mix_key);
 
 bool

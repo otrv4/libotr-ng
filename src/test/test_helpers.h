@@ -5,33 +5,14 @@
 
 #include "../str.h"
 #include "../ed448.h"
+#include "../debug.h"
 
 #define WITH_FIXTURE(_p, _c, _t, _f) \
   do { g_test_add(_p, _t, NULL, _f##_setup, _c, _f##_teardown); } while(0);
 
-static char*
-otrv4_memdump(const uint8_t *src, size_t len) {
-  if (src == NULL) {
-    return otrv4_strdup("(NULL)");
-  }
-
-  //each char is represented by "0x00, "
-  size_t s = len*6 + len/8 + 2;
-  char *buff = malloc(s);
-  char *cursor = buff;
-  int i = 0;
-
-  for (i = 0; i < len; i++) {
-    if (i % 8 == 0) { cursor += sprintf(cursor, "\n"); }
-    cursor += sprintf(cursor, "0x%02x, ", src[i]);
-  }
-
-  return buff;
-}
-
 #define otrv4_assert_cmpmem(s1, s2, len) do { \
-        char *__s1 = otrv4_memdump((const uint8_t*) s1, len); \
-        char *__s2 = otrv4_memdump((const uint8_t*) s2, len); \
+        char *__s1 = _otrv4_memdump((const uint8_t*) s1, len); \
+        char *__s2 = _otrv4_memdump((const uint8_t*) s2, len); \
         char *__msg = g_strdup_printf("assertion failed: (%s)\nEXPECTED (%p): %s\nACTUAL (%p): %s\n", \
             #s1 " ==  " #s2, s1, __s1, s2, __s2); \
         if (memcmp(s1, s2, len) == 0); else \

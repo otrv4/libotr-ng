@@ -12,6 +12,7 @@
 #include "test_dh.c"
 #include "test_serialize.c"
 #include "test_key_management.c"
+#include "test_data_message.c"
 
 int
 main(int argc, char **argv) {
@@ -39,6 +40,8 @@ main(int argc, char **argv) {
   g_test_add_func("/dake/dre_auth/generate_gamma_phi_sigma", test_dake_generate_gamma_phi_sigma);
   g_test_add_func("/dake/dre_auth/serialize", test_dake_dre_auth_serialize);
   g_test_add_func("/dake/protocol", test_dake_protocol);
+
+  g_test_add_func("/data_message/serialize", test_data_message_serializes);
 
   g_test_add_func("/key_management/derive_ratchet_keys", test_derive_ratchet_keys);
 

@@ -11,6 +11,7 @@
 #include "sha3.h"
 #include "data_message.h"
 #include "constants.h"
+#include "debug.h"
 
 #define QUERY_MESSAGE_TAG_BYTES 5
 
@@ -479,6 +480,16 @@ double_ratcheting_init(int j, otrv4_t *otr) {
     return false;
   }
 
+#ifdef DEBUG
+  printf("INIT DOUBLE RATCHET\n");
+  printf("K_ecdh = ");
+  otrv4_memdump(k_ecdh, sizeof(k_ecdh_t));
+  printf("k_dh = ");
+  otrv4_memdump(k_dh, sizeof(k_dh_t));
+  printf("mixed_key = ");
+  otrv4_memdump(mix_key, sizeof(mix_key_t));
+#endif
+
   shared_secret_t shared;
   if (!calculate_shared_secret(shared, k_ecdh, mix_key)) {
     return false;
@@ -547,7 +558,93 @@ otrv4_receive_dre_auth(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr
 }
 
 bool
-otrv4_receive_data_message(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
+data_message_decrypt(uint8_t **dst, const m_enc_key_t enc_key, const data_message_t *data_msg) {
+  uint8_t *plain = malloc(data_msg->enc_msg_len);
+  if (plain == NULL)
+    return false;
+
+  if (0 != crypto_stream_xor(plain, data_msg->enc_msg, data_msg->enc_msg_len, data_msg->nonce, enc_key)) {
+    free(plain);
+    return false;
+  }
+
+  *dst = plain;
+  return true;
+}
+
+bool
+derive_encription_and_mac_keys(m_enc_key_t enc_key, m_mac_key_t mac_key, const chain_key_t chain_key) {
+  uint8_t magic1[1] = {0x1};
+  if(!sha3_256_kdf(enc_key, sizeof(m_enc_key_t), magic1, chain_key, sizeof(chain_key_t))) {
+    return false;
+  }
+
+  uint8_t magic2[1] = {0x2};
+  if(!sha3_512_kdf(mac_key, sizeof(m_mac_key_t), magic2, chain_key, sizeof(chain_key_t))) {
+    return false;
+  }
+
+  return true;
+}
+
+bool
+retrieve_receiving_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key, int ratchet_id, int message_id, const otrv4_t *otr) {
+  chain_key_t receiving;
+  if (!key_manager_get_receiving_chain_key_by_id(receiving, ratchet_id, message_id, otr->our_ecdh->pub, otr->their_ecdh, otr->keys)) {
+    return false;
+  }
+
+  return derive_encription_and_mac_keys(enc_key, mac_key, receiving);
+}
+
+bool
+otrv4_receive_data_message(otrv4_response_t *response, uint8_t *buff, size_t buflen, otrv4_t *otr) {
+  response->to_display = NULL;
+  response->to_send = NULL;
+  response->warning = OTR_WARN_NONE;
+
+  if (otr->state != OTR_STATE_ENCRYPTED_MESSAGES) {
+    //TODO: warn the user and send an error message with a code.
+    return false;
+  }
+
+  data_message_t data_message;
+  if (!data_message_deserialize(&data_message, buff, buflen)) {
+    return false;
+  }
+
+  m_enc_key_t enc_key;
+  m_mac_key_t mac_key;
+
+  if (!retrieve_receiving_message_keys(enc_key, mac_key, data_message.ratchet_id, data_message.message_id, otr)) {
+    return false;
+  }
+
+#ifdef DEBUG
+  printf("DECRYPTING\n");
+  printf("enc_key = ");
+  otrv4_memdump(enc_key, sizeof(m_enc_key_t));
+  printf("mac_key = ");
+  otrv4_memdump(mac_key, sizeof(m_mac_key_t));
+  printf("nonce = ");
+  otrv4_memdump(data_msg->nonce, DATA_MSG_NONCE_BYTES);
+#endif
+
+  if (!data_message_validate(mac_key, &data_message)) {
+    return false;
+  }
+
+  if (!data_message_decrypt((uint8_t**) &response->to_display, enc_key, &data_message)) {
+    return false;
+  }
+
+  //TODO: to_send = depends on the TLVs we proccess
+
+  return true;
+}
+
+bool
+otrv4_receive_encoded_message(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
   size_t dec_len = 0;
   uint8_t *decoded = NULL;
   int err = otrl_base64_otr_decode(message, &decoded, &dec_len);
@@ -583,6 +680,10 @@ otrv4_receive_data_message(otrv4_response_t *response, const string_t message, o
     }
     break;
   case OTR_DATA_MSG_TYPE:
+    if (!otrv4_receive_data_message(response, decoded, dec_len, otr)) {
+      free(decoded);
+      return false;
+    }
     break;
   default:
     //errror. bad message type
@@ -633,7 +734,7 @@ otrv4_receive_message(otrv4_response_t* response, otrv4_t *otr, const string_t m
     break;
 
   case IN_MSG_CYPHERTEXT:
-    return otrv4_receive_data_message(response, message, otr);
+    return otrv4_receive_encoded_message(response, message, otr);
     break;
   }
 
@@ -645,13 +746,7 @@ retrieve_sending_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key, const ot
   chain_key_t sending;
   int message_id = key_manager_get_sending_chain_key(sending, otr->keys, otr->our_ecdh->pub, otr->their_ecdh);
 
-  uint8_t magic1[1] = {0x1};
-  if(!sha3_256_kdf(enc_key, sizeof(m_enc_key_t), magic1, sending, sizeof(chain_key_t))) {
-    return -1;
-  }
-
-  uint8_t magic2[1] = {0x2};
-  if(!sha3_512_kdf(mac_key, sizeof(m_mac_key_t), magic2, sending, sizeof(chain_key_t))) {
+  if (!derive_encription_and_mac_keys(enc_key, mac_key, sending)) {
     return -1;
   }
 
@@ -674,6 +769,14 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
     return false;
   }
 
+#ifdef DEBUG
+  printf("ENCRYPTING\n");
+  printf("enc_key = ");
+  otrv4_memdump(enc_key, sizeof(m_enc_key_t));
+  printf("mac_key = ");
+  otrv4_memdump(mac_key, sizeof(m_mac_key_t));
+#endif
+
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
   data_msg->ratchet_id = otr->keys->current->id;
@@ -694,6 +797,15 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
   data_msg->enc_msg = c;
   data_msg->enc_msg_len = message_len;
 
+#ifdef DEBUG
+  printf("nonce = ");
+  otrv4_memdump(data_msg->nonce, DATA_MSG_NONCE_BYTES);
+  printf("msg = ");
+  otrv4_memdump(message, message_len);
+  printf("cipher = ");
+  otrv4_memdump(c, message_len);
+#endif
+
   uint8_t *body = NULL;
   size_t bodylen = 0;
   if (!data_message_body_aprint(&body, &bodylen, data_msg)) {
@@ -711,13 +823,12 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
   }
 
   memcpy(ser, body, bodylen);
-  if (!sha3_512_mac(ser+bodylen, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t), body, bodylen)) {
-    free(body);
+  free(body);
+
+  if (!sha3_512_mac(ser+bodylen, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t), ser, bodylen)) {
     free(ser);
     return false;
   }
-
-  free(body);
 
   *to_send = (uint8_t*) otrl_base64_otr_encode(ser, serlen);
   free(ser);

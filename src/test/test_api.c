@@ -45,7 +45,6 @@ test_api_conversation(void) {
   //Check double ratchet is initialized
   otrv4_assert(alice->state == OTR_STATE_ENCRYPTED_MESSAGES);
   otrv4_assert(alice->keys->current);
-  g_assert_cmpint(alice->keys->current->root_key[0], !=, 0);
 
   //Bob receives DRE-auth
   otrv4_assert(otrv4_receive_message(response_to_alice, bob, response_to_bob->to_send));
@@ -61,9 +60,15 @@ test_api_conversation(void) {
   //Check double ratchet is initialized
   otrv4_assert(bob->state == OTR_STATE_ENCRYPTED_MESSAGES);
   otrv4_assert(bob->keys->current);
-  g_assert_cmpint(bob->keys->current->root_key[0], !=, 0);
 
   otrv4_assert_cmpmem(alice->keys->current->root_key, bob->keys->current->root_key, sizeof(root_key_t));
+  otrv4_assert_cmpmem(alice->keys->current->chain_a->key, bob->keys->current->chain_a->key, sizeof(chain_key_t));
+  otrv4_assert_cmpmem(bob->keys->current->chain_b->key, alice->keys->current->chain_b->key, sizeof(chain_key_t));
+
+  chain_key_t bob_sending_key, alice_receiving_key;
+  key_manager_get_sending_chain_key(bob_sending_key, bob->keys, bob->our_ecdh->pub, alice->our_ecdh->pub);
+  key_manager_get_receiving_chain_key_by_id(alice_receiving_key, 0, 0, alice->our_ecdh->pub, bob->our_ecdh->pub, alice->keys);
+  otrv4_assert_cmpmem(bob_sending_key, alice_receiving_key, sizeof(chain_key_t));
 
   //AKE HAS FINISHED.
 
@@ -72,7 +77,6 @@ test_api_conversation(void) {
   otrv4_assert(otrv4_send_message(&to_send, (uint8_t*) "hi", 3, bob));
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
-return;
 
   //Alice receives a data message
   otrv4_assert(otrv4_receive_message(response_to_bob, alice, (string_t) to_send));

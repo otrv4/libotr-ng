@@ -108,6 +108,19 @@ chain_get_last(const chain_link_t *head) {
   return cursor;
 }
 
+const chain_link_t*
+chain_get_by_id(int message_id, const chain_link_t *head) {
+  const chain_link_t *cursor = head;
+  while (cursor->next && cursor->id != message_id)
+    cursor = cursor->next;
+
+  if (cursor->id == message_id) {
+    return cursor;
+  }
+
+  return NULL;
+}
+
 message_chain_t*
 decide_between_chain_keys(const ratchet_t *ratchet, const ec_public_key_t our, const ec_public_key_t their) {
   message_chain_t* ret = malloc(sizeof(message_chain_t));
@@ -150,11 +163,34 @@ int
 key_manager_get_sending_chain_key(chain_key_t sending, const key_manager_t manager, const ec_public_key_t our_ecdh, const ec_public_key_t their_ecdh) {
   message_chain_t *chain = decide_between_chain_keys(manager->current, our_ecdh, their_ecdh);
   const chain_link_t *last = chain_get_last(chain->sending);
-  memcpy(sending, last->key, sizeof(chain)); 
+  memcpy(sending, last->key, sizeof(chain_key_t)); 
   free(chain);
 
   return last->id;
 }
+
+bool
+key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int ratchet_id, int message_id, const ec_public_key_t our_ecdh, const ec_public_key_t their_ecdh, const key_manager_t manager) {
+  ratchet_t *ratchet = NULL;
+  if (manager->current != NULL && manager->current->id == ratchet_id) {
+    ratchet = manager->current;
+  } else if (manager->previous != NULL && manager->previous->id == ratchet_id) {
+    ratchet = manager->previous;
+  } else {
+    return false; // ratchet id not found
+  }
+
+  message_chain_t *chain = decide_between_chain_keys(ratchet, our_ecdh, their_ecdh);
+  const chain_link_t *link = chain_get_by_id(message_id, chain->receiving);
+  if (link == NULL) {
+    return false; //message id not found
+  }
+  memcpy(receiving, link->key, sizeof(chain_key_t)); 
+  free(chain);
+
+  return true;
+}
+
 
 bool
 calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh, const mix_key_t mix_key) {
