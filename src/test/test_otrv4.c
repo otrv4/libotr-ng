@@ -105,9 +105,8 @@ test_otrv4_receives_plaintext_with_ws_tag(otrv4_fixture_t *otrv4_fixture, gconst
   otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text."));
 
   g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
+  otrv4_assert(response->to_send);
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_AKE_IN_PROGRESS);
-  //TODO: How to assert the pointer is not null without g_assert_nonnull?
-  //g_assert_cmpint(otrv4_fixture->otr->pre_key, >, 0);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTR_VERSION_4);
 
   otrv4_response_free(response);
@@ -170,13 +169,12 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpoint
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_ENCRYPTED_MESSAGES);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTR_VERSION_4);
   g_assert_cmpstr(response->to_display, ==, NULL);
-  dake_dre_auth_t *dre_auth = malloc(sizeof(dake_dre_auth_t));
+  otrv4_assert(response->to_send);
 
+  dake_dre_auth_t *dre_auth = malloc(sizeof(dake_dre_auth_t));
   //TODO: should base64 decode the message to respond after ?OTR and then
   //deserialize
   dake_dre_auth_deserialize(dre_auth, (uint8_t*) response->to_send, 0);
-  //TODO: How to assert the pointer is not null without g_assert_nonnull?
-  //g_assert_cmpuint(dre_auth, >, 0);
 
   free(serialized);
   otrv4_response_free(response);
