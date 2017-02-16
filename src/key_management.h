@@ -40,6 +40,9 @@ key_manager_init(key_manager_t manager);
 void
 key_manager_destroy(key_manager_t manager);
 
+void
+key_manager_free(key_manager_t manager);
+
 bool
 derive_ratchet_keys(ratchet_t *ratchet, const shared_secret_t shared);
 

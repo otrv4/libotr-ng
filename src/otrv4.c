@@ -102,7 +102,7 @@ void
 otrv4_destroy(/*@only@*/ otrv4_t *otr) {
   dh_keypair_destroy(otr->our_dh);
   dh_mpi_release(otr->their_dh);
-  key_manager_destroy(otr->keys);
+  key_manager_free(otr->keys);
   user_profile_free(otr->profile);
   otr->profile = NULL;
 }

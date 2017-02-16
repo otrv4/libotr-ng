@@ -15,7 +15,14 @@ key_manager_init(key_manager_t manager){
 
 void
 key_manager_destroy(key_manager_t manager) {
-  //TODO: should walk all the hierarchy and free.
+  free(manager->current);
+  free(manager->previous);
+}
+
+void
+key_manager_free(key_manager_t manager) {
+  key_manager_destroy(manager);
+  //free(manager);
 }
 
 bool
@@ -171,7 +178,7 @@ int
 key_manager_get_sending_chain_key(chain_key_t sending, const key_manager_t manager, const ec_public_key_t our_ecdh, const ec_public_key_t their_ecdh) {
   message_chain_t *chain = decide_between_chain_keys(manager->current, our_ecdh, their_ecdh);
   const chain_link_t *last = chain_get_last(chain->sending);
-  memcpy(sending, last->key, sizeof(chain_key_t)); 
+  memcpy(sending, last->key, sizeof(chain_key_t));
   free(chain);
 
   return last->id;
@@ -193,7 +200,7 @@ key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int ratchet_id,
   if (link == NULL) {
     return false; //message id not found
   }
-  memcpy(receiving, link->key, sizeof(chain_key_t)); 
+  memcpy(receiving, link->key, sizeof(chain_key_t));
   free(chain);
 
   return true;
