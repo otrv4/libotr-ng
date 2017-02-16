@@ -33,6 +33,7 @@ test_api_conversation(void) {
 
   //Alice receives pre-key
   otrv4_assert(otrv4_receive_message(response_to_bob, alice, response_to_alice->to_send));
+  free(response_to_alice->to_send);
 
   //Alice has Bob's ephemeral keys
   otrv4_assert_ec_public_key_eq(alice->their_ecdh, bob->our_ecdh->pub);
@@ -49,6 +50,7 @@ test_api_conversation(void) {
 
   //Bob receives DRE-auth
   otrv4_assert(otrv4_receive_message(response_to_alice, bob, response_to_bob->to_send));
+  free(response_to_bob->to_send);
 
   //Bob has Alice's ephemeral keys
   otrv4_assert_ec_public_key_eq(bob->their_ecdh, alice->our_ecdh->pub);
