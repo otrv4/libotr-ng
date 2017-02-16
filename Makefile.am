@@ -18,5 +18,5 @@ code-check:
 	splint +trytorecover src/*.h src/**.c `pkg-config --cflags glib-2.0`
 
 mem-check: check
-	valgrind --suppressions=valgrind.supp --error-exitcode=1 --leak-check=full $(top_builddir)/src/test/test
+	valgrind --error-exitcode=42 --leak-check=full --suppressions=valgrind.supp $(top_builddir)/src/test/test
 
