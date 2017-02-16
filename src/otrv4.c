@@ -91,7 +91,7 @@ otrv4_new(cs_keypair_s *keypair) {
   otr->their_dh = dh_mpi_new();
   otr->state = OTRV4_STATE_START;
   otr->supported_versions = OTRV4_ALLOW_V4;
-  otr->running_version = OTR_VERSION_NONE;
+  otr->running_version = OTRV4_VERSION_NONE;
   otr->profile = get_my_user_profile(otr);
   key_manager_init(otr->keys);
 
@@ -249,14 +249,14 @@ void
 otrv4_running_version_set_from_tag(otrv4_t *otr, const string_t message) {
   if (otrv4_allow_version(otr, OTRV4_ALLOW_V4)) {
     if (strstr(message, tag_version_v4)) {
-      otr->running_version = OTR_VERSION_4;
+      otr->running_version = OTRV4_VERSION_4;
       return;
     }
   }
 
   if (otrv4_allow_version(otr, OTRV4_ALLOW_V3)) {
     if (strstr(message, tag_version_v3)) {
-      otr->running_version = OTR_VERSION_3;
+      otr->running_version = OTRV4_VERSION_3;
       return;
     }
   }
@@ -275,14 +275,14 @@ void
 otrv4_running_version_set_from_query(otrv4_t *otr, const string_t message) {
   if (otrv4_allow_version(otr, OTRV4_ALLOW_V4)) {
       if (strstr(message, "4")) {
-        otr->running_version = OTR_VERSION_4;
+        otr->running_version = OTRV4_VERSION_4;
         return;
       }
   }
 
   if (otrv4_allow_version(otr, OTRV4_ALLOW_V3)) {
     if (strstr(message, "3")) {
-      otr->running_version = OTR_VERSION_3;
+      otr->running_version = OTRV4_VERSION_3;
       return;
     }
   }
@@ -390,14 +390,14 @@ otrv4_receive_tagged_plaintext(otrv4_response_t *response, const string_t messag
   //remove tag from message
 
   switch (otr->running_version) {
-  case OTR_VERSION_4:
+  case OTRV4_VERSION_4:
     if (!otrv4_message_to_display_without_tag(response, message, tag_version_v4)) {
       return false;
     }
 
     return otrv4_start_dake(response, message, otr);
     break;
-  case OTR_VERSION_3:
+  case OTRV4_VERSION_3:
     return otrv3_receive_message(message);
     break;
   default:
@@ -414,10 +414,10 @@ otrv4_receive_query_message(otrv4_response_t *response, const string_t message, 
   otrv4_running_version_set_from_query(otr, message);
 
   switch (otr->running_version) {
-  case OTR_VERSION_4:
+  case OTRV4_VERSION_4:
     return otrv4_start_dake(response, message, otr);
     break;
-  case OTR_VERSION_3:
+  case OTRV4_VERSION_3:
     return otrv3_receive_message(message);
     break;
   default:

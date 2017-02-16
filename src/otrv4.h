@@ -21,9 +21,9 @@ typedef enum {
 } otrv4_supported_version;
 
 typedef enum {
-  OTR_VERSION_NONE = 0,
-  OTR_VERSION_3 = 3,
-  OTR_VERSION_4 = 4
+  OTRV4_VERSION_NONE = 0,
+  OTRV4_VERSION_3 = 3,
+  OTRV4_VERSION_4 = 4
 } otrv4_version_t;
 
 typedef struct {
