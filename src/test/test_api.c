@@ -16,13 +16,14 @@ test_api_conversation(void) {
 
   otrv4_response_t *response_to_bob = otrv4_response_new();
   otrv4_response_t *response_to_alice = otrv4_response_new();
-  string_t query_message = NULL;
 
+  string_t query_message = NULL;
   otrv4_build_query_message(&query_message, alice, "", 0);
   otrv4_assert_cmpmem("?OTRv4", query_message, 6);
 
   //Bob receives query message
   otrv4_assert(otrv4_receive_message(response_to_alice, bob, query_message));
+  free(query_message);
 
   //Should reply with a pre-key
   otrv4_assert(bob->state == OTR_STATE_AKE_IN_PROGRESS);

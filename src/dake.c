@@ -727,5 +727,6 @@ dake_dre_auth_validate(ec_public_key_t their_ecdh,
   valid &= not_expired(dre_auth->profile->expires);
 
   // TODO: validate something Nick said about degenerated keys
+
   return valid;
 }

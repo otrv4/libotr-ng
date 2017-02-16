@@ -190,7 +190,6 @@ test_dake_dre_auth_serialize() {
   //assert phi
   otrv4_assert_cmpmem(expected_phi, cursor, dre_auth->phi_len);
 
-  dh_keypair_destroy(our_dh);
   dake_dre_auth_free(dre_auth);
   dh_keypair_destroy(our_dh);
   free(serialized);

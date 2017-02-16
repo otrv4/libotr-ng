@@ -120,7 +120,6 @@ test_dake_pre_key_valid(pre_key_fixture_t *f, gconstpointer data) {
   ec_keypair_destroy(ecdh);
   dh_keypair_destroy(dh);
   dake_pre_key_free(pre_key);
-  dh_keypair_destroy(dh);
 }
 
 void

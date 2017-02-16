@@ -35,6 +35,9 @@ data_message_new();
 void
 data_message_free(data_message_t *data_msg);
 
+void
+data_message_destroy(data_message_t *data_msg);
+
 bool
 data_message_body_aprint(uint8_t **body, size_t *bodylen, const data_message_t *data_msg);
 

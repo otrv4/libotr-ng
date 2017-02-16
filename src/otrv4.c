@@ -369,6 +369,8 @@ otrv4_reply_with_pre_key(otrv4_response_t *response, const otrv4_t *otr) {
 void
 otrv4_generate_ephemeral_keys(otrv4_t *otr) {
   ec_keypair_generate(otr->our_ecdh);
+
+  dh_keypair_destroy(otr->our_dh);
   dh_keypair_generate(otr->our_dh);
 }
 
@@ -553,6 +555,8 @@ otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr)
       return false;
     }
 
+    dake_pre_key_destroy(pre_key);
+
     if (!serialize_and_encode_dre_auth(dst, dre_auth)) {
       dake_dre_auth_free(dre_auth);
       return false;
@@ -639,15 +643,16 @@ otrv4_receive_data_message(otrv4_response_t *response, uint8_t *buff, size_t buf
     return false;
   }
 
-  data_message_t data_message;
-  if (!data_message_deserialize(&data_message, buff, buflen)) {
+  data_message_t data_message[1];
+  if (!data_message_deserialize(data_message, buff, buflen)) {
     return false;
   }
 
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
 
-  if (!retrieve_receiving_message_keys(enc_key, mac_key, data_message.ratchet_id, data_message.message_id, otr)) {
+  if (!retrieve_receiving_message_keys(enc_key, mac_key, data_message->ratchet_id, data_message->message_id, otr)) {
+    data_message_destroy(data_message);
     return false;
   }
 
@@ -661,16 +666,19 @@ otrv4_receive_data_message(otrv4_response_t *response, uint8_t *buff, size_t buf
   otrv4_memdump(data_msg->nonce, DATA_MSG_NONCE_BYTES);
 #endif
 
-  if (!data_message_validate(mac_key, &data_message)) {
+  if (!data_message_validate(mac_key, data_message)) {
+    data_message_destroy(data_message);
     return false;
   }
 
-  if (!data_message_decrypt((uint8_t**) &response->to_display, enc_key, &data_message)) {
+  if (!data_message_decrypt((uint8_t**) &response->to_display, enc_key, data_message)) {
+    data_message_destroy(data_message);
     return false;
   }
 
   //TODO: to_send = depends on the TLVs we proccess
 
+  data_message_destroy(data_message);
   return true;
 }
 

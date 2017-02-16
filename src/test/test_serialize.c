@@ -50,6 +50,7 @@ test_serialize_deserialize_data() {
   uint8_t *dst = malloc(9);
   otrv4_assert(dst);
   g_assert_cmpint(9, ==, serialize_data(dst, src, 5));
+  free(dst);
 }
 
 void

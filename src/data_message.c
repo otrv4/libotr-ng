@@ -18,10 +18,7 @@ data_message_new() {
 }
 
 void
-data_message_free(data_message_t *data_msg) {
-  if (data_msg == NULL)
-    return;
-
+data_message_destroy(data_message_t *data_msg) {
   data_msg->enc_msg_len = 0;
   free(data_msg->enc_msg);
   data_msg->enc_msg = NULL;
@@ -31,6 +28,14 @@ data_message_free(data_message_t *data_msg) {
   data_msg->old_mac_keys = NULL;
 
   dh_mpi_release(data_msg->our_dh);
+}
+
+void
+data_message_free(data_message_t *data_msg) {
+  if (data_msg == NULL)
+    return;
+
+  data_message_destroy(data_msg);
 
   free(data_msg);
 }

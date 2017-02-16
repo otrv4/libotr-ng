@@ -139,12 +139,14 @@ decide_between_chain_keys(const ratchet_t *ratchet, const ec_public_key_t our, c
 
   size_t nbits = sizeof(ec_public_key_t);
   gcry_mpi_t our_mpi = gcry_mpi_new(nbits);
+  gcry_mpi_t their_mpi = gcry_mpi_new(nbits);
+
   if (gcry_mpi_scan(&our_mpi, GCRYMPI_FMT_USG, our, sizeof(ec_public_key_t), NULL)){
     gcry_mpi_release(our_mpi);
+    gcry_mpi_release(their_mpi);
     return false;
   }
 
-  gcry_mpi_t their_mpi = gcry_mpi_new(nbits);
   if (gcry_mpi_scan(&their_mpi, GCRYMPI_FMT_USG, their, sizeof(ec_public_key_t), NULL)){
     gcry_mpi_release(our_mpi);
     gcry_mpi_release(their_mpi);
@@ -162,7 +164,6 @@ decide_between_chain_keys(const ratchet_t *ratchet, const ec_public_key_t our, c
 
   gcry_mpi_release(our_mpi);
   gcry_mpi_release(their_mpi);
-
   return ret;
 }
 
