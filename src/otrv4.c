@@ -306,7 +306,7 @@ otrv4_response_new(void) {
 
   response->to_display = NULL;
   response->to_send = NULL;
-  response->warning = OTR_WARN_NONE;
+  response->warning = OTRV4_WARN_NONE;
 
   return response;
 }
@@ -332,7 +332,7 @@ otrv4_receive_plaintext(otrv4_response_t *response, const string_t message, cons
   otrv4_message_to_display_set(response, message);
 
   if (otr->state != OTRV4_STATE_START) {
-    response->warning = OTR_WARN_RECEIVED_UNENCRYPTED;
+    response->warning = OTRV4_WARN_RECEIVED_UNENCRYPTED;
   }
 
   return true;
@@ -639,7 +639,7 @@ bool
 otrv4_receive_data_message(otrv4_response_t *response, uint8_t *buff, size_t buflen, otrv4_t *otr) {
   response->to_display = NULL;
   response->to_send = NULL;
-  response->warning = OTR_WARN_NONE;
+  response->warning = OTRV4_WARN_NONE;
 
   if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
     //TODO: warn the user and send an error message with a code.

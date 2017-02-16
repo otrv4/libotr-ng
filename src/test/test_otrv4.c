@@ -94,7 +94,7 @@ test_otrv4_receives_plaintext_without_ws_tag_not_on_start(otrv4_fixture_t *otrv4
   otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, "Some random text."));
 
   g_assert_cmpstr(response->to_display, ==, "Some random text.");
-  g_assert_cmpint(response->warning, ==, OTR_WARN_RECEIVED_UNENCRYPTED);
+  g_assert_cmpint(response->warning, ==, OTRV4_WARN_RECEIVED_UNENCRYPTED);
 
   otrv4_response_free(response);
 }

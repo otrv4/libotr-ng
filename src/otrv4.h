@@ -56,8 +56,8 @@ typedef enum {
 } otrv4_in_message_type_t;
 
 typedef enum {
-  OTR_WARN_NONE = 0,
-  OTR_WARN_RECEIVED_UNENCRYPTED
+  OTRV4_WARN_NONE = 0,
+  OTRV4_WARN_RECEIVED_UNENCRYPTED
 } otrv4_warning_t;
 
 typedef struct {
