@@ -8,10 +8,10 @@
 #include "key_management.h"
 
 typedef enum {
-  OTR_STATE_START = 1,
-  OTR_STATE_AKE_IN_PROGRESS = 2,
-  OTR_STATE_ENCRYPTED_MESSAGES = 3,
-  OTR_STATE_FINISHED = 4
+  OTRV4_STATE_START = 1,
+  OTRV4_STATE_AKE_IN_PROGRESS = 2,
+  OTRV4_STATE_ENCRYPTED_MESSAGES = 3,
+  OTRV4_STATE_FINISHED = 4
 } stateFlag;
 
 typedef enum {

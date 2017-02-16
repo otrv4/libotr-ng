@@ -89,7 +89,7 @@ otrv4_new(cs_keypair_s *keypair) {
   otr->our_dh->priv = dh_mpi_new();
   otr->our_dh->pub = dh_mpi_new();
   otr->their_dh = dh_mpi_new();
-  otr->state = OTR_STATE_START;
+  otr->state = OTRV4_STATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
   otr->running_version = OTR_VERSION_NONE;
   otr->profile = get_my_user_profile(otr);
@@ -124,7 +124,7 @@ otrv4_version_support_v3(otrv4_t *otr) {
 
 bool
 otrv4_start(otrv4_t *otr) {
-  otr->state = OTR_STATE_START;
+  otr->state = OTRV4_STATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
 
   return true;
@@ -331,7 +331,7 @@ bool
 otrv4_receive_plaintext(otrv4_response_t *response, const string_t message, const otrv4_t *otr) {
   otrv4_message_to_display_set(response, message);
 
-  if (otr->state != OTR_STATE_START) {
+  if (otr->state != OTRV4_STATE_START) {
     response->warning = OTR_WARN_RECEIVED_UNENCRYPTED;
   }
 
@@ -379,7 +379,7 @@ otrv4_generate_ephemeral_keys(otrv4_t *otr) {
 bool
 otrv4_start_dake(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
   otrv4_generate_ephemeral_keys(otr);
-  otrv4_state_set(otr, OTR_STATE_AKE_IN_PROGRESS);
+  otrv4_state_set(otr, OTRV4_STATE_AKE_IN_PROGRESS);
 
   return otrv4_reply_with_pre_key(response, otr);
 }
@@ -529,7 +529,7 @@ double_ratcheting_init(int j, otrv4_t *otr) {
     return false;
   }
 
-  otr->state = OTR_STATE_ENCRYPTED_MESSAGES;
+  otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
   return true;
 }
 
@@ -540,7 +540,7 @@ otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr)
     return false;
   }
 
-  if (otr->state == OTR_STATE_START) {
+  if (otr->state == OTRV4_STATE_START) {
     if (!dake_pre_key_validate(pre_key)) {
       dake_pre_key_destroy(pre_key);
       return false;
@@ -574,7 +574,7 @@ otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr)
 
 bool
 otrv4_receive_dre_auth(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr) {
-  if (otr->state != OTR_STATE_AKE_IN_PROGRESS) {
+  if (otr->state != OTRV4_STATE_AKE_IN_PROGRESS) {
     return true;
   }
 
@@ -641,7 +641,7 @@ otrv4_receive_data_message(otrv4_response_t *response, uint8_t *buff, size_t buf
   response->to_send = NULL;
   response->warning = OTR_WARN_NONE;
 
-  if (otr->state != OTR_STATE_ENCRYPTED_MESSAGES) {
+  if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
     //TODO: warn the user and send an error message with a code.
     return false;
   }
@@ -883,11 +883,11 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
 
 bool
 otrv4_send_message(uint8_t **to_send, const uint8_t *message, size_t message_len, otrv4_t *otr) {
-  if (otr->state == OTR_STATE_FINISHED) {
+  if (otr->state == OTRV4_STATE_FINISHED) {
     return false; //Should restart
   }
 
-  if (otr->state != OTR_STATE_ENCRYPTED_MESSAGES) {
+  if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
     //TODO: queue message
     return false;
   }
