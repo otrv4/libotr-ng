@@ -88,6 +88,7 @@ otrv4_new(cs_keypair_s *keypair) {
   otr->keypair = keypair;
   otr->our_dh->priv = dh_mpi_new();
   otr->our_dh->pub = dh_mpi_new();
+  otr->their_dh = dh_mpi_new();
   otr->state = OTR_STATE_START;
   otr->supported_versions = OTR_ALLOW_V4;
   otr->running_version = OTR_VERSION_NONE;
@@ -100,6 +101,7 @@ otrv4_new(cs_keypair_s *keypair) {
 void
 otrv4_destroy(/*@only@*/ otrv4_t *otr) {
   dh_keypair_destroy(otr->our_dh);
+  dh_mpi_release(otr->their_dh);
   key_manager_destroy(otr->keys);
   user_profile_free(otr->profile);
   otr->profile = NULL;
@@ -545,6 +547,7 @@ otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr)
     }
 
     ec_public_key_copy(otr->their_ecdh, pre_key->Y);
+    dh_mpi_release(otr->their_dh);
     otr->their_dh = dh_mpi_copy(pre_key->B);
 
     //TODO: why not use dake_dre_auth_new(otr->profile);

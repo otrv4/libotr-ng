@@ -26,6 +26,7 @@ dake_pre_key_new(const user_profile_t *profile) {
   pre_key->sender_instance_tag = 0;
   pre_key->receiver_instance_tag = 0;
   pre_key->profile->versions = NULL;
+  pre_key->B = dh_mpi_new();
   user_profile_copy(pre_key->profile, profile);
 
   return pre_key;
@@ -43,6 +44,7 @@ dake_pre_key_free(dake_pre_key_t *pre_key) {
 void
 dake_pre_key_destroy(dake_pre_key_t *pre_key) {
   user_profile_destroy(pre_key->profile);
+  dh_mpi_release(pre_key->B);
 }
 
 bool
