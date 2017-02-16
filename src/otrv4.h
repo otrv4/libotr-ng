@@ -12,7 +12,7 @@ typedef enum {
   OTRV4_STATE_AKE_IN_PROGRESS = 2,
   OTRV4_STATE_ENCRYPTED_MESSAGES = 3,
   OTRV4_STATE_FINISHED = 4
-} stateFlag;
+} otrv4_state;
 
 typedef enum {
   OTRV4_ALLOW_NONE = 0,
@@ -32,7 +32,7 @@ typedef struct {
 
   user_profile_t *profile;
   cs_keypair_s *keypair;
-  stateFlag state;
+  otrv4_state state;
   int supported_versions;
   otrv4_version_t running_version;
 

@@ -241,7 +241,7 @@ otrv4_message_to_display_without_tag(otrv4_response_t *response, const string_t 
 }
 
 void
-otrv4_state_set(otrv4_t *otr, stateFlag target) {
+otrv4_state_set(otrv4_t *otr, otrv4_state target) {
   otr->state = target;
 }
 
