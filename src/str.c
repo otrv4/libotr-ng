@@ -4,15 +4,14 @@
 #include "str.h"
 
 /*@null@*/ char *
-otrv4_strdup(const char *s) {
+otrv4_strndup(const char *s, size_t s_len) {
   if (s == NULL)
     return NULL;
 
-  size_t len = strlen (s) + 1;
-  void *new = malloc (len);
+  void *new = malloc (s_len + 1);
 
   if (new == NULL)
     return NULL;
 
-  return (char *) memcpy (new, s, len);
+  return (char *) memcpy (new, s, s_len + 1);
 }

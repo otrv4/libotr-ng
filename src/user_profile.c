@@ -21,7 +21,7 @@ user_profile_new(const string_t versions) {
   }
 
   profile->expires = 0;
-  profile->versions = otrv4_strdup(versions);
+  profile->versions = otrv4_strndup(versions, strlen(versions));
   memset(profile->signature, 0, sizeof(ec_signature_t));
   otr_mpi_init(profile->transitional_signature);
 
@@ -36,7 +36,7 @@ user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
   }
 
   cs_public_key_copy(dst->pub_key, src->pub_key);
-  dst->versions = otrv4_strdup(src->versions);
+  dst->versions = otrv4_strndup(src->versions, strlen(src->versions));
   dst->expires = src->expires;
 
   memcpy(dst->signature, src->signature, sizeof(ec_signature_t));
@@ -67,7 +67,7 @@ user_profile_body_serialize(uint8_t *dst, const user_profile_t *profile) {
   uint8_t *target = dst;
 
   target += serialize_cs_public_key(target, profile->pub_key);  
-  target += serialize_data(target, (uint8_t*) profile->versions, strlen(profile->versions)+1);
+  target += serialize_data(target, (uint8_t*) profile->versions, strlen(profile->versions) + 1);
   target += serialize_uint64(target, profile->expires);
 
   return target - dst;

@@ -211,8 +211,8 @@ otrv4_message_contains_tag(const string_t message) {
 }
 
 void
-otrv4_message_to_display_set(otrv4_response_t *response, const string_t message) {
-  response->to_display = otrv4_strdup(message);
+otrv4_message_to_display_set(otrv4_response_t *response, const string_t message, size_t msg_len) {
+  response->to_display = otrv4_strndup(message, msg_len);
 }
 
 bool
@@ -234,7 +234,7 @@ otrv4_message_to_display_without_tag(otrv4_response_t *response, const string_t 
   strncpy(buff, message+tag_length, chars);
   buff[chars] = '\0';
 
-  otrv4_message_to_display_set(response, buff);
+  otrv4_message_to_display_set(response, buff, chars);
 
   free(buff);
   return true;
@@ -328,8 +328,11 @@ otrv4_response_free(otrv4_response_t * response) {
 
 //TODO: Is not receiving a plaintext a problem?
 bool
-otrv4_receive_plaintext(otrv4_response_t *response, const string_t message, const otrv4_t *otr) {
-  otrv4_message_to_display_set(response, message);
+otrv4_receive_plaintext(otrv4_response_t *response,
+                        const string_t message,
+                        const otrv4_t *otr,
+                        size_t msg_len) {
+  otrv4_message_to_display_set(response, message, msg_len);
 
   if (otr->state != OTRV4_STATE_START) {
     response->warning = OTRV4_WARN_RECEIVED_UNENCRYPTED;
@@ -752,19 +755,22 @@ get_message_type(const string_t message) {
 
 // Receive a possibly OTR message.
 bool
-otrv4_receive_message(otrv4_response_t* response, otrv4_t *otr, const string_t message) {
+otrv4_receive_message(otrv4_response_t* response,
+                      otrv4_t *otr,
+                      const string_t message,
+                      size_t message_len) {
   if (message == NULL) {
     return false;
   }
 
-  otrv4_message_to_display_set(response, NULL);
+  otrv4_message_to_display_set(response, NULL, 0);
   response->to_send = NULL;
 
   switch (get_message_type(message)) {
   case IN_MSG_NONE:
     return false;
   case IN_MSG_PLAINTEXT:
-    return otrv4_receive_plaintext(response, message, otr);
+    return otrv4_receive_plaintext(response, message, otr, message_len);
     break;
 
   case IN_MSG_TAGGED_PLAINTEXT:

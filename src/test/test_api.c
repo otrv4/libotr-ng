@@ -22,7 +22,7 @@ test_api_conversation(void) {
   otrv4_assert_cmpmem("?OTRv4", query_message, 6);
 
   //Bob receives query message
-  otrv4_assert(otrv4_receive_message(response_to_alice, bob, query_message));
+  otrv4_assert(otrv4_receive_message(response_to_alice, bob, query_message, 6));
   free(query_message);
 
   //Should reply with a pre-key
@@ -32,7 +32,7 @@ test_api_conversation(void) {
   otrv4_assert_cmpmem("?OTR:AAQP", response_to_alice->to_send, 9);
 
   //Alice receives pre-key
-  otrv4_assert(otrv4_receive_message(response_to_bob, alice, response_to_alice->to_send));
+  otrv4_assert(otrv4_receive_message(response_to_bob, alice, response_to_alice->to_send, strlen(response_to_alice->to_send)));
   free(response_to_alice->to_send);
 
   //Alice has Bob's ephemeral keys
@@ -49,7 +49,7 @@ test_api_conversation(void) {
   otrv4_assert(alice->keys->current);
 
   //Bob receives DRE-auth
-  otrv4_assert(otrv4_receive_message(response_to_alice, bob, response_to_bob->to_send));
+  otrv4_assert(otrv4_receive_message(response_to_alice, bob, response_to_bob->to_send, strlen(response_to_bob->to_send)));
   free(response_to_bob->to_send);
 
   //Bob has Alice's ephemeral keys
@@ -82,7 +82,7 @@ test_api_conversation(void) {
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
 
   //Alice receives a data message
-  otrv4_assert(otrv4_receive_message(response_to_bob, alice, (string_t) to_send));
+  otrv4_assert(otrv4_receive_message(response_to_bob, alice, (string_t) to_send, sizeof(to_send)));
   free(to_send);
 
   otrv4_assert_cmpmem(response_to_bob->to_display, "hi", 3);

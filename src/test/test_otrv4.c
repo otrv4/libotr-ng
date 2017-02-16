@@ -79,7 +79,7 @@ test_otrv4_builds_whitespace_tag_v34(otrv4_fixture_t *otrv4_fixture, gconstpoint
 void
 test_otrv4_receives_plaintext_without_ws_tag_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_response_t *response = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, "Some random text."));
+  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, "Some random text.",17 ));
 
   g_assert_cmpstr(response->to_display, ==, "Some random text.");
 
@@ -91,7 +91,7 @@ test_otrv4_receives_plaintext_without_ws_tag_not_on_start(otrv4_fixture_t *otrv4
   otrv4_fixture->otr->state = OTRV4_STATE_AKE_IN_PROGRESS;
 
   otrv4_response_t *response = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, "Some random text."));
+  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, "Some random text.", 17));
 
   g_assert_cmpstr(response->to_display, ==, "Some random text.");
   g_assert_cmpint(response->warning, ==, OTRV4_WARN_RECEIVED_UNENCRYPTED);
@@ -102,7 +102,8 @@ test_otrv4_receives_plaintext_without_ws_tag_not_on_start(otrv4_fixture_t *otrv4
 void
 test_otrv4_receives_plaintext_with_ws_tag(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_response_t *response = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text."));
+  string_t message = " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
+  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, message, strlen(message)));
 
   g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
   otrv4_assert(response->to_send);
@@ -117,7 +118,8 @@ test_otrv4_receives_plaintext_with_ws_tag_v3(otrv4_fixture_t *otrv4_fixture, gco
   otrv4_version_support_v3(otrv4_fixture->otr);
 
   otrv4_response_t *response = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, " \t  \t\t\t\t \t \t \t    \t\t  \t\tAnd some random invitation text."));
+  string_t message = " \t  \t\t\t\t \t \t \t    \t\t  \t\tAnd some random invitation text.";
+  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, message, strlen(message)));
 
   //g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
   //g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_AKE_IN_PROGRESS);
@@ -129,7 +131,7 @@ test_otrv4_receives_plaintext_with_ws_tag_v3(otrv4_fixture_t *otrv4_fixture, gco
 void
 test_otrv4_receives_query_message(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_response_t *response = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, "?OTRv4? And some random invitation text."));
+  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, "?OTRv4? And some random invitation text.", 40));
 
   g_assert_cmpstr(response->to_send, !=, NULL);
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_AKE_IN_PROGRESS);
@@ -143,7 +145,7 @@ test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture, gconstpoint
   otrv4_version_support_v3(otrv4_fixture->otr);
 
   otrv4_response_t *response = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, "?OTRv3? And some random invitation text."));
+  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, "?OTRv3? And some random invitation text.", 40));
 
   //TODO: How to assert the pointer is not null without g_assert_nonnull?
   //g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_AKE_IN_PROGRESS);
@@ -164,7 +166,7 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpoint
   memcpy(message + 5, serialized, strlen((const char*)serialized) + 1);
 
   otrv4_response_t *response = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, message));
+  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, message, strlen(message)));
 
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_ENCRYPTED_MESSAGES);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
@@ -184,7 +186,7 @@ void
 test_otrv4_receives_pre_key_invalid_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   char *pre_key = "?OTR:";
   otrv4_response_t *response = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, pre_key));
+  otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, pre_key, 5));
 
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_START);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);

@@ -4,7 +4,7 @@
 static inline char*
 _otrv4_memdump(const uint8_t *src, size_t len) {
   if (src == NULL) {
-    return otrv4_strdup("(NULL)");
+    return otrv4_strndup("(NULL)", 6);
   }
 
   //each char is represented by "0x00, "
