@@ -13,7 +13,7 @@ test_otrv4_starts_protocol() {
 
   g_assert_cmpint(started, ==, true);
   g_assert_cmpint(otr->state, ==, OTRV4_STATE_START);
-  g_assert_cmpint(otr->supported_versions, ==, OTR_ALLOW_V4);
+  g_assert_cmpint(otr->supported_versions, ==, OTRV4_ALLOW_V4);
 
   cs_keypair_destroy(keypair);
   otrv4_free(otr);
@@ -23,7 +23,7 @@ void
 test_otrv4_version_supports_v34(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_version_support_v3(otrv4_fixture->otr);
 
-  g_assert_cmpint(otrv4_fixture->otr->supported_versions, ==, OTR_ALLOW_V3 | OTR_ALLOW_V4);
+  g_assert_cmpint(otrv4_fixture->otr->supported_versions, ==, OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4);
 }
 
 void

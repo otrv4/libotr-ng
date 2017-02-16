@@ -15,10 +15,10 @@ typedef enum {
 } stateFlag;
 
 typedef enum {
-  OTR_ALLOW_NONE = 0,
-  OTR_ALLOW_V3 = 1,
-  OTR_ALLOW_V4 = 2
-} supportVersion;
+  OTRV4_ALLOW_NONE = 0,
+  OTRV4_ALLOW_V3 = 1,
+  OTRV4_ALLOW_V4 = 2
+} otrv4_supported_version;
 
 typedef enum {
   OTR_VERSION_NONE = 0,

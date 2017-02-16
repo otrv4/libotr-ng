@@ -34,7 +34,7 @@ static const string_t query = "?OTRv";
 static const string_t otrv4 = "?OTR:";
 
 int
-otrv4_allow_version(const otrv4_t *otr, supportVersion version) {
+otrv4_allow_version(const otrv4_t *otr, otrv4_supported_version version) {
   return (otr->supported_versions & version);
 }
 
@@ -46,11 +46,11 @@ allowed_versions(string_t *dst, const otrv4_t *otr) { //generate a string with a
   }
 
   memset(*dst, 0, 3*sizeof(char));
-  if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
+  if (otrv4_allow_version(otr, OTRV4_ALLOW_V4)) {
     strcat(*dst, "4");
   }
 
-  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
+  if (otrv4_allow_version(otr, OTRV4_ALLOW_V3)) {
     strcat(*dst, "3");
   }
 
@@ -90,7 +90,7 @@ otrv4_new(cs_keypair_s *keypair) {
   otr->our_dh->pub = dh_mpi_new();
   otr->their_dh = dh_mpi_new();
   otr->state = OTRV4_STATE_START;
-  otr->supported_versions = OTR_ALLOW_V4;
+  otr->supported_versions = OTRV4_ALLOW_V4;
   otr->running_version = OTR_VERSION_NONE;
   otr->profile = get_my_user_profile(otr);
   key_manager_init(otr->keys);
@@ -119,13 +119,13 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
 
 void
 otrv4_version_support_v3(otrv4_t *otr) {
-  otr->supported_versions |= OTR_ALLOW_V3;
+  otr->supported_versions |= OTRV4_ALLOW_V3;
 }
 
 bool
 otrv4_start(otrv4_t *otr) {
   otr->state = OTRV4_STATE_START;
-  otr->supported_versions = OTR_ALLOW_V4;
+  otr->supported_versions = OTRV4_ALLOW_V4;
 
   return true;
 }
@@ -137,8 +137,8 @@ otrv4_build_query_message(string_t *query_message,
                           size_t message_len) {
   //size = qm tag + msg length + versions + question mark + whitespace + null byte
   int qm_size = QUERY_MESSAGE_TAG_BYTES + message_len + 2 + 1;
-  int allows_v4 = otrv4_allow_version(otr, OTR_ALLOW_V4);
-  int allows_v3 = otrv4_allow_version(otr, OTR_ALLOW_V3);
+  int allows_v4 = otrv4_allow_version(otr, OTRV4_ALLOW_V4);
+  int allows_v3 = otrv4_allow_version(otr, OTRV4_ALLOW_V3);
   if (allows_v4) qm_size++;
   if (allows_v3) qm_size++;
 
@@ -173,8 +173,8 @@ otrv4_build_whitespace_tag(string_t *whitespace_tag,
                            const string_t message,
                            size_t message_len) {
   size_t m_size = WHITESPACE_TAG_BASE_BYTES + message_len + 1;
-  int allows_v4 = otrv4_allow_version(otr, OTR_ALLOW_V4);
-  int allows_v3 = otrv4_allow_version(otr, OTR_ALLOW_V3);
+  int allows_v4 = otrv4_allow_version(otr, OTRV4_ALLOW_V4);
+  int allows_v3 = otrv4_allow_version(otr, OTRV4_ALLOW_V3);
   if (allows_v4) m_size += WHITESPACE_TAG_VERSION_BYTES;
   if (allows_v3) m_size += WHITESPACE_TAG_VERSION_BYTES;
 
@@ -247,14 +247,14 @@ otrv4_state_set(otrv4_t *otr, stateFlag target) {
 
 void
 otrv4_running_version_set_from_tag(otrv4_t *otr, const string_t message) {
-  if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
+  if (otrv4_allow_version(otr, OTRV4_ALLOW_V4)) {
     if (strstr(message, tag_version_v4)) {
       otr->running_version = OTR_VERSION_4;
       return;
     }
   }
 
-  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
+  if (otrv4_allow_version(otr, OTRV4_ALLOW_V3)) {
     if (strstr(message, tag_version_v3)) {
       otr->running_version = OTR_VERSION_3;
       return;
@@ -273,14 +273,14 @@ otrv4_message_is_query(const string_t message) {
 
 void
 otrv4_running_version_set_from_query(otrv4_t *otr, const string_t message) {
-  if (otrv4_allow_version(otr, OTR_ALLOW_V4)) {
+  if (otrv4_allow_version(otr, OTRV4_ALLOW_V4)) {
       if (strstr(message, "4")) {
         otr->running_version = OTR_VERSION_4;
         return;
       }
   }
 
-  if (otrv4_allow_version(otr, OTR_ALLOW_V3)) {
+  if (otrv4_allow_version(otr, OTRV4_ALLOW_V3)) {
     if (strstr(message, "3")) {
       otr->running_version = OTR_VERSION_3;
       return;
@@ -429,7 +429,7 @@ otrv4_receive_query_message(otrv4_response_t *response, const string_t message, 
 }
 
 typedef struct {
-  supportVersion version;
+  otrv4_supported_version version;
   uint8_t type;
 } otrv4_header_t;
 
@@ -450,11 +450,11 @@ extract_header(otrv4_header_t *dst, const uint8_t *buffer, const size_t bufflen)
     return false;
   }
 
-  dst->version = OTR_ALLOW_NONE;
+  dst->version = OTRV4_ALLOW_NONE;
   if (version == 0x04) {
-    dst->version = OTR_ALLOW_V4;
+    dst->version = OTRV4_ALLOW_V4;
   } else if (version == 0x03) {
-    dst->version = OTR_ALLOW_V3;
+    dst->version = OTRV4_ALLOW_V3;
   }
   dst->type = type;
 
