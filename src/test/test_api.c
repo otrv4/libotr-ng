@@ -36,8 +36,10 @@ test_api_conversation(void) {
   free(response_to_alice->to_send);
 
   //Alice has Bob's ephemeral keys
-  otrv4_assert_ec_public_key_eq(alice->their_ecdh, bob->our_ecdh->pub);
-  otrv4_assert_dh_public_key_eq(alice->their_dh, bob->our_dh->pub);
+  otrv4_assert_ec_public_key_eq(alice->keys->their_ecdh, bob->keys->our_ecdh->pub);
+  otrv4_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 0);
 
   //Should reply with a dre-auth
   otrv4_assert(response_to_bob->to_display == NULL);
@@ -53,8 +55,10 @@ test_api_conversation(void) {
   free(response_to_bob->to_send);
 
   //Bob has Alice's ephemeral keys
-  otrv4_assert_ec_public_key_eq(bob->their_ecdh, alice->our_ecdh->pub);
-  otrv4_assert_dh_public_key_eq(bob->their_dh, alice->our_dh->pub);
+  otrv4_assert_ec_public_key_eq(bob->keys->their_ecdh, alice->keys->our_ecdh->pub);
+  otrv4_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh->pub);
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 1);
 
   //There is no reply
   otrv4_assert(response_to_alice->to_display == NULL);
@@ -69,8 +73,8 @@ test_api_conversation(void) {
   otrv4_assert_cmpmem(bob->keys->current->chain_b->key, alice->keys->current->chain_b->key, sizeof(chain_key_t));
 
   chain_key_t bob_sending_key, alice_receiving_key;
-  key_manager_get_sending_chain_key(bob_sending_key, bob->keys, bob->our_ecdh->pub, alice->our_ecdh->pub);
-  key_manager_get_receiving_chain_key_by_id(alice_receiving_key, 0, 0, alice->our_ecdh->pub, bob->our_ecdh->pub, alice->keys);
+  key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
+  key_manager_get_receiving_chain_key_by_id(alice_receiving_key, 0, 0, alice->keys);
   otrv4_assert_cmpmem(bob_sending_key, alice_receiving_key, sizeof(chain_key_t));
 
   //AKE HAS FINISHED.
@@ -81,12 +85,40 @@ test_api_conversation(void) {
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
 
+  //This is a follow up message.
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 2);
+
   //Alice receives a data message
   otrv4_assert(otrv4_receive_message(response_to_bob, alice, (string_t) to_send, sizeof(to_send)));
   free(to_send);
 
   otrv4_assert_cmpmem(response_to_bob->to_display, "hi", 3);
   otrv4_assert(response_to_bob->to_send == NULL);
+
+  //Next message alice sends is a new "ratchet"
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 0);
+
+  //Alice sends a data message
+  otrv4_assert(otrv4_send_message(&to_send, (uint8_t*) "hello", 6, alice));
+  otrv4_assert(to_send);
+  otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+
+  //New ratchet hapenned
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 1);
+
+  //Bob receives a data message
+  otrv4_assert(otrv4_receive_message(response_to_alice, bob, (string_t) to_send, 6));
+  free(to_send);
+
+  otrv4_assert_cmpmem(response_to_alice->to_display, "hello", 6);
+  otrv4_assert(response_to_alice->to_send == NULL);
+
+  //Bob follows the ratchet 1 (and prepares to a new "ratchet")
+  g_assert_cmpint(bob->keys->i, ==, 1);
+  g_assert_cmpint(bob->keys->j, ==, 0);
 
   otrv4_response_free(response_to_alice);
   otrv4_response_free(response_to_bob);

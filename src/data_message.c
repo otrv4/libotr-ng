@@ -2,6 +2,7 @@
 #include "serialize.h"
 #include "deserialize.h"
 #include "constants.h"
+#include "sha3.h"
 
 data_message_t*
 data_message_new() {
@@ -56,6 +57,7 @@ data_message_body_aprint(uint8_t **body, size_t *bodylen, const data_message_t *
   cursor += serialize_uint32(cursor, data_msg->ratchet_id);
   cursor += serialize_uint32(cursor, data_msg->message_id);
   cursor += serialize_ec_public_key(cursor, data_msg->our_ecdh);
+  //TODO: This could be NULL. We need to test.
   cursor += serialize_dh_public_key(cursor, data_msg->our_dh);
   cursor += serialize_bytes_array(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
   cursor += serialize_data(cursor, data_msg->enc_msg, data_msg->enc_msg_len);
@@ -137,6 +139,8 @@ data_message_deserialize(data_message_t *dst, uint8_t *buff, size_t bufflen) {
 
   cursor += read;
   len -= read;
+
+  //TODO: This could be NULL. We need to test.
 
   otr_mpi_t b_mpi; // no need to free, because nothing is copied now
   if (!otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {

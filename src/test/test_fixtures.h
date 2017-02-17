@@ -19,12 +19,9 @@ otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
 
 void
 otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  ec_keypair_destroy(otrv4_fixture->otr->our_ecdh);
-  otrv4_free(otrv4_fixture->otr);
   cs_keypair_destroy(otrv4_fixture->keypair);
+  otrv4_free(otrv4_fixture->otr);
 }
-
-
 
 typedef struct {
   cs_keypair_t keypair;

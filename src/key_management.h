@@ -1,6 +1,9 @@
 #ifndef KEY_MANAGEMENT_H
 #define KEY_MANAGEMENT_H
 
+#include "ed448.h"
+#include "dh.h"
+
 typedef uint8_t k_dh_t[384];
 typedef uint8_t mix_key_t[32];
 typedef uint8_t k_ecdh_t[56];
@@ -25,9 +28,19 @@ typedef struct {
 } ratchet_t;
 
 typedef struct {
-  int i, j;
+  //AKE context
+  ec_keypair_t our_ecdh;
+  dh_keypair_t our_dh;
+
+  ec_public_key_t their_ecdh;
+  dh_public_key_t their_dh;
+
+  //Data messages context
+  int i, j; //TODO: We need to add k (maybe), but why dont we need to add a receiving_ratchet_id
   ratchet_t *current;
   ratchet_t *previous;
+
+  mix_key_t mix_key;
 } key_manager_t[1];
 
 typedef struct {
@@ -40,14 +53,38 @@ key_manager_init(key_manager_t manager);
 void
 key_manager_destroy(key_manager_t manager);
 
-void
-key_manager_free(key_manager_t manager);
+static inline void
+key_manager_set_their_ecdh(ec_public_key_t their, key_manager_t manager) {
+  ec_public_key_copy(manager->their_ecdh, their);
+}
 
+static inline void
+key_manager_set_their_dh(dh_public_key_t their, key_manager_t manager) {
+  dh_mpi_release(manager->their_dh);
+  manager->their_dh = dh_mpi_copy(their);
+}
+
+void
+key_manager_generate_ephemeral_keys(key_manager_t manager);
+
+bool
+key_manager_ratchetting_init(int j, key_manager_t manager);
+
+void
+key_manager_set_their_keys(ec_public_key_t their_ecdh, dh_public_key_t their_dh, key_manager_t manager);
+
+void
+key_manager_prepare_to_ratchet(key_manager_t manager);
+
+bool
+key_manager_new_ratchet(key_manager_t manager, const shared_secret_t shared);
+
+bool
+key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t manager);
+
+//PRIVATE
 bool
 derive_ratchet_keys(ratchet_t *ratchet, const shared_secret_t shared);
-
-bool
-key_manager_init_ratchet(key_manager_t manager, const shared_secret_t shared);
 
 void
 derive_chain_keys(key_manager_t manager, int i, int j);
@@ -58,22 +95,19 @@ retrive_chain_keys(chain_key_t ck, key_manager_t manager, int i, int j);
 void
 derive_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key, chain_key_t ck);
 
+bool
+key_manager_derive_sending_chain_key(key_manager_t manager);
+
 int
-key_manager_get_sending_chain_key(chain_key_t sending, const key_manager_t manager, const ec_public_key_t our_ecdh, const ec_public_key_t their_ecdh);
+key_manager_get_sending_chain_key(chain_key_t sending, const key_manager_t manager);
 
 bool
-key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int ratchet_id, int message_id, const ec_public_key_t our_ecdh, const ec_public_key_t their_ecdh, const key_manager_t manager);
+key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int ratchet_id, int message_id, const key_manager_t manager);
 
 bool
 calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh, const mix_key_t mix_key);
 
 bool
-sha3_512_mac(uint8_t *dst, size_t dstlen, const uint8_t *key, size_t keylen, const uint8_t *msg, size_t msglen);
-
-bool
-sha3_256_kdf(uint8_t *key, size_t keylen, const uint8_t magic[1], const uint8_t *secret, size_t secretlen);
-
-bool
-sha3_512_kdf(uint8_t *key, size_t keylen, const uint8_t magic[1], const uint8_t *secret, size_t secretlen);
+key_manager_rotate_keys(key_manager_t manager);
 
 #endif

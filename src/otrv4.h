@@ -36,14 +36,6 @@ typedef struct {
   int supported_versions;
   otrv4_version_t running_version;
 
-  //AKE context
-  ec_keypair_t our_ecdh;
-  dh_keypair_t our_dh;
-
-  ec_public_key_t their_ecdh;
-  dh_public_key_t their_dh;
-
-  //Data messages context
   key_manager_t keys;
 } otrv4_t;
 
@@ -76,6 +68,7 @@ void otrv4_version_support_v3(otrv4_t *otr);
 void
 otrv4_build_query_message
 (string_t *dst, const otrv4_t *otr, const string_t message, size_t message_len);
+
 bool
 otrv4_build_whitespace_tag
 (string_t *whitespace_tag, const otrv4_t *otr, const string_t message, size_t message_len);

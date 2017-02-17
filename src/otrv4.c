@@ -13,6 +13,11 @@
 #include "constants.h"
 #include "debug.h"
 
+#define OUR_ECDH(s) s->keys->our_ecdh->pub
+#define OUR_DH(s) s->keys->our_dh->pub
+#define THEIR_ECDH(s) s->keys->their_ecdh
+#define THEIR_DH(s) s->keys->their_dh
+
 #define QUERY_MESSAGE_TAG_BYTES 5
 #define WHITESPACE_TAG_BASE_BYTES 16
 #define WHITESPACE_TAG_VERSION_BYTES 8
@@ -86,9 +91,6 @@ otrv4_new(cs_keypair_s *keypair) {
   }
 
   otr->keypair = keypair;
-  otr->our_dh->priv = dh_mpi_new();
-  otr->our_dh->pub = dh_mpi_new();
-  otr->their_dh = dh_mpi_new();
   otr->state = OTRV4_STATE_START;
   otr->supported_versions = OTRV4_ALLOW_V4;
   otr->running_version = OTRV4_VERSION_NONE;
@@ -100,9 +102,7 @@ otrv4_new(cs_keypair_s *keypair) {
 
 void
 otrv4_destroy(/*@only@*/ otrv4_t *otr) {
-  dh_keypair_destroy(otr->our_dh);
-  dh_mpi_release(otr->their_dh);
-  key_manager_free(otr->keys);
+  key_manager_destroy(otr->keys);
   user_profile_free(otr->profile);
   otr->profile = NULL;
 }
@@ -362,8 +362,8 @@ otrv4_reply_with_pre_key(otrv4_response_t *response, const otrv4_t *otr) {
     return false;
   }
 
-  ec_public_key_copy(pre_key->Y, otr->our_ecdh->pub);
-  pre_key->B = dh_mpi_copy(otr->our_dh->pub);
+  ec_public_key_copy(pre_key->Y, OUR_ECDH(otr));
+  pre_key->B = dh_mpi_copy(OUR_DH(otr));
 
   bool ret = serialize_and_encode_pre_key(&response->to_send, pre_key);
   dake_pre_key_free(pre_key);
@@ -371,17 +371,15 @@ otrv4_reply_with_pre_key(otrv4_response_t *response, const otrv4_t *otr) {
   return ret;
 }
 
+//TODO: move to keymanager
 void
-otrv4_generate_ephemeral_keys(otrv4_t *otr) {
-  ec_keypair_generate(otr->our_ecdh);
-
-  dh_keypair_destroy(otr->our_dh);
-  dh_keypair_generate(otr->our_dh);
+generate_ephemeral_keys(otrv4_t *otr) {
+  key_manager_generate_ephemeral_keys(otr->keys);
 }
 
 bool
 otrv4_start_dake(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
-  otrv4_generate_ephemeral_keys(otr);
+  generate_ephemeral_keys(otr);
   otrv4_state_set(otr, OTRV4_STATE_AKE_IN_PROGRESS);
 
   return otrv4_reply_with_pre_key(response, otr);
@@ -469,8 +467,8 @@ otrv4_generate_dre_auth(dake_dre_auth_t **dst, const user_profile_t *their_profi
   dake_dre_auth_t *dre_auth = dake_dre_auth_new(otr->profile);
 
   if (!dake_dre_auth_generate_gamma_phi_sigma(
-      otr->keypair, otr->our_ecdh->pub, otr->our_dh->pub,
-      their_profile, otr->their_ecdh, otr->their_dh, dre_auth)) {
+      otr->keypair, OUR_ECDH(otr), OUR_DH(otr),
+      their_profile, THEIR_ECDH(otr), THEIR_DH(otr), dre_auth)) {
     dake_dre_auth_free(dre_auth);
     return false;
   }
@@ -495,42 +493,8 @@ serialize_and_encode_dre_auth(string_t *dst, const dake_dre_auth_t *dre_auth) {
 
 bool
 double_ratcheting_init(int j, otrv4_t *otr) {
-  otr->keys->i = 0;
-  otr->keys->j = j;
-
-  k_ecdh_t k_ecdh;
-  if (!ecdh_shared_secret(k_ecdh, sizeof(k_ecdh_t), otr->our_ecdh, otr->their_ecdh)) {
+  if (!key_manager_ratchetting_init(j, otr->keys))
     return false;
-  }
-
-  k_dh_t k_dh;
-  if (!dh_shared_secret(k_dh, sizeof(k_dh_t), otr->our_dh->priv, otr->their_dh)) {
-    return false;
-  }
-
-  mix_key_t mix_key;
-  if (!sha3_256(mix_key, sizeof(mix_key_t), k_dh, sizeof(k_dh_t))) {
-    return false;
-  }
-
-#ifdef DEBUG
-  printf("INIT DOUBLE RATCHET\n");
-  printf("K_ecdh = ");
-  otrv4_memdump(k_ecdh, sizeof(k_ecdh_t));
-  printf("k_dh = ");
-  otrv4_memdump(k_dh, sizeof(k_dh_t));
-  printf("mixed_key = ");
-  otrv4_memdump(mix_key, sizeof(mix_key_t));
-#endif
-
-  shared_secret_t shared;
-  if (!calculate_shared_secret(shared, k_ecdh, mix_key)) {
-    return false;
-  }
-
-  if (!key_manager_init_ratchet(otr->keys, shared)) {
-    return false;
-  }
 
   otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
   return true;
@@ -549,13 +513,12 @@ otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr)
       return false;
     }
 
-    ec_public_key_copy(otr->their_ecdh, pre_key->Y);
-    dh_mpi_release(otr->their_dh);
-    otr->their_dh = dh_mpi_copy(pre_key->B);
+    key_manager_set_their_ecdh(pre_key->Y, otr->keys);
+    key_manager_set_their_dh(pre_key->B, otr->keys);
 
     //TODO: why not use dake_dre_auth_new(otr->profile);
     dake_dre_auth_t *dre_auth = NULL;
-    otrv4_generate_ephemeral_keys(otr);
+    generate_ephemeral_keys(otr);
     if (!otrv4_generate_dre_auth(&dre_auth, pre_key->profile, otr)) {
       dake_pre_key_destroy(pre_key);
       return false;
@@ -586,12 +549,17 @@ otrv4_receive_dre_auth(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr
     return false;
   }
 
-  if (!dake_dre_auth_validate(otr->their_ecdh, &otr->their_dh,
-      otr->profile, otr->keypair, otr->our_ecdh->pub,
-      otr->our_dh->pub, dre_auth)) {
+  ec_public_key_t their_ecdh;
+  dh_public_key_t their_dh = dh_mpi_new();
+  if (!dake_dre_auth_validate(their_ecdh, &their_dh,
+      otr->profile, otr->keypair, OUR_ECDH(otr), OUR_DH(otr), dre_auth)) {
     dake_dre_auth_destroy(dre_auth);
     return false;
   }
+
+  key_manager_set_their_ecdh(their_ecdh, otr->keys);
+  key_manager_set_their_dh(their_dh, otr->keys);
+  dh_mpi_release(their_dh);
 
   *dst = NULL;
   dake_dre_auth_destroy(dre_auth);
@@ -631,7 +599,7 @@ derive_encription_and_mac_keys(m_enc_key_t enc_key, m_mac_key_t mac_key, const c
 bool
 retrieve_receiving_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key, int ratchet_id, int message_id, const otrv4_t *otr) {
   chain_key_t receiving;
-  if (!key_manager_get_receiving_chain_key_by_id(receiving, ratchet_id, message_id, otr->our_ecdh->pub, otr->their_ecdh, otr->keys)) {
+  if (!key_manager_get_receiving_chain_key_by_id(receiving, ratchet_id, message_id, otr->keys)) {
     return false;
   }
 
@@ -654,6 +622,10 @@ otrv4_receive_data_message(otrv4_response_t *response, uint8_t *buff, size_t buf
     return false;
   }
 
+  key_manager_set_their_keys(data_message->our_ecdh, data_message->our_dh, otr->keys);
+  if (!key_manager_ensure_on_ratchet(data_message->ratchet_id, otr->keys))
+    return false;
+
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
 
@@ -669,7 +641,7 @@ otrv4_receive_data_message(otrv4_response_t *response, uint8_t *buff, size_t buf
   printf("mac_key = ");
   otrv4_memdump(mac_key, sizeof(m_mac_key_t));
   printf("nonce = ");
-  otrv4_memdump(data_msg->nonce, DATA_MSG_NONCE_BYTES);
+  otrv4_memdump(data_message->nonce, DATA_MSG_NONCE_BYTES);
 #endif
 
   if (!data_message_validate(mac_key, data_message)) {
@@ -683,6 +655,9 @@ otrv4_receive_data_message(otrv4_response_t *response, uint8_t *buff, size_t buf
   }
 
   //TODO: to_send = depends on the TLVs we proccess
+  //TODO: Securely delete receiving chain keys older than message_id-1.
+  //TODO: Add the MKmac key to list mac_keys_to_reveal.
+  key_manager_prepare_to_ratchet(otr->keys);
 
   data_message_destroy(data_message);
   return true;
@@ -792,7 +767,7 @@ otrv4_receive_message(otrv4_response_t* response,
 int
 retrieve_sending_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key, const otrv4_t *otr) {
   chain_key_t sending;
-  int message_id = key_manager_get_sending_chain_key(sending, otr->keys, otr->our_ecdh->pub, otr->their_ecdh);
+  int message_id = key_manager_get_sending_chain_key(sending, otr->keys);
 
   if (!derive_encription_and_mac_keys(enc_key, mac_key, sending)) {
     return -1;
@@ -802,8 +777,22 @@ retrieve_sending_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key, const ot
 }
 
 bool
+should_ratchet(const otrv4_t *otr) {
+  if (otr->keys->j == 0)
+    return true;
+
+  return false;
+}
+
+bool
 otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t message_len, otrv4_t *otr) {
-  //ratchet_if_need_to()
+  if (should_ratchet(otr)) {
+    if (!key_manager_rotate_keys(otr->keys))
+      return false;
+  } else {
+    if (!key_manager_derive_sending_chain_key(otr->keys))
+      return false;
+  }
 
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
@@ -812,6 +801,9 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
   if (message_id < 0) {
     return false;
   }
+
+  //TODO: assert
+  //if (message_id != otr->keys->j) return false;
 
 #ifdef DEBUG
   printf("ENCRYPTING\n");
@@ -829,8 +821,8 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
   data_msg->receiver_instance_tag = otr->their_instance_tag;
   data_msg->ratchet_id = otr->keys->current->id;
   data_msg->message_id = message_id;
-  ec_public_key_copy(data_msg->our_ecdh, otr->our_ecdh->pub);
-  data_msg->our_dh = dh_mpi_copy(otr->our_dh->pub);
+  ec_public_key_copy(data_msg->our_ecdh, OUR_ECDH(otr));
+  data_msg->our_dh = dh_mpi_copy(OUR_DH(otr));
 
   random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
   uint8_t *c = malloc(message_len);
@@ -881,6 +873,10 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
     free(ser);
     return false;
   }
+
+  //TODO: Change the spec to say this should be incremented after the message
+  //is sent.
+  otr->keys->j++;
 
   *to_send = (uint8_t*) otrl_base64_otr_encode(ser, serlen);
   free(ser);

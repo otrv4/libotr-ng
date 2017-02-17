@@ -1,6 +1,8 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+#include "str.h"
+
 static inline char*
 _otrv4_memdump(const uint8_t *src, size_t len) {
   if (src == NULL) {
