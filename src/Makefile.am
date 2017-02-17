@@ -18,12 +18,14 @@ libotr4_la_SOURCES = \
 libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBDECAF_CFLAGS@ \
                                  @LIBSODIUM_CFLAGS@ \
                                  @LIBGCRYPT_CFLAGS@ \
-                                 @LIBCRAMERSHOUP_CFLAGS@
+                                 @LIBCRAMERSHOUP_CFLAGS@ \
+																 $(CODE_COVERAGE_CFLAGS)
 
 libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
                                    @LIBSODIUM_LIBS@ \
                                    @LIBGCRYPT_LIBS@ \
-                                   @LIBCRAMERSHOUP_LIBS@
+                                   @LIBCRAMERSHOUP_LIBS@ \
+																   $(CODE_COVERAGE_LIBS)
 
 otrincdir = $(includedir)/libotr4
 otrinc_HEADERS = protocol.h

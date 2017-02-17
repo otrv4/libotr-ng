@@ -3,6 +3,12 @@
 *.lo
 TAGS
 
+#gcov
+*.gcno
+*.gcda
+libotr4-*-coverage.info
+libotr4-*-coverage/
+
 *~
 *#*#
 

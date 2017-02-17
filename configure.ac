@@ -9,6 +9,7 @@ AC_INIT([libotr4], [0.0.1], [strike@thoughtworks.com])
 AC_CONFIG_SRCDIR([src/otrv4.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.])
+AM_SILENT_RULES([no])
 
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AM_PROG_AR
@@ -26,7 +27,6 @@ PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 1.0.0])
 PKG_CHECK_MODULES([LIBCRAMERSHOUP], [libcramershoup])
 AM_PATH_LIBGCRYPT(1:1.7.6,,AC_MSG_ERROR(libgcrypt 1.7.6 or newer is required.))
 
-
 # Checks for header files.
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
 
@@ -43,6 +43,7 @@ AC_PROG_CC_STDC
 AX_CFLAGS_GCC_OPTION([-Wall])
 AX_CFLAGS_GCC_OPTION([-Werror])
 AX_CFLAGS_GCC_OPTION([-Wfatal-errors])
+AX_CODE_COVERAGE
 
 # Checks for library functions.
 AC_FUNC_MALLOC
