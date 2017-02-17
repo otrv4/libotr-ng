@@ -256,16 +256,17 @@ key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int ratchet_id,
   }
 
   message_chain_t *chain = decide_between_chain_keys(ratchet, manager->our_ecdh->pub, manager->their_ecdh);
-  if (!rebuild_chain_keys_up_to(message_id, chain->receiving))
+  if (!rebuild_chain_keys_up_to(message_id, chain->receiving)) {
+    free(chain);
     return false;
+  }
 
   const chain_link_t *link = chain_get_by_id(message_id, chain->receiving);
-  if (link == NULL) {
-    //TODO: generate
-    return false; //message id not found
-  }
-  memcpy(receiving, link->key, sizeof(chain_key_t));
   free(chain);
+  if (link == NULL)
+    return false; //message id not found. Should have been generated at rebuild_chain_keys_up_to
+
+  memcpy(receiving, link->key, sizeof(chain_key_t));
 
   return true;
 }
@@ -294,13 +295,13 @@ bool
 key_manager_derive_sending_chain_key(key_manager_t manager) {
   message_chain_t *chain = decide_between_chain_keys(manager->current, manager->our_ecdh->pub, manager->their_ecdh);
   chain_link_t *last = (chain_link_t*) chain_get_last(chain->sending);
+  free(chain);
 
   chain_link_t *l = derive_next_chain_link(last);
   if (l == NULL)
     return false;
 
   //TODO: assert l->id == manager->j
-
   return true;
 }
 
