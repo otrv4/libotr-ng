@@ -113,7 +113,7 @@ derive_ratchet_keys(ratchet_t *ratchet, const shared_secret_t shared)
 
 bool
 key_manager_new_ratchet(key_manager_t manager, const shared_secret_t shared) {
-  ratchet_t *ratchet = malloc(sizeof(ratchet_t));
+  ratchet_t *ratchet = ratchet_new();
   if (ratchet == NULL)
     return false;
 
