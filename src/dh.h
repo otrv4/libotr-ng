@@ -20,6 +20,9 @@ typedef struct {
 void
 dh_init(void);
 
+void
+dh_free(void);
+
 static inline dh_mpi_t
 dh_mpi_new() {
   return gcry_mpi_new(DH3072_MOD_LEN_BITS);

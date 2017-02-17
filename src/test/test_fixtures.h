@@ -21,6 +21,8 @@ void
 otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   cs_keypair_destroy(otrv4_fixture->keypair);
   otrv4_free(otrv4_fixture->otr);
+
+  dh_free();
 }
 
 typedef struct {

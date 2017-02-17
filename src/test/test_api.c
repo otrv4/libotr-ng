@@ -124,5 +124,9 @@ test_api_conversation(void) {
   otrv4_response_free(response_to_bob);
   otrv4_free(alice);
   otrv4_free(bob);
+  cs_keypair_destroy(cs_alice);
+  cs_keypair_destroy(cs_bob);
+
+  OTR4_FREE;
 }
 

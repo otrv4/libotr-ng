@@ -6,13 +6,3 @@
    fun:g_test_add_vtable
    fun:main
 }
-
-{
-   ignore_problems_with_dh_init
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:dh_init
-   ...
-   fun:g_test_run_suite
-}

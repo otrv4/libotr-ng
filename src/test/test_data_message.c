@@ -70,4 +70,5 @@ test_data_message_serializes() {
   ec_keypair_destroy(ecdh);
   data_message_free(data_msg);
   free(serialized);
+  dh_free();
 }

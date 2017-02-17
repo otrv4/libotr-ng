@@ -23,8 +23,26 @@ ratchet_new() {
 }
 
 void
+chain_link_free(chain_link_t *current) {
+  chain_link_t *next = current;
+  while (next) {
+    next = current->next;
+    //TODO: should we safely remove current->key?
+    free(current);
+  }
+}
+
+void
 ratchet_free(ratchet_t *ratchet) {
-  //TODO: securely erase chain keys
+  if (ratchet == NULL)
+    return;
+
+  chain_link_free(ratchet->chain_a->next); 
+  ratchet->chain_a->next = NULL;
+
+  chain_link_free(ratchet->chain_b->next); 
+  ratchet->chain_b->next = NULL;
+
   free(ratchet);
 }
 
@@ -34,17 +52,18 @@ key_manager_init(key_manager_t manager){
   manager->j = 0;
   manager->current = NULL;
   manager->previous = NULL;
-  manager->our_dh->pub = dh_mpi_new();
-  manager->our_dh->priv = dh_mpi_new();
-  manager->their_dh = dh_mpi_new();
+  manager->our_dh->pub = NULL;
+  manager->our_dh->priv = NULL;
+  manager->their_dh = NULL;
 }
 
 void
 key_manager_destroy(key_manager_t manager) {
-  //TODO: should walk all the hierarchy and free.
-  //TODO: Should call rat
-  ratchet_free(manager->current);
   ratchet_free(manager->previous);
+  manager->previous = NULL;
+
+  ratchet_free(manager->current);
+  manager->current = NULL;
 
   dh_keypair_destroy(manager->our_dh);
   dh_mpi_release(manager->their_dh);
@@ -160,10 +179,8 @@ decide_between_chain_keys(const ratchet_t *ratchet, const ec_public_key_t our, c
   ret->sending = NULL;
   ret->receiving = NULL;
 
-  size_t nbits = sizeof(ec_public_key_t);
-  gcry_mpi_t our_mpi = gcry_mpi_new(nbits);
-  gcry_mpi_t their_mpi = gcry_mpi_new(nbits);
-
+  gcry_mpi_t our_mpi = NULL;
+  gcry_mpi_t their_mpi = NULL;
   if (gcry_mpi_scan(&our_mpi, GCRYMPI_FMT_USG, our, sizeof(ec_public_key_t), NULL)){
     gcry_mpi_release(our_mpi);
     gcry_mpi_release(their_mpi);
@@ -233,7 +250,7 @@ rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
   chain_link_t* last = (chain_link_t*) chain_get_last(head);
 
   int j = 0;
-  for (j = last->id; j <= message_id; j++) {
+  for (j = last->id; j < message_id; j++) {
     last = derive_next_chain_link(last);
     if (last == NULL)
       return false;

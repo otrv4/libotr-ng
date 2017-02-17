@@ -17,6 +17,7 @@ dh_test_api() {
 
   dh_keypair_destroy(alice);
   dh_keypair_destroy(bob);
+  dh_free();
 }
 
 void

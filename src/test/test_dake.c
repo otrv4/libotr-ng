@@ -48,6 +48,7 @@ test_dake_protocol() {
   user_profile_free(alice_profile);
   dh_keypair_destroy(alice_dh);
   ec_keypair_destroy(alice_ecdh);
+  dh_free();
 }
 
 void
@@ -74,7 +75,7 @@ test_dake_generate_gamma_phi_sigma() {
   dh_keypair_generate(dh_bob);
 
   ec_public_key_t received_ecdh_alice;
-  dh_public_key_t received_dh_alice = dh_mpi_new();
+  dh_public_key_t received_dh_alice = NULL;
 
   user_profile_t *profile_alice = user_profile_new("4");
   profile_alice->expires = time(NULL) + 60 * 60;
@@ -108,6 +109,7 @@ test_dake_generate_gamma_phi_sigma() {
   dake_dre_auth_free(dre_auth);
   dh_keypair_destroy(dh_alice);
   dh_keypair_destroy(dh_bob);
+  dh_free();
 }
 
 void
@@ -193,6 +195,7 @@ test_dake_dre_auth_serialize() {
   dake_dre_auth_free(dre_auth);
   dh_keypair_destroy(our_dh);
   free(serialized);
+  dh_free();
 }
 
 void
@@ -224,4 +227,5 @@ test_dake_dre_auth_deserialize() {
   dake_dre_auth_free(dre_auth);
   dake_dre_auth_free(des_dre);
   free(serialized);
+  dh_free();
 }

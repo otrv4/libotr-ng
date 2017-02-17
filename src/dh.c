@@ -36,6 +36,18 @@ dh_init(void) {
   gcry_mpi_sub_ui(DH3072_MODULUS_MINUS_2, DH3072_MODULUS, 2);
 }
 
+void
+dh_free(void) {
+  gcry_mpi_release(DH3072_MODULUS);
+  DH3072_MODULUS = NULL;
+
+  gcry_mpi_release(DH3072_MODULUS_MINUS_2);
+  DH3072_MODULUS_MINUS_2 = NULL;
+
+  gcry_mpi_release(DH3072_GENERATOR);
+  DH3072_GENERATOR = NULL;
+}
+
 bool
 dh_keypair_generate(dh_keypair_t keypair) {
   uint8_t *secbuf = malloc(DH_KEY_SIZE);

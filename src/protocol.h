@@ -8,4 +8,9 @@
   dh_init(); \
 } while (0);
 
+#define OTR4_FREE do { \
+  dh_free(); \
+} while (0);
+
+
 #endif

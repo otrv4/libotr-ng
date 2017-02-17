@@ -90,6 +90,8 @@ otrv4_new(cs_keypair_s *keypair) {
     return NULL;
   }
 
+  otr->our_instance_tag = 0;
+  otr->their_instance_tag = 0;
   otr->keypair = keypair;
   otr->state = OTRV4_STATE_START;
   otr->supported_versions = OTRV4_ALLOW_V4;
@@ -102,6 +104,7 @@ otrv4_new(cs_keypair_s *keypair) {
 
 void
 otrv4_destroy(/*@only@*/ otrv4_t *otr) {
+  otr->keypair = NULL;
   key_manager_destroy(otr->keys);
   user_profile_free(otr->profile);
   otr->profile = NULL;
@@ -550,7 +553,7 @@ otrv4_receive_dre_auth(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr
   }
 
   ec_public_key_t their_ecdh;
-  dh_public_key_t their_dh = dh_mpi_new();
+  dh_public_key_t their_dh = NULL;
   if (!dake_dre_auth_validate(their_ecdh, &their_dh,
       otr->profile, otr->keypair, OUR_ECDH(otr), OUR_DH(otr), dre_auth)) {
     dake_dre_auth_destroy(dre_auth);
