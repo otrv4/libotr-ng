@@ -382,8 +382,8 @@ generate_ephemeral_keys(otrv4_t *otr) {
   key_manager_generate_ephemeral_keys(otr->keys);
 }
 
-bool
-otrv4_start_dake(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
+static bool
+otrv4_start_dake(otrv4_response_t *response, otrv4_t *otr) {
   generate_ephemeral_keys(otr);
   otrv4_state_set(otr, OTRV4_STATE_AKE_IN_PROGRESS);
 
@@ -404,7 +404,7 @@ otrv4_receive_tagged_plaintext(otrv4_response_t *response,
       return false;
     }
 
-    return otrv4_start_dake(response, message, otr);
+    return otrv4_start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:
     return otrv3_receive_message(message);
@@ -424,7 +424,7 @@ otrv4_receive_query_message(otrv4_response_t *response, const string_t message, 
 
   switch (otr->running_version) {
   case OTRV4_VERSION_4:
-    return otrv4_start_dake(response, message, otr);
+    return otrv4_start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:
     return otrv3_receive_message(message);
