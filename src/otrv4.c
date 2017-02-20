@@ -511,7 +511,7 @@ double_ratcheting_init(int j, otrv4_t *otr) {
   return true;
 }
 
-bool
+static bool
 otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr) {
   dake_pre_key_t pre_key[1];
   if (!dake_pre_key_deserialize(pre_key, buff, buflen)) {
@@ -752,6 +752,10 @@ otrv4_receive_message(otrv4_response_t* response,
                       const string_t message,
                       size_t message_len) {
   if (message == NULL) {
+    return false;
+  }
+
+  if (response == NULL) {
     return false;
   }
 

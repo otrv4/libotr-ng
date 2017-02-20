@@ -133,7 +133,7 @@ test_otrv4_receives_query_message(otrv4_fixture_t *otrv4_fixture, gconstpointer 
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response, otrv4_fixture->otr, "?OTRv4? And some random invitation text.", 40));
 
-  g_assert_cmpstr(response->to_send, !=, NULL);
+  otrv4_assert(response->to_send);
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_AKE_IN_PROGRESS);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
 
