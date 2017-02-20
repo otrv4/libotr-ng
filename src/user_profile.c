@@ -66,7 +66,7 @@ static int
 user_profile_body_serialize(uint8_t *dst, const user_profile_t *profile) {
   uint8_t *target = dst;
 
-  target += serialize_cs_public_key(target, profile->pub_key);  
+  target += serialize_cs_public_key(target, profile->pub_key);
   target += serialize_data(target, (uint8_t*) profile->versions, strlen(profile->versions) + 1);
   target += serialize_uint64(target, profile->expires);
 
@@ -214,5 +214,21 @@ user_profile_verify_signature(const user_profile_t *profile) {
   free(body);
 
   return ok;
+}
+
+user_profile_t*
+user_profile_build(string_t versions, cs_keypair_t keypair) {
+  user_profile_t *profile = user_profile_new(versions);
+  if (profile == NULL) {
+    free(versions);
+    return NULL;
+  }
+
+  #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; //2 weeks
+  time_t expires = time(NULL);
+  profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
+  user_profile_sign(profile, keypair);
+
+  return profile;
 }
 

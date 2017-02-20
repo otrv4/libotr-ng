@@ -67,19 +67,13 @@ get_my_user_profile(const otrv4_t *otr) {
   string_t versions = NULL;
   allowed_versions(&versions, otr);
 
-  user_profile_t *profile = user_profile_new(versions);
+  user_profile_t *profile = user_profile_build(versions, otr->keypair);
   if (profile == NULL) {
     free(versions);
     return NULL;
   }
 
   free(versions);
-
-  #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; //2 weeks
-  time_t expires = time(NULL);
-  profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
-  user_profile_sign(profile, otr->keypair);
-
   return profile;
 }
 

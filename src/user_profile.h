@@ -42,4 +42,7 @@ user_profile_body_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *pr
 bool
 user_profile_aprint(uint8_t **dst, size_t *nbytes, const user_profile_t *profile);
 
+user_profile_t*
+user_profile_build(string_t versions, cs_keypair_t keypair);
+
 #endif

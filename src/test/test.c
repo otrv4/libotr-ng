@@ -31,6 +31,7 @@ main(int argc, char **argv) {
   g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
   g_test_add_func("/user_profile/deserializes", test_user_profile_deserializes);
   g_test_add_func("/user_profile/sign_and_verifies", test_user_profile_signs_and_verify);
+  g_test_add_func("/user_profile/build_user_profile", test_user_profile_build);
 
   WITH_FIXTURE("/dake/pre_key/new", test_dake_pre_key_new, pre_key_fixture_t, pre_key_fixture);
   WITH_FIXTURE("/dake/pre_key/serializes", test_dake_pre_key_serializes, pre_key_fixture_t, pre_key_fixture);

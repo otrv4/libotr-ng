@@ -132,3 +132,18 @@ test_user_profile_signs_and_verify() {
 
   user_profile_free(profile);
 }
+
+void
+test_user_profile_build() {
+  user_profile_t *profile = user_profile_build(NULL, NULL);
+
+  otrv4_assert(profile == NULL);
+
+  cs_keypair_t keypair;
+  cs_keypair_generate(keypair);
+
+  profile = user_profile_build("3", keypair);
+  g_assert_cmpstr(profile->versions, ==, "3");
+
+  user_profile_free(profile);
+}
