@@ -196,3 +196,18 @@ test_otrv4_receives_pre_key_invalid_on_start(otrv4_fixture_t *otrv4_fixture, gco
   otrv4_response_free(response);
 }
 
+void
+test_otrv4_destroy() {
+  cs_keypair_t keypair;
+  cs_keypair_generate(keypair);
+  otrv4_t *otr = otrv4_new(keypair);
+
+  otrv4_assert(otr->profile != NULL);
+  otrv4_destroy(otr);
+
+  otrv4_assert(otr->keypair == NULL);
+  otrv4_assert(otr->keys->current == NULL);
+  otrv4_assert(otr->profile == NULL);
+
+  free(otr);
+}

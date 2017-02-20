@@ -15,6 +15,8 @@ user_profile_new(const string_t versions) {
     return NULL;
   }
 
+  cs_keypair_t keypair;
+  cs_keypair_generate(keypair);
   user_profile_t *profile = malloc(sizeof(user_profile_t));
   if (profile == NULL) {
     return NULL;
