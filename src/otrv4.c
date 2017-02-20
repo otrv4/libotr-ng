@@ -407,7 +407,7 @@ otrv4_receive_tagged_plaintext(otrv4_response_t *response,
     return otrv4_start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:
-    return otrv3_receive_message(message);
+    return otrv3_receive_message(message, msg_len);
     break;
   default:
     //otrv4_message_to_display_without_tag(otr, message->raw_text, tag_version_v4);
@@ -427,7 +427,7 @@ otrv4_receive_query_message(otrv4_response_t *response, const string_t message, 
     return otrv4_start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:
-    return otrv3_receive_message(message);
+    return otrv3_receive_message(message, 0);
     break;
   default:
     //nothing to do
