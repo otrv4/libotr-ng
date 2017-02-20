@@ -218,23 +218,25 @@ otrv4_message_to_display_set(otrv4_response_t *response, const string_t message,
   response->to_display = otrv4_strndup(message, msg_len);
 }
 
-bool
-otrv4_message_to_display_without_tag(otrv4_response_t *response, const string_t message, const char *tag_version) {
+static bool
+otrv4_message_to_display_without_tag(otrv4_response_t *response,
+                                     const string_t message,
+                                     const char *tag_version,
+                                     size_t msg_len) {
   //TODO: this does not remove ALL tags
-  size_t msg_length = strlen(message);
-  size_t tag_length = strlen(tag_base) + strlen(tag_version);
-  size_t chars = msg_length - tag_length;
+  size_t tag_length = WHITESPACE_TAG_BASE_BYTES + WHITESPACE_TAG_VERSION_BYTES;
+  size_t chars = msg_len - tag_length;
 
-  if (msg_length < tag_length) {
+  if (msg_len < tag_length) {
     return false;
   }
 
-  string_t buff = malloc(chars+1);
+  string_t buff = malloc(chars + 1);
   if(buff == NULL) {
     return false;
   }
 
-  strncpy(buff, message+tag_length, chars);
+  strncpy(buff, message + tag_length, chars);
   buff[chars] = '\0';
 
   otrv4_message_to_display_set(response, buff, chars);
@@ -388,14 +390,17 @@ otrv4_start_dake(otrv4_response_t *response, const string_t message, otrv4_t *ot
   return otrv4_reply_with_pre_key(response, otr);
 }
 
-bool
-otrv4_receive_tagged_plaintext(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
+static bool
+otrv4_receive_tagged_plaintext(otrv4_response_t *response,
+                               const string_t message,
+                               otrv4_t *otr,
+                               size_t msg_len) {
   otrv4_running_version_set_from_tag(otr, message);
   //remove tag from message
 
   switch (otr->running_version) {
   case OTRV4_VERSION_4:
-    if (!otrv4_message_to_display_without_tag(response, message, tag_version_v4)) {
+    if (!otrv4_message_to_display_without_tag(response, message, tag_version_v4, msg_len)) {
       return false;
     }
 
@@ -752,7 +757,7 @@ otrv4_receive_message(otrv4_response_t* response,
     break;
 
   case IN_MSG_TAGGED_PLAINTEXT:
-    return otrv4_receive_tagged_plaintext(response, message, otr);
+    return otrv4_receive_tagged_plaintext(response, message, otr, message_len);
     break;
 
   case IN_MSG_QUERY_STRING:
