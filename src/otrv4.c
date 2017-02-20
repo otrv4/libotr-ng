@@ -418,8 +418,11 @@ otrv4_receive_tagged_plaintext(otrv4_response_t *response,
   return false;
 }
 
-bool
-otrv4_receive_query_message(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
+static bool
+otrv4_receive_query_message(otrv4_response_t *response,
+                            const string_t message,
+                            otrv4_t *otr,
+                            size_t msg_len) {
   otrv4_running_version_set_from_query(otr, message);
 
   switch (otr->running_version) {
@@ -671,12 +674,18 @@ otrv4_receive_data_message(otrv4_response_t *response, uint8_t *buff, size_t buf
   return true;
 }
 
-bool
-otrv4_receive_encoded_message(otrv4_response_t *response, const string_t message, otrv4_t *otr) {
+static bool
+otrv4_receive_encoded_message(otrv4_response_t *response,
+                              const string_t message,
+                              otrv4_t *otr,
+                              size_t msg_len) {
   size_t dec_len = 0;
   uint8_t *decoded = NULL;
   int err = otrl_base64_otr_decode(message, &decoded, &dec_len);
   if (err) {
+    return false;
+  }
+  if (dec_len > msg_len) {
     return false;
   }
 
@@ -761,11 +770,11 @@ otrv4_receive_message(otrv4_response_t* response,
     break;
 
   case IN_MSG_QUERY_STRING:
-    return otrv4_receive_query_message(response, message, otr);
+    return otrv4_receive_query_message(response, message, otr, message_len);
     break;
 
   case IN_MSG_CYPHERTEXT:
-    return otrv4_receive_encoded_message(response, message, otr);
+    return otrv4_receive_encoded_message(response, message, otr, message_len);
     break;
   }
 

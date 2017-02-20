@@ -90,7 +90,7 @@ test_api_conversation(void) {
   g_assert_cmpint(bob->keys->j, ==, 2);
 
   //Alice receives a data message
-  otrv4_assert(otrv4_receive_message(response_to_bob, alice, (string_t) to_send, sizeof(to_send)));
+  otrv4_assert(otrv4_receive_message(response_to_bob, alice, (string_t) to_send, strlen((char *) to_send)));
   free(to_send);
 
   otrv4_assert_cmpmem(response_to_bob->to_display, "hi", 3);
@@ -110,7 +110,7 @@ test_api_conversation(void) {
   g_assert_cmpint(alice->keys->j, ==, 1);
 
   //Bob receives a data message
-  otrv4_assert(otrv4_receive_message(response_to_alice, bob, (string_t) to_send, 6));
+  otrv4_assert(otrv4_receive_message(response_to_alice, bob, (string_t) to_send, strlen((char *) to_send)));
   free(to_send);
 
   otrv4_assert_cmpmem(response_to_alice->to_display, "hello", 6);
