@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libotr4
+Description: Off-the-Record Messaging Library
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -lotr4
+Cflags: -I${includedir}

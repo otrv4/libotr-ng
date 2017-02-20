@@ -1,7 +1,7 @@
 # SOURCES =
 #include src/include.am
 
-SUBDIRS = src src/test
+SUBDIRS = src src/test pkgconfig
 ACLOCAL_AMFLAGS = -I m4
 
 @CODE_COVERAGE_RULES@
