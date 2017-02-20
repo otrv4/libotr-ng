@@ -22,9 +22,6 @@ otr_mpi_set(otr_mpi_t mpi, const uint8_t *src, size_t len);
 void
 otr_mpi_copy(otr_mpi_t dst, const otr_mpi_t src);
 
-int
-otr_mpi_serialize(uint8_t *dst, size_t len, const otr_mpi_t src);
-
 bool
 otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src, size_t src_len, size_t *read);
 

@@ -36,20 +36,6 @@ otr_mpi_copy(otr_mpi_t dst, const otr_mpi_t src) {
   otr_mpi_set(dst, src->data, src->len);
 }
 
-int
-otr_mpi_serialize(uint8_t *dst, size_t len, const otr_mpi_t src) {
-  uint8_t *cursor = dst;
-
-  if (src->data == NULL) {
-    len = 0;
-  }
-
-  cursor += serialize_uint32(cursor, len);
-  cursor += serialize_bytes_array(cursor, src->data, len);
-
-  return cursor - dst;
-}
-
 static bool
 otr_mpi_read_len(otr_mpi_t dst, const uint8_t *src, size_t src_len, size_t *read) {
   size_t r = 0;
