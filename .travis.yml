@@ -1,7 +1,9 @@
 language: c
 cache: ccache
 
-dist: trusty
+dist:
+  - precise
+  - trusty
 
 compiler:
   - clang
@@ -29,6 +31,7 @@ before_script:
 
 script:
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-  - ./autogen.sh && ./configure && make ci
+  - ./autogen.sh && ./configure
+  - if [[ "$TRAVIS_DIST_NAME" == "precise" ]]; then make test; fi
+  - if [[ "$TRAVIS_DIST_NAME" == "trusty" ]];  then make ci;   fi
   - pkg-config --modversion glib-2.0
-
