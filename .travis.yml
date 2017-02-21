@@ -1,9 +1,11 @@
 language: c
 cache: ccache
 
+os: linux
+
 dist:
-  - precise
   - trusty
+  - precise
 
 compiler:
   - clang
