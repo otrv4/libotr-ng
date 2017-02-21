@@ -16,7 +16,6 @@ matrix:
       dist: precise
       compiler: gcc
 
-
 sudo: required
 
 before_install:
@@ -40,6 +39,5 @@ before_script:
 script:
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - ./autogen.sh && ./configure
-  - if [[ -n "lsb_release -c == precise" ]]; then make test; fi
-  - if [[ -n "lsb_release -c == trusty" ]];  then make ci;   fi
-  - pkg-config --modversion glib-2.0
+  - if [[ $(lsb_release -c -s) == "precise" ]]; then make test; fi
+  - if [[ $(lsb_release -c -s) == "trusty" ]];  then make ci;   fi
