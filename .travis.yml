@@ -1,11 +1,9 @@
 language: c
 cache: ccache
 
-os:
-  - linux
+os: linux
 
-distro:
-  xenial
+distro: trusty
 
 compiler:
   - clang
