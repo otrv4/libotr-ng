@@ -57,7 +57,7 @@ dh_keypair_generate(dh_keypair_t keypair) {
 
   random_bytes(secbuf, DH_KEY_SIZE);
   gcry_error_t err = gcry_mpi_scan(&keypair->priv, GCRYMPI_FMT_USG, secbuf, DH_KEY_SIZE, NULL);
-  gcry_free(secbuf);
+  free(secbuf);
 
   if (err) {
     return false;
