@@ -7,7 +7,6 @@
    fun:g_test_add_vtable
    fun:main
 }
-
 {
    g_test_add_vtable_problem2
    Memcheck:Leak
@@ -18,7 +17,6 @@
    fun:g_test_add_vtable
    fun:main
 }
-
 {
    g_test_run_suite_problem
    Memcheck:Leak
@@ -32,7 +30,6 @@
 {
    g_test_init_leak_reachable
    Memcheck:Leak
-   match-leak-kinds: reachable
    fun:malloc
    ...
    fun:g_test_init
@@ -41,7 +38,6 @@
 {
    g_test_add_vtable_leak_reachable
    Memcheck:Leak
-   match-leak-kinds: reachable
    fun:malloc
    ...
    fun:g_test_add_vtable
@@ -50,7 +46,6 @@
 {
   g_test_run_leak_reachable
    Memcheck:Leak
-   match-leak-kinds: reachable
    fun:malloc
    ...
    fun:g_test_run
@@ -59,7 +54,6 @@
 {
    g_test_run_suite_internal_leak_reachable
    Memcheck:Leak
-   match-leak-kinds: reachable
    fun:malloc
    ...
    fun:g_test_run_suite_internal
