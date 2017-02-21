@@ -1,7 +1,7 @@
 language: c
 cache: ccache
 
-distro: trusty
+dist: trusty
 
 compiler:
   - clang
