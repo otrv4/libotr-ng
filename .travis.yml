@@ -30,5 +30,5 @@ before_script:
 script:
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - ./autogen.sh && ./configure && make ci
-  - /lib64/libc.so.6
+  - /lib/x86_64-linux-gnu/libc.so.6
 
