@@ -1,12 +1,12 @@
 language: c
 cache: ccache
 
-os: linux
-
 matrix:
   include:
     - os: linux
       dist: trusty
+    - os: linux
+      dist: precise
 
 compiler:
   - clang
