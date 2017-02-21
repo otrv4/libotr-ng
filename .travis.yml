@@ -1,8 +1,6 @@
 language: c
 cache: ccache
 
-os: linux
-
 distro: trusty
 
 compiler:
