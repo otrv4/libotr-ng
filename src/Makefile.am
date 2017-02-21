@@ -28,7 +28,7 @@ libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
 																   $(CODE_COVERAGE_LIBS)
 
 otrincdir = $(includedir)/libotr4
-otrinc_HEADERS = protocol.h
+otrinc_HEADERS = protocol.h dh.h otrv4.h dake.h ed448.h random.h user_profile.h mpi.h cramershoup_interface.h str.h key_management.h
 
 #pkgconfigdir = $(libdir)/pkgconfig
 #pkgconfig_DATA = otr4.pc
