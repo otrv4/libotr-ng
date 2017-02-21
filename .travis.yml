@@ -5,14 +5,16 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      compiler:
-        - clang
-        - gcc
+      compiler: clang
+    - os: linux
+      dist: trusty
+      compiler: gcc
     - os: linux
       dist: precise
-      compiler:
-        - clang
-        - gcc
+      compiler: clang
+    - os: linux
+      dist: precise
+      compiler: gcc
 
 
 sudo: required
