@@ -29,8 +29,6 @@ before_script:
   - pushd .deps/cramershoup && ./autogen.sh && ./configure CFLAGS="-DFAST_RANDOM" && make && sudo make install && popd
 
 script:
-  - export CFLAGS="-g -ggdb3 -O0"
-  - export CXXFLAGS="-g -ggdb3 -O0"
-  - export LDFLAGS="-g -ggdb3 -O0"
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - ./autogen.sh && ./configure && make ci
+
