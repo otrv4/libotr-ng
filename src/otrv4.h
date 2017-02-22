@@ -81,7 +81,7 @@ otrv4_response_free(otrv4_response_t * response);
 
 bool
 otrv4_receive_message
-(otrv4_response_t* response, otrv4_t *otr, const string_t received, size_t message_lenn);
+(otrv4_response_t* response, const string_t received, size_t message_lenn, otrv4_t *otr);
 
 bool
 otrv4_send_message(uint8_t **to_send, const uint8_t *message, size_t message_len, otrv4_t *otr);

@@ -741,9 +741,9 @@ get_message_type(const string_t message) {
 // Receive a possibly OTR message.
 bool
 otrv4_receive_message(otrv4_response_t* response,
-                      otrv4_t *otr,
                       const string_t message,
-                      size_t message_len) {
+                      size_t message_len,
+                      otrv4_t *otr) {
   if (message == NULL) {
     return false;
   }
