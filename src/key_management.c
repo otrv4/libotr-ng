@@ -246,15 +246,6 @@ derive_next_chain_link(chain_link_t *previous) {
   return l;
 }
 
-static inline void
-dump_chain_link(const chain_link_t *head) {
-  const chain_link_t *cursor = head;
-  do {
-    printf("- Chain[%d] = %p\n", cursor->id, cursor);
-    cursor = cursor->next;
-  } while (cursor);
-}
-
 bool
 rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
   chain_link_t* last = (chain_link_t*) chain_get_last(head);
