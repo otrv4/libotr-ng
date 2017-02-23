@@ -23,12 +23,13 @@ ratchet_new() {
 }
 
 void
-chain_link_free(chain_link_t *current) {
-  chain_link_t *next = current;
-  while (next) {
-    next = current->next;
+chain_link_free(chain_link_t *head) {
+  chain_link_t *current = head;
+  while (current) {
     //TODO: should we safely remove current->key?
+    chain_link_t *next = current->next;
     free(current);
+    current = next;
   }
 }
 
@@ -245,6 +246,15 @@ derive_next_chain_link(chain_link_t *previous) {
   return l;
 }
 
+static inline void
+dump_chain_link(const chain_link_t *head) {
+  const chain_link_t *cursor = head;
+  do {
+    printf("- Chain[%d] = %p\n", cursor->id, cursor);
+    cursor = cursor->next;
+  } while (cursor);
+}
+
 bool
 rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
   chain_link_t* last = (chain_link_t*) chain_get_last(head);
@@ -390,7 +400,6 @@ key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t manager) {
   if (manager->i == ratchet_id)
     return true;
 
-  //TODO: FININISH
   manager->i = ratchet_id;
   if (!enter_new_ratchet(manager))
     return false;
