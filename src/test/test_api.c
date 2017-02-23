@@ -44,6 +44,7 @@ void do_ake(otrv4_t *alice, otrv4_t *bob) {
   //Bob receives DRE-auth
   otrv4_assert(otrv4_receive_message(response_to_alice, response_to_bob->to_send, strlen(response_to_bob->to_send), bob));
   free(response_to_bob->to_send);
+  response_to_bob->to_send = NULL;
 
   //Bob has Alice's ephemeral keys
   otrv4_assert_ec_public_key_eq(bob->keys->their_ecdh, alice->keys->our_ecdh->pub);
