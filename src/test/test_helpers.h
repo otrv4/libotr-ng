@@ -53,6 +53,14 @@
   g_assert_cmpint(dh_mpi_cmp(pk1, pk2), ==, 0); \
 } while (0)
 
+#define otrv4_assert_root_key_eq(rk1, rk2) do { \
+  otrv4_assert_cmpmem(rk1, rk2, sizeof(root_key_t)); \
+} while (0)
+
+#define otrv4_assert_chain_key_eq(ck1, ck2) do { \
+  otrv4_assert_cmpmem(ck1, ck2, sizeof(chain_key_t)); \
+} while (0)
+
 static inline void
 otrv4_assert_point_equals(const ec_point_t expected, const ec_point_t actual) {
   g_assert_cmpint(decaf_448_point_eq(expected, actual), !=, 0);
