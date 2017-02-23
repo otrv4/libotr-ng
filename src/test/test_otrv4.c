@@ -155,11 +155,11 @@ test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture, gconstpoint
 }
 
 void
-test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  dake_pre_key_t *pre_key = dake_pre_key_new(NULL); //TODO: add profile
+test_otrv4_receives_identity_message_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
+  dake_identity_message_t *identity_message = dake_identity_message_new(NULL); //TODO: add profile
 
   uint8_t *serialized = NULL;
-  otrv4_assert(dake_pre_key_aprint(&serialized, NULL, pre_key));
+  otrv4_assert(dake_identity_message_aprint(&serialized, NULL, identity_message));
 
   char message[1000];
   strcpy(message, "?OTR:");
@@ -183,10 +183,10 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpoint
 }
 
 void
-test_otrv4_receives_pre_key_invalid_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  char *pre_key = "?OTR:";
+test_otrv4_receives_identity_message_invalid_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
+  char *identity_message = "?OTR:";
   otrv4_response_t *response = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response, pre_key, 5, otrv4_fixture->otr));
+  otrv4_assert(otrv4_receive_message(response, identity_message, 5, otrv4_fixture->otr));
 
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_START);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);

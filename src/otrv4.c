@@ -340,10 +340,10 @@ otrv4_receive_plaintext(otrv4_response_t *response,
 }
 
 bool
-serialize_and_encode_pre_key(string_t *dst, const dake_pre_key_t* pre_key) {
+serialize_and_encode_identity_message(string_t *dst, const dake_identity_message_t* identity_message) {
   size_t ser_len = 0;
   uint8_t *serialized = NULL;
-  if (!dake_pre_key_aprint(&serialized, &ser_len, pre_key)) {
+  if (!dake_identity_message_aprint(&serialized, &ser_len, identity_message)) {
     return false;
   }
 
@@ -354,17 +354,17 @@ serialize_and_encode_pre_key(string_t *dst, const dake_pre_key_t* pre_key) {
 }
 
 bool
-otrv4_reply_with_pre_key(otrv4_response_t *response, const otrv4_t *otr) {
-  dake_pre_key_t *pre_key = dake_pre_key_new(otr->profile);
-  if (pre_key == NULL) {
+otrv4_reply_with_identity_message(otrv4_response_t *response, const otrv4_t *otr) {
+  dake_identity_message_t *identity_message = dake_identity_message_new(otr->profile);
+  if (identity_message == NULL) {
     return false;
   }
 
-  ec_public_key_copy(pre_key->Y, OUR_ECDH(otr));
-  pre_key->B = dh_mpi_copy(OUR_DH(otr));
+  ec_public_key_copy(identity_message->Y, OUR_ECDH(otr));
+  identity_message->B = dh_mpi_copy(OUR_DH(otr));
 
-  bool ret = serialize_and_encode_pre_key(&response->to_send, pre_key);
-  dake_pre_key_free(pre_key);
+  bool ret = serialize_and_encode_identity_message(&response->to_send, identity_message);
+  dake_identity_message_free(identity_message);
 
   return ret;
 }
@@ -380,7 +380,7 @@ otrv4_start_dake(otrv4_response_t *response, otrv4_t *otr) {
   generate_ephemeral_keys(otr);
   otrv4_state_set(otr, OTRV4_STATE_AKE_IN_PROGRESS);
 
-  return otrv4_reply_with_pre_key(response, otr);
+  return otrv4_reply_with_identity_message(response, otr);
 }
 
 static bool
@@ -505,30 +505,30 @@ double_ratcheting_init(int j, otrv4_t *otr) {
 }
 
 static bool
-otrv4_receive_pre_key(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr) {
-  dake_pre_key_t pre_key[1];
-  if (!dake_pre_key_deserialize(pre_key, buff, buflen)) {
+otrv4_receive_identity_message(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr) {
+  dake_identity_message_t identity_message[1];
+  if (!dake_identity_message_deserialize(identity_message, buff, buflen)) {
     return false;
   }
 
   if (otr->state == OTRV4_STATE_START) {
-    if (!dake_pre_key_validate(pre_key)) {
-      dake_pre_key_destroy(pre_key);
+    if (!dake_identity_message_validate(identity_message)) {
+      dake_identity_message_destroy(identity_message);
       return false;
     }
 
-    key_manager_set_their_ecdh(pre_key->Y, otr->keys);
-    key_manager_set_their_dh(pre_key->B, otr->keys);
+    key_manager_set_their_ecdh(identity_message->Y, otr->keys);
+    key_manager_set_their_dh(identity_message->B, otr->keys);
 
     //TODO: why not use dake_dre_auth_new(otr->profile);
     dake_dre_auth_t *dre_auth = NULL;
     generate_ephemeral_keys(otr);
-    if (!otrv4_generate_dre_auth(&dre_auth, pre_key->profile, otr)) {
-      dake_pre_key_destroy(pre_key);
+    if (!otrv4_generate_dre_auth(&dre_auth, identity_message->profile, otr)) {
+      dake_identity_message_destroy(identity_message);
       return false;
     }
 
-    dake_pre_key_destroy(pre_key);
+    dake_identity_message_destroy(identity_message);
 
     if (!serialize_and_encode_dre_auth(dst, dre_auth)) {
       dake_dre_auth_free(dre_auth);
@@ -698,7 +698,7 @@ otrv4_receive_encoded_message(otrv4_response_t *response,
 
   switch (header.type) {
   case OTR_PRE_KEY_MSG_TYPE:
-    if (!otrv4_receive_pre_key(&response->to_send, decoded, dec_len, otr)) {
+    if (!otrv4_receive_identity_message(&response->to_send, decoded, dec_len, otr)) {
       free(decoded);
       return false;
     }

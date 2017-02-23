@@ -28,21 +28,21 @@ test_dake_protocol() {
   user_profile_t *alice_profile = user_profile_new("4");
   alice_profile->expires = time(NULL) + 60 * 60;
   user_profile_sign(alice_profile, alice_cramershoup);
-  dake_pre_key_t *pre_key = dake_pre_key_new(alice_profile);
+  dake_identity_message_t *identity_message = dake_identity_message_new(alice_profile);
 
-  ec_public_key_copy(pre_key->Y, alice_ecdh->pub);
-  pre_key->B = dh_mpi_copy(alice_dh->pub);
+  ec_public_key_copy(identity_message->Y, alice_ecdh->pub);
+  identity_message->B = dh_mpi_copy(alice_dh->pub);
 
-  //dake_pre_key_serialize()
+  //dake_identity_message_serialize()
 
   //TODO: continue
   // Bob receives pre key
-  // dake_pre_key_deserialize()
+  // dake_identity_message_deserialize()
 
   // Bob sends DRE-auth
   // Alice receives DRE-auth
 
-  dake_pre_key_free(pre_key);
+  dake_identity_message_free(identity_message);
   dh_keypair_destroy(bob_dh);
   ec_keypair_destroy(bob_ecdh);
   user_profile_free(alice_profile);

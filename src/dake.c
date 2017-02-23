@@ -12,49 +12,49 @@
 #include "sha3.h"
 #include "constants.h"
 
-dake_pre_key_t *
-dake_pre_key_new(const user_profile_t *profile) {
+dake_identity_message_t *
+dake_identity_message_new(const user_profile_t *profile) {
   if (profile == NULL) {
     return NULL;
   }
 
-  dake_pre_key_t *pre_key = malloc(sizeof(dake_pre_key_t));
-  if (pre_key == NULL) {
+  dake_identity_message_t *identity_message = malloc(sizeof(dake_identity_message_t));
+  if (identity_message == NULL) {
     return NULL;
   }
 
-  pre_key->sender_instance_tag = 0;
-  pre_key->receiver_instance_tag = 0;
-  pre_key->profile->versions = NULL;
-  pre_key->B = NULL;
-  user_profile_copy(pre_key->profile, profile);
+  identity_message->sender_instance_tag = 0;
+  identity_message->receiver_instance_tag = 0;
+  identity_message->profile->versions = NULL;
+  identity_message->B = NULL;
+  user_profile_copy(identity_message->profile, profile);
 
-  return pre_key;
+  return identity_message;
 }
 
 void
-dake_pre_key_free(dake_pre_key_t *pre_key) {
-  if (pre_key == NULL)
+dake_identity_message_free(dake_identity_message_t *identity_message) {
+  if (identity_message == NULL)
     return;
 
-  dh_mpi_release(pre_key->B);
-  pre_key->B = NULL;
+  dh_mpi_release(identity_message->B);
+  identity_message->B = NULL;
 
-  dake_pre_key_destroy(pre_key);
-  free(pre_key);
+  dake_identity_message_destroy(identity_message);
+  free(identity_message);
 }
 
 void
-dake_pre_key_destroy(dake_pre_key_t *pre_key) {
-  user_profile_destroy(pre_key->profile);
-  dh_mpi_release(pre_key->B);
+dake_identity_message_destroy(dake_identity_message_t *identity_message) {
+  user_profile_destroy(identity_message->profile);
+  dh_mpi_release(identity_message->B);
 }
 
 bool
-dake_pre_key_aprint(uint8_t **dst, size_t *nbytes, const dake_pre_key_t *pre_key) {
+dake_identity_message_aprint(uint8_t **dst, size_t *nbytes, const dake_identity_message_t *identity_message) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
-  if (!user_profile_aprint(&profile, &profile_len, pre_key->profile)) {
+  if (!user_profile_aprint(&profile, &profile_len, identity_message->profile)) {
     return false;
   }
 
@@ -70,18 +70,18 @@ dake_pre_key_aprint(uint8_t **dst, size_t *nbytes, const dake_pre_key_t *pre_key
   uint8_t *target = *dst;
   target += serialize_uint16(target, OTR_VERSION);
   target += serialize_uint8(target, OTR_PRE_KEY_MSG_TYPE);
-  target += serialize_uint32(target, pre_key->sender_instance_tag);
-  target += serialize_uint32(target, pre_key->receiver_instance_tag);
+  target += serialize_uint32(target, identity_message->sender_instance_tag);
+  target += serialize_uint32(target, identity_message->receiver_instance_tag);
   target += serialize_bytes_array(target, profile, profile_len);
-  target += serialize_ec_public_key(target, pre_key->Y);
-  target += serialize_dh_public_key(target, pre_key->B);
+  target += serialize_ec_public_key(target, identity_message->Y);
+  target += serialize_dh_public_key(target, identity_message->B);
 
   free(profile);
   return true;
 }
 
 bool
-dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len) {
+dake_identity_message_deserialize(dake_identity_message_t *dst, const uint8_t *src, size_t src_len) {
     const uint8_t *cursor = src;
     int64_t len = src_len;
     size_t read = 0;
@@ -163,16 +163,16 @@ not_expired(time_t expires) {
 }
 
 bool
-dake_pre_key_validate(const dake_pre_key_t *pre_key) {
+dake_identity_message_validate(const dake_identity_message_t *identity_message) {
   ec_point_t y;
-  if (!ec_point_deserialize(y, pre_key->Y)) {
+  if (!ec_point_deserialize(y, identity_message->Y)) {
     return false;
   }
 
-  bool valid = user_profile_verify_signature(pre_key->profile);
-  valid &= not_expired(pre_key->profile->expires);
+  bool valid = user_profile_verify_signature(identity_message->profile);
+  valid &= not_expired(identity_message->profile->expires);
   valid &= ec_point_valid(y);
-  valid &= dh_mpi_valid(pre_key->B);
+  valid &= dh_mpi_valid(identity_message->B);
 
   // TODO: something Nick said about degenerated keys
 

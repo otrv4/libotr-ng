@@ -3,20 +3,11 @@
 #include "../protocol.h"
 #include "../str.h"
 
-void
-test_api_conversation(void) {
-  OTR4_INIT;
-
-  cs_keypair_t cs_alice, cs_bob;
-  cs_keypair_generate(cs_alice);
-  cs_keypair_generate(cs_bob);
-
-  otrv4_t *alice = otrv4_new(cs_alice);
-  otrv4_t *bob = otrv4_new(cs_bob);
-
+void do_ake(otrv4_t *alice, otrv4_t *bob) {
   otrv4_response_t *response_to_bob = otrv4_response_new();
   otrv4_response_t *response_to_alice = otrv4_response_new();
 
+  //Alice sends query message
   string_t query_message = NULL;
   otrv4_build_query_message(&query_message, alice, "", 0);
   otrv4_assert_cmpmem("?OTRv4", query_message, 6);
@@ -77,7 +68,26 @@ test_api_conversation(void) {
   key_manager_get_receiving_chain_key_by_id(alice_receiving_key, 0, 0, alice->keys);
   otrv4_assert_cmpmem(bob_sending_key, alice_receiving_key, sizeof(chain_key_t));
 
+  otrv4_response_free(response_to_alice);
+  otrv4_response_free(response_to_bob);
+}
+
+void
+test_api_conversation(void) {
+  OTR4_INIT;
+
+  cs_keypair_t cs_alice, cs_bob;
+  cs_keypair_generate(cs_alice);
+  cs_keypair_generate(cs_bob);
+
+  otrv4_t *alice = otrv4_new(cs_alice);
+  otrv4_t *bob = otrv4_new(cs_bob);
+
   //AKE HAS FINISHED.
+  do_ake(alice, bob);
+
+  otrv4_response_t *response_to_bob = otrv4_response_new();
+  otrv4_response_t *response_to_alice = otrv4_response_new();
 
   //Bob sends a data message
   uint8_t *to_send = NULL;

@@ -5,7 +5,7 @@
 
 #include "test_api.c"
 #include "test_otrv4.c"
-#include "test_prekey.c"
+#include "test_identity_message.c"
 #include "test_dake.c"
 #include "test_user_profile.c"
 #include "test_ed448.c"
@@ -33,10 +33,10 @@ main(int argc, char **argv) {
   g_test_add_func("/user_profile/sign_and_verifies", test_user_profile_signs_and_verify);
   g_test_add_func("/user_profile/build_user_profile", test_user_profile_build);
 
-  WITH_FIXTURE("/dake/pre_key/new", test_dake_pre_key_new, pre_key_fixture_t, pre_key_fixture);
-  WITH_FIXTURE("/dake/pre_key/serializes", test_dake_pre_key_serializes, pre_key_fixture_t, pre_key_fixture);
-  WITH_FIXTURE("/dake/pre_key/deserializes", test_dake_pre_key_deserializes, pre_key_fixture_t, pre_key_fixture);
-  WITH_FIXTURE("/dake/pre_key/valid", test_dake_pre_key_valid, pre_key_fixture_t, pre_key_fixture);
+  WITH_FIXTURE("/dake/identity_message/new", test_dake_identity_message_new, identity_message_fixture_t, identity_message_fixture);
+  WITH_FIXTURE("/dake/identity_message/serializes", test_dake_identity_message_serializes, identity_message_fixture_t, identity_message_fixture);
+  WITH_FIXTURE("/dake/identity_message/deserializes", test_dake_identity_message_deserializes, identity_message_fixture_t, identity_message_fixture);
+  WITH_FIXTURE("/dake/identity_message/valid", test_dake_identity_message_valid, identity_message_fixture_t, identity_message_fixture);
 
   g_test_add_func("/dake/dre_auth/generate_gamma_phi_sigma", test_dake_generate_gamma_phi_sigma);
   g_test_add_func("/dake/dre_auth/serialize", test_dake_dre_auth_serialize);

@@ -30,7 +30,7 @@ typedef struct {
   user_profile_t profile[1];
   ec_public_key_t Y;
   dh_public_key_t B;
-} dake_pre_key_t;
+} dake_identity_message_t;
 
 typedef struct {
   uint32_t sender_instance_tag;
@@ -56,23 +56,23 @@ typedef struct {
   dh_public_key_t sender_dh;
 } dake_dre_auth_phi_msg_t;
 
-dake_pre_key_t *
-dake_pre_key_new(const user_profile_t *profile);
+dake_identity_message_t *
+dake_identity_message_new(const user_profile_t *profile);
 
 void
-dake_pre_key_free(dake_pre_key_t *pre_key);
+dake_identity_message_free(dake_identity_message_t *identity_message);
 
 void
-dake_pre_key_destroy(dake_pre_key_t *pre_key);
+dake_identity_message_destroy(dake_identity_message_t *identity_message);
 
 bool
-dake_pre_key_deserialize(dake_pre_key_t *dst, const uint8_t *src, size_t src_len);
+dake_identity_message_deserialize(dake_identity_message_t *dst, const uint8_t *src, size_t src_len);
 
 bool
-dake_pre_key_aprint(uint8_t **dst, size_t *nbytes, const dake_pre_key_t *pre_key);
+dake_identity_message_aprint(uint8_t **dst, size_t *nbytes, const dake_identity_message_t *identity_message);
 
 bool
-dake_pre_key_validate(const dake_pre_key_t *pre_key);
+dake_identity_message_validate(const dake_identity_message_t *identity_message);
 
 
 
