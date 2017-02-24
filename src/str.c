@@ -15,3 +15,8 @@ otrv4_strndup(const char *s, size_t s_len) {
 
   return (char *) memcpy (new, s, s_len + 1);
 }
+
+/*@null@*/ char *
+otrv4_strdup(const char *s) {
+  return otrv4_strndup(s, strlen(s));
+}
