@@ -433,11 +433,6 @@ otrv4_receive_query_message(otrv4_response_t *response,
   return false;
 }
 
-typedef struct {
-  otrv4_supported_version version;
-  uint8_t type;
-} otrv4_header_t;
-
 bool
 extract_header(otrv4_header_t *dst, const uint8_t *buffer, const size_t bufflen) {
   //TODO: check the length

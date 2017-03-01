@@ -58,6 +58,11 @@ typedef struct {
   otrv4_warning_t warning;
 } otrv4_response_t;
 
+typedef struct {
+  otrv4_supported_version version;
+  uint8_t type;
+} otrv4_header_t;
+
 otrv4_t* otrv4_new(cs_keypair_s *keypair);
 void otrv4_destroy(otrv4_t *otr);
 void otrv4_free(/*@only@*/ otrv4_t *otr);
