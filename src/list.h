@@ -22,10 +22,8 @@ list_element_t*
 list_get_last(list_element_t *head);
 
 #define list_foreach(list, cursor, block) do {\
-  if (list == NULL) \
-    break; \
   list_element_t *cursor = list; \
-  while (cursor->next) {\
+  while (cursor) {\
     block; \
     cursor = cursor->next; \
   } \

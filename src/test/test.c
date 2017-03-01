@@ -14,10 +14,14 @@
 #include "test_key_management.c"
 #include "test_data_message.c"
 #include "test_client.c"
+#include "test_list.c"
 
 int
 main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
+
+  g_test_add_func("/list/add", test_list_add);
+
 
   g_test_add_func("/ed448/api", ed448_test_ecdh);
   g_test_add_func("/dh/api", dh_test_api);
@@ -61,6 +65,7 @@ main(int argc, char **argv) {
   g_test_add("/otrv4/receives_query_message_v3", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_query_message_v3, otrv4_fixture_teardown);
   g_test_add_func("/otrv4/destroy", test_otrv4_destroy);
 
+  g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);
 
   g_test_add_func("/api/conversation", test_api_conversation);

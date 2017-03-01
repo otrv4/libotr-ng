@@ -113,8 +113,6 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message, co
     }
 
     if (state_before != OTRV4_STATE_ENCRYPTED_MESSAGES && conv->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
-        //conv->ctx->msgstate = OTRL_MSGSTATE_ENCRYPTED; //Sync our state with OTR3 state
-
         if (client->callbacks && client->callbacks->gone_secure)
             client->callbacks->gone_secure(conv);
     }
