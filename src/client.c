@@ -143,3 +143,7 @@ otr4_client_query_message(const char *recipient, const char* message, otr4_clien
     return ret;
 }
 
+void
+otr4_client_disconnect(char **newmessage, const char *recipient, otr4_client_t *client) {
+    //TODO
+}
