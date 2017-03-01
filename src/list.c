@@ -42,13 +42,20 @@ list_add(void *data, list_element_t *head) {
         return NULL;
 
     n->data = data;
-    head->next = n;
 
-    return n;
+    list_element_t *last = list_get_last(head);
+    if (!last)
+        return n;
+
+    last->next = n;
+    return head;
 }
 
 list_element_t*
 list_get_last(list_element_t *head) {
+  if (!head)
+    return NULL;
+
   list_element_t *cursor = head;
   while (cursor->next)
     cursor = cursor->next;

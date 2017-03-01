@@ -17,7 +17,8 @@ otr4_client_new() {
         return NULL;
 
     cs_keypair_generate(client->keypair); //TODO: maybe not
-    client->conversations = list_new();
+    client->conversations = NULL;
+    client->callbacks = NULL;
 
     return client;
 }
@@ -59,11 +60,12 @@ new_conversation_with(const char *recipient) {
 }
 
 otr4_conversation_t*
-get_or_create_conversation_with(const char *recipient, list_element_t *conversations) {
-    otr4_conversation_t *conv = get_conversation_with(recipient, conversations);
+get_or_create_conversation_with(const char *recipient, otr4_client_t *client) {
+    otr4_conversation_t *conv = get_conversation_with(recipient, client->conversations);
     if (!conv) {
         conv = new_conversation_with(recipient);
-        list_add(conv, conversations);
+        conv->conn = otrv4_new(client->keypair);
+        client->conversations = list_add(conv, client->conversations);
     }
 
     return conv;
@@ -72,14 +74,14 @@ get_or_create_conversation_with(const char *recipient, list_element_t *conversat
 otr4_conversation_t*
 otr4_client_get_conversation(int force, const char *recipient, otr4_client_t *client) {
   if (force)
-      return get_or_create_conversation_with(recipient, client->conversations);
+      return get_or_create_conversation_with(recipient, client);
 
     return get_conversation_with(recipient, client->conversations);
 }
 
 int
 otr4_client_send(char **newmessage, const char *message, const char *recipient, otr4_client_t *client) {
-    otr4_conversation_t *conv = get_or_create_conversation_with(recipient, client->conversations);
+    otr4_conversation_t *conv = get_or_create_conversation_with(recipient, client);
 
     if (conv->conn->state == OTRV4_STATE_START) {
         return 1;
@@ -101,7 +103,7 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message, co
     *newmessage = NULL;
     *todisplay = NULL;
 
-    otr4_conversation_t *conv = get_or_create_conversation_with(recipient, client->conversations);
+    otr4_conversation_t *conv = get_or_create_conversation_with(recipient, client);
     state_before = conv->conn->state;
 
     otrv4_response_t *response = otrv4_response_new();
@@ -135,7 +137,7 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message, co
 
 char*
 otr4_client_query_message(const char *recipient, const char* message, otr4_client_t *client) {
-    otr4_conversation_t *conv = get_or_create_conversation_with(recipient, client->conversations);
+    otr4_conversation_t *conv = get_or_create_conversation_with(recipient, client);
 
     //TODO: implement policy
     char *ret = NULL;

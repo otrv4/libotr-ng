@@ -1,0 +1,84 @@
+#include "../client.h"
+
+void
+test_client_api() {
+  OTR4_INIT;
+
+  #define ALICE_IDENTITY "alice@otr.example"
+  #define BOB_IDENTITY "bob@otr.example"
+  #define CHARLIE_IDENTITY "charlie@otr.example"
+
+  otr4_client_t *alice = NULL,
+                *bob = NULL,
+                *charlie = NULL;
+
+  alice = otr4_client_new();
+  bob = otr4_client_new();
+  charlie = otr4_client_new();
+
+  cs_keypair_generate(alice->keypair);
+  cs_keypair_generate(bob->keypair);
+  cs_keypair_generate(charlie->keypair);
+
+  char *query_msg_to_bob = otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice); 
+  otrv4_assert(query_msg_to_bob);
+
+  char *query_msg_to_charlie = otr4_client_query_message(CHARLIE_IDENTITY, "Hi charlie", alice); 
+  otrv4_assert(query_msg_to_charlie);
+
+  int ignore = 0;
+  char *from_alice_to_bob = NULL,
+       *from_alice_to_charlie = NULL,
+       *frombob = NULL,
+       *fromcharlie = NULL,
+       *todisplay = NULL;
+
+  //Bob receives query message, sends identity msg
+  ignore = otr4_client_receive(&frombob, &todisplay, query_msg_to_bob, ALICE_IDENTITY, bob);
+  otrv4_assert(ignore);
+  otrv4_assert(!todisplay);
+  free(query_msg_to_bob);
+
+  //Charlie receives query message, sends identity msg
+  ignore = otr4_client_receive(&fromcharlie, &todisplay, query_msg_to_charlie, ALICE_IDENTITY, charlie);
+  otrv4_assert(ignore);
+  otrv4_assert(!todisplay);
+  free(query_msg_to_charlie);
+
+  //Alice receives identity message (from Bob), sends DRE auth msg
+  ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob, BOB_IDENTITY, alice);
+  otrv4_assert(ignore);
+  otrv4_assert(!todisplay);
+  free(frombob);
+  frombob = NULL;
+
+  //Alice receives identity message (from Charlie), sends DRE auth msg
+  ignore = otr4_client_receive(&from_alice_to_charlie, &todisplay, fromcharlie, CHARLIE_IDENTITY, alice);
+  otrv4_assert(ignore);
+  otrv4_assert(!todisplay);
+  free(fromcharlie);
+  fromcharlie = NULL;
+
+  //Bob receives DRE auth message.
+  ignore = otr4_client_receive(&frombob, &todisplay, from_alice_to_bob, ALICE_IDENTITY, bob);
+  otrv4_assert(ignore);
+  otrv4_assert(!frombob);
+  otrv4_assert(!todisplay);
+  free(from_alice_to_bob);
+
+  //Charlie receives DRE auth message.
+  ignore = otr4_client_receive(&fromcharlie, &todisplay, from_alice_to_charlie, ALICE_IDENTITY, charlie);
+  otrv4_assert(ignore);
+  otrv4_assert(!fromcharlie);
+  otrv4_assert(!todisplay);
+  free(from_alice_to_charlie);
+
+  // Free memory
+  cs_keypair_destroy(charlie->keypair);
+  cs_keypair_destroy(bob->keypair);
+  cs_keypair_destroy(alice->keypair);
+
+  otr4_client_free(charlie);
+  otr4_client_free(bob);
+  otr4_client_free(alice);
+}
