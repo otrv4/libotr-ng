@@ -11,6 +11,7 @@ libotr4_la_SOURCES = \
 										 list.c \
 										 mpi.c \
 										 otrv3.c \
+                     protocol.c \
 										 otrv4.c \
 										 serialize.c \
 										 str.c \

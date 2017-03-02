@@ -3,22 +3,10 @@
 
 #include <stdbool.h>
 
+#include "protocol.h"
 #include "dake.h"
 #include "str.h"
 #include "key_management.h"
-
-typedef enum {
-  OTRV4_STATE_START = 1,
-  OTRV4_STATE_AKE_IN_PROGRESS = 2,
-  OTRV4_STATE_ENCRYPTED_MESSAGES = 3,
-  OTRV4_STATE_FINISHED = 4
-} otrv4_state;
-
-typedef enum {
-  OTRV4_ALLOW_NONE = 0,
-  OTRV4_ALLOW_V3 = 1,
-  OTRV4_ALLOW_V4 = 2
-} otrv4_supported_version;
 
 typedef enum {
   OTRV4_VERSION_NONE = 0,
@@ -27,13 +15,17 @@ typedef enum {
 } otrv4_version_t;
 
 typedef struct {
+  int allows;
+} otrv4_policy_t;
+
+typedef struct {
   int our_instance_tag;
   int their_instance_tag;
 
+  otrv4_protocol_t *protocol;
+
   user_profile_t *profile;
   cs_keypair_s *keypair;
-  otrv4_state state;
-  int supported_versions;
   otrv4_version_t running_version;
 
   key_manager_t keys;
@@ -67,7 +59,7 @@ otrv4_t* otrv4_new(cs_keypair_s *keypair);
 void otrv4_destroy(otrv4_t *otr);
 void otrv4_free(/*@only@*/ otrv4_t *otr);
 
-bool otrv4_start(otrv4_t *otr);
+bool otrv4_start(otrv4_t *otr, otrv4_policy_t policy);
 void otrv4_version_support_v3(otrv4_t *otr);
 
 void

@@ -4,31 +4,10 @@
 #include "../otrv4.h"
 
 void
-test_otrv4_starts_protocol() {
-  cs_keypair_t keypair;
-  cs_keypair_generate(keypair);
-  otrv4_t *otr = otrv4_new(keypair);
-
-  int started = otrv4_start(otr);
-
-  g_assert_cmpint(started, ==, true);
-  g_assert_cmpint(otr->state, ==, OTRV4_STATE_START);
-  g_assert_cmpint(otr->supported_versions, ==, OTRV4_ALLOW_V4);
-
-  cs_keypair_destroy(keypair);
-  otrv4_free(otr);
-}
-
-void
-test_otrv4_version_supports_v34(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  otrv4_version_support_v3(otrv4_fixture->otr);
-
-  g_assert_cmpint(otrv4_fixture->otr->supported_versions, ==, OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4);
-}
-
-void
 test_otrv4_builds_query_message(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   char *message = "And some random invitation text.";
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V4 };
+  otrv4_start(otrv4_fixture->otr, policy);
 
   char *query_message = NULL;
   otrv4_build_query_message(&query_message, otrv4_fixture->otr, message, strlen(message));
@@ -41,8 +20,9 @@ test_otrv4_builds_query_message(otrv4_fixture_t *otrv4_fixture, gconstpointer da
 
 void
 test_otrv4_builds_query_message_v34(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  otrv4_version_support_v3(otrv4_fixture->otr);
   char *message = "And some random invitation text.";
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
+  otrv4_start(otrv4_fixture->otr, policy);
 
   char *query_message = NULL;
   otrv4_build_query_message(&query_message, otrv4_fixture->otr, message, strlen(message));
@@ -57,6 +37,8 @@ void
 test_otrv4_builds_whitespace_tag(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   char *expected_tag = " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
   char *message = "And some random invitation text.";
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V4 };
+  otrv4_start(otrv4_fixture->otr, policy);
 
   char *whitespace_tag = NULL;
   otrv4_build_whitespace_tag(&whitespace_tag, otrv4_fixture->otr, message, strlen(message));
@@ -66,9 +48,10 @@ test_otrv4_builds_whitespace_tag(otrv4_fixture_t *otrv4_fixture, gconstpointer d
 
 void
 test_otrv4_builds_whitespace_tag_v34(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  otrv4_version_support_v3(otrv4_fixture->otr);
   char *expected_tag = " \t  \t\t\t\t \t \t \t    \t\t \t    \t\t  \t\tAnd some random invitation text";
   char *message = "And some random invitation text";
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
+  otrv4_start(otrv4_fixture->otr, policy);
 
   char *whitespace_tag = NULL;
   otrv4_build_whitespace_tag(&whitespace_tag, otrv4_fixture->otr, message, strlen(message));
@@ -78,6 +61,8 @@ test_otrv4_builds_whitespace_tag_v34(otrv4_fixture_t *otrv4_fixture, gconstpoint
 
 void
 test_otrv4_receives_plaintext_without_ws_tag_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V4 };
+  otrv4_start(otrv4_fixture->otr, policy);
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response, "Some random text.", 17, otrv4_fixture->otr));
 
@@ -88,7 +73,9 @@ test_otrv4_receives_plaintext_without_ws_tag_on_start(otrv4_fixture_t *otrv4_fix
 
 void
 test_otrv4_receives_plaintext_without_ws_tag_not_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  otrv4_fixture->otr->state = OTRV4_STATE_AKE_IN_PROGRESS;
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V4 };
+  otrv4_start(otrv4_fixture->otr, policy);
+  otrv4_fixture->otr->protocol->state = OTRV4_STATE_AKE_IN_PROGRESS;
 
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response, "Some random text.", 17, otrv4_fixture->otr));
@@ -103,11 +90,13 @@ void
 test_otrv4_receives_plaintext_with_ws_tag(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_response_t *response = otrv4_response_new();
   string_t message = " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
-  otrv4_assert(otrv4_receive_message(response, message, strlen(message), otrv4_fixture->otr));
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V4 };
+  otrv4_start(otrv4_fixture->otr, policy);
 
+  otrv4_assert(otrv4_receive_message(response, message, strlen(message), otrv4_fixture->otr));
   g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
   otrv4_assert(response->to_send);
-  g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_AKE_IN_PROGRESS);
+  g_assert_cmpint(otrv4_fixture->otr->protocol->state, ==, OTRV4_STATE_AKE_IN_PROGRESS);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
 
   otrv4_response_free(response);
@@ -115,10 +104,10 @@ test_otrv4_receives_plaintext_with_ws_tag(otrv4_fixture_t *otrv4_fixture, gconst
 
 void
 test_otrv4_receives_plaintext_with_ws_tag_v3(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  otrv4_version_support_v3(otrv4_fixture->otr);
-
   otrv4_response_t *response = otrv4_response_new();
   string_t message = " \t  \t\t\t\t \t \t \t    \t\t  \t\tAnd some random invitation text.";
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V3 };
+  otrv4_start(otrv4_fixture->otr, policy);
   otrv4_assert(otrv4_receive_message(response, message, strlen(message), otrv4_fixture->otr));
 
   //g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
@@ -131,10 +120,12 @@ test_otrv4_receives_plaintext_with_ws_tag_v3(otrv4_fixture_t *otrv4_fixture, gco
 void
 test_otrv4_receives_query_message(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_response_t *response = otrv4_response_new();
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V4 };
+  otrv4_start(otrv4_fixture->otr, policy);
   otrv4_assert(otrv4_receive_message(response, "?OTRv4? And some random invitation text.", 40, otrv4_fixture->otr));
 
   otrv4_assert(response->to_send);
-  g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_AKE_IN_PROGRESS);
+  g_assert_cmpint(otrv4_fixture->otr->protocol->state, ==, OTRV4_STATE_AKE_IN_PROGRESS);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
 
   otrv4_response_free(response);
@@ -142,7 +133,8 @@ test_otrv4_receives_query_message(otrv4_fixture_t *otrv4_fixture, gconstpointer 
 
 void
 test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  otrv4_version_support_v3(otrv4_fixture->otr);
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V3 };
+  otrv4_start(otrv4_fixture->otr, policy);
 
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response, "?OTRv3? And some random invitation text.", 40, otrv4_fixture->otr));
@@ -155,8 +147,10 @@ test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture, gconstpoint
 }
 
 void
-test_otrv4_receives_identity_message_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
+test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   dake_identity_message_t *identity_message = dake_identity_message_new(NULL); //TODO: add profile
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V4 };
+  otrv4_start(otrv4_fixture->otr, policy);
 
   uint8_t *serialized = NULL;
   otrv4_assert(dake_identity_message_aprint(&serialized, NULL, identity_message));
@@ -168,7 +162,7 @@ test_otrv4_receives_identity_message_on_start(otrv4_fixture_t *otrv4_fixture, gc
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response, message, strlen(message), otrv4_fixture->otr));
 
-  g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_ENCRYPTED_MESSAGES);
+  g_assert_cmpint(otrv4_fixture->otr->protocol->state, ==, OTRV4_STATE_ENCRYPTED_MESSAGES);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
   g_assert_cmpstr(response->to_display, ==, NULL);
   otrv4_assert(response->to_send);
@@ -185,10 +179,12 @@ test_otrv4_receives_identity_message_on_start(otrv4_fixture_t *otrv4_fixture, gc
 void
 test_otrv4_receives_identity_message_invalid_on_start(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   char *identity_message = "?OTR:";
+  otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V4 };
+  otrv4_start(otrv4_fixture->otr, policy);
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response, identity_message, 5, otrv4_fixture->otr));
 
-  g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_START);
+  g_assert_cmpint(otrv4_fixture->otr->protocol->state, ==, OTRV4_STATE_START);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
   g_assert_cmpstr(response->to_display, ==, NULL);
   g_assert_cmpstr(response->to_send, ==, NULL);

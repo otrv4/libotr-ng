@@ -17,7 +17,7 @@ void do_ake(otrv4_t *alice, otrv4_t *bob) {
   free(query_message);
 
   //Should reply with a pre-key
-  otrv4_assert(bob->state == OTRV4_STATE_AKE_IN_PROGRESS);
+  otrv4_assert(bob->protocol->state == OTRV4_STATE_AKE_IN_PROGRESS);
   otrv4_assert(response_to_alice->to_display == NULL);
   otrv4_assert(response_to_alice->to_send);
   otrv4_assert_cmpmem("?OTR:AAQP", response_to_alice->to_send, 9);
@@ -38,7 +38,7 @@ void do_ake(otrv4_t *alice, otrv4_t *bob) {
   otrv4_assert_cmpmem("?OTR:AAQA", response_to_bob->to_send, 9);
 
   //Check double ratchet is initialized
-  otrv4_assert(alice->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+  otrv4_assert(alice->protocol->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
   otrv4_assert(alice->keys->current);
 
   //Bob receives DRE-auth
@@ -57,7 +57,7 @@ void do_ake(otrv4_t *alice, otrv4_t *bob) {
   otrv4_assert(response_to_alice->to_send == NULL);
 
   //Check double ratchet is initialized
-  otrv4_assert(bob->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+  otrv4_assert(bob->protocol->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
   otrv4_assert(bob->keys->current);
 
   //Both have the same shared secret 
