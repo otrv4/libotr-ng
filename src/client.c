@@ -83,7 +83,7 @@ int
 otr4_client_send(char **newmessage, const char *message, const char *recipient, otr4_client_t *client) {
     otr4_conversation_t *conv = get_or_create_conversation_with(recipient, client);
 
-    if (conv->conn->state == OTRV4_STATE_START) {
+    if (conv->conn->protocol->state == OTRV4_STATE_START) {
         return 1;
     }
 
@@ -104,7 +104,7 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message, co
     *todisplay = NULL;
 
     otr4_conversation_t *conv = get_or_create_conversation_with(recipient, client);
-    state_before = conv->conn->state;
+    state_before = conv->conn->protocol->state;
 
     otrv4_response_t *response = otrv4_response_new();
     if (!otrv4_receive_message(response, (const string_t) message, strlen(message), conv->conn)) {
@@ -112,7 +112,7 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message, co
       return 0; //Should this cause the message to be ignored or not?
     }
 
-    if (state_before != OTRV4_STATE_ENCRYPTED_MESSAGES && conv->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
+    if (state_before != OTRV4_STATE_ENCRYPTED_MESSAGES && conv->conn->protocol->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
         if (client->callbacks && client->callbacks->gone_secure)
             client->callbacks->gone_secure(conv);
     }

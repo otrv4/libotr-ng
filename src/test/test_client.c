@@ -84,8 +84,8 @@ test_client_api() {
   otr4_conversation_t* alice_to_bob = otr4_client_get_conversation(0, BOB_IDENTITY, alice);
   otr4_conversation_t* alice_to_charlie = otr4_client_get_conversation(0, CHARLIE_IDENTITY, alice);
 
-  otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_START);
-  otrv4_assert(alice_to_charlie->conn->state == OTRV4_STATE_START);
+  otrv4_assert(alice_to_bob->conn->protocol->state == OTRV4_STATE_START);
+  otrv4_assert(alice_to_charlie->conn->protocol->state == OTRV4_STATE_START);
 
   //Alice receives identity message (from Bob), sends DRE auth msg
   ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob, BOB_IDENTITY, alice);
