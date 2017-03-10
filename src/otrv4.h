@@ -28,14 +28,6 @@ typedef enum {
   OTRV4_ALLOW_V4 = 2
 } otrv4_supported_version;
 
-typedef struct {
-  otrv4_state state;
-  int supported_versions;
-} otrv4_protocol_t;
-
-otrv4_protocol_t *
-protocol_start(int versions, ...);
-
 typedef enum {
   OTRV4_VERSION_NONE = 0,
   OTRV4_VERSION_3 = 3,
@@ -47,10 +39,11 @@ typedef struct {
 } otrv4_policy_t;
 
 typedef struct {
+  otrv4_state state;
+  int supported_versions;
+
   int our_instance_tag;
   int their_instance_tag;
-
-  otrv4_protocol_t *protocol;
 
   user_profile_t *profile;
   cs_keypair_s *keypair;

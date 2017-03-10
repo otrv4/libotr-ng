@@ -39,7 +39,7 @@ static const string_t otrv4 = "?OTR:";
 
 int
 otrv4_allow_version(const otrv4_t *otr, otrv4_supported_version version) {
-  return (otr->protocol->supported_versions & version);
+  return (otr->supported_versions & version);
 }
 
 void
@@ -83,11 +83,8 @@ otrv4_new(cs_keypair_s *keypair) {
     return NULL;
   }
 
-  otrv4_protocol_t *protocol = protocol_start(1, OTRV4_ALLOW_V4);
-  if (protocol == NULL) {
-    return NULL;
-  }
-  otr->protocol = protocol;
+  otr->state = OTRV4_STATE_START;
+  otr->supported_versions = OTRV4_ALLOW_NONE;
 
   otr->our_instance_tag = 0;
   otr->their_instance_tag = 0;
@@ -105,8 +102,6 @@ otrv4_destroy(/*@only@*/ otrv4_t *otr) {
   key_manager_destroy(otr->keys);
   user_profile_free(otr->profile);
   otr->profile = NULL;
-  free(otr->protocol);
-  otr->protocol = NULL;
 }
 
 void
@@ -119,35 +114,9 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
   free(otr);
 }
 
-otrv4_protocol_t *
-protocol_start(int versions, ...) {
-  otrv4_protocol_t *protocol = malloc(sizeof(otrv4_protocol_t));
-  if(protocol == NULL) {
-    return NULL;
-  }
-
-  protocol->state = OTRV4_STATE_START;
-
-  va_list allowed;
-  va_start(allowed, versions);
-
-  protocol->supported_versions = OTRV4_ALLOW_NONE;
-  int i = 0;
-  for (; i < versions; i++) {
-    protocol->supported_versions |= va_arg(allowed, int);
-  }
-
-  va_end(allowed);
-
-  return protocol;
-}
-
 bool
 otrv4_start(otrv4_t *otr, otrv4_policy_t policy) {
-  unsigned int v3_mask = 0b01;
-  unsigned int v4_mask = 0b10;
-  unsigned int versions = (policy.allows & v3_mask) | (policy.allows & v4_mask);
-  otr->protocol = protocol_start(versions, policy.allows);
+  otr->supported_versions = policy.allows;
 
   return true;
 }
@@ -266,7 +235,7 @@ otrv4_message_to_display_without_tag(otrv4_response_t *response,
 
 void
 otrv4_state_set(otrv4_t *otr, otrv4_state target) {
-  otr->protocol->state = target;
+  otr->state = target;
 }
 
 void
@@ -358,7 +327,7 @@ otrv4_receive_plaintext(otrv4_response_t *response,
                         size_t msg_len) {
   otrv4_message_to_display_set(response, message, msg_len);
 
-  if (otr->protocol->state != OTRV4_STATE_START) {
+  if (otr->state != OTRV4_STATE_START) {
     response->warning = OTRV4_WARN_RECEIVED_UNENCRYPTED;
   }
 
@@ -521,7 +490,7 @@ double_ratcheting_init(int j, otrv4_t *otr) {
   if (!key_manager_ratchetting_init(j, otr->keys))
     return false;
 
-  otr->protocol->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
+  otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
   return true;
 }
 
@@ -532,7 +501,7 @@ otrv4_receive_identity_message(string_t *dst, uint8_t *buff, size_t buflen, otrv
     return false;
   }
 
-  if (otr->protocol->state == OTRV4_STATE_START) {
+  if (otr->state == OTRV4_STATE_START) {
     if (!dake_identity_message_validate(identity_message)) {
       dake_identity_message_destroy(identity_message);
       return false;
@@ -565,7 +534,7 @@ otrv4_receive_identity_message(string_t *dst, uint8_t *buff, size_t buflen, otrv
 
 bool
 otrv4_receive_dre_auth(string_t *dst, uint8_t *buff, size_t buflen, otrv4_t *otr) {
-  if (otr->protocol->state != OTRV4_STATE_AKE_IN_PROGRESS) {
+  if (otr->state != OTRV4_STATE_AKE_IN_PROGRESS) {
     return true;
   }
 
@@ -637,7 +606,7 @@ otrv4_receive_data_message(otrv4_response_t *response, uint8_t *buff, size_t buf
   response->to_send = NULL;
   response->warning = OTRV4_WARN_NONE;
 
-  if (otr->protocol->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
+  if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
     //TODO: warn the user and send an error message with a code.
     return false;
   }
@@ -920,11 +889,11 @@ otrv4_send_data_message(uint8_t **to_send, const uint8_t *message, size_t messag
 
 bool
 otrv4_send_message(uint8_t **to_send, const uint8_t *message, size_t message_len, otrv4_t *otr) {
-  if (otr->protocol->state == OTRV4_STATE_FINISHED) {
+  if (otr->state == OTRV4_STATE_FINISHED) {
     return false; //Should restart
   }
 
-  if (otr->protocol->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
+  if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
     //TODO: queue message
     return false;
   }
