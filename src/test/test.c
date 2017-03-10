@@ -68,6 +68,7 @@ main(int argc, char **argv) {
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);
   g_test_add_func("/client/get_our_fingerprint", test_client_get_our_fingerprint);
+  g_test_add_func("/client/fingerprint_to_human", test_fingerprint_hash_to_human);
 
   g_test_add_func("/api/conversation", test_api_conversation);
 

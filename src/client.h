@@ -4,6 +4,9 @@
 #include "otrv4.h"
 #include "list.h"
 
+#define OTR4_FPRINT_LEN_BYTES 64
+#define OTR4_FPRINT_HUMAN_LEN 64/4*9 + 1
+
 typedef struct {
   char *recipient;
   otrv4_t *conn;
@@ -64,5 +67,9 @@ otr4_client_get_conversation(int force, const char *recipient, otr4_client_t *cl
 
 uint8_t *
 otr4_client_get_our_fingerprint(const otr4_client_t *client);
+
+void otr4_fingerprint_hash_to_human(
+        char human[OTR4_FPRINT_HUMAN_LEN],
+        const unsigned char hash[OTR4_FPRINT_LEN_BYTES]);
 
 #endif
