@@ -76,12 +76,9 @@ typedef struct {
   uint8_t type;
 } otrv4_header_t;
 
-otrv4_t* otrv4_new(cs_keypair_s *keypair);
+otrv4_t* otrv4_new(cs_keypair_s *keypair, otrv4_policy_t policy);
 void otrv4_destroy(otrv4_t *otr);
 void otrv4_free(/*@only@*/ otrv4_t *otr);
-
-bool otrv4_start(otrv4_t *otr, otrv4_policy_t policy);
-void otrv4_version_support_v3(otrv4_t *otr);
 
 void
 otrv4_build_query_message

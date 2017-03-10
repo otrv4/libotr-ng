@@ -83,10 +83,8 @@ test_api_conversation(void) {
   cs_keypair_generate(cs_bob);
 
   otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
-  otrv4_t *alice = otrv4_new(cs_alice);
-  otrv4_start(alice, policy);
-  otrv4_t *bob = otrv4_new(cs_bob);
-  otrv4_start(bob, policy);
+  otrv4_t *alice = otrv4_new(cs_alice, policy);
+  otrv4_t *bob = otrv4_new(cs_bob, policy);
 
   //AKE HAS FINISHED.
   do_ake(alice, bob);

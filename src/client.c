@@ -67,10 +67,9 @@ get_or_create_conversation_with(const char *recipient, otr4_client_t *client) {
     otr4_conversation_t *conv = get_conversation_with(recipient, client->conversations);
     if (!conv) {
         conv = new_conversation_with(recipient);
-        conv->conn = otrv4_new(client->keypair);
         //TODO the policy should come from client config.
         otrv4_policy_t policy = { .allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
-        otrv4_start(conv->conn, policy);
+        conv->conn = otrv4_new(client->keypair, policy);
         client->conversations = list_add(conv, client->conversations);
     }
 

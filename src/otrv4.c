@@ -77,14 +77,14 @@ get_my_user_profile(const otrv4_t *otr) {
 }
 
 otrv4_t *
-otrv4_new(cs_keypair_s *keypair) {
+otrv4_new(cs_keypair_s *keypair, otrv4_policy_t policy) {
   otrv4_t *otr = malloc(sizeof(otrv4_t));
   if(otr == NULL) {
     return NULL;
   }
 
   otr->state = OTRV4_STATE_START;
-  otr->supported_versions = OTRV4_ALLOW_NONE;
+  otr->supported_versions = policy.allows;
 
   otr->our_instance_tag = 0;
   otr->their_instance_tag = 0;
@@ -112,13 +112,6 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
 
   otrv4_destroy(otr);
   free(otr);
-}
-
-bool
-otrv4_start(otrv4_t *otr, otrv4_policy_t policy) {
-  otr->supported_versions = policy.allows;
-
-  return true;
 }
 
 void
