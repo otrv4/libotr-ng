@@ -83,4 +83,7 @@ otrv4_receive_message
 bool
 otrv4_send_message(uint8_t **to_send, const uint8_t *message, size_t message_len, otrv4_t *otr);
 
+uint8_t *
+otrv4_get_our_fingerprint(const otrv4_t *otr);
+
 #endif
