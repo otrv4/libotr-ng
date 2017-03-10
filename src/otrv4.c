@@ -119,6 +119,29 @@ otrv4_free(/*@only@*/ otrv4_t *otr) {
   free(otr);
 }
 
+otrv4_protocol_t *
+protocol_start(int versions, ...) {
+  otrv4_protocol_t *protocol = malloc(sizeof(otrv4_protocol_t));
+  if(protocol == NULL) {
+    return NULL;
+  }
+
+  protocol->state = OTRV4_STATE_START;
+
+  va_list allowed;
+  va_start(allowed, versions);
+
+  protocol->supported_versions = OTRV4_ALLOW_NONE;
+  int i = 0;
+  for (; i < versions; i++) {
+    protocol->supported_versions |= va_arg(allowed, int);
+  }
+
+  va_end(allowed);
+
+  return protocol;
+}
+
 bool
 otrv4_start(otrv4_t *otr, otrv4_policy_t policy) {
   unsigned int v3_mask = 0b01;

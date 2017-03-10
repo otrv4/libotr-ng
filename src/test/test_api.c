@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "../protocol.h"
+#include "../otrv4.h"
 #include "../str.h"
 
 void do_ake(otrv4_t *alice, otrv4_t *bob) {

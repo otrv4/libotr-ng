@@ -11,7 +11,6 @@ libotr4_la_SOURCES = \
 										 list.c \
 										 mpi.c \
 										 otrv3.c \
-                     protocol.c \
 										 otrv4.c \
 										 serialize.c \
 										 str.c \
@@ -33,7 +32,6 @@ libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
 otrincdir = $(includedir)/libotr4
 otrinc_HEADERS = client.h \
 								 list.h \
-								 protocol.h \
 								 dh.h \
 								 otrv4.h \
 								 dake.h \

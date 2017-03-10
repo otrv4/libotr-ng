@@ -4,7 +4,6 @@
 #include "test_fixtures.h"
 
 #include "test_api.c"
-#include "test_protocol.c"
 #include "test_otrv4.c"
 #include "test_identity_message.c"
 #include "test_dake.c"
