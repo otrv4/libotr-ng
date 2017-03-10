@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 #include "../otrv4.h"
-#include "../sha3.h"
-#include "../serialize.h"
 
 void
 test_otrv4_builds_query_message(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
@@ -210,23 +208,3 @@ test_otrv4_destroy() {
   free(otr);
 }
 
-void
-test_otrv4_get_our_fingerprint() {
-  cs_keypair_t keypair;
-  cs_keypair_generate(keypair);
-  otrv4_t *otr = otrv4_new(keypair);
-
-  uint8_t *our_fp = otrv4_get_our_fingerprint(otr);
-  otrv4_assert(our_fp);
-
-  uint8_t serialized[170] = { 0 };
-  g_assert_cmpint(serialize_cs_public_key(serialized, keypair->pub), ==, 170);
-
-  uint8_t expected_fp[64] = {0};
-  bool ok = sha3_512(expected_fp, sizeof(expected_fp), serialized, sizeof(serialized));
-  otrv4_assert(ok == TRUE);
-  otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(expected_fp));
-
-  free(our_fp);
-  otrv4_free(otr);
-}

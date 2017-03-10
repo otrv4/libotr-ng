@@ -69,10 +69,9 @@ main(int argc, char **argv) {
   g_test_add("/otrv4/receives_query_message_v3", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_receives_query_message_v3, otrv4_fixture_teardown);
   g_test_add_func("/otrv4/destroy", test_otrv4_destroy);
 
-  g_test_add_func("/otrv4/get_our_fingerprint", test_otrv4_get_our_fingerprint);
-
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);
+  g_test_add_func("/client/get_our_fingerprint", test_client_get_our_fingerprint);
 
   g_test_add_func("/api/conversation", test_api_conversation);
 

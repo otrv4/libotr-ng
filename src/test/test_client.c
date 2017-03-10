@@ -1,5 +1,8 @@
 #include "../client.h"
 
+#include "../sha3.h"
+#include "../serialize.h"
+
 #define ALICE_IDENTITY "alice@otr.example"
 #define BOB_IDENTITY "bob@otr.example"
 #define CHARLIE_IDENTITY "charlie@otr.example"
@@ -123,4 +126,27 @@ test_client_api() {
   otr4_client_free(charlie);
   otr4_client_free(bob);
   otr4_client_free(alice);
+}
+
+void
+test_client_get_our_fingerprint() {
+  OTR4_INIT;
+
+  otr4_client_t *client = otr4_client_new();
+
+  cs_keypair_generate(client->keypair);
+
+  uint8_t *our_fp = otr4_client_get_our_fingerprint(client);
+  otrv4_assert(our_fp);
+
+  uint8_t serialized[170] = { 0 };
+  g_assert_cmpint(serialize_cs_public_key(serialized, client->keypair->pub), ==, 170);
+
+  uint8_t expected_fp[64] = {0};
+  bool ok = sha3_512(expected_fp, sizeof(expected_fp), serialized, sizeof(serialized));
+  otrv4_assert(ok == TRUE);
+  otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(expected_fp));
+
+  free(our_fp);
+  otr4_client_free(client);
 }

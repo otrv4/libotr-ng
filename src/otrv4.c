@@ -7,7 +7,6 @@
 #include "str.h"
 #include "b64.h"
 #include "deserialize.h"
-#include "serialize.h"
 #include "sha3.h"
 #include "data_message.h"
 #include "constants.h"
@@ -910,18 +909,3 @@ otrv4_send_message(uint8_t **to_send, const uint8_t *message, size_t message_len
   return otrv4_send_data_message(to_send, message, message_len, otr);
 }
 
-uint8_t *
-otrv4_get_our_fingerprint(const otrv4_t *otr) {
-  uint8_t *ser = malloc(64);
-
-  uint8_t serialized[170] = { 0 };
-  serialize_cs_public_key(serialized, otr->keypair->pub);
-  //TODO: do we need to check anything? 
-
-  bool ok = sha3_512(ser, 64, serialized, sizeof(serialized));
-  if (ok)
-    return ser;
-
-  free(ser);
-  return NULL;
-}

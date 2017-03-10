@@ -62,4 +62,7 @@ otr4_client_disconnect(char **newmessage,
 otr4_conversation_t*
 otr4_client_get_conversation(int force, const char *recipient, otr4_client_t *client);
 
+uint8_t *
+otr4_client_get_our_fingerprint(const otr4_client_t *client);
+
 #endif

@@ -1,5 +1,8 @@
 #include "client.h"
+
 #include "str.h"
+#include "serialize.h"
+#include "sha3.h"
 
 void
 conversation_free(otr4_conversation_t *conv) {
@@ -146,4 +149,20 @@ otr4_client_query_message(const char *recipient, const char* message, otr4_clien
 void
 otr4_client_disconnect(char **newmessage, const char *recipient, otr4_client_t *client) {
     //TODO
+}
+
+uint8_t *
+otr4_client_get_our_fingerprint(const otr4_client_t *client) {
+  uint8_t *ser = malloc(64);
+
+  uint8_t serialized[170] = { 0 };
+  serialize_cs_public_key(serialized, client->keypair->pub);
+  //TODO: do we need to check anything? 
+
+  bool ok = sha3_512(ser, 64, serialized, sizeof(serialized));
+  if (ok)
+    return ser;
+
+  free(ser);
+  return NULL;
 }
