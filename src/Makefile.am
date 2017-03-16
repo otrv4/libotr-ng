@@ -3,6 +3,7 @@ lib_LTLIBRARIES = libotr4.la
 libotr4_la_SOURCES = \
                      b64.c \
 										 client.c \
+										 cramershoup_interface.c \
                      dake.c \
 										 data_types.c \
 										 data_message.c \

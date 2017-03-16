@@ -1,6 +1,7 @@
 #ifndef CRAMER_SHOUP_H
 #define CRAMER_SHOUP_H
 
+#include <stdbool.h>
 #include <cramershoup.h>
 #include <string.h>
 
@@ -25,17 +26,13 @@ cs_keypair_generate(cs_keypair_t key_pair) {
 }
 
 static inline void
-cs_keypair_destroy(cs_keypair_t key_par) {
-  memset(key_par->pub, 0, sizeof(cs_public_key_t));
-  memset(key_par->priv, 0, sizeof(cs_private_key_t));
+cs_keypair_destroy(cs_keypair_t key_pair) {
+  memset(key_pair->pub, 0, sizeof(cs_public_key_t));
+  memset(key_pair->priv, 0, sizeof(cs_private_key_t));
 }
 
-static inline void
-cs_public_key_copy(cs_public_key_t *dst, const cs_public_key_t *src) {
-  ec_point_copy(dst->c, src->c);
-  ec_point_copy(dst->d, src->d);
-  ec_point_copy(dst->h, src->h);
-}
+void
+cs_public_key_copy(cs_public_key_t *dst, const cs_public_key_t *src);
 
 static inline void
 dr_cs_generate_symmetric_key(dr_cs_symmetric_key_t k) {
@@ -94,5 +91,8 @@ ring_signature_auth_valid(const rs_auth_t auth,
 
   return true;
 }
+
+int
+cs_serialize_private_key(char **dst, size_t *len, const cs_private_key_t *priv);
 
 #endif

@@ -169,6 +169,21 @@ otr4_client_get_our_fingerprint(const otr4_client_t *client) {
   return NULL;
 }
 
+int
+otr4_privkey_generate_FILEp(const otr4_client_t *client, FILE *privf) {
+    char *buff = NULL;
+    size_t s = 0;
+
+    int err = cs_serialize_private_key(&buff, &s, client->keypair->priv);
+    if (err)
+        return err;
+
+    if (1 != fwrite(buff, s, 1, privf))
+        return -1;
+
+    return 0;
+}
+
 /* Convert a 64-byte hash value to a 145-byte human-readable value */
 void otr4_fingerprint_hash_to_human(
         char human[OTR4_FPRINT_HUMAN_LEN],

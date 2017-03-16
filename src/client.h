@@ -68,6 +68,9 @@ otr4_client_get_conversation(int force, const char *recipient, otr4_client_t *cl
 uint8_t *
 otr4_client_get_our_fingerprint(const otr4_client_t *client);
 
+int
+otr4_privkey_generate_FILEp(const otr4_client_t *client, FILE *privf);
+
 void otr4_fingerprint_hash_to_human(
         char human[OTR4_FPRINT_HUMAN_LEN],
         const unsigned char hash[OTR4_FPRINT_LEN_BYTES]);
