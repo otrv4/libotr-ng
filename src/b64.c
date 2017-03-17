@@ -65,12 +65,14 @@ VERSION HISTORY:
 /*
 ** Translation Table as described in RFC1113
 */
-static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const char cb64[] =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /*
 ** Translation Table to decode (created by author)
 */
-static const char cd64[]="|$$$}rstuvwxyz{$$$$$$$>?@ABCDEFGHIJKLMNOPQRSTUVW$$$$$$XYZ[\\]^_`abcdefghijklmnopq";
+static const char cd64[] =
+  "|$$$}rstuvwxyz{$$$$$$$>?@ABCDEFGHIJKLMNOPQRSTUVW$$$$$$XYZ[\\]^_`abcdefghijklmnopq";
 
 /*
 ** encodeblock
@@ -78,19 +80,18 @@ static const char cd64[]="|$$$}rstuvwxyz{$$$$$$$>?@ABCDEFGHIJKLMNOPQRSTUVW$$$$$$
 ** encode up to 3 8-bit binary bytes as 4 '6-bit' characters.
 ** len must be 1, 2, or 3.
 */
-static void encodeblock( char *out, const unsigned char *in, size_t len )
+static void
+encodeblock (char *out, const unsigned char *in, size_t len)
 {
-    unsigned char in0, in1, in2;
-    in0 = in[0];
-    in1 = len > 1 ? in[1] : 0;
-    in2 = len > 2 ? in[2] : 0;
+  unsigned char in0, in1, in2;
+  in0 = in[0];
+  in1 = len > 1 ? in[1] : 0;
+  in2 = len > 2 ? in[2] : 0;
 
-    out[0] = cb64[ in0 >> 2 ];
-    out[1] = cb64[ ((in0 & 0x03) << 4) | ((in1 & 0xf0) >> 4) ];
-    out[2] = len > 1 ? cb64[ ((in1 & 0x0f) << 2) | ((in2 & 0xc0) >> 6) ]
-		     : '=';
-    out[3] = len > 2 ? cb64[ in2 & 0x3f ]
-		     : '=';
+  out[0] = cb64[in0 >> 2];
+  out[1] = cb64[((in0 & 0x03) << 4) | ((in1 & 0xf0) >> 4)];
+  out[2] = len > 1 ? cb64[((in1 & 0x0f) << 2) | ((in2 & 0xc0) >> 6)] : '=';
+  out[3] = len > 2 ? cb64[in2 & 0x3f] : '=';
 }
 
 /*
@@ -99,49 +100,57 @@ static void encodeblock( char *out, const unsigned char *in, size_t len )
  * The buffer base64data must contain at least ((datalen+2)/3)*4 bytes of
  * space.  This function will return the number of bytes actually used.
  */
-size_t otrl_base64_encode(char *base64data, const unsigned char *data,
-	size_t datalen)
+size_t
+otrl_base64_encode (char *base64data, const unsigned char *data,
+		    size_t datalen)
 {
-    size_t base64len = 0;
+  size_t base64len = 0;
 
-    while(datalen > 2) {
-	encodeblock(base64data, data, 3);
-	base64data += 4;
-	base64len += 4;
-	data += 3;
-	datalen -= 3;
+  while (datalen > 2)
+    {
+      encodeblock (base64data, data, 3);
+      base64data += 4;
+      base64len += 4;
+      data += 3;
+      datalen -= 3;
     }
-    if (datalen > 0) {
-	encodeblock(base64data, data, datalen);
-	base64len += 4;
+  if (datalen > 0)
+    {
+      encodeblock (base64data, data, datalen);
+      base64len += 4;
     }
 
-    return base64len;
+  return base64len;
 }
 
-static size_t decode(unsigned char *out, const char *in, size_t b64len)
+static size_t
+decode (unsigned char *out, const char *in, size_t b64len)
 {
-    size_t written = 0;
-    unsigned char c = 0;
+  size_t written = 0;
+  unsigned char c = 0;
 
-    if (b64len > 0) {
-	c = in[0] << 2;
+  if (b64len > 0)
+    {
+      c = in[0] << 2;
     }
-    if (b64len > 1) {
-	out[0] = c | in[1] >> 4;
-	written = 1;
-	c = in[1] << 4;
+  if (b64len > 1)
+    {
+      out[0] = c | in[1] >> 4;
+      written = 1;
+      c = in[1] << 4;
     }
-    if (b64len > 2) {
-	out[1] = c | in[2] >> 2;
-	written = 2;
-	c = in[2] << 6;
+  if (b64len > 2)
+    {
+      out[1] = c | in[2] >> 2;
+      written = 2;
+      c = in[2] << 6;
     }
-    if (b64len > 3) {
-	out[2] = c | in[3];
-	written = 3;
+  if (b64len > 3)
+    {
+      out[2] = c | in[3];
+      written = 3;
     }
-    return written;
+  return written;
 }
 
 /*
@@ -152,40 +161,48 @@ static size_t decode(unsigned char *out, const char *in, size_t b64len)
  * of space.  This function will return the number of bytes actually
  * used.
  */
-size_t otrl_base64_decode(unsigned char *data, const char *base64data,
-	size_t base64len)
+size_t
+otrl_base64_decode (unsigned char *data, const char *base64data,
+		    size_t base64len)
 {
-    size_t datalen = 0;
-    char b64[4];
-    size_t b64accum = 0;
+  size_t datalen = 0;
+  char b64[4];
+  size_t b64accum = 0;
 
-    while(base64len > 0) {
-	char b = *base64data;
-	unsigned char bdecode;
-	++base64data;
-	--base64len;
-	if (b < '+' || b > 'z') continue;  /* Skip non-base64 chars */
-	if (b == '=') {
-	    /* Force termination */
-	    datalen += decode(data, b64, b64accum);
-	    base64len = 0;
-	} else {
-	    bdecode = cd64[b-'+'];
-	    if (bdecode == '$') continue;  /* Skip non-base64 chars */
-	    b64[b64accum++] = bdecode-'>';
-	    if (b64accum == 4) {
-		/* We have a complete block; decode it. */
-		size_t written = decode(data, b64, b64accum);
-		data += written;
-		datalen += written;
-		b64accum = 0;
+  while (base64len > 0)
+    {
+      char b = *base64data;
+      unsigned char bdecode;
+      ++base64data;
+      --base64len;
+      if (b < '+' || b > 'z')
+	continue;		/* Skip non-base64 chars */
+      if (b == '=')
+	{
+	  /* Force termination */
+	  datalen += decode (data, b64, b64accum);
+	  base64len = 0;
+	}
+      else
+	{
+	  bdecode = cd64[b - '+'];
+	  if (bdecode == '$')
+	    continue;		/* Skip non-base64 chars */
+	  b64[b64accum++] = bdecode - '>';
+	  if (b64accum == 4)
+	    {
+	      /* We have a complete block; decode it. */
+	      size_t written = decode (data, b64, b64accum);
+	      data += written;
+	      datalen += written;
+	      b64accum = 0;
 	    }
 	}
     }
 
-    /* Just discard any short block at the end. */
+  /* Just discard any short block at the end. */
 
-    return datalen;
+  return datalen;
 }
 
 /*
@@ -193,33 +210,36 @@ size_t otrl_base64_decode(unsigned char *data, const char *base64data,
  * return the result, or NULL in the event of a memory error.  The
  * caller must free() the return value.
  */
-char *otrl_base64_otr_encode(const unsigned char *buf, size_t buflen)
+char *
+otrl_base64_otr_encode (const unsigned char *buf, size_t buflen)
 {
-    char *base64buf;
-    size_t base64len;
-    const size_t HALF_MAX_SIZE_T = ((size_t)-1) >> 1;
+  char *base64buf;
+  size_t base64len;
+  const size_t HALF_MAX_SIZE_T = ((size_t) - 1) >> 1;
 
-    if (buflen > HALF_MAX_SIZE_T) {
-	/* You somehow have a buffer that's of size more than half of
-	 * all addressable memory, and you now want a base64 version in
-	 * a new buffer 33% larger?  Not going to happen.  Exit now,
-	 * rather in the malloc below, to avoid integer overflowing the
-	 * computation of base64len. */
-	 return NULL;
+  if (buflen > HALF_MAX_SIZE_T)
+    {
+      /* You somehow have a buffer that's of size more than half of
+       * all addressable memory, and you now want a base64 version in
+       * a new buffer 33% larger?  Not going to happen.  Exit now,
+       * rather in the malloc below, to avoid integer overflowing the
+       * computation of base64len. */
+      return NULL;
     }
 
-    /* Make the base64-encoding. */
-    base64len = ((buflen + 2) / 3) * 4;
-    base64buf = malloc(5 + base64len + 1 + 1);
-    if (base64buf == NULL) {
-	return NULL;
+  /* Make the base64-encoding. */
+  base64len = ((buflen + 2) / 3) * 4;
+  base64buf = malloc (5 + base64len + 1 + 1);
+  if (base64buf == NULL)
+    {
+      return NULL;
     }
-    memmove(base64buf, "?OTR:", 5);
-    otrl_base64_encode(base64buf+5, buf, buflen);
-    base64buf[5 + base64len] = '.';
-    base64buf[5 + base64len + 1] = '\0';
+  memmove (base64buf, "?OTR:", 5);
+  otrl_base64_encode (base64buf + 5, buf, buflen);
+  base64buf[5 + base64len] = '.';
+  base64buf[5 + base64len + 1] = '\0';
 
-    return base64buf;
+  return base64buf;
 }
 
 /*
@@ -228,40 +248,45 @@ char *otrl_base64_otr_encode(const unsigned char *buf, size_t buflen)
  * The caller must free() the result.  Return 0 on success, -1 on a
  * memory error, or -2 on invalid input.
  */
-int otrl_base64_otr_decode(const char *msg, unsigned char **bufp,
-	size_t *lenp)
+int
+otrl_base64_otr_decode (const char *msg, unsigned char **bufp, size_t * lenp)
 {
-    char *otrtag, *endtag;
-    size_t msglen, rawlen;
-    unsigned char *rawmsg;
+  char *otrtag, *endtag;
+  size_t msglen, rawlen;
+  unsigned char *rawmsg;
 
-    otrtag = strstr(msg, "?OTR:");
-    if (!otrtag) {
-	return -2;
+  otrtag = strstr (msg, "?OTR:");
+  if (!otrtag)
+    {
+      return -2;
     }
 
-    endtag = strchr(otrtag, '.');
-    if (endtag) {
-	msglen = endtag-otrtag;
-    } else {
-	return -2;
+  endtag = strchr (otrtag, '.');
+  if (endtag)
+    {
+      msglen = endtag - otrtag;
+    }
+  else
+    {
+      return -2;
     }
 
-    /* Skip over the "?OTR:" */
-    otrtag += 5;
-    msglen -= 5;
+  /* Skip over the "?OTR:" */
+  otrtag += 5;
+  msglen -= 5;
 
-    /* Base64-decode the message */
-    rawlen = OTRL_B64_MAX_DECODED_SIZE(msglen);   /* maximum possible */
-    rawmsg = malloc(rawlen);
-    if (!rawmsg && rawlen > 0) {
-	return -1;
+  /* Base64-decode the message */
+  rawlen = OTRL_B64_MAX_DECODED_SIZE (msglen);	/* maximum possible */
+  rawmsg = malloc (rawlen);
+  if (!rawmsg && rawlen > 0)
+    {
+      return -1;
     }
 
-    rawlen = otrl_base64_decode(rawmsg, otrtag, msglen);  /* actual size */
+  rawlen = otrl_base64_decode (rawmsg, otrtag, msglen);	/* actual size */
 
-    *bufp = rawmsg;
-    *lenp = rawlen;
+  *bufp = rawmsg;
+  *lenp = rawlen;
 
-    return 0;
+  return 0;
 }

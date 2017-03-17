@@ -4,8 +4,9 @@
 #define RANDOM_H
 
 static inline void
-random_bytes(void * const buf, const size_t size) {
-  gcry_randomize(buf, size, GCRY_STRONG_RANDOM);
+random_bytes (void *const buf, const size_t size)
+{
+  gcry_randomize (buf, size, GCRY_STRONG_RANDOM);
 }
 
 #endif

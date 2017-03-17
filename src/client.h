@@ -7,7 +7,8 @@
 #define OTR4_FPRINT_LEN_BYTES 64
 #define OTR4_FPRINT_HUMAN_LEN 64/4*9 + 1
 
-typedef struct {
+typedef struct
+{
   char *recipient;
   otrv4_t *conn;
 
@@ -17,62 +18,56 @@ typedef struct {
   //otrl_instag_t our_instance;
 } otr4_conversation_t;
 
-typedef struct {
+typedef struct
+{
   /* A conversation has entered a secure state. */
-  void (*gone_secure)(const otr4_conversation_t *conv);
+  void (*gone_secure) (const otr4_conversation_t * conv);
 
   /* A conversation has left a secure state. */
-  void (*gone_insecure)(const otr4_conversation_t *conv);
+  void (*gone_insecure) (const otr4_conversation_t * conv);
 } otr4_client_callbacks_t;
 
 //A client handle messages from/to a sender to/from multiple recipients.
-typedef struct {
+typedef struct
+{
   otr4_client_callbacks_t *callbacks;
 
   cs_keypair_t keypair;
-  list_element_t* conversations;
+  list_element_t *conversations;
 } otr4_client_t;
 
-otr4_client_t*
-otr4_client_new();
+otr4_client_t *otr4_client_new ();
+
+void otr4_client_free (otr4_client_t * client);
+
+char *otr4_client_query_message (const char *recipient,
+				 const char *message, otr4_client_t * client);
+
+int
+otr4_client_send (char **newmessage,
+		  const char *message,
+		  const char *recipient, otr4_client_t * client);
+
+int
+otr4_client_receive (char **newmessage,
+		     char **todisplay,
+		     const char *message,
+		     const char *recipient, otr4_client_t * client);
 
 void
-otr4_client_free(otr4_client_t *client);
+otr4_client_disconnect (char **newmessage,
+			const char *recipient, otr4_client_t * client);
 
-char*
-otr4_client_query_message(const char *recipient,
-                          const char* message,
-                          otr4_client_t *client);
+otr4_conversation_t *otr4_client_get_conversation (int force,
+						   const char *recipient,
+						   otr4_client_t * client);
 
-int
-otr4_client_send(char **newmessage,
-                 const char *message,
-                 const char *recipient,
-                 otr4_client_t *client);
+uint8_t *otr4_client_get_our_fingerprint (const otr4_client_t * client);
 
-int
-otr4_client_receive(char **newmessage,
-                    char **todisplay,
-                    const char *message,
-                    const char *recipient,
-                    otr4_client_t *client);
+int otr4_privkey_generate_FILEp (const otr4_client_t * client, FILE * privf);
 
-void
-otr4_client_disconnect(char **newmessage,
-                       const char *recipient,
-                       otr4_client_t *client);
-
-otr4_conversation_t*
-otr4_client_get_conversation(int force, const char *recipient, otr4_client_t *client);
-
-uint8_t *
-otr4_client_get_our_fingerprint(const otr4_client_t *client);
-
-int
-otr4_privkey_generate_FILEp(const otr4_client_t *client, FILE *privf);
-
-void otr4_fingerprint_hash_to_human(
-        char human[OTR4_FPRINT_HUMAN_LEN],
-        const unsigned char hash[OTR4_FPRINT_LEN_BYTES]);
+void otr4_fingerprint_hash_to_human (char human[OTR4_FPRINT_HUMAN_LEN],
+				     const unsigned char
+				     hash[OTR4_FPRINT_LEN_BYTES]);
 
 #endif

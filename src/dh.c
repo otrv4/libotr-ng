@@ -1,7 +1,7 @@
 #include "dh.h"
 #include "random.h"
 
-static const char* DH3072_MODULUS_S = "0x"
+static const char *DH3072_MODULUS_S = "0x"
   "FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"
   "29024E088A67CC74020BBEA63B139B22514A08798E3404DD"
   "EF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245"
@@ -25,100 +25,116 @@ static const char *DH3072_GENERATOR_S = "0x02";
 static gcry_mpi_t DH3072_GENERATOR = NULL;
 
 void
-dh_init(void) {
-  gcry_mpi_scan(&DH3072_MODULUS, GCRYMPI_FMT_HEX,
-    (const unsigned char *)DH3072_MODULUS_S, 0, NULL);
+dh_init (void)
+{
+  gcry_mpi_scan (&DH3072_MODULUS, GCRYMPI_FMT_HEX,
+		 (const unsigned char *) DH3072_MODULUS_S, 0, NULL);
 
-  gcry_mpi_scan(&DH3072_GENERATOR, GCRYMPI_FMT_HEX,
-    (const unsigned char *)DH3072_GENERATOR_S, 0, NULL);
+  gcry_mpi_scan (&DH3072_GENERATOR, GCRYMPI_FMT_HEX,
+		 (const unsigned char *) DH3072_GENERATOR_S, 0, NULL);
 
-  DH3072_MODULUS_MINUS_2 = gcry_mpi_new(DH3072_MOD_LEN_BITS);
-  gcry_mpi_sub_ui(DH3072_MODULUS_MINUS_2, DH3072_MODULUS, 2);
+  DH3072_MODULUS_MINUS_2 = gcry_mpi_new (DH3072_MOD_LEN_BITS);
+  gcry_mpi_sub_ui (DH3072_MODULUS_MINUS_2, DH3072_MODULUS, 2);
 }
 
 void
-dh_free(void) {
-  gcry_mpi_release(DH3072_MODULUS);
+dh_free (void)
+{
+  gcry_mpi_release (DH3072_MODULUS);
   DH3072_MODULUS = NULL;
 
-  gcry_mpi_release(DH3072_MODULUS_MINUS_2);
+  gcry_mpi_release (DH3072_MODULUS_MINUS_2);
   DH3072_MODULUS_MINUS_2 = NULL;
 
-  gcry_mpi_release(DH3072_GENERATOR);
+  gcry_mpi_release (DH3072_GENERATOR);
   DH3072_GENERATOR = NULL;
 }
 
 bool
-dh_keypair_generate(dh_keypair_t keypair) {
-  uint8_t *secbuf = malloc(DH_KEY_SIZE);
-  if (secbuf == NULL) {
+dh_keypair_generate (dh_keypair_t keypair)
+{
+  uint8_t *secbuf = malloc (DH_KEY_SIZE);
+  if (secbuf == NULL)
+    {
       return false;
-  }
+    }
 
-  random_bytes(secbuf, DH_KEY_SIZE);
-  gcry_error_t err = gcry_mpi_scan(&keypair->priv, GCRYMPI_FMT_USG, secbuf, DH_KEY_SIZE, NULL);
-  free(secbuf);
+  random_bytes (secbuf, DH_KEY_SIZE);
+  gcry_error_t err =
+    gcry_mpi_scan (&keypair->priv, GCRYMPI_FMT_USG, secbuf, DH_KEY_SIZE,
+		   NULL);
+  free (secbuf);
 
-  if (err) {
-    return false;
-  }
+  if (err)
+    {
+      return false;
+    }
 
-  keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
-  gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, keypair->priv, DH3072_MODULUS);
+  keypair->pub = gcry_mpi_new (DH3072_MOD_LEN_BITS);
+  gcry_mpi_powm (keypair->pub, DH3072_GENERATOR, keypair->priv,
+		 DH3072_MODULUS);
 
   return true;
 }
 
 void
-dh_keypair_destroy(dh_keypair_t keypair) {
-  gcry_mpi_release(keypair->priv);
-  gcry_mpi_release(keypair->pub);
+dh_keypair_destroy (dh_keypair_t keypair)
+{
+  gcry_mpi_release (keypair->priv);
+  gcry_mpi_release (keypair->pub);
 }
 
 bool
-dh_shared_secret(
-    uint8_t *shared,
-    size_t shared_bytes,
-    const dh_private_key_t our_priv,
-    const dh_public_key_t their_pub
-) {
-  gcry_mpi_t secret = gcry_mpi_new(DH3072_MOD_LEN_BITS);
-  gcry_mpi_powm(secret, their_pub, our_priv, DH3072_MODULUS);
-  gcry_error_t err = gcry_mpi_print(GCRYMPI_FMT_USG, shared, shared_bytes, NULL, secret);
-  gcry_mpi_release(secret);
+dh_shared_secret (uint8_t * shared,
+		  size_t shared_bytes,
+		  const dh_private_key_t our_priv,
+		  const dh_public_key_t their_pub)
+{
+  gcry_mpi_t secret = gcry_mpi_new (DH3072_MOD_LEN_BITS);
+  gcry_mpi_powm (secret, their_pub, our_priv, DH3072_MODULUS);
+  gcry_error_t err =
+    gcry_mpi_print (GCRYMPI_FMT_USG, shared, shared_bytes, NULL, secret);
+  gcry_mpi_release (secret);
 
-  if (err) {
+  if (err)
+    {
       return false;
-  }
+    }
 
   return true;
 }
 
 size_t
-dh_mpi_serialize(uint8_t *dst, size_t dst_len, const dh_mpi_t src) {
+dh_mpi_serialize (uint8_t * dst, size_t dst_len, const dh_mpi_t src)
+{
   size_t nwritten = 0;
-  gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, &nwritten, src); //TODO: fail?
+  gcry_mpi_print (GCRYMPI_FMT_USG, dst, dst_len, &nwritten, src);	//TODO: fail?
   return nwritten;
 }
 
 bool
-dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer, size_t buflen, size_t *nread) {
-  gcry_error_t err = gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread);
-  if (err) {
-    return false;
-  }
+dh_mpi_deserialize (dh_mpi_t * dst, const uint8_t * buffer, size_t buflen,
+		    size_t * nread)
+{
+  gcry_error_t err =
+    gcry_mpi_scan (dst, GCRYMPI_FMT_USG, buffer, buflen, nread);
+  if (err)
+    {
+      return false;
+    }
 
   return true;
 }
 
 bool
-dh_mpi_valid(dh_mpi_t mpi) {
+dh_mpi_valid (dh_mpi_t mpi)
+{
   /* Check that their_pub is in range */
-  if (gcry_mpi_cmp_ui(mpi, 2) < 0 ||
-	    gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0) {
-    return false;
-  }
+  if (gcry_mpi_cmp_ui (mpi, 2) < 0 ||
+      gcry_mpi_cmp (mpi, DH3072_MODULUS_MINUS_2) > 0)
+    {
+      return false;
+    }
 
   return true;
 }
-

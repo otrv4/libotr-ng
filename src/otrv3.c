@@ -12,6 +12,7 @@
 #include "otrv3.h"
 
 bool
-otrv3_receive_message(const string_t message, size_t message_len) {
+otrv3_receive_message (const string_t message, size_t message_len)
+{
   return true;
 }

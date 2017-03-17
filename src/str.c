@@ -4,7 +4,8 @@
 #include "str.h"
 
 /*@null@*/ char *
-otrv4_strndup(const char *s, size_t s_len) {
+otrv4_strndup (const char *s, size_t s_len)
+{
   if (s == NULL)
     return NULL;
 
@@ -17,6 +18,7 @@ otrv4_strndup(const char *s, size_t s_len) {
 }
 
 /*@null@*/ char *
-otrv4_strdup(const char *s) {
-  return otrv4_strndup(s, strlen(s));
+otrv4_strdup (const char *s)
+{
+  return otrv4_strndup (s, strlen (s));
 }
