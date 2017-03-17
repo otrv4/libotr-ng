@@ -95,4 +95,7 @@ ring_signature_auth_valid(const rs_auth_t auth,
 int
 cs_serialize_private_key(char **dst, size_t *len, const cs_private_key_t *priv);
 
+int
+cs_deserialize_private_key(char *buff, size_t len, cs_private_key_t *priv);
+
 #endif

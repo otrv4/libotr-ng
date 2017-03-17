@@ -64,3 +64,124 @@ cs_serialize_private_key(char **dst, size_t *len, const cs_private_key_t *priv) 
     *len = cursor - buff;
     return 0;
 }
+
+
+static int
+decaf_448_scalar_decode_b64(decaf_448_scalar_t s, const char *buff, size_t len) {
+    //((base64len+3) / 4) * 3
+    unsigned char *dec = malloc(((len+3) / 4) * 3);
+    if (!dec)
+        return -1;
+
+    size_t written = otrl_base64_decode(dec, buff, len);
+    if (written != DECAF_448_SCALAR_BYTES) {
+        free(dec);
+        return 1;
+    }
+
+    decaf_bool_t ok = decaf_448_scalar_decode(s, dec);
+    free(dec);
+
+    return ok == DECAF_FALSE;
+}
+
+static int 
+compare_header(const char *buff, size_t len, const char *expected) {
+    if (memmem(buff, len, expected, strlen(expected)))
+        return strlen(expected);
+
+    return 0;
+}
+
+int
+cs_deserialize_private_key(char *buff, size_t len, cs_private_key_t *priv) {
+    char *eol = NULL;
+    int h = 0;
+
+    h = compare_header(buff, len, "x1: ");
+    if (!h)
+        return 1;
+
+    buff += h;
+    len -= h;
+
+    eol = memchr(buff, '\n', len);
+    if (!eol)
+        return 3;
+
+    if (decaf_448_scalar_decode_b64(priv->x1, buff, eol-buff))
+        return 4;
+
+    len -= eol-buff+1;
+    buff = eol+1;
+
+    h = compare_header(buff, len, "x2: ");
+    if (!h)
+        return 1;
+
+    buff += h;
+    len -= h;
+
+    eol = memchr(buff, '\n', len);
+    if (!eol)
+        return 3;
+
+    if (decaf_448_scalar_decode_b64(priv->x2, buff, eol-buff))
+        return 4;
+
+    len -= eol-buff+1;
+    buff = eol+1;
+
+    h = compare_header(buff, len, "y1: ");
+    if (!h)
+        return 1;
+
+    buff += h;
+    len -= h;
+
+    eol = memchr(buff, '\n', len);
+    if (!eol)
+        return 3;
+
+    if (decaf_448_scalar_decode_b64(priv->y1, buff, eol-buff))
+        return 4;
+
+    len -= eol-buff+1;
+    buff = eol+1;
+
+    h = compare_header(buff, len, "y2: ");
+    if (!h)
+        return 1;
+
+    buff += h;
+    len -= h;
+
+    eol = memchr(buff, '\n', len);
+    if (!eol)
+        return 3;
+
+    if (decaf_448_scalar_decode_b64(priv->y2, buff, eol-buff))
+        return 4;
+
+    len -= eol-buff+1;
+    buff = eol+1;
+
+    h = compare_header(buff, len, "z: ");
+    if (!h)
+        return 1;
+
+    buff += h;
+    len -= h;
+
+    eol = memchr(buff, '\n', len);
+    if (!eol)
+        return 3;
+
+    if (decaf_448_scalar_decode_b64(priv->z, buff, eol-buff))
+        return 4;
+
+    len -= eol-buff+1;
+    buff = eol+1;
+
+    return 0;
+}

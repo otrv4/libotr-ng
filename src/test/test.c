@@ -28,6 +28,7 @@ main(int argc, char **argv) {
   g_test_add_func("/dh/serialize", dh_test_serialize);
 
   g_test_add_func("/cramershoup/serialize_private_key", cramershoup_test_serialize_private_key);
+  g_test_add_func("/cramershoup/deserialize_private_key", cramershoup_test_deserialize_private_key);
 
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
   g_test_add_func("/serialize_and_deserialize/data", test_serialize_deserialize_data);

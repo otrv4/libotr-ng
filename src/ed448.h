@@ -16,6 +16,11 @@ typedef decaf_448_scalar_t          ec_scalar_t;
 typedef decaf_448_point_t           ec_point_t;
 typedef decaf_448_symmetric_key_t   ec_symmetric_key_t;
 
+static inline bool
+ec_scalar_eq(const ec_scalar_t a, const ec_scalar_t b) {
+    return DECAF_TRUE == decaf_448_scalar_eq(a, b);
+}
+
 static inline void
 ec_point_copy(ec_point_t dst, const ec_point_t src) {
   decaf_448_point_copy(dst, src);

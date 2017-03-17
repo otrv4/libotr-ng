@@ -86,3 +86,26 @@ cramershoup_test_serialize_private_key(void){
     cs_keypair_destroy(key_pair);
 }
 
+void
+cramershoup_test_deserialize_private_key(void){
+    cs_keypair_t expected, keypair;
+    cs_keypair_generate(expected);
+
+    char *buff = NULL;
+    size_t bufflen = 0;
+    int err = cs_serialize_private_key(&buff, &bufflen, expected->priv);
+    otrv4_assert(!err);
+
+    err = cs_deserialize_private_key(buff, bufflen, keypair->priv);
+    g_assert_cmpint(0, ==, err);
+
+    otrv4_assert(ec_scalar_eq(expected->priv->x1, keypair->priv->x1));
+    otrv4_assert(ec_scalar_eq(expected->priv->x2, keypair->priv->x2));
+    otrv4_assert(ec_scalar_eq(expected->priv->y1, keypair->priv->y1));
+    otrv4_assert(ec_scalar_eq(expected->priv->y2, keypair->priv->y2));
+    otrv4_assert(ec_scalar_eq(expected->priv->z, keypair->priv->z));
+
+    cs_keypair_destroy(expected);
+    cs_keypair_destroy(keypair);
+}
+
