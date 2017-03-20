@@ -29,11 +29,11 @@ typedef struct {
 typedef struct {
 	otr4_client_callbacks_t *callbacks;
 
-	cs_keypair_t keypair;
+	cs_keypair_s *keypair;
 	list_element_t *conversations;
 } otr4_client_t;
 
-otr4_client_t *otr4_client_new();
+otr4_client_t *otr4_client_new(cs_keypair_s * keypair);
 
 void otr4_client_free(otr4_client_t * client);
 

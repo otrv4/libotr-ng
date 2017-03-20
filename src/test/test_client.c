@@ -10,10 +10,11 @@
 void test_client_conversation_api()
 {
 	OTR4_INIT;
+	cs_keypair_t alice_keypair;
+	cs_keypair_generate(alice_keypair);
 
-	otr4_client_t *alice = otr4_client_new();
+	otr4_client_t *alice = otr4_client_new(alice_keypair);
 	otrv4_assert(!alice->conversations);
-	cs_keypair_generate(alice->keypair);
 
 	otr4_conversation_t *alice_to_bob =
 	    otr4_client_get_conversation(0, BOB_IDENTITY, alice);
@@ -43,7 +44,7 @@ void test_client_conversation_api()
 	otrv4_assert(alice_to_charlie->conn);
 
 	// Free memory
-	cs_keypair_destroy(alice->keypair);
+	cs_keypair_destroy(alice_keypair);
 	otr4_client_free(alice);
 }
 
@@ -51,15 +52,16 @@ void test_client_api()
 {
 	OTR4_INIT;
 
+	cs_keypair_t alice_keypair, bob_keypair, charlie_keypair;
+	cs_keypair_generate(alice_keypair);
+	cs_keypair_generate(bob_keypair);
+	cs_keypair_generate(charlie_keypair);
+
 	otr4_client_t *alice = NULL, *bob = NULL, *charlie = NULL;
 
-	alice = otr4_client_new();
-	bob = otr4_client_new();
-	charlie = otr4_client_new();
-
-	cs_keypair_generate(alice->keypair);
-	cs_keypair_generate(bob->keypair);
-	cs_keypair_generate(charlie->keypair);
+	alice = otr4_client_new(alice_keypair);
+	bob = otr4_client_new(bob_keypair);
+	charlie = otr4_client_new(charlie_keypair);
 
 	char *query_msg_to_bob =
 	    otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
@@ -109,8 +111,8 @@ void test_client_api()
 
 	//Alice receives identity message (from Charlie), sends DRE auth msg
 	ignore =
-	    otr4_client_receive(&from_alice_to_charlie, &todisplay, fromcharlie,
-				CHARLIE_IDENTITY, alice);
+	    otr4_client_receive(&from_alice_to_charlie, &todisplay,
+				fromcharlie, CHARLIE_IDENTITY, alice);
 	otrv4_assert(ignore);
 	otrv4_assert(!todisplay);
 	free(fromcharlie);
@@ -127,18 +129,18 @@ void test_client_api()
 
 	//Charlie receives DRE auth message.
 	ignore =
-	    otr4_client_receive(&fromcharlie, &todisplay, from_alice_to_charlie,
-				ALICE_IDENTITY, charlie);
+	    otr4_client_receive(&fromcharlie, &todisplay,
+				from_alice_to_charlie, ALICE_IDENTITY, charlie);
 	otrv4_assert(ignore);
 	otrv4_assert(!fromcharlie);
 	otrv4_assert(!todisplay);
 	free(from_alice_to_charlie);
 
-	// Free memory
-	cs_keypair_destroy(charlie->keypair);
-	cs_keypair_destroy(bob->keypair);
-	cs_keypair_destroy(alice->keypair);
+	cs_keypair_destroy(alice_keypair);
+	cs_keypair_destroy(bob_keypair);
+	cs_keypair_destroy(charlie_keypair);
 
+	// Free memory
 	otr4_client_free(charlie);
 	otr4_client_free(bob);
 	otr4_client_free(alice);
@@ -148,9 +150,10 @@ void test_client_get_our_fingerprint()
 {
 	OTR4_INIT;
 
-	otr4_client_t *client = otr4_client_new();
+	cs_keypair_t client_keypair;
+	cs_keypair_generate(client_keypair);
 
-	cs_keypair_generate(client->keypair);
+	otr4_client_t *client = otr4_client_new(client_keypair);
 
 	uint8_t *our_fp = otr4_client_get_our_fingerprint(client);
 	otrv4_assert(our_fp);
@@ -164,6 +167,8 @@ void test_client_get_our_fingerprint()
 			   sizeof(serialized));
 	otrv4_assert(ok == TRUE);
 	otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(expected_fp));
+
+	cs_keypair_destroy(client_keypair);
 
 	free(our_fp);
 	otr4_client_free(client);

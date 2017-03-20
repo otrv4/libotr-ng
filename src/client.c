@@ -13,13 +13,13 @@ void conversation_free(otr4_conversation_t * conv)
 	conv->recipient = NULL;
 }
 
-otr4_client_t *otr4_client_new()
+otr4_client_t *otr4_client_new(cs_keypair_s * keypair)
 {
 	otr4_client_t *client = malloc(sizeof(otr4_client_t));
 	if (!client)
 		return NULL;
 
-	cs_keypair_generate(client->keypair);	//TODO: maybe not
+	client->keypair = keypair;
 	client->conversations = NULL;
 	client->callbacks = NULL;
 
@@ -34,8 +34,7 @@ void otr4_client_free(otr4_client_t * client)
 		     });
 	list_free_all(client->conversations);
 	client->conversations = NULL;
-
-	cs_keypair_destroy(client->keypair);
+	client->keypair = NULL;
 
 	free(client);
 }
@@ -66,13 +65,18 @@ otr4_conversation_t *new_conversation_with(const char *recipient)
 otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 						     otr4_client_t * client)
 {
-	otr4_conversation_t *conv =
-	    get_conversation_with(recipient, client->conversations);
+	otr4_conversation_t *conv = NULL;
+
+	if (!client->keypair)
+		return NULL;
+
+	conv = get_conversation_with(recipient, client->conversations);
 	if (!conv) {
 		conv = new_conversation_with(recipient);
 		//TODO the policy should come from client config.
 		otrv4_policy_t policy = {.allows =
-			    OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
+			    OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4
+		};
 		conv->conn = otrv4_new(client->keypair, policy);
 		client->conversations = list_add(conv, client->conversations);
 	}
@@ -175,14 +179,20 @@ otr4_client_disconnect(char **newmessage, const char *recipient,
 
 uint8_t *otr4_client_get_our_fingerprint(const otr4_client_t * client)
 {
-	uint8_t *ser = malloc(64);
-
 	uint8_t serialized[170] = { 0 };
-	serialize_cs_public_key(serialized, client->keypair->pub);
-	//TODO: do we need to check anything? 
+	uint8_t *ser = NULL;
 
-	bool ok = sha3_512(ser, 64, serialized, sizeof(serialized));
-	if (ok)
+	if (!client->keypair)
+		return NULL;
+
+	ser = malloc(64);
+	if (!ser)
+		return NULL;
+
+	//TODO: do we need to check anything? 
+	serialize_cs_public_key(serialized, client->keypair->pub);
+
+	if (sha3_512(ser, 64, serialized, sizeof(serialized)))
 		return ser;
 
 	free(ser);
@@ -193,13 +203,20 @@ int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
 {
 	char *buff = NULL;
 	size_t s = 0;
+	int err = 0;
 
-	int err = cs_serialize_private_key(&buff, &s, client->keypair->priv);
+	if (!privf)
+		return -1;
+
+	if (!client->keypair)
+		return -2;
+
+	err = cs_serialize_private_key(&buff, &s, client->keypair->priv);
 	if (err)
 		return err;
 
 	if (1 != fwrite(buff, s, 1, privf))
-		return -1;
+		return -3;
 
 	return 0;
 }
@@ -219,6 +236,7 @@ otr4_fingerprint_hash_to_human(char human[OTR4_FPRINT_HUMAN_LEN],
 		}
 		*(p++) = ' ';
 	}
+
 	/* Change that last ' ' to a '\0' */
 	--p;
 	*p = '\0';
