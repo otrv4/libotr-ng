@@ -14,4 +14,6 @@ void test_list_add()
 	g_assert_cmpint(one, ==, *((int *)list->data));
 	otrv4_assert(list->next);
 	g_assert_cmpint(two, ==, *((int *)list->next->data));
+
+	list_free_all(list);
 }

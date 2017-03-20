@@ -82,6 +82,7 @@ void cramershoup_test_serialize_private_key(void)
 
 	otrv4_assert_cmpmem("\n", cursor, 1);
 
+	free(b64_buff);
 	free(buff);
 	cs_keypair_destroy(key_pair);
 }
