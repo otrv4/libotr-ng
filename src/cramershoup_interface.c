@@ -1,5 +1,7 @@
 #include "cramershoup_interface.h"
 
+#include <string.h>
+
 #include "b64.h"
 #include "ed448.h"
 
