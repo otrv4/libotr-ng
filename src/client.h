@@ -33,6 +33,8 @@ typedef struct {
 	list_element_t *conversations;
 } otr4_client_t;
 
+void conversation_free(otr4_conversation_t * conv);
+
 otr4_client_t *otr4_client_new(cs_keypair_s * keypair);
 
 void otr4_client_free(otr4_client_t * client);

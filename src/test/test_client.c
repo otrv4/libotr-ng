@@ -44,6 +44,8 @@ void test_client_conversation_api()
 	otrv4_assert(alice_to_charlie->conn);
 
 	// Free memory
+	conversation_free(alice_to_bob);
+	conversation_free(alice_to_charlie);
 	cs_keypair_destroy(alice_keypair);
 	otr4_client_free(alice);
 }
@@ -141,6 +143,8 @@ void test_client_api()
 	cs_keypair_destroy(charlie_keypair);
 
 	// Free memory
+	conversation_free(alice_to_bob);
+	conversation_free(alice_to_charlie);
 	otr4_client_free(charlie);
 	otr4_client_free(bob);
 	otr4_client_free(alice);

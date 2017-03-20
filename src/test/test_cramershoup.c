@@ -85,4 +85,3 @@ void cramershoup_test_serialize_private_key(void)
 	free(buff);
 	cs_keypair_destroy(key_pair);
 }
-
