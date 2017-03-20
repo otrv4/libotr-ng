@@ -222,15 +222,15 @@ int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
 	return 0;
 }
 
-static cs_keypair_s* new_keypair()
+static cs_keypair_s *new_keypair()
 {
-        cs_keypair_s *pair = NULL;
+	cs_keypair_s *pair = NULL;
 
-        pair = malloc(sizeof(cs_keypair_s));
+	pair = malloc(sizeof(cs_keypair_s));
 	if (pair)
-                cs_keypair_destroy(pair);
+		cs_keypair_destroy(pair);
 
-        return pair;
+	return pair;
 }
 
 int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
@@ -245,11 +245,11 @@ int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 		return -2;
 
 	if (cs_deserialize_private_key_FILEp(client->keypair->priv, privf)) {
-                cs_keypair_destroy(client->keypair);
-                free(client->keypair);
-                client->keypair = NULL;
-                return -3;
-        }
+		cs_keypair_destroy(client->keypair);
+		free(client->keypair);
+		client->keypair = NULL;
+		return -3;
+	}
 
 	cs_keypair_derive_public_key(client->keypair);
 	return 0;

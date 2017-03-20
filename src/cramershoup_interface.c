@@ -200,8 +200,8 @@ int cs_deserialize_private_key_FILEp(cs_private_key_t * priv, FILE * privf)
 	if (!privf)
 		return -1;
 
-        len = getline(&line, &cap, privf);
-	if (len<0)
+	len = getline(&line, &cap, privf);
+	if (len < 0)
 		return -1;
 
 	h = compare_header(line, len, "x1: ");
@@ -212,13 +212,13 @@ int cs_deserialize_private_key_FILEp(cs_private_key_t * priv, FILE * privf)
 
 	err = decaf_448_scalar_decode_b64(priv->x1, line + h, len - h);
 	free(line);
-        line = NULL;
+	line = NULL;
 
 	if (err)
 		return -1;
 
-        len = getline(&line, &cap, privf);
-	if (len<0)
+	len = getline(&line, &cap, privf);
+	if (len < 0)
 		return -1;
 
 	h = compare_header(line, len, "x2: ");
@@ -229,13 +229,13 @@ int cs_deserialize_private_key_FILEp(cs_private_key_t * priv, FILE * privf)
 
 	err = decaf_448_scalar_decode_b64(priv->x2, line + h, len - h);
 	free(line);
-        line = NULL;
+	line = NULL;
 
 	if (err)
 		return -1;
 
-        len = getline(&line, &cap, privf);
-	if (len<0)
+	len = getline(&line, &cap, privf);
+	if (len < 0)
 		return -1;
 
 	h = compare_header(line, len, "y1: ");
@@ -246,13 +246,13 @@ int cs_deserialize_private_key_FILEp(cs_private_key_t * priv, FILE * privf)
 
 	err = decaf_448_scalar_decode_b64(priv->y1, line + h, len - h);
 	free(line);
-        line = NULL;
+	line = NULL;
 
 	if (err)
 		return -1;
 
-        len = getline(&line, &cap, privf);
-	if (len<0)
+	len = getline(&line, &cap, privf);
+	if (len < 0)
 		return -1;
 
 	h = compare_header(line, len, "y2: ");
@@ -263,13 +263,13 @@ int cs_deserialize_private_key_FILEp(cs_private_key_t * priv, FILE * privf)
 
 	err = decaf_448_scalar_decode_b64(priv->y2, line + h, len - h);
 	free(line);
-        line = NULL;
+	line = NULL;
 
 	if (err)
 		return -1;
 
-        len = getline(&line, &cap, privf);
-	if (len<0)
+	len = getline(&line, &cap, privf);
+	if (len < 0)
 		return -1;
 
 	h = compare_header(line, len, "z: ");
@@ -280,7 +280,7 @@ int cs_deserialize_private_key_FILEp(cs_private_key_t * priv, FILE * privf)
 
 	err = decaf_448_scalar_decode_b64(priv->z, line + h, len - h);
 	free(line);
-        line = NULL;
+	line = NULL;
 
 	if (err)
 		return -1;
