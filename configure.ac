@@ -1,9 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-# Needed for autoconf 2.68
-#m4_pattern_allow([AC_CHECK_HEADER_STDBOOL])
-
 AC_PREREQ([2.68])
 AC_INIT([libotr4], [0.0.1], [strike@thoughtworks.com])
 AC_CONFIG_SRCDIR([src/otrv4.c])
@@ -36,7 +33,6 @@ AM_PATH_LIBGCRYPT(1:1.7.6,,AC_MSG_ERROR(libgcrypt 1.7.6 or newer is required.))
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
 AC_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_INT64_T
