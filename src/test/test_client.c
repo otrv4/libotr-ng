@@ -48,6 +48,8 @@ void test_client_conversation_api()
 	conversation_free(alice_to_charlie);
 	cs_keypair_destroy(alice_keypair);
 	otr4_client_free(alice);
+
+	dh_free();
 }
 
 void test_client_api()
@@ -148,6 +150,8 @@ void test_client_api()
 	otr4_client_free(charlie);
 	otr4_client_free(bob);
 	otr4_client_free(alice);
+
+	dh_free();
 }
 
 void test_client_get_our_fingerprint()
@@ -176,6 +180,8 @@ void test_client_get_our_fingerprint()
 
 	free(our_fp);
 	otr4_client_free(client);
+
+	dh_free();
 }
 
 void test_fingerprint_hash_to_human()
