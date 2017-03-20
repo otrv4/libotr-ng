@@ -187,3 +187,103 @@ int cs_deserialize_private_key(char *buff, size_t len, cs_private_key_t * priv)
 
 	return 0;
 }
+
+int cs_deserialize_private_key_FILEp(cs_private_key_t * priv, FILE * privf)
+{
+	char *line = NULL;
+	size_t cap = 0;
+
+	int len = 0;
+	int h = 0;
+	int err = 0;
+
+	if (!privf)
+		return -1;
+
+        len = getline(&line, &cap, privf);
+	if (len<0)
+		return -1;
+
+	h = compare_header(line, len, "x1: ");
+	if (!h) {
+		free(line);
+		return -1;
+	}
+
+	err = decaf_448_scalar_decode_b64(priv->x1, line + h, len - h);
+	free(line);
+        line = NULL;
+
+	if (err)
+		return -1;
+
+        len = getline(&line, &cap, privf);
+	if (len<0)
+		return -1;
+
+	h = compare_header(line, len, "x2: ");
+	if (!h) {
+		free(line);
+		return -1;
+	}
+
+	err = decaf_448_scalar_decode_b64(priv->x2, line + h, len - h);
+	free(line);
+        line = NULL;
+
+	if (err)
+		return -1;
+
+        len = getline(&line, &cap, privf);
+	if (len<0)
+		return -1;
+
+	h = compare_header(line, len, "y1: ");
+	if (!h) {
+		free(line);
+		return -1;
+	}
+
+	err = decaf_448_scalar_decode_b64(priv->y1, line + h, len - h);
+	free(line);
+        line = NULL;
+
+	if (err)
+		return -1;
+
+        len = getline(&line, &cap, privf);
+	if (len<0)
+		return -1;
+
+	h = compare_header(line, len, "y2: ");
+	if (!h) {
+		free(line);
+		return -1;
+	}
+
+	err = decaf_448_scalar_decode_b64(priv->y2, line + h, len - h);
+	free(line);
+        line = NULL;
+
+	if (err)
+		return -1;
+
+        len = getline(&line, &cap, privf);
+	if (len<0)
+		return -1;
+
+	h = compare_header(line, len, "z: ");
+	if (!h) {
+		free(line);
+		return -1;
+	}
+
+	err = decaf_448_scalar_decode_b64(priv->z, line + h, len - h);
+	free(line);
+        line = NULL;
+
+	if (err)
+		return -1;
+
+	return 0;
+}

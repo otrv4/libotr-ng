@@ -3,6 +3,7 @@
 #include "str.h"
 #include "serialize.h"
 #include "sha3.h"
+#include "cramershoup_interface.h"
 
 void conversation_free(otr4_conversation_t * conv)
 {
@@ -218,6 +219,39 @@ int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
 	if (1 != fwrite(buff, s, 1, privf))
 		return -3;
 
+	return 0;
+}
+
+static cs_keypair_s* new_keypair()
+{
+        cs_keypair_s *pair = NULL;
+
+        pair = malloc(sizeof(cs_keypair_s));
+	if (pair)
+                cs_keypair_destroy(pair);
+
+        return pair;
+}
+
+int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
+{
+	if (!privf)
+		return -1;
+
+	if (!client->keypair)
+		client->keypair = new_keypair();
+
+	if (!client->keypair)
+		return -2;
+
+	if (cs_deserialize_private_key_FILEp(client->keypair->priv, privf)) {
+                cs_keypair_destroy(client->keypair);
+                free(client->keypair);
+                client->keypair = NULL;
+                return -3;
+        }
+
+	cs_keypair_derive_public_key(client->keypair);
 	return 0;
 }
 

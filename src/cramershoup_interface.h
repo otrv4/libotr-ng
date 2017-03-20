@@ -25,6 +25,11 @@ static inline void cs_keypair_generate(cs_keypair_t key_pair)
 	cramershoup_448_derive_keys(key_pair->priv, key_pair->pub);
 }
 
+static inline void cs_keypair_derive_public_key(cs_keypair_t key_pair)
+{
+	cramershoup_448_public_from_private(key_pair->pub, key_pair->priv);
+}
+
 static inline void cs_keypair_destroy(cs_keypair_t key_pair)
 {
 	memset(key_pair->pub, 0, sizeof(cs_public_key_t));
@@ -101,5 +106,7 @@ cs_serialize_private_key(char **dst, size_t * len,
 			 const cs_private_key_t * priv);
 
 int cs_deserialize_private_key(char *buff, size_t len, cs_private_key_t * priv);
+
+int cs_deserialize_private_key_FILEp(cs_private_key_t * priv, FILE * privf);
 
 #endif
