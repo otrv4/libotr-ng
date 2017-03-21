@@ -524,44 +524,49 @@ bool double_ratcheting_init(int j, otrv4_t * otr)
 }
 
 static bool
+otrv4_receive_identity_message_on_state_start(string_t * dst,
+					      dake_identity_message_t *
+					      identity_message, otrv4_t * otr)
+{
+	bool ok = false;
+	dake_dre_auth_t *dre_auth = NULL;
+
+	if (!dake_identity_message_validate(identity_message))
+		return false;
+
+	key_manager_set_their_ecdh(identity_message->Y, otr->keys);
+	key_manager_set_their_dh(identity_message->B, otr->keys);
+	generate_ephemeral_keys(otr);
+
+	if (!otrv4_generate_dre_auth(&dre_auth, identity_message->profile, otr))
+		return false;
+
+	ok = serialize_and_encode_dre_auth(dst, dre_auth);
+	dake_dre_auth_free(dre_auth);
+
+	if (!ok)
+		return false;
+
+	return double_ratcheting_init(0, otr);
+}
+
+static bool
 otrv4_receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
 			       otrv4_t * otr)
 {
-	dake_identity_message_t identity_message[1];
-	if (!dake_identity_message_deserialize(identity_message, buff, buflen)) {
+	bool ok = false;
+	dake_identity_message_t m[1];
+
+	if (!dake_identity_message_deserialize(m, buff, buflen))
 		return false;
-	}
 
-	if (otr->state == OTRV4_STATE_START) {
-		if (!dake_identity_message_validate(identity_message)) {
-			dake_identity_message_destroy(identity_message);
-			return false;
-		}
+	if (otr->state == OTRV4_STATE_START)
+		ok = otrv4_receive_identity_message_on_state_start(dst, m, otr);
 
-		key_manager_set_their_ecdh(identity_message->Y, otr->keys);
-		key_manager_set_their_dh(identity_message->B, otr->keys);
+	dake_identity_message_destroy(m);
 
-		//TODO: why not use dake_dre_auth_new(otr->profile);
-		dake_dre_auth_t *dre_auth = NULL;
-		generate_ephemeral_keys(otr);
-		if (!otrv4_generate_dre_auth
-		    (&dre_auth, identity_message->profile, otr)) {
-			dake_identity_message_destroy(identity_message);
-			return false;
-		}
-
-		dake_identity_message_destroy(identity_message);
-
-		if (!serialize_and_encode_dre_auth(dst, dre_auth)) {
-			dake_dre_auth_free(dre_auth);
-			return false;
-		}
-		dake_dre_auth_free(dre_auth);
-
-		return double_ratcheting_init(0, otr);
-	}
-
-	return false;
+	//TODO: other states
+	return ok;
 }
 
 bool
