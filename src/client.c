@@ -43,10 +43,12 @@ void otr4_client_free(otr4_client_t * client)
 otr4_conversation_t *get_conversation_with(const char *recipient,
 					   list_element_t * conversations)
 {
+	otr4_conversation_t *conv = NULL;
 	list_foreach(conversations, c, {
-		     otr4_conversation_t * conv =
-		     (otr4_conversation_t *) c->data;
-		     if (!strcmp(conv->recipient, recipient)) return conv;}
+		     conv = (otr4_conversation_t *) c->data;
+		     if (!strcmp(conv->recipient, recipient)) {
+		     return conv;}
+		     }
 	) ;
 
 	return NULL;
@@ -73,6 +75,19 @@ otr4_conversation_t *new_conversation_with(const char *recipient)
 	return conv;
 }
 
+static otrv4_t *create_connection_for(const char *recipient,
+				      otr4_client_t * client)
+{
+	otrv4_t *conn = NULL;
+	conn = otrv4_new(client->keypair, get_policy_for(recipient));
+	if (!conn)
+		return NULL;
+
+	conn->callbacks = client->callbacks;
+
+	return conn;
+}
+
 otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 						     otr4_client_t * client)
 {
@@ -86,7 +101,7 @@ otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 	if (!client->keypair)
 		return NULL;
 
-	conn = otrv4_new(client->keypair, get_policy_for(recipient));
+	conn = create_connection_for(recipient, client);
 	if (!conn)
 		return NULL;
 
@@ -151,12 +166,6 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 	if (!ok) {
 		otrv4_response_free(response);
 		return 0;	//Should this cause the message to be ignored or not?
-	}
-
-	if (state_before != OTRV4_STATE_ENCRYPTED_MESSAGES
-	    && conv->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
-		if (client->callbacks && client->callbacks->gone_secure)
-			client->callbacks->gone_secure(conv);
 	}
 
 	if (response->to_send)

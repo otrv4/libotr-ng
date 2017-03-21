@@ -57,7 +57,7 @@ struct connection {
 	otrv4_version_t running_version;
 
 	key_manager_t keys;
-	otrv4_callbacks_t *callback;
+	otrv4_callbacks_t *callbacks;
 };				//otrv4_t
 
 typedef enum {

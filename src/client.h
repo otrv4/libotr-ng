@@ -17,17 +17,9 @@ typedef struct {
 	//otrl_instag_t our_instance;
 } otr4_conversation_t;
 
-typedef struct {
-	/* A conversation has entered a secure state. */
-	void (*gone_secure) (const otr4_conversation_t * conv);
-
-	/* A conversation has left a secure state. */
-	void (*gone_insecure) (const otr4_conversation_t * conv);
-} otr4_client_callbacks_t;
-
 //A client handle messages from/to a sender to/from multiple recipients.
 typedef struct {
-	otr4_client_callbacks_t *callbacks;
+	otrv4_callbacks_t *callbacks;
 
 	cs_keypair_s *keypair;
 	list_element_t *conversations;
