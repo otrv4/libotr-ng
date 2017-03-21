@@ -15,6 +15,8 @@
   dh_free(); \
 } while (0);
 
+typedef struct connection otrv4_t;	/* Forward declare */
+
 typedef enum {
 	OTRV4_STATE_START = 1,
 	OTRV4_STATE_AKE_IN_PROGRESS = 2,
@@ -39,6 +41,11 @@ typedef struct {
 } otrv4_policy_t;
 
 typedef struct {
+	/* A connection has entered a secure state. */
+	void (*gone_secure) (const otrv4_t * otr);
+} otrv4_callbacks_t;
+
+struct connection {
 	otrv4_state state;
 	int supported_versions;
 
@@ -50,7 +57,8 @@ typedef struct {
 	otrv4_version_t running_version;
 
 	key_manager_t keys;
-} otrv4_t;
+	otrv4_callbacks_t *callback;
+};				//otrv4_t
 
 typedef enum {
 	IN_MSG_NONE = 0,

@@ -89,6 +89,7 @@ otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy)
 	otr->state = OTRV4_STATE_START;
 	otr->supported_versions = policy.allows;
 
+	otr->callback = NULL;
 	otr->our_instance_tag = 0;
 	otr->their_instance_tag = 0;
 	otr->keypair = keypair;
@@ -105,6 +106,7 @@ void otrv4_destroy( /*@only@ */ otrv4_t * otr)
 	key_manager_destroy(otr->keys);
 	user_profile_free(otr->profile);
 	otr->profile = NULL;
+	otr->callback = NULL;
 }
 
 void otrv4_free( /*@only@ */ otrv4_t * otr)
@@ -508,6 +510,9 @@ bool double_ratcheting_init(int j, otrv4_t * otr)
 		return false;
 
 	otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
+	if (otr->callback)
+		otr->callback->gone_secure(otr);
+
 	return true;
 }
 
