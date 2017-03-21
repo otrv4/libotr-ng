@@ -150,7 +150,6 @@ int
 otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 		    const char *recipient, otr4_client_t * client)
 {
-	otrv4_state state_before;
 	otr4_conversation_t *conv = NULL;
 	bool ok = false;
 	otrv4_response_t *response = otrv4_response_new();
@@ -159,8 +158,6 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 	*todisplay = NULL;
 
 	conv = get_or_create_conversation_with(recipient, client);
-	state_before = conv->conn->state;
-
 	ok = otrv4_receive_message(response, message, strlen(message),
 				   conv->conn);
 	if (!ok) {
