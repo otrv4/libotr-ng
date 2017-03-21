@@ -33,17 +33,18 @@ libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
 
 otrincdir = $(includedir)/libotr4
 otrinc_HEADERS = client.h \
-		 list.h \
-		 dh.h \
-		 otrv4.h \
-		 dake.h \
-		 ed448.h \
-		 random.h \
-		 user_profile.h \
-		 mpi.h \
 		 cramershoup_interface.h \
+		 dake.h \
+		 dh.h \
+		 ed448.h \
+		 fingerprint.h \
+		 key_management.h \
+		 list.h \
+		 mpi.h \
+		 otrv4.h \
+		 random.h \
 		 str.h \
-		 key_management.h
+		 user_profile.h
 
 #pkgconfigdir = $(libdir)/pkgconfig
 #pkgconfig_DATA = otr4.pc
