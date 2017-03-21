@@ -201,24 +201,14 @@ otr4_client_disconnect(char **newmessage, const char *recipient,
 
 uint8_t *otr4_client_get_our_fingerprint(const otr4_client_t * client)
 {
-	uint8_t serialized[170] = { 0 };
-	uint8_t *ser = NULL;
-
+	uint8_t *fp = malloc(sizeof(otrv4_fingerprint_t));
 	if (!client->keypair)
 		return NULL;
 
-	ser = malloc(64);
-	if (!ser)
+	if (otr4_serialize_fingerprint(fp, client->keypair->pub))
 		return NULL;
 
-	//TODO: do we need to check anything? 
-	serialize_cs_public_key(serialized, client->keypair->pub);
-
-	if (sha3_512(ser, 64, serialized, sizeof(serialized)))
-		return ser;
-
-	free(ser);
-	return NULL;
+	return fp;
 }
 
 int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
@@ -274,25 +264,4 @@ int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 
 	cs_keypair_derive_public_key(client->keypair);
 	return 0;
-}
-
-/* Convert a 64-byte hash value to a 145-byte human-readable value */
-void
-otr4_fingerprint_hash_to_human(char human[OTR4_FPRINT_HUMAN_LEN],
-			       const unsigned char hash[OTR4_FPRINT_LEN_BYTES])
-{
-	int word, byte;
-	char *p = human;
-
-	for (word = 0; word < 16; ++word) {
-		for (byte = 0; byte < 4; ++byte) {
-			sprintf(p, "%02X", hash[word * 4 + byte]);
-			p += 2;
-		}
-		*(p++) = ' ';
-	}
-
-	/* Change that last ' ' to a '\0' */
-	--p;
-	*p = '\0';
 }

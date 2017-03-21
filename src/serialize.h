@@ -5,6 +5,8 @@
 #include "cramershoup_interface.h"
 #include "mpi.h"
 
+#define CRAMER_SHOUP_PUBKEY_BYTES 170
+
 int serialize_uint64(uint8_t * dst, const uint64_t data);
 
 int serialize_uint32(uint8_t * dst, const uint32_t data);
