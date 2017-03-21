@@ -52,14 +52,24 @@ otr4_conversation_t *get_conversation_with(const char *recipient,
 	return NULL;
 }
 
+otrv4_policy_t get_policy_for(const char *recipient)
+{
+	//TODO the policy should come from client config.
+	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4
+	};
+
+	return policy;
+}
+
 otr4_conversation_t *new_conversation_with(const char *recipient)
 {
-	otr4_conversation_t *conv = malloc(sizeof(otr4_conversation_t));
+	otr4_conversation_t *conv = NULL;
+
+	conv = malloc(sizeof(otr4_conversation_t));
 	if (!conv)
 		return NULL;
 
 	conv->recipient = otrv4_strdup(recipient);
-
 	return conv;
 }
 
@@ -67,20 +77,27 @@ otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 						     otr4_client_t * client)
 {
 	otr4_conversation_t *conv = NULL;
+	otrv4_t *conn = NULL;
+
+	conv = get_conversation_with(recipient, client->conversations);
+	if (conv)
+		return conv;
 
 	if (!client->keypair)
 		return NULL;
 
-	conv = get_conversation_with(recipient, client->conversations);
+	conn = otrv4_new(client->keypair, get_policy_for(recipient));
+	if (!conn)
+		return NULL;
+
+	conv = new_conversation_with(recipient);
 	if (!conv) {
-		conv = new_conversation_with(recipient);
-		//TODO the policy should come from client config.
-		otrv4_policy_t policy = {.allows =
-			    OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4
-		};
-		conv->conn = otrv4_new(client->keypair, policy);
-		client->conversations = list_add(conv, client->conversations);
+		free(conn);
+		return NULL;
 	}
+
+	conv->conn = conn;
+	client->conversations = list_add(conv, client->conversations);
 
 	return conv;
 }
