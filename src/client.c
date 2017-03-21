@@ -116,22 +116,19 @@ int
 otr4_client_send(char **newmessage, const char *message,
 		 const char *recipient, otr4_client_t * client)
 {
-	otr4_conversation_t *conv =
-	    get_or_create_conversation_with(recipient, client);
+	*newmessage = NULL;
+	otr4_conversation_t *conv = NULL;
 
-	if (conv->conn->state == OTRV4_STATE_START) {
+	conv = get_or_create_conversation_with(recipient, client);
+	if (conv->conn->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
+		// Cant send a message while not in OTRV4_STATE_ENCRYPTED_MESSAGES
+		//TODO: Store the message for retransmition if not FINISHED
+		//TODO: Add notifications (like "tried to send a message while not in encrypted")
 		return 1;
 	}
-	//TODO: add notifications (like "ttried to send a message while not in
-	//encrypted")
-	*newmessage = NULL;
-	if (!otrv4_send_message
-	    ((unsigned char **)newmessage, (unsigned char *)message,
-	     strlen(message) + 1, conv->conn)) {
-		return -1;
-	}
 
-	return 0;
+	return otrv4_send_message((uint8_t **) newmessage, (uint8_t *) message,
+				  strlen(message) + 1, conv->conn);
 }
 
 int
@@ -139,16 +136,19 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 		    const char *recipient, otr4_client_t * client)
 {
 	otrv4_state state_before;
+	otr4_conversation_t *conv = NULL;
+	bool ok = false;
+	otrv4_response_t *response = otrv4_response_new();
+
 	*newmessage = NULL;
 	*todisplay = NULL;
 
-	otr4_conversation_t *conv =
-	    get_or_create_conversation_with(recipient, client);
+	conv = get_or_create_conversation_with(recipient, client);
 	state_before = conv->conn->state;
 
-	otrv4_response_t *response = otrv4_response_new();
-	if (!otrv4_receive_message
-	    (response, (const string_t)message, strlen(message), conv->conn)) {
+	ok = otrv4_receive_message(response, message, strlen(message),
+				   conv->conn);
+	if (!ok) {
 		otrv4_response_free(response);
 		return 0;	//Should this cause the message to be ignored or not?
 	}
@@ -159,10 +159,8 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 			client->callbacks->gone_secure(conv);
 	}
 
-	if (response->to_send) {
-		char *tosend = otrv4_strdup(response->to_send);
-		*newmessage = tosend;
-	}
+	if (response->to_send)
+		*newmessage = otrv4_strdup(response->to_send);
 
 	int should_ignore = 1;
 	if (response->to_display) {

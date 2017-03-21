@@ -1,7 +1,7 @@
 #ifndef STR_H
 #define STR_H
 
-typedef char *string_t;
+#define string_t char*
 
 /*@null@*/ char *
  otrv4_strndup(const char *s, size_t s_len);
