@@ -199,16 +199,12 @@ otr4_client_disconnect(char **newmessage, const char *recipient,
 	//TODO
 }
 
-uint8_t *otr4_client_get_our_fingerprint(const otr4_client_t * client)
+int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp, const otr4_client_t * client)
 {
-	uint8_t *fp = malloc(sizeof(otrv4_fingerprint_t));
 	if (!client->keypair)
-		return NULL;
+		return -1;
 
-	if (otr4_serialize_fingerprint(fp, client->keypair->pub))
-		return NULL;
-
-	return fp;
+	return otr4_serialize_fingerprint(fp, client->keypair->pub);
 }
 
 int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)

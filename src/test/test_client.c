@@ -163,22 +163,21 @@ void test_client_get_our_fingerprint()
 
 	otr4_client_t *client = otr4_client_new(client_keypair);
 
-	uint8_t *our_fp = otr4_client_get_our_fingerprint(client);
-	otrv4_assert(our_fp);
+        otrv4_fingerprint_t our_fp = {0};
+	otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));
 
 	uint8_t serialized[170] = { 0 };
 	g_assert_cmpint(serialize_cs_public_key
 			(serialized, client->keypair->pub), ==, 170);
 
-	uint8_t expected_fp[64] = { 0 };
-	bool ok = sha3_512(expected_fp, sizeof(expected_fp), serialized,
+	otrv4_fingerprint_t expected_fp = { 0 };
+	bool ok = sha3_512(expected_fp, sizeof(otrv4_fingerprint_t), serialized,
 			   sizeof(serialized));
 	otrv4_assert(ok == TRUE);
-	otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(expected_fp));
+	otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(otrv4_fingerprint_t));
 
 	cs_keypair_destroy(client_keypair);
 
-	free(our_fp);
 	otr4_client_free(client);
 
 	dh_free();

@@ -50,7 +50,7 @@ otr4_conversation_t *otr4_client_get_conversation(int force,
 						  const char *recipient,
 						  otr4_client_t * client);
 
-uint8_t *otr4_client_get_our_fingerprint(const otr4_client_t * client);
+int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp, const otr4_client_t * client);
 
 int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf);
 int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf);
