@@ -43,8 +43,8 @@ test_otrv4_builds_whitespace_tag(otrv4_fixture_t * otrv4_fixture,
 	char *message = "And some random invitation text.";
 
 	char *whitespace_tag = NULL;
-	otrv4_build_whitespace_tag(&whitespace_tag, otrv4_fixture->otr, message,
-				   strlen(message));
+	otrv4_build_whitespace_tag(&whitespace_tag, message,
+				   otrv4_fixture->otr);
 	g_assert_cmpstr(whitespace_tag, ==, expected_tag);
 	free(whitespace_tag);
 }
@@ -58,8 +58,8 @@ test_otrv4_builds_whitespace_tag_v34(otrv4_fixture_t * otrv4_fixture,
 	char *message = "And some random invitation text";
 
 	char *whitespace_tag = NULL;
-	otrv4_build_whitespace_tag(&whitespace_tag, otrv4_fixture->otrv34,
-				   message, strlen(message));
+	otrv4_build_whitespace_tag(&whitespace_tag, message,
+				   otrv4_fixture->otrv34);
 	g_assert_cmpstr(whitespace_tag, ==, expected_tag);
 	free(whitespace_tag);
 }

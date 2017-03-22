@@ -95,9 +95,9 @@ void otrv4_free( /*@only@ */ otrv4_t * otr);
 int otrv4_build_query_message(string_t * dst, const string_t message,
 			      const otrv4_t * otr);
 
-bool otrv4_build_whitespace_tag
-    (string_t * whitespace_tag, const otrv4_t * otr, const string_t message,
-     size_t message_len);
+bool
+otrv4_build_whitespace_tag(string_t * whitespace_tag, const string_t message,
+			   const otrv4_t * otr);
 
 otrv4_response_t *otrv4_response_new(void);
 
