@@ -69,7 +69,7 @@ typedef enum {
 	IN_MSG_PLAINTEXT = 1,
 	IN_MSG_TAGGED_PLAINTEXT = 2,
 	IN_MSG_QUERY_STRING = 3,
-	IN_MSG_CYPHERTEXT = 4
+	IN_MSG_OTR_ENCODED = 4
 } otrv4_in_message_type_t;
 
 typedef enum {
