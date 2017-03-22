@@ -233,18 +233,16 @@ message_to_display_without_tag(otrv4_response_t * response,
 //TODO: This belongs to the client. A otrv4_t should only "run" the v4 wire protocol.
 static void set_running_version_from_tag(otrv4_t * otr, const string_t message)
 {
-	if (allow_version(otr, OTRV4_ALLOW_V4)) {
-		if (strstr(message, tag_version_v4)) {
-			otr->running_version = OTRV4_VERSION_4;
-			return;
-		}
+	if (allow_version(otr, OTRV4_ALLOW_V4)
+	    && strstr(message, tag_version_v4)) {
+		otr->running_version = OTRV4_VERSION_4;
+		return;
 	}
 
-	if (allow_version(otr, OTRV4_ALLOW_V3)) {
-		if (strstr(message, tag_version_v3)) {
-			otr->running_version = OTRV4_VERSION_3;
-			return;
-		}
+	if (allow_version(otr, OTRV4_ALLOW_V3)
+	    && strstr(message, tag_version_v3)) {
+		otr->running_version = OTRV4_VERSION_3;
+		return;
 	}
 }
 
@@ -257,18 +255,14 @@ static bool message_is_query(const string_t message)
 static void set_running_version_from_query_msg(otrv4_t * otr,
 					       const string_t message)
 {
-	if (allow_version(otr, OTRV4_ALLOW_V4)) {
-		if (strstr(message, "4")) {
-			otr->running_version = OTRV4_VERSION_4;
-			return;
-		}
+	if (allow_version(otr, OTRV4_ALLOW_V4) && strstr(message, "4")) {
+		otr->running_version = OTRV4_VERSION_4;
+		return;
 	}
 
-	if (allow_version(otr, OTRV4_ALLOW_V3)) {
-		if (strstr(message, "3")) {
-			otr->running_version = OTRV4_VERSION_3;
-			return;
-		}
+	if (allow_version(otr, OTRV4_ALLOW_V3) && strstr(message, "3")) {
+		otr->running_version = OTRV4_VERSION_3;
+		return;
 	}
 }
 
@@ -570,15 +564,16 @@ receive_dre_auth(string_t * dst, uint8_t * buff, size_t buflen, otrv4_t * otr)
 
 static bool
 decrypt_data_msg(uint8_t ** dst, const m_enc_key_t enc_key,
-		 const data_message_t * data_msg)
+		 const data_message_t * msg)
 {
-	uint8_t *plain = malloc(data_msg->enc_msg_len);
-	if (plain == NULL)
+	uint8_t *plain = malloc(msg->enc_msg_len);
+	if (!plain)
 		return false;
 
-	if (0 !=
-	    crypto_stream_xor(plain, data_msg->enc_msg, data_msg->enc_msg_len,
-			      data_msg->nonce, enc_key)) {
+	int err = crypto_stream_xor(plain, msg->enc_msg, msg->enc_msg_len,
+				    msg->nonce, enc_key);
+
+	if (err) {
 		free(plain);
 		return false;
 	}
@@ -587,75 +582,40 @@ decrypt_data_msg(uint8_t ** dst, const m_enc_key_t enc_key,
 	return true;
 }
 
-//TODO: This belongs to the key_manager
-bool
-derive_encription_and_mac_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
-			       const chain_key_t chain_key)
-{
-	uint8_t magic1[1] = { 0x1 };
-	if (!sha3_256_kdf
-	    (enc_key, sizeof(m_enc_key_t), magic1, chain_key,
-	     sizeof(chain_key_t))) {
-		return false;
-	}
-
-	uint8_t magic2[1] = { 0x2 };
-	if (!sha3_512_kdf
-	    (mac_key, sizeof(m_mac_key_t), magic2, chain_key,
-	     sizeof(chain_key_t))) {
-		return false;
-	}
-
-	return true;
-}
-
-//TODO: This belongs to the key_manager
-bool
-retrieve_receiving_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
-				int ratchet_id, int message_id,
-				const otrv4_t * otr)
-{
-	chain_key_t receiving;
-	if (!key_manager_get_receiving_chain_key_by_id
-	    (receiving, ratchet_id, message_id, otr->keys)) {
-		return false;
-	}
-
-	return derive_encription_and_mac_keys(enc_key, mac_key, receiving);
-}
-
 bool
 otrv4_receive_data_message(otrv4_response_t * response, uint8_t * buff,
 			   size_t buflen, otrv4_t * otr)
 {
+	bool ok = false;
+	data_message_t msg[1];
+	m_enc_key_t enc_key;
+	m_mac_key_t mac_key;
+
+	//TODO: Do we need to destroy the data_message from the stack?
+
 	response->to_display = NULL;
 	response->to_send = NULL;
 	response->warning = OTRV4_WARN_NONE;
 
-	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
-		//TODO: warn the user and send an error message with a code.
-		return false;
-	}
-
-	data_message_t data_message[1];
-	if (!data_message_deserialize(data_message, buff, buflen)) {
-		return false;
-	}
-
-	key_manager_set_their_keys(data_message->our_ecdh, data_message->our_dh,
-				   otr->keys);
-	if (!key_manager_ensure_on_ratchet(data_message->ratchet_id, otr->keys))
+	//TODO: warn the user and send an error message with a code.
+	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
 		return false;
 
-	m_enc_key_t enc_key;
-	m_mac_key_t mac_key;
-
-	if (!retrieve_receiving_message_keys
-	    (enc_key, mac_key, data_message->ratchet_id,
-	     data_message->message_id, otr)) {
-		data_message_destroy(data_message);
+	if (!data_message_deserialize(msg, buff, buflen))
 		return false;
-	}
+
+	key_manager_set_their_keys(msg->our_ecdh, msg->our_dh, otr->keys);
+	if (!key_manager_ensure_on_ratchet(msg->ratchet_id, otr->keys))
+		return false;
+
+	ok = key_manager_retrieve_receiving_message_keys(enc_key, mac_key,
+							 msg->ratchet_id,
+							 msg->message_id,
+							 otr->keys);
+
+	if (!ok)
+		return false;
+
 #ifdef DEBUG
 	printf("DECRYPTING\n");
 	printf("enc_key = ");
@@ -663,25 +623,23 @@ otrv4_receive_data_message(otrv4_response_t * response, uint8_t * buff,
 	printf("mac_key = ");
 	otrv4_memdump(mac_key, sizeof(m_mac_key_t));
 	printf("nonce = ");
-	otrv4_memdump(data_message->nonce, DATA_MSG_NONCE_BYTES);
+	otrv4_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
 #endif
 
-	if (!data_message_validate(mac_key, data_message)) {
-		data_message_destroy(data_message);
+	if (!data_message_validate(mac_key, msg))
 		return false;
-	}
 
-	if (!decrypt_data_msg
-	    ((uint8_t **) & response->to_display, enc_key, data_message)) {
-		data_message_destroy(data_message);
+	ok = decrypt_data_msg((uint8_t **) & response->to_display,
+			      enc_key, msg);
+
+	if (!ok)
 		return false;
-	}
+
 	//TODO: to_send = depends on the TLVs we proccess
 	//TODO: Securely delete receiving chain keys older than message_id-1.
 	//TODO: Add the MKmac key to list mac_keys_to_reveal.
-	key_manager_prepare_to_ratchet(otr->keys);
 
-	data_message_destroy(data_message);
+	key_manager_prepare_to_ratchet(otr->keys);
 	return true;
 }
 
@@ -795,43 +753,19 @@ otrv4_receive_message(otrv4_response_t * response,
 	return true;
 }
 
-//TODO: This belongs to the key_manager
-static int
-retrieve_sending_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
-			      const otrv4_t * otr)
-{
-	chain_key_t sending;
-	int message_id = key_manager_get_sending_chain_key(sending, otr->keys);
-
-	if (!derive_encription_and_mac_keys(enc_key, mac_key, sending)) {
-		return -1;
-	}
-
-	return message_id;
-}
-
-//TODO: This belongs to the key_manager
-static bool should_ratchet(const otrv4_t * otr)
-{
-	return otr->keys->j == 0;
-}
-
 static bool
 send_data_message(uint8_t ** to_send, const uint8_t * message,
 		  size_t message_len, otrv4_t * otr)
 {
-	if (should_ratchet(otr)) {
-		if (!key_manager_rotate_keys(otr->keys))
-			return false;
-	} else {
-		if (!key_manager_derive_sending_chain_key(otr->keys))
-			return false;
-	}
-
 	m_enc_key_t enc_key;
 	m_mac_key_t mac_key;
 
-	int message_id = retrieve_sending_message_keys(enc_key, mac_key, otr);
+	if (!key_manager_prepare_next_chain_key(otr->keys))
+		return false;
+
+	int message_id =
+	    key_manager_retrieve_sending_message_keys(enc_key, mac_key,
+						      otr->keys);
 	if (message_id < 0) {
 		return false;
 	}

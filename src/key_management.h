@@ -89,8 +89,6 @@ void retrive_chain_keys(chain_key_t ck, key_manager_t manager, int i, int j);
 void
 derive_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key, chain_key_t ck);
 
-bool key_manager_derive_sending_chain_key(key_manager_t manager);
-
 int
 key_manager_get_sending_chain_key(chain_key_t sending,
 				  const key_manager_t manager);
@@ -104,6 +102,17 @@ bool
 calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
 			const mix_key_t mix_key);
 
-bool key_manager_rotate_keys(key_manager_t manager);
+bool
+key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
+					    m_mac_key_t mac_key,
+					    int ratchet_id, int message_id,
+					    const key_manager_t manager);
+
+bool key_manager_prepare_next_chain_key(key_manager_t manager);
+
+int
+key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
+					  m_mac_key_t mac_key,
+					  const key_manager_t manager);
 
 #endif

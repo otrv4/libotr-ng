@@ -337,7 +337,7 @@ calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
 	return true;
 }
 
-bool key_manager_derive_sending_chain_key(key_manager_t manager)
+static bool derive_sending_chain_key(key_manager_t manager)
 {
 	message_chain_t *chain =
 	    decide_between_chain_keys(manager->current, manager->our_ecdh->pub,
@@ -353,7 +353,7 @@ bool key_manager_derive_sending_chain_key(key_manager_t manager)
 	return true;
 }
 
-bool enter_new_ratchet(key_manager_t manager)
+static bool enter_new_ratchet(key_manager_t manager)
 {
 	k_ecdh_t k_ecdh;
 	if (!ecdh_shared_secret
@@ -412,7 +412,7 @@ bool key_manager_ratchetting_init(int j, key_manager_t manager)
 	return true;
 }
 
-bool key_manager_rotate_keys(key_manager_t manager)
+static bool rotate_keys(key_manager_t manager)
 {
 	manager->i++;
 	manager->j = 0;
@@ -431,4 +431,64 @@ bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t manager)
 		return false;
 
 	return true;
+}
+
+static bool
+derive_encription_and_mac_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
+			       const chain_key_t chain_key)
+{
+	bool ok1 = false, ok2 = false;
+	uint8_t magic1[1] = { 0x1 };
+	uint8_t magic2[1] = { 0x2 };
+
+	ok1 = sha3_256_kdf(enc_key, sizeof(m_enc_key_t), magic1, chain_key,
+			   sizeof(chain_key_t));
+	ok2 = sha3_512_kdf(mac_key, sizeof(m_mac_key_t), magic2, chain_key,
+			   sizeof(chain_key_t));
+
+	return ok1 && ok2;
+}
+
+bool
+key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
+					    m_mac_key_t mac_key,
+					    int ratchet_id, int message_id,
+					    const key_manager_t manager)
+{
+	bool ok = false;
+	chain_key_t receiving;
+
+	ok = key_manager_get_receiving_chain_key_by_id(receiving, ratchet_id,
+						       message_id, manager);
+	if (!ok)
+		return false;
+
+	return derive_encription_and_mac_keys(enc_key, mac_key, receiving);
+}
+
+static bool should_ratchet(const key_manager_t manager)
+{
+	return manager->j == 0;
+}
+
+bool key_manager_prepare_next_chain_key(key_manager_t manager)
+{
+	if (should_ratchet(manager))
+		return rotate_keys(manager);
+
+	return derive_sending_chain_key(manager);
+}
+
+int
+key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
+					  m_mac_key_t mac_key,
+					  const key_manager_t manager)
+{
+	chain_key_t sending;
+	int message_id = key_manager_get_sending_chain_key(sending, manager);
+
+	if (!derive_encription_and_mac_keys(enc_key, mac_key, sending))
+		return -1;
+
+	return message_id;
 }
