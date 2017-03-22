@@ -37,7 +37,7 @@ static const char tag_version_v3[] = {
 	'\0'
 };
 
-static const string_t query = "?OTRv";
+static const string_t query_header = "?OTRv";
 static const string_t otrv4 = "?OTR:";
 
 static void gone_secure_cb(const otrv4_t * otr)
@@ -64,7 +64,7 @@ int otrv4_allow_version(const otrv4_t * otr, otrv4_supported_version version)
 
 static int allowed_versions(string_t * dst, const otrv4_t * otr)
 {
-//generate a string with all versions allowed
+	//generate a string with all versions allowed
 	*dst = malloc(3 * sizeof(char));
 	if (!*dst)
 		return -1;
@@ -133,42 +133,40 @@ void otrv4_free( /*@only@ */ otrv4_t * otr)
 	free(otr);
 }
 
-void
+//FIXME: If message is a string, why do we need message_len
+int
 otrv4_build_query_message(string_t * query_message,
 			  const otrv4_t * otr,
 			  const string_t message, size_t message_len)
 {
-	//size = qm tag + msg length + versions + question mark + whitespace + null byte
-	int qm_size = QUERY_MESSAGE_TAG_BYTES + message_len + 2 + 1;
-	int allows_v4 = otrv4_allow_version(otr, OTRV4_ALLOW_V4);
-	int allows_v3 = otrv4_allow_version(otr, OTRV4_ALLOW_V3);
-	if (allows_v4)
-		qm_size++;
-	if (allows_v3)
-		qm_size++;
+	string_t allowed = NULL;
+	size_t qm_size = 0;
+	*query_message = NULL;
 
+	if (allowed_versions(&allowed, otr))
+		return -1;
+
+	//size = allowed + qm tag + msg length + versions + question mark + whitespace + null byte
+	qm_size =
+	    strlen(allowed) + QUERY_MESSAGE_TAG_BYTES + message_len + 2 + 1;
 	string_t buff = malloc(qm_size);
-	if (buff == NULL) {
-		return;		//error
+	if (!buff) {
+		free(allowed);
+		return -1;
 	}
-
-	char *cursor = stpcpy(buff, query);
-
-	//TODO: how to use allowed_versions here?
-	if (allows_v4) {
-		*cursor++ = '4';
-	}
-
-	if (allows_v3) {
-		*cursor++ = '3';
-	}
-
-	cursor = stpcpy(cursor, "? ");
-
-	//TODO: stpncpy will return cursor + n, where n > 0 is an error
-	stpncpy(cursor, message, message_len + 1);
 
 	*query_message = buff;
+
+	char *cursor = stpcpy(buff, query_header);
+	cursor = stpcpy(cursor, allowed);
+	cursor = stpcpy(cursor, "? ");
+	free(allowed);
+
+	int rem = cursor - buff;
+	if (stpncpy(cursor, message, qm_size - rem) != '\0')
+		return 1;	// could not zero-terminate the string
+
+	return 0;
 }
 
 //TODO: should this care about UTF8?
@@ -275,7 +273,7 @@ void otrv4_running_version_set_from_tag(otrv4_t * otr, const string_t message)
 
 bool otrv4_message_is_query(const string_t message)
 {
-	if (strstr(message, query)) {
+	if (strstr(message, query_header)) {
 		return true;
 	} else {
 		return false;
