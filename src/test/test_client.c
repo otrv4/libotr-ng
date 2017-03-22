@@ -163,7 +163,7 @@ void test_client_get_our_fingerprint()
 
 	otr4_client_t *client = otr4_client_new(client_keypair);
 
-        otrv4_fingerprint_t our_fp = {0};
+	otrv4_fingerprint_t our_fp = { 0 };
 	otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));
 
 	uint8_t serialized[170] = { 0 };

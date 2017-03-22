@@ -199,7 +199,8 @@ otr4_client_disconnect(char **newmessage, const char *recipient,
 	//TODO
 }
 
-int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp, const otr4_client_t * client)
+int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
+				    const otr4_client_t * client)
 {
 	if (!client->keypair)
 		return -1;

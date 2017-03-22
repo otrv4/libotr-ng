@@ -6,6 +6,7 @@
 #include "dake.h"
 #include "str.h"
 #include "key_management.h"
+#include "fingerprint.h"
 
 #define OTR4_INIT do { \
   dh_init(); \
@@ -42,7 +43,10 @@ typedef struct {
 
 typedef struct {
 	/* A connection has entered a secure state. */
-	void (*gone_secure) (const otrv4_t * otr);
+	void (*gone_secure) (const otrv4_t *);
+
+	/* A fingerprint was seen in this connection. */
+	void (*fingerprint_seen) (const otrv4_fingerprint_t, const otrv4_t *);
 } otrv4_callbacks_t;
 
 struct connection {

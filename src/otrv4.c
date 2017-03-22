@@ -40,12 +40,21 @@ static const char tag_version_v3[] = {
 static const string_t query = "?OTRv";
 static const string_t otrv4 = "?OTR:";
 
-static void emit_gone_secure_cb(const otrv4_t * otr)
+static void gone_secure_cb(const otrv4_t * otr)
 {
 	if (!otr->callbacks)
 		return;
 
 	otr->callbacks->gone_secure(otr);
+}
+
+static void fingerprint_seen_cb(const otrv4_fingerprint_t fp,
+				const otrv4_t * otr)
+{
+	if (!otr->callbacks)
+		return;
+
+	otr->callbacks->fingerprint_seen(fp, otr);
 }
 
 int otrv4_allow_version(const otrv4_t * otr, otrv4_supported_version version)
@@ -518,7 +527,7 @@ bool double_ratcheting_init(int j, otrv4_t * otr)
 		return false;
 
 	otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
-	emit_gone_secure_cb(otr);
+	gone_secure_cb(otr);
 
 	return true;
 }
@@ -556,12 +565,16 @@ otrv4_receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
 {
 	bool ok = false;
 	dake_identity_message_t m[1];
+	otrv4_fingerprint_t fp;
 
 	if (!dake_identity_message_deserialize(m, buff, buflen))
 		return false;
 
 	if (otr->state == OTRV4_STATE_START)
 		ok = otrv4_receive_identity_message_on_state_start(dst, m, otr);
+
+	if (ok && !otr4_serialize_fingerprint(fp, m->profile->pub_key))
+		fingerprint_seen_cb(fp, otr);
 
 	dake_identity_message_destroy(m);
 
