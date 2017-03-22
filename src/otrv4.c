@@ -532,12 +532,32 @@ receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
 }
 
 static bool
+process_incoming_dre_auth(const dake_dre_auth_t * dre_auth, otrv4_t * otr)
+{
+	bool ok = false;
+	ec_public_key_t their_ecdh;
+	dh_public_key_t their_dh = NULL;
+
+	ok = dake_dre_auth_validate(their_ecdh, &their_dh, otr->profile,
+				    otr->keypair, OUR_ECDH(otr), OUR_DH(otr),
+				    dre_auth);
+
+	if (ok) {
+		key_manager_set_their_ecdh(their_ecdh, otr->keys);
+		key_manager_set_their_dh(their_dh, otr->keys);
+		ok = double_ratcheting_init(1, otr);
+	}
+
+	dh_mpi_release(their_dh);
+	return ok;
+}
+
+static bool
 receive_dre_auth(string_t * dst, uint8_t * buff, size_t buflen, otrv4_t * otr)
 {
 	bool ok = false;
 	dake_dre_auth_t dre_auth[1];
-	ec_public_key_t their_ecdh;
-	dh_public_key_t their_dh = NULL;
+	otrv4_fingerprint_t fp;
 
 	*dst = NULL;
 
@@ -547,19 +567,12 @@ receive_dre_auth(string_t * dst, uint8_t * buff, size_t buflen, otrv4_t * otr)
 	if (!dake_dre_auth_deserialize(dre_auth, buff, buflen))
 		return false;
 
-	ok = dake_dre_auth_validate(their_ecdh, &their_dh, otr->profile,
-				    otr->keypair, OUR_ECDH(otr), OUR_DH(otr),
-				    dre_auth);
+	ok = process_incoming_dre_auth(dre_auth, otr);
+	if (ok && !otr4_serialize_fingerprint(fp, dre_auth->profile->pub_key))
+		fingerprint_seen_cb(fp, otr);
+
 	dake_dre_auth_destroy(dre_auth);
-
-	if (!ok)
-		return false;
-
-	key_manager_set_their_ecdh(their_ecdh, otr->keys);
-	key_manager_set_their_dh(their_dh, otr->keys);
-	dh_mpi_release(their_dh);
-
-	return double_ratcheting_init(1, otr);
+	return ok;
 }
 
 static bool
