@@ -182,13 +182,13 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 char *otr4_client_query_message(const char *recipient, const char *message,
 				otr4_client_t * client)
 {
-	otr4_conversation_t *conv =
-	    get_or_create_conversation_with(recipient, client);
+	otr4_conversation_t *conv = NULL;
+	char *ret = NULL;
+
+	conv = get_or_create_conversation_with(recipient, client);
 
 	//TODO: implement policy
-	char *ret = NULL;
-	otrv4_build_query_message(&ret, conv->conn, (const string_t)message,
-				  strlen(message));
+	otrv4_build_query_message(&ret, message, conv->conn);
 	return ret;
 }
 

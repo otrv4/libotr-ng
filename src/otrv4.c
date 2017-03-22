@@ -62,35 +62,23 @@ int otrv4_allow_version(const otrv4_t * otr, otrv4_supported_version version)
 	return (otr->supported_versions & version);
 }
 
-static int allowed_versions(string_t * dst, const otrv4_t * otr)
+// dst must be at least 3 bytes long.
+static void allowed_versions(string_t dst, const otrv4_t * otr)
 {
-	//generate a string with all versions allowed
-	*dst = malloc(3 * sizeof(char));
-	if (!*dst)
-		return -1;
-
-	memset(*dst, 0, 3 * sizeof(char));
 	if (otrv4_allow_version(otr, OTRV4_ALLOW_V4))
-		strcat(*dst, "4");
+		*dst++ = '4';
 
 	if (otrv4_allow_version(otr, OTRV4_ALLOW_V3))
-		strcat(*dst, "3");
+		*dst++ = '3';
 
-	return 0;
+	*dst = 0;
 }
 
 static user_profile_t *get_my_user_profile(const otrv4_t * otr)
 {
-	string_t versions = NULL;
-	user_profile_t *profile = NULL;
-
-	if (allowed_versions(&versions, otr))
-		return NULL;
-
-	profile = user_profile_build(versions, otr->keypair);
-	free(versions);
-
-	return profile;
+	char versions[3] = { 0 };
+	allowed_versions(versions, otr);
+	return user_profile_build(versions, otr->keypair);
 }
 
 otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy)
@@ -133,43 +121,37 @@ void otrv4_free( /*@only@ */ otrv4_t * otr)
 	free(otr);
 }
 
-//FIXME: If message is a string, why do we need message_len
-int
-otrv4_build_query_message(string_t * query_message,
-			  const otrv4_t * otr,
-			  const string_t message, size_t message_len)
+int otrv4_build_query_message(string_t * dst, const string_t message,
+			      const otrv4_t * otr)
 {
-	string_t allowed = NULL;
-	size_t qm_size = 0;
-	*query_message = NULL;
+	//size = qm tag + versions + msg length + versions + question mark + whitespace + null byte
+	size_t qm_size = QUERY_MESSAGE_TAG_BYTES + 3 + strlen(message) + 2 + 1;
+	string_t buff = NULL;
+	char allowed[3] = { 0 };
 
-	if (allowed_versions(&allowed, otr))
+	*dst = NULL;
+	allowed_versions(allowed, otr);
+
+	buff = malloc(qm_size);
+	if (!buff)
 		return -1;
-
-	//size = allowed + qm tag + msg length + versions + question mark + whitespace + null byte
-	qm_size =
-	    strlen(allowed) + QUERY_MESSAGE_TAG_BYTES + message_len + 2 + 1;
-	string_t buff = malloc(qm_size);
-	if (!buff) {
-		free(allowed);
-		return -1;
-	}
-
-	*query_message = buff;
 
 	char *cursor = stpcpy(buff, query_header);
 	cursor = stpcpy(cursor, allowed);
 	cursor = stpcpy(cursor, "? ");
-	free(allowed);
 
 	int rem = cursor - buff;
-	if (stpncpy(cursor, message, qm_size - rem) != '\0')
+	if (*stpncpy(cursor, message, qm_size - rem)) {
+		free(buff);
 		return 1;	// could not zero-terminate the string
+	}
 
+	*dst = buff;
 	return 0;
 }
 
 //TODO: should this care about UTF8?
+//FIXME: If message is a string, why having len?
 bool
 otrv4_build_whitespace_tag(string_t * whitespace_tag,
 			   const otrv4_t * otr,

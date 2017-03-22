@@ -10,7 +10,7 @@ void do_ake(otrv4_t * alice, otrv4_t * bob)
 
 	//Alice sends query message
 	string_t query_message = NULL;
-	otrv4_build_query_message(&query_message, alice, "", 0);
+	otrv4_build_query_message(&query_message, "", alice);
 	otrv4_assert_cmpmem("?OTRv4", query_message, 6);
 
 	//Bob receives query message

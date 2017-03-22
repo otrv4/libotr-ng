@@ -92,8 +92,8 @@ otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy);
 void otrv4_destroy(otrv4_t * otr);
 void otrv4_free( /*@only@ */ otrv4_t * otr);
 
-int otrv4_build_query_message(string_t * dst, const otrv4_t * otr,
-			      const string_t message, size_t message_len);
+int otrv4_build_query_message(string_t * dst, const string_t message,
+			      const otrv4_t * otr);
 
 bool otrv4_build_whitespace_tag
     (string_t * whitespace_tag, const otrv4_t * otr, const string_t message,
