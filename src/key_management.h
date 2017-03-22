@@ -110,7 +110,7 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
 
 bool key_manager_prepare_next_chain_key(key_manager_t manager);
 
-int
+bool
 key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
 					  m_mac_key_t mac_key,
 					  const key_manager_t manager);

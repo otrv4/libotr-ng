@@ -430,8 +430,8 @@ extract_header(otrv4_header_t * dst, const uint8_t * buffer,
 	return true;
 }
 
-static dake_dre_auth_t *otrv4_generate_dre_auth(const user_profile_t * their,
-						const otrv4_t * otr)
+static dake_dre_auth_t *generate_dre_auth(const user_profile_t * their,
+					  const otrv4_t * otr)
 {
 	bool ok = false;
 	dake_dre_auth_t *dre_auth = dake_dre_auth_new(otr->profile);
@@ -479,7 +479,7 @@ reply_with_dre_auth_msg(string_t * dst, const user_profile_t * their,
 			const otrv4_t * otr)
 {
 	bool ok = false;
-	dake_dre_auth_t *m = otrv4_generate_dre_auth(their, otr);
+	dake_dre_auth_t *m = generate_dre_auth(their, otr);
 
 	if (!m)
 		return false;
@@ -753,56 +753,38 @@ otrv4_receive_message(otrv4_response_t * response,
 	return true;
 }
 
-static bool
-send_data_message(uint8_t ** to_send, const uint8_t * message,
-		  size_t message_len, otrv4_t * otr)
+static data_message_t *generate_data_msg(const otrv4_t * otr)
 {
-	m_enc_key_t enc_key;
-	m_mac_key_t mac_key;
-
-	if (!key_manager_prepare_next_chain_key(otr->keys))
-		return false;
-
-	int message_id =
-	    key_manager_retrieve_sending_message_keys(enc_key, mac_key,
-						      otr->keys);
-	if (message_id < 0) {
-		return false;
-	}
-	//TODO: assert
-	//if (message_id != otr->keys->j) return false;
-
-#ifdef DEBUG
-	printf("ENCRYPTING\n");
-	printf("enc_key = ");
-	otrv4_memdump(enc_key, sizeof(m_enc_key_t));
-	printf("mac_key = ");
-	otrv4_memdump(mac_key, sizeof(m_mac_key_t));
-#endif
-
 	data_message_t *data_msg = data_message_new();
-	if (data_msg == NULL)
-		return false;
+	if (!data_msg)
+		return NULL;
 
 	data_msg->sender_instance_tag = otr->our_instance_tag;
 	data_msg->receiver_instance_tag = otr->their_instance_tag;
-	data_msg->ratchet_id = otr->keys->current->id;
-	data_msg->message_id = message_id;
+	data_msg->ratchet_id = otr->keys->i;
+	data_msg->message_id = otr->keys->j;
 	ec_public_key_copy(data_msg->our_ecdh, OUR_ECDH(otr));
 	data_msg->our_dh = dh_mpi_copy(OUR_DH(otr));
 
-	random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
-	uint8_t *c = malloc(message_len);
-	if (c == NULL) {
-		data_message_free(data_msg);
-		return false;
-	}
+	return data_msg;
+}
 
-	if (0 !=
-	    crypto_stream_xor(c, message, message_len, data_msg->nonce,
-			      enc_key)) {
+static bool
+encrypt_data_message(data_message_t * data_msg, const uint8_t * message,
+		     size_t message_len, const m_enc_key_t enc_key)
+{
+	int err = 0;
+	uint8_t *c = NULL;
+
+	random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
+	c = malloc(message_len);
+	if (!c)
+		return false;
+
+	err = crypto_stream_xor(c, message, message_len, data_msg->nonce,
+				enc_key);
+	if (err) {
 		free(c);
-		data_message_free(data_msg);
 		return false;
 	}
 
@@ -818,19 +800,24 @@ send_data_message(uint8_t ** to_send, const uint8_t * message,
 	otrv4_memdump(c, message_len);
 #endif
 
+	return true;
+}
+
+static bool
+serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
+			      const data_message_t * data_msg)
+{
+	bool ok = false;
 	uint8_t *body = NULL;
 	size_t bodylen = 0;
-	if (!data_message_body_aprint(&body, &bodylen, data_msg)) {
-		data_message_free(data_msg);
-		return false;
-	}
 
-	data_message_free(data_msg);
+	if (!data_message_body_aprint(&body, &bodylen, data_msg))
+		return false;
 
 	//TODO: append old mac keys to be revealed
 	size_t serlen = bodylen + DATA_MSG_MAC_BYTES;
 	uint8_t *ser = malloc(serlen);
-	if (ser == NULL) {
+	if (!ser) {
 		free(body);
 		return false;
 	}
@@ -838,19 +825,54 @@ send_data_message(uint8_t ** to_send, const uint8_t * message,
 	memcpy(ser, body, bodylen);
 	free(body);
 
-	if (!sha3_512_mac
-	    (ser + bodylen, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t),
-	     ser, bodylen)) {
+	ok = sha3_512_mac(ser + bodylen, DATA_MSG_MAC_BYTES, mac_key,
+			  sizeof(m_mac_key_t), ser, bodylen);
+
+	if (!ok) {
 		free(ser);
 		return false;
 	}
+
+	*dst = otrl_base64_otr_encode(ser, serlen);
+	free(ser);
+
+	return true;
+}
+
+static bool
+send_data_message(uint8_t ** to_send, const uint8_t * message,
+		  size_t message_len, otrv4_t * otr)
+{
+	bool ok = false;
+	data_message_t *data_msg = NULL;
+	m_enc_key_t enc_key;
+	m_mac_key_t mac_key;
+
+	if (!key_manager_prepare_next_chain_key(otr->keys))
+		return false;
+
+	ok = key_manager_retrieve_sending_message_keys(enc_key, mac_key,
+						       otr->keys);
+	if (!ok)
+		return false;
+
+	data_msg = generate_data_msg(otr);
+	if (!data_msg)
+		return false;
+
+	ok = encrypt_data_message(data_msg, message, message_len, enc_key);
+	if (ok)
+		ok = serialize_and_encode_data_msg((char **)to_send, mac_key,
+						   data_msg);
+
+	data_message_free(data_msg);
+
 	//TODO: Change the spec to say this should be incremented after the message
 	//is sent.
-	otr->keys->j++;
+	if (ok)
+		otr->keys->j++;
 
-	*to_send = (uint8_t *) otrl_base64_otr_encode(ser, serlen);
-	free(ser);
-	return true;
+	return ok;
 }
 
 bool

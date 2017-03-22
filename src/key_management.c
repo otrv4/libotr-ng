@@ -479,7 +479,7 @@ bool key_manager_prepare_next_chain_key(key_manager_t manager)
 	return derive_sending_chain_key(manager);
 }
 
-int
+bool
 key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
 					  m_mac_key_t mac_key,
 					  const key_manager_t manager)
@@ -488,7 +488,15 @@ key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
 	int message_id = key_manager_get_sending_chain_key(sending, manager);
 
 	if (!derive_encription_and_mac_keys(enc_key, mac_key, sending))
-		return -1;
+		return false;
 
-	return message_id;
+#ifdef DEBUG
+	printf("GOT SENDING KEYS:\n");
+	printf("enc_key = ");
+	otrv4_memdump(enc_key, sizeof(m_enc_key_t));
+	printf("mac_key = ");
+	otrv4_memdump(mac_key, sizeof(m_mac_key_t));
+#endif
+
+	return message_id == manager->j;
 }
