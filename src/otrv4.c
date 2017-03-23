@@ -10,6 +10,7 @@
 #include "sha3.h"
 #include "data_message.h"
 #include "constants.h"
+#include "gcrypt.h"
 #include "debug.h"
 
 #define OUR_ECDH(s) s->keys->our_ecdh->pub
@@ -509,6 +510,43 @@ receive_identity_message_on_state_start(string_t * dst,
 }
 
 static bool
+receive_identity_message_while_in_progress(string_t * dst,
+					   dake_identity_message_t * msg,
+					   otrv4_t * otr)
+{
+	//1) Compare X with their_dh
+	gcry_mpi_t x = NULL;
+	gcry_mpi_t y = NULL;
+	int err = 0;
+
+	err |= gcry_mpi_scan(&x, GCRYMPI_FMT_USG, OUR_DH(otr),
+			     sizeof(ec_public_key_t), NULL);
+
+	err |= gcry_mpi_scan(&y, GCRYMPI_FMT_USG, msg->Y,
+			     sizeof(ec_public_key_t), NULL);
+
+	if (err) {
+		gcry_mpi_release(x);
+		gcry_mpi_release(y);
+		return false;
+	}
+
+	int cmp = gcry_mpi_cmp(x, y);
+	gcry_mpi_release(x);
+	gcry_mpi_release(y);
+
+	// If our is lower, ignore.
+	if (cmp < 0)
+		return true;	//ignore
+
+	//Forget our keys
+	key_manager_destroy(otr->keys);
+	key_manager_init(otr->keys);
+
+	return receive_identity_message_on_state_start(dst, msg, otr);
+}
+
+static bool
 receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
 			 otrv4_t * otr)
 {
@@ -516,11 +554,18 @@ receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
 	dake_identity_message_t m[1];
 	otrv4_fingerprint_t fp;
 
+	if (otr->state != OTRV4_STATE_START
+	    && otr->state != OTRV4_STATE_AKE_IN_PROGRESS)
+		return true;	// ignore
+
 	if (!dake_identity_message_deserialize(m, buff, buflen))
 		return false;
 
 	if (otr->state == OTRV4_STATE_START)
 		ok = receive_identity_message_on_state_start(dst, m, otr);
+
+	if (otr->state == OTRV4_STATE_AKE_IN_PROGRESS)
+		ok = receive_identity_message_while_in_progress(dst, m, otr);
 
 	if (ok && !otr4_serialize_fingerprint(fp, m->profile->pub_key))
 		fingerprint_seen_cb(fp, otr);
