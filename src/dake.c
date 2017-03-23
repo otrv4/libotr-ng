@@ -174,6 +174,20 @@ bool not_expired(time_t expires)
 	return false;
 }
 
+// Check if the profile contains any version other than supported by this
+// messaging protocol (that is, wire protocol v4 and v3).
+static bool no_rollback_detected(const char *versions)
+{
+	while (*versions) {
+		if (*versions != '3' && *versions != '4')
+			return false;
+
+		versions++;
+	}
+
+	return true;
+}
+
 bool
 dake_identity_message_validate(const dake_identity_message_t * identity_message)
 {
@@ -186,6 +200,7 @@ dake_identity_message_validate(const dake_identity_message_t * identity_message)
 	valid &= not_expired(identity_message->profile->expires);
 	valid &= ec_point_valid(y);
 	valid &= dh_mpi_valid(identity_message->B);
+	valid &= no_rollback_detected(identity_message->profile->versions);
 
 	// TODO: something Nick said about degenerated keys
 
@@ -801,6 +816,7 @@ dake_dre_auth_validate(ec_public_key_t their_ecdh,
 	//7) Verify their profile is valid (and not expired).
 	valid &= user_profile_verify_signature(dre_auth->profile);
 	valid &= not_expired(dre_auth->profile->expires);
+	valid &= no_rollback_detected(dre_auth->profile->versions);
 
 	// TODO: validate something Nick said about degenerated keys
 
