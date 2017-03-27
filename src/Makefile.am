@@ -45,6 +45,7 @@ otrinc_HEADERS = client.h \
 		 otrv4.h \
 		 random.h \
 		 str.h \
+		 tlv.h \
 		 user_profile.h
 
 #pkgconfigdir = $(libdir)/pkgconfig
