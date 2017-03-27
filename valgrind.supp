@@ -1,0 +1,75 @@
+{
+   g_test_add_vtable_problem
+   Memcheck:Leak
+   fun:g_malloc
+   ...
+   fun:g_test_create_case
+   fun:g_test_add_vtable
+   fun:main
+}
+{
+   g_test_add_vtable_problem2
+   Memcheck:Leak
+   fun:memalign
+   ...
+   fun:g_slice_alloc
+   ...
+   fun:g_test_add_vtable
+   fun:main
+}
+{
+   g_test_run_suite_problem
+   Memcheck:Leak
+   fun:memalign
+   ...
+   fun:g_slice_alloc
+   ...
+   fun:g_test_run_suite
+   fun:main
+}
+{
+   g_test_init_memalign_leak
+   Memcheck:Leak
+   fun:memalign
+   ...
+   fun:g_test_init
+   fun:main
+}
+{
+   g_random_init_memalign_leak
+   Memcheck:Leak
+   fun:memalign
+   ...
+   fun:g_random_int
+}
+{
+   g_test_init_leak_reachable
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:g_test_init
+   fun:main
+}
+{
+   g_test_add_vtable_leak_reachable
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:g_test_add_vtable
+   fun:main
+}
+{
+  g_test_run_leak_reachable
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:g_test_run
+   fun:main
+}
+{
+   g_test_run_suite_internal_leak_reachable
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:g_test_run_suite_internal
+}
