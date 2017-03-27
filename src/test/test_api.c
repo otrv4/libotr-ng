@@ -109,11 +109,10 @@ void test_api_conversation(void)
 	otrv4_response_t *response_to_alice = NULL;
 
 	//Bob sends a data message
-	uint8_t *to_send = NULL;
+	string_t to_send = NULL;
 
 	for (message_id = 2; message_id < 5; message_id++) {
-		otrv4_assert(otrv4_send_message
-			     (&to_send, (uint8_t *) "hi", 3, bob));
+		otrv4_assert(otrv4_send_message(&to_send, "hi", NULL, bob));
 		otrv4_assert(to_send);
 		otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
 
@@ -129,7 +128,7 @@ void test_api_conversation(void)
 		free(to_send);
 		to_send = NULL;
 
-		otrv4_assert_cmpmem(response_to_bob->to_display, "hi", 3);
+		otrv4_assert_cmpmem("hi", response_to_bob->to_display, 3);
 		otrv4_assert(response_to_bob->to_send == NULL);
 		otrv4_response_free(response_to_bob);
 		response_to_bob = NULL;
@@ -142,7 +141,7 @@ void test_api_conversation(void)
 	for (message_id = 1; message_id < 4; message_id++) {
 		//Alice sends a data message
 		otrv4_assert(otrv4_send_message
-			     (&to_send, (uint8_t *) "hello", 6, alice));
+			     (&to_send, "hello", NULL, alice));
 		otrv4_assert(to_send);
 		otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
 
@@ -158,7 +157,7 @@ void test_api_conversation(void)
 		free(to_send);
 		to_send = NULL;
 
-		otrv4_assert_cmpmem(response_to_alice->to_display, "hello", 6);
+		otrv4_assert_cmpmem("hello", response_to_alice->to_display, 6);
 		otrv4_assert(response_to_alice->to_send == NULL);
 		otrv4_response_free(response_to_alice);
 		response_to_alice = NULL;
@@ -167,6 +166,27 @@ void test_api_conversation(void)
 		g_assert_cmpint(bob->keys->i, ==, 1);
 		g_assert_cmpint(bob->keys->j, ==, 0);
 	}
+
+	tlv_t *tlvs = otrv4_padding_tlv_new(10);
+	otrv4_assert(tlvs);
+
+	//Bob sends a message with TLV
+	otrv4_assert(otrv4_send_message(&to_send, "hi", tlvs, bob));
+	otrv4_assert(to_send);
+	otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+	otrv4_tlv_free(tlvs);
+
+	//Alice receives a data message with TLV
+	response_to_bob = otrv4_response_new();
+	otrv4_assert(otrv4_receive_message
+		     (response_to_bob, (string_t) to_send,
+		      strlen((char *)to_send), alice));
+	free(to_send);
+	to_send = NULL;
+
+	otrv4_assert(response_to_bob->tlvs);
+	g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRV4_TLV_PADDING);
+	g_assert_cmpint(response_to_bob->tlvs->len, ==, 10);
 
 	otrv4_free(alice);
 	otrv4_free(bob);

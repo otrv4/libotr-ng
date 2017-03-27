@@ -62,3 +62,37 @@ list_element_t *list_get_last(list_element_t * head)
 
 	return cursor;
 }
+
+list_element_t *list_get_by_value(const void *wanted, list_element_t * head)
+{
+	list_element_t *cursor = head;
+
+	while (cursor) {
+		if (cursor->data == wanted)
+			return cursor;
+
+		cursor = cursor->next;
+	}
+
+	return NULL;
+}
+
+list_element_t *list_remove_element(const list_element_t * wanted,
+				    list_element_t * head)
+{
+	if (head == wanted) {
+		return wanted->next;
+	}
+
+	list_element_t *cursor = head;
+	while (cursor->next) {
+		if (cursor->next == wanted) {
+			cursor->next = wanted->next;
+			break;
+		}
+
+		cursor = cursor->next;
+	}
+
+	return head;
+}

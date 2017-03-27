@@ -42,9 +42,9 @@ otr4_client_receive(char **newmessage,
 		    const char *message,
 		    const char *recipient, otr4_client_t * client);
 
-void
-otr4_client_disconnect(char **newmessage,
-		       const char *recipient, otr4_client_t * client);
+int
+otr4_client_disconnect(char **newmessage, const char *recipient,
+		       otr4_client_t * client);
 
 otr4_conversation_t *otr4_client_get_conversation(int force,
 						  const char *recipient,

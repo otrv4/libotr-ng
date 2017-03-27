@@ -19,9 +19,9 @@ deserialize_uint64(uint64_t * n, const uint8_t * buffer, size_t buflen,
 	    ((uint64_t) buffer[2]) << 40 |
 	    ((uint64_t) buffer[1]) << 48 | ((uint64_t) buffer[0]) << 56;
 
-	if (nread != NULL) {
+	if (nread)
 		*nread = sizeof(uint64_t);
-	}
+
 	return true;
 }
 
@@ -35,9 +35,9 @@ deserialize_uint32(uint32_t * n, const uint8_t * buffer, size_t buflen,
 
 	*n = buffer[3] | buffer[2] << 8 | buffer[1] << 16 | buffer[0] << 24;
 
-	if (nread != NULL) {
+	if (nread)
 		*nread = sizeof(uint32_t);
-	}
+
 	return true;
 }
 

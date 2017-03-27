@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "gcrypt.h"
+
 #include "otrv4.h"
 #include "otrv3.h"
 #include "str.h"
@@ -10,7 +12,8 @@
 #include "sha3.h"
 #include "data_message.h"
 #include "constants.h"
-#include "gcrypt.h"
+#include "tlv.h"
+#include "serialize.h"
 #include "debug.h"
 
 #define OUR_ECDH(s) s->keys->our_ecdh->pub
@@ -49,6 +52,14 @@ static void gone_secure_cb(const otrv4_t * otr)
 	otr->callbacks->gone_secure(otr);
 }
 
+static void gone_insecure_cb(const otrv4_t * otr)
+{
+	if (!otr->callbacks)
+		return;
+
+	otr->callbacks->gone_insecure(otr);
+}
+
 static void fingerprint_seen_cb(const otrv4_fingerprint_t fp,
 				const otrv4_t * otr)
 {
@@ -85,9 +96,8 @@ static user_profile_t *get_my_user_profile(const otrv4_t * otr)
 otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy)
 {
 	otrv4_t *otr = malloc(sizeof(otrv4_t));
-	if (otr == NULL) {
+	if (!otr)
 		return NULL;
-	}
 
 	otr->state = OTRV4_STATE_START;
 	otr->supported_versions = policy.allows;
@@ -275,28 +285,30 @@ static bool message_is_otr_encoded(const string_t message)
 otrv4_response_t *otrv4_response_new(void)
 {
 	otrv4_response_t *response = malloc(sizeof(otrv4_response_t));
-	if (response == NULL) {
+	if (!response)
 		return NULL;
-	}
 
 	response->to_display = NULL;
 	response->to_send = NULL;
 	response->warning = OTRV4_WARN_NONE;
+	response->tlvs = NULL;
 
 	return response;
 }
 
 void otrv4_response_free(otrv4_response_t * response)
 {
-	if (response == NULL) {
+	if (!response)
 		return;
-	}
 
 	free(response->to_send);
 	response->to_send = NULL;
 
 	free(response->to_display);
 	response->to_display = NULL;
+
+	otrv4_tlv_free(response->tlvs);
+	response->tlvs = NULL;
 
 	free(response);
 }
@@ -509,6 +521,12 @@ receive_identity_message_on_state_start(string_t * dst,
 	return double_ratcheting_init(0, otr);
 }
 
+static void forget_our_keys(otrv4_t * otr)
+{
+	key_manager_destroy(otr->keys);
+	key_manager_init(otr->keys);
+}
+
 static bool
 receive_identity_message_while_in_progress(string_t * dst,
 					   dake_identity_message_t * msg,
@@ -539,10 +557,7 @@ receive_identity_message_while_in_progress(string_t * dst,
 	if (cmp < 0)
 		return true;	//ignore
 
-	//Forget our keys
-	key_manager_destroy(otr->keys);
-	key_manager_init(otr->keys);
-
+	forget_our_keys(otr);
 	return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
@@ -620,8 +635,21 @@ receive_dre_auth(string_t * dst, uint8_t * buff, size_t buflen, otrv4_t * otr)
 	return ok;
 }
 
+static void extract_tlvs(tlv_t ** tlvs, const uint8_t * src, size_t len)
+{
+	if (!tlvs)
+		return;
+
+	uint8_t *tlvs_start = memchr(src, 0, len);
+	if (!tlvs_start)
+		return;
+
+	size_t tlvs_len = len - (tlvs_start + 1 - src);
+	*tlvs = otrv4_parse_tlvs(tlvs_start + 1, tlvs_len);
+}
+
 static bool
-decrypt_data_msg(uint8_t ** dst, const m_enc_key_t enc_key,
+decrypt_data_msg(string_t * dst, tlv_t ** tlvs, const m_enc_key_t enc_key,
 		 const data_message_t * msg)
 {
 	uint8_t *plain = malloc(msg->enc_msg_len);
@@ -631,12 +659,40 @@ decrypt_data_msg(uint8_t ** dst, const m_enc_key_t enc_key,
 	int err = crypto_stream_xor(plain, msg->enc_msg, msg->enc_msg_len,
 				    msg->nonce, enc_key);
 
-	if (err) {
-		free(plain);
-		return false;
+	if (strnlen((string_t) plain, msg->enc_msg_len))
+		*dst = otrv4_strndup((char *)plain, msg->enc_msg_len);
+
+	extract_tlvs(tlvs, plain, msg->enc_msg_len);
+
+	free(plain);
+	return err == 0;
+}
+
+static void process_tlv(const tlv_t * tlv, otrv4_t * otr)
+{
+	switch (tlv->type) {
+	case OTRV4_TLV_PADDING:
+		break;
+	case OTRV4_TLV_DISCONNECTED:
+		forget_our_keys(otr);
+		otr->state = OTRV4_STATE_FINISHED;
+		gone_insecure_cb(otr);
+		break;
+	default:
+		//error?
+		break;
+	}
+}
+
+static bool receive_tlvs(otrv4_response_t * response, otrv4_t * otr)
+{
+	//TODO: Receive the TLVs and generate a response
+	const tlv_t *current = response->tlvs;
+	while (current) {
+		process_tlv(current, otr);
+		current = current->next;
 	}
 
-	*dst = plain;
 	return true;
 }
 
@@ -650,10 +706,6 @@ otrv4_receive_data_message(otrv4_response_t * response, uint8_t * buff,
 	m_mac_key_t mac_key;
 
 	//TODO: Do we need to destroy the data_message from the stack?
-
-	response->to_display = NULL;
-	response->to_send = NULL;
-	response->warning = OTRV4_WARN_NONE;
 
 	//TODO: warn the user and send an error message with a code.
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
@@ -687,8 +739,8 @@ otrv4_receive_data_message(otrv4_response_t * response, uint8_t * buff,
 	if (!data_message_validate(mac_key, msg))
 		return false;
 
-	ok = decrypt_data_msg((uint8_t **) & response->to_display,
-			      enc_key, msg);
+	ok = decrypt_data_msg(&response->to_display, &response->tlvs, enc_key,
+			      msg);
 
 	if (!ok)
 		return false;
@@ -696,6 +748,9 @@ otrv4_receive_data_message(otrv4_response_t * response, uint8_t * buff,
 	//TODO: to_send = depends on the TLVs we proccess
 	//TODO: Securely delete receiving chain keys older than message_id-1.
 	//TODO: Add the MKmac key to list mac_keys_to_reveal.
+
+	if (ok)
+		ok = receive_tlvs(response, otr);
 
 	key_manager_prepare_to_ratchet(otr->keys);
 	return true;
@@ -708,12 +763,11 @@ receive_encoded_message(otrv4_response_t * response,
 	size_t dec_len = 0;
 	uint8_t *decoded = NULL;
 	int err = otrl_base64_otr_decode(message, &decoded, &dec_len);
-	if (err) {
+	if (err)
 		return false;
-	}
-	if (dec_len > msg_len) {
+
+	if (dec_len > msg_len)
 		return false;
-	}
 
 	otrv4_header_t header;
 	if (!extract_header(&header, decoded, dec_len)) {
@@ -835,12 +889,16 @@ encrypt_data_message(data_message_t * data_msg, const uint8_t * message,
 	uint8_t *c = NULL;
 
 	random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
+
 	c = malloc(message_len);
 	if (!c)
 		return false;
 
-	err = crypto_stream_xor(c, message, message_len, data_msg->nonce,
-				enc_key);
+	//TODO: message is an UTF-8 string. Is there any problem to cast
+	//it to (unsigned char *)
+	err =
+	    crypto_stream_xor(c, message, message_len, data_msg->nonce,
+			      enc_key);
 	if (err) {
 		free(c);
 		return false;
@@ -898,7 +956,7 @@ serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 }
 
 static bool
-send_data_message(uint8_t ** to_send, const uint8_t * message,
+send_data_message(string_t * to_send, const uint8_t * message,
 		  size_t message_len, otrv4_t * otr)
 {
 	bool ok = false;
@@ -920,8 +978,7 @@ send_data_message(uint8_t ** to_send, const uint8_t * message,
 
 	ok = encrypt_data_message(data_msg, message, message_len, enc_key);
 	if (ok)
-		ok = serialize_and_encode_data_msg((char **)to_send, mac_key,
-						   data_msg);
+		ok = serialize_and_encode_data_msg(to_send, mac_key, data_msg);
 
 	data_message_free(data_msg);
 
@@ -933,15 +990,96 @@ send_data_message(uint8_t ** to_send, const uint8_t * message,
 	return ok;
 }
 
-bool
-otrv4_send_message(uint8_t ** to_send, const uint8_t * message,
-		   size_t message_len, otrv4_t * otr)
+static
+bool serlialize_tlvs(uint8_t ** dst, size_t * dstlen, const tlv_t * tlvs)
 {
+	const tlv_t *current = tlvs;
+	uint8_t *cursor = NULL;
+
+	*dst = NULL;
+	*dstlen = 0;
+
+	if (!tlvs)
+		return true;
+
+	for (*dstlen = 0; current; current = current->next)
+		*dstlen += current->len + 4;
+
+	*dst = malloc(*dstlen);
+	if (!*dst)
+		return false;
+
+	cursor = *dst;
+	for (current = tlvs; current; current = current->next) {
+		cursor += serialize_uint16(cursor, current->type);
+		cursor += serialize_uint16(cursor, current->len);
+		cursor += serialize_bytes_array(cursor, current->data,
+						current->len);
+	}
+
+	return true;
+}
+
+static
+bool append_tlvs(uint8_t ** dst, size_t * dstlen, const string_t message,
+		 const tlv_t * tlvs)
+{
+	uint8_t *ser = NULL;
+	size_t len = 0;
+
+	if (!serlialize_tlvs(&ser, &len, tlvs))
+		return false;
+
+	*dstlen = strlen(message) + 1 + len;
+	*dst = malloc(*dstlen);
+	if (!*dst) {
+		free(ser);
+		return false;
+	}
+
+	memcpy(stpcpy((char *)*dst, message) + 1, ser, len);
+
+	free(ser);
+	return true;
+}
+
+bool
+otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
+		   otrv4_t * otr)
+{
+	uint8_t *msg = NULL;
+	size_t msg_len = 0;
+
 	if (otr->state == OTRV4_STATE_FINISHED)
 		return false;	//Should restart
 
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
 		return false;	//TODO: queue message
 
-	return send_data_message(to_send, message, message_len, otr);
+	if (!append_tlvs(&msg, &msg_len, message, tlvs))
+		return false;
+
+	bool ok = send_data_message(to_send, msg, msg_len, otr);
+	free(msg);
+
+	return ok;
+}
+
+bool otrv4_close(string_t * to_send, otrv4_t * otr)
+{
+	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
+		return true;
+
+	tlv_t *disconnected = otrv4_disconnected_tlv_new();
+	if (!disconnected)
+		return false;
+
+	bool ok = otrv4_send_message(to_send, "", disconnected, otr);
+	otrv4_tlv_free(disconnected);
+
+	forget_our_keys(otr);
+	otr->state = OTRV4_STATE_START;
+	gone_insecure_cb(otr);
+
+	return ok;
 }

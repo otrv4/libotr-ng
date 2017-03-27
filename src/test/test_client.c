@@ -44,8 +44,6 @@ void test_client_conversation_api()
 	otrv4_assert(alice_to_charlie->conn);
 
 	// Free memory
-	conversation_free(alice_to_bob);
-	conversation_free(alice_to_charlie);
 	cs_keypair_destroy(alice_keypair);
 	otr4_client_free(alice);
 
@@ -108,6 +106,7 @@ void test_client_api()
 	ignore =
 	    otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
 				BOB_IDENTITY, alice);
+	otrv4_assert(from_alice_to_bob);
 	otrv4_assert(ignore);
 	otrv4_assert(!todisplay);
 	free(frombob);
@@ -130,6 +129,7 @@ void test_client_api()
 	otrv4_assert(!frombob);
 	otrv4_assert(!todisplay);
 	free(from_alice_to_bob);
+	from_alice_to_bob = NULL;
 
 	//Charlie receives DRE auth message.
 	ignore =
@@ -139,14 +139,35 @@ void test_client_api()
 	otrv4_assert(!fromcharlie);
 	otrv4_assert(!todisplay);
 	free(from_alice_to_charlie);
+	from_alice_to_charlie = NULL;
+
+	//Alice sends a disconnected to Bob
+	int err =
+	    otr4_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
+	otrv4_assert(!err);
+	otrv4_assert(from_alice_to_bob);
+
+	// We've deleted the conversation
+	otrv4_assert(!otr4_client_get_conversation(0, BOB_IDENTITY, alice));
+	otrv4_assert(!alice_to_bob->conn);
+	//TODO: Should we keep the conversation and set state to start instead?
+	//g_assert_cmpint(alice_to_bob->conn->state, ==, OTRV4_STATE_START);
+
+	//Bob receives the disconnected from Alice
+	ignore =
+	    otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
+				ALICE_IDENTITY, bob);
+	otrv4_assert(ignore);
+	otrv4_assert(!frombob);
+	otrv4_assert(!todisplay);
+	free(from_alice_to_bob);
+	from_alice_to_bob = NULL;
 
 	cs_keypair_destroy(alice_keypair);
 	cs_keypair_destroy(bob_keypair);
 	cs_keypair_destroy(charlie_keypair);
 
 	// Free memory
-	conversation_free(alice_to_bob);
-	conversation_free(alice_to_charlie);
 	otr4_client_free(charlie);
 	otr4_client_free(bob);
 	otr4_client_free(alice);

@@ -7,6 +7,7 @@
 #include "str.h"
 #include "key_management.h"
 #include "fingerprint.h"
+#include "tlv.h"
 
 #define OTR4_INIT do { \
   dh_init(); \
@@ -45,6 +46,9 @@ typedef struct {
 	/* A connection has entered a secure state. */
 	void (*gone_secure) (const otrv4_t *);
 
+	/* A connection has left a secure state. */
+	void (*gone_insecure) (const otrv4_t *);
+
 	/* A fingerprint was seen in this connection. */
 	void (*fingerprint_seen) (const otrv4_fingerprint_t, const otrv4_t *);
 } otrv4_callbacks_t;
@@ -80,6 +84,7 @@ typedef enum {
 typedef struct {
 	string_t to_display;
 	string_t to_send;
+	tlv_t *tlvs;
 	otrv4_warning_t warning;
 } otrv4_response_t;
 
@@ -108,7 +113,9 @@ bool otrv4_receive_message
      otrv4_t * otr);
 
 bool
-otrv4_send_message(uint8_t ** to_send, const uint8_t * message,
-		   size_t message_len, otrv4_t * otr);
+otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
+		   otrv4_t * otr);
+
+bool otrv4_close(string_t * to_send, otrv4_t * otr);
 
 #endif

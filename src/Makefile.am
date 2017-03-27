@@ -16,6 +16,7 @@ libotr4_la_SOURCES = \
 		     otrv4.c \
 		     serialize.c \
 		     str.c \
+		     tlv.c \
 		     user_profile.c \
 		     key_management.c
 

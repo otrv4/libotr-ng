@@ -68,6 +68,9 @@ void key_manager_destroy(key_manager_t manager)
 
 	dh_keypair_destroy(manager->our_dh);
 	dh_mpi_release(manager->their_dh);
+	manager->their_dh = NULL;
+
+	//TODO: destroy our_ecdh and their_ecdh
 }
 
 void key_manager_generate_ephemeral_keys(key_manager_t manager)

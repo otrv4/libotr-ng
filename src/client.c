@@ -142,8 +142,7 @@ otr4_client_send(char **newmessage, const char *message,
 		return 1;
 	}
 
-	return otrv4_send_message((uint8_t **) newmessage, (uint8_t *) message,
-				  strlen(message) + 1, conv->conn);
+	return otrv4_send_message(newmessage, message, NULL, conv->conn);
 }
 
 int
@@ -192,11 +191,30 @@ char *otr4_client_query_message(const char *recipient, const char *message,
 	return ret;
 }
 
-void
+int
 otr4_client_disconnect(char **newmessage, const char *recipient,
 		       otr4_client_t * client)
 {
-	//TODO
+	*newmessage = NULL;
+	otr4_conversation_t *conv = NULL;
+
+	conv = get_conversation_with(recipient, client->conversations);
+	if (!conv)
+		return 1;
+
+	if (!otrv4_close(newmessage, conv->conn))
+		return 2;
+
+	//TODO: Should we NOT remove the closed conversation?
+	list_element_t *elem = list_get_by_value(conv, client->conversations);
+	client->conversations =
+	    list_remove_element(elem, client->conversations);
+
+	elem->next = NULL;
+	conversation_free(conv);
+	list_free_all(elem);
+
+	return 0;
 }
 
 int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
