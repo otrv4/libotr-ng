@@ -5,13 +5,27 @@
 #include "sha3.h"
 #include "cramershoup_interface.h"
 
-void conversation_free(otr4_conversation_t * conv)
+#define CONV(c) ((otr4_conversation_t *) c)
+
+static otr4_conversation_t *new_conversation_with(const char *recipient)
+{
+	otr4_conversation_t *conv = malloc(sizeof(otr4_conversation_t));
+	if (!conv)
+		return NULL;
+
+	conv->recipient = otrv4_strdup(recipient);
+	return conv;
+}
+
+static void conversation_free(otr4_conversation_t * conv)
 {
 	otrv4_free(conv->conn);
 	conv->conn = NULL;
 
 	free(conv->recipient);
 	conv->recipient = NULL;
+
+	free(conv);
 }
 
 otr4_client_t *otr4_client_new(cs_keypair_s * keypair)
@@ -29,10 +43,12 @@ otr4_client_t *otr4_client_new(cs_keypair_s * keypair)
 
 void otr4_client_free(otr4_client_t * client)
 {
-	list_foreach(client->conversations, c, {
-		     conversation_free((otr4_conversation_t *) c->data);
-		     c->data = NULL;
-		     });
+	list_element_t *el;
+	for (el = client->conversations; el; el = el->next) {
+		conversation_free(CONV(el->data));
+		el->data = NULL;
+	}
+
 	list_free_all(client->conversations);
 	client->conversations = NULL;
 	client->keypair = NULL;
@@ -43,13 +59,12 @@ void otr4_client_free(otr4_client_t * client)
 otr4_conversation_t *get_conversation_with(const char *recipient,
 					   list_element_t * conversations)
 {
-	otr4_conversation_t *conv = NULL;
-	list_foreach(conversations, c, {
-		     conv = (otr4_conversation_t *) c->data;
-		     if (!strcmp(conv->recipient, recipient)) {
-		     return conv;}
-		     }
-	) ;
+	list_element_t *el;
+	for (el = conversations; el; el = el->next) {
+		otr4_conversation_t *conv = CONV(el->data);
+		if (!strcmp(conv->recipient, recipient))
+			return conv;
+	}
 
 	return NULL;
 }
@@ -61,18 +76,6 @@ otrv4_policy_t get_policy_for(const char *recipient)
 	};
 
 	return policy;
-}
-
-otr4_conversation_t *new_conversation_with(const char *recipient)
-{
-	otr4_conversation_t *conv = NULL;
-
-	conv = malloc(sizeof(otr4_conversation_t));
-	if (!conv)
-		return NULL;
-
-	conv->recipient = otrv4_strdup(recipient);
-	return conv;
 }
 
 static otrv4_t *create_connection_for(const char *recipient,

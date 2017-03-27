@@ -649,9 +649,22 @@ static void extract_tlvs(tlv_t ** tlvs, const uint8_t * src, size_t len)
 }
 
 static bool
-decrypt_data_msg(string_t * dst, tlv_t ** tlvs, const m_enc_key_t enc_key,
+decrypt_data_msg(otrv4_response_t * response, const m_enc_key_t enc_key,
 		 const data_message_t * msg)
 {
+	string_t *dst = &response->to_display;
+	tlv_t **tlvs = &response->tlvs;
+
+#ifdef DEBUG
+	printf("DECRYPTING\n");
+	printf("enc_key = ");
+	otrv4_memdump(enc_key, sizeof(m_enc_key_t));
+	printf("mac_key = ");
+	otrv4_memdump(mac_key, sizeof(m_mac_key_t));
+	printf("nonce = ");
+	otrv4_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
+#endif
+
 	uint8_t *plain = malloc(msg->enc_msg_len);
 	if (!plain)
 		return false;
@@ -696,16 +709,26 @@ static bool receive_tlvs(otrv4_response_t * response, otrv4_t * otr)
 	return true;
 }
 
+static bool
+get_receiving_msg_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
+		       const data_message_t * msg, otrv4_t * otr)
+{
+	if (!key_manager_ensure_on_ratchet(msg->ratchet_id, otr->keys))
+		return false;
+
+	return key_manager_retrieve_receiving_message_keys(enc_key, mac_key,
+							   msg->ratchet_id,
+							   msg->message_id,
+							   otr->keys);
+}
+
 bool
 otrv4_receive_data_message(otrv4_response_t * response, uint8_t * buff,
 			   size_t buflen, otrv4_t * otr)
 {
-	bool ok = false;
-	data_message_t msg[1];
+	data_message_t *msg = data_message_new();
 	m_enc_key_t enc_key;
 	m_mac_key_t mac_key;
-
-	//TODO: Do we need to destroy the data_message from the stack?
 
 	//TODO: warn the user and send an error message with a code.
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
@@ -715,45 +738,31 @@ otrv4_receive_data_message(otrv4_response_t * response, uint8_t * buff,
 		return false;
 
 	key_manager_set_their_keys(msg->our_ecdh, msg->our_dh, otr->keys);
-	if (!key_manager_ensure_on_ratchet(msg->ratchet_id, otr->keys))
-		return false;
 
-	ok = key_manager_retrieve_receiving_message_keys(enc_key, mac_key,
-							 msg->ratchet_id,
-							 msg->message_id,
-							 otr->keys);
+	do {
+		if (!get_receiving_msg_keys(enc_key, mac_key, msg, otr))
+			continue;
 
-	if (!ok)
-		return false;
+		if (!data_message_validate(mac_key, msg))
+			continue;
 
-#ifdef DEBUG
-	printf("DECRYPTING\n");
-	printf("enc_key = ");
-	otrv4_memdump(enc_key, sizeof(m_enc_key_t));
-	printf("mac_key = ");
-	otrv4_memdump(mac_key, sizeof(m_mac_key_t));
-	printf("nonce = ");
-	otrv4_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
-#endif
+		if (!decrypt_data_msg(response, enc_key, msg))
+			continue;
 
-	if (!data_message_validate(mac_key, msg))
-		return false;
+		//TODO: Securely delete receiving chain keys older than message_id-1.
+		//TODO: Add the MKmac key to list mac_keys_to_reveal.
 
-	ok = decrypt_data_msg(&response->to_display, &response->tlvs, enc_key,
-			      msg);
+		if (!receive_tlvs(response, otr))
+			continue;
 
-	if (!ok)
-		return false;
+		key_manager_prepare_to_ratchet(otr->keys);
+		data_message_free(msg);
 
-	//TODO: to_send = depends on the TLVs we proccess
-	//TODO: Securely delete receiving chain keys older than message_id-1.
-	//TODO: Add the MKmac key to list mac_keys_to_reveal.
+		return true;
+	} while (0);
 
-	if (ok)
-		ok = receive_tlvs(response, otr);
-
-	key_manager_prepare_to_ratchet(otr->keys);
-	return true;
+	data_message_free(msg);
+	return false;
 }
 
 static bool

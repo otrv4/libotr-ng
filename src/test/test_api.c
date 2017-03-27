@@ -187,6 +187,8 @@ void test_api_conversation(void)
 	otrv4_assert(response_to_bob->tlvs);
 	g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRV4_TLV_PADDING);
 	g_assert_cmpint(response_to_bob->tlvs->len, ==, 10);
+	otrv4_response_free(response_to_bob);
+	response_to_bob = NULL;
 
 	otrv4_free(alice);
 	otrv4_free(bob);

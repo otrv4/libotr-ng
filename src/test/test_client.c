@@ -149,7 +149,6 @@ void test_client_api()
 
 	// We've deleted the conversation
 	otrv4_assert(!otr4_client_get_conversation(0, BOB_IDENTITY, alice));
-	otrv4_assert(!alice_to_bob->conn);
 	//TODO: Should we keep the conversation and set state to start instead?
 	//g_assert_cmpint(alice_to_bob->conn->state, ==, OTRV4_STATE_START);
 

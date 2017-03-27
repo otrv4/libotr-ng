@@ -108,6 +108,7 @@ tlv_t *otrv4_padding_tlv_new(size_t len)
 	if (!data)
 		return NULL;
 
+	memset(data, 0, len);
 	tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, len, data);
 	free(data);
 

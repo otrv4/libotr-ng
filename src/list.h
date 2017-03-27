@@ -21,12 +21,4 @@ list_element_t *list_get_by_value(const void *wanted, list_element_t * head);
 list_element_t *list_remove_element(const list_element_t * wanted,
 				    list_element_t * head);
 
-#define list_foreach(list, cursor, block) do {\
-  list_element_t *cursor = list; \
-  while (cursor) {\
-    block; \
-    cursor = cursor->next; \
-  } \
-} while (0);
-
 #endif
