@@ -9,6 +9,7 @@ libotr4_la_SOURCES = \
 		     data_message.c \
 		     deserialize.c \
 		     dh.c \
+		     dread.c \
 		     fingerprint.c \
 		     list.c \
 		     mpi.c \

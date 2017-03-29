@@ -238,3 +238,36 @@ void test_dake_dre_auth_deserialize()
 	free(serialized);
 	dh_free();
 }
+
+#include "../dread.h"
+
+void test_dread()
+{
+    if (sodium_init() == -1) {
+        return;
+    }
+
+    dread_cipher_t dst;
+    dread_keypair_t pair1, pair2;
+
+    dread_keypair_generate(pair1);
+    dread_keypair_generate(pair2);
+
+    const char *msg = "hi";
+    const char *data = "session state";
+
+    int err = dread_encrypt(dst, pair1->pub, pair2->pub,
+        (unsigned char*) msg, strlen(msg),
+        (unsigned char*) data, strlen(data));
+    g_assert_cmpint(err, ==, 0);
+
+    unsigned char decripted[2];
+    unsigned long long decripted_len = 0;
+    err = dread_decrypt(decripted, &decripted_len, pair1, pair2->pub, dst, (unsigned char*) data, strlen(data));
+    g_assert_cmpint(err, ==, 0);
+
+    g_assert_cmpint(decripted_len, ==, 2);
+    otrv4_assert_cmpmem(msg, decripted, 2);
+
+    free(dst->cipher);
+}
