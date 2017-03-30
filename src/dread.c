@@ -51,6 +51,13 @@ elgamal_448_encrypt(elgamal_448_cipher_t c, decaf_448_scalar_t y, const decaf_44
     decaf_448_point_add(c->c2, s, m); // c2 = s * m
 }
 
+static void
+elgamal_448_decrypt(decaf_448_point_t m, const elgamal_448_cipher_t c, const decaf_448_scalar_t x)
+{
+    decaf_448_point_scalarmul(m, c->c1, x); // s = c1 ^ x
+    decaf_448_point_sub(m, c->c2, m); // m = c2 - s
+}
+
 int
 dread_keypair_generate(dread_keypair_t dst)
 {
@@ -149,14 +156,15 @@ dread_encrypt(dread_cipher_t dst, const dread_pubkey_t pub1, const dread_pubkey_
     decaf_448_scalar_mul(dst->n2, dst->L, k2);
     decaf_448_scalar_sub(dst->n2, t2, dst->n2);
 
-    //AEAD encryption
-    memcpy(nonce, hash, crypto_aead_chacha20poly1305_IETF_NPUBBYTES); // first 24 bytes
 
     decaf_448_point_encode(point_buff, K);
 
     gcry_md_open(&hd, GCRY_MD_SHA3_256, GCRY_MD_FLAG_SECURE);
     gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
     memcpy(key, gcry_md_read(hd, 0), crypto_aead_chacha20poly1305_IETF_KEYBYTES); // 32 bytes
+    gcry_md_close(hd);
+
+    memcpy(nonce, hash, crypto_aead_chacha20poly1305_IETF_NPUBBYTES); // first 24 bytes
 
     crypto_aead_chacha20poly1305_ietf_encrypt(ciphertext, &ciphertext_len,
         msg, msglen, data, datalen, NULL, nonce, key);
@@ -237,20 +245,20 @@ dread_decrypt(unsigned char *dst, unsigned long long *dstlen, const dread_keypai
     if (DECAF_FALSE == decaf_448_scalar_eq(L, cipher->L))
         return 1;
 
+
     //TODO: How do we know who we are?
-    //It depends if the other side has used us as pub1 or pub2
+    //It depends if the other side has used us as pub1 or pub2.
+    //We could try to decript using both and see which one works.
     decaf_448_point_t K;
-    decaf_448_point_scalarmul(K, cipher->c1->c1, pair1->priv);
-    decaf_448_point_sub(K, cipher->c1->c2, K);
-
-    //AEAD encryption
-    memcpy(nonce, hash, crypto_aead_chacha20poly1305_IETF_NPUBBYTES); // first 24 bytes
-
+    elgamal_448_decrypt(K, cipher->c1, pair1->priv);
     decaf_448_point_encode(point_buff, K);
 
     gcry_md_open(&hd, GCRY_MD_SHA3_256, GCRY_MD_FLAG_SECURE);
     gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
     memcpy(key, gcry_md_read(hd, 0), crypto_aead_chacha20poly1305_IETF_KEYBYTES); // 32 bytes
+    gcry_md_close(hd);
+
+    memcpy(nonce, hash, crypto_aead_chacha20poly1305_IETF_NPUBBYTES); // first 24 bytes
 
     return crypto_aead_chacha20poly1305_ietf_decrypt(dst, dstlen, NULL,
                                             cipher->cipher, cipher->cipherlen,
