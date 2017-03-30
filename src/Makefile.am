@@ -1,6 +1,7 @@
 lib_LTLIBRARIES = libotr4.la
 
 libotr4_la_SOURCES = \
+		     auth.c \
 		     b64.c \
 		     client.c \
 		     cramershoup_interface.c \

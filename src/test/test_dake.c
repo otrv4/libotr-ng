@@ -271,3 +271,22 @@ void test_dread()
 
     free(dst->cipher);
 }
+
+#include "../auth.h"
+
+void test_snizkpk_auth()
+{
+    snizkpk_proof_t dst;
+    snizkpk_keypair_t pair1, pair2, pair3;
+    const char *msg = "hi";
+
+    snizkpk_keypair_generate(pair1);
+    snizkpk_keypair_generate(pair2);
+    snizkpk_keypair_generate(pair3);
+
+    int err = snizkpk_authenticate(dst, pair1, pair2->pub, pair3->pub, (unsigned char*) msg, strlen(msg));
+    g_assert_cmpint(err, ==, 0);
+
+    err = snizkpk_verify(dst, pair1->pub, pair2->pub, pair3->pub, (unsigned char*) msg, strlen(msg));
+    g_assert_cmpint(err, ==, 0);
+}
