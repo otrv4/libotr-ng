@@ -148,7 +148,8 @@ dread_encrypt(dread_cipher_t dst, const dread_pubkey_t pub1, const dread_pubkey_
     gcry_md_close(hd);
 
     //TODO: Do we need anything else to hash from bytes to a scalar?
-    (void) decaf_448_scalar_decode(dst->L, hash);
+    int ok = decaf_448_scalar_decode(dst->L, hash);
+    (void) ok;
 
     decaf_448_scalar_mul(dst->n1, dst->L, k1);
     decaf_448_scalar_sub(dst->n1, t1, dst->n1);
@@ -240,7 +241,8 @@ dread_decrypt(unsigned char *dst, unsigned long long *dstlen, const dread_keypai
 
     //TODO: Do we need anything else to hash from bytes to a scalar?
     decaf_448_scalar_t L;
-    (void) decaf_448_scalar_decode(L, hash);
+    int ok = decaf_448_scalar_decode(L, hash);
+    (void) ok;
 
     if (DECAF_FALSE == decaf_448_scalar_eq(L, cipher->L))
         return 1;
