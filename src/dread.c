@@ -25,7 +25,8 @@ ed448_random_scalar(decaf_448_scalar_t priv)
 
     do {
         random_bytes(rand, DECAF_448_SCALAR_BYTES);
-        (void) decaf_448_scalar_decode(priv, rand);
+        int ok = decaf_448_scalar_decode(priv, rand);
+        (void) ok;
     } while (DECAF_TRUE == decaf_448_scalar_eq(priv, decaf_448_scalar_zero));
 
     memset(rand, 0, DECAF_448_SCALAR_BYTES);
