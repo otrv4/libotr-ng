@@ -8,6 +8,7 @@
 #include "key_management.h"
 #include "fingerprint.h"
 #include "tlv.h"
+#include "keys.h"
 
 #define OTR4_INIT do { \
   dh_init(); \
@@ -64,6 +65,7 @@ struct connection {
 	cs_keypair_s *keypair;
 	otrv4_version_t running_version;
 
+        otrv4_keypair_t *lt_keypair;
 	key_manager_t keys;
 	otrv4_callbacks_t *callbacks;
 };				//otrv4_t
