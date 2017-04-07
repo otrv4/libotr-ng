@@ -41,7 +41,7 @@ tlv_t * generate_smp_msg_1(smp_context_t smp, string_t answer)
 	size_t len = 0;
 	decaf_448_scalar_t a2, a3;
 	decaf_448_point_t G2a, G3a;
-	snizkpk_keypair_t pair_r2, pair_r3;
+	snizkpk_keypair_t pair_r2[1], pair_r3[1];
 	unsigned char hash[64];
 	gcry_md_hd_t hd;
 	snizkpk_privkey_t a3c3, a2c2;

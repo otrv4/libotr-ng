@@ -1,10 +1,15 @@
 #ifndef KEYS_H
 #define KEYS_H
 
-#include <libdecaf/decaf_crypto.h>
+#include "ed448.h"
 
-typedef decaf_448_public_key_t otrv4_public_key_t;
-typedef decaf_448_private_key_s otrv4_keypair_t;
+typedef ec_point_t otrv4_public_key_t;
+typedef ec_scalar_t otrv4_private_key_t;
+
+typedef struct {
+  otrv4_public_key_t pub;
+  otrv4_private_key_t priv;
+} otrv4_keypair_t;
 
 otrv4_keypair_t*
 otrv4_keypair_new(void);

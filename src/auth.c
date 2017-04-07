@@ -24,7 +24,7 @@ generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv)
 }
 
 void
-snizkpk_keypair_generate(snizkpk_keypair_t pair)
+snizkpk_keypair_generate(snizkpk_keypair_t *pair)
 {
     generate_keypair(pair->pub, pair->priv);
 }
@@ -50,7 +50,7 @@ const unsigned char prime_order_bytes_dup[DECAF_448_SCALAR_BYTES] = {
 };
 
 int
-snizkpk_authenticate(snizkpk_proof_t dst, const snizkpk_keypair_t pair1, const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3, const unsigned char *msg, size_t msglen)
+snizkpk_authenticate(snizkpk_proof_t dst, const snizkpk_keypair_t *pair1, const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3, const unsigned char *msg, size_t msglen)
 {
     gcry_md_hd_t hd;
     unsigned char hash[64];

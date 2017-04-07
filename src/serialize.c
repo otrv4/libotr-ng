@@ -73,6 +73,12 @@ int serialize_ec_point(uint8_t * dst, const ec_point_t point)
 	return 56;
 }
 
+int serialize_ec_scalar(uint8_t * dst, const ec_scalar_t scalar)
+{
+	ec_scalar_serialize(dst, 56, scalar);
+	return 56;
+}
+
 int serialize_dh_public_key(uint8_t * dst, const dh_public_key_t pub)
 {
 	//From gcrypt MPI
@@ -98,5 +104,18 @@ int serialize_cs_public_key(uint8_t * dst, const cs_public_key_t * pub)
 	cursor += serialize_ec_point(cursor, pub->d);
 	cursor += serialize_ec_point(cursor, pub->h);
 
+	return cursor - dst;
+}
+
+int serialize_snizkpk_proof(uint8_t *dst, const snizkpk_proof_t proof)
+{
+  	uint8_t *cursor = dst;
+	cursor += serialize_ec_scalar(cursor, proof->c1);
+	cursor += serialize_ec_scalar(cursor, proof->r1);
+	cursor += serialize_ec_scalar(cursor, proof->c2);
+	cursor += serialize_ec_scalar(cursor, proof->r2);
+	cursor += serialize_ec_scalar(cursor, proof->c3);
+	cursor += serialize_ec_scalar(cursor, proof->r3);
+ 
 	return cursor - dst;
 }

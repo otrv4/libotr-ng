@@ -76,7 +76,7 @@ dake_identity_message_aprint(uint8_t ** dst, size_t * nbytes,
 
 	uint8_t *target = *dst;
 	target += serialize_uint16(target, OTR_VERSION);
-	target += serialize_uint8(target, OTR_PRE_KEY_MSG_TYPE);
+	target += serialize_uint8(target, OTR_IDENTITY_MSG_TYPE);
 	target +=
 	    serialize_uint32(target, identity_message->sender_instance_tag);
 	target +=
@@ -117,7 +117,7 @@ dake_identity_message_deserialize(dake_identity_message_t * dst,
 	cursor += read;
 	len -= read;
 
-	if (message_type != OTR_PRE_KEY_MSG_TYPE) {
+	if (message_type != OTR_IDENTITY_MSG_TYPE) {
 		return false;
 	}
 
@@ -399,7 +399,7 @@ dake_dre_auth_generate_sigma_message(uint8_t ** dst, size_t * dst_len,
 				  their_profile_len);
 	cursor +=
 	    serialize_bytes_array(cursor, our_profile_buff, our_profile_len);
-	cursor += serialize_ec_public_key(cursor, their_ecdh);
+ 	cursor += serialize_ec_public_key(cursor, their_ecdh);
 	cursor += serialize_dh_public_key(cursor, their_dh);
 	cursor +=
 	    serialize_bytes_array(cursor, dre_auth->gamma,
@@ -822,3 +822,197 @@ dake_dre_auth_validate(ec_public_key_t their_ecdh,
 
 	return valid;
 }
+
+
+bool
+dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
+		   const dake_auth_r_t * dre_auth)
+{
+	size_t our_profile_len = 0;
+	uint8_t *our_profile = NULL;
+
+	if (!user_profile_aprint
+	    (&our_profile, &our_profile_len, dre_auth->profile)) {
+		return false;
+	}
+
+	size_t s = AUTH_R_MIN_BYTES + our_profile_len;
+	*dst = malloc(s);
+	if (!*dst) {
+		free(our_profile);
+		return false;
+	}
+
+	if (nbytes) {
+		*nbytes = s;
+	}
+
+	uint8_t *cursor = *dst;
+	cursor += serialize_uint16(cursor, OTR_VERSION);
+	cursor += serialize_uint8(cursor, OTR_AUTH_R_MSG_TYPE);
+	cursor += serialize_uint32(cursor, dre_auth->sender_instance_tag);
+	cursor += serialize_uint32(cursor, dre_auth->receiver_instance_tag);
+	cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
+ 	cursor += serialize_ec_public_key(cursor, dre_auth->X);
+	cursor += serialize_dh_public_key(cursor, dre_auth->A);
+	cursor += serialize_snizkpk_proof(cursor, dre_auth->sigma);
+
+	free(our_profile);
+	return true;
+}
+
+bool
+dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer,
+			  size_t buflen)
+{
+	const uint8_t *cursor = buffer;
+	int64_t len = buflen;
+	size_t read = 0;
+
+	uint16_t protocol_version = 0;
+	if (!deserialize_uint16(&protocol_version, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	if (protocol_version != OTR_VERSION) {
+		return false;
+	}
+
+	uint8_t message_type = 0;
+	if (!deserialize_uint8(&message_type, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	if (message_type != OTR_AUTH_R_MSG_TYPE) {
+		return false;
+	}
+
+	if (!deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_uint32
+	    (&dst->receiver_instance_tag, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	if (!user_profile_deserialize(dst->profile, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	//TODO: deserialize A and X
+	//TODO: deserialize sigma
+
+	if (!deserialize_ec_public_key(dst->X, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+ 	otr_mpi_t tmp_mpi;	// no need to free, because nothing is copied now
+	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	if (!dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	return deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
+}
+
+bool
+dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,
+		   const dake_auth_i_t * dre_auth)
+{
+  size_t s = DAKE_HEADER_BYTES + SNIZKPK_BYTES;
+	*dst = malloc(s);
+	if (!*dst) {
+		return false;
+	}
+
+	if (nbytes) {
+		*nbytes = s;
+	}
+
+	uint8_t *cursor = *dst;
+	cursor += serialize_uint16(cursor, OTR_VERSION);
+	cursor += serialize_uint8(cursor, OTR_AUTH_I_MSG_TYPE);
+	cursor += serialize_uint32(cursor, dre_auth->sender_instance_tag);
+	cursor += serialize_uint32(cursor, dre_auth->receiver_instance_tag);
+	cursor += serialize_snizkpk_proof(cursor, dre_auth->sigma);
+
+	return true;
+}
+
+bool
+dake_auth_i_deserialize(dake_auth_i_t * dst, uint8_t * buffer,
+			size_t buflen)
+{
+	const uint8_t *cursor = buffer;
+	int64_t len = buflen;
+	size_t read = 0;
+
+	uint16_t protocol_version = 0;
+	if (!deserialize_uint16(&protocol_version, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	if (protocol_version != OTR_VERSION) {
+		return false;
+	}
+
+	uint8_t message_type = 0;
+	if (!deserialize_uint8(&message_type, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	if (message_type != OTR_AUTH_I_MSG_TYPE) {
+		return false;
+	}
+
+	if (!deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
+		return false;
+	}
+
+	cursor += read;
+	len -= read;
+
+	return deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
+}
+

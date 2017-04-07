@@ -6,13 +6,15 @@
 #include "mpi.h"
 #include "cramershoup_interface.h"
 #include "str.h"
+#include "keys.h"
 
 typedef struct {
-	cs_public_key_t pub_key[1];
-	string_t versions;
-	uint64_t expires;
-	ec_signature_t signature;
-	otr_mpi_t transitional_signature;
+  cs_public_key_t pub_key[1];
+  otrv4_public_key_t lt_pub_key;
+  string_t versions;
+  uint64_t expires;
+  ec_signature_t signature;
+  otr_mpi_t transitional_signature;
 } user_profile_t;
 
 user_profile_t *user_profile_new(const string_t versions);

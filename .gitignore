@@ -2,6 +2,9 @@
 *.la
 *.lo
 TAGS
+tags
+src/tags
+src/test/tags
 
 #gcov
 *.gcno

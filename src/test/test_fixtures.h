@@ -60,7 +60,7 @@ identity_message_fixture_teardown(identity_message_fixture_t * fixture,
 	fixture->profile = NULL;
 }
 
-	void
+void
 do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 {
 	otrv4_response_t *response_to_bob = otrv4_response_new();
@@ -73,73 +73,92 @@ do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 
 	//Bob receives query message
 	otrv4_assert(otrv4_receive_message
-			(response_to_alice, query_message, 6, bob));
+		     (response_to_alice, query_message, 6, bob));
 	free(query_message);
+	query_message = NULL;
 
-	//Should reply with a pre-key
-	otrv4_assert(bob->state == OTRV4_STATE_AKE_IN_PROGRESS);
+	//Should reply with a identity message
+	otrv4_assert(bob->state == OTRV4_STATE_WAITING_AUTH_R);
 	otrv4_assert(response_to_alice->to_display == NULL);
 	otrv4_assert(response_to_alice->to_send);
-	otrv4_assert_cmpmem("?OTR:AAQP", response_to_alice->to_send, 9);
+	otrv4_assert_cmpmem("?OTR:AAQI", response_to_alice->to_send, 9);
 
-	//Alice receives pre-key
+	//Alice receives identity message
 	otrv4_assert(otrv4_receive_message
-			(response_to_bob, response_to_alice->to_send,
-			 strlen(response_to_alice->to_send), alice));
+		     (response_to_bob, response_to_alice->to_send,
+		      strlen(response_to_alice->to_send), alice));
 	free(response_to_alice->to_send);
+	response_to_alice->to_send = NULL;
 
 	//Alice has Bob's ephemeral keys
+	otrv4_assert(alice->state == OTRV4_STATE_WAITING_AUTH_I);
 	otrv4_assert_ec_public_key_eq(alice->keys->their_ecdh,
-			bob->keys->our_ecdh->pub);
+				      bob->keys->our_ecdh->pub);
 	otrv4_assert_dh_public_key_eq(alice->keys->their_dh,
-			bob->keys->our_dh->pub);
+				      bob->keys->our_dh->pub);
 	g_assert_cmpint(alice->keys->i, ==, 0);
 	g_assert_cmpint(alice->keys->j, ==, 0);
 
-	//Should reply with a dre-auth
+	//Should reply with an auth receiver
 	otrv4_assert(response_to_bob->to_display == NULL);
 	otrv4_assert(response_to_bob->to_send);
-	otrv4_assert_cmpmem("?OTR:AAQA", response_to_bob->to_send, 9);
+	otrv4_assert_cmpmem("?OTR:AASR", response_to_bob->to_send, 9);
 
-	//Check double ratchet is initialized
-	otrv4_assert(alice->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
-	otrv4_assert(alice->keys->current);
-
-	//Bob receives DRE-auth
+	//Bob receives an auth receiver
 	otrv4_assert(otrv4_receive_message
-			(response_to_alice, response_to_bob->to_send,
-			 strlen(response_to_bob->to_send), bob));
+		     (response_to_alice, response_to_bob->to_send,
+		      strlen(response_to_bob->to_send), bob));
 	free(response_to_bob->to_send);
 	response_to_bob->to_send = NULL;
 
 	//Bob has Alice's ephemeral keys
 	otrv4_assert_ec_public_key_eq(bob->keys->their_ecdh,
-			alice->keys->our_ecdh->pub);
+				      alice->keys->our_ecdh->pub);
 	otrv4_assert_dh_public_key_eq(bob->keys->their_dh,
-			alice->keys->our_dh->pub);
+				      alice->keys->our_dh->pub);
 	g_assert_cmpint(bob->keys->i, ==, 0);
-	g_assert_cmpint(bob->keys->j, ==, 1);
+	g_assert_cmpint(bob->keys->j, ==, 0);
 
-	//There is no reply
+	//Bob should replay with an auth initiator
 	otrv4_assert(response_to_alice->to_display == NULL);
-	otrv4_assert(response_to_alice->to_send == NULL);
+	otrv4_assert(response_to_alice->to_send);
+	otrv4_assert_cmpmem("?OTR:AASI", response_to_alice->to_send, 9);
 
 	//Check double ratchet is initialized
 	otrv4_assert(bob->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
 	otrv4_assert(bob->keys->current);
 
-	//Both have the same shared secret
+	//Alice receives an auth initiator
+	otrv4_assert(otrv4_receive_message
+		     (response_to_bob, response_to_alice->to_send,
+		      strlen(response_to_alice->to_send), alice));
+	free(response_to_alice->to_send);
+	response_to_alice->to_send = NULL;
+
+	//Alice should not reply
+	otrv4_assert(response_to_bob->to_display == NULL);
+	otrv4_assert(response_to_bob->to_send == NULL);
+
+	//Check double ratchet is initialized
+	otrv4_assert(alice->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+	otrv4_assert(alice->keys->current);
+
+	//Alice ratchets
+	g_assert_cmpint(alice->keys->i, ==, 0);
+	g_assert_cmpint(alice->keys->j, ==, 1);
+
+	//Both have the same shared secret 
 	otrv4_assert_root_key_eq(alice->keys->current->root_key,
-			bob->keys->current->root_key);
+				 bob->keys->current->root_key);
 	otrv4_assert_chain_key_eq(alice->keys->current->chain_a->key,
-			bob->keys->current->chain_a->key);
+				  bob->keys->current->chain_a->key);
 	otrv4_assert_chain_key_eq(bob->keys->current->chain_b->key,
-			alice->keys->current->chain_b->key);
+				  alice->keys->current->chain_b->key);
 
 	chain_key_t bob_sending_key, alice_receiving_key;
 	key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
 	key_manager_get_receiving_chain_key_by_id(alice_receiving_key, 0, 0,
-			alice->keys);
+						  alice->keys);
 	otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
 	otrv4_response_free(response_to_alice);

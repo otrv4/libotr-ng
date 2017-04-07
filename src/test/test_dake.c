@@ -116,9 +116,98 @@ void test_dake_generate_gamma_phi_sigma()
 	dh_free();
 }
 
+void test_dake_auth_r_serialize()
+{
+        uint8_t *cursor = NULL;
+	bool ok = false;
+
+	dh_init();
+
+	cs_keypair_t our_cramershoup;
+	cs_keypair_generate(our_cramershoup);
+
+	ec_keypair_t our_ecdh;
+	ec_keypair_generate(our_ecdh);
+
+	dh_keypair_t our_dh;
+	dh_keypair_generate(our_dh);
+
+	user_profile_t *our_profile = user_profile_new("4");
+	our_profile->expires = time(NULL) + 60 * 60;
+	user_profile_sign(our_profile, our_cramershoup);
+
+	//Generate DRE-AUTH to be serialized
+	dake_dre_auth_t *dre_auth = dake_dre_auth_new(our_profile);
+	user_profile_free(our_profile);
+	dre_auth->sender_instance_tag = 1;
+	dre_auth->receiver_instance_tag = 2;
+
+	memset(dre_auth->nonce, 0xA, NONCE_BYTES);
+	memset(dre_auth->gamma, 0xB, sizeof(dr_cs_encrypted_symmetric_key_t));
+	memset(dre_auth->sigma, 0xC, sizeof(rs_auth_t));
+
+	uint8_t expected_phi[] = { 0, 0, 0, 5, 1, 2, 3, 4, 5 };
+	dre_auth->phi = malloc(5);
+	dre_auth->phi_len = 5;
+	memcpy(dre_auth->phi, expected_phi + 4, 5);
+
+	uint8_t *serialized = NULL;
+	size_t serialized_len = 0;
+	ok = dake_dre_auth_aprint(&serialized, &serialized_len, dre_auth);
+	otrv4_assert(ok);
+
+	size_t user_profile_len = 0;
+	uint8_t *user_profile_serialized = NULL;
+	ok = user_profile_aprint(&user_profile_serialized, &user_profile_len,
+				 dre_auth->profile);
+	otrv4_assert(ok);
+
+	size_t expected_len =
+	    DRE_AUTH_MIN_BYTES + user_profile_len + dre_auth->phi_len + 4;
+	g_assert_cmpint(expected_len, ==, serialized_len);
+
+	uint8_t expected_header[] = {
+		0x0, 0x04,	// protocol version
+		0x0,		// message type
+		0x0, 0x0, 0x0, 0x01,	// sender instance tag
+		0x0, 0x0, 0x0, 0x02,	// receiver instance tag
+	};
+
+	//assert header
+	cursor = serialized;
+	otrv4_assert_cmpmem(expected_header, cursor, sizeof(expected_header));
+	cursor += sizeof(expected_header);
+
+	//assert user profile
+	otrv4_assert_cmpmem(user_profile_serialized, cursor, user_profile_len);
+	free(user_profile_serialized);
+	cursor += user_profile_len;
+
+	//assert gamma
+	otrv4_assert_cmpmem(dre_auth->gamma, cursor,
+			    sizeof(dr_cs_encrypted_symmetric_key_t));
+	cursor += sizeof(dr_cs_encrypted_symmetric_key_t);
+
+	//assert sigma
+	otrv4_assert_cmpmem(dre_auth->sigma, cursor, sizeof(rs_auth_t));
+	cursor += sizeof(rs_auth_t);
+
+	//assert nonce
+	otrv4_assert_cmpmem(dre_auth->nonce, cursor, NONCE_BYTES);
+	cursor += NONCE_BYTES;
+
+	//assert phi
+	otrv4_assert_cmpmem(expected_phi, cursor, dre_auth->phi_len);
+
+	dake_dre_auth_free(dre_auth);
+	dh_keypair_destroy(our_dh);
+	free(serialized);
+	dh_free();
+}
+
 void test_dake_dre_auth_serialize()
 {
-	uint8_t *cursor = NULL;
+        uint8_t *cursor = NULL;
 	bool ok = false;
 
 	dh_init();
@@ -277,13 +366,29 @@ void test_dread()
 void test_snizkpk_auth()
 {
     snizkpk_proof_t dst;
-    snizkpk_keypair_t pair1, pair2, pair3;
+    snizkpk_keypair_t pair1[1], pair2[1], pair3[1];
     const char *msg = "hi";
 
     snizkpk_keypair_generate(pair1);
     snizkpk_keypair_generate(pair2);
     snizkpk_keypair_generate(pair3);
 
+    uint8_t ser[DECAF_448_SER_BYTES];
+    ec_point_serialize(ser, DECAF_448_SER_BYTES, pair1->pub);
+    int i;
+    for (i = 0; i < DECAF_448_SER_BYTES; i++) {
+      printf("0x%02x,", ser[i]);
+    }
+
+    printf("\n");
+
+    decaf_448_scalar_encode(ser, pair1->priv);
+    for (i = 0; i < DECAF_448_SER_BYTES; i++) {
+      printf("0x%02x,", ser[i]);
+    }
+
+    printf("\n");
+    
     int err = snizkpk_authenticate(dst, pair1, pair2->pub, pair3->pub, (unsigned char*) msg, strlen(msg));
     g_assert_cmpint(err, ==, 0);
 

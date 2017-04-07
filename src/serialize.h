@@ -1,9 +1,13 @@
+#ifndef SERIALIZE_H
+#define SERIALIZE_H
+
 #include <stdint.h>
 
 #include "dh.h"
 #include "ed448.h"
 #include "cramershoup_interface.h"
 #include "mpi.h"
+#include "auth.h"
 
 #define CRAMER_SHOUP_PUBKEY_BYTES 170
 
@@ -28,3 +32,7 @@ int serialize_ec_point(uint8_t * dst, const ec_point_t point);
 int serialize_dh_public_key(uint8_t * dst, const dh_public_key_t pub);
 
 int serialize_cs_public_key(uint8_t * dst, const cs_public_key_t * pub);
+
+int serialize_snizkpk_proof(uint8_t *dst, const snizkpk_proof_t proof);
+
+#endif

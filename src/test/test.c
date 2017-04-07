@@ -118,6 +118,8 @@ int main(int argc, char **argv)
 		   otrv4_fixture_teardown);
 	g_test_add_func("/otrv4/destroy", test_otrv4_destroy);
 
+	g_test_add_func("/api/conversation", test_api_conversation);
+
 	g_test_add_func("/client/conversation_api",
 			test_client_conversation_api);
 	g_test_add_func("/client/api", test_client_api);
@@ -125,8 +127,6 @@ int main(int argc, char **argv)
 			test_client_get_our_fingerprint);
 	g_test_add_func("/client/fingerprint_to_human",
 			test_fingerprint_hash_to_human);
-
-	g_test_add_func("/api/conversation", test_api_conversation);
 
 	return g_test_run();
 }

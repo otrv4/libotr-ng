@@ -9,8 +9,8 @@ void test_smp_state_machine(void)
 	cs_keypair_generate(cs_alice);
 	cs_keypair_generate(cs_bob);
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
-	otrv4_t *alice_otr = otrv4_new(cs_alice, policy);
-	otrv4_t *bob_otr = otrv4_new(cs_bob, policy);
+	otrv4_t *alice_otr = otrv4_new_with_lt_key(otrv4_keypair_new(), cs_alice, policy);
+	otrv4_t *bob_otr = otrv4_new_with_lt_key(otrv4_keypair_new(), cs_bob, policy);
 
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
 

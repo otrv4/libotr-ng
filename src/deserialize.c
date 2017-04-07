@@ -237,3 +237,59 @@ decode_b64_ec_point(ec_point_t s, const char *buff, size_t len)
         free(dec);
 	return ok;
 }
+
+static bool
+deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *serialized, size_t ser_len)
+{
+    if (ser_len < DECAF_448_SCALAR_BYTES)
+       return false;
+
+    return ec_scalar_deserialize(scalar, serialized);
+}
+
+bool
+deserialize_snizkpk_proof(snizkpk_proof_t proof, const uint8_t * serialized,
+			  size_t ser_len, size_t * read)
+{
+  if (ser_len < SNIZKPK_BYTES)
+    return false;
+
+  const uint8_t *cursor = serialized;
+  if (!deserialize_ec_scalar(proof->c1, cursor, ser_len))
+    return false;
+
+  cursor += DECAF_448_SER_BYTES;
+  ser_len -= DECAF_448_SER_BYTES;
+  
+  if (!deserialize_ec_scalar(proof->r1, cursor, ser_len))
+    return false;
+
+  cursor += DECAF_448_SER_BYTES;
+  ser_len -= DECAF_448_SER_BYTES;
+  
+  if (!deserialize_ec_scalar(proof->c2, cursor, ser_len))
+    return false;
+
+  cursor += DECAF_448_SER_BYTES;
+  ser_len -= DECAF_448_SER_BYTES;
+  
+  if (!deserialize_ec_scalar(proof->r2, cursor, ser_len))
+    return false;
+
+  cursor += DECAF_448_SER_BYTES;
+  ser_len -= DECAF_448_SER_BYTES;
+  
+  if (!deserialize_ec_scalar(proof->c3, cursor, ser_len))
+    return false;
+
+  cursor += DECAF_448_SER_BYTES;
+  ser_len -= DECAF_448_SER_BYTES;
+ 
+  if (!deserialize_ec_scalar(proof->r3, cursor, ser_len))
+    return false;
+
+  if (read)
+    *read = SNIZKPK_BYTES;
+
+  return true;
+}

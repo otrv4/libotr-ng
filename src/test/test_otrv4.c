@@ -109,7 +109,7 @@ test_otrv4_receives_plaintext_with_ws_tag(otrv4_fixture_t * otrv4_fixture,
 			"And some random invitation text.");
 	otrv4_assert(response->to_send);
 	g_assert_cmpint(otrv4_fixture->otr->state, ==,
-			OTRV4_STATE_AKE_IN_PROGRESS);
+			OTRV4_STATE_WAITING_AUTH_R);
 	g_assert_cmpint(otrv4_fixture->otr->running_version, ==,
 			OTRV4_VERSION_4);
 
@@ -146,7 +146,7 @@ test_otrv4_receives_query_message(otrv4_fixture_t * otrv4_fixture,
 
 	otrv4_assert(response->to_send);
 	g_assert_cmpint(otrv4_fixture->otr->state, ==,
-			OTRV4_STATE_AKE_IN_PROGRESS);
+			OTRV4_STATE_WAITING_AUTH_R);
 	g_assert_cmpint(otrv4_fixture->otr->running_version, ==,
 			OTRV4_VERSION_4);
 

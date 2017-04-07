@@ -25,6 +25,8 @@ typedef enum {
 	OTRV4_STATE_START = 1,
 	OTRV4_STATE_AKE_IN_PROGRESS = 2,
 	OTRV4_STATE_ENCRYPTED_MESSAGES = 3,
+	OTRV4_STATE_WAITING_AUTH_I = 5,
+	OTRV4_STATE_WAITING_AUTH_R = 6,
 	OTRV4_STATE_FINISHED = 4
 } otrv4_state;
 
@@ -65,7 +67,7 @@ struct connection {
 	user_profile_t *profile;
 	user_profile_t *their_profile;
 
-	cs_keypair_s *keypair;
+        cs_keypair_s *keypair;
 	otrv4_version_t running_version;
 
         otrv4_keypair_t *lt_keypair;

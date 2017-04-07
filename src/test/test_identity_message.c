@@ -1,5 +1,6 @@
 #include "../dake.h"
 #include "../str.h"
+#include "../constants.h"
 
 #define PREKEY_BEFORE_PROFILE_BYTES 2+1+4+4
 
@@ -39,7 +40,7 @@ test_dake_identity_message_serializes(identity_message_fixture_t * f,
 
 	char expected[] = {
 		0x0, 0x04,	// version
-		0x0f,		//message type
+		OTR_IDENTITY_MSG_TYPE,		//message type
 		0x0, 0x0, 0x0, 0x1,	// sender instance tag
 		0x0, 0x0, 0x0, 0x0,	// receiver instance tag
 	};

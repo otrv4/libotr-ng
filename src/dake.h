@@ -1,3 +1,6 @@
+#ifndef DAKE_H
+#define DAKE_H
+
 #include <stdbool.h>
 #include <sodium.h>
 
@@ -5,6 +8,7 @@
 #include "ed448.h"
 #include "user_profile.h"
 #include "cramershoup_interface.h"
+#include "auth.h"
 
 #define NONCE_BYTES crypto_secretbox_NONCEBYTES
 #define AUTH_BYTES (6*DECAF_448_SCALAR_BYTES)
@@ -21,8 +25,7 @@
                            + AUTH_BYTES \
                            + NONCE_BYTES
 
-#ifndef DAKE_H
-#define DAKE_H
+#define AUTH_R_MIN_BYTES DAKE_HEADER_BYTES + DECAF_448_SER_BYTES + DH3072_MOD_LEN_BYTES+4 + SNIZKPK_BYTES
 
 typedef struct {
 	uint32_t sender_instance_tag;
@@ -42,8 +45,24 @@ typedef struct {
 	uint8_t nonce[NONCE_BYTES];
 	uint8_t *phi;
 	size_t phi_len;
-
 } dake_dre_auth_t;
+
+typedef struct {
+	uint32_t sender_instance_tag;
+	uint32_t receiver_instance_tag;
+
+        user_profile_t profile[1];
+	ec_public_key_t X;
+	dh_public_key_t A;
+	snizkpk_proof_t sigma;
+} dake_auth_r_t;
+
+typedef struct {
+	uint32_t sender_instance_tag;
+	uint32_t receiver_instance_tag;
+
+	snizkpk_proof_t sigma;
+} dake_auth_i_t;
 
 typedef struct {
 	user_profile_t receiver_profile[1];
@@ -106,5 +125,20 @@ dake_dre_auth_validate(ec_public_key_t their_ecdh,
 		       const ec_public_key_t our_ecdh_pub,
 		       const dh_mpi_t our_dh_pub,
 		       const dake_dre_auth_t * dre_auth);
+
+bool
+dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
+		   const dake_auth_r_t * dre_auth);
+bool
+dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer,
+			size_t buflen);
+
+bool
+dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,
+		   const dake_auth_i_t * dre_auth);
+bool
+dake_auth_i_deserialize(dake_auth_i_t * dst, uint8_t * buffer,
+			size_t buflen);
+
 
 #endif

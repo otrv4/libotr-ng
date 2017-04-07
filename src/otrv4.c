@@ -8,6 +8,7 @@
 #include "otrv3.h"
 #include "str.h"
 #include "b64.h"
+#include "serialize.h"
 #include "deserialize.h"
 #include "sha3.h"
 #include "data_message.h"
@@ -118,6 +119,7 @@ otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy)
 	otr->keypair = keypair;
 	otr->running_version = OTRV4_VERSION_NONE;
 	otr->profile = get_my_user_profile(otr);
+	otr->their_profile = NULL;
 	key_manager_init(otr->keys);
 	//TODO: moves initialization to smp
 	otr->smp->state = SMPSTATE_EXPECT1;
@@ -130,6 +132,7 @@ void otrv4_destroy( /*@only@ */ otrv4_t * otr)
 	otr->keypair = NULL;
 	key_manager_destroy(otr->keys);
 	user_profile_free(otr->profile);
+	user_profile_free(otr->their_profile);
 	otr->profile = NULL;
 	otr->callbacks = NULL;
 	smp_destroy(otr->smp);
@@ -373,7 +376,7 @@ reply_with_identity_msg(otrv4_response_t * response, const otrv4_t * otr)
 static bool start_dake(otrv4_response_t * response, otrv4_t * otr)
 {
 	key_manager_generate_ephemeral_keys(otr->keys);
-	otr->state = OTRV4_STATE_AKE_IN_PROGRESS;
+	otr->state = OTRV4_STATE_WAITING_AUTH_R;
 
 	return reply_with_identity_msg(response, otr);
 }
@@ -456,39 +459,6 @@ extract_header(otrv4_header_t * dst, const uint8_t * buffer,
 	return true;
 }
 
-static dake_dre_auth_t *generate_dre_auth(const user_profile_t * their,
-					  const otrv4_t * otr)
-{
-	bool ok = false;
-	dake_dre_auth_t *dre_auth = dake_dre_auth_new(otr->profile);
-
-	ok = dake_dre_auth_generate_gamma_phi_sigma(otr->keypair, OUR_ECDH(otr),
-						    OUR_DH(otr), their,
-						    THEIR_ECDH(otr),
-						    THEIR_DH(otr), dre_auth);
-
-	if (!ok) {
-		dake_dre_auth_free(dre_auth);
-		dre_auth = NULL;
-	}
-
-	return dre_auth;
-}
-
-static bool
-serialize_and_encode_dre_auth(string_t * dst, const dake_dre_auth_t * dre_auth)
-{
-	uint8_t *buff = NULL;
-	size_t len = 0;
-
-	if (!dake_dre_auth_aprint(&buff, &len, dre_auth))
-		return false;
-
-	*dst = otrl_base64_otr_encode(buff, len);
-	free(buff);
-	return true;
-}
-
 static bool double_ratcheting_init(int j, otrv4_t * otr)
 {
 	if (!key_manager_ratchetting_init(j, otr->keys))
@@ -501,19 +471,123 @@ static bool double_ratcheting_init(int j, otrv4_t * otr)
 }
 
 static bool
-reply_with_dre_auth_msg(string_t * dst, const user_profile_t * their,
+build_auth_message(
+		   uint8_t ** msg, size_t *msg_len,
+		   const uint8_t type,
+		   const user_profile_t *i_profile,
+		   const user_profile_t *r_profile,
+		   const ec_public_key_t i_ecdh,
+		   const ec_public_key_t r_ecdh,
+		   const dh_mpi_t i_dh,
+		   const dh_mpi_t r_dh)
+{
+  uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
+  size_t ser_i_profile_len, ser_r_profile_len = 0;
+  uint8_t ser_i_ecdh[DECAF_448_SER_BYTES], ser_r_ecdh[DECAF_448_SER_BYTES];
+  serialize_ec_public_key(ser_i_ecdh, i_ecdh);
+  serialize_ec_public_key(ser_r_ecdh, r_ecdh);
+  
+  uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
+  size_t ser_i_dh_len, ser_r_dh_len = 0;
+ 
+  ser_i_dh_len = serialize_dh_public_key(ser_i_dh, i_dh);
+  ser_r_dh_len = serialize_dh_public_key(ser_r_dh, r_dh);
+
+  bool ok = false;
+  
+  do {
+    if(!user_profile_aprint(&ser_i_profile, &ser_i_profile_len, i_profile))
+       continue;
+    
+    if(!user_profile_aprint(&ser_r_profile, &ser_r_profile_len, r_profile))
+      continue;
+
+    size_t len = 1
+      + 2 * DECAF_448_SER_BYTES
+    + ser_i_profile_len + ser_r_profile_len
+    + ser_i_dh_len + ser_r_dh_len;
+
+    uint8_t *buff = malloc(len);
+    if (!buff)
+      continue;
+
+    uint8_t *cursor = buff;
+    *cursor = type;
+    cursor += 1,
+
+    memcpy(cursor, ser_i_profile, ser_i_profile_len);
+    cursor += ser_i_profile_len;
+
+    memcpy(cursor, ser_r_profile, ser_r_profile_len);
+    cursor += ser_r_profile_len;
+
+    memcpy(cursor, ser_i_ecdh, DECAF_448_SER_BYTES);
+    cursor += DECAF_448_SER_BYTES;
+
+    memcpy(cursor, ser_r_ecdh, DECAF_448_SER_BYTES);
+    cursor += DECAF_448_SER_BYTES;
+
+    memcpy(cursor, ser_i_dh, ser_i_dh_len);
+    cursor += ser_i_dh_len;
+
+    memcpy(cursor, ser_r_dh, ser_r_dh_len);
+    cursor += ser_r_dh_len;
+
+    *msg = buff;
+    *msg_len = len;
+    ok = true;
+  } while(0);
+
+  free(ser_i_profile);
+  free(ser_r_profile);
+
+  //Destroy serialized ephemeral public keys from memory
+  
+  return ok;
+}
+
+static bool
+serialize_and_encode_auth_r(string_t * dst,
+			    const dake_auth_r_t * m)
+{
+	uint8_t *buff = NULL;
+	size_t len = 0;
+
+	if(!dake_auth_r_aprint(&buff, &len, m))
+	  return false;
+	
+	*dst = otrl_base64_otr_encode(buff, len);
+	free(buff);
+	return true;
+}
+
+static bool
+reply_with_auth_r_msg(string_t * dst, const user_profile_t * their,
 			const otrv4_t * otr)
 {
-	bool ok = false;
-	dake_dre_auth_t *m = generate_dre_auth(their, otr);
+  dake_auth_r_t *msg = malloc(sizeof(dake_auth_r_t));
+  if (!msg)
+    return false;
 
-	if (!m)
-		return false;
+  user_profile_copy(msg->profile, their);
 
-	ok = serialize_and_encode_dre_auth(dst, m);
-	dake_dre_auth_free(m);
+  ec_public_key_copy(msg->X, OUR_ECDH(otr));
+  msg->A = dh_mpi_copy(OUR_DH(otr));
+  
+  user_profile_t *our = get_my_user_profile(otr);
+  
+  unsigned char *t = NULL;
+  size_t t_len = 0;
+  if (!build_auth_message(&t, &t_len, 0, their, our, THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
+    return false;
 
-	return ok;
+  ec_point_t their_ecdh;
+  ec_point_deserialize(their_ecdh, THEIR_ECDH(otr));
+  
+  if(snizkpk_authenticate(msg->sigma, otr->lt_keypair, their->lt_pub_key, their_ecdh, t, t_len))
+    return false;
+
+   return serialize_and_encode_auth_r(dst, msg);
 }
 
 static bool
@@ -524,16 +598,21 @@ receive_identity_message_on_state_start(string_t * dst,
 	if (!dake_identity_message_validate(identity_message))
 		return false;
 
+        otr->their_profile = malloc(sizeof(user_profile_t));
+	if (!otr->their_profile)
+	  return false;
+	
 	key_manager_set_their_ecdh(identity_message->Y, otr->keys);
 	key_manager_set_their_dh(identity_message->B, otr->keys);
-
+	user_profile_copy(otr->their_profile, identity_message->profile);
+	
 	key_manager_generate_ephemeral_keys(otr->keys);
-	if (!reply_with_dre_auth_msg(dst, identity_message->profile, otr))
-		return false;
 
-	otr->their_profile = identity_message->profile;
+	if (!reply_with_auth_r_msg(dst, identity_message->profile, otr))
+	  return false;
 
-	return double_ratcheting_init(0, otr);
+	otr->state = OTRV4_STATE_WAITING_AUTH_I;
+	return true;
 }
 
 static void forget_our_keys(otrv4_t * otr)
@@ -582,23 +661,27 @@ receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
 {
 	bool ok = false;
 	dake_identity_message_t m[1];
-	otrv4_fingerprint_t fp;
+	//otrv4_fingerprint_t fp;
 
 	if (otr->state != OTRV4_STATE_START
-	    && otr->state != OTRV4_STATE_AKE_IN_PROGRESS)
+	    && otr->state != OTRV4_STATE_WAITING_AUTH_R
+	    && otr->state != OTRV4_STATE_WAITING_AUTH_I)
 		return true;	// ignore
 
 	if (!dake_identity_message_deserialize(m, buff, buflen))
 		return false;
 
+	//TODO: turn into a switch
 	if (otr->state == OTRV4_STATE_START)
 		ok = receive_identity_message_on_state_start(dst, m, otr);
-
-	if (otr->state == OTRV4_STATE_AKE_IN_PROGRESS)
+	else if (otr->state == OTRV4_STATE_WAITING_AUTH_R)
 		ok = receive_identity_message_while_in_progress(dst, m, otr);
+	else if (otr->state == OTRV4_STATE_WAITING_AUTH_I)
+	        ok = false; //TODO
 
-	if (ok && !otr4_serialize_fingerprint(fp, m->profile->pub_key))
-		fingerprint_seen_cb(fp, otr);
+	//TODO: this should happen when the AKE finishes
+	//if (ok && !otr4_serialize_fingerprint(fp, m->profile->pub_key))
+	//	fingerprint_seen_cb(fp, otr);
 
 	dake_identity_message_destroy(m);
 
@@ -626,6 +709,110 @@ process_incoming_dre_auth(const dake_dre_auth_t * dre_auth, otrv4_t * otr)
 	dh_mpi_release(their_dh);
 	return ok;
 }
+
+static bool
+serialize_and_encode_auth_i(string_t * dst,
+			    const dake_auth_i_t * m)
+{
+	uint8_t *buff = NULL;
+	size_t len = 0;
+
+	if(!dake_auth_i_aprint(&buff, &len, m))
+	  return false;
+	
+	*dst = otrl_base64_otr_encode(buff, len);
+	free(buff);
+	return true;
+}
+
+
+static bool
+reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
+			const otrv4_t * otr)
+{
+  dake_auth_i_t *msg = malloc(sizeof(dake_auth_i_t));
+  if (!msg)
+    return false;
+
+  user_profile_t *our = get_my_user_profile(otr);
+  
+  unsigned char *t = NULL;
+  size_t t_len = 0;
+  if (!build_auth_message(&t, &t_len, 1, our, their, OUR_ECDH(otr), THEIR_ECDH(otr), OUR_DH(otr), THEIR_DH(otr)))
+    return false;
+
+  ec_point_t their_ecdh;
+  ec_point_deserialize(their_ecdh, THEIR_ECDH(otr));
+  
+  if(snizkpk_authenticate(msg->sigma, otr->lt_keypair, their->lt_pub_key, their_ecdh, t, t_len))
+    return false;
+
+  return serialize_and_encode_auth_i(dst, msg);
+}
+
+static bool
+receive_auth_r(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
+{
+  if (otr->state != OTRV4_STATE_WAITING_AUTH_R)
+    return false;
+ 
+  dake_auth_r_t auth[1];
+  if (!dake_auth_r_deserialize(auth, buff, buff_len))
+    return false;
+
+  //TODO: validate A and X
+  //TODO: validate user profile.
+
+  uint8_t *t = NULL; 
+  size_t t_len = 0;
+
+  user_profile_t *our_profile = get_my_user_profile(otr);
+  if (!build_auth_message(&t, &t_len, 0, our_profile, auth->profile, OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A))
+    return false;
+  
+  snizkpk_pubkey_t X;
+  if(!ec_point_deserialize(X, auth->X))
+    return false;
+  
+  if (!snizkpk_verify(auth->sigma, otr->lt_keypair->pub, auth->profile->lt_pub_key, X, t, t_len))
+    return false;
+
+  key_manager_set_their_ecdh(auth->X, otr->keys);
+  key_manager_set_their_dh(auth->A, otr->keys);
+  
+  if (!reply_with_auth_i_msg(dst, auth->profile, otr))
+    return false;
+
+  return double_ratcheting_init(0, otr);
+}
+
+static bool
+receive_auth_i(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
+{
+  if (otr->state != OTRV4_STATE_WAITING_AUTH_I)
+    return false;
+ 
+  dake_auth_i_t auth[1];
+  if (!dake_auth_i_deserialize(auth, buff, buff_len))
+    return false;
+
+  uint8_t *t = NULL; 
+  size_t t_len = 0;
+
+  user_profile_t *our_profile = get_my_user_profile(otr);
+  if (!build_auth_message(&t, &t_len, 1, otr->their_profile, our_profile, THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
+    return false;
+  
+  snizkpk_pubkey_t X;
+  if(!ec_point_deserialize(X, OUR_ECDH(otr)))
+    return false;
+  
+  if (!snizkpk_verify(auth->sigma, otr->their_profile->lt_pub_key, otr->lt_keypair->pub, X, t, t_len))
+    return false;
+
+  return double_ratcheting_init(1, otr);
+}
+
 
 static bool
 receive_dre_auth(string_t * dst, uint8_t * buff, size_t buflen, otrv4_t * otr)
@@ -806,13 +993,27 @@ receive_encoded_message(otrv4_response_t * response,
 	//TODO: where should we ignore messages to a different instance tag?
 
 	switch (header.type) {
-	case OTR_PRE_KEY_MSG_TYPE:
+	case OTR_IDENTITY_MSG_TYPE:
 		if (!receive_identity_message
 		    (&response->to_send, decoded, dec_len, otr)) {
 			free(decoded);
 			return false;
 		}
 		break;
+	case OTR_AUTH_R_MSG_TYPE:
+		if (!receive_auth_r
+		    (&response->to_send, decoded, dec_len, otr)) {
+			free(decoded);
+			return false;
+		}
+		break;
+	case OTR_AUTH_I_MSG_TYPE:
+		if (!receive_auth_i
+		    (&response->to_send, decoded, dec_len, otr)) {
+			free(decoded);
+			return false;
+		}
+		break;		
 	case OTR_DRE_AUTH_MSG_TYPE:
 		if (!receive_dre_auth
 		    (&response->to_send, decoded, dec_len, otr)) {
