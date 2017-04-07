@@ -4,11 +4,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define OTRV4_TLV_PADDING 0
-#define OTRV4_TLV_DISCONNECTED 1
+typedef enum {
+	OTRV4_TLV_PADDING = 0,
+	OTRV4_TLV_DISCONNECTED = 1,
+	OTRV4_TLV_SMP_MSG_1 = 2,
+	OTRV4_TLV_SMP_MSG_2 = 3
+} tlv_type_t;
 
 typedef struct tlv_s {
-	uint16_t type;
+	tlv_type_t type;
 	uint16_t len;
 	uint8_t *data;
 	struct tlv_s *next;

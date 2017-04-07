@@ -3,11 +3,33 @@
 #include "deserialize.h"
 #include "tlv.h"
 
+void set_tlv_type(tlv_t * tlv, uint16_t tlv_type)
+{
+	switch (tlv_type) {
+		case 0:
+			tlv->type = OTRV4_TLV_PADDING;
+			break;
+		case 1:
+			tlv->type = OTRV4_TLV_DISCONNECTED;
+			break;
+		case 2:
+			tlv->type = OTRV4_TLV_SMP_MSG_1;
+			break;
+		case 3:
+			tlv->type = OTRV4_TLV_SMP_MSG_2;
+			break;
+		default:
+			break;
+	}
+
+}
+
 static
 tlv_t *extract_tlv(const uint8_t * src, size_t len, size_t * written)
 {
 	size_t w = 0;
 	tlv_t *tlv = NULL;
+	uint16_t tlv_type = -1;
 	const uint8_t *cursor = src;
 
 	do {
@@ -15,8 +37,10 @@ tlv_t *extract_tlv(const uint8_t * src, size_t len, size_t * written)
 		if (!tlv)
 			continue;
 
-		if (!deserialize_uint16(&tlv->type, cursor, len, &w))
+		if (!deserialize_uint16(&tlv_type, cursor, len, &w))
 			continue;
+
+		set_tlv_type(tlv, tlv_type);
 
 		len -= w;
 		cursor += w;

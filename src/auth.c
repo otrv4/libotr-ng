@@ -16,7 +16,7 @@ ed448_random_scalar(decaf_448_scalar_t priv)
     memset(rand, 0, DECAF_448_SCALAR_BYTES);
 }
 
-static void
+void
 generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv)
 {
     ed448_random_scalar(priv);

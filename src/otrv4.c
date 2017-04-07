@@ -119,6 +119,8 @@ otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy)
 	otr->running_version = OTRV4_VERSION_NONE;
 	otr->profile = get_my_user_profile(otr);
 	key_manager_init(otr->keys);
+	//TODO: moves initialization to smp
+	otr->smp->state = SMPSTATE_EXPECT1;
 
 	return otr;
 }
@@ -691,6 +693,7 @@ decrypt_data_msg(otrv4_response_t * response, const m_enc_key_t enc_key,
 	return err == 0;
 }
 
+//TODO: Process SMP TLVs
 static void process_tlv(const tlv_t * tlv, otrv4_t * otr)
 {
 	switch (tlv->type) {
@@ -1101,4 +1104,42 @@ bool otrv4_close(string_t * to_send, otrv4_t * otr)
 	gone_insecure_cb(otr);
 
 	return ok;
+}
+
+tlv_t * otrv4_smp_initiate(otrv4_t *otr, string_t answer)
+{
+	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
+		return NULL;
+
+	tlv_t * tlv = generate_smp_msg_1(otr->smp, answer);
+	if (!tlv)
+		return NULL;
+
+	otr->smp->state = SMPSTATE_EXPECT2;
+	return tlv;
+}
+
+tlv_t * otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
+{
+	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
+		otr->smp->state = SMPSTATE_EXPECT1;
+		return NULL;
+	}
+
+	tlv_t * msg = NULL;
+
+	switch (otr->smp->state) {
+	case SMPSTATE_EXPECT1 && tlv->type == OTRV4_TLV_SMP_MSG_1:
+		msg = generate_smp_msg_2();
+		if (!msg)
+			break;
+
+		otr->smp->state = SMPSTATE_EXPECT3;
+		break;
+	case SMPSTATE_EXPECT2:
+	case SMPSTATE_EXPECT3:
+		break;
+	}
+
+	return msg;
 }

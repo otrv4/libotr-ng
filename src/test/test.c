@@ -16,6 +16,7 @@
 #include "test_data_message.c"
 #include "test_client.c"
 #include "test_list.c"
+#include "test_smp.c"
 
 int main(int argc, char **argv)
 {
@@ -75,6 +76,8 @@ int main(int argc, char **argv)
 
 	g_test_add_func("/key_management/derive_ratchet_keys",
 			test_derive_ratchet_keys);
+
+	g_test_add_func("/smp/state_machine", test_smp_state_machine);
 
 	//g_test_add_func("/otrv4/starts_protocol", test_otrv4_starts_protocol);
 	//g_test_add("/otrv4/version_supports_v34", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_version_supports_v34, otrv4_fixture_teardown );
