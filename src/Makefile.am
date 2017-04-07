@@ -12,6 +12,7 @@ libotr4_la_SOURCES = \
 		     dh.c \
 		     dread.c \
 		     fingerprint.c \
+		     keys.c \
 		     list.c \
 		     mpi.c \
 		     otrv3.c \

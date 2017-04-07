@@ -93,6 +93,16 @@ static user_profile_t *get_my_user_profile(const otrv4_t * otr)
 	return user_profile_build(versions, otr->keypair);
 }
 
+otrv4_t*
+otrv4_new_with_lt_key(otrv4_keypair_t *lt, cs_keypair_s * keypair, otrv4_policy_t policy)
+{
+    otrv4_t *otr = otrv4_new(keypair, policy);
+    if (otr)
+        otr->lt_keypair = lt;
+
+    return otr;
+}
+
 otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy)
 {
 	otrv4_t *otr = malloc(sizeof(otrv4_t));
