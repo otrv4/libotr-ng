@@ -2,6 +2,7 @@
 
 #include "deserialize.h"
 #include "mpi.h"
+#include "b64.h"
 
 bool
 deserialize_uint64(uint64_t * n, const uint8_t * buffer, size_t buflen,
@@ -193,4 +194,46 @@ deserialize_ec_public_key(ec_public_key_t pub, const uint8_t * serialized,
 		*read = sizeof(ec_public_key_t);
 
 	return true;
+}
+
+bool
+decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len)
+{
+	//((base64len+3) / 4) * 3
+	unsigned char *dec = malloc(((len + 3) / 4) * 3);
+	if (!dec)
+		return false;
+
+        bool ok = false;
+        do {
+            size_t written = otrl_base64_decode(dec, buff, len);
+            if (written != DECAF_448_SCALAR_BYTES)
+                continue;
+
+            ok = DECAF_SUCCESS == decaf_448_scalar_decode(s, dec);
+        } while (0);
+
+        free(dec);
+	return ok;
+}
+
+bool
+decode_b64_ec_point(ec_point_t s, const char *buff, size_t len)
+{
+	//((base64len+3) / 4) * 3
+	unsigned char *dec = malloc(((len + 3) / 4) * 3);
+	if (!dec)
+		return false;
+
+        bool ok = false;
+        do {
+            size_t written = otrl_base64_decode(dec, buff, len);
+            if (written != DECAF_448_SER_BYTES)
+                continue;
+
+            ok = DECAF_SUCCESS == decaf_448_point_decode(s, dec, DECAF_FALSE);
+        } while (0);
+
+        free(dec);
+	return ok;
 }

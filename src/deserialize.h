@@ -38,3 +38,10 @@ deserialize_cs_public_key(cs_public_key_t * pub, const uint8_t * serialized,
 bool
 deserialize_ec_public_key(ec_public_key_t pub, const uint8_t * serialized,
 			  size_t ser_len, size_t * read);
+
+bool
+decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len);
+
+bool
+decode_b64_ec_point(ec_point_t s, const char *buff, size_t len);
+
