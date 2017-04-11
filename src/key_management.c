@@ -361,31 +361,28 @@ static bool enter_new_ratchet(key_manager_t manager)
 	k_ecdh_t k_ecdh;
 	if (!ecdh_shared_secret
 	    (k_ecdh, sizeof(k_ecdh_t), manager->our_ecdh, manager->their_ecdh))
-	{
 		return false;
-	}
 	//TODO: Securely delete our_ecdh.secret.
 
 	if (manager->i % 3 == 0) {
 		k_dh_t k_dh;
 		if (!dh_shared_secret
 		    (k_dh, sizeof(k_dh_t), manager->our_dh->priv,
-		     manager->their_dh)) {
+		     manager->their_dh))
 			return false;
-		}
+
 		//TODO: Securely delete our_dh.secret
 
 		if (!sha3_256
 		    (manager->mix_key, sizeof(mix_key_t), k_dh, sizeof(k_dh_t)))
-		{
 			return false;
-		}
+
 	} else {
 		if (!sha3_256
 		    (manager->mix_key, sizeof(mix_key_t), manager->mix_key,
-		     sizeof(mix_key_t))) {
+		     sizeof(mix_key_t)))
 			return false;
-		}
+
 	}
 
 #ifdef DEBUG
@@ -397,11 +394,18 @@ static bool enter_new_ratchet(key_manager_t manager)
 #endif
 
 	shared_secret_t shared;
-	if (!calculate_shared_secret(shared, k_ecdh, manager->mix_key)) {
+	if (!calculate_shared_secret(shared, k_ecdh, manager->mix_key))
 		return false;
-	}
+
 	// TODO: Securely delete the root key and all chain keys from the ratchet i-2.
 	// TODO: Securely delete shared.
+	uint8_t ssid_buff[GCRY_MD_SHA3_256];
+	if (!sha3_256(ssid_buff, gcry_md_get_algo_dlen(GCRY_MD_SHA3_256),
+	    shared, sizeof(shared_secret_t)))
+		return false;
+
+	memcpy(manager->ssid, ssid_buff, 8);
+
 	return key_manager_new_ratchet(manager, shared);
 }
 

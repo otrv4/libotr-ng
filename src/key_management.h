@@ -41,6 +41,8 @@ typedef struct {
 	ratchet_t *previous;
 
 	mix_key_t mix_key;
+
+	uint8_t ssid[8];
 } key_manager_t[1];
 
 typedef struct {

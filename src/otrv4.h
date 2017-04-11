@@ -73,7 +73,6 @@ struct connection {
 	otrv4_callbacks_t *callbacks;
 
 	smp_context_t smp;
-	uint8_t * ssid;
 };	//otrv4_t
 
 typedef enum {

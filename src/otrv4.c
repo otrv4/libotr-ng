@@ -1117,7 +1117,7 @@ tlv_t * otrv4_smp_initiate(otrv4_t *otr, string_t answer)
 	otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
 	otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
 
-	generate_smp_secret(otr->smp, our_fp, their_fp, otr->ssid, answer);
+	generate_smp_secret(otr->smp, our_fp, their_fp, otr->keys->ssid, answer);
 
 	tlv_t * tlv = generate_smp_msg_1(otr->smp, answer);
 	if (!tlv)
