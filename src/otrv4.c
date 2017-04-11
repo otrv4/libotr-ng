@@ -132,6 +132,7 @@ void otrv4_destroy( /*@only@ */ otrv4_t * otr)
 	user_profile_free(otr->profile);
 	otr->profile = NULL;
 	otr->callbacks = NULL;
+	smp_destroy(otr->smp);
 }
 
 void otrv4_free( /*@only@ */ otrv4_t * otr)
@@ -530,6 +531,8 @@ receive_identity_message_on_state_start(string_t * dst,
 	if (!reply_with_dre_auth_msg(dst, identity_message->profile, otr))
 		return false;
 
+	otr->their_profile = identity_message->profile;
+
 	return double_ratcheting_init(0, otr);
 }
 
@@ -671,8 +674,6 @@ decrypt_data_msg(otrv4_response_t * response, const m_enc_key_t enc_key,
 	printf("DECRYPTING\n");
 	printf("enc_key = ");
 	otrv4_memdump(enc_key, sizeof(m_enc_key_t));
-	printf("mac_key = ");
-	otrv4_memdump(mac_key, sizeof(m_mac_key_t));
 	printf("nonce = ");
 	otrv4_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
 #endif
@@ -1110,6 +1111,13 @@ tlv_t * otrv4_smp_initiate(otrv4_t *otr, string_t answer)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
 		return NULL;
+
+	otrv4_fingerprint_t our_fp, their_fp;
+
+	otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
+	otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
+
+	generate_smp_secret(otr->smp, our_fp, their_fp, otr->ssid, answer);
 
 	tlv_t * tlv = generate_smp_msg_1(otr->smp, answer);
 	if (!tlv)

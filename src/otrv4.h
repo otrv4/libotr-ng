@@ -63,6 +63,8 @@ struct connection {
 	int their_instance_tag;
 
 	user_profile_t *profile;
+	user_profile_t *their_profile;
+
 	cs_keypair_s *keypair;
 	otrv4_version_t running_version;
 
@@ -71,6 +73,7 @@ struct connection {
 	otrv4_callbacks_t *callbacks;
 
 	smp_context_t smp;
+	uint8_t * ssid;
 };	//otrv4_t
 
 typedef enum {

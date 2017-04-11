@@ -3,6 +3,37 @@
 #include "smp.h"
 #include "str.h"
 #include "tlv.h"
+#include "fingerprint.h"
+#include "debug.h"
+
+void smp_destroy(smp_context_t smp)
+{
+	//TODO: I think we should free this
+	smp->x = NULL;
+}
+
+void generate_smp_secret(smp_context_t smp, otrv4_fingerprint_t our_fp,
+			otrv4_fingerprint_t their_fp, uint8_t * ssid,
+			string_t answer)
+{
+	size_t len = SMP_MIN_SECRET_BYTES + strlen (answer) +1;
+	gcry_md_hd_t hd;
+	uint8_t version[1] = {0x01};
+
+	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
+	gcry_md_write(hd, version, 1);
+	gcry_md_write(hd, our_fp, sizeof(otrv4_fingerprint_t));
+	gcry_md_write(hd, their_fp, sizeof(otrv4_fingerprint_t));
+	gcry_md_write(hd, ssid, 8);
+	gcry_md_write(hd, answer, strlen (answer) +1);
+
+	smp->x = malloc(len);
+	if (!smp->x)
+		return;
+
+	memcpy(smp->x, gcry_md_read(hd, 0), len);
+	gcry_md_close(hd);
+}
 
 tlv_t * generate_smp_msg_1(smp_context_t smp, string_t answer)
 {
