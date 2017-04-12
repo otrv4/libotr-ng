@@ -668,7 +668,6 @@ receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
         if (!validate_received_values(m->Y, m->B, m->profile))
             return false;
 
-      return false;
         switch (otr->state) {
         case OTRV4_STATE_START:
 		ok = receive_identity_message_on_state_start(dst, m, otr);
