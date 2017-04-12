@@ -16,13 +16,16 @@ void otrv4_fixture_set_up(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 	cs_keypair_generate(otrv4_fixture->keypair);
 
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4 };
-	otrv4_fixture->otr = otrv4_new(otrv4_fixture->keypair, policy);
+	otrv4_fixture->otr = otrv4_new_with_lt_key(otrv4_keypair_new(),
+            otrv4_fixture->keypair, policy);
 
 	otrv4_policy_t policyv3 = {.allows = OTRV4_ALLOW_V3 };
-	otrv4_fixture->otrv3 = otrv4_new(otrv4_fixture->keypair, policyv3);
+	otrv4_fixture->otrv3 = otrv4_new_with_lt_key(otrv4_keypair_new(),
+            otrv4_fixture->keypair, policyv3);
 
 	otrv4_policy_t policyv34 = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
-	otrv4_fixture->otrv34 = otrv4_new(otrv4_fixture->keypair, policyv34);
+	otrv4_fixture->otrv34 = otrv4_new_with_lt_key(otrv4_keypair_new(),
+            otrv4_fixture->keypair, policyv34);
 }
 
 void otrv4_fixture_teardown(otrv4_fixture_t * otrv4_fixture, gconstpointer data)

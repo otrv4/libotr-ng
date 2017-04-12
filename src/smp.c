@@ -44,8 +44,8 @@ tlv_t * generate_smp_msg_1(smp_context_t smp, string_t answer)
 	snizkpk_keypair_t pair_r2[1], pair_r3[1];
 	unsigned char hash[64];
 	gcry_md_hd_t hd;
-	snizkpk_privkey_t a3c3, a2c2;
-	snizkpk_privkey_t c2, c3, d2, d3;
+	decaf_448_scalar_t a3c3, a2c2;
+	decaf_448_scalar_t c2, c3, d2, d3;
 	uint8_t version[2] = { 0x01, 0x02 };
 
 	generate_keypair(G2a, a2);

@@ -3,11 +3,11 @@
 
 #define OTR_VERSION 4
 #define OTR_IDENTITY_MSG_TYPE 0x08
-#define OTR_PRE_KEY_MSG_TYPE 0x0F
-#define OTR_DRE_AUTH_MSG_TYPE 0x00
-#define OTR_DATA_MSG_TYPE 0x03
-
 #define OTR_AUTH_R_MSG_TYPE 0x91
 #define OTR_AUTH_I_MSG_TYPE 0x88
+
+#define OTR_PRE_KEY_MSG_TYPE 0x0F
+
+#define OTR_DATA_MSG_TYPE 0x03
 
 #endif

@@ -174,7 +174,8 @@ void
 test_otrv4_receives_pre_key_on_start(otrv4_fixture_t * otrv4_fixture,
 				     gconstpointer data)
 {
-	dake_identity_message_t *identity_message = dake_identity_message_new(NULL);	//TODO: add profile
+	user_profile_t *profile = user_profile_new("4");
+	dake_identity_message_t *identity_message = dake_identity_message_new(profile);
 
 	uint8_t *serialized = NULL;
 	otrv4_assert(dake_identity_message_aprint
@@ -195,13 +196,9 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t * otrv4_fixture,
 	g_assert_cmpstr(response->to_display, ==, NULL);
 	otrv4_assert(response->to_send);
 
-	dake_dre_auth_t *dre_auth = malloc(sizeof(dake_dre_auth_t));
-	//TODO: should base64 decode the message to respond after ?OTR and then
-	//deserialize
-	dake_dre_auth_deserialize(dre_auth, (uint8_t *) response->to_send, 0);
-
 	free(serialized);
 	otrv4_response_free(response);
+        user_profile_free(profile);
 }
 
 void

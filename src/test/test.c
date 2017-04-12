@@ -65,10 +65,6 @@ int main(int argc, char **argv)
 		     test_dake_identity_message_valid,
 		     identity_message_fixture_t, identity_message_fixture);
 
-	g_test_add_func("/dake/dre_auth/generate_gamma_phi_sigma",
-			test_dake_generate_gamma_phi_sigma);
-	g_test_add_func("/dake/dre_auth/serialize",
-			test_dake_dre_auth_serialize);
 	g_test_add_func("/dake/protocol", test_dake_protocol);
 
 	g_test_add_func("/data_message/serialize",
@@ -116,6 +112,12 @@ int main(int argc, char **argv)
 	g_test_add("/otrv4/receives_query_message_v3", otrv4_fixture_t, NULL,
 		   otrv4_fixture_set_up, test_otrv4_receives_query_message_v3,
 		   otrv4_fixture_teardown);
+	/*
+        g_test_add("/otrv4/test_otrv4_receives_pre_key_on_start", otrv4_fixture_t, NULL,
+		   otrv4_fixture_set_up, test_otrv4_receives_pre_key_on_start,
+		   otrv4_fixture_teardown);
+        */
+
 	g_test_add_func("/otrv4/destroy", test_otrv4_destroy);
 
 	g_test_add_func("/api/conversation", test_api_conversation);

@@ -661,52 +661,30 @@ receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
 {
 	bool ok = false;
 	dake_identity_message_t m[1];
-	//otrv4_fingerprint_t fp;
-
-	if (otr->state != OTRV4_STATE_START
-	    && otr->state != OTRV4_STATE_WAITING_AUTH_R
-	    && otr->state != OTRV4_STATE_WAITING_AUTH_I)
-		return true;	// ignore
 
 	if (!dake_identity_message_deserialize(m, buff, buflen))
 		return false;
 
-	//TODO: turn into a switch
-	if (otr->state == OTRV4_STATE_START)
-		ok = receive_identity_message_on_state_start(dst, m, otr);
-	else if (otr->state == OTRV4_STATE_WAITING_AUTH_R)
-		ok = receive_identity_message_while_in_progress(dst, m, otr);
-	else if (otr->state == OTRV4_STATE_WAITING_AUTH_I)
-	        ok = false; //TODO
+        if (!validate_received_values(m->Y, m->B, m->profile))
+            return false;
 
-	//TODO: this should happen when the AKE finishes
-	//if (ok && !otr4_serialize_fingerprint(fp, m->profile->pub_key))
-	//	fingerprint_seen_cb(fp, otr);
+      return false;
+        switch (otr->state) {
+        case OTRV4_STATE_START:
+		ok = receive_identity_message_on_state_start(dst, m, otr);
+                break;
+        case OTRV4_STATE_WAITING_AUTH_R:
+		ok = receive_identity_message_while_in_progress(dst, m, otr);
+                break;
+        case OTRV4_STATE_WAITING_AUTH_I:
+                //TODO
+                break;
+        default:
+                //Ignore the message, but it is not an error.
+                ok = true;
+        }
 
 	dake_identity_message_destroy(m);
-
-	//TODO: other states
-	return ok;
-}
-
-static bool
-process_incoming_dre_auth(const dake_dre_auth_t * dre_auth, otrv4_t * otr)
-{
-	bool ok = false;
-	ec_public_key_t their_ecdh;
-	dh_public_key_t their_dh = NULL;
-
-	ok = dake_dre_auth_validate(their_ecdh, &their_dh, otr->profile,
-				    otr->keypair, OUR_ECDH(otr), OUR_DH(otr),
-				    dre_auth);
-
-	if (ok) {
-		key_manager_set_their_ecdh(their_ecdh, otr->keys);
-		key_manager_set_their_dh(their_dh, otr->keys);
-		ok = double_ratcheting_init(1, otr);
-	}
-
-	dh_mpi_release(their_dh);
 	return ok;
 }
 
@@ -760,8 +738,8 @@ receive_auth_r(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
   if (!dake_auth_r_deserialize(auth, buff, buff_len))
     return false;
 
-  //TODO: validate A and X
-  //TODO: validate user profile.
+  if (!validate_received_values(auth->X, auth->A, auth->profile))
+      return false;
 
   uint8_t *t = NULL; 
   size_t t_len = 0;
@@ -777,11 +755,20 @@ receive_auth_r(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
   if (!snizkpk_verify(auth->sigma, otr->lt_keypair->pub, auth->profile->lt_pub_key, X, t, t_len))
     return false;
 
+        otr->their_profile = malloc(sizeof(user_profile_t));
+	if (!otr->their_profile)
+	  return false;
   key_manager_set_their_ecdh(auth->X, otr->keys);
   key_manager_set_their_dh(auth->A, otr->keys);
-  
-  if (!reply_with_auth_i_msg(dst, auth->profile, otr))
+  user_profile_copy(otr->their_profile, auth->profile);
+
+
+  if (!reply_with_auth_i_msg(dst, otr->their_profile, otr))
     return false;
+
+	otrv4_fingerprint_t fp;
+	if (otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
+		fingerprint_seen_cb(fp, otr);
 
   return double_ratcheting_init(0, otr);
 }
@@ -810,32 +797,13 @@ receive_auth_i(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
   if (!snizkpk_verify(auth->sigma, otr->their_profile->lt_pub_key, otr->lt_keypair->pub, X, t, t_len))
     return false;
 
+	otrv4_fingerprint_t fp;
+	if (otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
+		fingerprint_seen_cb(fp, otr);
+
   return double_ratcheting_init(1, otr);
 }
 
-
-static bool
-receive_dre_auth(string_t * dst, uint8_t * buff, size_t buflen, otrv4_t * otr)
-{
-	bool ok = false;
-	dake_dre_auth_t dre_auth[1];
-	otrv4_fingerprint_t fp;
-
-	*dst = NULL;
-
-	if (otr->state != OTRV4_STATE_AKE_IN_PROGRESS)
-		return true;
-
-	if (!dake_dre_auth_deserialize(dre_auth, buff, buflen))
-		return false;
-
-	ok = process_incoming_dre_auth(dre_auth, otr);
-	if (ok && !otr4_serialize_fingerprint(fp, dre_auth->profile->pub_key))
-		fingerprint_seen_cb(fp, otr);
-
-	dake_dre_auth_destroy(dre_auth);
-	return ok;
-}
 
 static void extract_tlvs(tlv_t ** tlvs, const uint8_t * src, size_t len)
 {
@@ -1014,13 +982,6 @@ receive_encoded_message(otrv4_response_t * response,
 			return false;
 		}
 		break;		
-	case OTR_DRE_AUTH_MSG_TYPE:
-		if (!receive_dre_auth
-		    (&response->to_send, decoded, dec_len, otr)) {
-			free(decoded);
-			return false;
-		}
-		break;
 	case OTR_DATA_MSG_TYPE:
 		if (!otrv4_receive_data_message
 		    (response, decoded, dec_len, otr)) {
