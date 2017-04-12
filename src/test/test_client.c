@@ -86,7 +86,7 @@ void test_client_api()
 	otrv4_assert(!todisplay);
 	free(query_msg_to_bob);
 
-	//Charlie receives query message, sends identity msg
+	//Charlie receives query message, sends identity message
 	ignore =
 	    otr4_client_receive(&fromcharlie, &todisplay, query_msg_to_charlie,
 				ALICE_IDENTITY, charlie);
@@ -102,7 +102,7 @@ void test_client_api()
 	otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_START);
 	otrv4_assert(alice_to_charlie->conn->state == OTRV4_STATE_START);
 
-	//Alice receives identity message (from Bob), sends DRE auth msg
+	//Alice receives identity message (from Bob), sends Auth-R message
 	ignore =
 	    otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
 				BOB_IDENTITY, alice);
@@ -112,7 +112,7 @@ void test_client_api()
 	free(frombob);
 	frombob = NULL;
 
-	//Alice receives identity message (from Charlie), sends DRE auth msg
+	//Alice receives identity message (from Charlie), sends Auth-R message
 	ignore =
 	    otr4_client_receive(&from_alice_to_charlie, &todisplay,
 				fromcharlie, CHARLIE_IDENTITY, alice);
@@ -121,26 +121,46 @@ void test_client_api()
 	free(fromcharlie);
 	fromcharlie = NULL;
 
-	//Bob receives DRE auth message.
+	//Bob receives Auth-R message, sends Auth-I message
 	ignore =
 	    otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
 				ALICE_IDENTITY, bob);
 	otrv4_assert(ignore);
-	otrv4_assert(!frombob);
+	otrv4_assert(frombob);
 	otrv4_assert(!todisplay);
 	free(from_alice_to_bob);
 	from_alice_to_bob = NULL;
 
-	//Charlie receives DRE auth message.
+	//Charlie receives Auth-R message, sends Auth-I message
 	ignore =
 	    otr4_client_receive(&fromcharlie, &todisplay,
 				from_alice_to_charlie, ALICE_IDENTITY, charlie);
 	otrv4_assert(ignore);
-	otrv4_assert(!fromcharlie);
+	otrv4_assert(fromcharlie);
 	otrv4_assert(!todisplay);
 	free(from_alice_to_charlie);
 	from_alice_to_charlie = NULL;
 
+        //Alice receives Auth-I message (from Bob)
+	ignore =
+	    otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
+				BOB_IDENTITY, alice);
+	otrv4_assert(!from_alice_to_bob);
+	otrv4_assert(ignore);
+	otrv4_assert(!todisplay);
+	free(frombob);
+	frombob = NULL;
+
+	//Alice receives Auth-I message (from Charlie)
+	ignore =
+	    otr4_client_receive(&from_alice_to_charlie, &todisplay,
+				fromcharlie, CHARLIE_IDENTITY, alice);
+	otrv4_assert(!from_alice_to_charlie);
+	otrv4_assert(ignore);
+	otrv4_assert(!todisplay);
+	free(fromcharlie);
+	fromcharlie = NULL;
+	
 	//Alice sends a disconnected to Bob
 	int err =
 	    otr4_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);

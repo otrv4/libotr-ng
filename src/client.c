@@ -82,7 +82,7 @@ static otrv4_t *create_connection_for(const char *recipient,
 				      otr4_client_t * client)
 {
 	otrv4_t *conn = NULL;
-	conn = otrv4_new(client->keypair, get_policy_for(recipient));
+	conn = otrv4_new_with_lt_key(otrv4_keypair_new(), client->keypair, get_policy_for(recipient));
 	if (!conn)
 		return NULL;
 
