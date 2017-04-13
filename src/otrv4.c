@@ -575,6 +575,7 @@ reply_with_auth_r_msg(string_t * dst, const user_profile_t * their,
 	    (msg->sigma, otr->keypair, their->pub_key, their_ecdh, t, t_len))
 		return false;
 
+	free(t);
 	return serialize_and_encode_auth_r(dst, msg);
 }
 
@@ -692,6 +693,7 @@ static bool
 reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
 		      const otrv4_t * otr)
 {
+<<<<<<< 9b7ce30a5c027d7db8b9cad6ae02ae6c0dd64756
 	dake_auth_i_t *msg = malloc(sizeof(dake_auth_i_t));
 	if (!msg)
 		return false;
@@ -710,6 +712,7 @@ reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
 	    (msg->sigma, otr->keypair, their->pub_key, their_ecdh, t, t_len))
 		return false;
 
+	free(t);
 	return serialize_and_encode_auth_i(dst, msg);
 }
 
