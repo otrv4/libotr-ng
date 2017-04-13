@@ -3,31 +3,30 @@
 
 #include "../dake.h"
 #include "../serialize.h"
-#include "../cramershoup_interface.h"
 #include "../str.h"
 
 void test_dake_protocol()
 {
 	dh_init();
 
-	cs_keypair_t alice_cramershoup, bob_cramershoup;
+        otrv4_keypair_t alice_keypair[1], bob_keypair[1];
 	ec_keypair_t alice_ecdh, bob_ecdh;
 	dh_keypair_t alice_dh, bob_dh;
 
 	// Alice
-	cs_keypair_generate(alice_cramershoup);
+        otrv4_keypair_generate(alice_keypair);
 	ec_keypair_generate(alice_ecdh);
 	dh_keypair_generate(alice_dh);
 
 	// Bob
-	cs_keypair_generate(bob_cramershoup);
+        otrv4_keypair_generate(bob_keypair);
 	ec_keypair_generate(bob_ecdh);
 	dh_keypair_generate(bob_dh);
 
 	// Alice send pre key
 	user_profile_t *alice_profile = user_profile_new("4");
 	alice_profile->expires = time(NULL) + 60 * 60;
-	user_profile_sign(alice_profile, alice_cramershoup);
+	user_profile_sign(alice_profile, alice_keypair);
 	dake_identity_message_t *identity_message =
 	    dake_identity_message_new(alice_profile);
 
@@ -97,22 +96,6 @@ void test_snizkpk_auth()
     snizkpk_keypair_generate(pair2);
     snizkpk_keypair_generate(pair3);
 
-    uint8_t ser[DECAF_448_SER_BYTES];
-    ec_point_serialize(ser, DECAF_448_SER_BYTES, pair1->pub);
-    int i;
-    for (i = 0; i < DECAF_448_SER_BYTES; i++) {
-      printf("0x%02x,", ser[i]);
-    }
-
-    printf("\n");
-
-    decaf_448_scalar_encode(ser, pair1->priv);
-    for (i = 0; i < DECAF_448_SER_BYTES; i++) {
-      printf("0x%02x,", ser[i]);
-    }
-
-    printf("\n");
-    
     int err = snizkpk_authenticate(dst, pair1, pair2->pub, pair3->pub, (unsigned char*) msg, strlen(msg));
     g_assert_cmpint(err, ==, 0);
 

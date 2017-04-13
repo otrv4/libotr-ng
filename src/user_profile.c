@@ -12,17 +12,15 @@
 
 user_profile_t *user_profile_new(const string_t versions)
 {
-	if (versions == NULL) {
+	if (!versions)
 		return NULL;
-	}
 
-	cs_keypair_t keypair;
-	cs_keypair_generate(keypair);
 	user_profile_t *profile = malloc(sizeof(user_profile_t));
-	if (profile == NULL) {
+	if (!profile)
 		return NULL;
-	}
 
+        //TODO: Should we initialize to zero?
+        //ec_destroy_point(profile->pub_key);
 	profile->expires = 0;
 	profile->versions = otrv4_strndup(versions, strlen(versions));
 	memset(profile->signature, 0, sizeof(ec_signature_t));
@@ -33,12 +31,11 @@ user_profile_t *user_profile_new(const string_t versions)
 
 void user_profile_copy(user_profile_t * dst, const user_profile_t * src)
 {
-	if (src == NULL) {
-		//TODO should we set dst to a valid (but empty) profile?
+        //TODO should we set dst to a valid (but empty) profile?
+	if (!src)
 		return;
-	}
 
-	cs_public_key_copy(dst->pub_key, src->pub_key);
+	ec_point_copy(dst->pub_key, src->pub_key);
 	dst->versions = otrv4_strndup(src->versions, strlen(src->versions));
 	dst->expires = src->expires;
 
@@ -69,22 +66,19 @@ user_profile_body_serialize(uint8_t * dst, const user_profile_t * profile)
 {
 	uint8_t *target = dst;
 
-	target += serialize_cs_public_key(target, profile->pub_key);
-	target +=
-	    serialize_data(target, (uint8_t *) profile->versions,
+	target += serialize_otrv4_public_key(target, profile->pub_key);
+	target += serialize_data(target, (uint8_t *) profile->versions,
 			   strlen(profile->versions) + 1);
 	target += serialize_uint64(target, profile->expires);
 
 	return target - dst;
 }
 
-#define EC_PUBLIC_KEY_BYTES (2+3*56)
-
 bool
 user_profile_body_aprint(uint8_t ** dst, size_t * nbytes,
 			 const user_profile_t * profile)
 {
-	size_t s = EC_PUBLIC_KEY_BYTES + strlen(profile->versions) + 1 + 4 + 8;
+	size_t s = ED448_PUBKEY_BYTES + strlen(profile->versions) + 1 + 4 + 8;
 
 	uint8_t *buff = malloc(s);
 	if (buff == NULL) {
@@ -148,18 +142,17 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 	size_t read = 0;
 	int walked = 0;
 
-	if (target == NULL) {
+	if (!target)
 		return false;
-	}
 
-	if (!deserialize_cs_public_key(target->pub_key, buffer, buflen)) {
+	if (!deserialize_otrv4_public_key(target->pub_key, buffer, buflen, &read)) {
 		goto deserialize_error;
 	}
 
-	walked += 2 + 3 * 56;	//TODO
+	walked += read;
 
 	if (!deserialize_data
-	    ((uint8_t **) & target->versions, buffer + walked, buflen, &read)) {
+	    ((uint8_t **) & target->versions, buffer + walked, buflen - walked, &read)) {
 		goto deserialize_error;
 	}
 
@@ -200,26 +193,11 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 	return false;
 }
 
-bool user_profile_sign(user_profile_t * profile, const cs_keypair_t keypair)
+bool user_profile_sign(user_profile_t * profile, const otrv4_keypair_t *keypair)
 {
-	cs_public_key_copy(profile->pub_key, keypair->pub);
+        ec_point_copy(profile->pub_key, keypair->pub);
 
-	size_t body_len = 0;
-	uint8_t *body = NULL;
-	if (!user_profile_body_aprint(&body, &body_len, profile)) {
-		return false;
-	}
-	//unlike the decaf spec, we take a random symm for each signature
-	ec_keypair_t sig_key;
-	random_bytes(sig_key->sym, sizeof(ec_symmetric_key_t));	// TODO: use the "symmetric nonce"
-	ec_scalar_copy(sig_key->secret_scalar, keypair->priv->z);
-	ec_point_serialize(sig_key->pub, sizeof(ec_public_key_t),
-			   keypair->pub->h);
-
-	ec_sign(profile->signature, sig_key, body, body_len);
-	ec_keypair_destroy(sig_key);
-
-	free(body);
+        // TODO
 	return true;
 }
 
@@ -227,29 +205,18 @@ bool user_profile_sign(user_profile_t * profile, const cs_keypair_t keypair)
 //deserialized bytes.
 bool user_profile_verify_signature(const user_profile_t * profile)
 {
-	size_t body_len = 0;
-	uint8_t *body = NULL;
-	if (!user_profile_body_aprint(&body, &body_len, profile)) {
-		return false;
-	}
-
-	ec_public_key_t sign_pub_key;
-	ec_point_serialize(sign_pub_key, sizeof(ec_public_key_t),
-			   profile->pub_key->h);
-	bool ok = ec_verify(profile->signature, sign_pub_key, body, body_len);
-
-	free(body);
-
-	return ok;
+        //TODO
+	return true;
 }
 
-user_profile_t *user_profile_build(string_t versions, cs_keypair_t keypair)
+user_profile_t *user_profile_build(string_t versions, otrv4_keypair_t *keypair)
 {
 	user_profile_t *profile = user_profile_new(versions);
 	if (profile == NULL) {
 		free(versions);
 		return NULL;
 	}
+
 #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60;	//2 weeks
 	time_t expires = time(NULL);
 	profile->expires = expires + PROFILE_EXPIRATION_SECONDS;

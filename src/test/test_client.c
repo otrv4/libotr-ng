@@ -10,8 +10,8 @@
 void test_client_conversation_api()
 {
 	OTR4_INIT;
-	cs_keypair_t alice_keypair;
-	cs_keypair_generate(alice_keypair);
+	otrv4_keypair_t alice_keypair[1];
+	otrv4_keypair_generate(alice_keypair);
 
 	otr4_client_t *alice = otr4_client_new(alice_keypair);
 	otrv4_assert(!alice->conversations);
@@ -44,7 +44,7 @@ void test_client_conversation_api()
 	otrv4_assert(alice_to_charlie->conn);
 
 	// Free memory
-	cs_keypair_destroy(alice_keypair);
+	otrv4_keypair_destroy(alice_keypair);
 	otr4_client_free(alice);
 
 	dh_free();
@@ -54,10 +54,10 @@ void test_client_api()
 {
 	OTR4_INIT;
 
-	cs_keypair_t alice_keypair, bob_keypair, charlie_keypair;
-	cs_keypair_generate(alice_keypair);
-	cs_keypair_generate(bob_keypair);
-	cs_keypair_generate(charlie_keypair);
+	otrv4_keypair_t alice_keypair[1], bob_keypair[1], charlie_keypair[1];
+	otrv4_keypair_generate(alice_keypair);
+	otrv4_keypair_generate(bob_keypair);
+	otrv4_keypair_generate(charlie_keypair);
 
 	otr4_client_t *alice = NULL, *bob = NULL, *charlie = NULL;
 
@@ -182,9 +182,9 @@ void test_client_api()
 	free(from_alice_to_bob);
 	from_alice_to_bob = NULL;
 
-	cs_keypair_destroy(alice_keypair);
-	cs_keypair_destroy(bob_keypair);
-	cs_keypair_destroy(charlie_keypair);
+	otrv4_keypair_destroy(alice_keypair);
+	otrv4_keypair_destroy(bob_keypair);
+	otrv4_keypair_destroy(charlie_keypair);
 
 	// Free memory
 	otr4_client_free(charlie);
@@ -198,17 +198,17 @@ void test_client_get_our_fingerprint()
 {
 	OTR4_INIT;
 
-	cs_keypair_t client_keypair;
-	cs_keypair_generate(client_keypair);
+	otrv4_keypair_t client_keypair[1];
+	otrv4_keypair_generate(client_keypair);
 
 	otr4_client_t *client = otr4_client_new(client_keypair);
 
 	otrv4_fingerprint_t our_fp = { 0 };
 	otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));
 
-	uint8_t serialized[170] = { 0 };
-	g_assert_cmpint(serialize_cs_public_key
-			(serialized, client->keypair->pub), ==, 170);
+	uint8_t serialized[ED448_PUBKEY_BYTES] = { 0 };
+	g_assert_cmpint(serialize_otrv4_public_key
+			(serialized, client->lt_keypair->pub), ==, ED448_PUBKEY_BYTES);
 
 	otrv4_fingerprint_t expected_fp = { 0 };
 	bool ok = sha3_512(expected_fp, sizeof(otrv4_fingerprint_t), serialized,
@@ -216,7 +216,7 @@ void test_client_get_our_fingerprint()
 	otrv4_assert(ok == TRUE);
 	otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(otrv4_fingerprint_t));
 
-	cs_keypair_destroy(client_keypair);
+	otrv4_keypair_destroy(client_keypair);
 
 	otr4_client_free(client);
 

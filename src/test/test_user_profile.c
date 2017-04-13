@@ -9,9 +9,6 @@
 
 void test_user_profile_create()
 {
-	cs_keypair_t keypair;
-	cs_keypair_generate(keypair);
-
 	user_profile_t *profile = user_profile_new("4");
 	otrv4_assert(profile != NULL);
 	user_profile_free(profile);
@@ -19,8 +16,8 @@ void test_user_profile_create()
 
 void test_user_profile_serializes_body()
 {
-	cs_keypair_t keypair;
-	cs_keypair_generate(keypair);
+	otrv4_keypair_t keypair[1];
+	otrv4_keypair_generate(keypair);
 
 	user_profile_t *profile = user_profile_new("4");
 	otrv4_assert(profile != NULL);
@@ -31,15 +28,15 @@ void test_user_profile_serializes_body()
 	otr_mpi_set(profile->transitional_signature, transitional_signature,
 		    sizeof(transitional_signature));
 
-	uint8_t expected_pubkey[170] = { 0 };
-	serialize_cs_public_key(expected_pubkey, keypair->pub);
+	uint8_t expected_pubkey[ED448_PUBKEY_BYTES] = { 0 };
+	serialize_otrv4_public_key(expected_pubkey, keypair->pub);
 
 	size_t written = 0;
 	uint8_t *serialized = NULL;
 	otrv4_assert(user_profile_body_aprint(&serialized, &written, profile));
-	g_assert_cmpint(184, ==, written);
+	g_assert_cmpint(72, ==, written);
 
-	otrv4_assert_cmpmem(expected_pubkey, serialized, 170);
+	otrv4_assert_cmpmem(expected_pubkey, serialized, ED448_PUBKEY_BYTES);
 
 	char expected[] = {
 		0x0, 0x0, 0x0, 0x2,	// versions len
@@ -47,7 +44,7 @@ void test_user_profile_serializes_body()
 		0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0F,	// expires
 	};
 
-	otrv4_assert_cmpmem(expected, serialized + 170, sizeof(expected));
+	otrv4_assert_cmpmem(expected, serialized + ED448_PUBKEY_BYTES, sizeof(expected));
 
 	free(serialized);
 	user_profile_free(profile);
@@ -55,8 +52,8 @@ void test_user_profile_serializes_body()
 
 void test_user_profile_serializes()
 {
-	cs_keypair_t keypair;
-	cs_keypair_generate(keypair);
+	otrv4_keypair_t keypair[1];
+	otrv4_keypair_generate(keypair);
 
 	user_profile_t *profile = user_profile_new("4");
 	otrv4_assert(profile != NULL);
@@ -67,8 +64,8 @@ void test_user_profile_serializes()
 	otr_mpi_set(profile->transitional_signature, transitional_signature,
 		    sizeof(transitional_signature));
 
-	uint8_t expected_pubkey[170] = { 0 };
-	serialize_cs_public_key(expected_pubkey, keypair->pub);
+	uint8_t expected_pubkey[ED448_PUBKEY_BYTES] = { 0 };
+	serialize_otrv4_public_key(expected_pubkey, keypair->pub);
 
 	size_t written = 0;
 	uint8_t *serialized = NULL;
@@ -102,8 +99,8 @@ void test_user_profile_serializes()
 
 void test_user_profile_deserializes()
 {
-	cs_keypair_t keypair;
-	cs_keypair_generate(keypair);
+	otrv4_keypair_t keypair[1];
+	otrv4_keypair_generate(keypair);
 
 	user_profile_t *profile = user_profile_new("4");
 	otrv4_assert(profile != NULL);
@@ -125,8 +122,8 @@ void test_user_profile_deserializes()
 
 void test_user_profile_signs_and_verify()
 {
-	cs_keypair_t keypair;
-	cs_keypair_generate(keypair);
+	otrv4_keypair_t keypair[1];
+	otrv4_keypair_generate(keypair);
 
 	user_profile_t *profile = user_profile_new("4");
 	otrv4_assert(profile != NULL);
@@ -140,11 +137,10 @@ void test_user_profile_signs_and_verify()
 void test_user_profile_build()
 {
 	user_profile_t *profile = user_profile_build(NULL, NULL);
+	otrv4_assert(!profile);
 
-	otrv4_assert(profile == NULL);
-
-	cs_keypair_t keypair;
-	cs_keypair_generate(keypair);
+	otrv4_keypair_t keypair[1];
+	otrv4_keypair_generate(keypair);
 
 	profile = user_profile_build("3", keypair);
 	g_assert_cmpstr(profile->versions, ==, "3");

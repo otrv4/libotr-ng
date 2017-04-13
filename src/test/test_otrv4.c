@@ -222,15 +222,15 @@ test_otrv4_receives_identity_message_invalid_on_start(otrv4_fixture_t *
 
 void test_otrv4_destroy()
 {
-	cs_keypair_t keypair;
-	cs_keypair_generate(keypair);
+	otrv4_keypair_t keypair[1];
+	otrv4_keypair_generate(keypair);
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4 };
 	otrv4_t *otr = otrv4_new(keypair, policy);
 
 	otrv4_assert(otr->profile != NULL);
 	otrv4_destroy(otr);
 
-	otrv4_assert(otr->keypair == NULL);
+	otrv4_assert(otr->lt_keypair == NULL);
 	otrv4_assert(otr->keys->current == NULL);
 	otrv4_assert(otr->profile == NULL);
 

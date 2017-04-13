@@ -22,11 +22,9 @@ test_dake_identity_message_serializes(identity_message_fixture_t * f,
 
 	ec_keypair_t ecdh;
 	dh_keypair_t dh;
-	cs_keypair_t cs;
 
 	ec_keypair_generate(ecdh);
 	dh_keypair_generate(dh);
-	cs_keypair_generate(cs);
 
 	dake_identity_message_t *identity_message =
 	    dake_identity_message_new(f->profile);

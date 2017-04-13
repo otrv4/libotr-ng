@@ -91,20 +91,10 @@ static user_profile_t *get_my_user_profile(const otrv4_t * otr)
 {
 	char versions[3] = { 0 };
 	allowed_versions(versions, otr);
-	return user_profile_build(versions, otr->keypair);
+	return user_profile_build(versions, otr->lt_keypair);
 }
 
-otrv4_t*
-otrv4_new_with_lt_key(otrv4_keypair_t *lt, cs_keypair_s * keypair, otrv4_policy_t policy)
-{
-    otrv4_t *otr = otrv4_new(keypair, policy);
-    if (otr)
-        otr->lt_keypair = lt;
-
-    return otr;
-}
-
-otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy)
+otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy)
 {
 	otrv4_t *otr = malloc(sizeof(otrv4_t));
 	if (!otr)
@@ -116,7 +106,7 @@ otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy)
 	otr->callbacks = NULL;
 	otr->our_instance_tag = 0;
 	otr->their_instance_tag = 0;
-	otr->keypair = keypair;
+        otr->lt_keypair = keypair;
 	otr->running_version = OTRV4_VERSION_NONE;
 	otr->profile = get_my_user_profile(otr);
 	otr->their_profile = NULL;
@@ -129,7 +119,7 @@ otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy)
 
 void otrv4_destroy( /*@only@ */ otrv4_t * otr)
 {
-	otr->keypair = NULL;
+        otr->lt_keypair = NULL;
 	key_manager_destroy(otr->keys);
 	user_profile_free(otr->profile);
 	user_profile_free(otr->their_profile);
@@ -574,17 +564,15 @@ reply_with_auth_r_msg(string_t * dst, const user_profile_t * their,
   ec_public_key_copy(msg->X, OUR_ECDH(otr));
   msg->A = dh_mpi_copy(OUR_DH(otr));
   
-  user_profile_t *our = get_my_user_profile(otr);
-  
   unsigned char *t = NULL;
   size_t t_len = 0;
-  if (!build_auth_message(&t, &t_len, 0, their, our, THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
+  if (!build_auth_message(&t, &t_len, 0, their, otr->profile, THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
     return false;
 
   ec_point_t their_ecdh;
   ec_point_deserialize(their_ecdh, THEIR_ECDH(otr));
   
-  if(snizkpk_authenticate(msg->sigma, otr->lt_keypair, their->lt_pub_key, their_ecdh, t, t_len))
+  if(snizkpk_authenticate(msg->sigma, otr->lt_keypair, their->pub_key, their_ecdh, t, t_len))
     return false;
 
    return serialize_and_encode_auth_r(dst, msg);
@@ -711,17 +699,15 @@ reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
   if (!msg)
     return false;
 
-  user_profile_t *our = get_my_user_profile(otr);
-  
   unsigned char *t = NULL;
   size_t t_len = 0;
-  if (!build_auth_message(&t, &t_len, 1, our, their, OUR_ECDH(otr), THEIR_ECDH(otr), OUR_DH(otr), THEIR_DH(otr)))
+  if (!build_auth_message(&t, &t_len, 1, otr->profile, their, OUR_ECDH(otr), THEIR_ECDH(otr), OUR_DH(otr), THEIR_DH(otr)))
     return false;
 
   ec_point_t their_ecdh;
   ec_point_deserialize(their_ecdh, THEIR_ECDH(otr));
   
-  if(snizkpk_authenticate(msg->sigma, otr->lt_keypair, their->lt_pub_key, their_ecdh, t, t_len))
+  if(snizkpk_authenticate(msg->sigma, otr->lt_keypair, their->pub_key, their_ecdh, t, t_len))
     return false;
 
   return serialize_and_encode_auth_i(dst, msg);
@@ -743,15 +729,14 @@ receive_auth_r(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
   uint8_t *t = NULL; 
   size_t t_len = 0;
 
-  user_profile_t *our_profile = get_my_user_profile(otr);
-  if (!build_auth_message(&t, &t_len, 0, our_profile, auth->profile, OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A))
+  if (!build_auth_message(&t, &t_len, 0, otr->profile, auth->profile, OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A))
     return false;
   
   snizkpk_pubkey_t X;
   if(!ec_point_deserialize(X, auth->X))
     return false;
   
-  if (!snizkpk_verify(auth->sigma, otr->lt_keypair->pub, auth->profile->lt_pub_key, X, t, t_len))
+  if (!snizkpk_verify(auth->sigma, otr->lt_keypair->pub, auth->profile->pub_key, X, t, t_len))
     return false;
 
         otr->their_profile = malloc(sizeof(user_profile_t));
@@ -785,15 +770,14 @@ receive_auth_i(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
   uint8_t *t = NULL; 
   size_t t_len = 0;
 
-  user_profile_t *our_profile = get_my_user_profile(otr);
-  if (!build_auth_message(&t, &t_len, 1, otr->their_profile, our_profile, THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
+  if (!build_auth_message(&t, &t_len, 1, otr->their_profile, otr->profile, THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
     return false;
   
   snizkpk_pubkey_t X;
   if(!ec_point_deserialize(X, OUR_ECDH(otr)))
     return false;
   
-  if (!snizkpk_verify(auth->sigma, otr->their_profile->lt_pub_key, otr->lt_keypair->pub, X, t, t_len))
+  if (!snizkpk_verify(auth->sigma, otr->their_profile->pub_key, otr->lt_keypair->pub, X, t, t_len))
     return false;
 
 	otrv4_fingerprint_t fp;

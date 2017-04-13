@@ -7,13 +7,13 @@ void test_api_conversation(void)
 {
 	OTR4_INIT;
 
-	cs_keypair_t cs_alice, cs_bob;
-	cs_keypair_generate(cs_alice);
-	cs_keypair_generate(cs_bob);
+	otrv4_keypair_t cs_alice[1], cs_bob[1];
+	otrv4_keypair_generate(cs_alice);
+	otrv4_keypair_generate(cs_bob);
 
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
-	otrv4_t *alice = otrv4_new_with_lt_key(otrv4_keypair_new(), cs_alice, policy);
-	otrv4_t *bob = otrv4_new_with_lt_key(otrv4_keypair_new(), cs_bob, policy);
+	otrv4_t *alice = otrv4_new(cs_alice, policy);
+	otrv4_t *bob = otrv4_new(cs_bob, policy);
 
 	//AKE HAS FINISHED.
 	do_ake_fixture(alice, bob);
@@ -107,8 +107,8 @@ void test_api_conversation(void)
 
 	otrv4_free(alice);
 	otrv4_free(bob);
-	cs_keypair_destroy(cs_alice);
-	cs_keypair_destroy(cs_bob);
+	otrv4_keypair_destroy(cs_alice);
+	otrv4_keypair_destroy(cs_bob);
 
 	OTR4_FREE;
 }

@@ -7,7 +7,6 @@
 #include "dh.h"
 #include "ed448.h"
 #include "user_profile.h"
-#include "cramershoup_interface.h"
 #include "auth.h"
 
 #define DAKE_HEADER_BYTES (2+1+4+4)

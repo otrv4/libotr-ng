@@ -54,25 +54,20 @@ void test_serialize_deserialize_data()
 	free(dst);
 }
 
-void test_ser_des_cs_public_key()
+void test_ser_des_otrv4_public_key()
 {
-	cs_keypair_t keypair, deserialized;
-	cs_keypair_generate(keypair);
+	otrv4_keypair_t keypair[1];
+        otrv4_public_key_t deserialized;
+	otrv4_keypair_generate(keypair);
 
-	uint8_t serialized[170] = { 0 };
-	g_assert_cmpint(serialize_cs_public_key(serialized, keypair->pub), ==,
-			170);
-	g_assert_cmpint(deserialize_cs_public_key
-			(deserialized->pub, serialized, 170), ==, 1);
+	uint8_t serialized[ED448_PUBKEY_BYTES] = { 0 };
+	g_assert_cmpint(serialize_otrv4_public_key(serialized, keypair->pub), ==,
+			ED448_PUBKEY_BYTES);
+	g_assert_cmpint(deserialize_otrv4_public_key
+			(deserialized, serialized, ED448_PUBKEY_BYTES, NULL), ==, 1);
 
-	otrv4_assert(DECAF_TRUE == decaf_448_point_valid(deserialized->pub->c));
-	otrv4_assert(DECAF_TRUE == decaf_448_point_valid(deserialized->pub->d));
-	otrv4_assert(DECAF_TRUE == decaf_448_point_valid(deserialized->pub->h));
+	otrv4_assert(DECAF_TRUE == decaf_448_point_valid(deserialized));
 
-	otrv4_assert(decaf_448_point_eq(deserialized->pub->c, keypair->pub->c)
-		     == DECAF_TRUE);
-	otrv4_assert(decaf_448_point_eq(deserialized->pub->d, keypair->pub->d)
-		     == DECAF_TRUE);
-	otrv4_assert(decaf_448_point_eq(deserialized->pub->h, keypair->pub->h)
+	otrv4_assert(decaf_448_point_eq(deserialized, keypair->pub)
 		     == DECAF_TRUE);
 }

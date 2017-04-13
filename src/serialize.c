@@ -96,13 +96,11 @@ int serialize_dh_public_key(uint8_t * dst, const dh_public_key_t pub)
 	return s;
 }
 
-int serialize_cs_public_key(uint8_t * dst, const cs_public_key_t * pub)
+int serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
 {
 	uint8_t *cursor = dst;
-	cursor += serialize_uint16(cursor, CRAMER_SHOUP_PUBKEY_TYPE);
-	cursor += serialize_ec_point(cursor, pub->c);
-	cursor += serialize_ec_point(cursor, pub->d);
-	cursor += serialize_ec_point(cursor, pub->h);
+	cursor += serialize_uint16(cursor, ED448_PUBKEY_TYPE);
+	cursor += serialize_ec_point(cursor, pub);
 
 	return cursor - dst;
 }

@@ -146,38 +146,29 @@ bool deserialize_ec_point(ec_point_t point, const uint8_t * serialized)
 }
 
 bool
-deserialize_cs_public_key(cs_public_key_t * pub, const uint8_t * serialized,
-			  size_t ser_len)
+deserialize_otrv4_public_key(otrv4_public_key_t pub, const uint8_t * serialized,
+			  size_t ser_len, size_t * read)
 {
-	if (ser_len < (3 * DECAF_448_SER_BYTES + sizeof(uint16_t))) {
-		return false;
-	}
-
 	const uint8_t *cursor = serialized;
-	size_t read = 0;
-
+        size_t r = 0;
 	uint16_t pubkey_type = 0;
-	deserialize_uint16(&pubkey_type, cursor, ser_len, &read);
-	cursor += read;
-	if (CRAMER_SHOUP_PUBKEY_TYPE != pubkey_type) {
-		return false;
-	}
 
-	if (!deserialize_ec_point(pub->c, cursor)) {
+	if (ser_len < ED448_PUBKEY_BYTES)
 		return false;
-	}
 
-	cursor += DECAF_448_SER_BYTES;
-	if (!deserialize_ec_point(pub->d, cursor)) {
+	deserialize_uint16(&pubkey_type, cursor, ser_len, &r);
+	cursor += r;
+
+	if (ED448_PUBKEY_TYPE != pubkey_type)
 		return false;
-	}
 
-	cursor += DECAF_448_SER_BYTES;
-	if (!deserialize_ec_point(pub->h, cursor)) {
-		return false;
-	}
+	if (!deserialize_ec_point(pub, cursor))
+            return false;
 
-	return true;
+        if (read)
+            *read = ED448_PUBKEY_BYTES;
+
+        return true;
 }
 
 bool

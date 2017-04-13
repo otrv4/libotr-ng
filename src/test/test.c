@@ -10,7 +10,6 @@
 #include "test_user_profile.c"
 #include "test_ed448.c"
 #include "test_dh.c"
-#include "test_cramershoup.c"
 #include "test_serialize.c"
 #include "test_key_management.c"
 #include "test_data_message.c"
@@ -31,14 +30,11 @@ int main(int argc, char **argv)
 	g_test_add_func("/dh/api", dh_test_api);
 	g_test_add_func("/dh/serialize", dh_test_serialize);
 
-	g_test_add_func("/cramershoup/serialize_private_key",
-			cramershoup_test_serialize_private_key);
-
 	g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
 	g_test_add_func("/serialize_and_deserialize/data",
 			test_serialize_deserialize_data);
-	g_test_add_func("/serialize_and_deserialize/cramer-shoup",
-			test_ser_des_cs_public_key);
+	g_test_add_func("/serialize_and_deserialize/ed448-public-key",
+			test_ser_des_otrv4_public_key);
 
 	g_test_add_func("/user_profile/create", test_user_profile_create);
 	g_test_add_func("/user_profile/serialize_body",

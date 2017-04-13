@@ -18,11 +18,11 @@ typedef struct {
 typedef struct {
 	otrv4_callbacks_t *callbacks;
 
-	cs_keypair_s *keypair;
+        otrv4_keypair_t *lt_keypair;
 	list_element_t *conversations;
 } otr4_client_t;
 
-otr4_client_t *otr4_client_new(cs_keypair_s * keypair);
+otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair);
 
 void otr4_client_free(otr4_client_t * client);
 

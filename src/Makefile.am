@@ -4,7 +4,6 @@ libotr4_la_SOURCES = \
 		     auth.c \
 		     b64.c \
 		     client.c \
-		     cramershoup_interface.c \
 		     dake.c \
 		     data_types.c \
 		     data_message.c \
@@ -13,6 +12,7 @@ libotr4_la_SOURCES = \
 		     dread.c \
 		     fingerprint.c \
 		     keys.c \
+		     key_management.c \
 		     list.c \
 		     mpi.c \
 		     otrv3.c \
@@ -21,28 +21,25 @@ libotr4_la_SOURCES = \
 		     smp.c \
 		     str.c \
 		     tlv.c \
-		     user_profile.c \
-		     key_management.c
+		     user_profile.c
 
 libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBDECAF_CFLAGS@ \
                                  @LIBSODIUM_CFLAGS@ \
                                  @LIBGCRYPT_CFLAGS@ \
-                                 @LIBCRAMERSHOUP_CFLAGS@ \
 				 $(CODE_COVERAGE_CFLAGS)
 
 libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
                                    @LIBSODIUM_LIBS@ \
                                    @LIBGCRYPT_LIBS@ \
-                                   @LIBCRAMERSHOUP_LIBS@ \
 				   $(CODE_COVERAGE_LIBS)
 
 otrincdir = $(includedir)/libotr4
 otrinc_HEADERS = client.h \
-		 cramershoup_interface.h \
 		 dake.h \
 		 dh.h \
 		 ed448.h \
 		 fingerprint.h \
+		 keys.h \
 		 key_management.h \
 		 list.h \
 		 mpi.h \

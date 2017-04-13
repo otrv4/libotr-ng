@@ -4,13 +4,11 @@
 #include <stdint.h>
 
 #include "mpi.h"
-#include "cramershoup_interface.h"
 #include "str.h"
 #include "keys.h"
 
 typedef struct {
-  cs_public_key_t pub_key[1];
-  otrv4_public_key_t lt_pub_key;
+  otrv4_public_key_t pub_key;
   string_t versions;
   uint64_t expires;
   ec_signature_t signature;
@@ -19,7 +17,7 @@ typedef struct {
 
 user_profile_t *user_profile_new(const string_t versions);
 
-bool user_profile_sign(user_profile_t * profile, const cs_keypair_t keypair);
+bool user_profile_sign(user_profile_t * profile, const otrv4_keypair_t *keypair);
 
 bool user_profile_verify_signature(const user_profile_t * profile);
 
@@ -41,6 +39,6 @@ bool
 user_profile_aprint(uint8_t ** dst, size_t * nbytes,
 		    const user_profile_t * profile);
 
-user_profile_t *user_profile_build(string_t versions, cs_keypair_t keypair);
+user_profile_t *user_profile_build(string_t versions, otrv4_keypair_t *keypair);
 
 #endif

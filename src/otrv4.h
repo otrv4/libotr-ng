@@ -67,7 +67,6 @@ struct connection {
 	user_profile_t *profile;
 	user_profile_t *their_profile;
 
-        cs_keypair_s *keypair;
 	otrv4_version_t running_version;
 
         otrv4_keypair_t *lt_keypair;
@@ -102,8 +101,7 @@ typedef struct {
 	uint8_t type;
 } otrv4_header_t;
 
-otrv4_t *otrv4_new(cs_keypair_s * keypair, otrv4_policy_t policy);
-otrv4_t* otrv4_new_with_lt_key(otrv4_keypair_t *lt, cs_keypair_s * keypair, otrv4_policy_t policy);
+otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy);
 void otrv4_destroy(otrv4_t * otr);
 void otrv4_free( /*@only@ */ otrv4_t * otr);
 

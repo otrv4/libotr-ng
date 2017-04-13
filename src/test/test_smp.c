@@ -5,12 +5,14 @@
 void test_smp_state_machine(void)
 {
 	OTR4_INIT;
-	cs_keypair_t cs_alice, cs_bob;
-	cs_keypair_generate(cs_alice);
-	cs_keypair_generate(cs_bob);
+
+        otrv4_keypair_t alice_keypair[1], bob_keypair[1];
+        otrv4_keypair_generate(alice_keypair);
+        otrv4_keypair_generate(bob_keypair);
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
-	otrv4_t *alice_otr = otrv4_new_with_lt_key(otrv4_keypair_new(), cs_alice, policy);
-	otrv4_t *bob_otr = otrv4_new_with_lt_key(otrv4_keypair_new(), cs_bob, policy);
+
+	otrv4_t *alice_otr = otrv4_new(alice_keypair, policy);
+	otrv4_t *bob_otr = otrv4_new(bob_keypair, policy);
 
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
@@ -31,8 +33,8 @@ void test_smp_state_machine(void)
 
 	otrv4_destroy(alice_otr);
 	otrv4_destroy(bob_otr);
-	cs_keypair_destroy(cs_alice);
-	cs_keypair_destroy(cs_bob);
+	otrv4_keypair_destroy(alice_keypair);
+	otrv4_keypair_destroy(bob_keypair);
 
 	OTR4_FREE;
 };

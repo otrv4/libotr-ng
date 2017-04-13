@@ -24,15 +24,14 @@ otr4_fingerprint_hash_to_human(char human[OTR4_FPRINT_HUMAN_LEN],
 }
 
 int otr4_serialize_fingerprint(otrv4_fingerprint_t fp,
-			       const cs_public_key_t * pub)
+			       const otrv4_public_key_t pub)
 {
-	uint8_t serialized[CRAMER_SHOUP_PUBKEY_BYTES] = { 0 };
+	uint8_t serialized[ED448_PUBKEY_BYTES] = { 0 };
 
 	if (!fp)
 		return 1;
 
-	//TODO: do we need to check anything? 
-	serialize_cs_public_key(serialized, pub);
+	serialize_otrv4_public_key(serialized, pub);
 
 	return !sha3_512(fp, sizeof(otrv4_fingerprint_t), serialized,
 			 sizeof(serialized));

@@ -38,3 +38,10 @@ void otrv4_keypair_destroy(otrv4_keypair_t *keypair)
   decaf_448_point_destroy(keypair->pub);
   decaf_448_scalar_destroy(keypair->priv);
 }
+
+void
+otrv4_keypair_free(otrv4_keypair_t *keypair)
+{
+    otrv4_keypair_destroy(keypair);
+    free(keypair);
+}

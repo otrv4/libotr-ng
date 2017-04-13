@@ -3,7 +3,6 @@
 #include "str.h"
 #include "serialize.h"
 #include "sha3.h"
-#include "cramershoup_interface.h"
 
 #define CONV(c) ((otr4_conversation_t *) c)
 
@@ -28,13 +27,13 @@ static void conversation_free(otr4_conversation_t * conv)
 	free(conv);
 }
 
-otr4_client_t *otr4_client_new(cs_keypair_s * keypair)
+otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair)
 {
 	otr4_client_t *client = malloc(sizeof(otr4_client_t));
 	if (!client)
 		return NULL;
 
-	client->keypair = keypair;
+	client->lt_keypair = keypair;
 	client->conversations = NULL;
 	client->callbacks = NULL;
 
@@ -51,7 +50,7 @@ void otr4_client_free(otr4_client_t * client)
 
 	list_free_all(client->conversations);
 	client->conversations = NULL;
-	client->keypair = NULL;
+	client->lt_keypair = NULL;
 
 	free(client);
 }
@@ -82,7 +81,7 @@ static otrv4_t *create_connection_for(const char *recipient,
 				      otr4_client_t * client)
 {
 	otrv4_t *conn = NULL;
-	conn = otrv4_new_with_lt_key(otrv4_keypair_new(), client->keypair, get_policy_for(recipient));
+	conn = otrv4_new(client->lt_keypair, get_policy_for(recipient));
 	if (!conn)
 		return NULL;
 
@@ -101,7 +100,7 @@ otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 	if (conv)
 		return conv;
 
-	if (!client->keypair)
+	if (!client->lt_keypair)
 		return NULL;
 
 	conn = create_connection_for(recipient, client);
@@ -223,10 +222,10 @@ otr4_client_disconnect(char **newmessage, const char *recipient,
 int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
 				    const otr4_client_t * client)
 {
-	if (!client->keypair)
+	if (!client->lt_keypair)
 		return -1;
 
-	return otr4_serialize_fingerprint(fp, client->keypair->pub);
+	return otr4_serialize_fingerprint(fp, client->lt_keypair->pub);
 }
 
 int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
@@ -238,10 +237,11 @@ int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
 	if (!privf)
 		return -1;
 
-	if (!client->keypair)
+	if (!client->lt_keypair)
 		return -2;
 
-	err = cs_serialize_private_key(&buff, &s, client->keypair->priv);
+        //TODO: serialie otrv4 private key
+	//err = cs_serialize_private_key(&buff, &s, client->keypair->priv);
 	if (err)
 		return err;
 
@@ -251,35 +251,25 @@ int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
 	return 0;
 }
 
-static cs_keypair_s *new_keypair()
-{
-	cs_keypair_s *pair = NULL;
-
-	pair = malloc(sizeof(cs_keypair_s));
-	if (pair)
-		cs_keypair_destroy(pair);
-
-	return pair;
-}
-
 int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 {
 	if (!privf)
 		return -1;
 
-	if (!client->keypair)
-		client->keypair = new_keypair();
+	if (!client->lt_keypair)
+		client->lt_keypair = otrv4_keypair_new();
 
-	if (!client->keypair)
+	if (!client->lt_keypair)
 		return -2;
 
-	if (cs_deserialize_private_key_FILEp(client->keypair->priv, privf)) {
-		cs_keypair_destroy(client->keypair);
-		free(client->keypair);
-		client->keypair = NULL;
-		return -3;
-	}
+        //TODO: deserialize private key
+	//if (cs_deserialize_private_key_FILEp(client->keypair->priv, privf)) {
+	//	cs_keypair_destroy(client->keypair);
+	//	free(client->keypair);
+	//	client->keypair = NULL;
+	//	return -3;
+	//}
 
-	cs_keypair_derive_public_key(client->keypair);
+	//cs_keypair_derive_public_key(client->keypair);
 	return 0;
 }
