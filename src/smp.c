@@ -1,5 +1,4 @@
 #include "auth.h"
-#include "cramershoup_interface.h"
 #include "smp.h"
 #include "str.h"
 #include "tlv.h"
