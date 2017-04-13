@@ -65,6 +65,10 @@ bool
 dake_identity_message_validate(const dake_identity_message_t *
 			       identity_message);
 
+void dake_auth_r_destroy(dake_auth_r_t * auth_r);
+
+void dake_auth_r_free(dake_auth_r_t * auth_r);
+
 bool
 dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 		   const dake_auth_r_t * dre_auth);

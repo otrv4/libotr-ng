@@ -39,9 +39,6 @@ void dake_identity_message_free(dake_identity_message_t * identity_message)
 	if (identity_message == NULL)
 		return;
 
-	dh_mpi_release(identity_message->B);
-	identity_message->B = NULL;
-
 	dake_identity_message_destroy(identity_message);
 	free(identity_message);
 }
@@ -50,6 +47,7 @@ void dake_identity_message_destroy(dake_identity_message_t * identity_message)
 {
 	user_profile_destroy(identity_message->profile);
 	dh_mpi_release(identity_message->B);
+	identity_message->B = NULL;
 }
 
 bool
@@ -264,6 +262,22 @@ dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 
 	free(our_profile);
 	return true;
+}
+
+void dake_auth_r_destroy(dake_auth_r_t * auth_r)
+{
+	dh_mpi_release(auth_r->A);
+	auth_r->A = NULL;
+	user_profile_destroy(auth_r->profile);
+}
+
+void dake_auth_r_free(dake_auth_r_t * auth_r)
+{
+	if (auth_r == NULL)
+		return;
+
+	dake_auth_r_destroy(auth_r);
+	free(auth_r);
 }
 
 bool

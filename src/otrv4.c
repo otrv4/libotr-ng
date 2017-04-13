@@ -712,7 +712,10 @@ reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
 		return false;
 
 	free(t);
-	return serialize_and_encode_auth_i(dst, msg);
+
+	bool ok = serialize_and_encode_auth_i(dst, msg);
+	free(msg);
+	return ok;
 }
 
 static bool
@@ -748,12 +751,15 @@ receive_auth_r(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
 	otr->their_profile = malloc(sizeof(user_profile_t));
 	if (!otr->their_profile)
 		return false;
+
 	key_manager_set_their_ecdh(auth->X, otr->keys);
 	key_manager_set_their_dh(auth->A, otr->keys);
 	user_profile_copy(otr->their_profile, auth->profile);
 
 	if (!reply_with_auth_i_msg(dst, otr->their_profile, otr))
 		return false;
+
+	dake_auth_r_destroy(auth);
 
 	otrv4_fingerprint_t fp;
 	if (otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
