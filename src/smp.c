@@ -67,7 +67,7 @@ tlv_t * generate_smp_msg_1(smp_context_t smp, string_t answer)
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
 	gcry_md_write(hd, &version[1], 1);
 	gcry_md_write(hd, pair_r3->pub, DECAF_448_SER_BYTES);
-	memcpy(c3, gcry_md_read(hd, 0), 64);
+	memcpy(hash, gcry_md_read(hd, 0), 64);
 	gcry_md_close(hd);
 
 	ok = decaf_448_scalar_decode(c3, hash);
