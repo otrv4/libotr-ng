@@ -69,7 +69,7 @@ struct connection {
 
 	otrv4_version_t running_version;
 
-        otrv4_keypair_t *lt_keypair;
+        otrv4_keypair_t *keypair;
 	key_manager_t keys;
 	otrv4_callbacks_t *callbacks;
 

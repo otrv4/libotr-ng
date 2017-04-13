@@ -230,7 +230,7 @@ void test_otrv4_destroy()
 	otrv4_assert(otr->profile != NULL);
 	otrv4_destroy(otr);
 
-	otrv4_assert(otr->lt_keypair == NULL);
+	otrv4_assert(otr->keypair == NULL);
 	otrv4_assert(otr->keys->current == NULL);
 	otrv4_assert(otr->profile == NULL);
 

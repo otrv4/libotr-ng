@@ -33,7 +33,7 @@ otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair)
 	if (!client)
 		return NULL;
 
-	client->lt_keypair = keypair;
+	client->keypair = keypair;
 	client->conversations = NULL;
 	client->callbacks = NULL;
 
@@ -50,7 +50,7 @@ void otr4_client_free(otr4_client_t * client)
 
 	list_free_all(client->conversations);
 	client->conversations = NULL;
-	client->lt_keypair = NULL;
+	client->keypair = NULL;
 
 	free(client);
 }
@@ -81,7 +81,7 @@ static otrv4_t *create_connection_for(const char *recipient,
 				      otr4_client_t * client)
 {
 	otrv4_t *conn = NULL;
-	conn = otrv4_new(client->lt_keypair, get_policy_for(recipient));
+	conn = otrv4_new(client->keypair, get_policy_for(recipient));
 	if (!conn)
 		return NULL;
 
@@ -100,7 +100,7 @@ otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 	if (conv)
 		return conv;
 
-	if (!client->lt_keypair)
+	if (!client->keypair)
 		return NULL;
 
 	conn = create_connection_for(recipient, client);
@@ -222,10 +222,10 @@ otr4_client_disconnect(char **newmessage, const char *recipient,
 int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
 				    const otr4_client_t * client)
 {
-	if (!client->lt_keypair)
+	if (!client->keypair)
 		return -1;
 
-	return otr4_serialize_fingerprint(fp, client->lt_keypair->pub);
+	return otr4_serialize_fingerprint(fp, client->keypair->pub);
 }
 
 int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
@@ -237,7 +237,7 @@ int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
 	if (!privf)
 		return -1;
 
-	if (!client->lt_keypair)
+	if (!client->keypair)
 		return -2;
 
         //TODO: serialie otrv4 private key
@@ -256,10 +256,10 @@ int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 	if (!privf)
 		return -1;
 
-	if (!client->lt_keypair)
-		client->lt_keypair = otrv4_keypair_new();
+	if (!client->keypair)
+		client->keypair = otrv4_keypair_new();
 
-	if (!client->lt_keypair)
+	if (!client->keypair)
 		return -2;
 
         //TODO: deserialize private key

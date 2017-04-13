@@ -208,7 +208,7 @@ void test_client_get_our_fingerprint()
 
 	uint8_t serialized[ED448_PUBKEY_BYTES] = { 0 };
 	g_assert_cmpint(serialize_otrv4_public_key
-			(serialized, client->lt_keypair->pub), ==, ED448_PUBKEY_BYTES);
+			(serialized, client->keypair->pub), ==, ED448_PUBKEY_BYTES);
 
 	otrv4_fingerprint_t expected_fp = { 0 };
 	bool ok = sha3_512(expected_fp, sizeof(otrv4_fingerprint_t), serialized,

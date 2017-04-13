@@ -18,7 +18,7 @@ typedef struct {
 typedef struct {
 	otrv4_callbacks_t *callbacks;
 
-        otrv4_keypair_t *lt_keypair;
+        otrv4_keypair_t *keypair;
 	list_element_t *conversations;
 } otr4_client_t;
 
