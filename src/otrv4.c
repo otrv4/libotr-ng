@@ -100,20 +100,21 @@ otrv4_t *otrv4_new(otrv4_keypair_t * keypair, otrv4_policy_t policy)
 	if (!otr)
 		return NULL;
 
+	otr->keypair = keypair;
 	otr->state = OTRV4_STATE_START;
+	otr->running_version = OTRV4_VERSION_NONE;
 	otr->supported_versions = policy.allows;
 
-	otr->callbacks = NULL;
 	otr->our_instance_tag = 0;
 	otr->their_instance_tag = 0;
-	otr->keypair = keypair;
-	otr->running_version = OTRV4_VERSION_NONE;
 	otr->profile = get_my_user_profile(otr);
 	otr->their_profile = NULL;
+
 	key_manager_init(otr->keys);
+	otr->callbacks = NULL;
+
 	//TODO: moves initialization to smp
 	otr->smp->state = SMPSTATE_EXPECT1;
-
 	return otr;
 }
 
