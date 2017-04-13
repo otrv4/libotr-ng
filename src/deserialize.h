@@ -29,26 +29,21 @@ bool
 deserialize_mpi_data(uint8_t * dst, const uint8_t * buffer, size_t buflen,
 		     size_t * read);
 
-bool
-deserialize_ec_point(ec_point_t point, const uint8_t * serialized);
+bool deserialize_ec_point(ec_point_t point, const uint8_t * serialized);
 
 bool
 deserialize_otrv4_public_key(otrv4_public_key_t pub, const uint8_t * serialized,
-			  size_t ser_len, size_t * read);
+			     size_t ser_len, size_t * read);
 
 //FIXME: this should go away
 bool
 deserialize_ec_public_key(ec_public_key_t pub, const uint8_t * serialized,
 			  size_t ser_len, size_t * read);
 
-
 bool
 deserialize_snizkpk_proof(snizkpk_proof_t proof, const uint8_t * serialized,
 			  size_t ser_len, size_t * read);
 
-bool
-decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len);
+bool decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len);
 
-bool
-decode_b64_ec_point(ec_point_t s, const char *buff, size_t len);
-
+bool decode_b64_ec_point(ec_point_t s, const char *buff, size_t len);

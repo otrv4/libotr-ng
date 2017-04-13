@@ -175,7 +175,8 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t * otrv4_fixture,
 				     gconstpointer data)
 {
 	user_profile_t *profile = user_profile_new("4");
-	dake_identity_message_t *identity_message = dake_identity_message_new(profile);
+	dake_identity_message_t *identity_message =
+	    dake_identity_message_new(profile);
 
 	uint8_t *serialized = NULL;
 	otrv4_assert(dake_identity_message_aprint
@@ -198,7 +199,7 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t * otrv4_fixture,
 
 	free(serialized);
 	otrv4_response_free(response);
-        user_profile_free(profile);
+	user_profile_free(profile);
 }
 
 void

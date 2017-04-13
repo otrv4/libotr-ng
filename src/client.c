@@ -240,7 +240,7 @@ int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
 	if (!client->keypair)
 		return -2;
 
-        //TODO: serialie otrv4 private key
+	//TODO: serialie otrv4 private key
 	//err = cs_serialize_private_key(&buff, &s, client->keypair->priv);
 	if (err)
 		return err;
@@ -262,12 +262,12 @@ int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 	if (!client->keypair)
 		return -2;
 
-        //TODO: deserialize private key
+	//TODO: deserialize private key
 	//if (cs_deserialize_private_key_FILEp(client->keypair->priv, privf)) {
-	//	cs_keypair_destroy(client->keypair);
-	//	free(client->keypair);
-	//	client->keypair = NULL;
-	//	return -3;
+	//      cs_keypair_destroy(client->keypair);
+	//      free(client->keypair);
+	//      client->keypair = NULL;
+	//      return -3;
 	//}
 
 	//cs_keypair_derive_public_key(client->keypair);

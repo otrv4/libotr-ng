@@ -57,14 +57,15 @@ void test_serialize_deserialize_data()
 void test_ser_des_otrv4_public_key()
 {
 	otrv4_keypair_t keypair[1];
-        otrv4_public_key_t deserialized;
+	otrv4_public_key_t deserialized;
 	otrv4_keypair_generate(keypair);
 
 	uint8_t serialized[ED448_PUBKEY_BYTES] = { 0 };
-	g_assert_cmpint(serialize_otrv4_public_key(serialized, keypair->pub), ==,
-			ED448_PUBKEY_BYTES);
+	g_assert_cmpint(serialize_otrv4_public_key(serialized, keypair->pub),
+			==, ED448_PUBKEY_BYTES);
 	g_assert_cmpint(deserialize_otrv4_public_key
-			(deserialized, serialized, ED448_PUBKEY_BYTES, NULL), ==, 1);
+			(deserialized, serialized, ED448_PUBKEY_BYTES, NULL),
+			==, 1);
 
 	otrv4_assert(DECAF_TRUE == decaf_448_point_valid(deserialized));
 

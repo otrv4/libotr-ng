@@ -30,7 +30,7 @@ int serialize_ec_point(uint8_t * dst, const ec_point_t point);
 
 int serialize_dh_public_key(uint8_t * dst, const dh_public_key_t pub);
 
-int serialize_snizkpk_proof(uint8_t *dst, const snizkpk_proof_t proof);
+int serialize_snizkpk_proof(uint8_t * dst, const snizkpk_proof_t proof);
 
 int serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t);
 

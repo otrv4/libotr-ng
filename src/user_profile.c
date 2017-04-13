@@ -19,8 +19,8 @@ user_profile_t *user_profile_new(const string_t versions)
 	if (!profile)
 		return NULL;
 
-        //TODO: Should we initialize to zero?
-        //ec_destroy_point(profile->pub_key);
+	//TODO: Should we initialize to zero?
+	//ec_destroy_point(profile->pub_key);
 	profile->expires = 0;
 	profile->versions = otrv4_strndup(versions, strlen(versions));
 	memset(profile->signature, 0, sizeof(ec_signature_t));
@@ -31,7 +31,7 @@ user_profile_t *user_profile_new(const string_t versions)
 
 void user_profile_copy(user_profile_t * dst, const user_profile_t * src)
 {
-        //TODO should we set dst to a valid (but empty) profile?
+	//TODO should we set dst to a valid (but empty) profile?
 	if (!src)
 		return;
 
@@ -68,7 +68,7 @@ user_profile_body_serialize(uint8_t * dst, const user_profile_t * profile)
 
 	target += serialize_otrv4_public_key(target, profile->pub_key);
 	target += serialize_data(target, (uint8_t *) profile->versions,
-			   strlen(profile->versions) + 1);
+				 strlen(profile->versions) + 1);
 	target += serialize_uint64(target, profile->expires);
 
 	return target - dst;
@@ -145,14 +145,16 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 	if (!target)
 		return false;
 
-	if (!deserialize_otrv4_public_key(target->pub_key, buffer, buflen, &read)) {
+	if (!deserialize_otrv4_public_key
+	    (target->pub_key, buffer, buflen, &read)) {
 		goto deserialize_error;
 	}
 
 	walked += read;
 
 	if (!deserialize_data
-	    ((uint8_t **) & target->versions, buffer + walked, buflen - walked, &read)) {
+	    ((uint8_t **) & target->versions, buffer + walked, buflen - walked,
+	     &read)) {
 		goto deserialize_error;
 	}
 
@@ -193,11 +195,12 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 	return false;
 }
 
-bool user_profile_sign(user_profile_t * profile, const otrv4_keypair_t *keypair)
+bool user_profile_sign(user_profile_t * profile,
+		       const otrv4_keypair_t * keypair)
 {
-        ec_point_copy(profile->pub_key, keypair->pub);
+	ec_point_copy(profile->pub_key, keypair->pub);
 
-        // TODO
+	// TODO
 	return true;
 }
 
@@ -205,18 +208,17 @@ bool user_profile_sign(user_profile_t * profile, const otrv4_keypair_t *keypair)
 //deserialized bytes.
 bool user_profile_verify_signature(const user_profile_t * profile)
 {
-        //TODO
+	//TODO
 	return true;
 }
 
-user_profile_t *user_profile_build(string_t versions, otrv4_keypair_t *keypair)
+user_profile_t *user_profile_build(string_t versions, otrv4_keypair_t * keypair)
 {
 	user_profile_t *profile = user_profile_new(versions);
 	if (profile == NULL) {
 		free(versions);
 		return NULL;
 	}
-
 #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60;	//2 weeks
 	time_t expires = time(NULL);
 	profile->expires = expires + PROFILE_EXPIRATION_SECONDS;

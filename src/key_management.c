@@ -401,7 +401,7 @@ static bool enter_new_ratchet(key_manager_t manager)
 	// TODO: Securely delete shared.
 	uint8_t ssid_buff[GCRY_MD_SHA3_256];
 	if (!sha3_256(ssid_buff, gcry_md_get_algo_dlen(GCRY_MD_SHA3_256),
-	    shared, sizeof(shared_secret_t)))
+		      shared, sizeof(shared_secret_t)))
 		return false;
 
 	memcpy(manager->ssid, ssid_buff, 8);

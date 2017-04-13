@@ -5,15 +5,15 @@ typedef struct {
 	otrv4_t *otr;
 	otrv4_t *otrv3;
 	otrv4_t *otrv34;
-        otrv4_keypair_t *keypair;
+	otrv4_keypair_t *keypair;
 } otrv4_fixture_t;
 
 void otrv4_fixture_set_up(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 {
 	dh_init();
 
-        otrv4_fixture->keypair = otrv4_keypair_new();
-        otrv4_keypair_generate(otrv4_fixture->keypair);
+	otrv4_fixture->keypair = otrv4_keypair_new();
+	otrv4_keypair_generate(otrv4_fixture->keypair);
 
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4 };
 	otrv4_fixture->otr = otrv4_new(otrv4_fixture->keypair, policy);
@@ -27,7 +27,7 @@ void otrv4_fixture_set_up(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 
 void otrv4_fixture_teardown(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 {
-    otrv4_keypair_free(otrv4_fixture->keypair);
+	otrv4_keypair_free(otrv4_fixture->keypair);
 	otrv4_free(otrv4_fixture->otr);
 	otrv4_free(otrv4_fixture->otrv3);
 	otrv4_free(otrv4_fixture->otrv34);
@@ -36,7 +36,7 @@ void otrv4_fixture_teardown(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 }
 
 typedef struct {
-        otrv4_keypair_t *keypair;
+	otrv4_keypair_t *keypair;
 	user_profile_t *profile;
 } identity_message_fixture_t;
 
@@ -44,8 +44,8 @@ static void
 identity_message_fixture_setup(identity_message_fixture_t * fixture,
 			       gconstpointer user_data)
 {
-    fixture->keypair = otrv4_keypair_new();
-        otrv4_keypair_generate(fixture->keypair);
+	fixture->keypair = otrv4_keypair_new();
+	otrv4_keypair_generate(fixture->keypair);
 	fixture->profile = user_profile_new("4");
 	otrv4_assert(fixture->profile != NULL);
 	fixture->profile->expires = time(NULL) + 60 * 60;
@@ -56,13 +56,12 @@ static void
 identity_message_fixture_teardown(identity_message_fixture_t * fixture,
 				  gconstpointer user_data)
 {
-        otrv4_keypair_free(fixture->keypair);
+	otrv4_keypair_free(fixture->keypair);
 	user_profile_free(fixture->profile);
 	fixture->profile = NULL;
 }
 
-void
-do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
+void do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 {
 	otrv4_response_t *response_to_bob = otrv4_response_new();
 	otrv4_response_t *response_to_alice = otrv4_response_new();

@@ -38,7 +38,7 @@ test_dake_identity_message_serializes(identity_message_fixture_t * f,
 
 	char expected[] = {
 		0x0, 0x04,	// version
-		OTR_IDENTITY_MSG_TYPE,		//message type
+		OTR_IDENTITY_MSG_TYPE,	//message type
 		0x0, 0x0, 0x0, 0x1,	// sender instance tag
 		0x0, 0x0, 0x0, 0x0,	// receiver instance tag
 	};

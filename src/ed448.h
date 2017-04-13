@@ -70,21 +70,22 @@ ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src)
 static inline void
 ec_point_serialize(uint8_t * dst, size_t dst_len, const ec_point_t point)
 {
-  //TODO: error
+	//TODO: error
 	decaf_448_point_encode(dst, point);
 }
 
 static inline void
 ec_scalar_serialize(uint8_t * dst, size_t dst_len, const ec_scalar_t scalar)
 {
-  //TODO: error
+	//TODO: error
 	decaf_448_scalar_encode(dst, scalar);
 }
 
 static inline bool
-ec_scalar_deserialize(ec_scalar_t scalar, const uint8_t serialized[DECAF_448_SCALAR_BYTES])
+ec_scalar_deserialize(ec_scalar_t scalar,
+		      const uint8_t serialized[DECAF_448_SCALAR_BYTES])
 {
-  return DECAF_SUCCESS == decaf_448_scalar_decode(scalar, serialized);
+	return DECAF_SUCCESS == decaf_448_scalar_decode(scalar, serialized);
 }
 
 static inline bool

@@ -141,7 +141,7 @@ void test_client_api()
 	free(from_alice_to_charlie);
 	from_alice_to_charlie = NULL;
 
-        //Alice receives Auth-I message (from Bob)
+	//Alice receives Auth-I message (from Bob)
 	ignore =
 	    otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
 				BOB_IDENTITY, alice);
@@ -160,7 +160,7 @@ void test_client_api()
 	otrv4_assert(!todisplay);
 	free(fromcharlie);
 	fromcharlie = NULL;
-	
+
 	//Alice sends a disconnected to Bob
 	int err =
 	    otr4_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
@@ -208,7 +208,8 @@ void test_client_get_our_fingerprint()
 
 	uint8_t serialized[ED448_PUBKEY_BYTES] = { 0 };
 	g_assert_cmpint(serialize_otrv4_public_key
-			(serialized, client->keypair->pub), ==, ED448_PUBKEY_BYTES);
+			(serialized, client->keypair->pub), ==,
+			ED448_PUBKEY_BYTES);
 
 	otrv4_fingerprint_t expected_fp = { 0 };
 	bool ok = sha3_512(expected_fp, sizeof(otrv4_fingerprint_t), serialized,

@@ -109,10 +109,10 @@ int main(int argc, char **argv)
 		   otrv4_fixture_set_up, test_otrv4_receives_query_message_v3,
 		   otrv4_fixture_teardown);
 	/*
-        g_test_add("/otrv4/test_otrv4_receives_pre_key_on_start", otrv4_fixture_t, NULL,
-		   otrv4_fixture_set_up, test_otrv4_receives_pre_key_on_start,
-		   otrv4_fixture_teardown);
-        */
+	   g_test_add("/otrv4/test_otrv4_receives_pre_key_on_start", otrv4_fixture_t, NULL,
+	   otrv4_fixture_set_up, test_otrv4_receives_pre_key_on_start,
+	   otrv4_fixture_teardown);
+	 */
 
 	g_test_add_func("/otrv4/destroy", test_otrv4_destroy);
 

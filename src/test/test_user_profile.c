@@ -44,7 +44,8 @@ void test_user_profile_serializes_body()
 		0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0F,	// expires
 	};
 
-	otrv4_assert_cmpmem(expected, serialized + ED448_PUBKEY_BYTES, sizeof(expected));
+	otrv4_assert_cmpmem(expected, serialized + ED448_PUBKEY_BYTES,
+			    sizeof(expected));
 
 	free(serialized);
 	user_profile_free(profile);

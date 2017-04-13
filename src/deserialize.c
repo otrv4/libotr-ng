@@ -147,10 +147,10 @@ bool deserialize_ec_point(ec_point_t point, const uint8_t * serialized)
 
 bool
 deserialize_otrv4_public_key(otrv4_public_key_t pub, const uint8_t * serialized,
-			  size_t ser_len, size_t * read)
+			     size_t ser_len, size_t * read)
 {
 	const uint8_t *cursor = serialized;
-        size_t r = 0;
+	size_t r = 0;
 	uint16_t pubkey_type = 0;
 
 	if (ser_len < ED448_PUBKEY_BYTES)
@@ -163,12 +163,12 @@ deserialize_otrv4_public_key(otrv4_public_key_t pub, const uint8_t * serialized,
 		return false;
 
 	if (!deserialize_ec_point(pub, cursor))
-            return false;
+		return false;
 
-        if (read)
-            *read = ED448_PUBKEY_BYTES;
+	if (read)
+		*read = ED448_PUBKEY_BYTES;
 
-        return true;
+	return true;
 }
 
 bool
@@ -187,100 +187,100 @@ deserialize_ec_public_key(ec_public_key_t pub, const uint8_t * serialized,
 	return true;
 }
 
-bool
-decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len)
+bool decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len)
 {
 	//((base64len+3) / 4) * 3
 	unsigned char *dec = malloc(((len + 3) / 4) * 3);
 	if (!dec)
 		return false;
 
-        bool ok = false;
-        do {
-            size_t written = otrl_base64_decode(dec, buff, len);
-            if (written != DECAF_448_SCALAR_BYTES)
-                continue;
+	bool ok = false;
+	do {
+		size_t written = otrl_base64_decode(dec, buff, len);
+		if (written != DECAF_448_SCALAR_BYTES)
+			continue;
 
-            ok = DECAF_SUCCESS == decaf_448_scalar_decode(s, dec);
-        } while (0);
+		ok = DECAF_SUCCESS == decaf_448_scalar_decode(s, dec);
+	} while (0);
 
-        free(dec);
+	free(dec);
 	return ok;
 }
 
-bool
-decode_b64_ec_point(ec_point_t s, const char *buff, size_t len)
+bool decode_b64_ec_point(ec_point_t s, const char *buff, size_t len)
 {
 	//((base64len+3) / 4) * 3
 	unsigned char *dec = malloc(((len + 3) / 4) * 3);
 	if (!dec)
 		return false;
 
-        bool ok = false;
-        do {
-            size_t written = otrl_base64_decode(dec, buff, len);
-            if (written != DECAF_448_SER_BYTES)
-                continue;
+	bool ok = false;
+	do {
+		size_t written = otrl_base64_decode(dec, buff, len);
+		if (written != DECAF_448_SER_BYTES)
+			continue;
 
-            ok = DECAF_SUCCESS == decaf_448_point_decode(s, dec, DECAF_FALSE);
-        } while (0);
+		ok = DECAF_SUCCESS == decaf_448_point_decode(s, dec,
+							     DECAF_FALSE);
+	} while (0);
 
-        free(dec);
+	free(dec);
 	return ok;
 }
 
 static bool
-deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *serialized, size_t ser_len)
+deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t * serialized,
+		      size_t ser_len)
 {
-    if (ser_len < DECAF_448_SCALAR_BYTES)
-       return false;
+	if (ser_len < DECAF_448_SCALAR_BYTES)
+		return false;
 
-    return ec_scalar_deserialize(scalar, serialized);
+	return ec_scalar_deserialize(scalar, serialized);
 }
 
 bool
 deserialize_snizkpk_proof(snizkpk_proof_t proof, const uint8_t * serialized,
 			  size_t ser_len, size_t * read)
 {
-  if (ser_len < SNIZKPK_BYTES)
-    return false;
+	if (ser_len < SNIZKPK_BYTES)
+		return false;
 
-  const uint8_t *cursor = serialized;
-  if (!deserialize_ec_scalar(proof->c1, cursor, ser_len))
-    return false;
+	const uint8_t *cursor = serialized;
+	if (!deserialize_ec_scalar(proof->c1, cursor, ser_len))
+		return false;
 
-  cursor += DECAF_448_SER_BYTES;
-  ser_len -= DECAF_448_SER_BYTES;
-  
-  if (!deserialize_ec_scalar(proof->r1, cursor, ser_len))
-    return false;
+	cursor += DECAF_448_SER_BYTES;
+	ser_len -= DECAF_448_SER_BYTES;
 
-  cursor += DECAF_448_SER_BYTES;
-  ser_len -= DECAF_448_SER_BYTES;
-  
-  if (!deserialize_ec_scalar(proof->c2, cursor, ser_len))
-    return false;
+	if (!deserialize_ec_scalar(proof->r1, cursor, ser_len))
+		return false;
 
-  cursor += DECAF_448_SER_BYTES;
-  ser_len -= DECAF_448_SER_BYTES;
-  
-  if (!deserialize_ec_scalar(proof->r2, cursor, ser_len))
-    return false;
+	cursor += DECAF_448_SER_BYTES;
+	ser_len -= DECAF_448_SER_BYTES;
 
-  cursor += DECAF_448_SER_BYTES;
-  ser_len -= DECAF_448_SER_BYTES;
-  
-  if (!deserialize_ec_scalar(proof->c3, cursor, ser_len))
-    return false;
+	if (!deserialize_ec_scalar(proof->c2, cursor, ser_len))
+		return false;
 
-  cursor += DECAF_448_SER_BYTES;
-  ser_len -= DECAF_448_SER_BYTES;
- 
-  if (!deserialize_ec_scalar(proof->r3, cursor, ser_len))
-    return false;
+	cursor += DECAF_448_SER_BYTES;
+	ser_len -= DECAF_448_SER_BYTES;
 
-  if (read)
-    *read = SNIZKPK_BYTES;
+	if (!deserialize_ec_scalar(proof->r2, cursor, ser_len))
+		return false;
 
-  return true;
+	cursor += DECAF_448_SER_BYTES;
+	ser_len -= DECAF_448_SER_BYTES;
+
+	if (!deserialize_ec_scalar(proof->c3, cursor, ser_len))
+		return false;
+
+	cursor += DECAF_448_SER_BYTES;
+	ser_len -= DECAF_448_SER_BYTES;
+
+	if (!deserialize_ec_scalar(proof->r3, cursor, ser_len))
+		return false;
+
+	if (read)
+		*read = SNIZKPK_BYTES;
+
+	return true;
 }

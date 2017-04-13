@@ -207,7 +207,9 @@ dake_identity_message_validate(const dake_identity_message_t * identity_message)
 	return valid;
 }
 
-bool validate_received_values(const uint8_t their_ecdh[DECAF_448_SER_BYTES], const dh_mpi_t their_dh, const user_profile_t *profile)
+bool validate_received_values(const uint8_t their_ecdh[DECAF_448_SER_BYTES],
+			      const dh_mpi_t their_dh,
+			      const user_profile_t * profile)
 {
 	bool valid = true;
 
@@ -226,7 +228,6 @@ bool validate_received_values(const uint8_t their_ecdh[DECAF_448_SER_BYTES], con
 
 	return valid;
 }
-
 
 bool
 dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
@@ -257,7 +258,7 @@ dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 	cursor += serialize_uint32(cursor, dre_auth->sender_instance_tag);
 	cursor += serialize_uint32(cursor, dre_auth->receiver_instance_tag);
 	cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
- 	cursor += serialize_ec_public_key(cursor, dre_auth->X);
+	cursor += serialize_ec_public_key(cursor, dre_auth->X);
 	cursor += serialize_dh_public_key(cursor, dre_auth->A);
 	cursor += serialize_snizkpk_proof(cursor, dre_auth->sigma);
 
@@ -266,8 +267,7 @@ dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 }
 
 bool
-dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer,
-			  size_t buflen)
+dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer, size_t buflen)
 {
 	const uint8_t *cursor = buffer;
 	int64_t len = buflen;
@@ -329,7 +329,7 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer,
 	cursor += read;
 	len -= read;
 
- 	otr_mpi_t tmp_mpi;	// no need to free, because nothing is copied now
+	otr_mpi_t tmp_mpi;	// no need to free, because nothing is copied now
 	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
 		return false;
 	}
@@ -351,7 +351,7 @@ bool
 dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,
 		   const dake_auth_i_t * dre_auth)
 {
-  size_t s = DAKE_HEADER_BYTES + SNIZKPK_BYTES;
+	size_t s = DAKE_HEADER_BYTES + SNIZKPK_BYTES;
 	*dst = malloc(s);
 	if (!*dst) {
 		return false;
@@ -372,8 +372,7 @@ dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,
 }
 
 bool
-dake_auth_i_deserialize(dake_auth_i_t * dst, uint8_t * buffer,
-			size_t buflen)
+dake_auth_i_deserialize(dake_auth_i_t * dst, uint8_t * buffer, size_t buflen)
 {
 	const uint8_t *cursor = buffer;
 	int64_t len = buflen;
@@ -410,7 +409,8 @@ dake_auth_i_deserialize(dake_auth_i_t * dst, uint8_t * buffer,
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
+	if (!deserialize_uint32
+	    (&dst->receiver_instance_tag, cursor, len, &read)) {
 		return false;
 	}
 
@@ -419,4 +419,3 @@ dake_auth_i_deserialize(dake_auth_i_t * dst, uint8_t * buffer,
 
 	return deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
 }
-

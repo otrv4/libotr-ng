@@ -8,16 +8,17 @@
 #include "keys.h"
 
 typedef struct {
-  otrv4_public_key_t pub_key;
-  string_t versions;
-  uint64_t expires;
-  ec_signature_t signature;
-  otr_mpi_t transitional_signature;
+	otrv4_public_key_t pub_key;
+	string_t versions;
+	uint64_t expires;
+	ec_signature_t signature;
+	otr_mpi_t transitional_signature;
 } user_profile_t;
 
 user_profile_t *user_profile_new(const string_t versions);
 
-bool user_profile_sign(user_profile_t * profile, const otrv4_keypair_t *keypair);
+bool user_profile_sign(user_profile_t * profile,
+		       const otrv4_keypair_t * keypair);
 
 bool user_profile_verify_signature(const user_profile_t * profile);
 
@@ -39,6 +40,7 @@ bool
 user_profile_aprint(uint8_t ** dst, size_t * nbytes,
 		    const user_profile_t * profile);
 
-user_profile_t *user_profile_build(string_t versions, otrv4_keypair_t *keypair);
+user_profile_t *user_profile_build(string_t versions,
+				   otrv4_keypair_t * keypair);
 
 #endif

@@ -69,12 +69,12 @@ struct connection {
 
 	otrv4_version_t running_version;
 
-        otrv4_keypair_t *keypair;
+	otrv4_keypair_t *keypair;
 	key_manager_t keys;
 	otrv4_callbacks_t *callbacks;
 
 	smp_context_t smp;
-};	//otrv4_t
+};				//otrv4_t
 
 typedef enum {
 	IN_MSG_NONE = 0,
@@ -101,7 +101,7 @@ typedef struct {
 	uint8_t type;
 } otrv4_header_t;
 
-otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy);
+otrv4_t *otrv4_new(otrv4_keypair_t * keypair, otrv4_policy_t policy);
 void otrv4_destroy(otrv4_t * otr);
 void otrv4_free( /*@only@ */ otrv4_t * otr);
 
@@ -126,7 +126,7 @@ otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 
 bool otrv4_close(string_t * to_send, otrv4_t * otr);
 
-tlv_t * otrv4_smp_initiate(otrv4_t *otr, string_t answer);
+tlv_t *otrv4_smp_initiate(otrv4_t * otr, string_t answer);
 
-tlv_t * otrv4_process_smp(otrv4_t * otr, tlv_t * tlv);
+tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv);
 #endif

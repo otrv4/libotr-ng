@@ -105,15 +105,15 @@ int serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
 	return cursor - dst;
 }
 
-int serialize_snizkpk_proof(uint8_t *dst, const snizkpk_proof_t proof)
+int serialize_snizkpk_proof(uint8_t * dst, const snizkpk_proof_t proof)
 {
-  	uint8_t *cursor = dst;
+	uint8_t *cursor = dst;
 	cursor += serialize_ec_scalar(cursor, proof->c1);
 	cursor += serialize_ec_scalar(cursor, proof->r1);
 	cursor += serialize_ec_scalar(cursor, proof->c2);
 	cursor += serialize_ec_scalar(cursor, proof->r2);
 	cursor += serialize_ec_scalar(cursor, proof->c3);
 	cursor += serialize_ec_scalar(cursor, proof->r3);
- 
+
 	return cursor - dst;
 }

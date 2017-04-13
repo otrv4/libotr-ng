@@ -33,7 +33,7 @@ typedef struct {
 	uint32_t sender_instance_tag;
 	uint32_t receiver_instance_tag;
 
-        user_profile_t profile[1];
+	user_profile_t profile[1];
 	ec_public_key_t X;
 	dh_public_key_t A;
 	snizkpk_proof_t sigma;
@@ -69,16 +69,16 @@ bool
 dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 		   const dake_auth_r_t * dre_auth);
 bool
-dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer,
-			size_t buflen);
+dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer, size_t buflen);
 
 bool
 dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,
 		   const dake_auth_i_t * dre_auth);
 bool
-dake_auth_i_deserialize(dake_auth_i_t * dst, uint8_t * buffer,
-			size_t buflen);
+dake_auth_i_deserialize(dake_auth_i_t * dst, uint8_t * buffer, size_t buflen);
 
-bool validate_received_values(const uint8_t their_ecdh[DECAF_448_SER_BYTES], const dh_mpi_t their_dh, const user_profile_t *profile);
+bool validate_received_values(const uint8_t their_ecdh[DECAF_448_SER_BYTES],
+			      const dh_mpi_t their_dh,
+			      const user_profile_t * profile);
 
 #endif
