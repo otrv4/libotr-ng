@@ -45,9 +45,9 @@ void user_profile_copy(user_profile_t * dst, const user_profile_t * src)
 
 void user_profile_destroy(user_profile_t * profile)
 {
-	if (profile == NULL) {
+	if (!profile)
 		return;
-	}
+
 	//free the pubkey
 	free(profile->versions);
 	profile->versions = NULL;
@@ -81,16 +81,14 @@ user_profile_body_aprint(uint8_t ** dst, size_t * nbytes,
 	size_t s = ED448_PUBKEY_BYTES + strlen(profile->versions) + 1 + 4 + 8;
 
 	uint8_t *buff = malloc(s);
-	if (buff == NULL) {
+	if (!buff)
 		return false;
-	}
 
 	user_profile_body_serialize(buff, profile);
 
 	*dst = buff;
-	if (nbytes != NULL) {
+	if (nbytes)
 		*nbytes = s;
-	}
 
 	return true;
 }
@@ -103,18 +101,16 @@ user_profile_aprint(uint8_t ** dst, size_t * nbytes,
 	uint8_t *buff = NULL;
 	size_t body_len = 0;
 	uint8_t *body = NULL;
-	if (!user_profile_body_aprint(&body, &body_len, profile)) {
+	if (!user_profile_body_aprint(&body, &body_len, profile))
 		return false;
-	}
 
 	otr_mpi_t signature_mpi;
 	otr_mpi_set(signature_mpi, profile->signature, sizeof(ec_signature_t));
 
-	size_t s =
-	    body_len + 4 + signature_mpi->len + 4 +
+	size_t s = body_len + 4 + signature_mpi->len + 4 +
 	    profile->transitional_signature->len;
 	buff = malloc(s);
-	if (buff == NULL) {
+	if (!buff) {
 		otr_mpi_free(signature_mpi);
 		free(body);
 		return false;
@@ -126,9 +122,8 @@ user_profile_aprint(uint8_t ** dst, size_t * nbytes,
 	cursor += serialize_mpi(cursor, profile->transitional_signature);
 
 	*dst = buff;
-	if (nbytes != NULL) {
+	if (nbytes)
 		*nbytes = s;
-	}
 
 	otr_mpi_free(signature_mpi);
 	free(body);
@@ -145,54 +140,49 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 	if (!target)
 		return false;
 
-	if (!deserialize_otrv4_public_key
-	    (target->pub_key, buffer, buflen, &read)) {
-		goto deserialize_error;
-	}
+	bool ok = false;
+	do {
+		if (!deserialize_otrv4_public_key
+		    (target->pub_key, buffer, buflen, &read))
+			continue;
 
-	walked += read;
+		walked += read;
 
-	if (!deserialize_data
-	    ((uint8_t **) & target->versions, buffer + walked, buflen - walked,
-	     &read)) {
-		goto deserialize_error;
-	}
+		if (!deserialize_data
+		    ((uint8_t **) & target->versions, buffer + walked,
+		     buflen - walked, &read))
+			continue;
 
-	walked += read;
+		walked += read;
 
-	if (!deserialize_uint64
-	    (&target->expires, buffer + walked, buflen - walked, &read)) {
-		goto deserialize_error;
-	}
-	walked += read;
+		if (!deserialize_uint64
+		    (&target->expires, buffer + walked, buflen - walked, &read))
+			continue;
 
-	otr_mpi_t signature_mpi;	// no need to free, because nothing is copied now
-	if (!otr_mpi_deserialize_no_copy
-	    (signature_mpi, buffer + walked, buflen - walked, &read)) {
-		goto deserialize_error;
-	}
+		walked += read;
 
-	walked += read;
-	walked += otr_mpi_memcpy(target->signature, signature_mpi);
+		otr_mpi_t signature_mpi;	// no need to free, because nothing is copied now
+		if (!otr_mpi_deserialize_no_copy
+		    (signature_mpi, buffer + walked, buflen - walked, &read))
+			continue;
 
-	if (!otr_mpi_deserialize
-	    (target->transitional_signature, buffer + walked, buflen - walked,
-	     &read)) {
-		goto deserialize_error;
-	}
+		walked += read;
+		walked += otr_mpi_memcpy(target->signature, signature_mpi);
 
-	walked += read;
+		if (!otr_mpi_deserialize
+		    (target->transitional_signature, buffer + walked,
+		     buflen - walked, &read))
+			continue;
 
-	if (nread != NULL) {
+		walked += read;
+
+		ok = true;
+	} while (0);
+
+	if (nread)
 		*nread = walked;
-	}
-	return true;
 
- deserialize_error:
-	if (nread != NULL) {
-		*nread = walked;
-	}
-	return false;
+	return ok;
 }
 
 bool user_profile_sign(user_profile_t * profile,
@@ -212,13 +202,13 @@ bool user_profile_verify_signature(const user_profile_t * profile)
 	return true;
 }
 
-user_profile_t *user_profile_build(string_t versions, otrv4_keypair_t * keypair)
+user_profile_t *user_profile_build(const string_t versions,
+				   otrv4_keypair_t * keypair)
 {
 	user_profile_t *profile = user_profile_new(versions);
-	if (profile == NULL) {
-		free(versions);
+	if (!profile)
 		return NULL;
-	}
+
 #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60;	//2 weeks
 	time_t expires = time(NULL);
 	profile->expires = expires + PROFILE_EXPIRATION_SECONDS;

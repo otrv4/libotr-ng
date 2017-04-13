@@ -40,7 +40,7 @@ bool
 user_profile_aprint(uint8_t ** dst, size_t * nbytes,
 		    const user_profile_t * profile);
 
-user_profile_t *user_profile_build(string_t versions,
+user_profile_t *user_profile_build(const string_t versions,
 				   otrv4_keypair_t * keypair);
 
 #endif

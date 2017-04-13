@@ -693,7 +693,6 @@ static bool
 reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
 		      const otrv4_t * otr)
 {
-<<<<<<< 9b7ce30a5c027d7db8b9cad6ae02ae6c0dd64756
 	dake_auth_i_t *msg = malloc(sizeof(dake_auth_i_t));
 	if (!msg)
 		return false;
