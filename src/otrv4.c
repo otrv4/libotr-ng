@@ -357,6 +357,9 @@ reply_with_identity_msg(otrv4_response_t * response, const otrv4_t * otr)
 	if (!m)
 		return false;
 
+	m->sender_instance_tag = otr->our_instance_tag;
+	m->receiver_instance_tag = otr->their_instance_tag;
+
 	ec_public_key_copy(m->Y, OUR_ECDH(otr));
 	m->B = dh_mpi_copy(OUR_DH(otr));
 
@@ -555,6 +558,8 @@ static bool serialize_and_encode_auth_r(string_t * dst, const dake_auth_r_t * m)
 static bool reply_with_auth_r_msg(string_t * dst, const otrv4_t * otr)
 {
 	dake_auth_r_t msg[1];
+	msg->sender_instance_tag = otr->our_instance_tag;
+	msg->receiver_instance_tag = otr->their_instance_tag;
 
 	user_profile_copy(msg->profile, otr->profile);
 
@@ -704,6 +709,8 @@ reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
 		      const otrv4_t * otr)
 {
 	dake_auth_i_t msg[1];
+	msg->sender_instance_tag = otr->our_instance_tag;
+	msg->receiver_instance_tag = otr->their_instance_tag;
 
 	unsigned char *t = NULL;
 	size_t t_len = 0;
@@ -827,7 +834,7 @@ receive_auth_i(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
 	if (!verify_auth_i_message(auth, otr))
 		return false;
 
-        dake_auth_i_destroy(auth);
+	dake_auth_i_destroy(auth);
 
 	otrv4_fingerprint_t fp;
 	if (otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
