@@ -827,11 +827,12 @@ receive_auth_i(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
 	if (!verify_auth_i_message(auth, otr))
 		return false;
 
+        dake_auth_i_destroy(auth);
+
 	otrv4_fingerprint_t fp;
 	if (otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
 		fingerprint_seen_cb(fp, otr);
 
-	//TODO: destroy_auth ?
 	return double_ratcheting_init(1, otr);
 }
 
