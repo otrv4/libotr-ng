@@ -105,6 +105,7 @@ otrv4_t *otrv4_new(otrv4_keypair_t * keypair, otrv4_policy_t policy)
 	otr->running_version = OTRV4_VERSION_NONE;
 	otr->supported_versions = policy.allows;
 
+	//TODO: Serialize and deserialize our instance tags to/from disk.
 	otr->our_instance_tag = 0;
 	otr->their_instance_tag = 0;
 	otr->profile = get_my_user_profile(otr);
@@ -659,6 +660,12 @@ receive_identity_message_while_in_progress(string_t * dst,
 	return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
+static void received_instance_tag(uint32_t their_instance_tag, otrv4_t * otr)
+{
+	//TODO: should we do any additional check?
+	otr->their_instance_tag = their_instance_tag;
+}
+
 static bool
 receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
 			 otrv4_t * otr)
@@ -668,6 +675,8 @@ receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
 
 	if (!dake_identity_message_deserialize(m, buff, buflen))
 		return false;
+
+	received_instance_tag(m->sender_instance_tag, otr);
 
 	if (!validate_received_values(m->Y, m->B, m->profile))
 		return false;
@@ -774,6 +783,8 @@ receive_auth_r(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
 	dake_auth_r_t auth[1];
 	if (!dake_auth_r_deserialize(auth, buff, buff_len))
 		return false;
+
+	received_instance_tag(auth->sender_instance_tag, otr);
 
 	if (!verify_auth_r_message(auth, otr))
 		return false;
