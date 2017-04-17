@@ -4,17 +4,18 @@
 
 #include "gcrypt.h"
 
-#include "otrv4.h"
-#include "otrv3.h"
-#include "str.h"
 #include "b64.h"
-#include "serialize.h"
-#include "deserialize.h"
-#include "sha3.h"
-#include "data_message.h"
 #include "constants.h"
-#include "tlv.h"
+#include "dake.h"
+#include "data_message.h"
+#include "deserialize.h"
+#include "otrv3.h"
+#include "otrv4.h"
 #include "serialize.h"
+#include "sha3.h"
+#include "str.h"
+#include "tlv.h"
+
 #include "debug.h"
 
 #define OUR_ECDH(s) s->keys->our_ecdh->pub

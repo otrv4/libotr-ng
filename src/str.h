@@ -1,6 +1,8 @@
 #ifndef STR_H
 #define STR_H
 
+#include <stddef.h>
+
 #define string_t char*
 
 /*@null@*/ char *

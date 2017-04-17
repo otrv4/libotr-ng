@@ -3,13 +3,12 @@
 
 #include <stdbool.h>
 
-#include "dake.h"
-#include "str.h"
-#include "key_management.h"
 #include "fingerprint.h"
-#include "smp.h"
-#include "tlv.h"
+#include "key_management.h"
 #include "keys.h"
+#include "smp.h"
+#include "str.h"
+#include "user_profile.h"
 
 #define OTR4_INIT do { \
   dh_init(); \

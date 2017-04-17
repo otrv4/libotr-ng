@@ -1,6 +1,7 @@
 #include <glib.h>
 #include <string.h>
 
+#include "../dake.h"
 #include "../otrv4.h"
 
 void
