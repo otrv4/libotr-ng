@@ -126,7 +126,7 @@ otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 
 bool otrv4_close(string_t * to_send, otrv4_t * otr);
 
-tlv_t *otrv4_smp_initiate(otrv4_t * otr, string_t answer);
+tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question, string_t answer);
 
 tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv);
 #endif

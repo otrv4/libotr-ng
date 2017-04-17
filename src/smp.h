@@ -17,7 +17,21 @@ typedef enum {
 typedef struct {
 	smp_state_t state;
 	unsigned char *x;
+	decaf_448_scalar_t a2;
+	decaf_448_scalar_t a3;
 } smp_context_t[1];
+
+typedef struct
+{
+	char * question;
+	decaf_448_point_t G2a;
+	decaf_448_scalar_t c2;
+	decaf_448_scalar_t d2;
+	decaf_448_point_t G3a;
+	decaf_448_scalar_t c3;
+	decaf_448_scalar_t d3;
+
+} smp_msg_1_t[1];
 
 void smp_destroy(smp_context_t smp);
 
@@ -25,7 +39,9 @@ void generate_smp_secret(smp_context_t smp, otrv4_fingerprint_t our_fp,
 			otrv4_fingerprint_t their_fp, uint8_t * ssid,
 			string_t answer);
 
-tlv_t *generate_smp_msg_1(smp_context_t smp, string_t answer);
+int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp);
+int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg);
+
 tlv_t *generate_smp_msg_2(void);
 
 #endif

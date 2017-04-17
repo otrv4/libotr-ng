@@ -16,15 +16,19 @@ void test_smp_state_machine(void)
 
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
-	tlv_t *smp_msg_1 = otrv4_smp_initiate(alice_otr, "");
+	tlv_t *smp_msg_1 = otrv4_smp_initiate(alice_otr, "", "");
 	otrv4_assert(!smp_msg_1);
 
 	//Should be in ecrypted state before perform SMP
 	do_ake_fixture(alice_otr, bob_otr);
 
-	smp_msg_1 = otrv4_smp_initiate(alice_otr, "answer");
+	smp_msg_1 = otrv4_smp_initiate(alice_otr, "question", "answer");
 	otrv4_assert(smp_msg_1);
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT2);
+	otrv4_assert(alice_otr->smp->x != NULL);
+	otrv4_assert(alice_otr->smp->a2 != NULL);
+	otrv4_assert(alice_otr->smp->a3 != NULL);
+
 
 	tlv_t *smp_msg_2 = otrv4_process_smp(bob_otr, smp_msg_1);
 	otrv4_assert(smp_msg_2);

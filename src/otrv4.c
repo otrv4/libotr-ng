@@ -1316,22 +1316,36 @@ bool otrv4_close(string_t * to_send, otrv4_t * otr)
 	return ok;
 }
 
-tlv_t *otrv4_smp_initiate(otrv4_t * otr, string_t answer)
+tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question, string_t answer)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
 		return NULL;
 
 	otrv4_fingerprint_t our_fp, their_fp;
+	smp_msg_1_t msg;
+	uint8_t * to_send = NULL;
+	size_t len = 0;
 
 	otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
 	otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
 
-	generate_smp_secret(otr->smp, our_fp, their_fp, otr->keys->ssid,
-			    answer);
+	//TODO: return error?
+	generate_smp_secret(otr->smp, our_fp, their_fp,
+			otr->keys->ssid, answer);
 
-	tlv_t *tlv = generate_smp_msg_1(otr->smp, answer);
+	//TODO: return error?
+	generate_smp_msg_1(msg, otr->smp);
+	msg->question = otrv4_strdup(question);
+
+	if (smp_msg_1_aprint(&to_send, &len, msg) == 1)
+		return NULL;
+
+
+	tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, len, to_send);
 	if (!tlv)
 		return NULL;
+
+	free(to_send);
 
 	otr->smp->state = SMPSTATE_EXPECT2;
 	return tlv;
