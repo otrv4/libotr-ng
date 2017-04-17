@@ -269,6 +269,7 @@ void dake_auth_r_destroy(dake_auth_r_t * auth_r)
 	dh_mpi_release(auth_r->A);
 	auth_r->A = NULL;
 	user_profile_destroy(auth_r->profile);
+	snizkpk_proof_destroy(auth_r->sigma);
 }
 
 void dake_auth_r_free(dake_auth_r_t * auth_r)
@@ -359,6 +360,20 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer, size_t buflen)
 	len -= read;
 
 	return deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
+}
+
+void dake_auth_i_destroy(dake_auth_i_t * auth_i)
+{
+	snizkpk_proof_destroy(auth_i->sigma);
+}
+
+void dake_auth_i_free(dake_auth_i_t * auth_i)
+{
+	if (!auth_i)
+		return;
+
+	dake_auth_i_destroy(auth_i);
+	free(auth_i);
 }
 
 bool

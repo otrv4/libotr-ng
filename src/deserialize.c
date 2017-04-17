@@ -239,7 +239,7 @@ deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t * serialized,
 }
 
 bool
-deserialize_snizkpk_proof(snizkpk_proof_t proof, const uint8_t * serialized,
+deserialize_snizkpk_proof(snizkpk_proof_t * proof, const uint8_t * serialized,
 			  size_t ser_len, size_t * read)
 {
 	if (ser_len < SNIZKPK_BYTES)

@@ -90,7 +90,7 @@ void test_dread()
 
 void test_snizkpk_auth()
 {
-	snizkpk_proof_t dst;
+	snizkpk_proof_t dst[1];
 	snizkpk_keypair_t pair1[1], pair2[1], pair3[1];
 	const char *msg = "hi";
 

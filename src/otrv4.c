@@ -125,7 +125,7 @@ void otrv4_destroy( /*@only@ */ otrv4_t * otr)
 	user_profile_free(otr->profile);
 	user_profile_free(otr->their_profile);
 	otr->profile = NULL;
-        otr->their_profile = NULL;
+	otr->their_profile = NULL;
 	otr->callbacks = NULL;
 	smp_destroy(otr->smp);
 }
@@ -508,7 +508,7 @@ build_auth_message(uint8_t ** msg, size_t * msg_len,
 		*cursor = type;
 		cursor++;
 
-                memcpy(cursor, ser_i_profile, ser_i_profile_len);
+		memcpy(cursor, ser_i_profile, ser_i_profile_len);
 		cursor += ser_i_profile_len;
 
 		memcpy(cursor, ser_r_profile, ser_r_profile_len);
@@ -536,7 +536,6 @@ build_auth_message(uint8_t ** msg, size_t * msg_len,
 
 	//Destroy serialized ephemeral public keys from memory
 
-
 	return ok;
 }
 
@@ -553,8 +552,7 @@ static bool serialize_and_encode_auth_r(string_t * dst, const dake_auth_r_t * m)
 	return true;
 }
 
-static bool
-reply_with_auth_r_msg(string_t * dst, const otrv4_t * otr)
+static bool reply_with_auth_r_msg(string_t * dst, const otrv4_t * otr)
 {
 	dake_auth_r_t msg[1];
 
@@ -566,29 +564,29 @@ reply_with_auth_r_msg(string_t * dst, const otrv4_t * otr)
 	unsigned char *t = NULL;
 	size_t t_len = 0;
 	if (!build_auth_message
-	    (&t, &t_len, 0, otr->their_profile, otr->profile, THEIR_ECDH(otr), OUR_ECDH(otr),
-	     THEIR_DH(otr), OUR_DH(otr)))
+	    (&t, &t_len, 0, otr->their_profile, otr->profile, THEIR_ECDH(otr),
+	     OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
 		return false;
 
 	ec_point_t their_ecdh;
 	ec_point_deserialize(their_ecdh, THEIR_ECDH(otr));
 
-        //sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg)
+	//sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg)
 	int err = snizkpk_authenticate(msg->sigma,
-            otr->keypair,                   // g^R and R
-            otr->their_profile->pub_key,    // g^I
-            their_ecdh,                     // g^i -- Y
-            t, t_len);
+				       otr->keypair,	// g^R and R
+				       otr->their_profile->pub_key,	// g^I
+				       their_ecdh,	// g^i -- Y
+				       t, t_len);
 
 	free(t);
-        t = NULL;
+	t = NULL;
 
-        if (err)
-            return false;
+	if (err)
+		return false;
 
 	bool ok = serialize_and_encode_auth_r(dst, msg);
-        dake_auth_r_destroy(msg);
-        return ok;
+	dake_auth_r_destroy(msg);
+	return ok;
 }
 
 static bool
@@ -705,9 +703,7 @@ static bool
 reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
 		      const otrv4_t * otr)
 {
-	dake_auth_i_t *msg = malloc(sizeof(dake_auth_i_t));
-	if (!msg)
-		return false;
+	dake_auth_i_t msg[1];
 
 	unsigned char *t = NULL;
 	size_t t_len = 0;
@@ -724,14 +720,15 @@ reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
 		return false;
 
 	free(t);
+	t = NULL;
 
 	bool ok = serialize_and_encode_auth_i(dst, msg);
-	free(msg);
+	dake_auth_i_destroy(msg);
 	return ok;
 }
 
 static bool
-verify_auth_r_message(const dake_auth_r_t *auth, const otrv4_t *otr)
+verify_auth_r_message(const dake_auth_r_t * auth, const otrv4_t * otr)
 {
 	snizkpk_pubkey_t Y;
 	uint8_t *t = NULL;
@@ -743,25 +740,23 @@ verify_auth_r_message(const dake_auth_r_t *auth, const otrv4_t *otr)
 	if (!ec_point_deserialize(Y, OUR_ECDH(otr)))
 		return false;
 
-
 	if (!build_auth_message
 	    (&t, &t_len, 0, otr->profile, auth->profile, OUR_ECDH(otr), auth->X,
 	     OUR_DH(otr), auth->A))
 		return false;
 
-        //Verif({g^I, g^R, g^i}, sigma, msg)
+	//Verif({g^I, g^R, g^i}, sigma, msg)
 	int err = snizkpk_verify(auth->sigma,
-            auth->profile->pub_key, // g^R
-            otr->keypair->pub,      // g^I
-            Y,                      // g^
-            t, t_len);
+				 auth->profile->pub_key,	// g^R
+				 otr->keypair->pub,	// g^I
+				 Y,	// g^
+				 t, t_len);
 
-        free(t);
-        t = NULL;
+	free(t);
+	t = NULL;
 
-        return err == 0;
+	return err == 0;
 }
-
 
 static bool
 receive_auth_r(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
@@ -773,8 +768,8 @@ receive_auth_r(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
 	if (!dake_auth_r_deserialize(auth, buff, buff_len))
 		return false;
 
-        if (!verify_auth_r_message(auth, otr))
-            return false;
+	if (!verify_auth_r_message(auth, otr))
+		return false;
 
 	otr->their_profile = malloc(sizeof(user_profile_t));
 	if (!otr->their_profile)
@@ -797,26 +792,26 @@ receive_auth_r(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
 }
 
 static bool
-verify_auth_i_message(const dake_auth_i_t *auth, const otrv4_t *otr)
+verify_auth_i_message(const dake_auth_i_t * auth, const otrv4_t * otr)
 {
 	uint8_t *t = NULL;
 	size_t t_len = 0;
 
 	snizkpk_pubkey_t X;
 	if (!ec_point_deserialize(X, OUR_ECDH(otr)))
-            return false;
+		return false;
 
-        if (!build_auth_message(&t, &t_len, 1, otr->their_profile,
-            otr->profile, THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr),
-            OUR_DH(otr)))
-            return false;
+	if (!build_auth_message(&t, &t_len, 1, otr->their_profile,
+				otr->profile, THEIR_ECDH(otr), OUR_ECDH(otr),
+				THEIR_DH(otr), OUR_DH(otr)))
+		return false;
 
-        int err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
-                otr->keypair->pub, X, t, t_len);
-        free(t);
-        t = NULL;
+	int err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
+				 otr->keypair->pub, X, t, t_len);
+	free(t);
+	t = NULL;
 
-        return err == 0;
+	return err == 0;
 }
 
 static bool
@@ -829,14 +824,14 @@ receive_auth_i(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
 	if (!dake_auth_i_deserialize(auth, buff, buff_len))
 		return false;
 
-        if (!verify_auth_i_message(auth, otr))
-            return false;
+	if (!verify_auth_i_message(auth, otr))
+		return false;
 
 	otrv4_fingerprint_t fp;
 	if (otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
 		fingerprint_seen_cb(fp, otr);
 
-        //TODO: destroy_auth ?
+	//TODO: destroy_auth ?
 	return double_ratcheting_init(1, otr);
 }
 

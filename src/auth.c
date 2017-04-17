@@ -48,7 +48,7 @@ const unsigned char prime_order_bytes_dup[DECAF_448_SCALAR_BYTES] = {
 };
 
 int
-snizkpk_authenticate(snizkpk_proof_t dst, const snizkpk_keypair_t * pair1,
+snizkpk_authenticate(snizkpk_proof_t * dst, const snizkpk_keypair_t * pair1,
 		     const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
 		     const unsigned char *msg, size_t msglen)
 {
@@ -113,7 +113,7 @@ snizkpk_authenticate(snizkpk_proof_t dst, const snizkpk_keypair_t * pair1,
 }
 
 int
-snizkpk_verify(const snizkpk_proof_t src, const snizkpk_pubkey_t A1,
+snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 	       const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
 	       const unsigned char *msg, size_t msglen)
 {
@@ -171,4 +171,14 @@ snizkpk_verify(const snizkpk_proof_t src, const snizkpk_pubkey_t A1,
 	decaf_448_scalar_add(c1c2c3, c1c2c3, src->c3);
 
 	return DECAF_TRUE != decaf_448_scalar_eq(c, c1c2c3);
+}
+
+void snizkpk_proof_destroy(snizkpk_proof_t * src)
+{
+	ec_scalar_destroy(src->c1);
+	ec_scalar_destroy(src->r1);
+	ec_scalar_destroy(src->c2);
+	ec_scalar_destroy(src->r2);
+	ec_scalar_destroy(src->c3);
+	ec_scalar_destroy(src->r3);
 }

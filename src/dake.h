@@ -36,14 +36,14 @@ typedef struct {
 	user_profile_t profile[1];
 	ec_public_key_t X;
 	dh_public_key_t A;
-	snizkpk_proof_t sigma;
+	snizkpk_proof_t sigma[1];
 } dake_auth_r_t;
 
 typedef struct {
 	uint32_t sender_instance_tag;
 	uint32_t receiver_instance_tag;
 
-	snizkpk_proof_t sigma;
+	snizkpk_proof_t sigma[1];
 } dake_auth_i_t;
 
 dake_identity_message_t *dake_identity_message_new(const user_profile_t *
@@ -74,6 +74,10 @@ dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 		   const dake_auth_r_t * dre_auth);
 bool
 dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer, size_t buflen);
+
+void dake_auth_i_destroy(dake_auth_i_t * auth_i);
+
+void dake_auth_i_free(dake_auth_i_t * auth_i);
 
 bool
 dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,

@@ -41,7 +41,7 @@ deserialize_ec_public_key(ec_public_key_t pub, const uint8_t * serialized,
 			  size_t ser_len, size_t * read);
 
 bool
-deserialize_snizkpk_proof(snizkpk_proof_t proof, const uint8_t * serialized,
+deserialize_snizkpk_proof(snizkpk_proof_t * proof, const uint8_t * serialized,
 			  size_t ser_len, size_t * read);
 
 bool decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len);
