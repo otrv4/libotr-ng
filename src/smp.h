@@ -2,7 +2,7 @@
 #define SMP_H
 
 #include "fingerprint.h"
-#include "str.h"
+#include "str.h" //TODO: The question is an optional DATA. So it can be any array of bytes.
 #include "tlv.h"
 
 #define SMP_VERSION 0x01

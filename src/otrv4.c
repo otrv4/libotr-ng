@@ -11,6 +11,7 @@
 #include "deserialize.h"
 #include "otrv3.h"
 #include "otrv4.h"
+#include "random.h"
 #include "serialize.h"
 #include "sha3.h"
 #include "str.h"

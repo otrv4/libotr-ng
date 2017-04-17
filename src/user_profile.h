@@ -12,7 +12,7 @@ typedef struct {
 	string_t versions;
 	uint64_t expires;
 	ec_signature_t signature;
-	otr_mpi_t transitional_signature;
+	otr_mpi_t transitional_signature; //TODO: this should be a signature type
 } user_profile_t;
 
 user_profile_t *user_profile_new(const string_t versions);

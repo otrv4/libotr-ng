@@ -1,5 +1,8 @@
+#include <string.h>
+
 #include "auth.h"
-#include "fingerprint.h"
+#include "dh.h"
+#include "mpi.h"
 #include "serialize.h"
 #include "smp.h"
 #include "str.h"

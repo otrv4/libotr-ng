@@ -10,6 +10,7 @@ libotr4_la_SOURCES = \
 		     deserialize.c \
 		     dh.c \
 		     dread.c \
+		     ed448.c \
 		     fingerprint.c \
 		     keys.c \
 		     key_management.c \
@@ -35,7 +36,6 @@ libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
 
 otrincdir = $(includedir)/libotr4
 otrinc_HEADERS = client.h \
-		 dake.h \
 		 dh.h \
 		 ed448.h \
 		 fingerprint.h \
@@ -44,7 +44,7 @@ otrinc_HEADERS = client.h \
 		 list.h \
 		 mpi.h \
 		 otrv4.h \
-		 random.h \
+		 smp.h \
 		 str.h \
 		 tlv.h \
 		 user_profile.h
