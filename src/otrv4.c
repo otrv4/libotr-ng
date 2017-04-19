@@ -1306,23 +1306,28 @@ bool otrv4_close(string_t * to_send, otrv4_t * otr)
 	return ok;
 }
 
+void set_smp_secret(unsigned char ** secret, string_t answer, otrv4_t * otr)
+{
+	otrv4_fingerprint_t our_fp, their_fp;
+	otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
+	otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
+
+		//TODO: return error?
+	generate_smp_secret(secret, our_fp, their_fp,
+			otr->keys->ssid, answer);
+}
+
 tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 			  string_t answer)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
 		return NULL;
 
-	otrv4_fingerprint_t our_fp, their_fp;
 	smp_msg_1_t msg;
 	uint8_t *to_send = NULL;
 	size_t len = 0;
 
-	otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
-	otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
-
-	//TODO: return error?
-	generate_smp_secret(&otr->smp->x, our_fp, their_fp,
-			otr->keys->ssid, answer);
+	set_smp_secret(&otr->smp->x, answer, otr);
 
 	//TODO: return error?
 	generate_smp_msg_1(msg, otr->smp);
@@ -1350,7 +1355,6 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 
 	tlv_t *to_send = NULL;
 	smp_msg_1_t msg;
-	otrv4_fingerprint_t our_fp, their_fp;
 
 	switch (otr->smp->state) {
 	case SMPSTATE_EXPECT1 && tlv->type == OTRV4_TLV_SMP_MSG_1:
@@ -1360,11 +1364,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 		if (!smp_msg_1_validate(msg))
 			break;
 
-		otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
-		otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
-
-		generate_smp_secret(&otr->smp->y, our_fp, their_fp,
-			otr->keys->ssid, "the-answer");
+		set_smp_secret(&otr->smp->y, "the-answer", otr);
 
 		to_send = generate_smp_msg_2();
 		if (!to_send)
