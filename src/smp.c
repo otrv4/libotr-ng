@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "auth.h"
+#include "deserialize.h"
 #include "dh.h"
 #include "mpi.h"
 #include "serialize.h"
@@ -150,3 +151,93 @@ tlv_t *generate_smp_msg_2(void)
 
 	return otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, len, data);
 }
+
+//TODO: this function is duplicated from deserialize.c
+static bool
+deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t * serialized,
+		      size_t ser_len)
+{
+	if (ser_len < DECAF_448_SCALAR_BYTES)
+		return false;
+
+	return ec_scalar_deserialize(scalar, serialized);
+}
+
+bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
+{
+	const uint8_t * cursor = tlv->data;
+	uint16_t len = tlv->len;
+	size_t read = 0;
+	otr_mpi_t tmp_mpi;
+
+	if (!deserialize_data((uint8_t **) &msg->question, cursor, len, &read))
+		return false;
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_ec_point(msg->G2a, cursor))
+		return false;
+
+	cursor += DECAF_448_SER_BYTES;
+	len -= DECAF_448_SER_BYTES;
+
+	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read))
+		return false;
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_ec_scalar(msg->c2, tmp_mpi->data, tmp_mpi->len))
+		return false;
+
+	cursor += tmp_mpi->len;
+	len -= tmp_mpi->len;
+
+	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read))
+		return false;
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_ec_scalar(msg->d2, tmp_mpi->data, tmp_mpi->len))
+		return false;
+
+	cursor += tmp_mpi->len;
+	len -= tmp_mpi->len;
+
+	if (!deserialize_ec_point(msg->G3a, cursor))
+		return false;
+
+	cursor += DECAF_448_SER_BYTES;
+	len -= DECAF_448_SER_BYTES;
+
+	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read))
+		return false;
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_ec_scalar(msg->c3, tmp_mpi->data, tmp_mpi->len))
+		return false;
+
+	cursor += tmp_mpi->len;
+	len -= tmp_mpi->len;
+
+	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read))
+		return false;
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_ec_scalar(msg->d3, tmp_mpi->data, tmp_mpi->len))
+		return false;
+
+        return true;
+}
+
+bool smp_msg_1_validate(smp_msg_1_t msg)
+{
+	return ec_point_valid(msg->G2a) || !ec_point_valid(msg->G3a);
+}
+

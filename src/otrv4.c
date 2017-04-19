@@ -13,6 +13,7 @@
 #include "otrv4.h"
 #include "random.h"
 #include "serialize.h"
+#include "smp.c"
 #include "sha3.h"
 #include "str.h"
 #include "tlv.h"
@@ -1330,7 +1331,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	if (smp_msg_1_aprint(&to_send, &len, msg) == 1)
 		return NULL;
 
-	tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, len, to_send);
+	tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);
 	if (!tlv)
 		return NULL;
 
@@ -1347,12 +1348,26 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 		return NULL;
 	}
 
-	tlv_t *msg = NULL;
+	tlv_t *to_send = NULL;
+	smp_msg_1_t msg;
+	otrv4_fingerprint_t our_fp, their_fp;
 
 	switch (otr->smp->state) {
 	case SMPSTATE_EXPECT1 && tlv->type == OTRV4_TLV_SMP_MSG_1:
-		msg = generate_smp_msg_2();
-		if (!msg)
+		if (!smp_msg_1_deserialize(msg, tlv))
+			break;
+
+		if (!smp_msg_1_validate(msg))
+			break;
+
+		otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
+		otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
+
+		generate_smp_secret(&otr->smp->y, our_fp, their_fp,
+			otr->keys->ssid, "the-answer");
+
+		to_send = generate_smp_msg_2();
+		if (!to_send)
 			break;
 
 		otr->smp->state = SMPSTATE_EXPECT3;
@@ -1362,5 +1377,5 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 		break;
 	}
 
-	return msg;
+	return to_send;
 }

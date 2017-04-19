@@ -17,13 +17,15 @@ typedef enum {
 typedef struct {
 	smp_state_t state;
 	unsigned char *x;
+	unsigned char *y;
 	decaf_448_scalar_t a2;
 	decaf_448_scalar_t a3;
 } smp_context_t[1];
 
-typedef struct {
-	char *question;
-	decaf_448_point_t G2a;
+typedef struct
+{
+	char * question;
+	ec_point_t G2a;
 	decaf_448_scalar_t c2;
 	decaf_448_scalar_t d2;
 	decaf_448_point_t G3a;

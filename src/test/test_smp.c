@@ -26,16 +26,16 @@ void test_smp_state_machine(void)
 	do_ake_fixture(alice_otr, bob_otr);
 
 	smp_msg_1 = otrv4_smp_initiate(alice_otr, "question", "answer");
-	otrv4_assert(smp_msg_1);
+	g_assert_cmpint(smp_msg_1->type, ==, OTRV4_TLV_SMP_MSG_1);
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT2);
-	otrv4_assert(alice_otr->smp->x != NULL);
-	otrv4_assert(alice_otr->smp->a2 != NULL);
-	otrv4_assert(alice_otr->smp->a3 != NULL);
+	otrv4_assert(alice_otr->smp->x);
+	otrv4_assert(alice_otr->smp->a2);
+	otrv4_assert(alice_otr->smp->a3);
 
 	tlv_t *smp_msg_2 = otrv4_process_smp(bob_otr, smp_msg_1);
-	otrv4_assert(smp_msg_2);
 	g_assert_cmpint(smp_msg_2->type, ==, OTRV4_TLV_SMP_MSG_2);
 	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT3);
+	otrv4_assert(bob_otr->smp->y);
 
 	otrv4_destroy(alice_otr);
 	otrv4_destroy(bob_otr);
