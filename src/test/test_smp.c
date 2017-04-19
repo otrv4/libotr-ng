@@ -80,7 +80,7 @@ void test_generate_smp_secret(void)
 		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 	};
 
-	generate_smp_secret(smp, our, their, ssid, "the-answer");
+	generate_smp_secret(&smp->x, our, their, ssid, "the-answer");
 	otrv4_assert(smp->x);
 
 	unsigned char expected_secret[148] = {

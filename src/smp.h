@@ -34,9 +34,9 @@ typedef struct {
 
 void smp_destroy(smp_context_t smp);
 
-void generate_smp_secret(smp_context_t smp, otrv4_fingerprint_t our_fp,
-			 otrv4_fingerprint_t their_fp, uint8_t * ssid,
-			 string_t answer);
+void generate_smp_secret(unsigned char ** secret, otrv4_fingerprint_t our_fp,
+			otrv4_fingerprint_t their_fp, uint8_t * ssid,
+			string_t answer);
 
 int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp);
 int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg);

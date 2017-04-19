@@ -1320,8 +1320,8 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
 
 	//TODO: return error?
-	generate_smp_secret(otr->smp, our_fp, their_fp,
-			    otr->keys->ssid, answer);
+	generate_smp_secret(&otr->smp->x, our_fp, their_fp,
+			otr->keys->ssid, answer);
 
 	//TODO: return error?
 	generate_smp_msg_1(msg, otr->smp);

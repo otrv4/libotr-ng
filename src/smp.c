@@ -16,9 +16,9 @@ void smp_destroy(smp_context_t smp)
 	smp->x = NULL;
 }
 
-void generate_smp_secret(smp_context_t smp, otrv4_fingerprint_t our_fp,
-			 otrv4_fingerprint_t their_fp, uint8_t * ssid,
-			 string_t answer)
+void generate_smp_secret(unsigned char ** secret, otrv4_fingerprint_t our_fp,
+			otrv4_fingerprint_t their_fp, uint8_t * ssid,
+			string_t answer)
 {
 	size_t len = SMP_MIN_SECRET_BYTES + strlen(answer) + 1;
 	gcry_md_hd_t hd;
@@ -31,11 +31,11 @@ void generate_smp_secret(smp_context_t smp, otrv4_fingerprint_t our_fp,
 	gcry_md_write(hd, ssid, 8);
 	gcry_md_write(hd, answer, strlen(answer) + 1);
 
-	smp->x = malloc(len);
-	if (!smp->x)
+	*secret = malloc(len);
+	if (!*secret)
 		return;
 
-	memcpy(smp->x, gcry_md_read(hd, 0), len);
+	memcpy(*secret, gcry_md_read(hd, 0), len);
 	gcry_md_close(hd);
 }
 
