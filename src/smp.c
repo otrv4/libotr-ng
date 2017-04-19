@@ -163,12 +163,30 @@ deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t * serialized,
 	return ec_scalar_deserialize(scalar, serialized);
 }
 
+static bool
+deserialize_mpi_to_scalar(decaf_448_scalar_t dst, const uint8_t * buff,
+		uint16_t bufflen, size_t * read)
+{
+	otr_mpi_t tmp_mpi;
+	size_t r = 0;
+	const uint8_t * cursor = buff;
+
+	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, bufflen, &r))
+		return false;
+
+	if (!deserialize_ec_scalar(dst, tmp_mpi->data, tmp_mpi->len))
+		return false;
+
+	*read = r + tmp_mpi->len;
+
+	return true;
+}
+
 bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
 {
 	const uint8_t * cursor = tlv->data;
 	uint16_t len = tlv->len;
 	size_t read = 0;
-	otr_mpi_t tmp_mpi;
 
 	if (!deserialize_data((uint8_t **) &msg->question, cursor, len, &read))
 		return false;
@@ -182,29 +200,17 @@ bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
 	cursor += DECAF_448_SER_BYTES;
 	len -= DECAF_448_SER_BYTES;
 
-	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read))
+	if (!deserialize_mpi_to_scalar(msg->c2, cursor, len, &read))
 		return false;
 
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_scalar(msg->c2, tmp_mpi->data, tmp_mpi->len))
-		return false;
-
-	cursor += tmp_mpi->len;
-	len -= tmp_mpi->len;
-
-	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read))
+	if (!deserialize_mpi_to_scalar(msg->d2, cursor, len, &read))
 		return false;
 
 	cursor += read;
 	len -= read;
-
-	if (!deserialize_ec_scalar(msg->d2, tmp_mpi->data, tmp_mpi->len))
-		return false;
-
-	cursor += tmp_mpi->len;
-	len -= tmp_mpi->len;
 
 	if (!deserialize_ec_point(msg->G3a, cursor))
 		return false;
@@ -212,25 +218,13 @@ bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
 	cursor += DECAF_448_SER_BYTES;
 	len -= DECAF_448_SER_BYTES;
 
-	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read))
+	if (!deserialize_mpi_to_scalar(msg->c3, cursor, len, &read))
 		return false;
 
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_scalar(msg->c3, tmp_mpi->data, tmp_mpi->len))
-		return false;
-
-	cursor += tmp_mpi->len;
-	len -= tmp_mpi->len;
-
-	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read))
-		return false;
-
-	cursor += read;
-	len -= read;
-
-	if (!deserialize_ec_scalar(msg->d3, tmp_mpi->data, tmp_mpi->len))
+	if (!deserialize_mpi_to_scalar(msg->d3, cursor, len, &read))
 		return false;
 
         return true;
