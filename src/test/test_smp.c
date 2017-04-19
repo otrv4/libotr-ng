@@ -25,7 +25,7 @@ void test_smp_state_machine(void)
 	//Should be in ecrypted state before perform SMP
 	do_ake_fixture(alice_otr, bob_otr);
 
-	smp_msg_1 = otrv4_smp_initiate(alice_otr, "question", "answer");
+	smp_msg_1 = otrv4_smp_initiate(alice_otr, NULL, "answer");
 	g_assert_cmpint(smp_msg_1->type, ==, OTRV4_TLV_SMP_MSG_1);
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT2);
 	otrv4_assert(alice_otr->smp->x);
@@ -106,4 +106,22 @@ void test_generate_smp_secret(void)
 	};
 
 	otrv4_assert_cmpmem(smp->x, expected_secret, 148);
+}
+
+void test_smp_msg_1_aprint_null_question(void)
+{
+	smp_msg_1_t msg;
+	uint8_t *buff;
+	size_t writen = 0;
+	msg->question = NULL;
+
+	//data_header + question + 2 points + 4 mpis = 4 + 0 + (2*56) + (4*4) + (4*56)
+	size_t expected_size = 356;
+
+        otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
+	g_assert_cmpint(writen, ==, expected_size);
+
+	msg->question = "something";
+	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
+	g_assert_cmpint(writen, ==, (expected_size + strlen(msg->question)+1));
 }

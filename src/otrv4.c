@@ -1331,7 +1331,8 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 
 	//TODO: return error?
 	generate_smp_msg_1(msg, otr->smp);
-	msg->question = otrv4_strdup(question);
+	if (question)
+		msg->question = otrv4_strdup(question);
 
 	if (smp_msg_1_aprint(&to_send, &len, msg) == 1)
 		return NULL;

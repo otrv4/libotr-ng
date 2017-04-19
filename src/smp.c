@@ -49,6 +49,8 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	decaf_448_scalar_t a3c3, a2c2;
 	uint8_t version[2] = { 0x01, 0x02 };
 
+	dst->question = NULL;
+
 	generate_keypair(dst->G2a, a2);
 	generate_keypair(dst->G3a, a3);
 
@@ -83,13 +85,15 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 {
 	uint8_t *buff;
-	uint8_t buffmpi[56];
+	uint8_t buffmpi[DECAF_448_SER_BYTES];
 	int bufflen = 0;
 	otr_mpi_t c2_mpi, d2_mpi, c3_mpi, d3_mpi;
 	size_t s = 0;
 
-	s += 4 + strlen(msg->question) + 1;
-	s += 2 * 56;
+	s += 4;
+	if (msg->question)
+		s += strlen(msg->question) +1;
+	s += 2 * DECAF_448_SER_BYTES;
 	s += 4 * 4;
 
 	bufflen = serialize_ec_scalar(buffmpi, msg->c2);
@@ -114,17 +118,13 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 
 	uint8_t *cursor = buff;
 
-	if (msg->question)
-		cursor +=
-		    serialize_data(cursor, (uint8_t *) msg->question,
-				   strlen(msg->question) + 1);
-	else {
-		uint8_t q_len = 0;
-		string_t question = NULL;
-		cursor += serialize_uint32(cursor, q_len);
-		memcpy(cursor, question, 1);
-		cursor += 1;
+	if (!msg->question)
+	{
+		uint8_t null_question[4] = {0x0, 0x0, 0x0, 0x0};
+		cursor += serialize_data(cursor, null_question, 0);
 	}
+	else
+		cursor += serialize_data(cursor, (uint8_t *) msg->question, strlen(msg->question)+1);
 
 	cursor += serialize_ec_point(cursor, msg->G2a);
 	cursor += serialize_mpi(cursor, c2_mpi);
