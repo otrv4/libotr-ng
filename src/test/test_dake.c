@@ -7,7 +7,7 @@
 
 void test_dake_protocol()
 {
-    //TODO
+	//TODO
 }
 
 #include "../dread.h"
@@ -66,11 +66,11 @@ void test_snizkpk_auth()
 			   (unsigned char *)msg, strlen(msg));
 	g_assert_cmpint(err, ==, 0);
 
-        //Now lets serialize and deserialize things.
-        otrv4_keypair_t p1[1], p2[1], p3[1];
-        uint8_t sym1[ED448_PRIVATE_BYTES] = {1},
-                sym2[ED448_PRIVATE_BYTES] = {2},
-                sym3[ED448_PRIVATE_BYTES] = {3};
+	//Now lets serialize and deserialize things.
+	otrv4_keypair_t p1[1], p2[1], p3[1];
+	uint8_t sym1[ED448_PRIVATE_BYTES] = { 1 }, sym2[ED448_PRIVATE_BYTES] = {
+	2}, sym3[ED448_PRIVATE_BYTES] = {
+	3};
 
 	otrv4_keypair_generate(p1, sym1);
 	otrv4_keypair_generate(p2, sym2);
@@ -78,7 +78,7 @@ void test_snizkpk_auth()
 
 	snizkpk_proof_t dst2[1];
 	err = snizkpk_authenticate(dst2, p1, p2->pub, p3->pub,
-				       (unsigned char *)msg, strlen(msg));
+				   (unsigned char *)msg, strlen(msg));
 	g_assert_cmpint(err, ==, 0);
 
 	err =

@@ -8,10 +8,10 @@ void test_api_conversation(void)
 	OTR4_INIT;
 
 	otrv4_keypair_t alice_keypair[1], bob_keypair[1];
-        uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
+	uint8_t alice_sym[ED448_PRIVATE_BYTES] = { 1 };	// non-random private key on purpose
 	otrv4_keypair_generate(alice_keypair, alice_sym);
 
-        uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2}; // non-random private key on purpose
+	uint8_t bob_sym[ED448_PRIVATE_BYTES] = { 2 };	// non-random private key on purpose
 	otrv4_keypair_generate(bob_keypair, bob_sym);
 
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };

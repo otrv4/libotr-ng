@@ -17,19 +17,19 @@ void smp_destroy(smp_context_t smp)
 }
 
 void generate_smp_secret(smp_context_t smp, otrv4_fingerprint_t our_fp,
-			otrv4_fingerprint_t their_fp, uint8_t * ssid,
-			string_t answer)
+			 otrv4_fingerprint_t their_fp, uint8_t * ssid,
+			 string_t answer)
 {
-	size_t len = SMP_MIN_SECRET_BYTES + strlen (answer) +1;
+	size_t len = SMP_MIN_SECRET_BYTES + strlen(answer) + 1;
 	gcry_md_hd_t hd;
-	uint8_t version[1] = {0x01};
+	uint8_t version[1] = { 0x01 };
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
 	gcry_md_write(hd, version, 1);
 	gcry_md_write(hd, our_fp, sizeof(otrv4_fingerprint_t));
 	gcry_md_write(hd, their_fp, sizeof(otrv4_fingerprint_t));
 	gcry_md_write(hd, ssid, 8);
-	gcry_md_write(hd, answer, strlen (answer) +1);
+	gcry_md_write(hd, answer, strlen(answer) + 1);
 
 	smp->x = malloc(len);
 	if (!smp->x)
@@ -61,7 +61,7 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	gcry_md_close(hd);
 
 	int ok = decaf_448_scalar_decode(dst->c2, hash);
-	(void) ok;
+	(void)ok;
 	decaf_448_scalar_mul(a2c2, a2, dst->c2);
 	decaf_448_scalar_sub(dst->d2, pair_r2->priv, dst->c2);
 
@@ -72,7 +72,7 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	gcry_md_close(hd);
 
 	ok = decaf_448_scalar_decode(dst->c3, hash);
-	(void) ok;
+	(void)ok;
 	decaf_448_scalar_mul(a3c3, a3, dst->c3);
 	decaf_448_scalar_sub(dst->d3, pair_r3->priv, dst->c3);
 
@@ -87,7 +87,7 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 	otr_mpi_t c2_mpi, d2_mpi, c3_mpi, d3_mpi;
 	size_t s = 0;
 
-	s += 4 + strlen (msg->question) +1;
+	s += 4 + strlen(msg->question) + 1;
 	s += 2 * 56;
 	s += 4 * 4;
 
@@ -107,24 +107,23 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 	otr_mpi_set(d3_mpi, buffmpi, bufflen);
 	s += bufflen;
 
-
 	buff = malloc(s);
 	if (!dst)
 		return 1;
 
-	uint8_t * cursor = buff;
+	uint8_t *cursor = buff;
 
 	if (msg->question)
-		cursor += serialize_data(cursor, (uint8_t *) msg->question, strlen(msg->question)+1);
-	else
-	{
+		cursor +=
+		    serialize_data(cursor, (uint8_t *) msg->question,
+				   strlen(msg->question) + 1);
+	else {
 		uint8_t q_len = 0;
-		string_t question  = NULL;
+		string_t question = NULL;
 		cursor += serialize_uint32(cursor, q_len);
 		memcpy(cursor, question, 1);
 		cursor += 1;
 	}
-
 
 	cursor += serialize_ec_point(cursor, msg->G2a);
 	cursor += serialize_mpi(cursor, c2_mpi);
@@ -144,7 +143,7 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 	return 0;
 }
 
-tlv_t * generate_smp_msg_2(void)
+tlv_t *generate_smp_msg_2(void)
 {
 	uint8_t *data = NULL;
 	size_t len = 0;

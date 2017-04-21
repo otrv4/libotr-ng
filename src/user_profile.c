@@ -114,7 +114,9 @@ user_profile_aprint(uint8_t ** dst, size_t * nbytes,
 
 	uint8_t *cursor = buff;
 	cursor += serialize_bytes_array(cursor, body, body_len);
-	cursor += serialize_bytes_array(cursor, profile->signature, sizeof(eddsa_signature_t));
+	cursor +=
+	    serialize_bytes_array(cursor, profile->signature,
+				  sizeof(eddsa_signature_t));
 	cursor += serialize_mpi(cursor, profile->transitional_signature);
 
 	*dst = buff;
@@ -156,13 +158,14 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 
 		walked += read;
 
-                //TODO: check the len
-                if (buflen - walked < sizeof(eddsa_signature_t))
-                    continue;
+		//TODO: check the len
+		if (buflen - walked < sizeof(eddsa_signature_t))
+			continue;
 
-                memcpy(target->signature, buffer + walked, sizeof(eddsa_signature_t));
+		memcpy(target->signature, buffer + walked,
+		       sizeof(eddsa_signature_t));
 
-                walked += sizeof(eddsa_signature_t);
+		walked += sizeof(eddsa_signature_t);
 
 		if (!otr_mpi_deserialize
 		    (target->transitional_signature, buffer + walked,
@@ -183,21 +186,22 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 bool user_profile_sign(user_profile_t * profile,
 		       const otrv4_keypair_t * keypair)
 {
-    uint8_t *body = NULL;
-    size_t bodylen = 0;
+	uint8_t *body = NULL;
+	size_t bodylen = 0;
 
 	ec_point_copy(profile->pub_key, keypair->pub);
-    if (!user_profile_body_aprint(&body, &bodylen, profile))
-        return false;
+	if (!user_profile_body_aprint(&body, &bodylen, profile))
+		return false;
 
-    uint8_t pubkey[ED448_POINT_BYTES];
-    ec_point_serialize(pubkey, ED448_POINT_BYTES, keypair->pub);
-    //maybe ec_derive_public_key again?
+	uint8_t pubkey[ED448_POINT_BYTES];
+	ec_point_serialize(pubkey, ED448_POINT_BYTES, keypair->pub);
+	//maybe ec_derive_public_key again?
 
-        ec_sign(profile->signature, (uint8_t *)keypair->sym, pubkey, body, bodylen);
+	ec_sign(profile->signature, (uint8_t *) keypair->sym, pubkey, body,
+		bodylen);
 
-            free(body);
-            body = NULL;
+	free(body);
+	body = NULL;
 	return true;
 }
 

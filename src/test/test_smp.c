@@ -6,13 +6,13 @@ void test_smp_state_machine(void)
 {
 	OTR4_INIT;
 
-        otrv4_keypair_t alice_keypair[1], bob_keypair[1];
+	otrv4_keypair_t alice_keypair[1], bob_keypair[1];
 
-        uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-        uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-        otrv4_keypair_generate(alice_keypair, alice_sym);
-        otrv4_keypair_generate(bob_keypair, bob_sym);
-	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
+	uint8_t alice_sym[ED448_PRIVATE_BYTES] = { 1 };
+	uint8_t bob_sym[ED448_PRIVATE_BYTES] = { 2 };
+	otrv4_keypair_generate(alice_keypair, alice_sym);
+	otrv4_keypair_generate(bob_keypair, bob_sym);
+	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4 };
 
 	otrv4_t *alice_otr = otrv4_new(alice_keypair, policy);
 	otrv4_t *bob_otr = otrv4_new(bob_keypair, policy);
@@ -31,7 +31,6 @@ void test_smp_state_machine(void)
 	otrv4_assert(alice_otr->smp->x != NULL);
 	otrv4_assert(alice_otr->smp->a2 != NULL);
 	otrv4_assert(alice_otr->smp->a3 != NULL);
-
 
 	tlv_t *smp_msg_2 = otrv4_process_smp(bob_otr, smp_msg_1);
 	otrv4_assert(smp_msg_2);

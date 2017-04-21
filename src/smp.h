@@ -2,7 +2,7 @@
 #define SMP_H
 
 #include "fingerprint.h"
-#include "str.h" //TODO: The question is an optional DATA. So it can be any array of bytes.
+#include "str.h"		//TODO: The question is an optional DATA. So it can be any array of bytes.
 #include "tlv.h"
 
 #define SMP_VERSION 0x01
@@ -21,9 +21,8 @@ typedef struct {
 	decaf_448_scalar_t a3;
 } smp_context_t[1];
 
-typedef struct
-{
-	char * question;
+typedef struct {
+	char *question;
 	decaf_448_point_t G2a;
 	decaf_448_scalar_t c2;
 	decaf_448_scalar_t d2;
@@ -36,8 +35,8 @@ typedef struct
 void smp_destroy(smp_context_t smp);
 
 void generate_smp_secret(smp_context_t smp, otrv4_fingerprint_t our_fp,
-			otrv4_fingerprint_t their_fp, uint8_t * ssid,
-			string_t answer);
+			 otrv4_fingerprint_t their_fp, uint8_t * ssid,
+			 string_t answer);
 
 int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp);
 int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg);

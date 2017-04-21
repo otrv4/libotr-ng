@@ -13,7 +13,7 @@ void otrv4_fixture_set_up(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 	dh_init();
 
 	otrv4_fixture->keypair = otrv4_keypair_new();
-        uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };	// non-random private key on purpose
 	otrv4_keypair_generate(otrv4_fixture->keypair, sym);
 
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4 };
@@ -47,9 +47,9 @@ identity_message_fixture_setup(identity_message_fixture_t * fixture,
 {
 	fixture->keypair = otrv4_keypair_new();
 
-        uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };	// non-random private key on purpose
 	otrv4_keypair_generate(fixture->keypair, sym);
-        otrv4_assert(ec_point_valid(fixture->keypair->pub));
+	otrv4_assert(ec_point_valid(fixture->keypair->pub));
 
 	fixture->profile = user_profile_new("4");
 	otrv4_assert(fixture->profile != NULL);

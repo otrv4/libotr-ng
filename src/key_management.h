@@ -43,7 +43,7 @@ typedef struct {
 	mix_key_t mix_key;
 
 	uint8_t ssid[8];
-} key_manager_t[1]; //TODO: use pointer
+} key_manager_t[1];		//TODO: use pointer
 
 typedef struct {
 	const chain_link_t *sending, *receiving;

@@ -17,7 +17,7 @@ void test_user_profile_create()
 void test_user_profile_serializes_body()
 {
 	otrv4_keypair_t keypair[1];
-        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };
 	otrv4_keypair_generate(keypair, sym);
 
 	user_profile_t *profile = user_profile_new("4");
@@ -55,7 +55,7 @@ void test_user_profile_serializes_body()
 void test_user_profile_serializes()
 {
 	otrv4_keypair_t keypair[1];
-        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };
 	otrv4_keypair_generate(keypair, sym);
 
 	user_profile_t *profile = user_profile_new("4");
@@ -103,7 +103,7 @@ void test_user_profile_serializes()
 void test_user_profile_deserializes()
 {
 	otrv4_keypair_t keypair[1];
-        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };
 	otrv4_keypair_generate(keypair, sym);
 
 	user_profile_t *profile = user_profile_new("4");
@@ -127,7 +127,7 @@ void test_user_profile_deserializes()
 void test_user_profile_signs_and_verify()
 {
 	otrv4_keypair_t keypair[1];
-        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };
 	otrv4_keypair_generate(keypair, sym);
 
 	user_profile_t *profile = user_profile_new("4");
@@ -145,7 +145,7 @@ void test_user_profile_build()
 	otrv4_assert(!profile);
 
 	otrv4_keypair_t keypair[1];
-        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };
 	otrv4_keypair_generate(keypair, sym);
 
 	profile = user_profile_build("3", keypair);

@@ -76,9 +76,9 @@ void key_manager_destroy(key_manager_t manager)
 
 void key_manager_generate_ephemeral_keys(key_manager_t manager)
 {
-        //TODO: securely erase memory
-        uint8_t sym[ED448_PRIVATE_BYTES];
-        random_bytes(sym, ED448_PRIVATE_BYTES);
+	//TODO: securely erase memory
+	uint8_t sym[ED448_PRIVATE_BYTES];
+	random_bytes(sym, ED448_PRIVATE_BYTES);
 	ecdh_keypair_destroy(manager->our_ecdh);
 	ecdh_keypair_generate(manager->our_ecdh, sym);
 

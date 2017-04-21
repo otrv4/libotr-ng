@@ -225,7 +225,7 @@ test_otrv4_receives_identity_message_invalid_on_start(otrv4_fixture_t *
 void test_otrv4_destroy()
 {
 	otrv4_keypair_t keypair[1];
-        uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };	// non-random private key on purpose
 	otrv4_keypair_generate(keypair, sym);
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4 };
 	otrv4_t *otr = otrv4_new(keypair, policy);

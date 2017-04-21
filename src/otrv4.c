@@ -728,7 +728,8 @@ reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
 		return false;
 
 	if (snizkpk_authenticate
-	    (msg->sigma, otr->keypair, their->pub_key, THEIR_ECDH(otr), t, t_len))
+	    (msg->sigma, otr->keypair, their->pub_key, THEIR_ECDH(otr), t,
+	     t_len))
 		return false;
 
 	free(t);
@@ -1304,14 +1305,15 @@ bool otrv4_close(string_t * to_send, otrv4_t * otr)
 	return ok;
 }
 
-tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question, string_t answer)
+tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
+			  string_t answer)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
 		return NULL;
 
 	otrv4_fingerprint_t our_fp, their_fp;
 	smp_msg_1_t msg;
-	uint8_t * to_send = NULL;
+	uint8_t *to_send = NULL;
 	size_t len = 0;
 
 	otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
@@ -1319,7 +1321,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question, string_t answe
 
 	//TODO: return error?
 	generate_smp_secret(otr->smp, our_fp, their_fp,
-			otr->keys->ssid, answer);
+			    otr->keys->ssid, answer);
 
 	//TODO: return error?
 	generate_smp_msg_1(msg, otr->smp);
@@ -1327,7 +1329,6 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question, string_t answe
 
 	if (smp_msg_1_aprint(&to_send, &len, msg) == 1)
 		return NULL;
-
 
 	tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, len, to_send);
 	if (!tlv)

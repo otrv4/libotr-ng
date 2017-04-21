@@ -7,7 +7,7 @@ void test_data_message_serializes()
 	ecdh_keypair_t ecdh[1];
 	dh_keypair_t dh;
 
-        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };
 	ecdh_keypair_generate(ecdh, sym);
 	dh_keypair_generate(dh);
 
@@ -47,8 +47,7 @@ void test_data_message_serializes()
 	cursor += 20;
 
 	uint8_t serialized_y[ED448_POINT_BYTES + 2] = { 0 };
-	ec_point_serialize(serialized_y, ED448_POINT_BYTES,
-				data_msg->our_ecdh);
+	ec_point_serialize(serialized_y, ED448_POINT_BYTES, data_msg->our_ecdh);
 	otrv4_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
 	cursor += sizeof(ec_public_key_t);
 
