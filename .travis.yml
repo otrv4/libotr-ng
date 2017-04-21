@@ -31,10 +31,8 @@ before_script:
   - pushd .deps/libgcrypt-1.7.6 && ./configure && make && sudo make install && popd
   - curl https://download.libsodium.org/libsodium/releases/libsodium-1.0.11.tar.gz | tar xzf - -C .deps
   - pushd .deps/libsodium-1.0.11 && ./autogen.sh && ./configure && make && sudo make install && popd
-  - git clone --depth=1 https://github.com/twstrike/ed448goldilocks-decaf.git .deps/decaf
-  - pushd .deps/decaf && ./autogen.sh && ./configure && make && sudo make install && popd
-  - git clone --depth=1 https://github.com/twstrike/cramershoup.git .deps/cramershoup
-  - pushd .deps/cramershoup && ./autogen.sh && ./configure CFLAGS="-DFAST_RANDOM" && make && sudo make install && popd
+  - git clone --depth=1 https://github.com/twstrike/ed448goldilocks .deps/goldilocks
+  - pushd .deps/goldilocks && ./autogen.sh && ./configure && make && sudo make install && popd
 
 script:
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
