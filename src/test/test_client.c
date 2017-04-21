@@ -11,7 +11,8 @@ void test_client_conversation_api()
 {
 	OTR4_INIT;
 	otrv4_keypair_t alice_keypair[1];
-	otrv4_keypair_generate(alice_keypair);
+        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	otrv4_keypair_generate(alice_keypair, sym);
 
 	otr4_client_t *alice = otr4_client_new(alice_keypair);
 	otrv4_assert(!alice->conversations);
@@ -55,9 +56,12 @@ void test_client_api()
 	OTR4_INIT;
 
 	otrv4_keypair_t alice_keypair[1], bob_keypair[1], charlie_keypair[1];
-	otrv4_keypair_generate(alice_keypair);
-	otrv4_keypair_generate(bob_keypair);
-	otrv4_keypair_generate(charlie_keypair);
+        uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+        uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+        uint8_t charlie_sym[ED448_PRIVATE_BYTES] = {3};
+	otrv4_keypair_generate(alice_keypair, alice_sym);
+	otrv4_keypair_generate(bob_keypair, bob_sym);
+	otrv4_keypair_generate(charlie_keypair, charlie_sym);
 
 	otr4_client_t *alice = NULL, *bob = NULL, *charlie = NULL;
 
@@ -199,7 +203,8 @@ void test_client_get_our_fingerprint()
 	OTR4_INIT;
 
 	otrv4_keypair_t client_keypair[1];
-	otrv4_keypair_generate(client_keypair);
+        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	otrv4_keypair_generate(client_keypair, sym);
 
 	otr4_client_t *client = otr4_client_new(client_keypair);
 

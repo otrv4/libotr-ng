@@ -2,7 +2,8 @@
 #define DREAD_448_H
 
 #include <stddef.h>
-#include <libdecaf/decaf.h>
+#include <decaf.h>
+#include "ed448.h"
 
 typedef decaf_448_scalar_t dread_privkey_t;
 typedef decaf_448_point_t dread_pubkey_t;

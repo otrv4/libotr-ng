@@ -58,7 +58,7 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 	cursor += serialize_uint8(cursor, data_msg->flags);
 	cursor += serialize_uint32(cursor, data_msg->ratchet_id);
 	cursor += serialize_uint32(cursor, data_msg->message_id);
-	cursor += serialize_ec_public_key(cursor, data_msg->our_ecdh);
+	cursor += serialize_ec_point(cursor, data_msg->our_ecdh);
 	//TODO: This could be NULL. We need to test.
 	cursor += serialize_dh_public_key(cursor, data_msg->our_dh);
 	cursor +=
@@ -140,12 +140,12 @@ data_message_deserialize(data_message_t * dst, uint8_t * buff, size_t bufflen)
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_public_key(dst->our_ecdh, cursor, len, &read)) {
+	if (!deserialize_ec_point(dst->our_ecdh, cursor)) {
 		return false;
 	}
 
-	cursor += read;
-	len -= read;
+	cursor += ED448_POINT_BYTES;
+	len -= ED448_POINT_BYTES;
 
 	//TODO: This could be NULL. We need to test.
 
@@ -212,10 +212,5 @@ bool data_message_validate(m_mac_key_t mac_key, const data_message_t * data_msg)
 		return false;
 	}
 
-	ec_point_t y;
-	if (!ec_point_deserialize(y, data_msg->our_ecdh)) {
-		return false;
-	}
-
-	return ec_point_valid(y) & dh_mpi_valid(data_msg->our_dh);
+	return ec_point_valid(data_msg->our_ecdh) & dh_mpi_valid(data_msg->our_dh);
 }

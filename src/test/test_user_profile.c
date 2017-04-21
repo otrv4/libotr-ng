@@ -17,7 +17,8 @@ void test_user_profile_create()
 void test_user_profile_serializes_body()
 {
 	otrv4_keypair_t keypair[1];
-	otrv4_keypair_generate(keypair);
+        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	otrv4_keypair_generate(keypair, sym);
 
 	user_profile_t *profile = user_profile_new("4");
 	otrv4_assert(profile != NULL);
@@ -34,7 +35,7 @@ void test_user_profile_serializes_body()
 	size_t written = 0;
 	uint8_t *serialized = NULL;
 	otrv4_assert(user_profile_body_aprint(&serialized, &written, profile));
-	g_assert_cmpint(72, ==, written);
+	g_assert_cmpint(73, ==, written);
 
 	otrv4_assert_cmpmem(expected_pubkey, serialized, ED448_PUBKEY_BYTES);
 
@@ -54,7 +55,8 @@ void test_user_profile_serializes_body()
 void test_user_profile_serializes()
 {
 	otrv4_keypair_t keypair[1];
-	otrv4_keypair_generate(keypair);
+        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	otrv4_keypair_generate(keypair, sym);
 
 	user_profile_t *profile = user_profile_new("4");
 	otrv4_assert(profile != NULL);
@@ -90,7 +92,7 @@ void test_user_profile_serializes()
 
 	//transitional signature
 	otrv4_assert_cmpmem(expected_transitional_signature,
-			    serialized + body_len + 4 + 112,
+			    serialized + body_len + sizeof(eddsa_signature_t),
 			    sizeof(expected_transitional_signature));
 
 	user_profile_free(profile);
@@ -101,7 +103,8 @@ void test_user_profile_serializes()
 void test_user_profile_deserializes()
 {
 	otrv4_keypair_t keypair[1];
-	otrv4_keypair_generate(keypair);
+        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	otrv4_keypair_generate(keypair, sym);
 
 	user_profile_t *profile = user_profile_new("4");
 	otrv4_assert(profile != NULL);
@@ -124,7 +127,8 @@ void test_user_profile_deserializes()
 void test_user_profile_signs_and_verify()
 {
 	otrv4_keypair_t keypair[1];
-	otrv4_keypair_generate(keypair);
+        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	otrv4_keypair_generate(keypair, sym);
 
 	user_profile_t *profile = user_profile_new("4");
 	otrv4_assert(profile != NULL);
@@ -141,7 +145,8 @@ void test_user_profile_build()
 	otrv4_assert(!profile);
 
 	otrv4_keypair_t keypair[1];
-	otrv4_keypair_generate(keypair);
+        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	otrv4_keypair_generate(keypair, sym);
 
 	profile = user_profile_build("3", keypair);
 	g_assert_cmpstr(profile->versions, ==, "3");

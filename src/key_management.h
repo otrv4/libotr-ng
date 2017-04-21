@@ -6,7 +6,7 @@
 
 typedef uint8_t k_dh_t[384];
 typedef uint8_t mix_key_t[32];
-typedef uint8_t k_ecdh_t[56];
+typedef uint8_t k_ecdh_t[ED448_POINT_BYTES];
 typedef uint8_t shared_secret_t[64];
 
 typedef uint8_t root_key_t[64];
@@ -29,10 +29,10 @@ typedef struct {
 
 typedef struct {
 	//AKE context
-	ec_keypair_t our_ecdh;
+	ecdh_keypair_t our_ecdh[1];
 	dh_keypair_t our_dh;
 
-	ec_public_key_t their_ecdh;
+	ec_point_t their_ecdh;
 	dh_public_key_t their_dh;
 
 	//Data messages context
@@ -54,9 +54,9 @@ void key_manager_init(key_manager_t manager);
 void key_manager_destroy(key_manager_t manager);
 
 static inline void
-key_manager_set_their_ecdh(ec_public_key_t their, key_manager_t manager)
+key_manager_set_their_ecdh(ec_point_t their, key_manager_t manager)
 {
-	ec_public_key_copy(manager->their_ecdh, their);
+	ec_point_copy(manager->their_ecdh, their);
 }
 
 static inline void
@@ -71,7 +71,7 @@ void key_manager_generate_ephemeral_keys(key_manager_t manager);
 bool key_manager_ratchetting_init(int j, key_manager_t manager);
 
 void
-key_manager_set_their_keys(ec_public_key_t their_ecdh,
+key_manager_set_their_keys(ec_point_t their_ecdh,
 			   dh_public_key_t their_dh, key_manager_t manager);
 
 void key_manager_prepare_to_ratchet(key_manager_t manager);

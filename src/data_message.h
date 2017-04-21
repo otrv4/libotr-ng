@@ -7,11 +7,7 @@
 #include "ed448.h"
 #include "dh.h"
 #include "key_management.h"
-
-#define DATA_MSG_NONCE_BYTES crypto_secretbox_NONCEBYTES
-#define DATA_MSG_MAC_BYTES 64
-
-#define DATA_MESSAGE_MIN_BYTES (2+1+4+4+1+4+4+sizeof(ec_public_key_t)+DH_MPI_BYTES+DATA_MSG_NONCE_BYTES)
+#include "constants.h"
 
 typedef struct {
 	uint32_t sender_instance_tag;
@@ -19,7 +15,7 @@ typedef struct {
 	uint8_t flags;
 	uint32_t ratchet_id;
 	uint32_t message_id;
-	ec_public_key_t our_ecdh;
+	ec_point_t our_ecdh;
 	dh_public_key_t our_dh;
 	uint8_t nonce[DATA_MSG_NONCE_BYTES];
 	uint8_t *enc_msg;

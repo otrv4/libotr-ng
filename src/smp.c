@@ -56,7 +56,7 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
 	gcry_md_write(hd, &version[0], 1);
-	gcry_md_write(hd, pair_r2->pub, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, pair_r2->pub, ED448_POINT_BYTES);
 	memcpy(hash, gcry_md_read(hd, 0), 64);
 	gcry_md_close(hd);
 
@@ -67,7 +67,7 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
 	gcry_md_write(hd, &version[1], 1);
-	gcry_md_write(hd, pair_r3->pub, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, pair_r3->pub, ED448_POINT_BYTES);
 	memcpy(hash, gcry_md_read(hd, 0), 64);
 	gcry_md_close(hd);
 

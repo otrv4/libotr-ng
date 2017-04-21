@@ -4,10 +4,11 @@ void test_data_message_serializes()
 {
 	dh_init();
 
-	ec_keypair_t ecdh;
+	ecdh_keypair_t ecdh[1];
 	dh_keypair_t dh;
 
-	ec_keypair_generate(ecdh);
+        uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+	ecdh_keypair_generate(ecdh, sym);
 	dh_keypair_generate(dh);
 
 	data_message_t *data_msg = data_message_new();
@@ -18,7 +19,7 @@ void test_data_message_serializes()
 	data_msg->flags = 0xA;
 	data_msg->ratchet_id = 10;
 	data_msg->message_id = 99;
-	ec_public_key_copy(data_msg->our_ecdh, ecdh->pub);
+	ec_point_copy(data_msg->our_ecdh, ecdh->pub);
 	data_msg->our_dh = dh_mpi_copy(dh->pub);
 	memset(data_msg->nonce, 0xF, DATA_MSG_NONCE_BYTES);
 	data_msg->enc_msg = malloc(3);
@@ -45,10 +46,10 @@ void test_data_message_serializes()
 	otrv4_assert_cmpmem(cursor, expected, 20);
 	cursor += 20;
 
-	uint8_t serialized_y[sizeof(ec_public_key_t) + 2] = { 0 };
-	ec_public_key_serialize(serialized_y, sizeof(ec_public_key_t),
+	uint8_t serialized_y[ED448_POINT_BYTES + 2] = { 0 };
+	ec_point_serialize(serialized_y, ED448_POINT_BYTES,
 				data_msg->our_ecdh);
-	otrv4_assert_cmpmem(cursor, serialized_y, sizeof(ec_public_key_t));
+	otrv4_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
 	cursor += sizeof(ec_public_key_t);
 
 	uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = { 0 };
@@ -69,7 +70,7 @@ void test_data_message_serializes()
 	otrv4_assert_cmpmem(cursor, expected_enc, 7);
 
 	dh_keypair_destroy(dh);
-	ec_keypair_destroy(ecdh);
+	ecdh_keypair_destroy(ecdh);
 	data_message_free(data_msg);
 	free(serialized);
 	dh_free();

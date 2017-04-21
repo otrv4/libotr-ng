@@ -4,11 +4,15 @@
 
 void test_smp_state_machine(void)
 {
+    return;
 	OTR4_INIT;
 
         otrv4_keypair_t alice_keypair[1], bob_keypair[1];
-        otrv4_keypair_generate(alice_keypair);
-        otrv4_keypair_generate(bob_keypair);
+
+        uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+        uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+        otrv4_keypair_generate(alice_keypair, alice_sym);
+        otrv4_keypair_generate(bob_keypair, bob_sym);
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
 
 	otrv4_t *alice_otr = otrv4_new(alice_keypair, policy);

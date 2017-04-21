@@ -8,13 +8,13 @@
 
 static void ed448_random_point(decaf_448_point_t p)
 {
-	unsigned char rand[DECAF_448_SER_BYTES];
+	unsigned char rand[ED448_POINT_BYTES];
 
 	do {
-		random_bytes(rand, DECAF_448_SER_BYTES);
+		random_bytes(rand, ED448_POINT_BYTES);
 	} while (DECAF_FALSE == decaf_448_point_decode(p, rand, DECAF_FALSE));
 
-	memset(rand, 0, DECAF_448_SER_BYTES);
+	memset(rand, 0, ED448_POINT_BYTES);
 }
 
 static void ed448_random_scalar(decaf_448_scalar_t priv)
@@ -65,7 +65,7 @@ int dread_keypair_generate(dread_keypair_t dst)
 	return elgamal_448_generate_keypair(dst->priv, dst->pub);
 }
 
-const unsigned char base_point_bytes[DECAF_448_SER_BYTES] = {
+const unsigned char base_point_bytes[ED448_POINT_BYTES] = {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -92,7 +92,7 @@ dread_encrypt(dread_cipher_t dst, const dread_pubkey_t pub1,
 {
 	gcry_md_hd_t hd;
 	unsigned char hash[64];
-	unsigned char point_buff[DECAF_448_SER_BYTES];
+	unsigned char point_buff[ED448_POINT_BYTES];
 	unsigned char nonce[crypto_aead_chacha20poly1305_IETF_NPUBBYTES];
 	unsigned char key[crypto_aead_chacha20poly1305_IETF_KEYBYTES];
 	decaf_448_point_t K, T11, T12, T2, T1;
@@ -116,35 +116,35 @@ dread_encrypt(dread_cipher_t dst, const dread_pubkey_t pub1,
 	elgamal_448_encrypt(dst->c2, k2, pub2, K);	// c12, c22
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-	gcry_md_write(hd, base_point_bytes, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, base_point_bytes, ED448_POINT_BYTES);
 	gcry_md_write(hd, prime_order_bytes, DECAF_448_SCALAR_BYTES);
 
 	decaf_448_point_encode(point_buff, pub1);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, pub2);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, dst->c1->c1);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, dst->c1->c2);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, dst->c2->c1);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, dst->c2->c2);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, T11);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, T12);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, T2);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	gcry_md_write(hd, data, datalen);
 
@@ -164,7 +164,7 @@ dread_encrypt(dread_cipher_t dst, const dread_pubkey_t pub1,
 	decaf_448_point_encode(point_buff, K);
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_256, GCRY_MD_FLAG_SECURE);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 	memcpy(key, gcry_md_read(hd, 0), crypto_aead_chacha20poly1305_IETF_KEYBYTES);	// 32 bytes
 	gcry_md_close(hd);
 
@@ -188,7 +188,7 @@ dread_decrypt(unsigned char *dst, unsigned long long *dstlen,
 {
 	gcry_md_hd_t hd;
 	unsigned char hash[64];
-	unsigned char point_buff[DECAF_448_SER_BYTES];
+	unsigned char point_buff[ED448_POINT_BYTES];
 	unsigned char nonce[crypto_aead_chacha20poly1305_IETF_NPUBBYTES];
 	unsigned char key[crypto_aead_chacha20poly1305_IETF_KEYBYTES];
 	decaf_448_point_t tmp, T11, T12, T2;
@@ -211,35 +211,35 @@ dread_decrypt(unsigned char *dst, unsigned long long *dstlen,
 	decaf_448_point_add(T2, T2, tmp);
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-	gcry_md_write(hd, base_point_bytes, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, base_point_bytes, ED448_POINT_BYTES);
 	gcry_md_write(hd, prime_order_bytes, DECAF_448_SCALAR_BYTES);
 
 	decaf_448_point_encode(point_buff, pair1->pub);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, pub2);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, cipher->c1->c1);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, cipher->c1->c2);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, cipher->c2->c1);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, cipher->c2->c2);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, T11);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, T12);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_encode(point_buff, T2);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	gcry_md_write(hd, data, datalen);
 
@@ -262,7 +262,7 @@ dread_decrypt(unsigned char *dst, unsigned long long *dstlen,
 	decaf_448_point_encode(point_buff, K);
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_256, GCRY_MD_FLAG_SECURE);
-	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 	memcpy(key, gcry_md_read(hd, 0), crypto_aead_chacha20poly1305_IETF_KEYBYTES);	// 32 bytes
 	gcry_md_close(hd);
 

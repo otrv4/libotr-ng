@@ -7,36 +7,32 @@
 otrv4_keypair_t *otrv4_keypair_new(void)
 {
 	otrv4_keypair_t *ret = malloc(sizeof(otrv4_keypair_t));
-	if (ret)
-		otrv4_keypair_generate(ret);
+	if (!ret)
+            return NULL;
 
+        ec_scalar_destroy(ret->priv);
+        ec_point_destroy(ret->pub);
 	return ret;
 }
 
-void otrv4_keypair_generate(otrv4_keypair_t * keypair)
+void otrv4_keypair_generate(otrv4_keypair_t * keypair, const uint8_t sym[ED448_PRIVATE_BYTES])
 {
-	uint8_t proto[DECAF_448_SYMMETRIC_KEY_BYTES];
-	random_bytes(proto, DECAF_448_SYMMETRIC_KEY_BYTES);
+    //TODO: generating EdDSA keypair is not working
+    memcpy(keypair->sym, sym, ED448_PRIVATE_BYTES);
+    ec_scalar_derive_from_secret(keypair->priv, keypair->sym);
 
-	decaf_448_private_key_t private;
-	decaf_448_derive_private_key(private, proto);
+    uint8_t pub[ED448_POINT_BYTES];
+    ec_derive_public_key(pub, keypair->sym);
+    ec_point_deserialize(keypair->pub, pub);
 
-	//From Decaf private to OTR long term key
-	//Public-key must be deserialized into a Point
-	//Private-key is already a deserialized Scalar
-	decaf_bool_t ok =
-	    decaf_448_point_decode(keypair->pub, private->pub, DECAF_FALSE);
-	assert(ok == DECAF_SUCCESS);
-
-	decaf_448_scalar_copy(keypair->priv, private->secret_scalar);
-
-	decaf_448_destroy_private_key(private);
+    decaf_bzero(pub, ED448_POINT_BYTES);
 }
 
 void otrv4_keypair_destroy(otrv4_keypair_t * keypair)
 {
-	decaf_448_point_destroy(keypair->pub);
-	decaf_448_scalar_destroy(keypair->priv);
+    decaf_bzero(keypair->sym, ED448_PRIVATE_BYTES);
+    ec_scalar_destroy(keypair->priv);
+    ec_point_destroy(keypair->pub);
 }
 
 void otrv4_keypair_free(otrv4_keypair_t * keypair)
@@ -44,3 +40,4 @@ void otrv4_keypair_free(otrv4_keypair_t * keypair)
 	otrv4_keypair_destroy(keypair);
 	free(keypair);
 }
+

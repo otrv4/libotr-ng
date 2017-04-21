@@ -58,25 +58,16 @@ int serialize_mpi(uint8_t * dst, const otr_mpi_t mpi)
 	return serialize_data(dst, mpi->data, mpi->len);
 }
 
-int serialize_ec_public_key(uint8_t * dst, const ec_public_key_t pub)
-{
-	if (!ec_public_key_serialize(dst, sizeof(ec_public_key_t), pub)) {
-		return 0;
-	}
-
-	return sizeof(ec_public_key_t);
-}
-
 int serialize_ec_point(uint8_t * dst, const ec_point_t point)
 {
-	ec_point_serialize(dst, 56, point);
-	return 56;
+	ec_point_serialize(dst, ED448_POINT_BYTES, point);
+	return ED448_POINT_BYTES;
 }
 
 int serialize_ec_scalar(uint8_t * dst, const ec_scalar_t scalar)
 {
-	ec_scalar_serialize(dst, 56, scalar);
-	return 56;
+	ec_scalar_serialize(dst, ED448_SCALAR_BYTES, scalar);
+	return ED448_SCALAR_BYTES;
 }
 
 int serialize_dh_public_key(uint8_t * dst, const dh_public_key_t pub)

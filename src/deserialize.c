@@ -171,22 +171,6 @@ deserialize_otrv4_public_key(otrv4_public_key_t pub, const uint8_t * serialized,
 	return true;
 }
 
-bool
-deserialize_ec_public_key(ec_public_key_t pub, const uint8_t * serialized,
-			  size_t ser_len, size_t * read)
-{
-	if (ser_len < sizeof(ec_public_key_t)) {
-		return false;
-	}
-
-	ec_public_key_copy(pub, serialized);
-
-	if (read != NULL)
-		*read = sizeof(ec_public_key_t);
-
-	return true;
-}
-
 bool decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len)
 {
 	//((base64len+3) / 4) * 3
@@ -217,7 +201,7 @@ bool decode_b64_ec_point(ec_point_t s, const char *buff, size_t len)
 	bool ok = false;
 	do {
 		size_t written = otrl_base64_decode(dec, buff, len);
-		if (written != DECAF_448_SER_BYTES)
+		if (written != ED448_POINT_BYTES)
 			continue;
 
 		ok = DECAF_SUCCESS == decaf_448_point_decode(s, dec,
@@ -249,32 +233,32 @@ deserialize_snizkpk_proof(snizkpk_proof_t * proof, const uint8_t * serialized,
 	if (!deserialize_ec_scalar(proof->c1, cursor, ser_len))
 		return false;
 
-	cursor += DECAF_448_SER_BYTES;
-	ser_len -= DECAF_448_SER_BYTES;
+	cursor += ED448_SCALAR_BYTES;
+	ser_len -= ED448_SCALAR_BYTES;
 
 	if (!deserialize_ec_scalar(proof->r1, cursor, ser_len))
 		return false;
 
-	cursor += DECAF_448_SER_BYTES;
-	ser_len -= DECAF_448_SER_BYTES;
+	cursor += ED448_SCALAR_BYTES;
+	ser_len -= ED448_SCALAR_BYTES;
 
 	if (!deserialize_ec_scalar(proof->c2, cursor, ser_len))
 		return false;
 
-	cursor += DECAF_448_SER_BYTES;
-	ser_len -= DECAF_448_SER_BYTES;
+	cursor += ED448_SCALAR_BYTES;
+	ser_len -= ED448_SCALAR_BYTES;
 
 	if (!deserialize_ec_scalar(proof->r2, cursor, ser_len))
 		return false;
 
-	cursor += DECAF_448_SER_BYTES;
-	ser_len -= DECAF_448_SER_BYTES;
+	cursor += ED448_SCALAR_BYTES;
+	ser_len -= ED448_SCALAR_BYTES;
 
 	if (!deserialize_ec_scalar(proof->c3, cursor, ser_len))
 		return false;
 
-	cursor += DECAF_448_SER_BYTES;
-	ser_len -= DECAF_448_SER_BYTES;
+	cursor += ED448_SCALAR_BYTES;
+	ser_len -= ED448_SCALAR_BYTES;
 
 	if (!deserialize_ec_scalar(proof->r3, cursor, ser_len))
 		return false;

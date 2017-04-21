@@ -6,6 +6,7 @@
 #include "key_management.h"
 #include "sha3.h"
 #include "debug.h"
+#include "random.h"
 
 ratchet_t *ratchet_new()
 {
@@ -75,8 +76,11 @@ void key_manager_destroy(key_manager_t manager)
 
 void key_manager_generate_ephemeral_keys(key_manager_t manager)
 {
-	ec_keypair_destroy(manager->our_ecdh);
-	ec_keypair_generate(manager->our_ecdh);
+        //TODO: securely erase memory
+        uint8_t sym[ED448_PRIVATE_BYTES];
+        random_bytes(sym, ED448_PRIVATE_BYTES);
+	ecdh_keypair_destroy(manager->our_ecdh);
+	ecdh_keypair_generate(manager->our_ecdh, sym);
 
 	if (manager->i % 3 == 0) {
 		dh_keypair_destroy(manager->our_dh);
@@ -85,11 +89,11 @@ void key_manager_generate_ephemeral_keys(key_manager_t manager)
 }
 
 void
-key_manager_set_their_keys(ec_public_key_t their_ecdh,
+key_manager_set_their_keys(ec_point_t their_ecdh,
 			   dh_public_key_t their_dh, key_manager_t manager)
 {
-	//TODO: Should we safely remove this?
-	ec_public_key_copy(manager->their_ecdh, their_ecdh);
+	//TODO: Should we safely remove the previous point?
+	ec_point_copy(manager->their_ecdh, their_ecdh);
 	dh_mpi_release(manager->their_dh);
 	manager->their_dh = dh_mpi_copy(their_dh);
 }
@@ -184,8 +188,8 @@ const chain_link_t *chain_get_by_id(int message_id, const chain_link_t * head)
 }
 
 message_chain_t *decide_between_chain_keys(const ratchet_t * ratchet,
-					   const ec_public_key_t our,
-					   const ec_public_key_t their)
+					   const ec_point_t our,
+					   const ec_point_t their)
 {
 	message_chain_t *ret = malloc(sizeof(message_chain_t));
 	if (ret == NULL)

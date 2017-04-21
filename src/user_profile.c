@@ -23,7 +23,7 @@ user_profile_t *user_profile_new(const string_t versions)
 	//ec_destroy_point(profile->pub_key);
 	profile->expires = 0;
 	profile->versions = otrv4_strdup(versions);
-	memset(profile->signature, 0, sizeof(ec_signature_t));
+	memset(profile->signature, 0, sizeof(eddsa_signature_t));
 	otr_mpi_init(profile->transitional_signature);
 
 	return profile;
@@ -39,7 +39,7 @@ void user_profile_copy(user_profile_t * dst, const user_profile_t * src)
 	dst->versions = otrv4_strdup(src->versions);
 	dst->expires = src->expires;
 
-	memcpy(dst->signature, src->signature, sizeof(ec_signature_t));
+	memcpy(dst->signature, src->signature, sizeof(eddsa_signature_t));
 	otr_mpi_copy(dst->transitional_signature, src->transitional_signature);
 }
 
@@ -104,28 +104,23 @@ user_profile_aprint(uint8_t ** dst, size_t * nbytes,
 	if (!user_profile_body_aprint(&body, &body_len, profile))
 		return false;
 
-	otr_mpi_t signature_mpi;
-	otr_mpi_set(signature_mpi, profile->signature, sizeof(ec_signature_t));
-
-	size_t s = body_len + 4 + signature_mpi->len + 4 +
+	size_t s = body_len + 4 + sizeof(eddsa_signature_t) +
 	    profile->transitional_signature->len;
 	buff = malloc(s);
 	if (!buff) {
-		otr_mpi_free(signature_mpi);
 		free(body);
 		return false;
 	}
 
 	uint8_t *cursor = buff;
 	cursor += serialize_bytes_array(cursor, body, body_len);
-	cursor += serialize_mpi(cursor, signature_mpi);
+	cursor += serialize_bytes_array(cursor, profile->signature, sizeof(eddsa_signature_t));
 	cursor += serialize_mpi(cursor, profile->transitional_signature);
 
 	*dst = buff;
 	if (nbytes)
 		*nbytes = s;
 
-	otr_mpi_free(signature_mpi);
 	free(body);
 	return true;
 }
@@ -161,13 +156,13 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 
 		walked += read;
 
-		otr_mpi_t signature_mpi;	// no need to free, because nothing is copied now
-		if (!otr_mpi_deserialize_no_copy
-		    (signature_mpi, buffer + walked, buflen - walked, &read))
-			continue;
+                //TODO: check the len
+                if (buflen - walked < sizeof(eddsa_signature_t))
+                    continue;
 
-		walked += read;
-		walked += otr_mpi_memcpy(target->signature, signature_mpi);
+                memcpy(target->signature, buffer + walked, sizeof(eddsa_signature_t));
+
+                walked += sizeof(eddsa_signature_t);
 
 		if (!otr_mpi_deserialize
 		    (target->transitional_signature, buffer + walked,
@@ -188,9 +183,21 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 bool user_profile_sign(user_profile_t * profile,
 		       const otrv4_keypair_t * keypair)
 {
-	ec_point_copy(profile->pub_key, keypair->pub);
+    uint8_t *body = NULL;
+    size_t bodylen = 0;
 
-	// TODO
+	ec_point_copy(profile->pub_key, keypair->pub);
+    if (!user_profile_body_aprint(&body, &bodylen, profile))
+        return false;
+
+    uint8_t pubkey[ED448_POINT_BYTES];
+    ec_point_serialize(pubkey, ED448_POINT_BYTES, keypair->pub);
+    //maybe ec_derive_public_key again?
+
+        ec_sign(profile->signature, (uint8_t *)keypair->sym, pubkey, body, bodylen);
+
+            free(body);
+            body = NULL;
 	return true;
 }
 

@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <libdecaf/decaf.h>
 
 #include "../str.h"
 #include "../ed448.h"

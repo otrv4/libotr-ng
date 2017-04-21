@@ -80,7 +80,7 @@ dake_identity_message_aprint(uint8_t ** dst, size_t * nbytes,
 	target +=
 	    serialize_uint32(target, identity_message->receiver_instance_tag);
 	target += serialize_bytes_array(target, profile, profile_len);
-	target += serialize_ec_public_key(target, identity_message->Y);
+	target += serialize_ec_point(target, identity_message->Y);
 	target += serialize_dh_public_key(target, identity_message->B);
 
 	free(profile);
@@ -141,12 +141,12 @@ dake_identity_message_deserialize(dake_identity_message_t * dst,
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_public_key(dst->Y, cursor, len, &read)) {
+	if (!deserialize_ec_point(dst->Y, cursor)) {
 		return false;
 	}
 
-	cursor += read;
-	len -= read;
+	cursor += ED448_POINT_BYTES;
+	len -= ED448_POINT_BYTES;
 
 	otr_mpi_t b_mpi;	// no need to free, because nothing is copied now
 	if (!otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
@@ -189,14 +189,9 @@ static bool no_rollback_detected(const char *versions)
 bool
 dake_identity_message_validate(const dake_identity_message_t * identity_message)
 {
-	ec_point_t y;
-	if (!ec_point_deserialize(y, identity_message->Y)) {
-		return false;
-	}
-
 	bool valid = user_profile_verify_signature(identity_message->profile);
 	valid &= not_expired(identity_message->profile->expires);
-	valid &= ec_point_valid(y);
+	valid &= ec_point_valid(identity_message->Y);
 	valid &= dh_mpi_valid(identity_message->B);
 	valid &= no_rollback_detected(identity_message->profile->versions);
 
@@ -205,16 +200,14 @@ dake_identity_message_validate(const dake_identity_message_t * identity_message)
 	return valid;
 }
 
-bool validate_received_values(const uint8_t their_ecdh[DECAF_448_SER_BYTES],
+bool validate_received_values(const ec_point_t their_ecdh,
 			      const dh_mpi_t their_dh,
 			      const user_profile_t * profile)
 {
 	bool valid = true;
 
 	//5) Verify that the point X received is on curve 448
-	ec_point_t ec_point;
-	valid &= ec_point_deserialize(ec_point, their_ecdh);
-	valid &= ec_point_valid(ec_point);
+	valid &= ec_point_valid(their_ecdh);
 
 	//6) Verify that the DH public key A is from the correct group.
 	valid &= dh_mpi_valid(their_dh);
@@ -256,7 +249,7 @@ dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 	cursor += serialize_uint32(cursor, dre_auth->sender_instance_tag);
 	cursor += serialize_uint32(cursor, dre_auth->receiver_instance_tag);
 	cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
-	cursor += serialize_ec_public_key(cursor, dre_auth->X);
+	cursor += serialize_ec_point(cursor, dre_auth->X);
 	cursor += serialize_dh_public_key(cursor, dre_auth->A);
 	cursor += serialize_snizkpk_proof(cursor, dre_auth->sigma);
 
@@ -334,15 +327,12 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer, size_t buflen)
 	cursor += read;
 	len -= read;
 
-	//TODO: deserialize A and X
-	//TODO: deserialize sigma
-
-	if (!deserialize_ec_public_key(dst->X, cursor, len, &read)) {
+	if (!deserialize_ec_point(dst->X, cursor)) {
 		return false;
 	}
 
-	cursor += read;
-	len -= read;
+	cursor += ED448_POINT_BYTES;
+	len -= ED448_POINT_BYTES;
 
 	otr_mpi_t tmp_mpi;	// no need to free, because nothing is copied now
 	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {

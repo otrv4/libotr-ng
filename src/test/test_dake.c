@@ -7,48 +7,7 @@
 
 void test_dake_protocol()
 {
-	dh_init();
-
-	otrv4_keypair_t alice_keypair[1], bob_keypair[1];
-	ec_keypair_t alice_ecdh, bob_ecdh;
-	dh_keypair_t alice_dh, bob_dh;
-
-	// Alice
-	otrv4_keypair_generate(alice_keypair);
-	ec_keypair_generate(alice_ecdh);
-	dh_keypair_generate(alice_dh);
-
-	// Bob
-	otrv4_keypair_generate(bob_keypair);
-	ec_keypair_generate(bob_ecdh);
-	dh_keypair_generate(bob_dh);
-
-	// Alice send pre key
-	user_profile_t *alice_profile = user_profile_new("4");
-	alice_profile->expires = time(NULL) + 60 * 60;
-	user_profile_sign(alice_profile, alice_keypair);
-	dake_identity_message_t *identity_message =
-	    dake_identity_message_new(alice_profile);
-
-	ec_public_key_copy(identity_message->Y, alice_ecdh->pub);
-	identity_message->B = dh_mpi_copy(alice_dh->pub);
-
-	//dake_identity_message_serialize()
-
-	//TODO: continue
-	// Bob receives pre key
-	// dake_identity_message_deserialize()
-
-	// Bob sends DRE-auth
-	// Alice receives DRE-auth
-
-	dake_identity_message_free(identity_message);
-	dh_keypair_destroy(bob_dh);
-	ec_keypair_destroy(bob_ecdh);
-	user_profile_free(alice_profile);
-	dh_keypair_destroy(alice_dh);
-	ec_keypair_destroy(alice_ecdh);
-	dh_free();
+    //TODO
 }
 
 #include "../dread.h"
@@ -106,4 +65,25 @@ void test_snizkpk_auth()
 	    snizkpk_verify(dst, pair1->pub, pair2->pub, pair3->pub,
 			   (unsigned char *)msg, strlen(msg));
 	g_assert_cmpint(err, ==, 0);
+
+        //Now lets serialize and deserialize things.
+        otrv4_keypair_t p1[1], p2[1], p3[1];
+        uint8_t sym1[ED448_PRIVATE_BYTES] = {1},
+                sym2[ED448_PRIVATE_BYTES] = {2},
+                sym3[ED448_PRIVATE_BYTES] = {3};
+
+	otrv4_keypair_generate(p1, sym1);
+	otrv4_keypair_generate(p2, sym2);
+	otrv4_keypair_generate(p3, sym3);
+
+	snizkpk_proof_t dst2[1];
+	err = snizkpk_authenticate(dst2, p1, p2->pub, p3->pub,
+				       (unsigned char *)msg, strlen(msg));
+	g_assert_cmpint(err, ==, 0);
+
+	err =
+	    snizkpk_verify(dst2, p1->pub, p2->pub, p3->pub,
+			   (unsigned char *)msg, strlen(msg));
+	g_assert_cmpint(err, ==, 0);
+
 }

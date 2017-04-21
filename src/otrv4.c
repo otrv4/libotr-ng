@@ -363,7 +363,7 @@ reply_with_identity_msg(otrv4_response_t * response, const otrv4_t * otr)
 	m->sender_instance_tag = otr->our_instance_tag;
 	m->receiver_instance_tag = otr->their_instance_tag;
 
-	ec_public_key_copy(m->Y, OUR_ECDH(otr));
+	ec_point_copy(m->Y, OUR_ECDH(otr));
 	m->B = dh_mpi_copy(OUR_DH(otr));
 
 	ok = serialize_and_encode_identity_message(&response->to_send, m);
@@ -473,16 +473,16 @@ build_auth_message(uint8_t ** msg, size_t * msg_len,
 		   const uint8_t type,
 		   const user_profile_t * i_profile,
 		   const user_profile_t * r_profile,
-		   const ec_public_key_t i_ecdh,
-		   const ec_public_key_t r_ecdh,
+		   const ec_point_t i_ecdh,
+		   const ec_point_t r_ecdh,
 		   const dh_mpi_t i_dh, const dh_mpi_t r_dh)
 {
 	uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
 	size_t ser_i_profile_len, ser_r_profile_len = 0;
-	uint8_t ser_i_ecdh[DECAF_448_SER_BYTES],
-	    ser_r_ecdh[DECAF_448_SER_BYTES];
-	serialize_ec_public_key(ser_i_ecdh, i_ecdh);
-	serialize_ec_public_key(ser_r_ecdh, r_ecdh);
+	uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
+
+	serialize_ec_point(ser_i_ecdh, i_ecdh);
+	serialize_ec_point(ser_r_ecdh, r_ecdh);
 
 	uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
 	size_t ser_i_dh_len, ser_r_dh_len = 0;
@@ -502,7 +502,7 @@ build_auth_message(uint8_t ** msg, size_t * msg_len,
 			continue;
 
 		size_t len = 1
-		    + 2 * DECAF_448_SER_BYTES
+		    + 2 * ED448_POINT_BYTES
 		    + ser_i_profile_len + ser_r_profile_len
 		    + ser_i_dh_len + ser_r_dh_len;
 
@@ -520,11 +520,11 @@ build_auth_message(uint8_t ** msg, size_t * msg_len,
 		memcpy(cursor, ser_r_profile, ser_r_profile_len);
 		cursor += ser_r_profile_len;
 
-		memcpy(cursor, ser_i_ecdh, DECAF_448_SER_BYTES);
-		cursor += DECAF_448_SER_BYTES;
+		memcpy(cursor, ser_i_ecdh, ED448_POINT_BYTES);
+		cursor += ED448_POINT_BYTES;
 
-		memcpy(cursor, ser_r_ecdh, DECAF_448_SER_BYTES);
-		cursor += DECAF_448_SER_BYTES;
+		memcpy(cursor, ser_r_ecdh, ED448_POINT_BYTES);
+		cursor += ED448_POINT_BYTES;
 
 		memcpy(cursor, ser_i_dh, ser_i_dh_len);
 		cursor += ser_i_dh_len;
@@ -566,7 +566,7 @@ static bool reply_with_auth_r_msg(string_t * dst, const otrv4_t * otr)
 
 	user_profile_copy(msg->profile, otr->profile);
 
-	ec_public_key_copy(msg->X, OUR_ECDH(otr));
+	ec_point_copy(msg->X, OUR_ECDH(otr));
 	msg->A = dh_mpi_copy(OUR_DH(otr));
 
 	unsigned char *t = NULL;
@@ -576,14 +576,11 @@ static bool reply_with_auth_r_msg(string_t * dst, const otrv4_t * otr)
 	     OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
 		return false;
 
-	ec_point_t their_ecdh;
-	ec_point_deserialize(their_ecdh, THEIR_ECDH(otr));
-
 	//sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg)
 	int err = snizkpk_authenticate(msg->sigma,
 				       otr->keypair,	// g^R and R
 				       otr->their_profile->pub_key,	// g^I
-				       their_ecdh,	// g^i -- Y
+				       THEIR_ECDH(otr),	// g^i -- Y
 				       t, t_len);
 
 	free(t);
@@ -730,11 +727,8 @@ reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
 	     OUR_DH(otr), THEIR_DH(otr)))
 		return false;
 
-	ec_point_t their_ecdh;
-	ec_point_deserialize(their_ecdh, THEIR_ECDH(otr));
-
 	if (snizkpk_authenticate
-	    (msg->sigma, otr->keypair, their->pub_key, their_ecdh, t, t_len))
+	    (msg->sigma, otr->keypair, their->pub_key, THEIR_ECDH(otr), t, t_len))
 		return false;
 
 	free(t);
@@ -748,14 +742,10 @@ reply_with_auth_i_msg(string_t * dst, const user_profile_t * their,
 static bool
 verify_auth_r_message(const dake_auth_r_t * auth, const otrv4_t * otr)
 {
-	snizkpk_pubkey_t Y;
 	uint8_t *t = NULL;
 	size_t t_len = 0;
 
 	if (!validate_received_values(auth->X, auth->A, auth->profile))
-		return false;
-
-	if (!ec_point_deserialize(Y, OUR_ECDH(otr)))
 		return false;
 
 	if (!build_auth_message
@@ -767,7 +757,7 @@ verify_auth_r_message(const dake_auth_r_t * auth, const otrv4_t * otr)
 	int err = snizkpk_verify(auth->sigma,
 				 auth->profile->pub_key,	// g^R
 				 otr->keypair->pub,	// g^I
-				 Y,	// g^
+				 OUR_ECDH(otr),	// g^
 				 t, t_len);
 
 	free(t);
@@ -817,17 +807,13 @@ verify_auth_i_message(const dake_auth_i_t * auth, const otrv4_t * otr)
 	uint8_t *t = NULL;
 	size_t t_len = 0;
 
-	snizkpk_pubkey_t X;
-	if (!ec_point_deserialize(X, OUR_ECDH(otr)))
-		return false;
-
 	if (!build_auth_message(&t, &t_len, 1, otr->their_profile,
 				otr->profile, THEIR_ECDH(otr), OUR_ECDH(otr),
 				THEIR_DH(otr), OUR_DH(otr)))
 		return false;
 
 	int err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
-				 otr->keypair->pub, X, t, t_len);
+				 otr->keypair->pub, OUR_ECDH(otr), t, t_len);
 	free(t);
 	t = NULL;
 
@@ -1109,7 +1095,7 @@ static data_message_t *generate_data_msg(const otrv4_t * otr)
 	data_msg->receiver_instance_tag = otr->their_instance_tag;
 	data_msg->ratchet_id = otr->keys->i;
 	data_msg->message_id = otr->keys->j;
-	ec_public_key_copy(data_msg->our_ecdh, OUR_ECDH(otr));
+	ec_point_copy(data_msg->our_ecdh, OUR_ECDH(otr));
 	data_msg->our_dh = dh_mpi_copy(OUR_DH(otr));
 
 	return data_msg;

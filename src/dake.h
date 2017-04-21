@@ -8,24 +8,13 @@
 #include "ed448.h"
 #include "user_profile.h"
 #include "auth.h"
-
-#define DAKE_HEADER_BYTES (2+1+4+4)
-
-//size of PRE_KEY_MESSAGE without user_profile
-#define PRE_KEY_MIN_BYTES DAKE_HEADER_BYTES \
-                          + DECAF_448_SER_BYTES \
-                          + 4+DH3072_MOD_LEN_BYTES
-
-#define AUTH_R_MIN_BYTES DAKE_HEADER_BYTES \
-        + DECAF_448_SER_BYTES \
-        + DH3072_MOD_LEN_BYTES+4 \
-        + SNIZKPK_BYTES
+#include "constants.h"
 
 typedef struct {
 	uint32_t sender_instance_tag;
 	uint32_t receiver_instance_tag;
 	user_profile_t profile[1];
-	ec_public_key_t Y;
+	ec_point_t Y;
 	dh_public_key_t B;
 } dake_identity_message_t;
 
@@ -34,7 +23,7 @@ typedef struct {
 	uint32_t receiver_instance_tag;
 
 	user_profile_t profile[1];
-	ec_public_key_t X;
+	ec_point_t X;
 	dh_public_key_t A;
 	snizkpk_proof_t sigma[1];
 } dake_auth_r_t;
@@ -85,7 +74,7 @@ dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,
 bool
 dake_auth_i_deserialize(dake_auth_i_t * dst, uint8_t * buffer, size_t buflen);
 
-bool validate_received_values(const uint8_t their_ecdh[DECAF_448_SER_BYTES],
+bool validate_received_values(const ec_point_t their_ecdh,
 			      const dh_mpi_t their_dh,
 			      const user_profile_t * profile);
 
