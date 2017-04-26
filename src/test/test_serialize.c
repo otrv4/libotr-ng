@@ -73,3 +73,22 @@ void test_ser_des_otrv4_public_key()
 	otrv4_assert(decaf_448_point_eq(deserialized, keypair->pub)
 		     == DECAF_TRUE);
 }
+
+void test_serialize_otrv4_symmetric_key()
+{
+	otrv4_keypair_t keypair[1];
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };
+	otrv4_keypair_generate(keypair, sym);
+
+	char *expected =
+	    "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
+	char *buffer = NULL;
+	size_t buffer_size = 0;
+	otrv4_symmetric_key_serialize(&buffer, &buffer_size, sym);
+
+	g_assert_cmpint(strlen(expected), ==, buffer_size);	// 76
+	otrv4_assert_cmpmem(expected, buffer, buffer_size);
+
+	free(buffer);
+}

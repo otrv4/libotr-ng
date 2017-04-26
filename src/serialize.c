@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "serialize.h"
+#include "b64.h"
 
 static int
 serialize_int(uint8_t * target, const uint64_t data, const int offset)
@@ -107,4 +108,16 @@ int serialize_snizkpk_proof(uint8_t * dst, const snizkpk_proof_t * proof)
 	cursor += serialize_ec_scalar(cursor, proof->r3);
 
 	return cursor - dst;
+}
+
+int
+otrv4_symmetric_key_serialize(char **buffer, size_t * buffer_size,
+			      uint8_t sym[ED448_PRIVATE_BYTES])
+{
+	*buffer = malloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
+	if (!*buffer)
+		return -1;
+
+	*buffer_size = otrl_base64_encode(*buffer, sym, ED448_PRIVATE_BYTES);
+	return 0;
 }
