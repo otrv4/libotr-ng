@@ -1355,19 +1355,22 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 	}
 
 	tlv_t *to_send = NULL;
-	smp_msg_1_t msg;
+	smp_msg_1_t msg_1;
+	smp_msg_2_t msg_2;
 
 	switch (otr->smp->state) {
 	case SMPSTATE_EXPECT1 && tlv->type == OTRV4_TLV_SMP_MSG_1:
-		if (!smp_msg_1_deserialize(msg, tlv))
+		if (!smp_msg_1_deserialize(msg_1, tlv))
 			break;
 
-		if (!smp_msg_1_validate(msg))
+		if (!smp_msg_1_validate(msg_1))
 			break;
 
+		//TODO: this answer should be given by user
+		//we need to wait until they fill it
 		set_smp_secret(&otr->smp->y, "the-answer", otr);
 
-		to_send = generate_smp_msg_2();
+		to_send = generate_smp_msg_2(msg_2, msg_1, otr->smp->y, otr->smp);
 		if (!to_send)
 			break;
 

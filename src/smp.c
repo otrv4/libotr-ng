@@ -4,6 +4,7 @@
 #include "deserialize.h"
 #include "dh.h"
 #include "mpi.h"
+#include "random.h"
 #include "serialize.h"
 #include "smp.h"
 #include "str.h"
@@ -42,7 +43,6 @@ void generate_smp_secret(unsigned char ** secret, otrv4_fingerprint_t our_fp,
 
 int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 {
-	decaf_448_scalar_t a2, a3;
 	snizkpk_keypair_t pair_r2[1], pair_r3[1];
 	unsigned char hash[64];
 	gcry_md_hd_t hd;
@@ -51,8 +51,8 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 
 	dst->question = NULL;
 
-	generate_keypair(dst->G2a, a2);
-	generate_keypair(dst->G3a, a3);
+	generate_keypair(dst->G2a, smp->a2);
+	generate_keypair(dst->G3a, smp->a3);
 
 	snizkpk_keypair_generate(pair_r2);
 	snizkpk_keypair_generate(pair_r3);
@@ -64,9 +64,9 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	gcry_md_close(hd);
 
 	int ok = decaf_448_scalar_decode(dst->c2, hash);
-	(void)ok;
-	decaf_448_scalar_mul(a2c2, a2, dst->c2);
-	decaf_448_scalar_sub(dst->d2, pair_r2->priv, dst->c2);
+	(void) ok;
+	decaf_448_scalar_mul(a2c2, smp->a2, dst->c2);
+	decaf_448_scalar_sub(dst->d2, pair_r2->priv, a2c2);
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
 	gcry_md_write(hd, &version[1], 1);
@@ -75,9 +75,9 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	gcry_md_close(hd);
 
 	ok = decaf_448_scalar_decode(dst->c3, hash);
-	(void)ok;
-	decaf_448_scalar_mul(a3c3, a3, dst->c3);
-	decaf_448_scalar_sub(dst->d3, pair_r3->priv, dst->c3);
+	(void) ok;
+	decaf_448_scalar_mul(a3c3, smp->a3, dst->c3);
+	decaf_448_scalar_sub(dst->d3, pair_r3->priv, a3c3);
 
 	return 0;
 }
@@ -144,10 +144,84 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 	return 0;
 }
 
-tlv_t *generate_smp_msg_2(void)
+//TODO: This is triplicated (see auth.c)
+static void ed448_random_scalar(decaf_448_scalar_t priv)
+{
+	unsigned char rand[DECAF_448_SCALAR_BYTES];
+
+	do {
+		random_bytes(rand, DECAF_448_SCALAR_BYTES);
+		int ok = decaf_448_scalar_decode(priv, rand);
+		(void)ok;
+	} while (DECAF_TRUE ==
+		 decaf_448_scalar_eq(priv, decaf_448_scalar_zero));
+
+	memset(rand, 0, DECAF_448_SCALAR_BYTES);
+}
+
+tlv_t * generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
+			  const unsigned char * secret, smp_context_t smp)
 {
 	uint8_t *data = NULL;
 	size_t len = 0;
+	decaf_448_scalar_t b2;
+	snizkpk_keypair_t pair_r2[1], pair_r3[1], pair_r4[1];
+	ec_scalar_t r5, r6;
+	uint8_t version[2] = { 0x03, 0x04 };
+	gcry_md_hd_t hd;
+	unsigned char hash[64];
+	decaf_448_scalar_t temp_scalar;
+//	ec_point_t temp_point;
+
+	generate_keypair(dst->G2b, b2);
+	generate_keypair(dst->G3b, smp->b3);
+
+	snizkpk_keypair_generate(pair_r2);
+	snizkpk_keypair_generate(pair_r3);
+	snizkpk_keypair_generate(pair_r4);
+
+	ed448_random_scalar(r5);
+	ed448_random_scalar(r6);
+
+
+	//c2
+	//TODO: this is doing
+	//return h (mod q)?
+	//TODO: this KDF needs to have OTR4?
+	//KDF_2(x) = SHA3-512("OTR4" || x)
+	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
+	gcry_md_write(hd, &version[0], 1);
+	gcry_md_write(hd, pair_r2->pub, DECAF_448_SER_BYTES);
+	memcpy(hash, gcry_md_read(hd, 0), 64);
+	gcry_md_close(hd);
+	int ok = decaf_448_scalar_decode(dst->c2, hash);
+	(void) ok;
+
+	//d2 = r2 - b2 * c2 mod q.
+	decaf_448_scalar_mul(temp_scalar, b2, dst->c2);
+	decaf_448_scalar_sub(dst->d2, pair_r2->priv, temp_scalar);
+
+	//d3 = r3 - b3 * c3 mod q.
+	decaf_448_scalar_mul(temp_scalar, smp->b3, dst->c3);
+	decaf_448_scalar_sub(dst->d3, pair_r3->priv, temp_scalar);
+
+	//Compute G2 = G2a * b2
+	decaf_448_point_scalarmul(smp->G2, msg_1->G2a, b2);
+	//Compute G3 = G3a * b3.
+	decaf_448_point_scalarmul(smp->G3, msg_1->G3a, smp->b3);
+
+	//Compute Pb = G3 * r4
+	decaf_448_point_scalarmul(smp->Pb, smp->G3, pair_r4->priv);
+	//Compute Qb = G * r4 + G2 * y.
+
+  //TODO: Should use this secret
+  //	decaf_448_point_scalarmul(temp_point, smp->G2, &secret);
+	//TODO: multip is add?
+    //decaf_448_point_mul(smp->Qb, pair_r4->pub, temp_point);
+
+	//cp = HashToScalar(5 || G3 * r5 || G * r5 + G2 * r6)
+	//d5 = r5 - r4 * cp mod q
+	//d6 = r6 - y * cp mod q.
 
 	return otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, len, data);
 }
