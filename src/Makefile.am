@@ -9,7 +9,6 @@ libotr4_la_SOURCES = \
 		     data_message.c \
 		     deserialize.c \
 		     dh.c \
-		     dread.c \
 		     ed448.c \
 		     fingerprint.c \
 		     keys.c \

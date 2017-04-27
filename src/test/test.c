@@ -21,7 +21,6 @@ int main(int argc, char **argv)
 {
 	g_test_init(&argc, &argv, NULL);
 
-	g_test_add_func("/dake/dread", test_dread);
 	g_test_add_func("/dake/snizkpk", test_snizkpk_auth);
 
 	g_test_add_func("/list/add", test_list_add);
