@@ -240,8 +240,7 @@ int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
 	if (!client->keypair)
 		return -2;
 
-	//TODO: serialie otrv4 private key
-	//err = cs_serialize_private_key(&buff, &s, client->keypair->priv);
+	err = otrv4_symmetric_key_serialize(&buff, &s, client->keypair->sym);
 	if (err)
 		return err;
 
