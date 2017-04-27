@@ -1,25 +1,17 @@
 #include "auth.h"
 #include "random.h"
 
-//TODO: This is duplicated. This is also not great. Change.
 static void ed448_random_scalar(decaf_448_scalar_t priv)
 {
-	unsigned char rand[DECAF_448_SCALAR_BYTES];
-
-	do {
-		random_bytes(rand, DECAF_448_SCALAR_BYTES);
-		int ok = decaf_448_scalar_decode(priv, rand);
-		(void)ok;
-	} while (DECAF_TRUE ==
-		 decaf_448_scalar_eq(priv, decaf_448_scalar_zero));
-
-	memset(rand, 0, DECAF_448_SCALAR_BYTES);
+	uint8_t sym[ED448_PRIVATE_BYTES];
+	random_bytes(sym, ED448_PRIVATE_BYTES);
+	ec_scalar_derive_from_secret(priv, sym);
 }
 
 void generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv)
 {
-	ed448_random_scalar(priv);
-	decaf_448_point_scalarmul(pub, decaf_448_point_base, priv);
+    ed448_random_scalar(priv);
+    decaf_448_point_scalarmul(pub, decaf_448_point_base, priv);
 }
 
 void snizkpk_keypair_generate(snizkpk_keypair_t * pair)
@@ -30,6 +22,7 @@ void snizkpk_keypair_generate(snizkpk_keypair_t * pair)
 //TODO: This needs to be regenerated to be the EdDSA serialization of the base
 //point
 const unsigned char base_point_bytes_dup[ED448_POINT_BYTES] = {
+        0x0,
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
