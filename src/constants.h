@@ -27,7 +27,6 @@
                                + DAKE_HEADER_BYTES \
                                + 1+4+4 \
                                + ED448_POINT_BYTES \
-                               + DH_MPI_BYTES \
                                + DATA_MSG_NONCE_BYTES )
 
 #endif

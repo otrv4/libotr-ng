@@ -45,9 +45,9 @@ bool
 data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 			 const data_message_t * data_msg)
 {
-	size_t s = DATA_MESSAGE_MIN_BYTES + 4 + data_msg->enc_msg_len;
+	size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
 	uint8_t *dst = malloc(s);
-	if (dst == NULL)
+	if (!dst)
 		return false;
 
 	uint8_t *cursor = dst;
@@ -68,7 +68,7 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 	    serialize_data(cursor, data_msg->enc_msg, data_msg->enc_msg_len);
 
 	*body = dst;
-	*bodylen = s;
+	*bodylen = cursor - dst;
 
 	return true;
 }

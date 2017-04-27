@@ -29,12 +29,15 @@ int main(int argc, char **argv)
 	g_test_add_func("/dh/api", dh_test_api);
 	g_test_add_func("/dh/serialize", dh_test_serialize);
 
+
 	g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
 	g_test_add_func("/serialize_and_deserialize/data",
 			test_serialize_deserialize_data);
+	g_test_add_func("/serialize/dh-public-key",
+			test_serialize_dh_public_key);
 	g_test_add_func("/serialize_and_deserialize/ed448-public-key",
 			test_ser_des_otrv4_public_key);
-	g_test_add_func("/serialize/otrv4-keypair",
+	g_test_add_func("/serialize/otrv4-symmetric-key",
 			test_serialize_otrv4_symmetric_key);
 
 	g_test_add_func("/user_profile/create", test_user_profile_create);
