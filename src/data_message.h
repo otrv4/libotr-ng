@@ -36,7 +36,7 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 			 const data_message_t * data_msg);
 
 bool
-data_message_deserialize(data_message_t * data_msg, uint8_t * buff,
+data_message_deserialize(data_message_t * data_msg, const uint8_t * buff,
 			 size_t bufflen);
 
 bool

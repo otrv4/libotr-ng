@@ -667,7 +667,7 @@ static void received_instance_tag(uint32_t their_instance_tag, otrv4_t * otr)
 }
 
 static bool
-receive_identity_message(string_t * dst, uint8_t * buff, size_t buflen,
+receive_identity_message(string_t * dst, const uint8_t * buff, size_t buflen,
 			 otrv4_t * otr)
 {
 	bool ok = false;
@@ -769,7 +769,7 @@ verify_auth_r_message(const dake_auth_r_t * auth, const otrv4_t * otr)
 }
 
 static bool
-receive_auth_r(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
+receive_auth_r(string_t * dst, const uint8_t * buff, size_t buff_len, otrv4_t * otr)
 {
 	if (otr->state != OTRV4_STATE_WAITING_AUTH_R)
 		return false;
@@ -823,7 +823,7 @@ verify_auth_i_message(const dake_auth_i_t * auth, const otrv4_t * otr)
 }
 
 static bool
-receive_auth_i(string_t * dst, uint8_t * buff, size_t buff_len, otrv4_t * otr)
+receive_auth_i(string_t * dst, const uint8_t * buff, size_t buff_len, otrv4_t * otr)
 {
 	if (otr->state != OTRV4_STATE_WAITING_AUTH_I)
 		return false;
@@ -931,7 +931,7 @@ get_receiving_msg_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
 }
 
 bool
-otrv4_receive_data_message(otrv4_response_t * response, uint8_t * buff,
+otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 			   size_t buflen, otrv4_t * otr)
 {
 	data_message_t *msg = data_message_new();

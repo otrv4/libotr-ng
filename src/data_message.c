@@ -74,7 +74,7 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 }
 
 bool
-data_message_deserialize(data_message_t * dst, uint8_t * buff, size_t bufflen)
+data_message_deserialize(data_message_t * dst, const uint8_t * buff, size_t bufflen)
 {
 	const uint8_t *cursor = buff;
 	int64_t len = bufflen;

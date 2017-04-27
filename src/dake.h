@@ -62,7 +62,7 @@ bool
 dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 		   const dake_auth_r_t * dre_auth);
 bool
-dake_auth_r_deserialize(dake_auth_r_t * dst, uint8_t * buffer, size_t buflen);
+dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer, size_t buflen);
 
 void dake_auth_i_destroy(dake_auth_i_t * auth_i);
 
@@ -72,7 +72,7 @@ bool
 dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,
 		   const dake_auth_i_t * dre_auth);
 bool
-dake_auth_i_deserialize(dake_auth_i_t * dst, uint8_t * buffer, size_t buflen);
+dake_auth_i_deserialize(dake_auth_i_t * dst, const uint8_t * buffer, size_t buflen);
 
 bool validate_received_values(const ec_point_t their_ecdh,
 			      const dh_mpi_t their_dh,
