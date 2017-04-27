@@ -25,7 +25,10 @@ int main(int argc, char **argv)
 
 	g_test_add_func("/list/add", test_list_add);
 
-	g_test_add_func("/ed448/api", ed448_test_ecdh);
+	g_test_add_func("/edwards448/api", ed448_test_ecdh);
+	g_test_add_func("/edwards448/eddsa_serialization", ed448_test_eddsa_serialization);
+	g_test_add_func("/edwards448/eddsa_keygen", ed448_test_eddsa_keygen);
+
 	g_test_add_func("/dh/api", dh_test_api);
 	g_test_add_func("/dh/serialize", dh_test_serialize);
 

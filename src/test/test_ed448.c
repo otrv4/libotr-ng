@@ -25,7 +25,10 @@ void ed448_test_ecdh()
 	otrv4_assert(DECAF_SUCCESS == err);
 
 	otrv4_assert_cmpmem(shared1, shared2, DECAF_X448_PUBLIC_BYTES);
+}
 
+void ed448_test_eddsa_serialization()
+{
 	ec_scalar_t s;
 	uint8_t rand[ED448_SCALAR_BYTES];
 	random_bytes(rand, ED448_SCALAR_BYTES);
@@ -46,4 +49,24 @@ void ed448_test_ecdh()
 	otrv4_assert(dec_ok);
 
 	otrv4_assert(ec_point_eq(p, dec));
+}
+
+void ed448_test_eddsa_keygen()
+{
+	uint8_t pub[ED448_POINT_BYTES];
+	uint8_t sym[ED448_PRIVATE_BYTES];
+	random_bytes(sym, ED448_PRIVATE_BYTES);
+
+        ec_scalar_t secret_scalar;
+        ec_point_t public_point;
+	ec_scalar_derive_from_secret(secret_scalar, sym);
+	ec_derive_public_key(pub, sym);
+
+	ec_point_deserialize(public_point, pub);
+
+        //Is G * scalar == P?
+        ec_point_t expected;
+        decaf_448_point_scalarmul(expected, decaf_448_point_base, secret_scalar);
+
+        otrv4_assert(ec_point_eq(expected, public_point));
 }
