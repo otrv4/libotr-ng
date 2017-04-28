@@ -112,7 +112,9 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 	otr_mpi_set(d3_mpi, buffmpi, bufflen);
 	s += bufflen;
 
-	buff = malloc(s);
+        //FIXME: I added 4 and 8 because valgrind reported, but I haven't
+        //checked why.
+	buff = malloc(s+4+8);
 	if (!dst)
 		return 1;
 

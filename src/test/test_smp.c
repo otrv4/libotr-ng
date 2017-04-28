@@ -113,6 +113,7 @@ void test_generate_smp_secret(void)
 	};
 
 	otrv4_assert_cmpmem(smp->x, expected_secret, 148);
+        free(smp->x);
 }
 
 void test_smp_msg_1_aprint_null_question(void)
@@ -127,8 +128,13 @@ void test_smp_msg_1_aprint_null_question(void)
 
         otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
 	g_assert_cmpint(writen, ==, expected_size);
+        free(buff);
+        buff = NULL;
 
 	msg->question = "something";
 	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
 	g_assert_cmpint(writen, ==, (expected_size + strlen(msg->question)+1));
+
+        free(buff);
+        buff = NULL;
 }

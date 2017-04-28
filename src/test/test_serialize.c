@@ -102,6 +102,8 @@ void test_serialize_dh_public_key()
 
     uint8_t dst[383+4] = {0};
     size_t written = serialize_dh_public_key(dst, TEST_DH);
+    dh_mpi_release(TEST_DH);
+    TEST_DH = NULL;
 
     g_assert_cmpuint(383+4, ==, written);
 }
