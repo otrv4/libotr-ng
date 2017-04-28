@@ -2,6 +2,9 @@ language: c
 #cache: ccache
 
 matrix:
+  fast_finish: true
+  allow_failures:
+    - dist: precise
   include:
     - os: linux
       dist: trusty
