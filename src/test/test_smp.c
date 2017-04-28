@@ -4,7 +4,8 @@
 
 void test_smp_state_machine(void)
 {
-    return; //TODO: fixme
+    //FIXME: this segfaults
+    return;
 	OTR4_INIT;
 
 	otrv4_keypair_t alice_keypair[1], bob_keypair[1];
