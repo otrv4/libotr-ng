@@ -23,7 +23,7 @@ test_dake_identity_message_serializes(identity_message_fixture_t * f,
 	ecdh_keypair_t ecdh[1];
 	dh_keypair_t dh;
 
-	uint8_t sym[ED448_SCALAR_BYTES] = { 0 };
+	uint8_t sym[ED448_PRIVATE_BYTES] = { 0 };
 	ecdh_keypair_generate(ecdh, sym);
 	dh_keypair_generate(dh);
 
