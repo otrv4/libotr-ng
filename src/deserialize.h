@@ -42,3 +42,6 @@ deserialize_snizkpk_proof(snizkpk_proof_t * proof, const uint8_t * serialized,
 bool decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len);
 
 bool decode_b64_ec_point(ec_point_t s, const char *buff, size_t len);
+
+int otrv4_symmetric_key_deserialize(otrv4_keypair_t *pair, const char *buff,
+                                    size_t len);

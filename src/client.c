@@ -1,5 +1,6 @@
 #include "client.h"
 
+#include "deserialize.h"
 #include "str.h"
 #include "serialize.h"
 #include "sha3.h"
@@ -252,6 +253,11 @@ int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
 
 int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 {
+	char *line = NULL;
+	size_t cap = 0;
+	int len = 0;
+	int err = 0;
+
 	if (!privf)
 		return -1;
 
@@ -261,14 +267,11 @@ int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 	if (!client->keypair)
 		return -2;
 
-	//TODO: deserialize private key
-	//if (cs_deserialize_private_key_FILEp(client->keypair->priv, privf)) {
-	//      cs_keypair_destroy(client->keypair);
-	//      free(client->keypair);
-	//      client->keypair = NULL;
-	//      return -3;
-	//}
+	len = getline(&line, &cap, privf);
+	if (len < 0)
+		return -1;
 
-	//cs_keypair_derive_public_key(client->keypair);
-	return 0;
+        err = otrv4_symmetric_key_deserialize(client->keypair, line, len);
+        free(line);
+	return err;
 }

@@ -268,3 +268,22 @@ deserialize_snizkpk_proof(snizkpk_proof_t * proof, const uint8_t * serialized,
 
 	return true;
 }
+
+int otrv4_symmetric_key_deserialize(otrv4_keypair_t *pair, const char *buff,
+                                    size_t len)
+{
+	//((base64len+3) / 4) * 3
+	unsigned char *dec = malloc(((len + 3) / 4) * 3);
+	if (!dec)
+		return -1;
+
+	size_t written = otrl_base64_decode(dec, buff, len);
+        int err = (written == ED448_PRIVATE_BYTES);
+
+        if (!err)
+            otrv4_keypair_generate(pair, dec);
+
+        free(dec);
+        return err;
+}
+
