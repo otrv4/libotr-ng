@@ -278,7 +278,7 @@ int otrv4_symmetric_key_deserialize(otrv4_keypair_t *pair, const char *buff,
 		return -1;
 
 	size_t written = otrl_base64_decode(dec, buff, len);
-        int err = (written == ED448_PRIVATE_BYTES);
+        int err = (written != ED448_PRIVATE_BYTES);
 
         if (!err)
             otrv4_keypair_generate(pair, dec);
