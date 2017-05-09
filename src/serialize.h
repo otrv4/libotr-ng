@@ -34,7 +34,4 @@ int serialize_snizkpk_proof(uint8_t * dst, const snizkpk_proof_t * proof);
 
 int serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t);
 
-int otrv4_symmetric_key_serialize(char **buffer, size_t * buffer_size,
-				  uint8_t sym[ED448_PRIVATE_BYTES]);
-
 #endif

@@ -2,7 +2,9 @@
 #include <assert.h>
 
 #include "keys.h"
+
 #include "random.h"
+#include "b64.h"
 
 otrv4_keypair_t *otrv4_keypair_new(void)
 {
@@ -41,3 +43,16 @@ void otrv4_keypair_free(otrv4_keypair_t * keypair)
 	otrv4_keypair_destroy(keypair);
 	free(keypair);
 }
+
+int
+otrv4_symmetric_key_serialize(char **buffer, size_t * buffer_size,
+			      uint8_t sym[ED448_PRIVATE_BYTES])
+{
+	*buffer = malloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
+	if (!*buffer)
+		return -1;
+
+	*buffer_size = otrl_base64_encode(*buffer, sym, ED448_PRIVATE_BYTES);
+	return 0;
+}
+

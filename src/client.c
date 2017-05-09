@@ -230,30 +230,6 @@ int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
 	return otr4_serialize_fingerprint(fp, client->keypair->pub);
 }
 
-int otr4_privkey_generate_FILEp(const otr4_client_t * client, FILE * privf)
-{
-	char *buff = NULL;
-	size_t s = 0;
-	int err = 0;
-
-	if (!privf)
-		return -1;
-
-	if (!client->keypair)
-		return -2;
-
-	err = otrv4_symmetric_key_serialize(&buff, &s, client->keypair->sym);
-	if (err)
-		return err;
-
-	if (1 != fwrite(buff, s, 1, privf))
-		return -3;
-
-        fputs("\n", privf);
-
-	return 0;
-}
-
 int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 {
 	char *line = NULL;
