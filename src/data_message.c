@@ -218,6 +218,6 @@ bool data_message_validate(m_mac_key_t mac_key, const data_message_t * data_msg)
 		return false;
 	}
 
-	return ec_point_valid(data_msg->
-			      our_ecdh) & dh_mpi_valid(data_msg->our_dh);
+	return ec_point_valid(data_msg->our_ecdh) & dh_mpi_valid(data_msg->
+								 our_dh);
 }
