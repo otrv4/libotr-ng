@@ -80,7 +80,8 @@ dake_identity_message_aprint(uint8_t ** dst, size_t * nbytes,
 	target +=
 	    serialize_uint32(target, identity_message->receiver_instance_tag);
 	target += serialize_bytes_array(target, profile, profile_len);
-	target += serialize_ec_point(target, identity_message->Y);
+	serialize_ec_point(target, identity_message->Y);
+	target += ED448_POINT_BYTES;
 	target += serialize_dh_public_key(target, identity_message->B);
 
 	free(profile);
@@ -249,7 +250,8 @@ dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 	cursor += serialize_uint32(cursor, dre_auth->sender_instance_tag);
 	cursor += serialize_uint32(cursor, dre_auth->receiver_instance_tag);
 	cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
-	cursor += serialize_ec_point(cursor, dre_auth->X);
+	serialize_ec_point(cursor, dre_auth->X);
+	cursor += ED448_POINT_BYTES;
 	cursor += serialize_dh_public_key(cursor, dre_auth->A);
 	cursor += serialize_snizkpk_proof(cursor, dre_auth->sigma);
 

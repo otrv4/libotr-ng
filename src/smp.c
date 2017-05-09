@@ -128,10 +128,12 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 	else
 		cursor += serialize_data(cursor, (uint8_t *) msg->question, strlen(msg->question)+1);
 
-	cursor += serialize_ec_point(cursor, msg->G2a);
+	serialize_ec_point(cursor, msg->G2a);
+	cursor += ED448_POINT_BYTES;
 	cursor += serialize_mpi(cursor, c2_mpi);
 	cursor += serialize_mpi(cursor, d2_mpi);
-	cursor += serialize_ec_point(cursor, msg->G3a);
+	serialize_ec_point(cursor, msg->G3a);
+	cursor += ED448_POINT_BYTES;
 	cursor += serialize_mpi(cursor, c3_mpi);
 	cursor += serialize_mpi(cursor, d3_mpi);
 

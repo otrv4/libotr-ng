@@ -58,10 +58,13 @@ int serialize_mpi(uint8_t * dst, const otr_mpi_t mpi)
 	return serialize_data(dst, mpi->data, mpi->len);
 }
 
-int serialize_ec_point(uint8_t * dst, const ec_point_t point)
+bool serialize_ec_point(uint8_t * dst, const ec_point_t point)
 {
-	ec_point_serialize(dst, ED448_POINT_BYTES, point);
-	return ED448_POINT_BYTES;
+	bool ok = ec_point_serialize(dst, ED448_POINT_BYTES, point);
+	if (!ok) {
+		return false;
+	}
+	return true;
 }
 
 int serialize_ec_scalar(uint8_t * dst, const ec_scalar_t scalar)
@@ -91,7 +94,8 @@ int serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
 {
 	uint8_t *cursor = dst;
 	cursor += serialize_uint16(cursor, ED448_PUBKEY_TYPE);
-	cursor += serialize_ec_point(cursor, pub);
+	serialize_ec_point(cursor, pub);
+	cursor += ED448_POINT_BYTES;
 
 	return cursor - dst;
 }
