@@ -1,6 +1,8 @@
 #ifndef OTR4_CLIENT_H
 #define OTR4_CLIENT_H
 
+#define OTR4_CLIENT_ERROR_NOT_ENCRYPTED 0x1001
+
 #include "otrv4.h"
 #include "list.h"
 

@@ -143,10 +143,10 @@ otr4_client_send(char **newmessage, const char *message,
 		// Cant send a message while not in OTRV4_STATE_ENCRYPTED_MESSAGES
 		//TODO: Store the message for retransmition if not FINISHED
 		//TODO: Add notifications (like "tried to send a message while not in encrypted")
-		return 1;
+		return OTR4_CLIENT_ERROR_NOT_ENCRYPTED;
 	}
 
-	return otrv4_send_message(newmessage, message, NULL, conv->conn);
+	return !otrv4_send_message(newmessage, message, NULL, conv->conn);
 }
 
 int
