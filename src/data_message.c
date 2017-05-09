@@ -58,7 +58,10 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 	cursor += serialize_uint8(cursor, data_msg->flags);
 	cursor += serialize_uint32(cursor, data_msg->ratchet_id);
 	cursor += serialize_uint32(cursor, data_msg->message_id);
-	serialize_ec_point(cursor, data_msg->our_ecdh);
+	bool ok = serialize_ec_point(cursor, data_msg->our_ecdh);
+	if (!ok) {
+		return false;
+	}
 	cursor += ED448_POINT_BYTES;
 	//TODO: This could be NULL. We need to test.
 	cursor += serialize_dh_public_key(cursor, data_msg->our_dh);

@@ -482,8 +482,14 @@ build_auth_message(uint8_t ** msg, size_t * msg_len,
 	size_t ser_i_profile_len, ser_r_profile_len = 0;
 	uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
 
-	serialize_ec_point(ser_i_ecdh, i_ecdh);
-	serialize_ec_point(ser_r_ecdh, r_ecdh);
+	bool out = serialize_ec_point(ser_i_ecdh, i_ecdh);
+	if (!out) {
+		return false;
+	}
+	out = serialize_ec_point(ser_r_ecdh, r_ecdh);
+	if (!out) {
+		return false;
+	}
 
 	uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
 	size_t ser_i_dh_len, ser_r_dh_len = 0;
