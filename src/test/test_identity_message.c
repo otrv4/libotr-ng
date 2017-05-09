@@ -54,8 +54,10 @@ test_dake_identity_message_serializes(identity_message_fixture_t * f,
 	cursor += sizeof(ec_public_key_t);
 
 	uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = { 0 };
-	size_t mpi_len = dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
-					  identity_message->B);
+	size_t mpi_len = 0;
+	bool ok = dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
+				   &mpi_len, identity_message->B);
+	otrv4_assert(ok);
 	//Skip first 4 because they are the size (mpi_len)
 	otrv4_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
 

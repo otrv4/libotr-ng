@@ -12,6 +12,7 @@ typedef struct {
 
 	//const char* accountname;
 	//const char* proto; //???
+	// TODO: delete these instance types below?
 	//otrl_instag_t their_instance;
 	//otrl_instag_t our_instance;
 } otr4_conversation_t;

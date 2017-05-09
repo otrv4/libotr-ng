@@ -78,8 +78,10 @@ void test_data_message_serializes()
 	cursor += sizeof(ec_public_key_t);
 
 	uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = { 0 };
-	size_t mpi_len = dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
-					  data_msg->our_dh);
+	size_t mpi_len = 0;
+	bool ok = dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
+				   &mpi_len, data_msg->our_dh);
+	otrv4_assert(ok);
 	//Skip first 4 because they are the size (mpi_len)
 	otrv4_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
 

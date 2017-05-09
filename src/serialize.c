@@ -78,8 +78,11 @@ int serialize_dh_public_key(uint8_t * dst, const dh_public_key_t pub)
 	//From gcrypt MPI
 	uint8_t buf[DH3072_MOD_LEN_BYTES] = { 0 };
 	memset(buf, 0, DH3072_MOD_LEN_BYTES);
-	size_t written = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, pub);
-
+	size_t written = 0;
+	bool ok = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &written, pub);
+	if (!ok) {
+		// TODO: handle errors with serialization
+	}
 	//To OTR MPI
 	//TODO: Maybe gcrypt MPI already has some API for this.
 	//gcry_mpi_print with a different format, maybe?

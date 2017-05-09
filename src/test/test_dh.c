@@ -30,18 +30,20 @@ void dh_test_serialize()
 	uint8_t buf[DH3072_MOD_LEN_BYTES] = { 0 };
 	dh_mpi_t mpi = gcry_mpi_new(DH3072_MOD_LEN_BITS);
 
-	size_t len = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, mpi);
-	g_assert_cmpint(len, ==, 0);
+	size_t mpi_len = 0;
+	bool ok = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
+	otrv4_assert(ok);
+	g_assert_cmpint(mpi_len, ==, 0);
 
 	gcry_mpi_set_ui(mpi, 1);
-	len = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, mpi);
-
-	g_assert_cmpint(len, ==, 1);
+	ok = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
+	otrv4_assert(ok);
+	g_assert_cmpint(mpi_len, ==, 1);
 
 	gcry_mpi_set_ui(mpi, 0xffffffff);
-	len = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, mpi);
-
-	g_assert_cmpint(len, ==, 4);
+	ok = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
+	otrv4_assert(ok);
+	g_assert_cmpint(mpi_len, ==, 4);
 
 	gcry_mpi_release(mpi);
 }

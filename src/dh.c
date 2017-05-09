@@ -97,11 +97,16 @@ dh_shared_secret(uint8_t * shared,
 	return true;
 }
 
-size_t dh_mpi_serialize(uint8_t * dst, size_t dst_len, const dh_mpi_t src)
+bool
+dh_mpi_serialize(uint8_t * dst, size_t dst_len, size_t * written,
+		 const dh_mpi_t src)
 {
-	size_t nwritten = 0;
-	gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, &nwritten, src);	//TODO: fail?
-	return nwritten;
+	gcry_error_t err =
+	    gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
+	if (err) {
+		return false;
+	}
+	return true;
 }
 
 bool
