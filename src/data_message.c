@@ -45,7 +45,8 @@ bool
 data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 			 const data_message_t * data_msg)
 {
-	size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
+	size_t s =
+	    DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
 	uint8_t *dst = malloc(s);
 	if (!dst)
 		return false;
@@ -78,7 +79,8 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 }
 
 bool
-data_message_deserialize(data_message_t * dst, const uint8_t * buff, size_t bufflen)
+data_message_deserialize(data_message_t * dst, const uint8_t * buff,
+			 size_t bufflen)
 {
 	const uint8_t *cursor = buff;
 	int64_t len = bufflen;
@@ -216,6 +218,6 @@ bool data_message_validate(m_mac_key_t mac_key, const data_message_t * data_msg)
 		return false;
 	}
 
-	return ec_point_valid(data_msg->our_ecdh) & dh_mpi_valid(data_msg->
-								 our_dh);
+	return ec_point_valid(data_msg->
+			      our_ecdh) & dh_mpi_valid(data_msg->our_dh);
 }

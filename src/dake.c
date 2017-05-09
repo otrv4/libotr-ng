@@ -283,7 +283,8 @@ void dake_auth_r_free(dake_auth_r_t * auth_r)
 }
 
 bool
-dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer, size_t buflen)
+dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
+			size_t buflen)
 {
 	const uint8_t *cursor = buffer;
 	int64_t len = buflen;
@@ -399,7 +400,8 @@ dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,
 }
 
 bool
-dake_auth_i_deserialize(dake_auth_i_t * dst, const uint8_t * buffer, size_t buflen)
+dake_auth_i_deserialize(dake_auth_i_t * dst, const uint8_t * buffer,
+			size_t buflen)
 {
 	const uint8_t *cursor = buffer;
 	int64_t len = buflen;

@@ -101,7 +101,7 @@ otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 	if (conv)
 		return conv;
 
-        //TODO: Invoke the callback to create the keypair
+	//TODO: Invoke the callback to create the keypair
 	if (!client->keypair)
 		return NULL;
 
@@ -250,7 +250,7 @@ int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 	if (len < 0)
 		return -3;
 
-        err = otrv4_symmetric_key_deserialize(client->keypair, line, len);
-        free(line);
+	err = otrv4_symmetric_key_deserialize(client->keypair, line, len);
+	free(line);
 	return err;
 }

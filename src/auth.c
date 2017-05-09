@@ -10,8 +10,8 @@ static void ed448_random_scalar(decaf_448_scalar_t priv)
 
 void generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv)
 {
-    ed448_random_scalar(priv);
-    decaf_448_point_scalarmul(pub, decaf_448_point_base, priv);
+	ed448_random_scalar(priv);
+	decaf_448_point_scalarmul(pub, decaf_448_point_base, priv);
 }
 
 void snizkpk_keypair_generate(snizkpk_keypair_t * pair)
@@ -133,7 +133,7 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 	gcry_md_write(hd, base_point_bytes_dup, DECAF_448_SER_BYTES);
 	gcry_md_write(hd, prime_order_bytes_dup, DECAF_448_SCALAR_BYTES);
 
-        //This uses: DECAF_448_SER_BYTES bytes
+	//This uses: DECAF_448_SER_BYTES bytes
 	decaf_448_point_encode(point_buff, A1);
 	gcry_md_write(hd, point_buff, DECAF_448_SER_BYTES);
 

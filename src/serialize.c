@@ -115,4 +115,3 @@ int serialize_snizkpk_proof(uint8_t * dst, const snizkpk_proof_t * proof)
 
 	return cursor - dst;
 }
-

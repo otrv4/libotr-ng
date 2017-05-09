@@ -57,16 +57,17 @@ void ed448_test_eddsa_keygen()
 	uint8_t sym[ED448_PRIVATE_BYTES];
 	random_bytes(sym, ED448_PRIVATE_BYTES);
 
-        ec_scalar_t secret_scalar;
-        ec_point_t public_point;
+	ec_scalar_t secret_scalar;
+	ec_point_t public_point;
 	ec_scalar_derive_from_secret(secret_scalar, sym);
 	ec_derive_public_key(pub, sym);
 
 	ec_point_deserialize(public_point, pub);
 
-        //Is G * scalar == P?
-        ec_point_t expected;
-        decaf_448_point_scalarmul(expected, decaf_448_point_base, secret_scalar);
+	//Is G * scalar == P?
+	ec_point_t expected;
+	decaf_448_point_scalarmul(expected, decaf_448_point_base,
+				  secret_scalar);
 
-        otrv4_assert(ec_point_eq(expected, public_point));
+	otrv4_assert(ec_point_eq(expected, public_point));
 }

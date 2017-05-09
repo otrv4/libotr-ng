@@ -4,8 +4,8 @@
 
 void test_smp_state_machine(void)
 {
-    //FIXME: this segfaults
-    return;
+	//FIXME: this segfaults
+	return;
 	OTR4_INIT;
 
 	otrv4_keypair_t alice_keypair[1], bob_keypair[1];
@@ -38,12 +38,12 @@ void test_smp_state_machine(void)
 	g_assert_cmpint(smp_msg_2->type, ==, OTRV4_TLV_SMP_MSG_2);
 	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT3);
 	otrv4_assert(bob_otr->smp->y);
-//	otrv4_assert(bob_otr->smp->G3a);
-//	otrv4_assert(bob_otr->smp->G2);
-//	otrv4_assert(bob_otr->smp->G3);
-//	otrv4_assert(bob_otr->smp->b3);
-//	otrv4_assert(bob_otr->smp->Pb);
-//	otrv4_assert(bob_otr->smp->Qb);
+//      otrv4_assert(bob_otr->smp->G3a);
+//      otrv4_assert(bob_otr->smp->G2);
+//      otrv4_assert(bob_otr->smp->G3);
+//      otrv4_assert(bob_otr->smp->b3);
+//      otrv4_assert(bob_otr->smp->Pb);
+//      otrv4_assert(bob_otr->smp->Qb);
 
 	otrv4_destroy(alice_otr);
 	otrv4_destroy(bob_otr);
@@ -114,13 +114,13 @@ void test_generate_smp_secret(void)
 	};
 
 	otrv4_assert_cmpmem(smp->x, expected_secret, 148);
-        free(smp->x);
+	free(smp->x);
 }
 
 void test_smp_msg_1_aprint_null_question(void)
 {
-    //FIXME: G2a is not set, but is serialized. Valgrind reports.
-    return;
+	//FIXME: G2a is not set, but is serialized. Valgrind reports.
+	return;
 
 	smp_msg_1_t msg;
 	uint8_t *buff;
@@ -130,15 +130,16 @@ void test_smp_msg_1_aprint_null_question(void)
 	//data_header + question + 2 points + 4 mpis = 4 + 0 + (2*56) + (4*4) + (4*56)
 	size_t expected_size = 356;
 
-        otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
+	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
 	g_assert_cmpint(writen, ==, expected_size);
-        free(buff);
-        buff = NULL;
+	free(buff);
+	buff = NULL;
 
 	msg->question = "something";
 	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
-	g_assert_cmpint(writen, ==, (expected_size + strlen(msg->question)+1));
+	g_assert_cmpint(writen, ==,
+			(expected_size + strlen(msg->question) + 1));
 
-        free(buff);
-        buff = NULL;
+	free(buff);
+	buff = NULL;
 }

@@ -775,7 +775,8 @@ verify_auth_r_message(const dake_auth_r_t * auth, const otrv4_t * otr)
 }
 
 static bool
-receive_auth_r(string_t * dst, const uint8_t * buff, size_t buff_len, otrv4_t * otr)
+receive_auth_r(string_t * dst, const uint8_t * buff, size_t buff_len,
+	       otrv4_t * otr)
 {
 	if (otr->state != OTRV4_STATE_WAITING_AUTH_R)
 		return false;
@@ -829,7 +830,8 @@ verify_auth_i_message(const dake_auth_i_t * auth, const otrv4_t * otr)
 }
 
 static bool
-receive_auth_i(string_t * dst, const uint8_t * buff, size_t buff_len, otrv4_t * otr)
+receive_auth_i(string_t * dst, const uint8_t * buff, size_t buff_len,
+	       otrv4_t * otr)
 {
 	if (otr->state != OTRV4_STATE_WAITING_AUTH_I)
 		return false;
@@ -1312,15 +1314,14 @@ bool otrv4_close(string_t * to_send, otrv4_t * otr)
 	return ok;
 }
 
-void set_smp_secret(unsigned char ** secret, string_t answer, otrv4_t * otr)
+void set_smp_secret(unsigned char **secret, string_t answer, otrv4_t * otr)
 {
 	otrv4_fingerprint_t our_fp, their_fp;
 	otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
 	otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
 
-		//TODO: return error?
-	generate_smp_secret(secret, our_fp, their_fp,
-			otr->keys->ssid, answer);
+	//TODO: return error?
+	generate_smp_secret(secret, our_fp, their_fp, otr->keys->ssid, answer);
 }
 
 tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
@@ -1376,7 +1377,8 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 		//we need to wait until they fill it
 		set_smp_secret(&otr->smp->y, "the-answer", otr);
 
-		to_send = generate_smp_msg_2(msg_2, msg_1, otr->smp->y, otr->smp);
+		to_send =
+		    generate_smp_msg_2(msg_2, msg_1, otr->smp->y, otr->smp);
 		if (!to_send)
 			break;
 

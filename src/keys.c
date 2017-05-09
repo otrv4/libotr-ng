@@ -55,4 +55,3 @@ otrv4_symmetric_key_serialize(char **buffer, size_t * buffer_size,
 	*buffer_size = otrl_base64_encode(*buffer, sym, ED448_PRIVATE_BYTES);
 	return 0;
 }
-
