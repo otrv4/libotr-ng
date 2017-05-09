@@ -797,7 +797,7 @@ receive_auth_r(string_t * dst, const uint8_t * buff, size_t buff_len, otrv4_t * 
 	dake_auth_r_destroy(auth);
 
 	otrv4_fingerprint_t fp;
-	if (otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
+	if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
 		fingerprint_seen_cb(fp, otr);
 
 	return double_ratcheting_init(0, otr);
@@ -838,7 +838,7 @@ receive_auth_i(string_t * dst, const uint8_t * buff, size_t buff_len, otrv4_t * 
 	dake_auth_i_destroy(auth);
 
 	otrv4_fingerprint_t fp;
-	if (otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
+	if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
 		fingerprint_seen_cb(fp, otr);
 
 	return double_ratcheting_init(1, otr);
