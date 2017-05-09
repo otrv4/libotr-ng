@@ -54,9 +54,6 @@ int main(int argc, char **argv)
 	g_test_add_func("/user_profile/build_user_profile",
 			test_user_profile_build);
 
-	WITH_FIXTURE("/dake/identity_message/new",
-		     test_dake_identity_message_new, identity_message_fixture_t,
-		     identity_message_fixture);
 	WITH_FIXTURE("/dake/identity_message/serializes",
 		     test_dake_identity_message_serializes,
 		     identity_message_fixture_t, identity_message_fixture);
@@ -66,8 +63,6 @@ int main(int argc, char **argv)
 	WITH_FIXTURE("/dake/identity_message/valid",
 		     test_dake_identity_message_valid,
 		     identity_message_fixture_t, identity_message_fixture);
-
-	g_test_add_func("/dake/protocol", test_dake_protocol);
 
 	g_test_add_func("/data_message/serialize",
 			test_data_message_serializes);

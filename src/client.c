@@ -13,7 +13,7 @@ static otr4_conversation_t *new_conversation_with(const char *recipient)
 	if (!conv)
 		return NULL;
 
-	conv->recipient = otrv4_strdup(recipient);
+	conv->recipient = otrv4_string_duplicate(recipient);
 	return conv;
 }
 
@@ -121,11 +121,11 @@ otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 	return conv;
 }
 
-otr4_conversation_t *otr4_client_get_conversation(int force,
+otr4_conversation_t *otr4_client_get_conversation(int force_create,
 						  const char *recipient,
 						  otr4_client_t * client)
 {
-	if (force)
+	if (force_create)
 		return get_or_create_conversation_with(recipient, client);
 
 	return get_conversation_with(recipient, client->conversations);
@@ -169,11 +169,11 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 	}
 
 	if (response->to_send)
-		*newmessage = otrv4_strdup(response->to_send);
+		*newmessage = otrv4_string_duplicate(response->to_send);
 
 	int should_ignore = 1;
 	if (response->to_display) {
-		char *plain = otrv4_strdup(response->to_display);
+		char *plain = otrv4_string_duplicate(response->to_display);
 		*todisplay = plain;
 		should_ignore = 0;
 	}

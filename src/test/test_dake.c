@@ -4,12 +4,6 @@
 #include "../dake.h"
 #include "../serialize.h"
 #include "../str.h"
-
-void test_dake_protocol()
-{
-	//TODO
-}
-
 #include "../auth.h"
 
 void test_snizkpk_auth()

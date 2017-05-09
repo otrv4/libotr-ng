@@ -5,16 +5,6 @@
 #define PREKEY_BEFORE_PROFILE_BYTES 2+1+4+4
 
 void
-test_dake_identity_message_new(identity_message_fixture_t * f,
-			       gconstpointer data)
-{
-	dake_identity_message_t *identity_message =
-	    dake_identity_message_new(f->profile);
-	dake_identity_message_free(identity_message);
-	identity_message = NULL;
-}
-
-void
 test_dake_identity_message_serializes(identity_message_fixture_t * f,
 				      gconstpointer data)
 {

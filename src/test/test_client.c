@@ -6,6 +6,8 @@
 #define ALICE_IDENTITY "alice@otr.example"
 #define BOB_IDENTITY "bob@otr.example"
 #define CHARLIE_IDENTITY "charlie@otr.example"
+#define DONT_FORCE_CREATE_CONVO 0
+#define FORCE_CREATE_CONVO 1
 
 void test_client_conversation_api()
 {
@@ -18,26 +20,28 @@ void test_client_conversation_api()
 	otrv4_assert(!alice->conversations);
 
 	otr4_conversation_t *alice_to_bob =
-	    otr4_client_get_conversation(0, BOB_IDENTITY, alice);
+	    otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
 	otr4_conversation_t *alice_to_charlie =
-	    otr4_client_get_conversation(0, CHARLIE_IDENTITY, alice);
+	    otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO, CHARLIE_IDENTITY, alice);
 
 	otrv4_assert(!alice->conversations);
 	otrv4_assert(!alice_to_bob);
 	otrv4_assert(!alice_to_charlie);
 
-	alice_to_bob = otr4_client_get_conversation(1, BOB_IDENTITY, alice);
+	alice_to_bob =
+        otr4_client_get_conversation(FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
 	alice_to_charlie =
-	    otr4_client_get_conversation(1, CHARLIE_IDENTITY, alice);
+	    otr4_client_get_conversation(FORCE_CREATE_CONVO, CHARLIE_IDENTITY, alice);
 
 	otrv4_assert(alice_to_bob);
 	otrv4_assert(alice_to_bob->conn);
 	otrv4_assert(alice_to_charlie);
 	otrv4_assert(alice_to_charlie->conn);
 
-	alice_to_bob = otr4_client_get_conversation(0, BOB_IDENTITY, alice);
+    alice_to_bob =
+        otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
 	alice_to_charlie =
-	    otr4_client_get_conversation(0, CHARLIE_IDENTITY, alice);
+	    otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO, CHARLIE_IDENTITY, alice);
 
 	otrv4_assert(alice_to_bob);
 	otrv4_assert(alice_to_bob->conn);
@@ -99,9 +103,9 @@ void test_client_api()
 	free(query_msg_to_charlie);
 
 	otr4_conversation_t *alice_to_bob =
-	    otr4_client_get_conversation(0, BOB_IDENTITY, alice);
+	    otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
 	otr4_conversation_t *alice_to_charlie =
-	    otr4_client_get_conversation(0, CHARLIE_IDENTITY, alice);
+	    otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO, CHARLIE_IDENTITY, alice);
 
 	otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_START);
 	otrv4_assert(alice_to_charlie->conn->state == OTRV4_STATE_START);
@@ -172,7 +176,7 @@ void test_client_api()
 	otrv4_assert(from_alice_to_bob);
 
 	// We've deleted the conversation
-	otrv4_assert(!otr4_client_get_conversation(0, BOB_IDENTITY, alice));
+	otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice));
 	//TODO: Should we keep the conversation and set state to start instead?
 	//g_assert_cmpint(alice_to_bob->conn->state, ==, OTRV4_STATE_START);
 
