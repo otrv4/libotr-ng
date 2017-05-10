@@ -97,16 +97,16 @@ dh_shared_secret(uint8_t * shared,
 	return true;
 }
 
-bool
+otr4_err_t
 dh_mpi_serialize(uint8_t * dst, size_t dst_len, size_t * written,
 		 const dh_mpi_t src)
 {
 	gcry_error_t err =
 	    gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
 	if (err) {
-		return false;
+		return OTR4_SERIALIZATION_ERR;
 	}
-	return true;
+	return OTR4_SUCCESS_CODE;
 }
 
 bool

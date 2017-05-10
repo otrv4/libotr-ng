@@ -65,7 +65,13 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 	}
 	cursor += ED448_POINT_BYTES;
 	//TODO: This could be NULL. We need to test.
-	cursor += serialize_dh_public_key(cursor, data_msg->our_dh);
+	size_t len = 0;
+	otr4_err_t err =
+	    serialize_dh_public_key(cursor, &len, data_msg->our_dh);
+	if (err) {
+		return false;
+	}
+	cursor += len;
 	cursor +=
 	    serialize_bytes_array(cursor, data_msg->nonce,
 				  DATA_MSG_NONCE_BYTES);

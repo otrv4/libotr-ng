@@ -492,10 +492,16 @@ build_auth_message(uint8_t ** msg, size_t * msg_len,
 	}
 
 	uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
-	size_t ser_i_dh_len, ser_r_dh_len = 0;
+	size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
 
-	ser_i_dh_len = serialize_dh_public_key(ser_i_dh, i_dh);
-	ser_r_dh_len = serialize_dh_public_key(ser_r_dh, r_dh);
+	otr4_err_t err = serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh);
+	if (err) {
+		return false;
+	}
+	err = serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh);
+	if (err) {
+		return false;
+	}
 
 	bool ok = false;
 

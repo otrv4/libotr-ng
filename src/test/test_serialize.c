@@ -148,7 +148,9 @@ void test_serialize_dh_public_key()
 	otrv4_assert(!err);
 
 	uint8_t dst[383 + 4] = { 0 };
-	size_t written = serialize_dh_public_key(dst, TEST_DH);
+	size_t written = 0;
+	otr4_err_t otr_err = serialize_dh_public_key(dst, &written, TEST_DH);
+	otrv4_assert(!otr_err);
 	dh_mpi_release(TEST_DH);
 	TEST_DH = NULL;
 
