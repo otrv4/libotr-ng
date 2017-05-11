@@ -41,13 +41,28 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
 	gcry_md_close(hd);
 }
 
+int hashToScalar(const unsigned char * buff, const size_t bufflen,
+		decaf_448_scalar_t dst)
+{
+	gcry_md_hd_t hd;
+	char otr_marker[4] = "OTR4";
+	//TODO: should #DEFINE this size
+	unsigned char hash[64];
+
+	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
+	gcry_md_write(hd, &otr_marker, 4);
+	gcry_md_write(hd, buff, bufflen);
+	memcpy(hash, gcry_md_read(hd, 0), 64);
+	gcry_md_close(hd);
+
+	return decaf_448_scalar_decode(dst, hash);
+}
+
 int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 {
 	snizkpk_keypair_t pair_r2[1], pair_r3[1];
-	unsigned char hash[64];
-	gcry_md_hd_t hd;
+	unsigned char hash[ED448_POINT_BYTES+1];
 	decaf_448_scalar_t a3c3, a2c2;
-	uint8_t version[2] = { 0x01, 0x02 };
 
 	dst->question = NULL;
 
@@ -57,25 +72,17 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	snizkpk_keypair_generate(pair_r2);
 	snizkpk_keypair_generate(pair_r3);
 
-	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-	gcry_md_write(hd, &version[0], 1);
-	gcry_md_write(hd, pair_r2->pub, ED448_POINT_BYTES);
-	memcpy(hash, gcry_md_read(hd, 0), 64);
-	gcry_md_close(hd);
+	hash[0] = 0x01;
+	memcpy(hash+1, pair_r2->pub, ED448_POINT_BYTES);
+	hashToScalar(hash, 64, dst->c2);
 
-	int ok = decaf_448_scalar_decode(dst->c2, hash);
-	(void)ok;
 	decaf_448_scalar_mul(a2c2, smp->a2, dst->c2);
 	decaf_448_scalar_sub(dst->d2, pair_r2->priv, a2c2);
 
-	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-	gcry_md_write(hd, &version[1], 1);
-	gcry_md_write(hd, pair_r3->pub, ED448_POINT_BYTES);
-	memcpy(hash, gcry_md_read(hd, 0), 64);
-	gcry_md_close(hd);
+	hash[0] = 0x02;
+	memcpy(hash+1, pair_r3->pub, ED448_POINT_BYTES);
+	hashToScalar(hash, 64, dst->c3);
 
-	ok = decaf_448_scalar_decode(dst->c3, hash);
-	(void)ok;
 	decaf_448_scalar_mul(a3c3, smp->a3, dst->c3);
 	decaf_448_scalar_sub(dst->d3, pair_r3->priv, a3c3);
 
@@ -194,10 +201,6 @@ tlv_t *generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 	ed448_random_scalar(r6);
 
 	//c2
-	//TODO: this is doing
-	//return h (mod q)?
-	//TODO: this KDF needs to have OTR4?
-	//KDF_2(x) = SHA3-512("OTR4" || x)
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
 	gcry_md_write(hd, &version[0], 1);
 	gcry_md_write(hd, pair_r2->pub, DECAF_448_SER_BYTES);
