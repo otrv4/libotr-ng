@@ -2,8 +2,6 @@
 #include <stdint.h>
 #include <gcrypt.h>
 
-#include "error.h"
-
 #ifndef DH_H
 #define DH_H
 
@@ -32,7 +30,7 @@ bool dh_keypair_generate(dh_keypair_t keypair);
 
 void dh_keypair_destroy(dh_keypair_t keypair);
 
-otr4_err_t dh_mpi_serialize(uint8_t * dst, size_t dst_len, size_t * written,
+gcry_error_t dh_mpi_serialize(uint8_t * dst, size_t dst_len, size_t * written,
 			    const dh_mpi_t src);
 
 bool

@@ -7,7 +7,6 @@
 #include "ed448.h"
 #include "mpi.h"
 #include "auth.h"
-#include "error.h"
 
 #define CRAMER_SHOUP_PUBKEY_BYTES 170
 
@@ -29,7 +28,7 @@ bool serialize_ec_point(uint8_t * dst, const ec_point_t point);
 
 size_t serialize_ec_scalar(uint8_t * dst, const ec_scalar_t scalar);
 
-otr4_err_t serialize_dh_public_key(uint8_t * dst, size_t * len,
+gcry_error_t serialize_dh_public_key(uint8_t * dst, size_t * len,
 				   const dh_public_key_t pub);
 
 size_t serialize_snizkpk_proof(uint8_t * dst, const snizkpk_proof_t * proof);

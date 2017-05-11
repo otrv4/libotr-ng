@@ -149,8 +149,8 @@ void test_serialize_dh_public_key()
 
 	uint8_t dst[383 + 4] = { 0 };
 	size_t written = 0;
-	otr4_err_t otr_err = serialize_dh_public_key(dst, &written, TEST_DH);
-	otrv4_assert(!otr_err);
+	err = serialize_dh_public_key(dst, &written, TEST_DH);
+	otrv4_assert(err == gcry_error(GPG_ERR_NO_ERROR));
 	dh_mpi_release(TEST_DH);
 	TEST_DH = NULL;
 

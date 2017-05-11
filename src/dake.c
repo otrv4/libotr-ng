@@ -11,7 +11,6 @@
 #include "random.h"
 #include "sha3.h"
 #include "constants.h"
-#include "error.h"
 
 dake_identity_message_t *dake_identity_message_new(const user_profile_t *
 						   profile)
@@ -87,7 +86,7 @@ dake_identity_message_aprint(uint8_t ** dst, size_t * nbytes,
 	}
 	target += ED448_POINT_BYTES;
 	size_t len = 0;
-	otr4_err_t err =
+	gcry_error_t err =
 	    serialize_dh_public_key(target, &len, identity_message->B);
 	if (err) {
 		return false;
@@ -266,7 +265,7 @@ dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 	}
 	cursor += ED448_POINT_BYTES;
 	size_t len = 0;
-	otr4_err_t err = serialize_dh_public_key(cursor, &len, dre_auth->A);
+	gcry_error_t err = serialize_dh_public_key(cursor, &len, dre_auth->A);
 	if (err) {
 		return false;
 	}

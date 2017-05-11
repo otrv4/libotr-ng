@@ -66,7 +66,7 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 	cursor += ED448_POINT_BYTES;
 	//TODO: This could be NULL. We need to test.
 	size_t len = 0;
-	otr4_err_t err =
+	gcry_error_t err =
 	    serialize_dh_public_key(cursor, &len, data_msg->our_dh);
 	if (err) {
 		return false;
