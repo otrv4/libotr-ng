@@ -36,6 +36,7 @@ otrincdir = $(includedir)/libotr4
 otrinc_HEADERS = client.h \
 		 dh.h \
 		 ed448.h \
+		 error.h \
 		 fingerprint.h \
 		 keys.h \
 		 key_management.h \
