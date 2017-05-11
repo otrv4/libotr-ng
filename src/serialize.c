@@ -2,12 +2,11 @@
 
 #include "serialize.h"
 
-// TODO: test that this can never be negative
-static int
-serialize_int(uint8_t * target, const uint64_t data, const int offset)
+size_t
+serialize_uint(uint8_t * target, const uint64_t data, const size_t offset)
 {
-	int i;
-	int shift = offset;
+	size_t i;
+	size_t shift = offset;
 
 	for (i = 0; i < offset; i++) {
 		shift--;
@@ -17,34 +16,34 @@ serialize_int(uint8_t * target, const uint64_t data, const int offset)
 	return offset;
 }
 
-int serialize_uint64(uint8_t * dst, const uint64_t data)
+size_t serialize_uint64(uint8_t * dst, const uint64_t data)
 {
-	return serialize_int(dst, data, sizeof(uint64_t));
+	return serialize_uint(dst, data, sizeof(uint64_t));
 }
 
-int serialize_uint32(uint8_t * dst, const uint32_t data)
+size_t serialize_uint32(uint8_t * dst, const uint32_t data)
 {
-	return serialize_int(dst, data, sizeof(uint32_t));
+	return serialize_uint(dst, data, sizeof(uint32_t));
 }
 
-int serialize_uint16(uint8_t * dst, const uint16_t data)
+size_t serialize_uint16(uint8_t * dst, const uint16_t data)
 {
-	return serialize_int(dst, data, sizeof(uint16_t));
+	return serialize_uint(dst, data, sizeof(uint16_t));
 }
 
-int serialize_uint8(uint8_t * dst, const uint8_t data)
+size_t serialize_uint8(uint8_t * dst, const uint8_t data)
 {
-	return serialize_int(dst, data, sizeof(uint8_t));
+	return serialize_uint(dst, data, sizeof(uint8_t));
 }
 
-int serialize_bytes_array(uint8_t * target, const uint8_t * data, int len)
+size_t serialize_bytes_array(uint8_t * target, const uint8_t * data, size_t len)
 {
 	//this is just a memcpy thar returns the ammount copied for convenience
 	memcpy(target, data, len);
 	return len;
 }
 
-size_t serialize_data(uint8_t * dst, const uint8_t * data, int len)
+size_t serialize_data(uint8_t * dst, const uint8_t * data, size_t len)
 {
 	uint8_t *cursor = dst;
 
@@ -68,7 +67,7 @@ bool serialize_ec_point(uint8_t * dst, const ec_point_t point)
 	return true;
 }
 
-int serialize_ec_scalar(uint8_t * dst, const ec_scalar_t scalar)
+size_t serialize_ec_scalar(uint8_t * dst, const ec_scalar_t scalar)
 {
 	ec_scalar_serialize(dst, ED448_SCALAR_BYTES, scalar);
 	return ED448_SCALAR_BYTES;
@@ -96,7 +95,7 @@ serialize_dh_public_key(uint8_t * dst, size_t * len, const dh_public_key_t pub)
 	return OTR4_SUCCESS_CODE;
 }
 
-int serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
+size_t serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
 {
 	uint8_t *cursor = dst;
 	cursor += serialize_uint16(cursor, ED448_PUBKEY_TYPE);
@@ -109,7 +108,7 @@ int serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
 	return cursor - dst;
 }
 
-int serialize_snizkpk_proof(uint8_t * dst, const snizkpk_proof_t * proof)
+size_t serialize_snizkpk_proof(uint8_t * dst, const snizkpk_proof_t * proof)
 {
 	uint8_t *cursor = dst;
 	cursor += serialize_ec_scalar(cursor, proof->c1);
