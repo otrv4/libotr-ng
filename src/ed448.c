@@ -108,13 +108,13 @@ ec_point_deserialize(ec_point_t point,
 	return true;
 }
 
-static const char *ctx = "OTRv4_profile_signature";
 
 void
 ec_sign(eddsa_signature_t dst,
 	uint8_t sym[ED448_PRIVATE_BYTES],
 	uint8_t pubkey[ED448_POINT_BYTES], const uint8_t * msg, size_t msg_len)
 {
+        static const char *ctx = "";
 	decaf_ed448_sign(dst, sym, pubkey, msg, msg_len, 0, (uint8_t *) ctx,
 			 strlen(ctx));
 }
