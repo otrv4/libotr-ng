@@ -73,16 +73,16 @@ size_t serialize_ec_scalar(uint8_t * dst, const ec_scalar_t scalar)
 	return ED448_SCALAR_BYTES;
 }
 
-gcry_error_t
+otr4_err_t
 serialize_dh_public_key(uint8_t * dst, size_t * len, const dh_public_key_t pub)
 {
 	//From gcrypt MPI
 	uint8_t buf[DH3072_MOD_LEN_BYTES] = { 0 };
 	memset(buf, 0, DH3072_MOD_LEN_BYTES);
 	size_t written = 0;
-	gcry_error_t err =
+	otr4_err_t err =
 	    dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &written, pub);
-	if (err != GPG_ERR_NO_ERROR) {
+	if (err) {
 		return err;
 	}
 	//To OTR MPI
@@ -92,7 +92,7 @@ serialize_dh_public_key(uint8_t * dst, size_t * len, const dh_public_key_t pub)
 	otr_mpi_set(mpi, buf, written);
 	*len = serialize_mpi(dst, mpi);
 	otr_mpi_free(mpi);
-	return gcry_error(GPG_ERR_NO_ERROR);
+	return OTR4_SUCCESS_CODE;
 }
 
 size_t serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)

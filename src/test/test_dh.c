@@ -31,19 +31,19 @@ void dh_test_serialize()
 	dh_mpi_t mpi = gcry_mpi_new(DH3072_MOD_LEN_BITS);
 
 	size_t mpi_len = 0;
-	gcry_error_t err =
+	otr4_err_t err =
 	    dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
-	otrv4_assert(err == gcry_error(GPG_ERR_NO_ERROR));
+	otrv4_assert(!err);
 	g_assert_cmpint(mpi_len, ==, 0);
 
 	gcry_mpi_set_ui(mpi, 1);
 	err = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
-	otrv4_assert(err == gcry_error(GPG_ERR_NO_ERROR));
+	otrv4_assert(!err);
 	g_assert_cmpint(mpi_len, ==, 1);
 
 	gcry_mpi_set_ui(mpi, 0xffffffff);
 	err = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
-	otrv4_assert(err == gcry_error(GPG_ERR_NO_ERROR));
+	otrv4_assert(!err);
 	g_assert_cmpint(mpi_len, ==, 4);
 
 	gcry_mpi_release(mpi);

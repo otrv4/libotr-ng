@@ -108,10 +108,10 @@ void test_data_message_serializes()
 
 	uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = { 0 };
 	size_t mpi_len = 0;
-	err =
+	otr4_err_t otr_err =
 	    dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
 			     &mpi_len, data_msg->our_dh);
-	otrv4_assert(err == gcry_error(GPG_ERR_NO_ERROR));
+	otrv4_assert(!otr_err);
 	//Skip first 4 because they are the size (mpi_len)
 	otrv4_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
 
