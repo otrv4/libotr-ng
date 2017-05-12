@@ -34,7 +34,7 @@
   otrv4_assert_point_equals(p1->pub_key, p2->pub_key); \
   otrv4_assert_cmpmem(p1->versions, p2->versions, strlen(p1->versions)+1); \
   g_assert_cmpuint(p1->expires, ==, p2->expires); \
-  otrv4_assert_cmpmem(p1->signature, p2->signature, EC_SIGNATURE_BYTES); \
+  otrv4_assert_cmpmem(p1->signature, p2->signature, ED448_SIGNATURE_BYTES); \
   otrv4_assert_mpi_eq(p1->transitional_signature, p2->transitional_signature); \
 } while (0)
 

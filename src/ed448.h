@@ -12,12 +12,12 @@ typedef decaf_448_point_t ec_point_t;
 
 // We have decided to serialize points and scalars using EdDSA wire format.
 #define ED448_POINT_BYTES DECAF_EDDSA_448_PUBLIC_BYTES
+#define ED448_SIGNATURE_BYTES DECAF_EDDSA_448_SIGNATURE_BYTES
 #define ED448_SCALAR_BYTES DECAF_448_SCALAR_BYTES
 #define ED448_PRIVATE_BYTES DECAF_EDDSA_448_PRIVATE_BYTES
 
 //decaf_448_point_mul_by_cofactor_and_encode_like_eddsa
 
-#define EC_SIGNATURE_BYTES ED448_POINT_BYTES + DECAF_448_SCALAR_BYTES
 #define DECAF_448_SYMMETRIC_KEY_BYTES 32
 
 typedef uint8_t decaf_448_symmetric_key_t[DECAF_448_SYMMETRIC_KEY_BYTES];

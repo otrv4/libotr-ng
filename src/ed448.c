@@ -119,9 +119,9 @@ ec_sign(eddsa_signature_t dst,
 			 strlen(ctx));
 }
 
-// TODO: check sizes on const
 bool
-ec_verify(const uint8_t sig[DECAF_EDDSA_448_SIGNATURE_BYTES], const uint8_t pubkey[ED448_POINT_BYTES],
+ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
+          const uint8_t pubkey[ED448_POINT_BYTES],
 	  const uint8_t * msg, size_t msg_len)
 {
 	if (DECAF_TRUE == decaf_ed448_verify(sig, pubkey, msg, msg_len, 0,
