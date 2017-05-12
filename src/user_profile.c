@@ -209,7 +209,18 @@ bool user_profile_sign(user_profile_t * profile,
 //deserialized bytes.
 bool user_profile_verify_signature(const user_profile_t * profile)
 {
-	//TODO
+	uint8_t *body = NULL;
+	size_t bodylen = 0;
+
+	if (!user_profile_body_aprint(&body, &bodylen, profile))
+		return false;
+
+	uint8_t pubkey[ED448_POINT_BYTES];
+	ec_point_serialize(pubkey, ED448_POINT_BYTES, profile->pub_key);
+
+	if (!ec_verify(profile->signature, pubkey, body, bodylen))
+                return false;
+
 	return true;
 }
 

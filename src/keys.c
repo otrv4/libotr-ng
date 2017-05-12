@@ -20,7 +20,6 @@ otrv4_keypair_t *otrv4_keypair_new(void)
 void otrv4_keypair_generate(otrv4_keypair_t * keypair,
 			    const uint8_t sym[ED448_PRIVATE_BYTES])
 {
-	//TODO: generating EdDSA keypair is not working
 	memcpy(keypair->sym, sym, ED448_PRIVATE_BYTES);
 	ec_scalar_derive_from_secret(keypair->priv, keypair->sym);
 

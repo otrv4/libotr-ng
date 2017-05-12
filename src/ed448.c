@@ -34,11 +34,11 @@ void ecdh_keypair_destroy(ecdh_keypair_t * keypair)
 	ec_point_destroy(keypair->pub);
 }
 
-void ec_scalar_derive_from_secret(ec_scalar_t s,
-				  uint8_t secret[ED448_PRIVATE_BYTES])
+void ec_scalar_derive_from_secret(ec_scalar_t priv,
+				  uint8_t sym[ED448_PRIVATE_BYTES])
 {
 	//Hash and clamp the secret into a scalar
-	decaf_ed448_derive_secret_scalar(s, secret);
+	decaf_ed448_derive_secret_scalar(priv, sym);
 }
 
 void ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
@@ -108,24 +108,26 @@ ec_point_deserialize(ec_point_t point,
 	return true;
 }
 
+static const char *ctx = "";
 
 void
 ec_sign(eddsa_signature_t dst,
 	uint8_t sym[ED448_PRIVATE_BYTES],
 	uint8_t pubkey[ED448_POINT_BYTES], const uint8_t * msg, size_t msg_len)
 {
-        static const char *ctx = "";
 	decaf_ed448_sign(dst, sym, pubkey, msg, msg_len, 0, (uint8_t *) ctx,
 			 strlen(ctx));
 }
 
+// TODO: check sizes on const
 bool
-ec_verify(const eddsa_signature_t sig, const ec_public_key_t pub,
+ec_verify(const uint8_t sig[DECAF_EDDSA_448_SIGNATURE_BYTES], const uint8_t pubkey[ED448_POINT_BYTES],
 	  const uint8_t * msg, size_t msg_len)
 {
-	//if (DECAF_TRUE == decaf_448_verify(sig, pub, msg, msg_len)) {
-	//      return true;
-	//}
+	if (DECAF_TRUE == decaf_ed448_verify(sig, pubkey, msg, msg_len, 0,
+	                                     (uint8_t * )ctx, strlen(ctx))) {
+	      return true;
+	}
 
 	return false;
 }

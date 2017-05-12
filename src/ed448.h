@@ -82,8 +82,9 @@ ec_sign(eddsa_signature_t dst,
 	uint8_t sym[ED448_PRIVATE_BYTES],
 	uint8_t pubkey[ED448_POINT_BYTES], const uint8_t * msg, size_t msg_len);
 
+
 bool
-ec_verify(const eddsa_signature_t sig, const ec_public_key_t pub,
+ec_verify(const uint8_t sig[DECAF_EDDSA_448_SIGNATURE_BYTES], const uint8_t pub[ED448_POINT_BYTES],
 	  const uint8_t * msg, size_t msg_len);
 
 #endif
