@@ -12,10 +12,10 @@ void ed448_test_ecdh()
 	uint8_t bob_priv[DECAF_X448_PRIVATE_BYTES];
 
 	random_bytes(alice_priv, DECAF_X448_PRIVATE_BYTES);
-	decaf_x448_generate_key(alice_pub, alice_priv);
+	decaf_x448_derive_public_key(alice_pub, alice_priv);
 
 	random_bytes(bob_priv, DECAF_X448_PRIVATE_BYTES);
-	decaf_x448_generate_key(bob_pub, bob_priv);
+	decaf_x448_derive_public_key(bob_pub, bob_priv);
 
 	uint8_t shared1[DECAF_X448_PUBLIC_BYTES],
 	    shared2[DECAF_X448_PUBLIC_BYTES];
