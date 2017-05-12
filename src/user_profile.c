@@ -218,10 +218,12 @@ bool user_profile_verify_signature(const user_profile_t * profile)
 	uint8_t pubkey[ED448_POINT_BYTES];
 	ec_point_serialize(pubkey, ED448_POINT_BYTES, profile->pub_key);
 
-	if (!ec_verify(profile->signature, pubkey, body, bodylen))
-                return false;
+	bool valid = ec_verify(profile->signature, pubkey, body, bodylen);
 
-	return true;
+	free(body);
+	body = NULL;
+
+	return valid;
 }
 
 user_profile_t *user_profile_build(const string_t versions,
