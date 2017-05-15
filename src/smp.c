@@ -219,14 +219,15 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 	memcpy(smp->G3a, msg_1->G3a, ED448_POINT_BYTES);
 
 	//Compute Pb = G3 * r4
-	decaf_448_point_scalarmul(smp->Pb, smp->G3, pair_r4->priv);
-	memcpy(dst->Pb, smp->Pb, ED448_POINT_BYTES);
+	decaf_448_point_scalarmul(dst->Pb, smp->G3, pair_r4->priv);
+	memcpy(smp->Pb, dst->Pb, ED448_POINT_BYTES);
 
 	//Compute Qb = G * r4 + G2 * hashToScalar(y).
 	ec_scalar_t secret_as_scalar;
 	hashToScalar(secret, 64, secret_as_scalar);
-	decaf_448_point_scalarmul(smp->Qb, smp->G2, secret_as_scalar);
-	decaf_448_point_add(smp->Qb, pair_r4->pub, smp->Qb);
+	decaf_448_point_scalarmul(dst->Qb, smp->G2, secret_as_scalar);
+	decaf_448_point_add(dst->Qb, pair_r4->pub, dst->Qb);
+	memcpy(smp->Qb, dst->Qb, ED448_POINT_BYTES);
 
 	//cp = HashToScalar(5 || G3 * r5 || G * r5 + G2 * r6)
 	unsigned char buff_cp[ED448_POINT_BYTES*2+1];
