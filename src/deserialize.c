@@ -212,7 +212,7 @@ bool decode_b64_ec_point(ec_point_t s, const char *buff, size_t len)
 	return ok;
 }
 
-static bool
+bool
 deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t * serialized,
 		      size_t ser_len)
 {
