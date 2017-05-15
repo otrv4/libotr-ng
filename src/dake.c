@@ -245,6 +245,8 @@ dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 
 	size_t s = AUTH_R_MIN_BYTES + our_profile_len;
 	*dst = malloc(s);
+	memset(*dst, 0, s);
+
 	if (!*dst) {
 		free(our_profile);
 		return false;
@@ -393,6 +395,8 @@ dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,
 {
 	size_t s = DAKE_HEADER_BYTES + SNIZKPK_BYTES;
 	*dst = malloc(s);
+	memset(*dst, 0, s);
+
 	if (!*dst) {
 		return false;
 	}
