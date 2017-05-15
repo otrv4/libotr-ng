@@ -220,6 +220,7 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 
 	//Compute Pb = G3 * r4
 	decaf_448_point_scalarmul(smp->Pb, smp->G3, pair_r4->priv);
+	memcpy(dst->Pb, smp->Pb, ED448_POINT_BYTES);
 
 	//Compute Qb = G * r4 + G2 * hashToScalar(y).
 	ec_scalar_t secret_as_scalar;

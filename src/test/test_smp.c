@@ -4,8 +4,6 @@
 
 void test_smp_state_machine(void)
 {
-	//FIXME: this segfaults
-	return;
 	OTR4_INIT;
 
 	otrv4_keypair_t alice_keypair[1], bob_keypair[1];
@@ -27,7 +25,7 @@ void test_smp_state_machine(void)
 	//Should be in ecrypted state before perform SMP
 	do_ake_fixture(alice_otr, bob_otr);
 
-	smp_msg_1 = otrv4_smp_initiate(alice_otr, NULL, "answer");
+	smp_msg_1 = otrv4_smp_initiate(alice_otr, "some-question", "answer");
 	g_assert_cmpint(smp_msg_1->type, ==, OTRV4_TLV_SMP_MSG_1);
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT2);
 	otrv4_assert(alice_otr->smp->x);
@@ -45,7 +43,8 @@ void test_smp_state_machine(void)
 	otrv4_assert(bob_otr->smp->Pb);
 	otrv4_assert(bob_otr->smp->Qb);
 
-	otrv4_process_smp(alice_otr, smp_msg_2);
+	tlv_t * smp_msg_3 = otrv4_process_smp(alice_otr, smp_msg_2);
+	otrv4_assert(!smp_msg_3);
 //	g_assert_cmpint(smp_msg_3->type, ==, OTRV4_TLV_SMP_MSG_3);
 
 	otrv4_destroy(alice_otr);
