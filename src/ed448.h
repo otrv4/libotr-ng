@@ -14,7 +14,7 @@ typedef decaf_448_point_t ec_point_t;
 #define ED448_POINT_BYTES DECAF_EDDSA_448_PUBLIC_BYTES
 #define ED448_EDDSA_SER_BYTES DECAF_EDDSA_448_PUBLIC_BYTES
 #define ED448_SIGNATURE_BYTES DECAF_EDDSA_448_SIGNATURE_BYTES
-#define ED448_SCALAR_BYTES DECAF_448_SCALAR_BYTES
+#define ED448_SCALAR_BYTES ED448_EDDSA_SER_BYTES
 #define ED448_PRIVATE_BYTES DECAF_EDDSA_448_PRIVATE_BYTES
 
 //decaf_448_point_mul_by_cofactor_and_encode_like_eddsa
@@ -41,7 +41,7 @@ ec_scalar_serialize(uint8_t * dst, size_t dst_len, const ec_scalar_t scalar);
 
 bool
 ec_scalar_deserialize(ec_scalar_t scalar,
-		      const uint8_t serialized[DECAF_448_SCALAR_BYTES]);
+		      const uint8_t serialized[ED448_EDDSA_SER_BYTES]);
 
 void ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t src);
 

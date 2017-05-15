@@ -42,7 +42,7 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
 }
 
 int hashToScalar(const unsigned char * buff, const size_t bufflen,
-		decaf_448_scalar_t dst)
+		ec_scalar_t dst)
 {
 	gcry_md_hd_t hd;
 	char otr_marker[4] = "OTR4";
@@ -62,7 +62,7 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 {
 	snizkpk_keypair_t pair_r2[1], pair_r3[1];
 	unsigned char hash[ED448_POINT_BYTES+1];
-	decaf_448_scalar_t a3c3, a2c2;
+	ec_scalar_t a3c3, a2c2;
 
 	dst->question = NULL;
 
@@ -94,7 +94,7 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 {
 	uint8_t *buff;
-	uint8_t buffmpi[DECAF_448_SER_BYTES];
+	uint8_t buffmpi[ED448_POINT_BYTES];
 	int bufflen = 0;
 	otr_mpi_t c2_mpi, d2_mpi, c3_mpi, d3_mpi;
 	size_t s = 0;
@@ -102,7 +102,7 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 	s += 4;
 	if (msg->question)
 		s += strlen(msg->question) + 1;
-	s += 2 * DECAF_448_SER_BYTES;
+	s += 2 * ED448_POINT_BYTES;
 	s += 4 * 4;
 
 	bufflen = serialize_ec_scalar(buffmpi, msg->c2);
@@ -164,28 +164,21 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 }
 
 //TODO: This is triplicated (see auth.c)
-static void ed448_random_scalar(decaf_448_scalar_t priv)
+static void ed448_random_scalar(ec_scalar_t priv)
 {
-	unsigned char rand[DECAF_448_SCALAR_BYTES];
-
-	do {
-		random_bytes(rand, DECAF_448_SCALAR_BYTES);
-		int ok = decaf_448_scalar_decode(priv, rand);
-		(void)ok;
-	} while (DECAF_TRUE ==
-		 decaf_448_scalar_eq(priv, decaf_448_scalar_zero));
-
-	memset(rand, 0, DECAF_448_SCALAR_BYTES);
+	uint8_t sym[ED448_PRIVATE_BYTES];
+	random_bytes(sym, ED448_PRIVATE_BYTES);
+	ec_scalar_derive_from_secret(priv, sym);
 }
 
 int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 			  const unsigned char *secret, smp_context_t smp)
 {
-	decaf_448_scalar_t b2;
+	ec_scalar_t b2;
 	snizkpk_keypair_t pair_r2[1], pair_r3[1], pair_r4[1], pair_r5[1];
 	ec_scalar_t r6;
-	unsigned char buff[DECAF_448_SER_BYTES+1];
-	decaf_448_scalar_t temp_scalar;
+	unsigned char buff[ED448_POINT_BYTES+1];
+	ec_scalar_t temp_scalar;
 	ec_point_t temp_point;
 
 	generate_keypair(dst->G2b, b2);
@@ -200,9 +193,9 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 
 	//c2
 	buff[0] = 0x03;
-	memcpy(buff+1, pair_r2->pub, DECAF_448_SER_BYTES);
+	memcpy(buff+1, pair_r2->pub, ED448_POINT_BYTES);
 	//TODO: handle error
-	hashToScalar(buff, DECAF_448_SER_BYTES+1, dst->c2);
+	hashToScalar(buff, ED448_POINT_BYTES+1, dst->c2);
 
 
 	//d2 = r2 - b2 * c2 mod q.
@@ -211,9 +204,9 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 
 	//c3
 	buff[0] = 0x04;
-	memcpy(buff+1, pair_r3->pub, DECAF_448_SER_BYTES);
+	memcpy(buff+1, pair_r3->pub, ED448_POINT_BYTES);
 	//TODO: handle error
-	hashToScalar(buff, DECAF_448_SCALAR_BYTES+1, dst->c3);
+	hashToScalar(buff, ED448_POINT_BYTES+1, dst->c3);
 
 	//d3 = r3 - b3 * c3 mod q.
 	decaf_448_scalar_mul(temp_scalar, smp->b3, dst->c3);
@@ -229,7 +222,7 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 	decaf_448_point_scalarmul(smp->Pb, smp->G3, pair_r4->priv);
 
 	//Compute Qb = G * r4 + G2 * hashToScalar(y).
-	decaf_448_scalar_t secret_as_scalar;
+	ec_scalar_t secret_as_scalar;
 	hashToScalar(secret, 64, secret_as_scalar);
 	decaf_448_point_scalarmul(smp->Qb, smp->G2, secret_as_scalar);
 	decaf_448_point_add(smp->Qb, pair_r4->pub, smp->Qb);
@@ -259,7 +252,7 @@ int smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 {
 	uint8_t * buff;
 	uint8_t * cursor;
-	uint8_t buffmpi[DECAF_448_SER_BYTES];
+	uint8_t buffmpi[ED448_POINT_BYTES];
 	int bufflen = 0;
 	size_t s = 0;
 	s = 4 * ED448_POINT_BYTES;
@@ -342,14 +335,14 @@ static bool
 deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t * serialized,
 		      size_t ser_len)
 {
-	if (ser_len < DECAF_448_SCALAR_BYTES)
+	if (ser_len < ED448_POINT_BYTES)
 		return false;
 
 	return ec_scalar_deserialize(scalar, serialized);
 }
 
 static bool
-deserialize_mpi_to_scalar(decaf_448_scalar_t dst, const uint8_t * buff,
+deserialize_mpi_to_scalar(ec_scalar_t dst, const uint8_t * buff,
 			  uint16_t bufflen, size_t * read)
 {
 	otr_mpi_t tmp_mpi;
@@ -382,8 +375,8 @@ bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
 	if (!deserialize_ec_point(msg->G2a, cursor))
 		return false;
 
-	cursor += DECAF_448_SER_BYTES;
-	len -= DECAF_448_SER_BYTES;
+	cursor += ED448_POINT_BYTES;
+	len -= ED448_POINT_BYTES;
 
 	if (!deserialize_mpi_to_scalar(msg->c2, cursor, len, &read))
 		return false;
@@ -400,8 +393,8 @@ bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
 	if (!deserialize_ec_point(msg->G3a, cursor))
 		return false;
 
-	cursor += DECAF_448_SER_BYTES;
-	len -= DECAF_448_SER_BYTES;
+	cursor += ED448_POINT_BYTES;
+	len -= ED448_POINT_BYTES;
 
 	if (!deserialize_mpi_to_scalar(msg->c3, cursor, len, &read))
 		return false;

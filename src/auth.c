@@ -115,7 +115,7 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 {
 	gcry_md_hd_t hd;
 	unsigned char hash[64];
-	unsigned char point_buff[DECAF_448_SER_BYTES];
+	unsigned char point_buff[ED448_EDDSA_SER_BYTES];
 
 	snizkpk_pubkey_t gr1, gr2, gr3, A1c1, A2c2, A3c3;
 
@@ -135,7 +135,6 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 	gcry_md_write(hd, base_point_bytes_dup, ED448_EDDSA_SER_BYTES);
 	gcry_md_write(hd, prime_order_bytes_dup, ED448_EDDSA_SER_BYTES);
 
-	//This uses: DECAF_448_SER_BYTES bytes
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A1);
 	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
 

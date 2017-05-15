@@ -18,9 +18,9 @@ typedef struct {
 	smp_state_t state;
 	unsigned char *x;
 	unsigned char *y;
-	decaf_448_scalar_t a2;
-	decaf_448_scalar_t a3;
-	decaf_448_scalar_t b3;
+	ec_scalar_t a2;
+	ec_scalar_t a3;
+	ec_scalar_t b3;
 	ec_point_t G2;
 	ec_point_t G3;
 	ec_point_t G3a;
@@ -31,26 +31,26 @@ typedef struct {
 typedef struct {
 	char *question;
 	ec_point_t G2a;
-	decaf_448_scalar_t c2;
-	decaf_448_scalar_t d2;
+	ec_scalar_t c2;
+	ec_scalar_t d2;
 	ec_point_t G3a;
-	decaf_448_scalar_t c3;
-	decaf_448_scalar_t d3;
+	ec_scalar_t c3;
+	ec_scalar_t d3;
 
 } smp_msg_1_t[1];
 
 typedef struct {
 	ec_point_t G2b;
-	decaf_448_scalar_t c2;
-	decaf_448_scalar_t d2;
+	ec_scalar_t c2;
+	ec_scalar_t d2;
 	ec_point_t G3b;
-	decaf_448_scalar_t c3;
-	decaf_448_scalar_t d3;
+	ec_scalar_t c3;
+	ec_scalar_t d3;
 	ec_point_t Pb;
 	ec_point_t Qb;
-	decaf_448_scalar_t cp;
-	decaf_448_scalar_t d5;
-	decaf_448_scalar_t d6;
+	ec_scalar_t cp;
+	ec_scalar_t d5;
+	ec_scalar_t d6;
 } smp_msg_2_t[1];
 
 void smp_destroy(smp_context_t smp);

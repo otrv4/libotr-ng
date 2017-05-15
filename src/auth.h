@@ -6,7 +6,7 @@
 #include "ed448.h"
 #include "keys.h"
 
-#define SNIZKPK_BYTES 6*DECAF_448_SCALAR_BYTES
+#define SNIZKPK_BYTES 6*ED448_EDDSA_SER_BYTES
 
 typedef ec_scalar_t snizkpk_privkey_t;
 typedef ec_point_t snizkpk_pubkey_t;
