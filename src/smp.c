@@ -327,17 +327,6 @@ int smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 	return 0;
 }
 
-//TODO: this function is duplicated from deserialize.c
-static bool
-deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t * serialized,
-		      size_t ser_len)
-{
-	if (ser_len < ED448_POINT_BYTES)
-		return false;
-
-	return ec_scalar_deserialize(scalar, serialized);
-}
-
 static bool
 deserialize_mpi_to_scalar(ec_scalar_t dst, const uint8_t * buff,
 			  uint16_t bufflen, size_t * read)
