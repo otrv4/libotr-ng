@@ -93,7 +93,6 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 
 int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 {
-	uint8_t *buff;
 	uint8_t buffmpi[ED448_POINT_BYTES];
 	int bufflen = 0;
 	otr_mpi_t c2_mpi, d2_mpi, c3_mpi, d3_mpi;
@@ -103,31 +102,28 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 	if (msg->question)
 		s += strlen(msg->question) + 1;
 	s += 2 * ED448_POINT_BYTES;
-	s += 4 * 4;
 
 	bufflen = serialize_ec_scalar(buffmpi, msg->c2);
 	otr_mpi_set(c2_mpi, buffmpi, bufflen);
-	s += bufflen;
+	s += bufflen + 4;
 
 	bufflen = serialize_ec_scalar(buffmpi, msg->d2);
 	otr_mpi_set(d2_mpi, buffmpi, bufflen);
-	s += bufflen;
+	s += bufflen + 4;
 
 	bufflen = serialize_ec_scalar(buffmpi, msg->c3);
 	otr_mpi_set(c3_mpi, buffmpi, bufflen);
-	s += bufflen;
+	s += bufflen + 4;
 
 	bufflen = serialize_ec_scalar(buffmpi, msg->d3);
 	otr_mpi_set(d3_mpi, buffmpi, bufflen);
-	s += bufflen;
+	s += bufflen + 4;
 
-	//FIXME: I added 4 and 8 because valgrind reported, but I haven't
-	//checked why.
-	buff = malloc(s + 4 + 8);
-	if (!dst)
+	*dst = malloc(s);
+	if (!*dst)
 		return 1;
 
-	uint8_t *cursor = buff;
+	uint8_t *cursor = *dst;
 
 	if (!msg->question) {
 		uint8_t null_question[4] = { 0x0, 0x0, 0x0, 0x0 };
@@ -152,7 +148,6 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 	cursor += serialize_mpi(cursor, c3_mpi);
 	cursor += serialize_mpi(cursor, d3_mpi);
 
-	*dst = buff;
 	*len = s;
 
 	otr_mpi_free(c2_mpi);
