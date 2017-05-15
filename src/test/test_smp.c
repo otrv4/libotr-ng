@@ -38,12 +38,15 @@ void test_smp_state_machine(void)
 	g_assert_cmpint(smp_msg_2->type, ==, OTRV4_TLV_SMP_MSG_2);
 	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT3);
 	otrv4_assert(bob_otr->smp->y);
-//      otrv4_assert(bob_otr->smp->G3a);
-//      otrv4_assert(bob_otr->smp->G2);
-//      otrv4_assert(bob_otr->smp->G3);
-//      otrv4_assert(bob_otr->smp->b3);
-//      otrv4_assert(bob_otr->smp->Pb);
-//      otrv4_assert(bob_otr->smp->Qb);
+	otrv4_assert(bob_otr->smp->G3a);
+	otrv4_assert(bob_otr->smp->G2);
+	otrv4_assert(bob_otr->smp->G3);
+	otrv4_assert(bob_otr->smp->b3);
+	otrv4_assert(bob_otr->smp->Pb);
+	otrv4_assert(bob_otr->smp->Qb);
+
+	otrv4_process_smp(alice_otr, smp_msg_2);
+//	g_assert_cmpint(smp_msg_3->type, ==, OTRV4_TLV_SMP_MSG_3);
 
 	otrv4_destroy(alice_otr);
 	otrv4_destroy(bob_otr);

@@ -23,6 +23,7 @@ typedef struct {
 	decaf_448_scalar_t b3;
 	ec_point_t G2;
 	ec_point_t G3;
+	ec_point_t G3a;
 	ec_point_t Pb;
 	ec_point_t Qb;
 } smp_context_t[1];
@@ -50,7 +51,6 @@ typedef struct {
 	decaf_448_scalar_t cp;
 	decaf_448_scalar_t d5;
 	decaf_448_scalar_t d6;
-
 } smp_msg_2_t[1];
 
 void smp_destroy(smp_context_t smp);
@@ -63,7 +63,7 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp);
 
 int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg);
 
-tlv_t *generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
+int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 			  const unsigned char *secret, smp_context_t smp);
 
 #endif
