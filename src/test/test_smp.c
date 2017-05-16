@@ -1,5 +1,3 @@
-#include <glib.h>
-
 #include "../otrv4.h"
 #include "../smp.h"
 #include "../tlv.h"
@@ -159,12 +157,12 @@ void test_smp_validates_msg_2(void)
 	generate_smp_msg_1(msg_1, smp);
 	generate_smp_msg_2(msg_2, msg_1, smp);
 
-	g_assert_true(smp_msg_2_validate_points(msg_2));
+	otrv4_assert(smp_msg_2_validate_points(msg_2) == true);
 
 	decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
 	decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
 
-	g_assert_true(smp_msg_2_validate_zkp(msg_2, smp));
+	otrv4_assert(smp_msg_2_validate_zkp(msg_2, smp) == true);
 
 	free(smp->y);
 }
