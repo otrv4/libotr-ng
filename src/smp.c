@@ -75,7 +75,7 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	hash[0] = 0x01;
 	memcpy(hash+1, pair_r2->pub, ED448_POINT_BYTES);
 	//TODO: handle error
-	hashToScalar(hash, 64, dst->c2);
+	hashToScalar(hash, sizeof(hash), dst->c2);
 
 	decaf_448_scalar_mul(a2c2, smp->a2, dst->c2);
 	decaf_448_scalar_sub(dst->d2, pair_r2->priv, a2c2);
@@ -83,7 +83,7 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	hash[0] = 0x02;
 	memcpy(hash+1, pair_r3->pub, ED448_POINT_BYTES);
 	//TODO: handle error
-	hashToScalar(hash, 64, dst->c3);
+	hashToScalar(hash, sizeof(hash), dst->c3);
 
 	decaf_448_scalar_mul(a3c3, smp->a3, dst->c3);
 	decaf_448_scalar_sub(dst->d3, pair_r3->priv, a3c3);
