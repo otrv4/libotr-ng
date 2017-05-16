@@ -1395,7 +1395,7 @@ tlv_t * otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 
 		otr->smp->state = SMPSTATE_EXPECT3;
 	} else {
-		if (SMPSTATE_EXPECT2 == otr->smp->state && OTRV4_TLV_SMP_MSG_2 && tlv->type)
+		if (SMPSTATE_EXPECT2 == otr->smp->state && OTRV4_TLV_SMP_MSG_2 == tlv->type)
 		{
 			if (!smp_msg_2_deserialize(msg_2, tlv))
 				return NULL;
