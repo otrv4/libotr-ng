@@ -1372,13 +1372,14 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 	uint8_t * buff;
 	size_t bufflen;
 
-	switch (otr->smp->state) {
-	case SMPSTATE_EXPECT1 && tlv->type == OTRV4_TLV_SMP_MSG_1:
+	if (SMPSTATE_EXPECT1 == otr->smp->state &&
+		OTRV4_TLV_SMP_MSG_1 == tlv->type)
+	{
 		if (!smp_msg_1_deserialize(msg_1, tlv))
-			break;
+			return NULL;
 
 		if (!smp_msg_1_validate(msg_1))
-			break;
+			return NULL;
 
 		//TODO: this answer should be given by user
 		//we need to wait until they fill it
@@ -1390,14 +1391,12 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 		to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
 
 		if (!to_send)
-			break;
+			return NULL;
 
 		otr->smp->state = SMPSTATE_EXPECT3;
-		break;
-	case SMPSTATE_EXPECT2:
-	case SMPSTATE_EXPECT3:
-		break;
+	} else {
+		if (SMPSTATE_EXPECT2 == otr->smp->state && OTRV4_TLV_SMP_MSG_2 && tlv->type)
+			return NULL;
 	}
-
 	return to_send;
 }
