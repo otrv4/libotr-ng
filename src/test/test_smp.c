@@ -1,3 +1,5 @@
+#include <glib.h>
+
 #include "../otrv4.h"
 #include "../smp.h"
 #include "../tlv.h"
