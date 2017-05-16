@@ -73,7 +73,8 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	snizkpk_keypair_generate(pair_r3);
 
 	hash[0] = 0x01;
-	memcpy(hash+1, pair_r2->pub, ED448_POINT_BYTES);
+	//TODO: this can goes wrong
+	serialize_ec_point(hash+1, pair_r2->pub);
 	//TODO: handle error
 	hashToScalar(hash, sizeof(hash), dst->c2);
 
@@ -81,7 +82,8 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	decaf_448_scalar_sub(dst->d2, pair_r2->priv, a2c2);
 
 	hash[0] = 0x02;
-	memcpy(hash+1, pair_r3->pub, ED448_POINT_BYTES);
+	//TODO: this can goes wrong
+	serialize_ec_point(hash+1, pair_r3->pub);
 	//TODO: handle error
 	hashToScalar(hash, sizeof(hash), dst->c3);
 
@@ -167,7 +169,7 @@ static void ed448_random_scalar(ec_scalar_t priv)
 }
 
 int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
-			  const unsigned char *secret, smp_context_t smp)
+			smp_context_t smp)
 {
 	ec_scalar_t b2;
 	snizkpk_keypair_t pair_r2[1], pair_r3[1], pair_r4[1], pair_r5[1];
@@ -188,10 +190,10 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 
 	//c2
 	buff[0] = 0x03;
-	memcpy(buff+1, pair_r2->pub, ED448_POINT_BYTES);
+	//TODO: this can goes wrong
+	serialize_ec_point(buff+1, pair_r2->pub);
 	//TODO: handle error
 	hashToScalar(buff, ED448_POINT_BYTES+1, dst->c2);
-
 
 	//d2 = r2 - b2 * c2 mod q.
 	decaf_448_scalar_mul(temp_scalar, b2, dst->c2);
@@ -199,7 +201,8 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 
 	//c3
 	buff[0] = 0x04;
-	memcpy(buff+1, pair_r3->pub, ED448_POINT_BYTES);
+	//TODO: this can goes wrong
+	serialize_ec_point(buff+1, pair_r3->pub);
 	//TODO: handle error
 	hashToScalar(buff, ED448_POINT_BYTES+1, dst->c3);
 
@@ -211,27 +214,30 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 	decaf_448_point_scalarmul(smp->G2, msg_1->G2a, b2);
 	//Compute G3 = G3a * b3.
 	decaf_448_point_scalarmul(smp->G3, msg_1->G3a, smp->b3);
-	memcpy(smp->G3a, msg_1->G3a, ED448_POINT_BYTES);
+	memcpy(smp->G3a, msg_1->G3a, sizeof(ec_point_t));
 
 	//Compute Pb = G3 * r4
 	decaf_448_point_scalarmul(dst->Pb, smp->G3, pair_r4->priv);
-	memcpy(smp->Pb, dst->Pb, ED448_POINT_BYTES);
+	memcpy(smp->Pb, dst->Pb, sizeof(ec_point_t));
 
 	//Compute Qb = G * r4 + G2 * hashToScalar(y).
 	ec_scalar_t secret_as_scalar;
-	hashToScalar(secret, 64, secret_as_scalar);
+	hashToScalar(smp->y, 64, secret_as_scalar);
 	decaf_448_point_scalarmul(dst->Qb, smp->G2, secret_as_scalar);
 	decaf_448_point_add(dst->Qb, pair_r4->pub, dst->Qb);
-	memcpy(smp->Qb, dst->Qb, ED448_POINT_BYTES);
+	memcpy(smp->Qb, dst->Qb, sizeof(ec_point_t));
 
 	//cp = HashToScalar(5 || G3 * r5 || G * r5 + G2 * r6)
 	unsigned char buff_cp[ED448_POINT_BYTES*2+1];
 	buff_cp[0] = 0x05;
 	decaf_448_point_scalarmul(temp_point, smp->G3, pair_r5->priv);
-	memcpy(buff_cp+1, temp_point, ED448_POINT_BYTES);
+	//TODO: this can goes wrong
+	serialize_ec_point(buff_cp+1, temp_point);
+
 	decaf_448_point_scalarmul(temp_point, smp->G2, r6);
 	decaf_448_point_add(temp_point, pair_r5->pub, temp_point);
-	memcpy(buff_cp+1+ED448_POINT_BYTES, temp_point, ED448_POINT_BYTES);
+	//TODO: this can goes wrong
+	serialize_ec_point(buff_cp+1+ED448_POINT_BYTES, temp_point);
 	hashToScalar(buff_cp, ED448_POINT_BYTES*2+1, dst->cp);
 
 	//d5 = r5 - r4 * cp mod q

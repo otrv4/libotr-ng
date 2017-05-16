@@ -1386,7 +1386,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 		set_smp_secret(&otr->smp->y, "the-answer", otr);
 
 		//TODO: what to do is somtheing wrong happen?
-		generate_smp_msg_2(msg_2, msg_1, otr->smp->y, otr->smp);
+		generate_smp_msg_2(msg_2, msg_1, otr->smp);
 		smp_msg_2_aprint(&buff, &bufflen, msg_2);
 		to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
 

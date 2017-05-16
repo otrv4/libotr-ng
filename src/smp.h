@@ -36,7 +36,6 @@ typedef struct {
 	ec_point_t G3a;
 	ec_scalar_t c3;
 	ec_scalar_t d3;
-
 } smp_msg_1_t[1];
 
 typedef struct {
@@ -64,6 +63,6 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp);
 int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg);
 
 int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
-			  const unsigned char *secret, smp_context_t smp);
+			smp_context_t smp);
 
 #endif
