@@ -74,7 +74,8 @@ int main(int argc, char **argv)
 	g_test_add_func("/smp/generate_secret", test_generate_smp_secret);
 	g_test_add_func("/smp/msg_1_aprint_null_question",
 			test_smp_msg_1_aprint_null_question);
-	g_test_add_func("/smp/generate_validate_msg_2", test_smp_validates_msg_2);
+	g_test_add_func("/smp/generate_validate_msg_2",
+			test_smp_validates_msg_2);
 
 	//g_test_add_func("/otrv4/starts_protocol", test_otrv4_starts_protocol);
 	//g_test_add("/otrv4/version_supports_v34", otrv4_fixture_t, NULL, otrv4_fixture_set_up, test_otrv4_version_supports_v34, otrv4_fixture_teardown );

@@ -19,7 +19,8 @@ size_t serialize_uint16(uint8_t * dst, const uint16_t data);
 
 size_t serialize_uint8(uint8_t * dst, const uint8_t data);
 
-size_t serialize_bytes_array(uint8_t * target, const uint8_t data[], size_t len);
+size_t serialize_bytes_array(uint8_t * target, const uint8_t data[],
+			     size_t len);
 
 size_t serialize_data(uint8_t * target, const uint8_t * data, size_t len);
 

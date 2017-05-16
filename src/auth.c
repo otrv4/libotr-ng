@@ -71,7 +71,8 @@ snizkpk_authenticate(snizkpk_proof_t * dst, const snizkpk_keypair_t * pair1,
 	gcry_md_write(hd, base_point_bytes_dup, ED448_POINT_BYTES);
 	gcry_md_write(hd, prime_order_bytes_dup, ED448_POINT_BYTES);
 
-	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, pair1->pub);
+	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff,
+							      pair1->pub);
 	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A2);

@@ -1359,7 +1359,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	return tlv;
 }
 
-tlv_t * otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
+tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
 		otr->smp->state = SMPSTATE_EXPECT1;
@@ -1369,12 +1369,11 @@ tlv_t * otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 	tlv_t *to_send = NULL;
 	smp_msg_1_t msg_1;
 	smp_msg_2_t msg_2;
-	uint8_t * buff;
+	uint8_t *buff;
 	size_t bufflen;
 
 	if (SMPSTATE_EXPECT1 == otr->smp->state &&
-		OTRV4_TLV_SMP_MSG_1 == tlv->type)
-	{
+	    OTRV4_TLV_SMP_MSG_1 == tlv->type) {
 		if (!smp_msg_1_deserialize(msg_1, tlv))
 			return NULL;
 
@@ -1395,23 +1394,24 @@ tlv_t * otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 
 		otr->smp->state = SMPSTATE_EXPECT3;
 	} else {
-		if (SMPSTATE_EXPECT2 == otr->smp->state && OTRV4_TLV_SMP_MSG_2 == tlv->type)
-		{
-			if (!smp_msg_2_deserialize(msg_2, tlv))
+		if (SMPSTATE_EXPECT2 == otr->smp->state &&
+		    OTRV4_TLV_SMP_MSG_2 == tlv->type) {
+		if (!smp_msg_2_deserialize(msg_2, tlv))
 				return NULL;
 
 			if (!smp_msg_2_validate_points(msg_2))
 				return NULL;
 
-			decaf_448_point_scalarmul(otr->smp->G2, msg_2->G2b, otr->smp->a2);
-			decaf_448_point_scalarmul(otr->smp->G3, msg_2->G3b, otr->smp->a3);
+			decaf_448_point_scalarmul(otr->smp->G2, msg_2->G2b,
+						  otr->smp->a2);
+			decaf_448_point_scalarmul(otr->smp->G3, msg_2->G3b,
+						  otr->smp->a3);
 
 			if (!smp_msg_2_validate_zkp(msg_2, otr->smp))
 				return NULL;
 
 			return NULL;
-		}else
-		{
+		} else {
 			//If smpstate is not the receive message:
 			//Set smpstate to SMPSTATE_EXPECT1
 			//send a SMP abort to other peer.
@@ -1419,7 +1419,6 @@ tlv_t * otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 			return otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
 		}
 	}
-
 
 	return to_send;
 }
