@@ -1359,7 +1359,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	return tlv;
 }
 
-tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
+tlv_t * otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
 		otr->smp->state = SMPSTATE_EXPECT1;
