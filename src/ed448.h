@@ -11,13 +11,12 @@ typedef decaf_448_scalar_t ec_scalar_t;
 typedef decaf_448_point_t ec_point_t;
 
 // We have decided to serialize points and scalars using EdDSA wire format.
-#define ED448_PUBLIC_BYTES DECAF_EDDSA_448_PUBLIC_BYTES
 #define ED448_PRIVATE_BYTES DECAF_EDDSA_448_PRIVATE_BYTES
 #define ED448_POINT_BYTES DECAF_EDDSA_448_PUBLIC_BYTES
 #define ED448_SIGNATURE_BYTES DECAF_EDDSA_448_SIGNATURE_BYTES
 #define ED448_SCALAR_BYTES 57
 
-typedef uint8_t decaf_448_public_key_t[ED448_PUBLIC_BYTES];
+typedef uint8_t decaf_448_public_key_t[ED448_POINT_BYTES];
 typedef uint8_t eddsa_signature_t[ED448_SIGNATURE_BYTES];
 
 //ECDH keypair
@@ -58,7 +57,7 @@ ec_point_deserialize(ec_point_t point,
 //This is ed448 crypto
 void ec_scalar_derive_from_secret(ec_scalar_t, uint8_t[ED448_PRIVATE_BYTES]);
 
-void ec_derive_public_key(uint8_t pub[ED448_PUBLIC_BYTES],
+void ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
 			  const uint8_t priv[ED448_PRIVATE_BYTES]);
 
 void ecdh_keypair_generate(ecdh_keypair_t * keypair,
@@ -75,11 +74,11 @@ void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src);
 void
 ec_sign(eddsa_signature_t dst,
 	uint8_t sym[ED448_PRIVATE_BYTES],
-	uint8_t pubkey[ED448_PUBLIC_BYTES], const uint8_t * msg, size_t msg_len);
+	uint8_t pubkey[ED448_POINT_BYTES], const uint8_t * msg, size_t msg_len);
 
 
 bool
-ec_verify(const uint8_t sig[DECAF_EDDSA_448_SIGNATURE_BYTES], const uint8_t pub[ED448_PUBLIC_BYTES],
+ec_verify(const uint8_t sig[DECAF_EDDSA_448_SIGNATURE_BYTES], const uint8_t pub[ED448_POINT_BYTES],
 	  const uint8_t * msg, size_t msg_len);
 
 #endif
