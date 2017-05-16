@@ -1396,7 +1396,30 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 		otr->smp->state = SMPSTATE_EXPECT3;
 	} else {
 		if (SMPSTATE_EXPECT2 == otr->smp->state && OTRV4_TLV_SMP_MSG_2 && tlv->type)
+		{
+			if (!smp_msg_2_deserialize(msg_2, tlv))
+				return NULL;
+
+			if (!smp_msg_2_validate_points(msg_2))
+				return NULL;
+
+			decaf_448_point_scalarmul(otr->smp->G2, msg_2->G2b, otr->smp->a2);
+			decaf_448_point_scalarmul(otr->smp->G3, msg_2->G3b, otr->smp->a3);
+
+			if (!smp_msg_2_validate_zkp(msg_2, otr->smp))
+				return NULL;
+
 			return NULL;
+		}else
+		{
+			//If smpstate is not the receive message:
+			//Set smpstate to SMPSTATE_EXPECT1
+			//send a SMP abort to other peer.
+			otr->smp->state = SMPSTATE_EXPECT1;
+			return otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
+		}
 	}
+
+
 	return to_send;
 }

@@ -144,3 +144,25 @@ void test_smp_msg_1_aprint_null_question(void)
 	free(buff);
 	buff = NULL;
 }
+
+void test_smp_validates_msg_2(void)
+{
+	smp_msg_1_t msg_1;
+	smp_msg_2_t msg_2;
+	smp_context_t smp;
+	smp->y = malloc(64);
+	memset(smp->y, 0, 64);
+	smp->y[0] = 0x01;
+
+	generate_smp_msg_1(msg_1, smp);
+	generate_smp_msg_2(msg_2, msg_1, smp);
+
+	g_assert_true(smp_msg_2_validate_points(msg_2));
+
+	decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
+	decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
+
+	g_assert_true(smp_msg_2_validate_zkp(msg_2, smp));
+
+	free(smp->y);
+}

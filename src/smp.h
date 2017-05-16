@@ -65,4 +65,8 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg);
 int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 			smp_context_t smp);
 
+bool smp_msg_2_validate_points(smp_msg_2_t msg);
+
+bool smp_msg_2_validate_zkp(smp_msg_2_t msg, const smp_context_t smp);
+
 #endif
