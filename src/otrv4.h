@@ -70,7 +70,7 @@ struct connection {
 
 	otrv4_keypair_t *keypair;
 	key_manager_t keys;
-	otrv4_callbacks_t *callbacks;
+	const otrv4_callbacks_t *callbacks;
 
 	smp_context_t smp;
 };				//otrv4_t

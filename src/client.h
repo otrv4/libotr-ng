@@ -19,7 +19,7 @@ typedef struct {
 
 //A client handle messages from/to a sender to/from multiple recipients.
 typedef struct {
-	otrv4_callbacks_t *callbacks;
+	const otrv4_callbacks_t *callbacks;
 
 	otrv4_keypair_t *keypair;
 	list_element_t *conversations;
