@@ -121,16 +121,15 @@ void test_generate_smp_secret(void)
 
 void test_smp_msg_1_aprint_null_question(void)
 {
-	//FIXME: G2a is not set, but is serialized. Valgrind reports.
-	return;
-
 	smp_msg_1_t msg;
+	smp_context_t smp;
 	uint8_t *buff;
 	size_t writen = 0;
-	msg->question = NULL;
 
-	//data_header + question + 2 points + 4 mpis = 4 + 0 + (2*56) + (4*4) + (4*56)
-	size_t expected_size = 356;
+	generate_smp_msg_1(msg, smp);
+	//data_header + question + 2 points + 4 mpis = 4 + 0 + (2*57) + (4*(4+57))
+	size_t expected_size = 362;
+	msg->question = NULL;
 
 	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
 	g_assert_cmpint(writen, ==, expected_size);
@@ -138,9 +137,9 @@ void test_smp_msg_1_aprint_null_question(void)
 	buff = NULL;
 
 	msg->question = "something";
+	size_t expected_size_with_question = expected_size + strlen(msg->question)+1;
 	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
-	g_assert_cmpint(writen, ==,
-			(expected_size + strlen(msg->question) + 1));
+	g_assert_cmpint(writen, ==, expected_size_with_question);
 
 	free(buff);
 	buff = NULL;
