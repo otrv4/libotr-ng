@@ -63,7 +63,7 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 	if (!ok) {
 		return false;
 	}
-	cursor += ED448_POINT_BYTES;
+	cursor += ED448_PUBLIC_BYTES;
 	//TODO: This could be NULL. We need to test.
 	size_t len = 0;
 	otr4_err_t err =

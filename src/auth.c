@@ -20,7 +20,7 @@ void snizkpk_keypair_generate(snizkpk_keypair_t * pair)
 }
 
 // XXX: in big endian
-const unsigned char base_point_bytes_dup[ED448_EDDSA_SER_BYTES] = {
+const unsigned char base_point_bytes_dup[ED448_POINT_BYTES] = {
 	0x14, 0xfa, 0x30, 0xf2, 0x5b, 0x79, 0x08, 0x98,
 	0xad, 0xc8, 0xd7, 0x4e, 0x2c, 0x13, 0xbd, 0xfd,
 	0xc4, 0x39, 0x7c, 0xe6, 0x1c, 0xff, 0xd3, 0x3a,
@@ -32,7 +32,7 @@ const unsigned char base_point_bytes_dup[ED448_EDDSA_SER_BYTES] = {
 };
 
 // XXX: in big endian
-const unsigned char prime_order_bytes_dup[ED448_EDDSA_SER_BYTES] = {
+const unsigned char prime_order_bytes_dup[ED448_POINT_BYTES] = {
 	0x3f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -50,7 +50,7 @@ snizkpk_authenticate(snizkpk_proof_t * dst, const snizkpk_keypair_t * pair1,
 {
 	gcry_md_hd_t hd;
 	unsigned char hash[64];
-	unsigned char point_buff[ED448_EDDSA_SER_BYTES];
+	unsigned char point_buff[ED448_POINT_BYTES];
 
 	snizkpk_privkey_t t1;
 	snizkpk_pubkey_t T1, T2, T3, A2c2, A3c3;
@@ -68,26 +68,26 @@ snizkpk_authenticate(snizkpk_proof_t * dst, const snizkpk_keypair_t * pair1,
 	decaf_448_point_add(T3, T3, A3c3);
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-	gcry_md_write(hd, base_point_bytes_dup, ED448_EDDSA_SER_BYTES);
-	gcry_md_write(hd, prime_order_bytes_dup, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, base_point_bytes_dup, ED448_POINT_BYTES);
+	gcry_md_write(hd, prime_order_bytes_dup, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, pair1->pub);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A2);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A3);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, T1);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, T2);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, T3);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	gcry_md_write(hd, msg, msglen);
 
@@ -115,7 +115,7 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 {
 	gcry_md_hd_t hd;
 	unsigned char hash[64];
-	unsigned char point_buff[ED448_EDDSA_SER_BYTES];
+	unsigned char point_buff[ED448_POINT_BYTES];
 
 	snizkpk_pubkey_t gr1, gr2, gr3, A1c1, A2c2, A3c3;
 
@@ -132,26 +132,26 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 	decaf_448_point_add(A3c3, A3c3, gr3);
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-	gcry_md_write(hd, base_point_bytes_dup, ED448_EDDSA_SER_BYTES);
-	gcry_md_write(hd, prime_order_bytes_dup, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, base_point_bytes_dup, ED448_POINT_BYTES);
+	gcry_md_write(hd, prime_order_bytes_dup, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A1);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A2);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A3);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A1c1);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A2c2);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A3c3);
-	gcry_md_write(hd, point_buff, ED448_EDDSA_SER_BYTES);
+	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
 
 	gcry_md_write(hd, msg, msglen);
 

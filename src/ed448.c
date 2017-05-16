@@ -71,9 +71,11 @@ ec_scalar_serialize(uint8_t * dst, size_t dst_len, const ec_scalar_t scalar)
 
 bool
 ec_scalar_deserialize(ec_scalar_t scalar,
-		      const uint8_t serialized[ED448_EDDSA_SER_BYTES])
+		      const uint8_t serialized[ED448_SCALAR_BYTES])
 {
-	return DECAF_SUCCESS == decaf_448_scalar_decode(scalar, serialized);
+	decaf_448_scalar_decode_long(scalar, serialized, ED448_SCALAR_BYTES);
+
+	return true;
 }
 
 bool ec_point_serialize(uint8_t * dst, size_t dst_len, const ec_point_t point)

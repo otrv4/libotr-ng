@@ -171,6 +171,7 @@ deserialize_otrv4_public_key(otrv4_public_key_t pub, const uint8_t * serialized,
 	return true;
 }
 
+// TODO: check me
 bool decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len)
 {
 	//((base64len+3) / 4) * 3
@@ -181,7 +182,7 @@ bool decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len)
 	bool ok = false;
 	do {
 		size_t written = otrl_base64_decode(dec, buff, len);
-		if (written != ED448_EDDSA_SER_BYTES)
+		if (written != ED448_SCALAR_BYTES)
 			continue;
 
 		ok = DECAF_SUCCESS == decaf_448_scalar_decode(s, dec);
@@ -191,6 +192,7 @@ bool decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len)
 	return ok;
 }
 
+// XXX: check me
 bool decode_b64_ec_point(ec_point_t s, const char *buff, size_t len)
 {
 	//((base64len+3) / 4) * 3
@@ -216,7 +218,7 @@ bool
 deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t * serialized,
 		      size_t ser_len)
 {
-	if (ser_len < ED448_EDDSA_SER_BYTES)
+	if (ser_len < ED448_SCALAR_BYTES)
 		return false;
 
 	return ec_scalar_deserialize(scalar, serialized);

@@ -4,7 +4,7 @@
 #include "ed448.h"
 
 #define ED448_PUBKEY_TYPE 0x0010
-#define ED448_PUBKEY_BYTES 2 + ED448_POINT_BYTES
+#define ED448_PUBKEY_BYTES 2 + ED448_PUBLIC_BYTES
 
 typedef ec_point_t otrv4_public_key_t;
 typedef ec_scalar_t otrv4_private_key_t;

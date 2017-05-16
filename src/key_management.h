@@ -6,7 +6,7 @@
 
 typedef uint8_t k_dh_t[384];
 typedef uint8_t mix_key_t[32];
-typedef uint8_t k_ecdh_t[ED448_POINT_BYTES];
+typedef uint8_t k_ecdh_t[ED448_PUBLIC_BYTES];
 typedef uint8_t shared_secret_t[64];
 
 typedef uint8_t root_key_t[64];

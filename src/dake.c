@@ -85,7 +85,7 @@ dake_identity_message_aprint(uint8_t ** dst, size_t * nbytes,
 	if (!ok) {
 		return false;
 	}
-	target += ED448_POINT_BYTES;
+	target += ED448_PUBLIC_BYTES;
 	size_t len = 0;
 	otr4_err_t err =
 	    serialize_dh_public_key(target, &len, identity_message->B);
@@ -156,8 +156,8 @@ dake_identity_message_deserialize(dake_identity_message_t * dst,
 		return false;
 	}
 
-	cursor += ED448_POINT_BYTES;
-	len -= ED448_POINT_BYTES;
+	cursor += ED448_PUBLIC_BYTES;
+	len -= ED448_PUBLIC_BYTES;
 
 	otr_mpi_t b_mpi;	// no need to free, because nothing is copied now
 	if (!otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
@@ -266,7 +266,7 @@ dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 	if (!ok) {
 		return false;
 	}
-	cursor += ED448_POINT_BYTES;
+	cursor += ED448_PUBLIC_BYTES;
 	size_t len = 0;
 	otr4_err_t err = serialize_dh_public_key(cursor, &len, dre_auth->A);
 	if (err) {
@@ -354,8 +354,8 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
 		return false;
 	}
 
-	cursor += ED448_POINT_BYTES;
-	len -= ED448_POINT_BYTES;
+	cursor += ED448_PUBLIC_BYTES;
+	len -= ED448_PUBLIC_BYTES;
 
 	otr_mpi_t tmp_mpi;	// no need to free, because nothing is copied now
 	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {

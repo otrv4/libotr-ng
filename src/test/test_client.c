@@ -278,4 +278,5 @@ void test_fingerprint_hash_to_human()
 
 	g_assert_cmpint(0, ==,
 			strncmp(expected_fp, fp_human, OTR4_FPRINT_HUMAN_LEN));
+
 }
