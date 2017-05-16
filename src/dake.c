@@ -37,7 +37,7 @@ dake_identity_message_t *dake_identity_message_new(const user_profile_t *
 
 void dake_identity_message_free(dake_identity_message_t * identity_message)
 {
-	if (identity_message == NULL)
+	if (!identity_message)
 		return;
 
 	dake_identity_message_destroy(identity_message);
@@ -289,7 +289,7 @@ void dake_auth_r_destroy(dake_auth_r_t * auth_r)
 
 void dake_auth_r_free(dake_auth_r_t * auth_r)
 {
-	if (auth_r == NULL)
+	if (!auth_r)
 		return;
 
 	dake_auth_r_destroy(auth_r);

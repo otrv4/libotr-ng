@@ -11,7 +11,7 @@
 ratchet_t *ratchet_new()
 {
 	ratchet_t *ratchet = malloc(sizeof(ratchet_t));
-	if (ratchet == NULL)
+	if (!ratchet)
 		return NULL;
 
 	ratchet->id = 0;
@@ -36,7 +36,7 @@ void chain_link_free(chain_link_t * head)
 
 void ratchet_free(ratchet_t * ratchet)
 {
-	if (ratchet == NULL)
+	if (!ratchet)
 		return;
 
 	chain_link_free(ratchet->chain_a->next);

@@ -24,7 +24,7 @@ void otr_mpi_set(otr_mpi_t dst, const uint8_t * src, size_t len)
 
 	dst->len = len;
 	dst->data = malloc(dst->len);
-	if (dst->data == NULL) {
+	if (!dst->data) {
 		return;		// should it be an error?
 	}
 

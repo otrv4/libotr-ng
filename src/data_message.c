@@ -7,7 +7,7 @@
 data_message_t *data_message_new()
 {
 	data_message_t *ret = malloc(sizeof(data_message_t));
-	if (ret == NULL)
+	if (!ret)
 		return NULL;
 
 	ret->flags = 0;
@@ -33,7 +33,7 @@ void data_message_destroy(data_message_t * data_msg)
 
 void data_message_free(data_message_t * data_msg)
 {
-	if (data_msg == NULL)
+	if (!data_msg)
 		return;
 
 	data_message_destroy(data_msg);
