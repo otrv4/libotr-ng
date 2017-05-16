@@ -399,9 +399,8 @@ receive_tagged_plaintext(otrv4_response_t * response,
 		return otrv3_receive_message(message, msg_len);
 		break;
 	default:
-		//message_to_display_without_tag(otr, message->raw_text, tag_version_v4);
-		//TODO Do we exit(1)?
-		break;
+                //ignore
+                return true;
 	}
 
 	return false;
@@ -421,8 +420,8 @@ receive_query_message(otrv4_response_t * response,
 		return otrv3_receive_message(message, 0);
 		break;
 	default:
-		//nothing to do
-		break;
+		//ignore
+                return true;
 	}
 
 	return false;
@@ -785,7 +784,7 @@ receive_auth_r(string_t * dst, const uint8_t * buff, size_t buff_len,
 	       otrv4_t * otr)
 {
 	if (otr->state != OTRV4_STATE_WAITING_AUTH_R)
-		return false;
+		return true; // ignore the message
 
 	dake_auth_r_t auth[1];
 	if (!dake_auth_r_deserialize(auth, buff, buff_len))
@@ -840,7 +839,7 @@ receive_auth_i(string_t * dst, const uint8_t * buff, size_t buff_len,
 	       otrv4_t * otr)
 {
 	if (otr->state != OTRV4_STATE_WAITING_AUTH_I)
-		return false;
+		return true; // Ignore the message
 
 	dake_auth_i_t auth[1];
 	if (!dake_auth_i_deserialize(auth, buff, buff_len))
