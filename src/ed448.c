@@ -65,7 +65,9 @@ void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src)
 void
 ec_scalar_serialize(uint8_t * dst, size_t dst_len, const ec_scalar_t scalar)
 {
-	//TODO: error
+    if (dst_len < ED448_SCALAR_BYTES)
+        return; //TODO: error
+
 	decaf_448_scalar_encode(dst, scalar);
 }
 
