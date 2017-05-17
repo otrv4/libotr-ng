@@ -45,6 +45,18 @@ typedef struct {
 	int allows;
 } otrv4_policy_t;
 
+typedef enum {
+        OTRV4_SMPEVENT_NONE = 0,
+        OTRV4_SMPEVENT_ASK_FOR_SECRET = 1,
+        OTRV4_SMPEVENT_ASK_FOR_ANSWER = 2,
+        OTRV4_SMPEVENT_INPROGRESS = 3,
+        OTRV4_SMPEVENT_SUCCESS = 4,
+        OTRV4_SMPEVENT_CHEATED = 5,
+        OTRV4_SMPEVENT_FAILURE = 6,
+        OTRV4_SMPEVENT_ABORT = 7,
+        OTRV4_SMPEVENT_ERROR = 8,
+} otr4_smp_event_t;
+
 typedef struct {
 	/* A connection has entered a secure state. */
 	void (*gone_secure) (const otrv4_t *);
@@ -54,6 +66,33 @@ typedef struct {
 
 	/* A fingerprint was seen in this connection. */
 	void (*fingerprint_seen) (const otrv4_fingerprint_t, const otrv4_t *);
+
+        /* Update the authentication UI with respect to SMP events
+         * These are the possible events:
+         * - OTRL_SMPEVENT_ASK_FOR_SECRET
+         *      prompt the user to enter a shared secret. The sender application
+         *      should call otrl_message_initiate_smp, passing NULL as the question.
+         *      When the receiver application resumes the SM protocol by calling
+         *      otrl_message_respond_smp with the secret answer.
+         * - OTRL_SMPEVENT_ASK_FOR_ANSWER
+         *      (same as OTRL_SMPEVENT_ASK_FOR_SECRET but sender calls
+         *      otrl_message_initiate_smp_q instead)
+         * - OTRL_SMPEVENT_CHEATED
+         *      abort the current auth and update the auth progress dialog
+         *      with progress_percent. otrl_message_abort_smp should be called to
+         *      stop the SM protocol.
+         * - OTRL_SMPEVENT_INPROGRESS       and
+         *   OTRL_SMPEVENT_SUCCESS          and
+         *   OTRL_SMPEVENT_FAILURE          and
+         *   OTRL_SMPEVENT_ABORT
+         *      update the auth progress dialog with progress_percent
+         * - OTRL_SMPEVENT_ERROR
+         *      (same as OTRL_SMPEVENT_CHEATED)
+         * */
+        void (*handle_smp_event)(const otr4_smp_event_t event,
+            const uint8_t progress_percent, const char *question,
+            const otrv4_t *conn);
+
 } otrv4_callbacks_t;
 
 struct connection {
