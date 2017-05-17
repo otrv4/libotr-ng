@@ -114,6 +114,10 @@ otrv4_t *otrv4_new(otrv4_keypair_t * keypair, otrv4_policy_t policy)
 	otr->profile = get_my_user_profile(otr);
 	otr->their_profile = NULL;
 
+	otr->keys = malloc(sizeof(key_manager_t));
+	if (!otr->keys)
+		return NULL;
+
 	key_manager_init(otr->keys);
 	otr->callbacks = NULL;
 
@@ -132,6 +136,7 @@ void otrv4_destroy( /*@only@ */ otrv4_t * otr)
 	otr->their_profile = NULL;
 	otr->callbacks = NULL;
 	smp_destroy(otr->smp);
+	free(otr->keys);
 }
 
 void otrv4_free( /*@only@ */ otrv4_t * otr)

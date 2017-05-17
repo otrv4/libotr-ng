@@ -108,7 +108,7 @@ struct connection {
 	otrv4_version_t running_version;
 
 	otrv4_keypair_t *keypair;
-	key_manager_t keys;
+	key_manager_t *keys;
 	const otrv4_callbacks_t *callbacks;
 
 	smp_context_t smp;

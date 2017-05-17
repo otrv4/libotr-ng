@@ -48,7 +48,7 @@ void ratchet_free(ratchet_t * ratchet)
 	free(ratchet);
 }
 
-void key_manager_init(key_manager_t manager)
+void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 {
 	manager->i = 0;
 	manager->j = 0;
@@ -59,7 +59,7 @@ void key_manager_init(key_manager_t manager)
 	manager->their_dh = NULL;
 }
 
-void key_manager_destroy(key_manager_t manager)
+void key_manager_destroy(key_manager_t *manager)
 {
 	ratchet_free(manager->previous);
 	manager->previous = NULL;
@@ -74,13 +74,15 @@ void key_manager_destroy(key_manager_t manager)
 	//TODO: destroy our_ecdh and their_ecdh
 }
 
-void key_manager_generate_ephemeral_keys(key_manager_t manager)
+void key_manager_generate_ephemeral_keys(key_manager_t *manager)
 {
 	//TODO: securely erase memory
 	uint8_t sym[ED448_PRIVATE_BYTES];
 	random_bytes(sym, ED448_PRIVATE_BYTES);
+
 	ecdh_keypair_destroy(manager->our_ecdh);
 	ecdh_keypair_generate(manager->our_ecdh, sym);
+
 
 	if (manager->i % 3 == 0) {
 		dh_keypair_destroy(manager->our_dh);
@@ -90,7 +92,7 @@ void key_manager_generate_ephemeral_keys(key_manager_t manager)
 
 void
 key_manager_set_their_keys(ec_point_t their_ecdh,
-			   dh_public_key_t their_dh, key_manager_t manager)
+			   dh_public_key_t their_dh, key_manager_t *manager)
 {
 	//TODO: Should we safely remove the previous point?
 	ec_point_copy(manager->their_ecdh, their_ecdh);
@@ -98,7 +100,7 @@ key_manager_set_their_keys(ec_point_t their_ecdh,
 	manager->their_dh = dh_mpi_copy(their_dh);
 }
 
-void key_manager_prepare_to_ratchet(key_manager_t manager)
+void key_manager_prepare_to_ratchet(key_manager_t *manager)
 {
 	manager->j = 0;
 }
@@ -147,7 +149,7 @@ bool derive_ratchet_keys(ratchet_t * ratchet, const shared_secret_t shared)
 }
 
 bool
-key_manager_new_ratchet(key_manager_t manager, const shared_secret_t shared)
+key_manager_new_ratchet(key_manager_t *manager, const shared_secret_t shared)
 {
 	ratchet_t *ratchet = ratchet_new();
 	if (ratchet == NULL)
@@ -231,7 +233,7 @@ message_chain_t *decide_between_chain_keys(const ratchet_t * ratchet,
 
 int
 key_manager_get_sending_chain_key(chain_key_t sending,
-				  const key_manager_t manager)
+				  const key_manager_t *manager)
 {
 	message_chain_t *chain =
 	    decide_between_chain_keys(manager->current, manager->our_ecdh->pub,
@@ -289,7 +291,7 @@ bool rebuild_chain_keys_up_to(int message_id, const chain_link_t * head)
 bool
 key_manager_get_receiving_chain_key_by_id(chain_key_t receiving,
 					  int ratchet_id, int message_id,
-					  const key_manager_t manager)
+					  const key_manager_t *manager)
 {
 	//TODO: Should we be able to receive messages from the previous ratchet?
 	//TODO: This is a critical section to receiving messages out of order.
@@ -344,7 +346,7 @@ calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
 	return true;
 }
 
-static bool derive_sending_chain_key(key_manager_t manager)
+static bool derive_sending_chain_key(key_manager_t *manager)
 {
 	message_chain_t *chain =
 	    decide_between_chain_keys(manager->current, manager->our_ecdh->pub,
@@ -360,7 +362,7 @@ static bool derive_sending_chain_key(key_manager_t manager)
 	return true;
 }
 
-static bool enter_new_ratchet(key_manager_t manager)
+static bool enter_new_ratchet(key_manager_t *manager)
 {
 	k_ecdh_t k_ecdh;
 	if (!ecdh_shared_secret
@@ -413,7 +415,7 @@ static bool enter_new_ratchet(key_manager_t manager)
 	return key_manager_new_ratchet(manager, shared);
 }
 
-bool key_manager_ratchetting_init(int j, key_manager_t manager)
+bool key_manager_ratchetting_init(int j, key_manager_t *manager)
 {
 	if (!enter_new_ratchet(manager))
 		return false;
@@ -423,7 +425,7 @@ bool key_manager_ratchetting_init(int j, key_manager_t manager)
 	return true;
 }
 
-static bool rotate_keys(key_manager_t manager)
+static bool rotate_keys(key_manager_t *manager)
 {
 	manager->i++;
 	manager->j = 0;
@@ -432,7 +434,7 @@ static bool rotate_keys(key_manager_t manager)
 	return enter_new_ratchet(manager);
 }
 
-bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t manager)
+bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t *manager)
 {
 	if (manager->i == ratchet_id)
 		return true;
@@ -464,7 +466,7 @@ bool
 key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
 					    m_mac_key_t mac_key,
 					    int ratchet_id, int message_id,
-					    const key_manager_t manager)
+					    const key_manager_t *manager)
 {
 	bool ok = false;
 	chain_key_t receiving;
@@ -477,12 +479,12 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
 	return derive_encription_and_mac_keys(enc_key, mac_key, receiving);
 }
 
-static bool should_ratchet(const key_manager_t manager)
+static bool should_ratchet(const key_manager_t *manager)
 {
 	return manager->j == 0;
 }
 
-bool key_manager_prepare_next_chain_key(key_manager_t manager)
+bool key_manager_prepare_next_chain_key(key_manager_t *manager)
 {
 	if (should_ratchet(manager))
 		return rotate_keys(manager);
@@ -493,7 +495,7 @@ bool key_manager_prepare_next_chain_key(key_manager_t manager)
 bool
 key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
 					  m_mac_key_t mac_key,
-					  const key_manager_t manager)
+					  const key_manager_t *manager)
 {
 	chain_key_t sending;
 	int message_id = key_manager_get_sending_chain_key(sending, manager);

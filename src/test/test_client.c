@@ -208,7 +208,7 @@ void test_client_api()
 	otr4_client_free(bob);
 	otr4_client_free(alice);
 
-	dh_free();
+	OTR4_FREE
 }
 
 void test_client_get_our_fingerprint()

@@ -24,7 +24,6 @@ void test_smp_state_machine(void)
 	//Should be in ecrypted state before perform SMP
 	tlv_t *tlv_smp_1 = otrv4_smp_initiate(alice_otr, "", "");
 	otrv4_assert(!tlv_smp_1);
-
 	do_ake_fixture(alice_otr, bob_otr);
 
 	tlv_smp_1 = otrv4_smp_initiate(alice_otr, "some-question", "answer");
@@ -55,11 +54,10 @@ void test_smp_state_machine(void)
 	otrv4_assert(!tlv_smp_3);
 //	g_assert_cmpint(smp_msg_3->type, ==, OTRV4_TLV_SMP_MSG_3);
 
-	otrv4_destroy(alice_otr);
-	otrv4_destroy(bob_otr);
-	otrv4_keypair_destroy(alice_keypair);
+	otrv4_keypair_destroy(alice_keypair); //destroy keypair in otr?
 	otrv4_keypair_destroy(bob_keypair);
-
+	otrv4_free(alice_otr);
+	otrv4_free(bob_otr);
 	OTR4_FREE;
 };
 
