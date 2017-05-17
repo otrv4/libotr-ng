@@ -7,6 +7,8 @@ void test_smp_state_machine(void)
 	OTR4_INIT;
 
 	otrv4_keypair_t alice_keypair[1], bob_keypair[1];
+	smp_msg_1_t smp_msg_1;
+	smp_msg_2_t smp_msg_2;
 
 	uint8_t alice_sym[ED448_PRIVATE_BYTES] = { 1 };
 	uint8_t bob_sym[ED448_PRIVATE_BYTES] = { 2 };
@@ -19,32 +21,38 @@ void test_smp_state_machine(void)
 
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
-	tlv_t *smp_msg_1 = otrv4_smp_initiate(alice_otr, "", "");
-	otrv4_assert(!smp_msg_1);
-
 	//Should be in ecrypted state before perform SMP
+	tlv_t *tlv_smp_1 = otrv4_smp_initiate(alice_otr, "", "");
+	otrv4_assert(!tlv_smp_1);
+
 	do_ake_fixture(alice_otr, bob_otr);
 
-	smp_msg_1 = otrv4_smp_initiate(alice_otr, "some-question", "answer");
-	g_assert_cmpint(smp_msg_1->type, ==, OTRV4_TLV_SMP_MSG_1);
+	tlv_smp_1 = otrv4_smp_initiate(alice_otr, "some-question", "answer");
+	g_assert_cmpint(tlv_smp_1->type, ==, OTRV4_TLV_SMP_MSG_1);
+
+	//Should have correct context after generates tlv_smp_2
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT2);
 	otrv4_assert(alice_otr->smp->x);
 	otrv4_assert(alice_otr->smp->a2);
 	otrv4_assert(alice_otr->smp->a3);
+	otrv4_assert(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1) == true);
 
-	tlv_t *smp_msg_2 = otrv4_process_smp(bob_otr, smp_msg_1);
-	g_assert_cmpint(smp_msg_2->type, ==, OTRV4_TLV_SMP_MSG_2);
+	tlv_t *tlv_smp_2 = otrv4_process_smp(bob_otr, tlv_smp_1);
+	g_assert_cmpint(tlv_smp_2->type, ==, OTRV4_TLV_SMP_MSG_2);
+
+	//Should have correct context after generates tlv_smp_2
 	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT3);
 	otrv4_assert(bob_otr->smp->y);
-	otrv4_assert(bob_otr->smp->G3a);
+	otrv4_assert_point_equals(bob_otr->smp->G3a, smp_msg_1->G3a);
+	otrv4_assert(smp_msg_2_deserialize(smp_msg_2, tlv_smp_2) == 0);
+	otrv4_assert_point_equals(bob_otr->smp->Pb, smp_msg_2->Pb);
+	otrv4_assert_point_equals(bob_otr->smp->Qb, smp_msg_2->Qb);
+	otrv4_assert(bob_otr->smp->b3);
 	otrv4_assert(bob_otr->smp->G2);
 	otrv4_assert(bob_otr->smp->G3);
-	otrv4_assert(bob_otr->smp->b3);
-	otrv4_assert(bob_otr->smp->Pb);
-	otrv4_assert(bob_otr->smp->Qb);
 
-	tlv_t * smp_msg_3 = otrv4_process_smp(alice_otr, smp_msg_2);
-	otrv4_assert(!smp_msg_3);
+	tlv_t * tlv_smp_3 = otrv4_process_smp(alice_otr, tlv_smp_2);
+	otrv4_assert(!tlv_smp_3);
 //	g_assert_cmpint(smp_msg_3->type, ==, OTRV4_TLV_SMP_MSG_3);
 
 	otrv4_destroy(alice_otr);

@@ -69,4 +69,8 @@ bool smp_msg_2_validate_points(smp_msg_2_t msg);
 
 bool smp_msg_2_validate_zkp(smp_msg_2_t msg, const smp_context_t smp);
 
+//TODO: export only what is needed
+bool smp_msg_1_deserialize(smp_msg_1_t dst, const tlv_t * tlv);
+int smp_msg_2_deserialize(smp_msg_2_t dst, const tlv_t * tlv);
+
 #endif
