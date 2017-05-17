@@ -717,5 +717,41 @@ int smp_msg_3_deserialize(smp_msg_3_t dst, const tlv_t *tlv)
 
 bool smp_msg_3_validate_zkp(smp_msg_3_t msg, const smp_context_t smp)
 {
-      return true;
+	uint8_t buff[1 + 2 * ED448_POINT_BYTES];
+	ec_point_t temp_point, temp_point_2;
+	ec_scalar_t temp_scalar;
+	bool ok;
+
+	//cp = HashToScalar(6 || G3 * d5 + Pa * cp || G * d5 + G2 * d6 + Qa * cp)
+	buff[0] = 0x06;
+	decaf_448_point_scalarmul(temp_point, msg->Pa, msg->cp);
+	decaf_448_point_scalarmul(temp_point_2, smp->G3, msg->d5);
+	decaf_448_point_add(temp_point, temp_point, temp_point_2);
+	if (!serialize_ec_point(buff + 1, temp_point)) return false;
+
+	decaf_448_point_scalarmul(temp_point, msg->Qa, msg->cp);
+	decaf_448_point_scalarmul(temp_point_2, smp->G2, msg->d6);
+	decaf_448_point_add(temp_point, temp_point, temp_point_2);
+	decaf_448_point_scalarmul(temp_point_2, decaf_448_point_base, msg->d5);
+	decaf_448_point_add(temp_point, temp_point, temp_point_2);
+	if (!serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point)) return false;
+
+	hashToScalar(buff, sizeof(buff), temp_scalar);
+	ok = ec_scalar_eq(temp_scalar, msg->cp);
+
+	//cr = HashToScalar(7 || G * d7 + G3a * cr || (Qa - Qb) * d7 + Ra * cr)
+	buff[0] = 0x07;
+	decaf_448_point_scalarmul(temp_point, smp->G3a, msg->cr);
+	decaf_448_point_scalarmul(temp_point_2, decaf_448_point_base, msg->d7);
+	decaf_448_point_add(temp_point, temp_point, temp_point_2);
+	if (!serialize_ec_point(buff + 1, temp_point)) return false;
+
+	decaf_448_point_scalarmul(temp_point, msg->Ra, msg->cr);
+	decaf_448_point_sub(temp_point_2, msg->Qa, smp->Qb);
+	decaf_448_point_scalarmul(temp_point_2, temp_point_2, msg->d7);
+	decaf_448_point_add(temp_point, temp_point, temp_point_2);
+	if (!serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point)) return false;
+
+	hashToScalar(buff, sizeof(buff), temp_scalar);
+	return ok & ec_scalar_eq(temp_scalar, msg->cr);
 }
