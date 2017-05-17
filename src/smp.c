@@ -93,9 +93,9 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	return 0;
 }
 
-int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
+bool smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 {
-	uint8_t buffmpi[ED448_POINT_BYTES];
+	uint8_t buffmpi[ED448_SCALAR_BYTES];
 	int bufflen = 0;
 	otr_mpi_t c2_mpi, d2_mpi, c3_mpi, d3_mpi;
 	size_t s = 0;
@@ -123,7 +123,7 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 
 	*dst = malloc(s);
 	if (!*dst)
-		return 1;
+		return false;
 
 	uint8_t *cursor = *dst;
 
@@ -136,16 +136,16 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 				   strlen(msg->question) + 1);
 
 	bool ok = serialize_ec_point(cursor, msg->G2a);
-	if (!ok) {
+	if (!ok)
 		return false;
-	}
+
 	cursor += ED448_POINT_BYTES;
 	cursor += serialize_mpi(cursor, c2_mpi);
 	cursor += serialize_mpi(cursor, d2_mpi);
 	ok = serialize_ec_point(cursor, msg->G3a);
-	if (!ok) {
+	if (!ok)
 		return false;
-	}
+
 	cursor += ED448_POINT_BYTES;
 	cursor += serialize_mpi(cursor, c3_mpi);
 	cursor += serialize_mpi(cursor, d3_mpi);
@@ -157,7 +157,7 @@ int smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 	otr_mpi_free(c3_mpi);
 	otr_mpi_free(d3_mpi);
 
-	return 0;
+	return true;
 }
 
 //TODO: This is triplicated (see auth.c)
@@ -251,10 +251,10 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 	return 0;
 }
 
-int smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
+bool smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 {
 	uint8_t *cursor;
-	uint8_t buffmpi[ED448_POINT_BYTES];
+	uint8_t buffmpi[ED448_SCALAR_BYTES];
 	int bufflen = 0;
 	size_t s = 0;
 	otr_mpi_t c2_mpi, d2_mpi, c3_mpi, d3_mpi, cp_mpi, d5_mpi, d6_mpi;
@@ -290,7 +290,7 @@ int smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 	s += 4 * ED448_POINT_BYTES;
 	*dst = malloc(s);
 	if (!*dst)
-		return 1;
+		return false;
 
 	*len = s;
         cursor = *dst;
@@ -298,7 +298,7 @@ int smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 	bool ok = serialize_ec_point(cursor, msg->G2b);
 	if (!ok)
 	      //TODO: should free MPIs in all errors
-	      return 1;
+	      return false;
 	cursor += ED448_POINT_BYTES;
 
 	cursor += serialize_mpi(cursor, c2_mpi);
@@ -306,7 +306,7 @@ int smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 
 	ok = serialize_ec_point(cursor, msg->G3b);
 	if (!ok)
-	      return 1;
+	      return false;
 	cursor += ED448_POINT_BYTES;
 
 	cursor += serialize_mpi(cursor, c3_mpi);
@@ -314,12 +314,12 @@ int smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 
 	ok = serialize_ec_point(cursor, msg->Pb);
 	if (!ok)
-	      return 1;
+	      return false;
 	cursor += ED448_POINT_BYTES;
 
 	ok = serialize_ec_point(cursor, msg->Qb);
 	if (!ok)
-	      return 1;
+	      return false;
 	cursor += ED448_POINT_BYTES;
 
 	cursor += serialize_mpi(cursor, cp_mpi);
@@ -334,7 +334,7 @@ int smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 	otr_mpi_free(d5_mpi);
 	otr_mpi_free(d6_mpi);
 
-	return 0;
+	return true;
 }
 
 static bool
@@ -594,4 +594,128 @@ bool generate_smp_msg_3(smp_msg_3_t dst, const smp_msg_2_t msg_2,
 	decaf_448_scalar_sub(dst->d7, pair_r7->priv, dst->d7);
 
 	return true;
+}
+
+bool smp_msg_3_aprint(uint8_t ** dst, size_t * len, const smp_msg_3_t msg)
+{
+	uint8_t *cursor;
+	uint8_t buffmpi[ED448_SCALAR_BYTES];
+	int bufflen = 0;
+	size_t s = 0;
+	otr_mpi_t cp_mpi, d5_mpi, d6_mpi, cr_mpi, d7_mpi;
+
+	bufflen = serialize_ec_scalar(buffmpi, msg->cp);
+	otr_mpi_set(cp_mpi, buffmpi, bufflen);
+	s += bufflen + 4;
+
+	bufflen = serialize_ec_scalar(buffmpi, msg->d5);
+	otr_mpi_set(d5_mpi, buffmpi, bufflen);
+	s += bufflen + 4;
+
+	bufflen = serialize_ec_scalar(buffmpi, msg->d6);
+	otr_mpi_set(d6_mpi, buffmpi, bufflen);
+	s += bufflen + 4;
+
+	bufflen = serialize_ec_scalar(buffmpi, msg->cr);
+	otr_mpi_set(cr_mpi, buffmpi, bufflen);
+	s += bufflen + 4;
+
+	bufflen = serialize_ec_scalar(buffmpi, msg->d7);
+	otr_mpi_set(d7_mpi, buffmpi, bufflen);
+	s += bufflen + 4;
+
+	s += 3 * ED448_POINT_BYTES;
+	*dst = malloc(s);
+	if (!*dst)
+		return false;
+
+	*len = s;
+	cursor = *dst;
+	//TODO: should free buffer in the errors
+	if (!serialize_ec_point(cursor, msg->Pa))
+		return false;
+	cursor += ED448_POINT_BYTES;
+
+	if (!serialize_ec_point(cursor, msg->Qa))
+		return false;
+	cursor += ED448_POINT_BYTES;
+
+	cursor += serialize_mpi(cursor, cp_mpi);
+	cursor += serialize_mpi(cursor, d5_mpi);
+	cursor += serialize_mpi(cursor, d6_mpi);
+
+	if (!serialize_ec_point(cursor, msg->Ra))
+		return false;
+	cursor += ED448_POINT_BYTES;
+
+	cursor += serialize_mpi(cursor, cr_mpi);
+	cursor += serialize_mpi(cursor, d7_mpi);
+
+	otr_mpi_free(cp_mpi);
+	otr_mpi_free(d5_mpi);
+	otr_mpi_free(d6_mpi);
+	otr_mpi_free(cr_mpi);
+	otr_mpi_free(d7_mpi);
+
+	return true;
+}
+
+int smp_msg_3_deserialize(smp_msg_3_t dst, const tlv_t *tlv)
+{
+	const uint8_t *cursor = tlv->data;
+	uint16_t len = tlv->len;
+	size_t read = 0;
+
+	if (!deserialize_ec_point(dst->Pa, cursor))
+		return 1;
+
+	cursor += ED448_POINT_BYTES;
+	len -= ED448_POINT_BYTES;
+
+	if (!deserialize_ec_point(dst->Qa, cursor))
+		return 1;
+
+	cursor += ED448_POINT_BYTES;
+	len -= ED448_POINT_BYTES;
+
+	if (!deserialize_mpi_to_scalar(dst->cp, cursor, len, &read))
+		return 1;
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_mpi_to_scalar(dst->d5, cursor, len, &read))
+		return 1;
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_mpi_to_scalar(dst->d6, cursor, len, &read))
+		return 1;
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_ec_point(dst->Ra, cursor))
+		return 1;
+
+	cursor += ED448_POINT_BYTES;
+	len -= ED448_POINT_BYTES;
+
+	if (!deserialize_mpi_to_scalar(dst->cr, cursor, len, &read))
+		return 1;
+
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_mpi_to_scalar(dst->d7, cursor, len, &read))
+		return 1;
+
+	len -= read;
+	return len;
+}
+
+bool smp_msg_3_validate_zkp(smp_msg_3_t msg, const smp_context_t smp)
+{
+      return true;
 }

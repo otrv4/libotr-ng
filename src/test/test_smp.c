@@ -140,7 +140,7 @@ void test_smp_msg_1_aprint_null_question(void)
 	size_t expected_size = 358;
 	msg->question = NULL;
 
-	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
+	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == true);
 	g_assert_cmpint(writen, ==, expected_size);
 	free(buff);
 	buff = NULL;
@@ -148,7 +148,7 @@ void test_smp_msg_1_aprint_null_question(void)
 	msg->question = "something";
 	size_t expected_size_with_question =
 	    expected_size + strlen(msg->question) + 1;
-	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == 0);
+	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == true);
 	g_assert_cmpint(writen, ==, expected_size_with_question);
 
 	free(buff);
@@ -159,6 +159,9 @@ void test_smp_validates_msg_2(void)
 {
 	smp_msg_1_t msg_1;
 	smp_msg_2_t msg_2, smp_msg_2;
+	uint8_t *buff = NULL;
+	size_t bufflen = 0;
+	tlv_t *tlv ;
 	smp_context_t smp;
 	smp->y = malloc(64);
 	memset(smp->y, 0, 64);
@@ -167,10 +170,8 @@ void test_smp_validates_msg_2(void)
 	generate_smp_msg_1(msg_1, smp);
 	generate_smp_msg_2(msg_2, msg_1, smp);
 
-	uint8_t *buff = NULL;
-	size_t bufflen = 0;
-	smp_msg_2_aprint(&buff, &bufflen, msg_2);
-	tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
+	otrv4_assert(smp_msg_2_aprint(&buff, &bufflen, msg_2) == true);
+	tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
 	free(buff);
 
 	g_assert_cmpint(smp_msg_2_deserialize(smp_msg_2, tlv), ==, 0);
@@ -185,5 +186,39 @@ void test_smp_validates_msg_2(void)
 	otrv4_assert(smp_msg_2_validate_zkp(msg_2, smp) == true);
 	otrv4_assert(smp_msg_2_validate_zkp(smp_msg_2, smp) == true);
 
+	free(smp->y);
+}
+
+void test_smp_validates_msg_3(void)
+{
+	smp_msg_1_t msg_1;
+	smp_msg_2_t msg_2;
+	smp_msg_3_t msg_3;
+	uint8_t *buff = NULL;
+	size_t bufflen = 0;
+	tlv_t *tlv;
+	smp_context_t smp;
+	smp->x = malloc(64);
+	memset(smp->x, 0, 64);
+	smp->x[0] = 0x01;
+	smp->y = malloc(64);
+	memset(smp->y, 0, 64);
+	smp->y[0] = 0x02;
+
+	generate_smp_msg_1(msg_1, smp);
+	generate_smp_msg_2(msg_2, msg_1, smp);
+
+	otrv4_assert(generate_smp_msg_3(msg_3, msg_2, smp) == true);
+
+	otrv4_assert(smp_msg_3_aprint(&buff, &bufflen, msg_3) == true);
+	tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);
+	free(buff);
+
+	g_assert_cmpint(smp_msg_3_deserialize(msg_3, tlv), ==, 0);
+	otrv4_tlv_free(tlv);
+
+	otrv4_assert(smp_msg_3_validate_zkp(msg_3, smp) == true);
+
+	free(smp->x);
 	free(smp->y);
 }

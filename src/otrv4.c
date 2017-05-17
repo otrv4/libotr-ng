@@ -1351,7 +1351,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	if (question)
 		msg->question = otrv4_string_duplicate(question);
 
-	if (smp_msg_1_aprint(&to_send, &len, msg))
+	if (!smp_msg_1_aprint(&to_send, &len, msg))
 		return NULL;
 
 	tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);
@@ -1392,7 +1392,9 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 
 		//TODO: what to do is somtheing wrong happen?
 		generate_smp_msg_2(msg_2, msg_1, otr->smp);
-		smp_msg_2_aprint(&buff, &bufflen, msg_2);
+		if (!smp_msg_2_aprint(&buff, &bufflen, msg_2))
+			return NULL;
+
 		to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
 
 		if (!to_send)
