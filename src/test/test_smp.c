@@ -37,6 +37,7 @@ void test_smp_state_machine(void)
 	otrv4_assert(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1) == true);
 
 	tlv_t *tlv_smp_2 = otrv4_process_smp(bob_otr, tlv_smp_1);
+	otrv4_tlv_free(tlv_smp_1);
 	g_assert_cmpint(tlv_smp_2->type, ==, OTRV4_TLV_SMP_MSG_2);
 
 	//Should have correct context after generates tlv_smp_2
@@ -51,7 +52,10 @@ void test_smp_state_machine(void)
 	otrv4_assert(bob_otr->smp->G3);
 
 	tlv_t * tlv_smp_3 = otrv4_process_smp(alice_otr, tlv_smp_2);
+	otrv4_tlv_free(tlv_smp_2);
 	g_assert_cmpint(tlv_smp_3->type, ==, OTRV4_TLV_SMP_MSG_3);
+
+	//Should have correct context after generates tlv_smp_3
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT4);
 	otrv4_assert(alice_otr->smp->G3b);
 	otrv4_assert(alice_otr->smp->Pa_Pb);

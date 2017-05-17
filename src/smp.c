@@ -753,5 +753,6 @@ bool smp_msg_3_validate_zkp(smp_msg_3_t msg, const smp_context_t smp)
 	if (!serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point)) return false;
 
 	hashToScalar(buff, sizeof(buff), temp_scalar);
+
 	return ok & ec_scalar_eq(temp_scalar, msg->cr);
 }

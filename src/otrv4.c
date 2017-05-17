@@ -1421,7 +1421,10 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 			if (!generate_smp_msg_3(msg_3, msg_2, otr->smp))
 				return NULL;
 
-			to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, 0, NULL);
+			if (!smp_msg_3_aprint(&buff, &bufflen, msg_3))
+				return NULL;
+
+			to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);
 			otr->smp->state = SMPSTATE_EXPECT4;
 		} else {
 			//If smpstate is not the receive message:
