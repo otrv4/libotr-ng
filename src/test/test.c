@@ -25,6 +25,7 @@ int main(int argc, char **argv)
 	g_test_add_func("/edwards448/eddsa_serialization",
 			ed448_test_eddsa_serialization);
 	g_test_add_func("/edwards448/eddsa_keygen", ed448_test_eddsa_keygen);
+	g_test_add_func("/edwards448/scalar_serialization", ed448_test_scalar_serialization);
 
 	g_test_add_func("/dake/snizkpk", test_snizkpk_auth);
 	g_test_add_func("/list/add", test_list_add);

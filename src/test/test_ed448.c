@@ -71,3 +71,14 @@ void ed448_test_eddsa_keygen()
 
 	otrv4_assert(ec_point_eq(expected, public_point));
 }
+
+void ed448_test_scalar_serialization()
+{
+    ec_scalar_t scalar;
+
+    uint8_t buff[ED448_SCALAR_BYTES];
+    ec_scalar_serialize(buff, sizeof(buff), decaf_448_scalar_one);
+
+    otrv4_assert(ec_scalar_deserialize(scalar, buff));
+    otrv4_assert(ec_scalar_eq(scalar, decaf_448_scalar_one));
+}
