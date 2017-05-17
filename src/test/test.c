@@ -70,6 +70,8 @@ int main(int argc, char **argv)
 
 	g_test_add_func("/key_management/derive_ratchet_keys",
 			test_derive_ratchet_keys);
+	g_test_add_func("/key_management/destroy",
+			test_key_manager_destroy);
 
 	g_test_add_func("/smp/state_machine", test_smp_state_machine);
 	g_test_add_func("/smp/generate_secret", test_generate_smp_secret);
