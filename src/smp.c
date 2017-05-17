@@ -477,8 +477,9 @@ int smp_msg_2_deserialize(smp_msg_2_t msg, const tlv_t * tlv)
 
 	if (!deserialize_mpi_to_scalar(msg->d6, cursor, len, &read))
 		return 1;
+	len -= read;
 
-	return 0;
+	return len;
 }
 
 bool smp_msg_2_validate_points(smp_msg_2_t msg)
@@ -533,4 +534,64 @@ bool smp_msg_2_validate_zkp(smp_msg_2_t msg, const smp_context_t smp)
 	hashToScalar(buff, sizeof(buff), temp_scalar);
 
 	return ok & ec_scalar_eq(temp_scalar, msg->cp);
+}
+
+bool generate_smp_msg_3(smp_msg_3_t dst, const smp_msg_2_t msg_2,
+			smp_context_t smp)
+{
+	snizkpk_keypair_t pair_r4[1], pair_r5[1], pair_r7[1];
+	ec_scalar_t r6, secret_as_scalar;
+	ec_point_t temp_point;
+	uint8_t buff[1 + 2 * ED448_POINT_BYTES];
+
+	ed448_random_scalar(r6);
+
+	snizkpk_keypair_generate(pair_r4);
+	snizkpk_keypair_generate(pair_r5);
+	snizkpk_keypair_generate(pair_r7);
+
+	//Pa = G3 * r4
+	decaf_448_point_scalarmul(dst->Pa, smp->G3, pair_r4->priv);
+	decaf_448_point_sub(smp->Pa_Pb, dst->Pa, msg_2->Pb);
+
+	hashToScalar(smp->x, 64, secret_as_scalar);
+
+	//Qa = G * r4 + G2 * HashToScalar(x)
+	decaf_448_point_scalarmul(dst->Qa, smp->G2, secret_as_scalar);
+	decaf_448_point_add(dst->Qa, pair_r4->pub, dst->Qa);
+
+	//cp = HashToScalar(6 || G3 * r5 || G * r5 + G2 * r6)
+	buff[0] = 0x06;
+	decaf_448_point_scalarmul(temp_point, smp->G3, pair_r5->priv);
+	if (!serialize_ec_point(buff + 1, temp_point)) return false;
+
+	decaf_448_point_scalarmul(temp_point, smp->G2, r6);
+	decaf_448_point_add(temp_point, pair_r5->pub, temp_point);
+	if (!serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point)) return false;
+	hashToScalar(buff, sizeof(buff), dst->cp);
+
+	//d5 = r5 - r4 * cp mod q
+	decaf_448_scalar_mul(dst->d5, pair_r4->priv, dst->cp);
+	decaf_448_scalar_sub(dst->d5, pair_r5->priv, dst->d5);
+
+	//d6 = r6 - HashToScalar(x) * cp mod q
+	decaf_448_scalar_mul(dst->d6, secret_as_scalar, dst->cp);
+	decaf_448_scalar_sub(dst->d6, r6, dst->d6);
+
+	//Ra = (Qa - Qb) * a3
+	decaf_448_point_sub(smp->Qa_Qb, dst->Qa, msg_2->Qb);
+	decaf_448_point_scalarmul(dst->Ra, smp->Qa_Qb, smp->a3);
+
+	//cr = HashToScalar(7 || G * r7 || (Qa - Qb) * r7)
+	buff[0] = 0x07;
+	if (!serialize_ec_point(buff + 1, pair_r7->pub)) return false;
+	decaf_448_point_scalarmul(temp_point, smp->Qa_Qb, pair_r7->priv);
+	if (!serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point)) return false;
+	hashToScalar(buff, sizeof(buff), dst->cr);
+
+	//d7 = r7 - a3 * cr mod q
+	decaf_448_scalar_mul(dst->d7, smp->a3, dst->cr);
+	decaf_448_scalar_sub(dst->d7, pair_r7->priv, dst->d7);
+
+	return true;
 }

@@ -11,7 +11,8 @@
 typedef enum {
 	SMPSTATE_EXPECT1,
 	SMPSTATE_EXPECT2,
-	SMPSTATE_EXPECT3
+	SMPSTATE_EXPECT3,
+	SMPSTATE_EXPECT4
 } smp_state_t;
 
 typedef struct {
@@ -21,11 +22,10 @@ typedef struct {
 	ec_scalar_t a2;
 	ec_scalar_t a3;
 	ec_scalar_t b3;
-	ec_point_t G2;
-	ec_point_t G3;
-	ec_point_t G3a;
-	ec_point_t Pb;
-	ec_point_t Qb;
+	ec_point_t G2, G3;
+	ec_point_t G3a, G3b;
+	ec_point_t Pb, Qb;
+	ec_point_t Pa_Pb, Qa_Qb;
 } smp_context_t[1];
 
 typedef struct {
@@ -52,6 +52,13 @@ typedef struct {
 	ec_scalar_t d6;
 } smp_msg_2_t[1];
 
+typedef struct {
+	ec_point_t Pa, Qa;
+	ec_scalar_t cp, d5, d6;
+	ec_point_t Ra;
+	ec_scalar_t cr, d7;
+} smp_msg_3_t[1];
+
 void smp_destroy(smp_context_t smp);
 
 void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
@@ -72,5 +79,6 @@ bool smp_msg_2_validate_zkp(smp_msg_2_t msg, const smp_context_t smp);
 //TODO: export only what is needed
 bool smp_msg_1_deserialize(smp_msg_1_t dst, const tlv_t * tlv);
 int smp_msg_2_deserialize(smp_msg_2_t dst, const tlv_t * tlv);
+int smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg);
 
 #endif

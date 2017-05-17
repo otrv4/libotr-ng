@@ -43,7 +43,7 @@ void test_smp_state_machine(void)
 	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT3);
 	otrv4_assert(bob_otr->smp->y);
 	otrv4_assert_point_equals(bob_otr->smp->G3a, smp_msg_1->G3a);
-	otrv4_assert(smp_msg_2_deserialize(smp_msg_2, tlv_smp_2) == 0);
+	g_assert_cmpint(smp_msg_2_deserialize(smp_msg_2, tlv_smp_2), ==, 0);
 	otrv4_assert_point_equals(bob_otr->smp->Pb, smp_msg_2->Pb);
 	otrv4_assert_point_equals(bob_otr->smp->Qb, smp_msg_2->Qb);
 	otrv4_assert(bob_otr->smp->b3);
@@ -51,8 +51,11 @@ void test_smp_state_machine(void)
 	otrv4_assert(bob_otr->smp->G3);
 
 	tlv_t * tlv_smp_3 = otrv4_process_smp(alice_otr, tlv_smp_2);
-	otrv4_assert(!tlv_smp_3);
-//	g_assert_cmpint(smp_msg_3->type, ==, OTRV4_TLV_SMP_MSG_3);
+	g_assert_cmpint(tlv_smp_3->type, ==, OTRV4_TLV_SMP_MSG_3);
+	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT4);
+	otrv4_assert(alice_otr->smp->G3b);
+	otrv4_assert(alice_otr->smp->Pa_Pb);
+	otrv4_assert(alice_otr->smp->Qa_Qb);
 
 	otrv4_keypair_destroy(alice_keypair); //destroy keypair in otr?
 	otrv4_keypair_destroy(bob_keypair);
@@ -155,7 +158,7 @@ void test_smp_msg_1_aprint_null_question(void)
 void test_smp_validates_msg_2(void)
 {
 	smp_msg_1_t msg_1;
-	smp_msg_2_t msg_2;
+	smp_msg_2_t msg_2, smp_msg_2;
 	smp_context_t smp;
 	smp->y = malloc(64);
 	memset(smp->y, 0, 64);
@@ -164,12 +167,23 @@ void test_smp_validates_msg_2(void)
 	generate_smp_msg_1(msg_1, smp);
 	generate_smp_msg_2(msg_2, msg_1, smp);
 
+	uint8_t *buff = NULL;
+	size_t bufflen = 0;
+	smp_msg_2_aprint(&buff, &bufflen, msg_2);
+	tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
+	free(buff);
+
+	g_assert_cmpint(smp_msg_2_deserialize(smp_msg_2, tlv), ==, 0);
+	otrv4_tlv_free(tlv);
+
 	otrv4_assert(smp_msg_2_validate_points(msg_2) == true);
+	otrv4_assert(smp_msg_2_validate_points(smp_msg_2) == true);
 
 	decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
 	decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
 
 	otrv4_assert(smp_msg_2_validate_zkp(msg_2, smp) == true);
+	otrv4_assert(smp_msg_2_validate_zkp(smp_msg_2, smp) == true);
 
 	free(smp->y);
 }
