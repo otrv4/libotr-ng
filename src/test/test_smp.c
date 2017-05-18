@@ -63,12 +63,16 @@ void test_smp_state_machine(void)
 	otrv4_assert(alice_otr->smp->Pa_Pb);
 	otrv4_assert(alice_otr->smp->Qa_Qb);
 
-	//Receives second message
+	//Receives third message
 	tlv_t *tlv_smp_4 = otrv4_process_smp(bob_otr, tlv_smp_3);
 	g_assert_cmpint(tlv_smp_4->type, ==, OTRV4_TLV_SMP_MSG_4);
 
 	//Should have correct context after generates tlv_smp_3
 	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT1);
+
+	//Receives fourth message
+	//otrv4_process_smp(alice_otr, tlv_smp_4);
+	//g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
 	otrv4_keypair_destroy(alice_keypair);	//destroy keypair in otr?
 	otrv4_keypair_destroy(bob_keypair);
@@ -267,6 +271,8 @@ void test_smp_validates_msg_4(void)
 
 	g_assert_cmpint(smp_msg_4_deserialize(msg_4, tlv), ==, 0);
 	otrv4_tlv_free(tlv);
+
+	otrv4_assert(smp_msg_4_validate_zkp(msg_4, smp) == true);
 
 	free(smp->x);
 	free(smp->y);

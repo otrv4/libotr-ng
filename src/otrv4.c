@@ -1365,6 +1365,16 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	return tlv;
 }
 
+bool smp_is_valid_for_msg_3(smp_msg_3_t msg, smp_context_t smp)
+{
+	ec_point_t Rab, Pa_Pb;
+	//Compute Rab = Ra * b3
+	decaf_448_point_scalarmul(Rab, msg->Ra, smp->b3);
+	//Pa - Pb == Rab
+	decaf_448_point_sub(Pa_Pb, msg->Pa, smp->Pb);
+	return decaf_448_point_eq(Pa_Pb, Rab) == 0;
+}
+
 tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
@@ -1376,6 +1386,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 	smp_msg_1_t msg_1;
 	smp_msg_2_t msg_2;
 	smp_msg_3_t msg_3;
+	smp_msg_4_t msg_4[1];
 	uint8_t *buff;
 	size_t bufflen;
 
@@ -1441,17 +1452,45 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 				if (!smp_msg_3_validate_zkp(msg_3, otr->smp))
 					return NULL;
 
+				if (!generate_smp_msg_4(msg_4, msg_3, otr->smp))
+					return NULL;
+
+				if (!smp_msg_4_aprint(&buff, &bufflen, msg_4))
+					return NULL;
+
 				to_send =
-				    otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, 0, NULL);
+					otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
+
+				//Validates SMP
+				//TODO: Should send abort?
+				//Should validate after generates the message?
+				if (!smp_is_valid_for_msg_3(msg_3, otr->smp))
+					return NULL;
+
 				otr->smp->state = SMPSTATE_EXPECT1;
 
 			} else {
-				//If smpstate is not the receive message:
-				//Set smpstate to SMPSTATE_EXPECT1
-				//send a SMP abort to other peer.
-				otr->smp->state = SMPSTATE_EXPECT1;
-				to_send =
-				    otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
+				if (SMPSTATE_EXPECT4 == otr->smp->state &&
+						OTRV4_TLV_SMP_MSG_4 == tlv->type) {
+
+					if (smp_msg_4_deserialize(msg_4, tlv) != 0)
+						return NULL;
+
+					if (!ec_point_valid(msg_4->Rb))
+						return NULL;
+
+					// TODO: maybe need to send abort tlv is does not validate
+					if (!smp_msg_4_validate_zkp(msg_4, otr->smp))
+						return NULL;
+
+				} else {
+					//If smpstate is not the receive message:
+					//Set smpstate to SMPSTATE_EXPECT1
+					//send a SMP abort to other peer.
+					otr->smp->state = SMPSTATE_EXPECT1;
+					to_send =
+						otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
+				}
 			}
 		}
 	}

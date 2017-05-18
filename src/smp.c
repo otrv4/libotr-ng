@@ -847,3 +847,26 @@ int smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv)
 
 	return len;
 }
+
+bool smp_msg_4_validate_zkp(smp_msg_4_t * msg, const smp_context_t smp)
+{
+	uint8_t buff[1 + 2 * ED448_POINT_BYTES];
+	ec_point_t temp_point, temp_point_2;
+	ec_scalar_t temp_scalar;
+
+	//cr = HashToScalar(8 || G * d7 + G3 * cr || (Qa - Qb) * d7 + Rb * cr).
+	buff[0] = 0x08;
+	decaf_448_point_scalarmul(temp_point, smp->G3, msg->cr);
+	decaf_448_point_scalarmul(temp_point_2, decaf_448_point_base, msg->d7);
+	decaf_448_point_add(temp_point, temp_point, temp_point_2);
+	if (!serialize_ec_point(buff + 1, temp_point)) return false;
+
+	decaf_448_point_scalarmul(temp_point, msg->Rb, msg->cr);
+	decaf_448_point_scalarmul(temp_point_2, smp->Qa_Qb, msg->d7);
+	decaf_448_point_add(temp_point, temp_point, temp_point_2);
+	if (!serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point)) return false;
+
+	hashToScalar(buff, sizeof(buff), temp_scalar);
+
+	return ec_scalar_eq(msg->cr, temp_scalar) == 0;
+}
