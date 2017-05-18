@@ -75,7 +75,10 @@ bool dh_keypair_generate(dh_keypair_t keypair)
 void dh_keypair_destroy(dh_keypair_t keypair)
 {
 	gcry_mpi_release(keypair->priv);
+	keypair->priv = NULL;
+
 	gcry_mpi_release(keypair->pub);
+	keypair->pub = NULL;
 }
 
 bool

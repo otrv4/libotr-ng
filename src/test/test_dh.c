@@ -48,3 +48,21 @@ void dh_test_serialize()
 
 	gcry_mpi_release(mpi);
 }
+
+void dh_test_keypair_destroy()
+{
+	dh_init();
+	dh_keypair_t alice;
+
+	dh_keypair_generate(alice);
+
+	otrv4_assert(alice->priv);
+	otrv4_assert(alice->pub);
+
+	dh_keypair_destroy(alice);
+
+	otrv4_assert(!alice->priv);
+	otrv4_assert(!alice->pub);
+
+	dh_free();
+}
