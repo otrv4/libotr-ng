@@ -137,6 +137,7 @@ void otrv4_destroy( /*@only@ */ otrv4_t * otr)
 	otr->callbacks = NULL;
 	smp_destroy(otr->smp);
 	free(otr->keys);
+	otr->keys = NULL;
 }
 
 void otrv4_free( /*@only@ */ otrv4_t * otr)
