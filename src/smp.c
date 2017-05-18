@@ -293,12 +293,12 @@ bool smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 		return false;
 
 	*len = s;
-        cursor = *dst;
+	cursor = *dst;
 
 	bool ok = serialize_ec_point(cursor, msg->G2b);
 	if (!ok)
-	      //TODO: should free MPIs in all errors
-	      return false;
+		//TODO: should free MPIs in all errors
+		return false;
 	cursor += ED448_POINT_BYTES;
 
 	cursor += serialize_mpi(cursor, c2_mpi);
@@ -306,7 +306,7 @@ bool smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 
 	ok = serialize_ec_point(cursor, msg->G3b);
 	if (!ok)
-	      return false;
+		return false;
 	cursor += ED448_POINT_BYTES;
 
 	cursor += serialize_mpi(cursor, c3_mpi);
@@ -314,12 +314,12 @@ bool smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
 
 	ok = serialize_ec_point(cursor, msg->Pb);
 	if (!ok)
-	      return false;
+		return false;
 	cursor += ED448_POINT_BYTES;
 
 	ok = serialize_ec_point(cursor, msg->Qb);
 	if (!ok)
-	      return false;
+		return false;
 	cursor += ED448_POINT_BYTES;
 
 	cursor += serialize_mpi(cursor, cp_mpi);
@@ -660,7 +660,7 @@ bool smp_msg_3_aprint(uint8_t ** dst, size_t * len, const smp_msg_3_t msg)
 	return true;
 }
 
-int smp_msg_3_deserialize(smp_msg_3_t dst, const tlv_t *tlv)
+int smp_msg_3_deserialize(smp_msg_3_t dst, const tlv_t * tlv)
 {
 	const uint8_t *cursor = tlv->data;
 	uint16_t len = tlv->len;
@@ -713,6 +713,12 @@ int smp_msg_3_deserialize(smp_msg_3_t dst, const tlv_t *tlv)
 
 	len -= read;
 	return len;
+}
+
+bool smp_msg_3_validate_points(smp_msg_3_t msg)
+{
+	return ec_point_valid(msg->Pa) && ec_point_valid(msg->Qa) &&
+	    ec_point_valid(msg->Ra);
 }
 
 bool smp_msg_3_validate_zkp(smp_msg_3_t msg, const smp_context_t smp)

@@ -25,7 +25,8 @@ int main(int argc, char **argv)
 	g_test_add_func("/edwards448/eddsa_serialization",
 			ed448_test_eddsa_serialization);
 	g_test_add_func("/edwards448/eddsa_keygen", ed448_test_eddsa_keygen);
-	g_test_add_func("/edwards448/scalar_serialization", ed448_test_scalar_serialization);
+	g_test_add_func("/edwards448/scalar_serialization",
+			ed448_test_scalar_serialization);
 
 	g_test_add_func("/dake/snizkpk", test_snizkpk_auth);
 	g_test_add_func("/list/add", test_list_add);
@@ -70,8 +71,7 @@ int main(int argc, char **argv)
 
 	g_test_add_func("/key_management/derive_ratchet_keys",
 			test_derive_ratchet_keys);
-	g_test_add_func("/key_management/destroy",
-			test_key_manager_destroy);
+	g_test_add_func("/key_management/destroy", test_key_manager_destroy);
 
 	g_test_add_func("/smp/state_machine", test_smp_state_machine);
 	g_test_add_func("/smp/generate_secret", test_generate_smp_secret);

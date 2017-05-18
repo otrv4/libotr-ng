@@ -101,8 +101,8 @@ otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 	if (conv)
 		return conv;
 
-        if (!client->keypair)
-            return NULL;
+	if (!client->keypair)
+		return NULL;
 
 	conn = create_connection_for(recipient, client);
 	if (!conn)

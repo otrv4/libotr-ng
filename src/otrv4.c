@@ -1425,14 +1425,34 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 			if (!smp_msg_3_aprint(&buff, &bufflen, msg_3))
 				return NULL;
 
-			to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);
+			to_send =
+			    otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);
 			otr->smp->state = SMPSTATE_EXPECT4;
 		} else {
-			//If smpstate is not the receive message:
-			//Set smpstate to SMPSTATE_EXPECT1
-			//send a SMP abort to other peer.
-			otr->smp->state = SMPSTATE_EXPECT1;
-			to_send = otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
+			if (SMPSTATE_EXPECT3 == otr->smp->state &&
+			    OTRV4_TLV_SMP_MSG_3 == tlv->type) {
+
+				if (smp_msg_3_deserialize(msg_3, tlv) != 0)
+					return NULL;
+
+				if (!smp_msg_3_validate_points(msg_3))
+					return NULL;
+
+				if (!smp_msg_3_validate_zkp(msg_3, otr->smp))
+					return NULL;
+
+				to_send =
+				    otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, 0, NULL);
+				otr->smp->state = SMPSTATE_EXPECT1;
+
+			} else {
+				//If smpstate is not the receive message:
+				//Set smpstate to SMPSTATE_EXPECT1
+				//send a SMP abort to other peer.
+				otr->smp->state = SMPSTATE_EXPECT1;
+				to_send =
+				    otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
+			}
 		}
 	}
 
