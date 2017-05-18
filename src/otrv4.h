@@ -21,6 +21,7 @@
 typedef struct connection otrv4_t;	/* Forward declare */
 
 typedef enum {
+        OTRV4_STATE_NONE = 0,
 	OTRV4_STATE_START = 1,
 	OTRV4_STATE_AKE_IN_PROGRESS = 2,
 	OTRV4_STATE_ENCRYPTED_MESSAGES = 3,
