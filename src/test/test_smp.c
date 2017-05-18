@@ -235,3 +235,25 @@ void test_smp_validates_msg_3(void)
 	free(smp->x);
 	free(smp->y);
 }
+
+void test_smp_validates_msg_4(void)
+{
+	smp_msg_1_t msg_1;
+	smp_msg_2_t msg_2;
+	smp_msg_3_t msg_3;
+	smp_msg_4_t msg_4[1];
+	smp_context_t smp;
+
+	smp->x = malloc(64);
+	memset(smp->x, 0, 64);
+	smp->x[0] = 0x01;
+	smp->y = malloc(64);
+	memset(smp->y, 0, 64);
+	smp->y[0] = 0x02;
+
+	generate_smp_msg_1(msg_1, smp);
+	generate_smp_msg_2(msg_2, msg_1, smp);
+	generate_smp_msg_3(msg_3, msg_2, smp);
+
+	otrv4_assert(generate_smp_msg_4(msg_4, msg_3, smp) == true);
+}

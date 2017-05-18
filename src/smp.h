@@ -59,6 +59,11 @@ typedef struct {
 	ec_scalar_t cr, d7;
 } smp_msg_3_t[1];
 
+typedef struct {
+	ec_point_t Rb;
+	ec_scalar_t cr, d7;
+} smp_msg_4_t;
+
 void smp_destroy(smp_context_t smp);
 
 void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
@@ -77,6 +82,9 @@ bool smp_msg_2_validate_points(smp_msg_2_t msg);
 bool smp_msg_2_validate_zkp(smp_msg_2_t msg, const smp_context_t smp);
 
 bool generate_smp_msg_3(smp_msg_3_t dst, const smp_msg_2_t msg_2,
+			smp_context_t smp);
+
+bool generate_smp_msg_4(smp_msg_4_t * dst, smp_msg_3_t msg_3,
 			smp_context_t smp);
 
 //TODO: export only what is needed
