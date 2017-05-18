@@ -94,5 +94,7 @@ bool smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg);
 bool smp_msg_3_aprint(uint8_t ** dst, size_t * len, const smp_msg_3_t msg);
 int smp_msg_3_deserialize(smp_msg_3_t dst, const tlv_t * tlv);
 bool smp_msg_3_validate_zkp(smp_msg_3_t msg, const smp_context_t smp);
+bool smp_msg_4_aprint(uint8_t **dst, size_t *len, smp_msg_4_t *msg);
+int smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv);
 
 #endif

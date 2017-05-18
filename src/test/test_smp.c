@@ -244,6 +244,10 @@ void test_smp_validates_msg_4(void)
 	smp_msg_4_t msg_4[1];
 	smp_context_t smp;
 
+	uint8_t *buff = NULL;
+	size_t bufflen = 0;
+	tlv_t *tlv;
+
 	smp->x = malloc(64);
 	memset(smp->x, 0, 64);
 	smp->x[0] = 0x01;
@@ -256,4 +260,14 @@ void test_smp_validates_msg_4(void)
 	generate_smp_msg_3(msg_3, msg_2, smp);
 
 	otrv4_assert(generate_smp_msg_4(msg_4, msg_3, smp) == true);
+
+	otrv4_assert(smp_msg_4_aprint(&buff, &bufflen, msg_4) == true);
+	tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
+	free(buff);
+
+	g_assert_cmpint(smp_msg_4_deserialize(msg_4, tlv), ==, 0);
+	otrv4_tlv_free(tlv);
+
+	free(smp->x);
+	free(smp->y);
 }

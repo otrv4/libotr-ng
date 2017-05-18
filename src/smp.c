@@ -791,3 +791,59 @@ bool generate_smp_msg_4(smp_msg_4_t * dst, smp_msg_3_t msg_3, smp_context_t smp)
 
 	return true;
 }
+
+bool smp_msg_4_aprint(uint8_t **dst, size_t *len, smp_msg_4_t *msg)
+{
+	uint8_t buffmpi[ED448_SCALAR_BYTES];
+	int bufflen = 0;
+	otr_mpi_t cr_mpi, d7_mpi;
+	size_t s = 0;
+
+	bufflen = serialize_ec_scalar(buffmpi, msg->cr);
+	otr_mpi_set(cr_mpi, buffmpi, bufflen);
+	s += bufflen + 4;
+
+	bufflen = serialize_ec_scalar(buffmpi, msg->d7);
+	otr_mpi_set(d7_mpi, buffmpi, bufflen);
+	s += bufflen + 4;
+
+	s += ED448_POINT_BYTES;
+	*dst = malloc(s);
+	if (!*dst)
+		return false;
+
+	uint8_t *cursor = *dst;
+
+	if (!serialize_ec_point(cursor, msg->Rb))
+		return false;
+
+	cursor += ED448_POINT_BYTES;
+	cursor += serialize_mpi(cursor, cr_mpi);
+	cursor += serialize_mpi(cursor, d7_mpi);
+
+	*len = s;
+	return true;
+}
+
+int smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv)
+{
+	uint8_t *cursor = tlv->data;
+	size_t len = tlv->len;
+	size_t read = 0;
+
+	if (!deserialize_ec_point(dst->Rb, cursor))
+		return 1;
+	cursor += ED448_POINT_BYTES;
+	len -= ED448_POINT_BYTES;
+
+	if (!deserialize_mpi_to_scalar(dst->cr, cursor, len, &read))
+		return 1;
+	cursor += read;
+	len -= read;
+
+	if (!deserialize_mpi_to_scalar(dst->d7, cursor, len, &read))
+		return 1;
+	len -= read;
+
+	return len;
+}
