@@ -1375,6 +1375,15 @@ bool smp_is_valid_for_msg_3(smp_msg_3_t msg, smp_context_t smp)
 	return decaf_448_point_eq(Pa_Pb, Rab) == 0;
 }
 
+bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp)
+{
+	ec_point_t Rab;
+	//Compute Rab = Rb * a3.
+	decaf_448_point_scalarmul(Rab, msg->Rb, smp->a3);
+	//Pa - Pb == Rab
+	return decaf_448_point_eq(smp->Pa_Pb, Rab) == 0;
+}
+
 tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
@@ -1483,6 +1492,10 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 					if (!smp_msg_4_validate_zkp(msg_4, otr->smp))
 						return NULL;
 
+					if (!smp_is_valid_for_msg_4(msg_4, otr->smp))
+						return NULL;
+
+					otr->smp->state = SMPSTATE_EXPECT1;
 				} else {
 					//If smpstate is not the receive message:
 					//Set smpstate to SMPSTATE_EXPECT1
