@@ -148,6 +148,17 @@ otr4_client_send(char **newmessage, const char *message,
 	return !otrv4_send_message(newmessage, message, NULL, conv->conn);
 }
 
+int otr4_client_smp_start(char **tosend, const char *recipient,
+    const char *question, const unsigned char *secret, size_t secretlen,
+    otr4_client_t * client)
+{
+    *tosend = NULL;
+    otr4_conversation_t *conv = NULL;
+
+    conv = get_or_create_conversation_with(recipient, client);
+    return true == otrv4_smp_start(tosend, question, secret, secretlen, conv->conn);
+}
+
 int
 otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 		    const char *recipient, otr4_client_t * client)

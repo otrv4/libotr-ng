@@ -1339,6 +1339,9 @@ bool otrv4_smp_start(string_t * to_send, const string_t question,
 			  const uint8_t *secret, const size_t secretlen,
                           otrv4_t * otr)
 {
+    if (!otr)
+        return false;
+
     tlv_t *smp_start_tlv = otrv4_smp_initiate(otr, question, secret, secretlen);
     return otrv4_send_message(to_send, "", smp_start_tlv, otr);
 }
