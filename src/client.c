@@ -156,7 +156,7 @@ int otr4_client_smp_start(char **tosend, const char *recipient,
     otr4_conversation_t *conv = NULL;
 
     conv = get_or_create_conversation_with(recipient, client);
-    return true == otrv4_smp_start(tosend, question, secret, secretlen, conv->conn);
+    return !otrv4_smp_start(tosend, question, secret, secretlen, conv->conn);
 }
 
 int

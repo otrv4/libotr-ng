@@ -918,6 +918,12 @@ static void process_tlv(const tlv_t * tlv, otrv4_t * otr)
 		otr->state = OTRV4_STATE_FINISHED;
 		gone_insecure_cb(otr);
 		break;
+        case OTRV4_TLV_SMP_MSG_1:
+        case OTRV4_TLV_SMP_MSG_2:
+        case OTRV4_TLV_SMP_MSG_3:
+        case OTRV4_TLV_SMP_MSG_4:
+        case OTRV4_TLV_SMP_ABORT:
+            //TODO: process the TLV message
 	default:
 		//error?
 		break;
