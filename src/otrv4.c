@@ -1325,18 +1325,26 @@ bool otrv4_close(string_t * to_send, otrv4_t * otr)
 	return ok;
 }
 
-void set_smp_secret(unsigned char **secret, string_t answer, otrv4_t * otr)
+void set_smp_secret(unsigned char **secret, const uint8_t *answer, size_t answerlen, otrv4_t * otr)
 {
 	otrv4_fingerprint_t our_fp, their_fp;
 	otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
 	otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
 
 	//TODO: return error?
-	generate_smp_secret(secret, our_fp, their_fp, otr->keys->ssid, answer);
+	generate_smp_secret(secret, our_fp, their_fp, otr->keys->ssid, answer, answerlen);
+}
+
+bool otrv4_smp_start(string_t * to_send, const string_t question,
+			  const uint8_t *secret, const size_t secretlen,
+                          otrv4_t * otr)
+{
+    tlv_t *smp_start_tlv = otrv4_smp_initiate(otr, question, secret, secretlen);
+    return otrv4_send_message(to_send, "", smp_start_tlv, otr);
 }
 
 tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
-			  string_t answer)
+			  const uint8_t *secret, size_t secretlen)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
 		return NULL;
@@ -1345,7 +1353,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	uint8_t *to_send = NULL;
 	size_t len = 0;
 
-	set_smp_secret(&otr->smp->x, answer, otr);
+	set_smp_secret(&otr->smp->x, secret, secretlen, otr);
 
 	//TODO: return error?
 	generate_smp_msg_1(msg, otr->smp);
@@ -1384,6 +1392,22 @@ bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp)
 	return decaf_448_point_eq(smp->Pa_Pb, Rab) == 0;
 }
 
+static void ask_for_answer(uint8_t **answer, size_t *answerlen, const otrv4_t * otr)
+{
+    *answer = (uint8_t *) strdup("the-answer");
+    *answerlen = strlen("the-answer");
+
+    //TODO: invoke the callback
+    //if (!otr->callbacks || !otr->callbacks->handle_smp_event)
+    //    return NULL; //Missing callback
+
+    //uint8_t *answer = NULL;
+    //size_t answerlen = 0;
+    //otr->callbacks->handle_smp_event(OTRV4_SMPEVENT_ASK_FOR_ANSWER,
+    //    )
+    //
+}
+
 tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
@@ -1407,9 +1431,13 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
 		if (!smp_msg_1_validate(msg_1))
 			return NULL;
 
-		//TODO: this answer should be given by user
-		//we need to wait until they fill it
-		set_smp_secret(&otr->smp->y, "the-answer", otr);
+                //TODO: What if an error happens?
+                uint8_t *answer = NULL;
+                size_t answerlen = 0;
+                ask_for_answer(&answer, &answerlen, otr);
+		set_smp_secret(&otr->smp->y, answer, answerlen, otr);
+
+                free(answer);
 
 		//TODO: what to do is somtheing wrong happen?
 		generate_smp_msg_2(msg_2, msg_1, otr->smp);

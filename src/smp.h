@@ -68,7 +68,7 @@ void smp_destroy(smp_context_t smp);
 
 void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
 			 otrv4_fingerprint_t their_fp, uint8_t * ssid,
-			 string_t answer);
+			 const uint8_t *answer, size_t answerlen);
 
 int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp);
 

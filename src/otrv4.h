@@ -165,8 +165,12 @@ otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 
 bool otrv4_close(string_t * to_send, otrv4_t * otr);
 
+bool otrv4_smp_start(string_t * to_send, const string_t question,
+			  const uint8_t *secret, const size_t secretlen, otrv4_t * otr);
+
 tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
-			  string_t answer);
+			  const uint8_t *secret, size_t secretlen);
 
 tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv);
+
 #endif
