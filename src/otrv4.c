@@ -73,6 +73,16 @@ static void fingerprint_seen_cb(const otrv4_fingerprint_t fp,
 	otr->callbacks->fingerprint_seen(fp, otr);
 }
 
+static void handle_smp_event_cb(const otr4_smp_event_t event,
+            const uint8_t progress_percent, const char *question,
+            const otrv4_t *otr)
+{
+	if (!otr->callbacks)
+		return;
+
+	otr->callbacks->handle_smp_event(event, progress_percent, question, otr);
+}
+
 static int allow_version(const otrv4_t * otr, otrv4_supported_version version)
 {
 	return (otr->supported_versions & version);
@@ -908,7 +918,7 @@ decrypt_data_msg(otrv4_response_t * response, const m_enc_key_t enc_key,
 }
 
 //TODO: Process SMP TLVs
-static void process_tlv(const tlv_t * tlv, otrv4_t * otr)
+static tlv_t* process_tlv(const tlv_t * tlv, otrv4_t * otr)
 {
 	switch (tlv->type) {
 	case OTRV4_TLV_PADDING:
@@ -923,20 +933,31 @@ static void process_tlv(const tlv_t * tlv, otrv4_t * otr)
         case OTRV4_TLV_SMP_MSG_3:
         case OTRV4_TLV_SMP_MSG_4:
         case OTRV4_TLV_SMP_ABORT:
-            //TODO: process the TLV message
+            return otrv4_process_smp(otr, tlv);
 	default:
 		//error?
 		break;
 	}
+
+        return NULL;
 }
 
-static bool receive_tlvs(otrv4_response_t * response, otrv4_t * otr)
+static bool receive_tlvs(tlv_t **to_send, otrv4_response_t * response, otrv4_t * otr)
 {
-	//TODO: Receive the TLVs and generate a response
+        *to_send = NULL;
+        tlv_t *cursor = *to_send;
+
 	const tlv_t *current = response->tlvs;
 	while (current) {
-		process_tlv(current, otr);
+		tlv_t *ret = process_tlv(current, otr);
 		current = current->next;
+
+                if (!ret) continue;
+
+                if (cursor)
+                    cursor = cursor->next;
+
+                cursor = ret;
 	}
 
 	return true;
@@ -972,6 +993,7 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 
 	key_manager_set_their_keys(msg->our_ecdh, msg->our_dh, otr->keys);
 
+        tlv_t *to_send = NULL;
 	do {
 		if (!get_receiving_msg_keys(enc_key, mac_key, msg, otr))
 			continue;
@@ -985,11 +1007,14 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 		//TODO: Securely delete receiving chain keys older than message_id-1.
 		//TODO: Add the MKmac key to list mac_keys_to_reveal.
 
-		if (!receive_tlvs(response, otr))
+		if (!receive_tlvs(&to_send, response, otr))
 			continue;
 
 		key_manager_prepare_to_ratchet(otr->keys);
 		data_message_free(msg);
+
+                //TODO: append TLVs to_send to response->to_send
+                otrv4_tlv_free(to_send);
 
 		return true;
 	} while (0);
@@ -1417,7 +1442,7 @@ static void ask_for_answer(uint8_t **answer, size_t *answerlen, const otrv4_t * 
     //
 }
 
-tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv)
+tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
 		otr->smp->state = SMPSTATE_EXPECT1;

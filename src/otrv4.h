@@ -171,6 +171,6 @@ bool otrv4_smp_start(string_t * to_send, const string_t question,
 tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 			  const uint8_t *secret, size_t secretlen);
 
-tlv_t *otrv4_process_smp(otrv4_t * otr, tlv_t * tlv);
+tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv);
 
 #endif
