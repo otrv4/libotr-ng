@@ -1426,149 +1426,135 @@ bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp)
 	return decaf_448_point_eq(smp->Pa_Pb, Rab) == 0;
 }
 
-static void ask_for_answer(uint8_t **answer, size_t *answerlen, const otrv4_t * otr)
-{
-    *answer = (uint8_t *) strdup("the-answer");
-    *answerlen = strlen("the-answer");
-
-    //TODO: invoke the callback
-    //if (!otr->callbacks || !otr->callbacks->handle_smp_event)
-    //    return NULL; //Missing callback
-
-    //uint8_t *answer = NULL;
-    //size_t answerlen = 0;
-    //otr->callbacks->handle_smp_event(OTRV4_SMPEVENT_ASK_FOR_ANSWER,
-    //    )
-    //
-}
-
 tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 {
-	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
-		otr->smp->state = SMPSTATE_EXPECT1;
-		return NULL;
-	}
-
+        otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
 	tlv_t *to_send = NULL;
 	smp_msg_1_t msg_1;
-	smp_msg_2_t msg_2;
+        smp_msg_2_t msg_2;
 	smp_msg_3_t msg_3;
 	smp_msg_4_t msg_4[1];
-	uint8_t *buff;
-	size_t bufflen;
+        uint8_t progress = 0;
 
-	if (SMPSTATE_EXPECT1 == otr->smp->state &&
-	    OTRV4_TLV_SMP_MSG_1 == tlv->type) {
-		if (!smp_msg_1_deserialize(msg_1, tlv))
-			return NULL;
+        uint8_t *buff;
+        size_t bufflen;
 
-		if (!smp_msg_1_validate(msg_1))
-			return NULL;
+        switch (tlv->type) {
+        case OTRV4_TLV_SMP_MSG_1:
+            event = receive_smp_msg_1(msg_1, tlv, otr->smp);
+            if (event) {
+                //TODO: transition to state 1 if an abort happens
+                handle_smp_event_cb(event, progress, msg_1->question, otr);
+                return to_send;
+            }
 
-                //TODO: What if an error happens?
-                uint8_t *answer = NULL;
-                size_t answerlen = 0;
-                ask_for_answer(&answer, &answerlen, otr);
-		set_smp_secret(&otr->smp->y, answer, answerlen, otr);
+            //TODO: Go to state WaitingForSecret and the user shoudl eventually
+            //call "ProvideAuthenticationSecret" to continue SMP.
+            handle_smp_event_cb(OTRV4_SMPEVENT_ASK_FOR_ANSWER, progress,
+                msg_1->question, otr);
 
-                free(answer);
+            //TODO: this reply should only be sent when
+            //"ProvideAuthenticationSecret" is called.
+            uint8_t *answer = (uint8_t *) "the-answer";
+            size_t answerlen = strlen("the-answer");
+            set_smp_secret(&otr->smp->y, answer, answerlen, otr);
 
-		//TODO: what to do is somtheing wrong happen?
-		generate_smp_msg_2(msg_2, msg_1, otr->smp);
-		if (!smp_msg_2_aprint(&buff, &bufflen, msg_2))
-			return NULL;
+            event = reply_with_smp_msg_2(&to_send, msg_1, otr->smp);
 
-		to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
+            //TODO: transition to state 1 if an abort happens
+            if (event)
+                handle_smp_event_cb(event, progress, msg_1->question, otr);
 
-		if (!to_send)
-			return NULL;
+            return to_send;
 
-		otr->smp->state = SMPSTATE_EXPECT3;
-	} else {
-		if (SMPSTATE_EXPECT2 == otr->smp->state &&
-		    OTRV4_TLV_SMP_MSG_2 == tlv->type) {
-			if (smp_msg_2_deserialize(msg_2, tlv) != 0)
-				return NULL;
+        case OTRV4_TLV_SMP_MSG_2:
+		if (SMPSTATE_EXPECT2 != otr->smp->state)
+                    return NULL; // TODO: Send abort
 
-			if (!smp_msg_2_validate_points(msg_2))
-				return NULL;
+                if (smp_msg_2_deserialize(msg_2, tlv) != 0)
+                    return NULL;
 
-			decaf_448_point_scalarmul(otr->smp->G2, msg_2->G2b,
-						  otr->smp->a2);
-			decaf_448_point_scalarmul(otr->smp->G3, msg_2->G3b,
-						  otr->smp->a3);
+                if (!smp_msg_2_validate_points(msg_2))
+                    return NULL;
 
-			if (!smp_msg_2_validate_zkp(msg_2, otr->smp))
-				return NULL;
+                decaf_448_point_scalarmul(otr->smp->G2, msg_2->G2b,
+                    otr->smp->a2);
+                decaf_448_point_scalarmul(otr->smp->G3, msg_2->G3b,
+                    otr->smp->a3);
 
-			if (!generate_smp_msg_3(msg_3, msg_2, otr->smp))
-				return NULL;
+                if (!smp_msg_2_validate_zkp(msg_2, otr->smp))
+                    return NULL;
 
-			if (!smp_msg_3_aprint(&buff, &bufflen, msg_3))
-				return NULL;
+                if (!generate_smp_msg_3(msg_3, msg_2, otr->smp))
+                    return NULL;
 
-			to_send =
-			    otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);
-			otr->smp->state = SMPSTATE_EXPECT4;
-		} else {
-			if (SMPSTATE_EXPECT3 == otr->smp->state &&
-			    OTRV4_TLV_SMP_MSG_3 == tlv->type) {
+                if (!smp_msg_3_aprint(&buff, &bufflen, msg_3))
+                    return NULL;
 
-				if (smp_msg_3_deserialize(msg_3, tlv) != 0)
-					return NULL;
+                to_send =
+                    otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);
+                otr->smp->state = SMPSTATE_EXPECT4;
+                break;
 
-				if (!smp_msg_3_validate_points(msg_3))
-					return NULL;
+        case OTRV4_TLV_SMP_MSG_3:
+			if (SMPSTATE_EXPECT3 != otr->smp->state)
+                            return NULL; //TODO: Abort
 
-				if (!smp_msg_3_validate_zkp(msg_3, otr->smp))
-					return NULL;
+                        if (smp_msg_3_deserialize(msg_3, tlv) != 0)
+                            return NULL;
 
-				if (!generate_smp_msg_4(msg_4, msg_3, otr->smp))
-					return NULL;
+                        if (!smp_msg_3_validate_points(msg_3))
+                            return NULL;
 
-				if (!smp_msg_4_aprint(&buff, &bufflen, msg_4))
-					return NULL;
+                        if (!smp_msg_3_validate_zkp(msg_3, otr->smp))
+                            return NULL;
 
-				to_send =
-					otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
+                        if (!generate_smp_msg_4(msg_4, msg_3, otr->smp))
+                            return NULL;
 
-				//Validates SMP
-				//TODO: Should send abort?
-				//Should validate after generates the message?
-				if (!smp_is_valid_for_msg_3(msg_3, otr->smp))
-					return NULL;
+                        if (!smp_msg_4_aprint(&buff, &bufflen, msg_4))
+                            return NULL;
 
-				otr->smp->state = SMPSTATE_EXPECT1;
+                        to_send =
+                            otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
 
-			} else {
-				if (SMPSTATE_EXPECT4 == otr->smp->state &&
-						OTRV4_TLV_SMP_MSG_4 == tlv->type) {
+                        //Validates SMP
+                        //TODO: Should send abort?
+                        //Should validate after generates the message?
+                        if (!smp_is_valid_for_msg_3(msg_3, otr->smp))
+                            return NULL;
 
-					if (smp_msg_4_deserialize(msg_4, tlv) != 0)
-						return NULL;
+                        otr->smp->state = SMPSTATE_EXPECT1;
+                        break;
 
-					if (!ec_point_valid(msg_4->Rb))
-						return NULL;
+        case OTRV4_TLV_SMP_MSG_4:
+                        if (SMPSTATE_EXPECT4 != otr->smp->state)
+                            return NULL; //TODO: Abort
 
-					// TODO: maybe need to send abort tlv is does not validate
-					if (!smp_msg_4_validate_zkp(msg_4, otr->smp))
-						return NULL;
+                        if (smp_msg_4_deserialize(msg_4, tlv) != 0)
+                            return NULL;
 
-					if (!smp_is_valid_for_msg_4(msg_4, otr->smp))
-						return NULL;
+                        if (!ec_point_valid(msg_4->Rb))
+                            return NULL;
 
-					otr->smp->state = SMPSTATE_EXPECT1;
-				} else {
-					//If smpstate is not the receive message:
-					//Set smpstate to SMPSTATE_EXPECT1
-					//send a SMP abort to other peer.
-					otr->smp->state = SMPSTATE_EXPECT1;
-					to_send =
-						otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
-				}
-			}
-		}
-	}
+                        // TODO: maybe need to send abort tlv is does not validate
+                        if (!smp_msg_4_validate_zkp(msg_4, otr->smp))
+                            return NULL;
 
-	return to_send;
+                        if (!smp_is_valid_for_msg_4(msg_4, otr->smp))
+                            return NULL;
+
+                        otr->smp->state = SMPSTATE_EXPECT1;
+                        break;
+        default:
+                        //If smpstate is not the receive message:
+                        //Set smpstate to SMPSTATE_EXPECT1
+                        //send a SMP abort to other peer.
+                        otr->smp->state = SMPSTATE_EXPECT1;
+                        to_send =
+                            otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
+            break;
+        }
+
+        return to_send;
 }

@@ -869,3 +869,42 @@ bool smp_msg_4_validate_zkp(smp_msg_4_t * msg, const smp_context_t smp)
 
 	return ec_scalar_eq(msg->cr, temp_scalar) == 0;
 }
+
+static otr4_smp_event_t receive_smp_msg_1(smp_msg_1_t msg_1, const tlv_t *tlv, const smp_context_t smp)
+{
+    if (SMPSTATE_EXPECT1 != smp->state) {
+        return OTRV4_SMPEVENT_ABORT;
+    }
+
+    if (!smp_msg_1_deserialize(msg_1, tlv))
+        return OTRV4_SMPEVENT_ERROR;
+
+    if (!smp_msg_1_validate(msg_1))
+        return OTRV4_SMPEVENT_ERROR;
+
+    return OTRV4_SMPEVENT_NONE;
+}
+
+//TODO:
+static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, const smp_msg_1_t msg_1, smp_context_t smp)
+{
+    smp_msg_2_t msg_2;
+    uint8_t *buff;
+    size_t bufflen;
+
+    *to_send = NULL;
+
+    //TODO: what to do is somtheing wrong happen?
+    generate_smp_msg_2(msg_2, msg_1, smp);
+    if (!smp_msg_2_aprint(&buff, &bufflen, msg_2))
+        return OTRV4_SMPEVENT_ERROR;
+
+    *to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
+    free(buff);
+
+    if (!to_send)
+        return OTRV4_SMPEVENT_ERROR;
+
+    smp->state = SMPSTATE_EXPECT3;
+    return OTRV4_SMPEVENT_NONE;
+}
