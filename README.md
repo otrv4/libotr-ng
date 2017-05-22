@@ -1,5 +1,6 @@
 # OTR version 4 library
-![Travis](https://travis-ci.org/twstrike/libotr.svg?branch=master)
+
+[![Build Status](https://travis-ci.org/twstrike/libotrv4.svg?branch=master)](https://travis-ci.org/twstrike/libotrv4)
 
 ## Build
 Before you try to build libotrv4 verify you have installed
@@ -26,8 +27,8 @@ $ ./configure
 
 Configure project with debug options
 ```
-$ ./configure --disable-shared
-$ gdb [path/test/executable] 
+$ ./configure CFLAGS="-g -ggdb3 -O0" CXXFLAGS="-g -ggdb3 -O0" LDFLAGS="-g -ggdb3" --disable-shared
+$ gdb [path/test/executable]
 ```
 
 Build and install
