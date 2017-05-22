@@ -18,15 +18,12 @@ void test_smp_state_machine(void)
 
 	otrv4_t *alice_otr = otrv4_new(alice_keypair, policy);
 	otrv4_t *bob_otr = otrv4_new(bob_keypair, policy);
-
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
+	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
-	//Should be in ecrypted state before perform SMP
-	tlv_t *tlv_smp_1 = otrv4_smp_initiate(alice_otr, "", NULL, 0);
-	otrv4_assert(!tlv_smp_1);
 	do_ake_fixture(alice_otr, bob_otr);
 
-	tlv_smp_1 = otrv4_smp_initiate(alice_otr, "some-question", (const uint8_t *) "answer", strlen("answer"));
+	tlv_t *tlv_smp_1 = otrv4_smp_initiate(alice_otr, "some-question", (const uint8_t *) "answer", strlen("answer"));
 	g_assert_cmpint(tlv_smp_1->type, ==, OTRV4_TLV_SMP_MSG_1);
 
 	//Should have correct context after generates tlv_smp_2
@@ -68,15 +65,17 @@ void test_smp_state_machine(void)
 	otrv4_tlv_free(tlv_smp_3);
 	g_assert_cmpint(tlv_smp_4->type, ==, OTRV4_TLV_SMP_MSG_4);
 
-	//SMP is finished
+	//SMP is finished for Bob
 	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
 	//Receives fourth message
 	otrv4_process_smp(alice_otr, tlv_smp_4);
 	otrv4_tlv_free(tlv_smp_4);
 
-	//SMP is finished
+	//SMP is finished for Alice
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
+
+	otrv4_assert_cmpmem(alice_otr->smp->x, bob_otr->smp->y, 64);
 
 	otrv4_keypair_destroy(alice_keypair);	//destroy keypair in otr?
 	otrv4_keypair_destroy(bob_keypair);

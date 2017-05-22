@@ -1356,14 +1356,18 @@ bool otrv4_close(string_t * to_send, otrv4_t * otr)
 	return ok;
 }
 
-void set_smp_secret(unsigned char **secret, const uint8_t *answer, size_t answerlen, otrv4_t * otr)
+static void set_smp_secret(unsigned char **secret, const uint8_t *answer,
+		    size_t answerlen, bool is_initiator, otrv4_t * otr)
 {
 	otrv4_fingerprint_t our_fp, their_fp;
 	otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
 	otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
 
 	//TODO: return error?
-	generate_smp_secret(secret, our_fp, their_fp, otr->keys->ssid, answer, answerlen);
+	if (is_initiator)
+		generate_smp_secret(secret, our_fp, their_fp, otr->keys->ssid, answer, answerlen);
+	else
+		generate_smp_secret(secret, their_fp, our_fp, otr->keys->ssid, answer, answerlen);
 }
 
 bool otrv4_smp_start(string_t * to_send, const string_t question,
@@ -1387,7 +1391,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	uint8_t *to_send = NULL;
 	size_t len = 0;
 
-	set_smp_secret(&otr->smp->x, secret, secretlen, otr);
+	set_smp_secret(&otr->smp->x, secret, secretlen, true, otr);
 
 	//TODO: return error?
 	generate_smp_msg_1(msg, otr->smp);
@@ -1407,23 +1411,23 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	return tlv;
 }
 
-bool smp_is_valid_for_msg_3(smp_msg_3_t msg, smp_context_t smp)
+static bool smp_is_valid_for_msg_3(smp_msg_3_t msg, smp_context_t smp)
 {
 	ec_point_t Rab, Pa_Pb;
 	//Compute Rab = Ra * b3
 	decaf_448_point_scalarmul(Rab, msg->Ra, smp->b3);
 	//Pa - Pb == Rab
 	decaf_448_point_sub(Pa_Pb, msg->Pa, smp->Pb);
-	return decaf_448_point_eq(Pa_Pb, Rab) == 0;
+	return DECAF_TRUE == decaf_448_point_eq(Pa_Pb, Rab);
 }
 
-bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp)
+static bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp)
 {
 	ec_point_t Rab;
 	//Compute Rab = Rb * a3.
 	decaf_448_point_scalarmul(Rab, msg->Rb, smp->a3);
 	//Pa - Pb == Rab
-	return decaf_448_point_eq(smp->Pa_Pb, Rab) == 0;
+	return DECAF_TRUE == decaf_448_point_eq(smp->Pa_Pb, Rab);
 }
 
 tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
@@ -1455,9 +1459,9 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 
             //TODO: this reply should only be sent when
             //"ProvideAuthenticationSecret" is called.
-            uint8_t *answer = (uint8_t *) "the-answer";
-            size_t answerlen = strlen("the-answer");
-            set_smp_secret(&otr->smp->y, answer, answerlen, otr);
+            uint8_t *answer = (uint8_t *) "answer";
+            size_t answerlen = strlen("answer");
+            set_smp_secret(&otr->smp->y, answer, answerlen, false, otr);
 
             event = reply_with_smp_msg_2(&to_send, msg_1, otr->smp);
 
