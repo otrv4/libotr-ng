@@ -1411,15 +1411,6 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	return tlv;
 }
 
-static bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp)
-{
-	ec_point_t Rab;
-	//Compute Rab = Rb * a3.
-	decaf_448_point_scalarmul(Rab, msg->Rb, smp->a3);
-	//Pa - Pb == Rab
-	return DECAF_TRUE == decaf_448_point_eq(smp->Pa_Pb, Rab);
-}
-
 tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 {
         otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
@@ -1492,24 +1483,12 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 		break;
 
         case OTRV4_TLV_SMP_MSG_4:
-                        if (SMPSTATE_EXPECT4 != otr->smp->state)
-                            return NULL; //TODO: Abort
-
-                        if (smp_msg_4_deserialize(msg_4, tlv) != 0)
-                            return NULL;
-
-                        if (!ec_point_valid(msg_4->Rb))
-                            return NULL;
-
-                        // TODO: maybe need to send abort tlv is does not validate
-                        if (!smp_msg_4_validate_zkp(msg_4, otr->smp))
-                            return NULL;
-
-                        if (!smp_is_valid_for_msg_4(msg_4, otr->smp))
-                            return NULL;
-
-                        otr->smp->state = SMPSTATE_EXPECT1;
-                        break;
+		event = receive_smp_msg_4(msg_4, tlv, otr->smp);
+		if (event) {
+			//TODO: transition to state 1 if an abort happens
+			handle_smp_event_cb(event, progress, msg_1->question, otr);
+			return to_send;
+		}
         default:
                         //If smpstate is not the receive message:
                         //Set smpstate to SMPSTATE_EXPECT1

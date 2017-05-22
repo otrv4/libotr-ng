@@ -1006,3 +1006,34 @@ static otr4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
 	smp->state = SMPSTATE_EXPECT1;
 	return OTRV4_SMPEVENT_NONE;
 }
+
+static bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp)
+{
+	ec_point_t Rab;
+	//Compute Rab = Rb * a3.
+	decaf_448_point_scalarmul(Rab, msg->Rb, smp->a3);
+	//Pa - Pb == Rab
+	return DECAF_TRUE == decaf_448_point_eq(smp->Pa_Pb, Rab);
+}
+
+static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
+		smp_context_t smp)
+{
+	if (SMPSTATE_EXPECT4 != smp->state)
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (smp_msg_4_deserialize(msg_4, tlv) != 0)
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (!ec_point_valid(msg_4->Rb))
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (!smp_msg_4_validate_zkp(msg_4, smp))
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (!smp_is_valid_for_msg_4(msg_4, smp))
+		return OTRV4_SMPEVENT_ERROR;
+
+	smp->state = SMPSTATE_EXPECT1;
+	return OTRV4_SMPEVENT_NONE;
+}
