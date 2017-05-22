@@ -361,6 +361,7 @@ bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
 	uint16_t len = tlv->len;
 	size_t read = 0;
 
+        msg->question = NULL;
 	if (!deserialize_data((uint8_t **) & msg->question, cursor, len, &read))
 		return false;
 
