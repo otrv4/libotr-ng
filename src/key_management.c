@@ -68,10 +68,12 @@ void key_manager_destroy(key_manager_t *manager)
 	manager->current = NULL;
 
 	dh_keypair_destroy(manager->our_dh);
+
 	dh_mpi_release(manager->their_dh);
 	manager->their_dh = NULL;
 
-	//TODO: destroy our_ecdh and their_ecdh
+	ecdh_keypair_destroy(manager->our_ecdh);
+	ec_point_destroy(manager->their_ecdh);
 }
 
 void key_manager_generate_ephemeral_keys(key_manager_t *manager)
@@ -82,7 +84,6 @@ void key_manager_generate_ephemeral_keys(key_manager_t *manager)
 
 	ecdh_keypair_destroy(manager->our_ecdh);
 	ecdh_keypair_generate(manager->our_ecdh, sym);
-
 
 	if (manager->i % 3 == 0) {
 		dh_keypair_destroy(manager->our_dh);

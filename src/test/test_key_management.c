@@ -36,7 +36,7 @@ void test_key_manager_destroy()
 	key_manager_t *manager = malloc(sizeof(key_manager_t));
 	key_manager_init(manager);
 
-	shared_secret_t shared = {
+	shared_secret_t shared = { // TODO: is there a simpler way to write this?
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -50,13 +50,28 @@ void test_key_manager_destroy()
 	key_manager_new_ratchet(manager, shared);
 	key_manager_new_ratchet(manager, shared); //ran a second time to fill manager->previous
 
+	dh_init();
+	bool ok = dh_keypair_generate(manager->our_dh);
+	otrv4_assert(ok);
+
+	manager->their_dh = dh_mpi_copy(manager->our_dh->pub);
+
 	otrv4_assert(manager->current);
 	otrv4_assert(manager->previous);
+	otrv4_assert(manager->our_dh->priv);
+	otrv4_assert(manager->our_dh->pub);
+	otrv4_assert(manager->their_dh);
+	// TODO: destroy mix_key too?
+	// TODO: test destroy ecdh keys?
 
 	key_manager_destroy(manager);
 
 	otrv4_assert(!manager->current);
 	otrv4_assert(!manager->previous);
+	otrv4_assert(!manager->our_dh->priv);
+	otrv4_assert(!manager->our_dh->pub);
+	otrv4_assert(!manager->their_dh);
 
+	dh_free();
 	free(manager);
 }
