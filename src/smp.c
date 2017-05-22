@@ -764,7 +764,7 @@ bool smp_msg_3_validate_zkp(smp_msg_3_t msg, const smp_context_t smp)
 	return ok & ec_scalar_eq(temp_scalar, msg->cr);
 }
 
-bool generate_smp_msg_4(smp_msg_4_t * dst, smp_msg_3_t msg_3, smp_context_t smp)
+bool generate_smp_msg_4(smp_msg_4_t * dst, const smp_msg_3_t msg_3, smp_context_t smp)
 {
 	uint8_t buff[1 + 2 * ED448_POINT_BYTES];
 	ec_point_t Qa_Qb;
@@ -907,4 +907,102 @@ static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, const smp_msg_1_t 
 
     smp->state = SMPSTATE_EXPECT3;
     return OTRV4_SMPEVENT_NONE;
+}
+
+static otr4_smp_event_t receive_smp_msg_2(smp_msg_2_t msg_2, const tlv_t *tlv,
+					  smp_context_t smp)
+{
+	if (SMPSTATE_EXPECT2 != smp->state)
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (smp_msg_2_deserialize(msg_2, tlv) != 0)
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (!smp_msg_2_validate_points(msg_2))
+		return OTRV4_SMPEVENT_ERROR;
+
+	decaf_448_point_scalarmul(smp->G2, msg_2->G2b,
+			smp->a2);
+	decaf_448_point_scalarmul(smp->G3, msg_2->G3b,
+			smp->a3);
+
+	if (!smp_msg_2_validate_zkp(msg_2, smp))
+		return OTRV4_SMPEVENT_ERROR;
+
+	return OTRV4_SMPEVENT_NONE;
+}
+
+static otr4_smp_event_t reply_with_smp_msg_3(tlv_t **to_send,
+		const smp_msg_2_t msg_2, smp_context_t smp)
+{
+	smp_msg_3_t msg_3;
+	uint8_t *buff = NULL;
+	size_t bufflen = 0;
+
+	if (!generate_smp_msg_3(msg_3, msg_2, smp))
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (!smp_msg_3_aprint(&buff, &bufflen, msg_3))
+		return OTRV4_SMPEVENT_ERROR;
+
+	*to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);
+	free(buff);
+
+	if (!to_send)
+		return OTRV4_SMPEVENT_ERROR;
+
+	smp->state = SMPSTATE_EXPECT4;
+
+	return OTRV4_SMPEVENT_NONE;
+}
+
+static otr4_smp_event_t receive_smp_msg_3(smp_msg_3_t msg_3, const tlv_t *tlv,
+		smp_context_t smp)
+{
+	if (SMPSTATE_EXPECT3 != smp->state)
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (smp_msg_3_deserialize(msg_3, tlv) != 0)
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (!smp_msg_3_validate_points(msg_3))
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (!smp_msg_3_validate_zkp(msg_3, smp))
+		return OTRV4_SMPEVENT_ERROR;
+
+	return OTRV4_SMPEVENT_NONE;
+}
+
+static bool smp_is_valid_for_msg_3(const smp_msg_3_t msg, smp_context_t smp)
+{
+	ec_point_t Rab, Pa_Pb;
+	//Compute Rab = Ra * b3
+	decaf_448_point_scalarmul(Rab, msg->Ra, smp->b3);
+	//Pa - Pb == Rab
+	decaf_448_point_sub(Pa_Pb, msg->Pa, smp->Pb);
+	return DECAF_TRUE == decaf_448_point_eq(Pa_Pb, Rab);
+}
+
+static otr4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
+		const smp_msg_3_t msg_3, smp_context_t smp)
+{
+	smp_msg_4_t msg_4[1];
+	uint8_t *buff = NULL;
+	size_t bufflen = 0;
+
+	if (!generate_smp_msg_4(msg_4, msg_3, smp))
+		return OTRV4_SMPEVENT_ERROR;
+
+	if (!smp_msg_4_aprint(&buff, &bufflen, msg_4))
+		return OTRV4_SMPEVENT_ERROR;
+
+	*to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
+
+	//Validates SMP
+	if (!smp_is_valid_for_msg_3(msg_3, smp))
+		return OTRV4_SMPEVENT_ERROR;
+
+	smp->state = SMPSTATE_EXPECT1;
+	return OTRV4_SMPEVENT_NONE;
 }

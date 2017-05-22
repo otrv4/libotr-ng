@@ -1411,16 +1411,6 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 	return tlv;
 }
 
-static bool smp_is_valid_for_msg_3(smp_msg_3_t msg, smp_context_t smp)
-{
-	ec_point_t Rab, Pa_Pb;
-	//Compute Rab = Ra * b3
-	decaf_448_point_scalarmul(Rab, msg->Ra, smp->b3);
-	//Pa - Pb == Rab
-	decaf_448_point_sub(Pa_Pb, msg->Pa, smp->Pb);
-	return DECAF_TRUE == decaf_448_point_eq(Pa_Pb, Rab);
-}
-
 static bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp)
 {
 	ec_point_t Rab;
@@ -1439,9 +1429,6 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 	smp_msg_3_t msg_3;
 	smp_msg_4_t msg_4[1];
         uint8_t progress = 0;
-
-        uint8_t *buff;
-        size_t bufflen;
 
         switch (tlv->type) {
         case OTRV4_TLV_SMP_MSG_1:
@@ -1472,64 +1459,37 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
             return to_send;
 
         case OTRV4_TLV_SMP_MSG_2:
-		if (SMPSTATE_EXPECT2 != otr->smp->state)
-                    return NULL; // TODO: Send abort
+		event = receive_smp_msg_2(msg_2, tlv, otr->smp);
 
-                if (smp_msg_2_deserialize(msg_2, tlv) != 0)
-                    return NULL;
+                if (event) {
+		        //TODO: transition to state 1 if an abort happens
+		        handle_smp_event_cb(event, progress, msg_1->question, otr);
+			return to_send;
+		}
 
-                if (!smp_msg_2_validate_points(msg_2))
-                    return NULL;
+		event = reply_with_smp_msg_3(&to_send, msg_2, otr->smp);
 
-                decaf_448_point_scalarmul(otr->smp->G2, msg_2->G2b,
-                    otr->smp->a2);
-                decaf_448_point_scalarmul(otr->smp->G3, msg_2->G3b,
-                    otr->smp->a3);
+		//TODO: transition to state 1 if an abort happens
+		if (event)
+			handle_smp_event_cb(event, progress, msg_1->question, otr);
 
-                if (!smp_msg_2_validate_zkp(msg_2, otr->smp))
-                    return NULL;
-
-                if (!generate_smp_msg_3(msg_3, msg_2, otr->smp))
-                    return NULL;
-
-                if (!smp_msg_3_aprint(&buff, &bufflen, msg_3))
-                    return NULL;
-
-                to_send =
-                    otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);
-                otr->smp->state = SMPSTATE_EXPECT4;
                 break;
 
-        case OTRV4_TLV_SMP_MSG_3:
-			if (SMPSTATE_EXPECT3 != otr->smp->state)
-                            return NULL; //TODO: Abort
+	case OTRV4_TLV_SMP_MSG_3:
+		event = receive_smp_msg_3(msg_3, tlv, otr->smp);
+		if (event) {
+			//TODO: transition to state 1 if an abort happens
+			handle_smp_event_cb(event, progress, msg_1->question, otr);
+			return to_send;
+		}
 
-                        if (smp_msg_3_deserialize(msg_3, tlv) != 0)
-                            return NULL;
+		event = reply_with_smp_msg_4(&to_send, msg_3, otr->smp);
 
-                        if (!smp_msg_3_validate_points(msg_3))
-                            return NULL;
+		//TODO: transition to state 1 if an abort happens
+		if (event)
+			handle_smp_event_cb(event, progress, msg_1->question, otr);
 
-                        if (!smp_msg_3_validate_zkp(msg_3, otr->smp))
-                            return NULL;
-
-                        if (!generate_smp_msg_4(msg_4, msg_3, otr->smp))
-                            return NULL;
-
-                        if (!smp_msg_4_aprint(&buff, &bufflen, msg_4))
-                            return NULL;
-
-                        to_send =
-                            otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
-
-                        //Validates SMP
-                        //TODO: Should send abort?
-                        //Should validate after generates the message?
-                        if (!smp_is_valid_for_msg_3(msg_3, otr->smp))
-                            return NULL;
-
-                        otr->smp->state = SMPSTATE_EXPECT1;
-                        break;
+		break;
 
         case OTRV4_TLV_SMP_MSG_4:
                         if (SMPSTATE_EXPECT4 != otr->smp->state)
