@@ -41,7 +41,7 @@ void test_api_conversation(void)
 		//Bob receives a data message
 		response_to_alice = otrv4_response_new();
 		otrv4_assert(otrv4_receive_message
-			     (response_to_alice, (string_t) to_send,
+			     (response_to_alice, to_send,
 			      strlen((char *)to_send), bob));
 		free(to_send);
 		to_send = NULL;

@@ -155,6 +155,12 @@ otrv4_response_t *otrv4_response_new(void);
 
 void otrv4_response_free(otrv4_response_t * response);
 
+otrv4_in_message_type_t get_message_type(const string_t message);
+
+bool
+extract_header(otrv4_header_t * dst, const uint8_t * buffer,
+	       const size_t bufflen);
+
 bool otrv4_receive_message
     (otrv4_response_t * response, const string_t received, size_t message_lenn,
      otrv4_t * otr);

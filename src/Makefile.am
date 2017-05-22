@@ -33,7 +33,10 @@ libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
 				   $(CODE_COVERAGE_LIBS)
 
 otrincdir = $(includedir)/libotr4
-otrinc_HEADERS = client.h \
+otrinc_HEADERS = b64.h \
+                 client.h \
+		 constants.h \
+		 data_message.h \
 		 dh.h \
 		 ed448.h \
 		 error.h \

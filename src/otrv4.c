@@ -443,7 +443,7 @@ receive_query_message(otrv4_response_t * response,
 	return false;
 }
 
-static bool
+bool
 extract_header(otrv4_header_t * dst, const uint8_t * buffer,
 	       const size_t bufflen)
 {
@@ -1086,7 +1086,7 @@ receive_encoded_message(otrv4_response_t * response,
 	return true;
 }
 
-static otrv4_in_message_type_t get_message_type(const string_t message)
+otrv4_in_message_type_t get_message_type(const string_t message)
 {
 	if (message_contains_tag(message)) {
 		return IN_MSG_TAGGED_PLAINTEXT;
