@@ -1438,74 +1438,38 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 {
         otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
 	tlv_t *to_send = NULL;
-	smp_msg_1_t msg_1;
-        smp_msg_2_t msg_2;
-	smp_msg_3_t msg_3;
-	smp_msg_4_t msg_4[1];
 
         switch (tlv->type) {
         case OTRV4_TLV_SMP_MSG_1:
-            event = receive_smp_msg_1(msg_1, tlv, otr->smp);
-            if (event) {
-                //TODO: transition to state 1 if an abort happens
-                handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
-                return to_send;
-            }
-
-            handle_smp_event_cb(OTRV4_SMPEVENT_ASK_FOR_ANSWER, otr->smp->progress,
-                msg_1->question, otr);
+            event = process_smp_msg1(tlv, otr->smp);
             break;
 
         case OTRV4_TLV_SMP_MSG_2:
-		event = receive_smp_msg_2(msg_2, tlv, otr->smp);
-
-                if (event) {
-		        //TODO: transition to state 1 if an abort happens
-		        handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
-			return to_send;
-		}
-
-		event = reply_with_smp_msg_3(&to_send, msg_2, otr->smp);
-
-		//TODO: transition to state 1 if an abort happens
-		if (event)
-			handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
-
-                break;
+            event = process_smp_msg2(&to_send, tlv, otr->smp);
+            break;
 
 	case OTRV4_TLV_SMP_MSG_3:
-		event = receive_smp_msg_3(msg_3, tlv, otr->smp);
-		if (event) {
-			//TODO: transition to state 1 if an abort happens
-			handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
-			return to_send;
-		}
-
-		event = reply_with_smp_msg_4(&to_send, msg_3, otr->smp);
-
-		//TODO: transition to state 1 if an abort happens
-		if (event)
-			handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
-
-		break;
+            event = process_smp_msg3(&to_send, tlv, otr->smp);
+            break;
 
         case OTRV4_TLV_SMP_MSG_4:
-		event = receive_smp_msg_4(msg_4, tlv, otr->smp);
-		if (event) {
-			//TODO: transition to state 1 if an abort happens
-			handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
-			return to_send;
-		}
-                break;
+            event = process_smp_msg4(tlv, otr->smp);
+            break;
+
         default:
-                        //If smpstate is not the receive message:
-                        //Set smpstate to SMPSTATE_EXPECT1
-                        //send a SMP abort to other peer.
-                        otr->smp->state = SMPSTATE_EXPECT1;
-                        to_send =
-                            otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
+            //If smpstate is not the receive message:
+            //Set smpstate to SMPSTATE_EXPECT1
+            //send a SMP abort to other peer.
+            otr->smp->state = SMPSTATE_EXPECT1;
+            to_send = otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
+            event = OTRV4_SMPEVENT_ABORT;
+
             break;
         }
+
+        if (event)
+            handle_smp_event_cb(event, otr->smp->progress,
+                otr->smp->msg1->question, otr);
 
         return to_send;
 }

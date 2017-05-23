@@ -1009,10 +1009,10 @@ static otr4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
 
 	//Validates SMP
 	if (!smp_is_valid_for_msg_3(msg_3, smp))
-		return OTRV4_SMPEVENT_ERROR;
+		return OTRV4_SMPEVENT_FAILURE;
 
 	smp->state = SMPSTATE_EXPECT1;
-	return OTRV4_SMPEVENT_NONE;
+	return OTRV4_SMPEVENT_SUCCESS;
 }
 
 static bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp)
@@ -1040,8 +1040,54 @@ static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
 		return OTRV4_SMPEVENT_ERROR;
 
 	if (!smp_is_valid_for_msg_4(msg_4, smp))
-		return OTRV4_SMPEVENT_ERROR;
+		return OTRV4_SMPEVENT_FAILURE;
 
 	smp->state = SMPSTATE_EXPECT1;
-	return OTRV4_SMPEVENT_NONE;
+	return OTRV4_SMPEVENT_SUCCESS;
+}
+
+static otr4_smp_event_t process_smp_msg1(const tlv_t* tlv, smp_context_t smp)
+{
+    smp_msg_1_t msg_1;
+
+    otr4_smp_event_t event = receive_smp_msg_1(msg_1, tlv, smp);
+    if (!event)
+        event = OTRV4_SMPEVENT_ASK_FOR_ANSWER;
+
+    //TODO: destroy msg_1
+    return event;
+}
+
+static otr4_smp_event_t process_smp_msg2(tlv_t **smp_reply, const tlv_t* tlv, smp_context_t smp)
+{
+    smp_msg_2_t msg_2;
+    otr4_smp_event_t event = receive_smp_msg_2(msg_2, tlv, smp);
+
+    if (!event)
+        event = reply_with_smp_msg_3(smp_reply, msg_2, smp);
+
+    //TODO: destroy msg_2
+    return event;
+}
+
+static otr4_smp_event_t process_smp_msg3(tlv_t **smp_reply, const tlv_t* tlv, smp_context_t smp)
+{
+    smp_msg_3_t msg_3;
+    otr4_smp_event_t event = receive_smp_msg_3(msg_3, tlv, smp);
+
+    if (!event)
+        event = reply_with_smp_msg_4(smp_reply, msg_3, smp);
+
+    //TODO: destroy msg_3
+    return event;
+}
+
+static otr4_smp_event_t process_smp_msg4(const tlv_t* tlv, smp_context_t smp)
+{
+    smp_msg_4_t msg_4[1];
+
+    otr4_smp_event_t event = receive_smp_msg_4(msg_4, tlv, smp);
+
+    //TODO: destroy msg4
+    return event;
 }
