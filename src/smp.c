@@ -128,13 +128,8 @@ bool smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
 
 	uint8_t *cursor = *dst;
 
-	if (!msg->question) {
-		uint8_t null_question[4] = { 0x0, 0x0, 0x0, 0x0 };
-		cursor += serialize_data(cursor, null_question, 0);
-	} else
-		cursor +=
-		    serialize_data(cursor, (uint8_t *) msg->question,
-				   strlen(msg->question) + 1);
+        cursor += serialize_data(cursor, (uint8_t *) msg->question,
+            msg->question ? strlen(msg->question)+1 : 0);
 
 	bool ok = serialize_ec_point(cursor, msg->G2a);
 	if (!ok)
