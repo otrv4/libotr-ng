@@ -23,9 +23,15 @@ void test_smp_state_machine(void)
 
 	do_ake_fixture(alice_otr, bob_otr);
 
+        g_assert_cmpint(0, ==, alice_otr->smp->progress);
+        g_assert_cmpint(0, ==, bob_otr->smp->progress);
+
 	tlv_t *tlv_smp_1 = otrv4_smp_initiate(alice_otr, "some-question", (const uint8_t *) "answer", strlen("answer"));
         otrv4_assert(tlv_smp_1);
 	g_assert_cmpint(tlv_smp_1->type, ==, OTRV4_TLV_SMP_MSG_1);
+
+        g_assert_cmpint(25, ==, alice_otr->smp->progress);
+        g_assert_cmpint(0, ==, bob_otr->smp->progress);
 
 	//Should have correct context after generates tlv_smp_2
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT2);
@@ -39,9 +45,15 @@ void test_smp_state_machine(void)
 	otrv4_tlv_free(tlv_smp_1);
         otrv4_assert(!tlv_smp_2);
 
+        g_assert_cmpint(25, ==, alice_otr->smp->progress);
+        g_assert_cmpint(25, ==, bob_otr->smp->progress);
+
         tlv_smp_2 = otrv4_smp_provide_secret(bob_otr, (const uint8_t *) "answer", strlen("answer"));
         otrv4_assert(tlv_smp_2);
 	g_assert_cmpint(tlv_smp_2->type, ==, OTRV4_TLV_SMP_MSG_2);
+
+        g_assert_cmpint(25, ==, alice_otr->smp->progress);
+        g_assert_cmpint(50, ==, bob_otr->smp->progress);
 
 	//Should have correct context after generates tlv_smp_2
 	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT3);
@@ -60,6 +72,9 @@ void test_smp_state_machine(void)
         otrv4_assert(tlv_smp_3);
 	g_assert_cmpint(tlv_smp_3->type, ==, OTRV4_TLV_SMP_MSG_3);
 
+        g_assert_cmpint(50, ==, alice_otr->smp->progress);
+        g_assert_cmpint(50, ==, bob_otr->smp->progress);
+
 	//Should have correct context after generates tlv_smp_3
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT4);
 	otrv4_assert(alice_otr->smp->G3b);
@@ -72,12 +87,18 @@ void test_smp_state_machine(void)
         otrv4_assert(tlv_smp_4);
 	g_assert_cmpint(tlv_smp_4->type, ==, OTRV4_TLV_SMP_MSG_4);
 
+        g_assert_cmpint(50, ==, alice_otr->smp->progress);
+        g_assert_cmpint(100, ==, bob_otr->smp->progress);
+
 	//SMP is finished for Bob
 	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
 	//Receives fourth message
 	otrv4_process_smp(alice_otr, tlv_smp_4);
 	otrv4_tlv_free(tlv_smp_4);
+
+        g_assert_cmpint(100, ==, alice_otr->smp->progress);
+        g_assert_cmpint(100, ==, bob_otr->smp->progress);
 
 	//SMP is finished for Alice
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);

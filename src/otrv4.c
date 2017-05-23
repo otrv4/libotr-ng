@@ -1427,6 +1427,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
                 continue;
 
             otr->smp->state = SMPSTATE_EXPECT2;
+            otr->smp->progress = 25;
             handle_smp_event_cb(OTRV4_SMPEVENT_IN_PROGRESS, otr->smp->progress, otr->smp->msg1->question, otr);
 
             tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);

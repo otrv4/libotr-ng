@@ -914,6 +914,7 @@ static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, const smp_msg_1_t 
         return OTRV4_SMPEVENT_ERROR;
 
     smp->state = SMPSTATE_EXPECT3;
+    smp->progress = 50;
     return OTRV4_SMPEVENT_NONE;
 }
 
@@ -960,7 +961,7 @@ static otr4_smp_event_t reply_with_smp_msg_3(tlv_t **to_send,
 		return OTRV4_SMPEVENT_ERROR;
 
 	smp->state = SMPSTATE_EXPECT4;
-
+        smp->progress = 50;
 	return OTRV4_SMPEVENT_NONE;
 }
 
@@ -979,6 +980,7 @@ static otr4_smp_event_t receive_smp_msg_3(smp_msg_3_t msg_3, const tlv_t *tlv,
 	if (!smp_msg_3_validate_zkp(msg_3, smp))
 		return OTRV4_SMPEVENT_ERROR;
 
+        smp->progress = 75;
 	return OTRV4_SMPEVENT_NONE;
 }
 
@@ -1008,10 +1010,11 @@ static otr4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
 	*to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
 
 	//Validates SMP
+        smp->progress = 100;
+	smp->state = SMPSTATE_EXPECT1;
 	if (!smp_is_valid_for_msg_3(msg_3, smp))
 		return OTRV4_SMPEVENT_FAILURE;
 
-	smp->state = SMPSTATE_EXPECT1;
 	return OTRV4_SMPEVENT_SUCCESS;
 }
 
@@ -1039,10 +1042,11 @@ static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
 	if (!smp_msg_4_validate_zkp(msg_4, smp))
 		return OTRV4_SMPEVENT_ERROR;
 
+        smp->progress = 100;
+	smp->state = SMPSTATE_EXPECT1;
 	if (!smp_is_valid_for_msg_4(msg_4, smp))
 		return OTRV4_SMPEVENT_FAILURE;
 
-	smp->state = SMPSTATE_EXPECT1;
 	return OTRV4_SMPEVENT_SUCCESS;
 }
 
@@ -1051,8 +1055,10 @@ static otr4_smp_event_t process_smp_msg1(const tlv_t* tlv, smp_context_t smp)
     smp_msg_1_t msg_1;
 
     otr4_smp_event_t event = receive_smp_msg_1(msg_1, tlv, smp);
-    if (!event)
+    if (!event) {
+        smp->progress = 25;
         event = OTRV4_SMPEVENT_ASK_FOR_ANSWER;
+    }
 
     //TODO: destroy msg_1
     return event;
