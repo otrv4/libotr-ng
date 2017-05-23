@@ -38,8 +38,8 @@ size_t serialize_uint8(uint8_t * dst, const uint8_t data)
 
 size_t serialize_bytes_array(uint8_t * target, const uint8_t * data, size_t len)
 {
-    if (!data)
-        return 0;
+	if (!data)
+		return 0;
 
 	//this is just a memcpy thar returns the ammount copied for convenience
 	memcpy(target, data, len);
