@@ -1416,22 +1416,26 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 
 	set_smp_secret(&otr->smp->x, secret, secretlen, true, otr);
 
-	//TODO: return error?
-	generate_smp_msg_1(msg, otr->smp);
-	if (question)
-		msg->question = otrv4_string_duplicate(question);
+        do {
+            if (generate_smp_msg_1(msg, otr->smp))
+                continue;
 
-	if (!smp_msg_1_aprint(&to_send, &len, msg))
-		return NULL;
+            if (question)
+                msg->question = otrv4_string_duplicate(question);
 
-	tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);
-	if (!tlv)
-		return NULL;
+            if (!smp_msg_1_aprint(&to_send, &len, msg))
+                continue;
 
-	free(to_send);
+            otr->smp->state = SMPSTATE_EXPECT2;
+            handle_smp_event_cb(OTRV4_SMPEVENT_IN_PROGRESS, otr->smp->progress, otr->smp->msg1->question, otr);
 
-	otr->smp->state = SMPSTATE_EXPECT2;
-	return tlv;
+            tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);
+            free(to_send);
+            return tlv;
+        } while(0);
+
+        handle_smp_event_cb(OTRV4_SMPEVENT_ERROR, otr->smp->progress, otr->smp->msg1->question, otr);
+	return NULL;
 }
 
 tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
@@ -1467,9 +1471,11 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
             break;
         }
 
-        if (event)
-            handle_smp_event_cb(event, otr->smp->progress,
-                otr->smp->msg1->question, otr);
+        if (!event)
+            event = OTRV4_SMPEVENT_IN_PROGRESS;
+
+        handle_smp_event_cb(event, otr->smp->progress,
+            otr->smp->msg1->question, otr);
 
         return to_send;
 }
@@ -1484,6 +1490,9 @@ tlv_t *otrv4_smp_provide_secret(otrv4_t * otr, const uint8_t *secret,
     set_smp_secret(&otr->smp->y, secret, secretlen, false, otr);
 
     event = reply_with_smp_msg_2(&smp_reply, otr->smp->msg1, otr->smp);
+
+    if (!event)
+        event = OTRV4_SMPEVENT_IN_PROGRESS;
 
     //TODO: transition to state 1 if an abort happens
     if (event)
