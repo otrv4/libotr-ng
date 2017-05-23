@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 typedef enum {
+        OTRV4_TLV_NONE = -1,
 	OTRV4_TLV_PADDING = 0,
 	OTRV4_TLV_DISCONNECTED = 1,
 	OTRV4_TLV_SMP_MSG_1 = 2,

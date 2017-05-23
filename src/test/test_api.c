@@ -114,3 +114,91 @@ void test_api_conversation(void)
 
 	OTR4_FREE;
 }
+
+void test_api_smp(void)
+{
+	OTR4_INIT;
+
+	otrv4_keypair_t alice_keypair[1], bob_keypair[1];
+	uint8_t alice_sym[ED448_PRIVATE_BYTES] = { 1 };	// non-random private key on purpose
+	otrv4_keypair_generate(alice_keypair, alice_sym);
+
+	uint8_t bob_sym[ED448_PRIVATE_BYTES] = { 2 };	// non-random private key on purpose
+	otrv4_keypair_generate(bob_keypair, bob_sym);
+
+	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
+	otrv4_t *alice = otrv4_new(alice_keypair, policy);
+	otrv4_t *bob = otrv4_new(bob_keypair, policy);
+
+	//AKE HAS FINISHED.
+	do_ake_fixture(alice, bob);
+
+	otrv4_response_t *response_to_bob = NULL;
+	otrv4_response_t *response_to_alice = NULL;
+	string_t to_send = NULL;
+        char *secret = "secret";
+        bool ok = false;
+
+        // Alice sends SMP1
+        ok = otrv4_smp_start(&to_send, NULL, (uint8_t *) secret, strlen(secret), alice);
+        otrv4_assert(ok);
+        otrv4_assert(to_send);
+        otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
+
+        //Bob receives SMP1
+        response_to_alice = otrv4_response_new();
+        ok = otrv4_receive_message(response_to_alice, to_send, strlen(to_send), bob);
+        free(to_send);
+        to_send = NULL;
+
+        otrv4_assert(ok);
+        otrv4_assert(!response_to_alice->to_send);
+        otrv4_response_free(response_to_alice);
+        response_to_alice = NULL;
+
+        //This will be called by bob when the OTRV4_SMPEVENT_ASK_FOR_SECRET is
+        //triggered.
+        ok = otrv4_smp_continue(&to_send, (uint8_t *) secret, strlen(secret), bob);
+        otrv4_assert(ok);
+        otrv4_assert(to_send);
+        otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP2
+
+        //Alice receives SMP2
+        response_to_bob = otrv4_response_new();
+        ok = otrv4_receive_message(response_to_bob, to_send, strlen(to_send), alice);
+        free(to_send);
+        to_send = NULL;
+
+        otrv4_assert(ok);
+        otrv4_assert(response_to_bob->to_send);
+        otrv4_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9); // SMP3
+
+        //Bob receives SMP3
+        response_to_alice = otrv4_response_new();
+        ok = otrv4_receive_message(response_to_alice, response_to_bob->to_send, strlen(response_to_bob->to_send), bob);
+        otrv4_response_free(response_to_bob);
+        response_to_bob = NULL;
+
+        otrv4_assert(ok);
+        //TODO: Should be in the corect state
+        otrv4_assert(response_to_alice->to_send);
+        otrv4_assert_cmpmem("?OTR:AAQD", response_to_alice->to_send, 9); // SMP4
+
+        //Alice receives SMP4
+        response_to_bob = otrv4_response_new();
+        ok = otrv4_receive_message(response_to_bob, response_to_alice->to_send, strlen(response_to_alice->to_send), alice);
+        otrv4_response_free(response_to_alice);
+        response_to_alice = NULL;
+
+        otrv4_assert(ok);
+        //TODO: Should be in the corect state
+        otrv4_assert(!response_to_bob->to_send);
+
+
+	otrv4_free(alice);
+	otrv4_free(bob);
+	otrv4_keypair_destroy(alice_keypair);
+	otrv4_keypair_destroy(bob_keypair);
+
+	OTR4_FREE;
+}

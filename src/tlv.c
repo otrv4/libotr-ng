@@ -6,23 +6,36 @@
 
 void set_tlv_type(tlv_t * tlv, uint16_t tlv_type)
 {
+        tlv_type_t type = OTRV4_TLV_NONE;
+
 	switch (tlv_type) {
 	case 0:
-		tlv->type = OTRV4_TLV_PADDING;
+		type = OTRV4_TLV_PADDING;
 		break;
 	case 1:
-		tlv->type = OTRV4_TLV_DISCONNECTED;
+		type = OTRV4_TLV_DISCONNECTED;
 		break;
 	case 2:
-		tlv->type = OTRV4_TLV_SMP_MSG_1;
+		type = OTRV4_TLV_SMP_MSG_1;
 		break;
 	case 3:
-		tlv->type = OTRV4_TLV_SMP_MSG_2;
+		type = OTRV4_TLV_SMP_MSG_2;
+		break;
+        case 4:
+		type = OTRV4_TLV_SMP_MSG_3;
+		break;
+        case 5:
+		type = OTRV4_TLV_SMP_MSG_4;
+		break;
+        case 6:
+		type = OTRV4_TLV_SMP_ABORT;
 		break;
 	default:
+                //Panic!
 		break;
 	}
 
+	tlv->type = type;
 }
 
 static
@@ -87,7 +100,7 @@ tlv_t *otrv4_parse_tlvs(const uint8_t * src, size_t len)
 		len -= written;
 
 		if (ret)
-			ret->next = tlv;
+			ret->next = tlv; //TODO: Why not ret = ret->next?
 		else
 			ret = tlv;
 	}

@@ -945,8 +945,7 @@ static tlv_t* process_tlv(const tlv_t * tlv, otrv4_t * otr)
 
 static bool receive_tlvs(tlv_t **to_send, otrv4_response_t * response, otrv4_t * otr)
 {
-        *to_send = NULL;
-        tlv_t *cursor = *to_send;
+        tlv_t *cursor = NULL;
 
 	const tlv_t *current = response->tlvs;
 	while (current) {
@@ -961,6 +960,7 @@ static bool receive_tlvs(tlv_t **to_send, otrv4_response_t * response, otrv4_t *
                 cursor = ret;
 	}
 
+        *to_send = cursor;
 	return true;
 }
 
@@ -994,7 +994,7 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 
 	key_manager_set_their_keys(msg->our_ecdh, msg->our_dh, otr->keys);
 
-        tlv_t *to_send = NULL;
+        tlv_t *reply_tlv = NULL;
 	do {
 		if (!get_receiving_msg_keys(enc_key, mac_key, msg, otr))
 			continue;
@@ -1008,19 +1008,22 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 		//TODO: Securely delete receiving chain keys older than message_id-1.
 		//TODO: Add the MKmac key to list mac_keys_to_reveal.
 
-		if (!receive_tlvs(&to_send, response, otr))
+		if (!receive_tlvs(&reply_tlv, response, otr))
 			continue;
 
 		key_manager_prepare_to_ratchet(otr->keys);
+
+                if (reply_tlv)
+                    if (!otrv4_send_message(&response->to_send, "", reply_tlv, otr))
+                        continue;
+
+                otrv4_tlv_free(reply_tlv);
 		data_message_free(msg);
-
-                //TODO: append TLVs to_send to response->to_send
-                otrv4_tlv_free(to_send);
-
 		return true;
 	} while (0);
 
 	data_message_free(msg);
+        otrv4_tlv_free(reply_tlv);
 	return false;
 }
 
@@ -1448,12 +1451,9 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
                 return to_send;
             }
 
-            //TODO: Go to state WaitingForSecret and the user shoudl eventually
-            //call "ProvideAuthenticationSecret" to continue SMP.
             handle_smp_event_cb(OTRV4_SMPEVENT_ASK_FOR_ANSWER, otr->smp->progress,
                 msg_1->question, otr);
-
-            return to_send;
+            break;
 
         case OTRV4_TLV_SMP_MSG_2:
 		event = receive_smp_msg_2(msg_2, tlv, otr->smp);
@@ -1495,6 +1495,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 			handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
 			return to_send;
 		}
+                break;
         default:
                         //If smpstate is not the receive message:
                         //Set smpstate to SMPSTATE_EXPECT1
