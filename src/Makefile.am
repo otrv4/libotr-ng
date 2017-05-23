@@ -37,6 +37,7 @@ otrinc_HEADERS = b64.h \
                  client.h \
 		 constants.h \
 		 data_message.h \
+		 str.h \
 		 dh.h \
 		 ed448.h \
 		 error.h \
