@@ -133,6 +133,7 @@ otrv4_t *otrv4_new(otrv4_keypair_t * keypair, otrv4_policy_t policy)
 
 	//TODO: moves initialization to smp
 	otr->smp->state = SMPSTATE_EXPECT1;
+        otr->smp->progress = 0;
 	return otr;
 }
 
@@ -1381,6 +1382,24 @@ bool otrv4_smp_start(string_t * to_send, const string_t question,
     return otrv4_send_message(to_send, "", smp_start_tlv, otr);
 }
 
+bool otrv4_smp_continue(string_t * to_send, const uint8_t *secret,
+    const size_t secretlen, otrv4_t * otr)
+{
+    bool ok = false;
+    tlv_t *smp_reply = NULL;
+
+    if (!otr)
+        return false;
+
+    smp_reply = otrv4_smp_provide_secret(otr, secret, secretlen);
+
+    if (smp_reply)
+        ok = otrv4_send_message(to_send, "", smp_reply, otr);
+
+    otrv4_tlv_free(smp_reply);
+    return ok;
+}
+
 tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 			  const uint8_t *secret, size_t secretlen)
 {
@@ -1419,33 +1438,20 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
         smp_msg_2_t msg_2;
 	smp_msg_3_t msg_3;
 	smp_msg_4_t msg_4[1];
-        uint8_t progress = 0;
 
         switch (tlv->type) {
         case OTRV4_TLV_SMP_MSG_1:
             event = receive_smp_msg_1(msg_1, tlv, otr->smp);
             if (event) {
                 //TODO: transition to state 1 if an abort happens
-                handle_smp_event_cb(event, progress, msg_1->question, otr);
+                handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
                 return to_send;
             }
 
             //TODO: Go to state WaitingForSecret and the user shoudl eventually
             //call "ProvideAuthenticationSecret" to continue SMP.
-            handle_smp_event_cb(OTRV4_SMPEVENT_ASK_FOR_ANSWER, progress,
+            handle_smp_event_cb(OTRV4_SMPEVENT_ASK_FOR_ANSWER, otr->smp->progress,
                 msg_1->question, otr);
-
-            //TODO: this reply should only be sent when
-            //"ProvideAuthenticationSecret" is called.
-            uint8_t *answer = (uint8_t *) "answer";
-            size_t answerlen = strlen("answer");
-            set_smp_secret(&otr->smp->y, answer, answerlen, false, otr);
-
-            event = reply_with_smp_msg_2(&to_send, msg_1, otr->smp);
-
-            //TODO: transition to state 1 if an abort happens
-            if (event)
-                handle_smp_event_cb(event, progress, msg_1->question, otr);
 
             return to_send;
 
@@ -1454,7 +1460,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 
                 if (event) {
 		        //TODO: transition to state 1 if an abort happens
-		        handle_smp_event_cb(event, progress, msg_1->question, otr);
+		        handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
 			return to_send;
 		}
 
@@ -1462,7 +1468,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 
 		//TODO: transition to state 1 if an abort happens
 		if (event)
-			handle_smp_event_cb(event, progress, msg_1->question, otr);
+			handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
 
                 break;
 
@@ -1470,7 +1476,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 		event = receive_smp_msg_3(msg_3, tlv, otr->smp);
 		if (event) {
 			//TODO: transition to state 1 if an abort happens
-			handle_smp_event_cb(event, progress, msg_1->question, otr);
+			handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
 			return to_send;
 		}
 
@@ -1478,7 +1484,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 
 		//TODO: transition to state 1 if an abort happens
 		if (event)
-			handle_smp_event_cb(event, progress, msg_1->question, otr);
+			handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
 
 		break;
 
@@ -1486,7 +1492,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 		event = receive_smp_msg_4(msg_4, tlv, otr->smp);
 		if (event) {
 			//TODO: transition to state 1 if an abort happens
-			handle_smp_event_cb(event, progress, msg_1->question, otr);
+			handle_smp_event_cb(event, otr->smp->progress, msg_1->question, otr);
 			return to_send;
 		}
         default:
@@ -1500,4 +1506,22 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
         }
 
         return to_send;
+}
+
+tlv_t *otrv4_smp_provide_secret(otrv4_t * otr, const uint8_t *secret,
+    const size_t secretlen) {
+    //TODO: If state is not CONTINUE_SMP then error.
+    tlv_t *smp_reply = NULL;
+
+    otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
+
+    set_smp_secret(&otr->smp->y, secret, secretlen, false, otr);
+
+    event = reply_with_smp_msg_2(&smp_reply, otr->smp->msg1, otr->smp);
+
+    //TODO: transition to state 1 if an abort happens
+    if (event)
+        handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question, otr);
+
+    return smp_reply;
 }

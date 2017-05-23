@@ -24,6 +24,7 @@ void test_smp_state_machine(void)
 	do_ake_fixture(alice_otr, bob_otr);
 
 	tlv_t *tlv_smp_1 = otrv4_smp_initiate(alice_otr, "some-question", (const uint8_t *) "answer", strlen("answer"));
+        otrv4_assert(tlv_smp_1);
 	g_assert_cmpint(tlv_smp_1->type, ==, OTRV4_TLV_SMP_MSG_1);
 
 	//Should have correct context after generates tlv_smp_2
@@ -36,6 +37,10 @@ void test_smp_state_machine(void)
 	//Receives first message
 	tlv_t *tlv_smp_2 = otrv4_process_smp(bob_otr, tlv_smp_1);
 	otrv4_tlv_free(tlv_smp_1);
+        otrv4_assert(!tlv_smp_2);
+
+        tlv_smp_2 = otrv4_smp_provide_secret(bob_otr, (const uint8_t *) "answer", strlen("answer"));
+        otrv4_assert(tlv_smp_2);
 	g_assert_cmpint(tlv_smp_2->type, ==, OTRV4_TLV_SMP_MSG_2);
 
 	//Should have correct context after generates tlv_smp_2
@@ -52,6 +57,7 @@ void test_smp_state_machine(void)
 	//Receives second message
 	tlv_t *tlv_smp_3 = otrv4_process_smp(alice_otr, tlv_smp_2);
 	otrv4_tlv_free(tlv_smp_2);
+        otrv4_assert(tlv_smp_3);
 	g_assert_cmpint(tlv_smp_3->type, ==, OTRV4_TLV_SMP_MSG_3);
 
 	//Should have correct context after generates tlv_smp_3
@@ -63,6 +69,7 @@ void test_smp_state_machine(void)
 	//Receives third message
 	tlv_t *tlv_smp_4 = otrv4_process_smp(bob_otr, tlv_smp_3);
 	otrv4_tlv_free(tlv_smp_3);
+        otrv4_assert(tlv_smp_4);
 	g_assert_cmpint(tlv_smp_4->type, ==, OTRV4_TLV_SMP_MSG_4);
 
 	//SMP is finished for Bob

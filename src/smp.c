@@ -16,6 +16,8 @@ void smp_destroy(smp_context_t smp)
 {
 	//TODO: I think we should free this
 	smp->x = NULL;
+
+        //TODO: We should also destroy smp->msg1
 }
 
 void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
@@ -871,7 +873,7 @@ bool smp_msg_4_validate_zkp(smp_msg_4_t * msg, const smp_context_t smp)
 	return ec_scalar_eq(msg->cr, temp_scalar) == 0;
 }
 
-static otr4_smp_event_t receive_smp_msg_1(smp_msg_1_t msg_1, const tlv_t *tlv, const smp_context_t smp)
+static otr4_smp_event_t receive_smp_msg_1(smp_msg_1_t msg_1, const tlv_t *tlv, smp_context_t smp)
 {
     if (SMPSTATE_EXPECT1 != smp->state) {
         return OTRV4_SMPEVENT_ABORT;
@@ -882,6 +884,14 @@ static otr4_smp_event_t receive_smp_msg_1(smp_msg_1_t msg_1, const tlv_t *tlv, c
 
     if (!smp_msg_1_validate(msg_1))
         return OTRV4_SMPEVENT_ERROR;
+
+    smp->msg1->question = otrv4_string_duplicate(msg_1->question);
+    ec_point_copy(smp->msg1->G2a, msg_1->G2a);
+    ec_scalar_copy(smp->msg1->c2, msg_1->c2);
+    ec_scalar_copy(smp->msg1->d2, msg_1->d2);
+    ec_point_copy(smp->msg1->G3a, msg_1->G3a);
+    ec_scalar_copy(smp->msg1->c3, msg_1->c3);
+    ec_scalar_copy(smp->msg1->d3, msg_1->d3);
 
     return OTRV4_SMPEVENT_NONE;
 }

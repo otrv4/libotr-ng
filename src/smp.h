@@ -16,19 +16,6 @@ typedef enum {
 } smp_state_t;
 
 typedef struct {
-	smp_state_t state;
-	unsigned char *x;
-	unsigned char *y;
-	ec_scalar_t a2;
-	ec_scalar_t a3;
-	ec_scalar_t b3;
-	ec_point_t G2, G3;
-	ec_point_t G3a, G3b;
-	ec_point_t Pb, Qb;
-	ec_point_t Pa_Pb, Qa_Qb;
-} smp_context_t[1];
-
-typedef struct {
 	char *question;
 	ec_point_t G2a;
 	ec_scalar_t c2;
@@ -37,6 +24,20 @@ typedef struct {
 	ec_scalar_t c3;
 	ec_scalar_t d3;
 } smp_msg_1_t[1];
+
+typedef struct {
+	smp_state_t state;
+	unsigned char *x;
+	unsigned char *y;
+	ec_scalar_t a2, a3, b3;
+	ec_point_t G2, G3;
+	ec_point_t G3a, G3b;
+	ec_point_t Pb, Qb;
+	ec_point_t Pa_Pb, Qa_Qb;
+
+        uint8_t progress;
+        smp_msg_1_t msg1;
+} smp_context_t[1];
 
 typedef struct {
 	ec_point_t G2b;
