@@ -89,25 +89,26 @@ deserialize_data(uint8_t ** dst, const uint8_t * buffer, size_t buflen,
 		return false;
 	}
 
-	if (read != NULL) {
+	if (read)
 		*read = r;
-	}
+
+        if (!s)
+            return true;
+
 	buflen -= r;
-	if (buflen < s) {
+	if (buflen < s)
 		return false;
-	}
 
 	uint8_t *t = malloc(s);
-	if (t == NULL) {
+	if (!t)
 		return false;
-	}
 
 	memcpy(t, buffer + r, s);
 
 	*dst = t;
-	if (read != NULL) {
+	if (read)
 		*read += s;
-	}
+
 	return true;
 }
 
