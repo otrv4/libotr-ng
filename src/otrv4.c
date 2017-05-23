@@ -134,6 +134,7 @@ otrv4_t *otrv4_new(otrv4_keypair_t * keypair, otrv4_policy_t policy)
 	//TODO: moves initialization to smp
 	otr->smp->state = SMPSTATE_EXPECT1;
         otr->smp->progress = 0;
+        otr->smp->msg1->question = NULL;
 	return otr;
 }
 
