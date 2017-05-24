@@ -21,9 +21,6 @@ typedef struct {
 	uint8_t *enc_msg;
 	size_t enc_msg_len;
 	uint8_t mac[DATA_MSG_MAC_BYTES];
-	// XXX: remove and update on spec
-	uint8_t *old_mac_keys;
-	size_t old_mac_keys_len;
 } data_message_t;
 
 data_message_t *data_message_new();

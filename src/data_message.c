@@ -13,8 +13,6 @@ data_message_t *data_message_new()
 	ret->flags = 0;
 	ret->enc_msg = NULL;
 	ret->enc_msg_len = 0;
-	ret->old_mac_keys = NULL;
-	ret->old_mac_keys_len = 0;
 	return ret;
 }
 
@@ -23,10 +21,6 @@ void data_message_destroy(data_message_t * data_msg)
 	data_msg->enc_msg_len = 0;
 	free(data_msg->enc_msg);
 	data_msg->enc_msg = NULL;
-
-	data_msg->old_mac_keys = 0;
-	free(data_msg->old_mac_keys);
-	data_msg->old_mac_keys = NULL;
 
 	dh_mpi_release(data_msg->our_dh);
 }
