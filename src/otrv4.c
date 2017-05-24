@@ -1007,8 +1007,8 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 			continue;
 
 		//TODO: Securely delete receiving chain keys older than message_id-1.
-		//TODO: Add the MKmac key to list mac_keys_to_reveal.
 
+		otr->keys->old_mac_keys = list_add(mac_key, otr->keys->old_mac_keys);
 		if (!receive_tlvs(&reply_tlv, response, otr))
 			continue;
 
@@ -1209,7 +1209,6 @@ serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 
 
 	//TODO: append old mac keys to be revealed
-	// append(mac)
 	size_t serlen = bodylen + DATA_MSG_MAC_BYTES;
 	uint8_t *ser = malloc(serlen);
 	if (!ser) {

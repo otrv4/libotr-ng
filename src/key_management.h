@@ -3,6 +3,7 @@
 
 #include "ed448.h"
 #include "dh.h"
+#include "list.h"
 
 typedef uint8_t k_dh_t[384];
 typedef uint8_t mix_key_t[32];
@@ -43,6 +44,8 @@ typedef struct {
 	mix_key_t mix_key;
 
 	uint8_t ssid[8];
+
+	list_element_t *old_mac_keys;
 } key_manager_t;
 
 typedef struct {

@@ -57,6 +57,7 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 	manager->our_dh->pub = NULL;
 	manager->our_dh->priv = NULL;
 	manager->their_dh = NULL;
+	manager->old_mac_keys = NULL;
 }
 
 void key_manager_destroy(key_manager_t *manager)
@@ -74,6 +75,8 @@ void key_manager_destroy(key_manager_t *manager)
 
 	ecdh_keypair_destroy(manager->our_ecdh);
 	ec_point_destroy(manager->their_ecdh);
+
+	list_free_all(manager->old_mac_keys);
 }
 
 void key_manager_generate_ephemeral_keys(key_manager_t *manager)
