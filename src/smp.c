@@ -885,7 +885,7 @@ static otr4_smp_event_t receive_smp_msg_1(smp_msg_1_t msg_1, const tlv_t *tlv, s
         return OTRV4_SMPEVENT_ERROR;
 
     if (msg_1->question)
-        smp->msg1->question = otrv4_string_duplicate(msg_1->question);
+        smp->msg1->question = otrv4_strdup(msg_1->question);
 
     ec_point_copy(smp->msg1->G2a, msg_1->G2a);
     ec_scalar_copy(smp->msg1->c2, msg_1->c2);

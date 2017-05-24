@@ -22,7 +22,7 @@ user_profile_t *user_profile_new(const string_t versions)
 	//TODO: Should we initialize to zero?
 	//ec_destroy_point(profile->pub_key);
 	profile->expires = 0;
-	profile->versions = otrv4_string_duplicate(versions);
+	profile->versions = otrv4_strdup(versions);
 	memset(profile->signature, 0, sizeof(eddsa_signature_t));
 	otr_mpi_init(profile->transitional_signature);
 
@@ -36,7 +36,7 @@ void user_profile_copy(user_profile_t * dst, const user_profile_t * src)
 		return;
 
 	ec_point_copy(dst->pub_key, src->pub_key);
-	dst->versions = otrv4_string_duplicate(src->versions);
+	dst->versions = otrv4_strdup(src->versions);
 	dst->expires = src->expires;
 
 	memcpy(dst->signature, src->signature, sizeof(eddsa_signature_t));

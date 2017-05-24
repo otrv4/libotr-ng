@@ -1423,7 +1423,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
                 continue;
 
             if (question)
-                msg->question = otrv4_string_duplicate(question);
+                msg->question = otrv4_strdup(question);
 
             if (!smp_msg_1_aprint(&to_send, &len, msg))
                 continue;

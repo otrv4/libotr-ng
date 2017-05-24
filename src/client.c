@@ -13,7 +13,7 @@ static otr4_conversation_t *new_conversation_with(const char *recipient)
 	if (!conv)
 		return NULL;
 
-	conv->recipient = otrv4_string_duplicate(recipient);
+	conv->recipient = otrv4_strdup(recipient);
 	return conv;
 }
 
@@ -189,11 +189,11 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 	}
 
 	if (response->to_send)
-		*newmessage = otrv4_string_duplicate(response->to_send);
+		*newmessage = otrv4_strdup(response->to_send);
 
 	int should_ignore = 1;
 	if (response->to_display) {
-		char *plain = otrv4_string_duplicate(response->to_display);
+		char *plain = otrv4_strdup(response->to_display);
 		*todisplay = plain;
 		should_ignore = 0;
 	}
