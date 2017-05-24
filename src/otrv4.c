@@ -1207,7 +1207,9 @@ serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 	if (!data_message_body_aprint(&body, &bodylen, data_msg))
 		return false;
 
+
 	//TODO: append old mac keys to be revealed
+	// append(mac)
 	size_t serlen = bodylen + DATA_MSG_MAC_BYTES;
 	uint8_t *ser = malloc(serlen);
 	if (!ser) {

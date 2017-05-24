@@ -206,8 +206,6 @@ dake_identity_message_validate(const dake_identity_message_t * identity_message)
 	valid &= dh_mpi_valid(identity_message->B);
 	valid &= no_rollback_detected(identity_message->profile->versions);
 
-	// TODO: something Nick said about degenerated keys
-
 	return valid;
 }
 

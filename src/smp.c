@@ -819,6 +819,10 @@ bool smp_msg_4_aprint(uint8_t **dst, size_t *len, smp_msg_4_t *msg)
 	cursor += serialize_mpi(cursor, d7_mpi);
 
 	*len = s;
+
+	otr_mpi_free(cr_mpi);
+	otr_mpi_free(d7_mpi);
+
 	return true;
 }
 
