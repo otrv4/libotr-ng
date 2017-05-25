@@ -25,6 +25,7 @@ before_install:
   - sudo apt-get update --quiet --assume-yes
   - sudo apt-get install splint --quiet --assume-yes
   - sudo apt-get install valgrind --quiet --assume-yes
+  - sudo apt-get intall libotr5-dev --quiet --assume-yes
 
 before_script:
   - mkdir .deps
@@ -33,16 +34,16 @@ before_script:
   - curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.7.6.tar.bz2 | tar xjf - -C .deps
   - pushd .deps/libgcrypt-1.7.6 && ./configure && make && sudo make install && popd
   - git clone --depth=1 https://bugs.otr.im/lib/libotr.git .deps/libotr
-  - pushd .deps/libotr && ./bootstrap && ./configure --prefix=$PREFIX && make && sudo make install && popd
+  - pushd .deps/libotr && ./bootstrap && ./configure && make && sudo make install && popd
   - curl https://download.libsodium.org/libsodium/releases/libsodium-1.0.11.tar.gz | tar xzf - -C .deps
   - pushd .deps/libsodium-1.0.11 && ./autogen.sh && ./configure && make && sudo make install && popd
   - git clone --depth=1 https://github.com/twstrike/ed448goldilocks .deps/goldilocks
   - pushd .deps/goldilocks && ./autogen.sh && ./configure && make && sudo make install && popd
 
 script:
-  - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-  - autoreconf --install -I /share/aclocal
-  - ./configure
+  - export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
+  - export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
+  - ./autogen.sh && ./configure
   - if [[ $(lsb_release -c -s) == "precise" ]]; then make test; fi
   - if [[ $(lsb_release -c -s) == "trusty" ]];  then make ci;   fi
 
