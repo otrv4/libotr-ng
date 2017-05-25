@@ -22,7 +22,7 @@ void data_message_destroy(data_message_t * data_msg)
 	free(data_msg->enc_msg);
 	data_msg->enc_msg = NULL;
 
-	dh_mpi_release(data_msg->our_dh);
+	dh_mpi_release(data_msg->dh);
 }
 
 void data_message_free(data_message_t * data_msg)
@@ -53,7 +53,7 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 	cursor += serialize_uint8(cursor, data_msg->flags);
 	cursor += serialize_uint32(cursor, data_msg->ratchet_id);
 	cursor += serialize_uint32(cursor, data_msg->message_id);
-	bool ok = serialize_ec_point(cursor, data_msg->our_ecdh);
+	bool ok = serialize_ec_point(cursor, data_msg->ecdh);
 	if (!ok) {
 		return false;
 	}
@@ -61,7 +61,7 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 	//TODO: This could be NULL. We need to test.
 	size_t len = 0;
 	otr4_err_t err =
-	    serialize_dh_public_key(cursor, &len, data_msg->our_dh);
+	    serialize_dh_public_key(cursor, &len, data_msg->dh);
 	if (err) {
 		return false;
 	}
@@ -146,7 +146,7 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_point(dst->our_ecdh, cursor)) {
+	if (!deserialize_ec_point(dst->ecdh, cursor)) {
 		return false;
 	}
 
@@ -163,7 +163,7 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 	cursor += read;
 	len -= read;
 
-	if (!dh_mpi_deserialize(&dst->our_dh, b_mpi->data, b_mpi->len, &read)) {
+	if (!dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read)) {
 		return false;
 	}
 
@@ -218,6 +218,6 @@ bool data_message_validate(m_mac_key_t mac_key, const data_message_t * data_msg)
 		return false;
 	}
 
-	return ec_point_valid(data_msg->our_ecdh) & dh_mpi_valid(data_msg->
-								 our_dh);
+	return ec_point_valid(data_msg->ecdh) & dh_mpi_valid(data_msg->
+								 dh);
 }

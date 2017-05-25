@@ -66,10 +66,10 @@ void test_data_message_serializes()
 	data_msg->flags = 0xA;
 	data_msg->ratchet_id = 10;
 	data_msg->message_id = 99;
-	ec_point_copy(data_msg->our_ecdh, ecdh->pub);
+	ec_point_copy(data_msg->ecdh, ecdh->pub);
 
 	gcry_error_t err =
-	    gcry_mpi_scan(&data_msg->our_dh, GCRYMPI_FMT_USG, dh_data, 383,
+	    gcry_mpi_scan(&data_msg->dh, GCRYMPI_FMT_USG, dh_data, 383,
 			  NULL);
 	otrv4_assert(!err);
 
@@ -102,7 +102,7 @@ void test_data_message_serializes()
 	cursor += 20;
 
 	uint8_t serialized_y[ED448_POINT_BYTES + 2] = { 0 };
-	ec_point_serialize(serialized_y, ED448_POINT_BYTES, data_msg->our_ecdh);
+	ec_point_serialize(serialized_y, ED448_POINT_BYTES, data_msg->ecdh);
 	otrv4_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
 	cursor += sizeof(ec_public_key_t);
 
@@ -110,7 +110,7 @@ void test_data_message_serializes()
 	size_t mpi_len = 0;
 	otr4_err_t otr_err =
 	    dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
-			     &mpi_len, data_msg->our_dh);
+			     &mpi_len, data_msg->dh);
 	otrv4_assert(!otr_err);
 	//Skip first 4 because they are the size (mpi_len)
 	otrv4_assert_cmpmem(cursor + 4, serialized_b, mpi_len);

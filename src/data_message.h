@@ -15,8 +15,8 @@ typedef struct {
 	uint8_t flags;
 	uint32_t ratchet_id;
 	uint32_t message_id;
-	ec_point_t our_ecdh;
-	dh_public_key_t our_dh;
+	ec_point_t ecdh;
+	dh_public_key_t dh;
 	uint8_t nonce[DATA_MSG_NONCE_BYTES];
 	uint8_t *enc_msg;
 	size_t enc_msg_len;

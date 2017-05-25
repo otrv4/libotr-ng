@@ -993,7 +993,7 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 	if (!data_message_deserialize(msg, buff, buflen))
 		return false;
 
-	key_manager_set_their_keys(msg->our_ecdh, msg->our_dh, otr->keys);
+	key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
 
         tlv_t *reply_tlv = NULL;
 	do {
@@ -1153,8 +1153,8 @@ static data_message_t *generate_data_msg(const otrv4_t * otr)
 	data_msg->receiver_instance_tag = otr->their_instance_tag;
 	data_msg->ratchet_id = otr->keys->i;
 	data_msg->message_id = otr->keys->j;
-	ec_point_copy(data_msg->our_ecdh, OUR_ECDH(otr));
-	data_msg->our_dh = dh_mpi_copy(OUR_DH(otr));
+	ec_point_copy(data_msg->ecdh, OUR_ECDH(otr));
+	data_msg->dh = dh_mpi_copy(OUR_DH(otr));
 
 	return data_msg;
 }
