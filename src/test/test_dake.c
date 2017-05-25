@@ -16,14 +16,11 @@ void test_snizkpk_auth()
 	snizkpk_keypair_generate(pair2);
 	snizkpk_keypair_generate(pair3);
 
-	int err = snizkpk_authenticate(dst, pair1, pair2->pub, pair3->pub,
-				       (unsigned char *)msg, strlen(msg));
-	g_assert_cmpint(err, ==, 0);
+	otrv4_assert(snizkpk_authenticate(dst, pair1, pair2->pub, pair3->pub,
+				       (unsigned char *)msg, strlen(msg)) == OTR4_SUCCESS);
 
-	err =
-	    snizkpk_verify(dst, pair1->pub, pair2->pub, pair3->pub,
-			   (unsigned char *)msg, strlen(msg));
-	g_assert_cmpint(err, ==, 0);
+	otrv4_assert(snizkpk_verify(dst, pair1->pub, pair2->pub, pair3->pub,
+			   (unsigned char *)msg, strlen(msg)) == OTR4_SUCCESS);
 
 	//Now lets serialize and deserialize things.
 	otrv4_keypair_t p1[1], p2[1], p3[1];
@@ -36,13 +33,9 @@ void test_snizkpk_auth()
 	otrv4_keypair_generate(p3, sym3);
 
 	snizkpk_proof_t dst2[1];
-	err = snizkpk_authenticate(dst2, p1, p2->pub, p3->pub,
-				   (unsigned char *)msg, strlen(msg));
-	g_assert_cmpint(err, ==, 0);
+	otrv4_assert(snizkpk_authenticate(dst2, p1, p2->pub, p3->pub,
+				   (unsigned char *)msg, strlen(msg)) == OTR4_SUCCESS);
 
-	err =
-	    snizkpk_verify(dst2, p1->pub, p2->pub, p3->pub,
-			   (unsigned char *)msg, strlen(msg));
-	g_assert_cmpint(err, ==, 0);
-
+	otrv4_assert(snizkpk_verify(dst2, p1->pub, p2->pub, p3->pub,
+			   (unsigned char *)msg, strlen(msg)) == OTR4_SUCCESS);
 }

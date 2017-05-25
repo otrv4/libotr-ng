@@ -615,7 +615,7 @@ static bool reply_with_auth_r_msg(string_t * dst, const otrv4_t * otr)
 		return false;
 
 	//sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg)
-	int err = snizkpk_authenticate(msg->sigma,
+	otr4_err_t err = snizkpk_authenticate(msg->sigma,
 				       otr->keypair,	// g^R and R
 				       otr->their_profile->pub_key,	// g^I
 				       THEIR_ECDH(otr),	// g^i -- Y
@@ -793,7 +793,7 @@ verify_auth_r_message(const dake_auth_r_t * auth, const otrv4_t * otr)
 		return false;
 
 	//Verif({g^I, g^R, g^i}, sigma, msg)
-	int err = snizkpk_verify(auth->sigma,
+	otr4_err_t err = snizkpk_verify(auth->sigma,
 				 auth->profile->pub_key,	// g^R
 				 otr->keypair->pub,	// g^I
 				 OUR_ECDH(otr),	// g^
@@ -802,7 +802,7 @@ verify_auth_r_message(const dake_auth_r_t * auth, const otrv4_t * otr)
 	free(t);
 	t = NULL;
 
-	return err == 0;
+	return err == OTR4_SUCCESS;
 }
 
 static bool
@@ -852,12 +852,12 @@ verify_auth_i_message(const dake_auth_i_t * auth, const otrv4_t * otr)
 				THEIR_DH(otr), OUR_DH(otr)))
 		return false;
 
-	int err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
+	otr4_err_t err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
 				 otr->keypair->pub, OUR_ECDH(otr), t, t_len);
 	free(t);
 	t = NULL;
 
-	return err == 0;
+	return err == OTR4_SUCCESS;
 }
 
 static bool
