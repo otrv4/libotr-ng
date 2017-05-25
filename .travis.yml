@@ -32,6 +32,8 @@ before_script:
   - pushd .deps/libgpg-error-1.26 && ./configure && make && sudo make install && popd
   - curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.7.6.tar.bz2 | tar xjf - -C .deps
   - pushd .deps/libgcrypt-1.7.6 && ./configure && make && sudo make install && popd
+  - git clone --depth=1 https://bugs.otr.im/lib/libotr.git .deps/libotr
+  - pushd .deps/libotr && ./bootstrap && ./configure --prefix=$PREFIX && make && make install && popd
   - curl https://download.libsodium.org/libsodium/releases/libsodium-1.0.11.tar.gz | tar xzf - -C .deps
   - pushd .deps/libsodium-1.0.11 && ./autogen.sh && ./configure && make && sudo make install && popd
   - git clone --depth=1 https://github.com/twstrike/ed448goldilocks .deps/goldilocks
