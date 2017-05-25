@@ -127,6 +127,7 @@ bool otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t **tlvs
     if (to_display && newmessage)
         *to_display = otrv4_strdup(newmessage);
 
+    otrl_tlv_free(tlvsv3);
     otrl_message_free(newmessage);
 
     //TODO: Here we can use contextp to get information we might need about the
