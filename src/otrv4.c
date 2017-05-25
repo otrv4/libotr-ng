@@ -499,12 +499,10 @@ build_auth_message(uint8_t ** msg, size_t * msg_len,
 	size_t ser_i_profile_len, ser_r_profile_len = 0;
 	uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
 
-	bool out = serialize_ec_point(ser_i_ecdh, i_ecdh);
-	if (!out) {
+	if (serialize_ec_point(ser_i_ecdh, i_ecdh)) {
 		return false;
 	}
-	out = serialize_ec_point(ser_r_ecdh, r_ecdh);
-	if (!out) {
+	if (serialize_ec_point(ser_r_ecdh, r_ecdh)) {
 		return false;
 	}
 

@@ -61,12 +61,9 @@ size_t serialize_mpi(uint8_t * dst, const otr_mpi_t mpi)
 	return serialize_data(dst, mpi->data, mpi->len);
 }
 
-bool serialize_ec_point(uint8_t * dst, const ec_point_t point)
+otr4_err_t serialize_ec_point(uint8_t * dst, const ec_point_t point)
 {
-	if (ec_point_serialize(dst, ED448_POINT_BYTES, point)) {
-		return false;
-	}
-	return true;
+	return ec_point_serialize(dst, ED448_POINT_BYTES, point);
 }
 
 size_t serialize_ec_scalar(uint8_t * dst, const ec_scalar_t scalar)
@@ -101,8 +98,7 @@ size_t serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
 {
 	uint8_t *cursor = dst;
 	cursor += serialize_uint16(cursor, ED448_PUBKEY_TYPE);
-	bool ok = serialize_ec_point(cursor, pub);
-	if (!ok) {
+	if (serialize_ec_point(cursor, pub)) {
 		// TODO: handle error
 	}
 	cursor += ED448_POINT_BYTES;
