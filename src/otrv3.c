@@ -65,6 +65,8 @@ void otr3_conn_free(otr3_conn_t* conn)
         return;
 
     otrl_userstate_free(conn->userstate);
+    conn->userstate = NULL;
+
     conn->ops = NULL;
     conn->ctx = NULL;
 
