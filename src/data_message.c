@@ -35,15 +35,15 @@ void data_message_free(data_message_t * data_msg)
 	free(data_msg);
 }
 
-bool
-data_message_body_aprint(uint8_t ** body, size_t * bodylen,
+otr4_err_t
+data_message_body_asprintf(uint8_t ** body, size_t * bodylen,
 			 const data_message_t * data_msg)
 {
 	size_t s =
 	    DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
 	uint8_t *dst = malloc(s);
 	if (!dst)
-		return false;
+		return OTR4_ERROR;
 
 	uint8_t *cursor = dst;
 	cursor += serialize_uint16(cursor, OTR_VERSION);
@@ -54,15 +54,13 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 	cursor += serialize_uint32(cursor, data_msg->ratchet_id);
 	cursor += serialize_uint32(cursor, data_msg->message_id);
 	if (serialize_ec_point(cursor, data_msg->ecdh)) {
-		return false;
+		return OTR4_ERROR;
 	}
 	cursor += ED448_POINT_BYTES;
 	//TODO: This could be NULL. We need to test.
 	size_t len = 0;
-	otr4_err_t err =
-	    serialize_dh_public_key(cursor, &len, data_msg->dh);
-	if (err) {
-		return false;
+	if (serialize_dh_public_key(cursor, &len, data_msg->dh)) {
+		return OTR4_ERROR;
 	}
 	cursor += len;
 	cursor +=
@@ -74,10 +72,10 @@ data_message_body_aprint(uint8_t ** body, size_t * bodylen,
 	*body = dst;
 	*bodylen = cursor - dst;
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
-bool
+otr4_err_t
 data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 			 size_t bufflen)
 {
@@ -87,30 +85,30 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 
 	uint16_t protocol_version = 0;
 	if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += read;
 	len -= read;
 
 	if (protocol_version != OTR_VERSION) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	uint8_t message_type = 0;
 	if (deserialize_uint8(&message_type, cursor, len, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += read;
 	len -= read;
 
 	if (message_type != OTR_DATA_MSG_TYPE) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += read;
@@ -118,35 +116,35 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 
 	if (deserialize_uint32
 	    (&dst->receiver_instance_tag, cursor, len, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += read;
 	len -= read;
 
 	if (deserialize_uint8(&dst->flags, cursor, len, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += read;
 	len -= read;
 
 	if (deserialize_uint32(&dst->ratchet_id, cursor, len, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += read;
 	len -= read;
 
 	if (deserialize_uint32(&dst->message_id, cursor, len, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += read;
 	len -= read;
 
 	if (deserialize_ec_point(dst->ecdh, cursor)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += ED448_POINT_BYTES;
@@ -156,14 +154,14 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 
 	otr_mpi_t b_mpi;	// no need to free, because nothing is copied now
 	if (otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += read;
 	len -= read;
 
 	if (!dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += read;
@@ -171,34 +169,30 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 
 	if (deserialize_bytes_array
 	    ((uint8_t *) & dst->nonce, DATA_MSG_NONCE_BYTES, cursor, len)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	cursor += DATA_MSG_NONCE_BYTES;
 	len -= DATA_MSG_NONCE_BYTES;
 
 	if (deserialize_data(&dst->enc_msg, cursor, len, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	dst->enc_msg_len = read - 4;
 	cursor += read;
 	len -= read;
 
-	if (deserialize_bytes_array
-	    ((uint8_t *) & dst->mac, DATA_MSG_MAC_BYTES, cursor, len)) {
-		return false;
-	}
-
-	return true;
+    return deserialize_bytes_array
+	    ((uint8_t *) & dst->mac, DATA_MSG_MAC_BYTES, cursor, len);
 }
 
-bool data_message_validate(m_mac_key_t mac_key, const data_message_t * data_msg)
+bool valid_data_message(m_mac_key_t mac_key, const data_message_t * data_msg)
 {
 	uint8_t *body = NULL;
 	size_t bodylen = 0;
 
-	if (!data_message_body_aprint(&body, &bodylen, data_msg)) {
+	if (data_message_body_asprintf(&body, &bodylen, data_msg)) {
 		return false;
 	}
 

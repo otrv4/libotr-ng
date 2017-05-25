@@ -208,7 +208,7 @@ valid_dake_identity_message(const dake_identity_message_t * identity_message)
 	return valid;
 }
 
-bool validate_received_values(const ec_point_t their_ecdh,
+bool valid_received_values(const ec_point_t their_ecdh,
 			      const dh_mpi_t their_dh,
 			      const user_profile_t * profile)
 {

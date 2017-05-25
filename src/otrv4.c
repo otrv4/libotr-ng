@@ -715,7 +715,7 @@ receive_identity_message(string_t * dst, const uint8_t * buff, size_t buflen,
 
 	received_instance_tag(m->sender_instance_tag, otr);
 
-	if (!validate_received_values(m->Y, m->B, m->profile))
+	if (!valid_received_values(m->Y, m->B, m->profile))
 		return false;
 
 	switch (otr->state) {
@@ -784,7 +784,7 @@ verify_auth_r_message(const dake_auth_r_t * auth, const otrv4_t * otr)
 	uint8_t *t = NULL;
 	size_t t_len = 0;
 
-	if (!validate_received_values(auth->X, auth->A, auth->profile))
+	if (!valid_received_values(auth->X, auth->A, auth->profile))
 		return false;
 
 	if (!build_auth_message
@@ -1002,7 +1002,7 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
 		return false;
 
-	if (!data_message_deserialize(msg, buff, buflen))
+	if (data_message_deserialize(msg, buff, buflen))
 		return false;
 
 	key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
@@ -1012,7 +1012,7 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 		if (!get_receiving_msg_keys(enc_key, mac_key, msg, otr))
 			continue;
 
-		if (!data_message_validate(mac_key, msg))
+		if (!valid_data_message(mac_key, msg))
 			continue;
 
 		if (!decrypt_data_msg(response, enc_key, msg))
@@ -1235,7 +1235,7 @@ serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 	uint8_t *body = NULL;
 	size_t bodylen = 0;
 
-	if (!data_message_body_aprint(&body, &bodylen, data_msg))
+	if (data_message_body_asprintf(&body, &bodylen, data_msg))
 		return false;
 
 	size_t serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;

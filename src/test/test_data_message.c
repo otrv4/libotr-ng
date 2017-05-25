@@ -80,7 +80,7 @@ void test_data_message_serializes()
 
 	uint8_t *serialized = NULL;
 	size_t serlen = 0;
-	otrv4_assert(data_message_body_aprint(&serialized, &serlen, data_msg));
+	otrv4_assert(data_message_body_asprintf(&serialized, &serlen, data_msg) == OTR4_SUCCESS);
 
 #define OUR_DH_LEN (4+383)
 #define MSG_AS_DATA (4+3)

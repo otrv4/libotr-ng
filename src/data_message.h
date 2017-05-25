@@ -29,15 +29,15 @@ void data_message_free(data_message_t * data_msg);
 
 void data_message_destroy(data_message_t * data_msg);
 
-bool
-data_message_body_aprint(uint8_t ** body, size_t * bodylen,
+otr4_err_t
+data_message_body_asprintf(uint8_t ** body, size_t * bodylen,
 			 const data_message_t * data_msg);
 
-bool
+otr4_err_t
 data_message_deserialize(data_message_t * data_msg, const uint8_t * buff,
 			 size_t bufflen);
 
 bool
-data_message_validate(m_mac_key_t mac_key, const data_message_t * data_msg);
+valid_data_message(m_mac_key_t mac_key, const data_message_t * data_msg);
 
 #endif
