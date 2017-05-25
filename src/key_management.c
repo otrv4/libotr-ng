@@ -92,6 +92,7 @@ void key_manager_generate_ephemeral_keys(key_manager_t *manager)
 
 	if (manager->i % 3 == 0) {
 		dh_keypair_destroy(manager->our_dh);
+        //TODO: handle error when this fails
 		dh_keypair_generate(manager->our_dh);
 	}
 }
@@ -381,7 +382,7 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager)
 
 	if (manager->i % 3 == 0) {
 		k_dh_t k_dh;
-		if (!dh_shared_secret
+		if (dh_shared_secret
 		    (k_dh, sizeof(k_dh_t), manager->our_dh->priv,
 		     manager->their_dh))
 			return OTR4_ERROR;

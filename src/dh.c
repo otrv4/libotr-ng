@@ -48,11 +48,11 @@ void dh_free(void)
 	DH3072_GENERATOR = NULL;
 }
 
-bool dh_keypair_generate(dh_keypair_t keypair)
+otr4_err_t dh_keypair_generate(dh_keypair_t keypair)
 {
 	uint8_t *secbuf = malloc(DH_KEY_SIZE);
 	if (secbuf == NULL) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	random_bytes(secbuf, DH_KEY_SIZE);
@@ -62,14 +62,14 @@ bool dh_keypair_generate(dh_keypair_t keypair)
 	free(secbuf);
 
 	if (err) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
 	gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, keypair->priv,
 		      DH3072_MODULUS);
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
 void dh_keypair_destroy(dh_keypair_t keypair)
@@ -81,7 +81,7 @@ void dh_keypair_destroy(dh_keypair_t keypair)
 	keypair->pub = NULL;
 }
 
-bool
+otr4_err_t
 dh_shared_secret(uint8_t * shared,
 		 size_t shared_bytes,
 		 const dh_private_key_t our_priv,
@@ -94,10 +94,9 @@ dh_shared_secret(uint8_t * shared,
 	gcry_mpi_release(secret);
 
 	if (err) {
-		return false;
+		return OTR4_ERROR;
 	}
-
-	return true;
+	return OTR4_SUCCESS;
 }
 
 otr4_err_t
@@ -112,26 +111,19 @@ dh_mpi_serialize(uint8_t * dst, size_t dst_len, size_t * written,
 	return OTR4_SUCCESS;
 }
 
-bool
+otr4_err_t
 dh_mpi_deserialize(dh_mpi_t * dst, const uint8_t * buffer, size_t buflen,
 		   size_t * nread)
 {
-	gcry_error_t err =
-	    gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread);
-	if (err) {
-		return false;
+	if (gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread)) {
+		return OTR4_ERROR;
 	}
-
-	return true;
+	return OTR4_SUCCESS;
 }
 
 bool dh_mpi_valid(dh_mpi_t mpi)
 {
 	/* Check that their_pub is in range */
-	if (gcry_mpi_cmp_ui(mpi, 2) < 0 ||
-	    gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0) {
-		return false;
-	}
-
-	return true;
+	return !(gcry_mpi_cmp_ui(mpi, 2) < 0 ||
+	    gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0);
 }

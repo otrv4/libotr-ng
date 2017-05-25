@@ -28,18 +28,18 @@ static inline dh_mpi_t dh_mpi_new()
 	return gcry_mpi_new(DH3072_MOD_LEN_BITS);
 }
 
-bool dh_keypair_generate(dh_keypair_t keypair);
+otr4_err_t dh_keypair_generate(dh_keypair_t keypair);
 
 void dh_keypair_destroy(dh_keypair_t keypair);
 
 otr4_err_t dh_mpi_serialize(uint8_t * dst, size_t dst_len, size_t * written,
 			    const dh_mpi_t src);
 
-bool
+otr4_err_t
 dh_mpi_deserialize(dh_mpi_t * dst, const uint8_t * buffer, size_t buflen,
 		   size_t * nread);
 
-bool
+otr4_err_t
 dh_shared_secret(uint8_t * shared,
 		 size_t shared_bytes,
 		 const dh_private_key_t our_priv,

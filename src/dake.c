@@ -166,11 +166,7 @@ dake_identity_message_deserialize(dake_identity_message_t * dst,
 	cursor += read;
 	len -= read;
 
-	if (!dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read)) {
-		return OTR4_ERROR;
-	}
-
-	return OTR4_SUCCESS;
+	return dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
 
 bool not_expired(time_t expires)
@@ -361,7 +357,7 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
 	cursor += read;
 	len -= read;
 
-	if (!dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read)) {
+	if (dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read)) {
 		return OTR4_ERROR;
 	}
 

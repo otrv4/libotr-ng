@@ -15,7 +15,7 @@ test_dake_identity_message_serializes(identity_message_fixture_t * f,
 
 	uint8_t sym[ED448_PRIVATE_BYTES] = { 0 };
 	ecdh_keypair_generate(ecdh, sym);
-	dh_keypair_generate(dh);
+	otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
 
 	dake_identity_message_t *identity_message =
 	    dake_identity_message_new(f->profile);
@@ -79,7 +79,7 @@ test_dake_identity_message_deserializes(identity_message_fixture_t * f,
 
 	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };
 	ecdh_keypair_generate(ecdh, sym);
-	dh_keypair_generate(dh);
+	otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
 
 	dake_identity_message_t *identity_message =
 	    dake_identity_message_new(f->profile);
@@ -126,7 +126,7 @@ test_dake_identity_message_valid(identity_message_fixture_t * f,
 
 	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };
 	ecdh_keypair_generate(ecdh, sym);
-	dh_keypair_generate(dh);
+	otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
 
 	dake_identity_message_t *identity_message =
 	    dake_identity_message_new(f->profile);

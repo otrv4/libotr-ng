@@ -160,7 +160,7 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 	cursor += read;
 	len -= read;
 
-	if (!dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read)) {
+	if (dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read)) {
 		return OTR4_ERROR;
 	}
 

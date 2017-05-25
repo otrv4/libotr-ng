@@ -14,9 +14,9 @@ void dh_test_api()
 	memset(shared2, 0, DH3072_MOD_LEN_BYTES);
 
 	otrv4_assert(dh_shared_secret
-		     (shared1, sizeof(shared1), alice->priv, bob->pub));
+		     (shared1, sizeof(shared1), alice->priv, bob->pub) == OTR4_SUCCESS);
 	otrv4_assert(dh_shared_secret
-		     (shared2, sizeof(shared2), bob->priv, alice->pub));
+		     (shared2, sizeof(shared2), bob->priv, alice->pub) == OTR4_SUCCESS);
 
 	otrv4_assert_cmpmem(shared1, shared2, sizeof(shared1));
 
