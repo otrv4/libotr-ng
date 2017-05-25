@@ -7,6 +7,7 @@
 #include "sha3.h"
 #include "debug.h"
 #include "random.h"
+#include "constants.h"
 
 ratchet_t *ratchet_new()
 {
@@ -77,6 +78,7 @@ void key_manager_destroy(key_manager_t *manager)
 	ec_point_destroy(manager->their_ecdh);
 
 	list_free_all(manager->old_mac_keys);
+	manager->old_mac_keys = NULL;
 }
 
 void key_manager_generate_ephemeral_keys(key_manager_t *manager)
@@ -526,4 +528,18 @@ key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
 	if (message_id == manager->j)
         return OTR4_SUCCESS;
     return OTR4_ERROR;
+}
+
+void
+key_manager_old_mac_keys_serialize(uint8_t * serialized_mac_keys,
+                                   list_element_t *old_mac_keys)
+{
+	const size_t mac_keys_len = list_len(old_mac_keys);
+	for (int i = 0; i < mac_keys_len; i++) {
+	        list_element_t *last = list_get_last(old_mac_keys);
+		memcpy(serialized_mac_keys, last, DATA_MSG_MAC_BYTES);
+	        old_mac_keys = list_remove_element(last, old_mac_keys);
+	}
+
+        list_free_all(old_mac_keys);
 }

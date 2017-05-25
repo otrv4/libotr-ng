@@ -30,6 +30,7 @@ int main(int argc, char **argv)
 
 	g_test_add_func("/dake/snizkpk", test_snizkpk_auth);
 	g_test_add_func("/list/add", test_list_add);
+	g_test_add_func("/list/get", test_list_get_last);
 	g_test_add_func("/list/length", test_list_len);
 
 	g_test_add_func("/dh/api", dh_test_api);

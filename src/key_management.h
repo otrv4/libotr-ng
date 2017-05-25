@@ -119,5 +119,8 @@ otr4_err_t
 key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
 					  m_mac_key_t mac_key,
 					  const key_manager_t *manager);
+void
+key_manager_old_mac_keys_serialize(uint8_t * serialized_mac_keys,
+                                   list_element_t *old_mac_keys);
 
 #endif

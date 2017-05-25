@@ -51,6 +51,7 @@ void test_api_conversation(void)
 		otrv4_assert_cmpmem("hi", response_to_alice->to_display, 3);
 		g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, message_id-1);
 		otrv4_assert(response_to_alice->to_send == NULL);
+
 		otrv4_response_free(response_to_alice);
 		response_to_alice = NULL;
 
@@ -61,10 +62,11 @@ void test_api_conversation(void)
 
 	for (message_id = 1; message_id < 4; message_id++) {
 		//Bob sends a data message
+
 		otrv4_assert(otrv4_send_message(&to_send, "hello", NULL, bob));
 		otrv4_assert(to_send);
 		otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
-		//g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
+		g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
 
 		//New ratchet hapenned
 		g_assert_cmpint(bob->keys->i, ==, 1);
@@ -74,6 +76,7 @@ void test_api_conversation(void)
 		response_to_bob = otrv4_response_new();
 		otrv4_assert(otrv4_receive_message
 			     (response_to_bob, (string_t) to_send, alice));
+		g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
 		free(to_send);
 		to_send = NULL;
 

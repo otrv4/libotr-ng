@@ -17,6 +17,7 @@
 #include "sha3.h"
 #include "str.h"
 #include "tlv.h"
+#include "key_management.h"
 
 #include "debug.h"
 
@@ -1221,7 +1222,9 @@ encrypt_data_message(data_message_t * data_msg, const uint8_t * message,
 
 static bool
 serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
-			      const data_message_t * data_msg)
+			      const data_message_t * data_msg,
+			      uint8_t *to_reveal_mac_keys,
+			      size_t to_reveal_mac_keys_len)
 {
 	bool ok = false;
 	uint8_t *body = NULL;
@@ -1230,9 +1233,7 @@ serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 	if (!data_message_body_aprint(&body, &bodylen, data_msg))
 		return false;
 
-
-	//TODO: append old mac keys to be revealed
-	size_t serlen = bodylen + DATA_MSG_MAC_BYTES;
+	size_t serlen = bodylen + DATA_MSG_MAC_BYTES + to_reveal_mac_keys_len;
 	uint8_t *ser = malloc(serlen);
 	if (!ser) {
 		free(body);
@@ -1250,6 +1251,9 @@ serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 		return false;
 	}
 
+	serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES,
+	                      to_reveal_mac_keys, to_reveal_mac_keys_len);
+
 	*dst = otrl_base64_otr_encode(ser, serlen);
 	free(ser);
 
@@ -1265,6 +1269,15 @@ send_data_message(string_t * to_send, const uint8_t * message,
 	m_enc_key_t enc_key;
 	m_mac_key_t mac_key;
 
+	size_t serlen = list_len(otr->keys->old_mac_keys) * DATA_MSG_MAC_BYTES;
+	uint8_t *ser_mac_keys = malloc(serlen);
+	if (!ser_mac_keys) {
+		return false;
+	}
+
+        key_manager_old_mac_keys_serialize(ser_mac_keys, otr->keys->old_mac_keys);
+        otr->keys->old_mac_keys = NULL;
+
 	if (key_manager_prepare_next_chain_key(otr->keys))
 		return false;
 
@@ -1278,8 +1291,10 @@ send_data_message(string_t * to_send, const uint8_t * message,
 
 	ok = encrypt_data_message(data_msg, message, message_len, enc_key);
 	if (ok)
-		ok = serialize_and_encode_data_msg(to_send, mac_key, data_msg);
+		ok = serialize_and_encode_data_msg(to_send, mac_key, data_msg,
+		                                   ser_mac_keys, serlen);
 
+	free(ser_mac_keys);
 	data_message_free(data_msg);
 
 	//TODO: Change the spec to say this should be incremented after the message
