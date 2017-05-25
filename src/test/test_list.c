@@ -17,3 +17,16 @@ void test_list_add()
 
 	list_free_all(list);
 }
+
+void test_list_len()
+{
+	int one = 1, two = 2;
+	list_element_t *list = NULL;
+	list = list_add(&one, list);
+	list = list_add(&two, list);
+
+	otrv4_assert(list);
+	g_assert_cmpint(list_len(list), ==, 2);
+
+	list_free_all(list);
+}

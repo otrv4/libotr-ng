@@ -1009,6 +1009,7 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 		//TODO: Securely delete receiving chain keys older than message_id-1.
 
 		otr->keys->old_mac_keys = list_add(mac_key, otr->keys->old_mac_keys);
+
 		if (!receive_tlvs(&reply_tlv, response, otr))
 			continue;
 

@@ -99,7 +99,6 @@ list_element_t *list_remove_element(const list_element_t * wanted,
 
 int list_len(list_element_t *head)
 {
-
         list_element_t *cursor = head;
         int size = 0;
 

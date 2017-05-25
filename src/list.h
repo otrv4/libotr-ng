@@ -22,4 +22,5 @@ list_element_t *list_remove_element(const list_element_t * wanted,
 				    list_element_t * head);
 
 int list_len(list_element_t * head);
+
 #endif
