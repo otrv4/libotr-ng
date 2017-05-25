@@ -84,7 +84,7 @@ void test_serialize_otrv4_symmetric_key()
 
 	char *buffer = NULL;
 	size_t buffer_size = 0;
-	otrv4_symmetric_key_serialize(&buffer, &buffer_size, sym);
+	otrv4_assert(otrv4_symmetric_key_serialize(&buffer, &buffer_size, sym) == OTR4_SUCCESS);
 
 	g_assert_cmpint(strlen(expected), ==, buffer_size);	// 76
 	otrv4_assert_cmpmem(expected, buffer, buffer_size);

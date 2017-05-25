@@ -26,7 +26,7 @@ void otrv4_keypair_destroy(otrv4_keypair_t * keypair);
 
 void otrv4_keypair_free(otrv4_keypair_t * keypair);
 
-int otrv4_symmetric_key_serialize(char **buffer, size_t * buffer_size,
+otr4_err_t otrv4_symmetric_key_serialize(char **buffer, size_t * buffer_size,
 				  uint8_t sym[ED448_PRIVATE_BYTES]);
 
 #endif

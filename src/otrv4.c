@@ -477,7 +477,7 @@ extract_header(otrv4_header_t * dst, const uint8_t * buffer,
 
 static bool double_ratcheting_init(int j, otrv4_t * otr)
 {
-	if (!key_manager_ratchetting_init(j, otr->keys))
+	if (key_manager_ratchetting_init(j, otr->keys))
 		return false;
 
 	otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
@@ -970,10 +970,12 @@ get_receiving_msg_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
 	if (!key_manager_ensure_on_ratchet(msg->ratchet_id, otr->keys))
 		return false;
 
-	return key_manager_retrieve_receiving_message_keys(enc_key, mac_key,
+	if (key_manager_retrieve_receiving_message_keys(enc_key, mac_key,
 							   msg->ratchet_id,
 							   msg->message_id,
-							   otr->keys);
+							   otr->keys))
+        return false;
+    return true;
 }
 
 bool
@@ -1241,12 +1243,11 @@ send_data_message(string_t * to_send, const uint8_t * message,
 	m_enc_key_t enc_key;
 	m_mac_key_t mac_key;
 
-	if (!key_manager_prepare_next_chain_key(otr->keys))
+	if (key_manager_prepare_next_chain_key(otr->keys))
 		return false;
 
-	ok = key_manager_retrieve_sending_message_keys(enc_key, mac_key,
-						       otr->keys);
-	if (!ok)
+	if (key_manager_retrieve_sending_message_keys(enc_key, mac_key,
+						       otr->keys))
 		return false;
 
 	data_msg = generate_data_msg(otr);

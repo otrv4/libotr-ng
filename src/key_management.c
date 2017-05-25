@@ -139,28 +139,31 @@ bool derive_chain_key_b(chain_key_t chain_key, const shared_secret_t shared)
 					     magic, shared);
 }
 
-bool derive_ratchet_keys(ratchet_t * ratchet, const shared_secret_t shared)
+otr4_err_t derive_ratchet_keys(ratchet_t * ratchet, const shared_secret_t shared)
 {
 	if (!derive_root_key(ratchet->root_key, shared)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	if (!derive_chain_key_a(ratchet->chain_a->key, shared)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
-	return derive_chain_key_b(ratchet->chain_b->key, shared);
+    if (!derive_chain_key_b(ratchet->chain_b->key, shared)) {
+        return OTR4_ERROR;
+    }
+    return OTR4_SUCCESS;
 }
 
-bool
+otr4_err_t
 key_manager_new_ratchet(key_manager_t *manager, const shared_secret_t shared)
 {
 	ratchet_t *ratchet = ratchet_new();
 	if (ratchet == NULL)
-		return false;
+		return OTR4_ERROR;
 
-	if (!derive_ratchet_keys(ratchet, shared))
-		return false;
+	if (derive_ratchet_keys(ratchet, shared))
+		return OTR4_ERROR;
 
 	ratchet_free(manager->previous);
 	manager->previous = manager->current;
@@ -168,7 +171,7 @@ key_manager_new_ratchet(key_manager_t *manager, const shared_secret_t shared)
 	ratchet->id = manager->i;
 	manager->current = ratchet;
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
 const chain_link_t *chain_get_last(const chain_link_t * head)
@@ -292,7 +295,7 @@ bool rebuild_chain_keys_up_to(int message_id, const chain_link_t * head)
 	return true;
 }
 
-bool
+otr4_err_t
 key_manager_get_receiving_chain_key_by_id(chain_key_t receiving,
 					  int ratchet_id, int message_id,
 					  const key_manager_t *manager)
@@ -306,7 +309,7 @@ key_manager_get_receiving_chain_key_by_id(chain_key_t receiving,
 		   && manager->previous->id == ratchet_id) {
 		ratchet = manager->previous;
 	} else {
-		return false;	// ratchet id not found
+		return OTR4_ERROR;	// ratchet id not found
 	}
 
 	message_chain_t *chain =
@@ -314,31 +317,31 @@ key_manager_get_receiving_chain_key_by_id(chain_key_t receiving,
 				      manager->their_ecdh);
 	if (!rebuild_chain_keys_up_to(message_id, chain->receiving)) {
 		free(chain);
-		return false;
+		return OTR4_ERROR;
 	}
 
 	const chain_link_t *link =
 	    chain_get_by_id(message_id, chain->receiving);
 	free(chain);
 	if (link == NULL)
-		return false;	//message id not found. Should have been generated at rebuild_chain_keys_up_to
+		return OTR4_ERROR;	//message id not found. Should have been generated at rebuild_chain_keys_up_to
 
 	memcpy(receiving, link->key, sizeof(chain_key_t));
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
-bool
+otr4_err_t
 calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
 			const mix_key_t mix_key)
 {
 	if (gcry_md_get_algo_dlen(GCRY_MD_SHA3_512) != sizeof(shared_secret_t)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	gcry_md_hd_t hd;
 	if (gcry_md_open(&hd, GCRY_MD_SHA3_512, 0)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	gcry_md_write(hd, k_ecdh, sizeof(k_ecdh_t));
@@ -347,10 +350,10 @@ calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
 	       sizeof(shared_secret_t));
 	gcry_md_close(hd);
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
-static bool derive_sending_chain_key(key_manager_t *manager)
+static otr4_err_t derive_sending_chain_key(key_manager_t *manager)
 {
 	message_chain_t *chain =
 	    decide_between_chain_keys(manager->current, manager->our_ecdh->pub,
@@ -360,18 +363,18 @@ static bool derive_sending_chain_key(key_manager_t *manager)
 
 	chain_link_t *l = derive_next_chain_link(last);
 	if (l == NULL)
-		return false;
+		return OTR4_ERROR;
 
 	//TODO: assert l->id == manager->j
-	return true;
+	return OTR4_SUCCESS;
 }
 
-static bool enter_new_ratchet(key_manager_t *manager)
+static otr4_err_t enter_new_ratchet(key_manager_t *manager)
 {
 	k_ecdh_t k_ecdh;
 	if (ecdh_shared_secret
 	    (k_ecdh, sizeof(k_ecdh_t), manager->our_ecdh, manager->their_ecdh))
-		return false;
+		return OTR4_ERROR;
 	//TODO: Securely delete our_ecdh.secret.
 
 	if (manager->i % 3 == 0) {
@@ -379,19 +382,19 @@ static bool enter_new_ratchet(key_manager_t *manager)
 		if (!dh_shared_secret
 		    (k_dh, sizeof(k_dh_t), manager->our_dh->priv,
 		     manager->their_dh))
-			return false;
+			return OTR4_ERROR;
 
 		//TODO: Securely delete our_dh.secret
 
 		if (!sha3_256
 		    (manager->mix_key, sizeof(mix_key_t), k_dh, sizeof(k_dh_t)))
-			return false;
+			return OTR4_ERROR;
 
 	} else {
 		if (!sha3_256
 		    (manager->mix_key, sizeof(mix_key_t), manager->mix_key,
 		     sizeof(mix_key_t)))
-			return false;
+			return OTR4_ERROR;
 
 	}
 
@@ -404,32 +407,35 @@ static bool enter_new_ratchet(key_manager_t *manager)
 #endif
 
 	shared_secret_t shared;
-	if (!calculate_shared_secret(shared, k_ecdh, manager->mix_key))
-		return false;
+	if (calculate_shared_secret(shared, k_ecdh, manager->mix_key))
+		return OTR4_ERROR;
 
 	// TODO: Securely delete the root key and all chain keys from the ratchet i-2.
 	// TODO: Securely delete shared.
 	uint8_t ssid_buff[GCRY_MD_SHA3_256];
 	if (!sha3_256(ssid_buff, gcry_md_get_algo_dlen(GCRY_MD_SHA3_256),
 		      shared, sizeof(shared_secret_t)))
-		return false;
+		return OTR4_ERROR;
 
 	memcpy(manager->ssid, ssid_buff, 8);
 
-	return key_manager_new_ratchet(manager, shared);
+    if (key_manager_new_ratchet(manager, shared)) {
+        return OTR4_ERROR;
+    }
+    return OTR4_SUCCESS;
 }
 
-bool key_manager_ratchetting_init(int j, key_manager_t *manager)
+otr4_err_t key_manager_ratchetting_init(int j, key_manager_t *manager)
 {
-	if (!enter_new_ratchet(manager))
-		return false;
+	if (enter_new_ratchet(manager))
+		return OTR4_ERROR;
 
 	manager->i = 0;
 	manager->j = j;
-	return true;
+	return OTR4_SUCCESS;
 }
 
-static bool rotate_keys(key_manager_t *manager)
+static otr4_err_t rotate_keys(key_manager_t *manager)
 {
 	manager->i++;
 	manager->j = 0;
@@ -444,7 +450,7 @@ bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t *manager)
 		return true;
 
 	manager->i = ratchet_id;
-	if (!enter_new_ratchet(manager))
+	if (enter_new_ratchet(manager))
 		return false;
 
 	return true;
@@ -466,21 +472,22 @@ derive_encription_and_mac_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
 	return ok1 && ok2;
 }
 
-bool
+otr4_err_t
 key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
 					    m_mac_key_t mac_key,
 					    int ratchet_id, int message_id,
 					    const key_manager_t *manager)
 {
-	bool ok = false;
 	chain_key_t receiving;
 
-	ok = key_manager_get_receiving_chain_key_by_id(receiving, ratchet_id,
-						       message_id, manager);
-	if (!ok)
-		return false;
+	if (key_manager_get_receiving_chain_key_by_id(receiving, ratchet_id,
+						       message_id, manager))
+		return OTR4_ERROR;
 
-	return derive_encription_and_mac_keys(enc_key, mac_key, receiving);
+    if (!derive_encription_and_mac_keys(enc_key, mac_key, receiving)) {
+        return OTR4_ERROR;
+    }
+    return OTR4_SUCCESS;
 }
 
 static bool should_ratchet(const key_manager_t *manager)
@@ -488,15 +495,16 @@ static bool should_ratchet(const key_manager_t *manager)
 	return manager->j == 0;
 }
 
-bool key_manager_prepare_next_chain_key(key_manager_t *manager)
+otr4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager)
 {
-	if (should_ratchet(manager))
-		return rotate_keys(manager);
+    if (should_ratchet(manager)) {
+        return rotate_keys(manager);
+    }
 
-	return derive_sending_chain_key(manager);
+    return derive_sending_chain_key(manager);
 }
 
-bool
+otr4_err_t
 key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
 					  m_mac_key_t mac_key,
 					  const key_manager_t *manager)
@@ -505,7 +513,7 @@ key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
 	int message_id = key_manager_get_sending_chain_key(sending, manager);
 
 	if (!derive_encription_and_mac_keys(enc_key, mac_key, sending))
-		return false;
+		return OTR4_ERROR;
 
 #ifdef DEBUG
 	printf("GOT SENDING KEYS:\n");
@@ -515,5 +523,7 @@ key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
 	otrv4_memdump(mac_key, sizeof(m_mac_key_t));
 #endif
 
-	return message_id == manager->j;
+	if (message_id == manager->j)
+        return OTR4_SUCCESS;
+    return OTR4_ERROR;
 }

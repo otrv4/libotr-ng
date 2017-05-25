@@ -14,7 +14,7 @@ void test_derive_ratchet_keys()
 	};
 
 	ratchet_t ratchet;
-	derive_ratchet_keys(&ratchet, shared);
+	otrv4_assert(derive_ratchet_keys(&ratchet, shared) == OTR4_SUCCESS);
 
 	root_key_t expected_root_key;
 
@@ -47,8 +47,8 @@ void test_key_manager_destroy()
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 	};
 
-	key_manager_new_ratchet(manager, shared);
-	key_manager_new_ratchet(manager, shared); //ran a second time to fill manager->previous
+	otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
+	otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS); //ran a second time to fill manager->previous
 
 	dh_init();
 	bool ok = dh_keypair_generate(manager->our_dh);
