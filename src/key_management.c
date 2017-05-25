@@ -537,7 +537,7 @@ key_manager_old_mac_keys_serialize(uint8_t * serialized_mac_keys,
 	const size_t mac_keys_len = list_len(old_mac_keys);
 	for (int i = 0; i < mac_keys_len; i++) {
 	        list_element_t *last = list_get_last(old_mac_keys);
-		memcpy(serialized_mac_keys, last, DATA_MSG_MAC_BYTES);
+		memcpy(serialized_mac_keys, last, DATA_MSG_MAC_BYTES + 1);
 	        old_mac_keys = list_remove_element(last, old_mac_keys);
                 list_free_all(last);
 	}
