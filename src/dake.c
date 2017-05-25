@@ -57,7 +57,7 @@ dake_identity_message_aprint(uint8_t ** dst, size_t * nbytes,
 {
 	size_t profile_len = 0;
 	uint8_t *profile = NULL;
-	if (!user_profile_aprint
+	if (user_profile_asprintf
 	    (&profile, &profile_len, identity_message->profile)) {
 		return false;
 	}
@@ -144,7 +144,7 @@ dake_identity_message_deserialize(dake_identity_message_t * dst,
 	cursor += read;
 	len -= read;
 
-	if (!user_profile_deserialize(dst->profile, cursor, len, &read)) {
+	if (user_profile_deserialize(dst->profile, cursor, len, &read)) {
 		return false;
 	}
 
@@ -235,7 +235,7 @@ dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
 	size_t our_profile_len = 0;
 	uint8_t *our_profile = NULL;
 
-	if (!user_profile_aprint
+	if (user_profile_asprintf
 	    (&our_profile, &our_profile_len, dre_auth->profile)) {
 		return false;
 	}
@@ -339,7 +339,7 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
 	cursor += read;
 	len -= read;
 
-	if (!user_profile_deserialize(dst->profile, cursor, len, &read)) {
+	if (user_profile_deserialize(dst->profile, cursor, len, &read)) {
 		return false;
 	}
 

@@ -17,7 +17,7 @@ typedef struct {
 
 user_profile_t *user_profile_new(const string_t versions);
 
-bool user_profile_sign(user_profile_t * profile,
+otr4_err_t user_profile_sign(user_profile_t * profile,
 		       const otrv4_keypair_t * keypair);
 
 bool user_profile_verify_signature(const user_profile_t * profile);
@@ -28,16 +28,16 @@ void user_profile_destroy(user_profile_t * profile);
 
 void user_profile_free(user_profile_t * profile);
 
-bool
+otr4_err_t
 user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 			 size_t buflen, size_t * nread);
 
-bool
-user_profile_body_aprint(uint8_t ** dst, size_t * nbytes,
+otr4_err_t
+user_profile_body_asprintf(uint8_t ** dst, size_t * nbytes,
 			 const user_profile_t * profile);
 
-bool
-user_profile_aprint(uint8_t ** dst, size_t * nbytes,
+otr4_err_t
+user_profile_asprintf(uint8_t ** dst, size_t * nbytes,
 		    const user_profile_t * profile);
 
 user_profile_t *user_profile_build(const string_t versions,

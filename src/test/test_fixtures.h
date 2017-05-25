@@ -54,7 +54,7 @@ identity_message_fixture_setup(identity_message_fixture_t * fixture,
 	fixture->profile = user_profile_new("4");
 	otrv4_assert(fixture->profile != NULL);
 	fixture->profile->expires = time(NULL) + 60 * 60;
-	otrv4_assert(user_profile_sign(fixture->profile, fixture->keypair));
+	otrv4_assert(user_profile_sign(fixture->profile, fixture->keypair) == OTR4_SUCCESS);
 }
 
 static void

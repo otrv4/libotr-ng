@@ -40,9 +40,9 @@ test_dake_identity_message_serializes(identity_message_fixture_t * f,
 
 	size_t user_profile_len = 0;
 	uint8_t *user_profile_serialized = NULL;
-	otrv4_assert(user_profile_aprint
+	otrv4_assert(user_profile_asprintf
 		     (&user_profile_serialized, &user_profile_len,
-		      identity_message->profile));
+		      identity_message->profile) == OTR4_SUCCESS);
 	otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
 	free(user_profile_serialized);
 	cursor += user_profile_len;

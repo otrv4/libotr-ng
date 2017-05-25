@@ -521,11 +521,11 @@ build_auth_message(uint8_t ** msg, size_t * msg_len,
 	bool ok = false;
 
 	do {
-		if (!user_profile_aprint
+		if (user_profile_asprintf
 		    (&ser_i_profile, &ser_i_profile_len, i_profile))
 			continue;
 
-		if (!user_profile_aprint
+		if (user_profile_asprintf
 		    (&ser_r_profile, &ser_r_profile_len, r_profile))
 			continue;
 
