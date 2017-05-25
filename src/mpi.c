@@ -56,22 +56,22 @@ otr_mpi_read_len(otr_mpi_t dst, const uint8_t * src, size_t src_len,
 	return true;
 }
 
-bool
+otr4_err_t
 otr_mpi_deserialize(otr_mpi_t dst, const uint8_t * src, size_t src_len,
 		    size_t * read)
 {
 	if (!otr_mpi_read_len(dst, src, src_len, read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	if (dst->len == 0) {
 		dst->data = NULL;
-		return true;
+		return OTR4_SUCCESS;
 	}
 
 	dst->data = malloc(dst->len);
 	if (dst->data == NULL) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	memcpy(dst->data, src + *read, dst->len);
@@ -79,24 +79,24 @@ otr_mpi_deserialize(otr_mpi_t dst, const uint8_t * src, size_t src_len,
 	if (read != NULL) {
 		*read += dst->len;
 	}
-	return true;
+	return OTR4_SUCCESS;
 }
 
-bool
+otr4_err_t
 otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t * src,
 			    size_t src_len, size_t * read)
 {
 	if (!otr_mpi_read_len(dst, src, src_len, read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	if (dst->len == 0) {
 		dst->data = NULL;
-		return true;
+		return OTR4_SUCCESS;
 	}
 	//points to original buffer without copying
 	dst->data = (uint8_t *) src + *read;
-	return true;
+	return OTR4_SUCCESS;
 }
 
 size_t otr_mpi_memcpy(uint8_t * dst, const otr_mpi_t mpi)

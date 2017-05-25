@@ -130,7 +130,7 @@ deserialize_mpi_data(uint8_t * dst, const uint8_t * buffer, size_t buflen,
 {
 	otr_mpi_t mpi;		// no need to free, because nothing is copied now
 
-	if (!otr_mpi_deserialize_no_copy(mpi, buffer, buflen, read)) {
+	if (otr_mpi_deserialize_no_copy(mpi, buffer, buflen, read)) {
 		return OTR4_ERROR;	// only mpi len has been read
 	}
 

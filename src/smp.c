@@ -364,7 +364,7 @@ deserialize_mpi_to_scalar(ec_scalar_t dst, const uint8_t * buff,
 	size_t r = 0;
 	const uint8_t *cursor = buff;
 
-	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, bufflen, &r))
+	if (otr_mpi_deserialize_no_copy(tmp_mpi, cursor, bufflen, &r))
 		return false;
 
 	if (deserialize_ec_scalar(dst, tmp_mpi->data, tmp_mpi->len))

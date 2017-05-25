@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "error.h"
+
 #ifndef MPI_H
 #define MPI_H
 
@@ -18,11 +20,11 @@ void otr_mpi_set(otr_mpi_t mpi, const uint8_t * src, size_t len);
 
 void otr_mpi_copy(otr_mpi_t dst, const otr_mpi_t src);
 
-bool
+otr4_err_t
 otr_mpi_deserialize(otr_mpi_t dst, const uint8_t * src, size_t src_len,
 		    size_t * read);
 
-bool
+otr4_err_t
 otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t * src,
 			    size_t src_len, size_t * read);
 

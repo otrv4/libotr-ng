@@ -167,7 +167,7 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 
 		walked += sizeof(eddsa_signature_t);
 
-		if (!otr_mpi_deserialize
+		if (otr_mpi_deserialize
 		    (target->transitional_signature, buffer + walked,
 		     buflen - walked, &read))
 			continue;

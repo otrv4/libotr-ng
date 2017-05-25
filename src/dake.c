@@ -159,7 +159,7 @@ dake_identity_message_deserialize(dake_identity_message_t * dst,
 	len -= ED448_POINT_BYTES;
 
 	otr_mpi_t b_mpi;	// no need to free, because nothing is copied now
-	if (!otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
+	if (otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
 		return false;
 	}
 
@@ -354,7 +354,7 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
 	len -= ED448_POINT_BYTES;
 
 	otr_mpi_t tmp_mpi;	// no need to free, because nothing is copied now
-	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
+	if (otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
 		return false;
 	}
 
