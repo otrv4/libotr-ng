@@ -42,26 +42,26 @@ void dake_identity_message_free(dake_identity_message_t * identity_message);
 
 void dake_identity_message_destroy(dake_identity_message_t * identity_message);
 
-bool
+otr4_err_t
 dake_identity_message_deserialize(dake_identity_message_t * dst,
 				  const uint8_t * src, size_t src_len);
 
-bool
-dake_identity_message_aprint(uint8_t ** dst, size_t * nbytes,
+otr4_err_t
+dake_identity_message_asprintf(uint8_t ** dst, size_t * nbytes,
 			     const dake_identity_message_t * identity_message);
 
 bool
-dake_identity_message_validate(const dake_identity_message_t *
+valid_dake_identity_message(const dake_identity_message_t *
 			       identity_message);
 
 void dake_auth_r_destroy(dake_auth_r_t * auth_r);
 
 void dake_auth_r_free(dake_auth_r_t * auth_r);
 
-bool
-dake_auth_r_aprint(uint8_t ** dst, size_t * nbytes,
+otr4_err_t
+dake_auth_r_asprintf(uint8_t ** dst, size_t * nbytes,
 		   const dake_auth_r_t * dre_auth);
-bool
+otr4_err_t
 dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
 			size_t buflen);
 
@@ -69,10 +69,10 @@ void dake_auth_i_destroy(dake_auth_i_t * auth_i);
 
 void dake_auth_i_free(dake_auth_i_t * auth_i);
 
-bool
-dake_auth_i_aprint(uint8_t ** dst, size_t * nbytes,
+otr4_err_t
+dake_auth_i_asprintf(uint8_t ** dst, size_t * nbytes,
 		   const dake_auth_i_t * dre_auth);
-bool
+otr4_err_t
 dake_auth_i_deserialize(dake_auth_i_t * dst, const uint8_t * buffer,
 			size_t buflen);
 

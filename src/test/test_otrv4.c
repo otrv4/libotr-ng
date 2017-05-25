@@ -179,8 +179,8 @@ test_otrv4_receives_pre_key_on_start(otrv4_fixture_t * otrv4_fixture,
 	    dake_identity_message_new(profile);
 
 	uint8_t *serialized = NULL;
-	otrv4_assert(dake_identity_message_aprint
-		     (&serialized, NULL, identity_message));
+	otrv4_assert(dake_identity_message_asprintf
+		     (&serialized, NULL, identity_message) == OTR4_SUCCESS);
 
 	char message[1000];
 	strcpy(message, "?OTR:");

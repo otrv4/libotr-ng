@@ -24,8 +24,8 @@ test_dake_identity_message_serializes(identity_message_fixture_t * f,
 	identity_message->B = dh_mpi_copy(dh->pub);
 
 	uint8_t *serialized = NULL;
-	otrv4_assert(dake_identity_message_aprint
-		     (&serialized, NULL, identity_message));
+	otrv4_assert(dake_identity_message_asprintf
+		     (&serialized, NULL, identity_message) == OTR4_SUCCESS);
 
 	char expected[] = {
 		0x0, 0x04,	// version
@@ -88,14 +88,14 @@ test_dake_identity_message_deserializes(identity_message_fixture_t * f,
 
 	size_t serialized_len = 0;
 	uint8_t *serialized = NULL;
-	otrv4_assert(dake_identity_message_aprint
-		     (&serialized, &serialized_len, identity_message));
+	otrv4_assert(dake_identity_message_asprintf
+		     (&serialized, &serialized_len, identity_message) == OTR4_SUCCESS);
 
 	dake_identity_message_t *deserialized =
 	    malloc(sizeof(dake_identity_message_t));
 	memset(deserialized, 0, sizeof(dake_identity_message_t));
 	otrv4_assert(dake_identity_message_deserialize
-		     (deserialized, serialized, serialized_len));
+		     (deserialized, serialized, serialized_len) == OTR4_SUCCESS);
 
 	//assert prekey eq
 	g_assert_cmpuint(deserialized->sender_instance_tag, ==,
@@ -135,7 +135,7 @@ test_dake_identity_message_valid(identity_message_fixture_t * f,
 	ec_point_copy(identity_message->Y, ecdh->pub);
 	identity_message->B = dh_mpi_copy(dh->pub);
 
-	otrv4_assert(dake_identity_message_validate(identity_message));
+	otrv4_assert(valid_dake_identity_message(identity_message));
 
 	ecdh_keypair_destroy(ecdh);
 	dh_keypair_destroy(dh);
@@ -150,6 +150,6 @@ void
 	    dake_identity_message_new(f->profile);
 	otrv4_assert(identity_message != NULL);
 
-	otrv4_assert(dake_identity_message_validate(identity_message));	//TODO: boolean?
+	otrv4_assert(valid_dake_identity_message(identity_message));
 	dake_identity_message_free(identity_message);
 }

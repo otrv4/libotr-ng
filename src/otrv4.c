@@ -371,7 +371,7 @@ serialize_and_encode_identity_message(string_t * dst,
 	uint8_t *buff = NULL;
 	size_t len = 0;
 
-	if (!dake_identity_message_aprint(&buff, &len, m))
+	if (dake_identity_message_asprintf(&buff, &len, m))
 		return false;
 
 	*dst = otrl_base64_otr_encode(buff, len);
@@ -588,7 +588,7 @@ static bool serialize_and_encode_auth_r(string_t * dst, const dake_auth_r_t * m)
 	uint8_t *buff = NULL;
 	size_t len = 0;
 
-	if (!dake_auth_r_aprint(&buff, &len, m))
+	if (dake_auth_r_asprintf(&buff, &len, m))
 		return false;
 
 	*dst = otrl_base64_otr_encode(buff, len);
@@ -637,7 +637,7 @@ receive_identity_message_on_state_start(string_t * dst,
 					dake_identity_message_t *
 					identity_message, otrv4_t * otr)
 {
-	if (!dake_identity_message_validate(identity_message))
+	if (!valid_dake_identity_message(identity_message))
 		return false;
 
 	otr->their_profile = malloc(sizeof(user_profile_t));
@@ -710,7 +710,7 @@ receive_identity_message(string_t * dst, const uint8_t * buff, size_t buflen,
 	bool ok = false;
 	dake_identity_message_t m[1];
 
-	if (!dake_identity_message_deserialize(m, buff, buflen))
+	if (dake_identity_message_deserialize(m, buff, buflen))
 		return false;
 
 	received_instance_tag(m->sender_instance_tag, otr);
@@ -742,7 +742,7 @@ static bool serialize_and_encode_auth_i(string_t * dst, const dake_auth_i_t * m)
 	uint8_t *buff = NULL;
 	size_t len = 0;
 
-	if (!dake_auth_i_aprint(&buff, &len, m))
+	if (dake_auth_i_asprintf(&buff, &len, m))
 		return false;
 
 	*dst = otrl_base64_otr_encode(buff, len);
@@ -813,7 +813,7 @@ receive_auth_r(string_t * dst, const uint8_t * buff, size_t buff_len,
 		return true; // ignore the message
 
 	dake_auth_r_t auth[1];
-	if (!dake_auth_r_deserialize(auth, buff, buff_len))
+	if (dake_auth_r_deserialize(auth, buff, buff_len))
 		return false;
 
 	received_instance_tag(auth->sender_instance_tag, otr);
@@ -868,7 +868,7 @@ receive_auth_i(string_t * dst, const uint8_t * buff, size_t buff_len,
 		return true; // Ignore the message
 
 	dake_auth_i_t auth[1];
-	if (!dake_auth_i_deserialize(auth, buff, buff_len))
+	if (dake_auth_i_deserialize(auth, buff, buff_len))
 		return false;
 
 	if (!verify_auth_i_message(auth, otr))
