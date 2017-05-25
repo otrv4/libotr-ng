@@ -114,6 +114,8 @@ bool otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t **tlvs
         message, &newmessage,
         &tlvsv3, &conn->ctx, NULL, NULL);
 
+    (void) ignore_message;
+
     if (to_send && injected_to_send) {
         *to_send = otrv4_strdup(injected_to_send);
         free(injected_to_send);
