@@ -73,3 +73,10 @@
    ...
    fun:g_test_run_suite_internal
 }
+{
+   otrl_does_not_have_a_cleanup_for_DH_constants
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:otrl_init
+}
