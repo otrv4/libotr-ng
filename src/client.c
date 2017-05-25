@@ -270,7 +270,10 @@ int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 	if (len < 0)
 		return -3;
 
-	err = otrv4_symmetric_key_deserialize(client->keypair, line, len);
-	free(line);
+    if (otrv4_symmetric_key_deserialize(client->keypair, line, len)) {
+	    free(line);
+        return -1;
+    }
+    free(line);
 	return err;
 }

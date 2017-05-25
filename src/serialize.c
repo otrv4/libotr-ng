@@ -95,7 +95,7 @@ serialize_dh_public_key(uint8_t * dst, size_t * len, const dh_public_key_t pub)
 	otr_mpi_set(mpi, buf, written);
 	*len = serialize_mpi(dst, mpi);
 	otr_mpi_free(mpi);
-	return OTR4_SUCCESS_CODE;
+	return OTR4_SUCCESS;
 }
 
 size_t serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)

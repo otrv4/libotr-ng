@@ -139,20 +139,20 @@ user_profile_deserialize(user_profile_t * target, const uint8_t * buffer,
 
 	bool ok = false;
 	do {
-		if (!deserialize_otrv4_public_key
+		if (deserialize_otrv4_public_key
 		    (target->pub_key, buffer, buflen, &read))
 			continue;
 
 		walked += read;
 
-		if (!deserialize_data
+		if (deserialize_data
 		    ((uint8_t **) & target->versions, buffer + walked,
 		     buflen - walked, &read))
 			continue;
 
 		walked += read;
 
-		if (!deserialize_uint64
+		if (deserialize_uint64
 		    (&target->expires, buffer + walked, buflen - walked, &read))
 			continue;
 

@@ -51,7 +51,7 @@ tlv_t *extract_tlv(const uint8_t * src, size_t len, size_t * written)
 		if (!tlv)
 			continue;
 
-		if (!deserialize_uint16(&tlv_type, cursor, len, &w))
+		if (deserialize_uint16(&tlv_type, cursor, len, &w))
 			continue;
 
 		set_tlv_type(tlv, tlv_type);
@@ -59,7 +59,7 @@ tlv_t *extract_tlv(const uint8_t * src, size_t len, size_t * written)
 		len -= w;
 		cursor += w;
 
-		if (!deserialize_uint16(&tlv->len, cursor, len, &w))
+		if (deserialize_uint16(&tlv->len, cursor, len, &w))
 			continue;
 
 		len -= w;

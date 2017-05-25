@@ -107,7 +107,7 @@ dake_identity_message_deserialize(dake_identity_message_t * dst,
 	size_t read = 0;
 
 	uint16_t protocol_version = 0;
-	if (!deserialize_uint16(&protocol_version, cursor, len, &read)) {
+	if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
 		return false;
 	}
 
@@ -119,7 +119,7 @@ dake_identity_message_deserialize(dake_identity_message_t * dst,
 	}
 
 	uint8_t message_type = 0;
-	if (!deserialize_uint8(&message_type, cursor, len, &read)) {
+	if (deserialize_uint8(&message_type, cursor, len, &read)) {
 		return false;
 	}
 
@@ -130,14 +130,14 @@ dake_identity_message_deserialize(dake_identity_message_t * dst,
 		return false;
 	}
 
-	if (!deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
+	if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
 		return false;
 	}
 
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_uint32
+	if (deserialize_uint32
 	    (&dst->receiver_instance_tag, cursor, len, &read)) {
 		return false;
 	}
@@ -152,7 +152,7 @@ dake_identity_message_deserialize(dake_identity_message_t * dst,
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_point(dst->Y, cursor)) {
+	if (deserialize_ec_point(dst->Y, cursor)) {
 		return false;
 	}
 
@@ -303,7 +303,7 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
 	size_t read = 0;
 
 	uint16_t protocol_version = 0;
-	if (!deserialize_uint16(&protocol_version, cursor, len, &read)) {
+	if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
 		return false;
 	}
 
@@ -315,7 +315,7 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
 	}
 
 	uint8_t message_type = 0;
-	if (!deserialize_uint8(&message_type, cursor, len, &read)) {
+	if (deserialize_uint8(&message_type, cursor, len, &read)) {
 		return false;
 	}
 
@@ -326,14 +326,14 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
 		return false;
 	}
 
-	if (!deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
+	if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
 		return false;
 	}
 
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_uint32
+	if (deserialize_uint32
 	    (&dst->receiver_instance_tag, cursor, len, &read)) {
 		return false;
 	}
@@ -348,7 +348,7 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_point(dst->X, cursor)) {
+	if (deserialize_ec_point(dst->X, cursor)) {
 		return false;
 	}
 
@@ -370,7 +370,10 @@ dake_auth_r_deserialize(dake_auth_r_t * dst, const uint8_t * buffer,
 	cursor += read;
 	len -= read;
 
-	return deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
+    if (deserialize_snizkpk_proof(dst->sigma, cursor, len, &read)) {
+        return false;
+    }
+    return true;
 }
 
 void dake_auth_i_destroy(dake_auth_i_t * auth_i)
@@ -422,7 +425,7 @@ dake_auth_i_deserialize(dake_auth_i_t * dst, const uint8_t * buffer,
 	size_t read = 0;
 
 	uint16_t protocol_version = 0;
-	if (!deserialize_uint16(&protocol_version, cursor, len, &read)) {
+	if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
 		return false;
 	}
 
@@ -434,7 +437,7 @@ dake_auth_i_deserialize(dake_auth_i_t * dst, const uint8_t * buffer,
 	}
 
 	uint8_t message_type = 0;
-	if (!deserialize_uint8(&message_type, cursor, len, &read)) {
+	if (deserialize_uint8(&message_type, cursor, len, &read)) {
 		return false;
 	}
 
@@ -445,14 +448,14 @@ dake_auth_i_deserialize(dake_auth_i_t * dst, const uint8_t * buffer,
 		return false;
 	}
 
-	if (!deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
+	if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
 		return false;
 	}
 
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_uint32
+	if (deserialize_uint32
 	    (&dst->receiver_instance_tag, cursor, len, &read)) {
 		return false;
 	}
@@ -460,5 +463,8 @@ dake_auth_i_deserialize(dake_auth_i_t * dst, const uint8_t * buffer,
 	cursor += read;
 	len -= read;
 
-	return deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
+    if (deserialize_snizkpk_proof(dst->sigma, cursor, len, &read)) {
+        return false;
+    }
+    return true;
 }

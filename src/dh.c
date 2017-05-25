@@ -107,9 +107,9 @@ dh_mpi_serialize(uint8_t * dst, size_t dst_len, size_t * written,
 	gcry_error_t err =
 	    gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
 	if (err) {
-		return OTR4_SERIALIZATION_ERR;
+		return OTR4_ERROR;
 	}
-	return OTR4_SUCCESS_CODE;
+	return OTR4_SUCCESS;
 }
 
 bool

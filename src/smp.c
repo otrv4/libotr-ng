@@ -344,7 +344,7 @@ deserialize_mpi_to_scalar(ec_scalar_t dst, const uint8_t * buff,
 	if (!otr_mpi_deserialize_no_copy(tmp_mpi, cursor, bufflen, &r))
 		return false;
 
-	if (!deserialize_ec_scalar(dst, tmp_mpi->data, tmp_mpi->len))
+	if (deserialize_ec_scalar(dst, tmp_mpi->data, tmp_mpi->len))
 		return false;
 
 	*read = r + tmp_mpi->len;
@@ -359,13 +359,13 @@ bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
 	size_t read = 0;
 
         msg->question = NULL;
-	if (!deserialize_data((uint8_t **) & msg->question, cursor, len, &read))
+	if (deserialize_data((uint8_t **) & msg->question, cursor, len, &read))
 		return false;
 
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_point(msg->G2a, cursor))
+	if (deserialize_ec_point(msg->G2a, cursor))
 		return false;
 
 	cursor += ED448_POINT_BYTES;
@@ -383,7 +383,7 @@ bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_point(msg->G3a, cursor))
+	if (deserialize_ec_point(msg->G3a, cursor))
 		return false;
 
 	cursor += ED448_POINT_BYTES;
@@ -412,7 +412,7 @@ int smp_msg_2_deserialize(smp_msg_2_t msg, const tlv_t * tlv)
 	uint16_t len = tlv->len;
 	size_t read = 0;
 
-	if (!deserialize_ec_point(msg->G2b, cursor))
+	if (deserialize_ec_point(msg->G2b, cursor))
 		return 1;
 
 	cursor += ED448_POINT_BYTES;
@@ -430,7 +430,7 @@ int smp_msg_2_deserialize(smp_msg_2_t msg, const tlv_t * tlv)
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_point(msg->G3b, cursor))
+	if (deserialize_ec_point(msg->G3b, cursor))
 		return 1;
 
 	cursor += ED448_POINT_BYTES;
@@ -448,13 +448,13 @@ int smp_msg_2_deserialize(smp_msg_2_t msg, const tlv_t * tlv)
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_point(msg->Pb, cursor))
+	if (deserialize_ec_point(msg->Pb, cursor))
 		return 1;
 
 	cursor += ED448_POINT_BYTES;
 	len -= ED448_POINT_BYTES;
 
-	if (!deserialize_ec_point(msg->Qb, cursor))
+	if (deserialize_ec_point(msg->Qb, cursor))
 		return 1;
 
 	cursor += ED448_POINT_BYTES;
@@ -663,13 +663,13 @@ int smp_msg_3_deserialize(smp_msg_3_t dst, const tlv_t * tlv)
 	uint16_t len = tlv->len;
 	size_t read = 0;
 
-	if (!deserialize_ec_point(dst->Pa, cursor))
+	if (deserialize_ec_point(dst->Pa, cursor))
 		return 1;
 
 	cursor += ED448_POINT_BYTES;
 	len -= ED448_POINT_BYTES;
 
-	if (!deserialize_ec_point(dst->Qa, cursor))
+	if (deserialize_ec_point(dst->Qa, cursor))
 		return 1;
 
 	cursor += ED448_POINT_BYTES;
@@ -693,7 +693,7 @@ int smp_msg_3_deserialize(smp_msg_3_t dst, const tlv_t * tlv)
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_point(dst->Ra, cursor))
+	if (deserialize_ec_point(dst->Ra, cursor))
 		return 1;
 
 	cursor += ED448_POINT_BYTES;
@@ -832,7 +832,7 @@ int smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv)
 	size_t len = tlv->len;
 	size_t read = 0;
 
-	if (!deserialize_ec_point(dst->Rb, cursor))
+	if (deserialize_ec_point(dst->Rb, cursor))
 		return 1;
 	cursor += ED448_POINT_BYTES;
 	len -= ED448_POINT_BYTES;

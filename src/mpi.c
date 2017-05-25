@@ -41,7 +41,7 @@ otr_mpi_read_len(otr_mpi_t dst, const uint8_t * src, size_t src_len,
 		 size_t * read)
 {
 	size_t r = 0;
-	if (!deserialize_uint32(&dst->len, src, src_len, &r)) {
+	if (deserialize_uint32(&dst->len, src, src_len, &r)) {
 		return false;
 	}
 

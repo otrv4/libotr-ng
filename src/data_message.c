@@ -87,7 +87,7 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 	size_t read = 0;
 
 	uint16_t protocol_version = 0;
-	if (!deserialize_uint16(&protocol_version, cursor, len, &read)) {
+	if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
 		return false;
 	}
 
@@ -99,7 +99,7 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 	}
 
 	uint8_t message_type = 0;
-	if (!deserialize_uint8(&message_type, cursor, len, &read)) {
+	if (deserialize_uint8(&message_type, cursor, len, &read)) {
 		return false;
 	}
 
@@ -110,14 +110,14 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 		return false;
 	}
 
-	if (!deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
+	if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
 		return false;
 	}
 
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_uint32
+	if (deserialize_uint32
 	    (&dst->receiver_instance_tag, cursor, len, &read)) {
 		return false;
 	}
@@ -125,28 +125,28 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_uint8(&dst->flags, cursor, len, &read)) {
+	if (deserialize_uint8(&dst->flags, cursor, len, &read)) {
 		return false;
 	}
 
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_uint32(&dst->ratchet_id, cursor, len, &read)) {
+	if (deserialize_uint32(&dst->ratchet_id, cursor, len, &read)) {
 		return false;
 	}
 
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_uint32(&dst->message_id, cursor, len, &read)) {
+	if (deserialize_uint32(&dst->message_id, cursor, len, &read)) {
 		return false;
 	}
 
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_ec_point(dst->ecdh, cursor)) {
+	if (deserialize_ec_point(dst->ecdh, cursor)) {
 		return false;
 	}
 
@@ -170,7 +170,7 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_bytes_array
+	if (deserialize_bytes_array
 	    ((uint8_t *) & dst->nonce, DATA_MSG_NONCE_BYTES, cursor, len)) {
 		return false;
 	}
@@ -178,7 +178,7 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 	cursor += DATA_MSG_NONCE_BYTES;
 	len -= DATA_MSG_NONCE_BYTES;
 
-	if (!deserialize_data(&dst->enc_msg, cursor, len, &read)) {
+	if (deserialize_data(&dst->enc_msg, cursor, len, &read)) {
 		return false;
 	}
 
@@ -186,7 +186,7 @@ data_message_deserialize(data_message_t * dst, const uint8_t * buff,
 	cursor += read;
 	len -= read;
 
-	if (!deserialize_bytes_array
+	if (deserialize_bytes_array
 	    ((uint8_t *) & dst->mac, DATA_MSG_MAC_BYTES, cursor, len)) {
 		return false;
 	}
