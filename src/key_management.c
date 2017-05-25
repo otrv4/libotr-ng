@@ -369,7 +369,7 @@ static bool derive_sending_chain_key(key_manager_t *manager)
 static bool enter_new_ratchet(key_manager_t *manager)
 {
 	k_ecdh_t k_ecdh;
-	if (!ecdh_shared_secret
+	if (ecdh_shared_secret
 	    (k_ecdh, sizeof(k_ecdh_t), manager->our_ecdh, manager->their_ecdh))
 		return false;
 	//TODO: Securely delete our_ecdh.secret.

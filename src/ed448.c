@@ -47,14 +47,14 @@ void ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
 	decaf_ed448_derive_public_key(pub, sym);
 }
 
-bool
+otr4_err_t
 ecdh_shared_secret(uint8_t * shared,
 		   size_t shared_bytes,
 		   const ecdh_keypair_t * our_priv, const ec_point_t their_pub)
 {
 	decaf_448_point_t s;
 	decaf_448_point_scalarmul(s, their_pub, our_priv->priv);
-	return ec_point_serialize(shared, shared_bytes, s);
+    return ec_point_serialize(shared, shared_bytes, s);
 }
 
 void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src)
@@ -72,6 +72,7 @@ ec_scalar_serialize(uint8_t * dst, size_t dst_len, const ec_scalar_t scalar)
 }
 
 bool
+//TODO: why do we return a boolean here?
 ec_scalar_deserialize(ec_scalar_t scalar,
 		      const uint8_t serialized[ED448_SCALAR_BYTES])
 {
@@ -80,17 +81,17 @@ ec_scalar_deserialize(ec_scalar_t scalar,
 	return true;
 }
 
-bool ec_point_serialize(uint8_t * dst, size_t dst_len, const ec_point_t point)
+otr4_err_t ec_point_serialize(uint8_t * dst, size_t dst_len, const ec_point_t point)
 {
 	if (dst_len < ED448_POINT_BYTES)
-		return false;
+		return OTR4_ERROR;
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(dst, point);
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
-bool
+otr4_err_t
 ec_point_deserialize(ec_point_t point,
 		     const uint8_t serialized[ED448_POINT_BYTES])
 {
@@ -99,7 +100,7 @@ ec_point_deserialize(ec_point_t point,
 	    decaf_448_point_decode_like_eddsa_and_ignore_cofactor(p,
 								  serialized);
 	if (DECAF_SUCCESS != err)
-		return false;
+		return OTR4_ERROR;
 
 	//The decoded point is equal to the original point * 2^2
 	decaf_448_scalar_t r;
@@ -109,7 +110,7 @@ ec_point_deserialize(ec_point_t point,
 
 	decaf_448_point_scalarmul(point, p, r);
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
 static const char *ctx = "";
@@ -128,12 +129,8 @@ ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
           const uint8_t pubkey[ED448_POINT_BYTES],
 	  const uint8_t * msg, size_t msg_len)
 {
-	if (DECAF_TRUE == decaf_ed448_verify(sig, pubkey, msg, msg_len, 0,
-	                                     (uint8_t * )ctx, strlen(ctx))) {
-	      return true;
-	}
-
-	return false;
+	return DECAF_TRUE == decaf_ed448_verify(sig, pubkey, msg, msg_len, 0,
+	                                     (uint8_t * )ctx, strlen(ctx));
 }
 
 void ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t src)

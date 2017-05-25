@@ -143,10 +143,7 @@ deserialize_mpi_data(uint8_t * dst, const uint8_t * buffer, size_t buflen,
 
 otr4_err_t deserialize_ec_point(ec_point_t point, const uint8_t * serialized)
 {
-    if (!ec_point_deserialize(point, serialized)) {
-        return OTR4_ERROR;
-    }
-    return OTR4_SUCCESS;
+    return ec_point_deserialize(point, serialized);
 }
 
 otr4_err_t

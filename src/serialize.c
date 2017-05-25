@@ -63,8 +63,7 @@ size_t serialize_mpi(uint8_t * dst, const otr_mpi_t mpi)
 
 bool serialize_ec_point(uint8_t * dst, const ec_point_t point)
 {
-	bool ok = ec_point_serialize(dst, ED448_POINT_BYTES, point);
-	if (!ok) {
+	if (ec_point_serialize(dst, ED448_POINT_BYTES, point)) {
 		return false;
 	}
 	return true;
