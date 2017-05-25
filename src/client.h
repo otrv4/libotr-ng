@@ -9,16 +9,12 @@
 typedef struct {
 	char *recipient;
 	otrv4_t *conn;
-
-	// TODO: delete these instance types below?
-	//otrl_instag_t their_instance;
-	//otrl_instag_t our_instance;
 } otr4_conversation_t;
 
 //A client handle messages from/to a sender to/from multiple recipients.
 typedef struct {
 	const otrv4_callbacks_t *callbacks;
-
+        
 	otrv4_keypair_t *keypair;
 	list_element_t *conversations;
 } otr4_client_t;

@@ -135,21 +135,31 @@ otrv4_t *otrv4_new(otrv4_keypair_t * keypair, otrv4_policy_t policy)
 	otr->smp->state = SMPSTATE_EXPECT1;
         otr->smp->progress = 0;
         otr->smp->msg1->question = NULL;
+
+        otr->otr3_conn = NULL;
+
 	return otr;
 }
 
 void otrv4_destroy( /*@only@ */ otrv4_t * otr)
 {
 	otr->keypair = NULL;
-	key_manager_destroy(otr->keys);
-	user_profile_free(otr->profile);
-	user_profile_free(otr->their_profile);
-	otr->profile = NULL;
-	otr->their_profile = NULL;
 	otr->callbacks = NULL;
-	smp_destroy(otr->smp);
+
+	key_manager_destroy(otr->keys);
 	free(otr->keys);
 	otr->keys = NULL;
+
+	user_profile_free(otr->profile);
+	otr->profile = NULL;
+
+	user_profile_free(otr->their_profile);
+	otr->their_profile = NULL;
+
+	smp_destroy(otr->smp);
+
+        otr3_conn_free(otr->otr3_conn);
+        otr->otr3_conn = NULL;
 }
 
 void otrv4_free( /*@only@ */ otrv4_t * otr)
@@ -346,9 +356,9 @@ void otrv4_response_free(otrv4_response_t * response)
 //TODO: Is not receiving a plaintext a problem?
 static void
 receive_plaintext(otrv4_response_t * response, const string_t message,
-		  const otrv4_t * otr, size_t msg_len)
+		  const otrv4_t * otr)
 {
-	set_to_display(response, message, msg_len);
+	set_to_display(response, message, strlen(message));
 
 	if (otr->state != OTRV4_STATE_START)
 		response->warning = OTRV4_WARN_RECEIVED_UNENCRYPTED;
@@ -400,21 +410,21 @@ static bool start_dake(otrv4_response_t * response, otrv4_t * otr)
 
 static bool
 receive_tagged_plaintext(otrv4_response_t * response,
-			 const string_t message, otrv4_t * otr, size_t msg_len)
+			 const string_t message, otrv4_t * otr)
 {
 	set_running_version_from_tag(otr, message);
 
 	switch (otr->running_version) {
 	case OTRV4_VERSION_4:
 		if (!message_to_display_without_tag
-		    (response, message, tag_version_v4, msg_len)) {
+		    (response, message, tag_version_v4, strlen(message))) {
 			return false;
 		}
 
 		return start_dake(response, otr);
 		break;
 	case OTRV4_VERSION_3:
-		return otrv3_receive_message(message, msg_len);
+		return otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn);
 		break;
 	default:
                 //ignore
@@ -426,7 +436,7 @@ receive_tagged_plaintext(otrv4_response_t * response,
 
 static bool
 receive_query_message(otrv4_response_t * response,
-		      const string_t message, otrv4_t * otr, size_t msg_len)
+		      const string_t message, otrv4_t * otr)
 {
 	set_running_version_from_query_msg(otr, message);
 
@@ -435,7 +445,7 @@ receive_query_message(otrv4_response_t * response,
 		return start_dake(response, otr);
 		break;
 	case OTRV4_VERSION_3:
-		return otrv3_receive_message(message, 0);
+		return otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn);
 		break;
 	default:
 		//ignore
@@ -1031,7 +1041,7 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 
 static bool
 receive_encoded_message(otrv4_response_t * response,
-			const string_t message, otrv4_t * otr, size_t msg_len)
+			const string_t message, otrv4_t * otr)
 {
 	size_t dec_len = 0;
 	uint8_t *decoded = NULL;
@@ -1039,7 +1049,7 @@ receive_encoded_message(otrv4_response_t * response,
 	if (err)
 		return false;
 
-	if (dec_len > msg_len)
+	if (dec_len > strlen(message))
 		return false;
 
 	otrv4_header_t header;
@@ -1105,10 +1115,37 @@ otrv4_in_message_type_t get_message_type(const string_t message)
 	return IN_MSG_PLAINTEXT;
 }
 
+static bool receive_message_v4_only(otrv4_response_t * response,
+		      const string_t message, otrv4_t * otr)
+{
+	switch (get_message_type(message)) {
+	case IN_MSG_NONE:
+		return false;
+	case IN_MSG_PLAINTEXT:
+		receive_plaintext(response, message, otr);
+		return true;
+		break;
+
+	case IN_MSG_TAGGED_PLAINTEXT:
+		return receive_tagged_plaintext(response, message, otr);
+		break;
+
+	case IN_MSG_QUERY_STRING:
+		return receive_query_message(response, message, otr);
+		break;
+
+	case IN_MSG_OTR_ENCODED:
+		return receive_encoded_message(response, message, otr);
+		break;
+	}
+
+	return true;
+}
+
 // Receive a possibly OTR message.
 bool
 otrv4_receive_message(otrv4_response_t * response,
-		      const string_t message, size_t message_len, otrv4_t * otr)
+		      const string_t message, otrv4_t * otr)
 {
 	if (!message || !response)
 		return false;
@@ -1116,31 +1153,16 @@ otrv4_receive_message(otrv4_response_t * response,
 	set_to_display(response, NULL, 0);
 	response->to_send = NULL;
 
-	switch (get_message_type(message)) {
-	case IN_MSG_NONE:
-		return false;
-	case IN_MSG_PLAINTEXT:
-		receive_plaintext(response, message, otr, message_len);
-		return true;
-		break;
+        //A DH-Commit sets our running version to 3
+	if (otr->running_version == OTRV4_VERSION_NONE &&
+            allow_version(otr, OTRV4_ALLOW_V3) &&
+	    strstr(message, "?OTR:AAMC"))
+		otr->running_version = OTRV4_VERSION_3;
 
-	case IN_MSG_TAGGED_PLAINTEXT:
-		return receive_tagged_plaintext(response, message, otr,
-						message_len);
-		break;
+	if (otr->running_version == OTRV4_VERSION_3)
+            return otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn);
 
-	case IN_MSG_QUERY_STRING:
-		return receive_query_message(response, message, otr,
-					     message_len);
-		break;
-
-	case IN_MSG_OTR_ENCODED:
-		return receive_encoded_message(response, message, otr,
-					       message_len);
-		break;
-	}
-
-	return true;
+    return receive_message_v4_only(response, message, otr);
 }
 
 static data_message_t *generate_data_msg(const otrv4_t * otr)
@@ -1321,8 +1343,8 @@ bool append_tlvs(uint8_t ** dst, size_t * dstlen, const string_t message,
 	return true;
 }
 
-bool
-otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
+static bool
+send_otrv4_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 		   otrv4_t * otr)
 {
 	uint8_t *msg = NULL;
@@ -1341,6 +1363,16 @@ otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 	free(msg);
 
 	return ok;
+}
+
+bool
+otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
+		   otrv4_t * otr)
+{
+        if (otr && otr->running_version == OTRV4_VERSION_3)
+            return send_otrv3_message(to_send, message, tlvs, otr->otr3_conn);
+
+        return send_otrv4_message(to_send, message, tlvs, otr);
 }
 
 bool otrv4_close(string_t * to_send, otrv4_t * otr)

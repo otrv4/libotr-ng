@@ -86,6 +86,9 @@ static otrv4_t *create_connection_for(const char *recipient,
 	if (!conn)
 		return NULL;
 
+        //TODO: add protocol, account
+        //TODO: add otrv3 callbacks
+        conn->otr3_conn = otr3_conn_new("", "", recipient);
 	conn->callbacks = client->callbacks;
 
 	return conn;
@@ -130,8 +133,7 @@ otr4_conversation_t *otr4_client_get_conversation(int force_create,
 	return get_conversation_with(recipient, client->conversations);
 }
 
-int
-otr4_client_send(char **newmessage, const char *message,
+static int send_otrv4_message(char **newmessage, const char *message,
 		 const char *recipient, otr4_client_t * client)
 {
 	*newmessage = NULL;
@@ -146,6 +148,15 @@ otr4_client_send(char **newmessage, const char *message,
 	}
 
 	return !otrv4_send_message(newmessage, message, NULL, conv->conn);
+}
+
+int
+otr4_client_send(char **newmessage, const char *message,
+		 const char *recipient, otr4_client_t * client)
+{
+    //OTR4 client will know how to transition to OTR3 if a v3 conversation is
+    //started
+    return send_otrv4_message(newmessage, message, recipient, client);
 }
 
 int otr4_client_smp_start(char **tosend, const char *recipient,
@@ -181,8 +192,7 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 	*todisplay = NULL;
 
 	conv = get_or_create_conversation_with(recipient, client);
-	ok = otrv4_receive_message(response, message, strlen(message),
-				   conv->conn);
+	ok = otrv4_receive_message(response, message, conv->conn);
 	if (!ok) {
 		otrv4_response_free(response);
 		return 0;	//Should this cause the message to be ignored or not?
@@ -277,3 +287,19 @@ int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
     free(line);
 	return err;
 }
+
+//TODO: Read privkeys, fingerprints, instance tags for OTRv3
+/*
+ *To read stored private keys:
+
+    otrl_privkey_read(userstate, privkeyfilename);
+
+To read stored instance tags:
+
+    otrl_instag_read(userstate, instagfilename);
+
+To read stored fingerprints:
+
+    otrl_privkey_read_fingerprints(userstate, fingerprintfilename,
+            add_app_info, add_app_info_data);
+*/

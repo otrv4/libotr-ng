@@ -21,9 +21,11 @@ void otrv4_fixture_set_up(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 
 	otrv4_policy_t policyv3 = {.allows = OTRV4_ALLOW_V3 };
 	otrv4_fixture->otrv3 = otrv4_new(otrv4_fixture->keypair, policyv3);
+        otrv4_fixture->otrv3->otr3_conn = otr3_conn_new("proto", "we_are_alice", "they_are_bob");
 
 	otrv4_policy_t policyv34 = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
 	otrv4_fixture->otrv34 = otrv4_new(otrv4_fixture->keypair, policyv34);
+        otrv4_fixture->otrv34->otr3_conn = otr3_conn_new("proto", "we_are_bob", "they_are_alice");
 }
 
 void otrv4_fixture_teardown(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
@@ -78,7 +80,7 @@ void do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 
 	//Bob receives query message
 	otrv4_assert(otrv4_receive_message
-		     (response_to_alice, query_message, 6, bob));
+		     (response_to_alice, query_message, bob));
 	free(query_message);
 	query_message = NULL;
 
@@ -90,8 +92,7 @@ void do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 
 	//Alice receives identity message
 	otrv4_assert(otrv4_receive_message
-		     (response_to_bob, response_to_alice->to_send,
-		      strlen(response_to_alice->to_send), alice));
+		     (response_to_bob, response_to_alice->to_send, alice));
 	free(response_to_alice->to_send);
 	response_to_alice->to_send = NULL;
 
@@ -111,8 +112,7 @@ void do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 
 	//Bob receives an auth receiver
 	otrv4_assert(otrv4_receive_message
-		     (response_to_alice, response_to_bob->to_send,
-		      strlen(response_to_bob->to_send), bob));
+		     (response_to_alice, response_to_bob->to_send, bob));
 	free(response_to_bob->to_send);
 	response_to_bob->to_send = NULL;
 
@@ -135,8 +135,7 @@ void do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 
 	//Alice receives an auth initiator
 	otrv4_assert(otrv4_receive_message
-		     (response_to_bob, response_to_alice->to_send,
-		      strlen(response_to_alice->to_send), alice));
+		     (response_to_bob, response_to_alice->to_send, alice));
 	free(response_to_alice->to_send);
 	response_to_alice->to_send = NULL;
 

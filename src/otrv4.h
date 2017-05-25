@@ -9,8 +9,10 @@
 #include "smp.h"
 #include "str.h"
 #include "user_profile.h"
+#include "otrv3.h"
 
 #define OTR4_INIT do { \
+  OTRL_INIT; \
   dh_init(); \
 } while (0);
 
@@ -112,6 +114,8 @@ struct connection {
 	key_manager_t *keys;
 	const otrv4_callbacks_t *callbacks;
 
+        otr3_conn_t *otr3_conn;
+
 	smp_context_t smp;
 };				//otrv4_t
 
@@ -161,9 +165,9 @@ bool
 extract_header(otrv4_header_t * dst, const uint8_t * buffer,
 	       const size_t bufflen);
 
-bool otrv4_receive_message
-    (otrv4_response_t * response, const string_t received, size_t message_lenn,
-     otrv4_t * otr);
+bool
+otrv4_receive_message(otrv4_response_t * response,
+		      const string_t message, otrv4_t * otr);
 
 bool
 otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,

@@ -130,7 +130,8 @@ int main(int argc, char **argv)
 
 	g_test_add_func("/otrv4/destroy", test_otrv4_destroy);
 
-	g_test_add_func("/api/conversation", test_api_conversation);
+	g_test_add_func("/api/conversation/v4", test_api_conversation);
+	g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
 	g_test_add_func("/api/smp", test_api_smp);
 
 	g_test_add_func("/client/conversation_api",
