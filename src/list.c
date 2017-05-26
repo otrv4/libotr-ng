@@ -103,8 +103,8 @@ size_t list_len(list_element_t *head)
         list_element_t *cursor = head;
         size_t size = 0;
 
-        while (cursor != NULL) {
-                ++size;
+        while (cursor) {
+                size++;
                 cursor = cursor->next;
         }
 
