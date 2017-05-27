@@ -1275,7 +1275,9 @@ send_data_message(string_t * to_send, const uint8_t * message,
 		return false;
 	}
 
-        key_manager_old_mac_keys_serialize(ser_mac_keys, otr->keys->old_mac_keys);
+	if (list_len(otr->keys->old_mac_keys) != 0) {
+	        key_manager_old_mac_keys_serialize(ser_mac_keys, otr->keys->old_mac_keys);
+	}
         otr->keys->old_mac_keys = NULL;
 
 	if (key_manager_prepare_next_chain_key(otr->keys))
