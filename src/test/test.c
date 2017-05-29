@@ -22,6 +22,9 @@ int main(int argc, char **argv)
     if (!gcry_check_version(GCRYPT_VERSION))
         return 2;
 
+    /* Set to quick random so we don't wait on /dev/random. */
+    gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
+
 	g_test_init(&argc, &argv, NULL);
 
 	g_test_add_func("/edwards448/api", ed448_test_ecdh);
