@@ -99,18 +99,15 @@ list_element_t *list_remove_element(const list_element_t * wanted,
 	return head;
 }
 
-// XXX: check
 size_t list_len(list_element_t *head)
 {
-        //if (head == NULL)
-	//        return 0;
-
-	//return 1 + list_len(head->next);
        list_element_t *cursor = head;
        size_t size = 0;
 
         while (cursor) {
+	  if (cursor->data) {
                 size++;
+	  }
                 cursor = cursor->next;
         }
 

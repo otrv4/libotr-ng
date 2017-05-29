@@ -26,16 +26,18 @@ void test_list_get_last()
 	list = list_add(&two, list);
 
 	otrv4_assert(list);
+	// Adds two after one
+	g_assert_cmpint(one, ==, *((int *)list->data));
+	g_assert_cmpint(two, ==, *((int *)list->next->data));
+
+	// Gets two and keeps one in the head
+	list_element_t *last = list_get_last(list);
+	g_assert_cmpint(two, ==, *((int *) last->data));
 	g_assert_cmpint(one, ==, *((int *)list->data));
 
-	list_element_t *last = list_get_last(list);
-
-	g_assert_cmpint(two, ==, *((int *)last->data));
-
+	// Removes two and one is the new last element
 	list = list_remove_element(last, list);
-        list_free_all(last);
-
-        last = list_get_last(list);
+	last = list_get_last(list);
 	g_assert_cmpint(one, ==, *((int *)last->data));
 
 	list_free_all(list);
@@ -62,4 +64,11 @@ void test_list_len()
 	g_assert_cmpint(list_len(list), ==, 0);
 
 	list_free_all(list);
+}
+
+void test_list_empty_size()
+{
+        list_element_t *empty = list_new();
+        g_assert_cmpint(list_len(empty), ==, 0);
+	list_free_all(empty);
 }
