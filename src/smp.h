@@ -23,12 +23,11 @@ typedef struct {
 	ec_point_t G3a;
 	ec_scalar_t c3;
 	ec_scalar_t d3;
-} smp_msg_1_t[1];
+} smp_msg_1_t;
 
 typedef struct {
 	smp_state_t state;
-	unsigned char *x;
-	unsigned char *y;
+	unsigned char *secret;
 	ec_scalar_t a2, a3, b3;
 	ec_point_t G2, G3;
 	ec_point_t G3a, G3b;
@@ -36,7 +35,7 @@ typedef struct {
 	ec_point_t Pa_Pb, Qa_Qb;
 
         uint8_t progress;
-        smp_msg_1_t msg1;
+        smp_msg_1_t *msg1;
 } smp_context_t[1];
 
 typedef struct {
@@ -71,11 +70,12 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
 			 otrv4_fingerprint_t their_fp, uint8_t * ssid,
 			 const uint8_t *answer, size_t answerlen);
 
-int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp);
+void smp_msg_1_destroy(smp_msg_1_t *msg);
+int generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp);
 
-bool smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg);
+bool smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t *msg);
 
-int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
+int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t *msg_1,
 		       smp_context_t smp);
 
 bool smp_msg_2_validate_points(smp_msg_2_t msg);
@@ -89,7 +89,7 @@ bool generate_smp_msg_4(smp_msg_4_t * dst, const smp_msg_3_t msg_3,
 			smp_context_t smp);
 
 //TODO: export only what is needed
-bool smp_msg_1_deserialize(smp_msg_1_t dst, const tlv_t * tlv);
+bool smp_msg_1_deserialize(smp_msg_1_t *dst, const tlv_t * tlv);
 int smp_msg_2_deserialize(smp_msg_2_t dst, const tlv_t * tlv);
 bool smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg);
 bool smp_msg_3_aprint(uint8_t ** dst, size_t * len, const smp_msg_3_t msg);

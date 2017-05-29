@@ -135,7 +135,8 @@ otrv4_t *otrv4_new(otrv4_keypair_t * keypair, otrv4_policy_t policy)
 	//TODO: moves initialization to smp
 	otr->smp->state = SMPSTATE_EXPECT1;
         otr->smp->progress = 0;
-        otr->smp->msg1->question = NULL;
+        otr->smp->msg1 = NULL;
+        otr->smp->secret = NULL;
 
         otr->otr3_conn = NULL;
 
@@ -1428,7 +1429,7 @@ bool otrv4_close(string_t * to_send, otrv4_t * otr)
 	return ok;
 }
 
-static void set_smp_secret(unsigned char **secret, const uint8_t *answer,
+static void set_smp_secret(const uint8_t *answer,
 		    size_t answerlen, bool is_initiator, otrv4_t * otr)
 {
 	otrv4_fingerprint_t our_fp, their_fp;
@@ -1437,9 +1438,9 @@ static void set_smp_secret(unsigned char **secret, const uint8_t *answer,
 
 	//TODO: return error?
 	if (is_initiator)
-		generate_smp_secret(secret, our_fp, their_fp, otr->keys->ssid, answer, answerlen);
+		generate_smp_secret(&otr->smp->secret, our_fp, their_fp, otr->keys->ssid, answer, answerlen);
 	else
-		generate_smp_secret(secret, their_fp, our_fp, otr->keys->ssid, answer, answerlen);
+		generate_smp_secret(&otr->smp->secret, their_fp, our_fp, otr->keys->ssid, answer, answerlen);
 }
 
 bool otrv4_smp_start(string_t * to_send, const string_t question,
@@ -1471,17 +1472,18 @@ bool otrv4_smp_continue(string_t * to_send, const uint8_t *secret,
     return ok;
 }
 
+//TODO: extract some function to SMP
 tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 			  const uint8_t *secret, size_t secretlen)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
 		return NULL;
 
-	smp_msg_1_t msg;
+	smp_msg_1_t msg[1];
 	uint8_t *to_send = NULL;
 	size_t len = 0;
 
-	set_smp_secret(&otr->smp->x, secret, secretlen, true, otr);
+	set_smp_secret(secret, secretlen, true, otr);
 
         do {
             if (generate_smp_msg_1(msg, otr->smp))
@@ -1495,13 +1497,15 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
 
             otr->smp->state = SMPSTATE_EXPECT2;
             otr->smp->progress = 25;
-            handle_smp_event_cb(OTRV4_SMPEVENT_IN_PROGRESS, otr->smp->progress, otr->smp->msg1->question, otr);
+            handle_smp_event_cb(OTRV4_SMPEVENT_IN_PROGRESS, otr->smp->progress, question, otr);
 
             tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);
             free(to_send);
+            smp_msg_1_destroy(msg);
             return tlv;
         } while(0);
 
+        smp_msg_1_destroy(msg);
         handle_smp_event_cb(OTRV4_SMPEVENT_ERROR, otr->smp->progress, otr->smp->msg1->question, otr);
 	return NULL;
 }
@@ -1543,7 +1547,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
             event = OTRV4_SMPEVENT_IN_PROGRESS;
 
         handle_smp_event_cb(event, otr->smp->progress,
-            otr->smp->msg1->question, otr);
+            otr->smp->msg1 ? otr->smp->msg1->question : NULL, otr);
 
         return to_send;
 }
@@ -1555,9 +1559,9 @@ tlv_t *otrv4_smp_provide_secret(otrv4_t * otr, const uint8_t *secret,
 
     otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
 
-    set_smp_secret(&otr->smp->y, secret, secretlen, false, otr);
+    set_smp_secret(secret, secretlen, false, otr);
 
-    event = reply_with_smp_msg_2(&smp_reply, otr->smp->msg1, otr->smp);
+    event = reply_with_smp_msg_2(&smp_reply, otr->smp);
 
     if (!event)
         event = OTRV4_SMPEVENT_IN_PROGRESS;

@@ -14,10 +14,12 @@
 
 void smp_destroy(smp_context_t smp)
 {
-	//TODO: I think we should free this
-	smp->x = NULL;
+	free(smp->secret);
+        smp->secret = NULL;
 
-        //TODO: We should also destroy smp->msg1
+        smp_msg_1_destroy(smp->msg1);
+        free(smp->msg1);
+        smp->msg1 = NULL;
 }
 
 void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
@@ -59,7 +61,25 @@ int hashToScalar(const unsigned char *buff, const size_t bufflen,
 	return DECAF_SUCCESS == decaf_448_scalar_decode(dst, hash);
 }
 
-int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
+void smp_msg_1_destroy(smp_msg_1_t *msg)
+{
+    if (!msg)
+        return;
+
+    free(msg->question);
+    msg->question = NULL;
+
+    ec_point_destroy(msg->G2a);
+    ec_point_destroy(msg->G3a);
+
+    ec_scalar_destroy(msg->c2);
+    ec_scalar_destroy(msg->c3);
+    ec_scalar_destroy(msg->d2);
+    ec_scalar_destroy(msg->d3);
+}
+
+
+int generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp)
 {
 	snizkpk_keypair_t pair_r2[1], pair_r3[1];
 	unsigned char hash[ED448_POINT_BYTES + 1];
@@ -94,7 +114,7 @@ int generate_smp_msg_1(smp_msg_1_t dst, smp_context_t smp)
 	return 0;
 }
 
-bool smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t msg)
+bool smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t *msg)
 {
 	uint8_t buffmpi[ED448_SCALAR_BYTES];
 	int bufflen = 0;
@@ -162,7 +182,7 @@ static void ed448_random_scalar(ec_scalar_t priv)
 	ec_scalar_derive_from_secret(priv, sym);
 }
 
-int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
+int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t *msg_1,
 		       smp_context_t smp)
 {
 	ec_scalar_t b2;
@@ -218,7 +238,7 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t msg_1,
 
 	//Compute Qb = G * r4 + G2 * hashToScalar(y).
 	ec_scalar_t secret_as_scalar;
-	hashToScalar(smp->y, 64, secret_as_scalar);
+	hashToScalar(smp->secret, 64, secret_as_scalar);
 	decaf_448_point_scalarmul(dst->Qb, smp->G2, secret_as_scalar);
 	decaf_448_point_add(dst->Qb, pair_r4->pub, dst->Qb);
 	ec_point_copy(smp->Qb, dst->Qb);
@@ -355,7 +375,7 @@ deserialize_mpi_to_scalar(ec_scalar_t dst, const uint8_t * buff,
 	return true;
 }
 
-bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
+bool smp_msg_1_deserialize(smp_msg_1_t *msg, const tlv_t * tlv)
 {
 	const uint8_t *cursor = tlv->data;
 	uint16_t len = tlv->len;
@@ -404,7 +424,7 @@ bool smp_msg_1_deserialize(smp_msg_1_t msg, const tlv_t * tlv)
 	return true;
 }
 
-bool smp_msg_1_validate(smp_msg_1_t msg)
+bool smp_msg_1_validate(smp_msg_1_t *msg)
 {
 	return ec_point_valid(msg->G2a) || !ec_point_valid(msg->G3a);
 }
@@ -554,7 +574,7 @@ bool generate_smp_msg_3(smp_msg_3_t dst, const smp_msg_2_t msg_2,
 	decaf_448_point_scalarmul(dst->Pa, smp->G3, pair_r4->priv);
 	decaf_448_point_sub(smp->Pa_Pb, dst->Pa, msg_2->Pb);
 
-	hashToScalar(smp->x, 64, secret_as_scalar);
+	hashToScalar(smp->secret, 64, secret_as_scalar);
 
 	//Qa = G * r4 + G2 * HashToScalar(x)
 	decaf_448_point_scalarmul(dst->Qa, smp->G2, secret_as_scalar);
@@ -875,33 +895,51 @@ bool smp_msg_4_validate_zkp(smp_msg_4_t * msg, const smp_context_t smp)
 	return ec_scalar_eq(msg->cr, temp_scalar) == 0;
 }
 
-static otr4_smp_event_t receive_smp_msg_1(smp_msg_1_t msg_1, const tlv_t *tlv, smp_context_t smp)
+static void smp_msg_1_copy(smp_msg_1_t *dst, const smp_msg_1_t *src)
 {
-    if (SMPSTATE_EXPECT1 != smp->state) {
+    //TODO: Maybe we dont need to copy everything
+        if (src->question)
+            dst->question = otrv4_strdup(src->question);
+        else
+            dst->question = NULL;
+
+        ec_point_copy(dst->G2a, src->G2a);
+        ec_scalar_copy(dst->c2, src->c2);
+        ec_scalar_copy(dst->d2, src->d2);
+        ec_point_copy(dst->G3a, src->G3a);
+        ec_scalar_copy(dst->c3, src->c3);
+        ec_scalar_copy(dst->d3, src->d3);
+}
+
+static otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp)
+{
+    smp_msg_1_t msg_1[1];
+
+    if (SMPSTATE_EXPECT1 != smp->state)
         return OTRV4_SMPEVENT_ABORT;
-    }
 
-    if (!smp_msg_1_deserialize(msg_1, tlv))
-        return OTRV4_SMPEVENT_ERROR;
+    do {
+        if (!smp_msg_1_deserialize(msg_1, tlv))
+            continue;
 
-    if (!smp_msg_1_validate(msg_1))
-        return OTRV4_SMPEVENT_ERROR;
+        if (!smp_msg_1_validate(msg_1))
+            continue;
 
-    if (msg_1->question)
-        smp->msg1->question = otrv4_strdup(msg_1->question);
+        smp->msg1 = malloc(sizeof(smp_msg_1_t));
+        if (!smp->msg1)
+            continue;
 
-    ec_point_copy(smp->msg1->G2a, msg_1->G2a);
-    ec_scalar_copy(smp->msg1->c2, msg_1->c2);
-    ec_scalar_copy(smp->msg1->d2, msg_1->d2);
-    ec_point_copy(smp->msg1->G3a, msg_1->G3a);
-    ec_scalar_copy(smp->msg1->c3, msg_1->c3);
-    ec_scalar_copy(smp->msg1->d3, msg_1->d3);
+        smp_msg_1_copy(smp->msg1, msg_1);
+        smp_msg_1_destroy(msg_1);
+        return OTRV4_SMPEVENT_NONE;
+    } while (0);
 
-    return OTRV4_SMPEVENT_NONE;
+    smp_msg_1_destroy(msg_1);
+    return OTRV4_SMPEVENT_ERROR;
 }
 
 //TODO:
-static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, const smp_msg_1_t msg_1, smp_context_t smp)
+static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp)
 {
     smp_msg_2_t msg_2;
     uint8_t *buff;
@@ -910,7 +948,7 @@ static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, const smp_msg_1_t 
     *to_send = NULL;
 
     //TODO: what to do is somtheing wrong happen?
-    generate_smp_msg_2(msg_2, msg_1, smp);
+    generate_smp_msg_2(msg_2, smp->msg1, smp);
     if (!smp_msg_2_aprint(&buff, &bufflen, msg_2))
         return OTRV4_SMPEVENT_ERROR;
 
@@ -1015,6 +1053,7 @@ static otr4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
 		return OTRV4_SMPEVENT_ERROR;
 
 	*to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
+        free(buff);
 
 	//Validates SMP
         smp->progress = 100;
@@ -1059,15 +1098,13 @@ static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
 
 static otr4_smp_event_t process_smp_msg1(const tlv_t* tlv, smp_context_t smp)
 {
-    smp_msg_1_t msg_1;
+    otr4_smp_event_t event = receive_smp_msg_1(tlv, smp);
 
-    otr4_smp_event_t event = receive_smp_msg_1(msg_1, tlv, smp);
     if (!event) {
         smp->progress = 25;
         event = OTRV4_SMPEVENT_ASK_FOR_ANSWER;
     }
 
-    //TODO: destroy msg_1
     return event;
 }
 

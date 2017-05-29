@@ -7,7 +7,7 @@ void test_smp_state_machine(void)
 	OTR4_INIT;
 
 	otrv4_keypair_t alice_keypair[1], bob_keypair[1];
-	smp_msg_1_t smp_msg_1;
+	smp_msg_1_t smp_msg_1[1];
 	smp_msg_2_t smp_msg_2;
 
 	uint8_t alice_sym[ED448_PRIVATE_BYTES] = { 1 };
@@ -35,7 +35,7 @@ void test_smp_state_machine(void)
 
 	//Should have correct context after generates tlv_smp_2
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT2);
-	otrv4_assert(alice_otr->smp->x);
+	otrv4_assert(alice_otr->smp->secret);
 	otrv4_assert(alice_otr->smp->a2);
 	otrv4_assert(alice_otr->smp->a3);
 	otrv4_assert(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1) == true);
@@ -57,7 +57,7 @@ void test_smp_state_machine(void)
 
 	//Should have correct context after generates tlv_smp_2
 	g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT3);
-	otrv4_assert(bob_otr->smp->y);
+	otrv4_assert(bob_otr->smp->secret);
 	otrv4_assert_point_equals(bob_otr->smp->G3a, smp_msg_1->G3a);
 	g_assert_cmpint(smp_msg_2_deserialize(smp_msg_2, tlv_smp_2), ==, 0);
 	otrv4_assert_point_equals(bob_otr->smp->Pb, smp_msg_2->Pb);
@@ -65,6 +65,8 @@ void test_smp_state_machine(void)
 	otrv4_assert(bob_otr->smp->b3);
 	otrv4_assert(bob_otr->smp->G2);
 	otrv4_assert(bob_otr->smp->G3);
+
+        smp_msg_1_destroy(smp_msg_1);
 
 	//Receives second message
 	tlv_t *tlv_smp_3 = otrv4_process_smp(alice_otr, tlv_smp_2);
@@ -103,7 +105,7 @@ void test_smp_state_machine(void)
 	//SMP is finished for Alice
 	g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
-	otrv4_assert_cmpmem(alice_otr->smp->x, bob_otr->smp->y, 64);
+	otrv4_assert_cmpmem(alice_otr->smp->secret, bob_otr->smp->secret, 64);
 
 	otrv4_keypair_destroy(alice_keypair);	//destroy keypair in otr?
 	otrv4_keypair_destroy(bob_keypair);
@@ -115,6 +117,7 @@ void test_smp_state_machine(void)
 void test_generate_smp_secret(void)
 {
 	smp_context_t smp;
+        smp->msg1 = NULL;
 	otrv4_fingerprint_t our = {
 		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -147,8 +150,8 @@ void test_generate_smp_secret(void)
 		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 	};
 
-	generate_smp_secret(&smp->x, our, their, ssid, (const uint8_t *) "the-answer", strlen("the-answer"));
-	otrv4_assert(smp->x);
+	generate_smp_secret(&smp->secret, our, their, ssid, (const uint8_t *) "the-answer", strlen("the-answer"));
+	otrv4_assert(smp->secret);
 
 	unsigned char expected_secret[64] = {
             0x8d, 0x7a, 0xec, 0x1a, 0xa8, 0x52, 0x04, 0x9e,
@@ -161,14 +164,15 @@ void test_generate_smp_secret(void)
             0x34, 0xb6, 0x7b, 0xce, 0xda, 0xfa, 0x58, 0x87,
         };
 
-	otrv4_assert_cmpmem(expected_secret, smp->x, 64);
-	free(smp->x);
+	otrv4_assert_cmpmem(expected_secret, smp->secret, 64);
+        smp_destroy(smp);
 }
 
 void test_smp_msg_1_aprint_null_question(void)
 {
-	smp_msg_1_t msg;
+	smp_msg_1_t msg[1];
 	smp_context_t smp;
+        smp->msg1 = NULL;
 	uint8_t *buff;
 	size_t writen = 0;
 
@@ -194,15 +198,17 @@ void test_smp_msg_1_aprint_null_question(void)
 
 void test_smp_validates_msg_2(void)
 {
-	smp_msg_1_t msg_1;
+	smp_msg_1_t msg_1[1];
 	smp_msg_2_t msg_2, smp_msg_2;
 	uint8_t *buff = NULL;
 	size_t bufflen = 0;
 	tlv_t *tlv;
+
 	smp_context_t smp;
-	smp->y = malloc(64);
-	memset(smp->y, 0, 64);
-	smp->y[0] = 0x01;
+        smp->msg1 = NULL;
+	smp->secret = malloc(64);
+	memset(smp->secret, 0, 64);
+	smp->secret[0] = 0x01;
 
 	generate_smp_msg_1(msg_1, smp);
 	generate_smp_msg_2(msg_2, msg_1, smp);
@@ -223,28 +229,36 @@ void test_smp_validates_msg_2(void)
 	otrv4_assert(smp_msg_2_validate_zkp(msg_2, smp) == true);
 	otrv4_assert(smp_msg_2_validate_zkp(smp_msg_2, smp) == true);
 
-	free(smp->y);
+        smp_destroy(smp);
 }
 
 void test_smp_validates_msg_3(void)
 {
-	smp_msg_1_t msg_1;
+	smp_msg_1_t msg_1[1];
+        msg_1->question = NULL;
 	smp_msg_2_t msg_2;
 	smp_msg_3_t msg_3;
 	uint8_t *buff = NULL;
 	size_t bufflen = 0;
 	tlv_t *tlv;
+
 	smp_context_t smp;
-	smp->x = malloc(64);
-	memset(smp->x, 0, 64);
-	smp->x[0] = 0x01;
-	smp->y = malloc(64);
-	memset(smp->y, 0, 64);
-	smp->y[0] = 0x02;
+        smp->msg1 = NULL;
+	smp->secret = malloc(64);
+	memset(smp->secret, 0, 64);
+	smp->secret[0] = 0x01;
 
-	generate_smp_msg_1(msg_1, smp);
-	generate_smp_msg_2(msg_2, msg_1, smp);
+	smp_context_t smp2;
+        smp2->msg1 = NULL;
+	smp2->secret = malloc(64);
+	memset(smp2->secret, 0, 64);
+	smp2->secret[0] = 0x02;
 
+	otrv4_assert(!generate_smp_msg_1(msg_1, smp));
+	otrv4_assert(!generate_smp_msg_2(msg_2, msg_1, smp2)); // calcula G2 from G2a (msg1)
+
+	decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
+	decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
 	otrv4_assert(generate_smp_msg_3(msg_3, msg_2, smp) == true);
 
 	otrv4_assert(smp_msg_3_aprint(&buff, &bufflen, msg_3) == true);
@@ -254,36 +268,44 @@ void test_smp_validates_msg_3(void)
 	g_assert_cmpint(smp_msg_3_deserialize(msg_3, tlv), ==, 0);
 	otrv4_tlv_free(tlv);
 
-	otrv4_assert(smp_msg_3_validate_zkp(msg_3, smp) == true);
+	otrv4_assert(smp_msg_3_validate_zkp(msg_3, smp2) == true);
 
-	free(smp->x);
-	free(smp->y);
+        smp_destroy(smp);
+        smp_destroy(smp2);
 }
 
 void test_smp_validates_msg_4(void)
 {
-	smp_msg_1_t msg_1;
+	smp_msg_1_t msg_1[1];
 	smp_msg_2_t msg_2;
 	smp_msg_3_t msg_3;
 	smp_msg_4_t msg_4[1];
-	smp_context_t smp;
 
 	uint8_t *buff = NULL;
 	size_t bufflen = 0;
 	tlv_t *tlv;
 
-	smp->x = malloc(64);
-	memset(smp->x, 0, 64);
-	smp->x[0] = 0x01;
-	smp->y = malloc(64);
-	memset(smp->y, 0, 64);
-	smp->y[0] = 0x02;
+	smp_context_t smp;
+        smp->msg1 = NULL;
+	smp->secret = malloc(64);
+	memset(smp->secret, 0, 64);
+	smp->secret[0] = 0x01;
+
+	smp_context_t smp2;
+        smp2->msg1 = NULL;
+	smp2->secret = malloc(64);
+	memset(smp2->secret, 0, 64);
+	smp2->secret[0] = 0x02;
 
 	generate_smp_msg_1(msg_1, smp);
-	generate_smp_msg_2(msg_2, msg_1, smp);
+	generate_smp_msg_2(msg_2, msg_1, smp2);
+
+	decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
+	decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
 	generate_smp_msg_3(msg_3, msg_2, smp);
 
-	otrv4_assert(generate_smp_msg_4(msg_4, msg_3, smp) == true);
+        //???
+	otrv4_assert(generate_smp_msg_4(msg_4, msg_3, smp2) == true);
 
 	otrv4_assert(smp_msg_4_aprint(&buff, &bufflen, msg_4) == true);
 	tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
@@ -294,6 +316,6 @@ void test_smp_validates_msg_4(void)
 
 	otrv4_assert(smp_msg_4_validate_zkp(msg_4, smp) == true);
 
-	free(smp->x);
-	free(smp->y);
+        smp_destroy(smp);
+        smp_destroy(smp2);
 }
