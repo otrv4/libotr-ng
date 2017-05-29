@@ -195,7 +195,7 @@ static bool no_rollback_detected(const char *versions)
 bool
 valid_dake_identity_message(const dake_identity_message_t * identity_message)
 {
-	bool valid = user_profile_verify_signature(identity_message->profile);
+	bool valid = user_profile_valid_signature(identity_message->profile);
 	valid &= not_expired(identity_message->profile->expires);
 	valid &= ec_point_valid(identity_message->Y);
 	valid &= dh_mpi_valid(identity_message->B);
@@ -217,7 +217,7 @@ bool valid_received_values(const ec_point_t their_ecdh,
 	valid &= dh_mpi_valid(their_dh);
 
 	//7) Verify their profile is valid (and not expired).
-	valid &= user_profile_verify_signature(profile);
+	valid &= user_profile_valid_signature(profile);
 	valid &= not_expired(profile->expires);
 	valid &= no_rollback_detected(profile->versions);
 

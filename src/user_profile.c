@@ -209,7 +209,7 @@ otr4_err_t user_profile_sign(user_profile_t * profile,
 
 //TODO: I dont think this needs the data structure. Could verify from the
 //deserialized bytes.
-bool user_profile_verify_signature(const user_profile_t * profile)
+bool user_profile_valid_signature(const user_profile_t * profile)
 {
 	uint8_t *body = NULL;
 	size_t bodylen = 0;
