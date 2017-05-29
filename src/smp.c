@@ -182,7 +182,7 @@ static void ed448_random_scalar(ec_scalar_t priv)
 	ec_scalar_derive_from_secret(priv, sym);
 }
 
-int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t *msg_1,
+int generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 		       smp_context_t smp)
 {
 	ec_scalar_t b2;
@@ -271,7 +271,7 @@ int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t *msg_1,
 	return 0;
 }
 
-bool smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg)
+bool smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t *msg)
 {
 	uint8_t *cursor;
 	uint8_t buffmpi[ED448_SCALAR_BYTES];
@@ -429,7 +429,7 @@ bool smp_msg_1_validate(smp_msg_1_t *msg)
 	return ec_point_valid(msg->G2a) || !ec_point_valid(msg->G3a);
 }
 
-int smp_msg_2_deserialize(smp_msg_2_t msg, const tlv_t * tlv)
+int smp_msg_2_deserialize(smp_msg_2_t *msg, const tlv_t * tlv)
 {
 	const uint8_t *cursor = tlv->data;
 	uint16_t len = tlv->len;
@@ -502,13 +502,13 @@ int smp_msg_2_deserialize(smp_msg_2_t msg, const tlv_t * tlv)
 	return len;
 }
 
-bool smp_msg_2_validate_points(smp_msg_2_t msg)
+bool smp_msg_2_validate_points(smp_msg_2_t *msg)
 {
 	return ec_point_valid(msg->G2b) && ec_point_valid(msg->G3b) &&
 	    ec_point_valid(msg->Pb) && ec_point_valid(msg->Qb);
 }
 
-bool smp_msg_2_validate_zkp(smp_msg_2_t msg, const smp_context_t smp)
+bool smp_msg_2_validate_zkp(smp_msg_2_t *msg, const smp_context_t smp)
 {
 	uint8_t hash[ED448_POINT_BYTES + 1];
 	ec_scalar_t temp_scalar;
@@ -556,7 +556,7 @@ bool smp_msg_2_validate_zkp(smp_msg_2_t msg, const smp_context_t smp)
 	return ok & ec_scalar_eq(temp_scalar, msg->cp);
 }
 
-bool generate_smp_msg_3(smp_msg_3_t dst, const smp_msg_2_t msg_2,
+bool generate_smp_msg_3(smp_msg_3_t dst, const smp_msg_2_t *msg_2,
 			smp_context_t smp)
 {
 	snizkpk_keypair_t pair_r4[1], pair_r5[1], pair_r7[1];
@@ -938,10 +938,25 @@ static otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp)
     return OTRV4_SMPEVENT_ERROR;
 }
 
+void smp_msg_2_destroy(smp_msg_2_t *msg)
+{
+	ec_point_destroy(msg->G2b);
+	ec_point_destroy(msg->G3b);
+	ec_point_destroy(msg->Pb);
+	ec_point_destroy(msg->Qb);
+	ec_scalar_destroy(msg->c3);
+	ec_scalar_destroy(msg->d3);
+	ec_scalar_destroy(msg->c2);
+	ec_scalar_destroy(msg->d2);
+	ec_scalar_destroy(msg->cp);
+	ec_scalar_destroy(msg->d5);
+	ec_scalar_destroy(msg->d6);
+}
+
 //TODO:
 static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp)
 {
-    smp_msg_2_t msg_2;
+    smp_msg_2_t msg_2[1];
     uint8_t *buff;
     size_t bufflen;
 
@@ -951,6 +966,8 @@ static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp)
     generate_smp_msg_2(msg_2, smp->msg1, smp);
     if (!smp_msg_2_aprint(&buff, &bufflen, msg_2))
         return OTRV4_SMPEVENT_ERROR;
+
+    smp_msg_2_destroy(msg_2);
 
     *to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
     free(buff);
@@ -963,7 +980,7 @@ static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp)
     return OTRV4_SMPEVENT_NONE;
 }
 
-static otr4_smp_event_t receive_smp_msg_2(smp_msg_2_t msg_2, const tlv_t *tlv,
+static otr4_smp_event_t receive_smp_msg_2(smp_msg_2_t *msg_2, const tlv_t *tlv,
 					  smp_context_t smp)
 {
 	if (SMPSTATE_EXPECT2 != smp->state)
@@ -987,7 +1004,7 @@ static otr4_smp_event_t receive_smp_msg_2(smp_msg_2_t msg_2, const tlv_t *tlv,
 }
 
 static otr4_smp_event_t reply_with_smp_msg_3(tlv_t **to_send,
-		const smp_msg_2_t msg_2, smp_context_t smp)
+		const smp_msg_2_t *msg_2, smp_context_t smp)
 {
 	smp_msg_3_t msg_3;
 	uint8_t *buff = NULL;
@@ -1110,13 +1127,12 @@ static otr4_smp_event_t process_smp_msg1(const tlv_t* tlv, smp_context_t smp)
 
 static otr4_smp_event_t process_smp_msg2(tlv_t **smp_reply, const tlv_t* tlv, smp_context_t smp)
 {
-    smp_msg_2_t msg_2;
+    smp_msg_2_t msg_2[1];
     otr4_smp_event_t event = receive_smp_msg_2(msg_2, tlv, smp);
 
     if (!event)
         event = reply_with_smp_msg_3(smp_reply, msg_2, smp);
 
-    //TODO: destroy msg_2
     return event;
 }
 

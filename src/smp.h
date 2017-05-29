@@ -50,7 +50,7 @@ typedef struct {
 	ec_scalar_t cp;
 	ec_scalar_t d5;
 	ec_scalar_t d6;
-} smp_msg_2_t[1];
+} smp_msg_2_t;
 
 typedef struct {
 	ec_point_t Pa, Qa;
@@ -75,14 +75,16 @@ int generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp);
 
 bool smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t *msg);
 
-int generate_smp_msg_2(smp_msg_2_t dst, const smp_msg_1_t *msg_1,
+void smp_msg_2_destroy(smp_msg_2_t *msg);
+
+int generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 		       smp_context_t smp);
 
-bool smp_msg_2_validate_points(smp_msg_2_t msg);
+bool smp_msg_2_validate_points(smp_msg_2_t *msg);
 
-bool smp_msg_2_validate_zkp(smp_msg_2_t msg, const smp_context_t smp);
+bool smp_msg_2_validate_zkp(smp_msg_2_t *msg, const smp_context_t smp);
 
-bool generate_smp_msg_3(smp_msg_3_t dst, const smp_msg_2_t msg_2,
+bool generate_smp_msg_3(smp_msg_3_t dst, const smp_msg_2_t *msg_2,
 			smp_context_t smp);
 
 bool generate_smp_msg_4(smp_msg_4_t * dst, const smp_msg_3_t msg_3,
@@ -90,8 +92,8 @@ bool generate_smp_msg_4(smp_msg_4_t * dst, const smp_msg_3_t msg_3,
 
 //TODO: export only what is needed
 bool smp_msg_1_deserialize(smp_msg_1_t *dst, const tlv_t * tlv);
-int smp_msg_2_deserialize(smp_msg_2_t dst, const tlv_t * tlv);
-bool smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t msg);
+int smp_msg_2_deserialize(smp_msg_2_t *dst, const tlv_t * tlv);
+bool smp_msg_2_aprint(uint8_t ** dst, size_t * len, const smp_msg_2_t *msg);
 bool smp_msg_3_aprint(uint8_t ** dst, size_t * len, const smp_msg_3_t msg);
 int smp_msg_3_deserialize(smp_msg_3_t dst, const tlv_t * tlv);
 bool smp_msg_3_validate_zkp(smp_msg_3_t msg, const smp_context_t smp);

@@ -8,7 +8,7 @@ void test_smp_state_machine(void)
 
 	otrv4_keypair_t alice_keypair[1], bob_keypair[1];
 	smp_msg_1_t smp_msg_1[1];
-	smp_msg_2_t smp_msg_2;
+	smp_msg_2_t smp_msg_2[1];
 
 	uint8_t alice_sym[ED448_PRIVATE_BYTES] = { 1 };
 	uint8_t bob_sym[ED448_PRIVATE_BYTES] = { 2 };
@@ -67,6 +67,7 @@ void test_smp_state_machine(void)
 	otrv4_assert(bob_otr->smp->G3);
 
         smp_msg_1_destroy(smp_msg_1);
+        smp_msg_2_destroy(smp_msg_2);
 
 	//Receives second message
 	tlv_t *tlv_smp_3 = otrv4_process_smp(alice_otr, tlv_smp_2);
@@ -199,7 +200,7 @@ void test_smp_msg_1_aprint_null_question(void)
 void test_smp_validates_msg_2(void)
 {
 	smp_msg_1_t msg_1[1];
-	smp_msg_2_t msg_2, smp_msg_2;
+	smp_msg_2_t msg_2[1], smp_msg_2[1];
 	uint8_t *buff = NULL;
 	size_t bufflen = 0;
 	tlv_t *tlv;
@@ -230,13 +231,15 @@ void test_smp_validates_msg_2(void)
 	otrv4_assert(smp_msg_2_validate_zkp(smp_msg_2, smp) == true);
 
         smp_destroy(smp);
+	smp_msg_2_destroy(msg_2);
+	smp_msg_2_destroy(smp_msg_2);
 }
 
 void test_smp_validates_msg_3(void)
 {
 	smp_msg_1_t msg_1[1];
         msg_1->question = NULL;
-	smp_msg_2_t msg_2;
+	smp_msg_2_t msg_2[1];
 	smp_msg_3_t msg_3;
 	uint8_t *buff = NULL;
 	size_t bufflen = 0;
@@ -272,12 +275,13 @@ void test_smp_validates_msg_3(void)
 
         smp_destroy(smp);
         smp_destroy(smp2);
+	smp_msg_2_destroy(msg_2);
 }
 
 void test_smp_validates_msg_4(void)
 {
 	smp_msg_1_t msg_1[1];
-	smp_msg_2_t msg_2;
+	smp_msg_2_t msg_2[1];
 	smp_msg_3_t msg_3;
 	smp_msg_4_t msg_4[1];
 
@@ -318,4 +322,5 @@ void test_smp_validates_msg_4(void)
 
         smp_destroy(smp);
         smp_destroy(smp2);
+	smp_msg_2_destroy(msg_2);
 }
