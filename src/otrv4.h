@@ -12,13 +12,26 @@
 #include "otrv3.h"
 
 #define OTR4_INIT do { \
-  OTRL_INIT; \
+  otrv3_init(); \
   dh_init(); \
 } while (0);
 
 #define OTR4_FREE do { \
   dh_free(); \
 } while (0);
+
+static int otrl_initialized = 0;
+static inline void otrv3_init(void)
+{
+  if (otrl_initialized)
+      return;
+
+    if (otrl_init(OTRL_VERSION_MAJOR, OTRL_VERSION_MINOR,
+        OTRL_VERSION_SUB))
+            exit(1);
+
+  otrl_initialized = 1;
+}
 
 typedef struct connection otrv4_t;	/* Forward declare */
 

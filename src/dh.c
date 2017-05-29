@@ -24,16 +24,23 @@ static gcry_mpi_t DH3072_MODULUS_MINUS_2 = NULL;
 static const char *DH3072_GENERATOR_S = "0x02";
 static gcry_mpi_t DH3072_GENERATOR = NULL;
 
+static int dh_initialized = 0;
+
 void dh_init(void)
 {
-	gcry_mpi_scan(&DH3072_MODULUS, GCRYMPI_FMT_HEX,
-		      (const unsigned char *)DH3072_MODULUS_S, 0, NULL);
+    if (dh_initialized)
+        return;
 
-	gcry_mpi_scan(&DH3072_GENERATOR, GCRYMPI_FMT_HEX,
-		      (const unsigned char *)DH3072_GENERATOR_S, 0, NULL);
+    dh_initialized = 1;
 
-	DH3072_MODULUS_MINUS_2 = gcry_mpi_new(DH3072_MOD_LEN_BITS);
-	gcry_mpi_sub_ui(DH3072_MODULUS_MINUS_2, DH3072_MODULUS, 2);
+    gcry_mpi_scan(&DH3072_MODULUS, GCRYMPI_FMT_HEX,
+        (const unsigned char *)DH3072_MODULUS_S, 0, NULL);
+
+    gcry_mpi_scan(&DH3072_GENERATOR, GCRYMPI_FMT_HEX,
+        (const unsigned char *)DH3072_GENERATOR_S, 0, NULL);
+
+    DH3072_MODULUS_MINUS_2 = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+    gcry_mpi_sub_ui(DH3072_MODULUS_MINUS_2, DH3072_MODULUS, 2);
 }
 
 void dh_free(void)
@@ -46,6 +53,8 @@ void dh_free(void)
 
 	gcry_mpi_release(DH3072_GENERATOR);
 	DH3072_GENERATOR = NULL;
+
+        dh_initialized = 0;
 }
 
 otr4_err_t dh_keypair_generate(dh_keypair_t keypair)
