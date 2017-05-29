@@ -113,3 +113,13 @@
    fun:otrl_privkey_generate_calculate
    ...
 }
+{
+   I_have_no_idea_4
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:gen_prime
+   ...
+   fun:dsa_generate
+   ...
+}
