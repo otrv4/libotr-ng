@@ -42,7 +42,7 @@ before_script:
 script:
   - export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
   - export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
-  - ./autogen.sh && ./configure
-  - if [[ $(lsb_release -c -s) == "precise" ]]; then make test; fi
-  - if [[ $(lsb_release -c -s) == "trusty" ]];  then make ci;   fi
+  - ./autogen.sh && ./configure --disable-shared
+  - if [[ $(lsb_release -c -s) == "precise" ]]; then make ci; fi
+  - if [[ $(lsb_release -c -s) == "trusty" ]];  then make ci; fi
 
