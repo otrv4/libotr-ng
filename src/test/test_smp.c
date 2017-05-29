@@ -177,12 +177,12 @@ void test_smp_msg_1_aprint_null_question(void)
 	uint8_t *buff;
 	size_t writen = 0;
 
-	generate_smp_msg_1(msg, smp);
+	otrv4_assert(generate_smp_msg_1(msg, smp) == OTR4_SUCCESS);
 	//data_header + question + 2 points + 4 mpis = 4 + 0 + (2*57) + (4*(4+56))
 	size_t expected_size = 358;
 	msg->question = NULL;
 
-	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == true);
+	otrv4_assert(smp_msg_1_asprintf(&buff, &writen, msg) == OTR4_SUCCESS);
 	g_assert_cmpint(writen, ==, expected_size);
 	free(buff);
 	buff = NULL;
@@ -190,7 +190,7 @@ void test_smp_msg_1_aprint_null_question(void)
 	msg->question = "something";
 	size_t expected_size_with_question =
 	    expected_size + strlen(msg->question) + 1;
-	otrv4_assert(smp_msg_1_aprint(&buff, &writen, msg) == true);
+	otrv4_assert(smp_msg_1_asprintf(&buff, &writen, msg) == OTR4_SUCCESS);
 	g_assert_cmpint(writen, ==, expected_size_with_question);
 
 	free(buff);
@@ -212,7 +212,7 @@ void test_smp_validates_msg_2(void)
 	smp->secret[0] = 0x01;
 
 	generate_smp_msg_1(msg_1, smp);
-	generate_smp_msg_2(msg_2, msg_1, smp);
+	otrv4_assert(generate_smp_msg_2(msg_2, msg_1, smp) == OTR4_SUCCESS);
 
 	otrv4_assert(smp_msg_2_aprint(&buff, &bufflen, msg_2) == true);
 	tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
@@ -221,14 +221,14 @@ void test_smp_validates_msg_2(void)
 	g_assert_cmpint(smp_msg_2_deserialize(smp_msg_2, tlv), ==, 0);
 	otrv4_tlv_free(tlv);
 
-	otrv4_assert(smp_msg_2_validate_points(msg_2) == true);
-	otrv4_assert(smp_msg_2_validate_points(smp_msg_2) == true);
+	otrv4_assert(smp_msg_2_valid_points(msg_2) == true);
+	otrv4_assert(smp_msg_2_valid_points(smp_msg_2) == true);
 
 	decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
 	decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
 
-	otrv4_assert(smp_msg_2_validate_zkp(msg_2, smp) == true);
-	otrv4_assert(smp_msg_2_validate_zkp(smp_msg_2, smp) == true);
+	otrv4_assert(smp_msg_2_valid_zkp(msg_2, smp) == true);
+	otrv4_assert(smp_msg_2_valid_zkp(smp_msg_2, smp) == true);
 
         smp_destroy(smp);
 	smp_msg_2_destroy(msg_2);
@@ -262,7 +262,7 @@ void test_smp_validates_msg_3(void)
 
 	decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
 	decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
-	otrv4_assert(generate_smp_msg_3(msg_3, msg_2, smp) == true);
+	otrv4_assert(generate_smp_msg_3(msg_3, msg_2, smp) == OTR4_SUCCESS);
 
 	otrv4_assert(smp_msg_3_aprint(&buff, &bufflen, msg_3) == true);
 	tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);

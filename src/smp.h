@@ -71,22 +71,24 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
 			 const uint8_t *answer, size_t answerlen);
 
 void smp_msg_1_destroy(smp_msg_1_t *msg);
-int generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp);
+otr4_err_t generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp);
 
-bool smp_msg_1_aprint(uint8_t ** dst, size_t * len, const smp_msg_1_t *msg);
+otr4_err_t smp_msg_1_asprintf(uint8_t ** dst, size_t * len, const smp_msg_1_t *msg);
 
 void smp_msg_2_destroy(smp_msg_2_t *msg);
 
-int generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
+otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 		       smp_context_t smp);
 
-bool smp_msg_2_validate_points(smp_msg_2_t *msg);
+bool smp_msg_2_valid_points(smp_msg_2_t *msg);
+
+bool smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp);
 
 bool smp_msg_2_validate_zkp(smp_msg_2_t *msg, const smp_context_t smp);
 
 void smp_msg_3_destroy(smp_msg_3_t *msg);
 
-bool generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
+otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
 			smp_context_t smp);
 
 bool generate_smp_msg_4(smp_msg_4_t * dst, const smp_msg_3_t *msg_3,

@@ -1473,7 +1473,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,
             if (question)
                 msg->question = otrv4_strdup(question);
 
-            if (!smp_msg_1_aprint(&to_send, &len, msg))
+            if (smp_msg_1_asprintf(&to_send, &len, msg))
                 continue;
 
             otr->smp->state = SMPSTATE_EXPECT2;
