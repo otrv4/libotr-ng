@@ -240,7 +240,7 @@ void test_smp_validates_msg_3(void)
 	smp_msg_1_t msg_1[1];
         msg_1->question = NULL;
 	smp_msg_2_t msg_2[1];
-	smp_msg_3_t msg_3;
+	smp_msg_3_t msg_3[1];
 	uint8_t *buff = NULL;
 	size_t bufflen = 0;
 	tlv_t *tlv;
@@ -276,13 +276,14 @@ void test_smp_validates_msg_3(void)
         smp_destroy(smp);
         smp_destroy(smp2);
 	smp_msg_2_destroy(msg_2);
+	smp_msg_3_destroy(msg_3);
 }
 
 void test_smp_validates_msg_4(void)
 {
 	smp_msg_1_t msg_1[1];
 	smp_msg_2_t msg_2[1];
-	smp_msg_3_t msg_3;
+	smp_msg_3_t msg_3[1];
 	smp_msg_4_t msg_4[1];
 
 	uint8_t *buff = NULL;
@@ -323,4 +324,5 @@ void test_smp_validates_msg_4(void)
         smp_destroy(smp);
         smp_destroy(smp2);
 	smp_msg_2_destroy(msg_2);
+	smp_msg_3_destroy(msg_3);
 }
