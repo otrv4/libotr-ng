@@ -45,6 +45,7 @@ otrinc_HEADERS = b64.h \
 		 key_management.h \
 		 list.h \
 		 mpi.h \
+		 otrv3.h \
 		 otrv4.h \
 		 smp.h \
 		 str.h \
