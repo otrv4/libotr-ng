@@ -22,6 +22,7 @@
 
 #define DATA_MSG_NONCE_BYTES crypto_secretbox_NONCEBYTES
 #define DATA_MSG_MAC_BYTES 64
+#define MAC_KEY_BYTES 64
 
 #define DATA_MESSAGE_MIN_BYTES (\
                                + DAKE_HEADER_BYTES \

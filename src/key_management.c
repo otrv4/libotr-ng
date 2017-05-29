@@ -78,7 +78,7 @@ void key_manager_destroy(key_manager_t *manager)
 	ec_point_destroy(manager->their_ecdh);
 
 	list_free_all(manager->old_mac_keys);
-	manager->old_mac_keys = NULL;
+        manager->old_mac_keys = NULL;
 }
 
 void key_manager_generate_ephemeral_keys(key_manager_t *manager)
@@ -534,9 +534,8 @@ void
 key_manager_old_mac_keys_serialize(uint8_t * serialized_mac_keys,
                                    list_element_t *old_mac_keys)
 {
-	//const size_t mac_keys_len = list_len(old_mac_keys);
-	//for (int i = 1; i <= mac_keys_len; i++) {
-
+	const size_t mac_keys_len = list_len(old_mac_keys);
+	for (int i = 0; i < mac_keys_len; i++) {
 	        list_element_t *last = list_new();
 		last = list_get_last(old_mac_keys);
 		memcpy(serialized_mac_keys, last, DATA_MSG_MAC_BYTES);
@@ -544,7 +543,7 @@ key_manager_old_mac_keys_serialize(uint8_t * serialized_mac_keys,
 		list_free_all(last);
 		last->next = NULL;
 		last = NULL;
-	//}
+	}
 
 	list_free_all(old_mac_keys);
 }

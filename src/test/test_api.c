@@ -19,7 +19,9 @@ void test_api_conversation(void)
 
 	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
 	otrv4_t *alice = otrv4_new(alice_keypair, policy);
+        otrv4_assert(!alice->keys->old_mac_keys);
 	otrv4_t *bob = otrv4_new(bob_keypair, policy);
+        otrv4_assert(!bob->keys->old_mac_keys);
 
 	//AKE HAS FINISHED.
 	do_ake_fixture(alice, bob);
@@ -36,6 +38,7 @@ void test_api_conversation(void)
 		otrv4_assert(otrv4_send_message(&to_send, "hi", NULL, alice));
 		otrv4_assert(to_send);
 		otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+                otrv4_assert(!alice->keys->old_mac_keys);
 
 		//This is a follow up message.
 		g_assert_cmpint(alice->keys->i, ==, 0);
@@ -45,6 +48,8 @@ void test_api_conversation(void)
 		response_to_alice = otrv4_response_new();
 		otrv4_assert(otrv4_receive_message
 			     (response_to_alice, to_send, bob));
+
+		otrv4_assert(bob->keys->old_mac_keys);
 		free(to_send);
 		to_send = NULL;
 
@@ -62,7 +67,6 @@ void test_api_conversation(void)
 
 	for (message_id = 1; message_id < 4; message_id++) {
 		//Bob sends a data message
-
 		otrv4_assert(otrv4_send_message(&to_send, "hello", NULL, bob));
 		otrv4_assert(to_send);
 		otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
@@ -97,12 +101,14 @@ void test_api_conversation(void)
 	otrv4_assert(otrv4_send_message(&to_send, "hi", tlvs, bob));
 	otrv4_assert(to_send);
 	otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+	g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
 	otrv4_tlv_free(tlvs);
 
 	//Alice receives a data message with TLV
 	response_to_bob = otrv4_response_new();
 	otrv4_assert(otrv4_receive_message
 		     (response_to_bob, (string_t) to_send, alice));
+	g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
 	free(to_send);
 	to_send = NULL;
 

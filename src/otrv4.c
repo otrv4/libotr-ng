@@ -989,6 +989,18 @@ get_receiving_msg_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
     return true;
 }
 
+static uint8_t *new_mac(m_mac_key_t mac_key)
+{
+	uint8_t *ser = malloc(MAC_KEY_BYTES);
+	if (!ser) {
+		return NULL;
+	}
+
+	memcpy(ser, mac_key, MAC_KEY_BYTES);
+
+	return ser;
+}
+
 bool
 otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 			   size_t buflen, otrv4_t * otr)
@@ -1019,8 +1031,6 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 
 		//TODO: Securely delete receiving chain keys older than message_id-1.
 
-		otr->keys->old_mac_keys = list_add(mac_key, otr->keys->old_mac_keys);
-
 		if (!receive_tlvs(&reply_tlv, response, otr))
 			continue;
 
@@ -1032,11 +1042,22 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 
                 otrv4_tlv_free(reply_tlv);
 		data_message_free(msg);
+
+		uint8_t *to_store_mac = new_mac(mac_key);
+                if (!to_store_mac) {
+		   return false;
+		}
+
+	        otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
+		free(to_store_mac);
+
 		return true;
 	} while (0);
 
 	data_message_free(msg);
         otrv4_tlv_free(reply_tlv);
+
+
 	return false;
 }
 
@@ -1222,9 +1243,9 @@ encrypt_data_message(data_message_t * data_msg, const uint8_t * message,
 
 static bool
 serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
-			      const data_message_t * data_msg,
 			      uint8_t *to_reveal_mac_keys,
-			      size_t to_reveal_mac_keys_len)
+                              size_t to_reveal_mac_keys_len,
+			      const data_message_t * data_msg)
 {
 	bool ok = false;
 	uint8_t *body = NULL;
@@ -1233,7 +1254,7 @@ serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 	if (!data_message_body_aprint(&body, &bodylen, data_msg))
 		return false;
 
-	size_t serlen = bodylen + DATA_MSG_MAC_BYTES + to_reveal_mac_keys_len;
+	size_t serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
 	uint8_t *ser = malloc(serlen);
 	if (!ser) {
 		free(body);
@@ -1243,7 +1264,7 @@ serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 	memcpy(ser, body, bodylen);
 	free(body);
 
-	ok = sha3_512_mac(ser + bodylen, DATA_MSG_MAC_BYTES, mac_key,
+	ok = sha3_512_mac(ser + bodylen, MAC_KEY_BYTES, mac_key,
 			  sizeof(m_mac_key_t), ser, bodylen);
 
 	if (!ok) {
@@ -1269,15 +1290,13 @@ send_data_message(string_t * to_send, const uint8_t * message,
 	m_enc_key_t enc_key;
 	m_mac_key_t mac_key;
 
-	size_t serlen = list_len(otr->keys->old_mac_keys) * DATA_MSG_MAC_BYTES;
+	size_t serlen = list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
 	uint8_t *ser_mac_keys = malloc(serlen);
 	if (!ser_mac_keys) {
 		return false;
 	}
 
-	if (list_len(otr->keys->old_mac_keys) != 0) {
-	        key_manager_old_mac_keys_serialize(ser_mac_keys, otr->keys->old_mac_keys);
-	}
+	key_manager_old_mac_keys_serialize(ser_mac_keys, otr->keys->old_mac_keys);
         otr->keys->old_mac_keys = NULL;
 
 	if (key_manager_prepare_next_chain_key(otr->keys))
@@ -1293,8 +1312,8 @@ send_data_message(string_t * to_send, const uint8_t * message,
 
 	ok = encrypt_data_message(data_msg, message, message_len, enc_key);
 	if (ok)
-		ok = serialize_and_encode_data_msg(to_send, mac_key, data_msg,
-		                                   ser_mac_keys, serlen);
+		ok = serialize_and_encode_data_msg(to_send, mac_key,
+		                                   ser_mac_keys, serlen, data_msg);
 
 	free(ser_mac_keys);
 	data_message_free(data_msg);
