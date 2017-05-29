@@ -222,11 +222,11 @@ void test_api_conversation_v3(void)
         //Generate long term private key.
         FILE *tmpFILEp;
         tmpFILEp = tmpfile();
-        otrl_privkey_generate_FILEp(alice->otr3_conn->userstate, tmpFILEp, "alice", "proto");
+        otrv4_assert(!otrl_privkey_generate_FILEp(alice->otr3_conn->userstate, tmpFILEp, "alice", "proto"));
         fclose(tmpFILEp);
 
         tmpFILEp = tmpfile();
-        otrl_privkey_generate_FILEp(bob->otr3_conn->userstate, tmpFILEp, "bob", "proto");
+        otrv4_assert(!otrl_privkey_generate_FILEp(bob->otr3_conn->userstate, tmpFILEp, "bob", "proto"));
         fclose(tmpFILEp);
 
         //Generate instance tag
