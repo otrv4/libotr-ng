@@ -33,6 +33,8 @@ void test_derive_ratchet_keys()
 
 void test_key_manager_destroy()
 {
+	OTR4_INIT;
+
 	key_manager_t *manager = malloc(sizeof(key_manager_t));
 	key_manager_init(manager);
 
@@ -50,7 +52,6 @@ void test_key_manager_destroy()
 	otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
 	otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS); //ran a second time to fill manager->previous
 
-	dh_init();
 	bool ok = dh_keypair_generate(manager->our_dh);
 	otrv4_assert(ok);
 

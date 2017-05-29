@@ -2,7 +2,7 @@
 
 void test_data_message_serializes()
 {
-	dh_init();
+        OTR4_INIT;
 
 	ecdh_keypair_t ecdh[1];
 	dh_keypair_t dh;

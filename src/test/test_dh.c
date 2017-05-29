@@ -2,7 +2,7 @@
 
 void dh_test_api()
 {
-	dh_init();
+	OTR4_INIT;
 
 	dh_keypair_t alice, bob;
 	dh_keypair_generate(alice);
@@ -51,7 +51,7 @@ void dh_test_serialize()
 
 void dh_test_keypair_destroy()
 {
-	dh_init();
+	OTR4_INIT;
 	dh_keypair_t alice;
 
 	dh_keypair_generate(alice);

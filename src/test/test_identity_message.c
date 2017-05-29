@@ -8,7 +8,7 @@ void
 test_dake_identity_message_serializes(identity_message_fixture_t * f,
 				      gconstpointer data)
 {
-	dh_init();
+	OTR4_INIT;
 
 	ecdh_keypair_t ecdh[1];
 	dh_keypair_t dh;
@@ -72,7 +72,7 @@ void
 test_dake_identity_message_deserializes(identity_message_fixture_t * f,
 					gconstpointer data)
 {
-	dh_init();
+	OTR4_INIT;
 
 	ecdh_keypair_t ecdh[1];
 	dh_keypair_t dh;
@@ -119,7 +119,7 @@ void
 test_dake_identity_message_valid(identity_message_fixture_t * f,
 				 gconstpointer data)
 {
-	dh_init();
+	OTR4_INIT;
 
 	ecdh_keypair_t ecdh[1];
 	dh_keypair_t dh;

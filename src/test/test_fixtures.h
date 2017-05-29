@@ -1,6 +1,8 @@
 #include "../otrv4.h"
 #include "../user_profile.h"
 
+#include <libotr/privkey.h>
+
 typedef struct {
 	otrv4_t *otr;
 	otrv4_t *otrv3;
@@ -10,7 +12,7 @@ typedef struct {
 
 void otrv4_fixture_set_up(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 {
-	dh_init();
+        OTR4_INIT;
 
 	otrv4_fixture->keypair = otrv4_keypair_new();
 	uint8_t sym[ED448_PRIVATE_BYTES] = { 1 };	// non-random private key on purpose
@@ -26,6 +28,24 @@ void otrv4_fixture_set_up(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 	otrv4_policy_t policyv34 = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4 };
 	otrv4_fixture->otrv34 = otrv4_new(otrv4_fixture->keypair, policyv34);
         otrv4_fixture->otrv34->otr3_conn = otr3_conn_new("proto", "we_are_bob", "they_are_alice");
+
+        //TODO: This should be done automatically
+        FILE *tmpFILEp;
+        tmpFILEp = tmpfile();
+        otrv4_assert(!otrl_privkey_generate_FILEp(otrv4_fixture->otrv3->otr3_conn->userstate, tmpFILEp, "we_are_alice", "proto"));
+        fclose(tmpFILEp);
+
+        tmpFILEp = tmpfile();
+        otrl_instag_generate_FILEp(otrv4_fixture->otrv3->otr3_conn->userstate, tmpFILEp, "we_are_alice", "proto");
+        fclose(tmpFILEp);
+
+        tmpFILEp = tmpfile();
+        otrv4_assert(!otrl_privkey_generate_FILEp(otrv4_fixture->otrv34->otr3_conn->userstate, tmpFILEp, "we_are_bob", "proto"));
+        fclose(tmpFILEp);
+
+        tmpFILEp = tmpfile();
+        otrl_instag_generate_FILEp(otrv4_fixture->otrv34->otr3_conn->userstate, tmpFILEp, "we_are_bob", "proto");
+        fclose(tmpFILEp);
 }
 
 void otrv4_fixture_teardown(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
