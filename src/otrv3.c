@@ -64,11 +64,16 @@ void otr3_conn_free(otr3_conn_t* conn)
     if (!conn)
         return;
 
+    //Force the context to be in plaintext so it is freed.
+    //See: otrl_context_forget()
+    if (conn->ctx)
+        otrl_context_force_plaintext(conn->ctx);
+
+    conn->ctx = NULL;
+    conn->ops = NULL;
+
     otrl_userstate_free(conn->userstate);
     conn->userstate = NULL;
-
-    conn->ops = NULL;
-    conn->ctx = NULL;
 
     free(conn->protocol);
     conn->protocol = NULL;
