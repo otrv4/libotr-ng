@@ -87,3 +87,12 @@
    ...
    fun:otrl_init
 }
+{
+   I_have_no_idea
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:gen_prime
+   ...
+   fun:gcry_pk_genkey
+}
