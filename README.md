@@ -12,7 +12,7 @@ Then you should install the following dependencies
 * libglib2.0-dev
 * libdecaf
 * libsodium-dev
-* libcramershoup
+* libotr
 * libgcrypt
 
 Generate project configuration

@@ -68,7 +68,7 @@ snizkpk_authenticate(snizkpk_proof_t * dst, const snizkpk_keypair_t * pair1,
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
 	gcry_md_write(hd, base_point_bytes_dup, ED448_POINT_BYTES);
-	gcry_md_write(hd, prime_order_bytes_dup, ED448_POINT_BYTES);
+	gcry_md_write(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff,
 							      pair1->pub);
@@ -133,7 +133,7 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
 	gcry_md_write(hd, base_point_bytes_dup, ED448_POINT_BYTES);
-	gcry_md_write(hd, prime_order_bytes_dup, ED448_POINT_BYTES);
+	gcry_md_write(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
 
 	decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A1);
 	gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
@@ -158,7 +158,6 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 	memcpy(hash, gcry_md_read(hd, 0), 64);
 	gcry_md_close(hd);
 
-	//TODO: Do we need anything else to hash from bytes to a scalar?
 	snizkpk_privkey_t c, c1c2c3;
 	int ok = decaf_448_scalar_decode(c, hash);
 	(void)ok;
