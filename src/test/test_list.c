@@ -33,8 +33,9 @@ void test_list_get_last()
 	g_assert_cmpint(two, ==, *((int *)last->data));
 
 	list = list_remove_element(last, list);
-        last = list_get_last(list);
+        list_free_all(last);
 
+        last = list_get_last(list);
 	g_assert_cmpint(one, ==, *((int *)last->data));
 
 	list_free_all(list);
@@ -52,9 +53,11 @@ void test_list_len()
 
 	list_element_t *last = list_get_last(list);
 	list = list_remove_element(last, list);
+        list_free_all(last);
 
 	last = list_get_last(list);
 	list = list_remove_element(last, list);
+        list_free_all(last);
 
 	g_assert_cmpint(list_len(list), ==, 0);
 
