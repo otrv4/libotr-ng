@@ -31,9 +31,16 @@ void otrv4_fixture_set_up(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 void otrv4_fixture_teardown(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 {
 	otrv4_keypair_free(otrv4_fixture->keypair);
+        otrv4_fixture->keypair = NULL;
+
 	otrv4_free(otrv4_fixture->otr);
+        otrv4_fixture->otr = NULL;
+
 	otrv4_free(otrv4_fixture->otrv3);
+        otrv4_fixture->otrv3 = NULL;
+
 	otrv4_free(otrv4_fixture->otrv34);
+        otrv4_fixture->otrv34 = NULL;
 
 	dh_free();
 }
