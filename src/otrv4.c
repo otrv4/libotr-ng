@@ -282,7 +282,6 @@ message_to_display_without_tag(otrv4_response_t * response,
 	return true;
 }
 
-//TODO: This belongs to the client. A otrv4_t should only "run" the v4 wire protocol.
 static void set_running_version_from_tag(otrv4_t * otr, const string_t message)
 {
 	if (allow_version(otr, OTRV4_ALLOW_V4)
@@ -303,7 +302,6 @@ static bool message_is_query(const string_t message)
 	return strstr(message, query_header) != NULL;
 }
 
-//TODO: This belongs to the client. A otrv4_t should only "run" the v4 wire protocol.
 static void set_running_version_from_query_msg(otrv4_t * otr,
 					       const string_t message)
 {
