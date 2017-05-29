@@ -66,7 +66,7 @@ void test_api_conversation(void)
 	}
 
 	for (message_id = 1; message_id < 4; message_id++) {
-		//Bob sends a data message
+	  //Bob sends a data message
 		otrv4_assert(otrv4_send_message(&to_send, "hello", NULL, bob));
 		otrv4_assert(to_send);
 		otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);

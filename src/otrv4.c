@@ -988,18 +988,6 @@ get_receiving_msg_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
     return true;
 }
 
-static uint8_t *new_mac(m_mac_key_t mac_key)
-{
-	uint8_t *ser = malloc(MAC_KEY_BYTES);
-	if (!ser) {
-		return NULL;
-	}
-
-	memcpy(ser, mac_key, MAC_KEY_BYTES);
-
-	return ser;
-}
-
 bool
 otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 			   size_t buflen, otrv4_t * otr)
@@ -1007,6 +995,8 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 	data_message_t *msg = data_message_new();
 	m_enc_key_t enc_key;
 	m_mac_key_t mac_key;
+        uint8_t * to_store_mac = malloc(MAC_KEY_BYTES);
+
 
 	//TODO: warn the user and send an error message with a code.
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
@@ -1042,17 +1032,12 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
                 otrv4_tlv_free(reply_tlv);
 		data_message_free(msg);
 
-		uint8_t *to_store_mac = new_mac(mac_key);
-                if (!to_store_mac) {
-		   return false;
-		}
-
+		memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
 	        otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
-		free(to_store_mac);
-
 		return true;
 	} while (0);
 
+	free(to_store_mac);
 	data_message_free(msg);
         otrv4_tlv_free(reply_tlv);
 
@@ -1272,7 +1257,7 @@ serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 	}
 
 	serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES,
-	                      to_reveal_mac_keys, to_reveal_mac_keys_len);
+	                    to_reveal_mac_keys, to_reveal_mac_keys_len);
 
 	*dst = otrl_base64_otr_encode(ser, serlen);
 	free(ser);
@@ -1290,12 +1275,8 @@ send_data_message(string_t * to_send, const uint8_t * message,
 	m_mac_key_t mac_key;
 
 	size_t serlen = list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
-	uint8_t *ser_mac_keys = malloc(serlen);
-	if (!ser_mac_keys) {
-		return false;
-	}
 
-	key_manager_old_mac_keys_serialize(ser_mac_keys, otr->keys->old_mac_keys);
+	uint8_t * ser_mac_keys = key_manager_old_mac_keys_serialize(otr->keys->old_mac_keys);
         otr->keys->old_mac_keys = NULL;
 
 	if (key_manager_prepare_next_chain_key(otr->keys))

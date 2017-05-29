@@ -530,20 +530,29 @@ key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
     return OTR4_ERROR;
 }
 
-void
-key_manager_old_mac_keys_serialize(uint8_t * serialized_mac_keys,
-                                   list_element_t *old_mac_keys)
+uint8_t *
+key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys)
 {
-	const size_t mac_keys_len = list_len(old_mac_keys);
-	for (int i = 0; i < mac_keys_len; i++) {
-	        list_element_t *last = list_new();
-		last = list_get_last(old_mac_keys);
-		memcpy(serialized_mac_keys, last, DATA_MSG_MAC_BYTES);
-		old_mac_keys = list_remove_element(last, old_mac_keys);
-		list_free_all(last);
-		last->next = NULL;
-		last = NULL;
+        uint num_mac_keys = list_len(old_mac_keys);
+        size_t serlen = num_mac_keys * MAC_KEY_BYTES;
+        if (serlen == 0) {
+                return NULL;
+        }
+
+        uint8_t *ser_mac_keys = malloc(serlen);
+	if (!ser_mac_keys) {
+		return NULL;
+	}
+
+        for (int i = 0; i < num_mac_keys; i++) {
+	        list_element_t *last = list_get_last(old_mac_keys);
+	        memcpy(ser_mac_keys+i*MAC_KEY_BYTES,
+		       last->data, MAC_KEY_BYTES);
+	        old_mac_keys = list_remove_element(last, old_mac_keys);
+	        free(last); //after pull, list_free_all(last);
 	}
 
 	list_free_all(old_mac_keys);
+
+        return ser_mac_keys;
 }
