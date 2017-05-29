@@ -102,12 +102,12 @@ void do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 
 	//Alice sends query message
 	string_t query_message = NULL;
-	otrv4_build_query_message(&query_message, "", alice);
+	otrv4_assert(otrv4_build_query_message(&query_message, "", alice) == OTR4_SUCCESS);
 	otrv4_assert_cmpmem("?OTRv4", query_message, 6);
 
 	//Bob receives query message
 	otrv4_assert(otrv4_receive_message
-		     (response_to_alice, query_message, bob));
+		     (response_to_alice, query_message, bob) == OTR4_SUCCESS);
 	free(query_message);
 	query_message = NULL;
 
@@ -119,7 +119,7 @@ void do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 
 	//Alice receives identity message
 	otrv4_assert(otrv4_receive_message
-		     (response_to_bob, response_to_alice->to_send, alice));
+		     (response_to_bob, response_to_alice->to_send, alice) == OTR4_SUCCESS);
 	free(response_to_alice->to_send);
 	response_to_alice->to_send = NULL;
 
@@ -139,7 +139,7 @@ void do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 
 	//Bob receives an auth receiver
 	otrv4_assert(otrv4_receive_message
-		     (response_to_alice, response_to_bob->to_send, bob));
+		     (response_to_alice, response_to_bob->to_send, bob) == OTR4_SUCCESS);
 	free(response_to_bob->to_send);
 	response_to_bob->to_send = NULL;
 
@@ -162,7 +162,7 @@ void do_ake_fixture(otrv4_t * alice, otrv4_t * bob)
 
 	//Alice receives an auth initiator
 	otrv4_assert(otrv4_receive_message
-		     (response_to_bob, response_to_alice->to_send, alice));
+		     (response_to_bob, response_to_alice->to_send, alice) == OTR4_SUCCESS);
 	free(response_to_alice->to_send);
 	response_to_alice->to_send = NULL;
 

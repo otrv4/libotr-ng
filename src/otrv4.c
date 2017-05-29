@@ -175,7 +175,7 @@ void otrv4_free( /*@only@ */ otrv4_t * otr)
 }
 
 //TODO: This belongs to the client.
-int otrv4_build_query_message(string_t * dst, const string_t message,
+otr4_err_t otrv4_build_query_message(string_t * dst, const string_t message,
 			      const otrv4_t * otr)
 {
 	//size = qm tag + versions + msg length + versions + question mark + whitespace + null byte
@@ -188,7 +188,7 @@ int otrv4_build_query_message(string_t * dst, const string_t message,
 
 	buff = malloc(qm_size);
 	if (!buff)
-		return -1;
+		return OTR4_ERROR;
 
 	char *cursor = stpcpy(buff, query_header);
 	cursor = stpcpy(cursor, allowed);
@@ -197,15 +197,15 @@ int otrv4_build_query_message(string_t * dst, const string_t message,
 	int rem = cursor - buff;
 	if (*stpncpy(cursor, message, qm_size - rem)) {
 		free(buff);
-		return 1;	// could not zero-terminate the string
+		return OTR4_ERROR;	// could not zero-terminate the string
 	}
 
 	*dst = buff;
-	return 0;
+	return OTR4_SUCCESS;
 }
 
 //TODO: This belongs to the client.
-bool
+otr4_err_t
 otrv4_build_whitespace_tag(string_t * whitespace_tag, const string_t message,
 			   const otrv4_t * otr)
 {
@@ -223,7 +223,7 @@ otrv4_build_whitespace_tag(string_t * whitespace_tag, const string_t message,
 
 	buff = malloc(m_size);
 	if (!buff)
-		return false;
+		return OTR4_ERROR;
 
 	cursor = stpcpy(buff, tag_base);
 
@@ -235,11 +235,11 @@ otrv4_build_whitespace_tag(string_t * whitespace_tag, const string_t message,
 
 	if (*stpncpy(cursor, message, m_size - strlen(buff))) {
 		free(buff);
-		return false;
+		return OTR4_ERROR;
 	}
 
 	*whitespace_tag = buff;
-	return true;
+	return OTR4_SUCCESS;
 }
 
 static bool message_contains_tag(const string_t message)
@@ -256,7 +256,7 @@ set_to_display(otrv4_response_t * response, const string_t message,
 }
 
 //TODO: this does not remove ALL tags
-static bool
+static otr4_err_t
 message_to_display_without_tag(otrv4_response_t * response,
 			       const string_t message,
 			       const char *tag_version, size_t msg_len)
@@ -266,12 +266,12 @@ message_to_display_without_tag(otrv4_response_t * response,
 	size_t chars = msg_len - tag_length;
 
 	if (msg_len < tag_length) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	string_t buff = malloc(chars + 1);
 	if (buff == NULL) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	strncpy(buff, message + tag_length, chars);
@@ -280,7 +280,7 @@ message_to_display_without_tag(otrv4_response_t * response,
 	set_to_display(response, buff, chars);
 
 	free(buff);
-	return true;
+	return OTR4_SUCCESS;
 }
 
 static void set_running_version_from_tag(otrv4_t * otr, const string_t message)
@@ -364,7 +364,7 @@ receive_plaintext(otrv4_response_t * response, const string_t message,
 		response->warning = OTRV4_WARN_RECEIVED_UNENCRYPTED;
 }
 
-static bool
+static otr4_err_t
 serialize_and_encode_identity_message(string_t * dst,
 				      const dake_identity_message_t * m)
 {
@@ -372,22 +372,22 @@ serialize_and_encode_identity_message(string_t * dst,
 	size_t len = 0;
 
 	if (dake_identity_message_asprintf(&buff, &len, m))
-		return false;
+		return OTR4_ERROR;
 
 	*dst = otrl_base64_otr_encode(buff, len);
 	free(buff);
-	return true;
+	return OTR4_SUCCESS;
 }
 
-static bool
+static otr4_err_t
 reply_with_identity_msg(otrv4_response_t * response, const otrv4_t * otr)
 {
 	dake_identity_message_t *m = NULL;
-	bool ok = false;
+    otr4_err_t err = OTR4_ERROR;
 
 	m = dake_identity_message_new(otr->profile);
 	if (!m)
-		return false;
+		return err;
 
 	m->sender_instance_tag = otr->our_instance_tag;
 	m->receiver_instance_tag = otr->their_instance_tag;
@@ -395,12 +395,15 @@ reply_with_identity_msg(otrv4_response_t * response, const otrv4_t * otr)
 	ec_point_copy(m->Y, OUR_ECDH(otr));
 	m->B = dh_mpi_copy(OUR_DH(otr));
 
-	ok = serialize_and_encode_identity_message(&response->to_send, m);
+    if (serialize_and_encode_identity_message(&response->to_send, m)) {
+        return err;
+    }
+    err = OTR4_SUCCESS;
 	dake_identity_message_free(m);
-	return ok;
+	return err;
 }
 
-static bool start_dake(otrv4_response_t * response, otrv4_t * otr)
+static otr4_err_t start_dake(otrv4_response_t * response, otrv4_t * otr)
 {
 	key_manager_generate_ephemeral_keys(otr->keys);
 	otr->state = OTRV4_STATE_WAITING_AUTH_R;
@@ -408,7 +411,7 @@ static bool start_dake(otrv4_response_t * response, otrv4_t * otr)
 	return reply_with_identity_msg(response, otr);
 }
 
-static bool
+static otr4_err_t
 receive_tagged_plaintext(otrv4_response_t * response,
 			 const string_t message, otrv4_t * otr)
 {
@@ -416,22 +419,24 @@ receive_tagged_plaintext(otrv4_response_t * response,
 
 	switch (otr->running_version) {
 	case OTRV4_VERSION_4:
-		if (!message_to_display_without_tag
+		if (message_to_display_without_tag
 		    (response, message, tag_version_v4, strlen(message))) {
-			return false;
+			return OTR4_ERROR;
 		}
-
-		return start_dake(response, otr);
-		break;
+        return start_dake(response, otr);
+        break;
 	case OTRV4_VERSION_3:
-		return otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn);
+        if (!otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn)) {
+            return OTR4_ERROR;
+        }
+        return OTR4_SUCCESS;
 		break;
 	default:
-                //ignore
-                return true;
+        //ignore
+        return OTR4_SUCCESS;
 	}
 
-	return false;
+	return OTR4_ERROR;
 }
 
 static bool
@@ -442,7 +447,10 @@ receive_query_message(otrv4_response_t * response,
 
 	switch (otr->running_version) {
 	case OTRV4_VERSION_4:
-		return start_dake(response, otr);
+        if (start_dake(response, otr)) {
+            return false;
+        }
+        return true;
 		break;
 	case OTRV4_VERSION_3:
 		return otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn);
@@ -455,7 +463,7 @@ receive_query_message(otrv4_response_t * response,
 	return false;
 }
 
-bool
+otr4_err_t
 extract_header(otrv4_header_t * dst, const uint8_t * buffer,
 	       const size_t bufflen)
 {
@@ -465,13 +473,13 @@ extract_header(otrv4_header_t * dst, const uint8_t * buffer,
 	uint16_t version = 0;
 	uint8_t type = 0;
 	if (deserialize_uint16(&version, buffer, bufflen, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	buffer += read;
 
 	if (deserialize_uint8(&type, buffer, bufflen - read, &read)) {
-		return false;
+		return OTR4_ERROR;
 	}
 
 	dst->version = OTRV4_ALLOW_NONE;
@@ -482,7 +490,7 @@ extract_header(otrv4_header_t * dst, const uint8_t * buffer,
 	}
 	dst->type = type;
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
 static bool double_ratcheting_init(int j, otrv4_t * otr)
@@ -1026,7 +1034,7 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 		key_manager_prepare_to_ratchet(otr->keys);
 
                 if (reply_tlv)
-                    if (!otrv4_send_message(&response->to_send, "", reply_tlv, otr))
+                    if (otrv4_send_message(&response->to_send, "", reply_tlv, otr))
                         continue;
 
                 otrv4_tlv_free(reply_tlv);
@@ -1059,7 +1067,7 @@ receive_encoded_message(otrv4_response_t * response,
 		return false;
 
 	otrv4_header_t header;
-	if (!extract_header(&header, decoded, dec_len)) {
+	if (extract_header(&header, decoded, dec_len)) {
 		free(decoded);
 		return false;
 	}
@@ -1121,40 +1129,46 @@ otrv4_in_message_type_t get_message_type(const string_t message)
 	return IN_MSG_PLAINTEXT;
 }
 
-static bool receive_message_v4_only(otrv4_response_t * response,
+static otr4_err_t receive_message_v4_only(otrv4_response_t * response,
 		      const string_t message, otrv4_t * otr)
 {
 	switch (get_message_type(message)) {
 	case IN_MSG_NONE:
-		return false;
+		return OTR4_ERROR;
 	case IN_MSG_PLAINTEXT:
 		receive_plaintext(response, message, otr);
-		return true;
+		return OTR4_SUCCESS;
 		break;
 
 	case IN_MSG_TAGGED_PLAINTEXT:
-		return receive_tagged_plaintext(response, message, otr);
+        return receive_tagged_plaintext(response, message, otr);
 		break;
 
 	case IN_MSG_QUERY_STRING:
-		return receive_query_message(response, message, otr);
+        if (!receive_query_message(response, message, otr)) {
+            return OTR4_ERROR;
+        }
+        return OTR4_SUCCESS;
 		break;
 
 	case IN_MSG_OTR_ENCODED:
-		return receive_encoded_message(response, message, otr);
+        if (!receive_encoded_message(response, message, otr)) {
+            return OTR4_ERROR;
+        }
+        return OTR4_SUCCESS;
 		break;
 	}
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
 // Receive a possibly OTR message.
-bool
+otr4_err_t
 otrv4_receive_message(otrv4_response_t * response,
 		      const string_t message, otrv4_t * otr)
 {
 	if (!message || !response)
-		return false;
+		return OTR4_ERROR;
 
 	set_to_display(response, NULL, 0);
 	response->to_send = NULL;
@@ -1165,8 +1179,12 @@ otrv4_receive_message(otrv4_response_t * response,
 	    strstr(message, "?OTR:AAMC"))
 		otr->running_version = OTRV4_VERSION_3;
 
-	if (otr->running_version == OTRV4_VERSION_3)
-            return otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn);
+    if (otr->running_version == OTRV4_VERSION_3) {
+        if (!otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn)) {
+            return OTR4_ERROR;
+        }
+        return OTR4_SUCCESS;
+    }
 
     return receive_message_v4_only(response, message, otr);
 }
@@ -1187,7 +1205,7 @@ static data_message_t *generate_data_msg(const otrv4_t * otr)
 	return data_msg;
 }
 
-static bool
+static otr4_err_t
 encrypt_data_message(data_message_t * data_msg, const uint8_t * message,
 		     size_t message_len, const m_enc_key_t enc_key)
 {
@@ -1198,7 +1216,7 @@ encrypt_data_message(data_message_t * data_msg, const uint8_t * message,
 
 	c = malloc(message_len);
 	if (!c)
-		return false;
+		return OTR4_ERROR;
 
 	//TODO: message is an UTF-8 string. Is there any problem to cast
 	//it to (unsigned char *)
@@ -1207,7 +1225,7 @@ encrypt_data_message(data_message_t * data_msg, const uint8_t * message,
 			      enc_key);
 	if (err) {
 		free(c);
-		return false;
+		return OTR4_ERROR;
 	}
 
 	data_msg->enc_msg = c;
@@ -1222,38 +1240,35 @@ encrypt_data_message(data_message_t * data_msg, const uint8_t * message,
 	otrv4_memdump(c, message_len);
 #endif
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
-static bool
+static otr4_err_t
 serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 			      uint8_t *to_reveal_mac_keys,
                               size_t to_reveal_mac_keys_len,
 			      const data_message_t * data_msg)
 {
-	bool ok = false;
 	uint8_t *body = NULL;
 	size_t bodylen = 0;
 
 	if (data_message_body_asprintf(&body, &bodylen, data_msg))
-		return false;
+		return OTR4_ERROR;
 
 	size_t serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
 	uint8_t *ser = malloc(serlen);
 	if (!ser) {
 		free(body);
-		return false;
+		return OTR4_ERROR;
 	}
 
 	memcpy(ser, body, bodylen);
 	free(body);
 
-	ok = sha3_512_mac(ser + bodylen, MAC_KEY_BYTES, mac_key,
-			  sizeof(m_mac_key_t), ser, bodylen);
-
-	if (!ok) {
+	if (!sha3_512_mac(ser + bodylen, MAC_KEY_BYTES, mac_key,
+			  sizeof(m_mac_key_t), ser, bodylen)) {
 		free(ser);
-		return false;
+		return OTR4_ERROR;
 	}
 
 	serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES,
@@ -1262,14 +1277,13 @@ serialize_and_encode_data_msg(string_t * dst, const m_mac_key_t mac_key,
 	*dst = otrl_base64_otr_encode(ser, serlen);
 	free(ser);
 
-	return true;
+	return OTR4_SUCCESS;
 }
 
-static bool
+static otr4_err_t
 send_data_message(string_t * to_send, const uint8_t * message,
 		  size_t message_len, otrv4_t * otr)
 {
-	bool ok = false;
 	data_message_t *data_msg = NULL;
 	m_enc_key_t enc_key;
 	m_mac_key_t mac_key;
@@ -1280,30 +1294,29 @@ send_data_message(string_t * to_send, const uint8_t * message,
         otr->keys->old_mac_keys = NULL;
 
 	if (key_manager_prepare_next_chain_key(otr->keys))
-		return false;
+		return OTR4_ERROR;
 
 	if (key_manager_retrieve_sending_message_keys(enc_key, mac_key,
 						       otr->keys))
-		return false;
+		return OTR4_ERROR;
 
 	data_msg = generate_data_msg(otr);
 	if (!data_msg)
-		return false;
+		return OTR4_ERROR;
 
-	ok = encrypt_data_message(data_msg, message, message_len, enc_key);
-	if (ok)
-		ok = serialize_and_encode_data_msg(to_send, mac_key,
-		                                   ser_mac_keys, serlen, data_msg);
+	otr4_err_t err = OTR4_ERROR;
+    if (encrypt_data_message(data_msg, message, message_len, enc_key) == OTR4_SUCCESS &&
+        serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys, serlen, data_msg) == OTR4_SUCCESS) {
+			//TODO: Change the spec to say this should be incremented after the message
+			//is sent.
+		    otr->keys->j++;
+            err = OTR4_SUCCESS;
+        }
 
 	free(ser_mac_keys);
 	data_message_free(data_msg);
 
-	//TODO: Change the spec to say this should be incremented after the message
-	//is sent.
-	if (ok)
-		otr->keys->j++;
-
-	return ok;
+    return err;
 }
 
 static
@@ -1359,7 +1372,7 @@ bool append_tlvs(uint8_t ** dst, size_t * dstlen, const string_t message,
 	return true;
 }
 
-static bool
+static otr4_err_t
 send_otrv4_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 		   otrv4_t * otr)
 {
@@ -1367,47 +1380,54 @@ send_otrv4_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 	size_t msg_len = 0;
 
 	if (otr->state == OTRV4_STATE_FINISHED)
-		return false;	//Should restart
+		return OTR4_ERROR;	//Should restart
 
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
-		return false;	//TODO: queue message
+		return OTR4_ERROR;	//TODO: queue message
 
 	if (!append_tlvs(&msg, &msg_len, message, tlvs))
-		return false;
+		return OTR4_ERROR;
 
-	bool ok = send_data_message(to_send, msg, msg_len, otr);
+	otr4_err_t err = send_data_message(to_send, msg, msg_len, otr);
 	free(msg);
 
-	return ok;
+	return err;
 }
 
-bool
+otr4_err_t
 otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 		   otrv4_t * otr)
 {
-        if (otr && otr->running_version == OTRV4_VERSION_3)
-            return send_otrv3_message(to_send, message, tlvs, otr->otr3_conn);
+    if (otr && otr->running_version == OTRV4_VERSION_3) {
+        if (!send_otrv3_message(to_send, message, tlvs, otr->otr3_conn)) {
+            return OTR4_ERROR;
+        }
+        return OTR4_SUCCESS;
+    }
 
-        return send_otrv4_message(to_send, message, tlvs, otr);
+    return send_otrv4_message(to_send, message, tlvs, otr);
 }
 
-bool otrv4_close(string_t * to_send, otrv4_t * otr)
+otr4_err_t otrv4_close(string_t * to_send, otrv4_t * otr)
 {
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
-		return true;
+		return OTR4_SUCCESS;
 
 	tlv_t *disconnected = otrv4_disconnected_tlv_new();
 	if (!disconnected)
-		return false;
+		return OTR4_ERROR;
 
-	bool ok = otrv4_send_message(to_send, "", disconnected, otr);
+	otr4_err_t err = OTR4_ERROR;
+    if (otrv4_send_message(to_send, "", disconnected, otr) == OTR4_SUCCESS) {
+        err = OTR4_SUCCESS;
+    }
 	otrv4_tlv_free(disconnected);
 
 	forget_our_keys(otr);
 	otr->state = OTRV4_STATE_START;
 	gone_insecure_cb(otr);
 
-	return ok;
+	return err;
 }
 
 static void set_smp_secret(const uint8_t *answer,
@@ -1424,33 +1444,34 @@ static void set_smp_secret(const uint8_t *answer,
 		generate_smp_secret(&otr->smp->secret, their_fp, our_fp, otr->keys->ssid, answer, answerlen);
 }
 
-bool otrv4_smp_start(string_t * to_send, const string_t question,
+otr4_err_t otrv4_smp_start(string_t * to_send, const string_t question,
 			  const uint8_t *secret, const size_t secretlen,
                           otrv4_t * otr)
 {
     if (!otr)
-        return false;
+        return OTR4_ERROR;
 
     tlv_t *smp_start_tlv = otrv4_smp_initiate(otr, question, secret, secretlen);
     return otrv4_send_message(to_send, "", smp_start_tlv, otr);
 }
 
-bool otrv4_smp_continue(string_t * to_send, const uint8_t *secret,
+otr4_err_t otrv4_smp_continue(string_t * to_send, const uint8_t *secret,
     const size_t secretlen, otrv4_t * otr)
 {
-    bool ok = false;
+    otr4_err_t err = OTR4_ERROR;
     tlv_t *smp_reply = NULL;
 
     if (!otr)
-        return false;
+        return err;
 
     smp_reply = otrv4_smp_provide_secret(otr, secret, secretlen);
 
-    if (smp_reply)
-        ok = otrv4_send_message(to_send, "", smp_reply, otr);
+    if (smp_reply && otrv4_send_message(to_send, "", smp_reply, otr) == OTR4_SUCCESS) {
+        err = OTR4_SUCCESS;
+    }
 
     otrv4_tlv_free(smp_reply);
-    return ok;
+    return err;
 }
 
 //TODO: extract some function to SMP

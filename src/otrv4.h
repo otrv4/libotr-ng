@@ -148,10 +148,10 @@ otrv4_t *otrv4_new(otrv4_keypair_t * keypair, otrv4_policy_t policy);
 void otrv4_destroy(otrv4_t * otr);
 void otrv4_free( /*@only@ */ otrv4_t * otr);
 
-int otrv4_build_query_message(string_t * dst, const string_t message,
+otr4_err_t otrv4_build_query_message(string_t * dst, const string_t message,
 			      const otrv4_t * otr);
 
-bool
+otr4_err_t
 otrv4_build_whitespace_tag(string_t * whitespace_tag, const string_t message,
 			   const otrv4_t * otr);
 
@@ -161,24 +161,24 @@ void otrv4_response_free(otrv4_response_t * response);
 
 otrv4_in_message_type_t get_message_type(const string_t message);
 
-bool
+otr4_err_t
 extract_header(otrv4_header_t * dst, const uint8_t * buffer,
 	       const size_t bufflen);
 
-bool
+otr4_err_t
 otrv4_receive_message(otrv4_response_t * response,
 		      const string_t message, otrv4_t * otr);
 
-bool
+otr4_err_t
 otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 		   otrv4_t * otr);
 
-bool otrv4_close(string_t * to_send, otrv4_t * otr);
+otr4_err_t otrv4_close(string_t * to_send, otrv4_t * otr);
 
-bool otrv4_smp_start(string_t * to_send, const string_t question,
+otr4_err_t otrv4_smp_start(string_t * to_send, const string_t question,
 			  const uint8_t *secret, const size_t secretlen, otrv4_t * otr);
 
-bool otrv4_smp_continue(string_t * to_send, const uint8_t *secret,
+otr4_err_t otrv4_smp_continue(string_t * to_send, const uint8_t *secret,
     const size_t secretlen, otrv4_t * otr);
 
 tlv_t *otrv4_smp_initiate(otrv4_t * otr, const string_t question,

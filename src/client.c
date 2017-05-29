@@ -147,7 +147,10 @@ static int send_otrv4_message(char **newmessage, const char *message,
 		return OTR4_CLIENT_ERROR_NOT_ENCRYPTED;
 	}
 
-	return !otrv4_send_message(newmessage, message, NULL, conv->conn);
+    if (otrv4_send_message(newmessage, message, NULL, conv->conn)) {
+        return -1;
+    }
+    return 0;
 }
 
 int
@@ -167,7 +170,10 @@ int otr4_client_smp_start(char **tosend, const char *recipient,
     otr4_conversation_t *conv = NULL;
 
     conv = get_or_create_conversation_with(recipient, client);
-    return !otrv4_smp_start(tosend, question, secret, secretlen, conv->conn);
+    if (otrv4_smp_start(tosend, question, secret, secretlen, conv->conn)) {
+        return 1;
+    }
+    return 0;
 }
 
 int otr4_client_smp_respond(char **tosend, const char *recipient,
@@ -177,7 +183,10 @@ int otr4_client_smp_respond(char **tosend, const char *recipient,
     otr4_conversation_t *conv = NULL;
 
     conv = get_or_create_conversation_with(recipient, client);
-    return !otrv4_smp_continue(tosend, secret, secretlen, conv->conn);
+    if (otrv4_smp_continue(tosend, secret, secretlen, conv->conn)) {
+        return 1;
+    }
+    return 0;
 }
 
 int
@@ -185,15 +194,13 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 		    const char *recipient, otr4_client_t * client)
 {
 	otr4_conversation_t *conv = NULL;
-	bool ok = false;
 	otrv4_response_t *response = otrv4_response_new();
 
 	*newmessage = NULL;
 	*todisplay = NULL;
 
 	conv = get_or_create_conversation_with(recipient, client);
-	ok = otrv4_receive_message(response, message, conv->conn);
-	if (!ok) {
+	if (otrv4_receive_message(response, message, conv->conn)) {
 		otrv4_response_free(response);
 		return 0;	//Should this cause the message to be ignored or not?
 	}
@@ -221,6 +228,7 @@ char *otr4_client_query_message(const char *recipient, const char *message,
 	conv = get_or_create_conversation_with(recipient, client);
 
 	//TODO: implement policy
+    //TODO: Check for errors when calling this function
 	otrv4_build_query_message(&ret, message, conv->conn);
 	return ret;
 }
@@ -236,7 +244,7 @@ otr4_client_disconnect(char **newmessage, const char *recipient,
 	if (!conv)
 		return 1;
 
-	if (!otrv4_close(newmessage, conv->conn))
+	if (otrv4_close(newmessage, conv->conn))
 		return 2;
 
 	//TODO: Should we NOT remove the closed conversation?
