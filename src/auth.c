@@ -88,9 +88,7 @@ snizkpk_authenticate(snizkpk_proof_t * dst, const snizkpk_keypair_t * pair1,
 	memcpy(hash, gcry_md_read(hd, 0), HASH_BYTES);
 	gcry_md_close(hd);
 
-	//TODO: Do we need anything else to hash from bytes to a scalar?
 	snizkpk_privkey_t c, c1a1;
-
 	decaf_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
 
 	decaf_448_scalar_sub(dst->c1, c, dst->c2);
@@ -153,17 +151,16 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 	gcry_md_close(hd);
 
 	snizkpk_privkey_t c, c1c2c3;
-	//TODO: add code to handle when this fails
-	int ok = decaf_448_scalar_decode(c, hash);
-	(void)ok;
+	decaf_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
 
 	decaf_448_scalar_add(c1c2c3, src->c1, src->c2);
 	decaf_448_scalar_add(c1c2c3, c1c2c3, src->c3);
 
-    if (DECAF_TRUE == decaf_448_scalar_eq(c, c1c2c3)) {
-        return OTR4_SUCCESS;
-    }
-    return OTR4_ERROR;
+        if (DECAF_TRUE == decaf_448_scalar_eq(c, c1c2c3)) {
+                return OTR4_SUCCESS;
+        }
+
+	return OTR4_ERROR;
 }
 
 void snizkpk_proof_destroy(snizkpk_proof_t * src)
