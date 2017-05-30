@@ -31,7 +31,7 @@ typedef decaf_448_public_key_t ec_public_key_t;
 
 bool ec_scalar_eq(const ec_scalar_t a, const ec_scalar_t b);
 
-void
+otr4_err_t
 ec_scalar_serialize(uint8_t * dst, size_t dst_len, const ec_scalar_t scalar);
 
 void

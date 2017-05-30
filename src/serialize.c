@@ -16,27 +16,32 @@ serialize_uint(uint8_t * target, const uint64_t data, const size_t offset)
 	return offset;
 }
 
-size_t serialize_uint64(uint8_t * dst, const uint64_t data)
+size_t
+serialize_uint64(uint8_t * dst, const uint64_t data)
 {
 	return serialize_uint(dst, data, sizeof(uint64_t));
 }
 
-size_t serialize_uint32(uint8_t * dst, const uint32_t data)
+size_t
+serialize_uint32(uint8_t * dst, const uint32_t data)
 {
 	return serialize_uint(dst, data, sizeof(uint32_t));
 }
 
-size_t serialize_uint16(uint8_t * dst, const uint16_t data)
+size_t
+serialize_uint16(uint8_t * dst, const uint16_t data)
 {
 	return serialize_uint(dst, data, sizeof(uint16_t));
 }
 
-size_t serialize_uint8(uint8_t * dst, const uint8_t data)
+size_t
+serialize_uint8(uint8_t * dst, const uint8_t data)
 {
 	return serialize_uint(dst, data, sizeof(uint8_t));
 }
 
-size_t serialize_bytes_array(uint8_t * target, const uint8_t * data, size_t len)
+size_t
+serialize_bytes_array(uint8_t * target, const uint8_t * data, size_t len)
 {
 	if (!data)
 		return 0;
@@ -46,7 +51,8 @@ size_t serialize_bytes_array(uint8_t * target, const uint8_t * data, size_t len)
 	return len;
 }
 
-size_t serialize_data(uint8_t * dst, const uint8_t * data, size_t len)
+size_t
+serialize_data(uint8_t * dst, const uint8_t * data, size_t len)
 {
 	uint8_t *cursor = dst;
 
@@ -56,19 +62,24 @@ size_t serialize_data(uint8_t * dst, const uint8_t * data, size_t len)
 	return cursor - dst;
 }
 
-size_t serialize_mpi(uint8_t * dst, const otr_mpi_t mpi)
+size_t
+serialize_mpi(uint8_t * dst, const otr_mpi_t mpi)
 {
         return serialize_data(dst, mpi->data, mpi->len);
 }
 
-otr4_err_t serialize_ec_point(uint8_t * dst, const ec_point_t point)
+otr4_err_t
+serialize_ec_point(uint8_t * dst, const ec_point_t point)
 {
 	return ec_point_serialize(dst, ED448_POINT_BYTES, point);
 }
 
-size_t serialize_ec_scalar(uint8_t * dst, const ec_scalar_t scalar)
+size_t
+serialize_ec_scalar(uint8_t * dst, const ec_scalar_t scalar)
 {
-	ec_scalar_serialize(dst, ED448_SCALAR_BYTES, scalar);
+	if (ec_scalar_serialize(dst, ED448_SCALAR_BYTES, scalar))
+	       return 0;
+
 	return ED448_SCALAR_BYTES;
 }
 
@@ -94,7 +105,8 @@ serialize_dh_public_key(uint8_t * dst, size_t * len, const dh_public_key_t pub)
 	return OTR4_SUCCESS;
 }
 
-size_t serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
+size_t
+serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
 {
 	uint8_t *cursor = dst;
 	cursor += serialize_uint16(cursor, ED448_PUBKEY_TYPE);
@@ -106,7 +118,8 @@ size_t serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
 	return cursor - dst;
 }
 
-size_t serialize_snizkpk_proof(uint8_t * dst, const snizkpk_proof_t * proof)
+size_t
+serialize_snizkpk_proof(uint8_t * dst, const snizkpk_proof_t * proof)
 {
 	uint8_t *cursor = dst;
 	cursor += serialize_ec_scalar(cursor, proof->c1);
