@@ -94,9 +94,8 @@ static otrv4_t *create_connection_for(const char *recipient,
 	if (!conn)
 		return NULL;
 
-        //TODO: add protocol, account
         //TODO: add otrv3 callbacks
-        conn->otr3_conn = otr3_conn_new("", "", recipient);
+        conn->otr3_conn = otr3_conn_new(client->protocol, client->account, recipient);
 	conn->callbacks = client->callbacks;
 
 	return conn;
