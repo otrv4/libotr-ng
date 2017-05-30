@@ -29,6 +29,9 @@ void otrv4_fixture_set_up(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 	otrv4_fixture->otrv34 = otrv4_new(otrv4_fixture->keypair, policyv34);
         otrv4_fixture->otrv34->otr3_conn = otr3_conn_new("proto", "we_are_bob", "they_are_alice");
 
+        otrv4_fixture->otrv3->otr3_conn->userstate = otrl_userstate_create();
+        otrv4_fixture->otrv34->otr3_conn->userstate = otrl_userstate_create();
+
         //TODO: This should be done automatically
         FILE *tmpFILEp;
         tmpFILEp = tmpfile();
@@ -50,6 +53,9 @@ void otrv4_fixture_set_up(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 
 void otrv4_fixture_teardown(otrv4_fixture_t * otrv4_fixture, gconstpointer data)
 {
+        otrl_userstate_free(otrv4_fixture->otrv3->otr3_conn->userstate);
+        otrl_userstate_free(otrv4_fixture->otrv34->otr3_conn->userstate);
+
 	otrv4_keypair_free(otrv4_fixture->keypair);
         otrv4_fixture->keypair = NULL;
 

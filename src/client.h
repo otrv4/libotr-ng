@@ -3,6 +3,8 @@
 
 #define OTR4_CLIENT_ERROR_NOT_ENCRYPTED 0x1001
 
+#include <libotr/context.h>
+
 #include "otrv4.h"
 #include "list.h"
 
@@ -17,6 +19,7 @@ typedef struct {
 
         char *account;
         char *protocol;
+        OtrlUserState userstate;
 
 	otrv4_keypair_t *keypair;
 	list_element_t *conversations;

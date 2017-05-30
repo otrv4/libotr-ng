@@ -45,10 +45,7 @@ otr3_conn_t* otr3_conn_new(const char *protocol, const char *account, const char
     if (!ret)
         return NULL;
 
-    //TODO: Use the same userstate for every conn OR change the save/load/load function
-    //to work with multiple userstates and a single fingerprint/instance
-    //tag/privkey file.
-    ret->userstate = otrl_userstate_create();
+    ret->userstate = NULL;
     ret->ops = &null_ops; // This cant be null
     ret->ctx = NULL;
 
@@ -66,8 +63,6 @@ void otr3_conn_free(otr3_conn_t* conn)
 
     conn->ctx = NULL;
     conn->ops = NULL;
-
-    otrl_userstate_free(conn->userstate);
     conn->userstate = NULL;
 
     free(conn->protocol);

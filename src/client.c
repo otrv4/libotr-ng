@@ -37,6 +37,8 @@ otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair, const char *protocol, 
 	client->keypair = keypair;
         client->protocol = otrv4_strdup(protocol);
         client->account = otrv4_strdup(account);
+        client->userstate = otrl_userstate_create();
+
 	client->conversations = NULL;
 	client->callbacks = NULL;
 
@@ -50,6 +52,9 @@ void otr4_client_free(otr4_client_t * client)
 		conversation_free(CONV(el->data));
 		el->data = NULL;
 	}
+
+        otrl_userstate_free(client->userstate);
+        client->userstate = NULL;
 
         free(client->protocol);
         client->protocol = NULL;
@@ -89,13 +94,22 @@ otrv4_policy_t get_policy_for(const char *recipient)
 static otrv4_t *create_connection_for(const char *recipient,
 				      otr4_client_t * client)
 {
+        otr3_conn_t *otr3_conn = NULL;
 	otrv4_t *conn = NULL;
+
+        otr3_conn = otr3_conn_new(client->protocol, client->account, recipient);
+        if (!otr3_conn)
+            return NULL;
+
 	conn = otrv4_new(client->keypair, get_policy_for(recipient));
-	if (!conn)
-		return NULL;
+	if (!conn) {
+            free(otr3_conn);
+            return NULL;
+        }
 
         //TODO: add otrv3 callbacks
-        conn->otr3_conn = otr3_conn_new(client->protocol, client->account, recipient);
+        otr3_conn->userstate = client->userstate;
+        conn->otr3_conn = otr3_conn;
 	conn->callbacks = client->callbacks;
 
 	return conn;

@@ -213,7 +213,9 @@ void test_api_conversation_v3(void)
 
         //Set up OTRv3 context
         alice->otr3_conn = otr3_conn_new("proto", "alice", "bob");
+        alice->otr3_conn->userstate = otrl_userstate_create();
         bob->otr3_conn = otr3_conn_new("proto", "bob", "alice");
+        bob->otr3_conn->userstate = otrl_userstate_create();
 
         //Generate long term private key.
         FILE *tmpFILEp;
@@ -277,6 +279,8 @@ void test_api_conversation_v3(void)
         otrv4_response_free(response_to_bob);
         response_to_bob = NULL;
 
+        otrl_userstate_free(alice->otr3_conn->userstate);
+        otrl_userstate_free(bob->otr3_conn->userstate);
 	otrv4_free(alice);
 	otrv4_free(bob);
 	otrv4_keypair_destroy(alice_keypair);
