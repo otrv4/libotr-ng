@@ -28,13 +28,15 @@ static void conversation_free(otr4_conversation_t * conv)
 	free(conv);
 }
 
-otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair)
+otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair, const char *protocol, const char *account)
 {
 	otr4_client_t *client = malloc(sizeof(otr4_client_t));
 	if (!client)
 		return NULL;
 
 	client->keypair = keypair;
+        client->protocol = otrv4_strdup(protocol);
+        client->account = otrv4_strdup(account);
 	client->conversations = NULL;
 	client->callbacks = NULL;
 
@@ -48,6 +50,12 @@ void otr4_client_free(otr4_client_t * client)
 		conversation_free(CONV(el->data));
 		el->data = NULL;
 	}
+
+        free(client->protocol);
+        client->protocol = NULL;
+
+        free(client->account);
+        client->account = NULL;
 
 	list_free_all(client->conversations);
 	client->conversations = NULL;

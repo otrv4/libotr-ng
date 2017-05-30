@@ -14,12 +14,15 @@ typedef struct {
 //A client handle messages from/to a sender to/from multiple recipients.
 typedef struct {
 	const otrv4_callbacks_t *callbacks;
-        
+
+        char *account;
+        char *protocol;
+
 	otrv4_keypair_t *keypair;
 	list_element_t *conversations;
 } otr4_client_t;
 
-otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair);
+otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair, const char *protocol, const char *account);
 
 void otr4_client_free(otr4_client_t * client);
 
