@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "auth.h"
+#include "constants.h"
 #include "deserialize.h"
 #include "dh.h"
 #include "mpi.h"
@@ -36,11 +37,11 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
 	gcry_md_write(hd, ssid, 8);
 	gcry_md_write(hd, answer, answerlen);
 
-	*secret = malloc(64);
+	*secret = malloc(HASH_BYTES);
 	if (!*secret)
 		return;
 
-	memcpy(*secret, gcry_md_read(hd, 0), 64);
+	memcpy(*secret, gcry_md_read(hd, 0), HASH_BYTES);
 	gcry_md_close(hd);
 }
 
@@ -49,13 +50,12 @@ int hashToScalar(const unsigned char *buff, const size_t bufflen,
 {
 	gcry_md_hd_t hd;
 	char otr_marker[4] = "OTR4";
-	//TODO: should #DEFINE this size
-	unsigned char hash[64];
+	unsigned char hash[HASH_BYTES];
 
 	gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
 	gcry_md_write(hd, &otr_marker, 4);
 	gcry_md_write(hd, buff, bufflen);
-	memcpy(hash, gcry_md_read(hd, 0), 64);
+	memcpy(hash, gcry_md_read(hd, 0), HASH_BYTES);
 	gcry_md_close(hd);
 
 	return ec_scalar_deserialize(dst, hash);
@@ -152,14 +152,6 @@ otr4_err_t smp_msg_1_asprintf(uint8_t ** dst, size_t * len, const smp_msg_1_t *m
 	return OTR4_SUCCESS;
 }
 
-//TODO: This is triplicated (see auth.c)
-static void ed448_random_scalar(ec_scalar_t priv)
-{
-	uint8_t sym[ED448_PRIVATE_BYTES];
-	random_bytes(sym, ED448_PRIVATE_BYTES);
-	ec_scalar_derive_from_secret(priv, sym);
-}
-
 otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 		       smp_context_t smp)
 {
@@ -217,7 +209,7 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 
 	//Compute Qb = G * r4 + G2 * hashToScalar(y).
 	ec_scalar_t secret_as_scalar;
-	hashToScalar(smp->secret, 64, secret_as_scalar);
+	hashToScalar(smp->secret, HASH_BYTES, secret_as_scalar);
 	decaf_448_point_scalarmul(dst->Qb, smp->G2, secret_as_scalar);
 	decaf_448_point_add(dst->Qb, pair_r4->pub, dst->Qb);
 	ec_point_copy(smp->Qb, dst->Qb);
@@ -499,7 +491,7 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
 	decaf_448_point_scalarmul(dst->Pa, smp->G3, pair_r4->priv);
 	decaf_448_point_sub(smp->Pa_Pb, dst->Pa, msg_2->Pb);
 
-	hashToScalar(smp->secret, 64, secret_as_scalar);
+	hashToScalar(smp->secret, HASH_BYTES, secret_as_scalar);
 
 	//Qa = G * r4 + G2 * HashToScalar(x)
 	decaf_448_point_scalarmul(dst->Qa, smp->G2, secret_as_scalar);

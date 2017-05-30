@@ -9,6 +9,7 @@
 #define OTR_DATA_MSG_TYPE 0x03
 
 #define DAKE_HEADER_BYTES (2+1+4+4)
+#define HASH_BYTES 64
 
 //size of PRE_KEY_MESSAGE without user_profile
 #define PRE_KEY_MIN_BYTES (DAKE_HEADER_BYTES \

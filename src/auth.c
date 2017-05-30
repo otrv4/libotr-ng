@@ -1,12 +1,6 @@
 #include "auth.h"
+#include "constants.h"
 #include "random.h"
-
-static void ed448_random_scalar(decaf_448_scalar_t priv)
-{
-	uint8_t sym[ED448_PRIVATE_BYTES];
-	random_bytes(sym, ED448_PRIVATE_BYTES);
-	ec_scalar_derive_from_secret(priv, sym);
-}
 
 void generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv)
 {
@@ -48,7 +42,7 @@ snizkpk_authenticate(snizkpk_proof_t * dst, const snizkpk_keypair_t * pair1,
 		     const unsigned char *msg, size_t msglen)
 {
 	gcry_md_hd_t hd;
-	unsigned char hash[64];
+	unsigned char hash[HASH_BYTES];
 	unsigned char point_buff[ED448_POINT_BYTES];
 
 	snizkpk_privkey_t t1;
@@ -91,7 +85,7 @@ snizkpk_authenticate(snizkpk_proof_t * dst, const snizkpk_keypair_t * pair1,
 
 	gcry_md_write(hd, msg, msglen);
 
-	memcpy(hash, gcry_md_read(hd, 0), 64);
+	memcpy(hash, gcry_md_read(hd, 0), HASH_BYTES);
 	gcry_md_close(hd);
 
 	//TODO: Do we need anything else to hash from bytes to a scalar?
@@ -115,7 +109,7 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 	       const unsigned char *msg, size_t msglen)
 {
 	gcry_md_hd_t hd;
-	unsigned char hash[64];
+	unsigned char hash[HASH_BYTES];
 	unsigned char point_buff[ED448_POINT_BYTES];
 
 	snizkpk_pubkey_t gr1, gr2, gr3, A1c1, A2c2, A3c3;
@@ -156,7 +150,7 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 
 	gcry_md_write(hd, msg, msglen);
 
-	memcpy(hash, gcry_md_read(hd, 0), 64);
+	memcpy(hash, gcry_md_read(hd, 0), HASH_BYTES);
 	gcry_md_close(hd);
 
 	snizkpk_privkey_t c, c1c2c3;
