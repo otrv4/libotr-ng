@@ -59,7 +59,7 @@ int hashToScalar(const unsigned char *buff, const size_t bufflen,
 	memcpy(hash, gcry_md_read(hd, 0), HASH_BYTES);
 	gcry_md_close(hd);
 
-	return ec_scalar_deserialize(dst, hash);
+	return deserialize_ec_scalar(dst, hash, ED448_SCALAR_BYTES);
 }
 
 void smp_msg_1_destroy(smp_msg_1_t *msg)

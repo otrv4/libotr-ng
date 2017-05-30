@@ -90,9 +90,8 @@ snizkpk_authenticate(snizkpk_proof_t * dst, const snizkpk_keypair_t * pair1,
 
 	//TODO: Do we need anything else to hash from bytes to a scalar?
 	snizkpk_privkey_t c, c1a1;
-    //TODO: add a code to handle when this fails
-	int ok = decaf_448_scalar_decode(c, hash);
-	(void)ok;
+
+	decaf_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
 
 	decaf_448_scalar_sub(dst->c1, c, dst->c2);
 	decaf_448_scalar_sub(dst->c1, dst->c1, dst->c3);

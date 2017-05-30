@@ -77,6 +77,6 @@ void ed448_test_scalar_serialization()
     uint8_t buff[ED448_SCALAR_BYTES];
     ec_scalar_serialize(buff, sizeof(buff), decaf_448_scalar_one);
 
-    otrv4_assert(ec_scalar_deserialize(scalar, buff));
+    ec_scalar_deserialize(scalar, buff);
     otrv4_assert(ec_scalar_eq(scalar, decaf_448_scalar_one));
 }

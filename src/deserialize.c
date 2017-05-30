@@ -226,9 +226,7 @@ deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t * serialized,
 	if (ser_len < ED448_SCALAR_BYTES)
 		return OTR4_ERROR;
 
-        if (!ec_scalar_deserialize(scalar, serialized)) {
-                return OTR4_ERROR;
-        }
+        ec_scalar_deserialize(scalar, serialized);
 
         return OTR4_SUCCESS;
 }

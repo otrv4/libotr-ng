@@ -34,7 +34,7 @@ bool ec_scalar_eq(const ec_scalar_t a, const ec_scalar_t b);
 void
 ec_scalar_serialize(uint8_t * dst, size_t dst_len, const ec_scalar_t scalar);
 
-bool
+void
 ec_scalar_deserialize(ec_scalar_t scalar,
 		      const uint8_t serialized[ED448_SCALAR_BYTES]);
 
