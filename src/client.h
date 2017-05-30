@@ -61,4 +61,6 @@ otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
 
 int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf);
 
+int otr3_privkey_generate(otr4_client_t *client, FILE *privf);
+
 #endif
