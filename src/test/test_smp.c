@@ -178,8 +178,8 @@ void test_smp_msg_1_aprint_null_question(void)
 	size_t writen = 0;
 
 	otrv4_assert(generate_smp_msg_1(msg, smp) == OTR4_SUCCESS);
-	//data_header + question + 2 points + 4 mpis = 4 + 0 + (2*57) + (4*(4+56))
-	size_t expected_size = 358;
+	//data_header + question + 2 points + 4 scalars = 4 + 0 + (2*57) + (4*(56))
+	size_t expected_size = 342;
 	msg->question = NULL;
 
 	otrv4_assert(smp_msg_1_asprintf(&buff, &writen, msg) == OTR4_SUCCESS);
