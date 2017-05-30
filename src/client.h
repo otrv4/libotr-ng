@@ -25,7 +25,8 @@ typedef struct {
 	list_element_t *conversations;
 } otr4_client_t;
 
-otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair, const char *protocol, const char *account);
+otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair, OtrlUserState userstate,
+    const char *protocol, const char *account);
 
 void otr4_client_free(otr4_client_t * client);
 

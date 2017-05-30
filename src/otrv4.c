@@ -1383,7 +1383,7 @@ send_otrv4_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 		return OTR4_ERROR;	//Should restart
 
 	if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
-		return OTR4_ERROR;	//TODO: queue message
+		return OTR4_STATE_NOT_ENCRYPTED;	//TODO: queue message
 
 	if (append_tlvs(&msg, &msg_len, message, tlvs))
 		return OTR4_ERROR;
