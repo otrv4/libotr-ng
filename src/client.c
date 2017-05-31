@@ -103,10 +103,14 @@ int otr4_conversation_is_encrypted(otr4_conversation_t *conv)
     if (!conv)
         return 0;
 
-    if (conv->conn->running_version == OTRV4_VERSION_4)
+    switch (conv->conn->running_version) {
+    case OTRV4_VERSION_NONE:
+        return 0;
+    case OTRV4_VERSION_4:
         return conv->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES;
-
-    return conv->conn->otr3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
+    case OTRV4_VERSION_3:
+        return conv->conn->otr3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
+    }
 }
 
 int otr4_conversation_is_finished(otr4_conversation_t *conv)
@@ -114,10 +118,14 @@ int otr4_conversation_is_finished(otr4_conversation_t *conv)
     if (!conv)
         return 0;
 
-    if (conv->conn->running_version == OTRV4_VERSION_4)
+    switch (conv->conn->running_version) {
+    case OTRV4_VERSION_NONE:
+        return 0;
+    case OTRV4_VERSION_4:
         return conv->conn->state == OTRV4_STATE_FINISHED;
-
-    return conv->conn->otr3_conn->ctx->msgstate == OTRL_MSGSTATE_FINISHED;
+    case OTRV4_VERSION_3:
+        return conv->conn->otr3_conn->ctx->msgstate == OTRL_MSGSTATE_FINISHED;
+    }
 }
 
 static otrv4_t *create_connection_for(const char *recipient,
