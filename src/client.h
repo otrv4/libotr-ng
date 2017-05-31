@@ -56,6 +56,9 @@ otr4_conversation_t *otr4_client_get_conversation(int force,
 						  const char *recipient,
 						  otr4_client_t * client);
 
+int otr4_conversation_is_encrypted(otr4_conversation_t *conv);
+int otr4_conversation_is_finished(otr4_conversation_t *conv);
+
 int
 otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
 				const otr4_client_t * client);

@@ -91,10 +91,33 @@ otr4_conversation_t *get_conversation_with(const char *recipient,
 otrv4_policy_t get_policy_for(const char *recipient)
 {
 	//TODO the policy should come from client config.
-	otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4
+	otrv4_policy_t policy = {
+            .allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4
 	};
 
 	return policy;
+}
+
+int otr4_conversation_is_encrypted(otr4_conversation_t *conv)
+{
+    if (!conv)
+        return 0;
+
+    if (conv->conn->running_version == OTRV4_VERSION_4)
+        return conv->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES;
+
+    return conv->conn->otr3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
+}
+
+int otr4_conversation_is_finished(otr4_conversation_t *conv)
+{
+    if (!conv)
+        return 0;
+
+    if (conv->conn->running_version == OTRV4_VERSION_4)
+        return conv->conn->state == OTRV4_STATE_FINISHED;
+
+    return conv->conn->otr3_conn->ctx->msgstate == OTRL_MSGSTATE_FINISHED;
 }
 
 static otrv4_t *create_connection_for(const char *recipient,
