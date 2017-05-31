@@ -13,6 +13,8 @@ typedef struct {
         char *account;
         char *peer;
 
+        void *opdata; //OTRv4 conn for use in callbacks
+
         OtrlUserState userstate;
         OtrlMessageAppOps *ops;
         ConnContext *ctx;

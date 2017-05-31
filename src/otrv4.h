@@ -73,6 +73,8 @@ typedef enum {
         OTRV4_SMPEVENT_ERROR = 8,
 } otr4_smp_event_t;
 
+//TODO: These callbacks could receive a "otrv4_conversation_t" with only
+//(proto, account, peer) and keep the otrv4_t private;
 typedef struct {
 	/* A connection has entered a secure state. */
 	void (*gone_secure) (const otrv4_t *);

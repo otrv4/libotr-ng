@@ -109,10 +109,11 @@ static otrv4_t *create_connection_for(const char *recipient,
             return NULL;
         }
 
-        //TODO: add otrv3 callbacks
         otr3_conn->userstate = client->userstate;
+        otr3_conn->opdata = conn; // For use in callbacks
         conn->otr3_conn = otr3_conn;
 	conn->callbacks = client->callbacks;
+        
 
 	return conn;
 }
