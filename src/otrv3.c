@@ -17,13 +17,13 @@ static void gone_insecure_cb(const otrv4_t * otr)
 	otr->callbacks->gone_insecure(otr);
 }
 
-static void fingerprint_seen_cb(const otrv4_fingerprint_t fp,
+static void fingerprint_seen_cb(const otrv3_fingerprint_t fp,
 				const otrv4_t * otr)
 {
 	if (!otr || !otr->callbacks)
 		return;
 
-	otr->callbacks->fingerprint_seen(fp, otr);
+	otr->callbacks->fingerprint_seen_otr3(fp, otr);
 }
 
 static void handle_smp_event_cb(const otr4_smp_event_t event,
@@ -87,8 +87,7 @@ static void op_new_fingerprint(void *opdata, OtrlUserState us,
         const char *accountname, const char *protocol,
         const char *username, unsigned char fingerprint[20])
 {
-    //TODO: This must receive a V3 or V4 fingerprint
-    fingerprint_seen_cb(opdata, NULL);
+    fingerprint_seen_cb(fingerprint, opdata);
 }
 
 /* The list of known fingerprints has changed.  Write them to disk. */

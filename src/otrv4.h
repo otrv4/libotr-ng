@@ -85,6 +85,9 @@ typedef struct {
 	/* A fingerprint was seen in this connection. */
 	void (*fingerprint_seen) (const otrv4_fingerprint_t, const otrv4_t *);
 
+	/* An OTR3 fingerprint was seen in this connection. */
+        void (*fingerprint_seen_otr3) (const otrv3_fingerprint_t, const otrv4_t*);
+
         /* Update the authentication UI with respect to SMP events
          * These are the possible events:
          * - OTRL_SMPEVENT_ASK_FOR_SECRET
