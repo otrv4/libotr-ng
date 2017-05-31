@@ -9,13 +9,17 @@
 
 #define CONV(c) ((otr4_conversation_t *) c)
 
-static otr4_conversation_t *new_conversation_with(const char *recipient)
+static otr4_conversation_t *new_conversation_with(const char *recipient, otrv4_t *conn)
 {
 	otr4_conversation_t *conv = malloc(sizeof(otr4_conversation_t));
-	if (!conv)
+	if (!conv) {
+                free(conn);
 		return NULL;
+        }
 
+	conv->conn = conn;
 	conv->recipient = otrv4_strdup(recipient);
+
 	return conv;
 }
 
@@ -135,13 +139,10 @@ otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 	if (!conn)
 		return NULL;
 
-	conv = new_conversation_with(recipient);
-	if (!conv) {
-		free(conn);
+	conv = new_conversation_with(recipient, conn);
+	if (!conv)
 		return NULL;
-	}
 
-	conv->conn = conn;
 	client->conversations = list_add(conv, client->conversations);
 
 	return conv;
