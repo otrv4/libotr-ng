@@ -111,7 +111,7 @@ serialize_otrv4_public_key(uint8_t * dst, const otrv4_public_key_t pub)
 	uint8_t *cursor = dst;
 	cursor += serialize_uint16(cursor, ED448_PUBKEY_TYPE);
 	if (serialize_ec_point(cursor, pub)) {
-		// TODO: handle error
+		return 0;
 	}
 	cursor += ED448_POINT_BYTES;
 

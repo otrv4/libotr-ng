@@ -1565,20 +1565,21 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
 tlv_t *otrv4_smp_provide_secret(otrv4_t * otr, const uint8_t *secret,
     const size_t secretlen) {
     //TODO: If state is not CONTINUE_SMP then error.
-    tlv_t *smp_reply = NULL;
+        tlv_t *smp_reply = NULL;
 
-    otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
+        otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
 
-    set_smp_secret(secret, secretlen, false, otr);
+        set_smp_secret(secret, secretlen, false, otr);
 
-    event = reply_with_smp_msg_2(&smp_reply, otr->smp);
+        event = reply_with_smp_msg_2(&smp_reply, otr->smp);
 
-    if (!event)
-        event = OTRV4_SMPEVENT_IN_PROGRESS;
+        if (!event)
+                event = OTRV4_SMPEVENT_IN_PROGRESS;
 
-    //TODO: transition to state 1 if an abort happens
-    if (event)
-        handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question, otr);
+        //TODO: transition to state 1 if an abort happens
+        if (event)
+                handle_smp_event_cb(event, otr->smp->progress,
+		                    otr->smp->msg1->question, otr);
 
-    return smp_reply;
+        return smp_reply;
 }
