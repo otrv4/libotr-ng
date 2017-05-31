@@ -4,6 +4,7 @@
 #include "deserialize.h"
 #include "tlv.h"
 
+//TODO: Should we use an array to make this mapping?
 void set_tlv_type(tlv_t * tlv, uint16_t tlv_type)
 {
         tlv_type_t type = OTRV4_TLV_NONE;

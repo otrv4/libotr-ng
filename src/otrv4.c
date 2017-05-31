@@ -415,52 +415,52 @@ static otr4_err_t
 receive_tagged_plaintext(otrv4_response_t * response,
 			 const string_t message, otrv4_t * otr)
 {
-	set_running_version_from_tag(otr, message);
+    set_running_version_from_tag(otr, message);
 
-	switch (otr->running_version) {
-	case OTRV4_VERSION_4:
-		if (message_to_display_without_tag
-		    (response, message, tag_version_v4, strlen(message))) {
-			return OTR4_ERROR;
-		}
+    switch (otr->running_version) {
+    case OTRV4_VERSION_4:
+        if (message_to_display_without_tag
+            (response, message, tag_version_v4, strlen(message))) {
+            return OTR4_ERROR;
+        }
         return start_dake(response, otr);
         break;
-	case OTRV4_VERSION_3:
+    case OTRV4_VERSION_3:
         if (!otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn)) {
             return OTR4_ERROR;
         }
         return OTR4_SUCCESS;
-		break;
-	default:
+        break;
+    case OTRV4_VERSION_NONE:
         //ignore
         return OTR4_SUCCESS;
-	}
+    }
 
-	return OTR4_ERROR;
+    return OTR4_ERROR;
 }
 
 static otr4_err_t
 receive_query_message(otrv4_response_t * response,
 		      const string_t message, otrv4_t * otr)
 {
-	set_running_version_from_query_msg(otr, message);
+    set_running_version_from_query_msg(otr, message);
 
-	switch (otr->running_version) {
-	case OTRV4_VERSION_4:
+    switch (otr->running_version) {
+    case OTRV4_VERSION_4:
         return start_dake(response, otr);
-		break;
-	case OTRV4_VERSION_3:
+        break;
+    case OTRV4_VERSION_3:
         if (!otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn)) {
             return OTR4_ERROR;
         }
         return OTR4_SUCCESS;
-		break;
-	default:
-		//ignore
+        break;
+    case OTRV4_VERSION_NONE:
+        //ignore
         return OTR4_SUCCESS;
-	}
+    }
 
-	return OTR4_ERROR;
+    return OTR4_ERROR;
 }
 
 otr4_err_t
@@ -739,7 +739,10 @@ receive_identity_message(string_t * dst, const uint8_t * buff, size_t buflen,
 	case OTRV4_STATE_WAITING_AUTH_I:
 		//TODO
 		break;
-	default:
+        case OTRV4_STATE_NONE:
+        case OTRV4_STATE_AKE_IN_PROGRESS:
+        case OTRV4_STATE_ENCRYPTED_MESSAGES:
+        case OTRV4_STATE_FINISHED:
 		//Ignore the message, but it is not an error.
 		err = OTR4_SUCCESS;
 	}
@@ -958,7 +961,7 @@ static tlv_t* process_tlv(const tlv_t * tlv, otrv4_t * otr)
         case OTRV4_TLV_SMP_MSG_4:
         case OTRV4_TLV_SMP_ABORT:
             return otrv4_process_smp(otr, tlv);
-	default:
+        case OTRV4_TLV_NONE:
 		//error?
 		break;
 	}
@@ -1534,7 +1537,7 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
             event = process_smp_msg4(tlv, otr->smp);
             break;
 
-        default:
+        case OTRV4_TLV_SMP_ABORT:
             //If smpstate is not the receive message:
             //Set smpstate to SMPSTATE_EXPECT1
             //send a SMP abort to other peer.
@@ -1542,6 +1545,11 @@ tlv_t *otrv4_process_smp(otrv4_t * otr, const tlv_t * tlv)
             to_send = otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
             event = OTRV4_SMPEVENT_ABORT;
 
+            break;
+        case OTRV4_TLV_NONE:
+        case OTRV4_TLV_PADDING:
+        case OTRV4_TLV_DISCONNECTED:
+            //Ignore. They should not be passed to this function.
             break;
         }
 
