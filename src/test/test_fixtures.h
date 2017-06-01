@@ -1,6 +1,3 @@
-#include "../otrv4.h"
-#include "../user_profile.h"
-
 #include <libotr/privkey.h>
 
 typedef struct {

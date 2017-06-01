@@ -1,8 +1,10 @@
 #ifndef _OTR3_H_
 #define _OTR3_H_
 
-#include <libotr/message.h>
+// clang-format off
 #include <libotr/proto.h>
+#include <libotr/message.h>
+// clang-format on
 #include <stdbool.h>
 
 #include "error.h"

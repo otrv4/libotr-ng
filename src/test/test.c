@@ -1,7 +1,11 @@
 #include <glib.h>
 
-#include "test_fixtures.h"
+#include "../otrv4.h"
+
+// clang-format off
 #include "test_helpers.h"
+#include "test_fixtures.h"
+// clang-format on
 
 #include "test_api.c"
 #include "test_client.c"

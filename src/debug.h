@@ -1,8 +1,8 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "str.h"
 
