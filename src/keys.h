@@ -17,16 +17,21 @@ typedef struct {
 	otrv4_private_key_t priv;
 } otrv4_keypair_t;
 
-otrv4_keypair_t *otrv4_keypair_new(void);
+otrv4_keypair_t *
+otrv4_keypair_new(void);
 
-void otrv4_keypair_generate(otrv4_keypair_t * keypair,
-			    const uint8_t sym[ED448_PRIVATE_BYTES]);
+void
+otrv4_keypair_generate(otrv4_keypair_t * keypair,
+                       const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-void otrv4_keypair_destroy(otrv4_keypair_t * keypair);
+void
+otrv4_keypair_destroy(otrv4_keypair_t * keypair);
 
-void otrv4_keypair_free(otrv4_keypair_t * keypair);
+void
+otrv4_keypair_free(otrv4_keypair_t * keypair);
 
-otr4_err_t otrv4_symmetric_key_serialize(char **buffer, size_t * buffer_size,
-				  uint8_t sym[ED448_PRIVATE_BYTES]);
+otr4_err_t
+otrv4_symmetric_key_serialize(char **buffer, size_t * buffer_size,
+			      uint8_t sym[ED448_PRIVATE_BYTES]);
 
 #endif

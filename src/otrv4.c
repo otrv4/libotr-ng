@@ -1050,7 +1050,9 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 		data_message_free(msg);
 
 		memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
-	        otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
+		otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
+
+	        free(to_store_mac);
 		return OTR4_SUCCESS;
 	} while (0);
 
