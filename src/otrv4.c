@@ -43,6 +43,13 @@ static const char tag_version_v3[] = {'\x20', '\x20', '\x09', '\x09', '\x20',
 static const string_t query_header = "?OTRv";
 static const string_t otr_header = "?OTR:";
 
+static void create_privkey_cb(const otrv4_t *otr) {
+  if (!otr->callbacks)
+    return;
+
+  otr->callbacks->create_privkey(otr);
+}
+
 static void gone_secure_cb(const otrv4_t *otr) {
   if (!otr->callbacks)
     return;
@@ -74,6 +81,11 @@ static void handle_smp_event_cb(const otr4_smp_event_t event,
   otr->callbacks->handle_smp_event(event, progress_percent, question, otr);
 }
 
+static void maybe_create_keys(const otrv4_t *otr) {
+  if (!otr->keypair)
+    create_privkey_cb(otr);
+}
+
 static int allow_version(const otrv4_t *otr, otrv4_supported_version version) {
   return (otr->supported_versions & version);
 }
@@ -92,6 +104,7 @@ static void allowed_versions(string_t dst, const otrv4_t *otr) {
 static user_profile_t *get_my_user_profile(const otrv4_t *otr) {
   char versions[3] = {0};
   allowed_versions(versions, otr);
+  maybe_create_keys(otr);
   return user_profile_build(versions, otr->keypair);
 }
 
@@ -372,7 +385,7 @@ static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
 static otr4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
   key_manager_generate_ephemeral_keys(otr->keys);
   otr->state = OTRV4_STATE_WAITING_AUTH_R;
-
+  maybe_create_keys(otr);
   return reply_with_identity_msg(response, otr);
 }
 
@@ -998,6 +1011,8 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
 
   // TODO: how to prevent version rollback?
   // TODO: where should we ignore messages to a different instance tag?
+
+  maybe_create_keys(otr);
 
   switch (header.type) {
   case OTR_IDENTITY_MSG_TYPE:

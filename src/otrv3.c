@@ -63,7 +63,7 @@ static void op_inject(void *opdata, const char *accountname,
  * desired. */
 static void op_create_privkey(void *opdata, const char *accountname,
                               const char *protocol) {
-    create_privkey_cb(opdata);
+  create_privkey_cb(opdata);
 }
 
 /* Report whether you think the given user is online.  Return 1 if
