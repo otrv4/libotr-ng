@@ -74,6 +74,9 @@ typedef enum {
 // TODO: These callbacks could receive a "otrv4_conversation_t" with only
 //(proto, account, peer) and keep the otrv4_t private;
 typedef struct {
+  /* Create private keys V3 and V4. */
+  void (*create_privkey)(const otrv4_t *);
+
   /* A connection has entered a secure state. */
   void (*gone_secure)(const otrv4_t *);
 

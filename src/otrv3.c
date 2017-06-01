@@ -1,6 +1,13 @@
 #include "otrv3.h"
 #include "otrv4.h"
 
+static void create_privkey_cb(const otrv4_t *otr) {
+  if (!otr || !otr->callbacks)
+    return;
+
+  otr->callbacks->create_privkey(otr);
+}
+
 static void gone_secure_cb(const otrv4_t *otr) {
   if (!otr || !otr->callbacks)
     return;
@@ -55,7 +62,9 @@ static void op_inject(void *opdata, const char *accountname,
 /* Create a private key for the given accountname/protocol if
  * desired. */
 static void op_create_privkey(void *opdata, const char *accountname,
-                              const char *protocol) {}
+                              const char *protocol) {
+    create_privkey_cb(opdata);
+}
 
 /* Report whether you think the given user is online.  Return 1 if
  * you think he is, 0 if you think he isn't, -1 if you're not sure.
