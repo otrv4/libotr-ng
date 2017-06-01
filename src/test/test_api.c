@@ -361,6 +361,9 @@ void test_api_smp(void)
         //TODO: Should be in the corect state
         otrv4_assert(!response_to_bob->to_send);
 
+        otrv4_response_free(response_to_bob);
+        response_to_bob = NULL;
+
 	otrv4_free(alice);
 	otrv4_free(bob);
 	otrv4_keypair_destroy(alice_keypair);
