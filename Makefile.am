@@ -20,3 +20,5 @@ mem-check: check
 coverage-check: test 
 	@make check-code-coverage
 
+code-style:
+	clang-format -style=llvm -i config.h src/*.h src/*.c src/**/*.h src/**/*.c

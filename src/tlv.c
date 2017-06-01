@@ -4,157 +4,149 @@
 #include "deserialize.h"
 #include "tlv.h"
 
-//TODO: Should we use an array to make this mapping?
-void set_tlv_type(tlv_t * tlv, uint16_t tlv_type)
-{
-        tlv_type_t type = OTRV4_TLV_NONE;
+// TODO: Should we use an array to make this mapping?
+void set_tlv_type(tlv_t *tlv, uint16_t tlv_type) {
+  tlv_type_t type = OTRV4_TLV_NONE;
 
-	switch (tlv_type) {
-	case 0:
-		type = OTRV4_TLV_PADDING;
-		break;
-	case 1:
-		type = OTRV4_TLV_DISCONNECTED;
-		break;
-	case 2:
-		type = OTRV4_TLV_SMP_MSG_1;
-		break;
-	case 3:
-		type = OTRV4_TLV_SMP_MSG_2;
-		break;
-        case 4:
-		type = OTRV4_TLV_SMP_MSG_3;
-		break;
-        case 5:
-		type = OTRV4_TLV_SMP_MSG_4;
-		break;
-        case 6:
-		type = OTRV4_TLV_SMP_ABORT;
-		break;
-	default:
-                //Panic!
-		break;
-	}
+  switch (tlv_type) {
+  case 0:
+    type = OTRV4_TLV_PADDING;
+    break;
+  case 1:
+    type = OTRV4_TLV_DISCONNECTED;
+    break;
+  case 2:
+    type = OTRV4_TLV_SMP_MSG_1;
+    break;
+  case 3:
+    type = OTRV4_TLV_SMP_MSG_2;
+    break;
+  case 4:
+    type = OTRV4_TLV_SMP_MSG_3;
+    break;
+  case 5:
+    type = OTRV4_TLV_SMP_MSG_4;
+    break;
+  case 6:
+    type = OTRV4_TLV_SMP_ABORT;
+    break;
+  default:
+    // Panic!
+    break;
+  }
 
-	tlv->type = type;
+  tlv->type = type;
 }
 
-static
-tlv_t *extract_tlv(const uint8_t * src, size_t len, size_t * written)
-{
-	size_t w = 0;
-	tlv_t *tlv = NULL;
-	uint16_t tlv_type = -1;
-	const uint8_t *cursor = src;
+static tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
+  size_t w = 0;
+  tlv_t *tlv = NULL;
+  uint16_t tlv_type = -1;
+  const uint8_t *cursor = src;
 
-	do {
-		tlv = malloc(sizeof(tlv_t));
-		if (!tlv)
-			continue;
+  do {
+    tlv = malloc(sizeof(tlv_t));
+    if (!tlv)
+      continue;
 
-		if (deserialize_uint16(&tlv_type, cursor, len, &w))
-			continue;
+    if (deserialize_uint16(&tlv_type, cursor, len, &w))
+      continue;
 
-		set_tlv_type(tlv, tlv_type);
+    set_tlv_type(tlv, tlv_type);
 
-		len -= w;
-		cursor += w;
+    len -= w;
+    cursor += w;
 
-		if (deserialize_uint16(&tlv->len, cursor, len, &w))
-			continue;
+    if (deserialize_uint16(&tlv->len, cursor, len, &w))
+      continue;
 
-		len -= w;
-		cursor += w;
+    len -= w;
+    cursor += w;
 
-		if (len < tlv->len)
-			continue;
+    if (len < tlv->len)
+      continue;
 
-		tlv->data = malloc(tlv->len);
-		if (!tlv->data)
-			continue;
+    tlv->data = malloc(tlv->len);
+    if (!tlv->data)
+      continue;
 
-		memcpy(tlv->data, cursor, tlv->len);
-		len -= tlv->len;
-		cursor += tlv->len;
+    memcpy(tlv->data, cursor, tlv->len);
+    len -= tlv->len;
+    cursor += tlv->len;
 
-		if (written)
-			*written = cursor - src;
+    if (written)
+      *written = cursor - src;
 
-		tlv->next = NULL;
-		return tlv;
-	} while (0);
+    tlv->next = NULL;
+    return tlv;
+  } while (0);
 
-	free(tlv);
-	return NULL;
+  free(tlv);
+  return NULL;
 }
 
-tlv_t *otrv4_parse_tlvs(const uint8_t * src, size_t len)
-{
-	size_t written = 0;
-	tlv_t *tlv = NULL, *ret = NULL;
+tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
+  size_t written = 0;
+  tlv_t *tlv = NULL, *ret = NULL;
 
-	while (len > 0) {
-		tlv = extract_tlv(src + written, len, &written);
-		if (!tlv)
-			break;
+  while (len > 0) {
+    tlv = extract_tlv(src + written, len, &written);
+    if (!tlv)
+      break;
 
-		len -= written;
+    len -= written;
 
-		if (ret)
-			ret->next = tlv; //TODO: Why not ret = ret->next?
-		else
-			ret = tlv;
-	}
+    if (ret)
+      ret->next = tlv; // TODO: Why not ret = ret->next?
+    else
+      ret = tlv;
+  }
 
-	return ret;
+  return ret;
 }
 
-tlv_t *otrv4_tlv_free(tlv_t * tlv)
-{
-	if (!tlv)
-		return NULL;
+tlv_t *otrv4_tlv_free(tlv_t *tlv) {
+  if (!tlv)
+    return NULL;
 
-	free(tlv->data);
-	tlv->data = NULL;
-	free(tlv);
+  free(tlv->data);
+  tlv->data = NULL;
+  free(tlv);
 
-	//TODO: free nexts
+  // TODO: free nexts
 
-	return NULL;
+  return NULL;
 }
 
-tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t * data)
-{
-	tlv_t *tlv = malloc(sizeof(tlv_t));
-	if (!tlv)
-		return NULL;
+tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
+  tlv_t *tlv = malloc(sizeof(tlv_t));
+  if (!tlv)
+    return NULL;
 
-	tlv->type = type;
-	tlv->len = len;
-	tlv->next = NULL;
-	tlv->data = malloc(tlv->len);
+  tlv->type = type;
+  tlv->len = len;
+  tlv->next = NULL;
+  tlv->data = malloc(tlv->len);
 
-	if (!tlv->data)
-		return otrv4_tlv_free(tlv);
+  if (!tlv->data)
+    return otrv4_tlv_free(tlv);
 
-	memcpy(tlv->data, data, tlv->len);
-	return tlv;
+  memcpy(tlv->data, data, tlv->len);
+  return tlv;
 }
 
-tlv_t *otrv4_padding_tlv_new(size_t len)
-{
-	uint8_t *data = malloc(len);
-	if (!data)
-		return NULL;
+tlv_t *otrv4_padding_tlv_new(size_t len) {
+  uint8_t *data = malloc(len);
+  if (!data)
+    return NULL;
 
-	memset(data, 0, len);
-	tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, len, data);
-	free(data);
+  memset(data, 0, len);
+  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, len, data);
+  free(data);
 
-	return tlv;
+  return tlv;
 }
 
-tlv_t *otrv4_disconnected_tlv_new(void)
-{
-	return otrv4_tlv_new(OTRV4_TLV_DISCONNECTED, 0, NULL);
+tlv_t *otrv4_disconnected_tlv_new(void) {
+  return otrv4_tlv_new(OTRV4_TLV_DISCONNECTED, 0, NULL);
 }
