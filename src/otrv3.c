@@ -475,7 +475,23 @@ otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t 
     return OTR4_SUCCESS;
 }
 
-otr4_err_t otrv3_smp_start(char **newmessage, otr3_conn_t * conn)
+otr4_err_t otrv3_smp_start(string_t *to_send, const char *question,
+    const uint8_t *secret, size_t secretlen, otr3_conn_t * conn)
 {
-    return OTR4_ERROR;
+    if (question)
+        otrl_message_initiate_smp_q(conn->userstate,
+            conn->ops, conn->opdata,
+            conn->ctx, question, secret, secretlen);
+    else
+        otrl_message_initiate_smp(conn->userstate,
+            conn->ops, conn->opdata,
+            conn->ctx, secret, secretlen);
+
+    if (to_send && injected_to_send) {
+        *to_send = otrv4_strdup(injected_to_send);
+        free(injected_to_send);
+        injected_to_send = NULL;
+    }
+
+    return OTR4_SUCCESS;
 }

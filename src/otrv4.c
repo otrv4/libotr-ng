@@ -1453,7 +1453,7 @@ otr4_err_t otrv4_smp_start(string_t * to_send, const string_t question,
 
     switch (otr->running_version) {
     case OTRV4_VERSION_3:
-        return otrv3_smp_start(to_send, otr->otr3_conn);
+        return otrv3_smp_start(to_send, question, secret, secretlen, otr->otr3_conn);
         break;
     case OTRV4_VERSION_4:
         smp_start_tlv = otrv4_smp_initiate(otr, question, secret, secretlen); // TODO: Free?
