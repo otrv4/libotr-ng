@@ -21,7 +21,8 @@ typedef struct {
 	ec_scalar_t r3;
 } snizkpk_proof_t;
 
-void snizkpk_keypair_generate(snizkpk_keypair_t * pair);
+void
+snizkpk_keypair_generate(snizkpk_keypair_t * pair);
 
 otr4_err_t
 snizkpk_authenticate(snizkpk_proof_t * dst, const snizkpk_keypair_t * pair1,
@@ -33,8 +34,10 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 	       const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
 	       const unsigned char *msg, size_t msglen);
 
-void generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv);
+void
+generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv);
 
-void snizkpk_proof_destroy(snizkpk_proof_t * src);
+void
+snizkpk_proof_destroy(snizkpk_proof_t * src);
 
 #endif

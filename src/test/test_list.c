@@ -40,6 +40,8 @@ void test_list_get_last()
 	// Removes two and one is the new last element
 	list = list_remove_element(last, list);
 	g_assert_cmpint(two, ==, *((int *) last->data));
+	list_free_all(last);
+
 	last = list_get_last(list);
 	g_assert_cmpint(one, ==, *((int *)last->data));
 
