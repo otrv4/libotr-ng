@@ -25,6 +25,7 @@ before_install:
   - sudo apt-get update --quiet --assume-yes
   - sudo apt-get install splint --quiet --assume-yes
   - sudo apt-get install valgrind --quiet --assume-yes
+  - sudo apt-get install clang-format --quiet --assume-yes
 
 before_script:
   - mkdir .deps
