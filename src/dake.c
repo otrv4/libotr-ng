@@ -13,12 +13,11 @@
 #include "constants.h"
 #include "error.h"
 
-dake_identity_message_t *dake_identity_message_new(const user_profile_t *
-						   profile)
+dake_identity_message_t *
+dake_identity_message_new(const user_profile_t *profile)
 {
-	if (profile == NULL) {
+	if (profile == NULL)
 		return NULL;
-	}
 
 	dake_identity_message_t *identity_message =
 	    malloc(sizeof(dake_identity_message_t));

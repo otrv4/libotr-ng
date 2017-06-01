@@ -2,13 +2,15 @@
 #include "constants.h"
 #include "random.h"
 
-void generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv)
+void
+generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv)
 {
 	ed448_random_scalar(priv);
 	decaf_448_point_scalarmul(pub, decaf_448_point_base, priv);
 }
 
-void snizkpk_keypair_generate(snizkpk_keypair_t * pair)
+void
+snizkpk_keypair_generate(snizkpk_keypair_t * pair)
 {
 	generate_keypair(pair->pub, pair->priv);
 }
@@ -163,7 +165,8 @@ snizkpk_verify(const snizkpk_proof_t * src, const snizkpk_pubkey_t A1,
 	return OTR4_ERROR;
 }
 
-void snizkpk_proof_destroy(snizkpk_proof_t * src)
+void
+snizkpk_proof_destroy(snizkpk_proof_t * src)
 {
 	ec_scalar_destroy(src->c1);
 	ec_scalar_destroy(src->r1);

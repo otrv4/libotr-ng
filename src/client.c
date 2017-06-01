@@ -9,7 +9,8 @@
 
 #define CONV(c) ((otr4_conversation_t *) c)
 
-static otr4_conversation_t *new_conversation_with(const char *recipient, otrv4_t *conn)
+static otr4_conversation_t *
+new_conversation_with(const char *recipient, otrv4_t *conn)
 {
 	otr4_conversation_t *conv = malloc(sizeof(otr4_conversation_t));
 	if (!conv) {
@@ -23,7 +24,8 @@ static otr4_conversation_t *new_conversation_with(const char *recipient, otrv4_t
 	return conv;
 }
 
-static void conversation_free(otr4_conversation_t * conv)
+static void
+conversation_free(otr4_conversation_t * conv)
 {
 	otrv4_free(conv->conn);
 	conv->conn = NULL;
@@ -34,8 +36,9 @@ static void conversation_free(otr4_conversation_t * conv)
 	free(conv);
 }
 
-otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair, OtrlUserState userstate,
-    const char *protocol, const char *account)
+otr4_client_t *
+otr4_client_new(otrv4_keypair_t * keypair, OtrlUserState userstate,
+                const char *protocol, const char *account)
 {
 	otr4_client_t *client = malloc(sizeof(otr4_client_t));
 	if (!client)
@@ -52,7 +55,8 @@ otr4_client_t *otr4_client_new(otrv4_keypair_t * keypair, OtrlUserState userstat
 	return client;
 }
 
-void otr4_client_free(otr4_client_t * client)
+void
+otr4_client_free(otr4_client_t * client)
 {
 	list_element_t *el;
 	for (el = client->conversations; el; el = el->next) {
@@ -75,7 +79,8 @@ void otr4_client_free(otr4_client_t * client)
 	free(client);
 }
 
-otr4_conversation_t *get_conversation_with(const char *recipient,
+otr4_conversation_t *
+get_conversation_with(const char *recipient,
 					   list_element_t * conversations)
 {
 	list_element_t *el;
@@ -88,7 +93,8 @@ otr4_conversation_t *get_conversation_with(const char *recipient,
 	return NULL;
 }
 
-otrv4_policy_t get_policy_for(const char *recipient)
+otrv4_policy_t
+get_policy_for(const char *recipient)
 {
 	//TODO the policy should come from client config.
 	otrv4_policy_t policy = {
@@ -98,42 +104,44 @@ otrv4_policy_t get_policy_for(const char *recipient)
 	return policy;
 }
 
-int otr4_conversation_is_encrypted(otr4_conversation_t *conv)
+int
+otr4_conversation_is_encrypted(otr4_conversation_t *conv)
 {
-    if (!conv)
-        return 0;
+        if (!conv)
+                return 0;
 
-    switch (conv->conn->running_version) {
-    case OTRV4_VERSION_NONE:
-        return 0;
-    case OTRV4_VERSION_4:
-        return conv->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES;
-    case OTRV4_VERSION_3:
-        return conv->conn->otr3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
-    }
+        switch (conv->conn->running_version) {
+        case OTRV4_VERSION_NONE:
+                return 0;
+        case OTRV4_VERSION_4:
+                return conv->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES;
+        case OTRV4_VERSION_3:
+                return conv->conn->otr3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
+        }
 
-    return 0;
+        return 0;
 }
 
-int otr4_conversation_is_finished(otr4_conversation_t *conv)
+int
+otr4_conversation_is_finished(otr4_conversation_t *conv)
 {
-    if (!conv)
-        return 0;
+        if (!conv)
+                return 0;
 
-    switch (conv->conn->running_version) {
-    case OTRV4_VERSION_NONE:
-        return 0;
-    case OTRV4_VERSION_4:
-        return conv->conn->state == OTRV4_STATE_FINISHED;
-    case OTRV4_VERSION_3:
-        return conv->conn->otr3_conn->ctx->msgstate == OTRL_MSGSTATE_FINISHED;
-    }
+        switch (conv->conn->running_version) {
+        case OTRV4_VERSION_NONE:
+                return 0;
+        case OTRV4_VERSION_4:
+                return conv->conn->state == OTRV4_STATE_FINISHED;
+        case OTRV4_VERSION_3:
+                return conv->conn->otr3_conn->ctx->msgstate == OTRL_MSGSTATE_FINISHED;
+        }
 
-    return 0;
+        return 0;
 }
 
-static otrv4_t *create_connection_for(const char *recipient,
-				      otr4_client_t * client)
+static otrv4_t *
+create_connection_for(const char *recipient, otr4_client_t * client)
 {
         otr3_conn_t *otr3_conn = NULL;
 	otrv4_t *conn = NULL;
@@ -152,12 +160,12 @@ static otrv4_t *create_connection_for(const char *recipient,
         otr3_conn->opdata = conn; // For use in callbacks
         conn->otr3_conn = otr3_conn;
 	conn->callbacks = client->callbacks;
-        
 
 	return conn;
 }
 
-otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
+otr4_conversation_t *
+get_or_create_conversation_with(const char *recipient,
 						     otr4_client_t * client)
 {
 	otr4_conversation_t *conv = NULL;
@@ -183,7 +191,8 @@ otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
 	return conv;
 }
 
-otr4_conversation_t *otr4_client_get_conversation(int force_create,
+otr4_conversation_t *
+otr4_client_get_conversation(int force_create,
 						  const char *recipient,
 						  otr4_client_t * client)
 {
@@ -193,7 +202,8 @@ otr4_conversation_t *otr4_client_get_conversation(int force_create,
 	return get_conversation_with(recipient, client->conversations);
 }
 
-static int send_otrv4_message(char **newmessage, const char *message,
+static int
+send_otrv4_message(char **newmessage, const char *message,
 		 const char *recipient, otr4_client_t * client)
 {
 	*newmessage = NULL;
@@ -212,36 +222,38 @@ int
 otr4_client_send(char **newmessage, const char *message,
 		 const char *recipient, otr4_client_t * client)
 {
-    //OTR4 client will know how to transition to OTR3 if a v3 conversation is
-    //started
-    return send_otrv4_message(newmessage, message, recipient, client);
+        //OTR4 client will know how to transition to OTR3 if a v3 conversation is
+        //started
+        return send_otrv4_message(newmessage, message, recipient, client);
 }
 
-int otr4_client_smp_start(char **tosend, const char *recipient,
+int
+otr4_client_smp_start(char **tosend, const char *recipient,
     const char *question, const unsigned char *secret, size_t secretlen,
     otr4_client_t * client)
 {
-    *tosend = NULL;
-    otr4_conversation_t *conv = NULL;
+        *tosend = NULL;
+        otr4_conversation_t *conv = NULL;
 
-    conv = get_or_create_conversation_with(recipient, client);
-    if (otrv4_smp_start(tosend, question, secret, secretlen, conv->conn)) {
-        return 1;
-    }
-    return 0;
+        conv = get_or_create_conversation_with(recipient, client);
+        if (otrv4_smp_start(tosend, question, secret, secretlen, conv->conn))
+                return 1;
+
+        return 0;
 }
 
-int otr4_client_smp_respond(char **tosend, const char *recipient,
+int
+otr4_client_smp_respond(char **tosend, const char *recipient,
     const unsigned char *secret, size_t secretlen, otr4_client_t * client)
 {
-    *tosend = NULL;
-    otr4_conversation_t *conv = NULL;
+        *tosend = NULL;
+        otr4_conversation_t *conv = NULL;
 
-    conv = get_or_create_conversation_with(recipient, client);
-    if (otrv4_smp_continue(tosend, secret, secretlen, conv->conn)) {
-        return 1;
-    }
-    return 0;
+        conv = get_or_create_conversation_with(recipient, client);
+        if (otrv4_smp_continue(tosend, secret, secretlen, conv->conn))
+                return 1;
+
+        return 0;
 }
 
 int
@@ -274,7 +286,8 @@ otr4_client_receive(char **newmessage, char **todisplay, const char *message,
 	return should_ignore;
 }
 
-char *otr4_client_query_message(const char *recipient, const char *message,
+char *
+otr4_client_query_message(const char *recipient, const char *message,
 				otr4_client_t * client)
 {
 	otr4_conversation_t *conv = NULL;
@@ -283,7 +296,7 @@ char *otr4_client_query_message(const char *recipient, const char *message,
 	conv = get_or_create_conversation_with(recipient, client);
 
 	//TODO: implement policy
-    //TODO: Check for errors when calling this function
+        //TODO: Check for errors when calling this function
 	otrv4_build_query_message(&ret, message, conv->conn);
 	return ret;
 }
@@ -314,7 +327,8 @@ otr4_client_disconnect(char **newmessage, const char *recipient,
 	return 0;
 }
 
-int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
+int
+otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
 				    const otr4_client_t * client)
 {
 	if (!client->keypair)
@@ -323,7 +337,8 @@ int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
 	return otr4_serialize_fingerprint(fp, client->keypair->pub);
 }
 
-int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
+int
+otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 {
 	char *line = NULL;
 	size_t cap = 0;
@@ -343,11 +358,12 @@ int otr4_read_privkey_FILEp(otr4_client_t * client, FILE * privf)
 	if (len < 0)
 		return -3;
 
-    if (otrv4_symmetric_key_deserialize(client->keypair, line, len)) {
-	    free(line);
-        return -1;
-    }
-    free(line);
+        if (otrv4_symmetric_key_deserialize(client->keypair, line, len)) {
+	        free(line);
+                return -1;
+         }
+        free(line);
+
 	return err;
 }
 
@@ -367,8 +383,9 @@ To read stored fingerprints:
             add_app_info, add_app_info_data);
 */
 
-int otr3_privkey_generate(otr4_client_t *client, FILE *privf)
+int
+otr3_privkey_generate(otr4_client_t *client, FILE *privf)
 {
-     return otrl_privkey_generate_FILEp(client->userstate, privf,
-         client->account, client->protocol);
+        return otrl_privkey_generate_FILEp(client->userstate, privf,
+                                  client->account, client->protocol);
 }

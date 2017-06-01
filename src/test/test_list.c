@@ -33,13 +33,20 @@ void test_list_get_last()
 	// Gets two and keeps one in the head
 	list_element_t *last = list_get_last(list);
 	g_assert_cmpint(two, ==, *((int *) last->data));
+	otrv4_assert(!last->next);
 	g_assert_cmpint(one, ==, *((int *)list->data));
+	g_assert_cmpint(two, ==, *((int *)list->next->data));
 
 	// Removes two and one is the new last element
 	list = list_remove_element(last, list);
+	g_assert_cmpint(two, ==, *((int *) last->data));
 	last = list_get_last(list);
 	g_assert_cmpint(one, ==, *((int *)last->data));
 
+	last->data = NULL;
+	free(last->data);
+
+	list_free_all(last->next);
 	list_free_all(list);
 }
 
