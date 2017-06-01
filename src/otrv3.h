@@ -7,6 +7,7 @@
 
 #include "str.h"
 #include "tlv.h"
+#include "error.h"
 
 typedef struct {
         char *protocol;
@@ -27,6 +28,6 @@ void otr3_conn_free(otr3_conn_t* conn);
 bool send_otrv3_message(char **newmessage, const char *message,
 		 tlv_t * tlvs, otr3_conn_t * conn);
 
-bool otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t **tlvs, const string_t message, otr3_conn_t *conn);
+otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t **tlvs, const string_t message, otr3_conn_t *conn);
 
 #endif

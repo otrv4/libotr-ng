@@ -437,13 +437,13 @@ bool send_otrv3_message(char **newmessage, const char *message,
     return !err;
 }
 
-bool otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t **tlvs, const string_t message, otr3_conn_t *conn)
+otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t **tlvs, const string_t message, otr3_conn_t *conn)
 {
     int ignore_message;
     OtrlTLV *tlvsv3 = NULL; //TODO: convert to v4 tlvs
 
     if (!conn)
-        return false;
+        return OTR4_ERROR;
 
     char *newmessage = NULL;
     ignore_message = otrl_message_receiving(conn->userstate,
@@ -469,5 +469,5 @@ bool otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t **tlvs
     //TODO: Here we can use contextp to get information we might need about the
     //state, for example (context->msgstate)
 
-    return true;
+    return OTR4_SUCCESS;
 }

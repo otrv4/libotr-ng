@@ -426,10 +426,8 @@ receive_tagged_plaintext(otrv4_response_t * response,
         return start_dake(response, otr);
         break;
     case OTRV4_VERSION_3:
-        if (!otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn)) {
-            return OTR4_ERROR;
-        }
-        return OTR4_SUCCESS;
+        return otrv3_receive_message(&response->to_send, &response->to_display,
+            &response->tlvs, message, otr->otr3_conn);
         break;
     case OTRV4_VERSION_NONE:
         //ignore
@@ -450,10 +448,8 @@ receive_query_message(otrv4_response_t * response,
         return start_dake(response, otr);
         break;
     case OTRV4_VERSION_3:
-        if (!otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn)) {
-            return OTR4_ERROR;
-        }
-        return OTR4_SUCCESS;
+        return otrv3_receive_message(&response->to_send, &response->to_display,
+            &response->tlvs, message, otr->otr3_conn);
         break;
     case OTRV4_VERSION_NONE:
         //ignore
@@ -1184,14 +1180,17 @@ otrv4_receive_message(otrv4_response_t * response,
 	    strstr(message, "?OTR:AAMC"))
 		otr->running_version = OTRV4_VERSION_3;
 
-    if (otr->running_version == OTRV4_VERSION_3) {
-        if (!otrv3_receive_message(&response->to_send, &response->to_display, &response->tlvs, message, otr->otr3_conn)) {
-            return OTR4_ERROR;
-        }
-        return OTR4_SUCCESS;
+    switch (otr->running_version) {
+    case OTRV4_VERSION_3:
+        return otrv3_receive_message(&response->to_send, &response->to_display,
+            &response->tlvs, message, otr->otr3_conn);
+        break;
+    case OTRV4_VERSION_4:
+    case OTRV4_VERSION_NONE:
+        return receive_message_v4_only(response, message, otr);
     }
 
-    return receive_message_v4_only(response, message, otr);
+    return OTR4_ERROR;
 }
 
 static data_message_t *generate_data_msg(const otrv4_t * otr)
