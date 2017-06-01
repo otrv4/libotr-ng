@@ -963,13 +963,14 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
       if (otrv4_send_message(&response->to_send, "", reply_tlv, otr))
         continue;
 
-    otrv4_tlv_free(reply_tlv);
-    data_message_free(msg);
-
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
 
-    // TODO: free to_store_mac
+    to_store_mac = NULL;
+    free(to_store_mac);
+    otrv4_tlv_free(reply_tlv);
+    data_message_free(msg);
+
     return OTR4_SUCCESS;
   } while (0);
 
