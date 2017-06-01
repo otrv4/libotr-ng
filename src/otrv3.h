@@ -25,9 +25,9 @@ otr3_conn_t* otr3_conn_new(const char *protocol, const char *account, const char
 
 void otr3_conn_free(otr3_conn_t* conn);
 
-bool send_otrv3_message(char **newmessage, const char *message,
-		 tlv_t * tlvs, otr3_conn_t * conn);
-
+otr4_err_t otrv3_send_message(char **newmessage, const char *message, tlv_t * tlvs, otr3_conn_t * conn);
 otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t **tlvs, const string_t message, otr3_conn_t *conn);
+
+otr4_err_t otrv3_smp_start(char **newmessage, otr3_conn_t * conn);
 
 #endif

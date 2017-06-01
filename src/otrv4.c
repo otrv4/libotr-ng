@@ -656,7 +656,7 @@ receive_identity_message_on_state_start(string_t * dst,
 		return OTR4_ERROR;
 
 	otr->state = OTRV4_STATE_WAITING_AUTH_I;
-	return OTR4_ERROR;
+	return OTR4_SUCCESS;
 }
 
 static void forget_our_keys(otrv4_t * otr)
@@ -665,7 +665,7 @@ static void forget_our_keys(otrv4_t * otr)
 	key_manager_init(otr->keys);
 }
 
-static bool
+static otr4_err_t
 receive_identity_message_while_in_progress(string_t * dst,
 					   dake_identity_message_t * msg,
 					   otrv4_t * otr)
@@ -684,7 +684,7 @@ receive_identity_message_while_in_progress(string_t * dst,
 	if (err) {
 		gcry_mpi_release(x);
 		gcry_mpi_release(y);
-		return false;
+		return OTR4_ERROR;
 	}
 
 	int cmp = gcry_mpi_cmp(x, y);
@@ -693,13 +693,10 @@ receive_identity_message_while_in_progress(string_t * dst,
 
 	// If our is lower, ignore.
 	if (cmp < 0)
-		return true;	//ignore
+		return OTR4_SUCCESS;	//ignore
 
 	forget_our_keys(otr);
-    if (receive_identity_message_on_state_start(dst, msg, otr)) {
-        return false;
-    }
-    return true;
+        return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
 static void received_instance_tag(uint32_t their_instance_tag, otrv4_t * otr)
@@ -716,21 +713,19 @@ receive_identity_message(string_t * dst, const uint8_t * buff, size_t buflen,
 	dake_identity_message_t m[1];
 
 	if (dake_identity_message_deserialize(m, buff, buflen))
-		return false;
+		return err;
 
 	received_instance_tag(m->sender_instance_tag, otr);
 
 	if (!valid_received_values(m->Y, m->B, m->profile))
-		return false;
+		return err;
 
 	switch (otr->state) {
 	case OTRV4_STATE_START:
 		err = receive_identity_message_on_state_start(dst, m, otr);
 		break;
 	case OTRV4_STATE_WAITING_AUTH_R:
-        if (receive_identity_message_while_in_progress(dst, m, otr)) {
-            err = OTR4_SUCCESS;
-        }
+                err = receive_identity_message_while_in_progress(dst, m, otr);
 		break;
 	case OTRV4_STATE_WAITING_AUTH_I:
 		//TODO
@@ -1001,7 +996,7 @@ get_receiving_msg_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
     return OTR4_SUCCESS;
 }
 
-otr4_err_t
+static otr4_err_t
 otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 			   size_t buflen, otrv4_t * otr)
 {
@@ -1061,57 +1056,37 @@ otrv4_receive_data_message(otrv4_response_t * response, const uint8_t * buff,
 }
 
 static otr4_err_t
-receive_encoded_message(otrv4_response_t * response,
-			const string_t message, otrv4_t * otr)
+receive_decoded_message(otrv4_response_t * response,
+			const uint8_t *decoded, size_t dec_len, otrv4_t * otr)
 {
-	size_t dec_len = 0;
-	uint8_t *decoded = NULL;
-	int err = otrl_base64_otr_decode(message, &decoded, &dec_len);
-	if (err)
-		return OTR4_ERROR;
-
-	if (dec_len > strlen(message))
-		return OTR4_ERROR;
-
 	otrv4_header_t header;
-	if (extract_header(&header, decoded, dec_len)) {
-		free(decoded);
+	if (extract_header(&header, decoded, dec_len))
 		return OTR4_ERROR;
-	}
 
-	if (!allow_version(otr, header.version)) {
-		free(decoded);
+	if (!allow_version(otr, header.version))
 		return OTR4_ERROR;
-	}
+
+        //TODO: Why the version in the header is a ALLOWED VERSION?
+        //This is the message version, not the version the protocol allows
+        if (header.version != OTRV4_ALLOW_V4)
+		return OTR4_ERROR;
+
 	//TODO: how to prevent version rollback?
 	//TODO: where should we ignore messages to a different instance tag?
 
 	switch (header.type) {
 	case OTR_IDENTITY_MSG_TYPE:
-		if (!receive_identity_message
-		    (&response->to_send, decoded, dec_len, otr)) {
-			free(decoded);
-			return OTR4_ERROR;
-		}
+                otr->running_version = OTRV4_VERSION_4;
+		return receive_identity_message(&response->to_send, decoded, dec_len, otr);
 		break;
 	case OTR_AUTH_R_MSG_TYPE:
-		if (receive_auth_r(&response->to_send, decoded, dec_len, otr)) {
-			free(decoded);
-			return OTR4_ERROR;
-		}
+		return receive_auth_r(&response->to_send, decoded, dec_len, otr);
 		break;
 	case OTR_AUTH_I_MSG_TYPE:
-		if (receive_auth_i(&response->to_send, decoded, dec_len, otr)) {
-			free(decoded);
-			return OTR4_ERROR;
-		}
+		return receive_auth_i(&response->to_send, decoded, dec_len, otr);
 		break;
 	case OTR_DATA_MSG_TYPE:
-		if (otrv4_receive_data_message
-		    (response, decoded, dec_len, otr)) {
-			free(decoded);
-			return OTR4_ERROR;
-		}
+		return otrv4_receive_data_message(response, decoded, dec_len, otr);
 		break;
 	default:
 		//errror. bad message type
@@ -1119,8 +1094,22 @@ receive_encoded_message(otrv4_response_t * response,
 		break;
 	}
 
+	return OTR4_ERROR;
+}
+
+static otr4_err_t
+receive_encoded_message(otrv4_response_t * response,
+			const string_t message, otrv4_t * otr)
+{
+	size_t dec_len = 0;
+	uint8_t *decoded = NULL;
+	if (otrl_base64_otr_decode(message, &decoded, &dec_len))
+		return OTR4_ERROR;
+
+        otr4_err_t err = receive_decoded_message(response, decoded, dec_len, otr);
 	free(decoded);
-	return OTR4_SUCCESS;
+
+	return err;
 }
 
 otrv4_in_message_type_t get_message_type(const string_t message)
@@ -1402,14 +1391,19 @@ otr4_err_t
 otrv4_send_message(string_t * to_send, const string_t message, tlv_t * tlvs,
 		   otrv4_t * otr)
 {
-    if (otr && otr->running_version == OTRV4_VERSION_3) {
-        if (!send_otrv3_message(to_send, message, tlvs, otr->otr3_conn)) {
-            return OTR4_ERROR;
-        }
-        return OTR4_SUCCESS;
+    if (!otr)
+        return OTR4_ERROR;
+
+    switch (otr->running_version) {
+    case OTRV4_VERSION_3:
+        return otrv3_send_message(to_send, message, tlvs, otr->otr3_conn);
+    case OTRV4_VERSION_4:
+        return send_otrv4_message(to_send, message, tlvs, otr);
+    case OTRV4_VERSION_NONE:
+        return OTR4_ERROR;
     }
 
-    return send_otrv4_message(to_send, message, tlvs, otr);
+    return OTR4_ERROR;
 }
 
 otr4_err_t otrv4_close(string_t * to_send, otrv4_t * otr)
@@ -1452,12 +1446,24 @@ otr4_err_t otrv4_smp_start(string_t * to_send, const string_t question,
 			  const uint8_t *secret, const size_t secretlen,
                           otrv4_t * otr)
 {
+    tlv_t *smp_start_tlv = NULL;
+
     if (!otr)
         return OTR4_ERROR;
 
-    // TODO: free this tlv
-    tlv_t *smp_start_tlv = otrv4_smp_initiate(otr, question, secret, secretlen);
-    return otrv4_send_message(to_send, "", smp_start_tlv, otr);
+    switch (otr->running_version) {
+    case OTRV4_VERSION_3:
+        return otrv3_smp_start(to_send, otr->otr3_conn);
+        break;
+    case OTRV4_VERSION_4:
+        smp_start_tlv = otrv4_smp_initiate(otr, question, secret, secretlen); // TODO: Free?
+        return otrv4_send_message(to_send, "", smp_start_tlv, otr);
+        break;
+    case OTRV4_VERSION_NONE:
+        return OTR4_ERROR;
+    }
+
+    return OTR4_ERROR;
 }
 
 otr4_err_t otrv4_smp_continue(string_t * to_send, const uint8_t *secret,

@@ -418,14 +418,14 @@ void otr3_conn_free(otr3_conn_t* conn)
     free(conn);
 }
 
-bool send_otrv3_message(char **newmessage, const char *message,
+otr4_err_t otrv3_send_message(char **newmessage, const char *message,
 		 tlv_t * tlvs, otr3_conn_t * conn)
 {
     //TODO: convert TLVs
     OtrlTLV *tlvsv3 = NULL;
 
     if (!conn)
-        return false;
+        return OTR4_ERROR;
 
     int err = otrl_message_sending(conn->userstate,
         conn->ops, conn->opdata,
@@ -434,7 +434,10 @@ bool send_otrv3_message(char **newmessage, const char *message,
         newmessage, OTRL_FRAGMENT_SEND_SKIP,
         &conn->ctx, NULL, NULL);
 
-    return !err;
+    if (!err)
+        return OTR4_SUCCESS;
+
+    return OTR4_ERROR;
 }
 
 otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t **tlvs, const string_t message, otr3_conn_t *conn)
@@ -470,4 +473,9 @@ otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display, tlv_t 
     //state, for example (context->msgstate)
 
     return OTR4_SUCCESS;
+}
+
+otr4_err_t otrv3_smp_start(char **newmessage, otr3_conn_t * conn)
+{
+    return OTR4_ERROR;
 }
