@@ -6,7 +6,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 @CODE_COVERAGE_RULES@
 
-ci: code-style-doctor test mem-check coverage-check
+ci: test mem-check coverage-check
 
 test: check
 	$(top_builddir)/src/test/test
@@ -24,5 +24,5 @@ code-style:
 	clang-format -style=llvm -i config.h src/*.h src/*.c src/**/*.h src/**/*.c
 
 code-style-doctor: code-style
-	git diff --exit-code . || true
+	git diff --exit-code .
 
