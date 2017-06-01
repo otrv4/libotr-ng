@@ -988,6 +988,8 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   } while (0);
 
   free(to_store_mac);
+  to_store_mac = NULL;
+
   data_message_free(msg);
   otrv4_tlv_free(reply_tlv);
 
