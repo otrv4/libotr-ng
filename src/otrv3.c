@@ -463,3 +463,17 @@ otr4_err_t otrv3_smp_start(string_t *to_send, const char *question,
 
   return OTR4_SUCCESS;
 }
+
+otr4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret,
+                              const size_t secretlen, otr3_conn_t *conn) {
+  otrl_message_respond_smp(conn->userstate, conn->ops, conn->opdata, conn->ctx,
+                           secret, secretlen);
+
+  if (to_send && injected_to_send) {
+    *to_send = otrv4_strdup(injected_to_send);
+    free(injected_to_send);
+    injected_to_send = NULL;
+  }
+
+  return OTR4_SUCCESS;
+}

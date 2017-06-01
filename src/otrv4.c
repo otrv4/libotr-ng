@@ -878,7 +878,6 @@ static otr4_err_t decrypt_data_msg(otrv4_response_t *response,
   return OTR4_ERROR;
 }
 
-// TODO: Process SMP TLVs
 static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
   switch (tlv->type) {
   case OTRV4_TLV_PADDING:
@@ -1390,8 +1389,30 @@ otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
   return OTR4_ERROR;
 }
 
-otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
-                              const size_t secretlen, otrv4_t *otr) {
+tlv_t *otrv4_smp_provide_secret(otrv4_t *otr, const uint8_t *secret,
+                                const size_t secretlen) {
+  // TODO: If state is not CONTINUE_SMP then error.
+  tlv_t *smp_reply = NULL;
+
+  otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
+
+  set_smp_secret(secret, secretlen, false, otr);
+
+  event = reply_with_smp_msg_2(&smp_reply, otr->smp);
+
+  if (!event)
+    event = OTRV4_SMPEVENT_IN_PROGRESS;
+
+  // TODO: transition to state 1 if an abort happens
+  if (event)
+    handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
+                        otr);
+
+  return smp_reply;
+}
+
+static otr4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
+                                     const size_t secretlen, otrv4_t *otr) {
   otr4_err_t err = OTR4_ERROR;
   tlv_t *smp_reply = NULL;
 
@@ -1409,7 +1430,22 @@ otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
   return err;
 }
 
-// TODO: extract some function to SMP
+otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
+                              const size_t secretlen, otrv4_t *otr) {
+  switch (otr->running_version) {
+  case OTRV4_VERSION_3:
+    return otrv3_smp_continue(to_send, secret, secretlen, otr->otr3_conn);
+    break;
+  case OTRV4_VERSION_4:
+    return smp_continue_otrv4(to_send, secret, secretlen, otr);
+    break;
+  case OTRV4_VERSION_NONE:
+    return OTR4_ERROR;
+  }
+
+  return OTR4_ERROR; // TODO: IMPLEMENT
+}
+
 tlv_t *otrv4_smp_initiate(otrv4_t *otr, const string_t question,
                           const uint8_t *secret, size_t secretlen) {
   if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
@@ -1494,24 +1530,7 @@ tlv_t *otrv4_process_smp(otrv4_t *otr, const tlv_t *tlv) {
   return to_send;
 }
 
-tlv_t *otrv4_smp_provide_secret(otrv4_t *otr, const uint8_t *secret,
-                                const size_t secretlen) {
-  // TODO: If state is not CONTINUE_SMP then error.
-  tlv_t *smp_reply = NULL;
-
-  otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
-
-  set_smp_secret(secret, secretlen, false, otr);
-
-  event = reply_with_smp_msg_2(&smp_reply, otr->smp);
-
-  if (!event)
-    event = OTRV4_SMPEVENT_IN_PROGRESS;
-
-  // TODO: transition to state 1 if an abort happens
-  if (event)
-    handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
-                        otr);
-
-  return smp_reply;
+otr4_err_t otrv4_smp_abort(otrv4_t *otr) {
+  // TODO: implement for both OTR3 and OTR4
+  return OTR4_ERROR;
 }
