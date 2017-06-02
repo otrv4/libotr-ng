@@ -1393,8 +1393,12 @@ otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
   case OTRV4_VERSION_4:
     smp_start_tlv =
         otrv4_smp_initiate(otr, question, secret, secretlen);
-    // free tlv
-    return otrv4_send_message(to_send, "", smp_start_tlv, otr);
+    if (otrv4_send_message(to_send, "", smp_start_tlv, otr)) {
+      free(smp_start_tlv);
+      return OTR4_ERROR;
+    }
+    free(smp_start_tlv);
+    return OTR4_SUCCESS;
     break;
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
