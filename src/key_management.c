@@ -59,6 +59,12 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 }
 
 void key_manager_destroy(key_manager_t *manager) {
+  list_element_t *el;
+  for (el = manager->old_mac_keys; el; el = el->next) {
+    free((uint8_t *)el->data);
+    el->data = NULL;
+  }
+
   ratchet_free(manager->previous);
   manager->previous = NULL;
 

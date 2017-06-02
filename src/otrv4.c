@@ -943,17 +943,28 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
   uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
+  if (to_store_mac == NULL) {
+    data_message_free(msg);
+    return OTR4_ERROR;
+  }
 
   // TODO: warn the user and send an error message with a code.
-  if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
+  if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
+    data_message_free(msg);
+    free(to_store_mac);
     return OTR4_ERROR;
+  }
 
-  if (data_message_deserialize(msg, buff, buflen))
+  if (data_message_deserialize(msg, buff, buflen)) {
+    data_message_free(msg);
+    free(to_store_mac);
     return OTR4_ERROR;
+  }
 
   key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
 
   tlv_t *reply_tlv = NULL;
+
   do {
     if (get_receiving_msg_keys(enc_key, mac_key, msg, otr))
       continue;
@@ -980,6 +991,8 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
 
     to_store_mac = NULL;
     free(to_store_mac);
+    to_store_mac = NULL;
+
     otrv4_tlv_free(reply_tlv);
     data_message_free(msg);
 
