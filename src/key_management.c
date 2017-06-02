@@ -501,7 +501,8 @@ uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys) {
     list_element_t *last = list_get_last(old_mac_keys);
     memcpy(ser_mac_keys + i * MAC_KEY_BYTES, last->data, MAC_KEY_BYTES);
     old_mac_keys = list_remove_element(last, old_mac_keys);
-    free(last); // after pull, list_free_all(last);
+    list_free_all(last); // after pull, list_free_all(last);
+    list_free_all(last->next);
   }
 
   list_free_all(old_mac_keys);
