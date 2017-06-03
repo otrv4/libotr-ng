@@ -45,7 +45,7 @@ void user_profile_destroy(user_profile_t *profile) {
   if (!profile)
     return;
 
-  // free the pubkey
+  ec_point_destroy(profile->pub_key);
   free(profile->versions);
   profile->versions = NULL;
 

@@ -1404,7 +1404,6 @@ otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
     return OTR4_ERROR;
   }
 
-  otrv4_tlv_free(smp_start_tlv);
   return OTR4_ERROR;
 }
 
