@@ -270,6 +270,13 @@ char *otr4_client_query_message(const char *recipient, const char *message,
   return ret;
 }
 
+static void destroy_client_conversation(const otr4_conversation_t *conv, otr4_client_t *client)
+{
+  list_element_t *elem = list_get_by_value(conv, client->conversations);
+  client->conversations = list_remove_element(elem, client->conversations);
+  list_free_all(elem);
+}
+
 int otr4_client_disconnect(char **newmessage, const char *recipient,
                            otr4_client_t *client) {
   *newmessage = NULL;
@@ -282,12 +289,9 @@ int otr4_client_disconnect(char **newmessage, const char *recipient,
   if (otrv4_close(newmessage, conv->conn))
     return 2;
 
-  // TODO: Should we NOT remove the closed conversation?
-  list_element_t *elem = list_get_by_value(conv, client->conversations);
-  client->conversations = list_remove_element(elem, client->conversations);
-
+  destroy_client_conversation(conv, client);
   conversation_free(conv);
-  list_free_all(elem);
+  conv = NULL;
 
   return 0;
 }
