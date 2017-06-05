@@ -73,11 +73,14 @@ list_element_t *list_get_by_value(const void *wanted, list_element_t *head) {
 
 list_element_t *list_remove_element(const list_element_t *wanted,
                                     list_element_t *head) {
+  list_element_t *cursor = head;
+
   if (head == wanted) {
-    return wanted->next;
+    cursor = head->next;
+    head->next = NULL;
+    return cursor;
   }
 
-  list_element_t *cursor = head;
   while (cursor->next) {
     if (cursor->next == wanted) {
       list_element_t *found = cursor->next;

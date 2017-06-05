@@ -286,7 +286,6 @@ int otr4_client_disconnect(char **newmessage, const char *recipient,
   list_element_t *elem = list_get_by_value(conv, client->conversations);
   client->conversations = list_remove_element(elem, client->conversations);
 
-  elem->next = NULL;
   conversation_free(conv);
   list_free_all(elem);
 
