@@ -1341,7 +1341,7 @@ otr4_err_t otrv4_send_message(string_t *to_send, const string_t message,
   return OTR4_ERROR;
 }
 
-otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
+static otr4_err_t otrv4_close_v4(string_t *to_send, otrv4_t *otr) {
   if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
     return OTR4_SUCCESS;
 
@@ -1349,10 +1349,7 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
   if (!disconnected)
     return OTR4_ERROR;
 
-  otr4_err_t err = OTR4_ERROR;
-  if (otrv4_send_message(to_send, "", disconnected, otr) == OTR4_SUCCESS) {
-    err = OTR4_SUCCESS;
-  }
+  otr4_err_t err = otrv4_send_message(to_send, "", disconnected, otr);
   otrv4_tlv_free(disconnected);
 
   forget_our_keys(otr);
@@ -1360,6 +1357,23 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
   gone_insecure_cb(otr);
 
   return err;
+}
+
+otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
+  if (!otr)
+    return OTR4_ERROR;
+
+  switch (otr->running_version) {
+  case OTRV4_VERSION_3:
+    otrv3_close(to_send, otr->otr3_conn);
+    return OTR4_SUCCESS;
+  case OTRV4_VERSION_4:
+    return otrv4_close_v4(to_send, otr);
+  case OTRV4_VERSION_NONE:
+    return OTR4_ERROR;
+  }
+
+  return OTR4_ERROR;
 }
 
 static void set_smp_secret(const uint8_t *answer, size_t answerlen,

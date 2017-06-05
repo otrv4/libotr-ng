@@ -445,6 +445,18 @@ otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
   return OTR4_SUCCESS;
 }
 
+void otrv3_close(string_t *to_send, otr3_conn_t *conn) {
+  otrl_message_disconnect_all_instances(conn->userstate, conn->ops,
+                                        conn->opdata, conn->account,
+                                        conn->protocol, conn->peer);
+
+  if (to_send && injected_to_send) {
+    *to_send = otrv4_strdup(injected_to_send);
+    free(injected_to_send);
+    injected_to_send = NULL;
+  }
+}
+
 otr4_err_t otrv3_smp_start(string_t *to_send, const char *question,
                            const uint8_t *secret, size_t secretlen,
                            otr3_conn_t *conn) {
