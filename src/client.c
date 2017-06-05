@@ -270,8 +270,8 @@ char *otr4_client_query_message(const char *recipient, const char *message,
   return ret;
 }
 
-static void destroy_client_conversation(const otr4_conversation_t *conv, otr4_client_t *client)
-{
+static void destroy_client_conversation(const otr4_conversation_t *conv,
+                                        otr4_client_t *client) {
   list_element_t *elem = list_get_by_value(conv, client->conversations);
   client->conversations = list_remove_element(elem, client->conversations);
   list_free_all(elem);
