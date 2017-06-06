@@ -352,3 +352,8 @@ int otr3_privkey_generate(otr4_client_t *client, FILE *privf) {
   return otrl_privkey_generate_FILEp(client->userstate, privf, client->account,
                                      client->protocol);
 }
+
+int otr3_instag_generate(otr4_client_t *client, FILE *privf) {
+  return otrl_instag_generate_FILEp(client->userstate, privf, client->account,
+                                     client->protocol);
+}
