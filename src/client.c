@@ -6,6 +6,7 @@
 #include "serialize.h"
 #include "sha3.h"
 #include "str.h"
+#include "instance_tag.h"
 
 #define CONV(c) ((otr4_conversation_t *)c)
 
@@ -71,8 +72,6 @@ void otr4_client_free(otr4_client_t *client) {
   free(client->account);
   client->account = NULL;
 
-  //TODO: fix me
-  //free(client->instag);
   client->instag = NULL;
 
   list_free_all(client->conversations);

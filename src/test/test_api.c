@@ -121,8 +121,6 @@ void test_api_conversation(void) {
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
-  otrv4_free(alice);
-  otrv4_free(bob);
   otrv4_keypair_destroy(alice_keypair);
   otrv4_keypair_destroy(bob_keypair);
 

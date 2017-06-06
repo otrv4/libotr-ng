@@ -9,6 +9,8 @@ typedef struct {
   uint32_t value;
 } otrv4_instag_t;
 
-int otr4_instag_generate(otrv4_instag_t *instag, char * account, char *protocol);
+otrv4_instag_t *otr4_instag_generate(char * account, char *protocol);
+
+void otr4_instag_free(otrv4_instag_t *instag);
 
 #endif

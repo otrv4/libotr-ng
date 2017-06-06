@@ -17,8 +17,7 @@ void test_client_conversation_api() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrv4_keypair_generate(alice_keypair, sym);
 
-  otrv4_instag_t *alice_instag = malloc(sizeof(otrv4_instag_t));
-  otr4_instag_generate(alice_instag, "", "");
+  otrv4_instag_t *alice_instag = otr4_instag_generate("", "");
 
   otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, "", "",
                                          alice_instag);
@@ -53,10 +52,8 @@ void test_client_conversation_api() {
   otrv4_assert(alice_to_charlie);
   otrv4_assert(alice_to_charlie->conn);
 
-  free(alice_instag);
-  alice_instag = NULL;
-
   // Free memory
+  otr4_instag_free(alice_instag);
   otrv4_keypair_destroy(alice_keypair);
   otr4_client_free(alice);
 
@@ -76,14 +73,9 @@ void test_client_api() {
 
   otr4_client_t *alice = NULL, *bob = NULL, *charlie = NULL;
 
-  otrv4_instag_t *alice_instag = malloc(sizeof(otrv4_instag_t));
-  otr4_instag_generate(alice_instag, "", "");
-
-  otrv4_instag_t *bob_instag = malloc(sizeof(otrv4_instag_t));
-  otr4_instag_generate(bob_instag, "", "");
-
-  otrv4_instag_t *charlie_instag = malloc(sizeof(otrv4_instag_t));
-  otr4_instag_generate(charlie_instag, "", "");
+  otrv4_instag_t *alice_instag = otr4_instag_generate("", "");
+  otrv4_instag_t *bob_instag = otr4_instag_generate("", "");
+  otrv4_instag_t *charlie_instag = otr4_instag_generate("", "");
 
   alice = otr4_client_new(alice_keypair, NULL, "", "", alice_instag);
   bob = otr4_client_new(bob_keypair, NULL, "", "", bob_instag);
@@ -200,12 +192,9 @@ void test_client_api() {
   otrv4_keypair_destroy(bob_keypair);
   otrv4_keypair_destroy(charlie_keypair);
 
-  free(alice_instag);
-  alice_instag = NULL;
-  free(bob_instag);
-  bob_instag = NULL;
-  free(charlie_instag);
-  charlie_instag = NULL;
+  otr4_instag_free(alice_instag);
+  otr4_instag_free(bob_instag);
+  otr4_instag_free(charlie_instag);
 
   // Free memory
   otr4_client_free(charlie);
@@ -222,8 +211,7 @@ void test_client_get_our_fingerprint() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrv4_keypair_generate(client_keypair, sym);
 
-  otrv4_instag_t *client_instag = malloc(sizeof(otrv4_instag_t));
-  otr4_instag_generate(client_instag, "", "");
+  otrv4_instag_t *client_instag = otr4_instag_generate("", "");
 
   otr4_client_t *client = otr4_client_new(client_keypair, NULL, "", "",
                                           client_instag);
@@ -243,8 +231,7 @@ void test_client_get_our_fingerprint() {
 
   otrv4_keypair_destroy(client_keypair);
 
-  free(client_instag);
-  client_instag = NULL;
+  otr4_instag_free(client_instag);
 
   otr4_client_free(client);
 
@@ -292,25 +279,22 @@ void test_conversation_with_multiple_locations() {
   char *alice_account = "alice_xmpp";
   char *protocol = "XMPP";
 
-  otrv4_instag_t *alice_instag = malloc(sizeof(otrv4_instag_t));
-  otr4_instag_generate(alice_instag, alice_account, protocol);
+  otrv4_instag_t *alice_instag = otr4_instag_generate(alice_account, protocol);
 
   otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, protocol,
                                          alice_account, alice_instag);
   otrv4_assert(!alice->conversations);
 
   char *bob_account = "bob_xmpp";
-  otrv4_instag_t *bob_instag_1 = malloc(sizeof(otrv4_instag_t));
-  otrv4_instag_t *bob_instag_2 = malloc(sizeof(otrv4_instag_t));
 
-  otr4_instag_generate(bob_instag_1, bob_account, protocol);
+  otrv4_instag_t *bob_instag_1 = otr4_instag_generate(bob_account, protocol);
 
   otr4_client_t *bob = otr4_client_new(bob_keypair, NULL, protocol, bob_account,
                                        bob_instag_1);
 
   otrv4_assert(!bob->conversations);
 
-  otr4_instag_generate(bob_instag_2, bob_account, protocol);
+  otrv4_instag_t *bob_instag_2 = otr4_instag_generate(bob_account, protocol);
 
   otr4_client_t *bob_2 = otr4_client_new(bob_keypair, NULL, protocol, bob_account,
                                          bob_instag_2);
@@ -324,12 +308,9 @@ void test_conversation_with_multiple_locations() {
   otrv4_keypair_destroy(alice_keypair);
   otrv4_keypair_destroy(bob_keypair);
 
-  free(alice_instag);
-  alice_instag = NULL;
-  free(bob_instag_1);
-  bob_instag_1 = NULL;
-  free(bob_instag_2);
-  bob_instag_2 = NULL;
+  otr4_instag_free(alice_instag);
+  otr4_instag_free(bob_instag_1);
+  otr4_instag_free(bob_instag_2);
 
   otr4_client_free(alice);
   otr4_client_free(bob);

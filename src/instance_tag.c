@@ -3,12 +3,27 @@
 
 #include <libotr/instag.h>
 
-int otr4_instag_generate(otrv4_instag_t *instag, char * account, char *protocol) {
+otrv4_instag_t *otr4_instag_generate(char * account, char *protocol) {
+
+  otrv4_instag_t *instag = malloc(sizeof(otrv4_instag_t));
+  if (!instag) {
+    return NULL;
+  }
 
   instag->account = otrv4_strdup(account);
   instag->protocol = otrv4_strdup(protocol);
 
   instag->value = otrl_instag_get_new();
 
-  return 0;
+  return instag;
+}
+
+void otr4_instag_free(otrv4_instag_t *instag) {
+  free(instag->account);
+  instag->account = NULL;
+
+  free(instag->protocol);
+  instag->protocol = NULL;
+
+  free(instag);
 }
