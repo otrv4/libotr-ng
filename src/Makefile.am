@@ -11,6 +11,7 @@ libotr4_la_SOURCES = \
 		     dh.c \
 		     ed448.c \
 		     fingerprint.c \
+		     instance_tag.c \
 		     keys.c \
 		     key_management.c \
 		     list.c \
@@ -41,6 +42,7 @@ otrinc_HEADERS = b64.h \
 		 ed448.h \
 		 error.h \
 		 fingerprint.h \
+		 instance_tag.h \
 		 keys.h \
 		 key_management.h \
 		 list.h \

@@ -7,6 +7,7 @@
 
 #include "list.h"
 #include "otrv4.h"
+#include "instance_tag.h"
 
 typedef struct {
   char *recipient;
@@ -19,6 +20,7 @@ typedef struct {
 
   char *account;
   char *protocol;
+  otrv4_instag_t *instag;
   OtrlUserState userstate;
 
   otrv4_keypair_t *keypair;
@@ -27,7 +29,7 @@ typedef struct {
 
 otr4_client_t *otr4_client_new(otrv4_keypair_t *keypair,
                                OtrlUserState userstate, const char *protocol,
-                               const char *account);
+                               const char *account, otrv4_instag_t *instag);
 
 void otr4_client_free(otr4_client_t *client);
 
@@ -66,5 +68,7 @@ int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
 int otr4_read_privkey_FILEp(otr4_client_t *client, FILE *privf);
 
 int otr3_privkey_generate(otr4_client_t *client, FILE *privf);
+
+int otr3_instag_generate(otr4_client_t *client, FILE *privf);
 
 #endif

@@ -144,5 +144,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/client/fingerprint_to_human",
                   test_fingerprint_hash_to_human);
 
+  g_test_add_func("/client/conversation_multiple_locations",
+                  test_conversation_with_multiple_locations);
+
   return g_test_run();
 }

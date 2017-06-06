@@ -35,14 +35,19 @@ static void conversation_free(otr4_conversation_t *conv) {
 
 otr4_client_t *otr4_client_new(otrv4_keypair_t *keypair,
                                OtrlUserState userstate, const char *protocol,
-                               const char *account) {
+                                const char *account, otrv4_instag_t *instag) {
   otr4_client_t *client = malloc(sizeof(otr4_client_t));
   if (!client)
     return NULL;
 
+  if (!instag) {
+    return NULL;
+  }
+
   client->keypair = keypair;
   client->protocol = otrv4_strdup(protocol);
   client->account = otrv4_strdup(account);
+  client->instag = instag;
 
   client->userstate = userstate;
   client->conversations = NULL;
@@ -65,6 +70,10 @@ void otr4_client_free(otr4_client_t *client) {
 
   free(client->account);
   client->account = NULL;
+
+  //TODO: fix me
+  //free(client->instag);
+  client->instag = NULL;
 
   list_free_all(client->conversations);
   client->conversations = NULL;
@@ -342,7 +351,7 @@ To read stored instance tags:
 
     otrl_instag_read(userstate, instagfilename);
 
-To read stored fingerprints:
+	To read stored fingerprints:
 
     otrl_privkey_read_fingerprints(userstate, fingerprintfilename,
             add_app_info, add_app_info_data);

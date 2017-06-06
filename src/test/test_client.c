@@ -2,6 +2,8 @@
 
 #include "../serialize.h"
 #include "../sha3.h"
+#include "../client.h"
+#include "../instance_tag.h"
 
 #define ALICE_IDENTITY "alice@otr.example"
 #define BOB_IDENTITY "bob@otr.example"
@@ -15,7 +17,11 @@ void test_client_conversation_api() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrv4_keypair_generate(alice_keypair, sym);
 
-  otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, "", "");
+  otrv4_instag_t *alice_instag = malloc(sizeof(otrv4_instag_t));
+  otr4_instag_generate(alice_instag, "", "");
+
+  otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, "", "",
+                                         alice_instag);
   otrv4_assert(!alice->conversations);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
@@ -47,6 +53,9 @@ void test_client_conversation_api() {
   otrv4_assert(alice_to_charlie);
   otrv4_assert(alice_to_charlie->conn);
 
+  free(alice_instag);
+  alice_instag = NULL;
+
   // Free memory
   otrv4_keypair_destroy(alice_keypair);
   otr4_client_free(alice);
@@ -67,9 +76,18 @@ void test_client_api() {
 
   otr4_client_t *alice = NULL, *bob = NULL, *charlie = NULL;
 
-  alice = otr4_client_new(alice_keypair, NULL, "", "");
-  bob = otr4_client_new(bob_keypair, NULL, "", "");
-  charlie = otr4_client_new(charlie_keypair, NULL, "", "");
+  otrv4_instag_t *alice_instag = malloc(sizeof(otrv4_instag_t));
+  otr4_instag_generate(alice_instag, "", "");
+
+  otrv4_instag_t *bob_instag = malloc(sizeof(otrv4_instag_t));
+  otr4_instag_generate(bob_instag, "", "");
+
+  otrv4_instag_t *charlie_instag = malloc(sizeof(otrv4_instag_t));
+  otr4_instag_generate(charlie_instag, "", "");
+
+  alice = otr4_client_new(alice_keypair, NULL, "", "", alice_instag);
+  bob = otr4_client_new(bob_keypair, NULL, "", "", bob_instag);
+  charlie = otr4_client_new(charlie_keypair, NULL, "", "", charlie_instag);
 
   char *query_msg_to_bob =
       otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
@@ -182,6 +200,13 @@ void test_client_api() {
   otrv4_keypair_destroy(bob_keypair);
   otrv4_keypair_destroy(charlie_keypair);
 
+  free(alice_instag);
+  alice_instag = NULL;
+  free(bob_instag);
+  bob_instag = NULL;
+  free(charlie_instag);
+  charlie_instag = NULL;
+
   // Free memory
   otr4_client_free(charlie);
   otr4_client_free(bob);
@@ -197,7 +222,11 @@ void test_client_get_our_fingerprint() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrv4_keypair_generate(client_keypair, sym);
 
-  otr4_client_t *client = otr4_client_new(client_keypair, NULL, "", "");
+  otrv4_instag_t *client_instag = malloc(sizeof(otrv4_instag_t));
+  otr4_instag_generate(client_instag, "", "");
+
+  otr4_client_t *client = otr4_client_new(client_keypair, NULL, "", "",
+                                          client_instag);
 
   otrv4_fingerprint_t our_fp = {0};
   otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));
@@ -213,6 +242,9 @@ void test_client_get_our_fingerprint() {
   otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(otrv4_fingerprint_t));
 
   otrv4_keypair_destroy(client_keypair);
+
+  free(client_instag);
+  client_instag = NULL;
 
   otr4_client_free(client);
 
@@ -245,4 +277,63 @@ void test_fingerprint_hash_to_human() {
   otr4_fingerprint_hash_to_human(fp_human, fp_hash);
 
   g_assert_cmpint(0, ==, strncmp(expected_fp, fp_human, OTR4_FPRINT_HUMAN_LEN));
+}
+
+void test_conversation_with_multiple_locations() {
+  OTR4_INIT;
+  otrv4_keypair_t alice_keypair[1];
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  otrv4_keypair_generate(alice_keypair, alice_sym);
+
+  otrv4_keypair_t bob_keypair[1];
+  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {1};
+  otrv4_keypair_generate(bob_keypair, bob_sym);
+
+  char *alice_account = "alice_xmpp";
+  char *protocol = "XMPP";
+
+  otrv4_instag_t *alice_instag = malloc(sizeof(otrv4_instag_t));
+  otr4_instag_generate(alice_instag, alice_account, protocol);
+
+  otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, protocol,
+                                         alice_account, alice_instag);
+  otrv4_assert(!alice->conversations);
+
+  char *bob_account = "bob_xmpp";
+  otrv4_instag_t *bob_instag_1 = malloc(sizeof(otrv4_instag_t));
+  otrv4_instag_t *bob_instag_2 = malloc(sizeof(otrv4_instag_t));
+
+  otr4_instag_generate(bob_instag_1, bob_account, protocol);
+
+  otr4_client_t *bob = otr4_client_new(bob_keypair, NULL, protocol, bob_account,
+                                       bob_instag_1);
+
+  otrv4_assert(!bob->conversations);
+
+  otr4_instag_generate(bob_instag_2, bob_account, protocol);
+
+  otr4_client_t *bob_2 = otr4_client_new(bob_keypair, NULL, protocol, bob_account,
+                                         bob_instag_2);
+
+  otrv4_assert(!bob_2->conversations);
+  otrv4_assert(bob->instag->value > 0);
+  otrv4_assert(bob_2->instag->value > 0);
+
+  g_assert_cmpuint(bob->instag->value, !=, bob_2->instag->value);
+
+  otrv4_keypair_destroy(alice_keypair);
+  otrv4_keypair_destroy(bob_keypair);
+
+  free(alice_instag);
+  alice_instag = NULL;
+  free(bob_instag_1);
+  bob_instag_1 = NULL;
+  free(bob_instag_2);
+  bob_instag_2 = NULL;
+
+  otr4_client_free(alice);
+  otr4_client_free(bob);
+  otr4_client_free(bob_2);
+
+  dh_free();
 }
