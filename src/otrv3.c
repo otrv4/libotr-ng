@@ -120,7 +120,7 @@ static void op_gone_insecure(void *opdata, ConnContext *context) {
 /* We have completed an authentication, using the D-H keys we
  * already knew.  is_reply indicates whether we initiated the AKE. */
 static void op_still_secure(void *opdata, ConnContext *context, int is_reply) {
-  // Nothing
+  gone_secure_cb(opdata);
 }
 
 /* Find the maximum message size supported by this protocol. */
@@ -417,7 +417,7 @@ otr4_err_t otrv3_send_message(char **newmessage, const char *message,
 
   int err = otrl_message_sending(
       conn->userstate, conn->ops, conn->opdata, conn->account, conn->protocol,
-      conn->peer, OTRL_INSTAG_BEST, message, tlvsv3, newmessage,
+      conn->peer, OTRL_INSTAG_RECENT, message, tlvsv3, newmessage,
       OTRL_FRAGMENT_SEND_SKIP, &conn->ctx, NULL, NULL);
 
   if (!err)
