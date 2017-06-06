@@ -1365,7 +1365,10 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    otrv3_close(to_send, otr->otr3_conn);
+    otrv3_close(to_send, otr->otr3_conn); // TODO: This should return an error
+                                          // but errors are reported on a
+                                          // callback
+    gone_insecure_cb(otr);                // TODO: Only if success
     return OTR4_SUCCESS;
   case OTRV4_VERSION_4:
     return otrv4_close_v4(to_send, otr);

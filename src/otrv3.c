@@ -47,9 +47,23 @@ static OtrlPolicy op_policy(void *opdata, ConnContext *context) {
 
 static char *injected_to_send = NULL;
 
+static void from_injected_to_send(char **to_send) {
+  if (!to_send || !injected_to_send)
+    return;
+
+  // TODO: As this is stored from a callback it MAY be the case a message
+  // was lost (if the callback was invoked multiple times before we consume
+  // this injected_to_send). Ideally this would be a list.
+  *to_send = otrv4_strdup(injected_to_send);
+  free(injected_to_send);
+  injected_to_send = NULL;
+}
+
 static void op_inject(void *opdata, const char *accountname,
                       const char *protocol, const char *recipient,
                       const char *message) {
+  // TODO: This is where we should ADD a new element to the list.
+  // We are just ignoring for now.
   if (injected_to_send) {
     free(injected_to_send);
     injected_to_send = NULL;
@@ -74,7 +88,8 @@ static void op_create_privkey(void *opdata, const char *accountname,
  * logged in" errors if you're wrong. */
 static int op_is_logged_in(void *opdata, const char *accountname,
                            const char *protocol, const char *recipient) {
-  return -1;
+  return 1; // We always think the person is logged in, otherwise it wont send
+            // disconnect TLVs, for example.
 }
 
 /* When the list of ConnContexts changes (including a change in
@@ -427,11 +442,7 @@ otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
 
   (void)ignore_message;
 
-  if (to_send && injected_to_send) {
-    *to_send = otrv4_strdup(injected_to_send);
-    free(injected_to_send);
-    injected_to_send = NULL;
-  }
+  from_injected_to_send(to_send);
 
   if (to_display && newmessage)
     *to_display = otrv4_strdup(newmessage);
@@ -450,11 +461,7 @@ void otrv3_close(string_t *to_send, otr3_conn_t *conn) {
                                         conn->opdata, conn->account,
                                         conn->protocol, conn->peer);
 
-  if (to_send && injected_to_send) {
-    *to_send = otrv4_strdup(injected_to_send);
-    free(injected_to_send);
-    injected_to_send = NULL;
-  }
+  from_injected_to_send(to_send);
 }
 
 otr4_err_t otrv3_smp_start(string_t *to_send, const char *question,
@@ -467,12 +474,7 @@ otr4_err_t otrv3_smp_start(string_t *to_send, const char *question,
     otrl_message_initiate_smp(conn->userstate, conn->ops, conn->opdata,
                               conn->ctx, secret, secretlen);
 
-  if (to_send && injected_to_send) {
-    *to_send = otrv4_strdup(injected_to_send);
-    free(injected_to_send);
-    injected_to_send = NULL;
-  }
-
+  from_injected_to_send(to_send);
   return OTR4_SUCCESS;
 }
 
@@ -481,11 +483,6 @@ otr4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret,
   otrl_message_respond_smp(conn->userstate, conn->ops, conn->opdata, conn->ctx,
                            secret, secretlen);
 
-  if (to_send && injected_to_send) {
-    *to_send = otrv4_strdup(injected_to_send);
-    free(injected_to_send);
-    injected_to_send = NULL;
-  }
-
+  from_injected_to_send(to_send);
   return OTR4_SUCCESS;
 }
