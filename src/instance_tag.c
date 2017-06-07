@@ -1,22 +1,38 @@
 #include "instance_tag.h"
 #include "str.h"
 
+#include <stdio.h>
 #include <libotr/instag.h>
 
-otrv4_instag_t *otr4_instag_generate(const char *account,
-                                     const char *protocol) {
+int otrv4_instag_get(otrv4_instag_t *otrv4_instag, char *account,
+                     char *protocol, FILE *filename) {
 
-  otrv4_instag_t *instag = malloc(sizeof(otrv4_instag_t));
-  if (!instag) {
-    return NULL;
+  OtrlUserState us = otrl_userstate_create();
+  if (otrl_instag_read_FILEp(us, filename)) {
+    return 1;
   }
 
-  instag->account = otrv4_strdup(account);
-  instag->protocol = otrv4_strdup(protocol);
+  OtrlInsTag *tmp_instag;
+  tmp_instag = otrl_instag_find(us, account, protocol);
 
-  instag->value = otrl_instag_get_new();
+  if (!tmp_instag) {
+    if (otrl_instag_generate_FILEp(us, filename, account, protocol)) {
+      return 1;
+    }
 
-  return instag;
+    tmp_instag = otrl_instag_find(us, account, protocol);
+    otrv4_instag->account = tmp_instag ->accountname;
+    otrv4_instag->protocol = tmp_instag ->protocol;
+    otrv4_instag->value = tmp_instag ->instag;
+
+    return 0;
+  }
+
+  otrv4_instag->account = tmp_instag->accountname;
+  otrv4_instag->protocol = tmp_instag->protocol;
+  otrv4_instag->value = tmp_instag->instag;
+
+  return 0;
 }
 
 void otr4_instag_free(otrv4_instag_t *instag) {

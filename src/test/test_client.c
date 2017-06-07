@@ -20,10 +20,7 @@ void test_client_conversation_api() {
   char *account = "";
   char *protocol = "";
 
-  otrv4_instag_t *alice_instag = otr4_instag_generate(account, protocol);
-
-  otr4_client_t *alice =
-      otr4_client_new(alice_keypair, NULL, protocol, account, alice_instag);
+  otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, protocol, account);
   otrv4_assert(!alice->conversations);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
@@ -57,7 +54,6 @@ void test_client_conversation_api() {
 
   // Free memory
   otrv4_keypair_destroy(alice_keypair);
-  otr4_instag_free(alice_instag);
   otr4_client_free(alice);
 
   dh_free();
@@ -79,14 +75,9 @@ void test_client_api() {
   char *account = "";
   char *protocol = "";
 
-  otrv4_instag_t *alice_instag = otr4_instag_generate(account, protocol);
-  otrv4_instag_t *bob_instag = otr4_instag_generate(account, protocol);
-  otrv4_instag_t *charlie_instag = otr4_instag_generate(account, protocol);
-
-  alice = otr4_client_new(alice_keypair, NULL, protocol, account, alice_instag);
-  bob = otr4_client_new(bob_keypair, NULL, protocol, account, bob_instag);
-  charlie =
-      otr4_client_new(charlie_keypair, NULL, protocol, account, charlie_instag);
+  alice = otr4_client_new(alice_keypair, NULL, protocol, account);
+  bob = otr4_client_new(bob_keypair, NULL, protocol, account);
+  charlie = otr4_client_new(charlie_keypair, NULL, protocol, account);
 
   char *query_msg_to_bob =
       otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
@@ -199,10 +190,6 @@ void test_client_api() {
   otrv4_keypair_destroy(bob_keypair);
   otrv4_keypair_destroy(charlie_keypair);
 
-  otr4_instag_free(alice_instag);
-  otr4_instag_free(bob_instag);
-  otr4_instag_free(charlie_instag);
-
   // Free memory
   otr4_client_free(charlie);
   otr4_client_free(bob);
@@ -221,10 +208,8 @@ void test_client_get_our_fingerprint() {
   char *account = "";
   char *protocol = "";
 
-  otrv4_instag_t *client_instag = otr4_instag_generate(account, protocol);
-
-  otr4_client_t *client =
-      otr4_client_new(client_keypair, NULL, protocol, account, client_instag);
+  otr4_client_t *client = otr4_client_new(client_keypair, NULL, protocol,
+                                          account);
 
   otrv4_fingerprint_t our_fp = {0};
   otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));
@@ -240,8 +225,6 @@ void test_client_get_our_fingerprint() {
   otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(otrv4_fingerprint_t));
 
   otrv4_keypair_destroy(client_keypair);
-
-  otr4_instag_free(client_instag);
 
   otr4_client_free(client);
 
@@ -289,42 +272,22 @@ void test_conversation_with_multiple_locations() {
   char *alice_account = "alice_xmpp";
   char *protocol = "XMPP";
 
-  otrv4_instag_t *alice_instag = otr4_instag_generate(alice_account, protocol);
-
   otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, protocol,
-                                         alice_account, alice_instag);
+                                         alice_account);
   otrv4_assert(!alice->conversations);
 
   char *bob_account = "bob_xmpp";
 
-  otrv4_instag_t *bob_instag_1 = otr4_instag_generate(bob_account, protocol);
-
-  otr4_client_t *bob =
-      otr4_client_new(bob_keypair, NULL, protocol, bob_account, bob_instag_1);
+  otr4_client_t *bob = otr4_client_new(bob_keypair, NULL, protocol, bob_account);
 
   otrv4_assert(!bob->conversations);
 
-  otrv4_instag_t *bob_instag_2 = otr4_instag_generate(bob_account, protocol);
-
-  otr4_client_t *bob_2 =
-      otr4_client_new(bob_keypair, NULL, protocol, bob_account, bob_instag_2);
+  otr4_client_t *bob_2 = otr4_client_new(bob_keypair, NULL, protocol, bob_account);
 
   otrv4_assert(!bob_2->conversations);
-  otrv4_assert(bob->instag->value > 0);
-  otrv4_assert(bob_2->instag->value > 0);
-
-  g_assert_cmpuint(bob->instag->value, !=, bob_2->instag->value);
 
   otrv4_keypair_destroy(alice_keypair);
   otrv4_keypair_destroy(bob_keypair);
-
-  otr4_instag_free(alice_instag);
-  otr4_instag_free(bob_instag_1);
-  otr4_instag_free(bob_instag_2);
-
-  otr4_client_free(alice);
-  otr4_client_free(bob);
-  otr4_client_free(bob_2);
 
   dh_free();
 }
