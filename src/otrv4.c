@@ -101,11 +101,15 @@ static void allowed_versions(string_t dst, const otrv4_t *otr) {
   *dst = 0;
 }
 
-static user_profile_t *get_my_user_profile(const otrv4_t *otr) {
+static const user_profile_t *get_my_user_profile(otrv4_t *otr) {
+  if (otr->profile)
+    return otr->profile;
+
   char versions[3] = {0};
   allowed_versions(versions, otr);
   maybe_create_keys(otr);
-  return user_profile_build(versions, otr->keypair);
+  otr->profile = user_profile_build(versions, otr->keypair);
+  return otr->profile;
 }
 
 otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy) {
@@ -121,7 +125,7 @@ otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy) {
   // TODO: Serialize and deserialize our instance tags to/from disk.
   otr->our_instance_tag = 0;
   otr->their_instance_tag = 0;
-  otr->profile = get_my_user_profile(otr);
+  otr->profile = NULL;
   otr->their_profile = NULL;
 
   otr->keys = malloc(sizeof(key_manager_t));
@@ -360,11 +364,11 @@ serialize_and_encode_identity_message(string_t *dst,
 }
 
 static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
-                                          const otrv4_t *otr) {
+                                          otrv4_t *otr) {
   dake_identity_message_t *m = NULL;
   otr4_err_t err = OTR4_ERROR;
 
-  m = dake_identity_message_new(otr->profile);
+  m = dake_identity_message_new(get_my_user_profile(otr));
   if (!m)
     return err;
 
@@ -564,21 +568,21 @@ static otr4_err_t serialize_and_encode_auth_r(string_t *dst,
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t reply_with_auth_r_msg(string_t *dst, const otrv4_t *otr) {
+static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
   dake_auth_r_t msg[1];
   msg->sender_instance_tag = otr->our_instance_tag;
   msg->receiver_instance_tag = otr->their_instance_tag;
 
-  user_profile_copy(msg->profile, otr->profile);
+  user_profile_copy(msg->profile, get_my_user_profile(otr));
 
   ec_point_copy(msg->X, OUR_ECDH(otr));
   msg->A = dh_mpi_copy(OUR_DH(otr));
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  if (build_auth_message(&t, &t_len, 0, otr->their_profile, otr->profile,
-                         THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr),
-                         OUR_DH(otr)))
+  if (build_auth_message(&t, &t_len, 0, otr->their_profile,
+                         get_my_user_profile(otr), THEIR_ECDH(otr),
+                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
     return OTR4_ERROR;
 
   // sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg)
@@ -712,15 +716,16 @@ static otr4_err_t serialize_and_encode_auth_i(string_t *dst,
 
 static otr4_err_t reply_with_auth_i_msg(string_t *dst,
                                         const user_profile_t *their,
-                                        const otrv4_t *otr) {
+                                        otrv4_t *otr) {
   dake_auth_i_t msg[1];
   msg->sender_instance_tag = otr->our_instance_tag;
   msg->receiver_instance_tag = otr->their_instance_tag;
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  if (build_auth_message(&t, &t_len, 1, otr->profile, their, OUR_ECDH(otr),
-                         THEIR_ECDH(otr), OUR_DH(otr), THEIR_DH(otr)))
+  if (build_auth_message(&t, &t_len, 1, get_my_user_profile(otr), their,
+                         OUR_ECDH(otr), THEIR_ECDH(otr), OUR_DH(otr),
+                         THEIR_DH(otr)))
     return OTR4_ERROR;
 
   if (snizkpk_authenticate(msg->sigma, otr->keypair, their->pub_key,
@@ -735,15 +740,14 @@ static otr4_err_t reply_with_auth_i_msg(string_t *dst,
   return err;
 }
 
-static bool valid_auth_r_message(const dake_auth_r_t *auth,
-                                 const otrv4_t *otr) {
+static bool valid_auth_r_message(const dake_auth_r_t *auth, otrv4_t *otr) {
   uint8_t *t = NULL;
   size_t t_len = 0;
 
   if (!valid_received_values(auth->X, auth->A, auth->profile))
     return false;
 
-  if (build_auth_message(&t, &t_len, 0, otr->profile, auth->profile,
+  if (build_auth_message(&t, &t_len, 0, get_my_user_profile(otr), auth->profile,
                          OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A))
     return false;
 
@@ -794,14 +798,13 @@ static otr4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
   return double_ratcheting_init(0, otr);
 }
 
-static bool valid_auth_i_message(const dake_auth_i_t *auth,
-                                 const otrv4_t *otr) {
+static bool valid_auth_i_message(const dake_auth_i_t *auth, otrv4_t *otr) {
   uint8_t *t = NULL;
   size_t t_len = 0;
 
-  if (build_auth_message(&t, &t_len, 1, otr->their_profile, otr->profile,
-                         THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr),
-                         OUR_DH(otr)))
+  if (build_auth_message(&t, &t_len, 1, otr->their_profile,
+                         get_my_user_profile(otr), THEIR_ECDH(otr),
+                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
     return false;
 
   otr4_err_t err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
@@ -1382,7 +1385,7 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
 static void set_smp_secret(const uint8_t *answer, size_t answerlen,
                            bool is_initiator, otrv4_t *otr) {
   otrv4_fingerprint_t our_fp, their_fp;
-  otr4_serialize_fingerprint(our_fp, otr->profile->pub_key);
+  otr4_serialize_fingerprint(our_fp, get_my_user_profile(otr)->pub_key);
   otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
 
   // TODO: return error?

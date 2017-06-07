@@ -198,7 +198,7 @@ void test_otrv4_destroy() {
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
   otrv4_t *otr = otrv4_new(keypair, policy);
 
-  otrv4_assert(otr->profile != NULL);
+  otr->profile = user_profile_new("4");
   otrv4_destroy(otr);
 
   otrv4_assert(otr->keypair == NULL);
