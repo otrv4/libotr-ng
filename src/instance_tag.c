@@ -32,6 +32,7 @@ int otrv4_instag_get(otrv4_instag_t *otrv4_instag, char *account,
   otrv4_instag->protocol = tmp_instag->protocol;
   otrv4_instag->value = tmp_instag->instag;
 
+  free(us);
   return 0;
 }
 

@@ -289,5 +289,9 @@ void test_conversation_with_multiple_locations() {
   otrv4_keypair_destroy(alice_keypair);
   otrv4_keypair_destroy(bob_keypair);
 
+  otr4_client_free(alice);
+  otr4_client_free(bob);
+  otr4_client_free(bob_2);
+
   dh_free();
 }
