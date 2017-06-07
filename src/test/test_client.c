@@ -1,9 +1,9 @@
 #include "../client.h"
 
-#include "../serialize.h"
-#include "../sha3.h"
 #include "../client.h"
 #include "../instance_tag.h"
+#include "../serialize.h"
+#include "../sha3.h"
 
 #define ALICE_IDENTITY "alice@otr.example"
 #define BOB_IDENTITY "bob@otr.example"
@@ -22,8 +22,8 @@ void test_client_conversation_api() {
 
   otrv4_instag_t *alice_instag = otr4_instag_generate(account, protocol);
 
-  otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, protocol, account,
-                                         alice_instag);
+  otr4_client_t *alice =
+      otr4_client_new(alice_keypair, NULL, protocol, account, alice_instag);
   otrv4_assert(!alice->conversations);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
@@ -85,8 +85,8 @@ void test_client_api() {
 
   alice = otr4_client_new(alice_keypair, NULL, protocol, account, alice_instag);
   bob = otr4_client_new(bob_keypair, NULL, protocol, account, bob_instag);
-  charlie = otr4_client_new(charlie_keypair, NULL, protocol, account,
-                            charlie_instag);
+  charlie =
+      otr4_client_new(charlie_keypair, NULL, protocol, account, charlie_instag);
 
   char *query_msg_to_bob =
       otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
@@ -223,8 +223,8 @@ void test_client_get_our_fingerprint() {
 
   otrv4_instag_t *client_instag = otr4_instag_generate(account, protocol);
 
-  otr4_client_t *client = otr4_client_new(client_keypair, NULL, protocol,
-                                          account, client_instag);
+  otr4_client_t *client =
+      otr4_client_new(client_keypair, NULL, protocol, account, client_instag);
 
   otrv4_fingerprint_t our_fp = {0};
   otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));
@@ -299,15 +299,15 @@ void test_conversation_with_multiple_locations() {
 
   otrv4_instag_t *bob_instag_1 = otr4_instag_generate(bob_account, protocol);
 
-  otr4_client_t *bob = otr4_client_new(bob_keypair, NULL, protocol, bob_account,
-                                       bob_instag_1);
+  otr4_client_t *bob =
+      otr4_client_new(bob_keypair, NULL, protocol, bob_account, bob_instag_1);
 
   otrv4_assert(!bob->conversations);
 
   otrv4_instag_t *bob_instag_2 = otr4_instag_generate(bob_account, protocol);
 
-  otr4_client_t *bob_2 = otr4_client_new(bob_keypair, NULL, protocol, bob_account,
-                                         bob_instag_2);
+  otr4_client_t *bob_2 =
+      otr4_client_new(bob_keypair, NULL, protocol, bob_account, bob_instag_2);
 
   otrv4_assert(!bob_2->conversations);
   otrv4_assert(bob->instag->value > 0);

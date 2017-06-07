@@ -1,9 +1,10 @@
-#include "str.h"
 #include "instance_tag.h"
+#include "str.h"
 
 #include <libotr/instag.h>
 
-otrv4_instag_t *otr4_instag_generate(const char * account, const char *protocol) {
+otrv4_instag_t *otr4_instag_generate(const char *account,
+                                     const char *protocol) {
 
   otrv4_instag_t *instag = malloc(sizeof(otrv4_instag_t));
   if (!instag) {

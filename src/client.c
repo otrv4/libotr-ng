@@ -3,10 +3,10 @@
 #include <libotr/privkey.h>
 
 #include "deserialize.h"
+#include "instance_tag.h"
 #include "serialize.h"
 #include "sha3.h"
 #include "str.h"
-#include "instance_tag.h"
 
 #define CONV(c) ((otr4_conversation_t *)c)
 
@@ -36,7 +36,7 @@ static void conversation_free(otr4_conversation_t *conv) {
 
 otr4_client_t *otr4_client_new(otrv4_keypair_t *keypair,
                                OtrlUserState userstate, const char *protocol,
-                                const char *account, otrv4_instag_t *instag) {
+                               const char *account, otrv4_instag_t *instag) {
   otr4_client_t *client = malloc(sizeof(otr4_client_t));
   if (!client)
     return NULL;
@@ -195,6 +195,8 @@ static int send_otrv4_message(char **newmessage, const char *message,
   otr4_conversation_t *conv = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
+  if (!conv)
+    return 1;
 
   otr4_err_t error = otrv4_send_message(newmessage, message, NULL, conv->conn);
   if (error == OTR4_STATE_NOT_ENCRYPTED)
@@ -217,6 +219,9 @@ int otr4_client_smp_start(char **tosend, const char *recipient,
   otr4_conversation_t *conv = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
+  if (!conv)
+    return 1;
+
   if (otrv4_smp_start(tosend, question, secret, secretlen, conv->conn))
     return 1;
 
@@ -230,6 +235,9 @@ int otr4_client_smp_respond(char **tosend, const char *recipient,
   otr4_conversation_t *conv = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
+  if (!conv)
+    return 1;
+
   if (otrv4_smp_continue(tosend, secret, secretlen, conv->conn))
     return 1;
 
@@ -246,6 +254,9 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   *todisplay = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
+  if (!conv)
+    return 1;
+
   if (otrv4_receive_message(response, message, conv->conn)) {
     otrv4_response_free(response);
     return 0; // Should this cause the message to be ignored or not?
@@ -271,6 +282,8 @@ char *otr4_client_query_message(const char *recipient, const char *message,
   char *ret = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
+  if (!conv)
+    return NULL;
 
   // TODO: implement policy
   // TODO: Check for errors when calling this function
@@ -350,7 +363,7 @@ To read stored instance tags:
 
     otrl_instag_read(userstate, instagfilename);
 
-	To read stored fingerprints:
+        To read stored fingerprints:
 
     otrl_privkey_read_fingerprints(userstate, fingerprintfilename,
             add_app_info, add_app_info_data);
@@ -363,5 +376,5 @@ int otr3_privkey_generate(otr4_client_t *client, FILE *privf) {
 
 int otr3_instag_generate(otr4_client_t *client, FILE *privf) {
   return otrl_instag_generate_FILEp(client->userstate, privf, client->account,
-                                     client->protocol);
+                                    client->protocol);
 }

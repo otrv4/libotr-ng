@@ -5,9 +5,9 @@
 
 #include <libotr/context.h>
 
+#include "instance_tag.h"
 #include "list.h"
 #include "otrv4.h"
-#include "instance_tag.h"
 
 typedef struct {
   char *recipient;
