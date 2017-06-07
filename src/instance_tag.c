@@ -3,7 +3,7 @@
 
 #include <libotr/instag.h>
 
-otrv4_instag_t *otr4_instag_generate(char * account, char *protocol) {
+otrv4_instag_t *otr4_instag_generate(const char * account, const char *protocol) {
 
   otrv4_instag_t *instag = malloc(sizeof(otrv4_instag_t));
   if (!instag) {
