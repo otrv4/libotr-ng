@@ -17,9 +17,12 @@ void test_client_conversation_api() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrv4_keypair_generate(alice_keypair, sym);
 
-  otrv4_instag_t *alice_instag = otr4_instag_generate("", "");
+  char *account = "";
+  char *protocol = "";
 
-  otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, "", "",
+  otrv4_instag_t *alice_instag = otr4_instag_generate(account, protocol);
+
+  otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, protocol, account,
                                          alice_instag);
   otrv4_assert(!alice->conversations);
 
@@ -53,8 +56,8 @@ void test_client_conversation_api() {
   otrv4_assert(alice_to_charlie->conn);
 
   // Free memory
-  otr4_instag_free(alice_instag);
   otrv4_keypair_destroy(alice_keypair);
+  otr4_instag_free(alice_instag);
   otr4_client_free(alice);
 
   dh_free();
@@ -73,13 +76,17 @@ void test_client_api() {
 
   otr4_client_t *alice = NULL, *bob = NULL, *charlie = NULL;
 
-  otrv4_instag_t *alice_instag = otr4_instag_generate("", "");
-  otrv4_instag_t *bob_instag = otr4_instag_generate("", "");
-  otrv4_instag_t *charlie_instag = otr4_instag_generate("", "");
+  char *account = "";
+  char *protocol = "";
 
-  alice = otr4_client_new(alice_keypair, NULL, "", "", alice_instag);
-  bob = otr4_client_new(bob_keypair, NULL, "", "", bob_instag);
-  charlie = otr4_client_new(charlie_keypair, NULL, "", "", charlie_instag);
+  otrv4_instag_t *alice_instag = otr4_instag_generate(account, protocol);
+  otrv4_instag_t *bob_instag = otr4_instag_generate(account, protocol);
+  otrv4_instag_t *charlie_instag = otr4_instag_generate(account, protocol);
+
+  alice = otr4_client_new(alice_keypair, NULL, protocol, account, alice_instag);
+  bob = otr4_client_new(bob_keypair, NULL, protocol, account, bob_instag);
+  charlie = otr4_client_new(charlie_keypair, NULL, protocol, account,
+                            charlie_instag);
 
   char *query_msg_to_bob =
       otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
@@ -211,10 +218,13 @@ void test_client_get_our_fingerprint() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrv4_keypair_generate(client_keypair, sym);
 
-  otrv4_instag_t *client_instag = otr4_instag_generate("", "");
+  char *account = "";
+  char *protocol = "";
 
-  otr4_client_t *client = otr4_client_new(client_keypair, NULL, "", "",
-                                          client_instag);
+  otrv4_instag_t *client_instag = otr4_instag_generate(account, protocol);
+
+  otr4_client_t *client = otr4_client_new(client_keypair, NULL, protocol,
+                                          account, client_instag);
 
   otrv4_fingerprint_t our_fp = {0};
   otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));

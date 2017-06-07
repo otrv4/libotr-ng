@@ -124,6 +124,9 @@ void test_api_conversation(void) {
   otrv4_keypair_destroy(alice_keypair);
   otrv4_keypair_destroy(bob_keypair);
 
+  otrv4_free(bob);
+  otrv4_free(alice);
+
   OTR4_FREE;
 }
 
