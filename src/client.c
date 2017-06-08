@@ -72,6 +72,7 @@ void otr4_client_free(otr4_client_t *client) {
   free(client->account);
   client->account = NULL;
 
+  free(client->instag);
   client->instag = NULL;
 
   list_free(client->conversations, conversation_free);
