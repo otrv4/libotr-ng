@@ -1,6 +1,6 @@
+#include <sodium.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sodium.h>
 
 #include "constants.h"
 #include "debug.h"
@@ -26,10 +26,14 @@ ratchet_t *ratchet_new() {
 
 void chain_link_free(chain_link_t *head) {
   chain_link_t *current = head;
+  chain_link_t *next = NULL;
+
   while (current) {
-    chain_link_t *next = current->next;
+    next = current->next;
+
     sodium_memzero(current->key, sizeof(current->key));
     free(current);
+
     current = next;
   }
 }
