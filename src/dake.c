@@ -64,32 +64,32 @@ otr4_err_t dake_identity_message_asprintf(
     return OTR4_ERROR;
   }
 
-  uint8_t *target = buff;
-  target += serialize_uint16(target, OTR_VERSION);
-  target += serialize_uint8(target, OTR_IDENTITY_MSG_TYPE);
-  target += serialize_uint32(target, identity_message->sender_instance_tag);
-  target += serialize_uint32(target, identity_message->receiver_instance_tag);
-  target += serialize_bytes_array(target, profile, profile_len);
-  if (serialize_ec_point(target, identity_message->Y)) {
+  uint8_t *cursor = buff;
+  cursor += serialize_uint16(cursor, OTR_VERSION);
+  cursor += serialize_uint8(cursor, OTR_IDENTITY_MSG_TYPE);
+  cursor += serialize_uint32(cursor, identity_message->sender_instance_tag);
+  cursor += serialize_uint32(cursor, identity_message->receiver_instance_tag);
+  cursor += serialize_bytes_array(cursor, profile, profile_len);
+  if (serialize_ec_point(cursor, identity_message->Y)) {
     free(profile);
     free(buff);
     return OTR4_ERROR;
   }
-  target += ED448_POINT_BYTES;
+  cursor += ED448_POINT_BYTES;
   size_t len = 0;
-  otr4_err_t err = serialize_dh_public_key(target, &len, identity_message->B);
+  otr4_err_t err = serialize_dh_public_key(cursor, &len, identity_message->B);
   if (err) {
     free(profile);
     free(buff);
     return OTR4_ERROR;
   }
-  target += len;
+  cursor += len;
 
   if (dst)
     *dst = buff;
 
   if (nbytes)
-    *nbytes = target - *dst;
+    *nbytes = cursor - buff;
 
   free(profile);
   return OTR4_SUCCESS;
@@ -226,35 +226,40 @@ otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   }
 
   size_t s = AUTH_R_MIN_BYTES + our_profile_len;
-  *dst = malloc(s);
-  memset(*dst, 0, s);
+  uint8_t *buff = malloc(s);
 
-  if (!*dst) {
+  if (!buff) {
     free(our_profile);
     return OTR4_ERROR;
   }
 
-  if (nbytes) {
-    *nbytes = s;
-  }
-
-  uint8_t *cursor = *dst;
+  uint8_t *cursor = buff;
   cursor += serialize_uint16(cursor, OTR_VERSION);
   cursor += serialize_uint8(cursor, OTR_AUTH_R_MSG_TYPE);
   cursor += serialize_uint32(cursor, dre_auth->sender_instance_tag);
   cursor += serialize_uint32(cursor, dre_auth->receiver_instance_tag);
   cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
   if (serialize_ec_point(cursor, dre_auth->X)) {
+    free(our_profile);
+    free(buff);
     return OTR4_ERROR;
   }
   cursor += ED448_POINT_BYTES;
   size_t len = 0;
   otr4_err_t err = serialize_dh_public_key(cursor, &len, dre_auth->A);
   if (err) {
+    free(our_profile);
+    free(buff);
     return OTR4_ERROR;
   }
   cursor += len;
   cursor += serialize_snizkpk_proof(cursor, dre_auth->sigma);
+
+  if (dst)
+    *dst = buff;
+
+  if (nbytes)
+    *nbytes = cursor - buff;
 
   free(our_profile);
   return OTR4_SUCCESS;
@@ -367,7 +372,6 @@ otr4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
                                 const dake_auth_i_t *dre_auth) {
   size_t s = DAKE_HEADER_BYTES + SNIZKPK_BYTES;
   *dst = malloc(s);
-  memset(*dst, 0, s);
 
   if (!*dst) {
     return OTR4_ERROR;
