@@ -47,7 +47,7 @@ otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,
     }
 
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN,
-        "?OTR|%08x|%08x,%05hu,%05hu,%s,",
+        "?OTR|%08x|%08x,%05x,%05x,%s,",
         our_instance, their_instance, curfrag, fragments->total, piece_data);
     piece[piece_len + FRAGMENT_HEADER_LEN] = 0;
 
