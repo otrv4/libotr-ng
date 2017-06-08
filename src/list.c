@@ -13,24 +13,24 @@ list_element_t *list_new() {
   return n;
 }
 
-void list_free_full(list_element_t *head) {
+void list_free(list_element_t *head, void (*fn)(void *data)) {
   list_element_t *current = head;
   while (current) {
     list_element_t *next = current->next;
-    free(current->data);
+
+    if (fn)
+      fn(current->data);
+
+    current->data = NULL;
+
     free(current);
     current = next;
   }
 }
 
-void list_free_all(list_element_t *head) {
-  list_element_t *current = head;
-  while (current) {
-    list_element_t *next = current->next;
-    free(current);
-    current = next;
-  }
-}
+void list_free_full(list_element_t *head) { list_free(head, free); }
+
+void list_free_nodes(list_element_t *head) { list_free(head, NULL); }
 
 list_element_t *list_add(void *data, list_element_t *head) {
   list_element_t *n = list_new();

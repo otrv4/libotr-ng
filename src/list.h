@@ -8,9 +8,14 @@ typedef struct _list_element {
 
 list_element_t *list_new();
 
+// Free list and invoke fn to free the nodes' data
+void list_free(list_element_t *head, void (*fn)(void *data));
+
+// Free list and invoke "free()" to free the nodes' data
 void list_free_full(list_element_t *head);
 
-void list_free_all(list_element_t *head);
+// Free list but does not free the nodes' data
+void list_free_nodes(list_element_t *head);
 
 list_element_t *list_add(void *data, list_element_t *head);
 

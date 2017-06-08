@@ -24,7 +24,8 @@ static otr4_conversation_t *new_conversation_with(const char *recipient,
   return conv;
 }
 
-static void conversation_free(otr4_conversation_t *conv) {
+static void conversation_free(void *data) {
+  otr4_conversation_t *conv = data;
   otrv4_free(conv->conn);
   conv->conn = NULL;
 
@@ -58,12 +59,6 @@ otr4_client_t *otr4_client_new(otrv4_keypair_t *keypair,
 }
 
 void otr4_client_free(otr4_client_t *client) {
-  list_element_t *el;
-  for (el = client->conversations; el; el = el->next) {
-    conversation_free(CONV(el->data));
-    el->data = NULL;
-  }
-
   client->userstate = NULL;
 
   free(client->protocol);
@@ -74,7 +69,7 @@ void otr4_client_free(otr4_client_t *client) {
 
   client->instag = NULL;
 
-  list_free_all(client->conversations);
+  list_free(client->conversations, conversation_free);
   client->conversations = NULL;
   client->keypair = NULL;
 
@@ -322,7 +317,7 @@ static void destroy_client_conversation(const otr4_conversation_t *conv,
                                         otr4_client_t *client) {
   list_element_t *elem = list_get_by_value(conv, client->conversations);
   client->conversations = list_remove_element(elem, client->conversations);
-  list_free_all(elem);
+  list_free_nodes(elem);
 }
 
 int otr4_client_disconnect(char **newmessage, const char *recipient,

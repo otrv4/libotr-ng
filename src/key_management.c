@@ -86,7 +86,7 @@ void key_manager_destroy(key_manager_t *manager) {
   ecdh_keypair_destroy(manager->our_ecdh);
   ec_point_destroy(manager->their_ecdh);
 
-  list_free_all(manager->old_mac_keys);
+  list_free_full(manager->old_mac_keys);
   manager->old_mac_keys = NULL;
 }
 
@@ -510,7 +510,7 @@ uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys) {
     list_free_full(last);
   }
 
-  list_free_all(old_mac_keys);
+  list_free_nodes(old_mac_keys);
 
   return ser_mac_keys;
 }
