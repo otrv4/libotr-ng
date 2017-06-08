@@ -27,8 +27,8 @@ ratchet_t *ratchet_new() {
 void chain_link_free(chain_link_t *head) {
   chain_link_t *current = head;
   while (current) {
-    sodium_memzero(current->key, sizeof(current->key));
     chain_link_t *next = current->next;
+    sodium_memzero(current->key, sizeof(current->key));
     free(current);
     current = next;
   }

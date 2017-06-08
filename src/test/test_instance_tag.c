@@ -16,8 +16,8 @@ void test_instance_tag_generates_tag_when_file_empty() {
   g_assert_cmpint(instag->value, !=, 0);
   g_assert_cmpint(instag->value, >, 0x100);
 
-  g_assert_cmpstr(instag->account, ==, account);
-  g_assert_cmpstr(instag->protocol, ==, protocol);
+  g_assert_cmpstr(instag->account, ==, alice_coy_account);
+  g_assert_cmpstr(instag->protocol, ==, xmpp_protocol);
 
   otr4_instag_free(instag);
 }
@@ -45,13 +45,13 @@ void test_instance_tag_generates_tag_when_file_is_full() {
 
   fclose(tmpFILEp);
 
-  g_assert_cmpstr(first_instag->account, ==, account);
-  g_assert_cmpstr(first_instag->protocol, ==, protocol);
+  g_assert_cmpstr(first_instag->account, ==, irc_alice_account);
+  g_assert_cmpstr(first_instag->protocol, ==, irc_protocol);
   g_assert_cmpint(first_instag->value, !=, 0);
   g_assert_cmpint(first_instag->value, >, 0x100);
 
-  g_assert_cmpstr(second_instag->account, ==, account);
-  g_assert_cmpstr(second_instag->protocol, ==, protocol);
+  g_assert_cmpstr(second_instag->account, ==, xmpp_alice_account);
+  g_assert_cmpstr(second_instag->protocol, ==, xmpp_protocol);
   g_assert_cmpint(second_instag->value, !=, 0);
   g_assert_cmpint(second_instag->value, >, 0x100);
 
