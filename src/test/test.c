@@ -13,6 +13,7 @@
 #include "test_data_message.c"
 #include "test_dh.c"
 #include "test_ed448.c"
+#include "test_fragment.c"
 #include "test_identity_message.c"
 #include "test_instance_tag.c"
 #include "test_key_management.c"
@@ -82,6 +83,8 @@ int main(int argc, char **argv) {
                identity_message_fixture_t, identity_message_fixture);
 
   g_test_add_func("/data_message/serialize", test_data_message_serializes);
+
+  g_test_add_func("/fragment/create_fragments", test_create_fragments);
 
   g_test_add_func("/key_management/derive_ratchet_keys",
                   test_derive_ratchet_keys);

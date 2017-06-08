@@ -11,6 +11,7 @@ libotr4_la_SOURCES = \
 		     dh.c \
 		     ed448.c \
 		     fingerprint.c \
+		     fragment.c \
 		     instance_tag.c \
 		     keys.c \
 		     key_management.c \
