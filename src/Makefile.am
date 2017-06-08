@@ -15,6 +15,7 @@ libotr4_la_SOURCES = \
 		     keys.c \
 		     key_management.c \
 		     list.c \
+		     messaging.c \
 		     mpi.c \
 		     otrv3.c \
 		     otrv4.c \

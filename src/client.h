@@ -16,6 +16,11 @@ typedef struct {
 
 // A client handle messages from/to a sender to/from multiple recipients.
 typedef struct {
+  void *opdata; // Data in the messaging application context that represents
+                // a client and should map directly to it. For example, in
+                // libpurple-based apps (like Pidgin) this could be a
+                // PurpleAccount*
+
   const otrv4_callbacks_t *callbacks;
 
   char *account;
@@ -24,6 +29,7 @@ typedef struct {
   OtrlUserState userstate;
 
   otrv4_keypair_t *keypair;
+
   list_element_t *conversations;
 } otr4_client_t;
 
