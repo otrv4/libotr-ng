@@ -31,7 +31,7 @@ void chain_link_free(chain_link_t *head) {
   while (current) {
     next = current->next;
 
-    sodium_memzero(current->key, sizeof(current->key));
+    sodium_memzero(current->key, 64);
     free(current);
 
     current = next;
