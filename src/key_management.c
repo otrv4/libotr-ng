@@ -42,7 +42,7 @@ void ratchet_free(ratchet_t *ratchet) {
   if (!ratchet)
     return;
 
-  sodium_memzero(ratchet->root_key, sizeof(ratchet->root_key));
+  sodium_memzero(ratchet->root_key, 64);
 
   chain_link_free(ratchet->chain_a->next);
   ratchet->chain_a->next = NULL;
