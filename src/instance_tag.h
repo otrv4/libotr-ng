@@ -10,8 +10,8 @@ typedef struct {
   unsigned int value;
 } otrv4_instag_t;
 
-int otrv4_instag_get(otrv4_instag_t *otrv4_instag, char *account, char *protocol,
-                     FILE *filename);
+int otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
+                     const char *protocol, FILE *filename);
 
 void otr4_instag_free(otrv4_instag_t *instag);
 

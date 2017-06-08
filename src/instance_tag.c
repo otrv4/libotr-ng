@@ -4,11 +4,12 @@
 #include <stdio.h>
 #include <libotr/instag.h>
 
-int otrv4_instag_get(otrv4_instag_t *otrv4_instag, char *account,
-                     char *protocol, FILE *filename) {
+int otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
+                     const char *protocol, FILE *filename) {
 
   OtrlUserState us = otrl_userstate_create();
   if (otrl_instag_read_FILEp(us, filename)) {
+    free(us);
     return 1;
   }
 
@@ -17,6 +18,9 @@ int otrv4_instag_get(otrv4_instag_t *otrv4_instag, char *account,
 
   if (!tmp_instag) {
     if (otrl_instag_generate_FILEp(us, filename, account, protocol)) {
+      free(us);
+      free(tmp_instag);
+      tmp_instag = NULL;
       return 1;
     }
 
@@ -25,6 +29,9 @@ int otrv4_instag_get(otrv4_instag_t *otrv4_instag, char *account,
     otrv4_instag->protocol = tmp_instag ->protocol;
     otrv4_instag->value = tmp_instag ->instag;
 
+    free(us);
+    free(tmp_instag);
+    tmp_instag = NULL;
     return 0;
   }
 
@@ -33,6 +40,8 @@ int otrv4_instag_get(otrv4_instag_t *otrv4_instag, char *account,
   otrv4_instag->value = tmp_instag->instag;
 
   free(us);
+  free(tmp_instag);
+  tmp_instag = NULL;
   return 0;
 }
 
