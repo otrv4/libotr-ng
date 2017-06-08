@@ -48,12 +48,14 @@ otr4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
   cursor += serialize_uint32(cursor, data_msg->ratchet_id);
   cursor += serialize_uint32(cursor, data_msg->message_id);
   if (serialize_ec_point(cursor, data_msg->ecdh)) {
+    free(dst);
     return OTR4_ERROR;
   }
   cursor += ED448_POINT_BYTES;
   // TODO: This could be NULL. We need to test.
   size_t len = 0;
   if (serialize_dh_public_key(cursor, &len, data_msg->dh)) {
+    free(dst);
     return OTR4_ERROR;
   }
   cursor += len;
@@ -61,8 +63,11 @@ otr4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
       serialize_bytes_array(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
   cursor += serialize_data(cursor, data_msg->enc_msg, data_msg->enc_msg_len);
 
-  *body = dst;
-  *bodylen = cursor - dst;
+  if (body)
+    *body = dst;
+
+  if (bodylen)
+    *bodylen = cursor - dst;
 
   return OTR4_SUCCESS;
 }
