@@ -50,7 +50,7 @@ otr4_messaging_client_t *otr4_messaging_client_new(otr4_userstate_t *state,
   //(What if it is null?)
 
   // TODO: Replace protocol, account by a function called on the opdata
-  otr4_client_t *c = otr4_client_new(NULL, state->userstate_v3, "", "");
+  otr4_client_t *c = otr4_client_new(NULL, state->userstate_v3, "", "", NULL);
   if (!c)
     return NULL;
 

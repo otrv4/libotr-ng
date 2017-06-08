@@ -969,6 +969,15 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   tlv_t *reply_tlv = NULL;
 
   do {
+    if (msg->receiver_instance_tag != otr->our_instance_tag) {
+      response->to_display = NULL;
+
+      data_message_free(msg);
+      free(to_store_mac);
+
+      return OTR4_SUCCESS;
+    }
+
     if (get_receiving_msg_keys(enc_key, mac_key, msg, otr))
       continue;
 

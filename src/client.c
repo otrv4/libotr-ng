@@ -37,19 +37,24 @@ static void conversation_free(void *data) {
 
 otr4_client_t *otr4_client_new(otrv4_keypair_t *keypair,
                                OtrlUserState userstate, const char *protocol,
-                               const char *account) {
+			       const char *account, FILE *instag_file) {
   otr4_client_t *client = malloc(sizeof(otr4_client_t));
   if (!client)
     return NULL;
 
-  //  if (!instag) {
-  //    return NULL;
-  //  }
-
   client->keypair = keypair;
   client->protocol = otrv4_strdup(protocol);
   client->account = otrv4_strdup(account);
-  client->instag = NULL;
+
+  client->instag = malloc(sizeof(otrv4_instag_t));
+  if (!client->instag) {
+    return NULL;
+  }
+  if (!instag_file) {
+    instag_file = tmpfile();
+  }
+  otrv4_instag_get(client->instag, account, protocol, instag_file);
+  fclose(instag_file);
 
   client->userstate = userstate;
   client->conversations = NULL;
@@ -279,6 +284,7 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   if (!conv)
     return 1;
 
+  conv->conn->our_instance_tag = client->instag->value;
   if (otrv4_receive_message(response, message, conv->conn)) {
     otrv4_response_free(response);
     return 0; // Should this cause the message to be ignored or not?
