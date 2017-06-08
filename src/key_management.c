@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <sodium.h>
 
 #include "constants.h"
 #include "debug.h"
@@ -26,7 +27,7 @@ ratchet_t *ratchet_new() {
 void chain_link_free(chain_link_t *head) {
   chain_link_t *current = head;
   while (current) {
-    // TODO: should we safely remove current->key?
+    sodium_memzero(current->key, sizeof(current->key));
     chain_link_t *next = current->next;
     free(current);
     current = next;
@@ -36,6 +37,8 @@ void chain_link_free(chain_link_t *head) {
 void ratchet_free(ratchet_t *ratchet) {
   if (!ratchet)
     return;
+
+  sodium_memzero(ratchet->root_key, sizeof(ratchet->root_key));
 
   chain_link_free(ratchet->chain_a->next);
   ratchet->chain_a->next = NULL;
@@ -379,7 +382,6 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   if (calculate_shared_secret(shared, k_ecdh, manager->mix_key))
     return OTR4_ERROR;
 
-  // TODO: Securely delete the root key and all chain keys from the ratchet i-2.
   // TODO: Securely delete shared.
   uint8_t ssid_buff[GCRY_MD_SHA3_256];
   if (!sha3_256(ssid_buff, gcry_md_get_algo_dlen(GCRY_MD_SHA3_256), shared,
