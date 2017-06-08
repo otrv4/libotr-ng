@@ -37,7 +37,7 @@ static void conversation_free(void *data) {
 
 otr4_client_t *otr4_client_new(otrv4_keypair_t *keypair,
                                OtrlUserState userstate, const char *protocol,
-			       const char *account, FILE *instag_file) {
+                               const char *account, FILE *instag_file) {
   otr4_client_t *client = malloc(sizeof(otr4_client_t));
   if (!client)
     return NULL;

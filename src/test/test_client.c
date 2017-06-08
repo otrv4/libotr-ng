@@ -20,7 +20,8 @@ void test_client_conversation_api() {
   char *account = "";
   char *protocol = "";
 
-  otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, protocol, account, NULL);
+  otr4_client_t *alice =
+      otr4_client_new(alice_keypair, NULL, protocol, account, NULL);
   otrv4_assert(!alice->conversations);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
@@ -208,8 +209,8 @@ void test_client_get_our_fingerprint() {
   char *account = "";
   char *protocol = "";
 
-  otr4_client_t *client = otr4_client_new(client_keypair, NULL, protocol,
-                                          account, NULL);
+  otr4_client_t *client =
+      otr4_client_new(client_keypair, NULL, protocol, account, NULL);
 
   otrv4_fingerprint_t our_fp = {0};
   otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));
@@ -286,8 +287,8 @@ void test_conversation_with_multiple_locations() {
   char *from_alice_to_bob = NULL, *frombob = NULL, *todisplay = NULL;
 
   // Bob receives query message, sends identity msg
-  ignore = otr4_client_receive(&frombob, &todisplay, query_msg,
-                               ALICE_IDENTITY, bob);
+  ignore =
+      otr4_client_receive(&frombob, &todisplay, query_msg, ALICE_IDENTITY, bob);
   free(query_msg);
 
   // Alice receives identity message (from Bob), sends Auth-R message
@@ -308,13 +309,12 @@ void test_conversation_with_multiple_locations() {
   free(frombob);
   frombob = NULL;
 
-
   // Bob sends a message with orginal intance tag
   otr4_client_send(&frombob, "hello", ALICE_IDENTITY, bob);
 
   // Alice receives the message.
   ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
-			       BOB_IDENTITY, alice);
+                               BOB_IDENTITY, alice);
   free(frombob);
   frombob = NULL;
 
@@ -327,7 +327,7 @@ void test_conversation_with_multiple_locations() {
 
   // Alice receives and ignores the message.
   ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
-			       BOB_IDENTITY, alice);
+                               BOB_IDENTITY, alice);
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
 
