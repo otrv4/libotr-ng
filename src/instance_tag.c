@@ -23,16 +23,7 @@ int otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
       tmp_instag = NULL;
       return 1;
     }
-
     tmp_instag = otrl_instag_find(us, account, protocol);
-    otrv4_instag->account = tmp_instag->accountname;
-    otrv4_instag->protocol = tmp_instag->protocol;
-    otrv4_instag->value = tmp_instag->instag;
-
-    free(us);
-    free(tmp_instag);
-    tmp_instag = NULL;
-    return 0;
   }
 
   otrv4_instag->account = tmp_instag->accountname;

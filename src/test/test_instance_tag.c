@@ -25,37 +25,60 @@ void test_instance_tag_generates_tag_when_file_empty() {
 
 void test_instance_tag_generates_tag_when_file_is_full() {
 
-  char *irc_alice_account = "alice_irc";
-  char *irc_protocol = "IRC";
+  char *icq_alice_account = "alice_icq";
+  char *icq_protocol = "ICQ";
   char *xmpp_alice_account = "alice_xmpp";
   char *xmpp_protocol = "XMPP";
+  char *irc_alice_account = "alice_irc";
+  char *irc_protocol = "IRC";
+  unsigned int icq_instag_value = 0x9abcdef0;
 
+  int err;
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
 
+  fprintf(tmpFILEp, "%s\t%s\t%08x\n", icq_alice_account, icq_protocol,
+          icq_instag_value);
+
+  rewind(tmpFILEp);
+
   otrv4_instag_t *first_instag = malloc(sizeof(otrv4_instag_t));
-  int err =
-      otrv4_instag_get(first_instag, irc_alice_account, irc_protocol, tmpFILEp);
+  err =
+      otrv4_instag_get(first_instag, icq_alice_account, icq_protocol, tmpFILEp);
   g_assert_cmpint(err, ==, 0);
 
   otrv4_instag_t *second_instag = malloc(sizeof(otrv4_instag_t));
   err = otrv4_instag_get(second_instag, xmpp_alice_account, xmpp_protocol,
                          tmpFILEp);
+  g_assert_cmpint(err, ==, 0);
 
+  otrv4_instag_t *third_instag = malloc(sizeof(otrv4_instag_t));
+  err =
+      otrv4_instag_get(third_instag, irc_alice_account, irc_protocol, tmpFILEp);
   g_assert_cmpint(err, ==, 0);
 
   fclose(tmpFILEp);
 
-  g_assert_cmpstr(first_instag->account, ==, irc_alice_account);
-  g_assert_cmpstr(first_instag->protocol, ==, irc_protocol);
+  char sone[9];
+  snprintf(sone, sizeof(sone), "%08x", first_instag->value);
+
+  g_assert_cmpstr(first_instag->account, ==, icq_alice_account);
+  g_assert_cmpstr(first_instag->protocol, ==, icq_protocol);
   g_assert_cmpint(first_instag->value, !=, 0);
   g_assert_cmpint(first_instag->value, >, 0x100);
+  g_assert_cmpstr(sone, ==, "9abcdef0");
 
   g_assert_cmpstr(second_instag->account, ==, xmpp_alice_account);
   g_assert_cmpstr(second_instag->protocol, ==, xmpp_protocol);
   g_assert_cmpint(second_instag->value, !=, 0);
   g_assert_cmpint(second_instag->value, >, 0x100);
 
+  g_assert_cmpstr(third_instag->account, ==, irc_alice_account);
+  g_assert_cmpstr(third_instag->protocol, ==, irc_protocol);
+  g_assert_cmpint(third_instag->value, !=, 0);
+  g_assert_cmpint(third_instag->value, >, 0x100);
+
   otr4_instag_free(first_instag);
   otr4_instag_free(second_instag);
+  otr4_instag_free(third_instag);
 }
