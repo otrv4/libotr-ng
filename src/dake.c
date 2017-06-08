@@ -58,32 +58,38 @@ otr4_err_t dake_identity_message_asprintf(
   }
 
   size_t s = PRE_KEY_MIN_BYTES + profile_len;
-  *dst = malloc(s);
-  if (*dst == NULL) {
+  uint8_t *buff = malloc(s);
+  if (!buff) {
     free(profile);
     return OTR4_ERROR;
   }
 
-  if (nbytes != NULL) {
-    *nbytes = s;
-  }
-
-  uint8_t *target = *dst;
+  uint8_t *target = buff;
   target += serialize_uint16(target, OTR_VERSION);
   target += serialize_uint8(target, OTR_IDENTITY_MSG_TYPE);
   target += serialize_uint32(target, identity_message->sender_instance_tag);
   target += serialize_uint32(target, identity_message->receiver_instance_tag);
   target += serialize_bytes_array(target, profile, profile_len);
   if (serialize_ec_point(target, identity_message->Y)) {
+    free(profile);
+    free(buff);
     return OTR4_ERROR;
   }
   target += ED448_POINT_BYTES;
   size_t len = 0;
   otr4_err_t err = serialize_dh_public_key(target, &len, identity_message->B);
   if (err) {
+    free(profile);
+    free(buff);
     return OTR4_ERROR;
   }
   target += len;
+
+  if (dst)
+    *dst = buff;
+
+  if (nbytes)
+    *nbytes = target - *dst;
 
   free(profile);
   return OTR4_SUCCESS;
