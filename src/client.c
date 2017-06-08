@@ -112,10 +112,12 @@ int otr4_client_generate_keypair(otr4_client_t *client) {
 otr4_conversation_t *get_conversation_with(const char *recipient,
                                            list_element_t *conversations) {
   const list_element_t *el = NULL;
+  otr4_conversation_t *conv = NULL;
 
   for (el = conversations; el; el = el->next) {
-    if (!strcmp(CONV(el->data)->recipient, recipient))
-      return CONV(el->data);
+    conv = CONV(el->data);
+    if (!strcmp(conv->recipient, recipient))
+      return conv;
   }
 
   return NULL;
