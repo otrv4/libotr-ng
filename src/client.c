@@ -107,13 +107,15 @@ int otr4_client_generate_keypair(otr4_client_t *client) {
   return 0;
 }
 
+// TODO: There may be multiple conversations with the same recipient if they
+// uses multiple instance tags. We are not allowing this yet.
 otr4_conversation_t *get_conversation_with(const char *recipient,
                                            list_element_t *conversations) {
-  list_element_t *el;
+  const list_element_t *el = NULL;
+
   for (el = conversations; el; el = el->next) {
-    otr4_conversation_t *conv = CONV(el->data);
-    if (!strcmp(conv->recipient, recipient))
-      return conv;
+    if (!strcmp(CONV(el->data)->recipient, recipient))
+      return CONV(el->data);
   }
 
   return NULL;
