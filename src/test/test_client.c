@@ -331,6 +331,9 @@ void test_conversation_with_multiple_locations() {
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
 
+  free(frombob);
+  frombob = NULL;
+
   // Alice sends a disconnected to Bob
   otr4_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
 
@@ -338,7 +341,6 @@ void test_conversation_with_multiple_locations() {
   ignore = otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
                                ALICE_IDENTITY, bob);
   free(from_alice_to_bob);
-  free(frombob);
   from_alice_to_bob = NULL;
 
   otrv4_keypair_destroy(alice_keypair);
