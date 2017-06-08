@@ -8,7 +8,8 @@ void test_instance_tag_generates_tag_when_file_empty() {
   tmpFILEp = tmpfile();
 
   otrv4_instag_t *instag = malloc(sizeof(otrv4_instag_t));
-  int err = otrv4_instag_get(instag, alice_coy_account, xmpp_protocol, tmpFILEp);
+  int err =
+      otrv4_instag_get(instag, alice_coy_account, xmpp_protocol, tmpFILEp);
 
   fclose(tmpFILEp);
 
@@ -33,8 +34,8 @@ void test_instance_tag_generates_tag_when_file_is_full() {
   tmpFILEp = tmpfile();
 
   otrv4_instag_t *first_instag = malloc(sizeof(otrv4_instag_t));
-  int err = otrv4_instag_get(first_instag, irc_alice_account, irc_protocol,
-                             tmpFILEp);
+  int err =
+      otrv4_instag_get(first_instag, irc_alice_account, irc_protocol, tmpFILEp);
   g_assert_cmpint(err, ==, 0);
 
   otrv4_instag_t *second_instag = malloc(sizeof(otrv4_instag_t));

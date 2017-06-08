@@ -32,9 +32,9 @@ int main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
 
   g_test_add_func("/otrv4/instance_tag/generates_when_file_empty",
-    test_instance_tag_generates_tag_when_file_empty);
+                  test_instance_tag_generates_tag_when_file_empty);
   g_test_add_func("/otrv4/instance_tag/generates_when_file_is_full",
-    test_instance_tag_generates_tag_when_file_is_full);
+                  test_instance_tag_generates_tag_when_file_is_full);
 
   g_test_add_func("/edwards448/api", ed448_test_ecdh);
   g_test_add_func("/edwards448/eddsa_serialization",

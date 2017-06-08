@@ -20,7 +20,8 @@ void test_client_conversation_api() {
   char *account = "";
   char *protocol = "";
 
-  otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, protocol, account);
+  otr4_client_t *alice =
+      otr4_client_new(alice_keypair, NULL, protocol, account);
   otrv4_assert(!alice->conversations);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
@@ -208,8 +209,8 @@ void test_client_get_our_fingerprint() {
   char *account = "";
   char *protocol = "";
 
-  otr4_client_t *client = otr4_client_new(client_keypair, NULL, protocol,
-                                          account);
+  otr4_client_t *client =
+      otr4_client_new(client_keypair, NULL, protocol, account);
 
   otrv4_fingerprint_t our_fp = {0};
   otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));
@@ -272,17 +273,19 @@ void test_conversation_with_multiple_locations() {
   char *alice_account = "alice_xmpp";
   char *protocol = "XMPP";
 
-  otr4_client_t *alice = otr4_client_new(alice_keypair, NULL, protocol,
-                                         alice_account);
+  otr4_client_t *alice =
+      otr4_client_new(alice_keypair, NULL, protocol, alice_account);
   otrv4_assert(!alice->conversations);
 
   char *bob_account = "bob_xmpp";
 
-  otr4_client_t *bob = otr4_client_new(bob_keypair, NULL, protocol, bob_account);
+  otr4_client_t *bob =
+      otr4_client_new(bob_keypair, NULL, protocol, bob_account);
 
   otrv4_assert(!bob->conversations);
 
-  otr4_client_t *bob_2 = otr4_client_new(bob_keypair, NULL, protocol, bob_account);
+  otr4_client_t *bob_2 =
+      otr4_client_new(bob_keypair, NULL, protocol, bob_account);
 
   otrv4_assert(!bob_2->conversations);
 

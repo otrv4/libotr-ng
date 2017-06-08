@@ -1,8 +1,8 @@
 #include "instance_tag.h"
 #include "str.h"
 
-#include <stdio.h>
 #include <libotr/instag.h>
+#include <stdio.h>
 
 int otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
                      const char *protocol, FILE *filename) {
@@ -25,9 +25,9 @@ int otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
     }
 
     tmp_instag = otrl_instag_find(us, account, protocol);
-    otrv4_instag->account = tmp_instag ->accountname;
-    otrv4_instag->protocol = tmp_instag ->protocol;
-    otrv4_instag->value = tmp_instag ->instag;
+    otrv4_instag->account = tmp_instag->accountname;
+    otrv4_instag->protocol = tmp_instag->protocol;
+    otrv4_instag->value = tmp_instag->instag;
 
     free(us);
     free(tmp_instag);

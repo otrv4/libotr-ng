@@ -36,14 +36,14 @@ static void conversation_free(otr4_conversation_t *conv) {
 
 otr4_client_t *otr4_client_new(otrv4_keypair_t *keypair,
                                OtrlUserState userstate, const char *protocol,
-                                const char *account) {
+                               const char *account) {
   otr4_client_t *client = malloc(sizeof(otr4_client_t));
   if (!client)
     return NULL;
 
-//  if (!instag) {
-//    return NULL;
-//  }
+  //  if (!instag) {
+  //    return NULL;
+  //  }
 
   client->keypair = keypair;
   client->protocol = otrv4_strdup(protocol);
