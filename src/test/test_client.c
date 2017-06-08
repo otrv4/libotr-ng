@@ -338,6 +338,7 @@ void test_conversation_with_multiple_locations() {
   ignore = otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
                                ALICE_IDENTITY, bob);
   free(from_alice_to_bob);
+  free(frombob);
   from_alice_to_bob = NULL;
 
   otrv4_keypair_destroy(alice_keypair);
