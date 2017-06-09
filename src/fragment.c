@@ -123,15 +123,16 @@ otr4_err_t otr4_defragment_message(fragment_context_t *context,
   sscanf(message, format, &sender_tag, &receiver_tag, &k, &n,
          &start, &end);
 
-  char *buff;
+  char *buff = NULL;
   context->N = n;
 
   if (k == 1) {
+    if (end <= start)
+      return OTR4_ERROR;
+
     context->fragment_len = 0;
     int buff_len = end - start - 1;
-    if (buff_len >= 1)
-      buff = malloc(buff_len + 1);
-
+    buff = malloc(buff_len + 1);
     if (!buff)
       return OTR4_ERROR;
 
