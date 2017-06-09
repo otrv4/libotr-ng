@@ -112,23 +112,49 @@ otr4_err_t otr4_defragment_message(fragment_context_t *context,
   }
 
   int sender_tag = 0, receiver_tag = 0, start = 0, end = 0;
+  int k = 0, n = 0;
   context->status = OTR4_FRAGMENT_INCOMPLETE;
 
   const string_t format = "?OTR|%08x|%08x,%05x,%05x,%n%*[^,],%n";
-  sscanf(message, format, &sender_tag, &receiver_tag, &context->K, &context->N,
+  sscanf(message, format, &sender_tag, &receiver_tag, &k, &n,
          &start, &end);
 
-  if (context->K == 1) {
-    int frag_len = end - start - 1;
-    if (frag_len >= 1)
-      context->fragment = malloc(frag_len + 1);
+  char *buff;
+  context->N = n;
 
-    if (!context->fragment)
+  if (k == 1) {
+    context->fragment_len = 0;
+    int buff_len = end - start - 1;
+    if (buff_len >= 1)
+      buff = malloc(buff_len + 1);
+
+    if (!buff)
       return OTR4_ERROR;
 
-    memmove(context->fragment, message + start, frag_len);
-    context->fragment[frag_len] = '\0';
-    context->fragment_len = frag_len;
+    memmove(buff, message + start, buff_len);
+    context->fragment_len += buff_len;
+    buff[context->fragment_len] = '\0';
+    context->fragment = buff;
+    context->K = k;
+  } else {
+      if (n == context->N && k == context->K + 1) {
+        int buff_len = end - start - 1;
+        size_t new_buff_len = context->fragment_len + buff_len + 1;
+        buff = realloc(context->fragment, new_buff_len);
+        if (!buff)
+          return OTR4_ERROR;
+
+        memmove(buff+context->fragment_len, message + start, buff_len);
+        context->fragment_len += buff_len;
+        buff[context->fragment_len] = '\0';
+        context->fragment = buff;
+        context->K = k;
+      } else {
+      }
+  }
+
+  if (context->N > 0 && context->N == context->K) {
+    context->status = OTR4_FRAGMENT_COMPLETE;
   }
 
   return OTR4_SUCCESS;

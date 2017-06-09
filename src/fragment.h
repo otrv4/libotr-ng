@@ -14,7 +14,7 @@ typedef struct {
 typedef enum {
   OTR4_FRAGMENT_UNFRAGMENTED,
   OTR4_FRAGMENT_INCOMPLETE,
-  OTR4_FRAGMENT_FINISH
+  OTR4_FRAGMENT_COMPLETE
 } fragment_status;
 
 typedef struct {

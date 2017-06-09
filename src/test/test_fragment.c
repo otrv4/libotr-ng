@@ -59,6 +59,14 @@ void test_defragment_valid_message(void) {
   g_assert_cmpint(context->fragment_len, ==, 4);
   otrv4_assert(context->status == OTR4_FRAGMENT_INCOMPLETE);
 
+  otrv4_assert(otr4_defragment_message(context, fragments[1]) == OTR4_SUCCESS);
+
+  g_assert_cmpint(context->N, ==, 2);
+  g_assert_cmpint(context->K, ==, 2);
+  g_assert_cmpstr(context->fragment, ==, "one more");
+  g_assert_cmpint(context->fragment_len, ==, 8);
+  otrv4_assert(context->status == OTR4_FRAGMENT_COMPLETE);
+
   fragment_context_free(context);
 }
 
