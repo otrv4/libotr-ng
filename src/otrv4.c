@@ -1147,13 +1147,15 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
 
   // A DH-Commit sets our running version to 3
   if (otr->running_version == OTRV4_VERSION_NONE &&
-      allow_version(otr, OTRV4_ALLOW_V3) && strstr(otr->frag_ctx->fragment, "?OTR:AAMC"))
+      allow_version(otr, OTRV4_ALLOW_V3) &&
+      strstr(otr->frag_ctx->fragment, "?OTR:AAMC"))
     otr->running_version = OTRV4_VERSION_3;
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     return otrv3_receive_message(&response->to_send, &response->to_display,
-                                 &response->tlvs, otr->frag_ctx->fragment, otr->otr3_conn);
+                                 &response->tlvs, otr->frag_ctx->fragment,
+                                 otr->otr3_conn);
     break;
   case OTRV4_VERSION_4:
   case OTRV4_VERSION_NONE:

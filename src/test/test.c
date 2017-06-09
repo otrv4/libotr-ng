@@ -152,9 +152,9 @@ int main(int argc, char **argv) {
    */
 
   g_test_add("/otrv4/receives_invalid_instance_tag_on_identity_message",
-                  otrv4_fixture_t, NULL, otrv4_fixture_set_up,
-		  test_otrv4_receives_identity_message_valid_instance_tag,
-		  otrv4_fixture_teardown);
+             otrv4_fixture_t, NULL, otrv4_fixture_set_up,
+             test_otrv4_receives_identity_message_valid_instance_tag,
+             otrv4_fixture_teardown);
   g_test_add_func("/otrv4/destroy", test_otrv4_destroy);
 
   g_test_add_func("/api/conversation/v4", test_api_conversation);

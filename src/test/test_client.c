@@ -381,7 +381,8 @@ void test_conversation_with_multiple_locations() {
 
   otr4_client_t *alice = NULL, *bob = NULL;
 
-  alice = otr4_client_new(alice_keypair, NULL, icq_protocol, icq_alice_account, tmpFILEp);
+  alice = otr4_client_new(alice_keypair, NULL, icq_protocol, icq_alice_account,
+                          tmpFILEp);
   bob = otr4_client_new(bob_keypair, NULL, protocol, account, tmpFILEp);
 
   // Clients should have an instance tag

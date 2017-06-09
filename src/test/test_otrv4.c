@@ -226,7 +226,7 @@ void test_otrv4_receives_fragmented_message(otrv4_fixture_t *otrv4_fixture,
 
   for (int i = 0; i < fmsg->total; i++)
     otrv4_assert(otrv4_receive_message(response, fmsg->pieces[i],
-                                     otrv4_fixture->otr) == OTR4_SUCCESS);
+                                       otrv4_fixture->otr) == OTR4_SUCCESS);
 
   g_assert_cmpstr(response->to_display, ==, "Receiving fragmented plaintext");
 
