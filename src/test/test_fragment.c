@@ -29,3 +29,42 @@ void test_create_fragments(void) {
   free(frag_message->pieces);
   free(frag_message);
 }
+
+void test_defragment_non_frag(void) {
+  string_t message = "not a fragment";
+
+  fragment_context_t *context;
+  context = fragment_context_new();
+    malloc(sizeof(fragment_context_t));
+
+  otrv4_assert(otr4_defragment_message(context, message) == OTR4_SUCCESS);
+
+  g_assert_cmpint(context->N, ==, 0);
+  g_assert_cmpint(context->K, ==, 0);
+  g_assert_cmpstr(context->fragment, ==, message);
+  otrv4_assert(context->status == OTR4_FRAGMENT_UNFRAGMENTED);
+
+  fragment_context_free(context);
+}
+
+void test_defragment_valid_message(void) {
+  string_t fragments[2];
+  fragments[0] = "?OTR|00000001|00000002,00001,00002,one ,";
+  fragments[1] = "?OTR|00000001|00000002,00002,00002,more,";
+
+
+  fragment_context_t *context;
+  context = fragment_context_new();
+    malloc(sizeof(fragment_context_t));
+
+  otrv4_assert(otr4_defragment_message(context, fragments[0]) == OTR4_SUCCESS);
+
+  g_assert_cmpint(context->N, ==, 2);
+  g_assert_cmpint(context->K, ==, 1);
+  g_assert_cmpstr(context->fragment, ==, "one ");
+  g_assert_cmpint(context->fragment_len, ==, 4);
+  otrv4_assert(context->status == OTR4_FRAGMENT_INCOMPLETE);
+
+  fragment_context_free(context);
+}
+
