@@ -25,4 +25,6 @@ void test_create_fragments(void) {
       "?OTR|00000001|00000002,00004,00004,ree,");
 
   g_assert_cmpint(frag_message->total, ==, 4);
+
+  free(frag_message);
 }
