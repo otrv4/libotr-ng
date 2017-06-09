@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "fingerprint.h"
+#include "fragment.h"
 #include "key_management.h"
 #include "keys.h"
 #include "otrv3.h"
@@ -136,6 +137,8 @@ struct connection {
   otr3_conn_t *otr3_conn;
 
   smp_context_t smp;
+
+  fragment_context_t *frag_ctx;
 }; // otrv4_t
 
 typedef enum {

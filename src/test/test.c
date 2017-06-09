@@ -135,6 +135,9 @@ int main(int argc, char **argv) {
   g_test_add("/otrv4/receives_plaintext_with_ws_tag_v3", otrv4_fixture_t, NULL,
              otrv4_fixture_set_up, test_otrv4_receives_plaintext_with_ws_tag_v3,
              otrv4_fixture_teardown);
+  g_test_add("/otrv4/receives_fragmented_message", otrv4_fixture_t, NULL,
+             otrv4_fixture_set_up, test_otrv4_receives_fragmented_message,
+             otrv4_fixture_teardown);
   g_test_add("/otrv4/receives_query_message", otrv4_fixture_t, NULL,
              otrv4_fixture_set_up, test_otrv4_receives_query_message,
              otrv4_fixture_teardown);

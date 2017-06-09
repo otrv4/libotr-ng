@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "../dake.h"
+#include "../fragment.h"
 #include "../otrv4.h"
 
 void test_otrv4_builds_query_message(otrv4_fixture_t *otrv4_fixture,
@@ -213,6 +214,24 @@ void test_otrv4_receives_identity_message_valid_instance_tag(
 
   otrv4_response_free(auth_msg);
   otrv4_response_free(id_msg);
+}
+
+void test_otrv4_receives_fragmented_message(otrv4_fixture_t *otrv4_fixture,
+                                            gconstpointer data) {
+  otrv4_response_t *response = otrv4_response_new();
+  char *msg = "Receiving fragmented plaintext";
+
+  fragment_message_t *fmsg = malloc(sizeof(fragment_message_t));
+  otrv4_assert(otr4_fragment_message(60, fmsg, 1, 2, msg) == OTR4_SUCCESS);
+
+  for (int i = 0; i < fmsg->total; i++)
+    otrv4_assert(otrv4_receive_message(response, fmsg->pieces[i],
+                                     otrv4_fixture->otr) == OTR4_SUCCESS);
+
+  g_assert_cmpstr(response->to_display, ==, "Receiving fragmented plaintext");
+
+  fragment_message_free(fmsg);
+  otrv4_response_free(response);
 }
 
 void test_otrv4_destroy() {

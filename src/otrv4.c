@@ -141,6 +141,8 @@ otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy) {
   otr->smp->msg1 = NULL;
   otr->smp->secret = NULL;
 
+  otr->frag_ctx = fragment_context_new();
+
   otr->otr3_conn = NULL;
 
   return otr;
@@ -161,6 +163,8 @@ void otrv4_destroy(/*@only@ */ otrv4_t *otr) {
   otr->their_profile = NULL;
 
   smp_destroy(otr->smp);
+
+  fragment_context_free(otr->frag_ctx);
 
   otr3_conn_free(otr->otr3_conn);
   otr->otr3_conn = NULL;
@@ -1131,19 +1135,26 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
   set_to_display(response, NULL, 0);
   response->to_send = NULL;
 
+  otr4_err_t err = otr4_defragment_message(otr->frag_ctx, message);
+  if (err != OTR4_SUCCESS)
+    return err;
+
+  if (otr->frag_ctx->status == OTR4_FRAGMENT_INCOMPLETE)
+    return OTR4_SUCCESS;
+
   // A DH-Commit sets our running version to 3
   if (otr->running_version == OTRV4_VERSION_NONE &&
-      allow_version(otr, OTRV4_ALLOW_V3) && strstr(message, "?OTR:AAMC"))
+      allow_version(otr, OTRV4_ALLOW_V3) && strstr(otr->frag_ctx->fragment, "?OTR:AAMC"))
     otr->running_version = OTRV4_VERSION_3;
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     return otrv3_receive_message(&response->to_send, &response->to_display,
-                                 &response->tlvs, message, otr->otr3_conn);
+                                 &response->tlvs, otr->frag_ctx->fragment, otr->otr3_conn);
     break;
   case OTRV4_VERSION_4:
   case OTRV4_VERSION_NONE:
-    return receive_message_v4_only(response, message, otr);
+    return receive_message_v4_only(response, otr->frag_ctx->fragment, otr);
   }
 
   return OTR4_ERROR;

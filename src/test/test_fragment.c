@@ -8,8 +8,7 @@ void test_create_fragments(void) {
   int mms = 40;
   char *message = "one two tree";
 
-  fragment_message_t *frag_message;
-  frag_message = malloc(sizeof(fragment_message_t));
+  fragment_message_t *frag_message = malloc(sizeof(fragment_message_t));
 
   otrv4_assert(otr4_fragment_message(mms, frag_message, 1, 2, message) ==
                OTR4_SUCCESS);
