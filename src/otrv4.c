@@ -1001,10 +1001,6 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
 
-    to_store_mac = NULL;
-    free(to_store_mac);
-    to_store_mac = NULL;
-
     otrv4_tlv_free(reply_tlv);
     data_message_free(msg);
 

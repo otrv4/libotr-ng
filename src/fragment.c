@@ -51,7 +51,8 @@ otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,
   if (!pieces)
     return OTR4_ERROR;
 
-  for (int curfrag = 1; curfrag <= fragments->total; curfrag++) {
+  int curfrag;
+  for (curfrag = 1; curfrag <= fragments->total; curfrag++) {
     int index_len = 0;
     string_t piece = NULL;
     string_t piece_data = NULL;
@@ -63,7 +64,8 @@ otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,
 
     piece_data = malloc(piece_len + 1);
     if (!piece_data) {
-      for (int i = 0; i < fragments->total; free(pieces[i++])) {}
+      int i;
+      for (i = 0; i < fragments->total; free(pieces[i++])) {}
       return OTR4_ERROR;
     }
 
