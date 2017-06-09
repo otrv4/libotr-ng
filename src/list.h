@@ -23,6 +23,9 @@ list_element_t *list_add(void *data, list_element_t *head);
 
 list_element_t *list_get_last(list_element_t *head);
 
+list_element_t *list_get(const void *wanted, list_element_t *head,
+                         int (*fn)(const void *current, const void *wanted));
+
 list_element_t *list_get_by_value(const void *wanted, list_element_t *head);
 
 list_element_t *list_remove_element(const list_element_t *wanted,
