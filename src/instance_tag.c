@@ -1,12 +1,12 @@
 #include <libotr/instag.h>
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "instance_tag.h"
 #include "str.h"
 
 bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
-                     const char *protocol, FILE *filename) {
+                      const char *protocol, FILE *filename) {
 
   OtrlUserState us = otrl_userstate_create();
   if (otrl_instag_read_FILEp(us, filename)) {

@@ -5,36 +5,32 @@
 
 #include <libotr/context.h>
 
+#include "client_state.h"
 #include "instance_tag.h"
 #include "list.h"
 #include "otrv4.h"
 
+// TODO: REMOVE
 typedef struct {
+  void *conversation_id; // Data in the messaging application context that
+                         // represents a conversation and should map directly to
+                         // it. For example, in libpurple-based apps (like
+                         // Pidgin) this could be a PurpleConversation*
+
   char *recipient;
   otrv4_t *conn;
 } otr4_conversation_t;
 
 // A client handle messages from/to a sender to/from multiple recipients.
 typedef struct {
-  void *opdata; // Data in the messaging application context that represents
-                // a client and should map directly to it. For example, in
-                // libpurple-based apps (like Pidgin) this could be a
-                // PurpleAccount*
-
-  const otrv4_callbacks_t *callbacks;
-
-  char *account;
-  char *protocol;
-  otrv4_instag_t *instag;
-  OtrlUserState userstate;
-
-  otrv4_keypair_t *keypair;
+  char *account;  // TODO: move to client_state?
+  char *protocol; // TODO: move to client_state?
+  otr4_client_state_t *state;
 
   list_element_t *conversations;
 } otr4_client_t;
 
-otr4_client_t *otr4_client_new(otrv4_keypair_t *keypair,
-                               OtrlUserState userstate, const char *protocol,
+otr4_client_t *otr4_client_new(otr4_client_state_t *, const char *protocol,
                                const char *account, FILE *instag_file);
 
 void otr4_client_free(otr4_client_t *client);
@@ -72,8 +68,6 @@ int otr4_conversation_is_finished(otr4_conversation_t *conv);
 
 int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
                                     const otr4_client_t *client);
-
-int otr4_read_privkey_FILEp(otr4_client_t *client, FILE *privf);
 
 int otr3_privkey_generate(otr4_client_t *client, FILE *privf);
 

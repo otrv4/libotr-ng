@@ -9,14 +9,16 @@
 void test_api_conversation(void) {
   OTR4_INIT;
 
-  otrv4_keypair_t alice_keypair[1], bob_keypair[1];
+  otr4_client_state_t *alice_keypair = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_keypair = otr4_client_state_new(NULL);
+
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
       1}; // non-random private key on purpose
-  otrv4_keypair_generate(alice_keypair, alice_sym);
+  otr4_client_state_add_private_key_v4(alice_keypair, alice_sym);
 
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
       2}; // non-random private key on purpose
-  otrv4_keypair_generate(bob_keypair, bob_sym);
+  otr4_client_state_add_private_key_v4(bob_keypair, bob_sym);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
   otrv4_t *alice = otrv4_new(alice_keypair, policy);
@@ -121,8 +123,8 @@ void test_api_conversation(void) {
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
-  otrv4_keypair_destroy(alice_keypair);
-  otrv4_keypair_destroy(bob_keypair);
+  otr4_client_state_free(alice_keypair);
+  otr4_client_state_free(bob_keypair);
 
   otrv4_free(bob);
   otrv4_free(alice);
@@ -210,14 +212,16 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
 void test_api_conversation_v3(void) {
   OTR4_INIT;
 
-  otrv4_keypair_t alice_keypair[1], bob_keypair[1];
+  otr4_client_state_t *alice_keypair = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_keypair = otr4_client_state_new(NULL);
+
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
       1}; // non-random private key on purpose
-  otrv4_keypair_generate(alice_keypair, alice_sym);
+  otr4_client_state_add_private_key_v4(alice_keypair, alice_sym);
 
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
       2}; // non-random private key on purpose
-  otrv4_keypair_generate(bob_keypair, bob_sym);
+  otr4_client_state_add_private_key_v4(bob_keypair, bob_sym);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3};
   otrv4_t *alice = otrv4_new(alice_keypair, policy);
@@ -299,8 +303,8 @@ void test_api_conversation_v3(void) {
   otrl_userstate_free(bob->otr3_conn->userstate);
   otrv4_free(alice);
   otrv4_free(bob);
-  otrv4_keypair_destroy(alice_keypair);
-  otrv4_keypair_destroy(bob_keypair);
+  otr4_client_state_free(alice_keypair);
+  otr4_client_state_free(bob_keypair);
 
   OTR4_FREE;
 }
@@ -308,14 +312,16 @@ void test_api_conversation_v3(void) {
 void test_api_smp(void) {
   OTR4_INIT;
 
-  otrv4_keypair_t alice_keypair[1], bob_keypair[1];
+  otr4_client_state_t *alice_keypair = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_keypair = otr4_client_state_new(NULL);
+
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
       1}; // non-random private key on purpose
-  otrv4_keypair_generate(alice_keypair, alice_sym);
+  otr4_client_state_add_private_key_v4(alice_keypair, alice_sym);
 
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
       2}; // non-random private key on purpose
-  otrv4_keypair_generate(bob_keypair, bob_sym);
+  otr4_client_state_add_private_key_v4(bob_keypair, bob_sym);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
   otrv4_t *alice = otrv4_new(alice_keypair, policy);
@@ -391,8 +397,8 @@ void test_api_smp(void) {
 
   otrv4_free(alice);
   otrv4_free(bob);
-  otrv4_keypair_destroy(alice_keypair);
-  otrv4_keypair_destroy(bob_keypair);
+  otr4_client_state_free(alice_keypair);
+  otr4_client_state_free(bob_keypair);
 
   OTR4_FREE;
 }

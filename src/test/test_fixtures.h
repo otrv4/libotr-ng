@@ -4,26 +4,26 @@ typedef struct {
   otrv4_t *otr;
   otrv4_t *otrv3;
   otrv4_t *otrv34;
-  otrv4_keypair_t *keypair;
+  otr4_client_state_t *state;
 } otrv4_fixture_t;
 
 void otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   OTR4_INIT;
 
-  otrv4_fixture->keypair = otrv4_keypair_new();
+  otrv4_fixture->state = otr4_client_state_new(NULL); // No callbacks
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
-  otrv4_keypair_generate(otrv4_fixture->keypair, sym);
+  otr4_client_state_add_private_key_v4(otrv4_fixture->state, sym);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
-  otrv4_fixture->otr = otrv4_new(otrv4_fixture->keypair, policy);
+  otrv4_fixture->otr = otrv4_new(otrv4_fixture->state, policy);
 
   otrv4_policy_t policyv3 = {.allows = OTRV4_ALLOW_V3};
-  otrv4_fixture->otrv3 = otrv4_new(otrv4_fixture->keypair, policyv3);
+  otrv4_fixture->otrv3 = otrv4_new(otrv4_fixture->state, policyv3);
   otrv4_fixture->otrv3->otr3_conn =
       otr3_conn_new("proto", "we_are_alice", "they_are_bob");
 
   otrv4_policy_t policyv34 = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_fixture->otrv34 = otrv4_new(otrv4_fixture->keypair, policyv34);
+  otrv4_fixture->otrv34 = otrv4_new(otrv4_fixture->state, policyv34);
   otrv4_fixture->otrv34->otr3_conn =
       otr3_conn_new("proto", "we_are_bob", "they_are_alice");
 
@@ -60,8 +60,8 @@ void otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture,
   otrl_userstate_free(otrv4_fixture->otrv3->otr3_conn->userstate);
   otrl_userstate_free(otrv4_fixture->otrv34->otr3_conn->userstate);
 
-  otrv4_keypair_free(otrv4_fixture->keypair);
-  otrv4_fixture->keypair = NULL;
+  otr4_client_state_free(otrv4_fixture->state);
+  otrv4_fixture->state = NULL;
 
   otrv4_free(otrv4_fixture->otr);
   otrv4_fixture->otr = NULL;

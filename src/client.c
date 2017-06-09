@@ -35,78 +35,74 @@ static void conversation_free(void *data) {
   free(conv);
 }
 
-otr4_client_t *otr4_client_new(otrv4_keypair_t *keypair,
-                               OtrlUserState userstate, const char *protocol,
+otr4_client_t *otr4_client_new(otr4_client_state_t *state, const char *protocol,
                                const char *account, FILE *instag_file) {
   otr4_client_t *client = malloc(sizeof(otr4_client_t));
   if (!client)
     return NULL;
 
-  client->keypair = keypair;
+  client->state = state;
   client->protocol = otrv4_strdup(protocol);
   client->account = otrv4_strdup(account);
 
-  client->instag = malloc(sizeof(otrv4_instag_t));
-  if (!client->instag) {
-    return NULL;
+  if (!client->state->instag) {
+    client->state->instag = malloc(sizeof(otrv4_instag_t));
+    if (!client->state->instag) {
+      return NULL;
+    }
+
+    if (!instag_file) {
+      instag_file = tmpfile();
+    }
+
+    // TODO: check the error
+    otrv4_instag_get(client->state->instag, account, protocol, instag_file);
+    fclose(instag_file);
   }
 
-  if (!instag_file) {
-    instag_file = tmpfile();
-  }
-
-  // TODO: check the error
-  otrv4_instag_get(client->instag, account, protocol, instag_file);
-  fclose(instag_file);
-
-  client->userstate = userstate;
+  // client->userstate = userstate;
   client->conversations = NULL;
-  client->callbacks = NULL;
 
   return client;
 }
 
 void otr4_client_free(otr4_client_t *client) {
-  client->userstate = NULL;
-
   free(client->protocol);
   client->protocol = NULL;
 
   free(client->account);
   client->account = NULL;
 
-  otr4_instag_free(client->instag);
-  client->instag = NULL;
-
   list_free(client->conversations, conversation_free);
   client->conversations = NULL;
-  client->keypair = NULL;
 
   free(client);
 }
 
 int otr4_client_generate_keypair(otr4_client_t *client) {
-  if (client->keypair)
-    return 0;
+  /*
+if (client->state->keypair)
+  return 0;
 
-  client->keypair = malloc(sizeof(otrv4_keypair_t));
-  if (!client->keypair)
-    return -1;
+client->keypair = malloc(sizeof(otrv4_keypair_t));
+if (!client->keypair)
+  return -1;
 
-  uint8_t sym[ED448_PRIVATE_BYTES];
-  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
+uint8_t sym[ED448_PRIVATE_BYTES];
+gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
 
-  otrv4_keypair_generate(client->keypair, sym);
+otrv4_keypair_generate(client->keypair, sym);
 
-  // Set this new keypair to every conversation in this client
-  list_element_t *el;
-  for (el = client->conversations; el; el = el->next) {
-    otr4_conversation_t *conv = CONV(el->data);
-    if (!conv->conn || conv->conn->keypair) // This should never happen
-      return 1;
+// Set this new keypair to every conversation in this client
+list_element_t *el;
+for (el = client->conversations; el; el = el->next) {
+  otr4_conversation_t *conv = CONV(el->data);
+  if (!conv->conn || conv->conn->keypair) // This should never happen
+    return 1;
 
-    conv->conn->keypair = client->keypair;
-  }
+  conv->conn->keypair = client->keypair;
+}
+*/
 
   return 0;
 }
@@ -171,20 +167,22 @@ static otrv4_t *create_connection_for(const char *recipient,
   otr3_conn_t *otr3_conn = NULL;
   otrv4_t *conn = NULL;
 
+  // TODO: This should receive only the client_state (which should allow
+  // you to get protocol, account, v3 userstate, etc)
   otr3_conn = otr3_conn_new(client->protocol, client->account, recipient);
   if (!otr3_conn)
     return NULL;
 
-  conn = otrv4_new(client->keypair, get_policy_for(recipient));
+  conn = otrv4_new(client->state, get_policy_for(recipient));
   if (!conn) {
     free(otr3_conn);
     return NULL;
   }
 
-  otr3_conn->userstate = client->userstate;
+  conn->conversation->peer = otrv4_strdup(recipient);
+  otr3_conn->userstate = client->state->userstate;
   otr3_conn->opdata = conn; // For use in callbacks
   conn->otr3_conn = otr3_conn;
-  conn->callbacks = client->callbacks;
 
   return conn;
 }
@@ -288,7 +286,10 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   if (!conv)
     return 1;
 
-  conv->conn->our_instance_tag = client->instag->value;
+  // TODO: Why is not this when we create this conn?
+  if (client->state->instag)
+    conv->conn->our_instance_tag = client->state->instag->value;
+
   if (otrv4_receive_message(response, message, conv->conn)) {
     otrv4_response_free(response);
     return 0; // Should this cause the message to be ignored or not?
@@ -351,38 +352,10 @@ int otr4_client_disconnect(char **newmessage, const char *recipient,
 
 int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
                                     const otr4_client_t *client) {
-  if (!client->keypair)
+  if (!client->state->keypair)
     return -1;
 
-  return otr4_serialize_fingerprint(fp, client->keypair->pub);
-}
-
-int otr4_read_privkey_FILEp(otr4_client_t *client, FILE *privf) {
-  char *line = NULL;
-  size_t cap = 0;
-  int len = 0;
-  int err = 0;
-
-  if (!privf)
-    return -1;
-
-  if (!client->keypair)
-    client->keypair = otrv4_keypair_new();
-
-  if (!client->keypair)
-    return -2;
-
-  len = getline(&line, &cap, privf);
-  if (len < 0)
-    return -3;
-
-  if (otrv4_symmetric_key_deserialize(client->keypair, line, len)) {
-    free(line);
-    return -1;
-  }
-  free(line);
-
-  return err;
+  return otr4_serialize_fingerprint(fp, client->state->keypair->pub);
 }
 
 // TODO: Read privkeys, fingerprints, instance tags for OTRv3
@@ -402,11 +375,11 @@ To read stored instance tags:
 */
 
 int otr3_privkey_generate(otr4_client_t *client, FILE *privf) {
-  return otrl_privkey_generate_FILEp(client->userstate, privf, client->account,
-                                     client->protocol);
+  return otrl_privkey_generate_FILEp(client->state->userstate, privf,
+                                     client->account, client->protocol);
 }
 
 int otr3_instag_generate(otr4_client_t *client, FILE *privf) {
-  return otrl_instag_generate_FILEp(client->userstate, privf, client->account,
-                                    client->protocol);
+  return otrl_instag_generate_FILEp(client->state->userstate, privf,
+                                    client->account, client->protocol);
 }

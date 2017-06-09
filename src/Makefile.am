@@ -4,6 +4,8 @@ libotr4_la_SOURCES = \
 		     auth.c \
 		     b64.c \
 		     client.c \
+		     client_callbacks.c \
+		     client_state.c \
 		     dake.c \
 		     data_types.c \
 		     data_message.c \
@@ -38,17 +40,21 @@ libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
 otrincdir = $(includedir)/libotr4
 otrinc_HEADERS = b64.h \
                  client.h \
+		 client_state.h \
+		 client_callbacks.h \
 		 constants.h \
 		 data_message.h \
 		 dh.h \
 		 ed448.h \
 		 error.h \
 		 fingerprint.h \
+		 fragment.h \
 		 instance_tag.h \
 		 keys.h \
 		 key_management.h \
 		 list.h \
 		 mpi.h \
+		 messaging.h \
 		 otrv3.h \
 		 otrv4.h \
 		 smp.h \

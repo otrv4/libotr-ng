@@ -25,20 +25,34 @@
 #include "client.h"
 #include "list.h"
 
+// TODO: Remove?
 typedef otr4_client_t otr4_messaging_client_t;
 
 typedef struct {
-  list_element_t *keypairs_v4;
-  list_element_t *instance_tags;
+  list_element_t *states;
   list_element_t *clients;
 
+  const otrv4_client_callbacks_t *callbacks;
   void *userstate_v3; // OtrlUserState
 } otr4_userstate_t;
 
-otr4_userstate_t *otr4_user_state_new(void);
+otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb);
 void otr4_user_state_free(otr4_userstate_t *);
 
+void otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *clientop,
+                                        const uint8_t sym[ED448_PRIVATE_BYTES]);
+
+otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
+                                                    void *client_id);
+
+int otr4_user_state_private_key_v4_read_FILEp(
+    otr4_userstate_t *state, FILE *keys,
+    void *(*read_client_id_for_key)(FILE *filep));
+
 otr4_messaging_client_t *otr4_messaging_client_new(otr4_userstate_t *state,
-                                                   void *opdata);
+                                                   void *client_id);
+
+otr4_messaging_client_t *otr4_messaging_client_get(otr4_userstate_t *state,
+                                                   void *client_id);
 
 #endif

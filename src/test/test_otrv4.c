@@ -235,18 +235,19 @@ void test_otrv4_receives_fragmented_message(otrv4_fixture_t *otrv4_fixture,
 }
 
 void test_otrv4_destroy() {
-  otrv4_keypair_t keypair[1];
-  uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
-  otrv4_keypair_generate(keypair, sym);
+  otr4_client_state_t keypair[1];
+
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
   otrv4_t *otr = otrv4_new(keypair, policy);
 
   otr->profile = user_profile_new("4");
   otrv4_destroy(otr);
 
-  otrv4_assert(otr->keypair == NULL);
+  otrv4_assert(otr->conversation == NULL);
   otrv4_assert(otr->keys == NULL);
   otrv4_assert(otr->profile == NULL);
+  otrv4_assert(otr->their_profile == NULL);
+  otrv4_assert(otr->otr3_conn == NULL);
 
   free(otr);
 }

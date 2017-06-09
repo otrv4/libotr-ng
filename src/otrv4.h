@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#include "client_state.h"
 #include "fingerprint.h"
 #include "fragment.h"
 #include "key_management.h"
@@ -60,65 +61,22 @@ typedef enum {
 
 typedef struct { int allows; } otrv4_policy_t;
 
-typedef enum {
-  OTRV4_SMPEVENT_NONE = 0,
-  OTRV4_SMPEVENT_ASK_FOR_SECRET = 1,
-  OTRV4_SMPEVENT_ASK_FOR_ANSWER = 2,
-  OTRV4_SMPEVENT_IN_PROGRESS = 3,
-  OTRV4_SMPEVENT_SUCCESS = 4,
-  OTRV4_SMPEVENT_CHEATED = 5,
-  OTRV4_SMPEVENT_FAILURE = 6,
-  OTRV4_SMPEVENT_ABORT = 7,
-  OTRV4_SMPEVENT_ERROR = 8,
-} otr4_smp_event_t;
+// TODO: This is a single instance conversation. Make it multi-instance.
+typedef struct otr4_conversation_state_t {
+  // void *opdata; // Could have a conversation opdata to point to a, say
+  // PurpleConversation
 
-// TODO: These callbacks could receive a "otrv4_conversation_t" with only
-//(proto, account, peer) and keep the otrv4_t private;
-typedef struct {
-  /* Create private keys V3 and V4. */
-  void (*create_privkey)(const otrv4_t *);
-
-  /* A connection has entered a secure state. */
-  void (*gone_secure)(const otrv4_t *);
-
-  /* A connection has left a secure state. */
-  void (*gone_insecure)(const otrv4_t *);
-
-  /* A fingerprint was seen in this connection. */
-  void (*fingerprint_seen)(const otrv4_fingerprint_t, const otrv4_t *);
-
-  /* An OTR3 fingerprint was seen in this connection. */
-  void (*fingerprint_seen_otr3)(const otrv3_fingerprint_t, const otrv4_t *);
-
-  /* Update the authentication UI with respect to SMP events
-   * These are the possible events:
-   * - OTRL_SMPEVENT_ASK_FOR_SECRET
-   *      prompt the user to enter a shared secret. The sender application
-   *      should call otrl_message_initiate_smp, passing NULL as the question.
-   *      When the receiver application resumes the SM protocol by calling
-   *      otrl_message_respond_smp with the secret answer.
-   * - OTRL_SMPEVENT_ASK_FOR_ANSWER
-   *      (same as OTRL_SMPEVENT_ASK_FOR_SECRET but sender calls
-   *      otrl_message_initiate_smp_q instead)
-   * - OTRL_SMPEVENT_CHEATED
-   *      abort the current auth and update the auth progress dialog
-   *      with progress_percent. otrl_message_abort_smp should be called to
-   *      stop the SM protocol.
-   * - OTRL_SMPEVENT_INPROGRESS       and
-   *   OTRL_SMPEVENT_SUCCESS          and
-   *   OTRL_SMPEVENT_FAILURE          and
-   *   OTRL_SMPEVENT_ABORT
-   *      update the auth progress dialog with progress_percent
-   * - OTRL_SMPEVENT_ERROR
-   *      (same as OTRL_SMPEVENT_CHEATED)
-   * */
-  void (*handle_smp_event)(const otr4_smp_event_t event,
-                           const uint8_t progress_percent, const char *question,
-                           const otrv4_t *conn);
-
-} otrv4_callbacks_t;
+  struct otr4_client_state_t *client;
+  char *peer;
+  uint16_t their_instance_tag;
+} otr4_conversation_state_t;
 
 struct connection {
+  // Contains: client (private key, instance tag, and callbacks) and
+  // conversation state
+  otr4_conversation_state_t *conversation;
+  otr3_conn_t *otr3_conn;
+
   otrv4_state state;
   int supported_versions;
 
@@ -130,12 +88,7 @@ struct connection {
 
   otrv4_version_t running_version;
 
-  otrv4_keypair_t *keypair;
   key_manager_t *keys;
-  const otrv4_callbacks_t *callbacks;
-
-  otr3_conn_t *otr3_conn;
-
   smp_context_t smp;
 
   fragment_context_t *frag_ctx;
@@ -166,7 +119,7 @@ typedef struct {
   uint8_t type;
 } otrv4_header_t;
 
-otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy);
+otrv4_t *otrv4_new(struct otr4_client_state_t *state, otrv4_policy_t policy);
 void otrv4_destroy(otrv4_t *otr);
 void otrv4_free(/*@only@ */ otrv4_t *otr);
 

@@ -1,42 +1,69 @@
 #include "otrv3.h"
 #include "otrv4.h"
 
-static void create_privkey_cb(const otrv4_t *otr) {
-  if (!otr || !otr->callbacks)
+static void create_privkey_cb(const otr4_conversation_state_t *otr) {
+  if (!otr || !otr->client)
     return;
-
-  otr->callbacks->create_privkey(otr);
+  otrv4_client_callbacks_create_privkey(otr->client->callbacks,
+                                        otr->client->client_id);
 }
 
-static void gone_secure_cb(const otrv4_t *otr) {
-  if (!otr || !otr->callbacks)
+static void gone_secure_cb(const otr4_conversation_state_t *otr) {
+  if (!otr || !otr->client)
     return;
-
-  otr->callbacks->gone_secure(otr);
+  otrv4_client_callbacks_gone_secure(
+      otr->client->callbacks,
+      otr->client->client_id); // TODO: should be conversation_id
 }
 
-static void gone_insecure_cb(const otrv4_t *otr) {
-  if (!otr || !otr->callbacks)
+static void gone_insecure_cb(const otr4_conversation_state_t *otr) {
+  if (!otr || !otr->client)
     return;
-
-  otr->callbacks->gone_insecure(otr);
+  otrv4_client_callbacks_gone_insecure(
+      otr->client->callbacks,
+      otr->client->client_id); // TODO: should be conversation_id
 }
 
 static void fingerprint_seen_cb(const otrv3_fingerprint_t fp,
-                                const otrv4_t *otr) {
-  if (!otr || !otr->callbacks)
+                                const otr4_conversation_state_t *otr) {
+  if (!otr || !otr->client)
     return;
-
-  otr->callbacks->fingerprint_seen_otr3(fp, otr);
+  otrv4_client_callbacks_fingerprint_seen_otr3(
+      otr->client->callbacks, fp,
+      otr->client->client_id); // TODO: should be conversation_id
 }
 
 static void handle_smp_event_cb(const otr4_smp_event_t event,
                                 const uint8_t progress_percent,
-                                const char *question, const otrv4_t *otr) {
-  if (!otr->callbacks)
+                                const char *question,
+                                const otr4_conversation_state_t *otr) {
+  if (!otr || !otr->client)
     return;
-
-  otr->callbacks->handle_smp_event(event, progress_percent, question, otr);
+  switch (event) {
+  case OTRV4_SMPEVENT_ASK_FOR_SECRET:
+    otrv4_client_callbacks_smp_ask_for_secret(
+        otr->client->callbacks,
+        otr->client->client_id); // TODO: should be conversation_id
+    break;
+  case OTRV4_SMPEVENT_ASK_FOR_ANSWER:
+    otrv4_client_callbacks_smp_ask_for_answer(
+        otr->client->callbacks, question,
+        otr->client->client_id); // TODO: should be conversation_id
+    break;
+  case OTRV4_SMPEVENT_CHEATED:
+  case OTRV4_SMPEVENT_IN_PROGRESS:
+  case OTRV4_SMPEVENT_SUCCESS:
+  case OTRV4_SMPEVENT_FAILURE:
+  case OTRV4_SMPEVENT_ABORT:
+  case OTRV4_SMPEVENT_ERROR:
+    otrv4_client_callbacks_smp_update(
+        otr->client->callbacks, event, progress_percent,
+        otr->client->client_id); // TODO: should be conversation_id
+    break;
+  default:
+    // OTRV4_SMPEVENT_NONE. Should not be used.
+    break;
+  }
 }
 
 static OtrlPolicy op_policy(void *opdata, ConnContext *context) {

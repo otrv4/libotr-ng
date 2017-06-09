@@ -43,47 +43,67 @@ static const char tag_version_v3[] = {'\x20', '\x20', '\x09', '\x09', '\x20',
 static const string_t query_header = "?OTRv";
 static const string_t otr_header = "?OTR:";
 
-static void create_privkey_cb(const otrv4_t *otr) {
-  if (!otr->callbacks)
+static void create_privkey_cb(const otr4_conversation_state_t *conv) {
+  if (!conv || !conv->client || !conv->client->callbacks)
     return;
 
-  otr->callbacks->create_privkey(otr);
+  // TODO: Change to receive conv->client
+  conv->client->callbacks->create_privkey(conv->client->client_id);
 }
 
-static void gone_secure_cb(const otrv4_t *otr) {
-  if (!otr->callbacks)
+static void gone_secure_cb(const otr4_conversation_state_t *conv) {
+  if (!conv || !conv->client || !conv->client->callbacks)
     return;
 
-  otr->callbacks->gone_secure(otr);
+  conv->client->callbacks->gone_secure(conv);
 }
 
-static void gone_insecure_cb(const otrv4_t *otr) {
-  if (!otr->callbacks)
+static void gone_insecure_cb(const otr4_conversation_state_t *conv) {
+  if (!conv || !conv->client || !conv->client->callbacks)
     return;
 
-  otr->callbacks->gone_insecure(otr);
+  conv->client->callbacks->gone_insecure(conv);
 }
 
 static void fingerprint_seen_cb(const otrv4_fingerprint_t fp,
-                                const otrv4_t *otr) {
-  if (!otr->callbacks)
+                                const otr4_conversation_state_t *conv) {
+  if (!conv || !conv->client || !conv->client->callbacks)
     return;
 
-  otr->callbacks->fingerprint_seen(fp, otr);
+  conv->client->callbacks->fingerprint_seen(fp, conv);
 }
 
 static void handle_smp_event_cb(const otr4_smp_event_t event,
                                 const uint8_t progress_percent,
-                                const char *question, const otrv4_t *otr) {
-  if (!otr->callbacks)
+                                const char *question,
+                                const otr4_conversation_state_t *conv) {
+  if (!conv || !conv->client || !conv->client->callbacks)
     return;
 
-  otr->callbacks->handle_smp_event(event, progress_percent, question, otr);
+  switch (event) {
+  case OTRV4_SMPEVENT_ASK_FOR_SECRET:
+    conv->client->callbacks->smp_ask_for_secret(conv);
+    break;
+  case OTRV4_SMPEVENT_ASK_FOR_ANSWER:
+    conv->client->callbacks->smp_ask_for_answer(question, conv);
+    break;
+  case OTRV4_SMPEVENT_CHEATED:
+  case OTRV4_SMPEVENT_IN_PROGRESS:
+  case OTRV4_SMPEVENT_SUCCESS:
+  case OTRV4_SMPEVENT_FAILURE:
+  case OTRV4_SMPEVENT_ABORT:
+  case OTRV4_SMPEVENT_ERROR:
+    conv->client->callbacks->smp_update(event, progress_percent, conv);
+    break;
+  default:
+    // OTRV4_SMPEVENT_NONE. Should not be used.
+    break;
+  }
 }
 
-static void maybe_create_keys(const otrv4_t *otr) {
-  if (!otr->keypair)
-    create_privkey_cb(otr);
+static void maybe_create_keys(const otr4_conversation_state_t *conv) {
+  if (!conv->client->keypair)
+    create_privkey_cb(conv);
 }
 
 static int allow_version(const otrv4_t *otr, otrv4_supported_version version) {
@@ -107,17 +127,22 @@ static const user_profile_t *get_my_user_profile(otrv4_t *otr) {
 
   char versions[3] = {0};
   allowed_versions(versions, otr);
-  maybe_create_keys(otr);
-  otr->profile = user_profile_build(versions, otr->keypair);
+  maybe_create_keys(otr->conversation);
+  otr->profile =
+      user_profile_build(versions, otr->conversation->client->keypair);
   return otr->profile;
 }
 
-otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy) {
+otrv4_t *otrv4_new(otr4_client_state_t *state, otrv4_policy_t policy) {
   otrv4_t *otr = malloc(sizeof(otrv4_t));
   if (!otr)
     return NULL;
 
-  otr->keypair = keypair;
+  // TODO: Move to constructor
+  otr->conversation = malloc(sizeof(otr4_conversation_state_t));
+  otr->conversation->client = state;
+  otr->conversation->peer = NULL;
+
   otr->state = OTRV4_STATE_START;
   otr->running_version = OTRV4_VERSION_NONE;
   otr->supported_versions = policy.allows;
@@ -132,7 +157,6 @@ otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy) {
     return NULL;
 
   key_manager_init(otr->keys);
-  otr->callbacks = NULL;
 
   // TODO: moves initialization to smp
   otr->smp->state = SMPSTATE_EXPECT1;
@@ -147,8 +171,12 @@ otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy) {
 }
 
 void otrv4_destroy(/*@only@ */ otrv4_t *otr) {
-  otr->keypair = NULL;
-  otr->callbacks = NULL;
+  if (otr->conversation) {
+    free(otr->conversation->peer);
+    otr->conversation->peer = NULL;
+    free(otr->conversation);
+    otr->conversation = NULL;
+  }
 
   key_manager_destroy(otr->keys);
   free(otr->keys);
@@ -393,7 +421,7 @@ static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
 static otr4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
   key_manager_generate_ephemeral_keys(otr->keys);
   otr->state = OTRV4_STATE_WAITING_AUTH_R;
-  maybe_create_keys(otr);
+  maybe_create_keys(otr->conversation);
   return reply_with_identity_msg(response, otr);
 }
 
@@ -475,7 +503,7 @@ static otr4_err_t double_ratcheting_init(int j, otrv4_t *otr) {
     return OTR4_ERROR;
 
   otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
-  gone_secure_cb(otr);
+  gone_secure_cb(otr->conversation);
 
   return OTR4_SUCCESS;
 }
@@ -591,11 +619,12 @@ static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
     return OTR4_ERROR;
 
   // sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg)
-  otr4_err_t err = snizkpk_authenticate(msg->sigma,
-                                        otr->keypair, // g^R and R
-                                        otr->their_profile->pub_key, // g^I
-                                        THEIR_ECDH(otr),             // g^i -- Y
-                                        t, t_len);
+  otr4_err_t err =
+      snizkpk_authenticate(msg->sigma,
+                           otr->conversation->client->keypair, // g^R and R
+                           otr->their_profile->pub_key,        // g^I
+                           THEIR_ECDH(otr),                    // g^i -- Y
+                           t, t_len);
 
   if (err) {
     free(t);
@@ -743,17 +772,16 @@ static otr4_err_t reply_with_auth_i_msg(string_t *dst,
                          THEIR_DH(otr)))
     return OTR4_ERROR;
 
-  if (snizkpk_authenticate(msg->sigma, otr->keypair, their->pub_key,
-                           THEIR_ECDH(otr), t, t_len)) {
-    free(t);
-    t = NULL;
-    return OTR4_ERROR;
-  }
-
+  otr4_err_t err =
+      snizkpk_authenticate(msg->sigma, otr->conversation->client->keypair,
+                           their->pub_key, THEIR_ECDH(otr), t, t_len);
   free(t);
   t = NULL;
 
-  otr4_err_t err = serialize_and_encode_auth_i(dst, msg);
+  if (err == OTR4_ERROR)
+    return err;
+
+  err = serialize_and_encode_auth_i(dst, msg);
   dake_auth_i_destroy(msg);
   return err;
 }
@@ -770,11 +798,12 @@ static bool valid_auth_r_message(const dake_auth_r_t *auth, otrv4_t *otr) {
     return false;
 
   // Verif({g^I, g^R, g^i}, sigma, msg)
-  otr4_err_t err = snizkpk_verify(auth->sigma,
-                                  auth->profile->pub_key, // g^R
-                                  otr->keypair->pub,      // g^I
-                                  OUR_ECDH(otr),          // g^
-                                  t, t_len);
+  otr4_err_t err =
+      snizkpk_verify(auth->sigma,
+                     auth->profile->pub_key,                  // g^R
+                     otr->conversation->client->keypair->pub, // g^I
+                     OUR_ECDH(otr),                           // g^
+                     t, t_len);
 
   free(t);
   t = NULL;
@@ -822,7 +851,7 @@ static otr4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
 
   otrv4_fingerprint_t fp;
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
-    fingerprint_seen_cb(fp, otr);
+    fingerprint_seen_cb(fp, otr->conversation);
 
   return double_ratcheting_init(0, otr);
 }
@@ -837,7 +866,8 @@ static bool valid_auth_i_message(const dake_auth_i_t *auth, otrv4_t *otr) {
     return false;
 
   otr4_err_t err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
-                                  otr->keypair->pub, OUR_ECDH(otr), t, t_len);
+                                  otr->conversation->client->keypair->pub,
+                                  OUR_ECDH(otr), t, t_len);
   free(t);
   t = NULL;
 
@@ -867,7 +897,7 @@ static otr4_err_t receive_auth_i(string_t *dst, const uint8_t *buff,
 
   otrv4_fingerprint_t fp;
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
-    fingerprint_seen_cb(fp, otr);
+    fingerprint_seen_cb(fp, otr->conversation);
 
   return double_ratcheting_init(1, otr);
 }
@@ -926,7 +956,7 @@ static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
   case OTRV4_TLV_DISCONNECTED:
     forget_our_keys(otr);
     otr->state = OTRV4_STATE_FINISHED;
-    gone_insecure_cb(otr);
+    gone_insecure_cb(otr->conversation);
     break;
   case OTRV4_TLV_SMP_MSG_1:
   case OTRV4_TLV_SMP_MSG_2:
@@ -1070,7 +1100,7 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
     return OTR4_ERROR;
 
   // TODO: how to prevent version rollback?
-  maybe_create_keys(otr);
+  maybe_create_keys(otr->conversation);
 
   switch (header.type) {
   case OTR_IDENTITY_MSG_TYPE:
@@ -1416,7 +1446,7 @@ static otr4_err_t otrv4_close_v4(string_t *to_send, otrv4_t *otr) {
 
   forget_our_keys(otr);
   otr->state = OTRV4_STATE_START;
-  gone_insecure_cb(otr);
+  gone_insecure_cb(otr->conversation);
 
   return err;
 }
@@ -1430,7 +1460,7 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
     otrv3_close(to_send, otr->otr3_conn); // TODO: This should return an error
                                           // but errors are reported on a
                                           // callback
-    gone_insecure_cb(otr);                // TODO: Only if success
+    gone_insecure_cb(otr->conversation);  // TODO: Only if success
     return OTR4_SUCCESS;
   case OTRV4_VERSION_4:
     return otrv4_close_v4(to_send, otr);
@@ -1502,7 +1532,7 @@ tlv_t *otrv4_smp_provide_secret(otrv4_t *otr, const uint8_t *secret,
   // TODO: transition to state 1 if an abort happens
   if (event)
     handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
-                        otr);
+                        otr->conversation);
 
   return smp_reply;
 }
@@ -1566,7 +1596,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t *otr, const string_t question,
     otr->smp->state = SMPSTATE_EXPECT2;
     otr->smp->progress = 25;
     handle_smp_event_cb(OTRV4_SMPEVENT_IN_PROGRESS, otr->smp->progress,
-                        question, otr);
+                        question, otr->conversation);
 
     tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);
     free(to_send);
@@ -1576,7 +1606,7 @@ tlv_t *otrv4_smp_initiate(otrv4_t *otr, const string_t question,
 
   smp_msg_1_destroy(msg);
   handle_smp_event_cb(OTRV4_SMPEVENT_ERROR, otr->smp->progress,
-                      otr->smp->msg1->question, otr);
+                      otr->smp->msg1->question, otr->conversation);
   return NULL;
 }
 
@@ -1621,7 +1651,8 @@ tlv_t *otrv4_process_smp(otrv4_t *otr, const tlv_t *tlv) {
     event = OTRV4_SMPEVENT_IN_PROGRESS;
 
   handle_smp_event_cb(event, otr->smp->progress,
-                      otr->smp->msg1 ? otr->smp->msg1->question : NULL, otr);
+                      otr->smp->msg1 ? otr->smp->msg1->question : NULL,
+                      otr->conversation);
 
   return to_send;
 }

@@ -2,6 +2,7 @@
 
 #include "../client.h"
 #include "../instance_tag.h"
+#include "../messaging.h"
 #include "../serialize.h"
 #include "../sha3.h"
 
@@ -13,15 +14,15 @@
 
 void test_client_conversation_api() {
   OTR4_INIT;
-  otrv4_keypair_t alice_keypair[1];
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrv4_keypair_generate(alice_keypair, sym);
 
   char *account = "";
   char *protocol = "";
 
-  otr4_client_t *alice =
-      otr4_client_new(alice_keypair, NULL, protocol, account, NULL);
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_add_private_key_v4(alice_state, sym);
+
+  otr4_client_t *alice = otr4_client_new(alice_state, protocol, account, NULL);
   otrv4_assert(!alice->conversations);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
@@ -54,7 +55,7 @@ void test_client_conversation_api() {
   otrv4_assert(alice_to_charlie->conn);
 
   // Free memory
-  otrv4_keypair_destroy(alice_keypair);
+  otr4_client_state_free(alice_state);
   otr4_client_free(alice);
 
   dh_free();
@@ -63,22 +64,27 @@ void test_client_conversation_api() {
 void test_client_api() {
   OTR4_INIT;
 
-  otrv4_keypair_t alice_keypair[1], bob_keypair[1], charlie_keypair[1];
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
   uint8_t charlie_sym[ED448_PRIVATE_BYTES] = {3};
-  otrv4_keypair_generate(alice_keypair, alice_sym);
-  otrv4_keypair_generate(bob_keypair, bob_sym);
-  otrv4_keypair_generate(charlie_keypair, charlie_sym);
 
   otr4_client_t *alice = NULL, *bob = NULL, *charlie = NULL;
 
   char *account = "";
   char *protocol = "";
 
-  alice = otr4_client_new(alice_keypair, NULL, protocol, account, NULL);
-  bob = otr4_client_new(bob_keypair, NULL, protocol, account, NULL);
-  charlie = otr4_client_new(charlie_keypair, NULL, protocol, account, NULL);
+  otr4_client_state_t *alice_state = otr4_client_state_new("alice");
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+
+  otr4_client_state_t *bob_state = otr4_client_state_new("bob");
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
+
+  otr4_client_state_t *charlie_state = otr4_client_state_new("charlie");
+  otr4_client_state_add_private_key_v4(charlie_state, charlie_sym);
+
+  alice = otr4_client_new(alice_state, protocol, account, NULL);
+  bob = otr4_client_new(bob_state, protocol, account, NULL);
+  charlie = otr4_client_new(charlie_state, protocol, account, NULL);
 
   char *query_msg_to_bob =
       otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
@@ -95,16 +101,20 @@ void test_client_api() {
   // Bob receives query message, sends identity msg
   ignore = otr4_client_receive(&frombob, &todisplay, query_msg_to_bob,
                                ALICE_IDENTITY, bob);
+  free(query_msg_to_bob);
+  query_msg_to_bob = NULL;
+
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
-  free(query_msg_to_bob);
 
   // Charlie receives query message, sends identity message
   ignore = otr4_client_receive(&fromcharlie, &todisplay, query_msg_to_charlie,
                                ALICE_IDENTITY, charlie);
+  free(query_msg_to_charlie);
+  query_msg_to_charlie = NULL;
+
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
-  free(query_msg_to_charlie);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
       DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
@@ -117,55 +127,61 @@ void test_client_api() {
   // Alice receives identity message (from Bob), sends Auth-R message
   ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
                                BOB_IDENTITY, alice);
+  free(frombob);
+  frombob = NULL;
+
   otrv4_assert(from_alice_to_bob);
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
-  free(frombob);
-  frombob = NULL;
 
   // Alice receives identity message (from Charlie), sends Auth-R message
   ignore = otr4_client_receive(&from_alice_to_charlie, &todisplay, fromcharlie,
                                CHARLIE_IDENTITY, alice);
-  otrv4_assert(ignore);
-  otrv4_assert(!todisplay);
   free(fromcharlie);
   fromcharlie = NULL;
+
+  otrv4_assert(ignore);
+  otrv4_assert(!todisplay);
 
   // Bob receives Auth-R message, sends Auth-I message
   ignore = otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
                                ALICE_IDENTITY, bob);
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
+
   otrv4_assert(ignore);
   otrv4_assert(frombob);
   otrv4_assert(!todisplay);
-  free(from_alice_to_bob);
-  from_alice_to_bob = NULL;
 
   // Charlie receives Auth-R message, sends Auth-I message
   ignore = otr4_client_receive(&fromcharlie, &todisplay, from_alice_to_charlie,
                                ALICE_IDENTITY, charlie);
+  free(from_alice_to_charlie);
+  from_alice_to_charlie = NULL;
+
   otrv4_assert(ignore);
   otrv4_assert(fromcharlie);
   otrv4_assert(!todisplay);
-  free(from_alice_to_charlie);
-  from_alice_to_charlie = NULL;
 
   // Alice receives Auth-I message (from Bob)
   ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
                                BOB_IDENTITY, alice);
+  free(frombob);
+  frombob = NULL;
+
   otrv4_assert(!from_alice_to_bob);
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
-  free(frombob);
-  frombob = NULL;
 
   // Alice receives Auth-I message (from Charlie)
   ignore = otr4_client_receive(&from_alice_to_charlie, &todisplay, fromcharlie,
                                CHARLIE_IDENTITY, alice);
+  free(fromcharlie);
+  fromcharlie = NULL;
+
   otrv4_assert(!from_alice_to_charlie);
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
-  free(fromcharlie);
-  fromcharlie = NULL;
 
   // Alice sends a disconnected to Bob
   int err = otr4_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
@@ -181,17 +197,17 @@ void test_client_api() {
   // Bob receives the disconnected from Alice
   ignore = otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
                                ALICE_IDENTITY, bob);
-  otrv4_assert(ignore);
-  otrv4_assert(!frombob);
-  otrv4_assert(!todisplay);
   free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
-  otrv4_keypair_destroy(alice_keypair);
-  otrv4_keypair_destroy(bob_keypair);
-  otrv4_keypair_destroy(charlie_keypair);
+  otrv4_assert(ignore);
+  otrv4_assert(!frombob);
+  otrv4_assert(!todisplay);
 
   // Free memory
+  otr4_client_state_free(alice_state);
+  otr4_client_state_free(bob_state);
+  otr4_client_state_free(charlie_state);
   otr4_client_free(charlie);
   otr4_client_free(bob);
   otr4_client_free(alice);
@@ -202,22 +218,23 @@ void test_client_api() {
 void test_client_get_our_fingerprint() {
   OTR4_INIT;
 
-  otrv4_keypair_t client_keypair[1];
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrv4_keypair_generate(client_keypair, sym);
-
   char *account = "";
   char *protocol = "";
 
+  otr4_client_state_t *client_state = otr4_client_state_new("alice");
+  otr4_client_state_add_private_key_v4(client_state, sym);
+
   otr4_client_t *client =
-      otr4_client_new(client_keypair, NULL, protocol, account, NULL);
+      otr4_client_new(client_state, protocol, account, NULL);
 
   otrv4_fingerprint_t our_fp = {0};
   otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));
 
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(serialize_otrv4_public_key(serialized, client->keypair->pub),
-                  ==, ED448_PUBKEY_BYTES);
+  g_assert_cmpint(
+      serialize_otrv4_public_key(serialized, client_state->keypair->pub), ==,
+      ED448_PUBKEY_BYTES);
 
   otrv4_fingerprint_t expected_fp = {0};
   bool ok = sha3_512(expected_fp, sizeof(otrv4_fingerprint_t), serialized,
@@ -225,8 +242,7 @@ void test_client_get_our_fingerprint() {
   otrv4_assert(ok == TRUE);
   otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(otrv4_fingerprint_t));
 
-  otrv4_keypair_destroy(client_keypair);
-
+  otr4_client_state_free(client_state);
   otr4_client_free(client);
 
   dh_free();
@@ -263,23 +279,26 @@ void test_fingerprint_hash_to_human() {
 void test_conversation_with_multiple_locations() {
   OTR4_INIT;
 
-  otrv4_keypair_t alice_keypair[1], bob_keypair[1];
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-  otrv4_keypair_generate(alice_keypair, alice_sym);
-  otrv4_keypair_generate(bob_keypair, bob_sym);
-
   otr4_client_t *alice = NULL, *bob = NULL;
 
   char *account = "";
   char *protocol = "";
 
-  alice = otr4_client_new(alice_keypair, NULL, protocol, account, NULL);
-  bob = otr4_client_new(bob_keypair, NULL, protocol, account, NULL);
+  otr4_client_state_t *alice_state = otr4_client_state_new("alice");
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+
+  otr4_client_state_t *bob_state = otr4_client_state_new("bob");
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
+
+  alice = otr4_client_new(alice_state, protocol, account, NULL);
+  bob = otr4_client_new(bob_state, protocol, account, NULL);
 
   // Clients should have an instance tag
-  otrv4_assert(alice->instag);
-  otrv4_assert(bob->instag);
+  // TODO: this test client_new creates instance tag?
+  otrv4_assert(alice->state && alice->state->instag);
+  otrv4_assert(bob->state && bob->state->instag);
 
   char *query_msg = otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
 
@@ -290,6 +309,7 @@ void test_conversation_with_multiple_locations() {
   ignore =
       otr4_client_receive(&frombob, &todisplay, query_msg, ALICE_IDENTITY, bob);
   free(query_msg);
+  query_msg = NULL;
 
   // Alice receives identity message (from Bob), sends Auth-R message
   ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
@@ -325,7 +345,7 @@ void test_conversation_with_multiple_locations() {
   free(todisplay);
 
   // Bob sends a message with a different instance tag
-  alice->instag->value = alice->instag->value + 1;
+  alice->state->instag->value = alice->state->instag->value + 1;
   otr4_client_send(&frombob, "hello again", ALICE_IDENTITY, bob);
 
   // Alice receives and ignores the message.
@@ -337,6 +357,10 @@ void test_conversation_with_multiple_locations() {
   free(frombob);
   frombob = NULL;
 
+  // Free the ignored reply
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
+
   // Alice sends a disconnected to Bob
   otr4_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
 
@@ -346,10 +370,13 @@ void test_conversation_with_multiple_locations() {
   free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
-  otrv4_keypair_destroy(alice_keypair);
-  otrv4_keypair_destroy(bob_keypair);
+  // Free the ignored reply
+  free(frombob);
+  frombob = NULL;
 
   // Free memory
+  otr4_client_state_free(bob_state);
+  otr4_client_state_free(alice_state);
   otr4_client_free(bob);
   otr4_client_free(alice);
 
@@ -359,11 +386,13 @@ void test_conversation_with_multiple_locations() {
 void test_conversation_with_multiple_locations_diff_instag() {
   OTR4_INIT;
 
-  otrv4_keypair_t alice_keypair[1], bob_keypair[1];
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-  otrv4_keypair_generate(alice_keypair, alice_sym);
-  otrv4_keypair_generate(bob_keypair, bob_sym);
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
 
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
@@ -381,16 +410,16 @@ void test_conversation_with_multiple_locations_diff_instag() {
 
   otr4_client_t *alice = NULL, *bob = NULL;
 
-  alice = otr4_client_new(alice_keypair, NULL, icq_protocol, icq_alice_account,
-                          tmpFILEp);
-  bob = otr4_client_new(bob_keypair, NULL, protocol, account, NULL);
+  alice =
+      otr4_client_new(alice_state, icq_protocol, icq_alice_account, tmpFILEp);
+  bob = otr4_client_new(bob_state, protocol, account, tmpFILEp);
 
-  // clients should have an instance tag
-  otrv4_assert(alice->instag);
-  otrv4_assert(bob->instag);
+  // Clients should have an instance tag
+  otrv4_assert(alice->state->instag);
+  otrv4_assert(bob->state->instag);
 
   char sone[9];
-  snprintf(sone, sizeof(sone), "%08x", alice->instag->value);
+  snprintf(sone, sizeof(sone), "%08x", alice->state->instag->value);
 
   g_assert_cmpstr(sone, ==, "9abcdef0");
 
@@ -439,7 +468,7 @@ void test_conversation_with_multiple_locations_diff_instag() {
   free(todisplay);
 
   // Bob sends a message with a different instance tag
-  alice->instag->value = alice->instag->value + 1;
+  alice->state->instag->value = alice->state->instag->value + 1;
   otr4_client_send(&frombob, "hello again", ALICE_IDENTITY, bob);
 
   // Alice receives and ignores the message.
@@ -460,8 +489,8 @@ void test_conversation_with_multiple_locations_diff_instag() {
   free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
-  otrv4_keypair_destroy(alice_keypair);
-  otrv4_keypair_destroy(bob_keypair);
+  otr4_client_state_free(alice_state);
+  otr4_client_state_free(bob_state);
 
   // Free memory
   otr4_client_free(bob);
