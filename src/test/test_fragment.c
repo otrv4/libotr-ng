@@ -10,19 +10,17 @@ void test_create_fragments(void) {
   fragment_message_t *frag_message;
   frag_message = malloc(sizeof(fragment_message_t));
 
-  otrv4_assert(
-      otr4_fragment_message(mms, frag_message, 1, 2, message)
-      ==
-      OTR4_SUCCESS);
+  otrv4_assert(otr4_fragment_message(mms, frag_message, 1, 2, message) ==
+               OTR4_SUCCESS);
 
   g_assert_cmpstr(frag_message->pieces[0], ==,
-      "?OTR|00000001|00000002,00001,00004,one,");
+                  "?OTR|00000001|00000002,00001,00004,one,");
   g_assert_cmpstr(frag_message->pieces[1], ==,
-      "?OTR|00000001|00000002,00002,00004, tw,");
+                  "?OTR|00000001|00000002,00002,00004, tw,");
   g_assert_cmpstr(frag_message->pieces[2], ==,
-      "?OTR|00000001|00000002,00003,00004,o t,");
+                  "?OTR|00000001|00000002,00003,00004,o t,");
   g_assert_cmpstr(frag_message->pieces[3], ==,
-      "?OTR|00000001|00000002,00004,00004,ree,");
+                  "?OTR|00000001|00000002,00004,00004,ree,");
 
   g_assert_cmpint(frag_message->total, ==, 4);
 
@@ -35,7 +33,7 @@ void test_defragment_non_frag(void) {
 
   fragment_context_t *context;
   context = fragment_context_new();
-    malloc(sizeof(fragment_context_t));
+  malloc(sizeof(fragment_context_t));
 
   otrv4_assert(otr4_defragment_message(context, message) == OTR4_SUCCESS);
 
@@ -52,10 +50,9 @@ void test_defragment_valid_message(void) {
   fragments[0] = "?OTR|00000001|00000002,00001,00002,one ,";
   fragments[1] = "?OTR|00000001|00000002,00002,00002,more,";
 
-
   fragment_context_t *context;
   context = fragment_context_new();
-    malloc(sizeof(fragment_context_t));
+  malloc(sizeof(fragment_context_t));
 
   otrv4_assert(otr4_defragment_message(context, fragments[0]) == OTR4_SUCCESS);
 
