@@ -674,6 +674,10 @@ static otr4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,
   if (dake_identity_message_deserialize(m, buff, buflen))
     return err;
 
+  if (m->receiver_instance_tag != 0) {
+    return OTR4_SUCCESS;
+  }
+
   received_instance_tag(m->sender_instance_tag, otr);
 
   if (!valid_received_values(m->Y, m->B, m->profile))
