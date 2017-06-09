@@ -319,7 +319,10 @@ void test_conversation_with_multiple_locations() {
   frombob = NULL;
 
   otrv4_assert(!ignore);
+  otrv4_assert(!from_alice_to_bob);
   otrv4_assert(todisplay);
+
+  free(todisplay);
 
   // Bob sends a message with a different instance tag
   alice->instag->value = alice->instag->value + 1;
