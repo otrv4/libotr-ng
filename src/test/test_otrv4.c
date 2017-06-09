@@ -212,8 +212,8 @@ void test_otrv4_receives_identity_message_valid_instance_tag(
   otrv4_receive_message(auth_msg, id_msg->to_send, otrv4_fixture->otr);
   otrv4_assert(!auth_msg->to_send);
 
-  otrv4_response_free(auth_msg);
   otrv4_response_free(id_msg);
+  otrv4_response_free(auth_msg);
 }
 
 void test_otrv4_receives_fragmented_message(otrv4_fixture_t *otrv4_fixture,

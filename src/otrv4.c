@@ -785,24 +785,31 @@ static otr4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
     return OTR4_ERROR;
 
   if (auth->receiver_instance_tag != otr->our_instance_tag) {
+    dake_auth_r_destroy(auth);
     return OTR4_SUCCESS;
   }
 
   received_instance_tag(auth->sender_instance_tag, otr);
 
-  if (!valid_auth_r_message(auth, otr))
+  if (!valid_auth_r_message(auth, otr)) {
+    dake_auth_r_destroy(auth);
     return OTR4_ERROR;
+  }
 
   otr->their_profile = malloc(sizeof(user_profile_t));
-  if (!otr->their_profile)
+  if (!otr->their_profile) {
+    dake_auth_r_destroy(auth);
     return OTR4_ERROR;
+  }
 
   key_manager_set_their_ecdh(auth->X, otr->keys);
   key_manager_set_their_dh(auth->A, otr->keys);
   user_profile_copy(otr->their_profile, auth->profile);
 
-  if (reply_with_auth_i_msg(dst, otr->their_profile, otr))
+  if (reply_with_auth_i_msg(dst, otr->their_profile, otr)) {
+    dake_auth_r_destroy(auth);
     return OTR4_ERROR;
+  }
 
   dake_auth_r_destroy(auth);
 
@@ -840,11 +847,14 @@ static otr4_err_t receive_auth_i(string_t *dst, const uint8_t *buff,
     return OTR4_ERROR;
 
   if (auth->receiver_instance_tag != otr->our_instance_tag) {
+    dake_auth_i_destroy(auth);
     return OTR4_SUCCESS;
   }
 
-  if (!valid_auth_i_message(auth, otr))
+  if (!valid_auth_i_message(auth, otr)) {
+    dake_auth_i_destroy(auth);
     return OTR4_ERROR;
+  }
 
   dake_auth_i_destroy(auth);
 
