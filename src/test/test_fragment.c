@@ -51,7 +51,6 @@ void test_defragment_valid_message(void) {
 
   fragment_context_t *context;
   context = fragment_context_new();
-  malloc(sizeof(fragment_context_t));
 
   otrv4_assert(otr4_defragment_message(context, fragments[0]) == OTR4_SUCCESS);
 
