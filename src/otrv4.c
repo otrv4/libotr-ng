@@ -773,6 +773,10 @@ static otr4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
   if (dake_auth_r_deserialize(auth, buff, buff_len))
     return OTR4_ERROR;
 
+  if (auth->receiver_instance_tag != otr->our_instance_tag) {
+    return OTR4_SUCCESS;
+  }
+
   received_instance_tag(auth->sender_instance_tag, otr);
 
   if (!valid_auth_r_message(auth, otr))
@@ -823,6 +827,10 @@ static otr4_err_t receive_auth_i(string_t *dst, const uint8_t *buff,
   dake_auth_i_t auth[1];
   if (dake_auth_i_deserialize(auth, buff, buff_len))
     return OTR4_ERROR;
+
+  if (auth->receiver_instance_tag != otr->our_instance_tag) {
+    return OTR4_SUCCESS;
+  }
 
   if (!valid_auth_i_message(auth, otr))
     return OTR4_ERROR;
@@ -1032,8 +1040,6 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
     return OTR4_ERROR;
 
   // TODO: how to prevent version rollback?
-  // TODO: where should we ignore messages to a different instance tag?
-
   maybe_create_keys(otr);
 
   switch (header.type) {
@@ -1245,6 +1251,9 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
   data_msg = generate_data_msg(otr);
   if (!data_msg)
     return OTR4_ERROR;
+
+  data_msg->sender_instance_tag = otr->our_instance_tag;
+  data_msg->receiver_instance_tag = otr->their_instance_tag;
 
   otr4_err_t err = OTR4_ERROR;
   if (encrypt_data_message(data_msg, message, message_len, enc_key) ==

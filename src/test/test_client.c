@@ -260,7 +260,7 @@ void test_fingerprint_hash_to_human() {
   g_assert_cmpint(0, ==, strncmp(expected_fp, fp_human, OTR4_FPRINT_HUMAN_LEN));
 }
 
-void test_conversation_with_multiple_locations() {
+void test_conversation_data_message_with_multiple_locations() {
   OTR4_INIT;
 
   otrv4_keypair_t alice_keypair[1], bob_keypair[1];
@@ -281,6 +281,119 @@ void test_conversation_with_multiple_locations() {
   otrv4_assert(alice->instag);
   otrv4_assert(bob->instag);
 
+  char *query_msg = otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+
+  int ignore = 0;
+  char *from_alice_to_bob = NULL, *frombob = NULL, *todisplay = NULL;
+
+  // Bob receives query message, sends identity msg
+  ignore =
+      otr4_client_receive(&frombob, &todisplay, query_msg, ALICE_IDENTITY, bob);
+  free(query_msg);
+
+  // Alice receives identity message (from Bob), sends Auth-R message
+  ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
+                               BOB_IDENTITY, alice);
+  free(frombob);
+  frombob = NULL;
+
+  // Bob receives Auth-R message, sends Auth-I message
+  ignore = otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
+                               ALICE_IDENTITY, bob);
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
+
+  // Alice receives Auth-I message (from Bob)
+  ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
+                               BOB_IDENTITY, alice);
+  free(frombob);
+  frombob = NULL;
+
+  // Bob sends a message with orginal intance tag
+  otr4_client_send(&frombob, "hello", ALICE_IDENTITY, bob);
+
+  // Alice receives the message.
+  ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
+                               BOB_IDENTITY, alice);
+  free(frombob);
+  frombob = NULL;
+
+  otrv4_assert(!ignore);
+  otrv4_assert(!from_alice_to_bob);
+  otrv4_assert(todisplay);
+
+  free(todisplay);
+
+  // Bob sends a message with a different instance tag
+  alice->instag->value = alice->instag->value + 1;
+  otr4_client_send(&frombob, "hello again", ALICE_IDENTITY, bob);
+
+  // Alice receives and ignores the message.
+  ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
+                               BOB_IDENTITY, alice);
+  otrv4_assert(ignore);
+  otrv4_assert(!todisplay);
+
+  free(frombob);
+  frombob = NULL;
+
+  // Alice sends a disconnected to Bob
+  otr4_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
+
+  // Bob receives the disconnected from Alice
+  ignore = otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
+                               ALICE_IDENTITY, bob);
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
+
+  otrv4_keypair_destroy(alice_keypair);
+  otrv4_keypair_destroy(bob_keypair);
+
+  // Free memory
+  otr4_client_free(bob);
+  otr4_client_free(alice);
+
+  OTR4_FREE
+}
+
+void test_conversation_with_multiple_locations() {
+  OTR4_INIT;
+
+  otrv4_keypair_t alice_keypair[1], bob_keypair[1];
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+  otrv4_keypair_generate(alice_keypair, alice_sym);
+  otrv4_keypair_generate(bob_keypair, bob_sym);
+
+  FILE *tmpFILEp;
+  tmpFILEp = tmpfile();
+
+  char *icq_alice_account = "alice_icq";
+  char *icq_protocol = "ICQ";
+  unsigned int icq_instag_value = 0x9abcdef0;
+
+  fprintf(tmpFILEp, "%s\t%s\t%08x\n", icq_alice_account, icq_protocol,
+          icq_instag_value);
+  rewind(tmpFILEp);
+
+  char *protocol = "";
+  char *account = "";
+
+  otr4_client_t *alice = NULL, *bob = NULL;
+
+  alice = otr4_client_new(alice_keypair, NULL, icq_protocol, icq_alice_account, tmpFILEp);
+  bob = otr4_client_new(bob_keypair, NULL, protocol, account, tmpFILEp);
+
+  // Clients should have an instance tag
+  otrv4_assert(alice->instag);
+  otrv4_assert(bob->instag);
+
+  char sone[9];
+  snprintf(sone, sizeof(sone), "%08x", alice->instag->value);
+
+  g_assert_cmpstr(sone, ==, "9abcdef0");
+
+  // Alice sends a query message to bob
   char *query_msg = otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
 
   int ignore = 0;

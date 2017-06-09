@@ -146,6 +146,10 @@ int main(int argc, char **argv) {
      otrv4_fixture_teardown);
    */
 
+  g_test_add("/otrv4/receives_invalid_instance_tag_on_identity_message",
+                  otrv4_fixture_t, NULL, otrv4_fixture_set_up,
+		  test_otrv4_receives_identity_message_valid_instance_tag,
+		  otrv4_fixture_teardown);
   g_test_add_func("/otrv4/destroy", test_otrv4_destroy);
 
   g_test_add_func("/api/conversation/v4", test_api_conversation);
@@ -160,8 +164,11 @@ int main(int argc, char **argv) {
   g_test_add_func("/client/fingerprint_to_human",
                   test_fingerprint_hash_to_human);
 
+  g_test_add_func("/client/conversation_data_message_multiple_locations",
+                  test_conversation_data_message_with_multiple_locations);
+
   g_test_add_func("/client/conversation_multiple_locations",
-                  test_conversation_with_multiple_locations);
+                  test_conversation_data_message_with_multiple_locations);
 
   return g_test_run();
 }

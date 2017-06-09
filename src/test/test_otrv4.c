@@ -191,6 +191,32 @@ void test_otrv4_receives_identity_message_invalid_on_start(
   otrv4_response_free(response);
 }
 
+void test_otrv4_receives_identity_message_valid_instance_tag(
+    otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
+
+  char *message = "And some random invitation text.";
+
+  // builds a query message
+  char *query_message = NULL;
+  otrv4_build_query_message(&query_message, message, otrv4_fixture->otr);
+
+  // build an identity message
+  otrv4_response_t *id_msg = otrv4_response_new();
+  otrv4_fixture->otr->their_instance_tag = 1;
+  otrv4_receive_message(id_msg, query_message, otrv4_fixture->otr);
+  free(query_message);
+
+  // receive the identity message with non-zero their instance tag
+  otrv4_response_t *auth_msg = otrv4_response_new();
+  otrv4_receive_message(auth_msg, id_msg->to_send, otrv4_fixture->otr);
+
+  otrv4_response_free(id_msg);
+
+  otrv4_assert(!auth_msg->to_send);
+
+  otrv4_response_free(auth_msg);
+}
+
 void test_otrv4_destroy() {
   otrv4_keypair_t keypair[1];
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
