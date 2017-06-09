@@ -103,6 +103,7 @@ static bool is_fragment(const string_t message) {
 otr4_err_t otr4_defragment_message(fragment_context_t *context,
                                    const string_t message) {
   if (!is_fragment(message)) {
+    free(context->fragment);
     context->fragment_len = strlen(message);
     context->fragment = malloc(context->fragment_len + 1);
     if (!context->fragment)
