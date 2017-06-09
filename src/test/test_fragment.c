@@ -1,5 +1,6 @@
 #include <glib.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "../fragment.h"
 
@@ -70,3 +71,30 @@ void test_defragment_valid_message(void) {
   fragment_context_free(context);
 }
 
+void test_defragment_plaintext_should_clean_context(void) {
+  string_t fragments[2];
+  fragments[0] = "?OTR|00000001|00000002,00001,00002,one ,";
+  fragments[1] = "?OTR|00000001|00000002,00002,00002,more,";
+
+  fragment_context_t *context;
+  context = fragment_context_new();
+
+  otrv4_assert(otr4_defragment_message(context, fragments[0]) == OTR4_SUCCESS);
+
+  g_assert_cmpint(context->N, ==, 2);
+  g_assert_cmpint(context->K, ==, 1);
+  g_assert_cmpstr(context->fragment, ==, "one ");
+  g_assert_cmpint(context->fragment_len, ==, 4);
+  otrv4_assert(context->status == OTR4_FRAGMENT_INCOMPLETE);
+
+  char *plaintext = "Anything else";
+  otrv4_assert(otr4_defragment_message(context, plaintext) == OTR4_SUCCESS);
+
+  g_assert_cmpint(context->N, ==, 0);
+  g_assert_cmpint(context->K, ==, 0);
+  g_assert_cmpstr(context->fragment, ==, plaintext);
+  g_assert_cmpint(context->fragment_len, ==, strlen(plaintext));
+  otrv4_assert(context->status == OTR4_FRAGMENT_UNFRAGMENTED);
+
+  fragment_context_free(context);
+}

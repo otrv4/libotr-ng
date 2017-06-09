@@ -84,10 +84,12 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/data_message/serialize", test_data_message_serializes);
 
+  g_test_add_func("/fragment/clean_when_receives_plaintext",
+                  test_defragment_plaintext_should_clean_context);
   g_test_add_func("/fragment/create_fragments", test_create_fragments);
-  g_test_add_func("/fragment/not_defrag_a_non_frag", test_defragment_non_frag);
   g_test_add_func("/fragment/defragment_message",
                   test_defragment_valid_message);
+  g_test_add_func("/fragment/not_defrag_a_non_frag", test_defragment_non_frag);
 
   g_test_add_func("/key_management/derive_ratchet_keys",
                   test_derive_ratchet_keys);
