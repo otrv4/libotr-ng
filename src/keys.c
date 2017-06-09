@@ -35,6 +35,9 @@ void otrv4_keypair_destroy(otrv4_keypair_t *keypair) {
 }
 
 void otrv4_keypair_free(otrv4_keypair_t *keypair) {
+    if (!keypair)
+        return;
+
   otrv4_keypair_destroy(keypair);
   free(keypair);
 }

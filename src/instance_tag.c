@@ -37,6 +37,9 @@ int otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
 }
 
 void otr4_instag_free(otrv4_instag_t *instag) {
+    if (!instag)
+        return;
+
   free(instag->account);
   instag->account = NULL;
 
