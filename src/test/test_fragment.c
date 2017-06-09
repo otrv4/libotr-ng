@@ -24,8 +24,7 @@ void test_create_fragments(void) {
 
   g_assert_cmpint(frag_message->total, ==, 4);
 
-  free(frag_message->pieces);
-  free(frag_message);
+  fragment_message_free(frag_message);
 }
 
 void test_defragment_non_frag(void) {

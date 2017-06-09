@@ -24,7 +24,10 @@ typedef struct {
   fragment_status status;
 } fragment_context_t;
 
+void fragment_message_free(fragment_message_t *message);
+
 fragment_context_t *fragment_context_new(void);
+
 void fragment_context_free(fragment_context_t *context);
 
 otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,

@@ -7,6 +7,14 @@
 
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
 
+void fragment_message_free(fragment_message_t *message) {
+  for (int i = 0; i < message->total; free(message->pieces[i++])) {}
+  free(message->pieces);
+  message->pieces = NULL;
+
+  free(message);
+}
+
 fragment_context_t *fragment_context_new(void) {
   fragment_context_t *context = malloc(sizeof(fragment_context_t));
   context->N = 0;
@@ -55,7 +63,7 @@ otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,
 
     piece_data = malloc(piece_len + 1);
     if (!piece_data) {
-      free(pieces);
+      for (int i = 0; i < fragments->total; free(pieces[i++])) {}
       return OTR4_ERROR;
     }
 
@@ -64,7 +72,7 @@ otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,
 
     piece = malloc(piece_len + FRAGMENT_HEADER_LEN + 1);
     if (!piece) {
-      free(piece);
+      for (int i = 0; i < fragments->total; free(pieces[i++])) {}
       free(piece_data);
       return OTR4_ERROR;
     }
