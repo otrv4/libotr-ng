@@ -161,8 +161,12 @@ otr4_err_t otr4_defragment_message(fragment_context_t *context,
   const string_t format = "?OTR|%08x|%08x,%05x,%05x,%n%*[^,],%n";
   sscanf(message, format, &sender_tag, &receiver_tag, &k, &n, &start, &end);
 
-  int msg_len = end - start - 1;
+  if (k == 0 || n == 0 || k > n) {
+      initialize_fragment_context(context);
+      return OTR4_SUCCESS;
+  }
 
+  int msg_len = end - start - 1;
   if (end <= start)
     return OTR4_ERROR;
 
@@ -186,7 +190,7 @@ otr4_err_t otr4_defragment_message(fragment_context_t *context,
       initialize_fragment_context(context);
   }
 
-  if (context->N > 0 && context->N == context->K)
+  if (context->N == context->K)
     context->status = OTR4_FRAGMENT_COMPLETE;
 
   return OTR4_SUCCESS;

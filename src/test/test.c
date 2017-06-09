@@ -89,6 +89,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/fragment/create_fragments", test_create_fragments);
   g_test_add_func("/fragment/defragment_message",
                   test_defragment_valid_message);
+  g_test_add_func("/fragment/defragment_single_fragment",
+                  test_defragment_single_fragment);
   g_test_add_func("/fragment/not_defrag_a_non_frag", test_defragment_non_frag);
 
   g_test_add_func("/key_management/derive_ratchet_keys",
