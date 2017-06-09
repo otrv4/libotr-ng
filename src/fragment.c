@@ -74,7 +74,8 @@ otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,
 
     piece = malloc(piece_len + FRAGMENT_HEADER_LEN + 1);
     if (!piece) {
-      for (int i = 0; i < fragments->total; free(pieces[i++])) {}
+      int i;
+      for (i = 0; i < fragments->total; free(pieces[i++])) {}
       free(piece_data);
       return OTR4_ERROR;
     }
@@ -100,19 +101,56 @@ static bool is_fragment(const string_t message) {
   return strstr(message, "?OTR|") != NULL;
 }
 
+static void initialize_fragment_context(fragment_context_t *context) {
+  free(context->fragment);
+  context->fragment = "";
+  context->fragment_len = 0;
+
+  context->N = 0;
+  context->K = 0;
+  context->status = OTR4_FRAGMENT_UNFRAGMENTED;
+}
+
+static otr4_err_t add_first_fragment(const char *msg, int msg_len,
+    fragment_context_t *ctx) {
+  char *buff = malloc(msg_len + 1);
+  if (!buff)
+    return OTR4_ERROR;
+
+  memmove(buff, msg, msg_len);
+  buff[msg_len] = '\0';
+  ctx->fragment_len += msg_len;
+  ctx->fragment = buff;
+
+  return OTR4_SUCCESS;
+}
+
+static otr4_err_t append_fragment(const char *msg, int msg_len,
+    fragment_context_t *ctx) {
+  size_t new_buff_len = ctx->fragment_len + msg_len + 1;
+  char *buff = realloc(ctx->fragment, new_buff_len);
+  if (!buff)
+    return OTR4_ERROR;
+
+  memmove(buff + ctx->fragment_len, msg, msg_len);
+  buff[ctx->fragment_len + msg_len] = '\0';
+  ctx->fragment_len += msg_len;
+  ctx->fragment = buff;
+
+  return OTR4_SUCCESS;
+}
+
 otr4_err_t otr4_defragment_message(fragment_context_t *context,
                                    const string_t message) {
   if (!is_fragment(message)) {
-    free(context->fragment);
+    initialize_fragment_context(context);
+
     context->fragment_len = strlen(message);
     context->fragment = malloc(context->fragment_len + 1);
     if (!context->fragment)
       return OTR4_ERROR;
 
     strcpy(context->fragment, message);
-    context->N = 0;
-    context->K = 0;
-    context->status = OTR4_FRAGMENT_UNFRAGMENTED;
     return OTR4_SUCCESS;
   }
 
@@ -121,51 +159,35 @@ otr4_err_t otr4_defragment_message(fragment_context_t *context,
   context->status = OTR4_FRAGMENT_INCOMPLETE;
 
   const string_t format = "?OTR|%08x|%08x,%05x,%05x,%n%*[^,],%n";
-  sscanf(message, format, &sender_tag, &receiver_tag, &k, &n,
-         &start, &end);
+  sscanf(message, format, &sender_tag, &receiver_tag, &k, &n, &start, &end);
 
-  char *buff = NULL;
-  context->N = n;
+  int msg_len = end - start - 1;
 
+  if (end <= start)
+    return OTR4_ERROR;
+
+  otr4_err_t err;
   if (k == 1) {
-    if (end <= start)
-      return OTR4_ERROR;
+    err = add_first_fragment(message+start, msg_len, context);
+    if (err != OTR4_SUCCESS)
+      return err;
 
-    context->fragment_len = 0;
-    int buff_len = end - start - 1;
-    buff = malloc(buff_len + 1);
-    if (!buff)
-      return OTR4_ERROR;
-
-    memmove(buff, message + start, buff_len);
-    context->fragment_len += buff_len;
-    buff[context->fragment_len] = '\0';
-    context->fragment = buff;
+    context->N = n;
     context->K = k;
+
   } else {
-      if (n == context->N && k == context->K + 1) {
-        int buff_len = end - start - 1;
-        size_t new_buff_len = context->fragment_len + buff_len + 1;
-        buff = realloc(context->fragment, new_buff_len);
-        if (!buff)
-          return OTR4_ERROR;
+    if (n == context->N && k == context->K + 1) {
+      err = append_fragment(message+start, msg_len, context);
+      if (err != OTR4_SUCCESS)
+        return err;
 
-        memmove(buff+context->fragment_len, message + start, buff_len);
-        context->fragment_len += buff_len;
-        buff[context->fragment_len] = '\0';
-        context->fragment = buff;
-        context->K = k;
-      } else {
-        free(context->fragment);
-        context->fragment = "";
-        context->K = 0;
-        context->N = 0;
-      }
+      context->K = k;
+    } else
+      initialize_fragment_context(context);
   }
 
-  if (context->N > 0 && context->N == context->K) {
+  if (context->N > 0 && context->N == context->K)
     context->status = OTR4_FRAGMENT_COMPLETE;
-  }
 
   return OTR4_SUCCESS;
 }
