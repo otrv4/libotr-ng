@@ -99,6 +99,8 @@ static void
 identity_message_fixture_teardown(identity_message_fixture_t *fixture,
                                   gconstpointer user_data) {
   otrv4_keypair_free(fixture->keypair);
+  fixture->keypair = NULL;
+
   user_profile_free(fixture->profile);
   fixture->profile = NULL;
 }

@@ -679,13 +679,16 @@ static otr4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,
     return err;
 
   if (m->receiver_instance_tag != 0) {
+    dake_identity_message_destroy(m);
     return OTR4_SUCCESS;
   }
 
   received_instance_tag(m->sender_instance_tag, otr);
 
-  if (!valid_received_values(m->Y, m->B, m->profile))
+  if (!valid_received_values(m->Y, m->B, m->profile)) {
+    dake_identity_message_destroy(m);
     return err;
+  }
 
   switch (otr->state) {
   case OTRV4_STATE_START:
