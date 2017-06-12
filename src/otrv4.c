@@ -142,7 +142,6 @@ otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy) {
   otr->smp->secret = NULL;
 
   otr->frag_ctx = fragment_context_new();
-
   otr->otr3_conn = NULL;
 
   return otr;
@@ -383,8 +382,10 @@ static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
   m->B = dh_mpi_copy(OUR_DH(otr));
 
   if (serialize_and_encode_identity_message(&response->to_send, m)) {
+    dake_identity_message_free(m);
     return err;
   }
+
   err = OTR4_SUCCESS;
   dake_identity_message_free(m);
   return err;
@@ -574,6 +575,7 @@ static otr4_err_t serialize_and_encode_auth_r(string_t *dst,
 
 static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
   dake_auth_r_t msg[1];
+
   msg->sender_instance_tag = otr->our_instance_tag;
   msg->receiver_instance_tag = otr->their_instance_tag;
 
@@ -596,12 +598,15 @@ static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
                                         THEIR_ECDH(otr),             // g^i -- Y
                                         t, t_len);
 
+  if (err) {
+    free(t);
+    t = NULL;
+    dake_auth_r_destroy(msg);
+    return OTR4_ERROR;
+  }
+
   free(t);
   t = NULL;
-
-  if (err)
-    return OTR4_ERROR;
-
   err = serialize_and_encode_auth_r(dst, msg);
   dake_auth_r_destroy(msg);
   return err;
@@ -740,8 +745,11 @@ static otr4_err_t reply_with_auth_i_msg(string_t *dst,
     return OTR4_ERROR;
 
   if (snizkpk_authenticate(msg->sigma, otr->keypair, their->pub_key,
-                           THEIR_ECDH(otr), t, t_len))
+                           THEIR_ECDH(otr), t, t_len)) {
+    free(t);
+    t = NULL;
     return OTR4_ERROR;
+  }
 
   free(t);
   t = NULL;
@@ -904,9 +912,11 @@ static otr4_err_t decrypt_data_msg(otrv4_response_t *response,
   extract_tlvs(tlvs, plain, msg->enc_msg_len);
 
   free(plain);
+
   if (err == 0) {
     return OTR4_SUCCESS;
   }
+
   return OTR4_ERROR;
 }
 
@@ -974,6 +984,7 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   data_message_t *msg = data_message_new();
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
+
   uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
   if (to_store_mac == NULL) {
     data_message_free(msg);
@@ -1000,7 +1011,6 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   do {
     if (msg->receiver_instance_tag != otr->our_instance_tag) {
       response->to_display = NULL;
-
       data_message_free(msg);
       free(to_store_mac);
 
@@ -1272,15 +1282,21 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
       key_manager_old_mac_keys_serialize(otr->keys->old_mac_keys);
   otr->keys->old_mac_keys = NULL;
 
-  if (key_manager_prepare_next_chain_key(otr->keys))
+  if (key_manager_prepare_next_chain_key(otr->keys)) {
+    free(ser_mac_keys);
     return OTR4_ERROR;
+  }
 
-  if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys))
+  if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
+    free(ser_mac_keys);
     return OTR4_ERROR;
+  }
 
   data_msg = generate_data_msg(otr);
-  if (!data_msg)
+  if (!data_msg) {
+    free(ser_mac_keys);
     return OTR4_ERROR;
+  }
 
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;

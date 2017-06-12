@@ -170,10 +170,10 @@ int main(int argc, char **argv) {
                   test_fingerprint_hash_to_human);
 
   g_test_add_func("/client/conversation_data_message_multiple_locations",
-                  test_conversation_data_message_with_multiple_locations);
+                  test_conversation_with_multiple_locations);
 
   g_test_add_func("/client/conversation_multiple_locations",
-                  test_conversation_data_message_with_multiple_locations);
+                  test_conversation_with_multiple_locations_diff_instag);
 
   return g_test_run();
 }

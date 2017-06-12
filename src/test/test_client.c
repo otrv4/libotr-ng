@@ -260,7 +260,7 @@ void test_fingerprint_hash_to_human() {
   g_assert_cmpint(0, ==, strncmp(expected_fp, fp_human, OTR4_FPRINT_HUMAN_LEN));
 }
 
-void test_conversation_data_message_with_multiple_locations() {
+void test_conversation_with_multiple_locations() {
   OTR4_INIT;
 
   otrv4_keypair_t alice_keypair[1], bob_keypair[1];
@@ -356,7 +356,7 @@ void test_conversation_data_message_with_multiple_locations() {
   OTR4_FREE
 }
 
-void test_conversation_with_multiple_locations() {
+void test_conversation_with_multiple_locations_diff_instag() {
   OTR4_INIT;
 
   otrv4_keypair_t alice_keypair[1], bob_keypair[1];
@@ -385,7 +385,7 @@ void test_conversation_with_multiple_locations() {
                           tmpFILEp);
   bob = otr4_client_new(bob_keypair, NULL, protocol, account, tmpFILEp);
 
-  // Clients should have an instance tag
+  // clients should have an instance tag
   otrv4_assert(alice->instag);
   otrv4_assert(bob->instag);
 

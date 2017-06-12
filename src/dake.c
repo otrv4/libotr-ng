@@ -226,8 +226,8 @@ otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   }
 
   size_t s = AUTH_R_MIN_BYTES + our_profile_len;
-  uint8_t *buff = malloc(s);
 
+  uint8_t *buff = malloc(s);
   if (!buff) {
     free(our_profile);
     return OTR4_ERROR;
@@ -244,14 +244,17 @@ otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
     free(buff);
     return OTR4_ERROR;
   }
+
   cursor += ED448_POINT_BYTES;
   size_t len = 0;
+
   otr4_err_t err = serialize_dh_public_key(cursor, &len, dre_auth->A);
   if (err) {
     free(our_profile);
     free(buff);
     return OTR4_ERROR;
   }
+
   cursor += len;
   cursor += serialize_snizkpk_proof(cursor, dre_auth->sigma);
 
