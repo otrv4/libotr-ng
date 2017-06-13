@@ -66,6 +66,9 @@ int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
   if (!privf)
     return -1;
 
+  if (feof(privf))
+      return 1;
+
   if (!state->keypair)
     state->keypair = otrv4_keypair_new();
 
