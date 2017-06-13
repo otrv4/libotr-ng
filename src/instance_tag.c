@@ -1,16 +1,17 @@
+#include <libotr/instag.h>
+#include <stdio.h>
+#include <stdbool.h>
+
 #include "instance_tag.h"
 #include "str.h"
 
-#include <libotr/instag.h>
-#include <stdio.h>
-
-int otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
+bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
                      const char *protocol, FILE *filename) {
 
   OtrlUserState us = otrl_userstate_create();
   if (otrl_instag_read_FILEp(us, filename)) {
     free(us);
-    return 1;
+    return false;
   }
 
   OtrlInsTag *tmp_instag;
@@ -21,7 +22,7 @@ int otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
       free(us);
       free(tmp_instag);
       tmp_instag = NULL;
-      return 1;
+      return false;
     }
     tmp_instag = otrl_instag_find(us, account, protocol);
   }

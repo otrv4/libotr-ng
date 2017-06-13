@@ -55,6 +55,7 @@ otr4_client_t *otr4_client_new(otrv4_keypair_t *keypair,
     instag_file = tmpfile();
   }
 
+  // TODO: check the error
   otrv4_instag_get(client->instag, account, protocol, instag_file);
   fclose(instag_file);
 
