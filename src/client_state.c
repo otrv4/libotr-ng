@@ -73,8 +73,10 @@ int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
     return -2;
 
   len = getline(&line, &cap, privf);
-  if (len < 0)
+  if (len < 0) {
+    free(line);
     return -3;
+  }
 
   err = otrv4_symmetric_key_deserialize(state->keypair, line, len - 1);
   free(line);
