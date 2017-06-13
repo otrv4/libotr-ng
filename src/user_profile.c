@@ -201,6 +201,8 @@ bool user_profile_valid_signature(const user_profile_t *profile) {
 
   uint8_t pubkey[ED448_POINT_BYTES];
   if (ec_point_serialize(pubkey, ED448_POINT_BYTES, profile->pub_key)) {
+    free(body);
+    body = NULL;
     return false;
   }
 
@@ -221,8 +223,11 @@ user_profile_t *user_profile_build(const string_t versions,
 #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; // 2 weeks
   time_t expires = time(NULL);
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
-  // TODO: check for error while calling this function
-  user_profile_sign(profile, keypair);
+
+  if (user_profile_sign(profile, keypair)) {
+    user_profile_free(profile);
+    return NULL;
+  }
 
   return profile;
 }

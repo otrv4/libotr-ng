@@ -122,7 +122,6 @@ otrv4_t *otrv4_new(otrv4_keypair_t *keypair, otrv4_policy_t policy) {
   otr->running_version = OTRV4_VERSION_NONE;
   otr->supported_versions = policy.allows;
 
-  // TODO: Serialize and deserialize our instance tags to/from disk.
   otr->our_instance_tag = 0;
   otr->their_instance_tag = 0;
   otr->profile = NULL;
