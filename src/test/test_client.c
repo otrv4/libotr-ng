@@ -412,7 +412,7 @@ void test_conversation_with_multiple_locations_diff_instag() {
 
   alice =
       otr4_client_new(alice_state, icq_protocol, icq_alice_account, tmpFILEp);
-  bob = otr4_client_new(bob_state, protocol, account, tmpFILEp);
+  bob = otr4_client_new(bob_state, protocol, account, NULL);
 
   // Clients should have an instance tag
   otrv4_assert(alice->state->instag);
