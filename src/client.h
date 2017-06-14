@@ -34,22 +34,22 @@ void otr4_client_free(otr4_client_t *client);
 char *otr4_client_query_message(const char *recipient, const char *message,
                                 otr4_client_t *client);
 
-int otr4_client_send(char **newmessage, const char *message,
+int otr4_client_send(otr4_message_to_send_t **newmsg, const char *message,
                      const char *recipient, otr4_client_t *client);
 
-int otr4_client_smp_start(char **tosend, const char *recipient,
+int otr4_client_smp_start(otr4_message_to_send_t **tosend, const char *recipient,
                           const char *question, const unsigned char *secret,
                           size_t secretlen, otr4_client_t *client);
 
-int otr4_client_smp_respond(char **tosend, const char *recipient,
+int otr4_client_smp_respond(otr4_message_to_send_t **tosend, const char *recipient,
                             const unsigned char *secret, size_t secretlen,
                             otr4_client_t *client);
 
-int otr4_client_receive(char **newmessage, char **todisplay,
+int otr4_client_receive(otr4_message_to_send_t **newmsg, char **todisplay,
                         const char *message, const char *recipient,
                         otr4_client_t *client);
 
-int otr4_client_disconnect(char **newmessage, const char *recipient,
+int otr4_client_disconnect(otr4_message_to_send_t **newmsg, const char *recipient,
                            otr4_client_t *client);
 
 otr4_conversation_t *otr4_client_get_conversation(int force,

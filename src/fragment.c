@@ -7,13 +7,29 @@
 
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
 
-void fragment_message_free(fragment_message_t *message) {
-  for (int i = 0; i < message->total; free(message->pieces[i++])) {
-  }
+void otr4_message_free(otr4_message_to_send_t *message) {
+  if (!message)
+    return;
+
+  int i;
+  for (i = 0; i < message->total; i++)
+    free(message->pieces[i]);
+
   free(message->pieces);
   message->pieces = NULL;
 
   free(message);
+}
+
+otr4_message_to_send_t * otr4_message_new() {
+    otr4_message_to_send_t *msg = malloc(sizeof(otr4_message_to_send_t));
+    if (!msg)
+      return NULL;
+
+    msg->pieces = NULL;
+    msg->total = 0;
+
+    return msg;
 }
 
 fragment_context_t *fragment_context_new(void) {
@@ -22,6 +38,7 @@ fragment_context_t *fragment_context_new(void) {
   context->K = 0;
   context->fragment = NULL;
   context->fragment_len = 0;
+  context->max_msg_size = 0;
   context->status = OTR4_FRAGMENT_UNFRAGMENTED;
 
   return context;
@@ -36,7 +53,7 @@ void fragment_context_free(fragment_context_t *context) {
   free(context);
 }
 
-otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,
+otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
                                  int our_instance, int their_instance,
                                  const string_t message) {
   size_t msglen = strlen(message);
@@ -66,7 +83,8 @@ otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,
     piece_data = malloc(piece_len + 1);
     if (!piece_data) {
       int i;
-      for (i = 0; i < fragments->total; free(pieces[i++])) {
+      for (i = 0; i < fragments->total; i++){
+          free(pieces[i]);
       }
       return OTR4_ERROR;
     }
@@ -77,7 +95,8 @@ otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,
     piece = malloc(piece_len + FRAGMENT_HEADER_LEN + 1);
     if (!piece) {
       int i;
-      for (i = 0; i < fragments->total; free(pieces[i++])) {
+      for (i = 0; i < fragments->total; i++){
+        free(pieces[i]);
       }
       free(piece_data);
       return OTR4_ERROR;
@@ -97,11 +116,6 @@ otr4_err_t otr4_fragment_message(int mms, fragment_message_t *fragments,
 
   fragments->pieces = pieces;
   return OTR4_SUCCESS;
-}
-
-static bool is_fragment(const string_t message) {
-  // TODO: should test if ends with , ?
-  return strstr(message, "?OTR|") != NULL;
 }
 
 static void initialize_fragment_context(fragment_context_t *context) {
@@ -136,27 +150,15 @@ static otr4_err_t append_fragment(const char *msg, int msg_len,
     return OTR4_ERROR;
 
   memmove(buff + ctx->fragment_len, msg, msg_len);
-  buff[ctx->fragment_len + msg_len] = '\0';
   ctx->fragment_len += msg_len;
+  buff[ctx->fragment_len] = '\0';
   ctx->fragment = buff;
 
   return OTR4_SUCCESS;
 }
 
-otr4_err_t otr4_defragment_message(fragment_context_t *context,
+otr4_err_t otr4_unfragment_message(char **unfrag_msg, fragment_context_t *context,
                                    const string_t message) {
-  if (!is_fragment(message)) {
-    initialize_fragment_context(context);
-
-    context->fragment_len = strlen(message);
-    context->fragment = malloc(context->fragment_len + 1);
-    if (!context->fragment)
-      return OTR4_ERROR;
-
-    strcpy(context->fragment, message);
-    return OTR4_SUCCESS;
-  }
-
   int sender_tag = 0, receiver_tag = 0, start = 0, end = 0;
   int k = 0, n = 0;
   context->status = OTR4_FRAGMENT_INCOMPLETE;
@@ -193,8 +195,10 @@ otr4_err_t otr4_defragment_message(fragment_context_t *context,
       initialize_fragment_context(context);
   }
 
-  if (context->N == context->K)
+  if (context->N == context->K) {
+    *unfrag_msg = context->fragment;
     context->status = OTR4_FRAGMENT_COMPLETE;
+  }
 
   return OTR4_SUCCESS;
 }

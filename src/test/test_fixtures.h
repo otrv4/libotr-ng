@@ -111,14 +111,14 @@ void do_ake_fixture(otrv4_t *alice, otrv4_t *bob) {
   // Should reply with a identity message
   otrv4_assert(bob->state == OTRV4_STATE_WAITING_AUTH_R);
   otrv4_assert(response_to_alice->to_display == NULL);
-  otrv4_assert(response_to_alice->to_send);
-  otrv4_assert_cmpmem("?OTR:AAQI", response_to_alice->to_send, 9);
+  otrv4_assert(response_to_alice->to_send->pieces[0]);
+  otrv4_assert_cmpmem("?OTR:AAQI", response_to_alice->to_send->pieces[0], 9);
 
   // Alice receives identity message
   otrv4_assert(otrv4_receive_message(response_to_bob,
-                                     response_to_alice->to_send,
+                                     response_to_alice->to_send->pieces[0],
                                      alice) == OTR4_SUCCESS);
-  free(response_to_alice->to_send);
+  otr4_message_free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
   // Alice has Bob's ephemeral keys
@@ -131,14 +131,14 @@ void do_ake_fixture(otrv4_t *alice, otrv4_t *bob) {
 
   // Should reply with an auth receiver
   otrv4_assert(response_to_bob->to_display == NULL);
-  otrv4_assert(response_to_bob->to_send);
-  otrv4_assert_cmpmem("?OTR:AASR", response_to_bob->to_send, 9);
+  otrv4_assert(response_to_bob->to_send->pieces[0]);
+  otrv4_assert_cmpmem("?OTR:AASR", response_to_bob->to_send->pieces[0], 9);
 
   // Bob receives an auth receiver
   otrv4_assert(otrv4_receive_message(response_to_alice,
-                                     response_to_bob->to_send,
+                                     response_to_bob->to_send->pieces[0],
                                      bob) == OTR4_SUCCESS);
-  free(response_to_bob->to_send);
+  otr4_message_free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
   // Bob has Alice's ephemeral keys
@@ -150,8 +150,8 @@ void do_ake_fixture(otrv4_t *alice, otrv4_t *bob) {
 
   // Bob should replay with an auth initiator
   otrv4_assert(response_to_alice->to_display == NULL);
-  otrv4_assert(response_to_alice->to_send);
-  otrv4_assert_cmpmem("?OTR:AASI", response_to_alice->to_send, 9);
+  otrv4_assert(response_to_alice->to_send->pieces[0]);
+  otrv4_assert_cmpmem("?OTR:AASI", response_to_alice->to_send->pieces[0], 9);
 
   // Check double ratchet is initialized
   otrv4_assert(bob->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
@@ -159,9 +159,9 @@ void do_ake_fixture(otrv4_t *alice, otrv4_t *bob) {
 
   // Alice receives an auth initiator
   otrv4_assert(otrv4_receive_message(response_to_bob,
-                                     response_to_alice->to_send,
+                                     response_to_alice->to_send->pieces[0],
                                      alice) == OTR4_SUCCESS);
-  free(response_to_alice->to_send);
+  otr4_message_free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
   //otrv4_assert(alice->keys->our_dh->priv != NULL);
@@ -169,7 +169,7 @@ void do_ake_fixture(otrv4_t *alice, otrv4_t *bob) {
 
   // Alice should not reply
   otrv4_assert(response_to_bob->to_display == NULL);
-  otrv4_assert(response_to_bob->to_send == NULL);
+  otrv4_assert(!response_to_bob->to_send);
 
   // Check double ratchet is initialized
   otrv4_assert(alice->state == OTRV4_STATE_ENCRYPTED_MESSAGES);

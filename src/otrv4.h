@@ -109,7 +109,8 @@ typedef enum {
 
 typedef struct {
   string_t to_display;
-  string_t to_send;
+  string_t our_reply;
+  otr4_message_to_send_t *to_send;
   tlv_t *tlvs;
   otrv4_warning_t warning;
 } otrv4_response_t;
@@ -142,16 +143,16 @@ otr4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
 otr4_err_t otrv4_receive_message(otrv4_response_t *response,
                                  const string_t message, otrv4_t *otr);
 
-otr4_err_t otrv4_send_message(string_t *to_send, const string_t message,
-                              tlv_t *tlvs, otrv4_t *otr);
+otr4_err_t otrv4_send_message(otr4_message_to_send_t *to_send,
+                              const string_t message, tlv_t *tlvs, otrv4_t *otr);
 
-otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr);
+otr4_err_t otrv4_close(otr4_message_to_send_t *to_send, otrv4_t *otr);
 
-otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
+otr4_err_t otrv4_smp_start(otr4_message_to_send_t *to_send, const string_t question,
                            const uint8_t *secret, const size_t secretlen,
                            otrv4_t *otr);
 
-otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
+otr4_err_t otrv4_smp_continue(otr4_message_to_send_t *to_send, const uint8_t *secret,
                               const size_t secretlen, otrv4_t *otr);
 
 otr4_err_t otrv4_smp_abort(otrv4_t *otr);
@@ -165,5 +166,7 @@ tlv_t *otrv4_process_smp(otrv4_t *otr, const tlv_t *tlv);
 
 tlv_t *otrv4_smp_provide_secret(otrv4_t *otr, const uint8_t *secret,
                                 const size_t secretlen);
+
+void otr4_set_fragmentation(int max_msg_size, otrv4_t *otr);
 
 #endif
