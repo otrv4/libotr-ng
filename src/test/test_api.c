@@ -132,6 +132,103 @@ void test_api_conversation(void) {
   OTR4_FREE;
 }
 
+void test_dh_key_rotation(void) {
+  OTR4_INIT;
+
+  otr4_client_state_t *alice_keypair = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_keypair = otr4_client_state_new(NULL);
+
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
+      1}; // non-random private key on purpose
+  otr4_client_state_add_private_key_v4(alice_keypair, alice_sym);
+
+  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
+      2}; // non-random private key on purpose
+  otr4_client_state_add_private_key_v4(bob_keypair, bob_sym);
+
+  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
+  otrv4_t *alice = otrv4_new(alice_keypair, policy);
+  otrv4_t *bob = otrv4_new(bob_keypair, policy);
+
+  // AKE HAS FINISHED.
+  do_ake_fixture(alice, bob);
+
+  otrv4_response_t *response_to_bob = NULL;
+  otrv4_response_t *response_to_alice = NULL;
+
+  // Bob sends a data message
+  string_t to_send = NULL;
+  otr4_err_t err = OTR4_ERROR;
+
+  for (int ratchet_id = 1; ratchet_id < 6; ratchet_id+=2) {
+    // Bob sends a data message
+    err = otrv4_send_message(&to_send, "hello", NULL, bob);
+    otrv4_assert(err == OTR4_SUCCESS);
+    otrv4_assert(to_send);
+    otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+
+    // New ratchet happened
+    g_assert_cmpint(bob->keys->i, ==, ratchet_id);
+    g_assert_cmpint(bob->keys->j, ==, 1);
+
+    //it should always be NULL
+    //manager->our_dh->priv == NULL
+
+    // Alice receives a data message
+    response_to_bob = otrv4_response_new();
+    err = otrv4_receive_message(response_to_bob, to_send, alice);
+    otrv4_assert(err == OTR4_SUCCESS);
+    free(to_send);
+    to_send = NULL;
+
+    otrv4_assert_cmpmem("hello", response_to_bob->to_display, 6);
+    otrv4_assert(response_to_bob->to_send == NULL);
+    otrv4_response_free(response_to_bob);
+    response_to_bob = NULL;
+
+    // Alice follows the ratchet 1 (and prepares to a new "ratchet")
+    g_assert_cmpint(alice->keys->i, ==, ratchet_id);
+    g_assert_cmpint(alice->keys->j, ==, 0); // New ratchet should happen
+
+    //
+    // Now alice ratchets
+    //
+
+    err = otrv4_send_message(&to_send, "hi", NULL, alice);
+    otrv4_assert(err == OTR4_SUCCESS);
+    otrv4_assert(to_send);
+    otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+
+    g_assert_cmpint(alice->keys->i, ==, ratchet_id+1);
+    g_assert_cmpint(alice->keys->j, ==, 1);
+
+    // Bob receives a data message
+    response_to_alice = otrv4_response_new();
+    err = otrv4_receive_message(response_to_alice, to_send, bob);
+    otrv4_assert(err == OTR4_SUCCESS);
+
+    g_assert_cmpint(bob->keys->i, ==, ratchet_id+1);
+    g_assert_cmpint(bob->keys->j, ==, 0); // New ratchet should happen
+
+    free(to_send);
+    to_send = NULL;
+
+    otrv4_assert_cmpmem("hi", response_to_alice->to_display, 3);
+    otrv4_assert(response_to_alice->to_send == NULL);
+
+    otrv4_response_free(response_to_alice);
+    response_to_alice = NULL;
+  }
+
+  otr4_client_state_free(alice_keypair);
+  otr4_client_state_free(bob_keypair);
+
+  otrv4_free(bob);
+  otrv4_free(alice);
+
+  OTR4_FREE;
+}
+
 static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   otrv4_response_t *response_to_bob = otrv4_response_new();
   otrv4_response_t *response_to_alice = otrv4_response_new();
