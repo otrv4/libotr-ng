@@ -5,6 +5,7 @@
 #include "instance_tag.h"
 #include "str.h"
 
+// TODO: return bool?
 bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
                       const char *protocol, FILE *filename) {
 
@@ -34,7 +35,8 @@ bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
   free(us);
   free(tmp_instag);
   tmp_instag = NULL;
-  return 0;
+
+  return true;
 }
 
 void otr4_instag_free(otrv4_instag_t *instag) {
