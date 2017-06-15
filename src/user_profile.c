@@ -88,6 +88,7 @@ otr4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
 
 otr4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
                                  const user_profile_t *profile) {
+
   // TODO: should it check if the profile is signed?
   uint8_t *buff = NULL;
   size_t body_len = 0;
