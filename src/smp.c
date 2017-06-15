@@ -92,8 +92,8 @@ otr4_err_t generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp) {
   if (serialize_ec_point(hash + 1, pair_r2->pub))
     return OTR4_ERROR;
 
-  // TODO: handle error
-  hashToScalar(hash, sizeof(hash), dst->c2);
+  if (hashToScalar(hash, sizeof(hash), dst->c2))
+    return OTR4_ERROR;
 
   decaf_448_scalar_mul(a2c2, smp->a2, dst->c2);
   decaf_448_scalar_sub(dst->d2, pair_r2->priv, a2c2);
@@ -102,8 +102,8 @@ otr4_err_t generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp) {
   if (serialize_ec_point(hash + 1, pair_r3->pub))
     return OTR4_ERROR;
 
-  // TODO: handle error
-  hashToScalar(hash, sizeof(hash), dst->c3);
+  if (hashToScalar(hash, sizeof(hash), dst->c3))
+    return OTR4_ERROR;
 
   decaf_448_scalar_mul(a3c3, smp->a3, dst->c3);
   decaf_448_scalar_sub(dst->d3, pair_r3->priv, a3c3);
@@ -173,7 +173,8 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
   if (serialize_ec_point(buff + 1, pair_r2->pub))
     return OTR4_ERROR;
 
-  hashToScalar(buff, ED448_POINT_BYTES + 1, dst->c2);
+  if (hashToScalar(buff, ED448_POINT_BYTES + 1, dst->c2))
+    return OTR4_ERROR;
 
   // d2 = r2 - b2 * c2 mod q.
   decaf_448_scalar_mul(temp_scalar, b2, dst->c2);
@@ -184,7 +185,8 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
   if (serialize_ec_point(buff + 1, pair_r3->pub))
     return OTR4_ERROR;
 
-  hashToScalar(buff, ED448_POINT_BYTES + 1, dst->c3);
+  if (hashToScalar(buff, ED448_POINT_BYTES + 1, dst->c3))
+    return OTR4_ERROR;
 
   // d3 = r3 - b3 * c3 mod q.
   decaf_448_scalar_mul(temp_scalar, smp->b3, dst->c3);
@@ -202,7 +204,9 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 
   // Compute Qb = G * r4 + G2 * hashToScalar(y).
   ec_scalar_t secret_as_scalar;
-  hashToScalar(smp->secret, HASH_BYTES, secret_as_scalar);
+  if (hashToScalar(smp->secret, HASH_BYTES, secret_as_scalar))
+    return OTR4_ERROR;
+
   decaf_448_point_scalarmul(dst->Qb, smp->G2, secret_as_scalar);
   decaf_448_point_add(dst->Qb, pair_r4->pub, dst->Qb);
   ec_point_copy(smp->Qb, dst->Qb);
@@ -223,7 +227,8 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
   if (serialize_ec_point(buff_cp + 1 + ED448_POINT_BYTES, temp_point))
     return OTR4_ERROR;
 
-  hashToScalar(buff_cp, ED448_POINT_BYTES * 2 + 1, dst->cp);
+  if (hashToScalar(buff_cp, ED448_POINT_BYTES * 2 + 1, dst->cp))
+    return OTR4_ERROR;
 
   // d5 = r5 - r4 * cp mod q
   decaf_448_scalar_mul(dst->d5, pair_r4->priv, dst->cp);
@@ -421,7 +426,9 @@ bool smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   if (serialize_ec_point(hash + 1, G_d))
     return false;
 
-  hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar);
+  if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar))
+    return false;
+
   ok = ec_scalar_eq(temp_scalar, msg->c2);
 
   // Check that c3 = HashToScalar(4 || G * d3 + G3b * c3).
@@ -433,7 +440,9 @@ bool smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   if (serialize_ec_point(hash + 1, G_d))
     return false;
 
-  hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar);
+  if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar))
+    return false;
+
   ok &= ec_scalar_eq(temp_scalar, msg->c3);
 
   // Check that cp = HashToScalar(5 || G3 * d5 + Pb * cp || G * d5 + G2 * d6 +
@@ -457,7 +466,8 @@ bool smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, G_d))
     return false;
 
-  hashToScalar(buff, sizeof(buff), temp_scalar);
+  if (hashToScalar(buff, sizeof(buff), temp_scalar))
+    return false;
 
   return ok & ec_scalar_eq(temp_scalar, msg->cp);
 }
@@ -480,7 +490,8 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
   decaf_448_point_scalarmul(dst->Pa, smp->G3, pair_r4->priv);
   decaf_448_point_sub(smp->Pa_Pb, dst->Pa, msg_2->Pb);
 
-  hashToScalar(smp->secret, HASH_BYTES, secret_as_scalar);
+  if (hashToScalar(smp->secret, HASH_BYTES, secret_as_scalar))
+    return OTR4_ERROR;
 
   // Qa = G * r4 + G2 * HashToScalar(x)
   decaf_448_point_scalarmul(dst->Qa, smp->G2, secret_as_scalar);
@@ -499,7 +510,8 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
   if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point))
     return OTR4_ERROR;
 
-  hashToScalar(buff, sizeof(buff), dst->cp);
+  if (hashToScalar(buff, sizeof(buff), dst->cp))
+    return OTR4_ERROR;
 
   // d5 = r5 - r4 * cp mod q
   decaf_448_scalar_mul(dst->d5, pair_r4->priv, dst->cp);
@@ -522,7 +534,8 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
   if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point))
     return OTR4_ERROR;
 
-  hashToScalar(buff, sizeof(buff), dst->cr);
+  if (hashToScalar(buff, sizeof(buff), dst->cr))
+    return OTR4_ERROR;
 
   // d7 = r7 - a3 * cr mod q
   decaf_448_scalar_mul(dst->d7, smp->a3, dst->cr);
@@ -649,7 +662,9 @@ bool smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
   if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point))
     return false;
 
-  hashToScalar(buff, sizeof(buff), temp_scalar);
+  if (hashToScalar(buff, sizeof(buff), temp_scalar))
+    return false;
+
   ok = ec_scalar_eq(temp_scalar, msg->cp);
 
   // cr = HashToScalar(7 || G * d7 + G3a * cr || (Qa - Qb) * d7 + Ra * cr)
@@ -669,7 +684,8 @@ bool smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
   if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point))
     return false;
 
-  hashToScalar(buff, sizeof(buff), temp_scalar);
+  if (hashToScalar(buff, sizeof(buff), temp_scalar))
+    return false;
 
   return ok & ec_scalar_eq(temp_scalar, msg->cr);
 }
@@ -694,7 +710,8 @@ bool generate_smp_msg_4(smp_msg_4_t *dst, const smp_msg_3_t *msg_3,
   if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, Qa_Qb))
     return false;
 
-  hashToScalar(buff, sizeof(buff), dst->cr);
+  if (hashToScalar(buff, sizeof(buff), dst->cr))
+    return false;
 
   // d7 = r7 - b3 * cr mod q
   decaf_448_scalar_mul(dst->d7, smp->b3, dst->cr);
@@ -771,7 +788,8 @@ bool smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
   if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point))
     return false;
 
-  hashToScalar(buff, sizeof(buff), temp_scalar);
+  if (hashToScalar(buff, sizeof(buff), temp_scalar))
+    return false;
 
   return ec_scalar_eq(msg->cr, temp_scalar) == 0;
 }
