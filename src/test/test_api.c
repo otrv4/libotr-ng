@@ -135,20 +135,20 @@ void test_api_conversation(void) {
 void test_dh_key_rotation(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_keypair = otr4_client_state_new(NULL);
-  otr4_client_state_t *bob_keypair = otr4_client_state_new(NULL);
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
       1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_keypair, alice_sym);
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
 
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
       2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_keypair, bob_sym);
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_t *alice = otrv4_new(alice_keypair, policy);
-  otrv4_t *bob = otrv4_new(bob_keypair, policy);
+  otrv4_t *alice = otrv4_new(alice_state, policy);
+  otrv4_t *bob = otrv4_new(bob_state, policy);
 
   // AKE HAS FINISHED.
   do_ake_fixture(alice, bob);
@@ -161,6 +161,7 @@ void test_dh_key_rotation(void) {
   otr4_err_t err = OTR4_ERROR;
 
   for (int ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
+
     // Bob sends a data message
     err = otrv4_send_message(&to_send, "hello", NULL, bob);
     otrv4_assert(err == OTR4_SUCCESS);
@@ -220,8 +221,8 @@ void test_dh_key_rotation(void) {
     response_to_alice = NULL;
   }
 
-  otr4_client_state_free(alice_keypair);
-  otr4_client_state_free(bob_keypair);
+  otr4_client_state_free(alice_state);
+  otr4_client_state_free(bob_state);
 
   otrv4_free(bob);
   otrv4_free(alice);

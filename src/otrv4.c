@@ -1101,6 +1101,7 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
 
   // TODO: how to prevent version rollback?
   maybe_create_keys(otr->conversation);
+  otr4_err_t err;
 
   switch (header.type) {
   case OTR_IDENTITY_MSG_TYPE:
@@ -1108,7 +1109,10 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
     return receive_identity_message(&response->to_send, decoded, dec_len, otr);
     break;
   case OTR_AUTH_R_MSG_TYPE:
-    return receive_auth_r(&response->to_send, decoded, dec_len, otr);
+    err = receive_auth_r(&response->to_send, decoded, dec_len, otr);
+    gcry_mpi_release(otr->keys->our_dh->priv);
+    otr->keys->our_dh->priv = NULL;
+    return err;
     break;
   case OTR_AUTH_I_MSG_TYPE:
     return receive_auth_i(&response->to_send, decoded, dec_len, otr);
