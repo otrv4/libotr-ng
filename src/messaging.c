@@ -75,8 +75,7 @@ otr4_messaging_client_t *otr4_messaging_client_new(otr4_userstate_t *state,
   if (!s)
     return NULL;
 
-  // TODO: Replace protocol, account by a function called on the client_id
-  otr4_client_t *c = otr4_client_new(s, "", "", NULL);
+  otr4_client_t *c = otr4_client_new(s);
   if (!c)
     return NULL;
 

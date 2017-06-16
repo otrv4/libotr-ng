@@ -147,8 +147,8 @@ otrv4_t *otrv4_new(otr4_client_state_t *state, otrv4_policy_t policy) {
   otr->running_version = OTRV4_VERSION_NONE;
   otr->supported_versions = policy.allows;
 
-  otr->our_instance_tag = 0;
   otr->their_instance_tag = 0;
+  otr->our_instance_tag = otr4_client_state_get_instance_tag(state);
   otr->profile = NULL;
   otr->their_profile = NULL;
 

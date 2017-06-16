@@ -11,6 +11,10 @@ void otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   OTR4_INIT;
 
   otrv4_fixture->state = otr4_client_state_new(NULL); // No callbacks
+  otrv4_fixture->state->userstate = otrl_userstate_create();
+  otrv4_fixture->state->protocol_name = otrv4_strdup("protocol");
+  otrv4_fixture->state->account_name = otrv4_strdup("account@protocol");
+
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
   otr4_client_state_add_private_key_v4(otrv4_fixture->state, sym);
 
@@ -20,45 +24,44 @@ void otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_policy_t policyv3 = {.allows = OTRV4_ALLOW_V3};
   otrv4_fixture->otrv3 = otrv4_new(otrv4_fixture->state, policyv3);
   otrv4_fixture->otrv3->otr3_conn =
-      otr3_conn_new("proto", "we_are_alice", "they_are_bob");
+      otr3_conn_new(otrv4_fixture->state, "they_are_bob");
 
   otrv4_policy_t policyv34 = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
   otrv4_fixture->otrv34 = otrv4_new(otrv4_fixture->state, policyv34);
   otrv4_fixture->otrv34->otr3_conn =
-      otr3_conn_new("proto", "we_are_bob", "they_are_alice");
-
-  otrv4_fixture->otrv3->otr3_conn->userstate = otrl_userstate_create();
-  otrv4_fixture->otrv34->otr3_conn->userstate = otrl_userstate_create();
+      otr3_conn_new(otrv4_fixture->state, "they_are_alice");
 
   // TODO: This should be done automatically
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
-  otrv4_assert(
-      !otrl_privkey_generate_FILEp(otrv4_fixture->otrv3->otr3_conn->userstate,
-                                   tmpFILEp, "we_are_alice", "proto"));
+  otrv4_assert(!otrl_privkey_generate_FILEp(
+      otrv4_fixture->state->userstate, tmpFILEp,
+      otrv4_fixture->state->account_name, otrv4_fixture->state->protocol_name));
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrl_instag_generate_FILEp(otrv4_fixture->otrv3->otr3_conn->userstate,
-                             tmpFILEp, "we_are_alice", "proto");
+  otrl_instag_generate_FILEp(otrv4_fixture->state->userstate, tmpFILEp,
+                             otrv4_fixture->state->account_name,
+                             otrv4_fixture->state->protocol_name);
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrv4_assert(
-      !otrl_privkey_generate_FILEp(otrv4_fixture->otrv34->otr3_conn->userstate,
-                                   tmpFILEp, "we_are_bob", "proto"));
+  otrv4_assert(!otrl_privkey_generate_FILEp(
+      otrv4_fixture->state->userstate, tmpFILEp,
+      otrv4_fixture->state->account_name, otrv4_fixture->state->protocol_name));
+
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrl_instag_generate_FILEp(otrv4_fixture->otrv34->otr3_conn->userstate,
-                             tmpFILEp, "we_are_bob", "proto");
+  otrl_instag_generate_FILEp(otrv4_fixture->state->userstate, tmpFILEp,
+                             otrv4_fixture->state->account_name,
+                             otrv4_fixture->state->protocol_name);
   fclose(tmpFILEp);
 }
 
 void otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture,
                             gconstpointer data) {
-  otrl_userstate_free(otrv4_fixture->otrv3->otr3_conn->userstate);
-  otrl_userstate_free(otrv4_fixture->otrv34->otr3_conn->userstate);
+  otrl_userstate_free(otrv4_fixture->state->userstate);
 
   otr4_client_state_free(otrv4_fixture->state);
   otrv4_fixture->state = NULL;

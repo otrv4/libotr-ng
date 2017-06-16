@@ -35,46 +35,22 @@ static void conversation_free(void *data) {
   free(conv);
 }
 
-otr4_client_t *otr4_client_new(otr4_client_state_t *state, const char *protocol,
-                               const char *account, FILE *instag_file) {
+otr4_client_t *otr4_client_new(otr4_client_state_t *state) {
   otr4_client_t *client = malloc(sizeof(otr4_client_t));
   if (!client)
     return NULL;
 
   client->state = state;
-  client->protocol = otrv4_strdup(protocol);
-  client->account = otrv4_strdup(account);
-
-  if (!client->state->instag) {
-    client->state->instag = malloc(sizeof(otrv4_instag_t));
-    if (!client->state->instag) {
-      return NULL;
-    }
-
-    if (!instag_file) {
-      instag_file = tmpfile();
-    }
-
-    if (!otrv4_instag_get(client->state->instag, account, protocol,
-                          instag_file)) {
-      fclose(instag_file);
-      return NULL;
-    };
-    fclose(instag_file);
-  }
-
-  // client->userstate = userstate;
   client->conversations = NULL;
 
   return client;
 }
 
 void otr4_client_free(otr4_client_t *client) {
-  free(client->protocol);
-  client->protocol = NULL;
+  if (!client)
+    return;
 
-  free(client->account);
-  client->account = NULL;
+  client->state = NULL;
 
   list_free(client->conversations, conversation_free);
   client->conversations = NULL;
@@ -172,7 +148,7 @@ static otrv4_t *create_connection_for(const char *recipient,
 
   // TODO: This should receive only the client_state (which should allow
   // you to get protocol, account, v3 userstate, etc)
-  otr3_conn = otr3_conn_new(client->protocol, client->account, recipient);
+  otr3_conn = otr3_conn_new(client->state, recipient);
   if (!otr3_conn)
     return NULL;
 
@@ -183,7 +159,6 @@ static otrv4_t *create_connection_for(const char *recipient,
   }
 
   conn->conversation->peer = otrv4_strdup(recipient);
-  otr3_conn->userstate = client->state->userstate;
   otr3_conn->opdata = conn; // For use in callbacks
   conn->otr3_conn = otr3_conn;
 
@@ -289,10 +264,6 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   if (!conv)
     return 1;
 
-  // TODO: Why is not this when we create this conn?
-  if (client->state->instag)
-    conv->conn->our_instance_tag = client->state->instag->value;
-
   if (otrv4_receive_message(response, message, conv->conn)) {
     otrv4_response_free(response);
     return 0; // Should this cause the message to be ignored or not?
@@ -379,10 +350,12 @@ To read stored instance tags:
 
 int otr3_privkey_generate(otr4_client_t *client, FILE *privf) {
   return otrl_privkey_generate_FILEp(client->state->userstate, privf,
-                                     client->account, client->protocol);
+                                     client->state->account_name,
+                                     client->state->protocol_name);
 }
 
 int otr3_instag_generate(otr4_client_t *client, FILE *privf) {
   return otrl_instag_generate_FILEp(client->state->userstate, privf,
-                                    client->account, client->protocol);
+                                    client->state->account_name,
+                                    client->state->protocol_name);
 }

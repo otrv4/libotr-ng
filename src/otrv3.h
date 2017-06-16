@@ -10,21 +10,19 @@
 #include "error.h"
 #include "str.h"
 #include "tlv.h"
+#include "client_state.h"
 
 typedef struct {
-  char *protocol;
-  char *account;
+  otr4_client_state_t *state;
   char *peer;
 
   void *opdata; // OTRv4 conn for use in callbacks
 
-  OtrlUserState userstate;
   OtrlMessageAppOps *ops;
   ConnContext *ctx;
 } otr3_conn_t;
 
-otr3_conn_t *otr3_conn_new(const char *protocol, const char *account,
-                           const char *peer);
+otr3_conn_t *otr3_conn_new(otr4_client_state_t *state, const char *peer);
 
 void otr3_conn_free(otr3_conn_t *conn);
 

@@ -23,15 +23,11 @@ typedef struct {
 
 // A client handle messages from/to a sender to/from multiple recipients.
 typedef struct {
-  char *account;  // TODO: move to client_state?
-  char *protocol; // TODO: move to client_state?
   otr4_client_state_t *state;
-
   list_element_t *conversations;
 } otr4_client_t;
 
-otr4_client_t *otr4_client_new(otr4_client_state_t *, const char *protocol,
-                               const char *account, FILE *instag_file);
+otr4_client_t *otr4_client_new(otr4_client_state_t *);
 
 void otr4_client_free(otr4_client_t *client);
 

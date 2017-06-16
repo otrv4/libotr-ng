@@ -15,12 +15,18 @@ typedef struct otr4_client_state_t {
                    // libpurple-based apps (like Pidgin) this could be a
                    // PurpleAccount*
 
+  // TODO: Replace with a callback that knows how to get these from the
+  // client_id.
+  char *account_name;
+  char *protocol_name;
+
   const struct otrv4_client_callbacks_t *callbacks;
 
   // OtrlPrivKey *privkeyv3; // ???
   OtrlUserState userstate;
   otrv4_keypair_t *keypair;
-  otrv4_instag_t *instag;
+  // otrv4_instag_t *instag; // TODO: Store the instance tag here rather than
+  // use OTR3 User State as a store for instance tags
 } otr4_client_state_t;
 
 otr4_client_state_t *otr4_client_state_new(void *client_id);
@@ -34,5 +40,10 @@ void otr4_client_state_add_private_key_v4(
 
 int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
                                                 FILE *privf);
+
+unsigned int otr4_client_state_get_instance_tag(otr4_client_state_t *state);
+
+int otr4_client_state_instance_tag_read_FILEp(otr4_client_state_t *state,
+                                              FILE *instag);
 
 #endif

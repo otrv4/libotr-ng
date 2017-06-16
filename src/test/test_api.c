@@ -9,21 +9,21 @@
 void test_api_conversation(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_keypair = otr4_client_state_new(NULL);
-  otr4_client_state_t *bob_keypair = otr4_client_state_new(NULL);
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
       1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_keypair, alice_sym);
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
 
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
       2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_keypair, bob_sym);
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_t *alice = otrv4_new(alice_keypair, policy);
+  otrv4_t *alice = otrv4_new(alice_state, policy);
   otrv4_assert(!alice->keys->old_mac_keys);
-  otrv4_t *bob = otrv4_new(bob_keypair, policy);
+  otrv4_t *bob = otrv4_new(bob_state, policy);
   otrv4_assert(!bob->keys->old_mac_keys);
 
   // AKE HAS FINISHED.
@@ -123,8 +123,8 @@ void test_api_conversation(void) {
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
-  otr4_client_state_free(alice_keypair);
-  otr4_client_state_free(bob_keypair);
+  otr4_client_state_free(alice_state);
+  otr4_client_state_free(bob_state);
 
   otrv4_free(bob);
   otrv4_free(alice);
@@ -310,48 +310,57 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
 void test_api_conversation_v3(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_keypair = otr4_client_state_new(NULL);
-  otr4_client_state_t *bob_keypair = otr4_client_state_new(NULL);
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  alice_state->protocol_name = otrv4_strdup("protocol");
+  alice_state->account_name = otrv4_strdup("alice@protocol");
+
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+  bob_state->protocol_name = otrv4_strdup("protocol");
+  bob_state->account_name = otrv4_strdup("bob@protocol");
+
+  alice_state->userstate = otrl_userstate_create();
+  bob_state->userstate = otrl_userstate_create();
 
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
       1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_keypair, alice_sym);
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
 
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
       2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_keypair, bob_sym);
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3};
-  otrv4_t *alice = otrv4_new(alice_keypair, policy);
-  otrv4_t *bob = otrv4_new(bob_keypair, policy);
+  otrv4_t *alice = otrv4_new(alice_state, policy);
+  otrv4_t *bob = otrv4_new(bob_state, policy);
 
   // Set up OTRv3 context
-  alice->otr3_conn = otr3_conn_new("proto", "alice", "bob");
-  alice->otr3_conn->userstate = otrl_userstate_create();
-  bob->otr3_conn = otr3_conn_new("proto", "bob", "alice");
-  bob->otr3_conn->userstate = otrl_userstate_create();
+  alice->otr3_conn = otr3_conn_new(alice_state, "bob");
+  bob->otr3_conn = otr3_conn_new(bob_state, "alice");
 
   // Generate long term private key.
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
-  otrv4_assert(!otrl_privkey_generate_FILEp(alice->otr3_conn->userstate,
-                                            tmpFILEp, "alice", "proto"));
+  otrv4_assert(!otrl_privkey_generate_FILEp(alice_state->userstate, tmpFILEp,
+                                            alice_state->account_name,
+                                            alice_state->protocol_name));
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrv4_assert(!otrl_privkey_generate_FILEp(bob->otr3_conn->userstate, tmpFILEp,
-                                            "bob", "proto"));
+  otrv4_assert(!otrl_privkey_generate_FILEp(bob_state->userstate, tmpFILEp,
+                                            bob_state->account_name,
+                                            bob_state->protocol_name));
   fclose(tmpFILEp);
 
   // Generate instance tag
   tmpFILEp = tmpfile();
-  otrl_instag_generate_FILEp(alice->otr3_conn->userstate, tmpFILEp, "alice",
-                             "proto");
+  otrl_instag_generate_FILEp(alice_state->userstate, tmpFILEp,
+                             alice_state->account_name,
+                             alice_state->protocol_name);
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrl_instag_generate_FILEp(bob->otr3_conn->userstate, tmpFILEp, "bob",
-                             "proto");
+  otrl_instag_generate_FILEp(bob_state->userstate, tmpFILEp,
+                             bob_state->account_name, bob_state->protocol_name);
   fclose(tmpFILEp);
 
   // AKE HAS FINISHED.
@@ -397,12 +406,12 @@ void test_api_conversation_v3(void) {
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
-  otrl_userstate_free(alice->otr3_conn->userstate);
-  otrl_userstate_free(bob->otr3_conn->userstate);
+  otrl_userstate_free(alice_state->userstate);
+  otrl_userstate_free(bob_state->userstate);
   otrv4_free(alice);
   otrv4_free(bob);
-  otr4_client_state_free(alice_keypair);
-  otr4_client_state_free(bob_keypair);
+  otr4_client_state_free(alice_state);
+  otr4_client_state_free(bob_state);
 
   OTR4_FREE;
 }
@@ -410,20 +419,20 @@ void test_api_conversation_v3(void) {
 void test_api_smp(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_keypair = otr4_client_state_new(NULL);
-  otr4_client_state_t *bob_keypair = otr4_client_state_new(NULL);
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
       1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_keypair, alice_sym);
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
 
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
       2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_keypair, bob_sym);
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_t *alice = otrv4_new(alice_keypair, policy);
-  otrv4_t *bob = otrv4_new(bob_keypair, policy);
+  otrv4_t *alice = otrv4_new(alice_state, policy);
+  otrv4_t *bob = otrv4_new(bob_state, policy);
 
   // AKE HAS FINISHED.
   do_ake_fixture(alice, bob);
@@ -495,8 +504,8 @@ void test_api_smp(void) {
 
   otrv4_free(alice);
   otrv4_free(bob);
-  otr4_client_state_free(alice_keypair);
-  otr4_client_state_free(bob_keypair);
+  otr4_client_state_free(alice_state);
+  otr4_client_state_free(bob_state);
 
   OTR4_FREE;
 }

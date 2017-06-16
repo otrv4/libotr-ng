@@ -163,6 +163,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
   g_test_add_func("/api/smp", test_api_smp);
   g_test_add_func("/api/messaging", test_api_messaging);
+  g_test_add_func("/api/instance_tag", test_instance_tag_api);
   g_test_add_func("/api/dh_key_rotation", test_dh_key_rotation);
 
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
@@ -174,9 +175,6 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/client/conversation_data_message_multiple_locations",
                   test_conversation_with_multiple_locations);
-
-  g_test_add_func("/client/conversation_multiple_locations",
-                  test_conversation_with_multiple_locations_diff_instag);
 
   return g_test_run();
 }

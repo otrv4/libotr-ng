@@ -8,9 +8,10 @@ otr4_client_state_t *otr4_client_state_new(void *client_id) {
     return NULL;
 
   state->client_id = client_id;
+  state->protocol_name = NULL;
+  state->account_name = NULL;
   state->userstate = NULL;
   state->keypair = NULL;
-  state->instag = NULL;
   state->callbacks = NULL;
 
   return state;
@@ -18,12 +19,15 @@ otr4_client_state_t *otr4_client_state_new(void *client_id) {
 
 void otr4_client_state_free(otr4_client_state_t *state) {
   state->client_id = NULL;
+  state->userstate = NULL;
+
+  free(state->protocol_name);
+  state->protocol_name = NULL;
+  free(state->account_name);
+  state->account_name = NULL;
 
   otrv4_keypair_free(state->keypair);
   state->keypair = NULL;
-
-  otr4_instag_free(state->instag);
-  state->instag = NULL;
 
   state->callbacks = NULL;
 
@@ -90,4 +94,24 @@ int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
   }
 
   return err;
+}
+
+unsigned int otr4_client_state_get_instance_tag(otr4_client_state_t *state) {
+  if (!state->userstate)
+    return 0;
+
+  OtrlInsTag *instag = otrl_instag_find(state->userstate, state->account_name,
+                                        state->protocol_name);
+  if (!instag)
+    return 0;
+
+  return instag->instag;
+}
+
+int otr4_client_state_instance_tag_read_FILEp(otr4_client_state_t *state,
+                                              FILE *instag) {
+  if (!state->userstate)
+    return 1;
+
+  return otrl_instag_read_FILEp(state->userstate, instag);
 }

@@ -21,5 +21,8 @@
 }
 
 /*@null@*/ char *otrv4_strdup(const char *s) {
+  if (!s)
+    return NULL;
+
   return otrv4_strndup(s, strlen(s));
 }

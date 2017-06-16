@@ -395,19 +395,16 @@ static OtrlMessageAppOps null_ops = {
     op_timer_control,
 };
 
-otr3_conn_t *otr3_conn_new(const char *protocol, const char *account,
-                           const char *peer) {
+otr3_conn_t *otr3_conn_new(otr4_client_state_t *state, const char *peer) {
   otr3_conn_t *ret = malloc(sizeof(otr3_conn_t));
   if (!ret)
     return NULL;
 
-  ret->userstate = NULL;
+  ret->state = state;
   ret->ops = &null_ops; // This cant be null
   ret->ctx = NULL;
   ret->opdata = NULL;
 
-  ret->protocol = otrv4_strdup(protocol);
-  ret->account = otrv4_strdup(account);
   ret->peer = otrv4_strdup(peer);
 
   return ret;
@@ -419,14 +416,7 @@ void otr3_conn_free(otr3_conn_t *conn) {
 
   conn->ctx = NULL;
   conn->ops = NULL;
-  conn->userstate = NULL;
   conn->opdata = NULL;
-
-  free(conn->protocol);
-  conn->protocol = NULL;
-
-  free(conn->account);
-  conn->account = NULL;
 
   free(conn->peer);
   conn->peer = NULL;
@@ -443,9 +433,10 @@ otr4_err_t otrv3_send_message(char **newmessage, const char *message,
     return OTR4_ERROR;
 
   int err = otrl_message_sending(
-      conn->userstate, conn->ops, conn->opdata, conn->account, conn->protocol,
-      conn->peer, OTRL_INSTAG_RECENT, message, tlvsv3, newmessage,
-      OTRL_FRAGMENT_SEND_SKIP, &conn->ctx, NULL, NULL);
+      conn->state->userstate, conn->ops, conn->opdata,
+      conn->state->account_name, conn->state->protocol_name, conn->peer,
+      OTRL_INSTAG_RECENT, message, tlvsv3, newmessage, OTRL_FRAGMENT_SEND_SKIP,
+      &conn->ctx, NULL, NULL);
 
   if (!err)
     return OTR4_SUCCESS;
@@ -464,8 +455,9 @@ otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
 
   char *newmessage = NULL;
   ignore_message = otrl_message_receiving(
-      conn->userstate, conn->ops, conn->opdata, conn->account, conn->protocol,
-      conn->peer, message, &newmessage, &tlvsv3, &conn->ctx, NULL, NULL);
+      conn->state->userstate, conn->ops, conn->opdata,
+      conn->state->account_name, conn->state->protocol_name, conn->peer,
+      message, &newmessage, &tlvsv3, &conn->ctx, NULL, NULL);
 
   (void)ignore_message;
 
@@ -484,9 +476,9 @@ otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
 }
 
 void otrv3_close(string_t *to_send, otr3_conn_t *conn) {
-  otrl_message_disconnect_all_instances(conn->userstate, conn->ops,
-                                        conn->opdata, conn->account,
-                                        conn->protocol, conn->peer);
+  otrl_message_disconnect_all_instances(conn->state->userstate, conn->ops,
+                                        conn->opdata, conn->state->account_name,
+                                        conn->state->protocol_name, conn->peer);
 
   from_injected_to_send(to_send);
 }
@@ -495,10 +487,10 @@ otr4_err_t otrv3_smp_start(string_t *to_send, const char *question,
                            const uint8_t *secret, size_t secretlen,
                            otr3_conn_t *conn) {
   if (question)
-    otrl_message_initiate_smp_q(conn->userstate, conn->ops, conn->opdata,
+    otrl_message_initiate_smp_q(conn->state->userstate, conn->ops, conn->opdata,
                                 conn->ctx, question, secret, secretlen);
   else
-    otrl_message_initiate_smp(conn->userstate, conn->ops, conn->opdata,
+    otrl_message_initiate_smp(conn->state->userstate, conn->ops, conn->opdata,
                               conn->ctx, secret, secretlen);
 
   from_injected_to_send(to_send);
@@ -507,8 +499,8 @@ otr4_err_t otrv3_smp_start(string_t *to_send, const char *question,
 
 otr4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret,
                               const size_t secretlen, otr3_conn_t *conn) {
-  otrl_message_respond_smp(conn->userstate, conn->ops, conn->opdata, conn->ctx,
-                           secret, secretlen);
+  otrl_message_respond_smp(conn->state->userstate, conn->ops, conn->opdata,
+                           conn->ctx, secret, secretlen);
 
   from_injected_to_send(to_send);
   return OTR4_SUCCESS;

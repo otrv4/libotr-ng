@@ -2,7 +2,6 @@
 #define _OTR4_CLIEN_CALLBACKS_
 
 #include "fingerprint.h"
-#include "otrv4.h"
 
 typedef enum {
   OTRV4_SMPEVENT_NONE = 0,
