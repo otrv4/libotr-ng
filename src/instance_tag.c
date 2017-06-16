@@ -11,7 +11,7 @@ bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
 
   OtrlUserState us = otrl_userstate_create();
   if (otrl_instag_read_FILEp(us, filename)) {
-    free(us);
+    otrl_userstate_free(us);
     return false;
   }
 
@@ -20,21 +20,17 @@ bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
 
   if (!tmp_instag) {
     if (otrl_instag_generate_FILEp(us, filename, account, protocol)) {
-      free(us);
-      free(tmp_instag);
-      tmp_instag = NULL;
+      otrl_userstate_free(us);
       return false;
     }
     tmp_instag = otrl_instag_find(us, account, protocol);
   }
 
-  otrv4_instag->account = tmp_instag->accountname;
-  otrv4_instag->protocol = tmp_instag->protocol;
+  otrv4_instag->account = otrv4_strdup(tmp_instag->accountname);
+  otrv4_instag->protocol = otrv4_strdup(tmp_instag->protocol);
   otrv4_instag->value = tmp_instag->instag;
 
-  free(us);
-  free(tmp_instag);
-  tmp_instag = NULL;
+  otrl_userstate_free(us);
 
   return true;
 }
