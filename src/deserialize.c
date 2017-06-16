@@ -153,50 +153,6 @@ otr4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
   return OTR4_SUCCESS;
 }
 
-// TODO: check me
-otr4_err_t decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len) {
-  //((base64len+3) / 4) * 3
-  unsigned char *dec = malloc(((len + 3) / 4) * 3);
-  if (!dec)
-    return OTR4_ERROR;
-
-  otr4_err_t ok = OTR4_ERROR;
-  do {
-    size_t written = otrl_base64_decode(dec, buff, len);
-    if (written != ED448_SCALAR_BYTES)
-      continue;
-
-    if (DECAF_SUCCESS == decaf_448_scalar_decode(s, dec)) {
-      ok = OTR4_SUCCESS;
-    }
-  } while (0);
-
-  free(dec);
-  return ok;
-}
-
-// XXX: check me
-otr4_err_t decode_b64_ec_point(ec_point_t s, const char *buff, size_t len) {
-  //((base64len+3) / 4) * 3
-  unsigned char *dec = malloc(((len + 3) / 4) * 3);
-  if (!dec)
-    return OTR4_ERROR;
-
-  otr4_err_t ok = OTR4_ERROR;
-  do {
-    size_t written = otrl_base64_decode(dec, buff, len);
-    if (written != ED448_POINT_BYTES)
-      continue;
-
-    if (DECAF_SUCCESS == decaf_448_point_decode(s, dec, DECAF_FALSE)) {
-      ok = OTR4_SUCCESS;
-    }
-  } while (0);
-
-  free(dec);
-  return ok;
-}
-
 otr4_err_t deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *serialized,
                                  size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES)

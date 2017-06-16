@@ -36,9 +36,5 @@ otr4_err_t deserialize_snizkpk_proof(snizkpk_proof_t *proof,
                                      const uint8_t *serialized, size_t ser_len,
                                      size_t *read);
 
-otr4_err_t decode_b64_ec_scalar(ec_scalar_t s, const char *buff, size_t len);
-
-otr4_err_t decode_b64_ec_point(ec_point_t s, const char *buff, size_t len);
-
 otr4_err_t otrv4_symmetric_key_deserialize(otrv4_keypair_t *pair,
                                            const char *buff, size_t len);
