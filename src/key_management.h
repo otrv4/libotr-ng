@@ -66,7 +66,7 @@ static inline void key_manager_set_their_dh(dh_public_key_t their,
   manager->their_dh = dh_mpi_copy(their);
 }
 
-void key_manager_generate_ephemeral_keys(key_manager_t *manager);
+otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager);
 
 otr4_err_t key_manager_ratchetting_init(int j, key_manager_t *manager);
 

@@ -419,7 +419,9 @@ static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
 }
 
 static otr4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
-  key_manager_generate_ephemeral_keys(otr->keys);
+  if (key_manager_generate_ephemeral_keys(otr->keys))
+    return OTR4_ERROR;
+
   otr->state = OTRV4_STATE_WAITING_AUTH_R;
   maybe_create_keys(otr->conversation);
   return reply_with_identity_msg(response, otr);
@@ -653,7 +655,8 @@ static otr4_err_t receive_identity_message_on_state_start(
   key_manager_set_their_dh(identity_message->B, otr->keys);
   user_profile_copy(otr->their_profile, identity_message->profile);
 
-  key_manager_generate_ephemeral_keys(otr->keys);
+  if (key_manager_generate_ephemeral_keys(otr->keys))
+    return OTR4_ERROR;
 
   if (reply_with_auth_r_msg(dst, otr))
     return OTR4_ERROR;

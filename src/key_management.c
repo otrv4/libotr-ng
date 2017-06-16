@@ -89,7 +89,7 @@ void key_manager_destroy(key_manager_t *manager) {
   manager->old_mac_keys = NULL;
 }
 
-void key_manager_generate_ephemeral_keys(key_manager_t *manager) {
+otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
   // TODO: securely erase memory
   uint8_t sym[ED448_PRIVATE_BYTES];
   random_bytes(sym, ED448_PRIVATE_BYTES);
@@ -99,9 +99,12 @@ void key_manager_generate_ephemeral_keys(key_manager_t *manager) {
 
   if (manager->i % 3 == 0) {
     dh_keypair_destroy(manager->our_dh);
-    // TODO: handle error when this fails
-    dh_keypair_generate(manager->our_dh);
+    if (dh_keypair_generate(manager->our_dh))
+      return OTR4_ERROR;
+
+    return OTR4_SUCCESS;
   }
+  return OTR4_SUCCESS;
 }
 
 void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
@@ -430,7 +433,9 @@ static otr4_err_t rotate_keys(key_manager_t *manager) {
   manager->i++;
   manager->j = 0;
 
-  key_manager_generate_ephemeral_keys(manager);
+  if (key_manager_generate_ephemeral_keys(manager))
+    return OTR4_ERROR;
+
   return enter_new_ratchet(manager);
 }
 
