@@ -55,7 +55,8 @@ otr4_client_t *otr4_client_new(otr4_client_state_t *state, const char *protocol,
       instag_file = tmpfile();
     }
 
-    if (!otrv4_instag_get(client->state->instag, account, protocol, instag_file)) {
+    if (!otrv4_instag_get(client->state->instag, account, protocol,
+                          instag_file)) {
       fclose(instag_file);
       return NULL;
     };

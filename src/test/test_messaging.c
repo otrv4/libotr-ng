@@ -73,4 +73,3 @@ void test_api_messaging(void) {
   otr4_user_state_free(test_state);
   test_state = NULL;
 }
-

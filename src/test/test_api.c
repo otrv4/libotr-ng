@@ -160,7 +160,7 @@ void test_dh_key_rotation(void) {
   string_t to_send = NULL;
   otr4_err_t err = OTR4_ERROR;
 
-  for (int ratchet_id = 1; ratchet_id < 6; ratchet_id+=2) {
+  for (int ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
     // Bob sends a data message
     err = otrv4_send_message(&to_send, "hello", NULL, bob);
     otrv4_assert(err == OTR4_SUCCESS);
@@ -171,8 +171,8 @@ void test_dh_key_rotation(void) {
     g_assert_cmpint(bob->keys->i, ==, ratchet_id);
     g_assert_cmpint(bob->keys->j, ==, 1);
 
-    //it should always be NULL
-    //manager->our_dh->priv == NULL
+    // it should always be NULL
+    // manager->our_dh->priv == NULL
 
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
@@ -199,7 +199,7 @@ void test_dh_key_rotation(void) {
     otrv4_assert(to_send);
     otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
 
-    g_assert_cmpint(alice->keys->i, ==, ratchet_id+1);
+    g_assert_cmpint(alice->keys->i, ==, ratchet_id + 1);
     g_assert_cmpint(alice->keys->j, ==, 1);
 
     // Bob receives a data message
@@ -207,7 +207,7 @@ void test_dh_key_rotation(void) {
     err = otrv4_receive_message(response_to_alice, to_send, bob);
     otrv4_assert(err == OTR4_SUCCESS);
 
-    g_assert_cmpint(bob->keys->i, ==, ratchet_id+1);
+    g_assert_cmpint(bob->keys->i, ==, ratchet_id + 1);
     g_assert_cmpint(bob->keys->j, ==, 0); // New ratchet should happen
 
     free(to_send);
