@@ -1,6 +1,8 @@
 #include "messaging.h"
 #include "keys.h"
 
+#include <libotr/privkey.h>
+
 otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb) {
   otr4_userstate_t *state = malloc(sizeof(otr4_userstate_t));
   if (!state)
@@ -123,4 +125,9 @@ int otr4_user_state_private_key_v4_read_FILEp(
   }
 
   return 0;
+}
+
+int otr4_user_state_private_key_v3_read_FILEp(otr4_userstate_t *state,
+                                              FILE *keys) {
+  return otrl_privkey_read_FILEp(state->userstate_v3, keys);
 }
