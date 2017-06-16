@@ -133,9 +133,7 @@ int otr4_user_state_private_key_v3_read_FILEp(otr4_userstate_t *state,
 }
 
 int otr4_user_state_instance_tags_read_FILEp(otr4_userstate_t *state,
-                                              FILE *instag)
-{
-    //TODO: Read for OTR4
-    return otrl_instag_read_FILEp(state->userstate_v3, instag);
+                                             FILE *instag) {
+  // TODO: Read for OTR4
+  return otrl_instag_read_FILEp(state->userstate_v3, instag);
 }
-

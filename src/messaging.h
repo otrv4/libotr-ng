@@ -53,7 +53,7 @@ int otr4_user_state_private_key_v3_read_FILEp(otr4_userstate_t *state,
                                               FILE *keys);
 
 int otr4_user_state_instance_tags_read_FILEp(otr4_userstate_t *state,
-                                              FILE *instag);
+                                             FILE *instag);
 
 otr4_messaging_client_t *otr4_messaging_client_new(otr4_userstate_t *state,
                                                    void *client_id);
