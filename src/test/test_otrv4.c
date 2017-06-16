@@ -235,10 +235,10 @@ void test_otrv4_receives_fragmented_message(otrv4_fixture_t *otrv4_fixture,
 }
 
 void test_otrv4_destroy() {
-  otr4_client_state_t keypair[1];
+  otr4_client_state_t *state = otr4_client_state_new(NULL);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
-  otrv4_t *otr = otrv4_new(keypair, policy);
+  otrv4_t *otr = otrv4_new(state, policy);
 
   otr->profile = user_profile_new("4");
   otrv4_destroy(otr);
@@ -250,4 +250,5 @@ void test_otrv4_destroy() {
   otrv4_assert(otr->otr3_conn == NULL);
 
   free(otr);
+  otr4_client_state_free(state);
 }
