@@ -27,11 +27,10 @@ ratchet_t *ratchet_new() {
 void chain_link_free(chain_link_t *head) {
   chain_link_t *current = head;
   chain_link_t *next = NULL;
-  // TODO: momentary fix. FIX this way of deleting keys
   while (current) {
     next = current->next;
 
-    sodium_memzero(current->key, 64);
+    sodium_memzero(current->key, sizeof(chain_key_t));
     free(current);
 
     current = next;
@@ -42,7 +41,7 @@ void ratchet_free(ratchet_t *ratchet) {
   if (!ratchet)
     return;
 
-  sodium_memzero(ratchet->root_key, 64);
+  sodium_memzero(ratchet->root_key, sizeof(root_key_t));
 
   chain_link_free(ratchet->chain_a->next);
   ratchet->chain_a->next = NULL;
