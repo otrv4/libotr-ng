@@ -43,7 +43,6 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
   gcry_md_close(hd);
 }
 
-// TODO: handle err
 int hashToScalar(const unsigned char *buff, const size_t bufflen,
                  ec_scalar_t dst) {
   gcry_md_hd_t hd;
@@ -56,7 +55,10 @@ int hashToScalar(const unsigned char *buff, const size_t bufflen,
   memcpy(hash, gcry_md_read(hd, 0), HASH_BYTES);
   gcry_md_close(hd);
 
-  return deserialize_ec_scalar(dst, hash, ED448_SCALAR_BYTES);
+  if (deserialize_ec_scalar(dst, hash, ED448_SCALAR_BYTES))
+    return 1;
+
+  return 0;
 }
 
 void smp_msg_1_destroy(smp_msg_1_t *msg) {
@@ -472,7 +474,6 @@ bool smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   return ok & ec_scalar_eq(temp_scalar, msg->cp);
 }
 
-// TODO: why would this fail?
 otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
                               smp_context_t smp) {
   snizkpk_keypair_t pair_r4[1], pair_r5[1], pair_r7[1];
