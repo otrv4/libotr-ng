@@ -25,10 +25,15 @@ Configure project
 $ ./configure
 ```
 
-Configure project with debug options
+Configure project with debug options on Linux
 ```
 $ ./configure CFLAGS="-g -ggdb3 -O0" CXXFLAGS="-g -ggdb3 -O0" LDFLAGS="-g -ggdb3" --disable-shared
 $ gdb [path/test/executable]
+```
+Configure project with debug options on OSX
+```
+$ ./configure CFLAGS="-g -ggdb3 -O0" CXXFLAGS="-g -ggdb3 -O0" LDFLAGS="-g -ggdb3" --disable-shared
+$ lldb [path/test/executable]
 ```
 
 Build and install
