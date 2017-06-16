@@ -350,18 +350,26 @@ static otr4_err_t derive_sending_chain_key(key_manager_t *manager) {
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
-  k_ecdh_t k_ecdh;
-  if (ecdh_shared_secret(k_ecdh, sizeof(k_ecdh_t), manager->our_ecdh,
-                         manager->their_ecdh))
+static otr4_err_t calculate_ssid(const shared_secret_t shared,
+                                 key_manager_t *manager) {
+  uint8_t ssid_buff[32];
+  if (!sha3_256(ssid_buff, sizeof(ssid_buff), shared, sizeof(shared_secret_t)))
     return OTR4_ERROR;
-  // TODO: Securely delete our_ecdh.secret.
+
+  memcpy(manager->ssid, ssid_buff, sizeof(manager->ssid));
+
+  return OTR4_SUCCESS;
+}
+
+static otr4_err_t calculate_mix_key(key_manager_t *manager) {
+  k_dh_t k_dh;
 
   if (manager->i % 3 == 0) {
-    k_dh_t k_dh;
-    if (dh_shared_secret(k_dh, sizeof(k_dh_t), manager->our_dh->priv,
-                         manager->their_dh))
-      return OTR4_ERROR;
+    otr4_err_t err = dh_shared_secret(k_dh, sizeof(k_dh_t),
+                                      manager->our_dh->priv, manager->their_dh);
+
+    if (err)
+      return err;
 
     // TODO: Securely delete our_dh.secret
 
@@ -374,6 +382,26 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
       return OTR4_ERROR;
   }
 
+  return OTR4_SUCCESS;
+}
+
+static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
+  k_ecdh_t k_ecdh;
+  shared_secret_t shared;
+
+  if (ecdh_shared_secret(k_ecdh, sizeof(k_ecdh_t), manager->our_ecdh,
+                         manager->their_ecdh))
+    return OTR4_ERROR;
+  // TODO: Securely delete our_ecdh.secret.
+
+  otr4_err_t err = calculate_mix_key(manager);
+  if (err)
+    return err;
+
+  err = calculate_shared_secret(shared, k_ecdh, manager->mix_key);
+  if (err)
+    return err;
+
 #ifdef DEBUG
   printf("ENTERING NEW RATCHET\n");
   printf("K_ecdh = ");
@@ -382,22 +410,12 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   otrv4_memdump(manager->mix_key, sizeof(mix_key_t));
 #endif
 
-  shared_secret_t shared;
-  if (calculate_shared_secret(shared, k_ecdh, manager->mix_key))
-    return OTR4_ERROR;
-
   // TODO: Securely delete shared.
-  uint8_t ssid_buff[GCRY_MD_SHA3_256];
-  if (!sha3_256(ssid_buff, gcry_md_get_algo_dlen(GCRY_MD_SHA3_256), shared,
-                sizeof(shared_secret_t)))
-    return OTR4_ERROR;
+  err = calculate_ssid(shared, manager);
+  if (err)
+    return err;
 
-  memcpy(manager->ssid, ssid_buff, 8);
-
-  if (key_manager_new_ratchet(manager, shared)) {
-    return OTR4_ERROR;
-  }
-  return OTR4_SUCCESS;
+  return key_manager_new_ratchet(manager, shared);
 }
 
 otr4_err_t key_manager_ratchetting_init(int j, key_manager_t *manager) {
