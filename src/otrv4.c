@@ -706,10 +706,10 @@ static otr4_err_t receive_identity_message_while_waiting(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
   // 1) Forget the old their_ecdh and their_dh from the previously received
   // Identity message.
-  //dh_mpi_release(prev_otr->keys->their_dh);
-  //prev_otr->keys->their_dh = NULL;
+  // dh_mpi_release(prev_otr->keys->their_dh);
+  // prev_otr->keys->their_dh = NULL;
 
-  //ec_point_destroy(prev_otr->keys->their_ecdh);
+  // ec_point_destroy(prev_otr->keys->their_ecdh);
 
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
