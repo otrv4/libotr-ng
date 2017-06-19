@@ -275,9 +275,6 @@ void test_conversation_with_multiple_locations() {
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
   otr4_client_t *alice = NULL, *bob = NULL;
 
-  char *account = "";
-  char *protocol = "";
-
   otr4_client_state_t *alice_state = otr4_client_state_new("alice");
   alice_state->userstate = otrl_userstate_create();
   alice_state->account_name = otrv4_strdup("");
@@ -293,11 +290,9 @@ void test_conversation_with_multiple_locations() {
   alice = otr4_client_new(alice_state);
   bob = otr4_client_new(bob_state);
 
-  // TODO: Remove this
-  FILE *instag = tmpfile();
-  otrl_instag_generate_FILEp(alice_state->userstate, instag, account, protocol);
-  otrl_instag_generate_FILEp(bob_state->userstate, instag, account, protocol);
-  fclose(instag);
+  // Generate instance tag
+  otr4_client_state_add_instance_tag(alice_state, 0x100 + 1);
+  otr4_client_state_add_instance_tag(bob_state, 0x100 + 2);
 
   char *query_msg = otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
 

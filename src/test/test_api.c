@@ -352,16 +352,8 @@ void test_api_conversation_v3(void) {
   fclose(tmpFILEp);
 
   // Generate instance tag
-  tmpFILEp = tmpfile();
-  otrl_instag_generate_FILEp(alice_state->userstate, tmpFILEp,
-                             alice_state->account_name,
-                             alice_state->protocol_name);
-  fclose(tmpFILEp);
-
-  tmpFILEp = tmpfile();
-  otrl_instag_generate_FILEp(bob_state->userstate, tmpFILEp,
-                             bob_state->account_name, bob_state->protocol_name);
-  fclose(tmpFILEp);
+  otr4_client_state_add_instance_tag(alice_state, 0x100 + 1);
+  otr4_client_state_add_instance_tag(bob_state, 0x100 + 2);
 
   // AKE HAS FINISHED.
   do_ake_otr3(alice, bob);

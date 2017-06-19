@@ -131,6 +131,18 @@ int otr4_user_state_private_key_v3_read_FILEp(otr4_userstate_t *state,
   return otrl_privkey_read_FILEp(state->userstate_v3, keys);
 }
 
+int otr4_user_state_add_instance_tag(otr4_userstate_t *state, void *client_id,
+                                     unsigned int instag) {
+  return otr4_client_state_add_instance_tag(get_client_state(state, client_id),
+                                            instag);
+}
+
+unsigned int otr4_user_state_get_instance_tag(otr4_userstate_t *state,
+                                              void *client_id) {
+  // TODO
+  return 0;
+}
+
 int otr4_user_state_instance_tags_read_FILEp(otr4_userstate_t *state,
                                              FILE *instag) {
   // TODO: Read for OTR4

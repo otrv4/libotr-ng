@@ -41,6 +41,9 @@ void otr4_client_state_add_private_key_v4(
 int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
                                                 FILE *privf);
 
+int otr4_client_state_add_instance_tag(otr4_client_state_t *state,
+                                       unsigned int instag);
+
 unsigned int otr4_client_state_get_instance_tag(otr4_client_state_t *state);
 
 int otr4_client_state_instance_tag_read_FILEp(otr4_client_state_t *state,

@@ -1,6 +1,7 @@
 #include "client_state.h"
 
 #include "deserialize.h"
+#include "str.h"
 
 otr4_client_state_t *otr4_client_state_new(void *client_id) {
   otr4_client_state_t *state = malloc(sizeof(otr4_client_state_t));
@@ -94,6 +95,45 @@ int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
   }
 
   return err;
+}
+
+static OtrlInsTag *otrl_instance_tag_new(const char *protocol,
+                                         const char *account,
+                                         unsigned int instag) {
+  if (instag < 0x00000100)
+    return NULL;
+
+  OtrlInsTag *p = malloc(sizeof(OtrlInsTag));
+  if (!p)
+    return NULL;
+
+  p->accountname = otrv4_strdup(account);
+  p->protocol = otrv4_strdup(protocol);
+  p->instag = instag;
+
+  return p;
+}
+
+static void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
+  // This comes from libotr3
+  p->next = us->instag_root;
+  if (p->next) {
+    p->next->tous = &(p->next);
+  }
+
+  p->tous = &(us->instag_root);
+  us->instag_root = p;
+}
+
+int otr4_client_state_add_instance_tag(otr4_client_state_t *state,
+                                       unsigned int instag) {
+  OtrlInsTag *p =
+      otrl_instance_tag_new(state->protocol_name, state->account_name, instag);
+  if (!p)
+    return -1;
+
+  otrl_userstate_instance_tag_add(state->userstate, p);
+  return 0;
 }
 
 unsigned int otr4_client_state_get_instance_tag(otr4_client_state_t *state) {

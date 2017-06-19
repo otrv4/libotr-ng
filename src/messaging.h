@@ -39,7 +39,8 @@ typedef struct {
 otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb);
 void otr4_user_state_free(otr4_userstate_t *);
 
-void otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *clientop,
+void otr4_user_state_add_private_key_v4(otr4_userstate_t *state,
+                                        void *client_id,
                                         const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
@@ -51,6 +52,12 @@ int otr4_user_state_private_key_v4_read_FILEp(
 
 int otr4_user_state_private_key_v3_read_FILEp(otr4_userstate_t *state,
                                               FILE *keys);
+
+int otr4_user_state_add_instance_tag(otr4_userstate_t *state, void *client_id,
+                                     unsigned int instag);
+
+unsigned int otr4_user_state_get_instance_tag(otr4_userstate_t *state,
+                                              void *client_id);
 
 int otr4_user_state_instance_tags_read_FILEp(otr4_userstate_t *state,
                                              FILE *instag);

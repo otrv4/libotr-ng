@@ -39,24 +39,8 @@ void otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
       otrv4_fixture->state->account_name, otrv4_fixture->state->protocol_name));
   fclose(tmpFILEp);
 
-  tmpFILEp = tmpfile();
-  otrl_instag_generate_FILEp(otrv4_fixture->state->userstate, tmpFILEp,
-                             otrv4_fixture->state->account_name,
-                             otrv4_fixture->state->protocol_name);
-  fclose(tmpFILEp);
-
-  tmpFILEp = tmpfile();
-  otrv4_assert(!otrl_privkey_generate_FILEp(
-      otrv4_fixture->state->userstate, tmpFILEp,
-      otrv4_fixture->state->account_name, otrv4_fixture->state->protocol_name));
-
-  fclose(tmpFILEp);
-
-  tmpFILEp = tmpfile();
-  otrl_instag_generate_FILEp(otrv4_fixture->state->userstate, tmpFILEp,
-                             otrv4_fixture->state->account_name,
-                             otrv4_fixture->state->protocol_name);
-  fclose(tmpFILEp);
+  // Generate instance tag
+  otr4_client_state_add_instance_tag(otrv4_fixture->state, 0x100 + 1);
 }
 
 void otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture,
