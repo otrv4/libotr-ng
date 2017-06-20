@@ -46,19 +46,20 @@ otr4_client_state_get_private_key_v4(otr4_client_state_t *state) {
   return state->keypair;
 }
 
-void otr4_client_state_add_private_key_v4(
+int otr4_client_state_add_private_key_v4(
     otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   if (!state)
-    return;
+    return 1;
 
   if (state->keypair)
-    return;
+    return 0;
 
   state->keypair = otrv4_keypair_new();
   if (!state->keypair)
-    return;
+    return 2;
 
   otrv4_keypair_generate(state->keypair, sym);
+  return 0;
 }
 
 int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,

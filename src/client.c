@@ -59,31 +59,9 @@ void otr4_client_free(otr4_client_t *client) {
 }
 
 int otr4_client_generate_keypair(otr4_client_t *client) {
-  /*
-if (client->state->keypair)
-  return 0;
-
-client->keypair = malloc(sizeof(otrv4_keypair_t));
-if (!client->keypair)
-  return -1;
-
-uint8_t sym[ED448_PRIVATE_BYTES];
-gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
-
-otrv4_keypair_generate(client->keypair, sym);
-
-// Set this new keypair to every conversation in this client
-list_element_t *el;
-for (el = client->conversations; el; el = el->next) {
-  otr4_conversation_t *conv = CONV(el->data);
-  if (!conv->conn || conv->conn->keypair) // This should never happen
-    return 1;
-
-  conv->conn->keypair = client->keypair;
-}
-*/
-
-  return 0;
+  uint8_t sym[ED448_PRIVATE_BYTES];
+  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
+  return otr4_client_state_add_private_key_v4(client->state, sym);
 }
 
 // TODO: There may be multiple conversations with the same recipient if they
