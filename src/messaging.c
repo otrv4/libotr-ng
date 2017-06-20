@@ -141,6 +141,13 @@ int otr4_user_state_private_key_v4_read_FILEp(
   return 0;
 }
 
+int otr4_user_state_private_key_v3_generate_FILEp(otr4_userstate_t *state,
+                                                  void *client_id,
+                                                  FILE *privf) {
+  return otr4_client_state_private_key_v3_generate_FILEp(
+      get_client_state(state, client_id), privf);
+}
+
 int otr4_user_state_private_key_v3_read_FILEp(otr4_userstate_t *state,
                                               FILE *keys) {
   return otrl_privkey_read_FILEp(state->userstate_v3, keys);

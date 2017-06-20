@@ -1,5 +1,6 @@
 #include "client_state.h"
 
+#include <libotr/privkey.h>
 #include <stdio.h>
 
 #include "deserialize.h"
@@ -35,6 +36,15 @@ void otr4_client_state_free(otr4_client_state_t *state) {
   state->callbacks = NULL;
 
   free(state);
+}
+
+// TODO: There's no API that allows us to simply write all private keys to the
+// file.
+// We might want to extract otrl_privkey_generate_finish_FILEp into 2 functions.
+int otr4_client_state_private_key_v3_generate_FILEp(
+    const otr4_client_state_t *state, FILE *privf) {
+  return otrl_privkey_generate_FILEp(state->userstate, privf,
+                                     state->account_name, state->protocol_name);
 }
 
 otrv4_keypair_t *
@@ -87,7 +97,10 @@ int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
   if (err)
     return err;
 
-  if (EOF == fputs(key, privf))
+  err = fputs(key, privf);
+  free(key);
+
+  if (EOF == err)
     return -3;
 
   if (EOF == fputs("\n", privf))

@@ -32,6 +32,9 @@ typedef struct otr4_client_state_t {
 otr4_client_state_t *otr4_client_state_new(void *client_id);
 void otr4_client_state_free(otr4_client_state_t *);
 
+int otr4_client_state_private_key_v3_generate_FILEp(
+    const otr4_client_state_t *state, FILE *privf);
+
 otrv4_keypair_t *
 otr4_client_state_get_private_key_v4(otr4_client_state_t *state);
 
