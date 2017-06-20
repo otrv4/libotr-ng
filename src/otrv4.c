@@ -1483,7 +1483,7 @@ otr4_err_t otrv4_send_message(otr4_message_to_send_t *to_send,
 
   string_t our_reply = NULL;
 
-  otr4_err_t err;
+  otr4_err_t err = OTR4_ERROR;
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     err = otrv3_send_message(&our_reply, message, tlvs, otr->otr3_conn);
