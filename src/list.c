@@ -13,19 +13,32 @@ list_element_t *list_new() {
   return n;
 }
 
-void list_free(list_element_t *head, void (*fn)(void *data)) {
+void list_foreach(list_element_t *head,
+                  void (*fn)(list_element_t *node, void *context),
+                  void *context) {
   list_element_t *current = head;
   while (current) {
     list_element_t *next = current->next;
 
     if (fn)
-      fn(current->data);
+      fn(current, context);
 
-    current->data = NULL;
-
-    free(current);
     current = next;
   }
+}
+
+static void call_and_free_node(list_element_t *node, void *context) {
+  void (*fn)(void *data) = context;
+
+  if (fn)
+    fn(node->data);
+
+  node->data = NULL;
+  free(node);
+}
+
+void list_free(list_element_t *head, void (*fn)(void *data)) {
+  list_foreach(head, call_and_free_node, fn);
 }
 
 void list_free_full(list_element_t *head) { list_free(head, free); }

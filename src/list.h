@@ -8,7 +8,11 @@ typedef struct _list_element {
   struct _list_element *next;
 } list_element_t;
 
-list_element_t *list_new();
+list_element_t *list_new(void);
+
+void list_foreach(list_element_t *head,
+                  void (*fn)(list_element_t *node, void *context),
+                  void *context);
 
 // Free list and invoke fn to free the nodes' data
 void list_free(list_element_t *head, void (*fn)(void *data));
