@@ -60,10 +60,10 @@ static otr4_client_state_t *get_client_state(otr4_userstate_t *state,
   return s;
 }
 
-void otr4_user_state_add_private_key_v4(
-    otr4_userstate_t *state, void *clientop,
-    const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  otr4_client_state_add_private_key_v4(get_client_state(state, clientop), sym);
+int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *clientop,
+                                       const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  return otr4_client_state_add_private_key_v4(get_client_state(state, clientop),
+                                              sym);
 }
 
 otr4_messaging_client_t *otr4_messaging_client_new(otr4_userstate_t *state,

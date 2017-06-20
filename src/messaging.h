@@ -39,9 +39,8 @@ typedef struct {
 otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb);
 void otr4_user_state_free(otr4_userstate_t *);
 
-void otr4_user_state_add_private_key_v4(otr4_userstate_t *state,
-                                        void *client_id,
-                                        const uint8_t sym[ED448_PRIVATE_BYTES]);
+int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *client_id,
+                                       const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
                                                     void *client_id);

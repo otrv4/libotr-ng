@@ -59,6 +59,7 @@ void otr4_client_free(otr4_client_t *client) {
 }
 
 int otr4_client_generate_keypair(otr4_client_t *client) {
+  // TODO: Generate OTR3 key.
   uint8_t sym[ED448_PRIVATE_BYTES];
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
   return otr4_client_state_add_private_key_v4(client->state, sym);
