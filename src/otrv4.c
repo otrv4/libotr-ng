@@ -343,7 +343,6 @@ otrv4_response_t *otrv4_response_new(void) {
 
   response->to_display = NULL;
   response->to_send = NULL;
-  response->our_reply = NULL;
   response->warning = OTRV4_WARN_NONE;
   response->tlvs = NULL;
 
@@ -357,14 +356,11 @@ void otrv4_response_free(otrv4_response_t *response) {
   free(response->to_display);
   response->to_display = NULL;
 
-  free(response->our_reply);
-  response->our_reply= NULL;
+  free(response->to_send);
+  response->to_send = NULL;
 
   otrv4_tlv_free(response->tlvs);
   response->tlvs = NULL;
-
-  otr4_message_free(response->to_send);
-  response->to_send = NULL;
 
   free(response);
 }
@@ -407,7 +403,7 @@ static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
   ec_point_copy(m->Y, OUR_ECDH(otr));
   m->B = dh_mpi_copy(OUR_DH(otr));
 
-  if (serialize_and_encode_identity_message(&response->our_reply, m)) {
+  if (serialize_and_encode_identity_message(&response->to_send, m)) {
     dake_identity_message_free(m);
     return err;
   }
@@ -441,7 +437,7 @@ static otr4_err_t receive_tagged_plaintext(otrv4_response_t *response,
     return start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:
-    return otrv3_receive_message(&response->our_reply, &response->to_display,
+    return otrv3_receive_message(&response->to_send, &response->to_display,
                                  &response->tlvs, message, otr->otr3_conn);
     break;
   case OTRV4_VERSION_NONE:
@@ -461,7 +457,7 @@ static otr4_err_t receive_query_message(otrv4_response_t *response,
     return start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:
-    return otrv3_receive_message(&response->our_reply, &response->to_display,
+    return otrv3_receive_message(&response->to_send, &response->to_display,
                                  &response->tlvs, message, otr->otr3_conn);
     break;
   case OTRV4_VERSION_NONE:
@@ -1074,11 +1070,9 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
 
     key_manager_prepare_to_ratchet(otr->keys);
 
-    if (reply_tlv) {
-      response->to_send = otr4_message_new();
-      if (otrv4_send_message(response->to_send, "", reply_tlv, otr))
+    if (reply_tlv)
+      if (otrv4_send_message(&response->to_send, "", reply_tlv, otr))
         continue;
-    }
 
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
@@ -1117,29 +1111,21 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
   maybe_create_keys(otr->conversation);
   // otr4_err_t err;
 
-  response->our_reply = NULL;
+  response->to_send = NULL;
 
   switch (header.type) {
   case OTR_IDENTITY_MSG_TYPE:
     otr->running_version = OTRV4_VERSION_4;
-    return receive_identity_message(&response->our_reply, decoded, dec_len, otr);
-    break;
+    return receive_identity_message(&response->to_send, decoded, dec_len, otr);
   case OTR_AUTH_R_MSG_TYPE:
-    return receive_auth_r(&response->our_reply, decoded, dec_len, otr);
-    // TODO: should prob be done on inside
-    // gcry_mpi_release(otr->keys->our_dh->priv);
-    // otr->keys->our_dh->priv = NULL;
-    break;
+    return receive_auth_r(&response->to_send, decoded, dec_len, otr);
   case OTR_AUTH_I_MSG_TYPE:
-    return receive_auth_i(&response->our_reply, decoded, dec_len, otr);
-    break;
+    return receive_auth_i(&response->to_send, decoded, dec_len, otr);
   case OTR_DATA_MSG_TYPE:
     return otrv4_receive_data_message(response, decoded, dec_len, otr);
-    break;
   default:
     // errror. bad message type
     return OTR4_ERROR;
-    break;
   }
 
   return OTR4_ERROR;
@@ -1198,25 +1184,6 @@ static otr4_err_t receive_message_v4_only(otrv4_response_t *response,
   return OTR4_SUCCESS;
 }
 
-void otr4_set_fragmentation(int max_msg_size, otrv4_t *otr) {
-  if (!max_msg_size && max_msg_size < 0)
-    return;
-
-  otr->frag_ctx->max_msg_size = max_msg_size;
-}
-
-static bool should_fragment(otrv4_t *otr) {
-  return otr->frag_ctx->max_msg_size > 0;
-}
-
-static void copy_single_piece(otr4_message_to_send_t *to_send, string_t msg) {
-  to_send->pieces = malloc(sizeof(string_t));
-  //FIXME error
-
-  to_send->pieces[0] = otrv4_strdup(msg);
-  to_send->total = 1;
-}
-
 static bool is_fragment(const string_t message) {
   // TODO: should test if ends with , ?
   return strstr(message, "?OTR|") != NULL;
@@ -1251,7 +1218,7 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    err = otrv3_receive_message(&response->our_reply, &response->to_display,
+    err = otrv3_receive_message(&response->to_send, &response->to_display,
                                  &response->tlvs, unfrag_msg,
                                  otr->otr3_conn);
     break;
@@ -1259,16 +1226,6 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
   case OTRV4_VERSION_NONE:
     err = receive_message_v4_only(response, unfrag_msg, otr);
     break;
-  }
-
-  if (response->our_reply) {
-    response->to_send = otr4_message_new();
-    if (should_fragment(otr)) {
-      //TODO: fragment message here
-      otr4_fragment_message(otr->frag_ctx->max_msg_size, response->to_send, otr->our_instance_tag, otr->their_instance_tag, response->our_reply);
-    } else
-      copy_single_piece(response->to_send, response->our_reply);
-
   }
 
   return err;
@@ -1476,37 +1433,24 @@ static otr4_err_t send_otrv4_message(string_t *to_send, const string_t message,
   return err;
 }
 
-otr4_err_t otrv4_send_message(otr4_message_to_send_t *to_send,
-                              const string_t message, tlv_t *tlvs, otrv4_t *otr) {
+otr4_err_t otrv4_send_message(string_t *to_send, const string_t message,
+                              tlv_t *tlvs, otrv4_t *otr) {
   if (!otr)
     return OTR4_ERROR;
 
-  string_t our_reply = NULL;
-
-  otr4_err_t err = OTR4_ERROR;
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    err = otrv3_send_message(&our_reply, message, tlvs, otr->otr3_conn);
-    break;
+    return otrv3_send_message(to_send, message, tlvs, otr->otr3_conn);
   case OTRV4_VERSION_4:
-    err = send_otrv4_message(&our_reply, message, tlvs, otr);
-    break;
+    return send_otrv4_message(to_send, message, tlvs, otr);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }
 
-  if (our_reply) {
-    if (should_fragment(otr)) {
-      otr4_fragment_message(otr->frag_ctx->max_msg_size, to_send, otr->our_instance_tag, otr->their_instance_tag, our_reply);
-    } else
-      copy_single_piece(to_send, our_reply);
-  }
-
-  free(our_reply);
-  return err;
+  return OTR4_SUCCESS;
 }
 
-static otr4_err_t otrv4_close_v4(otr4_message_to_send_t *to_send, otrv4_t *otr) {
+static otr4_err_t otrv4_close_v4(string_t *to_send, otrv4_t *otr) {
   if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
     return OTR4_SUCCESS;
 
@@ -1524,15 +1468,13 @@ static otr4_err_t otrv4_close_v4(otr4_message_to_send_t *to_send, otrv4_t *otr) 
   return err;
 }
 
-otr4_err_t otrv4_close(otr4_message_to_send_t *to_send, otrv4_t *otr) {
+otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
   if (!otr)
     return OTR4_ERROR;
 
-  string_t *our_reply = NULL;
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    //FIXME: missing fragmentation
-    otrv3_close(our_reply, otr->otr3_conn); // TODO: This should return an error
+    otrv3_close(to_send, otr->otr3_conn); // TODO: This should return an error
                                           // but errors are reported on a
                                           // callback
     gone_insecure_cb(otr->conversation);  // TODO: Only if success
@@ -1561,7 +1503,7 @@ static void set_smp_secret(const uint8_t *answer, size_t answerlen,
                         answer, answerlen);
 }
 
-otr4_err_t otrv4_smp_start(otr4_message_to_send_t *to_send, const string_t question,
+otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
                            const uint8_t *secret, const size_t secretlen,
                            otrv4_t *otr) {
   tlv_t *smp_start_tlv = NULL;
@@ -1569,12 +1511,10 @@ otr4_err_t otrv4_smp_start(otr4_message_to_send_t *to_send, const string_t quest
   if (!otr)
     return OTR4_ERROR;
 
-  string_t *our_reply = NULL;
-
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     //FIXME: missing fragmentation
-    return otrv3_smp_start(our_reply, question, secret, secretlen,
+    return otrv3_smp_start(to_send, question, secret, secretlen,
                            otr->otr3_conn);
     break;
   case OTRV4_VERSION_4:
@@ -1615,7 +1555,7 @@ tlv_t *otrv4_smp_provide_secret(otrv4_t *otr, const uint8_t *secret,
   return smp_reply;
 }
 
-static otr4_err_t smp_continue_otrv4(otr4_message_to_send_t *to_send, const uint8_t *secret,
+static otr4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
                                      const size_t secretlen, otrv4_t *otr) {
   otr4_err_t err = OTR4_ERROR;
   tlv_t *smp_reply = NULL;
@@ -1634,17 +1574,14 @@ static otr4_err_t smp_continue_otrv4(otr4_message_to_send_t *to_send, const uint
   return err;
 }
 
-otr4_err_t otrv4_smp_continue(otr4_message_to_send_t *to_send, const uint8_t *secret,
+otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
                               const size_t secretlen, otrv4_t *otr) {
-  string_t *our_reply = NULL;
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     //FIXME: missing fragmentation
-    return otrv3_smp_continue(our_reply, secret, secretlen, otr->otr3_conn);
-    break;
+    return otrv3_smp_continue(to_send, secret, secretlen, otr->otr3_conn);
   case OTRV4_VERSION_4:
     return smp_continue_otrv4(to_send, secret, secretlen, otr);
-    break;
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }

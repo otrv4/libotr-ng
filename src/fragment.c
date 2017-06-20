@@ -38,7 +38,6 @@ fragment_context_t *fragment_context_new(void) {
   context->K = 0;
   context->fragment = NULL;
   context->fragment_len = 0;
-  context->max_msg_size = 0;
   context->status = OTR4_FRAGMENT_UNFRAGMENTED;
 
   return context;

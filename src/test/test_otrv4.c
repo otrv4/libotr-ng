@@ -95,7 +95,7 @@ void test_otrv4_receives_plaintext_with_ws_tag(otrv4_fixture_t *otrv4_fixture,
   otrv4_assert(otrv4_receive_message(response, message, otrv4_fixture->otr) ==
                OTR4_SUCCESS);
   g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
-  otrv4_assert(response->to_send->pieces[0]);
+  otrv4_assert(response->to_send);
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_WAITING_AUTH_R);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
 
@@ -126,7 +126,7 @@ void test_otrv4_receives_query_message(otrv4_fixture_t *otrv4_fixture,
                                      "?OTRv4? And some random invitation text.",
                                      otrv4_fixture->otr) == OTR4_SUCCESS);
 
-  otrv4_assert(response->to_send->pieces[0]);
+  otrv4_assert(response->to_send);
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_WAITING_AUTH_R);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
 
@@ -170,7 +170,7 @@ void test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture,
                   OTRV4_STATE_ENCRYPTED_MESSAGES);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
   g_assert_cmpstr(response->to_display, ==, NULL);
-  otrv4_assert(response->to_send->pieces[0]);
+  otrv4_assert(response->to_send);
 
   free(serialized);
   otrv4_response_free(response);
@@ -209,29 +209,11 @@ void test_otrv4_receives_identity_message_validates_instance_tag(
 
   // receive the identity message with non-zero their instance tag
   otrv4_response_t *auth_msg = otrv4_response_new();
-  otrv4_receive_message(auth_msg, otrv4_strdup(id_msg->to_send->pieces[0]), otrv4_fixture->otr);
+  otrv4_receive_message(auth_msg, otrv4_strdup(id_msg->to_send), otrv4_fixture->otr);
   otrv4_assert(!auth_msg->to_send);
 
   otrv4_response_free(id_msg);
   otrv4_response_free(auth_msg);
-}
-
-void test_otrv4_receives_fragmented_message(otrv4_fixture_t *otrv4_fixture,
-                                            gconstpointer data) {
-  otrv4_response_t *response = otrv4_response_new();
-  char *msg = "Receiving fragmented plaintext";
-
-  otr4_message_to_send_t *fmsg = malloc(sizeof(otr4_message_to_send_t));
-  otrv4_assert(otr4_fragment_message(60, fmsg, 1, 2, msg) == OTR4_SUCCESS);
-
-  for (int i = 0; i < fmsg->total; i++)
-    otrv4_assert(otrv4_receive_message(response, fmsg->pieces[i],
-                                       otrv4_fixture->otr) == OTR4_SUCCESS);
-
-  g_assert_cmpstr(response->to_display, ==, "Receiving fragmented plaintext");
-
-  otr4_message_free(fmsg);
-  otrv4_response_free(response);
 }
 
 void test_otrv4_destroy() {

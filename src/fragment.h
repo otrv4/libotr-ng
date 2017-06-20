@@ -22,7 +22,6 @@ typedef struct {
   string_t fragment;
   size_t fragment_len;
   fragment_status status;
-  int max_msg_size;
 } fragment_context_t;
 
 void otr4_message_free(otr4_message_to_send_t *message);
