@@ -62,6 +62,40 @@ int otr4_client_state_add_private_key_v4(
   return 0;
 }
 
+int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
+                                                 FILE *privf) {
+  char *key = NULL;
+  asprintf(&key, "%s:%s", state->protocol_name, state->account_name);
+
+  char *buff = NULL;
+  size_t s = 0;
+  int err = 0;
+
+  if (!privf)
+    return -1;
+
+  if (!state->keypair)
+    return -2;
+
+  err = otrv4_symmetric_key_serialize(&buff, &s, state->keypair->sym);
+  if (err)
+    return err;
+
+  if (EOF == fputs(key, privf))
+    return -3;
+
+  if (EOF == fputs("\n", privf))
+    return -3;
+
+  if (1 != fwrite(buff, s, 1, privf))
+    return -3;
+
+  if (EOF == fputs("\n", privf))
+    return -3;
+
+  return 0;
+}
+
 int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
                                                 FILE *privf) {
   char *line = NULL;

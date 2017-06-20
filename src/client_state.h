@@ -38,6 +38,9 @@ otr4_client_state_get_private_key_v4(otr4_client_state_t *state);
 int otr4_client_state_add_private_key_v4(
     otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
+int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
+                                                 FILE *privf);
+
 int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
                                                 FILE *privf);
 

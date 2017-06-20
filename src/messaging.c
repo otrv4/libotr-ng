@@ -105,6 +105,21 @@ otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
       get_client_state(state, client_id));
 }
 
+static void add_private_key_v4_to_FILEp(list_element_t *node, void *context) {
+  FILE *privf = context;
+  otr4_client_state_t *state = node->data;
+  otr4_client_state_private_key_v4_write_FILEp(state, privf);
+}
+
+int otr4_user_state_private_key_v4_write_FILEp(const otr4_userstate_t *state,
+                                               FILE *privf) {
+  if (!privf)
+    return -1;
+
+  list_foreach(state->states, add_private_key_v4_to_FILEp, privf);
+  return 0;
+}
+
 int otr4_user_state_private_key_v4_read_FILEp(
     otr4_userstate_t *state, FILE *privf,
     void *(*read_client_id_for_key)(FILE *filep)) {

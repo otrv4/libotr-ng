@@ -45,6 +45,9 @@ int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *client_id,
 otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
                                                     void *client_id);
 
+int otr4_user_state_private_key_v4_write_FILEp(const otr4_userstate_t *state,
+                                               FILE *privf);
+
 int otr4_user_state_private_key_v4_read_FILEp(
     otr4_userstate_t *state, FILE *keys,
     void *(*read_client_id_for_key)(FILE *filep));
