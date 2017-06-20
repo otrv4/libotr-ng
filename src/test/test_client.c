@@ -380,3 +380,155 @@ void test_conversation_with_multiple_locations() {
 
   OTR4_FREE
 }
+
+void test_valid_identity_msg_in_waiting_auth_i() {
+  OTR4_INIT;
+
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+
+  otr4_client_t *alice = NULL, *bob = NULL;
+  otr4_client_state_t *alice_state = otr4_client_state_new("alice");
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+
+  otr4_client_state_t *bob_state = otr4_client_state_new("bob");
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
+
+  alice = otr4_client_new(alice_state);
+  bob = otr4_client_new(bob_state);
+
+  char *query_msg_to_bob =
+      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+
+  int ignore = 0;
+  char *from_alice_to_bob = NULL, *todisplay = NULL, *bobs_id = NULL,
+       *bobs_auth_i = NULL;
+
+  // Bob receives query message, sends identity msg
+  // Do not free bob identity message
+  // Do not free alice query message
+  ignore = otr4_client_receive(&bobs_id, &todisplay, query_msg_to_bob,
+                               ALICE_IDENTITY, bob);
+  otrv4_assert(ignore);
+  otrv4_assert(!todisplay);
+
+  otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
+      DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
+
+  otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_START);
+
+  // Alice receives identity message (from Bob), sends Auth-R message
+  ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, bobs_id,
+                               BOB_IDENTITY, alice);
+
+  otrv4_assert(from_alice_to_bob);
+  otrv4_assert(ignore);
+  otrv4_assert(!todisplay);
+
+  ec_point_t first_their_ecdh;
+  ec_point_copy(first_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
+
+  dh_public_key_t first_their_dh;
+  first_their_dh = dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
+
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
+
+  free(bobs_id);
+  bobs_id = NULL;
+
+  // Bob generates an identity message again
+  ignore = otr4_client_receive(&bobs_id, &todisplay, query_msg_to_bob,
+                               ALICE_IDENTITY, bob);
+
+  free(query_msg_to_bob);
+  query_msg_to_bob = NULL;
+
+  otr4_conversation_t *bob_to_alice = otr4_client_get_conversation(
+      DONT_FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
+
+  otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_WAITING_AUTH_R);
+
+  // Alice receives identity message (from Bob) again, sends Auth-R message
+  ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, bobs_id,
+                               BOB_IDENTITY, alice);
+  free(bobs_id);
+  bobs_id = NULL;
+
+  ec_point_t second_their_ecdh;
+  ec_point_copy(second_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
+
+  dh_public_key_t second_their_dh;
+  second_their_dh = dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
+
+  otrv4_assert(!ec_point_eq(first_their_ecdh, second_their_ecdh));
+  ec_point_destroy(first_their_ecdh);
+  ec_point_destroy(second_their_ecdh);
+
+  g_assert_cmpint(dh_mpi_cmp(first_their_dh, second_their_dh), !=, 0);
+  dh_mpi_release(first_their_dh);
+  first_their_dh = NULL;
+  dh_mpi_release(second_their_dh);
+  second_their_dh = NULL;
+
+  otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_WAITING_AUTH_I);
+
+  otrv4_assert(ignore);
+  otrv4_assert(from_alice_to_bob);
+  otrv4_assert(!todisplay);
+
+  // Bob receives Auth-R message, sends Auth-I message
+  ignore = otr4_client_receive(&bobs_auth_i, &todisplay, from_alice_to_bob,
+                               ALICE_IDENTITY, bob);
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
+
+  otrv4_assert(ignore);
+  otrv4_assert(bobs_auth_i);
+  otrv4_assert(!todisplay);
+
+  // Alice receives auth-i message (from Bob)
+  ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, bobs_auth_i,
+                               BOB_IDENTITY, alice);
+  free(bobs_auth_i);
+  bobs_auth_i = NULL;
+
+  otrv4_assert(!from_alice_to_bob);
+  otrv4_assert(ignore);
+  otrv4_assert(!todisplay);
+
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
+
+  // Alice sends a disconnected to Bob
+  int err = otr4_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
+  otrv4_assert(!err);
+  otrv4_assert(from_alice_to_bob);
+
+  // We've deleted the conversation
+  otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+                                             BOB_IDENTITY, alice));
+
+  char *frombob = NULL;
+  // Bob receives the disconnected from Alice
+  ignore = otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
+                               ALICE_IDENTITY, bob);
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
+
+  otrv4_assert(ignore);
+  otrv4_assert(!frombob);
+  otrv4_assert(!todisplay);
+
+  // ?
+  free(frombob);
+  frombob = NULL;
+
+  // Free memory
+  otr4_client_state_free(alice_state);
+  otr4_client_state_free(bob_state);
+  otr4_client_free(bob);
+  otr4_client_free(alice);
+
+  OTR4_FREE
+}

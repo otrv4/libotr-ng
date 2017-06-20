@@ -701,16 +701,10 @@ static otr4_err_t receive_identity_message_while_in_progress(
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
-// TODO: check
 static otr4_err_t receive_identity_message_while_waiting(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
-  // 1) Forget the old their_ecdh and their_dh from the previously received
-  // Identity message.
-  // dh_mpi_release(prev_otr->keys->their_dh);
-  // prev_otr->keys->their_dh = NULL;
-
-  // ec_point_destroy(prev_otr->keys->their_ecdh);
-
+  user_profile_free(otr->their_profile);
+  forget_our_keys(otr);
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
@@ -747,7 +741,6 @@ static otr4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,
     err = receive_identity_message_while_in_progress(dst, m, otr);
     break;
   case OTRV4_STATE_WAITING_AUTH_I:
-    // TODO
     err = receive_identity_message_while_waiting(dst, m, otr);
     break;
   case OTRV4_STATE_NONE:
@@ -1188,6 +1181,7 @@ static otr4_err_t receive_message_v4_only(otrv4_response_t *response,
     break;
 
   case IN_MSG_QUERY_STRING:
+    forget_our_keys(otr);
     return receive_query_message(response, message, otr);
     break;
 
