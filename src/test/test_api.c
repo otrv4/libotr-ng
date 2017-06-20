@@ -177,7 +177,7 @@ void test_dh_key_rotation(void) {
 
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
-    err = otrv4_receive_message(response_to_bob, to_send, alice);
+    err = otrv4_receive_message(response_to_bob, to_send, alice); // HERE!
     otrv4_assert(err == OTR4_SUCCESS);
     free(to_send);
     to_send = NULL;
@@ -190,6 +190,10 @@ void test_dh_key_rotation(void) {
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(alice->keys->i, ==, ratchet_id);
     g_assert_cmpint(alice->keys->j, ==, 0); // New ratchet should happen
+    if (ratchet_id == 3) {
+      otrv4_assert(alice->keys->our_dh->priv == NULL);
+      otrv4_assert(bob->keys->our_dh->priv != NULL);
+    }
 
     //
     // Now alice ratchets
@@ -220,6 +224,9 @@ void test_dh_key_rotation(void) {
     otrv4_response_free(response_to_alice);
     response_to_alice = NULL;
   }
+
+  otrv4_assert(alice->keys->our_dh->priv != NULL);
+  otrv4_assert(bob->keys->our_dh->priv == NULL);
 
   otr4_client_state_free(alice_state);
   otr4_client_state_free(bob_state);
