@@ -66,8 +66,12 @@ int otr4_client_state_add_private_key_v4(
 
 int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
                                                  FILE *privf) {
-  char *key = NULL;
-  asprintf(&key, "%s:%s", state->protocol_name, state->account_name);
+  if (!state->protocol_name || !state->account_name)
+    return 1;
+
+  char *key =
+      malloc(strlen(state->protocol_name) + strlen(state->account_name) + 2);
+  sprintf(key, "%s:%s", state->protocol_name, state->account_name);
 
   char *buff = NULL;
   size_t s = 0;
