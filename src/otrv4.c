@@ -1184,11 +1184,6 @@ static otr4_err_t receive_message_v4_only(otrv4_response_t *response,
   return OTR4_SUCCESS;
 }
 
-static bool is_fragment(const string_t message) {
-  // TODO: should test if ends with , ?
-  return strstr(message, "?OTR|") != NULL;
-}
-
 // Receive a possibly OTR message.
 otr4_err_t otrv4_receive_message(otrv4_response_t *response,
                                  const string_t message, otrv4_t *otr) {
@@ -1197,38 +1192,23 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
 
   set_to_display(response, NULL, 0);
 
-  char *unfrag_msg = NULL;
-  otr4_err_t err = OTR4_ERROR;
-
-  if (is_fragment(message)) {
-    err = otr4_unfragment_message(&unfrag_msg, otr->frag_ctx, message);
-    if (err != OTR4_SUCCESS)
-      return err;
-  } else
-    unfrag_msg = otrv4_strdup(message);
-
-  if (otr->frag_ctx->status == OTR4_FRAGMENT_INCOMPLETE)
-    return OTR4_SUCCESS;
-
   // A DH-Commit sets our running version to 3
   if (otr->running_version == OTRV4_VERSION_NONE &&
       allow_version(otr, OTRV4_ALLOW_V3) &&
-      strstr(unfrag_msg, "?OTR:AAMC"))
+      strstr(message, "?OTR:AAMC"))
     otr->running_version = OTRV4_VERSION_3;
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    err = otrv3_receive_message(&response->to_send, &response->to_display,
-                                 &response->tlvs, unfrag_msg,
+    return otrv3_receive_message(&response->to_send, &response->to_display,
+                                 &response->tlvs, message,
                                  otr->otr3_conn);
-    break;
   case OTRV4_VERSION_4:
   case OTRV4_VERSION_NONE:
-    err = receive_message_v4_only(response, unfrag_msg, otr);
-    break;
+    return receive_message_v4_only(response, message, otr);
   }
 
-  return err;
+  return OTR4_SUCCESS;
 }
 
 static data_message_t *generate_data_msg(const otrv4_t *otr) {

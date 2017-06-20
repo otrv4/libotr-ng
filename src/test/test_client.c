@@ -668,3 +668,28 @@ void test_valid_identity_msg_in_waiting_auth_r() {
 
   OTR4_FREE
 }
+
+void test_client_receives_fragmented_message(void) {
+  char *msg = "Receiving fragmented plaintext";
+
+  otr4_message_to_send_t *fmsg = malloc(sizeof(otr4_message_to_send_t));
+  otrv4_assert(otr4_fragment_message(60, fmsg, 1, 2, msg) == OTR4_SUCCESS);
+
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  otr4_client_t *alice = NULL;
+  otr4_client_state_t *alice_state = otr4_client_state_new("alice");
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+  alice = otr4_client_new(alice_state);
+
+  char *tosend = NULL, *todisplay = NULL;
+
+  for (int i = 0; i < fmsg->total; i++) {
+    otr4_client_receive(&tosend, &todisplay, fmsg->pieces[i], BOB_IDENTITY, alice);
+    otrv4_assert(!tosend);
+  }
+
+  g_assert_cmpstr(todisplay, ==, "Receiving fragmented plaintext");
+
+  otr4_message_free(fmsg);
+  free(todisplay);
+}

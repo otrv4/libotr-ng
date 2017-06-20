@@ -158,8 +158,6 @@ int main(int argc, char **argv) {
   g_test_add_func("/api/conversation/v4", test_api_conversation);
   g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
   g_test_add_func("/api/smp", test_api_smp);
-  g_test_add_func("/api/sends_fragmented_message",
-                  test_api_sends_framented_message);
   g_test_add_func("/api/messaging", test_api_messaging);
   g_test_add_func("/api/instance_tag", test_instance_tag_api);
   g_test_add_func("/api/dh_key_rotation", test_dh_key_rotation);
@@ -170,6 +168,8 @@ int main(int argc, char **argv) {
                   test_client_get_our_fingerprint);
   g_test_add_func("/client/fingerprint_to_human",
                   test_fingerprint_hash_to_human);
+  g_test_add_func("/client/receives_fragments",
+                  test_client_receives_fragmented_message);
 
   g_test_add_func("/client/conversation_data_message_multiple_locations",
                   test_conversation_with_multiple_locations);
