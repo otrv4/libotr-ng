@@ -99,6 +99,19 @@ otr4_messaging_client_t *otr4_messaging_client_get(otr4_userstate_t *state,
   return otr4_messaging_client_new(state, client_id);
 }
 
+int otr4_user_state_private_key_v3_generate_FILEp(otr4_userstate_t *state,
+                                                  void *client_id,
+                                                  FILE *privf) {
+  return otr4_client_state_private_key_v3_generate_FILEp(
+      get_client_state(state, client_id), privf);
+}
+
+int otr4_user_state_private_key_v3_read_FILEp(otr4_userstate_t *state,
+                                              FILE *keys) {
+  return otrl_privkey_read_FILEp(state->userstate_v3, keys);
+}
+
+
 otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
                                                     void *client_id) {
   return otr4_client_state_get_private_key_v4(
@@ -141,18 +154,6 @@ int otr4_user_state_private_key_v4_read_FILEp(
   return 0;
 }
 
-int otr4_user_state_private_key_v3_generate_FILEp(otr4_userstate_t *state,
-                                                  void *client_id,
-                                                  FILE *privf) {
-  return otr4_client_state_private_key_v3_generate_FILEp(
-      get_client_state(state, client_id), privf);
-}
-
-int otr4_user_state_private_key_v3_read_FILEp(otr4_userstate_t *state,
-                                              FILE *keys) {
-  return otrl_privkey_read_FILEp(state->userstate_v3, keys);
-}
-
 int otr4_user_state_add_instance_tag(otr4_userstate_t *state, void *client_id,
                                      unsigned int instag) {
   return otr4_client_state_add_instance_tag(get_client_state(state, client_id),
@@ -167,6 +168,6 @@ unsigned int otr4_user_state_get_instance_tag(otr4_userstate_t *state,
 
 int otr4_user_state_instance_tags_read_FILEp(otr4_userstate_t *state,
                                              FILE *instag) {
-  // TODO: Read for OTR4
+    // We use OTR3 userstate also for OTR4 instance tags, for now.
   return otrl_instag_read_FILEp(state->userstate_v3, instag);
 }
