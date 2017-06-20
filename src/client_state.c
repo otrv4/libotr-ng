@@ -1,5 +1,7 @@
 #include "client_state.h"
 
+#include <stdio.h>
+
 #include "deserialize.h"
 #include "str.h"
 
