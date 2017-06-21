@@ -279,7 +279,8 @@ bool rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
 }
 
 otr4_err_t
-key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int message_id, const key_manager_t *manager) {
+key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int message_id,
+                                          const key_manager_t *manager) {
 
   message_chain_t *chain = decide_between_chain_keys(
       manager->current, manager->our_ecdh->pub, manager->their_ecdh);
@@ -449,9 +450,10 @@ static bool derive_encription_and_mac_keys(m_enc_key_t enc_key,
   return ok1 && ok2;
 }
 
-otr4_err_t key_manager_retrieve_receiving_message_keys(
-    m_enc_key_t enc_key, m_mac_key_t mac_key, int message_id,
-    const key_manager_t *manager) {
+otr4_err_t
+key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
+                                            m_mac_key_t mac_key, int message_id,
+                                            const key_manager_t *manager) {
   chain_key_t receiving;
 
   if (key_manager_get_receiving_chain_key_by_id(receiving, message_id, manager))
