@@ -22,7 +22,6 @@ typedef struct _chain_link {
 } chain_link_t;
 
 typedef struct {
-  int id;
   root_key_t root_key;
   chain_link_t chain_a[1];
   chain_link_t chain_b[1];

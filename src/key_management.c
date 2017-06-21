@@ -15,7 +15,6 @@ ratchet_t *ratchet_new() {
   if (!ratchet)
     return NULL;
 
-  ratchet->id = 0;
   ratchet->chain_a->id = 0;
   ratchet->chain_a->next = NULL;
   ratchet->chain_b->id = 0;
@@ -162,7 +161,6 @@ otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
   if (derive_ratchet_keys(ratchet, shared))
     return OTR4_ERROR;
 
-  ratchet->id = manager->i;
   ratchet_free(manager->current);
   manager->current = ratchet;
 
