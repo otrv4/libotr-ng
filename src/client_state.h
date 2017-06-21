@@ -22,8 +22,8 @@ typedef struct otr4_client_state_t {
 
   const struct otrv4_client_callbacks_t *callbacks;
 
-  //TODO: We could point it directly to the user state and have access to the
-  //callback and v3 user state
+  // TODO: We could point it directly to the user state and have access to the
+  // callback and v3 user state
   OtrlUserState userstate;
   otrv4_keypair_t *keypair;
 
