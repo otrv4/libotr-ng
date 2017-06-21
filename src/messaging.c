@@ -60,12 +60,6 @@ static otr4_client_state_t *get_client_state(otr4_userstate_t *state,
   return s;
 }
 
-int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *clientop,
-                                       const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  return otr4_client_state_add_private_key_v4(get_client_state(state, clientop),
-                                              sym);
-}
-
 otr4_messaging_client_t *otr4_messaging_client_new(otr4_userstate_t *state,
                                                    void *client_id) {
   // TODO: Should not create if theres already a client for this client_id
@@ -111,6 +105,18 @@ int otr4_user_state_private_key_v3_read_FILEp(otr4_userstate_t *state,
   return otrl_privkey_read_FILEp(state->userstate_v3, keys);
 }
 
+int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *clientop,
+                                       const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  return otr4_client_state_add_private_key_v4(get_client_state(state, clientop),
+                                              sym);
+}
+
+int otr4_user_state_generate_private_key(otr4_userstate_t *state,
+                                         void *client_id) {
+  uint8_t sym[ED448_PRIVATE_BYTES];
+  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
+  return otr4_user_state_add_private_key_v4(state, client_id, sym);
+}
 
 otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
                                                     void *client_id) {
@@ -168,6 +174,6 @@ unsigned int otr4_user_state_get_instance_tag(otr4_userstate_t *state,
 
 int otr4_user_state_instance_tags_read_FILEp(otr4_userstate_t *state,
                                              FILE *instag) {
-    // We use OTR3 userstate also for OTR4 instance tags, for now.
+  // We use OTR3 userstate also for OTR4 instance tags, for now.
   return otrl_instag_read_FILEp(state->userstate_v3, instag);
 }

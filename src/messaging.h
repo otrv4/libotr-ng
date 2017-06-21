@@ -48,6 +48,9 @@ int otr4_user_state_private_key_v3_read_FILEp(otr4_userstate_t *state,
 int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *client_id,
                                        const uint8_t sym[ED448_PRIVATE_BYTES]);
 
+int otr4_user_state_generate_private_key(otr4_userstate_t *state,
+                                         void *client_id);
+
 otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
                                                     void *client_id);
 
