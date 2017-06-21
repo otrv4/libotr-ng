@@ -12,6 +12,8 @@ data_message_t *data_message_new() {
   ret->flags = 0;
   ret->enc_msg = NULL;
   ret->enc_msg_len = 0;
+  ret->dh = NULL;
+
   return ret;
 }
 
@@ -20,7 +22,11 @@ void data_message_destroy(data_message_t *data_msg) {
   free(data_msg->enc_msg);
   data_msg->enc_msg = NULL;
 
+  ec_point_destroy(data_msg->ecdh);
   dh_mpi_release(data_msg->dh);
+  data_msg->dh = NULL;
+  sodium_memzero(data_msg->mac, DATA_MSG_MAC_BYTES);
+  sodium_memzero(data_msg->nonce, DATA_MSG_NONCE_BYTES);
 }
 
 void data_message_free(data_message_t *data_msg) {
