@@ -501,7 +501,7 @@ otr4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
 }
 
 static otr4_err_t double_ratcheting_init(int j, otrv4_t *otr) {
-  if (key_manager_ratchetting_init(j, otr->keys))
+  if (key_manager_ratcheting_init(j, otr->keys))
     return OTR4_ERROR;
 
   otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;

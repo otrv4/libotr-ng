@@ -279,7 +279,7 @@ bool rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
 }
 
 otr4_err_t
-key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int message_id,
+key_manager_get_receiving_chain_key(chain_key_t receiving, int message_id,
                                           const key_manager_t *manager) {
 
   message_chain_t *chain = decide_between_chain_keys(
@@ -401,7 +401,7 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   return key_manager_new_ratchet(manager, shared);
 }
 
-otr4_err_t key_manager_ratchetting_init(int j, key_manager_t *manager) {
+otr4_err_t key_manager_ratcheting_init(int j, key_manager_t *manager) {
   if (enter_new_ratchet(manager))
     return OTR4_ERROR;
 
@@ -435,7 +435,7 @@ bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t *manager) {
   return true;
 }
 
-static bool derive_encription_and_mac_keys(m_enc_key_t enc_key,
+static bool derive_encryption_and_mac_keys(m_enc_key_t enc_key,
                                            m_mac_key_t mac_key,
                                            const chain_key_t chain_key) {
   bool ok1 = false, ok2 = false;
@@ -456,10 +456,10 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
                                             const key_manager_t *manager) {
   chain_key_t receiving;
 
-  if (key_manager_get_receiving_chain_key_by_id(receiving, message_id, manager))
+  if (key_manager_get_receiving_chain_key(receiving, message_id, manager))
     return OTR4_ERROR;
 
-  if (!derive_encription_and_mac_keys(enc_key, mac_key, receiving)) {
+  if (!derive_encryption_and_mac_keys(enc_key, mac_key, receiving)) {
     return OTR4_ERROR;
   }
   return OTR4_SUCCESS;
@@ -482,7 +482,7 @@ otr4_err_t key_manager_retrieve_sending_message_keys(
   chain_key_t sending;
   int message_id = key_manager_get_sending_chain_key(sending, manager);
 
-  if (!derive_encription_and_mac_keys(enc_key, mac_key, sending))
+  if (!derive_encryption_and_mac_keys(enc_key, mac_key, sending))
     return OTR4_ERROR;
 
 #ifdef DEBUG
