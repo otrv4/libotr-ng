@@ -33,6 +33,8 @@ int main(int argc, char **argv) {
 
   g_test_init(&argc, &argv, NULL);
 
+  g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
+
   g_test_add_func("/otrv4/instance_tag/generates_when_file_empty",
                   test_instance_tag_generates_tag_when_file_empty);
   g_test_add_func("/otrv4/instance_tag/generates_when_file_is_full",
