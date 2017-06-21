@@ -532,4 +532,3 @@ void test_valid_identity_msg_in_waiting_auth_i() {
 
   OTR4_FREE
 }
-

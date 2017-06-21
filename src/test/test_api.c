@@ -514,18 +514,18 @@ void test_api_multiple_clients(void) {
 
   otr4_client_state_t *bob_phone_state = otr4_client_state_new(NULL);
   bob_phone_state->userstate = otrl_userstate_create();
-    bob_phone_state->account_name = otrv4_strdup("bob@phone");
-    bob_phone_state->protocol_name = otrv4_strdup("proto");
+  bob_phone_state->account_name = otrv4_strdup("bob@phone");
+  bob_phone_state->protocol_name = otrv4_strdup("proto");
 
   otr4_client_state_t *bob_pc_state = otr4_client_state_new(NULL);
   bob_pc_state->userstate = otrl_userstate_create();
-    bob_pc_state->account_name = otrv4_strdup("bob@pc");
-    bob_pc_state->protocol_name = otrv4_strdup("proto");
+  bob_pc_state->account_name = otrv4_strdup("bob@pc");
+  bob_pc_state->protocol_name = otrv4_strdup("proto");
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   alice_state->userstate = otrl_userstate_create();
-    alice_state->account_name = otrv4_strdup("alice");
-    alice_state->protocol_name = otrv4_strdup("proto");
+  alice_state->account_name = otrv4_strdup("alice");
+  alice_state->protocol_name = otrv4_strdup("proto");
 
   uint8_t bob_phone_key[ED448_PRIVATE_BYTES] = {1};
   uint8_t bob_pc_key[ED448_PRIVATE_BYTES] = {2};
@@ -535,9 +535,9 @@ void test_api_multiple_clients(void) {
   otr4_client_state_add_private_key_v4(bob_pc_state, bob_pc_key);
   otr4_client_state_add_private_key_v4(alice_state, alice_key);
 
-  otr4_client_state_add_instance_tag(bob_phone_state, 0x100+1);
-  otr4_client_state_add_instance_tag(bob_pc_state, 0x100+2);
-  otr4_client_state_add_instance_tag(alice_state, 0x100+3);
+  otr4_client_state_add_instance_tag(bob_phone_state, 0x100 + 1);
+  otr4_client_state_add_instance_tag(bob_pc_state, 0x100 + 2);
+  otr4_client_state_add_instance_tag(alice_state, 0x100 + 3);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
 
@@ -571,15 +571,16 @@ void test_api_multiple_clients(void) {
   otrv4_assert(to_pc->to_send);
   otrv4_assert(alice->state == OTRV4_STATE_WAITING_AUTH_I);
 
-  // Receives second Identity Message from PHONE (on state OTRV4_STATE_WAITING_AUTH_I)
-  err = otrv4_receive_message(to_phone, from_phone->to_send, alice); 
+  // Receives second Identity Message from PHONE (on state
+  // OTRV4_STATE_WAITING_AUTH_I)
+  err = otrv4_receive_message(to_phone, from_phone->to_send, alice);
   otrv4_response_free(from_phone);
   otrv4_assert(err == OTR4_SUCCESS);
   otrv4_assert(!to_phone->to_display);
   otrv4_assert(to_phone->to_send);
   otrv4_assert(alice->state == OTRV4_STATE_WAITING_AUTH_I);
 
-  //Both receive the AUTH-R but only PC accepts
+  // Both receive the AUTH-R but only PC accepts
   from_pc = otrv4_response_new();
   err = otrv4_receive_message(from_pc, to_pc->to_send, bob_pc);
   otrv4_assert(err == OTR4_SUCCESS);
@@ -587,20 +588,29 @@ void test_api_multiple_clients(void) {
   otrv4_assert(from_pc->to_send);
   otrv4_assert(bob_pc->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
 
+  // It should be OK to get rid of the private DH-key generated at the AKE at
+  // this point. I suspect it is not NULL because a new DH-keypair was generated
+  // when the AKE finishes.
+  otrv4_assert(bob_phone->keys->our_dh->pub);
+  otrv4_assert(bob_phone->keys->our_dh->priv);
+
   from_phone = otrv4_response_new();
   err = otrv4_receive_message(from_phone, to_pc->to_send, bob_phone);
   otrv4_assert(err == OTR4_SUCCESS);
   otrv4_assert(!from_phone->to_display);
-  otrv4_assert(!from_phone->to_send); // This message was sent to PC instance tag.
+  otrv4_assert(
+      !from_phone->to_send); // This message was sent to PC instance tag.
   otrv4_assert(bob_phone->state == OTRV4_STATE_WAITING_AUTH_R);
 
-  // The message was ignored. It should not remove the private key yet.
-  otrv4_assert(bob_phone->keys->our_dh->pub != NULL);
-  otrv4_assert(bob_phone->keys->our_dh->priv != NULL);
+  // The message was ignored. It should not remove the private DH-key yet.
+  // The private DH-key is needed to send the AUTH-I when it actually receives
+  // a AUTH-R.
+  otrv4_assert(bob_phone->keys->our_dh->pub);
+  otrv4_assert(bob_phone->keys->our_dh->priv);
 
-  //TODO: Alice should receive from PC (PHONE will have ignored the message).
+  // TODO: Alice should receive from PC (PHONE will have ignored the message).
 
-  //Both receive but only PHONE accepts
+  // Both receive but only PHONE accepts
   from_pc = otrv4_response_new();
   err = otrv4_receive_message(from_pc, to_phone->to_send, bob_pc);
   otrv4_assert(err == OTR4_SUCCESS);
@@ -609,13 +619,15 @@ void test_api_multiple_clients(void) {
   otrv4_assert(bob_pc->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
 
   from_phone = otrv4_response_new();
-  err = otrv4_receive_message(from_phone, to_phone->to_send, bob_phone); // This segfaults, because we are freeing
+  err = otrv4_receive_message(
+      from_phone, to_phone->to_send,
+      bob_phone); // This segfaults, because we are freeing
   otrv4_assert(err == OTR4_SUCCESS);
   otrv4_assert(!from_phone->to_display);
   otrv4_assert(from_phone->to_send);
   otrv4_assert(bob_phone->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
 
-  //TODO: Alice should receive from PHONE (PC will have ignored the message).
+  // TODO: Alice should receive from PHONE (PC will have ignored the message).
 
   otrl_userstate_free(alice_state->userstate);
   otrl_userstate_free(bob_phone_state->userstate);
