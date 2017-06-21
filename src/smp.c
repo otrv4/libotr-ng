@@ -13,6 +13,27 @@
 
 #include "debug.h"
 
+void smp_context_init(smp_context_t smp)
+{
+  smp->state = SMPSTATE_EXPECT1;
+  smp->progress = 0;
+  smp->msg1 = NULL;
+  smp->secret = NULL;
+
+  ec_scalar_destroy(smp->a2);
+  ec_scalar_destroy(smp->a3);
+  ec_scalar_destroy(smp->b3);
+
+  ec_point_destroy(smp->G2);
+  ec_point_destroy(smp->G3);
+  ec_point_destroy(smp->G3a);
+  ec_point_destroy(smp->G3b);
+  ec_point_destroy(smp->Pb);
+  ec_point_destroy(smp->Qb);
+  ec_point_destroy(smp->Pa_Pb);
+  ec_point_destroy(smp->Qa_Qb);
+}
+
 void smp_destroy(smp_context_t smp) {
   free(smp->secret);
   smp->secret = NULL;
@@ -20,6 +41,20 @@ void smp_destroy(smp_context_t smp) {
   smp_msg_1_destroy(smp->msg1);
   free(smp->msg1);
   smp->msg1 = NULL;
+
+  //TODO: These should be removed from memory when the smp finishes
+  ec_scalar_destroy(smp->a2);
+  ec_scalar_destroy(smp->a3);
+  ec_scalar_destroy(smp->b3);
+
+  ec_point_destroy(smp->G2);
+  ec_point_destroy(smp->G3);
+  ec_point_destroy(smp->G3a);
+  ec_point_destroy(smp->G3b);
+  ec_point_destroy(smp->Pb);
+  ec_point_destroy(smp->Qb);
+  ec_point_destroy(smp->Pa_Pb);
+  ec_point_destroy(smp->Qa_Qb);
 }
 
 void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,

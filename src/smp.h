@@ -64,6 +64,7 @@ typedef struct {
   ec_scalar_t cr, d7;
 } smp_msg_4_t;
 
+void smp_context_init(smp_context_t smp);
 void smp_destroy(smp_context_t smp);
 
 void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,

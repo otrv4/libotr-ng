@@ -157,12 +157,7 @@ otrv4_t *otrv4_new(otr4_client_state_t *state, otrv4_policy_t policy) {
     return NULL;
 
   key_manager_init(otr->keys);
-
-  // TODO: moves initialization to smp
-  otr->smp->state = SMPSTATE_EXPECT1;
-  otr->smp->progress = 0;
-  otr->smp->msg1 = NULL;
-  otr->smp->secret = NULL;
+  smp_context_init(otr->smp);
 
   otr->frag_ctx = fragment_context_new();
   otr->otr3_conn = NULL;
