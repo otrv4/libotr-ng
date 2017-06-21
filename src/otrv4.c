@@ -670,7 +670,7 @@ static void forget_our_keys(otrv4_t *otr) {
   key_manager_init(otr->keys);
 }
 
-static otr4_err_t receive_identity_message_while_in_progress(
+static otr4_err_t receive_identity_message_on_waiting_auth_r(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
   // 1) Compare X with their_dh
   gcry_mpi_t x = NULL;
@@ -701,7 +701,7 @@ static otr4_err_t receive_identity_message_while_in_progress(
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
-static otr4_err_t receive_identity_message_while_waiting(
+static otr4_err_t receive_identity_message_on_waiting_auth_i(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
   user_profile_free(otr->their_profile);
   forget_our_keys(otr);
@@ -738,10 +738,10 @@ static otr4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,
     err = receive_identity_message_on_state_start(dst, m, otr);
     break;
   case OTRV4_STATE_WAITING_AUTH_R:
-    err = receive_identity_message_while_in_progress(dst, m, otr);
+    err = receive_identity_message_on_waiting_auth_r(dst, m, otr);
     break;
   case OTRV4_STATE_WAITING_AUTH_I:
-    err = receive_identity_message_while_waiting(dst, m, otr);
+    err = receive_identity_message_on_waiting_auth_i(dst, m, otr);
     break;
   case OTRV4_STATE_NONE:
   case OTRV4_STATE_AKE_IN_PROGRESS:

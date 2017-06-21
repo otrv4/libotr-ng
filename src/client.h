@@ -67,6 +67,4 @@ int otr3_privkey_generate(otr4_client_t *client, FILE *privf);
 
 int otr3_instag_generate(otr4_client_t *client, FILE *privf);
 
-otr4_conversation_t *get_or_create_conversation_with(const char *recipient,
-                                                     otr4_client_t *client);
 #endif
