@@ -56,6 +56,8 @@ static otr4_client_state_t *get_client_state(otr4_userstate_t *state,
     return NULL;
 
   s->callbacks = state->callbacks;
+  s->userstate = state->userstate_v3;
+
   state->states = list_add(s, state->states);
   return s;
 }
