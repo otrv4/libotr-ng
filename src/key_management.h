@@ -40,7 +40,6 @@ typedef struct {
   int i, j; // TODO: We need to add k (maybe), but why dont we need to add a
             // receiving_ratchet_id
   ratchet_t *current;
-  ratchet_t *previous;
 
   mix_key_t mix_key;
 

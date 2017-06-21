@@ -57,7 +57,6 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
   manager->i = 0;
   manager->j = 0;
   manager->current = NULL;
-  manager->previous = NULL;
   manager->our_dh->pub = NULL;
   manager->our_dh->priv = NULL;
   manager->their_dh = NULL;
@@ -70,9 +69,6 @@ void key_manager_destroy(key_manager_t *manager) {
     free((uint8_t *)el->data);
     el->data = NULL;
   }
-
-  ratchet_free(manager->previous);
-  manager->previous = NULL;
 
   ratchet_free(manager->current);
   manager->current = NULL;
@@ -165,9 +161,6 @@ otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
 
   if (derive_ratchet_keys(ratchet, shared))
     return OTR4_ERROR;
-
-  ratchet_free(manager->previous);
-  manager->previous = manager->current;
 
   ratchet->id = manager->i;
   manager->current = ratchet;
@@ -295,8 +288,6 @@ key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int ratchet_id,
   ratchet_t *ratchet = NULL;
   if (manager->current != NULL && manager->current->id == ratchet_id) {
     ratchet = manager->current;
-  } else if (manager->previous != NULL && manager->previous->id == ratchet_id) {
-    ratchet = manager->previous;
   } else {
     return OTR4_ERROR; // ratchet id not found
   }
