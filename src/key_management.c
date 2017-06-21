@@ -281,20 +281,10 @@ bool rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
 }
 
 otr4_err_t
-key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int ratchet_id,
-                                          int message_id,
-                                          const key_manager_t *manager) {
-  // TODO: Should we be able to receive messages from the previous ratchet?
-  // TODO: This is a critical section to receiving messages out of order.
-  ratchet_t *ratchet = NULL;
-  if (manager->current != NULL && manager->current->id == ratchet_id) {
-    ratchet = manager->current;
-  } else {
-    return OTR4_ERROR; // ratchet id not found
-  }
+key_manager_get_receiving_chain_key_by_id(chain_key_t receiving, int message_id, const key_manager_t *manager) {
 
   message_chain_t *chain = decide_between_chain_keys(
-      ratchet, manager->our_ecdh->pub, manager->their_ecdh);
+      manager->current, manager->our_ecdh->pub, manager->their_ecdh);
   if (!rebuild_chain_keys_up_to(message_id, chain->receiving)) {
     free(chain);
     return OTR4_ERROR;
@@ -462,12 +452,11 @@ static bool derive_encription_and_mac_keys(m_enc_key_t enc_key,
 }
 
 otr4_err_t key_manager_retrieve_receiving_message_keys(
-    m_enc_key_t enc_key, m_mac_key_t mac_key, int ratchet_id, int message_id,
+    m_enc_key_t enc_key, m_mac_key_t mac_key, int message_id,
     const key_manager_t *manager) {
   chain_key_t receiving;
 
-  if (key_manager_get_receiving_chain_key_by_id(receiving, ratchet_id,
-                                                message_id, manager))
+  if (key_manager_get_receiving_chain_key_by_id(receiving, message_id, manager))
     return OTR4_ERROR;
 
   if (!derive_encription_and_mac_keys(enc_key, mac_key, receiving)) {

@@ -190,7 +190,7 @@ void do_ake_fixture(otrv4_t *alice, otrv4_t *bob) {
   chain_key_t bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
   otrv4_assert(key_manager_get_receiving_chain_key_by_id(
-                   alice_receiving_key, 0, 0, alice->keys) == OTR4_SUCCESS);
+                   alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
   otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
   otrv4_response_free(response_to_alice);
