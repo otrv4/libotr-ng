@@ -60,6 +60,8 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
   manager->our_dh->priv = NULL;
   manager->their_dh = NULL;
   manager->old_mac_keys = NULL;
+  memset(manager->mix_key, sizeof(manager->mix_key), 0);
+  memset(manager->ssid, sizeof(manager->ssid), 0);
 }
 
 void key_manager_destroy(key_manager_t *manager) {
