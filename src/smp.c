@@ -13,8 +13,7 @@
 
 #include "debug.h"
 
-void smp_context_init(smp_context_t smp)
-{
+void smp_context_init(smp_context_t smp) {
   smp->state = SMPSTATE_EXPECT1;
   smp->progress = 0;
   smp->msg1 = NULL;
@@ -42,7 +41,7 @@ void smp_destroy(smp_context_t smp) {
   free(smp->msg1);
   smp->msg1 = NULL;
 
-  //TODO: These should be removed from memory when the smp finishes
+  // TODO: These should be removed from memory when the smp finishes
   ec_scalar_destroy(smp->a2);
   ec_scalar_destroy(smp->a3);
   ec_scalar_destroy(smp->b3);

@@ -1006,8 +1006,8 @@ static otr4_err_t get_receiving_msg_keys(m_enc_key_t enc_key,
   if (!key_manager_ensure_on_ratchet(msg->ratchet_id, otr->keys))
     return OTR4_ERROR;
 
-  if (key_manager_retrieve_receiving_message_keys(
-          enc_key, mac_key, msg->message_id, otr->keys))
+  if (key_manager_retrieve_receiving_message_keys(enc_key, mac_key,
+                                                  msg->message_id, otr->keys))
     return OTR4_ERROR;
   return OTR4_SUCCESS;
 }

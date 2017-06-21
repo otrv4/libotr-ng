@@ -92,9 +92,9 @@ void derive_message_keys(m_enc_key_t enc_key, m_mac_key_t mac_key,
 int key_manager_get_sending_chain_key(chain_key_t sending,
                                       const key_manager_t *manager);
 
-otr4_err_t
-key_manager_get_receiving_chain_key(chain_key_t receiving, int message_id,
-                                          const key_manager_t *manager);
+otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
+                                               int message_id,
+                                               const key_manager_t *manager);
 
 otr4_err_t calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
                                    const mix_key_t mix_key);

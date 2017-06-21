@@ -280,9 +280,9 @@ bool rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
   return true;
 }
 
-otr4_err_t
-key_manager_get_receiving_chain_key(chain_key_t receiving, int message_id,
-                                          const key_manager_t *manager) {
+otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
+                                               int message_id,
+                                               const key_manager_t *manager) {
 
   message_chain_t *chain = decide_between_chain_keys(
       manager->current, manager->our_ecdh->pub, manager->their_ecdh);
