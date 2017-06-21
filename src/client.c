@@ -261,6 +261,7 @@ int otr4_client_receive(char **newmessage, char **todisplay,
     should_ignore = 0;
   }
 
+  free(unfrag_msg);
   otrv4_response_free(response);
   return should_ignore;
 }
