@@ -507,7 +507,6 @@ void test_api_smp(void) {
 
   OTR4_FREE;
 }
-<<<<<<< c5b5f0cc07f566e1a67098e8bd8f6d1709f77cb0
 
 void test_api_multiple_clients(void) {
   OTR4_INIT;
@@ -643,54 +642,3 @@ void test_api_multiple_clients(void) {
 
   OTR4_FREE;
 }
-
-void test_api_sends_framented_message(void) {
-  OTR4_INIT;
-
-  otr4_client_state_t *alice_keypair = otr4_client_state_new(NULL);
-  otr4_client_state_t *bob_keypair = otr4_client_state_new(NULL);
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
-      1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_keypair, alice_sym);
-
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
-      2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_keypair, bob_sym);
-
-  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_t *alice = otrv4_new(alice_keypair, policy);
-  otrv4_t *bob = otrv4_new(bob_keypair, policy);
-
-  // AKE HAS FINISHED.
-  do_ake_fixture(alice, bob);
-
-  otrv4_response_t *response_to_alice = otrv4_response_new();
-  char *msg_tosend = "We should fragment when is needed";
-
-  otr4_message_to_send_t *to_send = otr4_message_new();
-
-  otr4_set_fragmentation(200, alice);
-  otrv4_assert(otrv4_send_message(to_send, msg_tosend, NULL, alice)
-      == OTR4_SUCCESS);
-  otrv4_assert(to_send->pieces);
-  g_assert_cmpint(to_send->total, ==, 5);
-
-  for (int i = 0; i < to_send->total; i++)
-    // Bob receives a data message
-    otrv4_assert(otrv4_receive_message(response_to_alice, to_send->pieces[i], bob) ==
-        OTR4_SUCCESS);
-
-
-
-  otrv4_assert_cmpmem(msg_tosend, response_to_alice->to_display, strlen(msg_tosend));
-  otrv4_assert(response_to_alice->to_send == NULL);
-
-  otrv4_response_free(response_to_alice);
-  response_to_alice = NULL;
-
-  otr4_message_free(to_send);
-  otrv4_response_free(response_to_alice);
-}
-
-=======
->>>>>>> Removes fragmentation from otr lib to move to client
