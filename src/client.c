@@ -190,6 +190,27 @@ int otr4_client_send(char **newmessage, const char *message,
   return send_otrv4_message(newmessage, message, recipient, client);
 }
 
+int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
+                             const char *message, int mms,
+                             const char *recipient, otr4_client_t *client) {
+  string_t to_send = NULL;
+  otr4_err_t err = send_otrv4_message(&to_send, message, recipient, client);
+  if (err != OTR4_SUCCESS)
+    return 1;
+
+  otr4_conversation_t *conv = NULL;
+  conv = get_or_create_conversation_with(recipient, client);
+  if (!conv)
+    return 1;
+
+  uint32_t ourtag = conv->conn->our_instance_tag;
+  uint32_t theirtag = conv->conn->their_instance_tag;
+  err = otr4_fragment_message(mms, *newmessage, ourtag, theirtag, to_send);
+  free(to_send);
+
+  return err != OTR4_SUCCESS;
+}
+
 int otr4_client_smp_start(char **tosend, const char *recipient,
                           const char *question, const unsigned char *secret,
                           size_t secretlen, otr4_client_t *client) {

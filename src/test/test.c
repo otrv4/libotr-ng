@@ -168,6 +168,8 @@ int main(int argc, char **argv) {
                   test_client_get_our_fingerprint);
   g_test_add_func("/client/fingerprint_to_human",
                   test_fingerprint_hash_to_human);
+  g_test_add_func("/client/sends_fragments",
+                  test_client_sends_fragmented_message);
   g_test_add_func("/client/receives_fragments",
                   test_client_receives_fragmented_message);
 

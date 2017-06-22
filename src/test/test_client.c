@@ -693,3 +693,66 @@ void test_client_receives_fragmented_message(void) {
   otr4_message_free(fmsg);
   free(todisplay);
 }
+
+void test_client_sends_fragmented_message(void) {
+  OTR4_INIT;
+
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+
+  otr4_client_t *alice = NULL, *bob = NULL;
+  otr4_client_state_t *alice_state = otr4_client_state_new("alice");
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+
+  otr4_client_state_t *bob_state = otr4_client_state_new("bob");
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
+
+  alice = otr4_client_new(alice_state);
+  bob = otr4_client_new(bob_state);
+
+  char *query_msg_to_bob =
+      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+  otrv4_assert(query_msg_to_bob);
+
+  char *from_alice_to_bob = NULL, *frombob = NULL, *todisplay = NULL;
+
+  // Bob receives query message, sends identity msg
+  otr4_client_receive(&frombob, &todisplay, query_msg_to_bob,
+                               ALICE_IDENTITY, bob);
+
+  // Bob receives query message, sends identity msg
+  otr4_client_receive(&frombob, &todisplay, query_msg_to_bob,
+                               ALICE_IDENTITY, bob);
+  free(query_msg_to_bob);
+  query_msg_to_bob = NULL;
+
+  // Alice receives identity message (from Bob), sends Auth-R message
+  otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
+                               BOB_IDENTITY, alice);
+
+  // Bob receives Auth-R message, sends Auth-I message
+  otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
+                               ALICE_IDENTITY, bob);
+
+  // Alice receives Auth-I message (from Bob)
+  otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
+                               BOB_IDENTITY, alice);
+
+  otr4_message_to_send_t *to_send = otr4_message_new();
+  char *message = "We should fragment when is needed";
+  //Alice fragments the message
+  otr4_client_send_fragment(&to_send, message, 100, BOB_IDENTITY, alice);
+
+  for (int i = 0; i < to_send->total; i++) {
+    // Bob receives the fragments
+    frombob = NULL;
+    otr4_client_receive(&frombob, &todisplay, to_send->pieces[i],
+                        ALICE_IDENTITY, bob);
+    otrv4_assert(!frombob);
+
+    if (to_send->total - 1 == i)
+      g_assert_cmpstr(todisplay, ==, message);
+  }
+
+  otr4_message_free(to_send);
+}

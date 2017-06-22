@@ -37,6 +37,10 @@ char *otr4_client_query_message(const char *recipient, const char *message,
 int otr4_client_send(char **newmessage, const char *message,
                      const char *recipient, otr4_client_t *client);
 
+int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
+                             const char *message, int mms,
+                             const char *recipient, otr4_client_t *client);
+
 int otr4_client_smp_start(char **tosend, const char *recipient,
                           const char *question, const unsigned char *secret,
                           size_t secretlen, otr4_client_t *client);
