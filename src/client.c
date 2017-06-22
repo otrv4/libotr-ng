@@ -250,10 +250,6 @@ int otr4_client_receive(char **newmessage, char **todisplay,
                         const char *message, const char *recipient,
                         otr4_client_t *client) {
   otr4_conversation_t *conv = NULL;
-  otrv4_response_t *response = otrv4_response_new();
-
-  *todisplay = NULL;
-
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
     return 1;
@@ -268,6 +264,7 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   if (conv->conn->frag_ctx->status == OTR4_FRAGMENT_INCOMPLETE)
     return should_ignore;
 
+  otrv4_response_t *response = otrv4_response_new();
   if (otrv4_receive_message(response, unfrag_msg, conv->conn)) {
     otrv4_response_free(response);
     return 0; // Should this cause the message to be ignored or not?
@@ -276,6 +273,7 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   if (response->to_send)
     *newmessage = otrv4_strdup(response->to_send);
 
+  *todisplay = NULL;
   if (response->to_display) {
     char *plain = otrv4_strdup(response->to_display);
     *todisplay = plain;
