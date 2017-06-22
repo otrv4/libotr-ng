@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "data_message.h"
 #include "constants.h"
 #include "deserialize.h"
@@ -12,7 +14,9 @@ data_message_t *data_message_new() {
   ret->flags = 0;
   ret->enc_msg = NULL;
   ret->enc_msg_len = 0;
-  ret->dh = NULL;
+
+  memset(ret->nonce, 0, sizeof(ret->nonce));
+  memset(ret->mac, 0, sizeof(ret->mac));
 
   return ret;
 }
