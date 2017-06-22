@@ -628,7 +628,7 @@ void test_api_multiple_clients(void) {
   otrv4_assert(bob_phone->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
 
   // TODO: Alice should receive from PHONE (PC will have ignored the message).
-
+  otrv4_response_free(to_pc);
   otrl_userstate_free(alice_state->userstate);
   otrl_userstate_free(bob_phone_state->userstate);
   otrl_userstate_free(bob_pc_state->userstate);
