@@ -673,8 +673,9 @@ static otr4_err_t receive_identity_message_on_waiting_auth_r(
   gcry_mpi_t y = NULL;
   int err = 0;
 
+  // TODO: is this ok?
   err |= gcry_mpi_scan(&x, GCRYMPI_FMT_USG, OUR_DH(otr),
-                       sizeof(ec_public_key_t), NULL);
+                       sizeof(dh_public_key_t), NULL);
 
   err |=
       gcry_mpi_scan(&y, GCRYMPI_FMT_USG, msg->Y, sizeof(ec_public_key_t), NULL);
@@ -690,8 +691,9 @@ static otr4_err_t receive_identity_message_on_waiting_auth_r(
   gcry_mpi_release(y);
 
   // If our is lower, ignore.
-  if (cmp < 0)
-    return OTR4_SUCCESS; // ignore
+  if (cmp < 0) {
+    return OTR4_SUCCESS;
+  } // ignore
 
   forget_our_keys(otr);
   return receive_identity_message_on_state_start(dst, msg, otr);
