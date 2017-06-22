@@ -82,6 +82,9 @@ void key_manager_destroy(key_manager_t *manager) {
   ecdh_keypair_destroy(manager->our_ecdh);
   ec_point_destroy(manager->their_ecdh);
 
+  sodium_memzero(manager->mix_key, sizeof(manager->mix_key));
+  sodium_memzero(manager->ssid, sizeof(manager->ssid));
+
   list_free_full(manager->old_mac_keys);
   manager->old_mac_keys = NULL;
 }
@@ -106,7 +109,7 @@ otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
 
 void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
                                 key_manager_t *manager) {
-  // TODO: Should we safely remove the previous point?
+  ec_point_destroy(manager->their_ecdh);
   ec_point_copy(manager->their_ecdh, their_ecdh);
   dh_mpi_release(manager->their_dh);
   manager->their_dh = dh_mpi_copy(their_dh);

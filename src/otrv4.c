@@ -410,6 +410,7 @@ static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
 
   err = OTR4_SUCCESS;
   dake_identity_message_free(m);
+
   return err;
 }
 
@@ -1176,7 +1177,6 @@ static otr4_err_t receive_message_v4_only(otrv4_response_t *response,
     break;
 
   case IN_MSG_QUERY_STRING:
-    forget_our_keys(otr);
     return receive_query_message(response, message, otr);
     break;
 
