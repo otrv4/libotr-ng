@@ -43,6 +43,7 @@ void dake_identity_message_free(dake_identity_message_t *identity_message) {
 
 void dake_identity_message_destroy(dake_identity_message_t *identity_message) {
   user_profile_destroy(identity_message->profile);
+  ec_point_destroy(identity_message->Y);
   dh_mpi_release(identity_message->B);
   identity_message->B = NULL;
 }
@@ -271,6 +272,7 @@ otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
 void dake_auth_r_destroy(dake_auth_r_t *auth_r) {
   dh_mpi_release(auth_r->A);
   auth_r->A = NULL;
+  ec_point_destroy(auth_r->X);
   user_profile_destroy(auth_r->profile);
   snizkpk_proof_destroy(auth_r->sigma);
 }
