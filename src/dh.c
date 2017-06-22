@@ -80,9 +80,6 @@ otr4_err_t dh_keypair_generate(dh_keypair_t keypair) {
 void dh_pub_key_destroy(dh_keypair_t keypair) {
   gcry_mpi_release(keypair->pub);
   keypair->pub = NULL;
-
-  gcry_mpi_release(keypair->priv);
-  keypair->priv = NULL;
 }
 
 void dh_priv_key_destroy(dh_keypair_t keypair) {
