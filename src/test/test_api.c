@@ -83,7 +83,7 @@ void test_api_conversation(void) {
 
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
-    otrv4_assert(otrv4_receive_message(response_to_bob, (string_t)to_send,
+    otrv4_assert(otrv4_receive_message(response_to_bob, to_send,
                                        alice) == OTR4_SUCCESS);
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
     free(to_send);
@@ -105,13 +105,13 @@ void test_api_conversation(void) {
   // Bob sends a message with TLV
   otrv4_assert(otrv4_send_message(&to_send, "hi", tlvs, bob) == OTR4_SUCCESS);
   otrv4_assert(to_send);
-  otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+    otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
   otrv4_tlv_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response_to_bob, (string_t)to_send,
+  otrv4_assert(otrv4_receive_message(response_to_bob, to_send,
                                      alice) == OTR4_SUCCESS);
   g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
   free(to_send);
@@ -177,7 +177,7 @@ void test_dh_key_rotation(void) {
 
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
-    err = otrv4_receive_message(response_to_bob, to_send, alice); // HERE!
+    err = otrv4_receive_message(response_to_bob, to_send, alice);
     otrv4_assert(err == OTR4_SUCCESS);
     free(to_send);
     to_send = NULL;
@@ -305,7 +305,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
 
   // Bob should NOT reply
   otrv4_assert(response_to_alice->to_display == NULL);
-  otrv4_assert(response_to_alice->to_send == NULL);
+  otrv4_assert(!response_to_alice->to_send);
 
   // Alice should be encrypted
   g_assert_cmpint(OTRL_MSGSTATE_ENCRYPTED, ==, bob->otr3_conn->ctx->msgstate);
@@ -377,13 +377,13 @@ void test_api_conversation_v3(void) {
   // Bob receives a data message
   response_to_alice = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_alice, to_send, bob) ==
-               OTR4_SUCCESS);
+              OTR4_SUCCESS);
   free(to_send);
   to_send = NULL;
 
   otrv4_assert(response_to_alice->to_display);
   otrv4_assert_cmpmem("hi", response_to_alice->to_display, 3);
-  otrv4_assert(response_to_alice->to_send == NULL);
+  otrv4_assert(!response_to_alice->to_send);
   otrv4_response_free(response_to_alice);
   response_to_alice = NULL;
 
@@ -401,7 +401,7 @@ void test_api_conversation_v3(void) {
 
   otrv4_assert(response_to_bob->to_display);
   otrv4_assert_cmpmem("hi", response_to_bob->to_display, 3);
-  otrv4_assert(response_to_bob->to_send == NULL);
+  otrv4_assert(!response_to_bob->to_send);
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
@@ -470,7 +470,6 @@ void test_api_smp(void) {
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
                OTR4_SUCCESS);
   free(to_send);
-  to_send = NULL;
 
   otrv4_assert(response_to_bob->to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9); // SMP3
@@ -587,6 +586,7 @@ void test_api_multiple_clients(void) {
   otrv4_assert(!from_pc->to_display);
   otrv4_assert(from_pc->to_send);
   otrv4_assert(bob_pc->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+  otrv4_response_free(from_pc);
 
   // It should be OK to get rid of the private DH-key generated at the AKE at
   // this point. I suspect it is not NULL because a new DH-keypair was generated
@@ -601,6 +601,7 @@ void test_api_multiple_clients(void) {
   otrv4_assert(
       !from_phone->to_send); // This message was sent to PC instance tag.
   otrv4_assert(bob_phone->state == OTRV4_STATE_WAITING_AUTH_R);
+  otrv4_response_free(from_phone);
 
   // The message was ignored. It should not remove the private DH-key yet.
   // The private DH-key is needed to send the AUTH-I when it actually receives
@@ -617,15 +618,18 @@ void test_api_multiple_clients(void) {
   otrv4_assert(!from_pc->to_display);
   otrv4_assert(!from_pc->to_send); // This message was sent to PC instance tag.
   otrv4_assert(bob_pc->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+  otrv4_response_free(from_pc);
 
   from_phone = otrv4_response_new();
   err = otrv4_receive_message(
       from_phone, to_phone->to_send,
       bob_phone); // This segfaults, because we are freeing
+  otrv4_response_free(to_phone);
   otrv4_assert(err == OTR4_SUCCESS);
   otrv4_assert(!from_phone->to_display);
   otrv4_assert(from_phone->to_send);
   otrv4_assert(bob_phone->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+  otrv4_response_free(from_phone);
 
   // TODO: Alice should receive from PHONE (PC will have ignored the message).
   otrv4_response_free(to_pc);

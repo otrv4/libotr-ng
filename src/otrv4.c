@@ -353,11 +353,11 @@ void otrv4_response_free(otrv4_response_t *response) {
   if (!response)
     return;
 
-  free(response->to_send);
-  response->to_send = NULL;
-
   free(response->to_display);
   response->to_display = NULL;
+
+  free(response->to_send);
+  response->to_send = NULL;
 
   otrv4_tlv_free(response->tlvs);
   response->tlvs = NULL;
@@ -1111,27 +1111,24 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
   maybe_create_keys(otr->conversation);
   // otr4_err_t err;
 
+  response->to_send = NULL;
+
   switch (header.type) {
   case OTR_IDENTITY_MSG_TYPE:
     otr->running_version = OTRV4_VERSION_4;
     return receive_identity_message(&response->to_send, decoded, dec_len, otr);
-    break;
   case OTR_AUTH_R_MSG_TYPE:
     return receive_auth_r(&response->to_send, decoded, dec_len, otr);
     // TODO: should prob be done on inside
     // gcry_mpi_release(otr->keys->our_dh->priv);
-    // otr->keys->our_dh->priv = NULL;
-    break;
+    // otr->keys->our_dh->priv = NULL
   case OTR_AUTH_I_MSG_TYPE:
     return receive_auth_i(&response->to_send, decoded, dec_len, otr);
-    break;
   case OTR_DATA_MSG_TYPE:
     return otrv4_receive_data_message(response, decoded, dec_len, otr);
-    break;
   default:
     // errror. bad message type
     return OTR4_ERROR;
-    break;
   }
 
   return OTR4_ERROR;
@@ -1197,33 +1194,24 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
     return OTR4_ERROR;
 
   set_to_display(response, NULL, 0);
-  response->to_send = NULL;
-
-  otr4_err_t err = otr4_defragment_message(otr->frag_ctx, message);
-  if (err != OTR4_SUCCESS)
-    return err;
-
-  if (otr->frag_ctx->status == OTR4_FRAGMENT_INCOMPLETE)
-    return OTR4_SUCCESS;
 
   // A DH-Commit sets our running version to 3
   if (otr->running_version == OTRV4_VERSION_NONE &&
       allow_version(otr, OTRV4_ALLOW_V3) &&
-      strstr(otr->frag_ctx->fragment, "?OTR:AAMC"))
+      strstr(message, "?OTR:AAMC"))
     otr->running_version = OTRV4_VERSION_3;
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     return otrv3_receive_message(&response->to_send, &response->to_display,
-                                 &response->tlvs, otr->frag_ctx->fragment,
+                                 &response->tlvs, message,
                                  otr->otr3_conn);
-    break;
   case OTRV4_VERSION_4:
   case OTRV4_VERSION_NONE:
-    return receive_message_v4_only(response, otr->frag_ctx->fragment, otr);
+    return receive_message_v4_only(response, message, otr);
   }
 
-  return OTR4_ERROR;
+  return OTR4_SUCCESS;
 }
 
 static data_message_t *generate_data_msg(const otrv4_t *otr) {
@@ -1442,7 +1430,7 @@ otr4_err_t otrv4_send_message(string_t *to_send, const string_t message,
     return OTR4_ERROR;
   }
 
-  return OTR4_ERROR;
+  return OTR4_SUCCESS;
 }
 
 static otr4_err_t otrv4_close_v4(string_t *to_send, otrv4_t *otr) {
@@ -1508,6 +1496,7 @@ otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
+    //FIXME: missing fragmentation
     return otrv3_smp_start(to_send, question, secret, secretlen,
                            otr->otr3_conn);
     break;
@@ -1572,11 +1561,10 @@ otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
                               const size_t secretlen, otrv4_t *otr) {
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
+    //FIXME: missing fragmentation
     return otrv3_smp_continue(to_send, secret, secretlen, otr->otr3_conn);
-    break;
   case OTRV4_VERSION_4:
     return smp_continue_otrv4(to_send, secret, secretlen, otr);
-    break;
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }

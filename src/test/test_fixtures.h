@@ -169,7 +169,7 @@ void do_ake_fixture(otrv4_t *alice, otrv4_t *bob) {
 
   // Alice should not reply
   otrv4_assert(response_to_bob->to_display == NULL);
-  otrv4_assert(response_to_bob->to_send == NULL);
+  otrv4_assert(!response_to_bob->to_send);
 
   // Check double ratchet is initialized
   otrv4_assert(alice->state == OTRV4_STATE_ENCRYPTED_MESSAGES);

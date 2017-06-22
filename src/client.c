@@ -168,16 +168,15 @@ otr4_conversation_t *otr4_client_get_conversation(int force_create,
   return get_conversation_with(recipient, client->conversations);
 }
 
-static int send_otrv4_message(char **newmessage, const char *message,
+static int send_otrv4_message(char **newmsg, const char *message,
                               const char *recipient, otr4_client_t *client) {
-  *newmessage = NULL;
   otr4_conversation_t *conv = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
     return 1;
 
-  otr4_err_t error = otrv4_send_message(newmessage, message, NULL, conv->conn);
+  otr4_err_t error = otrv4_send_message(newmsg, message, NULL, conv->conn);
   if (error == OTR4_STATE_NOT_ENCRYPTED)
     return OTR4_CLIENT_ERROR_NOT_ENCRYPTED;
   else
@@ -191,10 +190,30 @@ int otr4_client_send(char **newmessage, const char *message,
   return send_otrv4_message(newmessage, message, recipient, client);
 }
 
+int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
+                             const char *message, int mms,
+                             const char *recipient, otr4_client_t *client) {
+  string_t to_send = NULL;
+  otr4_err_t err = send_otrv4_message(&to_send, message, recipient, client);
+  if (err != OTR4_SUCCESS)
+    return 1;
+
+  otr4_conversation_t *conv = NULL;
+  conv = get_or_create_conversation_with(recipient, client);
+  if (!conv)
+    return 1;
+
+  uint32_t ourtag = conv->conn->our_instance_tag;
+  uint32_t theirtag = conv->conn->their_instance_tag;
+  err = otr4_fragment_message(mms, *newmessage, ourtag, theirtag, to_send);
+  free(to_send);
+
+  return err != OTR4_SUCCESS;
+}
+
 int otr4_client_smp_start(char **tosend, const char *recipient,
                           const char *question, const unsigned char *secret,
                           size_t secretlen, otr4_client_t *client) {
-  *tosend = NULL;
   otr4_conversation_t *conv = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
@@ -210,7 +229,6 @@ int otr4_client_smp_start(char **tosend, const char *recipient,
 int otr4_client_smp_respond(char **tosend, const char *recipient,
                             const unsigned char *secret, size_t secretlen,
                             otr4_client_t *client) {
-  *tosend = NULL;
   otr4_conversation_t *conv = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
@@ -223,34 +241,40 @@ int otr4_client_smp_respond(char **tosend, const char *recipient,
   return 0;
 }
 
+//TODO:
+// This should return error
 int otr4_client_receive(char **newmessage, char **todisplay,
                         const char *message, const char *recipient,
                         otr4_client_t *client) {
   otr4_conversation_t *conv = NULL;
-  otrv4_response_t *response = otrv4_response_new();
-
-  *newmessage = NULL;
-  *todisplay = NULL;
-
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
     return 1;
 
-  if (otrv4_receive_message(response, message, conv->conn)) {
+  char *unfrag_msg = NULL;
+  int should_ignore = 1;
+  if (otr4_unfragment_message(&unfrag_msg, conv->conn->frag_ctx, message)
+      != OTR4_SUCCESS || conv->conn->frag_ctx->status == OTR4_FRAGMENT_INCOMPLETE)
+    return should_ignore;
+
+  otrv4_response_t *response = otrv4_response_new();
+  if (otrv4_receive_message(response, unfrag_msg, conv->conn)) {
     otrv4_response_free(response);
+    free(unfrag_msg);
     return 0; // Should this cause the message to be ignored or not?
   }
 
   if (response->to_send)
     *newmessage = otrv4_strdup(response->to_send);
 
-  int should_ignore = 1;
+  *todisplay = NULL;
   if (response->to_display) {
     char *plain = otrv4_strdup(response->to_display);
     *todisplay = plain;
     should_ignore = 0;
   }
 
+  free(unfrag_msg);
   otrv4_response_free(response);
   return should_ignore;
 }
@@ -277,16 +301,15 @@ static void destroy_client_conversation(const otr4_conversation_t *conv,
   list_free_nodes(elem);
 }
 
-int otr4_client_disconnect(char **newmessage, const char *recipient,
+int otr4_client_disconnect(char **newmsg, const char *recipient,
                            otr4_client_t *client) {
-  *newmessage = NULL;
   otr4_conversation_t *conv = NULL;
 
   conv = get_conversation_with(recipient, client->conversations);
   if (!conv)
     return 1;
 
-  if (otrv4_close(newmessage, conv->conn))
+  if (otrv4_close(newmsg, conv->conn))
     return 2;
 
   destroy_client_conversation(conv, client);

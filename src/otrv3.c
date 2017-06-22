@@ -449,6 +449,7 @@ otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
                                  otr3_conn_t *conn) {
   int ignore_message;
   OtrlTLV *tlvsv3 = NULL; // TODO: convert to v4 tlvs
+  *to_send = NULL;
 
   if (!conn)
     return OTR4_ERROR;
