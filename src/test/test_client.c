@@ -617,6 +617,7 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   // Alice receives identity message, ignores auth-r sending
   ignore = otr4_client_receive(&alices_auth_r, &todisplay, bobs_id,
                                BOB_IDENTITY, alice);
+  free(bobs_id);
   otrv4_assert(ignore);
   otrv4_assert(!alices_auth_r);
   otrv4_assert(!todisplay);
@@ -629,7 +630,6 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   free(alices_id);
   alices_id = NULL;
 
-  free(bobs_id);
   bobs_id = NULL;
 
   // Alice resends identity msg
@@ -692,6 +692,7 @@ void test_client_receives_fragmented_message(void) {
 
   otr4_message_free(fmsg);
   free(todisplay);
+  otr4_client_state_free(alice_state);
   otr4_client_free(alice);
 }
 
@@ -726,16 +727,22 @@ void test_client_sends_fragmented_message(void) {
   // Alice receives identity message (from Bob), sends Auth-R message
   otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
                                BOB_IDENTITY, alice);
+  free(frombob);
+  frombob = NULL;
 
   // Bob receives Auth-R message, sends Auth-I message
   otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
                                ALICE_IDENTITY, bob);
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
 
   // Alice receives Auth-I message (from Bob)
   otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
                                BOB_IDENTITY, alice);
-  free(frombob);
   free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
+  free(frombob);
+  frombob = NULL;
 
   otr4_message_to_send_t *to_send = otr4_message_new();
   char *message = "We should fragment when is needed";

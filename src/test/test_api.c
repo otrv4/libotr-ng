@@ -601,6 +601,7 @@ void test_api_multiple_clients(void) {
   otrv4_assert(
       !from_phone->to_send); // This message was sent to PC instance tag.
   otrv4_assert(bob_phone->state == OTRV4_STATE_WAITING_AUTH_R);
+  otrv4_response_free(from_phone);
 
   // The message was ignored. It should not remove the private DH-key yet.
   // The private DH-key is needed to send the AUTH-I when it actually receives
@@ -628,7 +629,7 @@ void test_api_multiple_clients(void) {
   otrv4_assert(!from_phone->to_display);
   otrv4_assert(from_phone->to_send);
   otrv4_assert(bob_phone->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
-  free(from_phone);
+  otrv4_response_free(from_phone);
 
   // TODO: Alice should receive from PHONE (PC will have ignored the message).
   otrv4_response_free(to_pc);
