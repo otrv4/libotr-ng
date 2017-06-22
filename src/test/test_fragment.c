@@ -67,7 +67,6 @@ void test_defragment_single_fragment(void) {
 
   g_assert_cmpint(context->N, ==, 1);
   g_assert_cmpint(context->K, ==, 1);
-  g_assert_cmpstr(context->fragment, ==, "small lol");
   g_assert_cmpint(context->fragment_len, ==, 9);
   g_assert_cmpstr(unfrag, ==, "small lol");
   otrv4_assert(context->status == OTR4_FRAGMENT_COMPLETE);
