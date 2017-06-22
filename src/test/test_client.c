@@ -737,6 +737,7 @@ void test_client_sends_fragmented_message(void) {
   // Alice receives Auth-I message (from Bob)
   otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
                                BOB_IDENTITY, alice);
+  free(from_alice_to_bob);
 
   otr4_message_to_send_t *to_send = otr4_message_new();
   char *message = "We should fragment when is needed";
@@ -755,8 +756,6 @@ void test_client_sends_fragmented_message(void) {
   }
 
   free(todisplay);
-  free(frombob);
-  free(from_alice_to_bob);
   otr4_message_free(to_send);
   otr4_client_state_free(alice_state);
   otr4_client_state_free(bob_state);

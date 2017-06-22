@@ -156,8 +156,19 @@ static otr4_err_t append_fragment(const char *msg, int msg_len,
   return OTR4_SUCCESS;
 }
 
+static bool is_fragment(const string_t message) {
+  // TODO: should test if ends with , ?
+  return strstr(message, "?OTR|") != NULL;
+}
+
 otr4_err_t otr4_unfragment_message(char **unfrag_msg, fragment_context_t *context,
                                    const string_t message) {
+  if (!is_fragment(message)) {
+    *unfrag_msg = otrv4_strdup(message);
+    initialize_fragment_context(context);
+    return OTR4_SUCCESS;
+  }
+
   int sender_tag = 0, receiver_tag = 0, start = 0, end = 0;
   int k = 0, n = 0;
   context->status = OTR4_FRAGMENT_INCOMPLETE;

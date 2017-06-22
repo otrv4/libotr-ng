@@ -241,11 +241,8 @@ int otr4_client_smp_respond(char **tosend, const char *recipient,
   return 0;
 }
 
-static bool is_fragment(const string_t message) {
-  // TODO: should test if ends with , ?
-  return strstr(message, "?OTR|") != NULL;
-}
-
+//TODO:
+// This should return error
 int otr4_client_receive(char **newmessage, char **todisplay,
                         const char *message, const char *recipient,
                         otr4_client_t *client) {
@@ -255,18 +252,15 @@ int otr4_client_receive(char **newmessage, char **todisplay,
     return 1;
 
   char *unfrag_msg = NULL;
-  if (is_fragment(message))
-    otr4_unfragment_message(&unfrag_msg, conv->conn->frag_ctx, message);
-  else
-    unfrag_msg = otrv4_strdup(message);
-
   int should_ignore = 1;
-  if (conv->conn->frag_ctx->status == OTR4_FRAGMENT_INCOMPLETE)
+  if (otr4_unfragment_message(&unfrag_msg, conv->conn->frag_ctx, message)
+      != OTR4_SUCCESS || conv->conn->frag_ctx->status == OTR4_FRAGMENT_INCOMPLETE)
     return should_ignore;
 
   otrv4_response_t *response = otrv4_response_new();
   if (otrv4_receive_message(response, unfrag_msg, conv->conn)) {
     otrv4_response_free(response);
+    free(unfrag_msg);
     return 0; // Should this cause the message to be ignored or not?
   }
 
