@@ -692,6 +692,7 @@ void test_client_receives_fragmented_message(void) {
 
   otr4_message_free(fmsg);
   free(todisplay);
+  otr4_client_free(alice);
 }
 
 void test_client_sends_fragmented_message(void) {
@@ -719,10 +720,6 @@ void test_client_sends_fragmented_message(void) {
   // Bob receives query message, sends identity msg
   otr4_client_receive(&frombob, &todisplay, query_msg_to_bob,
                                ALICE_IDENTITY, bob);
-
-  // Bob receives query message, sends identity msg
-  otr4_client_receive(&frombob, &todisplay, query_msg_to_bob,
-                               ALICE_IDENTITY, bob);
   free(query_msg_to_bob);
   query_msg_to_bob = NULL;
 
@@ -737,6 +734,7 @@ void test_client_sends_fragmented_message(void) {
   // Alice receives Auth-I message (from Bob)
   otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
                                BOB_IDENTITY, alice);
+  free(frombob);
   free(from_alice_to_bob);
 
   otr4_message_to_send_t *to_send = otr4_message_new();

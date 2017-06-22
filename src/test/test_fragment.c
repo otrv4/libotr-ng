@@ -53,6 +53,7 @@ void test_defragment_valid_message(void) {
   g_assert_cmpstr(unfrag, ==, "one more");
   otrv4_assert(context->status == OTR4_FRAGMENT_COMPLETE);
 
+  free(unfrag);
   fragment_context_free(context);
 }
 
@@ -71,6 +72,7 @@ void test_defragment_single_fragment(void) {
   g_assert_cmpstr(unfrag, ==, "small lol");
   otrv4_assert(context->status == OTR4_FRAGMENT_COMPLETE);
 
+  free(unfrag);
   fragment_context_free(context);
 }
 
@@ -106,5 +108,6 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
   g_assert_cmpint(context->N, ==, 0);
   g_assert_cmpint(context->K, ==, 0);
 
+  free(unfrag);
   fragment_context_free(context);
 }
