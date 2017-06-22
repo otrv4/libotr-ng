@@ -209,7 +209,8 @@ void test_otrv4_receives_identity_message_validates_instance_tag(
 
   // receive the identity message with non-zero their instance tag
   otrv4_response_t *auth_msg = otrv4_response_new();
-  otrv4_receive_message(auth_msg, otrv4_strdup(id_msg->to_send), otrv4_fixture->otr);
+  char *to_send = otrv4_strdup(id_msg->to_send);
+  otrv4_receive_message(auth_msg, to_send, otrv4_fixture->otr);
   otrv4_assert(!auth_msg->to_send);
 
   otrv4_response_free(id_msg);

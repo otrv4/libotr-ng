@@ -754,5 +754,12 @@ void test_client_sends_fragmented_message(void) {
       g_assert_cmpstr(todisplay, ==, message);
   }
 
+  free(todisplay);
+  free(frombob);
+  free(from_alice_to_bob);
   otr4_message_free(to_send);
+  otr4_client_state_free(alice_state);
+  otr4_client_state_free(bob_state);
+  otr4_client_free(alice);
+  otr4_client_free(bob);
 }

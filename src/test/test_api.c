@@ -586,6 +586,7 @@ void test_api_multiple_clients(void) {
   otrv4_assert(!from_pc->to_display);
   otrv4_assert(from_pc->to_send);
   otrv4_assert(bob_pc->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+  otrv4_response_free(from_pc);
 
   // It should be OK to get rid of the private DH-key generated at the AKE at
   // this point. I suspect it is not NULL because a new DH-keypair was generated
@@ -616,11 +617,13 @@ void test_api_multiple_clients(void) {
   otrv4_assert(!from_pc->to_display);
   otrv4_assert(!from_pc->to_send); // This message was sent to PC instance tag.
   otrv4_assert(bob_pc->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+  otrv4_response_free(from_pc);
 
   from_phone = otrv4_response_new();
   err = otrv4_receive_message(
       from_phone, to_phone->to_send,
       bob_phone); // This segfaults, because we are freeing
+  otrv4_response_free(to_phone);
   otrv4_assert(err == OTR4_SUCCESS);
   otrv4_assert(!from_phone->to_display);
   otrv4_assert(from_phone->to_send);
