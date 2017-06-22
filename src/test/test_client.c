@@ -558,7 +558,8 @@ void test_valid_identity_msg_in_waiting_auth_r() {
 
   int ignore = 0;
   char *todisplay = NULL, *alices_id = NULL, *bobs_id = NULL,
-       *alices_auth_r = NULL, *bobs_auth_r = NULL;
+       *alices_auth_r = NULL, *bobs_auth_r = NULL, *alices_auth_i = NULL,
+       *bob_last = NULL, *alice_last = NULL;
 
   // Alice receives query message, sends identity msg
   // do not free querry message
@@ -631,20 +632,59 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_WAITING_AUTH_R);
 
   // TODO: check or destroy this case
-  // bob_to_alice->conn->state = OTRV4_STATE_START;
+  bob_to_alice->conn->state = OTRV4_STATE_START;
   // Bob receives an identity message. Cannot send anything else as it
-  // is on OTRV4_WAINTING_FOR_AUTH-R
+  // is on OTRV4_WAINTING_FOR_AUTH-R. Here the state is manually changed.
   ignore = otr4_client_receive(&bobs_auth_r, &todisplay, alices_id,
                                ALICE_IDENTITY, bob);
-  //otrv4_assert(!bobs_auth_r);
+  otrv4_assert(bobs_auth_r);
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
 
   free(alices_id);
   alices_id = NULL;
 
+  // Alice receives auth-r, sends auth-i
+  ignore = otr4_client_receive(&alices_auth_i, &todisplay, bobs_auth_r,
+                               BOB_IDENTITY, alice);
   free(bobs_auth_r);
   bobs_auth_r = NULL;
+
+  otrv4_assert(ignore);
+  otrv4_assert(alices_auth_i);
+  otrv4_assert(!todisplay);
+
+  // Bob receives Auth-I message
+  ignore = otr4_client_receive(&bob_last, &todisplay, alices_auth_i,
+                               ALICE_IDENTITY, bob);
+  free(alices_auth_i);
+  alices_auth_i = NULL;
+
+  otrv4_assert(!bob_last);
+  otrv4_assert(ignore);
+  otrv4_assert(!todisplay);
+
+  free(bob_last);
+  bob_last = NULL;
+
+  // Bob sends a disconnected to Alice
+  int error = otr4_client_disconnect(&bob_last, ALICE_IDENTITY, bob);
+  otrv4_assert(!error);
+  otrv4_assert(bob_last);
+
+  // We've deleted the conversation
+  otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+                                             ALICE_IDENTITY, bob));
+
+  // Alice receives the disconnected from Bob
+  ignore = otr4_client_receive(&alice_last, &todisplay, bob_last,
+                               BOB_IDENTITY, alice);
+  free(bob_last);
+  bob_last = NULL;
+
+  otrv4_assert(ignore);
+  otrv4_assert(!alice_last);
+  otrv4_assert(!todisplay);
 
   // Free memory
   otr4_client_state_free(alice_state);
