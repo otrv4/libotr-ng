@@ -179,6 +179,8 @@ int main(int argc, char **argv) {
                   test_valid_identity_msg_in_waiting_auth_i);
   g_test_add_func("/client/identity_message_in_waiting_auth_r",
                   test_valid_identity_msg_in_waiting_auth_r);
+  g_test_add_func("/client/invalid_auth_r_msg_in_not_waiting_auth_r",
+                  test_invalid_auth_r_msg_in_not_waiting_auth_r);
 
   return g_test_run();
 }
