@@ -21,7 +21,7 @@ void ecdh_keypair_generate(ecdh_keypair_t *keypair,
   ec_derive_public_key(pub, sym);
   ec_point_deserialize(keypair->pub, pub);
 
-  sodium_memzero(sym, 56);
+  decaf_bzero(sym, ED448_POINT_BYTES);
   decaf_bzero(pub, ED448_POINT_BYTES);
 }
 

@@ -655,10 +655,13 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   free(bob_last);
   bob_last = NULL;
 
-  // TODO: check
-  // otrv4_assert(ignore);
+  otrv4_assert(!ignore); // TODO: This should be set. It fails
+  // when comparing the macs.
   otrv4_assert(!alice_last);
   otrv4_assert(!todisplay);
+
+  free(alice_last);
+  alice_last = NULL;
 
   // Free memory
   otr4_client_state_free(alice_state);
