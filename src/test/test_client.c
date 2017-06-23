@@ -604,17 +604,8 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_WAITING_AUTH_R);
   otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_WAITING_AUTH_R);
 
-  dh_mpi_t mpi;
-  const char dh_data[5] = {
-      0x00, 0x00, 0x00, 0x00, 0x01};
+  gcry_mpi_set_ui(alice_to_bob->conn->keys->our_dh->pub, 1);
 
-  gcry_error_t err =
-      gcry_mpi_scan(&mpi, GCRYMPI_FMT_USG, dh_data, 5, NULL);
-
-  otrv4_assert(!err);
-  alice_to_bob->conn->keys->our_dh->pub = dh_mpi_copy(mpi);
-
-  gcry_mpi_release(mpi);
   // Alice receives identity message, ignores auth-r sending
   ignore = otr4_client_receive(&alices_auth_r, &todisplay, bobs_id,
                                BOB_IDENTITY, alice);
