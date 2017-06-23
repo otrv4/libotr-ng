@@ -455,6 +455,10 @@ static bool derive_encryption_and_mac_keys(m_enc_key_t enc_key,
   uint8_t magic1[1] = {0x1};
   uint8_t magic2[1] = {0x2};
 
+  // TODO: is it ok?
+  memset(enc_key, 0, sizeof(m_enc_key_t));
+  memset(mac_key, 0, sizeof(m_mac_key_t));
+
   ok1 = sha3_256_kdf(enc_key, sizeof(m_enc_key_t), magic1, chain_key,
                      sizeof(chain_key_t));
   ok2 = sha3_512_kdf(mac_key, sizeof(m_mac_key_t), magic2, chain_key,

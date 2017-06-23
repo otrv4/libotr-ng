@@ -1320,6 +1320,8 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
 
   data_msg = generate_data_msg(otr);
   if (!data_msg) {
+    sodium_memzero(enc_key, sizeof(enc_key));
+    sodium_memzero(mac_key, sizeof(mac_key));
     free(ser_mac_keys);
     return OTR4_ERROR;
   }
@@ -1338,6 +1340,8 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
     err = OTR4_SUCCESS;
   }
 
+  sodium_memzero(enc_key, sizeof(enc_key));
+  sodium_memzero(mac_key, sizeof(mac_key));
   free(ser_mac_keys);
   data_message_free(data_msg);
 
