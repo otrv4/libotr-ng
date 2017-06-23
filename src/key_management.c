@@ -15,9 +15,14 @@ ratchet_t *ratchet_new() {
   if (!ratchet)
     return NULL;
 
+  memset(ratchet->root_key, 0, sizeof(root_key_t));
+
   ratchet->chain_a->id = 0;
+  memset(ratchet->chain_a->key, 0, sizeof(chain_key_t));
   ratchet->chain_a->next = NULL;
+
   ratchet->chain_b->id = 0;
+  memset(ratchet->chain_b->key, 0, sizeof(chain_key_t));
   ratchet->chain_b->next = NULL;
 
   return ratchet;

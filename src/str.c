@@ -7,7 +7,7 @@
   if (s == NULL)
     return NULL;
 
-  if (strlen(s) < s_len)
+  if (sizeof(s) < s_len)
     s_len = strlen(s);
 
   void *new = malloc(s_len + 1);
