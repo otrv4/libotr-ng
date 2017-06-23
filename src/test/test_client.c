@@ -533,10 +533,6 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrv4_assert(!frombob);
   otrv4_assert(!todisplay);
 
-  // ?
-  free(frombob);
-  frombob = NULL;
-
   // Free memory
   otr4_client_state_free(alice_state);
   otr4_client_state_free(bob_state);

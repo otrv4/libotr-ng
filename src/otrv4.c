@@ -701,8 +701,6 @@ static otr4_err_t receive_identity_message_on_waiting_auth_r(
 
 static otr4_err_t receive_identity_message_on_waiting_auth_i(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
-  user_profile_free(otr->their_profile);
-  forget_our_keys(otr);
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
