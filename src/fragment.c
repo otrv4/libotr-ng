@@ -21,15 +21,15 @@ void otr4_message_free(otr4_message_to_send_t *message) {
   free(message);
 }
 
-otr4_message_to_send_t * otr4_message_new() {
-    otr4_message_to_send_t *msg = malloc(sizeof(otr4_message_to_send_t));
-    if (!msg)
-      return NULL;
+otr4_message_to_send_t *otr4_message_new() {
+  otr4_message_to_send_t *msg = malloc(sizeof(otr4_message_to_send_t));
+  if (!msg)
+    return NULL;
 
-    msg->pieces = NULL;
-    msg->total = 0;
+  msg->pieces = NULL;
+  msg->total = 0;
 
-    return msg;
+  return msg;
 }
 
 fragment_context_t *fragment_context_new(void) {
@@ -82,8 +82,8 @@ otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
     piece_data = malloc(piece_len + 1);
     if (!piece_data) {
       int i;
-      for (i = 0; i < fragments->total; i++){
-          free(pieces[i]);
+      for (i = 0; i < fragments->total; i++) {
+        free(pieces[i]);
       }
       return OTR4_ERROR;
     }
@@ -94,7 +94,7 @@ otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
     piece = malloc(piece_len + FRAGMENT_HEADER_LEN + 1);
     if (!piece) {
       int i;
-      for (i = 0; i < fragments->total; i++){
+      for (i = 0; i < fragments->total; i++) {
         free(pieces[i]);
       }
       free(piece_data);
@@ -162,7 +162,8 @@ static bool is_fragment(const string_t message) {
   return strstr(message, "?OTR|") != NULL;
 }
 
-otr4_err_t otr4_unfragment_message(char **unfrag_msg, fragment_context_t *context,
+otr4_err_t otr4_unfragment_message(char **unfrag_msg,
+                                   fragment_context_t *context,
                                    const string_t message) {
   if (!is_fragment(message)) {
     *unfrag_msg = otrv4_strdup(message);

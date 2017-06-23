@@ -1,7 +1,7 @@
 #include <string.h>
 
-#include "data_message.h"
 #include "constants.h"
+#include "data_message.h"
 #include "deserialize.h"
 #include "serialize.h"
 #include "sha3.h"

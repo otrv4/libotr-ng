@@ -1,9 +1,9 @@
 #ifndef DATA_MESSAGE_H
 #define DATA_MESSAGE_H
 
+#include <sodium.h>
 #include <stdint.h>
 #include <string.h>
-#include <sodium.h>
 
 #include "constants.h"
 #include "dh.h"

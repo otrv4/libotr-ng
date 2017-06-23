@@ -650,13 +650,13 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   alice_to_bob->conn->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
 
   // Alice receives the disconnected from Bob
-  ignore = otr4_client_receive(&alice_last, &todisplay, bob_last,
-                               BOB_IDENTITY, alice);
+  ignore = otr4_client_receive(&alice_last, &todisplay, bob_last, BOB_IDENTITY,
+                               alice);
   free(bob_last);
   bob_last = NULL;
 
   // TODO: check
-  //otrv4_assert(ignore);
+  // otrv4_assert(ignore);
   otrv4_assert(!alice_last);
   otrv4_assert(!todisplay);
 
@@ -805,8 +805,8 @@ void test_valid_identity_msg_in_waiting_auth_r() {
                                              ALICE_IDENTITY, bob));
 
   // Alice receives the disconnected from Bob
-  ignore = otr4_client_receive(&alice_last, &todisplay, bob_last,
-                               BOB_IDENTITY, alice);
+  ignore = otr4_client_receive(&alice_last, &todisplay, bob_last, BOB_IDENTITY,
+                               alice);
   free(bob_last);
   bob_last = NULL;
 
@@ -838,7 +838,8 @@ void test_client_receives_fragmented_message(void) {
   char *tosend = NULL, *todisplay = NULL;
 
   for (int i = 0; i < fmsg->total; i++) {
-    otr4_client_receive(&tosend, &todisplay, fmsg->pieces[i], BOB_IDENTITY, alice);
+    otr4_client_receive(&tosend, &todisplay, fmsg->pieces[i], BOB_IDENTITY,
+                        alice);
     otrv4_assert(!tosend);
   }
 
@@ -873,26 +874,26 @@ void test_client_sends_fragmented_message(void) {
   char *from_alice_to_bob = NULL, *frombob = NULL, *todisplay = NULL;
 
   // Bob receives query message, sends identity msg
-  otr4_client_receive(&frombob, &todisplay, query_msg_to_bob,
-                               ALICE_IDENTITY, bob);
+  otr4_client_receive(&frombob, &todisplay, query_msg_to_bob, ALICE_IDENTITY,
+                      bob);
   free(query_msg_to_bob);
   query_msg_to_bob = NULL;
 
   // Alice receives identity message (from Bob), sends Auth-R message
-  otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
-                               BOB_IDENTITY, alice);
+  otr4_client_receive(&from_alice_to_bob, &todisplay, frombob, BOB_IDENTITY,
+                      alice);
   free(frombob);
   frombob = NULL;
 
   // Bob receives Auth-R message, sends Auth-I message
-  otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
-                               ALICE_IDENTITY, bob);
+  otr4_client_receive(&frombob, &todisplay, from_alice_to_bob, ALICE_IDENTITY,
+                      bob);
   free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   // Alice receives Auth-I message (from Bob)
-  otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
-                               BOB_IDENTITY, alice);
+  otr4_client_receive(&from_alice_to_bob, &todisplay, frombob, BOB_IDENTITY,
+                      alice);
   free(from_alice_to_bob);
   from_alice_to_bob = NULL;
   free(frombob);
@@ -900,7 +901,7 @@ void test_client_sends_fragmented_message(void) {
 
   otr4_message_to_send_t *to_send = otr4_message_new();
   char *message = "We should fragment when is needed";
-  //Alice fragments the message
+  // Alice fragments the message
   otr4_client_send_fragment(&to_send, message, 100, BOB_IDENTITY, alice);
 
   for (int i = 0; i < to_send->total; i++) {

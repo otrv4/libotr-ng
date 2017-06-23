@@ -83,8 +83,8 @@ void test_api_conversation(void) {
 
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
-    otrv4_assert(otrv4_receive_message(response_to_bob, to_send,
-                                       alice) == OTR4_SUCCESS);
+    otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
+                 OTR4_SUCCESS);
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
     free(to_send);
     to_send = NULL;
@@ -105,14 +105,14 @@ void test_api_conversation(void) {
   // Bob sends a message with TLV
   otrv4_assert(otrv4_send_message(&to_send, "hi", tlvs, bob) == OTR4_SUCCESS);
   otrv4_assert(to_send);
-    otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+  otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
   otrv4_tlv_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response_to_bob, to_send,
-                                     alice) == OTR4_SUCCESS);
+  otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
+               OTR4_SUCCESS);
   g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
   free(to_send);
   to_send = NULL;
@@ -377,7 +377,7 @@ void test_api_conversation_v3(void) {
   // Bob receives a data message
   response_to_alice = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_alice, to_send, bob) ==
-              OTR4_SUCCESS);
+               OTR4_SUCCESS);
   free(to_send);
   to_send = NULL;
 

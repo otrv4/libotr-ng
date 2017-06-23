@@ -26,7 +26,7 @@ typedef struct {
 
 void otr4_message_free(otr4_message_to_send_t *message);
 
-otr4_message_to_send_t * otr4_message_new();
+otr4_message_to_send_t *otr4_message_new();
 
 fragment_context_t *fragment_context_new(void);
 
@@ -36,7 +36,8 @@ otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
                                  int our_instance, int their_instance,
                                  const string_t message);
 
-otr4_err_t otr4_unfragment_message(char **unfrag_msg, fragment_context_t *context,
+otr4_err_t otr4_unfragment_message(char **unfrag_msg,
+                                   fragment_context_t *context,
                                    const string_t message);
 
 #endif

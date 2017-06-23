@@ -1118,9 +1118,9 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
     return receive_identity_message(&response->to_send, decoded, dec_len, otr);
   case OTR_AUTH_R_MSG_TYPE:
     return receive_auth_r(&response->to_send, decoded, dec_len, otr);
-    // TODO: should prob be done on inside
-    // gcry_mpi_release(otr->keys->our_dh->priv);
-    // otr->keys->our_dh->priv = NULL
+  // TODO: should prob be done on inside
+  // gcry_mpi_release(otr->keys->our_dh->priv);
+  // otr->keys->our_dh->priv = NULL
   case OTR_AUTH_I_MSG_TYPE:
     return receive_auth_i(&response->to_send, decoded, dec_len, otr);
   case OTR_DATA_MSG_TYPE:
@@ -1196,15 +1196,13 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
 
   // A DH-Commit sets our running version to 3
   if (otr->running_version == OTRV4_VERSION_NONE &&
-      allow_version(otr, OTRV4_ALLOW_V3) &&
-      strstr(message, "?OTR:AAMC"))
+      allow_version(otr, OTRV4_ALLOW_V3) && strstr(message, "?OTR:AAMC"))
     otr->running_version = OTRV4_VERSION_3;
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     return otrv3_receive_message(&response->to_send, &response->to_display,
-                                 &response->tlvs, message,
-                                 otr->otr3_conn);
+                                 &response->tlvs, message, otr->otr3_conn);
   case OTRV4_VERSION_4:
   case OTRV4_VERSION_NONE:
     return receive_message_v4_only(response, message, otr);
@@ -1495,7 +1493,7 @@ otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    //FIXME: missing fragmentation
+    // FIXME: missing fragmentation
     return otrv3_smp_start(to_send, question, secret, secretlen,
                            otr->otr3_conn);
     break;
@@ -1560,7 +1558,7 @@ otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
                               const size_t secretlen, otrv4_t *otr) {
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    //FIXME: missing fragmentation
+    // FIXME: missing fragmentation
     return otrv3_smp_continue(to_send, secret, secretlen, otr->otr3_conn);
   case OTRV4_VERSION_4:
     return smp_continue_otrv4(to_send, secret, secretlen, otr);

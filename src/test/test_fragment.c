@@ -36,7 +36,8 @@ void test_defragment_valid_message(void) {
   context = fragment_context_new();
 
   char *unfrag = NULL;
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[0]) == OTR4_SUCCESS);
+  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[0]) ==
+               OTR4_SUCCESS);
 
   g_assert_cmpint(context->N, ==, 2);
   g_assert_cmpint(context->K, ==, 1);
@@ -45,7 +46,8 @@ void test_defragment_valid_message(void) {
   otrv4_assert(!unfrag);
   otrv4_assert(context->status == OTR4_FRAGMENT_INCOMPLETE);
 
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[1]) == OTR4_SUCCESS);
+  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[1]) ==
+               OTR4_SUCCESS);
 
   g_assert_cmpint(context->N, ==, 2);
   g_assert_cmpint(context->K, ==, 2);
@@ -86,7 +88,8 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
   context = fragment_context_new();
 
   char *unfrag = NULL;
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[0]) == OTR4_SUCCESS);
+  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[0]) ==
+               OTR4_SUCCESS);
   otrv4_assert(context->status == OTR4_FRAGMENT_INCOMPLETE);
   otrv4_assert(!unfrag);
   g_assert_cmpint(context->N, ==, 3);
@@ -94,14 +97,16 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
   g_assert_cmpstr(context->fragment, ==, "one more ");
   g_assert_cmpint(context->fragment_len, ==, 9);
 
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[1]) == OTR4_SUCCESS);
+  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[1]) ==
+               OTR4_SUCCESS);
   otrv4_assert(context->status == OTR4_FRAGMENT_UNFRAGMENTED);
   otrv4_assert(!unfrag);
   g_assert_cmpstr(context->fragment, ==, "");
   g_assert_cmpint(context->N, ==, 0);
   g_assert_cmpint(context->K, ==, 0);
 
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[2]) == OTR4_SUCCESS);
+  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[2]) ==
+               OTR4_SUCCESS);
   otrv4_assert(context->status == OTR4_FRAGMENT_UNFRAGMENTED);
   otrv4_assert(!unfrag);
   g_assert_cmpstr(context->fragment, ==, "");
