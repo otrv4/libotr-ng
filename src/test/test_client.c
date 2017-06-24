@@ -730,7 +730,16 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_WAITING_AUTH_R);
   otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_WAITING_AUTH_R);
 
-  gcry_mpi_set_ui(alice_to_bob->conn->keys->our_dh->pub, 1);
+  decaf_word_t x, y, z, t;
+  x = 0x1;
+  y = 0x1;
+  z = 0x1;
+  t = 0x1;
+
+  decaf_448_point_t p = {{{{{x}}}, {{{y}}}, {{{z}}}, {{{t}}}}};
+  ec_point_copy(alice_to_bob->conn->keys->our_ecdh->pub, p);
+
+  ec_point_destroy(p);
 
   // Alice receives identity message, ignores auth-r sending
   ignore = otr4_client_receive(&alices_auth_r, &todisplay, bobs_id,

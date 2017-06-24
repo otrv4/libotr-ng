@@ -674,8 +674,8 @@ static otr4_err_t receive_identity_message_on_waiting_auth_r(
   int err = 0;
 
   // TODO: is this ok?
-  err |= gcry_mpi_scan(&x, GCRYMPI_FMT_USG, OUR_DH(otr),
-                       sizeof(dh_public_key_t), NULL);
+  err |= gcry_mpi_scan(&x, GCRYMPI_FMT_USG, OUR_ECDH(otr),
+                       sizeof(ec_public_key_t), NULL);
 
   err |=
       gcry_mpi_scan(&y, GCRYMPI_FMT_USG, msg->Y, sizeof(ec_public_key_t), NULL);
