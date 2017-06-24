@@ -938,8 +938,8 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
                                              BOB_IDENTITY, alice));
 
   // Bob receives the disconnected from Alice
-  ignore = otr4_client_receive(&bob_last, &todisplay, alice_last, ALICE_IDENTITY,
-                               bob);
+  ignore = otr4_client_receive(&bob_last, &todisplay, alice_last,
+                               ALICE_IDENTITY, bob);
   free(alice_last);
   alice_last = NULL;
 

@@ -200,8 +200,8 @@ bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg) {
   }
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
-  if (!sha3_512_mac(mac_tag, DATA_MSG_MAC_BYTES, mac_key,
-                    sizeof(m_mac_key_t), body, bodylen)) {
+  if (!sha3_512_mac(mac_tag, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t),
+                    body, bodylen)) {
     free(body);
     return false;
   }
