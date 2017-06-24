@@ -179,7 +179,8 @@ int main(int argc, char **argv) {
                   test_valid_identity_msg_in_waiting_auth_r);
   g_test_add_func("/client/invalid_auth_r_msg_in_not_waiting_auth_r",
                   test_invalid_auth_r_msg_in_not_waiting_auth_r);
-
+  g_test_add_func("/client/invalid_auth_i_msg_in_not_waiting_auth_i",
+                  test_invalid_auth_i_msg_in_not_waiting_auth_i);
   // TODO: this has to be at the end. Is that ok?
 
   g_test_add_func("/api/multiple_clients", test_api_multiple_clients);

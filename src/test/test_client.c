@@ -826,6 +826,131 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   OTR4_FREE
 }
 
+void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
+  OTR4_INIT;
+
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+
+  otr4_client_t *alice = NULL, *bob = NULL;
+  otr4_client_state_t *alice_state = otr4_client_state_new("alice");
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+
+  otr4_client_state_t *bob_state = otr4_client_state_new("bob");
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
+
+  alice = otr4_client_new(alice_state);
+  bob = otr4_client_new(bob_state);
+
+  // Alice sends a query message to Bob
+  char *query_msg_to_bob =
+      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+
+  int ignore = 0;
+  char *todisplay = NULL, *bobs_id = NULL, *alices_auth_r = NULL,
+       *bobs_auth_i = NULL, *bob_last = NULL, *alice_last = NULL;
+
+  // Bob receives query message, sends identity msg
+  ignore = otr4_client_receive(&bobs_id, &todisplay, query_msg_to_bob,
+                               ALICE_IDENTITY, bob);
+
+  free(query_msg_to_bob);
+  query_msg_to_bob = NULL;
+
+  otrv4_assert(ignore);
+  otrv4_assert(bobs_id);
+  otrv4_assert(!todisplay);
+
+  otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
+      DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
+  otr4_conversation_t *bob_to_alice = otr4_client_get_conversation(
+      DONT_FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
+
+  otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_START);
+  otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_WAITING_AUTH_R);
+
+  // Alice receives identity message, sends auth-r msg
+  ignore = otr4_client_receive(&alices_auth_r, &todisplay, bobs_id,
+                               BOB_IDENTITY, alice);
+
+  free(bobs_id);
+  bobs_id = NULL;
+
+  otrv4_assert(ignore);
+  otrv4_assert(alices_auth_r);
+  otrv4_assert(!todisplay);
+
+  otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_WAITING_AUTH_I);
+
+  // Bob receives auth-r message, sends auth-i message
+  ignore = otr4_client_receive(&bobs_auth_i, &todisplay, alices_auth_r,
+                               ALICE_IDENTITY, bob);
+  free(alices_auth_r);
+  alices_auth_r = NULL;
+
+  otrv4_assert(ignore);
+  otrv4_assert(bobs_auth_i);
+  otrv4_assert(!todisplay);
+
+  otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+
+  // Alice receives auth-i message
+  ignore = otr4_client_receive(&alice_last, &todisplay, bobs_auth_i,
+                               BOB_IDENTITY, alice);
+
+  otrv4_assert(ignore);
+  otrv4_assert(!alice_last);
+  otrv4_assert(!todisplay);
+
+  otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+
+  // Alice receives auth-i message again
+  ignore = otr4_client_receive(&alice_last, &todisplay, bobs_auth_i,
+                               BOB_IDENTITY, alice);
+
+  otrv4_assert(ignore);
+  otrv4_assert(!alice_last);
+  otrv4_assert(!todisplay);
+
+  free(bobs_auth_i);
+  bobs_auth_i = NULL;
+
+  free(alice_last);
+  alice_last = NULL;
+
+  // Alice sends a disconnected to Bob
+  int error = otr4_client_disconnect(&alice_last, BOB_IDENTITY, alice);
+
+  otrv4_assert(!error);
+  otrv4_assert(alice_last);
+
+  // We've deleted the conversation
+  otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+                                             BOB_IDENTITY, alice));
+
+  // Bob receives the disconnected from Alice
+  ignore = otr4_client_receive(&bob_last, &todisplay, alice_last, ALICE_IDENTITY,
+                               bob);
+  free(alice_last);
+  alice_last = NULL;
+
+  otrv4_assert(ignore); // TODO: This should be set. It fails
+  // when comparing the macs.
+  otrv4_assert(!bob_last);
+  otrv4_assert(!todisplay);
+
+  free(bob_last);
+  bob_last = NULL;
+
+  // Free memory
+  otr4_client_state_free(alice_state);
+  otr4_client_state_free(bob_state);
+  otr4_client_free(bob);
+  otr4_client_free(alice);
+
+  OTR4_FREE
+}
+
 void test_client_receives_fragmented_message(void) {
   char *msg = "Receiving fragmented plaintext";
 
