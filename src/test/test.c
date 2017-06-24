@@ -33,8 +33,6 @@ int main(int argc, char **argv) {
 
   g_test_init(&argc, &argv, NULL);
 
-  g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
-
   g_test_add_func("/otrv4/instance_tag/generates_when_file_empty",
                   test_instance_tag_generates_tag_when_file_empty);
   g_test_add_func("/otrv4/instance_tag/generates_when_file_is_full",
@@ -182,5 +180,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/client/invalid_auth_r_msg_in_not_waiting_auth_r",
                   test_invalid_auth_r_msg_in_not_waiting_auth_r);
 
+  // TODO: this has to be at the end. Is that ok?
+
+  g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
   return g_test_run();
 }
