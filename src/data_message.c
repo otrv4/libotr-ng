@@ -200,6 +200,8 @@ bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg) {
   }
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
+  memset(mac_tag, 0, DATA_MSG_MAC_BYTES);
+
   if (!sha3_512_mac(mac_tag, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t),
                     body, bodylen)) {
     free(body);
@@ -210,6 +212,7 @@ bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg) {
 
   // TODO: Make constant time
   if (0 != memcmp(mac_tag, data_msg->mac, DATA_MSG_MAC_BYTES)) {
+    sodium_memzero(mac_tag, DATA_MSG_MAC_BYTES);
     return false;
   }
 
