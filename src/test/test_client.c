@@ -719,12 +719,16 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   // Bob receives query message, sends identity msg
   ignore = otr4_client_receive(&bobs_id, &todisplay, query_msg_to_bob,
                                ALICE_IDENTITY, bob);
+
   otrv4_assert(ignore);
   otrv4_assert(bobs_id);
   otrv4_assert(!todisplay);
 
   otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_WAITING_AUTH_R);
   otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_WAITING_AUTH_R);
+
+  free(query_msg_to_bob);
+  query_msg_to_bob = NULL;
 
   decaf_word_t x, y, z, t;
   x = 0x1;
