@@ -68,6 +68,7 @@ void test_client_api() {
   uint8_t charlie_sym[ED448_PRIVATE_BYTES] = {3};
 
   otr4_client_t *alice = NULL, *bob = NULL, *charlie = NULL;
+
   otr4_client_state_t *alice_state = otr4_client_state_new("alice");
   otr4_client_state_add_private_key_v4(alice_state, alice_sym);
 
@@ -122,18 +123,16 @@ void test_client_api() {
   // Alice receives identity message (from Bob), sends Auth-R message
   ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
                                BOB_IDENTITY, alice);
+  free(frombob);
+  frombob = NULL;
 
   otrv4_assert(from_alice_to_bob);
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
-  free(frombob);
-  frombob = NULL;
 
   // Alice receives identity message (from Charlie), sends Auth-R message
   ignore = otr4_client_receive(&from_alice_to_charlie, &todisplay, fromcharlie,
                                CHARLIE_IDENTITY, alice);
-  otrv4_assert(ignore);
-  otrv4_assert(!todisplay);
   free(fromcharlie);
   fromcharlie = NULL;
 
@@ -149,8 +148,6 @@ void test_client_api() {
   otrv4_assert(ignore);
   otrv4_assert(frombob);
   otrv4_assert(!todisplay);
-  free(from_alice_to_bob);
-  from_alice_to_bob = NULL;
 
   // Charlie receives Auth-R message, sends Auth-I message
   ignore = otr4_client_receive(&fromcharlie, &todisplay, from_alice_to_charlie,
@@ -161,8 +158,6 @@ void test_client_api() {
   otrv4_assert(ignore);
   otrv4_assert(fromcharlie);
   otrv4_assert(!todisplay);
-  free(from_alice_to_charlie);
-  from_alice_to_charlie = NULL;
 
   // Alice receives Auth-I message (from Bob)
   ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
@@ -173,8 +168,6 @@ void test_client_api() {
   otrv4_assert(!from_alice_to_bob);
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
-  free(frombob);
-  frombob = NULL;
 
   // Alice receives Auth-I message (from Charlie)
   ignore = otr4_client_receive(&from_alice_to_charlie, &todisplay, fromcharlie,
@@ -185,8 +178,6 @@ void test_client_api() {
   otrv4_assert(!from_alice_to_charlie);
   otrv4_assert(ignore);
   otrv4_assert(!todisplay);
-  free(fromcharlie);
-  fromcharlie = NULL;
 
   // Alice sends a disconnected to Bob
   int err = otr4_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
@@ -196,15 +187,13 @@ void test_client_api() {
   // We've deleted the conversation
   otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
                                              BOB_IDENTITY, alice));
+
   // TODO: Should we keep the conversation and set state to start instead?
   // g_assert_cmpint(alice_to_bob->conn->state, ==, OTRV4_STATE_START);
 
   // Bob receives the disconnected from Alice
   ignore = otr4_client_receive(&frombob, &todisplay, from_alice_to_bob,
                                ALICE_IDENTITY, bob);
-  otrv4_assert(ignore);
-  otrv4_assert(!frombob);
-  otrv4_assert(!todisplay);
   free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
@@ -216,6 +205,7 @@ void test_client_api() {
   otr4_client_state_free(alice_state);
   otr4_client_state_free(bob_state);
   otr4_client_state_free(charlie_state);
+
   otr4_client_free(charlie);
   otr4_client_free(bob);
   otr4_client_free(alice);

@@ -194,5 +194,8 @@ void do_ake_fixture(otrv4_t *alice, otrv4_t *bob) {
   otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
   otrv4_response_free(response_to_alice);
+  response_to_alice = NULL;
+
   otrv4_response_free(response_to_bob);
+  response_to_bob = NULL;
 }

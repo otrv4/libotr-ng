@@ -1,3 +1,4 @@
+#include <sodium.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +49,7 @@ void user_profile_destroy(user_profile_t *profile) {
   ec_point_destroy(profile->pub_key);
   free(profile->versions);
   profile->versions = NULL;
+  sodium_memzero(profile->signature, ED448_SIGNATURE_BYTES);
 
   otr_mpi_free(profile->transitional_signature);
 }
