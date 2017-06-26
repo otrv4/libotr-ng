@@ -38,6 +38,9 @@ int main(int argc, char **argv) {
   g_test_add_func("/otrv4/instance_tag/generates_when_file_is_full",
                   test_instance_tag_generates_tag_when_file_is_full);
 
+  // TODO: this can be moved here but no more up
+  g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
+
   g_test_add_func("/user_state/key_management", test_userstate_key_management);
 
   g_test_add_func("/edwards448/api", ed448_test_ecdh);
@@ -183,8 +186,6 @@ int main(int argc, char **argv) {
                   test_invalid_auth_r_msg_in_not_waiting_auth_r);
   g_test_add_func("/client/invalid_auth_i_msg_in_not_waiting_auth_i",
                   test_invalid_auth_i_msg_in_not_waiting_auth_i);
-  // TODO: this has to be at the end. Is that ok?
 
-  g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
   return g_test_run();
 }
