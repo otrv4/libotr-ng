@@ -701,7 +701,7 @@ void test_valid_identity_msg_in_waiting_auth_r() {
        *bob_last = NULL, *alice_last = NULL;
 
   // Alice receives query message, sends identity msg
-  // do not free querry message
+  // Do not free querry message
   ignore = otr4_client_receive(&alices_id, &todisplay, query_msg_to_alice,
                                BOB_IDENTITY, alice);
   otrv4_assert(ignore);
@@ -719,9 +719,6 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   // Bob receives query message, sends identity msg
   ignore = otr4_client_receive(&bobs_id, &todisplay, query_msg_to_bob,
                                ALICE_IDENTITY, bob);
-  free(query_msg_to_bob);
-  query_msg_to_bob = NULL;
-
   otrv4_assert(ignore);
   otrv4_assert(bobs_id);
   otrv4_assert(!todisplay);
@@ -875,6 +872,9 @@ void test_valid_identity_msg_in_waiting_auth_r_2() {
       DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
   otr4_conversation_t *bob_to_alice = otr4_client_get_conversation(
       DONT_FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
+
+  free(query_msg_to_alice);
+  query_msg_to_alice = NULL;
 
   // Bob receives query message, sends identity msg
   ignore = otr4_client_receive(&bobs_id, &todisplay, query_msg_to_bob,
