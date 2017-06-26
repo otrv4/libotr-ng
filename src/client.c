@@ -241,29 +241,34 @@ int otr4_client_smp_respond(char **tosend, const char *recipient,
   return 0;
 }
 
+static int unfragment(char **unfragmented, const char *received,
+                      fragment_context_t *ctx) {
+  otr4_err_t err = otr4_unfragment_message(unfragmented, ctx, received);
+  return err != OTR4_SUCCESS || ctx->status == OTR4_FRAGMENT_INCOMPLETE;
+}
+
 // TODO:
 // This should return error
 int otr4_client_receive(char **newmessage, char **todisplay,
                         const char *message, const char *recipient,
                         otr4_client_t *client) {
+  otr4_err_t err = OTR4_ERROR;
+  char *unfrag_msg = NULL;
+  int should_ignore = 1;
+
+  otrv4_response_t *response = NULL;
   otr4_conversation_t *conv = NULL;
+
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
     return 1;
 
-  char *unfrag_msg = NULL;
-  int should_ignore = 1;
-  if (otr4_unfragment_message(&unfrag_msg, conv->conn->frag_ctx, message) !=
-          OTR4_SUCCESS ||
-      conv->conn->frag_ctx->status == OTR4_FRAGMENT_INCOMPLETE)
-    return should_ignore;
+  if (unfragment(&unfrag_msg, message, conv->conn->frag_ctx))
+    return 1;
 
-  otrv4_response_t *response = otrv4_response_new();
-  if (otrv4_receive_message(response, unfrag_msg, conv->conn)) {
-    otrv4_response_free(response);
-    free(unfrag_msg);
-    return 0; // Should this cause the message to be ignored or not?
-  }
+  response = otrv4_response_new();
+  err = otrv4_receive_message(response, unfrag_msg, conv->conn);
+  free(unfrag_msg);
 
   if (response->to_send)
     *newmessage = otrv4_strdup(response->to_send);
@@ -275,8 +280,11 @@ int otr4_client_receive(char **newmessage, char **todisplay,
     should_ignore = 0;
   }
 
-  free(unfrag_msg);
   otrv4_response_free(response);
+
+  if (err != OTR4_SUCCESS)
+    return 0; // Should this cause the message to be ignored or not?
+
   return should_ignore;
 }
 
