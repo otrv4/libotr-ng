@@ -374,7 +374,7 @@ static void receive_plaintext(otrv4_response_t *response,
     response->warning = OTRV4_WARN_RECEIVED_UNENCRYPTED;
 }
 
-otr4_err_t
+static otr4_err_t
 serialize_and_encode_identity_message(string_t *dst,
                                       const dake_identity_message_t *m) {
   uint8_t *buff = NULL;
