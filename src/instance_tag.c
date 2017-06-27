@@ -5,12 +5,12 @@
 #include "instance_tag.h"
 #include "str.h"
 
-// TODO: return bool?
 // TODO: remove unused?
 bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
                       const char *protocol, FILE *filename) {
 
   OtrlUserState us = otrl_userstate_create();
+
   if (otrl_instag_read_FILEp(us, filename)) {
     otrl_userstate_free(us);
     return false;
