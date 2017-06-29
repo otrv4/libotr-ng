@@ -859,8 +859,8 @@ void test_valid_identity_msg_in_waiting_auth_r_higher() {
 
   int ignore = 0;
   char *todisplay = NULL, *alices_id = NULL, *bobs_id = NULL,
-       *alices_auth_r = NULL, *bobs_auth_i = NULL,
-       *bob_last = NULL, *alice_last = NULL;
+       *alices_auth_r = NULL, *bobs_auth_i = NULL, *bob_last = NULL,
+       *alice_last = NULL;
 
   // Alice receives query message, sends identity message
   // do not free querry message
@@ -946,8 +946,8 @@ void test_valid_identity_msg_in_waiting_auth_r_higher() {
                                              BOB_IDENTITY, alice));
 
   // Bob receives the disconnected from Alice
-  ignore = otr4_client_receive(&bob_last, &todisplay, alice_last, ALICE_IDENTITY,
-                               bob);
+  ignore = otr4_client_receive(&bob_last, &todisplay, alice_last,
+                               ALICE_IDENTITY, bob);
   otrv4_assert(ignore);
   otrv4_assert(!bob_last);
   otrv4_assert(!todisplay);
@@ -1069,8 +1069,7 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   free(alice_last);
   alice_last = NULL;
 
-  otrv4_assert(ignore); // TODO: This should be set. It fails
-  // when comparing the macs.
+  otrv4_assert(ignore);
   otrv4_assert(!bob_last);
   otrv4_assert(!todisplay);
 
