@@ -261,10 +261,10 @@ int otr4_client_receive(char **newmessage, char **todisplay,
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
-    return 1;
+    return should_ignore;
 
   if (unfragment(&unfrag_msg, message, conv->conn->frag_ctx))
-    return 1;
+    return should_ignore;
 
   response = otrv4_response_new();
   err = otrv4_receive_message(response, unfrag_msg, conv->conn);
@@ -277,13 +277,14 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   if (response->to_display) {
     char *plain = otrv4_strdup(response->to_display);
     *todisplay = plain;
-    should_ignore = 0;
+    otrv4_response_free(response);
+    return !should_ignore;
   }
 
   otrv4_response_free(response);
 
   if (err != OTR4_SUCCESS)
-    return 0; // Should this cause the message to be ignored or not?
+    return !should_ignore; // Should this cause the message to be ignored or not?
 
   return should_ignore;
 }
