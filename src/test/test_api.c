@@ -606,6 +606,7 @@ void test_api_multiple_clients(void) {
   // This segfaults, because we are freeing
   from_phone = otrv4_response_new();
   rec_msg(from_phone, to_phone, bob_phone, OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
+  otrv4_response_free(to_phone);
   otrv4_response_free(from_phone);
 
   // TODO: Alice should receive from PHONE (PC will have ignored the message).
