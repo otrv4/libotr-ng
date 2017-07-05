@@ -606,22 +606,14 @@ void test_api_multiple_clients(void) {
   // This segfaults, because we are freeing
   from_phone = otrv4_response_new();
   rec_msg(from_phone, to_phone, bob_phone, OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
-  otrv4_response_free(to_phone);
-  otrv4_response_free(from_phone);
+  otrv4_response_free_all(2, to_phone, from_phone);
 
   // TODO: Alice should receive from PHONE (PC will have ignored the message).
   otrv4_response_free(to_pc);
-  otrl_userstate_free(alice_state->userstate);
-  otrl_userstate_free(bob_phone_state->userstate);
-  otrl_userstate_free(bob_pc_state->userstate);
 
-  otr4_client_state_free(alice_state);
-  otr4_client_state_free(bob_pc_state);
-  otr4_client_state_free(bob_phone_state);
-
-  otrv4_free(bob_pc);
-  otrv4_free(bob_phone);
-  otrv4_free(alice);
+  otrv4_userstate_free_all(3, alice_state->userstate, bob_phone_state->userstate, bob_pc_state->userstate);
+  otrv4_client_state_free_all(3, alice_state, bob_pc_state, bob_phone_state);
+  otrv4_free_all(3, bob_pc, bob_phone, alice);
 
   OTR4_FREE;
 }
