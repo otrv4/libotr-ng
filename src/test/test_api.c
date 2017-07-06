@@ -310,23 +310,23 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   // Alice should be encrypted
   g_assert_cmpint(OTRL_MSGSTATE_ENCRYPTED, ==, bob->otr3_conn->ctx->msgstate);
 
-  otrv4_response_free(response_to_alice);
-  otrv4_response_free(response_to_bob);
+  otrv4_response_free_all(2, response_to_alice, response_to_bob);
+}
+
+static void set_up_state(otr4_client_state_t *state, string_t account_name) {
+  state->userstate = otrl_userstate_create();
+  state->account_name = otrv4_strdup(account_name);
+  state->protocol_name = otrv4_strdup("proto");
 }
 
 void test_api_conversation_v3(void) {
   OTR4_INIT;
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
-  alice_state->protocol_name = otrv4_strdup("protocol");
-  alice_state->account_name = otrv4_strdup("alice@protocol");
+  set_up_state(alice_state, "alice@protocol");
 
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
-  bob_state->protocol_name = otrv4_strdup("protocol");
-  bob_state->account_name = otrv4_strdup("bob@protocol");
-
-  alice_state->userstate = otrl_userstate_create();
-  bob_state->userstate = otrl_userstate_create();
+  set_up_state(bob_state, "bob@protocol");
 
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
       1}; // non-random private key on purpose
@@ -405,12 +405,9 @@ void test_api_conversation_v3(void) {
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
-  otrl_userstate_free(alice_state->userstate);
-  otrl_userstate_free(bob_state->userstate);
-  otrv4_free(alice);
-  otrv4_free(bob);
-  otr4_client_state_free(alice_state);
-  otr4_client_state_free(bob_state);
+  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
+  otrv4_free_all(2, alice, bob);
+  otrv4_client_state_free_all(2, alice_state, bob_state);
 
   OTR4_FREE;
 }
@@ -500,19 +497,14 @@ void test_api_smp(void) {
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
-  otrv4_free(alice);
-  otrv4_free(bob);
-  otr4_client_state_free(alice_state);
-  otr4_client_state_free(bob_state);
+  otrv4_free_all(2, alice, bob);
+  otrv4_client_state_free_all(2, alice_state, bob_state);
 
   OTR4_FREE;
 }
 
 static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name, int byte, otrv4_policy_t policy) {
-  state->userstate = otrl_userstate_create();
-  state->account_name = otrv4_strdup(account_name);
-  state->protocol_name = otrv4_strdup("proto");
-
+  set_up_state(state, account_name);
   uint8_t priv_key[ED448_PRIVATE_BYTES] = {byte};
   otr4_client_state_add_private_key_v4(state, priv_key);
   otr4_client_state_add_instance_tag(state, 0x100 + byte);
