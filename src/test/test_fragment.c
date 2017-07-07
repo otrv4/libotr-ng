@@ -78,6 +78,23 @@ void test_defragment_single_fragment(void) {
   fragment_context_free(context);
 }
 
+void test_defragment_without_comma_fails(void) {
+  string_t msg = "?OTR|00000001|00000002,00001,00001,blergh";
+
+  fragment_context_t *context;
+  context = fragment_context_new();
+
+  char *unfrag = NULL;
+  otrv4_assert(otr4_unfragment_message(&unfrag, context, msg) == OTR4_ERROR);
+  g_assert_cmpint(context->N, ==, 0);
+  g_assert_cmpint(context->K, ==, 0);
+  g_assert_cmpint(context->fragment_len, ==, 0);
+  g_assert_cmpstr(unfrag, ==, NULL);
+
+  free(unfrag);
+  fragment_context_free(context);
+}
+
 void test_defragment_clean_context_for_frag_out_of_order(void) {
   string_t fragments[3];
   fragments[0] = "?OTR|00000001|00000002,00001,00003,one more ,";

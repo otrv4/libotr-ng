@@ -158,7 +158,6 @@ static otr4_err_t append_fragment(const char *msg, int msg_len,
 }
 
 static bool is_fragment(const string_t message) {
-  // TODO: should test if ends with , ?
   return strstr(message, "?OTR|") != NULL;
 }
 
