@@ -942,6 +942,13 @@ void smp_msg_3_destroy(smp_msg_3_t *msg) {
   ec_scalar_destroy(msg->d7);
 }
 
+void smp_msg_4_destroy(smp_msg_4_t *msg) {
+  ec_scalar_destroy(msg->cr);
+  ec_scalar_destroy(msg->d7);
+
+  ec_point_destroy(msg->Rb);
+}
+
 static otr4_smp_event_t reply_with_smp_msg_3(tlv_t **to_send,
                                              const smp_msg_2_t *msg_2,
                                              smp_context_t smp) {
@@ -1090,6 +1097,7 @@ static otr4_smp_event_t process_smp_msg4(const tlv_t *tlv, smp_context_t smp) {
 
   otr4_smp_event_t event = receive_smp_msg_4(msg_4, tlv, smp);
 
-  // TODO: destroy msg4
+  smp_msg_4_destroy(msg_4);
+
   return event;
 }
