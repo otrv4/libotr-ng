@@ -1001,6 +1001,7 @@ static otr4_err_t receive_tlvs(tlv_t **to_send, otrv4_response_t *response,
   return OTR4_SUCCESS;
 }
 
+// TODO: delete and set enc and mac keys
 static otr4_err_t get_receiving_msg_keys(m_enc_key_t enc_key,
                                          m_mac_key_t mac_key,
                                          const data_message_t *msg,
@@ -1301,6 +1302,9 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
   data_message_t *data_msg = NULL;
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
+
+  memset(enc_key, 0, sizeof(m_enc_key_t));
+  memset(mac_key, 0, sizeof(m_mac_key_t));
 
   size_t serlen = list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
 
