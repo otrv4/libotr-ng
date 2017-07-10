@@ -16,6 +16,7 @@ typedef enum {
 } smp_state_t;
 
 typedef struct {
+  uint32_t q_len;
   char *question;
   ec_point_t G2a;
   ec_scalar_t c2;

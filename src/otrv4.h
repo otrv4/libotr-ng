@@ -147,7 +147,7 @@ otr4_err_t otrv4_send_message(string_t *to_send, const string_t message,
 
 otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr);
 
-otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
+otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question, const size_t q_len,
                            const uint8_t *secret, const size_t secretlen,
                            otrv4_t *otr);
 
@@ -158,7 +158,7 @@ otr4_err_t otrv4_smp_abort(otrv4_t *otr);
 
 // TODO: These should be private.
 // Remove dependency on otr and it should work.
-tlv_t *otrv4_smp_initiate(otrv4_t *otr, const string_t question,
+tlv_t *otrv4_smp_initiate(otrv4_t *otr, const string_t question, const size_t q_len,
                           const uint8_t *secret, size_t secretlen);
 
 tlv_t *otrv4_process_smp(otrv4_t *otr, const tlv_t *tlv);

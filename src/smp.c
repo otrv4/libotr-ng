@@ -41,7 +41,6 @@ void smp_destroy(smp_context_t smp) {
   free(smp->msg1);
   smp->msg1 = NULL;
 
-  // TODO: These should be removed from memory when the smp finishes
   ec_scalar_destroy(smp->a2);
   ec_scalar_destroy(smp->a3);
   ec_scalar_destroy(smp->b3);
@@ -101,6 +100,7 @@ void smp_msg_1_destroy(smp_msg_1_t *msg) {
 
   free(msg->question);
   msg->question = NULL;
+  msg->q_len = 0;
 
   ec_point_destroy(msg->G2a);
   ec_point_destroy(msg->G3a);
@@ -116,6 +116,7 @@ otr4_err_t generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp) {
   unsigned char hash[ED448_POINT_BYTES + 1];
   ec_scalar_t a3c3, a2c2;
 
+  dst->q_len = 0;
   dst->question = NULL;
 
   generate_keypair(dst->G2a, smp->a2);
@@ -152,8 +153,7 @@ otr4_err_t smp_msg_1_asprintf(uint8_t **dst, size_t *len,
   size_t s = 0;
 
   s += 4;
-  if (msg->question)
-    s += strlen(msg->question) + 1;
+  s += msg->q_len;
   s += 2 * ED448_POINT_BYTES;
   s += 4 * ED448_SCALAR_BYTES;
 
@@ -163,8 +163,7 @@ otr4_err_t smp_msg_1_asprintf(uint8_t **dst, size_t *len,
 
   uint8_t *cursor = *dst;
 
-  cursor += serialize_data(cursor, (uint8_t *)msg->question,
-                           msg->question ? strlen(msg->question) + 1 : 0);
+  cursor += serialize_data(cursor, (uint8_t *)msg->question, msg->q_len);
 
   if (serialize_ec_point(cursor, msg->G2a))
     return OTR4_ERROR;
@@ -831,6 +830,7 @@ bool smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
 
 static void smp_msg_1_copy(smp_msg_1_t *dst, const smp_msg_1_t *src) {
   // TODO: Maybe we dont need to copy everything
+  dst->q_len = src->q_len;
   if (src->question)
     dst->question = otrv4_strdup(src->question);
   else

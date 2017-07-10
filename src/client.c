@@ -212,7 +212,7 @@ int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
 }
 
 int otr4_client_smp_start(char **tosend, const char *recipient,
-                          const char *question, const unsigned char *secret,
+                          const char *question, const size_t q_len, const unsigned char *secret,
                           size_t secretlen, otr4_client_t *client) {
   otr4_conversation_t *conv = NULL;
 
@@ -220,7 +220,7 @@ int otr4_client_smp_start(char **tosend, const char *recipient,
   if (!conv)
     return 1;
 
-  if (otrv4_smp_start(tosend, question, secret, secretlen, conv->conn))
+  if (otrv4_smp_start(tosend, question, q_len, secret, secretlen, conv->conn))
     return 1;
 
   return 0;

@@ -439,7 +439,7 @@ void test_api_smp(void) {
   char *secret = "secret";
 
   // Alice sends SMP1
-  otrv4_assert(otrv4_smp_start(&to_send, NULL, (uint8_t *)secret,
+  otrv4_assert(otrv4_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
                                strlen(secret), alice) == OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
