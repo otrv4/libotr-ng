@@ -668,12 +668,11 @@ static void forget_our_keys(otrv4_t *otr) {
 
 static otr4_err_t receive_identity_message_on_waiting_auth_r(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
-  // 1) Compare X with their_dh
+  // 1) Compare X with their_ecdh
   gcry_mpi_t x = NULL;
   gcry_mpi_t y = NULL;
   int err = 0;
 
-  // TODO: is this ok?
   err |= gcry_mpi_scan(&x, GCRYMPI_FMT_USG, OUR_ECDH(otr),
                        sizeof(ec_public_key_t), NULL);
 
@@ -1001,7 +1000,6 @@ static otr4_err_t receive_tlvs(tlv_t **to_send, otrv4_response_t *response,
   return OTR4_SUCCESS;
 }
 
-// TODO: delete and set enc and mac keys
 static otr4_err_t get_receiving_msg_keys(m_enc_key_t enc_key,
                                          m_mac_key_t mac_key,
                                          const data_message_t *msg,
@@ -1021,6 +1019,9 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   data_message_t *msg = data_message_new();
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
+
+  memset(enc_key, 0, sizeof(m_enc_key_t));
+  memset(mac_key, 0, sizeof(m_mac_key_t));
 
   uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
   if (to_store_mac == NULL) {
@@ -1077,6 +1078,8 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
 
+    sodium_memzero(enc_key, sizeof(enc_key));
+    sodium_memzero(mac_key, sizeof(mac_key));
     otrv4_tlv_free(reply_tlv);
     data_message_free(msg);
 
