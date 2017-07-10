@@ -104,8 +104,6 @@ otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
   ecdh_keypair_generate(manager->our_ecdh, sym);
 
   if (manager->i % 3 == 0) {
-    // TODO: check this
-    // dh_pub_key_destroy(manager->our_dh);
     dh_keypair_destroy(manager->our_dh);
     if (dh_keypair_generate(manager->our_dh))
       return OTR4_ERROR;
@@ -385,10 +383,9 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   k_ecdh_t k_ecdh;
   shared_secret_t shared;
 
-  if (ecdh_shared_secret(k_ecdh, sizeof(k_ecdh_t), manager->our_ecdh,
+  if (ecdh_shared_secret(k_ecdh, ED448_POINT_BYTES, manager->our_ecdh,
                          manager->their_ecdh))
     return OTR4_ERROR;
-  // TODO: Securely delete our_ecdh.secret.
 
   otr4_err_t err = calculate_mix_key(manager);
   if (err)
@@ -441,8 +438,11 @@ bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t *manager) {
   if (enter_new_ratchet(manager))
     return false;
 
+  decaf_448_scalar_destroy(manager->our_ecdh->priv);
+
   if (manager->i % 3 == 0) {
-    dh_priv_key_destroy(manager->our_dh);
+    gcry_mpi_release(manager->our_dh->priv);
+    manager->our_dh->priv = NULL;
   }
 
   return true;

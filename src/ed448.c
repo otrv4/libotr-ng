@@ -46,6 +46,7 @@ otr4_err_t ecdh_shared_secret(uint8_t *shared, size_t shared_bytes,
                               const ec_point_t their_pub) {
   decaf_448_point_t s;
   decaf_448_point_scalarmul(s, their_pub, our_priv->priv);
+
   return ec_point_serialize(shared, shared_bytes, s);
 }
 
