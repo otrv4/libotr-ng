@@ -97,6 +97,7 @@ void test_smp_state_machine(void) {
   g_assert_cmpint(100, ==, bob_otr->smp->progress);
 
   // SMP is finished for Bob
+  // TODO: Should this never end or move to a finished state?
   g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
   // Receives fourth message

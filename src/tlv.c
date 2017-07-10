@@ -4,35 +4,21 @@
 #include "deserialize.h"
 #include "tlv.h"
 
-// TODO: Should we use an array to make this mapping?
+const tlv_type_t tlv_types[] = {
+  OTRV4_TLV_PADDING,
+  OTRV4_TLV_DISCONNECTED,
+  OTRV4_TLV_SMP_MSG_1,
+  OTRV4_TLV_SMP_MSG_2,
+  OTRV4_TLV_SMP_MSG_3,
+  OTRV4_TLV_SMP_MSG_4,
+  OTRV4_TLV_SMP_ABORT
+  };
+
 void set_tlv_type(tlv_t *tlv, uint16_t tlv_type) {
   tlv_type_t type = OTRV4_TLV_NONE;
 
-  switch (tlv_type) {
-  case 0:
-    type = OTRV4_TLV_PADDING;
-    break;
-  case 1:
-    type = OTRV4_TLV_DISCONNECTED;
-    break;
-  case 2:
-    type = OTRV4_TLV_SMP_MSG_1;
-    break;
-  case 3:
-    type = OTRV4_TLV_SMP_MSG_2;
-    break;
-  case 4:
-    type = OTRV4_TLV_SMP_MSG_3;
-    break;
-  case 5:
-    type = OTRV4_TLV_SMP_MSG_4;
-    break;
-  case 6:
-    type = OTRV4_TLV_SMP_ABORT;
-    break;
-  default:
-    // Panic!
-    break;
+  if (tlv_type >= 0 && tlv_type < 7) {
+    type = tlv_types[tlv_type];
   }
 
   tlv->type = type;
