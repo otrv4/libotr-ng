@@ -509,13 +509,13 @@ void test_api_smp(void) {
   OTR4_FREE;
 }
 
-static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name,
-                           int byte, otrv4_policy_t policy) {
+static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name, int byte) {
   set_up_state(state, account_name);
   uint8_t priv_key[ED448_PRIVATE_BYTES] = {byte};
   otr4_client_state_add_private_key_v4(state, priv_key);
   otr4_client_state_add_instance_tag(state, 0x100 + byte);
 
+  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
   return otrv4_new(state, policy);
 }
 
@@ -552,11 +552,9 @@ void test_api_multiple_clients(void) {
   otr4_client_state_t *bob_phone_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_pc_state = otr4_client_state_new(NULL);
 
-  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
-
-  otrv4_t *alice = set_up_otr(alice_state, "alice", 3, policy);
-  otrv4_t *bob_phone = set_up_otr(bob_phone_state, "bob@phone", 1, policy);
-  otrv4_t *bob_pc = set_up_otr(bob_pc_state, "bob@pc", 2, policy);
+  otrv4_t *alice = set_up_otr(alice_state, "alice", 3);
+  otrv4_t *bob_phone = set_up_otr(bob_phone_state, "bob@phone", 1);
+  otrv4_t *bob_pc = set_up_otr(bob_pc_state, "bob@pc", 2);
 
   otrv4_response_t *from_pc = otrv4_response_new();
   otrv4_response_t *from_phone = otrv4_response_new();
