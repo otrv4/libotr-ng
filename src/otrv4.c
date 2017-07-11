@@ -585,7 +585,7 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
   free(ser_i_profile);
   free(ser_r_profile);
 
-  // Destroy serialized ephemeral public keys from memory
+  // TODO: Destroy serialized ephemeral public keys from memory
 
   return err;
 }
@@ -621,12 +621,12 @@ static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
                          OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
     return OTR4_ERROR;
 
-  // sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg)
+  /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
   otr4_err_t err =
       snizkpk_authenticate(msg->sigma,
-                           otr->conversation->client->keypair, // g^R and R
-                           otr->their_profile->pub_key,        // g^I
-                           THEIR_ECDH(otr),                    // g^i -- Y
+                           otr->conversation->client->keypair, /* g^R and R */
+                           otr->their_profile->pub_key,        /* g^I */
+                           THEIR_ECDH(otr),                    /* g^i -- Y */
                            t, t_len);
 
   if (err) {
@@ -673,7 +673,7 @@ static void forget_our_keys(otrv4_t *otr) {
 
 static otr4_err_t receive_identity_message_on_waiting_auth_r(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
-  // 1) Compare X with their_ecdh
+  /* Compare X with their_ecdh */
   gcry_mpi_t x = NULL;
   gcry_mpi_t y = NULL;
   int err = 0;
@@ -694,7 +694,7 @@ static otr4_err_t receive_identity_message_on_waiting_auth_r(
   gcry_mpi_release(x);
   gcry_mpi_release(y);
 
-  // If our is lower, ignore.
+  /* If our is lower, ignore. */
   if (cmp < 0) {
     return OTR4_SUCCESS;
   } // ignore
@@ -808,12 +808,12 @@ static bool valid_auth_r_message(const dake_auth_r_t *auth, otrv4_t *otr) {
                          OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A))
     return false;
 
-  // Verif({g^I, g^R, g^i}, sigma, msg)
+  /* Verif({g^I, g^R, g^i}, sigma, msg) */
   otr4_err_t err =
       snizkpk_verify(auth->sigma,
-                     auth->profile->pub_key,                  // g^R
-                     otr->conversation->client->keypair->pub, // g^I
-                     OUR_ECDH(otr),                           // g^
+                     auth->profile->pub_key,                  /* g^R */
+                     otr->conversation->client->keypair->pub, /* g^I */
+                     OUR_ECDH(otr),                           /* g^  */
                      t, t_len);
 
   free(t);
@@ -1117,7 +1117,6 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
 
   // TODO: how to prevent version rollback?
   maybe_create_keys(otr->conversation);
-  // otr4_err_t err;
 
   response->to_send = NULL;
 
@@ -1192,7 +1191,7 @@ static otr4_err_t receive_message_v4_only(otrv4_response_t *response,
   return OTR4_SUCCESS;
 }
 
-// Receive a possibly OTR message.
+/* Receive a possibly OTR message. */
 otr4_err_t otrv4_receive_message(otrv4_response_t *response,
                                  const string_t message, otrv4_t *otr) {
   if (!message || !response)
@@ -1200,7 +1199,7 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
 
   response->to_display = otrv4_strndup(NULL, 0);
 
-  // A DH-Commit sets our running version to 3
+  /* A DH-Commit sets our running version to 3 */
   if (otr->running_version == OTRV4_VERSION_NONE &&
       allow_version(otr, OTRV4_ALLOW_V3) && strstr(message, "?OTR:AAMC"))
     otr->running_version = OTRV4_VERSION_3;
@@ -1329,8 +1328,8 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
 
   data_msg = generate_data_msg(otr);
   if (!data_msg) {
-    sodium_memzero(enc_key, sizeof(enc_key));
-    sodium_memzero(mac_key, sizeof(mac_key));
+    sodium_memzero(enc_key, sizeof(m_enc_key_t));
+    sodium_memzero(mac_key, sizeof(m_mac_key_t));
     free(ser_mac_keys);
     return OTR4_ERROR;
   }
@@ -1349,8 +1348,8 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
     err = OTR4_SUCCESS;
   }
 
-  sodium_memzero(enc_key, sizeof(enc_key));
-  sodium_memzero(mac_key, sizeof(mac_key));
+  sodium_memzero(enc_key, sizeof(m_enc_key_t));
+  sodium_memzero(mac_key, sizeof(m_mac_key_t));
   free(ser_mac_keys);
   data_message_free(data_msg);
 

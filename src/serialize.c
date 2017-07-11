@@ -66,7 +66,7 @@ size_t serialize_ec_scalar(uint8_t *dst, const ec_scalar_t scalar) {
 
 otr4_err_t serialize_dh_public_key(uint8_t *dst, size_t *len,
                                    const dh_public_key_t pub) {
-  // From gcrypt MPI
+  /* From gcrypt MPI */
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   memset(buf, 0, DH3072_MOD_LEN_BYTES);
   size_t written = 0;

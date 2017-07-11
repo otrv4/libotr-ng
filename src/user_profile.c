@@ -90,7 +90,6 @@ otr4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
 
 otr4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
                                  const user_profile_t *profile) {
-
   // TODO: should it check if the profile is signed?
   uint8_t *buff = NULL;
   size_t body_len = 0;
@@ -223,7 +222,7 @@ user_profile_t *user_profile_build(const string_t versions,
   if (!profile)
     return NULL;
 
-#define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; // 2 weeks
+#define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   time_t expires = time(NULL);
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
 

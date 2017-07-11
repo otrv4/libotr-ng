@@ -63,8 +63,8 @@ typedef struct { int allows; } otrv4_policy_t;
 
 // TODO: This is a single instance conversation. Make it multi-instance.
 typedef struct otr4_conversation_state_t {
-  // void *opdata; // Could have a conversation opdata to point to a, say
-  // PurpleConversation
+  /* void *opdata; // Could have a conversation opdata to point to a, say
+   PurpleConversation */
 
   struct otr4_client_state_t *client;
   char *peer;
@@ -72,8 +72,8 @@ typedef struct otr4_conversation_state_t {
 } otr4_conversation_state_t;
 
 struct connection {
-  // Contains: client (private key, instance tag, and callbacks) and
-  // conversation state
+  /* Contains: client (private key, instance tag, and callbacks) and
+   conversation state */
   otr4_conversation_state_t *conversation;
   otr3_conn_t *otr3_conn;
 
@@ -92,7 +92,7 @@ struct connection {
   smp_context_t smp;
 
   fragment_context_t *frag_ctx;
-}; // otrv4_t
+}; /* otrv4_t */
 
 typedef enum {
   IN_MSG_NONE = 0,
