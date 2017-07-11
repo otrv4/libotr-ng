@@ -108,7 +108,7 @@ list_element_t *list_remove_element(const list_element_t *wanted,
       list_element_t *found = cursor->next;
       cursor->next = wanted->next;
       found->next =
-          NULL; // the element found should not point to anything in the list
+          NULL; /* the element found should not point to anything in the list */
       break;
     }
 

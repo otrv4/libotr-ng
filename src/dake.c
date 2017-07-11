@@ -33,19 +33,19 @@ dake_identity_message_new(const user_profile_t *profile) {
   return identity_message;
 }
 
+void dake_identity_message_destroy(dake_identity_message_t *identity_message) {
+  user_profile_destroy(identity_message->profile);
+  ec_point_destroy(identity_message->Y);
+  dh_mpi_release(identity_message->B);
+  identity_message->B = NULL;
+}
+
 void dake_identity_message_free(dake_identity_message_t *identity_message) {
   if (!identity_message)
     return;
 
   dake_identity_message_destroy(identity_message);
   free(identity_message);
-}
-
-void dake_identity_message_destroy(dake_identity_message_t *identity_message) {
-  user_profile_destroy(identity_message->profile);
-  ec_point_destroy(identity_message->Y);
-  dh_mpi_release(identity_message->B);
-  identity_message->B = NULL;
 }
 
 otr4_err_t dake_identity_message_asprintf(
@@ -174,7 +174,7 @@ bool not_expired(time_t expires) {
   return false;
 }
 
-// Check if the profile contains any version other than supported by this
+// TODO: Check if the profile contains any version other than supported by this
 // messaging protocol (that is, wire protocol v4 and v3).
 static bool no_rollback_detected(const char *versions) {
   while (*versions) {
@@ -202,13 +202,13 @@ bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
                            const user_profile_t *profile) {
   bool valid = true;
 
-  // 5) Verify that the point X received is on curve 448
+  /* Verify that the point X received is on curve 448. */
   valid &= ec_point_valid(their_ecdh);
 
-  // 6) Verify that the DH public key A is from the correct group.
+  /* Verify that the DH public key A is from the correct group. */
   valid &= dh_mpi_valid(their_dh);
 
-  // 7) Verify their profile is valid (and not expired).
+  /* Verify their profile is valid (and not expired). */
   valid &= user_profile_valid_signature(profile);
   valid &= not_expired(profile->expires);
   valid &= no_rollback_detected(profile->versions);

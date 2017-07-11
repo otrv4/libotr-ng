@@ -212,8 +212,8 @@ bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg) {
 
   free(body);
 
-  // Note that this is not a lexicographic comparator.
-  // Check: https://download.libsodium.org/doc/helpers/
+  /* Note that this is not a lexicographic comparator.
+   Check: https://download.libsodium.org/doc/helpers/ */
   if (0 != sodium_memcmp(mac_tag, data_msg->mac, sizeof mac_tag)) {
     sodium_memzero(mac_tag, sizeof mac_tag);
     return false;

@@ -132,7 +132,7 @@ static otrv4_t *create_connection_for(const char *recipient,
   }
 
   conn->conversation->peer = otrv4_strdup(recipient);
-  otr3_conn->opdata = conn; // For use in callbacks
+  otr3_conn->opdata = conn; /* For use in callbacks */
   conn->otr3_conn = otr3_conn;
 
   return conn;
@@ -186,8 +186,8 @@ static int send_otrv4_message(char **newmsg, const char *message,
 
 int otr4_client_send(char **newmessage, const char *message,
                      const char *recipient, otr4_client_t *client) {
-  // OTR4 client will know how to transition to OTR3 if a v3 conversation is
-  // started
+  /* OTR4 client will know how to transition to OTR3 if a v3 conversation is
+   started */
   return send_otrv4_message(newmessage, message, recipient, client);
 }
 

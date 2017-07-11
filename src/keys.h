@@ -10,7 +10,7 @@ typedef ec_point_t otrv4_public_key_t;
 typedef ec_scalar_t otrv4_private_key_t;
 
 typedef struct {
-  // the private key is this symmetric key, and not the scalar serialized
+  /* the private key is this symmetric key, and not the scalar serialized */
   uint8_t sym[ED448_PRIVATE_BYTES];
 
   otrv4_public_key_t pub;

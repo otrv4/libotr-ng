@@ -32,5 +32,5 @@ int otr4_serialize_fingerprint(otrv4_fingerprint_t fp,
   serialize_otrv4_public_key(serialized, pub);
 
   return !sha3_512(fp, sizeof(otrv4_fingerprint_t), serialized,
-                   sizeof(serialized));
+                   sizeof serialized);
 }

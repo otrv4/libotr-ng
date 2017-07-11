@@ -14,7 +14,7 @@ typedef uint8_t shared_secret_t[SHARED_SECRET_BYTES];
 typedef uint8_t root_key_t[64];
 typedef uint8_t chain_key_t[64];
 typedef uint8_t m_enc_key_t[32];
-typedef uint8_t m_mac_key_t[64];
+typedef uint8_t m_mac_key_t[MAC_KEY_BYTES];
 
 typedef struct _chain_link {
   int id;
@@ -29,14 +29,14 @@ typedef struct {
 } ratchet_t;
 
 typedef struct {
-  // AKE context
+  /* AKE context */
   ecdh_keypair_t our_ecdh[1];
   dh_keypair_t our_dh;
 
   ec_point_t their_ecdh;
   dh_public_key_t their_dh;
 
-  // Data messages context
+  /* Data message context */
   int i, j; // TODO: We need to add k (maybe), but why dont we need to add a
             // receiving_ratchet_id
   ratchet_t *current;
@@ -79,7 +79,7 @@ otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
 
 bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t *manager);
 
-// PRIVATE
+/* Private */
 otr4_err_t derive_ratchet_keys(ratchet_t *ratchet,
                                const shared_secret_t shared);
 

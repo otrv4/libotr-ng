@@ -32,7 +32,7 @@ void ecdh_keypair_destroy(ecdh_keypair_t *keypair) {
 
 void ec_scalar_derive_from_secret(ec_scalar_t priv,
                                   uint8_t sym[ED448_PRIVATE_BYTES]) {
-  // Hash and clamp the secret into a scalar
+  /* Hash and clamp the secret into a scalar */
   decaf_ed448_derive_secret_scalar(priv, sym);
 }
 

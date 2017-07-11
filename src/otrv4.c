@@ -110,7 +110,7 @@ static int allow_version(const otrv4_t *otr, otrv4_supported_version version) {
   return (otr->supported_versions & version);
 }
 
-// dst must be at least 3 bytes long.
+/* dst must be at least 3 bytes long. */
 static void allowed_versions(string_t dst, const otrv4_t *otr) {
   if (allow_version(otr, OTRV4_ALLOW_V4))
     *dst++ = '4';

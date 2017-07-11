@@ -24,9 +24,9 @@ typedef struct {
   fragment_status status;
 } fragment_context_t;
 
-void otr4_message_free(otr4_message_to_send_t *message);
-
 otr4_message_to_send_t *otr4_message_new();
+
+void otr4_message_free(otr4_message_to_send_t *message);
 
 fragment_context_t *fragment_context_new(void);
 

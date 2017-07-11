@@ -10,7 +10,7 @@ static inline char *_otrv4_memdump(const uint8_t *src, size_t len) {
   if (src == NULL) {
     return otrv4_strndup("(NULL)", 6);
   }
-  // each char is represented by "0x00, "
+  /* each char is represented by "0x00, " */
   size_t s = len * 6 + len / 8 + 2;
   char *buff = malloc(s);
   char *cursor = buff;

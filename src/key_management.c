@@ -10,6 +10,19 @@
 #include "random.h"
 #include "sha3.h"
 
+void chain_link_free(chain_link_t *head) {
+  chain_link_t *current = head;
+  chain_link_t *next = NULL;
+  while (current) {
+    next = current->next;
+
+    sodium_memzero(current->key, sizeof(chain_key_t));
+    free(current);
+
+    current = next;
+  }
+}
+
 ratchet_t *ratchet_new() {
   ratchet_t *ratchet = malloc(sizeof(ratchet_t));
   if (!ratchet)
@@ -26,19 +39,6 @@ ratchet_t *ratchet_new() {
   ratchet->chain_b->next = NULL;
 
   return ratchet;
-}
-
-void chain_link_free(chain_link_t *head) {
-  chain_link_t *current = head;
-  chain_link_t *next = NULL;
-  while (current) {
-    next = current->next;
-
-    sodium_memzero(current->key, sizeof(chain_key_t));
-    free(current);
-
-    current = next;
-  }
 }
 
 void ratchet_free(ratchet_t *ratchet) {
@@ -313,8 +313,8 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
   const chain_link_t *link = chain_get_by_id(message_id, chain->receiving);
   free(chain);
   if (link == NULL)
-    return OTR4_ERROR; // message id not found. Should have been generated at
-                       // rebuild_chain_keys_up_to
+    return OTR4_ERROR; /* message id not found. Should have been generated at
+                        rebuild_chain_keys_up_to */
 
   memcpy(receiving, link->key, sizeof(chain_key_t));
 
@@ -357,10 +357,10 @@ static otr4_err_t derive_sending_chain_key(key_manager_t *manager) {
 static otr4_err_t calculate_ssid(const shared_secret_t shared,
                                  key_manager_t *manager) {
   uint8_t ssid_buff[32];
-  if (!sha3_256(ssid_buff, sizeof(ssid_buff), shared, sizeof(shared_secret_t)))
+  if (!sha3_256(ssid_buff, sizeof ssid_buff, shared, sizeof(shared_secret_t)))
     return OTR4_ERROR;
 
-  memcpy(manager->ssid, ssid_buff, sizeof(manager->ssid));
+  memcpy(manager->ssid, ssid_buff, sizeof manager->ssid);
 
   return OTR4_SUCCESS;
 }

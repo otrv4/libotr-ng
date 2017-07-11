@@ -8,11 +8,11 @@
 
 #include "error.h"
 
-// ATTENTION, PLEASE! decaf_448_point_t is in the twisted ed448-goldilocks.
+/* Decaf_448_point_t is in the twisted ed448-goldilocks. */
 typedef decaf_448_scalar_t ec_scalar_t;
 typedef decaf_448_point_t ec_point_t;
 
-// We have decided to serialize points and scalars using EdDSA wire format.
+/* Serialize points and scalars using EdDSA wire format. */
 #define ED448_PRIVATE_BYTES DECAF_EDDSA_448_PRIVATE_BYTES
 #define ED448_POINT_BYTES DECAF_EDDSA_448_PUBLIC_BYTES
 #define ED448_SIGNATURE_BYTES DECAF_EDDSA_448_SIGNATURE_BYTES
@@ -21,7 +21,7 @@ typedef decaf_448_point_t ec_point_t;
 typedef uint8_t decaf_448_public_key_t[ED448_POINT_BYTES];
 typedef uint8_t eddsa_signature_t[ED448_SIGNATURE_BYTES];
 
-// ECDH keypair
+/* ECDH keypair */
 typedef struct {
   ec_scalar_t priv;
   ec_point_t pub;
@@ -55,7 +55,7 @@ otr4_err_t ec_point_serialize(uint8_t *dst, size_t dst_len,
 otr4_err_t ec_point_deserialize(ec_point_t point,
                                 const uint8_t serialized[ED448_POINT_BYTES]);
 
-// This is ed448 crypto
+/* This is ed448 crypto */
 void ec_scalar_derive_from_secret(ec_scalar_t, uint8_t[ED448_PRIVATE_BYTES]);
 
 void ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],

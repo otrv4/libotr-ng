@@ -12,16 +12,16 @@
 
 // TODO: REMOVE
 typedef struct {
-  void *conversation_id; // Data in the messaging application context that
-                         // represents a conversation and should map directly to
-                         // it. For example, in libpurple-based apps (like
-                         // Pidgin) this could be a PurpleConversation*
+  void *conversation_id; /* Data in the messaging application context that
+                          represents a conversation and should map directly to
+                          it. For example, in libpurple-based apps (like
+                          Pidgin) this could be a PurpleConversation */
 
   char *recipient;
   otrv4_t *conn;
 } otr4_conversation_t;
 
-// A client handle messages from/to a sender to/from multiple recipients.
+/* A client handle messages from/to a sender to/from multiple recipients. */
 typedef struct {
   otr4_client_state_t *state;
   list_element_t *conversations;

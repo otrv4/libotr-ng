@@ -68,7 +68,7 @@ otr4_err_t deserialize_data(uint8_t **dst, const uint8_t *buffer, size_t buflen,
   size_t r = 0;
   uint32_t s = 0;
 
-  // 4 bytes len
+  /* 4 bytes len */
   if (deserialize_uint32(&s, buffer, buflen, &r)) {
     if (read != NULL) {
       *read = r;
@@ -114,7 +114,7 @@ otr4_err_t deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer,
   otr_mpi_t mpi; // no need to free, because nothing is copied now
 
   if (otr_mpi_deserialize_no_copy(mpi, buffer, buflen, read)) {
-    return OTR4_ERROR; // only mpi len has been read
+    return OTR4_ERROR; /* only mpi len has been read */
   }
 
   size_t r = otr_mpi_memcpy(dst, mpi);
@@ -213,7 +213,7 @@ otr4_err_t otrv4_symmetric_key_deserialize(otrv4_keypair_t *pair,
                                            const char *buff, size_t len) {
   otr4_err_t err = OTR4_ERROR;
 
-  //((base64len+3) / 4) * 3
+  /* (((base64len+3) / 4) * 3) */
   unsigned char *dec = malloc(((len + 3) / 4) * 3);
   if (!dec)
     return err;

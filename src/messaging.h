@@ -33,7 +33,7 @@ typedef struct {
   list_element_t *clients;
 
   const otrv4_client_callbacks_t *callbacks;
-  void *userstate_v3; // OtrlUserState
+  void *userstate_v3; /* OtrlUserState */
 } otr4_userstate_t;
 
 otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb);

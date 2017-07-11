@@ -7,6 +7,17 @@
 
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
 
+otr4_message_to_send_t *otr4_message_new() {
+  otr4_message_to_send_t *msg = malloc(sizeof(otr4_message_to_send_t));
+  if (!msg)
+    return NULL;
+
+  msg->pieces = NULL;
+  msg->total = 0;
+
+  return msg;
+}
+
 void otr4_message_free(otr4_message_to_send_t *message) {
   if (!message)
     return;
@@ -19,17 +30,6 @@ void otr4_message_free(otr4_message_to_send_t *message) {
   message->pieces = NULL;
 
   free(message);
-}
-
-otr4_message_to_send_t *otr4_message_new() {
-  otr4_message_to_send_t *msg = malloc(sizeof(otr4_message_to_send_t));
-  if (!msg)
-    return NULL;
-
-  msg->pieces = NULL;
-  msg->total = 0;
-
-  return msg;
 }
 
 fragment_context_t *fragment_context_new(void) {
