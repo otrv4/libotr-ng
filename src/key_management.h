@@ -1,14 +1,15 @@
 #ifndef KEY_MANAGEMENT_H
 #define KEY_MANAGEMENT_H
 
+#include "constants.h"
 #include "dh.h"
 #include "ed448.h"
 #include "list.h"
 
 typedef uint8_t k_dh_t[384];
-typedef uint8_t mix_key_t[32];
+typedef uint8_t mix_key_t[MIX_KEY_BYTES];
 typedef uint8_t k_ecdh_t[ED448_POINT_BYTES];
-typedef uint8_t shared_secret_t[64];
+typedef uint8_t shared_secret_t[SHARED_SECRET_BYTES];
 
 typedef uint8_t root_key_t[64];
 typedef uint8_t chain_key_t[64];
@@ -74,7 +75,7 @@ void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
 void key_manager_prepare_to_ratchet(key_manager_t *manager);
 
 otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
-                                   const shared_secret_t shared);
+                                   shared_secret_t shared);
 
 bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t *manager);
 

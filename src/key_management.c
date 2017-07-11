@@ -160,18 +160,24 @@ otr4_err_t derive_ratchet_keys(ratchet_t *ratchet,
   if (!derive_chain_key_b(ratchet->chain_b->key, shared)) {
     return OTR4_ERROR;
   }
+
   return OTR4_SUCCESS;
 }
 
 otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
-                                   const shared_secret_t shared) {
+                                   shared_secret_t shared) {
   ratchet_t *ratchet = ratchet_new();
-  if (ratchet == NULL)
+  if (ratchet == NULL) {
+    sodium_memzero(shared, SHARED_SECRET_BYTES);
     return OTR4_ERROR;
+  }
 
-  if (derive_ratchet_keys(ratchet, shared))
+  if (derive_ratchet_keys(ratchet, shared)) {
+    sodium_memzero(shared, SHARED_SECRET_BYTES);
     return OTR4_ERROR;
+  }
 
+  sodium_memzero(shared, SHARED_SECRET_BYTES);
   ratchet_free(manager->current);
   manager->current = ratchet;
 
@@ -403,10 +409,11 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   otrv4_memdump(manager->mix_key, sizeof(mix_key_t));
 #endif
 
-  // TODO: Securely delete shared.
   err = calculate_ssid(shared, manager);
-  if (err)
+  if (err) {
+    sodium_memzero(shared, SHARED_SECRET_BYTES);
     return err;
+  }
 
   return key_manager_new_ratchet(manager, shared);
 }
