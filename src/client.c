@@ -249,8 +249,6 @@ static int unfragment(char **unfragmented, const char *received,
   return err != OTR4_SUCCESS || ctx->status == OTR4_FRAGMENT_INCOMPLETE;
 }
 
-// TODO:
-// This should return error
 int otr4_client_receive(char **newmessage, char **todisplay,
                         const char *message, const char *recipient,
                         otr4_client_t *client) {

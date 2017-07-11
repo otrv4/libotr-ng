@@ -501,6 +501,10 @@ static otr4_err_t double_ratcheting_init(int j, otrv4_t *otr) {
   if (key_manager_ratcheting_init(j, otr->keys))
     return OTR4_ERROR;
 
+  if (j == 0) {
+    dh_priv_key_destroy(otr->keys->our_dh);
+  }
+
   otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
   gone_secure_cb(otr->conversation);
 

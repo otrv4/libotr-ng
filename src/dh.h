@@ -30,6 +30,10 @@ static inline dh_mpi_t dh_mpi_new() {
 
 otr4_err_t dh_keypair_generate(dh_keypair_t keypair);
 
+void dh_pub_key_destroy(dh_keypair_t keypair);
+
+void dh_priv_key_destroy(dh_keypair_t keypair);
+
 void dh_keypair_destroy(dh_keypair_t keypair);
 
 otr4_err_t dh_mpi_serialize(uint8_t *dst, size_t dst_len, size_t *written,

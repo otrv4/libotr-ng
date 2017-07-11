@@ -586,6 +586,9 @@ void test_api_multiple_clients(void) {
   otrv4_assert(bob_phone->keys->our_dh->pub);
   otrv4_assert(bob_phone->keys->our_dh->priv);
 
+  otrv4_assert(bob_pc->keys->our_dh->pub);
+  otrv4_assert(!bob_pc->keys->our_dh->priv);
+
   // This message was sent to PC instance tag.
   from_phone = otrv4_response_new();
   rec_msg(from_phone, to_pc, bob_phone, OTRV4_STATE_WAITING_AUTH_R,
@@ -594,7 +597,7 @@ void test_api_multiple_clients(void) {
 
   // The message was ignored. It should not remove the private DH-key yet.
   // The private DH-key is needed to send the AUTH-I when it actually receives
-  // a AUTH-R.
+  // an AUTH-R.
   otrv4_assert(bob_phone->keys->our_dh->pub);
   otrv4_assert(bob_phone->keys->our_dh->priv);
 
