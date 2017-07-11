@@ -7,7 +7,6 @@ libotr4_la_SOURCES = \
 		     client_callbacks.c \
 		     client_state.c \
 		     dake.c \
-		     data_types.c \
 		     data_message.c \
 		     deserialize.c \
 		     dh.c \
