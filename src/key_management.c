@@ -108,7 +108,7 @@ otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
   ecdh_keypair_generate(manager->our_ecdh, sym);
 
   if (manager->i % 3 == 0) {
-    dh_pub_key_destroy(manager->our_dh);
+    dh_keypair_destroy(manager->our_dh);
 
     if (dh_keypair_generate(manager->our_dh)) {
       return OTR4_ERROR;
