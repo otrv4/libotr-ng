@@ -212,8 +212,9 @@ int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
 }
 
 int otr4_client_smp_start(char **tosend, const char *recipient,
-                          const char *question, const size_t q_len, const unsigned char *secret,
-                          size_t secretlen, otr4_client_t *client) {
+                          const char *question, const size_t q_len,
+                          const unsigned char *secret, size_t secretlen,
+                          otr4_client_t *client) {
   otr4_conversation_t *conv = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
@@ -284,7 +285,8 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   otrv4_response_free(response);
 
   if (err != OTR4_SUCCESS)
-    return !should_ignore; // Should this cause the message to be ignored or not?
+    return !should_ignore; // Should this cause the message to be ignored or
+                           // not?
 
   return should_ignore;
 }

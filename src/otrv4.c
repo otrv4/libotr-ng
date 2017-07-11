@@ -1494,9 +1494,9 @@ static void set_smp_secret(const uint8_t *answer, size_t answerlen,
                         answer, answerlen);
 }
 
-otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question, const size_t q_len,
-                           const uint8_t *secret, const size_t secretlen,
-                           otrv4_t *otr) {
+otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
+                           const size_t q_len, const uint8_t *secret,
+                           const size_t secretlen, otrv4_t *otr) {
   tlv_t *smp_start_tlv = NULL;
 
   if (!otr)
@@ -1580,8 +1580,9 @@ otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
   return OTR4_ERROR; // TODO: IMPLEMENT
 }
 
-tlv_t *otrv4_smp_initiate(otrv4_t *otr, const string_t question, const size_t q_len,
-                          const uint8_t *secret, size_t secretlen) {
+tlv_t *otrv4_smp_initiate(otrv4_t *otr, const string_t question,
+                          const size_t q_len, const uint8_t *secret,
+                          size_t secretlen) {
   if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
     return NULL;
 

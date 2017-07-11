@@ -4,15 +4,10 @@
 #include "deserialize.h"
 #include "tlv.h"
 
-const tlv_type_t tlv_types[] = {
-  OTRV4_TLV_PADDING,
-  OTRV4_TLV_DISCONNECTED,
-  OTRV4_TLV_SMP_MSG_1,
-  OTRV4_TLV_SMP_MSG_2,
-  OTRV4_TLV_SMP_MSG_3,
-  OTRV4_TLV_SMP_MSG_4,
-  OTRV4_TLV_SMP_ABORT
-  };
+const tlv_type_t tlv_types[] = {OTRV4_TLV_PADDING,   OTRV4_TLV_DISCONNECTED,
+                                OTRV4_TLV_SMP_MSG_1, OTRV4_TLV_SMP_MSG_2,
+                                OTRV4_TLV_SMP_MSG_3, OTRV4_TLV_SMP_MSG_4,
+                                OTRV4_TLV_SMP_ABORT};
 
 void set_tlv_type(tlv_t *tlv, uint16_t tlv_type) {
   tlv_type_t type = OTRV4_TLV_NONE;

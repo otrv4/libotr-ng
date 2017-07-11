@@ -503,7 +503,8 @@ void test_api_smp(void) {
   OTR4_FREE;
 }
 
-static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name, int byte, otrv4_policy_t policy) {
+static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name,
+                           int byte, otrv4_policy_t policy) {
   set_up_state(state, account_name);
   uint8_t priv_key[ED448_PRIVATE_BYTES] = {byte};
   otr4_client_state_add_private_key_v4(state, priv_key);
@@ -512,7 +513,8 @@ static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name, in
   return otrv4_new(state, policy);
 }
 
-static void rec_query_msg(otrv4_response_t *respond_to, string_t query, otrv4_t *sender, int state){
+static void rec_query_msg(otrv4_response_t *respond_to, string_t query,
+                          otrv4_t *sender, int state) {
   otr4_err_t err = otrv4_receive_message(respond_to, query, sender);
   otrv4_assert(err == OTR4_SUCCESS);
   otrv4_assert(!respond_to->to_display);
@@ -520,9 +522,11 @@ static void rec_query_msg(otrv4_response_t *respond_to, string_t query, otrv4_t 
   otrv4_assert(sender->state == state);
 }
 
-static void rec_msg(otrv4_response_t *respond_to, otrv4_response_t *received_from, otrv4_t *sender,
-  int state, bool send_response) {
-  otr4_err_t err = otrv4_receive_message(respond_to, received_from->to_send, sender);
+static void rec_msg(otrv4_response_t *respond_to,
+                    otrv4_response_t *received_from, otrv4_t *sender, int state,
+                    bool send_response) {
+  otr4_err_t err =
+      otrv4_receive_message(respond_to, received_from->to_send, sender);
   otrv4_assert(err == OTR4_SUCCESS);
   otrv4_assert(!respond_to->to_display);
   otrv4_assert(sender->state == state);
@@ -562,12 +566,14 @@ void test_api_multiple_clients(void) {
 
   // Receives second Identity Message from PHONE (on state
   // OTRV4_STATE_WAITING_AUTH_I)
-  rec_msg(to_phone, from_phone, alice, OTRV4_STATE_WAITING_AUTH_I, send_response);
+  rec_msg(to_phone, from_phone, alice, OTRV4_STATE_WAITING_AUTH_I,
+          send_response);
   otrv4_response_free(from_phone);
 
   // Both receive the AUTH-R but only PC accepts
   from_pc = otrv4_response_new();
-  rec_msg(from_pc, to_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
+  rec_msg(from_pc, to_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
+          send_response);
   otrv4_response_free(from_pc);
 
   // It should be OK to get rid of the private DH-key generated at the AKE at
@@ -578,7 +584,8 @@ void test_api_multiple_clients(void) {
 
   // This message was sent to PC instance tag.
   from_phone = otrv4_response_new();
-  rec_msg(from_phone, to_pc, bob_phone, OTRV4_STATE_WAITING_AUTH_R, !send_response);
+  rec_msg(from_phone, to_pc, bob_phone, OTRV4_STATE_WAITING_AUTH_R,
+          !send_response);
   otrv4_response_free(from_phone);
 
   // The message was ignored. It should not remove the private DH-key yet.
@@ -592,18 +599,21 @@ void test_api_multiple_clients(void) {
   // Both receive but only PHONE accepts
   // This message was sent to PC instance tag.
   from_pc = otrv4_response_new();
-  rec_msg(from_pc, to_phone, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES, !send_response);
+  rec_msg(from_pc, to_phone, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
+          !send_response);
   otrv4_response_free(from_pc);
 
   // This segfaults, because we are freeing
   from_phone = otrv4_response_new();
-  rec_msg(from_phone, to_phone, bob_phone, OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
+  rec_msg(from_phone, to_phone, bob_phone, OTRV4_STATE_ENCRYPTED_MESSAGES,
+          send_response);
   otrv4_response_free_all(2, to_phone, from_phone);
 
   // TODO: Alice should receive from PHONE (PC will have ignored the message).
   otrv4_response_free(to_pc);
 
-  otrv4_userstate_free_all(3, alice_state->userstate, bob_phone_state->userstate, bob_pc_state->userstate);
+  otrv4_userstate_free_all(3, alice_state->userstate,
+                           bob_phone_state->userstate, bob_pc_state->userstate);
   otrv4_client_state_free_all(3, alice_state, bob_pc_state, bob_phone_state);
   otrv4_free_all(3, bob_pc, bob_phone, alice);
 

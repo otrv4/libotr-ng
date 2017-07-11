@@ -28,7 +28,8 @@ void test_smp_state_machine(void) {
   g_assert_cmpint(0, ==, bob_otr->smp->progress);
 
   tlv_t *tlv_smp_1 = otrv4_smp_initiate(
-					alice_otr, "some-question", strlen("some-question") + 1, (const uint8_t *)"answer", strlen("answer"));
+      alice_otr, "some-question", strlen("some-question") + 1,
+      (const uint8_t *)"answer", strlen("answer"));
   otrv4_assert(tlv_smp_1);
   g_assert_cmpint(tlv_smp_1->type, ==, OTRV4_TLV_SMP_MSG_1);
 
