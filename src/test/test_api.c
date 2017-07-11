@@ -430,6 +430,10 @@ void test_api_smp(void) {
   otrv4_t *alice = otrv4_new(alice_state, policy);
   otrv4_t *bob = otrv4_new(bob_state, policy);
 
+  // Starts an smp state machine
+  g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
+  g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
+
   // AKE HAS FINISHED.
   do_ake_fixture(alice, bob);
 
@@ -443,6 +447,7 @@ void test_api_smp(void) {
                                strlen(secret), alice) == OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
+  g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT2);
 
   // Bob receives SMP1
   response_to_alice = otrv4_response_new();
@@ -461,6 +466,7 @@ void test_api_smp(void) {
                                   bob) == OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP2
+  g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT3);
 
   // Alice receives SMP2
   response_to_bob = otrv4_response_new();
@@ -479,9 +485,9 @@ void test_api_smp(void) {
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
-  // TODO: Should be in the corect state
   otrv4_assert(response_to_alice->to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", response_to_alice->to_send, 9); // SMP4
+  g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT4);
 
   // Alice receives SMP4
   response_to_bob = otrv4_response_new();
@@ -491,7 +497,7 @@ void test_api_smp(void) {
   otrv4_response_free(response_to_alice);
   response_to_alice = NULL;
 
-  // TODO: Should be in the corect state
+  // TODO: Should be in the correct state
   otrv4_assert(!response_to_bob->to_send);
 
   otrv4_response_free(response_to_bob);
