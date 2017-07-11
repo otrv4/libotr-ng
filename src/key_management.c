@@ -58,37 +58,41 @@ void ratchet_free(ratchet_t *ratchet) {
 
 void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 {
-  manager->i = 0;
-  manager->j = 0;
-  manager->current = NULL;
   manager->our_dh->pub = NULL;
   manager->our_dh->priv = NULL;
+
   manager->their_dh = NULL;
-  manager->old_mac_keys = NULL;
+
+  manager->i = 0;
+  manager->j = 0;
+
+  manager->current = ratchet_new();
+
   memset(manager->mix_key, 0, sizeof(manager->mix_key));
   memset(manager->ssid, 0, sizeof(manager->ssid));
+
+  manager->old_mac_keys = NULL;
 }
 
 void key_manager_destroy(key_manager_t *manager) {
+  ecdh_keypair_destroy(manager->our_ecdh);
+  dh_keypair_destroy(manager->our_dh);
+
+  ec_point_destroy(manager->their_ecdh);
+  dh_mpi_release(manager->their_dh);
+  manager->their_dh = NULL;
+
+  ratchet_free(manager->current);
+  manager->current = NULL;
+
+  sodium_memzero(manager->mix_key, sizeof(manager->mix_key));
+  sodium_memzero(manager->ssid, sizeof(manager->ssid));
+
   list_element_t *el;
   for (el = manager->old_mac_keys; el; el = el->next) {
     free((uint8_t *)el->data);
     el->data = NULL;
   }
-
-  ratchet_free(manager->current);
-  manager->current = NULL;
-
-  dh_keypair_destroy(manager->our_dh);
-
-  dh_mpi_release(manager->their_dh);
-  manager->their_dh = NULL;
-
-  ecdh_keypair_destroy(manager->our_ecdh);
-  ec_point_destroy(manager->their_ecdh);
-
-  sodium_memzero(manager->mix_key, sizeof(manager->mix_key));
-  sodium_memzero(manager->ssid, sizeof(manager->ssid));
 
   list_free_full(manager->old_mac_keys);
   manager->old_mac_keys = NULL;
@@ -105,11 +109,13 @@ otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
 
   if (manager->i % 3 == 0) {
     dh_keypair_destroy(manager->our_dh);
-    if (dh_keypair_generate(manager->our_dh))
+    if (dh_keypair_generate(manager->our_dh)) {
       return OTR4_ERROR;
+    }
 
     return OTR4_SUCCESS;
   }
+
   return OTR4_SUCCESS;
 }
 
