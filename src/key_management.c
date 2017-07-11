@@ -165,19 +165,16 @@ otr4_err_t derive_ratchet_keys(ratchet_t *ratchet,
 }
 
 otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
-                                   shared_secret_t shared) {
+                                   const shared_secret_t shared) {
   ratchet_t *ratchet = ratchet_new();
   if (ratchet == NULL) {
-    sodium_memzero(shared, SHARED_SECRET_BYTES);
     return OTR4_ERROR;
   }
 
   if (derive_ratchet_keys(ratchet, shared)) {
-    sodium_memzero(shared, SHARED_SECRET_BYTES);
     return OTR4_ERROR;
   }
 
-  sodium_memzero(shared, SHARED_SECRET_BYTES);
   ratchet_free(manager->current);
   manager->current = ratchet;
 
@@ -415,7 +412,13 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
     return err;
   }
 
-  return key_manager_new_ratchet(manager, shared);
+  if (key_manager_new_ratchet(manager, shared)) {
+    sodium_memzero(shared, SHARED_SECRET_BYTES);
+    return OTR4_ERROR;
+  }
+
+  sodium_memzero(shared, SHARED_SECRET_BYTES);
+  return OTR4_SUCCESS;
 }
 
 otr4_err_t key_manager_ratcheting_init(int j, key_manager_t *manager) {

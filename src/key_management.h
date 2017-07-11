@@ -75,7 +75,7 @@ void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
 void key_manager_prepare_to_ratchet(key_manager_t *manager);
 
 otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
-                                   shared_secret_t shared);
+                                   const shared_secret_t shared);
 
 bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t *manager);
 
