@@ -15,22 +15,24 @@ data_message_t *data_message_new() {
   ret->enc_msg = NULL;
   ret->enc_msg_len = 0;
 
-  memset(ret->nonce, 0, sizeof(ret->nonce));
-  memset(ret->mac, 0, sizeof(ret->mac));
+  memset(ret->nonce, 0, sizeof ret->nonce);
+  memset(ret->mac, 0, sizeof ret->mac);
 
   return ret;
 }
 
 void data_message_destroy(data_message_t *data_msg) {
+  ec_point_destroy(data_msg->ecdh);
+  dh_mpi_release(data_msg->dh);
+  data_msg->dh = NULL;
+
+  sodium_memzero(data_msg->nonce, sizeof data_msg->nonce);
+
   data_msg->enc_msg_len = 0;
   free(data_msg->enc_msg);
   data_msg->enc_msg = NULL;
 
-  ec_point_destroy(data_msg->ecdh);
-  dh_mpi_release(data_msg->dh);
-  data_msg->dh = NULL;
-  sodium_memzero(data_msg->mac, DATA_MSG_MAC_BYTES);
-  sodium_memzero(data_msg->nonce, DATA_MSG_NONCE_BYTES);
+  sodium_memzero(data_msg->mac, sizeof data_msg->mac);
 }
 
 void data_message_free(data_message_t *data_msg) {
@@ -200,9 +202,9 @@ bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg) {
   }
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
-  memset(mac_tag, 0, DATA_MSG_MAC_BYTES);
+  memset(mac_tag, 0, sizeof(m_mac_key_t));
 
-  if (!sha3_512_mac(mac_tag, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t),
+  if (!sha3_512_mac(mac_tag, sizeof mac_tag, mac_key, sizeof(m_mac_key_t),
                     body, bodylen)) {
     free(body);
     return false;

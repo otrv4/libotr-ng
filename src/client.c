@@ -18,19 +18,20 @@ static otr4_conversation_t *new_conversation_with(const char *recipient,
     return NULL;
   }
 
-  conv->conn = conn;
   conv->recipient = otrv4_strdup(recipient);
+  conv->conn = conn;
 
   return conv;
 }
 
 static void conversation_free(void *data) {
   otr4_conversation_t *conv = data;
-  otrv4_free(conv->conn);
-  conv->conn = NULL;
 
   free(conv->recipient);
   conv->recipient = NULL;
+
+  otrv4_free(conv->conn);
+  conv->conn = NULL;
 
   free(conv);
 }
