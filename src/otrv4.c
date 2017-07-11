@@ -271,9 +271,8 @@ static bool message_contains_tag(const string_t message) {
   return strstr(message, tag_base) != NULL;
 }
 
-// TODO: If it is a string, why having len?
-static void set_to_display(otrv4_response_t *response, const string_t message,
-                           size_t msg_len) {
+static void set_to_display(otrv4_response_t *response, const string_t message) {
+  size_t msg_len = strlen(message);
   response->to_display = otrv4_strndup(message, msg_len);
 }
 
@@ -297,7 +296,7 @@ static otr4_err_t message_to_display_without_tag(otrv4_response_t *response,
   strncpy(buff, message + tag_length, chars);
   buff[chars] = '\0';
 
-  set_to_display(response, buff, chars);
+  response->to_display = otrv4_strndup(buff, chars);
 
   free(buff);
   return OTR4_SUCCESS;
@@ -368,7 +367,7 @@ void otrv4_response_free(otrv4_response_t *response) {
 // TODO: Is not receiving a plaintext a problem?
 static void receive_plaintext(otrv4_response_t *response,
                               const string_t message, const otrv4_t *otr) {
-  set_to_display(response, message, strlen(message));
+  set_to_display(response, message);
 
   if (otr->state != OTRV4_STATE_START)
     response->warning = OTRV4_WARN_RECEIVED_UNENCRYPTED;
@@ -470,7 +469,9 @@ static otr4_err_t receive_query_message(otrv4_response_t *response,
 
 otr4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
                           const size_t bufflen) {
-  // TODO: check the length
+  if (bufflen == 0) {
+    return OTR4_ERROR;
+  }
 
   size_t read = 0;
   uint16_t version = 0;
@@ -1122,9 +1123,6 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
     return receive_identity_message(&response->to_send, decoded, dec_len, otr);
   case OTR_AUTH_R_MSG_TYPE:
     return receive_auth_r(&response->to_send, decoded, dec_len, otr);
-  // TODO: should prob be done on inside
-  // gcry_mpi_release(otr->keys->our_dh->priv);
-  // otr->keys->our_dh->priv = NULL
   case OTR_AUTH_I_MSG_TYPE:
     return receive_auth_i(&response->to_send, decoded, dec_len, otr);
   case OTR_DATA_MSG_TYPE:
@@ -1196,7 +1194,7 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
   if (!message || !response)
     return OTR4_ERROR;
 
-  set_to_display(response, NULL, 0);
+  response->to_display = otrv4_strndup(NULL, 0);
 
   // A DH-Commit sets our running version to 3
   if (otr->running_version == OTRV4_VERSION_NONE &&
