@@ -159,8 +159,6 @@ otr4_err_t otrv4_smp_abort(otrv4_t *otr);
 // TODO: These should be private.
 // Remove dependency on otr and it should work.
 
-tlv_t *otrv4_process_smp(otrv4_t *otr, const tlv_t *tlv);
-
 tlv_t *otrv4_smp_provide_secret(otrv4_t *otr, const uint8_t *secret,
                                 const size_t secretlen);
 

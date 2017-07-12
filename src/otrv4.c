@@ -960,27 +960,72 @@ static otr4_err_t decrypt_data_msg(otrv4_response_t *response,
   return OTR4_ERROR;
 }
 
-static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
+static tlv_t *otrv4_process_smp(otr4_smp_event_t event, smp_context_t smp, const tlv_t *tlv) {
+  event = OTRV4_SMPEVENT_NONE;
+  tlv_t *to_send = NULL;
+
   switch (tlv->type) {
-  case OTRV4_TLV_PADDING:
-    break;
-  case OTRV4_TLV_DISCONNECTED:
-    forget_our_keys(otr);
-    otr->state = OTRV4_STATE_FINISHED;
-    gone_insecure_cb(otr->conversation);
-    break;
   case OTRV4_TLV_SMP_MSG_1:
+    event = process_smp_msg1(tlv, smp);
+    break;
+
   case OTRV4_TLV_SMP_MSG_2:
+    event = process_smp_msg2(&to_send, tlv, smp);
+    break;
+
   case OTRV4_TLV_SMP_MSG_3:
+    event = process_smp_msg3(&to_send, tlv, smp);
+    break;
+
   case OTRV4_TLV_SMP_MSG_4:
+    event = process_smp_msg4(tlv, smp);
+    break;
+
   case OTRV4_TLV_SMP_ABORT:
-    return otrv4_process_smp(otr, tlv);
+    // If smpstate is not the receive message:
+    // Set smpstate to SMPSTATE_EXPECT1
+    // send a SMP abort to other peer.
+    smp->state = SMPSTATE_EXPECT1;
+    to_send = otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
+    event = OTRV4_SMPEVENT_ABORT;
+
+    break;
   case OTRV4_TLV_NONE:
-    // error?
+  case OTRV4_TLV_PADDING:
+  case OTRV4_TLV_DISCONNECTED:
+    // Ignore. They should not be passed to this function.
     break;
   }
 
-  return NULL;
+  if (!event)
+    event = OTRV4_SMPEVENT_IN_PROGRESS;
+
+  return to_send;
+}
+
+static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
+  if (OTRV4_TLV_NONE == tlv->type) {
+    return NULL;
+  }
+
+  if (OTRV4_TLV_PADDING == tlv->type) {
+    return NULL;
+  }
+
+  if (OTRV4_TLV_DISCONNECTED == tlv->type) {
+    forget_our_keys(otr);
+    otr->state = OTRV4_STATE_FINISHED;
+    gone_insecure_cb(otr->conversation);
+    return NULL;
+  }
+
+  otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
+  tlv_t * out = otrv4_process_smp(event, otr->smp, tlv);
+  handle_smp_event_cb(event, otr->smp->progress,
+                      otr->smp->msg1 ? otr->smp->msg1->question : NULL,
+                      otr->conversation);
+
+  return out;
 }
 
 static otr4_err_t receive_tlvs(tlv_t **to_send, otrv4_response_t *response,
@@ -1629,53 +1674,6 @@ otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
   }
 
   return OTR4_ERROR; // TODO: IMPLEMENT
-}
-
-tlv_t *otrv4_process_smp(otrv4_t *otr, const tlv_t *tlv) {
-  otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
-  tlv_t *to_send = NULL;
-
-  switch (tlv->type) {
-  case OTRV4_TLV_SMP_MSG_1:
-    event = process_smp_msg1(tlv, otr->smp);
-    break;
-
-  case OTRV4_TLV_SMP_MSG_2:
-    event = process_smp_msg2(&to_send, tlv, otr->smp);
-    break;
-
-  case OTRV4_TLV_SMP_MSG_3:
-    event = process_smp_msg3(&to_send, tlv, otr->smp);
-    break;
-
-  case OTRV4_TLV_SMP_MSG_4:
-    event = process_smp_msg4(tlv, otr->smp);
-    break;
-
-  case OTRV4_TLV_SMP_ABORT:
-    // If smpstate is not the receive message:
-    // Set smpstate to SMPSTATE_EXPECT1
-    // send a SMP abort to other peer.
-    otr->smp->state = SMPSTATE_EXPECT1;
-    to_send = otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
-    event = OTRV4_SMPEVENT_ABORT;
-
-    break;
-  case OTRV4_TLV_NONE:
-  case OTRV4_TLV_PADDING:
-  case OTRV4_TLV_DISCONNECTED:
-    // Ignore. They should not be passed to this function.
-    break;
-  }
-
-  if (!event)
-    event = OTRV4_SMPEVENT_IN_PROGRESS;
-
-  handle_smp_event_cb(event, otr->smp->progress,
-                      otr->smp->msg1 ? otr->smp->msg1->question : NULL,
-                      otr->conversation);
-
-  return to_send;
 }
 
 otr4_err_t otrv4_smp_abort(otrv4_t *otr) {
