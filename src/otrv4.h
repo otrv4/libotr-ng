@@ -159,9 +159,6 @@ otr4_err_t otrv4_smp_abort(otrv4_t *otr);
 // TODO: These should be private.
 // Remove dependency on otr and it should work.
 
-tlv_t *otrv4_smp_provide_secret(otrv4_t *otr, const uint8_t *secret,
-                                const size_t secretlen);
-
 void otr4_set_fragmentation(int max_msg_size, otrv4_t *otr);
 
 #endif

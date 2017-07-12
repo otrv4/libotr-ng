@@ -59,8 +59,7 @@ void test_smp_state_machine(void) {
   g_assert_cmpint(25, ==, alice_otr->smp->progress);
   g_assert_cmpint(25, ==, bob_otr->smp->progress);
 
-  tlv_smp_2 = otrv4_smp_provide_secret(bob_otr, (const uint8_t *)"answer",
-                                       strlen("answer"));
+  tlv_smp_2 = NULL; //otrv4_smp_provide_secret(bob_otr, (const uint8_t *)"answer", strlen("answer"));
   otrv4_assert(tlv_smp_2);
   g_assert_cmpint(tlv_smp_2->type, ==, OTRV4_TLV_SMP_MSG_2);
 

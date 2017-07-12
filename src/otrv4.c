@@ -1615,29 +1615,23 @@ otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
   return OTR4_ERROR;
 }
 
-tlv_t *otrv4_smp_provide_secret(otrv4_t *otr, const uint8_t *secret,
+static tlv_t *otrv4_smp_provide_secret(otr4_smp_event_t * event,
+				       smp_context_t smp,
+				       const user_profile_t * our_profile,
+				       const user_profile_t * their_profile,
+				       uint8_t * ssid,
+				       const uint8_t *secret,
                                 const size_t secretlen) {
   // TODO: If state is not CONTINUE_SMP then error.
   tlv_t *smp_reply = NULL;
 
-  otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
-
   otrv4_fingerprint_t our_fp, their_fp;
-  otr4_serialize_fingerprint(our_fp, get_my_user_profile(otr)->pub_key);
-  otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
+  otr4_serialize_fingerprint(our_fp, our_profile->pub_key);
+  otr4_serialize_fingerprint(their_fp, their_profile->pub_key);
 
-  set_smp_secret(their_fp, our_fp, secret, secretlen, otr->keys->ssid,
-                 otr->smp);
+  set_smp_secret(their_fp, our_fp, secret, secretlen, ssid, smp);
 
-  event = reply_with_smp_msg_2(&smp_reply, otr->smp);
-
-  if (!event)
-    event = OTRV4_SMPEVENT_IN_PROGRESS;
-
-  // TODO: transition to state 1 if an abort happens
-  if (event)
-    handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
-                        otr->conversation);
+  *event = reply_with_smp_msg_2(&smp_reply, smp);
 
   return smp_reply;
 }
@@ -1650,7 +1644,15 @@ static otr4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
   if (!otr)
     return err;
 
-  smp_reply = otrv4_smp_provide_secret(otr, secret, secretlen);
+  otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
+  smp_reply = otrv4_smp_provide_secret(&event, otr->smp, get_my_user_profile(otr), otr->their_profile, otr->keys->ssid, secret, secretlen);
+
+  if (!event)
+    event = OTRV4_SMPEVENT_IN_PROGRESS;
+
+  // TODO: transition to state 1 if an abort happens
+  handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
+                        otr->conversation);
 
   if (smp_reply &&
       otrv4_send_message(to_send, "", smp_reply, otr) == OTR4_SUCCESS) {
