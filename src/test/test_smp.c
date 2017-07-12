@@ -52,14 +52,15 @@ void test_smp_state_machine(void) {
   otrv4_assert(alice_otr->smp->a3);
 
   // Receives first message
-  tlv_t *tlv_smp_2 = NULL; //otrv4_process_smp(bob_otr, tlv_smp_1);
+  tlv_t *tlv_smp_2 = NULL; // otrv4_process_smp(bob_otr, tlv_smp_1);
   otrv4_tlv_free(tlv_smp_1);
   otrv4_assert(!tlv_smp_2);
 
   g_assert_cmpint(25, ==, alice_otr->smp->progress);
   g_assert_cmpint(25, ==, bob_otr->smp->progress);
 
-  tlv_smp_2 = NULL; //otrv4_smp_provide_secret(bob_otr, (const uint8_t *)"answer", strlen("answer"));
+  tlv_smp_2 = NULL; // otrv4_smp_provide_secret(bob_otr, (const uint8_t
+                    // *)"answer", strlen("answer"));
   otrv4_assert(tlv_smp_2);
   g_assert_cmpint(tlv_smp_2->type, ==, OTRV4_TLV_SMP_MSG_2);
 
@@ -81,7 +82,7 @@ void test_smp_state_machine(void) {
   smp_msg_2_destroy(smp_msg_2);
 
   // Receives second message
-  tlv_t *tlv_smp_3 = NULL; //otrv4_process_smp(alice_otr, tlv_smp_2);
+  tlv_t *tlv_smp_3 = NULL; // otrv4_process_smp(alice_otr, tlv_smp_2);
   otrv4_tlv_free(tlv_smp_2);
   otrv4_assert(tlv_smp_3);
   g_assert_cmpint(tlv_smp_3->type, ==, OTRV4_TLV_SMP_MSG_3);
@@ -96,7 +97,7 @@ void test_smp_state_machine(void) {
   otrv4_assert(alice_otr->smp->Qa_Qb);
 
   // Receives third message
-  tlv_t *tlv_smp_4 = NULL; //otrv4_process_smp(bob_otr, tlv_smp_3);
+  tlv_t *tlv_smp_4 = NULL; // otrv4_process_smp(bob_otr, tlv_smp_3);
   otrv4_tlv_free(tlv_smp_3);
   otrv4_assert(tlv_smp_4);
   g_assert_cmpint(tlv_smp_4->type, ==, OTRV4_TLV_SMP_MSG_4);
@@ -109,7 +110,7 @@ void test_smp_state_machine(void) {
   g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
   // Receives fourth message
-  //otrv4_process_smp(alice_otr, tlv_smp_4);
+  // otrv4_process_smp(alice_otr, tlv_smp_4);
   otrv4_tlv_free(tlv_smp_4);
 
   g_assert_cmpint(100, ==, alice_otr->smp->progress);

@@ -622,12 +622,11 @@ static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
     return OTR4_ERROR;
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
-  otr4_err_t err =
-      snizkpk_authenticate(msg->sigma,
-                           otr->conversation->client->keypair, /* g^R and R */
-                           otr->their_profile->pub_key,        /* g^I */
-                           THEIR_ECDH(otr),                    /* g^i -- Y */
-                           t, t_len);
+  otr4_err_t err = snizkpk_authenticate(
+      msg->sigma, otr->conversation->client->keypair, /* g^R and R */
+      otr->their_profile->pub_key,                    /* g^I */
+      THEIR_ECDH(otr),                                /* g^i -- Y */
+      t, t_len);
 
   if (err) {
     free(t);
@@ -810,8 +809,7 @@ static bool valid_auth_r_message(const dake_auth_r_t *auth, otrv4_t *otr) {
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
   otr4_err_t err =
-      snizkpk_verify(auth->sigma,
-                     auth->profile->pub_key,                  /* g^R */
+      snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
                      otr->conversation->client->keypair->pub, /* g^I */
                      OUR_ECDH(otr),                           /* g^  */
                      t, t_len);
@@ -960,7 +958,8 @@ static otr4_err_t decrypt_data_msg(otrv4_response_t *response,
   return OTR4_ERROR;
 }
 
-static tlv_t *otrv4_process_smp(otr4_smp_event_t event, smp_context_t smp, const tlv_t *tlv) {
+static tlv_t *otrv4_process_smp(otr4_smp_event_t event, smp_context_t smp,
+                                const tlv_t *tlv) {
   event = OTRV4_SMPEVENT_NONE;
   tlv_t *to_send = NULL;
 
@@ -1020,7 +1019,7 @@ static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
   }
 
   otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
-  tlv_t * out = otrv4_process_smp(event, otr->smp, tlv);
+  tlv_t *out = otrv4_process_smp(event, otr->smp, tlv);
   handle_smp_event_cb(event, otr->smp->progress,
                       otr->smp->msg1 ? otr->smp->msg1->question : NULL,
                       otr->conversation);
@@ -1615,13 +1614,12 @@ otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
   return OTR4_ERROR;
 }
 
-static tlv_t *otrv4_smp_provide_secret(otr4_smp_event_t * event,
-				       smp_context_t smp,
-				       const user_profile_t * our_profile,
-				       const user_profile_t * their_profile,
-				       uint8_t * ssid,
-				       const uint8_t *secret,
-                                const size_t secretlen) {
+static tlv_t *otrv4_smp_provide_secret(otr4_smp_event_t *event,
+                                       smp_context_t smp,
+                                       const user_profile_t *our_profile,
+                                       const user_profile_t *their_profile,
+                                       uint8_t *ssid, const uint8_t *secret,
+                                       const size_t secretlen) {
   // TODO: If state is not CONTINUE_SMP then error.
   tlv_t *smp_reply = NULL;
 
@@ -1645,14 +1643,16 @@ static otr4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
     return err;
 
   otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
-  smp_reply = otrv4_smp_provide_secret(&event, otr->smp, get_my_user_profile(otr), otr->their_profile, otr->keys->ssid, secret, secretlen);
+  smp_reply = otrv4_smp_provide_secret(
+      &event, otr->smp, get_my_user_profile(otr), otr->their_profile,
+      otr->keys->ssid, secret, secretlen);
 
   if (!event)
     event = OTRV4_SMPEVENT_IN_PROGRESS;
 
   // TODO: transition to state 1 if an abort happens
   handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
-                        otr->conversation);
+                      otr->conversation);
 
   if (smp_reply &&
       otrv4_send_message(to_send, "", smp_reply, otr) == OTR4_SUCCESS) {

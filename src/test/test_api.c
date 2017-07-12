@@ -509,7 +509,8 @@ void test_api_smp(void) {
   OTR4_FREE;
 }
 
-static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name, int byte) {
+static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name,
+                           int byte) {
   set_up_state(state, account_name);
   uint8_t priv_key[ED448_PRIVATE_BYTES] = {byte};
   otr4_client_state_add_private_key_v4(state, priv_key);
