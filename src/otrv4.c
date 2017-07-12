@@ -1524,17 +1524,8 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
   return OTR4_ERROR;
 }
 
-static void set_smp_secret(otrv4_fingerprint_t initiator,
-                           otrv4_fingerprint_t responder, const uint8_t *answer,
-                           size_t answerlen, uint8_t *ssid, smp_context_t smp) {
-
-  // TODO: return error?
-  generate_smp_secret(&smp->secret, initiator, responder, ssid, answer,
-                      answerlen);
-}
-
-static tlv_t *otrv4_smp_initiate(otrv4_fingerprint_t initiator,
-                                 otrv4_fingerprint_t responder,
+static tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
+                                 const user_profile_t *responder,
                                  const string_t question, const size_t q_len,
                                  const uint8_t *secret, const size_t secretlen,
                                  uint8_t *ssid, smp_context_t smp,
@@ -1544,7 +1535,10 @@ static tlv_t *otrv4_smp_initiate(otrv4_fingerprint_t initiator,
   uint8_t *to_send = NULL;
   size_t len = 0;
 
-  set_smp_secret(initiator, responder, secret, secretlen, ssid, smp);
+  otrv4_fingerprint_t our_fp, their_fp;
+  otr4_serialize_fingerprint(our_fp, initiator->pub_key);
+  otr4_serialize_fingerprint(their_fp, responder->pub_key);
+  generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, secret, secretlen);
 
   do {
     if (generate_smp_msg_1(msg, smp))
@@ -1593,13 +1587,9 @@ otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
     if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
       return OTR4_ERROR;
 
-    otrv4_fingerprint_t our_fp, their_fp;
-    otr4_serialize_fingerprint(our_fp, get_my_user_profile(otr)->pub_key);
-    otr4_serialize_fingerprint(their_fp, otr->their_profile->pub_key);
-
-    smp_start_tlv =
-        otrv4_smp_initiate(our_fp, their_fp, question, q_len, secret, secretlen,
-                           otr->keys->ssid, otr->smp, otr->conversation);
+    smp_start_tlv = otrv4_smp_initiate(
+        get_my_user_profile(otr), otr->their_profile, question, q_len, secret,
+        secretlen, otr->keys->ssid, otr->smp, otr->conversation);
     if (otrv4_send_message(to_send, "", smp_start_tlv, otr)) {
       otrv4_tlv_free(smp_start_tlv);
       return OTR4_ERROR;
@@ -1626,8 +1616,7 @@ static tlv_t *otrv4_smp_provide_secret(otr4_smp_event_t *event,
   otrv4_fingerprint_t our_fp, their_fp;
   otr4_serialize_fingerprint(our_fp, our_profile->pub_key);
   otr4_serialize_fingerprint(their_fp, their_profile->pub_key);
-
-  set_smp_secret(their_fp, our_fp, secret, secretlen, ssid, smp);
+  generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret, secretlen);
 
   *event = reply_with_smp_msg_2(&smp_reply, smp);
 
