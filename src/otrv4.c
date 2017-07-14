@@ -501,10 +501,6 @@ static otr4_err_t double_ratcheting_init(int j, otrv4_t *otr) {
   if (key_manager_ratcheting_init(j, otr->keys))
     return OTR4_ERROR;
 
-  if (j == 0) {
-    dh_priv_key_destroy(otr->keys->our_dh);
-  }
-
   otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
   gone_secure_cb(otr->conversation);
 
@@ -1163,13 +1159,18 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
   maybe_create_keys(otr->conversation);
 
   response->to_send = NULL;
+  otr4_err_t err;
 
   switch (header.type) {
   case OTR_IDENTITY_MSG_TYPE:
     otr->running_version = OTRV4_VERSION_4;
     return receive_identity_message(&response->to_send, decoded, dec_len, otr);
   case OTR_AUTH_R_MSG_TYPE:
-    return receive_auth_r(&response->to_send, decoded, dec_len, otr);
+    err = receive_auth_r(&response->to_send, decoded, dec_len, otr);
+    if (otr->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
+      dh_priv_key_destroy(otr->keys->our_dh);
+    }
+    return err;
   case OTR_AUTH_I_MSG_TYPE:
     return receive_auth_i(&response->to_send, decoded, dec_len, otr);
   case OTR_DATA_MSG_TYPE:
