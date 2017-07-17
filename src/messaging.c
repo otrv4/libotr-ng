@@ -62,27 +62,35 @@ static otr4_client_state_t *get_client_state(otr4_userstate_t *state,
   return s;
 }
 
-otr4_messaging_client_t *otr4_messaging_client_new(otr4_userstate_t *state,
-                                                   void *client_id) {
-  // TODO: Should not create if theres already a client for this client_id
-  //(What if it is null?)
-
-  otr4_client_state_t *s = get_client_state(state, client_id);
-  if (!s)
-    return NULL;
-
-  otr4_client_t *c = otr4_client_new(s);
-  if (!c)
-    return NULL;
-
-  state->clients = list_add(c, state->clients);
-
-  return c;
-}
-
 static int find_client_by_client_id(const void *current, const void *wanted) {
   const otr4_client_t *s = current;
   return s && s->state && s->state->client_id == wanted;
+}
+
+otr4_messaging_client_t *otr4_messaging_client_new(otr4_userstate_t *state,
+                                                   void *client_id) {
+  if (!client_id) {
+    return NULL;
+  }
+
+  list_element_t *e =
+    list_get(client_id, state->clients, find_client_by_client_id);
+
+  if (e) {
+    return e->data;
+  } else {
+    otr4_client_state_t *s = get_client_state(state, client_id);
+    if (!s)
+      return NULL;
+
+    otr4_client_t *c = otr4_client_new(s);
+    if (!c)
+      return NULL;
+
+    state->clients = list_add(c, state->clients);
+
+    return c;
+  }
 }
 
 otr4_messaging_client_t *otr4_messaging_client_get(otr4_userstate_t *state,
