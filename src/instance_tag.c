@@ -5,7 +5,6 @@
 #include "instance_tag.h"
 #include "str.h"
 
-// TODO: remove unused?
 bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
                       const char *protocol, FILE *filename) {
 

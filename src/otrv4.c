@@ -200,7 +200,6 @@ void otrv4_free(/*@only@ */ otrv4_t *otr) {
   free(otr);
 }
 
-// TODO: This belongs to the client.
 otr4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
                                      const otrv4_t *otr) {
   // size = qm tag + versions + msg length + versions + question mark +
@@ -230,7 +229,6 @@ otr4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
   return OTR4_SUCCESS;
 }
 
-// TODO: This belongs to the client.
 otr4_err_t otrv4_build_whitespace_tag(string_t *whitespace_tag,
                                       const string_t message,
                                       const otrv4_t *otr) {

@@ -140,9 +140,6 @@ void test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture,
                                      "?OTRv3? And some random invitation text.",
                                      otrv4_fixture->otrv3) == OTR4_SUCCESS);
 
-  // TODO: How to assert the pointer is not null without g_assert_nonnull?
-  // g_assert_cmpint(otrv4_fixture->otr->state, ==,
-  // OTRV4_STATE_AKE_IN_PROGRESS);
   g_assert_cmpint(otrv4_fixture->otrv3->running_version, ==, OTRV4_VERSION_3);
 
   otrv4_response_free(response);
