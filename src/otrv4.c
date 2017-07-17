@@ -274,7 +274,6 @@ static void set_to_display(otrv4_response_t *response, const string_t message) {
   response->to_display = otrv4_strndup(message, msg_len);
 }
 
-// TODO: this does not remove ALL tags
 static otr4_err_t message_to_display_without_tag(otrv4_response_t *response,
                                                  const string_t message,
                                                  const char *tag_version,
@@ -291,12 +290,24 @@ static otr4_err_t message_to_display_without_tag(otrv4_response_t *response,
     return OTR4_ERROR;
   }
 
-  strncpy(buff, message + tag_length, chars);
+  char * found_at = strstr(message, tag_base);
+  if (!found_at) {
+    return OTR4_ERROR;
+  }
+  size_t bytes_before_tag = found_at - message;
+  if (!bytes_before_tag) {
+    strncpy(buff, message + tag_length, chars);
+  } else {
+    strncpy(buff, message, bytes_before_tag);
+    strncpy(buff, message + bytes_before_tag, chars - bytes_before_tag);
+  }
   buff[chars] = '\0';
 
   response->to_display = otrv4_strndup(buff, chars);
 
   free(buff);
+  buff = NULL;
+
   return OTR4_SUCCESS;
 }
 

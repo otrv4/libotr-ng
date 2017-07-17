@@ -102,6 +102,22 @@ void test_otrv4_receives_plaintext_with_ws_tag(otrv4_fixture_t *otrv4_fixture,
   otrv4_response_free(response);
 }
 
+void test_otrv4_receives_plaintext_with_ws_tag_after_text(otrv4_fixture_t *otrv4_fixture,
+                                               gconstpointer data) {
+  otrv4_response_t *response = otrv4_response_new();
+  string_t message =
+      "Some random invitation text. \t  \t\t\t\t \t \t \t    \t\t \t  ";
+
+  otrv4_assert(otrv4_receive_message(response, message, otrv4_fixture->otr) ==
+               OTR4_SUCCESS);
+  g_assert_cmpstr(response->to_display, ==, "Some random invitation text.");
+  otrv4_assert(response->to_send);
+  g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_WAITING_AUTH_R);
+  g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
+
+  otrv4_response_free(response);
+}
+
 void test_otrv4_receives_plaintext_with_ws_tag_v3(
     otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_response_t *response = otrv4_response_new();
