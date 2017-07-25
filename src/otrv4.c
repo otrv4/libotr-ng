@@ -749,7 +749,6 @@ static otr4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,
     err = receive_identity_message_on_waiting_auth_i(dst, m, otr);
     break;
   case OTRV4_STATE_NONE:
-  case OTRV4_STATE_AKE_IN_PROGRESS:
   case OTRV4_STATE_ENCRYPTED_MESSAGES:
   case OTRV4_STATE_FINISHED:
     // Ignore the message, but it is not an error.
