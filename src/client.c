@@ -169,7 +169,7 @@ otr4_conversation_t *otr4_client_get_conversation(int force_create,
   return get_conversation_with(recipient, client->conversations);
 }
 
-static int send_otrv4_message(char **newmsg, const char *message,
+static int otrv4_send_message(char **newmsg, const char *message,
                               const char *recipient, otr4_client_t *client) {
   otr4_conversation_t *conv = NULL;
 
@@ -177,7 +177,7 @@ static int send_otrv4_message(char **newmsg, const char *message,
   if (!conv)
     return 1;
 
-  otr4_err_t error = otrv4_send_message(newmsg, message, NULL, conv->conn);
+  otr4_err_t error = otrv4_prepare_to_send_message(newmsg, message, NULL, conv->conn);
   if (error == OTR4_STATE_NOT_ENCRYPTED)
     return OTR4_CLIENT_ERROR_NOT_ENCRYPTED;
   else
@@ -188,14 +188,14 @@ int otr4_client_send(char **newmessage, const char *message,
                      const char *recipient, otr4_client_t *client) {
   /* OTR4 client will know how to transition to OTR3 if a v3 conversation is
    started */
-  return send_otrv4_message(newmessage, message, recipient, client);
+  return otrv4_send_message(newmessage, message, recipient, client);
 }
 
 int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
                               const char *message, int mms,
                               const char *recipient, otr4_client_t *client) {
   string_t to_send = NULL;
-  otr4_err_t err = send_otrv4_message(&to_send, message, recipient, client);
+  otr4_err_t err = otrv4_send_message(&to_send, message, recipient, client);
   if (err != OTR4_SUCCESS)
     return 1;
 

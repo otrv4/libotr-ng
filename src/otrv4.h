@@ -142,7 +142,7 @@ otr4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
 otr4_err_t otrv4_receive_message(otrv4_response_t *response,
                                  const string_t message, otrv4_t *otr);
 
-otr4_err_t otrv4_send_message(string_t *to_send, const string_t message,
+otr4_err_t otrv4_prepare_to_send_message(string_t *to_send, const string_t message,
                               tlv_t *tlvs, otrv4_t *otr);
 
 otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr);

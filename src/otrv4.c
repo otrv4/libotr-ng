@@ -1125,7 +1125,7 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     key_manager_prepare_to_ratchet(otr->keys);
 
     if (reply_tlv)
-      if (otrv4_send_message(&response->to_send, "", reply_tlv, otr))
+      if (otrv4_prepare_to_send_message(&response->to_send, "", reply_tlv, otr))
         continue;
 
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
@@ -1458,7 +1458,7 @@ static otr4_err_t append_tlvs(uint8_t **dst, size_t *dstlen,
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t send_otrv4_message(string_t *to_send, const string_t message,
+static otr4_err_t otrv4_prepare_to_send_data_message(string_t *to_send, const string_t message,
                                      tlv_t *tlvs, otrv4_t *otr) {
   uint8_t *msg = NULL;
   size_t msg_len = 0;
@@ -1478,7 +1478,7 @@ static otr4_err_t send_otrv4_message(string_t *to_send, const string_t message,
   return err;
 }
 
-otr4_err_t otrv4_send_message(string_t *to_send, const string_t message,
+otr4_err_t otrv4_prepare_to_send_message(string_t *to_send, const string_t message,
                               tlv_t *tlvs, otrv4_t *otr) {
   if (!otr)
     return OTR4_ERROR;
@@ -1487,7 +1487,7 @@ otr4_err_t otrv4_send_message(string_t *to_send, const string_t message,
   case OTRV4_VERSION_3:
     return otrv3_send_message(to_send, message, tlvs, otr->otr3_conn);
   case OTRV4_VERSION_4:
-    return send_otrv4_message(to_send, message, tlvs, otr);
+    return otrv4_prepare_to_send_data_message(to_send, message, tlvs, otr);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }
@@ -1503,7 +1503,7 @@ static otr4_err_t otrv4_close_v4(string_t *to_send, otrv4_t *otr) {
   if (!disconnected)
     return OTR4_ERROR;
 
-  otr4_err_t err = otrv4_send_message(to_send, "", disconnected, otr);
+  otr4_err_t err = otrv4_prepare_to_send_message(to_send, "", disconnected, otr);
   otrv4_tlv_free(disconnected);
 
   forget_our_keys(otr);
@@ -1599,7 +1599,7 @@ otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
     smp_start_tlv = otrv4_smp_initiate(
         get_my_user_profile(otr), otr->their_profile, question, q_len, secret,
         secretlen, otr->keys->ssid, otr->smp, otr->conversation);
-    if (otrv4_send_message(to_send, "", smp_start_tlv, otr)) {
+    if (otrv4_prepare_to_send_message(to_send, "", smp_start_tlv, otr)) {
       otrv4_tlv_free(smp_start_tlv);
       return OTR4_ERROR;
     }
@@ -1653,7 +1653,7 @@ static otr4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
                       otr->conversation);
 
   if (smp_reply &&
-      otrv4_send_message(to_send, "", smp_reply, otr) == OTR4_SUCCESS) {
+      otrv4_prepare_to_send_message(to_send, "", smp_reply, otr) == OTR4_SUCCESS) {
     err = OTR4_SUCCESS;
   }
 

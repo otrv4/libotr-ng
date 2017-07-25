@@ -38,7 +38,7 @@ void test_api_conversation(void) {
   string_t to_send = NULL;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    otrv4_assert(otrv4_send_message(&to_send, "hi", NULL, alice) ==
+    otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice) ==
                  OTR4_SUCCESS);
     otrv4_assert(to_send);
     otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
@@ -71,7 +71,7 @@ void test_api_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    otrv4_assert(otrv4_send_message(&to_send, "hello", NULL, bob) ==
+    otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hello", NULL, bob) ==
                  OTR4_SUCCESS);
     otrv4_assert(to_send);
     otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
@@ -103,7 +103,7 @@ void test_api_conversation(void) {
   otrv4_assert(tlvs);
 
   // Bob sends a message with TLV
-  otrv4_assert(otrv4_send_message(&to_send, "hi", tlvs, bob) == OTR4_SUCCESS);
+  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", tlvs, bob) == OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -163,7 +163,7 @@ void test_dh_key_rotation(void) {
   for (int ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
 
     // Bob sends a data message
-    err = otrv4_send_message(&to_send, "hello", NULL, bob);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, bob);
     otrv4_assert(err == OTR4_SUCCESS);
     otrv4_assert(to_send);
     otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
@@ -199,7 +199,7 @@ void test_dh_key_rotation(void) {
     // Now alice ratchets
     //
 
-    err = otrv4_send_message(&to_send, "hi", NULL, alice);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
     otrv4_assert(err == OTR4_SUCCESS);
     otrv4_assert(to_send);
     otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
@@ -370,7 +370,7 @@ void test_api_conversation_v3(void) {
   string_t to_send = NULL;
 
   // Alice sends a data message
-  otrv4_assert(otrv4_send_message(&to_send, "hi", NULL, alice) == OTR4_SUCCESS);
+  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice) == OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
@@ -388,7 +388,7 @@ void test_api_conversation_v3(void) {
   response_to_alice = NULL;
 
   // Bob sends a data message
-  otrv4_assert(otrv4_send_message(&to_send, "hi", NULL, bob) == OTR4_SUCCESS);
+  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", NULL, bob) == OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
