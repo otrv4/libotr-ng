@@ -71,7 +71,6 @@ void test_api_conversation(void) {
     g_assert_cmpint(alice->keys->j, ==, message_id);
 
     // Bob receives a data message
-    response_to_alice = otrv4_response_new();
     to_send = rec_data_msg(response_to_alice, to_send, bob, "hi");
     otrv4_assert(bob->keys->old_mac_keys);
 
@@ -92,7 +91,6 @@ void test_api_conversation(void) {
     g_assert_cmpint(bob->keys->j, ==, message_id);
 
     // Alice receives a data message
-    response_to_bob = otrv4_response_new();
     to_send = rec_data_msg(response_to_bob, to_send, alice, "hello");
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
 
