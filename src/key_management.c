@@ -447,11 +447,11 @@ static otr4_err_t rotate_keys(key_manager_t *manager) {
   return enter_new_ratchet(manager);
 }
 
-bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t *manager) {
-  if (manager->i == ratchet_id)
+bool key_manager_ensure_on_ratchet(key_manager_t *manager) {
+  if (manager->j == 0)
     return true;
 
-  manager->i = ratchet_id;
+  manager->i++;
   if (enter_new_ratchet(manager))
     return false;
 

@@ -77,7 +77,7 @@ void key_manager_prepare_to_ratchet(key_manager_t *manager);
 otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
                                    const shared_secret_t shared);
 
-bool key_manager_ensure_on_ratchet(int ratchet_id, key_manager_t *manager);
+bool key_manager_ensure_on_ratchet(key_manager_t *manager);
 
 /* Private */
 otr4_err_t derive_ratchet_keys(ratchet_t *ratchet,

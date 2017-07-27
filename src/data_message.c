@@ -57,7 +57,6 @@ otr4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
   cursor += serialize_uint32(cursor, data_msg->sender_instance_tag);
   cursor += serialize_uint32(cursor, data_msg->receiver_instance_tag);
   cursor += serialize_uint8(cursor, data_msg->flags);
-  cursor += serialize_uint32(cursor, data_msg->ratchet_id);
   cursor += serialize_uint32(cursor, data_msg->message_id);
   if (serialize_ec_point(cursor, data_msg->ecdh)) {
     free(dst);
@@ -129,13 +128,6 @@ otr4_err_t data_message_deserialize(data_message_t *dst, const uint8_t *buff,
   len -= read;
 
   if (deserialize_uint8(&dst->flags, cursor, len, &read)) {
-    return OTR4_ERROR;
-  }
-
-  cursor += read;
-  len -= read;
-
-  if (deserialize_uint32(&dst->ratchet_id, cursor, len, &read)) {
     return OTR4_ERROR;
   }
 

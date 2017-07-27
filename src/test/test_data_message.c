@@ -49,7 +49,6 @@ void test_data_message_serializes() {
   data_msg->sender_instance_tag = 1;
   data_msg->receiver_instance_tag = 2;
   data_msg->flags = 0xA;
-  data_msg->ratchet_id = 10;
   data_msg->message_id = 99;
   ec_point_copy(data_msg->ecdh, ecdh->pub);
 
@@ -78,13 +77,12 @@ void test_data_message_serializes() {
       0x0,  0x0,  0x0, 0x1, // sender instance tag
       0x0,  0x0,  0x0, 0x2, // receiver instance tag
       0xA,                  // flags
-      0x0,  0x0,  0x0, 0xA, // ratchet id
       0x0,  0x0,  0x0, 99,  // message id
   };
 
   uint8_t *cursor = serialized;
-  otrv4_assert_cmpmem(cursor, expected, 20);
-  cursor += 20;
+  otrv4_assert_cmpmem(cursor, expected, 16);
+  cursor += 16;
 
   uint8_t serialized_y[ED448_POINT_BYTES + 2] = {0};
   ec_point_serialize(serialized_y, ED448_POINT_BYTES, data_msg->ecdh);
