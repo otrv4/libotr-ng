@@ -1276,7 +1276,6 @@ static data_message_t *generate_data_msg(const otrv4_t *otr) {
 
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
-  data_msg->ratchet_id = otr->keys->i;
   data_msg->message_id = otr->keys->j;
   ec_point_copy(data_msg->ecdh, OUR_ECDH(otr));
   data_msg->dh = dh_mpi_copy(OUR_DH(otr));
