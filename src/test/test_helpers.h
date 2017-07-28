@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "../debug.h"
-#include "../ed448.h"
+#include "../client.h"
 #include "../str.h"
 
 #define WITH_FIXTURE(_p, _c, _t, _f)                                           \
@@ -103,6 +103,15 @@ static void otrv4_client_state_free_all(int num, ...) {
   va_start(args, num);
   for (int i = 0; i < num; i++) {
     otr4_client_state_free(va_arg(args, otr4_client_state_t *));
+  }
+  va_end(args);
+}
+
+static void otrv4_client_free_all(int num, ...) {
+  va_list args;
+  va_start(args, num);
+  for (int i = 0; i < num; i++) {
+    otr4_client_free(va_arg(args, otr4_client_t *));
   }
   va_end(args);
 }
