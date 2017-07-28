@@ -163,7 +163,8 @@ static bool is_fragment(const string_t message) {
 
 otr4_err_t otr4_unfragment_message(char **unfrag_msg,
                                    fragment_context_t *context,
-                                   const string_t message) {
+                                   const string_t message,
+				   const int our_instance_tag) {
   if (!is_fragment(message)) {
     *unfrag_msg = otrv4_strdup(message);
     initialize_fragment_context(context);
@@ -176,6 +177,11 @@ otr4_err_t otr4_unfragment_message(char **unfrag_msg,
 
   const string_t format = "?OTR|%08x|%08x,%05x,%05x,%n%*[^,],%n";
   sscanf(message, format, &sender_tag, &receiver_tag, &k, &n, &start, &end);
+
+  if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
+    context->status = OTR4_FRAGMENT_COMPLETE;
+    return OTR4_ERROR;
+  }
 
   if (k == 0 || n == 0 || k > n) {
     initialize_fragment_context(context);

@@ -1073,7 +1073,7 @@ void test_client_receives_fragmented_message(void) {
   char *msg = "Receiving fragmented plaintext";
 
   otr4_message_to_send_t *fmsg = malloc(sizeof(otr4_message_to_send_t));
-  otrv4_assert(otr4_fragment_message(60, fmsg, 1, 2, msg) == OTR4_SUCCESS);
+  otrv4_assert(otr4_fragment_message(60, fmsg, 0, 0, msg) == OTR4_SUCCESS);
 
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   otr4_client_t *alice = NULL;

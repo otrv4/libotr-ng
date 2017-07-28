@@ -38,6 +38,7 @@ otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
 
 otr4_err_t otr4_unfragment_message(char **unfrag_msg,
                                    fragment_context_t *context,
-                                   const string_t message);
+                                   const string_t message,
+				   const int our_instance_tag);
 
 #endif

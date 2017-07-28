@@ -244,8 +244,8 @@ int otr4_client_smp_respond(char **tosend, const char *recipient,
 }
 
 static int unfragment(char **unfragmented, const char *received,
-                      fragment_context_t *ctx) {
-  otr4_err_t err = otr4_unfragment_message(unfragmented, ctx, received);
+                      fragment_context_t *ctx, int our_instance_tag) {
+  otr4_err_t err = otr4_unfragment_message(unfragmented, ctx, received, our_instance_tag);
   return err != OTR4_SUCCESS || ctx->status == OTR4_FRAGMENT_INCOMPLETE;
 }
 
@@ -263,7 +263,8 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   if (!conv)
     return should_ignore;
 
-  if (unfragment(&unfrag_msg, message, conv->conn->frag_ctx))
+  if (unfragment(&unfrag_msg, message, conv->conn->frag_ctx, conv->conn
+		 ->our_instance_tag))
     return should_ignore;
 
   response = otrv4_response_new();
