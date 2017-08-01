@@ -113,8 +113,6 @@ otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
     if (dh_keypair_generate(manager->our_dh)) {
       return OTR4_ERROR;
     }
-
-    return OTR4_SUCCESS;
   }
 
   return OTR4_SUCCESS;
