@@ -152,8 +152,13 @@ bool derive_chain_key_b(chain_key_t chain_key, const shared_secret_t shared) {
                                        shared);
 }
 
-otr4_err_t derive_ratchet_keys(ratchet_t *ratchet,
-                               const shared_secret_t shared) {
+otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
+                                   const shared_secret_t shared) {
+  ratchet_t *ratchet = ratchet_new();
+  if (ratchet == NULL) {
+    return OTR4_ERROR;
+  }
+
   if (!derive_root_key(ratchet->root_key, shared)) {
     return OTR4_ERROR;
   }
@@ -163,20 +168,6 @@ otr4_err_t derive_ratchet_keys(ratchet_t *ratchet,
   }
 
   if (!derive_chain_key_b(ratchet->chain_b->key, shared)) {
-    return OTR4_ERROR;
-  }
-
-  return OTR4_SUCCESS;
-}
-
-otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
-                                   const shared_secret_t shared) {
-  ratchet_t *ratchet = ratchet_new();
-  if (ratchet == NULL) {
-    return OTR4_ERROR;
-  }
-
-  if (derive_ratchet_keys(ratchet, shared)) {
     return OTR4_ERROR;
   }
 
