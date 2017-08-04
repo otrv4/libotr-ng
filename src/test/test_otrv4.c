@@ -74,7 +74,6 @@ void test_otrv4_receives_plaintext_without_ws_tag_on_start(
 
 void test_otrv4_receives_plaintext_without_ws_tag_not_on_start(
     otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  // otrv4_fixture->otr->state = OTRV4_STATE_AKE_IN_PROGRESS;
   otrv4_fixture->otr->state = OTRV4_STATE_WAITING_AUTH_I;
 
   otrv4_response_t *response = otrv4_response_new();

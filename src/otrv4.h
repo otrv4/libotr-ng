@@ -37,14 +37,13 @@ static inline void otrv3_init(void) {
 
 typedef struct connection otrv4_t; /* Forward declare */
 
-// TODO: change the number of theses constants
 typedef enum {
   OTRV4_STATE_NONE = 0,
   OTRV4_STATE_START = 1,
-  OTRV4_STATE_ENCRYPTED_MESSAGES = 3,
-  OTRV4_STATE_WAITING_AUTH_I = 5,
-  OTRV4_STATE_WAITING_AUTH_R = 6,
-  OTRV4_STATE_FINISHED = 4
+  OTRV4_STATE_ENCRYPTED_MESSAGES = 2,
+  OTRV4_STATE_WAITING_AUTH_I = 3,
+  OTRV4_STATE_WAITING_AUTH_R = 4,
+  OTRV4_STATE_FINISHED = 5
 } otrv4_state;
 
 typedef enum {
