@@ -1,23 +1,19 @@
 #include "../key_management.h"
 
-static shared_secret_t testShared = {
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-void create_sha3_512_buffer(gcry_md_hd_t *sha3_512, uint8_t *magic) {
+void create_sha3_512_buffer(shared_secret_t shared, gcry_md_hd_t *sha3_512, uint8_t *magic) {
   gcry_md_open(sha3_512, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
   gcry_md_write(*sha3_512, magic, 1);
-  gcry_md_write(*sha3_512, testShared, sizeof(shared_secret_t));
+  gcry_md_write(*sha3_512, shared, sizeof(shared_secret_t));
 }
 
 void test_derive_ratchet_keys() {
   key_manager_t *manager = malloc(sizeof(key_manager_t));
   key_manager_init(manager);
-  otrv4_assert(key_manager_new_ratchet(manager, testShared) == OTR4_SUCCESS);
+
+  shared_secret_t shared;
+  memset(shared, 0, sizeof(shared_secret_t));
+
+  otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
 
   root_key_t expected_root_key;
   chain_key_t expected_chain_key_a;
@@ -26,13 +22,13 @@ void test_derive_ratchet_keys() {
   gcry_md_hd_t sha3_512;
   uint8_t magic[3] = {0x01, 0x02, 0x03};
 
-  create_sha3_512_buffer(&sha3_512, &magic[0]);
+  create_sha3_512_buffer(shared, &sha3_512, &magic[0]);
   memcpy(expected_root_key, gcry_md_read(sha3_512, 0), sizeof(root_key_t));
   gcry_md_close(sha3_512);
-  create_sha3_512_buffer(&sha3_512, &magic[1]);
+  create_sha3_512_buffer(shared, &sha3_512, &magic[1]);
   memcpy(expected_chain_key_a, gcry_md_read(sha3_512, 0), sizeof(chain_key_t));
   gcry_md_close(sha3_512);
-  create_sha3_512_buffer(&sha3_512, &magic[2]);
+  create_sha3_512_buffer(shared, &sha3_512, &magic[2]);
   memcpy(expected_chain_key_b, gcry_md_read(sha3_512, 0), sizeof(chain_key_t));
   gcry_md_close(sha3_512);
 
@@ -40,7 +36,7 @@ void test_derive_ratchet_keys() {
   otrv4_assert_cmpmem(expected_chain_key_a, manager->current->chain_a->key, sizeof(chain_key_t));
   otrv4_assert_cmpmem(expected_chain_key_b, manager->current->chain_b->key, sizeof(chain_key_t));
 
-  free(manager->current);
+  key_manager_destroy(manager);
   free(manager);
 }
 
@@ -50,14 +46,8 @@ void test_key_manager_destroy() {
   key_manager_t *manager = malloc(sizeof(key_manager_t));
   key_manager_init(manager);
 
-  shared_secret_t shared = {
-      // TODO: is there a simpler way to write this?
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  shared_secret_t shared;
+  memset(shared, 0, sizeof(shared_secret_t));
 
   otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
 
