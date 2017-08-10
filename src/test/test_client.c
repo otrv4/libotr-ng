@@ -651,8 +651,6 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_client_free_all(2, alice, bob);
 
-  dh_free();
-
   OTR4_FREE
 }
 
@@ -813,8 +811,6 @@ void test_valid_identity_msg_in_waiting_auth_r_lower() {
   // Free memory
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_client_free_all(2, alice, bob);
-
-  dh_free();
 
   OTR4_FREE
 }
@@ -1152,7 +1148,7 @@ void test_client_sends_fragmented_message(void) {
 
   for (int i = 0; i < to_send->total; i++) {
     // Bob receives the fragments
-    frombob = NULL;
+    //frombob = NULL;
     otr4_client_receive(&frombob, &todisplay, to_send->pieces[i],
                         ALICE_IDENTITY, bob);
     otrv4_assert(!frombob);

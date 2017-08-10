@@ -442,6 +442,7 @@ static otr4_err_t receive_tagged_plaintext(otrv4_response_t *response,
                                        strlen(message))) {
       return OTR4_ERROR;
     }
+    dh_priv_key_destroy(otr->keys->our_dh);
     return start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:

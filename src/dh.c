@@ -47,11 +47,11 @@ void dh_free(void) {
   gcry_mpi_release(DH3072_MODULUS);
   DH3072_MODULUS = NULL;
 
-  gcry_mpi_release(DH3072_MODULUS_MINUS_2);
-  DH3072_MODULUS_MINUS_2 = NULL;
-
   gcry_mpi_release(DH3072_GENERATOR);
   DH3072_GENERATOR = NULL;
+
+  gcry_mpi_release(DH3072_MODULUS_MINUS_2);
+  DH3072_MODULUS_MINUS_2 = NULL;
 
   dh_initialized = 0;
 }
