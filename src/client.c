@@ -255,9 +255,13 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   otr4_err_t err = OTR4_ERROR;
   char *unfrag_msg = NULL;
   int should_ignore = 1;
-
   otrv4_response_t *response = NULL;
   otr4_conversation_t *conv = NULL;
+
+  if (!newmessage)
+    return err;
+
+  *newmessage = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
