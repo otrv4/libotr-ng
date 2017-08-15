@@ -59,7 +59,7 @@ void test_api_conversation(void) {
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;
 
-  // Bob sends a data message
+  // Alice sends a data message
   string_t to_send = NULL;
 
   for (message_id = 2; message_id < 5; message_id++) {
@@ -151,12 +151,13 @@ void test_dh_key_rotation(void) {
   // AKE HAS FINISHED.
   do_ake_fixture(alice, bob);
 
+  int ratchet_id;
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;
 
   // Bob sends a data message
   string_t to_send = NULL;
-  for (int ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
+  for (ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
     // Bob sends a data message
     to_send = send_data_msg(to_send, "hello", bob, NULL);
 
@@ -190,6 +191,12 @@ void test_dh_key_rotation(void) {
 
   otrv4_assert(alice->keys->our_dh->priv != NULL);
   otrv4_assert(bob->keys->our_dh->priv == NULL);
+
+  free(to_send);
+  to_send = NULL;
+
+  otrv4_response_free(response_to_bob);
+  otrv4_response_free(response_to_alice);
 
   otr4_client_state_free(alice_state);
   otr4_client_state_free(bob_state);
