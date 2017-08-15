@@ -69,6 +69,8 @@ void test_key_manager_destroy() {
   otrv4_assert(!manager->our_dh->pub);
   otrv4_assert(!manager->their_dh);
 
-  dh_free();
   free(manager);
+  manager = NULL;
+
+  dh_free();
 }
