@@ -1305,8 +1305,13 @@ static otr4_err_t encrypt_data_message(data_message_t *data_msg,
     return OTR4_ERROR;
   }
 
-  data_msg->enc_msg = c;
   data_msg->enc_msg_len = message_len;
+
+  data_msg->enc_msg = malloc(data_msg->enc_msg_len);
+   if (!data_msg)
+     return OTR4_ERROR;
+
+  data_msg->enc_msg = c;
 
 #ifdef DEBUG
   printf("nonce = ");

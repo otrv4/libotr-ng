@@ -76,17 +76,11 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 
 void key_manager_destroy(key_manager_t *manager) {
   ecdh_keypair_destroy(manager->our_ecdh);
-  gcry_mpi_release(manager->our_dh->pub);
-  manager->our_dh->pub = NULL;
-  gcry_mpi_release(manager->our_dh->priv);
-  manager->our_dh->priv = NULL;
-  //gcry_mpi_release(keypair->pub);
-  //dh_keypair_destroy(manager->our_dh);
+  dh_keypair_destroy(manager->our_dh);
 
   ec_point_destroy(manager->their_ecdh);
+
   gcry_mpi_release(manager->their_dh);
-  manager->their_dh = NULL;
-  //dh_mpi_release(manager->their_dh);
   manager->their_dh = NULL;
 
   ratchet_free(manager->current);

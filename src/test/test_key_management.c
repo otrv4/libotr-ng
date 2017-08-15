@@ -51,10 +51,6 @@ void test_key_manager_destroy() {
 
   otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
 
-  otrv4_assert(dh_keypair_generate(manager->our_dh) == OTR4_SUCCESS);
-
-  manager->their_dh = dh_mpi_copy(manager->our_dh->pub);
-
   otrv4_assert(manager->current);
   otrv4_assert(manager->our_dh->priv);
   otrv4_assert(manager->our_dh->pub);
@@ -72,5 +68,5 @@ void test_key_manager_destroy() {
   free(manager);
   manager = NULL;
 
-  dh_free();
+  OTR4_FREE;
 }
