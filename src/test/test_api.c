@@ -176,7 +176,6 @@ void test_dh_key_rotation(void) {
     }
 
     // Now alice ratchets
-
     to_send = send_data_msg(to_send, "hi", alice, NULL);
 
     g_assert_cmpint(alice->keys->i, ==, ratchet_id + 1);
