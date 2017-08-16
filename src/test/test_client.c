@@ -11,7 +11,6 @@
 #define ALICE_IDENTITY "alice@otr.example"
 #define BOB_IDENTITY "bob@otr.example"
 #define CHARLIE_IDENTITY "charlie@otr.example"
-#define DONT_FORCE_CREATE_CONVO false
 #define FORCE_CREATE_CONVO true
 
 void test_client_conversation_api() {
@@ -25,9 +24,9 @@ void test_client_conversation_api() {
   otrv4_assert(!alice->conversations);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
+      !FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
   otr4_conversation_t *alice_to_charlie = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, CHARLIE_IDENTITY, alice);
+      !FORCE_CREATE_CONVO, CHARLIE_IDENTITY, alice);
 
   otrv4_assert(!alice->conversations);
   otrv4_assert(!alice_to_bob);
@@ -43,9 +42,9 @@ void test_client_conversation_api() {
   otrv4_assert(alice_to_charlie);
   otrv4_assert(alice_to_charlie->conn);
 
-  alice_to_bob = otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+  alice_to_bob = otr4_client_get_conversation(!FORCE_CREATE_CONVO,
                                               BOB_IDENTITY, alice);
-  alice_to_charlie = otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+  alice_to_charlie = otr4_client_get_conversation(!FORCE_CREATE_CONVO,
                                                   CHARLIE_IDENTITY, alice);
 
   otrv4_assert(alice_to_bob);
@@ -113,9 +112,9 @@ void test_client_api() {
   otrv4_assert(!todisplay);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
+      !FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
   otr4_conversation_t *alice_to_charlie = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, CHARLIE_IDENTITY, alice);
+      !FORCE_CREATE_CONVO, CHARLIE_IDENTITY, alice);
 
   otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_START);
   otrv4_assert(alice_to_charlie->conn->state == OTRV4_STATE_START);
@@ -185,7 +184,7 @@ void test_client_api() {
   otrv4_assert(from_alice_to_bob);
 
   // We've deleted the conversation
-  otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+  otrv4_assert(!otr4_client_get_conversation(!FORCE_CREATE_CONVO,
                                              BOB_IDENTITY, alice));
 
   // TODO: Should we keep the conversation and set state to start instead?
@@ -419,7 +418,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrv4_assert(!todisplay);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
+      !FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
 
   ec_point_t stored_their_ecdh;
   ec_point_copy(stored_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
@@ -440,7 +439,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   query_msg_to_bob = NULL;
 
   otr4_conversation_t *bob_to_alice = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
+      !FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
 
   otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_WAITING_AUTH_R);
 
@@ -501,7 +500,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrv4_assert(from_alice_to_bob);
 
   // We've deleted the conversation
-  otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+  otrv4_assert(!otr4_client_get_conversation(!FORCE_CREATE_CONVO,
                                              BOB_IDENTITY, alice));
 
   // Bob receives the disconnected from Alice
@@ -556,9 +555,9 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrv4_assert(!todisplay);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
+      !FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
   otr4_conversation_t *bob_to_alice = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
+      !FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
 
   otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_START);
   otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_WAITING_AUTH_R);
@@ -619,7 +618,7 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrv4_assert(bob_last);
 
   // We've deleted the conversation
-  otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+  otrv4_assert(!otr4_client_get_conversation(!FORCE_CREATE_CONVO,
                                              ALICE_IDENTITY, bob));
 
   // TODO: is it not ok to receive disconnected in other state?
@@ -684,9 +683,9 @@ void test_valid_identity_msg_in_waiting_auth_r_lower() {
   otrv4_assert(!todisplay);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
+      !FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
   otr4_conversation_t *bob_to_alice = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
+      !FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
 
   otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_WAITING_AUTH_R);
   otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_START);
@@ -787,7 +786,7 @@ void test_valid_identity_msg_in_waiting_auth_r_lower() {
   otrv4_assert(bob_last);
 
   // We've deleted the conversation
-  otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+  otrv4_assert(!otr4_client_get_conversation(!FORCE_CREATE_CONVO,
                                              ALICE_IDENTITY, bob));
 
   // Alice receives the disconnected from Bob
@@ -848,9 +847,9 @@ void test_valid_identity_msg_in_waiting_auth_r_higher() {
   otrv4_assert(!todisplay);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
+      !FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
   otr4_conversation_t *bob_to_alice = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
+      !FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
 
   // Bob receives query message, sends identity message
   ignore = otr4_client_receive(&bobs_id, &todisplay, query_msg_to_bob,
@@ -916,7 +915,7 @@ void test_valid_identity_msg_in_waiting_auth_r_higher() {
   otrv4_assert(alice_last);
 
   // We've deleted the conversation
-  otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+  otrv4_assert(!otr4_client_get_conversation(!FORCE_CREATE_CONVO,
                                              BOB_IDENTITY, alice));
 
   // Bob receives the disconnected from Alice
@@ -971,9 +970,9 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   otrv4_assert(!todisplay);
 
   otr4_conversation_t *alice_to_bob = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
+      !FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
   otr4_conversation_t *bob_to_alice = otr4_client_get_conversation(
-      DONT_FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
+      !FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
 
   otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_START);
   otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_WAITING_AUTH_R);
@@ -1030,7 +1029,7 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   otrv4_assert(alice_last);
 
   // We've deleted the conversation
-  otrv4_assert(!otr4_client_get_conversation(DONT_FORCE_CREATE_CONVO,
+  otrv4_assert(!otr4_client_get_conversation(!FORCE_CREATE_CONVO,
                                              BOB_IDENTITY, alice));
 
   // Bob receives the disconnected from Alice
