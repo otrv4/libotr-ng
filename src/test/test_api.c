@@ -6,7 +6,8 @@
 
 #include <libotr/privkey.h>
 
-string_t send_data_msg(string_t to_send, const string_t message, otrv4_t *otr, tlv_t *tlv) {
+string_t send_data_msg(string_t to_send, const string_t message, otrv4_t *otr,
+                       tlv_t *tlv) {
   otr4_err_t err;
   err = otrv4_prepare_to_send_message(&to_send, message, tlv, otr);
   otrv4_assert(err == OTR4_SUCCESS);
@@ -15,7 +16,8 @@ string_t send_data_msg(string_t to_send, const string_t message, otrv4_t *otr, t
   return to_send;
 }
 
-string_t rec_data_msg(otrv4_response_t *response, string_t send, otrv4_t *otr, const string_t message) {
+string_t rec_data_msg(otrv4_response_t *response, string_t send, otrv4_t *otr,
+                      const string_t message) {
   otr4_err_t err;
   response = otrv4_response_new();
   err = otrv4_receive_message(response, send, otr);
@@ -340,7 +342,8 @@ void test_api_conversation_v3(void) {
   string_t to_send = NULL;
 
   // Alice sends a data message
-  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice) == OTR4_SUCCESS);
+  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice) ==
+               OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
@@ -358,7 +361,8 @@ void test_api_conversation_v3(void) {
   response_to_alice = NULL;
 
   // Bob sends a data message
-  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", NULL, bob) == OTR4_SUCCESS);
+  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", NULL, bob) ==
+               OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAMD", to_send, 9);
 

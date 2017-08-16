@@ -1,6 +1,7 @@
 #include "../key_management.h"
 
-void create_sha3_512_buffer(shared_secret_t shared, gcry_md_hd_t *sha3_512, uint8_t *magic) {
+void create_sha3_512_buffer(shared_secret_t shared, gcry_md_hd_t *sha3_512,
+                            uint8_t *magic) {
   gcry_md_open(sha3_512, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
   gcry_md_write(*sha3_512, magic, 1);
   gcry_md_write(*sha3_512, shared, sizeof(shared_secret_t));
@@ -32,9 +33,12 @@ void test_derive_ratchet_keys() {
   memcpy(expected_chain_key_b, gcry_md_read(sha3_512, 0), sizeof(chain_key_t));
   gcry_md_close(sha3_512);
 
-  otrv4_assert_cmpmem(expected_root_key, manager->current->root_key, sizeof(root_key_t));
-  otrv4_assert_cmpmem(expected_chain_key_a, manager->current->chain_a->key, sizeof(chain_key_t));
-  otrv4_assert_cmpmem(expected_chain_key_b, manager->current->chain_b->key, sizeof(chain_key_t));
+  otrv4_assert_cmpmem(expected_root_key, manager->current->root_key,
+                      sizeof(root_key_t));
+  otrv4_assert_cmpmem(expected_chain_key_a, manager->current->chain_a->key,
+                      sizeof(chain_key_t));
+  otrv4_assert_cmpmem(expected_chain_key_b, manager->current->chain_b->key,
+                      sizeof(chain_key_t));
 
   key_manager_destroy(manager);
   free(manager);

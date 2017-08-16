@@ -164,7 +164,7 @@ static bool is_fragment(const string_t message) {
 otr4_err_t otr4_unfragment_message(char **unfrag_msg,
                                    fragment_context_t *context,
                                    const string_t message,
-				   const int our_instance_tag) {
+                                   const int our_instance_tag) {
   if (!is_fragment(message)) {
     *unfrag_msg = otrv4_strdup(message);
     initialize_fragment_context(context);

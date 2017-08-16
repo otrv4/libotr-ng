@@ -58,7 +58,9 @@ typedef enum {
   OTRV4_VERSION_4 = 4
 } otrv4_version_t;
 
-typedef struct { int allows; } otrv4_policy_t;
+typedef struct {
+  int allows;
+} otrv4_policy_t;
 
 // TODO: This is a single instance conversation. Make it multi-instance.
 typedef struct otr4_conversation_state_t {
@@ -141,8 +143,9 @@ otr4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
 otr4_err_t otrv4_receive_message(otrv4_response_t *response,
                                  const string_t message, otrv4_t *otr);
 
-otr4_err_t otrv4_prepare_to_send_message(string_t *to_send, const string_t message,
-                              tlv_t *tlvs, otrv4_t *otr);
+otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
+                                         const string_t message, tlv_t *tlvs,
+                                         otrv4_t *otr);
 
 otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr);
 

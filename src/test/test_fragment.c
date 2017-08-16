@@ -66,7 +66,8 @@ void test_defragment_single_fragment(void) {
   context = fragment_context_new();
 
   char *unfrag = NULL;
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, msg, 2) == OTR4_SUCCESS);
+  otrv4_assert(otr4_unfragment_message(&unfrag, context, msg, 2) ==
+               OTR4_SUCCESS);
 
   g_assert_cmpint(context->N, ==, 1);
   g_assert_cmpint(context->K, ==, 1);

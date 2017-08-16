@@ -102,8 +102,8 @@ void test_otrv4_receives_plaintext_with_ws_tag(otrv4_fixture_t *otrv4_fixture,
   otrv4_response_free(response);
 }
 
-void test_otrv4_receives_plaintext_with_ws_tag_after_text(otrv4_fixture_t *otrv4_fixture,
-                                               gconstpointer data) {
+void test_otrv4_receives_plaintext_with_ws_tag_after_text(
+    otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_response_t *response = otrv4_response_new();
   string_t message =
       "Some random invitation text. \t  \t\t\t\t \t \t \t    \t\t \t  ";

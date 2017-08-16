@@ -74,7 +74,7 @@ otr4_messaging_client_t *otr4_messaging_client_new(otr4_userstate_t *state,
   }
 
   list_element_t *e =
-    list_get(client_id, state->clients, find_client_by_client_id);
+      list_get(client_id, state->clients, find_client_by_client_id);
 
   if (e) {
     return e->data;

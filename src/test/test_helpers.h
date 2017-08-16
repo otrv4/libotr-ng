@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../debug.h"
 #include "../client.h"
+#include "../debug.h"
 #include "../str.h"
 
 #define WITH_FIXTURE(_p, _c, _t, _f)                                           \

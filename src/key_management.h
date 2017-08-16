@@ -48,7 +48,9 @@ typedef struct {
   list_element_t *old_mac_keys;
 } key_manager_t;
 
-typedef struct { const chain_link_t *sending, *receiving; } message_chain_t;
+typedef struct {
+  const chain_link_t *sending, *receiving;
+} message_chain_t;
 
 void key_manager_init(key_manager_t *manager);
 

@@ -177,7 +177,8 @@ static int otrv4_send_message(char **newmsg, const char *message,
   if (!conv)
     return 1;
 
-  otr4_err_t error = otrv4_prepare_to_send_message(newmsg, message, NULL, conv->conn);
+  otr4_err_t error =
+      otrv4_prepare_to_send_message(newmsg, message, NULL, conv->conn);
   if (error == OTR4_STATE_NOT_ENCRYPTED)
     return OTR4_CLIENT_ERROR_NOT_ENCRYPTED;
   else
@@ -245,7 +246,8 @@ int otr4_client_smp_respond(char **tosend, const char *recipient,
 
 static int unfragment(char **unfragmented, const char *received,
                       fragment_context_t *ctx, int our_instance_tag) {
-  otr4_err_t err = otr4_unfragment_message(unfragmented, ctx, received, our_instance_tag);
+  otr4_err_t err =
+      otr4_unfragment_message(unfragmented, ctx, received, our_instance_tag);
   return err != OTR4_SUCCESS || ctx->status == OTR4_FRAGMENT_INCOMPLETE;
 }
 
@@ -267,8 +269,8 @@ int otr4_client_receive(char **newmessage, char **todisplay,
   if (!conv)
     return should_ignore;
 
-  if (unfragment(&unfrag_msg, message, conv->conn->frag_ctx, conv->conn
-		 ->our_instance_tag))
+  if (unfragment(&unfrag_msg, message, conv->conn->frag_ctx,
+                 conv->conn->our_instance_tag))
     return should_ignore;
 
   response = otrv4_response_new();

@@ -290,7 +290,7 @@ static otr4_err_t message_to_display_without_tag(otrv4_response_t *response,
     return OTR4_ERROR;
   }
 
-  char * found_at = strstr(message, tag_base);
+  char *found_at = strstr(message, tag_base);
   if (!found_at) {
     return OTR4_ERROR;
   }
@@ -1308,8 +1308,8 @@ static otr4_err_t encrypt_data_message(data_message_t *data_msg,
   data_msg->enc_msg_len = message_len;
 
   data_msg->enc_msg = malloc(data_msg->enc_msg_len);
-   if (!data_msg)
-     return OTR4_ERROR;
+  if (!data_msg)
+    return OTR4_ERROR;
 
   data_msg->enc_msg = c;
 
@@ -1463,8 +1463,10 @@ static otr4_err_t append_tlvs(uint8_t **dst, size_t *dstlen,
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t otrv4_prepare_to_send_data_message(string_t *to_send, const string_t message,
-                                     tlv_t *tlvs, otrv4_t *otr) {
+static otr4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
+                                                     const string_t message,
+                                                     tlv_t *tlvs,
+                                                     otrv4_t *otr) {
   uint8_t *msg = NULL;
   size_t msg_len = 0;
 
@@ -1483,8 +1485,9 @@ static otr4_err_t otrv4_prepare_to_send_data_message(string_t *to_send, const st
   return err;
 }
 
-otr4_err_t otrv4_prepare_to_send_message(string_t *to_send, const string_t message,
-                              tlv_t *tlvs, otrv4_t *otr) {
+otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
+                                         const string_t message, tlv_t *tlvs,
+                                         otrv4_t *otr) {
   if (!otr)
     return OTR4_ERROR;
 
@@ -1508,7 +1511,8 @@ static otr4_err_t otrv4_close_v4(string_t *to_send, otrv4_t *otr) {
   if (!disconnected)
     return OTR4_ERROR;
 
-  otr4_err_t err = otrv4_prepare_to_send_message(to_send, "", disconnected, otr);
+  otr4_err_t err =
+      otrv4_prepare_to_send_message(to_send, "", disconnected, otr);
   otrv4_tlv_free(disconnected);
 
   forget_our_keys(otr);
@@ -1657,8 +1661,8 @@ static otr4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
   handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
                       otr->conversation);
 
-  if (smp_reply &&
-      otrv4_prepare_to_send_message(to_send, "", smp_reply, otr) == OTR4_SUCCESS) {
+  if (smp_reply && otrv4_prepare_to_send_message(to_send, "", smp_reply, otr) ==
+                       OTR4_SUCCESS) {
     err = OTR4_SUCCESS;
   }
 
