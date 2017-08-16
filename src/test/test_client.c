@@ -941,8 +941,6 @@ void test_valid_identity_msg_in_waiting_auth_r_higher() {
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_client_free_all(2, alice, bob);
 
-  dh_free();
-
   OTR4_FREE
 }
 
@@ -1060,8 +1058,6 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_client_free_all(2, alice, bob);
 
-  dh_free();
-
   OTR4_FREE
 }
 
@@ -1164,4 +1160,6 @@ void test_client_sends_fragmented_message(void) {
   otr4_message_free(to_send);
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_client_free_all(2, alice, bob);
+
+  OTR4_FREE;
 }
