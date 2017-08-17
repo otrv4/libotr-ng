@@ -587,7 +587,7 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   free(bobs_auth_i);
   bobs_auth_i = NULL;
 
-  // Alice resends Auth-R msg
+  // Alice resends Auth-R message
   ignore = otr4_client_receive(&alices_auth_r, &todisplay, bobs_id,
                                BOB_IDENTITY, alice);
   free(bobs_id);
@@ -675,7 +675,7 @@ void test_valid_identity_msg_in_waiting_auth_r_lower() {
        *bob_last = NULL, *alice_last = NULL;
 
   // Alice receives query message, sends identity message
-  // Do not free querry message
+  // Do not free query message
   ignore = otr4_client_receive(&alices_id, &todisplay, query_msg_to_alice,
                                BOB_IDENTITY, alice);
   otrv4_assert(ignore);
@@ -747,7 +747,7 @@ void test_valid_identity_msg_in_waiting_auth_r_lower() {
   // TODO: check or destroy this case
   bob_to_alice->conn->state = OTRV4_STATE_START;
   // Bob receives an identity message. Cannot send anything else as it
-  // is on OTRV4_WAINTING_FOR_AUTH-R. Here the state is manually changed.
+  // is on OTRV4_WAITING_FOR_AUTH-R. Here the state is manually changed.
   ignore = otr4_client_receive(&bobs_auth_r, &todisplay, alices_id,
                                ALICE_IDENTITY, bob);
   otrv4_assert(bobs_auth_r);
