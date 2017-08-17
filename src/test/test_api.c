@@ -21,12 +21,15 @@ string_t rec_data_msg(otrv4_response_t *response, string_t send, otrv4_t *otr,
   otr4_err_t err;
   response = otrv4_response_new();
   err = otrv4_receive_message(response, send, otr);
+
   otrv4_assert(err == OTR4_SUCCESS);
+
   free(send);
   send = NULL;
 
   otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);
   otrv4_assert(response->to_send == NULL);
+
   otrv4_response_free(response);
   response = NULL;
 
@@ -109,6 +112,9 @@ void test_api_conversation(void) {
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
   otrv4_tlv_free(tlvs);
 
+  otrv4_response_free(response_to_bob);
+  response_to_bob = NULL;
+
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
@@ -120,6 +126,7 @@ void test_api_conversation(void) {
   otrv4_assert(response_to_bob->tlvs);
   g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRV4_TLV_PADDING);
   g_assert_cmpint(response_to_bob->tlvs->len, ==, 10);
+
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 

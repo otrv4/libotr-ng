@@ -57,8 +57,6 @@ void test_client_conversation_api() {
   otr4_client_state_free(alice_state);
   otr4_client_free(alice);
 
-  dh_free();
-
   OTR4_FREE
 }
 
@@ -207,8 +205,6 @@ void test_client_api() {
   otrv4_client_state_free_all(3, alice_state, bob_state, charlie_state);
   otrv4_client_free_all(3, alice, bob, charlie);
 
-  dh_free();
-
   OTR4_FREE
 }
 
@@ -238,8 +234,6 @@ void test_client_get_our_fingerprint() {
 
   otr4_client_state_free(client_state);
   otr4_client_free(client);
-
-  dh_free();
 
   OTR4_FREE
 }
@@ -327,8 +321,10 @@ void test_conversation_with_multiple_locations() {
   free(frombob);
   frombob = NULL;
 
-  // Bob sends a message with orginal intance tag
-  otr4_client_send(&frombob, "hello", ALICE_IDENTITY, bob);
+  char *message = "hello";
+
+  // Bob sends a message with orginal instance tag
+  otr4_client_send(&frombob, message, ALICE_IDENTITY, bob);
 
   // Alice receives the message.
   ignore = otr4_client_receive(&from_alice_to_bob, &todisplay, frombob,
@@ -379,8 +375,6 @@ void test_conversation_with_multiple_locations() {
   otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_client_free_all(2, alice, bob);
-
-  dh_free();
 
   OTR4_FREE
 }
@@ -523,8 +517,6 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   // Free memory
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_client_free_all(2, alice, bob);
-
-  dh_free();
 
   OTR4_FREE
 }
