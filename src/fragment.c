@@ -29,6 +29,8 @@ void otr4_message_free(otr4_message_to_send_t *message) {
   free(message->pieces);
   message->pieces = NULL;
 
+  message->total = 0;
+
   free(message);
 }
 
@@ -64,7 +66,8 @@ otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
   if (fragments->total > 65535)
     return OTR4_ERROR;
 
-  pieces = malloc(fragments->total * sizeof(string_t));
+  size_t pieces_len = fragments->total * sizeof(string_t);
+  pieces = malloc(pieces_len);
   if (!pieces)
     return OTR4_ERROR;
 
@@ -85,6 +88,9 @@ otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
       for (i = 0; i < fragments->total; i++) {
         free(pieces[i]);
       }
+
+      free(pieces);
+      pieces = NULL;
       return OTR4_ERROR;
     }
 
@@ -97,7 +103,11 @@ otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
       for (i = 0; i < fragments->total; i++) {
         free(pieces[i]);
       }
+
       free(piece_data);
+      free(pieces);
+      pieces = NULL;
+
       return OTR4_ERROR;
     }
 
@@ -114,6 +124,7 @@ otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
   }
 
   fragments->pieces = pieces;
+
   return OTR4_SUCCESS;
 }
 

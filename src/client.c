@@ -205,9 +205,9 @@ int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
   if (!conv)
     return 1;
 
-  uint32_t ourtag = conv->conn->our_instance_tag;
-  uint32_t theirtag = conv->conn->their_instance_tag;
-  err = otr4_fragment_message(mms, *newmessage, ourtag, theirtag, to_send);
+  uint32_t our_tag = conv->conn->our_instance_tag;
+  uint32_t their_tag = conv->conn->their_instance_tag;
+  err = otr4_fragment_message(mms, *newmessage, our_tag, their_tag, to_send);
   free(to_send);
 
   return err != OTR4_SUCCESS;
