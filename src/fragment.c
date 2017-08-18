@@ -54,15 +54,16 @@ void fragment_context_free(fragment_context_t *context) {
   free(context);
 }
 
-otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
+otr4_err_t otr4_fragment_message(int max_size,
+                                 otr4_message_to_send_t *fragments,
                                  int our_instance, int their_instance,
                                  const string_t message) {
-  size_t msglen = strlen(message);
-  size_t limit_piece = mms - FRAGMENT_HEADER_LEN;
+  size_t msg_len = strlen(message);
+  size_t limit_piece = max_size - FRAGMENT_HEADER_LEN;
   string_t *pieces;
   int piece_len = 0;
 
-  fragments->total = ((msglen - 1) / (mms - FRAGMENT_HEADER_LEN)) + 1;
+  fragments->total = ((msg_len - 1) / (max_size - FRAGMENT_HEADER_LEN)) + 1;
   if (fragments->total > 65535)
     return OTR4_ERROR;
 
@@ -71,14 +72,14 @@ otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
   if (!pieces)
     return OTR4_ERROR;
 
-  int curfrag;
-  for (curfrag = 1; curfrag <= fragments->total; curfrag++) {
+  int current_frag;
+  for (current_frag = 1; current_frag <= fragments->total; current_frag++) {
     int index_len = 0;
     string_t piece = NULL;
     string_t piece_data = NULL;
 
-    if (msglen - index_len < limit_piece)
-      piece_len = msglen - index_len;
+    if (msg_len - index_len < limit_piece)
+      piece_len = msg_len - index_len;
     else
       piece_len = limit_piece;
 
@@ -112,11 +113,11 @@ otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
     }
 
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN, FRAGMENT_FORMAT,
-             our_instance, their_instance, curfrag, fragments->total,
+             our_instance, their_instance, current_frag, fragments->total,
              piece_data);
     piece[piece_len + FRAGMENT_HEADER_LEN] = 0;
 
-    pieces[curfrag - 1] = piece;
+    pieces[current_frag - 1] = piece;
 
     free(piece_data);
     index_len += piece_len;
