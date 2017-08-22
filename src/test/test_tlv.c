@@ -10,7 +10,6 @@ void test_tlv_new() {
 	otrv4_assert(tlv->len == len);
 	otrv4_assert(tlv->next == NULL);
 	otrv4_assert_cmpmem(tlv->data, data, len);
-	otrv4_assert(!tlv->data[len+1]);
 
 	otrv4_tlv_free(tlv);
 }
