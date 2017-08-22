@@ -13,3 +13,46 @@ void test_tlv_new() {
 
 	otrv4_tlv_free(tlv);
 }
+
+void test_tlv_parse() {
+	uint8_t msg1[7] = {0x01, 0x02, 0x00, 0x03, 0x08, 0x05, 0x09};
+	uint8_t msg2[4] = {0x01, 0x02, 0x00, 0x00};
+	uint8_t msg3[15] = {0x03, 0x04, 0x00, 0x03, 0x08, 0x05, 0x09, 0xac, 0x34, 0x00, 0xff, 0xac, 0x04, 0x05, 0x06};
+	uint8_t msg4[15] = {0x03, 0x04, 0x00, 0x03, 0x08, 0x05, 0x09, 0xac, 0x34, 0x00, 0x04, 0xac, 0x04, 0x05, 0x06};
+
+	uint8_t data2[3] = {0x08, 0x05, 0x09};
+	uint8_t data3[4] = {0xac, 0x04, 0x05, 0x06};
+
+	tlv_t *tlv1 = otrv4_parse_tlvs(msg1, sizeof(msg1));
+	otrv4_assert(tlv1->type == OTRV4_TLV_NONE);
+	otrv4_assert(tlv1->len == sizeof(data2));
+	otrv4_assert(tlv1->next == NULL);
+	otrv4_assert_cmpmem(tlv1->data, data2, sizeof(data2));
+
+	tlv_t *tlv2 = otrv4_parse_tlvs(msg2, sizeof(msg2));
+	otrv4_assert(tlv2->type == OTRV4_TLV_NONE);
+	otrv4_assert(tlv2->len == 0);
+	otrv4_assert(tlv2->next == NULL);
+
+	tlv_t *tlv3 = otrv4_parse_tlvs(msg3, sizeof(msg3));
+	otrv4_assert(tlv3->type == OTRV4_TLV_NONE);
+	otrv4_assert(tlv3->len == sizeof(data2));
+	otrv4_assert(tlv3->next == NULL);
+	otrv4_assert_cmpmem(tlv3->data, data2, sizeof(data2));
+
+	tlv_t *tlv4 = otrv4_parse_tlvs(msg4, sizeof(msg4));
+	otrv4_assert(tlv4->type == OTRV4_TLV_NONE);
+	otrv4_assert(tlv4->len == sizeof(data2));
+	otrv4_assert(tlv4->next != NULL);
+	otrv4_assert_cmpmem(tlv4->data, data2, sizeof(data2));
+
+	otrv4_assert(tlv4->next->type == OTRV4_TLV_NONE);
+	otrv4_assert(tlv4->next->len == sizeof(data3));
+	otrv4_assert_cmpmem(tlv4->next->data, data3, sizeof(data3));
+
+	otrv4_tlv_free(tlv1);
+	otrv4_tlv_free(tlv2);
+	otrv4_tlv_free(tlv3);
+	otrv4_tlv_free(tlv4->next);
+	otrv4_tlv_free(tlv4);
+}

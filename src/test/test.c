@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/smp/generate_validate_msg_4", test_smp_validates_msg_4);
 
   g_test_add_func("/tlv/new", test_tlv_new);
-  // g_test_add_func("/tlv/parse", test_tlv_parse);
+  g_test_add_func("/tlv/parse", test_tlv_parse);
   // g_test_add_func("/tlv/free", test_tlv_free);
   // g_test_add_func("/tlv/new_padding", test_tlv_new_padding);
   // g_test_add_func("/tlv/new_disconnected", test_tlv_new_disconnected);
