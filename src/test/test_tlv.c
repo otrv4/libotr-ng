@@ -50,9 +50,5 @@ void test_tlv_parse() {
 	otrv4_assert(tlv4->next->len == sizeof(data3));
 	otrv4_assert_cmpmem(tlv4->next->data, data3, sizeof(data3));
 
-	otrv4_tlv_free(tlv1);
-	otrv4_tlv_free(tlv2);
-	otrv4_tlv_free(tlv3);
-	otrv4_tlv_free(tlv4->next);
-	otrv4_tlv_free(tlv4);
+	otrv4_tlv_free_all(5, tlv1, tlv2, tlv3, tlv4->next, tlv4);
 }
