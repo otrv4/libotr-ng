@@ -21,6 +21,7 @@
 #include "test_otrv4.c"
 #include "test_serialize.c"
 #include "test_smp.c"
+#include "test_tlv.c"
 #include "test_user_profile.c"
 #include "test_messaging.c"
 
@@ -107,6 +108,12 @@ int main(int argc, char **argv) {
   g_test_add_func("/smp/generate_validate_msg_2", test_smp_validates_msg_2);
   g_test_add_func("/smp/generate_validate_msg_3", test_smp_validates_msg_3);
   g_test_add_func("/smp/generate_validate_msg_4", test_smp_validates_msg_4);
+
+  g_test_add_func("/tlv/new", test_tlv_new);
+  // g_test_add_func("/tlv/parse", test_tlv_parse);
+  // g_test_add_func("/tlv/free", test_tlv_free);
+  // g_test_add_func("/tlv/new_padding", test_tlv_new_padding);
+  // g_test_add_func("/tlv/new_disconnected", test_tlv_new_disconnected);
 
   // g_test_add_func("/otrv4/starts_protocol", test_otrv4_starts_protocol);
   // g_test_add("/otrv4/version_supports_v34", otrv4_fixture_t, NULL,
