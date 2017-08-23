@@ -54,8 +54,8 @@ void test_tlv_parse() {
 }
 
 void test_tlv_new_padding() {
-	const uint16_t len = 2;
-	uint8_t data[len] = {0x00, 0x00};
+	uint16_t len = 2;
+	uint8_t data[2] = {0x00, 0x00};
 
 	tlv_t *tlv = otrv4_padding_tlv_new(len);
 
