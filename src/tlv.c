@@ -87,14 +87,13 @@ tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
 }
 
 tlv_t *otrv4_tlv_free(tlv_t *tlv) {
-  if (!tlv)
-    return NULL;
-
-  free(tlv->data);
-  tlv->data = NULL;
-  free(tlv);
-
-  // TODO: free nexts
+  while (tlv) {
+    tlv_t *next = tlv->next;
+    free(tlv->data);
+    tlv->data = NULL;
+    free(tlv);
+    tlv = next;
+  }
 
   return NULL;
 }
