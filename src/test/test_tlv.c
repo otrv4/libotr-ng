@@ -52,3 +52,17 @@ void test_tlv_parse() {
 
 	otrv4_tlv_free_all(4, tlv1, tlv2, tlv3, tlv4);
 }
+
+void test_tlv_new_padding() {
+	const uint16_t len = 2;
+	uint8_t data[len] = {0x00, 0x00};
+
+	tlv_t *tlv = otrv4_padding_tlv_new(len);
+
+	otrv4_assert(tlv->type == OTRV4_TLV_PADDING);
+	otrv4_assert(tlv->len == len);
+	otrv4_assert(tlv->next == NULL);
+	otrv4_assert_cmpmem(tlv->data, data, len);
+
+	otrv4_tlv_free(tlv);
+}
