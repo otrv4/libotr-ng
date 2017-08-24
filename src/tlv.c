@@ -106,12 +106,13 @@ tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
   tlv->type = type;
   tlv->len = len;
   tlv->next = NULL;
-  tlv->data = malloc(tlv->len);
+  tlv->data = NULL;
 
-  if (!tlv->data)
-    return otrv4_tlv_free(tlv);
+  if (data) {
+    tlv->data = malloc(tlv->len);
+    memcpy(tlv->data, data, tlv->len);
+  }
 
-  memcpy(tlv->data, data, tlv->len);
   return tlv;
 }
 
