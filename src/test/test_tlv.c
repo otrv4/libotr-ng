@@ -66,3 +66,14 @@ void test_tlv_new_padding() {
 
 	otrv4_tlv_free(tlv);
 }
+
+void test_tlv_new_disconnected() {
+	tlv_t *tlv = otrv4_disconnected_tlv_new();
+
+	otrv4_assert(tlv->type == OTRV4_TLV_DISCONNECTED);
+	otrv4_assert(tlv->len == 0);
+	otrv4_assert(tlv->next == NULL);
+	otrv4_assert(tlv->data == NULL);
+
+	otrv4_tlv_free(tlv);
+}
