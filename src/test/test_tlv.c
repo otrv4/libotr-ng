@@ -9,11 +9,7 @@
 		} else { \
 			otrv4_assert(tlv->next == NULL); \
 		} \
-		if (tlv_data == NULL) { \
-			otrv4_assert(tlv->data == NULL); \
-		} else { \
-			otrv4_assert_cmpmem(tlv->data, tlv_data, tlv_len); \
-		} \
+		otrv4_assert_cmpmem(tlv->data, tlv_data, tlv_len); \
 } while (0)
 
 static bool next_exists = true;
@@ -70,7 +66,10 @@ void test_tlv_new_padding() {
 void test_tlv_new_disconnected() {
 	tlv_t *tlv = otrv4_disconnected_tlv_new();
 
-	assert_tlv_structure(tlv, OTRV4_TLV_DISCONNECTED, 0, NULL, !next_exists);
+	otrv4_assert(tlv->type == OTRV4_TLV_DISCONNECTED); \
+	otrv4_assert(tlv->len == 0); \
+	otrv4_assert(tlv->next != NULL); \
+	otrv4_assert(tlv->data == NULL);
 
 	otrv4_tlv_free(tlv);
 }
