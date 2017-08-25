@@ -9,7 +9,11 @@
 		} else { \
 			otrv4_assert(tlv->next == NULL); \
 		} \
-		otrv4_assert_cmpmem(tlv->data, tlv_data, tlv_len); \
+		if (tlv_data == NULL) { \
+			otrv4_assert(tlv->data == NULL); \
+		} else { \
+			otrv4_assert_cmpmem(tlv->data, tlv_data, tlv_len); \
+		} \
 } while (0)
 
 static bool next_exists = true;
