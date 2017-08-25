@@ -68,7 +68,7 @@ void test_tlv_new_disconnected() {
 
 	otrv4_assert(tlv->type == OTRV4_TLV_DISCONNECTED); \
 	otrv4_assert(tlv->len == 0); \
-	otrv4_assert(tlv->next != NULL); \
+	otrv4_assert(tlv->next == NULL); \
 	otrv4_assert(tlv->data == NULL);
 
 	otrv4_tlv_free(tlv);
