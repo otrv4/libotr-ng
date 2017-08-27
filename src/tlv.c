@@ -99,9 +99,7 @@ void tlv_foreach(tlv_t *head) {
   }
 }
 
-void otrv4_tlv_free(tlv_t *tlv) {
-  tlv_foreach(tlv);
-}
+void otrv4_tlv_free(tlv_t *tlv) { tlv_foreach(tlv); }
 
 tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
   tlv_t *tlv = malloc(sizeof(tlv_t));
