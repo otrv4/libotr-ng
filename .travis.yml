@@ -31,8 +31,8 @@ before_script:
   - mkdir .deps
   - curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
   - pushd .deps/libgpg-error-1.26 && ./configure && make && sudo make install && popd
-  - curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.7.6.tar.bz2 | tar xjf - -C .deps
-  - pushd .deps/libgcrypt-1.7.6 && ./configure && make && sudo make install && popd
+  - curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps
+  - pushd .deps/libgcrypt-1.8.1 && ./configure && make && sudo make install && popd
   - git clone --depth=1 https://bugs.otr.im/lib/libotr.git .deps/libotr
   - pushd .deps/libotr && ./bootstrap && ./configure && make && sudo make install && popd
   - git clone --depth=1 https://github.com/jedisct1/libsodium.git .deps/libsodium
