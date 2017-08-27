@@ -960,6 +960,8 @@ static otr4_err_t decrypt_data_msg(otrv4_response_t *response,
     return OTR4_SUCCESS;
   }
 
+  // TODO: correctly free
+  otrv4_tlv_free(*tlvs);
   return OTR4_ERROR;
 }
 
