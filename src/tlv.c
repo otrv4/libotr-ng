@@ -86,16 +86,21 @@ tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
   return ret;
 }
 
-tlv_t *otrv4_tlv_free(tlv_t *tlv) {
-  while (tlv) {
-    tlv_t *next = tlv->next;
-    free(tlv->data);
-    tlv->data = NULL;
-    free(tlv);
-    tlv = next;
-  }
+void tlv_foreach(tlv_t *head) {
+  tlv_t *current = head;
+  while (current) {
+    tlv_t *next = current->next;
 
-  return NULL;
+    free(current->data);
+    current->data = NULL;
+    free(current);
+
+    current = next;
+  }
+}
+
+void otrv4_tlv_free(tlv_t *tlv) {
+  tlv_foreach(tlv);
 }
 
 tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
@@ -111,7 +116,8 @@ tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
   if (len != 0) {
     tlv->data = malloc(tlv->len);
     if (!tlv->data) {
-      return otrv4_tlv_free(tlv);
+      otrv4_tlv_free(tlv);
+      return NULL;
     }
     memcpy(tlv->data, data, tlv->len);
   }

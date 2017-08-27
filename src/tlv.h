@@ -22,7 +22,7 @@ typedef struct tlv_s {
   struct tlv_s *next;
 } tlv_t;
 
-tlv_t *otrv4_tlv_free(tlv_t *tlv);
+void otrv4_tlv_free(tlv_t *tlv);
 tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data);
 
 tlv_t *otrv4_padding_tlv_new(size_t len);
