@@ -149,6 +149,8 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   otrv4_assert(!valid_dake_identity_message(invalid_identity_message));
 
   user_profile_free(invalid_profile);
+  dake_identity_message_free(invalid_identity_message);
+
   OTR4_FREE;
 }
 
