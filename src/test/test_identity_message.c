@@ -142,13 +142,25 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   dh_keypair_destroy(dh);
   dake_identity_message_free(identity_message);
 
+  ecdh_keypair_t invalid_ecdh[1];
+  dh_keypair_t invalid_dh;
+
+  uint8_t invalid_sym[ED448_PRIVATE_BYTES] = {1};
+  ecdh_keypair_generate(invalid_ecdh, invalid_sym);
+  otrv4_assert(dh_keypair_generate(invalid_dh) == OTR4_SUCCESS);
+
   user_profile_t *invalid_profile = user_profile_new("2");
   dake_identity_message_t *invalid_identity_message =
       dake_identity_message_new(invalid_profile);
 
+  ec_point_copy(invalid_identity_message->Y, invalid_ecdh->pub);
+  invalid_identity_message->B = dh_mpi_copy(invalid_dh->pub);
+
   otrv4_assert(!valid_dake_identity_message(invalid_identity_message));
 
   user_profile_free(invalid_profile);
+  ecdh_keypair_destroy(invalid_ecdh);
+  dh_keypair_destroy(invalid_dh);
   dake_identity_message_free(invalid_identity_message);
 
   OTR4_FREE;
