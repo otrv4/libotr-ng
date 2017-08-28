@@ -20,7 +20,7 @@ dake_identity_message_new(const user_profile_t *profile) {
 
   dake_identity_message_t *identity_message =
       malloc(sizeof(dake_identity_message_t));
-  if (identity_message == NULL) {
+  if (!identity_message) {
     return NULL;
   }
 
@@ -174,17 +174,18 @@ bool not_expired(time_t expires) {
   return false;
 }
 
-// TODO: Check if the profile contains any version other than supported by this
-// messaging protocol (that is, wire protocol v4 and v3).
 static bool no_rollback_detected(const char *versions) {
   while (*versions) {
-    if (*versions != '3' && *versions != '4')
+    if (*versions == '2' || *versions == '1')
       return false;
 
-    versions++;
+    if (*versions == '3' || *versions == '4') {
+      versions++;
+      return true;
+    }
   }
 
-  return true;
+  return false;
 }
 
 bool valid_dake_identity_message(

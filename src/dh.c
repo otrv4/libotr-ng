@@ -127,6 +127,10 @@ otr4_err_t dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer,
 
 bool dh_mpi_valid(dh_mpi_t mpi) {
   /* Check that their_pub is in range */
+  if (mpi == NULL) {
+    return false;
+  }
+
   return !(gcry_mpi_cmp_ui(mpi, 2) < 0 ||
            gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0);
 }

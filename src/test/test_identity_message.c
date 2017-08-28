@@ -141,7 +141,15 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   ecdh_keypair_destroy(ecdh);
   dh_keypair_destroy(dh);
   dake_identity_message_free(identity_message);
-  dh_free();
+
+  user_profile_t *invalid_profile = user_profile_new("2");
+  dake_identity_message_t *invalid_identity_message =
+      dake_identity_message_new(invalid_profile);
+
+  otrv4_assert(!valid_dake_identity_message(invalid_identity_message));
+
+  user_profile_free(invalid_profile);
+  OTR4_FREE;
 }
 
 void test_dake_identity_message_Y_doesnt_belong_to_curve(
