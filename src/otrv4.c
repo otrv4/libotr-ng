@@ -1010,15 +1010,15 @@ static tlv_t *otrv4_process_smp(otr4_smp_event_t event, smp_context_t smp,
 }
 
 static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
-  if (OTRV4_TLV_NONE == tlv->type) {
+  if (tlv->type == OTRV4_TLV_NONE) {
     return NULL;
   }
 
-  if (OTRV4_TLV_PADDING == tlv->type) {
+  if (tlv->type == OTRV4_TLV_PADDING) {
     return NULL;
   }
 
-  if (OTRV4_TLV_DISCONNECTED == tlv->type) {
+  if (tlv->type ==  OTRV4_TLV_DISCONNECTED) {
     forget_our_keys(otr);
     otr->state = OTRV4_STATE_FINISHED;
     gone_insecure_cb(otr->conversation);
