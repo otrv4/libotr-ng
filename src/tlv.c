@@ -23,9 +23,11 @@ static tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
   size_t w = 0;
   tlv_t *tlv = NULL;
   uint16_t tlv_type = -1;
-  const uint8_t *cursor = src;
+  const uint8_t *start = src + *written;
+  const uint8_t *cursor = start;
 
   do {
+
     tlv = malloc(sizeof(tlv_t));
     if (!tlv)
       continue;
@@ -55,10 +57,10 @@ static tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
     len -= tlv->len;
     cursor += tlv->len;
 
-    if (written)
-      *written = cursor - src;
+    *written += cursor - start;
 
     tlv->next = NULL;
+
     return tlv;
   } while (0);
 
@@ -66,21 +68,36 @@ static tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
   return NULL;
 }
 
+static tlv_t *create_tlv_chain(tlv_t *head, tlv_t *tlv) {
+  if (!head)
+    return tlv;
+
+  tlv_t *current = head;
+
+  while (current->next)
+    current = current->next;
+
+  tlv_t *last_tlv = current;
+  last_tlv -> next = tlv;
+
+  return head;
+}
+
 tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
   size_t written = 0;
   tlv_t *tlv = NULL, *ret = NULL;
 
-  while (len > 0) {
-    tlv = extract_tlv(src + written, len, &written);
+  int data_to_parse = len;
+
+  while (data_to_parse > 0) {
+
+    tlv = extract_tlv(src, data_to_parse, &written);
     if (!tlv)
       break;
 
-    len -= written;
+    ret = create_tlv_chain(ret, tlv);
 
-    if (ret)
-      ret->next = tlv; // TODO: Why not ret = ret->next?
-    else
-      ret = tlv;
+    data_to_parse = len - written;
   }
 
   return ret;
