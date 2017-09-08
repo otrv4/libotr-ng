@@ -116,5 +116,5 @@ void test_create_tlv_chain() {
   assert_tlv_structure(tlvs->next, OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data), smp3_data, next_exists);
   assert_tlv_structure(tlvs->next->next, OTRV4_TLV_PADDING, sizeof(pad_data), pad_data, !next_exists);
 
-  otrv4_tlv_free(tlv_pad);
+  otrv4_tlv_free(tlvs);
 }
