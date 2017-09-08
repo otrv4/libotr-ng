@@ -30,4 +30,6 @@ tlv_t *otrv4_disconnected_tlv_new(void);
 
 tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len);
 
+tlv_t *create_tlv_chain(tlv_t *tlvs, tlv_t *new_tlv);
+
 #endif

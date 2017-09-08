@@ -68,7 +68,7 @@ static tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
   return NULL;
 }
 
-static tlv_t *create_tlv_chain(tlv_t *head, tlv_t *tlv) {
+tlv_t *create_tlv_chain(tlv_t *head, tlv_t *tlv) {
   if (!head)
     return tlv;
 
