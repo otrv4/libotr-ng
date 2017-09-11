@@ -6,34 +6,25 @@
 
 #include <libotr/privkey.h>
 
-string_t send_data_msg(string_t to_send, const string_t message, otrv4_t *otr,
-                       tlv_t *tlv) {
-  otr4_err_t err;
-  err = otrv4_prepare_to_send_message(&to_send, message, tlv, otr);
-  otrv4_assert(err == OTR4_SUCCESS);
-  otrv4_assert(to_send);
-  otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
-  return to_send;
-}
+#define assert_msg_sent(err, message_to_send, message)    \
+  do {                                                    \
+      otrv4_assert(err == OTR4_SUCCESS);                  \
+      otrv4_assert(to_send);                              \
+      otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);       \
+  } while (0)
 
-string_t rec_data_msg(otrv4_response_t *response, string_t send, otrv4_t *otr,
-                      const string_t message) {
-  otr4_err_t err;
-  response = otrv4_response_new();
-  err = otrv4_receive_message(response, send, otr);
+#define assert_and_free_rec_msg(err, message, response)                        \
+  do {                                                                         \
+      otrv4_assert(err == OTR4_SUCCESS);                                       \
+      otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1); \
+      otrv4_assert(response->to_send == NULL);                                 \
+  } while (0)
 
-  otrv4_assert(err == OTR4_SUCCESS);
-
-  free(send);
-  send = NULL;
-
-  otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);
-  otrv4_assert(response->to_send == NULL);
-
+void free_message_and_response(otrv4_response_t *response, string_t *message) {
   otrv4_response_free(response);
   response = NULL;
-
-  return send;
+  free(*message);
+  *message = NULL;
 }
 
 void test_api_conversation(void) {
@@ -59,7 +50,6 @@ void test_api_conversation(void) {
   // AKE HAS FINISHED.
   do_ake_fixture(alice, bob);
 
-  // int ratchet_id;
   int message_id;
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;
@@ -67,8 +57,11 @@ void test_api_conversation(void) {
   // Alice sends a data message
   string_t to_send = NULL;
 
+  otr4_err_t err;
+
   for (message_id = 2; message_id < 5; message_id++) {
-    to_send = send_data_msg(to_send, "hi", alice, NULL);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
+    assert_msg_sent(err, to_send, "hi");
     otrv4_assert(!alice->keys->old_mac_keys);
 
     // This is a follow up message.
@@ -76,8 +69,12 @@ void test_api_conversation(void) {
     g_assert_cmpint(alice->keys->j, ==, message_id);
 
     // Bob receives a data message
-    to_send = rec_data_msg(response_to_alice, to_send, bob, "hi");
+    response_to_alice = otrv4_response_new();
+    otr4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
+    assert_and_free_rec_msg(err, "hi", response_to_alice);
     otrv4_assert(bob->keys->old_mac_keys);
+
+    free_message_and_response(response_to_alice, &to_send);
 
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, message_id - 1);
 
@@ -88,7 +85,9 @@ void test_api_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    to_send = send_data_msg(to_send, "hello", bob, NULL);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, bob);
+    assert_msg_sent(err, to_send, "hello");
+
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
 
     // New ratchet hapenned
@@ -96,8 +95,12 @@ void test_api_conversation(void) {
     g_assert_cmpint(bob->keys->j, ==, message_id);
 
     // Alice receives a data message
-    to_send = rec_data_msg(response_to_bob, to_send, alice, "hello");
+    response_to_bob = otrv4_response_new();
+    otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
+    assert_and_free_rec_msg(err, "hello", response_to_bob);
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
+
+    free_message_and_response(response_to_bob, &to_send);
 
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(alice->keys->i, ==, 1);
@@ -108,27 +111,23 @@ void test_api_conversation(void) {
   otrv4_assert(tlvs);
 
   // Bob sends a message with TLV
-  to_send = send_data_msg(to_send, "hi", bob, tlvs);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", tlvs, bob);
+  assert_msg_sent(err, to_send, "hello");
+
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
   otrv4_tlv_free(tlvs);
-
-  otrv4_response_free(response_to_bob);
-  response_to_bob = NULL;
 
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
                OTR4_SUCCESS);
   g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
-  free(to_send);
-  to_send = NULL;
 
   otrv4_assert(response_to_bob->tlvs);
   g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRV4_TLV_PADDING);
   g_assert_cmpint(response_to_bob->tlvs->len, ==, 10);
 
-  otrv4_response_free(response_to_bob);
-  response_to_bob = NULL;
+  free_message_and_response(response_to_bob, &to_send);
 
   otr4_client_state_free(alice_state);
   otr4_client_state_free(bob_state);
@@ -166,16 +165,21 @@ void test_dh_key_rotation(void) {
 
   // Bob sends a data message
   string_t to_send = NULL;
+  otr4_err_t err;
+
   for (ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
     // Bob sends a data message
-    to_send = send_data_msg(to_send, "hello", bob, NULL);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, bob);
+    assert_msg_sent(err, to_send, "hello");
 
     // New ratchet happened
     g_assert_cmpint(bob->keys->i, ==, ratchet_id);
     g_assert_cmpint(bob->keys->j, ==, 1);
 
     // Alice receives a data message
-    to_send = rec_data_msg(response_to_bob, to_send, alice, "hello");
+    response_to_bob = otrv4_response_new();
+    otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
+    assert_and_free_rec_msg(err, "hello", response_to_bob);
 
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(alice->keys->i, ==, ratchet_id);
@@ -185,14 +189,21 @@ void test_dh_key_rotation(void) {
       otrv4_assert(bob->keys->our_dh->priv != NULL);
     }
 
+    free_message_and_response(response_to_bob, &to_send);
+
     // Now alice ratchets
-    to_send = send_data_msg(to_send, "hi", alice, NULL);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
+    assert_msg_sent(err, to_send, "hi");
 
     g_assert_cmpint(alice->keys->i, ==, ratchet_id + 1);
     g_assert_cmpint(alice->keys->j, ==, 1);
 
     // Bob receives a data message
-    to_send = rec_data_msg(response_to_alice, to_send, bob, "hi");
+    response_to_alice = otrv4_response_new();
+    err = otrv4_receive_message(response_to_alice, to_send, bob);
+    assert_and_free_rec_msg(err, "hi", response_to_alice);
+
+    free_message_and_response(response_to_alice, &to_send);
 
     g_assert_cmpint(bob->keys->i, ==, ratchet_id + 1);
     g_assert_cmpint(bob->keys->j, ==, 0); // New ratchet should happen
@@ -200,12 +211,6 @@ void test_dh_key_rotation(void) {
 
   otrv4_assert(alice->keys->our_dh->priv != NULL);
   otrv4_assert(bob->keys->our_dh->priv == NULL);
-
-  free(to_send);
-  to_send = NULL;
-
-  otrv4_response_free(response_to_bob);
-  otrv4_response_free(response_to_alice);
 
   otr4_client_state_free(alice_state);
   otr4_client_state_free(bob_state);
@@ -358,14 +363,11 @@ void test_api_conversation_v3(void) {
   response_to_alice = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_alice, to_send, bob) ==
                OTR4_SUCCESS);
-  free(to_send);
-  to_send = NULL;
 
   otrv4_assert(response_to_alice->to_display);
   otrv4_assert_cmpmem("hi", response_to_alice->to_display, 3);
   otrv4_assert(!response_to_alice->to_send);
-  otrv4_response_free(response_to_alice);
-  response_to_alice = NULL;
+  free_message_and_response(response_to_alice, &to_send);
 
   // Bob sends a data message
   otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", NULL, bob) ==
@@ -377,14 +379,11 @@ void test_api_conversation_v3(void) {
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
                OTR4_SUCCESS);
-  free(to_send);
-  to_send = NULL;
 
   otrv4_assert(response_to_bob->to_display);
   otrv4_assert_cmpmem("hi", response_to_bob->to_display, 3);
   otrv4_assert(!response_to_bob->to_send);
-  otrv4_response_free(response_to_bob);
-  response_to_bob = NULL;
+  free_message_and_response(response_to_bob, &to_send);
 
   otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
   otrv4_free_all(2, alice, bob);
@@ -434,12 +433,9 @@ void test_api_smp(void) {
   response_to_alice = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_alice, to_send, bob) ==
                OTR4_SUCCESS);
-  free(to_send);
-  to_send = NULL;
 
   otrv4_assert(!response_to_alice->to_send);
-  otrv4_response_free(response_to_alice);
-  response_to_alice = NULL;
+  free_message_and_response(response_to_alice, &to_send);
 
   // This will be called by bob when the OTRV4_SMPEVENT_ASK_FOR_SECRET is
   // triggered.
@@ -453,7 +449,6 @@ void test_api_smp(void) {
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
                OTR4_SUCCESS);
-  free(to_send);
 
   otrv4_assert(response_to_bob->to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9); // SMP3
@@ -463,8 +458,7 @@ void test_api_smp(void) {
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
                                      bob) == OTR4_SUCCESS);
-  otrv4_response_free(response_to_bob);
-  response_to_bob = NULL;
+  free_message_and_response(response_to_bob, &to_send);
 
   otrv4_assert(response_to_alice->to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", response_to_alice->to_send, 9); // SMP4
