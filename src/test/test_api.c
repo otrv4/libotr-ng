@@ -13,11 +13,11 @@
       otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);       \
   } while (0)
 
-#define assert_and_free_rec_msg(err, message, response)                        \
-  do {                                                                         \
-      otrv4_assert(err == OTR4_SUCCESS);                                       \
-      otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1); \
-      otrv4_assert(response->to_send == NULL);                                 \
+#define assert_rec_msg(err, message, response)                                  \
+  do {                                                                          \
+      otrv4_assert(err == OTR4_SUCCESS);                                        \
+      otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);  \
+      otrv4_assert(response->to_send == NULL);                                  \
   } while (0)
 
 void free_message_and_response(otrv4_response_t *response, string_t *message) {
@@ -71,7 +71,7 @@ void test_api_conversation(void) {
     // Bob receives a data message
     response_to_alice = otrv4_response_new();
     otr4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
-    assert_and_free_rec_msg(err, "hi", response_to_alice);
+    assert_rec_msg(err, "hi", response_to_alice);
     otrv4_assert(bob->keys->old_mac_keys);
 
     free_message_and_response(response_to_alice, &to_send);
@@ -97,7 +97,7 @@ void test_api_conversation(void) {
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
     otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
-    assert_and_free_rec_msg(err, "hello", response_to_bob);
+    assert_rec_msg(err, "hello", response_to_bob);
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
 
     free_message_and_response(response_to_bob, &to_send);
@@ -179,7 +179,7 @@ void test_dh_key_rotation(void) {
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
     otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
-    assert_and_free_rec_msg(err, "hello", response_to_bob);
+    assert_rec_msg(err, "hello", response_to_bob);
 
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(alice->keys->i, ==, ratchet_id);
@@ -201,7 +201,7 @@ void test_dh_key_rotation(void) {
     // Bob receives a data message
     response_to_alice = otrv4_response_new();
     err = otrv4_receive_message(response_to_alice, to_send, bob);
-    assert_and_free_rec_msg(err, "hi", response_to_alice);
+    assert_rec_msg(err, "hi", response_to_alice);
 
     free_message_and_response(response_to_alice, &to_send);
 
@@ -495,34 +495,23 @@ static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name,
   return otrv4_new(state, policy);
 }
 
-static void rec_query_msg(otrv4_response_t *respond_to, string_t query,
-                          otrv4_t *sender, int state) {
-  otr4_err_t err = otrv4_receive_message(respond_to, query, sender);
-  otrv4_assert(err == OTR4_SUCCESS);
-  otrv4_assert(!respond_to->to_display);
-  otrv4_assert(respond_to->to_send);
-  otrv4_assert(sender->state == state);
-}
-
-static void rec_msg(otrv4_response_t *respond_to,
-                    otrv4_response_t *received_from, otrv4_t *sender, int state,
-                    bool send_response) {
-  otr4_err_t err =
-      otrv4_receive_message(respond_to, received_from->to_send, sender);
-  otrv4_assert(err == OTR4_SUCCESS);
-  otrv4_assert(!respond_to->to_display);
-  otrv4_assert(sender->state == state);
-  if (send_response) {
-    otrv4_assert(respond_to->to_send);
-  } else {
-    otrv4_assert(!respond_to->to_send);
-  }
-}
+#define assert_rec_msg_inc_state(err, respond_to, sender, otrv4_state, send_response) \
+  do {                                                                                \
+    otrv4_assert(err == OTR4_SUCCESS);                                                \
+    otrv4_assert(!respond_to->to_display);                                            \
+    otrv4_assert(sender->state == otrv4_state);                                       \
+    if (send_response) {                                                              \
+      otrv4_assert(respond_to->to_send);                                              \
+    } else {                                                                          \
+      otrv4_assert(!respond_to->to_send);                                             \
+    }                                                                                 \
+  } while (0)
 
 void test_api_multiple_clients(void) {
   OTR4_INIT;
 
   bool send_response = true;
+  otr4_err_t err;
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_phone_state = otr4_client_state_new(NULL);
@@ -537,23 +526,27 @@ void test_api_multiple_clients(void) {
   otrv4_response_t *to_pc = otrv4_response_new();
   otrv4_response_t *to_phone = otrv4_response_new();
 
-  rec_query_msg(from_pc, "?OTRv4?", bob_pc, OTRV4_STATE_WAITING_AUTH_R);
-  rec_query_msg(from_phone, "?OTRv4?", bob_phone, OTRV4_STATE_WAITING_AUTH_R);
+  err = otrv4_receive_message(from_pc, "?OTRv4?", bob_pc);
+  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_WAITING_AUTH_R, send_response);
+
+  err = otrv4_receive_message(from_phone, "?OTRv4?", bob_phone);
+  assert_rec_msg_inc_state(err, from_phone, bob_phone, OTRV4_STATE_WAITING_AUTH_R, send_response);
 
   // Receives first Identity Message from PC
-  rec_msg(to_pc, from_pc, alice, OTRV4_STATE_WAITING_AUTH_I, send_response);
+  err = otrv4_receive_message(to_pc, from_pc->to_send, alice);
+  assert_rec_msg_inc_state(err, to_pc, alice, OTRV4_STATE_WAITING_AUTH_I, send_response);
   otrv4_response_free(from_pc);
 
   // Receives second Identity Message from PHONE (on state
   // OTRV4_STATE_WAITING_AUTH_I)
-  rec_msg(to_phone, from_phone, alice, OTRV4_STATE_WAITING_AUTH_I,
-          send_response);
+  err = otrv4_receive_message(to_phone, from_phone->to_send, alice);
+  assert_rec_msg_inc_state(err, to_phone, alice, OTRV4_STATE_WAITING_AUTH_I, send_response);
   otrv4_response_free(from_phone);
 
   // Both receive the AUTH-R but only PC accepts
   from_pc = otrv4_response_new();
-  rec_msg(from_pc, to_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
-          send_response);
+  err = otrv4_receive_message(from_pc, to_pc->to_send, bob_pc);
+  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
   otrv4_response_free(from_pc);
 
   // It should be OK to get rid of the private DH-key generated at the AKE at
@@ -567,8 +560,8 @@ void test_api_multiple_clients(void) {
 
   // This message was sent to PC instance tag.
   from_phone = otrv4_response_new();
-  rec_msg(from_phone, to_pc, bob_phone, OTRV4_STATE_WAITING_AUTH_R,
-          !send_response);
+  err = otrv4_receive_message(from_phone, to_pc->to_send, bob_phone);
+  assert_rec_msg_inc_state(err, from_phone, bob_phone, OTRV4_STATE_WAITING_AUTH_R, !send_response);
   otrv4_response_free(from_phone);
 
   // The message was ignored. It should not remove the private DH-key yet.
@@ -582,14 +575,14 @@ void test_api_multiple_clients(void) {
   // Both receive but only PHONE accepts
   // This message was sent to PC instance tag.
   from_pc = otrv4_response_new();
-  rec_msg(from_pc, to_phone, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
-          !send_response);
+  err = otrv4_receive_message(from_pc, to_phone->to_send, bob_pc);
+  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES, !send_response);
   otrv4_response_free(from_pc);
 
   // This segfaults, because we are freeing
   from_phone = otrv4_response_new();
-  rec_msg(from_phone, to_phone, bob_phone, OTRV4_STATE_ENCRYPTED_MESSAGES,
-          send_response);
+  err = otrv4_receive_message(from_phone, to_phone->to_send, bob_phone);
+  assert_rec_msg_inc_state(err, from_phone, bob_phone, OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
   otrv4_response_free_all(2, to_phone, from_phone);
 
   // TODO: Alice should receive from PHONE (PC will have ignored the message).
