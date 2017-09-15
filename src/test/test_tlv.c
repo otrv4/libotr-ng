@@ -118,3 +118,23 @@ void test_create_tlv_chain() {
 
   otrv4_tlv_free(tlvs);
 }
+
+void test_append_padding_tlv() {
+  uint8_t smp2_data[2] = {0x03, 0x04};
+
+  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
+
+  append_padding_tlv(tlv, 15);
+  otrv4_assert(tlv->next->type == OTRV4_TLV_PADDING);
+  otrv4_assert(tlv->next->len == 237);
+  otrv4_assert(tlv->next->next == NULL);
+
+  tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
+
+  append_padding_tlv(tlv, 500);
+  otrv4_assert(tlv->next->type == OTRV4_TLV_PADDING);
+  otrv4_assert(tlv->next->len == 8);
+  otrv4_assert(tlv->next->next == NULL);
+
+  otrv4_tlv_free(tlv);
+}

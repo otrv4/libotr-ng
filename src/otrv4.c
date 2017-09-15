@@ -1493,6 +1493,8 @@ otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
   if (!otr)
     return OTR4_ERROR;
 
+  append_padding_tlv(tlvs, strlen(message));
+
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     return otrv3_send_message(to_send, message, tlvs, otr->otr3_conn);

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "deserialize.h"
 #include "tlv.h"
@@ -154,4 +155,13 @@ tlv_t *otrv4_padding_tlv_new(size_t len) {
 
 tlv_t *otrv4_disconnected_tlv_new(void) {
   return otrv4_tlv_new(OTRV4_TLV_DISCONNECTED, 0, NULL);
+}
+
+void append_padding_tlv(tlv_t *tlvs, int message_len) {
+  int padding_factor = 256;
+  int padding_len = padding_factor - ((message_len + 4) % padding_factor);
+
+  tlv_t *padding = otrv4_padding_tlv_new(padding_len);
+
+  tlvs = create_tlv_chain(tlvs, padding);
 }

@@ -107,7 +107,9 @@ void test_api_conversation(void) {
     g_assert_cmpint(alice->keys->j, ==, 0);
   }
 
-  tlv_t *tlvs = otrv4_padding_tlv_new(10);
+  uint16_t tlv_len = 2;
+  uint8_t tlv_data[2] = {0x08, 0x05};
+  tlv_t *tlvs = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, tlv_len, tlv_data);
   otrv4_assert(tlvs);
 
   // Bob sends a message with TLV
@@ -123,9 +125,16 @@ void test_api_conversation(void) {
                OTR4_SUCCESS);
   g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
 
+  // Check TLVS
   otrv4_assert(response_to_bob->tlvs);
-  g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRV4_TLV_PADDING);
-  g_assert_cmpint(response_to_bob->tlvs->len, ==, 10);
+  g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRV4_TLV_SMP_MSG_1);
+  g_assert_cmpint(response_to_bob->tlvs->len, ==, tlv_len);
+  otrv4_assert_cmpmem(response_to_bob->tlvs->data, tlv_data, tlv_len);
+
+  // Check Padding
+  otrv4_assert(response_to_bob->tlvs->next);
+  g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRV4_TLV_PADDING);
+  g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 250);
 
   free_message_and_response(response_to_bob, &to_send);
 
