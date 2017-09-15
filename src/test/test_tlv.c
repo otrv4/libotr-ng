@@ -129,6 +129,8 @@ void test_append_padding_tlv() {
   otrv4_assert(tlv->next->len == 237);
   otrv4_assert(tlv->next->next == NULL);
 
+  otrv4_tlv_free(tlv);
+
   tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
 
   append_padding_tlv(tlv, 500);
