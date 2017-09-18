@@ -591,7 +591,10 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
   free(ser_i_profile);
   free(ser_r_profile);
 
-  // TODO: Destroy serialized ephemeral public keys from memory
+  sodium_memzero(ser_i_ecdh, ED448_POINT_BYTES);
+  sodium_memzero(ser_r_ecdh, ED448_POINT_BYTES);
+  sodium_memzero(ser_i_dh, DH3072_MOD_LEN_BYTES);
+  sodium_memzero(ser_r_dh, DH3072_MOD_LEN_BYTES);
 
   return err;
 }
