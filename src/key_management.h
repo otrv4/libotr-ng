@@ -7,7 +7,7 @@
 #include "list.h"
 
 typedef uint8_t k_dh_t[384];
-typedef uint8_t mix_key_t[MIX_KEY_BYTES];
+typedef uint8_t brace_key_t[BRACE_KEY_BYTES];
 typedef uint8_t k_ecdh_t[ED448_POINT_BYTES];
 typedef uint8_t shared_secret_t[SHARED_SECRET_BYTES];
 
@@ -41,7 +41,7 @@ typedef struct {
             // receiving_ratchet_id
   ratchet_t *current;
 
-  mix_key_t mix_key;
+  brace_key_t brace_key;
 
   uint8_t ssid[8];
 
@@ -100,7 +100,7 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
                                                const key_manager_t *manager);
 
 otr4_err_t calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
-                                   const mix_key_t mix_key);
+                                   const brace_key_t brace_key);
 
 otr4_err_t
 key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,

@@ -68,7 +68,7 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 
   manager->current = ratchet_new();
 
-  memset(manager->mix_key, 0, sizeof(manager->mix_key));
+  memset(manager->brace_key, 0, sizeof(manager->brace_key));
   memset(manager->ssid, 0, sizeof(manager->ssid));
 
   manager->old_mac_keys = NULL;
@@ -86,7 +86,7 @@ void key_manager_destroy(key_manager_t *manager) {
   ratchet_free(manager->current);
   manager->current = NULL;
 
-  sodium_memzero(manager->mix_key, sizeof(manager->mix_key));
+  sodium_memzero(manager->brace_key, sizeof(manager->brace_key));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
 
   list_element_t *el;
@@ -312,7 +312,7 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
 }
 
 otr4_err_t calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
-                                   const mix_key_t mix_key) {
+                                   const brace_key_t brace_key) {
   if (gcry_md_get_algo_dlen(GCRY_MD_SHA3_512) != sizeof(shared_secret_t)) {
     return OTR4_ERROR;
   }
@@ -323,7 +323,7 @@ otr4_err_t calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
   }
 
   gcry_md_write(hd, k_ecdh, sizeof(k_ecdh_t));
-  gcry_md_write(hd, mix_key, sizeof(mix_key_t));
+  gcry_md_write(hd, brace_key, sizeof(brace_key_t));
   memcpy(dst, gcry_md_read(hd, GCRY_MD_SHA3_512), sizeof(shared_secret_t));
   gcry_md_close(hd);
 
@@ -355,7 +355,7 @@ static otr4_err_t calculate_ssid(const shared_secret_t shared,
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t calculate_mix_key(key_manager_t *manager) {
+static otr4_err_t calculate_brace_key(key_manager_t *manager) {
   k_dh_t k_dh;
 
   if (manager->i % 3 == 0) {
@@ -367,12 +367,12 @@ static otr4_err_t calculate_mix_key(key_manager_t *manager) {
 
     // TODO: Securely delete our_dh.secret
 
-    if (!sha3_256(manager->mix_key, sizeof(mix_key_t), k_dh, sizeof(k_dh_t)))
+    if (!sha3_256(manager->brace_key, sizeof(brace_key_t), k_dh, sizeof(k_dh_t)))
       return OTR4_ERROR;
 
   } else {
-    if (!sha3_256(manager->mix_key, sizeof(mix_key_t), manager->mix_key,
-                  sizeof(mix_key_t)))
+    if (!sha3_256(manager->brace_key, sizeof(brace_key_t), manager->brace_key,
+                  sizeof(brace_key_t)))
       return OTR4_ERROR;
   }
 
@@ -387,11 +387,11 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
                          manager->their_ecdh))
     return OTR4_ERROR;
 
-  otr4_err_t err = calculate_mix_key(manager);
+  otr4_err_t err = calculate_brace_key(manager);
   if (err)
     return err;
 
-  err = calculate_shared_secret(shared, k_ecdh, manager->mix_key);
+  err = calculate_shared_secret(shared, k_ecdh, manager->brace_key);
   if (err)
     return err;
 
@@ -400,7 +400,7 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   printf("K_ecdh = ");
   otrv4_memdump(k_ecdh, sizeof(k_ecdh_t));
   printf("mixed_key = ");
-  otrv4_memdump(manager->mix_key, sizeof(mix_key_t));
+  otrv4_memdump(manager->brace_key, sizeof(brace_key_t));
 #endif
 
   err = calculate_ssid(shared, manager);

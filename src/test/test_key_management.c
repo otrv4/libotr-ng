@@ -59,7 +59,7 @@ void test_key_manager_destroy() {
   otrv4_assert(manager->our_dh->priv);
   otrv4_assert(manager->our_dh->pub);
   otrv4_assert(manager->their_dh);
-  // TODO: destroy mix_key too?
+  // TODO: destroy brace_key too?
   // TODO: test destroy ecdh keys?
 
   key_manager_destroy(manager);

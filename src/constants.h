@@ -20,7 +20,7 @@
 #define DATA_MSG_NONCE_BYTES crypto_secretbox_NONCEBYTES
 #define DATA_MSG_MAC_BYTES 64
 #define MAC_KEY_BYTES 64
-#define MIX_KEY_BYTES 32
+#define BRACE_KEY_BYTES 32
 #define SHARED_SECRET_BYTES 64
 
 #define DATA_MESSAGE_MIN_BYTES                                                 \
