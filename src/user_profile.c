@@ -20,7 +20,7 @@ user_profile_t *user_profile_new(const string_t versions) {
     return NULL;
 
   // the compiler might optimize this
-  memset(profile->pub_key, sizeof(profile->pub_key), 0);
+  memset(profile->pub_key, 0, sizeof(profile->pub_key));
   profile->expires = 0;
   profile->versions = otrv4_strdup(versions);
   memset(profile->signature, 0, sizeof(eddsa_signature_t));
