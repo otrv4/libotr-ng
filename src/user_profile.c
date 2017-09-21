@@ -19,8 +19,8 @@ user_profile_t *user_profile_new(const string_t versions) {
   if (!profile)
     return NULL;
 
-  // TODO: Should we initialize to zero?
-  // ec_destroy_point(profile->pub_key);
+  // the compiler might optimize this
+  memset_s(profile->pub_key, sizeof(profile->pub_key), 0, sizeof(profile->pub_key));
   profile->expires = 0;
   profile->versions = otrv4_strdup(versions);
   memset(profile->signature, 0, sizeof(eddsa_signature_t));
