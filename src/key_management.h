@@ -11,8 +11,8 @@ typedef uint8_t brace_key_t[BRACE_KEY_BYTES];
 typedef uint8_t k_ecdh_t[ED448_POINT_BYTES];
 typedef uint8_t shared_secret_t[SHARED_SECRET_BYTES];
 
-typedef uint8_t root_key_t[64];
-typedef uint8_t chain_key_t[64];
+typedef uint8_t root_key_t[ROOT_KEY_BYTES];
+typedef uint8_t chain_key_t[CHAIN_KEY_BYTES];
 typedef uint8_t m_enc_key_t[32];
 typedef uint8_t m_mac_key_t[MAC_KEY_BYTES];
 

@@ -100,7 +100,6 @@ void key_manager_destroy(key_manager_t *manager) {
 }
 
 otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
-  // TODO: securely erase memory
   uint8_t sym[ED448_PRIVATE_BYTES];
   memset(sym, 0, ED448_PRIVATE_BYTES);
   random_bytes(sym, ED448_PRIVATE_BYTES);
@@ -269,7 +268,7 @@ chain_link_t *derive_next_chain_link(chain_link_t *previous) {
                 sizeof(chain_key_t)))
     return NULL;
 
-  // TODO: Securely delete previous->key
+  sodium_memzero(previous->key, CHAIN_KEY_BYTES);
 
   l->id = previous->id + 1;
   previous->next = l;
