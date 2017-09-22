@@ -1021,7 +1021,7 @@ static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
     return NULL;
   }
 
-  if (tlv->type ==  OTRV4_TLV_DISCONNECTED) {
+  if (tlv->type == OTRV4_TLV_DISCONNECTED) {
     forget_our_keys(otr);
     otr->state = OTRV4_STATE_FINISHED;
     gone_insecure_cb(otr->conversation);

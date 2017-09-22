@@ -28,13 +28,13 @@ void test_tlv_new() {
 void test_tlv_parse() {
   uint8_t msg1[7] = {0x01, 0x02, 0x00, 0x03, 0x08, 0x05, 0x09};
   uint8_t msg2[4] = {0x00, 0x00, 0x00, 0x00};
-  uint8_t msg3[15] = {0x00, 0x01, 0x00, 0x03, 0x08, 0x05, 0x09,
-                      0x00, 0x02, 0x00, 0xff, 0xac, 0x04, 0x05, 0x06};
-  uint8_t msg4[15] = {0x00, 0x06, 0x00, 0x03, 0x08, 0x05, 0x09,
-                      0x00, 0x02, 0x00, 0x04, 0xac, 0x04, 0x05, 0x06};
-  uint8_t msg5[22] = {0x00, 0x06, 0x00, 0x03, 0x08, 0x05, 0x09,
-                      0x00, 0x02, 0x00, 0x04, 0xac, 0x04, 0x05, 0x06,
-                      0x00, 0x05, 0x00, 0x03, 0x08, 0x05, 0x09};
+  uint8_t msg3[15] = {0x00, 0x01, 0x00, 0x03, 0x08, 0x05, 0x09, 0x00,
+                      0x02, 0x00, 0xff, 0xac, 0x04, 0x05, 0x06};
+  uint8_t msg4[15] = {0x00, 0x06, 0x00, 0x03, 0x08, 0x05, 0x09, 0x00,
+                      0x02, 0x00, 0x04, 0xac, 0x04, 0x05, 0x06};
+  uint8_t msg5[22] = {0x00, 0x06, 0x00, 0x03, 0x08, 0x05, 0x09, 0x00,
+                      0x02, 0x00, 0x04, 0xac, 0x04, 0x05, 0x06, 0x00,
+                      0x05, 0x00, 0x03, 0x08, 0x05, 0x09};
 
   uint8_t data1[3] = {0x08, 0x05, 0x09};
   uint8_t data2[4] = {0xac, 0x04, 0x05, 0x06};
@@ -63,8 +63,8 @@ void test_tlv_parse() {
                        next_exists);
   assert_tlv_structure(tlv5->next, OTRV4_TLV_SMP_MSG_1, sizeof(data2), data2,
                        next_exists);
-  assert_tlv_structure(tlv5->next->next, OTRV4_TLV_SMP_MSG_4, sizeof(data1), data1,
-                       !next_exists);
+  assert_tlv_structure(tlv5->next->next, OTRV4_TLV_SMP_MSG_4, sizeof(data1),
+                       data1, !next_exists);
 
   otrv4_tlv_free_all(5, tlv1, tlv2, tlv3, tlv4, tlv5);
 }
@@ -97,24 +97,32 @@ void test_create_tlv_chain() {
   uint8_t pad_data[5] = {0x00, 0x00, 0x00, 0x00, 0x00};
 
   tlv_t *tlvs = NULL;
-  tlv_t *tlv_smp2 = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
-  tlv_t *tlv_smp3 = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data), smp3_data);
+  tlv_t *tlv_smp2 =
+      otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
+  tlv_t *tlv_smp3 =
+      otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data), smp3_data);
   tlv_t *tlv_pad = otrv4_padding_tlv_new(sizeof(pad_data));
 
   tlvs = create_tlv_chain(tlvs, tlv_smp2);
 
-  assert_tlv_structure(tlvs, OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data, !next_exists);
+  assert_tlv_structure(tlvs, OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data,
+                       !next_exists);
 
   tlvs = create_tlv_chain(tlvs, tlv_smp3);
 
-  assert_tlv_structure(tlvs, OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data, next_exists);
-  assert_tlv_structure(tlvs->next, OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data), smp3_data, !next_exists);
+  assert_tlv_structure(tlvs, OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data,
+                       next_exists);
+  assert_tlv_structure(tlvs->next, OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data),
+                       smp3_data, !next_exists);
 
   tlvs = create_tlv_chain(tlvs, tlv_pad);
 
-  assert_tlv_structure(tlvs, OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data, next_exists);
-  assert_tlv_structure(tlvs->next, OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data), smp3_data, next_exists);
-  assert_tlv_structure(tlvs->next->next, OTRV4_TLV_PADDING, sizeof(pad_data), pad_data, !next_exists);
+  assert_tlv_structure(tlvs, OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data,
+                       next_exists);
+  assert_tlv_structure(tlvs->next, OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data),
+                       smp3_data, next_exists);
+  assert_tlv_structure(tlvs->next->next, OTRV4_TLV_PADDING, sizeof(pad_data),
+                       pad_data, !next_exists);
 
   otrv4_tlv_free(tlvs);
 }

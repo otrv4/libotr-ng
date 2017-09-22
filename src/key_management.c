@@ -367,7 +367,8 @@ static otr4_err_t calculate_brace_key(key_manager_t *manager) {
 
     // TODO: Securely delete our_dh.secret
 
-    if (!sha3_256(manager->brace_key, sizeof(brace_key_t), k_dh, sizeof(k_dh_t)))
+    if (!sha3_256(manager->brace_key, sizeof(brace_key_t), k_dh,
+                  sizeof(k_dh_t)))
       return OTR4_ERROR;
 
   } else {

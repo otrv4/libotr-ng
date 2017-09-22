@@ -1,6 +1,6 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "deserialize.h"
 #include "tlv.h"
@@ -79,7 +79,7 @@ tlv_t *create_tlv_chain(tlv_t *head, tlv_t *tlv) {
     current = current->next;
 
   tlv_t *last_tlv = current;
-  last_tlv -> next = tlv;
+  last_tlv->next = tlv;
 
   return head;
 }

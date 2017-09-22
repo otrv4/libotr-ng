@@ -6,18 +6,18 @@
 
 #include <libotr/privkey.h>
 
-#define assert_msg_sent(err, message_to_send, message)    \
-  do {                                                    \
-      otrv4_assert(err == OTR4_SUCCESS);                  \
-      otrv4_assert(to_send);                              \
-      otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);       \
+#define assert_msg_sent(err, message_to_send, message)                         \
+  do {                                                                         \
+    otrv4_assert(err == OTR4_SUCCESS);                                         \
+    otrv4_assert(to_send);                                                     \
+    otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);                              \
   } while (0)
 
-#define assert_rec_msg(err, message, response)                                  \
-  do {                                                                          \
-      otrv4_assert(err == OTR4_SUCCESS);                                        \
-      otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);  \
-      otrv4_assert(response->to_send == NULL);                                  \
+#define assert_rec_msg(err, message, response)                                 \
+  do {                                                                         \
+    otrv4_assert(err == OTR4_SUCCESS);                                         \
+    otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);   \
+    otrv4_assert(response->to_send == NULL);                                   \
   } while (0)
 
 void free_message_and_response(otrv4_response_t *response, string_t *message) {
@@ -513,16 +513,17 @@ static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name,
   return otrv4_new(state, policy);
 }
 
-#define assert_rec_msg_inc_state(err, respond_to, sender, otrv4_state, send_response) \
-  do {                                                                                \
-    otrv4_assert(err == OTR4_SUCCESS);                                                \
-    otrv4_assert(!respond_to->to_display);                                            \
-    otrv4_assert(sender->state == otrv4_state);                                       \
-    if (send_response) {                                                              \
-      otrv4_assert(respond_to->to_send);                                              \
-    } else {                                                                          \
-      otrv4_assert(!respond_to->to_send);                                             \
-    }                                                                                 \
+#define assert_rec_msg_inc_state(err, respond_to, sender, otrv4_state,         \
+                                 send_response)                                \
+  do {                                                                         \
+    otrv4_assert(err == OTR4_SUCCESS);                                         \
+    otrv4_assert(!respond_to->to_display);                                     \
+    otrv4_assert(sender->state == otrv4_state);                                \
+    if (send_response) {                                                       \
+      otrv4_assert(respond_to->to_send);                                       \
+    } else {                                                                   \
+      otrv4_assert(!respond_to->to_send);                                      \
+    }                                                                          \
   } while (0)
 
 void test_api_multiple_clients(void) {
@@ -545,26 +546,31 @@ void test_api_multiple_clients(void) {
   otrv4_response_t *to_phone = otrv4_response_new();
 
   err = otrv4_receive_message(from_pc, "?OTRv4?", bob_pc);
-  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_WAITING_AUTH_R, send_response);
+  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_WAITING_AUTH_R,
+                           send_response);
 
   err = otrv4_receive_message(from_phone, "?OTRv4?", bob_phone);
-  assert_rec_msg_inc_state(err, from_phone, bob_phone, OTRV4_STATE_WAITING_AUTH_R, send_response);
+  assert_rec_msg_inc_state(err, from_phone, bob_phone,
+                           OTRV4_STATE_WAITING_AUTH_R, send_response);
 
   // Receives first Identity Message from PC
   err = otrv4_receive_message(to_pc, from_pc->to_send, alice);
-  assert_rec_msg_inc_state(err, to_pc, alice, OTRV4_STATE_WAITING_AUTH_I, send_response);
+  assert_rec_msg_inc_state(err, to_pc, alice, OTRV4_STATE_WAITING_AUTH_I,
+                           send_response);
   otrv4_response_free(from_pc);
 
   // Receives second Identity Message from PHONE (on state
   // OTRV4_STATE_WAITING_AUTH_I)
   err = otrv4_receive_message(to_phone, from_phone->to_send, alice);
-  assert_rec_msg_inc_state(err, to_phone, alice, OTRV4_STATE_WAITING_AUTH_I, send_response);
+  assert_rec_msg_inc_state(err, to_phone, alice, OTRV4_STATE_WAITING_AUTH_I,
+                           send_response);
   otrv4_response_free(from_phone);
 
   // Both receive the AUTH-R but only PC accepts
   from_pc = otrv4_response_new();
   err = otrv4_receive_message(from_pc, to_pc->to_send, bob_pc);
-  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
+  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
+                           send_response);
   otrv4_response_free(from_pc);
 
   // It should be OK to get rid of the private DH-key generated at the AKE at
@@ -579,7 +585,8 @@ void test_api_multiple_clients(void) {
   // This message was sent to PC instance tag.
   from_phone = otrv4_response_new();
   err = otrv4_receive_message(from_phone, to_pc->to_send, bob_phone);
-  assert_rec_msg_inc_state(err, from_phone, bob_phone, OTRV4_STATE_WAITING_AUTH_R, !send_response);
+  assert_rec_msg_inc_state(err, from_phone, bob_phone,
+                           OTRV4_STATE_WAITING_AUTH_R, !send_response);
   otrv4_response_free(from_phone);
 
   // The message was ignored. It should not remove the private DH-key yet.
@@ -594,13 +601,15 @@ void test_api_multiple_clients(void) {
   // This message was sent to PC instance tag.
   from_pc = otrv4_response_new();
   err = otrv4_receive_message(from_pc, to_phone->to_send, bob_pc);
-  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES, !send_response);
+  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
+                           !send_response);
   otrv4_response_free(from_pc);
 
   // This segfaults, because we are freeing
   from_phone = otrv4_response_new();
   err = otrv4_receive_message(from_phone, to_phone->to_send, bob_phone);
-  assert_rec_msg_inc_state(err, from_phone, bob_phone, OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
+  assert_rec_msg_inc_state(err, from_phone, bob_phone,
+                           OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
   otrv4_response_free_all(2, to_phone, from_phone);
 
   // TODO: Alice should receive from PHONE (PC will have ignored the message).
