@@ -6,8 +6,8 @@
 
 #include "keys.h"
 
-#define OTR4_FPRINT_LEN_BYTES 64 // TODO: this should be 56
-#define OTR4_FPRINT_HUMAN_LEN 64 / 4 * 9
+#define OTR4_FPRINT_LEN_BYTES 56
+#define OTR4_FPRINT_HUMAN_LEN 125
 
 typedef uint8_t otrv4_fingerprint_t[OTR4_FPRINT_LEN_BYTES];
 typedef uint8_t otrv3_fingerprint_t[20];

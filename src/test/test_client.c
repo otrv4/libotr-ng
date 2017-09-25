@@ -240,7 +240,7 @@ void test_fingerprint_hash_to_human() {
   char *expected_fp = "00010203 04050607 08090A0B 0C0D0E0F "
                       "10111213 14151617 18191A1B 1C1D1E1F "
                       "20212223 24252627 28292A2B 2C2D2E2F "
-                      "30313233 34353637 38393A3B 3C3D3E3F";
+                      "30313233 34353637";
 
   uint8_t fp_hash[OTR4_FPRINT_LEN_BYTES] = {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -253,7 +253,6 @@ void test_fingerprint_hash_to_human() {
       0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
 
       0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
-      0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
   };
 
   char fp_human[OTR4_FPRINT_HUMAN_LEN];
