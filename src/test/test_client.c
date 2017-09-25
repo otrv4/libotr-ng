@@ -227,7 +227,7 @@ void test_client_get_our_fingerprint() {
 
   otrv4_fingerprint_t expected_fp = {0};
   hash_hash(expected_fp, sizeof(otrv4_fingerprint_t), serialized,
-                     sizeof(serialized)); // TODO: this should be 56
+            sizeof(serialized)); // TODO: this should be 56
   otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(otrv4_fingerprint_t));
 
   otr4_client_state_free(client_state);

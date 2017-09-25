@@ -100,7 +100,7 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
                                                const key_manager_t *manager);
 
 void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
-                                   const brace_key_t brace_key);
+                             const brace_key_t brace_key);
 
 otr4_err_t
 key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,

@@ -136,20 +136,17 @@ void derive_key_from_shared_secret(uint8_t *key, size_t keylen,
 
 void derive_root_key(root_key_t root_key, const shared_secret_t shared) {
   uint8_t magic[1] = {0x1};
-  derive_key_from_shared_secret(root_key, sizeof(root_key_t), magic,
-                                       shared);
+  derive_key_from_shared_secret(root_key, sizeof(root_key_t), magic, shared);
 }
 
 void derive_chain_key_a(chain_key_t chain_key, const shared_secret_t shared) {
   uint8_t magic[1] = {0x2};
-  derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic,
-                                       shared);
+  derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic, shared);
 }
 
 void derive_chain_key_b(chain_key_t chain_key, const shared_secret_t shared) {
   uint8_t magic[1] = {0x3};
-  derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic,
-                                       shared);
+  derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic, shared);
 }
 
 otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
@@ -301,7 +298,7 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
 }
 
 void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
-                                   const brace_key_t brace_key) {
+                             const brace_key_t brace_key) {
   decaf_shake256_ctx_t hd;
 
   hash_init_with_dom(hd);
@@ -348,12 +345,11 @@ static otr4_err_t calculate_brace_key(key_manager_t *manager) {
 
     // TODO: Securely delete our_dh.secret
 
-    hash_hash(manager->brace_key, sizeof(brace_key_t), k_dh,
-                  sizeof(k_dh_t));
+    hash_hash(manager->brace_key, sizeof(brace_key_t), k_dh, sizeof(k_dh_t));
 
   } else {
     hash_hash(manager->brace_key, sizeof(brace_key_t), manager->brace_key,
-                  sizeof(brace_key_t));
+              sizeof(brace_key_t));
   }
 
   return OTR4_SUCCESS;
@@ -439,9 +435,9 @@ static void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
   uint8_t magic2[1] = {0x2};
 
   shake_256_kdf(enc_key, sizeof(m_enc_key_t), magic1, chain_key,
-                     sizeof(chain_key_t));
+                sizeof(chain_key_t));
   shake_256_kdf(mac_key, sizeof(m_mac_key_t), magic2, chain_key,
-                     sizeof(chain_key_t));
+                sizeof(chain_key_t));
 }
 
 otr4_err_t

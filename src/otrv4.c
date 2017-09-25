@@ -1349,8 +1349,8 @@ static otr4_err_t serialize_and_encode_data_msg(
   memcpy(ser, body, bodylen);
   free(body);
 
-  shake_256_mac(ser + bodylen, MAC_KEY_BYTES, mac_key, sizeof(m_mac_key_t),
-                    ser, bodylen);
+  shake_256_mac(ser + bodylen, MAC_KEY_BYTES, mac_key, sizeof(m_mac_key_t), ser,
+                bodylen);
 
   serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES, to_reveal_mac_keys,
                         to_reveal_mac_keys_len);

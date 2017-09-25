@@ -197,7 +197,7 @@ bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg) {
   memset(mac_tag, 0, sizeof(m_mac_key_t));
 
   shake_256_mac(mac_tag, sizeof mac_tag, mac_key, sizeof(m_mac_key_t), body,
-                    bodylen);
+                bodylen);
 
   free(body);
 
