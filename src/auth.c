@@ -1,6 +1,12 @@
 #include "auth.h"
 #include "constants.h"
 #include "random.h"
+#include "decaf/shake.h"
+
+#define hash_init    decaf_shake256_init
+#define hash_update  decaf_shake256_update
+#define hash_final   decaf_shake256_final
+#define hash_destroy decaf_shake256_destroy
 
 void generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv) {
   ed448_random_scalar(priv);
@@ -34,8 +40,9 @@ otr4_err_t snizkpk_authenticate(snizkpk_proof_t *dst,
                                 const snizkpk_pubkey_t A2,
                                 const snizkpk_pubkey_t A3,
                                 const unsigned char *msg, size_t msglen) {
-  gcry_md_hd_t hd;
-  unsigned char hash[HASH_BYTES];
+
+  decaf_shake256_ctx_t hd;
+  uint8_t hash[HASH_BYTES];
   unsigned char point_buff[ED448_POINT_BYTES];
 
   snizkpk_privkey_t t1;
@@ -53,32 +60,32 @@ otr4_err_t snizkpk_authenticate(snizkpk_proof_t *dst,
   decaf_448_point_scalarmul(A3c3, A3, dst->c3);
   decaf_448_point_add(T3, T3, A3c3);
 
-  gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-  gcry_md_write(hd, base_point_bytes_dup, ED448_POINT_BYTES);
-  gcry_md_write(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
+  hash_init(hd);
+  hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
+  hash_update(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, pair1->pub);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A2);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A3);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, T1);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, T2);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, T3);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  gcry_md_write(hd, msg, msglen);
+  hash_update(hd, msg, msglen);
 
-  memcpy(hash, gcry_md_read(hd, 0), HASH_BYTES);
-  gcry_md_close(hd);
+  hash_final(hd, hash, sizeof(hash));
+  hash_destroy(hd);
 
   snizkpk_privkey_t c, c1a1;
   decaf_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
@@ -95,9 +102,12 @@ otr4_err_t snizkpk_authenticate(snizkpk_proof_t *dst,
 otr4_err_t snizkpk_verify(const snizkpk_proof_t *src, const snizkpk_pubkey_t A1,
                           const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
                           const unsigned char *msg, size_t msglen) {
-  gcry_md_hd_t hd;
-  unsigned char hash[HASH_BYTES];
+
+  decaf_shake256_ctx_t hd;
+  uint8_t hash[HASH_BYTES];
   unsigned char point_buff[ED448_POINT_BYTES];
+
+  hash_init(hd);
 
   snizkpk_pubkey_t gr1, gr2, gr3, A1c1, A2c2, A3c3;
 
@@ -113,32 +123,31 @@ otr4_err_t snizkpk_verify(const snizkpk_proof_t *src, const snizkpk_pubkey_t A1,
   decaf_448_point_add(A2c2, A2c2, gr2);
   decaf_448_point_add(A3c3, A3c3, gr3);
 
-  gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-  gcry_md_write(hd, base_point_bytes_dup, ED448_POINT_BYTES);
-  gcry_md_write(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
+  hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
+  hash_update(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A1);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A2);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A3);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A1c1);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A2c2);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A3c3);
-  gcry_md_write(hd, point_buff, ED448_POINT_BYTES);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  gcry_md_write(hd, msg, msglen);
+  hash_update(hd, msg, msglen);
 
-  memcpy(hash, gcry_md_read(hd, 0), HASH_BYTES);
-  gcry_md_close(hd);
+  hash_final(hd, hash, sizeof(hash));
+  hash_destroy(hd);
 
   snizkpk_privkey_t c, c1c2c3;
   decaf_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
