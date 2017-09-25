@@ -6,7 +6,7 @@
 #include "../instance_tag.h"
 #include "../messaging.h"
 #include "../serialize.h"
-#include "../sha3.h"
+#include "../shake.h"
 
 #define ALICE_IDENTITY "alice@otr.example"
 #define BOB_IDENTITY "bob@otr.example"
@@ -226,9 +226,8 @@ void test_client_get_our_fingerprint() {
       ED448_PUBKEY_BYTES);
 
   otrv4_fingerprint_t expected_fp = {0};
-  bool ok = sha3_512(expected_fp, sizeof(otrv4_fingerprint_t), serialized,
-                     sizeof(serialized));
-  otrv4_assert(ok == TRUE);
+  hash_hash(expected_fp, sizeof(otrv4_fingerprint_t), serialized,
+                     sizeof(serialized)); // TODO: this should be 56
   otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(otrv4_fingerprint_t));
 
   otr4_client_state_free(client_state);

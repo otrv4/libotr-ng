@@ -14,7 +14,7 @@
 #include "otrv4.h"
 #include "random.h"
 #include "serialize.h"
-#include "sha3.h"
+#include "shake.h"
 #include "smp.c"
 #include "str.h"
 #include "tlv.h"
@@ -1349,11 +1349,8 @@ static otr4_err_t serialize_and_encode_data_msg(
   memcpy(ser, body, bodylen);
   free(body);
 
-  if (!sha3_512_mac(ser + bodylen, MAC_KEY_BYTES, mac_key, sizeof(m_mac_key_t),
-                    ser, bodylen)) {
-    free(ser);
-    return OTR4_ERROR;
-  }
+  shake_256_mac(ser + bodylen, MAC_KEY_BYTES, mac_key, sizeof(m_mac_key_t),
+                    ser, bodylen);
 
   serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES, to_reveal_mac_keys,
                         to_reveal_mac_keys_len);

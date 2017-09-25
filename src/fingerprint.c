@@ -1,6 +1,6 @@
 #include "fingerprint.h"
 #include "serialize.h"
-#include "sha3.h"
+#include "shake.h"
 
 /* Convert a 64-byte hash value to a 145-byte human-readable value */
 void otr4_fingerprint_hash_to_human(
@@ -31,6 +31,8 @@ int otr4_serialize_fingerprint(otrv4_fingerprint_t fp,
 
   serialize_otrv4_public_key(serialized, pub);
 
-  return !sha3_512(fp, sizeof(otrv4_fingerprint_t), serialized,
+  hash_hash(fp, sizeof(otrv4_fingerprint_t), serialized,
                    sizeof serialized);
+
+  return 0;
 }

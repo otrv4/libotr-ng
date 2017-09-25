@@ -5,7 +5,6 @@
 #include "deserialize.h"
 #include "instance_tag.h"
 #include "serialize.h"
-#include "sha3.h"
 #include "str.h"
 
 #define CONV(c) ((otr4_conversation_t *)c)

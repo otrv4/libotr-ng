@@ -8,7 +8,7 @@
 #include "gcrypt.h"
 #include "key_management.h"
 #include "random.h"
-#include "sha3.h"
+#include "shake.h"
 
 void chain_link_free(chain_link_t *head) {
   chain_link_t *current = head;
@@ -128,27 +128,27 @@ void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
 
 void key_manager_prepare_to_ratchet(key_manager_t *manager) { manager->j = 0; }
 
-bool derive_key_from_shared_secret(uint8_t *key, size_t keylen,
+void derive_key_from_shared_secret(uint8_t *key, size_t keylen,
                                    const uint8_t magic[1],
                                    const shared_secret_t shared) {
-  return sha3_512_kdf(key, keylen, magic, shared, sizeof(shared_secret_t));
+  shake_256_kdf(key, keylen, magic, shared, sizeof(shared_secret_t));
 }
 
-bool derive_root_key(root_key_t root_key, const shared_secret_t shared) {
+void derive_root_key(root_key_t root_key, const shared_secret_t shared) {
   uint8_t magic[1] = {0x1};
-  return derive_key_from_shared_secret(root_key, sizeof(root_key_t), magic,
+  derive_key_from_shared_secret(root_key, sizeof(root_key_t), magic,
                                        shared);
 }
 
-bool derive_chain_key_a(chain_key_t chain_key, const shared_secret_t shared) {
+void derive_chain_key_a(chain_key_t chain_key, const shared_secret_t shared) {
   uint8_t magic[1] = {0x2};
-  return derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic,
+  derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic,
                                        shared);
 }
 
-bool derive_chain_key_b(chain_key_t chain_key, const shared_secret_t shared) {
+void derive_chain_key_b(chain_key_t chain_key, const shared_secret_t shared) {
   uint8_t magic[1] = {0x3};
-  return derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic,
+  derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic,
                                        shared);
 }
 
@@ -159,17 +159,9 @@ otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
     return OTR4_ERROR;
   }
 
-  if (!derive_root_key(ratchet->root_key, shared)) {
-    return OTR4_ERROR;
-  }
-
-  if (!derive_chain_key_a(ratchet->chain_a->key, shared)) {
-    return OTR4_ERROR;
-  }
-
-  if (!derive_chain_key_b(ratchet->chain_b->key, shared)) {
-    return OTR4_ERROR;
-  }
+  derive_root_key(ratchet->root_key, shared);
+  derive_chain_key_a(ratchet->chain_a->key, shared);
+  derive_chain_key_b(ratchet->chain_b->key, shared);
 
   ratchet_free(manager->current);
   manager->current = ratchet;
@@ -264,9 +256,7 @@ chain_link_t *derive_next_chain_link(chain_link_t *previous) {
   if (l == NULL)
     return NULL;
 
-  if (!sha3_512(l->key, sizeof(chain_key_t), previous->key,
-                sizeof(chain_key_t)))
-    return NULL;
+  hash_hash(l->key, sizeof(chain_key_t), previous->key, sizeof(chain_key_t));
 
   sodium_memzero(previous->key, CHAIN_KEY_BYTES);
 
@@ -310,23 +300,16 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
+void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
                                    const brace_key_t brace_key) {
-  if (gcry_md_get_algo_dlen(GCRY_MD_SHA3_512) != sizeof(shared_secret_t)) {
-    return OTR4_ERROR;
-  }
+  decaf_shake256_ctx_t hd;
 
-  gcry_md_hd_t hd;
-  if (gcry_md_open(&hd, GCRY_MD_SHA3_512, 0)) {
-    return OTR4_ERROR;
-  }
+  hash_init_with_dom(hd);
+  hash_update(hd, k_ecdh, sizeof(k_ecdh_t));
+  hash_update(hd, brace_key, sizeof(brace_key_t));
 
-  gcry_md_write(hd, k_ecdh, sizeof(k_ecdh_t));
-  gcry_md_write(hd, brace_key, sizeof(brace_key_t));
-  memcpy(dst, gcry_md_read(hd, GCRY_MD_SHA3_512), sizeof(shared_secret_t));
-  gcry_md_close(hd);
-
-  return OTR4_SUCCESS;
+  hash_final(hd, dst, sizeof(shared_secret_t));
+  hash_destroy(hd);
 }
 
 static otr4_err_t derive_sending_chain_key(key_manager_t *manager) {
@@ -346,8 +329,7 @@ static otr4_err_t derive_sending_chain_key(key_manager_t *manager) {
 static otr4_err_t calculate_ssid(const shared_secret_t shared,
                                  key_manager_t *manager) {
   uint8_t ssid_buff[32];
-  if (!sha3_256(ssid_buff, sizeof ssid_buff, shared, sizeof(shared_secret_t)))
-    return OTR4_ERROR;
+  hash_hash(ssid_buff, sizeof ssid_buff, shared, sizeof(shared_secret_t));
 
   memcpy(manager->ssid, ssid_buff, sizeof manager->ssid);
 
@@ -366,14 +348,12 @@ static otr4_err_t calculate_brace_key(key_manager_t *manager) {
 
     // TODO: Securely delete our_dh.secret
 
-    if (!sha3_256(manager->brace_key, sizeof(brace_key_t), k_dh,
-                  sizeof(k_dh_t)))
-      return OTR4_ERROR;
+    hash_hash(manager->brace_key, sizeof(brace_key_t), k_dh,
+                  sizeof(k_dh_t));
 
   } else {
-    if (!sha3_256(manager->brace_key, sizeof(brace_key_t), manager->brace_key,
-                  sizeof(brace_key_t)))
-      return OTR4_ERROR;
+    hash_hash(manager->brace_key, sizeof(brace_key_t), manager->brace_key,
+                  sizeof(brace_key_t));
   }
 
   return OTR4_SUCCESS;
@@ -391,9 +371,7 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   if (err)
     return err;
 
-  err = calculate_shared_secret(shared, k_ecdh, manager->brace_key);
-  if (err)
-    return err;
+  calculate_shared_secret(shared, k_ecdh, manager->brace_key);
 
 #ifdef DEBUG
   printf("ENTERING NEW RATCHET\n");
@@ -454,19 +432,16 @@ bool key_manager_ensure_on_ratchet(key_manager_t *manager) {
   return true;
 }
 
-static bool derive_encryption_and_mac_keys(m_enc_key_t enc_key,
+static void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
                                            m_mac_key_t mac_key,
                                            const chain_key_t chain_key) {
-  bool ok1 = false, ok2 = false;
   uint8_t magic1[1] = {0x1};
   uint8_t magic2[1] = {0x2};
 
-  ok1 = sha3_256_kdf(enc_key, sizeof(m_enc_key_t), magic1, chain_key,
+  shake_256_kdf(enc_key, sizeof(m_enc_key_t), magic1, chain_key,
                      sizeof(chain_key_t));
-  ok2 = sha3_512_kdf(mac_key, sizeof(m_mac_key_t), magic2, chain_key,
+  shake_256_kdf(mac_key, sizeof(m_mac_key_t), magic2, chain_key,
                      sizeof(chain_key_t));
-
-  return ok1 && ok2;
 }
 
 otr4_err_t
@@ -478,9 +453,8 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
   if (key_manager_get_receiving_chain_key(receiving, message_id, manager))
     return OTR4_ERROR;
 
-  if (!derive_encryption_and_mac_keys(enc_key, mac_key, receiving)) {
-    return OTR4_ERROR;
-  }
+  derive_encryption_and_mac_keys(enc_key, mac_key, receiving);
+
   return OTR4_SUCCESS;
 }
 
@@ -501,8 +475,7 @@ otr4_err_t key_manager_retrieve_sending_message_keys(
   chain_key_t sending;
   int message_id = key_manager_get_sending_chain_key(sending, manager);
 
-  if (!derive_encryption_and_mac_keys(enc_key, mac_key, sending))
-    return OTR4_ERROR;
+  derive_encryption_and_mac_keys(enc_key, mac_key, sending);
 
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");

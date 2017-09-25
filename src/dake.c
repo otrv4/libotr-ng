@@ -9,7 +9,6 @@
 #include "error.h"
 #include "random.h"
 #include "serialize.h"
-#include "sha3.h"
 #include "str.h"
 #include "user_profile.h"
 
