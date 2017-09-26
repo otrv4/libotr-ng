@@ -2,14 +2,14 @@
 #include "serialize.h"
 #include "shake.h"
 
-/* Convert a 64-byte hash value to a 145-byte human-readable value */
+/* Convert a 56-byte hash value to a 126-byte human-readable value */
 void otr4_fingerprint_hash_to_human(
     char human[OTR4_FPRINT_HUMAN_LEN],
     const unsigned char hash[OTR4_FPRINT_LEN_BYTES]) {
   int word, byte;
   char *p = human;
 
-  for (word = 0; word < 16; ++word) {
+  for (word = 0; word < 14; ++word) {
     for (byte = 0; byte < 4; ++byte) {
       sprintf(p, "%02X", hash[word * 4 + byte]);
       p += 2;
