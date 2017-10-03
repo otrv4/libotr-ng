@@ -1,6 +1,6 @@
 # OTR version 4 library
 
-[![Build Status](https://travis-ci.org/otrv4/libotrv4.svg?branch=master)](https://travis-ci.org/twstrike/libotrv4)
+[![Build Status](https://travis-ci.org/otrv4/libotrv4.svg?branch=master)](https://travis-ci.org/otrv4/libotrv4)
 
 
 ## Build
