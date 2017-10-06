@@ -554,7 +554,6 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
     if (user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
       continue;
 
-
     uint8_t hash_ser_i_profile[HASH_BYTES];
     decaf_shake256_ctx_t hd_i;
     hash_init_with_dom(hd_i);
@@ -571,8 +570,8 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
     hash_final(hd_r, hash_ser_r_profile, sizeof(hash_ser_r_profile));
     hash_destroy(hd_r);
 
-    size_t len = 1 + 2 * ED448_POINT_BYTES + HASH_BYTES +
-                 HASH_BYTES + ser_i_dh_len + ser_r_dh_len;
+    size_t len = 1 + 2 * ED448_POINT_BYTES + HASH_BYTES + HASH_BYTES +
+                 ser_i_dh_len + ser_r_dh_len;
 
     uint8_t *buff = malloc(len);
     if (!buff)
