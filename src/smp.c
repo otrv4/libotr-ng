@@ -58,22 +58,25 @@ void smp_destroy(smp_context_t smp) {
 void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
                          otrv4_fingerprint_t their_fp, uint8_t *ssid,
                          const uint8_t *answer, size_t answerlen) {
-  gcry_md_hd_t hd;
   uint8_t version[1] = {0x01};
 
-  gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-  gcry_md_write(hd, version, 1);
-  gcry_md_write(hd, our_fp, sizeof(otrv4_fingerprint_t));
-  gcry_md_write(hd, their_fp, sizeof(otrv4_fingerprint_t));
-  gcry_md_write(hd, ssid, sizeof(ssid));
-  gcry_md_write(hd, answer, answerlen);
+  uint8_t hash[HASH_BYTES];
+  decaf_shake256_ctx_t hd;
+  hash_init_with_dom(hd);
+  hash_update(hd, version, 1);
+  hash_update(hd, our_fp, sizeof(otrv4_fingerprint_t));
+  hash_update(hd, their_fp, sizeof(otrv4_fingerprint_t));
+  hash_update(hd, ssid, sizeof(ssid));
+  hash_update(hd, answer, answerlen);
+
+  hash_final(hd, hash, sizeof(hash));
+  hash_destroy(hd);
 
   *secret = malloc(HASH_BYTES);
   if (!*secret)
     return;
 
-  memcpy(*secret, gcry_md_read(hd, 0), HASH_BYTES);
-  gcry_md_close(hd);
+  memcpy(*secret, hash, HASH_BYTES);
 }
 
 int hashToScalar(const unsigned char *buff, const size_t bufflen,
