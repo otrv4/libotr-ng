@@ -371,6 +371,7 @@ void otrv4_response_free(otrv4_response_t *response) {
   response->tlvs = NULL;
 
   free(response);
+  response = NULL;
 }
 
 // TODO: Is not receiving a plaintext a problem?
@@ -1329,7 +1330,7 @@ static otr4_err_t encrypt_data_message(data_message_t *data_msg,
   data_msg->enc_msg_len = message_len;
 
   data_msg->enc_msg = malloc(data_msg->enc_msg_len);
-  if (!data_msg)
+  if (!data_msg->enc_msg)
     return OTR4_ERROR;
 
   data_msg->enc_msg = c;
@@ -1380,11 +1381,7 @@ static otr4_err_t serialize_and_encode_data_msg(
 static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
                                     size_t message_len, otrv4_t *otr) {
   data_message_t *data_msg = NULL;
-  m_enc_key_t enc_key;
-  m_mac_key_t mac_key;
 
-  memset(enc_key, 0, sizeof(m_enc_key_t));
-  memset(mac_key, 0, sizeof(m_mac_key_t));
 
   size_t serlen = list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
 
@@ -1397,8 +1394,15 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
     return OTR4_ERROR;
   }
 
+  m_enc_key_t enc_key;
+  m_mac_key_t mac_key;
+  memset(enc_key, 0, sizeof(m_enc_key_t));
+  memset(mac_key, 0, sizeof(m_mac_key_t));
+
   if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
     free(ser_mac_keys);
+    sodium_memzero(enc_key, sizeof(m_enc_key_t));
+    sodium_memzero(mac_key, sizeof(m_mac_key_t));
     return OTR4_ERROR;
   }
 
@@ -1596,7 +1600,6 @@ static tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
                         conversation);
 
     tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);
-    free(to_send);
     smp_msg_1_destroy(msg);
     return tlv;
   } while (0);

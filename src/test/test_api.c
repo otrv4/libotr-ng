@@ -22,7 +22,6 @@
 
 void free_message_and_response(otrv4_response_t *response, string_t *message) {
   otrv4_response_free(response);
-  response = NULL;
   free(*message);
   *message = NULL;
 }
