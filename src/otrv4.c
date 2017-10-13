@@ -1436,7 +1436,7 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
   return err;
 }
 
-static otr4_err_t serlialize_tlvs(uint8_t **dst, size_t *dstlen,
+static otr4_err_t serialize_tlvs(uint8_t **dst, size_t *dstlen,
                                   const tlv_t *tlvs) {
   const tlv_t *current = tlvs;
   uint8_t *cursor = NULL;
@@ -1469,7 +1469,7 @@ static otr4_err_t append_tlvs(uint8_t **dst, size_t *dstlen,
   uint8_t *ser = NULL;
   size_t len = 0;
 
-  if (serlialize_tlvs(&ser, &len, tlvs))
+  if (serialize_tlvs(&ser, &len, tlvs))
     return OTR4_ERROR;
 
   *dstlen = strlen(message) + 1 + len;
