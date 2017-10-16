@@ -197,6 +197,12 @@ otr4_err_t user_profile_sign(user_profile_t *profile,
 bool user_profile_valid_signature(const user_profile_t *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
+  uint8_t empty_signature[ED448_SIGNATURE_BYTES];
+  memset(empty_signature, 0, ED448_SIGNATURE_BYTES);
+
+  if (memcmp(profile->signature, empty_signature, ED448_SIGNATURE_BYTES) == 0){
+    return false;
+  }
 
   if (user_profile_body_asprintf(&body, &bodylen, profile))
     return false;
