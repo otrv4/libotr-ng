@@ -198,9 +198,6 @@ bool user_profile_valid_signature(const user_profile_t *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  if (!profile->signature[0])
-    return false;
-
   if (user_profile_body_asprintf(&body, &bodylen, profile))
     return false;
 
