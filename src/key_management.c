@@ -327,8 +327,11 @@ static otr4_err_t derive_sending_chain_key(key_manager_t *manager) {
 
 static void calculate_ssid(key_manager_t *manager,
                            const shared_secret_t shared) {
+  uint8_t magic[1] = {0x00};
   uint8_t ssid_buff[32];
-  hash_hash(ssid_buff, sizeof ssid_buff, shared, sizeof(shared_secret_t));
+
+  shake_256_kdf(ssid_buff, sizeof ssid_buff, magic, shared,
+                sizeof(shared_secret_t));
 
   memcpy(manager->ssid, ssid_buff, sizeof manager->ssid);
 }
@@ -462,7 +465,15 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
 
   derive_encryption_and_mac_keys(enc_key, mac_key, receiving);
 
-  return OTR4_SUCCESS;
+#ifdef DEBUG
+  printf("GOT SENDING KEYS:\n");
+  printf("receiving enc_key = ");
+  otrv4_memdump(enc_key, sizeof(m_enc_key_t));
+  printf("receiving mac_key = ");
+  otrv4_memdump(mac_key, sizeof(m_mac_key_t));
+#endif
+
+return OTR4_SUCCESS;
 }
 
 static bool should_ratchet(const key_manager_t *manager) {
@@ -486,9 +497,9 @@ otr4_err_t key_manager_retrieve_sending_message_keys(
 
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
-  printf("enc_key = ");
+  printf("sending enc_key = ");
   otrv4_memdump(enc_key, sizeof(m_enc_key_t));
-  printf("mac_key = ");
+  printf("sending mac_key = ");
   otrv4_memdump(mac_key, sizeof(m_mac_key_t));
 #endif
 
