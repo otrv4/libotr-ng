@@ -72,7 +72,7 @@ void test_user_profile_serializes() {
   uint8_t *serialized = NULL;
   otrv4_assert(user_profile_asprintf(&serialized, &written, profile) ==
                OTR4_SUCCESS);
-  // g_assert_cmpint(340, ==, written);
+  g_assert_cmpint(written, ==, 231);
 
   // check "body"
   size_t body_len = 0;
