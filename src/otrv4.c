@@ -1084,8 +1084,12 @@ static otr4_err_t get_receiving_msg_keys(m_enc_key_t enc_key,
     return OTR4_ERROR;
 
   if (key_manager_retrieve_receiving_message_keys(enc_key, mac_key,
-                                                  msg->message_id, otr->keys))
+                                                  msg->message_id, otr->keys)) {
+    sodium_memzero(enc_key, sizeof(m_enc_key_t));
+    sodium_memzero(mac_key, sizeof(m_mac_key_t));
     return OTR4_ERROR;
+  }
+
   return OTR4_SUCCESS;
 }
 
@@ -1400,8 +1404,6 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
 
   if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
     free(ser_mac_keys);
-    sodium_memzero(enc_key, sizeof(m_enc_key_t));
-    sodium_memzero(mac_key, sizeof(m_mac_key_t));
     return OTR4_ERROR;
   }
 
