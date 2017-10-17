@@ -1601,6 +1601,7 @@ static tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
 
     tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);
     smp_msg_1_destroy(msg);
+    free(to_send);
     return tlv;
   } while (0);
 
