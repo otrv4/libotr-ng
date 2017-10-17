@@ -323,14 +323,12 @@ static otr4_err_t derive_sending_chain_key(key_manager_t *manager) {
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t calculate_ssid(const shared_secret_t shared,
+static void calculate_ssid(const shared_secret_t shared,
                                  key_manager_t *manager) {
   uint8_t ssid_buff[32];
   hash_hash(ssid_buff, sizeof ssid_buff, shared, sizeof(shared_secret_t));
 
   memcpy(manager->ssid, ssid_buff, sizeof manager->ssid);
-
-  return OTR4_SUCCESS;
 }
 
 static otr4_err_t calculate_brace_key(key_manager_t *manager) {
@@ -377,14 +375,12 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   otrv4_memdump(manager->brace_key, sizeof(brace_key_t));
 #endif
 
-  err = calculate_ssid(shared, manager);
-  if (err) {
-    sodium_memzero(shared, SHARED_SECRET_BYTES);
-    return err;
-  }
+  calculate_ssid(shared, manager);
 
   if (key_manager_new_ratchet(manager, shared)) {
     sodium_memzero(shared, SHARED_SECRET_BYTES);
+    // TODO: probably not needed
+    sodium_memzero(manager->ssid, sizeof(manager->ssid));
     return OTR4_ERROR;
   }
 
@@ -481,8 +477,12 @@ otr4_err_t key_manager_retrieve_sending_message_keys(
   otrv4_memdump(mac_key, sizeof(m_mac_key_t));
 #endif
 
-  if (message_id == manager->j)
+  if (message_id == manager->j) {
     return OTR4_SUCCESS;
+  }
+
+  sodium_memzero(enc_key, sizeof(m_enc_key_t));
+  sodium_memzero(mac_key, sizeof(m_mac_key_t));
   return OTR4_ERROR;
 }
 
