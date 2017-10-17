@@ -70,6 +70,7 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 
   memset(manager->brace_key, 0, sizeof(manager->brace_key));
   memset(manager->ssid, 0, sizeof(manager->ssid));
+  memset(manager->extra_key, 0, sizeof(manager->extra_key));
 
   manager->old_mac_keys = NULL;
 }
@@ -88,6 +89,7 @@ void key_manager_destroy(key_manager_t *manager) {
 
   sodium_memzero(manager->brace_key, sizeof(manager->brace_key));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
+  sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
 
   list_element_t *el;
   for (el = manager->old_mac_keys; el; el = el->next) {
@@ -323,12 +325,23 @@ static otr4_err_t derive_sending_chain_key(key_manager_t *manager) {
   return OTR4_SUCCESS;
 }
 
-static void calculate_ssid(const shared_secret_t shared,
-                                 key_manager_t *manager) {
+static void calculate_ssid(key_manager_t *manager,
+                           const shared_secret_t shared) {
   uint8_t ssid_buff[32];
   hash_hash(ssid_buff, sizeof ssid_buff, shared, sizeof(shared_secret_t));
 
   memcpy(manager->ssid, ssid_buff, sizeof manager->ssid);
+}
+
+static void calculate_extra_key(key_manager_t *manager,
+                                const shared_secret_t shared) {
+  uint8_t magic[1] = {0xFF};
+  uint8_t extra_key_buff[HASH_BYTES];
+
+  shake_256_kdf(extra_key_buff, HASH_BYTES, magic, shared,
+                sizeof(shared_secret_t));
+
+  memcpy(manager->extra_key, extra_key_buff, sizeof manager->extra_key);
 }
 
 static otr4_err_t calculate_brace_key(key_manager_t *manager) {
@@ -375,12 +388,14 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   otrv4_memdump(manager->brace_key, sizeof(brace_key_t));
 #endif
 
-  calculate_ssid(shared, manager);
+  calculate_ssid(manager, shared);
+  calculate_extra_key(manager, shared);
 
   if (key_manager_new_ratchet(manager, shared)) {
     sodium_memzero(shared, SHARED_SECRET_BYTES);
     // TODO: probably not needed
     sodium_memzero(manager->ssid, sizeof(manager->ssid));
+    sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
     return OTR4_ERROR;
   }
 

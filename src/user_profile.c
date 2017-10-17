@@ -200,7 +200,7 @@ bool user_profile_valid_signature(const user_profile_t *profile) {
   uint8_t empty_signature[ED448_SIGNATURE_BYTES];
   memset(empty_signature, 0, ED448_SIGNATURE_BYTES);
 
-  if (memcmp(profile->signature, empty_signature, ED448_SIGNATURE_BYTES) == 0){
+  if (memcmp(profile->signature, empty_signature, ED448_SIGNATURE_BYTES) == 0) {
     return false;
   }
 

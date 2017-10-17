@@ -1382,7 +1382,6 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
                                     size_t message_len, otrv4_t *otr) {
   data_message_t *data_msg = NULL;
 
-
   size_t serlen = list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
 
   uint8_t *ser_mac_keys =
@@ -1437,7 +1436,7 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
 }
 
 static otr4_err_t serialize_tlvs(uint8_t **dst, size_t *dstlen,
-                                  const tlv_t *tlvs) {
+                                 const tlv_t *tlvs) {
   const tlv_t *current = tlvs;
   uint8_t *cursor = NULL;
 

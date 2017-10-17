@@ -44,6 +44,7 @@ typedef struct {
   brace_key_t brace_key;
 
   uint8_t ssid[8];
+  uint8_t extra_key[HASH_BYTES];
 
   list_element_t *old_mac_keys;
 } key_manager_t;

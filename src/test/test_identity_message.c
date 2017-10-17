@@ -145,7 +145,6 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   ecdh_keypair_t invalid_ecdh[1];
   dh_keypair_t invalid_dh;
 
-
   uint8_t invalid_sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(invalid_ecdh, invalid_sym);
   otrv4_assert(dh_keypair_generate(invalid_dh) == OTR4_SUCCESS);
