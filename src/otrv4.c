@@ -670,8 +670,6 @@ static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
 
 static otr4_err_t receive_identity_message_on_state_start(
     string_t *dst, dake_identity_message_t *identity_message, otrv4_t *otr) {
-  if (!valid_dake_identity_message(identity_message))
-    return OTR4_ERROR;
 
   otr->their_profile = malloc(sizeof(user_profile_t));
   if (!otr->their_profile)
@@ -754,7 +752,7 @@ static otr4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,
 
   received_instance_tag(m->sender_instance_tag, otr);
 
-  if (!valid_received_values(m->Y, m->B, m->profile)) {
+  if (!valid_identity_message(m->Y, m->B, m->profile)) {
     dake_identity_message_destroy(m);
     return err;
   }
@@ -825,7 +823,7 @@ static bool valid_auth_r_message(const dake_auth_r_t *auth, otrv4_t *otr) {
   uint8_t *t = NULL;
   size_t t_len = 0;
 
-  if (!valid_received_values(auth->X, auth->A, auth->profile))
+  if (!valid_identity_message(auth->X, auth->A, auth->profile))
     return false;
 
   if (build_auth_message(&t, &t_len, 0, get_my_user_profile(otr), auth->profile,

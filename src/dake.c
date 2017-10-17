@@ -187,18 +187,7 @@ static bool no_rollback_detected(const char *versions) {
   return false;
 }
 
-bool valid_dake_identity_message(
-    const dake_identity_message_t *identity_message) {
-  bool valid = user_profile_valid_signature(identity_message->profile);
-  valid &= not_expired(identity_message->profile->expires);
-  valid &= ec_point_valid(identity_message->Y);
-  valid &= dh_mpi_valid(identity_message->B);
-  valid &= no_rollback_detected(identity_message->profile->versions);
-
-  return valid;
-}
-
-bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
+bool valid_identity_message(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
                            const user_profile_t *profile) {
   bool valid = true;
 

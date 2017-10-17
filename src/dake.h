@@ -50,9 +50,6 @@ otr4_err_t
 dake_identity_message_asprintf(uint8_t **dst, size_t *nbytes,
                                const dake_identity_message_t *identity_message);
 
-bool valid_dake_identity_message(
-    const dake_identity_message_t *identity_message);
-
 void dake_auth_r_destroy(dake_auth_r_t *auth_r);
 
 void dake_auth_r_free(dake_auth_r_t *auth_r);
@@ -71,7 +68,7 @@ otr4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
 otr4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
                                    size_t buflen);
 
-bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
+bool valid_identity_message(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
                            const user_profile_t *profile);
 
 #endif

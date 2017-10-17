@@ -136,7 +136,8 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   ec_point_copy(identity_message->Y, ecdh->pub);
   identity_message->B = dh_mpi_copy(dh->pub);
 
-  otrv4_assert(valid_dake_identity_message(identity_message));
+  otrv4_assert(valid_identity_message(identity_message->Y,
+    identity_message->B, identity_message->profile));
 
   ecdh_keypair_destroy(ecdh);
   dh_keypair_destroy(dh);
@@ -157,7 +158,9 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   ec_point_copy(invalid_identity_message->Y, invalid_ecdh->pub);
   invalid_identity_message->B = dh_mpi_copy(invalid_dh->pub);
 
-  otrv4_assert(!valid_dake_identity_message(invalid_identity_message));
+  otrv4_assert(!valid_identity_message(
+    invalid_identity_message->Y, invalid_identity_message->B,
+    invalid_identity_message->profile));
 
   user_profile_free(invalid_profile);
   ecdh_keypair_destroy(invalid_ecdh);
@@ -173,6 +176,7 @@ void test_dake_identity_message_Y_doesnt_belong_to_curve(
       dake_identity_message_new(f->profile);
   otrv4_assert(identity_message != NULL);
 
-  otrv4_assert(valid_dake_identity_message(identity_message));
+  otrv4_assert(valid_identity_message(identity_message->Y,
+    identity_message->B, identity_message->profile));
   dake_identity_message_free(identity_message);
 }
