@@ -473,7 +473,7 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
   otrv4_memdump(mac_key, sizeof(m_mac_key_t));
 #endif
 
-return OTR4_SUCCESS;
+  return OTR4_SUCCESS;
 }
 
 static bool should_ratchet(const key_manager_t *manager) {

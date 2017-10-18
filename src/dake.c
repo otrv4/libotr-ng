@@ -187,7 +187,7 @@ static bool no_rollback_detected(const char *versions) {
   return false;
 }
 
-bool valid_identity_message(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
+bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
                            const user_profile_t *profile) {
   bool valid = true;
 
