@@ -135,6 +135,7 @@ otr4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
   size_t r = 0;
   uint16_t pubkey_type = 0;
 
+  // TODO: prob unneccessary
   if (ser_len < ED448_PUBKEY_BYTES)
     return OTR4_ERROR;
 
@@ -149,6 +150,32 @@ otr4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
 
   if (read)
     *read = ED448_PUBKEY_BYTES;
+
+  return OTR4_SUCCESS;
+}
+
+otr4_err_t deserialize_otrv4_shared_prekey(otrv4_shared_prekey_t shared_prekey,
+                                           const uint8_t *serialized,
+                                           size_t ser_len, size_t *read) {
+  const uint8_t *cursor = serialized;
+  size_t r = 0;
+  uint16_t shared_prekey_type = 0;
+
+  // TODO: prob unneccessary
+  if (ser_len < ED448_PUBKEY_BYTES)
+    return OTR4_ERROR;
+
+  deserialize_uint16(&shared_prekey_type, cursor, ser_len, &r);
+  cursor += r;
+
+  if (ED448_SHARED_PREKEY_TYPE != shared_prekey_type)
+    return OTR4_ERROR;
+
+  if (deserialize_ec_point(shared_prekey, cursor))
+    return OTR4_ERROR;
+
+  if (read)
+    *read = ED448_SHARED_PREKEY_BYTES;
 
   return OTR4_SUCCESS;
 }

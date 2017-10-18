@@ -29,6 +29,10 @@ otr4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
                                         const uint8_t *serialized,
                                         size_t ser_len, size_t *read);
 
+otr4_err_t deserialize_otrv4_shared_prekey(otrv4_shared_prekey_t shared_prekey,
+                                           const uint8_t *serialized,
+                                           size_t ser_len, size_t *read);
+
 otr4_err_t deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *serialized,
                                  size_t ser_len);
 

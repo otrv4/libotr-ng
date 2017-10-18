@@ -64,6 +64,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/serialize/dh-public-key", test_serialize_dh_public_key);
   g_test_add_func("/serialize_and_deserialize/ed448-public-key",
                   test_ser_des_otrv4_public_key);
+  g_test_add_func("/serialize_and_deserialize/ed448-shared-prekey",
+                  test_ser_des_otrv4_shared_prekey);
   g_test_add_func("/serialize/otrv4-symmetric-key",
                   test_serialize_otrv4_symmetric_key);
 

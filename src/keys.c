@@ -16,6 +16,15 @@ otrv4_keypair_t *otrv4_keypair_new(void) {
   return ret;
 }
 
+void otrv4_shared_prekey_generate(otrv4_shared_prekey_t shared_prekey,
+                                  const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  uint8_t pub[ED448_POINT_BYTES];
+  ec_derive_public_key(pub, sym);
+  ec_point_deserialize(shared_prekey, pub);
+
+  decaf_bzero(pub, ED448_POINT_BYTES);
+}
+
 void otrv4_keypair_generate(otrv4_keypair_t *keypair,
                             const uint8_t sym[ED448_PRIVATE_BYTES]) {
   memcpy(keypair->sym, sym, ED448_PRIVATE_BYTES);

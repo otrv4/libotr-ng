@@ -11,6 +11,7 @@ typedef struct {
   otrv4_public_key_t pub_key;
   string_t versions;
   uint64_t expires;
+  otrv4_shared_prekey_t shared_prekey;
   eddsa_signature_t signature;
   otr_mpi_t transitional_signature; // TODO: this should be a signature type
 } user_profile_t;

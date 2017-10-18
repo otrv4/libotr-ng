@@ -76,6 +76,7 @@ static void identity_message_fixture_setup(identity_message_fixture_t *fixture,
   otrv4_assert(ec_point_valid(fixture->keypair->pub));
 
   fixture->profile = user_profile_new("4");
+  otrv4_shared_prekey_generate(fixture->profile->shared_prekey, sym);
   otrv4_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 60 * 60;
   otrv4_assert(user_profile_sign(fixture->profile, fixture->keypair) ==

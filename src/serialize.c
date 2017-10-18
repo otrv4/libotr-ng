@@ -95,6 +95,19 @@ size_t serialize_otrv4_public_key(uint8_t *dst, const otrv4_public_key_t pub) {
   return cursor - dst;
 }
 
+size_t
+serialize_otrv4_shared_prekey(uint8_t *dst,
+                              const otrv4_shared_prekey_t shared_prekey) {
+  uint8_t *cursor = dst;
+  cursor += serialize_uint16(cursor, ED448_SHARED_PREKEY_TYPE);
+  if (serialize_ec_point(cursor, shared_prekey)) {
+    return 0;
+  }
+  cursor += ED448_POINT_BYTES;
+
+  return cursor - dst;
+}
+
 size_t serialize_snizkpk_proof(uint8_t *dst, const snizkpk_proof_t *proof) {
   uint8_t *cursor = dst;
   cursor += serialize_ec_scalar(cursor, proof->c1);

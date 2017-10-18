@@ -20,15 +20,17 @@ user_profile_t *user_profile_new(const string_t versions) {
     return NULL;
 
   // the compiler might optimize this
-  memset(profile->pub_key, 0, sizeof(profile->pub_key));
+  memset(profile->pub_key, 0, sizeof(otrv4_public_key_t));
   profile->expires = 0;
   profile->versions = otrv4_strdup(versions);
+  memset(profile->shared_prekey, 0, sizeof(otrv4_shared_prekey_t));
   memset(profile->signature, 0, sizeof(eddsa_signature_t));
   otr_mpi_init(profile->transitional_signature);
 
   return profile;
 }
 
+// TODO: copy the shared prekey?
 void user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
   // TODO should we set dst to a valid (but empty) profile?
   if (!src)
@@ -50,7 +52,7 @@ void user_profile_destroy(user_profile_t *profile) {
   free(profile->versions);
   profile->versions = NULL;
   sodium_memzero(profile->signature, ED448_SIGNATURE_BYTES);
-
+  ec_point_destroy(profile->shared_prekey);
   otr_mpi_free(profile->transitional_signature);
 }
 
