@@ -142,5 +142,7 @@ void assert_tlv_structure(tlv_t *tlv, tlv_type_t type, uint16_t len, uint8_t *da
     } else {
       otrv4_assert(tlv->next == NULL);
     }
+    if (data != NULL) {
     otrv4_assert_cmpmem(tlv->data, data, len);
+    }
 }
