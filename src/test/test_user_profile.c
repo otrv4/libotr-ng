@@ -19,6 +19,7 @@ void test_user_profile_serializes_body() {
   otrv4_keypair_generate(keypair, sym);
 
   user_profile_t *profile = user_profile_new("4");
+  otrv4_shared_prekey_generate(profile->shared_prekey, sym);
   otrv4_assert(profile != NULL);
   profile->expires = 15;
   otrv4_assert(user_profile_sign(profile, keypair) == OTR4_SUCCESS);
@@ -34,7 +35,7 @@ void test_user_profile_serializes_body() {
   uint8_t *serialized = NULL;
   otrv4_assert(user_profile_body_asprintf(&serialized, &written, profile) ==
                OTR4_SUCCESS);
-  g_assert_cmpint(73, ==, written);
+  g_assert_cmpint(132, ==, written);
 
   otrv4_assert_cmpmem(expected_pubkey, serialized, ED448_PUBKEY_BYTES);
 
@@ -47,6 +48,13 @@ void test_user_profile_serializes_body() {
   otrv4_assert_cmpmem(expected, serialized + ED448_PUBKEY_BYTES,
                       sizeof(expected));
 
+  uint8_t expected_shared_prekey[ED448_SHARED_PREKEY_BYTES] = {0};
+  serialize_otrv4_shared_prekey(expected_shared_prekey, profile->shared_prekey);
+
+  otrv4_assert_cmpmem(expected_shared_prekey,
+                      serialized + ED448_PUBKEY_BYTES + 14,
+                      ED448_SHARED_PREKEY_BYTES);
+
   free(serialized);
   user_profile_free(profile);
 }
@@ -57,6 +65,7 @@ void test_user_profile_serializes() {
   otrv4_keypair_generate(keypair, sym);
 
   user_profile_t *profile = user_profile_new("4");
+  otrv4_shared_prekey_generate(profile->shared_prekey, sym);
   otrv4_assert(profile != NULL);
   profile->expires = 15;
 
@@ -65,14 +74,11 @@ void test_user_profile_serializes() {
   otr_mpi_set(profile->transitional_signature, transitional_signature,
               sizeof(transitional_signature));
 
-  uint8_t expected_pubkey[ED448_PUBKEY_BYTES] = {0};
-  serialize_otrv4_public_key(expected_pubkey, keypair->pub);
-
   size_t written = 0;
   uint8_t *serialized = NULL;
   otrv4_assert(user_profile_asprintf(&serialized, &written, profile) ==
                OTR4_SUCCESS);
-  g_assert_cmpint(written, ==, 231);
+  g_assert_cmpint(written, ==, 290);
 
   // check "body"
   size_t body_len = 0;
@@ -104,6 +110,7 @@ void test_user_profile_deserializes() {
   otrv4_keypair_generate(keypair, sym);
 
   user_profile_t *profile = user_profile_new("4");
+  otrv4_shared_prekey_generate(profile->shared_prekey, sym);
   otrv4_assert(profile != NULL);
   user_profile_sign(profile, keypair);
 
@@ -129,6 +136,7 @@ void test_user_profile_signs_and_verify() {
   otrv4_keypair_generate(keypair, sym);
 
   user_profile_t *profile = user_profile_new("4");
+  otrv4_shared_prekey_generate(profile->shared_prekey, sym);
   otrv4_assert(profile != NULL);
   user_profile_sign(profile, keypair);
 
@@ -151,6 +159,7 @@ void test_user_profile_build() {
 
   profile = user_profile_build("3", keypair);
   g_assert_cmpstr(profile->versions, ==, "3");
+  otrv4_assert(DECAF_TRUE == decaf_448_point_valid(profile->shared_prekey));
 
   user_profile_free(profile);
 }

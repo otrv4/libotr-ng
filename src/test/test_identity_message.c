@@ -151,6 +151,7 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   otrv4_assert(dh_keypair_generate(invalid_dh) == OTR4_SUCCESS);
 
   user_profile_t *invalid_profile = user_profile_new("2");
+  otrv4_shared_prekey_generate(invalid_profile->shared_prekey, sym);
   ec_point_copy(invalid_profile->pub_key, invalid_ecdh->pub);
   dake_identity_message_t *invalid_identity_message =
       dake_identity_message_new(invalid_profile);

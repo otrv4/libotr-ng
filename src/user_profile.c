@@ -39,6 +39,7 @@ void user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
   ec_point_copy(dst->pub_key, src->pub_key);
   dst->versions = otrv4_strdup(src->versions);
   dst->expires = src->expires;
+  ec_point_copy(dst->shared_prekey, src->shared_prekey);
 
   memcpy(dst->signature, src->signature, sizeof(eddsa_signature_t));
   otr_mpi_copy(dst->transitional_signature, src->transitional_signature);
@@ -69,13 +70,15 @@ static int user_profile_body_serialize(uint8_t *dst,
   target += serialize_data(target, (uint8_t *)profile->versions,
                            strlen(profile->versions) + 1);
   target += serialize_uint64(target, profile->expires);
+  target += serialize_otrv4_shared_prekey(target, profile->shared_prekey);
 
   return target - dst;
 }
 
 otr4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
                                       const user_profile_t *profile) {
-  size_t s = ED448_PUBKEY_BYTES + strlen(profile->versions) + 1 + 4 + 8;
+  size_t s = ED448_PUBKEY_BYTES + strlen(profile->versions) +
+             ED448_SHARED_PREKEY_BYTES + 1 + 4 + 8;
 
   uint8_t *buff = malloc(s);
   if (!buff)
@@ -145,6 +148,12 @@ otr4_err_t user_profile_deserialize(user_profile_t *target,
 
     if (deserialize_uint64(&target->expires, buffer + walked, buflen - walked,
                            &read))
+      continue;
+
+    walked += read;
+
+    if (deserialize_otrv4_shared_prekey(target->shared_prekey, buffer + walked,
+                                        buflen - walked, &read))
       continue;
 
     walked += read;
@@ -233,6 +242,11 @@ user_profile_t *user_profile_build(const string_t versions,
 #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   time_t expires = time(NULL);
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
+
+  // TODO: check if this is the best place to generate
+  uint8_t sym[ED448_PRIVATE_BYTES];
+  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
+  otrv4_shared_prekey_generate(profile->shared_prekey, sym);
 
   if (user_profile_sign(profile, keypair)) {
     user_profile_free(profile);
