@@ -8,12 +8,12 @@
 const tlv_type_t tlv_types[] = {OTRV4_TLV_PADDING,   OTRV4_TLV_DISCONNECTED,
                                 OTRV4_TLV_SMP_MSG_1, OTRV4_TLV_SMP_MSG_2,
                                 OTRV4_TLV_SMP_MSG_3, OTRV4_TLV_SMP_MSG_4,
-                                OTRV4_TLV_SMP_ABORT};
+                                OTRV4_TLV_SMP_ABORT, OTRV4_TLV_SYM_KEY};
 
 void set_tlv_type(tlv_t *tlv, uint16_t tlv_type) {
   tlv_type_t type = OTRV4_TLV_NONE;
 
-  if (tlv_type >= 0 && tlv_type < 7) {
+  if (tlv_type >= 0 && tlv_type < 8) {
     type = tlv_types[tlv_type];
   }
 

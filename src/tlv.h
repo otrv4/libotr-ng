@@ -12,7 +12,8 @@ typedef enum {
   OTRV4_TLV_SMP_MSG_2 = 3,
   OTRV4_TLV_SMP_MSG_3 = 4,
   OTRV4_TLV_SMP_MSG_4 = 5,
-  OTRV4_TLV_SMP_ABORT = 6
+  OTRV4_TLV_SMP_ABORT = 6,
+  OTRV4_TLV_SYM_KEY = 7
 } tlv_type_t;
 
 typedef struct tlv_s {

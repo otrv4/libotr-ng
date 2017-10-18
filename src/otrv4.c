@@ -1017,6 +1017,7 @@ static tlv_t *otrv4_process_smp(otr4_smp_event_t event, smp_context_t smp,
   case OTRV4_TLV_NONE:
   case OTRV4_TLV_PADDING:
   case OTRV4_TLV_DISCONNECTED:
+  case OTRV4_TLV_SYM_KEY:
     // Ignore. They should not be passed to this function.
     break;
   }
