@@ -19,18 +19,19 @@ void smp_context_init(smp_context_t smp) {
   smp->msg1 = NULL;
   smp->secret = NULL;
 
+  // TODO: not needed
   ec_scalar_destroy(smp->a2);
   ec_scalar_destroy(smp->a3);
   ec_scalar_destroy(smp->b3);
 
-  ec_point_destroy(smp->G2);
-  ec_point_destroy(smp->G3);
-  ec_point_destroy(smp->G3a);
-  ec_point_destroy(smp->G3b);
-  ec_point_destroy(smp->Pb);
-  ec_point_destroy(smp->Qb);
-  ec_point_destroy(smp->Pa_Pb);
-  ec_point_destroy(smp->Qa_Qb);
+  memset(smp->G2, 0, ED448_POINT_BYTES);
+  memset(smp->G3, 0, ED448_POINT_BYTES);
+  memset(smp->G3a, 0, ED448_POINT_BYTES);
+  memset(smp->G3b, 0, ED448_POINT_BYTES);
+  memset(smp->Pb, 0, ED448_POINT_BYTES);
+  memset(smp->Qb, 0, ED448_POINT_BYTES);
+  memset(smp->Pa_Pb, 0, ED448_POINT_BYTES);
+  memset(smp->Qa_Qb, 0, ED448_POINT_BYTES);
 }
 
 void smp_destroy(smp_context_t smp) {
