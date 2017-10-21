@@ -375,8 +375,7 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   k_ecdh_t k_ecdh;
   shared_secret_t shared;
 
-  ecdh_shared_secret(k_ecdh, ED448_POINT_BYTES, manager->our_ecdh,
-                     manager->their_ecdh);
+  ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
   otr4_err_t err = calculate_brace_key(manager);
   if (err)

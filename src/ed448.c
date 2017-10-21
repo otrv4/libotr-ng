@@ -41,8 +41,7 @@ void ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
   decaf_ed448_derive_public_key(pub, sym);
 }
 
-void ecdh_shared_secret(uint8_t *shared, size_t shared_bytes,
-                        const ecdh_keypair_t *our_priv,
+void ecdh_shared_secret(uint8_t *shared, const ecdh_keypair_t *our_priv,
                         const ec_point_t their_pub) {
   decaf_448_point_t s;
   decaf_448_point_scalarmul(s, their_pub, our_priv->priv);

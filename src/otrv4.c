@@ -1067,10 +1067,11 @@ static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
   }
 
   if (tlv->type == OTRV4_TLV_SYM_KEY && tlv->len >= 4) {
-    // TODO: check it has an extrakey
+    // TODO: check it has extrakey
     unsigned int use = extract_word(tlv->data + 4, tlv->len);
     received_symkey_cb(otr->conversation, use, tlv->data + 8, tlv->len - 8,
                        otr->keys->extra_key);
+    sodium_memzero(otr->keys->extra_key, sizeof(otr->keys->extra_key));
     return NULL;
   }
 
@@ -1362,11 +1363,6 @@ static otr4_err_t encrypt_data_message(data_message_t *data_msg,
   }
 
   data_msg->enc_msg_len = message_len;
-
-  data_msg->enc_msg = malloc(data_msg->enc_msg_len);
-  if (!data_msg->enc_msg)
-    return OTR4_ERROR;
-
   data_msg->enc_msg = c;
 
 #ifdef DEBUG
