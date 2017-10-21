@@ -6,7 +6,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 @CODE_COVERAGE_RULES@
 
-ci: test mem-check coverage-check
+ci: test mem-check
 
 test: check
 	$(top_builddir)/src/test/test
