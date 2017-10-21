@@ -15,6 +15,8 @@ data_message_t *data_message_new() {
   ret->enc_msg = NULL;
   ret->enc_msg_len = 0;
 
+  memset(ret->ecdh, 0, ED448_POINT_BYTES);
+
   memset(ret->nonce, 0, sizeof ret->nonce);
   memset(ret->mac, 0, sizeof ret->mac);
 

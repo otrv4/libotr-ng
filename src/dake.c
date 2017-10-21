@@ -26,6 +26,7 @@ dake_identity_message_new(const user_profile_t *profile) {
   identity_message->sender_instance_tag = 0;
   identity_message->receiver_instance_tag = 0;
   identity_message->profile->versions = NULL;
+  memset(identity_message->Y, 0, ED448_POINT_BYTES);
   identity_message->B = NULL;
   user_profile_copy(identity_message->profile, profile);
 
