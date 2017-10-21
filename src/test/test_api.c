@@ -514,6 +514,130 @@ void test_api_smp(void) {
   OTR4_FREE;
 }
 
+// TODO: reduce this test
+void test_api_extra_sym_key(void) {
+  OTR4_INIT;
+
+  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
+
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
+      1}; // non-random private key on purpose
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+
+  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
+      2}; // non-random private key on purpose
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
+
+  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
+  otrv4_t *alice = otrv4_new(alice_state, policy);
+  otrv4_assert(!alice->keys->old_mac_keys);
+  otrv4_t *bob = otrv4_new(bob_state, policy);
+  otrv4_assert(!bob->keys->old_mac_keys);
+
+  // AKE HAS FINISHED.
+  do_ake_fixture(alice, bob);
+
+  int message_id;
+  otrv4_response_t *response_to_bob = NULL;
+  otrv4_response_t *response_to_alice = NULL;
+
+  // Alice sends a data message
+  string_t to_send = NULL;
+
+  otr4_err_t err;
+
+  for (message_id = 2; message_id < 5; message_id++) {
+    err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
+    assert_msg_sent(err, to_send);
+    otrv4_assert(!alice->keys->old_mac_keys);
+
+    // This is a follow up message.
+    g_assert_cmpint(alice->keys->i, ==, 0);
+    g_assert_cmpint(alice->keys->j, ==, message_id);
+
+    // Bob receives a data message
+    response_to_alice = otrv4_response_new();
+    otr4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
+    assert_msg_rec(err, "hi", response_to_alice);
+    otrv4_assert(bob->keys->old_mac_keys);
+
+    free_message_and_response(response_to_alice, &to_send);
+
+    g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, message_id - 1);
+
+    // Next message Bob sends is a new "ratchet"
+    g_assert_cmpint(bob->keys->i, ==, 0);
+    g_assert_cmpint(bob->keys->j, ==, 0);
+  }
+
+  for (message_id = 1; message_id < 4; message_id++) {
+    // Bob sends a data message
+    err = otrv4_prepare_to_send_message(&to_send, "hello", tlv, bob);
+    assert_msg_sent(err, to_send);
+
+    g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
+
+    // New ratchet hapenned
+    g_assert_cmpint(bob->keys->i, ==, 1);
+    g_assert_cmpint(bob->keys->j, ==, message_id);
+
+    // Alice receives a data message
+    response_to_bob = otrv4_response_new();
+    otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
+    assert_msg_rec(err, "hello", response_to_bob);
+    g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
+
+    free_message_and_response(response_to_bob, &to_send);
+
+    // Alice follows the ratchet 1 (and prepares to a new "ratchet")
+    g_assert_cmpint(alice->keys->i, ==, 1);
+    g_assert_cmpint(alice->keys->j, ==, 0);
+  }
+
+  uint16_t tlv_len = 10;
+  uint8_t tlv_data[10] = {0x00, 0x07, 0x00, 0x07, 0x08,
+                          0x05, 0x09, 0x00, 0x02, 0x04};
+  tlv_t *tlvs = otrv4_tlv_new(OTRV4_TLV_SYM_KEY, tlv_len, tlv_data);
+  otrv4_assert(tlvs);
+
+  // Bob sends a message with TLV
+  err = otrv4_prepare_to_send_message(&to_send, "hello", tlvs, bob);
+  assert_msg_sent(err, to_send);
+
+  g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
+  otrv4_tlv_free(tlvs);
+
+  // Alice receives a data message with TLV
+  response_to_bob = otrv4_response_new();
+  otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
+               OTR4_SUCCESS);
+  g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
+
+  // Check TLVS
+  otrv4_assert(response_to_bob->tlvs);
+  g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRV4_TLV_SYM_KEY);
+  g_assert_cmpint(response_to_bob->tlvs->len, ==, tlv_len);
+  otrv4_assert_cmpmem(response_to_bob->tlvs->data, tlv_data, tlv_len);
+
+  // TODO: check this padding
+  otrv4_assert(response_to_bob->tlvs->next);
+  g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRV4_TLV_PADDING);
+  //TODO: check
+  //g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 247);
+
+  otr4_client_state_free(alice_state);
+  otr4_client_state_free(bob_state);
+
+  otrv4_free(bob);
+  otrv4_free(alice);
+
+  otrv4_tlv_free(tlv);
+
+  OTR4_FREE;
+}
 static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name,
                            int byte) {
   set_up_state(state, account_name);

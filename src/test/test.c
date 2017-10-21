@@ -177,6 +177,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/api/messaging", test_api_messaging);
   g_test_add_func("/api/instance_tag", test_instance_tag_api);
   g_test_add_func("/api/dh_key_rotation", test_dh_key_rotation);
+  g_test_add_func("/api/extra_symm_key", test_api_extra_sym_key);
 
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);

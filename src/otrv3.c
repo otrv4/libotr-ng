@@ -66,6 +66,12 @@ static void handle_smp_event_cb(const otr4_smp_event_t event,
   }
 }
 
+// TODO: check
+static void received_symkey_cb(const otr4_conversation_state_t *otr,
+                               unsigned int use, const unsigned char *usedata,
+                               size_t usedatalen, const unsigned char *symkey) {
+}
+
 static OtrlPolicy op_policy(void *opdata, ConnContext *context) {
   // TODO: should we use OTRL_POLICY_DEFAULT?;
   // TODO: Should an error restart AKE?
@@ -173,6 +179,7 @@ static void op_account_name_free(void *opdata, const char *account_name) {}
 static void op_received_symkey(void *opdata, ConnContext *context,
                                unsigned int use, const unsigned char *usedata,
                                size_t usedatalen, const unsigned char *symkey) {
+  received_symkey_cb(opdata, use, usedata, usedatalen, symkey);
 }
 
 /* Return a string according to the error event. This string will then

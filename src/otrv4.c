@@ -101,6 +101,26 @@ static void handle_smp_event_cb(const otr4_smp_event_t event,
   }
 }
 
+// TODO: should be implemented on client side
+static void received_symkey_cb(const otr4_conversation_state_t *conv,
+                               unsigned int use, const unsigned char *usedata,
+                               size_t usedatalen, const unsigned char *symkey) {
+#ifdef DEBUG
+  printf("Received symkey use: %08x\nKey: ", use);
+  printf("Usedata lenght: %zu\n", usedatalen);
+  printf("Usedata: ");
+  for (int i = 0; i < usedatalen; i++) {
+    printf("%02x", usedata[i]);
+  }
+  printf("\n");
+  printf("Symkey: ");
+  for (int i = 0; i < HASH_BYTES; i++) {
+    printf("%02x", symkey[i]);
+  }
+  printf("\n");
+#endif
+}
+
 static void maybe_create_keys(const otr4_conversation_state_t *conv) {
   if (!conv->client->keypair)
     create_privkey_cb(conv);
@@ -1028,6 +1048,12 @@ static tlv_t *otrv4_process_smp(otr4_smp_event_t event, smp_context_t smp,
   return to_send;
 }
 
+static unsigned int extract_word(unsigned char *bufp, size_t len) {
+  unsigned int use =
+      (bufp[0] << 24) | (bufp[1] << 16) | (bufp[2] << 8) | bufp[3];
+  return use;
+}
+
 static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
   if (tlv->type == OTRV4_TLV_NONE) {
     return NULL;
@@ -1044,12 +1070,19 @@ static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
     return NULL;
   }
 
+  if (tlv->type == OTRV4_TLV_SYM_KEY && tlv->len >= 4) {
+    // TODO: check it has an extrakey
+    unsigned int use = extract_word(tlv->data + 4, tlv->len);
+    received_symkey_cb(otr->conversation, use, tlv->data + 8, tlv->len - 8,
+                       otr->keys->extra_key);
+    return NULL;
+  }
+
   otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
   tlv_t *out = otrv4_process_smp(event, otr->smp, tlv);
   handle_smp_event_cb(event, otr->smp->progress,
                       otr->smp->msg1 ? otr->smp->msg1->question : NULL,
                       otr->conversation);
-
   return out;
 }
 
@@ -1072,6 +1105,7 @@ static otr4_err_t receive_tlvs(tlv_t **to_send, otrv4_response_t *response,
   }
 
   *to_send = cursor;
+
   return OTR4_SUCCESS;
 }
 
@@ -1150,16 +1184,17 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
 
     key_manager_prepare_to_ratchet(otr->keys);
 
-    if (reply_tlv)
+    if (reply_tlv) {
       if (otrv4_prepare_to_send_message(&response->to_send, "", reply_tlv, otr))
         continue;
+    }
 
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
 
     sodium_memzero(enc_key, sizeof(enc_key));
-    sodium_memzero(mac_key, sizeof(mac_key));
     otrv4_tlv_free(reply_tlv);
+    sodium_memzero(mac_key, sizeof(mac_key));
     data_message_free(msg);
 
     return OTR4_SUCCESS;
