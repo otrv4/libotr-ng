@@ -59,7 +59,6 @@ void ratchet_free(ratchet_t *ratchet) {
 void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 {
   memset(manager->our_ecdh->pub, 0, ED448_POINT_BYTES);
-  memset(manager->our_ecdh->priv, 0, ED448_PRIVATE_BYTES);
   manager->our_dh->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
   manager->our_dh->priv = gcry_mpi_new(DH_KEY_SIZE);
 

@@ -243,13 +243,11 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
   buff_cp[0] = 0x05;
   decaf_448_point_scalarmul(temp_point, smp->G3, pair_r5->priv);
 
-  // TODO: test for better error generation here
   serialize_ec_point(buff_cp + 1, temp_point);
 
   decaf_448_point_scalarmul(temp_point, smp->G2, r6);
   decaf_448_point_add(temp_point, pair_r5->pub, temp_point);
 
-  // TODO: test for better error generation here
   serialize_ec_point(buff_cp + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff_cp, ED448_POINT_BYTES * 2 + 1, dst->cp))
