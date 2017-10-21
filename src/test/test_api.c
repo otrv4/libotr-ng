@@ -625,8 +625,10 @@ void test_api_extra_sym_key(void) {
   // TODO: check this padding
   otrv4_assert(response_to_bob->tlvs->next);
   g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRV4_TLV_PADDING);
-  //TODO: check
-  //g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 247);
+  // TODO: check
+  // g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 247);
+
+  free_message_and_response(response_to_bob, &to_send);
 
   otr4_client_state_free(alice_state);
   otr4_client_state_free(bob_state);
