@@ -26,6 +26,7 @@ before_install:
   - sudo apt-get update --quiet --assume-yes
   - sudo apt-get install splint --quiet --assume-yes
   - sudo apt-get install valgrind --quiet --assume-yes
+  - sudo apt-get install lcov --quiet --assume-yes
 
 before_script:
   - mkdir .deps
@@ -43,7 +44,7 @@ before_script:
 script:
   - export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
   - export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
-  - ./autogen.sh && ./configure --disable-shared
+  - ./autogen.sh && ./configure --disable-shared --enable-coverage
   - if [[ $(lsb_release -c -s) == "precise" ]]; then make ci; fi
   - if [[ $(lsb_release -c -s) == "trusty" ]];  then make ci; fi
 
