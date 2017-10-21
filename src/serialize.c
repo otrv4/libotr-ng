@@ -53,8 +53,9 @@ size_t serialize_mpi(uint8_t *dst, const otr_mpi_t mpi) {
   return serialize_data(dst, mpi->data, mpi->len);
 }
 
-otr4_err_t serialize_ec_point(uint8_t *dst, const ec_point_t point) {
-  return ec_point_serialize(dst, ED448_POINT_BYTES, point);
+int serialize_ec_point(uint8_t *dst, const ec_point_t point) {
+  ec_point_serialize(dst, point);
+  return ED448_POINT_BYTES;
 }
 
 size_t serialize_ec_scalar(uint8_t *dst, const ec_scalar_t scalar) {
@@ -87,10 +88,7 @@ otr4_err_t serialize_dh_public_key(uint8_t *dst, size_t *len,
 size_t serialize_otrv4_public_key(uint8_t *dst, const otrv4_public_key_t pub) {
   uint8_t *cursor = dst;
   cursor += serialize_uint16(cursor, ED448_PUBKEY_TYPE);
-  if (serialize_ec_point(cursor, pub)) {
-    return 0;
-  }
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, pub);
 
   return cursor - dst;
 }
@@ -100,10 +98,7 @@ serialize_otrv4_shared_prekey(uint8_t *dst,
                               const otrv4_shared_prekey_t shared_prekey) {
   uint8_t *cursor = dst;
   cursor += serialize_uint16(cursor, ED448_SHARED_PREKEY_TYPE);
-  if (serialize_ec_point(cursor, shared_prekey)) {
-    return 0;
-  }
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, shared_prekey);
 
   return cursor - dst;
 }

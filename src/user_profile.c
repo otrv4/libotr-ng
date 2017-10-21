@@ -191,11 +191,9 @@ otr4_err_t user_profile_sign(user_profile_t *profile,
     return OTR4_ERROR;
 
   uint8_t pubkey[ED448_POINT_BYTES];
-  if (ec_point_serialize(pubkey, ED448_POINT_BYTES, keypair->pub)) {
-    return OTR4_ERROR;
-  }
-  // maybe ec_derive_public_key again?
+  ec_point_serialize(pubkey, keypair->pub);
 
+  // maybe ec_derive_public_key again?
   ec_sign(profile->signature, (uint8_t *)keypair->sym, pubkey, body, bodylen);
 
   free(body);
@@ -219,11 +217,7 @@ bool user_profile_valid_signature(const user_profile_t *profile) {
     return false;
 
   uint8_t pubkey[ED448_POINT_BYTES];
-  if (ec_point_serialize(pubkey, ED448_POINT_BYTES, profile->pub_key)) {
-    free(body);
-    body = NULL;
-    return false;
-  }
+  ec_point_serialize(pubkey, profile->pub_key);
 
   bool valid = ec_verify(profile->signature, pubkey, body, bodylen);
 

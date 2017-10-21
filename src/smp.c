@@ -129,8 +129,7 @@ otr4_err_t generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp) {
   snizkpk_keypair_generate(pair_r3);
 
   hash[0] = 0x01;
-  if (serialize_ec_point(hash + 1, pair_r2->pub))
-    return OTR4_ERROR;
+  serialize_ec_point(hash + 1, pair_r2->pub);
 
   if (hashToScalar(hash, sizeof(hash), dst->c2))
     return OTR4_ERROR;
@@ -139,8 +138,7 @@ otr4_err_t generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp) {
   decaf_448_scalar_sub(dst->d2, pair_r2->priv, a2c2);
 
   hash[0] = 0x02;
-  if (serialize_ec_point(hash + 1, pair_r3->pub))
-    return OTR4_ERROR;
+  serialize_ec_point(hash + 1, pair_r3->pub);
 
   if (hashToScalar(hash, sizeof(hash), dst->c3))
     return OTR4_ERROR;
@@ -167,18 +165,10 @@ otr4_err_t smp_msg_1_asprintf(uint8_t **dst, size_t *len,
   uint8_t *cursor = *dst;
 
   cursor += serialize_data(cursor, (uint8_t *)msg->question, msg->q_len);
-
-  if (serialize_ec_point(cursor, msg->G2a))
-    return OTR4_ERROR;
-
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, msg->G2a);
   cursor += serialize_ec_scalar(cursor, msg->c2);
   cursor += serialize_ec_scalar(cursor, msg->d2);
-
-  if (serialize_ec_point(cursor, msg->G3a))
-    return OTR4_ERROR;
-
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, msg->G3a);
   cursor += serialize_ec_scalar(cursor, msg->c3);
   cursor += serialize_ec_scalar(cursor, msg->d3);
 
@@ -208,8 +198,7 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 
   /* c2 */
   buff[0] = 0x03;
-  if (serialize_ec_point(buff + 1, pair_r2->pub))
-    return OTR4_ERROR;
+  serialize_ec_point(buff + 1, pair_r2->pub);
 
   if (hashToScalar(buff, ED448_POINT_BYTES + 1, dst->c2))
     return OTR4_ERROR;
@@ -220,8 +209,7 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 
   /* c3 */
   buff[0] = 0x04;
-  if (serialize_ec_point(buff + 1, pair_r3->pub))
-    return OTR4_ERROR;
+  serialize_ec_point(buff + 1, pair_r3->pub);
 
   if (hashToScalar(buff, ED448_POINT_BYTES + 1, dst->c3))
     return OTR4_ERROR;
@@ -256,15 +244,13 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
   decaf_448_point_scalarmul(temp_point, smp->G3, pair_r5->priv);
 
   // TODO: test for better error generation here
-  if (serialize_ec_point(buff_cp + 1, temp_point))
-    return OTR4_ERROR;
+  serialize_ec_point(buff_cp + 1, temp_point);
 
   decaf_448_point_scalarmul(temp_point, smp->G2, r6);
   decaf_448_point_add(temp_point, pair_r5->pub, temp_point);
 
   // TODO: test for better error generation here
-  if (serialize_ec_point(buff_cp + 1 + ED448_POINT_BYTES, temp_point))
-    return OTR4_ERROR;
+  serialize_ec_point(buff_cp + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff_cp, ED448_POINT_BYTES * 2 + 1, dst->cp))
     return OTR4_ERROR;
@@ -293,28 +279,14 @@ bool smp_msg_2_aprint(uint8_t **dst, size_t *len, const smp_msg_2_t *msg) {
   *len = s;
   cursor = *dst;
 
-  if (serialize_ec_point(cursor, msg->G2b))
-    return OTR4_ERROR;
-
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, msg->G2b);
   cursor += serialize_ec_scalar(cursor, msg->c2);
   cursor += serialize_ec_scalar(cursor, msg->d2);
-
-  if (serialize_ec_point(cursor, msg->G3b))
-    return false;
-
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, msg->G3b);
   cursor += serialize_ec_scalar(cursor, msg->c3);
   cursor += serialize_ec_scalar(cursor, msg->d3);
-
-  if (serialize_ec_point(cursor, msg->Pb))
-    return false;
-
-  cursor += ED448_POINT_BYTES;
-  if (serialize_ec_point(cursor, msg->Qb))
-    return false;
-
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, msg->Pb);
+  cursor += serialize_ec_point(cursor, msg->Qb);
   cursor += serialize_ec_scalar(cursor, msg->cp);
   cursor += serialize_ec_scalar(cursor, msg->d5);
   cursor += serialize_ec_scalar(cursor, msg->d6);
@@ -462,8 +434,7 @@ bool smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   decaf_448_point_add(G_d, G_d, Gb_c);
 
   hash[0] = 0x03;
-  if (serialize_ec_point(hash + 1, G_d))
-    return false;
+  serialize_ec_point(hash + 1, G_d);
 
   if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar))
     return false;
@@ -476,8 +447,7 @@ bool smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   decaf_448_point_add(G_d, G_d, Gb_c);
 
   hash[0] = 0x04;
-  if (serialize_ec_point(hash + 1, G_d))
-    return false;
+  serialize_ec_point(hash + 1, G_d);
 
   if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar))
     return false;
@@ -492,8 +462,7 @@ bool smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   decaf_448_point_add(G_d, G_d, point_cp);
 
   buff[0] = 0x05;
-  if (serialize_ec_point(buff + 1, G_d))
-    return false;
+  serialize_ec_point(buff + 1, G_d);
 
   decaf_448_point_scalarmul(point_cp, msg->Qb, msg->cp);
   decaf_448_point_scalarmul(G_d, smp->G2, msg->d6);
@@ -502,8 +471,7 @@ bool smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   decaf_448_point_scalarmul(point_cp, decaf_448_point_base, msg->d5);
   decaf_448_point_add(G_d, G_d, point_cp);
 
-  if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, G_d))
-    return false;
+  serialize_ec_point(buff + 1 + ED448_POINT_BYTES, G_d);
 
   if (hashToScalar(buff, sizeof(buff), temp_scalar))
     return false;
@@ -539,14 +507,12 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
   decaf_448_point_scalarmul(temp_point, smp->G3, pair_r5->priv);
 
   buff[0] = 0x06;
-  if (serialize_ec_point(buff + 1, temp_point))
-    return OTR4_ERROR;
+  serialize_ec_point(buff + 1, temp_point);
 
   decaf_448_point_scalarmul(temp_point, smp->G2, r6);
   decaf_448_point_add(temp_point, pair_r5->pub, temp_point);
 
-  if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point))
-    return OTR4_ERROR;
+  serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), dst->cp))
     return OTR4_ERROR;
@@ -565,12 +531,10 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
 
   /* cr = HashToScalar(7 || G * r7 || (Qa - Qb) * r7) */
   buff[0] = 0x07;
-  if (serialize_ec_point(buff + 1, pair_r7->pub))
-    return OTR4_ERROR;
+  serialize_ec_point(buff + 1, pair_r7->pub);
 
   decaf_448_point_scalarmul(temp_point, smp->Qa_Qb, pair_r7->priv);
-  if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point))
-    return OTR4_ERROR;
+  serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), dst->cr))
     return OTR4_ERROR;
@@ -596,23 +560,12 @@ bool smp_msg_3_aprint(uint8_t **dst, size_t *len, const smp_msg_3_t *msg) {
   *len = s;
   cursor = *dst;
 
-  if (serialize_ec_point(cursor, msg->Pa))
-    return false;
-
-  cursor += ED448_POINT_BYTES;
-
-  if (serialize_ec_point(cursor, msg->Qa))
-    return false;
-
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, msg->Pa);
+  cursor += serialize_ec_point(cursor, msg->Qa);
   cursor += serialize_ec_scalar(cursor, msg->cp);
   cursor += serialize_ec_scalar(cursor, msg->d5);
   cursor += serialize_ec_scalar(cursor, msg->d6);
-
-  if (serialize_ec_point(cursor, msg->Ra))
-    return false;
-
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, msg->Ra);
   cursor += serialize_ec_scalar(cursor, msg->cr);
   cursor += serialize_ec_scalar(cursor, msg->d7);
 
@@ -689,16 +642,14 @@ bool smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
   decaf_448_point_scalarmul(temp_point, msg->Pa, msg->cp);
   decaf_448_point_scalarmul(temp_point_2, smp->G3, msg->d5);
   decaf_448_point_add(temp_point, temp_point, temp_point_2);
-  if (serialize_ec_point(buff + 1, temp_point))
-    return false;
+  serialize_ec_point(buff + 1, temp_point);
 
   decaf_448_point_scalarmul(temp_point, msg->Qa, msg->cp);
   decaf_448_point_scalarmul(temp_point_2, smp->G2, msg->d6);
   decaf_448_point_add(temp_point, temp_point, temp_point_2);
   decaf_448_point_scalarmul(temp_point_2, decaf_448_point_base, msg->d5);
   decaf_448_point_add(temp_point, temp_point, temp_point_2);
-  if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point))
-    return false;
+  serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), temp_scalar))
     return false;
@@ -711,16 +662,14 @@ bool smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
   decaf_448_point_add(temp_point, temp_point, temp_point_2);
 
   buff[0] = 0x07;
-  if (serialize_ec_point(buff + 1, temp_point))
-    return false;
+  serialize_ec_point(buff + 1, temp_point);
 
   decaf_448_point_scalarmul(temp_point, msg->Ra, msg->cr);
   decaf_448_point_sub(temp_point_2, msg->Qa, smp->Qb);
   decaf_448_point_scalarmul(temp_point_2, temp_point_2, msg->d7);
   decaf_448_point_add(temp_point, temp_point, temp_point_2);
 
-  if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point))
-    return false;
+  serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), temp_scalar))
     return false;
@@ -741,12 +690,10 @@ bool generate_smp_msg_4(smp_msg_4_t *dst, const smp_msg_3_t *msg_3,
 
   /* cr = HashToScalar(8 || G * r7 || (Qa - Qb) * r7) */
   buff[0] = 0x08;
-  if (serialize_ec_point(buff + 1, pair_r7->pub))
-    return false;
+  serialize_ec_point(buff + 1, pair_r7->pub);
 
   decaf_448_point_scalarmul(Qa_Qb, Qa_Qb, pair_r7->priv);
-  if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, Qa_Qb))
-    return false;
+  serialize_ec_point(buff + 1 + ED448_POINT_BYTES, Qa_Qb);
 
   if (hashToScalar(buff, sizeof(buff), dst->cr))
     return false;
@@ -770,10 +717,7 @@ bool smp_msg_4_aprint(uint8_t **dst, size_t *len, smp_msg_4_t *msg) {
 
   uint8_t *cursor = *dst;
 
-  if (serialize_ec_point(cursor, msg->Rb))
-    return false;
-
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, msg->Rb);
   cursor += serialize_ec_scalar(cursor, msg->cr);
   cursor += serialize_ec_scalar(cursor, msg->d7);
 
@@ -817,14 +761,12 @@ bool smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
   decaf_448_point_add(temp_point, temp_point, temp_point_2);
 
   buff[0] = 0x08;
-  if (serialize_ec_point(buff + 1, temp_point))
-    return false;
+  serialize_ec_point(buff + 1, temp_point);
 
   decaf_448_point_scalarmul(temp_point, msg->Rb, msg->cr);
   decaf_448_point_scalarmul(temp_point_2, smp->Qa_Qb, msg->d7);
   decaf_448_point_add(temp_point, temp_point, temp_point_2);
-  if (serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point))
-    return false;
+  serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), temp_scalar))
     return false;

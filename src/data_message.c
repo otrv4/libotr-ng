@@ -60,11 +60,8 @@ otr4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
   cursor += serialize_uint32(cursor, data_msg->receiver_instance_tag);
   cursor += serialize_uint8(cursor, data_msg->flags);
   cursor += serialize_uint32(cursor, data_msg->message_id);
-  if (serialize_ec_point(cursor, data_msg->ecdh)) {
-    free(dst);
-    return OTR4_ERROR;
-  }
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, data_msg->ecdh);
+
   // TODO: This could be NULL. We need to test.
   size_t len = 0;
   if (serialize_dh_public_key(cursor, &len, data_msg->dh)) {

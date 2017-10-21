@@ -37,8 +37,7 @@ void ed448_test_eddsa_serialization() {
 
   // 2. Serialize using EdDSA
   uint8_t enc[DECAF_EDDSA_448_PUBLIC_BYTES];
-  otrv4_assert(ec_point_serialize(enc, DECAF_EDDSA_448_PUBLIC_BYTES, p) ==
-               OTR4_SUCCESS);
+  ec_point_serialize(enc, p);
 
   // 3. Deserialize
   ec_point_t dec;

@@ -41,13 +41,13 @@ void ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
   decaf_ed448_derive_public_key(pub, sym);
 }
 
-otr4_err_t ecdh_shared_secret(uint8_t *shared, size_t shared_bytes,
-                              const ecdh_keypair_t *our_priv,
-                              const ec_point_t their_pub) {
+void ecdh_shared_secret(uint8_t *shared, size_t shared_bytes,
+                        const ecdh_keypair_t *our_priv,
+                        const ec_point_t their_pub) {
   decaf_448_point_t s;
   decaf_448_point_scalarmul(s, their_pub, our_priv->priv);
 
-  return ec_point_serialize(shared, shared_bytes, s);
+  ec_point_serialize(shared, s);
 }
 
 void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src) {
@@ -69,14 +69,8 @@ void ec_scalar_deserialize(ec_scalar_t scalar,
   decaf_448_scalar_decode_long(scalar, serialized, ED448_SCALAR_BYTES);
 }
 
-otr4_err_t ec_point_serialize(uint8_t *dst, size_t dst_len,
-                              const ec_point_t point) {
-  if (dst_len < ED448_POINT_BYTES)
-    return OTR4_ERROR;
-
+void ec_point_serialize(uint8_t *dst, const ec_point_t point) {
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(dst, point);
-
-  return OTR4_SUCCESS;
 }
 
 otr4_err_t ec_point_deserialize(ec_point_t point,

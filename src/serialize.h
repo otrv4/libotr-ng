@@ -25,7 +25,7 @@ size_t serialize_data(uint8_t *target, const uint8_t *data, size_t len);
 
 size_t serialize_mpi(uint8_t *dst, const otr_mpi_t mpi);
 
-otr4_err_t serialize_ec_point(uint8_t *dst, const ec_point_t point);
+int serialize_ec_point(uint8_t *dst, const ec_point_t point);
 
 size_t serialize_ec_scalar(uint8_t *dst, const ec_scalar_t scalar);
 

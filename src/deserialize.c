@@ -180,6 +180,7 @@ otr4_err_t deserialize_otrv4_shared_prekey(otrv4_shared_prekey_t shared_prekey,
   return OTR4_SUCCESS;
 }
 
+// TODO: check if return is necessesary
 otr4_err_t deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *serialized,
                                  size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES)

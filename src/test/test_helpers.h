@@ -80,6 +80,7 @@ static inline void otrv4_assert_point_equals(const ec_point_t expected,
 
 // Free all functions
 
+// TODO: should this take __cdecl?
 static void otrv4_response_free_all(int num, ...) {
   va_list args;
   va_start(args, num);

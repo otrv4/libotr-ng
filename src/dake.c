@@ -71,12 +71,8 @@ otr4_err_t dake_identity_message_asprintf(
   cursor += serialize_uint32(cursor, identity_message->sender_instance_tag);
   cursor += serialize_uint32(cursor, identity_message->receiver_instance_tag);
   cursor += serialize_bytes_array(cursor, profile, profile_len);
-  if (serialize_ec_point(cursor, identity_message->Y)) {
-    free(profile);
-    free(buff);
-    return OTR4_ERROR;
-  }
-  cursor += ED448_POINT_BYTES;
+  cursor += serialize_ec_point(cursor, identity_message->Y);
+
   size_t len = 0;
   otr4_err_t err = serialize_dh_public_key(cursor, &len, identity_message->B);
   if (err) {
@@ -230,13 +226,8 @@ otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   cursor += serialize_uint32(cursor, dre_auth->sender_instance_tag);
   cursor += serialize_uint32(cursor, dre_auth->receiver_instance_tag);
   cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
-  if (serialize_ec_point(cursor, dre_auth->X)) {
-    free(our_profile);
-    free(buff);
-    return OTR4_ERROR;
-  }
+  cursor += serialize_ec_point(cursor, dre_auth->X);
 
-  cursor += ED448_POINT_BYTES;
   size_t len = 0;
 
   otr4_err_t err = serialize_dh_public_key(cursor, &len, dre_auth->A);

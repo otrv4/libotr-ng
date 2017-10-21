@@ -85,7 +85,7 @@ void test_data_message_serializes() {
   cursor += 16;
 
   uint8_t serialized_y[ED448_POINT_BYTES + 2] = {0};
-  ec_point_serialize(serialized_y, ED448_POINT_BYTES, data_msg->ecdh);
+  ec_point_serialize(serialized_y, data_msg->ecdh);
   otrv4_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
   cursor += sizeof(ec_public_key_t);
 

@@ -49,8 +49,7 @@ bool ec_point_eq(const ec_point_t, const ec_point_t);
 
 bool ec_point_valid(const ec_point_t point);
 
-otr4_err_t ec_point_serialize(uint8_t *dst, size_t dst_len,
-                              const ec_point_t point);
+void ec_point_serialize(uint8_t *dst, const ec_point_t point);
 
 otr4_err_t ec_point_deserialize(ec_point_t point,
                                 const uint8_t serialized[ED448_POINT_BYTES]);
@@ -65,9 +64,9 @@ void ecdh_keypair_generate(ecdh_keypair_t *keypair,
                            uint8_t sym[ED448_PRIVATE_BYTES]);
 void ecdh_keypair_destroy(ecdh_keypair_t *keypair);
 
-otr4_err_t ecdh_shared_secret(uint8_t *shared, size_t shared_bytes,
-                              const ecdh_keypair_t *our_priv,
-                              const ec_point_t their_pub);
+void ecdh_shared_secret(uint8_t *shared, size_t shared_bytes,
+                        const ecdh_keypair_t *our_priv,
+                        const ec_point_t their_pub);
 
 void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src);
 
