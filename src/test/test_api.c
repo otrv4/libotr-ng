@@ -6,19 +6,32 @@
 
 #include <libotr/privkey.h>
 
-#define assert_msg_sent(err, message_to_send, message)                         \
-  do {                                                                         \
-    otrv4_assert(err == OTR4_SUCCESS);                                         \
-    otrv4_assert(to_send);                                                     \
-    otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);                              \
-  } while (0)
+static void assert_msg_sent(otr4_err_t err, string_t to_send) {
+  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(to_send);
+  otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+}
 
-#define assert_rec_msg(err, message, response)                                 \
-  do {                                                                         \
-    otrv4_assert(err == OTR4_SUCCESS);                                         \
-    otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);   \
-    otrv4_assert(response->to_send == NULL);                                   \
-  } while (0)
+static void assert_msg_rec(otr4_err_t err, const string_t message,
+                           otrv4_response_t *response) {
+  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);
+  otrv4_assert(response->to_send == NULL);
+}
+
+static void assert_rec_msg_inc_state(otr4_err_t err,
+                                     otrv4_response_t *respond_to,
+                                     otrv4_t *sender, int state,
+                                     bool send_response) {
+  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(!respond_to->to_display);
+  otrv4_assert(sender->state == state);
+  if (send_response) {
+    otrv4_assert(respond_to->to_send);
+  } else {
+    otrv4_assert(!respond_to->to_send);
+  }
+}
 
 void free_message_and_response(otrv4_response_t *response, string_t *message) {
   otrv4_response_free(response);
@@ -62,7 +75,7 @@ void test_api_conversation(void) {
 
   for (message_id = 2; message_id < 5; message_id++) {
     err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
-    assert_msg_sent(err, to_send, "hi");
+    assert_msg_sent(err, to_send);
     otrv4_assert(!alice->keys->old_mac_keys);
 
     // This is a follow up message.
@@ -72,7 +85,7 @@ void test_api_conversation(void) {
     // Bob receives a data message
     response_to_alice = otrv4_response_new();
     otr4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
-    assert_rec_msg(err, "hi", response_to_alice);
+    assert_msg_rec(err, "hi", response_to_alice);
     otrv4_assert(bob->keys->old_mac_keys);
 
     free_message_and_response(response_to_alice, &to_send);
@@ -87,7 +100,7 @@ void test_api_conversation(void) {
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
     err = otrv4_prepare_to_send_message(&to_send, "hello", tlv, bob);
-    assert_msg_sent(err, to_send, "hello");
+    assert_msg_sent(err, to_send);
 
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
 
@@ -98,7 +111,7 @@ void test_api_conversation(void) {
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
     otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
-    assert_rec_msg(err, "hello", response_to_bob);
+    assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
 
     free_message_and_response(response_to_bob, &to_send);
@@ -115,7 +128,7 @@ void test_api_conversation(void) {
 
   // Bob sends a message with TLV
   err = otrv4_prepare_to_send_message(&to_send, "hi", tlvs, bob);
-  assert_msg_sent(err, to_send, "hello");
+  assert_msg_sent(err, to_send);
 
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
   otrv4_tlv_free(tlvs);
@@ -182,7 +195,7 @@ void test_dh_key_rotation(void) {
   for (ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
     // Bob sends a data message
     err = otrv4_prepare_to_send_message(&to_send, "hello", tlv, bob);
-    assert_msg_sent(err, to_send, "hello");
+    assert_msg_sent(err, to_send);
 
     // New ratchet happened
     g_assert_cmpint(bob->keys->i, ==, ratchet_id);
@@ -191,7 +204,7 @@ void test_dh_key_rotation(void) {
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
     otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
-    assert_rec_msg(err, "hello", response_to_bob);
+    assert_msg_rec(err, "hello", response_to_bob);
 
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(alice->keys->i, ==, ratchet_id);
@@ -205,7 +218,7 @@ void test_dh_key_rotation(void) {
 
     // Now alice ratchets
     err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
-    assert_msg_sent(err, to_send, "hi");
+    assert_msg_sent(err, to_send);
 
     g_assert_cmpint(alice->keys->i, ==, ratchet_id + 1);
     g_assert_cmpint(alice->keys->j, ==, 1);
@@ -213,7 +226,7 @@ void test_dh_key_rotation(void) {
     // Bob receives a data message
     response_to_alice = otrv4_response_new();
     err = otrv4_receive_message(response_to_alice, to_send, bob);
-    assert_rec_msg(err, "hi", response_to_alice);
+    assert_msg_rec(err, "hi", response_to_alice);
 
     free_message_and_response(response_to_alice, &to_send);
 
@@ -511,19 +524,6 @@ static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name,
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
   return otrv4_new(state, policy);
 }
-
-#define assert_rec_msg_inc_state(err, respond_to, sender, otrv4_state,         \
-                                 send_response)                                \
-  do {                                                                         \
-    otrv4_assert(err == OTR4_SUCCESS);                                         \
-    otrv4_assert(!respond_to->to_display);                                     \
-    otrv4_assert(sender->state == otrv4_state);                                \
-    if (send_response) {                                                       \
-      otrv4_assert(respond_to->to_send);                                       \
-    } else {                                                                   \
-      otrv4_assert(!respond_to->to_send);                                      \
-    }                                                                          \
-  } while (0)
 
 void test_api_multiple_clients(void) {
   OTR4_INIT;
