@@ -26,16 +26,21 @@ Configure project
 $ ./configure
 ```
 
-Configure project with debug options with `gdb`
+Configure project with debug option with `gdb`
 ```
 $ ./configure CFLAGS="-g -ggdb3 -O0" CXXFLAGS="-g -ggdb3 -O0" LDFLAGS="-g -ggdb3" --disable-shared
 $ gdb [path/test/executable]
 ```
 
-Configure project with debug options with `lldb`
+Configure project with debug option with `lldb`
 ```
 $ ./configure CFLAGS="-g -ggdb3 -O0" CXXFLAGS="-g -ggdb3 -O0" LDFLAGS="-g -ggdb3" --disable-shared
 $ lldb [path/test/executable]
+```
+
+Configure project with code-coverage option
+```
+$ ./configure --enable-code-coverage
 ```
 
 Build and install
