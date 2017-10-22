@@ -8,6 +8,9 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.])
 AM_SILENT_RULES([no])
 
+# Debug
+AX_CHECK_ENABLE_DEBUG([yes])
+
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AM_PROG_AR
 LT_INIT
@@ -46,6 +49,8 @@ AC_PROG_CC_STDC
 AX_CFLAGS_GCC_OPTION([-Wall])
 AX_CFLAGS_GCC_OPTION([-Werror])
 AX_CFLAGS_GCC_OPTION([-Wfatal-errors])
+
+# Code coverage
 AX_CODE_COVERAGE
 
 # Checks for library functions.
