@@ -622,11 +622,10 @@ void test_api_extra_sym_key(void) {
   g_assert_cmpint(response_to_bob->tlvs->len, ==, tlv_len);
   otrv4_assert_cmpmem(response_to_bob->tlvs->data, tlv_data, tlv_len);
 
-  // TODO: check this padding, this is not right
-  // otrv4_assert(response_to_bob->tlvs->next);
-  // g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRV4_TLV_PADDING);
-  // TODO: check
-  // g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 247);
+  // TODO: change this padding
+  otrv4_assert(response_to_bob->tlvs->next);
+  g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRV4_TLV_PADDING);
+  g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 247);
 
   free_message_and_response(response_to_bob, &to_send);
 

@@ -1540,7 +1540,7 @@ otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
   if (!otr)
     return OTR4_ERROR;
 
-  // TODO: why is this appending to tlvs?
+  // TODO: to check when a padding method is defined
   append_padding_tlv(tlvs, strlen(message));
 
   switch (otr->running_version) {

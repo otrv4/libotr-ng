@@ -69,7 +69,7 @@ static tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
   return NULL;
 }
 
-tlv_t *create_tlv_chain(tlv_t *head, tlv_t *tlv) {
+tlv_t *append_tlv(tlv_t *head, tlv_t *tlv) {
   if (!head)
     return tlv;
 
@@ -96,7 +96,7 @@ tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
     if (!tlv)
       break;
 
-    ret = create_tlv_chain(ret, tlv);
+    ret = append_tlv(ret, tlv);
 
     data_to_parse = len - written;
   }
@@ -157,11 +157,15 @@ tlv_t *otrv4_disconnected_tlv_new(void) {
   return otrv4_tlv_new(OTRV4_TLV_DISCONNECTED, 0, NULL);
 }
 
+// TODO: this seems loosly based on PKCS#7 as described on RFC 5652.
+// If it is the padding value is not set to zero, but rather to
+// the number of bytes added
+// In general zero padding scheme is not standarized for encryption
 void append_padding_tlv(tlv_t *tlvs, int message_len) {
-  int padding_factor = 256;
-  int padding_len = padding_factor - ((message_len + 4) % padding_factor);
+  int padding_granularity = 256;
+  int padding = padding_granularity - ((message_len + 4) % padding_granularity);
 
-  tlv_t *padding = otrv4_padding_tlv_new(padding_len);
+  tlv_t *padding_tlv = otrv4_padding_tlv_new(padding);
 
-  tlvs = create_tlv_chain(tlvs, padding);
+  tlvs = append_tlv(tlvs, padding_tlv);
 }
