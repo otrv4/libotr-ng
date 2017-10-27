@@ -148,7 +148,7 @@ void test_api_conversation(void) {
   // Check Padding
   otrv4_assert(response_to_bob->tlvs->next);
   g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRV4_TLV_PADDING);
-  g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 250);
+  g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 249);
 
   free_message_and_response(response_to_bob, &to_send);
 
@@ -625,7 +625,7 @@ void test_api_extra_sym_key(void) {
   // TODO: change this padding
   otrv4_assert(response_to_bob->tlvs->next);
   g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRV4_TLV_PADDING);
-  g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 247);
+  g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 246);
 
   free_message_and_response(response_to_bob, &to_send);
 

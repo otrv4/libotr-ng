@@ -135,20 +135,12 @@ tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
       otrv4_tlv_free(tlv);
       return NULL;
     }
+
+    if (tlv->type == OTRV4_TLV_PADDING)
+      return tlv;
+
     memcpy(tlv->data, data, tlv->len);
   }
-
-  return tlv;
-}
-
-tlv_t *otrv4_padding_tlv_new(size_t len) {
-  uint8_t *data = malloc(len);
-  if (!data)
-    return NULL;
-
-  memset(data, 0, len);
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, len, data);
-  free(data);
 
   return tlv;
 }
@@ -157,15 +149,18 @@ tlv_t *otrv4_disconnected_tlv_new(void) {
   return otrv4_tlv_new(OTRV4_TLV_DISCONNECTED, 0, NULL);
 }
 
-// TODO: this seems loosly based on PKCS#7 as described on RFC 5652.
-// If it is the padding value is not set to zero, but rather to
-// the number of bytes added
-// In general zero padding scheme is not standarized for encryption
-void append_padding_tlv(tlv_t *tlvs, int message_len) {
+otr4_err_t append_padding_tlv(tlv_t *tlvs, int message_len) {
   int padding_granularity = 256;
-  int padding = padding_granularity - ((message_len + 4) % padding_granularity);
+  int header_len = 4;
+  // TODO: check this
+  int padding = padding_granularity -
+                ((message_len + header_len + 1) % padding_granularity);
 
-  tlv_t *padding_tlv = otrv4_padding_tlv_new(padding);
+  tlv_t *padding_tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, padding, NULL);
+  if (!padding_tlv)
+    return OTR4_ERROR;
 
   tlvs = append_tlv(tlvs, padding_tlv);
+
+  return OTR4_SUCCESS;
 }

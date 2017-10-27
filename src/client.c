@@ -172,6 +172,8 @@ static int otrv4_send_message(char **newmsg, const char *message,
                               const char *recipient, otr4_client_t *client) {
   otr4_conversation_t *conv = NULL;
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
+  if (!tlv)
+    return 1;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)

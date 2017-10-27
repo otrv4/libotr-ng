@@ -1027,6 +1027,9 @@ static tlv_t *otrv4_process_smp(otr4_smp_event_t event, smp_context_t smp,
     // send a SMP abort to other peer.
     smp->state = SMPSTATE_EXPECT1;
     to_send = otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
+    if (!to_send)
+      return NULL;
+
     event = OTRV4_SMPEVENT_ABORT;
 
     break;
@@ -1540,8 +1543,8 @@ otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
   if (!otr)
     return OTR4_ERROR;
 
-  // TODO: to check when a padding method is defined
-  append_padding_tlv(tlvs, strlen(message));
+  if (append_padding_tlv(tlvs, strlen(message)))
+    return OTR4_ERROR;
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
@@ -1628,6 +1631,12 @@ static tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
                         conversation);
 
     tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);
+    if (!tlv) {
+      smp_msg_1_destroy(msg);
+      free(to_send);
+      return NULL;
+    }
+
     smp_msg_1_destroy(msg);
     free(to_send);
     return tlv;
@@ -1636,6 +1645,7 @@ static tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
   smp_msg_1_destroy(msg);
   handle_smp_event_cb(OTRV4_SMPEVENT_ERROR, smp->progress, smp->msg1->question,
                       conversation);
+
   return NULL;
 }
 

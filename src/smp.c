@@ -846,6 +846,7 @@ static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send,
   smp_msg_2_destroy(msg_2);
 
   *to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
+
   free(buff);
 
   if (!to_send)
@@ -962,6 +963,9 @@ static otr4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
 
   *to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
   free(buff);
+
+  if (!to_send)
+    return OTRV4_SMPEVENT_ERROR;
 
   /* Validates SMP */
   smp->progress = 100;

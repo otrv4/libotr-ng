@@ -113,7 +113,6 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/tlv/new", test_tlv_new);
   g_test_add_func("/tlv/parse", test_tlv_parse);
-  g_test_add_func("/tlv/new_padding", test_tlv_new_padding);
   g_test_add_func("/tlv/new_disconnected", test_tlv_new_disconnected);
   g_test_add_func("/tlv/append", test_append_tlv);
   g_test_add_func("/tlv/append_padding", test_append_padding_tlv);

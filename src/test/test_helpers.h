@@ -144,7 +144,7 @@ void assert_tlv_structure(tlv_t *tlv, tlv_type_t type, uint16_t len,
   } else {
     otrv4_assert(tlv->next == NULL);
   }
-  if (data != NULL) {
+  if (data != NULL || type != OTRV4_TLV_PADDING) {
     otrv4_assert_cmpmem(tlv->data, data, len);
   }
 }
