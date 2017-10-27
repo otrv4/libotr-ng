@@ -1543,10 +1543,12 @@ otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
   if (!otr)
     return OTR4_ERROR;
 
-  // TODO: this should be optional. Client might want or no to
-  // disguise the length of message
-  if (append_padding_tlv(tlvs, strlen(message)))
-    return OTR4_ERROR;
+  // Optional. Client might want or not to disguise the length of
+  // message
+  if (otr->conversation->client->pad) {
+    if (append_padding_tlv(tlvs, strlen(message)))
+      return OTR4_ERROR;
+  }
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:

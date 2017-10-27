@@ -14,9 +14,10 @@ otr4_client_state_t *otr4_client_state_new(void *client_id) {
   state->client_id = client_id;
   state->protocol_name = NULL;
   state->account_name = NULL;
+  state->callbacks = NULL;
   state->userstate = NULL;
   state->keypair = NULL;
-  state->callbacks = NULL;
+  state->pad = true; // TODO: for the time being
 
   return state;
 }
