@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "deserialize.h"
+#include "random.h"
 #include "tlv.h"
 
 const tlv_type_t tlv_types[] = {OTRV4_TLV_PADDING,   OTRV4_TLV_DISCONNECTED,
@@ -135,10 +136,6 @@ tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
       otrv4_tlv_free(tlv);
       return NULL;
     }
-
-    if (tlv->type == OTRV4_TLV_PADDING)
-      return tlv;
-
     memcpy(tlv->data, data, tlv->len);
   }
 
@@ -149,6 +146,19 @@ tlv_t *otrv4_disconnected_tlv_new(void) {
   return otrv4_tlv_new(OTRV4_TLV_DISCONNECTED, 0, NULL);
 }
 
+tlv_t *otrv4_padding_tlv_new(size_t len) {
+  uint8_t *data = malloc(len);
+  if (!data)
+    return NULL;
+
+  random_bytes(data, sizeof(data));
+  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, len, data);
+  free(data); // TODO: this shouldn't be the case.
+  // Maybe this is a potential mem leak.
+
+  return tlv;
+}
+
 otr4_err_t append_padding_tlv(tlv_t *tlvs, int message_len) {
   int padding_granularity = 256;
   int header_len = 4;
@@ -156,7 +166,7 @@ otr4_err_t append_padding_tlv(tlv_t *tlvs, int message_len) {
   int padding = padding_granularity -
                 ((message_len + header_len + 1) % padding_granularity);
 
-  tlv_t *padding_tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, padding, NULL);
+  tlv_t *padding_tlv = otrv4_padding_tlv_new(padding);
   if (!padding_tlv)
     return OTR4_ERROR;
 
