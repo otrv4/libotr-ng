@@ -26,3 +26,6 @@ code-style:
 code-style-doctor: code-style
 	git diff --exit-code .
 
+LOOPS = 10
+test-loop:
+	for ((i=1; i <= ${LOOPS}; ++i)) do make test && echo $$i || break; done
