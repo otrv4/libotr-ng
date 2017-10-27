@@ -81,7 +81,6 @@ void test_tlv_new_disconnected() {
 void test_append_tlv() {
   uint8_t smp2_data[2] = {0x03, 0x04};
   uint8_t smp3_data[3] = {0x05, 0x04, 0x03};
-  uint8_t padding_data[5] = {0x00};
 
   tlv_t *tlvs = NULL;
   tlv_t *smp_msg2_tlv =
@@ -108,8 +107,7 @@ void test_append_tlv() {
                        true);
   assert_tlv_structure(tlvs->next, OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data),
                        smp3_data, true);
-  // TODO: check
-  assert_tlv_structure(tlvs->next->next, OTRV4_TLV_PADDING, 5, padding_data,
+  assert_tlv_structure(tlvs->next->next, OTRV4_TLV_PADDING, 5, NULL,
                        false);
 
   otrv4_tlv_free(tlvs);
