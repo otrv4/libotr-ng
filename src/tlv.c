@@ -146,12 +146,13 @@ tlv_t *otrv4_disconnected_tlv_new(void) {
   return otrv4_tlv_new(OTRV4_TLV_DISCONNECTED, 0, NULL);
 }
 
+// TODO: check
 tlv_t *otrv4_padding_tlv_new(size_t len) {
   uint8_t *data = malloc(len);
   if (!data)
     return NULL;
 
-  random_bytes(data, sizeof(data));
+  random_bytes(data, len);
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, len, data);
   free(data); // TODO: this shouldn't be the case.
   // Maybe this is a potential mem leak.
