@@ -225,6 +225,7 @@ void test_smp_validates_msg_2(void) {
 
   otrv4_assert(smp_msg_2_aprint(&buff, &bufflen, msg_2) == true);
   tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, bufflen, buff);
+  otrv4_assert(tlv);
   free(buff);
 
   g_assert_cmpint(smp_msg_2_deserialize(smp_msg_2, tlv), ==, 0);
@@ -275,6 +276,7 @@ void test_smp_validates_msg_3(void) {
 
   otrv4_assert(smp_msg_3_aprint(&buff, &bufflen, msg_3) == true);
   tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);
+  otrv4_assert(tlv);
   free(buff);
 
   g_assert_cmpint(smp_msg_3_deserialize(msg_3, tlv), ==, 0);
@@ -322,6 +324,7 @@ void test_smp_validates_msg_4(void) {
 
   otrv4_assert(smp_msg_4_aprint(&buff, &bufflen, msg_4) == true);
   tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
+  otrv4_assert(tlv);
   free(buff);
 
   g_assert_cmpint(smp_msg_4_deserialize(msg_4, tlv), ==, 0);

@@ -911,6 +911,7 @@ static otr4_smp_event_t reply_with_smp_msg_3(tlv_t **to_send,
   smp_msg_3_destroy(msg_3);
 
   *to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, bufflen, buff);
+
   free(buff);
 
   if (!to_send)
@@ -962,6 +963,7 @@ static otr4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
     return OTRV4_SMPEVENT_ERROR;
 
   *to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
+
   free(buff);
 
   if (!to_send)

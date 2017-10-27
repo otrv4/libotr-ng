@@ -146,7 +146,6 @@ tlv_t *otrv4_disconnected_tlv_new(void) {
   return otrv4_tlv_new(OTRV4_TLV_DISCONNECTED, 0, NULL);
 }
 
-// TODO: check
 tlv_t *otrv4_padding_tlv_new(size_t len) {
   uint8_t *data = malloc(len);
   if (!data)
@@ -154,8 +153,7 @@ tlv_t *otrv4_padding_tlv_new(size_t len) {
 
   random_bytes(data, len);
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, len, data);
-  free(data); // TODO: this shouldn't be the case.
-  // Maybe this is a potential mem leak.
+  free(data);
 
   return tlv;
 }
@@ -163,9 +161,11 @@ tlv_t *otrv4_padding_tlv_new(size_t len) {
 otr4_err_t append_padding_tlv(tlv_t *tlvs, int message_len) {
   int padding_granularity = 256;
   int header_len = 4;
-  // TODO: check this
-  int padding = padding_granularity -
-                ((message_len + header_len + 1) % padding_granularity);
+  int nul_byte_len = 1;
+
+  int padding =
+      padding_granularity -
+      ((message_len + header_len + nul_byte_len) % padding_granularity);
 
   tlv_t *padding_tlv = otrv4_padding_tlv_new(padding);
   if (!padding_tlv)

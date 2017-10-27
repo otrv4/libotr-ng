@@ -137,6 +137,7 @@ static void otrv4_tlv_free_all(int num, ...) {
 
 void assert_tlv_structure(tlv_t *tlv, tlv_type_t type, uint16_t len,
                           uint8_t *data, bool next_exists) {
+  otrv4_assert(tlv);
   otrv4_assert(tlv->type == type);
   otrv4_assert(tlv->len == len);
   if (next_exists) {

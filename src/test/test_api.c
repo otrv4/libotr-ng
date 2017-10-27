@@ -43,7 +43,6 @@ void test_api_conversation(void) {
   OTR4_INIT;
 
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
-
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
@@ -540,7 +539,6 @@ void test_api_extra_sym_key(void) {
   // AKE HAS FINISHED.
   do_ake_fixture(alice, bob);
 
-  int message_id;
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;
 
@@ -549,53 +547,27 @@ void test_api_extra_sym_key(void) {
 
   otr4_err_t err;
 
-  for (message_id = 2; message_id < 5; message_id++) {
-    err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
-    assert_msg_sent(err, to_send);
-    otrv4_assert(!alice->keys->old_mac_keys);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
+  assert_msg_sent(err, to_send);
+  otrv4_assert(!alice->keys->old_mac_keys);
 
-    // This is a follow up message.
-    g_assert_cmpint(alice->keys->i, ==, 0);
-    g_assert_cmpint(alice->keys->j, ==, message_id);
+  // This is a follow up message.
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 2);
 
-    // Bob receives a data message
-    response_to_alice = otrv4_response_new();
-    otr4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
-    assert_msg_rec(err, "hi", response_to_alice);
-    otrv4_assert(bob->keys->old_mac_keys);
+  // Bob receives a data message
+  response_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(response_to_alice, to_send, bob);
+  assert_msg_rec(err, "hi", response_to_alice);
+  otrv4_assert(bob->keys->old_mac_keys);
 
-    free_message_and_response(response_to_alice, &to_send);
+  free_message_and_response(response_to_alice, &to_send);
 
-    g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, message_id - 1);
+  g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 1);
 
-    // Next message Bob sends is a new "ratchet"
-    g_assert_cmpint(bob->keys->i, ==, 0);
-    g_assert_cmpint(bob->keys->j, ==, 0);
-  }
-
-  for (message_id = 1; message_id < 4; message_id++) {
-    // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", tlv, bob);
-    assert_msg_sent(err, to_send);
-
-    g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
-
-    // New ratchet hapenned
-    g_assert_cmpint(bob->keys->i, ==, 1);
-    g_assert_cmpint(bob->keys->j, ==, message_id);
-
-    // Alice receives a data message
-    response_to_bob = otrv4_response_new();
-    otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
-    assert_msg_rec(err, "hello", response_to_bob);
-    g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
-
-    free_message_and_response(response_to_bob, &to_send);
-
-    // Alice follows the ratchet 1 (and prepares to a new "ratchet")
-    g_assert_cmpint(alice->keys->i, ==, 1);
-    g_assert_cmpint(alice->keys->j, ==, 0);
-  }
+  // Next message Bob sends is a new "ratchet"
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 0);
 
   uint16_t tlv_len = 10;
   uint8_t tlv_data[10] = {0x00, 0x07, 0x00, 0x07, 0x08,
@@ -614,7 +586,7 @@ void test_api_extra_sym_key(void) {
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
                OTR4_SUCCESS);
-  g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
+  g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 1);
 
   // Check TLVS
   otrv4_assert(response_to_bob->tlvs);
@@ -639,6 +611,7 @@ void test_api_extra_sym_key(void) {
 
   OTR4_FREE;
 }
+
 static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name,
                            int byte) {
   set_up_state(state, account_name);
