@@ -12,6 +12,7 @@ void snizkpk_keypair_generate(snizkpk_keypair_t *pair) {
   generate_keypair(pair->pub, pair->priv);
 }
 
+// TODO: check this base point
 /* in big endian */
 const unsigned char base_point_bytes_dup[ED448_POINT_BYTES] = {
     0x14, 0xfa, 0x30, 0xf2, 0x5b, 0x79, 0x08, 0x98, 0xad, 0xc8, 0xd7, 0x4e,
