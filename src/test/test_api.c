@@ -44,7 +44,9 @@ void test_api_conversation(void) {
 
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  alice_state->pad = true;
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+  bob_state->pad = true;
 
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
       1}; // non-random private key on purpose
@@ -519,7 +521,9 @@ void test_api_extra_sym_key(void) {
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  alice_state->pad = false;
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+  bob_state->pad = false;
 
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
       1}; // non-random private key on purpose
@@ -531,10 +535,8 @@ void test_api_extra_sym_key(void) {
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
   otrv4_t *alice = otrv4_new(alice_state, policy);
-  alice->conversation->client->pad = false;
   otrv4_assert(!alice->keys->old_mac_keys);
   otrv4_t *bob = otrv4_new(bob_state, policy);
-  bob->conversation->client->pad = false;
   otrv4_assert(!bob->keys->old_mac_keys);
 
   // AKE HAS FINISHED.

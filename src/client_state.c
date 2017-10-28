@@ -17,7 +17,7 @@ otr4_client_state_t *otr4_client_state_new(void *client_id) {
   state->callbacks = NULL;
   state->userstate = NULL;
   state->keypair = NULL;
-  state->pad = true; // TODO: for the time being
+  state->pad = false;
 
   return state;
 }
@@ -31,11 +31,12 @@ void otr4_client_state_free(otr4_client_state_t *state) {
   free(state->account_name);
   state->account_name = NULL;
 
+  state->callbacks = NULL;
+
   otrv4_keypair_free(state->keypair);
   state->keypair = NULL;
 
-  state->callbacks = NULL;
-
+  state->pad = false;
   free(state);
 }
 
