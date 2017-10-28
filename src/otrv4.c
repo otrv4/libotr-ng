@@ -1572,8 +1572,8 @@ static otr4_err_t otrv4_close_v4(string_t *to_send, otrv4_t *otr) {
 
   otr4_err_t err =
       otrv4_prepare_to_send_message(to_send, "", disconnected, otr);
-  otrv4_tlv_free(disconnected);
 
+  otrv4_tlv_free(disconnected);
   forget_our_keys(otr);
   otr->state = OTRV4_STATE_START;
   gone_insecure_cb(otr->conversation);
@@ -1594,6 +1594,61 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
     return OTR4_SUCCESS;
   case OTRV4_VERSION_4:
     return otrv4_close_v4(to_send, otr);
+  case OTRV4_VERSION_NONE:
+    return OTR4_ERROR;
+  }
+
+  return OTR4_ERROR;
+}
+
+static otr4_err_t
+otrv4_send_symkey_message_v4(string_t *to_send, unsigned int use,
+                             const unsigned char *usedata, size_t usedatalen,
+                             const unsigned char *symkey, otrv4_t *otr) {
+  if (usedatalen > 0 && !usedata) {
+    return OTR4_ERROR;
+  }
+
+  if (otr->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
+    unsigned char *tlv_data = malloc(usedatalen + 4);
+
+    tlv_data[0] = (use >> 24) & 0xff;
+    tlv_data[1] = (use >> 16) & 0xff;
+    tlv_data[2] = (use >> 8) & 0xff;
+    tlv_data[3] = (use)&0xff;
+    if (usedatalen > 0) {
+      memmove(tlv_data + 4, usedata, usedatalen);
+    }
+
+    tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SYM_KEY, usedatalen + 4, tlv_data);
+    free(tlv_data);
+
+    if (otrv4_prepare_to_send_message(to_send, "", tlv, otr)) {
+      otrv4_tlv_free(tlv);
+      return OTR4_ERROR;
+    }
+    return OTR4_SUCCESS;
+  }
+  return OTR4_ERROR;
+}
+
+otr4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
+                                     const unsigned char *usedata,
+                                     size_t usedatalen,
+                                     unsigned char *symkey,
+                                     otrv4_t *otr) {
+  if (!otr)
+    return OTR4_ERROR;
+
+  switch (otr->running_version) {
+  case OTRV4_VERSION_3:
+    otrv3_send_symkey_message(to_send, otr->otr3_conn, use, usedata, usedatalen,
+                              symkey); // TODO: This should return an error
+                                       // but errors are reported on a
+                                       // callback
+    return OTR4_SUCCESS;
+  case OTRV4_VERSION_4:
+    return otrv4_send_symkey_message_v4(to_send, use, usedata, usedatalen, symkey, otr);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }

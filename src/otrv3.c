@@ -484,11 +484,25 @@ otr4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
 }
 
 void otrv3_close(string_t *to_send, otr3_conn_t *conn) {
+  // TODO: there is also: otrl_message_disconnect, which only disconnects one
+  // instance
   otrl_message_disconnect_all_instances(conn->state->userstate, conn->ops,
                                         conn->opdata, conn->state->account_name,
                                         conn->state->protocol_name, conn->peer);
 
   from_injected_to_send(to_send);
+}
+
+otr4_err_t otrv3_send_symkey_message(string_t *to_send, otr3_conn_t *conn,
+                                     unsigned int use,
+                                     const unsigned char *usedata,
+                                     size_t usedatalen,
+                                     unsigned char *symkey) {
+  otrl_message_symkey(conn->state->userstate, conn->ops, conn->opdata,
+                      conn->ctx, use, usedata, usedatalen, symkey);
+  from_injected_to_send(to_send);
+
+  return OTR4_SUCCESS;
 }
 
 otr4_err_t otrv3_smp_start(string_t *to_send, const char *question,
