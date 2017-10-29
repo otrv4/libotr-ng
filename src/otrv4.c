@@ -1637,6 +1637,7 @@ otrv4_send_symkey_message_v4(string_t *to_send, unsigned int use,
       otrv4_tlv_free(tlv);
       return OTR4_ERROR;
     }
+    otrv4_tlv_free(tlv);
     return OTR4_SUCCESS;
   }
   return OTR4_ERROR;
