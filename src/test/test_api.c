@@ -572,10 +572,8 @@ void test_api_extra_sym_key(void) {
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
-  uint16_t tlv_len = 10;
-  // TODO: this should have the type and length
-  uint8_t tlv_data[10] = {0x00, 0x07, 0x00, 0x00, 0x08,
-                          0x05, 0x09, 0x00, 0x02, 0x04};
+  uint16_t tlv_len = 6;
+  uint8_t tlv_data[6] = {0x08, 0x05, 0x09, 0x00, 0x02, 0x04};
   // Bob sends a message with TLV
   int use = 134547712;
   uint8_t usedata[2] = {0x02, 0x04};

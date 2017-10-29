@@ -1072,9 +1072,9 @@ static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
 
   if (tlv->type == OTRV4_TLV_SYM_KEY && tlv->len >= 4) {
     if (otr->keys->extra_key > 0) {
-      unsigned int use = extract_word(tlv->data + 4, tlv->len);
+      unsigned int use = extract_word(tlv->data, tlv->len);
 
-      received_symkey_cb(otr->conversation, use, tlv->data + 8, tlv->len - 8,
+      received_symkey_cb(otr->conversation, use, tlv->data + 4, tlv->len - 4,
                          otr->keys->extra_key);
       sodium_memzero(otr->keys->extra_key, sizeof(otr->keys->extra_key));
       return NULL;
@@ -1614,23 +1614,17 @@ otrv4_send_symkey_message_v4(string_t *to_send, unsigned int use,
   }
 
   if (otr->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
-    unsigned char *tlv_data = malloc(usedatalen + 8);
+    unsigned char *tlv_data = malloc(usedatalen + 4);
 
-    // TODO: remove this
-    tlv_data[0] = 0x00;
-    tlv_data[1] = 0x07;
-    tlv_data[2] = 0x00;
-    tlv_data[3] = 0x00;
-
-    tlv_data[4] = (use >> 24) & 0xff;
-    tlv_data[5] = (use >> 16) & 0xff;
-    tlv_data[6] = (use >> 8) & 0xff;
-    tlv_data[7] = (use)&0xff;
+    tlv_data[0] = (use >> 24) & 0xff;
+    tlv_data[1] = (use >> 16) & 0xff;
+    tlv_data[2] = (use >> 8) & 0xff;
+    tlv_data[3] = (use)&0xff;
     if (usedatalen > 0) {
-      memmove(tlv_data + 8, usedata, usedatalen);
+      memmove(tlv_data + 4, usedata, usedatalen);
     }
 
-    tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SYM_KEY, usedatalen + 8, tlv_data);
+    tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SYM_KEY, usedatalen + 4, tlv_data);
     free(tlv_data);
 
     if (otrv4_prepare_to_send_message(to_send, "", tlv, otr)) {
