@@ -66,11 +66,25 @@ static void handle_smp_event_cb(const otr4_smp_event_t event,
   }
 }
 
-// TODO: check
 static void received_symkey_cb(const otr4_conversation_state_t *otr,
                                unsigned int use, const unsigned char *usedata,
                                size_t usedatalen,
-                               const unsigned char *extra_key) {}
+                               const unsigned char *extra_key) {
+#ifdef DEBUG
+  printf("Received symkey use: %08x\n", use);
+  printf("Usedata lenght: %zu\n", usedatalen);
+  printf("Usedata: ");
+  for (int i = 0; i < usedatalen; i++) {
+    printf("%02x", usedata[i]);
+  }
+  printf("\n");
+  printf("Symkey: ");
+  for (int i = 0; i < HASH_BYTES; i++) {
+    printf("0x%02x, ", extra_key[i]);
+  }
+  printf("\n");
+#endif
+}
 
 static OtrlPolicy op_policy(void *opdata, ConnContext *context) {
   // TODO: should we use OTRL_POLICY_DEFAULT?;

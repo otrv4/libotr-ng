@@ -574,7 +574,7 @@ void test_api_extra_sym_key(void) {
 
   uint16_t tlv_len = 10;
   // TODO: this should have the type and length
-  uint8_t tlv_data[10] = {0x00, 0x00, 0x00, 0x00, 0x08,
+  uint8_t tlv_data[10] = {0x00, 0x07, 0x00, 0x00, 0x08,
                           0x05, 0x09, 0x00, 0x02, 0x04};
   // Bob sends a message with TLV
   int use = 134547712;

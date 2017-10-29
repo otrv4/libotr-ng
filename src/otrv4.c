@@ -107,7 +107,7 @@ static void received_symkey_cb(const otr4_conversation_state_t *conv,
                                size_t usedatalen,
                                const unsigned char *extra_key) {
 #ifdef DEBUG
-  printf("Received symkey use: %08x\nKey: ", use);
+  printf("Received symkey use: %08x\n", use);
   printf("Usedata lenght: %zu\n", usedatalen);
   printf("Usedata: ");
   for (int i = 0; i < usedatalen; i++) {
@@ -1615,6 +1615,12 @@ otrv4_send_symkey_message_v4(string_t *to_send, unsigned int use,
 
   if (otr->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
     unsigned char *tlv_data = malloc(usedatalen + 8);
+
+    // TODO: remove this
+    tlv_data[0] = 0x00;
+    tlv_data[1] = 0x07;
+    tlv_data[2] = 0x00;
+    tlv_data[3] = 0x00;
 
     tlv_data[4] = (use >> 24) & 0xff;
     tlv_data[5] = (use >> 16) & 0xff;
