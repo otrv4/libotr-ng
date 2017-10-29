@@ -17,6 +17,7 @@ libotr4_la_SOURCES = \
 		     keys.c \
 		     key_management.c \
 		     list.c \
+		     mem.c \
 		     messaging.c \
 		     mpi.c \
 		     otrv3.c \
@@ -52,6 +53,7 @@ otrinc_HEADERS = b64.h \
 		 keys.h \
 		 key_management.h \
 		 list.h \
+		 mem.h \
 		 mpi.h \
 		 messaging.h \
 		 otrv3.h \
