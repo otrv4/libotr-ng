@@ -172,16 +172,12 @@ bool not_expired(time_t expires) {
 
 static bool no_rollback_detected(const char *versions) {
   while (*versions) {
-    if (*versions == '2' || *versions == '1')
+    if (*versions != '3' && *versions != '4')
       return false;
 
-    if (*versions == '3' || *versions == '4') {
-      versions++;
-      return true;
-    }
-  }
-
-  return false;
+versions++;
+}
+  return true;
 }
 
 bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
