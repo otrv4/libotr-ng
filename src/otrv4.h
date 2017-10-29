@@ -152,7 +152,7 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr);
 otr4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
                                      const unsigned char *usedata,
                                      size_t usedatalen,
-                                     unsigned char *symkey, otrv4_t *otr);
+                                     unsigned char *extra_key, otrv4_t *otr);
 
 otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
                            const size_t q_len, const uint8_t *secret,

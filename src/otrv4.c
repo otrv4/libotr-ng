@@ -104,7 +104,8 @@ static void handle_smp_event_cb(const otr4_smp_event_t event,
 // TODO: should be implemented on client side
 static void received_symkey_cb(const otr4_conversation_state_t *conv,
                                unsigned int use, const unsigned char *usedata,
-                               size_t usedatalen, const unsigned char *symkey) {
+                               size_t usedatalen,
+                               const unsigned char *extra_key) {
 #ifdef DEBUG
   printf("Received symkey use: %08x\nKey: ", use);
   printf("Usedata lenght: %zu\n", usedatalen);
@@ -115,7 +116,7 @@ static void received_symkey_cb(const otr4_conversation_state_t *conv,
   printf("\n");
   printf("Symkey: ");
   for (int i = 0; i < HASH_BYTES; i++) {
-    printf("%02x", symkey[i]);
+    printf("0x%02x, ", extra_key[i]);
   }
   printf("\n");
 #endif
@@ -1070,11 +1071,14 @@ static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
   }
 
   if (tlv->type == OTRV4_TLV_SYM_KEY && tlv->len >= 4) {
-    // TODO: check it has extrakey
-    unsigned int use = extract_word(tlv->data + 4, tlv->len);
-    received_symkey_cb(otr->conversation, use, tlv->data + 8, tlv->len - 8,
-                       otr->keys->extra_key);
-    sodium_memzero(otr->keys->extra_key, sizeof(otr->keys->extra_key));
+    if (otr->keys->extra_key > 0) {
+      unsigned int use = extract_word(tlv->data + 4, tlv->len);
+
+      received_symkey_cb(otr->conversation, use, tlv->data + 8, tlv->len - 8,
+                         otr->keys->extra_key);
+      sodium_memzero(otr->keys->extra_key, sizeof(otr->keys->extra_key));
+      return NULL;
+    }
     return NULL;
   }
 
@@ -1604,23 +1608,23 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
 static otr4_err_t
 otrv4_send_symkey_message_v4(string_t *to_send, unsigned int use,
                              const unsigned char *usedata, size_t usedatalen,
-                             const unsigned char *symkey, otrv4_t *otr) {
+                             const unsigned char *extra_key, otrv4_t *otr) {
   if (usedatalen > 0 && !usedata) {
     return OTR4_ERROR;
   }
 
   if (otr->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
-    unsigned char *tlv_data = malloc(usedatalen + 4);
+    unsigned char *tlv_data = malloc(usedatalen + 8);
 
-    tlv_data[0] = (use >> 24) & 0xff;
-    tlv_data[1] = (use >> 16) & 0xff;
-    tlv_data[2] = (use >> 8) & 0xff;
-    tlv_data[3] = (use)&0xff;
+    tlv_data[4] = (use >> 24) & 0xff;
+    tlv_data[5] = (use >> 16) & 0xff;
+    tlv_data[6] = (use >> 8) & 0xff;
+    tlv_data[7] = (use)&0xff;
     if (usedatalen > 0) {
-      memmove(tlv_data + 4, usedata, usedatalen);
+      memmove(tlv_data + 8, usedata, usedatalen);
     }
 
-    tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SYM_KEY, usedatalen + 4, tlv_data);
+    tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SYM_KEY, usedatalen + 8, tlv_data);
     free(tlv_data);
 
     if (otrv4_prepare_to_send_message(to_send, "", tlv, otr)) {
@@ -1635,20 +1639,20 @@ otrv4_send_symkey_message_v4(string_t *to_send, unsigned int use,
 otr4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
                                      const unsigned char *usedata,
                                      size_t usedatalen,
-                                     unsigned char *symkey,
-                                     otrv4_t *otr) {
+                                     unsigned char *extra_key, otrv4_t *otr) {
   if (!otr)
     return OTR4_ERROR;
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     otrv3_send_symkey_message(to_send, otr->otr3_conn, use, usedata, usedatalen,
-                              symkey); // TODO: This should return an error
-                                       // but errors are reported on a
-                                       // callback
+                              extra_key); // TODO: This should return an error
+                                          // but errors are reported on a
+                                          // callback
     return OTR4_SUCCESS;
   case OTRV4_VERSION_4:
-    return otrv4_send_symkey_message_v4(to_send, use, usedata, usedatalen, symkey, otr);
+    return otrv4_send_symkey_message_v4(to_send, use, usedata, usedatalen,
+                                        extra_key, otr);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }

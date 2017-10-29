@@ -69,8 +69,8 @@ static void handle_smp_event_cb(const otr4_smp_event_t event,
 // TODO: check
 static void received_symkey_cb(const otr4_conversation_state_t *otr,
                                unsigned int use, const unsigned char *usedata,
-                               size_t usedatalen, const unsigned char *symkey) {
-}
+                               size_t usedatalen,
+                               const unsigned char *extra_key) {}
 
 static OtrlPolicy op_policy(void *opdata, ConnContext *context) {
   // TODO: should we use OTRL_POLICY_DEFAULT?;
@@ -178,8 +178,9 @@ static void op_account_name_free(void *opdata, const char *account_name) {}
  * information (some id for the data transfer, for example). */
 static void op_received_symkey(void *opdata, ConnContext *context,
                                unsigned int use, const unsigned char *usedata,
-                               size_t usedatalen, const unsigned char *symkey) {
-  received_symkey_cb(opdata, use, usedata, usedatalen, symkey);
+                               size_t usedatalen,
+                               const unsigned char *extra_key) {
+  received_symkey_cb(opdata, use, usedata, usedatalen, extra_key);
 }
 
 /* Return a string according to the error event. This string will then
@@ -497,9 +498,9 @@ otr4_err_t otrv3_send_symkey_message(string_t *to_send, otr3_conn_t *conn,
                                      unsigned int use,
                                      const unsigned char *usedata,
                                      size_t usedatalen,
-                                     unsigned char *symkey) {
+                                     unsigned char *extra_key) {
   otrl_message_symkey(conn->state->userstate, conn->ops, conn->opdata,
-                      conn->ctx, use, usedata, usedatalen, symkey);
+                      conn->ctx, use, usedata, usedatalen, extra_key);
   from_injected_to_send(to_send);
 
   return OTR4_SUCCESS;

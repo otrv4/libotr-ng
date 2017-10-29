@@ -573,17 +573,18 @@ void test_api_extra_sym_key(void) {
   g_assert_cmpint(bob->keys->j, ==, 0);
 
   uint16_t tlv_len = 10;
-  uint8_t tlv_data[10] = {0x00, 0x07, 0x00, 0x07, 0x08,
+  // TODO: this should have the type and length
+  uint8_t tlv_data[10] = {0x00, 0x00, 0x00, 0x00, 0x08,
                           0x05, 0x09, 0x00, 0x02, 0x04};
-  tlv_t *tlvs = otrv4_tlv_new(OTRV4_TLV_SYM_KEY, tlv_len, tlv_data);
-  otrv4_assert(tlvs);
-
   // Bob sends a message with TLV
-  err = otrv4_prepare_to_send_message(&to_send, "hello", tlvs, bob);
+  int use = 134547712;
+  uint8_t usedata[2] = {0x02, 0x04};
+  uint16_t usedatalen = 2;
+  err = otrv4_send_symkey_message(&to_send, use, usedata, usedatalen,
+                                  bob->keys->extra_key, bob);
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
-  otrv4_tlv_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
