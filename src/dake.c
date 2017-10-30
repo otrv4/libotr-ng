@@ -175,8 +175,8 @@ static bool no_rollback_detected(const char *versions) {
     if (*versions != '3' && *versions != '4')
       return false;
 
-versions++;
-}
+    versions++;
+  }
   return true;
 }
 

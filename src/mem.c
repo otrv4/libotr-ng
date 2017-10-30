@@ -22,14 +22,12 @@
 
 #include "mem.h"
 
-int mem_diff(const unsigned char *buf1, const unsigned char *buf2,
-    size_t len)
-{
-    volatile unsigned char diff = 0;
-    size_t i;
+int mem_diff(const unsigned char *buf1, const unsigned char *buf2, size_t len) {
+  volatile unsigned char diff = 0;
+  size_t i;
 
-    for (i = 0; i < len; ++i) {
-        diff |= (buf1[i] ^ buf2[i]);
-    }
-    return (diff != 0);
+  for (i = 0; i < len; ++i) {
+    diff |= (buf1[i] ^ buf2[i]);
+  }
+  return (diff != 0);
 }

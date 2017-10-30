@@ -46,4 +46,5 @@ otr4_err_t otrv3_smp_start(string_t *to_send, const char *queston,
 otr4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret,
                               const size_t secretlen, otr3_conn_t *conn);
 
+otr4_err_t otrv3_smp_abort(otr3_conn_t *conn);
 #endif

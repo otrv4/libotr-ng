@@ -26,7 +26,6 @@
 /* Compare two memory blocks in time dependent on the length of the
  * blocks, but not their contents.  Returns 1 if they differ, 0 if they
  * are the same. */
-int mem_diff(const unsigned char *buf1, const unsigned char *buf2,
-    size_t len);
+int mem_diff(const unsigned char *buf1, const unsigned char *buf2, size_t len);
 
 #endif

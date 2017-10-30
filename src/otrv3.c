@@ -542,3 +542,9 @@ otr4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret,
   from_injected_to_send(to_send);
   return OTR4_SUCCESS;
 }
+
+otr4_err_t otrv3_smp_abort(otr3_conn_t *conn) {
+  otrl_message_abort_smp(conn->state->userstate, conn->ops, conn->opdata,
+                         conn->ctx);
+  return OTR4_SUCCESS;
+}
