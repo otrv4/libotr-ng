@@ -106,9 +106,16 @@ otr4_err_t dh_shared_secret(uint8_t *shared, size_t shared_bytes,
                             const dh_public_key_t their_pub) {
   gcry_mpi_t secret = gcry_mpi_new(DH3072_MOD_LEN_BITS);
   gcry_mpi_powm(secret, their_pub, our_priv, DH3072_MODULUS);
+  size_t written;
+  uint8_t buffer[shared_bytes];
   gcry_error_t err =
-      gcry_mpi_print(GCRYMPI_FMT_USG, shared, shared_bytes, NULL, secret);
+      gcry_mpi_print(GCRYMPI_FMT_USG, buffer, shared_bytes, &written, secret);
+
   gcry_mpi_release(secret);
+
+  // Replace removed leading zeroes to ensure sise is 384
+  memset(shared, 0, shared_bytes);
+  memcpy(shared + shared_bytes - written, buffer, written);
 
   if (err) {
     return OTR4_ERROR;
