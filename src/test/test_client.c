@@ -701,10 +701,10 @@ void test_valid_identity_msg_in_waiting_auth_r_lower() {
   query_msg_to_bob = NULL;
 
   decaf_word_t x, y, z, t;
-  x = 0x1;
-  y = 0x1;
-  z = 0x1;
-  t = 0x1;
+  x = 0x0;
+  y = 0x0;
+  z = 0x0;
+  t = 0x0;
 
   decaf_448_point_t p = {{{{{x}}}, {{{y}}}, {{{z}}}, {{{t}}}}};
   ec_point_copy(alice_to_bob->conn->keys->our_ecdh->pub, p);
