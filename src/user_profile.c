@@ -95,7 +95,10 @@ otr4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
 
 otr4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
                                  const user_profile_t *profile) {
-  // TODO: should it check if the profile is signed?
+  // TODO: should it checked here for signature?
+  if (!(profile->signature > 0))
+    return OTR4_ERROR;
+
   uint8_t *buff = NULL;
   size_t body_len = 0;
   uint8_t *body = NULL;
@@ -206,13 +209,9 @@ otr4_err_t user_profile_sign(user_profile_t *profile,
 bool user_profile_valid_signature(const user_profile_t *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
-  uint8_t empty_signature[ED448_SIGNATURE_BYTES];
-  memset(empty_signature, 0, ED448_SIGNATURE_BYTES);
 
-  // TODO: change this to a len check rather than memcmp
-  if (memcmp(profile->signature, empty_signature, ED448_SIGNATURE_BYTES) == 0) {
+  if (!(profile->signature > 0))
     return false;
-  }
 
   if (user_profile_body_asprintf(&body, &bodylen, profile))
     return false;
