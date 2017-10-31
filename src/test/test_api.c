@@ -33,10 +33,10 @@ static void assert_rec_msg_inc_state(otr4_err_t err,
   }
 }
 
-void free_message_and_response(otrv4_response_t *response, string_t *message) {
+void free_message_and_response(otrv4_response_t *response, string_t message) {
   otrv4_response_free(response);
-  free(*message);
-  *message = NULL;
+  free(message);
+  message = NULL;
 }
 
 void test_api_conversation(void) {
@@ -89,7 +89,7 @@ void test_api_conversation(void) {
     assert_msg_rec(err, "hi", response_to_alice);
     otrv4_assert(bob->keys->old_mac_keys);
 
-    free_message_and_response(response_to_alice, &to_send);
+    free_message_and_response(response_to_alice, to_send);
 
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, message_id - 1);
 
@@ -115,7 +115,7 @@ void test_api_conversation(void) {
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
 
-    free_message_and_response(response_to_bob, &to_send);
+    free_message_and_response(response_to_bob, to_send);
 
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(alice->keys->i, ==, 1);
@@ -151,7 +151,7 @@ void test_api_conversation(void) {
   g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRV4_TLV_PADDING);
   g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 249);
 
-  free_message_and_response(response_to_bob, &to_send);
+  free_message_and_response(response_to_bob, to_send);
 
   otr4_client_state_free(alice_state);
   otr4_client_state_free(bob_state);
@@ -215,7 +215,7 @@ void test_dh_key_rotation(void) {
       otrv4_assert(bob->keys->our_dh->priv != NULL);
     }
 
-    free_message_and_response(response_to_bob, &to_send);
+    free_message_and_response(response_to_bob, to_send);
 
     // Now alice ratchets
     err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
@@ -229,7 +229,7 @@ void test_dh_key_rotation(void) {
     err = otrv4_receive_message(response_to_alice, to_send, bob);
     assert_msg_rec(err, "hi", response_to_alice);
 
-    free_message_and_response(response_to_alice, &to_send);
+    free_message_and_response(response_to_alice, to_send);
 
     g_assert_cmpint(bob->keys->i, ==, ratchet_id + 1);
     g_assert_cmpint(bob->keys->j, ==, 0); // New ratchet should happen
@@ -396,7 +396,7 @@ void test_api_conversation_v3(void) {
   otrv4_assert(response_to_alice->to_display);
   otrv4_assert_cmpmem("hi", response_to_alice->to_display, 3);
   otrv4_assert(!response_to_alice->to_send);
-  free_message_and_response(response_to_alice, &to_send);
+  free_message_and_response(response_to_alice, to_send);
 
   // Bob sends a data message
   otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", tlv, bob) ==
@@ -412,7 +412,7 @@ void test_api_conversation_v3(void) {
   otrv4_assert(response_to_bob->to_display);
   otrv4_assert_cmpmem("hi", response_to_bob->to_display, 3);
   otrv4_assert(!response_to_bob->to_send);
-  free_message_and_response(response_to_bob, &to_send);
+  free_message_and_response(response_to_bob, to_send);
 
   otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
   otrv4_free_all(2, alice, bob);
@@ -466,7 +466,7 @@ void test_api_smp(void) {
                OTR4_SUCCESS);
 
   otrv4_assert(!response_to_alice->to_send);
-  free_message_and_response(response_to_alice, &to_send);
+  free_message_and_response(response_to_alice, to_send);
 
   // This will be called by bob when the OTRV4_SMPEVENT_ASK_FOR_SECRET is
   // triggered.
@@ -489,7 +489,7 @@ void test_api_smp(void) {
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
                                      bob) == OTR4_SUCCESS);
-  free_message_and_response(response_to_bob, &to_send);
+  free_message_and_response(response_to_bob, to_send);
 
   otrv4_assert(response_to_alice->to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", response_to_alice->to_send, 9); // SMP4
@@ -559,7 +559,7 @@ void test_api_smp_abort(void) {
                OTR4_SUCCESS);
 
   otrv4_assert(!response_to_alice->to_send);
-  free_message_and_response(response_to_alice, &to_send);
+  free_message_and_response(response_to_alice, to_send);
 
   otrv4_assert(otrv4_smp_abort(&to_send, bob) == OTR4_SUCCESS);
   g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
@@ -633,7 +633,7 @@ void test_api_extra_sym_key(void) {
   assert_msg_rec(err, "hi", response_to_alice);
   otrv4_assert(bob->keys->old_mac_keys);
 
-  free_message_and_response(response_to_alice, &to_send);
+  free_message_and_response(response_to_alice, to_send);
 
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 1);
 
@@ -667,7 +667,7 @@ void test_api_extra_sym_key(void) {
 
   otrv4_assert(!response_to_bob->tlvs->next);
 
-  free_message_and_response(response_to_bob, &to_send);
+  free_message_and_response(response_to_bob, to_send);
 
   otr4_client_state_free(alice_state);
   otr4_client_state_free(bob_state);
