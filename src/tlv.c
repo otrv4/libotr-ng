@@ -34,7 +34,6 @@ static tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
     if (!tlv)
       continue;
 
-    // TODO: check this
     if (deserialize_uint16(&tlv_type, cursor, len, &w))
       continue;
 

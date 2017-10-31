@@ -128,8 +128,6 @@ void test_user_profile_deserializes() {
   free(serialized);
 }
 
-// TODO: is the check on signature with memory set to
-// zero really neccessary?
 void test_user_profile_signs_and_verify() {
   otrv4_keypair_t keypair[1];
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};

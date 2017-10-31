@@ -98,7 +98,6 @@ bool generate_smp_msg_4(smp_msg_4_t *dst, const smp_msg_3_t *msg_3,
                         smp_context_t smp);
 
 // TODO: export only what is needed
-bool smp_msg_1_deserialize(smp_msg_1_t *dst, const tlv_t *tlv);
 int smp_msg_2_deserialize(smp_msg_2_t *dst, const tlv_t *tlv);
 bool smp_msg_2_aprint(uint8_t **dst, size_t *len, const smp_msg_2_t *msg);
 bool smp_msg_3_aprint(uint8_t **dst, size_t *len, const smp_msg_3_t *msg);
