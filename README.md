@@ -13,8 +13,8 @@ Then you should install the following dependencies
 * libglib2.0-dev
 * libdecaf
 * libsodium-dev
-* libotr
-* libgcrypt
+* libotr 4.x
+* libgcrypt 1.8.0 or newer
 
 Generate project configuration
 ```
