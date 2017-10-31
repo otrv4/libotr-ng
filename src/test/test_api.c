@@ -515,6 +515,74 @@ void test_api_smp(void) {
   OTR4_FREE;
 }
 
+// TODO: complete this test
+void test_api_smp_abort(void) {
+  OTR4_INIT;
+
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
+      1}; // non-random private key on purpose
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+
+  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
+      2}; // non-random private key on purpose
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
+
+  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
+  otrv4_t *alice = otrv4_new(alice_state, policy);
+  otrv4_t *bob = otrv4_new(bob_state, policy);
+
+  // Starts an smp state machine
+  g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
+  g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
+
+  // AKE HAS FINISHED.
+  do_ake_fixture(alice, bob);
+
+  otrv4_response_t *response_to_bob = NULL;
+  otrv4_response_t *response_to_alice = NULL;
+  string_t to_send = NULL;
+  char *secret = "secret";
+
+  // Alice sends SMP1
+  otrv4_assert(otrv4_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
+                               strlen(secret), alice) == OTR4_SUCCESS);
+  otrv4_assert(to_send);
+  otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
+  g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT2);
+
+  // Bob receives SMP1
+  response_to_alice = otrv4_response_new();
+  otrv4_assert(otrv4_receive_message(response_to_alice, to_send, bob) ==
+               OTR4_SUCCESS);
+
+  otrv4_assert(!response_to_alice->to_send);
+  free_message_and_response(response_to_alice, &to_send);
+
+  otrv4_assert(otrv4_smp_abort(&to_send, bob) == OTR4_SUCCESS);
+  g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
+
+  // Alice receives SMP ABORT
+  response_to_bob = otrv4_response_new();
+  otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
+               OTR4_SUCCESS);
+
+  otrv4_assert(response_to_bob->to_send);
+  // TODO: check this for abort
+  otrv4_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9);
+  g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
+
+  otrv4_response_free(response_to_bob);
+  response_to_bob = NULL;
+
+  otrv4_free_all(2, alice, bob);
+  otrv4_client_state_free_all(2, alice_state, bob_state);
+
+  OTR4_FREE;
+}
+
 void test_api_extra_sym_key(void) {
   OTR4_INIT;
 

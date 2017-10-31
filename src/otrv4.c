@@ -101,7 +101,6 @@ static void handle_smp_event_cb(const otr4_smp_event_t event,
   }
 }
 
-// TODO: should be implemented on client side
 static void received_symkey_cb(const otr4_conversation_state_t *conv,
                                unsigned int use, const unsigned char *usedata,
                                size_t usedatalen,
@@ -1783,7 +1782,6 @@ static otr4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
   if (!event)
     event = OTRV4_SMPEVENT_IN_PROGRESS;
 
-  // TODO: transition to state 1 if an abort happens
   handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
                       otr->conversation);
 
@@ -1811,11 +1809,8 @@ otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
   return OTR4_ERROR; // TODO: IMPLEMENT
 }
 
-// TODO: check this on callbacks and on other states
-otr4_err_t otrv4_smp_abort_v4(otrv4_t *otr) {
+otr4_err_t otrv4_smp_abort_v4(string_t *to_send, otrv4_t *otr) {
   tlv_t *tlv = otrv4_tlv_new(OTRL_TLV_SMP_ABORT, 0, NULL);
-
-  string_t *to_send = NULL;
 
   otr->smp->state = SMPSTATE_EXPECT1;
   if (otrv4_prepare_to_send_message(to_send, "", tlv, otr)) {
@@ -1823,24 +1818,17 @@ otr4_err_t otrv4_smp_abort_v4(otrv4_t *otr) {
     return OTR4_ERROR;
   }
 
-  // Add fragmentation
-  // if (!err) {
-  /* Send the abort signal so our buddy knows we've stopped */
-  //	err = fragment_and_send(ops, opdata, context,
-  //		sendsmp, OTRL_FRAGMENT_SEND_ALL, NULL);
-  //  }
-  free(to_send);
   otrv4_tlv_free(tlv);
 
-  return OTR4_ERROR;
+  return OTR4_SUCCESS;
 }
 
-otr4_err_t otrv4_smp_abort(otrv4_t *otr) {
+otr4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr) {
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     return otrv3_smp_abort(otr->otr3_conn);
   case OTRV4_VERSION_4:
-    return otrv4_smp_abort_v4(otr);
+    return otrv4_smp_abort_v4(to_send, otr);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }
