@@ -30,7 +30,16 @@ PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.18])
 PKG_CHECK_MODULES([LIBDECAF], [libdecaf >= 0.0.1])
 PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 1.0.0])
 AM_PATH_LIBOTR(4.0.0,,AC_MSG_ERROR(libotr 4.x >= 4.0.0 is required.))
+# TODO: this seems to be not correctly working on Darwin.
+# We probably need the config script
 AM_PATH_LIBGCRYPT(1:1.8.0,,AC_MSG_ERROR(libgcrypt 1.8.0 or newer is required.))
+
+# Check for lower version of libgcrypt due to its unavailability on
+# debian and fedora
+# AM_PATH_LIBGCRYPT(1:1.8.0,,
+#  [AC_DEFINE([HAVE_GCRYPT], [1], [Use GCRYPT])],
+#  [AM_PATH_LIBGCRYPT(1:1.6.0,, [AC_MSG_ERROR(libgcrypt 1.6.0 or newer is required.)])]
+#   )
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
