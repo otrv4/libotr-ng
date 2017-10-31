@@ -700,16 +700,21 @@ void test_valid_identity_msg_in_waiting_auth_r_lower() {
   free(query_msg_to_bob);
   query_msg_to_bob = NULL;
 
-  decaf_word_t x, y, z, t;
-  x = 0x0;
-  y = 0x0;
-  z = 0x0;
-  t = 0x0;
+  decaf_word_t xl, xh, y, z, t;
+  xl = 0x1;
+  xh = 0x2;
+  y = 0x1;
+  z = 0x1;
+  t = 0x1;
 
-  decaf_448_point_t p = {{{{{x}}}, {{{y}}}, {{{z}}}, {{{t}}}}};
-  ec_point_copy(alice_to_bob->conn->keys->our_ecdh->pub, p);
+  decaf_448_point_t low_point = {{{{{xl}}}, {{{y}}}, {{{z}}}, {{{t}}}}};
+  decaf_448_point_t high_point = {{{{{xh}}}, {{{y}}}, {{{z}}}, {{{t}}}}};
 
-  ec_point_destroy(p);
+  ec_point_copy(alice_to_bob->conn->keys->our_ecdh->pub, low_point);
+  ec_point_copy(bob_to_alice->conn->keys->our_ecdh->pub, high_point);
+
+  ec_point_destroy(low_point);
+  ec_point_destroy(high_point);
 
   // Alice receives identity message, ignores Auth-R sending
   ignore = otr4_client_receive(&alices_auth_r, &todisplay, bobs_id,
