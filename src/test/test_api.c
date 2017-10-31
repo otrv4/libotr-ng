@@ -574,6 +574,7 @@ void test_api_smp_abort(void) {
   otrv4_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9);
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
 
+  free(to_send);
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
