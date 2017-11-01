@@ -36,7 +36,7 @@ void test_smp_state_machine(void) {
                                alice_otr) == OTR4_SUCCESS);
 
   tlv_t *tlv_smp_1 = NULL;
-  //otrv4_assert(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1) == true);
+  // otrv4_assert(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1) == true);
   g_assert_cmpint(tlv_smp_1->type, ==, OTRV4_TLV_SMP_MSG_1);
 
   g_assert_cmpint(25, ==, alice_otr->smp->progress);

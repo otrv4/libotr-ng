@@ -710,33 +710,17 @@ static void forget_our_keys(otrv4_t *otr) {
   key_manager_init(otr->keys);
 }
 
+// TODO: Comparison is between the dh pub values. Change to points
+// if is found easier
 static otr4_err_t receive_identity_message_on_waiting_auth_r(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
-  /* Compare X with their_ecdh */
-  gcry_mpi_t x = NULL;
-  gcry_mpi_t y = NULL;
-  int err = 0;
+  int cmp = gcry_mpi_cmp(OUR_DH(otr), msg->B);
 
-  err |= gcry_mpi_scan(&x, GCRYMPI_FMT_USG, OUR_ECDH(otr),
-                       sizeof(ec_public_key_t), NULL);
-
-  err |=
-      gcry_mpi_scan(&y, GCRYMPI_FMT_USG, msg->Y, sizeof(ec_public_key_t), NULL);
-
-  if (err) {
-    gcry_mpi_release(x);
-    gcry_mpi_release(y);
-    return OTR4_ERROR;
-  }
-
-  int cmp = gcry_mpi_cmp(x, y);
-  gcry_mpi_release(x);
-  gcry_mpi_release(y);
-
-  /* If our is lower, ignore. */
-  if (cmp < 0) {
+  /* If our is higher, ignore. */
+  if (cmp > 0) {
+    // TODO: this should resend the prev identity message
     return OTR4_SUCCESS;
-  } // ignore
+  }
 
   forget_our_keys(otr);
   return receive_identity_message_on_state_start(dst, msg, otr);

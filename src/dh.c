@@ -104,7 +104,7 @@ void dh_keypair_destroy(dh_keypair_t keypair) {
 otr4_err_t dh_shared_secret(uint8_t *shared, size_t shared_bytes,
                             const dh_private_key_t our_priv,
                             const dh_public_key_t their_pub) {
-  gcry_mpi_t secret = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  gcry_mpi_t secret = gcry_mpi_snew(DH3072_MOD_LEN_BITS);
   gcry_mpi_powm(secret, their_pub, our_priv, DH3072_MODULUS);
   size_t written;
   uint8_t buffer[shared_bytes];
