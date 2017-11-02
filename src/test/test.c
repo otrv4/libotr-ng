@@ -157,13 +157,6 @@ int main(int argc, char **argv) {
   g_test_add("/otrv4/receives_query_message_v3", otrv4_fixture_t, NULL,
              otrv4_fixture_set_up, test_otrv4_receives_query_message_v3,
              otrv4_fixture_teardown);
-  /*
-     g_test_add("/otrv4/test_otrv4_receives_pre_key_on_start", otrv4_fixture_t,
-     NULL,
-     otrv4_fixture_set_up, test_otrv4_receives_pre_key_on_start,
-     otrv4_fixture_teardown);
-   */
-
   g_test_add("/otrv4/receives_invalid_instance_tag_on_identity_message",
              otrv4_fixture_t, NULL, otrv4_fixture_set_up,
              test_otrv4_receives_identity_message_validates_instance_tag,

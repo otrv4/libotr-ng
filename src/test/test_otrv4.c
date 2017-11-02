@@ -161,35 +161,6 @@ void test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture,
   otrv4_response_free(response);
 }
 
-void test_otrv4_receives_pre_key_on_start(otrv4_fixture_t *otrv4_fixture,
-                                          gconstpointer data) {
-  user_profile_t *profile = user_profile_new("4");
-  dake_identity_message_t *identity_message =
-      dake_identity_message_new(profile);
-
-  uint8_t *serialized = NULL;
-  otrv4_assert(dake_identity_message_asprintf(
-                   &serialized, NULL, identity_message) == OTR4_SUCCESS);
-
-  char message[1000];
-  strcpy(message, "?OTR:");
-  memcpy(message + 5, serialized, strlen((const char *)serialized) + 1);
-
-  otrv4_response_t *response = otrv4_response_new();
-  otrv4_assert(otrv4_receive_message(response, message, otrv4_fixture->otr) ==
-               OTR4_SUCCESS);
-
-  g_assert_cmpint(otrv4_fixture->otr->state, ==,
-                  OTRV4_STATE_ENCRYPTED_MESSAGES);
-  g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);
-  g_assert_cmpstr(response->to_display, ==, NULL);
-  otrv4_assert(response->to_send);
-
-  free(serialized);
-  otrv4_response_free(response);
-  user_profile_free(profile);
-}
-
 void test_otrv4_receives_identity_message_invalid_on_start(
     otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   char *identity_message = "?OTR:";
