@@ -172,14 +172,3 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
 
   OTR4_FREE;
 }
-
-void test_dake_identity_message_Y_doesnt_belong_to_curve(
-    identity_message_fixture_t *f, gconstpointer data) {
-  dake_identity_message_t *identity_message =
-      dake_identity_message_new(f->profile);
-  otrv4_assert(identity_message != NULL);
-
-  otrv4_assert(valid_received_values(identity_message->Y, identity_message->B,
-                                     identity_message->profile));
-  dake_identity_message_free(identity_message);
-}
