@@ -118,3 +118,56 @@ void test_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
 
   OTR4_FREE;
 }
+
+void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
+                                      gconstpointer data) {
+  OTR4_INIT;
+
+  ecdh_keypair_t ecdh[1];
+  dh_keypair_t dh;
+
+  uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+  ecdh_keypair_generate(ecdh, sym);
+  otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
+
+  dake_prekey_message_t *prekey_message =
+      dake_prekey_message_new(f->profile);
+  otrv4_assert(prekey_message != NULL);
+
+  ec_point_copy(prekey_message->Y, ecdh->pub);
+  prekey_message->B = dh_mpi_copy(dh->pub);
+
+  otrv4_assert(valid_received_values(prekey_message->Y, prekey_message->B,
+                                     prekey_message->profile));
+
+  ecdh_keypair_destroy(ecdh);
+  dh_keypair_destroy(dh);
+  dake_prekey_message_free(prekey_message);
+
+  ecdh_keypair_t invalid_ecdh[1];
+  dh_keypair_t invalid_dh;
+
+  uint8_t invalid_sym[ED448_PRIVATE_BYTES] = {1};
+  ecdh_keypair_generate(invalid_ecdh, invalid_sym);
+  otrv4_assert(dh_keypair_generate(invalid_dh) == OTR4_SUCCESS);
+
+  user_profile_t *invalid_profile = user_profile_new("2");
+  otrv4_shared_prekey_generate(invalid_profile->shared_prekey, sym);
+  ec_point_copy(invalid_profile->pub_key, invalid_ecdh->pub);
+  dake_prekey_message_t *invalid_prekey_message =
+      dake_prekey_message_new(invalid_profile);
+
+  ec_point_copy(invalid_prekey_message->Y, invalid_ecdh->pub);
+  invalid_prekey_message->B = dh_mpi_copy(invalid_dh->pub);
+
+  otrv4_assert(!valid_received_values(invalid_prekey_message->Y,
+                                      invalid_prekey_message->B,
+                                      invalid_prekey_message->profile));
+
+  user_profile_free(invalid_profile);
+  ecdh_keypair_destroy(invalid_ecdh);
+  dh_keypair_destroy(invalid_dh);
+  dake_prekey_message_free(invalid_prekey_message);
+
+  OTR4_FREE;
+}
