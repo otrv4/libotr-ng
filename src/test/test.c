@@ -90,6 +90,9 @@ int main(int argc, char **argv) {
   WITH_FIXTURE("/dake/prekey_message/serializes",
                test_dake_prekey_message_serializes,
                prekey_message_fixture_t, prekey_message_fixture);
+  WITH_FIXTURE("/dake/prekey_message/deserializes",
+               test_dake_prekey_message_deserializes,
+               prekey_message_fixture_t, prekey_message_fixture);
   g_test_add_func("/data_message/serialize", test_data_message_serializes);
 
   g_test_add_func("/fragment/create_fragments", test_create_fragments);

@@ -69,7 +69,8 @@ void test_dake_identity_message_serializes(identity_message_fixture_t *f,
   ecdh_keypair_destroy(ecdh);
   dake_identity_message_free(identity_message);
   free(serialized);
-  dh_free();
+
+  OTR4_FREE;
 }
 
 void test_dake_identity_message_deserializes(identity_message_fixture_t *f,
@@ -115,7 +116,8 @@ void test_dake_identity_message_deserializes(identity_message_fixture_t *f,
   dake_identity_message_free(identity_message);
   dake_identity_message_free(deserialized);
   free(serialized);
-  dh_free();
+
+  OTR4_FREE;
 }
 
 void test_dake_identity_message_valid(identity_message_fixture_t *f,
