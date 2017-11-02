@@ -67,6 +67,11 @@ typedef struct {
   user_profile_t *profile;
 } identity_message_fixture_t;
 
+typedef struct {
+  otrv4_keypair_t *keypair;
+  user_profile_t *profile;
+} prekey_message_fixture_t;
+
 static void identity_message_fixture_setup(identity_message_fixture_t *fixture,
                                            gconstpointer user_data) {
   fixture->keypair = otrv4_keypair_new();
@@ -85,6 +90,32 @@ static void identity_message_fixture_setup(identity_message_fixture_t *fixture,
 
 static void
 identity_message_fixture_teardown(identity_message_fixture_t *fixture,
+                                  gconstpointer user_data) {
+  otrv4_keypair_free(fixture->keypair);
+  fixture->keypair = NULL;
+
+  user_profile_free(fixture->profile);
+  fixture->profile = NULL;
+}
+
+static void prekey_message_fixture_setup(prekey_message_fixture_t *fixture,
+                                           gconstpointer user_data) {
+  fixture->keypair = otrv4_keypair_new();
+
+  uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
+  otrv4_keypair_generate(fixture->keypair, sym);
+  otrv4_assert(ec_point_valid(fixture->keypair->pub));
+
+  fixture->profile = user_profile_new("4");
+  otrv4_shared_prekey_generate(fixture->profile->shared_prekey, sym);
+  otrv4_assert(fixture->profile != NULL);
+  fixture->profile->expires = time(NULL) + 60 * 60;
+  otrv4_assert(user_profile_sign(fixture->profile, fixture->keypair) ==
+               OTR4_SUCCESS);
+}
+
+static void
+prekey_message_fixture_teardown(prekey_message_fixture_t *fixture,
                                   gconstpointer user_data) {
   otrv4_keypair_free(fixture->keypair);
   fixture->keypair = NULL;

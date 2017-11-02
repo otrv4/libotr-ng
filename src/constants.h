@@ -5,7 +5,8 @@
 #define OTR_IDENTITY_MSG_TYPE 0x08
 #define OTR_AUTH_R_MSG_TYPE 0x91
 #define OTR_AUTH_I_MSG_TYPE 0x88
-#define OTR_PRE_KEY_MSG_TYPE 0x0F
+// TODO: check this msg type
+#define OTR_PRE_KEY_MSG_TYPE 0x55
 #define OTR_DATA_MSG_TYPE 0x03
 
 #define DAKE_HEADER_BYTES (2 + 1 + 4 + 4)

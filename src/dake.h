@@ -35,6 +35,14 @@ typedef struct {
   snizkpk_proof_t sigma[1];
 } dake_auth_i_t;
 
+typedef struct {
+  uint32_t sender_instance_tag;
+  uint32_t receiver_instance_tag;
+  user_profile_t profile[1];
+  ec_point_t Y;
+  dh_public_key_t B;
+} dake_prekey_message_t;
+
 dake_identity_message_t *
 dake_identity_message_new(const user_profile_t *profile);
 
@@ -70,5 +78,21 @@ otr4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
 
 bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
                            const user_profile_t *profile);
+
+dake_prekey_message_t *
+dake_prekey_message_new(const user_profile_t *profile);
+
+void dake_prekey_message_free(dake_prekey_message_t *prekey_message);
+
+void dake_prekey_message_destroy(dake_prekey_message_t *prekey_message);
+
+otr4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
+                                             const uint8_t *src,
+                                             size_t src_len);
+
+otr4_err_t
+dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
+                               const dake_prekey_message_t *prekey_message);
+
 
 #endif
