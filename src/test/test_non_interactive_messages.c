@@ -5,7 +5,7 @@
 #define PREKEY_BEFORE_PROFILE_BYTES 2 + 1 + 4 + 4
 
 void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
-                                           gconstpointer data) {
+                                         gconstpointer data) {
   OTR4_INIT;
 
   ecdh_keypair_t ecdh[1];
@@ -15,19 +15,18 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
   ecdh_keypair_generate(ecdh, sym);
   otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
 
-  dake_prekey_message_t *prekey_message =
-      dake_prekey_message_new(f->profile);
+  dake_prekey_message_t *prekey_message = dake_prekey_message_new(f->profile);
   prekey_message->sender_instance_tag = 1;
   ec_point_copy(prekey_message->Y, ecdh->pub);
   prekey_message->B = dh_mpi_copy(dh->pub);
 
   uint8_t *serialized = NULL;
-  otrv4_assert(dake_prekey_message_asprintf(
-                   &serialized, NULL, prekey_message) == OTR4_SUCCESS);
+  otrv4_assert(dake_prekey_message_asprintf(&serialized, NULL,
+                                            prekey_message) == OTR4_SUCCESS);
 
   char expected[] = {
       0x0,
-      0x04,                  // version
+      0x04,                 // version
       OTR_PRE_KEY_MSG_TYPE, // message type
       0x0,
       0x0,
@@ -45,9 +44,9 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
 
   size_t user_profile_len = 0;
   uint8_t *user_profile_serialized = NULL;
-  otrv4_assert(
-      user_profile_asprintf(&user_profile_serialized, &user_profile_len,
-                            prekey_message->profile) == OTR4_SUCCESS);
+  otrv4_assert(user_profile_asprintf(&user_profile_serialized,
+                                     &user_profile_len,
+                                     prekey_message->profile) == OTR4_SUCCESS);
   otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
   free(user_profile_serialized);
   cursor += user_profile_len;
@@ -73,7 +72,7 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
 }
 
 void test_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
-                                             gconstpointer data) {
+                                           gconstpointer data) {
   OTR4_INIT;
 
   ecdh_keypair_t ecdh[1];
@@ -83,30 +82,26 @@ void test_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
   ecdh_keypair_generate(ecdh, sym);
   otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
 
-  dake_prekey_message_t *prekey_message =
-      dake_prekey_message_new(f->profile);
+  dake_prekey_message_t *prekey_message = dake_prekey_message_new(f->profile);
   ec_point_copy(prekey_message->Y, ecdh->pub);
   prekey_message->B = dh_mpi_copy(dh->pub);
 
   size_t serialized_len = 0;
   uint8_t *serialized = NULL;
   otrv4_assert(dake_prekey_message_asprintf(&serialized, &serialized_len,
-                                              prekey_message) ==
-               OTR4_SUCCESS);
+                                            prekey_message) == OTR4_SUCCESS);
 
-  dake_prekey_message_t *deserialized =
-      malloc(sizeof(dake_prekey_message_t));
+  dake_prekey_message_t *deserialized = malloc(sizeof(dake_prekey_message_t));
   memset(deserialized, 0, sizeof(dake_prekey_message_t));
-  otrv4_assert(dake_prekey_message_deserialize(
-                   deserialized, serialized, serialized_len) == OTR4_SUCCESS);
+  otrv4_assert(dake_prekey_message_deserialize(deserialized, serialized,
+                                               serialized_len) == OTR4_SUCCESS);
 
   // assert prekey eq
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
                    prekey_message->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==,
                    prekey_message->receiver_instance_tag);
-  otrv4_assert_user_profile_eq(deserialized->profile,
-                               prekey_message->profile);
+  otrv4_assert_user_profile_eq(deserialized->profile, prekey_message->profile);
   otrv4_assert_ec_public_key_eq(deserialized->Y, prekey_message->Y);
   otrv4_assert_dh_public_key_eq(deserialized->B, prekey_message->B);
 
@@ -120,7 +115,7 @@ void test_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
 }
 
 void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
-                                      gconstpointer data) {
+                                    gconstpointer data) {
   OTR4_INIT;
 
   ecdh_keypair_t ecdh[1];
@@ -130,8 +125,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
   ecdh_keypair_generate(ecdh, sym);
   otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
 
-  dake_prekey_message_t *prekey_message =
-      dake_prekey_message_new(f->profile);
+  dake_prekey_message_t *prekey_message = dake_prekey_message_new(f->profile);
   otrv4_assert(prekey_message != NULL);
 
   ec_point_copy(prekey_message->Y, ecdh->pub);

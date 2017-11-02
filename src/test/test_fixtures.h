@@ -72,6 +72,12 @@ typedef struct {
   user_profile_t *profile;
 } prekey_message_fixture_t;
 
+typedef struct {
+  otrv4_keypair_t *keypair;
+  user_profile_t *profile;
+} non_interactive_auth_message_fixture_t;
+
+// TODO: unify all of these
 static void identity_message_fixture_setup(identity_message_fixture_t *fixture,
                                            gconstpointer user_data) {
   fixture->keypair = otrv4_keypair_new();
@@ -99,7 +105,7 @@ identity_message_fixture_teardown(identity_message_fixture_t *fixture,
 }
 
 static void prekey_message_fixture_setup(prekey_message_fixture_t *fixture,
-                                           gconstpointer user_data) {
+                                         gconstpointer user_data) {
   fixture->keypair = otrv4_keypair_new();
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
@@ -114,9 +120,8 @@ static void prekey_message_fixture_setup(prekey_message_fixture_t *fixture,
                OTR4_SUCCESS);
 }
 
-static void
-prekey_message_fixture_teardown(prekey_message_fixture_t *fixture,
-                                  gconstpointer user_data) {
+static void prekey_message_fixture_teardown(prekey_message_fixture_t *fixture,
+                                            gconstpointer user_data) {
   otrv4_keypair_free(fixture->keypair);
   fixture->keypair = NULL;
 

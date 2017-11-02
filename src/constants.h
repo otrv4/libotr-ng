@@ -19,8 +19,9 @@
 #define AUTH_R_MIN_BYTES                                                       \
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES + SNIZKPK_BYTES)
 
-#define NON_INT_AUTH_BYTES                                                       \
-  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES + SNIZKPK_BYTES + HASH_BYTES)
+#define NON_INT_AUTH_BYTES                                                     \
+  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES + SNIZKPK_BYTES +      \
+   HASH_BYTES)
 
 #define DATA_MSG_NONCE_BYTES crypto_secretbox_NONCEBYTES
 #define DATA_MSG_MAC_BYTES 64

@@ -48,7 +48,7 @@ typedef struct {
   ec_point_t X;
   dh_public_key_t A;
   snizkpk_proof_t sigma[1];
-  uint8_t auth_mac[DATA_MSG_MAC_BYTES];
+  uint8_t auth_mac[HASH_BYTES];
 } dake_non_interactive_auth_message_t;
 
 dake_identity_message_t *
@@ -87,20 +87,17 @@ otr4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
 bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
                            const user_profile_t *profile);
 
-dake_prekey_message_t *
-dake_prekey_message_new(const user_profile_t *profile);
+dake_prekey_message_t *dake_prekey_message_new(const user_profile_t *profile);
 
 void dake_prekey_message_free(dake_prekey_message_t *prekey_message);
 
 void dake_prekey_message_destroy(dake_prekey_message_t *prekey_message);
 
 otr4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
-                                             const uint8_t *src,
-                                             size_t src_len);
+                                           const uint8_t *src, size_t src_len);
 
 otr4_err_t
 dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
-                               const dake_prekey_message_t *prekey_message);
-
+                             const dake_prekey_message_t *prekey_message);
 
 #endif

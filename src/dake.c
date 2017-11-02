@@ -162,40 +162,20 @@ otr4_err_t dake_identity_message_deserialize(dake_identity_message_t *dst,
   return dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
 
-bool not_expired(time_t expires) {
-  if (difftime(expires, time(NULL)) > 0) {
-    return true;
-  }
-
-  return false;
+void dake_auth_r_destroy(dake_auth_r_t *auth_r) {
+  dh_mpi_release(auth_r->A);
+  auth_r->A = NULL;
+  ec_point_destroy(auth_r->X);
+  user_profile_destroy(auth_r->profile);
+  snizkpk_proof_destroy(auth_r->sigma);
 }
 
-static bool no_rollback_detected(const char *versions) {
-  while (*versions) {
-    if (*versions != '3' && *versions != '4')
-      return false;
+void dake_auth_r_free(dake_auth_r_t *auth_r) {
+  if (!auth_r)
+    return;
 
-    versions++;
-  }
-  return true;
-}
-
-bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
-                           const user_profile_t *profile) {
-  bool valid = true;
-
-  /* Verify that the point X received is on curve 448. */
-  valid &= ec_point_valid(their_ecdh);
-
-  /* Verify that the DH public key A is from the correct group. */
-  valid &= dh_mpi_valid(their_dh);
-
-  /* Verify their profile is valid (and not expired). */
-  valid &= user_profile_valid_signature(profile);
-  valid &= not_expired(profile->expires);
-  valid &= no_rollback_detected(profile->versions);
-
-  return valid;
+  dake_auth_r_destroy(auth_r);
+  free(auth_r);
 }
 
 otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
@@ -203,8 +183,7 @@ otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
-  if (user_profile_asprintf(&our_profile, &our_profile_len,
-                            auth_r->profile)) {
+  if (user_profile_asprintf(&our_profile, &our_profile_len, auth_r->profile)) {
     return OTR4_ERROR;
   }
 
@@ -244,22 +223,6 @@ otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
 
   free(our_profile);
   return OTR4_SUCCESS;
-}
-
-void dake_auth_r_destroy(dake_auth_r_t *auth_r) {
-  dh_mpi_release(auth_r->A);
-  auth_r->A = NULL;
-  ec_point_destroy(auth_r->X);
-  user_profile_destroy(auth_r->profile);
-  snizkpk_proof_destroy(auth_r->sigma);
-}
-
-void dake_auth_r_free(dake_auth_r_t *auth_r) {
-  if (!auth_r)
-    return;
-
-  dake_auth_r_destroy(auth_r);
-  free(auth_r);
 }
 
 otr4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
@@ -420,13 +383,11 @@ otr4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
   return deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
 }
 
-dake_prekey_message_t *
-dake_prekey_message_new(const user_profile_t *profile) {
+dake_prekey_message_t *dake_prekey_message_new(const user_profile_t *profile) {
   if (profile == NULL)
     return NULL;
 
-  dake_prekey_message_t *prekey_message =
-      malloc(sizeof(dake_prekey_message_t));
+  dake_prekey_message_t *prekey_message = malloc(sizeof(dake_prekey_message_t));
   if (!prekey_message) {
     return NULL;
   }
@@ -456,13 +417,12 @@ void dake_prekey_message_free(dake_prekey_message_t *prekey_message) {
   free(prekey_message);
 }
 
-otr4_err_t dake_prekey_message_asprintf(
-    uint8_t **dst, size_t *nbytes,
-    const dake_prekey_message_t *prekey_message) {
+otr4_err_t
+dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
+                             const dake_prekey_message_t *prekey_message) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
-  if (user_profile_asprintf(&profile, &profile_len,
-                            prekey_message->profile)) {
+  if (user_profile_asprintf(&profile, &profile_len, prekey_message->profile)) {
     return OTR4_ERROR;
   }
 
@@ -501,8 +461,7 @@ otr4_err_t dake_prekey_message_asprintf(
 }
 
 otr4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
-                                             const uint8_t *src,
-                                             size_t src_len) {
+                                           const uint8_t *src, size_t src_len) {
   const uint8_t *cursor = src;
   int64_t len = src_len;
   size_t read = 0;
@@ -570,8 +529,28 @@ otr4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
   return dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
 
-otr4_err_t dake_non_interactive_auth_asprintf(uint8_t **dst, size_t *nbytes,
-                                const dake_non_interactive_auth_message_t *non_interactive_auth) {
+void dake_non_interactive_auth_destroy(
+    dake_non_interactive_auth_message_t *non_interactive_auth) {
+  dh_mpi_release(non_interactive_auth->A);
+  non_interactive_auth->A = NULL;
+  ec_point_destroy(non_interactive_auth->X);
+  user_profile_destroy(non_interactive_auth->profile);
+  snizkpk_proof_destroy(non_interactive_auth->sigma);
+  sodium_memzero(non_interactive_auth->sigma, DATA_MSG_MAC_BYTES);
+}
+
+void dake_non_interactive_auth_free(
+    dake_non_interactive_auth_message_t *non_interactive_auth) {
+  if (!non_interactive_auth)
+    return;
+
+  dake_non_interactive_auth_destroy(non_interactive_auth);
+  free(non_interactive_auth);
+}
+
+otr4_err_t dake_non_interactive_auth_asprintf(
+    uint8_t **dst, size_t *nbytes,
+    const dake_non_interactive_auth_message_t *non_interactive_auth) {
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
@@ -592,13 +571,15 @@ otr4_err_t dake_non_interactive_auth_asprintf(uint8_t **dst, size_t *nbytes,
   cursor += serialize_uint16(cursor, OTR_VERSION);
   cursor += serialize_uint8(cursor, OTR_NON_INT_AUTH_MSG_TYPE);
   cursor += serialize_uint32(cursor, non_interactive_auth->sender_instance_tag);
-  cursor += serialize_uint32(cursor, non_interactive_auth->receiver_instance_tag);
+  cursor +=
+      serialize_uint32(cursor, non_interactive_auth->receiver_instance_tag);
   cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
   cursor += serialize_ec_point(cursor, non_interactive_auth->X);
 
   size_t len = 0;
 
-  otr4_err_t err = serialize_dh_public_key(cursor, &len, non_interactive_auth->A);
+  otr4_err_t err =
+      serialize_dh_public_key(cursor, &len, non_interactive_auth->A);
   if (err) {
     free(our_profile);
     free(buff);
@@ -609,7 +590,8 @@ otr4_err_t dake_non_interactive_auth_asprintf(uint8_t **dst, size_t *nbytes,
   cursor += serialize_snizkpk_proof(cursor, non_interactive_auth->sigma);
 
   cursor += len;
-  cursor += serialize_bytes_array(cursor, non_interactive_auth->auth_mac, HASH_BYTES);
+  cursor +=
+      serialize_bytes_array(cursor, non_interactive_auth->auth_mac, HASH_BYTES);
 
   if (dst)
     *dst = buff;
@@ -622,19 +604,122 @@ otr4_err_t dake_non_interactive_auth_asprintf(uint8_t **dst, size_t *nbytes,
   return OTR4_SUCCESS;
 }
 
-void dake_non_interactive_auth_destroy(dake_non_interactive_auth_message_t *non_interactive_auth) {
-  dh_mpi_release(non_interactive_auth->A);
-  non_interactive_auth->A = NULL;
-  ec_point_destroy(non_interactive_auth->X);
-  user_profile_destroy(non_interactive_auth->profile);
-  snizkpk_proof_destroy(non_interactive_auth->sigma);
-  sodium_memzero(non_interactive_auth->sigma, DATA_MSG_MAC_BYTES);
+otr4_err_t dake_non_interactive_auth_deserialize(dake_non_interactive_auth_message_t *dst, const uint8_t *buffer,
+                                   size_t buflen) {
+  const uint8_t *cursor = buffer;
+  int64_t len = buflen;
+  size_t read = 0;
+
+  uint16_t protocol_version = 0;
+  if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
+    return OTR4_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (protocol_version != OTR_VERSION) {
+    return OTR4_ERROR;
+  }
+
+  uint8_t message_type = 0;
+  if (deserialize_uint8(&message_type, cursor, len, &read)) {
+    return OTR4_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (message_type != OTR_NON_INT_AUTH_MSG_TYPE) {
+    return OTR4_ERROR;
+  }
+
+  if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
+    return OTR4_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
+    return OTR4_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (user_profile_deserialize(dst->profile, cursor, len, &read)) {
+    return OTR4_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (deserialize_ec_point(dst->X, cursor)) {
+    return OTR4_ERROR;
+  }
+
+  cursor += ED448_POINT_BYTES;
+  len -= ED448_POINT_BYTES;
+
+  otr_mpi_t tmp_mpi; // no need to free, because nothing is copied now
+  if (otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
+    return OTR4_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read)) {
+    return OTR4_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (deserialize_snizkpk_proof(dst->sigma, cursor, len, &read)) {
+    return OTR4_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  return deserialize_bytes_array(dst->auth_mac, HASH_BYTES, cursor, len);
 }
 
-void dake_non_interactive_auth_free(dake_non_interactive_auth_message_t *non_interactive_auth) {
-  if (!non_interactive_auth)
-    return;
 
-  dake_non_interactive_auth_destroy(non_interactive_auth);
-  free(non_interactive_auth);
+bool not_expired(time_t expires) {
+  if (difftime(expires, time(NULL)) > 0) {
+    return true;
+  }
+
+  return false;
+}
+
+static bool no_rollback_detected(const char *versions) {
+  while (*versions) {
+    if (*versions != '3' && *versions != '4')
+      return false;
+
+    versions++;
+  }
+  return true;
+}
+
+bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
+                           const user_profile_t *profile) {
+  bool valid = true;
+
+  /* Verify that the point X received is on curve 448. */
+  valid &= ec_point_valid(their_ecdh);
+
+  /* Verify that the DH public key A is from the correct group. */
+  valid &= dh_mpi_valid(their_dh);
+
+  /* Verify their profile is valid (and not expired). */
+  valid &= user_profile_valid_signature(profile);
+  valid &= not_expired(profile->expires);
+  valid &= no_rollback_detected(profile->versions);
+
+  return valid;
 }

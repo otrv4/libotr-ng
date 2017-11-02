@@ -18,8 +18,8 @@
 #include "test_instance_tag.c"
 #include "test_key_management.c"
 #include "test_list.c"
+#include "test_non_interactive_messages.c"
 #include "test_otrv4.c"
-#include "test_prekey_message.c"
 #include "test_serialize.c"
 #include "test_smp.c"
 #include "test_tlv.c"
@@ -88,11 +88,11 @@ int main(int argc, char **argv) {
   WITH_FIXTURE("/dake/identity_message/valid", test_dake_identity_message_valid,
                identity_message_fixture_t, identity_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/serializes",
-               test_dake_prekey_message_serializes,
-               prekey_message_fixture_t, prekey_message_fixture);
+               test_dake_prekey_message_serializes, prekey_message_fixture_t,
+               prekey_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/deserializes",
-               test_dake_prekey_message_deserializes,
-               prekey_message_fixture_t, prekey_message_fixture);
+               test_dake_prekey_message_deserializes, prekey_message_fixture_t,
+               prekey_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/valid", test_dake_prekey_message_valid,
                prekey_message_fixture_t, prekey_message_fixture);
   g_test_add_func("/data_message/serialize", test_data_message_serializes);
