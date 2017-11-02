@@ -63,6 +63,7 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
 
   uint8_t hash[HASH_BYTES];
   decaf_shake256_ctx_t hd;
+
   hash_init_with_dom(hd);
   hash_update(hd, version, 1);
   hash_update(hd, our_fp, sizeof(otrv4_fingerprint_t));
@@ -80,18 +81,16 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
   memcpy(*secret, hash, HASH_BYTES);
 }
 
-// TODO: this should be shake and should have the dom
 int hashToScalar(const unsigned char *buff, const size_t bufflen,
                  ec_scalar_t dst) {
-  gcry_md_hd_t hd;
-  char otr_marker[4] = "OTR4";
-  unsigned char hash[HASH_BYTES];
+  uint8_t hash[HASH_BYTES];
+  decaf_shake256_ctx_t hd;
 
-  gcry_md_open(&hd, GCRY_MD_SHA3_512, GCRY_MD_FLAG_SECURE);
-  gcry_md_write(hd, &otr_marker, 4);
-  gcry_md_write(hd, buff, bufflen);
-  memcpy(hash, gcry_md_read(hd, 0), HASH_BYTES);
-  gcry_md_close(hd);
+  hash_init_with_dom(hd);
+  hash_update(hd, buff, bufflen);
+
+  hash_final(hd, hash, sizeof(hash));
+  hash_destroy(hd);
 
   if (deserialize_ec_scalar(dst, hash, ED448_SCALAR_BYTES))
     return 1;
