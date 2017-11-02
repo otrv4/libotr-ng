@@ -71,7 +71,7 @@ void dake_auth_r_destroy(dake_auth_r_t *auth_r);
 void dake_auth_r_free(dake_auth_r_t *auth_r);
 
 otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
-                                const dake_auth_r_t *dre_auth);
+                                const dake_auth_r_t *auth_r);
 otr4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
                                    size_t buflen);
 
@@ -80,7 +80,7 @@ void dake_auth_i_destroy(dake_auth_i_t *auth_i);
 void dake_auth_i_free(dake_auth_i_t *auth_i);
 
 otr4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
-                                const dake_auth_i_t *dre_auth);
+                                const dake_auth_i_t *auth_i);
 otr4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
                                    size_t buflen);
 
