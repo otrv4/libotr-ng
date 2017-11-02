@@ -293,52 +293,52 @@ bool smp_msg_2_aprint(uint8_t **dst, size_t *len, const smp_msg_2_t *msg) {
   return true;
 }
 
-bool smp_msg_1_deserialize(smp_msg_1_t *msg, const tlv_t *tlv) {
+otr4_err_t smp_msg_1_deserialize(smp_msg_1_t *msg, const tlv_t *tlv) {
   const uint8_t *cursor = tlv->data;
   uint16_t len = tlv->len;
   size_t read = 0;
 
   msg->question = NULL;
   if (deserialize_data((uint8_t **)&msg->question, cursor, len, &read))
-    return false;
+    return OTR4_ERROR;
 
   cursor += read;
   len -= read;
 
   if (deserialize_ec_point(msg->G2a, cursor))
-    return false;
+    return OTR4_ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   if (deserialize_ec_scalar(msg->c2, cursor, len))
-    return false;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_scalar(msg->d2, cursor, len))
-    return false;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_point(msg->G3a, cursor))
-    return false;
+    return OTR4_ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   if (deserialize_ec_scalar(msg->c3, cursor, len))
-    return false;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_scalar(msg->d3, cursor, len))
-    return false;
+    return OTR4_ERROR;
 
-  return true;
+  return OTR4_SUCCESS;
 }
 
 bool smp_msg_1_valid_points(smp_msg_1_t *msg) {
@@ -378,76 +378,75 @@ bool smp_msg_1_valid_zkp(smp_msg_1_t *msg, const smp_context_t smp) {
   return ok &= ec_scalar_eq(temp_scalar, msg->c3);
 }
 
-// TODO: either return bool or int on deserialization
-int smp_msg_2_deserialize(smp_msg_2_t *msg, const tlv_t *tlv) {
+otr4_err_t smp_msg_2_deserialize(smp_msg_2_t *msg, const tlv_t *tlv) {
   const uint8_t *cursor = tlv->data;
   uint16_t len = tlv->len;
 
   if (deserialize_ec_point(msg->G2b, cursor))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   if (deserialize_ec_scalar(msg->c2, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_scalar(msg->d2, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_point(msg->G3b, cursor))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   if (deserialize_ec_scalar(msg->c3, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_scalar(msg->d3, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_point(msg->Pb, cursor))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   if (deserialize_ec_point(msg->Qb, cursor))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   if (deserialize_ec_scalar(msg->cp, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_scalar(msg->d5, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_scalar(msg->d6, cursor, len))
-    return 1;
+    return OTR4_ERROR;
   len -= ED448_SCALAR_BYTES;
 
-  return len;
+  return OTR4_SUCCESS;
 }
 
 bool smp_msg_2_valid_points(smp_msg_2_t *msg) {
@@ -605,58 +604,58 @@ bool smp_msg_3_aprint(uint8_t **dst, size_t *len, const smp_msg_3_t *msg) {
   return true;
 }
 
-int smp_msg_3_deserialize(smp_msg_3_t *dst, const tlv_t *tlv) {
+otr4_err_t smp_msg_3_deserialize(smp_msg_3_t *dst, const tlv_t *tlv) {
   const uint8_t *cursor = tlv->data;
   uint16_t len = tlv->len;
 
   if (deserialize_ec_point(dst->Pa, cursor))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   if (deserialize_ec_point(dst->Qa, cursor))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   if (deserialize_ec_scalar(dst->cp, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_scalar(dst->d5, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_scalar(dst->d6, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_point(dst->Ra, cursor))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   if (deserialize_ec_scalar(dst->cr, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_scalar(dst->d7, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   len -= ED448_SCALAR_BYTES;
 
-  return len;
+  return OTR4_SUCCESS;
 }
 
 bool smp_msg_3_validate_points(smp_msg_3_t *msg) {
@@ -759,28 +758,28 @@ bool smp_msg_4_aprint(uint8_t **dst, size_t *len, smp_msg_4_t *msg) {
   return true;
 }
 
-int smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv) {
+otr4_err_t smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv) {
   uint8_t *cursor = tlv->data;
   size_t len = tlv->len;
 
   if (deserialize_ec_point(dst->Rb, cursor))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   if (deserialize_ec_scalar(dst->cr, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
   if (deserialize_ec_scalar(dst->d7, cursor, len))
-    return 1;
+    return OTR4_ERROR;
 
   len -= ED448_SCALAR_BYTES;
 
-  return len;
+  return OTR4_SUCCESS;
 }
 
 bool smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
@@ -830,7 +829,7 @@ static otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp) {
     return OTRV4_SMPEVENT_ABORT;
 
   do {
-    if (!smp_msg_1_deserialize(msg_1, tlv))
+    if (smp_msg_1_deserialize(msg_1, tlv))
       continue;
 
     if (!smp_msg_1_valid_points(msg_1))
@@ -866,7 +865,6 @@ void smp_msg_2_destroy(smp_msg_2_t *msg) {
   ec_scalar_destroy(msg->d6);
 }
 
-// TODO:
 static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send,
                                              smp_context_t smp) {
   smp_msg_2_t msg_2[1];
