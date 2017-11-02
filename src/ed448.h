@@ -55,7 +55,7 @@ otr4_err_t ec_point_deserialize(ec_point_t point,
                                 const uint8_t serialized[ED448_POINT_BYTES]);
 
 /* This is ed448 crypto */
-void ec_scalar_derive_from_secret(ec_scalar_t, uint8_t[ED448_PRIVATE_BYTES]);
+void ec_scalar_derive_from_secret(ec_scalar_t, uint8_t sym[ED448_PRIVATE_BYTES]);
 
 void ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
                           const uint8_t priv[ED448_PRIVATE_BYTES]);

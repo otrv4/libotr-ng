@@ -19,10 +19,9 @@ void smp_context_init(smp_context_t smp) {
   smp->msg1 = NULL;
   smp->secret = NULL;
 
-  // TODO: not needed
-  ec_scalar_destroy(smp->a2);
-  ec_scalar_destroy(smp->a3);
-  ec_scalar_destroy(smp->b3);
+  memset(smp->a2, 0, ED448_SCALAR_BYTES);
+  memset(smp->a3, 0, ED448_SCALAR_BYTES);
+  memset(smp->b3, 0, ED448_SCALAR_BYTES);
 
   memset(smp->G2, 0, ED448_POINT_BYTES);
   memset(smp->G3, 0, ED448_POINT_BYTES);

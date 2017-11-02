@@ -1165,7 +1165,6 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
       continue;
 
     // TODO: Securely delete receiving chain keys older than message_id-1.
-
     if (receive_tlvs(&reply_tlv, response, otr))
       continue;
 
