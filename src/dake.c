@@ -569,3 +569,72 @@ otr4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
 
   return dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
+
+otr4_err_t dake_non_interactive_auth_asprintf(uint8_t **dst, size_t *nbytes,
+                                const dake_non_interactive_auth_message_t *non_interactive_auth) {
+  size_t our_profile_len = 0;
+  uint8_t *our_profile = NULL;
+
+  if (user_profile_asprintf(&our_profile, &our_profile_len,
+                            non_interactive_auth->profile)) {
+    return OTR4_ERROR;
+  }
+
+  size_t s = NON_INT_AUTH_BYTES + our_profile_len;
+
+  uint8_t *buff = malloc(s);
+  if (!buff) {
+    free(our_profile);
+    return OTR4_ERROR;
+  }
+
+  uint8_t *cursor = buff;
+  cursor += serialize_uint16(cursor, OTR_VERSION);
+  cursor += serialize_uint8(cursor, OTR_NON_INT_AUTH_MSG_TYPE);
+  cursor += serialize_uint32(cursor, non_interactive_auth->sender_instance_tag);
+  cursor += serialize_uint32(cursor, non_interactive_auth->receiver_instance_tag);
+  cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
+  cursor += serialize_ec_point(cursor, non_interactive_auth->X);
+
+  size_t len = 0;
+
+  otr4_err_t err = serialize_dh_public_key(cursor, &len, non_interactive_auth->A);
+  if (err) {
+    free(our_profile);
+    free(buff);
+    return OTR4_ERROR;
+  }
+
+  cursor += len;
+  cursor += serialize_snizkpk_proof(cursor, non_interactive_auth->sigma);
+
+  cursor += len;
+  cursor += serialize_bytes_array(cursor, non_interactive_auth->auth_mac, HASH_BYTES);
+
+  if (dst)
+    *dst = buff;
+
+  if (nbytes)
+    *nbytes = cursor - buff;
+
+  free(our_profile);
+
+  return OTR4_SUCCESS;
+}
+
+void dake_non_interactive_auth_destroy(dake_non_interactive_auth_message_t *non_interactive_auth) {
+  dh_mpi_release(non_interactive_auth->A);
+  non_interactive_auth->A = NULL;
+  ec_point_destroy(non_interactive_auth->X);
+  user_profile_destroy(non_interactive_auth->profile);
+  snizkpk_proof_destroy(non_interactive_auth->sigma);
+  sodium_memzero(non_interactive_auth->sigma, DATA_MSG_MAC_BYTES);
+}
+
+void dake_non_interactive_auth_free(dake_non_interactive_auth_message_t *non_interactive_auth) {
+  if (!non_interactive_auth)
+    return;
+
+  dake_non_interactive_auth_destroy(non_interactive_auth);
+  free(non_interactive_auth);
+}

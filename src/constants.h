@@ -7,6 +7,7 @@
 #define OTR_AUTH_I_MSG_TYPE 0x88
 // TODO: check this msg type
 #define OTR_PRE_KEY_MSG_TYPE 0x55
+#define OTR_NON_INT_AUTH_MSG_TYPE 0x04
 #define OTR_DATA_MSG_TYPE 0x03
 
 #define DAKE_HEADER_BYTES (2 + 1 + 4 + 4)
@@ -17,6 +18,9 @@
 
 #define AUTH_R_MIN_BYTES                                                       \
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES + SNIZKPK_BYTES)
+
+#define NON_INT_AUTH_BYTES                                                       \
+  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES + SNIZKPK_BYTES + HASH_BYTES)
 
 #define DATA_MSG_NONCE_BYTES crypto_secretbox_NONCEBYTES
 #define DATA_MSG_MAC_BYTES 64

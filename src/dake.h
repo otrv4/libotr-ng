@@ -21,7 +21,6 @@ typedef struct {
 typedef struct {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-
   user_profile_t profile[1];
   ec_point_t X;
   dh_public_key_t A;
@@ -31,7 +30,6 @@ typedef struct {
 typedef struct {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-
   snizkpk_proof_t sigma[1];
 } dake_auth_i_t;
 
@@ -42,6 +40,16 @@ typedef struct {
   ec_point_t Y;
   dh_public_key_t B;
 } dake_prekey_message_t;
+
+typedef struct {
+  uint32_t sender_instance_tag;
+  uint32_t receiver_instance_tag;
+  user_profile_t profile[1];
+  ec_point_t X;
+  dh_public_key_t A;
+  snizkpk_proof_t sigma[1];
+  uint8_t auth_mac[DATA_MSG_MAC_BYTES];
+} dake_non_interactive_auth_message_t;
 
 dake_identity_message_t *
 dake_identity_message_new(const user_profile_t *profile);
