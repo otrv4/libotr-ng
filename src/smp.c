@@ -341,10 +341,44 @@ bool smp_msg_1_deserialize(smp_msg_1_t *msg, const tlv_t *tlv) {
   return true;
 }
 
-bool smp_msg_1_validate(smp_msg_1_t *msg) {
+bool smp_msg_1_valid_points(smp_msg_1_t *msg) {
   return ec_point_valid(msg->G2a) && ec_point_valid(msg->G3a);
 }
 
+bool smp_msg_1_valid_zkp(smp_msg_1_t *msg, const smp_context_t smp) {
+  uint8_t hash[ED448_POINT_BYTES + 1];
+  ec_scalar_t temp_scalar;
+  ec_point_t Ga_c, G_d;
+  bool ok;
+
+  /* Check that c2 = HashToScalar(1 || G * d2 + G2a * c2). */
+  decaf_448_point_scalarmul(Ga_c, msg->G2a, msg->c2);
+  decaf_448_point_scalarmul(G_d, decaf_448_point_base, msg->d2);
+  decaf_448_point_add(G_d, G_d, Ga_c);
+
+  hash[0] = 0x01;
+  serialize_ec_point(hash + 1, G_d);
+
+  if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar))
+    return false;
+
+  ok = ec_scalar_eq(temp_scalar, msg->c2);
+
+  /* Check that c3 = HashToScalar(2 || G * d3 + G3a * c3). */
+  decaf_448_point_scalarmul(Ga_c, msg->G3a, msg->c3);
+  decaf_448_point_scalarmul(G_d, decaf_448_point_base, msg->d3);
+  decaf_448_point_add(G_d, G_d, Ga_c);
+
+  hash[0] = 0x02;
+  serialize_ec_point(hash + 1, G_d);
+
+  if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar))
+    return false;
+
+  return ok &= ec_scalar_eq(temp_scalar, msg->c3);
+}
+
+// TODO: either return bool or int on deserialization
 int smp_msg_2_deserialize(smp_msg_2_t *msg, const tlv_t *tlv) {
   const uint8_t *cursor = tlv->data;
   uint16_t len = tlv->len;
@@ -799,8 +833,10 @@ static otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp) {
     if (!smp_msg_1_deserialize(msg_1, tlv))
       continue;
 
-    // TODO: is this missing some checks?
-    if (!smp_msg_1_validate(msg_1))
+    if (!smp_msg_1_valid_points(msg_1))
+      continue;
+
+    if (!smp_msg_1_valid_zkp(msg_1, smp))
       continue;
 
     smp->msg1 = malloc(sizeof(smp_msg_1_t));
@@ -839,7 +875,8 @@ static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send,
 
   *to_send = NULL;
 
-  // TODO: what to do is something wrong happen?
+  // TODO: this only return error due to deserialization. It
+  // should not happen
   generate_smp_msg_2(msg_2, smp->msg1, smp);
   if (!smp_msg_2_aprint(&buff, &bufflen, msg_2))
     return OTRV4_SMPEVENT_ERROR;
@@ -861,9 +898,9 @@ static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send,
 static otr4_smp_event_t receive_smp_msg_2(smp_msg_2_t *msg_2, const tlv_t *tlv,
                                           smp_context_t smp) {
   if (smp->state != SMPSTATE_EXPECT2)
-    return OTRV4_SMPEVENT_ERROR; //TODO: this should abort
+    return OTRV4_SMPEVENT_ERROR; // TODO: this should abort
 
-  if (smp_msg_2_deserialize(msg_2, tlv) != 0)
+  if (smp_msg_2_deserialize(msg_2, tlv))
     return OTRV4_SMPEVENT_ERROR;
 
   if (!smp_msg_2_valid_points(msg_2))
@@ -928,7 +965,7 @@ static otr4_smp_event_t receive_smp_msg_3(smp_msg_3_t *msg_3, const tlv_t *tlv,
   if (smp->state != SMPSTATE_EXPECT3)
     return OTRV4_SMPEVENT_ERROR; // TODO: this errors, though it should abort
 
-  if (smp_msg_3_deserialize(msg_3, tlv) != 0)
+  if (smp_msg_3_deserialize(msg_3, tlv))
     return OTRV4_SMPEVENT_ERROR;
 
   if (!smp_msg_3_validate_points(msg_3))
@@ -990,9 +1027,9 @@ static bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp) {
 static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
                                           smp_context_t smp) {
   if (smp->state != SMPSTATE_EXPECT4)
-    return OTRV4_SMPEVENT_ERROR; //TODO: this should abort
+    return OTRV4_SMPEVENT_ERROR; // TODO: this should abort
 
-  if (smp_msg_4_deserialize(msg_4, tlv) != 0)
+  if (smp_msg_4_deserialize(msg_4, tlv))
     return OTRV4_SMPEVENT_ERROR;
 
   if (!ec_point_valid(msg_4->Rb))
@@ -1010,7 +1047,6 @@ static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
 }
 
 static otr4_smp_event_t process_smp_msg1(const tlv_t *tlv, smp_context_t smp) {
-  // TODO: if this is not SMPSTATE_EXPECT1, send and abort
   otr4_smp_event_t event = receive_smp_msg_1(tlv, smp);
 
   if (!event) {
