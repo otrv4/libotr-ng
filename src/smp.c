@@ -80,6 +80,7 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
   memcpy(*secret, hash, HASH_BYTES);
 }
 
+// TODO: this should be shake and should have the dom
 int hashToScalar(const unsigned char *buff, const size_t bufflen,
                  ec_scalar_t dst) {
   gcry_md_hd_t hd;
@@ -342,7 +343,7 @@ bool smp_msg_1_deserialize(smp_msg_1_t *msg, const tlv_t *tlv) {
 }
 
 bool smp_msg_1_validate(smp_msg_1_t *msg) {
-  return ec_point_valid(msg->G2a) || !ec_point_valid(msg->G3a);
+  return ec_point_valid(msg->G2a) && ec_point_valid(msg->G3a);
 }
 
 int smp_msg_2_deserialize(smp_msg_2_t *msg, const tlv_t *tlv) {
@@ -792,13 +793,14 @@ static void smp_msg_1_copy(smp_msg_1_t *dst, const smp_msg_1_t *src) {
 static otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp) {
   smp_msg_1_t msg_1[1];
 
-  if (SMPSTATE_EXPECT1 != smp->state)
+  if (smp->state != SMPSTATE_EXPECT1)
     return OTRV4_SMPEVENT_ABORT;
 
   do {
     if (!smp_msg_1_deserialize(msg_1, tlv))
       continue;
 
+    // TODO: is this missing some checks?
     if (!smp_msg_1_validate(msg_1))
       continue;
 
@@ -859,8 +861,8 @@ static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send,
 
 static otr4_smp_event_t receive_smp_msg_2(smp_msg_2_t *msg_2, const tlv_t *tlv,
                                           smp_context_t smp) {
-  if (SMPSTATE_EXPECT2 != smp->state)
-    return OTRV4_SMPEVENT_ERROR;
+  if (smp->state != SMPSTATE_EXPECT2)
+    return OTRV4_SMPEVENT_ERROR; //TODO: this should abort
 
   if (smp_msg_2_deserialize(msg_2, tlv) != 0)
     return OTRV4_SMPEVENT_ERROR;
@@ -924,8 +926,8 @@ static otr4_smp_event_t reply_with_smp_msg_3(tlv_t **to_send,
 
 static otr4_smp_event_t receive_smp_msg_3(smp_msg_3_t *msg_3, const tlv_t *tlv,
                                           smp_context_t smp) {
-  if (SMPSTATE_EXPECT3 != smp->state)
-    return OTRV4_SMPEVENT_ERROR;
+  if (smp->state != SMPSTATE_EXPECT3)
+    return OTRV4_SMPEVENT_ERROR; // TODO: this errors, though it should abort
 
   if (smp_msg_3_deserialize(msg_3, tlv) != 0)
     return OTRV4_SMPEVENT_ERROR;
@@ -988,8 +990,8 @@ static bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp) {
 
 static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
                                           smp_context_t smp) {
-  if (SMPSTATE_EXPECT4 != smp->state)
-    return OTRV4_SMPEVENT_ERROR;
+  if (smp->state != SMPSTATE_EXPECT4)
+    return OTRV4_SMPEVENT_ERROR; //TODO: this should abort
 
   if (smp_msg_4_deserialize(msg_4, tlv) != 0)
     return OTRV4_SMPEVENT_ERROR;
@@ -1009,6 +1011,7 @@ static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
 }
 
 static otr4_smp_event_t process_smp_msg1(const tlv_t *tlv, smp_context_t smp) {
+  // TODO: if this is not SMPSTATE_EXPECT1, send and abort
   otr4_smp_event_t event = receive_smp_msg_1(tlv, smp);
 
   if (!event) {

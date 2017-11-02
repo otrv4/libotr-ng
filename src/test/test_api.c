@@ -515,7 +515,6 @@ void test_api_smp(void) {
   OTR4_FREE;
 }
 
-// TODO: complete this test
 void test_api_smp_abort(void) {
   OTR4_INIT;
 
@@ -561,23 +560,25 @@ void test_api_smp_abort(void) {
   otrv4_assert(!response_to_alice->to_send);
   free_message_and_response(response_to_alice, to_send);
 
+  // From here
+  // Bob sends SMP Abort. TODO: check it does not trigger anything else
   otrv4_assert(otrv4_smp_abort(&to_send, bob) == OTR4_SUCCESS);
   g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
 
-  // Alice receives SMP ABORT
+  // Alice receives SMP ABORT, send SMP_ABORT
+  // TODO: Alice probably should not send and abort at this point
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
                OTR4_SUCCESS);
 
   otrv4_assert(response_to_bob->to_send);
-  // TODO: check this for abort
+
   otrv4_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9);
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
 
-  free(to_send);
-  otrv4_response_free(response_to_bob);
-  response_to_bob = NULL;
+  free_message_and_response(response_to_bob, to_send);
 
+  // TODO: Alice can restart here the smp. This will mem leak though
   otrv4_free_all(2, alice, bob);
   otrv4_client_state_free_all(2, alice_state, bob_state);
 
