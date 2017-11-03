@@ -26,6 +26,18 @@ Configure project
 $ ./configure
 ```
 
+Build and install
+```
+$ make && make install
+```
+
+Run tests
+```
+$ make test
+```
+
+## Configure library with other options
+
 Configure project with debug option with `gdb`
 ```
 $ ./configure CFLAGS="-g -ggdb3 -O0" CXXFLAGS="-g -ggdb3 -O0" LDFLAGS="-g -ggdb3" --disable-shared
@@ -41,14 +53,4 @@ $ lldb [path/test/executable]
 Configure project with code-coverage option
 ```
 $ ./configure --enable-code-coverage
-```
-
-Build and install
-```
-$ make && make install
-```
-
-Run tests
-```
-$ make test
 ```
