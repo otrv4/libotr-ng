@@ -706,81 +706,105 @@ void test_api_multiple_clients(void) {
   otrv4_t *bob_phone = set_up_otr(bob_phone_state, "bob@phone", 1);
   otrv4_t *bob_pc = set_up_otr(bob_pc_state, "bob@pc", 2);
 
-  otrv4_response_t *from_pc = otrv4_response_new();
-  otrv4_response_t *from_phone = otrv4_response_new();
-  otrv4_response_t *to_pc = otrv4_response_new();
-  otrv4_response_t *to_phone = otrv4_response_new();
+  otrv4_response_t *pc_to_alice = otrv4_response_new();
+  otrv4_response_t *phone_to_alice = otrv4_response_new();
+  otrv4_response_t *alice_to_pc = otrv4_response_new();
+  otrv4_response_t *alice_to_phone = otrv4_response_new();
 
-  err = otrv4_receive_message(from_pc, "?OTRv4?", bob_pc);
-  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_WAITING_AUTH_R,
+  // PC sends query msg
+  err = otrv4_receive_message(pc_to_alice, "?OTRv4?", bob_pc);
+  assert_rec_msg_inc_state(err, pc_to_alice, bob_pc, OTRV4_STATE_WAITING_AUTH_R,
                            send_response);
 
-  err = otrv4_receive_message(from_phone, "?OTRv4?", bob_phone);
-  assert_rec_msg_inc_state(err, from_phone, bob_phone,
+  // PHONE sends query msg
+  err = otrv4_receive_message(phone_to_alice, "?OTRv4?", bob_phone);
+  assert_rec_msg_inc_state(err, phone_to_alice, bob_phone,
                            OTRV4_STATE_WAITING_AUTH_R, send_response);
 
-  // Receives first Identity Message from PC
-  err = otrv4_receive_message(to_pc, from_pc->to_send, alice);
-  assert_rec_msg_inc_state(err, to_pc, alice, OTRV4_STATE_WAITING_AUTH_I,
+  // ALICE receives Identity msg from PC and sends AUTH-R
+  err = otrv4_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
+  assert_rec_msg_inc_state(err, alice_to_pc, alice, OTRV4_STATE_WAITING_AUTH_I,
                            send_response);
-  otrv4_response_free(from_pc);
+  otrv4_response_free(pc_to_alice);
 
-  // Receives second Identity Message from PHONE (on state
-  // OTRV4_STATE_WAITING_AUTH_I)
-  err = otrv4_receive_message(to_phone, from_phone->to_send, alice);
-  assert_rec_msg_inc_state(err, to_phone, alice, OTRV4_STATE_WAITING_AUTH_I,
+  // ALICE receives Identity msg from PHONE (on state OTRV4_STATE_WAITING_AUTH_I)
+  // and sends AUTH-R.
+  // ALICE will replace keys and profile info from PC with info from PHONE.
+  err = otrv4_receive_message(alice_to_phone, phone_to_alice->to_send, alice);
+  assert_rec_msg_inc_state(err, alice_to_phone, alice, OTRV4_STATE_WAITING_AUTH_I,
                            send_response);
-  otrv4_response_free(from_phone);
+  otrv4_response_free(phone_to_alice);
 
-  // Both receive the AUTH-R but only PC accepts
-  from_pc = otrv4_response_new();
-  err = otrv4_receive_message(from_pc, to_pc->to_send, bob_pc);
-  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
+  // PC receives AUTH-R succesfully
+  pc_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(pc_to_alice, alice_to_pc->to_send, bob_pc);
+  assert_rec_msg_inc_state(err, pc_to_alice, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
                            send_response);
-  otrv4_response_free(from_pc);
 
-  // It should be OK to get rid of the private DH-key generated at the AKE at
-  // this point. I suspect it is not NULL because a new DH-keypair was generated
-  // when the AKE finishes.
-  otrv4_assert(bob_phone->keys->our_dh->pub);
-  otrv4_assert(bob_phone->keys->our_dh->priv);
-
+  // PC deletes private keys as AUTH-R succesful
   otrv4_assert(bob_pc->keys->our_dh->pub);
   otrv4_assert(!bob_pc->keys->our_dh->priv);
 
-  // This message was sent to PC instance tag.
-  from_phone = otrv4_response_new();
-  err = otrv4_receive_message(from_phone, to_pc->to_send, bob_phone);
-  assert_rec_msg_inc_state(err, from_phone, bob_phone,
-                           OTRV4_STATE_WAITING_AUTH_R, !send_response);
-  otrv4_response_free(from_phone);
+  otrv4_assert_not_zero(bob_pc->keys->our_ecdh->pub, ED448_POINT_BYTES);
+  otrv4_assert_zero(bob_pc->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
-  // The message was ignored. It should not remove the private keys yet.
-  // The private keys are needed to send the AUTH-I when it actually receives
-  // an AUTH-R.
+  // PHONE receives AUTH-R with PC instance tag - Ignores
+  phone_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(phone_to_alice, alice_to_pc->to_send, bob_phone);
+  assert_rec_msg_inc_state(err, phone_to_alice, bob_phone,
+                           OTRV4_STATE_WAITING_AUTH_R, !send_response);
+  otrv4_response_free(phone_to_alice);
+  otrv4_response_free(alice_to_pc);
+
+  // PHONE does NOT remove the private keys yet - needed for AUTH-I when it
+  // actually receives an AUTH-R
   otrv4_assert(bob_phone->keys->our_dh->pub);
   otrv4_assert(bob_phone->keys->our_dh->priv);
 
-  // TODO: Alice should receive from PC (PHONE will have ignored the message).
+  otrv4_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
+  otrv4_assert_not_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
-  // Both receive but only PHONE accepts
-  // This message was sent to PC instance tag.
-  from_pc = otrv4_response_new();
-  err = otrv4_receive_message(from_pc, to_phone->to_send, bob_pc);
-  assert_rec_msg_inc_state(err, from_pc, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
+  // ALICE receives AUTH-I from PC - Authentication fails
+  alice_to_pc = otrv4_response_new();
+  err = otrv4_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
+  assert_rec_msg_inc_state(!err, alice_to_pc, alice, OTRV4_STATE_WAITING_AUTH_I,
                            !send_response);
-  otrv4_response_free(from_pc);
+  otrv4_response_free(pc_to_alice);
+  otrv4_response_free(alice_to_pc);
 
-  // This segfaults, because we are freeing
-  from_phone = otrv4_response_new();
-  err = otrv4_receive_message(from_phone, to_phone->to_send, bob_phone);
-  assert_rec_msg_inc_state(err, from_phone, bob_phone,
+  // PC receives AUTH-R again - ignores
+  pc_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(pc_to_alice, alice_to_phone->to_send, bob_pc);
+  assert_rec_msg_inc_state(err, pc_to_alice, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
+                           !send_response);
+  otrv4_response_free(pc_to_alice);
+
+  // PHONE receives correct AUTH-R message and sends AUTH-I
+  phone_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(phone_to_alice, alice_to_phone->to_send, bob_phone);
+  assert_rec_msg_inc_state(err, phone_to_alice, bob_phone,
                            OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
-  otrv4_response_free_all(2, to_phone, from_phone);
+  otrv4_response_free(alice_to_phone);
 
-  // TODO: Alice should receive from PHONE (PC will have ignored the message).
-  otrv4_response_free(to_pc);
+  // PHONE can now delete private keys
+  otrv4_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
+  otrv4_assert_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
+  // ALICE receives AUTH-I from PHONE
+  alice_to_phone = otrv4_response_new();
+  err = otrv4_receive_message(alice_to_phone, phone_to_alice->to_send, alice);
+  assert_rec_msg_inc_state(err, alice_to_phone, alice, OTRV4_STATE_ENCRYPTED_MESSAGES,
+                           !send_response);
+
+  // ALICE and PHONE have the same shared secret
+  otrv4_assert_root_key_eq(alice->keys->current->root_key,
+                           bob_phone->keys->current->root_key);
+  otrv4_assert_chain_key_eq(alice->keys->current->chain_a->key,
+                            bob_phone->keys->current->chain_a->key);
+  otrv4_assert_chain_key_eq(bob_phone->keys->current->chain_b->key,
+                            alice->keys->current->chain_b->key);
+
+  otrv4_response_free_all(2, phone_to_alice, alice_to_phone);
   otrv4_userstate_free_all(3, alice_state->userstate,
                            bob_phone_state->userstate, bob_pc_state->userstate);
   otrv4_client_state_free_all(3, alice_state, bob_pc_state, bob_phone_state);

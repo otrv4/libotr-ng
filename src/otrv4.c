@@ -1227,6 +1227,7 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
     err = receive_auth_r(&response->to_send, decoded, dec_len, otr);
     if (otr->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
       dh_priv_key_destroy(otr->keys->our_dh);
+      ec_scalar_destroy(otr->keys->our_ecdh->priv);
     }
     return err;
   case OTR_AUTH_I_MSG_TYPE:
