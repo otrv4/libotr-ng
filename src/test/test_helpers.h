@@ -53,6 +53,29 @@
                         p2->transitional_signature);                           \
   } while (0)
 
+#define otrv4_assert_not_zero(s, len)                                          \
+  do {                                                                         \
+    char *__s = _otrv4_memdump((const uint8_t *)s, len);                       \
+    char zero_value[len];                                                      \
+    memset(zero_value, 0, len);                                                \
+    char *__msg = g_strdup_printf(                                             \
+        "assertion failed: (%s)\nRESULT (%p): %s\n",                           \
+        #s " is zero", s, __s);                                                \
+    if (memcmp(s, zero_value, len) != 0)                                       \
+      ;                                                                        \
+    else                                                                       \
+      g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, __msg); \
+    free(__s);                                                                 \
+    g_free(__msg);                                                             \
+  } while (0)
+
+#define otrv4_assert_zero(s, len)                                              \
+  do {                                                                         \
+    char zero_value[len];                                                      \
+    memset(zero_value, 0, len);                                                \
+    otrv4_assert_cmpmem(zero_value, s, len);                                   \
+  } while (0)
+
 #define otrv4_assert_ec_public_key_eq(pk1, pk2)                                \
   do {                                                                         \
     otrv4_assert_cmpmem(pk1, pk2, sizeof(ec_public_key_t));                    \

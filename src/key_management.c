@@ -108,7 +108,7 @@ otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
   memset(sym, 0, ED448_PRIVATE_BYTES);
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
-  ecdh_keypair_destroy(manager->our_ecdh);
+  ec_point_destroy(manager->our_ecdh->pub);
   ecdh_keypair_generate(manager->our_ecdh, sym);
 
   if (manager->i % 3 == 0) {

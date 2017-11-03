@@ -755,8 +755,8 @@ void test_api_multiple_clients(void) {
                            OTRV4_STATE_WAITING_AUTH_R, !send_response);
   otrv4_response_free(from_phone);
 
-  // The message was ignored. It should not remove the private DH-key yet.
-  // The private DH-key is needed to send the AUTH-I when it actually receives
+  // The message was ignored. It should not remove the private keys yet.
+  // The private keys are needed to send the AUTH-I when it actually receives
   // an AUTH-R.
   otrv4_assert(bob_phone->keys->our_dh->pub);
   otrv4_assert(bob_phone->keys->our_dh->priv);
@@ -785,6 +785,103 @@ void test_api_multiple_clients(void) {
                            bob_phone_state->userstate, bob_pc_state->userstate);
   otrv4_client_state_free_all(3, alice_state, bob_pc_state, bob_phone_state);
   otrv4_free_all(3, bob_pc, bob_phone, alice);
+
+  OTR4_FREE;
+}
+
+void test_ecdh_priv_keys_destroyed_early() {
+  OTR4_INIT;
+
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+
+  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
+
+  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
+  otrv4_t *alice = otrv4_new(alice_state, policy);
+  otrv4_t *bob = otrv4_new(bob_state, policy);
+
+  do_ake_fixture(alice, bob);
+
+  otrv4_response_t *response_to_bob = NULL;
+  otrv4_response_t *response_to_alice = NULL;
+  string_t to_send = NULL;
+  otr4_err_t err;
+
+  // Alice sends a data message
+  err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
+  assert_msg_sent(err, to_send);
+
+  // Follow up message
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 2);
+
+  // Alice should not delete ECDH priv key
+  otrv4_assert_not_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+
+  // Bob receives a data message
+  response_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(response_to_alice, to_send, bob);
+  assert_msg_rec(err, "hi", response_to_alice);
+
+  free_message_and_response(response_to_alice, to_send);
+
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+
+  // Bob's ECDH priv key should be zero still from the DAKE
+  otrv4_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+
+  // Bob sends a data message
+  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, bob);
+  assert_msg_sent(err, to_send);
+
+  // New ratchet
+  g_assert_cmpint(bob->keys->i, ==, 1);
+  g_assert_cmpint(bob->keys->j, ==, 1);
+
+  // Alice receives a data message
+  response_to_bob = otrv4_response_new();
+  err = otrv4_receive_message(response_to_bob, to_send, alice);
+  assert_msg_rec(err, "hello", response_to_bob);
+
+  free_message_and_response(response_to_bob, to_send);
+
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 0);
+
+  // Alice should delete ECDH priv key
+  otrv4_assert_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+
+  err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
+  assert_msg_sent(err, to_send);
+
+  // New ratchet
+  g_assert_cmpint(alice->keys->i, ==, 2);
+  g_assert_cmpint(alice->keys->j, ==, 1);
+
+  // Alice should NOT delete ECDH priv key
+  otrv4_assert_not_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+
+  // Bob receives a data message
+  response_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(response_to_alice, to_send, bob);
+  assert_msg_rec(err, "hi", response_to_alice);
+
+  free_message_and_response(response_to_alice, to_send);
+
+  g_assert_cmpint(bob->keys->i, ==, 2);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+
+  // Bob should delete ECDH priv key
+  otrv4_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+
+  otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_free_all(2, alice, bob);
 
   OTR4_FREE;
 }
