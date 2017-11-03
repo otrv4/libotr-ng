@@ -20,20 +20,20 @@
     otrv4_assert(response->to_send == NULL);                                  \
   } while(0);
 
-#define assert_rec_msg_inc_state(err, respond_to, sender, otr_state,  \
-                                 send_response)                       \
-  do {                                                                \
-    otrv4_assert(err == OTR4_SUCCESS);                                \
-    otrv4_assert(!respond_to->to_display);                            \
-    otrv4_assert(sender->state == otr_state);                         \
-    if (send_response) {                                              \
-      otrv4_assert(respond_to->to_send);                              \
-    } else {                                                          \
-      otrv4_assert(!respond_to->to_send);                             \
-    }                                                                 \
+#define assert_rec_msg_inc_state(result, respond_to, sender, otr_state,   \
+                                 send_response)                           \
+  do {                                                                    \
+    otrv4_assert(result);                                                 \
+    otrv4_assert(!respond_to->to_display);                                \
+    otrv4_assert(sender->state == otr_state);                             \
+    if (send_response) {                                                  \
+      otrv4_assert(respond_to->to_send);                                  \
+    } else {                                                              \
+      otrv4_assert(!respond_to->to_send);                                 \
+    }                                                                     \
   } while(0);
 
-void free_message_and_response(otrv4_response_t *response, string_t message) {
+static void free_message_and_response(otrv4_response_t *response, string_t message) {
   otrv4_response_free(response);
   free(message);
   message = NULL;
@@ -692,6 +692,10 @@ static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name,
   return otrv4_new(state, policy);
 }
 
+static int should_succeed(otr4_err_t err) {
+  return err == OTR4_SUCCESS;
+}
+
 void test_api_multiple_clients(void) {
   OTR4_INIT;
 
@@ -713,17 +717,17 @@ void test_api_multiple_clients(void) {
 
   // PC sends query msg
   err = otrv4_receive_message(pc_to_alice, "?OTRv4?", bob_pc);
-  assert_rec_msg_inc_state(err, pc_to_alice, bob_pc, OTRV4_STATE_WAITING_AUTH_R,
+  assert_rec_msg_inc_state(should_succeed(err), pc_to_alice, bob_pc, OTRV4_STATE_WAITING_AUTH_R,
                            send_response);
 
   // PHONE sends query msg
   err = otrv4_receive_message(phone_to_alice, "?OTRv4?", bob_phone);
-  assert_rec_msg_inc_state(err, phone_to_alice, bob_phone,
+  assert_rec_msg_inc_state(should_succeed(err), phone_to_alice, bob_phone,
                            OTRV4_STATE_WAITING_AUTH_R, send_response);
 
   // ALICE receives Identity msg from PC and sends AUTH-R
   err = otrv4_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
-  assert_rec_msg_inc_state(err, alice_to_pc, alice, OTRV4_STATE_WAITING_AUTH_I,
+  assert_rec_msg_inc_state(should_succeed(err), alice_to_pc, alice, OTRV4_STATE_WAITING_AUTH_I,
                            send_response);
   otrv4_response_free(pc_to_alice);
 
@@ -731,14 +735,14 @@ void test_api_multiple_clients(void) {
   // and sends AUTH-R.
   // ALICE will replace keys and profile info from PC with info from PHONE.
   err = otrv4_receive_message(alice_to_phone, phone_to_alice->to_send, alice);
-  assert_rec_msg_inc_state(err, alice_to_phone, alice, OTRV4_STATE_WAITING_AUTH_I,
+  assert_rec_msg_inc_state(should_succeed(err), alice_to_phone, alice, OTRV4_STATE_WAITING_AUTH_I,
                            send_response);
   otrv4_response_free(phone_to_alice);
 
   // PC receives AUTH-R succesfully
   pc_to_alice = otrv4_response_new();
   err = otrv4_receive_message(pc_to_alice, alice_to_pc->to_send, bob_pc);
-  assert_rec_msg_inc_state(err, pc_to_alice, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
+  assert_rec_msg_inc_state(should_succeed(err), pc_to_alice, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
                            send_response);
 
   // PC deletes private keys as AUTH-R succesful
@@ -751,7 +755,7 @@ void test_api_multiple_clients(void) {
   // PHONE receives AUTH-R with PC instance tag - Ignores
   phone_to_alice = otrv4_response_new();
   err = otrv4_receive_message(phone_to_alice, alice_to_pc->to_send, bob_phone);
-  assert_rec_msg_inc_state(err, phone_to_alice, bob_phone,
+  assert_rec_msg_inc_state(should_succeed(err), phone_to_alice, bob_phone,
                            OTRV4_STATE_WAITING_AUTH_R, !send_response);
   otrv4_response_free(phone_to_alice);
   otrv4_response_free(alice_to_pc);
@@ -767,7 +771,7 @@ void test_api_multiple_clients(void) {
   // ALICE receives AUTH-I from PC - Authentication fails
   alice_to_pc = otrv4_response_new();
   err = otrv4_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
-  assert_rec_msg_inc_state((bool)!err, alice_to_pc, alice, OTRV4_STATE_WAITING_AUTH_I,
+  assert_rec_msg_inc_state(!should_succeed(err), alice_to_pc, alice, OTRV4_STATE_WAITING_AUTH_I,
                            !send_response);
 
   otrv4_response_free(pc_to_alice);
@@ -776,14 +780,14 @@ void test_api_multiple_clients(void) {
   // PC receives AUTH-R again - ignores
   pc_to_alice = otrv4_response_new();
   err = otrv4_receive_message(pc_to_alice, alice_to_phone->to_send, bob_pc);
-  assert_rec_msg_inc_state(err, pc_to_alice, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
+  assert_rec_msg_inc_state(should_succeed(err), pc_to_alice, bob_pc, OTRV4_STATE_ENCRYPTED_MESSAGES,
                            !send_response);
   otrv4_response_free(pc_to_alice);
 
   // PHONE receives correct AUTH-R message and sends AUTH-I
   phone_to_alice = otrv4_response_new();
   err = otrv4_receive_message(phone_to_alice, alice_to_phone->to_send, bob_phone);
-  assert_rec_msg_inc_state(err, phone_to_alice, bob_phone,
+  assert_rec_msg_inc_state(should_succeed(err), phone_to_alice, bob_phone,
                            OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
   otrv4_response_free(alice_to_phone);
 
@@ -794,7 +798,7 @@ void test_api_multiple_clients(void) {
   // ALICE receives AUTH-I from PHONE
   alice_to_phone = otrv4_response_new();
   err = otrv4_receive_message(alice_to_phone, phone_to_alice->to_send, alice);
-  assert_rec_msg_inc_state(err, alice_to_phone, alice, OTRV4_STATE_ENCRYPTED_MESSAGES,
+  assert_rec_msg_inc_state(should_succeed(err), alice_to_phone, alice, OTRV4_STATE_ENCRYPTED_MESSAGES,
                            !send_response);
 
   // ALICE and PHONE have the same shared secret
