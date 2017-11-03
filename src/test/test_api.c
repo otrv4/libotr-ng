@@ -767,10 +767,8 @@ void test_api_multiple_clients(void) {
   // ALICE receives AUTH-I from PC - Authentication fails
   alice_to_pc = otrv4_response_new();
   err = otrv4_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
-  otrv4_assert(err != OTR4_SUCCESS);
-  otrv4_assert(!alice_to_pc->to_display);
-  otrv4_assert(alice->state == OTRV4_STATE_WAITING_AUTH_I);
-  otrv4_assert(!alice_to_pc->to_send);
+  assert_rec_msg_inc_state((bool)!err, alice_to_pc, alice, OTRV4_STATE_WAITING_AUTH_I,
+                           !send_response);
 
   otrv4_response_free(pc_to_alice);
   otrv4_response_free(alice_to_pc);
