@@ -15,12 +15,6 @@ void test_tlv_new() {
   assert_tlv_structure(tlv, OTRV4_TLV_SMP_ABORT, 0, NULL, false);
 
   otrv4_tlv_free(tlv);
-
-  tlv = otrv4_padding_tlv_new(5);
-
-  assert_tlv_structure(tlv, OTRV4_TLV_PADDING, 5, NULL, false);
-
-  otrv4_tlv_free(tlv);
 }
 
 void test_tlv_parse() {
@@ -87,7 +81,6 @@ void test_append_tlv() {
       otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
   tlv_t *smp_msg3_tlv =
       otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data), smp3_data);
-  tlv_t *tlv_pad = otrv4_padding_tlv_new(5);
 
   tlvs = append_tlv(tlvs, smp_msg2_tlv);
 
@@ -101,13 +94,8 @@ void test_append_tlv() {
   assert_tlv_structure(tlvs->next, OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data),
                        smp3_data, false);
 
-  tlvs = append_tlv(tlvs, tlv_pad);
-
   assert_tlv_structure(tlvs, OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data,
                        true);
-  assert_tlv_structure(tlvs->next, OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data),
-                       smp3_data, true);
-  assert_tlv_structure(tlvs->next->next, OTRV4_TLV_PADDING, 5, NULL, false);
 
   otrv4_tlv_free(tlvs);
 }
