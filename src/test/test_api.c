@@ -6,32 +6,32 @@
 
 #include <libotr/privkey.h>
 
-static void assert_msg_sent(otr4_err_t err, string_t to_send) {
-  otrv4_assert(err == OTR4_SUCCESS);
-  otrv4_assert(to_send);
-  otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
-}
+#define assert_msg_sent(err, to_send)                 \
+  do {                                                \
+    otrv4_assert(err == OTR4_SUCCESS);                \
+    otrv4_assert(to_send);                            \
+    otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);     \
+  } while(0);
 
-static void assert_msg_rec(otr4_err_t err, const string_t message,
-                           otrv4_response_t *response) {
-  otrv4_assert(err == OTR4_SUCCESS);
-  otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);
-  otrv4_assert(response->to_send == NULL);
-}
+#define assert_msg_rec(err, message, response)                                \
+  do {                                                                        \
+    otrv4_assert(err == OTR4_SUCCESS);                                        \
+    otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);  \
+    otrv4_assert(response->to_send == NULL);                                  \
+  } while(0);
 
-static void assert_rec_msg_inc_state(otr4_err_t err,
-                                     otrv4_response_t *respond_to,
-                                     otrv4_t *sender, int state,
-                                     bool send_response) {
-  otrv4_assert(err == OTR4_SUCCESS);
-  otrv4_assert(!respond_to->to_display);
-  otrv4_assert(sender->state == state);
-  if (send_response) {
-    otrv4_assert(respond_to->to_send);
-  } else {
-    otrv4_assert(!respond_to->to_send);
-  }
-}
+#define assert_rec_msg_inc_state(err, respond_to, sender, otr_state,  \
+                                 send_response)                       \
+  do {                                                                \
+    otrv4_assert(err == OTR4_SUCCESS);                                \
+    otrv4_assert(!respond_to->to_display);                            \
+    otrv4_assert(sender->state == otr_state);                         \
+    if (send_response) {                                              \
+      otrv4_assert(respond_to->to_send);                              \
+    } else {                                                          \
+      otrv4_assert(!respond_to->to_send);                             \
+    }                                                                 \
+  } while(0);
 
 void free_message_and_response(otrv4_response_t *response, string_t message) {
   otrv4_response_free(response);
