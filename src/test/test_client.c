@@ -13,14 +13,20 @@
 #define CHARLIE_IDENTITY "charlie@otr.example"
 #define FORCE_CREATE_CONVO true
 
+static otr4_client_t *set_up_client(otr4_client_state_t *state, uint8_t sym_value) {
+  uint8_t sym[ED448_PRIVATE_BYTES] = {sym_value};
+  otr4_client_state_add_private_key_v4(state, sym);
+  otr4_client_t *dst = otr4_client_new(state);
+
+  return dst;
+}
+
 void test_client_conversation_api() {
   OTR4_INIT;
-  uint8_t sym[ED448_PRIVATE_BYTES] = {1};
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
-  otr4_client_state_add_private_key_v4(alice_state, sym);
 
-  otr4_client_t *alice = otr4_client_new(alice_state);
+  otr4_client_t *alice = set_up_client(alice_state, 1);
   otrv4_assert(!alice->conversations);
 
   otr4_conversation_t *alice_to_bob =
@@ -62,24 +68,13 @@ void test_client_conversation_api() {
 void test_client_api() {
   OTR4_INIT;
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-  uint8_t charlie_sym[ED448_PRIVATE_BYTES] = {3};
-
-  otr4_client_t *alice = NULL, *bob = NULL, *charlie = NULL;
-
   otr4_client_state_t *alice_state = otr4_client_state_new("alice");
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
   otr4_client_state_t *bob_state = otr4_client_state_new("bob");
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
-
   otr4_client_state_t *charlie_state = otr4_client_state_new("charlie");
-  otr4_client_state_add_private_key_v4(charlie_state, charlie_sym);
 
-  alice = otr4_client_new(alice_state);
-  bob = otr4_client_new(bob_state);
-  charlie = otr4_client_new(charlie_state);
+  otr4_client_t *alice = set_up_client(alice_state, 1);
+  otr4_client_t *bob = set_up_client(bob_state, 2);
+  otr4_client_t *charlie = set_up_client(charlie_state, 3);
 
   char *query_msg_to_bob =
       otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
@@ -210,12 +205,8 @@ void test_client_api() {
 void test_client_get_our_fingerprint() {
   OTR4_INIT;
 
-  uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-
   otr4_client_state_t *client_state = otr4_client_state_new("alice");
-  otr4_client_state_add_private_key_v4(client_state, sym);
-
-  otr4_client_t *client = otr4_client_new(client_state);
+  otr4_client_t *client = set_up_client(client_state, 1);
 
   otrv4_fingerprint_t our_fp = {0};
   otrv4_assert(!otr4_client_get_our_fingerprint(our_fp, client));
@@ -266,24 +257,17 @@ void test_fingerprint_hash_to_human() {
 void test_conversation_with_multiple_locations() {
   OTR4_INIT;
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-  otr4_client_t *alice = NULL, *bob = NULL;
-
   otr4_client_state_t *alice_state = otr4_client_state_new("alice");
   alice_state->userstate = otrl_userstate_create();
   alice_state->account_name = otrv4_strdup("");
   alice_state->protocol_name = otrv4_strdup("");
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
+  otr4_client_t *alice = set_up_client(alice_state, 1);
 
   otr4_client_state_t *bob_state = otr4_client_state_new("bob");
   bob_state->userstate = otrl_userstate_create();
   bob_state->account_name = otrv4_strdup("");
   bob_state->protocol_name = otrv4_strdup("");
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
-
-  alice = otr4_client_new(alice_state);
-  bob = otr4_client_new(bob_state);
+  otr4_client_t *bob = set_up_client(bob_state, 2);
 
   // Generate instance tag
   otr4_client_state_add_instance_tag(alice_state, 0x100 + 1);
@@ -379,18 +363,11 @@ void test_conversation_with_multiple_locations() {
 void test_valid_identity_msg_in_waiting_auth_i() {
   OTR4_INIT;
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-
-  otr4_client_t *alice = NULL, *bob = NULL;
   otr4_client_state_t *alice_state = otr4_client_state_new("alice");
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
   otr4_client_state_t *bob_state = otr4_client_state_new("bob");
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
 
-  alice = otr4_client_new(alice_state);
-  bob = otr4_client_new(bob_state);
+  otr4_client_t *alice = set_up_client(alice_state, 1);
+  otr4_client_t *bob = set_up_client(bob_state, 2);
 
   char *query_msg_to_bob =
       otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
@@ -521,18 +498,11 @@ void test_valid_identity_msg_in_waiting_auth_i() {
 void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   OTR4_INIT;
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-
-  otr4_client_t *alice = NULL, *bob = NULL;
   otr4_client_state_t *alice_state = otr4_client_state_new("alice");
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
   otr4_client_state_t *bob_state = otr4_client_state_new("bob");
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
 
-  alice = otr4_client_new(alice_state);
-  bob = otr4_client_new(bob_state);
+  otr4_client_t *alice = set_up_client(alice_state, 1);
+  otr4_client_t *bob = set_up_client(bob_state, 2);
 
   // Alice sends a query message to Bob
   char *query_msg_to_bob =
@@ -645,18 +615,11 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
 void test_valid_identity_msg_in_waiting_auth_r() {
   OTR4_INIT;
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-
-  otr4_client_t *alice = NULL, *bob = NULL;
   otr4_client_state_t *alice_state = otr4_client_state_new("alice");
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
   otr4_client_state_t *bob_state = otr4_client_state_new("bob");
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
 
-  alice = otr4_client_new(alice_state);
-  bob = otr4_client_new(bob_state);
+  otr4_client_t *alice = set_up_client(alice_state, 1);
+  otr4_client_t *bob = set_up_client(bob_state, 2);
 
   // Alice sends a query message to Bob
   char *query_msg_to_bob =
@@ -827,18 +790,11 @@ void test_valid_identity_msg_in_waiting_auth_r() {
 void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   OTR4_INIT;
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-
-  otr4_client_t *alice = NULL, *bob = NULL;
   otr4_client_state_t *alice_state = otr4_client_state_new("alice");
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
   otr4_client_state_t *bob_state = otr4_client_state_new("bob");
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
 
-  alice = otr4_client_new(alice_state);
-  bob = otr4_client_new(bob_state);
+  otr4_client_t *alice = set_up_client(alice_state, 1);
+  otr4_client_t *bob = set_up_client(bob_state, 2);
 
   // Alice sends a query message to Bob
   char *query_msg_to_bob =
@@ -947,11 +903,8 @@ void test_client_receives_fragmented_message(void) {
   otr4_message_to_send_t *fmsg = malloc(sizeof(otr4_message_to_send_t));
   otrv4_assert(otr4_fragment_message(60, fmsg, 0, 0, msg) == OTR4_SUCCESS);
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-  otr4_client_t *alice = NULL;
   otr4_client_state_t *alice_state = otr4_client_state_new("alice");
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-  alice = otr4_client_new(alice_state);
+  otr4_client_t *alice = set_up_client(alice_state, 1);
 
   char *tosend = NULL, *todisplay = NULL;
 
@@ -972,18 +925,11 @@ void test_client_receives_fragmented_message(void) {
 void test_client_sends_fragmented_message(void) {
   OTR4_INIT;
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-
-  otr4_client_t *alice = NULL, *bob = NULL;
   otr4_client_state_t *alice_state = otr4_client_state_new("alice");
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
   otr4_client_state_t *bob_state = otr4_client_state_new("bob");
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
 
-  alice = otr4_client_new(alice_state);
-  bob = otr4_client_new(bob_state);
+  otr4_client_t *alice = set_up_client(alice_state, 1);
+  otr4_client_t *bob = set_up_client(bob_state, 2);
 
   char *query_msg_to_bob =
       otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
