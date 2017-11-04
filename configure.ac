@@ -11,7 +11,7 @@ AM_SILENT_RULES([no])
 # Debug
 AX_CHECK_ENABLE_DEBUG([yes])
 
-AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
+AM_INIT_AUTOMAKE([-Wall -W -Werror foreign subdir-objects])
 AM_PROG_AR
 LT_INIT
 
