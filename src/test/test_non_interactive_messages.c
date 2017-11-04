@@ -183,11 +183,14 @@ void test_dake_non_interactive_auth_message_serializes(
   user_profile_copy(msg->profile, f->profile);
   ec_point_copy(msg->X, ecdh->pub);
   msg->A = dh_mpi_copy(dh->pub);
+
+  // TODO: correctly generate this sigma
   unsigned char *t = NULL;
   size_t t_len = 0;
   otr4_err_t err = snizkpk_authenticate(msg->sigma, f->keypair,
                                         f->profile->pub_key, msg->X, t, t_len);
 
+  // TODO: generate auth-mac
   uint8_t *serialized = NULL;
   size_t len = 0;
 
@@ -240,6 +243,66 @@ void test_dake_non_interactive_auth_message_serializes(
   dake_non_interactive_auth_message_destroy(msg);
   free(serialized);
   free(t);
+
+  OTR4_FREE;
+}
+
+void test_dake_non_interactive_auth_message_deserializes(prekey_message_fixture_t *f,
+                                           gconstpointer data) {
+  OTR4_INIT;
+
+  ecdh_keypair_t ecdh[1];
+  dh_keypair_t dh;
+
+  uint8_t sym[ED448_PRIVATE_BYTES] = {0};
+  ecdh_keypair_generate(ecdh, sym);
+  otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
+
+  dake_non_interactive_auth_message_t msg[1];
+
+  msg->sender_instance_tag = 1;
+  msg->receiver_instance_tag = 1;
+  user_profile_copy(msg->profile, f->profile);
+  ec_point_copy(msg->X, ecdh->pub);
+  msg->A = dh_mpi_copy(dh->pub);
+
+  // TODO: correctly generate this sigma
+  unsigned char *t = NULL;
+  size_t t_len = 0;
+  otr4_err_t err = snizkpk_authenticate(msg->sigma, f->keypair,
+                                        f->profile->pub_key, msg->X, t, t_len);
+
+  otrv4_assert(err == OTR4_SUCCESS);
+  memset(msg->auth_mac, 0, HASH_BYTES);
+
+  uint8_t *serialized = NULL;
+  size_t len = 0;
+  otrv4_assert(dake_non_interactive_auth_message_asprintf(&serialized, &len,
+                                                          msg) == OTR4_SUCCESS);
+
+  dh_keypair_destroy(dh);
+  ecdh_keypair_destroy(ecdh);
+  free(t);
+
+  dake_non_interactive_auth_message_t deserialized[1];
+  memset(deserialized, 0, sizeof(dake_non_interactive_auth_message_t));
+  otrv4_assert(dake_non_interactive_auth_message_deserialize(deserialized, serialized,
+                                               len) == OTR4_SUCCESS);
+
+  // assert prekey eq
+  g_assert_cmpuint(deserialized->sender_instance_tag, ==,
+                   msg->sender_instance_tag);
+  g_assert_cmpuint(deserialized->receiver_instance_tag, ==,
+                   msg->receiver_instance_tag);
+  otrv4_assert_user_profile_eq(deserialized->profile, msg->profile);
+  otrv4_assert_ec_public_key_eq(deserialized->X, msg->X);
+  otrv4_assert_dh_public_key_eq(deserialized->A, msg->A);
+  otrv4_assert(memcmp(deserialized->auth_mac, msg->auth_mac, HASH_BYTES));
+  // TODO: check znpk
+
+  free(serialized);
+  dake_non_interactive_auth_message_destroy(msg);
+  dake_non_interactive_auth_message_destroy(deserialized);
 
   OTR4_FREE;
 }

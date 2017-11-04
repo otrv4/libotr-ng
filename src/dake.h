@@ -103,4 +103,8 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_t *non_interactive_auth);
 
+otr4_err_t dake_non_interactive_auth_message_deserialize(
+    dake_non_interactive_auth_message_t *dst, const uint8_t *buffer,
+    size_t buflen);
+
 #endif
