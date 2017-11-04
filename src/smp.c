@@ -80,7 +80,7 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
   memcpy(*secret, hash, HASH_BYTES);
 }
 
-int hashToScalar(const unsigned char *buff, const size_t bufflen,
+ otr4_err_t hashToScalar(const unsigned char *buff, const size_t bufflen,
                  ec_scalar_t dst) {
   uint8_t hash[HASH_BYTES];
   decaf_shake256_ctx_t hd;
@@ -92,9 +92,9 @@ int hashToScalar(const unsigned char *buff, const size_t bufflen,
   hash_destroy(hd);
 
   if (deserialize_ec_scalar(dst, hash, ED448_SCALAR_BYTES))
-    return 1;
+    return OTR4_ERROR;
 
-  return 0;
+  return OTR4_SUCCESS;
 }
 
 void smp_msg_1_destroy(smp_msg_1_t *msg) {
