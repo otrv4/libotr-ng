@@ -100,4 +100,11 @@ otr4_err_t
 dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
                              const dake_prekey_message_t *prekey_message);
 
+void dake_non_interactive_auth_message_destroy(
+    dake_non_interactive_auth_message_t *non_interactive_auth);
+
+otr4_err_t dake_non_interactive_auth_message_asprintf(
+    uint8_t **dst, size_t *nbytes,
+    const dake_non_interactive_auth_message_t *non_interactive_auth);
+
 #endif

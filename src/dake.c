@@ -529,7 +529,7 @@ otr4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
   return dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
 
-void dake_non_interactive_auth_destroy(
+void dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_t *non_interactive_auth) {
   dh_mpi_release(non_interactive_auth->A);
   non_interactive_auth->A = NULL;
@@ -544,11 +544,11 @@ void dake_non_interactive_auth_free(
   if (!non_interactive_auth)
     return;
 
-  dake_non_interactive_auth_destroy(non_interactive_auth);
+  dake_non_interactive_auth_message_destroy(non_interactive_auth);
   free(non_interactive_auth);
 }
 
-otr4_err_t dake_non_interactive_auth_asprintf(
+otr4_err_t dake_non_interactive_auth_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_t *non_interactive_auth) {
   size_t our_profile_len = 0;
@@ -604,8 +604,9 @@ otr4_err_t dake_non_interactive_auth_asprintf(
   return OTR4_SUCCESS;
 }
 
-otr4_err_t dake_non_interactive_auth_deserialize(dake_non_interactive_auth_message_t *dst, const uint8_t *buffer,
-                                   size_t buflen) {
+otr4_err_t dake_non_interactive_auth_message_deserialize(
+    dake_non_interactive_auth_message_t *dst, const uint8_t *buffer,
+    size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
   size_t read = 0;
@@ -686,7 +687,6 @@ otr4_err_t dake_non_interactive_auth_deserialize(dake_non_interactive_auth_messa
 
   return deserialize_bytes_array(dst->auth_mac, HASH_BYTES, cursor, len);
 }
-
 
 bool not_expired(time_t expires) {
   if (difftime(expires, time(NULL)) > 0) {
