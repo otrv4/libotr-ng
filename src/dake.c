@@ -170,14 +170,6 @@ void dake_auth_r_destroy(dake_auth_r_t *auth_r) {
   snizkpk_proof_destroy(auth_r->sigma);
 }
 
-void dake_auth_r_free(dake_auth_r_t *auth_r) {
-  if (!auth_r)
-    return;
-
-  dake_auth_r_destroy(auth_r);
-  free(auth_r);
-}
-
 otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
                                 const dake_auth_r_t *auth_r) {
   size_t our_profile_len = 0;
@@ -303,14 +295,6 @@ otr4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
 
 void dake_auth_i_destroy(dake_auth_i_t *auth_i) {
   snizkpk_proof_destroy(auth_i->sigma);
-}
-
-void dake_auth_i_free(dake_auth_i_t *auth_i) {
-  if (!auth_i)
-    return;
-
-  dake_auth_i_destroy(auth_i);
-  free(auth_i);
 }
 
 otr4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
@@ -537,15 +521,6 @@ void dake_non_interactive_auth_message_destroy(
   user_profile_destroy(non_interactive_auth->profile);
   snizkpk_proof_destroy(non_interactive_auth->sigma);
   sodium_memzero(non_interactive_auth->sigma, DATA_MSG_MAC_BYTES);
-}
-
-void dake_non_interactive_auth_free(
-    dake_non_interactive_auth_message_t *non_interactive_auth) {
-  if (!non_interactive_auth)
-    return;
-
-  dake_non_interactive_auth_message_destroy(non_interactive_auth);
-  free(non_interactive_auth);
 }
 
 otr4_err_t dake_non_interactive_auth_message_asprintf(
