@@ -13,7 +13,8 @@
 #define CHARLIE_IDENTITY "charlie@otr.example"
 #define FORCE_CREATE_CONVO true
 
-static otr4_client_t *set_up_client(otr4_client_state_t *state, uint8_t sym_value) {
+static otr4_client_t *set_up_client(otr4_client_state_t *state,
+                                    uint8_t sym_value) {
   uint8_t sym[ED448_PRIVATE_BYTES] = {sym_value};
   otr4_client_state_add_private_key_v4(state, sym);
   otr4_client_t *dst = otr4_client_new(state);

@@ -58,9 +58,8 @@
     char *__s = _otrv4_memdump((const uint8_t *)s, len);                       \
     char zero_value[len];                                                      \
     memset(zero_value, 0, len);                                                \
-    char *__msg = g_strdup_printf(                                             \
-        "assertion failed: (%s)\nRESULT (%p): %s\n",                           \
-        #s " is zero", s, __s);                                                \
+    char *__msg = g_strdup_printf("assertion failed: (%s)\nRESULT (%p): %s\n", \
+                                  #s " is zero", s, __s);                      \
     if (memcmp(s, zero_value, len) != 0)                                       \
       ;                                                                        \
     else                                                                       \
