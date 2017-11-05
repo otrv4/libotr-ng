@@ -1,22 +1,5 @@
 #include "../tlv.h"
 
-void test_tlv_new() {
-  uint8_t data[2] = {0x03, 0x04};
-  uint16_t len = 2;
-
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, len, data);
-
-  assert_tlv_structure(tlv, OTRV4_TLV_SMP_MSG_2, len, data, false);
-
-  otrv4_tlv_free(tlv);
-
-  tlv = otrv4_tlv_new(OTRV4_TLV_SMP_ABORT, 0, NULL);
-
-  assert_tlv_structure(tlv, OTRV4_TLV_SMP_ABORT, 0, NULL, false);
-
-  otrv4_tlv_free(tlv);
-}
-
 void test_tlv_parse() {
   uint8_t msg1[7] = {0x01, 0x02, 0x00, 0x03, 0x08, 0x05, 0x09};
   uint8_t msg2[4] = {0x00, 0x00, 0x00, 0x00};
@@ -62,14 +45,6 @@ void test_tlv_parse() {
   assert_tlv_structure(tlv6, OTRV4_TLV_SYM_KEY, sizeof(data3), data3, false);
 
   otrv4_tlv_free_all(6, tlv1, tlv2, tlv3, tlv4, tlv5, tlv6);
-}
-
-void test_tlv_new_disconnected() {
-  tlv_t *tlv = otrv4_disconnected_tlv_new();
-
-  assert_tlv_structure(tlv, OTRV4_TLV_DISCONNECTED, 0, NULL, false);
-
-  otrv4_tlv_free(tlv);
 }
 
 void test_append_tlv() {
