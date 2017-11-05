@@ -30,8 +30,8 @@ int main(int argc, char **argv) {
   if (!gcry_check_version(GCRYPT_VERSION))
     return 2;
 
-  //gcry_control (GCRYCTL_INIT_SECMEM, 1);
   // TODO: we are using gcry_mpi_snew, so we might need this
+  //gcry_control (GCRYCTL_INIT_SECMEM, 1);
   //gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
   //gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
 
