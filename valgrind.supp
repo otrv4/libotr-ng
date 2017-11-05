@@ -123,3 +123,22 @@
    fun:dsa_generate
    ...
 }
+{
+   _gcry_rngcsprng_randomize
+   Memcheck:Leak
+   ...
+   fun:_gcry_malloc
+   ...
+   fun:initialize
+   fun:_gcry_rngcsprng_randomize
+}
+{
+   _gcry_rngcsprng_randomize_2
+   Memcheck:Leak
+   ...
+   fun:_gcry_xmalloc
+   fun:_gcry_xcalloc
+   ...
+   fun:initialize
+   fun:_gcry_rngcsprng_randomize
+}

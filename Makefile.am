@@ -14,8 +14,14 @@ test: check
 code-check:
 	splint +trytorecover src/*.h src/**.c `pkg-config --cflags glib-2.0`
 
+VALGRIND_SUPPRESSIONS = \
+	valgrind.supp
+
+VALGRIND_ARGS = --track-origins=yes --quiet --error-exitcode=2 --leak-check=full \
+	--suppressions=$(VALGRIND_SUPPRESSIONS) --gen-suppressions=all
+
 mem-check: check
-	valgrind --error-exitcode=2 --track-origins=yes --trace-children=yes --leak-check=full --suppressions=valgrind.supp $(top_builddir)/src/test/test
+	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/test
 
 coverage-check: test
 	@make check-code-coverage

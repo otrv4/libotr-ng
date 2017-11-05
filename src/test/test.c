@@ -30,11 +30,17 @@ int main(int argc, char **argv) {
   if (!gcry_check_version(GCRYPT_VERSION))
     return 2;
 
+  //gcry_control (GCRYCTL_INIT_SECMEM, 1);
+  // TODO: we are using gcry_mpi_snew, so we might need this
+  //gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
+  //gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
+
   /* Set to quick random so we don't wait on /dev/random. */
   gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
 
   g_test_init(&argc, &argv, NULL);
 
+  g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
   g_test_add_func("/otrv4/instance_tag/generates_when_file_empty",
                   test_instance_tag_generates_tag_when_file_empty);
   g_test_add_func("/otrv4/instance_tag/generates_when_file_is_full",
@@ -203,7 +209,6 @@ int main(int argc, char **argv) {
                   test_invalid_auth_i_msg_in_not_waiting_auth_i);
 
   // TODO: this can be moved here but no more up
-  g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
 
   return g_test_run();
 }
