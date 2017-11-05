@@ -12,6 +12,8 @@
     g_test_add(_p, _t, NULL, _f##_setup, _c, _f##_teardown);                   \
   } while (0);
 
+// TODO: for structs like scalars and points, use: decaf_memeq
+// for the rest use our own implementation of mem_cmp
 #define otrv4_assert_cmpmem(s1, s2, len)                                       \
   do {                                                                         \
     char *__s1 = _otrv4_memdump((const uint8_t *)s1, len);                     \
@@ -60,7 +62,7 @@
     memset(zero_value, 0, len);                                                \
     char *__msg = g_strdup_printf("assertion failed: (%s)\nRESULT (%p): %s\n", \
                                   #s " is zero", s, __s);                      \
-    if (memcmp(s, zero_value, len) != 0)                                       \
+    if (decaf_memeq(s, zero_value, len) == 0)                                       \
       ;                                                                        \
     else                                                                       \
       g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, __msg); \
