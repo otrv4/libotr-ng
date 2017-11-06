@@ -464,6 +464,7 @@ static otr4_err_t receive_tagged_plaintext(otrv4_response_t *response,
       return OTR4_ERROR;
     }
     dh_priv_key_destroy(otr->keys->our_dh);
+    ec_scalar_destroy(otr->keys->our_ecdh->priv);
     return start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:
@@ -484,6 +485,7 @@ static otr4_err_t receive_query_message(otrv4_response_t *response,
 
   switch (otr->running_version) {
   case OTRV4_VERSION_4:
+    ec_scalar_destroy(otr->keys->our_ecdh->priv);
     return start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:
