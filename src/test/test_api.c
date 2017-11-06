@@ -873,6 +873,9 @@ void test_ecdh_priv_keys_destroyed_early() {
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 1);
 
+  // Bob's ECDH priv key should not be zero after sending
+  otrv4_assert_not_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+
   // Alice receives a data message
   response_to_bob = otrv4_response_new();
   err = otrv4_receive_message(response_to_bob, to_send, alice);
@@ -886,6 +889,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   // Alice should delete ECDH priv key
   otrv4_assert_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
+  // Alice sends a data message
   err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
   assert_msg_sent(err, to_send);
 
