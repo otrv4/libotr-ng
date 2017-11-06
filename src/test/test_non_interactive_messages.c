@@ -247,8 +247,8 @@ void test_dake_non_interactive_auth_message_serializes(
   OTR4_FREE;
 }
 
-void test_dake_non_interactive_auth_message_deserializes(prekey_message_fixture_t *f,
-                                           gconstpointer data) {
+void test_dake_non_interactive_auth_message_deserializes(
+    prekey_message_fixture_t *f, gconstpointer data) {
   OTR4_INIT;
 
   ecdh_keypair_t ecdh[1];
@@ -286,8 +286,8 @@ void test_dake_non_interactive_auth_message_deserializes(prekey_message_fixture_
 
   dake_non_interactive_auth_message_t deserialized[1];
   memset(deserialized, 0, sizeof(dake_non_interactive_auth_message_t));
-  otrv4_assert(dake_non_interactive_auth_message_deserialize(deserialized, serialized,
-                                               len) == OTR4_SUCCESS);
+  otrv4_assert(dake_non_interactive_auth_message_deserialize(
+                   deserialized, serialized, len) == OTR4_SUCCESS);
 
   // assert prekey eq
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,

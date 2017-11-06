@@ -62,7 +62,7 @@
     memset(zero_value, 0, len);                                                \
     char *__msg = g_strdup_printf("assertion failed: (%s)\nRESULT (%p): %s\n", \
                                   #s " is zero", s, __s);                      \
-    if (decaf_memeq(s, zero_value, len) == 0)                                       \
+    if (decaf_memeq(s, zero_value, len) == 0)                                  \
       ;                                                                        \
     else                                                                       \
       g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, __msg); \
