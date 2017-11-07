@@ -119,8 +119,8 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/smp/state_machine", test_smp_state_machine);
   g_test_add_func("/smp/generate_secret", test_generate_smp_secret);
-  g_test_add_func("/smp/msg_1_aprint_null_question",
-                  test_smp_msg_1_aprint_null_question);
+  g_test_add_func("/smp/msg_1_asprintf_null_question",
+                  test_smp_msg_1_asprintf_null_question);
   g_test_add_func("/smp/generate_validate_msg_2", test_smp_validates_msg_2);
   g_test_add_func("/smp/generate_validate_msg_3", test_smp_validates_msg_3);
   g_test_add_func("/smp/generate_validate_msg_4", test_smp_validates_msg_4);

@@ -27,19 +27,6 @@ typedef struct {
 } smp_msg_1_t;
 
 typedef struct {
-  smp_state_t state;
-  unsigned char *secret;
-  ec_scalar_t a2, a3, b3;
-  ec_point_t G2, G3;
-  ec_point_t G3a, G3b;
-  ec_point_t Pb, Qb;
-  ec_point_t Pa_Pb, Qa_Qb;
-
-  uint8_t progress;
-  smp_msg_1_t *msg1;
-} smp_context_t[1];
-
-typedef struct {
   ec_point_t G2b;
   ec_scalar_t c2;
   ec_scalar_t d2;
@@ -64,6 +51,19 @@ typedef struct {
   ec_point_t Rb;
   ec_scalar_t cr, d7;
 } smp_msg_4_t;
+
+typedef struct {
+  smp_state_t state;
+  unsigned char *secret;
+  ec_scalar_t a2, a3, b3;
+  ec_point_t G2, G3;
+  ec_point_t G3a, G3b;
+  ec_point_t Pb, Qb;
+  ec_point_t Pa_Pb, Qa_Qb;
+
+  uint8_t progress;
+  smp_msg_1_t *msg1;
+} smp_context_t[1];
 
 void smp_context_init(smp_context_t smp);
 void smp_destroy(smp_context_t smp);
@@ -98,11 +98,11 @@ otr4_err_t generate_smp_msg_4(smp_msg_4_t *dst, const smp_msg_3_t *msg_3,
 
 // TODO: export only what is needed
 otr4_err_t smp_msg_2_deserialize(smp_msg_2_t *dst, const tlv_t *tlv);
-otr4_err_t smp_msg_2_aprint(uint8_t **dst, size_t *len, const smp_msg_2_t *msg);
-otr4_err_t smp_msg_3_aprint(uint8_t **dst, size_t *len, const smp_msg_3_t *msg);
+otr4_err_t smp_msg_2_asprintf(uint8_t **dst, size_t *len, const smp_msg_2_t *msg);
+otr4_err_t smp_msg_3_asprintf(uint8_t **dst, size_t *len, const smp_msg_3_t *msg);
 otr4_err_t smp_msg_3_deserialize(smp_msg_3_t *dst, const tlv_t *tlv);
 otr4_err_t smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp);
-otr4_err_t smp_msg_4_aprint(uint8_t **dst, size_t *len, smp_msg_4_t *msg);
+otr4_err_t smp_msg_4_asprintf(uint8_t **dst, size_t *len, smp_msg_4_t *msg);
 otr4_err_t smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv);
 otr4_err_t smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp);
 

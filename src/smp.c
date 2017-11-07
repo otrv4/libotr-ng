@@ -376,8 +376,7 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
   return OTR4_SUCCESS;
 }
 
-// TODO: correct name?
-otr4_err_t smp_msg_2_aprint(uint8_t **dst, size_t *len,
+otr4_err_t smp_msg_2_asprintf(uint8_t **dst, size_t *len,
                             const smp_msg_2_t *msg) {
   uint8_t *cursor;
   size_t s = 0;
@@ -571,7 +570,6 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
   snizkpk_keypair_generate(pair_r5);
   snizkpk_keypair_generate(pair_r7);
 
-  // TODO: generate here G2 and G3 again?
   ec_point_copy(smp->G3b, msg_2->G3b);
 
   /* Pa = (G3 * r4) */
@@ -628,7 +626,7 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t smp_msg_3_aprint(uint8_t **dst, size_t *len,
+otr4_err_t smp_msg_3_asprintf(uint8_t **dst, size_t *len,
                             const smp_msg_3_t *msg) {
   uint8_t *cursor;
   size_t s = 0;
@@ -802,7 +800,7 @@ otr4_err_t generate_smp_msg_4(smp_msg_4_t *dst, const smp_msg_3_t *msg_3,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t smp_msg_4_aprint(uint8_t **dst, size_t *len, smp_msg_4_t *msg) {
+otr4_err_t smp_msg_4_asprintf(uint8_t **dst, size_t *len, smp_msg_4_t *msg) {
   size_t s = 0;
 
   s += ED448_POINT_BYTES;
@@ -940,7 +938,7 @@ static otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send,
   // TODO: this only return error due to deserialization. It
   // should not happen
   generate_smp_msg_2(msg_2, smp->msg1, smp);
-  if (smp_msg_2_aprint(&buff, &bufflen, msg_2) == OTR4_ERROR)
+  if (smp_msg_2_asprintf(&buff, &bufflen, msg_2) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
   smp_msg_2_destroy(msg_2);
@@ -987,7 +985,7 @@ static otr4_smp_event_t reply_with_smp_msg_3(tlv_t **to_send,
   if (generate_smp_msg_3(msg_3, msg_2, smp) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
-  if (smp_msg_3_aprint(&buff, &bufflen, msg_3) == OTR4_ERROR)
+  if (smp_msg_3_asprintf(&buff, &bufflen, msg_3) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
   smp_msg_3_destroy(msg_3);
@@ -1032,7 +1030,7 @@ static otr4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
   if (generate_smp_msg_4(msg_4, msg_3, smp) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
-  if (smp_msg_4_aprint(&buff, &bufflen, msg_4) == OTR4_ERROR)
+  if (smp_msg_4_asprintf(&buff, &bufflen, msg_4) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
   *to_send = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
