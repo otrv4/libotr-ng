@@ -163,4 +163,7 @@ otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
 
 otr4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr);
 
+// TODO: unexpose this
+otr4_err_t reply_with_non_interactive_auth_msg(string_t *to_send, otrv4_t *otr);
+
 #endif

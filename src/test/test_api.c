@@ -63,7 +63,8 @@ void test_api_conversation(void) {
   otrv4_t *bob = otrv4_new(bob_state, policy);
   otrv4_assert(!bob->keys->old_mac_keys);
 
-  // AKE HAS FINISHED.
+  // DAKE HAS FINISHED.
+  // TODO: this is a dake
   do_ake_fixture(alice, bob);
 
   int message_id;

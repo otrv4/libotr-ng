@@ -520,7 +520,7 @@ void dake_non_interactive_auth_message_destroy(
   ec_point_destroy(non_interactive_auth->X);
   user_profile_destroy(non_interactive_auth->profile);
   snizkpk_proof_destroy(non_interactive_auth->sigma);
-  sodium_memzero(non_interactive_auth->sigma, DATA_MSG_MAC_BYTES);
+  sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
 }
 
 otr4_err_t dake_non_interactive_auth_message_asprintf(

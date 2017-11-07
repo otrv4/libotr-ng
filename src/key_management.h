@@ -28,6 +28,7 @@ typedef struct {
   chain_link_t chain_b[1];
 } ratchet_t;
 
+// TODO: add shared prekey
 typedef struct {
   /* AKE context */
   ecdh_keypair_t our_ecdh[1];

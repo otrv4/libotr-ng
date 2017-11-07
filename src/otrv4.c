@@ -782,6 +782,106 @@ static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
   return err;
 }
 
+static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
+  uint8_t ser_ecdh[ED448_POINT_BYTES];
+  uint8_t ser_dh[DH3072_MOD_LEN_BYTES];
+  size_t ser_dh_len = 0;
+
+  k_ecdh_t tmp_ecdh_k1;
+  k_ecdh_t tmp_ecdh_k2;
+
+  // TODO: this needs these keys to be set
+  ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh, otr->their_profile->shared_prekey);
+  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
+                     THEIR_ECDH(otr));
+
+  serialize_ec_point(ser_ecdh, otr->keys->our_ecdh->pub);
+
+  if (serialize_dh_public_key(ser_dh, &ser_dh_len,
+                              otr->keys->our_dh->pub)) {
+    return OTR4_ERROR;
+  }
+
+  decaf_shake256_ctx_t hd;
+  hash_init_with_dom(hd);
+  hash_update(hd, ser_ecdh, ED448_POINT_BYTES);
+  hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
+  hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
+  hash_update(hd, ser_dh, ser_dh_len);
+
+  hash_final(hd, dst, HASH_BYTES);
+  hash_destroy(hd);
+
+  return OTR4_SUCCESS;
+}
+
+static otr4_err_t serialize_and_encode_non_interactive_auth(string_t *dst,
+                                              const dake_non_interactive_auth_message_t *m) {
+  uint8_t *buff = NULL;
+  size_t len = 0;
+
+  if (dake_non_interactive_auth_message_asprintf(&buff, &len, m))
+    return OTR4_ERROR;
+
+  *dst = otrl_base64_otr_encode(buff, len);
+  free(buff);
+  return OTR4_SUCCESS;
+}
+
+// TODO: make static
+otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
+                                                      otrv4_t *otr) {
+  dake_non_interactive_auth_message_t msg[1];
+
+  msg->sender_instance_tag = otr->our_instance_tag;
+  msg->receiver_instance_tag = otr->their_instance_tag;
+
+  user_profile_copy(msg->profile, get_my_user_profile(otr));
+
+  ec_point_copy(msg->X, OUR_ECDH(otr));
+  msg->A = dh_mpi_copy(OUR_DH(otr));
+
+  uint8_t tmp_k[HASH_BYTES];
+  if (generate_tmp_key(tmp_k , otr) == OTR4_ERROR) {
+    return OTR4_ERROR;
+  }
+
+  uint8_t magic[1] = {0x01};
+  uint8_t auth_mac_k[HASH_BYTES];
+  shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, tmp_k, sizeof(tmp_k));
+
+  unsigned char *t = NULL;
+  size_t t_len = 0;
+  // TODO: keep 192 bytes as nonce
+  if (build_non_interactive_auth_message(
+          &t, &t_len, otr->their_profile, get_my_user_profile(otr),
+          THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
+          otr->their_profile->shared_prekey))
+    return OTR4_ERROR;
+
+  /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
+  otr4_err_t err = snizkpk_authenticate(
+      msg->sigma, otr->conversation->client->keypair, /* g^R and R */
+      otr->their_profile->pub_key,                    /* g^I */
+      THEIR_ECDH(otr),                                /* g^i -- Y */
+      t, t_len);
+
+  if (err) {
+    free(t);
+    t = NULL;
+    dake_non_interactive_auth_message_destroy(msg);
+    return OTR4_ERROR;
+  }
+
+  shake_256_mac(msg->auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
+
+  free(t);
+  t = NULL;
+  err = serialize_and_encode_non_interactive_auth(dst, msg);
+  dake_non_interactive_auth_message_destroy(msg);
+  return true;
+}
+
 static otr4_err_t receive_identity_message_on_state_start(
     string_t *dst, dake_identity_message_t *identity_message, otrv4_t *otr) {
 
