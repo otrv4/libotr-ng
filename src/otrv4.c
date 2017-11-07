@@ -634,6 +634,102 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
   return err;
 }
 
+static otr4_err_t build_non_interactive_auth_message(
+    uint8_t **msg, size_t *msg_len,
+    const user_profile_t *i_profile, const user_profile_t *r_profile,
+    const ec_point_t i_ecdh, const ec_point_t r_ecdh, const dh_mpi_t i_dh,
+    const dh_mpi_t r_dh, const otrv4_shared_prekey_t r_shared_prekey) {
+  uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
+  size_t ser_i_profile_len, ser_r_profile_len = 0;
+  uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
+  uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
+  uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
+  size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
+
+  serialize_ec_point(ser_i_ecdh, i_ecdh);
+  serialize_ec_point(ser_r_ecdh, r_ecdh);
+
+  if (serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh)) {
+    return OTR4_ERROR;
+  }
+  if (serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh)) {
+    return OTR4_ERROR;
+  }
+
+  serialize_otrv4_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
+
+  otr4_err_t err = OTR4_ERROR;
+
+  do {
+    if (user_profile_asprintf(&ser_i_profile, &ser_i_profile_len, i_profile))
+      continue;
+
+    if (user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
+      continue;
+
+    uint8_t hash_ser_i_profile[HASH_BYTES];
+    decaf_shake256_ctx_t hd_i;
+    hash_init_with_dom(hd_i);
+    hash_update(hd_i, ser_i_profile, ser_i_profile_len);
+
+    hash_final(hd_i, hash_ser_i_profile, sizeof(hash_ser_i_profile));
+    hash_destroy(hd_i);
+
+    uint8_t hash_ser_r_profile[HASH_BYTES];
+    decaf_shake256_ctx_t hd_r;
+    hash_init_with_dom(hd_r);
+    hash_update(hd_r, ser_r_profile, ser_r_profile_len);
+
+    hash_final(hd_r, hash_ser_r_profile, sizeof(hash_ser_r_profile));
+    hash_destroy(hd_r);
+
+    size_t len = 1 + 2 * ED448_POINT_BYTES + HASH_BYTES + HASH_BYTES +
+                 ser_i_dh_len + ser_r_dh_len + ED448_SHARED_PREKEY_BYTES;
+
+    uint8_t *buff = malloc(len);
+    if (!buff)
+      continue;
+
+    uint8_t *cursor = buff;
+
+    memcpy(cursor, hash_ser_i_profile, HASH_BYTES);
+    cursor += HASH_BYTES;
+
+    memcpy(cursor, hash_ser_r_profile, HASH_BYTES);
+    cursor += HASH_BYTES;
+
+    memcpy(cursor, ser_i_ecdh, ED448_POINT_BYTES);
+    cursor += ED448_POINT_BYTES;
+
+    memcpy(cursor, ser_r_ecdh, ED448_POINT_BYTES);
+    cursor += ED448_POINT_BYTES;
+
+    memcpy(cursor, ser_i_dh, ser_i_dh_len);
+    cursor += ser_i_dh_len;
+
+    memcpy(cursor, ser_r_dh, ser_r_dh_len);
+    cursor += ser_r_dh_len;
+
+    memcpy(cursor, ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
+    cursor += ED448_SHARED_PREKEY_BYTES;
+
+    *msg = buff;
+    *msg_len = len;
+    err = OTR4_SUCCESS;
+  } while (0);
+
+  free(ser_i_profile);
+  free(ser_r_profile);
+
+  sodium_memzero(ser_i_ecdh, ED448_POINT_BYTES);
+  sodium_memzero(ser_r_ecdh, ED448_POINT_BYTES);
+  sodium_memzero(ser_i_dh, DH3072_MOD_LEN_BYTES);
+  sodium_memzero(ser_r_dh, DH3072_MOD_LEN_BYTES);
+  sodium_memzero(ser_r_shared_prekey, DH3072_MOD_LEN_BYTES);
+
+  return err;
+}
+
 static otr4_err_t serialize_and_encode_auth_r(string_t *dst,
                                               const dake_auth_r_t *m) {
   uint8_t *buff = NULL;
