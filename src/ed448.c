@@ -3,8 +3,12 @@
 #include "ed448.h"
 #include "random.h"
 
-bool ec_scalar_eq(const ec_scalar_t a, const ec_scalar_t b) {
-  return DECAF_TRUE == decaf_448_scalar_eq(a, b);
+otr4_err_t ec_scalar_eq(const ec_scalar_t a, const ec_scalar_t b) {
+  if (decaf_448_scalar_eq(a, b) == DECAF_TRUE) {
+    return OTR4_SUCCESS;
+  }
+
+  return OTR4_ERROR;
 }
 
 void ec_point_copy(ec_point_t dst, const ec_point_t src) {
