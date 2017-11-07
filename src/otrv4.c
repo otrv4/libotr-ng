@@ -560,6 +560,7 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
   if (serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh)) {
     return OTR4_ERROR;
   }
+
   if (serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh)) {
     return OTR4_ERROR;
   }
@@ -642,9 +643,9 @@ static otr4_err_t build_non_interactive_auth_message(
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
-  uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
   size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
+  uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
 
   serialize_ec_point(ser_i_ecdh, i_ecdh);
   serialize_ec_point(ser_r_ecdh, r_ecdh);
@@ -652,6 +653,7 @@ static otr4_err_t build_non_interactive_auth_message(
   if (serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh)) {
     return OTR4_ERROR;
   }
+
   if (serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh)) {
     return OTR4_ERROR;
   }
@@ -683,7 +685,7 @@ static otr4_err_t build_non_interactive_auth_message(
     hash_final(hd_r, hash_ser_r_profile, sizeof(hash_ser_r_profile));
     hash_destroy(hd_r);
 
-    size_t len = 1 + 2 * ED448_POINT_BYTES + HASH_BYTES + HASH_BYTES +
+    size_t len = 2 * ED448_POINT_BYTES + 2 * HASH_BYTES +
                  ser_i_dh_len + ser_r_dh_len + ED448_SHARED_PREKEY_BYTES;
 
     uint8_t *buff = malloc(len);
@@ -725,7 +727,7 @@ static otr4_err_t build_non_interactive_auth_message(
   sodium_memzero(ser_r_ecdh, ED448_POINT_BYTES);
   sodium_memzero(ser_i_dh, DH3072_MOD_LEN_BYTES);
   sodium_memzero(ser_r_dh, DH3072_MOD_LEN_BYTES);
-  sodium_memzero(ser_r_shared_prekey, DH3072_MOD_LEN_BYTES);
+  sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
   return err;
 }
@@ -795,12 +797,10 @@ static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
   ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
                      THEIR_ECDH(otr));
 
-  serialize_ec_point(ser_ecdh, otr->keys->our_ecdh->pub);
+  serialize_ec_point(ser_ecdh, OUR_ECDH(otr));
 
-  if (serialize_dh_public_key(ser_dh, &ser_dh_len,
-                              otr->keys->our_dh->pub)) {
+  if (serialize_dh_public_key(ser_dh, &ser_dh_len, OUR_DH(otr)))
     return OTR4_ERROR;
-  }
 
   decaf_shake256_ctx_t hd;
   hash_init_with_dom(hd);
@@ -811,6 +811,9 @@ static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
 
   hash_final(hd, dst, HASH_BYTES);
   hash_destroy(hd);
+
+  sodium_memzero(tmp_ecdh_k1, ED448_POINT_BYTES);
+  sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
 
   return OTR4_SUCCESS;
 }
@@ -841,11 +844,13 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   ec_point_copy(msg->X, OUR_ECDH(otr));
   msg->A = dh_mpi_copy(OUR_DH(otr));
 
+  /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) || ECDH(x, Pkb) || k_dh) */
   uint8_t tmp_k[HASH_BYTES];
   if (generate_tmp_key(tmp_k , otr) == OTR4_ERROR) {
     return OTR4_ERROR;
   }
 
+  /* auth_mac_k = KDF_2(0x01 || tmp_k */
   uint8_t magic[1] = {0x01};
   uint8_t auth_mac_k[HASH_BYTES];
   shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, tmp_k, sizeof(tmp_k));
@@ -853,6 +858,7 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   unsigned char *t = NULL;
   size_t t_len = 0;
   // TODO: keep 192 bytes as nonce
+  // t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) || Y || X || B || A || our_shared_prekey.public
   if (build_non_interactive_auth_message(
           &t, &t_len, otr->their_profile, get_my_user_profile(otr),
           THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
@@ -873,6 +879,7 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     return OTR4_ERROR;
   }
 
+  /* Auth MAC = KDF_2(auth_mac_k || t) */
   shake_256_mac(msg->auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
 
   free(t);
