@@ -188,6 +188,7 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
   ec_scalar_t temp_scalar;
   ec_point_t temp_point;
 
+  /* G2b = G * b2 and G3b = G * b3 */
   generate_keypair(dst->G2b, b2);
   generate_keypair(dst->G3b, smp->b3);
 
@@ -198,7 +199,7 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 
   ed448_random_scalar(r6);
 
-  /* c2 */
+  /* c2 = HashToScalar(3 || G * r2) */
   buff[0] = 0x03;
   serialize_ec_point(buff + 1, pair_r2->pub);
 
@@ -209,7 +210,7 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
   decaf_448_scalar_mul(temp_scalar, b2, dst->c2);
   decaf_448_scalar_sub(dst->d2, pair_r2->priv, temp_scalar);
 
-  /* c3 */
+  /* c3 = HashToScalar(4 || G * r3) */
   buff[0] = 0x04;
   serialize_ec_point(buff + 1, pair_r3->pub);
 
@@ -528,6 +529,9 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
   snizkpk_keypair_generate(pair_r5);
   snizkpk_keypair_generate(pair_r7);
 
+  // TODO: generate here G2 and G3 again?
+  ec_point_copy(smp->G3b, msg_2->G3b);
+
   /* Pa = (G3 * r4) */
   decaf_448_point_scalarmul(dst->Pa, smp->G3, pair_r4->priv);
   decaf_448_point_sub(smp->Pa_Pb, dst->Pa, msg_2->Pb);
@@ -792,8 +796,8 @@ otr4_err_t smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
   ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
 
-  /* cr = HashToScalar(8 || G * d7 + G3 * cr || (Qa - Qb) * d7 + Rb * cr). */
-  decaf_448_point_scalarmul(temp_point, smp->G3, msg->cr);
+  /* cr = HashToScalar(8 || G * d7 + G3b * cr || (Qa - Qb) * d7 + Rb * cr). */
+  decaf_448_point_scalarmul(temp_point, smp->G3b, msg->cr);
   decaf_448_point_scalarmul(temp_point_2, decaf_448_point_base, msg->d7);
   decaf_448_point_add(temp_point, temp_point, temp_point_2);
 
