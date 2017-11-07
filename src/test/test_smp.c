@@ -228,7 +228,7 @@ void test_smp_validates_msg_2(void) {
   otrv4_assert(tlv);
   free(buff);
 
-  g_assert_cmpint(smp_msg_2_deserialize(smp_msg_2, tlv), ==, 0);
+  otrv4_assert(smp_msg_2_deserialize(smp_msg_2, tlv) == OTR4_SUCCESS);
   otrv4_tlv_free(tlv);
 
   otrv4_assert(smp_msg_2_valid_points(msg_2) == true);
@@ -266,9 +266,10 @@ void test_smp_validates_msg_3(void) {
   memset(smp2->secret, 0, 64);
   smp2->secret[0] = 0x02;
 
-  otrv4_assert(!generate_smp_msg_1(msg_1, smp));
+  // TODO: why was it negating before?
+  otrv4_assert(generate_smp_msg_1(msg_1, smp) == OTR4_SUCCESS);
   otrv4_assert(
-      !generate_smp_msg_2(msg_2, msg_1, smp2)); // calcula G2 from G2a (msg1)
+      generate_smp_msg_2(msg_2, msg_1, smp2) == OTR4_SUCCESS); // calculate G2 from G2a (msg1)
 
   decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
   decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
@@ -279,7 +280,7 @@ void test_smp_validates_msg_3(void) {
   otrv4_assert(tlv);
   free(buff);
 
-  g_assert_cmpint(smp_msg_3_deserialize(msg_3, tlv), ==, 0);
+  otrv4_assert(smp_msg_3_deserialize(msg_3, tlv) == OTR4_SUCCESS);
   otrv4_tlv_free(tlv);
 
   otrv4_assert(smp_msg_3_validate_zkp(msg_3, smp2) == OTR4_SUCCESS);
@@ -321,13 +322,13 @@ void test_smp_validates_msg_4(void) {
 
   //???
   otrv4_assert(generate_smp_msg_4(msg_4, msg_3, smp2) == OTR4_SUCCESS);
-
   otrv4_assert(smp_msg_4_aprint(&buff, &bufflen, msg_4) == OTR4_SUCCESS);
+
   tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_4, bufflen, buff);
   otrv4_assert(tlv);
   free(buff);
 
-  g_assert_cmpint(smp_msg_4_deserialize(msg_4, tlv), ==, 0);
+  otrv4_assert(smp_msg_4_deserialize(msg_4, tlv) == OTR4_SUCCESS);
   otrv4_tlv_free(tlv);
 
   otrv4_assert(smp_msg_4_validate_zkp(msg_4, smp) == OTR4_SUCCESS);
