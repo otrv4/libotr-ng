@@ -16,8 +16,8 @@ typedef gcry_mpi_t dh_mpi_t;
 typedef dh_mpi_t dh_private_key_t, dh_public_key_t;
 
 typedef struct {
-  dh_public_key_t priv;
-  dh_private_key_t pub;
+  dh_public_key_t pub;
+  dh_private_key_t priv;
 } dh_keypair_t[1];
 
 void dh_init(void);
