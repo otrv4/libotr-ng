@@ -64,8 +64,7 @@ void test_api_conversation(void) {
   otrv4_assert(!bob->keys->old_mac_keys);
 
   // DAKE HAS FINISHED.
-  // TODO: this is a dake
-  do_ake_fixture(alice, bob);
+  do_dake_fixture(alice, bob);
 
   int message_id;
   otrv4_response_t *response_to_bob = NULL;
@@ -184,8 +183,8 @@ void test_dh_key_rotation(void) {
   otrv4_t *alice = otrv4_new(alice_state, policy);
   otrv4_t *bob = otrv4_new(bob_state, policy);
 
-  // AKE HAS FINISHED.
-  do_ake_fixture(alice, bob);
+  // DAKE HAS FINISHED.
+  do_dake_fixture(alice, bob);
 
   int ratchet_id;
   otrv4_response_t *response_to_bob = NULL;
@@ -447,8 +446,8 @@ void test_api_smp(void) {
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
   g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
 
-  // AKE HAS FINISHED.
-  do_ake_fixture(alice, bob);
+  // DAKE HAS FINISHED.
+  do_dake_fixture(alice, bob);
 
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;
@@ -539,8 +538,8 @@ void test_api_smp_abort(void) {
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
   g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
 
-  // AKE HAS FINISHED.
-  do_ake_fixture(alice, bob);
+  // DAKE HAS FINISHED.
+  do_dake_fixture(alice, bob);
 
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;
@@ -611,8 +610,8 @@ void test_api_extra_sym_key(void) {
   otrv4_t *bob = otrv4_new(bob_state, policy);
   otrv4_assert(!bob->keys->old_mac_keys);
 
-  // AKE HAS FINISHED.
-  do_ake_fixture(alice, bob);
+  // DAKE HAS FINISHED.
+  do_dake_fixture(alice, bob);
 
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;
@@ -835,7 +834,8 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrv4_t *alice = otrv4_new(alice_state, policy);
   otrv4_t *bob = otrv4_new(bob_state, policy);
 
-  do_ake_fixture(alice, bob);
+  // DAKE has finished
+  do_dake_fixture(alice, bob);
 
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;

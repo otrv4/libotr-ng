@@ -23,7 +23,7 @@ void test_smp_state_machine(void) {
   g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
   g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
-  do_ake_fixture(alice_otr, bob_otr);
+  do_dake_fixture(alice_otr, bob_otr);
 
   g_assert_cmpint(0, ==, alice_otr->smp->progress);
   g_assert_cmpint(0, ==, bob_otr->smp->progress);

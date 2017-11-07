@@ -129,7 +129,7 @@ static void prekey_message_fixture_teardown(prekey_message_fixture_t *fixture,
   fixture->profile = NULL;
 }
 
-void do_ake_fixture(otrv4_t *alice, otrv4_t *bob) {
+void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
   otrv4_response_t *response_to_bob = otrv4_response_new();
   otrv4_response_t *response_to_alice = otrv4_response_new();
 
