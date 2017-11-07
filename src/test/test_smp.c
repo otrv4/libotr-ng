@@ -231,8 +231,8 @@ void test_smp_validates_msg_2(void) {
   otrv4_assert(smp_msg_2_deserialize(smp_msg_2, tlv) == OTR4_SUCCESS);
   otrv4_tlv_free(tlv);
 
-  otrv4_assert(smp_msg_2_valid_points(msg_2) == true);
-  otrv4_assert(smp_msg_2_valid_points(smp_msg_2) == true);
+  otrv4_assert(smp_msg_2_valid_points(msg_2) == OTR4_SUCCESS);
+  otrv4_assert(smp_msg_2_valid_points(smp_msg_2) == OTR4_SUCCESS);
 
   decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
   decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
@@ -268,8 +268,8 @@ void test_smp_validates_msg_3(void) {
 
   // TODO: why was it negating before?
   otrv4_assert(generate_smp_msg_1(msg_1, smp) == OTR4_SUCCESS);
-  otrv4_assert(
-      generate_smp_msg_2(msg_2, msg_1, smp2) == OTR4_SUCCESS); // calculate G2 from G2a (msg1)
+  otrv4_assert(generate_smp_msg_2(msg_2, msg_1, smp2) ==
+               OTR4_SUCCESS); // calculate G2 from G2a (msg1)
 
   decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
   decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);

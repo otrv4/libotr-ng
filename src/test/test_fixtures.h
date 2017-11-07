@@ -84,7 +84,7 @@ static void identity_message_fixture_setup(identity_message_fixture_t *fixture,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
   otrv4_keypair_generate(fixture->keypair, sym);
-  otrv4_assert(ec_point_valid(fixture->keypair->pub));
+  otrv4_assert(ec_point_valid(fixture->keypair->pub) == OTR4_SUCCESS);
 
   fixture->profile = user_profile_new("4");
   otrv4_shared_prekey_generate(fixture->profile->shared_prekey, sym);
@@ -110,7 +110,7 @@ static void prekey_message_fixture_setup(prekey_message_fixture_t *fixture,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
   otrv4_keypair_generate(fixture->keypair, sym);
-  otrv4_assert(ec_point_valid(fixture->keypair->pub));
+  otrv4_assert(ec_point_valid(fixture->keypair->pub) == OTR4_SUCCESS);
 
   fixture->profile = user_profile_new("4");
   otrv4_shared_prekey_generate(fixture->profile->shared_prekey, sym);

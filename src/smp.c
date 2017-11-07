@@ -2,8 +2,8 @@
 
 #include "auth.h"
 #include "constants.h"
-#include "deserialize.h"
 #include "debug.h"
+#include "deserialize.h"
 #include "dh.h"
 #include "mpi.h"
 #include "random.h"
@@ -472,6 +472,7 @@ otr4_err_t smp_msg_2_deserialize(smp_msg_2_t *msg, const tlv_t *tlv) {
 
   if (deserialize_ec_scalar(msg->d6, cursor, len) == OTR4_ERROR)
     return OTR4_ERROR;
+
   len -= ED448_SCALAR_BYTES;
 
   return OTR4_SUCCESS;
@@ -739,7 +740,7 @@ otr4_err_t smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
     return OTR4_ERROR;
 
   /* cr = HashToScalar(7 || G * d7 + G3a * cr || (Qa - Qb) * d7 + Ra * cr) */
-decaf_448_point_scalarmul(temp_point, smp->G3a, msg->cr);
+  decaf_448_point_scalarmul(temp_point, smp->G3a, msg->cr);
   decaf_448_point_scalarmul(temp_point_2, decaf_448_point_base, msg->d7);
   decaf_448_point_add(temp_point, temp_point, temp_point_2);
 
@@ -867,7 +868,6 @@ otr4_err_t smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  // TODO: this is failing
   if (ec_scalar_eq(msg->cr, temp_scalar) == OTR4_ERROR)
     return OTR4_ERROR;
 
@@ -910,9 +910,7 @@ static otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp) {
     if (smp_msg_1_deserialize(msg_1, tlv) == OTR4_ERROR)
       continue;
 
-    // TODO: this will fail due to the comparison between points and
-    // the error enum
-    if (!smp_msg_1_valid_points(msg_1))
+    if (smp_msg_1_valid_points(msg_1) == OTR4_ERROR)
       continue;
 
     if (smp_msg_1_valid_zkp(msg_1, smp) == OTR4_ERROR)
@@ -967,8 +965,7 @@ static otr4_smp_event_t receive_smp_msg_2(smp_msg_2_t *msg_2, const tlv_t *tlv,
   if (smp_msg_2_deserialize(msg_2, tlv) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
-  // TODO: this will also fail due to point cmp
-  if (!smp_msg_2_valid_points(msg_2))
+  if (smp_msg_2_valid_points(msg_2) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
   decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
@@ -1015,7 +1012,7 @@ static otr4_smp_event_t receive_smp_msg_3(smp_msg_3_t *msg_3, const tlv_t *tlv,
   if (smp_msg_3_deserialize(msg_3, tlv) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
-  if (!smp_msg_3_validate_points(msg_3))
+  if (smp_msg_3_validate_points(msg_3) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
   if (smp_msg_3_validate_zkp(msg_3, smp) == OTR4_ERROR)
@@ -1062,7 +1059,7 @@ static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
   if (smp_msg_4_deserialize(msg_4, tlv) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
-  if (!ec_point_valid(msg_4->Rb))
+  if (ec_point_valid(msg_4->Rb) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
   if (smp_msg_4_validate_zkp(msg_4, smp) == OTR4_ERROR)

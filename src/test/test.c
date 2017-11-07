@@ -208,7 +208,5 @@ int main(int argc, char **argv) {
   g_test_add_func("/client/invalid_auth_i_msg_in_not_waiting_auth_i",
                   test_invalid_auth_i_msg_in_not_waiting_auth_i);
 
-  // TODO: this can be moved here but no more up
-
   return g_test_run();
 }

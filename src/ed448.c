@@ -117,13 +117,12 @@ void ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t src) {
 
 void ec_scalar_destroy(ec_scalar_t dst) { decaf_448_scalar_destroy(dst); }
 
-// TODO: this should use decaf_successful
-bool ec_point_valid(const ec_point_t point) {
+otr4_err_t ec_point_valid(const ec_point_t point) {
   if (DECAF_TRUE == decaf_448_point_valid(point)) {
-    return true;
+    return OTR4_SUCCESS;
   }
 
-  return false;
+  return OTR4_ERROR;
 }
 
 bool ec_point_eq(const ec_point_t p, const ec_point_t q) {

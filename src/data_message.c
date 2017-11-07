@@ -206,5 +206,8 @@ bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg) {
     return false;
   }
 
-  return ec_point_valid(data_msg->ecdh) & dh_mpi_valid(data_msg->dh);
+  if (ec_point_valid(data_msg->ecdh) == OTR4_ERROR)
+    return false;
+
+  return dh_mpi_valid(data_msg->dh);
 }

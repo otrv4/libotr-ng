@@ -686,7 +686,8 @@ bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
   bool valid = true;
 
   /* Verify that the point X received is on curve 448. */
-  valid &= ec_point_valid(their_ecdh);
+  if (ec_point_valid(their_ecdh) == OTR4_ERROR)
+    return false;
 
   /* Verify that the DH public key A is from the correct group. */
   valid &= dh_mpi_valid(their_dh);
