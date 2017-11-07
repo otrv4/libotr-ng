@@ -377,7 +377,7 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 }
 
 otr4_err_t smp_msg_2_asprintf(uint8_t **dst, size_t *len,
-                            const smp_msg_2_t *msg) {
+                              const smp_msg_2_t *msg) {
   uint8_t *cursor;
   size_t s = 0;
   s += 4 * ED448_POINT_BYTES;
@@ -627,7 +627,7 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
 }
 
 otr4_err_t smp_msg_3_asprintf(uint8_t **dst, size_t *len,
-                            const smp_msg_3_t *msg) {
+                              const smp_msg_3_t *msg) {
   uint8_t *cursor;
   size_t s = 0;
 
@@ -879,23 +879,29 @@ void smp_msg_4_destroy(smp_msg_4_t *msg) {
   ec_point_destroy(msg->Rb);
 }
 
-// TODO: this will need another err
-static bool smp_is_valid_for_msg_3(const smp_msg_3_t *msg, smp_context_t smp) {
+static otr4_err_t smp_is_valid_for_msg_3(const smp_msg_3_t *msg,
+                                         smp_context_t smp) {
   ec_point_t Rab, Pa_Pb;
   /* Compute Rab = (Ra * b3) */
   decaf_448_point_scalarmul(Rab, msg->Ra, smp->b3);
   /* Pa - Pb == Rab */
   decaf_448_point_sub(Pa_Pb, msg->Pa, smp->Pb);
-  return DECAF_TRUE == decaf_448_point_eq(Pa_Pb, Rab);
+
+  if ((decaf_448_point_eq(Pa_Pb, Rab) == DECAF_FALSE))
+    return OTR4_ERROR;
+
+  return OTR4_SUCCESS;
 }
 
-// TODO: this will need another err
-static bool smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp) {
+static otr4_err_t smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp) {
   ec_point_t Rab;
   /* Compute Rab = Rb * a3. */
   decaf_448_point_scalarmul(Rab, msg->Rb, smp->a3);
   /* Pa - Pb == Rab */
-  return DECAF_TRUE == decaf_448_point_eq(smp->Pa_Pb, Rab);
+  if (decaf_448_point_eq(smp->Pa_Pb, Rab) == DECAF_FALSE)
+    return OTR4_ERROR;
+
+  return OTR4_SUCCESS;
 }
 
 static otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp) {
@@ -1043,7 +1049,7 @@ static otr4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
   /* Validates SMP */
   smp->progress = 100;
   smp->state = SMPSTATE_EXPECT1;
-  if (!smp_is_valid_for_msg_3(msg_3, smp))
+  if (smp_is_valid_for_msg_3(msg_3, smp) == OTR4_ERROR)
     return OTRV4_SMPEVENT_FAILURE;
 
   return OTRV4_SMPEVENT_SUCCESS;
@@ -1065,7 +1071,7 @@ static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
 
   smp->progress = 100;
   smp->state = SMPSTATE_EXPECT1;
-  if (!smp_is_valid_for_msg_4(msg_4, smp))
+  if (smp_is_valid_for_msg_4(msg_4, smp) == OTR4_ERROR)
     return OTRV4_SMPEVENT_FAILURE;
 
   return OTRV4_SMPEVENT_SUCCESS;
