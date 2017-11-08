@@ -417,6 +417,55 @@ serialize_and_encode_identity_message(string_t *dst,
   return OTR4_SUCCESS;
 }
 
+static otr4_err_t
+serialize_and_encode_prekey_message(string_t *dst,
+                                      const dake_prekey_message_t *m) {
+  uint8_t *buff = NULL;
+  size_t len = 0;
+
+  if (dake_prekey_message_asprintf(&buff, &len, m))
+    return OTR4_ERROR;
+
+  *dst = otrl_base64_otr_encode(buff, len);
+  free(buff);
+  return OTR4_SUCCESS;
+}
+
+// to send to server
+otr4_err_t otrv4_build_prekey_message(string_t *dst,
+                                     otrv4_t *otr) {
+  // TODO: move this to start non int dake?
+  if (key_manager_generate_ephemeral_keys(otr->keys))
+    return OTR4_ERROR;
+
+  // TODO: keeps on state start?
+  //otr->state = OTRV4_STATE_WAITING_AUTH_R;
+  maybe_create_keys(otr->conversation);
+
+  dake_prekey_message_t *m = NULL;
+  otr4_err_t err = OTR4_ERROR;
+
+  m = dake_prekey_message_new(get_my_user_profile(otr));
+  if (!m)
+    return err;
+
+  m->sender_instance_tag = otr->our_instance_tag;
+  m->receiver_instance_tag = otr->their_instance_tag;
+
+  ec_point_copy(m->Y, OUR_ECDH(otr));
+  m->B = dh_mpi_copy(OUR_DH(otr));
+
+  if (serialize_and_encode_prekey_message(dst, m)) {
+    dake_prekey_message_free(m);
+    return err;
+  }
+
+  err = OTR4_SUCCESS;
+  dake_prekey_message_free(m);
+
+  return err;
+}
+
 static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
                                           otrv4_t *otr) {
   dake_identity_message_t *m = NULL;
@@ -530,6 +579,7 @@ otr4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
   return OTR4_SUCCESS;
 }
 
+// TODO: calculate differently for non interactive
 static otr4_err_t double_ratcheting_init(int j, otrv4_t *otr) {
   if (key_manager_ratcheting_init(j, otr->keys))
     return OTR4_ERROR;
@@ -915,8 +965,6 @@ static void forget_our_keys(otrv4_t *otr) {
   key_manager_init(otr->keys);
 }
 
-// TODO: Comparison is between the dh pub values. Change to points
-// if is found easier
 static otr4_err_t receive_identity_message_on_waiting_auth_r(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
   int cmp = gcry_mpi_cmp(OUR_DH(otr), msg->B);
