@@ -533,6 +533,7 @@ static otr4_err_t receive_query_message(otrv4_response_t *response,
 
   switch (otr->running_version) {
   case OTRV4_VERSION_4:
+    dh_priv_key_destroy(otr->keys->our_dh);
     ec_scalar_destroy(otr->keys->our_ecdh->priv);
     return start_dake(response, otr);
     break;
@@ -1422,9 +1423,6 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
       continue;
 
     key_manager_prepare_to_ratchet(otr->keys);
-
-    // Securely delete ECDH priv key as no longer needed
-    ec_scalar_destroy(otr->keys->our_ecdh->priv);
 
     if (reply_tlv) {
       if (otrv4_prepare_to_send_message(&response->to_send, "", reply_tlv, otr))

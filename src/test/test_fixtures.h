@@ -145,7 +145,7 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
   free(query_message);
   query_message = NULL;
 
-  // Should reply with a identity message
+  // Should reply with an identity message
   otrv4_assert(bob->state == OTRV4_STATE_WAITING_AUTH_R);
   otrv4_assert(response_to_alice->to_display == NULL);
   otrv4_assert(response_to_alice->to_send);
@@ -185,7 +185,8 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
-  // Bob should delete ECDH priv key
+  // Bob should delete priv keys
+  otrv4_assert(!bob->keys->our_dh->priv);
   otrv4_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Bob should replay with an auth initiator
@@ -204,10 +205,8 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
-  // otrv4_assert(alice->keys->our_dh->priv != NULL);
-  // otrv4_assert(bob->keys->our_dh->priv == NULL);
-
-  // Alice should NOT delete ECDH priv key
+  // Alice should NOT delete priv keys
+  otrv4_assert(alice->keys->our_dh->priv);
   otrv4_assert_not_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Alice should not reply

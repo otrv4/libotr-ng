@@ -211,19 +211,30 @@ void test_dh_key_rotation(void) {
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(alice->keys->i, ==, ratchet_id);
     g_assert_cmpint(alice->keys->j, ==, 0); // New ratchet should happen
-    if (ratchet_id == 3) {
-      otrv4_assert(alice->keys->our_dh->priv == NULL);
-      otrv4_assert(bob->keys->our_dh->priv != NULL);
+
+    // Alice deletes priv key when receiving on ratchet 3
+    if (ratchet_id == 1) {
+      otrv4_assert(alice->keys->our_dh->priv);
+      otrv4_assert(!bob->keys->our_dh->priv);
+    }
+    else if (ratchet_id == 3 || ratchet_id == 5) {
+      otrv4_assert(!alice->keys->our_dh->priv);
+      otrv4_assert(bob->keys->our_dh->priv);
     }
 
     free_message_and_response(response_to_bob, to_send);
 
-    // Now alice ratchets
+    // Now alice ratchets and sends a data message
     err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(alice->keys->i, ==, ratchet_id + 1);
     g_assert_cmpint(alice->keys->j, ==, 1);
+
+    if (ratchet_id == 3) {
+      otrv4_assert(!alice->keys->our_dh->priv);
+      otrv4_assert(bob->keys->our_dh->priv);
+    }
 
     // Bob receives a data message
     response_to_alice = otrv4_response_new();
@@ -234,17 +245,20 @@ void test_dh_key_rotation(void) {
 
     g_assert_cmpint(bob->keys->i, ==, ratchet_id + 1);
     g_assert_cmpint(bob->keys->j, ==, 0); // New ratchet should happen
+
+    // Bob deletes priv key when receiving on ratchet 6
+    if (ratchet_id + 1 == 2 || ratchet_id + 1 == 6) {
+      otrv4_assert(alice->keys->our_dh->priv);
+      otrv4_assert(!bob->keys->our_dh->priv);
+    }
+    else if (ratchet_id + 1 == 4) {
+      otrv4_assert(!alice->keys->our_dh->priv);
+      otrv4_assert(bob->keys->our_dh->priv);
+    }
   }
 
-  otrv4_assert(alice->keys->our_dh->priv != NULL);
-  otrv4_assert(bob->keys->our_dh->priv == NULL);
-
-  otr4_client_state_free(alice_state);
-  otr4_client_state_free(bob_state);
-
-  otrv4_free(bob);
-  otrv4_free(alice);
-
+  otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_free_all(2, alice, bob);
   otrv4_tlv_free(tlv);
 
   OTR4_FREE;
@@ -714,12 +728,12 @@ void test_api_multiple_clients(void) {
   otrv4_response_t *alice_to_pc = otrv4_response_new();
   otrv4_response_t *alice_to_phone = otrv4_response_new();
 
-  // PC sends query msg
+  // PC receives query msg and sends identity msg
   err = otrv4_receive_message(pc_to_alice, "?OTRv4?", bob_pc);
   assert_rec_msg_inc_state(should_succeed(err), pc_to_alice, bob_pc,
                            OTRV4_STATE_WAITING_AUTH_R, send_response);
 
-  // PHONE sends query msg
+  // PHONE receives query msg and sends identity msg
   err = otrv4_receive_message(phone_to_alice, "?OTRv4?", bob_phone);
   assert_rec_msg_inc_state(should_succeed(err), phone_to_alice, bob_phone,
                            OTRV4_STATE_WAITING_AUTH_R, send_response);
@@ -792,6 +806,8 @@ void test_api_multiple_clients(void) {
   otrv4_response_free(alice_to_phone);
 
   // PHONE can now delete private keys
+  otrv4_assert(bob_phone->keys->our_dh->pub);
+  otrv4_assert(!bob_phone->keys->our_dh->priv);
   otrv4_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
   otrv4_assert_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 

@@ -59,8 +59,8 @@ void ratchet_free(ratchet_t *ratchet) {
 void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 {
   memset(manager->our_ecdh->pub, 0, ED448_POINT_BYTES);
-  manager->our_dh->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
-  manager->our_dh->priv = gcry_mpi_new(DH_KEY_SIZE);
+  manager->our_dh->pub = NULL;
+  manager->our_dh->priv = NULL;
 
   memset(manager->their_ecdh, 0, ED448_POINT_BYTES);
   manager->their_dh = gcry_mpi_new(DH3072_MOD_LEN_BITS);
@@ -429,8 +429,8 @@ otr4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager) {
   if (enter_new_ratchet(manager) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  decaf_448_scalar_destroy(manager->our_ecdh->priv);
-
+  // Securely delete priv keys as no longer needed
+  ec_scalar_destroy(manager->our_ecdh->priv);
   if (manager->i % 3 == 0) {
     dh_priv_key_destroy(manager->our_dh);
   }

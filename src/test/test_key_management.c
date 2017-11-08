@@ -44,6 +44,9 @@ void test_key_manager_destroy() {
 
   otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
 
+  manager->our_dh->priv = gcry_mpi_new(DH_KEY_SIZE);
+  manager->our_dh->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  
   otrv4_assert(manager->current);
   otrv4_assert(manager->our_dh->priv);
   otrv4_assert(manager->our_dh->pub);
