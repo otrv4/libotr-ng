@@ -114,7 +114,7 @@ otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
   if (manager->i % 3 == 0) {
     dh_keypair_destroy(manager->our_dh);
 
-    if (dh_keypair_generate(manager->our_dh)) {
+    if (dh_keypair_generate(manager->our_dh) == OTR4_ERROR) {
       return OTR4_ERROR;
     }
   }
@@ -206,14 +206,14 @@ message_chain_t *decide_between_chain_keys(const ratchet_t *ratchet,
                     NULL)) {
     gcry_mpi_release(our_mpi);
     gcry_mpi_release(their_mpi);
-    return false;
+    return NULL;
   }
 
   if (gcry_mpi_scan(&their_mpi, GCRYMPI_FMT_USG, their, sizeof(ec_public_key_t),
                     NULL)) {
     gcry_mpi_release(our_mpi);
     gcry_mpi_release(their_mpi);
-    return false;
+    return NULL;
   }
 
   int cmp = gcry_mpi_cmp(our_mpi, their_mpi);
@@ -227,6 +227,7 @@ message_chain_t *decide_between_chain_keys(const ratchet_t *ratchet,
 
   gcry_mpi_release(our_mpi);
   gcry_mpi_release(their_mpi);
+
   return ret;
 }
 
@@ -266,17 +267,17 @@ chain_link_t *derive_next_chain_link(chain_link_t *previous) {
   return l;
 }
 
-bool rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
+otr4_err_t rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
   chain_link_t *last = (chain_link_t *)chain_get_last(head);
 
   int j = 0;
   for (j = last->id; j < message_id; j++) {
     last = derive_next_chain_link(last);
     if (last == NULL)
-      return false;
+      return OTR4_ERROR;
   }
 
-  return true;
+  return OTR4_SUCCESS;
 }
 
 otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
@@ -285,7 +286,7 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
 
   message_chain_t *chain = decide_between_chain_keys(
       manager->current, manager->our_ecdh->pub, manager->their_ecdh);
-  if (!rebuild_chain_keys_up_to(message_id, chain->receiving)) {
+  if (rebuild_chain_keys_up_to(message_id, chain->receiving) == OTR4_ERROR) {
     free(chain);
     return OTR4_ERROR;
   }
@@ -353,11 +354,9 @@ static otr4_err_t calculate_brace_key(key_manager_t *manager) {
   k_dh_t k_dh;
 
   if (manager->i % 3 == 0) {
-    otr4_err_t err = dh_shared_secret(k_dh, sizeof(k_dh_t),
-                                      manager->our_dh->priv, manager->their_dh);
-
-    if (err)
-      return err;
+    if (dh_shared_secret(k_dh, sizeof(k_dh_t), manager->our_dh->priv,
+                         manager->their_dh) == OTR4_ERROR)
+      return OTR4_ERROR;
 
     hash_hash(manager->brace_key, sizeof(brace_key_t), k_dh, sizeof(k_dh_t));
 
@@ -375,9 +374,8 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
 
   ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
-  otr4_err_t err = calculate_brace_key(manager);
-  if (err)
-    return err;
+  if (calculate_brace_key(manager) == OTR4_ERROR)
+    return OTR4_ERROR;
 
   calculate_shared_secret(shared, k_ecdh, manager->brace_key);
 
@@ -392,7 +390,7 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   calculate_ssid(manager, shared);
   calculate_extra_key(manager, shared);
 
-  if (key_manager_new_ratchet(manager, shared)) {
+  if (key_manager_new_ratchet(manager, shared) == OTR4_ERROR) {
     sodium_memzero(shared, SHARED_SECRET_BYTES);
     // TODO: probably not needed
     sodium_memzero(manager->ssid, sizeof(manager->ssid));
@@ -417,19 +415,19 @@ static otr4_err_t rotate_keys(key_manager_t *manager) {
   manager->i++;
   manager->j = 0;
 
-  if (key_manager_generate_ephemeral_keys(manager))
+  if (key_manager_generate_ephemeral_keys(manager) == OTR4_ERROR)
     return OTR4_ERROR;
 
   return enter_new_ratchet(manager);
 }
 
-bool key_manager_ensure_on_ratchet(key_manager_t *manager) {
+otr4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager) {
   if (manager->j == 0)
-    return true;
+    return OTR4_SUCCESS;
 
   manager->i++;
-  if (enter_new_ratchet(manager))
-    return false;
+  if (enter_new_ratchet(manager) == OTR4_ERROR)
+    return OTR4_ERROR;
 
   decaf_448_scalar_destroy(manager->our_ecdh->priv);
 
@@ -437,7 +435,7 @@ bool key_manager_ensure_on_ratchet(key_manager_t *manager) {
     dh_priv_key_destroy(manager->our_dh);
   }
 
-  return true;
+  return OTR4_SUCCESS;
 }
 
 static void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
@@ -458,7 +456,8 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
                                             const key_manager_t *manager) {
   chain_key_t receiving;
 
-  if (key_manager_get_receiving_chain_key(receiving, message_id, manager))
+  if (key_manager_get_receiving_chain_key(receiving, message_id, manager) ==
+      OTR4_ERROR)
     return OTR4_ERROR;
 
   derive_encryption_and_mac_keys(enc_key, mac_key, receiving);
@@ -479,6 +478,7 @@ static bool should_ratchet(const key_manager_t *manager) {
 }
 
 otr4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager) {
+  // TODO: check this
   if (should_ratchet(manager)) {
     return rotate_keys(manager);
   }

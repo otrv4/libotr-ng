@@ -120,6 +120,7 @@ otr4_err_t dh_shared_secret(uint8_t *shared, size_t shared_bytes,
   if (err) {
     return OTR4_ERROR;
   }
+
   return OTR4_SUCCESS;
 }
 

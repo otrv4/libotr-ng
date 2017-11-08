@@ -419,7 +419,7 @@ serialize_and_encode_identity_message(string_t *dst,
 
 static otr4_err_t
 serialize_and_encode_prekey_message(string_t *dst,
-                                      const dake_prekey_message_t *m) {
+                                    const dake_prekey_message_t *m) {
   uint8_t *buff = NULL;
   size_t len = 0;
 
@@ -432,14 +432,13 @@ serialize_and_encode_prekey_message(string_t *dst,
 }
 
 // to send to server
-otr4_err_t otrv4_build_prekey_message(string_t *dst,
-                                     otrv4_t *otr) {
+otr4_err_t otrv4_build_prekey_message(string_t *dst, otrv4_t *otr) {
   // TODO: move this to start non int dake?
-  if (key_manager_generate_ephemeral_keys(otr->keys))
+  if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
     return OTR4_ERROR;
 
   // TODO: keeps on state start?
-  //otr->state = OTRV4_STATE_WAITING_AUTH_R;
+  // otr->state = OTRV4_STATE_WAITING_AUTH_R;
   maybe_create_keys(otr->conversation);
 
   dake_prekey_message_t *m = NULL;
@@ -493,7 +492,7 @@ static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
 }
 
 static otr4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
-  if (key_manager_generate_ephemeral_keys(otr->keys))
+  if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
     return OTR4_ERROR;
 
   otr->state = OTRV4_STATE_WAITING_AUTH_R;
@@ -686,10 +685,10 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
 }
 
 static otr4_err_t build_non_interactive_auth_message(
-    uint8_t **msg, size_t *msg_len,
-    const user_profile_t *i_profile, const user_profile_t *r_profile,
-    const ec_point_t i_ecdh, const ec_point_t r_ecdh, const dh_mpi_t i_dh,
-    const dh_mpi_t r_dh, const otrv4_shared_prekey_t r_shared_prekey) {
+    uint8_t **msg, size_t *msg_len, const user_profile_t *i_profile,
+    const user_profile_t *r_profile, const ec_point_t i_ecdh,
+    const ec_point_t r_ecdh, const dh_mpi_t i_dh, const dh_mpi_t r_dh,
+    const otrv4_shared_prekey_t r_shared_prekey) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
@@ -735,8 +734,8 @@ static otr4_err_t build_non_interactive_auth_message(
     hash_final(hd_r, hash_ser_r_profile, sizeof(hash_ser_r_profile));
     hash_destroy(hd_r);
 
-    size_t len = 2 * ED448_POINT_BYTES + 2 * HASH_BYTES +
-                 ser_i_dh_len + ser_r_dh_len + ED448_SHARED_PREKEY_BYTES;
+    size_t len = 2 * ED448_POINT_BYTES + 2 * HASH_BYTES + ser_i_dh_len +
+                 ser_r_dh_len + ED448_SHARED_PREKEY_BYTES;
 
     uint8_t *buff = malloc(len);
     if (!buff)
@@ -843,9 +842,9 @@ static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
   k_ecdh_t tmp_ecdh_k2;
 
   // TODO: this needs these keys to be set
-  ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh, otr->their_profile->shared_prekey);
-  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
-                     THEIR_ECDH(otr));
+  ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
+                     otr->their_profile->shared_prekey);
+  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh, THEIR_ECDH(otr));
 
   serialize_ec_point(ser_ecdh, OUR_ECDH(otr));
 
@@ -868,8 +867,8 @@ static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t serialize_and_encode_non_interactive_auth(string_t *dst,
-                                              const dake_non_interactive_auth_message_t *m) {
+static otr4_err_t serialize_and_encode_non_interactive_auth(
+    string_t *dst, const dake_non_interactive_auth_message_t *m) {
   uint8_t *buff = NULL;
   size_t len = 0;
 
@@ -882,8 +881,7 @@ static otr4_err_t serialize_and_encode_non_interactive_auth(string_t *dst,
 }
 
 // TODO: make static
-otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
-                                                      otrv4_t *otr) {
+otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst, otrv4_t *otr) {
   dake_non_interactive_auth_message_t msg[1];
 
   msg->sender_instance_tag = otr->our_instance_tag;
@@ -894,9 +892,10 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   ec_point_copy(msg->X, OUR_ECDH(otr));
   msg->A = dh_mpi_copy(OUR_DH(otr));
 
-  /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) || ECDH(x, Pkb) || k_dh) */
+  /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) || ECDH(x, Pkb) ||
+   * k_dh) */
   uint8_t tmp_k[HASH_BYTES];
-  if (generate_tmp_key(tmp_k , otr) == OTR4_ERROR) {
+  if (generate_tmp_key(tmp_k, otr) == OTR4_ERROR) {
     return OTR4_ERROR;
   }
 
@@ -908,7 +907,8 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   unsigned char *t = NULL;
   size_t t_len = 0;
   // TODO: keep 192 bytes as nonce
-  // t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) || Y || X || B || A || our_shared_prekey.public
+  // t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) || Y || X || B
+  // || A || our_shared_prekey.public
   if (build_non_interactive_auth_message(
           &t, &t_len, otr->their_profile, get_my_user_profile(otr),
           THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
@@ -950,7 +950,7 @@ static otr4_err_t receive_identity_message_on_state_start(
   key_manager_set_their_dh(identity_message->B, otr->keys);
   user_profile_copy(otr->their_profile, identity_message->profile);
 
-  if (key_manager_generate_ephemeral_keys(otr->keys))
+  if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
     return OTR4_ERROR;
 
   if (reply_with_auth_r_msg(dst, otr))
@@ -1353,7 +1353,7 @@ static otr4_err_t get_receiving_msg_keys(m_enc_key_t enc_key,
                                          m_mac_key_t mac_key,
                                          const data_message_t *msg,
                                          otrv4_t *otr) {
-  if (!key_manager_ensure_on_ratchet(otr->keys))
+  if (key_manager_ensure_on_ratchet(otr->keys) == OTR4_ERROR)
     return OTR4_ERROR;
 
   if (key_manager_retrieve_receiving_message_keys(enc_key, mac_key,
