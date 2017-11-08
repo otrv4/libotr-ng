@@ -392,7 +392,6 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
 
   if (key_manager_new_ratchet(manager, shared) == OTR4_ERROR) {
     sodium_memzero(shared, SHARED_SECRET_BYTES);
-    // TODO: probably not needed
     sodium_memzero(manager->ssid, sizeof(manager->ssid));
     sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
     return OTR4_ERROR;
@@ -473,13 +472,15 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
   return OTR4_SUCCESS;
 }
 
-static bool should_ratchet(const key_manager_t *manager) {
-  return manager->j == 0;
+static otr4_err_t should_ratchet(const key_manager_t *manager) {
+  if (manager->j == 0)
+    return OTR4_SUCCESS;
+
+  return OTR4_ERROR;
 }
 
 otr4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager) {
-  // TODO: check this
-  if (should_ratchet(manager)) {
+  if (should_ratchet(manager) == OTR4_SUCCESS) {
     return rotate_keys(manager);
   }
 
