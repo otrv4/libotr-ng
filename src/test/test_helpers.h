@@ -150,15 +150,6 @@ static void otrv4_free_all(int num, ...) {
   va_end(args);
 }
 
-static void otrv4_tlv_free_all(int num, ...) {
-  va_list args;
-  va_start(args, num);
-  for (int i = 0; i < num; i++) {
-    otrv4_tlv_free(va_arg(args, tlv_t *));
-  }
-  va_end(args);
-}
-
 void assert_tlv_structure(tlv_t *tlv, tlv_type_t type, uint16_t len,
                           uint8_t *data, bool next_exists) {
   otrv4_assert(tlv);
