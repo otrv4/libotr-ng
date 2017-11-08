@@ -1,2 +1,0 @@
-- funcoes nao exportadas nao precisam do namespace
-- identar como linux kernel
