@@ -151,16 +151,16 @@ static void otrv4_free_all(int num, ...) {
 }
 
 void assert_tlv_structure(tlv_t *tlv, tlv_type_t type, uint16_t len,
-                          uint8_t *data, bool next_exists) {
+                          uint8_t *data, bool next) {
   otrv4_assert(tlv);
   otrv4_assert(tlv->type == type);
   otrv4_assert(tlv->len == len);
-  if (next_exists) {
+  if (next) {
     otrv4_assert(tlv->next != NULL);
   } else {
     otrv4_assert(tlv->next == NULL);
   }
-  if (data != NULL || tlv->type != OTRV4_TLV_PADDING) {
+  if (type != OTRV4_TLV_PADDING) {
     otrv4_assert_cmpmem(tlv->data, data, len);
   }
 }
