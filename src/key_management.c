@@ -63,7 +63,7 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
   manager->our_dh->priv = NULL;
 
   memset(manager->their_ecdh, 0, ED448_POINT_BYTES);
-  manager->their_dh = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  manager->their_dh = NULL;
 
   manager->i = 0;
   manager->j = 0;

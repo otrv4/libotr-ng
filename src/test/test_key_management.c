@@ -39,20 +39,18 @@ void test_key_manager_destroy() {
   key_manager_t *manager = malloc(sizeof(key_manager_t));
   key_manager_init(manager);
 
-  shared_secret_t shared;
-  memset(shared, 0, sizeof(shared_secret_t));
+  otrv4_assert(key_manager_generate_ephemeral_keys(manager) == OTR4_SUCCESS);
+  memcpy(manager->their_ecdh, manager->our_ecdh->pub, ED448_POINT_BYTES);
+  manager->their_dh = gcry_mpi_new(DH3072_MOD_LEN_BITS);
 
-  otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
-
-  manager->our_dh->priv = gcry_mpi_new(DH_KEY_SIZE);
-  manager->our_dh->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
-  
   otrv4_assert(manager->current);
   otrv4_assert(manager->our_dh->priv);
   otrv4_assert(manager->our_dh->pub);
   otrv4_assert(manager->their_dh);
+  otrv4_assert_not_zero(manager->our_ecdh->priv, ED448_SCALAR_BYTES);
+  otrv4_assert_not_zero(manager->our_ecdh->pub, ED448_POINT_BYTES);
+  otrv4_assert_not_zero(manager->their_ecdh, ED448_POINT_BYTES);
   // TODO: destroy brace_key too?
-  // TODO: test destroy ecdh keys?
 
   key_manager_destroy(manager);
 
@@ -60,6 +58,9 @@ void test_key_manager_destroy() {
   otrv4_assert(!manager->our_dh->priv);
   otrv4_assert(!manager->our_dh->pub);
   otrv4_assert(!manager->their_dh);
+  otrv4_assert_zero(manager->our_ecdh->priv, ED448_SCALAR_BYTES);
+  otrv4_assert_zero(manager->our_ecdh->pub, ED448_POINT_BYTES);
+  otrv4_assert_zero(manager->their_ecdh, ED448_POINT_BYTES);
 
   free(manager);
   manager = NULL;
