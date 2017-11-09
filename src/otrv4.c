@@ -590,7 +590,6 @@ static otr4_err_t double_ratcheting_init(int j, otrv4_t *otr) {
   return OTR4_SUCCESS;
 }
 
-// phi is probably a char as it is the node and domain from an account
 static otr4_err_t
 build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
                    const user_profile_t *i_profile,
@@ -827,10 +826,10 @@ static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-  // TODO: this needs to take: otr->conversation->client->account_name
   if (build_auth_message(&t, &t_len, 0, otr->their_profile,
                          get_my_user_profile(otr), THEIR_ECDH(otr),
-                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr), ""))
+                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
+                         otr->conversation->client->phi))
     return OTR4_ERROR;
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
@@ -1075,10 +1074,9 @@ static otr4_err_t reply_with_auth_i_msg(string_t *dst,
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-  // TODO: this needs to take: otr->conversation->client->account_name
   if (build_auth_message(&t, &t_len, 1, get_my_user_profile(otr), their,
                          OUR_ECDH(otr), THEIR_ECDH(otr), OUR_DH(otr),
-                         THEIR_DH(otr), ""))
+                         THEIR_DH(otr), otr->conversation->client->phi))
     return OTR4_ERROR;
 
   otr4_err_t err =
@@ -1102,9 +1100,9 @@ static bool valid_auth_r_message(const dake_auth_r_t *auth, otrv4_t *otr) {
   if (!valid_received_values(auth->X, auth->A, auth->profile))
     return false;
 
-  // TODO: this needs to take: otr->conversation->client->account_name
   if (build_auth_message(&t, &t_len, 0, get_my_user_profile(otr), auth->profile,
-                         OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A, ""))
+                         OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A,
+                         otr->conversation->client->phi))
     return false;
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
@@ -1169,10 +1167,10 @@ static bool valid_auth_i_message(const dake_auth_i_t *auth, otrv4_t *otr) {
   uint8_t *t = NULL;
   size_t t_len = 0;
 
-  // TODO: this needs to take: otr->conversation->client->account_name
   if (build_auth_message(&t, &t_len, 1, otr->their_profile,
                          get_my_user_profile(otr), THEIR_ECDH(otr),
-                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr), ""))
+                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
+                         otr->conversation->client->phi))
     return false;
 
   otr4_err_t err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,

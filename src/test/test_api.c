@@ -40,12 +40,15 @@ static void free_message_and_response(otrv4_response_t *response,
   message = NULL;
 }
 
-// TODO: add pad
 static void set_up_client_state(otr4_client_state_t *state,
                                 string_t account_name, int byte) {
   state->userstate = otrl_userstate_create();
   state->account_name = otrv4_strdup(account_name);
-  state->protocol_name = otrv4_strdup("protocol");
+  state->protocol_name = otrv4_strdup("otr");
+  // on client this will probably be the jid and the
+  // receipient jid for the party
+  state->phi = otrv4_strdup("otr");
+  state->pad = false;
 
   uint8_t sym_key[ED448_PRIVATE_BYTES] = {byte};
   otr4_client_state_add_private_key_v4(state, sym_key);
@@ -66,13 +69,13 @@ void test_api_conversation(void) {
   OTR4_INIT;
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
-  alice_state->pad = true;
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
-  bob_state->pad = true;
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, 2);
 
+  bob_state->pad = true;
+  alice_state->pad = true;
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
 
@@ -575,9 +578,7 @@ void test_api_extra_sym_key(void) {
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
-  alice_state->pad = false;
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
-  bob_state->pad = false;
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, 2);

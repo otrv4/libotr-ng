@@ -26,7 +26,8 @@ typedef struct otr4_client_state_t {
   // callback and v3 user state
   OtrlUserState userstate;
   otrv4_keypair_t *keypair;
-  bool pad; // TODO: this can be replaced by length
+  char *phi; // this is the shared session state
+  bool pad;  // TODO: this can be replaced by length
 
   // OtrlPrivKey *privkeyv3; // ???
   // otrv4_instag_t *instag; // TODO: Store the instance tag here rather than
