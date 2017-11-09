@@ -591,13 +591,12 @@ static otr4_err_t double_ratcheting_init(int j, otrv4_t *otr) {
 }
 
 // phi is probably a char as it is the node and domain from an account
-static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
-                                     const uint8_t type,
-                                     const user_profile_t *i_profile,
-                                     const user_profile_t *r_profile,
-                                     const ec_point_t i_ecdh,
-                                     const ec_point_t r_ecdh,
-                                     const dh_mpi_t i_dh, const dh_mpi_t r_dh, char *phi) {
+static otr4_err_t
+build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
+                   const user_profile_t *i_profile,
+                   const user_profile_t *r_profile, const ec_point_t i_ecdh,
+                   const ec_point_t r_ecdh, const dh_mpi_t i_dh,
+                   const dh_mpi_t r_dh, char *phi) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
@@ -646,8 +645,8 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
     hash_final(hd, hash_phi, sizeof(hash_phi));
     hash_destroy(hd);
 
-    size_t len = 1 + 2 * ED448_POINT_BYTES + 2 * HASH_BYTES +
-                 ser_i_dh_len + ser_r_dh_len + HASH_BYTES;
+    size_t len = 1 + 2 * ED448_POINT_BYTES + 2 * HASH_BYTES + ser_i_dh_len +
+                 ser_r_dh_len + HASH_BYTES;
 
     uint8_t *buff = malloc(len);
     if (!buff)

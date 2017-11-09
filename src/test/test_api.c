@@ -41,7 +41,8 @@ static void free_message_and_response(otrv4_response_t *response,
 }
 
 // TODO: add pad
-static void set_up_client_state(otr4_client_state_t *state, string_t account_name, int byte) {
+static void set_up_client_state(otr4_client_state_t *state,
+                                string_t account_name, int byte) {
   state->userstate = otrl_userstate_create();
   state->account_name = otrv4_strdup(account_name);
   state->protocol_name = otrv4_strdup("protocol");
@@ -163,8 +164,7 @@ void test_api_conversation(void) {
 
   free_message_and_response(response_to_bob, to_send);
 
-  otrv4_userstate_free_all(2, alice_state->userstate,
-                           bob_state->userstate);
+  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
 
   otrv4_free_all(2, alice, bob);
@@ -216,8 +216,7 @@ void test_dh_key_rotation(void) {
     if (ratchet_id == 1) {
       otrv4_assert(alice->keys->our_dh->priv);
       otrv4_assert(!bob->keys->our_dh->priv);
-    }
-    else if (ratchet_id == 3 || ratchet_id == 5) {
+    } else if (ratchet_id == 3 || ratchet_id == 5) {
       otrv4_assert(!alice->keys->our_dh->priv);
       otrv4_assert(bob->keys->our_dh->priv);
     }
@@ -250,15 +249,13 @@ void test_dh_key_rotation(void) {
     if (ratchet_id + 1 == 2 || ratchet_id + 1 == 6) {
       otrv4_assert(alice->keys->our_dh->priv);
       otrv4_assert(!bob->keys->our_dh->priv);
-    }
-    else if (ratchet_id + 1 == 4) {
+    } else if (ratchet_id + 1 == 4) {
       otrv4_assert(!alice->keys->our_dh->priv);
       otrv4_assert(bob->keys->our_dh->priv);
     }
   }
 
-  otrv4_userstate_free_all(2, alice_state->userstate,
-                           bob_state->userstate);
+  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_free_all(2, alice, bob);
   otrv4_tlv_free(tlv);
@@ -503,8 +500,7 @@ void test_api_smp(void) {
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
-  otrv4_userstate_free_all(2, alice_state->userstate,
-                           bob_state->userstate);
+  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_free_all(2, alice, bob);
 
@@ -566,8 +562,7 @@ void test_api_smp_abort(void) {
   free_message_and_response(response_to_bob, to_send);
 
   // TODO: Alice can restart here the smp. This will mem leak though
-  otrv4_userstate_free_all(2, alice_state->userstate,
-                           bob_state->userstate);
+  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_free_all(2, alice, bob);
 
@@ -648,8 +643,7 @@ void test_api_extra_sym_key(void) {
 
   free_message_and_response(response_to_bob, to_send);
 
-  otrv4_userstate_free_all(2, alice_state->userstate,
-                           bob_state->userstate);
+  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_free_all(2, alice, bob);
 
@@ -877,8 +871,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   // Bob should delete ECDH priv key
   otrv4_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
-  otrv4_userstate_free_all(2, alice_state->userstate,
-                           bob_state->userstate);
+  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_free_all(2, alice, bob);
 

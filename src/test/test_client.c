@@ -9,8 +9,7 @@
 #include "../shake.h"
 
 static otr4_client_t *set_up_client(otr4_client_state_t *state,
-                                    char *account_name,
-                                    uint8_t sym_value) {
+                                    char *account_name, uint8_t sym_value) {
   set_up_client_state(state, account_name, sym_value);
   otr4_client_t *dst = otr4_client_new(state);
 
@@ -193,7 +192,8 @@ void test_client_api() {
   otrv4_assert(!todisplay);
 
   // Free memory
-  otrv4_userstate_free_all(3, alice_state->userstate, bob_state->userstate, charlie_state->userstate);
+  otrv4_userstate_free_all(3, alice_state->userstate, bob_state->userstate,
+                           charlie_state->userstate);
   otrv4_client_state_free_all(3, alice_state, bob_state, charlie_state);
   otrv4_client_free_all(3, alice, bob, charlie);
 
@@ -219,7 +219,7 @@ void test_client_get_our_fingerprint() {
             sizeof(serialized));
   otrv4_assert_cmpmem(expected_fp, our_fp, sizeof(otrv4_fingerprint_t));
 
-    otrl_userstate_free(alice_state->userstate);
+  otrl_userstate_free(alice_state->userstate);
   otr4_client_state_free(alice_state);
   otr4_client_free(alice);
 
