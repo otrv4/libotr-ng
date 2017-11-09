@@ -41,6 +41,7 @@ static void free_message_and_response(otrv4_response_t *response,
 }
 
 // TODO: there is a very similar function on client
+// TODO: add pad
 static void set_up_client_state(otr4_client_state_t *state, string_t account_name, int byte) {
   state->userstate = otrl_userstate_create();
   state->account_name = otrv4_strdup(account_name);
@@ -64,25 +65,13 @@ static otrv4_t *set_up_otr(otr4_client_state_t *state, char *account_name,
 void test_api_conversation(void) {
   OTR4_INIT;
 
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   alice_state->pad = true;
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
   bob_state->pad = true;
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
-      1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
-      2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
-
-  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_t *alice = otrv4_new(alice_state, policy);
-  otrv4_assert(!alice->keys->old_mac_keys);
-  otrv4_t *bob = otrv4_new(bob_state, policy);
-  otrv4_assert(!bob->keys->old_mac_keys);
+  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
+  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -93,7 +82,7 @@ void test_api_conversation(void) {
 
   // Alice sends a data message
   string_t to_send = NULL;
-
+  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
   otr4_err_t err;
 
   for (message_id = 2; message_id < 5; message_id++) {
@@ -175,11 +164,11 @@ void test_api_conversation(void) {
 
   free_message_and_response(response_to_bob, to_send);
 
-  otr4_client_state_free(alice_state);
-  otr4_client_state_free(bob_state);
+  otrv4_userstate_free_all(2, alice_state->userstate,
+                           bob_state->userstate);
+  otrv4_client_state_free_all(2, alice_state, bob_state);
 
-  otrv4_free(bob);
-  otrv4_free(alice);
+  otrv4_free_all(2, alice, bob);
 
   otrv4_tlv_free(tlv);
 
@@ -192,17 +181,8 @@ void test_dh_key_rotation(void) {
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
-      1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
-      2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
-
-  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_t *alice = otrv4_new(alice_state, policy);
-  otrv4_t *bob = otrv4_new(bob_state, policy);
+  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
+  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -278,6 +258,8 @@ void test_dh_key_rotation(void) {
     }
   }
 
+  otrv4_userstate_free_all(2, alice_state->userstate,
+                           bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_free_all(2, alice, bob);
   otrv4_tlv_free(tlv);
@@ -451,17 +433,8 @@ void test_api_smp(void) {
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
-      1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
-      2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
-
-  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_t *alice = otrv4_new(alice_state, policy);
-  otrv4_t *bob = otrv4_new(bob_state, policy);
+  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
+  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
@@ -531,8 +504,10 @@ void test_api_smp(void) {
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
-  otrv4_free_all(2, alice, bob);
+  otrv4_userstate_free_all(2, alice_state->userstate,
+                           bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_free_all(2, alice, bob);
 
   OTR4_FREE;
 }
@@ -543,17 +518,8 @@ void test_api_smp_abort(void) {
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
-      1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
-      2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
-
-  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_t *alice = otrv4_new(alice_state, policy);
-  otrv4_t *bob = otrv4_new(bob_state, policy);
+  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
+  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
@@ -601,8 +567,10 @@ void test_api_smp_abort(void) {
   free_message_and_response(response_to_bob, to_send);
 
   // TODO: Alice can restart here the smp. This will mem leak though
-  otrv4_free_all(2, alice, bob);
+  otrv4_userstate_free_all(2, alice_state->userstate,
+                           bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_free_all(2, alice, bob);
 
   OTR4_FREE;
 }
@@ -617,19 +585,8 @@ void test_api_extra_sym_key(void) {
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
   bob_state->pad = false;
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
-      1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
-      2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
-
-  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_t *alice = otrv4_new(alice_state, policy);
-  otrv4_assert(!alice->keys->old_mac_keys);
-  otrv4_t *bob = otrv4_new(bob_state, policy);
-  otrv4_assert(!bob->keys->old_mac_keys);
+  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
+  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -692,11 +649,10 @@ void test_api_extra_sym_key(void) {
 
   free_message_and_response(response_to_bob, to_send);
 
-  otr4_client_state_free(alice_state);
-  otr4_client_state_free(bob_state);
-
-  otrv4_free(bob);
-  otrv4_free(alice);
+  otrv4_userstate_free_all(2, alice_state->userstate,
+                           bob_state->userstate);
+  otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_free_all(2, alice, bob);
 
   otrv4_tlv_free(tlv);
 
@@ -718,9 +674,9 @@ void test_api_multiple_clients(void) {
   // The account name should be the same. The account can be logged
   // on different clients. Instance tags are used for that. This
   // account name can be used as phi.
-  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 3);
-  otrv4_t *bob_phone = set_up_otr(bob_phone_state, "bob@protocol", 1);
-  otrv4_t *bob_pc = set_up_otr(bob_pc_state, "bob@protocol", 2);
+  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
+  otrv4_t *bob_phone = set_up_otr(bob_phone_state, "bob@protocol", 2);
+  otrv4_t *bob_pc = set_up_otr(bob_pc_state, "bob@protocol", 3);
 
   otrv4_response_t *pc_to_alice = otrv4_response_new();
   otrv4_response_t *phone_to_alice = otrv4_response_new();
@@ -828,7 +784,7 @@ void test_api_multiple_clients(void) {
   otrv4_userstate_free_all(3, alice_state->userstate,
                            bob_phone_state->userstate, bob_pc_state->userstate);
   otrv4_client_state_free_all(3, alice_state, bob_pc_state, bob_phone_state);
-  otrv4_free_all(3, bob_pc, bob_phone, alice);
+  otrv4_free_all(3, alice, bob_pc, bob_phone);
 
   OTR4_FREE;
 }
@@ -839,15 +795,8 @@ void test_ecdh_priv_keys_destroyed_early() {
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
-
-  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
-  otrv4_t *alice = otrv4_new(alice_state, policy);
-  otrv4_t *bob = otrv4_new(bob_state, policy);
+  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
+  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
@@ -929,6 +878,8 @@ void test_ecdh_priv_keys_destroyed_early() {
   // Bob should delete ECDH priv key
   otrv4_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
+  otrv4_userstate_free_all(2, alice_state->userstate,
+                           bob_state->userstate);
   otrv4_client_state_free_all(2, alice_state, bob_state);
   otrv4_free_all(2, alice, bob);
 
