@@ -1,5 +1,20 @@
 #include "../tlv.h"
 
+void assert_tlv_structure(tlv_t *tlv, tlv_type_t type, uint16_t len,
+                          uint8_t *data, bool next) {
+  otrv4_assert(tlv);
+  otrv4_assert(tlv->type == type);
+  otrv4_assert(tlv->len == len);
+  if (next) {
+    otrv4_assert(tlv->next != NULL);
+  } else {
+    otrv4_assert(tlv->next == NULL);
+  }
+  if (type != OTRV4_TLV_PADDING) {
+    otrv4_assert_cmpmem(tlv->data, data, len);
+  }
+}
+
 void test_tlv_parse() {
   uint8_t msg[22] = {0x00, 0x06, 0x00, 0x03, 0x08, 0x05, 0x09, 0x00,
                      0x02, 0x00, 0x04, 0xac, 0x04, 0x05, 0x06, 0x00,

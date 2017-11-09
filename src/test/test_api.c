@@ -40,7 +40,6 @@ static void free_message_and_response(otrv4_response_t *response,
   message = NULL;
 }
 
-// TODO: there is a very similar function on client
 // TODO: add pad
 static void set_up_client_state(otr4_client_state_t *state, string_t account_name, int byte) {
   state->userstate = otrl_userstate_create();
