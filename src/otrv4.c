@@ -696,7 +696,7 @@ static otr4_err_t build_non_interactive_auth_message(
     uint8_t **msg, size_t *msg_len, const user_profile_t *i_profile,
     const user_profile_t *r_profile, const ec_point_t i_ecdh,
     const ec_point_t r_ecdh, const dh_mpi_t i_dh, const dh_mpi_t r_dh,
-    const otrv4_shared_prekey_t r_shared_prekey) {
+    const otrv4_shared_prekey_t r_shared_prekey, char *phi) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
@@ -742,8 +742,16 @@ static otr4_err_t build_non_interactive_auth_message(
     hash_final(hd_r, hash_ser_r_profile, sizeof(hash_ser_r_profile));
     hash_destroy(hd_r);
 
+    uint8_t hash_phi[HASH_BYTES];
+    decaf_shake256_ctx_t hd;
+    hash_init_with_dom(hd);
+    hash_update(hd, (uint8_t *)phi, strlen(phi));
+
+    hash_final(hd, hash_phi, sizeof(hash_phi));
+    hash_destroy(hd);
+
     size_t len = 2 * ED448_POINT_BYTES + 2 * HASH_BYTES + ser_i_dh_len +
-                 ser_r_dh_len + ED448_SHARED_PREKEY_BYTES;
+                 ser_r_dh_len + ED448_SHARED_PREKEY_BYTES + HASH_BYTES;
 
     uint8_t *buff = malloc(len);
     if (!buff)
@@ -771,6 +779,9 @@ static otr4_err_t build_non_interactive_auth_message(
 
     memcpy(cursor, ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
     cursor += ED448_SHARED_PREKEY_BYTES;
+
+    memcpy(cursor, hash_phi, HASH_BYTES);
+    cursor += HASH_BYTES;
 
     *msg = buff;
     *msg_len = len;
@@ -922,7 +933,7 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst, otrv4_t *otr) {
   if (build_non_interactive_auth_message(
           &t, &t_len, otr->their_profile, get_my_user_profile(otr),
           THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
-          otr->their_profile->shared_prekey))
+          otr->their_profile->shared_prekey, ""))
     return OTR4_ERROR;
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
