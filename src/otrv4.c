@@ -590,22 +590,22 @@ static otr4_err_t double_ratcheting_init(int j, otrv4_t *otr) {
   return OTR4_SUCCESS;
 }
 
+// phi is probably a char as it is the node and domain from an account
 static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
                                      const uint8_t type,
                                      const user_profile_t *i_profile,
                                      const user_profile_t *r_profile,
                                      const ec_point_t i_ecdh,
                                      const ec_point_t r_ecdh,
-                                     const dh_mpi_t i_dh, const dh_mpi_t r_dh) {
+                                     const dh_mpi_t i_dh, const dh_mpi_t r_dh, char *phi) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
+  uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
+  size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
 
   serialize_ec_point(ser_i_ecdh, i_ecdh);
   serialize_ec_point(ser_r_ecdh, r_ecdh);
-
-  uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
-  size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
 
   if (serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh)) {
     return OTR4_ERROR;
@@ -614,8 +614,6 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
   if (serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh)) {
     return OTR4_ERROR;
   }
-
-  otr4_err_t err = OTR4_ERROR;
 
   do {
     if (user_profile_asprintf(&ser_i_profile, &ser_i_profile_len, i_profile))
@@ -640,8 +638,16 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
     hash_final(hd_r, hash_ser_r_profile, sizeof(hash_ser_r_profile));
     hash_destroy(hd_r);
 
-    size_t len = 1 + 2 * ED448_POINT_BYTES + HASH_BYTES + HASH_BYTES +
-                 ser_i_dh_len + ser_r_dh_len;
+    uint8_t hash_phi[HASH_BYTES];
+    decaf_shake256_ctx_t hd;
+    hash_init_with_dom(hd);
+    hash_update(hd, (uint8_t *)phi, strlen(phi));
+
+    hash_final(hd, hash_phi, sizeof(hash_phi));
+    hash_destroy(hd);
+
+    size_t len = 1 + 2 * ED448_POINT_BYTES + 2 * HASH_BYTES +
+                 ser_i_dh_len + ser_r_dh_len + HASH_BYTES;
 
     uint8_t *buff = malloc(len);
     if (!buff)
@@ -669,9 +675,11 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
     memcpy(cursor, ser_r_dh, ser_r_dh_len);
     cursor += ser_r_dh_len;
 
+    memcpy(cursor, hash_phi, HASH_BYTES);
+    cursor += HASH_BYTES;
+
     *msg = buff;
     *msg_len = len;
-    err = OTR4_SUCCESS;
   } while (0);
 
   free(ser_i_profile);
@@ -682,7 +690,7 @@ static otr4_err_t build_auth_message(uint8_t **msg, size_t *msg_len,
   sodium_memzero(ser_i_dh, DH3072_MOD_LEN_BYTES);
   sodium_memzero(ser_r_dh, DH3072_MOD_LEN_BYTES);
 
-  return err;
+  return OTR4_SUCCESS;
 }
 
 static otr4_err_t build_non_interactive_auth_message(
@@ -808,9 +816,11 @@ static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
 
   unsigned char *t = NULL;
   size_t t_len = 0;
+
+  // TODO: this needs to take: otr->conversation->client->account_name
   if (build_auth_message(&t, &t_len, 0, otr->their_profile,
                          get_my_user_profile(otr), THEIR_ECDH(otr),
-                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
+                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr), ""))
     return OTR4_ERROR;
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
@@ -1054,9 +1064,11 @@ static otr4_err_t reply_with_auth_i_msg(string_t *dst,
 
   unsigned char *t = NULL;
   size_t t_len = 0;
+
+  // TODO: this needs to take: otr->conversation->client->account_name
   if (build_auth_message(&t, &t_len, 1, get_my_user_profile(otr), their,
                          OUR_ECDH(otr), THEIR_ECDH(otr), OUR_DH(otr),
-                         THEIR_DH(otr)))
+                         THEIR_DH(otr), ""))
     return OTR4_ERROR;
 
   otr4_err_t err =
@@ -1080,8 +1092,9 @@ static bool valid_auth_r_message(const dake_auth_r_t *auth, otrv4_t *otr) {
   if (!valid_received_values(auth->X, auth->A, auth->profile))
     return false;
 
+  // TODO: this needs to take: otr->conversation->client->account_name
   if (build_auth_message(&t, &t_len, 0, get_my_user_profile(otr), auth->profile,
-                         OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A))
+                         OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A, ""))
     return false;
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
@@ -1146,9 +1159,10 @@ static bool valid_auth_i_message(const dake_auth_i_t *auth, otrv4_t *otr) {
   uint8_t *t = NULL;
   size_t t_len = 0;
 
+  // TODO: this needs to take: otr->conversation->client->account_name
   if (build_auth_message(&t, &t_len, 1, otr->their_profile,
                          get_my_user_profile(otr), THEIR_ECDH(otr),
-                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr)))
+                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr), ""))
     return false;
 
   otr4_err_t err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
