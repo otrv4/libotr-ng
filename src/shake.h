@@ -18,7 +18,6 @@ static void shake_kkdf(uint8_t *dst, size_t dstlen, const uint8_t *key,
   decaf_shake256_ctx_t hd;
 
   hash_init_with_dom(hd);
-
   hash_update(hd, key, keylen);
   hash_update(hd, secret, secretlen);
 
@@ -36,4 +35,15 @@ static inline void shake_256_kdf(uint8_t *key, size_t keylen,
                                  const uint8_t magic[1], const uint8_t *secret,
                                  size_t secretlen) {
   shake_kkdf(key, keylen, magic, 1, secret, secretlen);
+}
+
+static inline void shake_256_hash(uint8_t *dst, size_t dstlen,
+                                  const uint8_t *secret, size_t secretlen) {
+  decaf_shake256_ctx_t hd;
+
+  hash_init_with_dom(hd);
+  hash_update(hd, secret, secretlen);
+
+  hash_final(hd, dst, dstlen);
+  hash_destroy(hd);
 }

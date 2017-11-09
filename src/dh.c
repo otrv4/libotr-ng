@@ -58,7 +58,6 @@ void dh_free(void) {
 }
 
 otr4_err_t dh_keypair_generate(dh_keypair_t keypair) {
-  decaf_shake256_ctx_t hd;
   uint8_t hash[DH_KEY_SIZE];
 
   uint8_t *secbuf = malloc(DH_KEY_SIZE);
@@ -67,10 +66,7 @@ otr4_err_t dh_keypair_generate(dh_keypair_t keypair) {
   }
 
   random_bytes(secbuf, DH_KEY_SIZE);
-  hash_init_with_dom(hd);
-  hash_update(hd, secbuf, DH_KEY_SIZE);
-  hash_final(hd, hash, sizeof(hash));
-  hash_destroy(hd);
+  shake_256_hash(hash, sizeof(hash), secbuf, sizeof(secbuf));
 
   gcry_error_t err =
       gcry_mpi_scan(&keypair->priv, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);

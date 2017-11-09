@@ -83,13 +83,7 @@ void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
 otr4_err_t hashToScalar(const unsigned char *buff, const size_t bufflen,
                         ec_scalar_t dst) {
   uint8_t hash[HASH_BYTES];
-  decaf_shake256_ctx_t hd;
-
-  hash_init_with_dom(hd);
-  hash_update(hd, buff, bufflen);
-
-  hash_final(hd, hash, sizeof(hash));
-  hash_destroy(hd);
+  shake_256_hash(hash, sizeof(hash), buff, bufflen);
 
   if (deserialize_ec_scalar(dst, hash, ED448_SCALAR_BYTES) == OTR4_ERROR)
     return OTR4_ERROR;

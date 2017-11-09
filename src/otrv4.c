@@ -601,6 +601,9 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
   uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
   size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
+  uint8_t hash_ser_i_profile[HASH_BYTES];
+  uint8_t hash_ser_r_profile[HASH_BYTES];
+  uint8_t hash_phi[HASH_BYTES];
 
   serialize_ec_point(ser_i_ecdh, i_ecdh);
   serialize_ec_point(ser_r_ecdh, r_ecdh);
@@ -620,29 +623,13 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
     if (user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
       continue;
 
-    uint8_t hash_ser_i_profile[HASH_BYTES];
-    decaf_shake256_ctx_t hd_i;
-    hash_init_with_dom(hd_i);
-    hash_update(hd_i, ser_i_profile, ser_i_profile_len);
+    shake_256_hash(hash_ser_i_profile, sizeof(hash_ser_i_profile),
+                   ser_i_profile, ser_i_profile_len);
 
-    hash_final(hd_i, hash_ser_i_profile, sizeof(hash_ser_i_profile));
-    hash_destroy(hd_i);
-
-    uint8_t hash_ser_r_profile[HASH_BYTES];
-    decaf_shake256_ctx_t hd_r;
-    hash_init_with_dom(hd_r);
-    hash_update(hd_r, ser_r_profile, ser_r_profile_len);
-
-    hash_final(hd_r, hash_ser_r_profile, sizeof(hash_ser_r_profile));
-    hash_destroy(hd_r);
-
-    uint8_t hash_phi[HASH_BYTES];
-    decaf_shake256_ctx_t hd;
-    hash_init_with_dom(hd);
-    hash_update(hd, (uint8_t *)phi, strlen(phi));
-
-    hash_final(hd, hash_phi, sizeof(hash_phi));
-    hash_destroy(hd);
+    shake_256_hash(hash_ser_r_profile, sizeof(hash_ser_r_profile),
+                   ser_r_profile, ser_r_profile_len);
+    // TODO: is it ok to cast it here?
+    shake_256_hash(hash_phi, sizeof(hash_phi), (uint8_t *)phi, strlen(phi));
 
     size_t len = 1 + 2 * ED448_POINT_BYTES + 2 * HASH_BYTES + ser_i_dh_len +
                  ser_r_dh_len + HASH_BYTES;
@@ -702,6 +689,9 @@ static otr4_err_t build_non_interactive_auth_message(
   uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
   size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
+  uint8_t hash_ser_i_profile[HASH_BYTES];
+  uint8_t hash_ser_r_profile[HASH_BYTES];
+  uint8_t hash_phi[HASH_BYTES];
 
   serialize_ec_point(ser_i_ecdh, i_ecdh);
   serialize_ec_point(ser_r_ecdh, r_ecdh);
@@ -725,29 +715,13 @@ static otr4_err_t build_non_interactive_auth_message(
     if (user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
       continue;
 
-    uint8_t hash_ser_i_profile[HASH_BYTES];
-    decaf_shake256_ctx_t hd_i;
-    hash_init_with_dom(hd_i);
-    hash_update(hd_i, ser_i_profile, ser_i_profile_len);
+    shake_256_hash(hash_ser_i_profile, sizeof(hash_ser_i_profile),
+                   ser_i_profile, ser_i_profile_len);
 
-    hash_final(hd_i, hash_ser_i_profile, sizeof(hash_ser_i_profile));
-    hash_destroy(hd_i);
-
-    uint8_t hash_ser_r_profile[HASH_BYTES];
-    decaf_shake256_ctx_t hd_r;
-    hash_init_with_dom(hd_r);
-    hash_update(hd_r, ser_r_profile, ser_r_profile_len);
-
-    hash_final(hd_r, hash_ser_r_profile, sizeof(hash_ser_r_profile));
-    hash_destroy(hd_r);
-
-    uint8_t hash_phi[HASH_BYTES];
-    decaf_shake256_ctx_t hd;
-    hash_init_with_dom(hd);
-    hash_update(hd, (uint8_t *)phi, strlen(phi));
-
-    hash_final(hd, hash_phi, sizeof(hash_phi));
-    hash_destroy(hd);
+    shake_256_hash(hash_ser_r_profile, sizeof(hash_ser_r_profile),
+                   ser_r_profile, ser_r_profile_len);
+    // TODO: is it ok to cast it here?
+    shake_256_hash(hash_phi, sizeof(hash_phi), (uint8_t *)phi, strlen(phi));
 
     size_t len = 2 * ED448_POINT_BYTES + 2 * HASH_BYTES + ser_i_dh_len +
                  ser_r_dh_len + ED448_SHARED_PREKEY_BYTES + HASH_BYTES;
