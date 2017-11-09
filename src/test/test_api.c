@@ -40,6 +40,27 @@ static void free_message_and_response(otrv4_response_t *response,
   message = NULL;
 }
 
+// TODO: there is a very similar function on client
+static void set_up_client_state(otr4_client_state_t *state, string_t account_name, int byte) {
+  state->userstate = otrl_userstate_create();
+  state->account_name = otrv4_strdup(account_name);
+  state->protocol_name = otrv4_strdup("protocol");
+
+  uint8_t sym_key[ED448_PRIVATE_BYTES] = {byte};
+  otr4_client_state_add_private_key_v4(state, sym_key);
+  otr4_client_state_add_instance_tag(state, 0x100 + byte);
+}
+
+// TODO: a cliente state is not part of a otr creation
+static otrv4_t *set_up_otr(otr4_client_state_t *state, char *account_name,
+                           int byte) {
+  set_up_client_state(state, account_name, byte);
+
+  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
+
+  return otrv4_new(state, policy);
+}
+
 void test_api_conversation(void) {
   OTR4_INIT;
 
@@ -340,29 +361,15 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   otrv4_response_free_all(2, response_to_alice, response_to_bob);
 }
 
-static void set_up_state(otr4_client_state_t *state, string_t account_name) {
-  state->userstate = otrl_userstate_create();
-  state->account_name = otrv4_strdup(account_name);
-  state->protocol_name = otrv4_strdup("proto");
-}
-
 void test_api_conversation_v3(void) {
   OTR4_INIT;
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
-  set_up_state(alice_state, "alice@protocol");
+  set_up_client_state(alice_state, "alice@protocol", 1);
 
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
-  set_up_state(bob_state, "bob@protocol");
-
-  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {
-      1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(alice_state, alice_sym);
-
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
-      2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
+  set_up_client_state(bob_state, "bob@protocol", 2);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3};
   otrv4_t *alice = otrv4_new(alice_state, policy);
@@ -696,17 +703,6 @@ void test_api_extra_sym_key(void) {
   OTR4_FREE;
 }
 
-static otrv4_t *set_up_otr(otr4_client_state_t *state, string_t account_name,
-                           int byte) {
-  set_up_state(state, account_name);
-  uint8_t priv_key[ED448_PRIVATE_BYTES] = {byte};
-  otr4_client_state_add_private_key_v4(state, priv_key);
-  otr4_client_state_add_instance_tag(state, 0x100 + byte);
-
-  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
-  return otrv4_new(state, policy);
-}
-
 static int should_succeed(otr4_err_t err) { return err == OTR4_SUCCESS; }
 
 void test_api_multiple_clients(void) {
@@ -719,9 +715,12 @@ void test_api_multiple_clients(void) {
   otr4_client_state_t *bob_phone_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_pc_state = otr4_client_state_new(NULL);
 
-  otrv4_t *alice = set_up_otr(alice_state, "alice", 3);
-  otrv4_t *bob_phone = set_up_otr(bob_phone_state, "bob@phone", 1);
-  otrv4_t *bob_pc = set_up_otr(bob_pc_state, "bob@pc", 2);
+  // The account name should be the same. The account can be logged
+  // on different clients. Instance tags are used for that. This
+  // account name can be used as phi.
+  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 3);
+  otrv4_t *bob_phone = set_up_otr(bob_phone_state, "bob@protocol", 1);
+  otrv4_t *bob_pc = set_up_otr(bob_pc_state, "bob@protocol", 2);
 
   otrv4_response_t *pc_to_alice = otrv4_response_new();
   otrv4_response_t *phone_to_alice = otrv4_response_new();
