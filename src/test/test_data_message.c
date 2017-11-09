@@ -8,7 +8,7 @@ void test_data_message_serializes() {
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(ecdh, sym);
-  dh_keypair_generate(dh);
+  otrv4_assert(dh_keypair_generate(dh) ==OTR4_SUCCESS);
 
   data_message_t *data_msg = data_message_new();
   otrv4_assert(data_msg);

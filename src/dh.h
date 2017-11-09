@@ -36,21 +36,22 @@ void dh_priv_key_destroy(dh_keypair_t keypair);
 
 void dh_keypair_destroy(dh_keypair_t keypair);
 
+otr4_err_t dh_shared_secret(uint8_t *shared, size_t shared_bytes,
+                            const dh_private_key_t our_priv,
+                            const dh_public_key_t their_pub);
+
 otr4_err_t dh_mpi_serialize(uint8_t *dst, size_t dst_len, size_t *written,
                             const dh_mpi_t src);
 
 otr4_err_t dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer,
                               size_t buflen, size_t *nread);
 
-otr4_err_t dh_shared_secret(uint8_t *shared, size_t shared_bytes,
-                            const dh_private_key_t our_priv,
-                            const dh_public_key_t their_pub);
+otr4_err_t dh_mpi_valid(dh_mpi_t mpi);
 
 static inline int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
   return gcry_mpi_cmp(m1, m2);
 }
 
-bool dh_mpi_valid(dh_mpi_t mpi);
 
 static inline dh_mpi_t dh_mpi_copy(const dh_mpi_t src) {
   return gcry_mpi_copy(src);

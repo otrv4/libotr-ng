@@ -61,9 +61,8 @@ otr4_err_t dh_keypair_generate(dh_keypair_t keypair) {
   uint8_t hash[DH_KEY_SIZE];
 
   uint8_t *secbuf = malloc(DH_KEY_SIZE);
-  if (secbuf == NULL) {
+  if (secbuf == NULL)
     return OTR4_ERROR;
-  }
 
   random_bytes(secbuf, DH_KEY_SIZE);
   shake_256_hash(hash, sizeof(hash), secbuf, sizeof(secbuf));
@@ -72,9 +71,8 @@ otr4_err_t dh_keypair_generate(dh_keypair_t keypair) {
       gcry_mpi_scan(&keypair->priv, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);
   free(secbuf);
 
-  if (err) {
+  if (err)
     return OTR4_ERROR;
-  }
 
   keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
   gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, keypair->priv, DH3072_MODULUS);
@@ -113,9 +111,8 @@ otr4_err_t dh_shared_secret(uint8_t *shared, size_t shared_bytes,
   memset(shared, 0, shared_bytes);
   memcpy(shared + shared_bytes - written, buffer, written);
 
-  if (err) {
+  if (err)
     return OTR4_ERROR;
-  }
 
   return OTR4_SUCCESS;
 }
@@ -124,26 +121,28 @@ otr4_err_t dh_mpi_serialize(uint8_t *dst, size_t dst_len, size_t *written,
                             const dh_mpi_t src) {
   gcry_error_t err =
       gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
-  if (err) {
+  if (err)
     return OTR4_ERROR;
-  }
+
   return OTR4_SUCCESS;
 }
 
 otr4_err_t dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer,
                               size_t buflen, size_t *nread) {
-  if (gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread)) {
+  if (gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread))
     return OTR4_ERROR;
-  }
+
   return OTR4_SUCCESS;
 }
 
-bool dh_mpi_valid(dh_mpi_t mpi) {
-  /* Check that their_pub is in range */
-  if (mpi == NULL) {
-    return false;
-  }
+// TODO: check this validation
+otr4_err_t dh_mpi_valid(dh_mpi_t mpi) {
+  /* Check that pub is in range */
+  if (mpi == NULL)
+    return OTR4_ERROR;
 
-  return !(gcry_mpi_cmp_ui(mpi, 2) < 0 ||
-           gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0);
+  if (gcry_mpi_cmp_ui(mpi, 2) < 0 || gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0)
+    return OTR4_SUCCESS;
+
+ return OTR4_ERROR;
 }
