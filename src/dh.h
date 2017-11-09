@@ -52,7 +52,6 @@ static inline int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
   return gcry_mpi_cmp(m1, m2);
 }
 
-
 static inline dh_mpi_t dh_mpi_copy(const dh_mpi_t src) {
   return gcry_mpi_copy(src);
 }

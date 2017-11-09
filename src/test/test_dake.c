@@ -32,7 +32,8 @@ void test_snizkpk_auth() {
   otrv4_keypair_generate(p3, sym3);
 
   snizkpk_proof_t dst2[1];
-  snizkpk_authenticate(dst2, p1, p2->pub, p3->pub, (unsigned char *)msg, strlen(msg));
+  snizkpk_authenticate(dst2, p1, p2->pub, p3->pub, (unsigned char *)msg,
+                       strlen(msg));
 
   otrv4_assert(snizkpk_verify(dst2, p1->pub, p2->pub, p3->pub,
                               (unsigned char *)msg,

@@ -187,7 +187,8 @@ void test_dake_non_interactive_auth_message_serializes(
   // TODO: correctly generate this sigma
   unsigned char *t = NULL;
   size_t t_len = 0;
-  snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t, t_len);
+  snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t,
+                       t_len);
 
   // TODO: generate auth-mac
   uint8_t *serialized = NULL;
@@ -230,7 +231,8 @@ void test_dake_non_interactive_auth_message_serializes(
 
   uint8_t serialized_a[DH3072_MOD_LEN_BYTES] = {0};
   size_t mpi_len = 0;
-  otr4_err_t err = dh_mpi_serialize(serialized_a, DH3072_MOD_LEN_BYTES, &mpi_len, msg->A);
+  otr4_err_t err =
+      dh_mpi_serialize(serialized_a, DH3072_MOD_LEN_BYTES, &mpi_len, msg->A);
   otrv4_assert(!err);
 
   // Skip first 4 because they are the size (mpi_len)
@@ -268,7 +270,8 @@ void test_dake_non_interactive_auth_message_deserializes(
   // TODO: correctly generate this sigma
   unsigned char *t = NULL;
   size_t t_len = 0;
-  snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t, t_len);
+  snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t,
+                       t_len);
 
   memset(msg->auth_mac, 0, HASH_BYTES);
 
