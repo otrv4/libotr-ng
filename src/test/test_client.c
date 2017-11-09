@@ -8,11 +8,6 @@
 #include "../serialize.h"
 #include "../shake.h"
 
-#define ALICE_IDENTITY "alice@otr.example"
-#define BOB_IDENTITY "bob@otr.example"
-#define CHARLIE_IDENTITY "charlie@otr.example"
-#define FORCE_CREATE_CONVO true
-
 static otr4_client_t *set_up_client(otr4_client_state_t *state,
                                     char *account_name,
                                     uint8_t sym_value) {

@@ -69,8 +69,8 @@ void test_api_conversation(void) {
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
   bob_state->pad = true;
 
-  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
-  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -180,8 +180,8 @@ void test_dh_key_rotation(void) {
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
-  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
-  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -432,8 +432,8 @@ void test_api_smp(void) {
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
-  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
-  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
@@ -517,8 +517,8 @@ void test_api_smp_abort(void) {
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
-  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
-  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
@@ -584,8 +584,8 @@ void test_api_extra_sym_key(void) {
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
   bob_state->pad = false;
 
-  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
-  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -673,9 +673,9 @@ void test_api_multiple_clients(void) {
   // The account name should be the same. The account can be logged
   // on different clients. Instance tags are used for that. This
   // account name can be used as phi.
-  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
-  otrv4_t *bob_phone = set_up_otr(bob_phone_state, "bob@protocol", 2);
-  otrv4_t *bob_pc = set_up_otr(bob_pc_state, "bob@protocol", 3);
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, 1);
+  otrv4_t *bob_phone = set_up_otr(bob_phone_state, BOB_IDENTITY, 2);
+  otrv4_t *bob_pc = set_up_otr(bob_pc_state, BOB_IDENTITY, 3);
 
   otrv4_response_t *pc_to_alice = otrv4_response_new();
   otrv4_response_t *phone_to_alice = otrv4_response_new();
@@ -794,8 +794,8 @@ void test_ecdh_priv_keys_destroyed_early() {
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
-  otrv4_t *alice = set_up_otr(alice_state, "alice@protocol", 1);
-  otrv4_t *bob = set_up_otr(bob_state, "bob@protocol", 2);
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, 2);
 
   // DAKE has finished
   do_dake_fixture(alice, bob);

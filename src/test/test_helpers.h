@@ -7,6 +7,11 @@
 #include "../debug.h"
 #include "../str.h"
 
+#define ALICE_IDENTITY "alice@otr.example"
+#define BOB_IDENTITY "bob@otr.example"
+#define CHARLIE_IDENTITY "charlie@otr.example"
+#define FORCE_CREATE_CONVO true
+
 #define WITH_FIXTURE(_p, _c, _t, _f)                                           \
   do {                                                                         \
     g_test_add(_p, _t, NULL, _f##_setup, _c, _f##_teardown);                   \
