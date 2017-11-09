@@ -807,23 +807,18 @@ static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
     return OTR4_ERROR;
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
-  otr4_err_t err = snizkpk_authenticate(
-      msg->sigma, otr->conversation->client->keypair, /* g^R and R */
-      otr->their_profile->pub_key,                    /* g^I */
-      THEIR_ECDH(otr),                                /* g^i -- Y */
-      t, t_len);
-
-  if (err) {
-    free(t);
-    t = NULL;
-    dake_auth_r_destroy(msg);
-    return OTR4_ERROR;
-  }
+  snizkpk_authenticate(msg->sigma,
+                       otr->conversation->client->keypair, /* g^R and R */
+                       otr->their_profile->pub_key,        /* g^I */
+                       THEIR_ECDH(otr),                    /* g^i -- Y */
+                       t, t_len);
 
   free(t);
   t = NULL;
-  err = serialize_and_encode_auth_r(dst, msg);
+
+  otr4_err_t err = serialize_and_encode_auth_r(dst, msg);
   dake_auth_r_destroy(msg);
+
   return err;
 }
 
@@ -910,27 +905,23 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst, otrv4_t *otr) {
     return OTR4_ERROR;
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
-  otr4_err_t err = snizkpk_authenticate(
-      msg->sigma, otr->conversation->client->keypair, /* g^R and R */
-      otr->their_profile->pub_key,                    /* g^I */
-      THEIR_ECDH(otr),                                /* g^i -- Y */
-      t, t_len);
-
-  if (err) {
-    free(t);
-    t = NULL;
-    dake_non_interactive_auth_message_destroy(msg);
-    return OTR4_ERROR;
-  }
+  snizkpk_authenticate(msg->sigma,
+                       otr->conversation->client->keypair, /* g^R and R */
+                       otr->their_profile->pub_key,        /* g^I */
+                       THEIR_ECDH(otr),                    /* g^i -- Y */
+                       t, t_len);
 
   /* Auth MAC = KDF_2(auth_mac_k || t) */
   shake_256_mac(msg->auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
 
   free(t);
   t = NULL;
-  err = serialize_and_encode_non_interactive_auth(dst, msg);
+
+  otr4_err_t err = serialize_and_encode_non_interactive_auth(dst, msg);
+
   dake_non_interactive_auth_message_destroy(msg);
-  return true;
+
+  return err;
 }
 
 static otr4_err_t receive_identity_message_on_state_start(
@@ -1053,17 +1044,14 @@ static otr4_err_t reply_with_auth_i_msg(string_t *dst,
                          THEIR_DH(otr), otr->conversation->client->phi))
     return OTR4_ERROR;
 
-  otr4_err_t err =
-      snizkpk_authenticate(msg->sigma, otr->conversation->client->keypair,
-                           their->pub_key, THEIR_ECDH(otr), t, t_len);
+  snizkpk_authenticate(msg->sigma, otr->conversation->client->keypair,
+                       their->pub_key, THEIR_ECDH(otr), t, t_len);
   free(t);
   t = NULL;
 
-  if (err == OTR4_ERROR)
-    return err;
-
-  err = serialize_and_encode_auth_i(dst, msg);
+  otr4_err_t err = serialize_and_encode_auth_i(dst, msg);
   dake_auth_i_destroy(msg);
+
   return err;
 }
 

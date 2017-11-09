@@ -31,11 +31,9 @@ const unsigned char prime_order_bytes_dup[ED448_SCALAR_BYTES] = {
     0x23, 0x78, 0xc2, 0x92, 0xab, 0x58, 0x44, 0xf3,
 };
 
-otr4_err_t snizkpk_authenticate(snizkpk_proof_t *dst,
-                                const snizkpk_keypair_t *pair1,
-                                const snizkpk_pubkey_t A2,
-                                const snizkpk_pubkey_t A3,
-                                const unsigned char *msg, size_t msglen) {
+void snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
+                          const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
+                          const unsigned char *msg, size_t msglen) {
 
   decaf_shake256_ctx_t hd;
   uint8_t hash[HASH_BYTES];
@@ -91,8 +89,6 @@ otr4_err_t snizkpk_authenticate(snizkpk_proof_t *dst,
 
   decaf_448_scalar_mul(c1a1, dst->c1, pair1->priv);
   decaf_448_scalar_sub(dst->r1, t1, c1a1);
-
-  return OTR4_SUCCESS;
 }
 
 otr4_err_t snizkpk_verify(const snizkpk_proof_t *src, const snizkpk_pubkey_t A1,

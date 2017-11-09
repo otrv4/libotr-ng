@@ -23,11 +23,9 @@ typedef struct {
 
 void snizkpk_keypair_generate(snizkpk_keypair_t *pair);
 
-otr4_err_t snizkpk_authenticate(snizkpk_proof_t *dst,
-                                const snizkpk_keypair_t *pair1,
-                                const snizkpk_pubkey_t A2,
-                                const snizkpk_pubkey_t A3,
-                                const unsigned char *msg, size_t msglen);
+void snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
+                          const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
+                          const unsigned char *msg, size_t msglen);
 
 otr4_err_t snizkpk_verify(const snizkpk_proof_t *src, const snizkpk_pubkey_t A1,
                           const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,

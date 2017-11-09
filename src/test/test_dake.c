@@ -15,15 +15,14 @@ void test_snizkpk_auth() {
   snizkpk_keypair_generate(pair2);
   snizkpk_keypair_generate(pair3);
 
-  otrv4_assert(snizkpk_authenticate(dst, pair1, pair2->pub, pair3->pub,
-                                    (unsigned char *)msg,
-                                    strlen(msg)) == OTR4_SUCCESS);
+  snizkpk_authenticate(dst, pair1, pair2->pub, pair3->pub, (unsigned char *)msg,
+                       strlen(msg));
 
   otrv4_assert(snizkpk_verify(dst, pair1->pub, pair2->pub, pair3->pub,
                               (unsigned char *)msg,
                               strlen(msg)) == OTR4_SUCCESS);
 
-  // Now lets serialize and deserialize things.
+  // Serialize and deserialize things.
   otrv4_keypair_t p1[1], p2[1], p3[1];
   uint8_t sym1[ED448_PRIVATE_BYTES] = {1}, sym2[ED448_PRIVATE_BYTES] = {2},
           sym3[ED448_PRIVATE_BYTES] = {3};
@@ -33,15 +32,14 @@ void test_snizkpk_auth() {
   otrv4_keypair_generate(p3, sym3);
 
   snizkpk_proof_t dst2[1];
-  otrv4_assert(snizkpk_authenticate(dst2, p1, p2->pub, p3->pub,
-                                    (unsigned char *)msg,
-                                    strlen(msg)) == OTR4_SUCCESS);
+  snizkpk_authenticate(dst2, p1, p2->pub, p3->pub, (unsigned char *)msg, strlen(msg));
 
   otrv4_assert(snizkpk_verify(dst2, p1->pub, p2->pub, p3->pub,
                               (unsigned char *)msg,
                               strlen(msg)) == OTR4_SUCCESS);
 }
 
+// TODO: remove me when the time comes
 void test_non_interactive_auth_snizkpk() {
   OTR4_INIT;
 
