@@ -4,53 +4,63 @@
 
 
 ## Build
-Before you try to build libotrv4 verify you have installed:
+Before you try to build libotrv4, verify you have installed:
 * autoconf - https://www.gnu.org/software/autoconf/autoconf.html
 * splint - http://splint.org/documentation
 * valgrind - http://valgrind.org/
 
-Then you should install the following dependencies
+Then, install the following dependencies:
 * libglib2.0-dev
 * libdecaf
 * libsodium-dev
 * libotr 4.x
 * libgcrypt 1.8.0 or newer
 
-Generate project configuration
+To generate project configuration:
 ```
 $ autoreconf --install
 ```
 
-Configure project
+To configure the project:
 ```
 $ ./configure
 ```
 
-Build and install
+To build and install:
 ```
 $ make && make install
 ```
 
-Run tests
+To run the tests:
 ```
 $ make test
 ```
 
 ## Configure library with other options
 
-Configure project with debug option with `gdb`
+To configure the project with debug option using `gdb`:
 ```
 $ ./configure CFLAGS="-g -ggdb3 -O0" CXXFLAGS="-g -ggdb3 -O0" LDFLAGS="-g -ggdb3" --disable-shared
 $ gdb [path/test/executable]
 ```
 
-Configure project with debug option with `lldb`
+To configure project with debug option using `lldb`:
 ```
 $ ./configure CFLAGS="-g -ggdb3 -O0" CXXFLAGS="-g -ggdb3 -O0" LDFLAGS="-g -ggdb3" --disable-shared
 $ lldb [path/test/executable]
 ```
 
-Configure project with code-coverage option
+To configure project with debug option:
+```
+$ ./configure --enable-debug
+```
+
+To configure project with code-coverage option:
+
+Install:
+* lcov
+* genhtml
+
 ```
 $ ./configure --enable-code-coverage
 ```
