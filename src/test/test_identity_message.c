@@ -95,7 +95,7 @@ void test_dake_identity_message_deserializes(identity_message_fixture_t *f,
 
   dake_identity_message_t *deserialized =
       malloc(sizeof(dake_identity_message_t));
-  memset(deserialized, 0, sizeof(dake_identity_message_t));
+
   otrv4_assert(dake_identity_message_deserialize(
                    deserialized, serialized, serialized_len) == OTR4_SUCCESS);
 

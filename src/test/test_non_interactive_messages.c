@@ -91,7 +91,6 @@ void test_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
                                             prekey_message) == OTR4_SUCCESS);
 
   dake_prekey_message_t *deserialized = malloc(sizeof(dake_prekey_message_t));
-  memset(deserialized, 0, sizeof(dake_prekey_message_t));
   otrv4_assert(dake_prekey_message_deserialize(deserialized, serialized,
                                                serialized_len) == OTR4_SUCCESS);
 
@@ -285,7 +284,6 @@ void test_dake_non_interactive_auth_message_deserializes(
   free(t);
 
   dake_non_interactive_auth_message_t deserialized[1];
-  memset(deserialized, 0, sizeof(dake_non_interactive_auth_message_t));
   otrv4_assert(dake_non_interactive_auth_message_deserialize(
                    deserialized, serialized, len) == OTR4_SUCCESS);
 
