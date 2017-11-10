@@ -776,8 +776,8 @@ void test_api_multiple_clients(void) {
                             alice->keys->current->chain_b->key);
 
   otrv4_response_free_all(phone_to_alice, alice_to_phone);
-  otrv4_userstate_free_all(alice_state->userstate,
-                           bob_phone_state->userstate, bob_pc_state->userstate);
+  otrv4_userstate_free_all(alice_state->userstate, bob_phone_state->userstate,
+                           bob_pc_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_pc_state, bob_phone_state);
   otrv4_free_all(alice, bob_pc, bob_phone);
 

@@ -11,7 +11,7 @@
 static otr4_client_t *set_up_client(otr4_client_state_t *state,
                                     char *account_name, char *phi,
                                     uint8_t byte) {
-  set_up_client_state(state, account_name, PHI, byte);
+  set_up_client_state(state, account_name, phi, byte);
   otr4_client_t *dst = otr4_client_new(state);
 
   return dst;

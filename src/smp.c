@@ -228,7 +228,7 @@ otr4_err_t smp_msg_1_valid_points(smp_msg_1_t *msg) {
   return ec_point_valid(msg->G2a) && ec_point_valid(msg->G3a);
 }
 
-otr4_err_t smp_msg_1_valid_zkp(smp_msg_1_t *msg, const smp_context_t smp) {
+otr4_err_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
   uint8_t hash[ED448_POINT_BYTES + 1];
   ec_scalar_t temp_scalar;
   ec_point_t Ga_c, G_d;
@@ -911,7 +911,7 @@ static otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp) {
     if (smp_msg_1_valid_points(msg_1) == OTR4_ERROR)
       continue;
 
-    if (smp_msg_1_valid_zkp(msg_1, smp) == OTR4_ERROR)
+    if (smp_msg_1_valid_zkp(msg_1) == OTR4_ERROR)
       continue;
 
     smp->msg1 = malloc(sizeof(smp_msg_1_t));

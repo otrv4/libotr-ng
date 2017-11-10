@@ -113,13 +113,17 @@
 
 #define otrv4_free_all(...) Fn_apply(void, otrv4_free, __VA_ARGS__);
 
-#define otrv4_response_free_all(...) Fn_apply(void, otrv4_response_free, __VA_ARGS__);
+#define otrv4_response_free_all(...)                                           \
+  Fn_apply(void, otrv4_response_free, __VA_ARGS__);
 
-#define otrv4_userstate_free_all(...) Fn_apply(void, otrl_userstate_free, __VA_ARGS__);
+#define otrv4_userstate_free_all(...)                                          \
+  Fn_apply(void, otrl_userstate_free, __VA_ARGS__);
 
-#define otrv4_client_state_free_all(...) Fn_apply(void, otr4_client_state_free, __VA_ARGS__);
+#define otrv4_client_state_free_all(...)                                       \
+  Fn_apply(void, otr4_client_state_free, __VA_ARGS__);
 
-#define otrv4_client_free_all(...) Fn_apply(void, otr4_client_free, __VA_ARGS__);
+#define otrv4_client_free_all(...)                                             \
+  Fn_apply(void, otr4_client_free, __VA_ARGS__);
 
 static inline void otrv4_assert_point_equals(const ec_point_t expected,
                                              const ec_point_t actual) {

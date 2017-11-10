@@ -105,7 +105,7 @@ static void received_symkey_cb(const otr4_conversation_state_t *conv,
                                unsigned int use, const unsigned char *usedata,
                                size_t usedatalen,
                                const unsigned char *extra_key) {
- #ifdef DEBUG
+#ifdef DEBUG
   printf("Received symkey use: %08x\n", use);
   printf("Usedata lenght: %zu\n", usedatalen);
   printf("Usedata: ");
@@ -296,7 +296,6 @@ static void set_to_display(otrv4_response_t *response, const string_t message) {
 
 static otr4_err_t message_to_display_without_tag(otrv4_response_t *response,
                                                  const string_t message,
-                                                 const char *tag_version,
                                                  size_t msg_len) {
   size_t tag_length = WHITESPACE_TAG_BASE_BYTES + WHITESPACE_TAG_VERSION_BYTES;
   size_t chars = msg_len - tag_length;
@@ -507,8 +506,7 @@ static otr4_err_t receive_tagged_plaintext(otrv4_response_t *response,
 
   switch (otr->running_version) {
   case OTRV4_VERSION_4:
-    if (message_to_display_without_tag(response, message, tag_version_v4,
-                                       strlen(message))) {
+    if (message_to_display_without_tag(response, message, strlen(message))) {
       return OTR4_ERROR;
     }
     dh_priv_key_destroy(otr->keys->our_dh);
@@ -1144,8 +1142,8 @@ static bool valid_auth_i_message(const dake_auth_i_t *auth, otrv4_t *otr) {
   return err == OTR4_SUCCESS;
 }
 
-static otr4_err_t receive_auth_i(string_t *dst, const uint8_t *buff,
-                                 size_t buff_len, otrv4_t *otr) {
+static otr4_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
+                                 otrv4_t *otr) {
   if (otr->state != OTRV4_STATE_WAITING_AUTH_I)
     return OTR4_SUCCESS; // Ignore the message
 
@@ -1269,7 +1267,7 @@ static tlv_t *otrv4_process_smp(otr4_smp_event_t event, smp_context_t smp,
   return to_send;
 }
 
-static unsigned int extract_word(unsigned char *bufp, size_t len) {
+static unsigned int extract_word(unsigned char *bufp) {
   unsigned int use =
       (bufp[0] << 24) | (bufp[1] << 16) | (bufp[2] << 8) | bufp[3];
   return use;
@@ -1293,7 +1291,7 @@ static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
 
   if (tlv->type == OTRV4_TLV_SYM_KEY && tlv->len >= 4) {
     if (otr->keys->extra_key > 0) {
-      unsigned int use = extract_word(tlv->data, tlv->len);
+      unsigned int use = extract_word(tlv->data);
 
       received_symkey_cb(otr->conversation, use, tlv->data + 4, tlv->len - 4,
                          otr->keys->extra_key);
@@ -1466,7 +1464,7 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
     }
     return err;
   case OTR_AUTH_I_MSG_TYPE:
-    return receive_auth_i(&response->to_send, decoded, dec_len, otr);
+    return receive_auth_i(decoded, dec_len, otr);
   case OTR_DATA_MSG_TYPE:
     return otrv4_receive_data_message(response, decoded, dec_len, otr);
   default:
@@ -1826,10 +1824,11 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
   return OTR4_ERROR;
 }
 
-static otr4_err_t
-otrv4_send_symkey_message_v4(string_t *to_send, unsigned int use,
-                             const unsigned char *usedata, size_t usedatalen,
-                             const unsigned char *extra_key, otrv4_t *otr) {
+static otr4_err_t otrv4_send_symkey_message_v4(string_t *to_send,
+                                               unsigned int use,
+                                               const unsigned char *usedata,
+                                               size_t usedatalen,
+                                               otrv4_t *otr) {
   if (usedatalen > 0 && !usedata) {
     return OTR4_ERROR;
   }
@@ -1873,8 +1872,7 @@ otr4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
                                           // callback
     return OTR4_SUCCESS;
   case OTRV4_VERSION_4:
-    return otrv4_send_symkey_message_v4(to_send, use, usedata, usedatalen,
-                                        extra_key, otr);
+    return otrv4_send_symkey_message_v4(to_send, use, usedata, usedatalen, otr);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }
