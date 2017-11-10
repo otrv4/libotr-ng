@@ -11,7 +11,8 @@ AM_SILENT_RULES([no])
 # Debug
 AX_CHECK_ENABLE_DEBUG([yes])
 
-AM_INIT_AUTOMAKE([-Wall -W -Werror foreign subdir-objects])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
+#AM_INIT_AUTOMAKE([-Wall -W -Werror foreign subdir-objects]) # Use this to allow Wextra flag
 AM_PROG_AR
 LT_INIT
 
@@ -52,6 +53,7 @@ AC_TYPE_UINT8_T
 AC_PROG_CC_STDC
 
 AX_CFLAGS_GCC_OPTION([-Wall])
+# AX_CFLAGS_GCC_OPTION([-W]) Uncomment this to allow Wextra flag
 AX_CFLAGS_GCC_OPTION([-Werror])
 AX_CFLAGS_GCC_OPTION([-Wfatal-errors])
 
