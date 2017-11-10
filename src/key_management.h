@@ -102,17 +102,17 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
                                                const key_manager_t *manager);
 
 void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
-                             const brace_key_t brace_key);
+                             const chain_key_t chain_key);
 
 otr4_err_t
 key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
                                             m_mac_key_t mac_key, int message_id,
-                                            const key_manager_t *manager);
+                                            key_manager_t *manager);
 
 otr4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager);
 
 otr4_err_t key_manager_retrieve_sending_message_keys(
-    m_enc_key_t enc_key, m_mac_key_t mac_key, const key_manager_t *manager);
+    m_enc_key_t enc_key, m_mac_key_t mac_key, key_manager_t *manager);
 uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys);
 
 #endif

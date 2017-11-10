@@ -340,12 +340,12 @@ static void calculate_ssid(key_manager_t *manager,
 }
 
 static void calculate_extra_key(key_manager_t *manager,
-                                const shared_secret_t shared) {
+                                const chain_key_t chain_key) {
   uint8_t magic[1] = {0xFF};
   uint8_t extra_key_buff[HASH_BYTES];
 
-  shake_256_kdf(extra_key_buff, HASH_BYTES, magic, shared,
-                sizeof(shared_secret_t));
+  shake_256_kdf(extra_key_buff, HASH_BYTES, magic, chain_key,
+                sizeof(chain_key_t));
 
   memcpy(manager->extra_key, extra_key_buff, sizeof manager->extra_key);
 }
@@ -388,7 +388,6 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
 #endif
 
   calculate_ssid(manager, shared);
-  calculate_extra_key(manager, shared);
 
   if (key_manager_new_ratchet(manager, shared) == OTR4_ERROR) {
     sodium_memzero(shared, SHARED_SECRET_BYTES);
@@ -452,7 +451,7 @@ static void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
 otr4_err_t
 key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
                                             m_mac_key_t mac_key, int message_id,
-                                            const key_manager_t *manager) {
+                                            key_manager_t *manager) {
   chain_key_t receiving;
 
   if (key_manager_get_receiving_chain_key(receiving, message_id, manager) ==
@@ -460,6 +459,7 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
     return OTR4_ERROR;
 
   derive_encryption_and_mac_keys(enc_key, mac_key, receiving);
+  calculate_extra_key(manager, receiving);
 
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
@@ -488,11 +488,12 @@ otr4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager) {
 }
 
 otr4_err_t key_manager_retrieve_sending_message_keys(
-    m_enc_key_t enc_key, m_mac_key_t mac_key, const key_manager_t *manager) {
+    m_enc_key_t enc_key, m_mac_key_t mac_key, key_manager_t *manager) {
   chain_key_t sending;
   int message_id = key_manager_get_sending_chain_key(sending, manager);
 
   derive_encryption_and_mac_keys(enc_key, mac_key, sending);
+  calculate_extra_key(manager, sending);
 
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
