@@ -103,7 +103,7 @@
     otrv4_assert_cmpmem(ck1, ck2, sizeof(chain_key_t));                        \
   } while (0)
 
-#define Fn_apply(type, fn, ...)                                                \
+#define fn_apply(type, fn, ...)                                                \
   {                                                                            \
     void *stopper_for_apply = (int[]){0};                                      \
     type **list_for_apply = (type *[]){__VA_ARGS__, stopper_for_apply};        \
@@ -111,19 +111,19 @@
       fn(list_for_apply[i]);                                                   \
   }
 
-#define otrv4_free_all(...) Fn_apply(void, otrv4_free, __VA_ARGS__);
+#define otrv4_free_all(...) fn_apply(void, otrv4_free, __VA_ARGS__);
 
 #define otrv4_response_free_all(...)                                           \
-  Fn_apply(void, otrv4_response_free, __VA_ARGS__);
+  fn_apply(void, otrv4_response_free, __VA_ARGS__);
 
 #define otrv4_userstate_free_all(...)                                          \
-  Fn_apply(void, otrl_userstate_free, __VA_ARGS__);
+  fn_apply(void, otrl_userstate_free, __VA_ARGS__);
 
 #define otrv4_client_state_free_all(...)                                       \
-  Fn_apply(void, otr4_client_state_free, __VA_ARGS__);
+  fn_apply(void, otr4_client_state_free, __VA_ARGS__);
 
 #define otrv4_client_free_all(...)                                             \
-  Fn_apply(void, otr4_client_free, __VA_ARGS__);
+  fn_apply(void, otr4_client_free, __VA_ARGS__);
 
 static inline void otrv4_assert_point_equals(const ec_point_t expected,
                                              const ec_point_t actual) {
