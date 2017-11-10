@@ -1291,7 +1291,7 @@ static tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
 
   if (tlv->type == OTRV4_TLV_SYM_KEY && tlv->len >= 4) {
     if (otr->keys->extra_key > 0) {
-      unsigned int use = extract_word(tlv->data);
+      uint32_t use = extract_word(tlv->data);
 
       received_symkey_cb(otr->conversation, use, tlv->data + 4, tlv->len - 4,
                          otr->keys->extra_key);
