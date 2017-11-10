@@ -14,7 +14,7 @@ static inline char *_otrv4_memdump(const uint8_t *src, size_t len) {
   size_t s = len * 6 + len / 8 + 2;
   char *buff = malloc(s);
   char *cursor = buff;
-  int i = 0;
+  unsigned int i = 0;
 
   for (i = 0; i < len; i++) {
     if (i % 8 == 0) {
@@ -31,6 +31,7 @@ static inline void otrv4_memdump(const uint8_t *src, size_t len) {
   printf("%s\n", _otrv4_memdump(src, len));
 }
 #else
+// TODO: is this used?
 static inline void otrv4_memdump(const uint8_t *src, size_t len) {}
 #endif
 

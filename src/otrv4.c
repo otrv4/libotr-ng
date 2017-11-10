@@ -105,11 +105,11 @@ static void received_symkey_cb(const otr4_conversation_state_t *conv,
                                unsigned int use, const unsigned char *usedata,
                                size_t usedatalen,
                                const unsigned char *extra_key) {
-#ifdef DEBUG
+ #ifdef DEBUG
   printf("Received symkey use: %08x\n", use);
   printf("Usedata lenght: %zu\n", usedatalen);
   printf("Usedata: ");
-  for (int i = 0; i < usedatalen; i++) {
+  for (unsigned int i = 0; i < usedatalen; i++) {
     printf("%02x", usedata[i]);
   }
   printf("\n");

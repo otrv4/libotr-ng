@@ -523,7 +523,7 @@ uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys) {
     return NULL;
   }
 
-  for (int i = 0; i < num_mac_keys; i++) {
+  for (unsigned int i = 0; i < num_mac_keys; i++) {
     list_element_t *last = list_get_last(old_mac_keys);
     memcpy(ser_mac_keys + i * MAC_KEY_BYTES, last->data, MAC_KEY_BYTES);
     old_mac_keys = list_remove_element(last, old_mac_keys);

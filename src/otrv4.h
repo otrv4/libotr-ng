@@ -81,8 +81,8 @@ struct connection {
   otrv4_state state;
   int supported_versions;
 
-  int our_instance_tag;
-  int their_instance_tag;
+  uint32_t our_instance_tag;
+  uint32_t their_instance_tag;
 
   user_profile_t *profile;
   user_profile_t *their_profile;
