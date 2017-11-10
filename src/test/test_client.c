@@ -194,10 +194,10 @@ void test_client_api() {
   otrv4_assert(!todisplay);
 
   // Free memory
-  otrv4_userstate_free_all(3, alice_state->userstate, bob_state->userstate,
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate,
                            charlie_state->userstate);
-  otrv4_client_state_free_all(3, alice_state, bob_state, charlie_state);
-  otrv4_client_free_all(3, alice, bob, charlie);
+  otrv4_client_state_free_all(alice_state, bob_state, charlie_state);
+  otrv4_client_free_all(alice, bob, charlie);
 
   OTR4_FREE
 }
@@ -344,9 +344,9 @@ void test_conversation_with_multiple_locations() {
   frombob = NULL;
 
   // Free memory
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
-  otrv4_client_free_all(2, alice, bob);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_client_free_all(alice, bob);
 
   OTR4_FREE
 }
@@ -480,9 +480,9 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrv4_assert(!todisplay);
 
   // Free memory
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
-  otrv4_client_free_all(2, alice, bob);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_client_free_all(alice, bob);
 
   OTR4_FREE
 }
@@ -597,9 +597,9 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   alice_last = NULL;
 
   // Free memory
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
-  otrv4_client_free_all(2, alice, bob);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_client_free_all(alice, bob);
 
   OTR4_FREE
 }
@@ -773,9 +773,9 @@ void test_valid_identity_msg_in_waiting_auth_r() {
     otrv4_assert(!todisplay);
   }
   // Free memory
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
-  otrv4_client_free_all(2, alice, bob);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_client_free_all(alice, bob);
 
   OTR4_FREE
 }
@@ -884,9 +884,9 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   bob_last = NULL;
 
   // Free memory
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
-  otrv4_client_free_all(2, alice, bob);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_client_free_all(alice, bob);
 
   OTR4_FREE
 }
@@ -979,9 +979,9 @@ void test_client_sends_fragmented_message(void) {
 
   free(todisplay);
   otr4_message_free(to_send);
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
-  otrv4_client_free_all(2, alice, bob);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_client_free_all(alice, bob);
 
   OTR4_FREE;
 }

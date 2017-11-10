@@ -113,46 +113,15 @@
 
 #define otrv4_free_all(...) Fn_apply(void, otrv4_free, __VA_ARGS__);
 
+#define otrv4_response_free_all(...) Fn_apply(void, otrv4_response_free, __VA_ARGS__);
+
+#define otrv4_userstate_free_all(...) Fn_apply(void, otrl_userstate_free, __VA_ARGS__);
+
+#define otrv4_client_state_free_all(...) Fn_apply(void, otr4_client_state_free, __VA_ARGS__);
+
+#define otrv4_client_free_all(...) Fn_apply(void, otr4_client_free, __VA_ARGS__);
+
 static inline void otrv4_assert_point_equals(const ec_point_t expected,
                                              const ec_point_t actual) {
   g_assert_cmpint(decaf_448_point_eq(expected, actual), !=, 0);
-}
-
-// Free all functions
-
-// TODO: should this take __cdecl?
-static void otrv4_response_free_all(int num, ...) {
-  va_list args;
-  va_start(args, num);
-  for (int i = 0; i < num; i++) {
-    otrv4_response_free(va_arg(args, otrv4_response_t *));
-  }
-  va_end(args);
-}
-
-static void otrv4_userstate_free_all(int num, ...) {
-  va_list args;
-  va_start(args, num);
-  for (int i = 0; i < num; i++) {
-    otrl_userstate_free(va_arg(args, OtrlUserState));
-  }
-  va_end(args);
-}
-
-static void otrv4_client_state_free_all(int num, ...) {
-  va_list args;
-  va_start(args, num);
-  for (int i = 0; i < num; i++) {
-    otr4_client_state_free(va_arg(args, otr4_client_state_t *));
-  }
-  va_end(args);
-}
-
-static void otrv4_client_free_all(int num, ...) {
-  va_list args;
-  va_start(args, num);
-  for (int i = 0; i < num; i++) {
-    otr4_client_free(va_arg(args, otr4_client_t *));
-  }
-  va_end(args);
 }

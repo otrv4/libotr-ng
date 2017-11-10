@@ -168,8 +168,8 @@ void test_api_conversation(void) {
 
   free_message_and_response(response_to_bob, to_send);
 
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
 
   otrv4_free_all(alice, bob);
 
@@ -259,8 +259,8 @@ void test_dh_key_rotation(void) {
     }
   }
 
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
   otrv4_tlv_free(tlv);
 
@@ -340,7 +340,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   // Alice should be encrypted
   g_assert_cmpint(OTRL_MSGSTATE_ENCRYPTED, ==, bob->otr3_conn->ctx->msgstate);
 
-  otrv4_response_free_all(2, response_to_alice, response_to_bob);
+  otrv4_response_free_all(response_to_alice, response_to_bob);
 }
 
 void test_api_conversation_v3(void) {
@@ -418,9 +418,9 @@ void test_api_conversation_v3(void) {
   otrv4_assert(!response_to_bob->to_send);
   free_message_and_response(response_to_bob, to_send);
 
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_free_all(alice, bob);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_client_state_free_all(alice_state, bob_state);
 
   otrv4_tlv_free(tlv);
 
@@ -504,8 +504,8 @@ void test_api_smp(void) {
   otrv4_response_free(response_to_bob);
   response_to_bob = NULL;
 
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
   OTR4_FREE;
@@ -566,8 +566,8 @@ void test_api_smp_abort(void) {
   free_message_and_response(response_to_bob, to_send);
 
   // TODO: Alice can restart here the smp. This will mem leak though
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
   OTR4_FREE;
@@ -645,8 +645,8 @@ void test_api_extra_sym_key(void) {
 
   free_message_and_response(response_to_bob, to_send);
 
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
   otrv4_tlv_free(tlv);
@@ -775,10 +775,10 @@ void test_api_multiple_clients(void) {
   otrv4_assert_chain_key_eq(bob_phone->keys->current->chain_b->key,
                             alice->keys->current->chain_b->key);
 
-  otrv4_response_free_all(2, phone_to_alice, alice_to_phone);
-  otrv4_userstate_free_all(3, alice_state->userstate,
+  otrv4_response_free_all(phone_to_alice, alice_to_phone);
+  otrv4_userstate_free_all(alice_state->userstate,
                            bob_phone_state->userstate, bob_pc_state->userstate);
-  otrv4_client_state_free_all(3, alice_state, bob_pc_state, bob_phone_state);
+  otrv4_client_state_free_all(alice_state, bob_pc_state, bob_phone_state);
   otrv4_free_all(alice, bob_pc, bob_phone);
 
   OTR4_FREE;
@@ -873,8 +873,8 @@ void test_ecdh_priv_keys_destroyed_early() {
   // Bob should delete ECDH priv key
   otrv4_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
-  otrv4_userstate_free_all(2, alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(2, alice_state, bob_state);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
   OTR4_FREE;
