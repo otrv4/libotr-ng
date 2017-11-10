@@ -1827,8 +1827,8 @@ otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
 static otr4_err_t otrv4_send_symkey_message_v4(string_t *to_send,
                                                unsigned int use,
                                                const unsigned char *usedata,
-                                               size_t usedatalen,
-                                               otrv4_t *otr) {
+                                               size_t usedatalen, otrv4_t *otr,
+                                               unsigned char *extra_key) {
   if (usedatalen > 0 && !usedata) {
     return OTR4_ERROR;
   }
@@ -1847,6 +1847,10 @@ static otr4_err_t otrv4_send_symkey_message_v4(string_t *to_send,
     tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SYM_KEY, usedatalen + 4, tlv_data);
     free(tlv_data);
 
+    memmove(extra_key, otr->keys->extra_key, HASH_BYTES);
+
+    // TODO: in otrv3 the extra_key is passed as a param to this
+    // do the same?
     if (otrv4_prepare_to_send_message(to_send, "", tlv, otr)) {
       otrv4_tlv_free(tlv);
       return OTR4_ERROR;
@@ -1860,7 +1864,7 @@ static otr4_err_t otrv4_send_symkey_message_v4(string_t *to_send,
 otr4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
                                      const unsigned char *usedata,
                                      size_t usedatalen,
-                                     unsigned char *extra_key, otrv4_t *otr) {
+                                      uint8_t *extra_key, otrv4_t *otr) {
   if (!otr)
     return OTR4_ERROR;
 
@@ -1872,7 +1876,8 @@ otr4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
                                           // callback
     return OTR4_SUCCESS;
   case OTRV4_VERSION_4:
-    return otrv4_send_symkey_message_v4(to_send, use, usedata, usedatalen, otr);
+    return otrv4_send_symkey_message_v4(to_send, use, usedata, usedatalen, otr,
+                                        extra_key);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }
