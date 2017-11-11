@@ -1116,9 +1116,6 @@ static otr4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
 
   dake_auth_r_destroy(auth);
 
-  // TODO: this should be done here
-  //calculate_ssid(otr->keys->manager, shared);
-
   otrv4_fingerprint_t fp;
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
     fingerprint_seen_cb(fp, otr->conversation);
@@ -1165,9 +1162,6 @@ static otr4_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
   }
 
   dake_auth_i_destroy(auth);
-
-  // TODO: this should be done here
-  //calculate_ssid(otr->keys->manager, shared);
 
   otrv4_fingerprint_t fp;
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))

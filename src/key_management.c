@@ -387,6 +387,36 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   otrv4_memdump(manager->brace_key, sizeof(brace_key_t));
 #endif
 
+  if (key_manager_new_ratchet(manager, shared) == OTR4_ERROR) {
+    sodium_memzero(shared, SHARED_SECRET_BYTES);
+    sodium_memzero(manager->ssid, sizeof(manager->ssid));
+    sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
+    return OTR4_ERROR;
+  }
+
+  sodium_memzero(shared, SHARED_SECRET_BYTES);
+  return OTR4_SUCCESS;
+}
+
+static otr4_err_t init_ratchet(key_manager_t *manager) {
+  k_ecdh_t k_ecdh;
+  shared_secret_t shared;
+
+  ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
+
+  if (calculate_brace_key(manager) == OTR4_ERROR)
+    return OTR4_ERROR;
+
+  calculate_shared_secret(shared, k_ecdh, manager->brace_key);
+
+#ifdef DEBUG
+  printf("ENTERING NEW RATCHET\n");
+  printf("K_ecdh = ");
+  otrv4_memdump(k_ecdh, sizeof(k_ecdh_t));
+  printf("mixed_key = ");
+  otrv4_memdump(manager->brace_key, sizeof(brace_key_t));
+#endif
+
   calculate_ssid(manager, shared);
 
   if (key_manager_new_ratchet(manager, shared) == OTR4_ERROR) {
@@ -401,7 +431,7 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
 }
 
 otr4_err_t key_manager_ratcheting_init(int j, key_manager_t *manager) {
-  if (enter_new_ratchet(manager))
+  if (init_ratchet(manager))
     return OTR4_ERROR;
 
   manager->i = 0;
