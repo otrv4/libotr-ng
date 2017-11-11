@@ -65,6 +65,9 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
   memset(manager->their_ecdh, 0, ED448_POINT_BYTES);
   manager->their_dh = NULL;
 
+  memset(manager->their_shared_prekey, 0, ED448_POINT_BYTES);
+  memset(manager->our_shared_prekey, 0, ED448_POINT_BYTES);
+
   manager->i = 0;
   manager->j = 0;
 
@@ -89,6 +92,9 @@ void key_manager_destroy(key_manager_t *manager) {
 
   ratchet_free(manager->current);
   manager->current = NULL;
+
+  sodium_memzero(manager->their_shared_prekey, ED448_POINT_BYTES);
+  sodium_memzero(manager->our_shared_prekey, ED448_POINT_BYTES);
 
   sodium_memzero(manager->brace_key, sizeof(manager->brace_key));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));

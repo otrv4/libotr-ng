@@ -222,8 +222,8 @@ void otrv4_free(/*@only@ */ otrv4_t *otr) {
 
 otr4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
                                      const otrv4_t *otr) {
-  // size = qm tag + versions + msg length + versions + question mark +
-  // whitespace + null byte
+  /* size = qm tag + versions + msg length + versions
+   * + question mark + whitespace + null byte */
   size_t qm_size = QUERY_MESSAGE_TAG_BYTES + 3 + strlen(message) + 2 + 1;
   string_t buff = NULL;
   char allowed[3] = {0};
@@ -830,7 +830,7 @@ static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
 
   // TODO: this needs these keys to be set
   ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
-                     otr->their_profile->shared_prekey);
+                     otr->keys->their_shared_prekey);
   ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh, THEIR_ECDH(otr));
 
   serialize_ec_point(ser_ecdh, OUR_ECDH(otr));
@@ -879,8 +879,11 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst, otrv4_t *otr) {
   ec_point_copy(msg->X, OUR_ECDH(otr));
   msg->A = dh_mpi_copy(OUR_DH(otr));
 
-  /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) || ECDH(x, Pkb) ||
-   * k_dh) */
+  memcpy(otr->keys->their_shared_prekey, otr->their_profile->shared_prekey,
+         sizeof(otrv4_shared_prekey_t));
+
+  /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) ||
+   * ECDH(x, Pkb) || k_dh) */
   if (generate_tmp_key(otr->keys->tmp_key, otr) == OTR4_ERROR) {
     return OTR4_ERROR;
   }
@@ -894,8 +897,8 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst, otrv4_t *otr) {
   unsigned char *t = NULL;
   size_t t_len = 0;
   // TODO: keep 192 bytes as nonce
-  // t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) || Y || X || B
-  // || A || our_shared_prekey.public
+  /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
+   * Y || X || B || A || our_shared_prekey.public */
   if (build_non_interactive_auth_message(
           &t, &t_len, otr->their_profile, get_my_user_profile(otr),
           THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
@@ -1081,7 +1084,7 @@ static bool valid_auth_r_message(const dake_auth_r_t *auth, otrv4_t *otr) {
 static otr4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
                                  size_t buff_len, otrv4_t *otr) {
   if (otr->state != OTRV4_STATE_WAITING_AUTH_R)
-    return OTR4_SUCCESS; // ignore the message
+    return OTR4_SUCCESS; /* ignore the message */
 
   dake_auth_r_t auth[1];
   if (dake_auth_r_deserialize(auth, buff, buff_len))
@@ -1145,7 +1148,7 @@ static bool valid_auth_i_message(const dake_auth_i_t *auth, otrv4_t *otr) {
 static otr4_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
                                  otrv4_t *otr) {
   if (otr->state != OTRV4_STATE_WAITING_AUTH_I)
-    return OTR4_SUCCESS; // Ignore the message
+    return OTR4_SUCCESS; /* Ignore the message */
 
   dake_auth_i_t auth[1];
   if (dake_auth_i_deserialize(auth, buff, buff_len))

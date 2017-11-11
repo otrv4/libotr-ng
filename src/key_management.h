@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "dh.h"
 #include "ed448.h"
+#include "keys.h"
 #include "list.h"
 
 typedef uint8_t k_dh_t[384];
@@ -28,7 +29,6 @@ typedef struct {
   chain_link_t chain_b[1];
 } ratchet_t;
 
-// TODO: add shared prekey
 typedef struct {
   /* AKE context */
   ecdh_keypair_t our_ecdh[1];
@@ -36,6 +36,9 @@ typedef struct {
 
   ec_point_t their_ecdh;
   dh_public_key_t their_dh;
+
+  otrv4_shared_prekey_t our_shared_prekey;
+  otrv4_shared_prekey_t their_shared_prekey;
 
   /* Data message context */
   int i, j; // TODO: We need to add k (maybe), but why dont we need to add a
