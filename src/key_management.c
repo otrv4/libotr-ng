@@ -419,6 +419,21 @@ static otr4_err_t init_ratchet(key_manager_t *manager) {
 
   calculate_ssid(manager, shared);
 
+#ifdef DEBUG
+  printf("THE SECURE SESSION ID\n");
+  printf("ssid: \n");
+  printf("the first 32 = ");
+  for (unsigned int i = 0; i < 4; i++) {
+    printf("0x%08x ", manager->ssid[i]);
+  }
+  printf("\n");
+  printf("the last 32 = ");
+  for (unsigned int i = 4; i < 8; i++) {
+    printf("0x%08x ", manager->ssid[i]);
+  }
+  printf("\n");
+#endif
+
   if (key_manager_new_ratchet(manager, shared) == OTR4_ERROR) {
     sodium_memzero(shared, SHARED_SECRET_BYTES);
     sodium_memzero(manager->ssid, sizeof(manager->ssid));

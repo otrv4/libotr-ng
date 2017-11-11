@@ -30,6 +30,7 @@ static inline char *_otrv4_memdump(const uint8_t *src, size_t len) {
 static inline void otrv4_memdump(const uint8_t *src, size_t len) {
   printf("%s\n", _otrv4_memdump(src, len));
 }
+
 #else
 // TODO: is this used?
 static inline void otrv4_memdump(const uint8_t *src, size_t len) {}
