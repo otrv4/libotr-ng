@@ -460,6 +460,9 @@ static otr4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
   }
 
   sodium_memzero(shared, SHARED_SECRET_BYTES);
+  /* tmp_k is no longer needed */
+  sodium_memzero(manager->tmp_key, HASH_BYTES);
+
   return OTR4_SUCCESS;
 }
 
