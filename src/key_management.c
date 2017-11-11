@@ -73,6 +73,7 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
   memset(manager->brace_key, 0, sizeof(manager->brace_key));
   memset(manager->ssid, 0, sizeof(manager->ssid));
   memset(manager->extra_key, 0, sizeof(manager->extra_key));
+  memset(manager->tmp_key, 0, sizeof(manager->tmp_key));
 
   manager->old_mac_keys = NULL;
 }
@@ -92,6 +93,7 @@ void key_manager_destroy(key_manager_t *manager) {
   sodium_memzero(manager->brace_key, sizeof(manager->brace_key));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
   sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
+  sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 
   list_element_t *el;
   for (el = manager->old_mac_keys; el; el = el->next) {
@@ -302,6 +304,7 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
   return OTR4_SUCCESS;
 }
 
+// TODO: change the name
 void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
                              const brace_key_t brace_key) {
   decaf_shake256_ctx_t hd;
@@ -309,6 +312,17 @@ void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
   hash_init_with_dom(hd);
   hash_update(hd, k_ecdh, sizeof(k_ecdh_t));
   hash_update(hd, brace_key, sizeof(brace_key_t));
+
+  hash_final(hd, dst, sizeof(shared_secret_t));
+  hash_destroy(hd);
+}
+
+void calculate_shared_secret_from_tmp_key(shared_secret_t dst,
+                                          const uint8_t *tmp_k) {
+  decaf_shake256_ctx_t hd;
+
+  hash_init_with_dom(hd);
+  hash_update(hd, tmp_k, HASH_BYTES);
 
   hash_final(hd, dst, sizeof(shared_secret_t));
   hash_destroy(hd);
@@ -398,7 +412,7 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t init_ratchet(key_manager_t *manager) {
+static otr4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
   k_ecdh_t k_ecdh;
   shared_secret_t shared;
 
@@ -407,7 +421,10 @@ static otr4_err_t init_ratchet(key_manager_t *manager) {
   if (calculate_brace_key(manager) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  calculate_shared_secret(shared, k_ecdh, manager->brace_key);
+  if (interactive)
+    calculate_shared_secret(shared, k_ecdh, manager->brace_key);
+  else
+    calculate_shared_secret_from_tmp_key(shared, manager->tmp_key);
 
 #ifdef DEBUG
   printf("ENTERING NEW RATCHET\n");
@@ -438,6 +455,7 @@ static otr4_err_t init_ratchet(key_manager_t *manager) {
     sodium_memzero(shared, SHARED_SECRET_BYTES);
     sodium_memzero(manager->ssid, sizeof(manager->ssid));
     sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
+    sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
     return OTR4_ERROR;
   }
 
@@ -445,8 +463,9 @@ static otr4_err_t init_ratchet(key_manager_t *manager) {
   return OTR4_SUCCESS;
 }
 
-otr4_err_t key_manager_ratcheting_init(int j, key_manager_t *manager) {
-  if (init_ratchet(manager))
+otr4_err_t key_manager_ratcheting_init(int j, bool interactive,
+                                       key_manager_t *manager) {
+  if (init_ratchet(manager, interactive))
     return OTR4_ERROR;
 
   manager->i = 0;
@@ -493,10 +512,10 @@ static void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
                 sizeof(chain_key_t));
 }
 
-otr4_err_t
-key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
-                                            m_mac_key_t mac_key, int message_id,
-                                            key_manager_t *manager) {
+otr4_err_t key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
+                                                       m_mac_key_t mac_key,
+                                                       int message_id,
+                                                       key_manager_t *manager) {
   chain_key_t receiving;
 
   if (key_manager_get_receiving_chain_key(receiving, message_id, manager) ==
@@ -532,8 +551,9 @@ otr4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager) {
   return derive_sending_chain_key(manager);
 }
 
-otr4_err_t key_manager_retrieve_sending_message_keys(
-    m_enc_key_t enc_key, m_mac_key_t mac_key, key_manager_t *manager) {
+otr4_err_t key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
+                                                     m_mac_key_t mac_key,
+                                                     key_manager_t *manager) {
   chain_key_t sending;
   int message_id = key_manager_get_sending_chain_key(sending, manager);
 

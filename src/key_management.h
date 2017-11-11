@@ -46,6 +46,7 @@ typedef struct {
 
   uint8_t ssid[8];
   uint8_t extra_key[HASH_BYTES];
+  uint8_t tmp_key[HASH_BYTES];
 
   list_element_t *old_mac_keys;
 } key_manager_t;
@@ -71,7 +72,8 @@ static inline void key_manager_set_their_dh(dh_public_key_t their,
 
 otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager);
 
-otr4_err_t key_manager_ratcheting_init(int j, key_manager_t *manager);
+otr4_err_t key_manager_ratcheting_init(int j, bool interactive,
+                                       key_manager_t *manager);
 
 void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
                                 key_manager_t *manager);
@@ -104,15 +106,16 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
 void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
                              const chain_key_t chain_key);
 
-otr4_err_t
-key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
-                                            m_mac_key_t mac_key, int message_id,
-                                            key_manager_t *manager);
+otr4_err_t key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
+                                                       m_mac_key_t mac_key,
+                                                       int message_id,
+                                                       key_manager_t *manager);
 
 otr4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager);
 
-otr4_err_t key_manager_retrieve_sending_message_keys(
-    m_enc_key_t enc_key, m_mac_key_t mac_key, key_manager_t *manager);
+otr4_err_t key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
+                                                     m_mac_key_t mac_key,
+                                                     key_manager_t *manager);
 uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys);
 
 #endif

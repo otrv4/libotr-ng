@@ -577,9 +577,9 @@ otr4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
   return OTR4_SUCCESS;
 }
 
-// TODO: calculate differently for non interactive
-static otr4_err_t double_ratcheting_init(int j, otrv4_t *otr) {
-  if (key_manager_ratcheting_init(j, otr->keys))
+static otr4_err_t double_ratcheting_init(int j, bool interactive,
+                                         otrv4_t *otr) {
+  if (key_manager_ratcheting_init(j, interactive, otr->keys))
     return OTR4_ERROR;
 
   otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
@@ -881,15 +881,15 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst, otrv4_t *otr) {
 
   /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) || ECDH(x, Pkb) ||
    * k_dh) */
-  uint8_t tmp_k[HASH_BYTES];
-  if (generate_tmp_key(tmp_k, otr) == OTR4_ERROR) {
+  if (generate_tmp_key(otr->keys->tmp_key, otr) == OTR4_ERROR) {
     return OTR4_ERROR;
   }
 
   /* auth_mac_k = KDF_2(0x01 || tmp_k */
   uint8_t magic[1] = {0x01};
   uint8_t auth_mac_k[HASH_BYTES];
-  shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, tmp_k, sizeof(tmp_k));
+  shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
+                HASH_BYTES);
 
   unsigned char *t = NULL;
   size_t t_len = 0;
@@ -1120,7 +1120,7 @@ static otr4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
     fingerprint_seen_cb(fp, otr->conversation);
 
-  return double_ratcheting_init(0, otr);
+  return double_ratcheting_init(0, true, otr);
 }
 
 static bool valid_auth_i_message(const dake_auth_i_t *auth, otrv4_t *otr) {
@@ -1167,7 +1167,7 @@ static otr4_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
     fingerprint_seen_cb(fp, otr->conversation);
 
-  return double_ratcheting_init(1, otr);
+  return double_ratcheting_init(1, true, otr);
 }
 
 static void extract_tlvs(tlv_t **tlvs, const uint8_t *src, size_t len) {
@@ -1863,8 +1863,8 @@ static otr4_err_t otrv4_send_symkey_message_v4(string_t *to_send,
 
 otr4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
                                      const unsigned char *usedata,
-                                     size_t usedatalen,
-                                      uint8_t *extra_key, otrv4_t *otr) {
+                                     size_t usedatalen, uint8_t *extra_key,
+                                     otrv4_t *otr) {
   if (!otr)
     return OTR4_ERROR;
 
