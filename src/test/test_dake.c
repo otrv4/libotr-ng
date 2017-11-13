@@ -55,8 +55,8 @@ void test_non_interactive_auth_snizkpk() {
   otrv4_t *bob = otrv4_new(bob_state, policy);
 
   otrv4_response_t *response = otrv4_response_new();
-  response->to_send = malloc(500);
-  otr4_err_t err = reply_with_non_interactive_auth_msg(&response->to_send, bob);
+  response->to_send = malloc(500); // may not be needed
+  otr4_err_t err = reply_with_non_interactive_auth_msg(response, bob);
 
   otrv4_assert(err == OTR4_SUCCESS);
 }

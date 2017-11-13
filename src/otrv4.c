@@ -430,16 +430,7 @@ serialize_and_encode_prekey_message(string_t *dst,
   return OTR4_SUCCESS;
 }
 
-// to send to server
-otr4_err_t otrv4_build_prekey_message(string_t *dst, otrv4_t *otr) {
-  // TODO: move this to start non int dake?
-  if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
-    return OTR4_ERROR;
-
-  // TODO: keeps on state start?
-  // otr->state = OTRV4_STATE_WAITING_AUTH_R;
-  maybe_create_keys(otr->conversation);
-
+otr4_err_t otrv4_build_prekey_message(otrv4_server_t *server, otrv4_t *otr) {
   dake_prekey_message_t *m = NULL;
   otr4_err_t err = OTR4_ERROR;
 
@@ -453,7 +444,8 @@ otr4_err_t otrv4_build_prekey_message(string_t *dst, otrv4_t *otr) {
   ec_point_copy(m->Y, OUR_ECDH(otr));
   m->B = dh_mpi_copy(OUR_DH(otr));
 
-  if (serialize_and_encode_prekey_message(dst, m)) {
+  // TODO: initialize server
+  if (serialize_and_encode_prekey_message(&server->prekey_message, m)) {
     dake_prekey_message_free(m);
     return err;
   }
@@ -462,6 +454,13 @@ otr4_err_t otrv4_build_prekey_message(string_t *dst, otrv4_t *otr) {
   dake_prekey_message_free(m);
 
   return err;
+}
+
+void reply_with_prekey_msg(otrv4_server_t *server, otrv4_response_t *response, otrv4_t *otr) {
+
+  // TODO: delete the prekey message from server?
+  memcpy(&response->to_send, server->prekey_message, strlen(server->prekey_message));
+
 }
 
 static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
@@ -497,6 +496,15 @@ static otr4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
   otr->state = OTRV4_STATE_WAITING_AUTH_R;
   maybe_create_keys(otr->conversation);
   return reply_with_identity_msg(response, otr);
+}
+
+otr4_err_t start_non_int_dake(otrv4_response_t *response, otrv4_t *otr) {
+  if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
+    return OTR4_ERROR;
+
+  otr->state = OTRV4_STATE_START; //needed?
+  maybe_create_keys(otr->conversation);
+  return reply_with_non_interactive_auth_msg(response, otr);
 }
 
 static otr4_err_t receive_tagged_plaintext(otrv4_response_t *response,
@@ -868,7 +876,7 @@ static otr4_err_t serialize_and_encode_non_interactive_auth(
 }
 
 // TODO: make static
-otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst, otrv4_t *otr) {
+otr4_err_t reply_with_non_interactive_auth_msg(otrv4_response_t *response, otrv4_t *otr) {
   dake_non_interactive_auth_message_t msg[1];
 
   msg->sender_instance_tag = otr->our_instance_tag;
@@ -918,7 +926,7 @@ otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst, otrv4_t *otr) {
   free(t);
   t = NULL;
 
-  otr4_err_t err = serialize_and_encode_non_interactive_auth(dst, msg);
+  otr4_err_t err = serialize_and_encode_non_interactive_auth(&response->to_send, msg);
 
   dake_non_interactive_auth_message_destroy(msg);
 

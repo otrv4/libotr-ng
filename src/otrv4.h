@@ -95,6 +95,11 @@ struct connection {
   fragment_context_t *frag_ctx;
 }; /* otrv4_t */
 
+// TODO: this a mock
+typedef struct {
+  string_t prekey_message;
+} otrv4_server_t;
+
 typedef enum {
   IN_MSG_NONE = 0,
   IN_MSG_PLAINTEXT = 1,
@@ -164,6 +169,9 @@ otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
 otr4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr);
 
 // TODO: unexpose this
-otr4_err_t reply_with_non_interactive_auth_msg(string_t *to_send, otrv4_t *otr);
+otr4_err_t reply_with_non_interactive_auth_msg(otrv4_response_t *response, otrv4_t *otr);
 
+void reply_with_prekey_msg(otrv4_server_t *server, otrv4_response_t *response, otrv4_t *otr);
+
+otr4_err_t start_non_int_dake(otrv4_response_t *response, otrv4_t *otr);
 #endif
