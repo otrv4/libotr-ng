@@ -169,14 +169,15 @@ otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
 otr4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr);
 
 // TODO: unexpose and make static
-void reply_with_prekey_msg(otrv4_server_t *server, otrv4_response_t *response, otrv4_t *otr);
+void reply_with_prekey_msg(otrv4_server_t *server, otrv4_response_t *response,
+                           otrv4_t *otr);
 
 otr4_err_t start_non_int_dake(otrv4_server_t *server, otrv4_t *otr);
 
 otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
-                                           size_t buflen, otrv4_t *otr);
+                                  size_t buflen, otrv4_t *otr);
 
 otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
-                                 size_t buff_len, otrv4_t *otr);
+                                                size_t buff_len, otrv4_t *otr);
 
 #endif

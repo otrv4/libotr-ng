@@ -461,15 +461,17 @@ otr4_err_t otrv4_build_prekey_message(otrv4_server_t *server, otrv4_t *otr) {
 }
 
 // from server
-void reply_with_prekey_msg(otrv4_server_t *server, otrv4_response_t *response, otrv4_t *otr) {
+void reply_with_prekey_msg(otrv4_server_t *server, otrv4_response_t *response,
+                           otrv4_t *otr) {
 
   // TODO: delete the prekey message from server?
-  memcpy(&response->to_send, server->prekey_message, strlen(server->prekey_message));
-
+  memcpy(&response->to_send, server->prekey_message,
+         strlen(server->prekey_message));
 }
 
 // to server
-otr4_err_t reply_with_prekey_msg_to_upload(otrv4_server_t *server, otrv4_t *otr) {
+otr4_err_t reply_with_prekey_msg_to_upload(otrv4_server_t *server,
+                                           otrv4_t *otr) {
   return otrv4_build_prekey_message(server, otr);
 }
 
@@ -508,11 +510,11 @@ static otr4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
   return reply_with_identity_msg(response, otr);
 }
 
-otr4_err_t start_non_int_dake(otrv4_server_t * server, otrv4_t *otr) {
+otr4_err_t start_non_int_dake(otrv4_server_t *server, otrv4_t *otr) {
   if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  otr->state = OTRV4_STATE_START; //needed?
+  otr->state = OTRV4_STATE_START; // needed?
   maybe_create_keys(otr->conversation);
   return reply_with_prekey_msg_to_upload(server, otr);
 }
@@ -886,7 +888,8 @@ static otr4_err_t serialize_and_encode_non_interactive_auth(
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst, otrv4_t *otr) {
+static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
+                                                      otrv4_t *otr) {
   dake_non_interactive_auth_message_t msg[1];
 
   msg->sender_instance_tag = otr->our_instance_tag;
@@ -950,7 +953,7 @@ static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
 }
 
 otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
-                                           size_t buflen, otrv4_t *otr) {
+                                  size_t buflen, otrv4_t *otr) {
   otr4_err_t err = OTR4_ERROR;
   dake_prekey_message_t m[1];
 
@@ -975,7 +978,7 @@ otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
 
   key_manager_set_their_ecdh(m->Y, otr->keys);
   key_manager_set_their_dh(m->B, otr->keys);
-  user_profile_copy(otr->their_profile, m ->profile);
+  user_profile_copy(otr->their_profile, m->profile);
 
   if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
     return OTR4_ERROR;
@@ -999,11 +1002,11 @@ static otr4_err_t generate_tmp_key_2(uint8_t *dst, otrv4_t *otr) {
 
   // TODO: this needs these keys to be set
   // TODO: this should take the secret part of the shared secret
-  ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
-                     otr->keys->their_ecdh);
+  ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh, otr->keys->their_ecdh);
   // TODO: check this priv
   // TODO: this should take ska and auth->X
-  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh, otr->conversation->client->keypair->pub);
+  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
+                     otr->conversation->client->keypair->pub);
 
   serialize_ec_point(ser_ecdh, OUR_ECDH(otr));
 
@@ -1026,7 +1029,8 @@ static otr4_err_t generate_tmp_key_2(uint8_t *dst, otrv4_t *otr) {
   return OTR4_SUCCESS;
 }
 
-static bool valid_non_interactive_auth_message(const dake_non_interactive_auth_message_t *auth, otrv4_t *otr) {
+static bool valid_non_interactive_auth_message(
+    const dake_non_interactive_auth_message_t *auth, otrv4_t *otr) {
   /* tmp_k = KDF_2(K_ecdh ||
    * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
    * ECDH(Ska, X) || k_dh) */
@@ -1045,8 +1049,9 @@ static bool valid_non_interactive_auth_message(const dake_non_interactive_auth_m
   // TODO: keep 192 bytes as nonce
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
-  if (build_non_interactive_auth_message(&t, &t_len, get_my_user_profile(otr), auth->profile,
-                         OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A, otr->profile->shared_prekey, ""))
+  if (build_non_interactive_auth_message(
+          &t, &t_len, get_my_user_profile(otr), auth->profile, OUR_ECDH(otr),
+          auth->X, OUR_DH(otr), auth->A, otr->profile->shared_prekey, ""))
     return false;
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
@@ -1061,9 +1066,9 @@ static bool valid_non_interactive_auth_message(const dake_non_interactive_auth_m
   uint8_t auth_mac[HASH_BYTES];
   shake_256_mac(auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
   if (0 != mem_diff(auth_mac, auth->auth_mac, sizeof auth_mac)) {
-  free(t);
-  t = NULL;
-  return OTR4_ERROR;
+    free(t);
+    t = NULL;
+    return OTR4_ERROR;
   }
 
   free(t);
@@ -1074,9 +1079,9 @@ static bool valid_non_interactive_auth_message(const dake_non_interactive_auth_m
 }
 
 otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
-                                 size_t buff_len, otrv4_t *otr) {
+                                                size_t buff_len, otrv4_t *otr) {
   if (otr->state != OTRV4_STATE_START) // TODO: check on protocol state machine
-    return OTR4_SUCCESS; /* ignore the message */
+    return OTR4_SUCCESS;               /* ignore the message */
 
   dake_non_interactive_auth_message_t auth[1];
   if (dake_non_interactive_auth_message_deserialize(auth, buff, buff_len))
