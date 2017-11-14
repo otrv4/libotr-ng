@@ -220,6 +220,8 @@ void otrv4_free(/*@only@ */ otrv4_t *otr) {
   free(otr);
 }
 
+// TODO: there should be something like a query message to server
+// stating: version, party to get a prekey message from server
 otr4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
                                      const otrv4_t *otr) {
   /* size = qm tag + versions + msg length + versions
@@ -430,6 +432,7 @@ serialize_and_encode_prekey_message(string_t *dst,
   return OTR4_SUCCESS;
 }
 
+// TODO: should this send to server?
 otr4_err_t otrv4_build_prekey_message(otrv4_server_t *server, otrv4_t *otr) {
   dake_prekey_message_t *m = NULL;
   otr4_err_t err = OTR4_ERROR;
@@ -456,11 +459,17 @@ otr4_err_t otrv4_build_prekey_message(otrv4_server_t *server, otrv4_t *otr) {
   return err;
 }
 
+// from server
 void reply_with_prekey_msg(otrv4_server_t *server, otrv4_response_t *response, otrv4_t *otr) {
 
   // TODO: delete the prekey message from server?
   memcpy(&response->to_send, server->prekey_message, strlen(server->prekey_message));
 
+}
+
+// to server
+otr4_err_t reply_with_prekey_msg_to_upload(otrv4_server_t *server, otrv4_t *otr) {
+  return otrv4_build_prekey_message(server, otr);
 }
 
 static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
@@ -498,13 +507,13 @@ static otr4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
   return reply_with_identity_msg(response, otr);
 }
 
-otr4_err_t start_non_int_dake(otrv4_response_t *response, otrv4_t *otr) {
+otr4_err_t start_non_int_dake(otrv4_server_t * server, otrv4_t *otr) {
   if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
     return OTR4_ERROR;
 
   otr->state = OTRV4_STATE_START; //needed?
   maybe_create_keys(otr->conversation);
-  return reply_with_non_interactive_auth_msg(response, otr);
+  return reply_with_prekey_msg_to_upload(server, otr);
 }
 
 static otr4_err_t receive_tagged_plaintext(otrv4_response_t *response,
@@ -875,8 +884,7 @@ static otr4_err_t serialize_and_encode_non_interactive_auth(
   return OTR4_SUCCESS;
 }
 
-// TODO: make static
-otr4_err_t reply_with_non_interactive_auth_msg(otrv4_response_t *response, otrv4_t *otr) {
+static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst, otrv4_t *otr) {
   dake_non_interactive_auth_message_t msg[1];
 
   msg->sender_instance_tag = otr->our_instance_tag;
@@ -926,11 +934,57 @@ otr4_err_t reply_with_non_interactive_auth_msg(otrv4_response_t *response, otrv4
   free(t);
   t = NULL;
 
-  otr4_err_t err = serialize_and_encode_non_interactive_auth(&response->to_send, msg);
+  // check this
+  otr4_err_t err = serialize_and_encode_non_interactive_auth(dst, msg);
 
   dake_non_interactive_auth_message_destroy(msg);
 
   return err;
+}
+
+static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
+  // TODO: should we do any additional check?
+  otr->their_instance_tag = their_instance_tag;
+}
+
+otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
+                                           size_t buflen, otrv4_t *otr) {
+  otr4_err_t err = OTR4_ERROR;
+  dake_prekey_message_t m[1];
+
+  if (dake_prekey_message_deserialize(m, buff, buflen))
+    return err;
+
+  if (m->receiver_instance_tag != 0) {
+    dake_prekey_message_destroy(m);
+    return OTR4_SUCCESS;
+  }
+
+  received_instance_tag(m->sender_instance_tag, otr);
+
+  if (!valid_received_values(m->Y, m->B, m->profile)) {
+    dake_prekey_message_destroy(m);
+    return err;
+  }
+
+  otr->their_profile = malloc(sizeof(user_profile_t));
+  if (!otr->their_profile)
+    return OTR4_ERROR;
+
+  key_manager_set_their_ecdh(m->Y, otr->keys);
+  key_manager_set_their_dh(m->B, otr->keys);
+  user_profile_copy(otr->their_profile, m ->profile);
+
+  if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
+    return OTR4_ERROR;
+
+  // TODO: perhaps extract from here the generation of tmp_k
+  if (reply_with_non_interactive_auth_msg(dst, otr))
+    return OTR4_ERROR;
+
+  dake_prekey_message_destroy(m);
+
+  return double_ratcheting_init(0, false, otr);
 }
 
 static otr4_err_t receive_identity_message_on_state_start(
@@ -977,11 +1031,6 @@ static otr4_err_t receive_identity_message_on_waiting_auth_i(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
   user_profile_free(otr->their_profile);
   return receive_identity_message_on_state_start(dst, msg, otr);
-}
-
-static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
-  // TODO: should we do any additional check?
-  otr->their_instance_tag = their_instance_tag;
 }
 
 static otr4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,

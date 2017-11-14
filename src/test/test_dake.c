@@ -39,24 +39,3 @@ void test_snizkpk_auth() {
                               (unsigned char *)msg,
                               strlen(msg)) == OTR4_SUCCESS);
 }
-
-// TODO: remove me when the time comes
-void test_non_interactive_auth_snizkpk() {
-  OTR4_INIT;
-
-  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
-  bob_state->pad = true;
-
-  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {
-      2}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(bob_state, bob_sym);
-
-  otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
-  otrv4_t *bob = otrv4_new(bob_state, policy);
-
-  otrv4_response_t *response = otrv4_response_new();
-  response->to_send = malloc(500); // may not be needed
-  otr4_err_t err = reply_with_non_interactive_auth_msg(response, bob);
-
-  otrv4_assert(err == OTR4_SUCCESS);
-}
