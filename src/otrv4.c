@@ -10,6 +10,7 @@
 #include "data_message.h"
 #include "deserialize.h"
 #include "key_management.h"
+#include "mem.h"
 #include "otrv3.h"
 #include "otrv4.h"
 #include "random.h"
@@ -848,6 +849,7 @@ static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
   // TODO: this needs these keys to be set
   ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
                      otr->keys->their_shared_prekey);
+  // TODO: check this pub value
   ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh, THEIR_ECDH(otr));
 
   serialize_ec_point(ser_ecdh, OUR_ECDH(otr));
@@ -983,6 +985,130 @@ otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
     return OTR4_ERROR;
 
   dake_prekey_message_destroy(m);
+
+  return double_ratcheting_init(0, false, otr);
+}
+
+static otr4_err_t generate_tmp_key_2(uint8_t *dst, otrv4_t *otr) {
+  uint8_t ser_ecdh[ED448_POINT_BYTES];
+  uint8_t ser_dh[DH3072_MOD_LEN_BYTES];
+  size_t ser_dh_len = 0;
+
+  k_ecdh_t tmp_ecdh_k1;
+  k_ecdh_t tmp_ecdh_k2;
+
+  // TODO: this needs these keys to be set
+  // TODO: this should take the secret part of the shared secret
+  ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
+                     otr->keys->their_ecdh);
+  // TODO: check this priv
+  // TODO: this should take ska and auth->X
+  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh, otr->conversation->client->keypair->pub);
+
+  serialize_ec_point(ser_ecdh, OUR_ECDH(otr));
+
+  if (serialize_dh_public_key(ser_dh, &ser_dh_len, OUR_DH(otr)))
+    return OTR4_ERROR;
+
+  decaf_shake256_ctx_t hd;
+  hash_init_with_dom(hd);
+  hash_update(hd, ser_ecdh, ED448_POINT_BYTES);
+  hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
+  hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
+  hash_update(hd, ser_dh, ser_dh_len);
+
+  hash_final(hd, dst, HASH_BYTES);
+  hash_destroy(hd);
+
+  sodium_memzero(tmp_ecdh_k1, ED448_POINT_BYTES);
+  sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
+
+  return OTR4_SUCCESS;
+}
+
+static bool valid_non_interactive_auth_message(const dake_non_interactive_auth_message_t *auth, otrv4_t *otr) {
+  /* tmp_k = KDF_2(K_ecdh ||
+   * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
+   * ECDH(Ska, X) || k_dh) */
+  if (generate_tmp_key_2(otr->keys->tmp_key, otr) == OTR4_ERROR) {
+    return OTR4_ERROR;
+  }
+
+  /* auth_mac_k = KDF_2(0x01 || tmp_k */
+  uint8_t magic[1] = {0x01};
+  uint8_t auth_mac_k[HASH_BYTES];
+  shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
+                HASH_BYTES);
+
+  unsigned char *t = NULL;
+  size_t t_len = 0;
+  // TODO: keep 192 bytes as nonce
+  /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
+   * Y || X || B || A || our_shared_prekey.public */
+  if (build_non_interactive_auth_message(&t, &t_len, get_my_user_profile(otr), auth->profile,
+                         OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A, otr->profile->shared_prekey, ""))
+    return false;
+
+  /* Verif({g^I, g^R, g^i}, sigma, msg) */
+  otr4_err_t err =
+      snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
+                     otr->conversation->client->keypair->pub, /* g^I */
+                     OUR_ECDH(otr),                           /* g^  */
+                     t, t_len);
+
+  // TODO: check the mac
+  /* Auth MAC = KDF_2(auth_mac_k || t) */
+  uint8_t auth_mac[HASH_BYTES];
+  shake_256_mac(auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
+  if (0 != mem_diff(auth_mac, auth->auth_mac, sizeof auth_mac)) {
+  free(t);
+  t = NULL;
+  return OTR4_ERROR;
+  }
+
+  free(t);
+  t = NULL;
+
+  // TODO: decrypt the message if present, and add the auth_mac to reveal
+  return err == OTR4_SUCCESS;
+}
+
+otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
+                                 size_t buff_len, otrv4_t *otr) {
+  if (otr->state != OTRV4_STATE_START) // TODO: check on protocol state machine
+    return OTR4_SUCCESS; /* ignore the message */
+
+  dake_non_interactive_auth_message_t auth[1];
+  if (dake_non_interactive_auth_message_deserialize(auth, buff, buff_len))
+    return OTR4_ERROR;
+
+  if (auth->receiver_instance_tag != otr->our_instance_tag) {
+    dake_non_interactive_auth_message_destroy(auth);
+    return OTR4_SUCCESS;
+  }
+
+  received_instance_tag(auth->sender_instance_tag, otr);
+
+  otr->their_profile = malloc(sizeof(user_profile_t));
+  if (!otr->their_profile) {
+    dake_non_interactive_auth_message_destroy(auth);
+    return OTR4_ERROR;
+  }
+
+  key_manager_set_their_ecdh(auth->X, otr->keys);
+  key_manager_set_their_dh(auth->A, otr->keys);
+  user_profile_copy(otr->their_profile, auth->profile);
+
+  if (!valid_non_interactive_auth_message(auth, otr)) {
+    dake_non_interactive_auth_message_destroy(auth);
+    return OTR4_ERROR;
+  }
+
+  dake_non_interactive_auth_message_destroy(auth);
+
+  otrv4_fingerprint_t fp;
+  if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
+    fingerprint_seen_cb(fp, otr->conversation);
 
   return double_ratcheting_init(0, false, otr);
 }
