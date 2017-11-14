@@ -756,7 +756,8 @@ static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
 
   ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
                      otr->keys->their_shared_prekey);
-  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh, otr->their_profile->pub_key);
+  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
+                     otr->their_profile->pub_key);
 
   decaf_shake256_ctx_t hd;
   hash_init_with_dom(hd);
@@ -903,7 +904,7 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     return OTR4_ERROR;
   }
 
-  /* auth_mac_k = KDF_2(0x01 || tmp_k */
+  /* auth_mac_k = KDF_2(0x01 || tmp_k) */
   uint8_t magic[1] = {0x01};
   uint8_t auth_mac_k[HASH_BYTES];
   shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
@@ -988,32 +989,31 @@ otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
 }
 
 static otr4_err_t generate_tmp_key_2(uint8_t *dst, otrv4_t *otr) {
-  uint8_t ser_ecdh[ED448_POINT_BYTES];
-  uint8_t ser_dh[DH3072_MOD_LEN_BYTES];
-  size_t ser_dh_len = 0;
-
+  k_ecdh_t k_ecdh;
+  k_dh_t k_dh;
   k_ecdh_t tmp_ecdh_k1;
   k_ecdh_t tmp_ecdh_k2;
 
-  // TODO: this needs these keys to be set
+  // TODO: this will be calculated again later
+  ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh, otr->keys->their_ecdh);
+  // TODO: this will be calculated again later
+  if (dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
+                       otr->keys->their_dh) == OTR4_ERROR)
+    return OTR4_ERROR;
+
   // TODO: this should take the secret part of the shared secret
   ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh, otr->keys->their_ecdh);
   // TODO: check this priv
-  // TODO: this should take ska and auth->X
+  // TODO: this should take ska
   ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
-                     otr->conversation->client->keypair->pub);
-
-  serialize_ec_point(ser_ecdh, OUR_ECDH(otr));
-
-  if (serialize_dh_public_key(ser_dh, &ser_dh_len, OUR_DH(otr)))
-    return OTR4_ERROR;
+                     otr->keys->our_ecdh->pub);
 
   decaf_shake256_ctx_t hd;
   hash_init_with_dom(hd);
-  hash_update(hd, ser_ecdh, ED448_POINT_BYTES);
+  hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
-  hash_update(hd, ser_dh, ser_dh_len);
+  hash_update(hd, k_dh, sizeof(k_dh_t));
 
   hash_final(hd, dst, HASH_BYTES);
   hash_destroy(hd);
