@@ -221,8 +221,6 @@ void otrv4_free(/*@only@ */ otrv4_t *otr) {
   free(otr);
 }
 
-// TODO: there should be something like a query message to server
-// stating: version, party to get a prekey message from server
 otr4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
                                      const otrv4_t *otr) {
   /* size = qm tag + versions + msg length + versions
@@ -406,20 +404,6 @@ static void receive_plaintext(otrv4_response_t *response,
 }
 
 static otr4_err_t
-serialize_and_encode_identity_message(string_t *dst,
-                                      const dake_identity_message_t *m) {
-  uint8_t *buff = NULL;
-  size_t len = 0;
-
-  if (dake_identity_message_asprintf(&buff, &len, m))
-    return OTR4_ERROR;
-
-  *dst = otrl_base64_otr_encode(buff, len);
-  free(buff);
-  return OTR4_SUCCESS;
-}
-
-static otr4_err_t
 serialize_and_encode_prekey_message(string_t *dst,
                                     const dake_prekey_message_t *m) {
   uint8_t *buff = NULL;
@@ -460,19 +444,30 @@ otr4_err_t otrv4_build_prekey_message(otrv4_server_t *server, otrv4_t *otr) {
   return err;
 }
 
-// from server
-void reply_with_prekey_msg(otrv4_server_t *server, otrv4_response_t *response,
-                           otrv4_t *otr) {
+static otr4_err_t reply_with_prekey_msg_to_server(otrv4_server_t *server,
+                                                  otrv4_t *otr) {
+  return otrv4_build_prekey_message(server, otr);
+}
 
-  // TODO: delete the prekey message from server?
+void reply_with_prekey_msg_from_server(otrv4_server_t *server,
+                                       otrv4_response_t *response,
+                                       otrv4_t *otr) {
   memcpy(&response->to_send, server->prekey_message,
          strlen(server->prekey_message));
 }
 
-// to server
-otr4_err_t reply_with_prekey_msg_to_upload(otrv4_server_t *server,
-                                           otrv4_t *otr) {
-  return otrv4_build_prekey_message(server, otr);
+static otr4_err_t
+serialize_and_encode_identity_message(string_t *dst,
+                                      const dake_identity_message_t *m) {
+  uint8_t *buff = NULL;
+  size_t len = 0;
+
+  if (dake_identity_message_asprintf(&buff, &len, m))
+    return OTR4_ERROR;
+
+  *dst = otrl_base64_otr_encode(buff, len);
+  free(buff);
+  return OTR4_SUCCESS;
 }
 
 static otr4_err_t reply_with_identity_msg(otrv4_response_t *response,
@@ -510,13 +505,14 @@ static otr4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
   return reply_with_identity_msg(response, otr);
 }
 
-otr4_err_t start_non_int_dake(otrv4_server_t *server, otrv4_t *otr) {
+otr4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr) {
   if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
     return OTR4_ERROR;
 
   otr->state = OTRV4_STATE_START; // needed?
   maybe_create_keys(otr->conversation);
-  return reply_with_prekey_msg_to_upload(server, otr);
+  // TODO: maybe client should also generate here the shared prekey
+  return reply_with_prekey_msg_to_server(server, otr);
 }
 
 static otr4_err_t receive_tagged_plaintext(otrv4_response_t *response,
@@ -696,6 +692,88 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
   return OTR4_SUCCESS;
 }
 
+static otr4_err_t serialize_and_encode_auth_r(string_t *dst,
+                                              const dake_auth_r_t *m) {
+  uint8_t *buff = NULL;
+  size_t len = 0;
+
+  if (dake_auth_r_asprintf(&buff, &len, m))
+    return OTR4_ERROR;
+
+  *dst = otrl_base64_otr_encode(buff, len);
+  free(buff);
+  return OTR4_SUCCESS;
+}
+
+static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
+  dake_auth_r_t msg[1];
+
+  msg->sender_instance_tag = otr->our_instance_tag;
+  msg->receiver_instance_tag = otr->their_instance_tag;
+
+  user_profile_copy(msg->profile, get_my_user_profile(otr));
+
+  ec_point_copy(msg->X, OUR_ECDH(otr));
+  msg->A = dh_mpi_copy(OUR_DH(otr));
+
+  unsigned char *t = NULL;
+  size_t t_len = 0;
+
+  if (build_auth_message(&t, &t_len, 0, otr->their_profile,
+                         get_my_user_profile(otr), THEIR_ECDH(otr),
+                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
+                         otr->conversation->client->phi))
+    return OTR4_ERROR;
+
+  /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
+  snizkpk_authenticate(msg->sigma,
+                       otr->conversation->client->keypair, /* g^R and R */
+                       otr->their_profile->pub_key,        /* g^I */
+                       THEIR_ECDH(otr),                    /* g^i -- Y */
+                       t, t_len);
+
+  free(t);
+  t = NULL;
+
+  otr4_err_t err = serialize_and_encode_auth_r(dst, msg);
+  dake_auth_r_destroy(msg);
+
+  return err;
+}
+
+static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
+  k_ecdh_t tmp_ecdh_k1;
+  k_ecdh_t tmp_ecdh_k2;
+  k_ecdh_t k_ecdh;
+  k_dh_t k_dh;
+
+  // TODO: this will be calculated again later
+  ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh, otr->keys->their_ecdh);
+  // TODO: this will be calculated again later
+  if (dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
+                       otr->keys->their_dh) == OTR4_ERROR)
+    return OTR4_ERROR;
+
+  ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
+                     otr->keys->their_shared_prekey);
+  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh, otr->their_profile->pub_key);
+
+  decaf_shake256_ctx_t hd;
+  hash_init_with_dom(hd);
+  hash_update(hd, k_ecdh, ED448_POINT_BYTES);
+  hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
+  hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
+  hash_update(hd, k_dh, sizeof(k_dh_t));
+
+  hash_final(hd, dst, HASH_BYTES);
+  hash_destroy(hd);
+
+  sodium_memzero(tmp_ecdh_k1, ED448_POINT_BYTES);
+  sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
+
+  return OTR4_SUCCESS;
+}
+
 static otr4_err_t build_non_interactive_auth_message(
     uint8_t **msg, size_t *msg_len, const user_profile_t *i_profile,
     const user_profile_t *r_profile, const ec_point_t i_ecdh,
@@ -789,90 +867,6 @@ static otr4_err_t build_non_interactive_auth_message(
   sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
   return err;
-}
-
-static otr4_err_t serialize_and_encode_auth_r(string_t *dst,
-                                              const dake_auth_r_t *m) {
-  uint8_t *buff = NULL;
-  size_t len = 0;
-
-  if (dake_auth_r_asprintf(&buff, &len, m))
-    return OTR4_ERROR;
-
-  *dst = otrl_base64_otr_encode(buff, len);
-  free(buff);
-  return OTR4_SUCCESS;
-}
-
-static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
-  dake_auth_r_t msg[1];
-
-  msg->sender_instance_tag = otr->our_instance_tag;
-  msg->receiver_instance_tag = otr->their_instance_tag;
-
-  user_profile_copy(msg->profile, get_my_user_profile(otr));
-
-  ec_point_copy(msg->X, OUR_ECDH(otr));
-  msg->A = dh_mpi_copy(OUR_DH(otr));
-
-  unsigned char *t = NULL;
-  size_t t_len = 0;
-
-  if (build_auth_message(&t, &t_len, 0, otr->their_profile,
-                         get_my_user_profile(otr), THEIR_ECDH(otr),
-                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
-                         otr->conversation->client->phi))
-    return OTR4_ERROR;
-
-  /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
-  snizkpk_authenticate(msg->sigma,
-                       otr->conversation->client->keypair, /* g^R and R */
-                       otr->their_profile->pub_key,        /* g^I */
-                       THEIR_ECDH(otr),                    /* g^i -- Y */
-                       t, t_len);
-
-  free(t);
-  t = NULL;
-
-  otr4_err_t err = serialize_and_encode_auth_r(dst, msg);
-  dake_auth_r_destroy(msg);
-
-  return err;
-}
-
-static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
-  uint8_t ser_ecdh[ED448_POINT_BYTES];
-  uint8_t ser_dh[DH3072_MOD_LEN_BYTES];
-  size_t ser_dh_len = 0;
-
-  k_ecdh_t tmp_ecdh_k1;
-  k_ecdh_t tmp_ecdh_k2;
-
-  // TODO: this needs these keys to be set
-  ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
-                     otr->keys->their_shared_prekey);
-  // TODO: check this pub value
-  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh, THEIR_ECDH(otr));
-
-  serialize_ec_point(ser_ecdh, OUR_ECDH(otr));
-
-  if (serialize_dh_public_key(ser_dh, &ser_dh_len, OUR_DH(otr)))
-    return OTR4_ERROR;
-
-  decaf_shake256_ctx_t hd;
-  hash_init_with_dom(hd);
-  hash_update(hd, ser_ecdh, ED448_POINT_BYTES);
-  hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
-  hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
-  hash_update(hd, ser_dh, ser_dh_len);
-
-  hash_final(hd, dst, HASH_BYTES);
-  hash_destroy(hd);
-
-  sodium_memzero(tmp_ecdh_k1, ED448_POINT_BYTES);
-  sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
-
-  return OTR4_SUCCESS;
 }
 
 static otr4_err_t serialize_and_encode_non_interactive_auth(
@@ -978,6 +972,7 @@ otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
 
   key_manager_set_their_ecdh(m->Y, otr->keys);
   key_manager_set_their_dh(m->B, otr->keys);
+  // TODO: this should also validate the user_profile
   user_profile_copy(otr->their_profile, m->profile);
 
   if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
@@ -1127,6 +1122,7 @@ static otr4_err_t receive_identity_message_on_state_start(
 
   key_manager_set_their_ecdh(identity_message->Y, otr->keys);
   key_manager_set_their_dh(identity_message->B, otr->keys);
+  // TODO: this should also validate the user_profile
   user_profile_copy(otr->their_profile, identity_message->profile);
 
   if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
