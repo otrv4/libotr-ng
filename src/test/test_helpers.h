@@ -103,27 +103,27 @@
     otrv4_assert_cmpmem(ck1, ck2, sizeof(chain_key_t));                        \
   } while (0)
 
-#define fn_apply(type, fn, ...)                                                \
+// TODO: here actually use the designated initializers as I was planning to
+// do for the future nonetheless
+#define fn_apply(fn, ...)                                                      \
   {                                                                            \
-    void *stopper_for_apply = (int[]){0};                                      \
-    type **list_for_apply = (type *[]){__VA_ARGS__, stopper_for_apply};        \
-    for (int i = 0; list_for_apply[i] != stopper_for_apply; i++)               \
-      fn(list_for_apply[i]);                                                   \
+    void *stopper = (int[]){0};                                                \
+    void **list = (void *[]){__VA_ARGS__, stopper};                            \
+    for (int i = 0; list[i] != stopper; i++)                                   \
+      fn(list[i]);                                                             \
   }
 
-#define otrv4_free_all(...) fn_apply(void, otrv4_free, __VA_ARGS__);
+#define otrv4_free_all(...) fn_apply(otrv4_free, __VA_ARGS__);
 
-#define otrv4_response_free_all(...)                                           \
-  fn_apply(void, otrv4_response_free, __VA_ARGS__);
+#define otrv4_response_free_all(...) fn_apply(otrv4_response_free, __VA_ARGS__);
 
 #define otrv4_userstate_free_all(...)                                          \
-  fn_apply(void, otrl_userstate_free, __VA_ARGS__);
+  fn_apply(otrl_userstate_free, __VA_ARGS__);
 
 #define otrv4_client_state_free_all(...)                                       \
-  fn_apply(void, otr4_client_state_free, __VA_ARGS__);
+  fn_apply(otr4_client_state_free, __VA_ARGS__);
 
-#define otrv4_client_free_all(...)                                             \
-  fn_apply(void, otr4_client_free, __VA_ARGS__);
+#define otrv4_client_free_all(...) fn_apply(otr4_client_free, __VA_ARGS__);
 
 static inline void otrv4_assert_point_equals(const ec_point_t expected,
                                              const ec_point_t actual) {
