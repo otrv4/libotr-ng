@@ -106,6 +106,12 @@ static void received_symkey_cb(const otr4_conversation_state_t *conv,
                                unsigned int use, const unsigned char *usedata,
                                size_t usedatalen,
                                const unsigned char *extra_key) {
+  UNUSED_ARG(conv);
+  UNUSED_ARG(use);
+  UNUSED_ARG(usedata);
+  UNUSED_ARG(usedatalen);
+  UNUSED_ARG(extra_key);
+
 #ifdef DEBUG
   printf("Received symkey use: %08x\n", use);
   printf("Usedata lenght: %zu\n", usedatalen);
@@ -450,8 +456,7 @@ static otr4_err_t reply_with_prekey_msg_to_server(otrv4_server_t *server,
 }
 
 void reply_with_prekey_msg_from_server(otrv4_server_t *server,
-                                       otrv4_response_t *response,
-                                       otrv4_t *otr) {
+                                       otrv4_response_t *response) {
   memcpy(&response->to_send, server->prekey_message,
          strlen(server->prekey_message));
 }

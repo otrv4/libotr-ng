@@ -178,6 +178,8 @@ int otr4_user_state_add_instance_tag(otr4_userstate_t *state, void *client_id,
 
 unsigned int otr4_user_state_get_instance_tag(otr4_userstate_t *state,
                                               void *client_id) {
+  UNUSED_ARG(state);
+  UNUSED_ARG(client_id);
   // TODO
   return 0;
 }

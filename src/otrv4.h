@@ -13,6 +13,8 @@
 #include "str.h"
 #include "user_profile.h"
 
+#define UNUSED_ARG(x) (void)x
+
 #define OTR4_INIT                                                              \
   do {                                                                         \
     otrv3_init();                                                              \
@@ -170,8 +172,7 @@ otr4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr);
 
 // TODO: unexpose and make static
 void reply_with_prekey_msg_from_server(otrv4_server_t *server,
-                                       otrv4_response_t *response,
-                                       otrv4_t *otr);
+                                       otrv4_response_t *response);
 
 otr4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr);
 

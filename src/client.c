@@ -4,6 +4,7 @@
 
 #include "deserialize.h"
 #include "instance_tag.h"
+#include "otrv4.h"
 #include "serialize.h"
 #include "str.h"
 
@@ -76,6 +77,7 @@ otr4_conversation_t *get_conversation_with(const char *recipient,
 
 otrv4_policy_t get_policy_for(const char *recipient) {
   // TODO the policy should come from client config.
+  UNUSED_ARG(recipient);
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
 
   return policy;
