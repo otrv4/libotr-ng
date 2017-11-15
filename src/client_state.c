@@ -17,6 +17,7 @@ otr4_client_state_t *otr4_client_state_new(void *client_id) {
   state->callbacks = NULL;
   state->userstate = NULL;
   state->keypair = NULL;
+  state->shared_prekey_pair = NULL;
   state->phi = NULL;
 
   return state;
@@ -35,6 +36,9 @@ void otr4_client_state_free(otr4_client_state_t *state) {
 
   otrv4_keypair_free(state->keypair);
   state->keypair = NULL;
+
+  otrv4_shared_prekey_pair_free(state->shared_prekey_pair);
+  state->shared_prekey_pair = NULL;
 
   free(state->phi);
   state->phi = NULL;
@@ -154,6 +158,22 @@ int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
   }
 
   return err;
+}
+
+int otr4_client_state_add_shared_prekey_v4(
+    otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  if (!state)
+    return 1;
+
+  if (state->shared_prekey_pair)
+    return 0;
+
+  state->shared_prekey_pair = otrv4_shared_prekey_pair_new();
+  if (!state->shared_prekey_pair)
+    return 2;
+
+  otrv4_shared_prekey_pair_generate(state->shared_prekey_pair, sym);
+  return 0;
 }
 
 static OtrlInsTag *otrl_instance_tag_new(const char *protocol,

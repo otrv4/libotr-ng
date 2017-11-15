@@ -30,7 +30,6 @@ user_profile_t *user_profile_new(const string_t versions) {
   return profile;
 }
 
-// TODO: copy the shared prekey?
 void user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
   // TODO should we set dst to a valid (but empty) profile?
   if (!src)
@@ -227,8 +226,9 @@ bool user_profile_valid_signature(const user_profile_t *profile) {
   return valid;
 }
 
-user_profile_t *user_profile_build(const string_t versions,
-                                   otrv4_keypair_t *keypair) {
+user_profile_t *
+user_profile_build(const string_t versions, otrv4_keypair_t *keypair,
+                   otrv4_shared_prekey_pair_t *shared_prekey_pair) {
   user_profile_t *profile = user_profile_new(versions);
   if (!profile)
     return NULL;
@@ -237,10 +237,8 @@ user_profile_t *user_profile_build(const string_t versions,
   time_t expires = time(NULL);
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
 
-  // TODO: check if this is the best place to generate
-  uint8_t sym[ED448_PRIVATE_BYTES];
-  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
-  otrv4_shared_prekey_generate(profile->shared_prekey, sym);
+  memcpy(profile->shared_prekey, shared_prekey_pair->pub,
+         sizeof(otrv4_shared_prekey_t));
 
   if (user_profile_sign(profile, keypair)) {
     user_profile_free(profile);

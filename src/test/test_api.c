@@ -52,6 +52,7 @@ static void set_up_client_state(otr4_client_state_t *state, char *account_name,
 
   uint8_t sym_key[ED448_PRIVATE_BYTES] = {byte};
   otr4_client_state_add_private_key_v4(state, sym_key);
+  otr4_client_state_add_shared_prekey_v4(state, sym_key);
   otr4_client_state_add_instance_tag(state, 0x100 + byte);
 }
 

@@ -26,6 +26,9 @@ typedef struct otr4_client_state_t {
   // callback and v3 user state
   OtrlUserState userstate;
   otrv4_keypair_t *keypair;
+  otrv4_shared_prekey_pair_t *shared_prekey_pair; // TODO: is this something the
+                                                  // client will generate? The
+                                                  // spec does not specify.
   char *phi; // this is the shared session state
   bool pad;  // TODO: this can be replaced by length
 
@@ -51,6 +54,9 @@ int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
 
 int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
                                                 FILE *privf);
+
+int otr4_client_state_add_shared_prekey_v4(
+    otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 int otr4_client_state_add_instance_tag(otr4_client_state_t *state,
                                        unsigned int instag);

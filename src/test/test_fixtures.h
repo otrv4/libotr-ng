@@ -18,6 +18,8 @@ void otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
   otr4_client_state_add_private_key_v4(otrv4_fixture->state, sym);
 
+  otr4_client_state_add_shared_prekey_v4(otrv4_fixture->state, sym);
+
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
   otrv4_fixture->otr = otrv4_new(otrv4_fixture->state, policy);
 
@@ -64,16 +66,19 @@ void otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture,
 
 typedef struct {
   otrv4_keypair_t *keypair;
+  otrv4_shared_prekey_pair_t *shared_prekey;
   user_profile_t *profile;
 } identity_message_fixture_t;
 
 typedef struct {
   otrv4_keypair_t *keypair;
+  otrv4_shared_prekey_pair_t *shared_prekey;
   user_profile_t *profile;
 } prekey_message_fixture_t;
 
 typedef struct {
   otrv4_keypair_t *keypair;
+  otrv4_shared_prekey_pair_t *shared_prekey;
   user_profile_t *profile;
 } non_interactive_auth_message_fixture_t;
 
@@ -87,7 +92,14 @@ static void identity_message_fixture_setup(identity_message_fixture_t *fixture,
   otrv4_assert(ec_point_valid(fixture->keypair->pub) == OTR4_SUCCESS);
 
   fixture->profile = user_profile_new("4");
-  otrv4_shared_prekey_generate(fixture->profile->shared_prekey, sym);
+
+  fixture->shared_prekey = otrv4_shared_prekey_pair_new();
+  otrv4_shared_prekey_pair_generate(fixture->shared_prekey, sym);
+  otrv4_assert(ec_point_valid(fixture->shared_prekey->pub) == OTR4_SUCCESS);
+
+  memcpy(fixture->profile->shared_prekey, fixture->shared_prekey->pub,
+         sizeof(otrv4_shared_prekey_t));
+
   otrv4_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 60 * 60;
   otrv4_assert(user_profile_sign(fixture->profile, fixture->keypair) ==
@@ -99,6 +111,9 @@ identity_message_fixture_teardown(identity_message_fixture_t *fixture,
                                   gconstpointer user_data) {
   otrv4_keypair_free(fixture->keypair);
   fixture->keypair = NULL;
+
+  otrv4_shared_prekey_pair_free(fixture->shared_prekey);
+  fixture->shared_prekey = NULL;
 
   user_profile_free(fixture->profile);
   fixture->profile = NULL;
@@ -113,7 +128,14 @@ static void prekey_message_fixture_setup(prekey_message_fixture_t *fixture,
   otrv4_assert(ec_point_valid(fixture->keypair->pub) == OTR4_SUCCESS);
 
   fixture->profile = user_profile_new("4");
-  otrv4_shared_prekey_generate(fixture->profile->shared_prekey, sym);
+
+  fixture->shared_prekey = otrv4_shared_prekey_pair_new();
+  otrv4_shared_prekey_pair_generate(fixture->shared_prekey, sym);
+  otrv4_assert(ec_point_valid(fixture->shared_prekey->pub) == OTR4_SUCCESS);
+
+  memcpy(fixture->profile->shared_prekey, fixture->shared_prekey->pub,
+         sizeof(otrv4_shared_prekey_t));
+
   otrv4_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 60 * 60;
   otrv4_assert(user_profile_sign(fixture->profile, fixture->keypair) ==
@@ -124,6 +146,9 @@ static void prekey_message_fixture_teardown(prekey_message_fixture_t *fixture,
                                             gconstpointer user_data) {
   otrv4_keypair_free(fixture->keypair);
   fixture->keypair = NULL;
+
+  otrv4_shared_prekey_pair_free(fixture->shared_prekey);
+  fixture->shared_prekey = NULL;
 
   user_profile_free(fixture->profile);
   fixture->profile = NULL;

@@ -155,8 +155,10 @@ static const user_profile_t *get_my_user_profile(otrv4_t *otr) {
   char versions[3] = {0};
   allowed_versions(versions, otr);
   maybe_create_keys(otr->conversation);
+
   otr->profile =
-      user_profile_build(versions, otr->conversation->client->keypair);
+      user_profile_build(versions, otr->conversation->client->keypair,
+                         otr->conversation->client->shared_prekey_pair);
   return otr->profile;
 }
 

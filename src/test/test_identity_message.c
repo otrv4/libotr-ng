@@ -1,5 +1,6 @@
 #include "../constants.h"
 #include "../dake.h"
+#include "../keys.h"
 #include "../str.h"
 
 void test_dake_identity_message_serializes(identity_message_fixture_t *f,
@@ -84,6 +85,7 @@ void test_dake_identity_message_deserializes(identity_message_fixture_t *f,
 
   dake_identity_message_t *identity_message =
       dake_identity_message_new(f->profile);
+
   ec_point_copy(identity_message->Y, ecdh->pub);
   identity_message->B = dh_mpi_copy(dh->pub);
 
@@ -151,8 +153,14 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   otrv4_assert(dh_keypair_generate(invalid_dh) == OTR4_SUCCESS);
 
   user_profile_t *invalid_profile = user_profile_new("2");
-  otrv4_shared_prekey_generate(invalid_profile->shared_prekey, sym);
+
+  otrv4_shared_prekey_pair_t *shared_prekey = otrv4_shared_prekey_pair_new();
+  otrv4_shared_prekey_pair_generate(shared_prekey, invalid_sym);
+  otrv4_assert(ec_point_valid(shared_prekey->pub) == OTR4_SUCCESS);
+
   ec_point_copy(invalid_profile->pub_key, invalid_ecdh->pub);
+  ec_point_copy(invalid_profile->shared_prekey, shared_prekey->pub);
+
   dake_identity_message_t *invalid_identity_message =
       dake_identity_message_new(invalid_profile);
 
@@ -166,6 +174,7 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   user_profile_free(invalid_profile);
   ecdh_keypair_destroy(invalid_ecdh);
   dh_keypair_destroy(invalid_dh);
+  otrv4_shared_prekey_pair_free(shared_prekey);
   dake_identity_message_free(invalid_identity_message);
 
   OTR4_FREE;

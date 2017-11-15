@@ -74,21 +74,23 @@ void test_ser_des_otrv4_public_key() {
 }
 
 void test_ser_des_otrv4_shared_prekey() {
-  otrv4_shared_prekey_t shared_prekey;
+  otrv4_shared_prekey_pair_t *shared_prekey = otrv4_shared_prekey_pair_new();
   otrv4_shared_prekey_t deserialized;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrv4_shared_prekey_generate(shared_prekey, sym);
+  otrv4_shared_prekey_pair_generate(shared_prekey, sym);
 
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(serialize_otrv4_shared_prekey(serialized, shared_prekey), ==,
-                  ED448_PUBKEY_BYTES);
+  g_assert_cmpint(serialize_otrv4_shared_prekey(serialized, shared_prekey->pub),
+                  ==, ED448_PUBKEY_BYTES);
   otrv4_assert(deserialize_otrv4_shared_prekey(deserialized, serialized,
                                                ED448_PUBKEY_BYTES,
                                                NULL) == OTR4_SUCCESS);
 
   otrv4_assert(DECAF_TRUE == decaf_448_point_valid(deserialized));
 
-  otrv4_assert(decaf_448_point_eq(deserialized, shared_prekey) == DECAF_TRUE);
+  otrv4_assert(decaf_448_point_eq(deserialized, shared_prekey->pub) ==
+               DECAF_TRUE);
+  otrv4_shared_prekey_pair_free(shared_prekey);
 }
 
 void test_serialize_otrv4_symmetric_key() {

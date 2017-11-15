@@ -39,7 +39,8 @@ otr4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
 otr4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
                                  const user_profile_t *profile);
 
-user_profile_t *user_profile_build(const string_t versions,
-                                   otrv4_keypair_t *keypair);
+user_profile_t *
+user_profile_build(const string_t versions, otrv4_keypair_t *keypair,
+                   otrv4_shared_prekey_pair_t *shared_prekey_keypair);
 
 #endif

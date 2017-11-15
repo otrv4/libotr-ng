@@ -1,5 +1,6 @@
 #include "../constants.h"
 #include "../dake.h"
+#include "../keys.h"
 #include "../str.h"
 
 void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
@@ -142,10 +143,15 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
   uint8_t invalid_sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(invalid_ecdh, invalid_sym);
   otrv4_assert(dh_keypair_generate(invalid_dh) == OTR4_SUCCESS);
+  otrv4_shared_prekey_pair_t *shared_prekey = otrv4_shared_prekey_pair_new();
+  otrv4_shared_prekey_pair_generate(shared_prekey, invalid_sym);
+  otrv4_assert(ec_point_valid(shared_prekey->pub) == OTR4_SUCCESS);
 
   user_profile_t *invalid_profile = user_profile_new("2");
-  otrv4_shared_prekey_generate(invalid_profile->shared_prekey, sym);
+  // otrv4_shared_prekey_generate(invalid_profile->shared_prekey, sym);
   ec_point_copy(invalid_profile->pub_key, invalid_ecdh->pub);
+  ec_point_copy(invalid_profile->shared_prekey, shared_prekey->pub);
+
   dake_prekey_message_t *invalid_prekey_message =
       dake_prekey_message_new(invalid_profile);
 
@@ -159,6 +165,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
   user_profile_free(invalid_profile);
   ecdh_keypair_destroy(invalid_ecdh);
   dh_keypair_destroy(invalid_dh);
+  otrv4_shared_prekey_pair_free(shared_prekey);
   dake_prekey_message_free(invalid_prekey_message);
 
   OTR4_FREE;
