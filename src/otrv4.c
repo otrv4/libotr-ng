@@ -460,8 +460,7 @@ static otr4_err_t reply_with_prekey_msg_to_server(otrv4_server_t *server,
 
 void reply_with_prekey_msg_from_server(otrv4_server_t *server,
                                        otrv4_response_t *response) {
-  memcpy(&response->to_send, server->prekey_message,
-         strlen(server->prekey_message));
+  response->to_send = server->prekey_message;
 }
 
 static otr4_err_t
@@ -937,15 +936,18 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   unsigned char *t = NULL;
   size_t t_len = 0;
 
+
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
   if (build_non_interactive_auth_message(
           &t, &t_len, otr->their_profile, get_my_user_profile(otr),
           THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
-          otr->their_profile->shared_prekey, "")) {
+          otr->their_profile->shared_prekey, otr->conversation->client->phi)) {
     dake_non_interactive_auth_message_destroy(msg);
     return OTR4_ERROR;
   }
+
+  printf("%zu \n", t_len);
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
   snizkpk_authenticate(msg->sigma,
@@ -955,17 +957,16 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
                        t, t_len);
 
   /* Auth MAC = KDF_2(auth_mac_k || t) */
-  shake_256_mac(msg->auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
+  shake_256_mac(msg->auth_mac, sizeof(msg->auth_mac), auth_mac_k, sizeof(auth_mac_k), t, t_len);
 
   free(t);
   t = NULL;
 
-  // TODO: free this
+  otr4_err_t err = serialize_and_encode_non_interactive_auth(dst, msg);
+
   data_msg = generate_data_msg(otr);
   memcpy(data_msg->nonce, &t, sizeof(data_msg->nonce));
-
-  // TODO: check this
-  otr4_err_t err = serialize_and_encode_non_interactive_auth(dst, msg);
+  data_message_free(data_msg); // for the moment
 
   dake_non_interactive_auth_message_destroy(msg);
 
@@ -1080,7 +1081,7 @@ static bool valid_non_interactive_auth_message(
    * Y || X || B || A || our_shared_prekey.public */
   if (build_non_interactive_auth_message(
           &t, &t_len, get_my_user_profile(otr), auth->profile, OUR_ECDH(otr),
-          auth->X, OUR_DH(otr), auth->A, otr->profile->shared_prekey, ""))
+          auth->X, OUR_DH(otr), auth->A, otr->profile->shared_prekey, otr->conversation->client->phi))
     return false;
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
@@ -1102,9 +1103,9 @@ static bool valid_non_interactive_auth_message(
   free(t);
   t = NULL;
 
-  // TODO: free this
   data_msg = generate_data_msg(otr);
   memcpy(data_msg->nonce, &t, sizeof(data_msg->nonce));
+  data_message_free(data_msg); // for the moment
 
   // TODO: decrypt the message if present, and add the auth_mac to reveal
   return err == OTR4_SUCCESS;

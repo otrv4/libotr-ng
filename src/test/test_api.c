@@ -179,6 +179,110 @@ void test_api_interactive_conversation(void) {
   OTR4_FREE;
 }
 
+void test_api_non_interactive_conversation(void) {
+  OTR4_INIT;
+
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+
+  otrv4_response_t *response_to_bob = otrv4_response_new();
+  otrv4_response_t *response_to_alice = otrv4_response_new();
+
+  otrv4_server_t *server = malloc(sizeof(otrv4_server_t));
+  server->prekey_message = NULL;
+
+  // Alice uploads prekey message to server
+  otrv4_assert(start_non_interactive_dake(server, alice) == OTR4_SUCCESS);
+
+  otrv4_assert(alice->state == OTRV4_STATE_START);
+  otrv4_assert(server->prekey_message != NULL);
+
+  // Bob asks server for prekey message
+  // Server replies with prekey message
+  reply_with_prekey_msg_from_server(server, response_to_bob);
+  otrv4_assert(bob->state == OTRV4_STATE_START);
+  otrv4_assert(response_to_bob != NULL);
+
+  otrv4_assert_cmpmem("?OTR:AARV", response_to_bob->to_send, 9);
+  // Bob receives prekey message
+  otrv4_assert(otrv4_receive_message(response_to_alice,
+                                     response_to_bob->to_send,
+                                     bob) == OTR4_SUCCESS);
+  free(response_to_bob->to_send);
+  response_to_bob->to_send = NULL;
+
+  otrv4_assert(bob->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+  otrv4_assert(bob->keys->current);
+
+  otrv4_assert_ec_public_key_eq(bob->keys->their_ecdh,
+                                alice->keys->our_ecdh->pub);
+  otrv4_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh->pub);
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+
+  // Should reply with an non interactive auth
+  otrv4_assert(response_to_alice->to_display == NULL);
+  otrv4_assert(response_to_alice->to_send);
+  otrv4_assert_cmpmem("?OTR:AAQE", response_to_alice->to_send, 9);
+
+  // Alice receives an non interactive auth
+  otrv4_assert(otrv4_receive_message(response_to_bob,
+                                     response_to_alice->to_send,
+                                     alice) == OTR4_SUCCESS);
+  free(response_to_alice->to_send);
+  response_to_alice->to_send = NULL;
+
+  otrv4_assert_ec_public_key_eq(alice->keys->their_ecdh,
+                                bob->keys->our_ecdh->pub);
+  otrv4_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 0);
+
+  otrv4_assert(response_to_alice->to_display == NULL);
+  otrv4_assert(response_to_alice->to_send == NULL);
+
+  // Check double ratchet is initialized
+  otrv4_assert(alice->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
+  otrv4_assert(alice->keys->current);
+
+  // How will the ratchet happen on non interactive?
+  //g_assert_cmpint(alice->keys->i, ==, 0);
+  //g_assert_cmpint(alice->keys->j, ==, 1);
+
+  // Both have the same shared secret
+  //otrv4_assert_root_key_eq(alice->keys->current->root_key,
+  //                         bob->keys->current->root_key);
+  //otrv4_assert_chain_key_eq(alice->keys->current->chain_a->key,
+  //                          bob->keys->current->chain_a->key);
+  //otrv4_assert_chain_key_eq(bob->keys->current->chain_b->key,
+  //                          alice->keys->current->chain_b->key);
+
+  //chain_key_t bob_sending_key, alice_receiving_key;
+  //key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
+  //otrv4_assert(key_manager_get_receiving_chain_key(
+  //                 alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
+  //otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
+
+  free(server);
+  server = NULL;
+
+  otrv4_response_free(response_to_alice);
+  response_to_alice = NULL;
+
+  otrv4_response_free(response_to_bob);
+  response_to_bob = NULL;
+
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+
+  otrv4_free_all(alice, bob);
+
+  OTR4_FREE;
+}
+
 static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   otrv4_response_t *response_to_bob = otrv4_response_new();
   otrv4_response_t *response_to_alice = otrv4_response_new();
