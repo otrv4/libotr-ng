@@ -9,6 +9,7 @@
 #include "dake.h"
 #include "data_message.h"
 #include "deserialize.h"
+#include "keys.h"
 #include "key_management.h"
 #include "mem.h"
 #include "otrv3.h"
@@ -1008,12 +1009,9 @@ static otr4_err_t generate_tmp_key_2(uint8_t *dst, otrv4_t *otr) {
                        otr->keys->their_dh) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  // TODO: this should take the secret part of the shared secret
-  ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh, otr->keys->their_ecdh);
-  // TODO: check this priv
-  // TODO: this should take ska
-  ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
-                     otr->keys->our_ecdh->pub);
+  ecdh_shared_secret_from_prekey(tmp_ecdh_k1, otr->conversation->client->shared_prekey_pair, THEIR_ECDH(otr));
+  ecdh_shared_secret_from_keypair(tmp_ecdh_k2, otr->conversation->client->keypair,
+                     OUR_ECDH(otr));
 
   decaf_shake256_ctx_t hd;
   hash_init_with_dom(hd);
@@ -1063,7 +1061,6 @@ static bool valid_non_interactive_auth_message(
                      OUR_ECDH(otr),                           /* g^  */
                      t, t_len);
 
-  // TODO: check the mac
   /* Auth MAC = KDF_2(auth_mac_k || t) */
   uint8_t auth_mac[HASH_BYTES];
   shake_256_mac(auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
