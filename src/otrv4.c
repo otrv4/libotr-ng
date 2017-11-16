@@ -9,8 +9,8 @@
 #include "dake.h"
 #include "data_message.h"
 #include "deserialize.h"
-#include "keys.h"
 #include "key_management.h"
+#include "keys.h"
 #include "mem.h"
 #include "otrv3.h"
 #include "otrv4.h"
@@ -1009,9 +1009,11 @@ static otr4_err_t generate_tmp_key_2(uint8_t *dst, otrv4_t *otr) {
                        otr->keys->their_dh) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  ecdh_shared_secret_from_prekey(tmp_ecdh_k1, otr->conversation->client->shared_prekey_pair, THEIR_ECDH(otr));
-  ecdh_shared_secret_from_keypair(tmp_ecdh_k2, otr->conversation->client->keypair,
-                     OUR_ECDH(otr));
+  ecdh_shared_secret_from_prekey(tmp_ecdh_k1,
+                                 otr->conversation->client->shared_prekey_pair,
+                                 THEIR_ECDH(otr));
+  ecdh_shared_secret_from_keypair(
+      tmp_ecdh_k2, otr->conversation->client->keypair, OUR_ECDH(otr));
 
   decaf_shake256_ctx_t hd;
   hash_init_with_dom(hd);

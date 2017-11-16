@@ -65,7 +65,7 @@ void ecdh_keypair_generate(ecdh_keypair_t *keypair,
                            uint8_t sym[ED448_PRIVATE_BYTES]);
 void ecdh_keypair_destroy(ecdh_keypair_t *keypair);
 
-void ecdh_shared_secret(uint8_t *shared, ecdh_keypair_t *our_keypair,
+void ecdh_shared_secret(uint8_t *shared, const ecdh_keypair_t *our_keypair,
                         const ec_point_t their_pub);
 
 void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src);

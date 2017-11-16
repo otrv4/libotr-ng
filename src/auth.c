@@ -164,8 +164,9 @@ void snizkpk_proof_destroy(snizkpk_proof_t *src) {
 }
 
 // TODO: move this to the correct place
-void ecdh_shared_secret_from_prekey(uint8_t *shared, otrv4_shared_prekey_pair_t *shared_prekey,
-                        const ec_point_t their_pub) {
+void ecdh_shared_secret_from_prekey(uint8_t *shared,
+                                    otrv4_shared_prekey_pair_t *shared_prekey,
+                                    const ec_point_t their_pub) {
   decaf_448_point_t s;
   decaf_448_point_scalarmul(s, their_pub, shared_prekey->priv);
 
@@ -173,7 +174,7 @@ void ecdh_shared_secret_from_prekey(uint8_t *shared, otrv4_shared_prekey_pair_t 
 }
 
 void ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
-                        const ec_point_t their_pub) {
+                                     const ec_point_t their_pub) {
   decaf_448_point_t s;
   decaf_448_point_scalarmul(s, their_pub, keypair->priv);
 
