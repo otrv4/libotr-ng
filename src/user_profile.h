@@ -21,7 +21,7 @@ user_profile_t *user_profile_new(const string_t versions);
 otr4_err_t user_profile_sign(user_profile_t *profile,
                              const otrv4_keypair_t *keypair);
 
-bool user_profile_valid_signature(const user_profile_t *profile);
+bool user_profile_verify_signature(const user_profile_t *profile);
 
 void user_profile_copy(user_profile_t *dst, const user_profile_t *src);
 

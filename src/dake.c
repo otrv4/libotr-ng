@@ -694,7 +694,7 @@ bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
   valid &= dh_mpi_valid(their_dh);
 
   /* Verify their profile is valid (and not expired). */
-  valid &= user_profile_valid_signature(profile);
+  valid &= user_profile_verify_signature(profile);
   valid &= not_expired(profile->expires);
   valid &= no_rollback_detected(profile->versions);
 
