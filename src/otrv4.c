@@ -955,7 +955,7 @@ static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
   otr->their_instance_tag = their_instance_tag;
 }
 
-otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
+static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
                                   size_t buflen, otrv4_t *otr) {
   if (otr->state == OTRV4_STATE_FINISHED)
     return OTR4_SUCCESS; /* ignore the message */
@@ -1082,7 +1082,7 @@ static bool valid_non_interactive_auth_message(
   return err == OTR4_SUCCESS;
 }
 
-otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
+static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
                                                 size_t buff_len, otrv4_t *otr) {
   if (otr->state == OTRV4_STATE_FINISHED)
     return OTR4_SUCCESS; /* ignore the message */
@@ -1661,6 +1661,10 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
     return err;
   case OTR_AUTH_I_MSG_TYPE:
     return receive_auth_i(decoded, dec_len, otr);
+  case OTR_PRE_KEY_MSG_TYPE:
+    return receive_prekey_message(&response->to_send, decoded, dec_len, otr);
+  case OTR_NON_INT_AUTH_MSG_TYPE:
+    return receive_non_interactive_auth_message(decoded, dec_len, otr);
   case OTR_DATA_MSG_TYPE:
     return otrv4_receive_data_message(response, decoded, dec_len, otr);
   default:

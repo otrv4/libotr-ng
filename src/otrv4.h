@@ -176,10 +176,4 @@ void reply_with_prekey_msg_from_server(otrv4_server_t *server,
 
 otr4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr);
 
-otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
-                                  size_t buflen, otrv4_t *otr);
-
-otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
-                                                size_t buff_len, otrv4_t *otr);
-
 #endif
