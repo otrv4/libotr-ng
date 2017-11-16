@@ -957,6 +957,9 @@ static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
 
 otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
                                   size_t buflen, otrv4_t *otr) {
+  if (otr->state == OTRV4_STATE_FINISHED)
+    return OTR4_SUCCESS; /* ignore the message */
+
   otr4_err_t err = OTR4_ERROR;
   dake_prekey_message_t m[1];
 
@@ -1081,8 +1084,8 @@ static bool valid_non_interactive_auth_message(
 
 otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
                                                 size_t buff_len, otrv4_t *otr) {
-  if (otr->state != OTRV4_STATE_START) // TODO: check on protocol state machine
-    return OTR4_SUCCESS;               /* ignore the message */
+  if (otr->state == OTRV4_STATE_FINISHED)
+    return OTR4_SUCCESS; /* ignore the message */
 
   dake_non_interactive_auth_message_t auth[1];
   if (dake_non_interactive_auth_message_deserialize(auth, buff, buff_len))
