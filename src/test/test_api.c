@@ -66,7 +66,7 @@ static otrv4_t *set_up_otr(otr4_client_state_t *state, char *account_name,
   return otrv4_new(state, policy);
 }
 
-void test_api_conversation(void) {
+void test_api_interactive_conversation(void) {
   OTR4_INIT;
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
@@ -174,95 +174,6 @@ void test_api_conversation(void) {
 
   otrv4_free_all(alice, bob);
 
-  otrv4_tlv_free(tlv);
-
-  OTR4_FREE;
-}
-
-void test_dh_key_rotation(void) {
-  OTR4_INIT;
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
-  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
-
-  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
-
-  // DAKE HAS FINISHED.
-  do_dake_fixture(alice, bob);
-
-  int ratchet_id;
-  otrv4_response_t *response_to_bob = NULL;
-  otrv4_response_t *response_to_alice = NULL;
-
-  // Bob sends a data message
-  string_t to_send = NULL;
-  otr4_err_t err;
-
-  for (ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
-    // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", tlv, bob);
-    assert_msg_sent(err, to_send);
-
-    // New ratchet happened
-    g_assert_cmpint(bob->keys->i, ==, ratchet_id);
-    g_assert_cmpint(bob->keys->j, ==, 1);
-
-    // Alice receives a data message
-    response_to_bob = otrv4_response_new();
-    otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
-    assert_msg_rec(err, "hello", response_to_bob);
-
-    // Alice follows the ratchet 1 (and prepares to a new "ratchet")
-    g_assert_cmpint(alice->keys->i, ==, ratchet_id);
-    g_assert_cmpint(alice->keys->j, ==, 0); // New ratchet should happen
-
-    // Alice deletes priv key when receiving on ratchet 3
-    if (ratchet_id == 1) {
-      otrv4_assert(alice->keys->our_dh->priv);
-      otrv4_assert(!bob->keys->our_dh->priv);
-    } else if (ratchet_id == 3 || ratchet_id == 5) {
-      otrv4_assert(!alice->keys->our_dh->priv);
-      otrv4_assert(bob->keys->our_dh->priv);
-    }
-
-    free_message_and_response(response_to_bob, to_send);
-
-    // Now alice ratchets and sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
-    assert_msg_sent(err, to_send);
-
-    g_assert_cmpint(alice->keys->i, ==, ratchet_id + 1);
-    g_assert_cmpint(alice->keys->j, ==, 1);
-
-    if (ratchet_id == 3) {
-      otrv4_assert(!alice->keys->our_dh->priv);
-      otrv4_assert(bob->keys->our_dh->priv);
-    }
-
-    // Bob receives a data message
-    response_to_alice = otrv4_response_new();
-    err = otrv4_receive_message(response_to_alice, to_send, bob);
-    assert_msg_rec(err, "hi", response_to_alice);
-
-    free_message_and_response(response_to_alice, to_send);
-
-    g_assert_cmpint(bob->keys->i, ==, ratchet_id + 1);
-    g_assert_cmpint(bob->keys->j, ==, 0); // New ratchet should happen
-
-    // Bob deletes priv key when receiving on ratchet 6
-    if (ratchet_id + 1 == 2 || ratchet_id + 1 == 6) {
-      otrv4_assert(alice->keys->our_dh->priv);
-      otrv4_assert(!bob->keys->our_dh->priv);
-    } else if (ratchet_id + 1 == 4) {
-      otrv4_assert(!alice->keys->our_dh->priv);
-      otrv4_assert(bob->keys->our_dh->priv);
-    }
-  }
-
-  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
-  otrv4_client_state_free_all(alice_state, bob_state);
-  otrv4_free_all(alice, bob);
   otrv4_tlv_free(tlv);
 
   OTR4_FREE;
@@ -424,6 +335,136 @@ void test_api_conversation_v3(void) {
   otrv4_client_state_free_all(alice_state, bob_state);
 
   otrv4_tlv_free(tlv);
+
+  OTR4_FREE;
+}
+
+static int should_succeed(otr4_err_t err) { return err == OTR4_SUCCESS; }
+
+void test_api_multiple_clients(void) {
+  OTR4_INIT;
+
+  bool send_response = true;
+  otr4_err_t err;
+
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_phone_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_pc_state = otr4_client_state_new(NULL);
+
+  // The account name should be the same. The account can be logged
+  // on different clients. Instance tags are used for that. This
+  // account name can be used as phi.
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrv4_t *bob_phone = set_up_otr(bob_phone_state, BOB_IDENTITY, PHI, 2);
+  otrv4_t *bob_pc = set_up_otr(bob_pc_state, BOB_IDENTITY, PHI, 3);
+
+  otrv4_response_t *pc_to_alice = otrv4_response_new();
+  otrv4_response_t *phone_to_alice = otrv4_response_new();
+  otrv4_response_t *alice_to_pc = otrv4_response_new();
+  otrv4_response_t *alice_to_phone = otrv4_response_new();
+
+  // PC receives query msg and sends identity msg
+  err = otrv4_receive_message(pc_to_alice, "?OTRv4?", bob_pc);
+  assert_rec_msg_inc_state(should_succeed(err), pc_to_alice, bob_pc,
+                           OTRV4_STATE_WAITING_AUTH_R, send_response);
+
+  // PHONE receives query msg and sends identity msg
+  err = otrv4_receive_message(phone_to_alice, "?OTRv4?", bob_phone);
+  assert_rec_msg_inc_state(should_succeed(err), phone_to_alice, bob_phone,
+                           OTRV4_STATE_WAITING_AUTH_R, send_response);
+
+  // ALICE receives Identity msg from PC and sends AUTH-R
+  err = otrv4_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
+  assert_rec_msg_inc_state(should_succeed(err), alice_to_pc, alice,
+                           OTRV4_STATE_WAITING_AUTH_I, send_response);
+  otrv4_response_free(pc_to_alice);
+
+  // ALICE receives Identity msg from PHONE (on state
+  // OTRV4_STATE_WAITING_AUTH_I) and sends AUTH-R. ALICE will replace keys and
+  // profile info from PC with info from PHONE.
+  err = otrv4_receive_message(alice_to_phone, phone_to_alice->to_send, alice);
+  assert_rec_msg_inc_state(should_succeed(err), alice_to_phone, alice,
+                           OTRV4_STATE_WAITING_AUTH_I, send_response);
+  otrv4_response_free(phone_to_alice);
+
+  // PC receives AUTH-R succesfully
+  pc_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(pc_to_alice, alice_to_pc->to_send, bob_pc);
+  assert_rec_msg_inc_state(should_succeed(err), pc_to_alice, bob_pc,
+                           OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
+
+  // PC deletes private keys as AUTH-R succesful
+  otrv4_assert(bob_pc->keys->our_dh->pub);
+  otrv4_assert(!bob_pc->keys->our_dh->priv);
+
+  otrv4_assert_not_zero(bob_pc->keys->our_ecdh->pub, ED448_POINT_BYTES);
+  otrv4_assert_zero(bob_pc->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+
+  // PHONE receives AUTH-R with PC instance tag - Ignores
+  phone_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(phone_to_alice, alice_to_pc->to_send, bob_phone);
+  assert_rec_msg_inc_state(should_succeed(err), phone_to_alice, bob_phone,
+                           OTRV4_STATE_WAITING_AUTH_R, !send_response);
+  otrv4_response_free(phone_to_alice);
+  otrv4_response_free(alice_to_pc);
+
+  // PHONE does NOT remove the private keys yet - needed for AUTH-I when it
+  // actually receives an AUTH-R
+  otrv4_assert(bob_phone->keys->our_dh->pub);
+  otrv4_assert(bob_phone->keys->our_dh->priv);
+
+  otrv4_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
+  otrv4_assert_not_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+
+  // ALICE receives AUTH-I from PC - Authentication fails
+  alice_to_pc = otrv4_response_new();
+  err = otrv4_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
+  assert_rec_msg_inc_state(!should_succeed(err), alice_to_pc, alice,
+                           OTRV4_STATE_WAITING_AUTH_I, !send_response);
+
+  otrv4_response_free(pc_to_alice);
+  otrv4_response_free(alice_to_pc);
+
+  // PC receives AUTH-R again - ignores
+  pc_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(pc_to_alice, alice_to_phone->to_send, bob_pc);
+  assert_rec_msg_inc_state(should_succeed(err), pc_to_alice, bob_pc,
+                           OTRV4_STATE_ENCRYPTED_MESSAGES, !send_response);
+  otrv4_response_free(pc_to_alice);
+
+  // PHONE receives correct AUTH-R message and sends AUTH-I
+  phone_to_alice = otrv4_response_new();
+  err =
+      otrv4_receive_message(phone_to_alice, alice_to_phone->to_send, bob_phone);
+  assert_rec_msg_inc_state(should_succeed(err), phone_to_alice, bob_phone,
+                           OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
+  otrv4_response_free(alice_to_phone);
+
+  // PHONE can now delete private keys
+  otrv4_assert(bob_phone->keys->our_dh->pub);
+  otrv4_assert(!bob_phone->keys->our_dh->priv);
+  otrv4_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
+  otrv4_assert_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+
+  // ALICE receives AUTH-I from PHONE
+  alice_to_phone = otrv4_response_new();
+  err = otrv4_receive_message(alice_to_phone, phone_to_alice->to_send, alice);
+  assert_rec_msg_inc_state(should_succeed(err), alice_to_phone, alice,
+                           OTRV4_STATE_ENCRYPTED_MESSAGES, !send_response);
+
+  // ALICE and PHONE have the same shared secret
+  otrv4_assert_root_key_eq(alice->keys->current->root_key,
+                           bob_phone->keys->current->root_key);
+  otrv4_assert_chain_key_eq(alice->keys->current->chain_a->key,
+                            bob_phone->keys->current->chain_a->key);
+  otrv4_assert_chain_key_eq(bob_phone->keys->current->chain_b->key,
+                            alice->keys->current->chain_b->key);
+
+  otrv4_response_free_all(phone_to_alice, alice_to_phone);
+  otrv4_userstate_free_all(alice_state->userstate, bob_phone_state->userstate,
+                           bob_pc_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_pc_state, bob_phone_state);
+  otrv4_free_all(alice, bob_pc, bob_phone);
 
   OTR4_FREE;
 }
@@ -655,132 +696,91 @@ void test_api_extra_sym_key(void) {
   OTR4_FREE;
 }
 
-static int should_succeed(otr4_err_t err) { return err == OTR4_SUCCESS; }
-
-void test_api_multiple_clients(void) {
+void test_dh_key_rotation(void) {
   OTR4_INIT;
+  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 
-  bool send_response = true;
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+
+  // DAKE HAS FINISHED.
+  do_dake_fixture(alice, bob);
+
+  int ratchet_id;
+  otrv4_response_t *response_to_bob = NULL;
+  otrv4_response_t *response_to_alice = NULL;
+
+  // Bob sends a data message
+  string_t to_send = NULL;
   otr4_err_t err;
 
-  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
-  otr4_client_state_t *bob_phone_state = otr4_client_state_new(NULL);
-  otr4_client_state_t *bob_pc_state = otr4_client_state_new(NULL);
+  for (ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
+    // Bob sends a data message
+    err = otrv4_prepare_to_send_message(&to_send, "hello", tlv, bob);
+    assert_msg_sent(err, to_send);
 
-  // The account name should be the same. The account can be logged
-  // on different clients. Instance tags are used for that. This
-  // account name can be used as phi.
-  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrv4_t *bob_phone = set_up_otr(bob_phone_state, BOB_IDENTITY, PHI, 2);
-  otrv4_t *bob_pc = set_up_otr(bob_pc_state, BOB_IDENTITY, PHI, 3);
+    // New ratchet happened
+    g_assert_cmpint(bob->keys->i, ==, ratchet_id);
+    g_assert_cmpint(bob->keys->j, ==, 1);
 
-  otrv4_response_t *pc_to_alice = otrv4_response_new();
-  otrv4_response_t *phone_to_alice = otrv4_response_new();
-  otrv4_response_t *alice_to_pc = otrv4_response_new();
-  otrv4_response_t *alice_to_phone = otrv4_response_new();
+    // Alice receives a data message
+    response_to_bob = otrv4_response_new();
+    otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
+    assert_msg_rec(err, "hello", response_to_bob);
 
-  // PC receives query msg and sends identity msg
-  err = otrv4_receive_message(pc_to_alice, "?OTRv4?", bob_pc);
-  assert_rec_msg_inc_state(should_succeed(err), pc_to_alice, bob_pc,
-                           OTRV4_STATE_WAITING_AUTH_R, send_response);
+    // Alice follows the ratchet 1 (and prepares to a new "ratchet")
+    g_assert_cmpint(alice->keys->i, ==, ratchet_id);
+    g_assert_cmpint(alice->keys->j, ==, 0); // New ratchet should happen
 
-  // PHONE receives query msg and sends identity msg
-  err = otrv4_receive_message(phone_to_alice, "?OTRv4?", bob_phone);
-  assert_rec_msg_inc_state(should_succeed(err), phone_to_alice, bob_phone,
-                           OTRV4_STATE_WAITING_AUTH_R, send_response);
+    // Alice deletes priv key when receiving on ratchet 3
+    if (ratchet_id == 1) {
+      otrv4_assert(alice->keys->our_dh->priv);
+      otrv4_assert(!bob->keys->our_dh->priv);
+    } else if (ratchet_id == 3 || ratchet_id == 5) {
+      otrv4_assert(!alice->keys->our_dh->priv);
+      otrv4_assert(bob->keys->our_dh->priv);
+    }
 
-  // ALICE receives Identity msg from PC and sends AUTH-R
-  err = otrv4_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
-  assert_rec_msg_inc_state(should_succeed(err), alice_to_pc, alice,
-                           OTRV4_STATE_WAITING_AUTH_I, send_response);
-  otrv4_response_free(pc_to_alice);
+    free_message_and_response(response_to_bob, to_send);
 
-  // ALICE receives Identity msg from PHONE (on state
-  // OTRV4_STATE_WAITING_AUTH_I) and sends AUTH-R. ALICE will replace keys and
-  // profile info from PC with info from PHONE.
-  err = otrv4_receive_message(alice_to_phone, phone_to_alice->to_send, alice);
-  assert_rec_msg_inc_state(should_succeed(err), alice_to_phone, alice,
-                           OTRV4_STATE_WAITING_AUTH_I, send_response);
-  otrv4_response_free(phone_to_alice);
+    // Now alice ratchets and sends a data message
+    err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
+    assert_msg_sent(err, to_send);
 
-  // PC receives AUTH-R succesfully
-  pc_to_alice = otrv4_response_new();
-  err = otrv4_receive_message(pc_to_alice, alice_to_pc->to_send, bob_pc);
-  assert_rec_msg_inc_state(should_succeed(err), pc_to_alice, bob_pc,
-                           OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
+    g_assert_cmpint(alice->keys->i, ==, ratchet_id + 1);
+    g_assert_cmpint(alice->keys->j, ==, 1);
 
-  // PC deletes private keys as AUTH-R succesful
-  otrv4_assert(bob_pc->keys->our_dh->pub);
-  otrv4_assert(!bob_pc->keys->our_dh->priv);
+    if (ratchet_id == 3) {
+      otrv4_assert(!alice->keys->our_dh->priv);
+      otrv4_assert(bob->keys->our_dh->priv);
+    }
 
-  otrv4_assert_not_zero(bob_pc->keys->our_ecdh->pub, ED448_POINT_BYTES);
-  otrv4_assert_zero(bob_pc->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+    // Bob receives a data message
+    response_to_alice = otrv4_response_new();
+    err = otrv4_receive_message(response_to_alice, to_send, bob);
+    assert_msg_rec(err, "hi", response_to_alice);
 
-  // PHONE receives AUTH-R with PC instance tag - Ignores
-  phone_to_alice = otrv4_response_new();
-  err = otrv4_receive_message(phone_to_alice, alice_to_pc->to_send, bob_phone);
-  assert_rec_msg_inc_state(should_succeed(err), phone_to_alice, bob_phone,
-                           OTRV4_STATE_WAITING_AUTH_R, !send_response);
-  otrv4_response_free(phone_to_alice);
-  otrv4_response_free(alice_to_pc);
+    free_message_and_response(response_to_alice, to_send);
 
-  // PHONE does NOT remove the private keys yet - needed for AUTH-I when it
-  // actually receives an AUTH-R
-  otrv4_assert(bob_phone->keys->our_dh->pub);
-  otrv4_assert(bob_phone->keys->our_dh->priv);
+    g_assert_cmpint(bob->keys->i, ==, ratchet_id + 1);
+    g_assert_cmpint(bob->keys->j, ==, 0); // New ratchet should happen
 
-  otrv4_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
-  otrv4_assert_not_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+    // Bob deletes priv key when receiving on ratchet 6
+    if (ratchet_id + 1 == 2 || ratchet_id + 1 == 6) {
+      otrv4_assert(alice->keys->our_dh->priv);
+      otrv4_assert(!bob->keys->our_dh->priv);
+    } else if (ratchet_id + 1 == 4) {
+      otrv4_assert(!alice->keys->our_dh->priv);
+      otrv4_assert(bob->keys->our_dh->priv);
+    }
+  }
 
-  // ALICE receives AUTH-I from PC - Authentication fails
-  alice_to_pc = otrv4_response_new();
-  err = otrv4_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
-  assert_rec_msg_inc_state(!should_succeed(err), alice_to_pc, alice,
-                           OTRV4_STATE_WAITING_AUTH_I, !send_response);
-
-  otrv4_response_free(pc_to_alice);
-  otrv4_response_free(alice_to_pc);
-
-  // PC receives AUTH-R again - ignores
-  pc_to_alice = otrv4_response_new();
-  err = otrv4_receive_message(pc_to_alice, alice_to_phone->to_send, bob_pc);
-  assert_rec_msg_inc_state(should_succeed(err), pc_to_alice, bob_pc,
-                           OTRV4_STATE_ENCRYPTED_MESSAGES, !send_response);
-  otrv4_response_free(pc_to_alice);
-
-  // PHONE receives correct AUTH-R message and sends AUTH-I
-  phone_to_alice = otrv4_response_new();
-  err =
-      otrv4_receive_message(phone_to_alice, alice_to_phone->to_send, bob_phone);
-  assert_rec_msg_inc_state(should_succeed(err), phone_to_alice, bob_phone,
-                           OTRV4_STATE_ENCRYPTED_MESSAGES, send_response);
-  otrv4_response_free(alice_to_phone);
-
-  // PHONE can now delete private keys
-  otrv4_assert(bob_phone->keys->our_dh->pub);
-  otrv4_assert(!bob_phone->keys->our_dh->priv);
-  otrv4_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
-  otrv4_assert_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
-
-  // ALICE receives AUTH-I from PHONE
-  alice_to_phone = otrv4_response_new();
-  err = otrv4_receive_message(alice_to_phone, phone_to_alice->to_send, alice);
-  assert_rec_msg_inc_state(should_succeed(err), alice_to_phone, alice,
-                           OTRV4_STATE_ENCRYPTED_MESSAGES, !send_response);
-
-  // ALICE and PHONE have the same shared secret
-  otrv4_assert_root_key_eq(alice->keys->current->root_key,
-                           bob_phone->keys->current->root_key);
-  otrv4_assert_chain_key_eq(alice->keys->current->chain_a->key,
-                            bob_phone->keys->current->chain_a->key);
-  otrv4_assert_chain_key_eq(bob_phone->keys->current->chain_b->key,
-                            alice->keys->current->chain_b->key);
-
-  otrv4_response_free_all(phone_to_alice, alice_to_phone);
-  otrv4_userstate_free_all(alice_state->userstate, bob_phone_state->userstate,
-                           bob_pc_state->userstate);
-  otrv4_client_state_free_all(alice_state, bob_pc_state, bob_phone_state);
-  otrv4_free_all(alice, bob_pc, bob_phone);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_free_all(alice, bob);
+  otrv4_tlv_free(tlv);
 
   OTR4_FREE;
 }
