@@ -167,10 +167,18 @@ otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
   if (ratchet == NULL) {
     return OTR4_ERROR;
   }
-
-  derive_root_key(ratchet->root_key, shared);
-  derive_chain_key_a(ratchet->chain_a->key, shared);
-  derive_chain_key_b(ratchet->chain_b->key, shared);
+  if (manager->i == 0) {
+    derive_root_key(ratchet->root_key, shared);
+    derive_chain_key_a(ratchet->chain_a->key, shared);
+    derive_chain_key_b(ratchet->chain_b->key, shared);
+  } else {
+    shared_secret_t root_shared;
+    shake_kkdf(root_shared, sizeof(shared_secret_t), manager->current->root_key,
+               sizeof(root_key_t), shared, sizeof(shared_secret_t));
+    derive_root_key(ratchet->root_key, root_shared);
+    derive_chain_key_a(ratchet->chain_a->key, root_shared);
+    derive_chain_key_b(ratchet->chain_b->key, root_shared);
+  }
 
   ratchet_free(manager->current);
   manager->current = ratchet;

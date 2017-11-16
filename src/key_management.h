@@ -88,10 +88,6 @@ otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
 
 otr4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager);
 
-/* Private */
-otr4_err_t derive_ratchet_keys(ratchet_t *ratchet,
-                               const shared_secret_t shared);
-
 void derive_chain_keys(key_manager_t *manager, int i, int j);
 
 void retrive_chain_keys(chain_key_t ck, key_manager_t *manager, int i, int j);

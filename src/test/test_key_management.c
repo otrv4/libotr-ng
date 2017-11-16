@@ -7,6 +7,7 @@ void test_derive_ratchet_keys() {
   shared_secret_t shared;
   memset(shared, 0, sizeof(shared_secret_t));
 
+  otrv4_assert(manager->i == 0);
   otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
 
   root_key_t expected_root_key;
@@ -21,6 +22,26 @@ void test_derive_ratchet_keys() {
                 sizeof(shared_secret_t));
   shake_256_kdf(expected_chain_key_b, sizeof(chain_key_t), &magic[2], shared,
                 sizeof(shared_secret_t));
+
+  otrv4_assert_cmpmem(expected_root_key, manager->current->root_key,
+                      sizeof(root_key_t));
+  otrv4_assert_cmpmem(expected_chain_key_a, manager->current->chain_a->key,
+                      sizeof(chain_key_t));
+  otrv4_assert_cmpmem(expected_chain_key_b, manager->current->chain_b->key,
+                      sizeof(chain_key_t));
+
+  shared_secret_t root_shared;
+  shake_kkdf(root_shared, sizeof(shared_secret_t), manager->current->root_key,
+             sizeof(root_key_t), shared, sizeof(shared_secret_t));
+  shake_256_kdf(expected_root_key, sizeof(root_key_t), &magic[0],
+                root_shared, sizeof(shared_secret_t));
+  shake_256_kdf(expected_chain_key_a, sizeof(chain_key_t), &magic[1],
+                root_shared, sizeof(shared_secret_t));
+  shake_256_kdf(expected_chain_key_b, sizeof(chain_key_t), &magic[2],
+                root_shared, sizeof(shared_secret_t));
+
+  manager->i = 1;
+  otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
 
   otrv4_assert_cmpmem(expected_root_key, manager->current->root_key,
                       sizeof(root_key_t));
