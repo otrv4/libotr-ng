@@ -891,6 +891,20 @@ static otr4_err_t serialize_and_encode_non_interactive_auth(
   return OTR4_SUCCESS;
 }
 
+static data_message_t *generate_data_msg(const otrv4_t *otr) {
+  data_message_t *data_msg = data_message_new();
+  if (!data_msg)
+    return NULL;
+
+  data_msg->sender_instance_tag = otr->our_instance_tag;
+  data_msg->receiver_instance_tag = otr->their_instance_tag;
+  data_msg->message_id = otr->keys->j;
+  ec_point_copy(data_msg->ecdh, OUR_ECDH(otr));
+  data_msg->dh = dh_mpi_copy(OUR_DH(otr));
+
+  return data_msg;
+}
+
 static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
                                                       otrv4_t *otr) {
   dake_non_interactive_auth_message_t msg[1];
@@ -946,7 +960,8 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   free(t);
   t = NULL;
 
-  //data_msg = generate_data_msg(otr);
+  // TODO: free this
+  data_msg = generate_data_msg(otr);
   memcpy(data_msg->nonce, &t, sizeof(data_msg->nonce));
 
   // TODO: check this
@@ -1058,7 +1073,9 @@ static bool valid_non_interactive_auth_message(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  // TODO: keep 192 bytes as nonce
+
+  data_message_t *data_msg = NULL;
+
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
   if (build_non_interactive_auth_message(
@@ -1084,6 +1101,10 @@ static bool valid_non_interactive_auth_message(
 
   free(t);
   t = NULL;
+
+  // TODO: free this
+  data_msg = generate_data_msg(otr);
+  memcpy(data_msg->nonce, &t, sizeof(data_msg->nonce));
 
   // TODO: decrypt the message if present, and add the auth_mac to reveal
   return err == OTR4_SUCCESS;
@@ -1758,20 +1779,6 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
   }
 
   return OTR4_SUCCESS;
-}
-
-static data_message_t *generate_data_msg(const otrv4_t *otr) {
-  data_message_t *data_msg = data_message_new();
-  if (!data_msg)
-    return NULL;
-
-  data_msg->sender_instance_tag = otr->our_instance_tag;
-  data_msg->receiver_instance_tag = otr->their_instance_tag;
-  data_msg->message_id = otr->keys->j;
-  ec_point_copy(data_msg->ecdh, OUR_ECDH(otr));
-  data_msg->dh = dh_mpi_copy(OUR_DH(otr));
-
-  return data_msg;
 }
 
 static otr4_err_t encrypt_data_message(data_message_t *data_msg,
