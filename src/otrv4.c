@@ -895,6 +895,8 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
                                                       otrv4_t *otr) {
   dake_non_interactive_auth_message_t msg[1];
 
+  data_message_t *data_msg = NULL;
+
   msg->sender_instance_tag = otr->our_instance_tag;
   msg->receiver_instance_tag = otr->their_instance_tag;
 
@@ -920,14 +922,16 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  // TODO: keep 192 bytes as nonce
+
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
   if (build_non_interactive_auth_message(
           &t, &t_len, otr->their_profile, get_my_user_profile(otr),
           THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
-          otr->their_profile->shared_prekey, ""))
+          otr->their_profile->shared_prekey, "")) {
+    dake_non_interactive_auth_message_destroy(msg);
     return OTR4_ERROR;
+  }
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
   snizkpk_authenticate(msg->sigma,
@@ -942,7 +946,10 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   free(t);
   t = NULL;
 
-  // check this
+  //data_msg = generate_data_msg(otr);
+  memcpy(data_msg->nonce, &t, sizeof(data_msg->nonce));
+
+  // TODO: check this
   otr4_err_t err = serialize_and_encode_non_interactive_auth(dst, msg);
 
   dake_non_interactive_auth_message_destroy(msg);
