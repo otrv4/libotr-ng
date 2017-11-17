@@ -564,8 +564,8 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
   cursor += len;
   cursor += serialize_snizkpk_proof(cursor, non_interactive_auth->sigma);
 
-  cursor +=
-      serialize_bytes_array(cursor, non_interactive_auth->auth_mac, sizeof(non_interactive_auth->auth_mac));
+  cursor += serialize_bytes_array(cursor, non_interactive_auth->auth_mac,
+                                  sizeof(non_interactive_auth->auth_mac));
 
   if (dst)
     *dst = buff;

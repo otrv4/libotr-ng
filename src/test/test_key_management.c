@@ -33,8 +33,8 @@ void test_derive_ratchet_keys() {
   shared_secret_t root_shared;
   shake_kkdf(root_shared, sizeof(shared_secret_t), manager->current->root_key,
              sizeof(root_key_t), shared, sizeof(shared_secret_t));
-  shake_256_kdf(expected_root_key, sizeof(root_key_t), &magic[0],
-                root_shared, sizeof(shared_secret_t));
+  shake_256_kdf(expected_root_key, sizeof(root_key_t), &magic[0], root_shared,
+                sizeof(shared_secret_t));
   shake_256_kdf(expected_chain_key_a, sizeof(chain_key_t), &magic[1],
                 root_shared, sizeof(shared_secret_t));
   shake_256_kdf(expected_chain_key_b, sizeof(chain_key_t), &magic[2],

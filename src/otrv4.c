@@ -426,8 +426,8 @@ serialize_and_encode_prekey_message(string_t *dst,
   return OTR4_SUCCESS;
 }
 
-// TODO: should this send to server?
-otr4_err_t otrv4_build_prekey_message(otrv4_server_t *server, otrv4_t *otr) {
+static otr4_err_t otrv4_build_prekey_message(otrv4_server_t *server,
+                                             otrv4_t *otr) {
   dake_prekey_message_t *m = NULL;
   otr4_err_t err = OTR4_ERROR;
 
@@ -441,7 +441,6 @@ otr4_err_t otrv4_build_prekey_message(otrv4_server_t *server, otrv4_t *otr) {
   ec_point_copy(m->Y, OUR_ECDH(otr));
   m->B = dh_mpi_copy(OUR_DH(otr));
 
-  // TODO: initialize server
   if (serialize_and_encode_prekey_message(&server->prekey_message, m)) {
     dake_prekey_message_free(m);
     return err;
@@ -518,7 +517,7 @@ otr4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr) {
 
   otr->state = OTRV4_STATE_START; // needed?
   maybe_create_keys(otr->conversation);
-  // TODO: maybe client should also generate here the shared prekey
+
   return reply_with_prekey_msg_to_server(server, otr);
 }
 
@@ -936,7 +935,6 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
   if (build_non_interactive_auth_message(
@@ -947,8 +945,6 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     return OTR4_ERROR;
   }
 
-  printf("%zu \n", t_len);
-
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
   snizkpk_authenticate(msg->sigma,
                        otr->conversation->client->keypair, /* g^R and R */
@@ -957,7 +953,8 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
                        t, t_len);
 
   /* Auth MAC = KDF_2(auth_mac_k || t) */
-  shake_256_mac(msg->auth_mac, sizeof(msg->auth_mac), auth_mac_k, sizeof(auth_mac_k), t, t_len);
+  shake_256_mac(msg->auth_mac, sizeof(msg->auth_mac), auth_mac_k,
+                sizeof(auth_mac_k), t, t_len);
 
   free(t);
   t = NULL;
@@ -979,7 +976,7 @@ static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
 }
 
 static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
-                                  size_t buflen, otrv4_t *otr) {
+                                         size_t buflen, otrv4_t *otr) {
   if (otr->state == OTRV4_STATE_FINISHED)
     return OTR4_SUCCESS; /* ignore the message */
 
@@ -1007,7 +1004,6 @@ static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
 
   key_manager_set_their_ecdh(m->Y, otr->keys);
   key_manager_set_their_dh(m->B, otr->keys);
-  // TODO: this should also validate the user_profile
   user_profile_copy(otr->their_profile, m->profile);
 
   if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
@@ -1081,7 +1077,8 @@ static bool valid_non_interactive_auth_message(
    * Y || X || B || A || our_shared_prekey.public */
   if (build_non_interactive_auth_message(
           &t, &t_len, get_my_user_profile(otr), auth->profile, OUR_ECDH(otr),
-          auth->X, OUR_DH(otr), auth->A, otr->profile->shared_prekey, otr->conversation->client->phi))
+          auth->X, OUR_DH(otr), auth->A, otr->profile->shared_prekey,
+          otr->conversation->client->phi))
     return false;
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
@@ -1112,7 +1109,8 @@ static bool valid_non_interactive_auth_message(
 }
 
 static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
-                                                size_t buff_len, otrv4_t *otr) {
+                                                       size_t buff_len,
+                                                       otrv4_t *otr) {
   if (otr->state == OTRV4_STATE_FINISHED)
     return OTR4_SUCCESS; /* ignore the message */
 
@@ -1160,7 +1158,6 @@ static otr4_err_t receive_identity_message_on_state_start(
 
   key_manager_set_their_ecdh(identity_message->Y, otr->keys);
   key_manager_set_their_dh(identity_message->B, otr->keys);
-  // TODO: this should also validate the user_profile
   user_profile_copy(otr->their_profile, identity_message->profile);
 
   if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
