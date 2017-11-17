@@ -238,8 +238,6 @@ void test_api_non_interactive_conversation(void) {
   otrv4_assert_ec_public_key_eq(alice->keys->their_ecdh,
                                 bob->keys->our_ecdh->pub);
   otrv4_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
-  g_assert_cmpint(alice->keys->i, ==, 0);
-  g_assert_cmpint(alice->keys->j, ==, 0);
 
   otrv4_assert(response_to_alice->to_display == NULL);
   otrv4_assert(response_to_alice->to_send == NULL);
@@ -249,8 +247,8 @@ void test_api_non_interactive_conversation(void) {
   otrv4_assert(alice->keys->current);
 
   // How will the ratchet happen on non interactive?
-  // g_assert_cmpint(alice->keys->i, ==, 0);
-  // g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 1);
 
   // Both have the same shared secret
   // otrv4_assert_root_key_eq(alice->keys->current->root_key,

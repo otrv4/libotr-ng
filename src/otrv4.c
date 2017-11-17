@@ -1146,7 +1146,7 @@ static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
     fingerprint_seen_cb(fp, otr->conversation);
 
-  return double_ratcheting_init(0, false, otr);
+  return double_ratcheting_init(1, false, otr);
 }
 
 static otr4_err_t receive_identity_message_on_state_start(
