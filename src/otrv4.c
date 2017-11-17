@@ -747,7 +747,7 @@ static otr4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
   return err;
 }
 
-static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
+static otr4_err_t generate_tmp_key_r(uint8_t *dst, otrv4_t *otr) {
   k_ecdh_t tmp_ecdh_k1;
   k_ecdh_t tmp_ecdh_k2;
   k_ecdh_t k_ecdh;
@@ -760,6 +760,17 @@ static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
                        otr->keys->their_dh) == OTR4_ERROR)
     return OTR4_ERROR;
 
+  brace_key_t brace_key;
+  hash_hash(brace_key, sizeof(brace_key_t), k_dh, sizeof(k_dh_t));
+
+#ifdef DEBUG
+  printf("GENERATING TEMP KEY R\n");
+  printf("K_ecdh = ");
+  otrv4_memdump(k_ecdh, sizeof(k_ecdh_t));
+  printf("brace_key = ");
+  otrv4_memdump(brace_key, sizeof(brace_key_t));
+#endif
+
   ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
                      otr->keys->their_shared_prekey);
   ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
@@ -770,10 +781,16 @@ static otr4_err_t generate_tmp_key(uint8_t *dst, otrv4_t *otr) {
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
-  hash_update(hd, k_dh, sizeof(k_dh_t));
+  hash_update(hd, brace_key, sizeof(brace_key_t));
 
   hash_final(hd, dst, HASH_BYTES);
   hash_destroy(hd);
+
+#ifdef DEBUG
+  printf("GENERATING TEMP KEY R\n");
+  printf("tmp_key_i = ");
+  otrv4_memdump(dst, HASH_BYTES);
+#endif
 
   sodium_memzero(tmp_ecdh_k1, ED448_POINT_BYTES);
   sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
@@ -922,7 +939,7 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
 
   /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) ||
    * ECDH(x, Pkb) || k_dh) */
-  if (generate_tmp_key(otr->keys->tmp_key, otr) == OTR4_ERROR) {
+  if (generate_tmp_key_r(otr->keys->tmp_key, otr) == OTR4_ERROR) {
     return OTR4_ERROR;
   }
 
@@ -1018,7 +1035,7 @@ static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
   return double_ratcheting_init(0, false, otr);
 }
 
-static otr4_err_t generate_tmp_key_2(uint8_t *dst, otrv4_t *otr) {
+static otr4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
   k_ecdh_t k_ecdh;
   k_dh_t k_dh;
   k_ecdh_t tmp_ecdh_k1;
@@ -1031,6 +1048,17 @@ static otr4_err_t generate_tmp_key_2(uint8_t *dst, otrv4_t *otr) {
                        otr->keys->their_dh) == OTR4_ERROR)
     return OTR4_ERROR;
 
+  brace_key_t brace_key;
+  hash_hash(brace_key, sizeof(brace_key_t), k_dh, sizeof(k_dh_t));
+
+#ifdef DEBUG
+  printf("GENERATING TEMP KEY I\n");
+  printf("K_ecdh = ");
+  otrv4_memdump(k_ecdh, sizeof(k_ecdh_t));
+  printf("brace_key = ");
+  otrv4_memdump(brace_key, sizeof(brace_key_t));
+#endif
+
   ecdh_shared_secret_from_prekey(tmp_ecdh_k1,
                                  otr->conversation->client->shared_prekey_pair,
                                  THEIR_ECDH(otr));
@@ -1042,10 +1070,16 @@ static otr4_err_t generate_tmp_key_2(uint8_t *dst, otrv4_t *otr) {
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
-  hash_update(hd, k_dh, sizeof(k_dh_t));
+  hash_update(hd, brace_key, sizeof(brace_key_t));
 
   hash_final(hd, dst, HASH_BYTES);
   hash_destroy(hd);
+
+#ifdef DEBUG
+  printf("GENERATING TEMP KEY I\n");
+  printf("tmp_key_i = ");
+  otrv4_memdump(dst, HASH_BYTES);
+#endif
 
   sodium_memzero(tmp_ecdh_k1, ED448_POINT_BYTES);
   sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
@@ -1058,7 +1092,7 @@ static bool valid_non_interactive_auth_message(
   /* tmp_k = KDF_2(K_ecdh ||
    * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
    * ECDH(Ska, X) || k_dh) */
-  if (generate_tmp_key_2(otr->keys->tmp_key, otr) == OTR4_ERROR) {
+  if (generate_tmp_key_i(otr->keys->tmp_key, otr) == OTR4_ERROR) {
     return OTR4_ERROR;
   }
 
