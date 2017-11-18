@@ -251,18 +251,18 @@ void test_api_non_interactive_conversation(void) {
   g_assert_cmpint(alice->keys->j, ==, 1);
 
   // Both have the same shared secret
-  // otrv4_assert_root_key_eq(alice->keys->current->root_key,
-  //                         bob->keys->current->root_key);
-  // otrv4_assert_chain_key_eq(alice->keys->current->chain_a->key,
-  //                          bob->keys->current->chain_a->key);
-  // otrv4_assert_chain_key_eq(bob->keys->current->chain_b->key,
-  //                          alice->keys->current->chain_b->key);
+  otrv4_assert_root_key_eq(alice->keys->current->root_key,
+                           bob->keys->current->root_key);
+  otrv4_assert_chain_key_eq(alice->keys->current->chain_a->key,
+                            bob->keys->current->chain_a->key);
+  otrv4_assert_chain_key_eq(bob->keys->current->chain_b->key,
+                            alice->keys->current->chain_b->key);
 
-  // chain_key_t bob_sending_key, alice_receiving_key;
-  // key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
-  // otrv4_assert(key_manager_get_receiving_chain_key(
-  //                 alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
-  // otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
+  chain_key_t bob_sending_key, alice_receiving_key;
+  key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
+  otrv4_assert(key_manager_get_receiving_chain_key(
+                   alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
+  otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
   free(server);
   server = NULL;

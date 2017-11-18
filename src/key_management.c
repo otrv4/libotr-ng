@@ -318,7 +318,6 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
   return OTR4_SUCCESS;
 }
 
-// TODO: change the name
 void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
                              const brace_key_t brace_key) {
   decaf_shake256_ctx_t hd;
@@ -411,7 +410,7 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   printf("ENTERING NEW RATCHET\n");
   printf("K_ecdh = ");
   otrv4_memdump(k_ecdh, sizeof(k_ecdh_t));
-  printf("mixed_key = ");
+  printf("brace_key = ");
   otrv4_memdump(manager->brace_key, sizeof(brace_key_t));
 #endif
 

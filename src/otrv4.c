@@ -1063,7 +1063,7 @@ static otr4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
                                  otr->conversation->client->shared_prekey_pair,
                                  THEIR_ECDH(otr));
   ecdh_shared_secret_from_keypair(
-      tmp_ecdh_k2, otr->conversation->client->keypair, OUR_ECDH(otr));
+      tmp_ecdh_k2, otr->conversation->client->keypair, THEIR_ECDH(otr));
 
   decaf_shake256_ctx_t hd;
   hash_init_with_dom(hd);
