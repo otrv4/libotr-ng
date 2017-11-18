@@ -1105,8 +1105,6 @@ static bool valid_non_interactive_auth_message(
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-  data_message_t *data_msg = NULL;
-
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
   if (build_non_interactive_auth_message(
@@ -1122,6 +1120,11 @@ static bool valid_non_interactive_auth_message(
                      OUR_ECDH(otr),                           /* g^  */
                      t, t_len);
 
+  data_message_t *data_msg = NULL;
+  data_msg = generate_data_msg(otr);
+  memcpy(data_msg->nonce, &t, sizeof(data_msg->nonce));
+  data_message_free(data_msg); // for the moment
+
   /* Auth MAC = KDF_2(auth_mac_k || t) */
   uint8_t auth_mac[HASH_BYTES];
   shake_256_mac(auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
@@ -1133,10 +1136,6 @@ static bool valid_non_interactive_auth_message(
 
   free(t);
   t = NULL;
-
-  data_msg = generate_data_msg(otr);
-  memcpy(data_msg->nonce, &t, sizeof(data_msg->nonce));
-  data_message_free(data_msg); // for the moment
 
   // TODO: decrypt the message if present, and add the auth_mac to reveal
   return err == OTR4_SUCCESS;
