@@ -920,11 +920,92 @@ static data_message_t *generate_data_msg(const otrv4_t *otr) {
   return data_msg;
 }
 
+static otr4_err_t encrypt_data_message(data_message_t *data_msg,
+                                       const uint8_t *message,
+                                       size_t message_len,
+                                       const m_enc_key_t enc_key) {
+  int err = 0;
+  uint8_t *c = NULL;
+
+  if (!(data_msg->nonce > 0))
+    random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
+
+  c = malloc(message_len);
+  if (!c)
+    return OTR4_ERROR;
+
+  // TODO: message is an UTF-8 string. Is there any problem to cast
+  // it to (unsigned char *)
+  err = crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
+  if (err) {
+    free(c);
+    return OTR4_ERROR;
+  }
+
+  data_msg->enc_msg_len = message_len;
+  data_msg->enc_msg = c;
+
+#ifdef DEBUG
+  printf("nonce = ");
+  otrv4_memdump(data_msg->nonce, DATA_MSG_NONCE_BYTES);
+  printf("msg = ");
+  otrv4_memdump(message, message_len);
+  printf("cipher = ");
+  otrv4_memdump(c, message_len);
+#endif
+
+  return OTR4_SUCCESS;
+}
+
+static otr4_err_t generate_data_msg_on_non_interactive_auth(
+    string_t *to_send, const uint8_t *message, size_t message_len,
+    uint8_t nonce[DATA_MSG_NONCE_BYTES], otrv4_t *otr) {
+  data_message_t *data_msg = NULL;
+
+  if (key_manager_prepare_next_chain_key(otr->keys)) {
+    return OTR4_ERROR;
+  }
+
+  m_enc_key_t enc_key;
+  m_mac_key_t mac_key;
+  memset(enc_key, 0, sizeof(m_enc_key_t));
+  memset(mac_key, 0, sizeof(m_mac_key_t));
+
+  if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
+    return OTR4_ERROR;
+  }
+
+  data_msg = generate_data_msg(otr);
+  if (!data_msg) {
+    sodium_memzero(enc_key, sizeof(m_enc_key_t));
+    sodium_memzero(mac_key, sizeof(m_mac_key_t));
+    return OTR4_ERROR;
+  }
+
+  data_msg->sender_instance_tag = otr->our_instance_tag;
+  data_msg->receiver_instance_tag = otr->their_instance_tag;
+
+  memcpy(data_msg->nonce, nonce, DATA_MSG_NONCE_BYTES);
+
+  otr4_err_t err = OTR4_ERROR;
+  if (encrypt_data_message(data_msg, message, message_len, enc_key) ==
+      OTR4_SUCCESS) {
+    err = OTR4_SUCCESS;
+  }
+
+  sodium_memzero(enc_key, sizeof(m_enc_key_t));
+  sodium_memzero(mac_key, sizeof(m_mac_key_t));
+
+  free(data_msg); // for the moment
+  data_msg = NULL;
+  return err;
+}
+
 static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
+                                                      uint8_t *data_msg,
+                                                      size_t len,
                                                       otrv4_t *otr) {
   dake_non_interactive_auth_message_t msg[1];
-
-  data_message_t *data_msg = NULL;
 
   msg->sender_instance_tag = otr->our_instance_tag;
   msg->receiver_instance_tag = otr->their_instance_tag;
@@ -933,15 +1014,6 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
 
   ec_point_copy(msg->X, OUR_ECDH(otr));
   msg->A = dh_mpi_copy(OUR_DH(otr));
-
-  memcpy(otr->keys->their_shared_prekey, otr->their_profile->shared_prekey,
-         sizeof(otrv4_shared_prekey_t));
-
-  /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) ||
-   * ECDH(x, Pkb) || k_dh) */
-  if (generate_tmp_key_r(otr->keys->tmp_key, otr) == OTR4_ERROR) {
-    return OTR4_ERROR;
-  }
 
   /* auth_mac_k = KDF_2(0x01 || tmp_k) */
   uint8_t magic[1] = {0x01};
@@ -969,6 +1041,19 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
                        THEIR_ECDH(otr),                    /* g^i -- Y */
                        t, t_len);
 
+  uint8_t nonce[DATA_MSG_NONCE_BYTES];
+  memcpy(nonce, &t, DATA_MSG_NONCE_BYTES);
+
+  // TODO: for the moment
+  if (data_msg == NULL) {
+    if (generate_data_msg_on_non_interactive_auth(&msg->enc_msg, data_msg, len,
+                                                  nonce, otr) == OTR4_ERROR)
+      return OTR4_ERROR;
+
+    free(data_msg);
+    data_msg = NULL;
+  }
+
   /* Auth MAC = KDF_2(auth_mac_k || t) */
   shake_256_mac(msg->auth_mac, sizeof(msg->auth_mac), auth_mac_k,
                 sizeof(auth_mac_k), t, t_len);
@@ -976,12 +1061,15 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   free(t);
   t = NULL;
 
+  // TODO: for the moment
+  free(data_msg);
+  data_msg = NULL;
+
   otr4_err_t err = serialize_and_encode_non_interactive_auth(dst, msg);
 
-  data_msg = generate_data_msg(otr);
-  memcpy(data_msg->nonce, &t, sizeof(data_msg->nonce));
-  data_message_free(data_msg); // for the moment
-
+  // TODO: add this when the msg is serialized
+  // if ((err == OTR4_SUCCESS) && msg->enc_msg)
+  //   otr->keys->j++;
   dake_non_interactive_auth_message_destroy(msg);
 
   return err;
@@ -1026,13 +1114,30 @@ static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
   if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  // TODO: perhaps extract from here the generation of tmp_k
-  if (reply_with_non_interactive_auth_msg(dst, otr))
+  memcpy(otr->keys->their_shared_prekey, otr->their_profile->shared_prekey,
+         sizeof(otrv4_shared_prekey_t));
+
+  /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) ||
+   * ECDH(x, Pkb) || k_dh) */
+  if (generate_tmp_key_r(otr->keys->tmp_key, otr) == OTR4_ERROR)
+    return OTR4_ERROR;
+
+  if (double_ratcheting_init(0, false, otr))
     return OTR4_ERROR;
 
   dake_prekey_message_destroy(m);
 
-  return double_ratcheting_init(0, false, otr);
+  // TODO: for the moment
+  const string_t message = "hi";
+  uint8_t *data_msg = NULL;
+  size_t len = strlen(message) + 1;
+  data_msg = malloc(len);
+  if (!data_msg)
+    return OTR4_ERROR;
+
+  stpcpy((char *)data_msg, message);
+
+  return reply_with_non_interactive_auth_msg(dst, data_msg, len, otr);
 }
 
 static otr4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
@@ -1808,42 +1913,6 @@ otr4_err_t otrv4_receive_message(otrv4_response_t *response,
   case OTRV4_VERSION_NONE:
     return receive_message_v4_only(response, message, otr);
   }
-
-  return OTR4_SUCCESS;
-}
-
-static otr4_err_t encrypt_data_message(data_message_t *data_msg,
-                                       const uint8_t *message,
-                                       size_t message_len,
-                                       const m_enc_key_t enc_key) {
-  int err = 0;
-  uint8_t *c = NULL;
-
-  random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
-
-  c = malloc(message_len);
-  if (!c)
-    return OTR4_ERROR;
-
-  // TODO: message is an UTF-8 string. Is there any problem to cast
-  // it to (unsigned char *)
-  err = crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
-  if (err) {
-    free(c);
-    return OTR4_ERROR;
-  }
-
-  data_msg->enc_msg_len = message_len;
-  data_msg->enc_msg = c;
-
-#ifdef DEBUG
-  printf("nonce = ");
-  otrv4_memdump(data_msg->nonce, DATA_MSG_NONCE_BYTES);
-  printf("msg = ");
-  otrv4_memdump(message, message_len);
-  printf("cipher = ");
-  otrv4_memdump(c, message_len);
-#endif
 
   return OTR4_SUCCESS;
 }

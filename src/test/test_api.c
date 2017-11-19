@@ -288,7 +288,6 @@ void test_api_non_interactive_conversation(void) {
   bob->running_version = OTRV4_VERSION_4;
   alice->running_version = OTRV4_VERSION_4;
 
-
   for (message_id = 2; message_id < 5; message_id++) {
     err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
     assert_msg_sent(err, to_send);
