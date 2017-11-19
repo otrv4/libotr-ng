@@ -643,13 +643,24 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
     if (user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
       continue;
 
+    uint8_t *phi_val = NULL;
+    size_t phi_len = strlen(phi) + 1;
+    phi_val = malloc(phi_len);
+    if (!phi_val) {
+      return OTR4_ERROR;
+    }
+
+    stpcpy((char *)phi_val, phi);
+
     shake_256_hash(hash_ser_i_profile, sizeof(hash_ser_i_profile),
                    ser_i_profile, ser_i_profile_len);
 
     shake_256_hash(hash_ser_r_profile, sizeof(hash_ser_r_profile),
                    ser_r_profile, ser_r_profile_len);
-    // TODO: is it ok to cast it here?
-    shake_256_hash(hash_phi, sizeof(hash_phi), (uint8_t *)phi, strlen(phi));
+
+    shake_256_hash(hash_phi, sizeof(hash_phi), phi_val, phi_len);
+    free(phi_val);
+    phi_val = NULL;
 
     size_t len = 1 + 2 * ED448_POINT_BYTES + 2 * HASH_BYTES + ser_i_dh_len +
                  ser_r_dh_len + HASH_BYTES;
@@ -835,13 +846,24 @@ static otr4_err_t build_non_interactive_auth_message(
     if (user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
       continue;
 
+    uint8_t *phi_val = NULL;
+    size_t phi_len = strlen(phi) + 1;
+    phi_val = malloc(phi_len);
+    if (!phi_val) {
+      return OTR4_ERROR;
+    }
+
+    stpcpy((char *)phi_val, phi);
+
     shake_256_hash(hash_ser_i_profile, sizeof(hash_ser_i_profile),
                    ser_i_profile, ser_i_profile_len);
 
     shake_256_hash(hash_ser_r_profile, sizeof(hash_ser_r_profile),
                    ser_r_profile, ser_r_profile_len);
-    // TODO: is it ok to cast it here?
-    shake_256_hash(hash_phi, sizeof(hash_phi), (uint8_t *)phi, strlen(phi));
+
+    shake_256_hash(hash_phi, sizeof(hash_phi), phi_val, phi_len);
+    free(phi_val);
+    phi_val = NULL;
 
     size_t len = 2 * ED448_POINT_BYTES + 2 * HASH_BYTES + ser_i_dh_len +
                  ser_r_dh_len + ED448_SHARED_PREKEY_BYTES + HASH_BYTES;
