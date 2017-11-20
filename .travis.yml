@@ -16,6 +16,8 @@ matrix:
     - os: linux
       dist: precise
       compiler: gcc
+    - os: osx
+      compiler: clang
 
 sudo: required
 
