@@ -53,5 +53,6 @@ script:
   - export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
   - export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
   - ./autogen.sh && ./configure --disable-shared
-  - make ci
-
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then make ci; fi
+  - if [[ $(lsb_release -c -s) == "precise" ]] && [[ $TRAVIS_OS_NAME == 'linux' ]]; then make ci; fi
+  - if [[ $(lsb_release -c -s) == "trusty" ]] && [[ $TRAVIS_OS_NAME == 'linux' ]];  then make ci; fi
