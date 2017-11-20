@@ -35,6 +35,7 @@ before_install:
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install glib; fi
 
 before_script:
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgpg-error; fi
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgcrypt; fi
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libsodium; fi
   - mkdir .deps
