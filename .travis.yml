@@ -31,11 +31,12 @@ before_install:
 - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes; fi
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install valgrind; fi
 - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install valgrind --quiet --assume-yes; fi
+- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install curl; fi
 
 before_script:
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgcrypt; fi
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libsodium; fi
   - mkdir .deps
-  - curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
-  - pushd .deps/libgpg-error-1.26 && ./configure && make && sudo make install && popd
   - curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps
   - pushd .deps/libgcrypt-1.8.1 && ./configure && make && sudo make install && popd
   - git clone --depth=1 https://bugs.otr.im/lib/libotr.git .deps/libotr
