@@ -28,9 +28,9 @@ before_install:
 
 # Dependencies
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint; fi
-- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install --quiet --assume-yes; fi
+- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes; fi
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install valgrind; fi
-- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get valgrind --quiet --assume-yes; fi
+- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install valgrind --quiet --assume-yes; fi
 
 before_script:
   - mkdir .deps
