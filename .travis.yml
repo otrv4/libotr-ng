@@ -55,4 +55,5 @@ script:
   - ./autogen.sh && ./configure --disable-shared
   - if [[ $(lsb_release -c -s) == "precise" ]]; then make ci; fi
   - if [[ $(lsb_release -c -s) == "trusty" ]];  then make ci; fi
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then make ci; fi
 
