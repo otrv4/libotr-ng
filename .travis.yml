@@ -32,6 +32,7 @@ before_install:
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install valgrind; fi
 - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install valgrind --quiet --assume-yes; fi
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install curl; fi
+- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install glib; fi
 
 before_script:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgcrypt; fi
