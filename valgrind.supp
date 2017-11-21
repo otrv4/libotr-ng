@@ -262,6 +262,21 @@
    fun:_ZN11ImageLoader19processInitializersERKNS_11LinkContextEjRNS_21InitializerTimingListERNS_15UninitedUpwardsE
 }
 {
+   osx_image_loader_8
+   Memcheck:Cond
+   ...
+   fun:bcmp
+   ...
+   fun:_ZN4dyldL14libraryLocatorEPKcbS1_PKN11ImageLoader10RPathChainE
+}
+{
+   osx_image_loader_9
+   Memcheck:Cond
+   ...
+   fun:_ZN16ImageLoaderMachO18validateFirstPagesEPK21linkedit_data_commandiPKhmxRKN11ImageLoader11LinkContextE
+   fun:_ZN11ImageLoader22recursiveLoadLibrariesERKNS_11LinkContextEbRKNS_10RPathChainE
+}
+{
    osx_init_object
    Memcheck:Leak
    ...
