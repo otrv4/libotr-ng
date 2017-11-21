@@ -49,7 +49,8 @@ typedef struct {
   dh_public_key_t A;
   snizkpk_proof_t sigma[1];
   uint8_t auth_mac[HASH_BYTES];
-  string_t enc_msg;
+  uint8_t *enc_msg;
+  size_t enc_msg_len;
 } dake_non_interactive_auth_message_t;
 
 dake_identity_message_t *

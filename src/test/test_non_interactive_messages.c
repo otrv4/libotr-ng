@@ -189,6 +189,8 @@ void test_dake_non_interactive_auth_message_serializes(
   user_profile_copy(msg->profile, f->profile);
   ec_point_copy(msg->X, ecdh->pub);
   msg->A = dh_mpi_copy(dh->pub);
+  msg->enc_msg = NULL;
+  msg->enc_msg_len = 0;
 
   // TODO: correctly generate this sigma
   unsigned char *t = NULL;
@@ -272,6 +274,8 @@ void test_dake_non_interactive_auth_message_deserializes(
   user_profile_copy(msg->profile, f->profile);
   ec_point_copy(msg->X, ecdh->pub);
   msg->A = dh_mpi_copy(dh->pub);
+  msg->enc_msg = NULL;
+  msg->enc_msg_len = 0;
 
   // TODO: correctly generate this sigma
   unsigned char *t = NULL;

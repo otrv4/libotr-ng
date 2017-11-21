@@ -521,20 +521,26 @@ void dake_non_interactive_auth_message_destroy(
   user_profile_destroy(non_interactive_auth->profile);
   snizkpk_proof_destroy(non_interactive_auth->sigma);
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
+  non_interactive_auth->enc_msg = NULL;
 }
 
 otr4_err_t dake_non_interactive_auth_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_t *non_interactive_auth) {
+  size_t data_msg_len = 0;
+
+  if (non_interactive_auth->enc_msg)
+    data_msg_len = non_interactive_auth->enc_msg_len + MAC_KEY_BYTES;
+
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
   if (user_profile_asprintf(&our_profile, &our_profile_len,
-                            non_interactive_auth->profile)) {
+                            non_interactive_auth->profile))
     return OTR4_ERROR;
-  }
 
-  size_t s = NON_INT_AUTH_BYTES + our_profile_len;
+  // TODO: add old mac keys
+  size_t s = NON_INT_AUTH_BYTES + our_profile_len + data_msg_len;
 
   uint8_t *buff = malloc(s);
   if (!buff) {
@@ -563,6 +569,11 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
 
   cursor += len;
   cursor += serialize_snizkpk_proof(cursor, non_interactive_auth->sigma);
+
+  if (non_interactive_auth->enc_msg) {
+    cursor += serialize_bytes_array(cursor, non_interactive_auth->enc_msg,
+                                    data_msg_len);
+  }
 
   cursor += serialize_bytes_array(cursor, non_interactive_auth->auth_mac,
                                   sizeof(non_interactive_auth->auth_mac));
