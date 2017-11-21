@@ -27,16 +27,11 @@ before_install:
 - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get update --quiet --assume-yes; fi
 
 # Dependencies
-- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint; fi
-- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes; fi
-- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install valgrind; fi
-- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install valgrind --quiet --assume-yes; fi
-- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install curl; fi
-- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install glib; fi
+- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint && brew install valgrind && brew install curl && brew install glib; fi
+- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes && sudo apt-get install valgrind --quiet --assume-yes; fi
 
 before_script:
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgcrypt; fi
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libsodium; fi
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgcrypt && brew install libsodium; fi
   - mkdir .deps
   - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps; fi
   - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then pushd .deps/libgpg-error-1.26 && ./configure && make && sudo make install && popd; fi
