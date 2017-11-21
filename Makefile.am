@@ -15,7 +15,8 @@ code-check:
 	splint +trytorecover src/*.h src/**.c `pkg-config --cflags glib-2.0`
 
 VALGRIND_SUPPRESSIONS = \
-	valgrind.supp
+	valgrind.supp \
+	osx.supp
 
 VALGRIND_ARGS = --track-origins=yes --quiet --error-exitcode=2 --leak-check=full \
 	--suppressions=$(VALGRIND_SUPPRESSIONS) --gen-suppressions=all
