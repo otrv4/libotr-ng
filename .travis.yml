@@ -42,10 +42,10 @@ before_script:
   - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then pushd .deps/libgpg-error-1.26 && ./configure && make && sudo make install && popd; fi
   - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps; fi
   - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then pushd .deps/libgcrypt-1.8.1 && ./configure && make && sudo make install && popd; fi
+  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then git clone --depth=1 https://github.com/jedisct1/libsodium.git .deps/libsodium; fi
+  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then pushd .deps/libsodium && ./autogen.sh && ./configure && make && sudo make install && popd; fi
   - git clone --depth=1 https://bugs.otr.im/lib/libotr.git .deps/libotr
   - pushd .deps/libotr && ./bootstrap && ./configure && make && sudo make install && popd
-  - git clone --depth=1 https://github.com/jedisct1/libsodium.git .deps/libsodium
-  - pushd .deps/libsodium && ./autogen.sh && ./configure && make && sudo make install && popd
   - git clone --depth=1 https://github.com/twstrike/ed448goldilocks .deps/goldilocks
   - pushd .deps/goldilocks && ./autogen.sh && ./configure && make && sudo make install && popd
 
