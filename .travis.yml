@@ -16,24 +16,31 @@ matrix:
     - os: linux
       dist: precise
       compiler: gcc
+    - os: osx
+      compiler: clang
 
 sudo: required
 
 before_install:
-  - sudo apt-get update --quiet --assume-yes
-  - sudo apt-get install splint --quiet --assume-yes
-  - sudo apt-get install valgrind --quiet --assume-yes
+# Update the repo
+- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew update; fi
+- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get update --quiet --assume-yes; fi
+
+# Dependencies
+- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint && brew install valgrind && brew install curl && brew install glib; fi
+- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes && sudo apt-get install valgrind --quiet --assume-yes; fi
 
 before_script:
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgcrypt && brew install libsodium; fi
   - mkdir .deps
-  - curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
-  - pushd .deps/libgpg-error-1.26 && ./configure && make && sudo make install && popd
-  - curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps
-  - pushd .deps/libgcrypt-1.8.1 && ./configure && make && sudo make install && popd
+  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps; fi
+  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then pushd .deps/libgpg-error-1.26 && ./configure && make && sudo make install && popd; fi
+  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps; fi
+  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then pushd .deps/libgcrypt-1.8.1 && ./configure && make && sudo make install && popd; fi
+  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then git clone --depth=1 https://github.com/jedisct1/libsodium.git .deps/libsodium; fi
+  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then pushd .deps/libsodium && ./autogen.sh && ./configure && make && sudo make install && popd; fi
   - git clone --depth=1 https://bugs.otr.im/lib/libotr.git .deps/libotr
   - pushd .deps/libotr && ./bootstrap && ./configure && make && sudo make install && popd
-  - git clone --depth=1 https://github.com/jedisct1/libsodium.git .deps/libsodium
-  - pushd .deps/libsodium && ./autogen.sh && ./configure && make && sudo make install && popd
   - git clone --depth=1 https://github.com/twstrike/ed448goldilocks .deps/goldilocks
   - pushd .deps/goldilocks && ./autogen.sh && ./configure && make && sudo make install && popd
 
@@ -41,6 +48,6 @@ script:
   - export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
   - export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
   - ./autogen.sh && ./configure --disable-shared
-  - if [[ $(lsb_release -c -s) == "precise" ]]; then make ci; fi
-  - if [[ $(lsb_release -c -s) == "trusty" ]];  then make ci; fi
-
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then make ci; fi
+  - if [[ $(lsb_release -c -s) == "precise" ]] && [[ $TRAVIS_OS_NAME == 'linux' ]]; then make ci; fi
+  - if [[ $(lsb_release -c -s) == "trusty" ]] && [[ $TRAVIS_OS_NAME == 'linux' ]];  then make ci; fi
