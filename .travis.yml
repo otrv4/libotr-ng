@@ -16,9 +16,12 @@ matrix:
     - os: linux
       dist: precise
       compiler: gcc
+    - os: osx
+      compiler: clang
   allow_failures:
     - os: osx
       compiler: clang
+  fast-finish: true
 
 sudo: required
 
