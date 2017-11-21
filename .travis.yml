@@ -16,6 +16,7 @@ matrix:
     - os: linux
       dist: precise
       compiler: gcc
+  allow_failures:
     - os: osx
       compiler: clang
 
