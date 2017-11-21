@@ -18,7 +18,7 @@ matrix:
       compiler: gcc
   allow_failures:
     - os: osx
-      compiler: clang
+    - compiler: clang
   fast-finish: true
 
 sudo: required
