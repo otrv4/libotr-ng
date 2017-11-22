@@ -84,66 +84,57 @@ otr4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
 }
 
 otr4_err_t data_message_deserialize(data_message_t *dst, const uint8_t *buff,
-                                    size_t bufflen) {
+                                    size_t bufflen, size_t *nread) {
   const uint8_t *cursor = buff;
   int64_t len = bufflen;
   size_t read = 0;
 
   uint16_t protocol_version = 0;
-  if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
+  if (deserialize_uint16(&protocol_version, cursor, len, &read))
     return OTR4_ERROR;
-  }
 
   cursor += read;
   len -= read;
 
-  if (protocol_version != OTR_VERSION) {
+  if (protocol_version != OTR_VERSION)
     return OTR4_ERROR;
-  }
 
   uint8_t message_type = 0;
-  if (deserialize_uint8(&message_type, cursor, len, &read)) {
+  if (deserialize_uint8(&message_type, cursor, len, &read))
     return OTR4_ERROR;
-  }
 
   cursor += read;
   len -= read;
 
-  if (message_type != OTR_DATA_MSG_TYPE) {
+  if (message_type != OTR_DATA_MSG_TYPE)
     return OTR4_ERROR;
-  }
 
-  if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
+  if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read))
     return OTR4_ERROR;
-  }
 
   cursor += read;
   len -= read;
 
-  if (deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
+  if (deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read))
     return OTR4_ERROR;
-  }
 
   cursor += read;
   len -= read;
 
-  if (deserialize_uint8(&dst->flags, cursor, len, &read)) {
+  if (deserialize_uint8(&dst->flags, cursor, len, &read))
     return OTR4_ERROR;
-  }
 
   cursor += read;
   len -= read;
 
-  if (deserialize_uint32(&dst->message_id, cursor, len, &read)) {
+  if (deserialize_uint32(&dst->message_id, cursor, len, &read))
     return OTR4_ERROR;
-  }
 
   cursor += read;
   len -= read;
 
-  if (deserialize_ec_point(dst->ecdh, cursor)) {
+  if (deserialize_ec_point(dst->ecdh, cursor))
     return OTR4_ERROR;
-  }
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
@@ -151,31 +142,27 @@ otr4_err_t data_message_deserialize(data_message_t *dst, const uint8_t *buff,
   // TODO: This could be NULL. We need to test.
 
   otr_mpi_t b_mpi; // no need to free, because nothing is copied now
-  if (otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
+  if (otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read))
     return OTR4_ERROR;
-  }
 
   cursor += read;
   len -= read;
 
-  if (dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read)) {
+  if (dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read))
     return OTR4_ERROR;
-  }
 
   cursor += read;
   len -= read;
 
   if (deserialize_bytes_array((uint8_t *)&dst->nonce, DATA_MSG_NONCE_BYTES,
-                              cursor, len)) {
+                              cursor, len))
     return OTR4_ERROR;
-  }
 
   cursor += DATA_MSG_NONCE_BYTES;
   len -= DATA_MSG_NONCE_BYTES;
 
-  if (deserialize_data(&dst->enc_msg, cursor, len, &read)) {
+  if (deserialize_data(&dst->enc_msg, cursor, len, &read))
     return OTR4_ERROR;
-  }
 
   dst->enc_msg_len = read - 4;
   cursor += read;

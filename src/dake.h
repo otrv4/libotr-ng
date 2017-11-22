@@ -6,6 +6,7 @@
 
 #include "auth.h"
 #include "constants.h"
+#include "data_message.h"
 #include "dh.h"
 #include "ed448.h"
 #include "user_profile.h"
@@ -49,7 +50,7 @@ typedef struct {
   dh_public_key_t A;
   snizkpk_proof_t sigma[1];
   uint8_t auth_mac[HASH_BYTES];
-  uint8_t *enc_msg;
+  data_message_t *enc_msg; // TODO: either use this or add j
   size_t enc_msg_len;
 } dake_non_interactive_auth_message_t;
 

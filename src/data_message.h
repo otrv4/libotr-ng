@@ -33,7 +33,7 @@ otr4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
                                       const data_message_t *data_msg);
 
 otr4_err_t data_message_deserialize(data_message_t *data_msg,
-                                    const uint8_t *buff, size_t bufflen);
+                                    const uint8_t *buff, size_t bufflen, size_t *nread);
 
 bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg);
 

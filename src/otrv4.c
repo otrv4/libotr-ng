@@ -982,8 +982,9 @@ static otr4_err_t encrypt_data_message(data_message_t *data_msg,
 static otr4_err_t generate_data_msg_on_non_interactive_auth(
     data_message_t *data_msg, const uint8_t *message, size_t message_len,
     uint8_t nonce[DATA_MSG_NONCE_BYTES], otrv4_t *otr) {
-  if (key_manager_prepare_next_chain_key(otr->keys))
-    return OTR4_ERROR;
+  // TODO: probably not needed
+  //if (key_manager_prepare_next_chain_key(otr->keys))
+  //  return OTR4_ERROR;
 
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
@@ -1058,9 +1059,8 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
 
   // for the moment
   if (msg == NULL) {
-    data_message_t *data_msg = NULL;
-    data_msg = generate_data_msg(otr);
-    if (!data_msg) {
+    auth->enc_msg = generate_data_msg(otr);
+    if (!auth->enc_msg) {
       dake_non_interactive_auth_message_destroy(auth);
       free(t);
       t = NULL;
@@ -1070,10 +1070,10 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     }
 
     size_t data_msg_len = 0;
-    if (generate_data_msg_on_non_interactive_auth(data_msg, msg, len, nonce,
+    if (generate_data_msg_on_non_interactive_auth(auth->enc_msg, msg, len, nonce,
                                                   otr) == OTR4_ERROR) {
       dake_non_interactive_auth_message_destroy(auth);
-      data_message_free(data_msg);
+      data_message_free(auth->enc_msg);
       free(t);
       t = NULL;
       free(msg);
@@ -1085,9 +1085,11 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     msg = NULL;
 
     size_t bodylen = 0;
-    if (data_message_body_asprintf(&auth->enc_msg, &bodylen, data_msg)) {
+    uint8_t *enc_msg = NULL;
+    // TODO: this gets repeated by the way the mac is calculated
+    if (data_message_body_asprintf(&enc_msg, &bodylen, auth->enc_msg)) {
       dake_non_interactive_auth_message_destroy(auth);
-      data_message_free(data_msg);
+      data_message_free(auth->enc_msg);
       free(t);
       t = NULL;
       return OTR4_ERROR;
@@ -1103,7 +1105,7 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
       hash_init_with_dom(hd);
       hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
       hash_update(hd, t, t_len);
-      hash_update(hd, auth->enc_msg, data_msg_len);
+      hash_update(hd, enc_msg, data_msg_len);
 
       hash_final(hd, auth->auth_mac, sizeof(auth->auth_mac));
       hash_destroy(hd);
@@ -1289,6 +1291,7 @@ static bool valid_non_interactive_auth_message(
   /* Auth MAC = KDF_2(auth_mac_k || t) */
   uint8_t auth_mac[HASH_BYTES];
   shake_256_mac(auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
+  // TODO: check this
   if (0 != mem_diff(auth_mac, auth->auth_mac, sizeof auth_mac)) {
     free(t);
     t = NULL;
@@ -1299,7 +1302,7 @@ static bool valid_non_interactive_auth_message(
   t = NULL;
 
   // TODO: decrypt the message if present, and add the auth_mac to reveal
-  return err == OTR4_SUCCESS;
+  return err;
 }
 
 static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
@@ -1309,6 +1312,8 @@ static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
     return OTR4_SUCCESS; /* ignore the message */
 
   dake_non_interactive_auth_message_t auth[1];
+  auth->enc_msg = NULL;
+
   if (dake_non_interactive_auth_message_deserialize(auth, buff, buff_len))
     return OTR4_ERROR;
 
@@ -1788,7 +1793,8 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     return OTR4_ERROR;
   }
 
-  if (data_message_deserialize(msg, buff, buflen)) {
+  size_t read = 0;
+  if (data_message_deserialize(msg, buff, buflen, &read)) {
     data_message_free(msg);
     free(to_store_mac);
     return OTR4_ERROR;
