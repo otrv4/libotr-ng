@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "constants.h"
+#include "dake.h"
 #include "data_message.h"
 #include "deserialize.h"
 #include "mem.h"
@@ -197,4 +198,26 @@ bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg) {
     return false;
 
   return dh_mpi_valid(data_msg->dh);
+}
+
+otr4_err_t data_message_body_on_non_interactive_asprintf(
+    uint8_t **body, size_t *bodylen,
+    const dake_non_interactive_auth_message_t *auth) {
+  size_t s = 4 + DATA_MSG_NONCE_BYTES + auth->enc_msg_len;
+  uint8_t *dst = malloc(s);
+  if (!dst)
+    return OTR4_ERROR;
+
+  uint8_t *cursor = dst;
+  cursor += serialize_uint32(cursor, auth->message_id);
+  cursor += serialize_bytes_array(cursor, auth->nonce, DATA_MSG_NONCE_BYTES);
+  cursor += serialize_data(cursor, auth->enc_msg, auth->enc_msg_len);
+
+  if (body)
+    *body = dst;
+
+  if (bodylen)
+    *bodylen = cursor - dst;
+
+  return OTR4_SUCCESS;
 }

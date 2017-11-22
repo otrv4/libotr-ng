@@ -6,7 +6,6 @@
 
 #include "auth.h"
 #include "constants.h"
-#include "data_message.h"
 #include "dh.h"
 #include "ed448.h"
 #include "user_profile.h"
@@ -49,9 +48,12 @@ typedef struct {
   ec_point_t X;
   dh_public_key_t A;
   snizkpk_proof_t sigma[1];
-  uint8_t auth_mac[HASH_BYTES];
-  data_message_t *enc_msg; // TODO: either use this or add j
+  /* only used if an ecrypted message is attached */
+  uint32_t message_id;
+  uint8_t nonce[DATA_MSG_NONCE_BYTES];
+  uint8_t *enc_msg;
   size_t enc_msg_len;
+  uint8_t auth_mac[HASH_BYTES];
 } dake_non_interactive_auth_message_t;
 
 dake_identity_message_t *
@@ -103,7 +105,7 @@ void dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_t *non_interactive_auth);
 
 otr4_err_t dake_non_interactive_auth_message_asprintf(
-    uint8_t **dst, size_t *nbytes,
+    uint8_t **dst, size_t *nbytes, uint8_t *ser_enc_msg,
     const dake_non_interactive_auth_message_t *non_interactive_auth);
 
 otr4_err_t dake_non_interactive_auth_message_deserialize(

@@ -521,12 +521,14 @@ void dake_non_interactive_auth_message_destroy(
   ec_point_destroy(non_interactive_auth->X);
   user_profile_destroy(non_interactive_auth->profile);
   snizkpk_proof_destroy(non_interactive_auth->sigma);
-  sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
   non_interactive_auth->enc_msg = NULL;
+  non_interactive_auth->enc_msg_len = 0;
+  sodium_memzero(non_interactive_auth->nonce, DATA_MSG_NONCE_BYTES);
+  sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
 }
 
 otr4_err_t dake_non_interactive_auth_message_asprintf(
-    uint8_t **dst, size_t *nbytes,
+    uint8_t **dst, size_t *nbytes, uint8_t *ser_enc_msg,
     const dake_non_interactive_auth_message_t *non_interactive_auth) {
   size_t data_msg_len = 0;
 
@@ -572,13 +574,11 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
 
   size_t bodylen = 0;
 
-  if (non_interactive_auth->enc_msg) {
-    if (data_message_body_asprintf(&cursor, &bodylen, non_interactive_auth->enc_msg)) {
-    free(our_profile);
-    free(buff);
-     return OTR4_ERROR;
-    }
-
+  if (ser_enc_msg) {
+    cursor += serialize_bytes_array(cursor, ser_enc_msg,
+                                    non_interactive_auth->enc_msg_len + 4 +
+                                        DATA_MSG_NONCE_BYTES);
+    free(non_interactive_auth->enc_msg); // nullify
     cursor += bodylen;
   }
 
@@ -667,11 +667,11 @@ otr4_err_t dake_non_interactive_auth_message_deserialize(
   len -= read;
 
   // TODO: this has var length
-  //if (data_message_deserialize(dst->enc_msg, cursor, len, &read))
+  // if (data_message_deserialize(dst->enc_msg, cursor, len, &read))
   //  return OTR4_ERROR;
 
-  //cursor += read;
-  //len -= read;
+  // cursor += read;
+  // len -= read;
 
   return deserialize_bytes_array(dst->auth_mac, HASH_BYTES, cursor, len);
 }
