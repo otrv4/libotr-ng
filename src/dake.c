@@ -539,7 +539,6 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
                             non_interactive_auth->profile))
     return OTR4_ERROR;
 
-  // TODO: add old mac keys
   size_t s = NON_INT_AUTH_BYTES + our_profile_len + data_msg_len;
 
   uint8_t *buff = malloc(s);

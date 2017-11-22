@@ -982,10 +982,8 @@ static otr4_err_t encrypt_data_message(data_message_t *data_msg,
 static otr4_err_t generate_data_msg_on_non_interactive_auth(
     data_message_t *data_msg, const uint8_t *message, size_t message_len,
     uint8_t nonce[DATA_MSG_NONCE_BYTES], otrv4_t *otr) {
-
-  if (key_manager_prepare_next_chain_key(otr->keys)) {
+  if (key_manager_prepare_next_chain_key(otr->keys))
     return OTR4_ERROR;
-  }
 
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
@@ -1056,17 +1054,21 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   uint8_t nonce[DATA_MSG_NONCE_BYTES];
   memcpy(nonce, &t, DATA_MSG_NONCE_BYTES);
 
-  data_message_t *data_msg = NULL;
-  data_msg = generate_data_msg(otr);
-  if (!data_msg) {
-    dake_non_interactive_auth_message_destroy(auth);
-    return OTR4_ERROR;
-  }
-
   auth->enc_msg_len = 0;
 
   // for the moment
   if (msg == NULL) {
+    data_message_t *data_msg = NULL;
+    data_msg = generate_data_msg(otr);
+    if (!data_msg) {
+      dake_non_interactive_auth_message_destroy(auth);
+      free(t);
+      t = NULL;
+      free(msg);
+      msg = NULL;
+      return OTR4_ERROR;
+    }
+
     size_t data_msg_len = 0;
     if (generate_data_msg_on_non_interactive_auth(data_msg, msg, len, nonce,
                                                   otr) == OTR4_ERROR) {
@@ -1074,6 +1076,8 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
       data_message_free(data_msg);
       free(t);
       t = NULL;
+      free(msg);
+      msg = NULL;
       return OTR4_ERROR;
     }
 
@@ -1104,18 +1108,20 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
       hash_final(hd, auth->auth_mac, sizeof(auth->auth_mac));
       hash_destroy(hd);
     }
+
+    // TODO: check in spec
+    otr->keys->j++;
+
+  } else {
+    /* Auth MAC = KDF_2(auth_mac_k || t) */
+    shake_256_mac(auth->auth_mac, sizeof(auth->auth_mac), auth_mac_k,
+                  sizeof(auth_mac_k), t, t_len);
   }
-
-  /* Auth MAC = KDF_2(auth_mac_k || t) */
-  shake_256_mac(auth->auth_mac, sizeof(auth->auth_mac), auth_mac_k,
-                sizeof(auth_mac_k), t, t_len);
-
   free(t);
   t = NULL;
 
   otr4_err_t err = serialize_and_encode_non_interactive_auth(dst, auth);
 
-  data_message_free(data_msg);
   dake_non_interactive_auth_message_destroy(auth);
 
   // for the moment
