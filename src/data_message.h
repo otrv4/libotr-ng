@@ -41,4 +41,8 @@ bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg);
 otr4_err_t data_message_body_on_non_interactive_asprintf(
     uint8_t **body, size_t *bodylen,
     const dake_non_interactive_auth_message_t *auth);
+
+bool valid_data_message_on_non_interactive_auth(
+    m_mac_key_t mac_key, const dake_non_interactive_auth_message_t *auth);
+
 #endif

@@ -155,8 +155,7 @@ otr4_err_t data_message_deserialize(data_message_t *dst, const uint8_t *buff,
   cursor += read;
   len -= read;
 
-  if (deserialize_bytes_array((uint8_t *)&dst->nonce, DATA_MSG_NONCE_BYTES,
-                              cursor, len))
+  if (deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor, len))
     return OTR4_ERROR;
 
   cursor += DATA_MSG_NONCE_BYTES;
@@ -220,4 +219,29 @@ otr4_err_t data_message_body_on_non_interactive_asprintf(
     *bodylen = cursor - dst;
 
   return OTR4_SUCCESS;
+}
+
+bool valid_data_message_on_non_interactive_auth(
+    m_mac_key_t mac_key, const dake_non_interactive_auth_message_t *auth) {
+  uint8_t *body = NULL;
+  size_t bodylen = 0;
+
+  if (data_message_body_on_non_interactive_asprintf(&body, &bodylen, auth)) {
+    return false;
+  }
+
+  uint8_t mac_tag[DATA_MSG_MAC_BYTES];
+  memset(mac_tag, 0, sizeof(m_mac_key_t));
+
+  shake_256_mac(mac_tag, sizeof mac_tag, mac_key, sizeof(m_mac_key_t), body,
+                bodylen);
+
+  free(body);
+
+  if (0 != mem_diff(mac_tag, auth->auth_mac, sizeof mac_tag)) {
+    sodium_memzero(mac_tag, sizeof mac_tag);
+    return false;
+  }
+
+  return true;
 }

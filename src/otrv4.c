@@ -1084,10 +1084,10 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     if (encrypt_msg_on_non_interactive_auth(auth, msg, len, nonce, otr) ==
         OTR4_ERROR) {
       dake_non_interactive_auth_message_destroy(auth);
-      free(t);
-      t = NULL;
       free(msg);
       msg = NULL;
+      free(t);
+      t = NULL;
       return OTR4_ERROR;
     }
 
@@ -1307,8 +1307,24 @@ static bool valid_non_interactive_auth_message(
   free(t);
   t = NULL;
 
-  // TODO: decrypt the message if present, and add the auth_mac to reveal
   return err;
+}
+
+// TODO: remove this duplication
+static otr4_err_t get_receiving_msg_keys_on_non_interactive_auth(
+    m_enc_key_t enc_key, m_mac_key_t mac_key,
+    const dake_non_interactive_auth_message_t *auth, otrv4_t *otr) {
+  if (key_manager_ensure_on_ratchet(otr->keys) == OTR4_ERROR)
+    return OTR4_ERROR;
+
+  if (key_manager_retrieve_receiving_message_keys(
+          enc_key, mac_key, auth->message_id, otr->keys)) {
+    sodium_memzero(enc_key, sizeof(m_enc_key_t));
+    sodium_memzero(mac_key, sizeof(m_mac_key_t));
+    return OTR4_ERROR;
+  }
+
+  return OTR4_SUCCESS;
 }
 
 static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
@@ -1340,9 +1356,68 @@ static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
   key_manager_set_their_dh(auth->A, otr->keys);
   user_profile_copy(otr->their_profile, auth->profile);
 
+  // TODO: do not check the mac here
   if (!valid_non_interactive_auth_message(auth, otr)) {
     dake_non_interactive_auth_message_destroy(auth);
     return OTR4_ERROR;
+  }
+
+  if (double_ratcheting_init(1, false, otr)) {
+    dake_non_interactive_auth_message_destroy(auth);
+    return OTR4_ERROR;
+  }
+
+  // TODO: warn the user and send an error message with a code.
+  if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
+    dake_non_interactive_auth_message_destroy(auth);
+    return OTR4_ERROR;
+  }
+
+  if (auth->enc_msg) {
+    m_enc_key_t enc_key;
+    m_mac_key_t mac_key;
+
+    memset(enc_key, 0, sizeof(m_enc_key_t));
+    memset(mac_key, 0, sizeof(m_mac_key_t));
+
+    if (get_receiving_msg_keys_on_non_interactive_auth(enc_key, mac_key, auth,
+                                                       otr)) {
+      dake_non_interactive_auth_message_destroy(auth);
+      return OTR4_ERROR;
+    }
+
+    if (!valid_data_message_on_non_interactive_auth(mac_key, auth)) {
+      dake_non_interactive_auth_message_destroy(auth);
+      return OTR4_ERROR;
+    }
+
+    uint8_t *plain = malloc(auth->enc_msg_len);
+    if (!plain) {
+      dake_non_interactive_auth_message_destroy(auth);
+      return OTR4_ERROR;
+    }
+
+    int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
+                                auth->nonce, enc_key);
+    // for the moment
+    free(plain);
+
+    if (err != 0) {
+      dake_non_interactive_auth_message_destroy(auth);
+      return OTR4_ERROR;
+    }
+
+    uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
+    if (to_store_mac == NULL) {
+      dake_non_interactive_auth_message_destroy(auth);
+      return OTR4_ERROR;
+    }
+
+    memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
+    otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
+
+    sodium_memzero(enc_key, sizeof(enc_key));
+    sodium_memzero(mac_key, sizeof(mac_key));
   }
 
   dake_non_interactive_auth_message_destroy(auth);
@@ -1351,7 +1426,7 @@ static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
     fingerprint_seen_cb(fp, otr->conversation);
 
-  return double_ratcheting_init(1, false, otr);
+  return OTR4_SUCCESS;
 }
 
 static otr4_err_t receive_identity_message_on_state_start(
@@ -1786,23 +1861,15 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   memset(enc_key, 0, sizeof(m_enc_key_t));
   memset(mac_key, 0, sizeof(m_mac_key_t));
 
-  uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
-  if (to_store_mac == NULL) {
-    data_message_free(msg);
-    return OTR4_ERROR;
-  }
-
   // TODO: warn the user and send an error message with a code.
   if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
     data_message_free(msg);
-    free(to_store_mac);
     return OTR4_ERROR;
   }
 
   size_t read = 0;
   if (data_message_deserialize(msg, buff, buflen, &read)) {
     data_message_free(msg);
-    free(to_store_mac);
     return OTR4_ERROR;
   }
 
@@ -1814,7 +1881,6 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     if (msg->receiver_instance_tag != otr->our_instance_tag) {
       response->to_display = NULL;
       data_message_free(msg);
-      free(to_store_mac);
 
       return OTR4_SUCCESS;
     }
@@ -1839,6 +1905,12 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
         continue;
     }
 
+  uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
+  if (to_store_mac == NULL) {
+    data_message_free(msg);
+    return OTR4_ERROR;
+  }
+
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
 
@@ -1849,9 +1921,6 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
 
     return OTR4_SUCCESS;
   } while (0);
-
-  free(to_store_mac);
-  to_store_mac = NULL;
 
   data_message_free(msg);
   otrv4_tlv_free(reply_tlv);

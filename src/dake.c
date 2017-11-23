@@ -5,7 +5,6 @@
 
 #include "constants.h"
 #include "dake.h"
-#include "data_message.h"
 #include "deserialize.h"
 #include "error.h"
 #include "random.h"
@@ -666,12 +665,27 @@ otr4_err_t dake_non_interactive_auth_message_deserialize(
   cursor += read;
   len -= read;
 
-  // TODO: this has var length
-  // if (data_message_deserialize(dst->enc_msg, cursor, len, &read))
-  //  return OTR4_ERROR;
+  if (len > 64) {
+    if (deserialize_uint32(&dst->message_id, cursor, len, &read))
+      return OTR4_ERROR;
 
-  // cursor += read;
-  // len -= read;
+    cursor += read;
+    len -= read;
+
+    if (deserialize_bytes_array((uint8_t *)&dst->nonce, DATA_MSG_NONCE_BYTES,
+                                cursor, len))
+      return OTR4_ERROR;
+
+    cursor += DATA_MSG_NONCE_BYTES;
+    len -= DATA_MSG_NONCE_BYTES;
+
+    if (deserialize_data(&dst->enc_msg, cursor, len, &read))
+      return OTR4_ERROR;
+
+    dst->enc_msg_len = read - 4;
+    cursor += read;
+    len -= read;
+  }
 
   return deserialize_bytes_array(dst->auth_mac, HASH_BYTES, cursor, len);
 }
