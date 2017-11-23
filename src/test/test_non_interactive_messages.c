@@ -25,20 +25,20 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
 
   char expected[] = {
       0x0,
-      0x04,                 // version
-      OTR_PRE_KEY_MSG_TYPE, // message type
+      0x04,                 /* version */
+      OTR_PRE_KEY_MSG_TYPE, /* message type */
       0x0,
       0x0,
       0x0,
-      0x1, // sender instance tag
+      0x1, /* sender instance tag */
       0x0,
       0x0,
       0x0,
-      0x0, // receiver instance tag
+      0x0, /* receiver instance tag */
   };
 
   uint8_t *cursor = serialized;
-  otrv4_assert_cmpmem(cursor, expected, 11); // sizeof(expected));
+  otrv4_assert_cmpmem(cursor, expected, 11); /* size of expected */;
   cursor += 11;
 
   size_t user_profile_len = 0;
@@ -60,7 +60,7 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
   otr4_err_t err = dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
                                     &mpi_len, prekey_message->B);
   otrv4_assert(!err);
-  // Skip first 4 because they are the size (mpi_len)
+  /* Skip first 4 because they are the size (mpi_len) */
   otrv4_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
 
   dh_keypair_destroy(dh);
@@ -95,7 +95,6 @@ void test_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
   otrv4_assert(dake_prekey_message_deserialize(deserialized, serialized,
                                                serialized_len) == OTR4_SUCCESS);
 
-  // assert prekey eq
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
                    prekey_message->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==,
@@ -148,7 +147,6 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
   otrv4_assert(ec_point_valid(shared_prekey->pub) == OTR4_SUCCESS);
 
   user_profile_t *invalid_profile = user_profile_new("2");
-  // otrv4_shared_prekey_generate(invalid_profile->shared_prekey, sym);
   ec_point_copy(invalid_profile->pub_key, invalid_ecdh->pub);
   ec_point_copy(invalid_profile->shared_prekey, shared_prekey->pub);
 
@@ -189,39 +187,42 @@ void test_dake_non_interactive_auth_message_serializes(
   user_profile_copy(msg->profile, f->profile);
   ec_point_copy(msg->X, ecdh->pub);
   msg->A = dh_mpi_copy(dh->pub);
+  memset(msg->nonce, 0, DATA_MSG_NONCE_BYTES);
   msg->enc_msg = NULL;
   msg->enc_msg_len = 0;
+  memset(msg->auth_mac, 0, HASH_BYTES);
 
-  // TODO: correctly generate this sigma
+  uint8_t secret[1] = {0x01};
+  shake_256_hash(msg->auth_mac, HASH_BYTES, secret, 1);
+
   unsigned char *t = NULL;
   size_t t_len = 0;
   snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t,
                        t_len);
 
-  // TODO: generate auth-mac
+  uint8_t *ser_enc_msg = NULL;
   uint8_t *serialized = NULL;
   size_t len = 0;
 
-  uint8_t *ser_enc_msg = NULL;
   otrv4_assert(dake_non_interactive_auth_message_asprintf(
                    &serialized, &len, ser_enc_msg, msg) == OTR4_SUCCESS);
 
   char expected[] = {
       0x0,
-      0x04,                      // version
-      OTR_NON_INT_AUTH_MSG_TYPE, // message type
+      0x04,                      /* version */
+      OTR_NON_INT_AUTH_MSG_TYPE, /* message type */
       0x0,
       0x0,
       0x0,
-      0x1, // sender instance tag
+      0x1, /* sender instance tag */
       0x0,
       0x0,
       0x0,
-      0x1, // receiver instance tag
+      0x1, /* receiver instance tag */
   };
 
   uint8_t *cursor = serialized;
-  otrv4_assert_cmpmem(cursor, expected, 11); // sizeof(expected));
+  otrv4_assert_cmpmem(cursor, expected, 11); /* size of expected */
   cursor += 11;
 
   size_t user_profile_len = 0;
@@ -233,19 +234,33 @@ void test_dake_non_interactive_auth_message_serializes(
   free(user_profile_serialized);
   cursor += user_profile_len;
 
-  uint8_t serialized_x[ED448_POINT_BYTES + 2] = {0};
+  uint8_t serialized_x[ED448_POINT_BYTES + 2] = {};
   ec_point_serialize(serialized_x, msg->X);
   otrv4_assert_cmpmem(cursor, serialized_x, sizeof(ec_public_key_t));
   cursor += sizeof(ec_public_key_t);
 
-  uint8_t serialized_a[DH3072_MOD_LEN_BYTES] = {0};
+  uint8_t serialized_a[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
   otr4_err_t err =
       dh_mpi_serialize(serialized_a, DH3072_MOD_LEN_BYTES, &mpi_len, msg->A);
   otrv4_assert(!err);
 
-  // Skip first 4 because they are the size (mpi_len)
+  /* Skip first 4 because they are the size (mpi_len) */
   otrv4_assert_cmpmem(cursor + 4, serialized_a, mpi_len);
+
+  cursor += 4 + mpi_len;
+
+  uint8_t serialized_snizkpk[SNIZKPK_BYTES] = {};
+  serialize_snizkpk_proof(serialized_snizkpk, msg->sigma);
+
+  otrv4_assert_cmpmem(cursor, serialized_snizkpk, SNIZKPK_BYTES);
+
+  cursor += SNIZKPK_BYTES;
+
+  uint8_t serialized_mac[HASH_BYTES] = {};
+  cursor += serialize_bytes_array(cursor, msg->auth_mac, HASH_BYTES);
+
+  otrv4_assert_cmpmem(cursor, serialized_mac, HASH_BYTES);
 
   dh_keypair_destroy(dh);
   ecdh_keypair_destroy(ecdh);
@@ -275,16 +290,18 @@ void test_dake_non_interactive_auth_message_deserializes(
   user_profile_copy(msg->profile, f->profile);
   ec_point_copy(msg->X, ecdh->pub);
   msg->A = dh_mpi_copy(dh->pub);
+  memset(msg->nonce, 0, DATA_MSG_NONCE_BYTES);
   msg->enc_msg = NULL;
   msg->enc_msg_len = 0;
+  memset(msg->auth_mac, 0, HASH_BYTES);
 
-  // TODO: correctly generate this sigma
+  uint8_t secret[1] = {0x01};
+  shake_256_hash(msg->auth_mac, HASH_BYTES, secret, 1);
+
   unsigned char *t = NULL;
   size_t t_len = 0;
   snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t,
                        t_len);
-
-  memset(msg->auth_mac, 0, HASH_BYTES);
 
   uint8_t *serialized = NULL;
   size_t len = 0;
@@ -300,7 +317,6 @@ void test_dake_non_interactive_auth_message_deserializes(
   otrv4_assert(dake_non_interactive_auth_message_deserialize(
                    deserialized, serialized, len) == OTR4_SUCCESS);
 
-  // assert prekey eq
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
                    msg->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==,
@@ -309,7 +325,7 @@ void test_dake_non_interactive_auth_message_deserializes(
   otrv4_assert_ec_public_key_eq(deserialized->X, msg->X);
   otrv4_assert_dh_public_key_eq(deserialized->A, msg->A);
   otrv4_assert(memcmp(deserialized->auth_mac, msg->auth_mac, HASH_BYTES));
-  // TODO: check znpk
+  otrv4_assert(memcmp(deserialized->sigma, msg->sigma, SNIZKPK_BYTES));
 
   free(serialized);
   dake_non_interactive_auth_message_destroy(msg);
