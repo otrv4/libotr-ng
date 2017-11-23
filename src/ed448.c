@@ -117,14 +117,14 @@ void ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t src) {
 
 void ec_scalar_destroy(ec_scalar_t dst) { decaf_448_scalar_destroy(dst); }
 
-otr4_err_t ec_point_valid(const ec_point_t point) {
+otrv4_bool_t ec_point_valid(const ec_point_t point) {
   if (DECAF_TRUE == decaf_448_point_valid(point)) {
-    return OTR4_SUCCESS;
+    return otrv4_true;
   }
 
-  return OTR4_ERROR;
+  return otrv4_false;
 }
 
-bool ec_point_eq(const ec_point_t p, const ec_point_t q) {
+otrv4_bool_t ec_point_eq(const ec_point_t p, const ec_point_t q) {
   return DECAF_TRUE == decaf_448_point_eq(p, q);
 }

@@ -172,12 +172,13 @@ otr4_err_t data_message_deserialize(data_message_t *dst, const uint8_t *buff,
                                  cursor, len);
 }
 
-bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg) {
+otrv4_bool_t valid_data_message(m_mac_key_t mac_key,
+                                const data_message_t *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
   if (data_message_body_asprintf(&body, &bodylen, data_msg)) {
-    return false;
+    return otrv4_false;
   }
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
@@ -188,13 +189,13 @@ bool valid_data_message(m_mac_key_t mac_key, const data_message_t *data_msg) {
 
   free(body);
 
-  if (0 != mem_diff(mac_tag, data_msg->mac, sizeof mac_tag)) {
+  if (mem_diff(mac_tag, data_msg->mac, sizeof mac_tag) != 0) {
     sodium_memzero(mac_tag, sizeof mac_tag);
-    return false;
+    return otrv4_false;
   }
 
-  if (ec_point_valid(data_msg->ecdh) == OTR4_ERROR)
-    return false;
+  if (!(ec_point_valid(data_msg->ecdh)))
+    return otrv4_false;
 
   return dh_mpi_valid(data_msg->dh);
 }

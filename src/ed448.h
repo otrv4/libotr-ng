@@ -45,9 +45,9 @@ void ec_point_copy(ec_point_t dst, const ec_point_t src);
 
 void ec_point_destroy(ec_point_t dst);
 
-bool ec_point_eq(const ec_point_t, const ec_point_t);
+otrv4_bool_t ec_point_valid(const ec_point_t point);
 
-otr4_err_t ec_point_valid(const ec_point_t point);
+otrv4_bool_t ec_point_eq(const ec_point_t, const ec_point_t);
 
 void ec_point_serialize(uint8_t *dst, const ec_point_t point);
 
