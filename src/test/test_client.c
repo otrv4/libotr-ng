@@ -295,7 +295,7 @@ void test_conversation_with_multiple_locations() {
 
   char *message = "hello";
 
-  // Bob sends a message with orginal instance tag
+  // Bob sends a message with original instance tag
   otr4_client_send(&frombob, message, ALICE_IDENTITY, bob);
 
   // Alice receives the message.
@@ -502,7 +502,8 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
 
   int ignore = 0;
   char *todisplay = NULL, *bobs_id = NULL, *alices_auth_r = NULL,
-       *bobs_auth_i = NULL, *bob_last = NULL, *alice_last = NULL;
+       *bobs_auth_i = NULL, *bob_last = NULL, *alice_last = NULL,
+       *ignores = NULL;
 
   // Bob receives query message, sends identity msg
   ignore = otr4_client_receive(&bobs_id, &todisplay, query_msg_to_bob,
@@ -534,67 +535,61 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   // Bob receives Auth-R message, sends Auth-I message
   ignore = otr4_client_receive(&bobs_auth_i, &todisplay, alices_auth_r,
                                ALICE_IDENTITY, bob);
-  free(alices_auth_r);
-  alices_auth_r = NULL;
-
   otrv4_assert(ignore);
   otrv4_assert(bobs_auth_i);
   otrv4_assert(!todisplay);
 
   otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
 
-  free(bobs_auth_i);
-  bobs_auth_i = NULL;
-
-  // Alice resends Auth-R message
-  ignore = otr4_client_receive(&alices_auth_r, &todisplay, bobs_id,
-                               BOB_IDENTITY, alice);
-  free(bobs_id);
-  bobs_id = NULL;
-
-  otrv4_assert(ignore);
-  otrv4_assert(alices_auth_r);
-  otrv4_assert(!todisplay);
-
-  // Bob receives again Auth-R message
-  ignore = otr4_client_receive(&bobs_auth_i, &todisplay, alices_auth_r,
+  // Bob receives again Auth-R message, ignores
+  ignore = otr4_client_receive(&ignores, &todisplay, alices_auth_r,
                                ALICE_IDENTITY, bob);
   free(alices_auth_r);
   alices_auth_r = NULL;
 
   otrv4_assert(ignore);
-  otrv4_assert(!bobs_auth_i);
+  otrv4_assert(!ignores);
   otrv4_assert(!todisplay);
 
   otrv4_assert(bob_to_alice->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
 
-  free(bobs_auth_i);
-  bobs_auth_i = NULL;
+  // Alice receives Auth-I message
+  ignore = otr4_client_receive(&alice_last, &todisplay, bobs_auth_i,
+                               BOB_IDENTITY, alice);
 
-  // Bob sends a disconnected to Alice
-  int error = otr4_client_disconnect(&bob_last, ALICE_IDENTITY, bob);
-  otrv4_assert(!error);
-  otrv4_assert(bob_last);
+  otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
 
-  // We've deleted the conversation
-  otrv4_assert(
-      !otr4_client_get_conversation(!FORCE_CREATE_CONVO, ALICE_IDENTITY, bob));
-
-  // TODO: is it not ok to receive disconnected in other state?
-  alice_to_bob->conn->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
-
-  // Alice receives the disconnected from Bob
-  ignore = otr4_client_receive(&alice_last, &todisplay, bob_last, BOB_IDENTITY,
-                               alice);
-  free(bob_last);
-  bob_last = NULL;
-
-  otrv4_assert(!ignore);
+  otrv4_assert(ignore);
   otrv4_assert(!alice_last);
   otrv4_assert(!todisplay);
 
+  free(bobs_auth_i);
+  bobs_auth_i = NULL;
+
   free(alice_last);
   alice_last = NULL;
+
+  // Alice sends a disconnected to Bob
+  int error = otr4_client_disconnect(&alice_last, BOB_IDENTITY, alice);
+  otrv4_assert(!error);
+  otrv4_assert(alice_last);
+
+  // We've deleted the conversation
+  otrv4_assert(
+      !otr4_client_get_conversation(!FORCE_CREATE_CONVO, BOB_IDENTITY, alice));
+
+  // Bob receives the disconnected from Alice
+  ignore = otr4_client_receive(&bob_last, &todisplay, alice_last,
+                               ALICE_IDENTITY, bob);
+  free(alice_last);
+  alice_last = NULL;
+
+  otrv4_assert(ignore);
+  otrv4_assert(!bob_last);
+  otrv4_assert(!todisplay);
+
+  free(bob_last);
+  bob_last = NULL;
 
   // Free memory
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);

@@ -1905,11 +1905,11 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
         continue;
     }
 
-  uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
-  if (to_store_mac == NULL) {
-    data_message_free(msg);
-    return OTR4_ERROR;
-  }
+    uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
+    if (to_store_mac == NULL) {
+      data_message_free(msg);
+      return OTR4_ERROR;
+    }
 
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
