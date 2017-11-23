@@ -2,7 +2,6 @@ language: c
 #cache: ccache
 
 matrix:
-  fast_finish: true
   include:
     - os: linux
       dist: trusty
@@ -18,8 +17,14 @@ matrix:
       compiler: gcc
     - os: osx
       compiler: clang
+    - os: osx
+      osx_image: xcode8.1
+      compiler: clang
   allow_failures:
     - os: osx
+      compiler: clang
+    - os: osx
+      osx_image: xcode8.1
       compiler: clang
   fast-finish: true
 
