@@ -38,7 +38,8 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
   };
 
   uint8_t *cursor = serialized;
-  otrv4_assert_cmpmem(cursor, expected, 11); /* size of expected */;
+  otrv4_assert_cmpmem(cursor, expected, 11); /* size of expected */
+  ;
   cursor += 11;
 
   size_t user_profile_len = 0;

@@ -1258,19 +1258,6 @@ static otr4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
 
 static bool valid_non_interactive_auth_message(
     const dake_non_interactive_auth_message_t *auth, otrv4_t *otr) {
-  /* tmp_k = KDF_2(K_ecdh ||
-   * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
-   * ECDH(Ska, X) || k_dh) */
-  if (generate_tmp_key_i(otr->keys->tmp_key, otr) == OTR4_ERROR) {
-    return OTR4_ERROR;
-  }
-
-  /* auth_mac_k = KDF_2(0x01 || tmp_k */
-  uint8_t magic[1] = {0x01};
-  uint8_t auth_mac_k[HASH_BYTES];
-  shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
-                HASH_BYTES);
-
   unsigned char *t = NULL;
   size_t t_len = 0;
 
@@ -1279,8 +1266,9 @@ static bool valid_non_interactive_auth_message(
   if (build_non_interactive_auth_message(
           &t, &t_len, get_my_user_profile(otr), auth->profile, OUR_ECDH(otr),
           auth->X, OUR_DH(otr), auth->A, otr->profile->shared_prekey,
-          otr->conversation->client->phi))
+          otr->conversation->client->phi)) {
     return false;
+  }
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
   otr4_err_t err =
@@ -1289,19 +1277,23 @@ static bool valid_non_interactive_auth_message(
                      OUR_ECDH(otr),                           /* g^  */
                      t, t_len);
 
-  data_message_t *data_msg = NULL;
-  data_msg = generate_data_msg(otr);
-  memcpy(data_msg->nonce, &t, sizeof(data_msg->nonce));
-  data_message_free(data_msg); // for the moment
+  // TODO: generate the nonce
 
-  /* Auth MAC = KDF_2(auth_mac_k || t) */
-  uint8_t auth_mac[HASH_BYTES];
-  shake_256_mac(auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
-  // TODO: check this
-  if (0 != mem_diff(auth_mac, auth->auth_mac, sizeof auth_mac)) {
-    free(t);
-    t = NULL;
-    return OTR4_ERROR;
+  if (!auth->enc_msg) {
+    /* auth_mac_k = KDF_2(0x01 || tmp_k */
+    uint8_t magic[1] = {0x01};
+    uint8_t auth_mac_k[HASH_BYTES];
+    shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
+                  HASH_BYTES);
+
+    /* Auth MAC = KDF_2(auth_mac_k || t) */
+    uint8_t auth_mac[HASH_BYTES];
+    shake_256_mac(auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
+    if (0 != mem_diff(auth_mac, auth->auth_mac, sizeof auth_mac)) {
+      free(t);
+      t = NULL;
+      return OTR4_ERROR;
+    }
   }
 
   free(t);
@@ -1356,8 +1348,10 @@ static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
   key_manager_set_their_dh(auth->A, otr->keys);
   user_profile_copy(otr->their_profile, auth->profile);
 
-  // TODO: do not check the mac here
-  if (!valid_non_interactive_auth_message(auth, otr)) {
+  /* tmp_k = KDF_2(K_ecdh ||
+   * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
+   * ECDH(Ska, X) || k_dh) */
+  if (generate_tmp_key_i(otr->keys->tmp_key, otr) == OTR4_ERROR) {
     dake_non_interactive_auth_message_destroy(auth);
     return OTR4_ERROR;
   }
@@ -1367,8 +1361,7 @@ static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
     return OTR4_ERROR;
   }
 
-  // TODO: warn the user and send an error message with a code.
-  if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
+  if (valid_non_interactive_auth_message(auth, otr) == OTR4_ERROR) {
     dake_non_interactive_auth_message_destroy(auth);
     return OTR4_ERROR;
   }
