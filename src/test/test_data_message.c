@@ -12,6 +12,12 @@ void test_data_message_serializes() {
 
   data_message_t *data_msg = data_message_new();
   otrv4_assert(data_msg);
+  data_msg->sender_instance_tag = 1;
+  data_msg->receiver_instance_tag = 2;
+  data_msg->flags = 0xA;
+  data_msg->message_id = 99;
+  ec_point_copy(data_msg->ecdh, ecdh->pub);
+
   const char dh_data[383] = {
       0x4c, 0x4e, 0x7b, 0xbd, 0x33, 0xd0, 0x9e, 0x63, 0xfd, 0xe4, 0x67, 0xee,
       0x6c, 0x65, 0x47, 0xc4, 0xe2, 0x1f, 0xaa, 0xb1, 0x90, 0x56, 0x8a, 0x7d,
@@ -46,12 +52,6 @@ void test_data_message_serializes() {
       0xa7, 0xf7, 0xd9, 0x90, 0xc8, 0xcf, 0x53, 0xf2, 0xb7, 0x8a, 0xa8, 0x54,
       0x8a, 0xac, 0xb1, 0xe0, 0x1,  0x8d, 0xc7, 0x3f, 0xac, 0x3,  0x73};
 
-  data_msg->sender_instance_tag = 1;
-  data_msg->receiver_instance_tag = 2;
-  data_msg->flags = 0xA;
-  data_msg->message_id = 99;
-  ec_point_copy(data_msg->ecdh, ecdh->pub);
-
   gcry_error_t err =
       gcry_mpi_scan(&data_msg->dh, GCRYMPI_FMT_USG, dh_data, 383, NULL);
   otrv4_assert(!err);
@@ -66,8 +66,8 @@ void test_data_message_serializes() {
   otrv4_assert(data_message_body_asprintf(&serialized, &serlen, data_msg) ==
                OTR4_SUCCESS);
 
-#define OUR_DH_LEN (4 + 383)
-#define MSG_AS_DATA (4 + 3)
+  const int OUR_DH_LEN = 4 + 383;
+  const int MSG_AS_DATA = 4 + 3;
   g_assert_cmpint(DATA_MESSAGE_MIN_BYTES + OUR_DH_LEN + MSG_AS_DATA, ==,
                   serlen);
 
@@ -106,6 +106,35 @@ void test_data_message_serializes() {
       0x0, 0x0, 0x0, 0x3, 0xE, 0xE, 0xE,
   };
   otrv4_assert_cmpmem(cursor, expected_enc, 7);
+
+  const uint8_t mac_data[MAC_KEY_BYTES] = {
+    0x14, 0x9a, 0xf0, 0x93, 0xcc, 0x3f, 0x44, 0xf5,
+    0x1b, 0x41, 0x11, 0xc3, 0x84, 0x10, 0x88, 0xed,
+    0xd3, 0xff, 0x66, 0x7e, 0xfd, 0x3c, 0x6e, 0x34,
+    0xf2, 0xbf, 0x92, 0x8a, 0x5e, 0xf6, 0x4b, 0x40,
+    0x39, 0xfe, 0xc1, 0xe7, 0xde, 0x4c, 0x17, 0x84,
+    0x2b, 0xfa, 0x2a, 0x55, 0x8c, 0xd6, 0x1a, 0x08,
+    0x26, 0x4f, 0x61, 0x32, 0xdb, 0xd2, 0x58, 0x90,
+    0x7d, 0x1e, 0x97, 0x35, 0xd2, 0x38, 0x60, 0xa1
+  };
+  memcpy(data_msg->mac, mac_data, MAC_KEY_BYTES);
+  serialized = realloc(serialized, serlen + MAC_KEY_BYTES);
+  memcpy(serialized + serlen, mac_data, MAC_KEY_BYTES);
+
+  data_message_t *deserialized = data_message_new();
+  otrv4_assert(data_message_deserialize(deserialized, serialized,
+                                        serlen+MAC_KEY_BYTES, NULL) == OTR4_SUCCESS);
+
+  otrv4_assert(data_msg->sender_instance_tag == deserialized->sender_instance_tag);
+  otrv4_assert(data_msg->receiver_instance_tag == deserialized->receiver_instance_tag);
+  otrv4_assert(data_msg->flags == deserialized->flags);
+  otrv4_assert(data_msg->message_id == deserialized->message_id);
+  otrv4_assert_cmpmem(data_msg->ecdh, deserialized->ecdh, ED448_POINT_BYTES);
+  otrv4_assert(dh_mpi_cmp(data_msg->dh, deserialized->dh) == 0);
+  otrv4_assert_cmpmem(data_msg->nonce, deserialized->nonce, DATA_MSG_NONCE_BYTES);
+  otrv4_assert_cmpmem(data_msg->enc_msg, deserialized->enc_msg, data_msg->enc_msg_len);
+  otrv4_assert(data_msg->enc_msg_len == deserialized->enc_msg_len);
+  otrv4_assert_cmpmem(data_msg->mac, deserialized->mac, MAC_KEY_BYTES);
 
   dh_keypair_destroy(dh);
   ecdh_keypair_destroy(ecdh);
