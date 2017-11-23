@@ -532,6 +532,9 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrv4_assert(!todisplay);
   otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_WAITING_AUTH_I);
 
+  free(bobs_id);
+  bobs_id = NULL;
+
   // Bob receives Auth-R message, sends Auth-I message
   ignore = otr4_client_receive(&bobs_auth_i, &todisplay, alices_auth_r,
                                ALICE_IDENTITY, bob);
