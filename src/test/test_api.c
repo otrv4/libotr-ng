@@ -223,7 +223,10 @@ void test_api_non_interactive_conversation(void) {
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
-  // Should reply with an non interactive auth
+  otrv4_assert(
+      send_non_interactive_auth_msg(&response_to_alice->to_send, bob, "") == OTR4_SUCCESS);
+
+  // Should send an non interactive auth
   otrv4_assert(response_to_alice->to_display == NULL);
   otrv4_assert(response_to_alice->to_send);
   otrv4_assert_cmpmem("?OTR:AAQE", response_to_alice->to_send, 9);

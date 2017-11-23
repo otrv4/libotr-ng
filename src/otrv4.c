@@ -1075,14 +1075,14 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
 
   uint8_t *ser_enc_msg = NULL;
 
-  // for the moment
-  if (msg == NULL) {
+  if (msg != NULL) {
     uint8_t nonce[DATA_MSG_NONCE_BYTES];
     memcpy(nonce, &t, DATA_MSG_NONCE_BYTES);
 
     size_t data_msg_len = 0;
     if (encrypt_msg_on_non_interactive_auth(auth, msg, len, nonce, otr) ==
         OTR4_ERROR) {
+
       dake_non_interactive_auth_message_destroy(auth);
       free(msg);
       msg = NULL;
@@ -1124,6 +1124,7 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     shake_256_mac(auth->auth_mac, sizeof(auth->auth_mac), auth_mac_k,
                   sizeof(auth_mac_k), t, t_len);
   }
+
   free(t);
   t = NULL;
 
@@ -1131,10 +1132,6 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
       serialize_and_encode_non_interactive_auth(dst, ser_enc_msg, auth);
 
   dake_non_interactive_auth_message_destroy(auth);
-
-  // for the moment
-  free(msg);
-  msg = NULL;
 
   return err;
 }
@@ -1144,8 +1141,8 @@ static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
   otr->their_instance_tag = their_instance_tag;
 }
 
-static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
-                                         size_t buflen, otrv4_t *otr) {
+static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff, size_t buflen,
+                                         otrv4_t *otr) {
   if (otr->state == OTRV4_STATE_FINISHED)
     return OTR4_SUCCESS; /* ignore the message */
 
@@ -1191,17 +1188,24 @@ static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
 
   dake_prekey_message_destroy(m);
 
-  // TODO: for the moment
-  const string_t message = "hi";
-  uint8_t *data_msg = NULL;
-  size_t len = strlen(message) + 1;
-  data_msg = malloc(len);
-  if (!data_msg)
-    return OTR4_ERROR;
+  return OTR4_SUCCESS;
+}
 
-  stpcpy((char *)data_msg, message);
+otr4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
+                                         string_t message) {
+  uint8_t *c = NULL;
+  size_t clen = strlen(message) + 1;
 
-  return reply_with_non_interactive_auth_msg(dst, data_msg, len, otr);
+  if ((strcmp(message, "") != 0)) { // TODO: this can still be valid
+    c = malloc(clen);
+    if (!c) {
+      return OTR4_ERROR;
+    }
+
+    stpcpy((char *)c, message);
+  }
+
+  return reply_with_non_interactive_auth_msg(dst, c, clen, otr);
 }
 
 static otr4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
