@@ -18,7 +18,7 @@ VALGRIND_SUPPRESSIONS = \
 	valgrind.supp
 
 VALGRIND_ARGS = --track-origins=yes --quiet --error-exitcode=2 --leak-check=full \
-	--suppressions=$(VALGRIND_SUPPRESSIONS)
+	--suppressions=$(VALGRIND_SUPPRESSIONS) --gen-suppressions=all
 
 mem-check: check
 	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/test
