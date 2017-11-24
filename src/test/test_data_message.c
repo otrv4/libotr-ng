@@ -1,8 +1,6 @@
 #include "../data_message.h"
 
-void test_data_message_serializes() {
-  OTR4_INIT;
-
+data_message_t* set_up_data_msg() {
   ecdh_keypair_t ecdh[1];
   dh_keypair_t dh;
 
@@ -50,7 +48,8 @@ void test_data_message_serializes() {
       0xdd, 0x52, 0x91, 0xf9, 0x20, 0x7b, 0xda, 0xb7, 0x4f, 0x86, 0x4e, 0x1e,
       0x4a, 0xf2, 0xc9, 0x83, 0xe1, 0xa6, 0x59, 0x56, 0xb4, 0xd,  0xf2, 0xda,
       0xa7, 0xf7, 0xd9, 0x90, 0xc8, 0xcf, 0x53, 0xf2, 0xb7, 0x8a, 0xa8, 0x54,
-      0x8a, 0xac, 0xb1, 0xe0, 0x1,  0x8d, 0xc7, 0x3f, 0xac, 0x3,  0x73};
+      0x8a, 0xac, 0xb1, 0xe0, 0x1,  0x8d, 0xc7, 0x3f, 0xac, 0x3,  0x73
+  };
 
   gcry_error_t err =
       gcry_mpi_scan(&data_msg->dh, GCRYMPI_FMT_USG, dh_data, 383, NULL);
@@ -60,6 +59,18 @@ void test_data_message_serializes() {
   data_msg->enc_msg = malloc(3);
   memset(data_msg->enc_msg, 0xE, 3);
   data_msg->enc_msg_len = 3;
+
+  dh_keypair_destroy(dh);
+  ecdh_keypair_destroy(ecdh);
+  dh_free();
+
+  return data_msg;
+}
+
+void test_data_message_serializes() {
+  OTR4_INIT;
+
+  data_message_t *data_msg = set_up_data_msg();
 
   uint8_t *serialized = NULL;
   size_t serlen = 0;
@@ -107,6 +118,20 @@ void test_data_message_serializes() {
   };
   otrv4_assert_cmpmem(cursor, expected_enc, 7);
 
+  data_message_free(data_msg);
+  free(serialized);
+}
+
+void test_data_message_deserializes() {
+  OTR4_INIT;
+
+  data_message_t *data_msg = set_up_data_msg();
+
+  uint8_t *serialized = NULL;
+  size_t serlen = 0;
+  otrv4_assert(data_message_body_asprintf(&serialized, &serlen, data_msg) ==
+               OTR4_SUCCESS);
+
   const uint8_t mac_data[MAC_KEY_BYTES] = {
     0x14, 0x9a, 0xf0, 0x93, 0xcc, 0x3f, 0x44, 0xf5,
     0x1b, 0x41, 0x11, 0xc3, 0x84, 0x10, 0x88, 0xed,
@@ -136,9 +161,6 @@ void test_data_message_serializes() {
   otrv4_assert(data_msg->enc_msg_len == deserialized->enc_msg_len);
   otrv4_assert_cmpmem(data_msg->mac, deserialized->mac, MAC_KEY_BYTES);
 
-  dh_keypair_destroy(dh);
-  ecdh_keypair_destroy(ecdh);
   data_message_free(data_msg);
   free(serialized);
-  dh_free();
 }
