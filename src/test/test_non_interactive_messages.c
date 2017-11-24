@@ -201,12 +201,11 @@ void test_dake_non_interactive_auth_message_serializes(
   snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t,
                        t_len);
 
-  uint8_t *ser_enc_msg = NULL;
   uint8_t *serialized = NULL;
   size_t len = 0;
 
-  otrv4_assert(dake_non_interactive_auth_message_asprintf(
-                   &serialized, &len, ser_enc_msg, msg) == OTR4_SUCCESS);
+  otrv4_assert(dake_non_interactive_auth_message_asprintf(&serialized, &len,
+                                                          msg) == OTR4_SUCCESS);
 
   char expected[] = {
       0x0,
@@ -306,9 +305,8 @@ void test_dake_non_interactive_auth_message_deserializes(
 
   uint8_t *serialized = NULL;
   size_t len = 0;
-  uint8_t *ser_enc_msg = NULL;
-  otrv4_assert(dake_non_interactive_auth_message_asprintf(
-                   &serialized, &len, ser_enc_msg, msg) == OTR4_SUCCESS);
+  otrv4_assert(dake_non_interactive_auth_message_asprintf(&serialized, &len,
+                                                          msg) == OTR4_SUCCESS);
 
   dh_keypair_destroy(dh);
   ecdh_keypair_destroy(ecdh);

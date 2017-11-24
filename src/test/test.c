@@ -56,8 +56,6 @@ int main(int argc, char **argv) {
                   ed448_test_scalar_serialization);
 
   g_test_add_func("/dake/snizkpk", test_snizkpk_auth);
-  // g_test_add_func("/dake/non_interactive_auth_snizkpk",
-  // test_non_interactive_auth_snizkpk)//;
   g_test_add_func("/list/add", test_list_add);
   g_test_add_func("/list/get", test_list_get_last);
   g_test_add_func("/list/length", test_list_len);
@@ -177,6 +175,8 @@ int main(int argc, char **argv) {
                   test_api_interactive_conversation);
   g_test_add_func("/api/non_interactive_conversation/v4",
                   test_api_non_interactive_conversation);
+  g_test_add_func("/api/non_interactive_conversation_enc_msg/v4",
+                  test_api_non_interactive_conversation_with_enc_msg);
   g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
   g_test_add_func("/api/smp", test_api_smp);
   g_test_add_func("/api/smp_abort", test_api_smp_abort);

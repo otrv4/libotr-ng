@@ -203,7 +203,8 @@ otrv4_bool_t valid_data_message(m_mac_key_t mac_key,
 otr4_err_t data_message_body_on_non_interactive_asprintf(
     uint8_t **body, size_t *bodylen,
     const dake_non_interactive_auth_message_t *auth) {
-  size_t s = 4 + DATA_MSG_NONCE_BYTES + auth->enc_msg_len;
+  // TODO: check this len
+  size_t s = 4 + DATA_MSG_NONCE_BYTES + auth->enc_msg_len + 4;
   uint8_t *dst = malloc(s);
   if (!dst)
     return OTR4_ERROR;
@@ -223,21 +224,31 @@ otr4_err_t data_message_body_on_non_interactive_asprintf(
 }
 
 bool valid_data_message_on_non_interactive_auth(
-    m_mac_key_t mac_key, const dake_non_interactive_auth_message_t *auth) {
-  uint8_t *body = NULL;
-  size_t bodylen = 0;
+    unsigned char *t, size_t t_len, m_mac_key_t mac_key,
+    const dake_non_interactive_auth_message_t *auth) {
+  uint8_t *enc_msg = NULL;
+  size_t enc_msg_len = 0;
 
-  if (data_message_body_on_non_interactive_asprintf(&body, &bodylen, auth)) {
+  if (data_message_body_on_non_interactive_asprintf(&enc_msg, &enc_msg_len,
+                                                    auth))
     return false;
-  }
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
   memset(mac_tag, 0, sizeof(m_mac_key_t));
 
-  shake_256_mac(mac_tag, sizeof mac_tag, mac_key, sizeof(m_mac_key_t), body,
-                bodylen);
+  /* Auth MAC = KDF_2(auth_mac_k || t || enc_msg) */
+  decaf_shake256_ctx_t hd;
 
-  free(body);
+  hash_init_with_dom(hd);
+  hash_update(hd, mac_key, DATA_MSG_MAC_BYTES);
+  hash_update(hd, t, t_len);
+  hash_update(hd, enc_msg, enc_msg_len);
+
+  hash_final(hd, mac_tag, DATA_MSG_MAC_BYTES);
+  hash_destroy(hd);
+
+  free(enc_msg);
+  enc_msg = NULL;
 
   if (0 != mem_diff(mac_tag, auth->auth_mac, sizeof mac_tag)) {
     sodium_memzero(mac_tag, sizeof mac_tag);

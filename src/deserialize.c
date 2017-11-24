@@ -70,9 +70,9 @@ otr4_err_t deserialize_data(uint8_t **dst, const uint8_t *buffer, size_t buflen,
 
   /* 4 bytes len */
   if (deserialize_uint32(&s, buffer, buflen, &r)) {
-    if (read != NULL) {
+    if (read != NULL)
       *read = r;
-    }
+
     return OTR4_ERROR;
   }
 

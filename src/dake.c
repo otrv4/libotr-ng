@@ -527,7 +527,7 @@ void dake_non_interactive_auth_message_destroy(
 }
 
 otr4_err_t dake_non_interactive_auth_message_asprintf(
-    uint8_t **dst, size_t *nbytes, uint8_t *ser_enc_msg,
+    uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_t *non_interactive_auth) {
   size_t data_msg_len = 0;
 
@@ -571,14 +571,13 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
   cursor += len;
   cursor += serialize_snizkpk_proof(cursor, non_interactive_auth->sigma);
 
-  size_t bodylen = 0;
-
-  if (ser_enc_msg) {
-    cursor += serialize_bytes_array(cursor, ser_enc_msg,
-                                    non_interactive_auth->enc_msg_len + 4 +
-                                        DATA_MSG_NONCE_BYTES);
-    free(non_interactive_auth->enc_msg); // nullify
-    cursor += bodylen;
+  if (non_interactive_auth->enc_msg) {
+    cursor += serialize_uint32(cursor, non_interactive_auth->message_id);
+    cursor += serialize_bytes_array(cursor, non_interactive_auth->nonce,
+                                    DATA_MSG_NONCE_BYTES);
+    cursor += serialize_data(cursor, non_interactive_auth->enc_msg,
+                             non_interactive_auth->enc_msg_len);
+    // free(non_interactive_auth->enc_msg); // nullify
   }
 
   cursor += serialize_bytes_array(cursor, non_interactive_auth->auth_mac,

@@ -44,6 +44,7 @@ otr4_err_t data_message_body_on_non_interactive_asprintf(
     const dake_non_interactive_auth_message_t *auth);
 
 bool valid_data_message_on_non_interactive_auth(
-    m_mac_key_t mac_key, const dake_non_interactive_auth_message_t *auth);
+    unsigned char *t, size_t t_len, m_mac_key_t mac_key,
+    const dake_non_interactive_auth_message_t *auth);
 
 #endif

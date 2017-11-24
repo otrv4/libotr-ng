@@ -105,7 +105,7 @@ void dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_t *non_interactive_auth);
 
 otr4_err_t dake_non_interactive_auth_message_asprintf(
-    uint8_t **dst, size_t *nbytes, uint8_t *ser_enc_msg,
+    uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_t *non_interactive_auth);
 
 otr4_err_t dake_non_interactive_auth_message_deserialize(
