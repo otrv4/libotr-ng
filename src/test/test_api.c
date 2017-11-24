@@ -433,36 +433,39 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
-  free(response_to_bob->to_send);
-  response_to_bob->to_send = NULL;
-
   otrv4_assert_ec_public_key_eq(alice->keys->their_ecdh,
                                 bob->keys->our_ecdh->pub);
   otrv4_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
 
-  otrv4_assert(response_to_alice->to_display == NULL);
+  for (int i = 0; i < 3; i++) {
+    printf("%c ", response_to_bob->to_display[i]);
+  }
+  otrv4_assert_cmpmem("hi", response_to_bob->to_display, 3);
   otrv4_assert(response_to_alice->to_send == NULL);
 
   // Check double ratchet is initialized
   otrv4_assert(alice->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
   otrv4_assert(alice->keys->current);
 
-  // g_assert_cmpint(alice->keys->i, ==, 0);
-  // g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 1);
 
-  //// Both have the same shared secret
-  // otrv4_assert_root_key_eq(alice->keys->current->root_key,
-  //                         bob->keys->current->root_key);
-  // otrv4_assert_chain_key_eq(alice->keys->current->chain_a->key,
-  //                          bob->keys->current->chain_a->key);
-  // otrv4_assert_chain_key_eq(bob->keys->current->chain_b->key,
-  //                          alice->keys->current->chain_b->key);
+  // Both have the same shared secret
+  otrv4_assert_root_key_eq(alice->keys->current->root_key,
+                           bob->keys->current->root_key);
+  otrv4_assert_chain_key_eq(alice->keys->current->chain_a->key,
+                            bob->keys->current->chain_a->key);
+  otrv4_assert_chain_key_eq(bob->keys->current->chain_b->key,
+                            alice->keys->current->chain_b->key);
 
-  // chain_key_t bob_sending_key, alice_receiving_key;
-  // key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
-  // otrv4_assert(key_manager_get_receiving_chain_key(
-  //                 alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
-  // otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
+  chain_key_t bob_sending_key, alice_receiving_key;
+  key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
+  otrv4_assert(key_manager_get_receiving_chain_key(
+                   alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
+  otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
+
+  free(response_to_bob->to_send);
+  response_to_bob->to_send = NULL;
 
   free(server);
   server = NULL;

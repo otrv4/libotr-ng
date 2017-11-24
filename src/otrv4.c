@@ -1264,9 +1264,8 @@ static otr4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
 static otr4_err_t get_receiving_msg_keys_on_non_interactive_auth(
     m_enc_key_t enc_key, m_mac_key_t mac_key,
     const dake_non_interactive_auth_message_t *auth, otrv4_t *otr) {
-  if (key_manager_ensure_on_ratchet(otr->keys) == OTR4_ERROR)
-    return OTR4_ERROR;
 
+  // TODO: the mac key is not needed
   if (key_manager_retrieve_receiving_message_keys(
           enc_key, mac_key, auth->message_id, otr->keys)) {
     sodium_memzero(enc_key, sizeof(m_enc_key_t));
@@ -1277,8 +1276,10 @@ static otr4_err_t get_receiving_msg_keys_on_non_interactive_auth(
   return OTR4_SUCCESS;
 }
 
+// TODO: can this also have tlv?
 static bool valid_non_interactive_auth_message(
-    const dake_non_interactive_auth_message_t *auth, otrv4_t *otr) {
+    otrv4_response_t *response, const dake_non_interactive_auth_message_t *auth,
+    otrv4_t *otr) {
   unsigned char *t = NULL;
   size_t t_len = 0;
 
@@ -1330,14 +1331,18 @@ static bool valid_non_interactive_auth_message(
     free(t);
     t = NULL;
 
+    string_t *dst = &response->to_display;
     uint8_t *plain = malloc(auth->enc_msg_len);
     if (!plain) {
+      free(auth->enc_msg);
       return OTR4_ERROR;
     }
 
     int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
                                 auth->nonce, enc_key);
-    // for the moment
+    if (strnlen((string_t)plain, auth->enc_msg_len))
+      *dst = otrv4_strndup((char *)plain, auth->enc_msg_len);
+
     free(plain);
 
     if (err != 0) {
@@ -1379,9 +1384,10 @@ static bool valid_non_interactive_auth_message(
   return err;
 }
 
-static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
-                                                       size_t buff_len,
-                                                       otrv4_t *otr) {
+static otr4_err_t
+receive_non_interactive_auth_message(otrv4_response_t *response,
+                                     const uint8_t *buff, size_t buff_len,
+                                     otrv4_t *otr) {
   if (otr->state == OTRV4_STATE_FINISHED)
     return OTR4_SUCCESS; /* ignore the message */
 
@@ -1421,7 +1427,8 @@ static otr4_err_t receive_non_interactive_auth_message(const uint8_t *buff,
     return OTR4_ERROR;
   }
 
-  if (valid_non_interactive_auth_message(auth, otr) == OTR4_ERROR) {
+  // TODO: change the name
+  if (valid_non_interactive_auth_message(response, auth, otr) == OTR4_ERROR) {
     auth->enc_msg = NULL;
     dake_non_interactive_auth_message_destroy(auth);
     return OTR4_ERROR;
@@ -1976,7 +1983,8 @@ static otr4_err_t receive_decoded_message(otrv4_response_t *response,
   case OTR_PRE_KEY_MSG_TYPE:
     return receive_prekey_message(&response->to_send, decoded, dec_len, otr);
   case OTR_NON_INT_AUTH_MSG_TYPE:
-    return receive_non_interactive_auth_message(decoded, dec_len, otr);
+    return receive_non_interactive_auth_message(response, decoded, dec_len,
+                                                otr);
   case OTR_DATA_MSG_TYPE:
     return otrv4_receive_data_message(response, decoded, dec_len, otr);
   default:
