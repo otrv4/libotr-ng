@@ -1114,8 +1114,6 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
 
     free(ser_enc_msg);
     ser_enc_msg = NULL;
-    // TODO: check in spec
-    otr->keys->j++;
   } else {
     /* Auth MAC = KDF_2(auth_mac_k || t) */
     shake_256_mac(auth->auth_mac, sizeof(auth->auth_mac), auth_mac_k,
