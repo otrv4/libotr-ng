@@ -7,7 +7,7 @@
 Before you try to build libotrv4, verify you have installed:
 * autoconf - https://www.gnu.org/software/autoconf/autoconf.html
 * splint - http://splint.org/documentation
-* valgrind - http://valgrind.org/
+* valgrind - http://valgrind.org/. At least, version 3.12.0
 
 Then, install the following dependencies:
 * libglib2.0-dev
