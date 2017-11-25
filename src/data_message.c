@@ -203,7 +203,6 @@ otrv4_bool_t valid_data_message(m_mac_key_t mac_key,
 otr4_err_t data_message_body_on_non_interactive_asprintf(
     uint8_t **body, size_t *bodylen,
     const dake_non_interactive_auth_message_t *auth) {
-  // TODO: check this len
   size_t s = 4 + DATA_MSG_NONCE_BYTES + auth->enc_msg_len + 4;
   uint8_t *dst = malloc(s);
   if (!dst)

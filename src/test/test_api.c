@@ -474,7 +474,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   int message_id;
 
-  // Bob sends a data message
+  // Alice sends a data message
   string_t to_send = NULL;
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
   otr4_err_t err;

@@ -532,7 +532,8 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
   size_t data_msg_len = 0;
 
   if (non_interactive_auth->enc_msg)
-    data_msg_len = non_interactive_auth->enc_msg_len + MAC_KEY_BYTES;
+    data_msg_len =
+        4 + DATA_MSG_NONCE_BYTES + non_interactive_auth->enc_msg_len + 4;
 
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
@@ -577,7 +578,6 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
                                     DATA_MSG_NONCE_BYTES);
     cursor += serialize_data(cursor, non_interactive_auth->enc_msg,
                              non_interactive_auth->enc_msg_len);
-    // free(non_interactive_auth->enc_msg); // nullify
   }
 
   cursor += serialize_bytes_array(cursor, non_interactive_auth->auth_mac,

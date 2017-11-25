@@ -942,6 +942,11 @@ static data_message_t *generate_data_msg(const otrv4_t *otr) {
   return data_msg;
 }
 
+static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
+  // TODO: should we do any additional check?
+  otr->their_instance_tag = their_instance_tag;
+}
+
 static otr4_err_t encrypt_data_message(data_message_t *data_msg,
                                        const uint8_t *message,
                                        size_t message_len,
@@ -979,12 +984,8 @@ static otr4_err_t encrypt_data_message(data_message_t *data_msg,
 }
 
 static otr4_err_t encrypt_msg_on_non_interactive_auth(
-    dake_non_interactive_auth_message_t *auth, const uint8_t *message,
+    dake_non_interactive_auth_message_t *auth, uint8_t *message,
     size_t message_len, uint8_t nonce[DATA_MSG_NONCE_BYTES], otrv4_t *otr) {
-  // TODO: probably not needed
-  // if (key_manager_prepare_next_chain_key(otr->keys))
-  //  return OTR4_ERROR;
-
   auth->message_id = otr->keys->j;
 
   // TODO: the mac key is not used
@@ -993,23 +994,31 @@ static otr4_err_t encrypt_msg_on_non_interactive_auth(
   memset(enc_key, 0, sizeof(m_enc_key_t));
   memset(mac_key, 0, sizeof(m_mac_key_t));
 
+  // TODO: this will create a new ratchet, is it ok.. or use the
+  // ones already derived? Check spec
   if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
     return OTR4_ERROR;
   }
 
+  // TODO: set it to zero as it is not used
+  sodium_memzero(mac_key, sizeof(m_mac_key_t));
   memcpy(auth->nonce, nonce, DATA_MSG_NONCE_BYTES);
 
   int err = 0;
   uint8_t *c = NULL;
   c = malloc(message_len);
-  if (!c)
+  if (!c) {
+    free(message);
+    message = NULL;
     return OTR4_ERROR;
+  }
 
   // TODO: message is an UTF-8 string. Is there any problem to cast
   // it to (unsigned char *)
   err = crypto_stream_xor(c, message, message_len, nonce, enc_key);
   if (err) {
     free(c);
+    c = NULL;
     return OTR4_ERROR;
   }
 
@@ -1026,13 +1035,14 @@ static otr4_err_t encrypt_msg_on_non_interactive_auth(
 #endif
 
   sodium_memzero(enc_key, sizeof(m_enc_key_t));
-  sodium_memzero(mac_key, sizeof(m_mac_key_t));
 
+  // TODO: increase j?
   return OTR4_SUCCESS;
 }
 
 static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
-                                                      uint8_t *msg, size_t len,
+                                                      uint8_t *message,
+                                                      size_t msglen,
                                                       otrv4_t *otr) {
   dake_non_interactive_auth_message_t auth[1];
   auth->enc_msg = NULL;
@@ -1061,6 +1071,8 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
           &t, &t_len, otr->their_profile, get_my_user_profile(otr),
           THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
           otr->their_profile->shared_prekey, otr->conversation->client->phi)) {
+    free(message);
+    message = NULL;
     dake_non_interactive_auth_message_destroy(auth);
     return OTR4_ERROR;
   }
@@ -1072,29 +1084,26 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
                        THEIR_ECDH(otr),                    /* g^i -- Y */
                        t, t_len);
 
-  if (msg != NULL) {
+  if (message != NULL) {
     uint8_t nonce[DATA_MSG_NONCE_BYTES];
-    uint8_t *ser_enc_msg = NULL;
+    uint8_t *ser_data_msg = NULL;
 
     memcpy(nonce, &t, DATA_MSG_NONCE_BYTES);
 
-    if (encrypt_msg_on_non_interactive_auth(auth, msg, len, nonce, otr) ==
-        OTR4_ERROR) {
+    if (encrypt_msg_on_non_interactive_auth(auth, message, msglen, nonce,
+                                            otr) == OTR4_ERROR) {
       dake_non_interactive_auth_message_destroy(auth);
-      free(msg);
-      msg = NULL;
       free(t);
       t = NULL;
       return OTR4_ERROR;
     }
 
-    free(msg);
-    msg = NULL;
+    free(message);
+    message = NULL;
 
-    // TODO: change the name
     size_t bodylen = 0;
-    if (data_message_body_on_non_interactive_asprintf(&ser_enc_msg, &bodylen,
-                                                      auth)) {
+    if (data_message_body_on_non_interactive_asprintf(&ser_data_msg, &bodylen,
+                                                      auth) == OTR4_ERROR) {
       free(auth->enc_msg);
       auth->enc_msg = NULL;
       dake_non_interactive_auth_message_destroy(auth);
@@ -1103,17 +1112,17 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
       return OTR4_ERROR;
     }
 
-    /* Auth MAC = KDF_2(auth_mac_k || t || enc_msg) */
+    /* Auth MAC = KDF_2(auth_mac_k || t || (message_id || nonce || enc_msg)) */
     decaf_shake256_ctx_t hd;
     hash_init_with_dom(hd);
     hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
     hash_update(hd, t, t_len);
-    hash_update(hd, ser_enc_msg, bodylen);
+    hash_update(hd, ser_data_msg, bodylen);
     hash_final(hd, auth->auth_mac, sizeof(auth->auth_mac));
     hash_destroy(hd);
 
-    free(ser_enc_msg);
-    ser_enc_msg = NULL;
+    free(ser_data_msg);
+    ser_data_msg = NULL;
   } else {
     /* Auth MAC = KDF_2(auth_mac_k || t) */
     shake_256_mac(auth->auth_mac, sizeof(auth->auth_mac), auth_mac_k,
@@ -1129,14 +1138,61 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     free(auth->enc_msg);
     auth->enc_msg = NULL;
   }
-
   dake_non_interactive_auth_message_destroy(auth);
+
   return err;
 }
 
-static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
-  // TODO: should we do any additional check?
-  otr->their_instance_tag = their_instance_tag;
+static otr4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
+  k_ecdh_t k_ecdh;
+  k_dh_t k_dh;
+  k_ecdh_t tmp_ecdh_k1;
+  k_ecdh_t tmp_ecdh_k2;
+
+  // TODO: this will be calculated again later
+  ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh, otr->keys->their_ecdh);
+  // TODO: this will be calculated again later
+  if (dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
+                       otr->keys->their_dh) == OTR4_ERROR)
+    return OTR4_ERROR;
+
+  brace_key_t brace_key;
+  hash_hash(brace_key, sizeof(brace_key_t), k_dh, sizeof(k_dh_t));
+
+#ifdef DEBUG
+  printf("GENERATING TEMP KEY I\n");
+  printf("K_ecdh = ");
+  otrv4_memdump(k_ecdh, sizeof(k_ecdh_t));
+  printf("brace_key = ");
+  otrv4_memdump(brace_key, sizeof(brace_key_t));
+#endif
+
+  ecdh_shared_secret_from_prekey(tmp_ecdh_k1,
+                                 otr->conversation->client->shared_prekey_pair,
+                                 THEIR_ECDH(otr));
+  ecdh_shared_secret_from_keypair(
+      tmp_ecdh_k2, otr->conversation->client->keypair, THEIR_ECDH(otr));
+
+  decaf_shake256_ctx_t hd;
+  hash_init_with_dom(hd);
+  hash_update(hd, k_ecdh, ED448_POINT_BYTES);
+  hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
+  hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
+  hash_update(hd, brace_key, sizeof(brace_key_t));
+
+  hash_final(hd, dst, HASH_BYTES);
+  hash_destroy(hd);
+
+#ifdef DEBUG
+  printf("GENERATING TEMP KEY I\n");
+  printf("tmp_key_i = ");
+  otrv4_memdump(dst, HASH_BYTES);
+#endif
+
+  sodium_memzero(tmp_ecdh_k1, ED448_POINT_BYTES);
+  sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
+
+  return OTR4_SUCCESS;
 }
 
 static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
@@ -1206,58 +1262,6 @@ otr4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
   return reply_with_non_interactive_auth_msg(dst, c, clen, otr);
 }
 
-static otr4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
-  k_ecdh_t k_ecdh;
-  k_dh_t k_dh;
-  k_ecdh_t tmp_ecdh_k1;
-  k_ecdh_t tmp_ecdh_k2;
-
-  // TODO: this will be calculated again later
-  ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh, otr->keys->their_ecdh);
-  // TODO: this will be calculated again later
-  if (dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
-                       otr->keys->their_dh) == OTR4_ERROR)
-    return OTR4_ERROR;
-
-  brace_key_t brace_key;
-  hash_hash(brace_key, sizeof(brace_key_t), k_dh, sizeof(k_dh_t));
-
-#ifdef DEBUG
-  printf("GENERATING TEMP KEY I\n");
-  printf("K_ecdh = ");
-  otrv4_memdump(k_ecdh, sizeof(k_ecdh_t));
-  printf("brace_key = ");
-  otrv4_memdump(brace_key, sizeof(brace_key_t));
-#endif
-
-  ecdh_shared_secret_from_prekey(tmp_ecdh_k1,
-                                 otr->conversation->client->shared_prekey_pair,
-                                 THEIR_ECDH(otr));
-  ecdh_shared_secret_from_keypair(
-      tmp_ecdh_k2, otr->conversation->client->keypair, THEIR_ECDH(otr));
-
-  decaf_shake256_ctx_t hd;
-  hash_init_with_dom(hd);
-  hash_update(hd, k_ecdh, ED448_POINT_BYTES);
-  hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
-  hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
-  hash_update(hd, brace_key, sizeof(brace_key_t));
-
-  hash_final(hd, dst, HASH_BYTES);
-  hash_destroy(hd);
-
-#ifdef DEBUG
-  printf("GENERATING TEMP KEY I\n");
-  printf("tmp_key_i = ");
-  otrv4_memdump(dst, HASH_BYTES);
-#endif
-
-  sodium_memzero(tmp_ecdh_k1, ED448_POINT_BYTES);
-  sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
-
-  return OTR4_SUCCESS;
-}
-
 // TODO: remove this duplication
 static otr4_err_t get_receiving_msg_keys_on_non_interactive_auth(
     m_enc_key_t enc_key, m_mac_key_t mac_key,
@@ -1275,7 +1279,7 @@ static otr4_err_t get_receiving_msg_keys_on_non_interactive_auth(
 }
 
 // TODO: can this also have tlv?
-static bool valid_non_interactive_auth_message(
+static bool verify_non_interactive_auth_message(
     otrv4_response_t *response, const dake_non_interactive_auth_message_t *auth,
     otrv4_t *otr) {
   unsigned char *t = NULL;
@@ -1314,7 +1318,6 @@ static bool valid_non_interactive_auth_message(
                                                        otr)) {
       free(t);
       t = NULL;
-      free(auth->enc_msg);
       return OTR4_ERROR;
     }
 
@@ -1322,7 +1325,6 @@ static bool valid_non_interactive_auth_message(
                                                    auth) == false) {
       free(t);
       t = NULL;
-      free(auth->enc_msg);
       return OTR4_ERROR;
     }
 
@@ -1331,10 +1333,8 @@ static bool valid_non_interactive_auth_message(
 
     string_t *dst = &response->to_display;
     uint8_t *plain = malloc(auth->enc_msg_len);
-    if (!plain) {
-      free(auth->enc_msg);
+    if (!plain)
       return OTR4_ERROR;
-    }
 
     int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
                                 auth->nonce, enc_key);
@@ -1343,16 +1343,12 @@ static bool valid_non_interactive_auth_message(
 
     free(plain);
 
-    if (err != 0) {
-      free(auth->enc_msg);
+    if (err != 0)
       return OTR4_ERROR;
-    }
 
     uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
-    if (to_store_mac == NULL) {
-      free(auth->enc_msg);
+    if (to_store_mac == NULL)
       return OTR4_ERROR;
-    }
 
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
@@ -1426,7 +1422,8 @@ receive_non_interactive_auth_message(otrv4_response_t *response,
   }
 
   // TODO: change the name
-  if (valid_non_interactive_auth_message(response, auth, otr) == OTR4_ERROR) {
+  if (verify_non_interactive_auth_message(response, auth, otr) == OTR4_ERROR) {
+    free(auth->enc_msg);
     auth->enc_msg = NULL;
     dake_non_interactive_auth_message_destroy(auth);
     return OTR4_ERROR;
