@@ -1036,6 +1036,28 @@ static otr4_err_t encrypt_msg_on_non_interactive_auth(
   return OTR4_SUCCESS;
 }
 
+static otr4_err_t data_message_body_on_non_interactive_asprintf(
+    uint8_t **body, size_t *bodylen,
+    const dake_non_interactive_auth_message_t *auth) {
+  size_t s = 4 + DATA_MSG_NONCE_BYTES + auth->enc_msg_len + 4;
+  uint8_t *dst = malloc(s);
+  if (!dst)
+    return OTR4_ERROR;
+
+  uint8_t *cursor = dst;
+  cursor += serialize_uint32(cursor, auth->message_id);
+  cursor += serialize_bytes_array(cursor, auth->nonce, DATA_MSG_NONCE_BYTES);
+  cursor += serialize_data(cursor, auth->enc_msg, auth->enc_msg_len);
+
+  if (body)
+    *body = dst;
+
+  if (bodylen)
+    *bodylen = cursor - dst;
+
+  return OTR4_SUCCESS;
+}
+
 static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
                                                       uint8_t *message,
                                                       size_t msglen,
@@ -1256,6 +1278,41 @@ otr4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
   }
 
   return reply_with_non_interactive_auth_msg(dst, c, clen, otr);
+}
+
+static otrv4_bool_t valid_data_message_on_non_interactive_auth(
+    unsigned char *t, size_t t_len, m_mac_key_t mac_key,
+    const dake_non_interactive_auth_message_t *auth) {
+  uint8_t *enc_msg = NULL;
+  size_t enc_msg_len = 0;
+
+  if (data_message_body_on_non_interactive_asprintf(&enc_msg, &enc_msg_len,
+                                                    auth))
+    return otrv4_false;
+
+  uint8_t mac_tag[DATA_MSG_MAC_BYTES];
+  memset(mac_tag, 0, sizeof(m_mac_key_t));
+
+  /* Auth MAC = KDF_2(auth_mac_k || t || enc_msg) */
+  decaf_shake256_ctx_t hd;
+
+  hash_init_with_dom(hd);
+  hash_update(hd, mac_key, DATA_MSG_MAC_BYTES);
+  hash_update(hd, t, t_len);
+  hash_update(hd, enc_msg, enc_msg_len);
+
+  hash_final(hd, mac_tag, DATA_MSG_MAC_BYTES);
+  hash_destroy(hd);
+
+  free(enc_msg);
+  enc_msg = NULL;
+
+  if (0 != mem_diff(mac_tag, auth->auth_mac, sizeof mac_tag)) {
+    sodium_memzero(mac_tag, sizeof mac_tag);
+    return otrv4_false;
+  }
+
+  return otrv4_true;
 }
 
 static otrv4_bool_t verify_non_interactive_auth_message(
