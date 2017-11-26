@@ -23,6 +23,7 @@ libotr4_la_SOURCES = \
 		     otrv3.c \
 		     otrv4.c \
 		     serialize.c \
+		     smp.c \
 		     str.c \
 		     tlv.c \
 		     user_profile.c

@@ -17,7 +17,7 @@
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
-#include "smp.c"
+#include "smp.h"
 #include "str.h"
 #include "tlv.h"
 

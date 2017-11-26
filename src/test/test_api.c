@@ -40,8 +40,9 @@ static void free_message_and_response(otrv4_response_t *response,
   message = NULL;
 }
 
-static void set_up_client_state(otr4_client_state_t *state, const char *account_name,
-                                const char *phi, int byte) {
+static void set_up_client_state(otr4_client_state_t *state,
+                                const char *account_name, const char *phi,
+                                int byte) {
   state->userstate = otrl_userstate_create();
   state->account_name = otrv4_strdup(account_name);
   state->protocol_name = otrv4_strdup("otr");

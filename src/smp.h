@@ -1,6 +1,7 @@
 #ifndef SMP_H
 #define SMP_H
 
+#include "client_callbacks.h"
 #include "fingerprint.h"
 #include "str.h"
 #include "tlv.h"
@@ -85,6 +86,8 @@ otr4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
 
 otr4_err_t smp_msg_2_deserialize(smp_msg_2_t *dst, const tlv_t *tlv);
 
+otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp);
+
 void smp_msg_2_destroy(smp_msg_2_t *msg);
 
 otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
@@ -92,5 +95,16 @@ otr4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
 
 otr4_err_t generate_smp_msg_4(smp_msg_4_t *dst, const smp_msg_3_t *msg_3,
                               smp_context_t smp);
+
+// TODO: should be exposed?
+otr4_smp_event_t process_smp_msg1(const tlv_t *tlv, smp_context_t smp);
+
+otr4_smp_event_t process_smp_msg2(tlv_t **smp_reply, const tlv_t *tlv,
+                                  smp_context_t smp);
+
+otr4_smp_event_t process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
+                                  smp_context_t smp);
+
+otr4_smp_event_t process_smp_msg4(const tlv_t *tlv, smp_context_t smp);
 
 #endif
