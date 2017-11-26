@@ -988,19 +988,16 @@ static otr4_err_t encrypt_msg_on_non_interactive_auth(
     size_t message_len, uint8_t nonce[DATA_MSG_NONCE_BYTES], otrv4_t *otr) {
   auth->message_id = otr->keys->j;
 
-  // TODO: the mac key is not used
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
   memset(enc_key, 0, sizeof(m_enc_key_t));
   memset(mac_key, 0, sizeof(m_mac_key_t));
 
-  // TODO: this will create a new ratchet, is it ok.. or use the
-  // ones already derived? Check spec
   if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
     return OTR4_ERROR;
   }
 
-  // TODO: set it to zero as it is not used
+  /* discard this mac key as it not used */
   sodium_memzero(mac_key, sizeof(m_mac_key_t));
   memcpy(auth->nonce, nonce, DATA_MSG_NONCE_BYTES);
 
@@ -1036,7 +1033,6 @@ static otr4_err_t encrypt_msg_on_non_interactive_auth(
 
   sodium_memzero(enc_key, sizeof(m_enc_key_t));
 
-  // TODO: increase j?
   return OTR4_SUCCESS;
 }
 
@@ -1250,7 +1246,7 @@ otr4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
   uint8_t *c = NULL;
   size_t clen = strlen(message) + 1;
 
-  if ((strcmp(message, "") != 0)) { // TODO: this can still be valid
+  if ((strcmp(message, "") != 0)) {
     c = malloc(clen);
     if (!c) {
       return OTR4_ERROR;
@@ -1262,24 +1258,7 @@ otr4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
   return reply_with_non_interactive_auth_msg(dst, c, clen, otr);
 }
 
-// TODO: remove this duplication
-static otr4_err_t get_receiving_msg_keys_on_non_interactive_auth(
-    m_enc_key_t enc_key, m_mac_key_t mac_key,
-    const dake_non_interactive_auth_message_t *auth, otrv4_t *otr) {
-
-  // TODO: the mac key is not needed
-  if (key_manager_retrieve_receiving_message_keys(
-          enc_key, mac_key, auth->message_id, otr->keys)) {
-    sodium_memzero(enc_key, sizeof(m_enc_key_t));
-    sodium_memzero(mac_key, sizeof(m_mac_key_t));
-    return OTR4_ERROR;
-  }
-
-  return OTR4_SUCCESS;
-}
-
-// TODO: can this also have tlv?
-static bool verify_non_interactive_auth_message(
+static otrv4_bool_t verify_non_interactive_auth_message(
     otrv4_response_t *response, const dake_non_interactive_auth_message_t *auth,
     otrv4_t *otr) {
   unsigned char *t = NULL;
@@ -1303,10 +1282,10 @@ static bool verify_non_interactive_auth_message(
 
   if (auth->enc_msg) {
     m_enc_key_t enc_key;
-    m_mac_key_t mac_key; // TODO: not really needed
+    m_mac_key_t mac_key;
 
     memset(enc_key, 0, sizeof(m_enc_key_t));
-    memset(mac_key, 0, sizeof(m_mac_key_t)); // TODO: not really needed
+    memset(mac_key, 0, sizeof(m_mac_key_t));
 
     /* auth_mac_k = KDF_2(0x01 || tmp_k) */
     uint8_t magic[1] = {0x01};
@@ -1314,18 +1293,23 @@ static bool verify_non_interactive_auth_message(
     shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
                   HASH_BYTES);
 
-    if (get_receiving_msg_keys_on_non_interactive_auth(enc_key, mac_key, auth,
-                                                       otr)) {
+    if (key_manager_retrieve_receiving_message_keys(
+            enc_key, mac_key, auth->message_id, otr->keys)) {
       free(t);
       t = NULL;
-      return OTR4_ERROR;
+      sodium_memzero(enc_key, sizeof(m_enc_key_t));
+      sodium_memzero(mac_key, sizeof(m_mac_key_t));
+      return otrv4_false;
     }
 
+    /* discard this mac key as it is not needed */
+    sodium_memzero(mac_key, sizeof(m_mac_key_t));
+
     if (valid_data_message_on_non_interactive_auth(t, t_len, auth_mac_k,
-                                                   auth) == false) {
+                                                   auth)) {
       free(t);
       t = NULL;
-      return OTR4_ERROR;
+      return otrv4_false;
     }
 
     free(t);
@@ -1334,7 +1318,7 @@ static bool verify_non_interactive_auth_message(
     string_t *dst = &response->to_display;
     uint8_t *plain = malloc(auth->enc_msg_len);
     if (!plain)
-      return OTR4_ERROR;
+      return otrv4_false;
 
     int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
                                 auth->nonce, enc_key);
@@ -1344,17 +1328,18 @@ static bool verify_non_interactive_auth_message(
     free(plain);
 
     if (err != 0)
-      return OTR4_ERROR;
+      return otrv4_false;
 
     uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
-    if (to_store_mac == NULL)
-      return OTR4_ERROR;
+    if (to_store_mac == NULL) {
+      sodium_memzero(enc_key, sizeof(enc_key));
+      return otrv4_false;
+    }
 
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
 
     sodium_memzero(enc_key, sizeof(enc_key));
-    sodium_memzero(mac_key, sizeof(mac_key));
   } else {
     /* auth_mac_k = KDF_2(0x01 || tmp_k */
     uint8_t magic[1] = {0x01};
@@ -1928,10 +1913,9 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
 
     sodium_memzero(enc_key, sizeof(enc_key));
-    otrv4_tlv_free(reply_tlv);
     sodium_memzero(mac_key, sizeof(mac_key));
     data_message_free(msg);
-
+    otrv4_tlv_free(reply_tlv);
     return OTR4_SUCCESS;
   } while (0);
 

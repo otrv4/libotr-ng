@@ -5,7 +5,6 @@
 #define OTR_IDENTITY_MSG_TYPE 0x08
 #define OTR_AUTH_R_MSG_TYPE 0x91
 #define OTR_AUTH_I_MSG_TYPE 0x88
-// TODO: check this msg type
 #define OTR_PRE_KEY_MSG_TYPE 0x55
 #define OTR_NON_INT_AUTH_MSG_TYPE 0x04
 #define OTR_DATA_MSG_TYPE 0x03
