@@ -689,40 +689,44 @@ otr4_err_t dake_non_interactive_auth_message_deserialize(
   return deserialize_bytes_array(dst->auth_mac, HASH_BYTES, cursor, len);
 }
 
-bool not_expired(time_t expires) {
+static otrv4_bool_t not_expired(time_t expires) {
   if (difftime(expires, time(NULL)) > 0) {
-    return true;
+    return otrv4_true;
   }
 
-  return false;
+  return otrv4_false;
 }
 
-static bool no_rollback_detected(const char *versions) {
+static otrv4_bool_t no_rollback_detected(const char *versions) {
   while (*versions) {
     if (*versions != '3' && *versions != '4')
-      return false;
+      return otrv4_false;
 
     versions++;
   }
-  return true;
+  return otrv4_true;
 }
 
-// is it always their?
-bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
-                           const user_profile_t *profile) {
-  bool valid = true;
-
+otrv4_bool_t valid_received_values(const ec_point_t their_ecdh,
+                                   const dh_mpi_t their_dh,
+                                   const user_profile_t *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */
-  if (ec_point_valid(their_ecdh) == OTR4_ERROR)
-    return false;
+  if (ec_point_valid(their_ecdh) == otrv4_false)
+    return otrv4_false;
 
   /* Verify that the DH public key their_dh is from the correct group. */
-  valid &= dh_mpi_valid(their_dh);
+  if (dh_mpi_valid(their_dh) == otrv4_false)
+    return otrv4_false;
 
   /* Verify their profile is valid (and not expired). */
-  valid &= user_profile_verify_signature(profile);
-  valid &= not_expired(profile->expires);
-  valid &= no_rollback_detected(profile->versions);
+  if (user_profile_verify_signature(profile) == otrv4_false)
+    return otrv4_false;
 
-  return valid;
+  if (not_expired(profile->expires) == otrv4_false)
+    return otrv4_false;
+
+  if (no_rollback_detected(profile->versions))
+    return otrv4_false;
+
+  return otrv4_true;
 }

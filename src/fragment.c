@@ -169,15 +169,18 @@ static otr4_err_t append_fragment(const char *msg, int msg_len,
   return OTR4_SUCCESS;
 }
 
-static bool is_fragment(const string_t message) {
-  return strstr(message, "?OTR|") != NULL;
+static otrv4_bool_t is_fragment(const string_t message) {
+  if (strstr(message, "?OTR|") != NULL)
+    return otrv4_true;
+
+  return otrv4_false;
 }
 
 otr4_err_t otr4_unfragment_message(char **unfrag_msg,
                                    fragment_context_t *context,
                                    const string_t message,
                                    const int our_instance_tag) {
-  if (!is_fragment(message)) {
+  if (is_fragment(message)) {
     *unfrag_msg = otrv4_strdup(message);
     initialize_fragment_context(context);
     return OTR4_SUCCESS;

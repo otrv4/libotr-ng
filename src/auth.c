@@ -91,9 +91,11 @@ void snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
   decaf_448_scalar_sub(dst->r1, t1, c1a1);
 }
 
-otr4_err_t snizkpk_verify(const snizkpk_proof_t *src, const snizkpk_pubkey_t A1,
-                          const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
-                          const unsigned char *msg, size_t msglen) {
+otrv4_bool_t snizkpk_verify(const snizkpk_proof_t *src,
+                            const snizkpk_pubkey_t A1,
+                            const snizkpk_pubkey_t A2,
+                            const snizkpk_pubkey_t A3, const unsigned char *msg,
+                            size_t msglen) {
 
   decaf_shake256_ctx_t hd;
   uint8_t hash[HASH_BYTES];
@@ -147,11 +149,10 @@ otr4_err_t snizkpk_verify(const snizkpk_proof_t *src, const snizkpk_pubkey_t A1,
   decaf_448_scalar_add(c1c2c3, src->c1, src->c2);
   decaf_448_scalar_add(c1c2c3, c1c2c3, src->c3);
 
-  if (DECAF_TRUE == decaf_448_scalar_eq(c, c1c2c3)) {
-    return OTR4_SUCCESS;
-  }
+  if (DECAF_TRUE == decaf_448_scalar_eq(c, c1c2c3))
+    return otrv4_true;
 
-  return OTR4_ERROR;
+  return otrv4_false;
 }
 
 void snizkpk_proof_destroy(snizkpk_proof_t *src) {

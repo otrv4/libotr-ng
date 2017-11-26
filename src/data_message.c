@@ -194,7 +194,7 @@ otrv4_bool_t valid_data_message(m_mac_key_t mac_key,
     return otrv4_false;
   }
 
-  if (!(ec_point_valid(data_msg->ecdh)))
+  if (ec_point_valid(data_msg->ecdh))
     return otrv4_false;
 
   return dh_mpi_valid(data_msg->dh);
@@ -222,7 +222,7 @@ otr4_err_t data_message_body_on_non_interactive_asprintf(
   return OTR4_SUCCESS;
 }
 
-bool valid_data_message_on_non_interactive_auth(
+otrv4_bool_t valid_data_message_on_non_interactive_auth(
     unsigned char *t, size_t t_len, m_mac_key_t mac_key,
     const dake_non_interactive_auth_message_t *auth) {
   uint8_t *enc_msg = NULL;
@@ -230,7 +230,7 @@ bool valid_data_message_on_non_interactive_auth(
 
   if (data_message_body_on_non_interactive_asprintf(&enc_msg, &enc_msg_len,
                                                     auth))
-    return false;
+    return otrv4_false;
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
   memset(mac_tag, 0, sizeof(m_mac_key_t));
@@ -251,8 +251,8 @@ bool valid_data_message_on_non_interactive_auth(
 
   if (0 != mem_diff(mac_tag, auth->auth_mac, sizeof mac_tag)) {
     sodium_memzero(mac_tag, sizeof mac_tag);
-    return false;
+    return otrv4_false;
   }
 
-  return true;
+  return otrv4_true;
 }

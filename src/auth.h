@@ -27,9 +27,11 @@ void snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
                           const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
                           const unsigned char *msg, size_t msglen);
 
-otr4_err_t snizkpk_verify(const snizkpk_proof_t *src, const snizkpk_pubkey_t A1,
-                          const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
-                          const unsigned char *msg, size_t msglen);
+otrv4_bool_t snizkpk_verify(const snizkpk_proof_t *src,
+                            const snizkpk_pubkey_t A1,
+                            const snizkpk_pubkey_t A2,
+                            const snizkpk_pubkey_t A3, const unsigned char *msg,
+                            size_t msglen);
 
 void generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv);
 

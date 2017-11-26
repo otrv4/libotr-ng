@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define OTR4_ERROR_PREFIX "?OTR Error: "
+
 // needed for comparing with DECAF_TRUE
 typedef uint32_t
     otrv4_bool_t; /* "Boolean" type, will be set to all-zero or all-one */

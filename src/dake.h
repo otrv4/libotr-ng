@@ -85,9 +85,6 @@ otr4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
 otr4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
                                    size_t buflen);
 
-bool valid_received_values(const ec_point_t their_ecdh, const dh_mpi_t their_dh,
-                           const user_profile_t *profile);
-
 dake_prekey_message_t *dake_prekey_message_new(const user_profile_t *profile);
 
 void dake_prekey_message_free(dake_prekey_message_t *prekey_message);
@@ -111,5 +108,9 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
 otr4_err_t dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_t *dst, const uint8_t *buffer,
     size_t buflen);
+
+otrv4_bool_t valid_received_values(const ec_point_t their_ecdh,
+                                   const dh_mpi_t their_dh,
+                                   const user_profile_t *profile);
 
 #endif

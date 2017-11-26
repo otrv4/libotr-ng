@@ -244,7 +244,7 @@ otr4_err_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
   if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  if (ec_scalar_eq(temp_scalar, msg->c2) == OTR4_ERROR)
+  if (ec_scalar_eq(temp_scalar, msg->c2))
     return OTR4_ERROR;
 
   /* Check that c3 = HashToScalar(2 || G * d3 + G3a * c3). */
@@ -258,7 +258,7 @@ otr4_err_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
   if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  if (ec_scalar_eq(temp_scalar, msg->c3) == OTR4_ERROR)
+  if (ec_scalar_eq(temp_scalar, msg->c3))
     return OTR4_ERROR;
 
   return OTR4_SUCCESS;
@@ -506,7 +506,7 @@ otr4_err_t smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  if (ec_scalar_eq(temp_scalar, msg->c3) == OTR4_ERROR)
+  if (ec_scalar_eq(temp_scalar, msg->c3))
     return OTR4_ERROR;
 
   /* Check that cp = HashToScalar(5 || G3 * d5 + Pb * cp || G * d5 + G2 * d6 +
@@ -531,7 +531,7 @@ otr4_err_t smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  if (ec_scalar_eq(temp_scalar, msg->cp) == OTR4_ERROR)
+  if (ec_scalar_eq(temp_scalar, msg->cp))
     return OTR4_ERROR;
 
   return OTR4_SUCCESS;
@@ -728,7 +728,7 @@ otr4_err_t smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  if (ec_scalar_eq(temp_scalar, msg->cp) == OTR4_ERROR)
+  if (ec_scalar_eq(temp_scalar, msg->cp))
     return OTR4_ERROR;
 
   /* cr = HashToScalar(7 || G * d7 + G3a * cr || (Qa - Qb) * d7 + Ra * cr) */
@@ -749,7 +749,7 @@ otr4_err_t smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  if (ec_scalar_eq(temp_scalar, msg->cr) == OTR4_ERROR)
+  if (ec_scalar_eq(temp_scalar, msg->cr))
     return OTR4_ERROR;
 
   return OTR4_SUCCESS;
@@ -860,7 +860,7 @@ otr4_err_t smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == OTR4_ERROR)
     return OTR4_ERROR;
 
-  if (ec_scalar_eq(msg->cr, temp_scalar) == OTR4_ERROR)
+  if (ec_scalar_eq(msg->cr, temp_scalar))
     return OTR4_ERROR;
 
   return OTR4_SUCCESS;

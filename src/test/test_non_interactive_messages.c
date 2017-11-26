@@ -131,7 +131,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
   prekey_message->B = dh_mpi_copy(dh->pub);
 
   otrv4_assert(valid_received_values(prekey_message->Y, prekey_message->B,
-                                     prekey_message->profile));
+                                     prekey_message->profile) == otrv4_true);
 
   ecdh_keypair_destroy(ecdh);
   dh_keypair_destroy(dh);
@@ -157,9 +157,9 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
   ec_point_copy(invalid_prekey_message->Y, invalid_ecdh->pub);
   invalid_prekey_message->B = dh_mpi_copy(invalid_dh->pub);
 
-  otrv4_assert(!valid_received_values(invalid_prekey_message->Y,
-                                      invalid_prekey_message->B,
-                                      invalid_prekey_message->profile));
+  otrv4_assert(valid_received_values(
+                   invalid_prekey_message->Y, invalid_prekey_message->B,
+                   invalid_prekey_message->profile) == otrv4_false);
 
   user_profile_free(invalid_profile);
   ecdh_keypair_destroy(invalid_ecdh);

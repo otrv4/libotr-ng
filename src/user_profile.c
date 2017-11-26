@@ -205,23 +205,23 @@ otr4_err_t user_profile_sign(user_profile_t *profile,
 
 // TODO: I dont think this needs the data structure. Could verify from the
 // deserialized bytes.
-bool user_profile_verify_signature(const user_profile_t *profile) {
+otrv4_bool_t user_profile_verify_signature(const user_profile_t *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
   if (!(profile->signature > 0))
-    return false;
+    return otrv4_false;
 
   if (ec_point_valid(profile->shared_prekey) == OTR4_ERROR)
-    return false;
+    return otrv4_false;
 
   if (user_profile_body_asprintf(&body, &bodylen, profile))
-    return false;
+    return otrv4_false;
 
   uint8_t pubkey[ED448_POINT_BYTES];
   ec_point_serialize(pubkey, profile->pub_key);
 
-  bool valid = ec_verify(profile->signature, pubkey, body, bodylen);
+  otrv4_bool_t valid = ec_verify(profile->signature, pubkey, body, bodylen);
 
   free(body);
   body = NULL;

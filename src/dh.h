@@ -46,7 +46,7 @@ otr4_err_t dh_mpi_serialize(uint8_t *dst, size_t dst_len, size_t *written,
 otr4_err_t dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer,
                               size_t buflen, size_t *nread);
 
-otr4_err_t dh_mpi_valid(dh_mpi_t mpi);
+otrv4_bool_t dh_mpi_valid(dh_mpi_t mpi);
 
 static inline int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
   return gcry_mpi_cmp(m1, m2);

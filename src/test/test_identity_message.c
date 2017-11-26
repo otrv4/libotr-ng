@@ -139,7 +139,7 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   identity_message->B = dh_mpi_copy(dh->pub);
 
   otrv4_assert(valid_received_values(identity_message->Y, identity_message->B,
-                                     identity_message->profile));
+                                     identity_message->profile) == otrv4_true);
 
   ecdh_keypair_destroy(ecdh);
   dh_keypair_destroy(dh);
@@ -167,9 +167,9 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   ec_point_copy(invalid_identity_message->Y, invalid_ecdh->pub);
   invalid_identity_message->B = dh_mpi_copy(invalid_dh->pub);
 
-  otrv4_assert(!valid_received_values(invalid_identity_message->Y,
-                                      invalid_identity_message->B,
-                                      invalid_identity_message->profile));
+  otrv4_assert(valid_received_values(
+                   invalid_identity_message->Y, invalid_identity_message->B,
+                   invalid_identity_message->profile) == otrv4_false);
 
   user_profile_free(invalid_profile);
   ecdh_keypair_destroy(invalid_ecdh);

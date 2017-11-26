@@ -158,11 +158,11 @@ void test_user_profile_signs_and_verify() {
   otrv4_assert(profile != NULL);
   user_profile_sign(profile, keypair);
 
-  otrv4_assert(user_profile_verify_signature(profile));
+  otrv4_assert(user_profile_verify_signature(profile) == otrv4_true);
 
   memset(profile->signature, 0, ED448_SIGNATURE_BYTES);
 
-  otrv4_assert(!user_profile_verify_signature(profile));
+  otrv4_assert(user_profile_verify_signature(profile) == otrv4_false);
 
   user_profile_free(profile);
 }

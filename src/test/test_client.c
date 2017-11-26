@@ -421,7 +421,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   dh_public_key_t new_their_dh;
   new_their_dh = dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
 
-  otrv4_assert(!ec_point_eq(stored_their_ecdh, new_their_ecdh));
+  otrv4_assert(ec_point_eq(stored_their_ecdh, new_their_ecdh) == otrv4_false);
   ec_point_destroy(stored_their_ecdh);
   ec_point_destroy(new_their_ecdh);
 

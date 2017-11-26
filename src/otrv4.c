@@ -1209,7 +1209,7 @@ static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
 
   received_instance_tag(m->sender_instance_tag, otr);
 
-  if (!valid_received_values(m->Y, m->B, m->profile)) {
+  if (valid_received_values(m->Y, m->B, m->profile)) {
     dake_prekey_message_destroy(m);
     return err;
   }
@@ -1270,11 +1270,11 @@ static otrv4_bool_t verify_non_interactive_auth_message(
           &t, &t_len, get_my_user_profile(otr), auth->profile, OUR_ECDH(otr),
           auth->X, OUR_DH(otr), auth->A, otr->profile->shared_prekey,
           otr->conversation->client->phi)) {
-    return false;
+    return otrv4_false;
   }
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
-  otr4_err_t err =
+  otrv4_bool_t err =
       snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
                      otr->conversation->client->keypair->pub, /* g^I */
                      OUR_ECDH(otr),                           /* g^  */
@@ -1353,7 +1353,7 @@ static otrv4_bool_t verify_non_interactive_auth_message(
     if (0 != mem_diff(auth_mac, auth->auth_mac, sizeof auth_mac)) {
       free(t);
       t = NULL;
-      return OTR4_ERROR;
+      return otrv4_false;
     }
   }
 
@@ -1406,8 +1406,7 @@ receive_non_interactive_auth_message(otrv4_response_t *response,
     return OTR4_ERROR;
   }
 
-  // TODO: change the name
-  if (verify_non_interactive_auth_message(response, auth, otr) == OTR4_ERROR) {
+  if (verify_non_interactive_auth_message(response, auth, otr) == otrv4_false) {
     free(auth->enc_msg);
     auth->enc_msg = NULL;
     dake_non_interactive_auth_message_destroy(auth);
@@ -1488,7 +1487,7 @@ static otr4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,
 
   received_instance_tag(m->sender_instance_tag, otr);
 
-  if (!valid_received_values(m->Y, m->B, m->profile)) {
+  if (valid_received_values(m->Y, m->B, m->profile)) {
     dake_identity_message_destroy(m);
     return err;
   }
@@ -1553,20 +1552,21 @@ static otr4_err_t reply_with_auth_i_msg(string_t *dst,
   return err;
 }
 
-static bool valid_auth_r_message(const dake_auth_r_t *auth, otrv4_t *otr) {
+static otrv4_bool_t valid_auth_r_message(const dake_auth_r_t *auth,
+                                         otrv4_t *otr) {
   uint8_t *t = NULL;
   size_t t_len = 0;
 
-  if (!valid_received_values(auth->X, auth->A, auth->profile))
-    return false;
+  if (valid_received_values(auth->X, auth->A, auth->profile))
+    return otrv4_false;
 
   if (build_auth_message(&t, &t_len, 0, get_my_user_profile(otr), auth->profile,
                          OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A,
                          otr->conversation->client->phi))
-    return false;
+    return otrv4_false;
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
-  otr4_err_t err =
+  otrv4_bool_t err =
       snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
                      otr->conversation->client->keypair->pub, /* g^I */
                      OUR_ECDH(otr),                           /* g^  */
@@ -1575,7 +1575,7 @@ static bool valid_auth_r_message(const dake_auth_r_t *auth, otrv4_t *otr) {
   free(t);
   t = NULL;
 
-  return err == OTR4_SUCCESS;
+  return err;
 }
 
 static otr4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
@@ -1594,7 +1594,7 @@ static otr4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
 
   received_instance_tag(auth->sender_instance_tag, otr);
 
-  if (!valid_auth_r_message(auth, otr)) {
+  if (valid_auth_r_message(auth, otr) == otrv4_false) {
     dake_auth_r_destroy(auth);
     return OTR4_ERROR;
   }
@@ -1623,7 +1623,8 @@ static otr4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
   return double_ratcheting_init(0, true, otr);
 }
 
-static bool valid_auth_i_message(const dake_auth_i_t *auth, otrv4_t *otr) {
+static otrv4_bool_t valid_auth_i_message(const dake_auth_i_t *auth,
+                                         otrv4_t *otr) {
   uint8_t *t = NULL;
   size_t t_len = 0;
 
@@ -1631,15 +1632,15 @@ static bool valid_auth_i_message(const dake_auth_i_t *auth, otrv4_t *otr) {
                          get_my_user_profile(otr), THEIR_ECDH(otr),
                          OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
                          otr->conversation->client->phi))
-    return false;
+    return otrv4_false;
 
-  otr4_err_t err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
-                                  otr->conversation->client->keypair->pub,
-                                  OUR_ECDH(otr), t, t_len);
+  otrv4_bool_t err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
+                                    otr->conversation->client->keypair->pub,
+                                    OUR_ECDH(otr), t, t_len);
   free(t);
   t = NULL;
 
-  return err == OTR4_SUCCESS;
+  return err;
 }
 
 static otr4_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
@@ -1656,7 +1657,7 @@ static otr4_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
     return OTR4_SUCCESS;
   }
 
-  if (!valid_auth_i_message(auth, otr)) {
+  if (valid_auth_i_message(auth, otr) == otrv4_false) {
     dake_auth_i_destroy(auth);
     return OTR4_ERROR;
   }
@@ -1886,7 +1887,7 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     if (get_receiving_msg_keys(enc_key, mac_key, msg, otr))
       continue;
 
-    if (!valid_data_message(mac_key, msg))
+    if (valid_data_message(mac_key, msg))
       continue;
 
     if (decrypt_data_msg(response, enc_key, msg))

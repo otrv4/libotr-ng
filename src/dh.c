@@ -161,15 +161,15 @@ otr4_err_t dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t dh_mpi_valid(dh_mpi_t mpi) {
+otrv4_bool_t dh_mpi_valid(dh_mpi_t mpi) {
   /* Check that pub is in range */
   if (mpi == NULL)
-    return OTR4_ERROR;
+    return otrv4_false;
 
   /* mpi >= 2 and <= dh_p - 2 */
-  if (!(gcry_mpi_cmp_ui(mpi, 2) < 0 ||
-        gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0))
-    return OTR4_ERROR;
+  if ((gcry_mpi_cmp_ui(mpi, 2) < 0 ||
+       gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0))
+    return otrv4_false;
 
   /* slower: x ^ q mod p
   gcry_mpi_t tmp = gcry_mpi_new(DH3072_MOD_LEN_BYTES);
@@ -179,5 +179,5 @@ otr4_err_t dh_mpi_valid(dh_mpi_t mpi) {
     return OTR4_ERROR;
   */
 
-  return OTR4_SUCCESS;
+  return otrv4_true;
 }

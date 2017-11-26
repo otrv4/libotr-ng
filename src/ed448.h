@@ -29,7 +29,7 @@ typedef struct {
 
 typedef decaf_448_public_key_t ec_public_key_t;
 
-otr4_err_t ec_scalar_eq(const ec_scalar_t a, const ec_scalar_t b);
+otrv4_bool_t ec_scalar_eq(const ec_scalar_t a, const ec_scalar_t b);
 
 otr4_err_t ec_scalar_serialize(uint8_t *dst, size_t dst_len,
                                const ec_scalar_t scalar);
@@ -74,8 +74,8 @@ void ec_sign(eddsa_signature_t dst, uint8_t sym[ED448_PRIVATE_BYTES],
              uint8_t pubkey[ED448_POINT_BYTES], const uint8_t *msg,
              size_t msg_len);
 
-bool ec_verify(const uint8_t sig[DECAF_EDDSA_448_SIGNATURE_BYTES],
-               const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg,
-               size_t msg_len);
+otrv4_bool_t ec_verify(const uint8_t sig[DECAF_EDDSA_448_SIGNATURE_BYTES],
+                       const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg,
+                       size_t msg_len);
 
 #endif
