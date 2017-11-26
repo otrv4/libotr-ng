@@ -1242,7 +1242,7 @@ static otr4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
 }
 
 otr4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
-                                         string_t message) {
+                                         const string_t message) {
   uint8_t *c = NULL;
   size_t clen = strlen(message) + 1;
 

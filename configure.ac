@@ -56,6 +56,15 @@ AX_CFLAGS_GCC_OPTION([-Wall])
 # AX_CFLAGS_GCC_OPTION([-W]) Uncomment this to allow Wextra flag
 AX_CFLAGS_GCC_OPTION([-Werror])
 AX_CFLAGS_GCC_OPTION([-Wfatal-errors])
+AX_CFLAGS_GCC_OPTION([-Wbad-function-cast])
+AX_CFLAGS_GCC_OPTION([-Wbad-cast-qual])
+AX_CFLAGS_GCC_OPTION([-Wdiv-by-zero])
+AX_CFLAGS_GCC_OPTION([-Wfloat-equal])
+AX_CFLAGS_GCC_OPTION([-Wlogical-op])
+AX_CFLAGS_GCC_OPTION([-Wnested-externs])
+AX_CFLAGS_GCC_OPTION([-Wpointer-arith])
+AX_CFLAGS_GCC_OPTION([-Wredundant-decls])
+AX_CFLAGS_GCC_OPTION([-Wstrict-prototypes])
 
 # Code coverage
 AX_CODE_COVERAGE

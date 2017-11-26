@@ -40,8 +40,8 @@ static void free_message_and_response(otrv4_response_t *response,
   message = NULL;
 }
 
-static void set_up_client_state(otr4_client_state_t *state, char *account_name,
-                                char *phi, int byte) {
+static void set_up_client_state(otr4_client_state_t *state, const char *account_name,
+                                const char *phi, int byte) {
   state->userstate = otrl_userstate_create();
   state->account_name = otrv4_strdup(account_name);
   state->protocol_name = otrv4_strdup("otr");
@@ -57,8 +57,8 @@ static void set_up_client_state(otr4_client_state_t *state, char *account_name,
 }
 
 // TODO: a cliente state is not part of a otr creation
-static otrv4_t *set_up_otr(otr4_client_state_t *state, char *account_name,
-                           char *phi, int byte) {
+static otrv4_t *set_up_otr(otr4_client_state_t *state, const char *account_name,
+                           const char *phi, int byte) {
   set_up_client_state(state, account_name, phi, byte);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
@@ -876,7 +876,7 @@ void test_api_smp(void) {
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;
   string_t to_send = NULL;
-  char *secret = "secret";
+  const char *secret = "secret";
 
   // Alice sends SMP1
   otrv4_assert(otrv4_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
@@ -960,7 +960,7 @@ void test_api_smp_abort(void) {
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;
   string_t to_send = NULL;
-  char *secret = "secret";
+  const char *secret = "secret";
 
   // Alice sends SMP1
   otrv4_assert(otrv4_smp_start(&to_send, NULL, 0, (uint8_t *)secret,

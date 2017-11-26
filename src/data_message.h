@@ -23,7 +23,7 @@ typedef struct {
   uint8_t mac[DATA_MSG_MAC_BYTES];
 } data_message_t;
 
-data_message_t *data_message_new();
+data_message_t *data_message_new(void);
 
 void data_message_free(data_message_t *data_msg);
 

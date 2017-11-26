@@ -178,6 +178,6 @@ void reply_with_prekey_msg_from_server(otrv4_server_t *server,
 otr4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr);
 
 otr4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
-                                         string_t message);
+                                         const string_t message);
 
 #endif
