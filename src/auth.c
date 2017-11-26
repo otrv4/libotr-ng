@@ -163,21 +163,3 @@ void snizkpk_proof_destroy(snizkpk_proof_t *src) {
   ec_scalar_destroy(src->c3);
   ec_scalar_destroy(src->r3);
 }
-
-// TODO: move this to the correct place
-void ecdh_shared_secret_from_prekey(uint8_t *shared,
-                                    otrv4_shared_prekey_pair_t *shared_prekey,
-                                    const ec_point_t their_pub) {
-  decaf_448_point_t s;
-  decaf_448_point_scalarmul(s, their_pub, shared_prekey->priv);
-
-  ec_point_serialize(shared, s);
-}
-
-void ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
-                                     const ec_point_t their_pub) {
-  decaf_448_point_t s;
-  decaf_448_point_scalarmul(s, their_pub, keypair->priv);
-
-  ec_point_serialize(shared, s);
-}

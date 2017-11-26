@@ -37,11 +37,4 @@ void generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv);
 
 void snizkpk_proof_destroy(snizkpk_proof_t *src);
 
-void ecdh_shared_secret_from_prekey(uint8_t *shared,
-                                    otrv4_shared_prekey_pair_t *shared_prekey,
-                                    const ec_point_t their_pub);
-
-void ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
-                                     const ec_point_t their_pub);
-
 #endif

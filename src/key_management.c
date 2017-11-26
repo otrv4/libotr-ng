@@ -318,6 +318,23 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
   return OTR4_SUCCESS;
 }
 
+void ecdh_shared_secret_from_prekey(uint8_t *shared,
+                                    otrv4_shared_prekey_pair_t *shared_prekey,
+                                    const ec_point_t their_pub) {
+  decaf_448_point_t s;
+  decaf_448_point_scalarmul(s, their_pub, shared_prekey->priv);
+
+  ec_point_serialize(shared, s);
+}
+
+void ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
+                                     const ec_point_t their_pub) {
+  decaf_448_point_t s;
+  decaf_448_point_scalarmul(s, their_pub, keypair->priv);
+
+  ec_point_serialize(shared, s);
+}
+
 void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
                              const brace_key_t brace_key) {
   decaf_shake256_ctx_t hd;

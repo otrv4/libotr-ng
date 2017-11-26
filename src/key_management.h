@@ -102,6 +102,13 @@ otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
                                                int message_id,
                                                const key_manager_t *manager);
 
+void ecdh_shared_secret_from_prekey(uint8_t *shared,
+                                    otrv4_shared_prekey_pair_t *shared_prekey,
+                                    const ec_point_t their_pub);
+
+void ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
+                                     const ec_point_t their_pub);
+
 void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
                              const chain_key_t chain_key);
 
