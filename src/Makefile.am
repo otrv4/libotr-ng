@@ -44,6 +44,7 @@ otrinc_HEADERS = b64.h \
 		 client_state.h \
 		 client_callbacks.h \
 		 constants.h \
+		 dake.h \
 		 data_message.h \
 		 dh.h \
 		 ed448.h \
