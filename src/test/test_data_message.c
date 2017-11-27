@@ -1,6 +1,6 @@
 #include "../data_message.h"
 
-data_message_t* set_up_data_msg() {
+static data_message_t* set_up_data_msg() {
   ecdh_keypair_t ecdh[1];
   dh_keypair_t dh;
 
@@ -162,5 +162,6 @@ void test_data_message_deserializes() {
   otrv4_assert_cmpmem(data_msg->mac, deserialized->mac, MAC_KEY_BYTES);
 
   data_message_free(data_msg);
+  data_message_free(deserialized);
   free(serialized);
 }
