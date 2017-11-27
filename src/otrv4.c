@@ -295,7 +295,7 @@ otr4_err_t otrv4_build_whitespace_tag(string_t *whitespace_tag,
   return OTR4_SUCCESS;
 }
 
-static bool message_contains_tag(const string_t message) {
+static otrv4_bool_t message_contains_tag(const string_t message) {
   return strstr(message, tag_base) != NULL;
 }
 
@@ -310,19 +310,17 @@ static otr4_err_t message_to_display_without_tag(otrv4_response_t *response,
   size_t tag_length = WHITESPACE_TAG_BASE_BYTES + WHITESPACE_TAG_VERSION_BYTES;
   size_t chars = msg_len - tag_length;
 
-  if (msg_len < tag_length) {
+  if (msg_len < tag_length)
     return OTR4_ERROR;
-  }
 
   string_t buff = malloc(chars + 1);
-  if (buff == NULL) {
+  if (buff == NULL)
     return OTR4_ERROR;
-  }
 
   char *found_at = strstr(message, tag_base);
-  if (!found_at) {
+  if (!found_at)
     return OTR4_ERROR;
-  }
+
   size_t bytes_before_tag = found_at - message;
   if (!bytes_before_tag) {
     strncpy(buff, message + tag_length, chars);
@@ -2047,7 +2045,7 @@ static otr4_err_t receive_encoded_message(otrv4_response_t *response,
 }
 
 otrv4_in_message_type_t get_message_type(const string_t message) {
-  if (message_contains_tag(message)) {
+  if (message_contains_tag(message) == otrv4_false) {
     return IN_MSG_TAGGED_PLAINTEXT;
   } else if (message_is_query(message)) {
     return IN_MSG_QUERY_STRING;
@@ -2336,9 +2334,8 @@ static otr4_err_t otrv4_send_symkey_message_v4(string_t *to_send,
                                                const unsigned char *usedata,
                                                size_t usedatalen, otrv4_t *otr,
                                                unsigned char *extra_key) {
-  if (usedatalen > 0 && !usedata) {
+  if (usedatalen > 0 && !usedata)
     return OTR4_ERROR;
-  }
 
   if (otr->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
     unsigned char *tlv_data = malloc(usedatalen + 4);
@@ -2347,9 +2344,8 @@ static otr4_err_t otrv4_send_symkey_message_v4(string_t *to_send,
     tlv_data[1] = (use >> 16) & 0xff;
     tlv_data[2] = (use >> 8) & 0xff;
     tlv_data[3] = (use)&0xff;
-    if (usedatalen > 0) {
+    if (usedatalen > 0)
       memmove(tlv_data + 4, usedata, usedatalen);
-    }
 
     tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SYM_KEY, usedatalen + 4, tlv_data);
     free(tlv_data);

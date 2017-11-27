@@ -226,11 +226,11 @@ otr4_err_t smp_msg_1_deserialize(smp_msg_1_t *msg, const tlv_t *tlv) {
   return OTR4_SUCCESS;
 }
 
-otr4_err_t smp_msg_1_valid_points(smp_msg_1_t *msg) {
+otrv4_bool_t smp_msg_1_valid_points(smp_msg_1_t *msg) {
   return ec_point_valid(msg->G2a) && ec_point_valid(msg->G3a);
 }
 
-otr4_err_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
+otrv4_bool_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
   uint8_t hash[ED448_POINT_BYTES + 1];
   ec_scalar_t temp_scalar;
   ec_point_t Ga_c, G_d;
@@ -244,10 +244,10 @@ otr4_err_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
   serialize_ec_point(hash + 1, G_d);
 
   if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == OTR4_ERROR)
-    return OTR4_ERROR;
+    return otrv4_false;
 
   if (ec_scalar_eq(temp_scalar, msg->c2))
-    return OTR4_ERROR;
+    return otrv4_false;
 
   /* Check that c3 = HashToScalar(2 || G * d3 + G3a * c3). */
   decaf_448_point_scalarmul(Ga_c, msg->G3a, msg->c3);
@@ -258,12 +258,12 @@ otr4_err_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
   serialize_ec_point(hash + 1, G_d);
 
   if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == OTR4_ERROR)
-    return OTR4_ERROR;
+    return otrv4_false;
 
   if (ec_scalar_eq(temp_scalar, msg->c3))
-    return OTR4_ERROR;
+    return otrv4_false;
 
-  return OTR4_SUCCESS;
+  return otrv4_true;
 }
 
 void smp_msg_1_destroy(smp_msg_1_t *msg) {
@@ -472,12 +472,12 @@ otr4_err_t smp_msg_2_deserialize(smp_msg_2_t *msg, const tlv_t *tlv) {
   return OTR4_SUCCESS;
 }
 
-otr4_err_t smp_msg_2_valid_points(smp_msg_2_t *msg) {
+static otrv4_bool_t smp_msg_2_valid_points(smp_msg_2_t *msg) {
   return ec_point_valid(msg->G2b) && ec_point_valid(msg->G3b) &&
          ec_point_valid(msg->Pb) && ec_point_valid(msg->Qb);
 }
 
-otr4_err_t smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
+static otrv4_bool_t smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   uint8_t hash[ED448_POINT_BYTES + 1];
   ec_scalar_t temp_scalar;
   ec_point_t Gb_c, G_d, point_cp;
@@ -491,10 +491,10 @@ otr4_err_t smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   serialize_ec_point(hash + 1, G_d);
 
   if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == OTR4_ERROR)
-    return OTR4_ERROR;
+    return otrv4_false;
 
   if (ec_scalar_eq(temp_scalar, msg->c2))
-    return OTR4_ERROR;
+    return otrv4_false;
 
   /* Check that c3 = HashToScalar(4 || G * d3 + G3b * c3). */
   decaf_448_point_scalarmul(Gb_c, msg->G3b, msg->c3);
@@ -505,10 +505,10 @@ otr4_err_t smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   serialize_ec_point(hash + 1, G_d);
 
   if (hashToScalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == OTR4_ERROR)
-    return OTR4_ERROR;
+    return otrv4_false;
 
   if (ec_scalar_eq(temp_scalar, msg->c3))
-    return OTR4_ERROR;
+    return otrv4_false;
 
   /* Check that cp = HashToScalar(5 || G3 * d5 + Pb * cp || G * d5 + G2 * d6 +
    Qb * cp) */
@@ -530,12 +530,12 @@ otr4_err_t smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
   serialize_ec_point(buff + 1 + ED448_POINT_BYTES, G_d);
 
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == OTR4_ERROR)
-    return OTR4_ERROR;
+    return otrv4_false;
 
   if (ec_scalar_eq(temp_scalar, msg->cp))
-    return OTR4_ERROR;
+    return otrv4_false;
 
-  return OTR4_SUCCESS;
+  return otrv4_true;
 }
 
 void smp_msg_2_destroy(smp_msg_2_t *msg) {
@@ -702,12 +702,12 @@ otr4_err_t smp_msg_3_deserialize(smp_msg_3_t *dst, const tlv_t *tlv) {
   return OTR4_SUCCESS;
 }
 
-otr4_err_t smp_msg_3_validate_points(smp_msg_3_t *msg) {
+static otrv4_bool_t smp_msg_3_validate_points(smp_msg_3_t *msg) {
   return ec_point_valid(msg->Pa) && ec_point_valid(msg->Qa) &&
          ec_point_valid(msg->Ra);
 }
 
-otr4_err_t smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
+static otrv4_bool_t smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
   uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
@@ -727,10 +727,10 @@ otr4_err_t smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
   serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == OTR4_ERROR)
-    return OTR4_ERROR;
+    return otrv4_false;
 
   if (ec_scalar_eq(temp_scalar, msg->cp))
-    return OTR4_ERROR;
+    return otrv4_false;
 
   /* cr = HashToScalar(7 || G * d7 + G3a * cr || (Qa - Qb) * d7 + Ra * cr) */
   decaf_448_point_scalarmul(temp_point, smp->G3a, msg->cr);
@@ -748,12 +748,12 @@ otr4_err_t smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
   serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == OTR4_ERROR)
-    return OTR4_ERROR;
+    return otrv4_false;
 
   if (ec_scalar_eq(temp_scalar, msg->cr))
-    return OTR4_ERROR;
+    return otrv4_false;
 
-  return OTR4_SUCCESS;
+  return otrv4_true;
 }
 
 void smp_msg_3_destroy(smp_msg_3_t *msg) {
@@ -840,7 +840,7 @@ otr4_err_t smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv) {
   return OTR4_SUCCESS;
 }
 
-otr4_err_t smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
+static otrv4_bool_t smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
   uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
@@ -859,12 +859,12 @@ otr4_err_t smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
   serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == OTR4_ERROR)
-    return OTR4_ERROR;
+    return otrv4_false;
 
   if (ec_scalar_eq(msg->cr, temp_scalar))
-    return OTR4_ERROR;
+    return otrv4_false;
 
-  return OTR4_SUCCESS;
+  return otrv4_true;
 }
 
 void smp_msg_4_destroy(smp_msg_4_t *msg) {
@@ -874,7 +874,7 @@ void smp_msg_4_destroy(smp_msg_4_t *msg) {
   ec_point_destroy(msg->Rb);
 }
 
-static otr4_err_t smp_is_valid_for_msg_3(const smp_msg_3_t *msg,
+static otrv4_bool_t smp_is_valid_for_msg_3(const smp_msg_3_t *msg,
                                          smp_context_t smp) {
   ec_point_t Rab, Pa_Pb;
   /* Compute Rab = (Ra * b3) */
@@ -882,21 +882,21 @@ static otr4_err_t smp_is_valid_for_msg_3(const smp_msg_3_t *msg,
   /* Pa - Pb == Rab */
   decaf_448_point_sub(Pa_Pb, msg->Pa, smp->Pb);
 
-  if ((decaf_448_point_eq(Pa_Pb, Rab) == DECAF_FALSE))
-    return OTR4_ERROR;
+  if ((ec_point_eq(Pa_Pb, Rab)))
+    return otrv4_false;
 
-  return OTR4_SUCCESS;
+  return otrv4_true;
 }
 
-static otr4_err_t smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp) {
+static otrv4_bool_t smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp) {
   ec_point_t Rab;
   /* Compute Rab = Rb * a3. */
   decaf_448_point_scalarmul(Rab, msg->Rb, smp->a3);
   /* Pa - Pb == Rab */
-  if (decaf_448_point_eq(smp->Pa_Pb, Rab) == DECAF_FALSE)
-    return OTR4_ERROR;
+  if (ec_point_eq(smp->Pa_Pb, Rab))
+    return otrv4_false;
 
-  return OTR4_SUCCESS;
+  return otrv4_true;
 }
 
 static otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp) {
@@ -909,10 +909,10 @@ static otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp) {
     if (smp_msg_1_deserialize(msg_1, tlv) == OTR4_ERROR)
       continue;
 
-    if (smp_msg_1_valid_points(msg_1) == OTR4_ERROR)
+    if (smp_msg_1_valid_points(msg_1))
       continue;
 
-    if (smp_msg_1_valid_zkp(msg_1) == OTR4_ERROR)
+    if (smp_msg_1_valid_zkp(msg_1))
       continue;
 
     smp->msg1 = malloc(sizeof(smp_msg_1_t));
@@ -963,13 +963,13 @@ static otr4_smp_event_t receive_smp_msg_2(smp_msg_2_t *msg_2, const tlv_t *tlv,
   if (smp_msg_2_deserialize(msg_2, tlv) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
-  if (smp_msg_2_valid_points(msg_2) == OTR4_ERROR)
+  if (smp_msg_2_valid_points(msg_2))
     return OTRV4_SMPEVENT_ERROR;
 
   decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
   decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
 
-  if (smp_msg_2_valid_zkp(msg_2, smp) == OTR4_ERROR)
+  if (smp_msg_2_valid_zkp(msg_2, smp) == otrv4_false)
     return OTRV4_SMPEVENT_ERROR;
 
   return OTRV4_SMPEVENT_NONE;
@@ -1010,10 +1010,10 @@ static otr4_smp_event_t receive_smp_msg_3(smp_msg_3_t *msg_3, const tlv_t *tlv,
   if (smp_msg_3_deserialize(msg_3, tlv) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
-  if (smp_msg_3_validate_points(msg_3) == OTR4_ERROR)
+  if (smp_msg_3_validate_points(msg_3))
     return OTRV4_SMPEVENT_ERROR;
 
-  if (smp_msg_3_validate_zkp(msg_3, smp) == OTR4_ERROR)
+  if (smp_msg_3_validate_zkp(msg_3, smp))
     return OTRV4_SMPEVENT_ERROR;
 
   smp->progress = 75;
@@ -1043,7 +1043,7 @@ static otr4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
   /* Validates SMP */
   smp->progress = 100;
   smp->state = SMPSTATE_EXPECT1;
-  if (smp_is_valid_for_msg_3(msg_3, smp) == OTR4_ERROR)
+  if (smp_is_valid_for_msg_3(msg_3, smp))
     return OTRV4_SMPEVENT_FAILURE;
 
   return OTRV4_SMPEVENT_SUCCESS;
@@ -1060,12 +1060,12 @@ static otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
   if (ec_point_valid(msg_4->Rb) == OTR4_ERROR)
     return OTRV4_SMPEVENT_ERROR;
 
-  if (smp_msg_4_validate_zkp(msg_4, smp) == OTR4_ERROR)
+  if (smp_msg_4_validate_zkp(msg_4, smp))
     return OTRV4_SMPEVENT_ERROR;
 
   smp->progress = 100;
   smp->state = SMPSTATE_EXPECT1;
-  if (smp_is_valid_for_msg_4(msg_4, smp) == OTR4_ERROR)
+  if (smp_is_valid_for_msg_4(msg_4, smp))
     return OTRV4_SMPEVENT_FAILURE;
 
   return OTRV4_SMPEVENT_SUCCESS;

@@ -21,9 +21,8 @@ void otr_mpi_set(otr_mpi_t dst, const uint8_t *src, size_t len) {
 
   dst->len = len;
   dst->data = malloc(dst->len);
-  if (!dst->data) {
+  if (!dst->data)
     return; // should it be an error?
-  }
 
   memcpy(dst->data, src, dst->len);
 }
@@ -32,29 +31,25 @@ void otr_mpi_copy(otr_mpi_t dst, const otr_mpi_t src) {
   otr_mpi_set(dst, src->data, src->len);
 }
 
-static bool otr_mpi_read_len(otr_mpi_t dst, const uint8_t *src, size_t src_len,
+static otrv4_bool_t otr_mpi_read_len(otr_mpi_t dst, const uint8_t *src, size_t src_len,
                              size_t *read) {
   size_t r = 0;
-  if (deserialize_uint32(&dst->len, src, src_len, &r)) {
-    return false;
-  }
+  if (deserialize_uint32(&dst->len, src, src_len, &r))
+    return otrv4_false;
 
-  if (read != NULL) {
+  if (read != NULL)
     *read = r;
-  }
 
-  if (dst->len > src_len - r) {
-    return false;
-  }
+  if (dst->len > src_len - r)
+    return otrv4_false;
 
-  return true;
+  return otrv4_true;
 }
 
 otr4_err_t otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src,
                                size_t src_len, size_t *read) {
-  if (!otr_mpi_read_len(dst, src, src_len, read)) {
+  if (otr_mpi_read_len(dst, src, src_len, read) == otrv4_false)
     return OTR4_ERROR;
-  }
 
   if (dst->len == 0) {
     dst->data = NULL;
@@ -68,17 +63,16 @@ otr4_err_t otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src,
 
   memcpy(dst->data, src + *read, dst->len);
 
-  if (read != NULL) {
+  if (read != NULL)
     *read += dst->len;
-  }
+
   return OTR4_SUCCESS;
 }
 
 otr4_err_t otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t *src,
                                        size_t src_len, size_t *read) {
-  if (!otr_mpi_read_len(dst, src, src_len, read)) {
+  if (otr_mpi_read_len(dst, src, src_len, read) == otrv4_false)
     return OTR4_ERROR;
-  }
 
   if (dst->len == 0) {
     dst->data = NULL;

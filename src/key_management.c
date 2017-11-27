@@ -122,7 +122,7 @@ otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
   if (manager->i % 3 == 0) {
     dh_keypair_destroy(manager->our_dh);
 
-    if (dh_keypair_generate(manager->our_dh) == OTR4_ERROR) {
+    if (dh_keypair_generate(manager->our_dh)) {
       return OTR4_ERROR;
     }
   }
@@ -510,7 +510,7 @@ static otr4_err_t rotate_keys(key_manager_t *manager) {
   manager->i++;
   manager->j = 0;
 
-  if (key_manager_generate_ephemeral_keys(manager) == OTR4_ERROR)
+  if (key_manager_generate_ephemeral_keys(manager))
     return OTR4_ERROR;
 
   return enter_new_ratchet(manager);
@@ -521,7 +521,7 @@ otr4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager) {
     return OTR4_SUCCESS;
 
   manager->i++;
-  if (enter_new_ratchet(manager) == OTR4_ERROR)
+  if (enter_new_ratchet(manager))
     return OTR4_ERROR;
 
   // Securely delete priv keys as no longer needed
@@ -569,15 +569,15 @@ otr4_err_t key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t should_ratchet(const key_manager_t *manager) {
+static otrv4_bool_t should_ratchet(const key_manager_t *manager) {
   if (manager->j == 0)
-    return OTR4_SUCCESS;
+    return otrv4_true;
 
-  return OTR4_ERROR;
+  return otrv4_false;
 }
 
 otr4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager) {
-  if (should_ratchet(manager) == OTR4_SUCCESS) {
+  if (should_ratchet(manager) == otrv4_true) {
     return rotate_keys(manager);
   }
 

@@ -72,9 +72,9 @@ otr4_err_t serialize_dh_public_key(uint8_t *dst, size_t *len,
   memset(buf, 0, DH3072_MOD_LEN_BYTES);
   size_t written = 0;
   otr4_err_t err = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &written, pub);
-  if (err) {
+  if (err)
     return err;
-  }
+
   // To OTR MPI
   // TODO: Maybe gcrypt MPI already has some API for this.
   // gcry_mpi_print with a different format, maybe?
@@ -82,6 +82,7 @@ otr4_err_t serialize_dh_public_key(uint8_t *dst, size_t *len,
   otr_mpi_set(mpi, buf, written);
   *len = serialize_mpi(dst, mpi);
   otr_mpi_free(mpi);
+
   return OTR4_SUCCESS;
 }
 

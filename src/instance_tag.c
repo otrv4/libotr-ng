@@ -5,14 +5,14 @@
 #include "instance_tag.h"
 #include "str.h"
 
-bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
+otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
                       const char *protocol, FILE *filename) {
 
   OtrlUserState us = otrl_userstate_create();
 
   if (otrl_instag_read_FILEp(us, filename)) {
     otrl_userstate_free(us);
-    return false;
+    return otrv4_false;
   }
 
   OtrlInsTag *tmp_instag;
@@ -21,7 +21,7 @@ bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
   if (!tmp_instag) {
     if (otrl_instag_generate_FILEp(us, filename, account, protocol)) {
       otrl_userstate_free(us);
-      return false;
+      return otrv4_false;
     }
     tmp_instag = otrl_instag_find(us, account, protocol);
   }
@@ -32,7 +32,7 @@ bool otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
 
   otrl_userstate_free(us);
 
-  return true;
+  return otrv4_true;
 }
 
 void otr4_instag_free(otrv4_instag_t *instag) {
