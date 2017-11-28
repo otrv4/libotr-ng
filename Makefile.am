@@ -41,3 +41,13 @@ code-style-doctor: code-style
 LOOPS = 10
 test-loop:
 	for ((i=1; i <= ${LOOPS}; ++i)) do make test && echo $$i || break; done
+
+# for the make check-valgrind
+check-valgrind-memcheck: check
+	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/test
+
+check-valgrind-helgrind: check
+	valgrind --tool=helgrind $(top_builddir)/src/test/test
+
+check-valgrind-drd: check
+	valgrind --tool=drd $(top_builddir)/src/test/test
