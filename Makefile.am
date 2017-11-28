@@ -6,6 +6,8 @@ ACLOCAL_AMFLAGS = -I m4
 
 @CODE_COVERAGE_RULES@
 
+@VALGRIND_CHECK_RULES@
+
 ci: test mem-check
 
 test: check
