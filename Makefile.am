@@ -25,6 +25,10 @@ VALGRIND_ARGS = --track-origins=yes --quiet --error-exitcode=2 --leak-check=full
 mem-check: check
 	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/test
 
+cache-check: check
+	valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file=cachegrindout.out $(top_builddir)/src/test/test
+	cg_annotate cachegrindout.out
+
 coverage-check: test
 	@make check-code-coverage
 
