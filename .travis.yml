@@ -43,7 +43,6 @@ matrix:
       compiler: gcc
       dist: precise
       env: T=full-valgrind-checks
-  fast-finish: true
 
 sudo: required
 

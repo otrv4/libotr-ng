@@ -8,9 +8,10 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.])
 AM_SILENT_RULES([no])
 
-# Debug
+dnl Debug
 AX_CHECK_ENABLE_DEBUG([yes])
 
+dnl Valgrind: make check-valgrind
 AX_VALGRIND_DFLT([sgcheck], [off])
 AX_VALGRIND_CHECK
 
@@ -19,7 +20,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AM_PROG_AR
 LT_INIT
 
-# Checks for programs.
+dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_LIBTOOL
@@ -29,7 +30,7 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
-# Checks for libraries.
+dnl Checks for libraries.
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.18])
 PKG_CHECK_MODULES([LIBDECAF], [libdecaf >= 0.0.1])
 PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 1.0.0])
@@ -41,10 +42,10 @@ AM_PATH_LIBGCRYPT(1:1.8.0,,
   [AM_PATH_LIBGCRYPT(1:1.6.0,, [AC_MSG_ERROR(libgcrypt 1.6.0 or newer is required.)])]
 )
 
-# Checks for header files.
+dnl Checks for header files.
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
 
-# Checks for typedefs, structures, and compiler characteristics.
+dnl Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_INT64_T
@@ -69,16 +70,23 @@ AX_CFLAGS_GCC_OPTION([-Wpointer-arith])
 AX_CFLAGS_GCC_OPTION([-Wredundant-decls])
 AX_CFLAGS_GCC_OPTION([-Wstrict-prototypes])
 
-# Code coverage
+dnl Code coverage
 AX_CODE_COVERAGE
 
-# Checks for library functions.
+dnl Checks for library functions.
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([memchr memmove memset stpcpy strchr strstr])
+
+dnl Switches
+AC_ARG_WITH(ctgrind,
+[AS_HELP_STRING(--with-ctgrind, Use only if you have ctgrind)],
+[AS_IF([test "x$with_ctgrind" = "xyes"], [
+    AC_CHECK_LIB(ctgrind, ct_poison)
+  ])
+])
 
 AC_CACHE_SAVE
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile src/test/Makefile pkgconfig/Makefile pkgconfig/libotr4.pc])
 AC_OUTPUT
-
