@@ -88,7 +88,7 @@ void test_api_interactive_conversation(void) {
 
   // Alice sends a data message
   string_t to_send = NULL;
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
+  tlv_t *tlv = NULL;
   otr4_err_t err;
 
   for (message_id = 2; message_id < 5; message_id++) {
@@ -283,7 +283,7 @@ void test_api_non_interactive_conversation(void) {
 
   // Bob sends a data message
   string_t to_send = NULL;
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
+  tlv_t *tlv = NULL;
   otr4_err_t err;
 
   // TODO: this is usually set up by the querry or whitespace,
@@ -477,7 +477,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   // Bob sends a data message
   string_t to_send = NULL;
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
+  tlv_t *tlv = NULL;
   otr4_err_t err;
 
   // TODO: this is usually set up by the querry or whitespace,
@@ -647,7 +647,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
 
 void test_api_conversation_v3(void) {
   OTR4_INIT;
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
+  tlv_t *tlv = NULL;
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   set_up_client_state(alice_state, ALICE_IDENTITY, PHI, 1);
@@ -1007,7 +1007,7 @@ void test_api_smp_abort(void) {
 void test_api_extra_sym_key(void) {
   OTR4_INIT;
 
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
+  tlv_t *tlv = NULL;
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
@@ -1087,7 +1087,7 @@ void test_api_extra_sym_key(void) {
 
 void test_dh_key_rotation(void) {
   OTR4_INIT;
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
+  tlv_t *tlv = NULL;
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
 

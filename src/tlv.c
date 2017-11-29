@@ -158,7 +158,7 @@ tlv_t *otrv4_padding_tlv_new(size_t len) {
   return tlv;
 }
 
-otr4_err_t append_padding_tlv(tlv_t *tlvs, int message_len) {
+otr4_err_t append_padding_tlv(tlv_t **tlvs, int message_len) {
   int padding_granularity = 256;
   int header_len = 4;
   int nul_byte_len = 1;
@@ -171,7 +171,7 @@ otr4_err_t append_padding_tlv(tlv_t *tlvs, int message_len) {
   if (!padding_tlv)
     return OTR4_ERROR;
 
-  tlvs = append_tlv(tlvs, padding_tlv);
+  *tlvs = append_tlv(*tlvs, padding_tlv);
 
   return OTR4_SUCCESS;
 }

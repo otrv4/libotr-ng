@@ -33,6 +33,6 @@ tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len);
 
 tlv_t *append_tlv(tlv_t *tlvs, tlv_t *new_tlv);
 
-otr4_err_t append_padding_tlv(tlv_t *tlvs, int message_len);
+otr4_err_t append_padding_tlv(tlv_t **tlvs, int message_len);
 
 #endif
