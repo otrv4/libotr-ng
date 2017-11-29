@@ -92,8 +92,9 @@ void test_api_interactive_conversation(void) {
   otr4_err_t err;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    err = otrv4_prepare_to_send_message(&to_send, "hi", tlvs, alice);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, alice);
     assert_msg_sent(err, to_send);
+    otrv4_assert(tlvs);
     otrv4_assert(!alice->keys->old_mac_keys);
 
     // This is a follow up message.
@@ -117,7 +118,7 @@ void test_api_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", tlvs, bob);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlvs, bob);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -147,7 +148,7 @@ void test_api_interactive_conversation(void) {
   otrv4_assert(tlvs);
 
   // Bob sends a message with TLV
-  err = otrv4_prepare_to_send_message(&to_send, "hi", tlvs, bob);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, bob);
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -290,7 +291,7 @@ void test_api_non_interactive_conversation(void) {
   alice->running_version = OTRV4_VERSION_4;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice);
     assert_msg_sent(err, to_send);
     otrv4_assert(!alice->keys->old_mac_keys);
 
@@ -315,7 +316,7 @@ void test_api_non_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", tlv, bob);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, bob);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -343,7 +344,7 @@ void test_api_non_interactive_conversation(void) {
   otrv4_assert(tlvs);
 
   // Bob sends a message with TLV
-  err = otrv4_prepare_to_send_message(&to_send, "hi", tlvs, bob);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, bob);
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -484,7 +485,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   alice->running_version = OTRV4_VERSION_4;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice);
     assert_msg_sent(err, to_send);
     otrv4_assert(!alice->keys->old_mac_keys);
 
@@ -509,7 +510,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", tlv, bob);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, bob);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -537,7 +538,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrv4_assert(tlvs);
 
   // Bob sends a message with TLV
-  err = otrv4_prepare_to_send_message(&to_send, "hi", tlvs, bob);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, bob);
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -687,7 +688,7 @@ void test_api_conversation_v3(void) {
   string_t to_send = NULL;
 
   // Alice sends a data message
-  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice) ==
+  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice) ==
                OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAMD", to_send, 9);
@@ -703,7 +704,7 @@ void test_api_conversation_v3(void) {
   free_message_and_response(response_to_alice, to_send);
 
   // Bob sends a data message
-  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", tlv, bob) ==
+  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", &tlv, bob) ==
                OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAMD", to_send, 9);
@@ -1024,7 +1025,7 @@ void test_api_extra_sym_key(void) {
 
   otr4_err_t err;
 
-  err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice);
   assert_msg_sent(err, to_send);
   otrv4_assert(!alice->keys->old_mac_keys);
 
@@ -1105,7 +1106,7 @@ void test_dh_key_rotation(void) {
 
   for (ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
     // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", tlv, bob);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, bob);
     assert_msg_sent(err, to_send);
 
     // New ratchet happened
@@ -1133,7 +1134,7 @@ void test_dh_key_rotation(void) {
     free_message_and_response(response_to_bob, to_send);
 
     // Now alice ratchets and sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(alice->keys->i, ==, ratchet_id + 1);
@@ -1190,7 +1191,8 @@ void test_ecdh_priv_keys_destroyed_early() {
   otr4_err_t err;
 
   // Alice sends a data message
-  err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
+  tlv_t *empty = NULL;
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &empty, alice);
   assert_msg_sent(err, to_send);
 
   // Follow up message
@@ -1214,7 +1216,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrv4_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Bob sends a data message
-  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, bob);
+  err = otrv4_prepare_to_send_message(&to_send, "hello", &empty, bob);
   assert_msg_sent(err, to_send);
 
   // New ratchet
@@ -1238,7 +1240,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrv4_assert_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Alice sends a data message
-  err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &empty, alice);
   assert_msg_sent(err, to_send);
 
   // New ratchet

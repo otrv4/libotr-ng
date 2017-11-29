@@ -1955,7 +1955,7 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     key_manager_prepare_to_ratchet(otr->keys);
 
     if (reply_tlv) {
-      if (otrv4_prepare_to_send_message(&response->to_send, "", reply_tlv, otr))
+      if (otrv4_prepare_to_send_message(&response->to_send, "", &reply_tlv, otr))
         continue;
     }
 
@@ -2266,7 +2266,7 @@ static otr4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
 }
 
 otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
-                                         const string_t message, tlv_t *tlvs,
+                                         const string_t message, tlv_t **tlvs,
                                          otrv4_t *otr) {
   if (!otr)
     return OTR4_ERROR;
@@ -2274,15 +2274,15 @@ otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
   // Optional. Client might want or not to disguise the length of
   // message
   if (otr->conversation->client->pad) {
-    if (append_padding_tlv(&tlvs, strlen(message)))
+    if (append_padding_tlv(tlvs, strlen(message)))
       return OTR4_ERROR;
   }
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    return otrv3_send_message(to_send, message, tlvs, otr->otr3_conn);
+    return otrv3_send_message(to_send, message, *tlvs, otr->otr3_conn);
   case OTRV4_VERSION_4:
-    return otrv4_prepare_to_send_data_message(to_send, message, tlvs, otr);
+    return otrv4_prepare_to_send_data_message(to_send, message, *tlvs, otr);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }
@@ -2299,7 +2299,7 @@ static otr4_err_t otrv4_close_v4(string_t *to_send, otrv4_t *otr) {
     return OTR4_ERROR;
 
   otr4_err_t err =
-      otrv4_prepare_to_send_message(to_send, "", disconnected, otr);
+      otrv4_prepare_to_send_message(to_send, "", &disconnected, otr);
 
   otrv4_tlv_free(disconnected);
   forget_our_keys(otr);
@@ -2354,7 +2354,7 @@ static otr4_err_t otrv4_send_symkey_message_v4(string_t *to_send,
 
     // TODO: in otrv3 the extra_key is passed as a param to this
     // do the same?
-    if (otrv4_prepare_to_send_message(to_send, "", tlv, otr)) {
+    if (otrv4_prepare_to_send_message(to_send, "", &tlv, otr)) {
       otrv4_tlv_free(tlv);
       return OTR4_ERROR;
     }
@@ -2461,7 +2461,7 @@ otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
     smp_start_tlv = otrv4_smp_initiate(
         get_my_user_profile(otr), otr->their_profile, question, q_len, secret,
         secretlen, otr->keys->ssid, otr->smp, otr->conversation);
-    if (otrv4_prepare_to_send_message(to_send, "", smp_start_tlv, otr)) {
+    if (otrv4_prepare_to_send_message(to_send, "", &smp_start_tlv, otr)) {
       otrv4_tlv_free(smp_start_tlv);
       return OTR4_ERROR;
     }
@@ -2513,7 +2513,7 @@ static otr4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
   handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
                       otr->conversation);
 
-  if (smp_reply && otrv4_prepare_to_send_message(to_send, "", smp_reply, otr) ==
+  if (smp_reply && otrv4_prepare_to_send_message(to_send, "", &smp_reply, otr) ==
                        OTR4_SUCCESS) {
     err = OTR4_SUCCESS;
   }
@@ -2541,7 +2541,7 @@ otr4_err_t otrv4_smp_abort_v4(string_t *to_send, otrv4_t *otr) {
   tlv_t *tlv = otrv4_tlv_new(OTRL_TLV_SMP_ABORT, 0, NULL);
 
   otr->smp->state = SMPSTATE_EXPECT1;
-  if (otrv4_prepare_to_send_message(to_send, "", tlv, otr)) {
+  if (otrv4_prepare_to_send_message(to_send, "", &tlv, otr)) {
     otrv4_tlv_free(tlv);
     return OTR4_ERROR;
   }

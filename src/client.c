@@ -173,16 +173,14 @@ otr4_conversation_t *otr4_client_get_conversation(int force_create,
 static int otrv4_send_message(char **newmsg, const char *message,
                               const char *recipient, otr4_client_t *client) {
   otr4_conversation_t *conv = NULL;
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_NONE, 0, NULL);
-  if (!tlv)
-    return 1;
+  tlv_t *tlv = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
     return 1;
 
   otr4_err_t error =
-      otrv4_prepare_to_send_message(newmsg, message, tlv, conv->conn);
+      otrv4_prepare_to_send_message(newmsg, message, &tlv, conv->conn);
   otrv4_tlv_free(tlv);
 
   if (error == OTR4_STATE_NOT_ENCRYPTED)
