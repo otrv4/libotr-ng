@@ -7,20 +7,42 @@ matrix:
     - os: linux
       dist: trusty
       compiler: clang
+      env: T=normal
     - os: linux
       dist: trusty
       compiler: gcc
+      env: T=normal
     - os: linux
       dist: precise
       compiler: clang
+      env: T=normal
     - os: linux
       dist: precise
       compiler: gcc
+      env: T=normal
     - os: osx
       compiler: clang
+      env: T=normal
+    - os: linux
+      compiler: gcc
+      dist: precise
+      env: T=coverage
+    - os: linux
+      compiler: gcc
+      dist: precise
+      env: T=full-valgrind-checks
   allow_failures:
     - os: osx
       compiler: clang
+      env: T=normal
+    - os: linux
+      compiler: gcc
+      dist: precise
+      env: T=coverage
+    - os: linux
+      compiler: gcc
+      dist: precise
+      env: T=full-valgrind-checks
   fast-finish: true
 
 sudo: required
@@ -33,6 +55,7 @@ before_install:
 # Dependencies
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint && brew install valgrind && brew install curl && brew install glib; fi
 - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes && sudo apt-get install valgrind --quiet --assume-yes; fi
+- if [[ "$T" = "coverage" ]]; then sudo apt-get install splint --quiet --assume-yes && sudo apt-get install valgrind --quiet --assume-yes && sudo apt-get install lcov; fi
 
 before_script:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgcrypt && brew install libsodium; fi
@@ -51,7 +74,22 @@ before_script:
 script:
   - export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
   - export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
-  - ./autogen.sh && ./configure --disable-shared
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then make ci; fi
-  - if [[ $(lsb_release -c -s) == "precise" ]] && [[ $TRAVIS_OS_NAME == 'linux' ]]; then make ci; fi
-  - if [[ $(lsb_release -c -s) == "trusty" ]] && [[ $TRAVIS_OS_NAME == 'linux' ]];  then make ci; fi
+  - |
+      if [ "$T" = "coverage" ]; then
+           ./autogen.sh
+           ./configure --disable-shared --enable-code-coverage
+           make ci
+           make coverage-check
+      fi
+  - |
+      if [ "$T" = "full-valgrind-checks" ]; then
+           ./autogen.sh
+           ./configure --enable-valgrind
+           make check-valgrind
+      fi
+  - |
+      if [ "$T" = "normal" ]; then
+           ./autogen.sh
+           ./configure --disable-shared
+           make ci
+      fi

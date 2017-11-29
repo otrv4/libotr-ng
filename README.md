@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/otrv4/libotrv4.svg?branch=master)](https://travis-ci.org/otrv4/libotrv4)
 
-
 ## Build
 Before you try to build libotrv4, verify you have installed:
 * autoconf - https://www.gnu.org/software/autoconf/autoconf.html
