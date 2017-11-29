@@ -1,6 +1,14 @@
 language: c
 #cache: ccache
 
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - lcov
+            - valgrind
+
 matrix:
   fast_finish: true
   include:
@@ -35,14 +43,6 @@ matrix:
     - os: osx
       compiler: clang
       env: T=normal
-    - os: linux
-      compiler: gcc
-      dist: precise
-      env: T=coverage
-    - os: linux
-      compiler: gcc
-      dist: precise
-      env: T=full-valgrind-checks
 
 sudo: required
 
@@ -53,8 +53,8 @@ before_install:
 
 # Dependencies
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint && brew install valgrind && brew install curl && brew install glib; fi
-- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes && sudo apt-get install valgrind --quiet --assume-yes; fi
-- if [[ "$T" = "coverage" ]]; then sudo apt-get install splint --quiet --assume-yes && sudo apt-get install valgrind --quiet --assume-yes && sudo apt-get install lcov; fi
+- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes; fi
+- if [[ "$T" = "coverage" ]]; then sudo apt-get install splint --quiet --assume-yes; fi
 
 before_script:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgcrypt && brew install libsodium; fi
