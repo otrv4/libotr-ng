@@ -88,11 +88,11 @@ void test_api_interactive_conversation(void) {
 
   // Alice sends a data message
   string_t to_send = NULL;
-  tlv_t *tlv = NULL;
+  tlv_t *tlvs = NULL;
   otr4_err_t err;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    err = otrv4_prepare_to_send_message(&to_send, "hi", tlv, alice);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", tlvs, alice);
     assert_msg_sent(err, to_send);
     otrv4_assert(!alice->keys->old_mac_keys);
 
@@ -117,7 +117,7 @@ void test_api_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", tlv, bob);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", tlvs, bob);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -139,9 +139,11 @@ void test_api_interactive_conversation(void) {
     g_assert_cmpint(alice->keys->j, ==, 0);
   }
 
+  otrv4_tlv_free(tlvs);
+
   uint16_t tlv_len = 2;
   uint8_t tlv_data[2] = {0x08, 0x05};
-  tlv_t *tlvs = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, tlv_len, tlv_data);
+  tlvs = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, tlv_len, tlv_data);
   otrv4_assert(tlvs);
 
   // Bob sends a message with TLV
@@ -169,13 +171,9 @@ void test_api_interactive_conversation(void) {
   g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 249);
 
   free_message_and_response(response_to_bob, to_send);
-
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
-
   otrv4_free_all(alice, bob);
-
-  otrv4_tlv_free(tlv);
 
   OTR4_FREE;
 }
