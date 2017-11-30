@@ -2245,7 +2245,7 @@ static otr4_err_t append_tlvs(uint8_t **dst, size_t *dstlen,
 
 static otr4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
                                                      const string_t message,
-                                                     tlv_t *tlvs,
+                                                     const tlv_t *tlvs,
                                                      otrv4_t *otr) {
   uint8_t *msg = NULL;
   size_t msg_len = 0;
@@ -2278,11 +2278,16 @@ otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
       return OTR4_ERROR;
   }
 
+  const tlv_t *const_tlvs = NULL;
+  if (tlvs)
+    const_tlvs = *tlvs;
+
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    return otrv3_send_message(to_send, message, *tlvs, otr->otr3_conn);
+    return otrv3_send_message(to_send, message, const_tlvs, otr->otr3_conn);
   case OTRV4_VERSION_4:
-    return otrv4_prepare_to_send_data_message(to_send, message, *tlvs, otr);
+    return otrv4_prepare_to_send_data_message(to_send, message,
+                                              const_tlvs, otr);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }

@@ -1191,8 +1191,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   otr4_err_t err;
 
   // Alice sends a data message
-  tlv_t *empty = NULL;
-  err = otrv4_prepare_to_send_message(&to_send, "hi", &empty, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
   assert_msg_sent(err, to_send);
 
   // Follow up message
@@ -1216,7 +1215,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrv4_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Bob sends a data message
-  err = otrv4_prepare_to_send_message(&to_send, "hello", &empty, bob);
+  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, bob);
   assert_msg_sent(err, to_send);
 
   // New ratchet
@@ -1240,7 +1239,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrv4_assert_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Alice sends a data message
-  err = otrv4_prepare_to_send_message(&to_send, "hi", &empty, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
   assert_msg_sent(err, to_send);
 
   // New ratchet
