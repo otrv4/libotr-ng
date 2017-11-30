@@ -1285,7 +1285,7 @@ void test_heartbeat_messages() {
   string_t to_send = NULL;
   otr4_err_t err;
 
-  // Alice sends a data message
+  // Alice sends a heartbeat message
   err = otrv4_prepare_to_send_message(&to_send, "", NULL, alice);
   assert_msg_sent(err, to_send);
 
@@ -1295,8 +1295,19 @@ void test_heartbeat_messages() {
 
   const int flag_position = 11;
   otrv4_assert(decoded[flag_position] == IGNORE_UNREADABLE);
+  free(decoded);
+  decoded = NULL;
+
+  // Alice sends a data message with text
+  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, alice);
+  assert_msg_sent(err, to_send);
+
+  otrl_base64_otr_decode(to_send, &decoded, &dec_len);
+
+  otrv4_assert(decoded[flag_position] == 0);
 
   free(to_send);
+  free(decoded);
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
