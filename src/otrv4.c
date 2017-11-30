@@ -2175,6 +2175,11 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
 
+  // For empty strings, set IGNORE_UNREADABLE flag
+  if (message_len == 1) {
+    data_msg->flags = IGNORE_UNREADABLE;
+  }
+
   otr4_err_t err = OTR4_ERROR;
   if (encrypt_data_message(data_msg, message, message_len, enc_key) ==
           OTR4_SUCCESS &&

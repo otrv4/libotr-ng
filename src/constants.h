@@ -33,4 +33,6 @@
 #define DATA_MESSAGE_MIN_BYTES                                                 \
   (DAKE_HEADER_BYTES + 1 + 4 + ED448_POINT_BYTES + DATA_MSG_NONCE_BYTES)
 
+#define IGNORE_UNREADABLE 0x01
+
 #endif

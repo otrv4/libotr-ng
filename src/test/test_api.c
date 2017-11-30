@@ -3,6 +3,7 @@
 #include "../list.h"
 #include "../otrv4.h"
 #include "../str.h"
+#include "../b64.h"
 
 #include <libotr/privkey.h>
 
@@ -1262,6 +1263,40 @@ void test_ecdh_priv_keys_destroyed_early() {
   // Bob should delete ECDH priv key
   otrv4_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_free_all(alice, bob);
+
+  OTR4_FREE;
+}
+
+void test_heartbeat_messages() {
+  OTR4_INIT;
+
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 3);
+
+  // DAKE has finished
+  do_dake_fixture(alice, bob);
+
+  string_t to_send = NULL;
+  otr4_err_t err;
+
+  // Alice sends a data message
+  err = otrv4_prepare_to_send_message(&to_send, "", NULL, alice);
+  assert_msg_sent(err, to_send);
+
+  size_t dec_len = 0;
+  uint8_t *decoded = NULL;
+  otrl_base64_otr_decode(to_send, &decoded, &dec_len);
+
+  const int flag_position = 11;
+  otrv4_assert(decoded[flag_position] == IGNORE_UNREADABLE);
+
+  free(to_send);
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
