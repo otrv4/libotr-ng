@@ -1295,6 +1295,8 @@ void test_heartbeat_messages() {
 
   const int flag_position = 11;
   otrv4_assert(decoded[flag_position] == IGNORE_UNREADABLE);
+  free(to_send);
+  to_send = NULL;
   free(decoded);
   decoded = NULL;
 
