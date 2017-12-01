@@ -1329,6 +1329,7 @@ void test_heartbeat_messages() {
 
   assert_msg_sent(err, to_send);
   otrv4_assert(decoded[flag_position] == IGNORE_UNREADABLE);
+  otrv4_tlv_free(tlv);
   free(decoded);
   decoded = NULL;
 
@@ -1355,6 +1356,7 @@ void test_heartbeat_messages() {
 
   free(decoded);
   free(to_send);
+
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
