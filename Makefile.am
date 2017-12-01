@@ -14,7 +14,7 @@ test: check
 	$(top_builddir)/src/test/test
 
 code-check:
-	splint +trytorecover src/*.h src/**.c `pkg-config --cflags glib-2.0`
+	splint +trytorecover src/*.h src/**.c `pkg-config --cflags glib-2.0` -preproc
 
 VALGRIND_SUPPRESSIONS = \
 	valgrind.supp
