@@ -5,7 +5,6 @@
 #include <libotr/proto.h>
 #include <libotr/message.h>
 // clang-format on
-#include <stdbool.h>
 
 #include "error.h"
 #include "str.h"

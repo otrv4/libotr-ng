@@ -1,6 +1,8 @@
 #ifndef _OTR4_CLIENT_STATE_H
 #define _OTR4_CLIENT_STATE_H
 
+#include <stdbool.h>
+
 #include <gcrypt.h>
 
 #include <libotr/userstate.h>

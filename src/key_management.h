@@ -1,6 +1,8 @@
 #ifndef KEY_MANAGEMENT_H
 #define KEY_MANAGEMENT_H
 
+#include <stdbool.h>
+
 #include "constants.h"
 #include "dh.h"
 #include "ed448.h"

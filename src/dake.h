@@ -2,7 +2,6 @@
 #define DAKE_H
 
 #include <sodium.h>
-#include <stdbool.h>
 
 #include "auth.h"
 #include "constants.h"

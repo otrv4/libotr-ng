@@ -1,7 +1,6 @@
 #ifndef INSTANCE_TAG_H
 #define INSTANCE_TAG_H
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 

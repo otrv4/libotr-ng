@@ -1,8 +1,6 @@
 #ifndef OTRV4_H
 #define OTRV4_H
 
-#include <stdbool.h>
-
 #include "client_state.h"
 #include "fingerprint.h"
 #include "fragment.h"

@@ -3,7 +3,6 @@
 
 #include <decaf.h>
 #include <decaf/ed448.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "ed448.h"
