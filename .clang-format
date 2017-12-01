@@ -3,22 +3,42 @@
 Language:        Cpp
 # BasedOnStyle:  LLVM
 AccessModifierOffset: -2
+
+# Align parameters on the open bracket
 AlignAfterOpenBracket: Align
+
+# Don't align consecutive assignments
 AlignConsecutiveAssignments: false
+
+# Don't align consecutive declarations
 AlignConsecutiveDeclarations: false
-AlignEscapedNewlinesLeft: false
+
+# Align escaped newlines as far left as possible
+AlignEscapedNewlinesLeft: Left
+
+# Align operands of binary and ternary expressions
 AlignOperands:   true
+
+# Align trailing comments
 AlignTrailingComments: true
+
+# Allow putting parameters onto the next line
 AllowAllParametersOfDeclarationOnNextLine: true
+
+# Don't allow short braced statements to be on a single line
 AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
+
+# Don't add a line break after the return type of functions
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: false
+
+# Pack as many parameters or arguments in the same line as possible
 BinPackArguments: true
 BinPackParameters: true
 BraceWrapping:
@@ -34,7 +54,10 @@ BraceWrapping:
   BeforeElse:      false
   IndentBraces:    false
 BreakBeforeBinaryOperators: None
+
 BreakBeforeBraces: Attach
+
+# Break after operators
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: false
 ColumnLimit:     80
@@ -71,12 +94,19 @@ PenaltyBreakFirstLessLess: 120
 PenaltyBreakString: 1000
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 60
+
+# Align pointer to the right
 PointerAlignment: Right
 ReflowComments:  true
+
+# Don't sort #include's
 SortIncludes:    true
+
 SpaceAfterCStyleCast: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
+
+# Don't insert spaces inside empty '()'
 SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 1
 SpacesInAngles:  false
