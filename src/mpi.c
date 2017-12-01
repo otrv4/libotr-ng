@@ -31,8 +31,8 @@ void otr_mpi_copy(otr_mpi_t dst, const otr_mpi_t src) {
   otr_mpi_set(dst, src->data, src->len);
 }
 
-static otrv4_bool_t otr_mpi_read_len(otr_mpi_t dst, const uint8_t *src, size_t src_len,
-                             size_t *read) {
+static otrv4_bool_t otr_mpi_read_len(otr_mpi_t dst, const uint8_t *src,
+                                     size_t src_len, size_t *read) {
   size_t r = 0;
   if (deserialize_uint32(&dst->len, src, src_len, &r))
     return otrv4_false;

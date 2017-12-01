@@ -18,7 +18,7 @@ typedef enum {
   OTR4_STATE_NOT_ENCRYPTED = 0x1001,
 } otr4_err_t;
 
-///Return success if x is true
+/// Return success if x is true
 // static otr4_err_t
 // otr4_succeed_if(otr4_bool_t x) {
 //    return (otr4_err_t)x;

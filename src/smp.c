@@ -477,7 +477,8 @@ static otrv4_bool_t smp_msg_2_valid_points(smp_msg_2_t *msg) {
          ec_point_valid(msg->Pb) && ec_point_valid(msg->Qb);
 }
 
-static otrv4_bool_t smp_msg_2_valid_zkp(smp_msg_2_t *msg, const smp_context_t smp) {
+static otrv4_bool_t smp_msg_2_valid_zkp(smp_msg_2_t *msg,
+                                        const smp_context_t smp) {
   uint8_t hash[ED448_POINT_BYTES + 1];
   ec_scalar_t temp_scalar;
   ec_point_t Gb_c, G_d, point_cp;
@@ -707,7 +708,8 @@ static otrv4_bool_t smp_msg_3_validate_points(smp_msg_3_t *msg) {
          ec_point_valid(msg->Ra);
 }
 
-static otrv4_bool_t smp_msg_3_validate_zkp(smp_msg_3_t *msg, const smp_context_t smp) {
+static otrv4_bool_t smp_msg_3_validate_zkp(smp_msg_3_t *msg,
+                                           const smp_context_t smp) {
   uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
@@ -840,7 +842,8 @@ otr4_err_t smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv) {
   return OTR4_SUCCESS;
 }
 
-static otrv4_bool_t smp_msg_4_validate_zkp(smp_msg_4_t *msg, const smp_context_t smp) {
+static otrv4_bool_t smp_msg_4_validate_zkp(smp_msg_4_t *msg,
+                                           const smp_context_t smp) {
   uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
@@ -875,7 +878,7 @@ void smp_msg_4_destroy(smp_msg_4_t *msg) {
 }
 
 static otrv4_bool_t smp_is_valid_for_msg_3(const smp_msg_3_t *msg,
-                                         smp_context_t smp) {
+                                           smp_context_t smp) {
   ec_point_t Rab, Pa_Pb;
   /* Compute Rab = (Ra * b3) */
   decaf_448_point_scalarmul(Rab, msg->Ra, smp->b3);
@@ -888,7 +891,8 @@ static otrv4_bool_t smp_is_valid_for_msg_3(const smp_msg_3_t *msg,
   return otrv4_true;
 }
 
-static otrv4_bool_t smp_is_valid_for_msg_4(smp_msg_4_t *msg, smp_context_t smp) {
+static otrv4_bool_t smp_is_valid_for_msg_4(smp_msg_4_t *msg,
+                                           smp_context_t smp) {
   ec_point_t Rab;
   /* Compute Rab = Rb * a3. */
   decaf_448_point_scalarmul(Rab, msg->Rb, smp->a3);

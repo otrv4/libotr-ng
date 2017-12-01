@@ -6,7 +6,7 @@
 #include "str.h"
 
 otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
-                      const char *protocol, FILE *filename) {
+                              const char *protocol, FILE *filename) {
 
   OtrlUserState us = otrl_userstate_create();
 

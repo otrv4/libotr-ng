@@ -1,9 +1,9 @@
 #include <string.h>
 
+#include "../b64.h"
 #include "../list.h"
 #include "../otrv4.h"
 #include "../str.h"
-#include "../b64.h"
 
 #include <libotr/privkey.h>
 

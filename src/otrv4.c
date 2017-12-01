@@ -1955,7 +1955,8 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     key_manager_prepare_to_ratchet(otr->keys);
 
     if (reply_tlv) {
-      if (otrv4_prepare_to_send_message(&response->to_send, "", &reply_tlv, otr))
+      if (otrv4_prepare_to_send_message(&response->to_send, "", &reply_tlv,
+                                        otr))
         continue;
     }
 
@@ -2291,8 +2292,8 @@ otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
   case OTRV4_VERSION_3:
     return otrv3_send_message(to_send, message, const_tlvs, otr->otr3_conn);
   case OTRV4_VERSION_4:
-    return otrv4_prepare_to_send_data_message(to_send, message,
-                                              const_tlvs, otr);
+    return otrv4_prepare_to_send_data_message(to_send, message, const_tlvs,
+                                              otr);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }
@@ -2523,8 +2524,8 @@ static otr4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
   handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
                       otr->conversation);
 
-  if (smp_reply && otrv4_prepare_to_send_message(to_send, "", &smp_reply, otr) ==
-                       OTR4_SUCCESS) {
+  if (smp_reply && otrv4_prepare_to_send_message(to_send, "", &smp_reply,
+                                                 otr) == OTR4_SUCCESS) {
     err = OTR4_SUCCESS;
   }
 
