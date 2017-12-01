@@ -1318,6 +1318,43 @@ void test_heartbeat_messages() {
   otrv4_assert(!response_to_alice->to_send);
 
   free_message_and_response(response_to_alice, to_send);
+
+  alice_state->pad = true;
+
+  tlv_t *tlv = NULL;
+
+  // Alice sends a heartbeat message with padding
+  err = otrv4_prepare_to_send_message(&to_send, "", &tlv, alice);
+  otrl_base64_otr_decode(to_send, &decoded, &dec_len);
+
+  assert_msg_sent(err, to_send);
+  otrv4_assert(decoded[flag_position] == IGNORE_UNREADABLE);
+  free(decoded);
+  decoded = NULL;
+
+  // Bob receives a heartbeat message with padding
+  response_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(response_to_alice, to_send, bob);
+
+  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(!response_to_alice->to_display);
+  otrv4_assert(!response_to_alice->to_send);
+
+  free_message_and_response(response_to_alice, to_send);
+
+  // Alice sends an smp message with padding
+  const char *secret = "secret";
+  otrv4_assert(otrv4_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
+                               strlen(secret), alice) == OTR4_SUCCESS);
+  otrv4_assert(to_send);
+  otrl_base64_otr_decode(to_send, &decoded, &dec_len);
+  otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
+
+  // SMP should not have the IGNORE_UNREADABLE flag set
+  otrv4_assert(decoded[flag_position] != IGNORE_UNREADABLE);
+
+  free(decoded);
+  free(to_send);
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);

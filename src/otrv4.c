@@ -2141,7 +2141,8 @@ static otr4_err_t serialize_and_encode_data_msg(
 }
 
 static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
-                                    size_t message_len, otrv4_t *otr) {
+                                    size_t message_len, otrv4_t *otr,
+                                    int isHeartbeat) {
   data_message_t *data_msg = NULL;
 
   size_t serlen = list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
@@ -2173,19 +2174,21 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
     return OTR4_ERROR;
   }
 
-  data_msg->sender_instance_tag = otr->our_instance_tag;
-  data_msg->receiver_instance_tag = otr->their_instance_tag;
-
-  // For empty strings, set IGNORE_UNREADABLE flag
-  if (message_len == 1) {
+  if(isHeartbeat) {
     data_msg->flags = IGNORE_UNREADABLE;
   }
 
+  data_msg->sender_instance_tag = otr->our_instance_tag;
+  data_msg->receiver_instance_tag = otr->their_instance_tag;
+
   otr4_err_t err = OTR4_ERROR;
-  if (encrypt_data_message(data_msg, message, message_len, enc_key) ==
-          OTR4_SUCCESS &&
-      serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys, serlen,
-                                    data_msg) == OTR4_SUCCESS) {
+  err = encrypt_data_message(data_msg, message, message_len, enc_key);
+
+  if (err == OTR4_SUCCESS) {
+    err = serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys, serlen,
+                                    data_msg);
+  }
+  if (err == OTR4_SUCCESS) {
     // TODO: Change the spec to say this should be incremented after the message
     // is sent.
     otr->keys->j++;
@@ -2265,7 +2268,13 @@ static otr4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
   if (append_tlvs(&msg, &msg_len, message, tlvs))
     return OTR4_ERROR;
 
-  otr4_err_t err = send_data_message(to_send, msg, msg_len, otr);
+  int isHeartbeat = 0;
+
+  if (strlen(message) == 0 && otr->smp->state == SMPSTATE_EXPECT1) {
+    isHeartbeat = 1;
+  }
+
+  otr4_err_t err = send_data_message(to_send, msg, msg_len, otr, isHeartbeat);
   free(msg);
 
   return err;
