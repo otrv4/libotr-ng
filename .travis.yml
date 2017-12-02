@@ -76,7 +76,7 @@ before_script:
           pushd .deps/libsodium && ./autogen.sh && ./configure && make && sudo make install && popd;
     fi
   - if [[ "$T" = "ctgrind" ]]; then
-      git clone --depth=1 https://github.com/jedisct1/ctgrind .deps/ctgrind &&
+      git clone --depth=1 https://github.com/claucece/ctgrind .deps/ctgrind &&
           pushd .deps/ctgrind && ./autogen.sh && ./configure && make && sudo make install && popd;
     fi
   - git clone --depth=1 https://bugs.otr.im/lib/libotr.git .deps/libotr
