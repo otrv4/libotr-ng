@@ -178,4 +178,6 @@ otr4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr);
 otr4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
                                          const string_t message);
 
+const char *otr_error_message(otrv4_err_code_t err_code);
+
 #endif

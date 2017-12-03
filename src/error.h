@@ -18,6 +18,12 @@ typedef enum {
   OTR4_STATE_NOT_ENCRYPTED = 0x1001,
 } otr4_err_t;
 
+typedef enum {
+  OTR4_ERR_NONE,
+  OTR4_ERR_MSG_NOT_PRIVATE, // TODO: this should be not encrypted
+  OTR4_ERR_MSG_UNDECRYPTABLE,
+} otrv4_err_code_t;
+
 /// Return success if x is true
 // static otr4_err_t
 // otr4_succeed_if(otr4_bool_t x) {

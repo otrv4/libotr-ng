@@ -189,6 +189,7 @@ otr4_err_t otr4_unfragment_message(char **unfrag_msg,
   int k = 0, n = 0;
   context->status = OTR4_FRAGMENT_INCOMPLETE;
 
+  // TODO: check this format
   const string_t format = "?OTR|%08x|%08x,%05x,%05x,%n%*[^,],%n";
   sscanf(message, format, &sender_tag, &receiver_tag, &k, &n, &start, &end);
 

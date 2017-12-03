@@ -940,6 +940,23 @@ static data_message_t *generate_data_msg(const otrv4_t *otr) {
   return data_msg;
 }
 
+const char *otr_error_message(otrv4_err_code_t err_code) {
+  char *msg = NULL;
+
+  switch (err_code) {
+  case OTR4_ERR_NONE:
+    break;
+  case OTR4_ERR_MSG_NOT_PRIVATE:
+    msg = strdup("OTR4_ERR_MSG_NOT_PRIVATE");
+    break;
+  case OTR4_ERR_MSG_UNDECRYPTABLE:
+    msg = strdup("OTR3_ERR_MSG_UNDECRYPTABLE");
+    break;
+  }
+
+  return msg;
+}
+
 static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
   // TODO: should we do any additional check?
   otr->their_instance_tag = their_instance_tag;
@@ -2174,7 +2191,7 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
     return OTR4_ERROR;
   }
 
-  if(isHeartbeat) {
+  if (isHeartbeat) {
     data_msg->flags = IGNORE_UNREADABLE;
   }
 
@@ -2186,7 +2203,7 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
 
   if (err == OTR4_SUCCESS) {
     err = serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys, serlen,
-                                    data_msg);
+                                        data_msg);
   }
   if (err == OTR4_SUCCESS) {
     // TODO: Change the spec to say this should be incremented after the message
