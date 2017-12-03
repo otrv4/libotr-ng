@@ -2,7 +2,15 @@
 # C Language Specifics
 Language:        Cpp
 # BasedOnStyle:  LLVM
+
 AccessModifierOffset: -2
+TabWidth:        8
+UseTab:          Never
+ContinuationIndentWidth: 4
+IndentCaseLabels: false
+IndentWidth:     2
+IndentWrappedFunctionNames: false
+ColumnLimit:     80
 
 # Align parameters on the open bracket
 AlignAfterOpenBracket: Align
@@ -53,22 +61,24 @@ BraceWrapping:
   BeforeCatch:     false
   BeforeElse:      false
   IndentBraces:    false
-BreakBeforeBinaryOperators: None
 
+# Break after operators
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: false
 BreakBeforeBraces: Attach
 
 # Break after operators
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: false
-ColumnLimit:     80
 CommentPragmas:  '^ IWYU pragma:'
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 4
-ContinuationIndentWidth: 4
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 DisableFormat:   false
 ExperimentalAutoDetectBinPacking: false
+
+# A list of macros that should be interpreted as foreach loops
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
 IncludeCategories:
   - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
@@ -77,12 +87,11 @@ IncludeCategories:
     Priority:        3
   - Regex:           '.*'
     Priority:        1
-IndentCaseLabels: false
-IndentWidth:     2
-IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: true
 MacroBlockBegin: ''
 MacroBlockEnd:   ''
+
+# The maximum number of consecutive empty lines
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 ObjCBlockIndentWidth: 2
@@ -102,20 +111,31 @@ ReflowComments:  true
 # Don't sort #include's
 SortIncludes:    true
 
+# Don't insert a space after a cast
 SpaceAfterCStyleCast: false
+
+# Insert spaces before and after assignment operators
 SpaceBeforeAssignmentOperators: true
+
+# Put a space before opening parentheses only after control statements
 SpaceBeforeParens: ControlStatements
 
 # Don't insert spaces inside empty '()'
 SpaceInEmptyParentheses: false
+
+# The number of spaces before trailing line comments
 SpacesBeforeTrailingComments: 1
 SpacesInAngles:  false
+
+# Don't insert spaces inside container literals
 SpacesInContainerLiterals: true
+
+# Don't insert spaces in casts
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
+
+# Don't insert spaces after '[' or before ']'
 SpacesInSquareBrackets: false
 Standard:        Cpp11
-TabWidth:        8
-UseTab:          Never
 ...
 
