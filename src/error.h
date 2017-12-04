@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 #define OTR4_ERROR_PREFIX "?OTR Error: "
+#define OTR4_ERROR_CODE_1 "ERROR_1: "
+#define OTR4_ERROR_CODE_2 "ERROR_2: "
 
 // needed for comparing with DECAF_TRUE
 typedef uint32_t

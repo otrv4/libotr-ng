@@ -940,7 +940,7 @@ static data_message_t *generate_data_msg(const otrv4_t *otr) {
   return data_msg;
 }
 
-const char *otr_error_message(otrv4_err_code_t err_code) {
+const char *otrv4_error_message(otrv4_err_code_t err_code) {
   char *msg = NULL;
 
   switch (err_code) {
@@ -2279,8 +2279,21 @@ static otr4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
   if (otr->state == OTRV4_STATE_FINISHED)
     return OTR4_ERROR; // Should restart
 
-  if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES)
+  // TODO: check this case with Nik on otr3
+  if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
+    const char *err_code = otrv4_error_message(OTR4_ERR_MSG_NOT_PRIVATE);
+    char *err_msg = malloc(strlen(OTR4_ERROR_PREFIX) +
+                           strlen(OTR4_ERROR_CODE_2) + strlen(err_code) + 1);
+    if (err_msg) {
+      strcpy(err_msg, OTR4_ERROR_PREFIX);
+      strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_1);
+      strcat(err_msg, err_code);
+    }
+
+    free((char *)err_code);
+    free(err_msg);                   // TODO: for the moment
     return OTR4_STATE_NOT_ENCRYPTED; // TODO: queue message
+  }
 
   if (append_tlvs(&msg, &msg_len, message, tlvs))
     return OTR4_ERROR;
