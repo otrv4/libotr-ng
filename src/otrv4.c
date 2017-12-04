@@ -1009,6 +1009,8 @@ static otr4_err_t encrypt_msg_on_non_interactive_auth(
   memset(mac_key, 0, sizeof(m_mac_key_t));
 
   if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
+    free(message);
+    message = NULL;
     return OTR4_ERROR;
   }
 
@@ -1055,6 +1057,7 @@ static otr4_err_t data_message_body_on_non_interactive_asprintf(
     uint8_t **body, size_t *bodylen,
     const dake_non_interactive_auth_message_t *auth) {
   size_t s = 4 + DATA_MSG_NONCE_BYTES + auth->enc_msg_len + 4;
+
   uint8_t *dst = malloc(s);
   if (!dst)
     return OTR4_ERROR;
@@ -1104,9 +1107,12 @@ static otr4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
           &t, &t_len, otr->their_profile, get_my_user_profile(otr),
           THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
           otr->their_profile->shared_prekey, otr->conversation->client->phi)) {
-    free(message);
-    message = NULL;
+    if (message != NULL) {
+      free(message);
+      message = NULL;
+    }
     dake_non_interactive_auth_message_destroy(auth);
+
     return OTR4_ERROR;
   }
 

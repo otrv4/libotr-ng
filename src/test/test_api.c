@@ -224,6 +224,7 @@ void test_api_non_interactive_conversation(void) {
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
+  response_to_alice->to_send = NULL;
   otrv4_assert(send_non_interactive_auth_msg(&response_to_alice->to_send, bob,
                                              "") == OTR4_SUCCESS);
 
