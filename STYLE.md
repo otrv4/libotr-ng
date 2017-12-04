@@ -1,8 +1,28 @@
 # Style
 
-// TODO: check clang.format
+For formatting the code, please use:
 
-Based on: [LinuxKernelCodingStyle](http://www.maultech.com/chrislott/resources/cstyle/LinuxKernelCodingStyle.txt)
+```
+make code-style
+```
+
+This style is based on:
+
+* [LinuxKernelCodingStyle](http://www.maultech.com/chrislott/resources/cstyle/LinuxKernelCodingStyle.txt)
+* [llvm coding standars](https://llvm.org/docs/CodingStandards.html)
+* [GNU Coding Standars](https://www.gnu.org/prep/standards/standards.html)
+
+# Formatting
+
+Keep the length of source lines to 79 characters or less, for maximum
+readability.
+
+# Tabs and Spaces
+
+In all cases, prefer spaces to tabs. The current indent width is 2.
+
+Follow the Golden Rule: follow the style of existing code if you are modifying
+and extending it.
 
 ## Naming
 
@@ -18,3 +38,11 @@ that counts the number of active users, you should call that
 
 If you are afraid to mix up your local variable names, you have another
 problem, which is called the function-growth-hormone-imbalance syndrome.
+
+Use underscores to separate words in a name instead of camel case.
+Stick to lower case; reserve uppercase for macros.
+
+## Language and compiler issues
+
+* Treat compiler warnings as errors.
+* #include as little as possible.
