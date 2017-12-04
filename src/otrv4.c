@@ -1938,9 +1938,31 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   memset(enc_key, 0, sizeof(m_enc_key_t));
   memset(mac_key, 0, sizeof(m_mac_key_t));
 
-  // TODO: warn the user and send an error message with a code.
+  // TODO: check this case with Nik on otr3
   if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
-    data_message_free(msg);
+    const char *err_code = otrv4_error_message(OTR4_ERR_MSG_NOT_PRIVATE);
+    char *err_msg = malloc(strlen(OTR4_ERROR_PREFIX) +
+                           strlen(OTR4_ERROR_CODE_2) + strlen(err_code) + 1);
+    if (err_msg) {
+      strcpy(err_msg, OTR4_ERROR_PREFIX);
+      strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_1);
+      strcat(err_msg, err_code);
+    }
+    free((char *)err_code);
+
+    size_t dstlen = strlen(err_msg) + 1;
+    uint8_t *dst = malloc(dstlen);
+    if (!dst) {
+      free(err_msg);
+      return OTR4_ERROR;
+    }
+
+    stpcpy((char *)dst, err_msg);
+    response->to_send = otrl_base64_otr_encode(dst, dstlen);
+
+    free(dst);
+    free(err_msg);
+    free(msg);
     return OTR4_ERROR;
   }
 
@@ -2285,19 +2307,7 @@ static otr4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
   if (otr->state == OTRV4_STATE_FINISHED)
     return OTR4_ERROR; // Should restart
 
-  // TODO: check this case with Nik on otr3
   if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
-    const char *err_code = otrv4_error_message(OTR4_ERR_MSG_NOT_PRIVATE);
-    char *err_msg = malloc(strlen(OTR4_ERROR_PREFIX) +
-                           strlen(OTR4_ERROR_CODE_2) + strlen(err_code) + 1);
-    if (err_msg) {
-      strcpy(err_msg, OTR4_ERROR_PREFIX);
-      strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_1);
-      strcat(err_msg, err_code);
-    }
-
-    free((char *)err_code);
-    free(err_msg);                   // TODO: for the moment
     return OTR4_STATE_NOT_ENCRYPTED; // TODO: queue message
   }
 

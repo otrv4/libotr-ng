@@ -570,6 +570,60 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   OTR4_FREE;
 }
 
+void test_api_conversation_errors(void) {
+  OTR4_INIT;
+
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+
+  bob_state->pad = true;
+  alice_state->pad = true;
+
+  // DAKE HAS FINISHED.
+  do_dake_fixture(alice, bob);
+
+  int message_id = 2;
+  otrv4_response_t *response_to_alice = NULL;
+
+  // Alice sends a data message
+  string_t to_send = NULL;
+  tlv_t *tlvs = NULL;
+  otr4_err_t err;
+
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, alice);
+  assert_msg_sent(err, to_send);
+  otrv4_assert(tlvs);
+  otrv4_assert(!alice->keys->old_mac_keys);
+
+  // This is a follow up message.
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, message_id);
+
+  bob->state = OTRV4_STATE_START;
+
+  // Bob receives a data message in the incorrect state
+  response_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(response_to_alice, to_send, bob);
+
+  otrv4_assert(err == OTR4_ERROR);
+  otrv4_assert(response_to_alice->to_send != NULL);
+  otrv4_assert(!bob->keys->old_mac_keys);
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+
+  otrv4_tlv_free(tlvs);
+  free_message_and_response(response_to_alice, to_send);
+
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_free_all(alice, bob);
+
+  OTR4_FREE;
+}
+
 static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   otrv4_response_t *response_to_bob = otrv4_response_new();
   otrv4_response_t *response_to_alice = otrv4_response_new();
