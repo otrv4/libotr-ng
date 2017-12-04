@@ -12,12 +12,12 @@ This style is based on:
 * [llvm coding standars](https://llvm.org/docs/CodingStandards.html)
 * [GNU Coding Standars](https://www.gnu.org/prep/standards/standards.html)
 
-# Formatting
+## Formatting
 
 Keep the length of source lines to 79 characters or less, for maximum
 readability.
 
-# Tabs and Spaces
+## Tabs and Spaces
 
 In all cases, prefer spaces to tabs. The current indent width is 2.
 
