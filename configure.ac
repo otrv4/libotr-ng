@@ -15,7 +15,7 @@ dnl Valgrind: make check-valgrind
 AX_VALGRIND_DFLT([sgcheck], [off])
 AX_VALGRIND_CHECK
 
-AM_INIT_AUTOMAKE([-Wall -Werror foreing subdir-objects])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 #AM_INIT_AUTOMAKE([-Wall -W -Werror foreign subdir-objects]) # Use this to allow Wextra flag
 AM_PROG_AR
 LT_INIT
