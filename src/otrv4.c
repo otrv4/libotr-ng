@@ -43,6 +43,7 @@ static const char tag_version_v3[] = {'\x20', '\x20', '\x09', '\x09', '\x20',
                                       '\x20', '\x09', '\x09', '\0'};
 
 static const string_t query_header = "?OTRv";
+static const string_t otr_error_header = "?OTR Error:";
 static const string_t otr_header = "?OTR:";
 
 static void create_privkey_cb(const otr4_conversation_state_t *conv) {
@@ -369,6 +370,10 @@ static void set_running_version_from_query_msg(otrv4_t *otr,
 
 static bool message_is_otr_encoded(const string_t message) {
   return strstr(message, otr_header) != NULL;
+}
+
+static bool message_is_otr_error(const string_t message) {
+  return strstr(message, otr_error_header) != NULL;
 }
 
 otrv4_response_t *otrv4_response_new(void) {
@@ -2081,11 +2086,23 @@ static otr4_err_t receive_encoded_message(otrv4_response_t *response,
   return err;
 }
 
+// TODO: only display the human readable part
+// TODO: check the error code
+static otr4_err_t receive_error_message(otrv4_response_t *response,
+                                         const string_t message,
+                                         otrv4_t *otr) {
+  response->to_display = otrv4_strndup(message, strlen(message));
+
+  return OTR4_SUCCESS;
+}
+
 otrv4_in_message_type_t get_message_type(const string_t message) {
   if (message_contains_tag(message) == otrv4_false) {
     return IN_MSG_TAGGED_PLAINTEXT;
   } else if (message_is_query(message)) {
     return IN_MSG_QUERY_STRING;
+  } else if (message_is_otr_error(message)) {
+    return IN_MSG_OTR_ERROR;
   } else if (message_is_otr_encoded(message)) {
     return IN_MSG_OTR_ENCODED;
   }
@@ -2096,6 +2113,7 @@ otrv4_in_message_type_t get_message_type(const string_t message) {
 static otr4_err_t receive_message_v4_only(otrv4_response_t *response,
                                           const string_t message,
                                           otrv4_t *otr) {
+
   switch (get_message_type(message)) {
   case IN_MSG_NONE:
     return OTR4_ERROR;
@@ -2115,6 +2133,9 @@ static otr4_err_t receive_message_v4_only(otrv4_response_t *response,
   case IN_MSG_OTR_ENCODED:
     return receive_encoded_message(response, message, otr);
     break;
+  case IN_MSG_OTR_ERROR:
+    return receive_error_message(response, message, otr);
+    break;
   }
 
   return OTR4_SUCCESS;
@@ -2123,6 +2144,7 @@ static otr4_err_t receive_message_v4_only(otrv4_response_t *response,
 /* Receive a possibly OTR message. */
 otr4_err_t otrv4_receive_message(otrv4_response_t *response,
                                  const string_t message, otrv4_t *otr) {
+
   if (!message || !response)
     return OTR4_ERROR;
 

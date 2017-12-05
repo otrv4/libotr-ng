@@ -588,6 +588,7 @@ void test_api_conversation_errors(void) {
 
   int message_id = 2;
   otrv4_response_t *response_to_alice = NULL;
+  otrv4_response_t *response_to_bob = NULL;
 
   // Alice sends a data message
   string_t to_send = NULL;
@@ -618,8 +619,16 @@ void test_api_conversation_errors(void) {
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
+  response_to_bob = otrv4_response_new();
+  err = otrv4_receive_message(response_to_bob, response_to_alice->to_send, alice);
+
+  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert_cmpmem(err_code, response_to_bob->to_display, strlen(err_code));
+
   otrv4_tlv_free(tlvs);
+
   free_message_and_response(response_to_alice, to_send);
+  otrv4_response_free(response_to_bob);
 
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
