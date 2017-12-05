@@ -188,6 +188,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/api/extra_symm_key", test_api_extra_sym_key);
   g_test_add_func("/api/ecdh_keys_destroy",
                   test_ecdh_priv_keys_destroyed_early);
+  g_test_add_func("/api/unreadable", test_unreadable_flag);
   g_test_add_func("/api/heartbeat", test_heartbeat_messages);
 
   g_test_add_func("/client/conversation_api", test_client_conversation_api);

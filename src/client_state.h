@@ -11,6 +11,11 @@
 #include "instance_tag.h"
 #include "keys.h"
 
+typedef struct heartbeat_t{
+  int time;
+  time_t last_msg_sent;
+} heartbeat_t;
+
 typedef struct otr4_client_state_t {
   void *client_id; /* Data in the messaging application context that represents
                     a client and should map directly to it. For example, in
@@ -33,11 +38,14 @@ typedef struct otr4_client_state_t {
                                                   // spec does not specify.
   char *phi; // this is the shared session state
   bool pad;  // TODO: this can be replaced by length
+  heartbeat_t *heartbeat;
 
   // OtrlPrivKey *privkeyv3; // ???
   // otrv4_instag_t *instag; // TODO: Store the instance tag here rather than
   // use OTR3 User State as a store for instance tags
 } otr4_client_state_t;
+
+heartbeat_t *otrv4_set_heartbeat(int wait);
 
 otr4_client_state_t *otr4_client_state_new(void *client_id);
 void otr4_client_state_free(otr4_client_state_t *);

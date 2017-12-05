@@ -2250,6 +2250,7 @@ static otr4_err_t send_data_message(string_t *to_send, const uint8_t *message,
     // TODO: Change the spec to say this should be incremented after the message
     // is sent.
     otr->keys->j++;
+    otr->conversation->client->heartbeat->last_msg_sent = time(0);
     err = OTR4_SUCCESS;
   }
 

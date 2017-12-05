@@ -6,6 +6,15 @@
 #include "deserialize.h"
 #include "str.h"
 
+heartbeat_t *otrv4_set_heartbeat(int wait) {
+  heartbeat_t *heartbeat = malloc(sizeof(heartbeat_t));
+  if (!heartbeat)
+    return NULL;
+  heartbeat->time = wait;
+  heartbeat->last_msg_sent = time(0);
+  return heartbeat;
+}
+
 otr4_client_state_t *otr4_client_state_new(void *client_id) {
   otr4_client_state_t *state = malloc(sizeof(otr4_client_state_t));
   if (!state)
@@ -19,6 +28,7 @@ otr4_client_state_t *otr4_client_state_new(void *client_id) {
   state->keypair = NULL;
   state->shared_prekey_pair = NULL;
   state->phi = NULL;
+  state->heartbeat = otrv4_set_heartbeat(300);
 
   return state;
 }
@@ -44,6 +54,10 @@ void otr4_client_state_free(otr4_client_state_t *state) {
   state->phi = NULL;
 
   state->pad = false;
+
+  free(state->heartbeat);
+  state->heartbeat = NULL;
+
   free(state);
 }
 

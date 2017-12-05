@@ -1338,7 +1338,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   OTR4_FREE;
 }
 
-void test_heartbeat_messages() {
+void test_unreadable_flag() {
   OTR4_INIT;
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
@@ -1425,6 +1425,45 @@ void test_heartbeat_messages() {
   free(decoded);
   free(to_send);
 
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_free_all(alice, bob);
+
+  OTR4_FREE;
+}
+
+static heartbeat_t *otrv4_set_test_heartbeat(int wait) {
+  heartbeat_t *heartbeat = malloc(sizeof(heartbeat_t));
+  heartbeat->time = wait;
+  heartbeat->last_msg_sent = time(NULL) - 60;
+  return heartbeat;
+}
+
+void test_heartbeat_messages() {
+  OTR4_INIT;
+
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 3);
+
+  int wait = 300;
+  alice_state->heartbeat = otrv4_set_test_heartbeat(wait);
+
+  // DAKE has finished
+  do_dake_fixture(alice, bob);
+
+  string_t to_send = NULL;
+  otr4_err_t err;
+
+  // Alice sends a data message with text
+  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, alice);
+
+  assert_msg_sent(err, to_send);
+  otrv4_assert(alice_state->heartbeat->last_msg_sent == time(0));
+
+  free(to_send);
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
