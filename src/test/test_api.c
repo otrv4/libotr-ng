@@ -1432,13 +1432,6 @@ void test_unreadable_flag() {
   OTR4_FREE;
 }
 
-static heartbeat_t *otrv4_set_test_heartbeat(int wait) {
-  heartbeat_t *heartbeat = malloc(sizeof(heartbeat_t));
-  heartbeat->time = wait;
-  heartbeat->last_msg_sent = time(NULL) - 60;
-  return heartbeat;
-}
-
 void test_heartbeat_messages() {
   OTR4_INIT;
 
@@ -1448,8 +1441,7 @@ void test_heartbeat_messages() {
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 3);
 
-  int wait = 300;
-  alice_state->heartbeat = otrv4_set_test_heartbeat(wait);
+  alice_state->heartbeat->last_msg_sent = time(NULL) - 60;
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
