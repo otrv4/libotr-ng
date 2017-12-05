@@ -207,7 +207,8 @@ void test_api_non_interactive_conversation(void) {
   otrv4_assert(bob->state == OTRV4_STATE_START);
   otrv4_assert(response_to_bob != NULL);
 
-  otrv4_assert_cmpmem("?OTR:AARV", response_to_bob->to_send, 9);
+  otrv4_assert_cmpmem("?OTR:AAQP", response_to_bob->to_send, 9);
+
   // Bob receives prekey message
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
@@ -231,7 +232,7 @@ void test_api_non_interactive_conversation(void) {
   // Should send an non interactive auth
   otrv4_assert(response_to_alice->to_display == NULL);
   otrv4_assert(response_to_alice->to_send);
-  otrv4_assert_cmpmem("?OTR:AAQE", response_to_alice->to_send, 9);
+  otrv4_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
 
   // Alice receives an non interactive auth
   otrv4_assert(otrv4_receive_message(response_to_bob,
@@ -403,7 +404,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrv4_assert(bob->state == OTRV4_STATE_START);
   otrv4_assert(response_to_bob != NULL);
 
-  otrv4_assert_cmpmem("?OTR:AARV", response_to_bob->to_send, 9);
+  otrv4_assert_cmpmem("?OTR:AAQP", response_to_bob->to_send, 9);
   // Bob receives prekey message
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
@@ -426,7 +427,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   // Should send an non interactive auth
   otrv4_assert(response_to_alice->to_display == NULL);
   otrv4_assert(response_to_alice->to_send);
-  otrv4_assert_cmpmem("?OTR:AAQE", response_to_alice->to_send, 9);
+  otrv4_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
 
   // Alice receives an non interactive auth
   otrv4_assert(otrv4_receive_message(response_to_bob,
@@ -607,6 +608,8 @@ void test_api_conversation_errors(void) {
   // Bob receives a data message in the incorrect state
   response_to_alice = otrv4_response_new();
   err = otrv4_receive_message(response_to_alice, to_send, bob);
+
+  otrv4_assert_cmpmem("?OTR:", response_to_alice->to_send, 5);
 
   otrv4_assert(err == OTR4_ERROR);
   otrv4_assert(response_to_alice->to_send != NULL);
