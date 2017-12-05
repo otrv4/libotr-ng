@@ -609,7 +609,8 @@ void test_api_conversation_errors(void) {
   response_to_alice = otrv4_response_new();
   err = otrv4_receive_message(response_to_alice, to_send, bob);
 
-  otrv4_assert_cmpmem("?OTR:", response_to_alice->to_send, 5);
+  string_t err_code = "?OTR Error: ERROR_2: OTR4_ERR_MSG_NOT_PRIVATE";
+  otrv4_assert_cmpmem(err_code, response_to_alice->to_send, strlen(err_code));
 
   otrv4_assert(err == OTR4_ERROR);
   otrv4_assert(response_to_alice->to_send != NULL);

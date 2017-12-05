@@ -1945,22 +1945,13 @@ static otr4_err_t otrv4_receive_data_message(otrv4_response_t *response,
                            strlen(OTR4_ERROR_CODE_2) + strlen(err_code) + 1);
     if (err_msg) {
       strcpy(err_msg, OTR4_ERROR_PREFIX);
-      strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_1);
+      strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_2);
       strcat(err_msg, err_code);
     }
     free((char *)err_code);
 
-    size_t dstlen = strlen(err_msg) + 1;
-    uint8_t *dst = malloc(dstlen);
-    if (!dst) {
-      free(err_msg);
-      return OTR4_ERROR;
-    }
+    response->to_send = otrv4_strdup(err_msg);
 
-    stpcpy((char *)dst, err_msg);
-    response->to_send = otrl_base64_otr_encode(dst, dstlen);
-
-    free(dst);
     free(err_msg);
     free(msg);
     return OTR4_ERROR;
