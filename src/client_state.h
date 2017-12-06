@@ -11,7 +11,7 @@
 #include "instance_tag.h"
 #include "keys.h"
 
-typedef struct heartbeat_t{
+typedef struct heartbeat_t {
   int time;
   time_t last_msg_sent;
 } heartbeat_t;

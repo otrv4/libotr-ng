@@ -2087,13 +2087,14 @@ static otr4_err_t receive_encoded_message(otrv4_response_t *response,
 }
 
 // TODO: only display the human readable part
-// TODO: check the error code
 static otr4_err_t receive_error_message(otrv4_response_t *response,
-                                         const string_t message,
-                                         otrv4_t *otr) {
-  response->to_display = otrv4_strndup(message, strlen(message));
+                                        const string_t message, otrv4_t *otr) {
+  if (strcmp(&message[18], "2") || strcmp(&message[18], "1")) {
+    response->to_display = otrv4_strndup(message, strlen(message));
+    return OTR4_SUCCESS;
+  }
 
-  return OTR4_SUCCESS;
+  return OTR4_ERROR;
 }
 
 otrv4_in_message_type_t get_message_type(const string_t message) {

@@ -620,7 +620,8 @@ void test_api_conversation_errors(void) {
   g_assert_cmpint(bob->keys->j, ==, 0);
 
   response_to_bob = otrv4_response_new();
-  err = otrv4_receive_message(response_to_bob, response_to_alice->to_send, alice);
+  err =
+      otrv4_receive_message(response_to_bob, response_to_alice->to_send, alice);
 
   otrv4_assert(err == OTR4_SUCCESS);
   otrv4_assert_cmpmem(err_code, response_to_bob->to_display, strlen(err_code));
