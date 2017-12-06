@@ -4,7 +4,6 @@
 #include <time.h>
 
 #include "../serialize.h"
-#include "../str.h"
 #include "../user_profile.h"
 
 void test_user_profile_create() {

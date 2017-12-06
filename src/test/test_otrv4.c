@@ -1,8 +1,6 @@
 #include <glib.h>
 #include <string.h>
 
-#include "../dake.h"
-#include "../fragment.h"
 #include "../otrv4.h"
 
 void test_otrv4_builds_query_message(otrv4_fixture_t *otrv4_fixture,

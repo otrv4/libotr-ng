@@ -1,7 +1,6 @@
 #include "../constants.h"
 #include "../dake.h"
 #include "../keys.h"
-#include "../str.h"
 
 void test_dake_identity_message_serializes(identity_message_fixture_t *f,
                                            gconstpointer data) {

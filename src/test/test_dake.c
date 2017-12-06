@@ -4,7 +4,6 @@
 #include "../auth.h"
 #include "../dake.h"
 #include "../serialize.h"
-#include "../str.h"
 
 void test_snizkpk_auth() {
   snizkpk_proof_t dst[1];
