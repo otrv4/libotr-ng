@@ -1,5 +1,5 @@
-#include <sodium.h>
 #include <gcrypt.h>
+#include <sodium.h>
 
 #include "ed448.h"
 

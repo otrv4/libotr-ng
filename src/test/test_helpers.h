@@ -4,8 +4,9 @@
 #include <string.h>
 
 #include "../client.h"
-#include "../debug.h"
 #include "../str.h"
+
+#include "../debug.h"
 
 #define ALICE_IDENTITY "alice@otr.example"
 #define BOB_IDENTITY "bob@otr.example"

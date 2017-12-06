@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug.h"
 #include "key_management.h"
 #include "random.h"
 #include "shake.h"
+
+#include "debug.h"
 
 void chain_link_free(chain_link_t *head) {
   chain_link_t *current = head;

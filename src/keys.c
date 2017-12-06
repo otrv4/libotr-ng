@@ -1,8 +1,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "keys.h"
 #include "b64.h"
+#include "keys.h"
 #include "random.h"
 
 otrv4_keypair_t *otrv4_keypair_new(void) {

@@ -3,8 +3,8 @@
 #include <libotr/privkey.h>
 
 #include "client.h"
-#include "str.h"
 #include "serialize.h"
+#include "str.h"
 
 #define CONV(c) ((otr4_conversation_t *)c)
 
