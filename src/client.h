@@ -6,7 +6,6 @@
 #include <libotr/context.h>
 
 #include "client_state.h"
-#include "instance_tag.h"
 #include "list.h"
 #include "otrv4.h"
 

@@ -5,7 +5,6 @@
 #include <decaf/ed448.h>
 #include <stdint.h>
 
-#include "ed448.h"
 #include "error.h"
 
 /* Decaf_448_point_t is in the twisted ed448-goldilocks. */

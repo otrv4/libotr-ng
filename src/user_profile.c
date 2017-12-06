@@ -5,10 +5,7 @@
 #include <time.h>
 
 #include "deserialize.h"
-#include "mpi.h"
-#include "random.h"
 #include "serialize.h"
-#include "str.h"
 #include "user_profile.h"
 
 user_profile_t *user_profile_new(const string_t versions) {

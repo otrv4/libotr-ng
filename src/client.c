@@ -2,11 +2,9 @@
 
 #include <libotr/privkey.h>
 
-#include "deserialize.h"
-#include "instance_tag.h"
-#include "otrv4.h"
-#include "serialize.h"
+#include "client.h"
 #include "str.h"
+#include "serialize.h"
 
 #define CONV(c) ((otr4_conversation_t *)c)
 

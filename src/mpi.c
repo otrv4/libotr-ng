@@ -1,6 +1,6 @@
 #include "mpi.h"
 #include "deserialize.h"
-#include "serialize.h"
+#include "serialize.h" // just for memcpy
 
 void otr_mpi_init(otr_mpi_t mpi) {
   mpi->len = 0;

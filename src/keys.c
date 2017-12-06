@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 #include "keys.h"
-
 #include "b64.h"
 #include "random.h"
 

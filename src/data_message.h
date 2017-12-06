@@ -6,8 +6,6 @@
 #include <string.h>
 
 #include "constants.h"
-#include "dh.h"
-#include "ed448.h"
 #include "key_management.h"
 
 typedef struct {

@@ -1,7 +1,5 @@
 #include <string.h>
 
-#include "constants.h"
-#include "dake.h"
 #include "data_message.h"
 #include "deserialize.h"
 #include "mem.h"

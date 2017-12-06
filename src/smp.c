@@ -3,13 +3,10 @@
 #include "auth.h"
 #include "constants.h"
 #include "deserialize.h"
-#include "dh.h"
-#include "mpi.h"
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
 #include "smp.h"
-#include "str.h"
 #include "tlv.h"
 
 #include "debug.h"

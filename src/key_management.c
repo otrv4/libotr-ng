@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "constants.h"
 #include "debug.h"
-#include "ed448.h"
-#include "gcrypt.h"
 #include "key_management.h"
 #include "random.h"
 #include "shake.h"

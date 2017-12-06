@@ -3,14 +3,11 @@
 #include <string.h>
 #include <time.h>
 
-#include "constants.h"
 #include "dake.h"
 #include "deserialize.h"
 #include "error.h"
-#include "random.h"
 #include "serialize.h"
 #include "str.h"
-#include "user_profile.h"
 
 dake_identity_message_t *
 dake_identity_message_new(const user_profile_t *profile) {

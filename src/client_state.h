@@ -8,7 +8,6 @@
 #include <libotr/userstate.h>
 
 #include "client_callbacks.h"
-#include "instance_tag.h"
 #include "keys.h"
 
 typedef struct heartbeat_t {

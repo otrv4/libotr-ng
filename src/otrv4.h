@@ -2,7 +2,6 @@
 #define OTRV4_H
 
 #include "client_state.h"
-#include "fingerprint.h"
 #include "fragment.h"
 #include "key_management.h"
 #include "keys.h"

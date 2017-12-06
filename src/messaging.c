@@ -1,7 +1,6 @@
-#include "messaging.h"
-#include "keys.h"
-
 #include <libotr/privkey.h>
+
+#include "messaging.h"
 
 otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb) {
   otr4_userstate_t *state = malloc(sizeof(otr4_userstate_t));
