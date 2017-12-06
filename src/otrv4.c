@@ -1978,8 +1978,14 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     if (get_receiving_msg_keys(enc_key, mac_key, msg, otr))
       continue;
 
-    if (valid_data_message(mac_key, msg))
-      continue;
+    if (valid_data_message(mac_key, msg)) {
+      sodium_memzero(enc_key, sizeof(enc_key));
+      sodium_memzero(mac_key, sizeof(mac_key));
+      response->to_display = NULL;
+      data_message_free(msg);
+
+      return OTR4_MSG_NOT_VALID;
+    }
 
     if (decrypt_data_msg(response, enc_key, msg))
       continue;
@@ -1998,6 +2004,7 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
 
     uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
     if (to_store_mac == NULL) {
+      response->to_display = NULL;
       data_message_free(msg);
       return OTR4_ERROR;
     }

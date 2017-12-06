@@ -18,6 +18,7 @@ typedef enum {
   OTR4_SUCCESS = 0,
   OTR4_ERROR = 1,
   OTR4_STATE_NOT_ENCRYPTED = 0x1001,
+  OTR4_MSG_NOT_VALID = 0x1011,
 } otrv4_err_t;
 
 typedef enum {

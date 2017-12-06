@@ -2,6 +2,8 @@
 #define OTR4_CLIENT_H
 
 #define OTR4_CLIENT_ERROR_NOT_ENCRYPTED 0x1001
+// TODO: check the error codes on client
+#define OTR4_CLIENT_ERROR_MSG_NOT_VALID 0x1011
 
 #include <libotr/context.h>
 

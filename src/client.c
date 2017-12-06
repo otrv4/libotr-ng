@@ -256,14 +256,14 @@ static int unfragment(char **unfragmented, const char *received,
 int otr4_client_receive(char **newmessage, char **todisplay,
                         const char *message, const char *recipient,
                         otr4_client_t *client) {
-  otrv4_err_t err = OTR4_ERROR;
+  otrv4_err_t error = OTR4_ERROR;
   char *unfrag_msg = NULL;
   int should_ignore = 1;
   otrv4_response_t *response = NULL;
   otr4_conversation_t *conv = NULL;
 
   if (!newmessage)
-    return err;
+    return error;
 
   *newmessage = NULL;
 
@@ -276,7 +276,10 @@ int otr4_client_receive(char **newmessage, char **todisplay,
     return should_ignore;
 
   response = otrv4_response_new();
-  err = otrv4_receive_message(response, unfrag_msg, conv->conn);
+  error = otrv4_receive_message(response, unfrag_msg, conv->conn);
+  if (error == OTR4_MSG_NOT_VALID)
+    return OTR4_CLIENT_ERROR_MSG_NOT_VALID;
+
   free(unfrag_msg);
 
   if (response->to_send)
@@ -292,7 +295,7 @@ int otr4_client_receive(char **newmessage, char **todisplay,
 
   otrv4_response_free(response);
 
-  if (err != OTR4_SUCCESS)
+  if (error != OTR4_SUCCESS)
     return !should_ignore; // Should this cause the message to be ignored or
                            // not?
 
