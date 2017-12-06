@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "deserialize.h"
+#include "instance_tag.h"
 #include "str.h"
 
 heartbeat_t *otrv4_set_heartbeat(int wait) {
@@ -193,7 +194,7 @@ int otr4_client_state_add_shared_prekey_v4(
 static OtrlInsTag *otrl_instance_tag_new(const char *protocol,
                                          const char *account,
                                          unsigned int instag) {
-  if (instag < 0x00000100)
+  if (instag < OTR4_MIN_VALID_INSTAG)
     return NULL;
 
   OtrlInsTag *p = malloc(sizeof(OtrlInsTag));
