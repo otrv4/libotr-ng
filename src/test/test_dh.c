@@ -29,7 +29,7 @@ void dh_test_serialize() {
   dh_mpi_t mpi = gcry_mpi_new(DH3072_MOD_LEN_BITS);
 
   size_t mpi_len = 0;
-  otr4_err_t err = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
+  otrv4_err_t err = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
   otrv4_assert(!err);
   g_assert_cmpint(mpi_len, ==, 0);
 

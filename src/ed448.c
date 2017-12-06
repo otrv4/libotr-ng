@@ -57,8 +57,8 @@ void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src) {
   memcpy(dst, src, sizeof(ec_public_key_t));
 }
 
-otr4_err_t ec_scalar_serialize(uint8_t *dst, size_t dst_len,
-                               const ec_scalar_t scalar) {
+otrv4_err_t ec_scalar_serialize(uint8_t *dst, size_t dst_len,
+                                const ec_scalar_t scalar) {
   if (dst_len < ED448_SCALAR_BYTES)
     return OTR4_ERROR;
 
@@ -76,8 +76,8 @@ void ec_point_serialize(uint8_t *dst, const ec_point_t point) {
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(dst, point);
 }
 
-otr4_err_t ec_point_deserialize(ec_point_t point,
-                                const uint8_t serialized[ED448_POINT_BYTES]) {
+otrv4_err_t ec_point_deserialize(ec_point_t point,
+                                 const uint8_t serialized[ED448_POINT_BYTES]) {
   decaf_448_point_t p;
   decaf_error_t err =
       decaf_448_point_decode_like_eddsa_and_ignore_cofactor(p, serialized);

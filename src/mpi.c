@@ -46,8 +46,8 @@ static otrv4_bool_t otr_mpi_read_len(otr_mpi_t dst, const uint8_t *src,
   return otrv4_true;
 }
 
-otr4_err_t otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src,
-                               size_t src_len, size_t *read) {
+otrv4_err_t otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src,
+                                size_t src_len, size_t *read) {
   if (otr_mpi_read_len(dst, src, src_len, read) == otrv4_false)
     return OTR4_ERROR;
 
@@ -69,8 +69,8 @@ otr4_err_t otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t *src,
-                                       size_t src_len, size_t *read) {
+otrv4_err_t otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t *src,
+                                        size_t src_len, size_t *read) {
   if (otr_mpi_read_len(dst, src, src_len, read) == otrv4_false)
     return OTR4_ERROR;
 

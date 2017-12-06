@@ -46,8 +46,8 @@ void data_message_free(data_message_t *data_msg) {
   free(data_msg);
 }
 
-otr4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
-                                      const data_message_t *data_msg) {
+otrv4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
+                                       const data_message_t *data_msg) {
   size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
   if (!dst)
@@ -82,8 +82,8 @@ otr4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t data_message_deserialize(data_message_t *dst, const uint8_t *buff,
-                                    size_t bufflen, size_t *nread) {
+otrv4_err_t data_message_deserialize(data_message_t *dst, const uint8_t *buff,
+                                     size_t bufflen, size_t *nread) {
   const uint8_t *cursor = buff;
   int64_t len = bufflen;
   size_t read = 0;

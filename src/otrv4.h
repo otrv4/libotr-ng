@@ -129,12 +129,12 @@ otrv4_t *otrv4_new(struct otr4_client_state_t *state, otrv4_policy_t policy);
 void otrv4_destroy(otrv4_t *otr);
 void otrv4_free(/*@only@ */ otrv4_t *otr);
 
-otr4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
-                                     const otrv4_t *otr);
-
-otr4_err_t otrv4_build_whitespace_tag(string_t *whitespace_tag,
-                                      const string_t message,
+otrv4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
                                       const otrv4_t *otr);
+
+otrv4_err_t otrv4_build_whitespace_tag(string_t *whitespace_tag,
+                                       const string_t message,
+                                       const otrv4_t *otr);
 
 otrv4_response_t *otrv4_response_new(void);
 
@@ -142,41 +142,41 @@ void otrv4_response_free(otrv4_response_t *response);
 
 otrv4_in_message_type_t get_message_type(const string_t message);
 
-otr4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
-                          const size_t bufflen);
+otrv4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
+                           const size_t bufflen);
 
-otr4_err_t otrv4_receive_message(otrv4_response_t *response,
-                                 const string_t message, otrv4_t *otr);
+otrv4_err_t otrv4_receive_message(otrv4_response_t *response,
+                                  const string_t message, otrv4_t *otr);
 
-otr4_err_t otrv4_prepare_to_send_message(string_t *to_send,
-                                         const string_t message, tlv_t **tlvs,
-                                         otrv4_t *otr);
+otrv4_err_t otrv4_prepare_to_send_message(string_t *to_send,
+                                          const string_t message, tlv_t **tlvs,
+                                          otrv4_t *otr);
 
-otr4_err_t otrv4_close(string_t *to_send, otrv4_t *otr);
+otrv4_err_t otrv4_close(string_t *to_send, otrv4_t *otr);
 
-otr4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
-                                     const unsigned char *usedata,
-                                     size_t usedatalen, uint8_t *extra_key,
-                                     otrv4_t *otr);
+otrv4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
+                                      const unsigned char *usedata,
+                                      size_t usedatalen, uint8_t *extra_key,
+                                      otrv4_t *otr);
 
-otr4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
-                           const size_t q_len, const uint8_t *secret,
-                           const size_t secretlen, otrv4_t *otr);
+otrv4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
+                            const size_t q_len, const uint8_t *secret,
+                            const size_t secretlen, otrv4_t *otr);
 
-otr4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
-                              const size_t secretlen, otrv4_t *otr);
+otrv4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
+                               const size_t secretlen, otrv4_t *otr);
 
-otr4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr);
+otrv4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr);
 
 // TODO: change to the real func: unexpose these and make them
 // static
 void reply_with_prekey_msg_from_server(otrv4_server_t *server,
                                        otrv4_response_t *response);
 
-otr4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr);
+otrv4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr);
 
-otr4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
-                                         const string_t message);
+otrv4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
+                                          const string_t message);
 
 const char *otr_error_message(otrv4_err_code_t err_code);
 

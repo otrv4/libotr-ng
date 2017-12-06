@@ -32,13 +32,13 @@ fragment_context_t *fragment_context_new(void);
 
 void fragment_context_free(fragment_context_t *context);
 
-otr4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
-                                 int our_instance, int their_instance,
-                                 const string_t message);
+otrv4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
+                                  int our_instance, int their_instance,
+                                  const string_t message);
 
-otr4_err_t otr4_unfragment_message(char **unfrag_msg,
-                                   fragment_context_t *context,
-                                   const string_t message,
-                                   const int our_instance_tag);
+otrv4_err_t otr4_unfragment_message(char **unfrag_msg,
+                                    fragment_context_t *context,
+                                    const string_t message,
+                                    const int our_instance_tag);
 
 #endif

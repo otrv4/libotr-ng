@@ -65,7 +65,7 @@ void test_append_padding_tlv() {
   uint8_t smp2_data[2] = {0x03, 0x04};
 
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
-  otr4_err_t err = append_padding_tlv(&tlv, 6);
+  otrv4_err_t err = append_padding_tlv(&tlv, 6);
   otrv4_assert(err == OTR4_SUCCESS);
   assert_tlv_structure(tlv->next, OTRV4_TLV_PADDING, 245, smp2_data, false);
   otrv4_tlv_free(tlv);

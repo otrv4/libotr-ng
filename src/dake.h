@@ -62,27 +62,27 @@ void dake_identity_message_free(dake_identity_message_t *identity_message);
 
 void dake_identity_message_destroy(dake_identity_message_t *identity_message);
 
-otr4_err_t dake_identity_message_deserialize(dake_identity_message_t *dst,
-                                             const uint8_t *src,
-                                             size_t src_len);
+otrv4_err_t dake_identity_message_deserialize(dake_identity_message_t *dst,
+                                              const uint8_t *src,
+                                              size_t src_len);
 
-otr4_err_t
+otrv4_err_t
 dake_identity_message_asprintf(uint8_t **dst, size_t *nbytes,
                                const dake_identity_message_t *identity_message);
 
 void dake_auth_r_destroy(dake_auth_r_t *auth_r);
 
-otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
-                                const dake_auth_r_t *auth_r);
-otr4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
-                                   size_t buflen);
+otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
+                                 const dake_auth_r_t *auth_r);
+otrv4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
+                                    size_t buflen);
 
 void dake_auth_i_destroy(dake_auth_i_t *auth_i);
 
-otr4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
-                                const dake_auth_i_t *auth_i);
-otr4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
-                                   size_t buflen);
+otrv4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
+                                 const dake_auth_i_t *auth_i);
+otrv4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
+                                    size_t buflen);
 
 dake_prekey_message_t *dake_prekey_message_new(const user_profile_t *profile);
 
@@ -90,21 +90,21 @@ void dake_prekey_message_free(dake_prekey_message_t *prekey_message);
 
 void dake_prekey_message_destroy(dake_prekey_message_t *prekey_message);
 
-otr4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
-                                           const uint8_t *src, size_t src_len);
+otrv4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
+                                            const uint8_t *src, size_t src_len);
 
-otr4_err_t
+otrv4_err_t
 dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
                              const dake_prekey_message_t *prekey_message);
 
 void dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_t *non_interactive_auth);
 
-otr4_err_t dake_non_interactive_auth_message_asprintf(
+otrv4_err_t dake_non_interactive_auth_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_t *non_interactive_auth);
 
-otr4_err_t dake_non_interactive_auth_message_deserialize(
+otrv4_err_t dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_t *dst, const uint8_t *buffer,
     size_t buflen);
 

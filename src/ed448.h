@@ -30,8 +30,8 @@ typedef decaf_448_public_key_t ec_public_key_t;
 
 otrv4_bool_t ec_scalar_eq(const ec_scalar_t a, const ec_scalar_t b);
 
-otr4_err_t ec_scalar_serialize(uint8_t *dst, size_t dst_len,
-                               const ec_scalar_t scalar);
+otrv4_err_t ec_scalar_serialize(uint8_t *dst, size_t dst_len,
+                                const ec_scalar_t scalar);
 
 void ec_scalar_deserialize(ec_scalar_t scalar,
                            const uint8_t serialized[ED448_SCALAR_BYTES]);
@@ -50,8 +50,8 @@ otrv4_bool_t ec_point_eq(const ec_point_t, const ec_point_t);
 
 void ec_point_serialize(uint8_t *dst, const ec_point_t point);
 
-otr4_err_t ec_point_deserialize(ec_point_t point,
-                                const uint8_t serialized[ED448_POINT_BYTES]);
+otrv4_err_t ec_point_deserialize(ec_point_t point,
+                                 const uint8_t serialized[ED448_POINT_BYTES]);
 
 /* This is ed448 crypto */
 void ec_scalar_derive_from_secret(ec_scalar_t priv,

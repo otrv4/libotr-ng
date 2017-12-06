@@ -71,8 +71,8 @@ static int user_profile_body_serialize(uint8_t *dst,
   return target - dst;
 }
 
-otr4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
-                                      const user_profile_t *profile) {
+otrv4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
+                                       const user_profile_t *profile) {
   size_t s = ED448_PUBKEY_BYTES + strlen(profile->versions) +
              ED448_SHARED_PREKEY_BYTES + 1 + 4 + 8;
 
@@ -89,8 +89,8 @@ otr4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
-                                 const user_profile_t *profile) {
+otrv4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
+                                  const user_profile_t *profile) {
   // TODO: should it checked here for signature?
   if (!(profile->signature > 0))
     return OTR4_ERROR;
@@ -123,16 +123,16 @@ otr4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t user_profile_deserialize(user_profile_t *target,
-                                    const uint8_t *buffer, size_t buflen,
-                                    size_t *nread) {
+otrv4_err_t user_profile_deserialize(user_profile_t *target,
+                                     const uint8_t *buffer, size_t buflen,
+                                     size_t *nread) {
   size_t read = 0;
   int walked = 0;
 
   if (!target)
     return OTR4_ERROR;
 
-  otr4_err_t ok = OTR4_ERROR;
+  otrv4_err_t ok = OTR4_ERROR;
   do {
     if (deserialize_otrv4_public_key(target->pub_key, buffer, buflen, &read))
       continue;
@@ -180,8 +180,8 @@ otr4_err_t user_profile_deserialize(user_profile_t *target,
   return ok;
 }
 
-otr4_err_t user_profile_sign(user_profile_t *profile,
-                             const otrv4_keypair_t *keypair) {
+otrv4_err_t user_profile_sign(user_profile_t *profile,
+                              const otrv4_keypair_t *keypair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 

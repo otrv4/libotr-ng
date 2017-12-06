@@ -90,7 +90,7 @@ void test_api_interactive_conversation(void) {
   // Alice sends a data message
   string_t to_send = NULL;
   tlv_t *tlvs = NULL;
-  otr4_err_t err;
+  otrv4_err_t err;
 
   for (message_id = 2; message_id < 5; message_id++) {
     err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, alice);
@@ -104,7 +104,7 @@ void test_api_interactive_conversation(void) {
 
     // Bob receives a data message
     response_to_alice = otrv4_response_new();
-    otr4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
+    otrv4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
     assert_msg_rec(err, "hi", response_to_alice);
     otrv4_assert(bob->keys->old_mac_keys);
 
@@ -130,7 +130,7 @@ void test_api_interactive_conversation(void) {
 
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
-    otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
+    otrv4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
 
@@ -286,7 +286,7 @@ void test_api_non_interactive_conversation(void) {
   // Bob sends a data message
   string_t to_send = NULL;
   tlv_t *tlv = NULL;
-  otr4_err_t err;
+  otrv4_err_t err;
 
   // TODO: this is usually set up by the querry or whitespace,
   // this will be defined on the prekey server spec.
@@ -304,7 +304,7 @@ void test_api_non_interactive_conversation(void) {
 
     // Bob receives a data message
     response_to_alice = otrv4_response_new();
-    otr4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
+    otrv4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
     assert_msg_rec(err, "hi", response_to_alice);
     otrv4_assert(bob->keys->old_mac_keys);
 
@@ -330,7 +330,7 @@ void test_api_non_interactive_conversation(void) {
 
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
-    otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
+    otrv4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
 
@@ -480,7 +480,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   // Bob sends a data message
   string_t to_send = NULL;
   tlv_t *tlv = NULL;
-  otr4_err_t err;
+  otrv4_err_t err;
 
   // TODO: this is usually set up by the querry or whitespace,
   // this will be defined on the prekey server spec.
@@ -498,7 +498,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
     // Bob receives a data message
     response_to_alice = otrv4_response_new();
-    otr4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
+    otrv4_err_t err = otrv4_receive_message(response_to_alice, to_send, bob);
     assert_msg_rec(err, "hi", response_to_alice);
     otrv4_assert(bob->keys->old_mac_keys);
 
@@ -524,7 +524,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
-    otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
+    otrv4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
 
@@ -593,7 +593,7 @@ void test_api_conversation_errors(void) {
   // Alice sends a data message
   string_t to_send = NULL;
   tlv_t *tlvs = NULL;
-  otr4_err_t err;
+  otrv4_err_t err;
 
   err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, alice);
   assert_msg_sent(err, to_send);
@@ -802,7 +802,7 @@ void test_api_multiple_clients(void) {
   OTR4_INIT;
 
   bool send_response = true;
-  otr4_err_t err;
+  otrv4_err_t err;
 
   otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
   otr4_client_state_t *bob_phone_state = otr4_client_state_new(NULL);
@@ -1093,7 +1093,7 @@ void test_api_extra_sym_key(void) {
   // Alice sends a data message
   string_t to_send = NULL;
 
-  otr4_err_t err;
+  otrv4_err_t err;
 
   err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice);
   assert_msg_sent(err, to_send);
@@ -1172,7 +1172,7 @@ void test_dh_key_rotation(void) {
 
   // Bob sends a data message
   string_t to_send = NULL;
-  otr4_err_t err;
+  otrv4_err_t err;
 
   for (ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
     // Bob sends a data message
@@ -1185,7 +1185,7 @@ void test_dh_key_rotation(void) {
 
     // Alice receives a data message
     response_to_bob = otrv4_response_new();
-    otr4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
+    otrv4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
 
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
@@ -1258,7 +1258,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrv4_response_t *response_to_bob = NULL;
   otrv4_response_t *response_to_alice = NULL;
   string_t to_send = NULL;
-  otr4_err_t err;
+  otrv4_err_t err;
 
   // Alice sends a data message
   err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
@@ -1352,7 +1352,7 @@ void test_unreadable_flag() {
   do_dake_fixture(alice, bob);
 
   string_t to_send = NULL;
-  otr4_err_t err;
+  otrv4_err_t err;
 
   // Alice sends a data message with text
   err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, alice);
@@ -1448,7 +1448,7 @@ void test_heartbeat_messages() {
   do_dake_fixture(alice, bob);
 
   string_t to_send = NULL;
-  otr4_err_t err;
+  otrv4_err_t err;
 
   // Alice sends a data message with text
   err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, alice);

@@ -42,8 +42,8 @@ void otrv4_keypair_free(otrv4_keypair_t *keypair) {
   free(keypair);
 }
 
-otr4_err_t otrv4_symmetric_key_serialize(char **buffer, size_t *buffer_size,
-                                         uint8_t sym[ED448_PRIVATE_BYTES]) {
+otrv4_err_t otrv4_symmetric_key_serialize(char **buffer, size_t *buffer_size,
+                                          uint8_t sym[ED448_PRIVATE_BYTES]) {
   *buffer = malloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
   if (!*buffer)
     return OTR4_ERROR;

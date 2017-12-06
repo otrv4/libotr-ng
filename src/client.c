@@ -177,7 +177,7 @@ static int otrv4_send_message(char **newmsg, const char *message,
   if (!conv)
     return 1;
 
-  otr4_err_t error =
+  otrv4_err_t error =
       otrv4_prepare_to_send_message(newmsg, message, &tlv, conv->conn);
   otrv4_tlv_free(tlv);
 
@@ -198,7 +198,7 @@ int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
                               const char *message, int mms,
                               const char *recipient, otr4_client_t *client) {
   string_t to_send = NULL;
-  otr4_err_t err = otrv4_send_message(&to_send, message, recipient, client);
+  otrv4_err_t err = otrv4_send_message(&to_send, message, recipient, client);
   if (err != OTR4_SUCCESS)
     return 1;
 
@@ -248,7 +248,7 @@ int otr4_client_smp_respond(char **tosend, const char *recipient,
 
 static int unfragment(char **unfragmented, const char *received,
                       fragment_context_t *ctx, int our_instance_tag) {
-  otr4_err_t err =
+  otrv4_err_t err =
       otr4_unfragment_message(unfragmented, ctx, received, our_instance_tag);
   return err != OTR4_SUCCESS || ctx->status == OTR4_FRAGMENT_INCOMPLETE;
 }
@@ -256,7 +256,7 @@ static int unfragment(char **unfragmented, const char *received,
 int otr4_client_receive(char **newmessage, char **todisplay,
                         const char *message, const char *recipient,
                         otr4_client_t *client) {
-  otr4_err_t err = OTR4_ERROR;
+  otrv4_err_t err = OTR4_ERROR;
   char *unfrag_msg = NULL;
   int should_ignore = 1;
   otrv4_response_t *response = NULL;

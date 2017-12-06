@@ -45,7 +45,7 @@ void dake_identity_message_free(dake_identity_message_t *identity_message) {
   free(identity_message);
 }
 
-otr4_err_t dake_identity_message_asprintf(
+otrv4_err_t dake_identity_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_identity_message_t *identity_message) {
   size_t profile_len = 0;
@@ -71,7 +71,7 @@ otr4_err_t dake_identity_message_asprintf(
   cursor += serialize_ec_point(cursor, identity_message->Y);
 
   size_t len = 0;
-  otr4_err_t err = serialize_dh_public_key(cursor, &len, identity_message->B);
+  otrv4_err_t err = serialize_dh_public_key(cursor, &len, identity_message->B);
   if (err) {
     free(profile);
     free(buff);
@@ -89,9 +89,9 @@ otr4_err_t dake_identity_message_asprintf(
   return OTR4_SUCCESS;
 }
 
-otr4_err_t dake_identity_message_deserialize(dake_identity_message_t *dst,
-                                             const uint8_t *src,
-                                             size_t src_len) {
+otrv4_err_t dake_identity_message_deserialize(dake_identity_message_t *dst,
+                                              const uint8_t *src,
+                                              size_t src_len) {
   const uint8_t *cursor = src;
   int64_t len = src_len;
   size_t read = 0;
@@ -167,8 +167,8 @@ void dake_auth_r_destroy(dake_auth_r_t *auth_r) {
   snizkpk_proof_destroy(auth_r->sigma);
 }
 
-otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
-                                const dake_auth_r_t *auth_r) {
+otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
+                                 const dake_auth_r_t *auth_r) {
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
@@ -194,7 +194,7 @@ otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
 
   size_t len = 0;
 
-  otr4_err_t err = serialize_dh_public_key(cursor, &len, auth_r->A);
+  otrv4_err_t err = serialize_dh_public_key(cursor, &len, auth_r->A);
   if (err) {
     free(our_profile);
     free(buff);
@@ -214,8 +214,8 @@ otr4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
-                                   size_t buflen) {
+otrv4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
+                                    size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
   size_t read = 0;
@@ -294,8 +294,8 @@ void dake_auth_i_destroy(dake_auth_i_t *auth_i) {
   snizkpk_proof_destroy(auth_i->sigma);
 }
 
-otr4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
-                                const dake_auth_i_t *auth_i) {
+otrv4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
+                                 const dake_auth_i_t *auth_i) {
   size_t s = DAKE_HEADER_BYTES + SNIZKPK_BYTES;
   *dst = malloc(s);
 
@@ -317,8 +317,8 @@ otr4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
-                                   size_t buflen) {
+otrv4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
+                                    size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
   size_t read = 0;
@@ -398,7 +398,7 @@ void dake_prekey_message_free(dake_prekey_message_t *prekey_message) {
   free(prekey_message);
 }
 
-otr4_err_t
+otrv4_err_t
 dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
                              const dake_prekey_message_t *prekey_message) {
   size_t profile_len = 0;
@@ -423,7 +423,7 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   cursor += serialize_ec_point(cursor, prekey_message->Y);
 
   size_t len = 0;
-  otr4_err_t err = serialize_dh_public_key(cursor, &len, prekey_message->B);
+  otrv4_err_t err = serialize_dh_public_key(cursor, &len, prekey_message->B);
   if (err) {
     free(profile);
     free(buff);
@@ -441,8 +441,9 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
-                                           const uint8_t *src, size_t src_len) {
+otrv4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
+                                            const uint8_t *src,
+                                            size_t src_len) {
   const uint8_t *cursor = src;
   int64_t len = src_len;
   size_t read = 0;
@@ -523,7 +524,7 @@ void dake_non_interactive_auth_message_destroy(
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
 }
 
-otr4_err_t dake_non_interactive_auth_message_asprintf(
+otrv4_err_t dake_non_interactive_auth_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_t *non_interactive_auth) {
   size_t data_msg_len = 0;
@@ -558,7 +559,7 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
 
   size_t len = 0;
 
-  otr4_err_t err =
+  otrv4_err_t err =
       serialize_dh_public_key(cursor, &len, non_interactive_auth->A);
   if (err) {
     free(our_profile);
@@ -591,7 +592,7 @@ otr4_err_t dake_non_interactive_auth_message_asprintf(
   return OTR4_SUCCESS;
 }
 
-otr4_err_t dake_non_interactive_auth_message_deserialize(
+otrv4_err_t dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_t *dst, const uint8_t *buffer,
     size_t buflen) {
   const uint8_t *cursor = buffer;

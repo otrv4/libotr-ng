@@ -83,7 +83,7 @@ void dh_free(void) {
   dh_initialized = 0;
 }
 
-otr4_err_t dh_keypair_generate(dh_keypair_t keypair) {
+otrv4_err_t dh_keypair_generate(dh_keypair_t keypair) {
   uint8_t hash[DH_KEY_SIZE];
 
   uint8_t *secbuf = malloc(DH_KEY_SIZE);
@@ -121,9 +121,9 @@ void dh_keypair_destroy(dh_keypair_t keypair) {
   dh_pub_key_destroy(keypair);
 }
 
-otr4_err_t dh_shared_secret(uint8_t *shared, size_t shared_bytes,
-                            const dh_private_key_t our_priv,
-                            const dh_public_key_t their_pub) {
+otrv4_err_t dh_shared_secret(uint8_t *shared, size_t shared_bytes,
+                             const dh_private_key_t our_priv,
+                             const dh_public_key_t their_pub) {
   gcry_mpi_t secret = gcry_mpi_snew(DH3072_MOD_LEN_BITS);
   gcry_mpi_powm(secret, their_pub, our_priv, DH3072_MODULUS);
   size_t written;
@@ -143,8 +143,8 @@ otr4_err_t dh_shared_secret(uint8_t *shared, size_t shared_bytes,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t dh_mpi_serialize(uint8_t *dst, size_t dst_len, size_t *written,
-                            const dh_mpi_t src) {
+otrv4_err_t dh_mpi_serialize(uint8_t *dst, size_t dst_len, size_t *written,
+                             const dh_mpi_t src) {
   gcry_error_t err =
       gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
   if (err)
@@ -153,8 +153,8 @@ otr4_err_t dh_mpi_serialize(uint8_t *dst, size_t dst_len, size_t *written,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer,
-                              size_t buflen, size_t *nread) {
+otrv4_err_t dh_mpi_deserialize(dh_mpi_t *dst, const uint8_t *buffer,
+                               size_t buflen, size_t *nread) {
   if (gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread))
     return OTR4_ERROR;
 

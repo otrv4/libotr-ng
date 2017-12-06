@@ -4,8 +4,8 @@
 #include "deserialize.h"
 #include "mpi.h"
 
-otr4_err_t deserialize_uint64(uint64_t *n, const uint8_t *buffer, size_t buflen,
-                              size_t *nread) {
+otrv4_err_t deserialize_uint64(uint64_t *n, const uint8_t *buffer,
+                               size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint64_t)) {
     return OTR4_ERROR;
   }
@@ -21,8 +21,8 @@ otr4_err_t deserialize_uint64(uint64_t *n, const uint8_t *buffer, size_t buflen,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t deserialize_uint32(uint32_t *n, const uint8_t *buffer, size_t buflen,
-                              size_t *nread) {
+otrv4_err_t deserialize_uint32(uint32_t *n, const uint8_t *buffer,
+                               size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint32_t)) {
     return OTR4_ERROR;
   }
@@ -35,8 +35,8 @@ otr4_err_t deserialize_uint32(uint32_t *n, const uint8_t *buffer, size_t buflen,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t deserialize_uint16(uint16_t *n, const uint8_t *buffer, size_t buflen,
-                              size_t *nread) {
+otrv4_err_t deserialize_uint16(uint16_t *n, const uint8_t *buffer,
+                               size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint16_t)) {
     return OTR4_ERROR;
   }
@@ -49,8 +49,8 @@ otr4_err_t deserialize_uint16(uint16_t *n, const uint8_t *buffer, size_t buflen,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t buflen,
-                             size_t *nread) {
+otrv4_err_t deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t buflen,
+                              size_t *nread) {
   if (buflen < sizeof(uint8_t)) {
     return OTR4_ERROR;
   }
@@ -63,8 +63,8 @@ otr4_err_t deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t buflen,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t deserialize_data(uint8_t **dst, const uint8_t *buffer, size_t buflen,
-                            size_t *read) {
+otrv4_err_t deserialize_data(uint8_t **dst, const uint8_t *buffer,
+                             size_t buflen, size_t *read) {
   size_t r = 0;
   uint32_t s = 0;
 
@@ -99,8 +99,8 @@ otr4_err_t deserialize_data(uint8_t **dst, const uint8_t *buffer, size_t buflen,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t deserialize_bytes_array(uint8_t *dst, size_t dstlen,
-                                   const uint8_t *buffer, size_t buflen) {
+otrv4_err_t deserialize_bytes_array(uint8_t *dst, size_t dstlen,
+                                    const uint8_t *buffer, size_t buflen) {
   if (buflen < dstlen) {
     return OTR4_ERROR;
   }
@@ -109,8 +109,8 @@ otr4_err_t deserialize_bytes_array(uint8_t *dst, size_t dstlen,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer,
-                                size_t buflen, size_t *read) {
+otrv4_err_t deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer,
+                                 size_t buflen, size_t *read) {
   otr_mpi_t mpi; // no need to free, because nothing is copied now
 
   if (otr_mpi_deserialize_no_copy(mpi, buffer, buflen, read)) {
@@ -124,13 +124,13 @@ otr4_err_t deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t deserialize_ec_point(ec_point_t point, const uint8_t *serialized) {
+otrv4_err_t deserialize_ec_point(ec_point_t point, const uint8_t *serialized) {
   return ec_point_deserialize(point, serialized);
 }
 
-otr4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
-                                        const uint8_t *serialized,
-                                        size_t ser_len, size_t *read) {
+otrv4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
+                                         const uint8_t *serialized,
+                                         size_t ser_len, size_t *read) {
   const uint8_t *cursor = serialized;
   size_t r = 0;
   uint16_t pubkey_type = 0;
@@ -154,9 +154,9 @@ otr4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t deserialize_otrv4_shared_prekey(otrv4_shared_prekey_t shared_prekey,
-                                           const uint8_t *serialized,
-                                           size_t ser_len, size_t *read) {
+otrv4_err_t deserialize_otrv4_shared_prekey(otrv4_shared_prekey_t shared_prekey,
+                                            const uint8_t *serialized,
+                                            size_t ser_len, size_t *read) {
   const uint8_t *cursor = serialized;
   size_t r = 0;
   uint16_t shared_prekey_type = 0;
@@ -181,8 +181,8 @@ otr4_err_t deserialize_otrv4_shared_prekey(otrv4_shared_prekey_t shared_prekey,
 }
 
 // TODO: check if return is necessesary
-otr4_err_t deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *serialized,
-                                 size_t ser_len) {
+otrv4_err_t deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *serialized,
+                                  size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES)
     return OTR4_ERROR;
 
@@ -191,9 +191,9 @@ otr4_err_t deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *serialized,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t deserialize_snizkpk_proof(snizkpk_proof_t *proof,
-                                     const uint8_t *serialized, size_t ser_len,
-                                     size_t *read) {
+otrv4_err_t deserialize_snizkpk_proof(snizkpk_proof_t *proof,
+                                      const uint8_t *serialized, size_t ser_len,
+                                      size_t *read) {
   if (ser_len < SNIZKPK_BYTES)
     return OTR4_ERROR;
 
@@ -237,9 +237,9 @@ otr4_err_t deserialize_snizkpk_proof(snizkpk_proof_t *proof,
   return OTR4_SUCCESS;
 }
 
-otr4_err_t otrv4_symmetric_key_deserialize(otrv4_keypair_t *pair,
-                                           const char *buff, size_t len) {
-  otr4_err_t err = OTR4_ERROR;
+otrv4_err_t otrv4_symmetric_key_deserialize(otrv4_keypair_t *pair,
+                                            const char *buff, size_t len) {
+  otrv4_err_t err = OTR4_ERROR;
 
   /* (((base64len+3) / 4) * 3) */
   unsigned char *dec = malloc(((len + 3) / 4) * 3);

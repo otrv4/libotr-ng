@@ -109,7 +109,7 @@ void key_manager_destroy(key_manager_t *manager) {
   manager->old_mac_keys = NULL;
 }
 
-otr4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
+otrv4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
   uint8_t sym[ED448_PRIVATE_BYTES];
   memset(sym, 0, ED448_PRIVATE_BYTES);
   random_bytes(sym, ED448_PRIVATE_BYTES);
@@ -159,8 +159,8 @@ void derive_chain_key_b(chain_key_t chain_key, const shared_secret_t shared) {
   derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic, shared);
 }
 
-otr4_err_t key_manager_new_ratchet(key_manager_t *manager,
-                                   const shared_secret_t shared) {
+otrv4_err_t key_manager_new_ratchet(key_manager_t *manager,
+                                    const shared_secret_t shared) {
   ratchet_t *ratchet = ratchet_new();
   if (ratchet == NULL) {
     return OTR4_ERROR;
@@ -281,7 +281,7 @@ chain_link_t *derive_next_chain_link(chain_link_t *previous) {
   return l;
 }
 
-otr4_err_t rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
+otrv4_err_t rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
   chain_link_t *last = (chain_link_t *)chain_get_last(head);
 
   int j = 0;
@@ -294,9 +294,9 @@ otr4_err_t rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
   return OTR4_SUCCESS;
 }
 
-otr4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
-                                               int message_id,
-                                               const key_manager_t *manager) {
+otrv4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
+                                                int message_id,
+                                                const key_manager_t *manager) {
 
   message_chain_t *chain = decide_between_chain_keys(
       manager->current, manager->our_ecdh->pub, manager->their_ecdh);
@@ -356,7 +356,7 @@ void calculate_shared_secret_from_tmp_key(shared_secret_t dst,
   hash_destroy(hd);
 }
 
-static otr4_err_t derive_sending_chain_key(key_manager_t *manager) {
+static otrv4_err_t derive_sending_chain_key(key_manager_t *manager) {
   message_chain_t *chain = decide_between_chain_keys(
       manager->current, manager->our_ecdh->pub, manager->their_ecdh);
   chain_link_t *last = (chain_link_t *)chain_get_last(chain->sending);
@@ -392,7 +392,7 @@ static void calculate_extra_key(key_manager_t *manager,
   memcpy(manager->extra_key, extra_key_buff, sizeof manager->extra_key);
 }
 
-static otr4_err_t calculate_brace_key(key_manager_t *manager) {
+static otrv4_err_t calculate_brace_key(key_manager_t *manager) {
   k_dh_t k_dh;
 
   if (manager->i % 3 == 0) {
@@ -410,7 +410,7 @@ static otr4_err_t calculate_brace_key(key_manager_t *manager) {
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
+static otrv4_err_t enter_new_ratchet(key_manager_t *manager) {
   k_ecdh_t k_ecdh;
   shared_secret_t shared;
 
@@ -440,7 +440,7 @@ static otr4_err_t enter_new_ratchet(key_manager_t *manager) {
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
+static otrv4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
   k_ecdh_t k_ecdh;
   shared_secret_t shared;
 
@@ -494,8 +494,8 @@ static otr4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
   return OTR4_SUCCESS;
 }
 
-otr4_err_t key_manager_ratcheting_init(int j, bool interactive,
-                                       key_manager_t *manager) {
+otrv4_err_t key_manager_ratcheting_init(int j, bool interactive,
+                                        key_manager_t *manager) {
   if (init_ratchet(manager, interactive))
     return OTR4_ERROR;
 
@@ -504,7 +504,7 @@ otr4_err_t key_manager_ratcheting_init(int j, bool interactive,
   return OTR4_SUCCESS;
 }
 
-static otr4_err_t rotate_keys(key_manager_t *manager) {
+static otrv4_err_t rotate_keys(key_manager_t *manager) {
   manager->i++;
   manager->j = 0;
 
@@ -514,7 +514,7 @@ static otr4_err_t rotate_keys(key_manager_t *manager) {
   return enter_new_ratchet(manager);
 }
 
-otr4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager) {
+otrv4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager) {
   if (manager->j == 0)
     return OTR4_SUCCESS;
 
@@ -543,10 +543,10 @@ static void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
                 sizeof(chain_key_t));
 }
 
-otr4_err_t key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
-                                                       m_mac_key_t mac_key,
-                                                       int message_id,
-                                                       key_manager_t *manager) {
+otrv4_err_t
+key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
+                                            m_mac_key_t mac_key, int message_id,
+                                            key_manager_t *manager) {
   chain_key_t receiving;
 
   if (key_manager_get_receiving_chain_key(receiving, message_id, manager) ==
@@ -574,7 +574,7 @@ static otrv4_bool_t should_ratchet(const key_manager_t *manager) {
   return otrv4_false;
 }
 
-otr4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager) {
+otrv4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager) {
   if (should_ratchet(manager) == otrv4_true) {
     return rotate_keys(manager);
   }
@@ -582,9 +582,9 @@ otr4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager) {
   return derive_sending_chain_key(manager);
 }
 
-otr4_err_t key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
-                                                     m_mac_key_t mac_key,
-                                                     key_manager_t *manager) {
+otrv4_err_t key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
+                                                      m_mac_key_t mac_key,
+                                                      key_manager_t *manager) {
   chain_key_t sending;
   int message_id = key_manager_get_sending_chain_key(sending, manager);
 
