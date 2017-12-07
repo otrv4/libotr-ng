@@ -225,7 +225,6 @@ void test_api_non_interactive_conversation(void) {
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
-  response_to_alice->to_send = NULL;
   otrv4_assert(send_non_interactive_auth_msg(&response_to_alice->to_send, bob,
                                              "") == OTR4_SUCCESS);
 
@@ -238,18 +237,17 @@ void test_api_non_interactive_conversation(void) {
   otrv4_assert(otrv4_receive_message(response_to_bob,
                                      response_to_alice->to_send,
                                      alice) == OTR4_SUCCESS);
-  free(response_to_alice->to_send);
-  response_to_alice->to_send = NULL;
+  otrv4_assert(response_to_alice->to_display == NULL);
 
-  free(response_to_bob->to_send);
-  response_to_bob->to_send = NULL;
+  otrv4_response_free_all(response_to_alice, response_to_bob);
+
+  free(server);
+  server = NULL;
 
   otrv4_assert_ec_public_key_eq(alice->keys->their_ecdh,
                                 bob->keys->our_ecdh->pub);
   otrv4_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
 
-  otrv4_assert(response_to_alice->to_display == NULL);
-  otrv4_assert(response_to_alice->to_send == NULL);
 
   // Check double ratchet is initialized
   otrv4_assert(alice->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
@@ -271,15 +269,6 @@ void test_api_non_interactive_conversation(void) {
   otrv4_assert(key_manager_get_receiving_chain_key(
                    alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
   otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
-
-  free(server);
-  server = NULL;
-
-  otrv4_response_free(response_to_alice);
-  response_to_alice = NULL;
-
-  otrv4_response_free(response_to_bob);
-  response_to_bob = NULL;
 
   int message_id;
 
@@ -308,13 +297,13 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_rec(err, "hi", response_to_alice);
     otrv4_assert(bob->keys->old_mac_keys);
 
-    free_message_and_response(response_to_alice, &to_send);
-
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, message_id - 1);
 
     // Next message Bob sends is a new "ratchet"
     g_assert_cmpint(bob->keys->i, ==, 0);
     g_assert_cmpint(bob->keys->j, ==, 0);
+
+    free_message_and_response(response_to_alice, &to_send);
   }
 
   for (message_id = 1; message_id < 4; message_id++) {
@@ -334,11 +323,11 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
 
-    free_message_and_response(response_to_bob, &to_send);
-
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(alice->keys->i, ==, 1);
     g_assert_cmpint(alice->keys->j, ==, 0);
+
+    free_message_and_response(response_to_bob, &to_send);
   }
 
   uint16_t tlv_len = 2;
@@ -405,12 +394,11 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrv4_assert(response_to_bob != NULL);
 
   otrv4_assert_cmpmem("?OTR:AAQP", response_to_bob->to_send, 9);
+
   // Bob receives prekey message
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
                                      bob) == OTR4_SUCCESS);
-  free(response_to_bob->to_send);
-  response_to_bob->to_send = NULL;
 
   otrv4_assert(bob->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
   otrv4_assert(bob->keys->current);
@@ -433,15 +421,19 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrv4_assert(otrv4_receive_message(response_to_bob,
                                      response_to_alice->to_send,
                                      alice) == OTR4_SUCCESS);
-  free(response_to_alice->to_send);
-  response_to_alice->to_send = NULL;
 
   otrv4_assert_ec_public_key_eq(alice->keys->their_ecdh,
                                 bob->keys->our_ecdh->pub);
   otrv4_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
 
   otrv4_assert_cmpmem("hi", response_to_bob->to_display, 3);
-  otrv4_assert(response_to_alice->to_send == NULL);
+
+  otrv4_response_free_all(response_to_alice, response_to_bob);
+
+  free(server->prekey_message);
+  server->prekey_message = NULL;
+  free(server);
+  server = NULL;
 
   // Check double ratchet is initialized
   otrv4_assert(alice->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
@@ -463,17 +455,6 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrv4_assert(key_manager_get_receiving_chain_key(
                    alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
   otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
-
-  free(response_to_bob->to_send);
-  response_to_bob->to_send = NULL;
-
-  free(server);
-  server = NULL;
-
-  otrv4_response_free(response_to_alice);
-  response_to_alice = NULL;
-  otrv4_response_free(response_to_bob);
-  response_to_bob = NULL;
 
   int message_id;
 
@@ -861,8 +842,7 @@ void test_api_multiple_clients(void) {
   err = otrv4_receive_message(phone_to_alice, alice_to_pc->to_send, bob_phone);
   assert_rec_msg_inc_state(err, phone_to_alice, bob_phone,
                            OTRV4_STATE_WAITING_AUTH_R, !send_response);
-  otrv4_response_free(phone_to_alice);
-  otrv4_response_free(alice_to_pc);
+  otrv4_response_free_all(phone_to_alice, alice_to_pc);
 
   // PHONE does NOT remove the private keys yet - needed for AUTH-I when it
   // actually receives an AUTH-R
@@ -879,8 +859,7 @@ void test_api_multiple_clients(void) {
   assert_rec_msg_inc_state(!err, alice_to_pc, alice, OTRV4_STATE_WAITING_AUTH_I,
                            !send_response);
 
-  otrv4_response_free(pc_to_alice);
-  otrv4_response_free(alice_to_pc);
+  otrv4_response_free_all(pc_to_alice, alice_to_pc);
 
   // PC receives AUTH-R again - ignores
   pc_to_alice = otrv4_response_new();
@@ -960,6 +939,7 @@ void test_api_smp(void) {
                OTR4_SUCCESS);
 
   otrv4_assert(!response_to_alice->to_send);
+
   free_message_and_response(response_to_alice, &to_send);
 
   // This will be called by bob when the OTRV4_SMPEVENT_ASK_FOR_SECRET is
@@ -978,12 +958,15 @@ void test_api_smp(void) {
   otrv4_assert(response_to_bob->to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9); // SMP3
 
+  free(to_send);
+  to_send = NULL;
+
   // Bob receives SMP3
   response_to_alice = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
                                      bob) == OTR4_SUCCESS);
-  free_message_and_response(response_to_bob, &to_send);
+  otrv4_response_free(response_to_bob);
 
   otrv4_assert(response_to_alice->to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", response_to_alice->to_send, 9); // SMP4
@@ -1001,7 +984,6 @@ void test_api_smp(void) {
   otrv4_assert(!response_to_bob->to_send);
 
   otrv4_response_free(response_to_bob);
-  response_to_bob = NULL;
 
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
@@ -1374,6 +1356,7 @@ void test_unreadable_flag() {
 
   assert_msg_sent(err, to_send);
   otrv4_assert(decoded[flag_position] == IGNORE_UNREADABLE);
+
   free(decoded);
   decoded = NULL;
 
@@ -1397,6 +1380,7 @@ void test_unreadable_flag() {
 
   assert_msg_sent(err, to_send);
   otrv4_assert(decoded[flag_position] == IGNORE_UNREADABLE);
+
   otrv4_tlv_free(tlv);
   free(decoded);
   decoded = NULL;
@@ -1423,7 +1407,9 @@ void test_unreadable_flag() {
   otrv4_assert(decoded[flag_position] != IGNORE_UNREADABLE);
 
   free(decoded);
+  decoded = NULL;
   free(to_send);
+  to_send = NULL;
 
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);

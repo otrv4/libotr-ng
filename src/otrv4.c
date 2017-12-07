@@ -390,11 +390,15 @@ void otrv4_response_free(otrv4_response_t *response) {
   if (!response)
     return;
 
-  free(response->to_display);
-  response->to_display = NULL;
+  if (response->to_display) {
+    free(response->to_display);
+    response->to_display = NULL;
+  }
 
-  free(response->to_send);
-  response->to_send = NULL;
+  if (response->to_send) {
+    free(response->to_send);
+    response->to_send = NULL;
+  }
 
   otrv4_tlv_free(response->tlvs);
   response->tlvs = NULL;
@@ -2138,6 +2142,7 @@ static otrv4_err_t receive_message_v4_only(otrv4_response_t *response,
   case IN_MSG_OTR_ENCODED:
     return receive_encoded_message(response, message, otr);
     break;
+
   case IN_MSG_OTR_ERROR:
     return receive_error_message(response, message, otr);
     break;
@@ -2645,7 +2650,8 @@ otrv4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr) {
 }
 
 otrv4_err_t otrv4_heartbeat_checker(string_t *to_send, otrv4_t *otr) {
-  if (difftime(time(0), HEARTBEAT(otr)->last_msg_sent) >= HEARTBEAT(otr)->time) {
+  if (difftime(time(0), HEARTBEAT(otr)->last_msg_sent) >=
+      HEARTBEAT(otr)->time) {
     const string_t heartbeat_msg = "";
     return otrv4_prepare_to_send_message(to_send, heartbeat_msg, NULL, otr);
   }
