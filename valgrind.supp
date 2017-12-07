@@ -88,16 +88,7 @@
    fun:otrl_init
 }
 {
-   I_have_no_idea
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:gen_prime
-   ...
-   fun:gcry_pk_genkey
-}
-{
-   I_have_no_idea_2
+   otrl_does_not_free_context_priv
    Memcheck:Leak
    fun:malloc
    fun:otrl_context_priv_new
@@ -106,15 +97,7 @@
    ...
 }
 {
-   I_have_no_idea_3
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:otrl_privkey_generate_calculate
-   ...
-}
-{
-   I_have_no_idea_4
+   I_have_no_idea_1
    Memcheck:Leak
    fun:malloc
    ...
