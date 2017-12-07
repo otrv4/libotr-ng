@@ -1441,13 +1441,19 @@ void test_heartbeat_messages() {
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 3);
 
-  alice_state->heartbeat->last_msg_sent = time(NULL) - 60;
+  // set heartbeat wait time
+  alice_state->heartbeat->time = 300;
+  bob_state->heartbeat->time = 100;
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
 
   string_t to_send = NULL;
   otrv4_err_t err;
+  time_t hundred_seconds_ago = time(0) - 100;
+
+  // set last_msg_sent time in the past
+  alice_state->heartbeat->last_msg_sent = hundred_seconds_ago;
 
   // Alice sends a data message with text
   err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, alice);
@@ -1455,7 +1461,38 @@ void test_heartbeat_messages() {
   assert_msg_sent(err, to_send);
   otrv4_assert(alice_state->heartbeat->last_msg_sent == time(0));
 
-  free(to_send);
+  // Bob receives the msg
+  otrv4_response_t *response_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(response_to_alice, to_send, bob);
+
+  assert_msg_rec(err, "hello", response_to_alice);
+  free_message_and_response(response_to_alice, &to_send);
+
+  // 100 seconds have passed
+  alice_state->heartbeat->last_msg_sent = hundred_seconds_ago;
+  bob_state->heartbeat->last_msg_sent = hundred_seconds_ago;
+
+  // Alice doesn't send a heartbeat
+  err = otrv4_heartbeat_checker(&to_send, alice);
+  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(to_send == NULL);
+  otrv4_assert(alice_state->heartbeat->last_msg_sent == hundred_seconds_ago);
+
+  // Bob sends a heartbeat
+  err = otrv4_heartbeat_checker(&to_send, bob);
+  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(to_send != NULL);
+  otrv4_assert(bob_state->heartbeat->last_msg_sent == time(0));
+
+  // Alice receives the heartbeat
+  otrv4_response_t *response_to_bob = otrv4_response_new();
+  err = otrv4_receive_message(response_to_bob, to_send, bob);
+
+  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(!response_to_bob->to_display);
+  otrv4_assert(!response_to_bob->to_send);
+
+  free_message_and_response(response_to_bob, &to_send);
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);

@@ -180,4 +180,6 @@ otrv4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
 
 const char *otr_error_message(otrv4_err_code_t err_code);
 
+otrv4_err_t otrv4_heartbeat_checker(string_t *to_send, otrv4_t *otr);
+
 #endif

@@ -23,6 +23,8 @@
 #define THEIR_ECDH(s) s->keys->their_ecdh
 #define THEIR_DH(s) s->keys->their_dh
 
+#define HEARTBEAT(s) s->conversation->client->heartbeat
+
 #define QUERY_MESSAGE_TAG_BYTES 5
 #define WHITESPACE_TAG_BASE_BYTES 16
 #define WHITESPACE_TAG_VERSION_BYTES 8
@@ -2253,7 +2255,7 @@ static otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
     // TODO: Change the spec to say this should be incremented after the message
     // is sent.
     otr->keys->j++;
-    otr->conversation->client->heartbeat->last_msg_sent = time(0);
+    HEARTBEAT(otr)->last_msg_sent = time(0);
     err = OTR4_SUCCESS;
   }
 
@@ -2644,4 +2646,12 @@ otrv4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr) {
     return OTR4_ERROR;
   }
   return OTR4_ERROR;
+}
+
+otrv4_err_t otrv4_heartbeat_checker(string_t *to_send, otrv4_t *otr) {
+  if (difftime(time(0), HEARTBEAT(otr)->last_msg_sent) >= HEARTBEAT(otr)->time) {
+    const string_t heartbeat_msg = "";
+    return otrv4_prepare_to_send_message(to_send, heartbeat_msg, NULL, otr);
+  }
+  return OTR4_SUCCESS;
 }
