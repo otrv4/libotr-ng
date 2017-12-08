@@ -36,6 +36,10 @@ matrix:
       dist: precise
       env: T=coverage
     - os: linux
+      dist: trusty
+      compiler: clang
+      env: T=style
+    - os: linux
       compiler: gcc
       dist: precise
       env: T=full-valgrind-checks
@@ -63,6 +67,7 @@ before_install:
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint && brew install valgrind && brew install curl && brew install glib; fi
 - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes; fi
 - if [[ "$T" = "coverage" ]]; then sudo apt-get install splint --quiet --assume-yes; fi
+- if [[ "$T" = "style" ]]; then sudo apt-get install clang-format-3.5 --quiet --assume-yes; fi
 
 before_script:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgcrypt && brew install libsodium; fi
@@ -105,6 +110,13 @@ script:
            ./autogen.sh
            ./configure --disable-shared
            make ci
+      fi
+  - |
+      if [ "$T" = "style" ]; then
+           ./autogen.sh
+           ./configure --disable-shared --enable-code-coverage
+           make ci
+           make code-style-doctor
       fi
   - |
       if [ "$T" = "ctgrind" ]; then

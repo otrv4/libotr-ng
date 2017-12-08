@@ -32,11 +32,11 @@ cache-check: check
 coverage-check: test
 	@make check-code-coverage
 
-code-style:
-	clang-format -style=llvm -i config.h src/*.h src/*.c src/**/*.h src/**/*.c
-
 code-style-doctor: code-style
 	git diff --exit-code .
+
+code-style:
+	clang-format -style=file -i config.h src/*.h src/*.c src/**/*.h src/**/*.c
 
 LOOPS = 10
 test-loop:

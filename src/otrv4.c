@@ -2073,7 +2073,7 @@ static otrv4_err_t receive_decoded_message(otrv4_response_t *response,
   case OTR_DATA_MSG_TYPE:
     return otrv4_receive_data_message(response, decoded, dec_len, otr);
   default:
-    // errror. bad message type
+    /* errror. bad message type */
     return OTR4_ERROR;
   }
 
@@ -2252,9 +2252,9 @@ static otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
   otrv4_err_t err = OTR4_ERROR;
 
   if (encrypt_data_message(data_msg, message, message_len, enc_key) ==
-         OTR4_SUCCESS &&
-     serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys, serlen,
-                                   data_msg) == OTR4_SUCCESS) {
+          OTR4_SUCCESS &&
+      serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys, serlen,
+                                    data_msg) == OTR4_SUCCESS) {
 
     // TODO: Change the spec to say this should be incremented after the message
     // is sent.
@@ -2337,8 +2337,8 @@ static otrv4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
   if (append_tlvs(&msg, &msg_len, message, tlvs))
     return OTR4_ERROR;
 
-  int is_heartbeat = strlen(message) == 0 &&
-                     otr->smp->state == SMPSTATE_EXPECT1 ? 1 : 0;
+  int is_heartbeat =
+      strlen(message) == 0 && otr->smp->state == SMPSTATE_EXPECT1 ? 1 : 0;
 
   otrv4_err_t err = send_data_message(to_send, msg, msg_len, otr, is_heartbeat);
   free(msg);
@@ -2599,10 +2599,11 @@ static otrv4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
   handle_smp_event_cb(event, otr->smp->progress, otr->smp->msg1->question,
                       otr->conversation);
 
+  // clang-format off
   if (smp_reply && otrv4_prepare_to_send_message(to_send, "", &smp_reply,
-                                                 otr) == OTR4_SUCCESS) {
+                                                 otr) == OTR4_SUCCESS)
     err = OTR4_SUCCESS;
-  }
+  // clang-format on
 
   otrv4_tlv_free(smp_reply);
   return err;

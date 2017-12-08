@@ -22,7 +22,7 @@ AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 
 # Align escaped newlines as far left as possible
-AlignEscapedNewlinesLeft: Left
+AlignEscapedNewlinesLeft: false
 
 # Align operands of binary and ternary expressions
 AlignOperands:   true

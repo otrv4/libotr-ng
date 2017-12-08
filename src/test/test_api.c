@@ -248,7 +248,6 @@ void test_api_non_interactive_conversation(void) {
                                 bob->keys->our_ecdh->pub);
   otrv4_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
 
-
   // Check double ratchet is initialized
   otrv4_assert(alice->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
   otrv4_assert(alice->keys->current);

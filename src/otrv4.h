@@ -57,9 +57,9 @@ typedef enum {
   OTRV4_VERSION_4 = 4
 } otrv4_version_t;
 
-typedef struct {
-  int allows;
-} otrv4_policy_t;
+// clang-format off
+typedef struct { int allows; } otrv4_policy_t;
+// clang-format on
 
 // TODO: This is a single instance conversation. Make it multi-instance.
 typedef struct otr4_conversation_state_t {
@@ -94,10 +94,12 @@ struct connection {
   fragment_context_t *frag_ctx;
 }; /* otrv4_t */
 
+// clang-format off
 // TODO: this a mock
 typedef struct {
   string_t prekey_message;
 } otrv4_server_t;
+// clang-format on
 
 typedef enum {
   IN_MSG_NONE = 0,
