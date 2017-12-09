@@ -178,7 +178,7 @@ static int otrv4_send_message(char **newmsg, const char *message,
     return 1;
 
   otrv4_err_t error =
-      otrv4_prepare_to_send_message(newmsg, message, &tlv, conv->conn);
+      otrv4_prepare_to_send_message(newmsg, message, &tlv, 0, conv->conn);
   otrv4_tlv_free(tlv);
 
   if (error == OTR4_STATE_NOT_ENCRYPTED)

@@ -24,16 +24,17 @@ data_message_t *data_message_new() {
 }
 
 void data_message_destroy(data_message_t *data_msg) {
+  data_msg->flags = 0;
+
   ec_point_destroy(data_msg->ecdh);
   dh_mpi_release(data_msg->dh);
   data_msg->dh = NULL;
 
   sodium_memzero(data_msg->nonce, sizeof data_msg->nonce);
-
   data_msg->enc_msg_len = 0;
+  // TODO: check if this free is always needed
   free(data_msg->enc_msg);
   data_msg->enc_msg = NULL;
-
   sodium_memzero(data_msg->mac, sizeof data_msg->mac);
 }
 

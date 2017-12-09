@@ -23,7 +23,7 @@ typedef enum {
 
 typedef enum {
   OTR4_ERR_NONE,
-  OTR4_ERR_MSG_NOT_PRIVATE, // TODO: this should be not encrypted
+  OTR4_ERR_MSG_NOT_PRIVATE,
   OTR4_ERR_MSG_UNDECRYPTABLE,
 } otrv4_err_code_t;
 

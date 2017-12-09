@@ -152,7 +152,7 @@ otrv4_err_t otrv4_receive_message(otrv4_response_t *response,
 
 otrv4_err_t otrv4_prepare_to_send_message(string_t *to_send,
                                           const string_t message, tlv_t **tlvs,
-                                          otrv4_t *otr);
+                                          uint8_t flags, otrv4_t *otr);
 
 otrv4_err_t otrv4_close(string_t *to_send, otrv4_t *otr);
 

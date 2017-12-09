@@ -93,7 +93,7 @@ void test_api_interactive_conversation(void) {
   otrv4_err_t err;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, alice);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
     assert_msg_sent(err, to_send);
     otrv4_assert(tlvs);
     otrv4_assert(!alice->keys->old_mac_keys);
@@ -119,7 +119,7 @@ void test_api_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlvs, bob);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -149,7 +149,7 @@ void test_api_interactive_conversation(void) {
   otrv4_assert(tlvs);
 
   // Bob sends a message with TLV
-  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, bob);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -282,7 +282,7 @@ void test_api_non_interactive_conversation(void) {
   alice->running_version = OTRV4_VERSION_4;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice);
     assert_msg_sent(err, to_send);
     otrv4_assert(!alice->keys->old_mac_keys);
 
@@ -307,7 +307,7 @@ void test_api_non_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, bob);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, 0, bob);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -335,7 +335,7 @@ void test_api_non_interactive_conversation(void) {
   otrv4_assert(tlvs);
 
   // Bob sends a message with TLV
-  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, bob);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -468,7 +468,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   alice->running_version = OTRV4_VERSION_4;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice);
     assert_msg_sent(err, to_send);
     otrv4_assert(!alice->keys->old_mac_keys);
 
@@ -493,7 +493,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, bob);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, 0, bob);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -521,7 +521,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrv4_assert(tlvs);
 
   // Bob sends a message with TLV
-  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, bob);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
@@ -575,7 +575,7 @@ void test_api_conversation_errors(void) {
   tlv_t *tlvs = NULL;
   otrv4_err_t err;
 
-  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
   assert_msg_sent(err, to_send);
   otrv4_assert(tlvs);
   otrv4_assert(!alice->keys->old_mac_keys);
@@ -737,7 +737,7 @@ void test_api_conversation_v3(void) {
   string_t to_send = NULL;
 
   // Alice sends a data message
-  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice) ==
+  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice) ==
                OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAMD", to_send, 9);
@@ -753,7 +753,7 @@ void test_api_conversation_v3(void) {
   free_message_and_response(response_to_alice, &to_send);
 
   // Bob sends a data message
-  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", &tlv, bob) ==
+  otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", &tlv, 0, bob) ==
                OTR4_SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAMD", to_send, 9);
@@ -1075,7 +1075,7 @@ void test_api_extra_sym_key(void) {
 
   otrv4_err_t err;
 
-  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice);
   assert_msg_sent(err, to_send);
   otrv4_assert(!alice->keys->old_mac_keys);
 
@@ -1156,7 +1156,7 @@ void test_dh_key_rotation(void) {
 
   for (ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
     // Bob sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, bob);
+    err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, 0, bob);
     assert_msg_sent(err, to_send);
 
     // New ratchet happened
@@ -1184,7 +1184,7 @@ void test_dh_key_rotation(void) {
     free_message_and_response(response_to_bob, &to_send);
 
     // Now alice ratchets and sends a data message
-    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, alice);
+    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(alice->keys->i, ==, ratchet_id + 1);
@@ -1241,7 +1241,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrv4_err_t err;
 
   // Alice sends a data message
-  err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, 0, alice);
   assert_msg_sent(err, to_send);
 
   // Follow up message
@@ -1265,7 +1265,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrv4_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Bob sends a data message
-  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, bob);
+  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, 0, bob);
   assert_msg_sent(err, to_send);
 
   // New ratchet
@@ -1289,7 +1289,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrv4_assert_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Alice sends a data message
-  err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "hi", NULL, 0, alice);
   assert_msg_sent(err, to_send);
 
   // New ratchet
@@ -1335,7 +1335,7 @@ void test_unreadable_flag() {
   otrv4_err_t err;
 
   // Alice sends a data message with text
-  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, 0, alice);
   size_t dec_len = 0;
   uint8_t *decoded = NULL;
   otrl_base64_otr_decode(to_send, &decoded, &dec_len);
@@ -1350,12 +1350,11 @@ void test_unreadable_flag() {
   decoded = NULL;
 
   // Alice sends a heartbeat message
-  err = otrv4_prepare_to_send_message(&to_send, "", NULL, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "", NULL, 0, alice);
   otrl_base64_otr_decode(to_send, &decoded, &dec_len);
 
   assert_msg_sent(err, to_send);
-  otrv4_assert(decoded[flag_position] == IGNORE_UNREADABLE);
-
+  otrv4_assert(decoded[flag_position] == OTR4_MSGFLAGS_IGNORE_UNREADABLE);
   free(decoded);
   decoded = NULL;
 
@@ -1374,12 +1373,11 @@ void test_unreadable_flag() {
   tlv_t *tlv = NULL;
 
   // Alice sends a heartbeat message with padding
-  err = otrv4_prepare_to_send_message(&to_send, "", &tlv, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "", &tlv, 0, alice);
   otrl_base64_otr_decode(to_send, &decoded, &dec_len);
 
   assert_msg_sent(err, to_send);
-  otrv4_assert(decoded[flag_position] == IGNORE_UNREADABLE);
-
+  otrv4_assert(decoded[flag_position] == OTR4_MSGFLAGS_IGNORE_UNREADABLE);
   otrv4_tlv_free(tlv);
   free(decoded);
   decoded = NULL;
@@ -1402,8 +1400,8 @@ void test_unreadable_flag() {
   otrl_base64_otr_decode(to_send, &decoded, &dec_len);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
 
-  // SMP should not have the IGNORE_UNREADABLE flag set
-  otrv4_assert(decoded[flag_position] != IGNORE_UNREADABLE);
+  // SMP should have the IGNORE_UNREADABLE flag set
+  otrv4_assert(decoded[flag_position] == OTR4_MSGFLAGS_IGNORE_UNREADABLE);
 
   free(decoded);
   decoded = NULL;
@@ -1441,7 +1439,7 @@ void test_heartbeat_messages() {
   alice_state->heartbeat->last_msg_sent = hundred_seconds_ago;
 
   // Alice sends a data message with text
-  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, alice);
+  err = otrv4_prepare_to_send_message(&to_send, "hello", NULL, 0, alice);
 
   assert_msg_sent(err, to_send);
   otrv4_assert(alice_state->heartbeat->last_msg_sent == time(0));

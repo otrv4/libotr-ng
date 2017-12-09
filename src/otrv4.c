@@ -1993,8 +1993,14 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
       return OTR4_MSG_NOT_VALID;
     }
 
-    if (decrypt_data_msg(response, enc_key, msg))
-      continue;
+    if ((decrypt_data_msg(response, enc_key, msg)) &&
+        (msg->flags != OTR4_MSGFLAGS_IGNORE_UNREADABLE)) {
+      sodium_memzero(enc_key, sizeof(enc_key));
+      sodium_memzero(mac_key, sizeof(mac_key));
+      response->to_display = NULL;
+      data_message_free(msg);
+      return OTR4_ERROR;
+    }
 
     // TODO: Securely delete receiving chain keys older than message_id-1.
     if (receive_tlvs(&reply_tlv, response, otr))
@@ -2004,7 +2010,7 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
 
     if (reply_tlv) {
       if (otrv4_prepare_to_send_message(&response->to_send, "", &reply_tlv,
-                                        otr))
+                                        OTR4_MSGFLAGS_IGNORE_UNREADABLE, otr))
         continue;
     }
 
@@ -2210,7 +2216,7 @@ static otrv4_err_t serialize_and_encode_data_msg(
 
 static otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
                                      size_t message_len, otrv4_t *otr,
-                                     int is_heartbeat) {
+                                     int isHeartbeat, unsigned char flags) {
   data_message_t *data_msg = NULL;
 
   size_t serlen = list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
@@ -2242,8 +2248,11 @@ static otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
     return OTR4_ERROR;
   }
 
-  if (is_heartbeat) {
-    data_msg->flags = IGNORE_UNREADABLE;
+  data_msg->flags = flags;
+
+  // TODO: remove this
+  if (isHeartbeat) {
+    data_msg->flags = OTR4_MSGFLAGS_IGNORE_UNREADABLE;
   }
 
   data_msg->sender_instance_tag = otr->our_instance_tag;
@@ -2323,7 +2332,8 @@ static otrv4_err_t append_tlvs(uint8_t **dst, size_t *dstlen,
 static otrv4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
                                                       const string_t message,
                                                       const tlv_t *tlvs,
-                                                      otrv4_t *otr) {
+                                                      otrv4_t *otr,
+                                                      unsigned char flags) {
   uint8_t *msg = NULL;
   size_t msg_len = 0;
 
@@ -2337,10 +2347,14 @@ static otrv4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
   if (append_tlvs(&msg, &msg_len, message, tlvs))
     return OTR4_ERROR;
 
+  // TODO: due to the addition of the flag to the tlvs, this will
+  // make the extra sym key, the disconneted and smp, a heartbeat
+  // msg as it is right now
   int is_heartbeat =
       strlen(message) == 0 && otr->smp->state == SMPSTATE_EXPECT1 ? 1 : 0;
 
-  otrv4_err_t err = send_data_message(to_send, msg, msg_len, otr, is_heartbeat);
+  otrv4_err_t err =
+      send_data_message(to_send, msg, msg_len, otr, is_heartbeat, flags);
   free(msg);
 
   return err;
@@ -2348,7 +2362,7 @@ static otrv4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
 
 otrv4_err_t otrv4_prepare_to_send_message(string_t *to_send,
                                           const string_t message, tlv_t **tlvs,
-                                          otrv4_t *otr) {
+                                          uint8_t flags, otrv4_t *otr) {
   if (!otr)
     return OTR4_ERROR;
 
@@ -2367,8 +2381,8 @@ otrv4_err_t otrv4_prepare_to_send_message(string_t *to_send,
   case OTRV4_VERSION_3:
     return otrv3_send_message(to_send, message, const_tlvs, otr->otr3_conn);
   case OTRV4_VERSION_4:
-    return otrv4_prepare_to_send_data_message(to_send, message, const_tlvs,
-                                              otr);
+    return otrv4_prepare_to_send_data_message(to_send, message, const_tlvs, otr,
+                                              flags);
   case OTRV4_VERSION_NONE:
     return OTR4_ERROR;
   }
@@ -2384,8 +2398,8 @@ static otrv4_err_t otrv4_close_v4(string_t *to_send, otrv4_t *otr) {
   if (!disconnected)
     return OTR4_ERROR;
 
-  otrv4_err_t err =
-      otrv4_prepare_to_send_message(to_send, "", &disconnected, otr);
+  otrv4_err_t err = otrv4_prepare_to_send_message(
+      to_send, "", &disconnected, OTR4_MSGFLAGS_IGNORE_UNREADABLE, otr);
 
   otrv4_tlv_free(disconnected);
   forget_our_keys(otr);
@@ -2440,7 +2454,8 @@ static otrv4_err_t otrv4_send_symkey_message_v4(string_t *to_send,
 
     // TODO: in otrv3 the extra_key is passed as a param to this
     // do the same?
-    if (otrv4_prepare_to_send_message(to_send, "", &tlv, otr)) {
+    if (otrv4_prepare_to_send_message(to_send, "", &tlv,
+                                      OTR4_MSGFLAGS_IGNORE_UNREADABLE, otr)) {
       otrv4_tlv_free(tlv);
       return OTR4_ERROR;
     }
@@ -2547,7 +2562,8 @@ otrv4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
     smp_start_tlv = otrv4_smp_initiate(
         get_my_user_profile(otr), otr->their_profile, question, q_len, secret,
         secretlen, otr->keys->ssid, otr->smp, otr->conversation);
-    if (otrv4_prepare_to_send_message(to_send, "", &smp_start_tlv, otr)) {
+    if (otrv4_prepare_to_send_message(to_send, "", &smp_start_tlv,
+                                      OTR4_MSGFLAGS_IGNORE_UNREADABLE, otr)) {
       otrv4_tlv_free(smp_start_tlv);
       return OTR4_ERROR;
     }
@@ -2601,7 +2617,7 @@ static otrv4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
 
   // clang-format off
   if (smp_reply && otrv4_prepare_to_send_message(to_send, "", &smp_reply,
-                                                 otr) == OTR4_SUCCESS)
+                                                 OTR4_MSGFLAGS_IGNORE_UNREADABLE, otr) == OTR4_SUCCESS)
     err = OTR4_SUCCESS;
   // clang-format on
 
@@ -2628,7 +2644,8 @@ otrv4_err_t otrv4_smp_abort_v4(string_t *to_send, otrv4_t *otr) {
   tlv_t *tlv = otrv4_tlv_new(OTRL_TLV_SMP_ABORT, 0, NULL);
 
   otr->smp->state = SMPSTATE_EXPECT1;
-  if (otrv4_prepare_to_send_message(to_send, "", &tlv, otr)) {
+  if (otrv4_prepare_to_send_message(to_send, "", &tlv,
+                                    OTR4_MSGFLAGS_IGNORE_UNREADABLE, otr)) {
     otrv4_tlv_free(tlv);
     return OTR4_ERROR;
   }
@@ -2654,7 +2671,7 @@ otrv4_err_t otrv4_heartbeat_checker(string_t *to_send, otrv4_t *otr) {
   if (difftime(time(0), HEARTBEAT(otr)->last_msg_sent) >=
       HEARTBEAT(otr)->time) {
     const string_t heartbeat_msg = "";
-    return otrv4_prepare_to_send_message(to_send, heartbeat_msg, NULL, otr);
+    return otrv4_prepare_to_send_message(to_send, heartbeat_msg, NULL, 0, otr);
   }
   return OTR4_SUCCESS;
 }
