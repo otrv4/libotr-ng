@@ -181,8 +181,10 @@ otrv4_t *otrv4_new(otr4_client_state_t *state, otrv4_policy_t policy) {
   otr->their_profile = NULL;
 
   otr->keys = malloc(sizeof(key_manager_t));
-  if (!otr->keys)
+  if (!otr->keys) {
+    free(otr);
     return NULL;
+  }
 
   key_manager_init(otr->keys);
   smp_context_init(otr->smp);
@@ -450,10 +452,9 @@ static otrv4_err_t otrv4_build_prekey_message(otrv4_server_t *server,
     return err;
   }
 
-  err = OTR4_SUCCESS;
   dake_prekey_message_free(m);
 
-  return err;
+  return OTR4_SUCCESS;
 }
 
 static otrv4_err_t reply_with_prekey_msg_to_server(otrv4_server_t *server,
@@ -500,10 +501,9 @@ static otrv4_err_t reply_with_identity_msg(otrv4_response_t *response,
     return err;
   }
 
-  err = OTR4_SUCCESS;
   dake_identity_message_free(m);
 
-  return err;
+  return OTR4_SUCCESS;
 }
 
 static otrv4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
@@ -544,7 +544,7 @@ static otrv4_err_t receive_tagged_plaintext(otrv4_response_t *response,
                                  &response->tlvs, message, otr->otr3_conn);
     break;
   case OTRV4_VERSION_NONE:
-    // ignore
+    /* ignore */
     return OTR4_SUCCESS;
   }
 
@@ -566,7 +566,7 @@ static otrv4_err_t receive_query_message(otrv4_response_t *response,
                                  &response->tlvs, message, otr->otr3_conn);
     break;
   case OTRV4_VERSION_NONE:
-    // ignore
+    /* ignore */
     return OTR4_SUCCESS;
   }
 
@@ -632,13 +632,11 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
   serialize_ec_point(ser_i_ecdh, i_ecdh);
   serialize_ec_point(ser_r_ecdh, r_ecdh);
 
-  if (serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh)) {
+  if (serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh))
     return OTR4_ERROR;
-  }
 
-  if (serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh)) {
+  if (serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh))
     return OTR4_ERROR;
-  }
 
   do {
     if (user_profile_asprintf(&ser_i_profile, &ser_i_profile_len, i_profile))
@@ -650,19 +648,17 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
     uint8_t *phi_val = NULL;
     size_t phi_len = strlen(phi) + 1;
     phi_val = malloc(phi_len);
-    if (!phi_val) {
+    if (!phi_val)
       return OTR4_ERROR;
-    }
 
     stpcpy((char *)phi_val, phi);
 
     shake_256_hash(hash_ser_i_profile, sizeof(hash_ser_i_profile),
                    ser_i_profile, ser_i_profile_len);
-
     shake_256_hash(hash_ser_r_profile, sizeof(hash_ser_r_profile),
                    ser_r_profile, ser_r_profile_len);
-
     shake_256_hash(hash_phi, sizeof(hash_phi), phi_val, phi_len);
+
     free(phi_val);
     phi_val = NULL;
 
@@ -831,13 +827,11 @@ static otrv4_err_t build_non_interactive_auth_message(
   serialize_ec_point(ser_i_ecdh, i_ecdh);
   serialize_ec_point(ser_r_ecdh, r_ecdh);
 
-  if (serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh)) {
+  if (serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh))
     return OTR4_ERROR;
-  }
 
-  if (serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh)) {
+  if (serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh))
     return OTR4_ERROR;
-  }
 
   serialize_otrv4_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
 
@@ -853,9 +847,8 @@ static otrv4_err_t build_non_interactive_auth_message(
     uint8_t *phi_val = NULL;
     size_t phi_len = strlen(phi) + 1;
     phi_val = malloc(phi_len);
-    if (!phi_val) {
+    if (!phi_val)
       return OTR4_ERROR;
-    }
 
     stpcpy((char *)phi_val, phi);
 
@@ -1034,7 +1027,7 @@ static otrv4_err_t encrypt_msg_on_non_interactive_auth(
   }
 
   // TODO: message is an UTF-8 string. Is there any problem to cast
-  // it to (unsigned char *)
+  // it to (unsigned char *)?
   err = crypto_stream_xor(c, message, message_len, nonce, enc_key);
   if (err) {
     free(c);
@@ -1266,15 +1259,19 @@ static otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
   }
 
   otr->their_profile = malloc(sizeof(user_profile_t));
-  if (!otr->their_profile)
-    return OTR4_ERROR;
+  if (!otr->their_profile) {
+    dake_prekey_message_destroy(m);
+    return err;
+  }
 
   key_manager_set_their_ecdh(m->Y, otr->keys);
   key_manager_set_their_dh(m->B, otr->keys);
   user_profile_copy(otr->their_profile, m->profile);
 
+  dake_prekey_message_destroy(m);
+
   if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
-    return OTR4_ERROR;
+    return err;
 
   memcpy(otr->keys->their_shared_prekey, otr->their_profile->shared_prekey,
          sizeof(otrv4_shared_prekey_t));
@@ -1282,12 +1279,10 @@ static otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
   /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) ||
    * ECDH(x, Pkb) || k_dh) */
   if (generate_tmp_key_r(otr->keys->tmp_key, otr) == OTR4_ERROR)
-    return OTR4_ERROR;
+    return err;
 
   if (double_ratcheting_init(0, false, otr))
-    return OTR4_ERROR;
-
-  dake_prekey_message_destroy(m);
+    return err;
 
   return OTR4_SUCCESS;
 }
@@ -1397,6 +1392,7 @@ static otrv4_bool_t verify_non_interactive_auth_message(
                                                    auth)) {
       free(t);
       t = NULL;
+      sodium_memzero(enc_key, sizeof(m_enc_key_t));
       return otrv4_false;
     }
 
@@ -1405,8 +1401,10 @@ static otrv4_bool_t verify_non_interactive_auth_message(
 
     string_t *dst = &response->to_display;
     uint8_t *plain = malloc(auth->enc_msg_len);
-    if (!plain)
+    if (!plain) {
+      sodium_memzero(enc_key, sizeof(m_enc_key_t));
       return otrv4_false;
+    }
 
     int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
                                 auth->nonce, enc_key);
@@ -1414,20 +1412,18 @@ static otrv4_bool_t verify_non_interactive_auth_message(
       *dst = otrv4_strndup((char *)plain, auth->enc_msg_len);
 
     free(plain);
+    sodium_memzero(enc_key, sizeof(enc_key));
 
     if (err != 0)
       return otrv4_false;
 
     uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
     if (to_store_mac == NULL) {
-      sodium_memzero(enc_key, sizeof(enc_key));
       return otrv4_false;
     }
 
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
-
-    sodium_memzero(enc_key, sizeof(enc_key));
   } else {
     /* auth_mac_k = KDF_2(0x01 || tmp_k */
     uint8_t magic[1] = {0x01};
@@ -1593,7 +1589,7 @@ static otrv4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,
   case OTRV4_STATE_NONE:
   case OTRV4_STATE_ENCRYPTED_MESSAGES:
   case OTRV4_STATE_FINISHED:
-    // Ignore the message, but it is not an error.
+    /* Ignore the message, but it is not an error. */
     err = OTR4_SUCCESS;
   }
 
@@ -2012,7 +2008,6 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
       response->to_send = otrv4_strdup(err_msg);
 
       free(err_msg);
-      free(msg);
 
       sodium_memzero(enc_key, sizeof(enc_key));
       sodium_memzero(mac_key, sizeof(mac_key));
@@ -2020,6 +2015,9 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
       data_message_free(msg);
       return OTR4_ERROR;
     }
+
+    sodium_memzero(enc_key, sizeof(enc_key));
+    sodium_memzero(mac_key, sizeof(mac_key));
 
     // TODO: Securely delete receiving chain keys older than message_id-1.
     if (receive_tlvs(&reply_tlv, response, otr))
@@ -2043,8 +2041,6 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
 
-    sodium_memzero(enc_key, sizeof(enc_key));
-    sodium_memzero(mac_key, sizeof(mac_key));
     data_message_free(msg);
     otrv4_tlv_free(reply_tlv);
     return OTR4_SUCCESS;
