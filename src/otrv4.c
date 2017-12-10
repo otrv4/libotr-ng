@@ -1995,6 +1995,21 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
 
     if ((decrypt_data_msg(response, enc_key, msg)) &&
         (msg->flags != OTR4_MSGFLAGS_IGNORE_UNREADABLE)) {
+      const char *err_code = otrv4_error_message(OTR4_ERR_MSG_UNDECRYPTABLE);
+      char *err_msg = malloc(strlen(OTR4_ERROR_PREFIX) +
+                             strlen(OTR4_ERROR_CODE_1) + strlen(err_code) + 1);
+      if (err_msg) {
+        strcpy(err_msg, OTR4_ERROR_PREFIX);
+        strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_1);
+        strcat(err_msg, err_code);
+      }
+      free((char *)err_code);
+
+      response->to_send = otrv4_strdup(err_msg);
+
+      free(err_msg);
+      free(msg);
+
       sodium_memzero(enc_key, sizeof(enc_key));
       sodium_memzero(mac_key, sizeof(mac_key));
       response->to_display = NULL;
@@ -2250,7 +2265,6 @@ static otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
 
   data_msg->flags = flags;
 
-  // TODO: remove this
   if (isHeartbeat) {
     data_msg->flags = OTR4_MSGFLAGS_IGNORE_UNREADABLE;
   }

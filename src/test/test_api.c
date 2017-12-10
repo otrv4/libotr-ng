@@ -584,6 +584,7 @@ void test_api_conversation_errors(void) {
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, message_id);
 
+  // To trigger the error message
   bob->state = OTRV4_STATE_START;
 
   // Bob receives a data message in the incorrect state
@@ -604,12 +605,33 @@ void test_api_conversation_errors(void) {
       otrv4_receive_message(response_to_bob, response_to_alice->to_send, alice);
 
   otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(response_to_bob);
   otrv4_assert_cmpmem(err_code, response_to_bob->to_display, strlen(err_code));
+
+  otrv4_response_free(response_to_alice);
+  otrv4_response_free(response_to_bob);
+  free(to_send);
+  to_send = NULL;
+
+  // Alice sends another data message
+  err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
+  assert_msg_sent(err, to_send);
+  otrv4_assert(tlvs);
+  otrv4_assert(!alice->keys->old_mac_keys);
+
+  bob->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
+  bob->keys->j = 15;
+
+  // Bob receives a non valid data message
+  response_to_alice = otrv4_response_new();
+  err = otrv4_receive_message(response_to_alice, to_send, bob);
+
+  otrv4_assert(err == OTR4_MSG_NOT_VALID);
+  otrv4_assert(response_to_alice->to_send == NULL);
 
   otrv4_tlv_free(tlvs);
 
   free_message_and_response(response_to_alice, &to_send);
-  otrv4_response_free(response_to_bob);
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
