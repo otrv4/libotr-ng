@@ -1129,11 +1129,13 @@ static otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
                        THEIR_ECDH(otr),                    /* g^i -- Y */
                        t, t_len);
 
+  sodium_memzero(auth->nonce, DATA_MSG_NONCE_BYTES);
+
   if (message != NULL) {
     uint8_t nonce[DATA_MSG_NONCE_BYTES];
     uint8_t *ser_data_msg = NULL;
 
-    memcpy(nonce, &t, DATA_MSG_NONCE_BYTES);
+    memcpy(nonce, t, DATA_MSG_NONCE_BYTES);
 
     if (encrypt_msg_on_non_interactive_auth(auth, message, msglen, nonce,
                                             otr) == OTR4_ERROR) {
@@ -1303,6 +1305,8 @@ otrv4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
 
     stpcpy((char *)c, message);
   }
+
+  *dst = NULL;
 
   return reply_with_non_interactive_auth_msg(dst, c, clen, otr);
 }
