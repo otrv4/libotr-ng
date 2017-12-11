@@ -946,7 +946,7 @@ const char *otrv4_error_message(otrv4_err_code_t err_code) {
   case OTR4_ERR_NONE:
     break;
   case OTR4_ERR_MSG_NOT_PRIVATE:
-    msg = strdup("OTR4_ERR_MSG_NOT_PRIVATE");
+    msg = strdup("OTR4_ERR_MSG_NOT_PRIVATE_STATE");
     break;
   case OTR4_ERR_MSG_UNDECRYPTABLE:
     msg = strdup("OTR3_ERR_MSG_UNDECRYPTABLE");
@@ -1993,27 +1993,36 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
       return OTR4_MSG_NOT_VALID;
     }
 
-    if ((decrypt_data_msg(response, enc_key, msg)) &&
-        (msg->flags != OTR4_MSGFLAGS_IGNORE_UNREADABLE)) {
-      const char *err_code = otrv4_error_message(OTR4_ERR_MSG_UNDECRYPTABLE);
-      char *err_msg = malloc(strlen(OTR4_ERROR_PREFIX) +
-                             strlen(OTR4_ERROR_CODE_1) + strlen(err_code) + 1);
-      if (err_msg) {
-        strcpy(err_msg, OTR4_ERROR_PREFIX);
-        strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_1);
-        strcat(err_msg, err_code);
+    if (decrypt_data_msg(response, enc_key, msg)) {
+      if (msg->flags != OTR4_MSGFLAGS_IGNORE_UNREADABLE) {
+        const char *err_code = otrv4_error_message(OTR4_ERR_MSG_UNDECRYPTABLE);
+        char *err_msg =
+            malloc(strlen(OTR4_ERROR_PREFIX) + strlen(OTR4_ERROR_CODE_1) +
+                   strlen(err_code) + 1);
+        if (err_msg) {
+          strcpy(err_msg, OTR4_ERROR_PREFIX);
+          strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_1);
+          strcat(err_msg, err_code);
+        }
+        free((char *)err_code);
+
+        response->to_send = otrv4_strdup(err_msg);
+
+        free(err_msg);
+        sodium_memzero(enc_key, sizeof(enc_key));
+        sodium_memzero(mac_key, sizeof(mac_key));
+        response->to_display = NULL;
+        data_message_free(msg);
+
+        return OTR4_ERROR;
+      } else if (msg->flags == OTR4_MSGFLAGS_IGNORE_UNREADABLE) {
+        sodium_memzero(enc_key, sizeof(enc_key));
+        sodium_memzero(mac_key, sizeof(mac_key));
+        response->to_display = NULL;
+        data_message_free(msg);
+
+        return OTR4_ERROR;
       }
-      free((char *)err_code);
-
-      response->to_send = otrv4_strdup(err_msg);
-
-      free(err_msg);
-
-      sodium_memzero(enc_key, sizeof(enc_key));
-      sodium_memzero(mac_key, sizeof(mac_key));
-      response->to_display = NULL;
-      data_message_free(msg);
-      return OTR4_ERROR;
     }
 
     sodium_memzero(enc_key, sizeof(enc_key));
