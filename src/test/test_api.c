@@ -628,6 +628,7 @@ void test_api_conversation_errors(void) {
 
   otrv4_assert(err == OTR4_MSG_NOT_VALID);
   otrv4_assert(response_to_alice->to_send == NULL);
+  otrv4_assert(response_to_alice->warning == OTRV4_WARN_RECEIVED_NOT_VALID);
 
   otrv4_tlv_free(tlvs);
 

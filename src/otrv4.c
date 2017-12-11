@@ -1990,6 +1990,7 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
       response->to_display = NULL;
       data_message_free(msg);
 
+      response->warning = OTRV4_WARN_RECEIVED_NOT_VALID;
       return OTR4_MSG_NOT_VALID;
     }
 

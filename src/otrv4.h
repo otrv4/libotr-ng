@@ -112,7 +112,8 @@ typedef enum {
 
 typedef enum {
   OTRV4_WARN_NONE = 0,
-  OTRV4_WARN_RECEIVED_UNENCRYPTED
+  OTRV4_WARN_RECEIVED_UNENCRYPTED,
+  OTRV4_WARN_RECEIVED_NOT_VALID
 } otrv4_warning_t;
 
 typedef struct {
