@@ -98,7 +98,7 @@ static void identity_message_fixture_setup(identity_message_fixture_t *fixture,
   otrv4_assert(ec_point_valid(fixture->shared_prekey->pub) == OTR4_SUCCESS);
 
   memcpy(fixture->profile->shared_prekey, fixture->shared_prekey->pub,
-         sizeof(otrv4_shared_prekey_t));
+         sizeof(otrv4_shared_prekey_pub_t));
 
   otrv4_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 60 * 60;
@@ -134,7 +134,7 @@ static void prekey_message_fixture_setup(prekey_message_fixture_t *fixture,
   otrv4_assert(ec_point_valid(fixture->shared_prekey->pub) == OTR4_SUCCESS);
 
   memcpy(fixture->profile->shared_prekey, fixture->shared_prekey->pub,
-         sizeof(otrv4_shared_prekey_t));
+         sizeof(otrv4_shared_prekey_pub_t));
 
   otrv4_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 60 * 60;

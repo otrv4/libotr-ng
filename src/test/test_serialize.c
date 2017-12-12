@@ -76,7 +76,7 @@ void test_ser_des_otrv4_public_key() {
 
 void test_ser_des_otrv4_shared_prekey() {
   otrv4_shared_prekey_pair_t *shared_prekey = otrv4_shared_prekey_pair_new();
-  otrv4_shared_prekey_t deserialized;
+  otrv4_shared_prekey_pub_t deserialized;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrv4_shared_prekey_pair_generate(shared_prekey, sym);
 

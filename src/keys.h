@@ -9,9 +9,9 @@
 #define ED448_SHARED_PREKEY_BYTES 2 + ED448_POINT_BYTES
 
 typedef ec_point_t otrv4_public_key_t;
-typedef ec_point_t otrv4_shared_prekey_t; // TODO: should be called public
 typedef ec_scalar_t otrv4_private_key_t;
-typedef ec_scalar_t otrv4_shared_prekey_private_key_t;
+typedef ec_point_t otrv4_shared_prekey_pub_t;
+typedef ec_scalar_t otrv4_shared_prekey_priv_t;
 
 typedef struct {
   /* the private key is this symmetric key, and not the scalar serialized */
@@ -26,8 +26,8 @@ typedef struct {
   /* the private key is this symmetric key, and not the scalar serialized */
   uint8_t sym[ED448_PRIVATE_BYTES];
 
-  otrv4_shared_prekey_t pub;
-  otrv4_shared_prekey_private_key_t priv;
+  otrv4_shared_prekey_pub_t pub;
+  otrv4_shared_prekey_priv_t priv;
 } otrv4_shared_prekey_pair_t;
 
 otrv4_keypair_t *otrv4_keypair_new(void);

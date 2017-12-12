@@ -23,12 +23,12 @@ size_t serialize_uint32(uint8_t *dst, const uint32_t data) {
   return serialize_uint(dst, data, sizeof(uint32_t));
 }
 
-size_t serialize_uint16(uint8_t *dst, const uint16_t data) {
-  return serialize_uint(dst, data, sizeof(uint16_t));
-}
-
 size_t serialize_uint8(uint8_t *dst, const uint8_t data) {
   return serialize_uint(dst, data, sizeof(uint8_t));
+}
+
+size_t serialize_uint16(uint8_t *dst, const uint16_t data) {
+  return serialize_uint(dst, data, sizeof(uint16_t));
 }
 
 size_t serialize_bytes_array(uint8_t *target, const uint8_t *data, size_t len) {
@@ -96,7 +96,7 @@ size_t serialize_otrv4_public_key(uint8_t *dst, const otrv4_public_key_t pub) {
 
 size_t
 serialize_otrv4_shared_prekey(uint8_t *dst,
-                              const otrv4_shared_prekey_t shared_prekey) {
+                              const otrv4_shared_prekey_pub_t shared_prekey) {
   uint8_t *cursor = dst;
   cursor += serialize_uint16(cursor, ED448_SHARED_PREKEY_TYPE);
   cursor += serialize_ec_point(cursor, shared_prekey);

@@ -241,7 +241,7 @@ user_profile_build(const string_t versions, otrv4_keypair_t *keypair,
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
 
   memcpy(profile->shared_prekey, shared_prekey_pair->pub,
-         sizeof(otrv4_shared_prekey_t));
+         sizeof(otrv4_shared_prekey_pub_t));
 
   if (user_profile_sign(profile, keypair)) {
     user_profile_free(profile);

@@ -36,7 +36,8 @@ size_t serialize_snizkpk_proof(uint8_t *dst, const snizkpk_proof_t *proof);
 
 size_t serialize_otrv4_public_key(uint8_t *dst, const otrv4_public_key_t);
 
-size_t serialize_otrv4_shared_prekey(uint8_t *dst,
-                                     const otrv4_shared_prekey_t shared_prekey);
+size_t
+serialize_otrv4_shared_prekey(uint8_t *dst,
+                              const otrv4_shared_prekey_pub_t shared_prekey);
 
 #endif

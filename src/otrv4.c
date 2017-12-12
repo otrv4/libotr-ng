@@ -828,7 +828,7 @@ static otrv4_err_t build_non_interactive_auth_message(
     uint8_t **msg, size_t *msg_len, const user_profile_t *i_profile,
     const user_profile_t *r_profile, const ec_point_t i_ecdh,
     const ec_point_t r_ecdh, const dh_mpi_t i_dh, const dh_mpi_t r_dh,
-    const otrv4_shared_prekey_t r_shared_prekey, char *phi) {
+    const otrv4_shared_prekey_pub_t r_shared_prekey, char *phi) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
@@ -1295,7 +1295,7 @@ static otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
     return err;
 
   memcpy(otr->keys->their_shared_prekey, otr->their_profile->shared_prekey,
-         sizeof(otrv4_shared_prekey_t));
+         sizeof(otrv4_shared_prekey_pub_t));
 
   /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) ||
    * ECDH(x, Pkb) || k_dh) */

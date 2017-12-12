@@ -39,8 +39,8 @@ typedef struct {
   ec_point_t their_ecdh;
   dh_public_key_t their_dh;
 
-  otrv4_shared_prekey_t our_shared_prekey;
-  otrv4_shared_prekey_t their_shared_prekey;
+  otrv4_shared_prekey_pub_t our_shared_prekey;
+  otrv4_shared_prekey_pub_t their_shared_prekey;
 
   /* Data message context */
   int i, j; // TODO: We need to add k (maybe), but why dont we need to add a

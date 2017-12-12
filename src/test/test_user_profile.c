@@ -22,7 +22,7 @@ void test_user_profile_serializes_body() {
   otrv4_shared_prekey_pair_t shared_prekey[1];
   otrv4_shared_prekey_pair_generate(shared_prekey, sym);
   memcpy(profile->shared_prekey, shared_prekey->pub,
-         sizeof(otrv4_shared_prekey_t));
+         sizeof(otrv4_shared_prekey_pub_t));
 
   otrv4_assert(profile != NULL);
   profile->expires = 15;
@@ -126,7 +126,7 @@ void test_user_profile_deserializes() {
   otrv4_shared_prekey_pair_t shared_prekey[1];
   otrv4_shared_prekey_pair_generate(shared_prekey, sym);
   memcpy(profile->shared_prekey, shared_prekey->pub,
-         sizeof(otrv4_shared_prekey_t));
+         sizeof(otrv4_shared_prekey_pub_t));
 
   otrv4_assert(profile != NULL);
   user_profile_sign(profile, keypair);
