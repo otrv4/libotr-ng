@@ -56,6 +56,7 @@ void test_defragment_valid_message(void) {
   otrv4_assert(context->status == OTR4_FRAGMENT_COMPLETE);
 
   free(unfrag);
+  unfrag = NULL;
   fragment_context_free(context);
 }
 
@@ -76,6 +77,7 @@ void test_defragment_single_fragment(void) {
   otrv4_assert(context->status == OTR4_FRAGMENT_COMPLETE);
 
   free(unfrag);
+  unfrag = NULL;
   fragment_context_free(context);
 }
 
@@ -93,6 +95,7 @@ void test_defragment_without_comma_fails(void) {
   g_assert_cmpstr(unfrag, ==, NULL);
 
   free(unfrag);
+  unfrag = NULL;
   fragment_context_free(context);
 }
 
@@ -132,6 +135,7 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
   g_assert_cmpint(context->K, ==, 0);
 
   free(unfrag);
+  unfrag = NULL;
   fragment_context_free(context);
 }
 
@@ -151,5 +155,6 @@ void test_defragment_fails_for_invalid_tag(void) {
   otrv4_assert(context->status == OTR4_FRAGMENT_COMPLETE);
 
   free(unfrag);
+  unfrag = NULL;
   fragment_context_free(context);
 }

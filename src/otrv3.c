@@ -444,6 +444,7 @@ void otr3_conn_free(otr3_conn_t *conn) {
   conn->peer = NULL;
 
   free(conn);
+  conn = NULL;
 }
 
 otrv4_err_t otrv3_send_message(char **newmessage, const char *message,

@@ -119,6 +119,7 @@ void test_data_message_serializes() {
 
   data_message_free(data_msg);
   free(serialized);
+  serialized = NULL;
 }
 
 void test_data_message_deserializes() {
@@ -165,4 +166,5 @@ void test_data_message_deserializes() {
   data_message_free(data_msg);
   data_message_free(deserialized);
   free(serialized);
+  serialized = NULL;
 }

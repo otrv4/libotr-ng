@@ -56,6 +56,7 @@ void user_profile_destroy(user_profile_t *profile) {
 void user_profile_free(user_profile_t *profile) {
   user_profile_destroy(profile);
   free(profile);
+  profile = NULL;
 }
 
 static int user_profile_body_serialize(uint8_t *dst,
@@ -106,6 +107,7 @@ otrv4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
   buff = malloc(s);
   if (!buff) {
     free(body);
+    body = NULL;
     return OTR4_ERROR;
   }
 
@@ -120,6 +122,8 @@ otrv4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
     *nbytes = s;
 
   free(body);
+  body = NULL;
+
   return OTR4_SUCCESS;
 }
 

@@ -44,7 +44,6 @@ void test_list_get_last() {
   g_assert_cmpint(one, ==, *((int *)last->data));
 
   last->data = NULL;
-  free(last->data);
 
   list_free_nodes(last->next);
   list_free_nodes(list);

@@ -52,6 +52,7 @@ void ratchet_free(ratchet_t *ratchet) {
   ratchet->chain_b->next = NULL;
 
   free(ratchet);
+  ratchet = NULL;
 }
 
 void key_manager_init(key_manager_t *manager) // make like ratchet_new?
@@ -252,6 +253,7 @@ int key_manager_get_sending_chain_key(chain_key_t sending,
   const chain_link_t *last = chain_get_last(chain->sending);
   memcpy(sending, last->key, sizeof(chain_key_t));
   free(chain);
+  chain = NULL;
 
   return last->id;
 }
@@ -302,11 +304,14 @@ otrv4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
       manager->current, manager->our_ecdh->pub, manager->their_ecdh);
   if (rebuild_chain_keys_up_to(message_id, chain->receiving) == OTR4_ERROR) {
     free(chain);
+    chain = NULL;
     return OTR4_ERROR;
   }
 
   const chain_link_t *link = chain_get_by_id(message_id, chain->receiving);
   free(chain);
+  chain = NULL;
+
   if (link == NULL)
     return OTR4_ERROR; /* message id not found. Should have been generated at
                         rebuild_chain_keys_up_to */
@@ -361,6 +366,7 @@ static otrv4_err_t derive_sending_chain_key(key_manager_t *manager) {
       manager->current, manager->our_ecdh->pub, manager->their_ecdh);
   chain_link_t *last = (chain_link_t *)chain_get_last(chain->sending);
   free(chain);
+  chain = NULL;
 
   chain_link_t *l = derive_next_chain_link(last);
   if (l == NULL)

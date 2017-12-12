@@ -31,6 +31,7 @@ void otr4_message_free(otr4_message_to_send_t *message) {
   message->total = 0;
 
   free(message);
+  message = NULL;
 }
 
 fragment_context_t *fragment_context_new(void) {
@@ -51,6 +52,7 @@ void fragment_context_free(fragment_context_t *context) {
   free(context->fragment);
   context->fragment = NULL;
   free(context);
+  context = NULL;
 }
 
 otrv4_err_t otr4_fragment_message(int max_size,
@@ -105,6 +107,7 @@ otrv4_err_t otr4_fragment_message(int max_size,
       }
 
       free(piece_data);
+      piece_data = NULL;
       free(pieces);
       pieces = NULL;
 
@@ -119,6 +122,7 @@ otrv4_err_t otr4_fragment_message(int max_size,
     pieces[current_frag - 1] = piece;
 
     free(piece_data);
+    piece_data = NULL;
     index_len += piece_len;
     message += piece_len;
   }
@@ -130,6 +134,7 @@ otrv4_err_t otr4_fragment_message(int max_size,
 
 static void initialize_fragment_context(fragment_context_t *context) {
   free(context->fragment);
+  context->fragment = NULL;
   context->fragment = otrv4_strdup("");
   context->fragment_len = 0;
 

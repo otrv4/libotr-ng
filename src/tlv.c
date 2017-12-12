@@ -67,6 +67,8 @@ static tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
   } while (0);
 
   free(tlv);
+  tlv = NULL;
+
   return NULL;
 }
 
@@ -154,6 +156,7 @@ tlv_t *otrv4_padding_tlv_new(size_t len) {
   random_bytes(data, len);
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, len, data);
   free(data);
+  data = NULL;
 
   return tlv;
 }

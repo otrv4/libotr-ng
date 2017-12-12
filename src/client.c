@@ -32,6 +32,7 @@ static void conversation_free(void *data) {
   conv->conn = NULL;
 
   free(conv);
+  conv = NULL;
 }
 
 otr4_client_t *otr4_client_new(otr4_client_state_t *state) {
@@ -55,6 +56,7 @@ void otr4_client_free(otr4_client_t *client) {
   client->conversations = NULL;
 
   free(client);
+  client = NULL;
 }
 
 // TODO: There may be multiple conversations with the same recipient if they
@@ -126,7 +128,7 @@ static otrv4_t *create_connection_for(const char *recipient,
 
   conn = otrv4_new(client->state, get_policy_for(recipient));
   if (!conn) {
-    free(otr3_conn);
+    otr3_conn_free(otr3_conn);
     return NULL;
   }
 
@@ -211,6 +213,7 @@ int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
   uint32_t their_tag = conv->conn->their_instance_tag;
   err = otr4_fragment_message(mms, *newmessage, our_tag, their_tag, to_send);
   free(to_send);
+  to_send = NULL;
 
   return err != OTR4_SUCCESS;
 }
@@ -281,6 +284,7 @@ int otr4_client_receive(char **newmessage, char **todisplay,
     return OTR4_CLIENT_ERROR_MSG_NOT_VALID;
 
   free(unfrag_msg);
+  unfrag_msg = NULL;
 
   if (response->to_send)
     *newmessage = otrv4_strdup(response->to_send);
@@ -337,7 +341,6 @@ int otr4_client_disconnect(char **newmsg, const char *recipient,
 
   destroy_client_conversation(conv, client);
   conversation_free(conv);
-  conv = NULL;
 
   return 0;
 }

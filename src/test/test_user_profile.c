@@ -60,6 +60,7 @@ void test_user_profile_serializes_body() {
                       ED448_SHARED_PREKEY_BYTES);
 
   free(serialized);
+  serialized = NULL;
   user_profile_free(profile);
 }
 
@@ -108,9 +109,11 @@ void test_user_profile_serializes() {
                       serialized + body_len + sizeof(eddsa_signature_t),
                       sizeof(expected_transitional_signature));
 
-  user_profile_free(profile);
   free(body);
+  body = NULL;
   free(serialized);
+  serialized = NULL;
+  user_profile_free(profile);
 }
 
 void test_user_profile_deserializes() {
@@ -137,9 +140,10 @@ void test_user_profile_deserializes() {
                                         NULL) == OTR4_SUCCESS);
   otrv4_assert_user_profile_eq(deserialized, profile);
 
+  free(serialized);
+  serialized = NULL;
   user_profile_free(profile);
   user_profile_free(deserialized);
-  free(serialized);
 }
 
 void test_user_profile_signs_and_verify() {

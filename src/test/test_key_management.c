@@ -52,6 +52,7 @@ void test_derive_ratchet_keys() {
 
   key_manager_destroy(manager);
   free(manager);
+  manager = NULL;
 }
 
 void test_key_manager_destroy() {

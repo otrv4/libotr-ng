@@ -36,6 +36,7 @@ void otr4_user_state_free(otr4_userstate_t *state) {
   state->userstate_v3 = NULL;
 
   free(state);
+  state = NULL;
 }
 
 static int find_state_by_client_id(const void *current, const void *wanted) {

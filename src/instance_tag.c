@@ -46,4 +46,5 @@ void otr4_instag_free(otrv4_instag_t *instag) {
   instag->protocol = NULL;
 
   free(instag);
+  instag = NULL;
 }

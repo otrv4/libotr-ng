@@ -60,6 +60,7 @@ void otr4_client_state_free(otr4_client_state_t *state) {
   state->heartbeat = NULL;
 
   free(state);
+  state = NULL;
 }
 
 // TODO: There's no API that allows us to simply write all private keys to the
@@ -123,6 +124,7 @@ int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
 
   err = fputs(key, privf);
   free(key);
+  key = NULL;
 
   if (EOF == err)
     return -3;
@@ -161,11 +163,13 @@ int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
   len = getline(&line, &cap, privf);
   if (len < 0) {
     free(line);
+    line = NULL;
     return -3;
   }
 
   err = otrv4_symmetric_key_deserialize(state->keypair, line, len - 1);
   free(line);
+  line = NULL;
 
   if (err) {
     otrv4_keypair_free(state->keypair);

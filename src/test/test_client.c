@@ -908,8 +908,10 @@ void test_client_receives_fragmented_message(void) {
 
   g_assert_cmpstr(todisplay, ==, "Receiving fragmented plaintext");
 
-  otr4_message_free(fmsg);
   free(todisplay);
+  todisplay = NULL;
+
+  otr4_message_free(fmsg);
   otrl_userstate_free(alice_state->userstate);
   otr4_client_state_free(alice_state);
   otr4_client_free(alice);
@@ -976,6 +978,8 @@ void test_client_sends_fragmented_message(void) {
   from_bob = NULL;
 
   free(todisplay);
+  todisplay = NULL;
+
   otr4_message_free(to_send);
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);

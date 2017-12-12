@@ -45,6 +45,7 @@ void data_message_free(data_message_t *data_msg) {
   data_message_destroy(data_msg);
 
   free(data_msg);
+  data_msg = NULL;
 }
 
 otrv4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
@@ -67,6 +68,7 @@ otrv4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
   size_t len = 0;
   if (serialize_dh_public_key(cursor, &len, data_msg->dh)) {
     free(dst);
+    dst = NULL;
     return OTR4_ERROR;
   }
   cursor += len;
@@ -187,6 +189,7 @@ otrv4_bool_t valid_data_message(m_mac_key_t mac_key,
                 bodylen);
 
   free(body);
+  body = NULL;
 
   if (mem_diff(mac_tag, data_msg->mac, sizeof mac_tag) != 0) {
     sodium_memzero(mac_tag, sizeof mac_tag);

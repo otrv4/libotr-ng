@@ -256,5 +256,6 @@ otrv4_err_t otrv4_symmetric_key_deserialize(otrv4_keypair_t *pair,
     otrv4_keypair_generate(pair, dec);
 
   free(dec);
+  dec = NULL;
   return err;
 }

@@ -71,7 +71,6 @@ void test_api_messaging(void) {
   otrv4_assert(otr4_user_state_get_private_key_v4(test_state, bob_account));
 
   otr4_user_state_free(test_state);
-  test_state = NULL;
 }
 
 void test_instance_tag_api(void) {

@@ -48,6 +48,8 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
                                      prekey_message->profile) == OTR4_SUCCESS);
   otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
   free(user_profile_serialized);
+  user_profile_serialized = NULL;
+
   cursor += user_profile_len;
 
   uint8_t serialized_y[ED448_POINT_BYTES + 2] = {0};
@@ -63,10 +65,11 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
   /* Skip first 4 because they are the size (mpi_len) */
   otrv4_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
 
+  free(serialized);
+  serialized = NULL;
   dh_keypair_destroy(dh);
   ecdh_keypair_destroy(ecdh);
   dake_prekey_message_free(prekey_message);
-  free(serialized);
 
   OTR4_FREE;
 }
@@ -103,11 +106,12 @@ void test_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
   otrv4_assert_ec_public_key_eq(deserialized->Y, prekey_message->Y);
   otrv4_assert_dh_public_key_eq(deserialized->B, prekey_message->B);
 
+  free(serialized);
+  serialized = NULL;
   dh_keypair_destroy(dh);
   ecdh_keypair_destroy(ecdh);
   dake_prekey_message_free(prekey_message);
   dake_prekey_message_free(deserialized);
-  free(serialized);
 
   OTR4_FREE;
 }
@@ -231,6 +235,8 @@ void test_dake_non_interactive_auth_message_serializes(
                                      msg->profile) == OTR4_SUCCESS);
   otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
   free(user_profile_serialized);
+  user_profile_serialized = NULL;
+
   cursor += user_profile_len;
 
   uint8_t serialized_x[ED448_POINT_BYTES + 2] = {};
@@ -261,12 +267,14 @@ void test_dake_non_interactive_auth_message_serializes(
 
   otrv4_assert_cmpmem(cursor, serialized_mac, HASH_BYTES);
 
+  free(t);
+  t = NULL;
+  free(serialized);
+  serialized = NULL;
+
   dh_keypair_destroy(dh);
   ecdh_keypair_destroy(ecdh);
-
   dake_non_interactive_auth_message_destroy(msg);
-  free(serialized);
-  free(t);
 
   OTR4_FREE;
 }
@@ -307,9 +315,10 @@ void test_dake_non_interactive_auth_message_deserializes(
   otrv4_assert(dake_non_interactive_auth_message_asprintf(&serialized, &len,
                                                           msg) == OTR4_SUCCESS);
 
+  free(t);
+  t = NULL;
   dh_keypair_destroy(dh);
   ecdh_keypair_destroy(ecdh);
-  free(t);
 
   dake_non_interactive_auth_message_t deserialized[1];
   otrv4_assert(dake_non_interactive_auth_message_deserialize(
@@ -325,6 +334,7 @@ void test_dake_non_interactive_auth_message_deserializes(
   otrv4_assert(memcmp(deserialized->auth_mac, msg->auth_mac, HASH_BYTES));
   otrv4_assert(memcmp(deserialized->sigma, msg->sigma, SNIZKPK_BYTES));
 
+  serialized = NULL;
   free(serialized);
   dake_non_interactive_auth_message_destroy(msg);
   dake_non_interactive_auth_message_destroy(deserialized);

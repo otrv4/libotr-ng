@@ -40,6 +40,7 @@ void otrv4_keypair_free(otrv4_keypair_t *keypair) {
 
   otrv4_keypair_destroy(keypair);
   free(keypair);
+  keypair = NULL;
 }
 
 otrv4_err_t otrv4_symmetric_key_serialize(char **buffer, size_t *buffer_size,
@@ -87,4 +88,5 @@ void otrv4_shared_prekey_pair_free(otrv4_shared_prekey_pair_t *prekey_pair) {
 
   otrv4_shared_prekey_pair_destroy(prekey_pair);
   free(prekey_pair);
+  prekey_pair = NULL;
 }

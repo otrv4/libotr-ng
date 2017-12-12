@@ -43,6 +43,7 @@ void dake_identity_message_free(dake_identity_message_t *identity_message) {
 
   dake_identity_message_destroy(identity_message);
   free(identity_message);
+  identity_message = NULL;
 }
 
 otrv4_err_t dake_identity_message_asprintf(
@@ -59,6 +60,7 @@ otrv4_err_t dake_identity_message_asprintf(
   uint8_t *buff = malloc(s);
   if (!buff) {
     free(profile);
+    profile = NULL;
     return OTR4_ERROR;
   }
 
@@ -70,11 +72,14 @@ otrv4_err_t dake_identity_message_asprintf(
   cursor += serialize_bytes_array(cursor, profile, profile_len);
   cursor += serialize_ec_point(cursor, identity_message->Y);
 
+  free(profile);
+  profile = NULL;
+
   size_t len = 0;
   otrv4_err_t err = serialize_dh_public_key(cursor, &len, identity_message->B);
   if (err) {
-    free(profile);
     free(buff);
+    buff = NULL;
     return OTR4_ERROR;
   }
   cursor += len;
@@ -85,7 +90,6 @@ otrv4_err_t dake_identity_message_asprintf(
   if (nbytes)
     *nbytes = cursor - buff;
 
-  free(profile);
   return OTR4_SUCCESS;
 }
 
@@ -181,6 +185,7 @@ otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   uint8_t *buff = malloc(s);
   if (!buff) {
     free(our_profile);
+    our_profile = NULL;
     return OTR4_ERROR;
   }
 
@@ -192,12 +197,14 @@ otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
   cursor += serialize_ec_point(cursor, auth_r->X);
 
-  size_t len = 0;
+  free(our_profile);
+  our_profile = NULL;
 
+  size_t len = 0;
   otrv4_err_t err = serialize_dh_public_key(cursor, &len, auth_r->A);
   if (err) {
-    free(our_profile);
     free(buff);
+    buff = NULL;
     return OTR4_ERROR;
   }
 
@@ -210,7 +217,6 @@ otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   if (nbytes)
     *nbytes = cursor - buff;
 
-  free(our_profile);
   return OTR4_SUCCESS;
 }
 
@@ -396,6 +402,7 @@ void dake_prekey_message_free(dake_prekey_message_t *prekey_message) {
 
   dake_prekey_message_destroy(prekey_message);
   free(prekey_message);
+  prekey_message = NULL;
 }
 
 otrv4_err_t
@@ -411,6 +418,7 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   uint8_t *buff = malloc(s);
   if (!buff) {
     free(profile);
+    profile = NULL;
     return OTR4_ERROR;
   }
 
@@ -422,11 +430,14 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   cursor += serialize_bytes_array(cursor, profile, profile_len);
   cursor += serialize_ec_point(cursor, prekey_message->Y);
 
+  free(profile);
+  profile = NULL;
+
   size_t len = 0;
   otrv4_err_t err = serialize_dh_public_key(cursor, &len, prekey_message->B);
   if (err) {
-    free(profile);
     free(buff);
+    buff = NULL;
     return OTR4_ERROR;
   }
   cursor += len;
@@ -437,7 +448,6 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   if (nbytes)
     *nbytes = cursor - buff;
 
-  free(profile);
   return OTR4_SUCCESS;
 }
 
@@ -545,6 +555,7 @@ otrv4_err_t dake_non_interactive_auth_message_asprintf(
   uint8_t *buff = malloc(s);
   if (!buff) {
     free(our_profile);
+    our_profile = NULL;
     return OTR4_ERROR;
   }
 
@@ -557,13 +568,15 @@ otrv4_err_t dake_non_interactive_auth_message_asprintf(
   cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
   cursor += serialize_ec_point(cursor, non_interactive_auth->X);
 
-  size_t len = 0;
+  free(our_profile);
+  our_profile = NULL;
 
+  size_t len = 0;
   otrv4_err_t err =
       serialize_dh_public_key(cursor, &len, non_interactive_auth->A);
   if (err) {
-    free(our_profile);
     free(buff);
+    buff = NULL;
     return OTR4_ERROR;
   }
 
@@ -586,8 +599,6 @@ otrv4_err_t dake_non_interactive_auth_message_asprintf(
 
   if (nbytes)
     *nbytes = cursor - buff;
-
-  free(our_profile);
 
   return OTR4_SUCCESS;
 }
@@ -723,7 +734,7 @@ otrv4_bool_t valid_received_values(const ec_point_t their_ecdh,
   if (not_expired(profile->expires) == otrv4_false)
     return otrv4_false;
 
-  if (no_rollback_detected(profile->versions))
+  if (no_rollback_detected(profile->versions) == otrv4_false)
     return otrv4_false;
 
   return otrv4_true;
