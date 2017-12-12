@@ -183,6 +183,7 @@ otrv4_t *otrv4_new(otr4_client_state_t *state, otrv4_policy_t policy) {
   otr->keys = malloc(sizeof(key_manager_t));
   if (!otr->keys) {
     free(otr);
+    otr = NULL;
     return NULL;
   }
 
@@ -228,6 +229,7 @@ void otrv4_free(/*@only@ */ otrv4_t *otr) {
 
   otrv4_destroy(otr);
   free(otr);
+  otr = NULL;
 }
 
 otrv4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
@@ -252,6 +254,7 @@ otrv4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
   int rem = cursor - buff;
   if (*stpncpy(cursor, message, qm_size - rem)) {
     free(buff);
+    buff = NULL;
     return OTR4_ERROR; // could not zero-terminate the string
   }
 
@@ -288,6 +291,7 @@ otrv4_err_t otrv4_build_whitespace_tag(string_t *whitespace_tag,
 
   if (*stpncpy(cursor, message, m_size - strlen(buff))) {
     free(buff);
+    buff = NULL;
     return OTR4_ERROR;
   }
 
@@ -402,6 +406,8 @@ void otrv4_response_free(otrv4_response_t *response) {
     response->to_send = NULL;
   }
 
+  response->warning = OTRV4_WARN_NONE;
+
   otrv4_tlv_free(response->tlvs);
   response->tlvs = NULL;
 
@@ -428,7 +434,10 @@ serialize_and_encode_prekey_message(string_t *dst,
     return OTR4_ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
+
   free(buff);
+  buff = NULL;
+
   return OTR4_SUCCESS;
 }
 
@@ -477,7 +486,10 @@ serialize_and_encode_identity_message(string_t *dst,
     return OTR4_ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
+
   free(buff);
+  buff = NULL;
+
   return OTR4_SUCCESS;
 }
 
@@ -582,15 +594,13 @@ otrv4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
   size_t read = 0;
   uint16_t version = 0;
   uint8_t type = 0;
-  if (deserialize_uint16(&version, buffer, bufflen, &read)) {
+  if (deserialize_uint16(&version, buffer, bufflen, &read))
     return OTR4_ERROR;
-  }
 
   buffer += read;
 
-  if (deserialize_uint8(&type, buffer, bufflen - read, &read)) {
+  if (deserialize_uint8(&type, buffer, bufflen - read, &read))
     return OTR4_ERROR;
-  }
 
   dst->version = OTRV4_ALLOW_NONE;
   if (version == 0x04) {
@@ -699,7 +709,9 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
   } while (0);
 
   free(ser_i_profile);
+  ser_i_profile = NULL;
   free(ser_r_profile);
+  ser_r_profile = NULL;
 
   sodium_memzero(ser_i_ecdh, ED448_POINT_BYTES);
   sodium_memzero(ser_r_ecdh, ED448_POINT_BYTES);
@@ -718,7 +730,10 @@ static otrv4_err_t serialize_and_encode_auth_r(string_t *dst,
     return OTR4_ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
+
   free(buff);
+  buff = NULL;
+
   return OTR4_SUCCESS;
 }
 
@@ -768,7 +783,7 @@ static otrv4_err_t generate_tmp_key_r(uint8_t *dst, otrv4_t *otr) {
   ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh, otr->keys->their_ecdh);
   // TODO: this will be calculated again later
   if (dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
-                       otr->keys->their_dh) == OTR4_ERROR)
+                       otr->keys->their_dh))
     return OTR4_ERROR;
 
   brace_key_t brace_key;
@@ -901,7 +916,9 @@ static otrv4_err_t build_non_interactive_auth_message(
   } while (0);
 
   free(ser_i_profile);
+  ser_i_profile = NULL;
   free(ser_r_profile);
+  ser_r_profile = NULL;
 
   sodium_memzero(ser_i_ecdh, ED448_POINT_BYTES);
   sodium_memzero(ser_r_ecdh, ED448_POINT_BYTES);
@@ -921,7 +938,10 @@ static otrv4_err_t serialize_and_encode_non_interactive_auth(
     return OTR4_ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
+
   free(buff);
+  buff = NULL;
+
   return OTR4_SUCCESS;
 }
 
@@ -949,7 +969,7 @@ const char *otrv4_error_message(otrv4_err_code_t err_code) {
     msg = strdup("OTR4_ERR_MSG_NOT_PRIVATE_STATE");
     break;
   case OTR4_ERR_MSG_UNDECRYPTABLE:
-    msg = strdup("OTR3_ERR_MSG_UNDECRYPTABLE");
+    msg = strdup("OTR4_ERR_MSG_READABLE");
     break;
   }
 
@@ -979,6 +999,7 @@ static otrv4_err_t encrypt_data_message(data_message_t *data_msg,
   err = crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
   if (err) {
     free(c);
+    c = NULL;
     return OTR4_ERROR;
   }
 
@@ -1013,7 +1034,7 @@ static otrv4_err_t encrypt_msg_on_non_interactive_auth(
     return OTR4_ERROR;
   }
 
-  /* discard this mac key as it not used */
+  /* discard this mac key as it is not used */
   sodium_memzero(mac_key, sizeof(m_mac_key_t));
   memcpy(auth->nonce, nonce, DATA_MSG_NONCE_BYTES);
 
@@ -1106,7 +1127,7 @@ static otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
           &t, &t_len, otr->their_profile, get_my_user_profile(otr),
           THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
           otr->their_profile->shared_prekey, otr->conversation->client->phi)) {
-    if (message != NULL) {
+    if (message) {
       free(message);
       message = NULL;
     }
@@ -1124,14 +1145,14 @@ static otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
 
   sodium_memzero(auth->nonce, DATA_MSG_NONCE_BYTES);
 
-  if (message != NULL) {
+  if (message) {
     uint8_t nonce[DATA_MSG_NONCE_BYTES];
     uint8_t *ser_data_msg = NULL;
 
     memcpy(nonce, t, DATA_MSG_NONCE_BYTES);
 
     if (encrypt_msg_on_non_interactive_auth(auth, message, msglen, nonce,
-                                            otr) == OTR4_ERROR) {
+                                            otr)) {
       dake_non_interactive_auth_message_destroy(auth);
       free(t);
       t = NULL;
@@ -1143,7 +1164,7 @@ static otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
 
     size_t bodylen = 0;
     if (data_message_body_on_non_interactive_asprintf(&ser_data_msg, &bodylen,
-                                                      auth) == OTR4_ERROR) {
+                                                      auth)) {
       free(auth->enc_msg);
       auth->enc_msg = NULL;
       dake_non_interactive_auth_message_destroy(auth);
@@ -1193,7 +1214,7 @@ static otrv4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
   ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh, otr->keys->their_ecdh);
   // TODO: this will be calculated again later
   if (dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
-                       otr->keys->their_dh) == OTR4_ERROR)
+                       otr->keys->their_dh))
     return OTR4_ERROR;
 
   brace_key_t brace_key;
@@ -1270,7 +1291,7 @@ static otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
 
   dake_prekey_message_destroy(m);
 
-  if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
+  if (key_manager_generate_ephemeral_keys(otr->keys))
     return err;
 
   memcpy(otr->keys->their_shared_prekey, otr->their_profile->shared_prekey,
@@ -1278,7 +1299,7 @@ static otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
 
   /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) ||
    * ECDH(x, Pkb) || k_dh) */
-  if (generate_tmp_key_r(otr->keys->tmp_key, otr) == OTR4_ERROR)
+  if (generate_tmp_key_r(otr->keys->tmp_key, otr))
     return err;
 
   if (double_ratcheting_init(0, false, otr))
@@ -1406,12 +1427,14 @@ static otrv4_bool_t verify_non_interactive_auth_message(
       return otrv4_false;
     }
 
+    // TODO: if errors here, error?
     int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
                                 auth->nonce, enc_key);
     if (strnlen((string_t)plain, auth->enc_msg_len))
       *dst = otrv4_strndup((char *)plain, auth->enc_msg_len);
 
     free(plain);
+    plain = NULL;
     sodium_memzero(enc_key, sizeof(enc_key));
 
     if (err != 0)
@@ -1521,7 +1544,7 @@ static otrv4_err_t receive_identity_message_on_state_start(
   key_manager_set_their_dh(identity_message->B, otr->keys);
   user_profile_copy(otr->their_profile, identity_message->profile);
 
-  if (key_manager_generate_ephemeral_keys(otr->keys) == OTR4_ERROR)
+  if (key_manager_generate_ephemeral_keys(otr->keys))
     return OTR4_ERROR;
 
   if (reply_with_auth_r_msg(dst, otr))
@@ -1606,7 +1629,10 @@ static otrv4_err_t serialize_and_encode_auth_i(string_t *dst,
     return OTR4_ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
+
   free(buff);
+  buff = NULL;
+
   return OTR4_SUCCESS;
 }
 
@@ -1794,6 +1820,7 @@ static otrv4_err_t decrypt_data_msg(otrv4_response_t *response,
   extract_tlvs(tlvs, plain, msg->enc_msg_len);
 
   free(plain);
+  plain = NULL;
 
   if (err == 0) {
     return OTR4_SUCCESS;
@@ -1955,11 +1982,14 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
       strcat(err_msg, err_code);
     }
     free((char *)err_code);
+    err_code = NULL;
 
     response->to_send = otrv4_strdup(err_msg);
 
     free(err_msg);
+    err_msg = NULL;
     free(msg);
+    msg = NULL;
     return OTR4_ERROR;
   }
 
@@ -1996,6 +2026,7 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
 
     if (decrypt_data_msg(response, enc_key, msg)) {
       if (msg->flags != OTR4_MSGFLAGS_IGNORE_UNREADABLE) {
+        // TODO: extract to separate?
         const char *err_code = otrv4_error_message(OTR4_ERR_MSG_UNDECRYPTABLE);
         char *err_msg =
             malloc(strlen(OTR4_ERROR_PREFIX) + strlen(OTR4_ERROR_CODE_1) +
@@ -2006,10 +2037,12 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
           strcat(err_msg, err_code);
         }
         free((char *)err_code);
+        err_code = NULL;
 
         response->to_send = otrv4_strdup(err_msg);
 
         free(err_msg);
+        err_msg = NULL;
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
         response->to_display = NULL;
@@ -2104,7 +2137,7 @@ static otrv4_err_t receive_decoded_message(otrv4_response_t *response,
   case OTR_DATA_MSG_TYPE:
     return otrv4_receive_data_message(response, decoded, dec_len, otr);
   default:
-    /* errror. bad message type */
+    /* error. bad message type */
     return OTR4_ERROR;
   }
 
@@ -2121,6 +2154,7 @@ static otrv4_err_t receive_encoded_message(otrv4_response_t *response,
 
   otrv4_err_t err = receive_decoded_message(response, decoded, dec_len, otr);
   free(decoded);
+  decoded = NULL;
 
   return err;
 }
@@ -2221,11 +2255,13 @@ static otrv4_err_t serialize_and_encode_data_msg(
   uint8_t *ser = malloc(serlen);
   if (!ser) {
     free(body);
+    body = NULL;
     return OTR4_ERROR;
   }
 
   memcpy(ser, body, bodylen);
   free(body);
+  body = NULL;
 
   shake_256_mac(ser + bodylen, MAC_KEY_BYTES, mac_key, sizeof(m_mac_key_t), ser,
                 bodylen);
@@ -2235,6 +2271,7 @@ static otrv4_err_t serialize_and_encode_data_msg(
 
   *dst = otrl_base64_otr_encode(ser, serlen);
   free(ser);
+  ser = NULL;
 
   return OTR4_SUCCESS;
 }
@@ -2252,6 +2289,7 @@ static otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
 
   if (key_manager_prepare_next_chain_key(otr->keys)) {
     free(ser_mac_keys);
+    ser_mac_keys = NULL;
     return OTR4_ERROR;
   }
 
@@ -2262,6 +2300,7 @@ static otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
 
   if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
     free(ser_mac_keys);
+    ser_mac_keys = NULL;
     return OTR4_ERROR;
   }
 
@@ -2270,6 +2309,7 @@ static otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
     sodium_memzero(enc_key, sizeof(m_enc_key_t));
     sodium_memzero(mac_key, sizeof(m_mac_key_t));
     free(ser_mac_keys);
+    ser_mac_keys = NULL;
     return OTR4_ERROR;
   }
 
@@ -2299,6 +2339,7 @@ static otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
   sodium_memzero(enc_key, sizeof(m_enc_key_t));
   sodium_memzero(mac_key, sizeof(m_mac_key_t));
   free(ser_mac_keys);
+  ser_mac_keys = NULL;
   data_message_free(data_msg);
 
   return err;
@@ -2344,12 +2385,14 @@ static otrv4_err_t append_tlvs(uint8_t **dst, size_t *dstlen,
   *dst = malloc(*dstlen);
   if (!*dst) {
     free(ser);
+    ser = NULL;
     return OTR4_ERROR;
   }
 
   memcpy(stpcpy((char *)*dst, message) + 1, ser, len);
 
   free(ser);
+  ser = NULL;
   return OTR4_SUCCESS;
 }
 
@@ -2380,6 +2423,7 @@ static otrv4_err_t otrv4_prepare_to_send_data_message(string_t *to_send,
   otrv4_err_t err =
       send_data_message(to_send, msg, msg_len, otr, is_heartbeat, flags);
   free(msg);
+  msg = NULL;
 
   return err;
 }
@@ -2473,6 +2517,7 @@ static otrv4_err_t otrv4_send_symkey_message_v4(string_t *to_send,
 
     tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SYM_KEY, usedatalen + 4, tlv_data);
     free(tlv_data);
+    tlv_data = NULL;
 
     memmove(extra_key, otr->keys->extra_key, HASH_BYTES);
 
@@ -2550,11 +2595,13 @@ static tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
     if (!tlv) {
       smp_msg_1_destroy(msg);
       free(to_send);
+      to_send = NULL;
       return NULL;
     }
 
     smp_msg_1_destroy(msg);
     free(to_send);
+    to_send = NULL;
     return tlv;
   } while (0);
 
