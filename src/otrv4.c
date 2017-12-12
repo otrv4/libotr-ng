@@ -1195,21 +1195,52 @@ static otrv4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
   return OTR4_SUCCESS;
 }
 
-const char *otrv4_error_message(otrv4_err_code_t err_code) {
+static void otrv4_error_message(string_t *to_send, otrv4_err_code_t err_code) {
   char *msg = NULL;
+  char *err_msg = NULL;
 
   switch (err_code) {
   case OTR4_ERR_NONE:
     break;
-  case OTR4_ERR_MSG_NOT_PRIVATE:
-    msg = strdup("OTR4_ERR_MSG_NOT_PRIVATE_STATE");
-    break;
   case OTR4_ERR_MSG_UNDECRYPTABLE:
     msg = strdup("OTR4_ERR_MSG_READABLE");
+    err_msg = malloc(strlen(OTR4_ERROR_PREFIX) + strlen(OTR4_ERROR_CODE_1) +
+                     strlen(msg) + 1);
+    if (!err_msg)
+      return;
+
+    if (err_msg) {
+      strcpy(err_msg, OTR4_ERROR_PREFIX);
+      strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_1);
+      strcat(err_msg, msg);
+    }
+    free((char *)msg);
+    msg = NULL;
+
+    *to_send = otrv4_strdup(err_msg);
+    free(err_msg);
+    err_msg = NULL;
+    break;
+  case OTR4_ERR_MSG_NOT_PRIVATE:
+    msg = strdup("OTR4_ERR_MSG_NOT_PRIVATE_STATE");
+    err_msg = malloc(strlen(OTR4_ERROR_PREFIX) + strlen(OTR4_ERROR_CODE_2) +
+                     strlen(msg) + 1);
+    if (!err_msg)
+      return;
+
+    if (err_msg) {
+      strcpy(err_msg, OTR4_ERROR_PREFIX);
+      strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_2);
+      strcat(err_msg, msg);
+    }
+    free((char *)msg);
+    msg = NULL;
+
+    *to_send = otrv4_strdup(err_msg);
+    free(err_msg);
+    err_msg = NULL;
     break;
   }
-
-  return msg;
 }
 
 static otrv4_err_t double_ratcheting_init(int j, bool interactive,
@@ -1964,21 +1995,7 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
 
   // TODO: check this case with Nik on otr3
   if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
-    const char *err_code = otrv4_error_message(OTR4_ERR_MSG_NOT_PRIVATE);
-    char *err_msg = malloc(strlen(OTR4_ERROR_PREFIX) +
-                           strlen(OTR4_ERROR_CODE_2) + strlen(err_code) + 1);
-    if (err_msg) {
-      strcpy(err_msg, OTR4_ERROR_PREFIX);
-      strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_2);
-      strcat(err_msg, err_code);
-    }
-    free((char *)err_code);
-    err_code = NULL;
-
-    response->to_send = otrv4_strdup(err_msg);
-
-    free(err_msg);
-    err_msg = NULL;
+    otrv4_error_message(&response->to_send, OTR4_ERR_MSG_NOT_PRIVATE);
     free(msg);
     msg = NULL;
     return OTR4_ERROR;
@@ -2017,23 +2034,7 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
 
     if (decrypt_data_msg(response, enc_key, msg)) {
       if (msg->flags != OTR4_MSGFLAGS_IGNORE_UNREADABLE) {
-        // TODO: extract to separate?
-        const char *err_code = otrv4_error_message(OTR4_ERR_MSG_UNDECRYPTABLE);
-        char *err_msg =
-            malloc(strlen(OTR4_ERROR_PREFIX) + strlen(OTR4_ERROR_CODE_1) +
-                   strlen(err_code) + 1);
-        if (err_msg) {
-          strcpy(err_msg, OTR4_ERROR_PREFIX);
-          strcpy(err_msg + strlen(OTR4_ERROR_PREFIX), OTR4_ERROR_CODE_1);
-          strcat(err_msg, err_code);
-        }
-        free((char *)err_code);
-        err_code = NULL;
-
-        response->to_send = otrv4_strdup(err_msg);
-
-        free(err_msg);
-        err_msg = NULL;
+        otrv4_error_message(&response->to_send, OTR4_ERR_MSG_UNDECRYPTABLE);
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
         response->to_display = NULL;
