@@ -1,6 +1,5 @@
 #include <sodium.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "key_management.h"
 #include "random.h"

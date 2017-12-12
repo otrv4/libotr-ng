@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "data_message.h"
 #include "deserialize.h"
 #include "mem.h"
