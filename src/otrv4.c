@@ -1417,6 +1417,7 @@ static otrv4_bool_t verify_non_interactive_auth_message(
       free(t);
       t = NULL;
       sodium_memzero(enc_key, sizeof(m_enc_key_t));
+      /* here no warning should be passed */
       return otrv4_false;
     }
 
@@ -1430,18 +1431,22 @@ static otrv4_bool_t verify_non_interactive_auth_message(
       return otrv4_false;
     }
 
-    // TODO: if errors here, error?
     int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
                                 auth->nonce, enc_key);
+    if (err != 0) {
+      otrv4_error_message(dst, OTR4_ERR_MSG_UNDECRYPTABLE);
+      free(plain);
+      plain = NULL;
+      sodium_memzero(enc_key, sizeof(m_enc_key_t));
+      return otrv4_false;
+    }
+
     if (strnlen((string_t)plain, auth->enc_msg_len))
       *dst = otrv4_strndup((char *)plain, auth->enc_msg_len);
 
     free(plain);
     plain = NULL;
     sodium_memzero(enc_key, sizeof(enc_key));
-
-    if (err != 0)
-      return otrv4_false;
 
     uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
     if (to_store_mac == NULL) {
