@@ -1,6 +1,6 @@
 #include <libotr/instag.h>
-#include <stdbool.h>
-#include <stdio.h>
+
+#include <string.h>
 
 #include "instance_tag.h"
 #include "str.h"

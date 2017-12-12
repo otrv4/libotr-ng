@@ -1785,7 +1785,8 @@ static void extract_tlvs(tlv_t **tlvs, const uint8_t *src, size_t len) {
   if (!tlvs)
     return;
 
-  uint8_t *tlvs_start = memchr(src, 0, len);
+  uint8_t *tlvs_start = NULL;
+  tlvs_start = memchr(src, 0, len);
   if (!tlvs_start)
     return;
 

@@ -1,5 +1,7 @@
 #include "client.h"
 
+#include <string.h>
+
 #include <libotr/privkey.h>
 
 #include "client.h"
