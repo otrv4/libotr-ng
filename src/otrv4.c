@@ -585,45 +585,6 @@ static otrv4_err_t receive_query_message(otrv4_response_t *response,
   return OTR4_ERROR;
 }
 
-otrv4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
-                           const size_t bufflen) {
-  if (bufflen == 0) {
-    return OTR4_ERROR;
-  }
-
-  size_t read = 0;
-  uint16_t version = 0;
-  uint8_t type = 0;
-  if (deserialize_uint16(&version, buffer, bufflen, &read))
-    return OTR4_ERROR;
-
-  buffer += read;
-
-  if (deserialize_uint8(&type, buffer, bufflen - read, &read))
-    return OTR4_ERROR;
-
-  dst->version = OTRV4_ALLOW_NONE;
-  if (version == 0x04) {
-    dst->version = OTRV4_ALLOW_V4;
-  } else if (version == 0x03) {
-    dst->version = OTRV4_ALLOW_V3;
-  }
-  dst->type = type;
-
-  return OTR4_SUCCESS;
-}
-
-static otrv4_err_t double_ratcheting_init(int j, bool interactive,
-                                          otrv4_t *otr) {
-  if (key_manager_ratcheting_init(j, interactive, otr->keys))
-    return OTR4_ERROR;
-
-  otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
-  gone_secure_cb(otr->conversation);
-
-  return OTR4_SUCCESS;
-}
-
 static otrv4_err_t
 build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
                    const user_profile_t *i_profile,
@@ -959,28 +920,6 @@ static data_message_t *generate_data_msg(const otrv4_t *otr) {
   return data_msg;
 }
 
-const char *otrv4_error_message(otrv4_err_code_t err_code) {
-  char *msg = NULL;
-
-  switch (err_code) {
-  case OTR4_ERR_NONE:
-    break;
-  case OTR4_ERR_MSG_NOT_PRIVATE:
-    msg = strdup("OTR4_ERR_MSG_NOT_PRIVATE_STATE");
-    break;
-  case OTR4_ERR_MSG_UNDECRYPTABLE:
-    msg = strdup("OTR4_ERR_MSG_READABLE");
-    break;
-  }
-
-  return msg;
-}
-
-static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
-  // TODO: should we do any additional check?
-  otr->their_instance_tag = their_instance_tag;
-}
-
 static otrv4_err_t encrypt_data_message(data_message_t *data_msg,
                                         const uint8_t *message,
                                         size_t message_len,
@@ -1254,6 +1193,39 @@ static otrv4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
   sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
 
   return OTR4_SUCCESS;
+}
+
+const char *otrv4_error_message(otrv4_err_code_t err_code) {
+  char *msg = NULL;
+
+  switch (err_code) {
+  case OTR4_ERR_NONE:
+    break;
+  case OTR4_ERR_MSG_NOT_PRIVATE:
+    msg = strdup("OTR4_ERR_MSG_NOT_PRIVATE_STATE");
+    break;
+  case OTR4_ERR_MSG_UNDECRYPTABLE:
+    msg = strdup("OTR4_ERR_MSG_READABLE");
+    break;
+  }
+
+  return msg;
+}
+
+static otrv4_err_t double_ratcheting_init(int j, bool interactive,
+                                          otrv4_t *otr) {
+  if (key_manager_ratcheting_init(j, interactive, otr->keys))
+    return OTR4_ERROR;
+
+  otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
+  gone_secure_cb(otr->conversation);
+
+  return OTR4_SUCCESS;
+}
+
+static void received_instance_tag(uint32_t their_instance_tag, otrv4_t *otr) {
+  // TODO: should we do any additional check?
+  otr->their_instance_tag = their_instance_tag;
 }
 
 static otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
@@ -2094,6 +2066,34 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   otrv4_tlv_free(reply_tlv);
 
   return OTR4_ERROR;
+}
+
+otrv4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
+                           const size_t bufflen) {
+  if (bufflen == 0) {
+    return OTR4_ERROR;
+  }
+
+  size_t read = 0;
+  uint16_t version = 0;
+  uint8_t type = 0;
+  if (deserialize_uint16(&version, buffer, bufflen, &read))
+    return OTR4_ERROR;
+
+  buffer += read;
+
+  if (deserialize_uint8(&type, buffer, bufflen - read, &read))
+    return OTR4_ERROR;
+
+  dst->version = OTRV4_ALLOW_NONE;
+  if (version == 0x04) {
+    dst->version = OTRV4_ALLOW_V4;
+  } else if (version == 0x03) {
+    dst->version = OTRV4_ALLOW_V3;
+  }
+  dst->type = type;
+
+  return OTR4_SUCCESS;
 }
 
 static otrv4_err_t receive_decoded_message(otrv4_response_t *response,

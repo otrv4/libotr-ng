@@ -171,6 +171,8 @@ otrv4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
 
 otrv4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr);
 
+otrv4_err_t otrv4_expire_session(string_t *to_send, otrv4_t *otr);
+
 // TODO: change to the real func: unexpose these and make them
 // static
 void reply_with_prekey_msg_from_server(otrv4_server_t *server,
