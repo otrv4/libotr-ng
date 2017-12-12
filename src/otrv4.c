@@ -1753,6 +1753,24 @@ static otrv4_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
   return double_ratcheting_init(1, true, otr);
 }
 
+// TODO: this is almost the same as otrv4_close
+otrv4_err_t otrv4_expire_session(string_t *to_send, otrv4_t *otr) {
+  tlv_t *disconnected = otrv4_disconnected_tlv_new();
+  if (!disconnected)
+    return OTR4_ERROR;
+
+  otrv4_err_t err = otrv4_prepare_to_send_message(
+      to_send, "", &disconnected, OTR4_MSGFLAGS_IGNORE_UNREADABLE, otr);
+
+  otrv4_tlv_free(disconnected);
+  forget_our_keys(otr);
+  // TODO: forget K
+  otr->state = OTRV4_STATE_START;
+  gone_insecure_cb(otr->conversation);
+
+  return err;
+}
+
 static void extract_tlvs(tlv_t **tlvs, const uint8_t *src, size_t len) {
   if (!tlvs)
     return;
