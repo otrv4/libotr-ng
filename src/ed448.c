@@ -3,6 +3,8 @@
 
 #include "ed448.h"
 
+void ec_bzero(void *data, size_t size) { decaf_bzero(data, size); }
+
 otrv4_bool_t ec_scalar_eq(const ec_scalar_t a, const ec_scalar_t b) {
   if (decaf_448_scalar_eq(a, b) == DECAF_TRUE) {
     return otrv4_true;

@@ -10,8 +10,8 @@ otrv4_keypair_t *otrv4_keypair_new(void) {
   if (!ret)
     return NULL;
 
-  memset(ret->priv, 0, ED448_POINT_BYTES);
-  memset(ret->pub, 0, ED448_SCALAR_BYTES);
+  ec_bzero(ret->priv, ED448_SCALAR_BYTES);
+  ec_bzero(ret->pub, ED448_POINT_BYTES);
 
   return ret;
 }
@@ -58,8 +58,8 @@ otrv4_shared_prekey_pair_t *otrv4_shared_prekey_pair_new(void) {
   if (!ret)
     return NULL;
 
-  memset(ret->priv, 0, ED448_POINT_BYTES);
-  memset(ret->pub, 0, ED448_SCALAR_BYTES);
+  ec_bzero(ret->priv, ED448_SCALAR_BYTES);
+  ec_bzero(ret->pub, ED448_POINT_BYTES);
 
   return ret;
 }

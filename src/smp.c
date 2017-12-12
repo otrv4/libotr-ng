@@ -17,18 +17,18 @@ void smp_context_init(smp_context_t smp) {
   smp->msg1 = NULL;
   smp->secret = NULL;
 
-  memset(smp->a2, 0, ED448_SCALAR_BYTES);
-  memset(smp->a3, 0, ED448_SCALAR_BYTES);
-  memset(smp->b3, 0, ED448_SCALAR_BYTES);
+  ec_bzero(smp->a2, ED448_SCALAR_BYTES);
+  ec_bzero(smp->a3, ED448_SCALAR_BYTES);
+  ec_bzero(smp->b3, ED448_SCALAR_BYTES);
 
-  memset(smp->G2, 0, ED448_POINT_BYTES);
-  memset(smp->G3, 0, ED448_POINT_BYTES);
-  memset(smp->G3a, 0, ED448_POINT_BYTES);
-  memset(smp->G3b, 0, ED448_POINT_BYTES);
-  memset(smp->Pb, 0, ED448_POINT_BYTES);
-  memset(smp->Qb, 0, ED448_POINT_BYTES);
-  memset(smp->Pa_Pb, 0, ED448_POINT_BYTES);
-  memset(smp->Qa_Qb, 0, ED448_POINT_BYTES);
+  ec_bzero(smp->G2, ED448_POINT_BYTES);
+  ec_bzero(smp->G3, ED448_POINT_BYTES);
+  ec_bzero(smp->G3a, ED448_POINT_BYTES);
+  ec_bzero(smp->G3b, ED448_POINT_BYTES);
+  ec_bzero(smp->Pb, ED448_POINT_BYTES);
+  ec_bzero(smp->Qb, ED448_POINT_BYTES);
+  ec_bzero(smp->Pa_Pb, ED448_POINT_BYTES);
+  ec_bzero(smp->Qa_Qb, ED448_POINT_BYTES);
 }
 
 void smp_destroy(smp_context_t smp) {

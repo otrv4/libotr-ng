@@ -16,11 +16,10 @@ user_profile_t *user_profile_new(const string_t versions) {
   if (!profile)
     return NULL;
 
-  // the compiler might optimize this
-  memset(profile->pub_key, 0, sizeof(otrv4_public_key_t));
+  ec_bzero(profile->pub_key, ED448_POINT_BYTES);
   profile->expires = 0;
   profile->versions = otrv4_strdup(versions);
-  memset(profile->shared_prekey, 0, sizeof(otrv4_shared_prekey_t));
+  ec_bzero(profile->shared_prekey, ED448_POINT_BYTES);
   memset(profile->signature, 0, sizeof(eddsa_signature_t));
   otr_mpi_init(profile->transitional_signature);
 

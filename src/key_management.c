@@ -57,15 +57,15 @@ void ratchet_free(ratchet_t *ratchet) {
 
 void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 {
-  memset(manager->our_ecdh->pub, 0, ED448_POINT_BYTES);
+  ec_bzero(manager->our_ecdh->pub, ED448_POINT_BYTES);
   manager->our_dh->pub = NULL;
   manager->our_dh->priv = NULL;
 
-  memset(manager->their_ecdh, 0, ED448_POINT_BYTES);
+  ec_bzero(manager->their_ecdh, ED448_POINT_BYTES);
   manager->their_dh = NULL;
 
-  memset(manager->their_shared_prekey, 0, ED448_POINT_BYTES);
-  memset(manager->our_shared_prekey, 0, ED448_POINT_BYTES);
+  ec_bzero(manager->their_shared_prekey, ED448_POINT_BYTES);
+  ec_bzero(manager->our_shared_prekey, ED448_POINT_BYTES);
 
   manager->i = 0;
   manager->j = 0;
@@ -112,7 +112,7 @@ void key_manager_destroy(key_manager_t *manager) {
 
 otrv4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
   uint8_t sym[ED448_PRIVATE_BYTES];
-  memset(sym, 0, ED448_PRIVATE_BYTES);
+  memset(sym, 0, sizeof(sym));
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
   ec_point_destroy(manager->our_ecdh->pub);

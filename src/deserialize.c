@@ -154,9 +154,10 @@ otrv4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
   return OTR4_SUCCESS;
 }
 
-otrv4_err_t deserialize_otrv4_shared_prekey(otrv4_shared_prekey_t shared_prekey,
-                                            const uint8_t *serialized,
-                                            size_t ser_len, size_t *read) {
+otrv4_err_t
+deserialize_otrv4_shared_prekey(otrv4_shared_prekey_pub_t shared_prekey,
+                                const uint8_t *serialized, size_t ser_len,
+                                size_t *read) {
   const uint8_t *cursor = serialized;
   size_t r = 0;
   uint16_t shared_prekey_type = 0;
