@@ -65,14 +65,19 @@ AX_CFLAGS_GCC_OPTION([-Wall])
 AX_CFLAGS_GCC_OPTION([-Werror])
 AX_CFLAGS_GCC_OPTION([-Wfatal-errors])
 AX_CFLAGS_GCC_OPTION([-Wbad-function-cast])
-AX_CFLAGS_GCC_OPTION([-Wbad-cast-qual])
 AX_CFLAGS_GCC_OPTION([-Wdiv-by-zero])
 AX_CFLAGS_GCC_OPTION([-Wfloat-equal])
-AX_CFLAGS_GCC_OPTION([-Wlogical-op])
 AX_CFLAGS_GCC_OPTION([-Wnested-externs])
 AX_CFLAGS_GCC_OPTION([-Wpointer-arith])
 AX_CFLAGS_GCC_OPTION([-Wredundant-decls])
 AX_CFLAGS_GCC_OPTION([-Wstrict-prototypes])
+AX_CFLAGS_GCC_OPTION([-Wlogical-op])
+AX_CFLAGS_GCC_OPTION([-Wbad-cast-qual])
+dnl for undefined behavior
+# AX_CFLAGS_GCC_OPTION([-fcatch-undefined-behavior])
+# AX_CFLAGS_GCC_OPTION([-fno-delete-null-pointer-checks])
+# AX_CFLAGS_GCC_OPTION([-fno-strict-overflow])
+# AX_CFLAGS_GCC_OPTION([-fno-strict-aliasing])
 
 dnl Code coverage
 AX_CODE_COVERAGE
