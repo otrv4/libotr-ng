@@ -57,6 +57,10 @@ int otr4_client_receive(char **newmsg, char **todisplay, const char *message,
 int otr4_client_disconnect(char **newmsg, const char *recipient,
                            otr4_client_t *client);
 
+int otr4_encrypted_conversation_expire(char **newmsg, const char *recipient,
+                                       int expiration_time,
+                                       otr4_client_t *client);
+
 otr4_conversation_t *otr4_client_get_conversation(int force,
                                                   const char *recipient,
                                                   otr4_client_t *client);

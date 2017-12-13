@@ -1,6 +1,7 @@
 #include "client.h"
 
 #include <libotr/privkey.h>
+#include <time.h>
 
 #include "client.h"
 #include "serialize.h"
@@ -338,6 +339,31 @@ int otr4_client_disconnect(char **newmsg, const char *recipient,
 
   if (otrv4_close(newmsg, conv->conn))
     return 2;
+
+  destroy_client_conversation(conv, client);
+  conversation_free(conv);
+
+  return 0;
+}
+
+// TODO: this depends on how is going to be handled: as a different
+// event or inside process_conv_updated?
+/* expiration time should be set on seconds */
+int otr4_encrypted_conversation_expire(char **newmsg, const char *recipient,
+                                       int expiration_time,
+                                       otr4_client_t *client) {
+  otr4_conversation_t *conv = NULL;
+  time_t now;
+
+  conv = get_conversation_with(recipient, client->conversations);
+  if (!conv)
+    return 1;
+
+  now = time(NULL);
+  if (conv->conn->keys->lastgenerated < now - expiration_time) {
+    if (otrv4_expire_session(newmsg, conv->conn))
+      return 2;
+  }
 
   destroy_client_conversation(conv, client);
   conversation_free(conv);

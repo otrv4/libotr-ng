@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "gcrypt.h"
 
@@ -1789,7 +1790,7 @@ static otrv4_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
   return double_ratcheting_init(1, true, otr);
 }
 
-// TODO: this is almost the same as otrv4_close
+// TODO: this is the same as otrv4_close
 otrv4_err_t otrv4_expire_session(string_t *to_send, otrv4_t *otr) {
   tlv_t *disconnected = otrv4_disconnected_tlv_new();
   if (!disconnected)
@@ -1800,7 +1801,6 @@ otrv4_err_t otrv4_expire_session(string_t *to_send, otrv4_t *otr) {
 
   otrv4_tlv_free(disconnected);
   forget_our_keys(otr);
-  // TODO: forget K
   otr->state = OTRV4_STATE_START;
   gone_insecure_cb(otr->conversation);
 

@@ -1,5 +1,6 @@
 #include <sodium.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "key_management.h"
 #include "random.h"
@@ -91,12 +92,14 @@ void key_manager_destroy(key_manager_t *manager) {
   ratchet_free(manager->current);
   manager->current = NULL;
 
+  // TODO: once ake is finished should be wiped out
   sodium_memzero(manager->their_shared_prekey, ED448_POINT_BYTES);
   sodium_memzero(manager->our_shared_prekey, ED448_POINT_BYTES);
 
   sodium_memzero(manager->brace_key, sizeof(manager->brace_key));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
   sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
+  // TODO: once ake is finished should be wiped out
   sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 
   list_element_t *el;
@@ -110,12 +113,15 @@ void key_manager_destroy(key_manager_t *manager) {
 }
 
 otrv4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
+  time_t now;
   uint8_t sym[ED448_PRIVATE_BYTES];
   memset(sym, 0, sizeof(sym));
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
+  now = time(NULL);
   ec_point_destroy(manager->our_ecdh->pub);
   ecdh_keypair_generate(manager->our_ecdh, sym);
+  manager->lastgenerated = now;
 
   if (manager->i % 3 == 0) {
     dh_keypair_destroy(manager->our_dh);

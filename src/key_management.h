@@ -54,6 +54,8 @@ typedef struct {
   uint8_t tmp_key[HASH_BYTES];
 
   list_element_t *old_mac_keys;
+
+  time_t lastgenerated;
 } key_manager_t;
 
 // clang-format off
