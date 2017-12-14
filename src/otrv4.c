@@ -253,10 +253,12 @@ otrv4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
   cursor = stpcpy(cursor, "? ");
 
   int rem = cursor - buff;
+
+  /* Add '\0' */
   if (*stpncpy(cursor, message, qm_size - rem)) {
     free(buff);
     buff = NULL;
-    return OTR4_ERROR; // could not zero-terminate the string
+    return OTR4_ERROR; /* could not zero-terminate the string */
   }
 
   *dst = buff;

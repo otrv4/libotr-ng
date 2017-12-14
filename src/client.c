@@ -316,9 +316,13 @@ char *otr4_client_query_message(const char *recipient, const char *message,
   if (!conv)
     return NULL;
 
+  // TODO: add name
+  ret = "Failed to start an Off-the-Record private conversation.";
+
   // TODO: implement policy
-  // TODO: Check for errors when calling this function
-  otrv4_build_query_message(&ret, message, conv->conn);
+  if (otrv4_build_query_message(&ret, message, conv->conn))
+    return ret;
+
   return ret;
 }
 
