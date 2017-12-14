@@ -646,8 +646,8 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
 
   // Alice sends query message
   string_t query_message = NULL;
-  otrv4_assert(otrv4_build_query_message(&query_message, "",
-                                         alice) == OTR4_SUCCESS);
+  otrv4_assert(otrv4_build_query_message(&query_message, "", alice) ==
+               OTR4_SUCCESS);
   otrv4_assert_cmpmem("?OTRv3", query_message, 6);
 
   // Bob receives query message
