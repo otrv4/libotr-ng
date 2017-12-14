@@ -74,6 +74,7 @@ void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 
   memset(manager->brace_key, 0, sizeof(manager->brace_key));
   memset(manager->ssid, 0, sizeof(manager->ssid));
+  manager->ssid_half = 0;
   memset(manager->extra_key, 0, sizeof(manager->extra_key));
   memset(manager->tmp_key, 0, sizeof(manager->tmp_key));
 
@@ -98,6 +99,7 @@ void key_manager_destroy(key_manager_t *manager) {
 
   sodium_memzero(manager->brace_key, sizeof(manager->brace_key));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
+  manager->ssid_half = 0;
   sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
   // TODO: once ake is finished should be wiped out
   sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
@@ -474,20 +476,29 @@ static otrv4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
 #endif
 
   calculate_ssid(manager, shared);
+  if (gcry_mpi_cmp(manager->our_dh->pub, manager->their_dh) > 0) {
+    manager->ssid_half = OTR4_SESSION_ID_SECOND_HALF_BOLD;
+  } else {
+    manager->ssid_half = OTR4_SESSION_ID_FIRST_HALF_BOLD;
+  }
 
 #ifdef DEBUG
   printf("THE SECURE SESSION ID\n");
   printf("ssid: \n");
-  printf("the first 32 = ");
-  for (unsigned int i = 0; i < 4; i++) {
-    printf("0x%08x ", manager->ssid[i]);
+  if (manager->ssid_half == OTR4_SESSION_ID_FIRST_HALF_BOLD) {
+    printf("the first 32 = ");
+    for (unsigned int i = 0; i < 4; i++) {
+      printf("0x%08x ", manager->ssid[i]);
+    }
+  } else {
+    printf("\n");
+    printf("the last 32 = ");
+    for (unsigned int i = 4; i < 8; i++) {
+      printf("0x%08x ", manager->ssid[i]);
+    }
+    printf("\n");
+    printf("the 32 = ");
   }
-  printf("\n");
-  printf("the last 32 = ");
-  for (unsigned int i = 4; i < 8; i++) {
-    printf("0x%08x ", manager->ssid[i]);
-  }
-  printf("\n");
 #endif
 
   if (key_manager_new_ratchet(manager, shared) == OTR4_ERROR) {

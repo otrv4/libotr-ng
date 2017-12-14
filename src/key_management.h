@@ -31,6 +31,11 @@ typedef struct {
   chain_link_t chain_b[1];
 } ratchet_t;
 
+typedef enum {
+  OTR4_SESSION_ID_FIRST_HALF_BOLD,
+  OTR4_SESSION_ID_SECOND_HALF_BOLD
+} session_id_half;
+
 typedef struct {
   /* AKE context */
   ecdh_keypair_t our_ecdh[1];
@@ -50,6 +55,7 @@ typedef struct {
   brace_key_t brace_key;
 
   uint8_t ssid[8];
+  session_id_half ssid_half;
   uint8_t extra_key[HASH_BYTES];
   uint8_t tmp_key[HASH_BYTES];
 
