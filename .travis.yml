@@ -73,8 +73,8 @@ before_install:
 
 before_script:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
-	brew install libgcrypt || brew outdated libgcrypt || brew upgrade libgcrypt &&
-	brew install libsodium || brew outdated libsodium || brew upgrade libsodium;
+      brew install libgcrypt || brew outdated libgcrypt || brew upgrade libgcrypt &&
+      brew install libsodium || brew outdated libsodium || brew upgrade libsodium &&
     fi
   - mkdir .deps
   - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
