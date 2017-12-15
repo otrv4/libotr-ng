@@ -72,7 +72,10 @@ before_install:
 - if [[ "$T" = "style" ]]; then sudo apt-get install clang-format-3.5 --quiet --assume-yes; fi
 
 before_script:
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then install-deps-osx; fi
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+	brew install libgcrypt || brew outdated libgcrypt || brew upgrade libgcrypt &&
+	brew install libsodium || brew outdated libsodium || brew upgrade libsodium;
+    fi
   - mkdir .deps
   - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
       curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps &&
