@@ -61,7 +61,6 @@ sudo: required
 before_install:
 # Update the repo
 
-- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew outdated libgcrypt || brew upgrade libgcrypt; fi
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew update; fi
 - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get update --quiet --assume-yes; fi
 
@@ -73,7 +72,7 @@ before_install:
 - if [[ "$T" = "style" ]]; then sudo apt-get install clang-format-3.5 --quiet --assume-yes; fi
 
 before_script:
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install libgcrypt && brew install libsodium; fi
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then install-deps-osx; fi
   - mkdir .deps
   - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
       curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps &&

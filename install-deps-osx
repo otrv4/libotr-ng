@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -x
+
+time brew update
+brew analytics off || true
+for dep in libgcrypt libsodium; do
+	time (brew install $dep || brew outdated $dep || brew upgrade $dep)
+done
+time brew cleanup || true
