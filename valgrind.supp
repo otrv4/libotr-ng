@@ -305,6 +305,7 @@
 {
    osx_image_loader_15
    Memcheck:Param
+   msg->desc.port.name
    fun:mach_msg_trap
    fun:mach_msg
    ...
