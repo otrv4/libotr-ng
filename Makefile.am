@@ -55,16 +55,16 @@ check-valgrind-drd: check
 # Finds todo items
 TODO_TYPES ?= HACK TODO @todo FIXME BUG XXX PERF FUTURE REMOVE MAGIC UNIFY
 TODO_LOCATIONS ?= src/*.c src/test/*.c Makefile.am
-todo::
-	@(find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c' -or -name '*.cxx' -or -name '*.hxx' -or -name '*.py') | xargs egrep --color=auto -w \
+todo:
+	@(find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c') | xargs egrep --color=auto -w \
 		`echo $(TODO_TYPES) | tr ' ' '|'`
 	@echo '============================='
 	@(for i in $(TODO_TYPES); do \
-	  (find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c' -or -name '*.cxx' -or -name '*.hxx' -or -name '*.py') | xargs egrep -w $$i > /dev/null || continue; \
+	  (find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c') | xargs egrep -w $$i > /dev/null || continue; \
 	  /bin/echo -n $$i'       ' | head -c 10; \
-	  (find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c' -or -name '*.cxx' -or -name '*.hxx' -or -name '*.py') | xargs egrep -w $$i| wc -l; \
+	  (find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c') | xargs egrep -w $$i| wc -l; \
 	done)
 	@echo '============================='
 	@echo -n 'Total     '
-	@(find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c' -or -name '*.cxx' -or -name '*.hxx' -or -name '*.py') | xargs egrep -w \
+	@(find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c') | xargs egrep -w \
 		`echo $(TODO_TYPES) | tr ' ' '|'` | wc -l
