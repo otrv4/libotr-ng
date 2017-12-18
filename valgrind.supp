@@ -303,6 +303,14 @@
    fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjPKcRNS_21InitializerTimingListERNS_15UninitedUpwardsE
 }
 {
+   osx_image_loader_15
+   Memcheck:Param
+   fun:mach_msg_trap
+   fun:mach_msg
+   ...
+   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextERNS_21InitializerTimingListE
+}
+{
    osx_init_object
    Memcheck:Leak
    ...
@@ -380,6 +388,34 @@
    fun:__sfvwrite
    fun:fputs
    ...
+   fun:g_test_run
+   fun:main
+}
+# Some optimizations. TODO: should be checked
+{
+   opt_aes_encrypt
+   Memcheck:Value8
+   fun:vng_aes_encrypt_opt
+   obj:*
+   obj:*
+}
+{
+   opt_memchr
+   Memcheck:Addr16
+   fun:_platform_memchr$VARIANT$Base
+   ...
+   fun:g_test_run_suite_internal
+   fun:g_test_run_suite_internal
+   fun:g_test_run_suite
+}
+{
+   opt_fgets
+   Memcheck:Addr16
+   fun:_platform_memchr$VARIANT$Base
+   fun:fgets
+   ...
+   fun:g_test_run_suite_internal
+   fun:g_test_run_suite
    fun:g_test_run
    fun:main
 }
