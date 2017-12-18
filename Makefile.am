@@ -42,7 +42,7 @@ LOOPS = 10
 test-loop:
 	for ((i=1; i <= ${LOOPS}; ++i)) do make test && echo $$i || break; done
 
-# for the make check-valgrind
+# For the make check-valgrind
 check-valgrind-memcheck: check
 	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/test
 
@@ -51,3 +51,20 @@ check-valgrind-helgrind: check
 
 check-valgrind-drd: check
 	valgrind --tool=drd $(top_builddir)/src/test/test
+
+# Finds todo items
+TODO_TYPES ?= HACK TODO @todo FIXME BUG XXX PERF FUTURE REMOVE MAGIC UNIFY
+TODO_LOCATIONS ?= src/*.c src/test/*.c Makefile.am
+todo::
+	@(find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c' -or -name '*.cxx' -or -name '*.hxx' -or -name '*.py') | xargs egrep --color=auto -w \
+		`echo $(TODO_TYPES) | tr ' ' '|'`
+	@echo '============================='
+	@(for i in $(TODO_TYPES); do \
+	  (find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c' -or -name '*.cxx' -or -name '*.hxx' -or -name '*.py') | xargs egrep -w $$i > /dev/null || continue; \
+	  /bin/echo -n $$i'       ' | head -c 10; \
+	  (find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c' -or -name '*.cxx' -or -name '*.hxx' -or -name '*.py') | xargs egrep -w $$i| wc -l; \
+	done)
+	@echo '============================='
+	@echo -n 'Total     '
+	@(find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c' -or -name '*.cxx' -or -name '*.hxx' -or -name '*.py') | xargs egrep -w \
+		`echo $(TODO_TYPES) | tr ' ' '|'` | wc -l
