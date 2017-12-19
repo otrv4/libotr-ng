@@ -10,6 +10,7 @@ AM_SILENT_RULES([no])
 
 dnl Debug
 AX_CHECK_ENABLE_DEBUG([yes])
+AX_CHECK_ENABLE_GPROF
 
 dnl Valgrind: make check-valgrind
 AX_VALGRIND_DFLT([sgcheck], [off])
