@@ -312,6 +312,24 @@
    fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextERNS_21InitializerTimingListE
 }
 {
+   osx_image_loader_16
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN13list_array_ttI10property_t15property_list_tE11attachListsEPKPS1_j
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjPKcRNS_21InitializerTimingListERNS_15UninitedUpwardsE
+}
+{
+   osx_image_loader_17
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN13list_array_ttI8method_t13method_list_tE11attachListsEPKPS1_j
+   ...
+   fun:load_images
+   fun:_ZN4dyldL12notifySingleE17dyld_image_statesPK11ImageLoaderPNS1_21InitializerTimingListE
+
+}
+{
    osx_init_object
    Memcheck:Leak
    ...
@@ -419,4 +437,11 @@
    fun:g_test_run_suite
    fun:g_test_run
    fun:main
+}
+{
+   opt_memchr_2
+   Memcheck:Addr16
+   fun:_platform_memchr$VARIANT$Base
+   ...
+   fun:g_test_run_suite_internal
 }
