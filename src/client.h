@@ -33,7 +33,7 @@ otr4_client_t *otr4_client_new(otr4_client_state_t *);
 void otr4_client_free(otr4_client_t *client);
 
 char *otr4_client_query_message(const char *recipient, const char *message,
-                                otr4_client_t *client);
+                                otr4_client_t *client, OtrlPolicy policy);
 
 int otr4_client_send(char **newmessage, const char *message,
                      const char *recipient, otr4_client_t *client);

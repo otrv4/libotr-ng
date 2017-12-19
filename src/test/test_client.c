@@ -75,11 +75,11 @@ void test_client_api() {
       set_up_client(charlie_state, CHARLIE_IDENTITY, PHI, 3);
 
   char *query_msg_to_bob =
-      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRV4_ALLOW_V4);
   otrv4_assert(query_msg_to_bob);
 
-  char *query_msg_to_charlie =
-      otr4_client_query_message(CHARLIE_IDENTITY, "Hi charlie", alice);
+  char *query_msg_to_charlie = otr4_client_query_message(
+      CHARLIE_IDENTITY, "Hi charlie", alice, OTRV4_ALLOW_V4);
   otrv4_assert(query_msg_to_charlie);
 
   int ignore = 0;
@@ -264,7 +264,8 @@ void test_conversation_with_multiple_locations() {
   otr4_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
   otr4_client_t *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
 
-  char *query_msg = otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+  char *query_msg =
+      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRV4_ALLOW_V4);
 
   int ignore = 0;
   char *from_alice_to_bob = NULL, *frombob = NULL, *todisplay = NULL;
@@ -361,7 +362,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otr4_client_t *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
 
   char *query_msg_to_bob =
-      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRV4_ALLOW_V4);
 
   int ignore = 0;
   char *from_alice_to_bob = NULL, *todisplay = NULL, *bobs_id = NULL,
@@ -498,7 +499,7 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
 
   // Alice sends a query message to Bob
   char *query_msg_to_bob =
-      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRV4_ALLOW_V4);
 
   int ignore = 0;
   char *todisplay = NULL, *bobs_id = NULL, *alices_auth_r = NULL,
@@ -613,11 +614,11 @@ void test_valid_identity_msg_in_waiting_auth_r() {
 
   // Alice sends a query message to Bob
   char *query_msg_to_bob =
-      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRV4_ALLOW_V4);
 
   // Bob sends a query message to Alice
-  char *query_msg_to_alice =
-      otr4_client_query_message(ALICE_IDENTITY, "Hi alice", bob);
+  char *query_msg_to_alice = otr4_client_query_message(
+      ALICE_IDENTITY, "Hi alice", bob, OTRV4_ALLOW_V4);
 
   int ignore = 0;
   char *todisplay = NULL, *alices_id = NULL, *bobs_id = NULL,
@@ -789,7 +790,7 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
 
   // Alice sends a query message to Bob
   char *query_msg_to_bob =
-      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRV4_ALLOW_V4);
 
   int ignore = 0;
   char *todisplay = NULL, *bobs_id = NULL, *alices_auth_r = NULL,
@@ -927,7 +928,7 @@ void test_client_sends_fragmented_message(void) {
   otr4_client_t *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
 
   char *query_msg_to_bob =
-      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+      otr4_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRV4_ALLOW_V4);
   otrv4_assert(query_msg_to_bob);
 
   char *from_alice_to_bob = NULL, *from_bob = NULL, *todisplay = NULL;

@@ -127,6 +127,7 @@ static otrv4_t *create_connection_for(const char *recipient,
   if (!otr3_conn)
     return NULL;
 
+  // TODO: put here policy none
   conn = otrv4_new(client->state, get_policy_for(recipient));
   if (!conn) {
     otr3_conn_free(otr3_conn);
@@ -308,7 +309,7 @@ int otr4_client_receive(char **newmessage, char **todisplay,
 }
 
 char *otr4_client_query_message(const char *recipient, const char *message,
-                                otr4_client_t *client) {
+                                otr4_client_t *client, OtrlPolicy policy) {
   otr4_conversation_t *conv = NULL;
   char *ret = NULL;
 
@@ -319,6 +320,7 @@ char *otr4_client_query_message(const char *recipient, const char *message,
   // TODO: add name
   ret = "Failed to start an Off-the-Record private conversation.";
 
+  conv->conn->supported_versions = policy;
   // TODO: implement policy
   if (otrv4_build_query_message(&ret, message, conv->conn))
     return ret;
