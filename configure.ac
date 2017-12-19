@@ -71,7 +71,6 @@ AX_CFLAGS_GCC_OPTION([-Wfloat-equal])
 AX_CFLAGS_GCC_OPTION([-Wnested-externs])
 AX_CFLAGS_GCC_OPTION([-Wpointer-arith])
 AX_CFLAGS_GCC_OPTION([-Wredundant-decls])
-AX_CFLAGS_GCC_OPTION([-Wstrict-prototypes])
 AX_CFLAGS_GCC_OPTION([-Wlogical-op])
 AX_CFLAGS_GCC_OPTION([-Wbad-cast-qual])
 dnl for undefined behavior
