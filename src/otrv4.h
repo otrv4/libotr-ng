@@ -23,6 +23,17 @@
     dh_free();                                                                 \
   } while (0);
 
+// TODO: how is this type chosen?
+#define OTR4_POLICY_ALLOW_V3 0x04
+#define OTR4_POLICY_ALLOW_V4 0x05
+
+/* Analogous to v1 and v3 policies */
+#define OTR4_POLICY_NEVER 0x00
+#define OTR4_POLICY_OPPORTUNISTIC (OTR4_POLICY_ALLOW_V3 | OTR4_POLICY_ALLOW_V4)
+#define OTR4_POLICY_MANUAL (OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_ALLOW_V4)
+#define OTR4_POLICY_ALWAYS (OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_ALLOW_V4)
+#define OTR4_POLICY_DEFAULT OTR4_POLICY_OPPORTUNISTIC
+
 static int otrl_initialized = 0;
 static inline void otrv3_init(void) {
   if (otrl_initialized)
