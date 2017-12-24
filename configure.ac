@@ -64,6 +64,8 @@ AC_PROG_CC_STDC
 AX_CFLAGS_GCC_OPTION([-Wall])
 # AX_CFLAGS_GCC_OPTION([-W]) Uncomment this to allow Wextra flag
 AX_CFLAGS_GCC_OPTION([-Werror])
+AX_CFLAGS_GCC_OPTION([-Wformat])
+AX_CFLAGS_GCC_OPTION([-Wno-format-extra-args])
 AX_CFLAGS_GCC_OPTION([-Wfatal-errors])
 AX_CFLAGS_GCC_OPTION([-Wbad-function-cast])
 AX_CFLAGS_GCC_OPTION([-Wdiv-by-zero])
@@ -74,6 +76,7 @@ AX_CFLAGS_GCC_OPTION([-Wredundant-decls])
 # AX_CFLAGS_GCC_OPTION([-Wstrict-prototypes])
 AX_CFLAGS_GCC_OPTION([-Wlogical-op])
 AX_CFLAGS_GCC_OPTION([-Wbad-cast-qual])
+AX_CFLAGS_GCC_OPTION([-Wformat-nonliteral])
 dnl for undefined behavior
 # AX_CFLAGS_GCC_OPTION([-fcatch-undefined-behavior])
 # AX_CFLAGS_GCC_OPTION([-fno-delete-null-pointer-checks])
