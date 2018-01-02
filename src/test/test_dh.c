@@ -9,8 +9,8 @@ void dh_test_api() {
 
   uint8_t shared1[DH3072_MOD_LEN_BYTES], shared2[DH3072_MOD_LEN_BYTES];
 
-  memset(shared1, 0, DH3072_MOD_LEN_BYTES);
-  memset(shared2, 0, DH3072_MOD_LEN_BYTES);
+  memset(shared1, 0, sizeof shared1);
+  memset(shared2, 0, sizeof shared2);
 
   otrv4_assert(dh_shared_secret(shared1, sizeof(shared1), alice->priv,
                                 bob->pub) == OTR4_SUCCESS);

@@ -20,7 +20,7 @@ user_profile_t *user_profile_new(const string_t versions) {
   profile->expires = 0;
   profile->versions = otrv4_strdup(versions);
   ec_bzero(profile->shared_prekey, ED448_POINT_BYTES);
-  memset(profile->signature, 0, sizeof(eddsa_signature_t));
+  memset(profile->signature, 0, sizeof(profile->signature));
   otr_mpi_init(profile->transitional_signature);
 
   return profile;

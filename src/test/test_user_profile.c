@@ -163,7 +163,7 @@ void test_user_profile_signs_and_verify() {
 
   otrv4_assert(user_profile_verify_signature(profile) == otrv4_true);
 
-  memset(profile->signature, 0, ED448_SIGNATURE_BYTES);
+  memset(profile->signature, 0, sizeof(profile->signature));
 
   otrv4_assert(user_profile_verify_signature(profile) == otrv4_false);
 

@@ -967,8 +967,8 @@ static otrv4_err_t encrypt_msg_on_non_interactive_auth(
 
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
-  memset(enc_key, 0, sizeof(m_enc_key_t));
-  memset(mac_key, 0, sizeof(m_mac_key_t));
+  memset(enc_key, 0, sizeof enc_key);
+  memset(mac_key, 0, sizeof mac_key);
 
   if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
     free(message);
@@ -1344,7 +1344,7 @@ static otrv4_bool_t valid_data_message_on_non_interactive_auth(
     return otrv4_false;
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
-  memset(mac_tag, 0, sizeof(m_mac_key_t));
+  memset(mac_tag, 0, sizeof mac_tag);
 
   /* Auth MAC = KDF_2(auth_mac_k || t || enc_msg) */
   decaf_shake256_ctx_t hd;
@@ -1394,8 +1394,8 @@ static otrv4_bool_t verify_non_interactive_auth_message(
     m_enc_key_t enc_key;
     m_mac_key_t mac_key;
 
-    memset(enc_key, 0, sizeof(m_enc_key_t));
-    memset(mac_key, 0, sizeof(m_mac_key_t));
+    memset(enc_key, 0, sizeof enc_key);
+    memset(mac_key, 0, sizeof mac_key);
 
     /* auth_mac_k = KDF_2(0x01 || tmp_k) */
     uint8_t magic[1] = {0x01};
@@ -1997,8 +1997,8 @@ static otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
 
-  memset(enc_key, 0, sizeof(m_enc_key_t));
-  memset(mac_key, 0, sizeof(m_mac_key_t));
+  memset(enc_key, 0, sizeof enc_key);
+  memset(mac_key, 0, sizeof mac_key);
 
   // TODO: check this case with Nik on otr3
   if (otr->state != OTRV4_STATE_ENCRYPTED_MESSAGES) {
@@ -2322,8 +2322,8 @@ static otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
 
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
-  memset(enc_key, 0, sizeof(m_enc_key_t));
-  memset(mac_key, 0, sizeof(m_mac_key_t));
+  memset(enc_key, 0, sizeof enc_key);
+  memset(mac_key, 0, sizeof mac_key);
 
   if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
     free(ser_mac_keys);

@@ -134,6 +134,7 @@ otrv4_err_t dh_shared_secret(uint8_t *shared, size_t shared_bytes,
   gcry_mpi_release(secret);
 
   // Replace removed leading zeroes to ensure size is 384
+  // TODO: this is memsetting a uint8_t *
   memset(shared, 0, shared_bytes);
   memcpy(shared + shared_bytes - written, buffer, written);
 

@@ -191,10 +191,10 @@ void test_dake_non_interactive_auth_message_serializes(
   user_profile_copy(msg->profile, f->profile);
   ec_point_copy(msg->X, ecdh->pub);
   msg->A = dh_mpi_copy(dh->pub);
-  memset(msg->nonce, 0, DATA_MSG_NONCE_BYTES);
+  memset(msg->nonce, 0, sizeof(msg->nonce));
   msg->enc_msg = NULL;
   msg->enc_msg_len = 0;
-  memset(msg->auth_mac, 0, HASH_BYTES);
+  memset(msg->auth_mac, 0, sizeof(msg->auth_mac));
 
   uint8_t secret[1] = {0x01};
   shake_256_hash(msg->auth_mac, HASH_BYTES, secret, 1);
@@ -297,10 +297,10 @@ void test_dake_non_interactive_auth_message_deserializes(
   user_profile_copy(msg->profile, f->profile);
   ec_point_copy(msg->X, ecdh->pub);
   msg->A = dh_mpi_copy(dh->pub);
-  memset(msg->nonce, 0, DATA_MSG_NONCE_BYTES);
+  memset(msg->nonce, 0, sizeof(msg->nonce));
   msg->enc_msg = NULL;
   msg->enc_msg_len = 0;
-  memset(msg->auth_mac, 0, HASH_BYTES);
+  memset(msg->auth_mac, 0, sizeof(msg->auth_mac));
 
   uint8_t secret[1] = {0x01};
   shake_256_hash(msg->auth_mac, HASH_BYTES, secret, 1);

@@ -54,8 +54,9 @@ static data_message_t *set_up_data_msg() {
       gcry_mpi_scan(&data_msg->dh, GCRYMPI_FMT_USG, dh_data, 383, NULL);
   otrv4_assert(!err);
 
-  memset(data_msg->nonce, 0xF, DATA_MSG_NONCE_BYTES);
+  memset(data_msg->nonce, 0xF, sizeof(data_msg->nonce));
   data_msg->enc_msg = malloc(3);
+  // TODO: check this memset
   memset(data_msg->enc_msg, 0xE, 3);
   data_msg->enc_msg_len = 3;
 

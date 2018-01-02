@@ -16,7 +16,7 @@ void test_ser_deser_uint() {
   g_assert_cmpuint(uint8_des, ==, 0x12);
   g_assert_cmpint(read, ==, sizeof(uint8_t));
 
-  memset(buf, 0, sizeof(buf));
+  memset(buf, 0, sizeof buf);
   serialize_uint16(buf, 0x1234);
   otrv4_assert_cmpmem(buf, ser, 2);
 
@@ -26,7 +26,7 @@ void test_ser_deser_uint() {
   g_assert_cmpuint(uint16_des, ==, 0x1234);
   g_assert_cmpint(read, ==, sizeof(uint16_t));
 
-  memset(buf, 0, sizeof(buf));
+  memset(buf, 0, sizeof buf);
   serialize_uint32(buf, 0x12345678);
   otrv4_assert_cmpmem(buf, ser, 4);
 
@@ -36,7 +36,7 @@ void test_ser_deser_uint() {
   g_assert_cmpuint(uint32_des, ==, 0x12345678);
   g_assert_cmpint(read, ==, sizeof(uint32_t));
 
-  memset(buf, 0, sizeof(buf));
+  memset(buf, 0, sizeof buf);
   serialize_uint64(buf, 0x123456789ABCDEF0);
   otrv4_assert_cmpmem(buf, ser, 8);
 

@@ -181,7 +181,7 @@ otrv4_bool_t valid_data_message(m_mac_key_t mac_key,
   }
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
-  memset(mac_tag, 0, sizeof(m_mac_key_t));
+  memset(mac_tag, 0, sizeof mac_tag);
 
   shake_256_mac(mac_tag, sizeof mac_tag, mac_key, sizeof(m_mac_key_t), body,
                 bodylen);
