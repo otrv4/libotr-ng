@@ -85,23 +85,22 @@ void dh_free(void) {
 
 otrv4_err_t dh_keypair_generate(dh_keypair_t keypair) {
   uint8_t hash[DH_KEY_SIZE];
+  gcry_mpi_t privkey = NULL;
+  uint8_t *secbuf = NULL;
 
-  uint8_t *secbuf = malloc(DH_KEY_SIZE);
-  if (secbuf == NULL)
-    return OTR4_ERROR;
-
-  random_bytes(secbuf, DH_KEY_SIZE);
-  shake_256_hash(hash, sizeof(hash), secbuf, sizeof(secbuf));
+  secbuf = gcry_random_bytes_secure(DH_KEY_SIZE, GCRY_STRONG_RANDOM);
+  shake_256_hash(hash, sizeof(hash), secbuf, DH_KEY_SIZE);
 
   gcry_error_t err =
-      gcry_mpi_scan(&keypair->priv, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);
-  free(secbuf);
+      gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);
+  gcry_free(secbuf);
 
   if (err)
     return OTR4_ERROR;
 
+  keypair->priv = privkey;
   keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
-  gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, keypair->priv, DH3072_MODULUS);
+  gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
 
   return OTR4_SUCCESS;
 }
