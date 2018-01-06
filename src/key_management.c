@@ -561,8 +561,8 @@ static void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
 
   shake_256_kdf(enc_key, sizeof(m_enc_key_t), magic1, chain_key,
                 sizeof(chain_key_t));
-  shake_256_kdf(mac_key, sizeof(m_mac_key_t), magic2, chain_key,
-                sizeof(chain_key_t));
+  shake_256_kdf(mac_key, sizeof(m_mac_key_t), magic2, enc_key,
+                sizeof(m_enc_key_t));
 }
 
 otrv4_err_t
