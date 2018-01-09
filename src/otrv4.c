@@ -156,6 +156,11 @@ static const user_profile_t *get_my_user_profile(otrv4_t *otr) {
   allowed_versions(versions, otr);
   maybe_create_keys(otr->conversation);
 
+  // This is a temporary measure for the pidgin plugin to work
+  // This will be removed later
+  uint8_t sym_key[ED448_PRIVATE_BYTES] = {0x01};
+  otr4_client_state_add_shared_prekey_v4(otr->conversation->client, sym_key);
+
   otr->profile =
       user_profile_build(versions, otr->conversation->client->keypair,
                          otr->conversation->client->shared_prekey_pair);
@@ -619,19 +624,19 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
     if (user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
       continue;
 
-    uint8_t *phi_val = NULL;
-    size_t phi_len = strlen(phi) + 1;
-    phi_val = malloc(phi_len);
+    char *phi_val = NULL;
+    if (!phi) {
+      phi = "";
+    }
+    phi_val = otrv4_strdup(phi);
     if (!phi_val)
       return OTR4_ERROR;
-
-    stpcpy((char *)phi_val, phi);
 
     shake_256_hash(hash_ser_i_profile, sizeof(hash_ser_i_profile),
                    ser_i_profile, ser_i_profile_len);
     shake_256_hash(hash_ser_r_profile, sizeof(hash_ser_r_profile),
                    ser_r_profile, ser_r_profile_len);
-    shake_256_hash(hash_phi, sizeof(hash_phi), phi_val, phi_len);
+    shake_256_hash(hash_phi, sizeof(hash_phi), (uint8_t*) phi_val, strlen(phi_val)+1);
 
     free(phi_val);
     phi_val = NULL;
