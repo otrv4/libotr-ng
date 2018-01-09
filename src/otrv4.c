@@ -636,7 +636,8 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
                    ser_i_profile, ser_i_profile_len);
     shake_256_hash(hash_ser_r_profile, sizeof(hash_ser_r_profile),
                    ser_r_profile, ser_r_profile_len);
-    shake_256_hash(hash_phi, sizeof(hash_phi), (uint8_t*) phi_val, strlen(phi_val)+1);
+    shake_256_hash(hash_phi, sizeof(hash_phi), (uint8_t *)phi_val,
+                   strlen(phi_val) + 1);
 
     free(phi_val);
     phi_val = NULL;
@@ -2469,7 +2470,7 @@ otrv4_err_t otrv4_prepare_to_send_message(string_t *to_send,
   // Optional. Client might want or not to disguise the length of
   // message
 
-  //TODO if we need to pad, merge the padding tlv and the user's tlvs to send
+  // TODO if we need to pad, merge the padding tlv and the user's tlvs to send
   if (otr->conversation->client->pad) {
     if (append_padding_tlv(tlvs, strlen(message)))
       return OTR4_ERROR;
