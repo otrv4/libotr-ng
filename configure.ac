@@ -2,7 +2,7 @@ dnl                                               -*- Autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT([libotr4], [0.0.1], [coyim@olabini.se])
+AC_INIT([libotr4], [0.0.1], [otrv4-dev@autonomia.digital])
 AC_CONFIG_SRCDIR([src/otrv4.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.])
