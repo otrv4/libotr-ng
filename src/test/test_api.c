@@ -180,6 +180,66 @@ void test_api_interactive_conversation(void) {
   OTR4_FREE;
 }
 
+// TODO: the way that i and j is being handled is not competly correct apparently. Including this test for reference
+void test_api_interactive_conversation_bob(void) {
+  OTR4_INIT;
+
+  otr4_client_state_t *alice_state = otr4_client_state_new(NULL);
+  otr4_client_state_t *bob_state = otr4_client_state_new(NULL);
+
+  otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+
+  bob_state->pad = true;
+  alice_state->pad = true;
+
+  // DAKE HAS FINISHED.
+  do_dake_fixture(alice, bob);
+
+  int message_id;
+  otrv4_response_t *response_to_bob = NULL;
+  otrv4_response_t *response_to_alice = NULL;
+
+  // Bob sends a data message
+  string_t to_send = NULL;
+  tlv_t *tlvs = NULL;
+  otrv4_err_t err;
+
+  for (message_id = 2; message_id < 5; message_id++) {
+    err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
+    assert_msg_sent(err, to_send);
+    otrv4_assert(tlvs);
+    otrv4_assert(!bob->keys->old_mac_keys);
+
+    // This is a follow up message.
+    g_assert_cmpint(bob->keys->i, ==, 1);
+    g_assert_cmpint(bob->keys->j, ==, message_id);
+
+    // Alice receives a data message
+    response_to_alice = otrv4_response_new();
+    otrv4_err_t err = otrv4_receive_message(response_to_alice, to_send, alice);
+    assert_msg_rec(err, "hi", response_to_alice);
+    otrv4_assert(alice->keys->old_mac_keys);
+
+    free_message_and_response(response_to_alice, &to_send);
+
+    g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id - 1);
+
+    // Next message Bob sends is a new "ratchet"
+    g_assert_cmpint(alice->keys->i, ==, 0);
+    g_assert_cmpint(alice->keys->j, ==, 0);
+  }
+
+  otrv4_tlv_free(tlvs);
+
+  free_message_and_response(response_to_bob, &to_send);
+  otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
+  otrv4_client_state_free_all(alice_state, bob_state);
+  otrv4_free_all(alice, bob);
+
+  OTR4_FREE;
+}
+
 void test_api_non_interactive_conversation(void) {
   OTR4_INIT;
 

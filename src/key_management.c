@@ -222,6 +222,7 @@ message_chain_t *decide_between_chain_keys(const ratchet_t *ratchet,
   ret->sending = NULL;
   ret->receiving = NULL;
 
+// TODO: this conversion from point to mpi might be checked.
   gcry_mpi_t our_mpi = NULL;
   gcry_mpi_t their_mpi = NULL;
   if (gcry_mpi_scan(&our_mpi, GCRYMPI_FMT_USG, our, sizeof(ec_public_key_t),
@@ -283,6 +284,7 @@ chain_link_t *derive_next_chain_link(chain_link_t *previous) {
 
   hash_hash(l->key, sizeof(chain_key_t), previous->key, sizeof(chain_key_t));
 
+  // TODO: the previous is still needed for the MK
   sodium_memzero(previous->key, CHAIN_KEY_BYTES);
 
   l->id = previous->id + 1;
@@ -374,7 +376,9 @@ static otrv4_err_t derive_sending_chain_key(key_manager_t *manager) {
   chain_link_t *last = (chain_link_t *)chain_get_last(chain->sending);
   free(chain);
   chain = NULL;
+  (void)last;
 
+  // TODO: seems to be wrong
   chain_link_t *l = derive_next_chain_link(last);
   if (l == NULL)
     return OTR4_ERROR;

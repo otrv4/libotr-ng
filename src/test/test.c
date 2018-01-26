@@ -174,6 +174,8 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/api/interactive_conversation/v4",
                   test_api_interactive_conversation);
+  g_test_add_func("/api/interactive_conversation_bob/v4",
+                  test_api_interactive_conversation_bob);
   g_test_add_func("/api/non_interactive_conversation/v4",
                   test_api_non_interactive_conversation);
   g_test_add_func("/api/non_interactive_conversation_enc_msg/v4",
