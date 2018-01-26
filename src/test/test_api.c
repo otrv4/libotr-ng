@@ -180,7 +180,8 @@ void test_api_interactive_conversation(void) {
   OTR4_FREE;
 }
 
-// TODO: the way that i and j is being handled is not competly correct apparently. Including this test for reference
+// TODO: the way that i and j is being handled is not competly correct
+// apparently. Including this test for reference
 void test_api_interactive_conversation_bob(void) {
   OTR4_INIT;
 

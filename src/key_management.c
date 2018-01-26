@@ -222,7 +222,7 @@ message_chain_t *decide_between_chain_keys(const ratchet_t *ratchet,
   ret->sending = NULL;
   ret->receiving = NULL;
 
-// TODO: this conversion from point to mpi might be checked.
+  // TODO: this conversion from point to mpi might be checked.
   gcry_mpi_t our_mpi = NULL;
   gcry_mpi_t their_mpi = NULL;
   if (gcry_mpi_scan(&our_mpi, GCRYMPI_FMT_USG, our, sizeof(ec_public_key_t),
