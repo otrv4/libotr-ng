@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <libotr/b64.h>
 
-#include "b64.h"
 #include "keys.h"
 #include "random.h"
 

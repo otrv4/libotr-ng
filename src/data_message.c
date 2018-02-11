@@ -1,6 +1,7 @@
+#include <libotr/mem.h>
+
 #include "data_message.h"
 #include "deserialize.h"
-#include "mem.h"
 #include "serialize.h"
 #include "shake.h"
 
@@ -189,7 +190,7 @@ otrv4_bool_t valid_data_message(m_mac_key_t mac_key,
   free(body);
   body = NULL;
 
-  if (mem_diff(mac_tag, data_msg->mac, sizeof mac_tag) != 0) {
+  if (otrl_mem_differ(mac_tag, data_msg->mac, sizeof mac_tag) != 0) {
     sodium_memzero(mac_tag, sizeof mac_tag);
     return otrv4_false;
   }

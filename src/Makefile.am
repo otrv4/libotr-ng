@@ -2,7 +2,6 @@ lib_LTLIBRARIES = libotr4.la
 
 libotr4_la_SOURCES = \
 		     auth.c \
-		     b64.c \
 		     client.c \
 		     client_callbacks.c \
 		     client_state.c \
@@ -17,7 +16,6 @@ libotr4_la_SOURCES = \
 		     keys.c \
 		     key_management.c \
 		     list.c \
-		     mem.c \
 		     messaging.c \
 		     mpi.c \
 		     otrv3.c \
@@ -39,8 +37,7 @@ libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
 				   $(CODE_COVERAGE_LIBS)
 
 otrincdir = $(includedir)/libotr4
-otrinc_HEADERS = b64.h \
-                 client.h \
+otrinc_HEADERS = client.h \
 		 client_state.h \
 		 client_callbacks.h \
 		 constants.h \
@@ -55,7 +52,6 @@ otrinc_HEADERS = b64.h \
 		 keys.h \
 		 key_management.h \
 		 list.h \
-		 mem.h \
 		 mpi.h \
 		 messaging.h \
 		 otrv3.h \

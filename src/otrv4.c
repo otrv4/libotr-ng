@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <libotr/b64.h>
+#include <libotr/mem.h>
 
 #include "gcrypt.h"
 
-#include "b64.h"
 #include "constants.h"
 #include "dake.h"
 #include "data_message.h"
 #include "deserialize.h"
-#include "mem.h"
 #include "otrv4.h"
 #include "random.h"
 #include "serialize.h"
@@ -1366,7 +1366,7 @@ static otrv4_bool_t valid_data_message_on_non_interactive_auth(
   free(enc_msg);
   enc_msg = NULL;
 
-  if (0 != mem_diff(mac_tag, auth->auth_mac, sizeof mac_tag)) {
+  if (0 != otrl_mem_differ(mac_tag, auth->auth_mac, sizeof mac_tag)) {
     sodium_memzero(mac_tag, sizeof mac_tag);
     return otrv4_false;
   }
@@ -1474,7 +1474,7 @@ static otrv4_bool_t verify_non_interactive_auth_message(
     /* Auth MAC = KDF_2(auth_mac_k || t) */
     uint8_t auth_mac[HASH_BYTES];
     shake_256_mac(auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
-    if (0 != mem_diff(auth_mac, auth->auth_mac, sizeof auth_mac)) {
+    if (0 != otrl_mem_differ(auth_mac, auth->auth_mac, sizeof auth_mac)) {
       free(t);
       t = NULL;
       return otrv4_false;

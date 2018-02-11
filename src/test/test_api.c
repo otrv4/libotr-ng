@@ -1,11 +1,11 @@
 #include <string.h>
+#include <libotr/b64.h>
+#include <libotr/privkey.h>
 
-#include "../b64.h"
 #include "../list.h"
 #include "../otrv4.h"
 #include "../str.h"
 
-#include <libotr/privkey.h>
 
 #define assert_msg_sent(err, to_send)                                          \
   do {                                                                         \

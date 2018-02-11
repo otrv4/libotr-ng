@@ -1,6 +1,6 @@
 #include <string.h>
+#include <libotr/b64.h>
 
-#include "b64.h"
 #include "deserialize.h"
 #include "mpi.h"
 
