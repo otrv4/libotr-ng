@@ -4,6 +4,8 @@
 #include <string.h>
 #include <time.h>
 
+#define OTRV4_DESERIALIZE_PRIVATE
+
 #include "deserialize.h"
 #include "serialize.h"
 #include "user_profile.h"

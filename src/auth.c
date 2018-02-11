@@ -1,3 +1,5 @@
+#define OTRV4_AUTH_PRIVATE
+
 #include "auth.h"
 #include "constants.h"
 #include "random.h"

@@ -1,5 +1,7 @@
 #include <libotr/mem.h>
 
+#define OTRV4_DATA_MESSAGE_PRIVATE
+
 #include "data_message.h"
 #include "deserialize.h"
 #include "serialize.h"

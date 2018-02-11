@@ -199,4 +199,8 @@ const char *otr_error_message(otrv4_err_code_t err_code);
 
 otrv4_err_t otrv4_heartbeat_checker(string_t *to_send, otrv4_t *otr);
 
+
+#ifdef OTRV4_OTRV4_PRIVATE
+#endif
+
 #endif

@@ -1,3 +1,5 @@
+#define OTRV4_FINGERPRINT_PRIVATE
+
 #include "fingerprint.h"
 #include "serialize.h"
 #include "shake.h"

@@ -1,8 +1,9 @@
-#include "client_state.h"
-
 #include <libotr/privkey.h>
 #include <stdio.h>
 
+#define OTRV4_CLIENT_STATE_PRIVATE
+
+#include "client_state.h"
 #include "deserialize.h"
 #include "instance_tag.h"
 #include "str.h"

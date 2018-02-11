@@ -1,6 +1,7 @@
 #include <libotr/instag.h>
-
 #include <string.h>
+
+#define OTRV4_INSTANCE_TAG_PRIVATE
 
 #include "instance_tag.h"
 #include "str.h"

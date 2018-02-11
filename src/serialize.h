@@ -41,4 +41,8 @@ size_t
 serialize_otrv4_shared_prekey(uint8_t *dst,
                               const otrv4_shared_prekey_pub_t shared_prekey);
 
+
+#ifdef OTRV4_SERIALIZE_PRIVATE
+#endif
+
 #endif

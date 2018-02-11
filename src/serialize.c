@@ -1,5 +1,7 @@
 #include <string.h>
 
+#define OTRV4_SERIALIZE_PRIVATE
+
 #include "serialize.h"
 
 size_t serialize_uint(uint8_t *target, const uint64_t data,

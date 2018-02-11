@@ -1,8 +1,11 @@
-#include "fragment.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define OTRV4_FRAGMENT_PRIVATE
+
+#include "fragment.h"
+
 
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
 

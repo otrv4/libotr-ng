@@ -114,5 +114,8 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
                              const dake_prekey_message_t *prekey_message);
 
 
+#ifdef OTRV4_DAKE_PRIVATE
+#endif
+
 
 #endif

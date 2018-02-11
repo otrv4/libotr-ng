@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define OTRV4_STR_PRIVATE
+
 #include "str.h"
 
 /*@null@*/ char *otrv4_strndup(const char *s, size_t s_len) {

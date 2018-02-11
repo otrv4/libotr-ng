@@ -38,4 +38,7 @@ INTERNAL void generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv);
 
 INTERNAL void snizkpk_proof_destroy(snizkpk_proof_t *src);
 
+#ifdef OTRV4_AUTH_PRIVATE
+#endif
+
 #endif

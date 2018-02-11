@@ -1,6 +1,8 @@
 #include <string.h>
 #include <libotr/b64.h>
 
+#define OTRV4_DESERIALIZE_PRIVATE
+
 #include "deserialize.h"
 #include "mpi.h"
 

@@ -5,8 +5,9 @@
 #include <libotr/b64.h>
 #include <libotr/mem.h>
 
-#include "gcrypt.h"
+#define OTRV4_OTRV4_PRIVATE
 
+#include "gcrypt.h"
 #include "constants.h"
 #include "dake.h"
 #include "data_message.h"

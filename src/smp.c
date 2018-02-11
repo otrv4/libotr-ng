@@ -1,3 +1,5 @@
+#define OTRV4_SMP_PRIVATE
+
 #include "smp.h"
 #include "auth.h"
 #include "constants.h"

@@ -77,4 +77,9 @@ otr4_messaging_client_t *otr4_messaging_client_new(otr4_userstate_t *state,
 otr4_messaging_client_t *otr4_messaging_client_get(otr4_userstate_t *state,
                                                    void *client_id);
 
+
+
+#ifdef OTRV4_MESSAGING_PRIVATE
+#endif
+
 #endif

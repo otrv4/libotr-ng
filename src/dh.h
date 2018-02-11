@@ -46,10 +46,7 @@ INTERNAL dh_mpi_t dh_mpi_copy(const dh_mpi_t src);
 
 INTERNAL void dh_mpi_release(dh_mpi_t mpi);
 
-#ifdef OTRV4_TESTS
-
-// This is a test helper, and should really be moved there.
- int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2);
+#ifdef OTRV4_DH_PRIVATE
 
 tstatic void dh_pub_key_destroy(dh_keypair_t keypair);
 

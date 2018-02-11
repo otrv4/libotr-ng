@@ -80,4 +80,8 @@ INTERNAL otrv4_bool_t ec_verify(const uint8_t sig[DECAF_EDDSA_448_SIGNATURE_BYTE
                        const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg,
                        size_t msg_len);
 
+
+#ifdef OTRV4_ED448_PRIVATE
+#endif
+
 #endif

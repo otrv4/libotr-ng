@@ -44,4 +44,8 @@ user_profile_t *
 user_profile_build(const string_t versions, otrv4_keypair_t *keypair,
                    otrv4_shared_prekey_pair_t *shared_prekey_keypair);
 
+
+#ifdef OTRV4_USER_PROFILE_PRIVATE
+#endif
+
 #endif

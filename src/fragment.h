@@ -42,4 +42,8 @@ INTERNAL otrv4_err_t otr4_unfragment_message(char **unfrag_msg,
                                     const string_t message,
                                     const int our_instance_tag);
 
+
+#ifdef OTRV4_FRAGMENT_PRIVATE
+#endif
+
 #endif

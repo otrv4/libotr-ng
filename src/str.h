@@ -11,4 +11,8 @@
 
 char *otrv4_strdup(const char *s);
 
+
+#ifdef OTRV4_STR_PRIVATE
+#endif
+
 #endif

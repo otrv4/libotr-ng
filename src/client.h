@@ -77,4 +77,7 @@ API int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
 
 /* tstatic int otr3_instag_generate(otr4_client_t *client, FILE *privf); */
 
+#ifdef OTRV4_CLIENT_PRIVATE
+#endif
+
 #endif

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define OTRV4_KEY_MANAGEMENT_PRIVATE
+
 #include "key_management.h"
 #include "random.h"
 #include "shake.h"

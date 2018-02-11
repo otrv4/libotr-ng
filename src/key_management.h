@@ -113,7 +113,7 @@ INTERNAL otrv4_err_t key_manager_retrieve_sending_message_keys(m_enc_key_t enc_k
                                                       key_manager_t *manager);
 INTERNAL uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys);
 
-#ifdef OTRV4_TESTS
+#ifdef OTRV4_KEY_MANAGEMENT_PRIVATE
 tstatic otrv4_err_t key_manager_new_ratchet(key_manager_t *manager,
                                     const shared_secret_t shared);
 

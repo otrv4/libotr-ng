@@ -20,4 +20,8 @@ API void otr4_fingerprint_hash_to_human(
 INTERNAL int otr4_serialize_fingerprint(otrv4_fingerprint_t fp,
                                const otrv4_public_key_t pub);
 
+
+#ifdef OTRV4_FINGERPRINT_PRIVATE
+#endif
+
 #endif

@@ -75,7 +75,7 @@ INTERNAL void otr4_client_state_free(otr4_client_state_t *);
 
 INTERNAL otr4_client_state_t *otr4_client_state_new(void *client_id);
 
-#ifdef OTRV4_TESTS
+#ifdef OTRV4_CLIENT_STATE_PRIVATE
 
 tstatic heartbeat_t *otrv4_set_heartbeat(int wait);
 

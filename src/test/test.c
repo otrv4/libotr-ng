@@ -1,5 +1,7 @@
 #include <glib.h>
 
+#define OTRV4_KEY_MANAGEMENT_PRIVATE
+
 #include "../otrv4.h"
 
 // clang-format off

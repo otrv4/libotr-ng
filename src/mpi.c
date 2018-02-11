@@ -1,3 +1,5 @@
+#define OTRV4_MPI_PRIVATE
+
 #include "mpi.h"
 #include "deserialize.h"
 #include "serialize.h" // just for memcpy

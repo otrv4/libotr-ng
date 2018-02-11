@@ -7,6 +7,11 @@ typedef struct {
   otr4_client_state_t *state;
 } otrv4_fixture_t;
 
+
+int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
+  return gcry_mpi_cmp(m1, m2);
+}
+
 void otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   OTR4_INIT;
 

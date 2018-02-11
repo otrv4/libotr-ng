@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define OTRV4_TLV_PRIVATE
+
 #include "deserialize.h"
 #include "random.h"
 #include "tlv.h"

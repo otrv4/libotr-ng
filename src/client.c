@@ -1,6 +1,8 @@
 #include <libotr/privkey.h>
 #include <time.h>
 
+#define OTRV4_CLIENT_PRIVATE
+
 #include "client.h"
 #include "serialize.h"
 #include "str.h"

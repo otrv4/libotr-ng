@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <libotr/b64.h>
 
+#define OTRV4_KEYS_PRIVATE
+
 #include "keys.h"
 #include "random.h"
 

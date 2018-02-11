@@ -3,6 +3,8 @@
 #include <string.h>
 #include <time.h>
 
+#define OTRV4_DAKE_PRIVATE
+
 #include "dake.h"
 #include "deserialize.h"
 #include "error.h"

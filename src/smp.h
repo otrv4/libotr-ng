@@ -108,4 +108,8 @@ otr4_smp_event_t process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
 
 otr4_smp_event_t process_smp_msg4(const tlv_t *tlv, smp_context_t smp);
 
+
+#ifdef OTRV4_SMP_PRIVATE
+#endif
+
 #endif

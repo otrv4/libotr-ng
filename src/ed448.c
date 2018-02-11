@@ -1,6 +1,8 @@
 #include <gcrypt.h>
 #include <sodium.h>
 
+#define OTRV4_ED448_PRIVATE
+
 #include "ed448.h"
 
 INTERNAL void ec_bzero(void *data, size_t size) { decaf_bzero(data, size); }

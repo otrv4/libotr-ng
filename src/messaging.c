@@ -1,5 +1,7 @@
 #include <libotr/privkey.h>
 
+#define OTRV4_MESSAGING_PRIVATE
+
 #include "messaging.h"
 
 otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb) {

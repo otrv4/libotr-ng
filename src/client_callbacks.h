@@ -99,4 +99,8 @@ INTERNAL void otrv4_client_callbacks_smp_update(const otrv4_client_callbacks_t *
                                        const uint8_t progress_percent,
                                        const otr4_client_conversation_t *conv);
 
+
+#ifdef OTRV4_CLIENT_CALLBACKS_PRIVATE
+#endif
+
 #endif

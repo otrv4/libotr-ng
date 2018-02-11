@@ -1,3 +1,4 @@
+#define OTRV4_CLIENT_CALLBACKS_PRIVATE
 #include "client_callbacks.h"
 
 INTERNAL void otrv4_client_callbacks_create_privkey(const otrv4_client_callbacks_t *cb,

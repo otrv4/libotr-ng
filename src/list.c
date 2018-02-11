@@ -1,5 +1,7 @@
 #include <stdlib.h>
 
+#define OTRV4_LIST_PRIVATE
+
 #include "list.h"
 
 list_element_t *list_new() {

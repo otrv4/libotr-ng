@@ -37,7 +37,7 @@ INTERNAL otrv4_bool_t valid_data_message(m_mac_key_t mac_key,
                                 const data_message_t *data_msg);
 
 
-#ifdef OTRV4_TESTS
+#ifdef OTRV4_DATA_MESSAGE_PRIVATE
 tstatic void data_message_destroy(data_message_t *data_msg);
 #endif
 

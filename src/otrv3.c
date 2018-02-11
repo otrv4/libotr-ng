@@ -1,3 +1,5 @@
+#define OTRV4_OTRV3_PRIVATE
+
 #include "otrv3.h"
 #include "otrv4.h"
 

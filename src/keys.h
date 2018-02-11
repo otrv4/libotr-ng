@@ -52,4 +52,8 @@ void otrv4_shared_prekey_pair_destroy(otrv4_shared_prekey_pair_t *prekey_pair);
 
 void otrv4_shared_prekey_pair_free(otrv4_shared_prekey_pair_t *prekey_pair);
 
+
+#ifdef OTRV4_KEYS_PRIVATE
+#endif
+
 #endif

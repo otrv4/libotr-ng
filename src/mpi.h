@@ -29,4 +29,8 @@ otrv4_err_t otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t *src,
 
 size_t otr_mpi_memcpy(uint8_t *dst, const otr_mpi_t mpi);
 
+
+#ifdef OTRV4_MPI_PRIVATE
+#endif
+
 #endif

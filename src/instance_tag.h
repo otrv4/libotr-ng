@@ -20,4 +20,8 @@ API otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *acco
 
 API void otr4_instag_free(otrv4_instag_t *instag);
 
+
+#ifdef OTRV4_INSTANCE_TAG_PRIVATE
+#endif
+
 #endif

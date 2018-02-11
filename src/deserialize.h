@@ -47,4 +47,9 @@ INTERNAL otrv4_err_t deserialize_snizkpk_proof(snizkpk_proof_t *proof,
 
 INTERNAL otrv4_err_t otrv4_symmetric_key_deserialize(otrv4_keypair_t *pair,
                                             const char *buff, size_t len);
+
+
+#ifdef OTRV4_DESERIALIZE_PRIVATE
+#endif
+
 #endif
