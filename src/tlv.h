@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "shared.h"
+
 typedef enum {
   OTRV4_TLV_NONE = -1,
   OTRV4_TLV_PADDING = 0,

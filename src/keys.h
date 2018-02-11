@@ -1,6 +1,7 @@
 #ifndef OTRV4_KEYS_H
 #define OTRV4_KEYS_H
 
+#include "shared.h"
 #include "ed448.h"
 
 #define ED448_PUBKEY_TYPE 0x0010

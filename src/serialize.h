@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "shared.h"
 #include "auth.h"
 #include "dh.h"
 #include "ed448.h"

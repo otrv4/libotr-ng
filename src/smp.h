@@ -1,6 +1,7 @@
 #ifndef OTRV4_SMP_H
 #define OTRV4_SMP_H
 
+#include "shared.h"
 #include "client_callbacks.h"
 #include "fingerprint.h"
 #include "str.h"

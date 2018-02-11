@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "shared.h"
 #include "error.h"
 
 

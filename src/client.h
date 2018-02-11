@@ -7,6 +7,7 @@
 
 #include <libotr/context.h>
 
+#include "shared.h"
 #include "client_state.h"
 #include "list.h"
 #include "otrv4.h"
@@ -28,52 +29,52 @@ typedef struct {
   list_element_t *conversations;
 } otr4_client_t;
 
-otr4_client_t *otr4_client_new(otr4_client_state_t *);
+API otr4_client_t *otr4_client_new(otr4_client_state_t *);
 
-void otr4_client_free(otr4_client_t *client);
+API void otr4_client_free(otr4_client_t *client);
 
-char *otr4_client_query_message(const char *recipient, const char *message,
+API char *otr4_client_query_message(const char *recipient, const char *message,
                                 otr4_client_t *client, OtrlPolicy policy);
 
-int otr4_client_send(char **newmessage, const char *message,
+API int otr4_client_send(char **newmessage, const char *message,
                      const char *recipient, otr4_client_t *client);
 
-int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
+API int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
                               const char *message, int mms,
                               const char *recipient, otr4_client_t *client);
 
-int otr4_client_smp_start(char **tosend, const char *recipient,
-                          const char *question, const size_t q_len,
-                          const unsigned char *secret, size_t secretlen,
-                          otr4_client_t *client);
+/* tstatic int otr4_client_smp_start(char **tosend, const char *recipient, */
+/*                           const char *question, const size_t q_len, */
+/*                           const unsigned char *secret, size_t secretlen, */
+/*                           otr4_client_t *client); */
 
-int otr4_client_smp_respond(char **tosend, const char *recipient,
-                            const unsigned char *secret, size_t secretlen,
-                            otr4_client_t *client);
+/* tstatic int otr4_client_smp_respond(char **tosend, const char *recipient, */
+/*                             const unsigned char *secret, size_t secretlen, */
+/*                             otr4_client_t *client); */
 
-int otr4_client_receive(char **newmsg, char **todisplay, const char *message,
+API int otr4_client_receive(char **newmsg, char **todisplay, const char *message,
                         const char *recipient, otr4_client_t *client);
 
-int otr4_client_disconnect(char **newmsg, const char *recipient,
+API int otr4_client_disconnect(char **newmsg, const char *recipient,
                            otr4_client_t *client);
 
-int otr4_encrypted_conversation_expire(char **newmsg, const char *recipient,
-                                       int expiration_time,
-                                       otr4_client_t *client);
+/* tstatic int otr4_encrypted_conversation_expire(char **newmsg, const char *recipient, */
+/*                                        int expiration_time, */
+/*                                        otr4_client_t *client); */
 
-otr4_conversation_t *otr4_client_get_conversation(int force,
+API otr4_conversation_t *otr4_client_get_conversation(int force,
                                                   const char *recipient,
                                                   otr4_client_t *client);
 
-int otr4_conversation_is_encrypted(otr4_conversation_t *conv);
+/* tstatic int otr4_conversation_is_encrypted(otr4_conversation_t *conv); */
 
-int otr4_conversation_is_finished(otr4_conversation_t *conv);
+/* tstatic int otr4_conversation_is_finished(otr4_conversation_t *conv); */
 
-int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
+API int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
                                     const otr4_client_t *client);
 
-int otr3_privkey_generate(otr4_client_t *client, FILE *privf);
+/* tstatic int otr3_privkey_generate(otr4_client_t *client, FILE *privf); */
 
-int otr3_instag_generate(otr4_client_t *client, FILE *privf);
+/* tstatic int otr3_instag_generate(otr4_client_t *client, FILE *privf); */
 
 #endif

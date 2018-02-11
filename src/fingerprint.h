@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "shared.h"
 #include "keys.h"
 
 #define OTR4_FPRINT_LEN_BYTES 56

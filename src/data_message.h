@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "shared.h"
 #include "constants.h"
 #include "key_management.h"
 

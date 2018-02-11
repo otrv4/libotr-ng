@@ -3,6 +3,7 @@
 
 #include <sodium.h>
 
+#include "shared.h"
 #include "auth.h"
 #include "constants.h"
 #include "dh.h"

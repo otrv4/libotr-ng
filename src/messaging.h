@@ -22,6 +22,7 @@
  * otr4_messaging_client_receiving(client, alice_talking_to_bob);
  */
 
+#include "shared.h"
 #include "client.h"
 #include "list.h"
 

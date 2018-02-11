@@ -1,6 +1,7 @@
 #ifndef OTRV4_CLIENT_CALLBACKS_H
 #define OTRV4_CLIENT_CALLBACKS_H
 
+#include "shared.h"
 #include "fingerprint.h"
 
 typedef enum {

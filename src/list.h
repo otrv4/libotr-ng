@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#include "shared.h"
+
 typedef struct _list_element {
   void *data;
   struct _list_element *next;

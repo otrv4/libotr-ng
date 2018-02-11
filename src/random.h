@@ -1,8 +1,10 @@
 #ifndef OTRV4_RANDOM_H
 #define OTRV4_RANDOM_H
 
-#include "ed448.h"
 #include <gcrypt.h>
+
+#include "shared.h"
+#include "ed448.h"
 
 static inline void random_bytes(void *const buf, const size_t size) {
   gcry_randomize(buf, size, GCRY_STRONG_RANDOM);

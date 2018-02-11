@@ -1,7 +1,7 @@
 #ifndef OTRV4_DESERIALIZE_H
 #define OTRV4_DESERIALIZE_H
 
-
+#include "shared.h"
 #include "auth.h"
 #include "ed448.h"
 #include "error.h"

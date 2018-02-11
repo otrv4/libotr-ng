@@ -4,10 +4,8 @@
 #include <gcrypt.h>
 #include <stdint.h>
 
+#include "shared.h"
 #include "error.h"
-
-#ifndef DH_H
-#define DH_H
 
 #define DH_KEY_SIZE 80
 #define DH3072_MOD_LEN_BITS 3072
@@ -59,7 +57,5 @@ static inline dh_mpi_t dh_mpi_copy(const dh_mpi_t src) {
 }
 
 static inline void dh_mpi_release(dh_mpi_t mpi) { gcry_mpi_release(mpi); }
-
-#endif
 
 #endif

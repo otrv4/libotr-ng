@@ -7,6 +7,7 @@
 
 #include <libotr/userstate.h>
 
+#include "shared.h"
 #include "client_callbacks.h"
 #include "keys.h"
 

@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#include "shared.h"
 #include "constants.h"
 #include "dh.h"
 #include "ed448.h"

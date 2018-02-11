@@ -1,6 +1,7 @@
 #ifndef OTRV4_OTRV4_H
 #define OTRV4_OTRV4_H
 
+#include "shared.h"
 #include "client_state.h"
 #include "fragment.h"
 #include "key_management.h"

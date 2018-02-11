@@ -1,6 +1,7 @@
 #ifndef OTRV4_SHAKE_H
 #define OTRV4_SHAKE_H
 
+#include "shared.h"
 #include "decaf/shake.h"
 
 #define hash_init decaf_shake256_init

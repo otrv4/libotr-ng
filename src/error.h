@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "shared.h"
+
 #define OTR4_ERROR_PREFIX "?OTR Error: "
 #define OTR4_ERROR_CODE_1 "ERROR_1: "
 #define OTR4_ERROR_CODE_2 "ERROR_2: "

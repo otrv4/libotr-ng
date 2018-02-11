@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "shared.h"
 #include "keys.h"
 #include "mpi.h"
 #include "str.h"

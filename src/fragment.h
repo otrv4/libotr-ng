@@ -1,6 +1,7 @@
 #ifndef OTRV4_FRAGMENT_H
 #define OTRV4_FRAGMENT_H
 
+#include "shared.h"
 #include "error.h"
 #include "str.h"
 

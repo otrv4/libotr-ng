@@ -6,6 +6,7 @@
 #include <libotr/message.h>
 // clang-format on
 
+#include "shared.h"
 #include "error.h"
 #include "str.h"
 #include "tlv.h"
