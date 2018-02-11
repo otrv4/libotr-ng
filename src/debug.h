@@ -1,5 +1,6 @@
-#ifndef OTRV4_DEBUG_H
-#define OTRV4_DEBUG_H
+// This file doesn't have the standard header file guard - the reason for that
+// has to do with weird interactions with static inline and so on.
+// It's a bit horrible, but let's keep it this way for now.
 
 #include <stdint.h>
 #include <stdio.h>
@@ -35,6 +36,4 @@ static inline void otrv4_memdump(const uint8_t *src, size_t len) {
 #else
 // TODO: is this used?
 static inline void otrv4_memdump(const uint8_t *src, size_t len) {}
-#endif
-
 #endif
