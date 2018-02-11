@@ -1,3 +1,6 @@
+#ifndef OTRV4_DH_H
+#define OTRV4_DH_H
+
 #include <gcrypt.h>
 #include <stdint.h>
 
@@ -56,5 +59,7 @@ static inline dh_mpi_t dh_mpi_copy(const dh_mpi_t src) {
 }
 
 static inline void dh_mpi_release(dh_mpi_t mpi) { gcry_mpi_release(mpi); }
+
+#endif
 
 #endif

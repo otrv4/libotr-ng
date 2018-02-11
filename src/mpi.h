@@ -1,10 +1,11 @@
+#ifndef OTRV4_MPI_H
+#define OTRV4_MPI_H
+
 #include <stdint.h>
 #include <stdlib.h>
 
 #include "error.h"
 
-#ifndef MPI_H
-#define MPI_H
 
 typedef struct {
   uint32_t len;

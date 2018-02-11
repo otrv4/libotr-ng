@@ -1,5 +1,5 @@
-#ifndef USER_PROFILE_H
-#define USER_PROFILE_H
+#ifndef OTRV4_USER_PROFILE_H
+#define OTRV4_USER_PROFILE_H
 
 #include <stdint.h>
 

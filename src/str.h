@@ -1,5 +1,5 @@
-#ifndef STR_H
-#define STR_H
+#ifndef OTRV4_STR_H
+#define OTRV4_STR_H
 
 #include <stddef.h>
 

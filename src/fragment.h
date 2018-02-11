@@ -1,5 +1,5 @@
-#ifndef FRAGMENT_H
-#define FRAGMENT_H
+#ifndef OTRV4_FRAGMENT_H
+#define OTRV4_FRAGMENT_H
 
 #include "error.h"
 #include "str.h"

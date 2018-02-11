@@ -1,5 +1,5 @@
-#ifndef ED448_H
-#define ED448_H
+#ifndef OTRV4_ED448_H
+#define OTRV4_ED448_H
 
 #include <decaf.h>
 #include <decaf/ed448.h>

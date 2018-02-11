@@ -1,5 +1,5 @@
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef OTRV4_ERROR_H
+#define OTRV4_ERROR_H
 
 #include <stdint.h>
 

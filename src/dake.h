@@ -1,5 +1,5 @@
-#ifndef DAKE_H
-#define DAKE_H
+#ifndef OTRV4_DAKE_H
+#define OTRV4_DAKE_H
 
 #include <sodium.h>
 

@@ -1,5 +1,5 @@
-#ifndef SMP_H
-#define SMP_H
+#ifndef OTRV4_SMP_H
+#define OTRV4_SMP_H
 
 #include "client_callbacks.h"
 #include "fingerprint.h"

@@ -1,5 +1,5 @@
-#ifndef TLV_H
-#define TLV_H
+#ifndef OTRV4_TLV_H
+#define OTRV4_TLV_H
 
 #include <stddef.h>
 #include <stdint.h>

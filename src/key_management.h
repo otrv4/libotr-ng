@@ -1,5 +1,5 @@
-#ifndef KEY_MANAGEMENT_H
-#define KEY_MANAGEMENT_H
+#ifndef OTRV4_KEY_MANAGEMENT_H
+#define OTRV4_KEY_MANAGEMENT_H
 
 #include <stdbool.h>
 

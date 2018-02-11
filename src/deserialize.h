@@ -1,3 +1,7 @@
+#ifndef OTRV4_DESERIALIZE_H
+#define OTRV4_DESERIALIZE_H
+
+
 #include "auth.h"
 #include "ed448.h"
 #include "error.h"
@@ -43,3 +47,4 @@ otrv4_err_t deserialize_snizkpk_proof(snizkpk_proof_t *proof,
 
 otrv4_err_t otrv4_symmetric_key_deserialize(otrv4_keypair_t *pair,
                                             const char *buff, size_t len);
+#endif

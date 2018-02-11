@@ -1,5 +1,5 @@
-#ifndef SERIALIZE_H
-#define SERIALIZE_H
+#ifndef OTRV4_SERIALIZE_H
+#define OTRV4_SERIALIZE_H
 
 #include <stdint.h>
 

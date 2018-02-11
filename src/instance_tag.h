@@ -1,5 +1,5 @@
-#ifndef INSTANCE_TAG_H
-#define INSTANCE_TAG_H
+#ifndef OTRV4_INSTANCE_TAG_H
+#define OTRV4_INSTANCE_TAG_H
 
 #include <stdint.h>
 #include <stdio.h>

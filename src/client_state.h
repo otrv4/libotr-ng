@@ -1,5 +1,5 @@
-#ifndef _OTR4_CLIENT_STATE_H
-#define _OTR4_CLIENT_STATE_H
+#ifndef OTRV4_CLIENT_STATE_H
+#define OTRV4_CLIENT_STATE_H
 
 #include <stdbool.h>
 

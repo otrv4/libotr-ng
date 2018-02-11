@@ -1,5 +1,5 @@
-#ifndef AUTH_H
-#define AUTH_H
+#ifndef OTRV4_AUTH_H
+#define OTRV4_AUTH_H
 
 #include <stddef.h>
 

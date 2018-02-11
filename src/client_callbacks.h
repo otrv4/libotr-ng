@@ -1,5 +1,5 @@
-#ifndef _OTR4_CLIEN_CALLBACKS_
-#define _OTR4_CLIEN_CALLBACKS_
+#ifndef OTRV4_CLIENT_CALLBACKS_H
+#define OTRV4_CLIENT_CALLBACKS_H
 
 #include "fingerprint.h"
 

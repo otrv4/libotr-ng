@@ -1,5 +1,5 @@
-#ifndef OTR4_CLIENT_H
-#define OTR4_CLIENT_H
+#ifndef OTRV4_CLIENT_H
+#define OTRV4_CLIENT_H
 
 #define OTR4_CLIENT_ERROR_NOT_ENCRYPTED 0x1001
 // TODO: check the error codes on client

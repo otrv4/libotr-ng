@@ -1,5 +1,5 @@
-#ifndef DEBUG_H
-#define DEBUG_H
+#ifndef OTRV4_DEBUG_H
+#define OTRV4_DEBUG_H
 
 #include <stdint.h>
 #include <stdio.h>

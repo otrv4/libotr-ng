@@ -1,3 +1,6 @@
+#ifndef OTRV4_SHAKE_H
+#define OTRV4_SHAKE_H
+
 #include "decaf/shake.h"
 
 #define hash_init decaf_shake256_init
@@ -47,3 +50,5 @@ static inline void shake_256_hash(uint8_t *dst, size_t dstlen,
   hash_final(hd, dst, dstlen);
   hash_destroy(hd);
 }
+
+#endif

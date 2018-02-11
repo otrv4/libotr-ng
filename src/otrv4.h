@@ -1,5 +1,5 @@
-#ifndef OTRV4_H
-#define OTRV4_H
+#ifndef OTRV4_OTRV4_H
+#define OTRV4_OTRV4_H
 
 #include "client_state.h"
 #include "fragment.h"

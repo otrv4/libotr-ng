@@ -1,5 +1,5 @@
-#ifndef DATA_MESSAGE_H
-#define DATA_MESSAGE_H
+#ifndef OTRV4_DATA_MESSAGE_H
+#define OTRV4_DATA_MESSAGE_H
 
 #include <sodium.h>
 #include <stdint.h>

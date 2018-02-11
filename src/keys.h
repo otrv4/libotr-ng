@@ -1,5 +1,5 @@
-#ifndef KEYS_H
-#define KEYS_H
+#ifndef OTRV4_KEYS_H
+#define OTRV4_KEYS_H
 
 #include "ed448.h"
 

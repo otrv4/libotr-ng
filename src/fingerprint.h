@@ -1,5 +1,5 @@
-#ifndef FINGERPRINT_H
-#define FINGERPRINT_H
+#ifndef OTRV4_FINGERPRINT_H
+#define OTRV4_FINGERPRINT_H
 
 #include <stdint.h>
 #include <stdio.h>

@@ -1,5 +1,5 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#ifndef OTRV4_CONSTANTS_H
+#define OTRV4_CONSTANTS_H
 
 #define OTR_VERSION 4
 #define OTR_IDENTITY_MSG_TYPE 0x08

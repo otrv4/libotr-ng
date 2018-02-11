@@ -1,5 +1,5 @@
-#ifndef _OTR3_H_
-#define _OTR3_H_
+#ifndef OTRV4_OTR3_H
+#define OTRV4_OTR3_H
 
 // clang-format off
 #include <libotr/proto.h>

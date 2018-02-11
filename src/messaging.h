@@ -1,5 +1,5 @@
-#ifndef _OTR4_MESSAGING_H_
-#define _OTR4_MESSAGING_H_
+#ifndef OTRV4_MESSAGING_H_
+#define OTRV4_MESSAGING_H_
 
 /* Defines an API to be used by an IM-plugin, like pidgin-otr4 */
 
