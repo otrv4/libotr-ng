@@ -15,9 +15,9 @@ typedef struct {
   unsigned int value;
 } otrv4_instag_t;
 
-otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
+API otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
                               const char *protocol, FILE *filename);
 
-void otr4_instag_free(otrv4_instag_t *instag);
+API void otr4_instag_free(otrv4_instag_t *instag);
 
 #endif

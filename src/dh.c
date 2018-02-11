@@ -181,3 +181,14 @@ INTERNAL otrv4_bool_t dh_mpi_valid(dh_mpi_t mpi) {
 
   return otrv4_true;
 }
+
+INTERNAL dh_mpi_t dh_mpi_copy(const dh_mpi_t src) {
+  return gcry_mpi_copy(src);
+}
+
+INTERNAL void dh_mpi_release(dh_mpi_t mpi) { gcry_mpi_release(mpi); }
+
+// TODO: This is a test helper, and should really be moved there.
+ int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
+  return gcry_mpi_cmp(m1, m2);
+}

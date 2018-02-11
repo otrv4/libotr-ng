@@ -1,5 +1,6 @@
-#include "../instance_tag.h"
 #include <string.h>
+
+#include "../instance_tag.h"
 
 void test_instance_tag_generates_tag_when_file_empty() {
 

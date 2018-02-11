@@ -5,7 +5,7 @@
 #include "instance_tag.h"
 #include "str.h"
 
-otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
+API otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
                               const char *protocol, FILE *filename) {
 
   OtrlUserState us = otrl_userstate_create();
@@ -35,7 +35,7 @@ otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
   return otrv4_true;
 }
 
-void otr4_instag_free(otrv4_instag_t *instag) {
+API void otr4_instag_free(otrv4_instag_t *instag) {
   if (!instag)
     return;
 

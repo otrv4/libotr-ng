@@ -1,7 +1,8 @@
+#include <decaf/ed448.h>
+
 #include "../ed448.h"
 #include "../random.h"
 
-#include <decaf/ed448.h>
 
 void ed448_test_ecdh() {
   uint8_t alice_pub[DECAF_X448_PUBLIC_BYTES];

@@ -1,7 +1,6 @@
-#include "../client.h"
-
 #include <stdio.h>
 
+#include "../client.h"
 #include "../fragment.h"
 #include "../instance_tag.h"
 #include "../messaging.h"

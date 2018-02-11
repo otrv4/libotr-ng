@@ -1,7 +1,5 @@
 #include <glib.h>
 
-#define OTRV4_TESTS
-
 #include "../otrv4.h"
 
 // clang-format off

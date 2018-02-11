@@ -25,19 +25,19 @@ typedef struct {
   fragment_status status;
 } fragment_context_t;
 
-otr4_message_to_send_t *otr4_message_new(void);
+API otr4_message_to_send_t *otr4_message_new(void);
 
-void otr4_message_free(otr4_message_to_send_t *message);
+API void otr4_message_free(otr4_message_to_send_t *message);
 
-fragment_context_t *fragment_context_new(void);
+INTERNAL fragment_context_t *fragment_context_new(void);
 
-void fragment_context_free(fragment_context_t *context);
+INTERNAL void fragment_context_free(fragment_context_t *context);
 
-otrv4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
+INTERNAL otrv4_err_t otr4_fragment_message(int mms, otr4_message_to_send_t *fragments,
                                   int our_instance, int their_instance,
                                   const string_t message);
 
-otrv4_err_t otr4_unfragment_message(char **unfrag_msg,
+INTERNAL otrv4_err_t otr4_unfragment_message(char **unfrag_msg,
                                     fragment_context_t *context,
                                     const string_t message,
                                     const int our_instance_tag);
