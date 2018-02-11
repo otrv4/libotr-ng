@@ -45,35 +45,40 @@ typedef struct otr4_client_state_t {
   // use OTR3 User State as a store for instance tags
 } otr4_client_state_t;
 
-heartbeat_t *otrv4_set_heartbeat(int wait);
+API int otr4_client_state_instance_tag_read_FILEp(otr4_client_state_t *state,
+                                              FILE *instag);
 
-otr4_client_state_t *otr4_client_state_new(void *client_id);
-void otr4_client_state_free(otr4_client_state_t *);
+INTERNAL unsigned int otr4_client_state_get_instance_tag(otr4_client_state_t *state);
 
-int otr4_client_state_private_key_v3_generate_FILEp(
-    const otr4_client_state_t *state, FILE *privf);
-
-otrv4_keypair_t *
-otr4_client_state_get_private_key_v4(otr4_client_state_t *state);
-
-int otr4_client_state_add_private_key_v4(
-    otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
-
-int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
-                                                 FILE *privf);
-
-int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
-                                                FILE *privf);
-
-int otr4_client_state_add_shared_prekey_v4(
-    otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
-
-int otr4_client_state_add_instance_tag(otr4_client_state_t *state,
+INTERNAL int otr4_client_state_add_instance_tag(otr4_client_state_t *state,
                                        unsigned int instag);
 
-unsigned int otr4_client_state_get_instance_tag(otr4_client_state_t *state);
+INTERNAL int otr4_client_state_add_shared_prekey_v4(
+    otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-int otr4_client_state_instance_tag_read_FILEp(otr4_client_state_t *state,
-                                              FILE *instag);
+INTERNAL int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
+                                                FILE *privf);
+
+INTERNAL int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
+                                                 FILE *privf);
+
+INTERNAL int otr4_client_state_private_key_v3_generate_FILEp(
+    const otr4_client_state_t *state, FILE *privf);
+
+INTERNAL otrv4_keypair_t *
+otr4_client_state_get_private_key_v4(otr4_client_state_t *state);
+
+INTERNAL int otr4_client_state_add_private_key_v4(
+    otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
+
+INTERNAL void otr4_client_state_free(otr4_client_state_t *);
+
+INTERNAL otr4_client_state_t *otr4_client_state_new(void *client_id);
+
+#ifdef OTRV4_TESTS
+
+tstatic heartbeat_t *otrv4_set_heartbeat(int wait);
+
+#endif
 
 #endif

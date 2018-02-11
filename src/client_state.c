@@ -7,7 +7,7 @@
 #include "instance_tag.h"
 #include "str.h"
 
-heartbeat_t *otrv4_set_heartbeat(int wait) {
+tstatic heartbeat_t *otrv4_set_heartbeat(int wait) {
   heartbeat_t *heartbeat = malloc(sizeof(heartbeat_t));
   if (!heartbeat)
     return NULL;
@@ -16,7 +16,7 @@ heartbeat_t *otrv4_set_heartbeat(int wait) {
   return heartbeat;
 }
 
-otr4_client_state_t *otr4_client_state_new(void *client_id) {
+INTERNAL otr4_client_state_t *otr4_client_state_new(void *client_id) {
   otr4_client_state_t *state = malloc(sizeof(otr4_client_state_t));
   if (!state)
     return NULL;
@@ -34,7 +34,7 @@ otr4_client_state_t *otr4_client_state_new(void *client_id) {
   return state;
 }
 
-void otr4_client_state_free(otr4_client_state_t *state) {
+INTERNAL void otr4_client_state_free(otr4_client_state_t *state) {
   state->client_id = NULL;
   state->userstate = NULL;
 
@@ -66,13 +66,13 @@ void otr4_client_state_free(otr4_client_state_t *state) {
 // TODO: There's no API that allows us to simply write all private keys to the
 // file.
 // We might want to extract otrl_privkey_generate_finish_FILEp into 2 functions.
-int otr4_client_state_private_key_v3_generate_FILEp(
+INTERNAL int otr4_client_state_private_key_v3_generate_FILEp(
     const otr4_client_state_t *state, FILE *privf) {
   return otrl_privkey_generate_FILEp(state->userstate, privf,
                                      state->account_name, state->protocol_name);
 }
 
-otrv4_keypair_t *
+INTERNAL otrv4_keypair_t *
 otr4_client_state_get_private_key_v4(otr4_client_state_t *state) {
   if (!state)
     return NULL;
@@ -83,7 +83,7 @@ otr4_client_state_get_private_key_v4(otr4_client_state_t *state) {
   return state->keypair;
 }
 
-int otr4_client_state_add_private_key_v4(
+INTERNAL int otr4_client_state_add_private_key_v4(
     otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   if (!state)
     return 1;
@@ -99,7 +99,7 @@ int otr4_client_state_add_private_key_v4(
   return 0;
 }
 
-int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
+INTERNAL int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
                                                  FILE *privf) {
   if (!state->protocol_name || !state->account_name)
     return 1;
@@ -141,7 +141,7 @@ int otr4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
   return 0;
 }
 
-int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
+INTERNAL int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
                                                 FILE *privf) {
   char *line = NULL;
   size_t cap = 0;
@@ -179,7 +179,7 @@ int otr4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
   return err;
 }
 
-int otr4_client_state_add_shared_prekey_v4(
+INTERNAL int otr4_client_state_add_shared_prekey_v4(
     otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   if (!state)
     return 1;
@@ -195,7 +195,7 @@ int otr4_client_state_add_shared_prekey_v4(
   return 0;
 }
 
-static OtrlInsTag *otrl_instance_tag_new(const char *protocol,
+tstatic OtrlInsTag *otrl_instance_tag_new(const char *protocol,
                                          const char *account,
                                          unsigned int instag) {
   if (instag < OTR4_MIN_VALID_INSTAG)
@@ -212,7 +212,7 @@ static OtrlInsTag *otrl_instance_tag_new(const char *protocol,
   return p;
 }
 
-static void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
+tstatic void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
   // This comes from libotr3
   p->next = us->instag_root;
   if (p->next) {
@@ -223,7 +223,7 @@ static void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
   us->instag_root = p;
 }
 
-int otr4_client_state_add_instance_tag(otr4_client_state_t *state,
+INTERNAL int otr4_client_state_add_instance_tag(otr4_client_state_t *state,
                                        unsigned int instag) {
   OtrlInsTag *p =
       otrl_instance_tag_new(state->protocol_name, state->account_name, instag);
@@ -234,7 +234,7 @@ int otr4_client_state_add_instance_tag(otr4_client_state_t *state,
   return 0;
 }
 
-unsigned int otr4_client_state_get_instance_tag(otr4_client_state_t *state) {
+INTERNAL unsigned int otr4_client_state_get_instance_tag(otr4_client_state_t *state) {
   if (!state->userstate)
     return 0;
 
@@ -246,7 +246,7 @@ unsigned int otr4_client_state_get_instance_tag(otr4_client_state_t *state) {
   return instag->instag;
 }
 
-int otr4_client_state_instance_tag_read_FILEp(otr4_client_state_t *state,
+API int otr4_client_state_instance_tag_read_FILEp(otr4_client_state_t *state,
                                               FILE *instag) {
   if (!state->userstate)
     return 1;
