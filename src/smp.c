@@ -99,11 +99,11 @@ INTERNAL otrv4_err_t generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp) {
   dst->question = NULL;
 
   /* G2a = G * a2 * and G3a = G * a3 */
-  generate_keypair(dst->G2a, smp->a2);
-  generate_keypair(dst->G3a, smp->a3);
+  otrv4_generate_keypair(dst->G2a, smp->a2);
+  otrv4_generate_keypair(dst->G3a, smp->a3);
 
-  snizkpk_keypair_generate(pair_r2);
-  snizkpk_keypair_generate(pair_r3);
+  otrv4_snizkpk_keypair_generate(pair_r2);
+  otrv4_snizkpk_keypair_generate(pair_r3);
 
   /* c2 = HashToScalar(1 || G * r2) */
   hash[0] = 0x01;
@@ -290,13 +290,13 @@ tstatic otrv4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_
   ec_point_t temp_point;
 
   /* G2b = G * b2 and G3b = G * b3 */
-  generate_keypair(dst->G2b, b2);
-  generate_keypair(dst->G3b, smp->b3);
+  otrv4_generate_keypair(dst->G2b, b2);
+  otrv4_generate_keypair(dst->G3b, smp->b3);
 
-  snizkpk_keypair_generate(pair_r2);
-  snizkpk_keypair_generate(pair_r3);
-  snizkpk_keypair_generate(pair_r4);
-  snizkpk_keypair_generate(pair_r5);
+  otrv4_snizkpk_keypair_generate(pair_r2);
+  otrv4_snizkpk_keypair_generate(pair_r3);
+  otrv4_snizkpk_keypair_generate(pair_r4);
+  otrv4_snizkpk_keypair_generate(pair_r5);
 
   ed448_random_scalar(r6);
 
@@ -559,9 +559,9 @@ tstatic otrv4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_
 
   ed448_random_scalar(r6);
 
-  snizkpk_keypair_generate(pair_r4);
-  snizkpk_keypair_generate(pair_r5);
-  snizkpk_keypair_generate(pair_r7);
+  otrv4_snizkpk_keypair_generate(pair_r4);
+  otrv4_snizkpk_keypair_generate(pair_r5);
+  otrv4_snizkpk_keypair_generate(pair_r7);
 
   ec_point_copy(smp->G3b, msg_2->G3b);
 
@@ -771,7 +771,7 @@ tstatic otrv4_err_t generate_smp_msg_4(smp_msg_4_t *dst, const smp_msg_3_t *msg_
   uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t Qa_Qb;
   snizkpk_keypair_t pair_r7[1];
-  snizkpk_keypair_generate(pair_r7);
+  otrv4_snizkpk_keypair_generate(pair_r7);
 
   /* Rb = ((Qa - Qb) * b3) */
   decaf_448_point_sub(Qa_Qb, msg_3->Qa, smp->Qb);

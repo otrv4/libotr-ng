@@ -170,7 +170,7 @@ INTERNAL void dake_auth_r_destroy(dake_auth_r_t *auth_r) {
   auth_r->A = NULL;
   ec_point_destroy(auth_r->X);
   user_profile_destroy(auth_r->profile);
-  snizkpk_proof_destroy(auth_r->sigma);
+  otrv4_snizkpk_proof_destroy(auth_r->sigma);
 }
 
 INTERNAL otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
@@ -299,7 +299,7 @@ INTERNAL otrv4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *
 }
 
 INTERNAL void dake_auth_i_destroy(dake_auth_i_t *auth_i) {
-  snizkpk_proof_destroy(auth_i->sigma);
+  otrv4_snizkpk_proof_destroy(auth_i->sigma);
 }
 
 INTERNAL otrv4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
@@ -529,7 +529,7 @@ INTERNAL void dake_non_interactive_auth_message_destroy(
   non_interactive_auth->A = NULL;
   ec_point_destroy(non_interactive_auth->X);
   user_profile_destroy(non_interactive_auth->profile);
-  snizkpk_proof_destroy(non_interactive_auth->sigma);
+  otrv4_snizkpk_proof_destroy(non_interactive_auth->sigma);
   non_interactive_auth->enc_msg = NULL;
   non_interactive_auth->enc_msg_len = 0;
   sodium_memzero(non_interactive_auth->nonce, DATA_MSG_NONCE_BYTES);

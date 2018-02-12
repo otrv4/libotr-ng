@@ -5,13 +5,13 @@
 #include "random.h"
 #include "shake.h"
 
-INTERNAL void generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv) {
+INTERNAL void otrv4_generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv) {
   ed448_random_scalar(priv);
   decaf_448_point_scalarmul(pub, decaf_448_point_base, priv);
 }
 
-INTERNAL void snizkpk_keypair_generate(snizkpk_keypair_t *pair) {
-  generate_keypair(pair->pub, pair->priv);
+INTERNAL void otrv4_snizkpk_keypair_generate(snizkpk_keypair_t *pair) {
+  otrv4_generate_keypair(pair->pub, pair->priv);
 }
 
 static const unsigned char base_point_bytes_dup[ED448_POINT_BYTES] = {
@@ -31,7 +31,7 @@ const unsigned char prime_order_bytes_dup[ED448_SCALAR_BYTES] = {
     0x23, 0x78, 0xc2, 0x92, 0xab, 0x58, 0x44, 0xf3,
 };
 
-INTERNAL void snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
+INTERNAL void otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
                           const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
                           const unsigned char *msg, size_t msglen) {
 
@@ -42,14 +42,14 @@ INTERNAL void snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t
   snizkpk_privkey_t t1;
   snizkpk_pubkey_t T1, T2, T3, A2c2, A3c3;
 
-  generate_keypair(T1, t1);
+  otrv4_generate_keypair(T1, t1);
 
-  generate_keypair(T2, dst->r2);
+  otrv4_generate_keypair(T2, dst->r2);
   ed448_random_scalar(dst->c2);
   decaf_448_point_scalarmul(A2c2, A2, dst->c2);
   decaf_448_point_add(T2, T2, A2c2);
 
-  generate_keypair(T3, dst->r3);
+  otrv4_generate_keypair(T3, dst->r3);
   ed448_random_scalar(dst->c3);
   decaf_448_point_scalarmul(A3c3, A3, dst->c3);
   decaf_448_point_add(T3, T3, A3c3);
@@ -91,7 +91,7 @@ INTERNAL void snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t
   decaf_448_scalar_sub(dst->r1, t1, c1a1);
 }
 
-INTERNAL otrv4_bool_t snizkpk_verify(const snizkpk_proof_t *src,
+INTERNAL otrv4_bool_t otrv4_snizkpk_verify(const snizkpk_proof_t *src,
                             const snizkpk_pubkey_t A1,
                             const snizkpk_pubkey_t A2,
                             const snizkpk_pubkey_t A3, const unsigned char *msg,
@@ -155,7 +155,7 @@ INTERNAL otrv4_bool_t snizkpk_verify(const snizkpk_proof_t *src,
   return otrv4_false;
 }
 
-INTERNAL void snizkpk_proof_destroy(snizkpk_proof_t *src) {
+INTERNAL void otrv4_snizkpk_proof_destroy(snizkpk_proof_t *src) {
   ec_scalar_destroy(src->c1);
   ec_scalar_destroy(src->r1);
   ec_scalar_destroy(src->c2);

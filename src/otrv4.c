@@ -729,7 +729,7 @@ tstatic otrv4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
     return OTR4_ERROR;
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
-  snizkpk_authenticate(msg->sigma,
+  otrv4_snizkpk_authenticate(msg->sigma,
                        otr->conversation->client->keypair, /* g^R and R */
                        otr->their_profile->pub_key,        /* g^I */
                        THEIR_ECDH(otr),                    /* g^i -- Y */
@@ -1086,7 +1086,7 @@ tstatic otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   }
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
-  snizkpk_authenticate(auth->sigma,
+  otrv4_snizkpk_authenticate(auth->sigma,
                        otr->conversation->client->keypair, /* g^R and R */
                        otr->their_profile->pub_key,        /* g^I */
                        THEIR_ECDH(otr),                    /* g^i -- Y */
@@ -1392,7 +1392,7 @@ tstatic otrv4_bool_t verify_non_interactive_auth_message(
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
   otrv4_bool_t err =
-      snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
+      otrv4_snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
                      otr->conversation->client->keypair->pub, /* g^I */
                      OUR_ECDH(otr),                           /* g^  */
                      t, t_len);
@@ -1669,7 +1669,7 @@ tstatic otrv4_err_t reply_with_auth_i_msg(string_t *dst,
                          THEIR_DH(otr), otr->conversation->client->phi))
     return OTR4_ERROR;
 
-  snizkpk_authenticate(msg->sigma, otr->conversation->client->keypair,
+  otrv4_snizkpk_authenticate(msg->sigma, otr->conversation->client->keypair,
                        their->pub_key, THEIR_ECDH(otr), t, t_len);
   free(t);
   t = NULL;
@@ -1695,7 +1695,7 @@ tstatic otrv4_bool_t valid_auth_r_message(const dake_auth_r_t *auth,
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
   otrv4_bool_t err =
-      snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
+      otrv4_snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
                      otr->conversation->client->keypair->pub, /* g^I */
                      OUR_ECDH(otr),                           /* g^  */
                      t, t_len);
@@ -1762,7 +1762,7 @@ tstatic otrv4_bool_t valid_auth_i_message(const dake_auth_i_t *auth,
                          otr->conversation->client->phi))
     return otrv4_false;
 
-  otrv4_bool_t err = snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
+  otrv4_bool_t err = otrv4_snizkpk_verify(auth->sigma, otr->their_profile->pub_key,
                                     otr->conversation->client->keypair->pub,
                                     OUR_ECDH(otr), t, t_len);
   free(t);
