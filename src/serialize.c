@@ -4,7 +4,7 @@
 
 #include "serialize.h"
 
-size_t serialize_uint(uint8_t *target, const uint64_t data,
+INTERNAL size_t serialize_uint(uint8_t *target, const uint64_t data,
                       const size_t offset) {
   size_t i;
   size_t shift = offset;
@@ -17,23 +17,23 @@ size_t serialize_uint(uint8_t *target, const uint64_t data,
   return offset;
 }
 
-size_t serialize_uint64(uint8_t *dst, const uint64_t data) {
+INTERNAL size_t serialize_uint64(uint8_t *dst, const uint64_t data) {
   return serialize_uint(dst, data, sizeof(uint64_t));
 }
 
-size_t serialize_uint32(uint8_t *dst, const uint32_t data) {
+INTERNAL size_t serialize_uint32(uint8_t *dst, const uint32_t data) {
   return serialize_uint(dst, data, sizeof(uint32_t));
 }
 
-size_t serialize_uint8(uint8_t *dst, const uint8_t data) {
+INTERNAL size_t serialize_uint8(uint8_t *dst, const uint8_t data) {
   return serialize_uint(dst, data, sizeof(uint8_t));
 }
 
-size_t serialize_uint16(uint8_t *dst, const uint16_t data) {
+INTERNAL size_t serialize_uint16(uint8_t *dst, const uint16_t data) {
   return serialize_uint(dst, data, sizeof(uint16_t));
 }
 
-size_t serialize_bytes_array(uint8_t *target, const uint8_t *data, size_t len) {
+INTERNAL size_t serialize_bytes_array(uint8_t *target, const uint8_t *data, size_t len) {
   if (!data)
     return 0;
 
@@ -42,7 +42,7 @@ size_t serialize_bytes_array(uint8_t *target, const uint8_t *data, size_t len) {
   return len;
 }
 
-size_t serialize_data(uint8_t *dst, const uint8_t *data, size_t len) {
+INTERNAL size_t serialize_data(uint8_t *dst, const uint8_t *data, size_t len) {
   uint8_t *cursor = dst;
 
   cursor += serialize_uint32(cursor, len);
@@ -51,23 +51,23 @@ size_t serialize_data(uint8_t *dst, const uint8_t *data, size_t len) {
   return cursor - dst;
 }
 
-size_t serialize_mpi(uint8_t *dst, const otr_mpi_t mpi) {
+INTERNAL size_t serialize_mpi(uint8_t *dst, const otr_mpi_t mpi) {
   return serialize_data(dst, mpi->data, mpi->len);
 }
 
-int serialize_ec_point(uint8_t *dst, const ec_point_t point) {
+INTERNAL int serialize_ec_point(uint8_t *dst, const ec_point_t point) {
   ec_point_serialize(dst, point);
   return ED448_POINT_BYTES;
 }
 
-size_t serialize_ec_scalar(uint8_t *dst, const ec_scalar_t scalar) {
+INTERNAL size_t serialize_ec_scalar(uint8_t *dst, const ec_scalar_t scalar) {
   if (ec_scalar_serialize(dst, ED448_SCALAR_BYTES, scalar))
     return 0;
 
   return ED448_SCALAR_BYTES;
 }
 
-otrv4_err_t serialize_dh_public_key(uint8_t *dst, size_t *len,
+INTERNAL otrv4_err_t serialize_dh_public_key(uint8_t *dst, size_t *len,
                                     const dh_public_key_t pub) {
   /* From gcrypt MPI */
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
@@ -88,7 +88,7 @@ otrv4_err_t serialize_dh_public_key(uint8_t *dst, size_t *len,
   return OTR4_SUCCESS;
 }
 
-size_t serialize_otrv4_public_key(uint8_t *dst, const otrv4_public_key_t pub) {
+INTERNAL size_t serialize_otrv4_public_key(uint8_t *dst, const otrv4_public_key_t pub) {
   uint8_t *cursor = dst;
   cursor += serialize_uint16(cursor, ED448_PUBKEY_TYPE);
   cursor += serialize_ec_point(cursor, pub);
@@ -96,7 +96,7 @@ size_t serialize_otrv4_public_key(uint8_t *dst, const otrv4_public_key_t pub) {
   return cursor - dst;
 }
 
-size_t
+INTERNAL size_t
 serialize_otrv4_shared_prekey(uint8_t *dst,
                               const otrv4_shared_prekey_pub_t shared_prekey) {
   uint8_t *cursor = dst;
@@ -106,7 +106,7 @@ serialize_otrv4_shared_prekey(uint8_t *dst,
   return cursor - dst;
 }
 
-size_t serialize_snizkpk_proof(uint8_t *dst, const snizkpk_proof_t *proof) {
+INTERNAL size_t serialize_snizkpk_proof(uint8_t *dst, const snizkpk_proof_t *proof) {
   uint8_t *cursor = dst;
   cursor += serialize_ec_scalar(cursor, proof->c1);
   cursor += serialize_ec_scalar(cursor, proof->r1);

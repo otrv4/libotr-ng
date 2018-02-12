@@ -12,7 +12,7 @@ const tlv_type_t tlv_types[] = {OTRV4_TLV_PADDING,   OTRV4_TLV_DISCONNECTED,
                                 OTRV4_TLV_SMP_MSG_3, OTRV4_TLV_SMP_MSG_4,
                                 OTRV4_TLV_SMP_ABORT, OTRV4_TLV_SYM_KEY};
 
-void set_tlv_type(tlv_t *tlv, uint16_t tlv_type) {
+INTERNAL void set_tlv_type(tlv_t *tlv, uint16_t tlv_type) {
   tlv_type_t type = OTRV4_TLV_NONE;
 
   if (tlv_type >= 0 && tlv_type < 8) {
@@ -22,7 +22,7 @@ void set_tlv_type(tlv_t *tlv, uint16_t tlv_type) {
   tlv->type = type;
 }
 
-static tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
+tstatic tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
   size_t w = 0;
   tlv_t *tlv = NULL;
   uint16_t tlv_type = -1;
@@ -73,7 +73,7 @@ static tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
   return NULL;
 }
 
-tlv_t *append_tlv(tlv_t *head, tlv_t *tlv) {
+INTERNAL tlv_t *append_tlv(tlv_t *head, tlv_t *tlv) {
   if (!head)
     return tlv;
 
@@ -88,7 +88,7 @@ tlv_t *append_tlv(tlv_t *head, tlv_t *tlv) {
   return head;
 }
 
-tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
+INTERNAL tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
   size_t written = 0;
   tlv_t *tlv = NULL, *ret = NULL;
 
@@ -108,7 +108,7 @@ tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
   return ret;
 }
 
-void tlv_foreach(tlv_t *head) {
+tstatic void tlv_foreach(tlv_t *head) {
   tlv_t *current = head;
   while (current) {
     tlv_t *next = current->next;
@@ -121,9 +121,9 @@ void tlv_foreach(tlv_t *head) {
   }
 }
 
-void otrv4_tlv_free(tlv_t *tlv) { tlv_foreach(tlv); }
+INTERNAL void otrv4_tlv_free(tlv_t *tlv) { tlv_foreach(tlv); }
 
-tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
+INTERNAL tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
   tlv_t *tlv = malloc(sizeof(tlv_t));
   if (!tlv)
     return NULL;
@@ -145,11 +145,11 @@ tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
   return tlv;
 }
 
-tlv_t *otrv4_disconnected_tlv_new(void) {
+INTERNAL tlv_t *otrv4_disconnected_tlv_new(void) {
   return otrv4_tlv_new(OTRV4_TLV_DISCONNECTED, 0, NULL);
 }
 
-tlv_t *otrv4_padding_tlv_new(size_t len) {
+INTERNAL tlv_t *otrv4_padding_tlv_new(size_t len) {
   uint8_t *data = malloc(len);
   if (!data)
     return NULL;
@@ -162,7 +162,7 @@ tlv_t *otrv4_padding_tlv_new(size_t len) {
   return tlv;
 }
 
-otrv4_err_t append_padding_tlv(tlv_t **tlvs, int message_len) {
+INTERNAL otrv4_err_t append_padding_tlv(tlv_t **tlvs, int message_len) {
   int padding_granularity = 256;
   int header_len = 4;
   int nul_byte_len = 1;

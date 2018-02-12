@@ -3,14 +3,14 @@
 #include "otrv3.h"
 #include "otrv4.h"
 
-static void create_privkey_cb(const otr4_conversation_state_t *otr) {
+tstatic void create_privkey_cb_v3(const otr4_conversation_state_t *otr) {
   if (!otr || !otr->client)
     return;
   otrv4_client_callbacks_create_privkey(otr->client->callbacks,
                                         otr->client->client_id);
 }
 
-static void gone_secure_cb(const otr4_conversation_state_t *otr) {
+tstatic void gone_secure_cb_v3(const otr4_conversation_state_t *otr) {
   if (!otr || !otr->client)
     return;
   otrv4_client_callbacks_gone_secure(
@@ -18,7 +18,7 @@ static void gone_secure_cb(const otr4_conversation_state_t *otr) {
       otr->client->client_id); // TODO: should be conversation_id
 }
 
-static void gone_insecure_cb(const otr4_conversation_state_t *otr) {
+tstatic void gone_insecure_cb_v3(const otr4_conversation_state_t *otr) {
   if (!otr || !otr->client)
     return;
   otrv4_client_callbacks_gone_insecure(
@@ -26,7 +26,7 @@ static void gone_insecure_cb(const otr4_conversation_state_t *otr) {
       otr->client->client_id); // TODO: should be conversation_id
 }
 
-static void fingerprint_seen_cb(const otrv3_fingerprint_t fp,
+tstatic void fingerprint_seen_cb_v3(const otrv3_fingerprint_t fp,
                                 const otr4_conversation_state_t *otr) {
   if (!otr || !otr->client)
     return;
@@ -35,7 +35,7 @@ static void fingerprint_seen_cb(const otrv3_fingerprint_t fp,
       otr->client->client_id); // TODO: should be conversation_id
 }
 
-static void handle_smp_event_cb(const otr4_smp_event_t event,
+tstatic void handle_smp_event_cb_v3(const otr4_smp_event_t event,
                                 const uint8_t progress_percent,
                                 const char *question,
                                 const otr4_conversation_state_t *otr) {
@@ -68,7 +68,7 @@ static void handle_smp_event_cb(const otr4_smp_event_t event,
   }
 }
 
-static void received_symkey_cb(const otr4_conversation_state_t *otr,
+tstatic void received_symkey_cb_v3(const otr4_conversation_state_t *otr,
                                unsigned int use, const unsigned char *usedata,
                                size_t usedatalen,
                                const unsigned char *extra_key) {
@@ -88,7 +88,7 @@ static void received_symkey_cb(const otr4_conversation_state_t *otr,
 #endif
 }
 
-static OtrlPolicy op_policy(void *opdata, ConnContext *context) {
+tstatic OtrlPolicy op_policy(void *opdata, ConnContext *context) {
   // TODO: should we use OTRL_POLICY_DEFAULT?;
   // TODO: Should an error restart AKE?
   return OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_WHITESPACE_START_AKE;
@@ -96,7 +96,7 @@ static OtrlPolicy op_policy(void *opdata, ConnContext *context) {
 
 static char *injected_to_send = NULL;
 
-static void from_injected_to_send(char **to_send) {
+tstatic void from_injected_to_send(char **to_send) {
   if (!to_send || !injected_to_send)
     return;
 
@@ -108,7 +108,7 @@ static void from_injected_to_send(char **to_send) {
   injected_to_send = NULL;
 }
 
-static void op_inject(void *opdata, const char *accountname,
+tstatic void op_inject(void *opdata, const char *accountname,
                       const char *protocol, const char *recipient,
                       const char *message) {
   // TODO: This is where we should ADD a new element to the list.
@@ -124,9 +124,9 @@ static void op_inject(void *opdata, const char *accountname,
 
 /* Create a private key for the given accountname/protocol if
  * desired. */
-static void op_create_privkey(void *opdata, const char *accountname,
+tstatic void op_create_privkey(void *opdata, const char *accountname,
                               const char *protocol) {
-  create_privkey_cb(opdata);
+  create_privkey_cb_v3(opdata);
 }
 
 /* Report whether you think the given user is online.  Return 1 if
@@ -135,7 +135,7 @@ static void op_create_privkey(void *opdata, const char *accountname,
  * If you return 1, messages such as heartbeats or other
  * notifications may be sent to the user, which could result in "not
  * logged in" errors if you're wrong. */
-static int op_is_logged_in(void *opdata, const char *accountname,
+tstatic int op_is_logged_in(void *opdata, const char *accountname,
                            const char *protocol, const char *recipient) {
   return 1; // We always think the person is logged in, otherwise it wont send
             // disconnect TLVs, for example.
@@ -143,60 +143,60 @@ static int op_is_logged_in(void *opdata, const char *accountname,
 
 /* When the list of ConnContexts changes (including a change in
  * state), this is called so the UI can be updated. */
-static void op_update_context_list(void *opdata) {}
+tstatic void op_update_context_list(void *opdata) {}
 
 /* A new fingerprint for the given user has been received. */
-static void op_new_fingerprint(void *opdata, OtrlUserState us,
+tstatic void op_new_fingerprint(void *opdata, OtrlUserState us,
                                const char *accountname, const char *protocol,
                                const char *username,
                                unsigned char fingerprint[20]) {
-  fingerprint_seen_cb(fingerprint, opdata);
+  fingerprint_seen_cb_v3(fingerprint, opdata);
 }
 
 /* The list of known fingerprints has changed.  Write them to disk. */
-static void op_write_fingerprints(void *opdata) {}
+tstatic void op_write_fingerprints(void *opdata) {}
 
 /* A ConnContext has entered a secure state. */
-static void op_gone_secure(void *opdata, ConnContext *context) {
-  gone_secure_cb(opdata);
+tstatic void op_gone_secure(void *opdata, ConnContext *context) {
+  gone_secure_cb_v3(opdata);
 }
 
 /* A ConnContext has left a secure state. */
-static void op_gone_insecure(void *opdata, ConnContext *context) {
-  gone_insecure_cb(opdata);
+tstatic void op_gone_insecure(void *opdata, ConnContext *context) {
+  gone_insecure_cb_v3(opdata);
 }
 
 /* We have completed an authentication, using the D-H keys we
  * already knew.  is_reply indicates whether we initiated the AKE. */
-static void op_still_secure(void *opdata, ConnContext *context, int is_reply) {
-  gone_secure_cb(opdata);
+tstatic void op_still_secure(void *opdata, ConnContext *context, int is_reply) {
+  gone_secure_cb_v3(opdata);
 }
 
 /* Find the maximum message size supported by this protocol. */
-static int op_max_message_size(void *opdata, ConnContext *context) {
+tstatic int op_max_message_size(void *opdata, ConnContext *context) {
   return 10000;
 }
 
 /* Return a newly allocated string containing a human-friendly
  * representation for the given account */
-static const char *op_account_name(void *opdata, const char *account,
+tstatic const char *op_account_name(void *opdata, const char *account,
                                    const char *protocol) {
   return "ACCOUNT NAME";
 }
 
 /* Deallocate a string returned by account_name */
-static void op_account_name_free(void *opdata, const char *account_name) {}
+tstatic void op_account_name_free(void *opdata, const char *account_name) {}
 
 /* We received a request from the buddy to use the current "extra"
  * symmetric key.  The key will be passed in symkey, of length
  * OTRL_EXTRAKEY_BYTES.  The requested use, as well as use-specific
  * data will be passed so that the applications can communicate other
  * information (some id for the data transfer, for example). */
-static void op_received_symkey(void *opdata, ConnContext *context,
+tstatic void op_received_symkey(void *opdata, ConnContext *context,
                                unsigned int use, const unsigned char *usedata,
                                size_t usedatalen,
                                const unsigned char *extra_key) {
-  received_symkey_cb(opdata, use, usedata, usedatalen, extra_key);
+  received_symkey_cb_v3(opdata, use, usedata, usedatalen, extra_key);
 }
 
 /* Return a string according to the error event. This string will then
@@ -211,25 +211,25 @@ static void op_received_symkey(void *opdata, ConnContext *context,
  *		sent an unreadable encrypted message
  * - OTRL_ERRCODE_MSG_MALFORMED
  * 		message sent is malformed */
-static const char *op_otr_error_message(void *opdata, ConnContext *context,
+tstatic const char *op_otr_error_message(void *opdata, ConnContext *context,
                                         OtrlErrorCode err_code) {
   printf("ERROR MESSAGE CB V3\n");
   return "ERROR MESSAGE";
 }
 
 /* Deallocate a string returned by otr_error_message */
-static void op_otr_error_message_free(void *opdata, const char *err_msg) {}
+tstatic void op_otr_error_message_free(void *opdata, const char *err_msg) {}
 
 /* Return a string that will be prefixed to any resent message. If this
  * function is not provided by the application then the default prefix,
  * "[resent]", will be used.
  * */
-static const char *op_resent_msg_prefix(void *opdata, ConnContext *context) {
+tstatic const char *op_resent_msg_prefix(void *opdata, ConnContext *context) {
   return NULL;
 }
 
 /* Deallocate a string returned by resent_msg_prefix */
-static void op_resent_msg_prefix_free(void *opdata, const char *prefix) {}
+tstatic void op_resent_msg_prefix_free(void *opdata, const char *prefix) {}
 
 /* Update the authentication UI with respect to SMP events
  * These are the possible events:
@@ -253,7 +253,7 @@ static void op_resent_msg_prefix_free(void *opdata, const char *prefix) {}
  * - OTRL_SMPEVENT_ERROR
  *      (same as OTRL_SMPEVENT_CHEATED)
  * */
-static void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
+tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
                                 ConnContext *context,
                                 unsigned short progress_percent,
                                 char *question) {
@@ -288,7 +288,7 @@ static void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
     break;
   }
 
-  handle_smp_event_cb(event, progress_percent, question, opdata);
+  handle_smp_event_cb_v3(event, progress_percent, question, opdata);
 }
 
 /* Handle and send the appropriate message(s) to the sender/recipient
@@ -333,7 +333,7 @@ static void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
  *      Cannot recognize the type of OTR message received.
  * - OTRL_MSGEVENT_RCVDMSG_FOR_OTHER_INSTANCE
  *      Received and discarded a message intended for another instance. */
-static void op_handle_msg_event(void *opdata, OtrlMessageEvent msg_event,
+tstatic void op_handle_msg_event(void *opdata, OtrlMessageEvent msg_event,
                                 ConnContext *context, const char *message,
                                 gcry_error_t err) {
   printf("MSG EVENT V3\n");
@@ -341,19 +341,19 @@ static void op_handle_msg_event(void *opdata, OtrlMessageEvent msg_event,
 
 /* Create a instance tag for the given accountname/protocol if
  * desired. */
-static void op_create_instag(void *opdata, const char *accountname,
+tstatic void op_create_instag(void *opdata, const char *accountname,
                              const char *protocol) {}
 
 /* Called immediately before a data message is encrypted, and after a data
  * message is decrypted. The OtrlConvertType parameter has the value
  * OTRL_CONVERT_SENDING or OTRL_CONVERT_RECEIVING to differentiate these
  * cases. */
-static void op_convert_msg(void *opdata, ConnContext *context,
+tstatic void op_convert_msg(void *opdata, ConnContext *context,
                            OtrlConvertType convert_type, char **dest,
                            const char *src) {}
 
 /* Deallocate a string returned by convert_msg. */
-static void op_convert_free(void *opdata, ConnContext *context, char *dest) {}
+tstatic void op_convert_free(void *opdata, ConnContext *context, char *dest) {}
 
 /* When timer_control is called, turn off any existing periodic
  * timer.
@@ -390,7 +390,7 @@ static void op_convert_free(void *opdata, ConnContext *context, char *dest) {}
  * of long-past messages (the first messages of an OTR
  * conversation).
  */
-static void op_timer_control(void *opdata, unsigned int interval) {}
+tstatic void op_timer_control(void *opdata, unsigned int interval) {}
 
 static OtrlMessageAppOps null_ops = {
     op_policy,
@@ -419,7 +419,7 @@ static OtrlMessageAppOps null_ops = {
     op_timer_control,
 };
 
-otr3_conn_t *otr3_conn_new(otr4_client_state_t *state, const char *peer) {
+INTERNAL otr3_conn_t *otr3_conn_new(otr4_client_state_t *state, const char *peer) {
   otr3_conn_t *ret = malloc(sizeof(otr3_conn_t));
   if (!ret)
     return NULL;
@@ -434,7 +434,7 @@ otr3_conn_t *otr3_conn_new(otr4_client_state_t *state, const char *peer) {
   return ret;
 }
 
-void otr3_conn_free(otr3_conn_t *conn) {
+INTERNAL void otr3_conn_free(otr3_conn_t *conn) {
   if (!conn)
     return;
 
@@ -449,7 +449,7 @@ void otr3_conn_free(otr3_conn_t *conn) {
   conn = NULL;
 }
 
-otrv4_err_t otrv3_send_message(char **newmessage, const char *message,
+INTERNAL otrv4_err_t otrv3_send_message(char **newmessage, const char *message,
                                const tlv_t *tlvs, otr3_conn_t *conn) {
   // TODO: convert TLVs
   OtrlTLV *tlvsv3 = NULL;
@@ -469,7 +469,7 @@ otrv4_err_t otrv3_send_message(char **newmessage, const char *message,
   return OTR4_ERROR;
 }
 
-otrv4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
+INTERNAL otrv4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
                                   tlv_t **tlvs, const string_t message,
                                   otr3_conn_t *conn) {
   int ignore_message;
@@ -501,7 +501,7 @@ otrv4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
   return OTR4_SUCCESS;
 }
 
-void otrv3_close(string_t *to_send, otr3_conn_t *conn) {
+INTERNAL void otrv3_close(string_t *to_send, otr3_conn_t *conn) {
   // TODO: there is also: otrl_message_disconnect, which only disconnects one
   // instance
   otrl_message_disconnect_all_instances(conn->state->userstate, conn->ops,
@@ -511,7 +511,7 @@ void otrv3_close(string_t *to_send, otr3_conn_t *conn) {
   from_injected_to_send(to_send);
 }
 
-otrv4_err_t otrv3_send_symkey_message(string_t *to_send, otr3_conn_t *conn,
+INTERNAL otrv4_err_t otrv3_send_symkey_message(string_t *to_send, otr3_conn_t *conn,
                                       unsigned int use,
                                       const unsigned char *usedata,
                                       size_t usedatalen,
@@ -523,7 +523,7 @@ otrv4_err_t otrv3_send_symkey_message(string_t *to_send, otr3_conn_t *conn,
   return OTR4_SUCCESS;
 }
 
-otrv4_err_t otrv3_smp_start(string_t *to_send, const char *question,
+INTERNAL otrv4_err_t otrv3_smp_start(string_t *to_send, const char *question,
                             const uint8_t *secret, size_t secretlen,
                             otr3_conn_t *conn) {
   if (question)
@@ -537,7 +537,7 @@ otrv4_err_t otrv3_smp_start(string_t *to_send, const char *question,
   return OTR4_SUCCESS;
 }
 
-otrv4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret,
+INTERNAL otrv4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret,
                                const size_t secretlen, otr3_conn_t *conn) {
   otrl_message_respond_smp(conn->state->userstate, conn->ops, conn->opdata,
                            conn->ctx, secret, secretlen);
@@ -546,7 +546,7 @@ otrv4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret,
   return OTR4_SUCCESS;
 }
 
-otrv4_err_t otrv3_smp_abort(otr3_conn_t *conn) {
+INTERNAL otrv4_err_t otrv3_smp_abort(otr3_conn_t *conn) {
   otrl_message_abort_smp(conn->state->userstate, conn->ops, conn->opdata,
                          conn->ctx);
   return OTR4_SUCCESS;

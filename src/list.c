@@ -4,7 +4,7 @@
 
 #include "list.h"
 
-list_element_t *list_new() {
+tstatic list_element_t *list_new() {
   list_element_t *n = malloc(sizeof(list_element_t));
   if (!n)
     return n;
@@ -15,7 +15,7 @@ list_element_t *list_new() {
   return n;
 }
 
-void list_foreach(list_element_t *head,
+INTERNAL void list_foreach(list_element_t *head,
                   void (*fn)(list_element_t *node, void *context),
                   void *context) {
   list_element_t *current = head;
@@ -29,7 +29,7 @@ void list_foreach(list_element_t *head,
   }
 }
 
-static void call_and_free_node(list_element_t *node, void *context) {
+tstatic void call_and_free_node(list_element_t *node, void *context) {
   void (*fn)(void *data) = context;
 
   if (fn)
@@ -39,15 +39,15 @@ static void call_and_free_node(list_element_t *node, void *context) {
   free(node);
 }
 
-void list_free(list_element_t *head, void (*fn)(void *data)) {
+INTERNAL void list_free(list_element_t *head, void (*fn)(void *data)) {
   list_foreach(head, call_and_free_node, fn);
 }
 
-void list_free_full(list_element_t *head) { list_free(head, free); }
+INTERNAL void list_free_full(list_element_t *head) { list_free(head, free); }
 
-void list_free_nodes(list_element_t *head) { list_free(head, NULL); }
+INTERNAL void list_free_nodes(list_element_t *head) { list_free(head, NULL); }
 
-list_element_t *list_add(void *data, list_element_t *head) {
+INTERNAL list_element_t *list_add(void *data, list_element_t *head) {
   list_element_t *n = list_new();
   if (!n)
     return NULL;
@@ -62,7 +62,7 @@ list_element_t *list_add(void *data, list_element_t *head) {
   return head;
 }
 
-list_element_t *list_get_last(list_element_t *head) {
+INTERNAL list_element_t *list_get_last(list_element_t *head) {
   if (!head)
     return NULL;
 
@@ -73,7 +73,7 @@ list_element_t *list_get_last(list_element_t *head) {
   return cursor;
 }
 
-list_element_t *list_get(const void *wanted, list_element_t *head,
+INTERNAL list_element_t *list_get(const void *wanted, list_element_t *head,
                          int (*fn)(const void *current, const void *wanted)) {
   list_element_t *cursor = head;
 
@@ -87,15 +87,15 @@ list_element_t *list_get(const void *wanted, list_element_t *head,
   return NULL;
 }
 
-static int compare_data(const void *current, const void *wanted) {
+tstatic int compare_data(const void *current, const void *wanted) {
   return current == wanted;
 }
 
-list_element_t *list_get_by_value(const void *wanted, list_element_t *head) {
+INTERNAL list_element_t *list_get_by_value(const void *wanted, list_element_t *head) {
   return list_get(wanted, head, compare_data);
 }
 
-list_element_t *list_remove_element(const list_element_t *wanted,
+INTERNAL list_element_t *list_remove_element(const list_element_t *wanted,
                                     list_element_t *head) {
   list_element_t *cursor = head;
 
@@ -120,7 +120,7 @@ list_element_t *list_remove_element(const list_element_t *wanted,
   return head;
 }
 
-size_t list_len(list_element_t *head) {
+INTERNAL size_t list_len(list_element_t *head) {
   list_element_t *cursor = head;
   size_t size = 0;
 

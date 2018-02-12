@@ -4,17 +4,17 @@
 #include "deserialize.h"
 #include "serialize.h" // just for memcpy
 
-void otr_mpi_init(otr_mpi_t mpi) {
+INTERNAL void otr_mpi_init(otr_mpi_t mpi) {
   mpi->len = 0;
   mpi->data = NULL;
 }
 
-void otr_mpi_free(otr_mpi_t mpi) {
+INTERNAL void otr_mpi_free(otr_mpi_t mpi) {
   free(mpi->data);
   mpi->data = NULL;
 }
 
-void otr_mpi_set(otr_mpi_t dst, const uint8_t *src, size_t len) {
+INTERNAL void otr_mpi_set(otr_mpi_t dst, const uint8_t *src, size_t len) {
   if (src == NULL || len == 0) {
     dst->len = 0;
     dst->data = NULL;
@@ -29,11 +29,11 @@ void otr_mpi_set(otr_mpi_t dst, const uint8_t *src, size_t len) {
   memcpy(dst->data, src, dst->len);
 }
 
-void otr_mpi_copy(otr_mpi_t dst, const otr_mpi_t src) {
+INTERNAL void otr_mpi_copy(otr_mpi_t dst, const otr_mpi_t src) {
   otr_mpi_set(dst, src->data, src->len);
 }
 
-static otrv4_bool_t otr_mpi_read_len(otr_mpi_t dst, const uint8_t *src,
+tstatic otrv4_bool_t otr_mpi_read_len(otr_mpi_t dst, const uint8_t *src,
                                      size_t src_len, size_t *read) {
   size_t r = 0;
   if (deserialize_uint32(&dst->len, src, src_len, &r))
@@ -48,7 +48,7 @@ static otrv4_bool_t otr_mpi_read_len(otr_mpi_t dst, const uint8_t *src,
   return otrv4_true;
 }
 
-otrv4_err_t otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src,
+INTERNAL otrv4_err_t otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src,
                                 size_t src_len, size_t *read) {
   if (otr_mpi_read_len(dst, src, src_len, read) == otrv4_false)
     return OTR4_ERROR;
@@ -71,7 +71,7 @@ otrv4_err_t otr_mpi_deserialize(otr_mpi_t dst, const uint8_t *src,
   return OTR4_SUCCESS;
 }
 
-otrv4_err_t otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t *src,
+INTERNAL otrv4_err_t otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t *src,
                                         size_t src_len, size_t *read) {
   if (otr_mpi_read_len(dst, src, src_len, read) == otrv4_false)
     return OTR4_ERROR;
@@ -85,7 +85,7 @@ otrv4_err_t otr_mpi_deserialize_no_copy(otr_mpi_t dst, const uint8_t *src,
   return OTR4_SUCCESS;
 }
 
-size_t otr_mpi_memcpy(uint8_t *dst, const otr_mpi_t mpi) {
+INTERNAL size_t otr_mpi_memcpy(uint8_t *dst, const otr_mpi_t mpi) {
   memcpy(dst, mpi->data, mpi->len);
   return mpi->len;
 }

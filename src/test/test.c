@@ -1,6 +1,10 @@
 #include <glib.h>
 
 #define OTRV4_KEY_MANAGEMENT_PRIVATE
+#define OTRV4_USER_PROFILE_PRIVATE
+#define OTRV4_LIST_PRIVATE
+#define OTRV4_OTRV4_PRIVATE
+#define OTRV4_SMP_PRIVATE
 
 #include "../otrv4.h"
 

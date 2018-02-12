@@ -35,17 +35,6 @@
 #define OTR4_POLICY_ALWAYS (OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_ALLOW_V4)
 #define OTR4_POLICY_DEFAULT OTR4_POLICY_OPPORTUNISTIC
 
-static int otrl_initialized = 0;
-static inline void otrv3_init(void) {
-  if (otrl_initialized)
-    return;
-
-  if (otrl_init(OTRL_VERSION_MAJOR, OTRL_VERSION_MINOR, OTRL_VERSION_SUB))
-    exit(1);
-
-  otrl_initialized = 1;
-}
-
 typedef struct connection otrv4_t; /* Forward declare */
 
 typedef enum {
@@ -140,67 +129,73 @@ typedef struct {
   uint8_t type;
 } otrv4_header_t;
 
-otrv4_t *otrv4_new(struct otr4_client_state_t *state, otrv4_policy_t policy);
-void otrv4_destroy(otrv4_t *otr);
-void otrv4_free(/*@only@ */ otrv4_t *otr);
+INTERNAL otrv4_t *otrv4_new(struct otr4_client_state_t *state, otrv4_policy_t policy);
 
-otrv4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
+INTERNAL void otrv4_free(/*@only@ */ otrv4_t *otr);
+
+INTERNAL otrv4_err_t otrv4_build_query_message(string_t *dst, const string_t message,
                                       const otrv4_t *otr);
 
-otrv4_err_t otrv4_build_whitespace_tag(string_t *whitespace_tag,
-                                       const string_t message,
-                                       const otrv4_t *otr);
+INTERNAL otrv4_response_t *otrv4_response_new(void);
 
-otrv4_response_t *otrv4_response_new(void);
+INTERNAL void otrv4_response_free(otrv4_response_t *response);
 
-void otrv4_response_free(otrv4_response_t *response);
 
-otrv4_in_message_type_t get_message_type(const string_t message);
-
-otrv4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
-                           const size_t bufflen);
-
-otrv4_err_t otrv4_receive_message(otrv4_response_t *response,
+INTERNAL otrv4_err_t otrv4_receive_message(otrv4_response_t *response,
                                   const string_t message, otrv4_t *otr);
 
-otrv4_err_t otrv4_prepare_to_send_message(string_t *to_send,
+INTERNAL otrv4_err_t otrv4_prepare_to_send_message(string_t *to_send,
                                           const string_t message, tlv_t **tlvs,
                                           uint8_t flags, otrv4_t *otr);
 
-otrv4_err_t otrv4_close(string_t *to_send, otrv4_t *otr);
+INTERNAL otrv4_err_t otrv4_close(string_t *to_send, otrv4_t *otr);
 
-otrv4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
+
+INTERNAL otrv4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
+                            const size_t q_len, const uint8_t *secret,
+                            const size_t secretlen, otrv4_t *otr);
+
+INTERNAL otrv4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
+                               const size_t secretlen, otrv4_t *otr);
+
+INTERNAL otrv4_err_t otrv4_expire_session(string_t *to_send, otrv4_t *otr);
+
+
+API otrv4_err_t otrv4_build_whitespace_tag(string_t *whitespace_tag,
+                                       const string_t message,
+                                       const otrv4_t *otr);
+
+API otrv4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
                                       const unsigned char *usedata,
                                       size_t usedatalen, uint8_t *extra_key,
                                       otrv4_t *otr);
 
-otrv4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
-                            const size_t q_len, const uint8_t *secret,
-                            const size_t secretlen, otrv4_t *otr);
-
-otrv4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret,
-                               const size_t secretlen, otrv4_t *otr);
-
-otrv4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr);
-
-otrv4_err_t otrv4_expire_session(string_t *to_send, otrv4_t *otr);
+API otrv4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr);
 
 // TODO: change to the real func: unexpose these and make them
 // static
-void reply_with_prekey_msg_from_server(otrv4_server_t *server,
+API void reply_with_prekey_msg_from_server(otrv4_server_t *server,
                                        otrv4_response_t *response);
 
-otrv4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr);
+API otrv4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr);
 
-otrv4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
+API otrv4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
                                           const string_t message);
 
-const char *otr_error_message(otrv4_err_code_t err_code);
+API otrv4_err_t otrv4_heartbeat_checker(string_t *to_send, otrv4_t *otr);
 
-otrv4_err_t otrv4_heartbeat_checker(string_t *to_send, otrv4_t *otr);
-
+API void otrv3_init(void);
 
 #ifdef OTRV4_OTRV4_PRIVATE
+
+tstatic void otrv4_destroy(otrv4_t *otr);
+
+
+tstatic otrv4_in_message_type_t get_message_type(const string_t message);
+
+tstatic otrv4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
+                           const size_t bufflen);
+
 #endif
 
 #endif
