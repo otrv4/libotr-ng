@@ -20,7 +20,7 @@ API otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb) {
 
 tstatic void free_client_state(void *data) { otr4_client_state_free(data); }
 
-tstatic void free_client(void *data) { otr4_client_free(data); }
+tstatic void free_client(void *data) { otrv4_client_free(data); }
 
 API void otr4_user_state_free(otr4_userstate_t *state) {
   if (!state)

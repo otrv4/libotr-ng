@@ -36,7 +36,7 @@ tstatic void conversation_free(void *data) {
   conv = NULL;
 }
 
-API otr4_client_t *otr4_client_new(otr4_client_state_t *state) {
+API otr4_client_t *otrv4_client_new(otr4_client_state_t *state) {
   otr4_client_t *client = malloc(sizeof(otr4_client_t));
   if (!client)
     return NULL;
@@ -47,7 +47,7 @@ API otr4_client_t *otr4_client_new(otr4_client_state_t *state) {
   return client;
 }
 
-API void otr4_client_free(otr4_client_t *client) {
+API void otrv4_client_free(otr4_client_t *client) {
   if (!client)
     return;
 
@@ -163,7 +163,7 @@ tstatic otr4_conversation_t *get_or_create_conversation_with(const char *recipie
   return conv;
 }
 
-API otr4_conversation_t *otr4_client_get_conversation(int force_create,
+API otr4_conversation_t *otrv4_client_get_conversation(int force_create,
                                                   const char *recipient,
                                                   otr4_client_t *client) {
   if (force_create)
@@ -172,7 +172,7 @@ API otr4_conversation_t *otr4_client_get_conversation(int force_create,
   return get_conversation_with(recipient, client->conversations);
 }
 
-tstatic int otrv4_send_message(char **newmsg, const char *message,
+tstatic int send_message(char **newmsg, const char *message,
                               const char *recipient, otr4_client_t *client) {
   otr4_conversation_t *conv = NULL;
   tlv_t *tlv = NULL;
@@ -191,18 +191,18 @@ tstatic int otrv4_send_message(char **newmsg, const char *message,
     return OTR4_SUCCESS != error;
 }
 
-API int otr4_client_send(char **newmessage, const char *message,
+API int otrv4_client_send(char **newmessage, const char *message,
                      const char *recipient, otr4_client_t *client) {
   /* OTR4 client will know how to transition to OTR3 if a v3 conversation is
    started */
-  return otrv4_send_message(newmessage, message, recipient, client);
+  return send_message(newmessage, message, recipient, client);
 }
 
-API int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
+API int otrv4_client_send_fragment(otr4_message_to_send_t **newmessage,
                               const char *message, int mms,
                               const char *recipient, otr4_client_t *client) {
   string_t to_send = NULL;
-  otrv4_err_t err = otrv4_send_message(&to_send, message, recipient, client);
+  otrv4_err_t err = send_message(&to_send, message, recipient, client);
   if (err != OTR4_SUCCESS)
     return 1;
 
@@ -258,7 +258,7 @@ tstatic int unfragment(char **unfragmented, const char *received,
   return err != OTR4_SUCCESS || ctx->status == OTR4_FRAGMENT_INCOMPLETE;
 }
 
-API int otr4_client_receive(char **newmessage, char **todisplay,
+API int otrv4_client_receive(char **newmessage, char **todisplay,
                         const char *message, const char *recipient,
                         otr4_client_t *client) {
   otrv4_err_t error = OTR4_ERROR;
@@ -308,7 +308,7 @@ API int otr4_client_receive(char **newmessage, char **todisplay,
   return should_ignore;
 }
 
-API char *otr4_client_query_message(const char *recipient, const char *message,
+API char *otrv4_client_query_message(const char *recipient, const char *message,
                                 otr4_client_t *client, OtrlPolicy policy) {
   otr4_conversation_t *conv = NULL;
   char *ret = NULL;
@@ -335,7 +335,7 @@ tstatic void destroy_client_conversation(const otr4_conversation_t *conv,
   list_free_nodes(elem);
 }
 
-API int otr4_client_disconnect(char **newmsg, const char *recipient,
+API int otrv4_client_disconnect(char **newmsg, const char *recipient,
                            otr4_client_t *client) {
   otr4_conversation_t *conv = NULL;
 
@@ -377,7 +377,7 @@ API int otr4_client_disconnect(char **newmsg, const char *recipient,
 /*   return 0; */
 /* } */
 
-API int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
+API int otrv4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
                                     const otr4_client_t *client) {
   if (!client->state->keypair)
     return -1;

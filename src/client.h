@@ -29,17 +29,17 @@ typedef struct {
   list_element_t *conversations;
 } otr4_client_t;
 
-API otr4_client_t *otr4_client_new(otr4_client_state_t *);
+API otr4_client_t *otrv4_client_new(otr4_client_state_t *);
 
-API void otr4_client_free(otr4_client_t *client);
+API void otrv4_client_free(otr4_client_t *client);
 
-API char *otr4_client_query_message(const char *recipient, const char *message,
+API char *otrv4_client_query_message(const char *recipient, const char *message,
                                 otr4_client_t *client, OtrlPolicy policy);
 
-API int otr4_client_send(char **newmessage, const char *message,
+API int otrv4_client_send(char **newmessage, const char *message,
                      const char *recipient, otr4_client_t *client);
 
-API int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
+API int otrv4_client_send_fragment(otr4_message_to_send_t **newmessage,
                               const char *message, int mms,
                               const char *recipient, otr4_client_t *client);
 
@@ -52,17 +52,17 @@ API int otr4_client_send_fragment(otr4_message_to_send_t **newmessage,
 /*                             const unsigned char *secret, size_t secretlen, */
 /*                             otr4_client_t *client); */
 
-API int otr4_client_receive(char **newmsg, char **todisplay, const char *message,
+API int otrv4_client_receive(char **newmsg, char **todisplay, const char *message,
                         const char *recipient, otr4_client_t *client);
 
-API int otr4_client_disconnect(char **newmsg, const char *recipient,
+API int otrv4_client_disconnect(char **newmsg, const char *recipient,
                            otr4_client_t *client);
 
 /* tstatic int otr4_encrypted_conversation_expire(char **newmsg, const char *recipient, */
 /*                                        int expiration_time, */
 /*                                        otr4_client_t *client); */
 
-API otr4_conversation_t *otr4_client_get_conversation(int force,
+API otr4_conversation_t *otrv4_client_get_conversation(int force,
                                                   const char *recipient,
                                                   otr4_client_t *client);
 
@@ -70,7 +70,7 @@ API otr4_conversation_t *otr4_client_get_conversation(int force,
 
 /* tstatic int otr4_conversation_is_finished(otr4_conversation_t *conv); */
 
-API int otr4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
+API int otrv4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
                                     const otr4_client_t *client);
 
 /* tstatic int otr3_privkey_generate(otr4_client_t *client, FILE *privf); */
