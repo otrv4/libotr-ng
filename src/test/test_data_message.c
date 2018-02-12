@@ -6,7 +6,7 @@ static data_message_t *set_up_data_msg() {
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
+  otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
 
   data_message_t *data_msg = data_message_new();
   otrv4_assert(data_msg);
@@ -75,7 +75,7 @@ void test_data_message_serializes() {
   uint8_t *serialized = NULL;
   size_t serlen = 0;
   otrv4_assert(data_message_body_asprintf(&serialized, &serlen, data_msg) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   const int OUR_DH_LEN = 4 + 383;
   const int MSG_AS_DATA = 4 + 3;
@@ -131,7 +131,7 @@ void test_data_message_deserializes() {
   uint8_t *serialized = NULL;
   size_t serlen = 0;
   otrv4_assert(data_message_body_asprintf(&serialized, &serlen, data_msg) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   const uint8_t mac_data[MAC_KEY_BYTES] = {
       0x14, 0x9a, 0xf0, 0x93, 0xcc, 0x3f, 0x44, 0xf5, 0x1b, 0x41, 0x11,
@@ -147,7 +147,7 @@ void test_data_message_deserializes() {
   data_message_t *deserialized = data_message_new();
   otrv4_assert(data_message_deserialize(deserialized, serialized,
                                         serlen + MAC_KEY_BYTES,
-                                        NULL) == OTR4_SUCCESS);
+                                        NULL) == SUCCESS);
 
   otrv4_assert(data_msg->sender_instance_tag ==
                deserialized->sender_instance_tag);

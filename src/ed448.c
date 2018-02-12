@@ -64,11 +64,11 @@ INTERNAL void ecdh_shared_secret(uint8_t *shared, const ecdh_keypair_t *our_keyp
 INTERNAL otrv4_err_t ec_scalar_serialize(uint8_t *dst, size_t dst_len,
                                 const ec_scalar_t scalar) {
   if (dst_len < ED448_SCALAR_BYTES)
-    return OTR4_ERROR;
+    return ERROR;
 
   decaf_448_scalar_encode(dst, scalar);
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL void ec_scalar_deserialize(ec_scalar_t scalar,
@@ -86,7 +86,7 @@ INTERNAL otrv4_err_t ec_point_deserialize(ec_point_t point,
   decaf_error_t err =
       decaf_448_point_decode_like_eddsa_and_ignore_cofactor(p, serialized);
   if (DECAF_SUCCESS != err)
-    return OTR4_ERROR;
+    return ERROR;
 
   // The decoded point is equal to the original point * 2^2
   decaf_448_scalar_t r;
@@ -96,7 +96,7 @@ INTERNAL otrv4_err_t ec_point_deserialize(ec_point_t point,
 
   decaf_448_point_scalarmul(point, p, r);
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 static const char *ctx = "";

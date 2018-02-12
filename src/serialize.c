@@ -85,7 +85,7 @@ INTERNAL otrv4_err_t serialize_dh_public_key(uint8_t *dst, size_t *len,
   *len = serialize_mpi(dst, mpi);
   otr_mpi_free(mpi);
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL size_t serialize_otrv4_public_key(uint8_t *dst, const otrv4_public_key_t pub) {

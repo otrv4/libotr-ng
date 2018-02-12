@@ -9,14 +9,14 @@
 
 #define assert_msg_sent(err, to_send)                                          \
   do {                                                                         \
-    otrv4_assert(err == OTR4_SUCCESS);                                         \
+    otrv4_assert(err == SUCCESS);                                         \
     otrv4_assert(to_send);                                                     \
     otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);                              \
   } while (0);
 
 #define assert_msg_rec(err, message, response)                                 \
   do {                                                                         \
-    otrv4_assert(err == OTR4_SUCCESS);                                         \
+    otrv4_assert(err == SUCCESS);                                         \
     otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);   \
     otrv4_assert(response->to_send == NULL);                                   \
   } while (0);
@@ -24,7 +24,7 @@
 #define assert_rec_msg_inc_state(result, respond_to, sender, otr_state,        \
                                  send_response)                                \
   do {                                                                         \
-    otrv4_assert((result) == OTR4_SUCCESS);                                    \
+    otrv4_assert((result) == SUCCESS);                                    \
     otrv4_assert(!respond_to->to_display);                                     \
     otrv4_assert(sender->state == otr_state);                                  \
     if (send_response) {                                                       \
@@ -158,7 +158,7 @@ void test_api_interactive_conversation(void) {
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
 
   // Check TLVS
@@ -257,7 +257,7 @@ void test_api_non_interactive_conversation(void) {
   server->prekey_message = NULL;
 
   // Alice uploads prekey message to server
-  otrv4_assert(start_non_interactive_dake(server, alice) == OTR4_SUCCESS);
+  otrv4_assert(start_non_interactive_dake(server, alice) == SUCCESS);
 
   otrv4_assert(alice->state == OTRV4_STATE_START);
   otrv4_assert(server->prekey_message != NULL);
@@ -273,7 +273,7 @@ void test_api_non_interactive_conversation(void) {
   // Bob receives prekey message
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
-                                     bob) == OTR4_SUCCESS);
+                                     bob) == SUCCESS);
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
@@ -287,7 +287,7 @@ void test_api_non_interactive_conversation(void) {
   g_assert_cmpint(bob->keys->j, ==, 0);
 
   otrv4_assert(send_non_interactive_auth_msg(&response_to_alice->to_send, bob,
-                                             "") == OTR4_SUCCESS);
+                                             "") == SUCCESS);
 
   // Should send an non interactive auth
   otrv4_assert(response_to_alice->to_display == NULL);
@@ -297,7 +297,7 @@ void test_api_non_interactive_conversation(void) {
   // Alice receives an non interactive auth
   otrv4_assert(otrv4_receive_message(response_to_bob,
                                      response_to_alice->to_send,
-                                     alice) == OTR4_SUCCESS);
+                                     alice) == SUCCESS);
   otrv4_assert(response_to_alice->to_display == NULL);
 
   otrv4_response_free_all(response_to_alice, response_to_bob);
@@ -327,7 +327,7 @@ void test_api_non_interactive_conversation(void) {
   chain_key_t bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
   otrv4_assert(key_manager_get_receiving_chain_key(
-                   alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
+                   alice_receiving_key, 0, alice->keys) == SUCCESS);
   otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
   int message_id;
@@ -405,7 +405,7 @@ void test_api_non_interactive_conversation(void) {
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
 
   // Check TLVS
@@ -442,7 +442,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   server->prekey_message = NULL;
 
   // Alice uploads prekey message to server
-  otrv4_assert(start_non_interactive_dake(server, alice) == OTR4_SUCCESS);
+  otrv4_assert(start_non_interactive_dake(server, alice) == SUCCESS);
 
   otrv4_assert(alice->state == OTRV4_STATE_START);
   otrv4_assert(server->prekey_message != NULL);
@@ -458,7 +458,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   // Bob receives prekey message
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
-                                     bob) == OTR4_SUCCESS);
+                                     bob) == SUCCESS);
 
   otrv4_assert(bob->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
   otrv4_assert(bob->keys->current);
@@ -470,7 +470,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   g_assert_cmpint(bob->keys->j, ==, 0);
 
   otrv4_assert(send_non_interactive_auth_msg(&response_to_alice->to_send, bob,
-                                             "hi") == OTR4_SUCCESS);
+                                             "hi") == SUCCESS);
 
   // Should send an non interactive auth
   otrv4_assert(response_to_alice->to_display == NULL);
@@ -480,7 +480,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   // Alice receives an non interactive auth
   otrv4_assert(otrv4_receive_message(response_to_bob,
                                      response_to_alice->to_send,
-                                     alice) == OTR4_SUCCESS);
+                                     alice) == SUCCESS);
 
   otrv4_assert_ec_public_key_eq(alice->keys->their_ecdh,
                                 bob->keys->our_ecdh->pub);
@@ -513,7 +513,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   chain_key_t bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
   otrv4_assert(key_manager_get_receiving_chain_key(
-                   alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
+                   alice_receiving_key, 0, alice->keys) == SUCCESS);
   otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
   int message_id;
@@ -591,7 +591,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
 
   // Check TLVS
@@ -655,7 +655,7 @@ void test_api_conversation_errors(void) {
   string_t err_code = "?OTR Error: ERROR_2: OTR4_ERR_MSG_NOT_PRIVATE_STATE";
   otrv4_assert_cmpmem(err_code, response_to_alice->to_send, strlen(err_code));
 
-  otrv4_assert(err == OTR4_ERROR);
+  otrv4_assert(err == ERROR);
   otrv4_assert(response_to_alice->to_send != NULL);
   otrv4_assert(!bob->keys->old_mac_keys);
   g_assert_cmpint(bob->keys->i, ==, 0);
@@ -665,7 +665,7 @@ void test_api_conversation_errors(void) {
   err =
       otrv4_receive_message(response_to_bob, response_to_alice->to_send, alice);
 
-  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(err == SUCCESS);
   otrv4_assert(response_to_bob);
   otrv4_assert_cmpmem(err_code, response_to_bob->to_display, strlen(err_code));
 
@@ -687,7 +687,7 @@ void test_api_conversation_errors(void) {
   response_to_alice = otrv4_response_new();
   err = otrv4_receive_message(response_to_alice, to_send, bob);
 
-  otrv4_assert(err == OTR4_MSG_NOT_VALID);
+  otrv4_assert(err == MSG_NOT_VALID);
   otrv4_assert(response_to_alice->to_send == NULL);
   otrv4_assert(response_to_alice->warning == OTRV4_WARN_RECEIVED_NOT_VALID);
 
@@ -708,12 +708,12 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   // Alice sends query message
   string_t query_message = NULL;
   otrv4_assert(otrv4_build_query_message(&query_message, "", alice) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   otrv4_assert_cmpmem("?OTRv3", query_message, 6);
 
   // Bob receives query message
   otrv4_assert(otrv4_receive_message(response_to_alice, query_message, bob) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   free(query_message);
   query_message = NULL;
 
@@ -725,7 +725,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   // Alice receives DH-Commit
   otrv4_assert(otrv4_receive_message(response_to_bob,
                                      response_to_alice->to_send,
-                                     alice) == OTR4_SUCCESS);
+                                     alice) == SUCCESS);
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
@@ -737,7 +737,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   // Bob receives a DH Key
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
-                                     bob) == OTR4_SUCCESS);
+                                     bob) == SUCCESS);
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
@@ -749,7 +749,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   // Alice receives Reveal Sig
   otrv4_assert(otrv4_receive_message(response_to_bob,
                                      response_to_alice->to_send,
-                                     alice) == OTR4_SUCCESS);
+                                     alice) == SUCCESS);
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
@@ -764,7 +764,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
   // Bob receives a Sig
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
-                                     bob) == OTR4_SUCCESS);
+                                     bob) == SUCCESS);
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
@@ -823,14 +823,14 @@ void test_api_conversation_v3(void) {
 
   // Alice sends a data message
   otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
   // Bob receives a data message
   response_to_alice = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_alice, to_send, bob) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   otrv4_assert(response_to_alice->to_display);
   otrv4_assert_cmpmem("hi", response_to_alice->to_display, 3);
@@ -839,14 +839,14 @@ void test_api_conversation_v3(void) {
 
   // Bob sends a data message
   otrv4_assert(otrv4_prepare_to_send_message(&to_send, "hi", &tlv, 0, bob) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
   // Alice receives a data message
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   otrv4_assert(response_to_bob->to_display);
   otrv4_assert_cmpmem("hi", response_to_bob->to_display, 3);
@@ -1012,7 +1012,7 @@ void test_api_smp(void) {
 
   // Alice sends SMP1
   otrv4_assert(otrv4_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
-                               strlen(secret), alice) == OTR4_SUCCESS);
+                               strlen(secret), alice) == SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT2);
@@ -1020,7 +1020,7 @@ void test_api_smp(void) {
   // Bob receives SMP1
   response_to_alice = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_alice, to_send, bob) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   otrv4_assert(!response_to_alice->to_send);
 
@@ -1029,7 +1029,7 @@ void test_api_smp(void) {
   // This will be called by bob when the OTRV4_SMPEVENT_ASK_FOR_SECRET is
   // triggered.
   otrv4_assert(otrv4_smp_continue(&to_send, (uint8_t *)secret, strlen(secret),
-                                  bob) == OTR4_SUCCESS);
+                                  bob) == SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP2
   g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT3);
@@ -1037,7 +1037,7 @@ void test_api_smp(void) {
   // Alice receives SMP2
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   otrv4_assert(response_to_bob->to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9); // SMP3
@@ -1049,7 +1049,7 @@ void test_api_smp(void) {
   response_to_alice = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
-                                     bob) == OTR4_SUCCESS);
+                                     bob) == SUCCESS);
   otrv4_response_free(response_to_bob);
 
   otrv4_assert(response_to_alice->to_send);
@@ -1060,7 +1060,7 @@ void test_api_smp(void) {
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob,
                                      response_to_alice->to_send,
-                                     alice) == OTR4_SUCCESS);
+                                     alice) == SUCCESS);
   otrv4_response_free(response_to_alice);
   response_to_alice = NULL;
 
@@ -1099,7 +1099,7 @@ void test_api_smp_abort(void) {
 
   // Alice sends SMP1
   otrv4_assert(otrv4_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
-                               strlen(secret), alice) == OTR4_SUCCESS);
+                               strlen(secret), alice) == SUCCESS);
   otrv4_assert(to_send);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT2);
@@ -1107,21 +1107,21 @@ void test_api_smp_abort(void) {
   // Bob receives SMP1
   response_to_alice = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_alice, to_send, bob) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   otrv4_assert(!response_to_alice->to_send);
   free_message_and_response(response_to_alice, &to_send);
 
   // From here
   // Bob sends SMP Abort. TODO: check it does not trigger anything else
-  otrv4_assert(otrv4_smp_abort(&to_send, bob) == OTR4_SUCCESS);
+  otrv4_assert(otrv4_smp_abort(&to_send, bob) == SUCCESS);
   g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
 
   // Alice receives SMP ABORT, send SMP_ABORT
   // TODO: Alice probably should not send and abort at this point
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   otrv4_assert(response_to_bob->to_send);
 
@@ -1197,7 +1197,7 @@ void test_api_extra_sym_key(void) {
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 1);
 
   // Check TLVS
@@ -1439,7 +1439,7 @@ void test_unreadable_flag() {
   otrl_base64_otr_decode(to_send, &decoded, &dec_len);
 
   assert_msg_sent(err, to_send);
-  otrv4_assert(decoded[flag_position] == OTR4_MSGFLAGS_IGNORE_UNREADABLE);
+  otrv4_assert(decoded[flag_position] == MSGFLAGS_IGNORE_UNREADABLE);
   free(decoded);
   decoded = NULL;
 
@@ -1447,7 +1447,7 @@ void test_unreadable_flag() {
   otrv4_response_t *response_to_alice = otrv4_response_new();
   err = otrv4_receive_message(response_to_alice, to_send, bob);
 
-  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(err == SUCCESS);
   otrv4_assert(!response_to_alice->to_display);
   otrv4_assert(!response_to_alice->to_send);
 
@@ -1462,7 +1462,7 @@ void test_unreadable_flag() {
   otrl_base64_otr_decode(to_send, &decoded, &dec_len);
 
   assert_msg_sent(err, to_send);
-  otrv4_assert(decoded[flag_position] == OTR4_MSGFLAGS_IGNORE_UNREADABLE);
+  otrv4_assert(decoded[flag_position] == MSGFLAGS_IGNORE_UNREADABLE);
   otrv4_tlv_free(tlv);
   free(decoded);
   decoded = NULL;
@@ -1471,7 +1471,7 @@ void test_unreadable_flag() {
   response_to_alice = otrv4_response_new();
   err = otrv4_receive_message(response_to_alice, to_send, bob);
 
-  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(err == SUCCESS);
   otrv4_assert(!response_to_alice->to_display);
   otrv4_assert(!response_to_alice->to_send);
 
@@ -1480,13 +1480,13 @@ void test_unreadable_flag() {
   // Alice sends an smp message with padding
   const char *secret = "secret";
   otrv4_assert(otrv4_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
-                               strlen(secret), alice) == OTR4_SUCCESS);
+                               strlen(secret), alice) == SUCCESS);
   otrv4_assert(to_send);
   otrl_base64_otr_decode(to_send, &decoded, &dec_len);
   otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);
 
   // SMP should have the IGNORE_UNREADABLE flag set
-  otrv4_assert(decoded[flag_position] == OTR4_MSGFLAGS_IGNORE_UNREADABLE);
+  otrv4_assert(decoded[flag_position] == MSGFLAGS_IGNORE_UNREADABLE);
 
   free(decoded);
   decoded = NULL;
@@ -1542,13 +1542,13 @@ void test_heartbeat_messages() {
 
   // Alice doesn't send a heartbeat
   err = otrv4_heartbeat_checker(&to_send, alice);
-  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(err == SUCCESS);
   otrv4_assert(to_send == NULL);
   otrv4_assert(alice_state->heartbeat->last_msg_sent == hundred_seconds_ago);
 
   // Bob sends a heartbeat
   err = otrv4_heartbeat_checker(&to_send, bob);
-  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(err == SUCCESS);
   otrv4_assert(to_send != NULL);
   otrv4_assert(bob_state->heartbeat->last_msg_sent == time(0));
 
@@ -1556,7 +1556,7 @@ void test_heartbeat_messages() {
   otrv4_response_t *response_to_bob = otrv4_response_new();
   err = otrv4_receive_message(response_to_bob, to_send, bob);
 
-  otrv4_assert(err == OTR4_SUCCESS);
+  otrv4_assert(err == SUCCESS);
   otrv4_assert(!response_to_bob->to_display);
   otrv4_assert(!response_to_bob->to_send);
 

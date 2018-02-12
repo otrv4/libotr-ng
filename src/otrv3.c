@@ -455,7 +455,7 @@ INTERNAL otrv4_err_t otrv3_send_message(char **newmessage, const char *message,
   OtrlTLV *tlvsv3 = NULL;
 
   if (!conn)
-    return OTR4_ERROR;
+    return ERROR;
 
   int err = otrl_message_sending(
       conn->state->userstate, conn->ops, conn->opdata,
@@ -464,9 +464,9 @@ INTERNAL otrv4_err_t otrv3_send_message(char **newmessage, const char *message,
       &conn->ctx, NULL, NULL);
 
   if (!err)
-    return OTR4_SUCCESS;
+    return SUCCESS;
 
-  return OTR4_ERROR;
+  return ERROR;
 }
 
 INTERNAL otrv4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
@@ -477,7 +477,7 @@ INTERNAL otrv4_err_t otrv3_receive_message(string_t *to_send, string_t *to_displ
   *to_send = NULL;
 
   if (!conn)
-    return OTR4_ERROR;
+    return ERROR;
 
   char *newmessage = NULL;
   ignore_message = otrl_message_receiving(
@@ -498,7 +498,7 @@ INTERNAL otrv4_err_t otrv3_receive_message(string_t *to_send, string_t *to_displ
   // TODO: Here we can use contextp to get information we might need about the
   // state, for example (context->msgstate)
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL void otrv3_close(string_t *to_send, otr3_conn_t *conn) {
@@ -520,7 +520,7 @@ INTERNAL otrv4_err_t otrv3_send_symkey_message(string_t *to_send, otr3_conn_t *c
                       conn->ctx, use, usedata, usedatalen, extra_key);
   from_injected_to_send(to_send);
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t otrv3_smp_start(string_t *to_send, const char *question,
@@ -534,7 +534,7 @@ INTERNAL otrv4_err_t otrv3_smp_start(string_t *to_send, const char *question,
                               conn->ctx, secret, secretlen);
 
   from_injected_to_send(to_send);
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret,
@@ -543,11 +543,11 @@ INTERNAL otrv4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret
                            conn->ctx, secret, secretlen);
 
   from_injected_to_send(to_send);
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t otrv3_smp_abort(otr3_conn_t *conn) {
   otrl_message_abort_smp(conn->state->userstate, conn->ops, conn->opdata,
                          conn->ctx);
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }

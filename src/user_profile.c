@@ -80,7 +80,7 @@ tstatic otrv4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
 
   uint8_t *buff = malloc(s);
   if (!buff)
-    return OTR4_ERROR;
+    return ERROR;
 
   user_profile_body_serialize(buff, profile);
 
@@ -88,20 +88,20 @@ tstatic otrv4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
   if (nbytes)
     *nbytes = s;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
                                   const user_profile_t *profile) {
   // TODO: should it checked here for signature?
   if (!(profile->signature > 0))
-    return OTR4_ERROR;
+    return ERROR;
 
   uint8_t *buff = NULL;
   size_t body_len = 0;
   uint8_t *body = NULL;
   if (user_profile_body_asprintf(&body, &body_len, profile))
-    return OTR4_ERROR;
+    return ERROR;
 
   size_t s = body_len + 4 + sizeof(eddsa_signature_t) +
              profile->transitional_signature->len;
@@ -109,7 +109,7 @@ INTERNAL otrv4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
   if (!buff) {
     free(body);
     body = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   uint8_t *cursor = buff;
@@ -125,7 +125,7 @@ INTERNAL otrv4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
   free(body);
   body = NULL;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t user_profile_deserialize(user_profile_t *target,
@@ -135,9 +135,9 @@ INTERNAL otrv4_err_t user_profile_deserialize(user_profile_t *target,
   int walked = 0;
 
   if (!target)
-    return OTR4_ERROR;
+    return ERROR;
 
-  otrv4_err_t ok = OTR4_ERROR;
+  otrv4_err_t ok = ERROR;
   do {
     if (deserialize_otrv4_public_key(target->pub_key, buffer, buflen, &read))
       continue;
@@ -176,7 +176,7 @@ INTERNAL otrv4_err_t user_profile_deserialize(user_profile_t *target,
 
     walked += read;
 
-    ok = OTR4_SUCCESS;
+    ok = SUCCESS;
   } while (0);
 
   if (nread)
@@ -192,7 +192,7 @@ tstatic otrv4_err_t user_profile_sign(user_profile_t *profile,
 
   ec_point_copy(profile->pub_key, keypair->pub);
   if (user_profile_body_asprintf(&body, &bodylen, profile))
-    return OTR4_ERROR;
+    return ERROR;
 
   uint8_t pubkey[ED448_POINT_BYTES];
   ec_point_serialize(pubkey, keypair->pub);
@@ -202,7 +202,7 @@ tstatic otrv4_err_t user_profile_sign(user_profile_t *profile,
 
   free(body);
   body = NULL;
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 // TODO: I dont think this needs the data structure. Could verify from the
@@ -214,7 +214,7 @@ INTERNAL otrv4_bool_t user_profile_verify_signature(const user_profile_t *profil
   if (!(profile->signature > 0))
     return otrv4_false;
 
-  if (ec_point_valid(profile->shared_prekey) == OTR4_ERROR)
+  if (ec_point_valid(profile->shared_prekey) == ERROR)
     return otrv4_false;
 
   if (user_profile_body_asprintf(&body, &bodylen, profile))

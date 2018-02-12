@@ -32,7 +32,7 @@ void test_smp_state_machine(void) {
   string_t to_send = NULL;
   otrv4_assert(otrv4_smp_start(&to_send, question, strlen(question),
                                (uint8_t *)answer, strlen(answer),
-                               alice_otr) == OTR4_SUCCESS);
+                               alice_otr) == SUCCESS);
 
   tlv_t *tlv_smp_1 = NULL;
   // otrv4_assert(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1) == true);
@@ -185,13 +185,13 @@ void test_smp_msg_1_asprintf_null_question(void) {
   uint8_t *buff;
   size_t writen = 0;
 
-  otrv4_assert(generate_smp_msg_1(msg, smp) == OTR4_SUCCESS);
+  otrv4_assert(generate_smp_msg_1(msg, smp) == SUCCESS);
   // data_header + question + 2 points + 4 scalars = 4 + 0 + (2*57) + (4*(56))
   size_t expected_size = 342;
   msg->q_len = 0;
   msg->question = NULL;
 
-  otrv4_assert(smp_msg_1_asprintf(&buff, &writen, msg) == OTR4_SUCCESS);
+  otrv4_assert(smp_msg_1_asprintf(&buff, &writen, msg) == SUCCESS);
   g_assert_cmpint(writen, ==, expected_size);
   free(buff);
   buff = NULL;
@@ -199,7 +199,7 @@ void test_smp_msg_1_asprintf_null_question(void) {
   msg->question = "something";
   msg->q_len = strlen(msg->question);
   size_t expected_size_with_question = expected_size + msg->q_len;
-  otrv4_assert(smp_msg_1_asprintf(&buff, &writen, msg) == OTR4_SUCCESS);
+  otrv4_assert(smp_msg_1_asprintf(&buff, &writen, msg) == SUCCESS);
   g_assert_cmpint(writen, ==, expected_size_with_question);
 
   free(buff);

@@ -55,7 +55,7 @@ INTERNAL otrv4_err_t dake_identity_message_asprintf(
   uint8_t *profile = NULL;
   if (user_profile_asprintf(&profile, &profile_len,
                             identity_message->profile)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   size_t s = PRE_KEY_MIN_BYTES + profile_len;
@@ -63,12 +63,12 @@ INTERNAL otrv4_err_t dake_identity_message_asprintf(
   if (!buff) {
     free(profile);
     profile = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   uint8_t *cursor = buff;
-  cursor += serialize_uint16(cursor, OTR_VERSION);
-  cursor += serialize_uint8(cursor, OTR_IDENTITY_MSG_TYPE);
+  cursor += serialize_uint16(cursor, VERSION);
+  cursor += serialize_uint8(cursor, IDENTITY_MSG_TYPE);
   cursor += serialize_uint32(cursor, identity_message->sender_instance_tag);
   cursor += serialize_uint32(cursor, identity_message->receiver_instance_tag);
   cursor += serialize_bytes_array(cursor, profile, profile_len);
@@ -82,7 +82,7 @@ INTERNAL otrv4_err_t dake_identity_message_asprintf(
   if (err) {
     free(buff);
     buff = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
   cursor += len;
 
@@ -92,7 +92,7 @@ INTERNAL otrv4_err_t dake_identity_message_asprintf(
   if (nbytes)
     *nbytes = cursor - buff;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t dake_identity_message_deserialize(dake_identity_message_t *dst,
@@ -104,51 +104,51 @@ INTERNAL otrv4_err_t dake_identity_message_deserialize(dake_identity_message_t *
 
   uint16_t protocol_version = 0;
   if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (protocol_version != OTR_VERSION) {
-    return OTR4_ERROR;
+  if (protocol_version != VERSION) {
+    return ERROR;
   }
 
   uint8_t message_type = 0;
   if (deserialize_uint8(&message_type, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (message_type != OTR_IDENTITY_MSG_TYPE) {
-    return OTR4_ERROR;
+  if (message_type != IDENTITY_MSG_TYPE) {
+    return ERROR;
   }
 
   if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (user_profile_deserialize(dst->profile, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (deserialize_ec_point(dst->Y, cursor)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += ED448_POINT_BYTES;
@@ -156,7 +156,7 @@ INTERNAL otrv4_err_t dake_identity_message_deserialize(dake_identity_message_t *
 
   otr_mpi_t b_mpi; // no need to free, because nothing is copied now
   if (otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
@@ -179,7 +179,7 @@ INTERNAL otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   uint8_t *our_profile = NULL;
 
   if (user_profile_asprintf(&our_profile, &our_profile_len, auth_r->profile)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   size_t s = AUTH_R_MIN_BYTES + our_profile_len;
@@ -188,12 +188,12 @@ INTERNAL otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   if (!buff) {
     free(our_profile);
     our_profile = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   uint8_t *cursor = buff;
-  cursor += serialize_uint16(cursor, OTR_VERSION);
-  cursor += serialize_uint8(cursor, OTR_AUTH_R_MSG_TYPE);
+  cursor += serialize_uint16(cursor, VERSION);
+  cursor += serialize_uint8(cursor, AUTH_R_MSG_TYPE);
   cursor += serialize_uint32(cursor, auth_r->sender_instance_tag);
   cursor += serialize_uint32(cursor, auth_r->receiver_instance_tag);
   cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
@@ -207,7 +207,7 @@ INTERNAL otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   if (err) {
     free(buff);
     buff = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += len;
@@ -219,7 +219,7 @@ INTERNAL otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   if (nbytes)
     *nbytes = cursor - buff;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
@@ -230,51 +230,51 @@ INTERNAL otrv4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *
 
   uint16_t protocol_version = 0;
   if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (protocol_version != OTR_VERSION) {
-    return OTR4_ERROR;
+  if (protocol_version != VERSION) {
+    return ERROR;
   }
 
   uint8_t message_type = 0;
   if (deserialize_uint8(&message_type, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (message_type != OTR_AUTH_R_MSG_TYPE) {
-    return OTR4_ERROR;
+  if (message_type != AUTH_R_MSG_TYPE) {
+    return ERROR;
   }
 
   if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (user_profile_deserialize(dst->profile, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (deserialize_ec_point(dst->X, cursor)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += ED448_POINT_BYTES;
@@ -282,14 +282,14 @@ INTERNAL otrv4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *
 
   otr_mpi_t tmp_mpi; // no need to free, because nothing is copied now
   if (otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
@@ -308,7 +308,7 @@ INTERNAL otrv4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
   *dst = malloc(s);
 
   if (!*dst) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   if (nbytes) {
@@ -316,13 +316,13 @@ INTERNAL otrv4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
   }
 
   uint8_t *cursor = *dst;
-  cursor += serialize_uint16(cursor, OTR_VERSION);
-  cursor += serialize_uint8(cursor, OTR_AUTH_I_MSG_TYPE);
+  cursor += serialize_uint16(cursor, VERSION);
+  cursor += serialize_uint8(cursor, AUTH_I_MSG_TYPE);
   cursor += serialize_uint32(cursor, auth_i->sender_instance_tag);
   cursor += serialize_uint32(cursor, auth_i->receiver_instance_tag);
   cursor += serialize_snizkpk_proof(cursor, auth_i->sigma);
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
@@ -333,37 +333,37 @@ INTERNAL otrv4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *
 
   uint16_t protocol_version = 0;
   if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (protocol_version != OTR_VERSION) {
-    return OTR4_ERROR;
+  if (protocol_version != VERSION) {
+    return ERROR;
   }
 
   uint8_t message_type = 0;
   if (deserialize_uint8(&message_type, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (message_type != OTR_AUTH_I_MSG_TYPE) {
-    return OTR4_ERROR;
+  if (message_type != AUTH_I_MSG_TYPE) {
+    return ERROR;
   }
 
   if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
@@ -413,7 +413,7 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   size_t profile_len = 0;
   uint8_t *profile = NULL;
   if (user_profile_asprintf(&profile, &profile_len, prekey_message->profile)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   size_t s = PRE_KEY_MIN_BYTES + profile_len;
@@ -421,12 +421,12 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   if (!buff) {
     free(profile);
     profile = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   uint8_t *cursor = buff;
-  cursor += serialize_uint16(cursor, OTR_VERSION);
-  cursor += serialize_uint8(cursor, OTR_PRE_KEY_MSG_TYPE);
+  cursor += serialize_uint16(cursor, VERSION);
+  cursor += serialize_uint8(cursor, PRE_KEY_MSG_TYPE);
   cursor += serialize_uint32(cursor, prekey_message->sender_instance_tag);
   cursor += serialize_uint32(cursor, prekey_message->receiver_instance_tag);
   cursor += serialize_bytes_array(cursor, profile, profile_len);
@@ -440,7 +440,7 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   if (err) {
     free(buff);
     buff = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
   cursor += len;
 
@@ -450,7 +450,7 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   if (nbytes)
     *nbytes = cursor - buff;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
@@ -462,51 +462,51 @@ INTERNAL otrv4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
 
   uint16_t protocol_version = 0;
   if (deserialize_uint16(&protocol_version, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (protocol_version != OTR_VERSION) {
-    return OTR4_ERROR;
+  if (protocol_version != VERSION) {
+    return ERROR;
   }
 
   uint8_t message_type = 0;
   if (deserialize_uint8(&message_type, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (message_type != OTR_PRE_KEY_MSG_TYPE) {
-    return OTR4_ERROR;
+  if (message_type != PRE_KEY_MSG_TYPE) {
+    return ERROR;
   }
 
   if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (user_profile_deserialize(dst->profile, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (deserialize_ec_point(dst->Y, cursor)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += ED448_POINT_BYTES;
@@ -514,7 +514,7 @@ INTERNAL otrv4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
 
   otr_mpi_t b_mpi; // no need to free, because nothing is copied now
   if (otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += read;
@@ -550,7 +550,7 @@ INTERNAL otrv4_err_t dake_non_interactive_auth_message_asprintf(
 
   if (user_profile_asprintf(&our_profile, &our_profile_len,
                             non_interactive_auth->profile))
-    return OTR4_ERROR;
+    return ERROR;
 
   size_t s = NON_INT_AUTH_BYTES + our_profile_len + data_msg_len;
 
@@ -558,12 +558,12 @@ INTERNAL otrv4_err_t dake_non_interactive_auth_message_asprintf(
   if (!buff) {
     free(our_profile);
     our_profile = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   uint8_t *cursor = buff;
-  cursor += serialize_uint16(cursor, OTR_VERSION);
-  cursor += serialize_uint8(cursor, OTR_NON_INT_AUTH_MSG_TYPE);
+  cursor += serialize_uint16(cursor, VERSION);
+  cursor += serialize_uint8(cursor, NON_INT_AUTH_MSG_TYPE);
   cursor += serialize_uint32(cursor, non_interactive_auth->sender_instance_tag);
   cursor +=
       serialize_uint32(cursor, non_interactive_auth->receiver_instance_tag);
@@ -579,7 +579,7 @@ INTERNAL otrv4_err_t dake_non_interactive_auth_message_asprintf(
   if (err) {
     free(buff);
     buff = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   cursor += len;
@@ -602,7 +602,7 @@ INTERNAL otrv4_err_t dake_non_interactive_auth_message_asprintf(
   if (nbytes)
     *nbytes = cursor - buff;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t dake_non_interactive_auth_message_deserialize(
@@ -614,83 +614,83 @@ INTERNAL otrv4_err_t dake_non_interactive_auth_message_deserialize(
 
   uint16_t protocol_version = 0;
   if (deserialize_uint16(&protocol_version, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (protocol_version != OTR_VERSION)
-    return OTR4_ERROR;
+  if (protocol_version != VERSION)
+    return ERROR;
 
   uint8_t message_type = 0;
   if (deserialize_uint8(&message_type, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (message_type != OTR_NON_INT_AUTH_MSG_TYPE)
-    return OTR4_ERROR;
+  if (message_type != NON_INT_AUTH_MSG_TYPE)
+    return ERROR;
 
   if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (user_profile_deserialize(dst->profile, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (deserialize_ec_point(dst->X, cursor))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   otr_mpi_t tmp_mpi; // no need to free, because nothing is copied now
   if (otr_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (deserialize_snizkpk_proof(dst->sigma, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (len > 64) {
     if (deserialize_uint32(&dst->message_id, cursor, len, &read))
-      return OTR4_ERROR;
+      return ERROR;
 
     cursor += read;
     len -= read;
 
     if (deserialize_bytes_array((uint8_t *)&dst->nonce, DATA_MSG_NONCE_BYTES,
                                 cursor, len))
-      return OTR4_ERROR;
+      return ERROR;
 
     cursor += DATA_MSG_NONCE_BYTES;
     len -= DATA_MSG_NONCE_BYTES;
 
     if (deserialize_data(&dst->enc_msg, cursor, len, &read))
-      return OTR4_ERROR;
+      return ERROR;
 
     dst->enc_msg_len = read - 4;
     cursor += read;

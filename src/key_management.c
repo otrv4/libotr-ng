@@ -131,11 +131,11 @@ INTERNAL otrv4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager)
     dh_keypair_destroy(manager->our_dh);
 
     if (dh_keypair_generate(manager->our_dh)) {
-      return OTR4_ERROR;
+      return ERROR;
     }
   }
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
@@ -173,7 +173,7 @@ tstatic otrv4_err_t key_manager_new_ratchet(key_manager_t *manager,
                                     const shared_secret_t shared) {
   ratchet_t *ratchet = ratchet_new();
   if (ratchet == NULL) {
-    return OTR4_ERROR;
+    return ERROR;
   }
   if (manager->i == 0) {
     derive_root_key(ratchet->root_key, shared);
@@ -191,7 +191,7 @@ tstatic otrv4_err_t key_manager_new_ratchet(key_manager_t *manager,
   ratchet_free(manager->current);
   manager->current = ratchet;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic const chain_link_t *chain_get_last(const chain_link_t *head) {
@@ -301,10 +301,10 @@ tstatic otrv4_err_t rebuild_chain_keys_up_to(int message_id, const chain_link_t 
   for (j = last->id; j < message_id; j++) {
     last = derive_next_chain_link(last);
     if (last == NULL)
-      return OTR4_ERROR;
+      return ERROR;
   }
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic otrv4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
@@ -313,10 +313,10 @@ tstatic otrv4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
 
   message_chain_t *chain = decide_between_chain_keys(
       manager->current, manager->our_ecdh->pub, manager->their_ecdh);
-  if (rebuild_chain_keys_up_to(message_id, chain->receiving) == OTR4_ERROR) {
+  if (rebuild_chain_keys_up_to(message_id, chain->receiving) == ERROR) {
     free(chain);
     chain = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   const chain_link_t *link = chain_get_by_id(message_id, chain->receiving);
@@ -324,12 +324,12 @@ tstatic otrv4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
   chain = NULL;
 
   if (link == NULL)
-    return OTR4_ERROR; /* message id not found. Should have been generated at
+    return ERROR; /* message id not found. Should have been generated at
                         rebuild_chain_keys_up_to */
 
   memcpy(receiving, link->key, sizeof(chain_key_t));
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL void ecdh_shared_secret_from_prekey(uint8_t *shared,
@@ -383,10 +383,10 @@ tstatic otrv4_err_t derive_sending_chain_key(key_manager_t *manager) {
   // TODO: seems to be wrong
   chain_link_t *l = derive_next_chain_link(last);
   if (l == NULL)
-    return OTR4_ERROR;
+    return ERROR;
 
   // TODO: assert l->id == manager->j
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic void calculate_ssid(key_manager_t *manager,
@@ -416,8 +416,8 @@ tstatic otrv4_err_t calculate_brace_key(key_manager_t *manager) {
 
   if (manager->i % 3 == 0) {
     if (dh_shared_secret(k_dh, sizeof(k_dh_t), manager->our_dh->priv,
-                         manager->their_dh) == OTR4_ERROR)
-      return OTR4_ERROR;
+                         manager->their_dh) == ERROR)
+      return ERROR;
 
     hash_hash(manager->brace_key, sizeof(brace_key_t), k_dh, sizeof(k_dh_t));
 
@@ -426,7 +426,7 @@ tstatic otrv4_err_t calculate_brace_key(key_manager_t *manager) {
               sizeof(brace_key_t));
   }
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic otrv4_err_t enter_new_ratchet(key_manager_t *manager) {
@@ -435,8 +435,8 @@ tstatic otrv4_err_t enter_new_ratchet(key_manager_t *manager) {
 
   ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
-  if (calculate_brace_key(manager) == OTR4_ERROR)
-    return OTR4_ERROR;
+  if (calculate_brace_key(manager) == ERROR)
+    return ERROR;
 
   calculate_shared_secret(shared, k_ecdh, manager->brace_key);
 
@@ -448,15 +448,15 @@ tstatic otrv4_err_t enter_new_ratchet(key_manager_t *manager) {
   otrv4_memdump(manager->brace_key, sizeof(brace_key_t));
 #endif
 
-  if (key_manager_new_ratchet(manager, shared) == OTR4_ERROR) {
+  if (key_manager_new_ratchet(manager, shared) == ERROR) {
     sodium_memzero(shared, SHARED_SECRET_BYTES);
     sodium_memzero(manager->ssid, sizeof(manager->ssid));
     sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   sodium_memzero(shared, SHARED_SECRET_BYTES);
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic otrv4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
@@ -465,8 +465,8 @@ tstatic otrv4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
 
   ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
-  if (calculate_brace_key(manager) == OTR4_ERROR)
-    return OTR4_ERROR;
+  if (calculate_brace_key(manager) == ERROR)
+    return ERROR;
 
   if (interactive)
     calculate_shared_secret(shared, k_ecdh, manager->brace_key);
@@ -483,15 +483,15 @@ tstatic otrv4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
 
   calculate_ssid(manager, shared);
   if (gcry_mpi_cmp(manager->our_dh->pub, manager->their_dh) > 0) {
-    manager->ssid_half = OTR4_SESSION_ID_SECOND_HALF_BOLD;
+    manager->ssid_half = SESSION_ID_SECOND_HALF_BOLD;
   } else {
-    manager->ssid_half = OTR4_SESSION_ID_FIRST_HALF_BOLD;
+    manager->ssid_half = SESSION_ID_FIRST_HALF_BOLD;
   }
 
 #ifdef DEBUG
   printf("THE SECURE SESSION ID\n");
   printf("ssid: \n");
-  if (manager->ssid_half == OTR4_SESSION_ID_FIRST_HALF_BOLD) {
+  if (manager->ssid_half == SESSION_ID_FIRST_HALF_BOLD) {
     printf("the first 32 = ");
     for (unsigned int i = 0; i < 4; i++) {
       printf("0x%08x ", manager->ssid[i]);
@@ -507,29 +507,29 @@ tstatic otrv4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
   }
 #endif
 
-  if (key_manager_new_ratchet(manager, shared) == OTR4_ERROR) {
+  if (key_manager_new_ratchet(manager, shared) == ERROR) {
     sodium_memzero(shared, SHARED_SECRET_BYTES);
     sodium_memzero(manager->ssid, sizeof(manager->ssid));
     sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
     sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
-    return OTR4_ERROR;
+    return ERROR;
   }
 
   sodium_memzero(shared, SHARED_SECRET_BYTES);
   /* tmp_k is no longer needed */
   sodium_memzero(manager->tmp_key, HASH_BYTES);
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t key_manager_ratcheting_init(int j, bool interactive,
                                         key_manager_t *manager) {
   if (init_ratchet(manager, interactive))
-    return OTR4_ERROR;
+    return ERROR;
 
   manager->i = 0;
   manager->j = j;
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic otrv4_err_t rotate_keys(key_manager_t *manager) {
@@ -537,18 +537,18 @@ tstatic otrv4_err_t rotate_keys(key_manager_t *manager) {
   manager->j = 0;
 
   if (key_manager_generate_ephemeral_keys(manager))
-    return OTR4_ERROR;
+    return ERROR;
 
   return enter_new_ratchet(manager);
 }
 
 INTERNAL otrv4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager) {
   if (manager->j == 0)
-    return OTR4_SUCCESS;
+    return SUCCESS;
 
   manager->i++;
   if (enter_new_ratchet(manager))
-    return OTR4_ERROR;
+    return ERROR;
 
   // Securely delete priv keys as no longer needed
   ec_scalar_destroy(manager->our_ecdh->priv);
@@ -556,7 +556,7 @@ INTERNAL otrv4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager) {
     dh_priv_key_destroy(manager->our_dh);
   }
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
@@ -578,8 +578,8 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
   chain_key_t receiving;
 
   if (key_manager_get_receiving_chain_key(receiving, message_id, manager) ==
-      OTR4_ERROR)
-    return OTR4_ERROR;
+      ERROR)
+    return ERROR;
 
   derive_encryption_and_mac_keys(enc_key, mac_key, receiving);
   calculate_extra_key(manager, receiving);
@@ -592,7 +592,7 @@ key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
   otrv4_memdump(mac_key, sizeof(m_mac_key_t));
 #endif
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic otrv4_bool_t should_ratchet(const key_manager_t *manager) {
@@ -628,12 +628,12 @@ INTERNAL otrv4_err_t key_manager_retrieve_sending_message_keys(m_enc_key_t enc_k
 #endif
 
   if (message_id == manager->j) {
-    return OTR4_SUCCESS;
+    return SUCCESS;
   }
 
   sodium_memzero(enc_key, sizeof(m_enc_key_t));
   sodium_memzero(mac_key, sizeof(m_mac_key_t));
-  return OTR4_ERROR;
+  return ERROR;
 }
 
 INTERNAL uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys) {

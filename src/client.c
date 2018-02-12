@@ -185,10 +185,10 @@ tstatic int send_message(char **newmsg, const char *message,
       otrv4_prepare_to_send_message(newmsg, message, &tlv, 0, conv->conn);
   otrv4_tlv_free(tlv);
 
-  if (error == OTR4_STATE_NOT_ENCRYPTED)
-    return OTR4_CLIENT_ERROR_NOT_ENCRYPTED;
+  if (error == STATE_NOT_ENCRYPTED)
+    return CLIENT_ERROR_NOT_ENCRYPTED;
   else
-    return OTR4_SUCCESS != error;
+    return SUCCESS != error;
 }
 
 API int otrv4_client_send(char **newmessage, const char *message,
@@ -203,7 +203,7 @@ API int otrv4_client_send_fragment(otr4_message_to_send_t **newmessage,
                               const char *recipient, otr4_client_t *client) {
   string_t to_send = NULL;
   otrv4_err_t err = send_message(&to_send, message, recipient, client);
-  if (err != OTR4_SUCCESS)
+  if (err != SUCCESS)
     return 1;
 
   otr4_conversation_t *conv = NULL;
@@ -217,7 +217,7 @@ API int otrv4_client_send_fragment(otr4_message_to_send_t **newmessage,
   free(to_send);
   to_send = NULL;
 
-  return err != OTR4_SUCCESS;
+  return err != SUCCESS;
 }
 
 /* tstatic int otr4_client_smp_start(char **tosend, const char *recipient, */
@@ -255,13 +255,13 @@ tstatic int unfragment(char **unfragmented, const char *received,
                       fragment_context_t *ctx, int our_instance_tag) {
   otrv4_err_t err =
       otr4_unfragment_message(unfragmented, ctx, received, our_instance_tag);
-  return err != OTR4_SUCCESS || ctx->status == OTR4_FRAGMENT_INCOMPLETE;
+  return err != SUCCESS || ctx->status == FRAGMENT_INCOMPLETE;
 }
 
 API int otrv4_client_receive(char **newmessage, char **todisplay,
                         const char *message, const char *recipient,
                         otr4_client_t *client) {
-  otrv4_err_t error = OTR4_ERROR;
+  otrv4_err_t error = ERROR;
   char *unfrag_msg = NULL;
   int should_ignore = 1;
   otrv4_response_t *response = NULL;
@@ -282,8 +282,8 @@ API int otrv4_client_receive(char **newmessage, char **todisplay,
 
   response = otrv4_response_new();
   error = otrv4_receive_message(response, unfrag_msg, conv->conn);
-  if (error == OTR4_MSG_NOT_VALID)
-    return OTR4_CLIENT_ERROR_MSG_NOT_VALID;
+  if (error == MSG_NOT_VALID)
+    return CLIENT_ERROR_MSG_NOT_VALID;
 
   free(unfrag_msg);
   unfrag_msg = NULL;
@@ -301,7 +301,7 @@ API int otrv4_client_receive(char **newmessage, char **todisplay,
 
   otrv4_response_free(response);
 
-  if (error != OTR4_SUCCESS)
+  if (error != SUCCESS)
     return !should_ignore; // Should this cause the message to be ignored or
                            // not?
 

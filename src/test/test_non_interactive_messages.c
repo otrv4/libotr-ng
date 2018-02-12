@@ -11,7 +11,7 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
+  otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
 
   dake_prekey_message_t *prekey_message = dake_prekey_message_new(f->profile);
   prekey_message->sender_instance_tag = 1;
@@ -20,12 +20,12 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
 
   uint8_t *serialized = NULL;
   otrv4_assert(dake_prekey_message_asprintf(&serialized, NULL,
-                                            prekey_message) == OTR4_SUCCESS);
+                                            prekey_message) == SUCCESS);
 
   char expected[] = {
       0x0,
       0x04,                 /* version */
-      OTR_PRE_KEY_MSG_TYPE, /* message type */
+      PRE_KEY_MSG_TYPE, /* message type */
       0x0,
       0x0,
       0x0,
@@ -45,7 +45,7 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
   uint8_t *user_profile_serialized = NULL;
   otrv4_assert(user_profile_asprintf(&user_profile_serialized,
                                      &user_profile_len,
-                                     prekey_message->profile) == OTR4_SUCCESS);
+                                     prekey_message->profile) == SUCCESS);
   otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
   free(user_profile_serialized);
   user_profile_serialized = NULL;
@@ -83,7 +83,7 @@ void test_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
+  otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
 
   dake_prekey_message_t *prekey_message = dake_prekey_message_new(f->profile);
   ec_point_copy(prekey_message->Y, ecdh->pub);
@@ -92,11 +92,11 @@ void test_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
   size_t serialized_len = 0;
   uint8_t *serialized = NULL;
   otrv4_assert(dake_prekey_message_asprintf(&serialized, &serialized_len,
-                                            prekey_message) == OTR4_SUCCESS);
+                                            prekey_message) == SUCCESS);
 
   dake_prekey_message_t *deserialized = malloc(sizeof(dake_prekey_message_t));
   otrv4_assert(dake_prekey_message_deserialize(deserialized, serialized,
-                                               serialized_len) == OTR4_SUCCESS);
+                                               serialized_len) == SUCCESS);
 
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
                    prekey_message->sender_instance_tag);
@@ -125,7 +125,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
+  otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
 
   dake_prekey_message_t *prekey_message = dake_prekey_message_new(f->profile);
   otrv4_assert(prekey_message != NULL);
@@ -145,10 +145,10 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
 
   uint8_t invalid_sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(invalid_ecdh, invalid_sym);
-  otrv4_assert(dh_keypair_generate(invalid_dh) == OTR4_SUCCESS);
+  otrv4_assert(dh_keypair_generate(invalid_dh) == SUCCESS);
   otrv4_shared_prekey_pair_t *shared_prekey = otrv4_shared_prekey_pair_new();
   otrv4_shared_prekey_pair_generate(shared_prekey, invalid_sym);
-  otrv4_assert(ec_point_valid(shared_prekey->pub) == OTR4_SUCCESS);
+  otrv4_assert(ec_point_valid(shared_prekey->pub) == SUCCESS);
 
   user_profile_t *invalid_profile = user_profile_new("2");
   ec_point_copy(invalid_profile->pub_key, invalid_ecdh->pub);
@@ -182,7 +182,7 @@ void test_dake_non_interactive_auth_message_serializes(
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
+  otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
 
   dake_non_interactive_auth_message_t msg[1];
 
@@ -201,19 +201,19 @@ void test_dake_non_interactive_auth_message_serializes(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t,
+  otrv4_snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t,
                        t_len);
 
   uint8_t *serialized = NULL;
   size_t len = 0;
 
   otrv4_assert(dake_non_interactive_auth_message_asprintf(&serialized, &len,
-                                                          msg) == OTR4_SUCCESS);
+                                                          msg) == SUCCESS);
 
   char expected[] = {
       0x0,
       0x04,                      /* version */
-      OTR_NON_INT_AUTH_MSG_TYPE, /* message type */
+      NON_INT_AUTH_MSG_TYPE, /* message type */
       0x0,
       0x0,
       0x0,
@@ -232,7 +232,7 @@ void test_dake_non_interactive_auth_message_serializes(
   uint8_t *user_profile_serialized = NULL;
   otrv4_assert(user_profile_asprintf(&user_profile_serialized,
                                      &user_profile_len,
-                                     msg->profile) == OTR4_SUCCESS);
+                                     msg->profile) == SUCCESS);
   otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
   free(user_profile_serialized);
   user_profile_serialized = NULL;
@@ -288,7 +288,7 @@ void test_dake_non_interactive_auth_message_deserializes(
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(dh_keypair_generate(dh) == OTR4_SUCCESS);
+  otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
 
   dake_non_interactive_auth_message_t msg[1];
 
@@ -307,13 +307,13 @@ void test_dake_non_interactive_auth_message_deserializes(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t,
+  otrv4_snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key, msg->X, t,
                        t_len);
 
   uint8_t *serialized = NULL;
   size_t len = 0;
   otrv4_assert(dake_non_interactive_auth_message_asprintf(&serialized, &len,
-                                                          msg) == OTR4_SUCCESS);
+                                                          msg) == SUCCESS);
 
   free(t);
   t = NULL;
@@ -322,7 +322,7 @@ void test_dake_non_interactive_auth_message_deserializes(
 
   dake_non_interactive_auth_message_t deserialized[1];
   otrv4_assert(dake_non_interactive_auth_message_deserialize(
-                   deserialized, serialized, len) == OTR4_SUCCESS);
+                   deserialized, serialized, len) == SUCCESS);
 
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
                    msg->sender_instance_tag);

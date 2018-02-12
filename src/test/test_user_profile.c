@@ -26,7 +26,7 @@ void test_user_profile_serializes_body() {
 
   otrv4_assert(profile != NULL);
   profile->expires = 15;
-  otrv4_assert(user_profile_sign(profile, keypair) == OTR4_SUCCESS);
+  otrv4_assert(user_profile_sign(profile, keypair) == SUCCESS);
 
   const uint8_t transitional_signature[40] = {0};
   otr_mpi_set(profile->transitional_signature, transitional_signature,
@@ -38,7 +38,7 @@ void test_user_profile_serializes_body() {
   size_t written = 0;
   uint8_t *serialized = NULL;
   otrv4_assert(user_profile_body_asprintf(&serialized, &written, profile) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpint(132, ==, written);
 
   otrv4_assert_cmpmem(expected_pubkey, serialized, ED448_PUBKEY_BYTES);
@@ -87,14 +87,14 @@ void test_user_profile_serializes() {
   size_t written = 0;
   uint8_t *serialized = NULL;
   otrv4_assert(user_profile_asprintf(&serialized, &written, profile) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpint(written, ==, 290);
 
   // check "body"
   size_t body_len = 0;
   uint8_t *body = NULL;
   otrv4_assert(user_profile_body_asprintf(&body, &body_len, profile) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   otrv4_assert_cmpmem(body, serialized, body_len);
 
   char expected_transitional_signature[] = {
@@ -137,7 +137,7 @@ void test_user_profile_deserializes() {
 
   user_profile_t *deserialized = malloc(sizeof(user_profile_t));
   otrv4_assert(user_profile_deserialize(deserialized, serialized, written,
-                                        NULL) == OTR4_SUCCESS);
+                                        NULL) == SUCCESS);
   otrv4_assert_user_profile_eq(deserialized, profile);
 
   free(serialized);

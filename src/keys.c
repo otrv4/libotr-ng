@@ -49,10 +49,10 @@ INTERNAL otrv4_err_t otrv4_symmetric_key_serialize(char **buffer, size_t *buffer
                                           uint8_t sym[ED448_PRIVATE_BYTES]) {
   *buffer = malloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
   if (!*buffer)
-    return OTR4_ERROR;
+    return ERROR;
 
   *buffer_size = otrl_base64_encode(*buffer, sym, ED448_PRIVATE_BYTES);
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_shared_prekey_pair_t *otrv4_shared_prekey_pair_new(void) {

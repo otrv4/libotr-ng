@@ -13,9 +13,9 @@ typedef struct {
 } otr4_message_to_send_t;
 
 typedef enum {
-  OTR4_FRAGMENT_UNFRAGMENTED,
-  OTR4_FRAGMENT_INCOMPLETE,
-  OTR4_FRAGMENT_COMPLETE
+  FRAGMENT_UNFRAGMENTED,
+  FRAGMENT_INCOMPLETE,
+  FRAGMENT_COMPLETE
 } fragment_status;
 
 typedef struct {

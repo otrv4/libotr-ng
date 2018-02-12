@@ -9,7 +9,7 @@ void test_derive_ratchet_keys() {
   memset(shared, 0, sizeof shared);
 
   otrv4_assert(manager->i == 0);
-  otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
+  otrv4_assert(key_manager_new_ratchet(manager, shared) == SUCCESS);
 
   root_key_t expected_root_key;
   chain_key_t expected_chain_key_a;
@@ -42,7 +42,7 @@ void test_derive_ratchet_keys() {
                 root_shared, sizeof(shared_secret_t));
 
   manager->i = 1;
-  otrv4_assert(key_manager_new_ratchet(manager, shared) == OTR4_SUCCESS);
+  otrv4_assert(key_manager_new_ratchet(manager, shared) == SUCCESS);
 
   otrv4_assert_cmpmem(expected_root_key, manager->current->root_key,
                       sizeof(root_key_t));
@@ -63,7 +63,7 @@ void test_key_manager_destroy() {
   key_manager_init(manager);
 
   // Populate values
-  otrv4_assert(key_manager_generate_ephemeral_keys(manager) == OTR4_SUCCESS);
+  otrv4_assert(key_manager_generate_ephemeral_keys(manager) == SUCCESS);
   memset(manager->their_ecdh, 1, sizeof(manager->their_ecdh));
   manager->their_dh = gcry_mpi_new(DH3072_MOD_LEN_BITS);
   memset(manager->brace_key, 1, sizeof(manager->brace_key));

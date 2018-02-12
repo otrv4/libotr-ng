@@ -43,7 +43,7 @@ INTERNAL fragment_context_t *fragment_context_new(void) {
   context->K = 0;
   context->fragment = otrv4_strdup("");
   context->fragment_len = 0;
-  context->status = OTR4_FRAGMENT_UNFRAGMENTED;
+  context->status = FRAGMENT_UNFRAGMENTED;
 
   return context;
 }
@@ -51,7 +51,7 @@ INTERNAL fragment_context_t *fragment_context_new(void) {
 INTERNAL void fragment_context_free(fragment_context_t *context) {
   context->N = 0;
   context->K = 0;
-  context->status = OTR4_FRAGMENT_UNFRAGMENTED;
+  context->status = FRAGMENT_UNFRAGMENTED;
   free(context->fragment);
   context->fragment = NULL;
   free(context);
@@ -69,12 +69,12 @@ INTERNAL otrv4_err_t otr4_fragment_message(int max_size,
 
   fragments->total = ((msg_len - 1) / (max_size - FRAGMENT_HEADER_LEN)) + 1;
   if (fragments->total > 65535)
-    return OTR4_ERROR;
+    return ERROR;
 
   size_t pieces_len = fragments->total * sizeof(string_t);
   pieces = malloc(pieces_len);
   if (!pieces)
-    return OTR4_ERROR;
+    return ERROR;
 
   int current_frag;
   for (current_frag = 1; current_frag <= fragments->total; current_frag++) {
@@ -96,7 +96,7 @@ INTERNAL otrv4_err_t otr4_fragment_message(int max_size,
 
       free(pieces);
       pieces = NULL;
-      return OTR4_ERROR;
+      return ERROR;
     }
 
     strncpy(piece_data, message, piece_len);
@@ -114,7 +114,7 @@ INTERNAL otrv4_err_t otr4_fragment_message(int max_size,
       free(pieces);
       pieces = NULL;
 
-      return OTR4_ERROR;
+      return ERROR;
     }
 
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN, FRAGMENT_FORMAT,
@@ -132,7 +132,7 @@ INTERNAL otrv4_err_t otr4_fragment_message(int max_size,
 
   fragments->pieces = pieces;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic void initialize_fragment_context(fragment_context_t *context) {
@@ -143,14 +143,14 @@ tstatic void initialize_fragment_context(fragment_context_t *context) {
 
   context->N = 0;
   context->K = 0;
-  context->status = OTR4_FRAGMENT_UNFRAGMENTED;
+  context->status = FRAGMENT_UNFRAGMENTED;
 }
 
 tstatic otrv4_err_t add_first_fragment(const char *msg, int msg_len,
                                       fragment_context_t *ctx) {
   char *buff = malloc(msg_len + 1);
   if (!buff)
-    return OTR4_ERROR;
+    return ERROR;
 
   memmove(buff, msg, msg_len);
   buff[msg_len] = '\0';
@@ -158,7 +158,7 @@ tstatic otrv4_err_t add_first_fragment(const char *msg, int msg_len,
   free(ctx->fragment);
   ctx->fragment = buff;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic otrv4_err_t append_fragment(const char *msg, int msg_len,
@@ -166,14 +166,14 @@ tstatic otrv4_err_t append_fragment(const char *msg, int msg_len,
   size_t new_buff_len = ctx->fragment_len + msg_len + 1;
   char *buff = realloc(ctx->fragment, new_buff_len);
   if (!buff)
-    return OTR4_ERROR;
+    return ERROR;
 
   memmove(buff + ctx->fragment_len, msg, msg_len);
   ctx->fragment_len += msg_len;
   buff[ctx->fragment_len] = '\0';
   ctx->fragment = buff;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 tstatic otrv4_bool_t is_fragment(const string_t message) {
@@ -190,35 +190,35 @@ INTERNAL otrv4_err_t otr4_unfragment_message(char **unfrag_msg,
   if (is_fragment(message)) {
     *unfrag_msg = otrv4_strdup(message);
     initialize_fragment_context(context);
-    return OTR4_SUCCESS;
+    return SUCCESS;
   }
 
   int sender_tag = 0, receiver_tag = 0, start = 0, end = 0;
   int k = 0, n = 0;
-  context->status = OTR4_FRAGMENT_INCOMPLETE;
+  context->status = FRAGMENT_INCOMPLETE;
 
   // TODO: check this format
   sscanf(message, "?OTR|%08x|%08x,%05x,%05x,%n%*[^,],%n", &sender_tag,
          &receiver_tag, &k, &n, &start, &end);
 
   if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
-    context->status = OTR4_FRAGMENT_COMPLETE;
-    return OTR4_ERROR;
+    context->status = FRAGMENT_COMPLETE;
+    return ERROR;
   }
 
   if (k == 0 || n == 0 || k > n) {
     initialize_fragment_context(context);
-    return OTR4_SUCCESS;
+    return SUCCESS;
   }
 
   int msg_len = end - start - 1;
   if (end <= start)
-    return OTR4_ERROR;
+    return ERROR;
 
   otrv4_err_t err;
   if (k == 1) {
     err = add_first_fragment(message + start, msg_len, context);
-    if (err != OTR4_SUCCESS)
+    if (err != SUCCESS)
       return err;
 
     context->N = n;
@@ -227,7 +227,7 @@ INTERNAL otrv4_err_t otr4_unfragment_message(char **unfrag_msg,
   } else {
     if (n == context->N && k == context->K + 1) {
       err = append_fragment(message + start, msg_len, context);
-      if (err != OTR4_SUCCESS)
+      if (err != SUCCESS)
         return err;
 
       context->K = k;
@@ -239,8 +239,8 @@ INTERNAL otrv4_err_t otr4_unfragment_message(char **unfrag_msg,
     *unfrag_msg = otrv4_strdup(context->fragment);
     free(context->fragment);
     context->fragment = NULL;
-    context->status = OTR4_FRAGMENT_COMPLETE;
+    context->status = FRAGMENT_COMPLETE;
   }
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }

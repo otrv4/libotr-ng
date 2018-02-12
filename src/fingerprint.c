@@ -6,8 +6,8 @@
 
 /* Convert a 56-byte hash value to a 126-byte human-readable value */
 API void otr4_fingerprint_hash_to_human(
-    char human[OTR4_FPRINT_HUMAN_LEN],
-    const unsigned char hash[OTR4_FPRINT_LEN_BYTES]) {
+    char human[FPRINT_HUMAN_LEN],
+    const unsigned char hash[FPRINT_LEN_BYTES]) {
   int word, byte;
   char *p = human;
 

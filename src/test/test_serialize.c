@@ -12,7 +12,7 @@ void test_ser_deser_uint() {
 
   uint8_t uint8_des = 0;
   otrv4_assert(deserialize_uint8(&uint8_des, ser, sizeof(ser), &read) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpuint(uint8_des, ==, 0x12);
   g_assert_cmpint(read, ==, sizeof(uint8_t));
 
@@ -22,7 +22,7 @@ void test_ser_deser_uint() {
 
   uint16_t uint16_des = 0;
   otrv4_assert(deserialize_uint16(&uint16_des, ser, sizeof(ser), &read) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpuint(uint16_des, ==, 0x1234);
   g_assert_cmpint(read, ==, sizeof(uint16_t));
 
@@ -32,7 +32,7 @@ void test_ser_deser_uint() {
 
   uint32_t uint32_des = 0;
   otrv4_assert(deserialize_uint32(&uint32_des, ser, sizeof(ser), &read) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpuint(uint32_des, ==, 0x12345678);
   g_assert_cmpint(read, ==, sizeof(uint32_t));
 
@@ -42,7 +42,7 @@ void test_ser_deser_uint() {
 
   uint64_t uint64_des = 0;
   otrv4_assert(deserialize_uint64(&uint64_des, ser, sizeof(ser), &read) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpuint(uint64_des, ==, 0x123456789ABCDEF0);
   g_assert_cmpint(read, ==, sizeof(uint64_t));
 }
@@ -67,7 +67,7 @@ void test_ser_des_otrv4_public_key() {
                   ED448_PUBKEY_BYTES);
   otrv4_assert(deserialize_otrv4_public_key(deserialized, serialized,
                                             ED448_PUBKEY_BYTES,
-                                            NULL) == OTR4_SUCCESS);
+                                            NULL) == SUCCESS);
 
   otrv4_assert(ec_point_valid(deserialized) == otrv4_true);
 
@@ -85,7 +85,7 @@ void test_ser_des_otrv4_shared_prekey() {
                   ==, ED448_PUBKEY_BYTES);
   otrv4_assert(deserialize_otrv4_shared_prekey(deserialized, serialized,
                                                ED448_PUBKEY_BYTES,
-                                               NULL) == OTR4_SUCCESS);
+                                               NULL) == SUCCESS);
 
   otrv4_assert(ec_point_valid(deserialized) == otrv4_true);
 
@@ -104,7 +104,7 @@ void test_serialize_otrv4_symmetric_key() {
   char *buffer = NULL;
   size_t buffer_size = 0;
   otrv4_assert(otrv4_symmetric_key_serialize(&buffer, &buffer_size, sym) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   g_assert_cmpint(strlen(expected), ==, buffer_size); // 76
   otrv4_assert_cmpmem(expected, buffer, buffer_size);

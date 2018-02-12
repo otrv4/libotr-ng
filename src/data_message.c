@@ -54,11 +54,11 @@ INTERNAL otrv4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
   size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
   if (!dst)
-    return OTR4_ERROR;
+    return ERROR;
 
   uint8_t *cursor = dst;
-  cursor += serialize_uint16(cursor, OTR_VERSION);
-  cursor += serialize_uint8(cursor, OTR_DATA_MSG_TYPE);
+  cursor += serialize_uint16(cursor, VERSION);
+  cursor += serialize_uint8(cursor, DATA_MSG_TYPE);
   cursor += serialize_uint32(cursor, data_msg->sender_instance_tag);
   cursor += serialize_uint32(cursor, data_msg->receiver_instance_tag);
   cursor += serialize_uint8(cursor, data_msg->flags);
@@ -70,7 +70,7 @@ INTERNAL otrv4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
   if (serialize_dh_public_key(cursor, &len, data_msg->dh)) {
     free(dst);
     dst = NULL;
-    return OTR4_ERROR;
+    return ERROR;
   }
   cursor += len;
   cursor +=
@@ -83,7 +83,7 @@ INTERNAL otrv4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
   if (bodylen)
     *bodylen = cursor - dst;
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
 
 INTERNAL otrv4_err_t data_message_deserialize(data_message_t *dst, const uint8_t *buff,
@@ -94,50 +94,50 @@ INTERNAL otrv4_err_t data_message_deserialize(data_message_t *dst, const uint8_t
 
   uint16_t protocol_version = 0;
   if (deserialize_uint16(&protocol_version, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (protocol_version != OTR_VERSION)
-    return OTR4_ERROR;
+  if (protocol_version != VERSION)
+    return ERROR;
 
   uint8_t message_type = 0;
   if (deserialize_uint8(&message_type, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (message_type != OTR_DATA_MSG_TYPE)
-    return OTR4_ERROR;
+  if (message_type != DATA_MSG_TYPE)
+    return ERROR;
 
   if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (deserialize_uint8(&dst->flags, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (deserialize_uint32(&dst->message_id, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (deserialize_ec_point(dst->ecdh, cursor))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
@@ -146,25 +146,25 @@ INTERNAL otrv4_err_t data_message_deserialize(data_message_t *dst, const uint8_t
 
   otr_mpi_t b_mpi; // no need to free, because nothing is copied now
   if (otr_mpi_deserialize_no_copy(b_mpi, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += read;
   len -= read;
 
   if (deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor, len))
-    return OTR4_ERROR;
+    return ERROR;
 
   cursor += DATA_MSG_NONCE_BYTES;
   len -= DATA_MSG_NONCE_BYTES;
 
   if (deserialize_data(&dst->enc_msg, cursor, len, &read))
-    return OTR4_ERROR;
+    return ERROR;
 
   dst->enc_msg_len = read - 4;
   cursor += read;

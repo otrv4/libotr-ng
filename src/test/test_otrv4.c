@@ -9,7 +9,7 @@ void test_otrv4_builds_query_message(otrv4_fixture_t *otrv4_fixture,
 
   char *query_message = NULL;
   otrv4_assert(otrv4_build_query_message(&query_message, message,
-                                         otrv4_fixture->otr) == OTR4_SUCCESS);
+                                         otrv4_fixture->otr) == SUCCESS);
 
   char *expected_qm = "?OTRv4? And some random invitation text.";
   g_assert_cmpstr(query_message, ==, expected_qm);
@@ -24,7 +24,7 @@ void test_otrv4_builds_query_message_v34(otrv4_fixture_t *otrv4_fixture,
   char *query_message = NULL;
   otrv4_assert(otrv4_build_query_message(&query_message, message,
                                          otrv4_fixture->otrv34) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   char *expected_qm = "?OTRv43? And some random invitation text.";
   g_assert_cmpstr(query_message, ==, expected_qm);
@@ -40,7 +40,7 @@ void test_otrv4_builds_whitespace_tag(otrv4_fixture_t *otrv4_fixture,
 
   char *whitespace_tag = NULL;
   otrv4_assert(otrv4_build_whitespace_tag(&whitespace_tag, message,
-                                          otrv4_fixture->otr) == OTR4_SUCCESS);
+                                          otrv4_fixture->otr) == SUCCESS);
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
   free(whitespace_tag);
 }
@@ -54,7 +54,7 @@ void test_otrv4_builds_whitespace_tag_v34(otrv4_fixture_t *otrv4_fixture,
   char *whitespace_tag = NULL;
   otrv4_assert(otrv4_build_whitespace_tag(&whitespace_tag, message,
                                           otrv4_fixture->otrv34) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
   free(whitespace_tag);
 }
@@ -63,7 +63,7 @@ void test_otrv4_receives_plaintext_without_ws_tag_on_start(
     otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response, "Some random text.",
-                                     otrv4_fixture->otr) == OTR4_SUCCESS);
+                                     otrv4_fixture->otr) == SUCCESS);
 
   g_assert_cmpstr(response->to_display, ==, "Some random text.");
 
@@ -76,7 +76,7 @@ void test_otrv4_receives_plaintext_without_ws_tag_not_on_start(
 
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response, "Some random text.",
-                                     otrv4_fixture->otr) == OTR4_SUCCESS);
+                                     otrv4_fixture->otr) == SUCCESS);
 
   g_assert_cmpstr(response->to_display, ==, "Some random text.");
   g_assert_cmpint(response->warning, ==, OTRV4_WARN_RECEIVED_UNENCRYPTED);
@@ -91,7 +91,7 @@ void test_otrv4_receives_plaintext_with_ws_tag(otrv4_fixture_t *otrv4_fixture,
       " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
 
   otrv4_assert(otrv4_receive_message(response, message, otrv4_fixture->otr) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
   otrv4_assert(response->to_send);
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_WAITING_AUTH_R);
@@ -107,7 +107,7 @@ void test_otrv4_receives_plaintext_with_ws_tag_after_text(
       "Some random invitation text. \t  \t\t\t\t \t \t \t    \t\t \t  ";
 
   otrv4_assert(otrv4_receive_message(response, message, otrv4_fixture->otr) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   g_assert_cmpstr(response->to_display, ==, "Some random invitation text.");
   otrv4_assert(response->to_send);
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_WAITING_AUTH_R);
@@ -122,7 +122,7 @@ void test_otrv4_receives_plaintext_with_ws_tag_v3(
   string_t message =
       " \t  \t\t\t\t \t \t \t    \t\t  \t\tAnd some random invitation text.";
   otrv4_assert(otrv4_receive_message(response, message, otrv4_fixture->otrv3) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   // g_assert_cmpstr(response->to_display, ==, "And some random invitation
   // text.");
@@ -138,7 +138,7 @@ void test_otrv4_receives_query_message(otrv4_fixture_t *otrv4_fixture,
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response,
                                      "?OTRv4? And some random invitation text.",
-                                     otrv4_fixture->otr) == OTR4_SUCCESS);
+                                     otrv4_fixture->otr) == SUCCESS);
 
   otrv4_assert(response->to_send);
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_WAITING_AUTH_R);
@@ -152,7 +152,7 @@ void test_otrv4_receives_query_message_v3(otrv4_fixture_t *otrv4_fixture,
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response,
                                      "?OTRv3? And some random invitation text.",
-                                     otrv4_fixture->otrv3) == OTR4_SUCCESS);
+                                     otrv4_fixture->otrv3) == SUCCESS);
 
   g_assert_cmpint(otrv4_fixture->otrv3->running_version, ==, OTRV4_VERSION_3);
 
@@ -164,7 +164,7 @@ void test_otrv4_receives_identity_message_invalid_on_start(
   char *identity_message = "?OTR:";
   otrv4_response_t *response = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response, identity_message,
-                                     otrv4_fixture->otr) == OTR4_SUCCESS);
+                                     otrv4_fixture->otr) == SUCCESS);
 
   g_assert_cmpint(otrv4_fixture->otr->state, ==, OTRV4_STATE_START);
   g_assert_cmpint(otrv4_fixture->otr->running_version, ==, OTRV4_VERSION_4);

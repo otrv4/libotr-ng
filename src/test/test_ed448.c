@@ -42,7 +42,7 @@ void ed448_test_eddsa_serialization() {
 
   // 3. Deserialize
   ec_point_t dec;
-  otrv4_assert(ec_point_deserialize(dec, enc) == OTR4_SUCCESS);
+  otrv4_assert(ec_point_deserialize(dec, enc) == SUCCESS);
 
   otrv4_assert(ec_point_eq(p, dec) == otrv4_true);
 }
@@ -57,7 +57,7 @@ void ed448_test_eddsa_keygen() {
   ec_scalar_derive_from_secret(secret_scalar, sym);
   ec_derive_public_key(pub, sym);
 
-  otrv4_assert(ec_point_deserialize(public_point, pub) == OTR4_SUCCESS);
+  otrv4_assert(ec_point_deserialize(public_point, pub) == SUCCESS);
 
   // Is G * scalar == P?
   ec_point_t expected;
@@ -71,7 +71,7 @@ void ed448_test_scalar_serialization() {
 
   uint8_t buff[ED448_SCALAR_BYTES];
   otrv4_assert(ec_scalar_serialize(buff, sizeof(buff), decaf_448_scalar_one) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 
   ec_scalar_deserialize(scalar, buff);
   otrv4_assert(ec_scalar_eq(scalar, decaf_448_scalar_one) == otrv4_true);

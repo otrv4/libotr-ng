@@ -94,13 +94,13 @@ static void identity_message_fixture_setup(identity_message_fixture_t *fixture,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
   otrv4_keypair_generate(fixture->keypair, sym);
-  otrv4_assert(ec_point_valid(fixture->keypair->pub) == OTR4_SUCCESS);
+  otrv4_assert(ec_point_valid(fixture->keypair->pub) == SUCCESS);
 
   fixture->profile = user_profile_new("4");
 
   fixture->shared_prekey = otrv4_shared_prekey_pair_new();
   otrv4_shared_prekey_pair_generate(fixture->shared_prekey, sym);
-  otrv4_assert(ec_point_valid(fixture->shared_prekey->pub) == OTR4_SUCCESS);
+  otrv4_assert(ec_point_valid(fixture->shared_prekey->pub) == SUCCESS);
 
   memcpy(fixture->profile->shared_prekey, fixture->shared_prekey->pub,
          sizeof(otrv4_shared_prekey_pub_t));
@@ -108,7 +108,7 @@ static void identity_message_fixture_setup(identity_message_fixture_t *fixture,
   otrv4_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 60 * 60;
   otrv4_assert(user_profile_sign(fixture->profile, fixture->keypair) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 }
 
 static void
@@ -130,13 +130,13 @@ static void prekey_message_fixture_setup(prekey_message_fixture_t *fixture,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
   otrv4_keypair_generate(fixture->keypair, sym);
-  otrv4_assert(ec_point_valid(fixture->keypair->pub) == OTR4_SUCCESS);
+  otrv4_assert(ec_point_valid(fixture->keypair->pub) == SUCCESS);
 
   fixture->profile = user_profile_new("4");
 
   fixture->shared_prekey = otrv4_shared_prekey_pair_new();
   otrv4_shared_prekey_pair_generate(fixture->shared_prekey, sym);
-  otrv4_assert(ec_point_valid(fixture->shared_prekey->pub) == OTR4_SUCCESS);
+  otrv4_assert(ec_point_valid(fixture->shared_prekey->pub) == SUCCESS);
 
   memcpy(fixture->profile->shared_prekey, fixture->shared_prekey->pub,
          sizeof(otrv4_shared_prekey_pub_t));
@@ -144,7 +144,7 @@ static void prekey_message_fixture_setup(prekey_message_fixture_t *fixture,
   otrv4_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 60 * 60;
   otrv4_assert(user_profile_sign(fixture->profile, fixture->keypair) ==
-               OTR4_SUCCESS);
+               SUCCESS);
 }
 
 static void prekey_message_fixture_teardown(prekey_message_fixture_t *fixture,
@@ -166,12 +166,12 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
   // Alice sends query message
   string_t query_message = NULL;
   otrv4_assert(otrv4_build_query_message(&query_message, "", alice) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   otrv4_assert_cmpmem("?OTRv4", query_message, 6);
 
   // Bob receives query message
   otrv4_assert(otrv4_receive_message(response_to_alice, query_message, bob) ==
-               OTR4_SUCCESS);
+               SUCCESS);
   free(query_message);
   query_message = NULL;
 
@@ -184,7 +184,7 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
   // Alice receives identity message
   otrv4_assert(otrv4_receive_message(response_to_bob,
                                      response_to_alice->to_send,
-                                     alice) == OTR4_SUCCESS);
+                                     alice) == SUCCESS);
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
@@ -204,7 +204,7 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
   // Bob receives an auth receiver
   otrv4_assert(otrv4_receive_message(response_to_alice,
                                      response_to_bob->to_send,
-                                     bob) == OTR4_SUCCESS);
+                                     bob) == SUCCESS);
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
@@ -231,7 +231,7 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
   // Alice receives an auth initiator
   otrv4_assert(otrv4_receive_message(response_to_bob,
                                      response_to_alice->to_send,
-                                     alice) == OTR4_SUCCESS);
+                                     alice) == SUCCESS);
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
@@ -262,7 +262,7 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
   chain_key_t bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
   otrv4_assert(key_manager_get_receiving_chain_key(
-                   alice_receiving_key, 0, alice->keys) == OTR4_SUCCESS);
+                   alice_receiving_key, 0, alice->keys) == SUCCESS);
   otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
   otrv4_response_free(response_to_alice);

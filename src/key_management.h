@@ -33,8 +33,8 @@ typedef struct {
 } ratchet_t;
 
 typedef enum {
-  OTR4_SESSION_ID_FIRST_HALF_BOLD,
-  OTR4_SESSION_ID_SECOND_HALF_BOLD
+  SESSION_ID_FIRST_HALF_BOLD,
+  SESSION_ID_SECOND_HALF_BOLD
 } session_id_half;
 
 typedef struct {

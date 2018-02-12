@@ -173,9 +173,9 @@ INTERNAL otrv4_err_t append_padding_tlv(tlv_t **tlvs, int message_len) {
 
   tlv_t *padding_tlv = otrv4_padding_tlv_new(padding);
   if (!padding_tlv)
-    return OTR4_ERROR;
+    return ERROR;
 
   *tlvs = append_tlv(*tlvs, padding_tlv);
 
-  return OTR4_SUCCESS;
+  return SUCCESS;
 }
