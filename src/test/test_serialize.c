@@ -69,9 +69,9 @@ void test_ser_des_otrv4_public_key() {
                                             ED448_PUBKEY_BYTES,
                                             NULL) == SUCCESS);
 
-  otrv4_assert(ec_point_valid(deserialized) == otrv4_true);
+  otrv4_assert(otrv4_ec_point_valid(deserialized) == otrv4_true);
 
-  otrv4_assert(ec_point_eq(deserialized, keypair->pub) == otrv4_true);
+  otrv4_assert(otrv4_ec_point_eq(deserialized, keypair->pub) == otrv4_true);
 }
 
 void test_ser_des_otrv4_shared_prekey() {
@@ -87,9 +87,9 @@ void test_ser_des_otrv4_shared_prekey() {
                                                ED448_PUBKEY_BYTES,
                                                NULL) == SUCCESS);
 
-  otrv4_assert(ec_point_valid(deserialized) == otrv4_true);
+  otrv4_assert(otrv4_ec_point_valid(deserialized) == otrv4_true);
 
-  otrv4_assert(ec_point_eq(deserialized, shared_prekey->pub) == otrv4_true);
+  otrv4_assert(otrv4_ec_point_eq(deserialized, shared_prekey->pub) == otrv4_true);
   otrv4_shared_prekey_pair_free(shared_prekey);
 }
 

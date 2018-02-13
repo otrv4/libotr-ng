@@ -25,7 +25,7 @@ otrv4_dake_identity_message_new(const user_profile_t *profile) {
   identity_message->sender_instance_tag = 0;
   identity_message->receiver_instance_tag = 0;
   identity_message->profile->versions = NULL;
-  ec_bzero(identity_message->Y, ED448_POINT_BYTES);
+  otrv4_ec_bzero(identity_message->Y, ED448_POINT_BYTES);
   identity_message->B = NULL;
   user_profile_copy(identity_message->profile, profile);
 
@@ -34,7 +34,7 @@ otrv4_dake_identity_message_new(const user_profile_t *profile) {
 
 INTERNAL void otrv4_dake_identity_message_destroy(dake_identity_message_t *identity_message) {
   user_profile_destroy(identity_message->profile);
-  ec_point_destroy(identity_message->Y);
+  otrv4_ec_point_destroy(identity_message->Y);
   otrv4_dh_mpi_release(identity_message->B);
   identity_message->B = NULL;
 }
@@ -168,7 +168,7 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_deserialize(dake_identity_messa
 INTERNAL void otrv4_dake_auth_r_destroy(dake_auth_r_t *auth_r) {
   otrv4_dh_mpi_release(auth_r->A);
   auth_r->A = NULL;
-  ec_point_destroy(auth_r->X);
+  otrv4_ec_point_destroy(auth_r->X);
   user_profile_destroy(auth_r->profile);
   otrv4_snizkpk_proof_destroy(auth_r->sigma);
 }
@@ -384,7 +384,7 @@ INTERNAL dake_prekey_message_t *otrv4_dake_prekey_message_new(const user_profile
   prekey_message->sender_instance_tag = 0;
   prekey_message->receiver_instance_tag = 0;
   prekey_message->profile->versions = NULL;
-  ec_bzero(prekey_message->Y, ED448_POINT_BYTES);
+  otrv4_ec_bzero(prekey_message->Y, ED448_POINT_BYTES);
   prekey_message->B = NULL;
   user_profile_copy(prekey_message->profile, profile);
 
@@ -393,7 +393,7 @@ INTERNAL dake_prekey_message_t *otrv4_dake_prekey_message_new(const user_profile
 
 INTERNAL void otrv4_dake_prekey_message_destroy(dake_prekey_message_t *prekey_message) {
   user_profile_destroy(prekey_message->profile);
-  ec_point_destroy(prekey_message->Y);
+  otrv4_ec_point_destroy(prekey_message->Y);
   otrv4_dh_mpi_release(prekey_message->B);
   prekey_message->B = NULL;
 }
@@ -527,7 +527,7 @@ INTERNAL void otrv4_dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_t *non_interactive_auth) {
   otrv4_dh_mpi_release(non_interactive_auth->A);
   non_interactive_auth->A = NULL;
-  ec_point_destroy(non_interactive_auth->X);
+  otrv4_ec_point_destroy(non_interactive_auth->X);
   user_profile_destroy(non_interactive_auth->profile);
   otrv4_snizkpk_proof_destroy(non_interactive_auth->sigma);
   non_interactive_auth->enc_msg = NULL;
@@ -722,7 +722,7 @@ INTERNAL otrv4_bool_t otrv4_valid_received_values(const ec_point_t their_ecdh,
                                    const dh_mpi_t their_dh,
                                    const user_profile_t *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */
-  if (ec_point_valid(their_ecdh) == otrv4_false)
+  if (otrv4_ec_point_valid(their_ecdh) == otrv4_false)
     return otrv4_false;
 
   /* Verify that the DH public key their_dh is from the correct group. */

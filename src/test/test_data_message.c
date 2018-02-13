@@ -5,7 +5,7 @@ static data_message_t *set_up_data_msg() {
   dh_keypair_t dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  ecdh_keypair_generate(ecdh, sym);
+  otrv4_ecdh_keypair_generate(ecdh, sym);
   otrv4_assert(otrv4_dh_keypair_generate(dh) == SUCCESS);
 
   data_message_t *data_msg = otrv4_data_message_new();
@@ -14,7 +14,7 @@ static data_message_t *set_up_data_msg() {
   data_msg->receiver_instance_tag = 2;
   data_msg->flags = 0xA;
   data_msg->message_id = 99;
-  ec_point_copy(data_msg->ecdh, ecdh->pub);
+  otrv4_ec_point_copy(data_msg->ecdh, ecdh->pub);
 
   const char dh_data[383] = {
       0x4c, 0x4e, 0x7b, 0xbd, 0x33, 0xd0, 0x9e, 0x63, 0xfd, 0xe4, 0x67, 0xee,
@@ -61,7 +61,7 @@ static data_message_t *set_up_data_msg() {
   data_msg->enc_msg_len = 3;
 
   otrv4_dh_keypair_destroy(dh);
-  ecdh_keypair_destroy(ecdh);
+  otrv4_ecdh_keypair_destroy(ecdh);
   otrv4_dh_free();
 
   return data_msg;
@@ -96,7 +96,7 @@ void test_data_message_serializes() {
   cursor += 16;
 
   uint8_t serialized_y[ED448_POINT_BYTES + 2] = {0};
-  ec_point_serialize(serialized_y, data_msg->ecdh);
+  otrv4_ec_point_serialize(serialized_y, data_msg->ecdh);
   otrv4_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
   cursor += sizeof(ec_public_key_t);
 

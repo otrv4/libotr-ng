@@ -18,10 +18,10 @@ tstatic user_profile_t *user_profile_new(const string_t versions) {
   if (!profile)
     return NULL;
 
-  ec_bzero(profile->pub_key, ED448_POINT_BYTES);
+  otrv4_ec_bzero(profile->pub_key, ED448_POINT_BYTES);
   profile->expires = 0;
   profile->versions = otrv4_strdup(versions);
-  ec_bzero(profile->shared_prekey, ED448_POINT_BYTES);
+  otrv4_ec_bzero(profile->shared_prekey, ED448_POINT_BYTES);
   memset(profile->signature, 0, sizeof(profile->signature));
   otr_mpi_init(profile->transitional_signature);
 
@@ -33,10 +33,10 @@ INTERNAL void user_profile_copy(user_profile_t *dst, const user_profile_t *src) 
   if (!src)
     return;
 
-  ec_point_copy(dst->pub_key, src->pub_key);
+  otrv4_ec_point_copy(dst->pub_key, src->pub_key);
   dst->versions = otrv4_strdup(src->versions);
   dst->expires = src->expires;
-  ec_point_copy(dst->shared_prekey, src->shared_prekey);
+  otrv4_ec_point_copy(dst->shared_prekey, src->shared_prekey);
 
   memcpy(dst->signature, src->signature, sizeof(eddsa_signature_t));
   otr_mpi_copy(dst->transitional_signature, src->transitional_signature);
@@ -46,11 +46,11 @@ INTERNAL void user_profile_destroy(user_profile_t *profile) {
   if (!profile)
     return;
 
-  ec_point_destroy(profile->pub_key);
+  otrv4_ec_point_destroy(profile->pub_key);
   free(profile->versions);
   profile->versions = NULL;
   sodium_memzero(profile->signature, ED448_SIGNATURE_BYTES);
-  ec_point_destroy(profile->shared_prekey);
+  otrv4_ec_point_destroy(profile->shared_prekey);
   otr_mpi_free(profile->transitional_signature);
 }
 
@@ -190,15 +190,15 @@ tstatic otrv4_err_t user_profile_sign(user_profile_t *profile,
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  ec_point_copy(profile->pub_key, keypair->pub);
+  otrv4_ec_point_copy(profile->pub_key, keypair->pub);
   if (user_profile_body_asprintf(&body, &bodylen, profile))
     return ERROR;
 
   uint8_t pubkey[ED448_POINT_BYTES];
-  ec_point_serialize(pubkey, keypair->pub);
+  otrv4_ec_point_serialize(pubkey, keypair->pub);
 
-  // maybe ec_derive_public_key again?
-  ec_sign(profile->signature, (uint8_t *)keypair->sym, pubkey, body, bodylen);
+  // maybe otrv4_ec_derive_public_key again?
+  otrv4_ec_sign(profile->signature, (uint8_t *)keypair->sym, pubkey, body, bodylen);
 
   free(body);
   body = NULL;
@@ -214,16 +214,16 @@ INTERNAL otrv4_bool_t user_profile_verify_signature(const user_profile_t *profil
   if (!(profile->signature > 0))
     return otrv4_false;
 
-  if (ec_point_valid(profile->shared_prekey) == ERROR)
+  if (otrv4_ec_point_valid(profile->shared_prekey) == ERROR)
     return otrv4_false;
 
   if (user_profile_body_asprintf(&body, &bodylen, profile))
     return otrv4_false;
 
   uint8_t pubkey[ED448_POINT_BYTES];
-  ec_point_serialize(pubkey, profile->pub_key);
+  otrv4_ec_point_serialize(pubkey, profile->pub_key);
 
-  otrv4_bool_t valid = ec_verify(profile->signature, pubkey, body, bodylen);
+  otrv4_bool_t valid = otrv4_ec_verify(profile->signature, pubkey, body, bodylen);
 
   free(body);
   body = NULL;

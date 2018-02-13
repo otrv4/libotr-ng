@@ -16,7 +16,7 @@ INTERNAL data_message_t *otrv4_data_message_new() {
   ret->enc_msg = NULL;
   ret->enc_msg_len = 0;
 
-  ec_bzero(ret->ecdh, ED448_POINT_BYTES);
+  otrv4_ec_bzero(ret->ecdh, ED448_POINT_BYTES);
 
   memset(ret->nonce, 0, sizeof ret->nonce);
   memset(ret->mac, 0, sizeof ret->mac);
@@ -27,7 +27,7 @@ INTERNAL data_message_t *otrv4_data_message_new() {
 tstatic void data_message_destroy(data_message_t *data_msg) {
   data_msg->flags = 0;
 
-  ec_point_destroy(data_msg->ecdh);
+  otrv4_ec_point_destroy(data_msg->ecdh);
   otrv4_dh_mpi_release(data_msg->dh);
   data_msg->dh = NULL;
 
@@ -197,7 +197,7 @@ INTERNAL otrv4_bool_t otrv4_valid_data_message(m_mac_key_t mac_key,
     return otrv4_false;
   }
 
-  if (ec_point_valid(data_msg->ecdh))
+  if (otrv4_ec_point_valid(data_msg->ecdh))
     return otrv4_false;
 
   return otrv4_dh_mpi_valid(data_msg->dh);

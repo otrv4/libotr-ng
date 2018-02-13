@@ -183,7 +183,7 @@ void test_user_profile_build() {
 
   profile = user_profile_build("3", keypair, shared_prekey);
   g_assert_cmpstr(profile->versions, ==, "3");
-  otrv4_assert(ec_point_valid(profile->shared_prekey) == otrv4_true);
+  otrv4_assert(otrv4_ec_point_valid(profile->shared_prekey) == otrv4_true);
 
   user_profile_free(profile);
 }

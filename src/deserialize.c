@@ -127,7 +127,7 @@ INTERNAL otrv4_err_t otrv4_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
 /* } */
 
 INTERNAL otrv4_err_t otrv4_deserialize_ec_point(ec_point_t point, const uint8_t *serialized) {
-  return ec_point_deserialize(point, serialized);
+  return otrv4_ec_point_deserialize(point, serialized);
 }
 
 INTERNAL otrv4_err_t otrv4_deserialize_otrv4_public_key(otrv4_public_key_t pub,
@@ -189,7 +189,7 @@ INTERNAL otrv4_err_t otrv4_deserialize_ec_scalar(ec_scalar_t scalar, const uint8
   if (ser_len < ED448_SCALAR_BYTES)
     return ERROR;
 
-  ec_scalar_deserialize(scalar, serialized);
+  otrv4_ec_scalar_deserialize(scalar, serialized);
 
   return SUCCESS;
 }

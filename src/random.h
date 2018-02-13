@@ -13,7 +13,7 @@ static inline void random_bytes(void *const buf, const size_t size) {
 static inline void ed448_random_scalar(decaf_448_scalar_t priv) {
   uint8_t sym[ED448_PRIVATE_BYTES];
   random_bytes(sym, ED448_PRIVATE_BYTES);
-  ec_scalar_derive_from_secret(priv, sym);
+  otrv4_ec_scalar_derive_from_secret(priv, sym);
 }
 
 #endif

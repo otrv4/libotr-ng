@@ -156,10 +156,10 @@ INTERNAL otrv4_bool_t otrv4_snizkpk_verify(const snizkpk_proof_t *src,
 }
 
 INTERNAL void otrv4_snizkpk_proof_destroy(snizkpk_proof_t *src) {
-  ec_scalar_destroy(src->c1);
-  ec_scalar_destroy(src->r1);
-  ec_scalar_destroy(src->c2);
-  ec_scalar_destroy(src->r2);
-  ec_scalar_destroy(src->c3);
-  ec_scalar_destroy(src->r3);
+  otrv4_ec_scalar_destroy(src->c1);
+  otrv4_ec_scalar_destroy(src->r1);
+  otrv4_ec_scalar_destroy(src->c2);
+  otrv4_ec_scalar_destroy(src->r2);
+  otrv4_ec_scalar_destroy(src->c3);
+  otrv4_ec_scalar_destroy(src->r3);
 }

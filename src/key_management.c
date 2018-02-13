@@ -59,15 +59,15 @@ tstatic void ratchet_free(ratchet_t *ratchet) {
 
 INTERNAL void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 {
-  ec_bzero(manager->our_ecdh->pub, ED448_POINT_BYTES);
+  otrv4_ec_bzero(manager->our_ecdh->pub, ED448_POINT_BYTES);
   manager->our_dh->pub = NULL;
   manager->our_dh->priv = NULL;
 
-  ec_bzero(manager->their_ecdh, ED448_POINT_BYTES);
+  otrv4_ec_bzero(manager->their_ecdh, ED448_POINT_BYTES);
   manager->their_dh = NULL;
 
-  ec_bzero(manager->their_shared_prekey, ED448_POINT_BYTES);
-  ec_bzero(manager->our_shared_prekey, ED448_POINT_BYTES);
+  otrv4_ec_bzero(manager->their_shared_prekey, ED448_POINT_BYTES);
+  otrv4_ec_bzero(manager->our_shared_prekey, ED448_POINT_BYTES);
 
   manager->i = 0;
   manager->j = 0;
@@ -84,10 +84,10 @@ INTERNAL void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 }
 
 INTERNAL void key_manager_destroy(key_manager_t *manager) {
-  ecdh_keypair_destroy(manager->our_ecdh);
+  otrv4_ecdh_keypair_destroy(manager->our_ecdh);
   otrv4_dh_keypair_destroy(manager->our_dh);
 
-  ec_point_destroy(manager->their_ecdh);
+  otrv4_ec_point_destroy(manager->their_ecdh);
 
   gcry_mpi_release(manager->their_dh);
   manager->their_dh = NULL;
@@ -123,8 +123,8 @@ INTERNAL otrv4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager)
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
   now = time(NULL);
-  ec_point_destroy(manager->our_ecdh->pub);
-  ecdh_keypair_generate(manager->our_ecdh, sym);
+  otrv4_ec_point_destroy(manager->our_ecdh->pub);
+  otrv4_ecdh_keypair_generate(manager->our_ecdh, sym);
   manager->lastgenerated = now;
 
   if (manager->i % 3 == 0) {
@@ -140,8 +140,8 @@ INTERNAL otrv4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager)
 
 INTERNAL void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
                                 key_manager_t *manager) {
-  ec_point_destroy(manager->their_ecdh);
-  ec_point_copy(manager->their_ecdh, their_ecdh);
+  otrv4_ec_point_destroy(manager->their_ecdh);
+  otrv4_ec_point_copy(manager->their_ecdh, their_ecdh);
   otrv4_dh_mpi_release(manager->their_dh);
   manager->their_dh = otrv4_dh_mpi_copy(their_dh);
 }
@@ -332,21 +332,21 @@ tstatic otrv4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
   return SUCCESS;
 }
 
-INTERNAL void ecdh_shared_secret_from_prekey(uint8_t *shared,
+INTERNAL void otrv4_ecdh_shared_secret_from_prekey(uint8_t *shared,
                                     otrv4_shared_prekey_pair_t *shared_prekey,
                                     const ec_point_t their_pub) {
   decaf_448_point_t s;
   decaf_448_point_scalarmul(s, their_pub, shared_prekey->priv);
 
-  ec_point_serialize(shared, s);
+  otrv4_ec_point_serialize(shared, s);
 }
 
-INTERNAL void ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
+INTERNAL void otrv4_ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
                                      const ec_point_t their_pub) {
   decaf_448_point_t s;
   decaf_448_point_scalarmul(s, their_pub, keypair->priv);
 
-  ec_point_serialize(shared, s);
+  otrv4_ec_point_serialize(shared, s);
 }
 
 tstatic void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
@@ -433,7 +433,7 @@ tstatic otrv4_err_t enter_new_ratchet(key_manager_t *manager) {
   k_ecdh_t k_ecdh;
   shared_secret_t shared;
 
-  ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
+  otrv4_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
   if (calculate_brace_key(manager) == ERROR)
     return ERROR;
@@ -463,7 +463,7 @@ tstatic otrv4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
   k_ecdh_t k_ecdh;
   shared_secret_t shared;
 
-  ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
+  otrv4_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
   if (calculate_brace_key(manager) == ERROR)
     return ERROR;
@@ -551,7 +551,7 @@ INTERNAL otrv4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager) {
     return ERROR;
 
   // Securely delete priv keys as no longer needed
-  ec_scalar_destroy(manager->our_ecdh->priv);
+  otrv4_ec_scalar_destroy(manager->our_ecdh->priv);
   if (manager->i % 3 == 0) {
     otrv4_dh_priv_key_destroy(manager->our_dh);
   }
@@ -662,7 +662,7 @@ INTERNAL uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_key
 
 INTERNAL void key_manager_set_their_ecdh(ec_point_t their,
                                               key_manager_t *manager) {
-  ec_point_copy(manager->their_ecdh, their);
+  otrv4_ec_point_copy(manager->their_ecdh, their);
 }
 
 INTERNAL void key_manager_set_their_dh(dh_public_key_t their,

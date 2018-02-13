@@ -387,7 +387,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
       otrv4_client_get_conversation(!FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
 
   ec_point_t stored_their_ecdh;
-  ec_point_copy(stored_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
+  otrv4_ec_point_copy(stored_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
 
   dh_public_key_t stored_their_dh;
   stored_their_dh = otrv4_dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
@@ -416,14 +416,14 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   bobs_id = NULL;
 
   ec_point_t new_their_ecdh;
-  ec_point_copy(new_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
+  otrv4_ec_point_copy(new_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
 
   dh_public_key_t new_their_dh;
   new_their_dh = otrv4_dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
 
-  otrv4_assert(ec_point_eq(stored_their_ecdh, new_their_ecdh) == otrv4_false);
-  ec_point_destroy(stored_their_ecdh);
-  ec_point_destroy(new_their_ecdh);
+  otrv4_assert(otrv4_ec_point_eq(stored_their_ecdh, new_their_ecdh) == otrv4_false);
+  otrv4_ec_point_destroy(stored_their_ecdh);
+  otrv4_ec_point_destroy(new_their_ecdh);
 
   g_assert_cmpint(dh_mpi_cmp(stored_their_dh, new_their_dh), !=, 0);
   otrv4_dh_mpi_release(stored_their_dh);

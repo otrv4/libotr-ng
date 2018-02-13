@@ -38,13 +38,13 @@ void ed448_test_eddsa_serialization() {
 
   // 2. Serialize using EdDSA
   uint8_t enc[DECAF_EDDSA_448_PUBLIC_BYTES];
-  ec_point_serialize(enc, p);
+  otrv4_ec_point_serialize(enc, p);
 
   // 3. Deserialize
   ec_point_t dec;
-  otrv4_assert(ec_point_deserialize(dec, enc) == SUCCESS);
+  otrv4_assert(otrv4_ec_point_deserialize(dec, enc) == SUCCESS);
 
-  otrv4_assert(ec_point_eq(p, dec) == otrv4_true);
+  otrv4_assert(otrv4_ec_point_eq(p, dec) == otrv4_true);
 }
 
 void ed448_test_eddsa_keygen() {
@@ -54,25 +54,25 @@ void ed448_test_eddsa_keygen() {
 
   ec_scalar_t secret_scalar;
   ec_point_t public_point;
-  ec_scalar_derive_from_secret(secret_scalar, sym);
-  ec_derive_public_key(pub, sym);
+  otrv4_ec_scalar_derive_from_secret(secret_scalar, sym);
+  otrv4_ec_derive_public_key(pub, sym);
 
-  otrv4_assert(ec_point_deserialize(public_point, pub) == SUCCESS);
+  otrv4_assert(otrv4_ec_point_deserialize(public_point, pub) == SUCCESS);
 
   // Is G * scalar == P?
   ec_point_t expected;
   decaf_448_point_scalarmul(expected, decaf_448_point_base, secret_scalar);
 
-  otrv4_assert(ec_point_eq(expected, public_point) == otrv4_true);
+  otrv4_assert(otrv4_ec_point_eq(expected, public_point) == otrv4_true);
 }
 
 void ed448_test_scalar_serialization() {
   ec_scalar_t scalar;
 
   uint8_t buff[ED448_SCALAR_BYTES];
-  otrv4_assert(ec_scalar_serialize(buff, sizeof(buff), decaf_448_scalar_one) ==
+  otrv4_assert(otrv4_ec_scalar_serialize(buff, sizeof(buff), decaf_448_scalar_one) ==
                SUCCESS);
 
-  ec_scalar_deserialize(scalar, buff);
-  otrv4_assert(ec_scalar_eq(scalar, decaf_448_scalar_one) == otrv4_true);
+  otrv4_ec_scalar_deserialize(scalar, buff);
+  otrv4_assert(otrv4_ec_scalar_eq(scalar, decaf_448_scalar_one) == otrv4_true);
 }

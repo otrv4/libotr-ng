@@ -94,11 +94,11 @@ INTERNAL void key_manager_prepare_to_ratchet(key_manager_t *manager);
 INTERNAL otrv4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager);
 
 
-INTERNAL void ecdh_shared_secret_from_prekey(uint8_t *shared,
+INTERNAL void otrv4_ecdh_shared_secret_from_prekey(uint8_t *shared,
                                     otrv4_shared_prekey_pair_t *shared_prekey,
                                     const ec_point_t their_pub);
 
-INTERNAL void ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
+INTERNAL void otrv4_ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
                                      const ec_point_t their_pub);
 
 INTERNAL otrv4_err_t key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,

@@ -129,5 +129,5 @@
 
 static inline void otrv4_assert_point_equals(const ec_point_t expected,
                                              const ec_point_t actual) {
-  g_assert_cmpint(ec_point_eq(expected, actual), !=, otrv4_false);
+  g_assert_cmpint(otrv4_ec_point_eq(expected, actual), !=, otrv4_false);
 }
