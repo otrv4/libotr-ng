@@ -12,7 +12,7 @@
 #include "str.h"
 
 INTERNAL dake_identity_message_t *
-dake_identity_message_new(const user_profile_t *profile) {
+otrv4_dake_identity_message_new(const user_profile_t *profile) {
   if (profile == NULL)
     return NULL;
 
@@ -32,23 +32,23 @@ dake_identity_message_new(const user_profile_t *profile) {
   return identity_message;
 }
 
-INTERNAL void dake_identity_message_destroy(dake_identity_message_t *identity_message) {
+INTERNAL void otrv4_dake_identity_message_destroy(dake_identity_message_t *identity_message) {
   user_profile_destroy(identity_message->profile);
   ec_point_destroy(identity_message->Y);
   dh_mpi_release(identity_message->B);
   identity_message->B = NULL;
 }
 
-INTERNAL void dake_identity_message_free(dake_identity_message_t *identity_message) {
+INTERNAL void otrv4_dake_identity_message_free(dake_identity_message_t *identity_message) {
   if (!identity_message)
     return;
 
-  dake_identity_message_destroy(identity_message);
+  otrv4_dake_identity_message_destroy(identity_message);
   free(identity_message);
   identity_message = NULL;
 }
 
-INTERNAL otrv4_err_t dake_identity_message_asprintf(
+INTERNAL otrv4_err_t otrv4_dake_identity_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_identity_message_t *identity_message) {
   size_t profile_len = 0;
@@ -95,7 +95,7 @@ INTERNAL otrv4_err_t dake_identity_message_asprintf(
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t dake_identity_message_deserialize(dake_identity_message_t *dst,
+INTERNAL otrv4_err_t otrv4_dake_identity_message_deserialize(dake_identity_message_t *dst,
                                               const uint8_t *src,
                                               size_t src_len) {
   const uint8_t *cursor = src;
@@ -165,7 +165,7 @@ INTERNAL otrv4_err_t dake_identity_message_deserialize(dake_identity_message_t *
   return dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
 
-INTERNAL void dake_auth_r_destroy(dake_auth_r_t *auth_r) {
+INTERNAL void otrv4_dake_auth_r_destroy(dake_auth_r_t *auth_r) {
   dh_mpi_release(auth_r->A);
   auth_r->A = NULL;
   ec_point_destroy(auth_r->X);
@@ -173,7 +173,7 @@ INTERNAL void dake_auth_r_destroy(dake_auth_r_t *auth_r) {
   otrv4_snizkpk_proof_destroy(auth_r->sigma);
 }
 
-INTERNAL otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
+INTERNAL otrv4_err_t otrv4_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
                                  const dake_auth_r_t *auth_r) {
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
@@ -222,7 +222,7 @@ INTERNAL otrv4_err_t dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
+INTERNAL otrv4_err_t otrv4_dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
                                     size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
@@ -298,11 +298,11 @@ INTERNAL otrv4_err_t dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *
   return deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
 }
 
-INTERNAL void dake_auth_i_destroy(dake_auth_i_t *auth_i) {
+INTERNAL void otrv4_dake_auth_i_destroy(dake_auth_i_t *auth_i) {
   otrv4_snizkpk_proof_destroy(auth_i->sigma);
 }
 
-INTERNAL otrv4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
+INTERNAL otrv4_err_t otrv4_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
                                  const dake_auth_i_t *auth_i) {
   size_t s = DAKE_HEADER_BYTES + SNIZKPK_BYTES;
   *dst = malloc(s);
@@ -325,7 +325,7 @@ INTERNAL otrv4_err_t dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
+INTERNAL otrv4_err_t otrv4_dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
                                     size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
@@ -372,7 +372,7 @@ INTERNAL otrv4_err_t dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *
   return deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
 }
 
-INTERNAL dake_prekey_message_t *dake_prekey_message_new(const user_profile_t *profile) {
+INTERNAL dake_prekey_message_t *otrv4_dake_prekey_message_new(const user_profile_t *profile) {
   if (profile == NULL)
     return NULL;
 
@@ -391,24 +391,24 @@ INTERNAL dake_prekey_message_t *dake_prekey_message_new(const user_profile_t *pr
   return prekey_message;
 }
 
-INTERNAL void dake_prekey_message_destroy(dake_prekey_message_t *prekey_message) {
+INTERNAL void otrv4_dake_prekey_message_destroy(dake_prekey_message_t *prekey_message) {
   user_profile_destroy(prekey_message->profile);
   ec_point_destroy(prekey_message->Y);
   dh_mpi_release(prekey_message->B);
   prekey_message->B = NULL;
 }
 
-INTERNAL void dake_prekey_message_free(dake_prekey_message_t *prekey_message) {
+INTERNAL void otrv4_dake_prekey_message_free(dake_prekey_message_t *prekey_message) {
   if (!prekey_message)
     return;
 
-  dake_prekey_message_destroy(prekey_message);
+  otrv4_dake_prekey_message_destroy(prekey_message);
   free(prekey_message);
   prekey_message = NULL;
 }
 
 INTERNAL otrv4_err_t
-dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
+otrv4_dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
                              const dake_prekey_message_t *prekey_message) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
@@ -453,7 +453,7 @@ dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
+INTERNAL otrv4_err_t otrv4_dake_prekey_message_deserialize(dake_prekey_message_t *dst,
                                             const uint8_t *src,
                                             size_t src_len) {
   const uint8_t *cursor = src;
@@ -523,7 +523,7 @@ INTERNAL otrv4_err_t dake_prekey_message_deserialize(dake_prekey_message_t *dst,
   return dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
 
-INTERNAL void dake_non_interactive_auth_message_destroy(
+INTERNAL void otrv4_dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_t *non_interactive_auth) {
   dh_mpi_release(non_interactive_auth->A);
   non_interactive_auth->A = NULL;
@@ -536,7 +536,7 @@ INTERNAL void dake_non_interactive_auth_message_destroy(
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
 }
 
-INTERNAL otrv4_err_t dake_non_interactive_auth_message_asprintf(
+INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_t *non_interactive_auth) {
   size_t data_msg_len = 0;
@@ -605,7 +605,7 @@ INTERNAL otrv4_err_t dake_non_interactive_auth_message_asprintf(
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t dake_non_interactive_auth_message_deserialize(
+INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_t *dst, const uint8_t *buffer,
     size_t buflen) {
   const uint8_t *cursor = buffer;
@@ -718,7 +718,7 @@ tstatic otrv4_bool_t no_rollback_detected(const char *versions) {
   return otrv4_true;
 }
 
-INTERNAL otrv4_bool_t valid_received_values(const ec_point_t their_ecdh,
+INTERNAL otrv4_bool_t otrv4_valid_received_values(const ec_point_t their_ecdh,
                                    const dh_mpi_t their_dh,
                                    const user_profile_t *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */

@@ -439,7 +439,7 @@ serialize_and_encode_prekey_message(string_t *dst,
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (dake_prekey_message_asprintf(&buff, &len, m))
+  if (otrv4_dake_prekey_message_asprintf(&buff, &len, m))
     return ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
@@ -455,7 +455,7 @@ tstatic otrv4_err_t otrv4_build_prekey_message(otrv4_server_t *server,
   dake_prekey_message_t *m = NULL;
   otrv4_err_t err = ERROR;
 
-  m = dake_prekey_message_new(get_my_user_profile(otr));
+  m = otrv4_dake_prekey_message_new(get_my_user_profile(otr));
   if (!m)
     return err;
 
@@ -466,11 +466,11 @@ tstatic otrv4_err_t otrv4_build_prekey_message(otrv4_server_t *server,
   m->B = dh_mpi_copy(OUR_DH(otr));
 
   if (serialize_and_encode_prekey_message(&server->prekey_message, m)) {
-    dake_prekey_message_free(m);
+    otrv4_dake_prekey_message_free(m);
     return err;
   }
 
-  dake_prekey_message_free(m);
+  otrv4_dake_prekey_message_free(m);
 
   return SUCCESS;
 }
@@ -491,7 +491,7 @@ serialize_and_encode_identity_message(string_t *dst,
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (dake_identity_message_asprintf(&buff, &len, m))
+  if (otrv4_dake_identity_message_asprintf(&buff, &len, m))
     return ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
@@ -507,7 +507,7 @@ tstatic otrv4_err_t reply_with_identity_msg(otrv4_response_t *response,
   dake_identity_message_t *m = NULL;
   otrv4_err_t err = ERROR;
 
-  m = dake_identity_message_new(get_my_user_profile(otr));
+  m = otrv4_dake_identity_message_new(get_my_user_profile(otr));
   if (!m)
     return err;
 
@@ -518,11 +518,11 @@ tstatic otrv4_err_t reply_with_identity_msg(otrv4_response_t *response,
   m->B = dh_mpi_copy(OUR_DH(otr));
 
   if (serialize_and_encode_identity_message(&response->to_send, m)) {
-    dake_identity_message_free(m);
+    otrv4_dake_identity_message_free(m);
     return err;
   }
 
-  dake_identity_message_free(m);
+  otrv4_dake_identity_message_free(m);
 
   return SUCCESS;
 }
@@ -697,7 +697,7 @@ tstatic otrv4_err_t serialize_and_encode_auth_r(string_t *dst,
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (dake_auth_r_asprintf(&buff, &len, m))
+  if (otrv4_dake_auth_r_asprintf(&buff, &len, m))
     return ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
@@ -739,7 +739,7 @@ tstatic otrv4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
   t = NULL;
 
   otrv4_err_t err = serialize_and_encode_auth_r(dst, msg);
-  dake_auth_r_destroy(msg);
+  otrv4_dake_auth_r_destroy(msg);
 
   return err;
 }
@@ -905,7 +905,7 @@ tstatic otrv4_err_t serialize_and_encode_non_interactive_auth(
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (dake_non_interactive_auth_message_asprintf(&buff, &len, m))
+  if (otrv4_dake_non_interactive_auth_message_asprintf(&buff, &len, m))
     return ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
@@ -1080,7 +1080,7 @@ tstatic otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
       free(message);
       message = NULL;
     }
-    dake_non_interactive_auth_message_destroy(auth);
+    otrv4_dake_non_interactive_auth_message_destroy(auth);
 
     return ERROR;
   }
@@ -1102,7 +1102,7 @@ tstatic otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
 
     if (encrypt_msg_on_non_interactive_auth(auth, message, msglen, nonce,
                                             otr)) {
-      dake_non_interactive_auth_message_destroy(auth);
+      otrv4_dake_non_interactive_auth_message_destroy(auth);
       free(t);
       t = NULL;
       return ERROR;
@@ -1116,7 +1116,7 @@ tstatic otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
                                                       auth)) {
       free(auth->enc_msg);
       auth->enc_msg = NULL;
-      dake_non_interactive_auth_message_destroy(auth);
+      otrv4_dake_non_interactive_auth_message_destroy(auth);
       free(t);
       t = NULL;
       return ERROR;
@@ -1148,7 +1148,7 @@ tstatic otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     free(auth->enc_msg);
     auth->enc_msg = NULL;
   }
-  dake_non_interactive_auth_message_destroy(auth);
+  otrv4_dake_non_interactive_auth_message_destroy(auth);
 
   return err;
 }
@@ -1277,24 +1277,24 @@ tstatic otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
   otrv4_err_t err = ERROR;
   dake_prekey_message_t m[1];
 
-  if (dake_prekey_message_deserialize(m, buff, buflen))
+  if (otrv4_dake_prekey_message_deserialize(m, buff, buflen))
     return err;
 
   if (m->receiver_instance_tag != 0) {
-    dake_prekey_message_destroy(m);
+    otrv4_dake_prekey_message_destroy(m);
     return SUCCESS;
   }
 
   received_instance_tag(m->sender_instance_tag, otr);
 
-  if (valid_received_values(m->Y, m->B, m->profile)) {
-    dake_prekey_message_destroy(m);
+  if (otrv4_valid_received_values(m->Y, m->B, m->profile)) {
+    otrv4_dake_prekey_message_destroy(m);
     return err;
   }
 
   otr->their_profile = malloc(sizeof(user_profile_t));
   if (!otr->their_profile) {
-    dake_prekey_message_destroy(m);
+    otrv4_dake_prekey_message_destroy(m);
     return err;
   }
 
@@ -1302,7 +1302,7 @@ tstatic otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
   key_manager_set_their_dh(m->B, otr->keys);
   user_profile_copy(otr->their_profile, m->profile);
 
-  dake_prekey_message_destroy(m);
+  otrv4_dake_prekey_message_destroy(m);
 
   if (key_manager_generate_ephemeral_keys(otr->keys))
     return err;
@@ -1498,11 +1498,11 @@ receive_non_interactive_auth_message(otrv4_response_t *response,
   dake_non_interactive_auth_message_t auth[1];
   auth->enc_msg = NULL;
 
-  if (dake_non_interactive_auth_message_deserialize(auth, buff, buff_len))
+  if (otrv4_dake_non_interactive_auth_message_deserialize(auth, buff, buff_len))
     return ERROR;
 
   if (auth->receiver_instance_tag != otr->our_instance_tag) {
-    dake_non_interactive_auth_message_destroy(auth);
+    otrv4_dake_non_interactive_auth_message_destroy(auth);
     return SUCCESS;
   }
 
@@ -1510,7 +1510,7 @@ receive_non_interactive_auth_message(otrv4_response_t *response,
 
   otr->their_profile = malloc(sizeof(user_profile_t));
   if (!otr->their_profile) {
-    dake_non_interactive_auth_message_destroy(auth);
+    otrv4_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
 
@@ -1522,19 +1522,19 @@ receive_non_interactive_auth_message(otrv4_response_t *response,
    * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
    * ECDH(Ska, X) || k_dh) */
   if (generate_tmp_key_i(otr->keys->tmp_key, otr) == ERROR) {
-    dake_non_interactive_auth_message_destroy(auth);
+    otrv4_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
 
   if (double_ratcheting_init(1, false, otr)) {
-    dake_non_interactive_auth_message_destroy(auth);
+    otrv4_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
 
   if (verify_non_interactive_auth_message(response, auth, otr) == otrv4_false) {
     free(auth->enc_msg);
     auth->enc_msg = NULL;
-    dake_non_interactive_auth_message_destroy(auth);
+    otrv4_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
 
@@ -1542,7 +1542,7 @@ receive_non_interactive_auth_message(otrv4_response_t *response,
     free(auth->enc_msg);
     auth->enc_msg = NULL;
   }
-  dake_non_interactive_auth_message_destroy(auth);
+  otrv4_dake_non_interactive_auth_message_destroy(auth);
 
   otrv4_fingerprint_t fp;
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
@@ -1602,18 +1602,18 @@ tstatic otrv4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,
   otrv4_err_t err = ERROR;
   dake_identity_message_t m[1];
 
-  if (dake_identity_message_deserialize(m, buff, buflen))
+  if (otrv4_dake_identity_message_deserialize(m, buff, buflen))
     return err;
 
   if (m->receiver_instance_tag != 0) {
-    dake_identity_message_destroy(m);
+    otrv4_dake_identity_message_destroy(m);
     return SUCCESS;
   }
 
   received_instance_tag(m->sender_instance_tag, otr);
 
-  if (valid_received_values(m->Y, m->B, m->profile)) {
-    dake_identity_message_destroy(m);
+  if (otrv4_valid_received_values(m->Y, m->B, m->profile)) {
+    otrv4_dake_identity_message_destroy(m);
     return err;
   }
 
@@ -1634,7 +1634,7 @@ tstatic otrv4_err_t receive_identity_message(string_t *dst, const uint8_t *buff,
     err = SUCCESS;
   }
 
-  dake_identity_message_destroy(m);
+  otrv4_dake_identity_message_destroy(m);
   return err;
 }
 
@@ -1643,7 +1643,7 @@ tstatic otrv4_err_t serialize_and_encode_auth_i(string_t *dst,
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (dake_auth_i_asprintf(&buff, &len, m))
+  if (otrv4_dake_auth_i_asprintf(&buff, &len, m))
     return ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
@@ -1675,7 +1675,7 @@ tstatic otrv4_err_t reply_with_auth_i_msg(string_t *dst,
   t = NULL;
 
   otrv4_err_t err = serialize_and_encode_auth_i(dst, msg);
-  dake_auth_i_destroy(msg);
+  otrv4_dake_auth_i_destroy(msg);
 
   return err;
 }
@@ -1685,7 +1685,7 @@ tstatic otrv4_bool_t valid_auth_r_message(const dake_auth_r_t *auth,
   uint8_t *t = NULL;
   size_t t_len = 0;
 
-  if (valid_received_values(auth->X, auth->A, auth->profile))
+  if (otrv4_valid_received_values(auth->X, auth->A, auth->profile))
     return otrv4_false;
 
   if (build_auth_message(&t, &t_len, 0, get_my_user_profile(otr), auth->profile,
@@ -1712,24 +1712,24 @@ tstatic otrv4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
     return SUCCESS; /* ignore the message */
 
   dake_auth_r_t auth[1];
-  if (dake_auth_r_deserialize(auth, buff, buff_len))
+  if (otrv4_dake_auth_r_deserialize(auth, buff, buff_len))
     return ERROR;
 
   if (auth->receiver_instance_tag != otr->our_instance_tag) {
-    dake_auth_r_destroy(auth);
+    otrv4_dake_auth_r_destroy(auth);
     return SUCCESS;
   }
 
   received_instance_tag(auth->sender_instance_tag, otr);
 
   if (valid_auth_r_message(auth, otr) == otrv4_false) {
-    dake_auth_r_destroy(auth);
+    otrv4_dake_auth_r_destroy(auth);
     return ERROR;
   }
 
   otr->their_profile = malloc(sizeof(user_profile_t));
   if (!otr->their_profile) {
-    dake_auth_r_destroy(auth);
+    otrv4_dake_auth_r_destroy(auth);
     return ERROR;
   }
 
@@ -1738,11 +1738,11 @@ tstatic otrv4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
   user_profile_copy(otr->their_profile, auth->profile);
 
   if (reply_with_auth_i_msg(dst, otr->their_profile, otr)) {
-    dake_auth_r_destroy(auth);
+    otrv4_dake_auth_r_destroy(auth);
     return ERROR;
   }
 
-  dake_auth_r_destroy(auth);
+  otrv4_dake_auth_r_destroy(auth);
 
   otrv4_fingerprint_t fp;
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
@@ -1777,20 +1777,20 @@ tstatic otrv4_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
     return SUCCESS; /* Ignore the message */
 
   dake_auth_i_t auth[1];
-  if (dake_auth_i_deserialize(auth, buff, buff_len))
+  if (otrv4_dake_auth_i_deserialize(auth, buff, buff_len))
     return ERROR;
 
   if (auth->receiver_instance_tag != otr->our_instance_tag) {
-    dake_auth_i_destroy(auth);
+    otrv4_dake_auth_i_destroy(auth);
     return SUCCESS;
   }
 
   if (valid_auth_i_message(auth, otr) == otrv4_false) {
-    dake_auth_i_destroy(auth);
+    otrv4_dake_auth_i_destroy(auth);
     return ERROR;
   }
 
-  dake_auth_i_destroy(auth);
+  otrv4_dake_auth_i_destroy(auth);
 
   otrv4_fingerprint_t fp;
   if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))

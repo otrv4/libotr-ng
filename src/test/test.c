@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
                test_dake_identity_message_serializes,
                identity_message_fixture_t, identity_message_fixture);
   WITH_FIXTURE("/dake/identity_message/deserializes",
-               test_dake_identity_message_deserializes,
+               test_otrv4_dake_identity_message_deserializes,
                identity_message_fixture_t, identity_message_fixture);
   WITH_FIXTURE("/dake/identity_message/valid", test_dake_identity_message_valid,
                identity_message_fixture_t, identity_message_fixture);
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
                test_dake_prekey_message_serializes, prekey_message_fixture_t,
                prekey_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/deserializes",
-               test_dake_prekey_message_deserializes, prekey_message_fixture_t,
+               test_otrv4_dake_prekey_message_deserializes, prekey_message_fixture_t,
                prekey_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/valid", test_dake_prekey_message_valid,
                prekey_message_fixture_t, prekey_message_fixture);
