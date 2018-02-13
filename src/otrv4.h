@@ -16,12 +16,12 @@
 #define OTR4_INIT                                                              \
   do {                                                                         \
     otrv3_init();                                                              \
-    dh_init();                                                                 \
+    otrv4_dh_init();                                                                 \
   } while (0);
 
 #define OTR4_FREE                                                              \
   do {                                                                         \
-    dh_free();                                                                 \
+    otrv4_dh_free();                                                                 \
   } while (0);
 
 // TODO: how is this type chosen?

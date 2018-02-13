@@ -390,7 +390,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   ec_point_copy(stored_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
 
   dh_public_key_t stored_their_dh;
-  stored_their_dh = dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
+  stored_their_dh = otrv4_dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
 
   free(from_alice_to_bob);
   from_alice_to_bob = NULL;
@@ -419,16 +419,16 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   ec_point_copy(new_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
 
   dh_public_key_t new_their_dh;
-  new_their_dh = dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
+  new_their_dh = otrv4_dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
 
   otrv4_assert(ec_point_eq(stored_their_ecdh, new_their_ecdh) == otrv4_false);
   ec_point_destroy(stored_their_ecdh);
   ec_point_destroy(new_their_ecdh);
 
   g_assert_cmpint(dh_mpi_cmp(stored_their_dh, new_their_dh), !=, 0);
-  dh_mpi_release(stored_their_dh);
+  otrv4_dh_mpi_release(stored_their_dh);
   stored_their_dh = NULL;
-  dh_mpi_release(new_their_dh);
+  otrv4_dh_mpi_release(new_their_dh);
   new_their_dh = NULL;
 
   otrv4_assert(alice_to_bob->conn->state == OTRV4_STATE_WAITING_AUTH_I);

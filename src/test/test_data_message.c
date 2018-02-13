@@ -6,7 +6,7 @@ static data_message_t *set_up_data_msg() {
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
+  otrv4_assert(otrv4_dh_keypair_generate(dh) == SUCCESS);
 
   data_message_t *data_msg = otrv4_data_message_new();
   otrv4_assert(data_msg);
@@ -60,9 +60,9 @@ static data_message_t *set_up_data_msg() {
   memset(data_msg->enc_msg, 0xE, 3);
   data_msg->enc_msg_len = 3;
 
-  dh_keypair_destroy(dh);
+  otrv4_dh_keypair_destroy(dh);
   ecdh_keypair_destroy(ecdh);
-  dh_free();
+  otrv4_dh_free();
 
   return data_msg;
 }
@@ -102,7 +102,7 @@ void test_data_message_serializes() {
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
   size_t mpi_len = 0;
-  otrv4_err_t otr_err = dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
+  otrv4_err_t otr_err = otrv4_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
                                          &mpi_len, data_msg->dh);
   otrv4_assert(!otr_err);
   // Skip first 4 because they are the size (mpi_len)

@@ -85,7 +85,7 @@ INTERNAL void key_manager_init(key_manager_t *manager) // make like ratchet_new?
 
 INTERNAL void key_manager_destroy(key_manager_t *manager) {
   ecdh_keypair_destroy(manager->our_ecdh);
-  dh_keypair_destroy(manager->our_dh);
+  otrv4_dh_keypair_destroy(manager->our_dh);
 
   ec_point_destroy(manager->their_ecdh);
 
@@ -128,9 +128,9 @@ INTERNAL otrv4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager)
   manager->lastgenerated = now;
 
   if (manager->i % 3 == 0) {
-    dh_keypair_destroy(manager->our_dh);
+    otrv4_dh_keypair_destroy(manager->our_dh);
 
-    if (dh_keypair_generate(manager->our_dh)) {
+    if (otrv4_dh_keypair_generate(manager->our_dh)) {
       return ERROR;
     }
   }
@@ -142,8 +142,8 @@ INTERNAL void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t 
                                 key_manager_t *manager) {
   ec_point_destroy(manager->their_ecdh);
   ec_point_copy(manager->their_ecdh, their_ecdh);
-  dh_mpi_release(manager->their_dh);
-  manager->their_dh = dh_mpi_copy(their_dh);
+  otrv4_dh_mpi_release(manager->their_dh);
+  manager->their_dh = otrv4_dh_mpi_copy(their_dh);
 }
 
 INTERNAL void key_manager_prepare_to_ratchet(key_manager_t *manager) { manager->j = 0; }
@@ -415,7 +415,7 @@ tstatic otrv4_err_t calculate_brace_key(key_manager_t *manager) {
   k_dh_t k_dh;
 
   if (manager->i % 3 == 0) {
-    if (dh_shared_secret(k_dh, sizeof(k_dh_t), manager->our_dh->priv,
+    if (otrv4_dh_shared_secret(k_dh, sizeof(k_dh_t), manager->our_dh->priv,
                          manager->their_dh) == ERROR)
       return ERROR;
 
@@ -553,7 +553,7 @@ INTERNAL otrv4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager) {
   // Securely delete priv keys as no longer needed
   ec_scalar_destroy(manager->our_ecdh->priv);
   if (manager->i % 3 == 0) {
-    dh_priv_key_destroy(manager->our_dh);
+    otrv4_dh_priv_key_destroy(manager->our_dh);
   }
 
   return SUCCESS;
@@ -667,6 +667,6 @@ INTERNAL void key_manager_set_their_ecdh(ec_point_t their,
 
 INTERNAL void key_manager_set_their_dh(dh_public_key_t their,
                                             key_manager_t *manager) {
-  dh_mpi_release(manager->their_dh);
-  manager->their_dh = dh_mpi_copy(their);
+  otrv4_dh_mpi_release(manager->their_dh);
+  manager->their_dh = otrv4_dh_mpi_copy(their);
 }

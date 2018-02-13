@@ -73,7 +73,7 @@ INTERNAL otrv4_err_t serialize_dh_public_key(uint8_t *dst, size_t *len,
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   memset(buf, 0, DH3072_MOD_LEN_BYTES);
   size_t written = 0;
-  otrv4_err_t err = dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &written, pub);
+  otrv4_err_t err = otrv4_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &written, pub);
   if (err)
     return err;
 

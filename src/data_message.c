@@ -28,7 +28,7 @@ tstatic void data_message_destroy(data_message_t *data_msg) {
   data_msg->flags = 0;
 
   ec_point_destroy(data_msg->ecdh);
-  dh_mpi_release(data_msg->dh);
+  otrv4_dh_mpi_release(data_msg->dh);
   data_msg->dh = NULL;
 
   sodium_memzero(data_msg->nonce, sizeof data_msg->nonce);
@@ -151,7 +151,7 @@ INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst, const u
   cursor += read;
   len -= read;
 
-  if (dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read))
+  if (otrv4_dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read))
     return ERROR;
 
   cursor += read;
@@ -200,5 +200,5 @@ INTERNAL otrv4_bool_t otrv4_valid_data_message(m_mac_key_t mac_key,
   if (ec_point_valid(data_msg->ecdh))
     return otrv4_false;
 
-  return dh_mpi_valid(data_msg->dh);
+  return otrv4_dh_mpi_valid(data_msg->dh);
 }

@@ -11,13 +11,13 @@ void test_dake_identity_message_serializes(identity_message_fixture_t *f,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
+  otrv4_assert(otrv4_dh_keypair_generate(dh) == SUCCESS);
 
   dake_identity_message_t *identity_message =
       otrv4_dake_identity_message_new(f->profile);
   identity_message->sender_instance_tag = 1;
   ec_point_copy(identity_message->Y, ecdh->pub);
-  identity_message->B = dh_mpi_copy(dh->pub);
+  identity_message->B = otrv4_dh_mpi_copy(dh->pub);
 
   uint8_t *serialized = NULL;
   otrv4_assert(otrv4_dake_identity_message_asprintf(
@@ -57,13 +57,13 @@ void test_dake_identity_message_serializes(identity_message_fixture_t *f,
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
   size_t mpi_len = 0;
-  otrv4_err_t err = dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
+  otrv4_err_t err = otrv4_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
                                      &mpi_len, identity_message->B);
   otrv4_assert(!err);
   // Skip first 4 because they are the size (mpi_len)
   otrv4_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
 
-  dh_keypair_destroy(dh);
+  otrv4_dh_keypair_destroy(dh);
   ecdh_keypair_destroy(ecdh);
   otrv4_dake_identity_message_free(identity_message);
   free(serialized);
@@ -80,13 +80,13 @@ void test_otrv4_dake_identity_message_deserializes(identity_message_fixture_t *f
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
+  otrv4_assert(otrv4_dh_keypair_generate(dh) == SUCCESS);
 
   dake_identity_message_t *identity_message =
       otrv4_dake_identity_message_new(f->profile);
 
   ec_point_copy(identity_message->Y, ecdh->pub);
-  identity_message->B = dh_mpi_copy(dh->pub);
+  identity_message->B = otrv4_dh_mpi_copy(dh->pub);
 
   size_t serialized_len = 0;
   uint8_t *serialized = NULL;
@@ -110,7 +110,7 @@ void test_otrv4_dake_identity_message_deserializes(identity_message_fixture_t *f
   otrv4_assert_ec_public_key_eq(deserialized->Y, identity_message->Y);
   otrv4_assert_dh_public_key_eq(deserialized->B, identity_message->B);
 
-  dh_keypair_destroy(dh);
+  otrv4_dh_keypair_destroy(dh);
   ecdh_keypair_destroy(ecdh);
   otrv4_dake_identity_message_free(identity_message);
   otrv4_dake_identity_message_free(deserialized);
@@ -128,20 +128,20 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
+  otrv4_assert(otrv4_dh_keypair_generate(dh) == SUCCESS);
 
   dake_identity_message_t *identity_message =
       otrv4_dake_identity_message_new(f->profile);
   otrv4_assert(identity_message != NULL);
 
   ec_point_copy(identity_message->Y, ecdh->pub);
-  identity_message->B = dh_mpi_copy(dh->pub);
+  identity_message->B = otrv4_dh_mpi_copy(dh->pub);
 
   otrv4_assert(otrv4_valid_received_values(identity_message->Y, identity_message->B,
                                      identity_message->profile) == otrv4_true);
 
   ecdh_keypair_destroy(ecdh);
-  dh_keypair_destroy(dh);
+  otrv4_dh_keypair_destroy(dh);
   otrv4_dake_identity_message_free(identity_message);
 
   ecdh_keypair_t invalid_ecdh[1];
@@ -149,7 +149,7 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
 
   uint8_t invalid_sym[ED448_PRIVATE_BYTES] = {1};
   ecdh_keypair_generate(invalid_ecdh, invalid_sym);
-  otrv4_assert(dh_keypair_generate(invalid_dh) == SUCCESS);
+  otrv4_assert(otrv4_dh_keypair_generate(invalid_dh) == SUCCESS);
 
   user_profile_t *invalid_profile = user_profile_new("2");
 
@@ -164,7 +164,7 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
       otrv4_dake_identity_message_new(invalid_profile);
 
   ec_point_copy(invalid_identity_message->Y, invalid_ecdh->pub);
-  invalid_identity_message->B = dh_mpi_copy(invalid_dh->pub);
+  invalid_identity_message->B = otrv4_dh_mpi_copy(invalid_dh->pub);
 
   otrv4_assert(otrv4_valid_received_values(
                    invalid_identity_message->Y, invalid_identity_message->B,
@@ -172,7 +172,7 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
 
   user_profile_free(invalid_profile);
   ecdh_keypair_destroy(invalid_ecdh);
-  dh_keypair_destroy(invalid_dh);
+  otrv4_dh_keypair_destroy(invalid_dh);
   otrv4_shared_prekey_pair_free(shared_prekey);
   otrv4_dake_identity_message_free(invalid_identity_message);
 

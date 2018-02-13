@@ -156,7 +156,7 @@ void test_serialize_dh_public_key() {
   size_t written = 0;
   otrv4_err_t otr_err = serialize_dh_public_key(dst, &written, TEST_DH);
   otrv4_assert(!otr_err);
-  dh_mpi_release(TEST_DH);
+  otrv4_dh_mpi_release(TEST_DH);
   TEST_DH = NULL;
 
   g_assert_cmpuint(383 + 4, ==, written);

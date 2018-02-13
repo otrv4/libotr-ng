@@ -463,7 +463,7 @@ tstatic otrv4_err_t otrv4_build_prekey_message(otrv4_server_t *server,
   m->receiver_instance_tag = otr->their_instance_tag;
 
   ec_point_copy(m->Y, OUR_ECDH(otr));
-  m->B = dh_mpi_copy(OUR_DH(otr));
+  m->B = otrv4_dh_mpi_copy(OUR_DH(otr));
 
   if (serialize_and_encode_prekey_message(&server->prekey_message, m)) {
     otrv4_dake_prekey_message_free(m);
@@ -515,7 +515,7 @@ tstatic otrv4_err_t reply_with_identity_msg(otrv4_response_t *response,
   m->receiver_instance_tag = otr->their_instance_tag;
 
   ec_point_copy(m->Y, OUR_ECDH(otr));
-  m->B = dh_mpi_copy(OUR_DH(otr));
+  m->B = otrv4_dh_mpi_copy(OUR_DH(otr));
 
   if (serialize_and_encode_identity_message(&response->to_send, m)) {
     otrv4_dake_identity_message_free(m);
@@ -556,7 +556,7 @@ tstatic otrv4_err_t receive_tagged_plaintext(otrv4_response_t *response,
     if (message_to_display_without_tag(response, message, strlen(message))) {
       return ERROR;
     }
-    dh_priv_key_destroy(otr->keys->our_dh);
+    otrv4_dh_priv_key_destroy(otr->keys->our_dh);
     ec_scalar_destroy(otr->keys->our_ecdh->priv);
     return start_dake(response, otr);
     break;
@@ -578,7 +578,7 @@ tstatic otrv4_err_t receive_query_message(otrv4_response_t *response,
 
   switch (otr->running_version) {
   case OTRV4_VERSION_4:
-    dh_priv_key_destroy(otr->keys->our_dh);
+    otrv4_dh_priv_key_destroy(otr->keys->our_dh);
     ec_scalar_destroy(otr->keys->our_ecdh->priv);
     return start_dake(response, otr);
     break;
@@ -717,7 +717,7 @@ tstatic otrv4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
   user_profile_copy(msg->profile, get_my_user_profile(otr));
 
   ec_point_copy(msg->X, OUR_ECDH(otr));
-  msg->A = dh_mpi_copy(OUR_DH(otr));
+  msg->A = otrv4_dh_mpi_copy(OUR_DH(otr));
 
   unsigned char *t = NULL;
   size_t t_len = 0;
@@ -753,7 +753,7 @@ tstatic otrv4_err_t generate_tmp_key_r(uint8_t *dst, otrv4_t *otr) {
   // TODO: this will be calculated again later
   ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh, otr->keys->their_ecdh);
   // TODO: this will be calculated again later
-  if (dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
+  if (otrv4_dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
                        otr->keys->their_dh))
     return ERROR;
 
@@ -925,7 +925,7 @@ tstatic data_message_t *generate_data_msg(const otrv4_t *otr) {
   data_msg->receiver_instance_tag = otr->their_instance_tag;
   data_msg->message_id = otr->keys->j;
   ec_point_copy(data_msg->ecdh, OUR_ECDH(otr));
-  data_msg->dh = dh_mpi_copy(OUR_DH(otr));
+  data_msg->dh = otrv4_dh_mpi_copy(OUR_DH(otr));
 
   return data_msg;
 }
@@ -1059,7 +1059,7 @@ tstatic otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   user_profile_copy(auth->profile, get_my_user_profile(otr));
 
   ec_point_copy(auth->X, OUR_ECDH(otr));
-  auth->A = dh_mpi_copy(OUR_DH(otr));
+  auth->A = otrv4_dh_mpi_copy(OUR_DH(otr));
 
   /* auth_mac_k = KDF_2(0x01 || tmp_k) */
   uint8_t magic[1] = {0x01};
@@ -1162,7 +1162,7 @@ tstatic otrv4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
   // TODO: this will be calculated again later
   ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh, otr->keys->their_ecdh);
   // TODO: this will be calculated again later
-  if (dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
+  if (otrv4_dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
                        otr->keys->their_dh))
     return ERROR;
 
@@ -2157,7 +2157,7 @@ tstatic otrv4_err_t receive_decoded_message(otrv4_response_t *response,
   case AUTH_R_MSG_TYPE:
     err = receive_auth_r(&response->to_send, decoded, dec_len, otr);
     if (otr->state == OTRV4_STATE_ENCRYPTED_MESSAGES) {
-      dh_priv_key_destroy(otr->keys->our_dh);
+      otrv4_dh_priv_key_destroy(otr->keys->our_dh);
       ec_scalar_destroy(otr->keys->our_ecdh->priv);
     }
     return err;

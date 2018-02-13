@@ -66,7 +66,7 @@ void otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture,
   otrv4_free(otrv4_fixture->otrv34);
   otrv4_fixture->otrv34 = NULL;
 
-  dh_free();
+  otrv4_dh_free();
 }
 
 typedef struct {

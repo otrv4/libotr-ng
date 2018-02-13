@@ -35,7 +35,7 @@ otrv4_dake_identity_message_new(const user_profile_t *profile) {
 INTERNAL void otrv4_dake_identity_message_destroy(dake_identity_message_t *identity_message) {
   user_profile_destroy(identity_message->profile);
   ec_point_destroy(identity_message->Y);
-  dh_mpi_release(identity_message->B);
+  otrv4_dh_mpi_release(identity_message->B);
   identity_message->B = NULL;
 }
 
@@ -162,11 +162,11 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_deserialize(dake_identity_messa
   cursor += read;
   len -= read;
 
-  return dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
+  return otrv4_dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
 
 INTERNAL void otrv4_dake_auth_r_destroy(dake_auth_r_t *auth_r) {
-  dh_mpi_release(auth_r->A);
+  otrv4_dh_mpi_release(auth_r->A);
   auth_r->A = NULL;
   ec_point_destroy(auth_r->X);
   user_profile_destroy(auth_r->profile);
@@ -288,7 +288,7 @@ INTERNAL otrv4_err_t otrv4_dake_auth_r_deserialize(dake_auth_r_t *dst, const uin
   cursor += read;
   len -= read;
 
-  if (dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read)) {
+  if (otrv4_dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read)) {
     return ERROR;
   }
 
@@ -394,7 +394,7 @@ INTERNAL dake_prekey_message_t *otrv4_dake_prekey_message_new(const user_profile
 INTERNAL void otrv4_dake_prekey_message_destroy(dake_prekey_message_t *prekey_message) {
   user_profile_destroy(prekey_message->profile);
   ec_point_destroy(prekey_message->Y);
-  dh_mpi_release(prekey_message->B);
+  otrv4_dh_mpi_release(prekey_message->B);
   prekey_message->B = NULL;
 }
 
@@ -520,12 +520,12 @@ INTERNAL otrv4_err_t otrv4_dake_prekey_message_deserialize(dake_prekey_message_t
   cursor += read;
   len -= read;
 
-  return dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
+  return otrv4_dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
 
 INTERNAL void otrv4_dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_t *non_interactive_auth) {
-  dh_mpi_release(non_interactive_auth->A);
+  otrv4_dh_mpi_release(non_interactive_auth->A);
   non_interactive_auth->A = NULL;
   ec_point_destroy(non_interactive_auth->X);
   user_profile_destroy(non_interactive_auth->profile);
@@ -663,7 +663,7 @@ INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read))
+  if (otrv4_dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read))
     return ERROR;
 
   cursor += read;
@@ -726,7 +726,7 @@ INTERNAL otrv4_bool_t otrv4_valid_received_values(const ec_point_t their_ecdh,
     return otrv4_false;
 
   /* Verify that the DH public key their_dh is from the correct group. */
-  if (dh_mpi_valid(their_dh) == otrv4_false)
+  if (otrv4_dh_mpi_valid(their_dh) == otrv4_false)
     return otrv4_false;
 
   /* Verify their profile is valid (and not expired). */
