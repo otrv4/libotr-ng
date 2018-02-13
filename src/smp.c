@@ -11,7 +11,7 @@
 
 #include "debug.h"
 
-INTERNAL void smp_context_init(smp_context_t smp) {
+INTERNAL void otrv4_smp_context_init(smp_context_t smp) {
   smp->state = SMPSTATE_EXPECT1;
   smp->progress = 0;
   smp->msg1 = NULL;
@@ -31,11 +31,11 @@ INTERNAL void smp_context_init(smp_context_t smp) {
   otrv4_ec_bzero(smp->Qa_Qb, ED448_POINT_BYTES);
 }
 
-INTERNAL void smp_destroy(smp_context_t smp) {
+INTERNAL void otrv4_smp_destroy(smp_context_t smp) {
   free(smp->secret);
   smp->secret = NULL;
 
-  smp_msg_1_destroy(smp->msg1);
+  otrv4_smp_msg_1_destroy(smp->msg1);
   free(smp->msg1);
   smp->msg1 = NULL;
 
@@ -54,7 +54,7 @@ INTERNAL void smp_destroy(smp_context_t smp) {
 }
 
 // TODO: return err here?
-INTERNAL void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
+INTERNAL void otrv4_generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
                          otrv4_fingerprint_t their_fp, uint8_t *ssid,
                          const uint8_t *answer, size_t answerlen) {
   uint8_t version[1] = {0x01};
@@ -90,7 +90,7 @@ tstatic otrv4_err_t hashToScalar(const unsigned char *buff, const size_t bufflen
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp) {
+INTERNAL otrv4_err_t otrv4_generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp) {
   snizkpk_keypair_t pair_r2[1], pair_r3[1];
   unsigned char hash[ED448_POINT_BYTES + 1];
   ec_scalar_t a3c3, a2c2;
@@ -146,7 +146,7 @@ tstatic void smp_msg_1_copy(smp_msg_1_t *dst, const smp_msg_1_t *src) {
   otrv4_ec_scalar_copy(dst->d3, src->d3);
 }
 
-INTERNAL otrv4_err_t smp_msg_1_asprintf(uint8_t **dst, size_t *len,
+INTERNAL otrv4_err_t otrv4_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
                                const smp_msg_1_t *msg) {
   size_t s = 0;
 
@@ -263,7 +263,7 @@ tstatic otrv4_bool_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
   return otrv4_true;
 }
 
-INTERNAL void smp_msg_1_destroy(smp_msg_1_t *msg) {
+INTERNAL void otrv4_smp_msg_1_destroy(smp_msg_1_t *msg) {
   if (!msg)
     return;
 
@@ -921,15 +921,15 @@ tstatic otr4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp) 
       continue;
 
     smp_msg_1_copy(smp->msg1, msg_1);
-    smp_msg_1_destroy(msg_1);
+    otrv4_smp_msg_1_destroy(msg_1);
     return OTRV4_SMPEVENT_NONE;
   } while (0);
 
-  smp_msg_1_destroy(msg_1);
+  otrv4_smp_msg_1_destroy(msg_1);
   return OTRV4_SMPEVENT_ERROR;
 }
 
-INTERNAL otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp) {
+INTERNAL otr4_smp_event_t otrv4_reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp) {
   smp_msg_2_t msg_2[1];
   uint8_t *buff;
   size_t bufflen;
@@ -1075,7 +1075,7 @@ tstatic otr4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
   return OTRV4_SMPEVENT_SUCCESS;
 }
 
-INTERNAL otr4_smp_event_t process_smp_msg1(const tlv_t *tlv, smp_context_t smp) {
+INTERNAL otr4_smp_event_t otrv4_process_smp_msg1(const tlv_t *tlv, smp_context_t smp) {
   otr4_smp_event_t event = receive_smp_msg_1(tlv, smp);
 
   if (!event) {
@@ -1086,7 +1086,7 @@ INTERNAL otr4_smp_event_t process_smp_msg1(const tlv_t *tlv, smp_context_t smp) 
   return event;
 }
 
-INTERNAL otr4_smp_event_t process_smp_msg2(tlv_t **smp_reply, const tlv_t *tlv,
+INTERNAL otr4_smp_event_t otrv4_process_smp_msg2(tlv_t **smp_reply, const tlv_t *tlv,
                                   smp_context_t smp) {
   smp_msg_2_t msg_2[1];
   otr4_smp_event_t event = receive_smp_msg_2(msg_2, tlv, smp);
@@ -1098,7 +1098,7 @@ INTERNAL otr4_smp_event_t process_smp_msg2(tlv_t **smp_reply, const tlv_t *tlv,
   return event;
 }
 
-INTERNAL otr4_smp_event_t process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
+INTERNAL otr4_smp_event_t otrv4_process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
                                   smp_context_t smp) {
   smp_msg_3_t msg_3[1];
   otr4_smp_event_t event = receive_smp_msg_3(msg_3, tlv, smp);
@@ -1110,7 +1110,7 @@ INTERNAL otr4_smp_event_t process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
   return event;
 }
 
-INTERNAL otr4_smp_event_t process_smp_msg4(const tlv_t *tlv, smp_context_t smp) {
+INTERNAL otr4_smp_event_t otrv4_process_smp_msg4(const tlv_t *tlv, smp_context_t smp) {
   smp_msg_4_t msg_4[1];
 
   otr4_smp_event_t event = receive_smp_msg_4(msg_4, tlv, smp);

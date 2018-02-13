@@ -195,7 +195,7 @@ INTERNAL otrv4_t *otrv4_new(otr4_client_state_t *state, otrv4_policy_t policy) {
   }
 
   otrv4_key_manager_init(otr->keys);
-  smp_context_init(otr->smp);
+  otrv4_smp_context_init(otr->smp);
 
   otr->frag_ctx = otrv4_fragment_context_new();
   otr->otr3_conn = NULL;
@@ -221,7 +221,7 @@ tstatic void otrv4_destroy(/*@only@ */ otrv4_t *otr) {
   user_profile_free(otr->their_profile);
   otr->their_profile = NULL;
 
-  smp_destroy(otr->smp);
+  otrv4_smp_destroy(otr->smp);
 
   otrv4_fragment_context_free(otr->frag_ctx);
 
@@ -1874,19 +1874,19 @@ tstatic tlv_t *otrv4_process_smp(otr4_smp_event_t event, smp_context_t smp,
 
   switch (tlv->type) {
   case OTRV4_TLV_SMP_MSG_1:
-    event = process_smp_msg1(tlv, smp);
+    event = otrv4_process_smp_msg1(tlv, smp);
     break;
 
   case OTRV4_TLV_SMP_MSG_2:
-    event = process_smp_msg2(&to_send, tlv, smp);
+    event = otrv4_process_smp_msg2(&to_send, tlv, smp);
     break;
 
   case OTRV4_TLV_SMP_MSG_3:
-    event = process_smp_msg3(&to_send, tlv, smp);
+    event = otrv4_process_smp_msg3(&to_send, tlv, smp);
     break;
 
   case OTRV4_TLV_SMP_MSG_4:
-    event = process_smp_msg4(tlv, smp);
+    event = otrv4_process_smp_msg4(tlv, smp);
     break;
 
   case OTRV4_TLV_SMP_ABORT:
@@ -2608,10 +2608,10 @@ tstatic tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
   otrv4_fingerprint_t our_fp, their_fp;
   otrv4_serialize_fingerprint(our_fp, initiator->pub_key);
   otrv4_serialize_fingerprint(their_fp, responder->pub_key);
-  generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, secret, secretlen);
+  otrv4_generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, secret, secretlen);
 
   do {
-    if (generate_smp_msg_1(msg, smp))
+    if (otrv4_generate_smp_msg_1(msg, smp))
       continue;
 
     if (q_len > 0 && question) {
@@ -2619,7 +2619,7 @@ tstatic tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
       msg->question = otrv4_strdup(question);
     }
 
-    if (smp_msg_1_asprintf(&to_send, &len, msg))
+    if (otrv4_smp_msg_1_asprintf(&to_send, &len, msg))
       continue;
 
     smp->state = SMPSTATE_EXPECT2;
@@ -2629,19 +2629,19 @@ tstatic tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
 
     tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_1, len, to_send);
     if (!tlv) {
-      smp_msg_1_destroy(msg);
+      otrv4_smp_msg_1_destroy(msg);
       free(to_send);
       to_send = NULL;
       return NULL;
     }
 
-    smp_msg_1_destroy(msg);
+    otrv4_smp_msg_1_destroy(msg);
     free(to_send);
     to_send = NULL;
     return tlv;
   } while (0);
 
-  smp_msg_1_destroy(msg);
+  otrv4_smp_msg_1_destroy(msg);
   handle_smp_event_cb_v4(OTRV4_SMPEVENT_ERROR, smp->progress, smp->msg1->question,
                       conversation);
 
@@ -2696,9 +2696,9 @@ tstatic tlv_t *otrv4_smp_provide_secret(otr4_smp_event_t *event,
   otrv4_fingerprint_t our_fp, their_fp;
   otrv4_serialize_fingerprint(our_fp, our_profile->pub_key);
   otrv4_serialize_fingerprint(their_fp, their_profile->pub_key);
-  generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret, secretlen);
+  otrv4_generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret, secretlen);
 
-  *event = reply_with_smp_msg_2(&smp_reply, smp);
+  *event = otrv4_reply_with_smp_msg_2(&smp_reply, smp);
 
   return smp_reply;
 }

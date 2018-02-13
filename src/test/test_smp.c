@@ -77,7 +77,7 @@ void test_smp_state_machine(void) {
   otrv4_assert(bob_otr->smp->G2);
   otrv4_assert(bob_otr->smp->G3);
 
-  smp_msg_1_destroy(smp_msg_1);
+  otrv4_smp_msg_1_destroy(smp_msg_1);
   smp_msg_2_destroy(smp_msg_2);
 
   // Receives second message
@@ -128,7 +128,7 @@ void test_smp_state_machine(void) {
   OTR4_FREE;
 };
 
-void test_generate_smp_secret(void) {
+void test_otrv4_generate_smp_secret(void) {
   smp_context_t smp;
   smp->msg1 = NULL;
   otrv4_fingerprint_t our = {
@@ -161,7 +161,7 @@ void test_generate_smp_secret(void) {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   };
 
-  generate_smp_secret(&smp->secret, our, their, ssid,
+  otrv4_generate_smp_secret(&smp->secret, our, their, ssid,
                       (const uint8_t *)"the-answer", strlen("the-answer"));
   otrv4_assert(smp->secret);
 
@@ -175,23 +175,23 @@ void test_generate_smp_secret(void) {
   };
 
   otrv4_assert_cmpmem(expected_secret, smp->secret, 64);
-  smp_destroy(smp);
+  otrv4_smp_destroy(smp);
 }
 
-void test_smp_msg_1_asprintf_null_question(void) {
+void test_otrv4_smp_msg_1_asprintf_null_question(void) {
   smp_msg_1_t msg[1];
   smp_context_t smp;
   smp->msg1 = NULL;
   uint8_t *buff;
   size_t writen = 0;
 
-  otrv4_assert(generate_smp_msg_1(msg, smp) == SUCCESS);
+  otrv4_assert(otrv4_generate_smp_msg_1(msg, smp) == SUCCESS);
   // data_header + question + 2 points + 4 scalars = 4 + 0 + (2*57) + (4*(56))
   size_t expected_size = 342;
   msg->q_len = 0;
   msg->question = NULL;
 
-  otrv4_assert(smp_msg_1_asprintf(&buff, &writen, msg) == SUCCESS);
+  otrv4_assert(otrv4_smp_msg_1_asprintf(&buff, &writen, msg) == SUCCESS);
   g_assert_cmpint(writen, ==, expected_size);
   free(buff);
   buff = NULL;
@@ -199,7 +199,7 @@ void test_smp_msg_1_asprintf_null_question(void) {
   msg->question = "something";
   msg->q_len = strlen(msg->question);
   size_t expected_size_with_question = expected_size + msg->q_len;
-  otrv4_assert(smp_msg_1_asprintf(&buff, &writen, msg) == SUCCESS);
+  otrv4_assert(otrv4_smp_msg_1_asprintf(&buff, &writen, msg) == SUCCESS);
   g_assert_cmpint(writen, ==, expected_size_with_question);
 
   free(buff);

@@ -67,33 +67,33 @@ typedef struct {
   smp_msg_1_t *msg1;
 } smp_context_t[1];
 
-INTERNAL void smp_context_init(smp_context_t smp);
+INTERNAL void otrv4_smp_context_init(smp_context_t smp);
 
-INTERNAL void smp_destroy(smp_context_t smp);
+INTERNAL void otrv4_smp_destroy(smp_context_t smp);
 
-INTERNAL void generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
+INTERNAL void otrv4_generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
                          otrv4_fingerprint_t their_fp, uint8_t *ssid,
                          const uint8_t *answer, size_t answerlen);
 
-INTERNAL otrv4_err_t generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp);
+INTERNAL otrv4_err_t otrv4_generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp);
 
-INTERNAL otrv4_err_t smp_msg_1_asprintf(uint8_t **dst, size_t *len,
+INTERNAL otrv4_err_t otrv4_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
                                const smp_msg_1_t *msg);
 
-INTERNAL void smp_msg_1_destroy(smp_msg_1_t *msg);
+INTERNAL void otrv4_smp_msg_1_destroy(smp_msg_1_t *msg);
 
-INTERNAL otr4_smp_event_t reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp);
+INTERNAL otr4_smp_event_t otrv4_reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp);
 
 // TODO: should be exposed?
-INTERNAL otr4_smp_event_t process_smp_msg1(const tlv_t *tlv, smp_context_t smp);
+INTERNAL otr4_smp_event_t otrv4_process_smp_msg1(const tlv_t *tlv, smp_context_t smp);
 
-INTERNAL otr4_smp_event_t process_smp_msg2(tlv_t **smp_reply, const tlv_t *tlv,
+INTERNAL otr4_smp_event_t otrv4_process_smp_msg2(tlv_t **smp_reply, const tlv_t *tlv,
                                   smp_context_t smp);
 
-INTERNAL otr4_smp_event_t process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
+INTERNAL otr4_smp_event_t otrv4_process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
                                   smp_context_t smp);
 
-INTERNAL otr4_smp_event_t process_smp_msg4(const tlv_t *tlv, smp_context_t smp);
+INTERNAL otr4_smp_event_t otrv4_process_smp_msg4(const tlv_t *tlv, smp_context_t smp);
 
 #ifdef OTRV4_SMP_PRIVATE
 
