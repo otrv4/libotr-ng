@@ -86,10 +86,10 @@ int main(int argc, char **argv) {
   g_test_add_func("/user_profile/serialize_body",
                   test_user_profile_serializes_body);
   g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
-  g_test_add_func("/user_profile/deserializes", test_user_profile_deserializes);
+  g_test_add_func("/user_profile/deserializes", test_otrv4_user_profile_deserializes);
   g_test_add_func("/user_profile/sign_and_verifies",
                   test_user_profile_signs_and_verify);
-  g_test_add_func("/user_profile/build_user_profile", test_user_profile_build);
+  g_test_add_func("/user_profile/build_user_profile", test_otrv4_user_profile_build);
 
   WITH_FIXTURE("/dake/identity_message/serializes",
                test_dake_identity_message_serializes,

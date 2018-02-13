@@ -44,7 +44,7 @@ void test_dake_identity_message_serializes(identity_message_fixture_t *f,
   size_t user_profile_len = 0;
   uint8_t *user_profile_serialized = NULL;
   otrv4_assert(
-      user_profile_asprintf(&user_profile_serialized, &user_profile_len,
+      otrv4_user_profile_asprintf(&user_profile_serialized, &user_profile_len,
                             identity_message->profile) == SUCCESS);
   otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
   free(user_profile_serialized);
@@ -170,7 +170,7 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
                    invalid_identity_message->Y, invalid_identity_message->B,
                    invalid_identity_message->profile) == otrv4_false);
 
-  user_profile_free(invalid_profile);
+  otrv4_user_profile_free(invalid_profile);
   otrv4_ecdh_keypair_destroy(invalid_ecdh);
   otrv4_dh_keypair_destroy(invalid_dh);
   otrv4_shared_prekey_pair_free(shared_prekey);

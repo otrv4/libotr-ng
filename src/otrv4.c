@@ -163,7 +163,7 @@ tstatic const user_profile_t *get_my_user_profile(otrv4_t *otr) {
   otrv4_client_state_add_shared_prekey_v4(otr->conversation->client, sym_key);
 
   otr->profile =
-      user_profile_build(versions, otr->conversation->client->keypair,
+      otrv4_user_profile_build(versions, otr->conversation->client->keypair,
                          otr->conversation->client->shared_prekey_pair);
   return otr->profile;
 }
@@ -215,10 +215,10 @@ tstatic void otrv4_destroy(/*@only@ */ otrv4_t *otr) {
   free(otr->keys);
   otr->keys = NULL;
 
-  user_profile_free(otr->profile);
+  otrv4_user_profile_free(otr->profile);
   otr->profile = NULL;
 
-  user_profile_free(otr->their_profile);
+  otrv4_user_profile_free(otr->their_profile);
   otr->their_profile = NULL;
 
   otrv4_smp_destroy(otr->smp);
@@ -619,10 +619,10 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
     return ERROR;
 
   do {
-    if (user_profile_asprintf(&ser_i_profile, &ser_i_profile_len, i_profile))
+    if (otrv4_user_profile_asprintf(&ser_i_profile, &ser_i_profile_len, i_profile))
       continue;
 
-    if (user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
+    if (otrv4_user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
       continue;
 
     char *phi_val = NULL;
@@ -714,7 +714,7 @@ tstatic otrv4_err_t reply_with_auth_r_msg(string_t *dst, otrv4_t *otr) {
   msg->sender_instance_tag = otr->our_instance_tag;
   msg->receiver_instance_tag = otr->their_instance_tag;
 
-  user_profile_copy(msg->profile, get_my_user_profile(otr));
+  otrv4_user_profile_copy(msg->profile, get_my_user_profile(otr));
 
   otrv4_ec_point_copy(msg->X, OUR_ECDH(otr));
   msg->A = otrv4_dh_mpi_copy(OUR_DH(otr));
@@ -824,10 +824,10 @@ tstatic otrv4_err_t build_non_interactive_auth_message(
   otrv4_err_t err = ERROR;
 
   do {
-    if (user_profile_asprintf(&ser_i_profile, &ser_i_profile_len, i_profile))
+    if (otrv4_user_profile_asprintf(&ser_i_profile, &ser_i_profile_len, i_profile))
       continue;
 
-    if (user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
+    if (otrv4_user_profile_asprintf(&ser_r_profile, &ser_r_profile_len, r_profile))
       continue;
 
     uint8_t *phi_val = NULL;
@@ -1056,7 +1056,7 @@ tstatic otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   auth->sender_instance_tag = otr->our_instance_tag;
   auth->receiver_instance_tag = otr->their_instance_tag;
 
-  user_profile_copy(auth->profile, get_my_user_profile(otr));
+  otrv4_user_profile_copy(auth->profile, get_my_user_profile(otr));
 
   otrv4_ec_point_copy(auth->X, OUR_ECDH(otr));
   auth->A = otrv4_dh_mpi_copy(OUR_DH(otr));
@@ -1300,7 +1300,7 @@ tstatic otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
 
   otrv4_key_manager_set_their_ecdh(m->Y, otr->keys);
   otrv4_key_manager_set_their_dh(m->B, otr->keys);
-  user_profile_copy(otr->their_profile, m->profile);
+  otrv4_user_profile_copy(otr->their_profile, m->profile);
 
   otrv4_dake_prekey_message_destroy(m);
 
@@ -1516,7 +1516,7 @@ receive_non_interactive_auth_message(otrv4_response_t *response,
 
   otrv4_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrv4_key_manager_set_their_dh(auth->A, otr->keys);
-  user_profile_copy(otr->their_profile, auth->profile);
+  otrv4_user_profile_copy(otr->their_profile, auth->profile);
 
   /* tmp_k = KDF_2(K_ecdh ||
    * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
@@ -1560,7 +1560,7 @@ tstatic otrv4_err_t receive_identity_message_on_state_start(
 
   otrv4_key_manager_set_their_ecdh(identity_message->Y, otr->keys);
   otrv4_key_manager_set_their_dh(identity_message->B, otr->keys);
-  user_profile_copy(otr->their_profile, identity_message->profile);
+  otrv4_user_profile_copy(otr->their_profile, identity_message->profile);
 
   if (otrv4_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
@@ -1593,7 +1593,7 @@ tstatic otrv4_err_t receive_identity_message_on_waiting_auth_r(
 
 tstatic otrv4_err_t receive_identity_message_on_waiting_auth_i(
     string_t *dst, dake_identity_message_t *msg, otrv4_t *otr) {
-  user_profile_free(otr->their_profile);
+  otrv4_user_profile_free(otr->their_profile);
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
@@ -1735,7 +1735,7 @@ tstatic otrv4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
 
   otrv4_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrv4_key_manager_set_their_dh(auth->A, otr->keys);
-  user_profile_copy(otr->their_profile, auth->profile);
+  otrv4_user_profile_copy(otr->their_profile, auth->profile);
 
   if (reply_with_auth_i_msg(dst, otr->their_profile, otr)) {
     otrv4_dake_auth_r_destroy(auth);

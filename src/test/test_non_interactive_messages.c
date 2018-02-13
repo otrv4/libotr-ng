@@ -43,7 +43,7 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
 
   size_t user_profile_len = 0;
   uint8_t *user_profile_serialized = NULL;
-  otrv4_assert(user_profile_asprintf(&user_profile_serialized,
+  otrv4_assert(otrv4_user_profile_asprintf(&user_profile_serialized,
                                      &user_profile_len,
                                      prekey_message->profile) == SUCCESS);
   otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
@@ -164,7 +164,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
                    invalid_prekey_message->Y, invalid_prekey_message->B,
                    invalid_prekey_message->profile) == otrv4_false);
 
-  user_profile_free(invalid_profile);
+  otrv4_user_profile_free(invalid_profile);
   otrv4_ecdh_keypair_destroy(invalid_ecdh);
   otrv4_dh_keypair_destroy(invalid_dh);
   otrv4_shared_prekey_pair_free(shared_prekey);
@@ -188,7 +188,7 @@ void test_dake_non_interactive_auth_message_serializes(
 
   msg->sender_instance_tag = 1;
   msg->receiver_instance_tag = 1;
-  user_profile_copy(msg->profile, f->profile);
+  otrv4_user_profile_copy(msg->profile, f->profile);
   otrv4_ec_point_copy(msg->X, ecdh->pub);
   msg->A = otrv4_dh_mpi_copy(dh->pub);
   memset(msg->nonce, 0, sizeof(msg->nonce));
@@ -230,7 +230,7 @@ void test_dake_non_interactive_auth_message_serializes(
 
   size_t user_profile_len = 0;
   uint8_t *user_profile_serialized = NULL;
-  otrv4_assert(user_profile_asprintf(&user_profile_serialized,
+  otrv4_assert(otrv4_user_profile_asprintf(&user_profile_serialized,
                                      &user_profile_len,
                                      msg->profile) == SUCCESS);
   otrv4_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
@@ -294,7 +294,7 @@ void test_otrv4_dake_non_interactive_auth_message_deserializes(
 
   msg->sender_instance_tag = 1;
   msg->receiver_instance_tag = 1;
-  user_profile_copy(msg->profile, f->profile);
+  otrv4_user_profile_copy(msg->profile, f->profile);
   otrv4_ec_point_copy(msg->X, ecdh->pub);
   msg->A = otrv4_dh_mpi_copy(dh->pub);
   memset(msg->nonce, 0, sizeof(msg->nonce));

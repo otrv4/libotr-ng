@@ -9,7 +9,7 @@
 void test_user_profile_create() {
   user_profile_t *profile = user_profile_new("4");
   otrv4_assert(profile != NULL);
-  user_profile_free(profile);
+  otrv4_user_profile_free(profile);
 }
 
 void test_user_profile_serializes_body() {
@@ -61,7 +61,7 @@ void test_user_profile_serializes_body() {
 
   free(serialized);
   serialized = NULL;
-  user_profile_free(profile);
+  otrv4_user_profile_free(profile);
 }
 
 void test_user_profile_serializes() {
@@ -86,7 +86,7 @@ void test_user_profile_serializes() {
 
   size_t written = 0;
   uint8_t *serialized = NULL;
-  otrv4_assert(user_profile_asprintf(&serialized, &written, profile) ==
+  otrv4_assert(otrv4_user_profile_asprintf(&serialized, &written, profile) ==
                SUCCESS);
   g_assert_cmpint(written, ==, 290);
 
@@ -113,10 +113,10 @@ void test_user_profile_serializes() {
   body = NULL;
   free(serialized);
   serialized = NULL;
-  user_profile_free(profile);
+  otrv4_user_profile_free(profile);
 }
 
-void test_user_profile_deserializes() {
+void test_otrv4_user_profile_deserializes() {
   otrv4_keypair_t keypair[1];
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrv4_keypair_generate(keypair, sym);
@@ -133,17 +133,17 @@ void test_user_profile_deserializes() {
 
   size_t written = 0;
   uint8_t *serialized = NULL;
-  user_profile_asprintf(&serialized, &written, profile);
+  otrv4_user_profile_asprintf(&serialized, &written, profile);
 
   user_profile_t *deserialized = malloc(sizeof(user_profile_t));
-  otrv4_assert(user_profile_deserialize(deserialized, serialized, written,
+  otrv4_assert(otrv4_user_profile_deserialize(deserialized, serialized, written,
                                         NULL) == SUCCESS);
   otrv4_assert_user_profile_eq(deserialized, profile);
 
   free(serialized);
   serialized = NULL;
-  user_profile_free(profile);
-  user_profile_free(deserialized);
+  otrv4_user_profile_free(profile);
+  otrv4_user_profile_free(deserialized);
 }
 
 void test_user_profile_signs_and_verify() {
@@ -161,17 +161,17 @@ void test_user_profile_signs_and_verify() {
   otrv4_assert(profile != NULL);
   user_profile_sign(profile, keypair);
 
-  otrv4_assert(user_profile_verify_signature(profile) == otrv4_true);
+  otrv4_assert(otrv4_user_profile_verify_signature(profile) == otrv4_true);
 
   memset(profile->signature, 0, sizeof(profile->signature));
 
-  otrv4_assert(user_profile_verify_signature(profile) == otrv4_false);
+  otrv4_assert(otrv4_user_profile_verify_signature(profile) == otrv4_false);
 
-  user_profile_free(profile);
+  otrv4_user_profile_free(profile);
 }
 
-void test_user_profile_build() {
-  user_profile_t *profile = user_profile_build(NULL, NULL, NULL);
+void test_otrv4_user_profile_build() {
+  user_profile_t *profile = otrv4_user_profile_build(NULL, NULL, NULL);
   otrv4_assert(!profile);
 
   otrv4_keypair_t keypair[1];
@@ -181,9 +181,9 @@ void test_user_profile_build() {
   otrv4_shared_prekey_pair_t shared_prekey[1];
   otrv4_shared_prekey_pair_generate(shared_prekey, sym);
 
-  profile = user_profile_build("3", keypair, shared_prekey);
+  profile = otrv4_user_profile_build("3", keypair, shared_prekey);
   g_assert_cmpstr(profile->versions, ==, "3");
   otrv4_assert(otrv4_ec_point_valid(profile->shared_prekey) == otrv4_true);
 
-  user_profile_free(profile);
+  otrv4_user_profile_free(profile);
 }

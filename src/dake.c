@@ -27,13 +27,13 @@ otrv4_dake_identity_message_new(const user_profile_t *profile) {
   identity_message->profile->versions = NULL;
   otrv4_ec_bzero(identity_message->Y, ED448_POINT_BYTES);
   identity_message->B = NULL;
-  user_profile_copy(identity_message->profile, profile);
+  otrv4_user_profile_copy(identity_message->profile, profile);
 
   return identity_message;
 }
 
 INTERNAL void otrv4_dake_identity_message_destroy(dake_identity_message_t *identity_message) {
-  user_profile_destroy(identity_message->profile);
+  otrv4_user_profile_destroy(identity_message->profile);
   otrv4_ec_point_destroy(identity_message->Y);
   otrv4_dh_mpi_release(identity_message->B);
   identity_message->B = NULL;
@@ -53,7 +53,7 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_asprintf(
     const dake_identity_message_t *identity_message) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
-  if (user_profile_asprintf(&profile, &profile_len,
+  if (otrv4_user_profile_asprintf(&profile, &profile_len,
                             identity_message->profile)) {
     return ERROR;
   }
@@ -140,7 +140,7 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_deserialize(dake_identity_messa
   cursor += read;
   len -= read;
 
-  if (user_profile_deserialize(dst->profile, cursor, len, &read)) {
+  if (otrv4_user_profile_deserialize(dst->profile, cursor, len, &read)) {
     return ERROR;
   }
 
@@ -169,7 +169,7 @@ INTERNAL void otrv4_dake_auth_r_destroy(dake_auth_r_t *auth_r) {
   otrv4_dh_mpi_release(auth_r->A);
   auth_r->A = NULL;
   otrv4_ec_point_destroy(auth_r->X);
-  user_profile_destroy(auth_r->profile);
+  otrv4_user_profile_destroy(auth_r->profile);
   otrv4_snizkpk_proof_destroy(auth_r->sigma);
 }
 
@@ -178,7 +178,7 @@ INTERNAL otrv4_err_t otrv4_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
-  if (user_profile_asprintf(&our_profile, &our_profile_len, auth_r->profile)) {
+  if (otrv4_user_profile_asprintf(&our_profile, &our_profile_len, auth_r->profile)) {
     return ERROR;
   }
 
@@ -266,7 +266,7 @@ INTERNAL otrv4_err_t otrv4_dake_auth_r_deserialize(dake_auth_r_t *dst, const uin
   cursor += read;
   len -= read;
 
-  if (user_profile_deserialize(dst->profile, cursor, len, &read)) {
+  if (otrv4_user_profile_deserialize(dst->profile, cursor, len, &read)) {
     return ERROR;
   }
 
@@ -386,13 +386,13 @@ INTERNAL dake_prekey_message_t *otrv4_dake_prekey_message_new(const user_profile
   prekey_message->profile->versions = NULL;
   otrv4_ec_bzero(prekey_message->Y, ED448_POINT_BYTES);
   prekey_message->B = NULL;
-  user_profile_copy(prekey_message->profile, profile);
+  otrv4_user_profile_copy(prekey_message->profile, profile);
 
   return prekey_message;
 }
 
 INTERNAL void otrv4_dake_prekey_message_destroy(dake_prekey_message_t *prekey_message) {
-  user_profile_destroy(prekey_message->profile);
+  otrv4_user_profile_destroy(prekey_message->profile);
   otrv4_ec_point_destroy(prekey_message->Y);
   otrv4_dh_mpi_release(prekey_message->B);
   prekey_message->B = NULL;
@@ -412,7 +412,7 @@ otrv4_dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
                              const dake_prekey_message_t *prekey_message) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
-  if (user_profile_asprintf(&profile, &profile_len, prekey_message->profile)) {
+  if (otrv4_user_profile_asprintf(&profile, &profile_len, prekey_message->profile)) {
     return ERROR;
   }
 
@@ -498,7 +498,7 @@ INTERNAL otrv4_err_t otrv4_dake_prekey_message_deserialize(dake_prekey_message_t
   cursor += read;
   len -= read;
 
-  if (user_profile_deserialize(dst->profile, cursor, len, &read)) {
+  if (otrv4_user_profile_deserialize(dst->profile, cursor, len, &read)) {
     return ERROR;
   }
 
@@ -528,7 +528,7 @@ INTERNAL void otrv4_dake_non_interactive_auth_message_destroy(
   otrv4_dh_mpi_release(non_interactive_auth->A);
   non_interactive_auth->A = NULL;
   otrv4_ec_point_destroy(non_interactive_auth->X);
-  user_profile_destroy(non_interactive_auth->profile);
+  otrv4_user_profile_destroy(non_interactive_auth->profile);
   otrv4_snizkpk_proof_destroy(non_interactive_auth->sigma);
   non_interactive_auth->enc_msg = NULL;
   non_interactive_auth->enc_msg_len = 0;
@@ -548,7 +548,7 @@ INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_asprintf(
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
-  if (user_profile_asprintf(&our_profile, &our_profile_len,
+  if (otrv4_user_profile_asprintf(&our_profile, &our_profile_len,
                             non_interactive_auth->profile))
     return ERROR;
 
@@ -644,7 +644,7 @@ INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (user_profile_deserialize(dst->profile, cursor, len, &read))
+  if (otrv4_user_profile_deserialize(dst->profile, cursor, len, &read))
     return ERROR;
 
   cursor += read;
@@ -730,7 +730,7 @@ INTERNAL otrv4_bool_t otrv4_valid_received_values(const ec_point_t their_ecdh,
     return otrv4_false;
 
   /* Verify their profile is valid (and not expired). */
-  if (user_profile_verify_signature(profile) == otrv4_false)
+  if (otrv4_user_profile_verify_signature(profile) == otrv4_false)
     return otrv4_false;
 
   if (not_expired(profile->expires) == otrv4_false)

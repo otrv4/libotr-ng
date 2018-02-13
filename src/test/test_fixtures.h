@@ -120,7 +120,7 @@ identity_message_fixture_teardown(identity_message_fixture_t *fixture,
   otrv4_shared_prekey_pair_free(fixture->shared_prekey);
   fixture->shared_prekey = NULL;
 
-  user_profile_free(fixture->profile);
+  otrv4_user_profile_free(fixture->profile);
   fixture->profile = NULL;
 }
 
@@ -155,7 +155,7 @@ static void prekey_message_fixture_teardown(prekey_message_fixture_t *fixture,
   otrv4_shared_prekey_pair_free(fixture->shared_prekey);
   fixture->shared_prekey = NULL;
 
-  user_profile_free(fixture->profile);
+  otrv4_user_profile_free(fixture->profile);
   fixture->profile = NULL;
 }
 

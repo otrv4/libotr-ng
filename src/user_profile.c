@@ -28,7 +28,7 @@ tstatic user_profile_t *user_profile_new(const string_t versions) {
   return profile;
 }
 
-INTERNAL void user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
+INTERNAL void otrv4_user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
   // TODO should we set dst to a valid (but empty) profile?
   if (!src)
     return;
@@ -42,7 +42,7 @@ INTERNAL void user_profile_copy(user_profile_t *dst, const user_profile_t *src) 
   otrv4_mpi_copy(dst->transitional_signature, src->transitional_signature);
 }
 
-INTERNAL void user_profile_destroy(user_profile_t *profile) {
+INTERNAL void otrv4_user_profile_destroy(user_profile_t *profile) {
   if (!profile)
     return;
 
@@ -54,8 +54,8 @@ INTERNAL void user_profile_destroy(user_profile_t *profile) {
   otrv4_mpi_free(profile->transitional_signature);
 }
 
-INTERNAL void user_profile_free(user_profile_t *profile) {
-  user_profile_destroy(profile);
+INTERNAL void otrv4_user_profile_free(user_profile_t *profile) {
+  otrv4_user_profile_destroy(profile);
   free(profile);
   profile = NULL;
 }
@@ -91,7 +91,7 @@ tstatic otrv4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
+INTERNAL otrv4_err_t otrv4_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
                                   const user_profile_t *profile) {
   // TODO: should it checked here for signature?
   if (!(profile->signature > 0))
@@ -128,7 +128,7 @@ INTERNAL otrv4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t user_profile_deserialize(user_profile_t *target,
+INTERNAL otrv4_err_t otrv4_user_profile_deserialize(user_profile_t *target,
                                      const uint8_t *buffer, size_t buflen,
                                      size_t *nread) {
   size_t read = 0;
@@ -207,7 +207,7 @@ tstatic otrv4_err_t user_profile_sign(user_profile_t *profile,
 
 // TODO: I dont think this needs the data structure. Could verify from the
 // deserialized bytes.
-INTERNAL otrv4_bool_t user_profile_verify_signature(const user_profile_t *profile) {
+INTERNAL otrv4_bool_t otrv4_user_profile_verify_signature(const user_profile_t *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
@@ -232,7 +232,7 @@ INTERNAL otrv4_bool_t user_profile_verify_signature(const user_profile_t *profil
 }
 
 INTERNAL user_profile_t *
-user_profile_build(const string_t versions, otrv4_keypair_t *keypair,
+otrv4_user_profile_build(const string_t versions, otrv4_keypair_t *keypair,
                    otrv4_shared_prekey_pair_t *shared_prekey_pair) {
   user_profile_t *profile = user_profile_new(versions);
   if (!profile)
@@ -246,7 +246,7 @@ user_profile_build(const string_t versions, otrv4_keypair_t *keypair,
          sizeof(otrv4_shared_prekey_pub_t));
 
   if (user_profile_sign(profile, keypair)) {
-    user_profile_free(profile);
+    otrv4_user_profile_free(profile);
     return NULL;
   }
 
