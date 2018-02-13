@@ -101,5 +101,5 @@ AC_ARG_WITH(ctgrind,
 AC_CACHE_SAVE
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile src/test/Makefile pkgconfig/Makefile pkgconfig/libotr4.pc])
+AC_CONFIG_FILES([Makefile src/Makefile src/include/Makefile src/test/Makefile pkgconfig/Makefile pkgconfig/libotr4.pc])
 AC_OUTPUT

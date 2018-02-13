@@ -36,31 +36,6 @@ libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
                                    @LIBGCRYPT_LIBS@ \
 				   $(CODE_COVERAGE_LIBS)
 
-otrincdir = $(includedir)/libotr4
-otrinc_HEADERS = client.h \
-		 client_state.h \
-		 client_callbacks.h \
-		 constants.h \
-		 dake.h \
-		 data_message.h \
-		 dh.h \
-		 ed448.h \
-		 error.h \
-		 fingerprint.h \
-		 fragment.h \
-		 instance_tag.h \
-		 keys.h \
-		 key_management.h \
-		 list.h \
-		 mpi.h \
-		 messaging.h \
-		 otrv3.h \
-		 otrv4.h \
-		 smp.h \
-		 str.h \
-		 tlv.h \
-		 user_profile.h
-
 #pkgconfigdir = $(libdir)/pkgconfig
 #pkgconfig_DATA = otr4.pc
 
