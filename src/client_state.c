@@ -199,7 +199,7 @@ INTERNAL int otrv4_client_state_add_shared_prekey_v4(
 tstatic OtrlInsTag *otrl_instance_tag_new(const char *protocol,
                                          const char *account,
                                          unsigned int instag) {
-  if (instag < OTR4_MIN_VALID_INSTAG)
+  if (instag < MIN_VALID_INSTAG)
     return NULL;
 
   OtrlInsTag *p = malloc(sizeof(OtrlInsTag));

@@ -13,13 +13,13 @@
 
 #define UNUSED_ARG(x) (void)x
 
-#define OTR4_INIT                                                              \
+#define OTRV4_INIT                                                              \
   do {                                                                         \
     otrv4_v3_init();                                                              \
     otrv4_dh_init();                                                                 \
   } while (0);
 
-#define OTR4_FREE                                                              \
+#define OTRV4_FREE                                                              \
   do {                                                                         \
     otrv4_dh_free();                                                                 \
   } while (0);
@@ -30,10 +30,10 @@
 
 /* Analogous to v1 and v3 policies */
 #define POLICY_NEVER 0x00
-#define POLICY_OPPORTUNISTIC (OTR4_POLICY_ALLOW_V3 | OTR4_POLICY_ALLOW_V4)
+#define POLICY_OPPORTUNISTIC (POLICY_ALLOW_V3 | POLICY_ALLOW_V4)
 #define POLICY_MANUAL (OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_ALLOW_V4)
 #define POLICY_ALWAYS (OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_ALLOW_V4)
-#define POLICY_DEFAULT OTR4_POLICY_OPPORTUNISTIC
+#define POLICY_DEFAULT POLICY_OPPORTUNISTIC
 
 typedef struct connection otrv4_t; /* Forward declare */
 

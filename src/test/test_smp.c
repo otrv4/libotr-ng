@@ -3,7 +3,7 @@
 
 void test_smp_state_machine(void) {
   return;
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_keypair = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_keypair = otrv4_client_state_new(NULL);
@@ -125,7 +125,7 @@ void test_smp_state_machine(void) {
   otrv4_free(alice_otr);
   otrv4_free(bob_otr);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 };
 
 void test_otrv4_generate_smp_secret(void) {

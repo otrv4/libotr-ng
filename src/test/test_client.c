@@ -17,7 +17,7 @@ static otrv4_client_t *set_up_client(otrv4_client_state_t *state,
 }
 
 void test_client_conversation_api() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
 
@@ -58,11 +58,11 @@ void test_client_conversation_api() {
   otrv4_client_state_free(alice_state);
   otrv4_client_free(alice);
 
-  OTR4_FREE
+  OTRV4_FREE
 }
 
 void test_client_api() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new("alice");
   otrv4_client_state_t *bob_state = otrv4_client_state_new("bob");
@@ -198,11 +198,11 @@ void test_client_api() {
   otrv4_client_state_free_all(alice_state, bob_state, charlie_state);
   otrv4_client_free_all(alice, bob, charlie);
 
-  OTR4_FREE
+  OTRV4_FREE
 }
 
 void test_client_get_our_fingerprint() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new("alice");
   otrv4_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
@@ -224,7 +224,7 @@ void test_client_get_our_fingerprint() {
   otrv4_client_state_free(alice_state);
   otrv4_client_free(alice);
 
-  OTR4_FREE
+  OTRV4_FREE
 }
 
 void test_fingerprint_hash_to_human() {
@@ -255,7 +255,7 @@ void test_fingerprint_hash_to_human() {
 }
 
 void test_conversation_with_multiple_locations() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new("alice");
   otrv4_client_state_t *bob_state = otrv4_client_state_new("bob");
@@ -348,11 +348,11 @@ void test_conversation_with_multiple_locations() {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_client_free_all(alice, bob);
 
-  OTR4_FREE
+  OTRV4_FREE
 }
 
 void test_valid_identity_msg_in_waiting_auth_i() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new("alice");
   otrv4_client_state_t *bob_state = otrv4_client_state_new("bob");
@@ -484,11 +484,11 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_client_free_all(alice, bob);
 
-  OTR4_FREE
+  OTRV4_FREE
 }
 
 void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new("alice");
   otrv4_client_state_t *bob_state = otrv4_client_state_new("bob");
@@ -599,11 +599,11 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_client_free_all(alice, bob);
 
-  OTR4_FREE
+  OTRV4_FREE
 }
 
 void test_valid_identity_msg_in_waiting_auth_r() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new("alice");
   otrv4_client_state_t *bob_state = otrv4_client_state_new("bob");
@@ -775,11 +775,11 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_client_free_all(alice, bob);
 
-  OTR4_FREE
+  OTRV4_FREE
 }
 
 void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new("alice");
   otrv4_client_state_t *bob_state = otrv4_client_state_new("bob");
@@ -886,7 +886,7 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_client_free_all(alice, bob);
 
-  OTR4_FREE
+  OTRV4_FREE
 }
 
 void test_client_receives_fragmented_message(void) {
@@ -918,7 +918,7 @@ void test_client_receives_fragmented_message(void) {
 }
 
 void test_client_sends_fragmented_message(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new("alice");
   otrv4_client_state_t *bob_state = otrv4_client_state_new("bob");
@@ -985,5 +985,5 @@ void test_client_sends_fragmented_message(void) {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_client_free_all(alice, bob);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }

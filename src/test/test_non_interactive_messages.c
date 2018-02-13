@@ -4,7 +4,7 @@
 
 void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
                                          gconstpointer data) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   ecdh_keypair_t ecdh[1];
   dh_keypair_t dh;
@@ -71,12 +71,12 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
   otrv4_ecdh_keypair_destroy(ecdh);
   otrv4_dake_prekey_message_free(prekey_message);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_otrv4_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
                                            gconstpointer data) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   ecdh_keypair_t ecdh[1];
   dh_keypair_t dh;
@@ -113,12 +113,12 @@ void test_otrv4_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
   otrv4_dake_prekey_message_free(prekey_message);
   otrv4_dake_prekey_message_free(deserialized);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
                                     gconstpointer data) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   ecdh_keypair_t ecdh[1];
   dh_keypair_t dh;
@@ -170,12 +170,12 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
   otrv4_shared_prekey_pair_free(shared_prekey);
   otrv4_dake_prekey_message_free(invalid_prekey_message);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_dake_non_interactive_auth_message_serializes(
     non_interactive_auth_message_fixture_t *f, gconstpointer data) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   ecdh_keypair_t ecdh[1];
   dh_keypair_t dh;
@@ -276,12 +276,12 @@ void test_dake_non_interactive_auth_message_serializes(
   otrv4_ecdh_keypair_destroy(ecdh);
   otrv4_dake_non_interactive_auth_message_destroy(msg);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_otrv4_dake_non_interactive_auth_message_deserializes(
     prekey_message_fixture_t *f, gconstpointer data) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   ecdh_keypair_t ecdh[1];
   dh_keypair_t dh;
@@ -339,5 +339,5 @@ void test_otrv4_dake_non_interactive_auth_message_deserializes(
   otrv4_dake_non_interactive_auth_message_destroy(msg);
   otrv4_dake_non_interactive_auth_message_destroy(deserialized);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }

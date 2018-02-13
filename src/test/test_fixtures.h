@@ -13,7 +13,7 @@ int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
 }
 
 void otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_fixture->state = otrv4_client_state_new(NULL); // No callbacks
   otrv4_fixture->state->userstate = otrl_userstate_create();

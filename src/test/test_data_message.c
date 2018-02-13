@@ -68,7 +68,7 @@ static data_message_t *set_up_data_msg() {
 }
 
 void test_data_message_serializes() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   data_message_t *data_msg = set_up_data_msg();
 
@@ -124,7 +124,7 @@ void test_data_message_serializes() {
 }
 
 void test_otrv4_data_message_deserializes() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   data_message_t *data_msg = set_up_data_msg();
 

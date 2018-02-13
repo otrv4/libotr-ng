@@ -69,7 +69,7 @@ static otrv4_t *set_up_otr(otrv4_client_state_t *state, const char *account_name
 }
 
 void test_api_interactive_conversation(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -177,13 +177,13 @@ void test_api_interactive_conversation(void) {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 // TODO: the way that i and j is being handled is not competly correct
 // apparently. Including this test for reference
 void test_api_interactive_conversation_bob(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -238,11 +238,11 @@ void test_api_interactive_conversation_bob(void) {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_api_non_interactive_conversation(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -423,11 +423,11 @@ void test_api_non_interactive_conversation(void) {
 
   otrv4_tlv_free(tlv);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_api_non_interactive_conversation_with_enc_msg(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -609,11 +609,11 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   otrv4_tlv_free(tlv);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_api_conversation_errors(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -698,7 +698,7 @@ void test_api_conversation_errors(void) {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
@@ -779,7 +779,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
 }
 
 void test_api_conversation_v3(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
   tlv_t *tlv = NULL;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
@@ -859,11 +859,11 @@ void test_api_conversation_v3(void) {
 
   otrv4_tlv_free(tlv);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_api_multiple_clients(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   bool send_response = true;
   otrv4_err_t err;
@@ -986,11 +986,11 @@ void test_api_multiple_clients(void) {
   otrv4_client_state_free_all(alice_state, bob_pc_state, bob_phone_state);
   otrv4_free_all(alice, bob_pc, bob_phone);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_api_smp(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -1073,11 +1073,11 @@ void test_api_smp(void) {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_api_smp_abort(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -1135,11 +1135,11 @@ void test_api_smp_abort(void) {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_api_extra_sym_key(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   tlv_t *tlv = NULL;
 
@@ -1216,11 +1216,11 @@ void test_api_extra_sym_key(void) {
 
   otrv4_tlv_free(tlv);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_dh_key_rotation(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
   tlv_t *tlv = NULL;
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -1305,11 +1305,11 @@ void test_dh_key_rotation(void) {
   otrv4_free_all(alice, bob);
   otrv4_tlv_free(tlv);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_ecdh_priv_keys_destroyed_early() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -1401,11 +1401,11 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_unreadable_flag() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -1497,11 +1497,11 @@ void test_unreadable_flag() {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }
 
 void test_heartbeat_messages() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
@@ -1565,5 +1565,5 @@ void test_heartbeat_messages() {
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_free_all(alice, bob);
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }

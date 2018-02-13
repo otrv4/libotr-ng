@@ -1,7 +1,7 @@
 #include "../dh.h"
 
 void dh_test_api() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   dh_keypair_t alice, bob;
   otrv4_dh_keypair_generate(alice);
@@ -47,7 +47,7 @@ void dh_test_serialize() {
 }
 
 void dh_test_keypair_destroy() {
-  OTR4_INIT;
+  OTRV4_INIT;
   dh_keypair_t alice;
 
   otrv4_dh_keypair_generate(alice);

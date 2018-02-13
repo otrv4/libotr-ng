@@ -57,7 +57,7 @@ void test_derive_ratchet_keys() {
 }
 
 void test_otrv4_key_manager_destroy() {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   key_manager_t *manager = malloc(sizeof(key_manager_t));
   otrv4_key_manager_init(manager);
@@ -91,5 +91,5 @@ void test_otrv4_key_manager_destroy() {
   free(manager);
   manager = NULL;
 
-  OTR4_FREE;
+  OTRV4_FREE;
 }

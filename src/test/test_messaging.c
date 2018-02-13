@@ -13,7 +13,7 @@ static void *read_client_id_for_privf(FILE *privf) {
 }
 
 void test_userstate_key_management(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
@@ -62,7 +62,7 @@ static otrv4_client_callbacks_t test_calbacks = {
 };
 
 void test_api_messaging(void) {
-  OTR4_INIT;
+  OTRV4_INIT;
 
   test_state = otrv4_user_state_new(&test_calbacks);
 
