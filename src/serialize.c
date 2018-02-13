@@ -81,9 +81,9 @@ INTERNAL otrv4_err_t serialize_dh_public_key(uint8_t *dst, size_t *len,
   // TODO: Maybe gcrypt MPI already has some API for this.
   // gcry_mpi_print with a different format, maybe?
   otr_mpi_t mpi;
-  otr_mpi_set(mpi, buf, written);
+  otrv4_mpi_set(mpi, buf, written);
   *len = serialize_mpi(dst, mpi);
-  otr_mpi_free(mpi);
+  otrv4_mpi_free(mpi);
 
   return SUCCESS;
 }

@@ -23,7 +23,7 @@ tstatic user_profile_t *user_profile_new(const string_t versions) {
   profile->versions = otrv4_strdup(versions);
   otrv4_ec_bzero(profile->shared_prekey, ED448_POINT_BYTES);
   memset(profile->signature, 0, sizeof(profile->signature));
-  otr_mpi_init(profile->transitional_signature);
+  otrv4_mpi_init(profile->transitional_signature);
 
   return profile;
 }
@@ -39,7 +39,7 @@ INTERNAL void user_profile_copy(user_profile_t *dst, const user_profile_t *src) 
   otrv4_ec_point_copy(dst->shared_prekey, src->shared_prekey);
 
   memcpy(dst->signature, src->signature, sizeof(eddsa_signature_t));
-  otr_mpi_copy(dst->transitional_signature, src->transitional_signature);
+  otrv4_mpi_copy(dst->transitional_signature, src->transitional_signature);
 }
 
 INTERNAL void user_profile_destroy(user_profile_t *profile) {
@@ -51,7 +51,7 @@ INTERNAL void user_profile_destroy(user_profile_t *profile) {
   profile->versions = NULL;
   sodium_memzero(profile->signature, ED448_SIGNATURE_BYTES);
   otrv4_ec_point_destroy(profile->shared_prekey);
-  otr_mpi_free(profile->transitional_signature);
+  otrv4_mpi_free(profile->transitional_signature);
 }
 
 INTERNAL void user_profile_free(user_profile_t *profile) {
@@ -170,7 +170,7 @@ INTERNAL otrv4_err_t user_profile_deserialize(user_profile_t *target,
 
     walked += sizeof(eddsa_signature_t);
 
-    if (otr_mpi_deserialize(target->transitional_signature, buffer + walked,
+    if (otrv4_mpi_deserialize(target->transitional_signature, buffer + walked,
                             buflen - walked, &read))
       continue;
 

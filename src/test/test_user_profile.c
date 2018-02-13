@@ -29,7 +29,7 @@ void test_user_profile_serializes_body() {
   otrv4_assert(user_profile_sign(profile, keypair) == SUCCESS);
 
   const uint8_t transitional_signature[40] = {0};
-  otr_mpi_set(profile->transitional_signature, transitional_signature,
+  otrv4_mpi_set(profile->transitional_signature, transitional_signature,
               sizeof(transitional_signature));
 
   uint8_t expected_pubkey[ED448_PUBKEY_BYTES] = {0};
@@ -81,7 +81,7 @@ void test_user_profile_serializes() {
 
   user_profile_sign(profile, keypair);
   const uint8_t transitional_signature[40] = {0};
-  otr_mpi_set(profile->transitional_signature, transitional_signature,
+  otrv4_mpi_set(profile->transitional_signature, transitional_signature,
               sizeof(transitional_signature));
 
   size_t written = 0;
