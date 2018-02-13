@@ -22,9 +22,9 @@
  * otr4_messaging_client_receiving(client, alice_talking_to_bob);
  */
 
-#include "shared.h"
 #include "client.h"
 #include "list.h"
+#include "shared.h"
 
 // TODO: Remove?
 typedef otrv4_client_t otr4_messaging_client_t;
@@ -37,9 +37,10 @@ typedef struct {
   void *userstate_v3; /* OtrlUserState */
 } otrv4_userstate_t;
 
-
-/* int otr4_user_state_private_key_v3_generate_FILEp(otrv4_userstate_t *state, */
-/*                                                   void *client_id, FILE *privf); */
+/* int otr4_user_state_private_key_v3_generate_FILEp(otrv4_userstate_t *state,
+ */
+/*                                                   void *client_id, FILE
+ * *privf); */
 
 /* int otr4_user_state_private_key_v3_read_FILEp(otrv4_userstate_t *state, */
 /*                                               FILE *keys); */
@@ -47,10 +48,12 @@ typedef struct {
 /* int otr4_user_state_generate_private_key(otrv4_userstate_t *state, */
 /*                                          void *client_id); */
 
-/* int otr4_user_state_private_key_v4_write_FILEp(const otrv4_userstate_t *state, */
+/* int otr4_user_state_private_key_v4_write_FILEp(const otrv4_userstate_t
+ * *state, */
 /*                                                FILE *privf); */
 
-/* int otr4_user_state_add_instance_tag(otrv4_userstate_t *state, void *client_id, */
+/* int otr4_user_state_add_instance_tag(otrv4_userstate_t *state, void
+ * *client_id, */
 /*                                      unsigned int instag); */
 
 /* unsigned int otr4_user_state_get_instance_tag(otrv4_userstate_t *state, */
@@ -59,19 +62,20 @@ typedef struct {
 /* int otr4_user_state_instance_tags_read_FILEp(otrv4_userstate_t *state, */
 /*                                              FILE *instag); */
 
-/* otr4_messaging_client_t *otr4_messaging_client_get(otrv4_userstate_t *state, */
+/* otr4_messaging_client_t *otr4_messaging_client_get(otrv4_userstate_t *state,
+ */
 /*                                                    void *client_id); */
-
 
 API int otrv4_user_state_private_key_v4_read_FILEp(
     otrv4_userstate_t *state, FILE *keys,
     void *(*read_client_id_for_key)(FILE *filep));
 
-API otrv4_keypair_t *otrv4_user_state_get_private_key_v4(otrv4_userstate_t *state,
-                                                    void *client_id);
+API otrv4_keypair_t *
+otrv4_user_state_get_private_key_v4(otrv4_userstate_t *state, void *client_id);
 
-API int otrv4_user_state_add_private_key_v4(otrv4_userstate_t *state, void *client_id,
-                                       const uint8_t sym[ED448_PRIVATE_BYTES]);
+API int
+otrv4_user_state_add_private_key_v4(otrv4_userstate_t *state, void *client_id,
+                                    const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 API otrv4_userstate_t *otrv4_user_state_new(const otrv4_client_callbacks_t *cb);
 
@@ -79,7 +83,8 @@ API void otrv4_user_state_free(otrv4_userstate_t *);
 
 #ifdef OTRV4_MESSAGING_PRIVATE
 
-/* tstatic otr4_messaging_client_t *otr4_messaging_client_new(otrv4_userstate_t *state, */
+/* tstatic otr4_messaging_client_t *otr4_messaging_client_new(otrv4_userstate_t
+ * *state, */
 /*                                                    void *client_id); */
 
 #endif

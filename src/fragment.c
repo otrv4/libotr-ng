@@ -6,7 +6,6 @@
 
 #include "fragment.h"
 
-
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
 
 API otrv4_message_to_send_t *otrv4_message_new() {
@@ -59,9 +58,10 @@ INTERNAL void otrv4_fragment_context_free(fragment_context_t *context) {
 }
 
 INTERNAL otrv4_err_t otrv4_fragment_message(int max_size,
-                                  otrv4_message_to_send_t *fragments,
-                                  int our_instance, int their_instance,
-                                  const string_t message) {
+                                            otrv4_message_to_send_t *fragments,
+                                            int our_instance,
+                                            int their_instance,
+                                            const string_t message) {
   size_t msg_len = strlen(message);
   size_t limit_piece = max_size - FRAGMENT_HEADER_LEN;
   string_t *pieces;
@@ -147,7 +147,7 @@ tstatic void initialize_fragment_context(fragment_context_t *context) {
 }
 
 tstatic otrv4_err_t add_first_fragment(const char *msg, int msg_len,
-                                      fragment_context_t *ctx) {
+                                       fragment_context_t *ctx) {
   char *buff = malloc(msg_len + 1);
   if (!buff)
     return ERROR;
@@ -162,7 +162,7 @@ tstatic otrv4_err_t add_first_fragment(const char *msg, int msg_len,
 }
 
 tstatic otrv4_err_t append_fragment(const char *msg, int msg_len,
-                                   fragment_context_t *ctx) {
+                                    fragment_context_t *ctx) {
   size_t new_buff_len = ctx->fragment_len + msg_len + 1;
   char *buff = realloc(ctx->fragment, new_buff_len);
   if (!buff)
@@ -184,9 +184,9 @@ tstatic otrv4_bool_t is_fragment(const string_t message) {
 }
 
 INTERNAL otrv4_err_t otrv4_unfragment_message(char **unfrag_msg,
-                                    fragment_context_t *context,
-                                    const string_t message,
-                                    const int our_instance_tag) {
+                                              fragment_context_t *context,
+                                              const string_t message,
+                                              const int our_instance_tag) {
   if (is_fragment(message)) {
     *unfrag_msg = otrv4_strdup(message);
     initialize_fragment_context(context);

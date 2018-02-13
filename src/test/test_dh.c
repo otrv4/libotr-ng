@@ -13,9 +13,9 @@ void dh_test_api() {
   memset(shared2, 0, sizeof shared2);
 
   otrv4_assert(otrv4_dh_shared_secret(shared1, sizeof(shared1), alice->priv,
-                                bob->pub) == SUCCESS);
+                                      bob->pub) == SUCCESS);
   otrv4_assert(otrv4_dh_shared_secret(shared2, sizeof(shared2), bob->priv,
-                                alice->pub) == SUCCESS);
+                                      alice->pub) == SUCCESS);
 
   otrv4_assert_cmpmem(shared1, shared2, sizeof(shared1));
 
@@ -29,7 +29,8 @@ void dh_test_serialize() {
   dh_mpi_t mpi = gcry_mpi_new(DH3072_MOD_LEN_BITS);
 
   size_t mpi_len = 0;
-  otrv4_err_t err = otrv4_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
+  otrv4_err_t err =
+      otrv4_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
   otrv4_assert(!err);
   g_assert_cmpint(mpi_len, ==, 0);
 

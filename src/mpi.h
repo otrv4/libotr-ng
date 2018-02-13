@@ -4,9 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "shared.h"
 #include "error.h"
-
+#include "shared.h"
 
 typedef struct {
   uint32_t len;
@@ -22,13 +21,14 @@ INTERNAL void otrv4_mpi_set(otrv4_mpi_t mpi, const uint8_t *src, size_t len);
 INTERNAL void otrv4_mpi_copy(otrv4_mpi_t dst, const otrv4_mpi_t src);
 
 INTERNAL otrv4_err_t otrv4_mpi_deserialize(otrv4_mpi_t dst, const uint8_t *src,
-                                size_t src_len, size_t *read);
+                                           size_t src_len, size_t *read);
 
-INTERNAL otrv4_err_t otrv4_mpi_deserialize_no_copy(otrv4_mpi_t dst, const uint8_t *src,
-                                        size_t src_len, size_t *read);
+INTERNAL otrv4_err_t otrv4_mpi_deserialize_no_copy(otrv4_mpi_t dst,
+                                                   const uint8_t *src,
+                                                   size_t src_len,
+                                                   size_t *read);
 
 INTERNAL size_t otrv4_mpi_memcpy(uint8_t *dst, const otrv4_mpi_t mpi);
-
 
 #ifdef OTRV4_MPI_PRIVATE
 #endif

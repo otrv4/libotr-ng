@@ -30,7 +30,7 @@ void test_user_profile_serializes_body() {
 
   const uint8_t transitional_signature[40] = {0};
   otrv4_mpi_set(profile->transitional_signature, transitional_signature,
-              sizeof(transitional_signature));
+                sizeof(transitional_signature));
 
   uint8_t expected_pubkey[ED448_PUBKEY_BYTES] = {0};
   otrv4_serialize_otrv4_public_key(expected_pubkey, keypair->pub);
@@ -53,7 +53,8 @@ void test_user_profile_serializes_body() {
                       sizeof(expected));
 
   uint8_t expected_shared_prekey[ED448_SHARED_PREKEY_BYTES] = {0};
-  otrv4_serialize_otrv4_shared_prekey(expected_shared_prekey, profile->shared_prekey);
+  otrv4_serialize_otrv4_shared_prekey(expected_shared_prekey,
+                                      profile->shared_prekey);
 
   otrv4_assert_cmpmem(expected_shared_prekey,
                       serialized + ED448_PUBKEY_BYTES + 14,
@@ -82,7 +83,7 @@ void test_user_profile_serializes() {
   user_profile_sign(profile, keypair);
   const uint8_t transitional_signature[40] = {0};
   otrv4_mpi_set(profile->transitional_signature, transitional_signature,
-              sizeof(transitional_signature));
+                sizeof(transitional_signature));
 
   size_t written = 0;
   uint8_t *serialized = NULL;
@@ -137,7 +138,7 @@ void test_otrv4_user_profile_deserializes() {
 
   user_profile_t *deserialized = malloc(sizeof(user_profile_t));
   otrv4_assert(otrv4_user_profile_deserialize(deserialized, serialized, written,
-                                        NULL) == SUCCESS);
+                                              NULL) == SUCCESS);
   otrv4_assert_user_profile_eq(deserialized, profile);
 
   free(serialized);

@@ -1,8 +1,8 @@
 #ifndef OTRV4_KEYS_H
 #define OTRV4_KEYS_H
 
-#include "shared.h"
 #include "ed448.h"
+#include "shared.h"
 
 #define ED448_PUBKEY_TYPE 0x0010
 #define ED448_PUBKEY_BYTES 2 + ED448_POINT_BYTES
@@ -34,27 +34,28 @@ typedef struct {
 INTERNAL otrv4_keypair_t *otrv4_keypair_new(void);
 
 INTERNAL void otrv4_keypair_generate(otrv4_keypair_t *keypair,
-                            const uint8_t sym[ED448_PRIVATE_BYTES]);
+                                     const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 INTERNAL void otrv4_keypair_free(otrv4_keypair_t *keypair);
 
-INTERNAL otrv4_err_t otrv4_symmetric_key_serialize(char **buffer, size_t *buffer_size,
-                                          uint8_t sym[ED448_PRIVATE_BYTES]);
+INTERNAL otrv4_err_t otrv4_symmetric_key_serialize(
+    char **buffer, size_t *buffer_size, uint8_t sym[ED448_PRIVATE_BYTES]);
 
 INTERNAL otrv4_shared_prekey_pair_t *otrv4_shared_prekey_pair_new(void);
 
-INTERNAL void otrv4_shared_prekey_pair_generate(otrv4_shared_prekey_pair_t *prekey_pair,
-                                       const uint8_t sym[ED448_PRIVATE_BYTES]);
+INTERNAL void
+otrv4_shared_prekey_pair_generate(otrv4_shared_prekey_pair_t *prekey_pair,
+                                  const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-
-INTERNAL void otrv4_shared_prekey_pair_free(otrv4_shared_prekey_pair_t *prekey_pair);
-
+INTERNAL void
+otrv4_shared_prekey_pair_free(otrv4_shared_prekey_pair_t *prekey_pair);
 
 #ifdef OTRV4_KEYS_PRIVATE
 
 tstatic void keypair_destroy(otrv4_keypair_t *keypair);
 
-tstatic void shared_prekey_pair_destroy(otrv4_shared_prekey_pair_t *prekey_pair);
+tstatic void
+shared_prekey_pair_destroy(otrv4_shared_prekey_pair_t *prekey_pair);
 
 #endif
 

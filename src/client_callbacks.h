@@ -1,8 +1,8 @@
 #ifndef OTRV4_CLIENT_CALLBACKS_H
 #define OTRV4_CLIENT_CALLBACKS_H
 
-#include "shared.h"
 #include "fingerprint.h"
+#include "shared.h"
 
 typedef enum {
   OTRV4_SMPEVENT_NONE = 0,
@@ -69,15 +69,17 @@ typedef struct otrv4_client_callbacks_t {
                      const otrv4_client_conversation_t *);
 } otrv4_client_callbacks_t;
 
+INTERNAL void
+otrv4_client_callbacks_create_privkey(const otrv4_client_callbacks_t *cb,
+                                      void *client_opdata);
 
-INTERNAL void otrv4_client_callbacks_create_privkey(const otrv4_client_callbacks_t *cb,
-                                           void *client_opdata);
+INTERNAL void
+otrv4_client_callbacks_gone_secure(const otrv4_client_callbacks_t *cb,
+                                   const otrv4_client_conversation_t *conv);
 
-INTERNAL void otrv4_client_callbacks_gone_secure(const otrv4_client_callbacks_t *cb,
-                                        const otrv4_client_conversation_t *conv);
-
-INTERNAL void otrv4_client_callbacks_gone_insecure(
-    const otrv4_client_callbacks_t *cb, const otrv4_client_conversation_t *conv);
+INTERNAL void
+otrv4_client_callbacks_gone_insecure(const otrv4_client_callbacks_t *cb,
+                                     const otrv4_client_conversation_t *conv);
 
 INTERNAL void otrv4_client_callbacks_fingerprint_seen(
     const otrv4_client_callbacks_t *cb, const otrv4_fingerprint_t fp,
@@ -92,13 +94,12 @@ INTERNAL void otrv4_client_callbacks_smp_ask_for_answer(
     const otrv4_client_conversation_t *conv);
 
 INTERNAL void otrv4_client_callbacks_smp_ask_for_secret(
-    const otrv4_client_callbacks_t *cb, const otrv4_client_conversation_t *conv);
+    const otrv4_client_callbacks_t *cb,
+    const otrv4_client_conversation_t *conv);
 
-INTERNAL void otrv4_client_callbacks_smp_update(const otrv4_client_callbacks_t *cb,
-                                       const otrv4_smp_event_t event,
-                                       const uint8_t progress_percent,
-                                       const otrv4_client_conversation_t *conv);
-
+INTERNAL void otrv4_client_callbacks_smp_update(
+    const otrv4_client_callbacks_t *cb, const otrv4_smp_event_t event,
+    const uint8_t progress_percent, const otrv4_client_conversation_t *conv);
 
 #ifdef OTRV4_CLIENT_CALLBACKS_PRIVATE
 #endif

@@ -4,7 +4,8 @@
 
 #include "messaging.h"
 
-API otrv4_userstate_t *otrv4_user_state_new(const otrv4_client_callbacks_t *cb) {
+API otrv4_userstate_t *
+otrv4_user_state_new(const otrv4_client_callbacks_t *cb) {
   otrv4_userstate_t *state = malloc(sizeof(otrv4_userstate_t));
   if (!state)
     return NULL;
@@ -47,7 +48,7 @@ tstatic int find_state_by_client_id(const void *current, const void *wanted) {
 }
 
 tstatic otrv4_client_state_t *get_client_state(otrv4_userstate_t *state,
-                                             void *client_id) {
+                                               void *client_id) {
   list_element_t *el =
       otrv4_list_get(client_id, state->states, find_state_by_client_id);
   if (el)
@@ -64,12 +65,14 @@ tstatic otrv4_client_state_t *get_client_state(otrv4_userstate_t *state,
   return s;
 }
 
-/* tstatic int find_client_by_client_id(const void *current, const void *wanted) { */
+/* tstatic int find_client_by_client_id(const void *current, const void *wanted)
+ * { */
 /*   const otrv4_client_t *s = current; */
 /*   return s && s->state && s->state->client_id == wanted; */
 /* } */
 
-/* tstatic otr4_messaging_client_t *otr4_messaging_client_new(otrv4_userstate_t *state, */
+/* tstatic otr4_messaging_client_t *otr4_messaging_client_new(otrv4_userstate_t
+ * *state, */
 /*                                                    void *client_id) { */
 /*   if (!client_id) { */
 /*     return NULL; */
@@ -95,7 +98,8 @@ tstatic otrv4_client_state_t *get_client_state(otrv4_userstate_t *state,
 /*   } */
 /* } */
 
-/* otr4_messaging_client_t *otr4_messaging_client_get(otrv4_userstate_t *state, */
+/* otr4_messaging_client_t *otr4_messaging_client_get(otrv4_userstate_t *state,
+ */
 /*                                                    void *client_id) { */
 /*   list_element_t *el = */
 /*       otrv4_list_get(client_id, state->clients, find_client_by_client_id); */
@@ -105,7 +109,8 @@ tstatic otrv4_client_state_t *get_client_state(otrv4_userstate_t *state,
 /*   return otr4_messaging_client_new(state, client_id); */
 /* } */
 
-/* int otr4_user_state_private_key_v3_generate_FILEp(otrv4_userstate_t *state, */
+/* int otr4_user_state_private_key_v3_generate_FILEp(otrv4_userstate_t *state,
+ */
 /*                                                   void *client_id, */
 /*                                                   FILE *privf) { */
 /*   return otr4_client_state_private_key_v3_generate_FILEp( */
@@ -117,10 +122,11 @@ tstatic otrv4_client_state_t *get_client_state(otrv4_userstate_t *state,
 /*   return otrl_privkey_read_FILEp(state->userstate_v3, keys); */
 /* } */
 
-API int otrv4_user_state_add_private_key_v4(otrv4_userstate_t *state, void *clientop,
-                                       const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  return otrv4_client_state_add_private_key_v4(get_client_state(state, clientop),
-                                              sym);
+API int
+otrv4_user_state_add_private_key_v4(otrv4_userstate_t *state, void *clientop,
+                                    const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  return otrv4_client_state_add_private_key_v4(
+      get_client_state(state, clientop), sym);
 }
 
 /* int otr4_user_state_generate_private_key(otrv4_userstate_t *state, */
@@ -130,19 +136,21 @@ API int otrv4_user_state_add_private_key_v4(otrv4_userstate_t *state, void *clie
 /*   return otrv4_user_state_add_private_key_v4(state, client_id, sym); */
 /* } */
 
-API otrv4_keypair_t *otrv4_user_state_get_private_key_v4(otrv4_userstate_t *state,
-                                                    void *client_id) {
+API otrv4_keypair_t *
+otrv4_user_state_get_private_key_v4(otrv4_userstate_t *state, void *client_id) {
   return otrv4_client_state_get_private_key_v4(
       get_client_state(state, client_id));
 }
 
-/* tstatic void add_private_key_v4_to_FILEp(list_element_t *node, void *context) { */
+/* tstatic void add_private_key_v4_to_FILEp(list_element_t *node, void *context)
+ * { */
 /*   FILE *privf = context; */
 /*   otrv4_client_state_t *state = node->data; */
 /*   otr4_client_state_private_key_v4_write_FILEp(state, privf); */
 /* } */
 
-/* int otr4_user_state_private_key_v4_write_FILEp(const otrv4_userstate_t *state, */
+/* int otr4_user_state_private_key_v4_write_FILEp(const otrv4_userstate_t
+ * *state, */
 /*                                                FILE *privf) { */
 /*   if (!privf) */
 /*     return -1; */
@@ -172,9 +180,11 @@ API int otrv4_user_state_private_key_v4_read_FILEp(
   return 0;
 }
 
-/* int otr4_user_state_add_instance_tag(otrv4_userstate_t *state, void *client_id, */
+/* int otr4_user_state_add_instance_tag(otrv4_userstate_t *state, void
+ * *client_id, */
 /*                                      unsigned int instag) { */
-/*   return otrv4_client_state_add_instance_tag(get_client_state(state, client_id), */
+/*   return otrv4_client_state_add_instance_tag(get_client_state(state,
+ * client_id), */
 /*                                             instag); */
 /* } */
 

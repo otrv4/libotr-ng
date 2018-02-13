@@ -57,7 +57,8 @@ tstatic void ratchet_free(ratchet_t *ratchet) {
   ratchet = NULL;
 }
 
-INTERNAL void otrv4_key_manager_init(key_manager_t *manager) // make like ratchet_new?
+INTERNAL void
+otrv4_key_manager_init(key_manager_t *manager) // make like ratchet_new?
 {
   otrv4_ec_bzero(manager->our_ecdh->pub, ED448_POINT_BYTES);
   manager->our_dh->pub = NULL;
@@ -116,7 +117,8 @@ INTERNAL void otrv4_key_manager_destroy(key_manager_t *manager) {
   manager->old_mac_keys = NULL;
 }
 
-INTERNAL otrv4_err_t otrv4_key_manager_generate_ephemeral_keys(key_manager_t *manager) {
+INTERNAL otrv4_err_t
+otrv4_key_manager_generate_ephemeral_keys(key_manager_t *manager) {
   time_t now;
   uint8_t sym[ED448_PRIVATE_BYTES];
   memset(sym, 0, sizeof(sym));
@@ -138,39 +140,45 @@ INTERNAL otrv4_err_t otrv4_key_manager_generate_ephemeral_keys(key_manager_t *ma
   return SUCCESS;
 }
 
-INTERNAL void otrv4_key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
-                                key_manager_t *manager) {
+INTERNAL void otrv4_key_manager_set_their_keys(ec_point_t their_ecdh,
+                                               dh_public_key_t their_dh,
+                                               key_manager_t *manager) {
   otrv4_ec_point_destroy(manager->their_ecdh);
   otrv4_ec_point_copy(manager->their_ecdh, their_ecdh);
   otrv4_dh_mpi_release(manager->their_dh);
   manager->their_dh = otrv4_dh_mpi_copy(their_dh);
 }
 
-INTERNAL void otrv4_key_manager_prepare_to_ratchet(key_manager_t *manager) { manager->j = 0; }
+INTERNAL void otrv4_key_manager_prepare_to_ratchet(key_manager_t *manager) {
+  manager->j = 0;
+}
 
 tstatic void derive_key_from_shared_secret(uint8_t *key, size_t keylen,
-                                   const uint8_t magic[1],
-                                   const shared_secret_t shared) {
+                                           const uint8_t magic[1],
+                                           const shared_secret_t shared) {
   shake_256_kdf(key, keylen, magic, shared, sizeof(shared_secret_t));
 }
 
-tstatic void derive_root_key(root_key_t root_key, const shared_secret_t shared) {
+tstatic void derive_root_key(root_key_t root_key,
+                             const shared_secret_t shared) {
   uint8_t magic[1] = {0x1};
   derive_key_from_shared_secret(root_key, sizeof(root_key_t), magic, shared);
 }
 
-tstatic void derive_chain_key_a(chain_key_t chain_key, const shared_secret_t shared) {
+tstatic void derive_chain_key_a(chain_key_t chain_key,
+                                const shared_secret_t shared) {
   uint8_t magic[1] = {0x2};
   derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic, shared);
 }
 
-tstatic void derive_chain_key_b(chain_key_t chain_key, const shared_secret_t shared) {
+tstatic void derive_chain_key_b(chain_key_t chain_key,
+                                const shared_secret_t shared) {
   uint8_t magic[1] = {0x3};
   derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic, shared);
 }
 
 tstatic otrv4_err_t key_manager_new_ratchet(key_manager_t *manager,
-                                    const shared_secret_t shared) {
+                                            const shared_secret_t shared) {
   ratchet_t *ratchet = ratchet_new();
   if (ratchet == NULL) {
     return ERROR;
@@ -202,7 +210,8 @@ tstatic const chain_link_t *chain_get_last(const chain_link_t *head) {
   return cursor;
 }
 
-tstatic const chain_link_t *chain_get_by_id(int message_id, const chain_link_t *head) {
+tstatic const chain_link_t *chain_get_by_id(int message_id,
+                                            const chain_link_t *head) {
   const chain_link_t *cursor = head;
   while (cursor->next && cursor->id != message_id)
     cursor = cursor->next;
@@ -215,8 +224,8 @@ tstatic const chain_link_t *chain_get_by_id(int message_id, const chain_link_t *
 }
 
 tstatic message_chain_t *decide_between_chain_keys(const ratchet_t *ratchet,
-                                           const ec_point_t our,
-                                           const ec_point_t their) {
+                                                   const ec_point_t our,
+                                                   const ec_point_t their) {
   message_chain_t *ret = malloc(sizeof(message_chain_t));
   if (ret == NULL)
     return NULL;
@@ -257,7 +266,7 @@ tstatic message_chain_t *decide_between_chain_keys(const ratchet_t *ratchet,
 }
 
 tstatic int key_manager_get_sending_chain_key(chain_key_t sending,
-                                      const key_manager_t *manager) {
+                                              const key_manager_t *manager) {
   message_chain_t *chain = decide_between_chain_keys(
       manager->current, manager->our_ecdh->pub, manager->their_ecdh);
   const chain_link_t *last = chain_get_last(chain->sending);
@@ -294,7 +303,8 @@ tstatic chain_link_t *derive_next_chain_link(chain_link_t *previous) {
   return l;
 }
 
-tstatic otrv4_err_t rebuild_chain_keys_up_to(int message_id, const chain_link_t *head) {
+tstatic otrv4_err_t rebuild_chain_keys_up_to(int message_id,
+                                             const chain_link_t *head) {
   chain_link_t *last = (chain_link_t *)chain_get_last(head);
 
   int j = 0;
@@ -307,9 +317,8 @@ tstatic otrv4_err_t rebuild_chain_keys_up_to(int message_id, const chain_link_t 
   return SUCCESS;
 }
 
-tstatic otrv4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
-                                                int message_id,
-                                                const key_manager_t *manager) {
+tstatic otrv4_err_t key_manager_get_receiving_chain_key(
+    chain_key_t receiving, int message_id, const key_manager_t *manager) {
 
   message_chain_t *chain = decide_between_chain_keys(
       manager->current, manager->our_ecdh->pub, manager->their_ecdh);
@@ -332,17 +341,19 @@ tstatic otrv4_err_t key_manager_get_receiving_chain_key(chain_key_t receiving,
   return SUCCESS;
 }
 
-INTERNAL void otrv4_ecdh_shared_secret_from_prekey(uint8_t *shared,
-                                    otrv4_shared_prekey_pair_t *shared_prekey,
-                                    const ec_point_t their_pub) {
+INTERNAL void
+otrv4_ecdh_shared_secret_from_prekey(uint8_t *shared,
+                                     otrv4_shared_prekey_pair_t *shared_prekey,
+                                     const ec_point_t their_pub) {
   decaf_448_point_t s;
   decaf_448_point_scalarmul(s, their_pub, shared_prekey->priv);
 
   otrv4_ec_point_serialize(shared, s);
 }
 
-INTERNAL void otrv4_ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
-                                     const ec_point_t their_pub) {
+INTERNAL void
+otrv4_ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
+                                      const ec_point_t their_pub) {
   decaf_448_point_t s;
   decaf_448_point_scalarmul(s, their_pub, keypair->priv);
 
@@ -350,7 +361,7 @@ INTERNAL void otrv4_ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypa
 }
 
 tstatic void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
-                             const brace_key_t brace_key) {
+                                     const brace_key_t brace_key) {
   decaf_shake256_ctx_t hd;
 
   hash_init_with_dom(hd);
@@ -362,7 +373,7 @@ tstatic void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
 }
 
 tstatic void calculate_shared_secret_from_tmp_key(shared_secret_t dst,
-                                          const uint8_t *tmp_k) {
+                                                  const uint8_t *tmp_k) {
   decaf_shake256_ctx_t hd;
 
   hash_init_with_dom(hd);
@@ -390,7 +401,7 @@ tstatic otrv4_err_t derive_sending_chain_key(key_manager_t *manager) {
 }
 
 tstatic void calculate_ssid(key_manager_t *manager,
-                           const shared_secret_t shared) {
+                            const shared_secret_t shared) {
   uint8_t magic[1] = {0x00};
   uint8_t ssid_buff[32];
 
@@ -401,7 +412,7 @@ tstatic void calculate_ssid(key_manager_t *manager,
 }
 
 tstatic void calculate_extra_key(key_manager_t *manager,
-                                const chain_key_t chain_key) {
+                                 const chain_key_t chain_key) {
   uint8_t magic[1] = {0xFF};
   uint8_t extra_key_buff[HASH_BYTES];
 
@@ -416,7 +427,7 @@ tstatic otrv4_err_t calculate_brace_key(key_manager_t *manager) {
 
   if (manager->i % 3 == 0) {
     if (otrv4_dh_shared_secret(k_dh, sizeof(k_dh_t), manager->our_dh->priv,
-                         manager->their_dh) == ERROR)
+                               manager->their_dh) == ERROR)
       return ERROR;
 
     hash_hash(manager->brace_key, sizeof(brace_key_t), k_dh, sizeof(k_dh_t));
@@ -523,7 +534,7 @@ tstatic otrv4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
 }
 
 INTERNAL otrv4_err_t otrv4_key_manager_ratcheting_init(int j, bool interactive,
-                                        key_manager_t *manager) {
+                                                       key_manager_t *manager) {
   if (init_ratchet(manager, interactive))
     return ERROR;
 
@@ -542,7 +553,8 @@ tstatic otrv4_err_t rotate_keys(key_manager_t *manager) {
   return enter_new_ratchet(manager);
 }
 
-INTERNAL otrv4_err_t otrv4_key_manager_ensure_on_ratchet(key_manager_t *manager) {
+INTERNAL otrv4_err_t
+otrv4_key_manager_ensure_on_ratchet(key_manager_t *manager) {
   if (manager->j == 0)
     return SUCCESS;
 
@@ -560,8 +572,8 @@ INTERNAL otrv4_err_t otrv4_key_manager_ensure_on_ratchet(key_manager_t *manager)
 }
 
 tstatic void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
-                                           m_mac_key_t mac_key,
-                                           const chain_key_t chain_key) {
+                                            m_mac_key_t mac_key,
+                                            const chain_key_t chain_key) {
   uint8_t magic1[1] = {0x1};
   uint8_t magic2[1] = {0x2};
 
@@ -571,10 +583,9 @@ tstatic void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
                 sizeof(m_enc_key_t));
 }
 
-INTERNAL otrv4_err_t
-otrv4_key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
-                                            m_mac_key_t mac_key, int message_id,
-                                            key_manager_t *manager) {
+INTERNAL otrv4_err_t otrv4_key_manager_retrieve_receiving_message_keys(
+    m_enc_key_t enc_key, m_mac_key_t mac_key, int message_id,
+    key_manager_t *manager) {
   chain_key_t receiving;
 
   if (key_manager_get_receiving_chain_key(receiving, message_id, manager) ==
@@ -602,7 +613,8 @@ tstatic otrv4_bool_t should_ratchet(const key_manager_t *manager) {
   return otrv4_false;
 }
 
-INTERNAL otrv4_err_t otrv4_key_manager_prepare_next_chain_key(key_manager_t *manager) {
+INTERNAL otrv4_err_t
+otrv4_key_manager_prepare_next_chain_key(key_manager_t *manager) {
   if (should_ratchet(manager) == otrv4_true) {
     return rotate_keys(manager);
   }
@@ -610,9 +622,8 @@ INTERNAL otrv4_err_t otrv4_key_manager_prepare_next_chain_key(key_manager_t *man
   return derive_sending_chain_key(manager);
 }
 
-INTERNAL otrv4_err_t otrv4_key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
-                                                      m_mac_key_t mac_key,
-                                                      key_manager_t *manager) {
+INTERNAL otrv4_err_t otrv4_key_manager_retrieve_sending_message_keys(
+    m_enc_key_t enc_key, m_mac_key_t mac_key, key_manager_t *manager) {
   chain_key_t sending;
   int message_id = key_manager_get_sending_chain_key(sending, manager);
 
@@ -636,7 +647,8 @@ INTERNAL otrv4_err_t otrv4_key_manager_retrieve_sending_message_keys(m_enc_key_t
   return ERROR;
 }
 
-INTERNAL uint8_t *otrv4_key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys) {
+INTERNAL uint8_t *
+otrv4_key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys) {
   uint num_mac_keys = otrv4_list_len(old_mac_keys);
   size_t serlen = num_mac_keys * MAC_KEY_BYTES;
   if (serlen == 0) {
@@ -661,12 +673,12 @@ INTERNAL uint8_t *otrv4_key_manager_old_mac_keys_serialize(list_element_t *old_m
 }
 
 INTERNAL void otrv4_key_manager_set_their_ecdh(ec_point_t their,
-                                              key_manager_t *manager) {
+                                               key_manager_t *manager) {
   otrv4_ec_point_copy(manager->their_ecdh, their);
 }
 
 INTERNAL void otrv4_key_manager_set_their_dh(dh_public_key_t their,
-                                            key_manager_t *manager) {
+                                             key_manager_t *manager) {
   otrv4_dh_mpi_release(manager->their_dh);
   manager->their_dh = otrv4_dh_mpi_copy(their);
 }

@@ -37,7 +37,6 @@ INTERNAL tlv_t *otrv4_append_tlv(tlv_t *tlvs, tlv_t *new_tlv);
 
 INTERNAL otrv4_err_t otrv4_append_padding_tlv(tlv_t **tlvs, int message_len);
 
-
 #ifdef OTRV4_TLV_PRIVATE
 #endif
 

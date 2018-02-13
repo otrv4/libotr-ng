@@ -16,8 +16,9 @@ tstatic list_element_t *list_new() {
 }
 
 INTERNAL void otrv4_list_foreach(list_element_t *head,
-                  void (*fn)(list_element_t *node, void *context),
-                  void *context) {
+                                 void (*fn)(list_element_t *node,
+                                            void *context),
+                                 void *context) {
   list_element_t *current = head;
   while (current) {
     list_element_t *next = current->next;
@@ -43,9 +44,13 @@ INTERNAL void otrv4_list_free(list_element_t *head, void (*fn)(void *data)) {
   otrv4_list_foreach(head, call_and_free_node, fn);
 }
 
-INTERNAL void otrv4_list_free_full(list_element_t *head) { otrv4_list_free(head, free); }
+INTERNAL void otrv4_list_free_full(list_element_t *head) {
+  otrv4_list_free(head, free);
+}
 
-INTERNAL void otrv4_list_free_nodes(list_element_t *head) { otrv4_list_free(head, NULL); }
+INTERNAL void otrv4_list_free_nodes(list_element_t *head) {
+  otrv4_list_free(head, NULL);
+}
 
 INTERNAL list_element_t *otrv4_list_add(void *data, list_element_t *head) {
   list_element_t *n = list_new();
@@ -73,8 +78,9 @@ INTERNAL list_element_t *otrv4_list_get_last(list_element_t *head) {
   return cursor;
 }
 
-INTERNAL list_element_t *otrv4_list_get(const void *wanted, list_element_t *head,
-                         int (*fn)(const void *current, const void *wanted)) {
+INTERNAL list_element_t *
+otrv4_list_get(const void *wanted, list_element_t *head,
+               int (*fn)(const void *current, const void *wanted)) {
   list_element_t *cursor = head;
 
   while (cursor) {
@@ -91,12 +97,13 @@ tstatic int compare_data(const void *current, const void *wanted) {
   return current == wanted;
 }
 
-INTERNAL list_element_t *otrv4_list_get_by_value(const void *wanted, list_element_t *head) {
+INTERNAL list_element_t *otrv4_list_get_by_value(const void *wanted,
+                                                 list_element_t *head) {
   return otrv4_list_get(wanted, head, compare_data);
 }
 
 INTERNAL list_element_t *otrv4_list_remove_element(const list_element_t *wanted,
-                                    list_element_t *head) {
+                                                   list_element_t *head) {
   list_element_t *cursor = head;
 
   if (head == wanted) {

@@ -6,8 +6,9 @@
 #include "instance_tag.h"
 #include "str.h"
 
-API otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *account,
-                              const char *protocol, FILE *filename) {
+API otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag,
+                                  const char *account, const char *protocol,
+                                  FILE *filename) {
 
   OtrlUserState us = otrl_userstate_create();
 

@@ -7,10 +7,10 @@
 
 #include <libotr/context.h>
 
-#include "shared.h"
 #include "client_state.h"
 #include "list.h"
 #include "otrv4.h"
+#include "shared.h"
 
 // TODO: REMOVE
 typedef struct {
@@ -34,14 +34,15 @@ API otrv4_client_t *otrv4_client_new(otrv4_client_state_t *);
 API void otrv4_client_free(otrv4_client_t *client);
 
 API char *otrv4_client_query_message(const char *recipient, const char *message,
-                                otrv4_client_t *client, OtrlPolicy policy);
+                                     otrv4_client_t *client, OtrlPolicy policy);
 
 API int otrv4_client_send(char **newmessage, const char *message,
-                     const char *recipient, otrv4_client_t *client);
+                          const char *recipient, otrv4_client_t *client);
 
 API int otrv4_client_send_fragment(otrv4_message_to_send_t **newmessage,
-                              const char *message, int mms,
-                              const char *recipient, otrv4_client_t *client);
+                                   const char *message, int mms,
+                                   const char *recipient,
+                                   otrv4_client_t *client);
 
 /* tstatic int otr4_client_smp_start(char **tosend, const char *recipient, */
 /*                           const char *question, const size_t q_len, */
@@ -52,26 +53,28 @@ API int otrv4_client_send_fragment(otrv4_message_to_send_t **newmessage,
 /*                             const unsigned char *secret, size_t secretlen, */
 /*                             otrv4_client_t *client); */
 
-API int otrv4_client_receive(char **newmsg, char **todisplay, const char *message,
-                        const char *recipient, otrv4_client_t *client);
+API int otrv4_client_receive(char **newmsg, char **todisplay,
+                             const char *message, const char *recipient,
+                             otrv4_client_t *client);
 
 API int otrv4_client_disconnect(char **newmsg, const char *recipient,
-                           otrv4_client_t *client);
+                                otrv4_client_t *client);
 
-/* tstatic int otr4_encrypted_conversation_expire(char **newmsg, const char *recipient, */
+/* tstatic int otr4_encrypted_conversation_expire(char **newmsg, const char
+ * *recipient, */
 /*                                        int expiration_time, */
 /*                                        otrv4_client_t *client); */
 
 API otrv4_conversation_t *otrv4_client_get_conversation(int force,
-                                                  const char *recipient,
-                                                  otrv4_client_t *client);
+                                                        const char *recipient,
+                                                        otrv4_client_t *client);
 
 /* tstatic int otr4_conversation_is_encrypted(otrv4_conversation_t *conv); */
 
 /* tstatic int otr4_conversation_is_finished(otrv4_conversation_t *conv); */
 
 API int otrv4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
-                                    const otrv4_client_t *client);
+                                         const otrv4_client_t *client);
 
 /* tstatic int otr3_privkey_generate(otrv4_client_t *client, FILE *privf); */
 

@@ -1,8 +1,8 @@
 #ifndef OTRV4_FRAGMENT_H
 #define OTRV4_FRAGMENT_H
 
-#include "shared.h"
 #include "error.h"
+#include "shared.h"
 #include "str.h"
 
 #define FRAGMENT_HEADER_LEN 37
@@ -33,15 +33,16 @@ INTERNAL fragment_context_t *otrv4_fragment_context_new(void);
 
 INTERNAL void otrv4_fragment_context_free(fragment_context_t *context);
 
-INTERNAL otrv4_err_t otrv4_fragment_message(int mms, otrv4_message_to_send_t *fragments,
-                                  int our_instance, int their_instance,
-                                  const string_t message);
+INTERNAL otrv4_err_t otrv4_fragment_message(int mms,
+                                            otrv4_message_to_send_t *fragments,
+                                            int our_instance,
+                                            int their_instance,
+                                            const string_t message);
 
 INTERNAL otrv4_err_t otrv4_unfragment_message(char **unfrag_msg,
-                                    fragment_context_t *context,
-                                    const string_t message,
-                                    const int our_instance_tag);
-
+                                              fragment_context_t *context,
+                                              const string_t message,
+                                              const int our_instance_tag);
 
 #ifdef OTRV4_FRAGMENT_PRIVATE
 #endif

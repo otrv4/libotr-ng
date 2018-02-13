@@ -32,14 +32,16 @@ otrv4_dake_identity_message_new(const user_profile_t *profile) {
   return identity_message;
 }
 
-INTERNAL void otrv4_dake_identity_message_destroy(dake_identity_message_t *identity_message) {
+INTERNAL void
+otrv4_dake_identity_message_destroy(dake_identity_message_t *identity_message) {
   otrv4_user_profile_destroy(identity_message->profile);
   otrv4_ec_point_destroy(identity_message->Y);
   otrv4_dh_mpi_release(identity_message->B);
   identity_message->B = NULL;
 }
 
-INTERNAL void otrv4_dake_identity_message_free(dake_identity_message_t *identity_message) {
+INTERNAL void
+otrv4_dake_identity_message_free(dake_identity_message_t *identity_message) {
   if (!identity_message)
     return;
 
@@ -54,7 +56,7 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_asprintf(
   size_t profile_len = 0;
   uint8_t *profile = NULL;
   if (otrv4_user_profile_asprintf(&profile, &profile_len,
-                            identity_message->profile)) {
+                                  identity_message->profile)) {
     return ERROR;
   }
 
@@ -69,8 +71,10 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_asprintf(
   uint8_t *cursor = buff;
   cursor += otrv4_serialize_uint16(cursor, VERSION);
   cursor += otrv4_serialize_uint8(cursor, IDENTITY_MSG_TYPE);
-  cursor += otrv4_serialize_uint32(cursor, identity_message->sender_instance_tag);
-  cursor += otrv4_serialize_uint32(cursor, identity_message->receiver_instance_tag);
+  cursor +=
+      otrv4_serialize_uint32(cursor, identity_message->sender_instance_tag);
+  cursor +=
+      otrv4_serialize_uint32(cursor, identity_message->receiver_instance_tag);
   cursor += otrv4_serialize_bytes_array(cursor, profile, profile_len);
   cursor += otrv4_serialize_ec_point(cursor, identity_message->Y);
 
@@ -78,7 +82,8 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_asprintf(
   profile = NULL;
 
   size_t len = 0;
-  otrv4_err_t err = otrv4_serialize_dh_public_key(cursor, &len, identity_message->B);
+  otrv4_err_t err =
+      otrv4_serialize_dh_public_key(cursor, &len, identity_message->B);
   if (err) {
     free(buff);
     buff = NULL;
@@ -95,9 +100,8 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_asprintf(
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_dake_identity_message_deserialize(dake_identity_message_t *dst,
-                                              const uint8_t *src,
-                                              size_t src_len) {
+INTERNAL otrv4_err_t otrv4_dake_identity_message_deserialize(
+    dake_identity_message_t *dst, const uint8_t *src, size_t src_len) {
   const uint8_t *cursor = src;
   int64_t len = src_len;
   size_t read = 0;
@@ -133,7 +137,8 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_deserialize(dake_identity_messa
   cursor += read;
   len -= read;
 
-  if (otrv4_deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
+  if (otrv4_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
+                               &read)) {
     return ERROR;
   }
 
@@ -174,11 +179,12 @@ INTERNAL void otrv4_dake_auth_r_destroy(dake_auth_r_t *auth_r) {
 }
 
 INTERNAL otrv4_err_t otrv4_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
-                                 const dake_auth_r_t *auth_r) {
+                                                const dake_auth_r_t *auth_r) {
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
-  if (otrv4_user_profile_asprintf(&our_profile, &our_profile_len, auth_r->profile)) {
+  if (otrv4_user_profile_asprintf(&our_profile, &our_profile_len,
+                                  auth_r->profile)) {
     return ERROR;
   }
 
@@ -222,8 +228,9 @@ INTERNAL otrv4_err_t otrv4_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_dake_auth_r_deserialize(dake_auth_r_t *dst, const uint8_t *buffer,
-                                    size_t buflen) {
+INTERNAL otrv4_err_t otrv4_dake_auth_r_deserialize(dake_auth_r_t *dst,
+                                                   const uint8_t *buffer,
+                                                   size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
   size_t read = 0;
@@ -259,7 +266,8 @@ INTERNAL otrv4_err_t otrv4_dake_auth_r_deserialize(dake_auth_r_t *dst, const uin
   cursor += read;
   len -= read;
 
-  if (otrv4_deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
+  if (otrv4_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
+                               &read)) {
     return ERROR;
   }
 
@@ -303,7 +311,7 @@ INTERNAL void otrv4_dake_auth_i_destroy(dake_auth_i_t *auth_i) {
 }
 
 INTERNAL otrv4_err_t otrv4_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
-                                 const dake_auth_i_t *auth_i) {
+                                                const dake_auth_i_t *auth_i) {
   size_t s = DAKE_HEADER_BYTES + SNIZKPK_BYTES;
   *dst = malloc(s);
 
@@ -325,8 +333,9 @@ INTERNAL otrv4_err_t otrv4_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_dake_auth_i_deserialize(dake_auth_i_t *dst, const uint8_t *buffer,
-                                    size_t buflen) {
+INTERNAL otrv4_err_t otrv4_dake_auth_i_deserialize(dake_auth_i_t *dst,
+                                                   const uint8_t *buffer,
+                                                   size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
   size_t read = 0;
@@ -362,7 +371,8 @@ INTERNAL otrv4_err_t otrv4_dake_auth_i_deserialize(dake_auth_i_t *dst, const uin
   cursor += read;
   len -= read;
 
-  if (otrv4_deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
+  if (otrv4_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
+                               &read)) {
     return ERROR;
   }
 
@@ -372,7 +382,8 @@ INTERNAL otrv4_err_t otrv4_dake_auth_i_deserialize(dake_auth_i_t *dst, const uin
   return otrv4_deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
 }
 
-INTERNAL dake_prekey_message_t *otrv4_dake_prekey_message_new(const user_profile_t *profile) {
+INTERNAL dake_prekey_message_t *
+otrv4_dake_prekey_message_new(const user_profile_t *profile) {
   if (profile == NULL)
     return NULL;
 
@@ -391,14 +402,16 @@ INTERNAL dake_prekey_message_t *otrv4_dake_prekey_message_new(const user_profile
   return prekey_message;
 }
 
-INTERNAL void otrv4_dake_prekey_message_destroy(dake_prekey_message_t *prekey_message) {
+INTERNAL void
+otrv4_dake_prekey_message_destroy(dake_prekey_message_t *prekey_message) {
   otrv4_user_profile_destroy(prekey_message->profile);
   otrv4_ec_point_destroy(prekey_message->Y);
   otrv4_dh_mpi_release(prekey_message->B);
   prekey_message->B = NULL;
 }
 
-INTERNAL void otrv4_dake_prekey_message_free(dake_prekey_message_t *prekey_message) {
+INTERNAL void
+otrv4_dake_prekey_message_free(dake_prekey_message_t *prekey_message) {
   if (!prekey_message)
     return;
 
@@ -407,12 +420,13 @@ INTERNAL void otrv4_dake_prekey_message_free(dake_prekey_message_t *prekey_messa
   prekey_message = NULL;
 }
 
-INTERNAL otrv4_err_t
-otrv4_dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
-                             const dake_prekey_message_t *prekey_message) {
+INTERNAL otrv4_err_t otrv4_dake_prekey_message_asprintf(
+    uint8_t **dst, size_t *nbytes,
+    const dake_prekey_message_t *prekey_message) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
-  if (otrv4_user_profile_asprintf(&profile, &profile_len, prekey_message->profile)) {
+  if (otrv4_user_profile_asprintf(&profile, &profile_len,
+                                  prekey_message->profile)) {
     return ERROR;
   }
 
@@ -428,7 +442,8 @@ otrv4_dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   cursor += otrv4_serialize_uint16(cursor, VERSION);
   cursor += otrv4_serialize_uint8(cursor, PRE_KEY_MSG_TYPE);
   cursor += otrv4_serialize_uint32(cursor, prekey_message->sender_instance_tag);
-  cursor += otrv4_serialize_uint32(cursor, prekey_message->receiver_instance_tag);
+  cursor +=
+      otrv4_serialize_uint32(cursor, prekey_message->receiver_instance_tag);
   cursor += otrv4_serialize_bytes_array(cursor, profile, profile_len);
   cursor += otrv4_serialize_ec_point(cursor, prekey_message->Y);
 
@@ -436,7 +451,8 @@ otrv4_dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   profile = NULL;
 
   size_t len = 0;
-  otrv4_err_t err = otrv4_serialize_dh_public_key(cursor, &len, prekey_message->B);
+  otrv4_err_t err =
+      otrv4_serialize_dh_public_key(cursor, &len, prekey_message->B);
   if (err) {
     free(buff);
     buff = NULL;
@@ -453,9 +469,8 @@ otrv4_dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_dake_prekey_message_deserialize(dake_prekey_message_t *dst,
-                                            const uint8_t *src,
-                                            size_t src_len) {
+INTERNAL otrv4_err_t otrv4_dake_prekey_message_deserialize(
+    dake_prekey_message_t *dst, const uint8_t *src, size_t src_len) {
   const uint8_t *cursor = src;
   int64_t len = src_len;
   size_t read = 0;
@@ -491,7 +506,8 @@ INTERNAL otrv4_err_t otrv4_dake_prekey_message_deserialize(dake_prekey_message_t
   cursor += read;
   len -= read;
 
-  if (otrv4_deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read)) {
+  if (otrv4_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
+                               &read)) {
     return ERROR;
   }
 
@@ -549,7 +565,7 @@ INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_asprintf(
   uint8_t *our_profile = NULL;
 
   if (otrv4_user_profile_asprintf(&our_profile, &our_profile_len,
-                            non_interactive_auth->profile))
+                                  non_interactive_auth->profile))
     return ERROR;
 
   size_t s = NON_INT_AUTH_BYTES + our_profile_len + data_msg_len;
@@ -564,9 +580,10 @@ INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_asprintf(
   uint8_t *cursor = buff;
   cursor += otrv4_serialize_uint16(cursor, VERSION);
   cursor += otrv4_serialize_uint8(cursor, NON_INT_AUTH_MSG_TYPE);
-  cursor += otrv4_serialize_uint32(cursor, non_interactive_auth->sender_instance_tag);
   cursor +=
-      otrv4_serialize_uint32(cursor, non_interactive_auth->receiver_instance_tag);
+      otrv4_serialize_uint32(cursor, non_interactive_auth->sender_instance_tag);
+  cursor += otrv4_serialize_uint32(cursor,
+                                   non_interactive_auth->receiver_instance_tag);
   cursor += otrv4_serialize_bytes_array(cursor, our_profile, our_profile_len);
   cursor += otrv4_serialize_ec_point(cursor, non_interactive_auth->X);
 
@@ -588,13 +605,13 @@ INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_asprintf(
   if (non_interactive_auth->enc_msg) {
     cursor += otrv4_serialize_uint32(cursor, non_interactive_auth->message_id);
     cursor += otrv4_serialize_bytes_array(cursor, non_interactive_auth->nonce,
-                                    DATA_MSG_NONCE_BYTES);
+                                          DATA_MSG_NONCE_BYTES);
     cursor += otrv4_serialize_data(cursor, non_interactive_auth->enc_msg,
-                             non_interactive_auth->enc_msg_len);
+                                   non_interactive_auth->enc_msg_len);
   }
 
   cursor += otrv4_serialize_bytes_array(cursor, non_interactive_auth->auth_mac,
-                                  sizeof(non_interactive_auth->auth_mac));
+                                        sizeof(non_interactive_auth->auth_mac));
 
   if (dst)
     *dst = buff;
@@ -682,8 +699,8 @@ INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_deserialize(
     cursor += read;
     len -= read;
 
-    if (otrv4_deserialize_bytes_array((uint8_t *)&dst->nonce, DATA_MSG_NONCE_BYTES,
-                                cursor, len))
+    if (otrv4_deserialize_bytes_array((uint8_t *)&dst->nonce,
+                                      DATA_MSG_NONCE_BYTES, cursor, len))
       return ERROR;
 
     cursor += DATA_MSG_NONCE_BYTES;
@@ -718,9 +735,9 @@ tstatic otrv4_bool_t no_rollback_detected(const char *versions) {
   return otrv4_true;
 }
 
-INTERNAL otrv4_bool_t otrv4_valid_received_values(const ec_point_t their_ecdh,
-                                   const dh_mpi_t their_dh,
-                                   const user_profile_t *profile) {
+INTERNAL otrv4_bool_t otrv4_valid_received_values(
+    const ec_point_t their_ecdh, const dh_mpi_t their_dh,
+    const user_profile_t *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */
   if (otrv4_ec_point_valid(their_ecdh) == otrv4_false)
     return otrv4_false;

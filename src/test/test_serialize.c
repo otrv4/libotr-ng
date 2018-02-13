@@ -63,11 +63,11 @@ void test_ser_des_otrv4_public_key() {
   otrv4_keypair_generate(keypair, sym);
 
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(otrv4_serialize_otrv4_public_key(serialized, keypair->pub), ==,
-                  ED448_PUBKEY_BYTES);
+  g_assert_cmpint(otrv4_serialize_otrv4_public_key(serialized, keypair->pub),
+                  ==, ED448_PUBKEY_BYTES);
   otrv4_assert(otrv4_deserialize_otrv4_public_key(deserialized, serialized,
-                                            ED448_PUBKEY_BYTES,
-                                            NULL) == SUCCESS);
+                                                  ED448_PUBKEY_BYTES,
+                                                  NULL) == SUCCESS);
 
   otrv4_assert(otrv4_ec_point_valid(deserialized) == otrv4_true);
 
@@ -81,15 +81,17 @@ void test_ser_des_otrv4_shared_prekey() {
   otrv4_shared_prekey_pair_generate(shared_prekey, sym);
 
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(otrv4_serialize_otrv4_shared_prekey(serialized, shared_prekey->pub),
-                  ==, ED448_PUBKEY_BYTES);
+  g_assert_cmpint(
+      otrv4_serialize_otrv4_shared_prekey(serialized, shared_prekey->pub), ==,
+      ED448_PUBKEY_BYTES);
   otrv4_assert(otrv4_deserialize_otrv4_shared_prekey(deserialized, serialized,
-                                               ED448_PUBKEY_BYTES,
-                                               NULL) == SUCCESS);
+                                                     ED448_PUBKEY_BYTES,
+                                                     NULL) == SUCCESS);
 
   otrv4_assert(otrv4_ec_point_valid(deserialized) == otrv4_true);
 
-  otrv4_assert(otrv4_ec_point_eq(deserialized, shared_prekey->pub) == otrv4_true);
+  otrv4_assert(otrv4_ec_point_eq(deserialized, shared_prekey->pub) ==
+               otrv4_true);
   otrv4_shared_prekey_pair_free(shared_prekey);
 }
 

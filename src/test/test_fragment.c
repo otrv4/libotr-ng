@@ -8,7 +8,8 @@ void test_create_fragments(void) {
   int mms = 40;
   char *message = "one two tree";
 
-  otrv4_message_to_send_t *frag_message = malloc(sizeof(otrv4_message_to_send_t));
+  otrv4_message_to_send_t *frag_message =
+      malloc(sizeof(otrv4_message_to_send_t));
 
   otrv4_assert(otrv4_fragment_message(mms, frag_message, 1, 2, message) ==
                SUCCESS);
@@ -67,8 +68,7 @@ void test_defragment_single_fragment(void) {
   context = otrv4_fragment_context_new();
 
   char *unfrag = NULL;
-  otrv4_assert(otrv4_unfragment_message(&unfrag, context, msg, 2) ==
-               SUCCESS);
+  otrv4_assert(otrv4_unfragment_message(&unfrag, context, msg, 2) == SUCCESS);
 
   g_assert_cmpint(context->N, ==, 1);
   g_assert_cmpint(context->K, ==, 1);

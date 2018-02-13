@@ -3,8 +3,8 @@
 
 #include <gcrypt.h>
 
-#include "shared.h"
 #include "ed448.h"
+#include "shared.h"
 
 static inline void random_bytes(void *const buf, const size_t size) {
   gcry_randomize(buf, size, GCRY_STRONG_RANDOM);

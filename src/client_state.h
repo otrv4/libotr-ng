@@ -7,9 +7,9 @@
 
 #include <libotr/userstate.h>
 
-#include "shared.h"
 #include "client_callbacks.h"
 #include "keys.h"
+#include "shared.h"
 
 typedef struct heartbeat_t {
   int time;
@@ -46,21 +46,25 @@ typedef struct otrv4_client_state_t {
 } otrv4_client_state_t;
 
 API int otrv4_client_state_instance_tag_read_FILEp(otrv4_client_state_t *state,
-                                              FILE *instag);
+                                                   FILE *instag);
 
-INTERNAL unsigned int otrv4_client_state_get_instance_tag(otrv4_client_state_t *state);
+INTERNAL unsigned int
+otrv4_client_state_get_instance_tag(otrv4_client_state_t *state);
 
 INTERNAL int otrv4_client_state_add_instance_tag(otrv4_client_state_t *state,
-                                       unsigned int instag);
+                                                 unsigned int instag);
 
-INTERNAL int otrv4_client_state_add_shared_prekey_v4(
-    otrv4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
+INTERNAL int
+otrv4_client_state_add_shared_prekey_v4(otrv4_client_state_t *state,
+                                        const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-INTERNAL int otrv4_client_state_private_key_v4_read_FILEp(otrv4_client_state_t *state,
-                                                FILE *privf);
+INTERNAL int
+otrv4_client_state_private_key_v4_read_FILEp(otrv4_client_state_t *state,
+                                             FILE *privf);
 
-INTERNAL int otrv4_client_state_private_key_v4_write_FILEp(otrv4_client_state_t *state,
-                                                 FILE *privf);
+INTERNAL int
+otrv4_client_state_private_key_v4_write_FILEp(otrv4_client_state_t *state,
+                                              FILE *privf);
 
 INTERNAL int otrv4_client_state_private_key_v3_generate_FILEp(
     const otrv4_client_state_t *state, FILE *privf);
@@ -68,8 +72,9 @@ INTERNAL int otrv4_client_state_private_key_v3_generate_FILEp(
 INTERNAL otrv4_keypair_t *
 otrv4_client_state_get_private_key_v4(otrv4_client_state_t *state);
 
-INTERNAL int otrv4_client_state_add_private_key_v4(
-    otrv4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
+INTERNAL int
+otrv4_client_state_add_private_key_v4(otrv4_client_state_t *state,
+                                      const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 INTERNAL void otrv4_client_state_free(otrv4_client_state_t *);
 

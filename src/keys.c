@@ -1,6 +1,6 @@
 #include <assert.h>
-#include <stdlib.h>
 #include <libotr/b64.h>
+#include <stdlib.h>
 
 #define OTRV4_KEYS_PRIVATE
 
@@ -19,7 +19,7 @@ INTERNAL otrv4_keypair_t *otrv4_keypair_new(void) {
 }
 
 INTERNAL void otrv4_keypair_generate(otrv4_keypair_t *keypair,
-                            const uint8_t sym[ED448_PRIVATE_BYTES]) {
+                                     const uint8_t sym[ED448_PRIVATE_BYTES]) {
   memcpy(keypair->sym, sym, ED448_PRIVATE_BYTES);
   otrv4_ec_scalar_derive_from_secret(keypair->priv, keypair->sym);
 
@@ -45,8 +45,8 @@ INTERNAL void otrv4_keypair_free(otrv4_keypair_t *keypair) {
   keypair = NULL;
 }
 
-INTERNAL otrv4_err_t otrv4_symmetric_key_serialize(char **buffer, size_t *buffer_size,
-                                          uint8_t sym[ED448_PRIVATE_BYTES]) {
+INTERNAL otrv4_err_t otrv4_symmetric_key_serialize(
+    char **buffer, size_t *buffer_size, uint8_t sym[ED448_PRIVATE_BYTES]) {
   *buffer = malloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
   if (!*buffer)
     return ERROR;
@@ -66,8 +66,9 @@ INTERNAL otrv4_shared_prekey_pair_t *otrv4_shared_prekey_pair_new(void) {
   return ret;
 }
 
-INTERNAL void otrv4_shared_prekey_pair_generate(otrv4_shared_prekey_pair_t *prekey_pair,
-                                       const uint8_t sym[ED448_PRIVATE_BYTES]) {
+INTERNAL void
+otrv4_shared_prekey_pair_generate(otrv4_shared_prekey_pair_t *prekey_pair,
+                                  const uint8_t sym[ED448_PRIVATE_BYTES]) {
   memcpy(prekey_pair->sym, sym, ED448_PRIVATE_BYTES);
   otrv4_ec_scalar_derive_from_secret(prekey_pair->priv, prekey_pair->sym);
 
@@ -78,13 +79,15 @@ INTERNAL void otrv4_shared_prekey_pair_generate(otrv4_shared_prekey_pair_t *prek
   decaf_bzero(pub, ED448_POINT_BYTES);
 }
 
-tstatic void shared_prekey_pair_destroy(otrv4_shared_prekey_pair_t *prekey_pair) {
+tstatic void
+shared_prekey_pair_destroy(otrv4_shared_prekey_pair_t *prekey_pair) {
   decaf_bzero(prekey_pair->sym, ED448_PRIVATE_BYTES);
   otrv4_ec_scalar_destroy(prekey_pair->priv);
   otrv4_ec_point_destroy(prekey_pair->pub);
 }
 
-INTERNAL void otrv4_shared_prekey_pair_free(otrv4_shared_prekey_pair_t *prekey_pair) {
+INTERNAL void
+otrv4_shared_prekey_pair_free(otrv4_shared_prekey_pair_t *prekey_pair) {
   if (!prekey_pair)
     return;
 

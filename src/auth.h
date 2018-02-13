@@ -3,9 +3,9 @@
 
 #include <stddef.h>
 
-#include "shared.h"
 #include "ed448.h"
 #include "keys.h"
+#include "shared.h"
 
 #define SNIZKPK_BYTES 6 * ED448_SCALAR_BYTES
 
@@ -24,17 +24,20 @@ typedef struct {
 
 INTERNAL void otrv4_snizkpk_keypair_generate(snizkpk_keypair_t *pair);
 
-INTERNAL void otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
-                          const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
-                          const unsigned char *msg, size_t msglen);
+INTERNAL void
+otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
+                           const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
+                           const unsigned char *msg, size_t msglen);
 
 INTERNAL otrv4_bool_t otrv4_snizkpk_verify(const snizkpk_proof_t *src,
-                            const snizkpk_pubkey_t A1,
-                            const snizkpk_pubkey_t A2,
-                            const snizkpk_pubkey_t A3, const unsigned char *msg,
-                            size_t msglen);
+                                           const snizkpk_pubkey_t A1,
+                                           const snizkpk_pubkey_t A2,
+                                           const snizkpk_pubkey_t A3,
+                                           const unsigned char *msg,
+                                           size_t msglen);
 
-INTERNAL void otrv4_generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv);
+INTERNAL void otrv4_generate_keypair(snizkpk_pubkey_t pub,
+                                     snizkpk_privkey_t priv);
 
 INTERNAL void otrv4_snizkpk_proof_destroy(snizkpk_proof_t *src);
 

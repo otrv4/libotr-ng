@@ -1,22 +1,21 @@
-#include <string.h>
 #include <libotr/b64.h>
 #include <libotr/privkey.h>
+#include <string.h>
 
 #include "../list.h"
 #include "../otrv4.h"
 #include "../str.h"
 
-
 #define assert_msg_sent(err, to_send)                                          \
   do {                                                                         \
-    otrv4_assert(err == SUCCESS);                                         \
+    otrv4_assert(err == SUCCESS);                                              \
     otrv4_assert(to_send);                                                     \
     otrv4_assert_cmpmem("?OTR:AAQD", to_send, 9);                              \
   } while (0);
 
 #define assert_msg_rec(err, message, response)                                 \
   do {                                                                         \
-    otrv4_assert(err == SUCCESS);                                         \
+    otrv4_assert(err == SUCCESS);                                              \
     otrv4_assert_cmpmem(message, response->to_display, strlen(message) + 1);   \
     otrv4_assert(response->to_send == NULL);                                   \
   } while (0);
@@ -24,7 +23,7 @@
 #define assert_rec_msg_inc_state(result, respond_to, sender, otr_state,        \
                                  send_response)                                \
   do {                                                                         \
-    otrv4_assert((result) == SUCCESS);                                    \
+    otrv4_assert((result) == SUCCESS);                                         \
     otrv4_assert(!respond_to->to_display);                                     \
     otrv4_assert(sender->state == otr_state);                                  \
     if (send_response) {                                                       \
@@ -59,8 +58,9 @@ static void set_up_client_state(otrv4_client_state_t *state,
 }
 
 // TODO: a cliente state is not part of a otr creation
-static otrv4_t *set_up_otr(otrv4_client_state_t *state, const char *account_name,
-                           const char *phi, int byte) {
+static otrv4_t *set_up_otr(otrv4_client_state_t *state,
+                           const char *account_name, const char *phi,
+                           int byte) {
   set_up_client_state(state, account_name, phi, byte);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
@@ -110,7 +110,8 @@ void test_api_interactive_conversation(void) {
 
     free_message_and_response(response_to_alice, &to_send);
 
-    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, message_id - 1);
+    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==,
+                    message_id - 1);
 
     // Next message Bob sends is a new "ratchet"
     g_assert_cmpint(bob->keys->i, ==, 0);
@@ -224,7 +225,8 @@ void test_api_interactive_conversation_bob(void) {
 
     free_message_and_response(response_to_alice, &to_send);
 
-    g_assert_cmpint(otrv4_list_len(alice->keys->old_mac_keys), ==, message_id - 1);
+    g_assert_cmpint(otrv4_list_len(alice->keys->old_mac_keys), ==,
+                    message_id - 1);
 
     // Next message Bob sends is a new "ratchet"
     g_assert_cmpint(alice->keys->i, ==, 0);
@@ -272,8 +274,7 @@ void test_api_non_interactive_conversation(void) {
 
   // Bob receives prekey message
   otrv4_assert(otrv4_receive_message(response_to_alice,
-                                     response_to_bob->to_send,
-                                     bob) == SUCCESS);
+                                     response_to_bob->to_send, bob) == SUCCESS);
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
@@ -286,8 +287,8 @@ void test_api_non_interactive_conversation(void) {
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
-  otrv4_assert(otrv4_send_non_interactive_auth_msg(&response_to_alice->to_send, bob,
-                                             "") == SUCCESS);
+  otrv4_assert(otrv4_send_non_interactive_auth_msg(&response_to_alice->to_send,
+                                                   bob, "") == SUCCESS);
 
   // Should send an non interactive auth
   otrv4_assert(response_to_alice->to_display == NULL);
@@ -326,8 +327,8 @@ void test_api_non_interactive_conversation(void) {
 
   chain_key_t bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
-  otrv4_assert(key_manager_get_receiving_chain_key(
-                   alice_receiving_key, 0, alice->keys) == SUCCESS);
+  otrv4_assert(key_manager_get_receiving_chain_key(alice_receiving_key, 0,
+                                                   alice->keys) == SUCCESS);
   otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
   int message_id;
@@ -357,7 +358,8 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_rec(err, "hi", response_to_alice);
     otrv4_assert(bob->keys->old_mac_keys);
 
-    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, message_id - 1);
+    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==,
+                    message_id - 1);
 
     // Next message Bob sends is a new "ratchet"
     g_assert_cmpint(bob->keys->i, ==, 0);
@@ -457,8 +459,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   // Bob receives prekey message
   otrv4_assert(otrv4_receive_message(response_to_alice,
-                                     response_to_bob->to_send,
-                                     bob) == SUCCESS);
+                                     response_to_bob->to_send, bob) == SUCCESS);
 
   otrv4_assert(bob->state == OTRV4_STATE_ENCRYPTED_MESSAGES);
   otrv4_assert(bob->keys->current);
@@ -469,8 +470,8 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
-  otrv4_assert(otrv4_send_non_interactive_auth_msg(&response_to_alice->to_send, bob,
-                                             "hi") == SUCCESS);
+  otrv4_assert(otrv4_send_non_interactive_auth_msg(&response_to_alice->to_send,
+                                                   bob, "hi") == SUCCESS);
 
   // Should send an non interactive auth
   otrv4_assert(response_to_alice->to_display == NULL);
@@ -512,8 +513,8 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   chain_key_t bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
-  otrv4_assert(key_manager_get_receiving_chain_key(
-                   alice_receiving_key, 0, alice->keys) == SUCCESS);
+  otrv4_assert(key_manager_get_receiving_chain_key(alice_receiving_key, 0,
+                                                   alice->keys) == SUCCESS);
   otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
   int message_id;
@@ -545,7 +546,8 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
     free_message_and_response(response_to_alice, &to_send);
 
-    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, message_id - 1);
+    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==,
+                    message_id - 1);
 
     // Next message Bob sends is a new "ratchet"
     g_assert_cmpint(bob->keys->i, ==, 0);
@@ -707,8 +709,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
 
   // Alice sends query message
   string_t query_message = NULL;
-  otrv4_assert(otrv4_build_query_message(&query_message, "", alice) ==
-               SUCCESS);
+  otrv4_assert(otrv4_build_query_message(&query_message, "", alice) == SUCCESS);
   otrv4_assert_cmpmem("?OTRv3", query_message, 6);
 
   // Bob receives query message
@@ -736,8 +737,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
 
   // Bob receives a DH Key
   otrv4_assert(otrv4_receive_message(response_to_alice,
-                                     response_to_bob->to_send,
-                                     bob) == SUCCESS);
+                                     response_to_bob->to_send, bob) == SUCCESS);
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
@@ -763,8 +763,7 @@ static void do_ake_otr3(otrv4_t *alice, otrv4_t *bob) {
 
   // Bob receives a Sig
   otrv4_assert(otrv4_receive_message(response_to_alice,
-                                     response_to_bob->to_send,
-                                     bob) == SUCCESS);
+                                     response_to_bob->to_send, bob) == SUCCESS);
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
@@ -1048,8 +1047,7 @@ void test_api_smp(void) {
   // Bob receives SMP3
   response_to_alice = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_alice,
-                                     response_to_bob->to_send,
-                                     bob) == SUCCESS);
+                                     response_to_bob->to_send, bob) == SUCCESS);
   otrv4_response_free(response_to_bob);
 
   otrv4_assert(response_to_alice->to_send);

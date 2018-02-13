@@ -10,7 +10,8 @@
 // Marker macro for internal functions - expands to nothing
 #define INTERNAL
 
-// Marker macro for API functions - expands to nothing - but will be used later to remind ourselves on what to expose, and where to change naming
+// Marker macro for API functions - expands to nothing - but will be used later
+// to remind ourselves on what to expose, and where to change naming
 #define API
 
 #endif

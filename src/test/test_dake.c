@@ -14,12 +14,12 @@ void test_snizkpk_auth() {
   otrv4_snizkpk_keypair_generate(pair2);
   otrv4_snizkpk_keypair_generate(pair3);
 
-  otrv4_snizkpk_authenticate(dst, pair1, pair2->pub, pair3->pub, (unsigned char *)msg,
-                       strlen(msg));
+  otrv4_snizkpk_authenticate(dst, pair1, pair2->pub, pair3->pub,
+                             (unsigned char *)msg, strlen(msg));
 
   otrv4_assert(otrv4_snizkpk_verify(dst, pair1->pub, pair2->pub, pair3->pub,
-                              (unsigned char *)msg,
-                              strlen(msg)) == SUCCESS);
+                                    (unsigned char *)msg,
+                                    strlen(msg)) == SUCCESS);
 
   // Serialize and deserialize things.
   otrv4_keypair_t p1[1], p2[1], p3[1];
@@ -32,9 +32,9 @@ void test_snizkpk_auth() {
 
   snizkpk_proof_t dst2[1];
   otrv4_snizkpk_authenticate(dst2, p1, p2->pub, p3->pub, (unsigned char *)msg,
-                       strlen(msg));
+                             strlen(msg));
 
   otrv4_assert(otrv4_snizkpk_verify(dst2, p1->pub, p2->pub, p3->pub,
-                              (unsigned char *)msg,
-                              strlen(msg)) == SUCCESS);
+                                    (unsigned char *)msg,
+                                    strlen(msg)) == SUCCESS);
 }

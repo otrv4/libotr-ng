@@ -28,7 +28,8 @@ tstatic user_profile_t *user_profile_new(const string_t versions) {
   return profile;
 }
 
-INTERNAL void otrv4_user_profile_copy(user_profile_t *dst, const user_profile_t *src) {
+INTERNAL void otrv4_user_profile_copy(user_profile_t *dst,
+                                      const user_profile_t *src) {
   // TODO should we set dst to a valid (but empty) profile?
   if (!src)
     return;
@@ -61,12 +62,12 @@ INTERNAL void otrv4_user_profile_free(user_profile_t *profile) {
 }
 
 tstatic int user_profile_body_serialize(uint8_t *dst,
-                                       const user_profile_t *profile) {
+                                        const user_profile_t *profile) {
   uint8_t *target = dst;
 
   target += otrv4_serialize_otrv4_public_key(target, profile->pub_key);
   target += otrv4_serialize_data(target, (uint8_t *)profile->versions,
-                           strlen(profile->versions) + 1);
+                                 strlen(profile->versions) + 1);
   target += otrv4_serialize_uint64(target, profile->expires);
   target += otrv4_serialize_otrv4_shared_prekey(target, profile->shared_prekey);
 
@@ -74,7 +75,7 @@ tstatic int user_profile_body_serialize(uint8_t *dst,
 }
 
 tstatic otrv4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
-                                       const user_profile_t *profile) {
+                                               const user_profile_t *profile) {
   size_t s = ED448_PUBKEY_BYTES + strlen(profile->versions) +
              ED448_SHARED_PREKEY_BYTES + 1 + 4 + 8;
 
@@ -91,8 +92,8 @@ tstatic otrv4_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
-                                  const user_profile_t *profile) {
+INTERNAL otrv4_err_t otrv4_user_profile_asprintf(
+    uint8_t **dst, size_t *nbytes, const user_profile_t *profile) {
   // TODO: should it checked here for signature?
   if (!(profile->signature > 0))
     return ERROR;
@@ -115,7 +116,7 @@ INTERNAL otrv4_err_t otrv4_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
   uint8_t *cursor = buff;
   cursor += otrv4_serialize_bytes_array(cursor, body, body_len);
   cursor += otrv4_serialize_bytes_array(cursor, profile->signature,
-                                  sizeof(eddsa_signature_t));
+                                        sizeof(eddsa_signature_t));
   cursor += otrv4_serialize_mpi(cursor, profile->transitional_signature);
 
   *dst = buff;
@@ -129,8 +130,9 @@ INTERNAL otrv4_err_t otrv4_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
 }
 
 INTERNAL otrv4_err_t otrv4_user_profile_deserialize(user_profile_t *target,
-                                     const uint8_t *buffer, size_t buflen,
-                                     size_t *nread) {
+                                                    const uint8_t *buffer,
+                                                    size_t buflen,
+                                                    size_t *nread) {
   size_t read = 0;
   int walked = 0;
 
@@ -139,25 +141,26 @@ INTERNAL otrv4_err_t otrv4_user_profile_deserialize(user_profile_t *target,
 
   otrv4_err_t ok = ERROR;
   do {
-    if (otrv4_deserialize_otrv4_public_key(target->pub_key, buffer, buflen, &read))
+    if (otrv4_deserialize_otrv4_public_key(target->pub_key, buffer, buflen,
+                                           &read))
       continue;
 
     walked += read;
 
     if (otrv4_deserialize_data((uint8_t **)&target->versions, buffer + walked,
-                         buflen - walked, &read))
+                               buflen - walked, &read))
       continue;
 
     walked += read;
 
-    if (otrv4_deserialize_uint64(&target->expires, buffer + walked, buflen - walked,
-                           &read))
+    if (otrv4_deserialize_uint64(&target->expires, buffer + walked,
+                                 buflen - walked, &read))
       continue;
 
     walked += read;
 
-    if (otrv4_deserialize_otrv4_shared_prekey(target->shared_prekey, buffer + walked,
-                                        buflen - walked, &read))
+    if (otrv4_deserialize_otrv4_shared_prekey(
+            target->shared_prekey, buffer + walked, buflen - walked, &read))
       continue;
 
     walked += read;
@@ -171,7 +174,7 @@ INTERNAL otrv4_err_t otrv4_user_profile_deserialize(user_profile_t *target,
     walked += sizeof(eddsa_signature_t);
 
     if (otrv4_mpi_deserialize(target->transitional_signature, buffer + walked,
-                            buflen - walked, &read))
+                              buflen - walked, &read))
       continue;
 
     walked += read;
@@ -186,7 +189,7 @@ INTERNAL otrv4_err_t otrv4_user_profile_deserialize(user_profile_t *target,
 }
 
 tstatic otrv4_err_t user_profile_sign(user_profile_t *profile,
-                              const otrv4_keypair_t *keypair) {
+                                      const otrv4_keypair_t *keypair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
@@ -198,7 +201,8 @@ tstatic otrv4_err_t user_profile_sign(user_profile_t *profile,
   otrv4_ec_point_serialize(pubkey, keypair->pub);
 
   // maybe otrv4_ec_derive_public_key again?
-  otrv4_ec_sign(profile->signature, (uint8_t *)keypair->sym, pubkey, body, bodylen);
+  otrv4_ec_sign(profile->signature, (uint8_t *)keypair->sym, pubkey, body,
+                bodylen);
 
   free(body);
   body = NULL;
@@ -207,7 +211,8 @@ tstatic otrv4_err_t user_profile_sign(user_profile_t *profile,
 
 // TODO: I dont think this needs the data structure. Could verify from the
 // deserialized bytes.
-INTERNAL otrv4_bool_t otrv4_user_profile_verify_signature(const user_profile_t *profile) {
+INTERNAL otrv4_bool_t
+otrv4_user_profile_verify_signature(const user_profile_t *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
@@ -223,7 +228,8 @@ INTERNAL otrv4_bool_t otrv4_user_profile_verify_signature(const user_profile_t *
   uint8_t pubkey[ED448_POINT_BYTES];
   otrv4_ec_point_serialize(pubkey, profile->pub_key);
 
-  otrv4_bool_t valid = otrv4_ec_verify(profile->signature, pubkey, body, bodylen);
+  otrv4_bool_t valid =
+      otrv4_ec_verify(profile->signature, pubkey, body, bodylen);
 
   free(body);
   body = NULL;
@@ -233,7 +239,7 @@ INTERNAL otrv4_bool_t otrv4_user_profile_verify_signature(const user_profile_t *
 
 INTERNAL user_profile_t *
 otrv4_user_profile_build(const string_t versions, otrv4_keypair_t *keypair,
-                   otrv4_shared_prekey_pair_t *shared_prekey_pair) {
+                         otrv4_shared_prekey_pair_t *shared_prekey_pair) {
   user_profile_t *profile = user_profile_new(versions);
   if (!profile)
     return NULL;

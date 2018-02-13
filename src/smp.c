@@ -54,9 +54,11 @@ INTERNAL void otrv4_smp_destroy(smp_context_t smp) {
 }
 
 // TODO: return err here?
-INTERNAL void otrv4_generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
-                         otrv4_fingerprint_t their_fp, uint8_t *ssid,
-                         const uint8_t *answer, size_t answerlen) {
+INTERNAL void otrv4_generate_smp_secret(unsigned char **secret,
+                                        otrv4_fingerprint_t our_fp,
+                                        otrv4_fingerprint_t their_fp,
+                                        uint8_t *ssid, const uint8_t *answer,
+                                        size_t answerlen) {
   uint8_t version[1] = {0x01};
 
   uint8_t hash[HASH_BYTES];
@@ -79,8 +81,8 @@ INTERNAL void otrv4_generate_smp_secret(unsigned char **secret, otrv4_fingerprin
   memcpy(*secret, hash, HASH_BYTES);
 }
 
-tstatic otrv4_err_t hashToScalar(const unsigned char *buff, const size_t bufflen,
-                         ec_scalar_t dst) {
+tstatic otrv4_err_t hashToScalar(const unsigned char *buff,
+                                 const size_t bufflen, ec_scalar_t dst) {
   uint8_t hash[HASH_BYTES];
   shake_256_hash(hash, sizeof(hash), buff, bufflen);
 
@@ -90,7 +92,8 @@ tstatic otrv4_err_t hashToScalar(const unsigned char *buff, const size_t bufflen
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp) {
+INTERNAL otrv4_err_t otrv4_generate_smp_msg_1(smp_msg_1_t *dst,
+                                              smp_context_t smp) {
   snizkpk_keypair_t pair_r2[1], pair_r3[1];
   unsigned char hash[ED448_POINT_BYTES + 1];
   ec_scalar_t a3c3, a2c2;
@@ -147,7 +150,7 @@ tstatic void smp_msg_1_copy(smp_msg_1_t *dst, const smp_msg_1_t *src) {
 }
 
 INTERNAL otrv4_err_t otrv4_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
-                               const smp_msg_1_t *msg) {
+                                              const smp_msg_1_t *msg) {
   size_t s = 0;
 
   s += 4;
@@ -280,8 +283,9 @@ INTERNAL void otrv4_smp_msg_1_destroy(smp_msg_1_t *msg) {
   otrv4_ec_scalar_destroy(msg->d3);
 }
 
-tstatic otrv4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
-                               smp_context_t smp) {
+tstatic otrv4_err_t generate_smp_msg_2(smp_msg_2_t *dst,
+                                       const smp_msg_1_t *msg_1,
+                                       smp_context_t smp) {
   ec_scalar_t b2;
   snizkpk_keypair_t pair_r2[1], pair_r3[1], pair_r4[1], pair_r5[1];
   ec_scalar_t r6;
@@ -369,7 +373,7 @@ tstatic otrv4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_
 }
 
 tstatic otrv4_err_t smp_msg_2_asprintf(uint8_t **dst, size_t *len,
-                               const smp_msg_2_t *msg) {
+                                       const smp_msg_2_t *msg) {
   uint8_t *cursor;
   size_t s = 0;
   s += 4 * ED448_POINT_BYTES;
@@ -475,7 +479,7 @@ tstatic otrv4_bool_t smp_msg_2_valid_points(smp_msg_2_t *msg) {
 }
 
 tstatic otrv4_bool_t smp_msg_2_valid_zkp(smp_msg_2_t *msg,
-                                        const smp_context_t smp) {
+                                         const smp_context_t smp) {
   uint8_t hash[ED448_POINT_BYTES + 1];
   ec_scalar_t temp_scalar;
   ec_point_t Gb_c, G_d, point_cp;
@@ -550,8 +554,9 @@ tstatic void smp_msg_2_destroy(smp_msg_2_t *msg) {
   otrv4_ec_scalar_destroy(msg->d6);
 }
 
-tstatic otrv4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
-                               smp_context_t smp) {
+tstatic otrv4_err_t generate_smp_msg_3(smp_msg_3_t *dst,
+                                       const smp_msg_2_t *msg_2,
+                                       smp_context_t smp) {
   snizkpk_keypair_t pair_r4[1], pair_r5[1], pair_r7[1];
   ec_scalar_t r6, secret_as_scalar;
   ec_point_t temp_point;
@@ -620,7 +625,7 @@ tstatic otrv4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_
 }
 
 tstatic otrv4_err_t smp_msg_3_asprintf(uint8_t **dst, size_t *len,
-                               const smp_msg_3_t *msg) {
+                                       const smp_msg_3_t *msg) {
   uint8_t *cursor;
   size_t s = 0;
 
@@ -706,7 +711,7 @@ tstatic otrv4_bool_t smp_msg_3_validate_points(smp_msg_3_t *msg) {
 }
 
 tstatic otrv4_bool_t smp_msg_3_validate_zkp(smp_msg_3_t *msg,
-                                           const smp_context_t smp) {
+                                            const smp_context_t smp) {
   uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
@@ -766,8 +771,9 @@ tstatic void smp_msg_3_destroy(smp_msg_3_t *msg) {
   otrv4_ec_scalar_destroy(msg->d7);
 }
 
-tstatic otrv4_err_t generate_smp_msg_4(smp_msg_4_t *dst, const smp_msg_3_t *msg_3,
-                               smp_context_t smp) {
+tstatic otrv4_err_t generate_smp_msg_4(smp_msg_4_t *dst,
+                                       const smp_msg_3_t *msg_3,
+                                       smp_context_t smp) {
   uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t Qa_Qb;
   snizkpk_keypair_t pair_r7[1];
@@ -794,7 +800,8 @@ tstatic otrv4_err_t generate_smp_msg_4(smp_msg_4_t *dst, const smp_msg_3_t *msg_
   return SUCCESS;
 }
 
-tstatic otrv4_err_t smp_msg_4_asprintf(uint8_t **dst, size_t *len, smp_msg_4_t *msg) {
+tstatic otrv4_err_t smp_msg_4_asprintf(uint8_t **dst, size_t *len,
+                                       smp_msg_4_t *msg) {
   size_t s = 0;
 
   s += ED448_POINT_BYTES;
@@ -840,7 +847,7 @@ tstatic otrv4_err_t smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv) {
 }
 
 tstatic otrv4_bool_t smp_msg_4_validate_zkp(smp_msg_4_t *msg,
-                                           const smp_context_t smp) {
+                                            const smp_context_t smp) {
   uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
@@ -875,7 +882,7 @@ tstatic void smp_msg_4_destroy(smp_msg_4_t *msg) {
 }
 
 tstatic otrv4_bool_t smp_is_valid_for_msg_3(const smp_msg_3_t *msg,
-                                           smp_context_t smp) {
+                                            smp_context_t smp) {
   ec_point_t Rab, Pa_Pb;
   /* Compute Rab = (Ra * b3) */
   decaf_448_point_scalarmul(Rab, msg->Ra, smp->b3);
@@ -889,7 +896,7 @@ tstatic otrv4_bool_t smp_is_valid_for_msg_3(const smp_msg_3_t *msg,
 }
 
 tstatic otrv4_bool_t smp_is_valid_for_msg_4(smp_msg_4_t *msg,
-                                           smp_context_t smp) {
+                                            smp_context_t smp) {
   ec_point_t Rab;
   /* Compute Rab = Rb * a3. */
   decaf_448_point_scalarmul(Rab, msg->Rb, smp->a3);
@@ -900,7 +907,8 @@ tstatic otrv4_bool_t smp_is_valid_for_msg_4(smp_msg_4_t *msg,
   return otrv4_true;
 }
 
-tstatic otrv4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp) {
+tstatic otrv4_smp_event_t receive_smp_msg_1(const tlv_t *tlv,
+                                            smp_context_t smp) {
   smp_msg_1_t msg_1[1];
 
   if (smp->state != SMPSTATE_EXPECT1)
@@ -929,7 +937,8 @@ tstatic otrv4_smp_event_t receive_smp_msg_1(const tlv_t *tlv, smp_context_t smp)
   return OTRV4_SMPEVENT_ERROR;
 }
 
-INTERNAL otrv4_smp_event_t otrv4_reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp) {
+INTERNAL otrv4_smp_event_t otrv4_reply_with_smp_msg_2(tlv_t **to_send,
+                                                      smp_context_t smp) {
   smp_msg_2_t msg_2[1];
   uint8_t *buff;
   size_t bufflen;
@@ -957,8 +966,9 @@ INTERNAL otrv4_smp_event_t otrv4_reply_with_smp_msg_2(tlv_t **to_send, smp_conte
   return OTRV4_SMPEVENT_NONE;
 }
 
-tstatic otrv4_smp_event_t receive_smp_msg_2(smp_msg_2_t *msg_2, const tlv_t *tlv,
-                                          smp_context_t smp) {
+tstatic otrv4_smp_event_t receive_smp_msg_2(smp_msg_2_t *msg_2,
+                                            const tlv_t *tlv,
+                                            smp_context_t smp) {
   if (smp->state != SMPSTATE_EXPECT2)
     return OTRV4_SMPEVENT_ERROR; // TODO: this should abort
 
@@ -978,8 +988,8 @@ tstatic otrv4_smp_event_t receive_smp_msg_2(smp_msg_2_t *msg_2, const tlv_t *tlv
 }
 
 tstatic otrv4_smp_event_t reply_with_smp_msg_3(tlv_t **to_send,
-                                             const smp_msg_2_t *msg_2,
-                                             smp_context_t smp) {
+                                               const smp_msg_2_t *msg_2,
+                                               smp_context_t smp) {
   smp_msg_3_t msg_3[1];
   uint8_t *buff = NULL;
   size_t bufflen = 0;
@@ -1005,8 +1015,9 @@ tstatic otrv4_smp_event_t reply_with_smp_msg_3(tlv_t **to_send,
   return OTRV4_SMPEVENT_NONE;
 }
 
-tstatic otrv4_smp_event_t receive_smp_msg_3(smp_msg_3_t *msg_3, const tlv_t *tlv,
-                                          smp_context_t smp) {
+tstatic otrv4_smp_event_t receive_smp_msg_3(smp_msg_3_t *msg_3,
+                                            const tlv_t *tlv,
+                                            smp_context_t smp) {
   if (smp->state != SMPSTATE_EXPECT3)
     return OTRV4_SMPEVENT_ERROR; // TODO: this errors, though it should abort
 
@@ -1024,8 +1035,8 @@ tstatic otrv4_smp_event_t receive_smp_msg_3(smp_msg_3_t *msg_3, const tlv_t *tlv
 }
 
 tstatic otrv4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
-                                             const smp_msg_3_t *msg_3,
-                                             smp_context_t smp) {
+                                               const smp_msg_3_t *msg_3,
+                                               smp_context_t smp) {
   smp_msg_4_t msg_4[1];
   uint8_t *buff = NULL;
   size_t bufflen = 0;
@@ -1053,8 +1064,9 @@ tstatic otrv4_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
   return OTRV4_SMPEVENT_SUCCESS;
 }
 
-tstatic otrv4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv,
-                                          smp_context_t smp) {
+tstatic otrv4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4,
+                                            const tlv_t *tlv,
+                                            smp_context_t smp) {
   if (smp->state != SMPSTATE_EXPECT4)
     return OTRV4_SMPEVENT_ERROR; // TODO: this should abort
 
@@ -1075,7 +1087,8 @@ tstatic otrv4_smp_event_t receive_smp_msg_4(smp_msg_4_t *msg_4, const tlv_t *tlv
   return OTRV4_SMPEVENT_SUCCESS;
 }
 
-INTERNAL otrv4_smp_event_t otrv4_process_smp_msg1(const tlv_t *tlv, smp_context_t smp) {
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg1(const tlv_t *tlv,
+                                                  smp_context_t smp) {
   otrv4_smp_event_t event = receive_smp_msg_1(tlv, smp);
 
   if (!event) {
@@ -1086,8 +1099,9 @@ INTERNAL otrv4_smp_event_t otrv4_process_smp_msg1(const tlv_t *tlv, smp_context_
   return event;
 }
 
-INTERNAL otrv4_smp_event_t otrv4_process_smp_msg2(tlv_t **smp_reply, const tlv_t *tlv,
-                                  smp_context_t smp) {
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg2(tlv_t **smp_reply,
+                                                  const tlv_t *tlv,
+                                                  smp_context_t smp) {
   smp_msg_2_t msg_2[1];
   otrv4_smp_event_t event = receive_smp_msg_2(msg_2, tlv, smp);
 
@@ -1098,8 +1112,9 @@ INTERNAL otrv4_smp_event_t otrv4_process_smp_msg2(tlv_t **smp_reply, const tlv_t
   return event;
 }
 
-INTERNAL otrv4_smp_event_t otrv4_process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
-                                  smp_context_t smp) {
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg3(tlv_t **smp_reply,
+                                                  const tlv_t *tlv,
+                                                  smp_context_t smp) {
   smp_msg_3_t msg_3[1];
   otrv4_smp_event_t event = receive_smp_msg_3(msg_3, tlv, smp);
 
@@ -1110,7 +1125,8 @@ INTERNAL otrv4_smp_event_t otrv4_process_smp_msg3(tlv_t **smp_reply, const tlv_t
   return event;
 }
 
-INTERNAL otrv4_smp_event_t otrv4_process_smp_msg4(const tlv_t *tlv, smp_context_t smp) {
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg4(const tlv_t *tlv,
+                                                  smp_context_t smp) {
   smp_msg_4_t msg_4[1];
 
   otrv4_smp_event_t event = receive_smp_msg_4(msg_4, tlv, smp);

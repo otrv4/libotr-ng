@@ -1,9 +1,9 @@
 #ifndef OTRV4_SMP_H
 #define OTRV4_SMP_H
 
-#include "shared.h"
 #include "client_callbacks.h"
 #include "fingerprint.h"
+#include "shared.h"
 #include "str.h"
 #include "tlv.h"
 
@@ -71,44 +71,55 @@ INTERNAL void otrv4_smp_context_init(smp_context_t smp);
 
 INTERNAL void otrv4_smp_destroy(smp_context_t smp);
 
-INTERNAL void otrv4_generate_smp_secret(unsigned char **secret, otrv4_fingerprint_t our_fp,
-                         otrv4_fingerprint_t their_fp, uint8_t *ssid,
-                         const uint8_t *answer, size_t answerlen);
+INTERNAL void otrv4_generate_smp_secret(unsigned char **secret,
+                                        otrv4_fingerprint_t our_fp,
+                                        otrv4_fingerprint_t their_fp,
+                                        uint8_t *ssid, const uint8_t *answer,
+                                        size_t answerlen);
 
-INTERNAL otrv4_err_t otrv4_generate_smp_msg_1(smp_msg_1_t *dst, smp_context_t smp);
+INTERNAL otrv4_err_t otrv4_generate_smp_msg_1(smp_msg_1_t *dst,
+                                              smp_context_t smp);
 
 INTERNAL otrv4_err_t otrv4_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
-                               const smp_msg_1_t *msg);
+                                              const smp_msg_1_t *msg);
 
 INTERNAL void otrv4_smp_msg_1_destroy(smp_msg_1_t *msg);
 
-INTERNAL otrv4_smp_event_t otrv4_reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp);
+INTERNAL otrv4_smp_event_t otrv4_reply_with_smp_msg_2(tlv_t **to_send,
+                                                      smp_context_t smp);
 
 // TODO: should be exposed?
-INTERNAL otrv4_smp_event_t otrv4_process_smp_msg1(const tlv_t *tlv, smp_context_t smp);
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg1(const tlv_t *tlv,
+                                                  smp_context_t smp);
 
-INTERNAL otrv4_smp_event_t otrv4_process_smp_msg2(tlv_t **smp_reply, const tlv_t *tlv,
-                                  smp_context_t smp);
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg2(tlv_t **smp_reply,
+                                                  const tlv_t *tlv,
+                                                  smp_context_t smp);
 
-INTERNAL otrv4_smp_event_t otrv4_process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
-                                  smp_context_t smp);
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg3(tlv_t **smp_reply,
+                                                  const tlv_t *tlv,
+                                                  smp_context_t smp);
 
-INTERNAL otrv4_smp_event_t otrv4_process_smp_msg4(const tlv_t *tlv, smp_context_t smp);
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg4(const tlv_t *tlv,
+                                                  smp_context_t smp);
 
 #ifdef OTRV4_SMP_PRIVATE
 
-tstatic otrv4_err_t generate_smp_msg_2(smp_msg_2_t *dst, const smp_msg_1_t *msg_1,
-                               smp_context_t smp);
+tstatic otrv4_err_t generate_smp_msg_2(smp_msg_2_t *dst,
+                                       const smp_msg_1_t *msg_1,
+                                       smp_context_t smp);
 
 tstatic otrv4_err_t smp_msg_2_deserialize(smp_msg_2_t *dst, const tlv_t *tlv);
 
 tstatic void smp_msg_2_destroy(smp_msg_2_t *msg);
 
-tstatic otrv4_err_t generate_smp_msg_3(smp_msg_3_t *dst, const smp_msg_2_t *msg_2,
-                               smp_context_t smp);
+tstatic otrv4_err_t generate_smp_msg_3(smp_msg_3_t *dst,
+                                       const smp_msg_2_t *msg_2,
+                                       smp_context_t smp);
 
-tstatic otrv4_err_t generate_smp_msg_4(smp_msg_4_t *dst, const smp_msg_3_t *msg_3,
-                               smp_context_t smp);
+tstatic otrv4_err_t generate_smp_msg_4(smp_msg_4_t *dst,
+                                       const smp_msg_3_t *msg_3,
+                                       smp_context_t smp);
 
 #endif
 

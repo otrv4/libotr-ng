@@ -5,7 +5,8 @@
 #include "random.h"
 #include "shake.h"
 
-INTERNAL void otrv4_generate_keypair(snizkpk_pubkey_t pub, snizkpk_privkey_t priv) {
+INTERNAL void otrv4_generate_keypair(snizkpk_pubkey_t pub,
+                                     snizkpk_privkey_t priv) {
   ed448_random_scalar(priv);
   decaf_448_point_scalarmul(pub, decaf_448_point_base, priv);
 }
@@ -31,9 +32,10 @@ const unsigned char prime_order_bytes_dup[ED448_SCALAR_BYTES] = {
     0x23, 0x78, 0xc2, 0x92, 0xab, 0x58, 0x44, 0xf3,
 };
 
-INTERNAL void otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
-                          const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
-                          const unsigned char *msg, size_t msglen) {
+INTERNAL void
+otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
+                           const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
+                           const unsigned char *msg, size_t msglen) {
 
   decaf_shake256_ctx_t hd;
   uint8_t hash[HASH_BYTES];
@@ -92,10 +94,11 @@ INTERNAL void otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_key
 }
 
 INTERNAL otrv4_bool_t otrv4_snizkpk_verify(const snizkpk_proof_t *src,
-                            const snizkpk_pubkey_t A1,
-                            const snizkpk_pubkey_t A2,
-                            const snizkpk_pubkey_t A3, const unsigned char *msg,
-                            size_t msglen) {
+                                           const snizkpk_pubkey_t A1,
+                                           const snizkpk_pubkey_t A2,
+                                           const snizkpk_pubkey_t A3,
+                                           const unsigned char *msg,
+                                           size_t msglen) {
 
   decaf_shake256_ctx_t hd;
   uint8_t hash[HASH_BYTES];

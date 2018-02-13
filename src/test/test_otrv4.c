@@ -23,8 +23,7 @@ void test_otrv4_builds_query_message_v34(otrv4_fixture_t *otrv4_fixture,
 
   char *query_message = NULL;
   otrv4_assert(otrv4_build_query_message(&query_message, message,
-                                         otrv4_fixture->otrv34) ==
-               SUCCESS);
+                                         otrv4_fixture->otrv34) == SUCCESS);
 
   char *expected_qm = "?OTRv43? And some random invitation text.";
   g_assert_cmpstr(query_message, ==, expected_qm);
@@ -53,8 +52,7 @@ void test_otrv4_builds_whitespace_tag_v34(otrv4_fixture_t *otrv4_fixture,
 
   char *whitespace_tag = NULL;
   otrv4_assert(otrv4_build_whitespace_tag(&whitespace_tag, message,
-                                          otrv4_fixture->otrv34) ==
-               SUCCESS);
+                                          otrv4_fixture->otrv34) == SUCCESS);
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
   free(whitespace_tag);
 }

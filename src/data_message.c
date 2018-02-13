@@ -49,8 +49,8 @@ INTERNAL void otrv4_data_message_free(data_message_t *data_msg) {
   data_msg = NULL;
 }
 
-INTERNAL otrv4_err_t otrv4_data_message_body_asprintf(uint8_t **body, size_t *bodylen,
-                                       const data_message_t *data_msg) {
+INTERNAL otrv4_err_t otrv4_data_message_body_asprintf(
+    uint8_t **body, size_t *bodylen, const data_message_t *data_msg) {
   size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
   if (!dst)
@@ -73,9 +73,10 @@ INTERNAL otrv4_err_t otrv4_data_message_body_asprintf(uint8_t **body, size_t *bo
     return ERROR;
   }
   cursor += len;
+  cursor += otrv4_serialize_bytes_array(cursor, data_msg->nonce,
+                                        DATA_MSG_NONCE_BYTES);
   cursor +=
-      otrv4_serialize_bytes_array(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
-  cursor += otrv4_serialize_data(cursor, data_msg->enc_msg, data_msg->enc_msg_len);
+      otrv4_serialize_data(cursor, data_msg->enc_msg, data_msg->enc_msg_len);
 
   if (body)
     *body = dst;
@@ -86,8 +87,10 @@ INTERNAL otrv4_err_t otrv4_data_message_body_asprintf(uint8_t **body, size_t *bo
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst, const uint8_t *buff,
-                                     size_t bufflen, size_t *nread) {
+INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst,
+                                                    const uint8_t *buff,
+                                                    size_t bufflen,
+                                                    size_t *nread) {
   const uint8_t *cursor = buff;
   int64_t len = bufflen;
   size_t read = 0;
@@ -157,7 +160,8 @@ INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst, const u
   cursor += read;
   len -= read;
 
-  if (otrv4_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor, len))
+  if (otrv4_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor,
+                                    len))
     return ERROR;
 
   cursor += DATA_MSG_NONCE_BYTES;
@@ -171,11 +175,11 @@ INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst, const u
   len -= read;
 
   return otrv4_deserialize_bytes_array((uint8_t *)&dst->mac, DATA_MSG_MAC_BYTES,
-                                 cursor, len);
+                                       cursor, len);
 }
 
 INTERNAL otrv4_bool_t otrv4_valid_data_message(m_mac_key_t mac_key,
-                                const data_message_t *data_msg) {
+                                               const data_message_t *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 

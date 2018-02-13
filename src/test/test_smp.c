@@ -162,7 +162,8 @@ void test_otrv4_generate_smp_secret(void) {
   };
 
   otrv4_generate_smp_secret(&smp->secret, our, their, ssid,
-                      (const uint8_t *)"the-answer", strlen("the-answer"));
+                            (const uint8_t *)"the-answer",
+                            strlen("the-answer"));
   otrv4_assert(smp->secret);
 
   unsigned char expected_secret[HASH_BYTES] = {

@@ -3,7 +3,6 @@
 #include "../ed448.h"
 #include "../random.h"
 
-
 void ed448_test_ecdh() {
   uint8_t alice_pub[DECAF_X448_PUBLIC_BYTES];
   uint8_t alice_priv[DECAF_X448_PRIVATE_BYTES];
@@ -70,8 +69,8 @@ void ed448_test_scalar_serialization() {
   ec_scalar_t scalar;
 
   uint8_t buff[ED448_SCALAR_BYTES];
-  otrv4_assert(otrv4_ec_scalar_serialize(buff, sizeof(buff), decaf_448_scalar_one) ==
-               SUCCESS);
+  otrv4_assert(otrv4_ec_scalar_serialize(buff, sizeof(buff),
+                                         decaf_448_scalar_one) == SUCCESS);
 
   otrv4_ec_scalar_deserialize(scalar, buff);
   otrv4_assert(otrv4_ec_scalar_eq(scalar, decaf_448_scalar_one) == otrv4_true);

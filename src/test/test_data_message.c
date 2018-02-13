@@ -74,8 +74,8 @@ void test_data_message_serializes() {
 
   uint8_t *serialized = NULL;
   size_t serlen = 0;
-  otrv4_assert(otrv4_data_message_body_asprintf(&serialized, &serlen, data_msg) ==
-               SUCCESS);
+  otrv4_assert(otrv4_data_message_body_asprintf(&serialized, &serlen,
+                                                data_msg) == SUCCESS);
 
   const int OUR_DH_LEN = 4 + 383;
   const int MSG_AS_DATA = 4 + 3;
@@ -102,8 +102,8 @@ void test_data_message_serializes() {
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
   size_t mpi_len = 0;
-  otrv4_err_t otr_err = otrv4_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
-                                         &mpi_len, data_msg->dh);
+  otrv4_err_t otr_err = otrv4_dh_mpi_serialize(
+      serialized_b, DH3072_MOD_LEN_BYTES, &mpi_len, data_msg->dh);
   otrv4_assert(!otr_err);
   // Skip first 4 because they are the size (mpi_len)
   otrv4_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
@@ -130,8 +130,8 @@ void test_otrv4_data_message_deserializes() {
 
   uint8_t *serialized = NULL;
   size_t serlen = 0;
-  otrv4_assert(otrv4_data_message_body_asprintf(&serialized, &serlen, data_msg) ==
-               SUCCESS);
+  otrv4_assert(otrv4_data_message_body_asprintf(&serialized, &serlen,
+                                                data_msg) == SUCCESS);
 
   const uint8_t mac_data[MAC_KEY_BYTES] = {
       0x14, 0x9a, 0xf0, 0x93, 0xcc, 0x3f, 0x44, 0xf5, 0x1b, 0x41, 0x11,
@@ -146,8 +146,8 @@ void test_otrv4_data_message_deserializes() {
 
   data_message_t *deserialized = otrv4_data_message_new();
   otrv4_assert(otrv4_data_message_deserialize(deserialized, serialized,
-                                        serlen + MAC_KEY_BYTES,
-                                        NULL) == SUCCESS);
+                                              serlen + MAC_KEY_BYTES,
+                                              NULL) == SUCCESS);
 
   otrv4_assert(data_msg->sender_instance_tag ==
                deserialized->sender_instance_tag);

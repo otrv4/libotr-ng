@@ -7,7 +7,6 @@ typedef struct {
   otrv4_client_state_t *state;
 } otrv4_fixture_t;
 
-
 int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
   return gcry_mpi_cmp(m1, m2);
 }
@@ -165,8 +164,7 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
 
   // Alice sends query message
   string_t query_message = NULL;
-  otrv4_assert(otrv4_build_query_message(&query_message, "", alice) ==
-               SUCCESS);
+  otrv4_assert(otrv4_build_query_message(&query_message, "", alice) == SUCCESS);
   otrv4_assert_cmpmem("?OTRv4", query_message, 6);
 
   // Bob receives query message
@@ -203,8 +201,7 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
 
   // Bob receives an auth receiver
   otrv4_assert(otrv4_receive_message(response_to_alice,
-                                     response_to_bob->to_send,
-                                     bob) == SUCCESS);
+                                     response_to_bob->to_send, bob) == SUCCESS);
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
@@ -261,8 +258,8 @@ void do_dake_fixture(otrv4_t *alice, otrv4_t *bob) {
 
   chain_key_t bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
-  otrv4_assert(key_manager_get_receiving_chain_key(
-                   alice_receiving_key, 0, alice->keys) == SUCCESS);
+  otrv4_assert(key_manager_get_receiving_chain_key(alice_receiving_key, 0,
+                                                   alice->keys) == SUCCESS);
   otrv4_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
   otrv4_response_free(response_to_alice);

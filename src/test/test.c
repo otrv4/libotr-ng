@@ -74,7 +74,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
   g_test_add_func("/serialize_and_deserialize/data",
                   test_serialize_otrv4_deserialize_data);
-  g_test_add_func("/serialize/dh-public-key", test_otrv4_serialize_dh_public_key);
+  g_test_add_func("/serialize/dh-public-key",
+                  test_otrv4_serialize_dh_public_key);
   g_test_add_func("/serialize_and_deserialize/ed448-public-key",
                   test_ser_des_otrv4_public_key);
   g_test_add_func("/serialize_and_deserialize/ed448-shared-prekey",
@@ -86,10 +87,12 @@ int main(int argc, char **argv) {
   g_test_add_func("/user_profile/serialize_body",
                   test_user_profile_serializes_body);
   g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
-  g_test_add_func("/user_profile/deserializes", test_otrv4_user_profile_deserializes);
+  g_test_add_func("/user_profile/deserializes",
+                  test_otrv4_user_profile_deserializes);
   g_test_add_func("/user_profile/sign_and_verifies",
                   test_user_profile_signs_and_verify);
-  g_test_add_func("/user_profile/build_user_profile", test_otrv4_user_profile_build);
+  g_test_add_func("/user_profile/build_user_profile",
+                  test_otrv4_user_profile_build);
 
   WITH_FIXTURE("/dake/identity_message/serializes",
                test_dake_identity_message_serializes,
@@ -103,12 +106,13 @@ int main(int argc, char **argv) {
                test_dake_prekey_message_serializes, prekey_message_fixture_t,
                prekey_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/deserializes",
-               test_otrv4_dake_prekey_message_deserializes, prekey_message_fixture_t,
-               prekey_message_fixture);
+               test_otrv4_dake_prekey_message_deserializes,
+               prekey_message_fixture_t, prekey_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/valid", test_dake_prekey_message_valid,
                prekey_message_fixture_t, prekey_message_fixture);
   g_test_add_func("/data_message/serialize", test_data_message_serializes);
-  g_test_add_func("/data_message/deserialize", test_otrv4_data_message_deserializes);
+  g_test_add_func("/data_message/deserialize",
+                  test_otrv4_data_message_deserializes);
 
   g_test_add_func("/fragment/create_fragments", test_create_fragments);
   g_test_add_func("/fragment/defragment_message",

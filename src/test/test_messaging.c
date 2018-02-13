@@ -34,8 +34,8 @@ void test_userstate_key_management(void) {
         keys);
   rewind(keys);
 
-  int err = otrv4_user_state_private_key_v4_read_FILEp(state, keys,
-                                                      read_client_id_for_privf);
+  int err = otrv4_user_state_private_key_v4_read_FILEp(
+      state, keys, read_client_id_for_privf);
   g_assert_cmpint(err, ==, 0);
   fclose(keys);
 

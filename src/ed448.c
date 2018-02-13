@@ -5,9 +5,12 @@
 
 #include "ed448.h"
 
-INTERNAL void otrv4_ec_bzero(void *data, size_t size) { decaf_bzero(data, size); }
+INTERNAL void otrv4_ec_bzero(void *data, size_t size) {
+  decaf_bzero(data, size);
+}
 
-INTERNAL otrv4_bool_t otrv4_ec_scalar_eq(const ec_scalar_t a, const ec_scalar_t b) {
+INTERNAL otrv4_bool_t otrv4_ec_scalar_eq(const ec_scalar_t a,
+                                         const ec_scalar_t b) {
   if (decaf_448_scalar_eq(a, b) == DECAF_TRUE) {
     return otrv4_true;
   }
@@ -19,10 +22,12 @@ INTERNAL void otrv4_ec_point_copy(ec_point_t dst, const ec_point_t src) {
   decaf_448_point_copy(dst, src);
 }
 
-INTERNAL void otrv4_ec_point_destroy(ec_point_t dst) { decaf_448_point_destroy(dst); }
+INTERNAL void otrv4_ec_point_destroy(ec_point_t dst) {
+  decaf_448_point_destroy(dst);
+}
 
 INTERNAL void otrv4_ecdh_keypair_generate(ecdh_keypair_t *keypair,
-                           uint8_t sym[ED448_PRIVATE_BYTES]) {
+                                          uint8_t sym[ED448_PRIVATE_BYTES]) {
   otrv4_ec_scalar_derive_from_secret(keypair->priv, sym);
 
   uint8_t pub[ED448_POINT_BYTES];
@@ -38,19 +43,22 @@ INTERNAL void otrv4_ecdh_keypair_destroy(ecdh_keypair_t *keypair) {
   otrv4_ec_point_destroy(keypair->pub);
 }
 
-INTERNAL void otrv4_ec_scalar_derive_from_secret(ec_scalar_t priv,
-                                  uint8_t sym[ED448_PRIVATE_BYTES]) {
+INTERNAL void
+otrv4_ec_scalar_derive_from_secret(ec_scalar_t priv,
+                                   uint8_t sym[ED448_PRIVATE_BYTES]) {
   /* Hash and clamp the secret into a scalar */
   decaf_ed448_derive_secret_scalar(priv, sym);
 }
 
-INTERNAL void otrv4_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
-                          const uint8_t sym[ED448_PRIVATE_BYTES]) {
+INTERNAL void
+otrv4_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
+                           const uint8_t sym[ED448_PRIVATE_BYTES]) {
   decaf_ed448_derive_public_key(pub, sym);
 }
 
-INTERNAL void otrv4_ecdh_shared_secret(uint8_t *shared, const ecdh_keypair_t *our_keypair,
-                        const ec_point_t their_pub) {
+INTERNAL void otrv4_ecdh_shared_secret(uint8_t *shared,
+                                       const ecdh_keypair_t *our_keypair,
+                                       const ec_point_t their_pub) {
   decaf_448_point_t s;
   decaf_448_point_scalarmul(s, their_pub, our_keypair->priv);
 
@@ -62,7 +70,7 @@ INTERNAL void otrv4_ecdh_shared_secret(uint8_t *shared, const ecdh_keypair_t *ou
 /* } */
 
 INTERNAL otrv4_err_t otrv4_ec_scalar_serialize(uint8_t *dst, size_t dst_len,
-                                const ec_scalar_t scalar) {
+                                               const ec_scalar_t scalar) {
   if (dst_len < ED448_SCALAR_BYTES)
     return ERROR;
 
@@ -71,8 +79,9 @@ INTERNAL otrv4_err_t otrv4_ec_scalar_serialize(uint8_t *dst, size_t dst_len,
   return SUCCESS;
 }
 
-INTERNAL void otrv4_ec_scalar_deserialize(ec_scalar_t scalar,
-                           const uint8_t serialized[ED448_SCALAR_BYTES]) {
+INTERNAL void
+otrv4_ec_scalar_deserialize(ec_scalar_t scalar,
+                            const uint8_t serialized[ED448_SCALAR_BYTES]) {
   decaf_448_scalar_decode_long(scalar, serialized, ED448_SCALAR_BYTES);
 }
 
@@ -80,8 +89,8 @@ INTERNAL void otrv4_ec_point_serialize(uint8_t *dst, const ec_point_t point) {
   decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(dst, point);
 }
 
-INTERNAL otrv4_err_t otrv4_ec_point_deserialize(ec_point_t point,
-                                 const uint8_t serialized[ED448_POINT_BYTES]) {
+INTERNAL otrv4_err_t otrv4_ec_point_deserialize(
+    ec_point_t point, const uint8_t serialized[ED448_POINT_BYTES]) {
   decaf_448_point_t p;
   decaf_error_t err =
       decaf_448_point_decode_like_eddsa_and_ignore_cofactor(p, serialized);
@@ -101,16 +110,17 @@ INTERNAL otrv4_err_t otrv4_ec_point_deserialize(ec_point_t point,
 
 static const char *ctx = "";
 
-INTERNAL void otrv4_ec_sign(eddsa_signature_t dst, uint8_t sym[ED448_PRIVATE_BYTES],
-             uint8_t pubkey[ED448_POINT_BYTES], const uint8_t *msg,
-             size_t msg_len) {
+INTERNAL void otrv4_ec_sign(eddsa_signature_t dst,
+                            uint8_t sym[ED448_PRIVATE_BYTES],
+                            uint8_t pubkey[ED448_POINT_BYTES],
+                            const uint8_t *msg, size_t msg_len) {
   decaf_ed448_sign(dst, sym, pubkey, msg, msg_len, 0, (uint8_t *)ctx,
                    strlen(ctx));
 }
 
 INTERNAL otrv4_bool_t otrv4_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
-                       const uint8_t pubkey[ED448_POINT_BYTES],
-                       const uint8_t *msg, size_t msg_len) {
+                                      const uint8_t pubkey[ED448_POINT_BYTES],
+                                      const uint8_t *msg, size_t msg_len) {
   if (decaf_ed448_verify(sig, pubkey, msg, msg_len, 0, (uint8_t *)ctx,
                          strlen(ctx)) == DECAF_TRUE)
     return otrv4_true;
@@ -122,7 +132,9 @@ INTERNAL void otrv4_ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t src) {
   decaf_448_scalar_copy(dst, src);
 }
 
-INTERNAL void otrv4_ec_scalar_destroy(ec_scalar_t dst) { decaf_448_scalar_destroy(dst); }
+INTERNAL void otrv4_ec_scalar_destroy(ec_scalar_t dst) {
+  decaf_448_scalar_destroy(dst);
+}
 
 INTERNAL otrv4_bool_t otrv4_ec_point_valid(const ec_point_t point) {
   if (DECAF_TRUE == decaf_448_point_valid(point)) {
@@ -132,7 +144,8 @@ INTERNAL otrv4_bool_t otrv4_ec_point_valid(const ec_point_t point) {
   return otrv4_false;
 }
 
-INTERNAL otrv4_bool_t otrv4_ec_point_eq(const ec_point_t p, const ec_point_t q) {
+INTERNAL otrv4_bool_t otrv4_ec_point_eq(const ec_point_t p,
+                                        const ec_point_t q) {
   if (decaf_448_point_eq(p, q) == DECAF_TRUE)
     return otrv4_true;
 
