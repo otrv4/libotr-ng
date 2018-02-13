@@ -382,7 +382,7 @@ API int otrv4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
   if (!client->state->keypair)
     return -1;
 
-  return otr4_serialize_fingerprint(fp, client->state->keypair->pub);
+  return otrv4_serialize_fingerprint(fp, client->state->keypair->pub);
 }
 
 // TODO: Read privkeys, fingerprints, instance tags for OTRv3

@@ -5,7 +5,7 @@
 #include "shake.h"
 
 /* Convert a 56-byte hash value to a 126-byte human-readable value */
-API void otr4_fingerprint_hash_to_human(
+API void otrv4_fingerprint_hash_to_human(
     char human[FPRINT_HUMAN_LEN],
     const unsigned char hash[FPRINT_LEN_BYTES]) {
   int word, byte;
@@ -24,7 +24,7 @@ API void otr4_fingerprint_hash_to_human(
   *p = '\0';
 }
 
-INTERNAL int otr4_serialize_fingerprint(otrv4_fingerprint_t fp,
+INTERNAL int otrv4_serialize_fingerprint(otrv4_fingerprint_t fp,
                                const otrv4_public_key_t pub) {
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
 

@@ -249,7 +249,7 @@ void test_fingerprint_hash_to_human() {
   char fp_human[FPRINT_HUMAN_LEN];
   memset(fp_human, 0, sizeof fp_human);
 
-  otr4_fingerprint_hash_to_human(fp_human, fp_hash);
+  otrv4_fingerprint_hash_to_human(fp_human, fp_hash);
 
   g_assert_cmpint(0, ==, strncmp(expected_fp, fp_human, FPRINT_HUMAN_LEN));
 }

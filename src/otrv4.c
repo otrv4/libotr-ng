@@ -1545,7 +1545,7 @@ receive_non_interactive_auth_message(otrv4_response_t *response,
   otrv4_dake_non_interactive_auth_message_destroy(auth);
 
   otrv4_fingerprint_t fp;
-  if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
+  if (!otrv4_serialize_fingerprint(fp, otr->their_profile->pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
   return SUCCESS;
@@ -1745,7 +1745,7 @@ tstatic otrv4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
   otrv4_dake_auth_r_destroy(auth);
 
   otrv4_fingerprint_t fp;
-  if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
+  if (!otrv4_serialize_fingerprint(fp, otr->their_profile->pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
   return double_ratcheting_init(0, true, otr);
@@ -1793,7 +1793,7 @@ tstatic otrv4_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
   otrv4_dake_auth_i_destroy(auth);
 
   otrv4_fingerprint_t fp;
-  if (!otr4_serialize_fingerprint(fp, otr->their_profile->pub_key))
+  if (!otrv4_serialize_fingerprint(fp, otr->their_profile->pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
   return double_ratcheting_init(1, true, otr);
@@ -2606,8 +2606,8 @@ tstatic tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
   size_t len = 0;
 
   otrv4_fingerprint_t our_fp, their_fp;
-  otr4_serialize_fingerprint(our_fp, initiator->pub_key);
-  otr4_serialize_fingerprint(their_fp, responder->pub_key);
+  otrv4_serialize_fingerprint(our_fp, initiator->pub_key);
+  otrv4_serialize_fingerprint(their_fp, responder->pub_key);
   generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, secret, secretlen);
 
   do {
@@ -2694,8 +2694,8 @@ tstatic tlv_t *otrv4_smp_provide_secret(otr4_smp_event_t *event,
   tlv_t *smp_reply = NULL;
 
   otrv4_fingerprint_t our_fp, their_fp;
-  otr4_serialize_fingerprint(our_fp, our_profile->pub_key);
-  otr4_serialize_fingerprint(their_fp, their_profile->pub_key);
+  otrv4_serialize_fingerprint(our_fp, our_profile->pub_key);
+  otrv4_serialize_fingerprint(their_fp, their_profile->pub_key);
   generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret, secretlen);
 
   *event = reply_with_smp_msg_2(&smp_reply, smp);
