@@ -5,16 +5,16 @@ void test_smp_state_machine(void) {
   return;
   OTR4_INIT;
 
-  otr4_client_state_t *alice_keypair = otr4_client_state_new(NULL);
-  otr4_client_state_t *bob_keypair = otr4_client_state_new(NULL);
+  otr4_client_state_t *alice_keypair = otrv4_client_state_new(NULL);
+  otr4_client_state_t *bob_keypair = otrv4_client_state_new(NULL);
 
   smp_msg_1_t smp_msg_1[1];
   smp_msg_2_t smp_msg_2[1];
 
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-  otr4_client_state_add_private_key_v4(alice_keypair, alice_sym);
-  otr4_client_state_add_private_key_v4(bob_keypair, bob_sym);
+  otrv4_client_state_add_private_key_v4(alice_keypair, alice_sym);
+  otrv4_client_state_add_private_key_v4(bob_keypair, bob_sym);
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
 
   otrv4_t *alice_otr = otrv4_new(alice_keypair, policy);
@@ -120,8 +120,8 @@ void test_smp_state_machine(void) {
 
   otrv4_assert_cmpmem(alice_otr->smp->secret, bob_otr->smp->secret, 64);
 
-  otr4_client_state_free(alice_keypair); // destroy keypair in otr?
-  otr4_client_state_free(bob_keypair);
+  otrv4_client_state_free(alice_keypair); // destroy keypair in otr?
+  otrv4_client_state_free(bob_keypair);
   otrv4_free(alice_otr);
   otrv4_free(bob_otr);
 

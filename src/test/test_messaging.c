@@ -79,7 +79,7 @@ void test_instance_tag_api(void) {
   char *icq_protocol = "ICQ";
   unsigned int icq_instag_value = 0x9abcdef0;
 
-  otr4_client_state_t *alice = otr4_client_state_new(alice_account);
+  otr4_client_state_t *alice = otrv4_client_state_new(alice_account);
   alice->userstate = otrl_userstate_create();
   alice->account_name = otrv4_strdup(icq_alice_account);
   alice->protocol_name = otrv4_strdup(icq_protocol);
@@ -89,10 +89,10 @@ void test_instance_tag_api(void) {
   fprintf(instagFILEp, "%s\t%s\t%08x\n", icq_alice_account, icq_protocol,
           icq_instag_value);
   rewind(instagFILEp);
-  otr4_client_state_instance_tag_read_FILEp(alice, instagFILEp);
+  otrv4_client_state_instance_tag_read_FILEp(alice, instagFILEp);
   fclose(instagFILEp);
 
-  unsigned int alice_instag = otr4_client_state_get_instance_tag(alice);
+  unsigned int alice_instag = otrv4_client_state_get_instance_tag(alice);
   otrv4_assert(alice_instag);
 
   char sone[9];
@@ -101,5 +101,5 @@ void test_instance_tag_api(void) {
   g_assert_cmpstr(sone, ==, "9abcdef0");
 
   otrl_userstate_free(alice->userstate);
-  otr4_client_state_free(alice);
+  otrv4_client_state_free(alice);
 }

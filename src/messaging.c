@@ -18,7 +18,7 @@ API otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb) {
   return state;
 }
 
-tstatic void free_client_state(void *data) { otr4_client_state_free(data); }
+tstatic void free_client_state(void *data) { otrv4_client_state_free(data); }
 
 tstatic void free_client(void *data) { otrv4_client_free(data); }
 
@@ -53,7 +53,7 @@ tstatic otr4_client_state_t *get_client_state(otr4_userstate_t *state,
   if (el)
     return el->data;
 
-  otr4_client_state_t *s = otr4_client_state_new(client_id);
+  otr4_client_state_t *s = otrv4_client_state_new(client_id);
   if (!s)
     return NULL;
 
@@ -119,7 +119,7 @@ tstatic otr4_client_state_t *get_client_state(otr4_userstate_t *state,
 
 API int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *clientop,
                                        const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  return otr4_client_state_add_private_key_v4(get_client_state(state, clientop),
+  return otrv4_client_state_add_private_key_v4(get_client_state(state, clientop),
                                               sym);
 }
 
@@ -132,7 +132,7 @@ API int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *client
 
 API otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
                                                     void *client_id) {
-  return otr4_client_state_get_private_key_v4(
+  return otrv4_client_state_get_private_key_v4(
       get_client_state(state, client_id));
 }
 
@@ -164,7 +164,7 @@ API int otr4_user_state_private_key_v4_read_FILEp(
     if (!client_id)
       continue;
 
-    if (otr4_client_state_private_key_v4_read_FILEp(
+    if (otrv4_client_state_private_key_v4_read_FILEp(
             get_client_state(state, client_id), privf))
       continue;
   }
@@ -174,7 +174,7 @@ API int otr4_user_state_private_key_v4_read_FILEp(
 
 /* int otr4_user_state_add_instance_tag(otr4_userstate_t *state, void *client_id, */
 /*                                      unsigned int instag) { */
-/*   return otr4_client_state_add_instance_tag(get_client_state(state, client_id), */
+/*   return otrv4_client_state_add_instance_tag(get_client_state(state, client_id), */
 /*                                             instag); */
 /* } */
 

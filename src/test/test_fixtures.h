@@ -15,15 +15,15 @@ int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
 void otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   OTR4_INIT;
 
-  otrv4_fixture->state = otr4_client_state_new(NULL); // No callbacks
+  otrv4_fixture->state = otrv4_client_state_new(NULL); // No callbacks
   otrv4_fixture->state->userstate = otrl_userstate_create();
   otrv4_fixture->state->protocol_name = otrv4_strdup("protocol");
   otrv4_fixture->state->account_name = otrv4_strdup("account@protocol");
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
-  otr4_client_state_add_private_key_v4(otrv4_fixture->state, sym);
+  otrv4_client_state_add_private_key_v4(otrv4_fixture->state, sym);
 
-  otr4_client_state_add_shared_prekey_v4(otrv4_fixture->state, sym);
+  otrv4_client_state_add_shared_prekey_v4(otrv4_fixture->state, sym);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
   otrv4_fixture->otr = otrv4_new(otrv4_fixture->state, policy);
@@ -47,14 +47,14 @@ void otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   fclose(tmpFILEp);
 
   // Generate instance tag
-  otr4_client_state_add_instance_tag(otrv4_fixture->state, 0x100 + 1);
+  otrv4_client_state_add_instance_tag(otrv4_fixture->state, 0x100 + 1);
 }
 
 void otrv4_fixture_teardown(otrv4_fixture_t *otrv4_fixture,
                             gconstpointer data) {
   otrl_userstate_free(otrv4_fixture->state->userstate);
 
-  otr4_client_state_free(otrv4_fixture->state);
+  otrv4_client_state_free(otrv4_fixture->state);
   otrv4_fixture->state = NULL;
 
   otrv4_free(otrv4_fixture->otr);

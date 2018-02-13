@@ -160,7 +160,7 @@ tstatic const user_profile_t *get_my_user_profile(otrv4_t *otr) {
   // This is a temporary measure for the pidgin plugin to work
   // This will be removed later
   uint8_t sym_key[ED448_PRIVATE_BYTES] = {0x01};
-  otr4_client_state_add_shared_prekey_v4(otr->conversation->client, sym_key);
+  otrv4_client_state_add_shared_prekey_v4(otr->conversation->client, sym_key);
 
   otr->profile =
       user_profile_build(versions, otr->conversation->client->keypair,
@@ -183,7 +183,7 @@ INTERNAL otrv4_t *otrv4_new(otr4_client_state_t *state, otrv4_policy_t policy) {
   otr->supported_versions = policy.allows;
 
   otr->their_instance_tag = 0;
-  otr->our_instance_tag = otr4_client_state_get_instance_tag(state);
+  otr->our_instance_tag = otrv4_client_state_get_instance_tag(state);
   otr->profile = NULL;
   otr->their_profile = NULL;
 

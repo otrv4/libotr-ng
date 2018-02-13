@@ -123,7 +123,7 @@
   fn_apply(otrl_userstate_free, __VA_ARGS__);
 
 #define otrv4_client_state_free_all(...)                                       \
-  fn_apply(otr4_client_state_free, __VA_ARGS__);
+  fn_apply(otrv4_client_state_free, __VA_ARGS__);
 
 #define otrv4_client_free_all(...) fn_apply(otrv4_client_free, __VA_ARGS__);
 
