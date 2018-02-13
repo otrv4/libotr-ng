@@ -129,8 +129,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/smp/msg_1_asprintf_null_question",
                   test_otrv4_smp_msg_1_asprintf_null_question);
   g_test_add_func("/tlv/parse", test_tlv_parse);
-  g_test_add_func("/tlv/append", test_append_tlv);
-  g_test_add_func("/tlv/append_padding", test_append_padding_tlv);
+  g_test_add_func("/tlv/append", test_otrv4_append_tlv);
+  g_test_add_func("/tlv/append_padding", test_otrv4_append_padding_tlv);
 
   // g_test_add_func("/otrv4/starts_protocol", test_otrv4_starts_protocol);
   // g_test_add("/otrv4/version_supports_v34", otrv4_fixture_t, NULL,

@@ -33,7 +33,7 @@ void test_tlv_parse() {
   otrv4_tlv_free(tlv);
 }
 
-void test_append_tlv() {
+void test_otrv4_append_tlv() {
   uint8_t smp2_data[2] = {0x03, 0x04};
   uint8_t smp3_data[3] = {0x05, 0x04, 0x03};
 
@@ -43,12 +43,12 @@ void test_append_tlv() {
   tlv_t *smp_msg3_tlv =
       otrv4_tlv_new(OTRV4_TLV_SMP_MSG_3, sizeof(smp3_data), smp3_data);
 
-  tlvs = append_tlv(tlvs, smp_msg2_tlv);
+  tlvs = otrv4_append_tlv(tlvs, smp_msg2_tlv);
 
   assert_tlv_structure(tlvs, OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data,
                        false);
 
-  tlvs = append_tlv(tlvs, smp_msg3_tlv);
+  tlvs = otrv4_append_tlv(tlvs, smp_msg3_tlv);
 
   assert_tlv_structure(tlvs, OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data,
                        true);
@@ -61,22 +61,22 @@ void test_append_tlv() {
   otrv4_tlv_free(tlvs);
 }
 
-void test_append_padding_tlv() {
+void test_otrv4_append_padding_tlv() {
   uint8_t smp2_data[2] = {0x03, 0x04};
 
   tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
-  otrv4_err_t err = append_padding_tlv(&tlv, 6);
+  otrv4_err_t err = otrv4_append_padding_tlv(&tlv, 6);
   otrv4_assert(err == SUCCESS);
   assert_tlv_structure(tlv->next, OTRV4_TLV_PADDING, 245, smp2_data, false);
   otrv4_tlv_free(tlv);
 
   tlv = otrv4_tlv_new(OTRV4_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
-  err = append_padding_tlv(&tlv, 500);
+  err = otrv4_append_padding_tlv(&tlv, 500);
   assert_tlv_structure(tlv->next, OTRV4_TLV_PADDING, 7, smp2_data, false);
   otrv4_tlv_free(tlv);
 
   tlv = NULL;
-  err = append_padding_tlv(&tlv, 500);
+  err = otrv4_append_padding_tlv(&tlv, 500);
   otrv4_assert(err == SUCCESS);
   otrv4_assert(tlv);
   otrv4_tlv_free(tlv);

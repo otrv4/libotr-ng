@@ -2473,7 +2473,7 @@ INTERNAL otrv4_err_t otrv4_prepare_to_send_message(string_t *to_send,
 
   // TODO if we need to pad, merge the padding tlv and the user's tlvs to send
   if (otr->conversation->client->pad) {
-    if (append_padding_tlv(tlvs, strlen(message)))
+    if (otrv4_append_padding_tlv(tlvs, strlen(message)))
       return ERROR;
   }
 

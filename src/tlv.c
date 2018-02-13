@@ -73,7 +73,7 @@ tstatic tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
   return NULL;
 }
 
-INTERNAL tlv_t *append_tlv(tlv_t *head, tlv_t *tlv) {
+INTERNAL tlv_t *otrv4_append_tlv(tlv_t *head, tlv_t *tlv) {
   if (!head)
     return tlv;
 
@@ -100,7 +100,7 @@ INTERNAL tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
     if (!tlv)
       break;
 
-    ret = append_tlv(ret, tlv);
+    ret = otrv4_append_tlv(ret, tlv);
 
     data_to_parse = len - written;
   }
@@ -162,7 +162,7 @@ INTERNAL tlv_t *otrv4_padding_tlv_new(size_t len) {
   return tlv;
 }
 
-INTERNAL otrv4_err_t append_padding_tlv(tlv_t **tlvs, int message_len) {
+INTERNAL otrv4_err_t otrv4_append_padding_tlv(tlv_t **tlvs, int message_len) {
   int padding_granularity = 256;
   int header_len = 4;
   int nul_byte_len = 1;
@@ -175,7 +175,7 @@ INTERNAL otrv4_err_t append_padding_tlv(tlv_t **tlvs, int message_len) {
   if (!padding_tlv)
     return ERROR;
 
-  *tlvs = append_tlv(*tlvs, padding_tlv);
+  *tlvs = otrv4_append_tlv(*tlvs, padding_tlv);
 
   return SUCCESS;
 }
