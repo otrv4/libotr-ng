@@ -30,7 +30,7 @@ INTERNAL void otrv4_keypair_generate(otrv4_keypair_t *keypair,
   decaf_bzero(pub, ED448_POINT_BYTES);
 }
 
-tstatic void otrv4_keypair_destroy(otrv4_keypair_t *keypair) {
+tstatic void keypair_destroy(otrv4_keypair_t *keypair) {
   decaf_bzero(keypair->sym, ED448_PRIVATE_BYTES);
   otrv4_ec_scalar_destroy(keypair->priv);
   otrv4_ec_point_destroy(keypair->pub);
@@ -40,7 +40,7 @@ INTERNAL void otrv4_keypair_free(otrv4_keypair_t *keypair) {
   if (!keypair)
     return;
 
-  otrv4_keypair_destroy(keypair);
+  keypair_destroy(keypair);
   free(keypair);
   keypair = NULL;
 }
@@ -78,7 +78,7 @@ INTERNAL void otrv4_shared_prekey_pair_generate(otrv4_shared_prekey_pair_t *prek
   decaf_bzero(pub, ED448_POINT_BYTES);
 }
 
-tstatic void otrv4_shared_prekey_pair_destroy(otrv4_shared_prekey_pair_t *prekey_pair) {
+tstatic void shared_prekey_pair_destroy(otrv4_shared_prekey_pair_t *prekey_pair) {
   decaf_bzero(prekey_pair->sym, ED448_PRIVATE_BYTES);
   otrv4_ec_scalar_destroy(prekey_pair->priv);
   otrv4_ec_point_destroy(prekey_pair->pub);
@@ -88,7 +88,7 @@ INTERNAL void otrv4_shared_prekey_pair_free(otrv4_shared_prekey_pair_t *prekey_p
   if (!prekey_pair)
     return;
 
-  otrv4_shared_prekey_pair_destroy(prekey_pair);
+  shared_prekey_pair_destroy(prekey_pair);
   free(prekey_pair);
   prekey_pair = NULL;
 }
