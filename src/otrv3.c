@@ -419,7 +419,7 @@ static OtrlMessageAppOps null_ops = {
     op_timer_control,
 };
 
-INTERNAL otr3_conn_t *otr3_conn_new(otr4_client_state_t *state, const char *peer) {
+INTERNAL otr3_conn_t *otrv4_v3_conn_new(otr4_client_state_t *state, const char *peer) {
   otr3_conn_t *ret = malloc(sizeof(otr3_conn_t));
   if (!ret)
     return NULL;
@@ -434,7 +434,7 @@ INTERNAL otr3_conn_t *otr3_conn_new(otr4_client_state_t *state, const char *peer
   return ret;
 }
 
-INTERNAL void otr3_conn_free(otr3_conn_t *conn) {
+INTERNAL void otrv4_v3_conn_free(otr3_conn_t *conn) {
   if (!conn)
     return;
 
@@ -449,7 +449,7 @@ INTERNAL void otr3_conn_free(otr3_conn_t *conn) {
   conn = NULL;
 }
 
-INTERNAL otrv4_err_t otrv3_send_message(char **newmessage, const char *message,
+INTERNAL otrv4_err_t otrv4_v3_send_message(char **newmessage, const char *message,
                                const tlv_t *tlvs, otr3_conn_t *conn) {
   // TODO: convert TLVs
   OtrlTLV *tlvsv3 = NULL;
@@ -469,7 +469,7 @@ INTERNAL otrv4_err_t otrv3_send_message(char **newmessage, const char *message,
   return ERROR;
 }
 
-INTERNAL otrv4_err_t otrv3_receive_message(string_t *to_send, string_t *to_display,
+INTERNAL otrv4_err_t otrv4_v3_receive_message(string_t *to_send, string_t *to_display,
                                   tlv_t **tlvs, const string_t message,
                                   otr3_conn_t *conn) {
   int ignore_message;
@@ -501,7 +501,7 @@ INTERNAL otrv4_err_t otrv3_receive_message(string_t *to_send, string_t *to_displ
   return SUCCESS;
 }
 
-INTERNAL void otrv3_close(string_t *to_send, otr3_conn_t *conn) {
+INTERNAL void otrv4_v3_close(string_t *to_send, otr3_conn_t *conn) {
   // TODO: there is also: otrl_message_disconnect, which only disconnects one
   // instance
   otrl_message_disconnect_all_instances(conn->state->userstate, conn->ops,
@@ -511,7 +511,7 @@ INTERNAL void otrv3_close(string_t *to_send, otr3_conn_t *conn) {
   from_injected_to_send(to_send);
 }
 
-INTERNAL otrv4_err_t otrv3_send_symkey_message(string_t *to_send, otr3_conn_t *conn,
+INTERNAL otrv4_err_t otrv4_v3_send_symkey_message(string_t *to_send, otr3_conn_t *conn,
                                       unsigned int use,
                                       const unsigned char *usedata,
                                       size_t usedatalen,
@@ -523,7 +523,7 @@ INTERNAL otrv4_err_t otrv3_send_symkey_message(string_t *to_send, otr3_conn_t *c
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv3_smp_start(string_t *to_send, const char *question,
+INTERNAL otrv4_err_t otrv4_v3_smp_start(string_t *to_send, const char *question,
                             const uint8_t *secret, size_t secretlen,
                             otr3_conn_t *conn) {
   if (question)
@@ -537,7 +537,7 @@ INTERNAL otrv4_err_t otrv3_smp_start(string_t *to_send, const char *question,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret,
+INTERNAL otrv4_err_t otrv4_v3_smp_continue(string_t *to_send, const uint8_t *secret,
                                const size_t secretlen, otr3_conn_t *conn) {
   otrl_message_respond_smp(conn->state->userstate, conn->ops, conn->opdata,
                            conn->ctx, secret, secretlen);
@@ -546,7 +546,7 @@ INTERNAL otrv4_err_t otrv3_smp_continue(string_t *to_send, const uint8_t *secret
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv3_smp_abort(otr3_conn_t *conn) {
+INTERNAL otrv4_err_t otrv4_v3_smp_abort(otr3_conn_t *conn) {
   otrl_message_abort_smp(conn->state->userstate, conn->ops, conn->opdata,
                          conn->ctx);
   return SUCCESS;

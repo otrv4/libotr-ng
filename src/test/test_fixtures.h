@@ -31,12 +31,12 @@ void otrv4_fixture_set_up(otrv4_fixture_t *otrv4_fixture, gconstpointer data) {
   otrv4_policy_t policyv3 = {.allows = OTRV4_ALLOW_V3};
   otrv4_fixture->otrv3 = otrv4_new(otrv4_fixture->state, policyv3);
   otrv4_fixture->otrv3->otr3_conn =
-      otr3_conn_new(otrv4_fixture->state, "they_are_bob");
+      otrv4_v3_conn_new(otrv4_fixture->state, "they_are_bob");
 
   otrv4_policy_t policyv34 = {.allows = OTRV4_ALLOW_V3 | OTRV4_ALLOW_V4};
   otrv4_fixture->otrv34 = otrv4_new(otrv4_fixture->state, policyv34);
   otrv4_fixture->otrv34->otr3_conn =
-      otr3_conn_new(otrv4_fixture->state, "they_are_alice");
+      otrv4_v3_conn_new(otrv4_fixture->state, "they_are_alice");
 
   // TODO: This should be done automatically
   FILE *tmpFILEp;

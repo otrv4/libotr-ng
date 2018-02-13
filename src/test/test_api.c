@@ -793,8 +793,8 @@ void test_api_conversation_v3(void) {
   otrv4_t *bob = otrv4_new(bob_state, policy);
 
   // Set up OTRv3 context
-  alice->otr3_conn = otr3_conn_new(alice_state, "bob");
-  bob->otr3_conn = otr3_conn_new(bob_state, "alice");
+  alice->otr3_conn = otrv4_v3_conn_new(alice_state, "bob");
+  bob->otr3_conn = otrv4_v3_conn_new(bob_state, "alice");
 
   // Generate long term private key.
   FILE *tmpFILEp;

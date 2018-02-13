@@ -225,7 +225,7 @@ tstatic void otrv4_destroy(/*@only@ */ otrv4_t *otr) {
 
   otrv4_fragment_context_free(otr->frag_ctx);
 
-  otr3_conn_free(otr->otr3_conn);
+  otrv4_v3_conn_free(otr->otr3_conn);
   otr->otr3_conn = NULL;
 }
 
@@ -561,7 +561,7 @@ tstatic otrv4_err_t receive_tagged_plaintext(otrv4_response_t *response,
     return start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:
-    return otrv3_receive_message(&response->to_send, &response->to_display,
+    return otrv4_v3_receive_message(&response->to_send, &response->to_display,
                                  &response->tlvs, message, otr->otr3_conn);
     break;
   case OTRV4_VERSION_NONE:
@@ -583,7 +583,7 @@ tstatic otrv4_err_t receive_query_message(otrv4_response_t *response,
     return start_dake(response, otr);
     break;
   case OTRV4_VERSION_3:
-    return otrv3_receive_message(&response->to_send, &response->to_display,
+    return otrv4_v3_receive_message(&response->to_send, &response->to_display,
                                  &response->tlvs, message, otr->otr3_conn);
     break;
   case OTRV4_VERSION_NONE:
@@ -2266,7 +2266,7 @@ INTERNAL otrv4_err_t otrv4_receive_message(otrv4_response_t *response,
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    return otrv3_receive_message(&response->to_send, &response->to_display,
+    return otrv4_v3_receive_message(&response->to_send, &response->to_display,
                                  &response->tlvs, message, otr->otr3_conn);
   case OTRV4_VERSION_4:
   case OTRV4_VERSION_NONE:
@@ -2483,7 +2483,7 @@ INTERNAL otrv4_err_t otrv4_prepare_to_send_message(string_t *to_send,
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    return otrv3_send_message(to_send, message, const_tlvs, otr->otr3_conn);
+    return otrv4_v3_send_message(to_send, message, const_tlvs, otr->otr3_conn);
   case OTRV4_VERSION_4:
     return otrv4_prepare_to_send_data_message(to_send, message, const_tlvs, otr,
                                               flags);
@@ -2519,7 +2519,7 @@ INTERNAL otrv4_err_t otrv4_close(string_t *to_send, otrv4_t *otr) {
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    otrv3_close(to_send, otr->otr3_conn); // TODO: This should return an error
+    otrv4_v3_close(to_send, otr->otr3_conn); // TODO: This should return an error
                                           // but errors are reported on a
                                           // callback
     gone_insecure_cb_v4(otr->conversation);  // TODO: Only if success
@@ -2579,7 +2579,7 @@ API otrv4_err_t otrv4_send_symkey_message(string_t *to_send, unsigned int use,
 
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    otrv3_send_symkey_message(to_send, otr->otr3_conn, use, usedata, usedatalen,
+    otrv4_v3_send_symkey_message(to_send, otr->otr3_conn, use, usedata, usedatalen,
                               extra_key); // TODO: This should return an error
                                           // but errors are reported on a
                                           // callback
@@ -2659,7 +2659,7 @@ INTERNAL otrv4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     // FIXME: missing fragmentation
-    return otrv3_smp_start(to_send, question, secret, secretlen,
+    return otrv4_v3_smp_start(to_send, question, secret, secretlen,
                            otr->otr3_conn);
     break;
   case OTRV4_VERSION_4:
@@ -2737,7 +2737,7 @@ INTERNAL otrv4_err_t otrv4_smp_continue(string_t *to_send, const uint8_t *secret
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
     // FIXME: missing fragmentation
-    return otrv3_smp_continue(to_send, secret, secretlen, otr->otr3_conn);
+    return otrv4_v3_smp_continue(to_send, secret, secretlen, otr->otr3_conn);
   case OTRV4_VERSION_4:
     return smp_continue_otrv4(to_send, secret, secretlen, otr);
   case OTRV4_VERSION_NONE:
@@ -2765,7 +2765,7 @@ tstatic otrv4_err_t otrv4_smp_abort_v4(string_t *to_send, otrv4_t *otr) {
 API otrv4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr) {
   switch (otr->running_version) {
   case OTRV4_VERSION_3:
-    return otrv3_smp_abort(otr->otr3_conn);
+    return otrv4_v3_smp_abort(otr->otr3_conn);
   case OTRV4_VERSION_4:
     return otrv4_smp_abort_v4(to_send, otr);
   case OTRV4_VERSION_NONE:

@@ -123,14 +123,14 @@ tstatic otrv4_t *create_connection_for(const char *recipient,
 
   // TODO: This should receive only the client_state (which should allow
   // you to get protocol, account, v3 userstate, etc)
-  otr3_conn = otr3_conn_new(client->state, recipient);
+  otr3_conn = otrv4_v3_conn_new(client->state, recipient);
   if (!otr3_conn)
     return NULL;
 
   // TODO: put here policy none
   conn = otrv4_new(client->state, get_policy_for(recipient));
   if (!conn) {
-    otr3_conn_free(otr3_conn);
+    otrv4_v3_conn_free(otr3_conn);
     return NULL;
   }
 
