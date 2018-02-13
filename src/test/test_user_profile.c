@@ -33,7 +33,7 @@ void test_user_profile_serializes_body() {
               sizeof(transitional_signature));
 
   uint8_t expected_pubkey[ED448_PUBKEY_BYTES] = {0};
-  serialize_otrv4_public_key(expected_pubkey, keypair->pub);
+  otrv4_serialize_otrv4_public_key(expected_pubkey, keypair->pub);
 
   size_t written = 0;
   uint8_t *serialized = NULL;
@@ -53,7 +53,7 @@ void test_user_profile_serializes_body() {
                       sizeof(expected));
 
   uint8_t expected_shared_prekey[ED448_SHARED_PREKEY_BYTES] = {0};
-  serialize_otrv4_shared_prekey(expected_shared_prekey, profile->shared_prekey);
+  otrv4_serialize_otrv4_shared_prekey(expected_shared_prekey, profile->shared_prekey);
 
   otrv4_assert_cmpmem(expected_shared_prekey,
                       serialized + ED448_PUBKEY_BYTES + 14,

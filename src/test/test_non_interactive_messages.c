@@ -256,14 +256,14 @@ void test_dake_non_interactive_auth_message_serializes(
   cursor += 4 + mpi_len;
 
   uint8_t serialized_snizkpk[SNIZKPK_BYTES] = {};
-  serialize_snizkpk_proof(serialized_snizkpk, msg->sigma);
+  otrv4_serialize_snizkpk_proof(serialized_snizkpk, msg->sigma);
 
   otrv4_assert_cmpmem(cursor, serialized_snizkpk, SNIZKPK_BYTES);
 
   cursor += SNIZKPK_BYTES;
 
   uint8_t serialized_mac[HASH_BYTES] = {};
-  cursor += serialize_bytes_array(cursor, msg->auth_mac, HASH_BYTES);
+  cursor += otrv4_serialize_bytes_array(cursor, msg->auth_mac, HASH_BYTES);
 
   otrv4_assert_cmpmem(cursor, serialized_mac, HASH_BYTES);
 

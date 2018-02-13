@@ -212,7 +212,7 @@ void test_client_get_our_fingerprint() {
 
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
   g_assert_cmpint(
-      serialize_otrv4_public_key(serialized, alice_state->keypair->pub), ==,
+      otrv4_serialize_otrv4_public_key(serialized, alice_state->keypair->pub), ==,
       ED448_PUBKEY_BYTES);
 
   otrv4_fingerprint_t expected_fp = {0};

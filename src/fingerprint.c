@@ -31,7 +31,7 @@ INTERNAL int otrv4_serialize_fingerprint(otrv4_fingerprint_t fp,
   if (!fp)
     return 1;
 
-  serialize_otrv4_public_key(serialized, pub);
+  otrv4_serialize_otrv4_public_key(serialized, pub);
 
   hash_hash(fp, sizeof(otrv4_fingerprint_t), serialized, sizeof serialized);
 

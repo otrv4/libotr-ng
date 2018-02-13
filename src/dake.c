@@ -67,18 +67,18 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_asprintf(
   }
 
   uint8_t *cursor = buff;
-  cursor += serialize_uint16(cursor, VERSION);
-  cursor += serialize_uint8(cursor, IDENTITY_MSG_TYPE);
-  cursor += serialize_uint32(cursor, identity_message->sender_instance_tag);
-  cursor += serialize_uint32(cursor, identity_message->receiver_instance_tag);
-  cursor += serialize_bytes_array(cursor, profile, profile_len);
-  cursor += serialize_ec_point(cursor, identity_message->Y);
+  cursor += otrv4_serialize_uint16(cursor, VERSION);
+  cursor += otrv4_serialize_uint8(cursor, IDENTITY_MSG_TYPE);
+  cursor += otrv4_serialize_uint32(cursor, identity_message->sender_instance_tag);
+  cursor += otrv4_serialize_uint32(cursor, identity_message->receiver_instance_tag);
+  cursor += otrv4_serialize_bytes_array(cursor, profile, profile_len);
+  cursor += otrv4_serialize_ec_point(cursor, identity_message->Y);
 
   free(profile);
   profile = NULL;
 
   size_t len = 0;
-  otrv4_err_t err = serialize_dh_public_key(cursor, &len, identity_message->B);
+  otrv4_err_t err = otrv4_serialize_dh_public_key(cursor, &len, identity_message->B);
   if (err) {
     free(buff);
     buff = NULL;
@@ -192,18 +192,18 @@ INTERNAL otrv4_err_t otrv4_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   }
 
   uint8_t *cursor = buff;
-  cursor += serialize_uint16(cursor, VERSION);
-  cursor += serialize_uint8(cursor, AUTH_R_MSG_TYPE);
-  cursor += serialize_uint32(cursor, auth_r->sender_instance_tag);
-  cursor += serialize_uint32(cursor, auth_r->receiver_instance_tag);
-  cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
-  cursor += serialize_ec_point(cursor, auth_r->X);
+  cursor += otrv4_serialize_uint16(cursor, VERSION);
+  cursor += otrv4_serialize_uint8(cursor, AUTH_R_MSG_TYPE);
+  cursor += otrv4_serialize_uint32(cursor, auth_r->sender_instance_tag);
+  cursor += otrv4_serialize_uint32(cursor, auth_r->receiver_instance_tag);
+  cursor += otrv4_serialize_bytes_array(cursor, our_profile, our_profile_len);
+  cursor += otrv4_serialize_ec_point(cursor, auth_r->X);
 
   free(our_profile);
   our_profile = NULL;
 
   size_t len = 0;
-  otrv4_err_t err = serialize_dh_public_key(cursor, &len, auth_r->A);
+  otrv4_err_t err = otrv4_serialize_dh_public_key(cursor, &len, auth_r->A);
   if (err) {
     free(buff);
     buff = NULL;
@@ -211,7 +211,7 @@ INTERNAL otrv4_err_t otrv4_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   }
 
   cursor += len;
-  cursor += serialize_snizkpk_proof(cursor, auth_r->sigma);
+  cursor += otrv4_serialize_snizkpk_proof(cursor, auth_r->sigma);
 
   if (dst)
     *dst = buff;
@@ -316,11 +316,11 @@ INTERNAL otrv4_err_t otrv4_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
   }
 
   uint8_t *cursor = *dst;
-  cursor += serialize_uint16(cursor, VERSION);
-  cursor += serialize_uint8(cursor, AUTH_I_MSG_TYPE);
-  cursor += serialize_uint32(cursor, auth_i->sender_instance_tag);
-  cursor += serialize_uint32(cursor, auth_i->receiver_instance_tag);
-  cursor += serialize_snizkpk_proof(cursor, auth_i->sigma);
+  cursor += otrv4_serialize_uint16(cursor, VERSION);
+  cursor += otrv4_serialize_uint8(cursor, AUTH_I_MSG_TYPE);
+  cursor += otrv4_serialize_uint32(cursor, auth_i->sender_instance_tag);
+  cursor += otrv4_serialize_uint32(cursor, auth_i->receiver_instance_tag);
+  cursor += otrv4_serialize_snizkpk_proof(cursor, auth_i->sigma);
 
   return SUCCESS;
 }
@@ -425,18 +425,18 @@ otrv4_dake_prekey_message_asprintf(uint8_t **dst, size_t *nbytes,
   }
 
   uint8_t *cursor = buff;
-  cursor += serialize_uint16(cursor, VERSION);
-  cursor += serialize_uint8(cursor, PRE_KEY_MSG_TYPE);
-  cursor += serialize_uint32(cursor, prekey_message->sender_instance_tag);
-  cursor += serialize_uint32(cursor, prekey_message->receiver_instance_tag);
-  cursor += serialize_bytes_array(cursor, profile, profile_len);
-  cursor += serialize_ec_point(cursor, prekey_message->Y);
+  cursor += otrv4_serialize_uint16(cursor, VERSION);
+  cursor += otrv4_serialize_uint8(cursor, PRE_KEY_MSG_TYPE);
+  cursor += otrv4_serialize_uint32(cursor, prekey_message->sender_instance_tag);
+  cursor += otrv4_serialize_uint32(cursor, prekey_message->receiver_instance_tag);
+  cursor += otrv4_serialize_bytes_array(cursor, profile, profile_len);
+  cursor += otrv4_serialize_ec_point(cursor, prekey_message->Y);
 
   free(profile);
   profile = NULL;
 
   size_t len = 0;
-  otrv4_err_t err = serialize_dh_public_key(cursor, &len, prekey_message->B);
+  otrv4_err_t err = otrv4_serialize_dh_public_key(cursor, &len, prekey_message->B);
   if (err) {
     free(buff);
     buff = NULL;
@@ -562,20 +562,20 @@ INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_asprintf(
   }
 
   uint8_t *cursor = buff;
-  cursor += serialize_uint16(cursor, VERSION);
-  cursor += serialize_uint8(cursor, NON_INT_AUTH_MSG_TYPE);
-  cursor += serialize_uint32(cursor, non_interactive_auth->sender_instance_tag);
+  cursor += otrv4_serialize_uint16(cursor, VERSION);
+  cursor += otrv4_serialize_uint8(cursor, NON_INT_AUTH_MSG_TYPE);
+  cursor += otrv4_serialize_uint32(cursor, non_interactive_auth->sender_instance_tag);
   cursor +=
-      serialize_uint32(cursor, non_interactive_auth->receiver_instance_tag);
-  cursor += serialize_bytes_array(cursor, our_profile, our_profile_len);
-  cursor += serialize_ec_point(cursor, non_interactive_auth->X);
+      otrv4_serialize_uint32(cursor, non_interactive_auth->receiver_instance_tag);
+  cursor += otrv4_serialize_bytes_array(cursor, our_profile, our_profile_len);
+  cursor += otrv4_serialize_ec_point(cursor, non_interactive_auth->X);
 
   free(our_profile);
   our_profile = NULL;
 
   size_t len = 0;
   otrv4_err_t err =
-      serialize_dh_public_key(cursor, &len, non_interactive_auth->A);
+      otrv4_serialize_dh_public_key(cursor, &len, non_interactive_auth->A);
   if (err) {
     free(buff);
     buff = NULL;
@@ -583,17 +583,17 @@ INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_asprintf(
   }
 
   cursor += len;
-  cursor += serialize_snizkpk_proof(cursor, non_interactive_auth->sigma);
+  cursor += otrv4_serialize_snizkpk_proof(cursor, non_interactive_auth->sigma);
 
   if (non_interactive_auth->enc_msg) {
-    cursor += serialize_uint32(cursor, non_interactive_auth->message_id);
-    cursor += serialize_bytes_array(cursor, non_interactive_auth->nonce,
+    cursor += otrv4_serialize_uint32(cursor, non_interactive_auth->message_id);
+    cursor += otrv4_serialize_bytes_array(cursor, non_interactive_auth->nonce,
                                     DATA_MSG_NONCE_BYTES);
-    cursor += serialize_data(cursor, non_interactive_auth->enc_msg,
+    cursor += otrv4_serialize_data(cursor, non_interactive_auth->enc_msg,
                              non_interactive_auth->enc_msg_len);
   }
 
-  cursor += serialize_bytes_array(cursor, non_interactive_auth->auth_mac,
+  cursor += otrv4_serialize_bytes_array(cursor, non_interactive_auth->auth_mac,
                                   sizeof(non_interactive_auth->auth_mac));
 
   if (dst)

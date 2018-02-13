@@ -57,25 +57,25 @@ INTERNAL otrv4_err_t otrv4_data_message_body_asprintf(uint8_t **body, size_t *bo
     return ERROR;
 
   uint8_t *cursor = dst;
-  cursor += serialize_uint16(cursor, VERSION);
-  cursor += serialize_uint8(cursor, DATA_MSG_TYPE);
-  cursor += serialize_uint32(cursor, data_msg->sender_instance_tag);
-  cursor += serialize_uint32(cursor, data_msg->receiver_instance_tag);
-  cursor += serialize_uint8(cursor, data_msg->flags);
-  cursor += serialize_uint32(cursor, data_msg->message_id);
-  cursor += serialize_ec_point(cursor, data_msg->ecdh);
+  cursor += otrv4_serialize_uint16(cursor, VERSION);
+  cursor += otrv4_serialize_uint8(cursor, DATA_MSG_TYPE);
+  cursor += otrv4_serialize_uint32(cursor, data_msg->sender_instance_tag);
+  cursor += otrv4_serialize_uint32(cursor, data_msg->receiver_instance_tag);
+  cursor += otrv4_serialize_uint8(cursor, data_msg->flags);
+  cursor += otrv4_serialize_uint32(cursor, data_msg->message_id);
+  cursor += otrv4_serialize_ec_point(cursor, data_msg->ecdh);
 
   // TODO: This could be NULL. We need to test.
   size_t len = 0;
-  if (serialize_dh_public_key(cursor, &len, data_msg->dh)) {
+  if (otrv4_serialize_dh_public_key(cursor, &len, data_msg->dh)) {
     free(dst);
     dst = NULL;
     return ERROR;
   }
   cursor += len;
   cursor +=
-      serialize_bytes_array(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
-  cursor += serialize_data(cursor, data_msg->enc_msg, data_msg->enc_msg_len);
+      otrv4_serialize_bytes_array(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
+  cursor += otrv4_serialize_data(cursor, data_msg->enc_msg, data_msg->enc_msg_len);
 
   if (body)
     *body = dst;

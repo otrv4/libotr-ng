@@ -64,11 +64,11 @@ tstatic int user_profile_body_serialize(uint8_t *dst,
                                        const user_profile_t *profile) {
   uint8_t *target = dst;
 
-  target += serialize_otrv4_public_key(target, profile->pub_key);
-  target += serialize_data(target, (uint8_t *)profile->versions,
+  target += otrv4_serialize_otrv4_public_key(target, profile->pub_key);
+  target += otrv4_serialize_data(target, (uint8_t *)profile->versions,
                            strlen(profile->versions) + 1);
-  target += serialize_uint64(target, profile->expires);
-  target += serialize_otrv4_shared_prekey(target, profile->shared_prekey);
+  target += otrv4_serialize_uint64(target, profile->expires);
+  target += otrv4_serialize_otrv4_shared_prekey(target, profile->shared_prekey);
 
   return target - dst;
 }
@@ -113,10 +113,10 @@ INTERNAL otrv4_err_t user_profile_asprintf(uint8_t **dst, size_t *nbytes,
   }
 
   uint8_t *cursor = buff;
-  cursor += serialize_bytes_array(cursor, body, body_len);
-  cursor += serialize_bytes_array(cursor, profile->signature,
+  cursor += otrv4_serialize_bytes_array(cursor, body, body_len);
+  cursor += otrv4_serialize_bytes_array(cursor, profile->signature,
                                   sizeof(eddsa_signature_t));
-  cursor += serialize_mpi(cursor, profile->transitional_signature);
+  cursor += otrv4_serialize_mpi(cursor, profile->transitional_signature);
 
   *dst = buff;
   if (nbytes)

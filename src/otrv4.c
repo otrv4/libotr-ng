@@ -609,13 +609,13 @@ build_auth_message(uint8_t **msg, size_t *msg_len, const uint8_t type,
   uint8_t hash_ser_r_profile[HASH_BYTES];
   uint8_t hash_phi[HASH_BYTES];
 
-  serialize_ec_point(ser_i_ecdh, i_ecdh);
-  serialize_ec_point(ser_r_ecdh, r_ecdh);
+  otrv4_serialize_ec_point(ser_i_ecdh, i_ecdh);
+  otrv4_serialize_ec_point(ser_r_ecdh, r_ecdh);
 
-  if (serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh))
+  if (otrv4_serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh))
     return ERROR;
 
-  if (serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh))
+  if (otrv4_serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh))
     return ERROR;
 
   do {
@@ -810,16 +810,16 @@ tstatic otrv4_err_t build_non_interactive_auth_message(
   uint8_t hash_ser_r_profile[HASH_BYTES];
   uint8_t hash_phi[HASH_BYTES];
 
-  serialize_ec_point(ser_i_ecdh, i_ecdh);
-  serialize_ec_point(ser_r_ecdh, r_ecdh);
+  otrv4_serialize_ec_point(ser_i_ecdh, i_ecdh);
+  otrv4_serialize_ec_point(ser_r_ecdh, r_ecdh);
 
-  if (serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh))
+  if (otrv4_serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh))
     return ERROR;
 
-  if (serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh))
+  if (otrv4_serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh))
     return ERROR;
 
-  serialize_otrv4_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
+  otrv4_serialize_otrv4_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
 
   otrv4_err_t err = ERROR;
 
@@ -1032,9 +1032,9 @@ tstatic otrv4_err_t data_message_body_on_non_interactive_asprintf(
     return ERROR;
 
   uint8_t *cursor = dst;
-  cursor += serialize_uint32(cursor, auth->message_id);
-  cursor += serialize_bytes_array(cursor, auth->nonce, DATA_MSG_NONCE_BYTES);
-  cursor += serialize_data(cursor, auth->enc_msg, auth->enc_msg_len);
+  cursor += otrv4_serialize_uint32(cursor, auth->message_id);
+  cursor += otrv4_serialize_bytes_array(cursor, auth->nonce, DATA_MSG_NONCE_BYTES);
+  cursor += otrv4_serialize_data(cursor, auth->enc_msg, auth->enc_msg_len);
 
   if (body)
     *body = dst;
@@ -2300,7 +2300,7 @@ tstatic otrv4_err_t serialize_and_encode_data_msg(
   shake_256_mac(ser + bodylen, MAC_KEY_BYTES, mac_key, sizeof(m_mac_key_t), ser,
                 bodylen);
 
-  serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES, to_reveal_mac_keys,
+  otrv4_serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES, to_reveal_mac_keys,
                         to_reveal_mac_keys_len);
 
   *dst = otrl_base64_otr_encode(ser, serlen);
@@ -2399,9 +2399,9 @@ tstatic otrv4_err_t serialize_tlvs(uint8_t **dst, size_t *dstlen,
 
   cursor = *dst;
   for (current = tlvs; current; current = current->next) {
-    cursor += serialize_uint16(cursor, current->type);
-    cursor += serialize_uint16(cursor, current->len);
-    cursor += serialize_bytes_array(cursor, current->data, current->len);
+    cursor += otrv4_serialize_uint16(cursor, current->type);
+    cursor += otrv4_serialize_uint16(cursor, current->len);
+    cursor += otrv4_serialize_bytes_array(cursor, current->data, current->len);
   }
 
   return SUCCESS;
