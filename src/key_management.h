@@ -70,28 +70,28 @@ typedef struct { const chain_link_t *sending, *receiving; } message_chain_t;
 
 // clang-format on
 
-INTERNAL void key_manager_init(key_manager_t *manager);
+INTERNAL void otrv4_key_manager_init(key_manager_t *manager);
 
-INTERNAL void key_manager_destroy(key_manager_t *manager);
+INTERNAL void otrv4_key_manager_destroy(key_manager_t *manager);
 
-INTERNAL void key_manager_set_their_ecdh(ec_point_t their,
+INTERNAL void otrv4_key_manager_set_their_ecdh(ec_point_t their,
                                          key_manager_t *manager);
 
-INTERNAL void key_manager_set_their_dh(dh_public_key_t their,
+INTERNAL void otrv4_key_manager_set_their_dh(dh_public_key_t their,
                                        key_manager_t *manager);
 
-INTERNAL otrv4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager);
+INTERNAL otrv4_err_t otrv4_key_manager_generate_ephemeral_keys(key_manager_t *manager);
 
-INTERNAL otrv4_err_t key_manager_ratcheting_init(int j, bool interactive,
+INTERNAL otrv4_err_t otrv4_key_manager_ratcheting_init(int j, bool interactive,
                                         key_manager_t *manager);
 
-INTERNAL void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
+INTERNAL void otrv4_key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
                                 key_manager_t *manager);
 
-INTERNAL void key_manager_prepare_to_ratchet(key_manager_t *manager);
+INTERNAL void otrv4_key_manager_prepare_to_ratchet(key_manager_t *manager);
 
 
-INTERNAL otrv4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager);
+INTERNAL otrv4_err_t otrv4_key_manager_ensure_on_ratchet(key_manager_t *manager);
 
 
 INTERNAL void otrv4_ecdh_shared_secret_from_prekey(uint8_t *shared,
@@ -101,17 +101,17 @@ INTERNAL void otrv4_ecdh_shared_secret_from_prekey(uint8_t *shared,
 INTERNAL void otrv4_ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
                                      const ec_point_t their_pub);
 
-INTERNAL otrv4_err_t key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
+INTERNAL otrv4_err_t otrv4_key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
                                                         m_mac_key_t mac_key,
                                                         int message_id,
                                                         key_manager_t *manager);
 
-INTERNAL otrv4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager);
+INTERNAL otrv4_err_t otrv4_key_manager_prepare_next_chain_key(key_manager_t *manager);
 
-INTERNAL otrv4_err_t key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
+INTERNAL otrv4_err_t otrv4_key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
                                                       m_mac_key_t mac_key,
                                                       key_manager_t *manager);
-INTERNAL uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys);
+INTERNAL uint8_t *otrv4_key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys);
 
 #ifdef OTRV4_KEY_MANAGEMENT_PRIVATE
 tstatic otrv4_err_t key_manager_new_ratchet(key_manager_t *manager,

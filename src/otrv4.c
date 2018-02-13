@@ -194,7 +194,7 @@ INTERNAL otrv4_t *otrv4_new(otr4_client_state_t *state, otrv4_policy_t policy) {
     return NULL;
   }
 
-  key_manager_init(otr->keys);
+  otrv4_key_manager_init(otr->keys);
   smp_context_init(otr->smp);
 
   otr->frag_ctx = otrv4_fragment_context_new();
@@ -211,7 +211,7 @@ tstatic void otrv4_destroy(/*@only@ */ otrv4_t *otr) {
     otr->conversation = NULL;
   }
 
-  key_manager_destroy(otr->keys);
+  otrv4_key_manager_destroy(otr->keys);
   free(otr->keys);
   otr->keys = NULL;
 
@@ -528,7 +528,7 @@ tstatic otrv4_err_t reply_with_identity_msg(otrv4_response_t *response,
 }
 
 tstatic otrv4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
-  if (key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
+  if (otrv4_key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
     return ERROR;
 
   otr->state = OTRV4_STATE_WAITING_AUTH_R;
@@ -537,7 +537,7 @@ tstatic otrv4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
 }
 
 API otrv4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr) {
-  if (key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
+  if (otrv4_key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
     return ERROR;
 
   otr->state = OTRV4_STATE_START; // needed?
@@ -977,7 +977,7 @@ tstatic otrv4_err_t encrypt_msg_on_non_interactive_auth(
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
 
-  if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
+  if (otrv4_key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
     free(message);
     message = NULL;
     return ERROR;
@@ -1255,7 +1255,7 @@ tstatic void otrv4_error_message(string_t *to_send, otrv4_err_code_t err_code) {
 
 tstatic otrv4_err_t double_ratcheting_init(int j, bool interactive,
                                           otrv4_t *otr) {
-  if (key_manager_ratcheting_init(j, interactive, otr->keys))
+  if (otrv4_key_manager_ratcheting_init(j, interactive, otr->keys))
     return ERROR;
 
   otr->state = OTRV4_STATE_ENCRYPTED_MESSAGES;
@@ -1298,13 +1298,13 @@ tstatic otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
     return err;
   }
 
-  key_manager_set_their_ecdh(m->Y, otr->keys);
-  key_manager_set_their_dh(m->B, otr->keys);
+  otrv4_key_manager_set_their_ecdh(m->Y, otr->keys);
+  otrv4_key_manager_set_their_dh(m->B, otr->keys);
   user_profile_copy(otr->their_profile, m->profile);
 
   otrv4_dake_prekey_message_destroy(m);
 
-  if (key_manager_generate_ephemeral_keys(otr->keys))
+  if (otrv4_key_manager_generate_ephemeral_keys(otr->keys))
     return err;
 
   memcpy(otr->keys->their_shared_prekey, otr->their_profile->shared_prekey,
@@ -1410,7 +1410,7 @@ tstatic otrv4_bool_t verify_non_interactive_auth_message(
     shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
                   HASH_BYTES);
 
-    if (key_manager_retrieve_receiving_message_keys(
+    if (otrv4_key_manager_retrieve_receiving_message_keys(
             enc_key, mac_key, auth->message_id, otr->keys)) {
       free(t);
       t = NULL;
@@ -1514,8 +1514,8 @@ receive_non_interactive_auth_message(otrv4_response_t *response,
     return ERROR;
   }
 
-  key_manager_set_their_ecdh(auth->X, otr->keys);
-  key_manager_set_their_dh(auth->A, otr->keys);
+  otrv4_key_manager_set_their_ecdh(auth->X, otr->keys);
+  otrv4_key_manager_set_their_dh(auth->A, otr->keys);
   user_profile_copy(otr->their_profile, auth->profile);
 
   /* tmp_k = KDF_2(K_ecdh ||
@@ -1558,11 +1558,11 @@ tstatic otrv4_err_t receive_identity_message_on_state_start(
   if (!otr->their_profile)
     return ERROR;
 
-  key_manager_set_their_ecdh(identity_message->Y, otr->keys);
-  key_manager_set_their_dh(identity_message->B, otr->keys);
+  otrv4_key_manager_set_their_ecdh(identity_message->Y, otr->keys);
+  otrv4_key_manager_set_their_dh(identity_message->B, otr->keys);
   user_profile_copy(otr->their_profile, identity_message->profile);
 
-  if (key_manager_generate_ephemeral_keys(otr->keys))
+  if (otrv4_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
 
   if (reply_with_auth_r_msg(dst, otr))
@@ -1573,8 +1573,8 @@ tstatic otrv4_err_t receive_identity_message_on_state_start(
 }
 
 tstatic void forget_our_keys(otrv4_t *otr) {
-  key_manager_destroy(otr->keys);
-  key_manager_init(otr->keys);
+  otrv4_key_manager_destroy(otr->keys);
+  otrv4_key_manager_init(otr->keys);
 }
 
 tstatic otrv4_err_t receive_identity_message_on_waiting_auth_r(
@@ -1733,8 +1733,8 @@ tstatic otrv4_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
     return ERROR;
   }
 
-  key_manager_set_their_ecdh(auth->X, otr->keys);
-  key_manager_set_their_dh(auth->A, otr->keys);
+  otrv4_key_manager_set_their_ecdh(auth->X, otr->keys);
+  otrv4_key_manager_set_their_dh(auth->A, otr->keys);
   user_profile_copy(otr->their_profile, auth->profile);
 
   if (reply_with_auth_i_msg(dst, otr->their_profile, otr)) {
@@ -1984,10 +1984,10 @@ tstatic otrv4_err_t get_receiving_msg_keys(m_enc_key_t enc_key,
                                           m_mac_key_t mac_key,
                                           const data_message_t *msg,
                                           otrv4_t *otr) {
-  if (key_manager_ensure_on_ratchet(otr->keys) == ERROR)
+  if (otrv4_key_manager_ensure_on_ratchet(otr->keys) == ERROR)
     return ERROR;
 
-  if (key_manager_retrieve_receiving_message_keys(enc_key, mac_key,
+  if (otrv4_key_manager_retrieve_receiving_message_keys(enc_key, mac_key,
                                                   msg->message_id, otr->keys)) {
     sodium_memzero(enc_key, sizeof(m_enc_key_t));
     sodium_memzero(mac_key, sizeof(m_mac_key_t));
@@ -2021,7 +2021,7 @@ tstatic otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     return ERROR;
   }
 
-  key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
+  otrv4_key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
 
   tlv_t *reply_tlv = NULL;
 
@@ -2072,7 +2072,7 @@ tstatic otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     if (receive_tlvs(&reply_tlv, response, otr))
       continue;
 
-    key_manager_prepare_to_ratchet(otr->keys);
+    otrv4_key_manager_prepare_to_ratchet(otr->keys);
 
     if (reply_tlv) {
       if (otrv4_prepare_to_send_message(&response->to_send, "", &reply_tlv,
@@ -2318,10 +2318,10 @@ tstatic otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
   size_t serlen = list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
 
   uint8_t *ser_mac_keys =
-      key_manager_old_mac_keys_serialize(otr->keys->old_mac_keys);
+      otrv4_key_manager_old_mac_keys_serialize(otr->keys->old_mac_keys);
   otr->keys->old_mac_keys = NULL;
 
-  if (key_manager_prepare_next_chain_key(otr->keys)) {
+  if (otrv4_key_manager_prepare_next_chain_key(otr->keys)) {
     free(ser_mac_keys);
     ser_mac_keys = NULL;
     return ERROR;
@@ -2332,7 +2332,7 @@ tstatic otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
 
-  if (key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
+  if (otrv4_key_manager_retrieve_sending_message_keys(enc_key, mac_key, otr->keys)) {
     free(ser_mac_keys);
     ser_mac_keys = NULL;
     return ERROR;

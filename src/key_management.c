@@ -57,7 +57,7 @@ tstatic void ratchet_free(ratchet_t *ratchet) {
   ratchet = NULL;
 }
 
-INTERNAL void key_manager_init(key_manager_t *manager) // make like ratchet_new?
+INTERNAL void otrv4_key_manager_init(key_manager_t *manager) // make like ratchet_new?
 {
   otrv4_ec_bzero(manager->our_ecdh->pub, ED448_POINT_BYTES);
   manager->our_dh->pub = NULL;
@@ -83,7 +83,7 @@ INTERNAL void key_manager_init(key_manager_t *manager) // make like ratchet_new?
   manager->old_mac_keys = NULL;
 }
 
-INTERNAL void key_manager_destroy(key_manager_t *manager) {
+INTERNAL void otrv4_key_manager_destroy(key_manager_t *manager) {
   otrv4_ecdh_keypair_destroy(manager->our_ecdh);
   otrv4_dh_keypair_destroy(manager->our_dh);
 
@@ -116,7 +116,7 @@ INTERNAL void key_manager_destroy(key_manager_t *manager) {
   manager->old_mac_keys = NULL;
 }
 
-INTERNAL otrv4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager) {
+INTERNAL otrv4_err_t otrv4_key_manager_generate_ephemeral_keys(key_manager_t *manager) {
   time_t now;
   uint8_t sym[ED448_PRIVATE_BYTES];
   memset(sym, 0, sizeof(sym));
@@ -138,7 +138,7 @@ INTERNAL otrv4_err_t key_manager_generate_ephemeral_keys(key_manager_t *manager)
   return SUCCESS;
 }
 
-INTERNAL void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
+INTERNAL void otrv4_key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t their_dh,
                                 key_manager_t *manager) {
   otrv4_ec_point_destroy(manager->their_ecdh);
   otrv4_ec_point_copy(manager->their_ecdh, their_ecdh);
@@ -146,7 +146,7 @@ INTERNAL void key_manager_set_their_keys(ec_point_t their_ecdh, dh_public_key_t 
   manager->their_dh = otrv4_dh_mpi_copy(their_dh);
 }
 
-INTERNAL void key_manager_prepare_to_ratchet(key_manager_t *manager) { manager->j = 0; }
+INTERNAL void otrv4_key_manager_prepare_to_ratchet(key_manager_t *manager) { manager->j = 0; }
 
 tstatic void derive_key_from_shared_secret(uint8_t *key, size_t keylen,
                                    const uint8_t magic[1],
@@ -522,7 +522,7 @@ tstatic otrv4_err_t init_ratchet(key_manager_t *manager, bool interactive) {
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t key_manager_ratcheting_init(int j, bool interactive,
+INTERNAL otrv4_err_t otrv4_key_manager_ratcheting_init(int j, bool interactive,
                                         key_manager_t *manager) {
   if (init_ratchet(manager, interactive))
     return ERROR;
@@ -536,13 +536,13 @@ tstatic otrv4_err_t rotate_keys(key_manager_t *manager) {
   manager->i++;
   manager->j = 0;
 
-  if (key_manager_generate_ephemeral_keys(manager))
+  if (otrv4_key_manager_generate_ephemeral_keys(manager))
     return ERROR;
 
   return enter_new_ratchet(manager);
 }
 
-INTERNAL otrv4_err_t key_manager_ensure_on_ratchet(key_manager_t *manager) {
+INTERNAL otrv4_err_t otrv4_key_manager_ensure_on_ratchet(key_manager_t *manager) {
   if (manager->j == 0)
     return SUCCESS;
 
@@ -572,7 +572,7 @@ tstatic void derive_encryption_and_mac_keys(m_enc_key_t enc_key,
 }
 
 INTERNAL otrv4_err_t
-key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
+otrv4_key_manager_retrieve_receiving_message_keys(m_enc_key_t enc_key,
                                             m_mac_key_t mac_key, int message_id,
                                             key_manager_t *manager) {
   chain_key_t receiving;
@@ -602,7 +602,7 @@ tstatic otrv4_bool_t should_ratchet(const key_manager_t *manager) {
   return otrv4_false;
 }
 
-INTERNAL otrv4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager) {
+INTERNAL otrv4_err_t otrv4_key_manager_prepare_next_chain_key(key_manager_t *manager) {
   if (should_ratchet(manager) == otrv4_true) {
     return rotate_keys(manager);
   }
@@ -610,7 +610,7 @@ INTERNAL otrv4_err_t key_manager_prepare_next_chain_key(key_manager_t *manager) 
   return derive_sending_chain_key(manager);
 }
 
-INTERNAL otrv4_err_t key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
+INTERNAL otrv4_err_t otrv4_key_manager_retrieve_sending_message_keys(m_enc_key_t enc_key,
                                                       m_mac_key_t mac_key,
                                                       key_manager_t *manager) {
   chain_key_t sending;
@@ -636,7 +636,7 @@ INTERNAL otrv4_err_t key_manager_retrieve_sending_message_keys(m_enc_key_t enc_k
   return ERROR;
 }
 
-INTERNAL uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys) {
+INTERNAL uint8_t *otrv4_key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys) {
   uint num_mac_keys = list_len(old_mac_keys);
   size_t serlen = num_mac_keys * MAC_KEY_BYTES;
   if (serlen == 0) {
@@ -660,12 +660,12 @@ INTERNAL uint8_t *key_manager_old_mac_keys_serialize(list_element_t *old_mac_key
   return ser_mac_keys;
 }
 
-INTERNAL void key_manager_set_their_ecdh(ec_point_t their,
+INTERNAL void otrv4_key_manager_set_their_ecdh(ec_point_t their,
                                               key_manager_t *manager) {
   otrv4_ec_point_copy(manager->their_ecdh, their);
 }
 
-INTERNAL void key_manager_set_their_dh(dh_public_key_t their,
+INTERNAL void otrv4_key_manager_set_their_dh(dh_public_key_t their,
                                             key_manager_t *manager) {
   otrv4_dh_mpi_release(manager->their_dh);
   manager->their_dh = otrv4_dh_mpi_copy(their);
