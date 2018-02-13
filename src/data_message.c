@@ -7,7 +7,7 @@
 #include "serialize.h"
 #include "shake.h"
 
-INTERNAL data_message_t *data_message_new() {
+INTERNAL data_message_t *otrv4_data_message_new() {
   data_message_t *ret = malloc(sizeof(data_message_t));
   if (!ret)
     return NULL;
@@ -39,7 +39,7 @@ tstatic void data_message_destroy(data_message_t *data_msg) {
   sodium_memzero(data_msg->mac, sizeof data_msg->mac);
 }
 
-INTERNAL void data_message_free(data_message_t *data_msg) {
+INTERNAL void otrv4_data_message_free(data_message_t *data_msg) {
   if (!data_msg)
     return;
 
@@ -49,7 +49,7 @@ INTERNAL void data_message_free(data_message_t *data_msg) {
   data_msg = NULL;
 }
 
-INTERNAL otrv4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
+INTERNAL otrv4_err_t otrv4_data_message_body_asprintf(uint8_t **body, size_t *bodylen,
                                        const data_message_t *data_msg) {
   size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
@@ -86,7 +86,7 @@ INTERNAL otrv4_err_t data_message_body_asprintf(uint8_t **body, size_t *bodylen,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t data_message_deserialize(data_message_t *dst, const uint8_t *buff,
+INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst, const uint8_t *buff,
                                      size_t bufflen, size_t *nread) {
   const uint8_t *cursor = buff;
   int64_t len = bufflen;
@@ -174,12 +174,12 @@ INTERNAL otrv4_err_t data_message_deserialize(data_message_t *dst, const uint8_t
                                  cursor, len);
 }
 
-INTERNAL otrv4_bool_t valid_data_message(m_mac_key_t mac_key,
+INTERNAL otrv4_bool_t otrv4_valid_data_message(m_mac_key_t mac_key,
                                 const data_message_t *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  if (data_message_body_asprintf(&body, &bodylen, data_msg)) {
+  if (otrv4_data_message_body_asprintf(&body, &bodylen, data_msg)) {
     return otrv4_false;
   }
 

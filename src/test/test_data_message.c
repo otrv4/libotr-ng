@@ -8,7 +8,7 @@ static data_message_t *set_up_data_msg() {
   ecdh_keypair_generate(ecdh, sym);
   otrv4_assert(dh_keypair_generate(dh) == SUCCESS);
 
-  data_message_t *data_msg = data_message_new();
+  data_message_t *data_msg = otrv4_data_message_new();
   otrv4_assert(data_msg);
   data_msg->sender_instance_tag = 1;
   data_msg->receiver_instance_tag = 2;
@@ -74,7 +74,7 @@ void test_data_message_serializes() {
 
   uint8_t *serialized = NULL;
   size_t serlen = 0;
-  otrv4_assert(data_message_body_asprintf(&serialized, &serlen, data_msg) ==
+  otrv4_assert(otrv4_data_message_body_asprintf(&serialized, &serlen, data_msg) ==
                SUCCESS);
 
   const int OUR_DH_LEN = 4 + 383;
@@ -118,19 +118,19 @@ void test_data_message_serializes() {
   };
   otrv4_assert_cmpmem(cursor, expected_enc, 7);
 
-  data_message_free(data_msg);
+  otrv4_data_message_free(data_msg);
   free(serialized);
   serialized = NULL;
 }
 
-void test_data_message_deserializes() {
+void test_otrv4_data_message_deserializes() {
   OTR4_INIT;
 
   data_message_t *data_msg = set_up_data_msg();
 
   uint8_t *serialized = NULL;
   size_t serlen = 0;
-  otrv4_assert(data_message_body_asprintf(&serialized, &serlen, data_msg) ==
+  otrv4_assert(otrv4_data_message_body_asprintf(&serialized, &serlen, data_msg) ==
                SUCCESS);
 
   const uint8_t mac_data[MAC_KEY_BYTES] = {
@@ -144,8 +144,8 @@ void test_data_message_deserializes() {
   serialized = realloc(serialized, serlen + MAC_KEY_BYTES);
   memcpy(serialized + serlen, mac_data, MAC_KEY_BYTES);
 
-  data_message_t *deserialized = data_message_new();
-  otrv4_assert(data_message_deserialize(deserialized, serialized,
+  data_message_t *deserialized = otrv4_data_message_new();
+  otrv4_assert(otrv4_data_message_deserialize(deserialized, serialized,
                                         serlen + MAC_KEY_BYTES,
                                         NULL) == SUCCESS);
 
@@ -164,8 +164,8 @@ void test_data_message_deserializes() {
   otrv4_assert(data_msg->enc_msg_len == deserialized->enc_msg_len);
   otrv4_assert_cmpmem(data_msg->mac, deserialized->mac, MAC_KEY_BYTES);
 
-  data_message_free(data_msg);
-  data_message_free(deserialized);
+  otrv4_data_message_free(data_msg);
+  otrv4_data_message_free(deserialized);
   free(serialized);
   serialized = NULL;
 }

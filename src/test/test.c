@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
   WITH_FIXTURE("/dake/prekey_message/valid", test_dake_prekey_message_valid,
                prekey_message_fixture_t, prekey_message_fixture);
   g_test_add_func("/data_message/serialize", test_data_message_serializes);
-  g_test_add_func("/data_message/deserialize", test_data_message_deserializes);
+  g_test_add_func("/data_message/deserialize", test_otrv4_data_message_deserializes);
 
   g_test_add_func("/fragment/create_fragments", test_create_fragments);
   g_test_add_func("/fragment/defragment_message",

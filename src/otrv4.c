@@ -917,7 +917,7 @@ tstatic otrv4_err_t serialize_and_encode_non_interactive_auth(
 }
 
 tstatic data_message_t *generate_data_msg(const otrv4_t *otr) {
-  data_message_t *data_msg = data_message_new();
+  data_message_t *data_msg = otrv4_data_message_new();
   if (!data_msg)
     return NULL;
 
@@ -2000,7 +2000,7 @@ tstatic otrv4_err_t get_receiving_msg_keys(m_enc_key_t enc_key,
 tstatic otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
                                               const uint8_t *buff,
                                               size_t buflen, otrv4_t *otr) {
-  data_message_t *msg = data_message_new();
+  data_message_t *msg = otrv4_data_message_new();
   m_enc_key_t enc_key;
   m_mac_key_t mac_key;
 
@@ -2016,8 +2016,8 @@ tstatic otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   }
 
   size_t read = 0;
-  if (data_message_deserialize(msg, buff, buflen, &read)) {
-    data_message_free(msg);
+  if (otrv4_data_message_deserialize(msg, buff, buflen, &read)) {
+    otrv4_data_message_free(msg);
     return ERROR;
   }
 
@@ -2028,7 +2028,7 @@ tstatic otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
   do {
     if (msg->receiver_instance_tag != otr->our_instance_tag) {
       response->to_display = NULL;
-      data_message_free(msg);
+      otrv4_data_message_free(msg);
 
       return SUCCESS;
     }
@@ -2036,11 +2036,11 @@ tstatic otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     if (get_receiving_msg_keys(enc_key, mac_key, msg, otr))
       continue;
 
-    if (valid_data_message(mac_key, msg)) {
+    if (otrv4_valid_data_message(mac_key, msg)) {
       sodium_memzero(enc_key, sizeof(enc_key));
       sodium_memzero(mac_key, sizeof(mac_key));
       response->to_display = NULL;
-      data_message_free(msg);
+      otrv4_data_message_free(msg);
 
       response->warning = OTRV4_WARN_RECEIVED_NOT_VALID;
       return MSG_NOT_VALID;
@@ -2052,14 +2052,14 @@ tstatic otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
         response->to_display = NULL;
-        data_message_free(msg);
+        otrv4_data_message_free(msg);
 
         return ERROR;
       } else if (msg->flags == MSGFLAGS_IGNORE_UNREADABLE) {
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
         response->to_display = NULL;
-        data_message_free(msg);
+        otrv4_data_message_free(msg);
 
         return ERROR;
       }
@@ -2083,19 +2083,19 @@ tstatic otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
     if (to_store_mac == NULL) {
       response->to_display = NULL;
-      data_message_free(msg);
+      otrv4_data_message_free(msg);
       return ERROR;
     }
 
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
     otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
 
-    data_message_free(msg);
+    otrv4_data_message_free(msg);
     otrv4_tlv_free(reply_tlv);
     return SUCCESS;
   } while (0);
 
-  data_message_free(msg);
+  otrv4_data_message_free(msg);
   otrv4_tlv_free(reply_tlv);
 
   return ERROR;
@@ -2282,7 +2282,7 @@ tstatic otrv4_err_t serialize_and_encode_data_msg(
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  if (data_message_body_asprintf(&body, &bodylen, data_msg))
+  if (otrv4_data_message_body_asprintf(&body, &bodylen, data_msg))
     return ERROR;
 
   size_t serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
@@ -2374,7 +2374,7 @@ tstatic otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
   sodium_memzero(mac_key, sizeof(m_mac_key_t));
   free(ser_mac_keys);
   ser_mac_keys = NULL;
-  data_message_free(data_msg);
+  otrv4_data_message_free(data_msg);
 
   return err;
 }
