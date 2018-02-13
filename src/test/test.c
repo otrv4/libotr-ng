@@ -62,9 +62,9 @@ int main(int argc, char **argv) {
                   ed448_test_scalar_serialization);
 
   g_test_add_func("/dake/snizkpk", test_snizkpk_auth);
-  g_test_add_func("/list/add", test_list_add);
-  g_test_add_func("/list/get", test_list_get_last);
-  g_test_add_func("/list/length", test_list_len);
+  g_test_add_func("/list/add", test_otrv4_list_add);
+  g_test_add_func("/list/get", test_otrv4_list_get_last);
+  g_test_add_func("/list/length", test_otrv4_list_len);
   g_test_add_func("/list/empty_size", test_list_empty_size);
 
   g_test_add_func("/dh/api", dh_test_api);

@@ -110,7 +110,7 @@ void test_api_interactive_conversation(void) {
 
     free_message_and_response(response_to_alice, &to_send);
 
-    g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, message_id - 1);
+    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, message_id - 1);
 
     // Next message Bob sends is a new "ratchet"
     g_assert_cmpint(bob->keys->i, ==, 0);
@@ -122,7 +122,7 @@ void test_api_interactive_conversation(void) {
     err = otrv4_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
     assert_msg_sent(err, to_send);
 
-    g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
+    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, 0);
 
     // New ratchet hapenned
     g_assert_cmpint(bob->keys->i, ==, 1);
@@ -132,7 +132,7 @@ void test_api_interactive_conversation(void) {
     response_to_bob = otrv4_response_new();
     otrv4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
-    g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
+    g_assert_cmpint(otrv4_list_len(alice->keys->old_mac_keys), ==, message_id);
 
     free_message_and_response(response_to_bob, &to_send);
 
@@ -152,14 +152,14 @@ void test_api_interactive_conversation(void) {
   err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
   assert_msg_sent(err, to_send);
 
-  g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
+  g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, 0);
   otrv4_tlv_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
                SUCCESS);
-  g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
+  g_assert_cmpint(otrv4_list_len(alice->keys->old_mac_keys), ==, 4);
 
   // Check TLVS
   otrv4_assert(response_to_bob->tlvs);
@@ -224,7 +224,7 @@ void test_api_interactive_conversation_bob(void) {
 
     free_message_and_response(response_to_alice, &to_send);
 
-    g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id - 1);
+    g_assert_cmpint(otrv4_list_len(alice->keys->old_mac_keys), ==, message_id - 1);
 
     // Next message Bob sends is a new "ratchet"
     g_assert_cmpint(alice->keys->i, ==, 0);
@@ -357,7 +357,7 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_rec(err, "hi", response_to_alice);
     otrv4_assert(bob->keys->old_mac_keys);
 
-    g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, message_id - 1);
+    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, message_id - 1);
 
     // Next message Bob sends is a new "ratchet"
     g_assert_cmpint(bob->keys->i, ==, 0);
@@ -371,7 +371,7 @@ void test_api_non_interactive_conversation(void) {
     err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, 0, bob);
     assert_msg_sent(err, to_send);
 
-    g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
+    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, 0);
 
     // New ratchet hapenned
     g_assert_cmpint(bob->keys->i, ==, 1);
@@ -381,7 +381,7 @@ void test_api_non_interactive_conversation(void) {
     response_to_bob = otrv4_response_new();
     otrv4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
-    g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
+    g_assert_cmpint(otrv4_list_len(alice->keys->old_mac_keys), ==, message_id);
 
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(alice->keys->i, ==, 1);
@@ -399,14 +399,14 @@ void test_api_non_interactive_conversation(void) {
   err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
   assert_msg_sent(err, to_send);
 
-  g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
+  g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, 0);
   otrv4_tlv_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
                SUCCESS);
-  g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
+  g_assert_cmpint(otrv4_list_len(alice->keys->old_mac_keys), ==, 4);
 
   // Check TLVS
   otrv4_assert(response_to_bob->tlvs);
@@ -545,7 +545,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
     free_message_and_response(response_to_alice, &to_send);
 
-    g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, message_id - 1);
+    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, message_id - 1);
 
     // Next message Bob sends is a new "ratchet"
     g_assert_cmpint(bob->keys->i, ==, 0);
@@ -557,7 +557,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
     err = otrv4_prepare_to_send_message(&to_send, "hello", &tlv, 0, bob);
     assert_msg_sent(err, to_send);
 
-    g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
+    g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, 0);
 
     // New ratchet hapenned
     g_assert_cmpint(bob->keys->i, ==, 1);
@@ -567,7 +567,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
     response_to_bob = otrv4_response_new();
     otrv4_err_t err = otrv4_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
-    g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, message_id);
+    g_assert_cmpint(otrv4_list_len(alice->keys->old_mac_keys), ==, message_id);
 
     free_message_and_response(response_to_bob, &to_send);
 
@@ -585,14 +585,14 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   err = otrv4_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
   assert_msg_sent(err, to_send);
 
-  g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
+  g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, 0);
   otrv4_tlv_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
                SUCCESS);
-  g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 4);
+  g_assert_cmpint(otrv4_list_len(alice->keys->old_mac_keys), ==, 4);
 
   // Check TLVS
   otrv4_assert(response_to_bob->tlvs);
@@ -1176,7 +1176,7 @@ void test_api_extra_sym_key(void) {
 
   free_message_and_response(response_to_alice, &to_send);
 
-  g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, 1);
 
   // Next message Bob sends is a new "ratchet"
   g_assert_cmpint(bob->keys->i, ==, 0);
@@ -1192,13 +1192,13 @@ void test_api_extra_sym_key(void) {
                                   bob->keys->extra_key, bob);
   assert_msg_sent(err, to_send);
 
-  g_assert_cmpint(list_len(bob->keys->old_mac_keys), ==, 0);
+  g_assert_cmpint(otrv4_list_len(bob->keys->old_mac_keys), ==, 0);
 
   // Alice receives a data message with TLV
   response_to_bob = otrv4_response_new();
   otrv4_assert(otrv4_receive_message(response_to_bob, to_send, alice) ==
                SUCCESS);
-  g_assert_cmpint(list_len(alice->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(otrv4_list_len(alice->keys->old_mac_keys), ==, 1);
 
   // Check TLVS
   otrv4_assert(response_to_bob->tlvs);

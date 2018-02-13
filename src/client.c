@@ -53,7 +53,7 @@ API void otrv4_client_free(otr4_client_t *client) {
 
   client->state = NULL;
 
-  list_free(client->conversations, conversation_free);
+  otrv4_list_free(client->conversations, conversation_free);
   client->conversations = NULL;
 
   free(client);
@@ -158,7 +158,7 @@ tstatic otr4_conversation_t *get_or_create_conversation_with(const char *recipie
   if (!conv)
     return NULL;
 
-  client->conversations = list_add(conv, client->conversations);
+  client->conversations = otrv4_list_add(conv, client->conversations);
 
   return conv;
 }
@@ -330,9 +330,9 @@ API char *otrv4_client_query_message(const char *recipient, const char *message,
 
 tstatic void destroy_client_conversation(const otr4_conversation_t *conv,
                                         otr4_client_t *client) {
-  list_element_t *elem = list_get_by_value(conv, client->conversations);
-  client->conversations = list_remove_element(elem, client->conversations);
-  list_free_nodes(elem);
+  list_element_t *elem = otrv4_list_get_by_value(conv, client->conversations);
+  client->conversations = otrv4_list_remove_element(elem, client->conversations);
+  otrv4_list_free_nodes(elem);
 }
 
 API int otrv4_client_disconnect(char **newmsg, const char *recipient,

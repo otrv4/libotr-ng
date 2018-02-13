@@ -112,7 +112,7 @@ INTERNAL void otrv4_key_manager_destroy(key_manager_t *manager) {
     el->data = NULL;
   }
 
-  list_free_full(manager->old_mac_keys);
+  otrv4_list_free_full(manager->old_mac_keys);
   manager->old_mac_keys = NULL;
 }
 
@@ -637,7 +637,7 @@ INTERNAL otrv4_err_t otrv4_key_manager_retrieve_sending_message_keys(m_enc_key_t
 }
 
 INTERNAL uint8_t *otrv4_key_manager_old_mac_keys_serialize(list_element_t *old_mac_keys) {
-  uint num_mac_keys = list_len(old_mac_keys);
+  uint num_mac_keys = otrv4_list_len(old_mac_keys);
   size_t serlen = num_mac_keys * MAC_KEY_BYTES;
   if (serlen == 0) {
     return NULL;
@@ -649,13 +649,13 @@ INTERNAL uint8_t *otrv4_key_manager_old_mac_keys_serialize(list_element_t *old_m
   }
 
   for (unsigned int i = 0; i < num_mac_keys; i++) {
-    list_element_t *last = list_get_last(old_mac_keys);
+    list_element_t *last = otrv4_list_get_last(old_mac_keys);
     memcpy(ser_mac_keys + i * MAC_KEY_BYTES, last->data, MAC_KEY_BYTES);
-    old_mac_keys = list_remove_element(last, old_mac_keys);
-    list_free_full(last);
+    old_mac_keys = otrv4_list_remove_element(last, old_mac_keys);
+    otrv4_list_free_full(last);
   }
 
-  list_free_nodes(old_mac_keys);
+  otrv4_list_free_nodes(old_mac_keys);
 
   return ser_mac_keys;
 }

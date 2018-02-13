@@ -1464,7 +1464,7 @@ tstatic otrv4_bool_t verify_non_interactive_auth_message(
     }
 
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
-    otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
+    otr->keys->old_mac_keys = otrv4_list_add(to_store_mac, otr->keys->old_mac_keys);
   } else {
     /* auth_mac_k = KDF_2(0x01 || tmp_k */
     uint8_t magic[1] = {0x01};
@@ -2088,7 +2088,7 @@ tstatic otrv4_err_t otrv4_receive_data_message(otrv4_response_t *response,
     }
 
     memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
-    otr->keys->old_mac_keys = list_add(to_store_mac, otr->keys->old_mac_keys);
+    otr->keys->old_mac_keys = otrv4_list_add(to_store_mac, otr->keys->old_mac_keys);
 
     otrv4_data_message_free(msg);
     otrv4_tlv_free(reply_tlv);
@@ -2315,7 +2315,7 @@ tstatic otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
                                      int isHeartbeat, unsigned char flags) {
   data_message_t *data_msg = NULL;
 
-  size_t serlen = list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
+  size_t serlen = otrv4_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
 
   uint8_t *ser_mac_keys =
       otrv4_key_manager_old_mac_keys_serialize(otr->keys->old_mac_keys);

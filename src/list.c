@@ -15,7 +15,7 @@ tstatic list_element_t *list_new() {
   return n;
 }
 
-INTERNAL void list_foreach(list_element_t *head,
+INTERNAL void otrv4_list_foreach(list_element_t *head,
                   void (*fn)(list_element_t *node, void *context),
                   void *context) {
   list_element_t *current = head;
@@ -39,22 +39,22 @@ tstatic void call_and_free_node(list_element_t *node, void *context) {
   free(node);
 }
 
-INTERNAL void list_free(list_element_t *head, void (*fn)(void *data)) {
-  list_foreach(head, call_and_free_node, fn);
+INTERNAL void otrv4_list_free(list_element_t *head, void (*fn)(void *data)) {
+  otrv4_list_foreach(head, call_and_free_node, fn);
 }
 
-INTERNAL void list_free_full(list_element_t *head) { list_free(head, free); }
+INTERNAL void otrv4_list_free_full(list_element_t *head) { otrv4_list_free(head, free); }
 
-INTERNAL void list_free_nodes(list_element_t *head) { list_free(head, NULL); }
+INTERNAL void otrv4_list_free_nodes(list_element_t *head) { otrv4_list_free(head, NULL); }
 
-INTERNAL list_element_t *list_add(void *data, list_element_t *head) {
+INTERNAL list_element_t *otrv4_list_add(void *data, list_element_t *head) {
   list_element_t *n = list_new();
   if (!n)
     return NULL;
 
   n->data = data;
 
-  list_element_t *last = list_get_last(head);
+  list_element_t *last = otrv4_list_get_last(head);
   if (!last)
     return n;
 
@@ -62,7 +62,7 @@ INTERNAL list_element_t *list_add(void *data, list_element_t *head) {
   return head;
 }
 
-INTERNAL list_element_t *list_get_last(list_element_t *head) {
+INTERNAL list_element_t *otrv4_list_get_last(list_element_t *head) {
   if (!head)
     return NULL;
 
@@ -73,7 +73,7 @@ INTERNAL list_element_t *list_get_last(list_element_t *head) {
   return cursor;
 }
 
-INTERNAL list_element_t *list_get(const void *wanted, list_element_t *head,
+INTERNAL list_element_t *otrv4_list_get(const void *wanted, list_element_t *head,
                          int (*fn)(const void *current, const void *wanted)) {
   list_element_t *cursor = head;
 
@@ -91,11 +91,11 @@ tstatic int compare_data(const void *current, const void *wanted) {
   return current == wanted;
 }
 
-INTERNAL list_element_t *list_get_by_value(const void *wanted, list_element_t *head) {
-  return list_get(wanted, head, compare_data);
+INTERNAL list_element_t *otrv4_list_get_by_value(const void *wanted, list_element_t *head) {
+  return otrv4_list_get(wanted, head, compare_data);
 }
 
-INTERNAL list_element_t *list_remove_element(const list_element_t *wanted,
+INTERNAL list_element_t *otrv4_list_remove_element(const list_element_t *wanted,
                                     list_element_t *head) {
   list_element_t *cursor = head;
 
@@ -120,7 +120,7 @@ INTERNAL list_element_t *list_remove_element(const list_element_t *wanted,
   return head;
 }
 
-INTERNAL size_t list_len(list_element_t *head) {
+INTERNAL size_t otrv4_list_len(list_element_t *head) {
   list_element_t *cursor = head;
   size_t size = 0;
 

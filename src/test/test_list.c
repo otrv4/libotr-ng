@@ -1,27 +1,27 @@
 #include "../list.h"
 
-void test_list_add() {
+void test_otrv4_list_add() {
   int one = 1, two = 2;
   list_element_t *list = NULL;
-  list = list_add(&one, list);
+  list = otrv4_list_add(&one, list);
 
   otrv4_assert(list);
   g_assert_cmpint(one, ==, *((int *)list->data));
 
-  list = list_add(&two, list);
+  list = otrv4_list_add(&two, list);
   otrv4_assert(list);
   g_assert_cmpint(one, ==, *((int *)list->data));
   otrv4_assert(list->next);
   g_assert_cmpint(two, ==, *((int *)list->next->data));
 
-  list_free_nodes(list);
+  otrv4_list_free_nodes(list);
 }
 
-void test_list_get_last() {
+void test_otrv4_list_get_last() {
   int one = 1, two = 2;
   list_element_t *list = NULL;
-  list = list_add(&one, list);
-  list = list_add(&two, list);
+  list = otrv4_list_add(&one, list);
+  list = otrv4_list_add(&two, list);
 
   otrv4_assert(list);
   // Adds two after one
@@ -29,50 +29,50 @@ void test_list_get_last() {
   g_assert_cmpint(two, ==, *((int *)list->next->data));
 
   // Gets two and keeps one in the head
-  list_element_t *last = list_get_last(list);
+  list_element_t *last = otrv4_list_get_last(list);
   g_assert_cmpint(two, ==, *((int *)last->data));
   otrv4_assert(!last->next);
   g_assert_cmpint(one, ==, *((int *)list->data));
   g_assert_cmpint(two, ==, *((int *)list->next->data));
 
   // Removes two and one is the new last element
-  list = list_remove_element(last, list);
+  list = otrv4_list_remove_element(last, list);
   g_assert_cmpint(two, ==, *((int *)last->data));
-  list_free_nodes(last);
+  otrv4_list_free_nodes(last);
 
-  last = list_get_last(list);
+  last = otrv4_list_get_last(list);
   g_assert_cmpint(one, ==, *((int *)last->data));
 
   last->data = NULL;
 
-  list_free_nodes(last->next);
-  list_free_nodes(list);
+  otrv4_list_free_nodes(last->next);
+  otrv4_list_free_nodes(list);
 }
 
-void test_list_len() {
+void test_otrv4_list_len() {
   int one = 1, two = 2;
   list_element_t *list = NULL;
-  list = list_add(&one, list);
-  list = list_add(&two, list);
+  list = otrv4_list_add(&one, list);
+  list = otrv4_list_add(&two, list);
 
   otrv4_assert(list);
-  g_assert_cmpint(list_len(list), ==, 2);
+  g_assert_cmpint(otrv4_list_len(list), ==, 2);
 
-  list_element_t *last = list_get_last(list);
-  list = list_remove_element(last, list);
-  list_free_nodes(last);
+  list_element_t *last = otrv4_list_get_last(list);
+  list = otrv4_list_remove_element(last, list);
+  otrv4_list_free_nodes(last);
 
-  last = list_get_last(list);
-  list = list_remove_element(last, list);
-  list_free_nodes(last);
+  last = otrv4_list_get_last(list);
+  list = otrv4_list_remove_element(last, list);
+  otrv4_list_free_nodes(last);
 
-  g_assert_cmpint(list_len(list), ==, 0);
+  g_assert_cmpint(otrv4_list_len(list), ==, 0);
 
-  list_free_nodes(list);
+  otrv4_list_free_nodes(list);
 }
 
 void test_list_empty_size() {
   list_element_t *empty = list_new();
-  g_assert_cmpint(list_len(empty), ==, 0);
-  list_free_nodes(empty);
+  g_assert_cmpint(otrv4_list_len(empty), ==, 0);
+  otrv4_list_free_nodes(empty);
 }

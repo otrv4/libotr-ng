@@ -26,10 +26,10 @@ API void otr4_user_state_free(otr4_userstate_t *state) {
   if (!state)
     return;
 
-  list_free(state->states, free_client_state);
+  otrv4_list_free(state->states, free_client_state);
   state->states = NULL;
 
-  list_free(state->clients, free_client);
+  otrv4_list_free(state->clients, free_client);
   state->clients = NULL;
 
   state->callbacks = NULL;
@@ -49,7 +49,7 @@ tstatic int find_state_by_client_id(const void *current, const void *wanted) {
 tstatic otr4_client_state_t *get_client_state(otr4_userstate_t *state,
                                              void *client_id) {
   list_element_t *el =
-      list_get(client_id, state->states, find_state_by_client_id);
+      otrv4_list_get(client_id, state->states, find_state_by_client_id);
   if (el)
     return el->data;
 
@@ -60,7 +60,7 @@ tstatic otr4_client_state_t *get_client_state(otr4_userstate_t *state,
   s->callbacks = state->callbacks;
   s->userstate = state->userstate_v3;
 
-  state->states = list_add(s, state->states);
+  state->states = otrv4_list_add(s, state->states);
   return s;
 }
 
@@ -76,7 +76,7 @@ tstatic otr4_client_state_t *get_client_state(otr4_userstate_t *state,
 /*   } */
 
 /*   list_element_t *e = */
-/*       list_get(client_id, state->clients, find_client_by_client_id); */
+/*       otrv4_list_get(client_id, state->clients, find_client_by_client_id); */
 
 /*   if (e) { */
 /*     return e->data; */
@@ -89,7 +89,7 @@ tstatic otr4_client_state_t *get_client_state(otr4_userstate_t *state,
 /*     if (!c) */
 /*       return NULL; */
 
-/*     state->clients = list_add(c, state->clients); */
+/*     state->clients = otrv4_list_add(c, state->clients); */
 
 /*     return c; */
 /*   } */
@@ -98,7 +98,7 @@ tstatic otr4_client_state_t *get_client_state(otr4_userstate_t *state,
 /* otr4_messaging_client_t *otr4_messaging_client_get(otr4_userstate_t *state, */
 /*                                                    void *client_id) { */
 /*   list_element_t *el = */
-/*       list_get(client_id, state->clients, find_client_by_client_id); */
+/*       otrv4_list_get(client_id, state->clients, find_client_by_client_id); */
 /*   if (el) */
 /*     return el->data; */
 
@@ -147,7 +147,7 @@ API otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
 /*   if (!privf) */
 /*     return -1; */
 
-/*   list_foreach(state->states, add_private_key_v4_to_FILEp, privf); */
+/*   otrv4_list_foreach(state->states, add_private_key_v4_to_FILEp, privf); */
 /*   return 0; */
 /* } */
 
