@@ -4,12 +4,12 @@
 /* Defines an API to be used by an IM-plugin, like pidgin-otr4 */
 
 /*
- * state = otr4_user_state_new();
- * otr4_user_state_private_key_v4_read_FILEp(state, priv4);
+ * state = otrv4_user_state_new();
+ * otrv4_user_state_private_key_v4_read_FILEp(state, priv4);
  * otr4_user_state_private_key_v4_write_FILEp(state, priv4);
  * otr4_user_state_private_key_v3_read_FILEp(state, priv3);
  * otr4_user_state_private_key_v3_write_FILEp(state, priv3);
- * otr4_user_state_add_private_key_v4(state, alice_xmpp, alice_priv4);
+ * otrv4_user_state_add_private_key_v4(state, alice_xmpp, alice_priv4);
  * otr4_user_state_add_private_key_v3(state, alice_xmpp, alice_priv3);
  *
  * PurpleAccount *alice_xmpp;
@@ -63,19 +63,19 @@ typedef struct {
 /*                                                    void *client_id); */
 
 
-API int otr4_user_state_private_key_v4_read_FILEp(
+API int otrv4_user_state_private_key_v4_read_FILEp(
     otr4_userstate_t *state, FILE *keys,
     void *(*read_client_id_for_key)(FILE *filep));
 
-API otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
+API otrv4_keypair_t *otrv4_user_state_get_private_key_v4(otr4_userstate_t *state,
                                                     void *client_id);
 
-API int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *client_id,
+API int otrv4_user_state_add_private_key_v4(otr4_userstate_t *state, void *client_id,
                                        const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-API otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb);
+API otr4_userstate_t *otrv4_user_state_new(const otrv4_client_callbacks_t *cb);
 
-API void otr4_user_state_free(otr4_userstate_t *);
+API void otrv4_user_state_free(otr4_userstate_t *);
 
 #ifdef OTRV4_MESSAGING_PRIVATE
 

@@ -4,7 +4,7 @@
 
 #include "messaging.h"
 
-API otr4_userstate_t *otr4_user_state_new(const otrv4_client_callbacks_t *cb) {
+API otr4_userstate_t *otrv4_user_state_new(const otrv4_client_callbacks_t *cb) {
   otr4_userstate_t *state = malloc(sizeof(otr4_userstate_t));
   if (!state)
     return NULL;
@@ -22,7 +22,7 @@ tstatic void free_client_state(void *data) { otrv4_client_state_free(data); }
 
 tstatic void free_client(void *data) { otrv4_client_free(data); }
 
-API void otr4_user_state_free(otr4_userstate_t *state) {
+API void otrv4_user_state_free(otr4_userstate_t *state) {
   if (!state)
     return;
 
@@ -117,7 +117,7 @@ tstatic otr4_client_state_t *get_client_state(otr4_userstate_t *state,
 /*   return otrl_privkey_read_FILEp(state->userstate_v3, keys); */
 /* } */
 
-API int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *clientop,
+API int otrv4_user_state_add_private_key_v4(otr4_userstate_t *state, void *clientop,
                                        const uint8_t sym[ED448_PRIVATE_BYTES]) {
   return otrv4_client_state_add_private_key_v4(get_client_state(state, clientop),
                                               sym);
@@ -127,10 +127,10 @@ API int otr4_user_state_add_private_key_v4(otr4_userstate_t *state, void *client
 /*                                          void *client_id) { */
 /*   uint8_t sym[ED448_PRIVATE_BYTES]; */
 /*   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM); */
-/*   return otr4_user_state_add_private_key_v4(state, client_id, sym); */
+/*   return otrv4_user_state_add_private_key_v4(state, client_id, sym); */
 /* } */
 
-API otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
+API otrv4_keypair_t *otrv4_user_state_get_private_key_v4(otr4_userstate_t *state,
                                                     void *client_id) {
   return otrv4_client_state_get_private_key_v4(
       get_client_state(state, client_id));
@@ -151,7 +151,7 @@ API otrv4_keypair_t *otr4_user_state_get_private_key_v4(otr4_userstate_t *state,
 /*   return 0; */
 /* } */
 
-API int otr4_user_state_private_key_v4_read_FILEp(
+API int otrv4_user_state_private_key_v4_read_FILEp(
     otr4_userstate_t *state, FILE *privf,
     void *(*read_client_id_for_key)(FILE *filep)) {
   void *client_id = NULL;
