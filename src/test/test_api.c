@@ -41,7 +41,7 @@ static void free_message_and_response(otrv4_response_t *response,
   *message = NULL;
 }
 
-static void set_up_client_state(otr4_client_state_t *state,
+static void set_up_client_state(otrv4_client_state_t *state,
                                 const char *account_name, const char *phi,
                                 int byte) {
   state->userstate = otrl_userstate_create();
@@ -59,7 +59,7 @@ static void set_up_client_state(otr4_client_state_t *state,
 }
 
 // TODO: a cliente state is not part of a otr creation
-static otrv4_t *set_up_otr(otr4_client_state_t *state, const char *account_name,
+static otrv4_t *set_up_otr(otrv4_client_state_t *state, const char *account_name,
                            const char *phi, int byte) {
   set_up_client_state(state, account_name, phi, byte);
 
@@ -71,8 +71,8 @@ static otrv4_t *set_up_otr(otr4_client_state_t *state, const char *account_name,
 void test_api_interactive_conversation(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
@@ -185,8 +185,8 @@ void test_api_interactive_conversation(void) {
 void test_api_interactive_conversation_bob(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
@@ -244,8 +244,8 @@ void test_api_interactive_conversation_bob(void) {
 void test_api_non_interactive_conversation(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
@@ -429,8 +429,8 @@ void test_api_non_interactive_conversation(void) {
 void test_api_non_interactive_conversation_with_enc_msg(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
@@ -615,8 +615,8 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 void test_api_conversation_errors(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
@@ -782,10 +782,10 @@ void test_api_conversation_v3(void) {
   OTR4_INIT;
   tlv_t *tlv = NULL;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
   set_up_client_state(alice_state, ALICE_IDENTITY, PHI, 1);
 
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
   set_up_client_state(bob_state, BOB_IDENTITY, PHI, 2);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V3};
@@ -868,9 +868,9 @@ void test_api_multiple_clients(void) {
   bool send_response = true;
   otrv4_err_t err;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_phone_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_pc_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_phone_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_pc_state = otrv4_client_state_new(NULL);
 
   // The account name should be the same. The account can be logged
   // on different clients. Instance tags are used for that. This
@@ -992,8 +992,8 @@ void test_api_multiple_clients(void) {
 void test_api_smp(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
@@ -1079,8 +1079,8 @@ void test_api_smp(void) {
 void test_api_smp_abort(void) {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
@@ -1143,8 +1143,8 @@ void test_api_extra_sym_key(void) {
 
   tlv_t *tlv = NULL;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
@@ -1222,8 +1222,8 @@ void test_api_extra_sym_key(void) {
 void test_dh_key_rotation(void) {
   OTR4_INIT;
   tlv_t *tlv = NULL;
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
@@ -1311,8 +1311,8 @@ void test_dh_key_rotation(void) {
 void test_ecdh_priv_keys_destroyed_early() {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
@@ -1407,8 +1407,8 @@ void test_ecdh_priv_keys_destroyed_early() {
 void test_unreadable_flag() {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 3);
@@ -1503,8 +1503,8 @@ void test_unreadable_flag() {
 void test_heartbeat_messages() {
   OTR4_INIT;
 
-  otr4_client_state_t *alice_state = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_state = otrv4_client_state_new(NULL);
 
   otrv4_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
   otrv4_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 3);

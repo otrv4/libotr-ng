@@ -16,7 +16,7 @@ typedef struct heartbeat_t {
   time_t last_msg_sent;
 } heartbeat_t;
 
-typedef struct otr4_client_state_t {
+typedef struct otrv4_client_state_t {
   void *client_id; /* Data in the messaging application context that represents
                     a client and should map directly to it. For example, in
                     libpurple-based apps (like Pidgin) this could be a
@@ -43,37 +43,37 @@ typedef struct otr4_client_state_t {
   // OtrlPrivKey *privkeyv3; // ???
   // otrv4_instag_t *instag; // TODO: Store the instance tag here rather than
   // use OTR3 User State as a store for instance tags
-} otr4_client_state_t;
+} otrv4_client_state_t;
 
-API int otrv4_client_state_instance_tag_read_FILEp(otr4_client_state_t *state,
+API int otrv4_client_state_instance_tag_read_FILEp(otrv4_client_state_t *state,
                                               FILE *instag);
 
-INTERNAL unsigned int otrv4_client_state_get_instance_tag(otr4_client_state_t *state);
+INTERNAL unsigned int otrv4_client_state_get_instance_tag(otrv4_client_state_t *state);
 
-INTERNAL int otrv4_client_state_add_instance_tag(otr4_client_state_t *state,
+INTERNAL int otrv4_client_state_add_instance_tag(otrv4_client_state_t *state,
                                        unsigned int instag);
 
 INTERNAL int otrv4_client_state_add_shared_prekey_v4(
-    otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
+    otrv4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-INTERNAL int otrv4_client_state_private_key_v4_read_FILEp(otr4_client_state_t *state,
+INTERNAL int otrv4_client_state_private_key_v4_read_FILEp(otrv4_client_state_t *state,
                                                 FILE *privf);
 
-INTERNAL int otrv4_client_state_private_key_v4_write_FILEp(otr4_client_state_t *state,
+INTERNAL int otrv4_client_state_private_key_v4_write_FILEp(otrv4_client_state_t *state,
                                                  FILE *privf);
 
 INTERNAL int otrv4_client_state_private_key_v3_generate_FILEp(
-    const otr4_client_state_t *state, FILE *privf);
+    const otrv4_client_state_t *state, FILE *privf);
 
 INTERNAL otrv4_keypair_t *
-otrv4_client_state_get_private_key_v4(otr4_client_state_t *state);
+otrv4_client_state_get_private_key_v4(otrv4_client_state_t *state);
 
 INTERNAL int otrv4_client_state_add_private_key_v4(
-    otr4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
+    otrv4_client_state_t *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-INTERNAL void otrv4_client_state_free(otr4_client_state_t *);
+INTERNAL void otrv4_client_state_free(otrv4_client_state_t *);
 
-INTERNAL otr4_client_state_t *otrv4_client_state_new(void *client_id);
+INTERNAL otrv4_client_state_t *otrv4_client_state_new(void *client_id);
 
 #ifdef OTRV4_CLIENT_STATE_PRIVATE
 

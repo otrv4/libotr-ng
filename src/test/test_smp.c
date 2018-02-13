@@ -5,8 +5,8 @@ void test_smp_state_machine(void) {
   return;
   OTR4_INIT;
 
-  otr4_client_state_t *alice_keypair = otrv4_client_state_new(NULL);
-  otr4_client_state_t *bob_keypair = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *alice_keypair = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *bob_keypair = otrv4_client_state_new(NULL);
 
   smp_msg_1_t smp_msg_1[1];
   smp_msg_2_t smp_msg_2[1];

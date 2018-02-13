@@ -144,7 +144,7 @@ INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst, const u
 
   // TODO: This could be NULL. We need to test.
 
-  otr_mpi_t b_mpi; // no need to free, because nothing is copied now
+  otrv4_mpi_t b_mpi; // no need to free, because nothing is copied now
   if (otrv4_mpi_deserialize_no_copy(b_mpi, cursor, len, &read))
     return ERROR;
 

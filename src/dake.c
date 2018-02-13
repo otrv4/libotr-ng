@@ -154,7 +154,7 @@ INTERNAL otrv4_err_t otrv4_dake_identity_message_deserialize(dake_identity_messa
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  otr_mpi_t b_mpi; // no need to free, because nothing is copied now
+  otrv4_mpi_t b_mpi; // no need to free, because nothing is copied now
   if (otrv4_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
     return ERROR;
   }
@@ -280,7 +280,7 @@ INTERNAL otrv4_err_t otrv4_dake_auth_r_deserialize(dake_auth_r_t *dst, const uin
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  otr_mpi_t tmp_mpi; // no need to free, because nothing is copied now
+  otrv4_mpi_t tmp_mpi; // no need to free, because nothing is copied now
   if (otrv4_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
     return ERROR;
   }
@@ -512,7 +512,7 @@ INTERNAL otrv4_err_t otrv4_dake_prekey_message_deserialize(dake_prekey_message_t
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  otr_mpi_t b_mpi; // no need to free, because nothing is copied now
+  otrv4_mpi_t b_mpi; // no need to free, because nothing is copied now
   if (otrv4_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
     return ERROR;
   }
@@ -656,7 +656,7 @@ INTERNAL otrv4_err_t otrv4_dake_non_interactive_auth_message_deserialize(
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  otr_mpi_t tmp_mpi; // no need to free, because nothing is copied now
+  otrv4_mpi_t tmp_mpi; // no need to free, because nothing is copied now
   if (otrv4_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read))
     return ERROR;
 

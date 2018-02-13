@@ -45,7 +45,7 @@ static const string_t query_header = "?OTRv";
 static const string_t otr_error_header = "?OTR Error:";
 static const string_t otr_header = "?OTR:";
 
-tstatic void create_privkey_cb_v4(const otr4_conversation_state_t *conv) {
+tstatic void create_privkey_cb_v4(const otrv4_conversation_state_t *conv) {
   if (!conv || !conv->client || !conv->client->callbacks)
     return;
 
@@ -53,14 +53,14 @@ tstatic void create_privkey_cb_v4(const otr4_conversation_state_t *conv) {
   conv->client->callbacks->create_privkey(conv->client->client_id);
 }
 
-tstatic void gone_secure_cb_v4(const otr4_conversation_state_t *conv) {
+tstatic void gone_secure_cb_v4(const otrv4_conversation_state_t *conv) {
   if (!conv || !conv->client || !conv->client->callbacks)
     return;
 
   conv->client->callbacks->gone_secure(conv);
 }
 
-tstatic void gone_insecure_cb_v4(const otr4_conversation_state_t *conv) {
+tstatic void gone_insecure_cb_v4(const otrv4_conversation_state_t *conv) {
   if (!conv || !conv->client || !conv->client->callbacks)
     return;
 
@@ -68,17 +68,17 @@ tstatic void gone_insecure_cb_v4(const otr4_conversation_state_t *conv) {
 }
 
 tstatic void fingerprint_seen_cb_v4(const otrv4_fingerprint_t fp,
-                                const otr4_conversation_state_t *conv) {
+                                const otrv4_conversation_state_t *conv) {
   if (!conv || !conv->client || !conv->client->callbacks)
     return;
 
   conv->client->callbacks->fingerprint_seen(fp, conv);
 }
 
-tstatic void handle_smp_event_cb_v4(const otr4_smp_event_t event,
+tstatic void handle_smp_event_cb_v4(const otrv4_smp_event_t event,
                                 const uint8_t progress_percent,
                                 const char *question,
-                                const otr4_conversation_state_t *conv) {
+                                const otrv4_conversation_state_t *conv) {
   if (!conv || !conv->client || !conv->client->callbacks)
     return;
 
@@ -103,7 +103,7 @@ tstatic void handle_smp_event_cb_v4(const otr4_smp_event_t event,
   }
 }
 
-tstatic void received_symkey_cb_v4(const otr4_conversation_state_t *conv,
+tstatic void received_symkey_cb_v4(const otrv4_conversation_state_t *conv,
                                unsigned int use, const unsigned char *usedata,
                                size_t usedatalen,
                                const unsigned char *extra_key) {
@@ -129,7 +129,7 @@ tstatic void received_symkey_cb_v4(const otr4_conversation_state_t *conv,
 #endif
 }
 
-tstatic void maybe_create_keys(const otr4_conversation_state_t *conv) {
+tstatic void maybe_create_keys(const otrv4_conversation_state_t *conv) {
   if (!conv->client->keypair)
     create_privkey_cb_v4(conv);
 }
@@ -168,13 +168,13 @@ tstatic const user_profile_t *get_my_user_profile(otrv4_t *otr) {
   return otr->profile;
 }
 
-INTERNAL otrv4_t *otrv4_new(otr4_client_state_t *state, otrv4_policy_t policy) {
+INTERNAL otrv4_t *otrv4_new(otrv4_client_state_t *state, otrv4_policy_t policy) {
   otrv4_t *otr = malloc(sizeof(otrv4_t));
   if (!otr)
     return NULL;
 
   // TODO: Move to constructor
-  otr->conversation = malloc(sizeof(otr4_conversation_state_t));
+  otr->conversation = malloc(sizeof(otrv4_conversation_state_t));
   otr->conversation->client = state;
   otr->conversation->peer = NULL;
 
@@ -1867,7 +1867,7 @@ tstatic otrv4_err_t decrypt_data_msg(otrv4_response_t *response,
   return ERROR;
 }
 
-tstatic tlv_t *otrv4_process_smp(otr4_smp_event_t event, smp_context_t smp,
+tstatic tlv_t *otrv4_process_smp(otrv4_smp_event_t event, smp_context_t smp,
                                 const tlv_t *tlv) {
   event = OTRV4_SMPEVENT_NONE;
   tlv_t *to_send = NULL;
@@ -1949,7 +1949,7 @@ tstatic tlv_t *process_tlv(const tlv_t *tlv, otrv4_t *otr) {
     return NULL;
   }
 
-  otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
+  otrv4_smp_event_t event = OTRV4_SMPEVENT_NONE;
   tlv_t *out = otrv4_process_smp(event, otr->smp, tlv);
   handle_smp_event_cb_v4(event, otr->smp->progress,
                       otr->smp->msg1 ? otr->smp->msg1->question : NULL,
@@ -2599,7 +2599,7 @@ tstatic tlv_t *otrv4_smp_initiate(const user_profile_t *initiator,
                                  const string_t question, const size_t q_len,
                                  const uint8_t *secret, const size_t secretlen,
                                  uint8_t *ssid, smp_context_t smp,
-                                 otr4_conversation_state_t *conversation) {
+                                 otrv4_conversation_state_t *conversation) {
 
   smp_msg_1_t msg[1];
   uint8_t *to_send = NULL;
@@ -2684,7 +2684,7 @@ INTERNAL otrv4_err_t otrv4_smp_start(string_t *to_send, const string_t question,
   return ERROR;
 }
 
-tstatic tlv_t *otrv4_smp_provide_secret(otr4_smp_event_t *event,
+tstatic tlv_t *otrv4_smp_provide_secret(otrv4_smp_event_t *event,
                                        smp_context_t smp,
                                        const user_profile_t *our_profile,
                                        const user_profile_t *their_profile,
@@ -2711,7 +2711,7 @@ tstatic otrv4_err_t smp_continue_otrv4(string_t *to_send, const uint8_t *secret,
   if (!otr)
     return err;
 
-  otr4_smp_event_t event = OTRV4_SMPEVENT_NONE;
+  otrv4_smp_event_t event = OTRV4_SMPEVENT_NONE;
   smp_reply = otrv4_smp_provide_secret(
       &event, otr->smp, get_my_user_profile(otr), otr->their_profile,
       otr->keys->ssid, secret, secretlen);

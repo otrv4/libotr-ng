@@ -201,7 +201,7 @@ void test_otrv4_receives_identity_message_validates_instance_tag(
 }
 
 void test_otrv4_destroy() {
-  otr4_client_state_t *state = otrv4_client_state_new(NULL);
+  otrv4_client_state_t *state = otrv4_client_state_new(NULL);
 
   otrv4_policy_t policy = {.allows = OTRV4_ALLOW_V4};
   otrv4_t *otr = otrv4_new(state, policy);

@@ -51,7 +51,7 @@ INTERNAL size_t otrv4_serialize_data(uint8_t *dst, const uint8_t *data, size_t l
   return cursor - dst;
 }
 
-INTERNAL size_t otrv4_serialize_mpi(uint8_t *dst, const otr_mpi_t mpi) {
+INTERNAL size_t otrv4_serialize_mpi(uint8_t *dst, const otrv4_mpi_t mpi) {
   return otrv4_serialize_data(dst, mpi->data, mpi->len);
 }
 
@@ -80,7 +80,7 @@ INTERNAL otrv4_err_t otrv4_serialize_dh_public_key(uint8_t *dst, size_t *len,
   // To OTR MPI
   // TODO: Maybe gcrypt MPI already has some API for this.
   // gcry_mpi_print with a different format, maybe?
-  otr_mpi_t mpi;
+  otrv4_mpi_t mpi;
   otrv4_mpi_set(mpi, buf, written);
   *len = otrv4_serialize_mpi(dst, mpi);
   otrv4_mpi_free(mpi);

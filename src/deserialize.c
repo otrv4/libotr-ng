@@ -113,7 +113,7 @@ INTERNAL otrv4_err_t otrv4_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
 
 /* otrv4_err_t deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer, */
 /*                                  size_t buflen, size_t *read) { */
-/*   otr_mpi_t mpi; // no need to free, because nothing is copied now */
+/*   otrv4_mpi_t mpi; // no need to free, because nothing is copied now */
 
 /*   if (otrv4_mpi_deserialize_no_copy(mpi, buffer, buflen, read)) { */
 /*     return ERROR; /\* only mpi len has been read *\/ */

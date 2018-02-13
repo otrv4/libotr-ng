@@ -63,20 +63,20 @@ typedef struct { int allows; } otrv4_policy_t;
 // clang-format on
 
 // TODO: This is a single instance conversation. Make it multi-instance.
-typedef struct otr4_conversation_state_t {
+typedef struct otrv4_conversation_state_t {
   /* void *opdata; // Could have a conversation opdata to point to a, say
    PurpleConversation */
 
-  struct otr4_client_state_t *client;
+  struct otrv4_client_state_t *client;
   char *peer;
   uint16_t their_instance_tag;
-} otr4_conversation_state_t;
+} otrv4_conversation_state_t;
 
 struct connection {
   /* Contains: client (private key, instance tag, and callbacks) and
    conversation state */
-  otr4_conversation_state_t *conversation;
-  otr3_conn_t *otr3_conn;
+  otrv4_conversation_state_t *conversation;
+  otrv4_v3_conn_t *otr3_conn;
 
   otrv4_state state;
   int supported_versions;
@@ -129,7 +129,7 @@ typedef struct {
   uint8_t type;
 } otrv4_header_t;
 
-INTERNAL otrv4_t *otrv4_new(struct otr4_client_state_t *state, otrv4_policy_t policy);
+INTERNAL otrv4_t *otrv4_new(struct otrv4_client_state_t *state, otrv4_policy_t policy);
 
 INTERNAL void otrv4_free(/*@only@ */ otrv4_t *otr);
 

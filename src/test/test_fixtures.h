@@ -4,7 +4,7 @@ typedef struct {
   otrv4_t *otr;
   otrv4_t *otrv3;
   otrv4_t *otrv34;
-  otr4_client_state_t *state;
+  otrv4_client_state_t *state;
 } otrv4_fixture_t;
 
 

@@ -24,7 +24,7 @@ INTERNAL size_t otrv4_serialize_bytes_array(uint8_t *target, const uint8_t data[
 
 INTERNAL size_t otrv4_serialize_data(uint8_t *target, const uint8_t *data, size_t len);
 
-INTERNAL size_t otrv4_serialize_mpi(uint8_t *dst, const otr_mpi_t mpi);
+INTERNAL size_t otrv4_serialize_mpi(uint8_t *dst, const otrv4_mpi_t mpi);
 
 INTERNAL int otrv4_serialize_ec_point(uint8_t *dst, const ec_point_t point);
 

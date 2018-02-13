@@ -9,8 +9,8 @@
 
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
 
-API otr4_message_to_send_t *otrv4_message_new() {
-  otr4_message_to_send_t *msg = malloc(sizeof(otr4_message_to_send_t));
+API otrv4_message_to_send_t *otrv4_message_new() {
+  otrv4_message_to_send_t *msg = malloc(sizeof(otrv4_message_to_send_t));
   if (!msg)
     return NULL;
 
@@ -20,7 +20,7 @@ API otr4_message_to_send_t *otrv4_message_new() {
   return msg;
 }
 
-API void otrv4_message_free(otr4_message_to_send_t *message) {
+API void otrv4_message_free(otrv4_message_to_send_t *message) {
   if (!message)
     return;
 
@@ -59,7 +59,7 @@ INTERNAL void otrv4_fragment_context_free(fragment_context_t *context) {
 }
 
 INTERNAL otrv4_err_t otrv4_fragment_message(int max_size,
-                                  otr4_message_to_send_t *fragments,
+                                  otrv4_message_to_send_t *fragments,
                                   int our_instance, int their_instance,
                                   const string_t message) {
   size_t msg_len = strlen(message);

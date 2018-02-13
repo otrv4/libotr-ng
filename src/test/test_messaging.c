@@ -18,7 +18,7 @@ void test_userstate_key_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
-  otr4_userstate_t *state = otrv4_user_state_new(NULL);
+  otrv4_userstate_t *state = otrv4_user_state_new(NULL);
   otrv4_user_state_add_private_key_v4(state, alice_account, alice_sym);
   otrv4_user_state_add_private_key_v4(state, bob_account, bob_sym);
 
@@ -50,7 +50,7 @@ void test_userstate_key_management(void) {
  * Create callbacks for testing the callbacks API
  */
 
-static otr4_userstate_t *test_state = NULL;
+static otrv4_userstate_t *test_state = NULL;
 
 static void create_privkey_cb(void *client_id) {
   const uint8_t sym[ED448_PRIVATE_BYTES] = {1};
@@ -79,7 +79,7 @@ void test_instance_tag_api(void) {
   char *icq_protocol = "ICQ";
   unsigned int icq_instag_value = 0x9abcdef0;
 
-  otr4_client_state_t *alice = otrv4_client_state_new(alice_account);
+  otrv4_client_state_t *alice = otrv4_client_state_new(alice_account);
   alice->userstate = otrl_userstate_create();
   alice->account_name = otrv4_strdup(icq_alice_account);
   alice->protocol_name = otrv4_strdup(icq_protocol);

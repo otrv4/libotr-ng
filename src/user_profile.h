@@ -14,7 +14,7 @@ typedef struct {
   uint64_t expires;
   otrv4_shared_prekey_pub_t shared_prekey;
   eddsa_signature_t signature;
-  otr_mpi_t transitional_signature; // TODO: this should be a signature type
+  otrv4_mpi_t transitional_signature; // TODO: this should be a signature type
 } user_profile_t;
 
 INTERNAL otrv4_bool_t otrv4_user_profile_verify_signature(const user_profile_t *profile);

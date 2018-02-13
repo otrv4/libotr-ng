@@ -82,18 +82,18 @@ INTERNAL otrv4_err_t otrv4_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
 
 INTERNAL void otrv4_smp_msg_1_destroy(smp_msg_1_t *msg);
 
-INTERNAL otr4_smp_event_t otrv4_reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp);
+INTERNAL otrv4_smp_event_t otrv4_reply_with_smp_msg_2(tlv_t **to_send, smp_context_t smp);
 
 // TODO: should be exposed?
-INTERNAL otr4_smp_event_t otrv4_process_smp_msg1(const tlv_t *tlv, smp_context_t smp);
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg1(const tlv_t *tlv, smp_context_t smp);
 
-INTERNAL otr4_smp_event_t otrv4_process_smp_msg2(tlv_t **smp_reply, const tlv_t *tlv,
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg2(tlv_t **smp_reply, const tlv_t *tlv,
                                   smp_context_t smp);
 
-INTERNAL otr4_smp_event_t otrv4_process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg3(tlv_t **smp_reply, const tlv_t *tlv,
                                   smp_context_t smp);
 
-INTERNAL otr4_smp_event_t otrv4_process_smp_msg4(const tlv_t *tlv, smp_context_t smp);
+INTERNAL otrv4_smp_event_t otrv4_process_smp_msg4(const tlv_t *tlv, smp_context_t smp);
 
 #ifdef OTRV4_SMP_PRIVATE
 
