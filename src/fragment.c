@@ -9,7 +9,7 @@
 
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
 
-API otr4_message_to_send_t *otr4_message_new() {
+API otr4_message_to_send_t *otrv4_message_new() {
   otr4_message_to_send_t *msg = malloc(sizeof(otr4_message_to_send_t));
   if (!msg)
     return NULL;
@@ -20,7 +20,7 @@ API otr4_message_to_send_t *otr4_message_new() {
   return msg;
 }
 
-API void otr4_message_free(otr4_message_to_send_t *message) {
+API void otrv4_message_free(otr4_message_to_send_t *message) {
   if (!message)
     return;
 
@@ -37,7 +37,7 @@ API void otr4_message_free(otr4_message_to_send_t *message) {
   message = NULL;
 }
 
-INTERNAL fragment_context_t *fragment_context_new(void) {
+INTERNAL fragment_context_t *otrv4_fragment_context_new(void) {
   fragment_context_t *context = malloc(sizeof(fragment_context_t));
   context->N = 0;
   context->K = 0;
@@ -48,7 +48,7 @@ INTERNAL fragment_context_t *fragment_context_new(void) {
   return context;
 }
 
-INTERNAL void fragment_context_free(fragment_context_t *context) {
+INTERNAL void otrv4_fragment_context_free(fragment_context_t *context) {
   context->N = 0;
   context->K = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
@@ -58,7 +58,7 @@ INTERNAL void fragment_context_free(fragment_context_t *context) {
   context = NULL;
 }
 
-INTERNAL otrv4_err_t otr4_fragment_message(int max_size,
+INTERNAL otrv4_err_t otrv4_fragment_message(int max_size,
                                   otr4_message_to_send_t *fragments,
                                   int our_instance, int their_instance,
                                   const string_t message) {
@@ -183,7 +183,7 @@ tstatic otrv4_bool_t is_fragment(const string_t message) {
   return otrv4_false;
 }
 
-INTERNAL otrv4_err_t otr4_unfragment_message(char **unfrag_msg,
+INTERNAL otrv4_err_t otrv4_unfragment_message(char **unfrag_msg,
                                     fragment_context_t *context,
                                     const string_t message,
                                     const int our_instance_tag) {

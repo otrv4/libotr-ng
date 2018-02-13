@@ -10,7 +10,7 @@ void test_create_fragments(void) {
 
   otr4_message_to_send_t *frag_message = malloc(sizeof(otr4_message_to_send_t));
 
-  otrv4_assert(otr4_fragment_message(mms, frag_message, 1, 2, message) ==
+  otrv4_assert(otrv4_fragment_message(mms, frag_message, 1, 2, message) ==
                SUCCESS);
 
   g_assert_cmpstr(frag_message->pieces[0], ==,
@@ -24,7 +24,7 @@ void test_create_fragments(void) {
 
   g_assert_cmpint(frag_message->total, ==, 4);
 
-  otr4_message_free(frag_message);
+  otrv4_message_free(frag_message);
 }
 
 void test_defragment_valid_message(void) {
@@ -33,10 +33,10 @@ void test_defragment_valid_message(void) {
   fragments[1] = "?OTR|00000001|00000002,00002,00002,more,";
 
   fragment_context_t *context;
-  context = fragment_context_new();
+  context = otrv4_fragment_context_new();
 
   char *unfrag = NULL;
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[0], 2) ==
+  otrv4_assert(otrv4_unfragment_message(&unfrag, context, fragments[0], 2) ==
                SUCCESS);
 
   g_assert_cmpint(context->N, ==, 2);
@@ -46,7 +46,7 @@ void test_defragment_valid_message(void) {
   otrv4_assert(!unfrag);
   otrv4_assert(context->status == FRAGMENT_INCOMPLETE);
 
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[1], 2) ==
+  otrv4_assert(otrv4_unfragment_message(&unfrag, context, fragments[1], 2) ==
                SUCCESS);
 
   g_assert_cmpint(context->N, ==, 2);
@@ -57,17 +57,17 @@ void test_defragment_valid_message(void) {
 
   free(unfrag);
   unfrag = NULL;
-  fragment_context_free(context);
+  otrv4_fragment_context_free(context);
 }
 
 void test_defragment_single_fragment(void) {
   string_t msg = "?OTR|00000001|00000002,00001,00001,small lol,";
 
   fragment_context_t *context;
-  context = fragment_context_new();
+  context = otrv4_fragment_context_new();
 
   char *unfrag = NULL;
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, msg, 2) ==
+  otrv4_assert(otrv4_unfragment_message(&unfrag, context, msg, 2) ==
                SUCCESS);
 
   g_assert_cmpint(context->N, ==, 1);
@@ -78,17 +78,17 @@ void test_defragment_single_fragment(void) {
 
   free(unfrag);
   unfrag = NULL;
-  fragment_context_free(context);
+  otrv4_fragment_context_free(context);
 }
 
 void test_defragment_without_comma_fails(void) {
   string_t msg = "?OTR|00000001|00000002,00001,00001,blergh";
 
   fragment_context_t *context;
-  context = fragment_context_new();
+  context = otrv4_fragment_context_new();
 
   char *unfrag = NULL;
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, msg, 2) == ERROR);
+  otrv4_assert(otrv4_unfragment_message(&unfrag, context, msg, 2) == ERROR);
   g_assert_cmpint(context->N, ==, 0);
   g_assert_cmpint(context->K, ==, 0);
   g_assert_cmpint(context->fragment_len, ==, 0);
@@ -96,7 +96,7 @@ void test_defragment_without_comma_fails(void) {
 
   free(unfrag);
   unfrag = NULL;
-  fragment_context_free(context);
+  otrv4_fragment_context_free(context);
 }
 
 void test_defragment_clean_context_for_frag_out_of_order(void) {
@@ -106,10 +106,10 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
   fragments[2] = "?OTR|00000001|00000002,00002,00003,fragment ,";
 
   fragment_context_t *context;
-  context = fragment_context_new();
+  context = otrv4_fragment_context_new();
 
   char *unfrag = NULL;
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[0], 2) ==
+  otrv4_assert(otrv4_unfragment_message(&unfrag, context, fragments[0], 2) ==
                SUCCESS);
   otrv4_assert(context->status == FRAGMENT_INCOMPLETE);
   otrv4_assert(!unfrag);
@@ -118,7 +118,7 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
   g_assert_cmpstr(context->fragment, ==, "one more ");
   g_assert_cmpint(context->fragment_len, ==, 9);
 
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[1], 2) ==
+  otrv4_assert(otrv4_unfragment_message(&unfrag, context, fragments[1], 2) ==
                SUCCESS);
   otrv4_assert(context->status == FRAGMENT_UNFRAGMENTED);
   otrv4_assert(!unfrag);
@@ -126,7 +126,7 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
   g_assert_cmpint(context->N, ==, 0);
   g_assert_cmpint(context->K, ==, 0);
 
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, fragments[2], 2) ==
+  otrv4_assert(otrv4_unfragment_message(&unfrag, context, fragments[2], 2) ==
                SUCCESS);
   otrv4_assert(context->status == FRAGMENT_UNFRAGMENTED);
   otrv4_assert(!unfrag);
@@ -136,17 +136,17 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
 
   free(unfrag);
   unfrag = NULL;
-  fragment_context_free(context);
+  otrv4_fragment_context_free(context);
 }
 
 void test_defragment_fails_for_invalid_tag(void) {
   string_t msg = "?OTR|00000001|00000002,00001,00001,small lol,";
 
   fragment_context_t *context;
-  context = fragment_context_new();
+  context = otrv4_fragment_context_new();
 
   char *unfrag = NULL;
-  otrv4_assert(otr4_unfragment_message(&unfrag, context, msg, 1) == ERROR);
+  otrv4_assert(otrv4_unfragment_message(&unfrag, context, msg, 1) == ERROR);
 
   g_assert_cmpint(context->N, ==, 0);
   g_assert_cmpint(context->K, ==, 0);
@@ -156,5 +156,5 @@ void test_defragment_fails_for_invalid_tag(void) {
 
   free(unfrag);
   unfrag = NULL;
-  fragment_context_free(context);
+  otrv4_fragment_context_free(context);
 }

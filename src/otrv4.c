@@ -197,7 +197,7 @@ INTERNAL otrv4_t *otrv4_new(otr4_client_state_t *state, otrv4_policy_t policy) {
   key_manager_init(otr->keys);
   smp_context_init(otr->smp);
 
-  otr->frag_ctx = fragment_context_new();
+  otr->frag_ctx = otrv4_fragment_context_new();
   otr->otr3_conn = NULL;
 
   return otr;
@@ -223,7 +223,7 @@ tstatic void otrv4_destroy(/*@only@ */ otrv4_t *otr) {
 
   smp_destroy(otr->smp);
 
-  fragment_context_free(otr->frag_ctx);
+  otrv4_fragment_context_free(otr->frag_ctx);
 
   otr3_conn_free(otr->otr3_conn);
   otr->otr3_conn = NULL;

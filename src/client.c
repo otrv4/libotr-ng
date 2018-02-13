@@ -213,7 +213,7 @@ API int otrv4_client_send_fragment(otr4_message_to_send_t **newmessage,
 
   uint32_t our_tag = conv->conn->our_instance_tag;
   uint32_t their_tag = conv->conn->their_instance_tag;
-  err = otr4_fragment_message(mms, *newmessage, our_tag, their_tag, to_send);
+  err = otrv4_fragment_message(mms, *newmessage, our_tag, their_tag, to_send);
   free(to_send);
   to_send = NULL;
 
@@ -254,7 +254,7 @@ API int otrv4_client_send_fragment(otr4_message_to_send_t **newmessage,
 tstatic int unfragment(char **unfragmented, const char *received,
                       fragment_context_t *ctx, int our_instance_tag) {
   otrv4_err_t err =
-      otr4_unfragment_message(unfragmented, ctx, received, our_instance_tag);
+      otrv4_unfragment_message(unfragmented, ctx, received, our_instance_tag);
   return err != SUCCESS || ctx->status == FRAGMENT_INCOMPLETE;
 }
 

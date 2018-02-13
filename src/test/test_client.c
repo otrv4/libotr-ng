@@ -893,7 +893,7 @@ void test_client_receives_fragmented_message(void) {
   char *msg = "Receiving fragmented plaintext";
 
   otr4_message_to_send_t *fmsg = malloc(sizeof(otr4_message_to_send_t));
-  otrv4_assert(otr4_fragment_message(60, fmsg, 0, 0, msg) == SUCCESS);
+  otrv4_assert(otrv4_fragment_message(60, fmsg, 0, 0, msg) == SUCCESS);
 
   otr4_client_state_t *alice_state = otrv4_client_state_new("alice");
   otr4_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
@@ -911,7 +911,7 @@ void test_client_receives_fragmented_message(void) {
   free(todisplay);
   todisplay = NULL;
 
-  otr4_message_free(fmsg);
+  otrv4_message_free(fmsg);
   otrl_userstate_free(alice_state->userstate);
   otrv4_client_state_free(alice_state);
   otrv4_client_free(alice);
@@ -958,7 +958,7 @@ void test_client_sends_fragmented_message(void) {
   free(from_bob);
   from_bob = NULL;
 
-  otr4_message_to_send_t *to_send = otr4_message_new();
+  otr4_message_to_send_t *to_send = otrv4_message_new();
   char *message = "We should fragment when is needed";
 
   // Alice fragments the message
@@ -980,7 +980,7 @@ void test_client_sends_fragmented_message(void) {
   free(todisplay);
   todisplay = NULL;
 
-  otr4_message_free(to_send);
+  otrv4_message_free(to_send);
   otrv4_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrv4_client_state_free_all(alice_state, bob_state);
   otrv4_client_free_all(alice, bob);
