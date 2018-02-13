@@ -23,7 +23,7 @@ void test_instance_tag_generates_tag_when_file_empty() {
   g_assert_cmpstr(instag->account, ==, alice_coy_account);
   g_assert_cmpstr(instag->protocol, ==, xmpp_protocol);
 
-  otr4_instag_free(instag);
+  otrv4_instag_free(instag);
 }
 
 void test_instance_tag_generates_tag_when_file_is_full() {
@@ -81,7 +81,7 @@ void test_instance_tag_generates_tag_when_file_is_full() {
   g_assert_cmpint(third_instag->value, !=, 0);
   g_assert_cmpint(third_instag->value, >, 0x100);
 
-  otr4_instag_free(first_instag);
-  otr4_instag_free(second_instag);
-  otr4_instag_free(third_instag);
+  otrv4_instag_free(first_instag);
+  otrv4_instag_free(second_instag);
+  otrv4_instag_free(third_instag);
 }

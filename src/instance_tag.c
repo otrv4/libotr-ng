@@ -36,7 +36,7 @@ API otrv4_bool_t otrv4_instag_get(otrv4_instag_t *otrv4_instag, const char *acco
   return otrv4_true;
 }
 
-API void otr4_instag_free(otrv4_instag_t *instag) {
+API void otrv4_instag_free(otrv4_instag_t *instag) {
   if (!instag)
     return;
 
