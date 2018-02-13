@@ -257,14 +257,14 @@ void test_api_non_interactive_conversation(void) {
   server->prekey_message = NULL;
 
   // Alice uploads prekey message to server
-  otrv4_assert(start_non_interactive_dake(server, alice) == SUCCESS);
+  otrv4_assert(otrv4_start_non_interactive_dake(server, alice) == SUCCESS);
 
   otrv4_assert(alice->state == OTRV4_STATE_START);
   otrv4_assert(server->prekey_message != NULL);
 
   // Bob asks server for prekey message
   // Server replies with prekey message
-  reply_with_prekey_msg_from_server(server, response_to_bob);
+  otrv4_reply_with_prekey_msg_from_server(server, response_to_bob);
   otrv4_assert(bob->state == OTRV4_STATE_START);
   otrv4_assert(response_to_bob != NULL);
 
@@ -286,7 +286,7 @@ void test_api_non_interactive_conversation(void) {
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
-  otrv4_assert(send_non_interactive_auth_msg(&response_to_alice->to_send, bob,
+  otrv4_assert(otrv4_send_non_interactive_auth_msg(&response_to_alice->to_send, bob,
                                              "") == SUCCESS);
 
   // Should send an non interactive auth
@@ -442,14 +442,14 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   server->prekey_message = NULL;
 
   // Alice uploads prekey message to server
-  otrv4_assert(start_non_interactive_dake(server, alice) == SUCCESS);
+  otrv4_assert(otrv4_start_non_interactive_dake(server, alice) == SUCCESS);
 
   otrv4_assert(alice->state == OTRV4_STATE_START);
   otrv4_assert(server->prekey_message != NULL);
 
   // Bob asks server for prekey message
   // Server replies with prekey message
-  reply_with_prekey_msg_from_server(server, response_to_bob);
+  otrv4_reply_with_prekey_msg_from_server(server, response_to_bob);
   otrv4_assert(bob->state == OTRV4_STATE_START);
   otrv4_assert(response_to_bob != NULL);
 
@@ -469,7 +469,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
-  otrv4_assert(send_non_interactive_auth_msg(&response_to_alice->to_send, bob,
+  otrv4_assert(otrv4_send_non_interactive_auth_msg(&response_to_alice->to_send, bob,
                                              "hi") == SUCCESS);
 
   // Should send an non interactive auth

@@ -15,7 +15,7 @@
 
 #define OTR4_INIT                                                              \
   do {                                                                         \
-    otrv3_init();                                                              \
+    otrv4_v3_init();                                                              \
     otrv4_dh_init();                                                                 \
   } while (0);
 
@@ -174,17 +174,17 @@ API otrv4_err_t otrv4_smp_abort(string_t *to_send, otrv4_t *otr);
 
 // TODO: change to the real func: unexpose these and make them
 // static
-API void reply_with_prekey_msg_from_server(otrv4_server_t *server,
+API void otrv4_reply_with_prekey_msg_from_server(otrv4_server_t *server,
                                        otrv4_response_t *response);
 
-API otrv4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr);
+API otrv4_err_t otrv4_start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr);
 
-API otrv4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
+API otrv4_err_t otrv4_send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
                                           const string_t message);
 
 API otrv4_err_t otrv4_heartbeat_checker(string_t *to_send, otrv4_t *otr);
 
-API void otrv3_init(void);
+API void otrv4_v3_init(void);
 
 #ifdef OTRV4_OTRV4_PRIVATE
 

@@ -480,7 +480,7 @@ tstatic otrv4_err_t reply_with_prekey_msg_to_server(otrv4_server_t *server,
   return otrv4_build_prekey_message(server, otr);
 }
 
-API void reply_with_prekey_msg_from_server(otrv4_server_t *server,
+API void otrv4_reply_with_prekey_msg_from_server(otrv4_server_t *server,
                                        otrv4_response_t *response) {
   response->to_send = server->prekey_message;
 }
@@ -536,7 +536,7 @@ tstatic otrv4_err_t start_dake(otrv4_response_t *response, otrv4_t *otr) {
   return reply_with_identity_msg(response, otr);
 }
 
-API otrv4_err_t start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr) {
+API otrv4_err_t otrv4_start_non_interactive_dake(otrv4_server_t *server, otrv4_t *otr) {
   if (otrv4_key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
     return ERROR;
 
@@ -1321,7 +1321,7 @@ tstatic otrv4_err_t receive_prekey_message(string_t *dst, const uint8_t *buff,
   return SUCCESS;
 }
 
-API otrv4_err_t send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
+API otrv4_err_t otrv4_send_non_interactive_auth_msg(string_t *dst, otrv4_t *otr,
                                           const string_t message) {
   uint8_t *c = NULL;
   size_t clen = strlen(message) + 1;
@@ -2785,7 +2785,7 @@ API otrv4_err_t otrv4_heartbeat_checker(string_t *to_send, otrv4_t *otr) {
 
 
 static int otrl_initialized = 0;
-API void otrv3_init(void) {
+API void otrv4_v3_init(void) {
   if (otrl_initialized)
     return;
 
