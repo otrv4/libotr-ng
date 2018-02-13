@@ -139,24 +139,24 @@ INTERNAL otrv4_err_t user_profile_deserialize(user_profile_t *target,
 
   otrv4_err_t ok = ERROR;
   do {
-    if (deserialize_otrv4_public_key(target->pub_key, buffer, buflen, &read))
+    if (otrv4_deserialize_otrv4_public_key(target->pub_key, buffer, buflen, &read))
       continue;
 
     walked += read;
 
-    if (deserialize_data((uint8_t **)&target->versions, buffer + walked,
+    if (otrv4_deserialize_data((uint8_t **)&target->versions, buffer + walked,
                          buflen - walked, &read))
       continue;
 
     walked += read;
 
-    if (deserialize_uint64(&target->expires, buffer + walked, buflen - walked,
+    if (otrv4_deserialize_uint64(&target->expires, buffer + walked, buflen - walked,
                            &read))
       continue;
 
     walked += read;
 
-    if (deserialize_otrv4_shared_prekey(target->shared_prekey, buffer + walked,
+    if (otrv4_deserialize_otrv4_shared_prekey(target->shared_prekey, buffer + walked,
                                         buflen - walked, &read))
       continue;
 

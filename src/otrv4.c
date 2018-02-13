@@ -2110,12 +2110,12 @@ tstatic otrv4_err_t extract_header(otrv4_header_t *dst, const uint8_t *buffer,
   size_t read = 0;
   uint16_t version = 0;
   uint8_t type = 0;
-  if (deserialize_uint16(&version, buffer, bufflen, &read))
+  if (otrv4_deserialize_uint16(&version, buffer, bufflen, &read))
     return ERROR;
 
   buffer += read;
 
-  if (deserialize_uint8(&type, buffer, bufflen - read, &read))
+  if (otrv4_deserialize_uint8(&type, buffer, bufflen - read, &read))
     return ERROR;
 
   dst->version = OTRV4_ALLOW_NONE;

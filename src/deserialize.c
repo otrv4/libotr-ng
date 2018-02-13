@@ -6,7 +6,7 @@
 #include "deserialize.h"
 #include "mpi.h"
 
-INTERNAL otrv4_err_t deserialize_uint64(uint64_t *n, const uint8_t *buffer,
+INTERNAL otrv4_err_t otrv4_deserialize_uint64(uint64_t *n, const uint8_t *buffer,
                                size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint64_t)) {
     return ERROR;
@@ -23,7 +23,7 @@ INTERNAL otrv4_err_t deserialize_uint64(uint64_t *n, const uint8_t *buffer,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t deserialize_uint32(uint32_t *n, const uint8_t *buffer,
+INTERNAL otrv4_err_t otrv4_deserialize_uint32(uint32_t *n, const uint8_t *buffer,
                                size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint32_t)) {
     return ERROR;
@@ -37,7 +37,7 @@ INTERNAL otrv4_err_t deserialize_uint32(uint32_t *n, const uint8_t *buffer,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t deserialize_uint16(uint16_t *n, const uint8_t *buffer,
+INTERNAL otrv4_err_t otrv4_deserialize_uint16(uint16_t *n, const uint8_t *buffer,
                                size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint16_t)) {
     return ERROR;
@@ -51,7 +51,7 @@ INTERNAL otrv4_err_t deserialize_uint16(uint16_t *n, const uint8_t *buffer,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t buflen,
+INTERNAL otrv4_err_t otrv4_deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t buflen,
                               size_t *nread) {
   if (buflen < sizeof(uint8_t)) {
     return ERROR;
@@ -65,13 +65,13 @@ INTERNAL otrv4_err_t deserialize_uint8(uint8_t *n, const uint8_t *buffer, size_t
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t deserialize_data(uint8_t **dst, const uint8_t *buffer,
+INTERNAL otrv4_err_t otrv4_deserialize_data(uint8_t **dst, const uint8_t *buffer,
                              size_t buflen, size_t *read) {
   size_t r = 0;
   uint32_t s = 0;
 
   /* 4 bytes len */
-  if (deserialize_uint32(&s, buffer, buflen, &r)) {
+  if (otrv4_deserialize_uint32(&s, buffer, buflen, &r)) {
     if (read != NULL)
       *read = r;
 
@@ -101,7 +101,7 @@ INTERNAL otrv4_err_t deserialize_data(uint8_t **dst, const uint8_t *buffer,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t deserialize_bytes_array(uint8_t *dst, size_t dstlen,
+INTERNAL otrv4_err_t otrv4_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
                                     const uint8_t *buffer, size_t buflen) {
   if (buflen < dstlen) {
     return ERROR;
@@ -126,11 +126,11 @@ INTERNAL otrv4_err_t deserialize_bytes_array(uint8_t *dst, size_t dstlen,
 /*   return SUCCESS; */
 /* } */
 
-INTERNAL otrv4_err_t deserialize_ec_point(ec_point_t point, const uint8_t *serialized) {
+INTERNAL otrv4_err_t otrv4_deserialize_ec_point(ec_point_t point, const uint8_t *serialized) {
   return ec_point_deserialize(point, serialized);
 }
 
-INTERNAL otrv4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
+INTERNAL otrv4_err_t otrv4_deserialize_otrv4_public_key(otrv4_public_key_t pub,
                                          const uint8_t *serialized,
                                          size_t ser_len, size_t *read) {
   const uint8_t *cursor = serialized;
@@ -141,13 +141,13 @@ INTERNAL otrv4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
   if (ser_len < ED448_PUBKEY_BYTES)
     return ERROR;
 
-  deserialize_uint16(&pubkey_type, cursor, ser_len, &r);
+  otrv4_deserialize_uint16(&pubkey_type, cursor, ser_len, &r);
   cursor += r;
 
   if (ED448_PUBKEY_TYPE != pubkey_type)
     return ERROR;
 
-  if (deserialize_ec_point(pub, cursor))
+  if (otrv4_deserialize_ec_point(pub, cursor))
     return ERROR;
 
   if (read)
@@ -157,7 +157,7 @@ INTERNAL otrv4_err_t deserialize_otrv4_public_key(otrv4_public_key_t pub,
 }
 
 INTERNAL otrv4_err_t
-deserialize_otrv4_shared_prekey(otrv4_shared_prekey_pub_t shared_prekey,
+otrv4_deserialize_otrv4_shared_prekey(otrv4_shared_prekey_pub_t shared_prekey,
                                 const uint8_t *serialized, size_t ser_len,
                                 size_t *read) {
   const uint8_t *cursor = serialized;
@@ -168,13 +168,13 @@ deserialize_otrv4_shared_prekey(otrv4_shared_prekey_pub_t shared_prekey,
   if (ser_len < ED448_PUBKEY_BYTES)
     return ERROR;
 
-  deserialize_uint16(&shared_prekey_type, cursor, ser_len, &r);
+  otrv4_deserialize_uint16(&shared_prekey_type, cursor, ser_len, &r);
   cursor += r;
 
   if (ED448_SHARED_PREKEY_TYPE != shared_prekey_type)
     return ERROR;
 
-  if (deserialize_ec_point(shared_prekey, cursor))
+  if (otrv4_deserialize_ec_point(shared_prekey, cursor))
     return ERROR;
 
   if (read)
@@ -184,7 +184,7 @@ deserialize_otrv4_shared_prekey(otrv4_shared_prekey_pub_t shared_prekey,
 }
 
 // TODO: check if return is necessesary
-INTERNAL otrv4_err_t deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *serialized,
+INTERNAL otrv4_err_t otrv4_deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *serialized,
                                   size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES)
     return ERROR;
@@ -194,44 +194,44 @@ INTERNAL otrv4_err_t deserialize_ec_scalar(ec_scalar_t scalar, const uint8_t *se
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t deserialize_snizkpk_proof(snizkpk_proof_t *proof,
+INTERNAL otrv4_err_t otrv4_deserialize_snizkpk_proof(snizkpk_proof_t *proof,
                                       const uint8_t *serialized, size_t ser_len,
                                       size_t *read) {
   if (ser_len < SNIZKPK_BYTES)
     return ERROR;
 
   const uint8_t *cursor = serialized;
-  if (deserialize_ec_scalar(proof->c1, cursor, ser_len))
+  if (otrv4_deserialize_ec_scalar(proof->c1, cursor, ser_len))
     return ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (deserialize_ec_scalar(proof->r1, cursor, ser_len))
+  if (otrv4_deserialize_ec_scalar(proof->r1, cursor, ser_len))
     return ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (deserialize_ec_scalar(proof->c2, cursor, ser_len))
+  if (otrv4_deserialize_ec_scalar(proof->c2, cursor, ser_len))
     return ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (deserialize_ec_scalar(proof->r2, cursor, ser_len))
+  if (otrv4_deserialize_ec_scalar(proof->r2, cursor, ser_len))
     return ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (deserialize_ec_scalar(proof->c3, cursor, ser_len))
+  if (otrv4_deserialize_ec_scalar(proof->c3, cursor, ser_len))
     return ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (deserialize_ec_scalar(proof->r3, cursor, ser_len))
+  if (otrv4_deserialize_ec_scalar(proof->r3, cursor, ser_len))
     return ERROR;
 
   if (read)

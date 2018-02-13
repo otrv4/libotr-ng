@@ -93,7 +93,7 @@ INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst, const u
   size_t read = 0;
 
   uint16_t protocol_version = 0;
-  if (deserialize_uint16(&protocol_version, cursor, len, &read))
+  if (otrv4_deserialize_uint16(&protocol_version, cursor, len, &read))
     return ERROR;
 
   cursor += read;
@@ -103,7 +103,7 @@ INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst, const u
     return ERROR;
 
   uint8_t message_type = 0;
-  if (deserialize_uint8(&message_type, cursor, len, &read))
+  if (otrv4_deserialize_uint8(&message_type, cursor, len, &read))
     return ERROR;
 
   cursor += read;
@@ -112,31 +112,31 @@ INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst, const u
   if (message_type != DATA_MSG_TYPE)
     return ERROR;
 
-  if (deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read))
+  if (otrv4_deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read))
+  if (otrv4_deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (deserialize_uint8(&dst->flags, cursor, len, &read))
+  if (otrv4_deserialize_uint8(&dst->flags, cursor, len, &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (deserialize_uint32(&dst->message_id, cursor, len, &read))
+  if (otrv4_deserialize_uint32(&dst->message_id, cursor, len, &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (deserialize_ec_point(dst->ecdh, cursor))
+  if (otrv4_deserialize_ec_point(dst->ecdh, cursor))
     return ERROR;
 
   cursor += ED448_POINT_BYTES;
@@ -157,20 +157,20 @@ INTERNAL otrv4_err_t otrv4_data_message_deserialize(data_message_t *dst, const u
   cursor += read;
   len -= read;
 
-  if (deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor, len))
+  if (otrv4_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor, len))
     return ERROR;
 
   cursor += DATA_MSG_NONCE_BYTES;
   len -= DATA_MSG_NONCE_BYTES;
 
-  if (deserialize_data(&dst->enc_msg, cursor, len, &read))
+  if (otrv4_deserialize_data(&dst->enc_msg, cursor, len, &read))
     return ERROR;
 
   dst->enc_msg_len = read - 4;
   cursor += read;
   len -= read;
 
-  return deserialize_bytes_array((uint8_t *)&dst->mac, DATA_MSG_MAC_BYTES,
+  return otrv4_deserialize_bytes_array((uint8_t *)&dst->mac, DATA_MSG_MAC_BYTES,
                                  cursor, len);
 }
 
