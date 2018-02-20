@@ -50,3 +50,6 @@ cachegrindout.out
 
 # code coverage
 coverage.info
+*.info.tmp
+
+.deps
