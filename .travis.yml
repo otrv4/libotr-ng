@@ -119,7 +119,8 @@ script:
   - |
       if [ "$T" = "style" ]; then
            ./autogen.sh
-           ./configure --disable-shared --enable-code-coverage
+           ./configure --disable-shared
+           make
            make ci
            make code-style-doctor
       fi
