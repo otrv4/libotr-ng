@@ -120,7 +120,6 @@ script:
       if [ "$T" = "style" ]; then
            ./autogen.sh
            ./configure --disable-shared
-           make && make install
            make ci
            make code-style-doctor
       fi
