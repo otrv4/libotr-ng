@@ -19,16 +19,19 @@ There are three levels of export that is possible inside the libotrv4 project:
 local, internal and API.
 
 1. Local
+
 Local functions must be marked with tstatic. These functions should also be
 placed in the PRIVATE segment of the corresponding header file - this makes it
 possible for tests to access the functionality when needed.
 
 2. Internal
+
 Functions that will be used by other compilation units in libotrv4, but not
 outside of libotrv4, should be marked with the INTERNAL marker on both
 declaration and definition.
 
 3. API
+
 Finally, functions that are to be exposed as API functions should be marked with
 the API marker on both declaration and definition. They should also be put
 inside header files in the `src/include` directory, not inside src.
