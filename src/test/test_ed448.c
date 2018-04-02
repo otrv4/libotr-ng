@@ -1,5 +1,5 @@
-#include <goldilocks/ed448.h>
 #include <goldilocks.h>
+#include <goldilocks/ed448.h>
 
 #include "../ed448.h"
 #include "../random.h"
@@ -17,7 +17,8 @@ void ed448_test_ecdh() {
   random_bytes(bob_priv, GOLDILOCKS_X448_PRIVATE_BYTES);
   goldilocks_x448_derive_public_key(bob_pub, bob_priv);
 
-  uint8_t shared1[GOLDILOCKS_X448_PUBLIC_BYTES], shared2[GOLDILOCKS_X448_PUBLIC_BYTES];
+  uint8_t shared1[GOLDILOCKS_X448_PUBLIC_BYTES],
+      shared2[GOLDILOCKS_X448_PUBLIC_BYTES];
 
   goldilocks_error_t err = goldilocks_x448(shared1, alice_pub, bob_priv);
   err = goldilocks_x448(shared2, bob_pub, alice_priv);
@@ -61,7 +62,8 @@ void ed448_test_eddsa_keygen() {
 
   // Is G * scalar == P?
   ec_point_t expected;
-  goldilocks_448_point_scalarmul(expected, goldilocks_448_point_base, secret_scalar);
+  goldilocks_448_point_scalarmul(expected, goldilocks_448_point_base,
+                                 secret_scalar);
 
   otrv4_assert(otrv4_ec_point_eq(expected, public_point) == otrv4_true);
 }
@@ -74,5 +76,6 @@ void ed448_test_scalar_serialization() {
                                          goldilocks_448_scalar_one) == SUCCESS);
 
   otrv4_ec_scalar_deserialize(scalar, buff);
-  otrv4_assert(otrv4_ec_scalar_eq(scalar, goldilocks_448_scalar_one) == otrv4_true);
+  otrv4_assert(otrv4_ec_scalar_eq(scalar, goldilocks_448_scalar_one) ==
+               otrv4_true);
 }

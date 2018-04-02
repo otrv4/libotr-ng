@@ -115,14 +115,14 @@ INTERNAL void otrv4_ec_sign(eddsa_signature_t dst,
                             uint8_t pubkey[ED448_POINT_BYTES],
                             const uint8_t *msg, size_t msg_len) {
   goldilocks_ed448_sign(dst, sym, pubkey, msg, msg_len, 0, (uint8_t *)ctx,
-                   strlen(ctx));
+                        strlen(ctx));
 }
 
 INTERNAL otrv4_bool_t otrv4_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
                                       const uint8_t pubkey[ED448_POINT_BYTES],
                                       const uint8_t *msg, size_t msg_len) {
   if (goldilocks_ed448_verify(sig, pubkey, msg, msg_len, 0, (uint8_t *)ctx,
-                         strlen(ctx)) == GOLDILOCKS_TRUE)
+                              strlen(ctx)) == GOLDILOCKS_TRUE)
     return otrv4_true;
 
   return otrv4_false;

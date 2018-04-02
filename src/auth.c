@@ -60,7 +60,8 @@ otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
   hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
   hash_update(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
 
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, pair1->pub);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff,
+                                                          pair1->pub);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A2);

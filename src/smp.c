@@ -726,7 +726,8 @@ tstatic otrv4_bool_t smp_msg_3_validate_zkp(smp_msg_3_t *msg,
   goldilocks_448_point_scalarmul(temp_point, msg->Qa, msg->cp);
   goldilocks_448_point_scalarmul(temp_point_2, smp->G2, msg->d6);
   goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
-  goldilocks_448_point_scalarmul(temp_point_2, goldilocks_448_point_base, msg->d5);
+  goldilocks_448_point_scalarmul(temp_point_2, goldilocks_448_point_base,
+                                 msg->d5);
   goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
   otrv4_serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
@@ -738,7 +739,8 @@ tstatic otrv4_bool_t smp_msg_3_validate_zkp(smp_msg_3_t *msg,
 
   /* cr = HashToScalar(7 || G * d7 + G3a * cr || (Qa - Qb) * d7 + Ra * cr) */
   goldilocks_448_point_scalarmul(temp_point, smp->G3a, msg->cr);
-  goldilocks_448_point_scalarmul(temp_point_2, goldilocks_448_point_base, msg->d7);
+  goldilocks_448_point_scalarmul(temp_point_2, goldilocks_448_point_base,
+                                 msg->d7);
   goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
 
   buff[0] = 0x07;
@@ -854,7 +856,8 @@ tstatic otrv4_bool_t smp_msg_4_validate_zkp(smp_msg_4_t *msg,
 
   /* cr = HashToScalar(8 || G * d7 + G3b * cr || (Qa - Qb) * d7 + Rb * cr). */
   goldilocks_448_point_scalarmul(temp_point, smp->G3b, msg->cr);
-  goldilocks_448_point_scalarmul(temp_point_2, goldilocks_448_point_base, msg->d7);
+  goldilocks_448_point_scalarmul(temp_point_2, goldilocks_448_point_base,
+                                 msg->d7);
   goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
 
   buff[0] = 0x08;
