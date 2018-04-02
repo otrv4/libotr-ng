@@ -779,7 +779,7 @@ tstatic otrv4_err_t generate_tmp_key_r(uint8_t *dst, otrv4_t *otr) {
   otrv4_ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
                            otr->their_profile->pub_key);
 
-  decaf_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_t hd;
   hash_init_with_dom(hd);
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
@@ -1133,7 +1133,7 @@ tstatic otrv4_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     }
 
     /* Auth MAC = KDF_2(auth_mac_k || t || (message_id || nonce || enc_msg)) */
-    decaf_shake256_ctx_t hd;
+    goldilocks_shake256_ctx_t hd;
     hash_init_with_dom(hd);
     hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
     hash_update(hd, t, t_len);
@@ -1193,7 +1193,7 @@ tstatic otrv4_err_t generate_tmp_key_i(uint8_t *dst, otrv4_t *otr) {
   otrv4_ecdh_shared_secret_from_keypair(
       tmp_ecdh_k2, otr->conversation->client->keypair, THEIR_ECDH(otr));
 
-  decaf_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_t hd;
   hash_init_with_dom(hd);
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
@@ -1364,7 +1364,7 @@ tstatic otrv4_bool_t valid_data_message_on_non_interactive_auth(
   memset(mac_tag, 0, sizeof mac_tag);
 
   /* Auth MAC = KDF_2(auth_mac_k || t || enc_msg) */
-  decaf_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_t hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, mac_key, DATA_MSG_MAC_BYTES);

@@ -8,7 +8,7 @@
 INTERNAL void otrv4_generate_keypair(snizkpk_pubkey_t pub,
                                      snizkpk_privkey_t priv) {
   ed448_random_scalar(priv);
-  decaf_448_point_scalarmul(pub, decaf_448_point_base, priv);
+  goldilocks_448_point_scalarmul(pub, goldilocks_448_point_base, priv);
 }
 
 INTERNAL void otrv4_snizkpk_keypair_generate(snizkpk_keypair_t *pair) {
@@ -37,7 +37,7 @@ otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
                            const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
                            const unsigned char *msg, size_t msglen) {
 
-  decaf_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_t hd;
   uint8_t hash[HASH_BYTES];
   unsigned char point_buff[ED448_POINT_BYTES];
 
@@ -48,34 +48,34 @@ otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
 
   otrv4_generate_keypair(T2, dst->r2);
   ed448_random_scalar(dst->c2);
-  decaf_448_point_scalarmul(A2c2, A2, dst->c2);
-  decaf_448_point_add(T2, T2, A2c2);
+  goldilocks_448_point_scalarmul(A2c2, A2, dst->c2);
+  goldilocks_448_point_add(T2, T2, A2c2);
 
   otrv4_generate_keypair(T3, dst->r3);
   ed448_random_scalar(dst->c3);
-  decaf_448_point_scalarmul(A3c3, A3, dst->c3);
-  decaf_448_point_add(T3, T3, A3c3);
+  goldilocks_448_point_scalarmul(A3c3, A3, dst->c3);
+  goldilocks_448_point_add(T3, T3, A3c3);
 
   hash_init_with_dom(hd);
   hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
   hash_update(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, pair1->pub);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, pair1->pub);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A2);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A2);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A3);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A3);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, T1);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, T1);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, T2);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, T2);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, T3);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, T3);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   hash_update(hd, msg, msglen);
@@ -84,13 +84,13 @@ otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
   hash_destroy(hd);
 
   snizkpk_privkey_t c, c1a1;
-  decaf_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
+  goldilocks_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
 
-  decaf_448_scalar_sub(dst->c1, c, dst->c2);
-  decaf_448_scalar_sub(dst->c1, dst->c1, dst->c3);
+  goldilocks_448_scalar_sub(dst->c1, c, dst->c2);
+  goldilocks_448_scalar_sub(dst->c1, dst->c1, dst->c3);
 
-  decaf_448_scalar_mul(c1a1, dst->c1, pair1->priv);
-  decaf_448_scalar_sub(dst->r1, t1, c1a1);
+  goldilocks_448_scalar_mul(c1a1, dst->c1, pair1->priv);
+  goldilocks_448_scalar_sub(dst->r1, t1, c1a1);
 }
 
 INTERNAL otrv4_bool_t otrv4_snizkpk_verify(const snizkpk_proof_t *src,
@@ -100,7 +100,7 @@ INTERNAL otrv4_bool_t otrv4_snizkpk_verify(const snizkpk_proof_t *src,
                                            const unsigned char *msg,
                                            size_t msglen) {
 
-  decaf_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_t hd;
   uint8_t hash[HASH_BYTES];
   unsigned char point_buff[ED448_POINT_BYTES];
 
@@ -108,37 +108,37 @@ INTERNAL otrv4_bool_t otrv4_snizkpk_verify(const snizkpk_proof_t *src,
 
   snizkpk_pubkey_t gr1, gr2, gr3, A1c1, A2c2, A3c3;
 
-  decaf_448_point_scalarmul(gr1, decaf_448_point_base, src->r1);
-  decaf_448_point_scalarmul(gr2, decaf_448_point_base, src->r2);
-  decaf_448_point_scalarmul(gr3, decaf_448_point_base, src->r3);
+  goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, src->r1);
+  goldilocks_448_point_scalarmul(gr2, goldilocks_448_point_base, src->r2);
+  goldilocks_448_point_scalarmul(gr3, goldilocks_448_point_base, src->r3);
 
-  decaf_448_point_scalarmul(A1c1, A1, src->c1);
-  decaf_448_point_scalarmul(A2c2, A2, src->c2);
-  decaf_448_point_scalarmul(A3c3, A3, src->c3);
+  goldilocks_448_point_scalarmul(A1c1, A1, src->c1);
+  goldilocks_448_point_scalarmul(A2c2, A2, src->c2);
+  goldilocks_448_point_scalarmul(A3c3, A3, src->c3);
 
-  decaf_448_point_add(A1c1, A1c1, gr1);
-  decaf_448_point_add(A2c2, A2c2, gr2);
-  decaf_448_point_add(A3c3, A3c3, gr3);
+  goldilocks_448_point_add(A1c1, A1c1, gr1);
+  goldilocks_448_point_add(A2c2, A2c2, gr2);
+  goldilocks_448_point_add(A3c3, A3c3, gr3);
 
   hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
   hash_update(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A1);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A1);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A2);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A2);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A3);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A3);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A1c1);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A1c1);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A2c2);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A2c2);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
-  decaf_448_point_mul_by_cofactor_and_encode_like_eddsa(point_buff, A3c3);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A3c3);
   hash_update(hd, point_buff, ED448_POINT_BYTES);
 
   hash_update(hd, msg, msglen);
@@ -147,12 +147,12 @@ INTERNAL otrv4_bool_t otrv4_snizkpk_verify(const snizkpk_proof_t *src,
   hash_destroy(hd);
 
   snizkpk_privkey_t c, c1c2c3;
-  decaf_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
+  goldilocks_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
 
-  decaf_448_scalar_add(c1c2c3, src->c1, src->c2);
-  decaf_448_scalar_add(c1c2c3, c1c2c3, src->c3);
+  goldilocks_448_scalar_add(c1c2c3, src->c1, src->c2);
+  goldilocks_448_scalar_add(c1c2c3, c1c2c3, src->c3);
 
-  if (DECAF_TRUE == decaf_448_scalar_eq(c, c1c2c3))
+  if (GOLDILOCKS_TRUE == goldilocks_448_scalar_eq(c, c1c2c3))
     return otrv4_true;
 
   return otrv4_false;

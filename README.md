@@ -10,7 +10,7 @@ Before you try to build libotrv4, verify you have installed:
 
 Then, install the following dependencies:
 * libglib2.0-dev
-* libdecaf
+* libgoldilocks
 * libsodium-dev
 * libotr 4.x
 * libgcrypt 1.8.0 or newer

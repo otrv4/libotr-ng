@@ -1,24 +1,24 @@
 #ifndef OTRV4_ED448_H
 #define OTRV4_ED448_H
 
-#include <decaf.h>
-#include <decaf/ed448.h>
+#include <goldilocks.h>
+#include <goldilocks/ed448.h>
 #include <stdint.h>
 
 #include "error.h"
 #include "shared.h"
 
-/* Decaf_448_point_t is in the twisted ed448-goldilocks. */
-typedef decaf_448_scalar_t ec_scalar_t;
-typedef decaf_448_point_t ec_point_t;
+/* goldilocks_448_point_t is in the twisted ed448-goldilocks. */
+typedef goldilocks_448_scalar_t ec_scalar_t;
+typedef goldilocks_448_point_t ec_point_t;
 
 /* Serialize points and scalars using EdDSA wire format. */
-#define ED448_PRIVATE_BYTES DECAF_EDDSA_448_PRIVATE_BYTES
-#define ED448_POINT_BYTES DECAF_EDDSA_448_PUBLIC_BYTES
-#define ED448_SIGNATURE_BYTES DECAF_EDDSA_448_SIGNATURE_BYTES
-#define ED448_SCALAR_BYTES DECAF_448_SCALAR_BYTES
+#define ED448_PRIVATE_BYTES GOLDILOCKS_EDDSA_448_PRIVATE_BYTES
+#define ED448_POINT_BYTES GOLDILOCKS_EDDSA_448_PUBLIC_BYTES
+#define ED448_SIGNATURE_BYTES GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES
+#define ED448_SCALAR_BYTES GOLDILOCKS_448_SCALAR_BYTES
 
-typedef uint8_t decaf_448_public_key_t[ED448_POINT_BYTES];
+typedef uint8_t goldilocks_448_public_key_t[ED448_POINT_BYTES];
 typedef uint8_t eddsa_signature_t[ED448_SIGNATURE_BYTES];
 
 /* ECDH keypair */
@@ -27,7 +27,7 @@ typedef struct {
   ec_point_t pub;
 } ecdh_keypair_t;
 
-typedef decaf_448_public_key_t ec_public_key_t;
+typedef goldilocks_448_public_key_t ec_public_key_t;
 
 INTERNAL void otrv4_ec_bzero(void *data, size_t size);
 
@@ -83,7 +83,7 @@ INTERNAL void otrv4_ec_sign(eddsa_signature_t dst,
                             const uint8_t *msg, size_t msg_len);
 
 INTERNAL otrv4_bool_t otrv4_ec_verify(
-    const uint8_t sig[DECAF_EDDSA_448_SIGNATURE_BYTES],
+    const uint8_t sig[GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES],
     const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg, size_t msg_len);
 
 #ifdef OTRV4_ED448_PRIVATE

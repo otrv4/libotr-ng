@@ -37,7 +37,7 @@ AC_C_INLINE
 
 dnl Checks for libraries.
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.18])
-PKG_CHECK_MODULES([LIBDECAF], [libdecaf >= 0.0.1])
+PKG_CHECK_MODULES([LIBGOLDILOCKS], [libgoldilocks >= 0.0.1])
 PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 1.0.0])
 AM_PATH_LIBOTR(4.0.0,,AC_MSG_ERROR(libotr 4.x >= 4.0.0 is required.))
 # TODO: this seems to be not correctly working on Darwin.

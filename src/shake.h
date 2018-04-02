@@ -1,16 +1,16 @@
 #ifndef OTRV4_SHAKE_H
 #define OTRV4_SHAKE_H
 
-#include "decaf/shake.h"
+#include "goldilocks/shake.h"
 #include "shared.h"
 
-#define hash_init decaf_shake256_init
-#define hash_update decaf_shake256_update
-#define hash_final decaf_shake256_final
-#define hash_destroy decaf_shake256_destroy
-#define hash_hash decaf_shake256_hash
+#define hash_init goldilocks_shake256_init
+#define hash_update goldilocks_shake256_update
+#define hash_final goldilocks_shake256_final
+#define hash_destroy goldilocks_shake256_destroy
+#define hash_hash goldilocks_shake256_hash
 
-static void hash_init_with_dom(decaf_shake256_ctx_t hash) {
+static void hash_init_with_dom(goldilocks_shake256_ctx_t hash) {
   hash_init(hash);
 
   const char *dom_s = "OTR4";
@@ -19,7 +19,7 @@ static void hash_init_with_dom(decaf_shake256_ctx_t hash) {
 
 static void shake_kkdf(uint8_t *dst, size_t dstlen, const uint8_t *key,
                        size_t keylen, const uint8_t *secret, size_t secretlen) {
-  decaf_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_t hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, key, keylen);
@@ -43,7 +43,7 @@ static inline void shake_256_kdf(uint8_t *key, size_t keylen,
 
 static inline void shake_256_hash(uint8_t *dst, size_t dstlen,
                                   const uint8_t *secret, size_t secretlen) {
-  decaf_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_t hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, secret, secretlen);

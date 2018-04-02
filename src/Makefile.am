@@ -26,12 +26,12 @@ libotr4_la_SOURCES = \
 		     tlv.c \
 		     user_profile.c
 
-libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBDECAF_CFLAGS@ \
+libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \
                                  @LIBSODIUM_CFLAGS@ \
                                  @LIBGCRYPT_CFLAGS@ \
 				 $(CODE_COVERAGE_CFLAGS)
 
-libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBDECAF_LIBS@ \
+libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBGOLDILOCKS_LIBS@ \
                                    @LIBSODIUM_LIBS@ \
                                    @LIBGCRYPT_LIBS@ \
 				   $(CODE_COVERAGE_LIBS)

@@ -27,11 +27,11 @@ INTERNAL void otrv4_keypair_generate(otrv4_keypair_t *keypair,
   otrv4_ec_derive_public_key(pub, keypair->sym);
   otrv4_ec_point_deserialize(keypair->pub, pub);
 
-  decaf_bzero(pub, ED448_POINT_BYTES);
+  goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
 
 tstatic void keypair_destroy(otrv4_keypair_t *keypair) {
-  decaf_bzero(keypair->sym, ED448_PRIVATE_BYTES);
+  goldilocks_bzero(keypair->sym, ED448_PRIVATE_BYTES);
   otrv4_ec_scalar_destroy(keypair->priv);
   otrv4_ec_point_destroy(keypair->pub);
 }
@@ -76,12 +76,12 @@ otrv4_shared_prekey_pair_generate(otrv4_shared_prekey_pair_t *prekey_pair,
   otrv4_ec_derive_public_key(pub, sym);
   otrv4_ec_point_deserialize(prekey_pair->pub, pub);
 
-  decaf_bzero(pub, ED448_POINT_BYTES);
+  goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
 
 tstatic void
 shared_prekey_pair_destroy(otrv4_shared_prekey_pair_t *prekey_pair) {
-  decaf_bzero(prekey_pair->sym, ED448_PRIVATE_BYTES);
+  goldilocks_bzero(prekey_pair->sym, ED448_PRIVATE_BYTES);
   otrv4_ec_scalar_destroy(prekey_pair->priv);
   otrv4_ec_point_destroy(prekey_pair->pub);
 }

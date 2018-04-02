@@ -1,4 +1,5 @@
 #include <glib.h>
+#include <goldilocks.h>
 
 #define OTRV4_KEY_MANAGEMENT_PRIVATE
 #define OTRV4_USER_PROFILE_PRIVATE

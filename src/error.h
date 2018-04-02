@@ -9,7 +9,7 @@
 #define ERROR_CODE_1 "ERROR_1: "
 #define ERROR_CODE_2 "ERROR_2: "
 
-// needed for comparing with DECAF_TRUE
+// needed for comparing with GOLDILOCKS_TRUE
 typedef uint32_t
     otrv4_bool_t; /* "Boolean" type, will be set to all-zero or all-one */
 

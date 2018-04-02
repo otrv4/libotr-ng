@@ -345,8 +345,8 @@ INTERNAL void
 otrv4_ecdh_shared_secret_from_prekey(uint8_t *shared,
                                      otrv4_shared_prekey_pair_t *shared_prekey,
                                      const ec_point_t their_pub) {
-  decaf_448_point_t s;
-  decaf_448_point_scalarmul(s, their_pub, shared_prekey->priv);
+  goldilocks_448_point_t s;
+  goldilocks_448_point_scalarmul(s, their_pub, shared_prekey->priv);
 
   otrv4_ec_point_serialize(shared, s);
 }
@@ -354,15 +354,15 @@ otrv4_ecdh_shared_secret_from_prekey(uint8_t *shared,
 INTERNAL void
 otrv4_ecdh_shared_secret_from_keypair(uint8_t *shared, otrv4_keypair_t *keypair,
                                       const ec_point_t their_pub) {
-  decaf_448_point_t s;
-  decaf_448_point_scalarmul(s, their_pub, keypair->priv);
+  goldilocks_448_point_t s;
+  goldilocks_448_point_scalarmul(s, their_pub, keypair->priv);
 
   otrv4_ec_point_serialize(shared, s);
 }
 
 tstatic void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
                                      const brace_key_t brace_key) {
-  decaf_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_t hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, k_ecdh, sizeof(k_ecdh_t));
@@ -374,7 +374,7 @@ tstatic void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
 
 tstatic void calculate_shared_secret_from_tmp_key(shared_secret_t dst,
                                                   const uint8_t *tmp_k) {
-  decaf_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_t hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, tmp_k, HASH_BYTES);

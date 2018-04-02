@@ -1,42 +1,43 @@
-#include <decaf/ed448.h>
+#include <goldilocks/ed448.h>
+#include <goldilocks.h>
 
 #include "../ed448.h"
 #include "../random.h"
 
 void ed448_test_ecdh() {
-  uint8_t alice_pub[DECAF_X448_PUBLIC_BYTES];
-  uint8_t alice_priv[DECAF_X448_PRIVATE_BYTES];
+  uint8_t alice_pub[GOLDILOCKS_X448_PUBLIC_BYTES];
+  uint8_t alice_priv[GOLDILOCKS_X448_PRIVATE_BYTES];
 
-  uint8_t bob_pub[DECAF_X448_PUBLIC_BYTES];
-  uint8_t bob_priv[DECAF_X448_PRIVATE_BYTES];
+  uint8_t bob_pub[GOLDILOCKS_X448_PUBLIC_BYTES];
+  uint8_t bob_priv[GOLDILOCKS_X448_PRIVATE_BYTES];
 
-  random_bytes(alice_priv, DECAF_X448_PRIVATE_BYTES);
-  decaf_x448_derive_public_key(alice_pub, alice_priv);
+  random_bytes(alice_priv, GOLDILOCKS_X448_PRIVATE_BYTES);
+  goldilocks_x448_derive_public_key(alice_pub, alice_priv);
 
-  random_bytes(bob_priv, DECAF_X448_PRIVATE_BYTES);
-  decaf_x448_derive_public_key(bob_pub, bob_priv);
+  random_bytes(bob_priv, GOLDILOCKS_X448_PRIVATE_BYTES);
+  goldilocks_x448_derive_public_key(bob_pub, bob_priv);
 
-  uint8_t shared1[DECAF_X448_PUBLIC_BYTES], shared2[DECAF_X448_PUBLIC_BYTES];
+  uint8_t shared1[GOLDILOCKS_X448_PUBLIC_BYTES], shared2[GOLDILOCKS_X448_PUBLIC_BYTES];
 
-  decaf_error_t err = decaf_x448(shared1, alice_pub, bob_priv);
-  err = decaf_x448(shared2, bob_pub, alice_priv);
-  otrv4_assert(DECAF_SUCCESS == err);
+  goldilocks_error_t err = goldilocks_x448(shared1, alice_pub, bob_priv);
+  err = goldilocks_x448(shared2, bob_pub, alice_priv);
+  otrv4_assert(GOLDILOCKS_SUCCESS == err);
 
-  otrv4_assert_cmpmem(shared1, shared2, DECAF_X448_PUBLIC_BYTES);
+  otrv4_assert_cmpmem(shared1, shared2, GOLDILOCKS_X448_PUBLIC_BYTES);
 }
 
 void ed448_test_eddsa_serialization() {
   ec_scalar_t s;
   uint8_t rand[ED448_SCALAR_BYTES];
   random_bytes(rand, ED448_SCALAR_BYTES);
-  decaf_448_scalar_decode_long(s, rand, ED448_SCALAR_BYTES);
+  goldilocks_448_scalar_decode_long(s, rand, ED448_SCALAR_BYTES);
 
   // 1. Create a point P
   ec_point_t p;
-  decaf_448_point_scalarmul(p, decaf_448_point_base, s);
+  goldilocks_448_point_scalarmul(p, goldilocks_448_point_base, s);
 
   // 2. Serialize using EdDSA
-  uint8_t enc[DECAF_EDDSA_448_PUBLIC_BYTES];
+  uint8_t enc[GOLDILOCKS_EDDSA_448_PUBLIC_BYTES];
   otrv4_ec_point_serialize(enc, p);
 
   // 3. Deserialize
@@ -60,7 +61,7 @@ void ed448_test_eddsa_keygen() {
 
   // Is G * scalar == P?
   ec_point_t expected;
-  decaf_448_point_scalarmul(expected, decaf_448_point_base, secret_scalar);
+  goldilocks_448_point_scalarmul(expected, goldilocks_448_point_base, secret_scalar);
 
   otrv4_assert(otrv4_ec_point_eq(expected, public_point) == otrv4_true);
 }
@@ -70,8 +71,8 @@ void ed448_test_scalar_serialization() {
 
   uint8_t buff[ED448_SCALAR_BYTES];
   otrv4_assert(otrv4_ec_scalar_serialize(buff, sizeof(buff),
-                                         decaf_448_scalar_one) == SUCCESS);
+                                         goldilocks_448_scalar_one) == SUCCESS);
 
   otrv4_ec_scalar_deserialize(scalar, buff);
-  otrv4_assert(otrv4_ec_scalar_eq(scalar, decaf_448_scalar_one) == otrv4_true);
+  otrv4_assert(otrv4_ec_scalar_eq(scalar, goldilocks_448_scalar_one) == otrv4_true);
 }

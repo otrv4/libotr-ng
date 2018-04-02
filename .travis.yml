@@ -91,8 +91,8 @@ before_script:
     fi
   - git clone --depth=1 https://bugs.otr.im/lib/libotr.git .deps/libotr
   - pushd .deps/libotr && ./bootstrap && ./configure && make && sudo make install && popd
-  - git clone --depth=1 https://github.com/twstrike/ed448goldilocks .deps/goldilocks
-  - pushd .deps/goldilocks && ./autogen.sh && ./configure && make && sudo make install && popd
+  - git clone --depth=1 https://github.com/otrv4/libgoldilocks .deps/libgoldilocks
+  - pushd .deps/libgoldilocks && ./autogen.sh && ./configure && make && sudo make install && popd
 
 script:
   - export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}

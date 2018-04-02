@@ -62,7 +62,7 @@ INTERNAL void otrv4_generate_smp_secret(unsigned char **secret,
   uint8_t version[1] = {0x01};
 
   uint8_t hash[HASH_BYTES];
-  decaf_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_t hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, version, 1);
@@ -116,8 +116,8 @@ INTERNAL otrv4_err_t otrv4_generate_smp_msg_1(smp_msg_1_t *dst,
     return ERROR;
 
   /* d2 = r2 - a2 * c2 mod q */
-  decaf_448_scalar_mul(a2c2, smp->a2, dst->c2);
-  decaf_448_scalar_sub(dst->d2, pair_r2->priv, a2c2);
+  goldilocks_448_scalar_mul(a2c2, smp->a2, dst->c2);
+  goldilocks_448_scalar_sub(dst->d2, pair_r2->priv, a2c2);
 
   /* c3 = HashToScalar(2 || G * r3) */
   hash[0] = 0x02;
@@ -127,8 +127,8 @@ INTERNAL otrv4_err_t otrv4_generate_smp_msg_1(smp_msg_1_t *dst,
     return ERROR;
 
   /* d3 = r3 - a3 * c3 mod q */
-  decaf_448_scalar_mul(a3c3, smp->a3, dst->c3);
-  decaf_448_scalar_sub(dst->d3, pair_r3->priv, a3c3);
+  goldilocks_448_scalar_mul(a3c3, smp->a3, dst->c3);
+  goldilocks_448_scalar_sub(dst->d3, pair_r3->priv, a3c3);
 
   return SUCCESS;
 }
@@ -236,9 +236,9 @@ tstatic otrv4_bool_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
   ec_point_t Ga_c, G_d;
 
   /* Check that c2 = HashToScalar(1 || G * d2 + G2a * c2). */
-  decaf_448_point_scalarmul(Ga_c, msg->G2a, msg->c2);
-  decaf_448_point_scalarmul(G_d, decaf_448_point_base, msg->d2);
-  decaf_448_point_add(G_d, G_d, Ga_c);
+  goldilocks_448_point_scalarmul(Ga_c, msg->G2a, msg->c2);
+  goldilocks_448_point_scalarmul(G_d, goldilocks_448_point_base, msg->d2);
+  goldilocks_448_point_add(G_d, G_d, Ga_c);
 
   hash[0] = 0x01;
   otrv4_serialize_ec_point(hash + 1, G_d);
@@ -250,9 +250,9 @@ tstatic otrv4_bool_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
     return otrv4_false;
 
   /* Check that c3 = HashToScalar(2 || G * d3 + G3a * c3). */
-  decaf_448_point_scalarmul(Ga_c, msg->G3a, msg->c3);
-  decaf_448_point_scalarmul(G_d, decaf_448_point_base, msg->d3);
-  decaf_448_point_add(G_d, G_d, Ga_c);
+  goldilocks_448_point_scalarmul(Ga_c, msg->G3a, msg->c3);
+  goldilocks_448_point_scalarmul(G_d, goldilocks_448_point_base, msg->d3);
+  goldilocks_448_point_add(G_d, G_d, Ga_c);
 
   hash[0] = 0x02;
   otrv4_serialize_ec_point(hash + 1, G_d);
@@ -312,8 +312,8 @@ tstatic otrv4_err_t generate_smp_msg_2(smp_msg_2_t *dst,
     return ERROR;
 
   /* d2 = (r2 - b2 * c2 mod q). */
-  decaf_448_scalar_mul(temp_scalar, b2, dst->c2);
-  decaf_448_scalar_sub(dst->d2, pair_r2->priv, temp_scalar);
+  goldilocks_448_scalar_mul(temp_scalar, b2, dst->c2);
+  goldilocks_448_scalar_sub(dst->d2, pair_r2->priv, temp_scalar);
 
   /* c3 = HashToScalar(4 || G * r3) */
   buff[0] = 0x04;
@@ -323,18 +323,18 @@ tstatic otrv4_err_t generate_smp_msg_2(smp_msg_2_t *dst,
     return ERROR;
 
   /* d3 = (r3 - b3 * c3 mod q). */
-  decaf_448_scalar_mul(temp_scalar, smp->b3, dst->c3);
-  decaf_448_scalar_sub(dst->d3, pair_r3->priv, temp_scalar);
+  goldilocks_448_scalar_mul(temp_scalar, smp->b3, dst->c3);
+  goldilocks_448_scalar_sub(dst->d3, pair_r3->priv, temp_scalar);
 
   /* Compute G2 = (G2a * b2). */
-  decaf_448_point_scalarmul(smp->G2, msg_1->G2a, b2);
+  goldilocks_448_point_scalarmul(smp->G2, msg_1->G2a, b2);
 
   /* Compute G3 = (G3a * b3). */
-  decaf_448_point_scalarmul(smp->G3, msg_1->G3a, smp->b3);
+  goldilocks_448_point_scalarmul(smp->G3, msg_1->G3a, smp->b3);
   otrv4_ec_point_copy(smp->G3a, msg_1->G3a);
 
   /* Compute Pb = (G3 * r4). */
-  decaf_448_point_scalarmul(dst->Pb, smp->G3, pair_r4->priv);
+  goldilocks_448_point_scalarmul(dst->Pb, smp->G3, pair_r4->priv);
   otrv4_ec_point_copy(smp->Pb, dst->Pb);
 
   /* Compute Qb = (G * r4 + G2 * hashToScalar(y)). */
@@ -342,19 +342,19 @@ tstatic otrv4_err_t generate_smp_msg_2(smp_msg_2_t *dst,
   if (hashToScalar(smp->secret, HASH_BYTES, secret_as_scalar) == ERROR)
     return ERROR;
 
-  decaf_448_point_scalarmul(dst->Qb, smp->G2, secret_as_scalar);
-  decaf_448_point_add(dst->Qb, pair_r4->pub, dst->Qb);
+  goldilocks_448_point_scalarmul(dst->Qb, smp->G2, secret_as_scalar);
+  goldilocks_448_point_add(dst->Qb, pair_r4->pub, dst->Qb);
   otrv4_ec_point_copy(smp->Qb, dst->Qb);
 
   /* cp = HashToScalar(5 || G3 * r5 || G * r5 + G2 * r6) */
   unsigned char buff_cp[ED448_POINT_BYTES * 2 + 1];
   buff_cp[0] = 0x05;
-  decaf_448_point_scalarmul(temp_point, smp->G3, pair_r5->priv);
+  goldilocks_448_point_scalarmul(temp_point, smp->G3, pair_r5->priv);
 
   otrv4_serialize_ec_point(buff_cp + 1, temp_point);
 
-  decaf_448_point_scalarmul(temp_point, smp->G2, r6);
-  decaf_448_point_add(temp_point, pair_r5->pub, temp_point);
+  goldilocks_448_point_scalarmul(temp_point, smp->G2, r6);
+  goldilocks_448_point_add(temp_point, pair_r5->pub, temp_point);
 
   otrv4_serialize_ec_point(buff_cp + 1 + ED448_POINT_BYTES, temp_point);
 
@@ -362,12 +362,12 @@ tstatic otrv4_err_t generate_smp_msg_2(smp_msg_2_t *dst,
     return ERROR;
 
   /* d5 = (r5 - r4 * cp mod q). */
-  decaf_448_scalar_mul(dst->d5, pair_r4->priv, dst->cp);
-  decaf_448_scalar_sub(dst->d5, pair_r5->priv, dst->d5);
+  goldilocks_448_scalar_mul(dst->d5, pair_r4->priv, dst->cp);
+  goldilocks_448_scalar_sub(dst->d5, pair_r5->priv, dst->d5);
 
   /* d6 = (r6 - y * cp mod q). */
-  decaf_448_scalar_mul(dst->d6, secret_as_scalar, dst->cp);
-  decaf_448_scalar_sub(dst->d6, r6, dst->d6);
+  goldilocks_448_scalar_mul(dst->d6, secret_as_scalar, dst->cp);
+  goldilocks_448_scalar_sub(dst->d6, r6, dst->d6);
 
   return SUCCESS;
 }
@@ -485,9 +485,9 @@ tstatic otrv4_bool_t smp_msg_2_valid_zkp(smp_msg_2_t *msg,
   ec_point_t Gb_c, G_d, point_cp;
 
   /* Check that c2 = HashToScalar(3 || G * d2 + G2b * c2). */
-  decaf_448_point_scalarmul(Gb_c, msg->G2b, msg->c2);
-  decaf_448_point_scalarmul(G_d, decaf_448_point_base, msg->d2);
-  decaf_448_point_add(G_d, G_d, Gb_c);
+  goldilocks_448_point_scalarmul(Gb_c, msg->G2b, msg->c2);
+  goldilocks_448_point_scalarmul(G_d, goldilocks_448_point_base, msg->d2);
+  goldilocks_448_point_add(G_d, G_d, Gb_c);
 
   hash[0] = 0x03;
   otrv4_serialize_ec_point(hash + 1, G_d);
@@ -499,9 +499,9 @@ tstatic otrv4_bool_t smp_msg_2_valid_zkp(smp_msg_2_t *msg,
     return otrv4_false;
 
   /* Check that c3 = HashToScalar(4 || G * d3 + G3b * c3). */
-  decaf_448_point_scalarmul(Gb_c, msg->G3b, msg->c3);
-  decaf_448_point_scalarmul(G_d, decaf_448_point_base, msg->d3);
-  decaf_448_point_add(G_d, G_d, Gb_c);
+  goldilocks_448_point_scalarmul(Gb_c, msg->G3b, msg->c3);
+  goldilocks_448_point_scalarmul(G_d, goldilocks_448_point_base, msg->d3);
+  goldilocks_448_point_add(G_d, G_d, Gb_c);
 
   hash[0] = 0x04;
   otrv4_serialize_ec_point(hash + 1, G_d);
@@ -515,19 +515,19 @@ tstatic otrv4_bool_t smp_msg_2_valid_zkp(smp_msg_2_t *msg,
   /* Check that cp = HashToScalar(5 || G3 * d5 + Pb * cp || G * d5 + G2 * d6 +
    Qb * cp) */
   uint8_t buff[2 * ED448_POINT_BYTES + 1];
-  decaf_448_point_scalarmul(point_cp, msg->Pb, msg->cp);
-  decaf_448_point_scalarmul(G_d, smp->G3, msg->d5);
-  decaf_448_point_add(G_d, G_d, point_cp);
+  goldilocks_448_point_scalarmul(point_cp, msg->Pb, msg->cp);
+  goldilocks_448_point_scalarmul(G_d, smp->G3, msg->d5);
+  goldilocks_448_point_add(G_d, G_d, point_cp);
 
   buff[0] = 0x05;
   otrv4_serialize_ec_point(buff + 1, G_d);
 
-  decaf_448_point_scalarmul(point_cp, msg->Qb, msg->cp);
-  decaf_448_point_scalarmul(G_d, smp->G2, msg->d6);
-  decaf_448_point_add(G_d, G_d, point_cp);
+  goldilocks_448_point_scalarmul(point_cp, msg->Qb, msg->cp);
+  goldilocks_448_point_scalarmul(G_d, smp->G2, msg->d6);
+  goldilocks_448_point_add(G_d, G_d, point_cp);
 
-  decaf_448_point_scalarmul(point_cp, decaf_448_point_base, msg->d5);
-  decaf_448_point_add(G_d, G_d, point_cp);
+  goldilocks_448_point_scalarmul(point_cp, goldilocks_448_point_base, msg->d5);
+  goldilocks_448_point_add(G_d, G_d, point_cp);
 
   otrv4_serialize_ec_point(buff + 1 + ED448_POINT_BYTES, G_d);
 
@@ -571,24 +571,24 @@ tstatic otrv4_err_t generate_smp_msg_3(smp_msg_3_t *dst,
   otrv4_ec_point_copy(smp->G3b, msg_2->G3b);
 
   /* Pa = (G3 * r4) */
-  decaf_448_point_scalarmul(dst->Pa, smp->G3, pair_r4->priv);
-  decaf_448_point_sub(smp->Pa_Pb, dst->Pa, msg_2->Pb);
+  goldilocks_448_point_scalarmul(dst->Pa, smp->G3, pair_r4->priv);
+  goldilocks_448_point_sub(smp->Pa_Pb, dst->Pa, msg_2->Pb);
 
   if (hashToScalar(smp->secret, HASH_BYTES, secret_as_scalar) == ERROR)
     return ERROR;
 
   /* Qa = (G * r4 + G2 * HashToScalar(x)) */
-  decaf_448_point_scalarmul(dst->Qa, smp->G2, secret_as_scalar);
-  decaf_448_point_add(dst->Qa, pair_r4->pub, dst->Qa);
+  goldilocks_448_point_scalarmul(dst->Qa, smp->G2, secret_as_scalar);
+  goldilocks_448_point_add(dst->Qa, pair_r4->pub, dst->Qa);
 
   /* cp = HashToScalar(6 || G3 * r5 || G * r5 + G2 * r6) */
-  decaf_448_point_scalarmul(temp_point, smp->G3, pair_r5->priv);
+  goldilocks_448_point_scalarmul(temp_point, smp->G3, pair_r5->priv);
 
   buff[0] = 0x06;
   otrv4_serialize_ec_point(buff + 1, temp_point);
 
-  decaf_448_point_scalarmul(temp_point, smp->G2, r6);
-  decaf_448_point_add(temp_point, pair_r5->pub, temp_point);
+  goldilocks_448_point_scalarmul(temp_point, smp->G2, r6);
+  goldilocks_448_point_add(temp_point, pair_r5->pub, temp_point);
 
   otrv4_serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
@@ -596,30 +596,30 @@ tstatic otrv4_err_t generate_smp_msg_3(smp_msg_3_t *dst,
     return ERROR;
 
   /* d5 = (r5 - r4 * cp mod q). */
-  decaf_448_scalar_mul(dst->d5, pair_r4->priv, dst->cp);
-  decaf_448_scalar_sub(dst->d5, pair_r5->priv, dst->d5);
+  goldilocks_448_scalar_mul(dst->d5, pair_r4->priv, dst->cp);
+  goldilocks_448_scalar_sub(dst->d5, pair_r5->priv, dst->d5);
 
   /* d6 = (r6 - HashToScalar(x) * cp mod q.) */
-  decaf_448_scalar_mul(dst->d6, secret_as_scalar, dst->cp);
-  decaf_448_scalar_sub(dst->d6, r6, dst->d6);
+  goldilocks_448_scalar_mul(dst->d6, secret_as_scalar, dst->cp);
+  goldilocks_448_scalar_sub(dst->d6, r6, dst->d6);
 
   /* Ra = ((Qa - Qb) * a3) */
-  decaf_448_point_sub(smp->Qa_Qb, dst->Qa, msg_2->Qb);
-  decaf_448_point_scalarmul(dst->Ra, smp->Qa_Qb, smp->a3);
+  goldilocks_448_point_sub(smp->Qa_Qb, dst->Qa, msg_2->Qb);
+  goldilocks_448_point_scalarmul(dst->Ra, smp->Qa_Qb, smp->a3);
 
   /* cr = HashToScalar(7 || G * r7 || (Qa - Qb) * r7) */
   buff[0] = 0x07;
   otrv4_serialize_ec_point(buff + 1, pair_r7->pub);
 
-  decaf_448_point_scalarmul(temp_point, smp->Qa_Qb, pair_r7->priv);
+  goldilocks_448_point_scalarmul(temp_point, smp->Qa_Qb, pair_r7->priv);
   otrv4_serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), dst->cr) == ERROR)
     return ERROR;
 
   /* d7 = (r7 - a3 * cr mod q). */
-  decaf_448_scalar_mul(dst->d7, smp->a3, dst->cr);
-  decaf_448_scalar_sub(dst->d7, pair_r7->priv, dst->d7);
+  goldilocks_448_scalar_mul(dst->d7, smp->a3, dst->cr);
+  goldilocks_448_scalar_sub(dst->d7, pair_r7->priv, dst->d7);
 
   return SUCCESS;
 }
@@ -718,16 +718,16 @@ tstatic otrv4_bool_t smp_msg_3_validate_zkp(smp_msg_3_t *msg,
 
   /* cp = HashToScalar(6 || G3 * d5 + Pa * cp || G * d5 + G2 * d6 + Qa * cp) */
   buff[0] = 0x06;
-  decaf_448_point_scalarmul(temp_point, msg->Pa, msg->cp);
-  decaf_448_point_scalarmul(temp_point_2, smp->G3, msg->d5);
-  decaf_448_point_add(temp_point, temp_point, temp_point_2);
+  goldilocks_448_point_scalarmul(temp_point, msg->Pa, msg->cp);
+  goldilocks_448_point_scalarmul(temp_point_2, smp->G3, msg->d5);
+  goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
   otrv4_serialize_ec_point(buff + 1, temp_point);
 
-  decaf_448_point_scalarmul(temp_point, msg->Qa, msg->cp);
-  decaf_448_point_scalarmul(temp_point_2, smp->G2, msg->d6);
-  decaf_448_point_add(temp_point, temp_point, temp_point_2);
-  decaf_448_point_scalarmul(temp_point_2, decaf_448_point_base, msg->d5);
-  decaf_448_point_add(temp_point, temp_point, temp_point_2);
+  goldilocks_448_point_scalarmul(temp_point, msg->Qa, msg->cp);
+  goldilocks_448_point_scalarmul(temp_point_2, smp->G2, msg->d6);
+  goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
+  goldilocks_448_point_scalarmul(temp_point_2, goldilocks_448_point_base, msg->d5);
+  goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
   otrv4_serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == ERROR)
@@ -737,17 +737,17 @@ tstatic otrv4_bool_t smp_msg_3_validate_zkp(smp_msg_3_t *msg,
     return otrv4_false;
 
   /* cr = HashToScalar(7 || G * d7 + G3a * cr || (Qa - Qb) * d7 + Ra * cr) */
-  decaf_448_point_scalarmul(temp_point, smp->G3a, msg->cr);
-  decaf_448_point_scalarmul(temp_point_2, decaf_448_point_base, msg->d7);
-  decaf_448_point_add(temp_point, temp_point, temp_point_2);
+  goldilocks_448_point_scalarmul(temp_point, smp->G3a, msg->cr);
+  goldilocks_448_point_scalarmul(temp_point_2, goldilocks_448_point_base, msg->d7);
+  goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
 
   buff[0] = 0x07;
   otrv4_serialize_ec_point(buff + 1, temp_point);
 
-  decaf_448_point_scalarmul(temp_point, msg->Ra, msg->cr);
-  decaf_448_point_sub(temp_point_2, msg->Qa, smp->Qb);
-  decaf_448_point_scalarmul(temp_point_2, temp_point_2, msg->d7);
-  decaf_448_point_add(temp_point, temp_point, temp_point_2);
+  goldilocks_448_point_scalarmul(temp_point, msg->Ra, msg->cr);
+  goldilocks_448_point_sub(temp_point_2, msg->Qa, smp->Qb);
+  goldilocks_448_point_scalarmul(temp_point_2, temp_point_2, msg->d7);
+  goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
 
   otrv4_serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
@@ -780,22 +780,22 @@ tstatic otrv4_err_t generate_smp_msg_4(smp_msg_4_t *dst,
   otrv4_snizkpk_keypair_generate(pair_r7);
 
   /* Rb = ((Qa - Qb) * b3) */
-  decaf_448_point_sub(Qa_Qb, msg_3->Qa, smp->Qb);
-  decaf_448_point_scalarmul(dst->Rb, Qa_Qb, smp->b3);
+  goldilocks_448_point_sub(Qa_Qb, msg_3->Qa, smp->Qb);
+  goldilocks_448_point_scalarmul(dst->Rb, Qa_Qb, smp->b3);
 
   /* cr = HashToScalar(8 || G * r7 || (Qa - Qb) * r7) */
   buff[0] = 0x08;
   otrv4_serialize_ec_point(buff + 1, pair_r7->pub);
 
-  decaf_448_point_scalarmul(Qa_Qb, Qa_Qb, pair_r7->priv);
+  goldilocks_448_point_scalarmul(Qa_Qb, Qa_Qb, pair_r7->priv);
   otrv4_serialize_ec_point(buff + 1 + ED448_POINT_BYTES, Qa_Qb);
 
   if (hashToScalar(buff, sizeof(buff), dst->cr) == ERROR)
     return ERROR;
 
   /* d7 = (r7 - b3 * cr mod q). */
-  decaf_448_scalar_mul(dst->d7, smp->b3, dst->cr);
-  decaf_448_scalar_sub(dst->d7, pair_r7->priv, dst->d7);
+  goldilocks_448_scalar_mul(dst->d7, smp->b3, dst->cr);
+  goldilocks_448_scalar_sub(dst->d7, pair_r7->priv, dst->d7);
 
   return SUCCESS;
 }
@@ -853,16 +853,16 @@ tstatic otrv4_bool_t smp_msg_4_validate_zkp(smp_msg_4_t *msg,
   ec_scalar_t temp_scalar;
 
   /* cr = HashToScalar(8 || G * d7 + G3b * cr || (Qa - Qb) * d7 + Rb * cr). */
-  decaf_448_point_scalarmul(temp_point, smp->G3b, msg->cr);
-  decaf_448_point_scalarmul(temp_point_2, decaf_448_point_base, msg->d7);
-  decaf_448_point_add(temp_point, temp_point, temp_point_2);
+  goldilocks_448_point_scalarmul(temp_point, smp->G3b, msg->cr);
+  goldilocks_448_point_scalarmul(temp_point_2, goldilocks_448_point_base, msg->d7);
+  goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
 
   buff[0] = 0x08;
   otrv4_serialize_ec_point(buff + 1, temp_point);
 
-  decaf_448_point_scalarmul(temp_point, msg->Rb, msg->cr);
-  decaf_448_point_scalarmul(temp_point_2, smp->Qa_Qb, msg->d7);
-  decaf_448_point_add(temp_point, temp_point, temp_point_2);
+  goldilocks_448_point_scalarmul(temp_point, msg->Rb, msg->cr);
+  goldilocks_448_point_scalarmul(temp_point_2, smp->Qa_Qb, msg->d7);
+  goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
   otrv4_serialize_ec_point(buff + 1 + ED448_POINT_BYTES, temp_point);
 
   if (hashToScalar(buff, sizeof(buff), temp_scalar) == ERROR)
@@ -885,9 +885,9 @@ tstatic otrv4_bool_t smp_is_valid_for_msg_3(const smp_msg_3_t *msg,
                                             smp_context_t smp) {
   ec_point_t Rab, Pa_Pb;
   /* Compute Rab = (Ra * b3) */
-  decaf_448_point_scalarmul(Rab, msg->Ra, smp->b3);
+  goldilocks_448_point_scalarmul(Rab, msg->Ra, smp->b3);
   /* Pa - Pb == Rab */
-  decaf_448_point_sub(Pa_Pb, msg->Pa, smp->Pb);
+  goldilocks_448_point_sub(Pa_Pb, msg->Pa, smp->Pb);
 
   if ((otrv4_ec_point_eq(Pa_Pb, Rab)))
     return otrv4_false;
@@ -899,7 +899,7 @@ tstatic otrv4_bool_t smp_is_valid_for_msg_4(smp_msg_4_t *msg,
                                             smp_context_t smp) {
   ec_point_t Rab;
   /* Compute Rab = Rb * a3. */
-  decaf_448_point_scalarmul(Rab, msg->Rb, smp->a3);
+  goldilocks_448_point_scalarmul(Rab, msg->Rb, smp->a3);
   /* Pa - Pb == Rab */
   if (otrv4_ec_point_eq(smp->Pa_Pb, Rab))
     return otrv4_false;
@@ -978,8 +978,8 @@ tstatic otrv4_smp_event_t receive_smp_msg_2(smp_msg_2_t *msg_2,
   if (smp_msg_2_valid_points(msg_2))
     return OTRV4_SMPEVENT_ERROR;
 
-  decaf_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
-  decaf_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
+  goldilocks_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
+  goldilocks_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
 
   if (smp_msg_2_valid_zkp(msg_2, smp) == otrv4_false)
     return OTRV4_SMPEVENT_ERROR;
