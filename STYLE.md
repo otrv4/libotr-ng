@@ -90,6 +90,7 @@ Follow these golden rules (taken from [C Style](https://github.com/mcinglis/c-st
 - Be consistent in your variable names across functions
 - Minimize the scope of variables
 - C isn't object-oriented, and you shouldn't pretend it is
+- Always set a pointer to NULL after been freed
 
 ### Naming
 
