@@ -53,3 +53,5 @@ coverage.info
 *.info.tmp
 
 .deps
+
+*/.dirstamp
