@@ -1,4 +1,4 @@
-# OTR version 4 library
+# OTR Next Generation library
 
 [![Build Status](https://travis-ci.org/otrv4/libotr-ng.svg?branch=master)](https://travis-ci.org/otrv4/libotr-ng)
 
