@@ -13,7 +13,7 @@
 static void hash_init_with_dom(goldilocks_shake256_ctx_t hash) {
   hash_init(hash);
 
-  const char *dom_s = "OTRNG";
+  const char *dom_s = "OTR4";
   hash_update(hash, (const unsigned char *)dom_s, strlen(dom_s));
 }
 
