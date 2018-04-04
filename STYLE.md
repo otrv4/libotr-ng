@@ -88,6 +88,8 @@ Follow these golden rules (taken from [C Style](https://github.com/mcinglis/c-st
 - No global or static variables if you can help it (you probably can)
 - Immutability saves lives: use `const` everywhere you can
 - Be consistent in your variable names across functions
+- Use underscores instead of camel case for naming.
+- Do not use 'is' or 'has' on booleans naming.
 - Minimize the scope of variables
 - C isn't object-oriented, and you shouldn't pretend it is
 - Always set a pointer to NULL after been freed
