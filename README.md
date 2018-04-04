@@ -16,21 +16,25 @@ Then, install the following dependencies:
 * libgcrypt 1.8.0 or newer
 
 To generate project configuration:
+
 ```
 $ autoreconf --install
 ```
 
 To configure the project:
+
 ```
 $ ./configure
 ```
 
 To build and install:
+
 ```
-# make && make install
+$ make && make install
 ```
 
 To run the tests:
+
 ```
 $ make test
 ```
