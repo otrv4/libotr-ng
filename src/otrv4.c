@@ -2325,7 +2325,7 @@ tstatic otrv4_err_t serialize_and_encode_data_msg(
 
 tstatic otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
                                       size_t message_len, otrv4_t *otr,
-                                      int isHeartbeat, unsigned char flags) {
+                                      int heartbeat, unsigned char flags) {
   data_message_t *data_msg = NULL;
 
   size_t serlen = otrv4_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
@@ -2363,7 +2363,7 @@ tstatic otrv4_err_t send_data_message(string_t *to_send, const uint8_t *message,
 
   data_msg->flags = flags;
 
-  if (isHeartbeat) {
+  if (heartbeat) {
     data_msg->flags = MSGFLAGS_IGNORE_UNREADABLE;
   }
 
