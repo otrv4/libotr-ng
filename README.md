@@ -27,7 +27,7 @@ $ ./configure
 
 To build and install:
 ```
-$ make && make install
+# make && make install
 ```
 
 To run the tests:
