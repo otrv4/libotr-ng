@@ -62,7 +62,8 @@ typedef struct {
 /* int otrng_user_state_instance_tags_read_FILEp(otrng_userstate_t *state, */
 /*                                              FILE *instag); */
 
-/* otrng_messaging_client_t *otrng_messaging_client_get(otrng_userstate_t *state,
+/* otrng_messaging_client_t *otrng_messaging_client_get(otrng_userstate_t
+ * *state,
  */
 /*                                                    void *client_id); */
 
@@ -83,8 +84,8 @@ API void otrng_user_state_free(otrng_userstate_t *);
 
 #ifdef OTRNG_MESSAGING_PRIVATE
 
-/* tstatic otrng_messaging_client_t *otrng_messaging_client_new(otrng_userstate_t
- * *state, */
+/* tstatic otrng_messaging_client_t
+ * *otrng_messaging_client_new(otrng_userstate_t *state, */
 /*                                                    void *client_id); */
 
 #endif

@@ -2535,7 +2535,7 @@ INTERNAL otrng_err_t otrng_close(string_t *to_send, otrng_t *otr) {
   switch (otr->running_version) {
   case OTRNG_VERSION_3:
     otrng_v3_close(to_send,
-                   otr->v3_conn);         // TODO: This should return an error
+                   otr->v3_conn);           // TODO: This should return an error
                                             // but errors are reported on a
                                             // callback
     gone_insecure_cb_v4(otr->conversation); // TODO: Only if success
@@ -2721,7 +2721,7 @@ tstatic tlv_t *otrng_smp_provide_secret(otrng_smp_event_t *event,
 }
 
 tstatic otrng_err_t smp_continue_v4(string_t *to_send, const uint8_t *secret,
-                                       const size_t secretlen, otrng_t *otr) {
+                                    const size_t secretlen, otrng_t *otr) {
   otrng_err_t err = ERROR;
   tlv_t *smp_reply = NULL;
 

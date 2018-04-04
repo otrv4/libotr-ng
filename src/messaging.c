@@ -71,8 +71,8 @@ tstatic otrng_client_state_t *get_client_state(otrng_userstate_t *state,
 /*   return s && s->state && s->state->client_id == wanted; */
 /* } */
 
-/* tstatic otrng_messaging_client_t *otrng_messaging_client_new(otrng_userstate_t
- * *state, */
+/* tstatic otrng_messaging_client_t
+ * *otrng_messaging_client_new(otrng_userstate_t *state, */
 /*                                                    void *client_id) { */
 /*   if (!client_id) { */
 /*     return NULL; */
@@ -98,7 +98,8 @@ tstatic otrng_client_state_t *get_client_state(otrng_userstate_t *state,
 /*   } */
 /* } */
 
-/* otrng_messaging_client_t *otrng_messaging_client_get(otrng_userstate_t *state,
+/* otrng_messaging_client_t *otrng_messaging_client_get(otrng_userstate_t
+ * *state,
  */
 /*                                                    void *client_id) { */
 /*   list_element_t *el = */

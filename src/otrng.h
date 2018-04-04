@@ -5,11 +5,11 @@
 #include "fragment.h"
 #include "key_management.h"
 #include "keys.h"
-#include "v3.h"
 #include "shared.h"
 #include "smp.h"
 #include "str.h"
 #include "user_profile.h"
+#include "v3.h"
 
 #define UNUSED_ARG(x) (void)x
 

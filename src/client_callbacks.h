@@ -36,7 +36,7 @@ typedef struct otrng_client_callbacks_t {
 
   /* A v3 fingerprint was seen in this connection. */
   void (*fingerprint_seen_v3)(const v3_fingerprint_t,
-                                const otrng_client_conversation_t *);
+                              const otrng_client_conversation_t *);
 
   /* Update the authentication UI and prompt the user to enter a shared secret.
    *      The sender application should call otrl_message_initiate_smp,
