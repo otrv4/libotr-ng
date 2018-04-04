@@ -1,5 +1,5 @@
-#ifndef OTRV4_CLIENT_H
-#define OTRV4_CLIENT_H
+#ifndef OTRNG_CLIENT_H
+#define OTRNG_CLIENT_H
 
 #define CLIENT_ERROR_NOT_ENCRYPTED 0x1001
 // TODO: check the error codes on client
@@ -9,7 +9,7 @@
 
 #include "client_state.h"
 #include "list.h"
-#include "otrv4.h"
+#include "otrng.h"
 #include "shared.h"
 
 // TODO: REMOVE
@@ -20,67 +20,67 @@ typedef struct {
                           Pidgin) this could be a PurpleConversation */
 
   char *recipient;
-  otrv4_t *conn;
-} otrv4_conversation_t;
+  otrng_t *conn;
+} otrng_conversation_t;
 
 /* A client handle messages from/to a sender to/from multiple recipients. */
 typedef struct {
-  otrv4_client_state_t *state;
+  otrng_client_state_t *state;
   list_element_t *conversations;
-} otrv4_client_t;
+} otrng_client_t;
 
-API otrv4_client_t *otrv4_client_new(otrv4_client_state_t *);
+API otrng_client_t *otrng_client_new(otrng_client_state_t *);
 
-API void otrv4_client_free(otrv4_client_t *client);
+API void otrng_client_free(otrng_client_t *client);
 
-API char *otrv4_client_query_message(const char *recipient, const char *message,
-                                     otrv4_client_t *client, OtrlPolicy policy);
+API char *otrng_client_query_message(const char *recipient, const char *message,
+                                     otrng_client_t *client, OtrlPolicy policy);
 
-API int otrv4_client_send(char **newmessage, const char *message,
-                          const char *recipient, otrv4_client_t *client);
+API int otrng_client_send(char **newmessage, const char *message,
+                          const char *recipient, otrng_client_t *client);
 
-API int otrv4_client_send_fragment(otrv4_message_to_send_t **newmessage,
+API int otrng_client_send_fragment(otrng_message_to_send_t **newmessage,
                                    const char *message, int mms,
                                    const char *recipient,
-                                   otrv4_client_t *client);
+                                   otrng_client_t *client);
 
-/* tstatic int otr4_client_smp_start(char **tosend, const char *recipient, */
+/* tstatic int otrng_client_smp_start(char **tosend, const char *recipient, */
 /*                           const char *question, const size_t q_len, */
 /*                           const unsigned char *secret, size_t secretlen, */
-/*                           otrv4_client_t *client); */
+/*                           otrng_client_t *client); */
 
-/* tstatic int otr4_client_smp_respond(char **tosend, const char *recipient, */
+/* tstatic int otrng_client_smp_respond(char **tosend, const char *recipient, */
 /*                             const unsigned char *secret, size_t secretlen, */
-/*                             otrv4_client_t *client); */
+/*                             otrng_client_t *client); */
 
-API int otrv4_client_receive(char **newmsg, char **todisplay,
+API int otrng_client_receive(char **newmsg, char **todisplay,
                              const char *message, const char *recipient,
-                             otrv4_client_t *client);
+                             otrng_client_t *client);
 
-API int otrv4_client_disconnect(char **newmsg, const char *recipient,
-                                otrv4_client_t *client);
+API int otrng_client_disconnect(char **newmsg, const char *recipient,
+                                otrng_client_t *client);
 
-/* tstatic int otr4_encrypted_conversation_expire(char **newmsg, const char
+/* tstatic int otrng_encrypted_conversation_expire(char **newmsg, const char
  * *recipient, */
 /*                                        int expiration_time, */
-/*                                        otrv4_client_t *client); */
+/*                                        otrng_client_t *client); */
 
-API otrv4_conversation_t *otrv4_client_get_conversation(int force,
+API otrng_conversation_t *otrng_client_get_conversation(int force,
                                                         const char *recipient,
-                                                        otrv4_client_t *client);
+                                                        otrng_client_t *client);
 
-/* tstatic int otr4_conversation_is_encrypted(otrv4_conversation_t *conv); */
+/* tstatic int otrng_conversation_is_encrypted(otrng_conversation_t *conv); */
 
-/* tstatic int otr4_conversation_is_finished(otrv4_conversation_t *conv); */
+/* tstatic int otrng_conversation_is_finished(otrng_conversation_t *conv); */
 
-API int otrv4_client_get_our_fingerprint(otrv4_fingerprint_t fp,
-                                         const otrv4_client_t *client);
+API int otrng_client_get_our_fingerprint(otrng_fingerprint_t fp,
+                                         const otrng_client_t *client);
 
-/* tstatic int otr3_privkey_generate(otrv4_client_t *client, FILE *privf); */
+/* tstatic int v3_privkey_generate(otrng_client_t *client, FILE *privf); */
 
-/* tstatic int otr3_instag_generate(otrv4_client_t *client, FILE *privf); */
+/* tstatic int v3_instag_generate(otrng_client_t *client, FILE *privf); */
 
-#ifdef OTRV4_CLIENT_PRIVATE
+#ifdef OTRNG_CLIENT_PRIVATE
 #endif
 
 #endif

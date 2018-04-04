@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define OTRV4_STR_PRIVATE
+#define OTRNG_STR_PRIVATE
 
 #include "str.h"
 
-INTERNAL /*@null@*/ char *otrv4_strndup(const char *s, size_t s_len) {
+INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len) {
   if (s == NULL)
     return NULL;
 
@@ -22,9 +22,9 @@ INTERNAL /*@null@*/ char *otrv4_strndup(const char *s, size_t s_len) {
   return ret;
 }
 
-INTERNAL /*@null@*/ char *otrv4_strdup(const char *s) {
+INTERNAL /*@null@*/ char *otrng_strdup(const char *s) {
   if (!s)
     return NULL;
 
-  return otrv4_strndup(s, strlen(s));
+  return otrng_strndup(s, strlen(s));
 }

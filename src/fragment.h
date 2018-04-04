@@ -1,5 +1,5 @@
-#ifndef OTRV4_FRAGMENT_H
-#define OTRV4_FRAGMENT_H
+#ifndef OTRNG_FRAGMENT_H
+#define OTRNG_FRAGMENT_H
 
 #include "error.h"
 #include "shared.h"
@@ -10,7 +10,7 @@
 typedef struct {
   string_t *pieces;
   int total;
-} otrv4_message_to_send_t;
+} otrng_message_to_send_t;
 
 typedef enum {
   FRAGMENT_UNFRAGMENTED,
@@ -25,26 +25,26 @@ typedef struct {
   fragment_status status;
 } fragment_context_t;
 
-API otrv4_message_to_send_t *otrv4_message_new(void);
+API otrng_message_to_send_t *otrng_message_new(void);
 
-API void otrv4_message_free(otrv4_message_to_send_t *message);
+API void otrng_message_free(otrng_message_to_send_t *message);
 
-INTERNAL fragment_context_t *otrv4_fragment_context_new(void);
+INTERNAL fragment_context_t *otrng_fragment_context_new(void);
 
-INTERNAL void otrv4_fragment_context_free(fragment_context_t *context);
+INTERNAL void otrng_fragment_context_free(fragment_context_t *context);
 
-INTERNAL otrv4_err_t otrv4_fragment_message(int mms,
-                                            otrv4_message_to_send_t *fragments,
+INTERNAL otrng_err_t otrng_fragment_message(int mms,
+                                            otrng_message_to_send_t *fragments,
                                             int our_instance,
                                             int their_instance,
                                             const string_t message);
 
-INTERNAL otrv4_err_t otrv4_unfragment_message(char **unfrag_msg,
+INTERNAL otrng_err_t otrng_unfragment_message(char **unfrag_msg,
                                               fragment_context_t *context,
                                               const string_t message,
                                               const int our_instance_tag);
 
-#ifdef OTRV4_FRAGMENT_PRIVATE
+#ifdef OTRNG_FRAGMENT_PRIVATE
 #endif
 
 #endif

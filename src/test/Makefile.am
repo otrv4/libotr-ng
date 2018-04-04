@@ -18,8 +18,8 @@ test_SOURCES = test.c \
 		     ../list.c \
 		     ../messaging.c \
 		     ../mpi.c \
-		     ../otrv3.c \
-		     ../otrv4.c \
+		     ../v3.c \
+		     ../otrng.c \
 		     ../serialize.c \
 		     ../smp.c \
 		     ../str.c \
@@ -30,7 +30,7 @@ test_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CODE_COVERAGE_CFLAGS) @LIBGOLDILOCKS
                                                                   @LIBGCRYPT_CFLAGS@ \
                                                                   @LIBSODIUM_CFLAGS@ \
                                                                   @LIBOTR_CFLAGS@ \
-                                                                  -DOTRV4_TESTS
+                                                                  -DOTRNG_TESTS
 test_LDFLAGS = $(AM_LDFLAGS) $(GLIB_LIBS) $(CODE_COVERAGE_LIBS) @LIBGOLDILOCKS_LIBS@ \
                                                                 @LIBGCRYPT_LIBS@ \
                                                                 @LIBSODIUM_LIBS@ \

@@ -1,74 +1,74 @@
-#define OTRV4_OTRV3_PRIVATE
+#define OTRNG_V3_PRIVATE
 
-#include "otrv3.h"
-#include "otrv4.h"
+#include "v3.h"
+#include "otrng.h"
 
-tstatic void create_privkey_cb_v3(const otrv4_conversation_state_t *otr) {
+tstatic void create_privkey_cb_v3(const otrng_conversation_state_t *otr) {
   if (!otr || !otr->client)
     return;
-  otrv4_client_callbacks_create_privkey(otr->client->callbacks,
+  otrng_client_callbacks_create_privkey(otr->client->callbacks,
                                         otr->client->client_id);
 }
 
-tstatic void gone_secure_cb_v3(const otrv4_conversation_state_t *otr) {
+tstatic void gone_secure_cb_v3(const otrng_conversation_state_t *otr) {
   if (!otr || !otr->client)
     return;
-  otrv4_client_callbacks_gone_secure(
+  otrng_client_callbacks_gone_secure(
       otr->client->callbacks,
       otr->client->client_id); // TODO: should be conversation_id
 }
 
-tstatic void gone_insecure_cb_v3(const otrv4_conversation_state_t *otr) {
+tstatic void gone_insecure_cb_v3(const otrng_conversation_state_t *otr) {
   if (!otr || !otr->client)
     return;
-  otrv4_client_callbacks_gone_insecure(
+  otrng_client_callbacks_gone_insecure(
       otr->client->callbacks,
       otr->client->client_id); // TODO: should be conversation_id
 }
 
-tstatic void fingerprint_seen_cb_v3(const otrv3_fingerprint_t fp,
-                                    const otrv4_conversation_state_t *otr) {
+tstatic void fingerprint_seen_cb_v3(const v3_fingerprint_t fp,
+                                    const otrng_conversation_state_t *otr) {
   if (!otr || !otr->client)
     return;
-  otrv4_client_callbacks_fingerprint_seen_otr3(
+  otrng_client_callbacks_fingerprint_seen_v3(
       otr->client->callbacks, fp,
       otr->client->client_id); // TODO: should be conversation_id
 }
 
-tstatic void handle_smp_event_cb_v3(const otrv4_smp_event_t event,
+tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
                                     const uint8_t progress_percent,
                                     const char *question,
-                                    const otrv4_conversation_state_t *otr) {
+                                    const otrng_conversation_state_t *otr) {
   if (!otr || !otr->client)
     return;
   switch (event) {
-  case OTRV4_SMPEVENT_ASK_FOR_SECRET:
-    otrv4_client_callbacks_smp_ask_for_secret(
+  case OTRNG_SMPEVENT_ASK_FOR_SECRET:
+    otrng_client_callbacks_smp_ask_for_secret(
         otr->client->callbacks,
         otr->client->client_id); // TODO: should be conversation_id
     break;
-  case OTRV4_SMPEVENT_ASK_FOR_ANSWER:
-    otrv4_client_callbacks_smp_ask_for_answer(
+  case OTRNG_SMPEVENT_ASK_FOR_ANSWER:
+    otrng_client_callbacks_smp_ask_for_answer(
         otr->client->callbacks, question,
         otr->client->client_id); // TODO: should be conversation_id
     break;
-  case OTRV4_SMPEVENT_CHEATED:
-  case OTRV4_SMPEVENT_IN_PROGRESS:
-  case OTRV4_SMPEVENT_SUCCESS:
-  case OTRV4_SMPEVENT_FAILURE:
-  case OTRV4_SMPEVENT_ABORT:
-  case OTRV4_SMPEVENT_ERROR:
-    otrv4_client_callbacks_smp_update(
+  case OTRNG_SMPEVENT_CHEATED:
+  case OTRNG_SMPEVENT_IN_PROGRESS:
+  case OTRNG_SMPEVENT_SUCCESS:
+  case OTRNG_SMPEVENT_FAILURE:
+  case OTRNG_SMPEVENT_ABORT:
+  case OTRNG_SMPEVENT_ERROR:
+    otrng_client_callbacks_smp_update(
         otr->client->callbacks, event, progress_percent,
         otr->client->client_id); // TODO: should be conversation_id
     break;
   default:
-    // OTRV4_SMPEVENT_NONE. Should not be used.
+    // OTRNG_SMPEVENT_NONE. Should not be used.
     break;
   }
 }
 
-tstatic void received_symkey_cb_v3(const otrv4_conversation_state_t *otr,
+tstatic void received_symkey_cb_v3(const otrng_conversation_state_t *otr,
                                    unsigned int use,
                                    const unsigned char *usedata,
                                    size_t usedatalen,
@@ -104,7 +104,7 @@ tstatic void from_injected_to_send(char **to_send) {
   // TODO: As this is stored from a callback it MAY be the case a message
   // was lost (if the callback was invoked multiple times before we consume
   // this injected_to_send). Ideally this would be a list.
-  *to_send = otrv4_strdup(injected_to_send);
+  *to_send = otrng_strdup(injected_to_send);
   free(injected_to_send);
   injected_to_send = NULL;
 }
@@ -120,7 +120,7 @@ tstatic void op_inject(void *opdata, const char *accountname,
   }
 
   if (message)
-    injected_to_send = otrv4_strdup(message);
+    injected_to_send = otrng_strdup(message);
 }
 
 /* Create a private key for the given accountname/protocol if
@@ -258,34 +258,34 @@ tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
                                  ConnContext *context,
                                  unsigned short progress_percent,
                                  char *question) {
-  otrv4_smp_event_t event = OTRV4_SMPEVENT_NONE;
+  otrng_smp_event_t event = OTRNG_SMPEVENT_NONE;
   switch (smp_event) {
   case OTRL_SMPEVENT_ASK_FOR_SECRET:
-    event = OTRV4_SMPEVENT_ASK_FOR_SECRET;
+    event = OTRNG_SMPEVENT_ASK_FOR_SECRET;
     break;
   case OTRL_SMPEVENT_ASK_FOR_ANSWER:
-    event = OTRV4_SMPEVENT_ASK_FOR_ANSWER;
+    event = OTRNG_SMPEVENT_ASK_FOR_ANSWER;
     break;
   case OTRL_SMPEVENT_CHEATED:
-    event = OTRV4_SMPEVENT_CHEATED;
+    event = OTRNG_SMPEVENT_CHEATED;
     break;
   case OTRL_SMPEVENT_IN_PROGRESS:
-    event = OTRV4_SMPEVENT_IN_PROGRESS;
+    event = OTRNG_SMPEVENT_IN_PROGRESS;
     break;
   case OTRL_SMPEVENT_SUCCESS:
-    event = OTRV4_SMPEVENT_SUCCESS;
+    event = OTRNG_SMPEVENT_SUCCESS;
     break;
   case OTRL_SMPEVENT_FAILURE:
-    event = OTRV4_SMPEVENT_FAILURE;
+    event = OTRNG_SMPEVENT_FAILURE;
     break;
   case OTRL_SMPEVENT_ABORT:
-    event = OTRV4_SMPEVENT_ABORT;
+    event = OTRNG_SMPEVENT_ABORT;
     break;
   case OTRL_SMPEVENT_ERROR:
-    event = OTRV4_SMPEVENT_ERROR;
+    event = OTRNG_SMPEVENT_ERROR;
     break;
   case OTRL_SMPEVENT_NONE:
-    event = OTRV4_SMPEVENT_NONE;
+    event = OTRNG_SMPEVENT_NONE;
     break;
   }
 
@@ -420,9 +420,9 @@ static OtrlMessageAppOps null_ops = {
     op_timer_control,
 };
 
-INTERNAL otrv4_v3_conn_t *otrv4_v3_conn_new(otrv4_client_state_t *state,
+INTERNAL otrng_v3_conn_t *otrng_v3_conn_new(otrng_client_state_t *state,
                                             const char *peer) {
-  otrv4_v3_conn_t *ret = malloc(sizeof(otrv4_v3_conn_t));
+  otrng_v3_conn_t *ret = malloc(sizeof(otrng_v3_conn_t));
   if (!ret)
     return NULL;
 
@@ -431,12 +431,12 @@ INTERNAL otrv4_v3_conn_t *otrv4_v3_conn_new(otrv4_client_state_t *state,
   ret->ctx = NULL;
   ret->opdata = NULL;
 
-  ret->peer = otrv4_strdup(peer);
+  ret->peer = otrng_strdup(peer);
 
   return ret;
 }
 
-INTERNAL void otrv4_v3_conn_free(otrv4_v3_conn_t *conn) {
+INTERNAL void otrng_v3_conn_free(otrng_v3_conn_t *conn) {
   if (!conn)
     return;
 
@@ -451,10 +451,10 @@ INTERNAL void otrv4_v3_conn_free(otrv4_v3_conn_t *conn) {
   conn = NULL;
 }
 
-INTERNAL otrv4_err_t otrv4_v3_send_message(char **newmessage,
+INTERNAL otrng_err_t otrng_v3_send_message(char **newmessage,
                                            const char *message,
                                            const tlv_t *tlvs,
-                                           otrv4_v3_conn_t *conn) {
+                                           otrng_v3_conn_t *conn) {
   // TODO: convert TLVs
   OtrlTLV *tlvsv3 = NULL;
 
@@ -473,11 +473,11 @@ INTERNAL otrv4_err_t otrv4_v3_send_message(char **newmessage,
   return ERROR;
 }
 
-INTERNAL otrv4_err_t otrv4_v3_receive_message(string_t *to_send,
+INTERNAL otrng_err_t otrng_v3_receive_message(string_t *to_send,
                                               string_t *to_display,
                                               tlv_t **tlvs,
                                               const string_t message,
-                                              otrv4_v3_conn_t *conn) {
+                                              otrng_v3_conn_t *conn) {
   int ignore_message;
   OtrlTLV *tlvsv3 = NULL; // TODO: convert to v4 tlvs
   *to_send = NULL;
@@ -496,7 +496,7 @@ INTERNAL otrv4_err_t otrv4_v3_receive_message(string_t *to_send,
   from_injected_to_send(to_send);
 
   if (to_display && newmessage)
-    *to_display = otrv4_strdup(newmessage);
+    *to_display = otrng_strdup(newmessage);
 
   otrl_tlv_free(tlvsv3);
   otrl_message_free(newmessage);
@@ -507,7 +507,7 @@ INTERNAL otrv4_err_t otrv4_v3_receive_message(string_t *to_send,
   return SUCCESS;
 }
 
-INTERNAL void otrv4_v3_close(string_t *to_send, otrv4_v3_conn_t *conn) {
+INTERNAL void otrng_v3_close(string_t *to_send, otrng_v3_conn_t *conn) {
   // TODO: there is also: otrl_message_disconnect, which only disconnects one
   // instance
   otrl_message_disconnect_all_instances(conn->state->userstate, conn->ops,
@@ -517,8 +517,8 @@ INTERNAL void otrv4_v3_close(string_t *to_send, otrv4_v3_conn_t *conn) {
   from_injected_to_send(to_send);
 }
 
-INTERNAL otrv4_err_t otrv4_v3_send_symkey_message(
-    string_t *to_send, otrv4_v3_conn_t *conn, unsigned int use,
+INTERNAL otrng_err_t otrng_v3_send_symkey_message(
+    string_t *to_send, otrng_v3_conn_t *conn, unsigned int use,
     const unsigned char *usedata, size_t usedatalen, unsigned char *extra_key) {
   otrl_message_symkey(conn->state->userstate, conn->ops, conn->opdata,
                       conn->ctx, use, usedata, usedatalen, extra_key);
@@ -527,9 +527,9 @@ INTERNAL otrv4_err_t otrv4_v3_send_symkey_message(
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_v3_smp_start(string_t *to_send, const char *question,
+INTERNAL otrng_err_t otrng_v3_smp_start(string_t *to_send, const char *question,
                                         const uint8_t *secret, size_t secretlen,
-                                        otrv4_v3_conn_t *conn) {
+                                        otrng_v3_conn_t *conn) {
   if (question)
     otrl_message_initiate_smp_q(conn->state->userstate, conn->ops, conn->opdata,
                                 conn->ctx, question, secret, secretlen);
@@ -541,10 +541,10 @@ INTERNAL otrv4_err_t otrv4_v3_smp_start(string_t *to_send, const char *question,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_v3_smp_continue(string_t *to_send,
+INTERNAL otrng_err_t otrng_v3_smp_continue(string_t *to_send,
                                            const uint8_t *secret,
                                            const size_t secretlen,
-                                           otrv4_v3_conn_t *conn) {
+                                           otrng_v3_conn_t *conn) {
   otrl_message_respond_smp(conn->state->userstate, conn->ops, conn->opdata,
                            conn->ctx, secret, secretlen);
 
@@ -552,7 +552,7 @@ INTERNAL otrv4_err_t otrv4_v3_smp_continue(string_t *to_send,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_v3_smp_abort(otrv4_v3_conn_t *conn) {
+INTERNAL otrng_err_t otrng_v3_smp_abort(otrng_v3_conn_t *conn) {
   otrl_message_abort_smp(conn->state->userstate, conn->ops, conn->opdata,
                          conn->ctx);
   return SUCCESS;

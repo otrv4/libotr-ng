@@ -1,12 +1,12 @@
 #include <libotr/privkey.h>
 
-#define OTRV4_MESSAGING_PRIVATE
+#define OTRNG_MESSAGING_PRIVATE
 
 #include "messaging.h"
 
-API otrv4_userstate_t *
-otrv4_user_state_new(const otrv4_client_callbacks_t *cb) {
-  otrv4_userstate_t *state = malloc(sizeof(otrv4_userstate_t));
+API otrng_userstate_t *
+otrng_user_state_new(const otrng_client_callbacks_t *cb) {
+  otrng_userstate_t *state = malloc(sizeof(otrng_userstate_t));
   if (!state)
     return NULL;
 
@@ -19,18 +19,18 @@ otrv4_user_state_new(const otrv4_client_callbacks_t *cb) {
   return state;
 }
 
-tstatic void free_client_state(void *data) { otrv4_client_state_free(data); }
+tstatic void free_client_state(void *data) { otrng_client_state_free(data); }
 
-tstatic void free_client(void *data) { otrv4_client_free(data); }
+tstatic void free_client(void *data) { otrng_client_free(data); }
 
-API void otrv4_user_state_free(otrv4_userstate_t *state) {
+API void otrng_user_state_free(otrng_userstate_t *state) {
   if (!state)
     return;
 
-  otrv4_list_free(state->states, free_client_state);
+  otrng_list_free(state->states, free_client_state);
   state->states = NULL;
 
-  otrv4_list_free(state->clients, free_client);
+  otrng_list_free(state->clients, free_client);
   state->clients = NULL;
 
   state->callbacks = NULL;
@@ -43,35 +43,35 @@ API void otrv4_user_state_free(otrv4_userstate_t *state) {
 }
 
 tstatic int find_state_by_client_id(const void *current, const void *wanted) {
-  const otrv4_client_state_t *s = current;
+  const otrng_client_state_t *s = current;
   return s->client_id == wanted;
 }
 
-tstatic otrv4_client_state_t *get_client_state(otrv4_userstate_t *state,
+tstatic otrng_client_state_t *get_client_state(otrng_userstate_t *state,
                                                void *client_id) {
   list_element_t *el =
-      otrv4_list_get(client_id, state->states, find_state_by_client_id);
+      otrng_list_get(client_id, state->states, find_state_by_client_id);
   if (el)
     return el->data;
 
-  otrv4_client_state_t *s = otrv4_client_state_new(client_id);
+  otrng_client_state_t *s = otrng_client_state_new(client_id);
   if (!s)
     return NULL;
 
   s->callbacks = state->callbacks;
   s->userstate = state->userstate_v3;
 
-  state->states = otrv4_list_add(s, state->states);
+  state->states = otrng_list_add(s, state->states);
   return s;
 }
 
 /* tstatic int find_client_by_client_id(const void *current, const void *wanted)
  * { */
-/*   const otrv4_client_t *s = current; */
+/*   const otrng_client_t *s = current; */
 /*   return s && s->state && s->state->client_id == wanted; */
 /* } */
 
-/* tstatic otr4_messaging_client_t *otr4_messaging_client_new(otrv4_userstate_t
+/* tstatic otrng_messaging_client_t *otrng_messaging_client_new(otrng_userstate_t
  * *state, */
 /*                                                    void *client_id) { */
 /*   if (!client_id) { */
@@ -79,88 +79,88 @@ tstatic otrv4_client_state_t *get_client_state(otrv4_userstate_t *state,
 /*   } */
 
 /*   list_element_t *e = */
-/*       otrv4_list_get(client_id, state->clients, find_client_by_client_id); */
+/*       otrng_list_get(client_id, state->clients, find_client_by_client_id); */
 
 /*   if (e) { */
 /*     return e->data; */
 /*   } else { */
-/*     otrv4_client_state_t *s = get_client_state(state, client_id); */
+/*     otrng_client_state_t *s = get_client_state(state, client_id); */
 /*     if (!s) */
 /*       return NULL; */
 
-/*     otrv4_client_t *c = otr4_client_new(s); */
+/*     otrng_client_t *c = otrng_client_new(s); */
 /*     if (!c) */
 /*       return NULL; */
 
-/*     state->clients = otrv4_list_add(c, state->clients); */
+/*     state->clients = otrng_list_add(c, state->clients); */
 
 /*     return c; */
 /*   } */
 /* } */
 
-/* otr4_messaging_client_t *otr4_messaging_client_get(otrv4_userstate_t *state,
+/* otrng_messaging_client_t *otrng_messaging_client_get(otrng_userstate_t *state,
  */
 /*                                                    void *client_id) { */
 /*   list_element_t *el = */
-/*       otrv4_list_get(client_id, state->clients, find_client_by_client_id); */
+/*       otrng_list_get(client_id, state->clients, find_client_by_client_id); */
 /*   if (el) */
 /*     return el->data; */
 
-/*   return otr4_messaging_client_new(state, client_id); */
+/*   return otrng_messaging_client_new(state, client_id); */
 /* } */
 
-/* int otr4_user_state_private_key_v3_generate_FILEp(otrv4_userstate_t *state,
+/* int otrng_user_state_private_key_v3_generate_FILEp(otrng_userstate_t *state,
  */
 /*                                                   void *client_id, */
 /*                                                   FILE *privf) { */
-/*   return otr4_client_state_private_key_v3_generate_FILEp( */
+/*   return otrng_client_state_private_key_v3_generate_FILEp( */
 /*       get_client_state(state, client_id), privf); */
 /* } */
 
-/* int otr4_user_state_private_key_v3_read_FILEp(otrv4_userstate_t *state, */
+/* int otrng_user_state_private_key_v3_read_FILEp(otrng_userstate_t *state, */
 /*                                               FILE *keys) { */
 /*   return otrl_privkey_read_FILEp(state->userstate_v3, keys); */
 /* } */
 
 API int
-otrv4_user_state_add_private_key_v4(otrv4_userstate_t *state, void *clientop,
+otrng_user_state_add_private_key_v4(otrng_userstate_t *state, void *clientop,
                                     const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  return otrv4_client_state_add_private_key_v4(
+  return otrng_client_state_add_private_key_v4(
       get_client_state(state, clientop), sym);
 }
 
-/* int otr4_user_state_generate_private_key(otrv4_userstate_t *state, */
+/* int otrng_user_state_generate_private_key(otrng_userstate_t *state, */
 /*                                          void *client_id) { */
 /*   uint8_t sym[ED448_PRIVATE_BYTES]; */
 /*   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM); */
-/*   return otrv4_user_state_add_private_key_v4(state, client_id, sym); */
+/*   return otrng_user_state_add_private_key_v4(state, client_id, sym); */
 /* } */
 
-API otrv4_keypair_t *
-otrv4_user_state_get_private_key_v4(otrv4_userstate_t *state, void *client_id) {
-  return otrv4_client_state_get_private_key_v4(
+API otrng_keypair_t *
+otrng_user_state_get_private_key_v4(otrng_userstate_t *state, void *client_id) {
+  return otrng_client_state_get_private_key_v4(
       get_client_state(state, client_id));
 }
 
 /* tstatic void add_private_key_v4_to_FILEp(list_element_t *node, void *context)
  * { */
 /*   FILE *privf = context; */
-/*   otrv4_client_state_t *state = node->data; */
-/*   otr4_client_state_private_key_v4_write_FILEp(state, privf); */
+/*   otrng_client_state_t *state = node->data; */
+/*   otrng_client_state_private_key_v4_write_FILEp(state, privf); */
 /* } */
 
-/* int otr4_user_state_private_key_v4_write_FILEp(const otrv4_userstate_t
+/* int otrng_user_state_private_key_v4_write_FILEp(const otrng_userstate_t
  * *state, */
 /*                                                FILE *privf) { */
 /*   if (!privf) */
 /*     return -1; */
 
-/*   otrv4_list_foreach(state->states, add_private_key_v4_to_FILEp, privf); */
+/*   otrng_list_foreach(state->states, add_private_key_v4_to_FILEp, privf); */
 /*   return 0; */
 /* } */
 
-API int otrv4_user_state_private_key_v4_read_FILEp(
-    otrv4_userstate_t *state, FILE *privf,
+API int otrng_user_state_private_key_v4_read_FILEp(
+    otrng_userstate_t *state, FILE *privf,
     void *(*read_client_id_for_key)(FILE *filep)) {
   void *client_id = NULL;
 
@@ -172,7 +172,7 @@ API int otrv4_user_state_private_key_v4_read_FILEp(
     if (!client_id)
       continue;
 
-    if (otrv4_client_state_private_key_v4_read_FILEp(
+    if (otrng_client_state_private_key_v4_read_FILEp(
             get_client_state(state, client_id), privf))
       continue;
   }
@@ -180,15 +180,15 @@ API int otrv4_user_state_private_key_v4_read_FILEp(
   return 0;
 }
 
-/* int otr4_user_state_add_instance_tag(otrv4_userstate_t *state, void
+/* int otrng_user_state_add_instance_tag(otrng_userstate_t *state, void
  * *client_id, */
 /*                                      unsigned int instag) { */
-/*   return otrv4_client_state_add_instance_tag(get_client_state(state,
+/*   return otrng_client_state_add_instance_tag(get_client_state(state,
  * client_id), */
 /*                                             instag); */
 /* } */
 
-/* unsigned int otr4_user_state_get_instance_tag(otrv4_userstate_t *state, */
+/* unsigned int otrng_user_state_get_instance_tag(otrng_userstate_t *state, */
 /*                                               void *client_id) { */
 /*   UNUSED_ARG(state); */
 /*   UNUSED_ARG(client_id); */
@@ -196,8 +196,8 @@ API int otrv4_user_state_private_key_v4_read_FILEp(
 /*   return 0; */
 /* } */
 
-/* int otr4_user_state_instance_tags_read_FILEp(otrv4_userstate_t *state, */
+/* int otrng_user_state_instance_tags_read_FILEp(otrng_userstate_t *state, */
 /*                                              FILE *instag) { */
-/*   // We use OTR3 userstate also for OTR4 instance tags, for now. */
+/*   // We use v3 userstate also for v4 instance tags, for now. */
 /*   return otrl_instag_read_FILEp(state->userstate_v3, instag); */
 /* } */

@@ -9,8 +9,8 @@ src/test/tags
 #gcov
 *.gcno
 *.gcda
-libotr4-*-coverage.info
-libotr4-*-coverage/
+libotr-ng-*-coverage.info
+libotr-ng-*-coverage/
 
 *~
 *#*#
@@ -42,7 +42,7 @@ m4/ltoptions.m4
 m4/ltsugar.m4
 m4/ltversion.m4
 m4/lt~obsolete.m4
-pkgconfig/libotr4.pc
+pkgconfig/libotr-ng.pc
 
 # cachegrind
 cachegrind.out.*

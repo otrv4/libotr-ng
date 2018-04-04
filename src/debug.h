@@ -8,9 +8,9 @@
 #include "shared.h"
 #include "str.h"
 
-static inline char *_otrv4_memdump(const uint8_t *src, size_t len) {
+static inline char *_otrng_memdump(const uint8_t *src, size_t len) {
   if (src == NULL) {
-    return otrv4_strndup("(NULL)", 6);
+    return otrng_strndup("(NULL)", 6);
   }
   /* each char is represented by "0x00, " */
   size_t s = len * 6 + len / 8 + 2;
@@ -29,11 +29,11 @@ static inline char *_otrv4_memdump(const uint8_t *src, size_t len) {
 }
 
 #ifdef DEBUG
-static inline void otrv4_memdump(const uint8_t *src, size_t len) {
-  printf("%s\n", _otrv4_memdump(src, len));
+static inline void otrng_memdump(const uint8_t *src, size_t len) {
+  printf("%s\n", _otrng_memdump(src, len));
 }
 
 #else
 // TODO: is this used?
-static inline void otrv4_memdump(const uint8_t *src, size_t len) {}
+static inline void otrng_memdump(const uint8_t *src, size_t len) {}
 #endif

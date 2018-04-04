@@ -5,16 +5,16 @@ static data_message_t *set_up_data_msg() {
   dh_keypair_t dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrv4_ecdh_keypair_generate(ecdh, sym);
-  otrv4_assert(otrv4_dh_keypair_generate(dh) == SUCCESS);
+  otrng_ecdh_keypair_generate(ecdh, sym);
+  otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
-  data_message_t *data_msg = otrv4_data_message_new();
-  otrv4_assert(data_msg);
+  data_message_t *data_msg = otrng_data_message_new();
+  otrng_assert(data_msg);
   data_msg->sender_instance_tag = 1;
   data_msg->receiver_instance_tag = 2;
   data_msg->flags = 0xA;
   data_msg->message_id = 99;
-  otrv4_ec_point_copy(data_msg->ecdh, ecdh->pub);
+  otrng_ec_point_copy(data_msg->ecdh, ecdh->pub);
 
   const char dh_data[383] = {
       0x4c, 0x4e, 0x7b, 0xbd, 0x33, 0xd0, 0x9e, 0x63, 0xfd, 0xe4, 0x67, 0xee,
@@ -52,7 +52,7 @@ static data_message_t *set_up_data_msg() {
 
   gcry_error_t err =
       gcry_mpi_scan(&data_msg->dh, GCRYMPI_FMT_USG, dh_data, 383, NULL);
-  otrv4_assert(!err);
+  otrng_assert(!err);
 
   memset(data_msg->nonce, 0xF, sizeof(data_msg->nonce));
   data_msg->enc_msg = malloc(3);
@@ -60,21 +60,21 @@ static data_message_t *set_up_data_msg() {
   memset(data_msg->enc_msg, 0xE, 3);
   data_msg->enc_msg_len = 3;
 
-  otrv4_dh_keypair_destroy(dh);
-  otrv4_ecdh_keypair_destroy(ecdh);
-  otrv4_dh_free();
+  otrng_dh_keypair_destroy(dh);
+  otrng_ecdh_keypair_destroy(ecdh);
+  otrng_dh_free();
 
   return data_msg;
 }
 
 void test_data_message_serializes() {
-  OTRV4_INIT;
+  OTRNG_INIT;
 
   data_message_t *data_msg = set_up_data_msg();
 
   uint8_t *serialized = NULL;
   size_t serlen = 0;
-  otrv4_assert(otrv4_data_message_body_asprintf(&serialized, &serlen,
+  otrng_assert(otrng_data_message_body_asprintf(&serialized, &serlen,
                                                 data_msg) == SUCCESS);
 
   const int OUR_DH_LEN = 4 + 383;
@@ -92,45 +92,45 @@ void test_data_message_serializes() {
   };
 
   uint8_t *cursor = serialized;
-  otrv4_assert_cmpmem(cursor, expected, 16);
+  otrng_assert_cmpmem(cursor, expected, 16);
   cursor += 16;
 
   uint8_t serialized_y[ED448_POINT_BYTES + 2] = {0};
-  otrv4_ec_point_serialize(serialized_y, data_msg->ecdh);
-  otrv4_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
+  otrng_ec_point_serialize(serialized_y, data_msg->ecdh);
+  otrng_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
   cursor += sizeof(ec_public_key_t);
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
   size_t mpi_len = 0;
-  otrv4_err_t otr_err = otrv4_dh_mpi_serialize(
+  otrng_err_t otr_err = otrng_dh_mpi_serialize(
       serialized_b, DH3072_MOD_LEN_BYTES, &mpi_len, data_msg->dh);
-  otrv4_assert(!otr_err);
+  otrng_assert(!otr_err);
   // Skip first 4 because they are the size (mpi_len)
-  otrv4_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
+  otrng_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
 
   cursor += 4 + mpi_len;
 
-  otrv4_assert_cmpmem(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
+  otrng_assert_cmpmem(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
   cursor += DATA_MSG_NONCE_BYTES;
 
   uint8_t expected_enc[7] = {
       0x0, 0x0, 0x0, 0x3, 0xE, 0xE, 0xE,
   };
-  otrv4_assert_cmpmem(cursor, expected_enc, 7);
+  otrng_assert_cmpmem(cursor, expected_enc, 7);
 
-  otrv4_data_message_free(data_msg);
+  otrng_data_message_free(data_msg);
   free(serialized);
   serialized = NULL;
 }
 
-void test_otrv4_data_message_deserializes() {
-  OTRV4_INIT;
+void test_otrng_data_message_deserializes() {
+  OTRNG_INIT;
 
   data_message_t *data_msg = set_up_data_msg();
 
   uint8_t *serialized = NULL;
   size_t serlen = 0;
-  otrv4_assert(otrv4_data_message_body_asprintf(&serialized, &serlen,
+  otrng_assert(otrng_data_message_body_asprintf(&serialized, &serlen,
                                                 data_msg) == SUCCESS);
 
   const uint8_t mac_data[MAC_KEY_BYTES] = {
@@ -144,28 +144,28 @@ void test_otrv4_data_message_deserializes() {
   serialized = realloc(serialized, serlen + MAC_KEY_BYTES);
   memcpy(serialized + serlen, mac_data, MAC_KEY_BYTES);
 
-  data_message_t *deserialized = otrv4_data_message_new();
-  otrv4_assert(otrv4_data_message_deserialize(deserialized, serialized,
+  data_message_t *deserialized = otrng_data_message_new();
+  otrng_assert(otrng_data_message_deserialize(deserialized, serialized,
                                               serlen + MAC_KEY_BYTES,
                                               NULL) == SUCCESS);
 
-  otrv4_assert(data_msg->sender_instance_tag ==
+  otrng_assert(data_msg->sender_instance_tag ==
                deserialized->sender_instance_tag);
-  otrv4_assert(data_msg->receiver_instance_tag ==
+  otrng_assert(data_msg->receiver_instance_tag ==
                deserialized->receiver_instance_tag);
-  otrv4_assert(data_msg->flags == deserialized->flags);
-  otrv4_assert(data_msg->message_id == deserialized->message_id);
-  otrv4_assert_cmpmem(data_msg->ecdh, deserialized->ecdh, ED448_POINT_BYTES);
-  otrv4_assert(dh_mpi_cmp(data_msg->dh, deserialized->dh) == 0);
-  otrv4_assert_cmpmem(data_msg->nonce, deserialized->nonce,
+  otrng_assert(data_msg->flags == deserialized->flags);
+  otrng_assert(data_msg->message_id == deserialized->message_id);
+  otrng_assert_cmpmem(data_msg->ecdh, deserialized->ecdh, ED448_POINT_BYTES);
+  otrng_assert(dh_mpi_cmp(data_msg->dh, deserialized->dh) == 0);
+  otrng_assert_cmpmem(data_msg->nonce, deserialized->nonce,
                       DATA_MSG_NONCE_BYTES);
-  otrv4_assert_cmpmem(data_msg->enc_msg, deserialized->enc_msg,
+  otrng_assert_cmpmem(data_msg->enc_msg, deserialized->enc_msg,
                       data_msg->enc_msg_len);
-  otrv4_assert(data_msg->enc_msg_len == deserialized->enc_msg_len);
-  otrv4_assert_cmpmem(data_msg->mac, deserialized->mac, MAC_KEY_BYTES);
+  otrng_assert(data_msg->enc_msg_len == deserialized->enc_msg_len);
+  otrng_assert_cmpmem(data_msg->mac, deserialized->mac, MAC_KEY_BYTES);
 
-  otrv4_data_message_free(data_msg);
-  otrv4_data_message_free(deserialized);
+  otrng_data_message_free(data_msg);
+  otrng_data_message_free(deserialized);
   free(serialized);
   serialized = NULL;
 }

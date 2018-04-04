@@ -10,9 +10,9 @@ void test_instance_tag_generates_tag_when_file_empty() {
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
 
-  otrv4_instag_t *instag = malloc(sizeof(otrv4_instag_t));
-  otrv4_bool_t err =
-      otrv4_instag_get(instag, alice_coy_account, xmpp_protocol, tmpFILEp);
+  otrng_instag_t *instag = malloc(sizeof(otrng_instag_t));
+  otrng_bool_t err =
+      otrng_instag_get(instag, alice_coy_account, xmpp_protocol, tmpFILEp);
 
   fclose(tmpFILEp);
 
@@ -23,7 +23,7 @@ void test_instance_tag_generates_tag_when_file_empty() {
   g_assert_cmpstr(instag->account, ==, alice_coy_account);
   g_assert_cmpstr(instag->protocol, ==, xmpp_protocol);
 
-  otrv4_instag_free(instag);
+  otrng_instag_free(instag);
 }
 
 void test_instance_tag_generates_tag_when_file_is_full() {
@@ -45,19 +45,19 @@ void test_instance_tag_generates_tag_when_file_is_full() {
 
   rewind(tmpFILEp);
 
-  otrv4_instag_t *first_instag = malloc(sizeof(otrv4_instag_t));
+  otrng_instag_t *first_instag = malloc(sizeof(otrng_instag_t));
   err =
-      otrv4_instag_get(first_instag, icq_alice_account, icq_protocol, tmpFILEp);
+      otrng_instag_get(first_instag, icq_alice_account, icq_protocol, tmpFILEp);
   g_assert_cmpint(err, ==, 0);
 
-  otrv4_instag_t *second_instag = malloc(sizeof(otrv4_instag_t));
-  err = otrv4_instag_get(second_instag, xmpp_alice_account, xmpp_protocol,
+  otrng_instag_t *second_instag = malloc(sizeof(otrng_instag_t));
+  err = otrng_instag_get(second_instag, xmpp_alice_account, xmpp_protocol,
                          tmpFILEp);
   g_assert_cmpint(err, ==, 0);
 
-  otrv4_instag_t *third_instag = malloc(sizeof(otrv4_instag_t));
+  otrng_instag_t *third_instag = malloc(sizeof(otrng_instag_t));
   err =
-      otrv4_instag_get(third_instag, irc_alice_account, irc_protocol, tmpFILEp);
+      otrng_instag_get(third_instag, irc_alice_account, irc_protocol, tmpFILEp);
   g_assert_cmpint(err, ==, 0);
 
   fclose(tmpFILEp);
@@ -81,7 +81,7 @@ void test_instance_tag_generates_tag_when_file_is_full() {
   g_assert_cmpint(third_instag->value, !=, 0);
   g_assert_cmpint(third_instag->value, >, 0x100);
 
-  otrv4_instag_free(first_instag);
-  otrv4_instag_free(second_instag);
-  otrv4_instag_free(third_instag);
+  otrng_instag_free(first_instag);
+  otrng_instag_free(second_instag);
+  otrng_instag_free(third_instag);
 }

@@ -1,19 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define OTRV4_TLV_PRIVATE
+#define OTRNG_TLV_PRIVATE
 
 #include "deserialize.h"
 #include "random.h"
 #include "tlv.h"
 
-const tlv_type_t tlv_types[] = {OTRV4_TLV_PADDING,   OTRV4_TLV_DISCONNECTED,
-                                OTRV4_TLV_SMP_MSG_1, OTRV4_TLV_SMP_MSG_2,
-                                OTRV4_TLV_SMP_MSG_3, OTRV4_TLV_SMP_MSG_4,
-                                OTRV4_TLV_SMP_ABORT, OTRV4_TLV_SYM_KEY};
+const tlv_type_t tlv_types[] = {OTRNG_TLV_PADDING,   OTRNG_TLV_DISCONNECTED,
+                                OTRNG_TLV_SMP_MSG_1, OTRNG_TLV_SMP_MSG_2,
+                                OTRNG_TLV_SMP_MSG_3, OTRNG_TLV_SMP_MSG_4,
+                                OTRNG_TLV_SMP_ABORT, OTRNG_TLV_SYM_KEY};
 
 INTERNAL void set_tlv_type(tlv_t *tlv, uint16_t tlv_type) {
-  tlv_type_t type = OTRV4_TLV_NONE;
+  tlv_type_t type = OTRNG_TLV_NONE;
 
   if (tlv_type >= 0 && tlv_type < 8) {
     type = tlv_types[tlv_type];
@@ -35,7 +35,7 @@ tstatic tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
     if (!tlv)
       continue;
 
-    if (otrv4_deserialize_uint16(&tlv_type, cursor, len, &w))
+    if (otrng_deserialize_uint16(&tlv_type, cursor, len, &w))
       continue;
 
     set_tlv_type(tlv, tlv_type);
@@ -43,7 +43,7 @@ tstatic tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
     len -= w;
     cursor += w;
 
-    if (otrv4_deserialize_uint16(&tlv->len, cursor, len, &w))
+    if (otrng_deserialize_uint16(&tlv->len, cursor, len, &w))
       continue;
 
     len -= w;
@@ -73,7 +73,7 @@ tstatic tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
   return NULL;
 }
 
-INTERNAL tlv_t *otrv4_append_tlv(tlv_t *head, tlv_t *tlv) {
+INTERNAL tlv_t *otrng_append_tlv(tlv_t *head, tlv_t *tlv) {
   if (!head)
     return tlv;
 
@@ -88,7 +88,7 @@ INTERNAL tlv_t *otrv4_append_tlv(tlv_t *head, tlv_t *tlv) {
   return head;
 }
 
-INTERNAL tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
+INTERNAL tlv_t *otrng_parse_tlvs(const uint8_t *src, size_t len) {
   size_t written = 0;
   tlv_t *tlv = NULL, *ret = NULL;
 
@@ -100,7 +100,7 @@ INTERNAL tlv_t *otrv4_parse_tlvs(const uint8_t *src, size_t len) {
     if (!tlv)
       break;
 
-    ret = otrv4_append_tlv(ret, tlv);
+    ret = otrng_append_tlv(ret, tlv);
 
     data_to_parse = len - written;
   }
@@ -121,9 +121,9 @@ tstatic void tlv_foreach(tlv_t *head) {
   }
 }
 
-INTERNAL void otrv4_tlv_free(tlv_t *tlv) { tlv_foreach(tlv); }
+INTERNAL void otrng_tlv_free(tlv_t *tlv) { tlv_foreach(tlv); }
 
-INTERNAL tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
+INTERNAL tlv_t *otrng_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
   tlv_t *tlv = malloc(sizeof(tlv_t));
   if (!tlv)
     return NULL;
@@ -136,7 +136,7 @@ INTERNAL tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
   if (len != 0) {
     tlv->data = malloc(tlv->len);
     if (!tlv->data) {
-      otrv4_tlv_free(tlv);
+      otrng_tlv_free(tlv);
       return NULL;
     }
     memcpy(tlv->data, data, tlv->len);
@@ -145,24 +145,24 @@ INTERNAL tlv_t *otrv4_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
   return tlv;
 }
 
-INTERNAL tlv_t *otrv4_disconnected_tlv_new(void) {
-  return otrv4_tlv_new(OTRV4_TLV_DISCONNECTED, 0, NULL);
+INTERNAL tlv_t *otrng_disconnected_tlv_new(void) {
+  return otrng_tlv_new(OTRNG_TLV_DISCONNECTED, 0, NULL);
 }
 
-INTERNAL tlv_t *otrv4_padding_tlv_new(size_t len) {
+INTERNAL tlv_t *otrng_padding_tlv_new(size_t len) {
   uint8_t *data = malloc(len);
   if (!data)
     return NULL;
 
   random_bytes(data, len);
-  tlv_t *tlv = otrv4_tlv_new(OTRV4_TLV_PADDING, len, data);
+  tlv_t *tlv = otrng_tlv_new(OTRNG_TLV_PADDING, len, data);
   free(data);
   data = NULL;
 
   return tlv;
 }
 
-INTERNAL otrv4_err_t otrv4_append_padding_tlv(tlv_t **tlvs, int message_len) {
+INTERNAL otrng_err_t otrng_append_padding_tlv(tlv_t **tlvs, int message_len) {
   int padding_granularity = 256;
   int header_len = 4;
   int nul_byte_len = 1;
@@ -171,11 +171,11 @@ INTERNAL otrv4_err_t otrv4_append_padding_tlv(tlv_t **tlvs, int message_len) {
       padding_granularity -
       ((message_len + header_len + nul_byte_len) % padding_granularity);
 
-  tlv_t *padding_tlv = otrv4_padding_tlv_new(padding);
+  tlv_t *padding_tlv = otrng_padding_tlv_new(padding);
   if (!padding_tlv)
     return ERROR;
 
-  *tlvs = otrv4_append_tlv(*tlvs, padding_tlv);
+  *tlvs = otrng_append_tlv(*tlvs, padding_tlv);
 
   return SUCCESS;
 }

@@ -22,9 +22,9 @@ void ed448_test_ecdh() {
 
   goldilocks_error_t err = goldilocks_x448(shared1, alice_pub, bob_priv);
   err = goldilocks_x448(shared2, bob_pub, alice_priv);
-  otrv4_assert(GOLDILOCKS_SUCCESS == err);
+  otrng_assert(GOLDILOCKS_SUCCESS == err);
 
-  otrv4_assert_cmpmem(shared1, shared2, GOLDILOCKS_X448_PUBLIC_BYTES);
+  otrng_assert_cmpmem(shared1, shared2, GOLDILOCKS_X448_PUBLIC_BYTES);
 }
 
 void ed448_test_eddsa_serialization() {
@@ -39,13 +39,13 @@ void ed448_test_eddsa_serialization() {
 
   // 2. Serialize using EdDSA
   uint8_t enc[GOLDILOCKS_EDDSA_448_PUBLIC_BYTES];
-  otrv4_ec_point_serialize(enc, p);
+  otrng_ec_point_serialize(enc, p);
 
   // 3. Deserialize
   ec_point_t dec;
-  otrv4_assert(otrv4_ec_point_deserialize(dec, enc) == SUCCESS);
+  otrng_assert(otrng_ec_point_deserialize(dec, enc) == SUCCESS);
 
-  otrv4_assert(otrv4_ec_point_eq(p, dec) == otrv4_true);
+  otrng_assert(otrng_ec_point_eq(p, dec) == otrng_true);
 }
 
 void ed448_test_eddsa_keygen() {
@@ -55,27 +55,27 @@ void ed448_test_eddsa_keygen() {
 
   ec_scalar_t secret_scalar;
   ec_point_t public_point;
-  otrv4_ec_scalar_derive_from_secret(secret_scalar, sym);
-  otrv4_ec_derive_public_key(pub, sym);
+  otrng_ec_scalar_derive_from_secret(secret_scalar, sym);
+  otrng_ec_derive_public_key(pub, sym);
 
-  otrv4_assert(otrv4_ec_point_deserialize(public_point, pub) == SUCCESS);
+  otrng_assert(otrng_ec_point_deserialize(public_point, pub) == SUCCESS);
 
   // Is G * scalar == P?
   ec_point_t expected;
   goldilocks_448_point_scalarmul(expected, goldilocks_448_point_base,
                                  secret_scalar);
 
-  otrv4_assert(otrv4_ec_point_eq(expected, public_point) == otrv4_true);
+  otrng_assert(otrng_ec_point_eq(expected, public_point) == otrng_true);
 }
 
 void ed448_test_scalar_serialization() {
   ec_scalar_t scalar;
 
   uint8_t buff[ED448_SCALAR_BYTES];
-  otrv4_assert(otrv4_ec_scalar_serialize(buff, sizeof(buff),
+  otrng_assert(otrng_ec_scalar_serialize(buff, sizeof(buff),
                                          goldilocks_448_scalar_one) == SUCCESS);
 
-  otrv4_ec_scalar_deserialize(scalar, buff);
-  otrv4_assert(otrv4_ec_scalar_eq(scalar, goldilocks_448_scalar_one) ==
-               otrv4_true);
+  otrng_ec_scalar_deserialize(scalar, buff);
+  otrng_assert(otrng_ec_scalar_eq(scalar, goldilocks_448_scalar_one) ==
+               otrng_true);
 }

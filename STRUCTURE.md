@@ -7,7 +7,7 @@ unit testing capabilities.
 ## Header files
 
 There are two places to put header files. The files in `src` will only be
-available during build time of libotrv4. If you have API functionality that you
+available during build time of libotr-ng. If you have API functionality that you
 want to expose, it should instead be put in `src/include`.
 
 It's important that all header files have "header guards" - the format for that
@@ -15,7 +15,7 @@ is established in the existing files.
 
 ## Export levels
 
-There are three levels of export that is possible inside the libotrv4 project:
+There are three levels of export that is possible inside the libotr-ng project:
 local, internal and API.
 
 1. Local
@@ -26,8 +26,8 @@ possible for tests to access the functionality when needed.
 
 2. Internal
 
-Functions that will be used by other compilation units in libotrv4, but not
-outside of libotrv4, should be marked with the INTERNAL marker on both
+Functions that will be used by other compilation units in libotr-ng, but not
+outside of libotr-ng, should be marked with the INTERNAL marker on both
 declaration and definition.
 
 3. API
@@ -44,11 +44,11 @@ structs.
 ## Naming
 
 For any cases where naming needs to be done in a way to avoid name clashes, the
-name should be prefixed with `otrv4_` or `OTRV4_` depending on the kind of thing
+name should be prefixed with `otrng_` or `OTRNG_` depending on the kind of thing
 that is exposed.
 
 For items that have to do with the version 3 functionality, the prefix should be
-`otrv4_v3_`.
+`otrng_v3_`.
 
 Local functions can have any name - since they will not clash. However, internal
 and API functions always have to be prefixed to avoid name clashes. This is

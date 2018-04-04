@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libotr4.la
+lib_LTLIBRARIES = libotr-ng.la
 
-libotr4_la_SOURCES = \
+libotr-ng_la_SOURCES = \
 		     auth.c \
 		     client.c \
 		     client_callbacks.c \
@@ -18,24 +18,24 @@ libotr4_la_SOURCES = \
 		     list.c \
 		     messaging.c \
 		     mpi.c \
-		     otrv3.c \
-		     otrv4.c \
+		     v3.c \
+		     otrng.c \
 		     serialize.c \
 		     smp.c \
 		     str.c \
 		     tlv.c \
 		     user_profile.c
 
-libotr4_la_CFLAGS = $(AM_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \
+libotr-ng_la_CFLAGS = $(AM_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \
                                  @LIBSODIUM_CFLAGS@ \
                                  @LIBGCRYPT_CFLAGS@ \
 				 $(CODE_COVERAGE_CFLAGS)
 
-libotr4_la_LDFLAGS = $(AM_LDFLAGS) @LIBGOLDILOCKS_LIBS@ \
+libotr-ng_la_LDFLAGS = $(AM_LDFLAGS) @LIBGOLDILOCKS_LIBS@ \
                                    @LIBSODIUM_LIBS@ \
                                    @LIBGCRYPT_LIBS@ \
 				   $(CODE_COVERAGE_LIBS)
 
-#pkgconfigdir = $(libdir)/pkgconfig
-#pkgconfig_DATA = otr4.pc
+
+
 

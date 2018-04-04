@@ -1,4 +1,4 @@
-#define OTRV4_FINGERPRINT_PRIVATE
+#define OTRNG_FINGERPRINT_PRIVATE
 
 #include "fingerprint.h"
 #include "serialize.h"
@@ -6,7 +6,7 @@
 
 /* Convert a 56-byte hash value to a 126-byte human-readable value */
 API void
-otrv4_fingerprint_hash_to_human(char human[FPRINT_HUMAN_LEN],
+otrng_fingerprint_hash_to_human(char human[FPRINT_HUMAN_LEN],
                                 const unsigned char hash[FPRINT_LEN_BYTES]) {
   int word, byte;
   char *p = human;
@@ -24,16 +24,16 @@ otrv4_fingerprint_hash_to_human(char human[FPRINT_HUMAN_LEN],
   *p = '\0';
 }
 
-INTERNAL int otrv4_serialize_fingerprint(otrv4_fingerprint_t fp,
-                                         const otrv4_public_key_t pub) {
+INTERNAL int otrng_serialize_fingerprint(otrng_fingerprint_t fp,
+                                         const otrng_public_key_t pub) {
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
 
   if (!fp)
     return 1;
 
-  otrv4_serialize_otrv4_public_key(serialized, pub);
+  otrng_serialize_otrng_public_key(serialized, pub);
 
-  hash_hash(fp, sizeof(otrv4_fingerprint_t), serialized, sizeof serialized);
+  hash_hash(fp, sizeof(otrng_fingerprint_t), serialized, sizeof serialized);
 
   return 0;
 }

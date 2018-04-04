@@ -1,5 +1,5 @@
-#ifndef OTRV4_ED448_H
-#define OTRV4_ED448_H
+#ifndef OTRNG_ED448_H
+#define OTRNG_ED448_H
 
 #include <goldilocks.h>
 #include <goldilocks/ed448.h>
@@ -29,64 +29,64 @@ typedef struct {
 
 typedef goldilocks_448_public_key_t ec_public_key_t;
 
-INTERNAL void otrv4_ec_bzero(void *data, size_t size);
+INTERNAL void otrng_ec_bzero(void *data, size_t size);
 
-INTERNAL otrv4_bool_t otrv4_ec_scalar_eq(const ec_scalar_t a,
+INTERNAL otrng_bool_t otrng_ec_scalar_eq(const ec_scalar_t a,
                                          const ec_scalar_t b);
 
-INTERNAL otrv4_err_t otrv4_ec_scalar_serialize(uint8_t *dst, size_t dst_len,
+INTERNAL otrng_err_t otrng_ec_scalar_serialize(uint8_t *dst, size_t dst_len,
                                                const ec_scalar_t scalar);
 
 INTERNAL void
-otrv4_ec_scalar_deserialize(ec_scalar_t scalar,
+otrng_ec_scalar_deserialize(ec_scalar_t scalar,
                             const uint8_t serialized[ED448_SCALAR_BYTES]);
 
-INTERNAL void otrv4_ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t src);
+INTERNAL void otrng_ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t src);
 
-INTERNAL void otrv4_ec_scalar_destroy(ec_scalar_t dst);
+INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t dst);
 
-INTERNAL void otrv4_ec_point_copy(ec_point_t dst, const ec_point_t src);
+INTERNAL void otrng_ec_point_copy(ec_point_t dst, const ec_point_t src);
 
-INTERNAL void otrv4_ec_point_destroy(ec_point_t dst);
+INTERNAL void otrng_ec_point_destroy(ec_point_t dst);
 
-INTERNAL otrv4_bool_t otrv4_ec_point_valid(const ec_point_t point);
+INTERNAL otrng_bool_t otrng_ec_point_valid(const ec_point_t point);
 
-INTERNAL otrv4_bool_t otrv4_ec_point_eq(const ec_point_t, const ec_point_t);
+INTERNAL otrng_bool_t otrng_ec_point_eq(const ec_point_t, const ec_point_t);
 
-INTERNAL void otrv4_ec_point_serialize(uint8_t *dst, const ec_point_t point);
+INTERNAL void otrng_ec_point_serialize(uint8_t *dst, const ec_point_t point);
 
-INTERNAL otrv4_err_t otrv4_ec_point_deserialize(
+INTERNAL otrng_err_t otrng_ec_point_deserialize(
     ec_point_t point, const uint8_t serialized[ED448_POINT_BYTES]);
 
 /* This is ed448 crypto */
 INTERNAL void
-otrv4_ec_scalar_derive_from_secret(ec_scalar_t priv,
+otrng_ec_scalar_derive_from_secret(ec_scalar_t priv,
                                    uint8_t sym[ED448_PRIVATE_BYTES]);
 
 INTERNAL void
-otrv4_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
+otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
                            const uint8_t priv[ED448_PRIVATE_BYTES]);
 
-INTERNAL void otrv4_ecdh_keypair_generate(ecdh_keypair_t *keypair,
+INTERNAL void otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
                                           uint8_t sym[ED448_PRIVATE_BYTES]);
-INTERNAL void otrv4_ecdh_keypair_destroy(ecdh_keypair_t *keypair);
+INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_t *keypair);
 
-INTERNAL void otrv4_ecdh_shared_secret(uint8_t *shared,
+INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared,
                                        const ecdh_keypair_t *our_keypair,
                                        const ec_point_t their_pub);
 
 /* void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src); */
 
-INTERNAL void otrv4_ec_sign(eddsa_signature_t dst,
+INTERNAL void otrng_ec_sign(eddsa_signature_t dst,
                             uint8_t sym[ED448_PRIVATE_BYTES],
                             uint8_t pubkey[ED448_POINT_BYTES],
                             const uint8_t *msg, size_t msg_len);
 
-INTERNAL otrv4_bool_t otrv4_ec_verify(
+INTERNAL otrng_bool_t otrng_ec_verify(
     const uint8_t sig[GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES],
     const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg, size_t msg_len);
 
-#ifdef OTRV4_ED448_PRIVATE
+#ifdef OTRNG_ED448_PRIVATE
 #endif
 
 #endif

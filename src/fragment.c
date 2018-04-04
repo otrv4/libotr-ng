@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define OTRV4_FRAGMENT_PRIVATE
+#define OTRNG_FRAGMENT_PRIVATE
 
 #include "fragment.h"
 
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
 
-API otrv4_message_to_send_t *otrv4_message_new() {
-  otrv4_message_to_send_t *msg = malloc(sizeof(otrv4_message_to_send_t));
+API otrng_message_to_send_t *otrng_message_new() {
+  otrng_message_to_send_t *msg = malloc(sizeof(otrng_message_to_send_t));
   if (!msg)
     return NULL;
 
@@ -19,7 +19,7 @@ API otrv4_message_to_send_t *otrv4_message_new() {
   return msg;
 }
 
-API void otrv4_message_free(otrv4_message_to_send_t *message) {
+API void otrng_message_free(otrng_message_to_send_t *message) {
   if (!message)
     return;
 
@@ -36,18 +36,18 @@ API void otrv4_message_free(otrv4_message_to_send_t *message) {
   message = NULL;
 }
 
-INTERNAL fragment_context_t *otrv4_fragment_context_new(void) {
+INTERNAL fragment_context_t *otrng_fragment_context_new(void) {
   fragment_context_t *context = malloc(sizeof(fragment_context_t));
   context->N = 0;
   context->K = 0;
-  context->fragment = otrv4_strdup("");
+  context->fragment = otrng_strdup("");
   context->fragment_len = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
 
   return context;
 }
 
-INTERNAL void otrv4_fragment_context_free(fragment_context_t *context) {
+INTERNAL void otrng_fragment_context_free(fragment_context_t *context) {
   context->N = 0;
   context->K = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
@@ -57,8 +57,8 @@ INTERNAL void otrv4_fragment_context_free(fragment_context_t *context) {
   context = NULL;
 }
 
-INTERNAL otrv4_err_t otrv4_fragment_message(int max_size,
-                                            otrv4_message_to_send_t *fragments,
+INTERNAL otrng_err_t otrng_fragment_message(int max_size,
+                                            otrng_message_to_send_t *fragments,
                                             int our_instance,
                                             int their_instance,
                                             const string_t message) {
@@ -138,7 +138,7 @@ INTERNAL otrv4_err_t otrv4_fragment_message(int max_size,
 tstatic void initialize_fragment_context(fragment_context_t *context) {
   free(context->fragment);
   context->fragment = NULL;
-  context->fragment = otrv4_strdup("");
+  context->fragment = otrng_strdup("");
   context->fragment_len = 0;
 
   context->N = 0;
@@ -146,7 +146,7 @@ tstatic void initialize_fragment_context(fragment_context_t *context) {
   context->status = FRAGMENT_UNFRAGMENTED;
 }
 
-tstatic otrv4_err_t add_first_fragment(const char *msg, int msg_len,
+tstatic otrng_err_t add_first_fragment(const char *msg, int msg_len,
                                        fragment_context_t *ctx) {
   char *buff = malloc(msg_len + 1);
   if (!buff)
@@ -161,7 +161,7 @@ tstatic otrv4_err_t add_first_fragment(const char *msg, int msg_len,
   return SUCCESS;
 }
 
-tstatic otrv4_err_t append_fragment(const char *msg, int msg_len,
+tstatic otrng_err_t append_fragment(const char *msg, int msg_len,
                                     fragment_context_t *ctx) {
   size_t new_buff_len = ctx->fragment_len + msg_len + 1;
   char *buff = realloc(ctx->fragment, new_buff_len);
@@ -176,19 +176,19 @@ tstatic otrv4_err_t append_fragment(const char *msg, int msg_len,
   return SUCCESS;
 }
 
-tstatic otrv4_bool_t is_fragment(const string_t message) {
+tstatic otrng_bool_t is_fragment(const string_t message) {
   if (strstr(message, "?OTR|") != NULL)
-    return otrv4_true;
+    return otrng_true;
 
-  return otrv4_false;
+  return otrng_false;
 }
 
-INTERNAL otrv4_err_t otrv4_unfragment_message(char **unfrag_msg,
+INTERNAL otrng_err_t otrng_unfragment_message(char **unfrag_msg,
                                               fragment_context_t *context,
                                               const string_t message,
                                               const int our_instance_tag) {
   if (is_fragment(message)) {
-    *unfrag_msg = otrv4_strdup(message);
+    *unfrag_msg = otrng_strdup(message);
     initialize_fragment_context(context);
     return SUCCESS;
   }
@@ -215,7 +215,7 @@ INTERNAL otrv4_err_t otrv4_unfragment_message(char **unfrag_msg,
   if (end <= start)
     return ERROR;
 
-  otrv4_err_t err;
+  otrng_err_t err;
   if (k == 1) {
     err = add_first_fragment(message + start, msg_len, context);
     if (err != SUCCESS)
@@ -236,7 +236,7 @@ INTERNAL otrv4_err_t otrv4_unfragment_message(char **unfrag_msg,
   }
 
   if (context->N == context->K) {
-    *unfrag_msg = otrv4_strdup(context->fragment);
+    *unfrag_msg = otrng_strdup(context->fragment);
     free(context->fragment);
     context->fragment = NULL;
     context->status = FRAGMENT_COMPLETE;

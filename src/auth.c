@@ -1,18 +1,18 @@
-#define OTRV4_AUTH_PRIVATE
+#define OTRNG_AUTH_PRIVATE
 
 #include "auth.h"
 #include "constants.h"
 #include "random.h"
 #include "shake.h"
 
-INTERNAL void otrv4_generate_keypair(snizkpk_pubkey_t pub,
+INTERNAL void otrng_generate_keypair(snizkpk_pubkey_t pub,
                                      snizkpk_privkey_t priv) {
   ed448_random_scalar(priv);
   goldilocks_448_point_scalarmul(pub, goldilocks_448_point_base, priv);
 }
 
-INTERNAL void otrv4_snizkpk_keypair_generate(snizkpk_keypair_t *pair) {
-  otrv4_generate_keypair(pair->pub, pair->priv);
+INTERNAL void otrng_snizkpk_keypair_generate(snizkpk_keypair_t *pair) {
+  otrng_generate_keypair(pair->pub, pair->priv);
 }
 
 static const unsigned char base_point_bytes_dup[ED448_POINT_BYTES] = {
@@ -33,7 +33,7 @@ const unsigned char prime_order_bytes_dup[ED448_SCALAR_BYTES] = {
 };
 
 INTERNAL void
-otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
+otrng_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
                            const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
                            const unsigned char *msg, size_t msglen) {
 
@@ -44,14 +44,14 @@ otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
   snizkpk_privkey_t t1;
   snizkpk_pubkey_t T1, T2, T3, A2c2, A3c3;
 
-  otrv4_generate_keypair(T1, t1);
+  otrng_generate_keypair(T1, t1);
 
-  otrv4_generate_keypair(T2, dst->r2);
+  otrng_generate_keypair(T2, dst->r2);
   ed448_random_scalar(dst->c2);
   goldilocks_448_point_scalarmul(A2c2, A2, dst->c2);
   goldilocks_448_point_add(T2, T2, A2c2);
 
-  otrv4_generate_keypair(T3, dst->r3);
+  otrng_generate_keypair(T3, dst->r3);
   ed448_random_scalar(dst->c3);
   goldilocks_448_point_scalarmul(A3c3, A3, dst->c3);
   goldilocks_448_point_add(T3, T3, A3c3);
@@ -94,7 +94,7 @@ otrv4_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
   goldilocks_448_scalar_sub(dst->r1, t1, c1a1);
 }
 
-INTERNAL otrv4_bool_t otrv4_snizkpk_verify(const snizkpk_proof_t *src,
+INTERNAL otrng_bool_t otrng_snizkpk_verify(const snizkpk_proof_t *src,
                                            const snizkpk_pubkey_t A1,
                                            const snizkpk_pubkey_t A2,
                                            const snizkpk_pubkey_t A3,
@@ -154,16 +154,16 @@ INTERNAL otrv4_bool_t otrv4_snizkpk_verify(const snizkpk_proof_t *src,
   goldilocks_448_scalar_add(c1c2c3, c1c2c3, src->c3);
 
   if (GOLDILOCKS_TRUE == goldilocks_448_scalar_eq(c, c1c2c3))
-    return otrv4_true;
+    return otrng_true;
 
-  return otrv4_false;
+  return otrng_false;
 }
 
-INTERNAL void otrv4_snizkpk_proof_destroy(snizkpk_proof_t *src) {
-  otrv4_ec_scalar_destroy(src->c1);
-  otrv4_ec_scalar_destroy(src->r1);
-  otrv4_ec_scalar_destroy(src->c2);
-  otrv4_ec_scalar_destroy(src->r2);
-  otrv4_ec_scalar_destroy(src->c3);
-  otrv4_ec_scalar_destroy(src->r3);
+INTERNAL void otrng_snizkpk_proof_destroy(snizkpk_proof_t *src) {
+  otrng_ec_scalar_destroy(src->c1);
+  otrng_ec_scalar_destroy(src->r1);
+  otrng_ec_scalar_destroy(src->c2);
+  otrng_ec_scalar_destroy(src->r2);
+  otrng_ec_scalar_destroy(src->c3);
+  otrng_ec_scalar_destroy(src->r3);
 }

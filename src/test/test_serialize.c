@@ -7,115 +7,115 @@ void test_ser_deser_uint() {
   size_t read = 0;
   uint8_t buf[8] = {};
 
-  otrv4_serialize_uint8(buf, 0x12);
-  otrv4_assert_cmpmem(buf, ser, 1);
+  otrng_serialize_uint8(buf, 0x12);
+  otrng_assert_cmpmem(buf, ser, 1);
 
   uint8_t uint8_des = 0;
-  otrv4_assert(otrv4_deserialize_uint8(&uint8_des, ser, sizeof(ser), &read) ==
+  otrng_assert(otrng_deserialize_uint8(&uint8_des, ser, sizeof(ser), &read) ==
                SUCCESS);
   g_assert_cmpuint(uint8_des, ==, 0x12);
   g_assert_cmpint(read, ==, sizeof(uint8_t));
 
   memset(buf, 0, sizeof buf);
-  otrv4_serialize_uint16(buf, 0x1234);
-  otrv4_assert_cmpmem(buf, ser, 2);
+  otrng_serialize_uint16(buf, 0x1234);
+  otrng_assert_cmpmem(buf, ser, 2);
 
   uint16_t uint16_des = 0;
-  otrv4_assert(otrv4_deserialize_uint16(&uint16_des, ser, sizeof(ser), &read) ==
+  otrng_assert(otrng_deserialize_uint16(&uint16_des, ser, sizeof(ser), &read) ==
                SUCCESS);
   g_assert_cmpuint(uint16_des, ==, 0x1234);
   g_assert_cmpint(read, ==, sizeof(uint16_t));
 
   memset(buf, 0, sizeof buf);
-  otrv4_serialize_uint32(buf, 0x12345678);
-  otrv4_assert_cmpmem(buf, ser, 4);
+  otrng_serialize_uint32(buf, 0x12345678);
+  otrng_assert_cmpmem(buf, ser, 4);
 
   uint32_t uint32_des = 0;
-  otrv4_assert(otrv4_deserialize_uint32(&uint32_des, ser, sizeof(ser), &read) ==
+  otrng_assert(otrng_deserialize_uint32(&uint32_des, ser, sizeof(ser), &read) ==
                SUCCESS);
   g_assert_cmpuint(uint32_des, ==, 0x12345678);
   g_assert_cmpint(read, ==, sizeof(uint32_t));
 
   memset(buf, 0, sizeof buf);
-  otrv4_serialize_uint64(buf, 0x123456789ABCDEF0);
-  otrv4_assert_cmpmem(buf, ser, 8);
+  otrng_serialize_uint64(buf, 0x123456789ABCDEF0);
+  otrng_assert_cmpmem(buf, ser, 8);
 
   uint64_t uint64_des = 0;
-  otrv4_assert(otrv4_deserialize_uint64(&uint64_des, ser, sizeof(ser), &read) ==
+  otrng_assert(otrng_deserialize_uint64(&uint64_des, ser, sizeof(ser), &read) ==
                SUCCESS);
   g_assert_cmpuint(uint64_des, ==, 0x123456789ABCDEF0);
   g_assert_cmpint(read, ==, sizeof(uint64_t));
 }
 
-void test_serialize_otrv4_deserialize_data() {
+void test_serialize_otrng_deserialize_data() {
   uint8_t src[5] = {1, 2, 3, 4, 5};
   uint8_t *dst = malloc(9);
-  otrv4_assert(dst);
-  g_assert_cmpint(9, ==, otrv4_serialize_data(dst, src, 5));
+  otrng_assert(dst);
+  g_assert_cmpint(9, ==, otrng_serialize_data(dst, src, 5));
   free(dst);
   dst = NULL;
 }
 
-void test_ser_des_otrv4_public_key() {
-  otrv4_keypair_t keypair[1];
-  otrv4_public_key_t deserialized;
+void test_ser_des_otrng_public_key() {
+  otrng_keypair_t keypair[1];
+  otrng_public_key_t deserialized;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrv4_keypair_generate(keypair, sym);
+  otrng_keypair_generate(keypair, sym);
 
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(otrv4_serialize_otrv4_public_key(serialized, keypair->pub),
+  g_assert_cmpint(otrng_serialize_otrng_public_key(serialized, keypair->pub),
                   ==, ED448_PUBKEY_BYTES);
-  otrv4_assert(otrv4_deserialize_otrv4_public_key(deserialized, serialized,
+  otrng_assert(otrng_deserialize_otrng_public_key(deserialized, serialized,
                                                   ED448_PUBKEY_BYTES,
                                                   NULL) == SUCCESS);
 
-  otrv4_assert(otrv4_ec_point_valid(deserialized) == otrv4_true);
+  otrng_assert(otrng_ec_point_valid(deserialized) == otrng_true);
 
-  otrv4_assert(otrv4_ec_point_eq(deserialized, keypair->pub) == otrv4_true);
+  otrng_assert(otrng_ec_point_eq(deserialized, keypair->pub) == otrng_true);
 }
 
-void test_ser_des_otrv4_shared_prekey() {
-  otrv4_shared_prekey_pair_t *shared_prekey = otrv4_shared_prekey_pair_new();
-  otrv4_shared_prekey_pub_t deserialized;
+void test_ser_des_otrng_shared_prekey() {
+  otrng_shared_prekey_pair_t *shared_prekey = otrng_shared_prekey_pair_new();
+  otrng_shared_prekey_pub_t deserialized;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrv4_shared_prekey_pair_generate(shared_prekey, sym);
+  otrng_shared_prekey_pair_generate(shared_prekey, sym);
 
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
   g_assert_cmpint(
-      otrv4_serialize_otrv4_shared_prekey(serialized, shared_prekey->pub), ==,
+      otrng_serialize_otrng_shared_prekey(serialized, shared_prekey->pub), ==,
       ED448_PUBKEY_BYTES);
-  otrv4_assert(otrv4_deserialize_otrv4_shared_prekey(deserialized, serialized,
+  otrng_assert(otrng_deserialize_otrng_shared_prekey(deserialized, serialized,
                                                      ED448_PUBKEY_BYTES,
                                                      NULL) == SUCCESS);
 
-  otrv4_assert(otrv4_ec_point_valid(deserialized) == otrv4_true);
+  otrng_assert(otrng_ec_point_valid(deserialized) == otrng_true);
 
-  otrv4_assert(otrv4_ec_point_eq(deserialized, shared_prekey->pub) ==
-               otrv4_true);
-  otrv4_shared_prekey_pair_free(shared_prekey);
+  otrng_assert(otrng_ec_point_eq(deserialized, shared_prekey->pub) ==
+               otrng_true);
+  otrng_shared_prekey_pair_free(shared_prekey);
 }
 
-void test_serialize_otrv4_symmetric_key() {
-  otrv4_keypair_t keypair[1];
+void test_serialize_otrng_symmetric_key() {
+  otrng_keypair_t keypair[1];
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrv4_keypair_generate(keypair, sym);
+  otrng_keypair_generate(keypair, sym);
 
   char *expected = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                    "AAAAAAAAAAAAAAAAA";
 
   char *buffer = NULL;
   size_t buffer_size = 0;
-  otrv4_assert(otrv4_symmetric_key_serialize(&buffer, &buffer_size, sym) ==
+  otrng_assert(otrng_symmetric_key_serialize(&buffer, &buffer_size, sym) ==
                SUCCESS);
 
   g_assert_cmpint(strlen(expected), ==, buffer_size); // 76
-  otrv4_assert_cmpmem(expected, buffer, buffer_size);
+  otrng_assert_cmpmem(expected, buffer, buffer_size);
 
   free(buffer);
   buffer = NULL;
 }
 
-void test_otrv4_serialize_dh_public_key() {
+void test_otrng_serialize_dh_public_key() {
   dh_mpi_t TEST_DH;
   const char dh_data[383] = {
       0x4c, 0x4e, 0x7b, 0xbd, 0x33, 0xd0, 0x9e, 0x63, 0xfd, 0xe4, 0x67, 0xee,
@@ -152,13 +152,13 @@ void test_otrv4_serialize_dh_public_key() {
       0x8a, 0xac, 0xb1, 0xe0, 0x01, 0x8d, 0xc7, 0x3f, 0xac, 0x03, 0x73};
   gcry_error_t err =
       gcry_mpi_scan(&TEST_DH, GCRYMPI_FMT_USG, dh_data, 383, NULL);
-  otrv4_assert(!err);
+  otrng_assert(!err);
 
   uint8_t dst[383 + 4] = {0};
   size_t written = 0;
-  otrv4_err_t otr_err = otrv4_serialize_dh_public_key(dst, &written, TEST_DH);
-  otrv4_assert(!otr_err);
-  otrv4_dh_mpi_release(TEST_DH);
+  otrng_err_t otr_err = otrng_serialize_dh_public_key(dst, &written, TEST_DH);
+  otrng_assert(!otr_err);
+  otrng_dh_mpi_release(TEST_DH);
   TEST_DH = NULL;
 
   g_assert_cmpuint(383 + 4, ==, written);

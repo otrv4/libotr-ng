@@ -1,4 +1,4 @@
-#define OTRV4_DH_PRIVATE
+#define OTRNG_DH_PRIVATE
 
 #include "dh.h"
 #include "random.h"
@@ -50,7 +50,7 @@ static gcry_mpi_t DH3072_GENERATOR = NULL;
 
 static int dh_initialized = 0;
 
-INTERNAL void otrv4_dh_init(void) {
+INTERNAL void otrng_dh_init(void) {
   if (dh_initialized)
     return;
 
@@ -69,7 +69,7 @@ INTERNAL void otrv4_dh_init(void) {
   gcry_mpi_sub_ui(DH3072_MODULUS_MINUS_2, DH3072_MODULUS, 2);
 }
 
-INTERNAL void otrv4_dh_free(void) {
+INTERNAL void otrng_dh_free(void) {
   gcry_mpi_release(DH3072_MODULUS);
   DH3072_MODULUS = NULL;
 
@@ -85,7 +85,7 @@ INTERNAL void otrv4_dh_free(void) {
   dh_initialized = 0;
 }
 
-INTERNAL otrv4_err_t otrv4_dh_keypair_generate(dh_keypair_t keypair) {
+INTERNAL otrng_err_t otrng_dh_keypair_generate(dh_keypair_t keypair) {
   uint8_t hash[DH_KEY_SIZE];
   gcry_mpi_t privkey = NULL;
   uint8_t *secbuf = NULL;
@@ -112,17 +112,17 @@ tstatic void dh_pub_key_destroy(dh_keypair_t keypair) {
   keypair->pub = NULL;
 }
 
-INTERNAL void otrv4_dh_priv_key_destroy(dh_keypair_t keypair) {
+INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_t keypair) {
   gcry_mpi_release(keypair->priv);
   keypair->priv = NULL;
 }
 
-INTERNAL void otrv4_dh_keypair_destroy(dh_keypair_t keypair) {
-  otrv4_dh_priv_key_destroy(keypair);
+INTERNAL void otrng_dh_keypair_destroy(dh_keypair_t keypair) {
+  otrng_dh_priv_key_destroy(keypair);
   dh_pub_key_destroy(keypair);
 }
 
-INTERNAL otrv4_err_t otrv4_dh_shared_secret(uint8_t *shared,
+INTERNAL otrng_err_t otrng_dh_shared_secret(uint8_t *shared,
                                             size_t shared_bytes,
                                             const dh_private_key_t our_priv,
                                             const dh_public_key_t their_pub) {
@@ -146,7 +146,7 @@ INTERNAL otrv4_err_t otrv4_dh_shared_secret(uint8_t *shared,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
+INTERNAL otrng_err_t otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                             size_t *written,
                                             const dh_mpi_t src) {
   gcry_error_t err =
@@ -157,7 +157,7 @@ INTERNAL otrv4_err_t otrv4_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
   return SUCCESS;
 }
 
-INTERNAL otrv4_err_t otrv4_dh_mpi_deserialize(dh_mpi_t *dst,
+INTERNAL otrng_err_t otrng_dh_mpi_deserialize(dh_mpi_t *dst,
                                               const uint8_t *buffer,
                                               size_t buflen, size_t *nread) {
   if (gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread))
@@ -166,15 +166,15 @@ INTERNAL otrv4_err_t otrv4_dh_mpi_deserialize(dh_mpi_t *dst,
   return SUCCESS;
 }
 
-INTERNAL otrv4_bool_t otrv4_dh_mpi_valid(dh_mpi_t mpi) {
+INTERNAL otrng_bool_t otrng_dh_mpi_valid(dh_mpi_t mpi) {
   /* Check that pub is in range */
   if (mpi == NULL)
-    return otrv4_false;
+    return otrng_false;
 
   /* mpi >= 2 and <= dh_p - 2 */
   if ((gcry_mpi_cmp_ui(mpi, 2) < 0 ||
        gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0))
-    return otrv4_false;
+    return otrng_false;
 
   /* slower: x ^ q mod p
   gcry_mpi_t tmp = gcry_mpi_new(DH3072_MOD_LEN_BYTES);
@@ -184,11 +184,11 @@ INTERNAL otrv4_bool_t otrv4_dh_mpi_valid(dh_mpi_t mpi) {
     return ERROR;
   */
 
-  return otrv4_true;
+  return otrng_true;
 }
 
-INTERNAL dh_mpi_t otrv4_dh_mpi_copy(const dh_mpi_t src) {
+INTERNAL dh_mpi_t otrng_dh_mpi_copy(const dh_mpi_t src) {
   return gcry_mpi_copy(src);
 }
 
-INTERNAL void otrv4_dh_mpi_release(dh_mpi_t mpi) { gcry_mpi_release(mpi); }
+INTERNAL void otrng_dh_mpi_release(dh_mpi_t mpi) { gcry_mpi_release(mpi); }

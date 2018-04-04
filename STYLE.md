@@ -7,7 +7,7 @@
 
 ## Git and Github
 
-This is a collaborative library, so if you are part of the core OTRv4
+This is a collaborative library, so if you are part of the core OTR
 development sign your commits using gpg.
 
 ### Commit messages

@@ -1,2 +1,2 @@
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libotr4.pc
+pkgconfig_DATA = libotr-ng.pc

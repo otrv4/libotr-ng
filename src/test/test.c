@@ -1,13 +1,13 @@
 #include <glib.h>
 #include <goldilocks.h>
 
-#define OTRV4_KEY_MANAGEMENT_PRIVATE
-#define OTRV4_USER_PROFILE_PRIVATE
-#define OTRV4_LIST_PRIVATE
-#define OTRV4_OTRV4_PRIVATE
-#define OTRV4_SMP_PRIVATE
+#define OTRNG_KEY_MANAGEMENT_PRIVATE
+#define OTRNG_USER_PROFILE_PRIVATE
+#define OTRNG_LIST_PRIVATE
+#define OTRNG_OTRNG_PRIVATE
+#define OTRNG_SMP_PRIVATE
 
-#include "../otrv4.h"
+#include "../otrng.h"
 
 // clang-format off
 #include "test_helpers.h"
@@ -26,7 +26,7 @@
 #include "test_key_management.c"
 #include "test_list.c"
 #include "test_non_interactive_messages.c"
-#include "test_otrv4.c"
+#include "test_otrng.c"
 #include "test_serialize.c"
 #include "test_smp.c"
 #include "test_tlv.c"
@@ -48,9 +48,9 @@ int main(int argc, char **argv) {
   g_test_init(&argc, &argv, NULL);
 
   g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
-  g_test_add_func("/otrv4/instance_tag/generates_when_file_empty",
+  g_test_add_func("/otrng/instance_tag/generates_when_file_empty",
                   test_instance_tag_generates_tag_when_file_empty);
-  g_test_add_func("/otrv4/instance_tag/generates_when_file_is_full",
+  g_test_add_func("/otrng/instance_tag/generates_when_file_is_full",
                   test_instance_tag_generates_tag_when_file_is_full);
 
   g_test_add_func("/user_state/key_management", test_userstate_key_management);
@@ -63,9 +63,9 @@ int main(int argc, char **argv) {
                   ed448_test_scalar_serialization);
 
   g_test_add_func("/dake/snizkpk", test_snizkpk_auth);
-  g_test_add_func("/list/add", test_otrv4_list_add);
-  g_test_add_func("/list/get", test_otrv4_list_get_last);
-  g_test_add_func("/list/length", test_otrv4_list_len);
+  g_test_add_func("/list/add", test_otrng_list_add);
+  g_test_add_func("/list/get", test_otrng_list_get_last);
+  g_test_add_func("/list/length", test_otrng_list_len);
   g_test_add_func("/list/empty_size", test_list_empty_size);
 
   g_test_add_func("/dh/api", dh_test_api);
@@ -74,32 +74,32 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
   g_test_add_func("/serialize_and_deserialize/data",
-                  test_serialize_otrv4_deserialize_data);
+                  test_serialize_otrng_deserialize_data);
   g_test_add_func("/serialize/dh-public-key",
-                  test_otrv4_serialize_dh_public_key);
+                  test_otrng_serialize_dh_public_key);
   g_test_add_func("/serialize_and_deserialize/ed448-public-key",
-                  test_ser_des_otrv4_public_key);
+                  test_ser_des_otrng_public_key);
   g_test_add_func("/serialize_and_deserialize/ed448-shared-prekey",
-                  test_ser_des_otrv4_shared_prekey);
-  g_test_add_func("/serialize/otrv4-symmetric-key",
-                  test_serialize_otrv4_symmetric_key);
+                  test_ser_des_otrng_shared_prekey);
+  g_test_add_func("/serialize/otrng-symmetric-key",
+                  test_serialize_otrng_symmetric_key);
 
   g_test_add_func("/user_profile/create", test_user_profile_create);
   g_test_add_func("/user_profile/serialize_body",
                   test_user_profile_serializes_body);
   g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
   g_test_add_func("/user_profile/deserializes",
-                  test_otrv4_user_profile_deserializes);
+                  test_otrng_user_profile_deserializes);
   g_test_add_func("/user_profile/sign_and_verifies",
                   test_user_profile_signs_and_verify);
   g_test_add_func("/user_profile/build_user_profile",
-                  test_otrv4_user_profile_build);
+                  test_otrng_user_profile_build);
 
   WITH_FIXTURE("/dake/identity_message/serializes",
                test_dake_identity_message_serializes,
                identity_message_fixture_t, identity_message_fixture);
   WITH_FIXTURE("/dake/identity_message/deserializes",
-               test_otrv4_dake_identity_message_deserializes,
+               test_otrng_dake_identity_message_deserializes,
                identity_message_fixture_t, identity_message_fixture);
   WITH_FIXTURE("/dake/identity_message/valid", test_dake_identity_message_valid,
                identity_message_fixture_t, identity_message_fixture);
@@ -107,13 +107,13 @@ int main(int argc, char **argv) {
                test_dake_prekey_message_serializes, prekey_message_fixture_t,
                prekey_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/deserializes",
-               test_otrv4_dake_prekey_message_deserializes,
+               test_otrng_dake_prekey_message_deserializes,
                prekey_message_fixture_t, prekey_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/valid", test_dake_prekey_message_valid,
                prekey_message_fixture_t, prekey_message_fixture);
   g_test_add_func("/data_message/serialize", test_data_message_serializes);
   g_test_add_func("/data_message/deserialize",
-                  test_otrv4_data_message_deserializes);
+                  test_otrng_data_message_deserializes);
 
   g_test_add_func("/fragment/create_fragments", test_create_fragments);
   g_test_add_func("/fragment/defragment_message",
@@ -127,61 +127,61 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/key_management/derive_ratchet_keys",
                   test_derive_ratchet_keys);
-  g_test_add_func("/key_management/destroy", test_otrv4_key_manager_destroy);
+  g_test_add_func("/key_management/destroy", test_otrng_key_manager_destroy);
 
   g_test_add_func("/smp/state_machine", test_smp_state_machine);
-  g_test_add_func("/smp/generate_secret", test_otrv4_generate_smp_secret);
+  g_test_add_func("/smp/generate_secret", test_otrng_generate_smp_secret);
   g_test_add_func("/smp/msg_1_asprintf_null_question",
-                  test_otrv4_smp_msg_1_asprintf_null_question);
+                  test_otrng_smp_msg_1_asprintf_null_question);
   g_test_add_func("/tlv/parse", test_tlv_parse);
-  g_test_add_func("/tlv/append", test_otrv4_append_tlv);
-  g_test_add_func("/tlv/append_padding", test_otrv4_append_padding_tlv);
+  g_test_add_func("/tlv/append", test_otrng_append_tlv);
+  g_test_add_func("/tlv/append_padding", test_otrng_append_padding_tlv);
 
-  // g_test_add_func("/otrv4/starts_protocol", test_otrv4_starts_protocol);
-  // g_test_add("/otrv4/version_supports_v34", otrv4_fixture_t, NULL,
-  // otrv4_fixture_set_up, test_otrv4_version_supports_v34,
-  // otrv4_fixture_teardown );
-  g_test_add("/otrv4/builds_query_message", otrv4_fixture_t, NULL,
-             otrv4_fixture_set_up, test_otrv4_builds_query_message,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/builds_query_message_v34", otrv4_fixture_t, NULL,
-             otrv4_fixture_set_up, test_otrv4_builds_query_message_v34,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/builds_whitespace_tag", otrv4_fixture_t, NULL,
-             otrv4_fixture_set_up, test_otrv4_builds_whitespace_tag,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/builds_whitespace_tag_v34", otrv4_fixture_t, NULL,
-             otrv4_fixture_set_up, test_otrv4_builds_whitespace_tag_v34,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/receives_plaintext_without_ws_tag_on_start",
-             otrv4_fixture_t, NULL, otrv4_fixture_set_up,
-             test_otrv4_receives_plaintext_without_ws_tag_on_start,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/receives_plaintext_without_ws_tag_not_on_start",
-             otrv4_fixture_t, NULL, otrv4_fixture_set_up,
-             test_otrv4_receives_plaintext_without_ws_tag_not_on_start,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/receives_plaintext_with_ws_tag", otrv4_fixture_t, NULL,
-             otrv4_fixture_set_up, test_otrv4_receives_plaintext_with_ws_tag,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/receives_plaintext_with_ws_tag_after_text",
-             otrv4_fixture_t, NULL, otrv4_fixture_set_up,
-             test_otrv4_receives_plaintext_with_ws_tag_after_text,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/receives_plaintext_with_ws_tag_v3", otrv4_fixture_t, NULL,
-             otrv4_fixture_set_up, test_otrv4_receives_plaintext_with_ws_tag_v3,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/receives_query_message", otrv4_fixture_t, NULL,
-             otrv4_fixture_set_up, test_otrv4_receives_query_message,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/receives_query_message_v3", otrv4_fixture_t, NULL,
-             otrv4_fixture_set_up, test_otrv4_receives_query_message_v3,
-             otrv4_fixture_teardown);
-  g_test_add("/otrv4/receives_invalid_instance_tag_on_identity_message",
-             otrv4_fixture_t, NULL, otrv4_fixture_set_up,
-             test_otrv4_receives_identity_message_validates_instance_tag,
-             otrv4_fixture_teardown);
-  g_test_add_func("/otrv4/destroy", test_otrv4_destroy);
+  // g_test_add_func("/otrng/starts_protocol", test_otrng_starts_protocol);
+  // g_test_add("/otrng/version_supports_v34", otrng_fixture_t, NULL,
+  // otrng_fixture_set_up, test_otrng_version_supports_v34,
+  // otrng_fixture_teardown );
+  g_test_add("/otrng/builds_query_message", otrng_fixture_t, NULL,
+             otrng_fixture_set_up, test_otrng_builds_query_message,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/builds_query_message_v34", otrng_fixture_t, NULL,
+             otrng_fixture_set_up, test_otrng_builds_query_message_v34,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/builds_whitespace_tag", otrng_fixture_t, NULL,
+             otrng_fixture_set_up, test_otrng_builds_whitespace_tag,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/builds_whitespace_tag_v34", otrng_fixture_t, NULL,
+             otrng_fixture_set_up, test_otrng_builds_whitespace_tag_v34,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_plaintext_without_ws_tag_on_start",
+             otrng_fixture_t, NULL, otrng_fixture_set_up,
+             test_otrng_receives_plaintext_without_ws_tag_on_start,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_plaintext_without_ws_tag_not_on_start",
+             otrng_fixture_t, NULL, otrng_fixture_set_up,
+             test_otrng_receives_plaintext_without_ws_tag_not_on_start,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_plaintext_with_ws_tag", otrng_fixture_t, NULL,
+             otrng_fixture_set_up, test_otrng_receives_plaintext_with_ws_tag,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_plaintext_with_ws_tag_after_text",
+             otrng_fixture_t, NULL, otrng_fixture_set_up,
+             test_otrng_receives_plaintext_with_ws_tag_after_text,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_plaintext_with_ws_tag_v3", otrng_fixture_t, NULL,
+             otrng_fixture_set_up, test_otrng_receives_plaintext_with_ws_tag_v3,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_query_message", otrng_fixture_t, NULL,
+             otrng_fixture_set_up, test_otrng_receives_query_message,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_query_message_v3", otrng_fixture_t, NULL,
+             otrng_fixture_set_up, test_otrng_receives_query_message_v3,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_invalid_instance_tag_on_identity_message",
+             otrng_fixture_t, NULL, otrng_fixture_set_up,
+             test_otrng_receives_identity_message_validates_instance_tag,
+             otrng_fixture_teardown);
+  g_test_add_func("/otrng/destroy", test_otrng_destroy);
 
   g_test_add_func("/api/interactive_conversation/v4",
                   test_api_interactive_conversation);

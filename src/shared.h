@@ -1,7 +1,7 @@
-#ifndef OTRV4_SHARED_H
-#define OTRV4_SHARED_H
+#ifndef OTRNG_SHARED_H
+#define OTRNG_SHARED_H
 
-#ifdef OTRV4_TESTS
+#ifdef OTRNG_TESTS
 #define tstatic
 #else
 #define tstatic static

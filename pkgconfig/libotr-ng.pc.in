@@ -3,8 +3,8 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libotr4
+Name: libotr-ng
 Description: Off-the-Record Messaging Library
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -lotr4
+Libs: -L${libdir} -lotr-ng
 Cflags: -I${includedir}

@@ -1,5 +1,5 @@
-#ifndef OTRV4_SHAKE_H
-#define OTRV4_SHAKE_H
+#ifndef OTRNG_SHAKE_H
+#define OTRNG_SHAKE_H
 
 #include "goldilocks/shake.h"
 #include "shared.h"
@@ -13,7 +13,7 @@
 static void hash_init_with_dom(goldilocks_shake256_ctx_t hash) {
   hash_init(hash);
 
-  const char *dom_s = "OTR4";
+  const char *dom_s = "OTRNG";
   hash_update(hash, (const unsigned char *)dom_s, strlen(dom_s));
 }
 

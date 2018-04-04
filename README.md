@@ -1,9 +1,9 @@
 # OTR version 4 library
 
-[![Build Status](https://travis-ci.org/otrv4/libotrv4.svg?branch=master)](https://travis-ci.org/otrv4/libotrv4)
+[![Build Status](https://travis-ci.org/otrv4/libotr-ng.svg?branch=master)](https://travis-ci.org/otrv4/libotr-ng)
 
 ## Build
-Before you try to build libotrv4, verify you have installed:
+Before you try to build libotr-ng, verify you have installed:
 * autoconf - https://www.gnu.org/software/autoconf/autoconf.html
 * splint - http://splint.org/documentation
 * valgrind - http://valgrind.org/. At least, version 3.12.0
