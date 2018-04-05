@@ -1,0 +1,3 @@
+- The original libotr developers
+- ThoughtWorks Inc.
+- Centro de Autonomia Digital
