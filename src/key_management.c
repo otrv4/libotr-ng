@@ -421,11 +421,11 @@ tstatic otrng_err_t derive_sending_chain_key(key_manager_t *manager) {
 }
 
 tstatic void calculate_ssid(key_manager_t *manager,
-                            const shared_secret_t shared) {
-  uint8_t magic[1] = {0x00};
-  uint8_t ssid_buff[32];
+                            const shared_secret_t shared_secret) {
+  uint8_t magic[1] = {0x05};
+  uint8_t ssid_buff[8];
 
-  shake_256_kdf(ssid_buff, sizeof ssid_buff, magic, shared,
+  shake_256_kdf(ssid_buff, sizeof ssid_buff, magic, shared_secret,
                 sizeof(shared_secret_t));
 
   memcpy(manager->ssid, ssid_buff, sizeof manager->ssid);
