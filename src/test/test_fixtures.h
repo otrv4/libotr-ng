@@ -182,10 +182,15 @@ void do_dake_fixture(otrng_t *alice, otrng_t *bob) {
   otrng_response_t *response_to_bob = otrng_response_new();
   otrng_response_t *response_to_alice = otrng_response_new();
 
+  otrng_assert(alice->state == OTRNG_STATE_START);
+  otrng_assert(bob->state == OTRNG_STATE_START);
+
   // Alice sends query message
   string_t query_message = NULL;
   otrng_assert(otrng_build_query_message(&query_message, "", alice) == SUCCESS);
   otrng_assert_cmpmem("?OTRv4", query_message, 6);
+
+  otrng_assert(alice->state == OTRNG_STATE_START);
 
   // Bob receives query message
   otrng_assert(otrng_receive_message(response_to_alice, query_message, bob) ==
@@ -214,17 +219,18 @@ void do_dake_fixture(otrng_t *alice, otrng_t *bob) {
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 0);
 
-  // Should reply with an auth receiver
+  // Should reply with an auth-r
   otrng_assert(response_to_bob->to_display == NULL);
   otrng_assert(response_to_bob->to_send);
   otrng_assert_cmpmem("?OTR:AASR", response_to_bob->to_send, 9);
 
-  // Bob receives an auth receiver
+  // Bob receives an auth-r
   otrng_assert(otrng_receive_message(response_to_alice,
                                      response_to_bob->to_send, bob) == SUCCESS);
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
+  // TODO: probably remove all of this, as this is a fixture
   // Bob has Alice's ephemeral keys
   otrng_assert_ec_public_key_eq(bob->keys->their_ecdh,
                                 alice->keys->our_ecdh->pub);
@@ -236,7 +242,7 @@ void do_dake_fixture(otrng_t *alice, otrng_t *bob) {
   otrng_assert(!bob->keys->our_dh->priv);
   otrng_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
-  // Bob should replay with an auth initiator
+  // Bob should replay with an auth-i
   otrng_assert(response_to_alice->to_display == NULL);
   otrng_assert(response_to_alice->to_send);
   otrng_assert_cmpmem("?OTR:AASI", response_to_alice->to_send, 9);
@@ -245,7 +251,7 @@ void do_dake_fixture(otrng_t *alice, otrng_t *bob) {
   otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(bob->keys->current);
 
-  // Alice receives an auth initiator
+  // Alice receives an auth-i
   otrng_assert(otrng_receive_message(response_to_bob,
                                      response_to_alice->to_send,
                                      alice) == SUCCESS);

@@ -25,6 +25,7 @@
 #include "../dake.h"
 #include "../serialize.h"
 
+// TODO: include somewhere else or remove
 void test_snizkpk_auth() {
   snizkpk_proof_t dst[1];
   snizkpk_keypair_t pair1[1], pair2[1], pair3[1];
