@@ -110,7 +110,7 @@ void test_api_interactive_conversation(void) {
   // Alice sends a data message
   string_t to_send = NULL;
   tlv_t *tlvs = NULL;
-  //tlv_t *tlv_1 = NULL;
+  // tlv_t *tlv_1 = NULL;
   otrng_err_t err;
 
   for (message_id = 2; message_id < 5; message_id++) {
@@ -195,13 +195,13 @@ void test_api_interactive_conversation(void) {
   g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 249);
 
   // TODO: for remote working
-  //tlv_1 = otrng_tlv_new(OTRNG_TLV_DISCONNECTED, 0, NULL);
+  // tlv_1 = otrng_tlv_new(OTRNG_TLV_DISCONNECTED, 0, NULL);
 
   // Bob sends a TLV type 1
-  //err = otrng_prepare_to_send_message(&to_send, "", &tlv_1, 0, bob);
+  // err = otrng_prepare_to_send_message(&to_send, "", &tlv_1, 0, bob);
 
-  //printf("STATE %u \n", bob->state);
-  //otrng_assert(bob->state == OTRNG_STATE_FINISHED);
+  // printf("STATE %u \n", bob->state);
+  // otrng_assert(bob->state == OTRNG_STATE_FINISHED);
 
   free_message_and_response(response_to_bob, &to_send);
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
