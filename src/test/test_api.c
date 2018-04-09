@@ -110,7 +110,6 @@ void test_api_interactive_conversation(void) {
   // Alice sends a data message
   string_t to_send = NULL;
   tlv_t *tlvs = NULL;
-  // tlv_t *tlv_1 = NULL;
   otrng_err_t err;
 
   for (message_id = 2; message_id < 5; message_id++) {
@@ -175,7 +174,6 @@ void test_api_interactive_conversation(void) {
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
-  otrng_tlv_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrng_response_new();
@@ -194,16 +192,18 @@ void test_api_interactive_conversation(void) {
   g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRNG_TLV_PADDING);
   g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 249);
 
-  // TODO: for remote working
-  // tlv_1 = otrng_tlv_new(OTRNG_TLV_DISCONNECTED, 0, NULL);
 
-  // Bob sends a TLV type 1
-  // err = otrng_prepare_to_send_message(&to_send, "", &tlv_1, 0, bob);
+  // Bob closes encrypted conversation
+  otrng_close(&to_send, bob);
+  otrng_assert(bob->state == OTRNG_STATE_START);
 
-  // printf("STATE %u \n", bob->state);
-  // otrng_assert(bob->state == OTRNG_STATE_FINISHED);
+  // Alice receives disconnected TLV from Bob
+  response_to_bob = otrng_response_new();
+  otrng_receive_message(response_to_bob, to_send, alice);
+  otrng_assert(alice->state == OTRNG_STATE_FINISHED);
 
   free_message_and_response(response_to_bob, &to_send);
+  otrng_tlv_free(tlvs);
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
