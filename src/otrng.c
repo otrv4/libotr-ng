@@ -2287,6 +2287,7 @@ INTERNAL otrng_err_t otrng_receive_message(otrng_response_t *response,
                                            const string_t message,
                                            otrng_t *otr) {
 
+  // TODO: why it is always mandatory to have a response?
   if (!message || !response)
     return ERROR;
 

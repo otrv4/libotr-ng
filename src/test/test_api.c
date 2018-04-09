@@ -192,18 +192,16 @@ void test_api_interactive_conversation(void) {
   g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRNG_TLV_PADDING);
   g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 249);
 
-
   // Bob closes encrypted conversation
   otrng_close(&to_send, bob);
   otrng_assert(bob->state == OTRNG_STATE_START);
 
   // Alice receives disconnected TLV from Bob
-  response_to_bob = otrng_response_new();
   otrng_receive_message(response_to_bob, to_send, alice);
   otrng_assert(alice->state == OTRNG_STATE_FINISHED);
 
-  free_message_and_response(response_to_bob, &to_send);
   otrng_tlv_free(tlvs);
+  free_message_and_response(response_to_bob, &to_send);
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
