@@ -150,20 +150,20 @@ void test_otrng_data_message_deserializes() {
   otrng_assert(otrng_data_message_body_asprintf(&serialized, &serlen,
                                                 data_msg) == SUCCESS);
 
-  const uint8_t mac_data[MAC_KEY_BYTES] = {
+  const uint8_t mac_data[DATA_MSG_MAC_BYTES] = {
       0x14, 0x9a, 0xf0, 0x93, 0xcc, 0x3f, 0x44, 0xf5, 0x1b, 0x41, 0x11,
       0xc3, 0x84, 0x10, 0x88, 0xed, 0xd3, 0xff, 0x66, 0x7e, 0xfd, 0x3c,
       0x6e, 0x34, 0xf2, 0xbf, 0x92, 0x8a, 0x5e, 0xf6, 0x4b, 0x40, 0x39,
       0xfe, 0xc1, 0xe7, 0xde, 0x4c, 0x17, 0x84, 0x2b, 0xfa, 0x2a, 0x55,
       0x8c, 0xd6, 0x1a, 0x08, 0x26, 0x4f, 0x61, 0x32, 0xdb, 0xd2, 0x58,
       0x90, 0x7d, 0x1e, 0x97, 0x35, 0xd2, 0x38, 0x60, 0xa1};
-  memcpy(data_msg->mac, mac_data, MAC_KEY_BYTES);
-  serialized = realloc(serialized, serlen + MAC_KEY_BYTES);
-  memcpy(serialized + serlen, mac_data, MAC_KEY_BYTES);
+  memcpy(data_msg->mac, mac_data, DATA_MSG_MAC_BYTES);
+  serialized = realloc(serialized, serlen + DATA_MSG_MAC_BYTES);
+  memcpy(serialized + serlen, mac_data, DATA_MSG_MAC_BYTES);
 
   data_message_t *deserialized = otrng_data_message_new();
   otrng_assert(otrng_data_message_deserialize(deserialized, serialized,
-                                              serlen + MAC_KEY_BYTES,
+                                              serlen + DATA_MSG_MAC_BYTES,
                                               NULL) == SUCCESS);
 
   otrng_assert(data_msg->sender_instance_tag ==
@@ -179,7 +179,7 @@ void test_otrng_data_message_deserializes() {
   otrng_assert_cmpmem(data_msg->enc_msg, deserialized->enc_msg,
                       data_msg->enc_msg_len);
   otrng_assert(data_msg->enc_msg_len == deserialized->enc_msg_len);
-  otrng_assert_cmpmem(data_msg->mac, deserialized->mac, MAC_KEY_BYTES);
+  otrng_assert_cmpmem(data_msg->mac, deserialized->mac, DATA_MSG_MAC_BYTES);
 
   otrng_data_message_free(data_msg);
   otrng_data_message_free(deserialized);
