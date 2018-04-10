@@ -194,7 +194,7 @@ void test_api_interactive_conversation(void) {
   otrng_assert(response_to_bob->tlvs->next);
   g_assert_cmpint(response_to_bob->tlvs->next->data->type, ==,
                   OTRNG_TLV_PADDING);
-  g_assert_cmpint(response_to_bob->tlvs->next->data->len, ==, 249);
+  g_assert_cmpint(response_to_bob->tlvs->next->data->len, ==, 243);
 
   free_message_and_response(response_to_bob, &to_send);
 

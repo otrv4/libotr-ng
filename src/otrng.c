@@ -2483,6 +2483,31 @@ tstatic otrng_err_t otrng_prepare_to_send_data_message(string_t *to_send,
   return err;
 }
 
+tstatic size_t tlv_serialized_length(tlv_t *tlv) {
+  size_t result = 0;
+
+  result += 2; // [type] length
+  result += 2; // [len] length
+  result += tlv->len;
+
+  return result;
+}
+
+tstatic size_t tlv_list_serialized_length(tlv_list_t *tlvs) {
+  size_t result = 0;
+
+  for(tlv_list_t *current = tlvs; current; current = current->next)
+    result += tlv_serialized_length(current->data);
+
+  return result;
+}
+
+/**
+ * @todo Move this documentation to header file later
+ *
+ * @param [tlvs] it is an ERROR to send in null as this parameter.
+ *    it can _point_ to NULL though.
+ **/
 INTERNAL otrng_err_t otrng_prepare_to_send_message(string_t *to_send,
                                                    const string_t message,
                                                    tlv_list_t **tlvs,
@@ -2491,16 +2516,9 @@ INTERNAL otrng_err_t otrng_prepare_to_send_message(string_t *to_send,
   if (!otr)
     return ERROR;
 
-  // Optional. Client might want or not to disguise the length of
-  // message
-
-  // TODO if we need to pad, merge the padding tlv and the user's tlvs to send
   if (otr->conversation->client->pad) {
-    // TODO[ola]: This pointer stuff is kinda wrong...
-    if (tlvs)
-      *tlvs = otrng_append_padding_tlv(*tlvs, strlen(message));
-    else
-      *tlvs = otrng_append_padding_tlv(NULL, strlen(message));
+    *tlvs = otrng_append_padding_tlv(*tlvs, strlen(message) +
+                                     tlv_list_serialized_length(*tlvs));
     if (!*tlvs)
       return ERROR;
   }
