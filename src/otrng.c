@@ -2496,7 +2496,7 @@ tstatic size_t tlv_serialized_length(tlv_t *tlv) {
 tstatic size_t tlv_list_serialized_length(tlv_list_t *tlvs) {
   size_t result = 0;
 
-  for(tlv_list_t *current = tlvs; current; current = current->next)
+  for (tlv_list_t *current = tlvs; current; current = current->next)
     result += tlv_serialized_length(current->data);
 
   return result;
@@ -2517,8 +2517,8 @@ INTERNAL otrng_err_t otrng_prepare_to_send_message(string_t *to_send,
     return ERROR;
 
   if (otr->conversation->client->pad) {
-    *tlvs = otrng_append_padding_tlv(*tlvs, strlen(message) +
-                                     tlv_list_serialized_length(*tlvs));
+    *tlvs = otrng_append_padding_tlv(
+        *tlvs, strlen(message) + tlv_list_serialized_length(*tlvs));
     if (!*tlvs)
       return ERROR;
   }
