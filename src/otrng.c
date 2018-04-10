@@ -2565,8 +2565,7 @@ INTERNAL otrng_err_t otrng_close(string_t *to_send, otrng_t *otr) {
 
   switch (otr->running_version) {
   case OTRNG_VERSION_3:
-    otrng_v3_close(to_send,
-                   otr->v3_conn);           // TODO: This should return an error
+    otrng_v3_close(to_send, otr->v3_conn);  // TODO: This should return an error
                                             // but errors are reported on a
                                             // callback
     gone_insecure_cb_v4(otr->conversation); // TODO: Only if success

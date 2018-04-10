@@ -82,8 +82,8 @@ INTERNAL otrng_err_t otrng_data_message_body_asprintf(
   cursor += otrng_serialize_uint32(cursor, data_msg->sender_instance_tag);
   cursor += otrng_serialize_uint32(cursor, data_msg->receiver_instance_tag);
   cursor += otrng_serialize_uint8(cursor, data_msg->flags);
-  //TODO: Add "Previous chain message number (INT)"
-  //TODO: Add "Ratchet id (INT)"
+  // TODO: Add "Previous chain message number (INT)"
+  // TODO: Add "Ratchet id (INT)"
   cursor += otrng_serialize_uint32(cursor, data_msg->message_id);
   cursor += otrng_serialize_ec_point(cursor, data_msg->ecdh);
 
