@@ -59,11 +59,11 @@ void ed448_test_eddsa_serialization() {
 
   // 2. Serialize using EdDSA
   uint8_t enc[GOLDILOCKS_EDDSA_448_PUBLIC_BYTES];
-  otrng_ec_point_serialize(enc, p);
+  otrng_ec_point_encode(enc, p);
 
   // 3. Deserialize
   ec_point_t dec;
-  otrng_assert(otrng_ec_point_deserialize(dec, enc) == SUCCESS);
+  otrng_assert(otrng_ec_point_decode(dec, enc) == SUCCESS);
 
   otrng_assert(otrng_ec_point_eq(p, dec) == otrng_true);
 }
@@ -78,7 +78,7 @@ void ed448_test_eddsa_keygen() {
   otrng_ec_scalar_derive_from_secret(secret_scalar, sym);
   otrng_ec_derive_public_key(pub, sym);
 
-  otrng_assert(otrng_ec_point_deserialize(public_point, pub) == SUCCESS);
+  otrng_assert(otrng_ec_point_decode(public_point, pub) == SUCCESS);
 
   // Is G * scalar == P?
   ec_point_t expected;

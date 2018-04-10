@@ -52,7 +52,7 @@ INTERNAL void otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
 
   uint8_t pub[ED448_POINT_BYTES];
   otrng_ec_derive_public_key(pub, sym);
-  otrng_ec_point_deserialize(keypair->pub, pub);
+  otrng_ec_point_decode(keypair->pub, pub);
 
   goldilocks_bzero(sym, ED448_POINT_BYTES);
   goldilocks_bzero(pub, ED448_POINT_BYTES);
@@ -82,7 +82,7 @@ INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared,
   goldilocks_448_point_t s;
   goldilocks_448_point_scalarmul(s, their_pub, our_keypair->priv);
 
-  otrng_ec_point_serialize(shared, s);
+  otrng_ec_point_encode(shared, s);
 }
 
 /* void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src) { */
@@ -105,11 +105,11 @@ otrng_ec_scalar_deserialize(ec_scalar_t scalar,
   goldilocks_448_scalar_decode_long(scalar, serialized, ED448_SCALAR_BYTES);
 }
 
-INTERNAL void otrng_ec_point_serialize(uint8_t *dst, const ec_point_t point) {
+INTERNAL void otrng_ec_point_encode(uint8_t *dst, const ec_point_t point) {
   goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(dst, point);
 }
 
-INTERNAL otrng_err_t otrng_ec_point_deserialize(
+INTERNAL otrng_err_t otrng_ec_point_decode(
     ec_point_t point, const uint8_t serialized[ED448_POINT_BYTES]) {
   goldilocks_448_point_t p;
   goldilocks_error_t err =

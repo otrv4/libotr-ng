@@ -71,7 +71,7 @@ void test_dake_identity_message_serializes(identity_message_fixture_t *f,
   cursor += user_profile_len;
 
   uint8_t serialized_y[ED448_POINT_BYTES + 2] = {0};
-  otrng_ec_point_serialize(serialized_y, identity_message->Y);
+  otrng_ec_point_encode(serialized_y, identity_message->Y);
   otrng_assert_cmpmem(cursor, serialized_y, sizeof(ec_public_key_t));
   cursor += sizeof(ec_public_key_t);
 

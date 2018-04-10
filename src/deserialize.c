@@ -153,7 +153,7 @@ INTERNAL otrng_err_t otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
 
 INTERNAL otrng_err_t otrng_deserialize_ec_point(ec_point_t point,
                                                 const uint8_t *serialized) {
-  return otrng_ec_point_deserialize(point, serialized);
+  return otrng_ec_point_decode(point, serialized);
 }
 
 INTERNAL otrng_err_t otrng_deserialize_otrng_public_key(

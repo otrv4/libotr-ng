@@ -73,9 +73,9 @@ INTERNAL otrng_bool_t otrng_ec_point_valid(const ec_point_t point);
 
 INTERNAL otrng_bool_t otrng_ec_point_eq(const ec_point_t, const ec_point_t);
 
-INTERNAL void otrng_ec_point_serialize(uint8_t *dst, const ec_point_t point);
+INTERNAL void otrng_ec_point_encode(uint8_t *dst, const ec_point_t point);
 
-INTERNAL otrng_err_t otrng_ec_point_deserialize(
+INTERNAL otrng_err_t otrng_ec_point_decode(
     ec_point_t point, const uint8_t serialized[ED448_POINT_BYTES]);
 
 /* This is ed448 crypto */

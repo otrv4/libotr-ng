@@ -218,7 +218,7 @@ tstatic otrng_err_t user_profile_sign(user_profile_t *profile,
     return ERROR;
 
   uint8_t pubkey[ED448_POINT_BYTES];
-  otrng_ec_point_serialize(pubkey, keypair->pub);
+  otrng_ec_point_encode(pubkey, keypair->pub);
 
   // maybe otrng_ec_derive_public_key again?
   otrng_ec_sign(profile->signature, (uint8_t *)keypair->sym, pubkey, body,
@@ -246,7 +246,7 @@ otrng_user_profile_verify_signature(const user_profile_t *profile) {
     return otrng_false;
 
   uint8_t pubkey[ED448_POINT_BYTES];
-  otrng_ec_point_serialize(pubkey, profile->pub_key);
+  otrng_ec_point_encode(pubkey, profile->pub_key);
 
   otrng_bool_t valid =
       otrng_ec_verify(profile->signature, pubkey, body, bodylen);

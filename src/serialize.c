@@ -78,7 +78,7 @@ INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_t mpi) {
 }
 
 INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_t point) {
-  otrng_ec_point_serialize(dst, point);
+  otrng_ec_point_encode(dst, point);
   return ED448_POINT_BYTES;
 }
 

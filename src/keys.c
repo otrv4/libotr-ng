@@ -45,7 +45,7 @@ INTERNAL void otrng_keypair_generate(otrng_keypair_t *keypair,
 
   uint8_t pub[ED448_POINT_BYTES];
   otrng_ec_derive_public_key(pub, keypair->sym);
-  otrng_ec_point_deserialize(keypair->pub, pub);
+  otrng_ec_point_decode(keypair->pub, pub);
 
   goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
@@ -94,7 +94,7 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_t *prekey_pair,
 
   uint8_t pub[ED448_POINT_BYTES];
   otrng_ec_derive_public_key(pub, sym);
-  otrng_ec_point_deserialize(prekey_pair->pub, pub);
+  otrng_ec_point_decode(prekey_pair->pub, pub);
 
   goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
