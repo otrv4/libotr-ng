@@ -22,11 +22,9 @@
 
 static data_message_t *set_up_data_msg() {
   ecdh_keypair_t ecdh[1];
-  dh_keypair_t dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(ecdh, sym);
-  otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
   data_message_t *data_msg = otrng_data_message_new();
   otrng_assert(data_msg);
@@ -80,7 +78,6 @@ static data_message_t *set_up_data_msg() {
   memset(data_msg->enc_msg, 0xE, 3);
   data_msg->enc_msg_len = 3;
 
-  otrng_dh_keypair_destroy(dh);
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dh_free();
 
