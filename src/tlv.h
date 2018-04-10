@@ -38,31 +38,119 @@ typedef enum {
   OTRNG_TLV_SYM_KEY = 7
 } tlv_type_t;
 
-// TODO: do we really want the TLVs to be a linked list?
+/**
+ * @brief The tlv_t structure represents one TLV from a data message.
+ *
+ *  [type] this will always be one of the valid types from tlv_type_t
+ *  [len]  the length of the associated data
+ *  [data] if there is associated data, this buffer will be [len] bytes long
+ *         if [len] is zero, the buffer can be NULL or a zero length pointer
+ **/
 typedef struct tlv_s {
   tlv_type_t type;
   uint16_t len;
   uint8_t *data;
 } tlv_t;
 
+/**
+ * @brief The tlv_list_t structure represents one link in a linked list of TLVs.
+ *
+ *  [data] the TLV this list node points to. should never be NULL.
+ *  [next] the next node of the list. can be NULL.
+ **/
 typedef struct tlv_list_s {
   tlv_t *data;
   struct tlv_list_s *next;
 } tlv_list_t;
 
+/**
+ * @brief Frees the given list of TLVs
+ *
+ * @param [tlvs] the first node of the list of TLVs to be freed. can be NULL.
+ *
+ * @warning It is NOT safe to call this twice with the same argument, since
+ *    after freeing each TLV, the [data] attribute of the list nodes will be
+ *    set to NULL.
+ *
+ * @warning It is NOT safe to call this on a node that is not first in the list,
+ *    unless you explicitly NULL out the [next] pointer of the previous entry.
+ **/
 INTERNAL void otrng_tlv_list_free(tlv_list_t *tlvs);
 
+/**
+ * @brief Returns a new list with one entry, the given [tlv] argument
+ *
+ * @param [tlv] the TLV to put as the only entry. if given NULL, the function
+ *    returns NULL.
+ *
+ * @return the newly created list, if successful. it is the callers
+ *    responsibility to free it after use.
+ *    returns NULL if something goes wrong, or if [tlv] is NULL.
+ **/
 INTERNAL tlv_list_t *otrng_tlv_list_one(tlv_t *tlv);
 
+/**
+ * @brief Returns a newly created disconnected TLV
+ *
+ * @return the newly TLV, if successful. it is the callers
+ *    responsibility to free it after use.
+ *    returns NULL if something goes wrong.
+ **/
 INTERNAL tlv_t *otrng_tlv_disconnected_new(void);
 
+/**
+ * @brief Tries to extract as many TLVs as possible in the memory region from
+ *    [src] to [src]+[len].
+ *
+ * @param [src] the pointer to where to start parsing. can't be NULL
+ * @param [len] the amount of data to parse. can be 0.
+ *
+ * @return the TLV list, if successful. it is the callers
+ *    responsibility to free it after use.
+ *    returns NULL if no TLVs can be found.
+ **/
 INTERNAL tlv_list_t *otrng_parse_tlvs(const uint8_t *src, size_t len);
 
+/**
+ * @brief creates a new TLV from the given data.
+ *
+ * @param [type] the type of the TLV to create. should be one of tlv_type_t
+ * @param [len]  the amount of data to associate with this TLV. can be 0
+ * @param [data] the data to put in the TLV. [len] bytes from this buffer will
+ *    be copied into the TLV. can be NULL, but must be at least [len] bytes long
+ *
+ * @return the newly created TLV, if successful. it is the callers
+ *    responsibility to free it after use.
+ *    returns NULL if something goes wrong.
+ **/
 INTERNAL tlv_t *otrng_tlv_new(const uint16_t type, const uint16_t len,
                               const uint8_t *data);
 
+/**
+ * @brief appends the given TLV to the list of TLVs
+ *
+ * @param [tlvs] the list of TLVs to add the TLV to. can be NULL. if given
+ *    the last nodes next-pointer will be modified.
+ * @param [tlv]  the TLV to add.
+ *
+ * @return if given [tlvs], returns it - otherwise a newly created TLV list.
+ *    it is the callers responsibility to free it after use.
+ *    returns NULL if something goes wrong, or if [tlv] is NULL
+ **/
 INTERNAL tlv_list_t *otrng_append_tlv(tlv_list_t *tlvs, tlv_t *tlv);
 
+/**
+ * @brief appends a new padding TLV to the given list
+ *
+ * @param [tlvs]        the list of TLVs to add the TLV to. can be NULL. if
+ *    given the last nodes next-pointer will be modified.
+ * @param [message_len] the complete length of messages, used to calculate the
+ *    amount of padding necessary.
+ *
+ * @return if given [tlvs], returns it - otherwise a newly created TLV list.
+ *    it is the callers responsibility to free it after use.
+ *    returns NULL if something goes wrong.
+ **/
 INTERNAL tlv_list_t *otrng_append_padding_tlv(tlv_list_t *tlvs,
                                               int message_len);
 
