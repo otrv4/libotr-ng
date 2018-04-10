@@ -117,11 +117,11 @@ INTERNAL tlv_list_t *otrng_parse_tlvs(const uint8_t *src, size_t len);
  * @param [type] the type of the TLV to create. should be one of tlv_type_t
  * @param [len]  the amount of data to associate with this TLV. can be 0
  * @param [data] the data to put in the TLV. [len] bytes from this buffer will
- *    be copied into the TLV. can be NULL, but must be at least [len] bytes long
+ *    be copied into the TLV. can be NULL, but only if [len] is 0.
  *
  * @return the newly created TLV, if successful. it is the callers
  *    responsibility to free it after use.
- *    returns NULL if something goes wrong.
+ *    returns NULL if something goes wrong, if [data] is NULL when [len] is > 0.
  **/
 INTERNAL tlv_t *otrng_tlv_new(const uint16_t type, const uint16_t len,
                               const uint8_t *data);

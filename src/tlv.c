@@ -153,6 +153,11 @@ INTERNAL tlv_t *otrng_tlv_new(const uint16_t type, const uint16_t len,
   tlv->data = NULL;
 
   if (len != 0) {
+    if (!data) {
+      tlv_free(tlv);
+      return NULL;
+    }
+
     tlv->data = malloc(tlv->len);
     if (!tlv->data) {
       tlv_free(tlv);
