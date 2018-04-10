@@ -26,6 +26,7 @@
 #define OTRNG_LIST_PRIVATE
 #define OTRNG_OTRNG_PRIVATE
 #define OTRNG_SMP_PRIVATE
+#define OTRNG_TLV_PRIVATE
 
 #include "../otrng.h"
 

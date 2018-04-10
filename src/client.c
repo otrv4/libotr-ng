@@ -196,15 +196,15 @@ otrng_client_get_conversation(int force_create, const char *recipient,
 tstatic int send_message(char **newmsg, const char *message,
                          const char *recipient, otrng_client_t *client) {
   otrng_conversation_t *conv = NULL;
-  tlv_t *tlv = NULL;
+  tlv_list_t *tlvs = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
     return 1;
 
   otrng_err_t error =
-      otrng_prepare_to_send_message(newmsg, message, &tlv, 0, conv->conn);
-  otrng_tlv_free(tlv);
+      otrng_prepare_to_send_message(newmsg, message, &tlvs, 0, conv->conn);
+  otrng_tlv_list_free(tlvs);
 
   if (error == STATE_NOT_ENCRYPTED)
     return CLIENT_ERROR_NOT_ENCRYPTED;

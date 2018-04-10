@@ -109,14 +109,15 @@ void test_api_interactive_conversation(void) {
 
   // Alice sends a data message
   string_t to_send = NULL;
-  tlv_t *tlvs = NULL;
   otrng_err_t err;
 
   for (message_id = 2; message_id < 5; message_id++) {
+    tlv_list_t *tlvs = NULL;
     err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
     assert_msg_sent(err, to_send);
     otrng_assert(tlvs);
     otrng_assert(!alice->keys->old_mac_keys);
+    otrng_tlv_list_free(tlvs);
 
     // This is a follow up message.
     g_assert_cmpint(alice->keys->i, ==, 0);
@@ -140,7 +141,9 @@ void test_api_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
+    tlv_list_t *tlvs = NULL;
     err = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
+    otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -162,11 +165,10 @@ void test_api_interactive_conversation(void) {
     g_assert_cmpint(alice->keys->j, ==, 0);
   }
 
-  otrng_tlv_free(tlvs);
-
   uint16_t tlv_len = 2;
   uint8_t tlv_data[2] = {0x08, 0x05};
-  tlvs = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, tlv_len, tlv_data);
+  tlv_list_t *tlvs =
+      otrng_tlv_list_one(otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, tlv_len, tlv_data));
   otrng_assert(tlvs);
 
   // Bob sends a message with TLV
@@ -174,7 +176,7 @@ void test_api_interactive_conversation(void) {
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
-  otrng_tlv_free(tlvs);
+  otrng_tlv_list_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrng_response_new();
@@ -184,14 +186,15 @@ void test_api_interactive_conversation(void) {
 
   // Check TLVs
   otrng_assert(response_to_bob->tlvs);
-  g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRNG_TLV_SMP_MSG_1);
-  g_assert_cmpint(response_to_bob->tlvs->len, ==, tlv_len);
-  otrng_assert_cmpmem(response_to_bob->tlvs->data, tlv_data, tlv_len);
+  g_assert_cmpint(response_to_bob->tlvs->data->type, ==, OTRNG_TLV_SMP_MSG_1);
+  g_assert_cmpint(response_to_bob->tlvs->data->len, ==, tlv_len);
+  otrng_assert_cmpmem(response_to_bob->tlvs->data->data, tlv_data, tlv_len);
 
   // Check Padding
   otrng_assert(response_to_bob->tlvs->next);
-  g_assert_cmpint(response_to_bob->tlvs->next->type, ==, OTRNG_TLV_PADDING);
-  g_assert_cmpint(response_to_bob->tlvs->next->len, ==, 249);
+  g_assert_cmpint(response_to_bob->tlvs->next->data->type, ==,
+                  OTRNG_TLV_PADDING);
+  g_assert_cmpint(response_to_bob->tlvs->next->data->len, ==, 249);
 
   free_message_and_response(response_to_bob, &to_send);
 
@@ -203,7 +206,8 @@ void test_api_interactive_conversation(void) {
   response_to_bob = otrng_response_new();
   otrng_receive_message(response_to_bob, to_send, alice);
   otrng_assert(response_to_bob->tlvs);
-  g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRNG_TLV_DISCONNECTED);
+  g_assert_cmpint(response_to_bob->tlvs->data->type, ==,
+                  OTRNG_TLV_DISCONNECTED);
   otrng_assert(alice->state == OTRNG_STATE_FINISHED);
 
   free_message_and_response(response_to_bob, &to_send);
@@ -237,7 +241,7 @@ void test_api_interactive_conversation_bob(void) {
 
   // Bob sends a data message
   string_t to_send = NULL;
-  tlv_t *tlvs = NULL;
+  tlv_list_t *tlvs = NULL;
   otrng_err_t err;
 
   for (message_id = 2; message_id < 5; message_id++) {
@@ -266,7 +270,7 @@ void test_api_interactive_conversation_bob(void) {
     g_assert_cmpint(alice->keys->j, ==, 0);
   }
 
-  otrng_tlv_free(tlvs);
+  otrng_tlv_list_free(tlvs);
 
   free_message_and_response(response_to_bob, &to_send);
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
@@ -368,7 +372,6 @@ void test_api_non_interactive_conversation(void) {
 
   // Bob sends a data message
   string_t to_send = NULL;
-  tlv_t *tlv = NULL;
   otrng_err_t err;
 
   // TODO: this is usually set up by the querry or whitespace,
@@ -377,7 +380,9 @@ void test_api_non_interactive_conversation(void) {
   alice->running_version = OTRNG_VERSION_4;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    err = otrng_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice);
+    tlv_list_t *tlvs = NULL;
+    err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
+    otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
@@ -403,7 +408,9 @@ void test_api_non_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    err = otrng_prepare_to_send_message(&to_send, "hello", &tlv, 0, bob);
+    tlv_list_t *tlvs = NULL;
+    err = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
+    otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -427,7 +434,8 @@ void test_api_non_interactive_conversation(void) {
 
   uint16_t tlv_len = 2;
   uint8_t tlv_data[2] = {0x08, 0x05};
-  tlv_t *tlvs = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, tlv_len, tlv_data);
+  tlv_list_t *tlvs =
+      otrng_tlv_list_one(otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, tlv_len, tlv_data));
   otrng_assert(tlvs);
 
   // Bob sends a message with TLV
@@ -435,7 +443,7 @@ void test_api_non_interactive_conversation(void) {
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
-  otrng_tlv_free(tlvs);
+  otrng_tlv_list_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrng_response_new();
@@ -445,9 +453,9 @@ void test_api_non_interactive_conversation(void) {
 
   // Check TLVS
   otrng_assert(response_to_bob->tlvs);
-  g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRNG_TLV_SMP_MSG_1);
-  g_assert_cmpint(response_to_bob->tlvs->len, ==, tlv_len);
-  otrng_assert_cmpmem(response_to_bob->tlvs->data, tlv_data, tlv_len);
+  g_assert_cmpint(response_to_bob->tlvs->data->type, ==, OTRNG_TLV_SMP_MSG_1);
+  g_assert_cmpint(response_to_bob->tlvs->data->len, ==, tlv_len);
+  otrng_assert_cmpmem(response_to_bob->tlvs->data->data, tlv_data, tlv_len);
 
   free_message_and_response(response_to_bob, &to_send);
 
@@ -455,8 +463,6 @@ void test_api_non_interactive_conversation(void) {
   otrng_client_state_free_all(alice_state, bob_state);
 
   otrng_free_all(alice, bob);
-
-  otrng_tlv_free(tlv);
 
   OTRNG_FREE;
 }
@@ -554,7 +560,6 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   // Bob sends a data message
   string_t to_send = NULL;
-  tlv_t *tlv = NULL;
   otrng_err_t err;
 
   // TODO: this is usually set up by the querry or whitespace,
@@ -563,7 +568,9 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   alice->running_version = OTRNG_VERSION_4;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    err = otrng_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice);
+    tlv_list_t *tlvs = NULL;
+    err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
+    otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
@@ -589,7 +596,9 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    err = otrng_prepare_to_send_message(&to_send, "hello", &tlv, 0, bob);
+    tlv_list_t *tlvs = NULL;
+    err = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
+    otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -613,7 +622,8 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   uint16_t tlv_len = 2;
   uint8_t tlv_data[2] = {0x08, 0x05};
-  tlv_t *tlvs = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, tlv_len, tlv_data);
+  tlv_list_t *tlvs =
+      otrng_tlv_list_one(otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, tlv_len, tlv_data));
   otrng_assert(tlvs);
 
   // Bob sends a message with TLV
@@ -621,7 +631,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
-  otrng_tlv_free(tlvs);
+  otrng_tlv_list_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrng_response_new();
@@ -631,9 +641,9 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   // Check TLVS
   otrng_assert(response_to_bob->tlvs);
-  g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRNG_TLV_SMP_MSG_1);
-  g_assert_cmpint(response_to_bob->tlvs->len, ==, tlv_len);
-  otrng_assert_cmpmem(response_to_bob->tlvs->data, tlv_data, tlv_len);
+  g_assert_cmpint(response_to_bob->tlvs->data->type, ==, OTRNG_TLV_SMP_MSG_1);
+  g_assert_cmpint(response_to_bob->tlvs->data->len, ==, tlv_len);
+  otrng_assert_cmpmem(response_to_bob->tlvs->data->data, tlv_data, tlv_len);
 
   free_message_and_response(response_to_bob, &to_send);
 
@@ -641,8 +651,6 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrng_client_state_free_all(alice_state, bob_state);
 
   otrng_free_all(alice, bob);
-
-  otrng_tlv_free(tlv);
 
   OTRNG_FREE;
 }
@@ -668,7 +676,7 @@ void test_api_conversation_errors(void) {
 
   // Alice sends a data message
   string_t to_send = NULL;
-  tlv_t *tlvs = NULL;
+  tlv_list_t *tlvs = NULL;
   otrng_err_t err;
 
   err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
@@ -726,7 +734,7 @@ void test_api_conversation_errors(void) {
   otrng_assert(response_to_alice->to_send == NULL);
   otrng_assert(response_to_alice->warning == OTRNG_WARN_RECEIVED_NOT_VALID);
 
-  otrng_tlv_free(tlvs);
+  otrng_tlv_list_free(tlvs);
 
   free_message_and_response(response_to_alice, &to_send);
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
@@ -812,7 +820,7 @@ static void do_ake_v3(otrng_t *alice, otrng_t *bob) {
 
 void test_api_conversation_v3(void) {
   OTRNG_INIT;
-  tlv_t *tlv = NULL;
+  tlv_list_t *tlvs = NULL;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   set_up_client_state(alice_state, ALICE_IDENTITY, PHI, 1);
@@ -854,7 +862,7 @@ void test_api_conversation_v3(void) {
   string_t to_send = NULL;
 
   // Alice sends a data message
-  otrng_assert(otrng_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice) ==
+  otrng_assert(otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice) ==
                SUCCESS);
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAMD", to_send, 9);
@@ -870,7 +878,7 @@ void test_api_conversation_v3(void) {
   free_message_and_response(response_to_alice, &to_send);
 
   // Bob sends a data message
-  otrng_assert(otrng_prepare_to_send_message(&to_send, "hi", &tlv, 0, bob) ==
+  otrng_assert(otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob) ==
                SUCCESS);
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAMD", to_send, 9);
@@ -889,7 +897,7 @@ void test_api_conversation_v3(void) {
   otrng_free_all(alice, bob);
   otrng_client_state_free_all(alice_state, bob_state);
 
-  otrng_tlv_free(tlv);
+  otrng_tlv_list_free(tlvs);
 
   OTRNG_FREE;
 }
@@ -1172,7 +1180,7 @@ void test_api_smp_abort(void) {
 void test_api_extra_sym_key(void) {
   OTRNG_INIT;
 
-  tlv_t *tlv = NULL;
+  tlv_list_t *tlvs = NULL;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -1191,7 +1199,7 @@ void test_api_extra_sym_key(void) {
 
   otrng_err_t err;
 
-  err = otrng_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice);
+  err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
   assert_msg_sent(err, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -1233,9 +1241,9 @@ void test_api_extra_sym_key(void) {
 
   // Check TLVS
   otrng_assert(response_to_bob->tlvs);
-  g_assert_cmpint(response_to_bob->tlvs->type, ==, OTRNG_TLV_SYM_KEY);
-  g_assert_cmpint(response_to_bob->tlvs->len, ==, tlv_len);
-  otrng_assert_cmpmem(response_to_bob->tlvs->data, tlv_data, tlv_len);
+  g_assert_cmpint(response_to_bob->tlvs->data->type, ==, OTRNG_TLV_SYM_KEY);
+  g_assert_cmpint(response_to_bob->tlvs->data->len, ==, tlv_len);
+  otrng_assert_cmpmem(response_to_bob->tlvs->data->data, tlv_data, tlv_len);
 
   otrng_assert(!response_to_bob->tlvs->next);
 
@@ -1245,14 +1253,14 @@ void test_api_extra_sym_key(void) {
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
 
-  otrng_tlv_free(tlv);
+  otrng_tlv_list_free(tlvs);
 
   OTRNG_FREE;
 }
 
 void test_dh_key_rotation(void) {
   OTRNG_INIT;
-  tlv_t *tlv = NULL;
+  tlv_list_t *tlvs = NULL;
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
 
@@ -1272,7 +1280,7 @@ void test_dh_key_rotation(void) {
 
   for (ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
     // Bob sends a data message
-    err = otrng_prepare_to_send_message(&to_send, "hello", &tlv, 0, bob);
+    err = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
     assert_msg_sent(err, to_send);
 
     // New ratchet happened
@@ -1300,7 +1308,7 @@ void test_dh_key_rotation(void) {
     free_message_and_response(response_to_bob, &to_send);
 
     // Now alice ratchets and sends a data message
-    err = otrng_prepare_to_send_message(&to_send, "hi", &tlv, 0, alice);
+    err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(alice->keys->i, ==, ratchet_id + 1);
@@ -1334,7 +1342,7 @@ void test_dh_key_rotation(void) {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
-  otrng_tlv_free(tlv);
+  otrng_tlv_list_free(tlvs);
 
   OTRNG_FREE;
 }
@@ -1486,15 +1494,15 @@ void test_unreadable_flag() {
 
   alice_state->pad = true;
 
-  tlv_t *tlv = NULL;
+  tlv_list_t *tlvs = NULL;
 
   // Alice sends a heartbeat message with padding
-  err = otrng_prepare_to_send_message(&to_send, "", &tlv, 0, alice);
+  err = otrng_prepare_to_send_message(&to_send, "", &tlvs, 0, alice);
   otrl_base64_otr_decode(to_send, &decoded, &dec_len);
 
   assert_msg_sent(err, to_send);
   otrng_assert(decoded[flag_position] == MSGFLAGS_IGNORE_UNREADABLE);
-  otrng_tlv_free(tlv);
+  otrng_tlv_list_free(tlvs);
   free(decoded);
   decoded = NULL;
 

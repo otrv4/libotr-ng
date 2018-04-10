@@ -32,108 +32,109 @@ const tlv_type_t tlv_types[] = {OTRNG_TLV_PADDING,   OTRNG_TLV_DISCONNECTED,
                                 OTRNG_TLV_SMP_MSG_3, OTRNG_TLV_SMP_MSG_4,
                                 OTRNG_TLV_SMP_ABORT, OTRNG_TLV_SYM_KEY};
 
-INTERNAL void set_tlv_type(tlv_t *tlv, uint16_t tlv_type) {
-  tlv_type_t type = OTRNG_TLV_NONE;
+const size_t TLV_TYPES_LENGTH = OTRNG_TLV_SYM_KEY + 1;
 
-  if (tlv_type >= 0 && tlv_type < 8) {
-    type = tlv_types[tlv_type];
+tstatic void set_tlv_type(tlv_t *tlv, uint16_t tlv_type) {
+  tlv->type = OTRNG_TLV_NONE;
+
+  if (tlv_type >= 0 && tlv_type < TLV_TYPES_LENGTH) {
+    tlv->type = tlv_types[tlv_type];
   }
-
-  tlv->type = type;
 }
 
-tstatic tlv_t *extract_tlv(const uint8_t *src, size_t len, size_t *written) {
+tstatic tlv_t *parse_tlv(const uint8_t *src, size_t len, size_t *written) {
+  tlv_t *tlv = malloc(sizeof(tlv_t));
+  if (!tlv)
+    return NULL;
+
   size_t w = 0;
-  tlv_t *tlv = NULL;
   uint16_t tlv_type = -1;
   const uint8_t *start = src + *written;
   const uint8_t *cursor = start;
 
-  do {
+  if (otrng_deserialize_uint16(&tlv_type, cursor, len, &w)) {
+    tlv_free(tlv);
+    return NULL;
+  }
 
-    tlv = malloc(sizeof(tlv_t));
-    if (!tlv)
-      continue;
+  set_tlv_type(tlv, tlv_type);
 
-    if (otrng_deserialize_uint16(&tlv_type, cursor, len, &w))
-      continue;
+  len -= w;
+  cursor += w;
 
-    set_tlv_type(tlv, tlv_type);
+  if (otrng_deserialize_uint16(&tlv->len, cursor, len, &w)) {
+    tlv_free(tlv);
+    return NULL;
+  }
 
-    len -= w;
-    cursor += w;
+  len -= w;
+  cursor += w;
 
-    if (otrng_deserialize_uint16(&tlv->len, cursor, len, &w))
-      continue;
+  if (len < tlv->len) {
+    tlv_free(tlv);
+    return NULL;
+  }
 
-    len -= w;
-    cursor += w;
+  tlv->data = malloc(tlv->len);
 
-    if (len < tlv->len)
-      continue;
+  if (!tlv->data) {
+    tlv_free(tlv);
+    return NULL;
+  }
 
-    tlv->data = malloc(tlv->len);
-    if (!tlv->data)
-      continue;
+  memcpy(tlv->data, cursor, tlv->len);
+  *written += (cursor + tlv->len) - start;
 
-    memcpy(tlv->data, cursor, tlv->len);
-    len -= tlv->len;
-    cursor += tlv->len;
-
-    *written += cursor - start;
-
-    tlv->next = NULL;
-
-    return tlv;
-  } while (0);
-
-  free(tlv);
-  tlv = NULL;
-
-  return NULL;
+  return tlv;
 }
 
-INTERNAL tlv_t *otrng_append_tlv(tlv_t *head, tlv_t *tlv) {
-  if (!head)
-    return tlv;
+INTERNAL tlv_list_t *otrng_append_tlv(tlv_list_t *head, tlv_t *tlv) {
+  tlv_list_t *n = otrng_tlv_list_one(tlv);
+  if (!n)
+    return NULL;
 
-  tlv_t *current = head;
+  if (!head)
+    return n;
+
+  tlv_list_t *current = head;
 
   while (current->next)
     current = current->next;
 
-  tlv_t *last_tlv = current;
-  last_tlv->next = tlv;
+  current->next = n;
 
   return head;
 }
 
-INTERNAL tlv_t *otrng_parse_tlvs(const uint8_t *src, size_t len) {
+INTERNAL tlv_list_t *otrng_parse_tlvs(const uint8_t *src, size_t len) {
   size_t written = 0;
-  tlv_t *tlv = NULL, *ret = NULL;
-
+  tlv_list_t *ret = NULL;
   int data_to_parse = len;
 
   while (data_to_parse > 0) {
-
-    tlv = extract_tlv(src, data_to_parse, &written);
+    tlv_t *tlv = parse_tlv(src, data_to_parse, &written);
     if (!tlv)
       break;
 
     ret = otrng_append_tlv(ret, tlv);
-
     data_to_parse = len - written;
   }
 
   return ret;
 }
 
-tstatic void tlv_foreach(tlv_t *head) {
-  tlv_t *current = head;
-  while (current) {
-    tlv_t *next = current->next;
+tstatic void tlv_free(tlv_t *tlv) {
+  free(tlv->data);
+  tlv->data = NULL;
+  free(tlv);
+}
 
-    free(current->data);
+INTERNAL void otrng_tlv_list_free(tlv_list_t *head) {
+  tlv_list_t *current = head;
+  while (current) {
+    tlv_list_t *next = current->next;
+
+    tlv_free(current->data);
     current->data = NULL;
     free(current);
 
@@ -141,22 +142,20 @@ tstatic void tlv_foreach(tlv_t *head) {
   }
 }
 
-INTERNAL void otrng_tlv_free(tlv_t *tlv) { tlv_foreach(tlv); }
-
-INTERNAL tlv_t *otrng_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
+INTERNAL tlv_t *otrng_tlv_new(const uint16_t type, const uint16_t len,
+                              const uint8_t *data) {
   tlv_t *tlv = malloc(sizeof(tlv_t));
   if (!tlv)
     return NULL;
 
   tlv->type = type;
   tlv->len = len;
-  tlv->next = NULL;
   tlv->data = NULL;
 
   if (len != 0) {
     tlv->data = malloc(tlv->len);
     if (!tlv->data) {
-      otrng_tlv_free(tlv);
+      tlv_free(tlv);
       return NULL;
     }
     memcpy(tlv->data, data, tlv->len);
@@ -165,11 +164,11 @@ INTERNAL tlv_t *otrng_tlv_new(uint16_t type, uint16_t len, uint8_t *data) {
   return tlv;
 }
 
-INTERNAL tlv_t *otrng_disconnected_tlv_new(void) {
+INTERNAL tlv_t *otrng_tlv_disconnected_new(void) {
   return otrng_tlv_new(OTRNG_TLV_DISCONNECTED, 0, NULL);
 }
 
-INTERNAL tlv_t *otrng_padding_tlv_new(size_t len) {
+tstatic tlv_t *otrng_tlv_padding_new(size_t len) {
   uint8_t *data = malloc(len);
   if (!data)
     return NULL;
@@ -177,25 +176,38 @@ INTERNAL tlv_t *otrng_padding_tlv_new(size_t len) {
   random_bytes(data, len);
   tlv_t *tlv = otrng_tlv_new(OTRNG_TLV_PADDING, len, data);
   free(data);
-  data = NULL;
 
   return tlv;
 }
 
-INTERNAL otrng_err_t otrng_append_padding_tlv(tlv_t **tlvs, int message_len) {
-  int padding_granularity = 256;
-  int header_len = 4;
-  int nul_byte_len = 1;
+tstatic size_t needed_padding(size_t message_len) {
+  const int padding_granularity = 256;
+  const int header_len = 4;
+  const int nul_byte_len = 1;
 
-  int padding =
-      padding_granularity -
-      ((message_len + header_len + nul_byte_len) % padding_granularity);
+  return padding_granularity -
+         ((message_len + header_len + nul_byte_len) % padding_granularity);
+}
 
-  tlv_t *padding_tlv = otrng_padding_tlv_new(padding);
+INTERNAL tlv_list_t *otrng_append_padding_tlv(tlv_list_t *tlvs,
+                                              int message_len) {
+  tlv_t *padding_tlv = otrng_tlv_padding_new(needed_padding(message_len));
   if (!padding_tlv)
-    return ERROR;
+    return NULL;
 
-  *tlvs = otrng_append_tlv(*tlvs, padding_tlv);
+  return otrng_append_tlv(tlvs, padding_tlv);
+}
 
-  return SUCCESS;
+INTERNAL tlv_list_t *otrng_tlv_list_one(tlv_t *tlv) {
+  if (!tlv)
+    return NULL;
+
+  tlv_list_t *tlvs = malloc(sizeof(tlv_list_t));
+  if (!tlvs)
+    return NULL;
+
+  tlvs->data = tlv;
+  tlvs->next = NULL;
+
+  return tlvs;
 }

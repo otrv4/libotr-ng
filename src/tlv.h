@@ -38,26 +38,38 @@ typedef enum {
   OTRNG_TLV_SYM_KEY = 7
 } tlv_type_t;
 
+// TODO: do we really want the TLVs to be a linked list?
 typedef struct tlv_s {
   tlv_type_t type;
   uint16_t len;
   uint8_t *data;
-  struct tlv_s *next;
 } tlv_t;
 
-INTERNAL void otrng_tlv_free(tlv_t *tlv);
+typedef struct tlv_list_s {
+  tlv_t *data;
+  struct tlv_list_s *next;
+} tlv_list_t;
 
-INTERNAL tlv_t *otrng_tlv_new(uint16_t type, uint16_t len, uint8_t *data);
+INTERNAL void otrng_tlv_list_free(tlv_list_t *tlvs);
 
-INTERNAL tlv_t *otrng_disconnected_tlv_new(void);
+INTERNAL tlv_list_t *otrng_tlv_list_one(tlv_t *tlv);
 
-INTERNAL tlv_t *otrng_parse_tlvs(const uint8_t *src, size_t len);
+INTERNAL tlv_t *otrng_tlv_disconnected_new(void);
 
-INTERNAL tlv_t *otrng_append_tlv(tlv_t *tlvs, tlv_t *new_tlv);
+INTERNAL tlv_list_t *otrng_parse_tlvs(const uint8_t *src, size_t len);
 
-INTERNAL otrng_err_t otrng_append_padding_tlv(tlv_t **tlvs, int message_len);
+INTERNAL tlv_t *otrng_tlv_new(const uint16_t type, const uint16_t len,
+                              const uint8_t *data);
+
+INTERNAL tlv_list_t *otrng_append_tlv(tlv_list_t *tlvs, tlv_t *tlv);
+
+INTERNAL tlv_list_t *otrng_append_padding_tlv(tlv_list_t *tlvs,
+                                              int message_len);
 
 #ifdef OTRNG_TLV_PRIVATE
+
+tstatic void tlv_free(tlv_t *tlv);
+
 #endif
 
 #endif

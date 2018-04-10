@@ -20,18 +20,19 @@
 
 #include "../tlv.h"
 
-void assert_tlv_structure(tlv_t *tlv, tlv_type_t type, uint16_t len,
+void assert_tlv_structure(tlv_list_t *tlvs, tlv_type_t type, uint16_t len,
                           uint8_t *data, bool next) {
-  otrng_assert(tlv);
-  otrng_assert(tlv->type == type);
-  otrng_assert(tlv->len == len);
+  otrng_assert(tlvs);
+  otrng_assert(tlvs->data);
+  otrng_assert(tlvs->data->type == type);
+  otrng_assert(tlvs->data->len == len);
   if (next) {
-    otrng_assert(tlv->next != NULL);
+    otrng_assert(tlvs->next != NULL);
   } else {
-    otrng_assert(tlv->next == NULL);
+    otrng_assert(tlvs->next == NULL);
   }
   if (type != OTRNG_TLV_PADDING) {
-    otrng_assert_cmpmem(tlv->data, data, len);
+    otrng_assert_cmpmem(tlvs->data->data, data, len);
   }
 }
 
@@ -43,21 +44,21 @@ void test_tlv_parse() {
   uint8_t data[3] = {0x08, 0x05, 0x09};
   uint8_t data2[4] = {0xac, 0x04, 0x05, 0x06};
 
-  tlv_t *tlv = otrng_parse_tlvs(msg, sizeof(msg));
-  assert_tlv_structure(tlv, OTRNG_TLV_SMP_ABORT, sizeof(data), data, true);
-  assert_tlv_structure(tlv->next, OTRNG_TLV_SMP_MSG_1, sizeof(data2), data2,
+  tlv_list_t *tlvs = otrng_parse_tlvs(msg, sizeof(msg));
+  assert_tlv_structure(tlvs, OTRNG_TLV_SMP_ABORT, sizeof(data), data, true);
+  assert_tlv_structure(tlvs->next, OTRNG_TLV_SMP_MSG_1, sizeof(data2), data2,
                        true);
-  assert_tlv_structure(tlv->next->next, OTRNG_TLV_SMP_MSG_4, sizeof(data), data,
-                       false);
+  assert_tlv_structure(tlvs->next->next, OTRNG_TLV_SMP_MSG_4, sizeof(data),
+                       data, false);
 
-  otrng_tlv_free(tlv);
+  otrng_tlv_list_free(tlvs);
 }
 
 void test_otrng_append_tlv() {
   uint8_t smp2_data[2] = {0x03, 0x04};
   uint8_t smp3_data[3] = {0x05, 0x04, 0x03};
 
-  tlv_t *tlvs = NULL;
+  tlv_list_t *tlvs = NULL;
   tlv_t *smp_msg2_tlv =
       otrng_tlv_new(OTRNG_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
   tlv_t *smp_msg3_tlv =
@@ -78,26 +79,26 @@ void test_otrng_append_tlv() {
   assert_tlv_structure(tlvs, OTRNG_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data,
                        true);
 
-  otrng_tlv_free(tlvs);
+  otrng_tlv_list_free(tlvs);
 }
 
 void test_otrng_append_padding_tlv() {
   uint8_t smp2_data[2] = {0x03, 0x04};
 
-  tlv_t *tlv = otrng_tlv_new(OTRNG_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
-  otrng_err_t err = otrng_append_padding_tlv(&tlv, 6);
-  otrng_assert(err == SUCCESS);
-  assert_tlv_structure(tlv->next, OTRNG_TLV_PADDING, 245, smp2_data, false);
-  otrng_tlv_free(tlv);
+  tlv_list_t *tlvs = otrng_tlv_list_one(
+      otrng_tlv_new(OTRNG_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data));
+  tlvs = otrng_append_padding_tlv(tlvs, 6);
+  otrng_assert(tlvs);
+  assert_tlv_structure(tlvs->next, OTRNG_TLV_PADDING, 245, smp2_data, false);
+  otrng_tlv_list_free(tlvs);
 
-  tlv = otrng_tlv_new(OTRNG_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
-  err = otrng_append_padding_tlv(&tlv, 500);
-  assert_tlv_structure(tlv->next, OTRNG_TLV_PADDING, 7, smp2_data, false);
-  otrng_tlv_free(tlv);
+  tlvs = otrng_tlv_list_one(
+      otrng_tlv_new(OTRNG_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data));
+  tlvs = otrng_append_padding_tlv(tlvs, 500);
+  assert_tlv_structure(tlvs->next, OTRNG_TLV_PADDING, 7, smp2_data, false);
+  otrng_tlv_list_free(tlvs);
 
-  tlv = NULL;
-  err = otrng_append_padding_tlv(&tlv, 500);
-  otrng_assert(err == SUCCESS);
-  otrng_assert(tlv);
-  otrng_tlv_free(tlv);
+  tlvs = otrng_append_padding_tlv(NULL, 500);
+  otrng_assert(tlvs);
+  otrng_tlv_list_free(tlvs);
 }

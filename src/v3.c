@@ -473,7 +473,7 @@ INTERNAL void otrng_v3_conn_free(otrng_v3_conn_t *conn) {
 
 INTERNAL otrng_err_t otrng_v3_send_message(char **newmessage,
                                            const char *message,
-                                           const tlv_t *tlvs,
+                                           const tlv_list_t *tlvs,
                                            otrng_v3_conn_t *conn) {
   // TODO: convert TLVs
   OtrlTLV *tlvsv3 = NULL;
@@ -495,7 +495,7 @@ INTERNAL otrng_err_t otrng_v3_send_message(char **newmessage,
 
 INTERNAL otrng_err_t otrng_v3_receive_message(string_t *to_send,
                                               string_t *to_display,
-                                              tlv_t **tlvs,
+                                              tlv_list_t **tlvs,
                                               const string_t message,
                                               otrng_v3_conn_t *conn) {
   int ignore_message;

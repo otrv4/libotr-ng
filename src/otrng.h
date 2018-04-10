@@ -140,7 +140,7 @@ typedef enum {
 typedef struct {
   string_t to_display;
   string_t to_send;
-  tlv_t *tlvs;
+  tlv_list_t *tlvs;
   otrng_warning_t warning;
 } otrng_response_t;
 
@@ -168,8 +168,8 @@ INTERNAL otrng_err_t otrng_receive_message(otrng_response_t *response,
 
 INTERNAL otrng_err_t otrng_prepare_to_send_message(string_t *to_send,
                                                    const string_t message,
-                                                   tlv_t **tlvs, uint8_t flags,
-                                                   otrng_t *otr);
+                                                   tlv_list_t **tlvs,
+                                                   uint8_t flags, otrng_t *otr);
 
 INTERNAL otrng_err_t otrng_close(string_t *to_send, otrng_t *otr);
 
