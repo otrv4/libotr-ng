@@ -22,7 +22,8 @@
 #include "../tlv.h"
 
 void test_smp_state_machine(void) {
-  return;
+  return; // TODO: this test is actually not working and does not
+          // check anything
   OTRNG_INIT;
 
   otrng_client_state_t *alice_keypair = otrng_client_state_new(NULL);
@@ -81,7 +82,7 @@ void test_smp_state_machine(void) {
   tlv_smp_2 = NULL; // otrng_smp_provide_secret(bob_otr, (const uint8_t
                     // *)"answer", strlen("answer"));
   otrng_assert(tlv_smp_2);
-  g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MSG_2);
+  g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MSG_1);
 
   g_assert_cmpint(25, ==, alice_otr->smp->progress);
   g_assert_cmpint(50, ==, bob_otr->smp->progress);
