@@ -23,7 +23,7 @@
 
 INTERNAL void
 otrng_client_callbacks_create_privkey(const otrng_client_callbacks_t *cb,
-                                      void *client_opdata) {
+                                      const void *client_opdata) {
   if (!cb)
     return;
 }

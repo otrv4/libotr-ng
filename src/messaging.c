@@ -68,7 +68,7 @@ tstatic int find_state_by_client_id(const void *current, const void *wanted) {
 }
 
 tstatic otrng_client_state_t *get_client_state(otrng_userstate_t *state,
-                                               void *client_id) {
+                                               const void *client_id) {
   list_element_t *el =
       otrng_list_get(client_id, state->states, find_state_by_client_id);
   if (el)
@@ -144,7 +144,7 @@ tstatic otrng_client_state_t *get_client_state(otrng_userstate_t *state,
 /* } */
 
 API int
-otrng_user_state_add_private_key_v4(otrng_userstate_t *state, void *clientop,
+otrng_user_state_add_private_key_v4(otrng_userstate_t *state, const void *clientop,
                                     const uint8_t sym[ED448_PRIVATE_BYTES]) {
   return otrng_client_state_add_private_key_v4(
       get_client_state(state, clientop), sym);
@@ -158,7 +158,7 @@ otrng_user_state_add_private_key_v4(otrng_userstate_t *state, void *clientop,
 /* } */
 
 API otrng_keypair_t *
-otrng_user_state_get_private_key_v4(otrng_userstate_t *state, void *client_id) {
+otrng_user_state_get_private_key_v4(otrng_userstate_t *state, const void *client_id) {
   return otrng_client_state_get_private_key_v4(
       get_client_state(state, client_id));
 }
@@ -182,14 +182,12 @@ otrng_user_state_get_private_key_v4(otrng_userstate_t *state, void *client_id) {
 
 API int otrng_user_state_private_key_v4_read_FILEp(
     otrng_userstate_t *state, FILE *privf,
-    void *(*read_client_id_for_key)(FILE *filep)) {
-  void *client_id = NULL;
-
+    const void *(*read_client_id_for_key)(FILE *filep)) {
   if (!privf)
     return 1;
 
   while (!feof(privf)) {
-    client_id = read_client_id_for_key(privf);
+    const void *client_id = read_client_id_for_key(privf);
     if (!client_id)
       continue;
 

@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
   g_test_add_func("/api/smp", test_api_smp);
   g_test_add_func("/api/smp_abort", test_api_smp_abort);
-  g_test_add_func("/api/messaging", test_api_messaging);
+  /* g_test_add_func("/api/messaging", test_api_messaging); */
   g_test_add_func("/api/instance_tag", test_instance_tag_api);
   g_test_add_func("/api/dh_key_rotation", test_dh_key_rotation);
   g_test_add_func("/api/extra_symm_key", test_api_extra_sym_key);

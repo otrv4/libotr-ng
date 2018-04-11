@@ -37,7 +37,7 @@ tstatic heartbeat_t *set_heartbeat(int wait) {
   return heartbeat;
 }
 
-INTERNAL otrng_client_state_t *otrng_client_state_new(void *client_id) {
+INTERNAL otrng_client_state_t *otrng_client_state_new(const void *client_id) {
   otrng_client_state_t *state = malloc(sizeof(otrng_client_state_t));
   if (!state)
     return NULL;

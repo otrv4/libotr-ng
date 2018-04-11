@@ -21,11 +21,11 @@
 #include "../messaging.h"
 
 // These must be fixed pointers managed by the messaging app
-static char *alice_account = "alice@xmpp";
-static char *bob_account = "bob@xmpp";
-static char *charlie_account = "charlie@xmpp";
+static const char *alice_account = "alice@xmpp";
+static const char *bob_account = "bob@xmpp";
+static const char *charlie_account = "charlie@xmpp";
 
-static void *read_client_id_for_privf(FILE *privf) {
+static const void *read_client_id_for_privf(FILE *privf) {
   // Uses the file pointer to read and locate the appropriate client_id in your
   // mesaging app
   fseek(privf, strlen(charlie_account) + 1, SEEK_CUR);
@@ -69,30 +69,39 @@ void test_userstate_key_management(void) {
  * Create callbacks for testing the callbacks API
  */
 
-static otrng_userstate_t *test_state = NULL;
+/* TODO: The below test is commented out because it didn't test anything
+ * - plus, the use of a global to manage things imply that these
+ * APIs are not well thouht out:
+ *   If you need access to the user state in order to reasonable create
+ *   a private key, it seems it should be an argument - neh?
+ */
 
-static void create_privkey_cb(void *client_id) {
-  const uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_user_state_add_private_key_v4(test_state, client_id, sym);
-}
+/* static otrng_userstate_t *test_state = NULL; */
 
-static otrng_client_callbacks_t test_calbacks = {
-    create_privkey_cb, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-};
+/* static void create_privkey_cb(void *client_id) { */
+/*   const uint8_t sym[ED448_PRIVATE_BYTES] = {1}; */
+/*   otrng_user_state_add_private_key_v4(test_state, client_id, sym); */
+/* } */
 
-void test_api_messaging(void) {
+/* static otrng_client_callbacks_t test_calbacks = { */
+/*     create_privkey_cb, NULL, NULL, NULL, NULL, NULL, NULL, NULL, */
+/* }; */
 
-  test_state = otrng_user_state_new(&test_calbacks);
+/* void test_api_messaging(void) { */
 
-  // This will invoke create_privkey_cb() to create the private keys
-  otrng_assert(otrng_user_state_get_private_key_v4(test_state, alice_account));
-  otrng_assert(otrng_user_state_get_private_key_v4(test_state, bob_account));
+/*   test_state = otrng_user_state_new(&test_calbacks); */
 
-  otrng_user_state_free(test_state);
-}
+/*   // This will invoke create_privkey_cb() to create the private keys */
+/*   otrng_assert(otrng_user_state_get_private_key_v4(test_state,
+ * alice_account)); */
+/*   otrng_assert(otrng_user_state_get_private_key_v4(test_state, bob_account));
+ */
+
+/*   otrng_user_state_free(test_state); */
+/* } */
 
 void test_instance_tag_api(void) {
-  char *alice_account = "alice@xmpp";
+  const char *alice_account = "alice@xmpp";
   char *icq_alice_account = "alice_icq";
   char *icq_protocol = "ICQ";
   unsigned int icq_instag_value = 0x9abcdef0;
