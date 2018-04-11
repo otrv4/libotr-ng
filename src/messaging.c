@@ -144,7 +144,8 @@ tstatic otrng_client_state_t *get_client_state(otrng_userstate_t *state,
 /* } */
 
 API int
-otrng_user_state_add_private_key_v4(otrng_userstate_t *state, const void *clientop,
+otrng_user_state_add_private_key_v4(otrng_userstate_t *state,
+                                    const void *clientop,
                                     const uint8_t sym[ED448_PRIVATE_BYTES]) {
   return otrng_client_state_add_private_key_v4(
       get_client_state(state, clientop), sym);
@@ -158,7 +159,8 @@ otrng_user_state_add_private_key_v4(otrng_userstate_t *state, const void *client
 /* } */
 
 API otrng_keypair_t *
-otrng_user_state_get_private_key_v4(otrng_userstate_t *state, const void *client_id) {
+otrng_user_state_get_private_key_v4(otrng_userstate_t *state,
+                                    const void *client_id) {
   return otrng_client_state_get_private_key_v4(
       get_client_state(state, client_id));
 }

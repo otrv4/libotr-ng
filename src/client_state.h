@@ -37,10 +37,11 @@ typedef struct heartbeat_t {
 } heartbeat_t;
 
 typedef struct otrng_client_state_t {
-  const void *client_id; /* Data in the messaging application context that represents
-                            a client and should map directly to it. For example, in
-                            libpurple-based apps (like Pidgin) this could be a
-                            PurpleAccount */
+  const void
+      *client_id; /* Data in the messaging application context that represents
+                     a client and should map directly to it. For example, in
+                     libpurple-based apps (like Pidgin) this could be a
+                     PurpleAccount */
 
   // TODO: Replace with a callback that knows how to get these from the
   // client_id.

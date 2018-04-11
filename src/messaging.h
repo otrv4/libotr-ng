@@ -92,10 +92,12 @@ API int otrng_user_state_private_key_v4_read_FILEp(
     const void *(*read_client_id_for_key)(FILE *filep));
 
 API otrng_keypair_t *
-otrng_user_state_get_private_key_v4(otrng_userstate_t *state, const void *client_id);
+otrng_user_state_get_private_key_v4(otrng_userstate_t *state,
+                                    const void *client_id);
 
 API int
-otrng_user_state_add_private_key_v4(otrng_userstate_t *state, const void *client_id,
+otrng_user_state_add_private_key_v4(otrng_userstate_t *state,
+                                    const void *client_id,
                                     const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 API otrng_userstate_t *otrng_user_state_new(const otrng_client_callbacks_t *cb);

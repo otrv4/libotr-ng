@@ -41,8 +41,9 @@ typedef struct otrng_conversation_state_t otrng_client_conversation_t;
 typedef struct otrng_client_callbacks_t {
   /* Create a private key for the given accountname/protocol if
    * desired. */
-  void (*create_privkey)(
-      const void *client_opdata); // TODO: This should receive a otrng_client_state_t
+  void (*create_privkey)(const void *client_opdata); // TODO: This should
+                                                     // receive a
+                                                     // otrng_client_state_t
 
   /* A connection has entered a secure state. */
   void (*gone_secure)(const otrng_client_conversation_t *);
