@@ -445,3 +445,19 @@
    ...
    fun:g_test_run_suite_internal
 }
+{
+   gcry_pk_genkey_2
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:gcry_pk_genkey
+   ...
+}
+{
+   gcry_randomize
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:random_bytes
+   ...
+}
