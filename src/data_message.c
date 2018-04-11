@@ -203,6 +203,23 @@ INTERNAL otrng_err_t otrng_data_message_deserialize(data_message_t *dst,
                                        cursor, len);
 }
 
+INTERNAL static otrng_err_t
+otrng_data_message_sections_hash(uint8_t *dst, size_t dstlen,
+                                 const uint8_t *body, size_t bodylen) {
+  if (dstlen < 64)
+    return ERROR;
+
+  // KDF_1(0x27 || data_message_sections, 64)
+  goldilocks_shake256_ctx_t sections_hash;
+  hash_init_with_usage(sections_hash, 0x27);
+
+  hash_update(sections_hash, body, bodylen);
+  hash_final(sections_hash, dst, 64);
+  hash_destroy(sections_hash);
+
+  return SUCCESS;
+}
+
 INTERNAL otrng_err_t otrng_data_message_authenticator(uint8_t *dst,
                                                       size_t dstlen,
                                                       const m_mac_key_t mac_key,
@@ -211,10 +228,19 @@ INTERNAL otrng_err_t otrng_data_message_authenticator(uint8_t *dst,
   if (dstlen < DATA_MSG_MAC_BYTES)
     return ERROR;
 
-  // TODO: replace by new KDF_1
-  memset(dst, 0, dstlen);
-  shake_256_mac(dst, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t), body,
-                bodylen);
+  // Authenticator = KDF_1(0x28 || MKmac || KDF_1(0x27 || data_message_sections,
+  // 64), 64)
+  uint8_t sections[64];
+  if (otrng_data_message_sections_hash(sections, 64, body, bodylen) == ERROR)
+    return ERROR;
+
+  goldilocks_shake256_ctx_t auth_hash;
+  hash_init_with_usage(auth_hash, 0x28);
+  hash_update(auth_hash, mac_key, sizeof(m_mac_key_t));
+  hash_update(auth_hash, sections, 64);
+  sodium_memzero(sections, 64);
+
+  hash_final(auth_hash, dst, DATA_MSG_MAC_BYTES);
   return SUCCESS;
 }
 

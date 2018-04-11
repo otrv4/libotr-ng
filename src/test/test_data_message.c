@@ -226,8 +226,10 @@ void test_data_message_valid() {
 
   otrng_assert(otrng_data_message_body_asprintf(&body, &bodylen, data_msg) ==
                otrng_true);
-  shake_256_mac(data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t),
-                body, bodylen);
+
+  otrng_assert(otrng_data_message_authenticator(data_msg->mac,
+                                                DATA_MSG_MAC_BYTES, mac_key,
+                                                body, bodylen) == SUCCESS);
 
   free(body);
   body = NULL;
@@ -244,8 +246,10 @@ void test_data_message_valid() {
 
   otrng_assert(otrng_data_message_body_asprintf(&body, &bodylen, data_msg) ==
                otrng_true);
-  shake_256_mac(data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t),
-                body, bodylen);
+
+  otrng_assert(otrng_data_message_authenticator(data_msg->mac,
+                                                DATA_MSG_MAC_BYTES, mac_key,
+                                                body, bodylen) == SUCCESS);
 
   free(body);
   body = NULL;

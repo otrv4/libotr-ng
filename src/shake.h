@@ -33,8 +33,18 @@
 static void hash_init_with_dom(goldilocks_shake256_ctx_t hash) {
   hash_init(hash);
 
+  // TODO: This should be "OTRv4", per spec.
   const char *dom_s = "OTR4";
   hash_update(hash, (const unsigned char *)dom_s, strlen(dom_s));
+}
+
+static inline void hash_init_with_usage(goldilocks_shake256_ctx_t hash,
+                                        uint8_t usage) {
+  uint8_t buff[1] = {0};
+  *buff = usage;
+
+  hash_init_with_dom(hash);
+  hash_update(hash, buff, 1);
 }
 
 static void shake_kkdf(uint8_t *dst, size_t dstlen, const uint8_t *key,
