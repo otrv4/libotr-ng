@@ -21,8 +21,6 @@
 #include "../dh.h"
 
 void dh_test_api() {
-  OTRNG_INIT;
-
   dh_keypair_t alice, bob;
   otrng_dh_keypair_generate(alice);
   otrng_dh_keypair_generate(bob);
@@ -41,7 +39,6 @@ void dh_test_api() {
 
   otrng_dh_keypair_destroy(alice);
   otrng_dh_keypair_destroy(bob);
-  otrng_dh_free();
 }
 
 void dh_test_serialize() {
@@ -68,7 +65,6 @@ void dh_test_serialize() {
 }
 
 void dh_test_keypair_destroy() {
-  OTRNG_INIT;
   dh_keypair_t alice;
 
   otrng_dh_keypair_generate(alice);
@@ -80,6 +76,4 @@ void dh_test_keypair_destroy() {
 
   otrng_assert(!alice->priv);
   otrng_assert(!alice->pub);
-
-  otrng_dh_free();
 }

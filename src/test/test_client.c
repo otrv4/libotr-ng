@@ -37,7 +37,6 @@ static otrng_client_t *set_up_client(otrng_client_state_t *state,
 }
 
 void test_client_conversation_api() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
 
@@ -77,12 +76,9 @@ void test_client_conversation_api() {
   otrl_userstate_free(alice_state->userstate);
   otrng_client_state_free(alice_state);
   otrng_client_free(alice);
-
-  OTRNG_FREE
 }
 
 void test_client_api() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new("alice");
   otrng_client_state_t *bob_state = otrng_client_state_new("bob");
@@ -217,12 +213,9 @@ void test_client_api() {
                            charlie_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state, charlie_state);
   otrng_client_free_all(alice, bob, charlie);
-
-  OTRNG_FREE
 }
 
 void test_client_get_our_fingerprint() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new("alice");
   otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
@@ -243,8 +236,6 @@ void test_client_get_our_fingerprint() {
   otrl_userstate_free(alice_state->userstate);
   otrng_client_state_free(alice_state);
   otrng_client_free(alice);
-
-  OTRNG_FREE
 }
 
 void test_fingerprint_hash_to_human() {
@@ -275,7 +266,6 @@ void test_fingerprint_hash_to_human() {
 }
 
 void test_conversation_with_multiple_locations() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new("alice");
   otrng_client_state_t *bob_state = otrng_client_state_new("bob");
@@ -367,12 +357,9 @@ void test_conversation_with_multiple_locations() {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_client_free_all(alice, bob);
-
-  OTRNG_FREE
 }
 
 void test_valid_identity_msg_in_waiting_auth_i() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new("alice");
   otrng_client_state_t *bob_state = otrng_client_state_new("bob");
@@ -504,12 +491,9 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_client_free_all(alice, bob);
-
-  OTRNG_FREE
 }
 
 void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new("alice");
   otrng_client_state_t *bob_state = otrng_client_state_new("bob");
@@ -619,12 +603,9 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_client_free_all(alice, bob);
-
-  OTRNG_FREE
 }
 
 void test_valid_identity_msg_in_waiting_auth_r() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new("alice");
   otrng_client_state_t *bob_state = otrng_client_state_new("bob");
@@ -795,12 +776,9 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_client_free_all(alice, bob);
-
-  OTRNG_FREE
 }
 
 void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new("alice");
   otrng_client_state_t *bob_state = otrng_client_state_new("bob");
@@ -906,8 +884,6 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_client_free_all(alice, bob);
-
-  OTRNG_FREE
 }
 
 void test_client_receives_fragmented_message(void) {
@@ -939,7 +915,6 @@ void test_client_receives_fragmented_message(void) {
 }
 
 void test_client_sends_fragmented_message(void) {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new("alice");
   otrng_client_state_t *bob_state = otrng_client_state_new("bob");
@@ -1005,6 +980,4 @@ void test_client_sends_fragmented_message(void) {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_client_free_all(alice, bob);
-
-  OTRNG_FREE;
 }

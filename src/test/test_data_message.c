@@ -83,7 +83,6 @@ static data_message_t *set_up_data_msg() {
 }
 
 void test_data_message_serializes() {
-  OTRNG_INIT;
 
   data_message_t *data_msg = set_up_data_msg();
 
@@ -139,7 +138,6 @@ void test_data_message_serializes() {
 }
 
 void test_otrng_data_message_deserializes() {
-  OTRNG_INIT;
 
   data_message_t *data_msg = set_up_data_msg();
 

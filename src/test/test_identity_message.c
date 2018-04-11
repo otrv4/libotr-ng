@@ -24,7 +24,6 @@
 
 void test_dake_identity_message_serializes(identity_message_fixture_t *f,
                                            gconstpointer data) {
-  OTRNG_INIT;
 
   ecdh_keypair_t ecdh[1];
   dh_keypair_t dh;
@@ -87,13 +86,10 @@ void test_dake_identity_message_serializes(identity_message_fixture_t *f,
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dake_identity_message_free(identity_message);
   free(serialized);
-
-  OTRNG_FREE;
 }
 
 void test_otrng_dake_identity_message_deserializes(
     identity_message_fixture_t *f, gconstpointer data) {
-  OTRNG_INIT;
 
   ecdh_keypair_t ecdh[1];
   dh_keypair_t dh;
@@ -134,13 +130,10 @@ void test_otrng_dake_identity_message_deserializes(
   otrng_dake_identity_message_free(identity_message);
   otrng_dake_identity_message_free(deserialized);
   free(serialized);
-
-  OTRNG_FREE;
 }
 
 void test_dake_identity_message_valid(identity_message_fixture_t *f,
                                       gconstpointer data) {
-  OTRNG_INIT;
 
   ecdh_keypair_t ecdh[1];
   dh_keypair_t dh;
@@ -195,6 +188,4 @@ void test_dake_identity_message_valid(identity_message_fixture_t *f,
   otrng_dh_keypair_destroy(invalid_dh);
   otrng_shared_prekey_pair_free(shared_prekey);
   otrng_dake_identity_message_free(invalid_identity_message);
-
-  OTRNG_FREE;
 }

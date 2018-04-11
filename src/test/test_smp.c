@@ -24,7 +24,6 @@
 void test_smp_state_machine(void) {
   return; // TODO: this test is actually not working and does not
           // check anything
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_keypair = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_keypair = otrng_client_state_new(NULL);
@@ -145,8 +144,6 @@ void test_smp_state_machine(void) {
   otrng_client_state_free(bob_keypair);
   otrng_free(alice_otr);
   otrng_free(bob_otr);
-
-  OTRNG_FREE;
 };
 
 void test_otrng_generate_smp_secret(void) {

@@ -32,7 +32,6 @@ int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
 }
 
 void otrng_fixture_set_up(otrng_fixture_t *otrng_fixture, gconstpointer data) {
-  OTRNG_INIT;
 
   otrng_fixture->state = otrng_client_state_new(NULL); // No callbacks
   otrng_fixture->state->userstate = otrl_userstate_create();
@@ -84,8 +83,6 @@ void otrng_fixture_teardown(otrng_fixture_t *otrng_fixture,
 
   otrng_free(otrng_fixture->v34);
   otrng_fixture->v34 = NULL;
-
-  otrng_dh_free();
 }
 
 typedef struct {

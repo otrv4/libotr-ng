@@ -89,7 +89,6 @@ static otrng_t *set_up_otr(otrng_client_state_t *state,
 }
 
 void test_api_interactive_conversation(void) {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -214,14 +213,11 @@ void test_api_interactive_conversation(void) {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
-
-  OTRNG_FREE;
 }
 
 // TODO: the way that i and j is being handled is not competly correct
 // apparently. Including this test for reference
 void test_api_interactive_conversation_bob(void) {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -276,12 +272,9 @@ void test_api_interactive_conversation_bob(void) {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
-
-  OTRNG_FREE;
 }
 
 void test_api_non_interactive_conversation(void) {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -463,12 +456,9 @@ void test_api_non_interactive_conversation(void) {
   otrng_client_state_free_all(alice_state, bob_state);
 
   otrng_free_all(alice, bob);
-
-  OTRNG_FREE;
 }
 
 void test_api_non_interactive_conversation_with_enc_msg(void) {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -651,12 +641,9 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrng_client_state_free_all(alice_state, bob_state);
 
   otrng_free_all(alice, bob);
-
-  OTRNG_FREE;
 }
 
 void test_api_conversation_errors(void) {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -740,8 +727,6 @@ void test_api_conversation_errors(void) {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
-
-  OTRNG_FREE;
 }
 
 static void do_ake_v3(otrng_t *alice, otrng_t *bob) {
@@ -819,7 +804,6 @@ static void do_ake_v3(otrng_t *alice, otrng_t *bob) {
 }
 
 void test_api_conversation_v3(void) {
-  OTRNG_INIT;
   tlv_list_t *tlvs = NULL;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
@@ -898,12 +882,9 @@ void test_api_conversation_v3(void) {
   otrng_client_state_free_all(alice_state, bob_state);
 
   otrng_tlv_list_free(tlvs);
-
-  OTRNG_FREE;
 }
 
 void test_api_multiple_clients(void) {
-  OTRNG_INIT;
 
   bool send_response = true;
   otrng_err_t err;
@@ -1025,12 +1006,9 @@ void test_api_multiple_clients(void) {
                            bob_pc_state->userstate);
   otrng_client_state_free_all(alice_state, bob_pc_state, bob_phone_state);
   otrng_free_all(alice, bob_pc, bob_phone);
-
-  OTRNG_FREE;
 }
 
 void test_api_smp(void) {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -1111,12 +1089,9 @@ void test_api_smp(void) {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
-
-  OTRNG_FREE;
 }
 
 void test_api_smp_abort(void) {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -1173,12 +1148,9 @@ void test_api_smp_abort(void) {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
-
-  OTRNG_FREE;
 }
 
 void test_api_extra_sym_key(void) {
-  OTRNG_INIT;
 
   tlv_list_t *tlvs = NULL;
 
@@ -1254,12 +1226,9 @@ void test_api_extra_sym_key(void) {
   otrng_free_all(alice, bob);
 
   otrng_tlv_list_free(tlvs);
-
-  OTRNG_FREE;
 }
 
 void test_dh_key_rotation(void) {
-  OTRNG_INIT;
   tlv_list_t *tlvs = NULL;
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -1343,12 +1312,9 @@ void test_dh_key_rotation(void) {
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
   otrng_tlv_list_free(tlvs);
-
-  OTRNG_FREE;
 }
 
 void test_ecdh_priv_keys_destroyed_early() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -1439,12 +1405,9 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
-
-  OTRNG_FREE;
 }
 
 void test_unreadable_flag() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -1535,12 +1498,9 @@ void test_unreadable_flag() {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
-
-  OTRNG_FREE;
 }
 
 void test_heartbeat_messages() {
-  OTRNG_INIT;
 
   otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
@@ -1603,6 +1563,4 @@ void test_heartbeat_messages() {
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
-
-  OTRNG_FREE;
 }
