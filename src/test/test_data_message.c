@@ -182,3 +182,32 @@ void test_otrng_data_message_deserializes() {
   free(serialized);
   serialized = NULL;
 }
+
+void test_data_message_valid() {
+  data_message_t *data_msg = set_up_data_msg();
+
+  // Should fail because data_msg has a zeroed mac tag.
+  m_mac_key_t mac_key = {0};
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_false);
+
+  // Overwrite the zeroed mac tag
+  uint8_t *body = NULL;
+  size_t bodylen = 0;
+
+  otrng_assert(otrng_data_message_body_asprintf(&body, &bodylen, data_msg) ==
+               otrng_true);
+  shake_256_mac(data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t),
+                body, bodylen);
+
+  free(body);
+  body = NULL;
+
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
+
+  // Overwrite DH with an invalid value
+  gcry_mpi_set_ui(data_msg->dh, 1);
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_false);
+
+  otrng_data_message_free(data_msg);
+  data_msg = NULL;
+}
