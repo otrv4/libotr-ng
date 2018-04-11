@@ -553,7 +553,7 @@ INTERNAL otrng_err_t otrng_v3_smp_start(string_t *to_send,
                                         otrng_v3_conn_t *conn) {
   string_t q = NULL;
   if (question && q_len > 0) {
-    q = malloc(q_len+1);
+    q = malloc(q_len + 1);
     if (!q) {
       return ERROR;
     }

@@ -49,7 +49,10 @@ void test_smp_state_machine(void) {
   const uint8_t *question = (const uint8_t *)"some-question";
   const uint8_t *answer = (const uint8_t *)"answer";
 
-  tlv_t *tlv_smp_1 = otrng_smp_initiate(get_my_user_profile(alice_otr), alice_otr->their_profile, question, 13, answer, 6, alice_otr->keys->ssid, alice_otr->smp, alice_otr->conversation);
+  tlv_t *tlv_smp_1 = otrng_smp_initiate(
+      get_my_user_profile(alice_otr), alice_otr->their_profile, question, 13,
+      answer, 6, alice_otr->keys->ssid, alice_otr->smp,
+      alice_otr->conversation);
   otrng_assert(tlv_smp_1);
 
   g_assert_cmpint(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1), ==, SUCCESS);
@@ -71,8 +74,10 @@ void test_smp_state_machine(void) {
   g_assert_cmpint(25, ==, bob_otr->smp->progress);
 
   otrng_smp_event_t event = OTRNG_SMPEVENT_NONE;
-  tlv_smp_2 = otrng_smp_provide_secret(&event, bob_otr->smp, get_my_user_profile(bob_otr), bob_otr->their_profile,
-      bob_otr->keys->ssid, (const uint8_t *)"answer", strlen("answer"));
+  tlv_smp_2 = otrng_smp_provide_secret(
+      &event, bob_otr->smp, get_my_user_profile(bob_otr),
+      bob_otr->their_profile, bob_otr->keys->ssid, (const uint8_t *)"answer",
+      strlen("answer"));
   otrng_assert(tlv_smp_2);
   g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MSG_2);
 

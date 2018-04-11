@@ -199,8 +199,7 @@ tstatic otrng_err_t smp_msg_1_deserialize(smp_msg_1_t *msg, const tlv_t *tlv) {
   size_t read = 0;
 
   msg->question = NULL;
-  if (otrng_deserialize_data(&msg->question, cursor, len, &read) ==
-      ERROR)
+  if (otrng_deserialize_data(&msg->question, cursor, len, &read) == ERROR)
     return ERROR;
 
   msg->q_len = read - 4;

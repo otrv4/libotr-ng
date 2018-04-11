@@ -38,7 +38,7 @@ typedef enum {
 } smp_state_t;
 
 /**
- * @warning the [question] field is NOT zero terminated, and can't be relied on 
+ * @warning the [question] field is NOT zero terminated, and can't be relied on
  *    to be. the length of this field is contained in the [q_len] field.
  **/
 typedef struct {
