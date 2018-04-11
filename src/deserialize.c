@@ -208,14 +208,13 @@ INTERNAL otrng_err_t otrng_deserialize_otrng_shared_prekey(
   return SUCCESS;
 }
 
-// TODO: check if return is necessesary
 INTERNAL otrng_err_t otrng_deserialize_ec_scalar(ec_scalar_t scalar,
                                                  const uint8_t *serialized,
                                                  size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES)
     return ERROR;
 
-  otrng_ec_scalar_deserialize(scalar, serialized);
+  otrng_ec_scalar_decode(scalar, serialized);
 
   return SUCCESS;
 }

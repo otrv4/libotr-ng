@@ -31,9 +31,8 @@ INTERNAL void otrng_ec_bzero(void *data, size_t size) {
 
 INTERNAL otrng_bool_t otrng_ec_scalar_eq(const ec_scalar_t a,
                                          const ec_scalar_t b) {
-  if (goldilocks_448_scalar_eq(a, b) == GOLDILOCKS_TRUE) {
+  if (goldilocks_448_scalar_eq(a, b))
     return otrng_true;
-  }
 
   return otrng_false;
 }
@@ -89,19 +88,13 @@ INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared,
 /*   memcpy(dst, src, sizeof(ec_public_key_t)); */
 /* } */
 
-INTERNAL otrng_err_t otrng_ec_scalar_serialize(uint8_t *dst, size_t dst_len,
-                                               const ec_scalar_t scalar) {
-  if (dst_len < ED448_SCALAR_BYTES)
-    return ERROR;
-
+INTERNAL void otrng_ec_scalar_encode(uint8_t *dst, const ec_scalar_t scalar) {
   goldilocks_448_scalar_encode(dst, scalar);
-
-  return SUCCESS;
 }
 
 INTERNAL void
-otrng_ec_scalar_deserialize(ec_scalar_t scalar,
-                            const uint8_t serialized[ED448_SCALAR_BYTES]) {
+otrng_ec_scalar_decode(ec_scalar_t scalar,
+                       const uint8_t serialized[ED448_SCALAR_BYTES]) {
   goldilocks_448_scalar_decode_long(scalar, serialized, ED448_SCALAR_BYTES);
 }
 
@@ -142,7 +135,7 @@ INTERNAL otrng_bool_t otrng_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
                                       const uint8_t pubkey[ED448_POINT_BYTES],
                                       const uint8_t *msg, size_t msg_len) {
   if (goldilocks_ed448_verify(sig, pubkey, msg, msg_len, 0, (uint8_t *)ctx,
-                              strlen(ctx)) == GOLDILOCKS_TRUE)
+                              strlen(ctx)))
     return otrng_true;
 
   return otrng_false;
@@ -157,16 +150,15 @@ INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t dst) {
 }
 
 INTERNAL otrng_bool_t otrng_ec_point_valid(const ec_point_t point) {
-  if (GOLDILOCKS_TRUE == goldilocks_448_point_valid(point)) {
+  if (goldilocks_448_point_valid(point))
     return otrng_true;
-  }
 
   return otrng_false;
 }
 
 INTERNAL otrng_bool_t otrng_ec_point_eq(const ec_point_t p,
                                         const ec_point_t q) {
-  if (goldilocks_448_point_eq(p, q) == GOLDILOCKS_TRUE)
+  if (goldilocks_448_point_eq(p, q))
     return otrng_true;
 
   return otrng_false;

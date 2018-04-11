@@ -92,10 +92,9 @@ void ed448_test_scalar_serialization() {
   ec_scalar_t scalar;
 
   uint8_t buff[ED448_SCALAR_BYTES];
-  otrng_assert(otrng_ec_scalar_serialize(buff, sizeof(buff),
-                                         goldilocks_448_scalar_one) == SUCCESS);
+  otrng_ec_scalar_encode(buff, goldilocks_448_scalar_one);
 
-  otrng_ec_scalar_deserialize(scalar, buff);
+  otrng_ec_scalar_decode(scalar, buff);
   otrng_assert(otrng_ec_scalar_eq(scalar, goldilocks_448_scalar_one) ==
                otrng_true);
 }

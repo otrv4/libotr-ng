@@ -54,12 +54,11 @@ INTERNAL void otrng_ec_bzero(void *data, size_t size);
 INTERNAL otrng_bool_t otrng_ec_scalar_eq(const ec_scalar_t a,
                                          const ec_scalar_t b);
 
-INTERNAL otrng_err_t otrng_ec_scalar_serialize(uint8_t *dst, size_t dst_len,
-                                               const ec_scalar_t scalar);
+INTERNAL void otrng_ec_scalar_encode(uint8_t *dst, const ec_scalar_t scalar);
 
 INTERNAL void
-otrng_ec_scalar_deserialize(ec_scalar_t scalar,
-                            const uint8_t serialized[ED448_SCALAR_BYTES]);
+otrng_ec_scalar_decode(ec_scalar_t scalar,
+                       const uint8_t serialized[ED448_SCALAR_BYTES]);
 
 INTERNAL void otrng_ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t src);
 
