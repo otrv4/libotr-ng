@@ -90,6 +90,9 @@ INTERNAL void otrng_dh_init(void) {
 }
 
 INTERNAL void otrng_dh_free(void) {
+  if (!dh_initialized)
+    return;
+
   gcry_mpi_release(DH3072_MODULUS);
   DH3072_MODULUS = NULL;
 
