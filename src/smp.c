@@ -73,12 +73,12 @@ INTERNAL void otrng_smp_destroy(smp_context_t smp) {
   otrng_ec_point_destroy(smp->Qa_Qb);
 }
 
-// TODO: return err here?
-INTERNAL void otrng_generate_smp_secret(unsigned char **secret,
-                                        otrng_fingerprint_t our_fp,
-                                        otrng_fingerprint_t their_fp,
-                                        uint8_t *ssid, const uint8_t *answer,
-                                        size_t answerlen) {
+INTERNAL otrng_err_t otrng_generate_smp_secret(unsigned char **secret,
+                                               otrng_fingerprint_t our_fp,
+                                               otrng_fingerprint_t their_fp,
+                                               uint8_t *ssid,
+                                               const uint8_t *answer,
+                                               size_t answerlen) {
   uint8_t version[1] = {0x01};
 
   uint8_t hash[HASH_BYTES];
@@ -96,9 +96,11 @@ INTERNAL void otrng_generate_smp_secret(unsigned char **secret,
 
   *secret = malloc(HASH_BYTES);
   if (!*secret)
-    return;
+    return ERROR;
 
   memcpy(*secret, hash, HASH_BYTES);
+
+  return SUCCESS;
 }
 
 tstatic otrng_err_t hashToScalar(const unsigned char *buff,

@@ -2674,8 +2674,9 @@ tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator,
   otrng_fingerprint_t our_fp, their_fp;
   otrng_serialize_fingerprint(our_fp, initiator->pub_key);
   otrng_serialize_fingerprint(their_fp, responder->pub_key);
-  otrng_generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, secret,
-                            secretlen);
+  if (otrng_generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, secret,
+                                secretlen))
+    return NULL;
 
   do {
     if (otrng_generate_smp_msg_1(msg, smp))
@@ -2759,8 +2760,9 @@ tstatic tlv_t *otrng_smp_provide_secret(otrng_smp_event_t *event,
   otrng_fingerprint_t our_fp, their_fp;
   otrng_serialize_fingerprint(our_fp, our_profile->pub_key);
   otrng_serialize_fingerprint(their_fp, their_profile->pub_key);
-  otrng_generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret,
-                            secretlen);
+  if (otrng_generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret,
+                                secretlen))
+    return NULL;
 
   *event = otrng_reply_with_smp_msg_2(&smp_reply, smp);
 
