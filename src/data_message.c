@@ -36,6 +36,7 @@ INTERNAL data_message_t *otrng_data_message_new() {
   ret->enc_msg = NULL;
   ret->enc_msg_len = 0;
 
+  ret->dh = NULL;
   otrng_ec_bzero(ret->ecdh, ED448_POINT_BYTES);
 
   memset(ret->nonce, 0, sizeof ret->nonce);
