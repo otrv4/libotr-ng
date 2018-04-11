@@ -54,8 +54,8 @@ INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t s) {
   goldilocks_448_scalar_destroy(s);
 }
 
-INTERNAL void otrng_ec_point_copy(ec_point_t dst, const ec_point_t src) {
-  goldilocks_448_point_copy(dst, src);
+INTERNAL void otrng_ec_point_copy(ec_point_t dst, const ec_point_t p) {
+  goldilocks_448_point_copy(dst, p);
 }
 
 INTERNAL otrng_bool_t otrng_ec_point_eq(const ec_point_t p,
@@ -139,24 +139,20 @@ INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared,
   otrng_ec_point_encode(shared, s);
 }
 
-/* void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src) { */
-/*   memcpy(dst, src, sizeof(ec_public_key_t)); */
-/* } */
-
 static const char *ctx = "";
 
-INTERNAL void otrng_ec_sign(eddsa_signature_t dst,
+INTERNAL void otrng_ec_sign(eddsa_signature_t sig,
                             uint8_t sym[ED448_PRIVATE_BYTES],
-                            uint8_t pubkey[ED448_POINT_BYTES],
-                            const uint8_t *msg, size_t msg_len) {
-  goldilocks_ed448_sign(dst, sym, pubkey, msg, msg_len, 0, (uint8_t *)ctx,
+                            uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg,
+                            size_t msg_len) {
+  goldilocks_ed448_sign(sig, sym, pub, msg, msg_len, 0, (uint8_t *)ctx,
                         strlen(ctx));
 }
 
 INTERNAL otrng_bool_t otrng_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
-                                      const uint8_t pubkey[ED448_POINT_BYTES],
+                                      const uint8_t pub[ED448_POINT_BYTES],
                                       const uint8_t *msg, size_t msg_len) {
-  if (goldilocks_ed448_verify(sig, pubkey, msg, msg_len, 0, (uint8_t *)ctx,
+  if (goldilocks_ed448_verify(sig, pub, msg, msg_len, 0, (uint8_t *)ctx,
                               strlen(ctx)))
     return otrng_true;
 

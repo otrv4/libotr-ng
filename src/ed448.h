@@ -102,11 +102,34 @@ INTERNAL void otrng_ec_scalar_decode(ec_scalar_t s,
 /** Securely erase a scalar. */
 INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t s);
 
-INTERNAL void otrng_ec_point_destroy(ec_point_t dst);
+/**
+ * @brief Copy a point.  The input and output may alias,
+ * in which case this function does nothing.
+ *
+ * @param [out] dst A copy of the point.
+ * @param [in] p Any point.
+ */
+INTERNAL void otrng_ec_point_copy(ec_point_t dst, const ec_point_t p);
 
+/**
+ * @brief Check whether two points are equal.  If yes, return
+ * otrng_true, else return otrng_false.
+ *
+ * @param [in] p A point.
+ * @param [in] q Another point.
+ * @retval otrng_true The points are equal.
+ * @retval otrng_false The points are not equal.
+ */
+INTERNAL otrng_bool_t otrng_ec_point_eq(const ec_point_t p, const ec_point_t q);
+
+/**
+ * @brief Check that a point is valid.
+ *
+ * @param [in] p The point to check.
+ * @retval otrng_true The point is valid.
+ * @retval otrng_false The point is invalid.
+ */
 INTERNAL otrng_bool_t otrng_ec_point_valid(const ec_point_t p);
-
-INTERNAL otrng_bool_t otrng_ec_point_eq(const ec_point_t, const ec_point_t);
 
 /**
  * @brief EdDSA point encoding.
@@ -132,31 +155,88 @@ INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_t p);
 INTERNAL otrng_err_t
 otrng_ec_point_decode(ec_point_t p, const uint8_t enc[ED448_POINT_BYTES]);
 
-INTERNAL void otrng_ec_point_copy(ec_point_t dst, const ec_point_t src);
+/** Securely erase a point by overwriting it with zeros.
+ * @warning This causes the point object to become invalid.
+ */
+INTERNAL void otrng_ec_point_destroy(ec_point_t p);
 
+/**
+ * @brief EdDSA key secret key generation.
+ *
+ * @param [out] priv The private key.
+ * @param [in] sym The symmetric key.
+ */
 INTERNAL void
 otrng_ec_scalar_derive_from_secret(ec_scalar_t priv,
                                    uint8_t sym[ED448_PRIVATE_BYTES]);
 
+/**
+ * @brief EdDSA key generation.
+ *
+ * @param [out] pub The public key.
+ * @param [in] sym The private key.
+ */
 INTERNAL void
 otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
-                           const uint8_t priv[ED448_PRIVATE_BYTES]);
+                           const uint8_t sym[ED448_PRIVATE_BYTES]);
 
+/**
+ * @brief Keypair generation.
+ *
+ * @param [out] keypair The keypair.
+ * @param [in] sym The private key.
+ *
+ * @warning The symm key is stored as the priv part
+ */
 INTERNAL void otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
                                           uint8_t sym[ED448_PRIVATE_BYTES]);
+
+/**
+ * @brief Securely destroy the keypair.
+ *
+ * @param [in] keypair The keypair.
+ *
+ */
 INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_t *keypair);
 
-INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared,
+/**
+ * @brief ECDH shared secret generation.
+ *
+ * @param [out] shared_secret The shared secret.
+ * @param [in] our_keypair Our keypair.
+ * @param [in] their_pub The other party's public key.
+ *
+ * @warning The symm key is stored as the priv part
+ */
+INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                        const ecdh_keypair_t *our_keypair,
                                        const ec_point_t their_pub);
 
-/* void ec_public_key_copy(ec_public_key_t dst, const ec_public_key_t src); */
-
-INTERNAL void otrng_ec_sign(eddsa_signature_t dst,
+/**
+ * @brief EdDSA signing.
+ *
+ * @param [out] sig The signature.
+ * @param [in] sym The symmetric key.
+ * @param [in] pub The public key.
+ * @param [in] msg The message to sign.
+ * @param [in] msg_len The length of the message.
+ *
+ * @warning It is not prehashed. The context is always an empty string
+ */
+INTERNAL void otrng_ec_sign(eddsa_signature_t sig,
                             uint8_t sym[ED448_PRIVATE_BYTES],
-                            uint8_t pubkey[ED448_POINT_BYTES],
-                            const uint8_t *msg, size_t msg_len);
+                            uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg,
+                            size_t msg_len);
 
+/**
+ * @brief EdDSA signature verification.
+ *
+ * @param [in] sig The signature.
+ * @param [in] pub The public key.
+ * @param [in] msg The message to verify.
+ * @param [in] msg_len The length of the message.
+ * @warning It is not prehashed. The context is always an empty string
+ */
 INTERNAL otrng_bool_t otrng_ec_verify(
     const uint8_t sig[GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES],
     const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg, size_t msg_len);
