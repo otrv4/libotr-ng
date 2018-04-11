@@ -46,8 +46,8 @@
     char *__s1 = _otrng_memdump((const uint8_t *)s1, len);                     \
     char *__s2 = _otrng_memdump((const uint8_t *)s2, len);                     \
     char *__msg = g_strdup_printf(                                             \
-        "assertion failed: (%s)\nEXPECTED (%p): %s\nACTUAL (%p): %s\n",        \
-        #s1 " ==  " #s2, s1, __s1, s2, __s2);                                  \
+        "assertion failed: (%s)\n\n%s (%p): %s\n\n%s (%p): %s\n",              \
+        #s1 " ==  " #s2, #s1, s1, __s1, #s2, s2, __s2);                        \
     if (memcmp(s1, s2, len) == 0)                                              \
       ;                                                                        \
     else                                                                       \
