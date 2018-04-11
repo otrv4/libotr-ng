@@ -137,6 +137,37 @@ void test_data_message_serializes() {
   serialized = NULL;
 }
 
+void test_data_message_serializes_absent_dh() {
+  data_message_t *data_msg = set_up_data_msg();
+
+  // Serialize with an empty DH
+  otrng_dh_mpi_release(data_msg->dh);
+  data_msg->dh = NULL;
+
+  uint8_t *serialized = NULL;
+  size_t serlen = 0;
+  otrng_assert(otrng_data_message_body_asprintf(&serialized, &serlen,
+                                                data_msg) == SUCCESS);
+
+  const int OUR_DH_LEN = 4 + 0; // Should be zero per spec.
+  const int MSG_AS_DATA = 4 + 3;
+  g_assert_cmpint(DATA_MESSAGE_MIN_BYTES + OUR_DH_LEN + MSG_AS_DATA, ==,
+                  serlen);
+
+  uint8_t *cursor = serialized;
+  cursor += 16; // Skip header
+  cursor += sizeof(ec_public_key_t); // Skip ECDH key
+  cursor += 4; // Skip the DH's MPI header;
+
+  // Make sure next field is deserialized as expected
+  otrng_assert_cmpmem(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
+
+  otrng_data_message_free(data_msg);
+  free(serialized);
+  serialized = NULL;
+}
+
+
 void test_otrng_data_message_deserializes() {
 
   data_message_t *data_msg = set_up_data_msg();

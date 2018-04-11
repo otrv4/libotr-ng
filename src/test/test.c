@@ -136,6 +136,7 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/data_message/valid", test_data_message_valid);
   g_test_add_func("/data_message/serialize", test_data_message_serializes);
+  g_test_add_func("/data_message/serialize_absent_dh", test_data_message_serializes_absent_dh);
   g_test_add_func("/data_message/deserialize",
                   test_otrng_data_message_deserializes);
 
