@@ -154,12 +154,8 @@ INTERNAL otrng_err_t otrng_generate_smp_msg_1(smp_msg_1_t *dst,
 }
 
 tstatic void smp_msg_1_copy(smp_msg_1_t *dst, const smp_msg_1_t *src) {
-  // TODO: Maybe we dont need to copy everything
   dst->q_len = src->q_len;
-  if (src->question)
-    dst->question = otrng_strdup(src->question);
-  else
-    dst->question = NULL;
+  dst->question = otrng_memdup(src->question, src->q_len);
 
   otrng_ec_point_copy(dst->G2a, src->G2a);
   otrng_ec_scalar_copy(dst->c2, src->c2);
@@ -203,10 +199,11 @@ tstatic otrng_err_t smp_msg_1_deserialize(smp_msg_1_t *msg, const tlv_t *tlv) {
   size_t read = 0;
 
   msg->question = NULL;
-  if (otrng_deserialize_data((uint8_t **)&msg->question, cursor, len, &read) ==
+  if (otrng_deserialize_data(&msg->question, cursor, len, &read) ==
       ERROR)
     return ERROR;
 
+  msg->q_len = read - 4;
   cursor += read;
   len -= read;
 

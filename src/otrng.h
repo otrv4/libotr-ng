@@ -173,7 +173,7 @@ INTERNAL otrng_err_t otrng_prepare_to_send_message(string_t *to_send,
 
 INTERNAL otrng_err_t otrng_close(string_t *to_send, otrng_t *otr);
 
-INTERNAL otrng_err_t otrng_smp_start(string_t *to_send, const string_t question,
+INTERNAL otrng_err_t otrng_smp_start(string_t *to_send, const uint8_t *question,
                                      const size_t q_len, const uint8_t *secret,
                                      const size_t secretlen, otrng_t *otr);
 
@@ -217,6 +217,24 @@ tstatic otrng_in_message_type_t get_message_type(const string_t message);
 
 tstatic otrng_err_t extract_header(otrng_header_t *dst, const uint8_t *buffer,
                                    const size_t bufflen);
+
+tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator,
+                                  const user_profile_t *responder,
+                                  const uint8_t *question, const size_t q_len,
+                                  const uint8_t *secret, const size_t secretlen,
+                                  uint8_t *ssid, smp_context_t smp,
+                                  otrng_conversation_state_t *conversation);
+
+tstatic const user_profile_t *get_my_user_profile(otrng_t *otr);
+
+tstatic tlv_t *process_tlv(const tlv_t *tlv, otrng_t *otr);
+
+tstatic tlv_t *otrng_smp_provide_secret(otrng_smp_event_t *event,
+                                        smp_context_t smp,
+                                        const user_profile_t *our_profile,
+                                        const user_profile_t *their_profile,
+                                        uint8_t *ssid, const uint8_t *secret,
+                                        const size_t secretlen);
 
 #endif
 

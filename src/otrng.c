@@ -97,7 +97,7 @@ tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint_t fp,
 
 tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
                                     const uint8_t progress_percent,
-                                    const char *question,
+                                    const uint8_t *question, const size_t q_len,
                                     const otrng_conversation_state_t *conv) {
   if (!conv || !conv->client || !conv->client->callbacks)
     return;
@@ -107,7 +107,7 @@ tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
     conv->client->callbacks->smp_ask_for_secret(conv);
     break;
   case OTRNG_SMPEVENT_ASK_FOR_ANSWER:
-    conv->client->callbacks->smp_ask_for_answer(question, conv);
+    conv->client->callbacks->smp_ask_for_answer(question, q_len, conv);
     break;
   case OTRNG_SMPEVENT_CHEATED:
   case OTRNG_SMPEVENT_IN_PROGRESS:
@@ -1973,6 +1973,7 @@ tstatic tlv_t *process_tlv(const tlv_t *tlv, otrng_t *otr) {
   tlv_t *out = otrng_process_smp(OTRNG_SMPEVENT_NONE, otr->smp, tlv);
   handle_smp_event_cb_v4(OTRNG_SMPEVENT_NONE, otr->smp->progress,
                          otr->smp->msg1 ? otr->smp->msg1->question : NULL,
+                         otr->smp->msg1 ? otr->smp->msg1->q_len : 0,
                          otr->conversation);
   return out;
 }
@@ -2643,7 +2644,7 @@ API otrng_err_t otrng_send_symkey_message(string_t *to_send, unsigned int use,
 
 tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator,
                                   const user_profile_t *responder,
-                                  const string_t question, const size_t q_len,
+                                  const uint8_t *question, const size_t q_len,
                                   const uint8_t *secret, const size_t secretlen,
                                   uint8_t *ssid, smp_context_t smp,
                                   otrng_conversation_state_t *conversation) {
@@ -2662,10 +2663,8 @@ tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator,
     if (otrng_generate_smp_msg_1(msg, smp))
       continue;
 
-    if (q_len > 0 && question) {
-      msg->q_len = q_len;
-      msg->question = otrng_strdup(question);
-    }
+    msg->q_len = q_len;
+    msg->question = otrng_memdup(question, q_len);
 
     if (otrng_smp_msg_1_asprintf(&to_send, &len, msg))
       continue;
@@ -2673,7 +2672,7 @@ tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator,
     smp->state = SMPSTATE_EXPECT2;
     smp->progress = 25;
     handle_smp_event_cb_v4(OTRNG_SMPEVENT_IN_PROGRESS, smp->progress, question,
-                           conversation);
+                           q_len, conversation);
 
     tlv_t *tlv = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, len, to_send);
     if (!tlv) {
@@ -2690,12 +2689,12 @@ tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator,
 
   otrng_smp_msg_1_destroy(msg);
   handle_smp_event_cb_v4(OTRNG_SMPEVENT_ERROR, smp->progress,
-                         smp->msg1->question, conversation);
+                         smp->msg1->question, smp->msg1->q_len, conversation);
 
   return NULL;
 }
 
-INTERNAL otrng_err_t otrng_smp_start(string_t *to_send, const string_t question,
+INTERNAL otrng_err_t otrng_smp_start(string_t *to_send, const uint8_t *question,
                                      const size_t q_len, const uint8_t *secret,
                                      const size_t secretlen, otrng_t *otr) {
   if (!otr)
@@ -2704,7 +2703,7 @@ INTERNAL otrng_err_t otrng_smp_start(string_t *to_send, const string_t question,
   switch (otr->running_version) {
   case OTRNG_VERSION_3:
     // FIXME: missing fragmentation
-    return otrng_v3_smp_start(to_send, question, secret, secretlen,
+    return otrng_v3_smp_start(to_send, question, q_len, secret, secretlen,
                               otr->v3_conn);
   case OTRNG_VERSION_4:
     if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES)
@@ -2766,7 +2765,7 @@ tstatic otrng_err_t smp_continue_v4(string_t *to_send, const uint8_t *secret,
     event = OTRNG_SMPEVENT_IN_PROGRESS;
 
   handle_smp_event_cb_v4(event, otr->smp->progress, otr->smp->msg1->question,
-                         otr->conversation);
+                         otr->smp->msg1->q_len, otr->conversation);
 
   if (otrng_prepare_to_send_message(
           to_send, "", &tlvs, MSGFLAGS_IGNORE_UNREADABLE, otr) == SUCCESS) {

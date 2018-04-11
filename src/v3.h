@@ -64,7 +64,8 @@ INTERNAL otrng_err_t otrng_v3_send_symkey_message(
     string_t *to_send, otrng_v3_conn_t *conn, unsigned int use,
     const unsigned char *usedata, size_t usedatalen, unsigned char *symkey);
 
-INTERNAL otrng_err_t otrng_v3_smp_start(string_t *to_send, const char *queston,
+INTERNAL otrng_err_t otrng_v3_smp_start(string_t *to_send,
+                                        const uint8_t *queston, size_t q_len,
                                         const uint8_t *secret, size_t secretlen,
                                         otrng_v3_conn_t *conn);
 

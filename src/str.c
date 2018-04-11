@@ -48,3 +48,14 @@ INTERNAL /*@null@*/ char *otrng_strdup(const char *s) {
 
   return otrng_strndup(s, strlen(s));
 }
+
+INTERNAL /*@null@*/ uint8_t *otrng_memdup(const uint8_t *s, const size_t len) {
+  if (s == NULL || len == 0)
+    return NULL;
+
+  uint8_t *d = malloc(len);
+  if (d == NULL)
+    return NULL;
+
+  return memcpy(d, s, len);
+}

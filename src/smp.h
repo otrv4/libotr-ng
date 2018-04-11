@@ -37,9 +37,13 @@ typedef enum {
   SMPSTATE_EXPECT4
 } smp_state_t;
 
+/**
+ * @warning the [question] field is NOT zero terminated, and can't be relied on 
+ *    to be. the length of this field is contained in the [q_len] field.
+ **/
 typedef struct {
   uint32_t q_len;
-  char *question;
+  uint8_t *question;
   ec_point_t G2a;
   ec_scalar_t c2;
   ec_scalar_t d2;
@@ -124,6 +128,8 @@ INTERNAL otrng_smp_event_t otrng_process_smp_msg4(const tlv_t *tlv,
                                                   smp_context_t smp);
 
 #ifdef OTRNG_SMP_PRIVATE
+
+tstatic otrng_err_t smp_msg_1_deserialize(smp_msg_1_t *msg, const tlv_t *tlv);
 
 tstatic otrng_err_t generate_smp_msg_2(smp_msg_2_t *dst,
                                        const smp_msg_1_t *msg_1,

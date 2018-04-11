@@ -547,12 +547,23 @@ INTERNAL otrng_err_t otrng_v3_send_symkey_message(
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_v3_smp_start(string_t *to_send, const char *question,
+INTERNAL otrng_err_t otrng_v3_smp_start(string_t *to_send,
+                                        const uint8_t *question, size_t q_len,
                                         const uint8_t *secret, size_t secretlen,
                                         otrng_v3_conn_t *conn) {
+  string_t q = NULL;
+  if (question && q_len > 0) {
+    q = malloc(q_len+1);
+    if (!q) {
+      return ERROR;
+    }
+    q = memcpy(q, question, q_len);
+    q[q_len] = 0;
+  }
+
   if (question)
     otrl_message_initiate_smp_q(conn->state->userstate, conn->ops, conn->opdata,
-                                conn->ctx, question, secret, secretlen);
+                                conn->ctx, q, secret, secretlen);
   else
     otrl_message_initiate_smp(conn->state->userstate, conn->ops, conn->opdata,
                               conn->ctx, secret, secretlen);

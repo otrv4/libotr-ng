@@ -22,8 +22,7 @@
 #include "../tlv.h"
 
 void test_smp_state_machine(void) {
-  return; // TODO: this test is actually not working and does not
-          // check anything
+  OTRNG_INIT;
 
   otrng_client_state_t *alice_keypair = otrng_client_state_new(NULL);
   otrng_client_state_t *bob_keypair = otrng_client_state_new(NULL);
@@ -47,41 +46,37 @@ void test_smp_state_machine(void) {
   g_assert_cmpint(0, ==, alice_otr->smp->progress);
   g_assert_cmpint(0, ==, bob_otr->smp->progress);
 
-  const char *question = "some-question";
-  const char *answer = "answer";
-  string_t to_send = NULL;
-  otrng_assert(otrng_smp_start(&to_send, question, strlen(question),
-                               (uint8_t *)answer, strlen(answer),
-                               alice_otr) == SUCCESS);
+  const uint8_t *question = (const uint8_t *)"some-question";
+  const uint8_t *answer = (const uint8_t *)"answer";
 
-  tlv_t *tlv_smp_1 = NULL;
-  // otrng_assert(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1) == true);
-  g_assert_cmpint(tlv_smp_1->type, ==, OTRNG_TLV_SMP_MSG_1);
+  tlv_t *tlv_smp_1 = otrng_smp_initiate(get_my_user_profile(alice_otr), alice_otr->their_profile, question, 13, answer, 6, alice_otr->keys->ssid, alice_otr->smp, alice_otr->conversation);
+  otrng_assert(tlv_smp_1);
+
+  g_assert_cmpint(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1), ==, SUCCESS);
 
   g_assert_cmpint(25, ==, alice_otr->smp->progress);
   g_assert_cmpint(0, ==, bob_otr->smp->progress);
 
-  free(to_send);
-  to_send = NULL;
-
-  // Should have correct context after generates tlv_smp_2
   g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT2);
   otrng_assert(alice_otr->smp->secret);
   otrng_assert(alice_otr->smp->a2);
   otrng_assert(alice_otr->smp->a3);
 
   // Receives first message
-  tlv_t *tlv_smp_2 = NULL; // otrng_process_smp(bob_otr, tlv_smp_1);
+  tlv_t *tlv_smp_2 = process_tlv(tlv_smp_1, bob_otr);
   tlv_free(tlv_smp_1);
   otrng_assert(!tlv_smp_2);
 
   g_assert_cmpint(25, ==, alice_otr->smp->progress);
   g_assert_cmpint(25, ==, bob_otr->smp->progress);
 
-  tlv_smp_2 = NULL; // otrng_smp_provide_secret(bob_otr, (const uint8_t
-                    // *)"answer", strlen("answer"));
+  otrng_smp_event_t event = OTRNG_SMPEVENT_NONE;
+  tlv_smp_2 = otrng_smp_provide_secret(&event, bob_otr->smp, get_my_user_profile(bob_otr), bob_otr->their_profile,
+      bob_otr->keys->ssid, (const uint8_t *)"answer", strlen("answer"));
   otrng_assert(tlv_smp_2);
-  g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MSG_1);
+  g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MSG_2);
+
+  g_assert_cmpint(smp_msg_2_deserialize(smp_msg_2, tlv_smp_2), ==, SUCCESS);
 
   g_assert_cmpint(25, ==, alice_otr->smp->progress);
   g_assert_cmpint(50, ==, bob_otr->smp->progress);
@@ -90,7 +85,6 @@ void test_smp_state_machine(void) {
   g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT3);
   otrng_assert(bob_otr->smp->secret);
   otrng_assert_point_equals(bob_otr->smp->G3a, smp_msg_1->G3a);
-  g_assert_cmpint(smp_msg_2_deserialize(smp_msg_2, tlv_smp_2), ==, 0);
   otrng_assert_point_equals(bob_otr->smp->Pb, smp_msg_2->Pb);
   otrng_assert_point_equals(bob_otr->smp->Qb, smp_msg_2->Qb);
   otrng_assert(bob_otr->smp->b3);
@@ -100,10 +94,10 @@ void test_smp_state_machine(void) {
   otrng_smp_msg_1_destroy(smp_msg_1);
   smp_msg_2_destroy(smp_msg_2);
 
-  // Receives second message
-  tlv_t *tlv_smp_3 = NULL; // otrng_process_smp(alice_otr, tlv_smp_2);
+  tlv_t *tlv_smp_3 = process_tlv(tlv_smp_2, alice_otr);
   tlv_free(tlv_smp_2);
   otrng_assert(tlv_smp_3);
+
   g_assert_cmpint(tlv_smp_3->type, ==, OTRNG_TLV_SMP_MSG_3);
 
   g_assert_cmpint(50, ==, alice_otr->smp->progress);
@@ -116,7 +110,7 @@ void test_smp_state_machine(void) {
   otrng_assert(alice_otr->smp->Qa_Qb);
 
   // Receives third message
-  tlv_t *tlv_smp_4 = NULL; // otrng_process_smp(bob_otr, tlv_smp_3);
+  tlv_t *tlv_smp_4 = process_tlv(tlv_smp_3, bob_otr);
   tlv_free(tlv_smp_3);
   otrng_assert(tlv_smp_4);
   g_assert_cmpint(tlv_smp_4->type, ==, OTRNG_TLV_SMP_MSG_4);
@@ -125,11 +119,10 @@ void test_smp_state_machine(void) {
   g_assert_cmpint(100, ==, bob_otr->smp->progress);
 
   // SMP is finished for Bob
-  // TODO: Should this never end or move to a finished state?
   g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
   // Receives fourth message
-  // otrng_process_smp(alice_otr, tlv_smp_4);
+  process_tlv(tlv_smp_4, alice_otr);
   tlv_free(tlv_smp_4);
 
   g_assert_cmpint(100, ==, alice_otr->smp->progress);
@@ -215,8 +208,8 @@ void test_otrng_smp_msg_1_asprintf_null_question(void) {
   free(buff);
   buff = NULL;
 
-  msg->question = "something";
-  msg->q_len = strlen(msg->question);
+  msg->question = (uint8_t *)"something";
+  msg->q_len = 9;
   size_t expected_size_with_question = expected_size + msg->q_len;
   otrng_assert(otrng_smp_msg_1_asprintf(&buff, &writen, msg) == SUCCESS);
   g_assert_cmpint(writen, ==, expected_size_with_question);

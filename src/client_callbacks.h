@@ -67,7 +67,7 @@ typedef struct otrng_client_callbacks_t {
 
   /* Same as smp_ask_for_secret but sender calls otrl_message_initiate_smp_q
    * instead) */
-  void (*smp_ask_for_answer)(const char *question,
+  void (*smp_ask_for_answer)(const uint8_t *question, const size_t q_len,
                              const otrng_client_conversation_t *);
 
   /* Update the authentication UI with respect to SMP events

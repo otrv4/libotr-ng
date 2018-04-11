@@ -22,10 +22,13 @@
 #define OTRNG_STR_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "shared.h"
 
 #define string_t char *
+
+INTERNAL /*@null@*/ uint8_t *otrng_memdup(const uint8_t *s, const size_t len);
 
 INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len);
 
