@@ -238,6 +238,20 @@ void test_data_message_valid() {
   gcry_mpi_set_ui(data_msg->dh, 1);
   otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_false);
 
+  // A data message without a DH key is also valid.
+  otrng_dh_mpi_release(data_msg->dh);
+  data_msg->dh = NULL;
+
+  otrng_assert(otrng_data_message_body_asprintf(&body, &bodylen, data_msg) ==
+               otrng_true);
+  shake_256_mac(data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t),
+                body, bodylen);
+
+  free(body);
+  body = NULL;
+
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
+
   otrng_data_message_free(data_msg);
   data_msg = NULL;
 }

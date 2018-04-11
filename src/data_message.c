@@ -227,5 +227,8 @@ INTERNAL otrng_bool_t otrng_valid_data_message(m_mac_key_t mac_key,
   if (otrng_ec_point_valid(data_msg->ecdh))
     return otrng_false;
 
+  if (!data_msg->dh)
+    return otrng_true;
+
   return otrng_dh_mpi_valid(data_msg->dh);
 }
