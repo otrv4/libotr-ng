@@ -2243,26 +2243,22 @@ tstatic otrng_err_t receive_message_v4_only(otrng_response_t *response,
   switch (get_message_type(message)) {
   case IN_MSG_NONE:
     return ERROR;
+
   case IN_MSG_PLAINTEXT:
     receive_plaintext(response, message, otr);
     return SUCCESS;
-    break;
 
   case IN_MSG_TAGGED_PLAINTEXT:
     return receive_tagged_plaintext(response, message, otr);
-    break;
 
   case IN_MSG_QUERY_STRING:
     return receive_query_message(response, message, otr);
-    break;
 
   case IN_MSG_OTR_ENCODED:
     return receive_encoded_message(response, message, otr);
-    break;
 
   case IN_MSG_OTR_ERROR:
     return receive_error_message(response, message, otr);
-    break;
   }
 
   return SUCCESS;
