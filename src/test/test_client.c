@@ -768,7 +768,6 @@ void test_valid_identity_msg_in_waiting_auth_r() {
     otrng_assert(!otrng_client_get_conversation(!FORCE_CREATE_CONVO,
                                                 ALICE_IDENTITY, bob));
 
-
     otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
 
     // Alice receives the disconnected from Bob
