@@ -369,20 +369,22 @@ INTERNAL void
 otrng_ecdh_shared_secret_from_prekey(uint8_t *shared_secret,
                                      otrng_shared_prekey_pair_t *shared_prekey,
                                      const ec_point_t their_pub) {
-  goldilocks_448_point_t s;
-  goldilocks_448_point_scalarmul(s, their_pub, shared_prekey->priv);
+  goldilocks_448_point_t p;
+  goldilocks_448_point_scalarmul(p, their_pub, shared_prekey->priv);
 
-  otrng_ec_point_encode(shared_secret, s);
+  otrng_ec_point_valid(p);
+  otrng_ec_point_encode(shared_secret, p);
 }
 
 INTERNAL void
 otrng_ecdh_shared_secret_from_keypair(uint8_t *shared_secret,
                                       otrng_keypair_t *keypair,
                                       const ec_point_t their_pub) {
-  goldilocks_448_point_t s;
-  goldilocks_448_point_scalarmul(s, their_pub, keypair->priv);
+  goldilocks_448_point_t p;
+  goldilocks_448_point_scalarmul(p, their_pub, keypair->priv);
 
-  otrng_ec_point_encode(shared_secret, s);
+  otrng_ec_point_valid(p);
+  otrng_ec_point_encode(shared_secret, p);
 }
 
 tstatic void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
@@ -471,6 +473,9 @@ tstatic otrng_err_t enter_new_ratchet(key_manager_t *manager) {
 
   otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
+  if (otrng_ecdh_valid_secret(k_ecdh))
+    return ERROR;
+
   if (calculate_brace_key(manager) == ERROR)
     return ERROR;
 
@@ -501,7 +506,10 @@ tstatic otrng_err_t init_ratchet(key_manager_t *manager, bool interactive) {
 
   otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
-  if (calculate_brace_key(manager) == ERROR)
+  if (otrng_ecdh_valid_secret(k_ecdh))
+    return ERROR;
+
+  if (calculate_brace_key(manager))
     return ERROR;
 
   if (interactive)

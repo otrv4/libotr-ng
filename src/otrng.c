@@ -778,9 +778,14 @@ tstatic otrng_err_t generate_tmp_key_r(uint8_t *dst, otrng_t *otr) {
 
   // TODO: this will be calculated again later
   otrng_ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh, otr->keys->their_ecdh);
+  if (otrng_ecdh_valid_secret(k_ecdh))
+    return ERROR;
+
   // TODO: this will be calculated again later
   if (otrng_dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
                              otr->keys->their_dh))
+    return ERROR;
+  if (otrng_ecdh_valid_secret(k_ecdh))
     return ERROR;
 
   brace_key_t brace_key;
@@ -796,8 +801,13 @@ tstatic otrng_err_t generate_tmp_key_r(uint8_t *dst, otrng_t *otr) {
 
   otrng_ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
                            otr->keys->their_shared_prekey);
+  if (otrng_ecdh_valid_secret(k_ecdh))
+    return ERROR;
+
   otrng_ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
                            otr->their_profile->pub_key);
+  if (otrng_ecdh_valid_secret(k_ecdh))
+    return ERROR;
 
   goldilocks_shake256_ctx_t hd;
   hash_init_with_dom(hd);
@@ -1191,9 +1201,14 @@ tstatic otrng_err_t generate_tmp_key_i(uint8_t *dst, otrng_t *otr) {
 
   // TODO: this will be calculated again later
   otrng_ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh, otr->keys->their_ecdh);
+  if (otrng_ecdh_valid_secret(k_ecdh))
+    return ERROR;
+
   // TODO: this will be calculated again later
   if (otrng_dh_shared_secret(k_dh, sizeof(k_dh_t), otr->keys->our_dh->priv,
                              otr->keys->their_dh))
+    return ERROR;
+  if (otrng_ecdh_valid_secret(k_ecdh))
     return ERROR;
 
   brace_key_t brace_key;
@@ -1210,8 +1225,13 @@ tstatic otrng_err_t generate_tmp_key_i(uint8_t *dst, otrng_t *otr) {
   otrng_ecdh_shared_secret_from_prekey(
       tmp_ecdh_k1, otr->conversation->client->shared_prekey_pair,
       THEIR_ECDH(otr));
+  if (otrng_ecdh_valid_secret(k_ecdh))
+    return ERROR;
+
   otrng_ecdh_shared_secret_from_keypair(
       tmp_ecdh_k2, otr->conversation->client->keypair, THEIR_ECDH(otr));
+  if (otrng_ecdh_valid_secret(k_ecdh))
+    return ERROR;
 
   goldilocks_shake256_ctx_t hd;
   hash_init_with_dom(hd);

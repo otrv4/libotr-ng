@@ -28,27 +28,33 @@
 #include "error.h"
 #include "shared.h"
 
-/* goldilocks_448_point_t is in the twisted ed448-goldilocks,
-   following the decaf technique. */
+/* ec_scalar_t represents a scalar. */
 typedef goldilocks_448_scalar_t ec_scalar_t;
+/* ec_point_t represents a ed488 point. It is in the twisted ed448-goldilocks,
+   curve representation following the decaf technique. */
 typedef goldilocks_448_point_t ec_point_t;
 
-/** Number of bytes in an EdDSA private key. */
+/** Number of bytes in an EdDSA private key: 57 */
 #define ED448_PRIVATE_BYTES GOLDILOCKS_EDDSA_448_PRIVATE_BYTES
 
-/** Number of bytes in an EdDSA public key. */
+/** Number of bytes in an EdDSA public key: 57 */
 #define ED448_POINT_BYTES GOLDILOCKS_EDDSA_448_PUBLIC_BYTES
 
-/** Number of bytes in an EdDSA signature. */
+/** Number of bytes in an EdDSA signature: 114 */
 #define ED448_SIGNATURE_BYTES GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES
 
-/** Number of bytes in an non-secret scalar. */
+/** Number of bytes in an non-secret scalar: 56 */
 #define ED448_SCALAR_BYTES GOLDILOCKS_448_SCALAR_BYTES
 
 typedef uint8_t goldilocks_448_public_key_t[ED448_POINT_BYTES];
 typedef uint8_t eddsa_signature_t[ED448_SIGNATURE_BYTES];
 
-/* ECDH keypair */
+/**
+ * @brief The ecdh_keypair_t structure represents an ECDH keypair.
+ *
+ *  [priv] the private key
+ *  [pub]  the public key
+ */
 typedef struct {
   ec_scalar_t priv;
   ec_point_t pub;
@@ -198,6 +204,14 @@ INTERNAL void otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
  *
  */
 INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_t *keypair);
+
+/**
+ * @brief Check that a shared secret is not a all-zero buff.
+ *
+ * @param [in] shared_secret The shared_secret.
+ *
+ */
+INTERNAL otrng_bool_t otrng_ecdh_valid_secret(uint8_t *shared_secret);
 
 /**
  * @brief ECDH shared secret generation.

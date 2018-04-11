@@ -130,13 +130,23 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_t *keypair) {
   otrng_ec_point_destroy(keypair->pub);
 }
 
-INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared,
+INTERNAL otrng_bool_t otrng_ecdh_valid_secret(uint8_t *shared_secret) {
+  uint8_t zero_buff[ED448_POINT_BYTES] = {};
+
+  if (memcmp(shared_secret, zero_buff, ED448_POINT_BYTES) == 0)
+    return otrng_false;
+
+  return otrng_true;
+}
+
+INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                        const ecdh_keypair_t *our_keypair,
                                        const ec_point_t their_pub) {
-  goldilocks_448_point_t s;
-  goldilocks_448_point_scalarmul(s, their_pub, our_keypair->priv);
+  goldilocks_448_point_t p;
+  goldilocks_448_point_scalarmul(p, their_pub, our_keypair->priv);
 
-  otrng_ec_point_encode(shared, s);
+  otrng_ec_point_valid(p);
+  otrng_ec_point_encode(shared_secret, p);
 }
 
 static const char *ctx = "";
