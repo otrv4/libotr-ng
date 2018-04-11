@@ -172,6 +172,13 @@ INTERNAL otrng_err_t otrng_dh_shared_secret(uint8_t *shared,
 INTERNAL otrng_err_t otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                             size_t *written,
                                             const dh_mpi_t src) {
+  if (!src) {
+    if(written)
+       *written = 0;
+
+    return SUCCESS;
+  }
+
   gcry_error_t err =
       gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
   if (err)

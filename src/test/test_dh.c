@@ -62,6 +62,11 @@ void dh_test_serialize() {
   g_assert_cmpint(mpi_len, ==, 4);
 
   gcry_mpi_release(mpi);
+  mpi = NULL;
+
+  err = otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, NULL);
+  otrng_assert(!err);
+  g_assert_cmpint(mpi_len, ==, 0);
 }
 
 void dh_test_keypair_destroy() {
