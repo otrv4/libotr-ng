@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
   g_test_add_func("/serialize_and_deserialize/data",
                   test_serialize_otrng_deserialize_data);
+
   g_test_add_func("/serialize/dh-public-key",
                   test_otrng_serialize_dh_public_key);
   g_test_add_func("/serialize_and_deserialize/ed448-public-key",
@@ -105,6 +106,7 @@ int main(int argc, char **argv) {
                   test_ser_des_otrng_shared_prekey);
   g_test_add_func("/serialize/otrng-symmetric-key",
                   test_serialize_otrng_symmetric_key);
+  g_test_add_func("/serialize/fingerprint", test_serializes_fingerprint);
 
   g_test_add_func("/user_profile/create", test_user_profile_create);
   g_test_add_func("/user_profile/serialize_body",

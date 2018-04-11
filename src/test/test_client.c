@@ -216,21 +216,15 @@ void test_client_api() {
 }
 
 void test_client_get_our_fingerprint() {
-
   otrng_client_state_t *alice_state = otrng_client_state_new("alice");
   otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
 
+  otrng_fingerprint_t expected_fp = {0};
+  otrng_assert(
+      !otrng_serialize_fingerprint(expected_fp, alice_state->keypair->pub));
+
   otrng_fingerprint_t our_fp = {0};
   otrng_assert(!otrng_client_get_our_fingerprint(our_fp, alice));
-
-  uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(
-      otrng_serialize_otrng_public_key(serialized, alice_state->keypair->pub),
-      ==, ED448_PUBKEY_BYTES);
-
-  otrng_fingerprint_t expected_fp = {0};
-  hash_hash(expected_fp, sizeof(otrng_fingerprint_t), serialized,
-            sizeof(serialized));
   otrng_assert_cmpmem(expected_fp, our_fp, sizeof(otrng_fingerprint_t));
 
   otrl_userstate_free(alice_state->userstate);
