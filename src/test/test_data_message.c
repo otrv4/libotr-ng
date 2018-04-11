@@ -155,9 +155,9 @@ void test_data_message_serializes_absent_dh() {
                   serlen);
 
   uint8_t *cursor = serialized;
-  cursor += 16; // Skip header
+  cursor += 16;                      // Skip header
   cursor += sizeof(ec_public_key_t); // Skip ECDH key
-  cursor += 4; // Skip the DH's MPI header;
+  cursor += 4;                       // Skip the DH's MPI header;
 
   // Make sure next field is deserialized as expected
   otrng_assert_cmpmem(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
@@ -166,7 +166,6 @@ void test_data_message_serializes_absent_dh() {
   free(serialized);
   serialized = NULL;
 }
-
 
 void test_otrng_data_message_deserializes() {
 

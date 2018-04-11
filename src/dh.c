@@ -173,8 +173,8 @@ INTERNAL otrng_err_t otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                             size_t *written,
                                             const dh_mpi_t src) {
   if (!src) {
-    if(written)
-       *written = 0;
+    if (written)
+      *written = 0;
 
     return SUCCESS;
   }
