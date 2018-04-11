@@ -523,18 +523,18 @@ tstatic otrng_err_t init_ratchet(key_manager_t *manager, bool interactive) {
   printf("THE SECURE SESSION ID\n");
   printf("ssid: \n");
   if (manager->ssid_half == SESSION_ID_FIRST_HALF_BOLD) {
-    printf("the first 4 = ");
+    printf("the first 4 bytes = ");
+    printf("0x");
     for (unsigned int i = 0; i < 4; i++) {
-      printf("0x%08x ", manager->ssid[i]);
+      printf("%x", manager->ssid[i]);
     }
   } else {
-    printf("\n");
-    printf("the last 4 = ");
+    printf("the last 4 bytes = ");
+    printf("0x");
     for (unsigned int i = 4; i < 8; i++) {
-      printf("0x%08x ", manager->ssid[i]);
+      printf("%x", manager->ssid[i]);
     }
     printf("\n");
-    printf("the 4 = ");
   }
 #endif
 
