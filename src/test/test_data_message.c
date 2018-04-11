@@ -79,8 +79,6 @@ static data_message_t *set_up_data_msg() {
   data_msg->enc_msg_len = 3;
 
   otrng_ecdh_keypair_destroy(ecdh);
-  otrng_dh_free();
-
   return data_msg;
 }
 
