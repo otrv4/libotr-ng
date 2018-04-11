@@ -54,6 +54,12 @@ INTERNAL otrng_err_t otrng_data_message_deserialize(data_message_t *data_msg,
                                                     size_t bufflen,
                                                     size_t *nread);
 
+INTERNAL otrng_err_t otrng_data_message_authenticator(uint8_t *dst,
+                                                      size_t dstlen,
+                                                      const m_mac_key_t mac_key,
+                                                      const uint8_t *body,
+                                                      size_t bodylen);
+
 INTERNAL otrng_bool_t otrng_valid_data_message(m_mac_key_t mac_key,
                                                const data_message_t *data_msg);
 

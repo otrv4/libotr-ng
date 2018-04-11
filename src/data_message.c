@@ -203,6 +203,21 @@ INTERNAL otrng_err_t otrng_data_message_deserialize(data_message_t *dst,
                                        cursor, len);
 }
 
+INTERNAL otrng_err_t otrng_data_message_authenticator(uint8_t *dst,
+                                                      size_t dstlen,
+                                                      const m_mac_key_t mac_key,
+                                                      const uint8_t *body,
+                                                      size_t bodylen) {
+  if (dstlen < DATA_MSG_MAC_BYTES)
+    return ERROR;
+
+  // TODO: replace by new KDF_1
+  memset(dst, 0, dstlen);
+  shake_256_mac(dst, DATA_MSG_MAC_BYTES, mac_key, sizeof(m_mac_key_t), body,
+                bodylen);
+  return SUCCESS;
+}
+
 INTERNAL otrng_bool_t otrng_valid_data_message(m_mac_key_t mac_key,
                                                const data_message_t *data_msg) {
   uint8_t *body = NULL;
@@ -213,13 +228,14 @@ INTERNAL otrng_bool_t otrng_valid_data_message(m_mac_key_t mac_key,
   }
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
-  memset(mac_tag, 0, sizeof mac_tag);
-
-  shake_256_mac(mac_tag, sizeof mac_tag, mac_key, sizeof(m_mac_key_t), body,
-                bodylen);
+  otrng_err_t ret = otrng_data_message_authenticator(mac_tag, sizeof mac_tag,
+                                                     mac_key, body, bodylen);
 
   free(body);
   body = NULL;
+
+  if (ret == ERROR)
+    return otrng_false;
 
   if (otrl_mem_differ(mac_tag, data_msg->mac, sizeof mac_tag) != 0) {
     sodium_memzero(mac_tag, sizeof mac_tag);

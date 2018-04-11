@@ -2312,8 +2312,10 @@ tstatic otrng_err_t serialize_and_encode_data_msg(
   free(body);
   body = NULL;
 
-  shake_256_mac(ser + bodylen, MAC_KEY_BYTES, mac_key, sizeof(m_mac_key_t), ser,
-                bodylen);
+  otrng_err_t err = otrng_data_message_authenticator(
+      ser + bodylen, MAC_KEY_BYTES, mac_key, ser, bodylen);
+  if (err == ERROR)
+    return ERROR;
 
   otrng_serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES,
                               to_reveal_mac_keys, to_reveal_mac_keys_len);
