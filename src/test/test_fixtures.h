@@ -272,7 +272,6 @@ void do_dake_fixture(otrng_t *alice, otrng_t *bob) {
   otrng_assert_chain_key_eq(bob->keys->current->chain_b->key,
                             alice->keys->current->chain_b->key);
 
-
   chain_key_t bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
   otrng_assert(key_manager_get_receiving_chain_key(alice_receiving_key, 0,

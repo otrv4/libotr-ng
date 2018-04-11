@@ -173,32 +173,36 @@ INTERNAL void otrng_key_manager_prepare_to_ratchet(key_manager_t *manager) {
   manager->j = 0;
 }
 
-tstatic void derive_key_from_shared_secret(uint8_t *key, size_t keylen,
-                                           const uint8_t magic[1],
-                                           const shared_secret_t shared_secret) {
+tstatic void
+derive_key_from_shared_secret(uint8_t *key, size_t keylen,
+                              const uint8_t magic[1],
+                              const shared_secret_t shared_secret) {
   shake_256_kdf(key, keylen, magic, shared_secret, sizeof(shared_secret_t));
 }
 
 tstatic void derive_root_key(root_key_t root_key,
                              const shared_secret_t shared_secret) {
   uint8_t magic[1] = {0x1};
-  derive_key_from_shared_secret(root_key, sizeof(root_key_t), magic, shared_secret);
+  derive_key_from_shared_secret(root_key, sizeof(root_key_t), magic,
+                                shared_secret);
 }
 
 tstatic void derive_chain_key_a(chain_key_t chain_key,
                                 const shared_secret_t shared_secret) {
   uint8_t magic[1] = {0x2};
-  derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic, shared_secret);
+  derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic,
+                                shared_secret);
 }
 
 tstatic void derive_chain_key_b(chain_key_t chain_key,
                                 const shared_secret_t shared_secret) {
   uint8_t magic[1] = {0x3};
-  derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic, shared_secret);
+  derive_key_from_shared_secret(chain_key, sizeof(chain_key_t), magic,
+                                shared_secret);
 }
 
-tstatic otrng_err_t key_manager_new_ratchet(key_manager_t *manager,
-                                            const shared_secret_t shared_secret) {
+tstatic otrng_err_t key_manager_new_ratchet(
+    key_manager_t *manager, const shared_secret_t shared_secret) {
   ratchet_t *ratchet = ratchet_new();
   if (ratchet == NULL) {
     return ERROR;
@@ -372,7 +376,8 @@ otrng_ecdh_shared_secret_from_prekey(uint8_t *shared_secret,
 }
 
 INTERNAL void
-otrng_ecdh_shared_secret_from_keypair(uint8_t *shared_secret, otrng_keypair_t *keypair,
+otrng_ecdh_shared_secret_from_keypair(uint8_t *shared_secret,
+                                      otrng_keypair_t *keypair,
                                       const ec_point_t their_pub) {
   goldilocks_448_point_t s;
   goldilocks_448_point_scalarmul(s, their_pub, keypair->priv);
