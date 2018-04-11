@@ -420,18 +420,14 @@ void test_api_non_interactive_conversation(void) {
     free_message_and_response(response_to_bob, &to_send);
   }
 
-  uint16_t tlv_len = 2;
-  uint8_t tlv_data[2] = {0x08, 0x05};
-  tlv_list_t *tlvs =
-      otrng_tlv_list_one(otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, tlv_len, tlv_data));
-  otrng_assert(tlvs);
+  const size_t secret_len = 2;
+  uint8_t secret_data[2] = {0x08, 0x05};
 
   // Bob sends a message with TLV
-  err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
+  err = otrng_smp_start(&to_send, NULL, 0, secret_data, secret_len, bob);
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
-  otrng_tlv_list_free(tlvs);
 
   // Alice receives a data message with TLV
   response_to_bob = otrng_response_new();
@@ -442,8 +438,7 @@ void test_api_non_interactive_conversation(void) {
   // Check TLVS
   otrng_assert(response_to_bob->tlvs);
   g_assert_cmpint(response_to_bob->tlvs->data->type, ==, OTRNG_TLV_SMP_MSG_1);
-  g_assert_cmpint(response_to_bob->tlvs->data->len, ==, tlv_len);
-  otrng_assert_cmpmem(response_to_bob->tlvs->data->data, tlv_data, tlv_len);
+  g_assert_cmpint(response_to_bob->tlvs->data->len, ==, 342);
 
   free_message_and_response(response_to_bob, &to_send);
 
@@ -604,33 +599,6 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
     g_assert_cmpint(alice->keys->i, ==, 1);
     g_assert_cmpint(alice->keys->j, ==, 0);
   }
-
-  uint16_t tlv_len = 2;
-  uint8_t tlv_data[2] = {0x08, 0x05};
-  tlv_list_t *tlvs =
-      otrng_tlv_list_one(otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, tlv_len, tlv_data));
-  otrng_assert(tlvs);
-
-  // Bob sends a message with TLV
-  err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
-  assert_msg_sent(err, to_send);
-
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
-  otrng_tlv_list_free(tlvs);
-
-  // Alice receives a data message with TLV
-  response_to_bob = otrng_response_new();
-  otrng_assert(otrng_receive_message(response_to_bob, to_send, alice) ==
-               SUCCESS);
-  g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 4);
-
-  // Check TLVS
-  otrng_assert(response_to_bob->tlvs);
-  g_assert_cmpint(response_to_bob->tlvs->data->type, ==, OTRNG_TLV_SMP_MSG_1);
-  g_assert_cmpint(response_to_bob->tlvs->data->len, ==, tlv_len);
-  otrng_assert_cmpmem(response_to_bob->tlvs->data->data, tlv_data, tlv_len);
-
-  free_message_and_response(response_to_bob, &to_send);
 
   otrng_userstate_free_all(alice_state->userstate, bob_state->userstate);
   otrng_client_state_free_all(alice_state, bob_state);
