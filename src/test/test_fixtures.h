@@ -231,8 +231,7 @@ void do_dake_fixture(otrng_t *alice, otrng_t *bob) {
   otrng_assert_ec_public_key_eq(bob->keys->their_ecdh,
                                 alice->keys->our_ecdh->pub);
   otrng_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh->pub);
-  uint8_t ssid_test[8] = {};
-  otrng_assert(memcmp(ssid_test, bob->keys->ssid, 8));
+  otrng_assert_not_zero(bob->keys->ssid, 8);
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
@@ -261,7 +260,7 @@ void do_dake_fixture(otrng_t *alice, otrng_t *bob) {
   otrng_assert(alice->keys->current);
 
   // Alice ratchets
-  otrng_assert(memcmp(ssid_test, alice->keys->ssid, 8));
+  otrng_assert_not_zero(alice->keys->ssid, 8);
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 1);
 
@@ -272,6 +271,7 @@ void do_dake_fixture(otrng_t *alice, otrng_t *bob) {
                             bob->keys->current->chain_a->key);
   otrng_assert_chain_key_eq(bob->keys->current->chain_b->key,
                             alice->keys->current->chain_b->key);
+
 
   chain_key_t bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
