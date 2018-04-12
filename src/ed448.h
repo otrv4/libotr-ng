@@ -65,23 +65,26 @@ typedef goldilocks_448_public_key_t ec_public_key_t;
 /**
  * @brief Overwrite data with zeros.  Uses memset_s if available.
  *
- * @param data The data to be zeroed.
- * @param size The size of the data.
+ * @param [data] The data to be zeroed.
+ * @param [size] The size of the data.
  */
 INTERNAL void otrng_ec_bzero(void *data, size_t size);
 
 /**
  * @brief Copy a scalar.  The scalars may use the same memory, in which
- * case this function does nothing.
- * @param [in] a A scalar.
- * @param [out] out Will become a copy of a.
+ *    case this function does nothing.
+ *
+ * @param [a]   A scalar.
+ * @param [out] Will become a copy of a.
  */
 INTERNAL void otrng_ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t a);
 
 /**
  * @brief Compare two scalars.
- * @param [in] a One scalar.
- * @param [in] b Another scalar.
+ *
+ * @param [a] One scalar.
+ * @param [b] Another scalar.
+ *
  * @retval otrng_true The scalars are equal.
  * @retval otrng_false The scalars are not equal.
  */
@@ -90,8 +93,8 @@ INTERNAL otrng_bool_t otrng_ec_scalar_eq(const ec_scalar_t a,
 /**
  * @brief Encode a scalar to wire format.
  *
- * @param [out] enc Encoded form of a scalar.
- * @param [in] s Deserialized scalar.
+ * @param [enc] Encoded form of a scalar.
+ * @param [s] Deserialized scalar.
  */
 INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar_t s);
 
@@ -99,8 +102,8 @@ INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar_t s);
  * @brief Read a scalar from wire format or from bytes.  Reduces mod
  * scalar prime.
  *
- * @param [in] enc Encoded form of a scalar.
- * @param [out] s Deserialized form.
+ * @param [enc] Encoded form of a scalar.
+ * @param [s] Deserialized form.
  */
 INTERNAL void otrng_ec_scalar_decode(ec_scalar_t s,
                                      const uint8_t enc[ED448_SCALAR_BYTES]);
@@ -110,19 +113,20 @@ INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t s);
 
 /**
  * @brief Copy a point.  The input and output may alias,
- * in which case this function does nothing.
+ *    in which case this function does nothing.
  *
- * @param [out] dst A copy of the point.
- * @param [in] p Any point.
+ * @param [dst] A copy of the point.
+ * @param [p] Any point.
  */
 INTERNAL void otrng_ec_point_copy(ec_point_t dst, const ec_point_t p);
 
 /**
  * @brief Check whether two points are equal.  If yes, return
- * otrng_true, else return otrng_false.
+ *    otrng_true, else return otrng_false.
  *
- * @param [in] p A point.
- * @param [in] q Another point.
+ * @param [p] A point.
+ * @param [q] Another point.
+ *
  * @retval otrng_true The points are equal.
  * @retval otrng_false The points are not equal.
  */
@@ -131,7 +135,8 @@ INTERNAL otrng_bool_t otrng_ec_point_eq(const ec_point_t p, const ec_point_t q);
 /**
  * @brief Check that a point is valid.
  *
- * @param [in] p The point to check.
+ * @param [p] The point to check.
+ *
  * @retval otrng_true The point is valid.
  * @retval otrng_false The point is invalid.
  */
@@ -139,7 +144,7 @@ INTERNAL otrng_bool_t otrng_ec_point_valid(const ec_point_t p);
 
 /**
  * @brief EdDSA point encoding.
- * Multiplies by the cofactor first.
+ *    Multiplies by the cofactor first.
  *
  * The multiplication is required because the EdDSA encoding represents
  * the cofactor information, but the Decaf encoding ignores it (which
@@ -147,16 +152,16 @@ INTERNAL otrng_bool_t otrng_ec_point_valid(const ec_point_t p);
  * EdDSA, the cofactor info must get cleared, because the intermediate
  * representation doesn't track it.
  *
- * @param [out] enc The encoded point.
- * @param [in] p The point.
+ * @param [enc] The encoded point.
+ * @param [p]   The point.
  */
 INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_t p);
 
 /**
  * @brief EdDSA point decoding.
  *
- * @param [out] enc The encoded point.
- * @param [in] p The point.
+ * @param [enc] The encoded point.
+ * @param [p]   The point.
  */
 INTERNAL otrng_err_t
 otrng_ec_point_decode(ec_point_t p, const uint8_t enc[ED448_POINT_BYTES]);
@@ -169,8 +174,8 @@ INTERNAL void otrng_ec_point_destroy(ec_point_t p);
 /**
  * @brief EdDSA key secret key generation.
  *
- * @param [out] priv The private key.
- * @param [in] sym The symmetric key.
+ * @param [priv] The private key.
+ * @param [sym]  The symmetric key.
  */
 INTERNAL void
 otrng_ec_scalar_derive_from_secret(ec_scalar_t priv,
@@ -179,8 +184,8 @@ otrng_ec_scalar_derive_from_secret(ec_scalar_t priv,
 /**
  * @brief EdDSA key generation.
  *
- * @param [out] pub The public key.
- * @param [in] sym The private key.
+ * @param [pub] The public key.
+ * @param [sym] The private key.
  */
 INTERNAL void
 otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
@@ -189,10 +194,10 @@ otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
 /**
  * @brief Keypair generation.
  *
- * @param [out] keypair The keypair.
- * @param [in] sym The private key.
+ * @param [keypair] The keypair.
+ * @param [sym]     The private key.
  *
- * @warning The symm key is stored as the priv part
+ * @warning The symmetric key is stored as the priv part
  */
 INTERNAL void otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
                                           uint8_t sym[ED448_PRIVATE_BYTES]);
@@ -200,7 +205,7 @@ INTERNAL void otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
 /**
  * @brief Securely destroy the keypair.
  *
- * @param [in] keypair The keypair.
+ * @param [keypair] The keypair.
  *
  */
 INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_t *keypair);
@@ -208,7 +213,7 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_t *keypair);
 /**
  * @brief Check that a shared secret is not a all-zero buff.
  *
- * @param [in] shared_secret The shared_secret.
+ * @param [shared_secret] The shared_secret.
  *
  */
 INTERNAL otrng_bool_t otrng_ecdh_valid_secret(uint8_t *shared_secret);
@@ -216,11 +221,11 @@ INTERNAL otrng_bool_t otrng_ecdh_valid_secret(uint8_t *shared_secret);
 /**
  * @brief ECDH shared secret generation.
  *
- * @param [out] shared_secret The shared secret.
- * @param [in] our_keypair Our keypair.
- * @param [in] their_pub The other party's public key.
+ * @param [shared_secret] The shared secret.
+ * @param [our_keypair]   Our keypair.
+ * @param [their_pub]     The other party's public key.
  *
- * @warning The symm key is stored as the priv part
+ * @warning The symmetric key is stored as the priv part
  */
 INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                        const ecdh_keypair_t *our_keypair,
@@ -229,11 +234,11 @@ INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
 /**
  * @brief EdDSA signing.
  *
- * @param [out] sig The signature.
- * @param [in] sym The symmetric key.
- * @param [in] pub The public key.
- * @param [in] msg The message to sign.
- * @param [in] msg_len The length of the message.
+ * @param [sig]     The signature.
+ * @param [sym]     The symmetric key.
+ * @param [pub]     The public key.
+ * @param [msg]     The message to sign.
+ * @param [msg_len] The length of the message.
  *
  * @warning It is not prehashed. The context is always an empty string
  */
@@ -245,10 +250,11 @@ INTERNAL void otrng_ec_sign(eddsa_signature_t sig,
 /**
  * @brief EdDSA signature verification.
  *
- * @param [in] sig The signature.
- * @param [in] pub The public key.
- * @param [in] msg The message to verify.
- * @param [in] msg_len The length of the message.
+ * @param [sig]     The signature.
+ * @param [pub]     The public key.
+ * @param [msg]     The message to verify.
+ * @param [msg_len] The length of the message.
+ *
  * @warning It is not prehashed. The context is always an empty string
  */
 INTERNAL otrng_bool_t otrng_ec_verify(
