@@ -27,6 +27,7 @@
 #include "serialize.h"
 #include "str.h"
 
+// TODO[ola]
 #define CONV(c) ((otrng_conversation_t *)c)
 
 tstatic otrng_conversation_t *new_conversation_with(const char *recipient,

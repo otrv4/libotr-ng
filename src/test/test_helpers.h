@@ -34,6 +34,7 @@
 #define PHI "alice@otr.jabber.net"
 #define FORCE_CREATE_CONVO true
 
+// TODO[ola]
 #define WITH_FIXTURE(_p, _c, _t, _f)                                           \
   do {                                                                         \
     g_test_add(_p, _t, NULL, _f##_setup, _c, _f##_teardown);                   \
@@ -41,6 +42,7 @@
 
 // TODO: for structs like scalars and points, use: goldilocks_memeq
 // for the rest use our own implementation of mem_cmp
+// TODO[ola]
 #define otrng_assert_cmpmem(s1, s2, len)                                       \
   do {                                                                         \
     char *__s1 = _otrng_memdump((const uint8_t *)s1, len);                     \
@@ -57,6 +59,7 @@
     g_free(__msg);                                                             \
   } while (0)
 
+// TODO[ola]
 #define otrng_assert(expr)                                                     \
   do {                                                                         \
     if                                                                         \
@@ -66,12 +69,14 @@
                                #expr);                                         \
   } while (0)
 
+// TODO[ola]
 #define otrng_assert_mpi_eq(m1, m2)                                            \
   do {                                                                         \
     g_assert_cmpuint(m1->len, ==, m2->len);                                    \
     otrng_assert_cmpmem(m1->data, m2->data, m1->len);                          \
   } while (0)
 
+// TODO[ola]
 #define otrng_assert_user_profile_eq(p1, p2)                                   \
   do {                                                                         \
     otrng_assert_point_equals(p1->pub_key, p2->pub_key);                       \
@@ -82,6 +87,7 @@
                         p2->transitional_signature);                           \
   } while (0)
 
+// TODO[ola]
 #define otrng_assert_not_zero(s, len)                                          \
   do {                                                                         \
     char *__s = _otrng_memdump((const uint8_t *)s, len);                       \
@@ -97,6 +103,7 @@
     g_free(__msg);                                                             \
   } while (0)
 
+// TODO[ola]
 #define otrng_assert_zero(s, len)                                              \
   do {                                                                         \
     char zero_value[len];                                                      \
@@ -104,21 +111,25 @@
     otrng_assert_cmpmem(zero_value, s, len);                                   \
   } while (0)
 
+// TODO[ola]
 #define otrng_assert_ec_public_key_eq(pk1, pk2)                                \
   do {                                                                         \
     otrng_assert_cmpmem(pk1, pk2, sizeof(ec_public_key_t));                    \
   } while (0)
 
+// TODO[ola]
 #define otrng_assert_dh_public_key_eq(pk1, pk2)                                \
   do {                                                                         \
     g_assert_cmpint(dh_mpi_cmp(pk1, pk2), ==, 0);                              \
   } while (0)
 
+// TODO[ola]
 #define otrng_assert_root_key_eq(rk1, rk2)                                     \
   do {                                                                         \
     otrng_assert_cmpmem(rk1, rk2, sizeof(root_key_t));                         \
   } while (0)
 
+// TODO[ola]
 #define otrng_assert_chain_key_eq(ck1, ck2)                                    \
   do {                                                                         \
     otrng_assert_cmpmem(ck1, ck2, sizeof(chain_key_t));                        \
@@ -126,6 +137,7 @@
 
 // TODO: here actually use the designated initializers as I was planning to
 // do for the future nonetheless
+// TODO[ola]
 #define fn_apply(fn, ...)                                                      \
   {                                                                            \
     void *stopper = (int[]){0};                                                \

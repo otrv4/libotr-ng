@@ -26,6 +26,7 @@
 #include "../otrng.h"
 #include "../str.h"
 
+// TODO[ola]
 #define assert_msg_sent(err, to_send)                                          \
   do {                                                                         \
     otrng_assert(err == SUCCESS);                                              \
@@ -33,6 +34,7 @@
     otrng_assert_cmpmem("?OTR:AAQD", to_send, 9);                              \
   } while (0);
 
+// TODO[ola]
 #define assert_msg_rec(err, message, response)                                 \
   do {                                                                         \
     otrng_assert(err == SUCCESS);                                              \
@@ -40,6 +42,7 @@
     otrng_assert(response->to_send == NULL);                                   \
   } while (0);
 
+// TODO[ola]
 #define assert_rec_msg_inc_state(result, respond_to, sender, otr_state,        \
                                  send_response)                                \
   do {                                                                         \

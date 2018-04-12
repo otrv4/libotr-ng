@@ -31,14 +31,17 @@
 #include "user_profile.h"
 #include "v3.h"
 
+// TODO[ola]
 #define UNUSED_ARG(x) (void)x
 
+// TODO[ola]
 #define OTRNG_INIT                                                             \
   do {                                                                         \
     otrng_v3_init();                                                           \
     otrng_dh_init();                                                           \
   } while (0);
 
+// TODO[ola]
 #define OTRNG_FREE                                                             \
   do {                                                                         \
     otrng_dh_free();                                                           \

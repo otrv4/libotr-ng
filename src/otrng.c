@@ -40,12 +40,25 @@
 
 #include "debug.h"
 
-#define OUR_ECDH(s) s->keys->our_ecdh->pub
-#define OUR_DH(s) s->keys->our_dh->pub
-#define THEIR_ECDH(s) s->keys->their_ecdh
-#define THEIR_DH(s) s->keys->their_dh
+static inline struct goldilocks_448_point_s *our_ecdh(const otrng_t *otr) {
+  return &otr->keys->our_ecdh->pub[0];
+}
 
-#define HEARTBEAT(s) s->conversation->client->heartbeat
+static inline dh_public_key_t our_dh(const otrng_t *otr) {
+  return otr->keys->our_dh->pub;
+}
+
+static inline struct goldilocks_448_point_s *their_ecdh(const otrng_t *otr) {
+  return &otr->keys->their_ecdh[0];
+}
+
+static inline dh_public_key_t their_dh(const otrng_t *otr) {
+  return otr->keys->their_dh;
+}
+
+static inline heartbeat_t *heartbeat(const otrng_t *otr) {
+  return otr->conversation->client->heartbeat;
+}
 
 #define QUERY_MESSAGE_TAG_BYTES 5
 #define WHITESPACE_TAG_BASE_BYTES 16
@@ -486,8 +499,8 @@ tstatic otrng_err_t otrng_build_prekey_message(otrng_server_t *server,
   m->sender_instance_tag = otr->our_instance_tag;
   m->receiver_instance_tag = otr->their_instance_tag;
 
-  otrng_ec_point_copy(m->Y, OUR_ECDH(otr));
-  m->B = otrng_dh_mpi_copy(OUR_DH(otr));
+  otrng_ec_point_copy(m->Y, our_ecdh(otr));
+  m->B = otrng_dh_mpi_copy(our_dh(otr));
 
   if (serialize_and_encode_prekey_message(&server->prekey_message, m)) {
     otrng_dake_prekey_message_free(m);
@@ -537,8 +550,8 @@ tstatic otrng_err_t reply_with_identity_msg(otrng_response_t *response,
   m->sender_instance_tag = otr->our_instance_tag;
   m->receiver_instance_tag = otr->their_instance_tag;
 
-  otrng_ec_point_copy(m->Y, OUR_ECDH(otr));
-  m->B = otrng_dh_mpi_copy(OUR_DH(otr));
+  otrng_ec_point_copy(m->Y, our_ecdh(otr));
+  m->B = otrng_dh_mpi_copy(our_dh(otr));
 
   if (serialize_and_encode_identity_message(&response->to_send, m)) {
     otrng_dake_identity_message_free(m);
@@ -742,15 +755,15 @@ tstatic otrng_err_t reply_with_auth_r_msg(string_t *dst, otrng_t *otr) {
 
   otrng_user_profile_copy(msg->profile, get_my_user_profile(otr));
 
-  otrng_ec_point_copy(msg->X, OUR_ECDH(otr));
-  msg->A = otrng_dh_mpi_copy(OUR_DH(otr));
+  otrng_ec_point_copy(msg->X, our_ecdh(otr));
+  msg->A = otrng_dh_mpi_copy(our_dh(otr));
 
   unsigned char *t = NULL;
   size_t t_len = 0;
 
   if (build_auth_message(&t, &t_len, 0, otr->their_profile,
-                         get_my_user_profile(otr), THEIR_ECDH(otr),
-                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
+                         get_my_user_profile(otr), their_ecdh(otr),
+                         our_ecdh(otr), their_dh(otr), our_dh(otr),
                          otr->conversation->client->phi))
     return ERROR;
 
@@ -758,7 +771,7 @@ tstatic otrng_err_t reply_with_auth_r_msg(string_t *dst, otrng_t *otr) {
   otrng_snizkpk_authenticate(msg->sigma,
                              otr->conversation->client->keypair, /* g^R and R */
                              otr->their_profile->pub_key,        /* g^I */
-                             THEIR_ECDH(otr),                    /* g^i -- Y */
+                             their_ecdh(otr),                    /* g^i -- Y */
                              t, t_len);
 
   free(t);
@@ -962,8 +975,8 @@ tstatic data_message_t *generate_data_msg(const otrng_t *otr) {
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
   data_msg->message_id = otr->keys->j;
-  otrng_ec_point_copy(data_msg->ecdh, OUR_ECDH(otr));
-  data_msg->dh = otrng_dh_mpi_copy(OUR_DH(otr));
+  otrng_ec_point_copy(data_msg->ecdh, our_ecdh(otr));
+  data_msg->dh = otrng_dh_mpi_copy(our_dh(otr));
 
   return data_msg;
 }
@@ -1098,8 +1111,8 @@ tstatic otrng_err_t reply_with_non_interactive_auth_msg(string_t *dst,
 
   otrng_user_profile_copy(auth->profile, get_my_user_profile(otr));
 
-  otrng_ec_point_copy(auth->X, OUR_ECDH(otr));
-  auth->A = otrng_dh_mpi_copy(OUR_DH(otr));
+  otrng_ec_point_copy(auth->X, our_ecdh(otr));
+  auth->A = otrng_dh_mpi_copy(our_dh(otr));
 
   /* auth_mac_k = KDF_2(0x01 || tmp_k) */
   uint8_t magic[1] = {0x01};
@@ -1114,7 +1127,7 @@ tstatic otrng_err_t reply_with_non_interactive_auth_msg(string_t *dst,
    * Y || X || B || A || our_shared_prekey.public */
   if (build_non_interactive_auth_message(
           &t, &t_len, otr->their_profile, get_my_user_profile(otr),
-          THEIR_ECDH(otr), OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
+          their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
           otr->their_profile->shared_prekey, otr->conversation->client->phi)) {
     if (message) {
       free(message);
@@ -1129,7 +1142,7 @@ tstatic otrng_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   otrng_snizkpk_authenticate(auth->sigma,
                              otr->conversation->client->keypair, /* g^R and R */
                              otr->their_profile->pub_key,        /* g^I */
-                             THEIR_ECDH(otr),                    /* g^i -- Y */
+                             their_ecdh(otr),                    /* g^i -- Y */
                              t, t_len);
 
   sodium_memzero(auth->nonce, DATA_MSG_NONCE_BYTES);
@@ -1224,12 +1237,12 @@ tstatic otrng_err_t generate_tmp_key_i(uint8_t *dst, otrng_t *otr) {
 
   otrng_ecdh_shared_secret_from_prekey(
       tmp_ecdh_k1, otr->conversation->client->shared_prekey_pair,
-      THEIR_ECDH(otr));
+      their_ecdh(otr));
   if (otrng_ecdh_valid_secret(k_ecdh))
     return ERROR;
 
   otrng_ecdh_shared_secret_from_keypair(
-      tmp_ecdh_k2, otr->conversation->client->keypair, THEIR_ECDH(otr));
+      tmp_ecdh_k2, otr->conversation->client->keypair, their_ecdh(otr));
   if (otrng_ecdh_valid_secret(k_ecdh))
     return ERROR;
 
@@ -1434,8 +1447,8 @@ tstatic otrng_bool_t verify_non_interactive_auth_message(
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
   if (build_non_interactive_auth_message(
-          &t, &t_len, get_my_user_profile(otr), auth->profile, OUR_ECDH(otr),
-          auth->X, OUR_DH(otr), auth->A, otr->profile->shared_prekey,
+          &t, &t_len, get_my_user_profile(otr), auth->profile, our_ecdh(otr),
+          auth->X, our_dh(otr), auth->A, otr->profile->shared_prekey,
           otr->conversation->client->phi)) {
     return otrng_false;
   }
@@ -1444,7 +1457,7 @@ tstatic otrng_bool_t verify_non_interactive_auth_message(
   otrng_bool_t err =
       otrng_snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
                            otr->conversation->client->keypair->pub, /* g^I */
-                           OUR_ECDH(otr),                           /* g^  */
+                           our_ecdh(otr),                           /* g^  */
                            t, t_len);
 
   if (auth->enc_msg) {
@@ -1629,7 +1642,7 @@ tstatic void forget_our_keys(otrng_t *otr) {
 
 tstatic otrng_err_t receive_identity_message_on_waiting_auth_r(
     string_t *dst, dake_identity_message_t *msg, otrng_t *otr) {
-  int cmp = gcry_mpi_cmp(OUR_DH(otr), msg->B);
+  int cmp = gcry_mpi_cmp(our_dh(otr), msg->B);
 
   /* If our is higher, ignore. */
   if (cmp > 0) {
@@ -1715,12 +1728,12 @@ tstatic otrng_err_t reply_with_auth_i_msg(string_t *dst,
   size_t t_len = 0;
 
   if (build_auth_message(&t, &t_len, 1, get_my_user_profile(otr), their,
-                         OUR_ECDH(otr), THEIR_ECDH(otr), OUR_DH(otr),
-                         THEIR_DH(otr), otr->conversation->client->phi))
+                         our_ecdh(otr), their_ecdh(otr), our_dh(otr),
+                         their_dh(otr), otr->conversation->client->phi))
     return ERROR;
 
   otrng_snizkpk_authenticate(msg->sigma, otr->conversation->client->keypair,
-                             their->pub_key, THEIR_ECDH(otr), t, t_len);
+                             their->pub_key, their_ecdh(otr), t, t_len);
   free(t);
   t = NULL;
 
@@ -1739,7 +1752,7 @@ tstatic otrng_bool_t valid_auth_r_message(const dake_auth_r_t *auth,
     return otrng_false;
 
   if (build_auth_message(&t, &t_len, 0, get_my_user_profile(otr), auth->profile,
-                         OUR_ECDH(otr), auth->X, OUR_DH(otr), auth->A,
+                         our_ecdh(otr), auth->X, our_dh(otr), auth->A,
                          otr->conversation->client->phi))
     return otrng_false;
 
@@ -1747,7 +1760,7 @@ tstatic otrng_bool_t valid_auth_r_message(const dake_auth_r_t *auth,
   otrng_bool_t err =
       otrng_snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
                            otr->conversation->client->keypair->pub, /* g^I */
-                           OUR_ECDH(otr),                           /* g^  */
+                           our_ecdh(otr),                           /* g^  */
                            t, t_len);
 
   free(t);
@@ -1807,14 +1820,14 @@ tstatic otrng_bool_t valid_auth_i_message(const dake_auth_i_t *auth,
   size_t t_len = 0;
 
   if (build_auth_message(&t, &t_len, 1, otr->their_profile,
-                         get_my_user_profile(otr), THEIR_ECDH(otr),
-                         OUR_ECDH(otr), THEIR_DH(otr), OUR_DH(otr),
+                         get_my_user_profile(otr), their_ecdh(otr),
+                         our_ecdh(otr), their_dh(otr), our_dh(otr),
                          otr->conversation->client->phi))
     return otrng_false;
 
   otrng_bool_t err = otrng_snizkpk_verify(
       auth->sigma, otr->their_profile->pub_key,
-      otr->conversation->client->keypair->pub, OUR_ECDH(otr), t, t_len);
+      otr->conversation->client->keypair->pub, our_ecdh(otr), t, t_len);
   free(t);
   t = NULL;
 
@@ -2348,8 +2361,8 @@ tstatic otrng_err_t serialize_and_encode_data_msg(
 }
 
 tstatic otrng_err_t send_data_message(string_t *to_send, const uint8_t *message,
-                                      size_t message_len, otrng_t *otr,
-                                      int heartbeat, unsigned char flags) {
+                                      size_t message_len, otrng_t *otr, int h,
+                                      unsigned char flags) {
   data_message_t *data_msg = NULL;
 
   size_t serlen = otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
@@ -2387,7 +2400,7 @@ tstatic otrng_err_t send_data_message(string_t *to_send, const uint8_t *message,
 
   data_msg->flags = flags;
 
-  if (heartbeat) {
+  if (h) {
     data_msg->flags = MSGFLAGS_IGNORE_UNREADABLE;
   }
 
@@ -2404,7 +2417,7 @@ tstatic otrng_err_t send_data_message(string_t *to_send, const uint8_t *message,
     // TODO: Change the spec to say this should be incremented after the message
     // is sent.
     otr->keys->j++;
-    HEARTBEAT(otr)->last_msg_sent = time(0);
+    heartbeat(otr)->last_msg_sent = time(0);
     err = SUCCESS;
   }
 
@@ -2845,8 +2858,8 @@ API otrng_err_t otrng_smp_abort(string_t *to_send, otrng_t *otr) {
 }
 
 API otrng_err_t otrng_heartbeat_checker(string_t *to_send, otrng_t *otr) {
-  if (difftime(time(0), HEARTBEAT(otr)->last_msg_sent) >=
-      HEARTBEAT(otr)->time) {
+  if (difftime(time(0), heartbeat(otr)->last_msg_sent) >=
+      heartbeat(otr)->time) {
     const string_t heartbeat_msg = "";
     return otrng_prepare_to_send_message(to_send, heartbeat_msg, NULL, 0, otr);
   }
