@@ -34,23 +34,24 @@
 #define PHI "alice@otr.jabber.net"
 #define FORCE_CREATE_CONVO true
 
-// TODO[ola]
 #define WITH_FIXTURE(_p, _c, _t, _f)                                           \
   do {                                                                         \
-    g_test_add(_p, _t, NULL, _f##_setup, _c, _f##_teardown);                   \
-  } while (0);
+    g_test_add((_p), _t, NULL, _f##_setup, (_c), _f##_teardown);      \
+  } while (0)
 
 // TODO: for structs like scalars and points, use: goldilocks_memeq
 // for the rest use our own implementation of mem_cmp
-// TODO[ola]
 #define otrng_assert_cmpmem(s1, s2, len)                                       \
   do {                                                                         \
-    char *__s1 = _otrng_memdump((const uint8_t *)s1, len);                     \
-    char *__s2 = _otrng_memdump((const uint8_t *)s2, len);                     \
+    const uint8_t *_s1_evaled = (uint8_t *)(s1);                               \
+    const uint8_t *_s2_evaled = (uint8_t *)(s2);                               \
+    const size_t _len_evaled = (len);                                          \
+    char *__s1 = _otrng_memdump(_s1_evaled, _len_evaled);                      \
+    char *__s2 = _otrng_memdump(_s2_evaled, _len_evaled);                      \
     char *__msg = g_strdup_printf(                                             \
         "assertion failed: (%s)\n\n%s (%p): %s\n\n%s (%p): %s\n",              \
-        #s1 " ==  " #s2, #s1, s1, __s1, #s2, s2, __s2);                        \
-    if (memcmp(s1, s2, len) == 0)                                              \
+        #s1 " ==  " #s2, #s1, _s1_evaled, __s1, #s2, _s2_evaled, __s2);        \
+    if (memcmp(_s1_evaled, _s2_evaled, _len_evaled) == 0)                      \
       ;                                                                        \
     else                                                                       \
       g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, __msg); \
@@ -59,7 +60,6 @@
     g_free(__msg);                                                             \
   } while (0)
 
-// TODO[ola]
 #define otrng_assert(expr)                                                     \
   do {                                                                         \
     if                                                                         \
@@ -69,33 +69,37 @@
                                #expr);                                         \
   } while (0)
 
-// TODO[ola]
 #define otrng_assert_mpi_eq(m1, m2)                                            \
   do {                                                                         \
-    g_assert_cmpuint(m1->len, ==, m2->len);                                    \
-    otrng_assert_cmpmem(m1->data, m2->data, m1->len);                          \
+      const otrng_mpi_t _m1 = {(m1)[0]};                                   \
+      const otrng_mpi_t _m2 = {(m2)[0]};                                   \
+    g_assert_cmpuint(_m1->len, ==, _m2->len);                                  \
+    otrng_assert_cmpmem(_m1->data, _m2->data, _m1->len);                       \
   } while (0)
 
-// TODO[ola]
 #define otrng_assert_user_profile_eq(p1, p2)                                   \
   do {                                                                         \
-    otrng_assert_point_equals(p1->pub_key, p2->pub_key);                       \
-    otrng_assert_cmpmem(p1->versions, p2->versions, strlen(p1->versions) + 1); \
-    g_assert_cmpuint(p1->expires, ==, p2->expires);                            \
-    otrng_assert_cmpmem(p1->signature, p2->signature, ED448_SIGNATURE_BYTES);  \
-    otrng_assert_mpi_eq(p1->transitional_signature,                            \
-                        p2->transitional_signature);                           \
+    const user_profile_t *_p1 = (p1);                                          \
+    const user_profile_t *_p2 = (p2);                                          \
+    otrng_assert_point_equals(_p1->pub_key, _p2->pub_key);                     \
+    otrng_assert_cmpmem(_p1->versions, _p2->versions,                          \
+                        strlen(_p1->versions) + 1);                            \
+    g_assert_cmpuint(_p1->expires, ==, _p2->expires);                          \
+    otrng_assert_cmpmem(_p1->signature, _p2->signature, ED448_SIGNATURE_BYTES);\
+    otrng_assert_mpi_eq(_p1->transitional_signature,                           \
+                        _p2->transitional_signature);                          \
   } while (0)
 
-// TODO[ola]
 #define otrng_assert_not_zero(s, len)                                          \
   do {                                                                         \
-    char *__s = _otrng_memdump((const uint8_t *)s, len);                       \
-    char zero_value[len];                                                      \
+    const uint8_t *_s = (uint8_t *)(s);                                        \
+    const size_t _len = (len);                                                 \
+    char *__s = _otrng_memdump(_s, _len);                                      \
+    char zero_value[_len];                                                     \
     memset(zero_value, 0, sizeof zero_value);                                  \
     char *__msg = g_strdup_printf("assertion failed: (%s)\nRESULT (%p): %s\n", \
-                                  #s " is zero", s, __s);                      \
-    if (goldilocks_memeq(s, zero_value, len) == 0)                             \
+                                  #s " is zero", _s, __s);                     \
+    if (goldilocks_memeq(_s, zero_value, _len) == 0)                           \
       ;                                                                        \
     else                                                                       \
       g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, __msg); \
@@ -103,41 +107,37 @@
     g_free(__msg);                                                             \
   } while (0)
 
-// TODO[ola]
 #define otrng_assert_zero(s, len)                                              \
   do {                                                                         \
-    char zero_value[len];                                                      \
+    const uint8_t *_s = (uint8_t *)(s);                                        \
+    const size_t _len = (len);                                                 \
+    char zero_value[_len];                                                     \
     memset(zero_value, 0, sizeof zero_value);                                  \
-    otrng_assert_cmpmem(zero_value, s, len);                                   \
+    otrng_assert_cmpmem(zero_value, _s, _len);                                 \
   } while (0)
 
-// TODO[ola]
 #define otrng_assert_ec_public_key_eq(pk1, pk2)                                \
   do {                                                                         \
-    otrng_assert_cmpmem(pk1, pk2, sizeof(ec_public_key_t));                    \
+    otrng_assert_cmpmem((pk1), (pk2), sizeof(ec_public_key_t));                \
   } while (0)
 
-// TODO[ola]
 #define otrng_assert_dh_public_key_eq(pk1, pk2)                                \
   do {                                                                         \
-    g_assert_cmpint(dh_mpi_cmp(pk1, pk2), ==, 0);                              \
+    g_assert_cmpint(dh_mpi_cmp((pk1), (pk2)), ==, 0);                          \
   } while (0)
 
-// TODO[ola]
 #define otrng_assert_root_key_eq(rk1, rk2)                                     \
   do {                                                                         \
-    otrng_assert_cmpmem(rk1, rk2, sizeof(root_key_t));                         \
+    otrng_assert_cmpmem((rk1), (rk2), sizeof(root_key_t));                     \
   } while (0)
 
-// TODO[ola]
 #define otrng_assert_chain_key_eq(ck1, ck2)                                    \
   do {                                                                         \
-    otrng_assert_cmpmem(ck1, ck2, sizeof(chain_key_t));                        \
+    otrng_assert_cmpmem((ck1), (ck2), sizeof(chain_key_t));                    \
   } while (0)
 
 // TODO: here actually use the designated initializers as I was planning to
 // do for the future nonetheless
-// TODO[ola]
 #define fn_apply(fn, ...)                                                      \
   {                                                                            \
     void *stopper = (int[]){0};                                                \

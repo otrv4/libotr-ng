@@ -26,35 +26,42 @@
 #include "../otrng.h"
 #include "../str.h"
 
-// TODO[ola]
 #define assert_msg_sent(err, to_send)                                          \
   do {                                                                         \
-    otrng_assert(err == SUCCESS);                                              \
-    otrng_assert(to_send);                                                     \
-    otrng_assert_cmpmem("?OTR:AAQD", to_send, 9);                              \
-  } while (0);
+    const otrng_err_t _err = (err);                                            \
+    const char *_to_send = (to_send);                                          \
+    otrng_assert(_err == SUCCESS);                                             \
+    otrng_assert(_to_send);                                                    \
+    otrng_assert_cmpmem("?OTR:AAQD", _to_send, 9);                             \
+  } while (0)
 
-// TODO[ola]
 #define assert_msg_rec(err, message, response)                                 \
   do {                                                                         \
-    otrng_assert(err == SUCCESS);                                              \
-    otrng_assert_cmpmem(message, response->to_display, strlen(message) + 1);   \
-    otrng_assert(response->to_send == NULL);                                   \
-  } while (0);
+    const otrng_err_t _err = (err);                                            \
+    const char *_message = (message);                                          \
+    const otrng_response_t *_response = (response);                            \
+    otrng_assert(_err == SUCCESS);                                             \
+    otrng_assert_cmpmem(_message, _response->to_display, strlen(_message) + 1);\
+    otrng_assert(_response->to_send == NULL);                                  \
+  } while (0)
 
-// TODO[ola]
 #define assert_rec_msg_inc_state(result, respond_to, sender, otr_state,        \
                                  send_response)                                \
   do {                                                                         \
-    otrng_assert((result) == SUCCESS);                                         \
-    otrng_assert(!respond_to->to_display);                                     \
-    otrng_assert(sender->state == otr_state);                                  \
-    if (send_response) {                                                       \
-      otrng_assert(respond_to->to_send);                                       \
+    const otrng_err_t _result = (result);                                      \
+    const otrng_response_t *_respond_to = (respond_to);                        \
+    const otrng_t *_sender = (sender);                                         \
+    const otrng_state _otr_state = (otr_state);                                \
+    const bool _send_response = (send_response);                               \
+    otrng_assert(_result == SUCCESS);                                          \
+    otrng_assert(!_respond_to->to_display);                                    \
+    otrng_assert(_sender->state == _otr_state);                                \
+    if (_send_response) {                                                      \
+      otrng_assert(_respond_to->to_send);                                      \
     } else {                                                                   \
-      otrng_assert(!respond_to->to_send);                                      \
+      otrng_assert(!_respond_to->to_send);                                     \
     }                                                                          \
-  } while (0);
+  } while (0)
 
 static void free_message_and_response(otrng_response_t *response,
                                       string_t *message) {

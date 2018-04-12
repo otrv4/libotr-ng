@@ -31,21 +31,18 @@
 #include "user_profile.h"
 #include "v3.h"
 
-// TODO[ola]
-#define UNUSED_ARG(x) (void)x
+#define UNUSED_ARG(x) (void)(x)
 
-// TODO[ola]
 #define OTRNG_INIT                                                             \
   do {                                                                         \
     otrng_v3_init();                                                           \
     otrng_dh_init();                                                           \
-  } while (0);
+  } while (0)
 
-// TODO[ola]
 #define OTRNG_FREE                                                             \
   do {                                                                         \
     otrng_dh_free();                                                           \
-  } while (0);
+  } while (0)
 
 // TODO: how is this type chosen?
 #define POLICY_ALLOW_V3 0x04
