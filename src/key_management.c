@@ -317,7 +317,9 @@ tstatic chain_link_t *derive_next_chain_link(chain_link_t *previous) {
   if (l == NULL)
     return NULL;
 
-  hash_hash(l->key, sizeof(chain_key_t), previous->key, sizeof(chain_key_t));
+  // KDF_1(0x23 || chain_key_s[i-1][j], 64).
+  shake_256_kdf1(l->key, sizeof(chain_key_t), 0x23, previous->key,
+                 sizeof(chain_key_t));
 
   // TODO: the previous is still needed for the MK
   sodium_memzero(previous->key, CHAIN_KEY_BYTES);
