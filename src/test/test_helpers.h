@@ -36,7 +36,7 @@
 
 #define WITH_FIXTURE(_p, _c, _t, _f)                                           \
   do {                                                                         \
-    g_test_add((_p), _t, NULL, _f##_setup, (_c), _f##_teardown);      \
+    g_test_add((_p), _t, NULL, _f##_setup, (_c), _f##_teardown);               \
   } while (0)
 
 // TODO: for structs like scalars and points, use: goldilocks_memeq
@@ -71,8 +71,8 @@
 
 #define otrng_assert_mpi_eq(m1, m2)                                            \
   do {                                                                         \
-      const otrng_mpi_t _m1 = {(m1)[0]};                                   \
-      const otrng_mpi_t _m2 = {(m2)[0]};                                   \
+    const otrng_mpi_t _m1 = {(m1)[0]};                                         \
+    const otrng_mpi_t _m2 = {(m2)[0]};                                         \
     g_assert_cmpuint(_m1->len, ==, _m2->len);                                  \
     otrng_assert_cmpmem(_m1->data, _m2->data, _m1->len);                       \
   } while (0)
@@ -85,7 +85,8 @@
     otrng_assert_cmpmem(_p1->versions, _p2->versions,                          \
                         strlen(_p1->versions) + 1);                            \
     g_assert_cmpuint(_p1->expires, ==, _p2->expires);                          \
-    otrng_assert_cmpmem(_p1->signature, _p2->signature, ED448_SIGNATURE_BYTES);\
+    otrng_assert_cmpmem(_p1->signature, _p2->signature,                        \
+                        ED448_SIGNATURE_BYTES);                                \
     otrng_assert_mpi_eq(_p1->transitional_signature,                           \
                         _p2->transitional_signature);                          \
   } while (0)

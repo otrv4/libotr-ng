@@ -41,7 +41,8 @@
     const char *_message = (message);                                          \
     const otrng_response_t *_response = (response);                            \
     otrng_assert(_err == SUCCESS);                                             \
-    otrng_assert_cmpmem(_message, _response->to_display, strlen(_message) + 1);\
+    otrng_assert_cmpmem(_message, _response->to_display,                       \
+                        strlen(_message) + 1);                                 \
     otrng_assert(_response->to_send == NULL);                                  \
   } while (0)
 
