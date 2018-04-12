@@ -71,6 +71,17 @@ static inline void shake_256_kdf(uint8_t *key, size_t keylen,
   shake_kkdf(key, keylen, magic, 1, secret, secretlen);
 }
 
+// KDF_1(usageID || values, 64)
+static inline void shake_256_kdf1(uint8_t *dst, size_t dstlen, uint8_t usage,
+                                  const uint8_t *values, size_t valueslen) {
+  goldilocks_shake256_ctx_t hd;
+  hash_init_with_usage(hd, usage);
+
+  hash_update(hd, values, valueslen);
+  hash_final(hd, dst, dstlen);
+  hash_destroy(hd);
+}
+
 static inline void shake_256_hash(uint8_t *dst, size_t dstlen,
                                   const uint8_t *secret, size_t secretlen) {
   goldilocks_shake256_ctx_t hd;

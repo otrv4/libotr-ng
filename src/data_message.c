@@ -210,12 +210,7 @@ otrng_data_message_sections_hash(uint8_t *dst, size_t dstlen,
     return ERROR;
 
   // KDF_1(0x27 || data_message_sections, 64)
-  goldilocks_shake256_ctx_t sections_hash;
-  hash_init_with_usage(sections_hash, 0x27);
-
-  hash_update(sections_hash, body, bodylen);
-  hash_final(sections_hash, dst, 64);
-  hash_destroy(sections_hash);
+  shake_256_kdf1(dst, 64, 0x27, body, bodylen);
 
   return SUCCESS;
 }
