@@ -179,7 +179,7 @@ INTERNAL void otrng_ec_point_destroy(ec_point_t p);
  */
 INTERNAL void
 otrng_ec_scalar_derive_from_secret(ec_scalar_t priv,
-                                   uint8_t sym[ED448_PRIVATE_BYTES]);
+                                   const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 /**
  * @brief EdDSA key generation.
@@ -199,8 +199,9 @@ otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
  *
  * @warning The symmetric key is stored as the priv part
  */
-INTERNAL void otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
-                                          uint8_t sym[ED448_PRIVATE_BYTES]);
+INTERNAL void
+otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
+                            const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 /**
  * @brief Securely destroy the keypair.
