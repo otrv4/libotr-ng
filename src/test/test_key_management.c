@@ -109,3 +109,18 @@ void test_otrng_key_manager_destroy() {
   free(manager);
   manager = NULL;
 }
+
+void test_calculate_ssid() {
+  key_manager_t manager[1];
+  otrng_key_manager_init(manager);
+
+  shared_secret_t s = {0};
+  uint8_t expected_ssid[8] = {
+      0xe4, 0x15, 0xc7, 0xa7, 0x96, 0x7c, 0xb1, 0x0f,
+  };
+
+  calculate_ssid(manager, s);
+  otrng_assert_cmpmem(expected_ssid, manager->ssid, 8);
+
+  otrng_key_manager_destroy(manager);
+}

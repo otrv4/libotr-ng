@@ -149,6 +149,9 @@ tstatic otrng_err_t key_manager_get_receiving_chain_key(
 tstatic void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
                                      const chain_key_t chain_key);
 
+tstatic void calculate_ssid(key_manager_t *manager,
+                            const shared_secret_t shared_secret);
+
 #endif
 
 #endif
