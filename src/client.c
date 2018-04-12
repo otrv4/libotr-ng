@@ -27,9 +27,6 @@
 #include "serialize.h"
 #include "str.h"
 
-// TODO[ola]
-#define CONV(c) ((otrng_conversation_t *)c)
-
 tstatic otrng_conversation_t *new_conversation_with(const char *recipient,
                                                     otrng_t *conn) {
   otrng_conversation_t *conv = malloc(sizeof(otrng_conversation_t));
@@ -89,7 +86,7 @@ get_conversation_with(const char *recipient, list_element_t *conversations) {
   otrng_conversation_t *conv = NULL;
 
   for (el = conversations; el; el = el->next) {
-    conv = CONV(el->data);
+    conv = el->data;
     if (!strcmp(conv->recipient, recipient))
       return conv;
   }
