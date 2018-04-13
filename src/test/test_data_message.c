@@ -109,7 +109,7 @@ void test_data_message_serializes() {
   otrng_assert_cmpmem(cursor, expected, 16);
   cursor += 16;
 
-  uint8_t serialized_y[ED448_POINT_BYTES + 2] = {};
+  uint8_t serialized_y[PUB_KEY_SER_BYTES] = {};
   int ser_len = otrng_serialize_ec_point(serialized_y, data_msg->ecdh);
   otrng_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
 

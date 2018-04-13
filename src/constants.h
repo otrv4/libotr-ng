@@ -51,6 +51,7 @@
 #define SHARED_SECRET_BYTES 64
 #define CHAIN_KEY_BYTES 64
 #define ROOT_KEY_BYTES 64
+#define PUB_KEY_SER_BYTES 59
 
 #define DATA_MESSAGE_MIN_BYTES                                                 \
   (DAKE_HEADER_BYTES + 1 + 4 + ED448_POINT_BYTES + DATA_MSG_NONCE_BYTES)

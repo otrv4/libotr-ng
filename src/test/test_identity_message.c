@@ -69,13 +69,13 @@ void test_dake_identity_message_serializes(identity_message_fixture_t *f,
   free(user_profile_serialized);
   cursor += user_profile_len;
 
-  uint8_t serialized_y[ED448_POINT_BYTES + 2] = {0};
+  uint8_t serialized_y[PUB_KEY_SER_BYTES] = {};
   int ser_len = otrng_serialize_ec_point(serialized_y, identity_message->Y);
   otrng_assert_cmpmem(cursor, serialized_y, ser_len);
 
   cursor += ser_len;
 
-  uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
+  uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
   otrng_err_t err = otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
                                            &mpi_len, identity_message->B);

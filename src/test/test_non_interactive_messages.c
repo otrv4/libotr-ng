@@ -72,13 +72,13 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
 
   cursor += user_profile_len;
 
-  uint8_t serialized_y[ED448_POINT_BYTES + 2] = {0};
+  uint8_t serialized_y[PUB_KEY_SER_BYTES] = {};
   int ser_len = otrng_serialize_ec_point(serialized_y, prekey_message->Y);
   otrng_assert_cmpmem(cursor, serialized_y, ser_len);
 
   cursor += ser_len;
 
-  uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
+  uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
   otrng_err_t err = otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
                                            &mpi_len, prekey_message->B);
