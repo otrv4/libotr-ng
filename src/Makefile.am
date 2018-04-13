@@ -40,6 +40,7 @@ libotr_ng_la_SOURCES = auth.c \
 		     v3.c \
 		     otrng.c \
 		     serialize.c \
+		     shake.c \
 		     smp.c \
 		     str.c \
 		     tlv.c \

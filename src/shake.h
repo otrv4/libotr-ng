@@ -30,34 +30,12 @@
 #define hash_destroy goldilocks_shake256_destroy
 #define hash_hash goldilocks_shake256_hash
 
-static void hash_init_with_dom(goldilocks_shake256_ctx_p hash) {
-  hash_init(hash);
+void hash_init_with_dom(goldilocks_shake256_ctx_p hash);
 
-  // TODO: This should be "OTRv4", per spec.
-  const char *dom_s = "OTR4";
-  hash_update(hash, (const unsigned char *)dom_s, strlen(dom_s));
-}
+void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage);
 
-static inline void hash_init_with_usage(goldilocks_shake256_ctx_p hash,
-                                        uint8_t usage) {
-  uint8_t buff[1] = {0};
-  *buff = usage;
-
-  hash_init_with_dom(hash);
-  hash_update(hash, buff, 1);
-}
-
-static void shake_kkdf(uint8_t *dst, size_t dstlen, const uint8_t *key,
-                       size_t keylen, const uint8_t *secret, size_t secretlen) {
-  goldilocks_shake256_ctx_p hd;
-
-  hash_init_with_dom(hd);
-  hash_update(hd, key, keylen);
-  hash_update(hd, secret, secretlen);
-
-  hash_final(hd, dst, dstlen);
-  hash_destroy(hd);
-}
+void shake_kkdf(uint8_t *dst, size_t dstlen, const uint8_t *key, size_t keylen,
+                const uint8_t *secret, size_t secretlen);
 
 static inline void shake_256_mac(uint8_t *dst, size_t dstlen,
                                  const uint8_t *key, size_t keylen,
@@ -72,25 +50,10 @@ static inline void shake_256_kdf(uint8_t *key, size_t keylen,
 }
 
 // KDF_1(usageID || values, 64)
-static inline void shake_256_kdf1(uint8_t *dst, size_t dstlen, uint8_t usage,
-                                  const uint8_t *values, size_t valueslen) {
-  goldilocks_shake256_ctx_p hd;
-  hash_init_with_usage(hd, usage);
+void shake_256_kdf1(uint8_t *dst, size_t dstlen, uint8_t usage,
+                    const uint8_t *values, size_t valueslen);
 
-  hash_update(hd, values, valueslen);
-  hash_final(hd, dst, dstlen);
-  hash_destroy(hd);
-}
-
-static inline void shake_256_hash(uint8_t *dst, size_t dstlen,
-                                  const uint8_t *secret, size_t secretlen) {
-  goldilocks_shake256_ctx_p hd;
-
-  hash_init_with_dom(hd);
-  hash_update(hd, secret, secretlen);
-
-  hash_final(hd, dst, dstlen);
-  hash_destroy(hd);
-}
+void shake_256_hash(uint8_t *dst, size_t dstlen, const uint8_t *secret,
+                    size_t secretlen);
 
 #endif
