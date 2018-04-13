@@ -371,7 +371,7 @@ INTERNAL void
 otrng_ecdh_shared_secret_from_prekey(uint8_t *shared_secret,
                                      otrng_shared_prekey_pair_t *shared_prekey,
                                      const ec_point_t their_pub) {
-  goldilocks_448_point_t p;
+  goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, shared_prekey->priv);
 
   otrng_ec_point_valid(p);
@@ -382,7 +382,7 @@ INTERNAL void
 otrng_ecdh_shared_secret_from_keypair(uint8_t *shared_secret,
                                       otrng_keypair_t *keypair,
                                       const ec_point_t their_pub) {
-  goldilocks_448_point_t p;
+  goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, keypair->priv);
 
   otrng_ec_point_valid(p);
@@ -391,7 +391,7 @@ otrng_ecdh_shared_secret_from_keypair(uint8_t *shared_secret,
 
 tstatic void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
                                      const brace_key_t brace_key) {
-  goldilocks_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_p hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, k_ecdh, sizeof(k_ecdh_t));
@@ -403,7 +403,7 @@ tstatic void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,
 
 tstatic void calculate_shared_secret_from_tmp_key(shared_secret_t dst,
                                                   const uint8_t *tmp_k) {
-  goldilocks_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_p hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, tmp_k, HASH_BYTES);

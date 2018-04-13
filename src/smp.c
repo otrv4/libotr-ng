@@ -80,7 +80,7 @@ INTERNAL otrng_err_t otrng_generate_smp_secret(unsigned char **secret,
                                                const uint8_t *answer,
                                                size_t answerlen) {
   uint8_t hash[HASH_BYTES];
-  goldilocks_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_p hd;
   uint8_t version[1] = {0x01};
 
   hash_init_with_dom(hd);

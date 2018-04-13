@@ -822,7 +822,7 @@ tstatic otrng_err_t generate_tmp_key_r(uint8_t *dst, otrng_t *otr) {
   if (otrng_ecdh_valid_secret(k_ecdh))
     return ERROR;
 
-  goldilocks_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_p hd;
   hash_init_with_dom(hd);
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
@@ -1176,7 +1176,7 @@ tstatic otrng_err_t reply_with_non_interactive_auth_msg(string_t *dst,
     }
 
     /* Auth MAC = KDF_2(auth_mac_k || t || (message_id || nonce || enc_msg)) */
-    goldilocks_shake256_ctx_t hd;
+    goldilocks_shake256_ctx_p hd;
     hash_init_with_dom(hd);
     hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
     hash_update(hd, t, t_len);
@@ -1246,7 +1246,7 @@ tstatic otrng_err_t generate_tmp_key_i(uint8_t *dst, otrng_t *otr) {
   if (otrng_ecdh_valid_secret(k_ecdh))
     return ERROR;
 
-  goldilocks_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_p hd;
   hash_init_with_dom(hd);
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
@@ -1417,7 +1417,7 @@ tstatic otrng_bool_t valid_data_message_on_non_interactive_auth(
   memset(mac_tag, 0, sizeof mac_tag);
 
   /* Auth MAC = KDF_2(auth_mac_k || t || enc_msg) */
-  goldilocks_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_p hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, mac_key, DATA_MSG_MAC_BYTES);

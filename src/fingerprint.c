@@ -54,7 +54,7 @@ INTERNAL int otrng_serialize_fingerprint(otrng_fingerprint_t fp,
   otrng_serialize_ec_point(serialized, pub);
 
   // KDF_1(0x00 || byte(H), 56)
-  goldilocks_shake256_ctx_t hd;
+  goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, 0x00);
   hash_update(hd, serialized, ED448_POINT_BYTES);
 

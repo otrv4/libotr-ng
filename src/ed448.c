@@ -80,14 +80,14 @@ INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_t p) {
 
 INTERNAL otrng_err_t
 otrng_ec_point_decode(ec_point_t p, const uint8_t enc[ED448_POINT_BYTES]) {
-  goldilocks_448_point_t tmp_p;
+  goldilocks_448_point_p tmp_p;
   goldilocks_error_t err =
       goldilocks_448_point_decode_like_eddsa_and_mul_by_ratio(tmp_p, enc);
   if (GOLDILOCKS_SUCCESS != err)
     return ERROR;
 
   // The decoded point is equal to the original point * 2^2
-  goldilocks_448_scalar_t r;
+  goldilocks_448_scalar_p r;
   goldilocks_448_scalar_copy(r, goldilocks_448_scalar_one);
   goldilocks_448_scalar_halve(r, r);
   goldilocks_448_scalar_halve(r, r);
@@ -161,7 +161,7 @@ INTERNAL otrng_bool_t otrng_ecdh_valid_secret(uint8_t *shared_secret) {
 INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                        const ecdh_keypair_t *our_keypair,
                                        const ec_point_t their_pub) {
-  goldilocks_448_point_t p;
+  goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, our_keypair->priv);
 
   otrng_ec_point_valid(p);

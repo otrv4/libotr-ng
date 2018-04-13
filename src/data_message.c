@@ -229,7 +229,7 @@ INTERNAL otrng_err_t otrng_data_message_authenticator(uint8_t *dst,
   if (otrng_data_message_sections_hash(sections, 64, body, bodylen) == ERROR)
     return ERROR;
 
-  goldilocks_shake256_ctx_t auth_hash;
+  goldilocks_shake256_ctx_p auth_hash;
   hash_init_with_usage(auth_hash, 0x28);
   hash_update(auth_hash, mac_key, sizeof(m_mac_key_t));
   hash_update(auth_hash, sections, 64);

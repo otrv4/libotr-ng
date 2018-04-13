@@ -29,10 +29,10 @@
 #include "shared.h"
 
 /* ec_scalar_t represents a scalar. */
-typedef goldilocks_448_scalar_t ec_scalar_t;
+typedef goldilocks_448_scalar_p ec_scalar_t;
 /* ec_point_t represents a ed488 point. It is in the twisted ed448-goldilocks,
    curve representation following the decaf technique. */
-typedef goldilocks_448_point_t ec_point_t;
+typedef goldilocks_448_point_p ec_point_t;
 
 /** Number of bytes in an EdDSA private key: 57 */
 #define ED448_PRIVATE_BYTES GOLDILOCKS_EDDSA_448_PRIVATE_BYTES
