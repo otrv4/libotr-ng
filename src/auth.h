@@ -41,26 +41,60 @@ typedef struct {
   ec_scalar_t r2;
   ec_scalar_t c3;
   ec_scalar_t r3;
-} snizkpk_proof_t;
+} ring_sig_t;
 
-INTERNAL void otrng_snizkpk_keypair_generate(snizkpk_keypair_t *pair);
+/**
+ * @brief Ring Sig keypair generation.
+ *
+ * @param [pub] The public key.
+ * @param [priv] The private key.
+ */
+INTERNAL void otrng_generate_keypair(rsig_pubkey_t pub, rsig_privkey_t priv);
 
-INTERNAL void
-otrng_snizkpk_authenticate(snizkpk_proof_t *dst, const snizkpk_keypair_t *pair1,
-                           const snizkpk_pubkey_t A2, const snizkpk_pubkey_t A3,
-                           const unsigned char *msg, size_t msglen);
+/**
+ * @brief Ring Sig keypair generation.
+ *
+ * @param [keypair] The keypair.
+ */
+INTERNAL void otrng_rsig_keypair_generate(rsig_keypair_t *keypair);
 
-INTERNAL otrng_bool_t otrng_snizkpk_verify(const snizkpk_proof_t *src,
-                                           const snizkpk_pubkey_t A1,
-                                           const snizkpk_pubkey_t A2,
-                                           const snizkpk_pubkey_t A3,
-                                           const unsigned char *msg,
-                                           size_t msglen);
+/**
+ * @brief The Authentication function of the Ring Sig.
+ *
+ * It produces a signature of knowledge, named sigma, bound to the
+ * message msg, that demonstrates knowledge of a private key
+ * corresponding to one of three public keys.
+ *
+ * @param [dst] The signature of knowledge
+ * @param [keypair] The keypair with the known private key.
+ * @param [A2] The second public key.
+ * @param [A3] The thrid public key.
+ * @param [msg] The message to "sign".
+ * @param [msg_len] The length of the message.
+ */
+INTERNAL void otrng_rsig_authenticate(ring_sig_t *dst,
+                                      const rsig_keypair_t *keypair,
+                                      const rsig_pubkey_t A2,
+                                      const rsig_pubkey_t A3,
+                                      const unsigned char *msg, size_t msglen);
 
-INTERNAL void otrng_generate_keypair(snizkpk_pubkey_t pub,
-                                     snizkpk_privkey_t priv);
+/**
+ * @brief The Verification function of the Ring Sig.
+ *
+ * The verification function for the SoK sigma, created by rsig_authenticate.
+ *
+ * @param [src] The signature of knowledge
+ * @param [A1] The first public key.
+ * @param [A2] The second public key.
+ * @param [A3] The thrid public key.
+ * @param [msg] The message to "verify".
+ * @param [msg_len] The length of the message.
+ */
+INTERNAL otrng_bool_t otrng_rsig_verify(
+    const ring_sig_t *src, const rsig_pubkey_t A1, const rsig_pubkey_t A2,
+    const rsig_pubkey_t A3, const unsigned char *msg, size_t msglen);
 
-INTERNAL void otrng_snizkpk_proof_destroy(snizkpk_proof_t *src);
+INTERNAL void otrng_ring_sig_destroy(ring_sig_t *src);
 
 #ifdef OTRNG_AUTH_PRIVATE
 #endif
