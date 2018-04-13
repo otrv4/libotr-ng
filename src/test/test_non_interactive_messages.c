@@ -254,7 +254,7 @@ void test_dake_non_interactive_auth_message_serializes(
 
   cursor += user_profile_len;
 
-  uint8_t serialized_x[ED448_POINT_BYTES + 2] = {};
+  uint8_t serialized_x[PUB_KEY_SER_BYTES] = {};
   int ser_len = otrng_serialize_ec_point(serialized_x, msg->X);
   otrng_assert_cmpmem(cursor, serialized_x, ser_len);
 

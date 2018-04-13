@@ -79,10 +79,9 @@ INTERNAL otrng_err_t otrng_generate_smp_secret(unsigned char **secret,
                                                uint8_t *ssid,
                                                const uint8_t *answer,
                                                size_t answerlen) {
-  uint8_t version[1] = {0x01};
-
   uint8_t hash[HASH_BYTES];
   goldilocks_shake256_ctx_t hd;
+  uint8_t version[1] = {0x01};
 
   hash_init_with_dom(hd);
   hash_update(hd, version, 1);
@@ -106,6 +105,7 @@ INTERNAL otrng_err_t otrng_generate_smp_secret(unsigned char **secret,
 tstatic otrng_err_t hash_to_scalar(const unsigned char *buff,
                                    const size_t bufflen, ec_scalar_t dst) {
   uint8_t hash[HASH_BYTES];
+
   shake_256_hash(hash, sizeof(hash), buff, bufflen);
 
   if (otrng_deserialize_ec_scalar(dst, hash, ED448_SCALAR_BYTES) == ERROR)
@@ -117,7 +117,8 @@ tstatic otrng_err_t hash_to_scalar(const unsigned char *buff,
 INTERNAL otrng_err_t otrng_generate_smp_msg_1(smp_msg_1_t *dst,
                                               smp_context_t smp) {
   snizkpk_keypair_t pair_r2[1], pair_r3[1];
-  unsigned char hash[ED448_POINT_BYTES + 1];
+  int len = ED448_POINT_BYTES + 1;
+  unsigned char hash[len];
   ec_scalar_t a3c3, a2c2;
 
   dst->q_len = 0;
@@ -130,7 +131,7 @@ INTERNAL otrng_err_t otrng_generate_smp_msg_1(smp_msg_1_t *dst,
   otrng_snizkpk_keypair_generate(pair_r2);
   otrng_snizkpk_keypair_generate(pair_r3);
 
-  /* c2 = HashToScalar(1 || G * r2) */
+  /* c2 = hash_to_scalar(1 || G * r2) */
   hash[0] = 0x01;
   otrng_serialize_ec_point(hash + 1, pair_r2->pub);
 
@@ -141,7 +142,7 @@ INTERNAL otrng_err_t otrng_generate_smp_msg_1(smp_msg_1_t *dst,
   goldilocks_448_scalar_mul(a2c2, smp->a2, dst->c2);
   goldilocks_448_scalar_sub(dst->d2, pair_r2->priv, a2c2);
 
-  /* c3 = HashToScalar(2 || G * r3) */
+  /* c3 = hash_to_scalar(2 || G * r3) */
   hash[0] = 0x02;
   otrng_serialize_ec_point(hash + 1, pair_r3->pub);
 
@@ -245,11 +246,12 @@ tstatic otrng_bool_t smp_msg_1_valid_points(smp_msg_1_t *msg) {
 }
 
 tstatic otrng_bool_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
-  uint8_t hash[ED448_POINT_BYTES + 1];
   ec_scalar_t temp_scalar;
   ec_point_t Ga_c, G_d;
+  int len = ED448_POINT_BYTES + 1;
+  uint8_t hash[len];
 
-  /* Check that c2 = HashToScalar(1 || G * d2 + G2a * c2). */
+  /* Check that c2 = hash_to_scalar(1 || G * d2 + G2a * c2). */
   goldilocks_448_point_scalarmul(Ga_c, msg->G2a, msg->c2);
   goldilocks_448_point_scalarmul(G_d, goldilocks_448_point_base, msg->d2);
   goldilocks_448_point_add(G_d, G_d, Ga_c);
@@ -263,7 +265,7 @@ tstatic otrng_bool_t smp_msg_1_valid_zkp(smp_msg_1_t *msg) {
   if (otrng_ec_scalar_eq(temp_scalar, msg->c2))
     return otrng_false;
 
-  /* Check that c3 = HashToScalar(2 || G * d3 + G3a * c3). */
+  /* Check that c3 = hash_to_scalar(2 || G * d3 + G3a * c3). */
   goldilocks_448_point_scalarmul(Ga_c, msg->G3a, msg->c3);
   goldilocks_448_point_scalarmul(G_d, goldilocks_448_point_base, msg->d3);
   goldilocks_448_point_add(G_d, G_d, Ga_c);
@@ -300,12 +302,12 @@ INTERNAL void otrng_smp_msg_1_destroy(smp_msg_1_t *msg) {
 tstatic otrng_err_t generate_smp_msg_2(smp_msg_2_t *dst,
                                        const smp_msg_1_t *msg_1,
                                        smp_context_t smp) {
-  ec_scalar_t b2;
-  snizkpk_keypair_t pair_r2[1], pair_r3[1], pair_r4[1], pair_r5[1];
-  ec_scalar_t r6;
-  unsigned char buff[ED448_POINT_BYTES + 1];
+  ec_scalar_t b2, r6;
   ec_scalar_t temp_scalar;
+  snizkpk_keypair_t pair_r2[1], pair_r3[1], pair_r4[1], pair_r5[1];
   ec_point_t temp_point;
+  int len = ED448_POINT_BYTES + 1;
+  unsigned char buff[len];
 
   /* G2b = G * b2 and G3b = G * b3 */
   otrng_generate_keypair(dst->G2b, b2);
@@ -390,8 +392,7 @@ tstatic otrng_err_t smp_msg_2_asprintf(uint8_t **dst, size_t *len,
                                        const smp_msg_2_t *msg) {
   uint8_t *cursor;
   size_t s = 0;
-  s += 4 * ED448_POINT_BYTES;
-  s += 7 * ED448_SCALAR_BYTES;
+  s += (4 * ED448_POINT_BYTES) + (7 * ED448_SCALAR_BYTES);
 
   *dst = malloc(s);
   if (!*dst)
@@ -494,9 +495,10 @@ tstatic otrng_bool_t smp_msg_2_valid_points(smp_msg_2_t *msg) {
 
 tstatic otrng_bool_t smp_msg_2_valid_zkp(smp_msg_2_t *msg,
                                          const smp_context_t smp) {
-  uint8_t hash[ED448_POINT_BYTES + 1];
   ec_scalar_t temp_scalar;
   ec_point_t Gb_c, G_d, point_cp;
+  int len = ED448_POINT_BYTES + 1;
+  uint8_t hash[len];
 
   /* Check that c2 = HashToScalar(3 || G * d2 + G2b * c2). */
   goldilocks_448_point_scalarmul(Gb_c, msg->G2b, msg->c2);
@@ -574,7 +576,8 @@ tstatic otrng_err_t generate_smp_msg_3(smp_msg_3_t *dst,
   snizkpk_keypair_t pair_r4[1], pair_r5[1], pair_r7[1];
   ec_scalar_t r6, secret_as_scalar;
   ec_point_t temp_point;
-  uint8_t buff[1 + 2 * ED448_POINT_BYTES];
+  int len = 1 + (2 * ED448_POINT_BYTES);
+  uint8_t buff[len];
 
   ed448_random_scalar(r6);
 
@@ -642,9 +645,7 @@ tstatic otrng_err_t smp_msg_3_asprintf(uint8_t **dst, size_t *len,
                                        const smp_msg_3_t *msg) {
   uint8_t *cursor;
   size_t s = 0;
-
-  s += 3 * ED448_POINT_BYTES;
-  s += 5 * ED448_SCALAR_BYTES;
+  s += (3 * ED448_POINT_BYTES) + (5 * ED448_SCALAR_BYTES);
 
   *dst = malloc(s);
   if (!*dst)
@@ -726,9 +727,10 @@ tstatic otrng_bool_t smp_msg_3_validate_points(smp_msg_3_t *msg) {
 
 tstatic otrng_bool_t smp_msg_3_validate_zkp(smp_msg_3_t *msg,
                                             const smp_context_t smp) {
-  uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
+  int len = 1 + (2 * ED448_POINT_BYTES);
+  uint8_t buff[len];
 
   /* cp = HashToScalar(6 || G3 * d5 + Pa * cp || G * d5 + G2 * d6 + Qa * cp) */
   buff[0] = 0x06;
@@ -790,10 +792,11 @@ tstatic void smp_msg_3_destroy(smp_msg_3_t *msg) {
 tstatic otrng_err_t generate_smp_msg_4(smp_msg_4_t *dst,
                                        const smp_msg_3_t *msg_3,
                                        smp_context_t smp) {
-  uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t Qa_Qb;
   snizkpk_keypair_t pair_r7[1];
   otrng_snizkpk_keypair_generate(pair_r7);
+  int len = 1 + (2 * ED448_POINT_BYTES);
+  uint8_t buff[len];
 
   /* Rb = ((Qa - Qb) * b3) */
   goldilocks_448_point_sub(Qa_Qb, msg_3->Qa, smp->Qb);
@@ -819,9 +822,7 @@ tstatic otrng_err_t generate_smp_msg_4(smp_msg_4_t *dst,
 tstatic otrng_err_t smp_msg_4_asprintf(uint8_t **dst, size_t *len,
                                        smp_msg_4_t *msg) {
   size_t s = 0;
-
-  s += ED448_POINT_BYTES;
-  s += 2 * ED448_SCALAR_BYTES;
+  s = ED448_POINT_BYTES + (2 * ED448_SCALAR_BYTES);
 
   *dst = malloc(s);
   if (!*dst)
@@ -864,9 +865,10 @@ tstatic otrng_err_t smp_msg_4_deserialize(smp_msg_4_t *dst, const tlv_t *tlv) {
 
 tstatic otrng_bool_t smp_msg_4_validate_zkp(smp_msg_4_t *msg,
                                             const smp_context_t smp) {
-  uint8_t buff[1 + 2 * ED448_POINT_BYTES];
   ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
+  int len = 1 + (2 * ED448_POINT_BYTES);
+  uint8_t buff[len];
 
   /* cr = HashToScalar(8 || G * d7 + G3b * cr || (Qa - Qb) * d7 + Rb * cr). */
   goldilocks_448_point_scalarmul(temp_point, smp->G3b, msg->cr);
@@ -957,8 +959,8 @@ tstatic otrng_smp_event_t receive_smp_msg_1(const tlv_t *tlv,
 INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_t **to_send,
                                                       smp_context_t smp) {
   smp_msg_2_t msg_2[1];
-  uint8_t *buff;
   size_t bufflen;
+  uint8_t *buff;
 
   *to_send = NULL;
 
@@ -1008,8 +1010,8 @@ tstatic otrng_smp_event_t reply_with_smp_msg_3(tlv_t **to_send,
                                                const smp_msg_2_t *msg_2,
                                                smp_context_t smp) {
   smp_msg_3_t msg_3[1];
-  uint8_t *buff = NULL;
   size_t bufflen = 0;
+  uint8_t *buff = NULL;
 
   if (generate_smp_msg_3(msg_3, msg_2, smp) == ERROR)
     return OTRNG_SMPEVENT_ERROR;
@@ -1055,8 +1057,8 @@ tstatic otrng_smp_event_t reply_with_smp_msg_4(tlv_t **to_send,
                                                const smp_msg_3_t *msg_3,
                                                smp_context_t smp) {
   smp_msg_4_t msg_4[1];
-  uint8_t *buff = NULL;
   size_t bufflen = 0;
+  uint8_t *buff = NULL;
 
   if (generate_smp_msg_4(msg_4, msg_3, smp) == ERROR)
     return OTRNG_SMPEVENT_ERROR;
