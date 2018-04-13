@@ -454,6 +454,11 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
                                manager->their_dh) == ERROR)
       return ERROR;
 
+    // Although k_dh has variable length (bc it is mod p), it is considered to
+    // have 384 bytes because otrng_dh_shared_secret adds leading zeroes to the
+    // serialized secret. Note that DH(a, B) (in the spec) does not mandate
+    // doing so.
+    // Also note that OTRv3 serializes DH values in MPI (no leading zeroes).
     shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x02, k_dh,
                    sizeof(k_dh_p));
 
