@@ -92,6 +92,8 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/dh/api", dh_test_api);
   g_test_add_func("/dh/serialize", dh_test_serialize);
+  g_test_add_func("/dh/shared-secret/leading-zeroes",
+                  dh_test_shared_secret_adds_leading_zeroes);
   g_test_add_func("/dh/destroy", dh_test_keypair_destroy);
 
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
