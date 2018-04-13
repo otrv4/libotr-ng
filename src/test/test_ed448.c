@@ -34,11 +34,11 @@ void ed448_test_eddsa_serialization() {
   ec_point_t p;
   goldilocks_448_point_scalarmul(p, goldilocks_448_point_base, s);
 
-  // 2. Serialize using EdDSA
+  // 2. Encode like EdDSA
   uint8_t enc[GOLDILOCKS_EDDSA_448_PUBLIC_BYTES];
   otrng_ec_point_encode(enc, p);
 
-  // 3. Deserialize
+  // 3. Decode like EdDSA
   ec_point_t dec;
   otrng_assert(otrng_ec_point_decode(dec, enc) == SUCCESS);
 

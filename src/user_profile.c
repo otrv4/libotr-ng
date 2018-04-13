@@ -38,7 +38,7 @@ tstatic user_profile_t *user_profile_new(const string_t versions) {
   if (!profile)
     return NULL;
 
-  otrng_ec_bzero(profile->pub_key, ED448_POINT_BYTES);
+  otrng_ec_bzero(profile->long_term_pub_key, ED448_POINT_BYTES);
   profile->expires = 0;
   profile->versions = otrng_strdup(versions);
   otrng_ec_bzero(profile->shared_prekey, ED448_POINT_BYTES);
@@ -54,7 +54,7 @@ INTERNAL void otrng_user_profile_copy(user_profile_t *dst,
   if (!src)
     return;
 
-  otrng_ec_point_copy(dst->pub_key, src->pub_key);
+  otrng_ec_point_copy(dst->long_term_pub_key, src->long_term_pub_key);
   dst->versions = otrng_strdup(src->versions);
   dst->expires = src->expires;
   otrng_ec_point_copy(dst->shared_prekey, src->shared_prekey);
@@ -67,7 +67,7 @@ INTERNAL void otrng_user_profile_destroy(user_profile_t *profile) {
   if (!profile)
     return;
 
-  otrng_ec_point_destroy(profile->pub_key);
+  otrng_ec_point_destroy(profile->long_term_pub_key);
   free(profile->versions);
   profile->versions = NULL;
   sodium_memzero(profile->signature, ED448_SIGNATURE_BYTES);
@@ -85,7 +85,8 @@ tstatic int user_profile_body_serialize(uint8_t *dst,
                                         const user_profile_t *profile) {
   uint8_t *target = dst;
 
-  target += otrng_serialize_otrng_public_key(target, profile->pub_key);
+  target +=
+      otrng_serialize_otrng_public_key(target, profile->long_term_pub_key);
   target += otrng_serialize_data(target, (uint8_t *)profile->versions,
                                  strlen(profile->versions) + 1);
   target += otrng_serialize_uint64(target, profile->expires);
@@ -161,8 +162,8 @@ INTERNAL otrng_err_t otrng_user_profile_deserialize(user_profile_t *target,
 
   otrng_err_t ok = ERROR;
   do {
-    if (otrng_deserialize_otrng_public_key(target->pub_key, buffer, buflen,
-                                           &read))
+    if (otrng_deserialize_otrng_public_key(target->long_term_pub_key, buffer,
+                                           buflen, &read))
       continue;
 
     walked += read;
@@ -213,7 +214,7 @@ tstatic otrng_err_t user_profile_sign(user_profile_t *profile,
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  otrng_ec_point_copy(profile->pub_key, keypair->pub);
+  otrng_ec_point_copy(profile->long_term_pub_key, keypair->pub);
   if (user_profile_body_asprintf(&body, &bodylen, profile))
     return ERROR;
 
@@ -246,7 +247,7 @@ otrng_user_profile_verify_signature(const user_profile_t *profile) {
     return otrng_false;
 
   uint8_t pubkey[ED448_POINT_BYTES];
-  otrng_ec_point_encode(pubkey, profile->pub_key);
+  otrng_ec_point_encode(pubkey, profile->long_term_pub_key);
 
   otrng_bool_t valid =
       otrng_ec_verify(profile->signature, pubkey, body, bodylen);

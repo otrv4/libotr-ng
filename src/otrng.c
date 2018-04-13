@@ -770,8 +770,8 @@ tstatic otrng_err_t reply_with_auth_r_msg(string_t *dst, otrng_t *otr) {
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
   otrng_snizkpk_authenticate(msg->sigma,
                              otr->conversation->client->keypair, /* g^R and R */
-                             otr->their_profile->pub_key,        /* g^I */
-                             their_ecdh(otr),                    /* g^i -- Y */
+                             otr->their_profile->long_term_pub_key, /* g^I */
+                             their_ecdh(otr), /* g^i -- Y */
                              t, t_len);
 
   free(t);
@@ -818,7 +818,7 @@ tstatic otrng_err_t generate_tmp_key_r(uint8_t *dst, otrng_t *otr) {
     return ERROR;
 
   otrng_ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
-                           otr->their_profile->pub_key);
+                           otr->their_profile->long_term_pub_key);
   if (otrng_ecdh_valid_secret(k_ecdh))
     return ERROR;
 
@@ -1141,8 +1141,8 @@ tstatic otrng_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
   otrng_snizkpk_authenticate(auth->sigma,
                              otr->conversation->client->keypair, /* g^R and R */
-                             otr->their_profile->pub_key,        /* g^I */
-                             their_ecdh(otr),                    /* g^i -- Y */
+                             otr->their_profile->long_term_pub_key, /* g^I */
+                             their_ecdh(otr), /* g^i -- Y */
                              t, t_len);
 
   sodium_memzero(auth->nonce, DATA_MSG_NONCE_BYTES);
@@ -1454,11 +1454,11 @@ tstatic otrng_bool_t verify_non_interactive_auth_message(
   }
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
-  otrng_bool_t err =
-      otrng_snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
-                           otr->conversation->client->keypair->pub, /* g^I */
-                           our_ecdh(otr),                           /* g^  */
-                           t, t_len);
+  otrng_bool_t err = otrng_snizkpk_verify(
+      auth->sigma, auth->profile->long_term_pub_key, /* g^R */
+      otr->conversation->client->keypair->pub,       /* g^I */
+      our_ecdh(otr),                                 /* g^  */
+      t, t_len);
 
   if (auth->enc_msg) {
     m_enc_key_t enc_key;
@@ -1608,7 +1608,7 @@ tstatic otrng_err_t receive_non_interactive_auth_message(
   otrng_dake_non_interactive_auth_message_destroy(auth);
 
   otrng_fingerprint_t fp;
-  if (!otrng_serialize_fingerprint(fp, otr->their_profile->pub_key))
+  if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
   return SUCCESS;
@@ -1718,7 +1718,7 @@ tstatic otrng_err_t serialize_and_encode_auth_i(string_t *dst,
 }
 
 tstatic otrng_err_t reply_with_auth_i_msg(string_t *dst,
-                                          const user_profile_t *their,
+                                          const user_profile_t *their_profile,
                                           otrng_t *otr) {
   dake_auth_i_t msg[1];
   msg->sender_instance_tag = otr->our_instance_tag;
@@ -1727,13 +1727,14 @@ tstatic otrng_err_t reply_with_auth_i_msg(string_t *dst,
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-  if (build_auth_message(&t, &t_len, 1, get_my_user_profile(otr), their,
+  if (build_auth_message(&t, &t_len, 1, get_my_user_profile(otr), their_profile,
                          our_ecdh(otr), their_ecdh(otr), our_dh(otr),
                          their_dh(otr), otr->conversation->client->phi))
     return ERROR;
 
   otrng_snizkpk_authenticate(msg->sigma, otr->conversation->client->keypair,
-                             their->pub_key, their_ecdh(otr), t, t_len);
+                             their_profile->long_term_pub_key, their_ecdh(otr),
+                             t, t_len);
   free(t);
   t = NULL;
 
@@ -1757,11 +1758,11 @@ tstatic otrng_bool_t valid_auth_r_message(const dake_auth_r_t *auth,
     return otrng_false;
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
-  otrng_bool_t err =
-      otrng_snizkpk_verify(auth->sigma, auth->profile->pub_key,     /* g^R */
-                           otr->conversation->client->keypair->pub, /* g^I */
-                           our_ecdh(otr),                           /* g^  */
-                           t, t_len);
+  otrng_bool_t err = otrng_snizkpk_verify(
+      auth->sigma, auth->profile->long_term_pub_key, /* g^R */
+      otr->conversation->client->keypair->pub,       /* g^I */
+      our_ecdh(otr),                                 /* g^  */
+      t, t_len);
 
   free(t);
   t = NULL;
@@ -1808,7 +1809,7 @@ tstatic otrng_err_t receive_auth_r(string_t *dst, const uint8_t *buff,
   otrng_dake_auth_r_destroy(auth);
 
   otrng_fingerprint_t fp;
-  if (!otrng_serialize_fingerprint(fp, otr->their_profile->pub_key))
+  if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
   return double_ratcheting_init(0, true, otr);
@@ -1826,7 +1827,7 @@ tstatic otrng_bool_t valid_auth_i_message(const dake_auth_i_t *auth,
     return otrng_false;
 
   otrng_bool_t err = otrng_snizkpk_verify(
-      auth->sigma, otr->their_profile->pub_key,
+      auth->sigma, otr->their_profile->long_term_pub_key,
       otr->conversation->client->keypair->pub, our_ecdh(otr), t, t_len);
   free(t);
   t = NULL;
@@ -1856,7 +1857,7 @@ tstatic otrng_err_t receive_auth_i(const uint8_t *buff, size_t buff_len,
   otrng_dake_auth_i_destroy(auth);
 
   otrng_fingerprint_t fp;
-  if (!otrng_serialize_fingerprint(fp, otr->their_profile->pub_key))
+  if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
   return double_ratcheting_init(1, true, otr);
@@ -2673,8 +2674,8 @@ API otrng_err_t otrng_send_symkey_message(string_t *to_send, unsigned int use,
   return ERROR;
 }
 
-tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator,
-                                  const user_profile_t *responder,
+tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator_profile,
+                                  const user_profile_t *responder_profile,
                                   const uint8_t *question, const size_t q_len,
                                   const uint8_t *secret, const size_t secretlen,
                                   uint8_t *ssid, smp_context_t smp,
@@ -2685,8 +2686,8 @@ tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator,
   size_t len = 0;
 
   otrng_fingerprint_t our_fp, their_fp;
-  otrng_serialize_fingerprint(our_fp, initiator->pub_key);
-  otrng_serialize_fingerprint(their_fp, responder->pub_key);
+  otrng_serialize_fingerprint(our_fp, initiator_profile->long_term_pub_key);
+  otrng_serialize_fingerprint(their_fp, responder_profile->long_term_pub_key);
   if (otrng_generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, secret,
                                 secretlen))
     return NULL;
@@ -2771,8 +2772,8 @@ tstatic tlv_t *otrng_smp_provide_secret(otrng_smp_event_t *event,
   tlv_t *smp_reply = NULL;
 
   otrng_fingerprint_t our_fp, their_fp;
-  otrng_serialize_fingerprint(our_fp, our_profile->pub_key);
-  otrng_serialize_fingerprint(their_fp, their_profile->pub_key);
+  otrng_serialize_fingerprint(our_fp, our_profile->long_term_pub_key);
+  otrng_serialize_fingerprint(their_fp, their_profile->long_term_pub_key);
   if (otrng_generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret,
                                 secretlen))
     return NULL;

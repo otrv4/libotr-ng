@@ -218,8 +218,8 @@ tstatic otrng_in_message_type_t get_message_type(const string_t message);
 tstatic otrng_err_t extract_header(otrng_header_t *dst, const uint8_t *buffer,
                                    const size_t bufflen);
 
-tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator,
-                                  const user_profile_t *responder,
+tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator_profile,
+                                  const user_profile_t *responder_profile,
                                   const uint8_t *question, const size_t q_len,
                                   const uint8_t *secret, const size_t secretlen,
                                   uint8_t *ssid, smp_context_t smp,

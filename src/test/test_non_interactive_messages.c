@@ -168,7 +168,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
   otrng_assert(otrng_ec_point_valid(shared_prekey->pub) == SUCCESS);
 
   user_profile_t *invalid_profile = user_profile_new("2");
-  otrng_ec_point_copy(invalid_profile->pub_key, invalid_ecdh->pub);
+  otrng_ec_point_copy(invalid_profile->long_term_pub_key, invalid_ecdh->pub);
   otrng_ec_point_copy(invalid_profile->shared_prekey, shared_prekey->pub);
 
   dake_prekey_message_t *invalid_prekey_message =
@@ -215,8 +215,8 @@ void test_dake_non_interactive_auth_message_serializes(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  otrng_snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key,
-                             msg->X, t, t_len);
+  otrng_snizkpk_authenticate(msg->sigma, f->keypair,
+                             f->profile->long_term_pub_key, msg->X, t, t_len);
 
   uint8_t *serialized = NULL;
   size_t len = 0;
@@ -318,8 +318,8 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  otrng_snizkpk_authenticate(msg->sigma, f->keypair, f->profile->pub_key,
-                             msg->X, t, t_len);
+  otrng_snizkpk_authenticate(msg->sigma, f->keypair,
+                             f->profile->long_term_pub_key, msg->X, t, t_len);
 
   uint8_t *serialized = NULL;
   size_t len = 0;

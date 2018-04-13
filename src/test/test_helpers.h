@@ -81,7 +81,7 @@
   do {                                                                         \
     const user_profile_t *_p1 = (p1);                                          \
     const user_profile_t *_p2 = (p2);                                          \
-    otrng_assert_point_equals(_p1->pub_key, _p2->pub_key);                     \
+    otrng_assert_point_equals(_p1->long_term_pub_key, _p2->long_term_pub_key); \
     otrng_assert_cmpmem(_p1->versions, _p2->versions,                          \
                         strlen(_p1->versions) + 1);                            \
     g_assert_cmpuint(_p1->expires, ==, _p2->expires);                          \

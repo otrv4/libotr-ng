@@ -29,7 +29,7 @@
 #include "str.h"
 
 typedef struct {
-  otrng_public_key_t pub_key;
+  otrng_public_key_t long_term_pub_key;
   string_t versions;
   uint64_t expires;
   otrng_shared_prekey_pub_t shared_prekey;
