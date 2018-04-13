@@ -24,29 +24,6 @@
 #include "../ed448.h"
 #include "../random.h"
 
-void ed448_test_ecdh() {
-  uint8_t alice_pub[GOLDILOCKS_X448_PUBLIC_BYTES];
-  uint8_t alice_priv[GOLDILOCKS_X448_PRIVATE_BYTES];
-
-  uint8_t bob_pub[GOLDILOCKS_X448_PUBLIC_BYTES];
-  uint8_t bob_priv[GOLDILOCKS_X448_PRIVATE_BYTES];
-
-  random_bytes(alice_priv, GOLDILOCKS_X448_PRIVATE_BYTES);
-  goldilocks_x448_derive_public_key(alice_pub, alice_priv);
-
-  random_bytes(bob_priv, GOLDILOCKS_X448_PRIVATE_BYTES);
-  goldilocks_x448_derive_public_key(bob_pub, bob_priv);
-
-  uint8_t shared1[GOLDILOCKS_X448_PUBLIC_BYTES],
-      shared2[GOLDILOCKS_X448_PUBLIC_BYTES];
-
-  goldilocks_error_t err = goldilocks_x448(shared1, alice_pub, bob_priv);
-  err = goldilocks_x448(shared2, bob_pub, alice_priv);
-  otrng_assert(GOLDILOCKS_SUCCESS == err);
-
-  otrng_assert_cmpmem(shared1, shared2, GOLDILOCKS_X448_PUBLIC_BYTES);
-}
-
 void ed448_test_eddsa_serialization() {
   ec_scalar_t s;
   uint8_t rand[ED448_SCALAR_BYTES];
