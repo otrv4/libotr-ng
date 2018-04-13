@@ -53,6 +53,17 @@ INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_p point);
 INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
                                           const ec_scalar_p scalar);
 
+/**
+ * @brief Serializes a DH public key as an MPI.
+ *
+ * @warning MPIs use the minimum-length encoding; i. e. no leading zeroes.
+ *
+ * @param [dst] The destination.
+ * @param [len] The destination's length.
+ * @param [pub] The DH public key.
+ *
+ * @out SUCCESS or ERROR.
+ */
 INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
                                                  const dh_public_key_p pub);
 

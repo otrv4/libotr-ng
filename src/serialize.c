@@ -92,8 +92,8 @@ INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
                                                  const dh_public_key_p pub) {
   /* From gcrypt MPI */
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
-  memset(buf, 0, DH3072_MOD_LEN_BYTES);
   size_t written = 0;
+
   otrng_err err =
       otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &written, pub);
   if (err)
