@@ -128,8 +128,8 @@ INTERNAL size_t otrng_serialize_otrng_shared_prekey(
   return cursor - dst;
 }
 
-INTERNAL size_t otrng_serialize_snizkpk_proof(uint8_t *dst,
-                                              const snizkpk_proof_t *proof) {
+INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst,
+                                         const ring_sig_t *proof) {
   uint8_t *cursor = dst;
   cursor += otrng_serialize_ec_scalar(cursor, proof->c1);
   cursor += otrng_serialize_ec_scalar(cursor, proof->r1);

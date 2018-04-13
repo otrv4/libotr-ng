@@ -116,7 +116,7 @@ tstatic otrng_err_t hash_to_scalar(const unsigned char *buff,
 
 INTERNAL otrng_err_t otrng_generate_smp_msg_1(smp_msg_1_t *dst,
                                               smp_context_t smp) {
-  snizkpk_keypair_t pair_r2[1], pair_r3[1];
+  rsig_keypair_t pair_r2[1], pair_r3[1];
   int len = ED448_POINT_BYTES + 1;
   unsigned char hash[len];
   ec_scalar_t a3c3, a2c2;
@@ -128,8 +128,8 @@ INTERNAL otrng_err_t otrng_generate_smp_msg_1(smp_msg_1_t *dst,
   otrng_generate_keypair(dst->G2a, smp->a2);
   otrng_generate_keypair(dst->G3a, smp->a3);
 
-  otrng_snizkpk_keypair_generate(pair_r2);
-  otrng_snizkpk_keypair_generate(pair_r3);
+  otrng_rsig_keypair_generate(pair_r2);
+  otrng_rsig_keypair_generate(pair_r3);
 
   /* c2 = hash_to_scalar(1 || G * r2) */
   hash[0] = 0x01;
@@ -304,7 +304,7 @@ tstatic otrng_err_t generate_smp_msg_2(smp_msg_2_t *dst,
                                        smp_context_t smp) {
   ec_scalar_t b2, r6;
   ec_scalar_t temp_scalar;
-  snizkpk_keypair_t pair_r2[1], pair_r3[1], pair_r4[1], pair_r5[1];
+  rsig_keypair_t pair_r2[1], pair_r3[1], pair_r4[1], pair_r5[1];
   ec_point_t temp_point;
   int len = ED448_POINT_BYTES + 1;
   unsigned char buff[len];
@@ -313,10 +313,10 @@ tstatic otrng_err_t generate_smp_msg_2(smp_msg_2_t *dst,
   otrng_generate_keypair(dst->G2b, b2);
   otrng_generate_keypair(dst->G3b, smp->b3);
 
-  otrng_snizkpk_keypair_generate(pair_r2);
-  otrng_snizkpk_keypair_generate(pair_r3);
-  otrng_snizkpk_keypair_generate(pair_r4);
-  otrng_snizkpk_keypair_generate(pair_r5);
+  otrng_rsig_keypair_generate(pair_r2);
+  otrng_rsig_keypair_generate(pair_r3);
+  otrng_rsig_keypair_generate(pair_r4);
+  otrng_rsig_keypair_generate(pair_r5);
 
   ed448_random_scalar(r6);
 
@@ -573,7 +573,7 @@ tstatic void smp_msg_2_destroy(smp_msg_2_t *msg) {
 tstatic otrng_err_t generate_smp_msg_3(smp_msg_3_t *dst,
                                        const smp_msg_2_t *msg_2,
                                        smp_context_t smp) {
-  snizkpk_keypair_t pair_r4[1], pair_r5[1], pair_r7[1];
+  rsig_keypair_t pair_r4[1], pair_r5[1], pair_r7[1];
   ec_scalar_t r6, secret_as_scalar;
   ec_point_t temp_point;
   int len = 1 + (2 * ED448_POINT_BYTES);
@@ -581,9 +581,9 @@ tstatic otrng_err_t generate_smp_msg_3(smp_msg_3_t *dst,
 
   ed448_random_scalar(r6);
 
-  otrng_snizkpk_keypair_generate(pair_r4);
-  otrng_snizkpk_keypair_generate(pair_r5);
-  otrng_snizkpk_keypair_generate(pair_r7);
+  otrng_rsig_keypair_generate(pair_r4);
+  otrng_rsig_keypair_generate(pair_r5);
+  otrng_rsig_keypair_generate(pair_r7);
 
   otrng_ec_point_copy(smp->G3b, msg_2->G3b);
 
@@ -793,8 +793,8 @@ tstatic otrng_err_t generate_smp_msg_4(smp_msg_4_t *dst,
                                        const smp_msg_3_t *msg_3,
                                        smp_context_t smp) {
   ec_point_t Qa_Qb;
-  snizkpk_keypair_t pair_r7[1];
-  otrng_snizkpk_keypair_generate(pair_r7);
+  rsig_keypair_t pair_r7[1];
+  otrng_rsig_keypair_generate(pair_r7);
   int len = 1 + (2 * ED448_POINT_BYTES);
   uint8_t buff[len];
 

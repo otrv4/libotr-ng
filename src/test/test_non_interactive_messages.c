@@ -216,8 +216,8 @@ void test_dake_non_interactive_auth_message_serializes(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  otrng_snizkpk_authenticate(msg->sigma, f->keypair,
-                             f->profile->long_term_pub_key, msg->X, t, t_len);
+  otrng_rsig_authenticate(msg->sigma, f->keypair, f->profile->long_term_pub_key,
+                          msg->X, t, t_len);
 
   uint8_t *serialized = NULL;
   size_t len = 0;
@@ -271,12 +271,12 @@ void test_dake_non_interactive_auth_message_serializes(
 
   cursor += 4 + mpi_len;
 
-  uint8_t serialized_snizkpk[SNIZKPK_BYTES] = {};
-  otrng_serialize_snizkpk_proof(serialized_snizkpk, msg->sigma);
+  uint8_t serialized_ring_sig[RING_SIG_BYTES] = {};
+  otrng_serialize_ring_sig(serialized_ring_sig, msg->sigma);
 
-  otrng_assert_cmpmem(cursor, serialized_snizkpk, SNIZKPK_BYTES);
+  otrng_assert_cmpmem(cursor, serialized_ring_sig, RING_SIG_BYTES);
 
-  cursor += SNIZKPK_BYTES;
+  cursor += RING_SIG_BYTES;
 
   uint8_t serialized_mac[HASH_BYTES] = {};
   cursor += otrng_serialize_bytes_array(cursor, msg->auth_mac, HASH_BYTES);
@@ -320,8 +320,8 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  otrng_snizkpk_authenticate(msg->sigma, f->keypair,
-                             f->profile->long_term_pub_key, msg->X, t, t_len);
+  otrng_rsig_authenticate(msg->sigma, f->keypair, f->profile->long_term_pub_key,
+                          msg->X, t, t_len);
 
   uint8_t *serialized = NULL;
   size_t len = 0;
@@ -345,7 +345,7 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
   otrng_assert_ec_public_key_eq(deserialized->X, msg->X);
   otrng_assert_dh_public_key_eq(deserialized->A, msg->A);
   otrng_assert(memcmp(deserialized->auth_mac, msg->auth_mac, HASH_BYTES));
-  otrng_assert(memcmp(deserialized->sigma, msg->sigma, SNIZKPK_BYTES));
+  otrng_assert(memcmp(deserialized->sigma, msg->sigma, RING_SIG_BYTES));
 
   serialized = NULL;
   free(serialized);

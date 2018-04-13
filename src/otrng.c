@@ -768,11 +768,11 @@ tstatic otrng_err_t reply_with_auth_r_msg(string_t *dst, otrng_t *otr) {
     return ERROR;
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
-  otrng_snizkpk_authenticate(msg->sigma,
-                             otr->conversation->client->keypair, /* g^R and R */
-                             otr->their_profile->long_term_pub_key, /* g^I */
-                             their_ecdh(otr), /* g^i -- Y */
-                             t, t_len);
+  otrng_rsig_authenticate(msg->sigma,
+                          otr->conversation->client->keypair,    /* g^R and R */
+                          otr->their_profile->long_term_pub_key, /* g^I */
+                          their_ecdh(otr),                       /* g^i -- Y */
+                          t, t_len);
 
   free(t);
   t = NULL;
@@ -1139,11 +1139,11 @@ tstatic otrng_err_t reply_with_non_interactive_auth_msg(string_t *dst,
   }
 
   /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
-  otrng_snizkpk_authenticate(auth->sigma,
-                             otr->conversation->client->keypair, /* g^R and R */
-                             otr->their_profile->long_term_pub_key, /* g^I */
-                             their_ecdh(otr), /* g^i -- Y */
-                             t, t_len);
+  otrng_rsig_authenticate(auth->sigma,
+                          otr->conversation->client->keypair,    /* g^R and R */
+                          otr->their_profile->long_term_pub_key, /* g^I */
+                          their_ecdh(otr),                       /* g^i -- Y */
+                          t, t_len);
 
   sodium_memzero(auth->nonce, DATA_MSG_NONCE_BYTES);
 
@@ -1454,11 +1454,11 @@ tstatic otrng_bool_t verify_non_interactive_auth_message(
   }
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
-  otrng_bool_t err = otrng_snizkpk_verify(
-      auth->sigma, auth->profile->long_term_pub_key, /* g^R */
-      otr->conversation->client->keypair->pub,       /* g^I */
-      our_ecdh(otr),                                 /* g^  */
-      t, t_len);
+  otrng_bool_t err =
+      otrng_rsig_verify(auth->sigma, auth->profile->long_term_pub_key, /* g^R */
+                        otr->conversation->client->keypair->pub,       /* g^I */
+                        our_ecdh(otr),                                 /* g^  */
+                        t, t_len);
 
   if (auth->enc_msg) {
     m_enc_key_t enc_key;
@@ -1732,9 +1732,9 @@ tstatic otrng_err_t reply_with_auth_i_msg(string_t *dst,
                          their_dh(otr), otr->conversation->client->phi))
     return ERROR;
 
-  otrng_snizkpk_authenticate(msg->sigma, otr->conversation->client->keypair,
-                             their_profile->long_term_pub_key, their_ecdh(otr),
-                             t, t_len);
+  otrng_rsig_authenticate(msg->sigma, otr->conversation->client->keypair,
+                          their_profile->long_term_pub_key, their_ecdh(otr), t,
+                          t_len);
   free(t);
   t = NULL;
 
@@ -1758,11 +1758,11 @@ tstatic otrng_bool_t valid_auth_r_message(const dake_auth_r_t *auth,
     return otrng_false;
 
   /* Verif({g^I, g^R, g^i}, sigma, msg) */
-  otrng_bool_t err = otrng_snizkpk_verify(
-      auth->sigma, auth->profile->long_term_pub_key, /* g^R */
-      otr->conversation->client->keypair->pub,       /* g^I */
-      our_ecdh(otr),                                 /* g^  */
-      t, t_len);
+  otrng_bool_t err =
+      otrng_rsig_verify(auth->sigma, auth->profile->long_term_pub_key, /* g^R */
+                        otr->conversation->client->keypair->pub,       /* g^I */
+                        our_ecdh(otr),                                 /* g^  */
+                        t, t_len);
 
   free(t);
   t = NULL;
@@ -1826,7 +1826,7 @@ tstatic otrng_bool_t valid_auth_i_message(const dake_auth_i_t *auth,
                          otr->conversation->client->phi))
     return otrng_false;
 
-  otrng_bool_t err = otrng_snizkpk_verify(
+  otrng_bool_t err = otrng_rsig_verify(
       auth->sigma, otr->their_profile->long_term_pub_key,
       otr->conversation->client->keypair->pub, our_ecdh(otr), t, t_len);
   free(t);

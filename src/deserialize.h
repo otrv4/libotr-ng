@@ -67,10 +67,9 @@ INTERNAL otrng_err_t otrng_deserialize_ec_scalar(ec_scalar_t scalar,
                                                  const uint8_t *serialized,
                                                  size_t ser_len);
 
-INTERNAL otrng_err_t otrng_deserialize_snizkpk_proof(snizkpk_proof_t *proof,
-                                                     const uint8_t *serialized,
-                                                     size_t ser_len,
-                                                     size_t *read);
+INTERNAL otrng_err_t otrng_deserialize_ring_sig(ring_sig_t *proof,
+                                                const uint8_t *serialized,
+                                                size_t ser_len, size_t *read);
 
 INTERNAL otrng_err_t otrng_symmetric_key_deserialize(otrng_keypair_t *pair,
                                                      const char *buff,

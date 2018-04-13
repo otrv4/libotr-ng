@@ -44,13 +44,13 @@ typedef struct {
   user_profile_t profile[1];
   ec_point_t X;
   dh_public_key_t A;
-  snizkpk_proof_t sigma[1];
+  ring_sig_t sigma[1];
 } dake_auth_r_t;
 
 typedef struct {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  snizkpk_proof_t sigma[1];
+  ring_sig_t sigma[1];
 } dake_auth_i_t;
 
 typedef struct {
@@ -67,7 +67,7 @@ typedef struct {
   user_profile_t profile[1];
   ec_point_t X;
   dh_public_key_t A;
-  snizkpk_proof_t sigma[1];
+  ring_sig_t sigma[1];
   /* only used if an ecrypted message is attached */
   uint32_t message_id;
   uint8_t nonce[DATA_MSG_NONCE_BYTES];

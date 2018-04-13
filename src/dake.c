@@ -195,7 +195,7 @@ INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_t *auth_r) {
   auth_r->A = NULL;
   otrng_ec_point_destroy(auth_r->X);
   otrng_user_profile_destroy(auth_r->profile);
-  otrng_snizkpk_proof_destroy(auth_r->sigma);
+  otrng_ring_sig_destroy(auth_r->sigma);
 }
 
 INTERNAL otrng_err_t otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
@@ -237,7 +237,7 @@ INTERNAL otrng_err_t otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   }
 
   cursor += len;
-  cursor += otrng_serialize_snizkpk_proof(cursor, auth_r->sigma);
+  cursor += otrng_serialize_ring_sig(cursor, auth_r->sigma);
 
   if (dst)
     *dst = buff;
@@ -323,16 +323,16 @@ INTERNAL otrng_err_t otrng_dake_auth_r_deserialize(dake_auth_r_t *dst,
   cursor += read;
   len -= read;
 
-  return otrng_deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
+  return otrng_deserialize_ring_sig(dst->sigma, cursor, len, &read);
 }
 
 INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_t *auth_i) {
-  otrng_snizkpk_proof_destroy(auth_i->sigma);
+  otrng_ring_sig_destroy(auth_i->sigma);
 }
 
 INTERNAL otrng_err_t otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
                                                 const dake_auth_i_t *auth_i) {
-  size_t s = DAKE_HEADER_BYTES + SNIZKPK_BYTES;
+  size_t s = DAKE_HEADER_BYTES + RING_SIG_BYTES;
   *dst = malloc(s);
 
   if (!*dst) {
@@ -348,7 +348,7 @@ INTERNAL otrng_err_t otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
   cursor += otrng_serialize_uint8(cursor, AUTH_I_MSG_TYPE);
   cursor += otrng_serialize_uint32(cursor, auth_i->sender_instance_tag);
   cursor += otrng_serialize_uint32(cursor, auth_i->receiver_instance_tag);
-  cursor += otrng_serialize_snizkpk_proof(cursor, auth_i->sigma);
+  cursor += otrng_serialize_ring_sig(cursor, auth_i->sigma);
 
   return SUCCESS;
 }
@@ -399,7 +399,7 @@ INTERNAL otrng_err_t otrng_dake_auth_i_deserialize(dake_auth_i_t *dst,
   cursor += read;
   len -= read;
 
-  return otrng_deserialize_snizkpk_proof(dst->sigma, cursor, len, &read);
+  return otrng_deserialize_ring_sig(dst->sigma, cursor, len, &read);
 }
 
 INTERNAL dake_prekey_message_t *
@@ -565,7 +565,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   non_interactive_auth->A = NULL;
   otrng_ec_point_destroy(non_interactive_auth->X);
   otrng_user_profile_destroy(non_interactive_auth->profile);
-  otrng_snizkpk_proof_destroy(non_interactive_auth->sigma);
+  otrng_ring_sig_destroy(non_interactive_auth->sigma);
   non_interactive_auth->enc_msg = NULL;
   non_interactive_auth->enc_msg_len = 0;
   sodium_memzero(non_interactive_auth->nonce, DATA_MSG_NONCE_BYTES);
@@ -620,7 +620,7 @@ INTERNAL otrng_err_t otrng_dake_non_interactive_auth_message_asprintf(
   }
 
   cursor += len;
-  cursor += otrng_serialize_snizkpk_proof(cursor, non_interactive_auth->sigma);
+  cursor += otrng_serialize_ring_sig(cursor, non_interactive_auth->sigma);
 
   if (non_interactive_auth->enc_msg) {
     cursor += otrng_serialize_uint32(cursor, non_interactive_auth->message_id);
@@ -706,7 +706,7 @@ INTERNAL otrng_err_t otrng_dake_non_interactive_auth_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (otrng_deserialize_snizkpk_proof(dst->sigma, cursor, len, &read))
+  if (otrng_deserialize_ring_sig(dst->sigma, cursor, len, &read))
     return ERROR;
 
   cursor += read;

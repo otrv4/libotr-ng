@@ -26,21 +26,20 @@
 #include "../serialize.h"
 
 // TODO: include somewhere else or remove
-void test_snizkpk_auth() {
-  snizkpk_proof_t dst[1];
-  snizkpk_keypair_t pair1[1], pair2[1], pair3[1];
+void test_rsig_auth() {
+  ring_sig_t dst[1];
+  rsig_keypair_t pair1[1], pair2[1], pair3[1];
   const char *msg = "hi";
 
-  otrng_snizkpk_keypair_generate(pair1);
-  otrng_snizkpk_keypair_generate(pair2);
-  otrng_snizkpk_keypair_generate(pair3);
+  otrng_rsig_keypair_generate(pair1);
+  otrng_rsig_keypair_generate(pair2);
+  otrng_rsig_keypair_generate(pair3);
 
-  otrng_snizkpk_authenticate(dst, pair1, pair2->pub, pair3->pub,
-                             (unsigned char *)msg, strlen(msg));
+  otrng_rsig_authenticate(dst, pair1, pair2->pub, pair3->pub,
+                          (unsigned char *)msg, strlen(msg));
 
-  otrng_assert(otrng_snizkpk_verify(dst, pair1->pub, pair2->pub, pair3->pub,
-                                    (unsigned char *)msg,
-                                    strlen(msg)) == SUCCESS);
+  otrng_assert(otrng_rsig_verify(dst, pair1->pub, pair2->pub, pair3->pub,
+                                 (unsigned char *)msg, strlen(msg)) == SUCCESS);
 
   // Serialize and deserialize things.
   otrng_keypair_t p1[1], p2[1], p3[1];
@@ -51,11 +50,10 @@ void test_snizkpk_auth() {
   otrng_keypair_generate(p2, sym2);
   otrng_keypair_generate(p3, sym3);
 
-  snizkpk_proof_t dst2[1];
-  otrng_snizkpk_authenticate(dst2, p1, p2->pub, p3->pub, (unsigned char *)msg,
-                             strlen(msg));
+  ring_sig_t dst2[1];
+  otrng_rsig_authenticate(dst2, p1, p2->pub, p3->pub, (unsigned char *)msg,
+                          strlen(msg));
 
-  otrng_assert(otrng_snizkpk_verify(dst2, p1->pub, p2->pub, p3->pub,
-                                    (unsigned char *)msg,
-                                    strlen(msg)) == SUCCESS);
+  otrng_assert(otrng_rsig_verify(dst2, p1->pub, p2->pub, p3->pub,
+                                 (unsigned char *)msg, strlen(msg)) == SUCCESS);
 }

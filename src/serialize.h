@@ -56,8 +56,7 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
 INTERNAL otrng_err_t otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
                                                    const dh_public_key_t pub);
 
-INTERNAL size_t otrng_serialize_snizkpk_proof(uint8_t *dst,
-                                              const snizkpk_proof_t *proof);
+INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst, const ring_sig_t *proof);
 
 INTERNAL size_t otrng_serialize_otrng_public_key(uint8_t *dst,
                                                  const otrng_public_key_t);

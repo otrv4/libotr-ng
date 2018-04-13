@@ -27,11 +27,12 @@
 #include "keys.h"
 #include "shared.h"
 
-#define SNIZKPK_BYTES 6 * ED448_SCALAR_BYTES
+/* The size of the ring signature. */
+#define RING_SIG_BYTES 6 * ED448_SCALAR_BYTES
 
-typedef ec_scalar_t snizkpk_privkey_t;
-typedef ec_point_t snizkpk_pubkey_t;
-typedef otrng_keypair_t snizkpk_keypair_t;
+typedef ec_scalar_t rsig_privkey_t;
+typedef ec_point_t rsig_pubkey_t;
+typedef otrng_keypair_t rsig_keypair_t;
 
 typedef struct {
   ec_scalar_t c1;

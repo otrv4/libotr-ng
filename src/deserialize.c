@@ -219,11 +219,10 @@ INTERNAL otrng_err_t otrng_deserialize_ec_scalar(ec_scalar_t scalar,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_deserialize_snizkpk_proof(snizkpk_proof_t *proof,
-                                                     const uint8_t *serialized,
-                                                     size_t ser_len,
-                                                     size_t *read) {
-  if (ser_len < SNIZKPK_BYTES)
+INTERNAL otrng_err_t otrng_deserialize_ring_sig(ring_sig_t *proof,
+                                                const uint8_t *serialized,
+                                                size_t ser_len, size_t *read) {
+  if (ser_len < RING_SIG_BYTES)
     return ERROR;
 
   const uint8_t *cursor = serialized;
@@ -261,7 +260,7 @@ INTERNAL otrng_err_t otrng_deserialize_snizkpk_proof(snizkpk_proof_t *proof,
     return ERROR;
 
   if (read)
-    *read = SNIZKPK_BYTES;
+    *read = RING_SIG_BYTES;
 
   return SUCCESS;
 }
