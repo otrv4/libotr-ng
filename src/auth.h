@@ -34,6 +34,16 @@ typedef ec_scalar_t rsig_privkey_t;
 typedef ec_point_t rsig_pubkey_t;
 typedef otrng_keypair_t rsig_keypair_t;
 
+/**
+ * @brief The ring_sig_t structure represents the ring signature.
+ *
+ *  [c1] the scalar for the signature
+ *  [r1] the scalar for the signature
+ *  [c2] the scalar for the signature
+ *  [r2] the scalar for the signature
+ *  [c3] the scalar for the signature
+ *  [r3] the scalar for the signature
+ */
 typedef struct {
   ec_scalar_t c1;
   ec_scalar_t r1;
