@@ -26,6 +26,7 @@
 
 #include "key_management.h"
 #include "random.h"
+#include "serialize.h"
 #include "shake.h"
 
 #include "debug.h"
@@ -260,14 +261,13 @@ tstatic message_chain_t *decide_between_chain_keys(const ratchet_t *ratchet,
   // TODO: this conversion from point to mpi might be checked.
   gcry_mpi_t our_mpi = NULL;
   gcry_mpi_t their_mpi = NULL;
-  if (gcry_mpi_scan(&our_mpi, GCRYMPI_FMT_USG, our, sizeof(ec_public_key_t),
-                    NULL)) {
+  if (gcry_mpi_scan(&our_mpi, GCRYMPI_FMT_USG, our, ED448_POINT_BYTES, NULL)) {
     gcry_mpi_release(our_mpi);
     gcry_mpi_release(their_mpi);
     return NULL;
   }
 
-  if (gcry_mpi_scan(&their_mpi, GCRYMPI_FMT_USG, their, sizeof(ec_public_key_t),
+  if (gcry_mpi_scan(&their_mpi, GCRYMPI_FMT_USG, their, ED448_POINT_BYTES,
                     NULL)) {
     gcry_mpi_release(our_mpi);
     gcry_mpi_release(their_mpi);

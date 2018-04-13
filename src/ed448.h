@@ -60,8 +60,6 @@ typedef struct {
   ec_point_t pub;
 } ecdh_keypair_t;
 
-typedef goldilocks_448_public_key_t ec_public_key_t;
-
 /**
  * @brief Overwrite data with zeros.  Uses memset_s if available.
  *

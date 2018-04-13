@@ -119,7 +119,7 @@
 
 #define otrng_assert_ec_public_key_eq(pk1, pk2)                                \
   do {                                                                         \
-    otrng_assert_cmpmem((pk1), (pk2), sizeof(ec_public_key_t));                \
+    otrng_assert_cmpmem((pk1), (pk2), sizeof(ec_point_t));                     \
   } while (0)
 
 #define otrng_assert_dh_public_key_eq(pk1, pk2)                                \
