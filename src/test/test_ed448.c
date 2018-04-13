@@ -30,7 +30,7 @@ void ed448_test_eddsa_serialization() {
   random_bytes(rand, ED448_SCALAR_BYTES);
   goldilocks_448_scalar_decode_long(s, rand, ED448_SCALAR_BYTES);
 
-  // 1. Create a point P
+  // 1. Create a point p
   ec_point_t p;
   goldilocks_448_point_scalarmul(p, goldilocks_448_point_base, s);
 
@@ -51,27 +51,26 @@ void ed448_test_eddsa_keygen() {
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
   ec_scalar_t secret_scalar;
-  ec_point_t public_point;
+  ec_point_t p;
   otrng_ec_scalar_derive_from_secret(secret_scalar, sym);
   otrng_ec_derive_public_key(pub, sym);
 
-  otrng_assert(otrng_ec_point_decode(public_point, pub) == SUCCESS);
+  otrng_assert(otrng_ec_point_decode(p, pub) == SUCCESS);
 
-  // Is G * scalar == P?
+  // Is G * scalar == p?
   ec_point_t expected;
   goldilocks_448_point_scalarmul(expected, goldilocks_448_point_base,
                                  secret_scalar);
 
-  otrng_assert(otrng_ec_point_eq(expected, public_point) == otrng_true);
+  otrng_assert(otrng_ec_point_eq(expected, p) == otrng_true);
 }
 
 void ed448_test_scalar_serialization() {
-  ec_scalar_t scalar;
+  ec_scalar_t s;
 
   uint8_t buff[ED448_SCALAR_BYTES];
   otrng_ec_scalar_encode(buff, goldilocks_448_scalar_one);
 
-  otrng_ec_scalar_decode(scalar, buff);
-  otrng_assert(otrng_ec_scalar_eq(scalar, goldilocks_448_scalar_one) ==
-               otrng_true);
+  otrng_ec_scalar_decode(s, buff);
+  otrng_assert(otrng_ec_scalar_eq(s, goldilocks_448_scalar_one) == otrng_true);
 }
