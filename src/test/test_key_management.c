@@ -124,3 +124,56 @@ void test_calculate_ssid() {
 
   otrng_key_manager_destroy(manager);
 }
+
+void test_calculate_brace_key() {
+  key_manager_p manager;
+  otrng_key_manager_init(manager);
+
+  // Setup a fixed their_dh
+  dh_mpi_p their_dh_secret = NULL;
+  const uint8_t their_secret[5] = {0x1, 0x0, 0x0, 0x0, 0x0};
+  uint8_t their_public[DH3072_MOD_LEN_BYTES] = {0};
+  otrng_assert(SUCCESS == otrng_dh_mpi_deserialize(&their_dh_secret,
+                                                   their_secret, 5, NULL));
+  otrng_assert(SUCCESS == otrng_dh_shared_secret(
+                              their_public, DH3072_MOD_LEN_BYTES,
+                              their_dh_secret, otrng_dh_mpi_generator()));
+  otrng_dh_mpi_release(their_dh_secret);
+  their_dh_secret = NULL;
+  otrng_assert(SUCCESS == otrng_dh_mpi_deserialize(&manager->their_dh,
+                                                   their_public,
+                                                   DH3072_MOD_LEN_BYTES, NULL));
+
+  // Setup a fixed our_dh
+  const uint8_t our_secret[5] = {0x2, 0x0, 0x0, 0x0, 0x0};
+  manager->our_dh->pub = NULL;
+  otrng_assert(SUCCESS == otrng_dh_mpi_deserialize(&manager->our_dh->priv,
+                                                   our_secret, 5, NULL));
+
+  uint8_t expected_brace_key_from_K_dh[BRACE_KEY_BYTES] = {
+      0xf8, 0x95, 0x39, 0x90, 0x33, 0x38, 0x5a, 0x4d, 0xf8, 0xba, 0x9a,
+      0x47, 0xe7, 0x4b, 0xe7, 0xe0, 0x7d, 0x2c, 0xe4, 0x83, 0x58, 0x67,
+      0x7b, 0x94, 0xfe, 0xcd, 0x6f, 0x2c, 0x0f, 0xa5, 0x6f, 0x2f,
+
+  };
+
+  // Calculates shared secret and brace key
+  manager->i = 0;
+  otrng_assert(SUCCESS == calculate_brace_key(manager));
+  otrng_assert_cmpmem(expected_brace_key_from_K_dh, manager->brace_key,
+                      BRACE_KEY_BYTES);
+
+  uint8_t expected_brace_key_from_previous_brace_key[BRACE_KEY_BYTES] = {
+      0xc1, 0xef, 0x72, 0x03, 0x4a, 0x38, 0xf4, 0xc5, 0x10, 0xb3, 0x05,
+      0xf5, 0x05, 0x18, 0x0c, 0xf2, 0xf9, 0x6c, 0xa0, 0xb4, 0x6d, 0xff,
+      0xc7, 0xa4, 0x4f, 0x45, 0x5c, 0xaf, 0x06, 0x91, 0xf2, 0x6e,
+  };
+
+  // Calculates brace key only
+  manager->i = 1;
+  otrng_assert(SUCCESS == calculate_brace_key(manager));
+  otrng_assert_cmpmem(expected_brace_key_from_previous_brace_key,
+                      manager->brace_key, BRACE_KEY_BYTES);
+
+  otrng_key_manager_destroy(manager);
+}

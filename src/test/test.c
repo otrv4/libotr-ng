@@ -21,12 +21,13 @@
 #include <glib.h>
 #include <goldilocks.h>
 
+#define OTRNG_DH_PRIVATE
 #define OTRNG_KEY_MANAGEMENT_PRIVATE
-#define OTRNG_USER_PROFILE_PRIVATE
 #define OTRNG_LIST_PRIVATE
 #define OTRNG_OTRNG_PRIVATE
 #define OTRNG_SMP_PRIVATE
 #define OTRNG_TLV_PRIVATE
+#define OTRNG_USER_PROFILE_PRIVATE
 
 #include "../otrng.h"
 
@@ -152,10 +153,11 @@ int main(int argc, char **argv) {
   g_test_add_func("/fragment/fails_for_invalid_tag",
                   test_defragment_fails_for_invalid_tag);
 
+  g_test_add_func("/key_management/destroy", test_otrng_key_manager_destroy);
   g_test_add_func("/key_management/derive_ratchet_keys",
                   test_derive_ratchet_keys);
-  g_test_add_func("/key_management/destroy", test_otrng_key_manager_destroy);
   g_test_add_func("/key_management/ssid", test_calculate_ssid);
+  g_test_add_func("/key_management/brave_key", test_calculate_brace_key);
 
   g_test_add_func("/smp/state_machine", test_smp_state_machine);
   g_test_add_func("/smp/generate_secret", test_otrng_generate_smp_secret);

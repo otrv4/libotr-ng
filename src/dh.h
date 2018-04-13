@@ -70,6 +70,7 @@ INTERNAL void otrng_dh_mpi_release(dh_mpi_p mpi);
 #ifdef OTRNG_DH_PRIVATE
 
 tstatic void dh_pub_key_destroy(dh_keypair_p keypair);
+INTERNAL const dh_mpi_p otrng_dh_mpi_generator(void);
 
 #endif
 

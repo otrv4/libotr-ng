@@ -153,6 +153,7 @@ tstatic void calculate_shared_secret(shared_secret_p dst, const k_ecdh_p k_ecdh,
 tstatic void calculate_ssid(key_manager_s *manager,
                             const shared_secret_p shared_secret);
 
+tstatic otrng_err calculate_brace_key(key_manager_s *manager);
 #endif
 
 #endif

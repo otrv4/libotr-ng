@@ -454,11 +454,12 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
                                manager->their_dh) == ERROR)
       return ERROR;
 
-    hash_hash(manager->brace_key, sizeof(brace_key_p), k_dh, sizeof(k_dh_p));
+    shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x02, k_dh,
+                   sizeof(k_dh_p));
 
   } else {
-    hash_hash(manager->brace_key, sizeof(brace_key_p), manager->brace_key,
-              sizeof(brace_key_p));
+    shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x03,
+                   manager->brace_key, sizeof(brace_key_p));
   }
 
   return SUCCESS;

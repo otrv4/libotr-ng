@@ -108,6 +108,10 @@ INTERNAL void otrng_dh_free(void) {
   dh_initialized = 0;
 }
 
+INTERNAL const dh_mpi_p otrng_dh_mpi_generator(void) {
+  return DH3072_GENERATOR;
+}
+
 INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair) {
   uint8_t hash[DH_KEY_SIZE];
   gcry_mpi_t privkey = NULL;
