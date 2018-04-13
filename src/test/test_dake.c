@@ -27,8 +27,8 @@
 
 // TODO: include somewhere else or remove
 void test_rsig_auth() {
-  ring_sig_t dst[1];
-  rsig_keypair_t pair1[1], pair2[1], pair3[1];
+  ring_sig_p dst;
+  rsig_keypair_p pair1, pair2, pair3;
   const char *msg = "hi";
 
   otrng_rsig_keypair_generate(pair1);
@@ -42,7 +42,7 @@ void test_rsig_auth() {
                                  (unsigned char *)msg, strlen(msg)) == SUCCESS);
 
   // Serialize and deserialize things.
-  otrng_keypair_t p1[1], p2[1], p3[1];
+  otrng_keypair_p p1, p2, p3;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {1}, sym2[ED448_PRIVATE_BYTES] = {2},
           sym3[ED448_PRIVATE_BYTES] = {3};
 
@@ -50,7 +50,7 @@ void test_rsig_auth() {
   otrng_keypair_generate(p2, sym2);
   otrng_keypair_generate(p3, sym3);
 
-  ring_sig_t dst2[1];
+  ring_sig_p dst2;
   otrng_rsig_authenticate(dst2, p1, p2->pub, p3->pub, (unsigned char *)msg,
                           strlen(msg));
 

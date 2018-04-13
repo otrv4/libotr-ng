@@ -20,13 +20,13 @@
 
 #include "../data_message.h"
 
-static data_message_t *set_up_data_msg() {
-  ecdh_keypair_t ecdh[1];
+static data_message_s *set_up_data_msg() {
+  ecdh_keypair_p ecdh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(ecdh, sym);
 
-  data_message_t *data_msg = otrng_data_message_new();
+  data_message_s *data_msg = otrng_data_message_new();
   otrng_assert(data_msg);
   data_msg->sender_instance_tag = 1;
   data_msg->receiver_instance_tag = 2;
@@ -84,7 +84,7 @@ static data_message_t *set_up_data_msg() {
 
 void test_data_message_serializes() {
 
-  data_message_t *data_msg = set_up_data_msg();
+  data_message_s *data_msg = set_up_data_msg();
 
   uint8_t *serialized = NULL;
   size_t serlen = 0;
@@ -117,7 +117,7 @@ void test_data_message_serializes() {
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
-  otrng_err_t otr_err = otrng_dh_mpi_serialize(
+  otrng_err otr_err = otrng_dh_mpi_serialize(
       serialized_b, DH3072_MOD_LEN_BYTES, &mpi_len, data_msg->dh);
   otrng_assert(!otr_err);
   // Skip first 4 because they are the size (mpi_len)
@@ -139,7 +139,7 @@ void test_data_message_serializes() {
 }
 
 void test_data_message_serializes_absent_dh() {
-  data_message_t *data_msg = set_up_data_msg();
+  data_message_s *data_msg = set_up_data_msg();
 
   // Serialize with an empty DH
   otrng_dh_mpi_release(data_msg->dh);
@@ -170,7 +170,7 @@ void test_data_message_serializes_absent_dh() {
 
 void test_otrng_data_message_deserializes() {
 
-  data_message_t *data_msg = set_up_data_msg();
+  data_message_s *data_msg = set_up_data_msg();
 
   uint8_t *serialized = NULL;
   size_t serlen = 0;
@@ -188,7 +188,7 @@ void test_otrng_data_message_deserializes() {
   serialized = realloc(serialized, serlen + DATA_MSG_MAC_BYTES);
   memcpy(serialized + serlen, mac_data, DATA_MSG_MAC_BYTES);
 
-  data_message_t *deserialized = otrng_data_message_new();
+  data_message_s *deserialized = otrng_data_message_new();
   otrng_assert(otrng_data_message_deserialize(deserialized, serialized,
                                               serlen + DATA_MSG_MAC_BYTES,
                                               NULL) == SUCCESS);
@@ -215,10 +215,10 @@ void test_otrng_data_message_deserializes() {
 }
 
 void test_data_message_valid() {
-  data_message_t *data_msg = set_up_data_msg();
+  data_message_s *data_msg = set_up_data_msg();
 
   // Should fail because data_msg has a zeroed mac tag.
-  m_mac_key_t mac_key = {0};
+  m_mac_key_p mac_key = {0};
   otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_false);
 
   // Overwrite the zeroed mac tag

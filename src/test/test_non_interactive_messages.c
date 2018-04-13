@@ -22,17 +22,17 @@
 #include "../dake.h"
 #include "../keys.h"
 
-void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
+void test_dake_prekey_message_serializes(prekey_message_fixture_s *f,
                                          gconstpointer data) {
 
-  ecdh_keypair_t ecdh[1];
-  dh_keypair_t dh;
+  ecdh_keypair_p ecdh;
+  dh_keypair_p dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
-  dake_prekey_message_t *prekey_message =
+  dake_prekey_message_s *prekey_message =
       otrng_dake_prekey_message_new(f->profile);
   prekey_message->sender_instance_tag = 1;
   otrng_ec_point_copy(prekey_message->Y, ecdh->pub);
@@ -80,7 +80,7 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
-  otrng_err_t err = otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
+  otrng_err err = otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
                                            &mpi_len, prekey_message->B);
   otrng_assert(!err);
   /* Skip first 4 because they are the size (mpi_len) */
@@ -93,17 +93,17 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
   otrng_dake_prekey_message_free(prekey_message);
 }
 
-void test_otrng_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
+void test_otrng_dake_prekey_message_deserializes(prekey_message_fixture_s *f,
                                                  gconstpointer data) {
 
-  ecdh_keypair_t ecdh[1];
-  dh_keypair_t dh;
+  ecdh_keypair_p ecdh;
+  dh_keypair_p dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
-  dake_prekey_message_t *prekey_message =
+  dake_prekey_message_s *prekey_message =
       otrng_dake_prekey_message_new(f->profile);
   otrng_ec_point_copy(prekey_message->Y, ecdh->pub);
   prekey_message->B = otrng_dh_mpi_copy(dh->pub);
@@ -113,7 +113,7 @@ void test_otrng_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
   otrng_assert(otrng_dake_prekey_message_asprintf(&serialized, &serialized_len,
                                                   prekey_message) == SUCCESS);
 
-  dake_prekey_message_t *deserialized = malloc(sizeof(dake_prekey_message_t));
+  dake_prekey_message_s *deserialized = malloc(sizeof(dake_prekey_message_s));
   otrng_assert(otrng_dake_prekey_message_deserialize(
                    deserialized, serialized, serialized_len) == SUCCESS);
 
@@ -133,17 +133,17 @@ void test_otrng_dake_prekey_message_deserializes(prekey_message_fixture_t *f,
   otrng_dake_prekey_message_free(deserialized);
 }
 
-void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
+void test_dake_prekey_message_valid(prekey_message_fixture_s *f,
                                     gconstpointer data) {
 
-  ecdh_keypair_t ecdh[1];
-  dh_keypair_t dh;
+  ecdh_keypair_p ecdh;
+  dh_keypair_p dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
-  dake_prekey_message_t *prekey_message =
+  dake_prekey_message_s *prekey_message =
       otrng_dake_prekey_message_new(f->profile);
   otrng_assert(prekey_message != NULL);
 
@@ -158,21 +158,21 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
   otrng_dh_keypair_destroy(dh);
   otrng_dake_prekey_message_free(prekey_message);
 
-  ecdh_keypair_t invalid_ecdh[1];
-  dh_keypair_t invalid_dh;
+  ecdh_keypair_p invalid_ecdh;
+  dh_keypair_p invalid_dh;
 
   uint8_t invalid_sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(invalid_ecdh, invalid_sym);
   otrng_assert(otrng_dh_keypair_generate(invalid_dh) == SUCCESS);
-  otrng_shared_prekey_pair_t *shared_prekey = otrng_shared_prekey_pair_new();
+  otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(shared_prekey, invalid_sym);
   otrng_assert(otrng_ec_point_valid(shared_prekey->pub) == SUCCESS);
 
-  user_profile_t *invalid_profile = user_profile_new("2");
+  user_profile_s *invalid_profile = user_profile_new("2");
   otrng_ec_point_copy(invalid_profile->long_term_pub_key, invalid_ecdh->pub);
   otrng_ec_point_copy(invalid_profile->shared_prekey, shared_prekey->pub);
 
-  dake_prekey_message_t *invalid_prekey_message =
+  dake_prekey_message_s *invalid_prekey_message =
       otrng_dake_prekey_message_new(invalid_profile);
 
   otrng_ec_point_copy(invalid_prekey_message->Y, invalid_ecdh->pub);
@@ -190,16 +190,16 @@ void test_dake_prekey_message_valid(prekey_message_fixture_t *f,
 }
 
 void test_dake_non_interactive_auth_message_serializes(
-    non_interactive_auth_message_fixture_t *f, gconstpointer data) {
+    non_interactive_auth_message_fixture_s *f, gconstpointer data) {
 
-  ecdh_keypair_t ecdh[1];
-  dh_keypair_t dh;
+  ecdh_keypair_p ecdh;
+  dh_keypair_p dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
-  dake_non_interactive_auth_message_t msg[1];
+  dake_non_interactive_auth_message_p msg;
 
   msg->sender_instance_tag = 1;
   msg->receiver_instance_tag = 1;
@@ -262,7 +262,7 @@ void test_dake_non_interactive_auth_message_serializes(
 
   uint8_t serialized_a[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
-  otrng_err_t err = otrng_dh_mpi_serialize(serialized_a, DH3072_MOD_LEN_BYTES,
+  otrng_err err = otrng_dh_mpi_serialize(serialized_a, DH3072_MOD_LEN_BYTES,
                                            &mpi_len, msg->A);
   otrng_assert(!err);
 
@@ -294,16 +294,16 @@ void test_dake_non_interactive_auth_message_serializes(
 }
 
 void test_otrng_dake_non_interactive_auth_message_deserializes(
-    prekey_message_fixture_t *f, gconstpointer data) {
+    prekey_message_fixture_s *f, gconstpointer data) {
 
-  ecdh_keypair_t ecdh[1];
-  dh_keypair_t dh;
+  ecdh_keypair_p ecdh;
+  dh_keypair_p dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
-  dake_non_interactive_auth_message_t msg[1];
+  dake_non_interactive_auth_message_p msg;
 
   msg->sender_instance_tag = 1;
   msg->receiver_instance_tag = 1;
@@ -333,7 +333,7 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
   otrng_dh_keypair_destroy(dh);
   otrng_ecdh_keypair_destroy(ecdh);
 
-  dake_non_interactive_auth_message_t deserialized[1];
+  dake_non_interactive_auth_message_p deserialized;
   otrng_assert(otrng_dake_non_interactive_auth_message_deserialize(
                    deserialized, serialized, len) == SUCCESS);
 

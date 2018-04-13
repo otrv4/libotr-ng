@@ -71,16 +71,16 @@
 
 #define otrng_assert_mpi_eq(m1, m2)                                            \
   do {                                                                         \
-    const otrng_mpi_t _m1 = {(m1)[0]};                                         \
-    const otrng_mpi_t _m2 = {(m2)[0]};                                         \
+    const otrng_mpi_p _m1 = {(m1)[0]};                                         \
+    const otrng_mpi_p _m2 = {(m2)[0]};                                         \
     g_assert_cmpuint(_m1->len, ==, _m2->len);                                  \
     otrng_assert_cmpmem(_m1->data, _m2->data, _m1->len);                       \
   } while (0)
 
 #define otrng_assert_user_profile_eq(p1, p2)                                   \
   do {                                                                         \
-    const user_profile_t *_p1 = (p1);                                          \
-    const user_profile_t *_p2 = (p2);                                          \
+    const user_profile_s *_p1 = (p1);                                          \
+    const user_profile_s *_p2 = (p2);                                          \
     otrng_assert_point_equals(_p1->long_term_pub_key, _p2->long_term_pub_key); \
     otrng_assert_cmpmem(_p1->versions, _p2->versions,                          \
                         strlen(_p1->versions) + 1);                            \
@@ -119,7 +119,7 @@
 
 #define otrng_assert_ec_public_key_eq(pk1, pk2)                                \
   do {                                                                         \
-    otrng_assert_cmpmem((pk1), (pk2), sizeof(ec_point_t));                     \
+    otrng_assert_cmpmem((pk1), (pk2), sizeof(ec_point_p));                     \
   } while (0)
 
 #define otrng_assert_dh_public_key_eq(pk1, pk2)                                \
@@ -129,12 +129,12 @@
 
 #define otrng_assert_root_key_eq(rk1, rk2)                                     \
   do {                                                                         \
-    otrng_assert_cmpmem((rk1), (rk2), sizeof(root_key_t));                     \
+    otrng_assert_cmpmem((rk1), (rk2), sizeof(root_key_p));                     \
   } while (0)
 
 #define otrng_assert_chain_key_eq(ck1, ck2)                                    \
   do {                                                                         \
-    otrng_assert_cmpmem((ck1), (ck2), sizeof(chain_key_t));                    \
+    otrng_assert_cmpmem((ck1), (ck2), sizeof(chain_key_p));                    \
   } while (0)
 
 // TODO: here actually use the designated initializers as I was planning to
@@ -159,7 +159,7 @@
 
 #define otrng_client_free_all(...) fn_apply(otrng_client_free, __VA_ARGS__);
 
-static inline void otrng_assert_point_equals(const ec_point_t expected,
-                                             const ec_point_t actual) {
+static inline void otrng_assert_point_equals(const ec_point_p expected,
+                                             const ec_point_p actual) {
   g_assert_cmpint(otrng_ec_point_eq(expected, actual), !=, otrng_false);
 }

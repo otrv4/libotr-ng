@@ -30,11 +30,11 @@
 #include "serialize.h"
 #include "user_profile.h"
 
-tstatic user_profile_t *user_profile_new(const string_t versions) {
+tstatic user_profile_s *user_profile_new(const string_p versions) {
   if (!versions)
     return NULL;
 
-  user_profile_t *profile = malloc(sizeof(user_profile_t));
+  user_profile_s *profile = malloc(sizeof(user_profile_s));
   if (!profile)
     return NULL;
 
@@ -48,8 +48,8 @@ tstatic user_profile_t *user_profile_new(const string_t versions) {
   return profile;
 }
 
-INTERNAL void otrng_user_profile_copy(user_profile_t *dst,
-                                      const user_profile_t *src) {
+INTERNAL void otrng_user_profile_copy(user_profile_s *dst,
+                                      const user_profile_s *src) {
   // TODO should we set dst to a valid (but empty) profile?
   if (!src)
     return;
@@ -59,11 +59,11 @@ INTERNAL void otrng_user_profile_copy(user_profile_t *dst,
   dst->expires = src->expires;
   otrng_ec_point_copy(dst->shared_prekey, src->shared_prekey);
 
-  memcpy(dst->signature, src->signature, sizeof(eddsa_signature_t));
+  memcpy(dst->signature, src->signature, sizeof(eddsa_signature_p));
   otrng_mpi_copy(dst->transitional_signature, src->transitional_signature);
 }
 
-INTERNAL void otrng_user_profile_destroy(user_profile_t *profile) {
+INTERNAL void otrng_user_profile_destroy(user_profile_s *profile) {
   if (!profile)
     return;
 
@@ -75,14 +75,14 @@ INTERNAL void otrng_user_profile_destroy(user_profile_t *profile) {
   otrng_mpi_free(profile->transitional_signature);
 }
 
-INTERNAL void otrng_user_profile_free(user_profile_t *profile) {
+INTERNAL void otrng_user_profile_free(user_profile_s *profile) {
   otrng_user_profile_destroy(profile);
   free(profile);
   profile = NULL;
 }
 
 tstatic int user_profile_body_serialize(uint8_t *dst,
-                                        const user_profile_t *profile) {
+                                        const user_profile_s *profile) {
   uint8_t *target = dst;
 
   target +=
@@ -95,8 +95,8 @@ tstatic int user_profile_body_serialize(uint8_t *dst,
   return target - dst;
 }
 
-tstatic otrng_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
-                                               const user_profile_t *profile) {
+tstatic otrng_err user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
+                                               const user_profile_s *profile) {
   size_t s = ED448_PUBKEY_BYTES + strlen(profile->versions) +
              ED448_SHARED_PREKEY_BYTES + 1 + 4 + 8;
 
@@ -113,8 +113,8 @@ tstatic otrng_err_t user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_user_profile_asprintf(
-    uint8_t **dst, size_t *nbytes, const user_profile_t *profile) {
+INTERNAL otrng_err otrng_user_profile_asprintf(
+    uint8_t **dst, size_t *nbytes, const user_profile_s *profile) {
   // TODO: should it checked here for signature?
   if (!(profile->signature > 0))
     return ERROR;
@@ -125,7 +125,7 @@ INTERNAL otrng_err_t otrng_user_profile_asprintf(
   if (user_profile_body_asprintf(&body, &body_len, profile))
     return ERROR;
 
-  size_t s = body_len + 4 + sizeof(eddsa_signature_t) +
+  size_t s = body_len + 4 + sizeof(eddsa_signature_p) +
              profile->transitional_signature->len;
   buff = malloc(s);
   if (!buff) {
@@ -137,7 +137,7 @@ INTERNAL otrng_err_t otrng_user_profile_asprintf(
   uint8_t *cursor = buff;
   cursor += otrng_serialize_bytes_array(cursor, body, body_len);
   cursor += otrng_serialize_bytes_array(cursor, profile->signature,
-                                        sizeof(eddsa_signature_t));
+                                        sizeof(eddsa_signature_p));
   cursor += otrng_serialize_mpi(cursor, profile->transitional_signature);
 
   *dst = buff;
@@ -150,7 +150,7 @@ INTERNAL otrng_err_t otrng_user_profile_asprintf(
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_user_profile_deserialize(user_profile_t *target,
+INTERNAL otrng_err otrng_user_profile_deserialize(user_profile_s *target,
                                                     const uint8_t *buffer,
                                                     size_t buflen,
                                                     size_t *nread) {
@@ -160,7 +160,7 @@ INTERNAL otrng_err_t otrng_user_profile_deserialize(user_profile_t *target,
   if (!target)
     return ERROR;
 
-  otrng_err_t ok = ERROR;
+  otrng_err ok = ERROR;
   do {
     if (otrng_deserialize_otrng_public_key(target->long_term_pub_key, buffer,
                                            buflen, &read))
@@ -187,12 +187,12 @@ INTERNAL otrng_err_t otrng_user_profile_deserialize(user_profile_t *target,
     walked += read;
 
     // TODO: check the len
-    if (buflen - walked < sizeof(eddsa_signature_t))
+    if (buflen - walked < sizeof(eddsa_signature_p))
       continue;
 
-    memcpy(target->signature, buffer + walked, sizeof(eddsa_signature_t));
+    memcpy(target->signature, buffer + walked, sizeof(eddsa_signature_p));
 
-    walked += sizeof(eddsa_signature_t);
+    walked += sizeof(eddsa_signature_p);
 
     if (otrng_mpi_deserialize(target->transitional_signature, buffer + walked,
                               buflen - walked, &read))
@@ -209,8 +209,8 @@ INTERNAL otrng_err_t otrng_user_profile_deserialize(user_profile_t *target,
   return ok;
 }
 
-tstatic otrng_err_t user_profile_sign(user_profile_t *profile,
-                                      const otrng_keypair_t *keypair) {
+tstatic otrng_err user_profile_sign(user_profile_s *profile,
+                                      const otrng_keypair_s *keypair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
@@ -232,8 +232,8 @@ tstatic otrng_err_t user_profile_sign(user_profile_t *profile,
 
 // TODO: I dont think this needs the data structure. Could verify from the
 // deserialized bytes.
-INTERNAL otrng_bool_t
-otrng_user_profile_verify_signature(const user_profile_t *profile) {
+INTERNAL otrng_bool
+otrng_user_profile_verify_signature(const user_profile_s *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
@@ -249,7 +249,7 @@ otrng_user_profile_verify_signature(const user_profile_t *profile) {
   uint8_t pubkey[ED448_POINT_BYTES];
   otrng_serialize_ec_point(pubkey, profile->long_term_pub_key);
 
-  otrng_bool_t valid =
+  otrng_bool valid =
       otrng_ec_verify(profile->signature, pubkey, body, bodylen);
 
   free(body);
@@ -258,10 +258,10 @@ otrng_user_profile_verify_signature(const user_profile_t *profile) {
   return valid;
 }
 
-INTERNAL user_profile_t *
-otrng_user_profile_build(const string_t versions, otrng_keypair_t *keypair,
-                         otrng_shared_prekey_pair_t *shared_prekey_pair) {
-  user_profile_t *profile = user_profile_new(versions);
+INTERNAL user_profile_s *
+otrng_user_profile_build(const string_p versions, otrng_keypair_s *keypair,
+                         otrng_shared_prekey_pair_s *shared_prekey_pair) {
+  user_profile_s *profile = user_profile_new(versions);
   if (!profile)
     return NULL;
 
@@ -270,7 +270,7 @@ otrng_user_profile_build(const string_t versions, otrng_keypair_t *keypair,
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
 
   memcpy(profile->shared_prekey, shared_prekey_pair->pub,
-         sizeof(otrng_shared_prekey_pub_t));
+         sizeof(otrng_shared_prekey_pub_p));
 
   if (user_profile_sign(profile, keypair)) {
     otrng_user_profile_free(profile);

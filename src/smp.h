@@ -41,112 +41,112 @@ typedef enum {
  * @warning the [question] field is NOT zero terminated, and can't be relied on
  *    to be. the length of this field is contained in the [q_len] field.
  **/
-typedef struct {
+typedef struct smp_msg_1_s {
   uint32_t q_len;
   uint8_t *question;
-  ec_point_t G2a;
-  ec_scalar_t c2;
-  ec_scalar_t d2;
-  ec_point_t G3a;
-  ec_scalar_t c3;
-  ec_scalar_t d3;
-} smp_msg_1_t;
+  ec_point_p G2a;
+  ec_scalar_p c2;
+  ec_scalar_p d2;
+  ec_point_p G3a;
+  ec_scalar_p c3;
+  ec_scalar_p d3;
+} smp_msg_1_s, smp_msg_1_p[1];
 
-typedef struct {
-  ec_point_t G2b;
-  ec_scalar_t c2;
-  ec_scalar_t d2;
-  ec_point_t G3b;
-  ec_scalar_t c3;
-  ec_scalar_t d3;
-  ec_point_t Pb;
-  ec_point_t Qb;
-  ec_scalar_t cp;
-  ec_scalar_t d5;
-  ec_scalar_t d6;
-} smp_msg_2_t;
+typedef struct smp_msg_2_s {
+  ec_point_p G2b;
+  ec_scalar_p c2;
+  ec_scalar_p d2;
+  ec_point_p G3b;
+  ec_scalar_p c3;
+  ec_scalar_p d3;
+  ec_point_p Pb;
+  ec_point_p Qb;
+  ec_scalar_p cp;
+  ec_scalar_p d5;
+  ec_scalar_p d6;
+} smp_msg_2_s, smp_msg_2_p[1];
 
-typedef struct {
-  ec_point_t Pa, Qa;
-  ec_scalar_t cp, d5, d6;
-  ec_point_t Ra;
-  ec_scalar_t cr, d7;
-} smp_msg_3_t;
+typedef struct smp_msg_3_s {
+  ec_point_p Pa, Qa;
+  ec_scalar_p cp, d5, d6;
+  ec_point_p Ra;
+  ec_scalar_p cr, d7;
+} smp_msg_3_s, smp_msg_3_p[1];
 
-typedef struct {
-  ec_point_t Rb;
-  ec_scalar_t cr, d7;
-} smp_msg_4_t;
+typedef struct smp_msg_4_s {
+  ec_point_p Rb;
+  ec_scalar_p cr, d7;
+} smp_msg_4_s, smp_msg_4_p[1];
 
-typedef struct {
+typedef struct smp_context_s {
   smp_state_t state;
   unsigned char *secret;
-  ec_scalar_t a2, a3, b3;
-  ec_point_t G2, G3;
-  ec_point_t G3a, G3b;
-  ec_point_t Pb, Qb;
-  ec_point_t Pa_Pb, Qa_Qb;
+  ec_scalar_p a2, a3, b3;
+  ec_point_p G2, G3;
+  ec_point_p G3a, G3b;
+  ec_point_p Pb, Qb;
+  ec_point_p Pa_Pb, Qa_Qb;
 
   uint8_t progress;
-  smp_msg_1_t *msg1;
-} smp_context_t[1];
+  smp_msg_1_s *msg1;
+} smp_context_s, smp_context_p[1];
 
-INTERNAL void otrng_smp_context_init(smp_context_t smp);
+INTERNAL void otrng_smp_context_init(smp_context_p smp);
 
-INTERNAL void otrng_smp_destroy(smp_context_t smp);
+INTERNAL void otrng_smp_destroy(smp_context_p smp);
 
-INTERNAL otrng_err_t otrng_generate_smp_secret(unsigned char **secret,
-                                               otrng_fingerprint_t our_fp,
-                                               otrng_fingerprint_t their_fp,
+INTERNAL otrng_err otrng_generate_smp_secret(unsigned char **secret,
+                                               otrng_fingerprint_p our_fp,
+                                               otrng_fingerprint_p their_fp,
                                                uint8_t *ssid,
                                                const uint8_t *answer,
                                                size_t answerlen);
 
-INTERNAL otrng_err_t otrng_generate_smp_msg_1(smp_msg_1_t *dst,
-                                              smp_context_t smp);
+INTERNAL otrng_err otrng_generate_smp_msg_1(smp_msg_1_s *dst,
+                                              smp_context_p smp);
 
-INTERNAL otrng_err_t otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
-                                              const smp_msg_1_t *msg);
+INTERNAL otrng_err otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
+                                              const smp_msg_1_s *msg);
 
-INTERNAL void otrng_smp_msg_1_destroy(smp_msg_1_t *msg);
+INTERNAL void otrng_smp_msg_1_destroy(smp_msg_1_s *msg);
 
-INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_t **to_send,
-                                                      smp_context_t smp);
+INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
+                                                      smp_context_p smp);
 
 // TODO: should be exposed?
-INTERNAL otrng_smp_event_t otrng_process_smp_msg1(const tlv_t *tlv,
-                                                  smp_context_t smp);
+INTERNAL otrng_smp_event_t otrng_process_smp_msg1(const tlv_s *tlv,
+                                                  smp_context_p smp);
 
-INTERNAL otrng_smp_event_t otrng_process_smp_msg2(tlv_t **smp_reply,
-                                                  const tlv_t *tlv,
-                                                  smp_context_t smp);
+INTERNAL otrng_smp_event_t otrng_process_smp_msg2(tlv_s **smp_reply,
+                                                  const tlv_s *tlv,
+                                                  smp_context_p smp);
 
-INTERNAL otrng_smp_event_t otrng_process_smp_msg3(tlv_t **smp_reply,
-                                                  const tlv_t *tlv,
-                                                  smp_context_t smp);
+INTERNAL otrng_smp_event_t otrng_process_smp_msg3(tlv_s **smp_reply,
+                                                  const tlv_s *tlv,
+                                                  smp_context_p smp);
 
-INTERNAL otrng_smp_event_t otrng_process_smp_msg4(const tlv_t *tlv,
-                                                  smp_context_t smp);
+INTERNAL otrng_smp_event_t otrng_process_smp_msg4(const tlv_s *tlv,
+                                                  smp_context_p smp);
 
 #ifdef OTRNG_SMP_PRIVATE
 
-tstatic otrng_err_t smp_msg_1_deserialize(smp_msg_1_t *msg, const tlv_t *tlv);
+tstatic otrng_err smp_msg_1_deserialize(smp_msg_1_s *msg, const tlv_s *tlv);
 
-tstatic otrng_err_t generate_smp_msg_2(smp_msg_2_t *dst,
-                                       const smp_msg_1_t *msg_1,
-                                       smp_context_t smp);
+tstatic otrng_err generate_smp_msg_2(smp_msg_2_s *dst,
+                                       const smp_msg_1_s *msg_1,
+                                       smp_context_p smp);
 
-tstatic otrng_err_t smp_msg_2_deserialize(smp_msg_2_t *dst, const tlv_t *tlv);
+tstatic otrng_err smp_msg_2_deserialize(smp_msg_2_s *dst, const tlv_s *tlv);
 
-tstatic void smp_msg_2_destroy(smp_msg_2_t *msg);
+tstatic void smp_msg_2_destroy(smp_msg_2_s *msg);
 
-tstatic otrng_err_t generate_smp_msg_3(smp_msg_3_t *dst,
-                                       const smp_msg_2_t *msg_2,
-                                       smp_context_t smp);
+tstatic otrng_err generate_smp_msg_3(smp_msg_3_s *dst,
+                                       const smp_msg_2_s *msg_2,
+                                       smp_context_p smp);
 
-tstatic otrng_err_t generate_smp_msg_4(smp_msg_4_t *dst,
-                                       const smp_msg_3_t *msg_3,
-                                       smp_context_t smp);
+tstatic otrng_err generate_smp_msg_4(smp_msg_4_s *dst,
+                                       const smp_msg_3_s *msg_3,
+                                       smp_context_p smp);
 
 #endif
 

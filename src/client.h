@@ -33,72 +33,72 @@
 #include "shared.h"
 
 // TODO: REMOVE
-typedef struct {
+typedef struct otrng_conversation_s {
   void *conversation_id; /* Data in the messaging application context that
                           represents a conversation and should map directly to
                           it. For example, in libpurple-based apps (like
                           Pidgin) this could be a PurpleConversation */
 
   char *recipient;
-  otrng_t *conn;
-} otrng_conversation_t;
+  otrng_s *conn;
+} otrng_conversation_s, otrng_conversation_p[1];
 
 /* A client handle messages from/to a sender to/from multiple recipients. */
-typedef struct {
-  otrng_client_state_t *state;
-  list_element_t *conversations;
-} otrng_client_t;
+typedef struct otrng_client_s {
+  otrng_client_state_s *state;
+  list_element_s *conversations;
+} otrng_client_s, otrng_client_p[1];
 
-API otrng_client_t *otrng_client_new(otrng_client_state_t *);
+API otrng_client_s *otrng_client_new(otrng_client_state_s *);
 
-API void otrng_client_free(otrng_client_t *client);
+API void otrng_client_free(otrng_client_s *client);
 
 API char *otrng_client_query_message(const char *recipient, const char *message,
-                                     otrng_client_t *client, OtrlPolicy policy);
+                                     otrng_client_s *client, OtrlPolicy policy);
 
 API int otrng_client_send(char **newmessage, const char *message,
-                          const char *recipient, otrng_client_t *client);
+                          const char *recipient, otrng_client_s *client);
 
-API int otrng_client_send_fragment(otrng_message_to_send_t **newmessage,
+API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
                                    const char *message, int mms,
                                    const char *recipient,
-                                   otrng_client_t *client);
+                                   otrng_client_s *client);
 
 /* tstatic int otrng_client_smp_start(char **tosend, const char *recipient, */
 /*                           const char *question, const size_t q_len, */
 /*                           const unsigned char *secret, size_t secretlen, */
-/*                           otrng_client_t *client); */
+/*                           otrng_client_s *client); */
 
 /* tstatic int otrng_client_smp_respond(char **tosend, const char *recipient, */
 /*                             const unsigned char *secret, size_t secretlen, */
-/*                             otrng_client_t *client); */
+/*                             otrng_client_s *client); */
 
 API int otrng_client_receive(char **newmsg, char **todisplay,
                              const char *message, const char *recipient,
-                             otrng_client_t *client);
+                             otrng_client_s *client);
 
 API int otrng_client_disconnect(char **newmsg, const char *recipient,
-                                otrng_client_t *client);
+                                otrng_client_s *client);
 
 /* tstatic int otrng_encrypted_conversation_expire(char **newmsg, const char
  * *recipient, */
 /*                                        int expiration_time, */
-/*                                        otrng_client_t *client); */
+/*                                        otrng_client_s *client); */
 
-API otrng_conversation_t *otrng_client_get_conversation(int force,
+API otrng_conversation_s *otrng_client_get_conversation(int force,
                                                         const char *recipient,
-                                                        otrng_client_t *client);
+                                                        otrng_client_s *client);
 
-/* tstatic int otrng_conversation_is_encrypted(otrng_conversation_t *conv); */
+/* tstatic int otrng_conversation_is_encrypted(otrng_conversation_s *conv); */
 
-/* tstatic int otrng_conversation_is_finished(otrng_conversation_t *conv); */
+/* tstatic int otrng_conversation_is_finished(otrng_conversation_s *conv); */
 
-API int otrng_client_get_our_fingerprint(otrng_fingerprint_t fp,
-                                         const otrng_client_t *client);
+API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
+                                         const otrng_client_s *client);
 
-/* tstatic int v3_privkey_generate(otrng_client_t *client, FILE *privf); */
+/* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf); */
 
-/* tstatic int v3_instag_generate(otrng_client_t *client, FILE *privf); */
+/* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf); */
 
 #ifdef OTRNG_CLIENT_PRIVATE
 #endif

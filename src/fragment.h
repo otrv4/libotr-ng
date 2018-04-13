@@ -27,10 +27,10 @@
 
 #define FRAGMENT_HEADER_LEN 37
 
-typedef struct {
-  string_t *pieces;
+typedef struct otrng_message_to_send_s {
+  string_p *pieces;
   int total;
-} otrng_message_to_send_t;
+} otrng_message_to_send_s, otrng_message_to_send_p[1];
 
 typedef enum {
   FRAGMENT_UNFRAGMENTED,
@@ -38,30 +38,30 @@ typedef enum {
   FRAGMENT_COMPLETE
 } fragment_status;
 
-typedef struct {
+typedef struct fragment_context_s {
   unsigned int K, N;
-  string_t fragment;
+  string_p fragment;
   size_t fragment_len;
   fragment_status status;
-} fragment_context_t;
+} fragment_context_s, fragment_context_p[1];
 
-API otrng_message_to_send_t *otrng_message_new(void);
+API otrng_message_to_send_s *otrng_message_new(void);
 
-API void otrng_message_free(otrng_message_to_send_t *message);
+API void otrng_message_free(otrng_message_to_send_s *message);
 
-INTERNAL fragment_context_t *otrng_fragment_context_new(void);
+INTERNAL fragment_context_s *otrng_fragment_context_new(void);
 
-INTERNAL void otrng_fragment_context_free(fragment_context_t *context);
+INTERNAL void otrng_fragment_context_free(fragment_context_s *context);
 
-INTERNAL otrng_err_t otrng_fragment_message(int mms,
-                                            otrng_message_to_send_t *fragments,
+INTERNAL otrng_err otrng_fragment_message(int mms,
+                                            otrng_message_to_send_s *fragments,
                                             int our_instance,
                                             int their_instance,
-                                            const string_t message);
+                                            const string_p message);
 
-INTERNAL otrng_err_t otrng_unfragment_message(char **unfrag_msg,
-                                              fragment_context_t *context,
-                                              const string_t message,
+INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
+                                              fragment_context_s *context,
+                                              const string_p message,
                                               const int our_instance_tag);
 
 #ifdef OTRNG_FRAGMENT_PRIVATE

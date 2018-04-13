@@ -28,8 +28,8 @@ void test_create_fragments(void) {
   int mms = 40;
   char *message = "one two tree";
 
-  otrng_message_to_send_t *frag_message =
-      malloc(sizeof(otrng_message_to_send_t));
+  otrng_message_to_send_s *frag_message =
+      malloc(sizeof(otrng_message_to_send_s));
 
   otrng_assert(otrng_fragment_message(mms, frag_message, 1, 2, message) ==
                SUCCESS);
@@ -49,11 +49,11 @@ void test_create_fragments(void) {
 }
 
 void test_defragment_valid_message(void) {
-  string_t fragments[2];
+  string_p fragments[2];
   fragments[0] = "?OTR|00000001|00000002,00001,00002,one ,";
   fragments[1] = "?OTR|00000001|00000002,00002,00002,more,";
 
-  fragment_context_t *context;
+  fragment_context_s *context;
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;
@@ -82,9 +82,9 @@ void test_defragment_valid_message(void) {
 }
 
 void test_defragment_single_fragment(void) {
-  string_t msg = "?OTR|00000001|00000002,00001,00001,small lol,";
+  string_p msg = "?OTR|00000001|00000002,00001,00001,small lol,";
 
-  fragment_context_t *context;
+  fragment_context_s *context;
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;
@@ -102,9 +102,9 @@ void test_defragment_single_fragment(void) {
 }
 
 void test_defragment_without_comma_fails(void) {
-  string_t msg = "?OTR|00000001|00000002,00001,00001,blergh";
+  string_p msg = "?OTR|00000001|00000002,00001,00001,blergh";
 
-  fragment_context_t *context;
+  fragment_context_s *context;
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;
@@ -120,12 +120,12 @@ void test_defragment_without_comma_fails(void) {
 }
 
 void test_defragment_clean_context_for_frag_out_of_order(void) {
-  string_t fragments[3];
+  string_p fragments[3];
   fragments[0] = "?OTR|00000001|00000002,00001,00003,one more ,";
   fragments[1] = "?OTR|00000001|00000002,00003,00003,send,";
   fragments[2] = "?OTR|00000001|00000002,00002,00003,fragment ,";
 
-  fragment_context_t *context;
+  fragment_context_s *context;
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;
@@ -160,9 +160,9 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
 }
 
 void test_defragment_fails_for_invalid_tag(void) {
-  string_t msg = "?OTR|00000001|00000002,00001,00001,small lol,";
+  string_p msg = "?OTR|00000001|00000002,00001,00001,small lol,";
 
-  fragment_context_t *context;
+  fragment_context_s *context;
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;

@@ -32,49 +32,49 @@
 #include "tlv.h"
 #include "client_state.h"
 
-typedef struct {
-  otrng_client_state_t *state;
+typedef struct otrng_v3_conn_s {
+  otrng_client_state_s *state;
   char *peer;
 
   void *opdata; // v4 conn for use in callbacks
 
   OtrlMessageAppOps *ops;
   ConnContext *ctx;
-} otrng_v3_conn_t;
+} otrng_v3_conn_s, otrng_v3_conn_p[1];
 
-INTERNAL otrng_v3_conn_t *otrng_v3_conn_new(otrng_client_state_t *state,
+INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_state_s *state,
                                             const char *peer);
 
-INTERNAL void otrng_v3_conn_free(otrng_v3_conn_t *conn);
+INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn);
 
-INTERNAL otrng_err_t otrng_v3_send_message(char **newmessage,
+INTERNAL otrng_err otrng_v3_send_message(char **newmessage,
                                            const char *message,
-                                           const tlv_list_t *tlvs,
-                                           otrng_v3_conn_t *conn);
+                                           const tlv_list_s *tlvs,
+                                           otrng_v3_conn_s *conn);
 
-INTERNAL otrng_err_t otrng_v3_receive_message(string_t *to_send,
-                                              string_t *to_display,
-                                              tlv_list_t **tlvs,
-                                              const string_t message,
-                                              otrng_v3_conn_t *conn);
+INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
+                                              string_p *to_display,
+                                              tlv_list_s **tlvs,
+                                              const string_p message,
+                                              otrng_v3_conn_s *conn);
 
-INTERNAL void otrng_v3_close(string_t *to_send, otrng_v3_conn_t *conn);
+INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn);
 
-INTERNAL otrng_err_t otrng_v3_send_symkey_message(
-    string_t *to_send, otrng_v3_conn_t *conn, unsigned int use,
+INTERNAL otrng_err otrng_v3_send_symkey_message(
+    string_p *to_send, otrng_v3_conn_s *conn, unsigned int use,
     const unsigned char *usedata, size_t usedatalen, unsigned char *symkey);
 
-INTERNAL otrng_err_t otrng_v3_smp_start(string_t *to_send,
-                                        const uint8_t *queston, size_t q_len,
+INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
+                                        const uint8_t *question, size_t q_len,
                                         const uint8_t *secret, size_t secretlen,
-                                        otrng_v3_conn_t *conn);
+                                        otrng_v3_conn_s *conn);
 
-INTERNAL otrng_err_t otrng_v3_smp_continue(string_t *to_send,
+INTERNAL otrng_err otrng_v3_smp_continue(string_p *to_send,
                                            const uint8_t *secret,
                                            const size_t secretlen,
-                                           otrng_v3_conn_t *conn);
+                                           otrng_v3_conn_s *conn);
 
-INTERNAL otrng_err_t otrng_v3_smp_abort(otrng_v3_conn_t *conn);
+INTERNAL otrng_err otrng_v3_smp_abort(otrng_v3_conn_s *conn);
 
 #ifdef OTRNG_V3_PRIVATE
 #endif

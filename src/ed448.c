@@ -30,56 +30,56 @@ INTERNAL void otrng_ec_bzero(void *data, size_t size) {
   goldilocks_bzero(data, size);
 }
 
-INTERNAL void otrng_ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t a) {
+INTERNAL void otrng_ec_scalar_copy(ec_scalar_p dst, const ec_scalar_p a) {
   goldilocks_448_scalar_copy(dst, a);
 }
 
-INTERNAL otrng_bool_t otrng_ec_scalar_eq(const ec_scalar_t a,
-                                         const ec_scalar_t b) {
+INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar_p a,
+                                         const ec_scalar_p b) {
   if (goldilocks_448_scalar_eq(a, b))
     return otrng_true;
 
   return otrng_false;
 }
 
-INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar_t s) {
+INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar_p s) {
   goldilocks_448_scalar_encode(enc, s);
 }
 
-INTERNAL void otrng_ec_scalar_decode(ec_scalar_t s,
+INTERNAL void otrng_ec_scalar_decode(ec_scalar_p s,
                                      const uint8_t enc[ED448_SCALAR_BYTES]) {
   goldilocks_448_scalar_decode_long(s, enc, ED448_SCALAR_BYTES);
 }
 
-INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t s) {
+INTERNAL void otrng_ec_scalar_destroy(ec_scalar_p s) {
   goldilocks_448_scalar_destroy(s);
 }
 
-INTERNAL void otrng_ec_point_copy(ec_point_t dst, const ec_point_t p) {
+INTERNAL void otrng_ec_point_copy(ec_point_p dst, const ec_point_p p) {
   goldilocks_448_point_copy(dst, p);
 }
 
-INTERNAL otrng_bool_t otrng_ec_point_eq(const ec_point_t p,
-                                        const ec_point_t q) {
+INTERNAL otrng_bool otrng_ec_point_eq(const ec_point_p p,
+                                        const ec_point_p q) {
   if (goldilocks_448_point_eq(p, q))
     return otrng_true;
 
   return otrng_false;
 }
 
-INTERNAL otrng_bool_t otrng_ec_point_valid(const ec_point_t p) {
+INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p) {
   if (goldilocks_448_point_valid(p))
     return otrng_true;
 
   return otrng_false;
 }
 
-INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_t p) {
+INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_p p) {
   goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(enc, p);
 }
 
-INTERNAL otrng_err_t
-otrng_ec_point_decode(ec_point_t p, const uint8_t enc[ED448_POINT_BYTES]) {
+INTERNAL otrng_err
+otrng_ec_point_decode(ec_point_p p, const uint8_t enc[ED448_POINT_BYTES]) {
   goldilocks_448_point_p tmp_p;
   goldilocks_error_t err =
       goldilocks_448_point_decode_like_eddsa_and_mul_by_ratio(tmp_p, enc);
@@ -97,12 +97,12 @@ otrng_ec_point_decode(ec_point_t p, const uint8_t enc[ED448_POINT_BYTES]) {
   return SUCCESS;
 }
 
-INTERNAL void otrng_ec_point_destroy(ec_point_t p) {
+INTERNAL void otrng_ec_point_destroy(ec_point_p p) {
   goldilocks_448_point_destroy(p);
 }
 
 INTERNAL void
-otrng_ec_scalar_derive_from_secret(ec_scalar_t priv,
+otrng_ec_scalar_derive_from_secret(ec_scalar_p priv,
                                    const uint8_t sym[ED448_PRIVATE_BYTES]) {
   /* Hash and clamp the secret into a scalar */
   goldilocks_ed448_derive_secret_scalar(priv, sym);
@@ -116,7 +116,7 @@ otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
 }
 
 INTERNAL void
-otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
+otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
                             const uint8_t sym[ED448_PRIVATE_BYTES]) {
   /*
    * The spec requires:
@@ -144,12 +144,12 @@ otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
   goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
 
-INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_t *keypair) {
+INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {
   otrng_ec_scalar_destroy(keypair->priv);
   otrng_ec_point_destroy(keypair->pub);
 }
 
-INTERNAL otrng_bool_t otrng_ecdh_valid_secret(uint8_t *shared_secret) {
+INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret) {
   uint8_t zero_buff[ED448_POINT_BYTES] = {};
 
   if (memcmp(shared_secret, zero_buff, ED448_POINT_BYTES) == 0)
@@ -159,8 +159,8 @@ INTERNAL otrng_bool_t otrng_ecdh_valid_secret(uint8_t *shared_secret) {
 }
 
 INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
-                                       const ecdh_keypair_t *our_keypair,
-                                       const ec_point_t their_pub) {
+                                       const ecdh_keypair_s *our_keypair,
+                                       const ec_point_p their_pub) {
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, our_keypair->priv);
 
@@ -170,7 +170,7 @@ INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
 
 static const char *ctx = "";
 
-INTERNAL void otrng_ec_sign(eddsa_signature_t sig,
+INTERNAL void otrng_ec_sign(eddsa_signature_p sig,
                             uint8_t sym[ED448_PRIVATE_BYTES],
                             uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg,
                             size_t msg_len) {
@@ -178,7 +178,7 @@ INTERNAL void otrng_ec_sign(eddsa_signature_t sig,
                         strlen(ctx));
 }
 
-INTERNAL otrng_bool_t otrng_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
+INTERNAL otrng_bool otrng_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
                                       const uint8_t pub[ED448_POINT_BYTES],
                                       const uint8_t *msg, size_t msg_len) {
   if (goldilocks_ed448_verify(sig, pub, msg, msg_len, 0, (uint8_t *)ctx,

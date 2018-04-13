@@ -29,17 +29,17 @@
 
 #define MIN_VALID_INSTAG 0x00000100
 
-typedef struct {
+typedef struct otrng_instag_s {
   char *account;
   char *protocol;
   unsigned int value;
-} otrng_instag_t;
+} otrng_instag_s, otrng_instag_p[1];
 
-API otrng_bool_t otrng_instag_get(otrng_instag_t *otrng_instag,
+API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
                                   const char *account, const char *protocol,
                                   FILE *filename);
 
-API void otrng_instag_free(otrng_instag_t *instag);
+API void otrng_instag_free(otrng_instag_s *instag);
 
 #ifdef OTRNG_INSTANCE_TAG_PRIVATE
 #endif

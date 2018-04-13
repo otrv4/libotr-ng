@@ -46,23 +46,23 @@ INTERNAL size_t otrng_serialize_bytes_array(uint8_t *target,
 INTERNAL size_t otrng_serialize_data(uint8_t *target, const uint8_t *data,
                                      size_t len);
 
-INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_t mpi);
+INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_p mpi);
 
-INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_t point);
+INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_p point);
 
 INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
-                                          const ec_scalar_t scalar);
+                                          const ec_scalar_p scalar);
 
-INTERNAL otrng_err_t otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
-                                                   const dh_public_key_t pub);
+INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
+                                                   const dh_public_key_p pub);
 
-INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst, const ring_sig_t *proof);
+INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst, const ring_sig_s *proof);
 
 INTERNAL size_t otrng_serialize_otrng_public_key(uint8_t *dst,
-                                                 const otrng_public_key_t);
+                                                 const otrng_public_key_p);
 
 INTERNAL size_t otrng_serialize_otrng_shared_prekey(
-    uint8_t *dst, const otrng_shared_prekey_pub_t shared_prekey);
+    uint8_t *dst, const otrng_shared_prekey_pub_p shared_prekey);
 
 #ifdef OTRNG_SERIALIZE_PRIVATE
 #endif

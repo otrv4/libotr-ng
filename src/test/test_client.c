@@ -27,25 +27,25 @@
 #include "../serialize.h"
 #include "../shake.h"
 
-static otrng_client_t *set_up_client(otrng_client_state_t *state,
+static otrng_client_s *set_up_client(otrng_client_state_s *state,
                                      const char *account_name, const char *phi,
                                      uint8_t byte) {
   set_up_client_state(state, account_name, phi, byte);
-  otrng_client_t *dst = otrng_client_new(state);
+  otrng_client_s *dst = otrng_client_new(state);
 
   return dst;
 }
 
 void test_client_conversation_api() {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
 
-  otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_client_s *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
   otrng_assert(!alice->conversations);
 
-  otrng_conversation_t *alice_to_bob =
+  otrng_conversation_s *alice_to_bob =
       otrng_client_get_conversation(!FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
-  otrng_conversation_t *alice_to_charlie = otrng_client_get_conversation(
+  otrng_conversation_s *alice_to_charlie = otrng_client_get_conversation(
       !FORCE_CREATE_CONVO, CHARLIE_IDENTITY, alice);
 
   otrng_assert(!alice->conversations);
@@ -80,13 +80,13 @@ void test_client_conversation_api() {
 
 void test_client_api() {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new("alice");
-  otrng_client_state_t *bob_state = otrng_client_state_new("bob");
-  otrng_client_state_t *charlie_state = otrng_client_state_new("charlie");
+  otrng_client_state_s *alice_state = otrng_client_state_new("alice");
+  otrng_client_state_s *bob_state = otrng_client_state_new("bob");
+  otrng_client_state_s *charlie_state = otrng_client_state_new("charlie");
 
-  otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_client_t *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
-  otrng_client_t *charlie =
+  otrng_client_s *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_client_s *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_client_s *charlie =
       set_up_client(charlie_state, CHARLIE_IDENTITY, PHI, 3);
 
   char *query_msg_to_bob =
@@ -119,9 +119,9 @@ void test_client_api() {
   otrng_assert(ignore);
   otrng_assert(!todisplay);
 
-  otrng_conversation_t *alice_to_bob =
+  otrng_conversation_s *alice_to_bob =
       otrng_client_get_conversation(!FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
-  otrng_conversation_t *alice_to_charlie = otrng_client_get_conversation(
+  otrng_conversation_s *alice_to_charlie = otrng_client_get_conversation(
       !FORCE_CREATE_CONVO, CHARLIE_IDENTITY, alice);
 
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_START);
@@ -216,16 +216,16 @@ void test_client_api() {
 }
 
 void test_client_get_our_fingerprint() {
-  otrng_client_state_t *alice_state = otrng_client_state_new("alice");
-  otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_client_state_s *alice_state = otrng_client_state_new("alice");
+  otrng_client_s *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
 
-  otrng_fingerprint_t expected_fp = {0};
+  otrng_fingerprint_p expected_fp = {0};
   otrng_assert(
       !otrng_serialize_fingerprint(expected_fp, alice_state->keypair->pub));
 
-  otrng_fingerprint_t our_fp = {0};
+  otrng_fingerprint_p our_fp = {0};
   otrng_assert(!otrng_client_get_our_fingerprint(our_fp, alice));
-  otrng_assert_cmpmem(expected_fp, our_fp, sizeof(otrng_fingerprint_t));
+  otrng_assert_cmpmem(expected_fp, our_fp, sizeof(otrng_fingerprint_p));
 
   otrl_userstate_free(alice_state->userstate);
   otrng_client_state_free(alice_state);
@@ -261,11 +261,11 @@ void test_fingerprint_hash_to_human() {
 
 void test_conversation_with_multiple_locations() {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new("alice");
-  otrng_client_state_t *bob_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_state = otrng_client_state_new("alice");
+  otrng_client_state_s *bob_state = otrng_client_state_new("bob");
 
-  otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_client_t *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_client_s *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_client_s *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
 
   char *query_msg =
       otrng_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRNG_ALLOW_V4);
@@ -316,7 +316,7 @@ void test_conversation_with_multiple_locations() {
   todisplay = NULL;
 
   // Bob sends a message with a different instance tag
-  otrng_conversation_t *conv =
+  otrng_conversation_s *conv =
       otrng_client_get_conversation(0, ALICE_IDENTITY, bob);
   conv->conn->their_instance_tag = conv->conn->their_instance_tag + 1;
   otrng_client_send(&frombob, "hello again", ALICE_IDENTITY, bob);
@@ -355,11 +355,11 @@ void test_conversation_with_multiple_locations() {
 
 void test_valid_identity_msg_in_waiting_auth_i() {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new("alice");
-  otrng_client_state_t *bob_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_state = otrng_client_state_new("alice");
+  otrng_client_state_s *bob_state = otrng_client_state_new("bob");
 
-  otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_client_t *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_client_s *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_client_s *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
 
   char *query_msg_to_bob =
       otrng_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRNG_ALLOW_V4);
@@ -376,7 +376,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrng_assert(ignore);
   otrng_assert(!todisplay);
 
-  otrng_conversation_t *bob_to_alice =
+  otrng_conversation_s *bob_to_alice =
       otrng_client_get_conversation(!FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
 
   otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_AUTH_R);
@@ -385,7 +385,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   ignore = otrng_client_receive(&from_alice_to_bob, &todisplay, bobs_id,
                                 BOB_IDENTITY, alice);
 
-  otrng_conversation_t *alice_to_bob =
+  otrng_conversation_s *alice_to_bob =
       otrng_client_get_conversation(!FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
 
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_WAITING_AUTH_I);
@@ -393,10 +393,10 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrng_assert(ignore);
   otrng_assert(!todisplay);
 
-  ec_point_t stored_their_ecdh;
+  ec_point_p stored_their_ecdh;
   otrng_ec_point_copy(stored_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
 
-  dh_public_key_t stored_their_dh;
+  dh_public_key_p stored_their_dh;
   stored_their_dh = otrng_dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
 
   free(from_alice_to_bob);
@@ -419,10 +419,10 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   free(bobs_id);
   bobs_id = NULL;
 
-  ec_point_t new_their_ecdh;
+  ec_point_p new_their_ecdh;
   otrng_ec_point_copy(new_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
 
-  dh_public_key_t new_their_dh;
+  dh_public_key_p new_their_dh;
   new_their_dh = otrng_dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
 
   otrng_assert(otrng_ec_point_eq(stored_their_ecdh, new_their_ecdh) ==
@@ -496,11 +496,11 @@ void test_valid_identity_msg_in_waiting_auth_i() {
 
 void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new("alice");
-  otrng_client_state_t *bob_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_state = otrng_client_state_new("alice");
+  otrng_client_state_s *bob_state = otrng_client_state_new("bob");
 
-  otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_client_t *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_client_s *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_client_s *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
 
   // Alice sends a query message to Bob
   char *query_msg_to_bob =
@@ -521,9 +521,9 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrng_assert(bobs_id);
   otrng_assert(!todisplay);
 
-  otrng_conversation_t *alice_to_bob =
+  otrng_conversation_s *alice_to_bob =
       otrng_client_get_conversation(!FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
-  otrng_conversation_t *bob_to_alice =
+  otrng_conversation_s *bob_to_alice =
       otrng_client_get_conversation(!FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
 
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_START);
@@ -608,11 +608,11 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
 
 void test_valid_identity_msg_in_waiting_auth_r() {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new("alice");
-  otrng_client_state_t *bob_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_state = otrng_client_state_new("alice");
+  otrng_client_state_s *bob_state = otrng_client_state_new("bob");
 
-  otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_client_t *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_client_s *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_client_s *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
 
   // Alice sends a query message to Bob
   char *query_msg_to_bob =
@@ -627,9 +627,9 @@ void test_valid_identity_msg_in_waiting_auth_r() {
        *alices_auth_r = NULL, *bobs_auth_r = NULL, *alices_auth_i = NULL,
        *bobs_auth_i = NULL, *bob_last = NULL, *alice_last = NULL;
 
-  otrng_conversation_t *alice_to_bob =
+  otrng_conversation_s *alice_to_bob =
       otrng_client_get_conversation(!FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
-  otrng_conversation_t *bob_to_alice =
+  otrng_conversation_s *bob_to_alice =
       otrng_client_get_conversation(!FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
 
   // Alice receives query message, sends identity message
@@ -791,11 +791,11 @@ void test_valid_identity_msg_in_waiting_auth_r() {
 
 void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new("alice");
-  otrng_client_state_t *bob_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_state = otrng_client_state_new("alice");
+  otrng_client_state_s *bob_state = otrng_client_state_new("bob");
 
-  otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_client_t *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_client_s *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_client_s *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
 
   // Alice sends a query message to Bob
   char *query_msg_to_bob =
@@ -815,9 +815,9 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   otrng_assert(bobs_id);
   otrng_assert(!todisplay);
 
-  otrng_conversation_t *alice_to_bob =
+  otrng_conversation_s *alice_to_bob =
       otrng_client_get_conversation(!FORCE_CREATE_CONVO, BOB_IDENTITY, alice);
-  otrng_conversation_t *bob_to_alice =
+  otrng_conversation_s *bob_to_alice =
       otrng_client_get_conversation(!FORCE_CREATE_CONVO, ALICE_IDENTITY, bob);
 
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_START);
@@ -905,11 +905,11 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
 void test_client_receives_fragmented_message(void) {
   char *msg = "Receiving fragmented plaintext";
 
-  otrng_message_to_send_t *fmsg = malloc(sizeof(otrng_message_to_send_t));
+  otrng_message_to_send_s *fmsg = malloc(sizeof(otrng_message_to_send_s));
   otrng_assert(otrng_fragment_message(60, fmsg, 0, 0, msg) == SUCCESS);
 
-  otrng_client_state_t *alice_state = otrng_client_state_new("alice");
-  otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_client_state_s *alice_state = otrng_client_state_new("alice");
+  otrng_client_s *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
 
   char *tosend = NULL, *todisplay = NULL;
 
@@ -932,11 +932,11 @@ void test_client_receives_fragmented_message(void) {
 
 void test_client_sends_fragmented_message(void) {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new("alice");
-  otrng_client_state_t *bob_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_state = otrng_client_state_new("alice");
+  otrng_client_state_s *bob_state = otrng_client_state_new("bob");
 
-  otrng_client_t *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_client_t *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_client_s *alice = set_up_client(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_client_s *bob = set_up_client(bob_state, BOB_IDENTITY, PHI, 2);
 
   char *query_msg_to_bob =
       otrng_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRNG_ALLOW_V4);
@@ -970,7 +970,7 @@ void test_client_sends_fragmented_message(void) {
   free(from_bob);
   from_bob = NULL;
 
-  otrng_message_to_send_t *to_send = otrng_message_new();
+  otrng_message_to_send_s *to_send = otrng_message_new();
   char *message = "We should fragment when is needed";
 
   // Alice fragments the message

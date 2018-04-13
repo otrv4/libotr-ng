@@ -25,12 +25,12 @@
 #include "random.h"
 #include "shake.h"
 
-INTERNAL void otrng_generate_keypair(rsig_pubkey_t pub, rsig_privkey_t priv) {
+INTERNAL void otrng_generate_keypair(rsig_pubkey_p pub, rsig_privkey_p priv) {
   ed448_random_scalar(priv);
   goldilocks_448_point_scalarmul(pub, goldilocks_448_point_base, priv);
 }
 
-INTERNAL void otrng_rsig_keypair_generate(rsig_keypair_t *keypair) {
+INTERNAL void otrng_rsig_keypair_generate(rsig_keypair_s *keypair) {
   otrng_generate_keypair(keypair->pub, keypair->priv);
 }
 
@@ -51,18 +51,18 @@ static const unsigned char prime_order_bytes_dup[ED448_SCALAR_BYTES] = {
     0x23, 0x78, 0xc2, 0x92, 0xab, 0x58, 0x44, 0xf3,
 };
 
-INTERNAL void otrng_rsig_authenticate(ring_sig_t *dst,
-                                      const rsig_keypair_t *keypair,
-                                      const rsig_pubkey_t A2,
-                                      const rsig_pubkey_t A3,
+INTERNAL void otrng_rsig_authenticate(ring_sig_s *dst,
+                                      const rsig_keypair_s *keypair,
+                                      const rsig_pubkey_p A2,
+                                      const rsig_pubkey_p A3,
                                       const unsigned char *msg, size_t msglen) {
 
   goldilocks_shake256_ctx_p hd;
   uint8_t hash[HASH_BYTES];
   unsigned char point_buff[ED448_POINT_BYTES];
 
-  rsig_privkey_t t1;
-  rsig_pubkey_t T1, T2, T3, A2c2, A3c3;
+  rsig_privkey_p t1;
+  rsig_pubkey_p T1, T2, T3, A2c2, A3c3;
 
   otrng_generate_keypair(T1, t1);
 
@@ -104,7 +104,7 @@ INTERNAL void otrng_rsig_authenticate(ring_sig_t *dst,
   hash_final(hd, hash, sizeof(hash));
   hash_destroy(hd);
 
-  rsig_privkey_t c, c1a1;
+  rsig_privkey_p c, c1a1;
   goldilocks_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
 
   goldilocks_448_scalar_sub(dst->c1, c, dst->c2);
@@ -114,9 +114,9 @@ INTERNAL void otrng_rsig_authenticate(ring_sig_t *dst,
   goldilocks_448_scalar_sub(dst->r1, t1, c1a1);
 }
 
-INTERNAL otrng_bool_t otrng_rsig_verify(
-    const ring_sig_t *src, const rsig_pubkey_t A1, const rsig_pubkey_t A2,
-    const rsig_pubkey_t A3, const unsigned char *msg, size_t msglen) {
+INTERNAL otrng_bool otrng_rsig_verify(
+    const ring_sig_s *src, const rsig_pubkey_p A1, const rsig_pubkey_p A2,
+    const rsig_pubkey_p A3, const unsigned char *msg, size_t msglen) {
 
   goldilocks_shake256_ctx_p hd;
   uint8_t hash[HASH_BYTES];
@@ -124,7 +124,7 @@ INTERNAL otrng_bool_t otrng_rsig_verify(
 
   hash_init_with_dom(hd);
 
-  rsig_pubkey_t gr1, gr2, gr3, A1c1, A2c2, A3c3;
+  rsig_pubkey_p gr1, gr2, gr3, A1c1, A2c2, A3c3;
 
   goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, src->r1);
   goldilocks_448_point_scalarmul(gr2, goldilocks_448_point_base, src->r2);
@@ -164,7 +164,7 @@ INTERNAL otrng_bool_t otrng_rsig_verify(
   hash_final(hd, hash, sizeof(hash));
   hash_destroy(hd);
 
-  rsig_privkey_t c, c1c2c3;
+  rsig_privkey_p c, c1c2c3;
   goldilocks_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
 
   goldilocks_448_scalar_add(c1c2c3, src->c1, src->c2);
@@ -176,7 +176,7 @@ INTERNAL otrng_bool_t otrng_rsig_verify(
   return otrng_false;
 }
 
-INTERNAL void otrng_ring_sig_destroy(ring_sig_t *src) {
+INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src) {
   otrng_ec_scalar_destroy(src->c1);
   otrng_ec_scalar_destroy(src->r1);
   otrng_ec_scalar_destroy(src->c2);

@@ -32,46 +32,46 @@
 #define DH3072_MOD_LEN_BYTES 384
 #define DH_MPI_BYTES (4 + DH3072_MOD_LEN_BYTES)
 
-typedef gcry_mpi_t dh_mpi_t;
-typedef dh_mpi_t dh_private_key_t, dh_public_key_t;
+typedef gcry_mpi_t dh_mpi_p;
+typedef dh_mpi_p dh_private_key_p, dh_public_key_p;
 
-typedef struct {
-  dh_public_key_t pub;
-  dh_private_key_t priv;
-} dh_keypair_t[1];
+typedef struct dh_keypair_s {
+  dh_public_key_p pub;
+  dh_private_key_p priv;
+} dh_keypair_s, dh_keypair_p[1];
 
 INTERNAL void otrng_dh_init(void);
 
 INTERNAL void otrng_dh_free(void);
 
-INTERNAL otrng_err_t otrng_dh_keypair_generate(dh_keypair_t keypair);
+INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair);
 
-INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_t keypair);
+INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_p keypair);
 
-INTERNAL void otrng_dh_keypair_destroy(dh_keypair_t keypair);
+INTERNAL void otrng_dh_keypair_destroy(dh_keypair_p keypair);
 
-INTERNAL otrng_err_t otrng_dh_shared_secret(uint8_t *shared,
+INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared,
                                             size_t shared_bytes,
-                                            const dh_private_key_t our_priv,
-                                            const dh_public_key_t their_pub);
+                                            const dh_private_key_p our_priv,
+                                            const dh_public_key_p their_pub);
 
-INTERNAL otrng_err_t otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
+INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                             size_t *written,
-                                            const dh_mpi_t src);
+                                            const dh_mpi_p src);
 
-INTERNAL otrng_err_t otrng_dh_mpi_deserialize(dh_mpi_t *dst,
+INTERNAL otrng_err otrng_dh_mpi_deserialize(dh_mpi_p *dst,
                                               const uint8_t *buffer,
                                               size_t buflen, size_t *nread);
 
-INTERNAL otrng_bool_t otrng_dh_mpi_valid(dh_mpi_t mpi);
+INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi);
 
-INTERNAL dh_mpi_t otrng_dh_mpi_copy(const dh_mpi_t src);
+INTERNAL dh_mpi_p otrng_dh_mpi_copy(const dh_mpi_p src);
 
-INTERNAL void otrng_dh_mpi_release(dh_mpi_t mpi);
+INTERNAL void otrng_dh_mpi_release(dh_mpi_p mpi);
 
 #ifdef OTRNG_DH_PRIVATE
 
-tstatic void dh_pub_key_destroy(dh_keypair_t keypair);
+tstatic void dh_pub_key_destroy(dh_keypair_p keypair);
 
 #endif
 

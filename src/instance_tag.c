@@ -26,7 +26,7 @@
 #include "instance_tag.h"
 #include "str.h"
 
-API otrng_bool_t otrng_instag_get(otrng_instag_t *otrng_instag,
+API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
                                   const char *account, const char *protocol,
                                   FILE *filename) {
 
@@ -57,7 +57,7 @@ API otrng_bool_t otrng_instag_get(otrng_instag_t *otrng_instag,
   return otrng_true;
 }
 
-API void otrng_instag_free(otrng_instag_t *instag) {
+API void otrng_instag_free(otrng_instag_s *instag) {
   if (!instag)
     return;
 

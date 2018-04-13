@@ -26,7 +26,7 @@
 
 #include "shared.h"
 
-#define string_t char *
+#define string_p char *
 
 INTERNAL /*@null@*/ uint8_t *otrng_memdup(const uint8_t *s, const size_t len);
 

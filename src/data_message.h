@@ -29,42 +29,42 @@
 #include "key_management.h"
 #include "shared.h"
 
-typedef struct {
+typedef struct data_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
   uint8_t flags;
   uint32_t message_id;
-  ec_point_t ecdh;
-  dh_public_key_t dh;
+  ec_point_p ecdh;
+  dh_public_key_p dh;
   uint8_t nonce[DATA_MSG_NONCE_BYTES];
   uint8_t *enc_msg;
   size_t enc_msg_len;
   uint8_t mac[DATA_MSG_MAC_BYTES];
-} data_message_t;
+} data_message_s, data_message_p[1];
 
-INTERNAL data_message_t *otrng_data_message_new(void);
+INTERNAL data_message_s *otrng_data_message_new(void);
 
-INTERNAL void otrng_data_message_free(data_message_t *data_msg);
+INTERNAL void otrng_data_message_free(data_message_s *data_msg);
 
-INTERNAL otrng_err_t otrng_data_message_body_asprintf(
-    uint8_t **body, size_t *bodylen, const data_message_t *data_msg);
+INTERNAL otrng_err otrng_data_message_body_asprintf(
+    uint8_t **body, size_t *bodylen, const data_message_s *data_msg);
 
-INTERNAL otrng_err_t otrng_data_message_deserialize(data_message_t *data_msg,
+INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *data_msg,
                                                     const uint8_t *buff,
                                                     size_t bufflen,
                                                     size_t *nread);
 
-INTERNAL otrng_err_t otrng_data_message_authenticator(uint8_t *dst,
+INTERNAL otrng_err otrng_data_message_authenticator(uint8_t *dst,
                                                       size_t dstlen,
-                                                      const m_mac_key_t mac_key,
+                                                      const m_mac_key_p mac_key,
                                                       const uint8_t *body,
                                                       size_t bodylen);
 
-INTERNAL otrng_bool_t otrng_valid_data_message(m_mac_key_t mac_key,
-                                               const data_message_t *data_msg);
+INTERNAL otrng_bool otrng_valid_data_message(m_mac_key_p mac_key,
+                                               const data_message_s *data_msg);
 
 #ifdef OTRNG_DATA_MESSAGE_PRIVATE
-tstatic void data_message_destroy(data_message_t *data_msg);
+tstatic void data_message_destroy(data_message_s *data_msg);
 #endif
 
 #endif

@@ -44,8 +44,8 @@ otrng_fingerprint_hash_to_human(char human[FPRINT_HUMAN_LEN],
   *p = '\0';
 }
 
-INTERNAL int otrng_serialize_fingerprint(otrng_fingerprint_t fp,
-                                         const otrng_public_key_t pub) {
+INTERNAL int otrng_serialize_fingerprint(otrng_fingerprint_p fp,
+                                         const otrng_public_key_p pub) {
   uint8_t serialized[ED448_POINT_BYTES] = {0};
 
   if (!fp)

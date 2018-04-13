@@ -27,22 +27,22 @@
 #include "../user_profile.h"
 
 void test_user_profile_create() {
-  user_profile_t *profile = user_profile_new("4");
+  user_profile_s *profile = user_profile_new("4");
   otrng_assert(profile != NULL);
   otrng_user_profile_free(profile);
 }
 
 void test_user_profile_serializes_body() {
-  otrng_keypair_t keypair[1];
+  otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  user_profile_t *profile = user_profile_new("4");
+  user_profile_s *profile = user_profile_new("4");
 
-  otrng_shared_prekey_pair_t shared_prekey[1];
+  otrng_shared_prekey_pair_p shared_prekey;
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
   memcpy(profile->shared_prekey, shared_prekey->pub,
-         sizeof(otrng_shared_prekey_pub_t));
+         sizeof(otrng_shared_prekey_pub_p));
 
   otrng_assert(profile != NULL);
   profile->expires = 15;
@@ -86,16 +86,16 @@ void test_user_profile_serializes_body() {
 }
 
 void test_user_profile_serializes() {
-  otrng_keypair_t keypair[1];
+  otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  user_profile_t *profile = user_profile_new("4");
+  user_profile_s *profile = user_profile_new("4");
 
-  otrng_shared_prekey_pair_t shared_prekey[1];
+  otrng_shared_prekey_pair_p shared_prekey;
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
   memcpy(profile->shared_prekey, shared_prekey->pub,
-         sizeof(otrng_shared_prekey_pair_t));
+         sizeof(otrng_shared_prekey_pair_s));
 
   otrng_assert(profile != NULL);
   profile->expires = 15;
@@ -127,7 +127,7 @@ void test_user_profile_serializes() {
 
   // transitional signature
   otrng_assert_cmpmem(expected_transitional_signature,
-                      serialized + body_len + sizeof(eddsa_signature_t),
+                      serialized + body_len + sizeof(eddsa_signature_p),
                       sizeof(expected_transitional_signature));
 
   free(body);
@@ -138,16 +138,16 @@ void test_user_profile_serializes() {
 }
 
 void test_otrng_user_profile_deserializes() {
-  otrng_keypair_t keypair[1];
+  otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  user_profile_t *profile = user_profile_new("4");
+  user_profile_s *profile = user_profile_new("4");
 
-  otrng_shared_prekey_pair_t shared_prekey[1];
+  otrng_shared_prekey_pair_p shared_prekey;
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
   memcpy(profile->shared_prekey, shared_prekey->pub,
-         sizeof(otrng_shared_prekey_pub_t));
+         sizeof(otrng_shared_prekey_pub_p));
 
   otrng_assert(profile != NULL);
   user_profile_sign(profile, keypair);
@@ -156,7 +156,7 @@ void test_otrng_user_profile_deserializes() {
   uint8_t *serialized = NULL;
   otrng_user_profile_asprintf(&serialized, &written, profile);
 
-  user_profile_t *deserialized = malloc(sizeof(user_profile_t));
+  user_profile_s *deserialized = malloc(sizeof(user_profile_s));
   otrng_assert(otrng_user_profile_deserialize(deserialized, serialized, written,
                                               NULL) == SUCCESS);
   otrng_assert_user_profile_eq(deserialized, profile);
@@ -168,16 +168,16 @@ void test_otrng_user_profile_deserializes() {
 }
 
 void test_user_profile_signs_and_verify() {
-  otrng_keypair_t keypair[1];
+  otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  user_profile_t *profile = user_profile_new("4");
+  user_profile_s *profile = user_profile_new("4");
 
-  otrng_shared_prekey_pair_t shared_prekey[1];
+  otrng_shared_prekey_pair_p shared_prekey;
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
   memcpy(profile->shared_prekey, shared_prekey->pub,
-         sizeof(otrng_shared_prekey_pair_t));
+         sizeof(otrng_shared_prekey_pair_s));
 
   otrng_assert(profile != NULL);
   user_profile_sign(profile, keypair);
@@ -192,14 +192,14 @@ void test_user_profile_signs_and_verify() {
 }
 
 void test_otrng_user_profile_build() {
-  user_profile_t *profile = otrng_user_profile_build(NULL, NULL, NULL);
+  user_profile_s *profile = otrng_user_profile_build(NULL, NULL, NULL);
   otrng_assert(!profile);
 
-  otrng_keypair_t keypair[1];
+  otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  otrng_shared_prekey_pair_t shared_prekey[1];
+  otrng_shared_prekey_pair_p shared_prekey;
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
 
   profile = otrng_user_profile_build("3", keypair, shared_prekey);

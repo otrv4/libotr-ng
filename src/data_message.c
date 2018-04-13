@@ -27,8 +27,8 @@
 #include "serialize.h"
 #include "shake.h"
 
-INTERNAL data_message_t *otrng_data_message_new() {
-  data_message_t *ret = malloc(sizeof(data_message_t));
+INTERNAL data_message_s *otrng_data_message_new() {
+  data_message_s *ret = malloc(sizeof(data_message_s));
   if (!ret)
     return NULL;
 
@@ -45,7 +45,7 @@ INTERNAL data_message_t *otrng_data_message_new() {
   return ret;
 }
 
-tstatic void data_message_destroy(data_message_t *data_msg) {
+tstatic void data_message_destroy(data_message_s *data_msg) {
   data_msg->flags = 0;
 
   otrng_ec_point_destroy(data_msg->ecdh);
@@ -60,7 +60,7 @@ tstatic void data_message_destroy(data_message_t *data_msg) {
   sodium_memzero(data_msg->mac, sizeof data_msg->mac);
 }
 
-INTERNAL void otrng_data_message_free(data_message_t *data_msg) {
+INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
   if (!data_msg)
     return;
 
@@ -70,8 +70,8 @@ INTERNAL void otrng_data_message_free(data_message_t *data_msg) {
   data_msg = NULL;
 }
 
-INTERNAL otrng_err_t otrng_data_message_body_asprintf(
-    uint8_t **body, size_t *bodylen, const data_message_t *data_msg) {
+INTERNAL otrng_err otrng_data_message_body_asprintf(
+    uint8_t **body, size_t *bodylen, const data_message_s *data_msg) {
   size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
   if (!dst)
@@ -110,7 +110,7 @@ INTERNAL otrng_err_t otrng_data_message_body_asprintf(
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_data_message_deserialize(data_message_t *dst,
+INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
                                                     const uint8_t *buff,
                                                     size_t bufflen,
                                                     size_t *nread) {
@@ -168,7 +168,7 @@ INTERNAL otrng_err_t otrng_data_message_deserialize(data_message_t *dst,
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  otrng_mpi_t b_mpi; // no need to free, because nothing is copied now
+  otrng_mpi_p b_mpi; // no need to free, because nothing is copied now
   if (otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read))
     return ERROR;
 
@@ -203,7 +203,7 @@ INTERNAL otrng_err_t otrng_data_message_deserialize(data_message_t *dst,
                                        cursor, len);
 }
 
-INTERNAL static otrng_err_t
+INTERNAL static otrng_err
 otrng_data_message_sections_hash(uint8_t *dst, size_t dstlen,
                                  const uint8_t *body, size_t bodylen) {
   if (dstlen < 64)
@@ -215,9 +215,9 @@ otrng_data_message_sections_hash(uint8_t *dst, size_t dstlen,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_data_message_authenticator(uint8_t *dst,
+INTERNAL otrng_err otrng_data_message_authenticator(uint8_t *dst,
                                                       size_t dstlen,
-                                                      const m_mac_key_t mac_key,
+                                                      const m_mac_key_p mac_key,
                                                       const uint8_t *body,
                                                       size_t bodylen) {
   if (dstlen < DATA_MSG_MAC_BYTES)
@@ -231,7 +231,7 @@ INTERNAL otrng_err_t otrng_data_message_authenticator(uint8_t *dst,
 
   goldilocks_shake256_ctx_p auth_hash;
   hash_init_with_usage(auth_hash, 0x28);
-  hash_update(auth_hash, mac_key, sizeof(m_mac_key_t));
+  hash_update(auth_hash, mac_key, sizeof(m_mac_key_p));
   hash_update(auth_hash, sections, 64);
   sodium_memzero(sections, 64);
 
@@ -239,8 +239,8 @@ INTERNAL otrng_err_t otrng_data_message_authenticator(uint8_t *dst,
   return SUCCESS;
 }
 
-INTERNAL otrng_bool_t otrng_valid_data_message(m_mac_key_t mac_key,
-                                               const data_message_t *data_msg) {
+INTERNAL otrng_bool otrng_valid_data_message(m_mac_key_p mac_key,
+                                             const data_message_s *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
@@ -249,7 +249,7 @@ INTERNAL otrng_bool_t otrng_valid_data_message(m_mac_key_t mac_key,
   }
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
-  otrng_err_t ret = otrng_data_message_authenticator(mac_tag, sizeof mac_tag,
+  otrng_err ret = otrng_data_message_authenticator(mac_tag, sizeof mac_tag,
                                                      mac_key, body, bodylen);
 
   free(body);

@@ -24,20 +24,20 @@
 void test_smp_state_machine(void) {
   OTRNG_INIT;
 
-  otrng_client_state_t *alice_keypair = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_keypair = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_keypair = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_keypair = otrng_client_state_new(NULL);
 
-  smp_msg_1_t smp_msg_1[1];
-  smp_msg_2_t smp_msg_2[1];
+  smp_msg_1_p smp_msg_1;
+  smp_msg_2_p smp_msg_2;
 
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
   otrng_client_state_add_private_key_v4(alice_keypair, alice_sym);
   otrng_client_state_add_private_key_v4(bob_keypair, bob_sym);
-  otrng_policy_t policy = {.allows = OTRNG_ALLOW_V4};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
 
-  otrng_t *alice_otr = otrng_new(alice_keypair, policy);
-  otrng_t *bob_otr = otrng_new(bob_keypair, policy);
+  otrng_s *alice_otr = otrng_new(alice_keypair, policy);
+  otrng_s *bob_otr = otrng_new(bob_keypair, policy);
   g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
   g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
@@ -49,7 +49,7 @@ void test_smp_state_machine(void) {
   const uint8_t *question = (const uint8_t *)"some-question";
   const uint8_t *answer = (const uint8_t *)"answer";
 
-  tlv_t *tlv_smp_1 = otrng_smp_initiate(
+  tlv_s *tlv_smp_1 = otrng_smp_initiate(
       get_my_user_profile(alice_otr), alice_otr->their_profile, question, 13,
       answer, 6, alice_otr->keys->ssid, alice_otr->smp,
       alice_otr->conversation);
@@ -66,7 +66,7 @@ void test_smp_state_machine(void) {
   otrng_assert(alice_otr->smp->a3);
 
   // Receives first message
-  tlv_t *tlv_smp_2 = process_tlv(tlv_smp_1, bob_otr);
+  tlv_s *tlv_smp_2 = process_tlv(tlv_smp_1, bob_otr);
   tlv_free(tlv_smp_1);
   otrng_assert(!tlv_smp_2);
 
@@ -99,7 +99,7 @@ void test_smp_state_machine(void) {
   otrng_smp_msg_1_destroy(smp_msg_1);
   smp_msg_2_destroy(smp_msg_2);
 
-  tlv_t *tlv_smp_3 = process_tlv(tlv_smp_2, alice_otr);
+  tlv_s *tlv_smp_3 = process_tlv(tlv_smp_2, alice_otr);
   tlv_free(tlv_smp_2);
   otrng_assert(tlv_smp_3);
 
@@ -115,7 +115,7 @@ void test_smp_state_machine(void) {
   otrng_assert(alice_otr->smp->Qa_Qb);
 
   // Receives third message
-  tlv_t *tlv_smp_4 = process_tlv(tlv_smp_3, bob_otr);
+  tlv_s *tlv_smp_4 = process_tlv(tlv_smp_3, bob_otr);
   tlv_free(tlv_smp_3);
   otrng_assert(tlv_smp_4);
   g_assert_cmpint(tlv_smp_4->type, ==, OTRNG_TLV_SMP_MSG_4);
@@ -145,9 +145,9 @@ void test_smp_state_machine(void) {
 };
 
 void test_otrng_generate_smp_secret(void) {
-  smp_context_t smp;
+  smp_context_p smp;
   smp->msg1 = NULL;
-  otrng_fingerprint_t our = {
+  otrng_fingerprint_p our = {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
       0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
 
@@ -160,7 +160,7 @@ void test_otrng_generate_smp_secret(void) {
       0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
   };
 
-  otrng_fingerprint_t their = {
+  otrng_fingerprint_p their = {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
       0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
 
@@ -196,8 +196,8 @@ void test_otrng_generate_smp_secret(void) {
 }
 
 void test_otrng_smp_msg_1_asprintf_null_question(void) {
-  smp_msg_1_t msg[1];
-  smp_context_t smp;
+  smp_msg_1_p msg;
+  smp_context_p smp;
   smp->msg1 = NULL;
   uint8_t *buff;
   size_t writen = 0;

@@ -27,8 +27,8 @@
 #include "keys.h"
 #include "random.h"
 
-INTERNAL otrng_keypair_t *otrng_keypair_new(void) {
-  otrng_keypair_t *ret = malloc(sizeof(otrng_keypair_t));
+INTERNAL otrng_keypair_s *otrng_keypair_new(void) {
+  otrng_keypair_s *ret = malloc(sizeof(otrng_keypair_s));
   if (!ret)
     return NULL;
 
@@ -38,7 +38,7 @@ INTERNAL otrng_keypair_t *otrng_keypair_new(void) {
   return ret;
 }
 
-INTERNAL void otrng_keypair_generate(otrng_keypair_t *keypair,
+INTERNAL void otrng_keypair_generate(otrng_keypair_s *keypair,
                                      const uint8_t sym[ED448_PRIVATE_BYTES]) {
   memcpy(keypair->sym, sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_derive_from_secret(keypair->priv, keypair->sym);
@@ -50,13 +50,13 @@ INTERNAL void otrng_keypair_generate(otrng_keypair_t *keypair,
   goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
 
-tstatic void keypair_destroy(otrng_keypair_t *keypair) {
+tstatic void keypair_destroy(otrng_keypair_s *keypair) {
   goldilocks_bzero(keypair->sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_destroy(keypair->priv);
   otrng_ec_point_destroy(keypair->pub);
 }
 
-INTERNAL void otrng_keypair_free(otrng_keypair_t *keypair) {
+INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
   if (!keypair)
     return;
 
@@ -65,7 +65,7 @@ INTERNAL void otrng_keypair_free(otrng_keypair_t *keypair) {
   keypair = NULL;
 }
 
-INTERNAL otrng_err_t otrng_symmetric_key_serialize(
+INTERNAL otrng_err otrng_symmetric_key_serialize(
     char **buffer, size_t *buffer_size, uint8_t sym[ED448_PRIVATE_BYTES]) {
   *buffer = malloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
   if (!*buffer)
@@ -75,8 +75,8 @@ INTERNAL otrng_err_t otrng_symmetric_key_serialize(
   return SUCCESS;
 }
 
-INTERNAL otrng_shared_prekey_pair_t *otrng_shared_prekey_pair_new(void) {
-  otrng_shared_prekey_pair_t *ret = malloc(sizeof(otrng_shared_prekey_pair_t));
+INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void) {
+  otrng_shared_prekey_pair_s *ret = malloc(sizeof(otrng_shared_prekey_pair_s));
   if (!ret)
     return NULL;
 
@@ -87,7 +87,7 @@ INTERNAL otrng_shared_prekey_pair_t *otrng_shared_prekey_pair_new(void) {
 }
 
 INTERNAL void
-otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_t *prekey_pair,
+otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
                                   const uint8_t sym[ED448_PRIVATE_BYTES]) {
   memcpy(prekey_pair->sym, sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_derive_from_secret(prekey_pair->priv, prekey_pair->sym);
@@ -100,14 +100,14 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_t *prekey_pair,
 }
 
 tstatic void
-shared_prekey_pair_destroy(otrng_shared_prekey_pair_t *prekey_pair) {
+shared_prekey_pair_destroy(otrng_shared_prekey_pair_s *prekey_pair) {
   goldilocks_bzero(prekey_pair->sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_destroy(prekey_pair->priv);
   otrng_ec_point_destroy(prekey_pair->pub);
 }
 
 INTERNAL void
-otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_t *prekey_pair) {
+otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair) {
   if (!prekey_pair)
     return;
 

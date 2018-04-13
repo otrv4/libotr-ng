@@ -27,9 +27,9 @@
 #include "serialize.h"
 #include "str.h"
 
-tstatic otrng_conversation_t *new_conversation_with(const char *recipient,
-                                                    otrng_t *conn) {
-  otrng_conversation_t *conv = malloc(sizeof(otrng_conversation_t));
+tstatic otrng_conversation_s *new_conversation_with(const char *recipient,
+                                                    otrng_s *conn) {
+  otrng_conversation_s *conv = malloc(sizeof(otrng_conversation_s));
   if (!conv) {
     free(conn);
     return NULL;
@@ -42,7 +42,7 @@ tstatic otrng_conversation_t *new_conversation_with(const char *recipient,
 }
 
 tstatic void conversation_free(void *data) {
-  otrng_conversation_t *conv = data;
+  otrng_conversation_s *conv = data;
 
   free(conv->recipient);
   conv->recipient = NULL;
@@ -54,8 +54,8 @@ tstatic void conversation_free(void *data) {
   conv = NULL;
 }
 
-API otrng_client_t *otrng_client_new(otrng_client_state_t *state) {
-  otrng_client_t *client = malloc(sizeof(otrng_client_t));
+API otrng_client_s *otrng_client_new(otrng_client_state_s *state) {
+  otrng_client_s *client = malloc(sizeof(otrng_client_s));
   if (!client)
     return NULL;
 
@@ -65,7 +65,7 @@ API otrng_client_t *otrng_client_new(otrng_client_state_t *state) {
   return client;
 }
 
-API void otrng_client_free(otrng_client_t *client) {
+API void otrng_client_free(otrng_client_s *client) {
   if (!client)
     return;
 
@@ -80,10 +80,10 @@ API void otrng_client_free(otrng_client_t *client) {
 
 // TODO: There may be multiple conversations with the same recipient if they
 // uses multiple instance tags. We are not allowing this yet.
-tstatic otrng_conversation_t *
-get_conversation_with(const char *recipient, list_element_t *conversations) {
-  const list_element_t *el = NULL;
-  otrng_conversation_t *conv = NULL;
+tstatic otrng_conversation_s *
+get_conversation_with(const char *recipient, list_element_s *conversations) {
+  const list_element_s *el = NULL;
+  otrng_conversation_s *conv = NULL;
 
   for (el = conversations; el; el = el->next) {
     conv = el->data;
@@ -94,15 +94,15 @@ get_conversation_with(const char *recipient, list_element_t *conversations) {
   return NULL;
 }
 
-tstatic otrng_policy_t get_policy_for(const char *recipient) {
+tstatic otrng_policy_s get_policy_for(const char *recipient) {
   // TODO the policy should come from client config.
   UNUSED_ARG(recipient);
-  otrng_policy_t policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
 
   return policy;
 }
 
-/* tstatic int otrng_conversation_is_encrypted(otrng_conversation_t *conv) { */
+/* tstatic int otrng_conversation_is_encrypted(otrng_conversation_s *conv) { */
 /*   if (!conv) */
 /*     return 0; */
 
@@ -119,7 +119,7 @@ tstatic otrng_policy_t get_policy_for(const char *recipient) {
 /*   return 0; */
 /* } */
 
-/* tstatic int otrng_conversation_is_finished(otrng_conversation_t *conv) { */
+/* tstatic int otrng_conversation_is_finished(otrng_conversation_s *conv) { */
 /*   if (!conv) */
 /*     return 0; */
 
@@ -135,10 +135,10 @@ tstatic otrng_policy_t get_policy_for(const char *recipient) {
 /*   return 0; */
 /* } */
 
-tstatic otrng_t *create_connection_for(const char *recipient,
-                                       otrng_client_t *client) {
-  otrng_v3_conn_t *v3_conn = NULL;
-  otrng_t *conn = NULL;
+tstatic otrng_s *create_connection_for(const char *recipient,
+                                       otrng_client_s *client) {
+  otrng_v3_conn_s *v3_conn = NULL;
+  otrng_s *conn = NULL;
 
   // TODO: This should receive only the client_state (which should allow
   // you to get protocol, account, v3 userstate, etc)
@@ -160,10 +160,10 @@ tstatic otrng_t *create_connection_for(const char *recipient,
   return conn;
 }
 
-tstatic otrng_conversation_t *
-get_or_create_conversation_with(const char *recipient, otrng_client_t *client) {
-  otrng_conversation_t *conv = NULL;
-  otrng_t *conn = NULL;
+tstatic otrng_conversation_s *
+get_or_create_conversation_with(const char *recipient, otrng_client_s *client) {
+  otrng_conversation_s *conv = NULL;
+  otrng_s *conn = NULL;
 
   conv = get_conversation_with(recipient, client->conversations);
   if (conv)
@@ -182,9 +182,9 @@ get_or_create_conversation_with(const char *recipient, otrng_client_t *client) {
   return conv;
 }
 
-API otrng_conversation_t *
+API otrng_conversation_s *
 otrng_client_get_conversation(int force_create, const char *recipient,
-                              otrng_client_t *client) {
+                              otrng_client_s *client) {
   if (force_create)
     return get_or_create_conversation_with(recipient, client);
 
@@ -192,15 +192,15 @@ otrng_client_get_conversation(int force_create, const char *recipient,
 }
 
 tstatic int send_message(char **newmsg, const char *message,
-                         const char *recipient, otrng_client_t *client) {
-  otrng_conversation_t *conv = NULL;
-  tlv_list_t *tlvs = NULL;
+                         const char *recipient, otrng_client_s *client) {
+  otrng_conversation_s *conv = NULL;
+  tlv_list_s *tlvs = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
     return 1;
 
-  otrng_err_t error =
+  otrng_err error =
       otrng_prepare_to_send_message(newmsg, message, &tlvs, 0, conv->conn);
   otrng_tlv_list_free(tlvs);
 
@@ -211,22 +211,22 @@ tstatic int send_message(char **newmsg, const char *message,
 }
 
 API int otrng_client_send(char **newmessage, const char *message,
-                          const char *recipient, otrng_client_t *client) {
+                          const char *recipient, otrng_client_s *client) {
   /* v4 client will know how to transition to v3 if a v3 conversation is
    started */
   return send_message(newmessage, message, recipient, client);
 }
 
-API int otrng_client_send_fragment(otrng_message_to_send_t **newmessage,
+API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
                                    const char *message, int mms,
                                    const char *recipient,
-                                   otrng_client_t *client) {
-  string_t to_send = NULL;
-  otrng_err_t err = send_message(&to_send, message, recipient, client);
+                                   otrng_client_s *client) {
+  string_p to_send = NULL;
+  otrng_err err = send_message(&to_send, message, recipient, client);
   if (err != SUCCESS)
     return 1;
 
-  otrng_conversation_t *conv = NULL;
+  otrng_conversation_s *conv = NULL;
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
     return 1;
@@ -243,8 +243,8 @@ API int otrng_client_send_fragment(otrng_message_to_send_t **newmessage,
 /* tstatic int otrng_client_smp_start(char **tosend, const char *recipient, */
 /*                           const char *question, const size_t q_len, */
 /*                           const unsigned char *secret, size_t secretlen, */
-/*                           otrng_client_t *client) { */
-/*   otrng_conversation_t *conv = NULL; */
+/*                           otrng_client_s *client) { */
+/*   otrng_conversation_s *conv = NULL; */
 
 /*   conv = get_or_create_conversation_with(recipient, client); */
 /*   if (!conv) */
@@ -259,8 +259,8 @@ API int otrng_client_send_fragment(otrng_message_to_send_t **newmessage,
 
 /* tstatic int otrng_client_smp_respond(char **tosend, const char *recipient, */
 /*                             const unsigned char *secret, size_t secretlen, */
-/*                             otrng_client_t *client) { */
-/*   otrng_conversation_t *conv = NULL; */
+/*                             otrng_client_s *client) { */
+/*   otrng_conversation_s *conv = NULL; */
 
 /*   conv = get_or_create_conversation_with(recipient, client); */
 /*   if (!conv) */
@@ -273,20 +273,20 @@ API int otrng_client_send_fragment(otrng_message_to_send_t **newmessage,
 /* } */
 
 tstatic int unfragment(char **unfragmented, const char *received,
-                       fragment_context_t *ctx, int our_instance_tag) {
-  otrng_err_t err =
+                       fragment_context_s *ctx, int our_instance_tag) {
+  otrng_err err =
       otrng_unfragment_message(unfragmented, ctx, received, our_instance_tag);
   return err != SUCCESS || ctx->status == FRAGMENT_INCOMPLETE;
 }
 
 API int otrng_client_receive(char **newmessage, char **todisplay,
                              const char *message, const char *recipient,
-                             otrng_client_t *client) {
-  otrng_err_t error = ERROR;
+                             otrng_client_s *client) {
+  otrng_err error = ERROR;
   char *unfrag_msg = NULL;
   int should_ignore = 1;
-  otrng_response_t *response = NULL;
-  otrng_conversation_t *conv = NULL;
+  otrng_response_s *response = NULL;
+  otrng_conversation_s *conv = NULL;
 
   if (!newmessage)
     return error;
@@ -330,9 +330,9 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
 }
 
 API char *otrng_client_query_message(const char *recipient, const char *message,
-                                     otrng_client_t *client,
+                                     otrng_client_s *client,
                                      OtrlPolicy policy) {
-  otrng_conversation_t *conv = NULL;
+  otrng_conversation_s *conv = NULL;
   char *ret = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
@@ -350,17 +350,17 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
   return ret;
 }
 
-tstatic void destroy_client_conversation(const otrng_conversation_t *conv,
-                                         otrng_client_t *client) {
-  list_element_t *elem = otrng_list_get_by_value(conv, client->conversations);
+tstatic void destroy_client_conversation(const otrng_conversation_s *conv,
+                                         otrng_client_s *client) {
+  list_element_s *elem = otrng_list_get_by_value(conv, client->conversations);
   client->conversations =
       otrng_list_remove_element(elem, client->conversations);
   otrng_list_free_nodes(elem);
 }
 
 API int otrng_client_disconnect(char **newmsg, const char *recipient,
-                                otrng_client_t *client) {
-  otrng_conversation_t *conv = NULL;
+                                otrng_client_s *client) {
+  otrng_conversation_s *conv = NULL;
 
   conv = get_conversation_with(recipient, client->conversations);
   if (!conv)
@@ -381,8 +381,8 @@ API int otrng_client_disconnect(char **newmsg, const char *recipient,
 /* tstatic int otrng_encrypted_conversation_expire(char **newmsg, const char
  * *recipient, */
 /*                                        int expiration_time, */
-/*                                        otrng_client_t *client) { */
-/*   otrng_conversation_t *conv = NULL; */
+/*                                        otrng_client_s *client) { */
+/*   otrng_conversation_s *conv = NULL; */
 /*   time_t now; */
 
 /*   conv = get_conversation_with(recipient, client->conversations); */
@@ -401,8 +401,8 @@ API int otrng_client_disconnect(char **newmsg, const char *recipient,
 /*   return 0; */
 /* } */
 
-API int otrng_client_get_our_fingerprint(otrng_fingerprint_t fp,
-                                         const otrng_client_t *client) {
+API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
+                                         const otrng_client_s *client) {
   if (!client->state->keypair)
     return -1;
 
@@ -425,13 +425,13 @@ To read stored instance tags:
             add_app_info, add_app_info_data);
 */
 
-/* tstatic int v3_privkey_generate(otrng_client_t *client, FILE *privf) { */
+/* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf) { */
 /*   return otrl_privkey_generate_FILEp(client->state->userstate, privf, */
 /*                                      client->state->account_name, */
 /*                                      client->state->protocol_name); */
 /* } */
 
-/* tstatic int v3_instag_generate(otrng_client_t *client, FILE *privf) { */
+/* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf) { */
 /*   return otrl_instag_generate_FILEp(client->state->userstate, privf, */
 /*                                     client->state->account_name, */
 /*                                     client->state->protocol_name); */

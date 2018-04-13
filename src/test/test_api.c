@@ -28,7 +28,7 @@
 
 #define assert_msg_sent(err, to_send)                                          \
   do {                                                                         \
-    const otrng_err_t _err = (err);                                            \
+    const otrng_err _err = (err);                                            \
     const char *_to_send = (to_send);                                          \
     otrng_assert(_err == SUCCESS);                                             \
     otrng_assert(_to_send);                                                    \
@@ -37,9 +37,9 @@
 
 #define assert_msg_rec(err, message, response)                                 \
   do {                                                                         \
-    const otrng_err_t _err = (err);                                            \
+    const otrng_err _err = (err);                                            \
     const char *_message = (message);                                          \
-    const otrng_response_t *_response = (response);                            \
+    const otrng_response_s *_response = (response);                            \
     otrng_assert(_err == SUCCESS);                                             \
     otrng_assert_cmpmem(_message, _response->to_display,                       \
                         strlen(_message) + 1);                                 \
@@ -49,9 +49,9 @@
 #define assert_rec_msg_inc_state(result, respond_to, sender, otr_state,        \
                                  send_response)                                \
   do {                                                                         \
-    const otrng_err_t _result = (result);                                      \
-    const otrng_response_t *_respond_to = (respond_to);                        \
-    const otrng_t *_sender = (sender);                                         \
+    const otrng_err _result = (result);                                      \
+    const otrng_response_s *_respond_to = (respond_to);                        \
+    const otrng_s *_sender = (sender);                                         \
     const otrng_state _otr_state = (otr_state);                                \
     const bool _send_response = (send_response);                               \
     otrng_assert(_result == SUCCESS);                                          \
@@ -64,14 +64,14 @@
     }                                                                          \
   } while (0)
 
-static void free_message_and_response(otrng_response_t *response,
-                                      string_t *message) {
+static void free_message_and_response(otrng_response_s *response,
+                                      string_p *message) {
   otrng_response_free(response);
   free(*message);
   *message = NULL;
 }
 
-static void set_up_client_state(otrng_client_state_t *state,
+static void set_up_client_state(otrng_client_state_s *state,
                                 const char *account_name, const char *phi,
                                 int byte) {
   state->userstate = otrl_userstate_create();
@@ -89,23 +89,23 @@ static void set_up_client_state(otrng_client_state_t *state,
 }
 
 // TODO: a cliente state is not part of a otr creation
-static otrng_t *set_up_otr(otrng_client_state_t *state,
+static otrng_s *set_up_otr(otrng_client_state_s *state,
                            const char *account_name, const char *phi,
                            int byte) {
   set_up_client_state(state, account_name, phi, byte);
 
-  otrng_policy_t policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
 
   return otrng_new(state, policy);
 }
 
 void test_api_interactive_conversation(void) {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
 
   bob_state->pad = true;
   alice_state->pad = true;
@@ -114,15 +114,15 @@ void test_api_interactive_conversation(void) {
   do_dake_fixture(alice, bob);
 
   int message_id;
-  otrng_response_t *response_to_bob = NULL;
-  otrng_response_t *response_to_alice = NULL;
+  otrng_response_s *response_to_bob = NULL;
+  otrng_response_s *response_to_alice = NULL;
 
   // Alice sends a data message
-  string_t to_send = NULL;
-  otrng_err_t err;
+  string_p to_send = NULL;
+  otrng_err err;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    tlv_list_t *tlvs = NULL;
+    tlv_list_s *tlvs = NULL;
     err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
     assert_msg_sent(err, to_send);
     otrng_assert(tlvs);
@@ -135,7 +135,7 @@ void test_api_interactive_conversation(void) {
 
     // Bob receives a data message
     response_to_alice = otrng_response_new();
-    otrng_err_t err = otrng_receive_message(response_to_alice, to_send, bob);
+    otrng_err err = otrng_receive_message(response_to_alice, to_send, bob);
     assert_msg_rec(err, "hi", response_to_alice);
     otrng_assert(bob->keys->old_mac_keys);
 
@@ -151,7 +151,7 @@ void test_api_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    tlv_list_t *tlvs = NULL;
+    tlv_list_s *tlvs = NULL;
     err = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
     otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
@@ -164,7 +164,7 @@ void test_api_interactive_conversation(void) {
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
-    otrng_err_t err = otrng_receive_message(response_to_bob, to_send, alice);
+    otrng_err err = otrng_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
@@ -225,11 +225,11 @@ void test_api_interactive_conversation(void) {
 // apparently. Including this test for reference
 void test_api_interactive_conversation_bob(void) {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
 
   bob_state->pad = true;
   alice_state->pad = true;
@@ -238,13 +238,13 @@ void test_api_interactive_conversation_bob(void) {
   do_dake_fixture(alice, bob);
 
   int message_id;
-  otrng_response_t *response_to_bob = NULL;
-  otrng_response_t *response_to_alice = NULL;
+  otrng_response_s *response_to_bob = NULL;
+  otrng_response_s *response_to_alice = NULL;
 
   // Bob sends a data message
-  string_t to_send = NULL;
-  tlv_list_t *tlvs = NULL;
-  otrng_err_t err;
+  string_p to_send = NULL;
+  tlv_list_s *tlvs = NULL;
+  otrng_err err;
 
   for (message_id = 2; message_id < 5; message_id++) {
     err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
@@ -258,7 +258,7 @@ void test_api_interactive_conversation_bob(void) {
 
     // Alice receives a data message
     response_to_alice = otrng_response_new();
-    otrng_err_t err = otrng_receive_message(response_to_alice, to_send, alice);
+    otrng_err err = otrng_receive_message(response_to_alice, to_send, alice);
     assert_msg_rec(err, "hi", response_to_alice);
     otrng_assert(alice->keys->old_mac_keys);
 
@@ -282,16 +282,16 @@ void test_api_interactive_conversation_bob(void) {
 
 void test_api_non_interactive_conversation(void) {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
 
-  otrng_response_t *response_to_bob = otrng_response_new();
-  otrng_response_t *response_to_alice = otrng_response_new();
+  otrng_response_s *response_to_bob = otrng_response_new();
+  otrng_response_s *response_to_alice = otrng_response_new();
 
-  otrng_server_t *server = malloc(sizeof(otrng_server_t));
+  otrng_server_s *server = malloc(sizeof(otrng_server_s));
   server->prekey_message = NULL;
 
   // Alice uploads prekey message to server
@@ -361,7 +361,7 @@ void test_api_non_interactive_conversation(void) {
   otrng_assert_chain_key_eq(bob->keys->current->chain_b->key,
                             alice->keys->current->chain_b->key);
 
-  chain_key_t bob_sending_key, alice_receiving_key;
+  chain_key_p bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
   otrng_assert(key_manager_get_receiving_chain_key(alice_receiving_key, 0,
                                                    alice->keys) == SUCCESS);
@@ -370,8 +370,8 @@ void test_api_non_interactive_conversation(void) {
   int message_id;
 
   // Bob sends a data message
-  string_t to_send = NULL;
-  otrng_err_t err;
+  string_p to_send = NULL;
+  otrng_err err;
 
   // TODO: this is usually set up by the querry or whitespace,
   // this will be defined on the prekey server spec.
@@ -379,7 +379,7 @@ void test_api_non_interactive_conversation(void) {
   alice->running_version = OTRNG_VERSION_4;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    tlv_list_t *tlvs = NULL;
+    tlv_list_s *tlvs = NULL;
     err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
     otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
@@ -391,7 +391,7 @@ void test_api_non_interactive_conversation(void) {
 
     // Bob receives a data message
     response_to_alice = otrng_response_new();
-    otrng_err_t err = otrng_receive_message(response_to_alice, to_send, bob);
+    otrng_err err = otrng_receive_message(response_to_alice, to_send, bob);
     assert_msg_rec(err, "hi", response_to_alice);
     otrng_assert(bob->keys->old_mac_keys);
 
@@ -407,7 +407,7 @@ void test_api_non_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    tlv_list_t *tlvs = NULL;
+    tlv_list_s *tlvs = NULL;
     err = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
     otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
@@ -420,7 +420,7 @@ void test_api_non_interactive_conversation(void) {
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
-    otrng_err_t err = otrng_receive_message(response_to_bob, to_send, alice);
+    otrng_err err = otrng_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
@@ -461,16 +461,16 @@ void test_api_non_interactive_conversation(void) {
 
 void test_api_non_interactive_conversation_with_enc_msg(void) {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
 
-  otrng_response_t *response_to_bob = otrng_response_new();
-  otrng_response_t *response_to_alice = otrng_response_new();
+  otrng_response_s *response_to_bob = otrng_response_new();
+  otrng_response_s *response_to_alice = otrng_response_new();
 
-  otrng_server_t *server = malloc(sizeof(otrng_server_t));
+  otrng_server_s *server = malloc(sizeof(otrng_server_s));
   server->prekey_message = NULL;
 
   // Alice uploads prekey message to server
@@ -541,7 +541,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrng_assert_chain_key_eq(bob->keys->current->chain_b->key,
                             alice->keys->current->chain_b->key);
 
-  chain_key_t bob_sending_key, alice_receiving_key;
+  chain_key_p bob_sending_key, alice_receiving_key;
   key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
   otrng_assert(key_manager_get_receiving_chain_key(alice_receiving_key, 0,
                                                    alice->keys) == SUCCESS);
@@ -550,8 +550,8 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   int message_id;
 
   // Bob sends a data message
-  string_t to_send = NULL;
-  otrng_err_t err;
+  string_p to_send = NULL;
+  otrng_err err;
 
   // TODO: this is usually set up by the querry or whitespace,
   // this will be defined on the prekey server spec.
@@ -559,7 +559,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   alice->running_version = OTRNG_VERSION_4;
 
   for (message_id = 2; message_id < 5; message_id++) {
-    tlv_list_t *tlvs = NULL;
+    tlv_list_s *tlvs = NULL;
     err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
     otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
@@ -571,7 +571,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
     // Bob receives a data message
     response_to_alice = otrng_response_new();
-    otrng_err_t err = otrng_receive_message(response_to_alice, to_send, bob);
+    otrng_err err = otrng_receive_message(response_to_alice, to_send, bob);
     assert_msg_rec(err, "hi", response_to_alice);
     otrng_assert(bob->keys->old_mac_keys);
 
@@ -587,7 +587,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    tlv_list_t *tlvs = NULL;
+    tlv_list_s *tlvs = NULL;
     err = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
     otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
@@ -600,7 +600,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
-    otrng_err_t err = otrng_receive_message(response_to_bob, to_send, alice);
+    otrng_err err = otrng_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
@@ -619,11 +619,11 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
 void test_api_conversation_errors(void) {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
 
   bob_state->pad = true;
   alice_state->pad = true;
@@ -632,13 +632,13 @@ void test_api_conversation_errors(void) {
   do_dake_fixture(alice, bob);
 
   int message_id = 2;
-  otrng_response_t *response_to_alice = NULL;
-  otrng_response_t *response_to_bob = NULL;
+  otrng_response_s *response_to_alice = NULL;
+  otrng_response_s *response_to_bob = NULL;
 
   // Alice sends a data message
-  string_t to_send = NULL;
-  tlv_list_t *tlvs = NULL;
-  otrng_err_t err;
+  string_p to_send = NULL;
+  tlv_list_s *tlvs = NULL;
+  otrng_err err;
 
   err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
   assert_msg_sent(err, to_send);
@@ -656,7 +656,7 @@ void test_api_conversation_errors(void) {
   response_to_alice = otrng_response_new();
   err = otrng_receive_message(response_to_alice, to_send, bob);
 
-  string_t err_code = "?OTR Error: ERROR_2: OTRNG_ERR_MSG_NOT_PRIVATE_STATE";
+  string_p err_code = "?OTR Error: ERROR_2: OTRNG_ERR_MSG_NOT_PRIVATE_STATE";
   otrng_assert_cmpmem(err_code, response_to_alice->to_send, strlen(err_code));
 
   otrng_assert(err == ERROR);
@@ -703,12 +703,12 @@ void test_api_conversation_errors(void) {
   otrng_free_all(alice, bob);
 }
 
-static void do_ake_v3(otrng_t *alice, otrng_t *bob) {
-  otrng_response_t *response_to_bob = otrng_response_new();
-  otrng_response_t *response_to_alice = otrng_response_new();
+static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
+  otrng_response_s *response_to_bob = otrng_response_new();
+  otrng_response_s *response_to_alice = otrng_response_new();
 
   // Alice sends query message
-  string_t query_message = NULL;
+  string_p query_message = NULL;
   otrng_assert(otrng_build_query_message(&query_message, "", alice) == SUCCESS);
   otrng_assert_cmpmem("?OTRv3", query_message, 6);
 
@@ -778,17 +778,17 @@ static void do_ake_v3(otrng_t *alice, otrng_t *bob) {
 }
 
 void test_api_conversation_v3(void) {
-  tlv_list_t *tlvs = NULL;
+  tlv_list_s *tlvs = NULL;
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
   set_up_client_state(alice_state, ALICE_IDENTITY, PHI, 1);
 
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
   set_up_client_state(bob_state, BOB_IDENTITY, PHI, 2);
 
-  otrng_policy_t policy = {.allows = OTRNG_ALLOW_V3};
-  otrng_t *alice = otrng_new(alice_state, policy);
-  otrng_t *bob = otrng_new(bob_state, policy);
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3};
+  otrng_s *alice = otrng_new(alice_state, policy);
+  otrng_s *bob = otrng_new(bob_state, policy);
 
   // Set up v3 context
   alice->v3_conn = otrng_v3_conn_new(alice_state, "bob");
@@ -815,9 +815,9 @@ void test_api_conversation_v3(void) {
   // AKE HAS FINISHED.
   do_ake_v3(alice, bob);
 
-  otrng_response_t *response_to_bob = NULL;
-  otrng_response_t *response_to_alice = NULL;
-  string_t to_send = NULL;
+  otrng_response_s *response_to_bob = NULL;
+  otrng_response_s *response_to_alice = NULL;
+  string_p to_send = NULL;
 
   // Alice sends a data message
   otrng_assert(otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice) ==
@@ -861,23 +861,23 @@ void test_api_conversation_v3(void) {
 void test_api_multiple_clients(void) {
 
   bool send_response = true;
-  otrng_err_t err;
+  otrng_err err;
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_phone_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_pc_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_phone_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_pc_state = otrng_client_state_new(NULL);
 
   // The account name should be the same. The account can be logged
   // on different clients. Instance tags are used for that. This
   // account name can be used as phi.
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob_phone = set_up_otr(bob_phone_state, BOB_IDENTITY, PHI, 2);
-  otrng_t *bob_pc = set_up_otr(bob_pc_state, BOB_IDENTITY, PHI, 3);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob_phone = set_up_otr(bob_phone_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *bob_pc = set_up_otr(bob_pc_state, BOB_IDENTITY, PHI, 3);
 
-  otrng_response_t *pc_to_alice = otrng_response_new();
-  otrng_response_t *phone_to_alice = otrng_response_new();
-  otrng_response_t *alice_to_pc = otrng_response_new();
-  otrng_response_t *alice_to_phone = otrng_response_new();
+  otrng_response_s *pc_to_alice = otrng_response_new();
+  otrng_response_s *phone_to_alice = otrng_response_new();
+  otrng_response_s *alice_to_pc = otrng_response_new();
+  otrng_response_s *alice_to_phone = otrng_response_new();
 
   // PC receives query msg and sends identity msg
   err = otrng_receive_message(pc_to_alice, "?OTRv4?", bob_pc);
@@ -984,11 +984,11 @@ void test_api_multiple_clients(void) {
 
 void test_api_smp(void) {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
@@ -997,9 +997,9 @@ void test_api_smp(void) {
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
 
-  otrng_response_t *response_to_bob = NULL;
-  otrng_response_t *response_to_alice = NULL;
-  string_t to_send = NULL;
+  otrng_response_s *response_to_bob = NULL;
+  otrng_response_s *response_to_alice = NULL;
+  string_p to_send = NULL;
   const char *secret = "secret";
 
   // Alice sends SMP1
@@ -1067,11 +1067,11 @@ void test_api_smp(void) {
 
 void test_api_smp_abort(void) {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
@@ -1080,9 +1080,9 @@ void test_api_smp_abort(void) {
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
 
-  otrng_response_t *response_to_bob = NULL;
-  otrng_response_t *response_to_alice = NULL;
-  string_t to_send = NULL;
+  otrng_response_s *response_to_bob = NULL;
+  otrng_response_s *response_to_alice = NULL;
+  string_p to_send = NULL;
   const char *secret = "secret";
 
   // Alice sends SMP1
@@ -1126,24 +1126,24 @@ void test_api_smp_abort(void) {
 
 void test_api_extra_sym_key(void) {
 
-  tlv_list_t *tlvs = NULL;
+  tlv_list_s *tlvs = NULL;
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
 
-  otrng_response_t *response_to_bob = NULL;
-  otrng_response_t *response_to_alice = NULL;
+  otrng_response_s *response_to_bob = NULL;
+  otrng_response_s *response_to_alice = NULL;
 
   // Alice sends a data message
-  string_t to_send = NULL;
+  string_p to_send = NULL;
 
-  otrng_err_t err;
+  otrng_err err;
 
   err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
   assert_msg_sent(err, to_send);
@@ -1203,23 +1203,23 @@ void test_api_extra_sym_key(void) {
 }
 
 void test_dh_key_rotation(void) {
-  tlv_list_t *tlvs = NULL;
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  tlv_list_s *tlvs = NULL;
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
 
   int ratchet_id;
-  otrng_response_t *response_to_bob = NULL;
-  otrng_response_t *response_to_alice = NULL;
+  otrng_response_s *response_to_bob = NULL;
+  otrng_response_s *response_to_alice = NULL;
 
   // Bob sends a data message
-  string_t to_send = NULL;
-  otrng_err_t err;
+  string_p to_send = NULL;
+  otrng_err err;
 
   for (ratchet_id = 1; ratchet_id < 6; ratchet_id += 2) {
     // Bob sends a data message
@@ -1232,7 +1232,7 @@ void test_dh_key_rotation(void) {
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
-    otrng_err_t err = otrng_receive_message(response_to_bob, to_send, alice);
+    otrng_err err = otrng_receive_message(response_to_bob, to_send, alice);
     assert_msg_rec(err, "hello", response_to_bob);
 
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
@@ -1290,19 +1290,19 @@ void test_dh_key_rotation(void) {
 
 void test_ecdh_priv_keys_destroyed_early() {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 2);
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
 
-  otrng_response_t *response_to_bob = NULL;
-  otrng_response_t *response_to_alice = NULL;
-  string_t to_send = NULL;
-  otrng_err_t err;
+  otrng_response_s *response_to_bob = NULL;
+  otrng_response_s *response_to_alice = NULL;
+  string_p to_send = NULL;
+  otrng_err err;
 
   // Alice sends a data message
   err = otrng_prepare_to_send_message(&to_send, "hi", NULL, 0, alice);
@@ -1383,17 +1383,17 @@ void test_ecdh_priv_keys_destroyed_early() {
 
 void test_unreadable_flag() {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 3);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 3);
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
 
-  string_t to_send = NULL;
-  otrng_err_t err;
+  string_p to_send = NULL;
+  otrng_err err;
 
   // Alice sends a data message with text
   err = otrng_prepare_to_send_message(&to_send, "hello", NULL, 0, alice);
@@ -1420,7 +1420,7 @@ void test_unreadable_flag() {
   decoded = NULL;
 
   // Bob receives a heartbeat message
-  otrng_response_t *response_to_alice = otrng_response_new();
+  otrng_response_s *response_to_alice = otrng_response_new();
   err = otrng_receive_message(response_to_alice, to_send, bob);
 
   otrng_assert(err == SUCCESS);
@@ -1431,7 +1431,7 @@ void test_unreadable_flag() {
 
   alice_state->pad = true;
 
-  tlv_list_t *tlvs = NULL;
+  tlv_list_s *tlvs = NULL;
 
   // Alice sends a heartbeat message with padding
   err = otrng_prepare_to_send_message(&to_send, "", &tlvs, 0, alice);
@@ -1476,11 +1476,11 @@ void test_unreadable_flag() {
 
 void test_heartbeat_messages() {
 
-  otrng_client_state_t *alice_state = otrng_client_state_new(NULL);
-  otrng_client_state_t *bob_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
-  otrng_t *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
-  otrng_t *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 3);
+  otrng_s *alice = set_up_otr(alice_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up_otr(bob_state, BOB_IDENTITY, PHI, 3);
 
   // set heartbeat wait time
   alice_state->heartbeat->time = 300;
@@ -1489,8 +1489,8 @@ void test_heartbeat_messages() {
   // DAKE has finished
   do_dake_fixture(alice, bob);
 
-  string_t to_send = NULL;
-  otrng_err_t err;
+  string_p to_send = NULL;
+  otrng_err err;
   time_t hundred_seconds_ago = time(0) - 100;
 
   // set last_msg_sent time in the past
@@ -1503,7 +1503,7 @@ void test_heartbeat_messages() {
   otrng_assert(alice_state->heartbeat->last_msg_sent == time(0));
 
   // Bob receives the msg
-  otrng_response_t *response_to_alice = otrng_response_new();
+  otrng_response_s *response_to_alice = otrng_response_new();
   err = otrng_receive_message(response_to_alice, to_send, bob);
 
   assert_msg_rec(err, "hello", response_to_alice);
@@ -1526,7 +1526,7 @@ void test_heartbeat_messages() {
   otrng_assert(bob_state->heartbeat->last_msg_sent == time(0));
 
   // Alice receives the heartbeat
-  otrng_response_t *response_to_bob = otrng_response_new();
+  otrng_response_s *response_to_bob = otrng_response_new();
   err = otrng_receive_message(response_to_bob, to_send, bob);
 
   otrng_assert(err == SUCCESS);

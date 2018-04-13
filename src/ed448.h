@@ -29,10 +29,10 @@
 #include "shared.h"
 
 /* ec_scalar_t represents a scalar. */
-typedef goldilocks_448_scalar_p ec_scalar_t;
-/* ec_point_t represents a ed488 point. It is in the twisted ed448-goldilocks,
+typedef goldilocks_448_scalar_p ec_scalar_p;
+/* ec_point_p represents a ed488 point. It is in the twisted ed448-goldilocks,
    curve representation following the decaf technique. */
-typedef goldilocks_448_point_p ec_point_t;
+typedef goldilocks_448_point_p ec_point_p;
 
 /** Number of bytes in an EdDSA private key: 57 */
 #define ED448_PRIVATE_BYTES GOLDILOCKS_EDDSA_448_PRIVATE_BYTES
@@ -46,19 +46,19 @@ typedef goldilocks_448_point_p ec_point_t;
 /** Number of bytes in an non-secret scalar: 56 */
 #define ED448_SCALAR_BYTES GOLDILOCKS_448_SCALAR_BYTES
 
-typedef uint8_t goldilocks_448_public_key_t[ED448_POINT_BYTES];
-typedef uint8_t eddsa_signature_t[ED448_SIGNATURE_BYTES];
+typedef uint8_t goldilocks_448_public_key_p[ED448_POINT_BYTES];
+typedef uint8_t eddsa_signature_p[ED448_SIGNATURE_BYTES];
 
 /**
- * @brief The ecdh_keypair_t structure represents an ECDH keypair.
+ * @brief The ecdh_keypair_s structure represents an ECDH keypair.
  *
  *  [priv] the private key
  *  [pub]  the public key
  */
-typedef struct {
-  ec_scalar_t priv;
-  ec_point_t pub;
-} ecdh_keypair_t;
+typedef struct ecdh_keypair_s {
+  ec_scalar_p priv;
+  ec_point_p pub;
+} ecdh_keypair_s, ecdh_keypair_p[1];
 
 /**
  * @brief Overwrite data with zeros.  Uses memset_s if available.
@@ -75,7 +75,7 @@ INTERNAL void otrng_ec_bzero(void *data, size_t size);
  * @param [a]   A scalar.
  * @param [out] Will become a copy of a.
  */
-INTERNAL void otrng_ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t a);
+INTERNAL void otrng_ec_scalar_copy(ec_scalar_p dst, const ec_scalar_p a);
 
 /**
  * @brief Compare two scalars.
@@ -86,15 +86,15 @@ INTERNAL void otrng_ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t a);
  * @retval otrng_true The scalars are equal.
  * @retval otrng_false The scalars are not equal.
  */
-INTERNAL otrng_bool_t otrng_ec_scalar_eq(const ec_scalar_t a,
-                                         const ec_scalar_t b);
+INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar_p a,
+                                         const ec_scalar_p b);
 /**
  * @brief Encode a scalar to wire format.
  *
  * @param [enc] Encoded form of a scalar.
  * @param [s] Deserialized scalar.
  */
-INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar_t s);
+INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar_p s);
 
 /**
  * @brief Read a scalar from wire format or from bytes.  Reduces mod
@@ -103,11 +103,11 @@ INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar_t s);
  * @param [enc] Encoded form of a scalar.
  * @param [s] Deserialized form.
  */
-INTERNAL void otrng_ec_scalar_decode(ec_scalar_t s,
+INTERNAL void otrng_ec_scalar_decode(ec_scalar_p s,
                                      const uint8_t enc[ED448_SCALAR_BYTES]);
 
 /** Securely erase a scalar. */
-INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t s);
+INTERNAL void otrng_ec_scalar_destroy(ec_scalar_p s);
 
 /**
  * @brief Copy a point.  The input and output may alias,
@@ -116,7 +116,7 @@ INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t s);
  * @param [dst] A copy of the point.
  * @param [p] Any point.
  */
-INTERNAL void otrng_ec_point_copy(ec_point_t dst, const ec_point_t p);
+INTERNAL void otrng_ec_point_copy(ec_point_p dst, const ec_point_p p);
 
 /**
  * @brief Check whether two points are equal.  If yes, return
@@ -128,7 +128,7 @@ INTERNAL void otrng_ec_point_copy(ec_point_t dst, const ec_point_t p);
  * @retval otrng_true The points are equal.
  * @retval otrng_false The points are not equal.
  */
-INTERNAL otrng_bool_t otrng_ec_point_eq(const ec_point_t p, const ec_point_t q);
+INTERNAL otrng_bool otrng_ec_point_eq(const ec_point_p p, const ec_point_p q);
 
 /**
  * @brief Check that a point is valid.
@@ -138,7 +138,7 @@ INTERNAL otrng_bool_t otrng_ec_point_eq(const ec_point_t p, const ec_point_t q);
  * @retval otrng_true The point is valid.
  * @retval otrng_false The point is invalid.
  */
-INTERNAL otrng_bool_t otrng_ec_point_valid(const ec_point_t p);
+INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p);
 
 /**
  * @brief EdDSA point encoding.
@@ -153,7 +153,7 @@ INTERNAL otrng_bool_t otrng_ec_point_valid(const ec_point_t p);
  * @param [enc] The encoded point.
  * @param [p]   The point.
  */
-INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_t p);
+INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_p p);
 
 /**
  * @brief EdDSA point decoding.
@@ -161,13 +161,13 @@ INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_t p);
  * @param [enc] The encoded point.
  * @param [p]   The point.
  */
-INTERNAL otrng_err_t
-otrng_ec_point_decode(ec_point_t p, const uint8_t enc[ED448_POINT_BYTES]);
+INTERNAL otrng_err
+otrng_ec_point_decode(ec_point_p p, const uint8_t enc[ED448_POINT_BYTES]);
 
 /** Securely erase a point by overwriting it with zeros.
  * @warning This causes the point object to become invalid.
  */
-INTERNAL void otrng_ec_point_destroy(ec_point_t p);
+INTERNAL void otrng_ec_point_destroy(ec_point_p p);
 
 /**
  * @brief EdDSA key secret key generation.
@@ -176,7 +176,7 @@ INTERNAL void otrng_ec_point_destroy(ec_point_t p);
  * @param [sym]  The symmetric key.
  */
 INTERNAL void
-otrng_ec_scalar_derive_from_secret(ec_scalar_t priv,
+otrng_ec_scalar_derive_from_secret(ec_scalar_p priv,
                                    const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 /**
@@ -198,7 +198,7 @@ otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
  * @warning The symmetric key is stored as the priv part
  */
 INTERNAL void
-otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
+otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
                             const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 /**
@@ -207,7 +207,7 @@ otrng_ecdh_keypair_generate(ecdh_keypair_t *keypair,
  * @param [keypair] The keypair.
  *
  */
-INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_t *keypair);
+INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair);
 
 /**
  * @brief Check that a shared secret is not a all-zero buff.
@@ -215,7 +215,7 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_t *keypair);
  * @param [shared_secret] The shared_secret.
  *
  */
-INTERNAL otrng_bool_t otrng_ecdh_valid_secret(uint8_t *shared_secret);
+INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret);
 
 /**
  * @brief ECDH shared secret generation.
@@ -227,8 +227,8 @@ INTERNAL otrng_bool_t otrng_ecdh_valid_secret(uint8_t *shared_secret);
  * @warning The symmetric key is stored as the priv part
  */
 INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
-                                       const ecdh_keypair_t *our_keypair,
-                                       const ec_point_t their_pub);
+                                       const ecdh_keypair_s *our_keypair,
+                                       const ec_point_p their_pub);
 
 /**
  * @brief EdDSA signing.
@@ -241,7 +241,7 @@ INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
  *
  * @warning It is not prehashed. The context is always an empty string
  */
-INTERNAL void otrng_ec_sign(eddsa_signature_t sig,
+INTERNAL void otrng_ec_sign(eddsa_signature_p sig,
                             uint8_t sym[ED448_PRIVATE_BYTES],
                             uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg,
                             size_t msg_len);
@@ -256,7 +256,7 @@ INTERNAL void otrng_ec_sign(eddsa_signature_t sig,
  *
  * @warning It is not prehashed. The context is always an empty string
  */
-INTERNAL otrng_bool_t otrng_ec_verify(
+INTERNAL otrng_bool otrng_ec_verify(
     const uint8_t sig[GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES],
     const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg, size_t msg_len);
 

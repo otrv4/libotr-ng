@@ -26,7 +26,7 @@
 #include "deserialize.h"
 #include "mpi.h"
 
-INTERNAL otrng_err_t otrng_deserialize_uint64(uint64_t *n,
+INTERNAL otrng_err otrng_deserialize_uint64(uint64_t *n,
                                               const uint8_t *buffer,
                                               size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint64_t)) {
@@ -44,7 +44,7 @@ INTERNAL otrng_err_t otrng_deserialize_uint64(uint64_t *n,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_deserialize_uint32(uint32_t *n,
+INTERNAL otrng_err otrng_deserialize_uint32(uint32_t *n,
                                               const uint8_t *buffer,
                                               size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint32_t)) {
@@ -59,7 +59,7 @@ INTERNAL otrng_err_t otrng_deserialize_uint32(uint32_t *n,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_deserialize_uint16(uint16_t *n,
+INTERNAL otrng_err otrng_deserialize_uint16(uint16_t *n,
                                               const uint8_t *buffer,
                                               size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint16_t)) {
@@ -74,7 +74,7 @@ INTERNAL otrng_err_t otrng_deserialize_uint16(uint16_t *n,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
+INTERNAL otrng_err otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
                                              size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint8_t)) {
     return ERROR;
@@ -88,7 +88,7 @@ INTERNAL otrng_err_t otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_deserialize_data(uint8_t **dst,
+INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst,
                                             const uint8_t *buffer,
                                             size_t buflen, size_t *read) {
   size_t r = 0;
@@ -125,7 +125,7 @@ INTERNAL otrng_err_t otrng_deserialize_data(uint8_t **dst,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
+INTERNAL otrng_err otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
                                                    const uint8_t *buffer,
                                                    size_t buflen) {
   if (buflen < dstlen) {
@@ -136,9 +136,9 @@ INTERNAL otrng_err_t otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
   return SUCCESS;
 }
 
-/* otrng_err_t deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer, */
+/* otrng_err deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer, */
 /*                                  size_t buflen, size_t *read) { */
-/*   otrng_mpi_t mpi; // no need to free, because nothing is copied now */
+/*   otrng_mpi_p mpi; // no need to free, because nothing is copied now */
 
 /*   if (otrng_mpi_deserialize_no_copy(mpi, buffer, buflen, read)) { */
 /*     return ERROR; /\* only mpi len has been read *\/ */
@@ -151,13 +151,13 @@ INTERNAL otrng_err_t otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
 /*   return SUCCESS; */
 /* } */
 
-INTERNAL otrng_err_t otrng_deserialize_ec_point(ec_point_t point,
+INTERNAL otrng_err otrng_deserialize_ec_point(ec_point_p point,
                                                 const uint8_t *serialized) {
   return otrng_ec_point_decode(point, serialized);
 }
 
-INTERNAL otrng_err_t otrng_deserialize_otrng_public_key(
-    otrng_public_key_t pub, const uint8_t *serialized, size_t ser_len,
+INTERNAL otrng_err otrng_deserialize_otrng_public_key(
+    otrng_public_key_p pub, const uint8_t *serialized, size_t ser_len,
     size_t *read) {
   const uint8_t *cursor = serialized;
   size_t r = 0;
@@ -182,8 +182,8 @@ INTERNAL otrng_err_t otrng_deserialize_otrng_public_key(
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_deserialize_otrng_shared_prekey(
-    otrng_shared_prekey_pub_t shared_prekey, const uint8_t *serialized,
+INTERNAL otrng_err otrng_deserialize_otrng_shared_prekey(
+    otrng_shared_prekey_pub_p shared_prekey, const uint8_t *serialized,
     size_t ser_len, size_t *read) {
   const uint8_t *cursor = serialized;
   size_t r = 0;
@@ -208,7 +208,7 @@ INTERNAL otrng_err_t otrng_deserialize_otrng_shared_prekey(
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_deserialize_ec_scalar(ec_scalar_t scalar,
+INTERNAL otrng_err otrng_deserialize_ec_scalar(ec_scalar_p scalar,
                                                  const uint8_t *serialized,
                                                  size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES)
@@ -219,7 +219,7 @@ INTERNAL otrng_err_t otrng_deserialize_ec_scalar(ec_scalar_t scalar,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_deserialize_ring_sig(ring_sig_t *proof,
+INTERNAL otrng_err otrng_deserialize_ring_sig(ring_sig_s *proof,
                                                 const uint8_t *serialized,
                                                 size_t ser_len, size_t *read) {
   if (ser_len < RING_SIG_BYTES)
@@ -265,10 +265,10 @@ INTERNAL otrng_err_t otrng_deserialize_ring_sig(ring_sig_t *proof,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_symmetric_key_deserialize(otrng_keypair_t *pair,
+INTERNAL otrng_err otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
                                                      const char *buff,
                                                      size_t len) {
-  otrng_err_t err = ERROR;
+  otrng_err err = ERROR;
 
   /* (((base64len+3) / 4) * 3) */
   unsigned char *dec = malloc(((len + 3) / 4) * 3);

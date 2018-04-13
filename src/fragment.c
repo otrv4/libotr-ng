@@ -28,8 +28,8 @@
 
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
 
-API otrng_message_to_send_t *otrng_message_new() {
-  otrng_message_to_send_t *msg = malloc(sizeof(otrng_message_to_send_t));
+API otrng_message_to_send_s *otrng_message_new() {
+  otrng_message_to_send_s *msg = malloc(sizeof(otrng_message_to_send_s));
   if (!msg)
     return NULL;
 
@@ -39,7 +39,7 @@ API otrng_message_to_send_t *otrng_message_new() {
   return msg;
 }
 
-API void otrng_message_free(otrng_message_to_send_t *message) {
+API void otrng_message_free(otrng_message_to_send_s *message) {
   if (!message)
     return;
 
@@ -56,8 +56,8 @@ API void otrng_message_free(otrng_message_to_send_t *message) {
   message = NULL;
 }
 
-INTERNAL fragment_context_t *otrng_fragment_context_new(void) {
-  fragment_context_t *context = malloc(sizeof(fragment_context_t));
+INTERNAL fragment_context_s *otrng_fragment_context_new(void) {
+  fragment_context_s *context = malloc(sizeof(fragment_context_s));
   context->N = 0;
   context->K = 0;
   context->fragment = otrng_strdup("");
@@ -67,7 +67,7 @@ INTERNAL fragment_context_t *otrng_fragment_context_new(void) {
   return context;
 }
 
-INTERNAL void otrng_fragment_context_free(fragment_context_t *context) {
+INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   context->N = 0;
   context->K = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
@@ -77,21 +77,21 @@ INTERNAL void otrng_fragment_context_free(fragment_context_t *context) {
   context = NULL;
 }
 
-INTERNAL otrng_err_t otrng_fragment_message(int max_size,
-                                            otrng_message_to_send_t *fragments,
+INTERNAL otrng_err otrng_fragment_message(int max_size,
+                                            otrng_message_to_send_s *fragments,
                                             int our_instance,
                                             int their_instance,
-                                            const string_t message) {
+                                            const string_p message) {
   size_t msg_len = strlen(message);
   size_t limit_piece = max_size - FRAGMENT_HEADER_LEN;
-  string_t *pieces;
+  string_p *pieces;
   int piece_len = 0;
 
   fragments->total = ((msg_len - 1) / (max_size - FRAGMENT_HEADER_LEN)) + 1;
   if (fragments->total > 65535)
     return ERROR;
 
-  size_t pieces_len = fragments->total * sizeof(string_t);
+  size_t pieces_len = fragments->total * sizeof(string_p);
   pieces = malloc(pieces_len);
   if (!pieces)
     return ERROR;
@@ -99,8 +99,8 @@ INTERNAL otrng_err_t otrng_fragment_message(int max_size,
   int current_frag;
   for (current_frag = 1; current_frag <= fragments->total; current_frag++) {
     int index_len = 0;
-    string_t piece = NULL;
-    string_t piece_data = NULL;
+    string_p piece = NULL;
+    string_p piece_data = NULL;
 
     if (msg_len - index_len < limit_piece)
       piece_len = msg_len - index_len;
@@ -155,7 +155,7 @@ INTERNAL otrng_err_t otrng_fragment_message(int max_size,
   return SUCCESS;
 }
 
-tstatic void initialize_fragment_context(fragment_context_t *context) {
+tstatic void initialize_fragment_context(fragment_context_s *context) {
   free(context->fragment);
   context->fragment = NULL;
   context->fragment = otrng_strdup("");
@@ -166,8 +166,8 @@ tstatic void initialize_fragment_context(fragment_context_t *context) {
   context->status = FRAGMENT_UNFRAGMENTED;
 }
 
-tstatic otrng_err_t add_first_fragment(const char *msg, int msg_len,
-                                       fragment_context_t *ctx) {
+tstatic otrng_err add_first_fragment(const char *msg, int msg_len,
+                                       fragment_context_s *ctx) {
   char *buff = malloc(msg_len + 1);
   if (!buff)
     return ERROR;
@@ -181,8 +181,8 @@ tstatic otrng_err_t add_first_fragment(const char *msg, int msg_len,
   return SUCCESS;
 }
 
-tstatic otrng_err_t append_fragment(const char *msg, int msg_len,
-                                    fragment_context_t *ctx) {
+tstatic otrng_err append_fragment(const char *msg, int msg_len,
+                                    fragment_context_s *ctx) {
   size_t new_buff_len = ctx->fragment_len + msg_len + 1;
   char *buff = realloc(ctx->fragment, new_buff_len);
   if (!buff)
@@ -196,16 +196,16 @@ tstatic otrng_err_t append_fragment(const char *msg, int msg_len,
   return SUCCESS;
 }
 
-tstatic otrng_bool_t is_fragment(const string_t message) {
+tstatic otrng_bool is_fragment(const string_p message) {
   if (strstr(message, "?OTR|") != NULL)
     return otrng_true;
 
   return otrng_false;
 }
 
-INTERNAL otrng_err_t otrng_unfragment_message(char **unfrag_msg,
-                                              fragment_context_t *context,
-                                              const string_t message,
+INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
+                                              fragment_context_s *context,
+                                              const string_p message,
                                               const int our_instance_tag) {
   if (is_fragment(message)) {
     *unfrag_msg = otrng_strdup(message);
@@ -235,7 +235,7 @@ INTERNAL otrng_err_t otrng_unfragment_message(char **unfrag_msg,
   if (end <= start)
     return ERROR;
 
-  otrng_err_t err;
+  otrng_err err;
   if (k == 1) {
     err = add_first_fragment(message + start, msg_len, context);
     if (err != SUCCESS)

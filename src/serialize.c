@@ -73,28 +73,28 @@ INTERNAL size_t otrng_serialize_data(uint8_t *dst, const uint8_t *data,
   return cursor - dst;
 }
 
-INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_t mpi) {
+INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_p mpi) {
   return otrng_serialize_data(dst, mpi->data, mpi->len);
 }
 
-INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_t point) {
+INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_p point) {
   otrng_ec_point_encode(dst, point);
   return ED448_POINT_BYTES;
 }
 
 INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
-                                          const ec_scalar_t scalar) {
+                                          const ec_scalar_p scalar) {
   otrng_ec_scalar_encode(dst, scalar);
   return ED448_SCALAR_BYTES;
 }
 
-INTERNAL otrng_err_t otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
-                                                   const dh_public_key_t pub) {
+INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
+                                                   const dh_public_key_p pub) {
   /* From gcrypt MPI */
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   memset(buf, 0, DH3072_MOD_LEN_BYTES);
   size_t written = 0;
-  otrng_err_t err =
+  otrng_err err =
       otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &written, pub);
   if (err)
     return err;
@@ -102,7 +102,7 @@ INTERNAL otrng_err_t otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
   // To OTR MPI
   // TODO: Maybe gcrypt MPI already has some API for this.
   // gcry_mpi_print with a different format, maybe?
-  otrng_mpi_t mpi;
+  otrng_mpi_p mpi;
   otrng_mpi_set(mpi, buf, written);
   *len = otrng_serialize_mpi(dst, mpi);
   otrng_mpi_free(mpi);
@@ -111,7 +111,7 @@ INTERNAL otrng_err_t otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
 }
 
 INTERNAL size_t otrng_serialize_otrng_public_key(uint8_t *dst,
-                                                 const otrng_public_key_t pub) {
+                                                 const otrng_public_key_p pub) {
   uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, ED448_PUBKEY_TYPE);
   cursor += otrng_serialize_ec_point(cursor, pub);
@@ -120,7 +120,7 @@ INTERNAL size_t otrng_serialize_otrng_public_key(uint8_t *dst,
 }
 
 INTERNAL size_t otrng_serialize_otrng_shared_prekey(
-    uint8_t *dst, const otrng_shared_prekey_pub_t shared_prekey) {
+    uint8_t *dst, const otrng_shared_prekey_pub_p shared_prekey) {
   uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, ED448_SHARED_PREKEY_TYPE);
   cursor += otrng_serialize_ec_point(cursor, shared_prekey);
@@ -129,7 +129,7 @@ INTERNAL size_t otrng_serialize_otrng_shared_prekey(
 }
 
 INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst,
-                                         const ring_sig_t *proof) {
+                                         const ring_sig_s *proof) {
   uint8_t *cursor = dst;
   cursor += otrng_serialize_ec_scalar(cursor, proof->c1);
   cursor += otrng_serialize_ec_scalar(cursor, proof->r1);

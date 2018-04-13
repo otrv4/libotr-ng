@@ -39,7 +39,7 @@ typedef enum {
 } tlv_type_t;
 
 /**
- * @brief The tlv_t structure represents one TLV from a data message.
+ * @brief The tlv_s structure represents one TLV from a data message.
  *
  *  [type] this will always be one of the valid types from tlv_type_t
  *  [len]  the length of the associated data
@@ -50,18 +50,18 @@ typedef struct tlv_s {
   tlv_type_t type;
   uint16_t len;
   uint8_t *data;
-} tlv_t;
+} tlv_s;
 
 /**
- * @brief The tlv_list_t structure represents one link in a linked list of TLVs.
+ * @brief The tlv_list_s structure represents one link in a linked list of TLVs.
  *
  *  [data] the TLV this list node points to. should never be NULL.
  *  [next] the next node of the list. can be NULL.
  **/
 typedef struct tlv_list_s {
-  tlv_t *data;
+  tlv_s *data;
   struct tlv_list_s *next;
-} tlv_list_t;
+} tlv_list_s;
 
 /**
  * @brief Frees the given list of TLVs
@@ -75,7 +75,7 @@ typedef struct tlv_list_s {
  * @warning It is NOT safe to call this on a node that is not first in the list,
  *    unless you explicitly NULL out the [next] pointer of the previous entry.
  **/
-INTERNAL void otrng_tlv_list_free(tlv_list_t *tlvs);
+INTERNAL void otrng_tlv_list_free(tlv_list_s *tlvs);
 
 /**
  * @brief Returns a new list with one entry, the given [tlv] argument
@@ -87,7 +87,7 @@ INTERNAL void otrng_tlv_list_free(tlv_list_t *tlvs);
  *    responsibility to free it after use.
  *    returns NULL if something goes wrong, or if [tlv] is NULL.
  **/
-INTERNAL tlv_list_t *otrng_tlv_list_one(tlv_t *tlv);
+INTERNAL tlv_list_s *otrng_tlv_list_one(tlv_s *tlv);
 
 /**
  * @brief Returns a newly created disconnected TLV
@@ -96,7 +96,7 @@ INTERNAL tlv_list_t *otrng_tlv_list_one(tlv_t *tlv);
  *    responsibility to free it after use.
  *    returns NULL if something goes wrong.
  **/
-INTERNAL tlv_t *otrng_tlv_disconnected_new(void);
+INTERNAL tlv_s *otrng_tlv_disconnected_new(void);
 
 /**
  * @brief Tries to extract as many TLVs as possible in the memory region from
@@ -109,7 +109,7 @@ INTERNAL tlv_t *otrng_tlv_disconnected_new(void);
  *    responsibility to free it after use.
  *    returns NULL if no TLVs can be found.
  **/
-INTERNAL tlv_list_t *otrng_parse_tlvs(const uint8_t *src, size_t len);
+INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len);
 
 /**
  * @brief creates a new TLV from the given data.
@@ -123,7 +123,7 @@ INTERNAL tlv_list_t *otrng_parse_tlvs(const uint8_t *src, size_t len);
  *    responsibility to free it after use.
  *    returns NULL if something goes wrong, if [data] is NULL when [len] is > 0.
  **/
-INTERNAL tlv_t *otrng_tlv_new(const uint16_t type, const uint16_t len,
+INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
                               const uint8_t *data);
 
 /**
@@ -137,7 +137,7 @@ INTERNAL tlv_t *otrng_tlv_new(const uint16_t type, const uint16_t len,
  *    it is the callers responsibility to free it after use.
  *    returns NULL if something goes wrong, or if [tlv] is NULL
  **/
-INTERNAL tlv_list_t *otrng_append_tlv(tlv_list_t *tlvs, tlv_t *tlv);
+INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *tlvs, tlv_s *tlv);
 
 /**
  * @brief appends a new padding TLV to the given list
@@ -151,12 +151,12 @@ INTERNAL tlv_list_t *otrng_append_tlv(tlv_list_t *tlvs, tlv_t *tlv);
  *    it is the callers responsibility to free it after use.
  *    returns NULL if something goes wrong.
  **/
-INTERNAL tlv_list_t *otrng_append_padding_tlv(tlv_list_t *tlvs,
+INTERNAL tlv_list_s *otrng_append_padding_tlv(tlv_list_s *tlvs,
                                               int message_len);
 
 #ifdef OTRNG_TLV_PRIVATE
 
-tstatic void tlv_free(tlv_t *tlv);
+tstatic void tlv_free(tlv_s *tlv);
 
 #endif
 

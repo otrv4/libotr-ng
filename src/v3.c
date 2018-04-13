@@ -23,14 +23,14 @@
 #include "v3.h"
 #include "otrng.h"
 
-tstatic void create_privkey_cb_v3(const otrng_conversation_state_t *otr) {
+tstatic void create_privkey_cb_v3(const otrng_conversation_state_s *otr) {
   if (!otr || !otr->client)
     return;
   otrng_client_callbacks_create_privkey(otr->client->callbacks,
                                         otr->client->client_id);
 }
 
-tstatic void gone_secure_cb_v3(const otrng_conversation_state_t *otr) {
+tstatic void gone_secure_cb_v3(const otrng_conversation_state_s *otr) {
   if (!otr || !otr->client)
     return;
   otrng_client_callbacks_gone_secure(
@@ -38,7 +38,7 @@ tstatic void gone_secure_cb_v3(const otrng_conversation_state_t *otr) {
       otr->client->client_id); // TODO: should be conversation_id
 }
 
-tstatic void gone_insecure_cb_v3(const otrng_conversation_state_t *otr) {
+tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *otr) {
   if (!otr || !otr->client)
     return;
   otrng_client_callbacks_gone_insecure(
@@ -46,8 +46,8 @@ tstatic void gone_insecure_cb_v3(const otrng_conversation_state_t *otr) {
       otr->client->client_id); // TODO: should be conversation_id
 }
 
-tstatic void fingerprint_seen_cb_v3(const v3_fingerprint_t fp,
-                                    const otrng_conversation_state_t *otr) {
+tstatic void fingerprint_seen_cb_v3(const v3_fingerprint_p fp,
+                                    const otrng_conversation_state_s *otr) {
   if (!otr || !otr->client)
     return;
   otrng_client_callbacks_fingerprint_seen_v3(
@@ -58,7 +58,7 @@ tstatic void fingerprint_seen_cb_v3(const v3_fingerprint_t fp,
 tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
                                     const uint8_t progress_percent,
                                     const char *question,
-                                    const otrng_conversation_state_t *otr) {
+                                    const otrng_conversation_state_s *otr) {
   if (!otr || !otr->client)
     return;
   switch (event) {
@@ -88,7 +88,7 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
   }
 }
 
-tstatic void received_symkey_cb_v3(const otrng_conversation_state_t *otr,
+tstatic void received_symkey_cb_v3(const otrng_conversation_state_s *otr,
                                    unsigned int use,
                                    const unsigned char *usedata,
                                    size_t usedatalen,
@@ -440,9 +440,9 @@ static OtrlMessageAppOps null_ops = {
     op_timer_control,
 };
 
-INTERNAL otrng_v3_conn_t *otrng_v3_conn_new(otrng_client_state_t *state,
+INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_state_s *state,
                                             const char *peer) {
-  otrng_v3_conn_t *ret = malloc(sizeof(otrng_v3_conn_t));
+  otrng_v3_conn_s *ret = malloc(sizeof(otrng_v3_conn_s));
   if (!ret)
     return NULL;
 
@@ -456,7 +456,7 @@ INTERNAL otrng_v3_conn_t *otrng_v3_conn_new(otrng_client_state_t *state,
   return ret;
 }
 
-INTERNAL void otrng_v3_conn_free(otrng_v3_conn_t *conn) {
+INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn) {
   if (!conn)
     return;
 
@@ -471,10 +471,10 @@ INTERNAL void otrng_v3_conn_free(otrng_v3_conn_t *conn) {
   conn = NULL;
 }
 
-INTERNAL otrng_err_t otrng_v3_send_message(char **newmessage,
+INTERNAL otrng_err otrng_v3_send_message(char **newmessage,
                                            const char *message,
-                                           const tlv_list_t *tlvs,
-                                           otrng_v3_conn_t *conn) {
+                                           const tlv_list_s *tlvs,
+                                           otrng_v3_conn_s *conn) {
   // TODO: convert TLVs
   OtrlTLV *tlvsv3 = NULL;
 
@@ -493,11 +493,11 @@ INTERNAL otrng_err_t otrng_v3_send_message(char **newmessage,
   return ERROR;
 }
 
-INTERNAL otrng_err_t otrng_v3_receive_message(string_t *to_send,
-                                              string_t *to_display,
-                                              tlv_list_t **tlvs,
-                                              const string_t message,
-                                              otrng_v3_conn_t *conn) {
+INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
+                                              string_p *to_display,
+                                              tlv_list_s **tlvs,
+                                              const string_p message,
+                                              otrng_v3_conn_s *conn) {
   int ignore_message;
   OtrlTLV *tlvsv3 = NULL; // TODO: convert to v4 tlvs
   *to_send = NULL;
@@ -527,7 +527,7 @@ INTERNAL otrng_err_t otrng_v3_receive_message(string_t *to_send,
   return SUCCESS;
 }
 
-INTERNAL void otrng_v3_close(string_t *to_send, otrng_v3_conn_t *conn) {
+INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn) {
   // TODO: there is also: otrl_message_disconnect, which only disconnects one
   // instance
   otrl_message_disconnect_all_instances(conn->state->userstate, conn->ops,
@@ -537,8 +537,8 @@ INTERNAL void otrng_v3_close(string_t *to_send, otrng_v3_conn_t *conn) {
   from_injected_to_send(to_send);
 }
 
-INTERNAL otrng_err_t otrng_v3_send_symkey_message(
-    string_t *to_send, otrng_v3_conn_t *conn, unsigned int use,
+INTERNAL otrng_err otrng_v3_send_symkey_message(
+    string_p *to_send, otrng_v3_conn_s *conn, unsigned int use,
     const unsigned char *usedata, size_t usedatalen, unsigned char *extra_key) {
   otrl_message_symkey(conn->state->userstate, conn->ops, conn->opdata,
                       conn->ctx, use, usedata, usedatalen, extra_key);
@@ -547,11 +547,11 @@ INTERNAL otrng_err_t otrng_v3_send_symkey_message(
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_v3_smp_start(string_t *to_send,
+INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
                                         const uint8_t *question, size_t q_len,
                                         const uint8_t *secret, size_t secretlen,
-                                        otrng_v3_conn_t *conn) {
-  string_t q = NULL;
+                                        otrng_v3_conn_s *conn) {
+  string_p q = NULL;
   if (question && q_len > 0) {
     q = malloc(q_len + 1);
     if (!q) {
@@ -572,10 +572,10 @@ INTERNAL otrng_err_t otrng_v3_smp_start(string_t *to_send,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_v3_smp_continue(string_t *to_send,
+INTERNAL otrng_err otrng_v3_smp_continue(string_p *to_send,
                                            const uint8_t *secret,
                                            const size_t secretlen,
-                                           otrng_v3_conn_t *conn) {
+                                           otrng_v3_conn_s *conn) {
   otrl_message_respond_smp(conn->state->userstate, conn->ops, conn->opdata,
                            conn->ctx, secret, secretlen);
 
@@ -583,7 +583,7 @@ INTERNAL otrng_err_t otrng_v3_smp_continue(string_t *to_send,
   return SUCCESS;
 }
 
-INTERNAL otrng_err_t otrng_v3_smp_abort(otrng_v3_conn_t *conn) {
+INTERNAL otrng_err otrng_v3_smp_abort(otrng_v3_conn_s *conn) {
   otrl_message_abort_smp(conn->state->userstate, conn->ops, conn->opdata,
                          conn->ctx);
   return SUCCESS;

@@ -120,20 +120,20 @@ int main(int argc, char **argv) {
 
   WITH_FIXTURE("/dake/identity_message/serializes",
                test_dake_identity_message_serializes,
-               identity_message_fixture_t, identity_message_fixture);
+               identity_message_fixture_s, identity_message_fixture);
   WITH_FIXTURE("/dake/identity_message/deserializes",
                test_otrng_dake_identity_message_deserializes,
-               identity_message_fixture_t, identity_message_fixture);
+               identity_message_fixture_s, identity_message_fixture);
   WITH_FIXTURE("/dake/identity_message/valid", test_dake_identity_message_valid,
-               identity_message_fixture_t, identity_message_fixture);
+               identity_message_fixture_s, identity_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/serializes",
-               test_dake_prekey_message_serializes, prekey_message_fixture_t,
+               test_dake_prekey_message_serializes, prekey_message_fixture_s,
                prekey_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/deserializes",
                test_otrng_dake_prekey_message_deserializes,
-               prekey_message_fixture_t, prekey_message_fixture);
+               prekey_message_fixture_s, prekey_message_fixture);
   WITH_FIXTURE("/dake/prekey_message/valid", test_dake_prekey_message_valid,
-               prekey_message_fixture_t, prekey_message_fixture);
+               prekey_message_fixture_s, prekey_message_fixture);
 
   g_test_add_func("/data_message/valid", test_data_message_valid);
   g_test_add_func("/data_message/serialize", test_data_message_serializes);
@@ -166,47 +166,47 @@ int main(int argc, char **argv) {
   g_test_add_func("/tlv/append_padding", test_otrng_append_padding_tlv);
 
   // g_test_add_func("/otrng/starts_protocol", test_otrng_starts_protocol);
-  // g_test_add("/otrng/version_supports_v34", otrng_fixture_t, NULL,
+  // g_test_add("/otrng/version_supports_v34", otrng_fixture_s, NULL,
   // otrng_fixture_set_up, test_otrng_version_supports_v34,
   // otrng_fixture_teardown );
-  g_test_add("/otrng/builds_query_message", otrng_fixture_t, NULL,
+  g_test_add("/otrng/builds_query_message", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_builds_query_message,
              otrng_fixture_teardown);
-  g_test_add("/otrng/builds_query_message_v34", otrng_fixture_t, NULL,
+  g_test_add("/otrng/builds_query_message_v34", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_builds_query_message_v34,
              otrng_fixture_teardown);
-  g_test_add("/otrng/builds_whitespace_tag", otrng_fixture_t, NULL,
+  g_test_add("/otrng/builds_whitespace_tag", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_builds_whitespace_tag,
              otrng_fixture_teardown);
-  g_test_add("/otrng/builds_whitespace_tag_v34", otrng_fixture_t, NULL,
+  g_test_add("/otrng/builds_whitespace_tag_v34", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_builds_whitespace_tag_v34,
              otrng_fixture_teardown);
   g_test_add("/otrng/receives_plaintext_without_ws_tag_on_start",
-             otrng_fixture_t, NULL, otrng_fixture_set_up,
+             otrng_fixture_s, NULL, otrng_fixture_set_up,
              test_otrng_receives_plaintext_without_ws_tag_on_start,
              otrng_fixture_teardown);
   g_test_add("/otrng/receives_plaintext_without_ws_tag_not_on_start",
-             otrng_fixture_t, NULL, otrng_fixture_set_up,
+             otrng_fixture_s, NULL, otrng_fixture_set_up,
              test_otrng_receives_plaintext_without_ws_tag_not_on_start,
              otrng_fixture_teardown);
-  g_test_add("/otrng/receives_plaintext_with_ws_tag", otrng_fixture_t, NULL,
+  g_test_add("/otrng/receives_plaintext_with_ws_tag", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_receives_plaintext_with_ws_tag,
              otrng_fixture_teardown);
   g_test_add("/otrng/receives_plaintext_with_ws_tag_after_text",
-             otrng_fixture_t, NULL, otrng_fixture_set_up,
+             otrng_fixture_s, NULL, otrng_fixture_set_up,
              test_otrng_receives_plaintext_with_ws_tag_after_text,
              otrng_fixture_teardown);
-  g_test_add("/otrng/receives_plaintext_with_ws_tag_v3", otrng_fixture_t, NULL,
+  g_test_add("/otrng/receives_plaintext_with_ws_tag_v3", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_receives_plaintext_with_ws_tag_v3,
              otrng_fixture_teardown);
-  g_test_add("/otrng/receives_query_message", otrng_fixture_t, NULL,
+  g_test_add("/otrng/receives_query_message", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_receives_query_message,
              otrng_fixture_teardown);
-  g_test_add("/otrng/receives_query_message_v3", otrng_fixture_t, NULL,
+  g_test_add("/otrng/receives_query_message_v3", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_receives_query_message_v3,
              otrng_fixture_teardown);
   g_test_add("/otrng/receives_invalid_instance_tag_on_identity_message",
-             otrng_fixture_t, NULL, otrng_fixture_set_up,
+             otrng_fixture_s, NULL, otrng_fixture_set_up,
              test_otrng_receives_identity_message_validates_instance_tag,
              otrng_fixture_teardown);
   g_test_add_func("/otrng/destroy", test_otrng_destroy);

@@ -21,7 +21,7 @@
 #include "../dh.h"
 
 void dh_test_api() {
-  dh_keypair_t alice, bob;
+  dh_keypair_p alice, bob;
   otrng_dh_keypair_generate(alice);
   otrng_dh_keypair_generate(bob);
 
@@ -43,10 +43,10 @@ void dh_test_api() {
 
 void dh_test_serialize() {
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
-  dh_mpi_t mpi = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  dh_mpi_p mpi = gcry_mpi_new(DH3072_MOD_LEN_BITS);
 
   size_t mpi_len = 0;
-  otrng_err_t err =
+  otrng_err err =
       otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
   otrng_assert(!err);
   g_assert_cmpint(mpi_len, ==, 0);
@@ -70,7 +70,7 @@ void dh_test_serialize() {
 }
 
 void dh_test_keypair_destroy() {
-  dh_keypair_t alice;
+  dh_keypair_p alice;
 
   otrng_dh_keypair_generate(alice);
 

@@ -55,7 +55,7 @@
 #define POLICY_ALWAYS (OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_ALLOW_V4)
 #define POLICY_DEFAULT POLICY_OPPORTUNISTIC
 
-typedef struct connection otrng_t; /* Forward declare */
+typedef struct otrng_s otrng_s; /* Forward declare */
 
 typedef enum {
   OTRNG_STATE_NONE = 0,
@@ -79,24 +79,26 @@ typedef enum {
 } otrng_version_t;
 
 // clang-format off
-typedef struct { int allows; } otrng_policy_t;
+typedef struct otrng_policy_s {
+  int allows;
+} otrng_policy_s, otrng_policy_p[1];
 // clang-format on
 
 // TODO: This is a single instance conversation. Make it multi-instance.
-typedef struct otrng_conversation_state_t {
+typedef struct otrng_conversation_state_s {
   /* void *opdata; // Could have a conversation opdata to point to a, say
    PurpleConversation */
 
-  struct otrng_client_state_t *client;
+  otrng_client_state_s *client;
   char *peer;
   uint16_t their_instance_tag;
-} otrng_conversation_state_t;
+} otrng_conversation_state_s, otrng_conversation_state_p[1];
 
-struct connection {
+struct otrng_s {
   /* Contains: client (private key, instance tag, and callbacks) and
    conversation state */
-  otrng_conversation_state_t *conversation;
-  otrng_v3_conn_t *v3_conn;
+  otrng_conversation_state_s *conversation;
+  otrng_v3_conn_s *v3_conn;
 
   otrng_state state;
   int supported_versions;
@@ -104,22 +106,24 @@ struct connection {
   uint32_t our_instance_tag;
   uint32_t their_instance_tag;
 
-  user_profile_t *profile;
-  user_profile_t *their_profile;
+  user_profile_s *profile;
+  user_profile_s *their_profile;
 
   otrng_version_t running_version;
 
-  key_manager_t *keys;
-  smp_context_t smp;
+  key_manager_s *keys;
+  smp_context_p smp;
 
-  fragment_context_t *frag_ctx;
-}; /* otrng_t */
+  fragment_context_s *frag_ctx;
+}; /* otrng_s */
+
+typedef struct otrng_s otrng_p[1];
 
 // clang-format off
 // TODO: this a mock
-typedef struct {
-  string_t prekey_message;
-} otrng_server_t;
+typedef struct otrng_server_s {
+  string_p prekey_message;
+} otrng_server_s, otrng_server_p[1];
 // clang-format on
 
 typedef enum {
@@ -129,110 +133,110 @@ typedef enum {
   IN_MSG_QUERY_STRING = 3,
   IN_MSG_OTR_ENCODED = 4,
   IN_MSG_OTR_ERROR = 5
-} otrng_in_message_type_t;
+} otrng_in_message_type;
 
 typedef enum {
   OTRNG_WARN_NONE = 0,
   OTRNG_WARN_RECEIVED_UNENCRYPTED,
   OTRNG_WARN_RECEIVED_NOT_VALID
-} otrng_warning_t;
+} otrng_warning;
 
-typedef struct {
-  string_t to_display;
-  string_t to_send;
-  tlv_list_t *tlvs;
-  otrng_warning_t warning;
-} otrng_response_t;
+typedef struct otrng_response_s {
+  string_p to_display;
+  string_p to_send;
+  tlv_list_s *tlvs;
+  otrng_warning warning;
+} otrng_response_s, otrng_response_p[1];
 
-typedef struct {
+typedef struct otrng_header_s {
   otrng_supported_version version;
   uint8_t type;
-} otrng_header_t;
+} otrng_header_s, otrng_header_p[1];
 
-INTERNAL otrng_t *otrng_new(struct otrng_client_state_t *state,
-                            otrng_policy_t policy);
+INTERNAL otrng_s *otrng_new(struct otrng_client_state_s *state,
+                            otrng_policy_s policy);
 
-INTERNAL void otrng_free(/*@only@ */ otrng_t *otr);
+INTERNAL void otrng_free(/*@only@ */ otrng_s *otr);
 
-INTERNAL otrng_err_t otrng_build_query_message(string_t *dst,
-                                               const string_t message,
-                                               const otrng_t *otr);
+INTERNAL otrng_err otrng_build_query_message(string_p *dst,
+                                               const string_p message,
+                                               const otrng_s *otr);
 
-INTERNAL otrng_response_t *otrng_response_new(void);
+INTERNAL otrng_response_s *otrng_response_new(void);
 
-INTERNAL void otrng_response_free(otrng_response_t *response);
+INTERNAL void otrng_response_free(otrng_response_s *response);
 
-INTERNAL otrng_err_t otrng_receive_message(otrng_response_t *response,
-                                           const string_t message,
-                                           otrng_t *otr);
+INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
+                                           const string_p message,
+                                           otrng_s *otr);
 
-INTERNAL otrng_err_t otrng_prepare_to_send_message(string_t *to_send,
-                                                   const string_t message,
-                                                   tlv_list_t **tlvs,
-                                                   uint8_t flags, otrng_t *otr);
+INTERNAL otrng_err otrng_prepare_to_send_message(string_p *to_send,
+                                                   const string_p message,
+                                                   tlv_list_s **tlvs,
+                                                   uint8_t flags, otrng_s *otr);
 
-INTERNAL otrng_err_t otrng_close(string_t *to_send, otrng_t *otr);
+INTERNAL otrng_err otrng_close(string_p *to_send, otrng_s *otr);
 
-INTERNAL otrng_err_t otrng_smp_start(string_t *to_send, const uint8_t *question,
+INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
                                      const size_t q_len, const uint8_t *secret,
-                                     const size_t secretlen, otrng_t *otr);
+                                     const size_t secretlen, otrng_s *otr);
 
-INTERNAL otrng_err_t otrng_smp_continue(string_t *to_send,
+INTERNAL otrng_err otrng_smp_continue(string_p *to_send,
                                         const uint8_t *secret,
-                                        const size_t secretlen, otrng_t *otr);
+                                        const size_t secretlen, otrng_s *otr);
 
-INTERNAL otrng_err_t otrng_expire_session(string_t *to_send, otrng_t *otr);
+INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr);
 
-API otrng_err_t otrng_build_whitespace_tag(string_t *whitespace_tag,
-                                           const string_t message,
-                                           const otrng_t *otr);
+API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
+                                           const string_p message,
+                                           const otrng_s *otr);
 
-API otrng_err_t otrng_send_symkey_message(string_t *to_send, unsigned int use,
+API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
                                           const unsigned char *usedata,
                                           size_t usedatalen, uint8_t *extra_key,
-                                          otrng_t *otr);
+                                          otrng_s *otr);
 
-API otrng_err_t otrng_smp_abort(string_t *to_send, otrng_t *otr);
+API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr);
 
 // TODO: change to the real func: unexpose these and make them
 // static
-API void otrng_reply_with_prekey_msg_from_server(otrng_server_t *server,
-                                                 otrng_response_t *response);
+API void otrng_reply_with_prekey_msg_from_server(otrng_server_s *server,
+                                                 otrng_response_s *response);
 
-API otrng_err_t otrng_start_non_interactive_dake(otrng_server_t *server,
-                                                 otrng_t *otr);
+API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
+                                                 otrng_s *otr);
 
-API otrng_err_t otrng_send_non_interactive_auth_msg(string_t *dst, otrng_t *otr,
-                                                    const string_t message);
+API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst, otrng_s *otr,
+                                                    const string_p message);
 
-API otrng_err_t otrng_heartbeat_checker(string_t *to_send, otrng_t *otr);
+API otrng_err otrng_heartbeat_checker(string_p *to_send, otrng_s *otr);
 
 API void otrng_v3_init(void);
 
 #ifdef OTRNG_OTRNG_PRIVATE
 
-tstatic void otrng_destroy(otrng_t *otr);
+tstatic void otrng_destroy(otrng_s *otr);
 
-tstatic otrng_in_message_type_t get_message_type(const string_t message);
+tstatic otrng_in_message_type get_message_type(const string_p message);
 
-tstatic otrng_err_t extract_header(otrng_header_t *dst, const uint8_t *buffer,
+tstatic otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
                                    const size_t bufflen);
 
-tstatic tlv_t *otrng_smp_initiate(const user_profile_t *initiator_profile,
-                                  const user_profile_t *responder_profile,
+tstatic tlv_s *otrng_smp_initiate(const user_profile_s *initiator_profile,
+                                  const user_profile_s *responder_profile,
                                   const uint8_t *question, const size_t q_len,
                                   const uint8_t *secret, const size_t secretlen,
-                                  uint8_t *ssid, smp_context_t smp,
-                                  otrng_conversation_state_t *conversation);
+                                  uint8_t *ssid, smp_context_p smp,
+                                  otrng_conversation_state_s *conversation);
 
-tstatic const user_profile_t *get_my_user_profile(otrng_t *otr);
+tstatic const user_profile_s *get_my_user_profile(otrng_s *otr);
 
-tstatic tlv_t *process_tlv(const tlv_t *tlv, otrng_t *otr);
+tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr);
 
-tstatic tlv_t *otrng_smp_provide_secret(otrng_smp_event_t *event,
-                                        smp_context_t smp,
-                                        const user_profile_t *our_profile,
-                                        const user_profile_t *their_profile,
+tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
+                                        smp_context_p smp,
+                                        const user_profile_s *our_profile,
+                                        const user_profile_s *their_profile,
                                         uint8_t *ssid, const uint8_t *secret,
                                         const size_t secretlen);
 

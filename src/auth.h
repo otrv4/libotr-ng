@@ -30,12 +30,12 @@
 /* The size of the ring signature. */
 #define RING_SIG_BYTES 6 * ED448_SCALAR_BYTES
 
-typedef ec_scalar_t rsig_privkey_t;
-typedef ec_point_t rsig_pubkey_t;
-typedef otrng_keypair_t rsig_keypair_t;
+typedef ec_scalar_p rsig_privkey_p;
+typedef ec_point_p rsig_pubkey_p;
+typedef otrng_keypair_s rsig_keypair_s, rsig_keypair_p[1];
 
 /**
- * @brief The ring_sig_t structure represents the ring signature.
+ * @brief The ring_sig_s structure represents the ring signature.
  *
  *  [c1] the scalar for the signature
  *  [r1] the scalar for the signature
@@ -44,14 +44,14 @@ typedef otrng_keypair_t rsig_keypair_t;
  *  [c3] the scalar for the signature
  *  [r3] the scalar for the signature
  */
-typedef struct {
-  ec_scalar_t c1;
-  ec_scalar_t r1;
-  ec_scalar_t c2;
-  ec_scalar_t r2;
-  ec_scalar_t c3;
-  ec_scalar_t r3;
-} ring_sig_t;
+typedef struct ring_sig_s {
+  ec_scalar_p c1;
+  ec_scalar_p r1;
+  ec_scalar_p c2;
+  ec_scalar_p r2;
+  ec_scalar_p c3;
+  ec_scalar_p r3;
+} ring_sig_s, ring_sig_p[1];
 
 /**
  * @brief Ring Sig keypair generation.
@@ -59,14 +59,14 @@ typedef struct {
  * @param [pub] The public key.
  * @param [priv] The private key.
  */
-INTERNAL void otrng_generate_keypair(rsig_pubkey_t pub, rsig_privkey_t priv);
+INTERNAL void otrng_generate_keypair(rsig_pubkey_p pub, rsig_privkey_p priv);
 
 /**
  * @brief Ring Sig keypair generation.
  *
  * @param [keypair] The keypair.
  */
-INTERNAL void otrng_rsig_keypair_generate(rsig_keypair_t *keypair);
+INTERNAL void otrng_rsig_keypair_generate(rsig_keypair_s *keypair);
 
 /**
  * @brief The Authentication function of the Ring Sig.
@@ -82,10 +82,10 @@ INTERNAL void otrng_rsig_keypair_generate(rsig_keypair_t *keypair);
  * @param [msg] The message to "sign".
  * @param [msg_len] The length of the message.
  */
-INTERNAL void otrng_rsig_authenticate(ring_sig_t *dst,
-                                      const rsig_keypair_t *keypair,
-                                      const rsig_pubkey_t A2,
-                                      const rsig_pubkey_t A3,
+INTERNAL void otrng_rsig_authenticate(ring_sig_s *dst,
+                                      const rsig_keypair_s *keypair,
+                                      const rsig_pubkey_p A2,
+                                      const rsig_pubkey_p A3,
                                       const unsigned char *msg, size_t msglen);
 
 /**
@@ -100,11 +100,11 @@ INTERNAL void otrng_rsig_authenticate(ring_sig_t *dst,
  * @param [msg] The message to "verify".
  * @param [msg_len] The length of the message.
  */
-INTERNAL otrng_bool_t otrng_rsig_verify(
-    const ring_sig_t *src, const rsig_pubkey_t A1, const rsig_pubkey_t A2,
-    const rsig_pubkey_t A3, const unsigned char *msg, size_t msglen);
+INTERNAL otrng_bool otrng_rsig_verify(
+    const ring_sig_s *src, const rsig_pubkey_p A1, const rsig_pubkey_p A2,
+    const rsig_pubkey_p A3, const unsigned char *msg, size_t msglen);
 
-INTERNAL void otrng_ring_sig_destroy(ring_sig_t *src);
+INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src);
 
 #ifdef OTRNG_AUTH_PRIVATE
 #endif

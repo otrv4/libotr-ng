@@ -31,33 +31,33 @@
 
 // needed for comparing with GOLDILOCKS_TRUE
 typedef uint32_t
-    otrng_bool_t; /* "Boolean" type, will be set to all-zero or all-one */
+    otrng_bool; /* "Boolean" type, will be set to all-zero or all-one */
 
-static const otrng_bool_t otrng_true = 0;
-static const otrng_bool_t otrng_false = 1;
+static const otrng_bool otrng_true = 0;
+static const otrng_bool otrng_false = 1;
 
 typedef enum {
   SUCCESS = 0,
   ERROR = 1,
   STATE_NOT_ENCRYPTED = 0x1001,
   MSG_NOT_VALID = 0x1011,
-} otrng_err_t;
+} otrng_err;
 
 typedef enum {
   ERR_NONE,
   ERR_MSG_NOT_PRIVATE,
   ERR_MSG_UNDECRYPTABLE,
-} otrng_err_code_t;
+} otrng_err_code;
 
 /// Return success if x is true
-// static otrng_err_t
-// otrng_succeed_if(otrng_bool_t x) {
-//    return (otrng_err_t)x;
+// static otrng_err
+// otrng_succeed_if(otrng_bool x) {
+//    return (otrng_err)x;
 //}
 //
 // Return OTRNG_TRUE iff x == SUCCESS
-// static otrng_bool_t
-// otrng_successful(otrng_err_t e) {
+// static otrng_bool
+// otrng_successful(otrng_err e) {
 //    uint64_t w = ((uint32_t)e) ^  ((uint32_t)SUCCESS);
 //    return (w-1)>>32;
 //}

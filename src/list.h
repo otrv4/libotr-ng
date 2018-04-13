@@ -25,44 +25,44 @@
 
 #include "shared.h"
 
-typedef struct _list_element {
+typedef struct list_element_s {
   void *data;
-  struct _list_element *next;
-} list_element_t;
+  struct list_element_s *next;
+} list_element_s, list_element_p[1];
 
-INTERNAL void otrng_list_foreach(list_element_t *head,
-                                 void (*fn)(list_element_t *node,
+INTERNAL void otrng_list_foreach(list_element_s *head,
+                                 void (*fn)(list_element_s *node,
                                             void *context),
                                  void *context);
 
 // Free list and invoke fn to free the nodes' data
-INTERNAL void otrng_list_free(list_element_t *head, void (*fn)(void *data));
+INTERNAL void otrng_list_free(list_element_s *head, void (*fn)(void *data));
 
 // Free list and invoke "free()" to free the nodes' data
-INTERNAL void otrng_list_free_full(list_element_t *head);
+INTERNAL void otrng_list_free_full(list_element_s *head);
 
 // Free list but does not free the nodes' data
-INTERNAL void otrng_list_free_nodes(list_element_t *head);
+INTERNAL void otrng_list_free_nodes(list_element_s *head);
 
-INTERNAL list_element_t *otrng_list_add(void *data, list_element_t *head);
+INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head);
 
-INTERNAL list_element_t *otrng_list_get_last(list_element_t *head);
+INTERNAL list_element_s *otrng_list_get_last(list_element_s *head);
 
-INTERNAL list_element_t *
-otrng_list_get(const void *wanted, list_element_t *head,
+INTERNAL list_element_s *
+otrng_list_get(const void *wanted, list_element_s *head,
                int (*fn)(const void *current, const void *wanted));
 
-INTERNAL list_element_t *otrng_list_get_by_value(const void *wanted,
-                                                 list_element_t *head);
+INTERNAL list_element_s *otrng_list_get_by_value(const void *wanted,
+                                                 list_element_s *head);
 
-INTERNAL list_element_t *otrng_list_remove_element(const list_element_t *wanted,
-                                                   list_element_t *head);
+INTERNAL list_element_s *otrng_list_remove_element(const list_element_s *wanted,
+                                                   list_element_s *head);
 
-INTERNAL size_t otrng_list_len(list_element_t *head);
+INTERNAL size_t otrng_list_len(list_element_s *head);
 
 #ifdef OTRNG_LIST_PRIVATE
 
-tstatic list_element_t *list_new(void);
+tstatic list_element_s *list_new(void);
 
 #endif
 
