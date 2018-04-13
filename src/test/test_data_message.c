@@ -109,12 +109,13 @@ void test_data_message_serializes() {
   otrng_assert_cmpmem(cursor, expected, 16);
   cursor += 16;
 
-  uint8_t serialized_y[ED448_POINT_BYTES + 2] = {0};
-  otrng_ec_point_encode(serialized_y, data_msg->ecdh);
+  uint8_t serialized_y[ED448_POINT_BYTES + 2] = {};
+  int ser_len = otrng_serialize_ec_point(serialized_y, data_msg->ecdh);
   otrng_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
-  cursor += sizeof(ec_public_key_t);
 
-  uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
+  cursor += ser_len;
+
+  uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
   otrng_err_t otr_err = otrng_dh_mpi_serialize(
       serialized_b, DH3072_MOD_LEN_BYTES, &mpi_len, data_msg->dh);

@@ -375,7 +375,7 @@ otrng_ecdh_shared_secret_from_prekey(uint8_t *shared_secret,
   goldilocks_448_point_scalarmul(p, their_pub, shared_prekey->priv);
 
   otrng_ec_point_valid(p);
-  otrng_ec_point_encode(shared_secret, p);
+  otrng_serialize_ec_point(shared_secret, p);
 }
 
 INTERNAL void
@@ -386,7 +386,7 @@ otrng_ecdh_shared_secret_from_keypair(uint8_t *shared_secret,
   goldilocks_448_point_scalarmul(p, their_pub, keypair->priv);
 
   otrng_ec_point_valid(p);
-  otrng_ec_point_encode(shared_secret, p);
+  otrng_serialize_ec_point(shared_secret, p);
 }
 
 tstatic void calculate_shared_secret(shared_secret_t dst, const k_ecdh_t k_ecdh,

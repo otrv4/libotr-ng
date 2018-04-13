@@ -73,9 +73,10 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_t *f,
   cursor += user_profile_len;
 
   uint8_t serialized_y[ED448_POINT_BYTES + 2] = {0};
-  otrng_ec_point_encode(serialized_y, prekey_message->Y);
-  otrng_assert_cmpmem(cursor, serialized_y, sizeof(ec_public_key_t));
-  cursor += sizeof(ec_public_key_t);
+  int ser_len = otrng_serialize_ec_point(serialized_y, prekey_message->Y);
+  otrng_assert_cmpmem(cursor, serialized_y, ser_len);
+
+  cursor += ser_len;
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
   size_t mpi_len = 0;
@@ -254,9 +255,10 @@ void test_dake_non_interactive_auth_message_serializes(
   cursor += user_profile_len;
 
   uint8_t serialized_x[ED448_POINT_BYTES + 2] = {};
-  otrng_ec_point_encode(serialized_x, msg->X);
-  otrng_assert_cmpmem(cursor, serialized_x, sizeof(ec_public_key_t));
-  cursor += sizeof(ec_public_key_t);
+  int ser_len = otrng_serialize_ec_point(serialized_x, msg->X);
+  otrng_assert_cmpmem(cursor, serialized_x, ser_len);
+
+  cursor += ser_len;
 
   uint8_t serialized_a[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
