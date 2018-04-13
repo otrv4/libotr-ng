@@ -80,7 +80,7 @@ INTERNAL otrng_err_t otrng_dake_identity_message_asprintf(
     return ERROR;
   }
 
-  size_t s = PRE_KEY_MIN_BYTES + profile_len;
+  size_t s = IDENTITY_MIN_BYTES + profile_len;
   uint8_t *buff = malloc(s);
   if (!buff) {
     free(profile);
