@@ -159,42 +159,40 @@ INTERNAL otrng_s *otrng_new(struct otrng_client_state_s *state,
 INTERNAL void otrng_free(/*@only@ */ otrng_s *otr);
 
 INTERNAL otrng_err otrng_build_query_message(string_p *dst,
-                                               const string_p message,
-                                               const otrng_s *otr);
+                                             const string_p message,
+                                             const otrng_s *otr);
 
 INTERNAL otrng_response_s *otrng_response_new(void);
 
 INTERNAL void otrng_response_free(otrng_response_s *response);
 
 INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
-                                           const string_p message,
-                                           otrng_s *otr);
+                                         const string_p message, otrng_s *otr);
 
 INTERNAL otrng_err otrng_prepare_to_send_message(string_p *to_send,
-                                                   const string_p message,
-                                                   tlv_list_s **tlvs,
-                                                   uint8_t flags, otrng_s *otr);
+                                                 const string_p message,
+                                                 tlv_list_s **tlvs,
+                                                 uint8_t flags, otrng_s *otr);
 
 INTERNAL otrng_err otrng_close(string_p *to_send, otrng_s *otr);
 
 INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
-                                     const size_t q_len, const uint8_t *secret,
-                                     const size_t secretlen, otrng_s *otr);
+                                   const size_t q_len, const uint8_t *secret,
+                                   const size_t secretlen, otrng_s *otr);
 
-INTERNAL otrng_err otrng_smp_continue(string_p *to_send,
-                                        const uint8_t *secret,
-                                        const size_t secretlen, otrng_s *otr);
+INTERNAL otrng_err otrng_smp_continue(string_p *to_send, const uint8_t *secret,
+                                      const size_t secretlen, otrng_s *otr);
 
 INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr);
 
 API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
-                                           const string_p message,
-                                           const otrng_s *otr);
+                                         const string_p message,
+                                         const otrng_s *otr);
 
 API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
-                                          const unsigned char *usedata,
-                                          size_t usedatalen, uint8_t *extra_key,
-                                          otrng_s *otr);
+                                        const unsigned char *usedata,
+                                        size_t usedatalen, uint8_t *extra_key,
+                                        otrng_s *otr);
 
 API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr);
 
@@ -204,10 +202,10 @@ API void otrng_reply_with_prekey_msg_from_server(otrng_server_s *server,
                                                  otrng_response_s *response);
 
 API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
-                                                 otrng_s *otr);
+                                               otrng_s *otr);
 
 API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst, otrng_s *otr,
-                                                    const string_p message);
+                                                  const string_p message);
 
 API otrng_err otrng_heartbeat_checker(string_p *to_send, otrng_s *otr);
 
@@ -220,7 +218,7 @@ tstatic void otrng_destroy(otrng_s *otr);
 tstatic otrng_in_message_type get_message_type(const string_p message);
 
 tstatic otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
-                                   const size_t bufflen);
+                                 const size_t bufflen);
 
 tstatic tlv_s *otrng_smp_initiate(const user_profile_s *initiator_profile,
                                   const user_profile_s *responder_profile,

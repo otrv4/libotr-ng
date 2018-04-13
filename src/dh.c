@@ -145,10 +145,9 @@ INTERNAL void otrng_dh_keypair_destroy(dh_keypair_p keypair) {
   dh_pub_key_destroy(keypair);
 }
 
-INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared,
-                                            size_t shared_bytes,
-                                            const dh_private_key_p our_priv,
-                                            const dh_public_key_p their_pub) {
+INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared, size_t shared_bytes,
+                                          const dh_private_key_p our_priv,
+                                          const dh_public_key_p their_pub) {
   gcry_mpi_t secret = gcry_mpi_snew(DH3072_MOD_LEN_BITS);
   gcry_mpi_powm(secret, their_pub, our_priv, DH3072_MODULUS);
   size_t written;
@@ -170,8 +169,7 @@ INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared,
 }
 
 INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
-                                            size_t *written,
-                                            const dh_mpi_p src) {
+                                          size_t *written, const dh_mpi_p src) {
   if (!src) {
     if (written)
       *written = 0;
@@ -188,8 +186,8 @@ INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
 }
 
 INTERNAL otrng_err otrng_dh_mpi_deserialize(dh_mpi_p *dst,
-                                              const uint8_t *buffer,
-                                              size_t buflen, size_t *nread) {
+                                            const uint8_t *buffer,
+                                            size_t buflen, size_t *nread) {
   if (gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread))
     return ERROR;
 

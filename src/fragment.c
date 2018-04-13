@@ -78,10 +78,9 @@ INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
 }
 
 INTERNAL otrng_err otrng_fragment_message(int max_size,
-                                            otrng_message_to_send_s *fragments,
-                                            int our_instance,
-                                            int their_instance,
-                                            const string_p message) {
+                                          otrng_message_to_send_s *fragments,
+                                          int our_instance, int their_instance,
+                                          const string_p message) {
   size_t msg_len = strlen(message);
   size_t limit_piece = max_size - FRAGMENT_HEADER_LEN;
   string_p *pieces;
@@ -167,7 +166,7 @@ tstatic void initialize_fragment_context(fragment_context_s *context) {
 }
 
 tstatic otrng_err add_first_fragment(const char *msg, int msg_len,
-                                       fragment_context_s *ctx) {
+                                     fragment_context_s *ctx) {
   char *buff = malloc(msg_len + 1);
   if (!buff)
     return ERROR;
@@ -182,7 +181,7 @@ tstatic otrng_err add_first_fragment(const char *msg, int msg_len,
 }
 
 tstatic otrng_err append_fragment(const char *msg, int msg_len,
-                                    fragment_context_s *ctx) {
+                                  fragment_context_s *ctx) {
   size_t new_buff_len = ctx->fragment_len + msg_len + 1;
   char *buff = realloc(ctx->fragment, new_buff_len);
   if (!buff)
@@ -204,9 +203,9 @@ tstatic otrng_bool is_fragment(const string_p message) {
 }
 
 INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
-                                              fragment_context_s *context,
-                                              const string_p message,
-                                              const int our_instance_tag) {
+                                            fragment_context_s *context,
+                                            const string_p message,
+                                            const int our_instance_tag) {
   if (is_fragment(message)) {
     *unfrag_msg = otrng_strdup(message);
     initialize_fragment_context(context);

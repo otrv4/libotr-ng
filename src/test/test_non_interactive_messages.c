@@ -81,7 +81,7 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_s *f,
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
   otrng_err err = otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
-                                           &mpi_len, prekey_message->B);
+                                         &mpi_len, prekey_message->B);
   otrng_assert(!err);
   /* Skip first 4 because they are the size (mpi_len) */
   otrng_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
@@ -263,7 +263,7 @@ void test_dake_non_interactive_auth_message_serializes(
   uint8_t serialized_a[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
   otrng_err err = otrng_dh_mpi_serialize(serialized_a, DH3072_MOD_LEN_BYTES,
-                                           &mpi_len, msg->A);
+                                         &mpi_len, msg->A);
   otrng_assert(!err);
 
   /* Skip first 4 because they are the size (mpi_len) */

@@ -114,9 +114,11 @@ INTERNAL void otrng_rsig_authenticate(ring_sig_s *dst,
   goldilocks_448_scalar_sub(dst->r1, t1, c1a1);
 }
 
-INTERNAL otrng_bool otrng_rsig_verify(
-    const ring_sig_s *src, const rsig_pubkey_p A1, const rsig_pubkey_p A2,
-    const rsig_pubkey_p A3, const unsigned char *msg, size_t msglen) {
+INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
+                                      const rsig_pubkey_p A1,
+                                      const rsig_pubkey_p A2,
+                                      const rsig_pubkey_p A3,
+                                      const unsigned char *msg, size_t msglen) {
 
   goldilocks_shake256_ctx_p hd;
   uint8_t hash[HASH_BYTES];

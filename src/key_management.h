@@ -106,7 +106,7 @@ INTERNAL otrng_err
 otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
 
 INTERNAL otrng_err otrng_key_manager_ratcheting_init(int j, bool interactive,
-                                                       key_manager_s *manager);
+                                                     key_manager_s *manager);
 
 INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
                                                dh_public_key_p their_dh,
@@ -114,8 +114,7 @@ INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
 
 INTERNAL void otrng_key_manager_prepare_to_ratchet(key_manager_s *manager);
 
-INTERNAL otrng_err
-otrng_key_manager_ensure_on_ratchet(key_manager_s *manager);
+INTERNAL otrng_err otrng_key_manager_ensure_on_ratchet(key_manager_s *manager);
 
 INTERNAL void
 otrng_ecdh_shared_secret_from_prekey(uint8_t *shared,
@@ -140,7 +139,7 @@ otrng_key_manager_old_mac_keys_serialize(list_element_s *old_mac_keys);
 
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
 tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
-                                            const shared_secret_p shared);
+                                          const shared_secret_p shared);
 
 tstatic int key_manager_get_sending_chain_key(chain_key_p sending,
                                               const key_manager_s *manager);

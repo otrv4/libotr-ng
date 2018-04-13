@@ -36,8 +36,8 @@ typedef struct otrng_instag_s {
 } otrng_instag_s, otrng_instag_p[1];
 
 API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
-                                  const char *account, const char *protocol,
-                                  FILE *filename);
+                                const char *account, const char *protocol,
+                                FILE *filename);
 
 API void otrng_instag_free(otrng_instag_s *instag);
 

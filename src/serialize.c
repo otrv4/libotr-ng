@@ -89,7 +89,7 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
 }
 
 INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
-                                                   const dh_public_key_p pub) {
+                                                 const dh_public_key_p pub) {
   /* From gcrypt MPI */
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   memset(buf, 0, DH3072_MOD_LEN_BYTES);

@@ -111,9 +111,9 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
 }
 
 INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
-                                                    const uint8_t *buff,
-                                                    size_t bufflen,
-                                                    size_t *nread) {
+                                                  const uint8_t *buff,
+                                                  size_t bufflen,
+                                                  size_t *nread) {
   const uint8_t *cursor = buff;
   int64_t len = bufflen;
   size_t read = 0;
@@ -203,9 +203,10 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
                                        cursor, len);
 }
 
-INTERNAL static otrng_err
-otrng_data_message_sections_hash(uint8_t *dst, size_t dstlen,
-                                 const uint8_t *body, size_t bodylen) {
+INTERNAL static otrng_err otrng_data_message_sections_hash(uint8_t *dst,
+                                                           size_t dstlen,
+                                                           const uint8_t *body,
+                                                           size_t bodylen) {
   if (dstlen < 64)
     return ERROR;
 
@@ -215,11 +216,10 @@ otrng_data_message_sections_hash(uint8_t *dst, size_t dstlen,
   return SUCCESS;
 }
 
-INTERNAL otrng_err otrng_data_message_authenticator(uint8_t *dst,
-                                                      size_t dstlen,
-                                                      const m_mac_key_p mac_key,
-                                                      const uint8_t *body,
-                                                      size_t bodylen) {
+INTERNAL otrng_err otrng_data_message_authenticator(uint8_t *dst, size_t dstlen,
+                                                    const m_mac_key_p mac_key,
+                                                    const uint8_t *body,
+                                                    size_t bodylen) {
   if (dstlen < DATA_MSG_MAC_BYTES)
     return ERROR;
 
@@ -250,7 +250,7 @@ INTERNAL otrng_bool otrng_valid_data_message(m_mac_key_p mac_key,
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
   otrng_err ret = otrng_data_message_authenticator(mac_tag, sizeof mac_tag,
-                                                     mac_key, body, bodylen);
+                                                   mac_key, body, bodylen);
 
   free(body);
   body = NULL;

@@ -78,7 +78,7 @@ void test_dake_identity_message_serializes(identity_message_fixture_s *f,
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
   otrng_err err = otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
-                                           &mpi_len, identity_message->B);
+                                         &mpi_len, identity_message->B);
   otrng_assert(!err);
   // Skip first 4 because they are the size (mpi_len)
   otrng_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
@@ -173,7 +173,6 @@ void test_dake_identity_message_valid(identity_message_fixture_s *f,
 
   otrng_ec_point_copy(invalid_profile->long_term_pub_key, invalid_ecdh->pub);
   otrng_ec_point_copy(invalid_profile->shared_prekey, shared_prekey->pub);
-
 
   dake_identity_message_s *invalid_identity_message =
       otrng_dake_identity_message_new(invalid_profile);

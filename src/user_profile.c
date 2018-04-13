@@ -96,7 +96,7 @@ tstatic int user_profile_body_serialize(uint8_t *dst,
 }
 
 tstatic otrng_err user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
-                                               const user_profile_s *profile) {
+                                             const user_profile_s *profile) {
   size_t s = ED448_PUBKEY_BYTES + strlen(profile->versions) +
              ED448_SHARED_PREKEY_BYTES + 1 + 4 + 8;
 
@@ -113,8 +113,8 @@ tstatic otrng_err user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrng_err otrng_user_profile_asprintf(
-    uint8_t **dst, size_t *nbytes, const user_profile_s *profile) {
+INTERNAL otrng_err otrng_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
+                                               const user_profile_s *profile) {
   // TODO: should it checked here for signature?
   if (!(profile->signature > 0))
     return ERROR;
@@ -151,9 +151,9 @@ INTERNAL otrng_err otrng_user_profile_asprintf(
 }
 
 INTERNAL otrng_err otrng_user_profile_deserialize(user_profile_s *target,
-                                                    const uint8_t *buffer,
-                                                    size_t buflen,
-                                                    size_t *nread) {
+                                                  const uint8_t *buffer,
+                                                  size_t buflen,
+                                                  size_t *nread) {
   size_t read = 0;
   int walked = 0;
 
@@ -210,7 +210,7 @@ INTERNAL otrng_err otrng_user_profile_deserialize(user_profile_s *target,
 }
 
 tstatic otrng_err user_profile_sign(user_profile_s *profile,
-                                      const otrng_keypair_s *keypair) {
+                                    const otrng_keypair_s *keypair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
@@ -249,8 +249,7 @@ otrng_user_profile_verify_signature(const user_profile_s *profile) {
   uint8_t pubkey[ED448_POINT_BYTES];
   otrng_serialize_ec_point(pubkey, profile->long_term_pub_key);
 
-  otrng_bool valid =
-      otrng_ec_verify(profile->signature, pubkey, body, bodylen);
+  otrng_bool valid = otrng_ec_verify(profile->signature, pubkey, body, bodylen);
 
   free(body);
   body = NULL;

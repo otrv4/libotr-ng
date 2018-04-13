@@ -101,7 +101,8 @@ typedef struct non_interactive_auth_message_fixture_s {
   otrng_keypair_s *keypair;
   otrng_shared_prekey_pair_s *shared_prekey;
   user_profile_s *profile;
-} non_interactive_auth_message_fixture_s, non_interactive_auth_message_fixture_p[1];
+} non_interactive_auth_message_fixture_s,
+    non_interactive_auth_message_fixture_p[1];
 
 // TODO: unify all of these
 static void identity_message_fixture_setup(identity_message_fixture_s *fixture,

@@ -48,12 +48,11 @@ INTERNAL void otrng_user_profile_destroy(user_profile_s *profile);
 INTERNAL void otrng_user_profile_free(user_profile_s *profile);
 
 INTERNAL otrng_err otrng_user_profile_deserialize(user_profile_s *target,
-                                                    const uint8_t *buffer,
-                                                    size_t buflen,
-                                                    size_t *nread);
+                                                  const uint8_t *buffer,
+                                                  size_t buflen, size_t *nread);
 
 INTERNAL otrng_err otrng_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
-                                                 const user_profile_s *profile);
+                                               const user_profile_s *profile);
 
 INTERNAL user_profile_s *
 otrng_user_profile_build(const string_p versions, otrng_keypair_s *keypair,
@@ -64,10 +63,10 @@ otrng_user_profile_build(const string_p versions, otrng_keypair_s *keypair,
 tstatic user_profile_s *user_profile_new(const string_p versions);
 
 tstatic otrng_err user_profile_sign(user_profile_s *profile,
-                                      const otrng_keypair_s *keypair);
+                                    const otrng_keypair_s *keypair);
 
 tstatic otrng_err user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
-                                               const user_profile_s *profile);
+                                             const user_profile_s *profile);
 
 #endif
 

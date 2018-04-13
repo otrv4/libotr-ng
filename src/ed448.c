@@ -35,7 +35,7 @@ INTERNAL void otrng_ec_scalar_copy(ec_scalar_p dst, const ec_scalar_p a) {
 }
 
 INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar_p a,
-                                         const ec_scalar_p b) {
+                                       const ec_scalar_p b) {
   if (goldilocks_448_scalar_eq(a, b))
     return otrng_true;
 
@@ -59,8 +59,7 @@ INTERNAL void otrng_ec_point_copy(ec_point_p dst, const ec_point_p p) {
   goldilocks_448_point_copy(dst, p);
 }
 
-INTERNAL otrng_bool otrng_ec_point_eq(const ec_point_p p,
-                                        const ec_point_p q) {
+INTERNAL otrng_bool otrng_ec_point_eq(const ec_point_p p, const ec_point_p q) {
   if (goldilocks_448_point_eq(p, q))
     return otrng_true;
 
@@ -78,8 +77,8 @@ INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_p p) {
   goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(enc, p);
 }
 
-INTERNAL otrng_err
-otrng_ec_point_decode(ec_point_p p, const uint8_t enc[ED448_POINT_BYTES]) {
+INTERNAL otrng_err otrng_ec_point_decode(ec_point_p p,
+                                         const uint8_t enc[ED448_POINT_BYTES]) {
   goldilocks_448_point_p tmp_p;
   goldilocks_error_t err =
       goldilocks_448_point_decode_like_eddsa_and_mul_by_ratio(tmp_p, enc);
@@ -179,8 +178,8 @@ INTERNAL void otrng_ec_sign(eddsa_signature_p sig,
 }
 
 INTERNAL otrng_bool otrng_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
-                                      const uint8_t pub[ED448_POINT_BYTES],
-                                      const uint8_t *msg, size_t msg_len) {
+                                    const uint8_t pub[ED448_POINT_BYTES],
+                                    const uint8_t *msg, size_t msg_len) {
   if (goldilocks_ed448_verify(sig, pub, msg, msg_len, 0, (uint8_t *)ctx,
                               strlen(ctx)))
     return otrng_true;

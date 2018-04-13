@@ -87,7 +87,7 @@ INTERNAL void otrng_ec_scalar_copy(ec_scalar_p dst, const ec_scalar_p a);
  * @retval otrng_false The scalars are not equal.
  */
 INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar_p a,
-                                         const ec_scalar_p b);
+                                       const ec_scalar_p b);
 /**
  * @brief Encode a scalar to wire format.
  *
@@ -161,8 +161,8 @@ INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_p p);
  * @param [enc] The encoded point.
  * @param [p]   The point.
  */
-INTERNAL otrng_err
-otrng_ec_point_decode(ec_point_p p, const uint8_t enc[ED448_POINT_BYTES]);
+INTERNAL otrng_err otrng_ec_point_decode(ec_point_p p,
+                                         const uint8_t enc[ED448_POINT_BYTES]);
 
 /** Securely erase a point by overwriting it with zeros.
  * @warning This causes the point object to become invalid.

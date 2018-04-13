@@ -76,9 +76,9 @@ typedef struct dake_non_interactive_auth_message_s {
   uint8_t auth_mac[HASH_BYTES];
 } dake_non_interactive_auth_message_s, dake_non_interactive_auth_message_p[1];
 
-INTERNAL otrng_bool otrng_valid_received_values(
-    const ec_point_p their_ecdh, const dh_mpi_p their_dh,
-    const user_profile_s *profile);
+INTERNAL otrng_bool otrng_valid_received_values(const ec_point_p their_ecdh,
+                                                const dh_mpi_p their_dh,
+                                                const user_profile_s *profile);
 
 INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_s *dst, const uint8_t *buffer,
@@ -110,18 +110,18 @@ INTERNAL otrng_err otrng_dake_identity_message_asprintf(
 INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r);
 
 INTERNAL otrng_err otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
-                                                const dake_auth_r_s *auth_r);
+                                              const dake_auth_r_s *auth_r);
 INTERNAL otrng_err otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
-                                                   const uint8_t *buffer,
-                                                   size_t buflen);
+                                                 const uint8_t *buffer,
+                                                 size_t buflen);
 
 INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_s *auth_i);
 
 INTERNAL otrng_err otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
-                                                const dake_auth_i_s *auth_i);
+                                              const dake_auth_i_s *auth_i);
 INTERNAL otrng_err otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
-                                                   const uint8_t *buffer,
-                                                   size_t buflen);
+                                                 const uint8_t *buffer,
+                                                 size_t buflen);
 
 INTERNAL dake_prekey_message_s *
 otrng_dake_prekey_message_new(const user_profile_s *profile);

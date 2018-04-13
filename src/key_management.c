@@ -202,8 +202,8 @@ tstatic void derive_chain_key_b(chain_key_p chain_key,
                                 shared_secret);
 }
 
-tstatic otrng_err key_manager_new_ratchet(
-    key_manager_s *manager, const shared_secret_p shared_secret) {
+tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
+                                          const shared_secret_p shared_secret) {
   ratchet_s *ratchet = ratchet_new();
   if (ratchet == NULL) {
     return ERROR;
@@ -330,7 +330,7 @@ tstatic chain_link_s *derive_next_chain_link(chain_link_s *previous) {
 }
 
 tstatic otrng_err rebuild_chain_keys_up_to(int message_id,
-                                             const chain_link_s *head) {
+                                           const chain_link_s *head) {
   chain_link_s *last = (chain_link_s *)chain_get_last(head);
 
   int j = 0;
@@ -564,7 +564,7 @@ tstatic otrng_err init_ratchet(key_manager_s *manager, bool interactive) {
 }
 
 INTERNAL otrng_err otrng_key_manager_ratcheting_init(int j, bool interactive,
-                                                       key_manager_s *manager) {
+                                                     key_manager_s *manager) {
   if (init_ratchet(manager, interactive))
     return ERROR;
 
@@ -583,8 +583,7 @@ tstatic otrng_err rotate_keys(key_manager_s *manager) {
   return enter_new_ratchet(manager);
 }
 
-INTERNAL otrng_err
-otrng_key_manager_ensure_on_ratchet(key_manager_s *manager) {
+INTERNAL otrng_err otrng_key_manager_ensure_on_ratchet(key_manager_s *manager) {
   if (manager->j == 0)
     return SUCCESS;
 

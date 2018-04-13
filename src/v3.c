@@ -471,10 +471,9 @@ INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn) {
   conn = NULL;
 }
 
-INTERNAL otrng_err otrng_v3_send_message(char **newmessage,
-                                           const char *message,
-                                           const tlv_list_s *tlvs,
-                                           otrng_v3_conn_s *conn) {
+INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,
+                                         const tlv_list_s *tlvs,
+                                         otrng_v3_conn_s *conn) {
   // TODO: convert TLVs
   OtrlTLV *tlvsv3 = NULL;
 
@@ -494,10 +493,10 @@ INTERNAL otrng_err otrng_v3_send_message(char **newmessage,
 }
 
 INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
-                                              string_p *to_display,
-                                              tlv_list_s **tlvs,
-                                              const string_p message,
-                                              otrng_v3_conn_s *conn) {
+                                            string_p *to_display,
+                                            tlv_list_s **tlvs,
+                                            const string_p message,
+                                            otrng_v3_conn_s *conn) {
   int ignore_message;
   OtrlTLV *tlvsv3 = NULL; // TODO: convert to v4 tlvs
   *to_send = NULL;
@@ -548,9 +547,9 @@ INTERNAL otrng_err otrng_v3_send_symkey_message(
 }
 
 INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
-                                        const uint8_t *question, size_t q_len,
-                                        const uint8_t *secret, size_t secretlen,
-                                        otrng_v3_conn_s *conn) {
+                                      const uint8_t *question, size_t q_len,
+                                      const uint8_t *secret, size_t secretlen,
+                                      otrng_v3_conn_s *conn) {
   string_p q = NULL;
   if (question && q_len > 0) {
     q = malloc(q_len + 1);
@@ -573,9 +572,9 @@ INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
 }
 
 INTERNAL otrng_err otrng_v3_smp_continue(string_p *to_send,
-                                           const uint8_t *secret,
-                                           const size_t secretlen,
-                                           otrng_v3_conn_s *conn) {
+                                         const uint8_t *secret,
+                                         const size_t secretlen,
+                                         otrng_v3_conn_s *conn) {
   otrl_message_respond_smp(conn->state->userstate, conn->ops, conn->opdata,
                            conn->ctx, secret, secretlen);
 

@@ -50,18 +50,16 @@ INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_p keypair);
 
 INTERNAL void otrng_dh_keypair_destroy(dh_keypair_p keypair);
 
-INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared,
-                                            size_t shared_bytes,
-                                            const dh_private_key_p our_priv,
-                                            const dh_public_key_p their_pub);
+INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared, size_t shared_bytes,
+                                          const dh_private_key_p our_priv,
+                                          const dh_public_key_p their_pub);
 
 INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
-                                            size_t *written,
-                                            const dh_mpi_p src);
+                                          size_t *written, const dh_mpi_p src);
 
 INTERNAL otrng_err otrng_dh_mpi_deserialize(dh_mpi_p *dst,
-                                              const uint8_t *buffer,
-                                              size_t buflen, size_t *nread);
+                                            const uint8_t *buffer,
+                                            size_t buflen, size_t *nread);
 
 INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi);
 

@@ -28,7 +28,7 @@
 
 #define assert_msg_sent(err, to_send)                                          \
   do {                                                                         \
-    const otrng_err _err = (err);                                            \
+    const otrng_err _err = (err);                                              \
     const char *_to_send = (to_send);                                          \
     otrng_assert(_err == SUCCESS);                                             \
     otrng_assert(_to_send);                                                    \
@@ -37,7 +37,7 @@
 
 #define assert_msg_rec(err, message, response)                                 \
   do {                                                                         \
-    const otrng_err _err = (err);                                            \
+    const otrng_err _err = (err);                                              \
     const char *_message = (message);                                          \
     const otrng_response_s *_response = (response);                            \
     otrng_assert(_err == SUCCESS);                                             \
@@ -49,7 +49,7 @@
 #define assert_rec_msg_inc_state(result, respond_to, sender, otr_state,        \
                                  send_response)                                \
   do {                                                                         \
-    const otrng_err _result = (result);                                      \
+    const otrng_err _result = (result);                                        \
     const otrng_response_s *_respond_to = (respond_to);                        \
     const otrng_s *_sender = (sender);                                         \
     const otrng_state _otr_state = (otr_state);                                \

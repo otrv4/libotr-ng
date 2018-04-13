@@ -199,7 +199,7 @@ INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
 }
 
 INTERNAL otrng_err otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
-                                                const dake_auth_r_s *auth_r) {
+                                              const dake_auth_r_s *auth_r) {
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
@@ -249,8 +249,8 @@ INTERNAL otrng_err otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
 }
 
 INTERNAL otrng_err otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
-                                                   const uint8_t *buffer,
-                                                   size_t buflen) {
+                                                 const uint8_t *buffer,
+                                                 size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
   size_t read = 0;
@@ -331,7 +331,7 @@ INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_s *auth_i) {
 }
 
 INTERNAL otrng_err otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
-                                                const dake_auth_i_s *auth_i) {
+                                              const dake_auth_i_s *auth_i) {
   size_t s = DAKE_HEADER_BYTES + RING_SIG_BYTES;
   *dst = malloc(s);
 
@@ -354,8 +354,8 @@ INTERNAL otrng_err otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
 }
 
 INTERNAL otrng_err otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
-                                                   const uint8_t *buffer,
-                                                   size_t buflen) {
+                                                 const uint8_t *buffer,
+                                                 size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
   size_t read = 0;
@@ -755,9 +755,9 @@ tstatic otrng_bool no_rollback_detected(const char *versions) {
   return otrng_true;
 }
 
-INTERNAL otrng_bool otrng_valid_received_values(
-    const ec_point_p their_ecdh, const dh_mpi_p their_dh,
-    const user_profile_s *profile) {
+INTERNAL otrng_bool otrng_valid_received_values(const ec_point_p their_ecdh,
+                                                const dh_mpi_p their_dh,
+                                                const user_profile_s *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */
   if (otrng_ec_point_valid(their_ecdh) == otrng_false)
     return otrng_false;

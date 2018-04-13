@@ -100,9 +100,11 @@ INTERNAL void otrng_rsig_authenticate(ring_sig_s *dst,
  * @param [msg] The message to "verify".
  * @param [msg_len] The length of the message.
  */
-INTERNAL otrng_bool otrng_rsig_verify(
-    const ring_sig_s *src, const rsig_pubkey_p A1, const rsig_pubkey_p A2,
-    const rsig_pubkey_p A3, const unsigned char *msg, size_t msglen);
+INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
+                                      const rsig_pubkey_p A1,
+                                      const rsig_pubkey_p A2,
+                                      const rsig_pubkey_p A3,
+                                      const unsigned char *msg, size_t msglen);
 
 INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src);
 
