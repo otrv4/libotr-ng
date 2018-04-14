@@ -541,11 +541,10 @@ tstatic otrng_err serialize_and_encode_identity_message(
 tstatic otrng_err reply_with_identity_msg(otrng_response_s *response,
                                           otrng_s *otr) {
   dake_identity_message_s *m = NULL;
-  otrng_err err = ERROR;
 
   m = otrng_dake_identity_message_new(get_my_user_profile(otr));
   if (!m)
-    return err;
+    return ERROR;
 
   m->sender_instance_tag = otr->our_instance_tag;
   m->receiver_instance_tag = otr->their_instance_tag;
@@ -555,7 +554,7 @@ tstatic otrng_err reply_with_identity_msg(otrng_response_s *response,
 
   if (serialize_and_encode_identity_message(&response->to_send, m)) {
     otrng_dake_identity_message_free(m);
-    return err;
+    return ERROR;
   }
 
   otrng_dake_identity_message_free(m);
@@ -567,9 +566,14 @@ tstatic otrng_err start_dake(otrng_response_s *response, otrng_s *otr) {
   if (otrng_key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
     return ERROR;
 
-  otr->state = OTRNG_STATE_WAITING_AUTH_R;
+  // TODO: check this function
   maybe_create_keys(otr->conversation);
-  return reply_with_identity_msg(response, otr);
+  if (reply_with_identity_msg(response, otr))
+    return ERROR;
+
+  otr->state = OTRNG_STATE_WAITING_AUTH_R;
+
+  return SUCCESS;
 }
 
 API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,

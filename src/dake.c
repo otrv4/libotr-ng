@@ -45,15 +45,17 @@ otrng_dake_identity_message_new(const user_profile_s *profile) {
   identity_message->sender_instance_tag = 0;
   identity_message->receiver_instance_tag = 0;
   identity_message->profile->versions = NULL;
+  otrng_user_profile_copy(identity_message->profile, profile);
   otrng_ec_bzero(identity_message->Y, ED448_POINT_BYTES);
   identity_message->B = NULL;
-  otrng_user_profile_copy(identity_message->profile, profile);
 
   return identity_message;
 }
 
 INTERNAL void
 otrng_dake_identity_message_destroy(dake_identity_message_s *identity_message) {
+  identity_message->sender_instance_tag = 0;
+  identity_message->receiver_instance_tag = 0;
   otrng_user_profile_destroy(identity_message->profile);
   otrng_ec_point_destroy(identity_message->Y);
   otrng_dh_mpi_release(identity_message->B);
@@ -111,6 +113,7 @@ INTERNAL otrng_err otrng_dake_identity_message_asprintf(
   }
   cursor += len;
 
+  // TODO: should take care of the else?
   if (dst)
     *dst = buff;
 
