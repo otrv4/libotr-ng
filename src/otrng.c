@@ -1659,7 +1659,7 @@ tstatic otrng_err receive_identity_message_on_waiting_auth_r(
 
   // Every time we call 'otrng_key_manager_generate_ephemeral_keys'
   // keys get deleted and replaced
-  //forget_our_keys(otr);
+  // forget_our_keys(otr);
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
@@ -1667,7 +1667,7 @@ tstatic otrng_err receive_identity_message_on_waiting_auth_i(
     string_p *dst, dake_identity_message_s *msg, otrng_s *otr) {
   // Every time we call 'otrng_key_manager_generate_ephemeral_keys'
   // keys get deleted and replaced
-  //forget_our_keys(otr);
+  // forget_our_keys(otr);
   otrng_user_profile_free(otr->their_profile);
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
