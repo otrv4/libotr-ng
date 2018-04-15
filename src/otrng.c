@@ -282,13 +282,13 @@ INTERNAL otrng_err otrng_build_query_message(string_p *dst,
   size_t qm_size = QUERY_MESSAGE_TAG_BYTES + 3 + strlen(message) + 2 + 1;
   string_p buff = NULL;
   char allowed[3] = {0};
-
   *dst = NULL;
-  allowed_versions(allowed, otr);
 
   buff = malloc(qm_size);
   if (!buff)
     return ERROR;
+
+  allowed_versions(allowed, otr);
 
   char *cursor = stpcpy(buff, query_header);
   cursor = stpcpy(cursor, allowed);
@@ -619,6 +619,7 @@ tstatic otrng_err receive_query_message(otrng_response_s *response,
 
   switch (otr->running_version) {
   case OTRNG_VERSION_4:
+    // TODO: why is this delete here?
     otrng_dh_priv_key_destroy(otr->keys->our_dh);
     otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
     return start_dake(response, otr);
@@ -1676,12 +1677,12 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
     return SUCCESS;
   }
 
-  received_instance_tag(m->sender_instance_tag, otr);
-
   if (otrng_valid_received_values(m->Y, m->B, m->profile)) {
     otrng_dake_identity_message_destroy(m);
     return err;
   }
+
+  received_instance_tag(m->sender_instance_tag, otr);
 
   switch (otr->state) {
   case OTRNG_STATE_START:

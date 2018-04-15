@@ -43,14 +43,16 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
     return NULL;
 
   state->client_id = client_id;
-  state->protocol_name = NULL;
   state->account_name = NULL;
+  state->protocol_name = NULL;
   state->callbacks = NULL;
   state->userstate = NULL;
   state->keypair = NULL;
   state->shared_prekey_pair = NULL;
   state->phi = NULL;
-  state->heartbeat = set_heartbeat(300);
+  state->pad = false; // TODO: why is this a bool?
+  state->heartbeat = set_heartbeat(
+      300); // TODO: why is this set here, and not from the client?
 
   return state;
 }
