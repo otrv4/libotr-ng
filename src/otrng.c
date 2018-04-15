@@ -1657,12 +1657,17 @@ tstatic otrng_err receive_identity_message_on_waiting_auth_r(
     return SUCCESS;
   }
 
-  forget_our_keys(otr);
+  // Every time we call 'otrng_key_manager_generate_ephemeral_keys'
+  // keys get deleted and replaced
+  //forget_our_keys(otr);
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
 tstatic otrng_err receive_identity_message_on_waiting_auth_i(
     string_p *dst, dake_identity_message_s *msg, otrng_s *otr) {
+  // Every time we call 'otrng_key_manager_generate_ephemeral_keys'
+  // keys get deleted and replaced
+  //forget_our_keys(otr);
   otrng_user_profile_free(otr->their_profile);
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
@@ -2216,6 +2221,8 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
     return receive_identity_message(&response->to_send, decoded, dec_len, otr);
   case AUTH_R_MSG_TYPE:
     err = receive_auth_r(&response->to_send, decoded, dec_len, otr);
+    // TODO: why is this delete here?
+    // TODO: this gets deleted regardless of the error?
     if (otr->state == OTRNG_STATE_ENCRYPTED_MESSAGES) {
       otrng_dh_priv_key_destroy(otr->keys->our_dh);
       otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
