@@ -37,12 +37,7 @@ typedef otrng_keypair_s rsig_keypair_s, rsig_keypair_p[1];
 /**
  * @brief The ring_sig_s structure represents the ring signature.
  *
- *  [c1] the scalar for the signature
- *  [r1] the scalar for the signature
- *  [c2] the scalar for the signature
- *  [r2] the scalar for the signature
- *  [c3] the scalar for the signature
- *  [r3] the scalar for the signature
+ *  [c1..r3] the scalars for the signature
  */
 typedef struct ring_sig_s {
   ec_scalar_p c1;
