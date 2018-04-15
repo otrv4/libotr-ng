@@ -186,8 +186,8 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
 
   // Alice sends a query message
   otrng_assert(otrng_build_query_message(&query_message, "", alice) == SUCCESS);
-  otrng_assert_cmpmem("?OTRv4", query_message, 6);
   otrng_assert(alice->state == OTRNG_STATE_START);
+  otrng_assert_cmpmem("?OTRv4", query_message, 6);
 
   // Bob receives a query message
   otrng_assert(otrng_receive_message(response_to_alice, query_message, bob) ==
