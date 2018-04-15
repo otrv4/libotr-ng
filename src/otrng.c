@@ -277,6 +277,9 @@ INTERNAL void otrng_free(/*@only@ */ otrng_s *otr) {
 INTERNAL otrng_err otrng_build_query_message(string_p *dst,
                                              const string_p message,
                                              const otrng_s *otr) {
+  if (otr->state == OTRNG_STATE_ENCRYPTED_MESSAGES)
+    return ERROR;
+
   /* size = qm tag + versions + msg length + versions
    * + question mark + whitespace + null byte */
   size_t qm_size = QUERY_MESSAGE_TAG_BYTES + 3 + strlen(message) + 2 + 1;
