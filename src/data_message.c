@@ -90,7 +90,8 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
 
   // TODO: This could be NULL. We need to test.
   size_t len = 0;
-  if (otrng_serialize_dh_public_key(cursor, &len, data_msg->dh)) {
+  if (otrng_serialize_dh_public_key(cursor, (s - (cursor - dst)), &len,
+                                    data_msg->dh)) {
     free(dst);
     dst = NULL;
     return ERROR;

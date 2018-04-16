@@ -59,12 +59,14 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
  * @warning MPIs use the minimum-length encoding; i. e. no leading zeroes.
  *
  * @param [dst] The destination.
- * @param [len] The destination's length.
+ * @param [dstlen] The length of dst.
+ * @param [written] How many bytes were written to dst.
  * @param [pub] The DH public key.
  *
  * @out SUCCESS or ERROR.
  */
-INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t *len,
+INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
+                                                 size_t *written,
                                                  const dh_public_key_p pub);
 
 INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst, const ring_sig_s *proof);

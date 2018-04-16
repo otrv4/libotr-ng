@@ -174,9 +174,10 @@ void test_otrng_serialize_dh_public_key() {
       gcry_mpi_scan(&TEST_DH, GCRYMPI_FMT_USG, dh_data, 383, NULL);
   otrng_assert(!err);
 
-  uint8_t dst[383 + 4] = {0};
+  uint8_t dst[DH_MPI_BYTES] = {0};
   size_t written = 0;
-  otrng_err otr_err = otrng_serialize_dh_public_key(dst, &written, TEST_DH);
+  otrng_err otr_err =
+      otrng_serialize_dh_public_key(dst, DH_MPI_BYTES, &written, TEST_DH);
   otrng_assert(!otr_err);
   otrng_dh_mpi_release(TEST_DH);
   TEST_DH = NULL;

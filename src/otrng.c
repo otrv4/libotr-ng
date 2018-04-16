@@ -647,7 +647,7 @@ tstatic otrng_err build_auth_message(
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
-  uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
+  uint8_t ser_i_dh[DH_MPI_BYTES], ser_r_dh[DH_MPI_BYTES];
   size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
   uint8_t hash_ser_i_profile[HASH_BYTES];
   uint8_t hash_ser_r_profile[HASH_BYTES];
@@ -656,10 +656,12 @@ tstatic otrng_err build_auth_message(
   otrng_serialize_ec_point(ser_i_ecdh, i_ecdh);
   otrng_serialize_ec_point(ser_r_ecdh, r_ecdh);
 
-  if (otrng_serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh))
+  if (otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_BYTES, &ser_i_dh_len,
+                                    i_dh))
     return ERROR;
 
-  if (otrng_serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh))
+  if (otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_BYTES, &ser_r_dh_len,
+                                    r_dh))
     return ERROR;
 
   do {
@@ -722,7 +724,7 @@ tstatic otrng_err build_auth_message(
     cursor += HASH_BYTES;
 
     *msg = buff;
-    *msg_len = len;
+    *msg_len = cursor - buff;
   } while (0);
 
   free(ser_i_profile);
@@ -859,7 +861,7 @@ tstatic otrng_err build_non_interactive_auth_message(
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
-  uint8_t ser_i_dh[DH3072_MOD_LEN_BYTES], ser_r_dh[DH3072_MOD_LEN_BYTES];
+  uint8_t ser_i_dh[DH_MPI_BYTES], ser_r_dh[DH_MPI_BYTES];
   size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   uint8_t hash_ser_i_profile[HASH_BYTES];
@@ -869,10 +871,12 @@ tstatic otrng_err build_non_interactive_auth_message(
   otrng_serialize_ec_point(ser_i_ecdh, i_ecdh);
   otrng_serialize_ec_point(ser_r_ecdh, r_ecdh);
 
-  if (otrng_serialize_dh_public_key(ser_i_dh, &ser_i_dh_len, i_dh))
+  if (otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_BYTES, &ser_i_dh_len,
+                                    i_dh))
     return ERROR;
 
-  if (otrng_serialize_dh_public_key(ser_r_dh, &ser_r_dh_len, r_dh))
+  if (otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_BYTES, &ser_r_dh_len,
+                                    r_dh))
     return ERROR;
 
   otrng_serialize_otrng_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
@@ -940,7 +944,7 @@ tstatic otrng_err build_non_interactive_auth_message(
     cursor += HASH_BYTES;
 
     *msg = buff;
-    *msg_len = len;
+    *msg_len = cursor - buff;
     err = SUCCESS;
   } while (0);
 

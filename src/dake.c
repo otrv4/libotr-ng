@@ -104,8 +104,8 @@ INTERNAL otrng_err otrng_dake_identity_message_asprintf(
   profile = NULL;
 
   size_t len = 0;
-  otrng_err err =
-      otrng_serialize_dh_public_key(cursor, &len, identity_message->B);
+  otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
+                                                &len, identity_message->B);
   if (err) {
     free(buff);
     buff = NULL;
@@ -232,7 +232,8 @@ INTERNAL otrng_err otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   our_profile = NULL;
 
   size_t len = 0;
-  otrng_err err = otrng_serialize_dh_public_key(cursor, &len, auth_r->A);
+  otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
+                                                &len, auth_r->A);
   if (err) {
     free(buff);
     buff = NULL;
@@ -474,8 +475,8 @@ INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
   profile = NULL;
 
   size_t len = 0;
-  otrng_err err =
-      otrng_serialize_dh_public_key(cursor, &len, prekey_message->B);
+  otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
+                                                &len, prekey_message->B);
   if (err) {
     free(buff);
     buff = NULL;
@@ -614,8 +615,8 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   our_profile = NULL;
 
   size_t len = 0;
-  otrng_err err =
-      otrng_serialize_dh_public_key(cursor, &len, non_interactive_auth->A);
+  otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
+                                                &len, non_interactive_auth->A);
   if (err) {
     free(buff);
     buff = NULL;
