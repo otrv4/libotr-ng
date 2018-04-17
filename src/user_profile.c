@@ -222,6 +222,8 @@ tstatic otrng_err user_profile_sign(user_profile_s *profile,
   otrng_serialize_ec_point(pubkey, keypair->pub);
 
   // maybe otrng_ec_derive_public_key again?
+  // TODO: Why does sign() receive both sym and pub if it can derive
+  // the pub form the sym?
   otrng_ec_sign(profile->signature, (uint8_t *)keypair->sym, pubkey, body,
                 bodylen);
 
