@@ -84,7 +84,9 @@ int main(int argc, char **argv) {
   g_test_add_func("/edwards448/scalar_serialization",
                   ed448_test_scalar_serialization);
 
+  g_test_add_func("/dake/build_auth_message_auth", test_build_auth_message);
   g_test_add_func("/dake/rsig_auth", test_rsig_auth);
+
   g_test_add_func("/list/add", test_otrng_list_add);
   g_test_add_func("/list/get", test_otrng_list_get_last);
   g_test_add_func("/list/length", test_otrng_list_len);
