@@ -329,8 +329,22 @@ void test_build_auth_message() {
   otrng_assert(dstlen == 1083);
   otrng_assert_cmpmem(dst, expected_t, dstlen);
 
+  //err = build_auth_message(&dst, &dstlen, 0x02, initiator_profile,
+  //                         responder_profile, initiator_ecdh, responder_ecdh,
+  //                         initiator_dh, responder_dh, "phi");
+
+  //otrng_assert(SUCCESS == err);
+  //otrng_assert(dstlen == 1083);
+  //otrng_assert_cmpmem(dst, expected_t, dstlen);
+
   otrng_dh_mpi_release(initiator_dh);
   otrng_dh_mpi_release(responder_dh);
+  initiator_dh = NULL;
+  responder_dh = NULL;
+
   otrng_user_profile_destroy(initiator_profile);
   otrng_user_profile_destroy(responder_profile);
+
+  free(dst);
+  dst = NULL;
 }
