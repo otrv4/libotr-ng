@@ -426,7 +426,7 @@ tstatic bool message_is_otr_encoded(const string_p message) {
 }
 
 tstatic bool message_is_otr_error(const string_p message) {
-  return strstr(message, otr_error_header) != NULL;
+  return strncmp(message, otr_error_header, strlen(otr_error_header)) == 0;
 }
 
 INTERNAL otrng_response_s *otrng_response_new(void) {
