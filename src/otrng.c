@@ -2055,8 +2055,10 @@ tstatic otrng_err receive_encoded_message(otrng_response_s *response,
 
 // TODO: only display the human readable part
 tstatic otrng_err receive_error_message(otrng_response_s *response,
-                                        const string_p message, otrng_s *otr) {
-  if (strcmp(&message[18], "2") || strcmp(&message[18], "1")) {
+                                        const string_p message) {
+
+  const char error_identifier[] = "?OTR Error";
+  if (strncmp(message, error_identifier, strlen(error_identifier) + 1)) {
     response->to_display = otrng_strndup(message, strlen(message));
     return SUCCESS;
   }
@@ -2099,7 +2101,7 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
     return receive_encoded_message(response, message, otr);
 
   case IN_MSG_OTR_ERROR:
-    return receive_error_message(response, message, otr);
+    return receive_error_message(response, message);
   }
 
   return SUCCESS;
