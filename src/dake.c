@@ -29,6 +29,7 @@
 #include "deserialize.h"
 #include "error.h"
 #include "serialize.h"
+#include "shake.h"
 #include "str.h"
 
 INTERNAL dake_identity_message_s *
@@ -781,4 +782,168 @@ INTERNAL otrng_bool otrng_valid_received_values(const ec_point_p their_ecdh,
     return otrng_false;
 
   return otrng_true;
+}
+
+#define MAX_t_LENGTH                                                           \
+  (3 * 64 + 2 * ED448_POINT_BYTES + 2 * DH_MPI_BYTES +                         \
+   ED448_SHARED_PREKEY_BYTES)
+
+tstatic otrng_err build_t(uint8_t *dst, size_t dstlen, size_t *written,
+                          uint8_t first_usage, const user_profile_s *i_profile,
+                          const user_profile_s *r_profile,
+                          const ec_point_p i_ecdh, const ec_point_p r_ecdh,
+                          const dh_mpi_p i_dh, const dh_mpi_p r_dh,
+                          const uint8_t *ser_r_shared_prekey,
+                          size_t ser_r_shared_prekey_len, const char *phi) {
+  uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
+  size_t ser_i_profile_len, ser_r_profile_len = 0;
+  uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
+  uint8_t ser_i_dh[DH_MPI_BYTES], ser_r_dh[DH_MPI_BYTES];
+  size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
+
+  uint8_t hash_ser_i_profile[64];
+  uint8_t hash_ser_r_profile[64];
+  uint8_t hash_phi[64];
+
+  if (dstlen < MAX_t_LENGTH)
+    return ERROR;
+
+  otrng_serialize_ec_point(ser_i_ecdh, i_ecdh);
+  otrng_serialize_ec_point(ser_r_ecdh, r_ecdh);
+
+  if (otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_BYTES, &ser_i_dh_len,
+                                    i_dh))
+    return ERROR;
+
+  if (otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_BYTES, &ser_r_dh_len,
+                                    r_dh))
+    return ERROR;
+
+  do {
+    if (otrng_user_profile_asprintf(&ser_i_profile, &ser_i_profile_len,
+                                    i_profile))
+      continue;
+
+    if (otrng_user_profile_asprintf(&ser_r_profile, &ser_r_profile_len,
+                                    r_profile))
+      continue;
+
+    char *phi_val = otrng_strdup(phi);
+    if (!phi_val)
+      continue;
+
+    shake_256_kdf1(hash_ser_i_profile, 64, first_usage, ser_i_profile,
+                   ser_i_profile_len);
+    shake_256_kdf1(hash_ser_r_profile, 64, first_usage + 1, ser_r_profile,
+                   ser_r_profile_len);
+    shake_256_kdf1(hash_phi, 64, first_usage + 2, (uint8_t *)phi_val,
+                   strlen(phi_val) + 1);
+
+    free(phi_val);
+    phi_val = NULL;
+
+    uint8_t *cursor = dst;
+    memcpy(cursor, hash_ser_i_profile, 64);
+    cursor += 64;
+
+    memcpy(cursor, hash_ser_r_profile, 64);
+    cursor += 64;
+
+    memcpy(cursor, ser_i_ecdh, ED448_POINT_BYTES);
+    cursor += ED448_POINT_BYTES;
+
+    memcpy(cursor, ser_r_ecdh, ED448_POINT_BYTES);
+    cursor += ED448_POINT_BYTES;
+
+    memcpy(cursor, ser_i_dh, ser_i_dh_len);
+    cursor += ser_i_dh_len;
+
+    memcpy(cursor, ser_r_dh, ser_r_dh_len);
+    cursor += ser_r_dh_len;
+
+    // This is only used in the non-interactive t msg
+    memcpy(cursor, ser_r_shared_prekey, ser_r_shared_prekey_len);
+    cursor += ser_r_shared_prekey_len;
+
+    memcpy(cursor, hash_phi, 64);
+    cursor += 64;
+
+    if (written)
+      *written = cursor - dst;
+  } while (0);
+
+  free(ser_i_profile);
+  ser_i_profile = NULL;
+  free(ser_r_profile);
+  ser_r_profile = NULL;
+
+  sodium_memzero(ser_i_ecdh, ED448_POINT_BYTES);
+  sodium_memzero(ser_r_ecdh, ED448_POINT_BYTES);
+  sodium_memzero(ser_i_dh, DH3072_MOD_LEN_BYTES);
+  sodium_memzero(ser_r_dh, DH3072_MOD_LEN_BYTES);
+
+  return SUCCESS;
+}
+
+INTERNAL otrng_err build_auth_message(
+    uint8_t **msg, size_t *msg_len, const uint8_t type,
+    const user_profile_s *i_profile, const user_profile_s *r_profile,
+    const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
+    const dh_mpi_p r_dh, const char *phi) {
+
+  if (!phi)
+    phi = "";
+
+  size_t written = 0;
+  uint8_t *buff = malloc(1 + MAX_t_LENGTH);
+  if (!buff)
+    return ERROR;
+
+  // If type == 0:
+  // t = 0x0 || KDF_1(0x06 || Bobs_User_Profile, 64) || KDF_1(0x07 ||
+  // Alices_User_Profile, 64) || Y || X || B || A || KDF_1(0x08 || phi, 64)
+  // if type == 1:
+  // t = 0x1 || KDF_1(0x09 || Bobs_User_Profile, 64) || KDF_1(0x10 ||
+  // Alices_User_Profile, 64) || Y || X || B || A || KDF_1(0x11 || phi, 64)
+
+  uint8_t first_usage = 0x06 + type * 3;
+  otrng_err err =
+      build_t(buff + 1, MAX_t_LENGTH, &written, first_usage, i_profile,
+              r_profile, i_ecdh, r_ecdh, i_dh, r_dh, NULL, 0, phi);
+
+  if (err == ERROR) {
+    free(buff);
+    return ERROR;
+  }
+
+  *buff = type;
+
+  *msg = buff;
+  if (msg_len)
+    *msg_len = written + 1;
+
+  return SUCCESS;
+}
+
+INTERNAL otrng_err build_non_interactive_auth_message(
+    uint8_t **msg, size_t *msg_len, const user_profile_s *i_profile,
+    const user_profile_s *r_profile, const ec_point_p i_ecdh,
+    const ec_point_p r_ecdh, const dh_mpi_p i_dh, const dh_mpi_p r_dh,
+    const otrng_shared_prekey_pub_p r_shared_prekey, char *phi) {
+
+  if (!phi)
+    phi = "";
+
+  *msg = malloc(MAX_t_LENGTH);
+  if (!*msg)
+    return ERROR;
+
+  uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
+  otrng_serialize_otrng_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
+  otrng_err err = build_t(*msg, MAX_t_LENGTH, msg_len, 0x14, i_profile,
+                          r_profile, i_ecdh, r_ecdh, i_dh, r_dh,
+                          ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi);
+  sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
+
+  return err;
 }
