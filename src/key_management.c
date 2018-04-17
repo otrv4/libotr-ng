@@ -392,7 +392,7 @@ tstatic void calculate_shared_secret(shared_secret_p dst, const k_ecdh_p k_ecdh,
                                      const brace_key_p brace_key) {
   goldilocks_shake256_ctx_p hd;
 
-  hash_init_with_dom(hd);
+  hash_init_with_usage(hd, 0x04);
   hash_update(hd, k_ecdh, sizeof(k_ecdh_p));
   hash_update(hd, brace_key, sizeof(brace_key_p));
 
