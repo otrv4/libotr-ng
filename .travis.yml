@@ -82,7 +82,7 @@ notifications:
   irc:
     channels:
       - "irc.oftc.net#cad"
-    on_success: never
+    on_success: change
     on_failure: always
 
 before_install:
