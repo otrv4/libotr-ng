@@ -674,7 +674,8 @@ void test_api_conversation_errors(void) {
 
   otrng_assert(err == SUCCESS);
   otrng_assert(response_to_bob);
-  otrng_assert_cmpmem(err_human, response_to_bob->to_display, strlen(err_human));
+  otrng_assert_cmpmem(err_human, response_to_bob->to_display,
+                      strlen(err_human));
 
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);

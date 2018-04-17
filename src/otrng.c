@@ -2060,13 +2060,13 @@ tstatic otrng_err receive_error_message(otrng_response_s *response,
   const char error2[] = "Not in private state message";
 
   if (strncmp(&message[18], "1", 1) == 0) {
-      response->to_display = otrng_strndup(error1, strlen(error1));
-      return SUCCESS;
+    response->to_display = otrng_strndup(error1, strlen(error1));
+    return SUCCESS;
   }
 
-  if (strncmp(&message[18], "2", 1) == 0){
-      response->to_display = otrng_strndup(error2, strlen(error2));
-      return SUCCESS;
+  if (strncmp(&message[18], "2", 1) == 0) {
+    response->to_display = otrng_strndup(error2, strlen(error2));
+    return SUCCESS;
   }
 
   return ERROR;
