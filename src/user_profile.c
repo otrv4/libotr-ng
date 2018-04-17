@@ -258,8 +258,9 @@ otrng_user_profile_verify_signature(const user_profile_s *profile) {
 }
 
 INTERNAL user_profile_s *
-otrng_user_profile_build(const string_p versions, otrng_keypair_s *keypair,
-                         otrng_shared_prekey_pair_s *shared_prekey_pair) {
+otrng_user_profile_build(const string_p versions,
+                         const otrng_keypair_s *keypair,
+                         const otrng_shared_prekey_pair_s *shared_prekey_pair) {
   user_profile_s *profile = user_profile_new(versions);
   if (!profile)
     return NULL;

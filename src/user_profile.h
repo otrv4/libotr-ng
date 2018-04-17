@@ -54,9 +54,9 @@ INTERNAL otrng_err otrng_user_profile_deserialize(user_profile_s *target,
 INTERNAL otrng_err otrng_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
                                                const user_profile_s *profile);
 
-INTERNAL user_profile_s *
-otrng_user_profile_build(const string_p versions, otrng_keypair_s *keypair,
-                         otrng_shared_prekey_pair_s *shared_prekey_keypair);
+INTERNAL user_profile_s *otrng_user_profile_build(
+    const string_p versions, const otrng_keypair_s *keypair,
+    const otrng_shared_prekey_pair_s *shared_prekey_keypair);
 
 #ifdef OTRNG_USER_PROFILE_PRIVATE
 
