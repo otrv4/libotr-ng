@@ -670,10 +670,11 @@ void test_api_conversation_errors(void) {
   response_to_bob = otrng_response_new();
   err =
       otrng_receive_message(response_to_bob, response_to_alice->to_send, alice);
+  string_p err_human = "Not in private state message";
 
   otrng_assert(err == SUCCESS);
   otrng_assert(response_to_bob);
-  otrng_assert_cmpmem(err_code, response_to_bob->to_display, strlen(err_code));
+  otrng_assert_cmpmem(err_human, response_to_bob->to_display, strlen(err_human));
 
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);
