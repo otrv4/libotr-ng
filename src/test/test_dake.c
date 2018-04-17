@@ -331,4 +331,6 @@ void test_build_auth_message() {
 
   otrng_dh_mpi_release(initiator_dh);
   otrng_dh_mpi_release(responder_dh);
+  otrng_user_profile_destroy(initiator_profile);
+  otrng_user_profile_destroy(responder_profile);
 }
