@@ -519,7 +519,8 @@ tstatic otrng_err init_ratchet(key_manager_s *manager, bool interactive) {
   if (interactive)
     calculate_shared_secret(shared_secret, k_ecdh, manager->brace_key);
   else
-    calculate_shared_secret_from_tmp_key(shared_secret, manager->tmp_key, manager->brace_key);
+    calculate_shared_secret_from_tmp_key(shared_secret, manager->tmp_key,
+                                         manager->brace_key);
 
 #ifdef DEBUG
   printf("ENTERING NEW RATCHET\n");
