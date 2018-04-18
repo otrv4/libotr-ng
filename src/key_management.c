@@ -406,7 +406,7 @@ tstatic void calculate_shared_secret_from_tmp_key(shared_secret_p dst,
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, 0x04);
-  hash_update(hd, tmp_k, sizeof(uint8_t));
+  hash_update(hd, tmp_k, sizeof(tmp_k));
   hash_update(hd, brace_key, sizeof(brace_key_p));
 
   hash_final(hd, dst, sizeof(shared_secret_p));
