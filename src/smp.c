@@ -106,7 +106,7 @@ tstatic otrng_err hash_to_scalar(const unsigned char *buff,
                                  const size_t bufflen, ec_scalar_p dst) {
   uint8_t hash[HASH_BYTES];
 
-  shake_256_hash(hash, sizeof(hash), buff, bufflen);
+  shake_256_kdf1(hash, sizeof(hash), 0x1D, buff, bufflen);
 
   if (otrng_deserialize_ec_scalar(dst, hash, ED448_SCALAR_BYTES) == ERROR)
     return ERROR;
