@@ -84,6 +84,9 @@ notifications:
       - "irc.oftc.net#cad"
     on_success: change
     on_failure: always
+    skip_join: true
+    template:
+      - "%{repository_slug}(%{author}): %{message} %{build_url}"
 
 before_install:
 # Update the repo
