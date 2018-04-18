@@ -903,8 +903,8 @@ INTERNAL otrng_err build_auth_message(
   // t = 0x0 || KDF_1(0x06 || Bobs_User_Profile, 64) || KDF_1(0x07 ||
   // Alices_User_Profile, 64) || Y || X || B || A || KDF_1(0x08 || phi, 64)
   // if type == 1:
-  // t = 0x1 || KDF_1(0x09 || Bobs_User_Profile, 64) || KDF_1(0x10 ||
-  // Alices_User_Profile, 64) || Y || X || B || A || KDF_1(0x11 || phi, 64)
+  // t = 0x1 || KDF_1(0x09 || Bobs_User_Profile, 64) || KDF_1(0x0A ||
+  // Alices_User_Profile, 64) || Y || X || B || A || KDF_1(0x0B || phi, 64)
 
   uint8_t first_usage = 0x06 + type * 3;
   otrng_err err =
@@ -940,7 +940,7 @@ INTERNAL otrng_err build_non_interactive_auth_message(
 
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_serialize_otrng_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
-  otrng_err err = build_t(*msg, MAX_t_LENGTH, msg_len, 0x14, i_profile,
+  otrng_err err = build_t(*msg, MAX_t_LENGTH, msg_len, 0x0E, i_profile,
                           r_profile, i_ecdh, r_ecdh, i_dh, r_dh,
                           ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi);
   sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);

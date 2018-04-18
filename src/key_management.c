@@ -316,8 +316,8 @@ tstatic chain_link_s *derive_next_chain_link(chain_link_s *previous) {
   if (l == NULL)
     return NULL;
 
-  // KDF_1(0x23 || chain_key_s[i-1][j], 64).
-  shake_256_kdf1(l->key, sizeof(chain_key_p), 0x23, previous->key,
+  // KDF_1(0x17 || chain_key_s[i-1][j], 64).
+  shake_256_kdf1(l->key, sizeof(chain_key_p), 0x17, previous->key,
                  sizeof(chain_key_p));
 
   // TODO: the previous is still needed for the MK
