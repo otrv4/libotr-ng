@@ -400,9 +400,10 @@ tstatic void calculate_shared_secret(shared_secret_p dst, const k_ecdh_p k_ecdh,
   hash_destroy(hd);
 }
 
-tstatic void calculate_shared_secret_from_tmp_key(shared_secret_p dst,
-                                                  const uint8_t tmp_k[HASH_BYTES],
-                                                  const brace_key_p brace_key) {
+tstatic void
+calculate_shared_secret_from_tmp_key(shared_secret_p dst,
+                                     const uint8_t tmp_k[HASH_BYTES],
+                                     const brace_key_p brace_key) {
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, 0x04);
