@@ -51,14 +51,6 @@ typedef struct ring_sig_s {
 /**
  * @brief Ring Sig keypair generation.
  *
- * @param [pub] The public key.
- * @param [priv] The private key.
- */
-INTERNAL void otrng_generate_keypair(rsig_pubkey_p pub, rsig_privkey_p priv);
-
-/**
- * @brief Ring Sig keypair generation.
- *
  * @param [keypair] The keypair.
  */
 INTERNAL void otrng_rsig_keypair_generate(rsig_keypair_s *keypair);
