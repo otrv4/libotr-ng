@@ -49,13 +49,6 @@ typedef struct ring_sig_s {
 } ring_sig_s, ring_sig_p[1];
 
 /**
- * @brief Ring Sig keypair generation.
- *
- * @param [keypair] The keypair.
- */
-INTERNAL void otrng_rsig_keypair_generate(rsig_keypair_s *keypair);
-
-/**
  * @brief The Authentication function of the Ring Sig.
  *
  * It produces a signature of knowledge, named sigma, bound to the
