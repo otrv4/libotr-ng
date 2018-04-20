@@ -55,14 +55,14 @@ INTERNAL void otrng_rsig_authenticate(ring_sig_s *dst,
   rsig_privkey_p t1;
   rsig_pubkey_p T1, T2, T3, A2c2, A3c3;
 
-  otrng_generate_keypair(T1, t1);
+  otrng_zq_keypair_generate(T1, t1);
 
-  otrng_generate_keypair(T2, dst->r2);
+  otrng_zq_keypair_generate(T2, dst->r2);
   ed448_random_scalar(dst->c2);
   goldilocks_448_point_scalarmul(A2c2, A2, dst->c2);
   goldilocks_448_point_add(T2, T2, A2c2);
 
-  otrng_generate_keypair(T3, dst->r3);
+  otrng_zq_keypair_generate(T3, dst->r3);
   ed448_random_scalar(dst->c3);
   goldilocks_448_point_scalarmul(A3c3, A3, dst->c3);
   goldilocks_448_point_add(T3, T3, A3c3);

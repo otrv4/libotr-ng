@@ -125,11 +125,11 @@ INTERNAL otrng_err otrng_generate_smp_msg_1(smp_msg_1_s *dst,
   dst->question = NULL;
 
   /* G2a = G * a2 * and G3a = G * a3 */
-  otrng_generate_keypair(dst->G2a, smp->a2);
-  otrng_generate_keypair(dst->G3a, smp->a3);
+  otrng_zq_keypair_generate(dst->G2a, smp->a2);
+  otrng_zq_keypair_generate(dst->G3a, smp->a3);
 
-  otrng_generate_keypair(pair_r2->pub, pair_r2->priv);
-  otrng_generate_keypair(pair_r3->pub, pair_r3->priv);
+  otrng_zq_keypair_generate(pair_r2->pub, pair_r2->priv);
+  otrng_zq_keypair_generate(pair_r3->pub, pair_r3->priv);
 
   /* c2 = hash_to_scalar(1 || G * r2) */
   hash[0] = 0x01;
@@ -309,13 +309,13 @@ tstatic otrng_err generate_smp_msg_2(smp_msg_2_s *dst, const smp_msg_1_s *msg_1,
   unsigned char buff[len];
 
   /* G2b = G * b2 and G3b = G * b3 */
-  otrng_generate_keypair(dst->G2b, b2);
-  otrng_generate_keypair(dst->G3b, smp->b3);
+  otrng_zq_keypair_generate(dst->G2b, b2);
+  otrng_zq_keypair_generate(dst->G3b, smp->b3);
 
-  otrng_generate_keypair(pair_r2->pub, pair_r2->priv);
-  otrng_generate_keypair(pair_r3->pub, pair_r3->priv);
-  otrng_generate_keypair(pair_r4->pub, pair_r4->priv);
-  otrng_generate_keypair(pair_r5->pub, pair_r5->priv);
+  otrng_zq_keypair_generate(pair_r2->pub, pair_r2->priv);
+  otrng_zq_keypair_generate(pair_r3->pub, pair_r3->priv);
+  otrng_zq_keypair_generate(pair_r4->pub, pair_r4->priv);
+  otrng_zq_keypair_generate(pair_r5->pub, pair_r5->priv);
 
   ed448_random_scalar(r6);
 
@@ -579,9 +579,9 @@ tstatic otrng_err generate_smp_msg_3(smp_msg_3_s *dst, const smp_msg_2_s *msg_2,
 
   ed448_random_scalar(r6);
 
-  otrng_generate_keypair(pair_r4->pub, pair_r4->priv);
-  otrng_generate_keypair(pair_r5->pub, pair_r5->priv);
-  otrng_generate_keypair(pair_r7->pub, pair_r7->priv);
+  otrng_zq_keypair_generate(pair_r4->pub, pair_r4->priv);
+  otrng_zq_keypair_generate(pair_r5->pub, pair_r5->priv);
+  otrng_zq_keypair_generate(pair_r7->pub, pair_r7->priv);
 
   otrng_ec_point_copy(smp->G3b, msg_2->G3b);
 
@@ -791,7 +791,7 @@ tstatic otrng_err generate_smp_msg_4(smp_msg_4_s *dst, const smp_msg_3_s *msg_3,
                                      smp_context_p smp) {
   ec_point_p Qa_Qb;
   ecdh_keypair_p pair_r7;
-  otrng_generate_keypair(pair_r7->pub, pair_r7->priv);
+  otrng_zq_keypair_generate(pair_r7->pub, pair_r7->priv);
   int len = 1 + (2 * ED448_POINT_BYTES);
   uint8_t buff[len];
 
