@@ -46,7 +46,7 @@ static inline void ed448_random_scalar(goldilocks_448_scalar_p priv) {
  * @warning TODO: Is this safe?
  */
 static inline void otrng_zq_keypair_generate(goldilocks_448_point_p pub,
-                                          goldilocks_448_scalar_p priv) {
+                                             goldilocks_448_scalar_p priv) {
   // Unlike otrng_keypair_generate and otrng_ecdh_keypair_generate, this
   // function does not apply a KDF to the random symmetric key before decoding
   // it into a scalar.
