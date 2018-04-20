@@ -18,8 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gcrypt.h>
-#include <sodium.h>
+#include <string.h>
 
 #define OTRNG_ED448_PRIVATE
 
