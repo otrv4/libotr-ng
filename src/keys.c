@@ -40,6 +40,9 @@ INTERNAL otrng_keypair_s *otrng_keypair_new(void) {
 
 INTERNAL void otrng_keypair_generate(otrng_keypair_s *keypair,
                                      const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  // Acording to the section "Public keys, Shared Prekeys and Fingerprints"
+  // this generates keys using RFC 8032.
+  // TODO: Double check if this is true (I dont see a SHAKE-256(sym, 114).
   memcpy(keypair->sym, sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_derive_from_secret(keypair->priv, keypair->sym);
 
