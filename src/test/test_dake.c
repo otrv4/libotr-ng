@@ -411,7 +411,6 @@ void test_build_auth_message() {
   otrng_assert_cmpmem(dst, expected_t1, dstlen);
 
   free(dst);
-  dst = NULL;
 
   err = build_auth_message(&dst, &dstlen, 0x02, initiator_profile,
                            responder_profile, initiator_ecdh, responder_ecdh,
@@ -422,13 +421,9 @@ void test_build_auth_message() {
   otrng_assert_cmpmem(dst, expected_t2, dstlen);
 
   free(dst);
-  dst = NULL;
 
   otrng_dh_mpi_release(initiator_dh);
   otrng_dh_mpi_release(responder_dh);
-  initiator_dh = NULL;
-  responder_dh = NULL;
-
   otrng_user_profile_destroy(initiator_profile);
   otrng_user_profile_destroy(responder_profile);
 }
