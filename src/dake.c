@@ -784,7 +784,7 @@ INTERNAL otrng_bool otrng_valid_received_values(const ec_point_p their_ecdh,
   return otrng_true;
 }
 
-#define MAX_t_LENGTH                                                           \
+#define MAX_T_LENGTH                                                           \
   (3 * 64 + 2 * ED448_POINT_BYTES + 2 * DH_MPI_BYTES +                         \
    ED448_SHARED_PREKEY_BYTES)
 
@@ -805,7 +805,7 @@ tstatic otrng_err build_t(uint8_t *dst, size_t dstlen, size_t *written,
   uint8_t hash_ser_r_profile[64];
   uint8_t hash_phi[64];
 
-  if (dstlen < MAX_t_LENGTH)
+  if (dstlen < MAX_T_LENGTH)
     return ERROR;
 
   otrng_serialize_ec_point(ser_i_ecdh, i_ecdh);
@@ -895,7 +895,7 @@ INTERNAL otrng_err build_auth_message(
     phi = "";
 
   size_t written = 0;
-  uint8_t *buff = malloc(1 + MAX_t_LENGTH);
+  uint8_t *buff = malloc(1 + MAX_T_LENGTH);
   if (!buff)
     return ERROR;
 
@@ -908,7 +908,7 @@ INTERNAL otrng_err build_auth_message(
 
   uint8_t first_usage = 0x06 + type * 3;
   otrng_err err =
-      build_t(buff + 1, MAX_t_LENGTH, &written, first_usage, i_profile,
+      build_t(buff + 1, MAX_T_LENGTH, &written, first_usage, i_profile,
               r_profile, i_ecdh, r_ecdh, i_dh, r_dh, NULL, 0, phi);
 
   if (err == ERROR) {
@@ -934,13 +934,13 @@ INTERNAL otrng_err build_non_interactive_auth_message(
   if (!phi)
     phi = "";
 
-  *msg = malloc(MAX_t_LENGTH);
+  *msg = malloc(MAX_T_LENGTH);
   if (!*msg)
     return ERROR;
 
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_serialize_otrng_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
-  otrng_err err = build_t(*msg, MAX_t_LENGTH, msg_len, 0x0E, i_profile,
+  otrng_err err = build_t(*msg, MAX_T_LENGTH, msg_len, 0x0E, i_profile,
                           r_profile, i_ecdh, r_ecdh, i_dh, r_dh,
                           ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi);
   sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
