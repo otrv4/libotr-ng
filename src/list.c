@@ -58,6 +58,7 @@ tstatic void call_and_free_node(list_element_s *node, void *context) {
 
   node->data = NULL;
   free(node);
+  node = NULL;
 }
 
 INTERNAL void otrng_list_free(list_element_s *head, void (*fn)(void *data)) {

@@ -35,6 +35,7 @@ void test_otrng_builds_query_message(otrng_fixture_s *otrng_fixture,
   g_assert_cmpstr(query_message, ==, expected_qm);
 
   free(query_message);
+  query_message = NULL;
 }
 
 void test_otrng_builds_query_message_v34(otrng_fixture_s *otrng_fixture,
@@ -49,6 +50,7 @@ void test_otrng_builds_query_message_v34(otrng_fixture_s *otrng_fixture,
   g_assert_cmpstr(query_message, ==, expected_qm);
 
   free(query_message);
+  query_message = NULL;
 }
 
 void test_otrng_builds_whitespace_tag(otrng_fixture_s *otrng_fixture,
@@ -62,6 +64,7 @@ void test_otrng_builds_whitespace_tag(otrng_fixture_s *otrng_fixture,
                                           otrng_fixture->otr) == SUCCESS);
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
   free(whitespace_tag);
+  whitespace_tag = NULL;
 }
 
 void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
@@ -75,6 +78,7 @@ void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
                                           otrng_fixture->v34) == SUCCESS);
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
   free(whitespace_tag);
+  whitespace_tag = NULL;
 }
 
 void test_otrng_receives_plaintext_without_ws_tag_on_start(
@@ -206,6 +210,7 @@ void test_otrng_receives_identity_message_validates_instance_tag(
   otrng_fixture->otr->their_instance_tag = 1;
   otrng_receive_message(id_msg, query_message, otrng_fixture->otr);
   free(query_message);
+  query_message = NULL;
 
   // receive the identity message with non-zero their instance tag
   otrng_response_s *auth_msg = otrng_response_new();
@@ -214,6 +219,7 @@ void test_otrng_receives_identity_message_validates_instance_tag(
   otrng_assert(!auth_msg->to_send);
 
   free(to_send);
+  to_send = NULL;
   otrng_response_free(id_msg);
   otrng_response_free(auth_msg);
 }
@@ -234,5 +240,6 @@ void test_otrng_destroy() {
   otrng_assert(otr->v3_conn == NULL);
 
   free(otr);
+  otr = NULL;
   otrng_client_state_free(state);
 }

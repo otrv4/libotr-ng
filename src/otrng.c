@@ -2049,6 +2049,7 @@ tstatic otrng_err receive_encoded_message(otrng_response_s *response,
 
   otrng_err err = receive_decoded_message(response, decoded, dec_len, otr);
   free(decoded);
+  decoded = NULL;
 
   return err;
 }
@@ -2447,6 +2448,7 @@ tstatic otrng_err otrng_send_symkey_message_v4(string_p *to_send,
     tlv_list_s *tlvs = otrng_tlv_list_one(
         otrng_tlv_new(OTRNG_TLV_SYM_KEY, usedatalen + 4, tlv_data));
     free(tlv_data);
+    tlv_data = NULL;
     if (!tlvs)
       return ERROR;
 
@@ -2525,6 +2527,7 @@ tstatic tlv_s *otrng_smp_initiate(const user_profile_s *initiator_profile,
     if (!tlv) {
       otrng_smp_msg_1_destroy(msg);
       free(to_send);
+      to_send = NULL;
       return NULL;
     }
 

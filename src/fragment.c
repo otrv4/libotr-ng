@@ -44,8 +44,10 @@ API void otrng_message_free(otrng_message_to_send_s *message) {
     return;
 
   int i;
-  for (i = 0; i < message->total; i++)
+  for (i = 0; i < message->total; i++) {
     free(message->pieces[i]);
+    message->pieces[i] = NULL;
+  }
 
   free(message->pieces);
   message->pieces = NULL;
@@ -111,6 +113,7 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
       int i;
       for (i = 0; i < fragments->total; i++) {
         free(pieces[i]);
+        pieces[i] = NULL;
       }
 
       free(pieces);
@@ -126,6 +129,7 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
       int i;
       for (i = 0; i < fragments->total; i++) {
         free(pieces[i]);
+        pieces[i] = NULL;
       }
 
       free(piece_data);

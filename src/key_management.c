@@ -39,6 +39,7 @@ tstatic void chain_link_free(chain_link_s *head) {
 
     sodium_memzero(current->key, sizeof(chain_key_p));
     free(current);
+    current = NULL;
 
     current = next;
   }
