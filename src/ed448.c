@@ -143,6 +143,36 @@ otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
   goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
 
+INTERNAL void
+otrng_ecdh_keypair_generate_their(ec_point_p keypair,
+                                  const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  /*
+   * The spec requires:
+
+   1. r = rand(57)
+   2. h = KDF1(0x01 || r, 57)
+   3. s = little-endian-decode(clamp(h))
+
+   4. secret = s
+   5. public = G * s
+
+   We can't ensure here how the scalar will be derived from h (step 3), since
+   this is under control of libgoldilocks.
+  */
+
+  uint8_t h[ED448_PRIVATE_BYTES];
+  ec_scalar_p priv;
+  shake_256_kdf1(h, ED448_PRIVATE_BYTES, 0x01, sym, ED448_PRIVATE_BYTES);
+  otrng_ec_scalar_derive_from_secret(priv, h);
+
+  uint8_t pub[ED448_POINT_BYTES];
+  otrng_ec_derive_public_key(pub, h);
+  otrng_ec_point_decode(keypair, pub);
+
+  goldilocks_bzero(h, ED448_PRIVATE_BYTES);
+  goldilocks_bzero(pub, ED448_POINT_BYTES);
+}
+
 INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {
   otrng_ec_scalar_destroy(keypair->priv);
   otrng_ec_point_destroy(keypair->pub);

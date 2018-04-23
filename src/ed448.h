@@ -260,6 +260,10 @@ INTERNAL otrng_bool otrng_ec_verify(
     const uint8_t sig[GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES],
     const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg, size_t msg_len);
 
+INTERNAL void
+otrng_ecdh_keypair_generate_their(ec_point_p keypair,
+                                  const uint8_t sym[ED448_PRIVATE_BYTES]);
+
 #ifdef OTRNG_ED448_PRIVATE
 #endif
 

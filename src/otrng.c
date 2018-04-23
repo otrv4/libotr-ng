@@ -730,6 +730,7 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   if (otrng_ecdh_valid_secret(k_ecdh))
     return ERROR;
 
+  // TODO: refactor this
   goldilocks_shake256_ctx_p hd;
   hash_init_with_dom(hd);
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
@@ -775,6 +776,8 @@ tstatic data_message_s *generate_data_msg(const otrng_s *otr) {
 
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
+  // TODO: can this be done?
+  data_msg->ratchet_id = otr->keys->i;
   data_msg->message_id = otr->keys->j;
   otrng_ec_point_copy(data_msg->ecdh, our_ecdh(otr));
   data_msg->dh = otrng_dh_mpi_copy(our_dh(otr));
@@ -829,12 +832,7 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
 
-  if (otrng_key_manager_retrieve_sending_message_keys(enc_key, mac_key,
-                                                      otr->keys)) {
-    free(message);
-    message = NULL;
-    return ERROR;
-  }
+  otrng_key_manager_derive_sending_keys(enc_key, mac_key, otr->keys);
 
   /* discard this mac key as it is not used */
   sodium_memzero(mac_key, sizeof(m_mac_key_p));
@@ -1117,9 +1115,8 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   }
 }
 
-tstatic otrng_err double_ratcheting_init(int j, bool interactive,
-                                         otrng_s *otr) {
-  if (otrng_key_manager_ratcheting_init(j, interactive, otr->keys))
+tstatic otrng_err double_ratcheting_init(otrng_s *otr, bool ours) {
+  if (otrng_key_manager_ratcheting_init(otr->keys, ours))
     return ERROR;
 
   otr->state = OTRNG_STATE_ENCRYPTED_MESSAGES;
@@ -1175,12 +1172,18 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
          sizeof(otrng_shared_prekey_pub_p));
 
   /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) ||
-   * ECDH(x, Pkb) || k_dh) */
+   * ECDH(x, Pkb) || brace_key) */
   if (generate_tmp_key_r(otr->keys->tmp_key, otr))
     return err;
 
-  if (double_ratcheting_init(0, false, otr))
+  if (otrng_key_manager_generate_shared_secret(otr->keys, false))
+    return ERROR;
+
+  if (double_ratcheting_init(otr, false))
     return err;
+
+  // TODO: this should send the non interactive auth and decide
+  // when the message is attached
 
   return SUCCESS;
 }
@@ -1274,8 +1277,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
                   HASH_BYTES);
 
-    if (otrng_key_manager_retrieve_receiving_message_keys(
-            enc_key, mac_key, auth->message_id, otr->keys)) {
+    if (otrng_key_manager_derive_receiving_keys(enc_key, mac_key, otr->keys)) {
       free(t);
       t = NULL;
       sodium_memzero(enc_key, sizeof(m_enc_key_p));
@@ -1331,6 +1333,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     otr->keys->old_mac_keys =
         otrng_list_add(to_store_mac, otr->keys->old_mac_keys);
   } else {
+
     /* auth_mac_k = KDF_2(0x01 || tmp_k */
     uint8_t magic[1] = {0x01};
     uint8_t auth_mac_k[HASH_BYTES];
@@ -1343,6 +1346,8 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     if (0 != otrl_mem_differ(auth_mac, auth->auth_mac, sizeof auth_mac)) {
       free(t);
       t = NULL;
+
+      printf("am I here?");
       return otrng_false;
     }
   }
@@ -1356,6 +1361,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 tstatic otrng_err receive_non_interactive_auth_message(
     otrng_response_s *response, const uint8_t *buff, size_t buff_len,
     otrng_s *otr) {
+
   if (otr->state == OTRNG_STATE_FINISHED)
     return SUCCESS; /* ignore the message */
 
@@ -1390,7 +1396,12 @@ tstatic otrng_err receive_non_interactive_auth_message(
     return ERROR;
   }
 
-  if (double_ratcheting_init(1, false, otr)) {
+  if (otrng_key_manager_generate_shared_secret(otr->keys, false)) {
+    otrng_dake_non_interactive_auth_message_destroy(auth);
+    return ERROR;
+  }
+
+  if (double_ratcheting_init(otr, true)) {
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
@@ -1430,6 +1441,9 @@ tstatic otrng_err receive_identity_message_on_state_start(
     return ERROR;
 
   if (reply_with_auth_r_msg(dst, otr))
+    return ERROR;
+
+  if (otrng_key_manager_generate_shared_secret(otr->keys, true))
     return ERROR;
 
   otr->state = OTRNG_STATE_WAITING_AUTH_I;
@@ -1618,7 +1632,10 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
   if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
-  return double_ratcheting_init(0, true, otr);
+  if (otrng_key_manager_generate_shared_secret(otr->keys, true))
+    return ERROR;
+
+  return double_ratcheting_init(otr, true);
 }
 
 tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
@@ -1666,7 +1683,7 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
   if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
-  return double_ratcheting_init(1, true, otr);
+  return double_ratcheting_init(otr, false);
 }
 
 // TODO: this is the same as otrng_close
@@ -1836,14 +1853,12 @@ tstatic otrng_err receive_tlvs(tlv_list_s **to_send, otrng_response_s *response,
 }
 
 tstatic otrng_err get_receiving_msg_keys(m_enc_key_p enc_key,
-                                         m_mac_key_p mac_key,
-                                         const data_message_s *msg,
-                                         otrng_s *otr) {
-  if (otrng_key_manager_ensure_on_ratchet(otr->keys) == ERROR)
+                                         m_mac_key_p mac_key, otrng_s *otr) {
+
+  if (otrng_key_manager_ensure_on_ratchet(otr->keys, false) == ERROR)
     return ERROR;
 
-  if (otrng_key_manager_retrieve_receiving_message_keys(
-          enc_key, mac_key, msg->message_id, otr->keys)) {
+  if (otrng_key_manager_derive_receiving_keys(enc_key, mac_key, otr->keys)) {
     sodium_memzero(enc_key, sizeof(m_enc_key_p));
     sodium_memzero(mac_key, sizeof(m_mac_key_p));
     return ERROR;
@@ -1877,6 +1892,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   }
 
   otrng_key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
+  otr->keys->j = msg->message_id;
 
   do {
     if (msg->receiver_instance_tag != otr->our_instance_tag) {
@@ -1886,7 +1902,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       return SUCCESS;
     }
 
-    if (get_receiving_msg_keys(enc_key, mac_key, msg, otr))
+    if (get_receiving_msg_keys(enc_key, mac_key, otr))
       continue;
 
     if (otrng_valid_data_message(mac_key, msg)) {
@@ -1914,6 +1930,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
         response->to_display = NULL;
         otrng_data_message_free(msg);
 
+        printf("amd I here");
         return ERROR;
       }
     }
@@ -2017,10 +2034,10 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
     err = receive_auth_r(&response->to_send, decoded, dec_len, otr);
     // TODO: why is this delete here?
     // TODO: this gets deleted regardless of the error?
-    if (otr->state == OTRNG_STATE_ENCRYPTED_MESSAGES) {
-      otrng_dh_priv_key_destroy(otr->keys->our_dh);
-      otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
-    }
+    // if (otr->state == OTRNG_STATE_ENCRYPTED_MESSAGES) {
+    //  otrng_dh_priv_key_destroy(otr->keys->our_dh);
+    //  otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
+    //}
     return err;
   case AUTH_I_MSG_TYPE:
     return receive_auth_i(decoded, dec_len, otr);
@@ -2187,7 +2204,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
       otrng_key_manager_old_mac_keys_serialize(otr->keys->old_mac_keys);
   otr->keys->old_mac_keys = NULL;
 
-  if (otrng_key_manager_prepare_next_chain_key(otr->keys)) {
+  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys)) {
     free(ser_mac_keys);
     ser_mac_keys = NULL;
     return ERROR;
@@ -2198,12 +2215,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
 
-  if (otrng_key_manager_retrieve_sending_message_keys(enc_key, mac_key,
-                                                      otr->keys)) {
-    free(ser_mac_keys);
-    ser_mac_keys = NULL;
-    return ERROR;
-  }
+  otrng_key_manager_derive_sending_keys(enc_key, mac_key, otr->keys);
 
   data_msg = generate_data_msg(otr);
   if (!data_msg) {
@@ -2216,6 +2228,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   data_msg->flags = flags;
 
+  // TODO: this should already come set
   if (h) {
     data_msg->flags = MSGFLAGS_IGNORE_UNREADABLE;
   }
@@ -2224,15 +2237,14 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   data_msg->receiver_instance_tag = otr->their_instance_tag;
 
   otrng_err err = ERROR;
+  otr->keys->j++;
 
   if (encrypt_data_message(data_msg, message, message_len, enc_key) ==
           SUCCESS &&
       serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys, serlen,
                                     data_msg) == SUCCESS) {
 
-    // TODO: Change the spec to say this should be incremented after the message
-    // is sent.
-    otr->keys->j++;
+    // TODO: check
     heartbeat(otr)->last_msg_sent = time(0);
     err = SUCCESS;
   }
@@ -2309,9 +2321,8 @@ tstatic otrng_err otrng_prepare_to_send_data_message(string_p *to_send,
   if (otr->state == OTRNG_STATE_FINISHED)
     return ERROR; // Should restart
 
-  if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
+  if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES)
     return STATE_NOT_ENCRYPTED; // TODO: queue message
-  }
 
   if (append_tlvs(&msg, &msg_len, message, tlvs))
     return ERROR;

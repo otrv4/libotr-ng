@@ -31,6 +31,7 @@ static data_message_s *set_up_data_msg() {
   data_msg->sender_instance_tag = 1;
   data_msg->receiver_instance_tag = 2;
   data_msg->flags = 0xA;
+  data_msg->ratchet_id = 1;
   data_msg->message_id = 99;
   otrng_ec_point_copy(data_msg->ecdh, ecdh->pub);
 
@@ -102,12 +103,13 @@ void test_data_message_serializes() {
       0x0,  0x0,  0x0, 0x1, // sender instance tag
       0x0,  0x0,  0x0, 0x2, // receiver instance tag
       0xA,                  // flags
+      0x0,  0x0,  0x0, 1,   // message id
       0x0,  0x0,  0x0, 99,  // message id
   };
 
   uint8_t *cursor = serialized;
-  otrng_assert_cmpmem(cursor, expected, 16);
-  cursor += 16;
+  otrng_assert_cmpmem(cursor, expected, 20);
+  cursor += 20;
 
   uint8_t serialized_y[PUB_KEY_SER_BYTES] = {};
   int ser_len = otrng_serialize_ec_point(serialized_y, data_msg->ecdh);
@@ -156,7 +158,7 @@ void test_data_message_serializes_absent_dh() {
                   serlen);
 
   uint8_t *cursor = serialized;
-  cursor += 16;                // Skip header
+  cursor += 20;                // Skip header
   cursor += ED448_POINT_BYTES; // Skip ECDH key
   cursor += 4;                 // Skip the DH's MPI header;
 
@@ -185,6 +187,7 @@ void test_otrng_data_message_deserializes() {
       0x8c, 0xd6, 0x1a, 0x08, 0x26, 0x4f, 0x61, 0x32, 0xdb, 0xd2, 0x58,
       0x90, 0x7d, 0x1e, 0x97, 0x35, 0xd2, 0x38, 0x60, 0xa1};
   memcpy(data_msg->mac, mac_data, DATA_MSG_MAC_BYTES);
+  // TODO: realloc here?
   serialized = realloc(serialized, serlen + DATA_MSG_MAC_BYTES);
   memcpy(serialized + serlen, mac_data, DATA_MSG_MAC_BYTES);
 
@@ -198,6 +201,7 @@ void test_otrng_data_message_deserializes() {
   otrng_assert(data_msg->receiver_instance_tag ==
                deserialized->receiver_instance_tag);
   otrng_assert(data_msg->flags == deserialized->flags);
+  otrng_assert(data_msg->ratchet_id == deserialized->ratchet_id);
   otrng_assert(data_msg->message_id == deserialized->message_id);
   otrng_assert_cmpmem(data_msg->ecdh, deserialized->ecdh, ED448_POINT_BYTES);
   otrng_assert(dh_mpi_cmp(data_msg->dh, deserialized->dh) == 0);

@@ -27,6 +27,7 @@
 #include "serialize.h"
 #include "shake.h"
 
+// TODO: add j and i here
 INTERNAL data_message_s *otrng_data_message_new() {
   data_message_s *ret = malloc(sizeof(data_message_s));
   if (!ret)
@@ -72,6 +73,7 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
 
 INTERNAL otrng_err otrng_data_message_body_asprintf(
     uint8_t **body, size_t *bodylen, const data_message_s *data_msg) {
+  // TODO: why is DH_MPI_BYTES + 4 not on the DATA_MESSAGE_MIN_BYTES const?
   size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
   if (!dst)
@@ -84,7 +86,7 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
   cursor += otrng_serialize_uint32(cursor, data_msg->receiver_instance_tag);
   cursor += otrng_serialize_uint8(cursor, data_msg->flags);
   // TODO: Add "Previous chain message number (INT)"
-  // TODO: Add "Ratchet id (INT)"
+  cursor += otrng_serialize_uint32(cursor, data_msg->ratchet_id);
   cursor += otrng_serialize_uint32(cursor, data_msg->message_id);
   cursor += otrng_serialize_ec_point(cursor, data_msg->ecdh);
 
@@ -152,6 +154,12 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   len -= read;
 
   if (otrng_deserialize_uint8(&dst->flags, cursor, len, &read))
+    return ERROR;
+
+  cursor += read;
+  len -= read;
+
+  if (otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &read))
     return ERROR;
 
   cursor += read;

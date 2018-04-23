@@ -24,6 +24,7 @@
 #include <gcrypt.h>
 #include <stdint.h>
 
+#include "constants.h"
 #include "error.h"
 #include "shared.h"
 
@@ -45,6 +46,12 @@ INTERNAL void otrng_dh_init(void);
 INTERNAL void otrng_dh_free(void);
 
 INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair);
+
+INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
+    uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair);
+
+INTERNAL otrng_err otrng_dh_keypair_generate_their_from_shared_secret(
+    uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair);
 
 INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_p keypair);
 

@@ -21,6 +21,7 @@
 #define OTRNG_DH_PRIVATE
 
 #include "dh.h"
+#include "key_management.h"
 #include "random.h"
 #include "shake.h"
 
@@ -134,7 +135,48 @@ INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair) {
   return SUCCESS;
 }
 
-tstatic void dh_pub_key_destroy(dh_keypair_p keypair) {
+// TODO: unify these two following functions
+INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
+    uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair) {
+  gcry_mpi_t privkey = NULL;
+  uint8_t random[80];
+  shake_256_kdf1(random, sizeof random, 0x14, shared_secret,
+                 sizeof(shared_secret_p));
+
+  gcry_error_t err =
+      gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random, DH_KEY_SIZE, NULL);
+  if (err)
+    return ERROR;
+
+  keypair->priv = privkey;
+  keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
+
+  return SUCCESS;
+}
+
+INTERNAL otrng_err otrng_dh_keypair_generate_their_from_shared_secret(
+    uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair) {
+  gcry_mpi_t privkey = NULL;
+  uint8_t random[80];
+  shake_256_kdf1(random, sizeof random, 0x14, shared_secret,
+                 sizeof(shared_secret_p));
+
+  gcry_error_t err =
+      gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random, DH_KEY_SIZE, NULL);
+  if (err)
+    return ERROR;
+
+  keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
+
+  // TODO: is this needed?
+  gcry_mpi_release(privkey);
+
+  return SUCCESS;
+}
+
+INTERNAL void dh_pub_key_destroy(dh_keypair_p keypair) {
   gcry_mpi_release(keypair->pub);
   keypair->pub = NULL;
 }

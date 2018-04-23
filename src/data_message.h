@@ -29,10 +29,12 @@
 #include "key_management.h"
 #include "shared.h"
 
+// TODO: add pn here too
 typedef struct data_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
   uint8_t flags;
+  uint32_t ratchet_id;
   uint32_t message_id;
   ec_point_p ecdh;
   dh_public_key_p dh;

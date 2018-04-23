@@ -29,6 +29,8 @@
 #define NON_INT_AUTH_MSG_TYPE 0x8D
 #define DATA_MSG_TYPE 0x03
 
+/* protocol version + message type + sender's instance tag + receiver's instance
+ * tag */
 #define DAKE_HEADER_BYTES (2 + 1 + 4 + 4)
 #define HASH_BYTES 64
 
@@ -53,8 +55,9 @@
 #define ROOT_KEY_BYTES 64
 #define PUB_KEY_SER_BYTES 59
 
+/* header + flags + ratchet id + message id + public ecdh key + nonce */
 #define DATA_MESSAGE_MIN_BYTES                                                 \
-  (DAKE_HEADER_BYTES + 1 + 4 + ED448_POINT_BYTES + DATA_MSG_NONCE_BYTES)
+  (DAKE_HEADER_BYTES + 1 + 4 + 4 + ED448_POINT_BYTES + DATA_MSG_NONCE_BYTES)
 
 #define MSGFLAGS_IGNORE_UNREADABLE 0x01
 

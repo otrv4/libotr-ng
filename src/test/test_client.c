@@ -305,53 +305,54 @@ void test_conversation_with_multiple_locations() {
 
   char *message = "hello";
 
-  // Bob sends a message with original instance tag
-  otrng_client_send(&frombob, message, ALICE_IDENTITY, bob);
+  // Alice sends a message with original instance tag
+  otrng_client_send(&from_alice_to_bob, message, BOB_IDENTITY, alice);
 
-  // Alice receives the message.
-  ignore = otrng_client_receive(&from_alice_to_bob, &todisplay, frombob,
-                                BOB_IDENTITY, alice);
-  free(frombob);
-  frombob = NULL;
-
-  otrng_assert(!ignore);
-  otrng_assert(!from_alice_to_bob);
-  otrng_assert(todisplay);
-
-  free(todisplay);
-  todisplay = NULL;
-
-  // Bob sends a message with a different instance tag
-  otrng_conversation_s *conv =
-      otrng_client_get_conversation(0, ALICE_IDENTITY, bob);
-  conv->conn->their_instance_tag = conv->conn->their_instance_tag + 1;
-  otrng_client_send(&frombob, "hello again", ALICE_IDENTITY, bob);
-
-  // Alice receives and ignores the message.
-  ignore = otrng_client_receive(&from_alice_to_bob, &todisplay, frombob,
-                                BOB_IDENTITY, alice);
-  free(frombob);
-  frombob = NULL;
-
-  otrng_assert(ignore);
-  otrng_assert(!todisplay);
-
-  // Free the ignored reply
-  free(from_alice_to_bob);
-  from_alice_to_bob = NULL;
-
-  // Alice sends a disconnected to Bob
-  otrng_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
-
-  // Bob receives the disconnected from Alice
+  // Bob receives the message.
   ignore = otrng_client_receive(&frombob, &todisplay, from_alice_to_bob,
                                 ALICE_IDENTITY, bob);
   free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
+  otrng_assert(!ignore);
+  otrng_assert(!frombob);
+  otrng_assert(todisplay);
+
+  free(todisplay);
+  todisplay = NULL;
+
+  // Alice sends a message with a different instance tag
+  otrng_conversation_s *conv =
+      otrng_client_get_conversation(0, BOB_IDENTITY, alice);
+  conv->conn->their_instance_tag = conv->conn->their_instance_tag + 1;
+  otrng_client_send(&from_alice_to_bob, "hello again", BOB_IDENTITY, alice);
+
+  // Bob receives and ignores the message.
+  ignore = otrng_client_receive(&frombob, &todisplay, from_alice_to_bob,
+                                ALICE_IDENTITY, bob);
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
+
+  otrng_assert(ignore);
+  otrng_assert(!todisplay);
+
   // Free the ignored reply
   free(frombob);
   frombob = NULL;
+
+  // Bob sends a disconnected to Alice
+  otrng_client_disconnect(&frombob, ALICE_IDENTITY, bob);
+
+  // Alice receives the disconnected from Alice
+  ignore = otrng_client_receive(&from_alice_to_bob, &todisplay, frombob,
+                                BOB_IDENTITY, alice);
+  free(frombob);
+  frombob = NULL;
+
+  // Free the ignored reply
+  // TODO: why?
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
 
   // Free memory
   otrng_userstate_free_all(alice_client_state->userstate,

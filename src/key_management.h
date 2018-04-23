@@ -36,20 +36,16 @@ typedef uint8_t k_ecdh_p[ED448_POINT_BYTES];
 typedef uint8_t shared_secret_p[SHARED_SECRET_BYTES];
 
 typedef uint8_t root_key_p[ROOT_KEY_BYTES];
+typedef uint8_t sending_chain_key_p[CHAIN_KEY_BYTES];
+typedef uint8_t receiving_chain_key_p[CHAIN_KEY_BYTES];
 typedef uint8_t chain_key_p[CHAIN_KEY_BYTES];
 typedef uint8_t m_enc_key_p[32];
 typedef uint8_t m_mac_key_p[MAC_KEY_BYTES];
 
-typedef struct chain_link_s {
-  int id;
-  chain_key_p key;
-  struct chain_link_s *next;
-} chain_link_s, chain_link_p[1];
-
 typedef struct ratchet_s {
   root_key_p root_key;
-  chain_link_p chain_a;
-  chain_link_p chain_b;
+  sending_chain_key_p chain_s;
+  receiving_chain_key_p chain_r;
 } ratchet_s, ratchet_p[1];
 
 typedef enum {
@@ -69,11 +65,11 @@ typedef struct key_manager_s {
   otrng_shared_prekey_pub_p their_shared_prekey;
 
   /* Data message context */
-  int i, j; // TODO: We need to add k (maybe), but why dont we need to add a
-            // receiving_ratchet_id
+  int i, j, k;
   ratchet_s *current;
 
   brace_key_p brace_key;
+  shared_secret_p shared_secret;
 
   uint8_t ssid[8];
   session_id_half ssid_half;
@@ -84,13 +80,6 @@ typedef struct key_manager_s {
 
   time_t lastgenerated;
 } key_manager_s, key_manager_p[1];
-
-// clang-format off
-typedef struct message_chain_s {
-  const chain_link_s *sending, *receiving;
-} message_chain_s, message_chain_p[1];
-
-// clang-format on
 
 INTERNAL void otrng_key_manager_init(key_manager_s *manager);
 
@@ -105,8 +94,11 @@ INTERNAL void otrng_key_manager_set_their_dh(dh_public_key_p their,
 INTERNAL otrng_err
 otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
 
-INTERNAL otrng_err otrng_key_manager_ratcheting_init(int j, bool interactive,
-                                                     key_manager_s *manager);
+INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
+    key_manager_s *manager, bool interactive);
+
+INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
+                                                     bool ours);
 
 INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
                                                dh_public_key_p their_dh,
@@ -114,7 +106,8 @@ INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
 
 INTERNAL void otrng_key_manager_prepare_to_ratchet(key_manager_s *manager);
 
-INTERNAL otrng_err otrng_key_manager_ensure_on_ratchet(key_manager_s *manager);
+INTERNAL otrng_err otrng_key_manager_ensure_on_ratchet(key_manager_s *manager,
+                                                       bool chain);
 
 INTERNAL void
 otrng_ecdh_shared_secret_from_prekey(uint8_t *shared,
@@ -125,33 +118,34 @@ INTERNAL void otrng_ecdh_shared_secret_from_keypair(uint8_t *shared,
                                                     otrng_keypair_s *keypair,
                                                     const ec_point_p their_pub);
 
-INTERNAL otrng_err otrng_key_manager_retrieve_receiving_message_keys(
-    m_enc_key_p enc_key, m_mac_key_p mac_key, int message_id,
-    key_manager_s *manager);
+INTERNAL otrng_err otrng_key_manager_derive_receiving_keys(
+    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager);
 
 INTERNAL otrng_err
-otrng_key_manager_prepare_next_chain_key(key_manager_s *manager);
+otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager);
 
-INTERNAL otrng_err otrng_key_manager_retrieve_sending_message_keys(
-    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager);
+INTERNAL void otrng_key_manager_derive_sending_keys(m_enc_key_p enc_key,
+                                                    m_mac_key_p mac_key,
+                                                    key_manager_s *manager);
 INTERNAL uint8_t *
 otrng_key_manager_old_mac_keys_serialize(list_element_s *old_mac_keys);
 
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
 tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
-                                          const shared_secret_p shared);
+                                          const shared_secret_p shared,
+                                          bool chain);
 
-tstatic int key_manager_get_sending_chain_key(chain_key_p sending,
-                                              const key_manager_s *manager);
+// tstatic int key_manager_get_sending_chain_key(chain_key_p sending,
+//                                              const key_manager_s *manager);
 
-tstatic otrng_err key_manager_get_receiving_chain_key(
-    chain_key_p receiving, int message_id, const key_manager_s *manager);
+// tstatic otrng_err key_manager_get_receiving_chain_key(
+//    chain_key_p receiving, int message_id, const key_manager_s *manager);
 
 tstatic void calculate_shared_secret(shared_secret_p dst, const k_ecdh_p k_ecdh,
                                      const chain_key_p chain_key);
 
-tstatic void calculate_ssid(key_manager_s *manager,
-                            const shared_secret_p shared_secret);
+// TODO: are we only exporting this for the test?
+tstatic void calculate_ssid(key_manager_s *manager);
 
 tstatic otrng_err calculate_brace_key(key_manager_s *manager);
 #endif

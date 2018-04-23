@@ -96,7 +96,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/dh/serialize", dh_test_serialize);
   g_test_add_func("/dh/shared-secret/leading-zeroes",
                   dh_test_shared_secret_adds_leading_zeroes);
-  g_test_add_func("/dh/destroy", dh_test_keypair_destroy);
+  g_test_add_func("/dh/destroy",
+                  dh_test_keypair_destroy); // TODO: check this one
 
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
   g_test_add_func("/serialize_and_deserialize/data",
@@ -157,11 +158,12 @@ int main(int argc, char **argv) {
   g_test_add_func("/fragment/fails_for_invalid_tag",
                   test_defragment_fails_for_invalid_tag);
 
-  g_test_add_func("/key_management/destroy", test_otrng_key_manager_destroy);
+  g_test_add_func("/key_management/destroy",
+                  test_otrng_key_manager_destroy); // TODO: check this
   g_test_add_func("/key_management/derive_ratchet_keys",
                   test_derive_ratchet_keys);
   g_test_add_func("/key_management/ssid", test_calculate_ssid);
-  g_test_add_func("/key_management/brave_key", test_calculate_brace_key);
+  g_test_add_func("/key_management/brace_key", test_calculate_brace_key);
 
   g_test_add_func("/smp/state_machine", test_smp_state_machine);
   g_test_add_func("/smp/generate_secret", test_otrng_generate_smp_secret);
@@ -171,6 +173,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/tlv/append", test_otrng_append_tlv);
   g_test_add_func("/tlv/append_padding", test_otrng_append_padding_tlv);
 
+  // TODO: why we have this?
   // g_test_add_func("/otrng/starts_protocol", test_otrng_starts_protocol);
   // g_test_add("/otrng/version_supports_v34", otrng_fixture_s, NULL,
   // otrng_fixture_set_up, test_otrng_version_supports_v34,
@@ -219,19 +222,18 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/api/interactive_conversation/v4",
                   test_api_interactive_conversation);
-  // g_test_add_func("/api/interactive_conversation_bob/v4",
-  //                test_api_interactive_conversation_bob);
   g_test_add_func("/api/non_interactive_conversation/v4",
                   test_api_non_interactive_conversation);
-  g_test_add_func("/api/non_interactive_conversation_enc_msg/v4",
-                  test_api_non_interactive_conversation_with_enc_msg);
+  // TODO: this special case needs checking
+  // g_test_add_func("/api/non_interactive_conversation_enc_msg/v4",
+  //                test_api_non_interactive_conversation_with_enc_msg);
   g_test_add_func("/api/conversation_errors", test_api_conversation_errors);
   g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
   g_test_add_func("/api/smp", test_api_smp);
   g_test_add_func("/api/smp_abort", test_api_smp_abort);
   /* g_test_add_func("/api/messaging", test_api_messaging); */
   g_test_add_func("/api/instance_tag", test_instance_tag_api);
-  g_test_add_func("/api/dh_key_rotation", test_dh_key_rotation);
+  // g_test_add_func("/api/dh_key_rotation", test_dh_key_rotation);
   g_test_add_func("/api/extra_symm_key", test_api_extra_sym_key);
   g_test_add_func("/api/ecdh_keys_destroy",
                   test_ecdh_priv_keys_destroyed_early);

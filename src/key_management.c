@@ -31,34 +31,14 @@
 
 #include "debug.h"
 
-tstatic void chain_link_free(chain_link_s *head) {
-  chain_link_s *current = head;
-  chain_link_s *next = NULL;
-  while (current) {
-    next = current->next;
-
-    sodium_memzero(current->key, sizeof(chain_key_p));
-    free(current);
-    current = NULL;
-
-    current = next;
-  }
-}
-
 tstatic ratchet_s *ratchet_new() {
   ratchet_s *ratchet = malloc(sizeof(ratchet_s));
   if (!ratchet)
     return NULL;
 
   memset(ratchet->root_key, 0, sizeof(ratchet->root_key));
-
-  ratchet->chain_a->id = 0;
-  memset(ratchet->chain_a->key, 0, sizeof(ratchet->chain_a->key));
-  ratchet->chain_a->next = NULL;
-
-  ratchet->chain_b->id = 0;
-  memset(ratchet->chain_b->key, 0, sizeof(ratchet->chain_b->key));
-  ratchet->chain_b->next = NULL;
+  memset(ratchet->chain_s, 0, sizeof(ratchet->chain_s));
+  memset(ratchet->chain_r, 0, sizeof(ratchet->chain_r));
 
   return ratchet;
 }
@@ -68,12 +48,8 @@ tstatic void ratchet_free(ratchet_s *ratchet) {
     return;
 
   sodium_memzero(ratchet->root_key, sizeof(root_key_p));
-
-  chain_link_free(ratchet->chain_a->next);
-  ratchet->chain_a->next = NULL;
-
-  chain_link_free(ratchet->chain_b->next);
-  ratchet->chain_b->next = NULL;
+  sodium_memzero(ratchet->chain_s, sizeof(sending_chain_key_p));
+  sodium_memzero(ratchet->chain_r, sizeof(receiving_chain_key_p));
 
   free(ratchet);
   ratchet = NULL;
@@ -94,10 +70,12 @@ otrng_key_manager_init(key_manager_s *manager) // make like ratchet_new?
 
   manager->i = 0;
   manager->j = 0;
-
+  manager->k = 0;
   manager->current = ratchet_new();
 
   memset(manager->brace_key, 0, sizeof(manager->brace_key));
+  memset(manager->shared_secret, 0, sizeof(manager->shared_secret));
+
   memset(manager->ssid, 0, sizeof(manager->ssid));
   manager->ssid_half = 0;
   memset(manager->extra_key, 0, sizeof(manager->extra_key));
@@ -123,6 +101,7 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   sodium_memzero(manager->our_shared_prekey, ED448_POINT_BYTES);
 
   sodium_memzero(manager->brace_key, sizeof(manager->brace_key));
+  sodium_memzero(manager->shared_secret, sizeof(manager->shared_secret));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
   manager->ssid_half = 0;
   sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
@@ -149,6 +128,7 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   now = time(NULL);
   otrng_ec_point_destroy(manager->our_ecdh->pub);
   otrng_ecdh_keypair_generate(manager->our_ecdh, sym);
+
   manager->lastgenerated = now;
 
   if (manager->i % 3 == 0) {
@@ -157,6 +137,99 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
     if (otrng_dh_keypair_generate(manager->our_dh))
       return ERROR;
   }
+
+  return SUCCESS;
+}
+
+INTERNAL otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
+                                                 bool ours) {
+  uint8_t random[ED448_PRIVATE_BYTES];
+
+  if (ours) {
+    shake_256_kdf1(random, sizeof random, 0x13, manager->shared_secret,
+                   sizeof(shared_secret_p));
+
+    otrng_ec_point_destroy(manager->our_ecdh->pub);
+    otrng_ecdh_keypair_generate(manager->our_ecdh, random);
+
+    otrng_dh_keypair_destroy(manager->our_dh);
+    if (otrng_dh_keypair_generate_from_shared_secret(manager->shared_secret,
+                                                     manager->our_dh))
+      return ERROR;
+  } else {
+    shake_256_kdf1(random, sizeof random, 0x13, manager->shared_secret,
+                   sizeof(shared_secret_p));
+
+    otrng_ec_point_destroy(manager->their_ecdh);
+    otrng_ecdh_keypair_generate_their(manager->their_ecdh, random);
+
+    gcry_mpi_release(manager->their_dh);
+    manager->their_dh = NULL;
+    dh_keypair_p tmp_their_dh;
+
+    if (otrng_dh_keypair_generate_their_from_shared_secret(
+            manager->shared_secret, tmp_their_dh))
+      return ERROR;
+
+    manager->their_dh = tmp_their_dh->pub;
+  }
+  return SUCCESS;
+}
+
+INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
+    key_manager_s *manager, bool interactive) {
+  if (interactive) {
+    k_ecdh_p k_ecdh;
+
+    otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
+    otrng_ec_bzero(manager->our_ecdh->priv, sizeof(ec_scalar_p));
+
+    if (otrng_ecdh_valid_secret(k_ecdh))
+      return ERROR;
+
+    if (calculate_brace_key(manager) == ERROR)
+      return ERROR;
+
+    // TODO: why is this passing the whole struct?
+    otrng_dh_priv_key_destroy(manager->our_dh);
+
+    calculate_shared_secret(manager->shared_secret, k_ecdh, manager->brace_key);
+  } else {
+    // TODO: correctly delete
+    goldilocks_shake256_ctx_p hd;
+
+    hash_init_with_usage(hd, 0x04);
+    hash_update(hd, manager->tmp_key, sizeof(manager->tmp_key));
+
+    hash_final(hd, manager->shared_secret, sizeof(shared_secret_p));
+    hash_destroy(hd);
+  }
+
+  calculate_ssid(manager);
+  if (gcry_mpi_cmp(manager->our_dh->pub, manager->their_dh) > 0) {
+    manager->ssid_half = SESSION_ID_SECOND_HALF_BOLD;
+  } else {
+    manager->ssid_half = SESSION_ID_FIRST_HALF_BOLD;
+  }
+
+#ifdef DEBUG
+  printf("THE SECURE SESSION ID\n");
+  printf("ssid: \n");
+  if (manager->ssid_half == SESSION_ID_FIRST_HALF_BOLD) {
+    printf("the first 4 bytes = ");
+    printf("0x");
+    for (unsigned int i = 0; i < 4; i++) {
+      printf("%x", manager->ssid[i]);
+    }
+  } else {
+    printf("the last 4 bytes = ");
+    printf("0x");
+    for (unsigned int i = 4; i < 8; i++) {
+      printf("%x", manager->ssid[i]);
+    }
+    printf("\n");
+  }
+#endif
 
   return SUCCESS;
 }
@@ -174,195 +247,46 @@ INTERNAL void otrng_key_manager_prepare_to_ratchet(key_manager_s *manager) {
   manager->j = 0;
 }
 
-tstatic void
-derive_key_from_shared_secret(uint8_t *key, size_t keylen,
-                              const uint8_t magic[1],
-                              const shared_secret_p shared_secret) {
-  shake_256_kdf(key, keylen, magic, shared_secret, sizeof(shared_secret_p));
-}
-
-tstatic void derive_root_key(root_key_p root_key,
-                             const shared_secret_p shared_secret) {
-  uint8_t magic[1] = {0x1};
-  derive_key_from_shared_secret(root_key, sizeof(root_key_p), magic,
-                                shared_secret);
-}
-
-tstatic void derive_chain_key_a(chain_key_p chain_key,
-                                const shared_secret_p shared_secret) {
-  uint8_t magic[1] = {0x2};
-  derive_key_from_shared_secret(chain_key, sizeof(chain_key_p), magic,
-                                shared_secret);
-}
-
-tstatic void derive_chain_key_b(chain_key_p chain_key,
-                                const shared_secret_p shared_secret) {
-  uint8_t magic[1] = {0x3};
-  derive_key_from_shared_secret(chain_key, sizeof(chain_key_p), magic,
-                                shared_secret);
-}
-
 tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
-                                          const shared_secret_p shared_secret) {
+                                          const shared_secret_p shared_secret,
+                                          bool sending) {
   ratchet_s *ratchet = ratchet_new();
-  if (ratchet == NULL) {
+  if (!ratchet)
     return ERROR;
-  }
-  if (manager->i == 0) {
-    derive_root_key(ratchet->root_key, shared_secret);
-    derive_chain_key_a(ratchet->chain_a->key, shared_secret);
-    derive_chain_key_b(ratchet->chain_b->key, shared_secret);
-  } else {
-    shared_secret_p root_shared;
-    shake_kkdf(root_shared, sizeof(shared_secret_p), manager->current->root_key,
-               sizeof(root_key_p), shared_secret, sizeof(shared_secret_p));
-    derive_root_key(ratchet->root_key, root_shared);
-    derive_chain_key_a(ratchet->chain_a->key, root_shared);
-    derive_chain_key_b(ratchet->chain_b->key, root_shared);
-  }
 
+  uint8_t buff[1] = {0x21};
+
+  goldilocks_shake256_ctx_p hd;
+  hash_init_with_dom(hd);
+  hash_update(hd, buff, 1);
+  hash_update(hd, manager->current->root_key, sizeof(root_key_p));
+  hash_update(hd, shared_secret, sizeof(shared_secret_p));
+  hash_final(hd, ratchet->root_key, sizeof(root_key_p));
+  hash_destroy(hd);
+
+  uint8_t buff2[1] = {0x22};
+
+  if (sending) {
+    goldilocks_shake256_ctx_p hd2;
+    hash_init_with_dom(hd2);
+    hash_update(hd2, buff2, 1);
+    hash_update(hd2, manager->current->root_key, sizeof(root_key_p));
+    hash_update(hd2, shared_secret, sizeof(shared_secret_p));
+
+    hash_final(hd2, ratchet->chain_s, sizeof(chain_key_p));
+    hash_destroy(hd2);
+  } else {
+    goldilocks_shake256_ctx_p hd2;
+    hash_init_with_dom(hd2);
+    hash_update(hd2, buff2, 1);
+    hash_update(hd2, manager->current->root_key, sizeof(root_key_p));
+    hash_update(hd2, shared_secret, sizeof(shared_secret_p));
+
+    hash_final(hd2, ratchet->chain_r, sizeof(chain_key_p));
+    hash_destroy(hd2);
+  }
   ratchet_free(manager->current);
   manager->current = ratchet;
-
-  return SUCCESS;
-}
-
-tstatic const chain_link_s *chain_get_last(const chain_link_s *head) {
-  const chain_link_s *cursor = head;
-  while (cursor->next)
-    cursor = cursor->next;
-
-  return cursor;
-}
-
-tstatic const chain_link_s *chain_get_by_id(int message_id,
-                                            const chain_link_s *head) {
-  const chain_link_s *cursor = head;
-  while (cursor->next && cursor->id != message_id)
-    cursor = cursor->next;
-
-  if (cursor->id == message_id) {
-    return cursor;
-  }
-
-  return NULL;
-}
-
-tstatic message_chain_s *decide_between_chain_keys(const ratchet_s *ratchet,
-                                                   const ec_point_p our,
-                                                   const ec_point_p their) {
-  message_chain_s *ret = malloc(sizeof(message_chain_s));
-  if (ret == NULL)
-    return NULL;
-
-  ret->sending = NULL;
-  ret->receiving = NULL;
-
-  // TODO: this conversion from point to mpi might be checked.
-  gcry_mpi_t our_mpi = NULL;
-  gcry_mpi_t their_mpi = NULL;
-  if (gcry_mpi_scan(&our_mpi, GCRYMPI_FMT_USG, our, ED448_POINT_BYTES, NULL)) {
-    gcry_mpi_release(our_mpi);
-    gcry_mpi_release(their_mpi);
-    return NULL;
-  }
-
-  if (gcry_mpi_scan(&their_mpi, GCRYMPI_FMT_USG, their, ED448_POINT_BYTES,
-                    NULL)) {
-    gcry_mpi_release(our_mpi);
-    gcry_mpi_release(their_mpi);
-    return NULL;
-  }
-
-  int cmp = gcry_mpi_cmp(our_mpi, their_mpi);
-  if (cmp > 0) {
-    ret->sending = ratchet->chain_a;
-    ret->receiving = ratchet->chain_b;
-  } else if (cmp < 0) {
-    ret->sending = ratchet->chain_b;
-    ret->receiving = ratchet->chain_a;
-  }
-
-  gcry_mpi_release(our_mpi);
-  gcry_mpi_release(their_mpi);
-
-  return ret;
-}
-
-tstatic int key_manager_get_sending_chain_key(chain_key_p sending,
-                                              const key_manager_s *manager) {
-  message_chain_s *chain = decide_between_chain_keys(
-      manager->current, manager->our_ecdh->pub, manager->their_ecdh);
-  const chain_link_s *last = chain_get_last(chain->sending);
-  memcpy(sending, last->key, sizeof(chain_key_p));
-  free(chain);
-  chain = NULL;
-
-  return last->id;
-}
-
-tstatic chain_link_s *chain_link_new() {
-  chain_link_s *l = malloc(sizeof(chain_link_s));
-  if (l == NULL)
-    return NULL;
-
-  l->id = 0;
-  l->next = NULL;
-
-  return l;
-}
-
-tstatic chain_link_s *derive_next_chain_link(chain_link_s *previous) {
-  chain_link_s *l = chain_link_new();
-  if (l == NULL)
-    return NULL;
-
-  // KDF_1(0x17 || chain_key_s[i-1][j], 64).
-  shake_256_kdf1(l->key, sizeof(chain_key_p), 0x17, previous->key,
-                 sizeof(chain_key_p));
-
-  // TODO: the previous is still needed for the MK
-  sodium_memzero(previous->key, CHAIN_KEY_BYTES);
-
-  l->id = previous->id + 1;
-  previous->next = l;
-  return l;
-}
-
-tstatic otrng_err rebuild_chain_keys_up_to(int message_id,
-                                           const chain_link_s *head) {
-  chain_link_s *last = (chain_link_s *)chain_get_last(head);
-
-  int j = 0;
-  for (j = last->id; j < message_id; j++) {
-    last = derive_next_chain_link(last);
-    if (last == NULL)
-      return ERROR;
-  }
-
-  return SUCCESS;
-}
-
-tstatic otrng_err key_manager_get_receiving_chain_key(
-    chain_key_p receiving, int message_id, const key_manager_s *manager) {
-
-  message_chain_s *chain = decide_between_chain_keys(
-      manager->current, manager->our_ecdh->pub, manager->their_ecdh);
-  if (rebuild_chain_keys_up_to(message_id, chain->receiving) == ERROR) {
-    free(chain);
-    chain = NULL;
-    return ERROR;
-  }
-
-  const chain_link_s *link = chain_get_by_id(message_id, chain->receiving);
-  free(chain);
-  chain = NULL;
-
-  if (link == NULL)
-    return ERROR; /* message id not found. Should have been generated at
-                        rebuild_chain_keys_up_to */
-
-  memcpy(receiving, link->key, sizeof(chain_key_p));
 
   return SUCCESS;
 }
@@ -399,51 +323,22 @@ tstatic void calculate_shared_secret(shared_secret_p dst, const k_ecdh_p k_ecdh,
 
   hash_final(hd, dst, sizeof(shared_secret_p));
   hash_destroy(hd);
+
+  // sodium_memzero(k_ecdh, sizeof(k_ecdh_p));
+  // sodium_memzero(brace_key, sizeof(brace_key_p));
 }
 
-tstatic void
-calculate_shared_secret_from_tmp_key(shared_secret_p dst,
-                                     const uint8_t tmp_k[HASH_BYTES],
-                                     const brace_key_p brace_key) {
-  goldilocks_shake256_ctx_p hd;
-
-  hash_init_with_usage(hd, 0x04);
-  hash_update(hd, tmp_k, HASH_BYTES);
-  hash_update(hd, brace_key, sizeof(brace_key_p));
-
-  hash_final(hd, dst, sizeof(shared_secret_p));
-  hash_destroy(hd);
-}
-
-tstatic otrng_err derive_sending_chain_key(key_manager_s *manager) {
-  message_chain_s *chain = decide_between_chain_keys(
-      manager->current, manager->our_ecdh->pub, manager->their_ecdh);
-  chain_link_s *last = (chain_link_s *)chain_get_last(chain->sending);
-  free(chain);
-  chain = NULL;
-  (void)last;
-
-  // TODO: seems to be wrong
-  chain_link_s *l = derive_next_chain_link(last);
-  if (l == NULL)
-    return ERROR;
-
-  // TODO: assert l->id == manager->j
-  return SUCCESS;
-}
-
-tstatic void calculate_ssid(key_manager_s *manager,
-                            const shared_secret_p shared_secret) {
-  shake_256_kdf1(manager->ssid, 8, 0x05, shared_secret,
+tstatic void calculate_ssid(key_manager_s *manager) {
+  shake_256_kdf1(manager->ssid, 8, 0x05, manager->shared_secret,
                  sizeof(shared_secret_p));
 }
 
-tstatic void calculate_extra_key(key_manager_s *manager,
-                                 const chain_key_p chain_key) {
+// TODO: add usageID
+tstatic void calculate_extra_key(key_manager_s *manager) {
   uint8_t magic[1] = {0xFF};
   uint8_t extra_key_buff[HASH_BYTES];
 
-  shake_256_kdf(extra_key_buff, HASH_BYTES, magic, chain_key,
+  shake_256_kdf(extra_key_buff, HASH_BYTES, magic, manager->current->chain_s,
                 sizeof(chain_key_p));
 
   memcpy(manager->extra_key, extra_key_buff, sizeof manager->extra_key);
@@ -470,10 +365,12 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
                    manager->brace_key, sizeof(brace_key_p));
   }
 
+  sodium_memzero(k_dh, sizeof(k_dh_p));
+
   return SUCCESS;
 }
 
-tstatic otrng_err enter_new_ratchet(key_manager_s *manager) {
+tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool chain) {
   k_ecdh_p k_ecdh;
   shared_secret_p shared_secret;
 
@@ -485,6 +382,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager) {
   if (calculate_brace_key(manager) == ERROR)
     return ERROR;
 
+  // TODO: change this signature
   calculate_shared_secret(shared_secret, k_ecdh, manager->brace_key);
 
 #ifdef DEBUG
@@ -495,10 +393,8 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager) {
   otrng_memdump(manager->brace_key, sizeof(brace_key_p));
 #endif
 
-  if (key_manager_new_ratchet(manager, shared_secret) == ERROR) {
+  if (key_manager_new_ratchet(manager, shared_secret, chain) == ERROR) {
     sodium_memzero(shared_secret, SHARED_SECRET_BYTES);
-    sodium_memzero(manager->ssid, sizeof(manager->ssid));
-    sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
     return ERROR;
   }
 
@@ -506,133 +402,82 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager) {
   return SUCCESS;
 }
 
-tstatic otrng_err init_ratchet(key_manager_s *manager, bool interactive) {
-  k_ecdh_p k_ecdh;
-  shared_secret_p shared_secret;
-
-  otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
-
-  if (otrng_ecdh_valid_secret(k_ecdh))
+INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
+                                                     bool ours) {
+  if (generate_first_ephemeral_keys(manager, ours))
     return ERROR;
 
-  if (calculate_brace_key(manager))
-    return ERROR;
-
-  if (interactive)
-    calculate_shared_secret(shared_secret, k_ecdh, manager->brace_key);
-  else
-    calculate_shared_secret_from_tmp_key(shared_secret, manager->tmp_key,
-                                         manager->brace_key);
-
-#ifdef DEBUG
-  printf("ENTERING NEW RATCHET\n");
-  printf("K_ecdh = ");
-  otrng_memdump(k_ecdh, sizeof(k_ecdh_p));
-  printf("mixed_key = ");
-  otrng_memdump(manager->brace_key, sizeof(brace_key_p));
-#endif
-
-  calculate_ssid(manager, shared_secret);
-  if (gcry_mpi_cmp(manager->our_dh->pub, manager->their_dh) > 0) {
-    manager->ssid_half = SESSION_ID_SECOND_HALF_BOLD;
-  } else {
-    manager->ssid_half = SESSION_ID_FIRST_HALF_BOLD;
-  }
-
-#ifdef DEBUG
-  printf("THE SECURE SESSION ID\n");
-  printf("ssid: \n");
-  if (manager->ssid_half == SESSION_ID_FIRST_HALF_BOLD) {
-    printf("the first 4 bytes = ");
-    printf("0x");
-    for (unsigned int i = 0; i < 4; i++) {
-      printf("%x", manager->ssid[i]);
-    }
-  } else {
-    printf("the last 4 bytes = ");
-    printf("0x");
-    for (unsigned int i = 4; i < 8; i++) {
-      printf("%x", manager->ssid[i]);
-    }
-    printf("\n");
-  }
-#endif
-
-  if (key_manager_new_ratchet(manager, shared_secret) == ERROR) {
-    sodium_memzero(shared_secret, SHARED_SECRET_BYTES);
-    sodium_memzero(manager->ssid, sizeof(manager->ssid));
-    sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
-    sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
-    return ERROR;
-  }
-
-  sodium_memzero(shared_secret, SHARED_SECRET_BYTES);
-  /* tmp_k is no longer needed */
-  sodium_memzero(manager->tmp_key, HASH_BYTES);
-
-  return SUCCESS;
-}
-
-INTERNAL otrng_err otrng_key_manager_ratcheting_init(int j, bool interactive,
-                                                     key_manager_s *manager) {
-  if (init_ratchet(manager, interactive))
-    return ERROR;
-
+  // TODO: this should be already set
   manager->i = 0;
-  manager->j = j;
+  manager->j = 0;
+  manager->k = 0;
+  // TODO: we can assing directly to the root key
+  memcpy(manager->current->root_key, manager->shared_secret, 64);
+  sodium_memzero(manager->shared_secret, 64);
+
   return SUCCESS;
 }
 
 tstatic otrng_err rotate_keys(key_manager_s *manager) {
-  manager->i++;
   manager->j = 0;
 
   if (otrng_key_manager_generate_ephemeral_keys(manager))
     return ERROR;
 
-  return enter_new_ratchet(manager);
-}
-
-INTERNAL otrng_err otrng_key_manager_ensure_on_ratchet(key_manager_s *manager) {
-  if (manager->j == 0)
-    return SUCCESS;
-
-  manager->i++;
-  if (enter_new_ratchet(manager))
+  if (enter_new_ratchet(manager, true))
     return ERROR;
 
-  // Securely delete priv keys as no longer needed
-  otrng_ec_scalar_destroy(manager->our_ecdh->priv);
-  if (manager->i % 3 == 0) {
-    otrng_dh_priv_key_destroy(manager->our_dh);
+  manager->i++;
+
+  return SUCCESS;
+}
+
+// TODO: this can be unified with the sending func
+INTERNAL otrng_err otrng_key_manager_ensure_on_ratchet(key_manager_s *manager,
+                                                       bool chain) {
+  if (manager->j == 0) {
+    manager->k = 0;
+    if (enter_new_ratchet(manager, chain))
+      return ERROR;
+
+    otrng_ec_scalar_destroy(manager->our_ecdh->priv);
+    if (manager->i % 3 == 0)
+      otrng_dh_priv_key_destroy(manager->our_dh);
+
+    manager->i++;
+
+    return SUCCESS;
   }
 
   return SUCCESS;
 }
 
+// TODO: refactor this
 tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                                             m_mac_key_p mac_key,
-                                            const chain_key_p chain_key) {
-  uint8_t magic1[1] = {0x1};
-  uint8_t magic2[1] = {0x2};
+                                            key_manager_s *manager,
+                                            bool sending) {
+  uint8_t magic[1] = {0x18};
 
-  shake_256_kdf(enc_key, sizeof(m_enc_key_p), magic1, chain_key,
-                sizeof(chain_key_p));
-  shake_256_kdf(mac_key, sizeof(m_mac_key_p), magic2, enc_key,
-                sizeof(m_enc_key_p));
+  if (sending) {
+    shake_256_kdf(enc_key, sizeof(m_enc_key_p), magic,
+                  manager->current->chain_s, sizeof(chain_key_p));
+  } else {
+    shake_256_kdf(enc_key, sizeof(m_enc_key_p), magic,
+                  manager->current->chain_r, sizeof(chain_key_p));
+  }
+
+  shake_256_kdf1(mac_key, sizeof(m_mac_key_p), 0x19, enc_key,
+                 sizeof(m_enc_key_p));
 }
 
-INTERNAL otrng_err otrng_key_manager_retrieve_receiving_message_keys(
-    m_enc_key_p enc_key, m_mac_key_p mac_key, int message_id,
-    key_manager_s *manager) {
-  chain_key_p receiving;
+INTERNAL otrng_err otrng_key_manager_derive_receiving_keys(
+    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager) {
+  derive_encryption_and_mac_keys(enc_key, mac_key, manager, false);
+  calculate_extra_key(manager);
 
-  if (key_manager_get_receiving_chain_key(receiving, message_id, manager) ==
-      ERROR)
-    return ERROR;
-
-  derive_encryption_and_mac_keys(enc_key, mac_key, receiving);
-  calculate_extra_key(manager, receiving);
+  shake_256_kdf1(manager->current->chain_r, sizeof(chain_key_p), 0x16,
+                 manager->current->chain_r, sizeof(chain_key_p));
 
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
@@ -642,33 +487,30 @@ INTERNAL otrng_err otrng_key_manager_retrieve_receiving_message_keys(
   otrng_memdump(mac_key, sizeof(m_mac_key_p));
 #endif
 
+  manager->k++;
+
   return SUCCESS;
 }
 
-tstatic otrng_bool should_ratchet(const key_manager_s *manager) {
-  if (manager->j == 0)
-    return otrng_true;
-
-  return otrng_false;
-}
-
 INTERNAL otrng_err
-otrng_key_manager_prepare_next_chain_key(key_manager_s *manager) {
-  if (should_ratchet(manager) == otrng_true) {
+otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager) {
+  // derive new ecdh, dh keys
+  if (manager->j == 0)
     return rotate_keys(manager);
-  }
 
-  return derive_sending_chain_key(manager);
+  return SUCCESS;
 }
 
-INTERNAL otrng_err otrng_key_manager_retrieve_sending_message_keys(
-    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager) {
-  chain_key_p sending;
-  int message_id = key_manager_get_sending_chain_key(sending, manager);
+INTERNAL void otrng_key_manager_derive_sending_keys(m_enc_key_p enc_key,
+                                                    m_mac_key_p mac_key,
+                                                    key_manager_s *manager) {
+  derive_encryption_and_mac_keys(enc_key, mac_key, manager, true);
+  calculate_extra_key(manager);
 
-  derive_encryption_and_mac_keys(enc_key, mac_key, sending);
-  calculate_extra_key(manager, sending);
-
+  // next chain key
+  // KDF_1(0x16 || chain_key_s[i-1][j], 64).
+  shake_256_kdf1(manager->current->chain_s, sizeof(chain_key_p), 0x16,
+                 manager->current->chain_s, sizeof(chain_key_p));
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
   printf("sending enc_key = ");
@@ -676,14 +518,6 @@ INTERNAL otrng_err otrng_key_manager_retrieve_sending_message_keys(
   printf("sending mac_key = ");
   otrng_memdump(mac_key, sizeof(m_mac_key_p));
 #endif
-
-  if (message_id == manager->j) {
-    return SUCCESS;
-  }
-
-  sodium_memzero(enc_key, sizeof(m_enc_key_p));
-  sodium_memzero(mac_key, sizeof(m_mac_key_p));
-  return ERROR;
 }
 
 INTERNAL uint8_t *
