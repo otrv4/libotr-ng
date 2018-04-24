@@ -1930,7 +1930,6 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
         response->to_display = NULL;
         otrng_data_message_free(msg);
 
-        printf("amd I here");
         return ERROR;
       }
     }
@@ -1946,7 +1945,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       continue;
     }
 
-    otrng_key_manager_prepare_to_ratchet(otr->keys);
+    otr->keys->j = 0;
 
     if (reply_tlvs) {
       if (otrng_prepare_to_send_message(&response->to_send, "", &reply_tlvs,

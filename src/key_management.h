@@ -30,6 +30,7 @@
 #include "list.h"
 #include "shared.h"
 
+// TODO: extract constant
 typedef uint8_t k_dh_p[384];
 typedef uint8_t brace_key_p[BRACE_KEY_BYTES];
 typedef uint8_t k_ecdh_p[ED448_POINT_BYTES];
@@ -38,7 +39,6 @@ typedef uint8_t shared_secret_p[SHARED_SECRET_BYTES];
 typedef uint8_t root_key_p[ROOT_KEY_BYTES];
 typedef uint8_t sending_chain_key_p[CHAIN_KEY_BYTES];
 typedef uint8_t receiving_chain_key_p[CHAIN_KEY_BYTES];
-typedef uint8_t chain_key_p[CHAIN_KEY_BYTES];
 typedef uint8_t m_enc_key_p[32];
 typedef uint8_t m_mac_key_p[MAC_KEY_BYTES];
 
@@ -104,8 +104,6 @@ INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
                                                dh_public_key_p their_dh,
                                                key_manager_s *manager);
 
-INTERNAL void otrng_key_manager_prepare_to_ratchet(key_manager_s *manager);
-
 INTERNAL otrng_err otrng_key_manager_ensure_on_ratchet(key_manager_s *manager,
                                                        bool chain);
 
@@ -134,15 +132,6 @@ otrng_key_manager_old_mac_keys_serialize(list_element_s *old_mac_keys);
 tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
                                           const shared_secret_p shared,
                                           bool chain);
-
-// tstatic int key_manager_get_sending_chain_key(chain_key_p sending,
-//                                              const key_manager_s *manager);
-
-// tstatic otrng_err key_manager_get_receiving_chain_key(
-//    chain_key_p receiving, int message_id, const key_manager_s *manager);
-
-tstatic void calculate_shared_secret(shared_secret_p dst, const k_ecdh_p k_ecdh,
-                                     const chain_key_p chain_key);
 
 // TODO: are we only exporting this for the test?
 tstatic void calculate_ssid(key_manager_s *manager);

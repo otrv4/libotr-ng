@@ -35,7 +35,7 @@ void test_derive_ratchet_keys() {
                SUCCESS);
 
   root_key_p expected_root_key;
-  chain_key_p expected_chain_key_s;
+  sending_chain_key_p expected_chain_key_s;
 
   uint8_t buff[1] = {0x21};
 
@@ -56,13 +56,13 @@ void test_derive_ratchet_keys() {
   hash_update(hd_2, root_key, sizeof(root_key_p));
   hash_update(hd_2, shared_secret, sizeof(shared_secret_p));
 
-  hash_final(hd_2, expected_chain_key_s, sizeof(chain_key_p));
+  hash_final(hd_2, expected_chain_key_s, sizeof(sending_chain_key_p));
   hash_destroy(hd_2);
 
   otrng_assert_cmpmem(expected_root_key, manager->current->root_key,
                       sizeof(root_key_p));
   otrng_assert_cmpmem(expected_chain_key_s, manager->current->chain_s,
-                      sizeof(chain_key_p));
+                      sizeof(sending_chain_key_p));
 
   otrng_key_manager_destroy(manager);
   free(manager);
