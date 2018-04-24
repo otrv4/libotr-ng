@@ -96,7 +96,7 @@ INTERNAL void otrng_rsig_authenticate(ring_sig_s *dst,
   hash_destroy(hd);
 
   rsig_privkey_p c, c1a1;
-  goldilocks_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
+  goldilocks_448_scalar_decode_long(c, hash, sizeof(hash));
 
   goldilocks_448_scalar_sub(dst->c1, c, dst->c2);
   goldilocks_448_scalar_sub(dst->c1, dst->c1, dst->c3);
@@ -158,7 +158,7 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
   hash_destroy(hd);
 
   rsig_privkey_p c, c1c2c3;
-  goldilocks_448_scalar_decode_long(c, hash, ED448_SCALAR_BYTES);
+  goldilocks_448_scalar_decode_long(c, hash, sizeof(hash));
 
   goldilocks_448_scalar_add(c1c2c3, src->c1, src->c2);
   goldilocks_448_scalar_add(c1c2c3, c1c2c3, src->c3);
