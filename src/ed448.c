@@ -103,7 +103,7 @@ INTERNAL void otrng_ec_point_destroy(ec_point_p p) {
 INTERNAL void
 otrng_ec_scalar_derive_from_secret(ec_scalar_p priv,
                                    const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  /* Hash and clamp the secret into a scalar */
+  /* Hash and clamp the secret into a scalar as per RFC 8032 */
   goldilocks_ed448_derive_secret_scalar(priv, sym);
 }
 
