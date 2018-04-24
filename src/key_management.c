@@ -266,7 +266,7 @@ tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
   if (!ratchet)
     return ERROR;
 
-  uint8_t buff[1] = {0x21};
+  uint8_t buff[1] = {0x15};
 
   goldilocks_shake256_ctx_p hd;
   hash_init_with_dom(hd);
@@ -276,7 +276,7 @@ tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
   hash_final(hd, ratchet->root_key, sizeof(root_key_p));
   hash_destroy(hd);
 
-  uint8_t buff2[1] = {0x22};
+  uint8_t buff2[1] = {0x16};
 
   if (sending) {
     goldilocks_shake256_ctx_p hd2;

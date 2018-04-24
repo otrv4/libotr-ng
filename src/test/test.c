@@ -158,8 +158,6 @@ int main(int argc, char **argv) {
   g_test_add_func("/fragment/fails_for_invalid_tag",
                   test_defragment_fails_for_invalid_tag);
 
-  g_test_add_func("/key_management/destroy",
-                  test_otrng_key_manager_destroy); // TODO: check this
   g_test_add_func("/key_management/derive_ratchet_keys",
                   test_derive_ratchet_keys);
   g_test_add_func("/key_management/ssid", test_calculate_ssid);
