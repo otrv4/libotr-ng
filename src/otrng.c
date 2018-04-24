@@ -2073,16 +2073,16 @@ tstatic otrng_err receive_encoded_message(otrng_response_s *response,
 tstatic otrng_err receive_error_message(otrng_response_s *response,
                                         const string_p message) {
 
-  const char error1[] = "Unreadable message";
-  const char error2[] = "Not in private state message";
+  const char *unreadable_msg_error = "Unreadable message";
+  const char *not_in_private_error = "Not in private state message";
 
-  if (strncmp(&message[18], "1", 1) == 0) {
-    response->to_display = otrng_strndup(error1, strlen(error1));
+  if (message[18] == '1') {
+    response->to_display =
+        otrng_strndup(unreadable_msg_error, strlen(unreadable_msg_error));
     return SUCCESS;
-  }
-
-  if (strncmp(&message[18], "2", 1) == 0) {
-    response->to_display = otrng_strndup(error2, strlen(error2));
+  } else if (message[18] == '2') {
+    response->to_display =
+        otrng_strndup(not_in_private_error, strlen(not_in_private_error));
     return SUCCESS;
   }
 
