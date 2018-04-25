@@ -1855,7 +1855,7 @@ tstatic otrng_err receive_tlvs(tlv_list_s **to_send, otrng_response_s *response,
 tstatic otrng_err get_receiving_msg_keys(m_enc_key_p enc_key,
                                          m_mac_key_p mac_key, otrng_s *otr) {
 
-  if (otrng_key_manager_ensure_on_ratchet(otr->keys, false) == ERROR)
+  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, false) == ERROR)
     return ERROR;
 
   if (otrng_key_manager_derive_receiving_keys(enc_key, mac_key, otr->keys)) {
@@ -2203,7 +2203,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
       otrng_key_manager_old_mac_keys_serialize(otr->keys->old_mac_keys);
   otr->keys->old_mac_keys = NULL;
 
-  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys)) {
+  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, true)) {
     free(ser_mac_keys);
     ser_mac_keys = NULL;
     return ERROR;

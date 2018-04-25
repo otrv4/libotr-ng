@@ -104,9 +104,6 @@ INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
                                                dh_public_key_p their_dh,
                                                key_manager_s *manager);
 
-INTERNAL otrng_err otrng_key_manager_ensure_on_ratchet(key_manager_s *manager,
-                                                       bool chain);
-
 INTERNAL void
 otrng_ecdh_shared_secret_from_prekey(uint8_t *shared,
                                      otrng_shared_prekey_pair_s *shared_prekey,
@@ -120,7 +117,7 @@ INTERNAL otrng_err otrng_key_manager_derive_receiving_keys(
     m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager);
 
 INTERNAL otrng_err
-otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager);
+otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager, bool sending);
 
 INTERNAL void otrng_key_manager_derive_sending_keys(m_enc_key_p enc_key,
                                                     m_mac_key_p mac_key,

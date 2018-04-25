@@ -406,27 +406,23 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
   return SUCCESS;
 }
 
-tstatic otrng_err rotate_keys(key_manager_s *manager) {
-  // TODO: this is not needed
-  manager->j = 0;
+// TODO: not sure about this always return SUCCESS.. maybe some other logic will
+// work
+tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
+  if (sending) {
+    // TODO: this is not needed
+    manager->j = 0;
 
-  if (otrng_key_manager_generate_ephemeral_keys(manager))
-    return ERROR;
+    if (otrng_key_manager_generate_ephemeral_keys(manager))
+      return ERROR;
 
-  if (enter_new_ratchet(manager, true))
-    return ERROR;
+    if (enter_new_ratchet(manager, true))
+      return ERROR;
 
-  manager->i++;
-
-  return SUCCESS;
-}
-
-// TODO: this can be unified with the sending func
-INTERNAL otrng_err otrng_key_manager_ensure_on_ratchet(key_manager_s *manager,
-                                                       bool chain) {
-  if (manager->j == 0) {
+    manager->i++;
+  } else {
     manager->k = 0;
-    if (enter_new_ratchet(manager, chain))
+    if (enter_new_ratchet(manager, false))
       return ERROR;
 
     otrng_ec_scalar_destroy(manager->our_ecdh->priv);
@@ -441,21 +437,18 @@ INTERNAL otrng_err otrng_key_manager_ensure_on_ratchet(key_manager_s *manager,
   return SUCCESS;
 }
 
-// TODO: refactor this
 tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                                             m_mac_key_p mac_key,
                                             key_manager_s *manager,
                                             bool sending) {
-  uint8_t magic[1] = {0x18};
-
+  // TODO: rename magic or buff to usageID everywhere
   if (sending) {
-    shake_256_kdf(enc_key, sizeof(m_enc_key_p), magic,
-                  manager->current->chain_s, sizeof(sending_chain_key_p));
+    shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
+                   manager->current->chain_s, sizeof(sending_chain_key_p));
   } else {
-    shake_256_kdf(enc_key, sizeof(m_enc_key_p), magic,
-                  manager->current->chain_r, sizeof(receiving_chain_key_p));
+    shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
+                   manager->current->chain_r, sizeof(receiving_chain_key_p));
   }
-
   shake_256_kdf1(mac_key, sizeof(m_mac_key_p), 0x19, enc_key,
                  sizeof(m_enc_key_p));
 }
@@ -465,6 +458,8 @@ INTERNAL otrng_err otrng_key_manager_derive_receiving_keys(
   derive_encryption_and_mac_keys(enc_key, mac_key, manager, false);
   calculate_extra_key(manager);
 
+  // Derive next receiving chain key
+  // KDF_1(0x16 || chain_key_r[i-1][j], 64).
   shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p), 0x16,
                  manager->current->chain_r, sizeof(receiving_chain_key_p));
 
@@ -476,16 +471,17 @@ INTERNAL otrng_err otrng_key_manager_derive_receiving_keys(
   otrng_memdump(mac_key, sizeof(m_mac_key_p));
 #endif
 
+  // TODO: j is incremented outside.. should be follow the same pattern?
   manager->k++;
 
   return SUCCESS;
 }
 
 INTERNAL otrng_err
-otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager) {
+otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager, bool sending) {
   // Derive new ecdh and dh keys
   if (manager->j == 0)
-    return rotate_keys(manager);
+    return rotate_keys(manager, sending);
 
   return SUCCESS;
 }
