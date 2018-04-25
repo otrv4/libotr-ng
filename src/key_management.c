@@ -155,7 +155,7 @@ INTERNAL otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
 
     otrng_dh_keypair_destroy(manager->our_dh);
     if (otrng_dh_keypair_generate_from_shared_secret(manager->shared_secret,
-                                                     manager->our_dh))
+                                                     manager->our_dh, true))
       return ERROR;
   } else {
     shake_256_kdf1(random, sizeof random, 0x13, manager->shared_secret,
@@ -168,8 +168,8 @@ INTERNAL otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     manager->their_dh = NULL;
     dh_keypair_p tmp_their_dh;
 
-    if (otrng_dh_keypair_generate_their_from_shared_secret(
-            manager->shared_secret, tmp_their_dh))
+    if (otrng_dh_keypair_generate_from_shared_secret(manager->shared_secret,
+                                                     tmp_their_dh, false))
       return ERROR;
 
     manager->their_dh = tmp_their_dh->pub;
@@ -177,19 +177,18 @@ INTERNAL otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
   return SUCCESS;
 }
 
-tstatic void calculate_shared_secret(shared_secret_p dst, const k_ecdh_p k_ecdh,
-                                     const brace_key_p brace_key) {
+tstatic void calculate_shared_secret(key_manager_s *manager, k_ecdh_p k_ecdh) {
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, 0x04);
   hash_update(hd, k_ecdh, sizeof(k_ecdh_p));
-  hash_update(hd, brace_key, sizeof(brace_key_p));
+  hash_update(hd, manager->brace_key, sizeof(brace_key_p));
 
-  hash_final(hd, dst, sizeof(shared_secret_p));
+  hash_final(hd, manager->shared_secret, sizeof(shared_secret_p));
   hash_destroy(hd);
 
-  // sodium_memzero(k_ecdh, sizeof(k_ecdh_p));
-  // sodium_memzero(brace_key, sizeof(brace_key_p));
+  sodium_memzero(manager->brace_key, sizeof(brace_key_p));
+  sodium_memzero(k_ecdh, sizeof(k_ecdh_p));
 }
 
 INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
@@ -209,16 +208,12 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     // TODO: why is this passing the whole struct?
     otrng_dh_priv_key_destroy(manager->our_dh);
 
-    calculate_shared_secret(manager->shared_secret, k_ecdh, manager->brace_key);
+    calculate_shared_secret(manager, k_ecdh);
   } else {
-    // TODO: correctly delete
-    goldilocks_shake256_ctx_p hd;
+    shake_256_kdf1(manager->shared_secret, sizeof(shared_secret_p), 0x04,
+                   manager->tmp_key, sizeof(manager->tmp_key));
 
-    hash_init_with_usage(hd, 0x04);
-    hash_update(hd, manager->tmp_key, sizeof(manager->tmp_key));
-
-    hash_final(hd, manager->shared_secret, sizeof(shared_secret_p));
-    hash_destroy(hd);
+    sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
   }
 
   calculate_ssid(manager);
@@ -326,8 +321,8 @@ otrng_ecdh_shared_secret_from_keypair(uint8_t *shared_secret,
 }
 
 tstatic void calculate_ssid(key_manager_s *manager) {
-  shake_256_kdf1(manager->ssid, 8, 0x05, manager->shared_secret,
-                 sizeof(shared_secret_p));
+  shake_256_kdf1(manager->ssid, sizeof(manager->ssid), 0x05,
+                 manager->shared_secret, sizeof(shared_secret_p));
 }
 
 // TODO: add usageID
@@ -380,7 +375,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool chain) {
     return ERROR;
 
   // TODO: change this signature
-  calculate_shared_secret(shared_secret, k_ecdh, manager->brace_key);
+  calculate_shared_secret(manager, k_ecdh);
 
 #ifdef DEBUG
   printf("ENTERING NEW RATCHET\n");
@@ -390,7 +385,8 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool chain) {
   otrng_memdump(manager->brace_key, sizeof(brace_key_p));
 #endif
 
-  if (key_manager_new_ratchet(manager, shared_secret, chain) == ERROR) {
+  if (key_manager_new_ratchet(manager, manager->shared_secret, chain) ==
+      ERROR) {
     sodium_memzero(shared_secret, SHARED_SECRET_BYTES);
     return ERROR;
   }
