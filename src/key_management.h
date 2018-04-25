@@ -129,9 +129,7 @@ INTERNAL uint8_t *
 otrng_key_manager_old_mac_keys_serialize(list_element_s *old_mac_keys);
 
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
-tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
-                                          const shared_secret_p shared,
-                                          bool chain);
+tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager, bool sending);
 
 // TODO: are we only exporting this for the test?
 tstatic void calculate_ssid(key_manager_s *manager);

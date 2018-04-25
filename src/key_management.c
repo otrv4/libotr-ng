@@ -131,7 +131,6 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
 
   manager->lastgenerated = now;
 
-  // TODO: check
   if (manager->i % 3 == 0) {
     otrng_dh_keypair_destroy(manager->our_dh);
 
@@ -255,7 +254,6 @@ INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
 }
 
 tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
-                                          const shared_secret_p shared_secret,
                                           bool sending) {
   ratchet_s *ratchet = ratchet_new();
   if (!ratchet)
@@ -267,7 +265,7 @@ tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
   hash_init_with_dom(hd);
   hash_update(hd, buff, 1);
   hash_update(hd, manager->current->root_key, sizeof(root_key_p));
-  hash_update(hd, shared_secret, sizeof(shared_secret_p));
+  hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
   hash_final(hd, ratchet->root_key, sizeof(root_key_p));
   hash_destroy(hd);
 
@@ -278,7 +276,7 @@ tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
     hash_init_with_dom(hd2);
     hash_update(hd2, buff2, 1);
     hash_update(hd2, manager->current->root_key, sizeof(root_key_p));
-    hash_update(hd2, shared_secret, sizeof(shared_secret_p));
+    hash_update(hd2, manager->shared_secret, sizeof(shared_secret_p));
 
     hash_final(hd2, ratchet->chain_s, sizeof(sending_chain_key_p));
     hash_destroy(hd2);
@@ -287,7 +285,7 @@ tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
     hash_init_with_dom(hd2);
     hash_update(hd2, buff2, 1);
     hash_update(hd2, manager->current->root_key, sizeof(root_key_p));
-    hash_update(hd2, shared_secret, sizeof(shared_secret_p));
+    hash_update(hd2, manager->shared_secret, sizeof(shared_secret_p));
 
     hash_final(hd2, ratchet->chain_r, sizeof(receiving_chain_key_p));
     hash_destroy(hd2);
@@ -362,9 +360,8 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
   return SUCCESS;
 }
 
-tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool chain) {
+tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool sending) {
   k_ecdh_p k_ecdh;
-  shared_secret_p shared_secret;
 
   otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
@@ -374,7 +371,6 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool chain) {
   if (calculate_brace_key(manager) == ERROR)
     return ERROR;
 
-  // TODO: change this signature
   calculate_shared_secret(manager, k_ecdh);
 
 #ifdef DEBUG
@@ -385,13 +381,12 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool chain) {
   otrng_memdump(manager->brace_key, sizeof(brace_key_p));
 #endif
 
-  if (key_manager_new_ratchet(manager, manager->shared_secret, chain) ==
-      ERROR) {
-    sodium_memzero(shared_secret, SHARED_SECRET_BYTES);
+  if (key_manager_new_ratchet(manager, sending) == ERROR) {
+    sodium_memzero(manager->shared_secret, SHARED_SECRET_BYTES);
     return ERROR;
   }
 
-  sodium_memzero(shared_secret, SHARED_SECRET_BYTES);
+  sodium_memzero(manager->shared_secret, SHARED_SECRET_BYTES);
   return SUCCESS;
 }
 
@@ -412,6 +407,7 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
 }
 
 tstatic otrng_err rotate_keys(key_manager_s *manager) {
+  // TODO: this is not needed
   manager->j = 0;
 
   if (otrng_key_manager_generate_ephemeral_keys(manager))
@@ -487,7 +483,7 @@ INTERNAL otrng_err otrng_key_manager_derive_receiving_keys(
 
 INTERNAL otrng_err
 otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager) {
-  // derive new ecdh, dh keys
+  // Derive new ecdh and dh keys
   if (manager->j == 0)
     return rotate_keys(manager);
 
@@ -500,15 +496,16 @@ INTERNAL void otrng_key_manager_derive_sending_keys(m_enc_key_p enc_key,
   derive_encryption_and_mac_keys(enc_key, mac_key, manager, true);
   calculate_extra_key(manager);
 
-  // next chain key
+  // Derive next sending chain key
   // KDF_1(0x16 || chain_key_s[i-1][j], 64).
   shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p), 0x16,
                  manager->current->chain_s, sizeof(sending_chain_key_p));
+
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
-  printf("sending enc_key = ");
+  printf("enc_key = ");
   otrng_memdump(enc_key, sizeof(m_enc_key_p));
-  printf("sending mac_key = ");
+  printf("mac_key = ");
   otrng_memdump(mac_key, sizeof(m_mac_key_p));
 #endif
 }

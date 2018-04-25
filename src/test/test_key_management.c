@@ -25,13 +25,11 @@ void test_derive_ratchet_keys() {
   key_manager_s *manager = malloc(sizeof(key_manager_s));
   otrng_key_manager_init(manager);
 
-  shared_secret_p shared_secret;
-  memset(shared_secret, 0, sizeof shared_secret);
+  memset(manager->shared_secret, 0, sizeof(shared_secret_p));
   root_key_p root_key;
   memset(root_key, 0, sizeof root_key);
 
-  otrng_assert(key_manager_new_ratchet(manager, shared_secret, true) ==
-               SUCCESS);
+  otrng_assert(key_manager_new_ratchet(manager, true) == SUCCESS);
 
   root_key_p expected_root_key;
   sending_chain_key_p expected_chain_key_s;
@@ -43,7 +41,7 @@ void test_derive_ratchet_keys() {
   hash_init_with_dom(hd);
   hash_update(hd, buff, 1);
   hash_update(hd, root_key, sizeof(root_key_p));
-  hash_update(hd, shared_secret, sizeof(shared_secret_p));
+  hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
 
   hash_final(hd, expected_root_key, sizeof(root_key_p));
   hash_destroy(hd);
@@ -52,7 +50,7 @@ void test_derive_ratchet_keys() {
   hash_init_with_dom(hd2);
   hash_update(hd2, buff2, 1);
   hash_update(hd2, root_key, sizeof(root_key_p));
-  hash_update(hd2, shared_secret, sizeof(shared_secret_p));
+  hash_update(hd2, manager->shared_secret, sizeof(shared_secret_p));
 
   hash_final(hd2, expected_chain_key_s, sizeof(sending_chain_key_p));
   hash_destroy(hd2);
