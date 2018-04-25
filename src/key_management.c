@@ -414,6 +414,7 @@ tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
   if (sending) {
     // TODO: this is not needed
     manager->j = 0;
+    manager->k = 0;
 
     if (otrng_key_manager_generate_ephemeral_keys(manager))
       return ERROR;

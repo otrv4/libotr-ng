@@ -46,16 +46,20 @@
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES + RING_SIG_BYTES +     \
    HASH_BYTES)
 
+#define DH_KEY_BYTES 384
+#define BRACE_KEY_BYTES 32
 #define DATA_MSG_NONCE_BYTES crypto_secretbox_NONCEBYTES
 #define DATA_MSG_MAC_BYTES 64
 #define MAC_KEY_BYTES 64
-#define BRACE_KEY_BYTES 32
+#define ENC_KEY_BYTES 32
 #define SHARED_SECRET_BYTES 64
 #define CHAIN_KEY_BYTES 64
 #define ROOT_KEY_BYTES 64
 #define PUB_KEY_SER_BYTES 59
+#define SSID_BYTES 8
 
-/* header + flags + ratchet id + message id + public ecdh key + nonce */
+/* header + flags + previous chain number + ratchet id + message id + public
+ * ecdh key + nonce */
 #define DATA_MESSAGE_MIN_BYTES                                                 \
   (DAKE_HEADER_BYTES + 1 + 4 + 4 + 4 + ED448_POINT_BYTES + DATA_MSG_NONCE_BYTES)
 

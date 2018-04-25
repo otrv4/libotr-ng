@@ -31,7 +31,7 @@
 #include "shared.h"
 
 // TODO: extract constant
-typedef uint8_t k_dh_p[384];
+typedef uint8_t k_dh_p[DH_KEY_BYTES];
 typedef uint8_t brace_key_p[BRACE_KEY_BYTES];
 typedef uint8_t k_ecdh_p[ED448_POINT_BYTES];
 typedef uint8_t shared_secret_p[SHARED_SECRET_BYTES];
@@ -39,7 +39,7 @@ typedef uint8_t shared_secret_p[SHARED_SECRET_BYTES];
 typedef uint8_t root_key_p[ROOT_KEY_BYTES];
 typedef uint8_t sending_chain_key_p[CHAIN_KEY_BYTES];
 typedef uint8_t receiving_chain_key_p[CHAIN_KEY_BYTES];
-typedef uint8_t m_enc_key_p[32];
+typedef uint8_t m_enc_key_p[ENC_KEY_BYTES];
 typedef uint8_t m_mac_key_p[MAC_KEY_BYTES];
 
 typedef struct ratchet_s {
@@ -71,7 +71,7 @@ typedef struct key_manager_s {
   brace_key_p brace_key;
   shared_secret_p shared_secret;
 
-  uint8_t ssid[8];
+  uint8_t ssid[SSID_BYTES];
   session_id_half ssid_half;
   uint8_t extra_key[HASH_BYTES];
   uint8_t tmp_key[HASH_BYTES];

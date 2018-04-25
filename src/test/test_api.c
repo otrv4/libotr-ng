@@ -118,7 +118,7 @@ void test_api_interactive_conversation(void) {
   string_p to_send = NULL;
   otrng_err err;
 
-  // on the same ratchet
+  // Alice sends in a ratchet
   for (message_id = 1; message_id < 4; message_id++) {
     tlv_list_s *tlvs = NULL;
     // Alice sends a data message
@@ -160,6 +160,7 @@ void test_api_interactive_conversation(void) {
 
     g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, message_id);
+    g_assert_cmpint(bob->keys->k, ==, 0);
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
@@ -172,6 +173,7 @@ void test_api_interactive_conversation(void) {
 
     g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, 0);
+    g_assert_cmpint(alice->keys->k, ==, message_id);
   }
 
   const size_t secret_len = 2;
@@ -201,11 +203,11 @@ void test_api_interactive_conversation(void) {
 
   free_message_and_response(response_to_bob, &to_send);
 
-  // Bob closes encrypted conversation
+  // Bob closes the encrypted conversation
   otrng_close(&to_send, bob);
   otrng_assert(bob->state == OTRNG_STATE_START);
 
-  // Alice receives disconnected TLV from Bob
+  // Alice receives a disconnected TLV from Bob
   response_to_bob = otrng_response_new();
   otrng_receive_message(response_to_bob, to_send, alice);
 
@@ -234,7 +236,7 @@ void test_api_non_interactive_conversation(void) {
   otrng_server_s *server = malloc(sizeof(otrng_server_s));
   server->prekey_message = NULL;
 
-  // Alice uploads prekey message to server
+  // Alice uploads a prekey message to the server
   otrng_assert(otrng_start_non_interactive_dake(server, alice) == SUCCESS);
 
   otrng_assert(alice->state == OTRNG_STATE_START);
@@ -255,12 +257,7 @@ void test_api_non_interactive_conversation(void) {
   response_to_bob->to_send = NULL;
 
   otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-  otrng_assert(bob->keys->current);
 
-  // otrng_assert_ec_public_key_eq(bob->keys->their_ecdh,
-  //                              alice->keys->our_ecdh->pub);
-  // otrng_assert_dh_public_key_eq(bob->keys->their_dh,
-  // alice->keys->our_dh->pub);
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 0);
@@ -280,7 +277,6 @@ void test_api_non_interactive_conversation(void) {
   otrng_assert(response_to_alice->to_display == NULL);
 
   otrng_response_free_all(response_to_alice, response_to_bob);
-
   free(server);
   server = NULL;
 
@@ -294,6 +290,7 @@ void test_api_non_interactive_conversation(void) {
 
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 0);
+  g_assert_cmpint(alice->keys->k, ==, 0);
 
   // Both have the same shared secret
   otrng_assert_root_key_eq(alice->keys->current->root_key,
@@ -316,7 +313,6 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_sent(err, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
-    // This is a follow up message.
     g_assert_cmpint(alice->keys->i, ==, 1);
     g_assert_cmpint(alice->keys->j, ==, message_id);
     g_assert_cmpint(alice->keys->k, ==, 0);
@@ -329,7 +325,6 @@ void test_api_non_interactive_conversation(void) {
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, message_id);
 
-    // Next message Bob sends is a new "ratchet"
     g_assert_cmpint(bob->keys->i, ==, 1);
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
@@ -348,8 +343,7 @@ void test_api_non_interactive_conversation(void) {
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
     g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, message_id);
-    // TODO: should this be reset?
-    // g_assert_cmpint(bob->keys->k, ==, 0);
+    g_assert_cmpint(bob->keys->k, ==, 0);
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
