@@ -27,7 +27,7 @@
 #include "serialize.h"
 #include "shake.h"
 
-// TODO: add j and i here
+// TODO: add j, i, k, pn here
 INTERNAL data_message_s *otrng_data_message_new() {
   data_message_s *ret = malloc(sizeof(data_message_s));
   if (!ret)

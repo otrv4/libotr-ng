@@ -776,7 +776,7 @@ tstatic data_message_s *generate_data_msg(const otrng_s *otr) {
 
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
-  data_msg->ratchet_id = otr->keys->pn;
+  data_msg->previous_chain_n = otr->keys->pn;
   data_msg->ratchet_id = otr->keys->i;
   data_msg->message_id = otr->keys->j;
   otrng_ec_point_copy(data_msg->ecdh, our_ecdh(otr));
