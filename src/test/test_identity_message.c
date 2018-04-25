@@ -88,7 +88,6 @@ void test_dake_identity_message_serializes(identity_message_fixture_s *f,
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dake_identity_message_free(identity_message);
   free(serialized);
-  serialized = NULL;
 }
 
 void test_otrng_dake_identity_message_deserializes(
@@ -133,7 +132,6 @@ void test_otrng_dake_identity_message_deserializes(
   otrng_dake_identity_message_free(identity_message);
   otrng_dake_identity_message_free(deserialized);
   free(serialized);
-  serialized = NULL;
 }
 
 void test_dake_identity_message_valid(identity_message_fixture_s *f,

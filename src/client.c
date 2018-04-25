@@ -32,7 +32,6 @@ tstatic otrng_conversation_s *new_conversation_with(const char *recipient,
   otrng_conversation_s *conv = malloc(sizeof(otrng_conversation_s));
   if (!conv) {
     free(conn);
-    conn = NULL;
     return NULL;
   }
 

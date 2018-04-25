@@ -2065,7 +2065,6 @@ tstatic otrng_err receive_encoded_message(otrng_response_s *response,
 
   otrng_err err = receive_decoded_message(response, decoded, dec_len, otr);
   free(decoded);
-  decoded = NULL;
 
   return err;
 }
@@ -2537,7 +2536,6 @@ tstatic tlv_s *otrng_smp_initiate(const user_profile_s *initiator_profile,
     if (!tlv) {
       otrng_smp_msg_1_destroy(msg);
       free(to_send);
-      to_send = NULL;
       return NULL;
     }
 

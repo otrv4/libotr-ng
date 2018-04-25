@@ -348,7 +348,6 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
   otrng_assert(memcmp(deserialized->sigma, msg->sigma, RING_SIG_BYTES));
 
   free(serialized);
-  serialized = NULL;
   otrng_dake_non_interactive_auth_message_destroy(msg);
   otrng_dake_non_interactive_auth_message_destroy(deserialized);
 }

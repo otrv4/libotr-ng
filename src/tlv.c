@@ -127,7 +127,6 @@ tstatic void tlv_free(tlv_s *tlv) {
   free(tlv->data);
   tlv->data = NULL;
   free(tlv);
-  tlv = NULL;
 }
 
 INTERNAL void otrng_tlv_list_free(tlv_list_s *head) {
@@ -138,7 +137,6 @@ INTERNAL void otrng_tlv_list_free(tlv_list_s *head) {
     tlv_free(current->data);
     current->data = NULL;
     free(current);
-    current = NULL;
     current = next;
   }
 }
@@ -182,7 +180,6 @@ tstatic tlv_s *otrng_tlv_padding_new(size_t len) {
   random_bytes(data, len);
   tlv_s *tlv = otrng_tlv_new(OTRNG_TLV_PADDING, len, data);
   free(data);
-  data = NULL;
 
   return tlv;
 }

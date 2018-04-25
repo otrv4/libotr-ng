@@ -913,7 +913,6 @@ INTERNAL otrng_err build_auth_message(
 
   if (err == ERROR) {
     free(buff);
-    buff = NULL;
     return ERROR;
   }
 
