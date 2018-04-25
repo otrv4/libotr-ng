@@ -400,6 +400,7 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
   manager->i = 0;
   manager->j = 0;
   manager->k = 0;
+  manager->pn = 0;
   // TODO: we can assing directly to the root key
   memcpy(manager->current->root_key, manager->shared_secret, 64);
   sodium_memzero(manager->shared_secret, 64);
