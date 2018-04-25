@@ -95,6 +95,11 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
 
 INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src);
 
+INTERNAL otrng_err otrng_rsig_authenticate_generic(
+    ring_sig_s *dst, const rsig_privkey_p a, const rsig_pubkey_p pub,
+    const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
+    const unsigned char *msg, size_t msglen);
+
 #ifdef OTRNG_AUTH_PRIVATE
 #endif
 

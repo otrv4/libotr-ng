@@ -54,6 +54,7 @@
 #include "test_tlv.c"
 #include "test_user_profile.c"
 #include "test_messaging.c"
+#include "test_auth.c"
 
 int main(int argc, char **argv) {
   if (!gcry_check_version(GCRYPT_VERSION))
@@ -85,7 +86,6 @@ int main(int argc, char **argv) {
                   ed448_test_scalar_serialization);
 
   g_test_add_func("/dake/build_auth_message_auth", test_build_auth_message);
-  g_test_add_func("/dake/rsig_auth", test_rsig_auth);
 
   g_test_add_func("/list/add", test_otrng_list_add);
   g_test_add_func("/list/get", test_otrng_list_get_last);
@@ -98,6 +98,9 @@ int main(int argc, char **argv) {
                   dh_test_shared_secret_adds_leading_zeroes);
   g_test_add_func("/dh/destroy",
                   dh_test_keypair_destroy); // TODO: check this one
+
+  g_test_add_func("/ring-signature/rsig_auth", test_rsig_auth);
+  g_test_add_func("/ring-signature/generic-auth", test_rsig_auth_generic);
 
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
   g_test_add_func("/serialize_and_deserialize/data",
