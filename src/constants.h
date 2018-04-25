@@ -31,7 +31,7 @@
 
 /* protocol version + message type + sender's instance tag + receiver's instance
  * tag */
-#define DAKE_HEADER_BYTES (2 + 1 + 4 + 4)
+#define DAKE_HEADER_BYTES (2 + 1 + 4 + 4 + 4)
 #define HASH_BYTES 64
 
 /* size of IDENTITY_MESSAGE without user_profile */

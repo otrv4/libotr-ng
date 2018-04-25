@@ -776,7 +776,7 @@ tstatic data_message_s *generate_data_msg(const otrng_s *otr) {
 
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
-  // TODO: can this be done?
+  data_msg->ratchet_id = otr->keys->pn;
   data_msg->ratchet_id = otr->keys->i;
   data_msg->message_id = otr->keys->j;
   otrng_ec_point_copy(data_msg->ecdh, our_ecdh(otr));
@@ -966,8 +966,10 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
     size_t bodylen = 0;
     if (data_message_body_on_non_interactive_asprintf(&ser_data_msg, &bodylen,
                                                       auth)) {
-      free(auth->enc_msg);
-      auth->enc_msg = NULL;
+      if (auth->enc_msg) {
+        free(auth->enc_msg);
+        auth->enc_msg = NULL;
+      }
       otrng_dake_non_interactive_auth_message_destroy(auth);
       free(t);
       t = NULL;
@@ -1893,6 +1895,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
 
   otrng_key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
   otr->keys->j = msg->message_id;
+  otr->keys->pn = otr->keys->j;
 
   do {
     if (msg->receiver_instance_tag != otr->our_instance_tag) {

@@ -71,6 +71,7 @@ otrng_key_manager_init(key_manager_s *manager) // make like ratchet_new?
   manager->i = 0;
   manager->j = 0;
   manager->k = 0;
+  manager->pn = 0;
   manager->current = ratchet_new();
 
   memset(manager->brace_key, 0, sizeof(manager->brace_key));

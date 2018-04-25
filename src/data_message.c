@@ -85,7 +85,7 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
   cursor += otrng_serialize_uint32(cursor, data_msg->sender_instance_tag);
   cursor += otrng_serialize_uint32(cursor, data_msg->receiver_instance_tag);
   cursor += otrng_serialize_uint8(cursor, data_msg->flags);
-  // TODO: Add "Previous chain message number (INT)"
+  cursor += otrng_serialize_uint32(cursor, data_msg->previous_chain_n);
   cursor += otrng_serialize_uint32(cursor, data_msg->ratchet_id);
   cursor += otrng_serialize_uint32(cursor, data_msg->message_id);
   cursor += otrng_serialize_ec_point(cursor, data_msg->ecdh);
@@ -154,6 +154,12 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   len -= read;
 
   if (otrng_deserialize_uint8(&dst->flags, cursor, len, &read))
+    return ERROR;
+
+  cursor += read;
+  len -= read;
+
+  if (otrng_deserialize_uint32(&dst->previous_chain_n, cursor, len, &read))
     return ERROR;
 
   cursor += read;
