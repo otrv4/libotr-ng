@@ -22,7 +22,6 @@
 
 #include "auth.h"
 #include "constants.h"
-#include "deserialize.h"
 #include "random.h"
 #include "shake.h"
 
