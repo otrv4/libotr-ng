@@ -43,17 +43,6 @@ static const unsigned char prime_order_bytes_dup[ED448_SCALAR_BYTES] = {
     0x23, 0x78, 0xc2, 0x92, 0xab, 0x58, 0x44, 0xf3,
 };
 
-// If V is one returns X. Returns Y otherwise.
-const void *otrng_constant_time_select(uint8_t v, const void *x,
-                                       const void *y) {
-  // TODO: Make it constant time
-
-  if (v == 1)
-    return x;
-
-  return y;
-}
-
 // TODO: export this function when it replaces the old one.
 // TODO: reduce the dependency on the rest of libotr-ng so it can be easily
 // turned into a standalone library.
@@ -83,10 +72,6 @@ INTERNAL otrng_err otrng_rsig_authenticate_generic(
     return ERROR;
   }
 
-  // serT1 = constant_time_select(secretIs1, encode(T1), encode(R1 + A1 * c1))
-  // serT2 = constant_time_select(secretIs2, encode(T2), encode(R2 + A2 * c2))
-  // serT3 = constant_time_select(secretIs3, encode(T3), encode(R3 + A3 * c3))
-
   ec_scalar_p t1, t2, t3;
   ec_point_p T1, T2, T3;
   otrng_zq_keypair_generate(T1, t1);
@@ -104,35 +89,34 @@ INTERNAL otrng_err otrng_rsig_authenticate_generic(
   ed448_random_scalar(c2);
   ed448_random_scalar(c3);
 
-  ec_point_p A1c1, A2c2, A3c3;
-  goldilocks_448_point_scalarmul(A1c1, A1, c1);
-  goldilocks_448_point_scalarmul(A2c2, A2, c2);
-  goldilocks_448_point_scalarmul(A3c3, A3, c3);
+  // serT1 = secretIs1 ? T1 : R1 + A1 * c1
+  // serT2 = secretIs2 ? T2 : R2 + A2 * c2
+  // serT3 = secretIs3 ? T3 : R3 + A3 * c3
 
-  goldilocks_448_point_add(A1c1, R1, A1c1);
-  goldilocks_448_point_add(A2c2, R2, A2c2);
-  goldilocks_448_point_add(A3c3, R3, A3c3);
+  ec_point_p RAc1, RAc2, RAc3;
+  goldilocks_448_point_scalarmul(RAc1, A1, c1);
+  goldilocks_448_point_add(RAc1, R1, RAc1);
 
-  uint8_t t1_bytes[ED448_POINT_BYTES];
-  uint8_t t2_bytes[ED448_POINT_BYTES];
-  uint8_t t3_bytes[ED448_POINT_BYTES];
-  uint8_t ac1_bytes[ED448_POINT_BYTES];
-  uint8_t ac2_bytes[ED448_POINT_BYTES];
-  uint8_t ac3_bytes[ED448_POINT_BYTES];
+  goldilocks_448_point_scalarmul(RAc2, A2, c2);
+  goldilocks_448_point_add(RAc2, R2, RAc2);
 
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(t1_bytes, T1);
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(t2_bytes, T2);
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(t3_bytes, T3);
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(ac1_bytes, A1c1);
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(ac2_bytes, A2c2);
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(ac3_bytes, A3c3);
+  goldilocks_448_point_scalarmul(RAc3, A3, c3);
+  goldilocks_448_point_add(RAc3, R3, RAc3);
 
-  const uint8_t *serT1 =
-      otrng_constant_time_select(isA1 & 1, t1_bytes, ac1_bytes);
-  const uint8_t *serT2 =
-      otrng_constant_time_select(isA2 & 1, t2_bytes, ac2_bytes);
-  const uint8_t *serT3 =
-      otrng_constant_time_select(isA3 & 1, t2_bytes, ac3_bytes);
+  goldilocks_448_point_p T1_chosen, T2_chosen, T3_chosen;
+  goldilocks_448_point_cond_sel(T1_chosen, RAc1, T1, isA1);
+  goldilocks_448_point_cond_sel(T2_chosen, RAc2, T2, isA2);
+  goldilocks_448_point_cond_sel(T3_chosen, RAc3, T3, isA3);
+
+  uint8_t serT1[ED448_POINT_BYTES];
+  uint8_t serT2[ED448_POINT_BYTES];
+  uint8_t serT3[ED448_POINT_BYTES];
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(serT1, T1_chosen);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(serT2, T2_chosen);
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(serT3, T3_chosen);
+
+  // TODO: zero RAci from the stack?
+  // TODO: zero Ti_chosen from the stack?
 
   hash_init_with_dom(hd);
   hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
