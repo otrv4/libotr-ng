@@ -675,11 +675,13 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
                          otr->conversation->client->phi))
     return ERROR;
 
-  /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
+  /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
   otrng_rsig_authenticate(msg->sigma,
-                          otr->conversation->client->keypair,    /* g^R and R */
-                          otr->their_profile->long_term_pub_key, /* g^I */
-                          their_ecdh(otr),                       /* g^i -- Y */
+                          otr->conversation->client->keypair->priv, /* sk_ha */
+                          otr->conversation->client->keypair->pub,  /* H_a */
+                          otr->their_profile->long_term_pub_key,    /* H_b */
+                          otr->conversation->client->keypair->pub,  /* H_a */
+                          their_ecdh(otr),                          /* Y */
                           t, t_len);
 
   free(t);
@@ -937,11 +939,13 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
     return ERROR;
   }
 
-  /* sigma = Auth(g^R, R, {g^I, g^R, g^i}, msg) */
+  /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
   otrng_rsig_authenticate(auth->sigma,
-                          otr->conversation->client->keypair,    /* g^R and R */
-                          otr->their_profile->long_term_pub_key, /* g^I */
-                          their_ecdh(otr),                       /* g^i -- Y */
+                          otr->conversation->client->keypair->priv, /* sk_ha */
+                          otr->conversation->client->keypair->pub,  /* H_a */
+                          otr->their_profile->long_term_pub_key,    /* H_b */
+                          otr->conversation->client->keypair->pub,  /* H_a */
+                          their_ecdh(otr),                          /* Y */
                           t, t_len);
 
   sodium_memzero(auth->nonce, DATA_MSG_NONCE_BYTES);
@@ -1259,12 +1263,12 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     return otrng_false;
   }
 
-  /* Verif({g^I, g^R, g^i}, sigma, msg) */
-  otrng_bool err =
-      otrng_rsig_verify(auth->sigma, auth->profile->long_term_pub_key, /* g^R */
-                        otr->conversation->client->keypair->pub,       /* g^I */
-                        our_ecdh(otr),                                 /* g^  */
-                        t, t_len);
+  /* RVrf({H_b, H_a, Y}, sigma, msg) */
+  otrng_bool err = otrng_rsig_verify(
+      auth->sigma, otr->conversation->client->keypair->pub, /* H_b */
+      auth->profile->long_term_pub_key,                     /* H_a */
+      our_ecdh(otr),                                        /* Y  */
+      t, t_len);
 
   if (auth->enc_msg) {
     m_enc_key_p enc_key;
@@ -1554,9 +1558,14 @@ tstatic otrng_err reply_with_auth_i_msg(string_p *dst,
                          their_dh(otr), otr->conversation->client->phi))
     return ERROR;
 
-  otrng_rsig_authenticate(msg->sigma, otr->conversation->client->keypair,
-                          their_profile->long_term_pub_key, their_ecdh(otr), t,
-                          t_len);
+  /* sigma = RSig(H_b, sk_hb, {H_b, H_a, X}, t) */
+  otrng_rsig_authenticate(msg->sigma,
+                          otr->conversation->client->keypair->priv, /* sk_hb */
+                          otr->conversation->client->keypair->pub,  /* H_b */
+                          otr->conversation->client->keypair->pub,  /* H_b */
+                          their_profile->long_term_pub_key,         /* H_a */
+                          their_ecdh(otr),                          /* X */
+                          t, t_len);
   free(t);
   t = NULL;
 
@@ -1579,12 +1588,12 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
                          otr->conversation->client->phi))
     return otrng_false;
 
-  /* Verif({g^I, g^R, g^i}, sigma, msg) */
-  otrng_bool err =
-      otrng_rsig_verify(auth->sigma, auth->profile->long_term_pub_key, /* g^R */
-                        otr->conversation->client->keypair->pub,       /* g^I */
-                        our_ecdh(otr),                                 /* g^  */
-                        t, t_len);
+  /* RVrf({H_b, H_a, Y}, sigma, msg) */
+  otrng_bool err = otrng_rsig_verify(
+      auth->sigma, otr->conversation->client->keypair->pub, /* H_b */
+      auth->profile->long_term_pub_key,                     /* H_a */
+      our_ecdh(otr),                                        /* Y */
+      t, t_len);
 
   free(t);
   t = NULL;
@@ -1651,9 +1660,12 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
                          otr->conversation->client->phi))
     return otrng_false;
 
+  /* RVrf({H_b, H_a, X}, sigma, msg) */
   otrng_bool err = otrng_rsig_verify(
-      auth->sigma, otr->their_profile->long_term_pub_key,
-      otr->conversation->client->keypair->pub, our_ecdh(otr), t, t_len);
+      auth->sigma, otr->their_profile->long_term_pub_key, /* H_b */
+      otr->conversation->client->keypair->pub,            /* H_a */
+      our_ecdh(otr),                                      /* X */
+      t, t_len);
   free(t);
   t = NULL;
 
