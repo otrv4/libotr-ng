@@ -72,19 +72,19 @@ INTERNAL otrng_err otrng_rsig_authenticate_generic(
     return ERROR;
   }
 
-  ec_scalar_p t1, t2, t3;
-  ec_point_p T1, T2, T3;
+  goldilocks_448_scalar_p t1, t2, t3;
+  goldilocks_448_point_p T1, T2, T3;
   otrng_zq_keypair_generate(T1, t1);
   otrng_zq_keypair_generate(T2, t2);
   otrng_zq_keypair_generate(T3, t3);
 
-  ec_scalar_p r1, r2, r3;
-  ec_point_p R1, R2, R3;
+  goldilocks_448_scalar_p r1, r2, r3;
+  goldilocks_448_point_p R1, R2, R3;
   otrng_zq_keypair_generate(R1, r1);
   otrng_zq_keypair_generate(R2, r2);
   otrng_zq_keypair_generate(R3, r3);
 
-  ec_scalar_p c1, c2, c3;
+  goldilocks_448_scalar_p c1, c2, c3;
   ed448_random_scalar(c1);
   ed448_random_scalar(c2);
   ed448_random_scalar(c3);
@@ -93,7 +93,7 @@ INTERNAL otrng_err otrng_rsig_authenticate_generic(
   // serT2 = secretIs2 ? T2 : R2 + A2 * c2
   // serT3 = secretIs3 ? T3 : R3 + A3 * c3
 
-  ec_point_p RAc1, RAc2, RAc3;
+  goldilocks_448_point_p RAc1, RAc2, RAc3;
   goldilocks_448_point_scalarmul(RAc1, A1, c1);
   goldilocks_448_point_add(RAc1, R1, RAc1);
 
@@ -141,7 +141,7 @@ INTERNAL otrng_err otrng_rsig_authenticate_generic(
   rsig_privkey_p c;
   goldilocks_448_scalar_decode_long(c, hash, sizeof(hash));
 
-  ec_scalar_p c1_secret, c2_secret, c3_secret;
+  goldilocks_448_scalar_p c1_secret, c2_secret, c3_secret;
   goldilocks_448_scalar_sub(c1_secret, c, c2);
   goldilocks_448_scalar_sub(c1_secret, c1_secret, c3);
 
@@ -166,12 +166,12 @@ INTERNAL otrng_err otrng_rsig_authenticate_generic(
   //  or:
   //  dst->c1 = (c1_secret * isA1) + c1 - (c1 * isA1);
 
-  ec_scalar_p is_a1_scalar, is_a2_scalar, is_a3_scalar;
+  goldilocks_448_scalar_p is_a1_scalar, is_a2_scalar, is_a3_scalar;
   goldilocks_448_scalar_set_unsigned(is_a1_scalar, isA1 & 1);
   goldilocks_448_scalar_set_unsigned(is_a2_scalar, isA2 & 1);
   goldilocks_448_scalar_set_unsigned(is_a3_scalar, isA3 & 1);
 
-  ec_scalar_p tmp;
+  goldilocks_448_scalar_p tmp;
   goldilocks_448_scalar_mul(tmp, c1_secret, is_a1_scalar);
   goldilocks_448_scalar_add(dst->c1, c1, tmp);
   goldilocks_448_scalar_mul(tmp, c1, is_a1_scalar);
@@ -188,7 +188,7 @@ INTERNAL otrng_err otrng_rsig_authenticate_generic(
   goldilocks_448_scalar_sub(dst->c3, dst->c3, tmp);
 
   // This is analogous to how we calculate dst->c1, dst->c2, dst->c3
-  ec_scalar_p r1_secret, r2_secret, r3_secret;
+  goldilocks_448_scalar_p r1_secret, r2_secret, r3_secret;
   goldilocks_448_scalar_mul(r1_secret, dst->c1, a);
   goldilocks_448_scalar_sub(r1_secret, t1, r1_secret);
 
