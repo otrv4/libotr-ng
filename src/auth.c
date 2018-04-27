@@ -148,14 +148,17 @@ INTERNAL otrng_err otrng_rsig_authenticate_generic(
   goldilocks_448_scalar_p c1_secret, c2_secret, c3_secret;
   goldilocks_448_scalar_sub(c1_secret, c, c2);
   goldilocks_448_scalar_sub(c1_secret, c1_secret, c3);
+  goldilocks_448_scalar_set_unsigned(dst->c1, 0);
   goldilocks_448_scalar_cond_sel(dst->c1, c1, c1_secret, isA1);
 
   goldilocks_448_scalar_sub(c2_secret, c, c3);
   goldilocks_448_scalar_sub(c2_secret, c2_secret, c1);
+  goldilocks_448_scalar_set_unsigned(dst->c2, 0);
   goldilocks_448_scalar_cond_sel(dst->c2, c2, c2_secret, isA2);
 
   goldilocks_448_scalar_sub(c3_secret, c, c2);
   goldilocks_448_scalar_sub(c3_secret, c3_secret, c1);
+  goldilocks_448_scalar_set_unsigned(dst->c3, 0);
   goldilocks_448_scalar_cond_sel(dst->c3, c3, c3_secret, isA3);
 
   // TODO: Ideally we want:
