@@ -31,41 +31,20 @@ void test_rsig_auth() {
   otrng_keypair_generate(p2, sym2);
   otrng_keypair_generate(p3, sym3);
 
-  ring_sig_p dst2;
-  otrng_rsig_authenticate(dst2, p1, p2->pub, p3->pub, (unsigned char *)msg,
-                          strlen(msg));
-
-  otrng_assert(otrng_rsig_verify(dst2, p1->pub, p2->pub, p3->pub,
-                                 (unsigned char *)msg, strlen(msg)) == SUCCESS);
-}
-
-void test_rsig_auth_generic() {
-  const char *msg = "hi";
-
-  otrng_keypair_p p1, p2, p3;
-  uint8_t sym1[ED448_PRIVATE_BYTES] = {1}, sym2[ED448_PRIVATE_BYTES] = {2},
-          sym3[ED448_PRIVATE_BYTES] = {3};
-
-  otrng_keypair_generate(p1, sym1);
-  otrng_keypair_generate(p2, sym2);
-  otrng_keypair_generate(p3, sym3);
-
   ring_sig_p dst;
-  otrng_err ok = otrng_rsig_authenticate_generic(
-      dst, p1->priv, p1->pub, p2->pub, p3->pub, p2->pub, (unsigned char *)msg,
-      strlen(msg));
+  otrng_err ok =
+      otrng_rsig_authenticate(dst, p1->priv, p1->pub, p2->pub, p3->pub, p2->pub,
+                              (unsigned char *)msg, strlen(msg));
 
   otrng_assert(ok == ERROR);
 
-  ok = otrng_rsig_authenticate_generic(dst, p1->priv, p1->pub, p1->pub, p3->pub,
-                                       p1->pub, (unsigned char *)msg,
-                                       strlen(msg));
+  ok = otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p3->pub,
+                               p1->pub, (unsigned char *)msg, strlen(msg));
 
   otrng_assert(ok == ERROR);
 
-  ok = otrng_rsig_authenticate_generic(dst, p1->priv, p1->pub, p1->pub, p2->pub,
-                                       p3->pub, (unsigned char *)msg,
-                                       strlen(msg));
+  ok = otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p2->pub,
+                               p3->pub, (unsigned char *)msg, strlen(msg));
 
   otrng_assert(ok == SUCCESS);
 
@@ -73,9 +52,8 @@ void test_rsig_auth_generic() {
                          strlen(msg));
   otrng_assert(ok == SUCCESS);
 
-  ok = otrng_rsig_authenticate_generic(dst, p1->priv, p1->pub, p3->pub, p1->pub,
-                                       p2->pub, (unsigned char *)msg,
-                                       strlen(msg));
+  ok = otrng_rsig_authenticate(dst, p1->priv, p1->pub, p3->pub, p1->pub,
+                               p2->pub, (unsigned char *)msg, strlen(msg));
 
   otrng_assert(ok == SUCCESS);
 

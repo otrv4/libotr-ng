@@ -109,10 +109,7 @@ static void calculate_ri(goldilocks_448_scalar_p dst,
   goldilocks_448_scalar_destroy(if_secret);
 }
 
-// TODO: export this function when it replaces the old one.
-// TODO: reduce the dependency on the rest of libotr-ng so it can be easily
-// turned into a standalone library.
-INTERNAL otrng_err otrng_rsig_authenticate_generic(
+INTERNAL otrng_err otrng_rsig_authenticate(
     ring_sig_s *dst, const rsig_privkey_p secret, const rsig_pubkey_p pub,
     const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
     const uint8_t *msg, size_t msglen) {
@@ -221,17 +218,6 @@ INTERNAL otrng_err otrng_rsig_authenticate_generic(
   goldilocks_448_scalar_destroy(r3);
 
   return SUCCESS;
-}
-
-// TODO: replace this function by the generic version.
-INTERNAL void otrng_rsig_authenticate(ring_sig_s *dst,
-                                      const rsig_keypair_s *keypair,
-                                      const rsig_pubkey_p A2,
-                                      const rsig_pubkey_p A3,
-                                      const unsigned char *msg, size_t msglen) {
-
-  otrng_rsig_authenticate_generic(dst, keypair->priv, keypair->pub,
-                                  keypair->pub, A2, A3, msg, msglen);
 }
 
 INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,

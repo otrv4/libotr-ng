@@ -100,7 +100,6 @@ int main(int argc, char **argv) {
                   dh_test_keypair_destroy); // TODO: check this one
 
   g_test_add_func("/ring-signature/rsig_auth", test_rsig_auth);
-  g_test_add_func("/ring-signature/generic-auth", test_rsig_auth_generic);
 
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
   g_test_add_func("/serialize_and_deserialize/data",

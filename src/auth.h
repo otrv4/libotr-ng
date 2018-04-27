@@ -63,17 +63,22 @@ typedef struct ring_sig_s {
  * corresponding to one of three public keys.
  *
  * @param [dst] The signature of knowledge
- * @param [keypair] The keypair with the known private key.
+ * @param [priv] The known private key.
+ * @param [pub] The public counterpart of priv.
+ * @param [A1] The first public key.
  * @param [A2] The second public key.
  * @param [A3] The thrid public key.
  * @param [msg] The message to "sign".
  * @param [msg_len] The length of the message.
+ *
+ * @return SUCCESS if pub is one of (A1, A2, A3) and a signature of knowledge
+ * could be created. Returns ERROR otherwise.
  */
-INTERNAL void otrng_rsig_authenticate(ring_sig_s *dst,
-                                      const rsig_keypair_s *keypair,
-                                      const rsig_pubkey_p A2,
-                                      const rsig_pubkey_p A3,
-                                      const unsigned char *msg, size_t msglen);
+
+INTERNAL otrng_err otrng_rsig_authenticate(
+    ring_sig_s *dst, const rsig_privkey_p priv, const rsig_pubkey_p pub,
+    const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
+    const uint8_t *msg, size_t msglen);
 
 /**
  * @brief The Verification function of the Ring Sig.

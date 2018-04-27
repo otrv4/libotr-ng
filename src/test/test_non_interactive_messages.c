@@ -216,7 +216,8 @@ void test_dake_non_interactive_auth_message_serializes(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  otrng_rsig_authenticate(msg->sigma, f->keypair, f->profile->long_term_pub_key,
+  otrng_rsig_authenticate(msg->sigma, f->keypair->priv, f->keypair->pub,
+                          f->keypair->pub, f->profile->long_term_pub_key,
                           msg->X, t, t_len);
 
   uint8_t *serialized = NULL;
@@ -320,7 +321,8 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  otrng_rsig_authenticate(msg->sigma, f->keypair, f->profile->long_term_pub_key,
+  otrng_rsig_authenticate(msg->sigma, f->keypair->priv, f->keypair->pub,
+                          f->keypair->pub, f->profile->long_term_pub_key,
                           msg->X, t, t_len);
 
   uint8_t *serialized = NULL;
