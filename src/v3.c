@@ -561,8 +561,8 @@ INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
   }
 
   if (question)
-    otrl_message_initiate_smp_q(conn->state->user_state, conn->ops, conn->opdata,
-                                conn->ctx, q, secret, secretlen);
+    otrl_message_initiate_smp_q(conn->state->user_state, conn->ops,
+                                conn->opdata, conn->ctx, q, secret, secretlen);
   else
     otrl_message_initiate_smp(conn->state->user_state, conn->ops, conn->opdata,
                               conn->ctx, secret, secretlen);

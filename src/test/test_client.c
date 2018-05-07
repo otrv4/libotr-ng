@@ -212,8 +212,8 @@ void test_client_api() {
 
   // Free memory
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state,
-                           charlie_state->user_state);
+                            bob_client_state->user_state,
+                            charlie_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state,
                               charlie_state);
   otrng_client_free_all(alice, bob, charlie);
@@ -356,7 +356,7 @@ void test_conversation_with_multiple_locations() {
 
   // Free memory
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }
@@ -499,7 +499,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
 
   // Free memory
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }
@@ -613,7 +613,7 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
 
   // Free memory
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }
@@ -798,7 +798,7 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   }
   // Free memory
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }
@@ -913,7 +913,7 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
 
   // Free memory
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }
@@ -1012,7 +1012,7 @@ void test_client_sends_fragmented_message(void) {
 
   otrng_message_free(to_send);
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }

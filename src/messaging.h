@@ -100,7 +100,8 @@ otrng_user_state_add_private_key_v4(otrng_user_state_s *state,
                                     const void *client_id,
                                     const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-API otrng_user_state_s *otrng_user_state_new(const otrng_client_callbacks_s *cb);
+API otrng_user_state_s *
+otrng_user_state_new(const otrng_client_callbacks_s *cb);
 
 API void otrng_user_state_free(otrng_user_state_s *);
 

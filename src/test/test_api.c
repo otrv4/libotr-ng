@@ -218,7 +218,7 @@ void test_api_interactive_conversation(void) {
 
   free_message_and_response(response_to_bob, &to_send);
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
@@ -381,7 +381,7 @@ void test_api_non_interactive_conversation(void) {
   free_message_and_response(response_to_bob, &to_send);
 
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
 
   otrng_free_all(alice, bob);
@@ -530,7 +530,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   }
 
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
 
   otrng_free_all(alice, bob);
@@ -620,7 +620,7 @@ void test_api_conversation_errors(void) {
 
   free_message_and_response(response_to_alice, &to_send);
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
@@ -720,8 +720,8 @@ void test_api_conversation_v3(void) {
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
   otrng_assert(!otrl_privkey_generate_FILEp(
-      alice_client_state->user_state, tmpFILEp, alice_client_state->account_name,
-      alice_client_state->protocol_name));
+      alice_client_state->user_state, tmpFILEp,
+      alice_client_state->account_name, alice_client_state->protocol_name));
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
@@ -774,7 +774,7 @@ void test_api_conversation_v3(void) {
   free_message_and_response(response_to_bob, &to_send);
 
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_free_all(alice, bob);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
 
@@ -898,7 +898,8 @@ void test_api_multiple_clients(void) {
 
   otrng_response_free_all(phone_to_alice, alice_to_phone);
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_phone_state->user_state, bob_pc_state->user_state);
+                            bob_phone_state->user_state,
+                            bob_pc_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_pc_state,
                               bob_phone_state);
   otrng_free_all(alice, bob_pc, bob_phone);
@@ -983,7 +984,7 @@ void test_api_smp(void) {
   otrng_response_free(response_to_bob);
 
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
@@ -1043,7 +1044,7 @@ void test_api_smp_abort(void) {
 
   // TODO: Alice can restart here the smp. This will mem leak though
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
@@ -1119,7 +1120,7 @@ void test_api_extra_sym_key(void) {
   free_message_and_response(response_to_bob, &to_send);
 
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 
@@ -1199,7 +1200,7 @@ void test_dh_key_rotation(void) {
   free_message_and_response(response_to_alice, &to_send);
 
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
   otrng_tlv_list_free(tlvs);
@@ -1296,7 +1297,7 @@ void test_ecdh_priv_keys_destroyed_early() {
   otrng_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
@@ -1393,7 +1394,7 @@ void test_unreadable_flag() {
   to_send = NULL;
 
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
@@ -1460,7 +1461,7 @@ void test_heartbeat_messages() {
 
   free_message_and_response(response_to_bob, &to_send);
   otrng_user_state_free_all(alice_client_state->user_state,
-                           bob_client_state->user_state);
+                            bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
