@@ -34,7 +34,7 @@ int dh_mpi_cmp(const dh_mpi_p m1, const dh_mpi_p m2) {
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
 
   otrng_fixture->state = otrng_client_state_new(NULL); // No callbacks
-  otrng_fixture->state->userstate = otrl_userstate_create();
+  otrng_fixture->state->user_state = otrl_userstate_create();
   otrng_fixture->state->protocol_name = otrng_strdup("protocol");
   otrng_fixture->state->account_name = otrng_strdup("account@protocol");
 
@@ -60,7 +60,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
   otrng_assert(!otrl_privkey_generate_FILEp(
-      otrng_fixture->state->userstate, tmpFILEp,
+      otrng_fixture->state->user_state, tmpFILEp,
       otrng_fixture->state->account_name, otrng_fixture->state->protocol_name));
   fclose(tmpFILEp);
 
@@ -70,7 +70,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
 
 void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture,
                             gconstpointer data) {
-  otrl_userstate_free(otrng_fixture->state->userstate);
+  otrl_userstate_free(otrng_fixture->state->user_state);
 
   otrng_client_state_free(otrng_fixture->state);
   otrng_fixture->state = NULL;

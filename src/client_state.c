@@ -46,7 +46,7 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->account_name = NULL;
   state->protocol_name = NULL;
   state->callbacks = NULL;
-  state->userstate = NULL;
+  state->user_state = NULL;
   state->keypair = NULL;
   state->shared_prekey_pair = NULL;
   state->phi = NULL;
@@ -59,7 +59,7 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
 
 INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
   state->client_id = NULL;
-  state->userstate = NULL;
+  state->user_state = NULL;
 
   free(state->protocol_name);
   state->protocol_name = NULL;
@@ -91,7 +91,7 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
 // We might want to extract otrl_privkey_generate_finish_FILEp into 2 functions.
 INTERNAL int otrng_client_state_private_key_v3_generate_FILEp(
     const otrng_client_state_s *state, FILE *privf) {
-  return otrl_privkey_generate_FILEp(state->userstate, privf,
+  return otrl_privkey_generate_FILEp(state->user_state, privf,
                                      state->account_name, state->protocol_name);
 }
 
@@ -256,16 +256,16 @@ INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
   if (!p)
     return -1;
 
-  otrl_userstate_instance_tag_add(state->userstate, p);
+  otrl_userstate_instance_tag_add(state->user_state, p);
   return 0;
 }
 
 INTERNAL unsigned int
 otrng_client_state_get_instance_tag(otrng_client_state_s *state) {
-  if (!state->userstate)
+  if (!state->user_state)
     return 0;
 
-  OtrlInsTag *instag = otrl_instag_find(state->userstate, state->account_name,
+  OtrlInsTag *instag = otrl_instag_find(state->user_state, state->account_name,
                                         state->protocol_name);
   if (!instag)
     return 0;
@@ -275,8 +275,8 @@ otrng_client_state_get_instance_tag(otrng_client_state_s *state) {
 
 API int otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
                                                    FILE *instag) {
-  if (!state->userstate)
+  if (!state->user_state)
     return 1;
 
-  return otrl_instag_read_FILEp(state->userstate, instag);
+  return otrl_instag_read_FILEp(state->user_state, instag);
 }

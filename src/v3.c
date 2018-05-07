@@ -381,7 +381,7 @@ tstatic void op_convert_free(void *opdata, ConnContext *context, char *dest) {}
  *
  * Additionally, if interval > 0, set a new periodic timer
  * to go off every interval seconds.  When that timer fires, you
- * must call otrl_message_poll(userstate, uiops, uiopdata); from the
+ * must call otrl_message_poll(user_state, uiops, uiopdata); from the
  * main libotr thread.
  *
  * The timing does not have to be exact; this timer is used to
@@ -392,11 +392,11 @@ tstatic void op_convert_free(void *opdata, ConnContext *context, char *dest) {}
  * there's no more periodic work to be done at this time).
  *
  * If you set this callback to NULL, then you must ensure that your
- * application calls otrl_message_poll(userstate, uiops, uiopdata);
+ * application calls otrl_message_poll(user_state, uiops, uiopdata);
  * from the main libotr thread every definterval seconds (where
  * definterval can be obtained by calling
- * definterval = otrl_message_poll_get_default_interval(userstate);
- * right after creating the userstate).  The advantage of
+ * definterval = otrl_message_poll_get_default_interval(user_state);
+ * right after creating the user_state).  The advantage of
  * implementing the timer_control callback is that the timer can be
  * turned on by libotr only when it's needed.
  *
@@ -481,7 +481,7 @@ INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,
     return ERROR;
 
   int err = otrl_message_sending(
-      conn->state->userstate, conn->ops, conn->opdata,
+      conn->state->user_state, conn->ops, conn->opdata,
       conn->state->account_name, conn->state->protocol_name, conn->peer,
       OTRL_INSTAG_RECENT, message, tlvsv3, newmessage, OTRL_FRAGMENT_SEND_SKIP,
       &conn->ctx, NULL, NULL);
@@ -506,7 +506,7 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
 
   char *newmessage = NULL;
   ignore_message = otrl_message_receiving(
-      conn->state->userstate, conn->ops, conn->opdata,
+      conn->state->user_state, conn->ops, conn->opdata,
       conn->state->account_name, conn->state->protocol_name, conn->peer,
       message, &newmessage, &tlvsv3, &conn->ctx, NULL, NULL);
 
@@ -529,7 +529,7 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
 INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn) {
   // TODO: there is also: otrl_message_disconnect, which only disconnects one
   // instance
-  otrl_message_disconnect_all_instances(conn->state->userstate, conn->ops,
+  otrl_message_disconnect_all_instances(conn->state->user_state, conn->ops,
                                         conn->opdata, conn->state->account_name,
                                         conn->state->protocol_name, conn->peer);
 
@@ -539,7 +539,7 @@ INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn) {
 INTERNAL otrng_err otrng_v3_send_symkey_message(
     string_p *to_send, otrng_v3_conn_s *conn, unsigned int use,
     const unsigned char *usedata, size_t usedatalen, unsigned char *extra_key) {
-  otrl_message_symkey(conn->state->userstate, conn->ops, conn->opdata,
+  otrl_message_symkey(conn->state->user_state, conn->ops, conn->opdata,
                       conn->ctx, use, usedata, usedatalen, extra_key);
   from_injected_to_send(to_send);
 
@@ -561,10 +561,10 @@ INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
   }
 
   if (question)
-    otrl_message_initiate_smp_q(conn->state->userstate, conn->ops, conn->opdata,
+    otrl_message_initiate_smp_q(conn->state->user_state, conn->ops, conn->opdata,
                                 conn->ctx, q, secret, secretlen);
   else
-    otrl_message_initiate_smp(conn->state->userstate, conn->ops, conn->opdata,
+    otrl_message_initiate_smp(conn->state->user_state, conn->ops, conn->opdata,
                               conn->ctx, secret, secretlen);
 
   from_injected_to_send(to_send);
@@ -575,7 +575,7 @@ INTERNAL otrng_err otrng_v3_smp_continue(string_p *to_send,
                                          const uint8_t *secret,
                                          const size_t secretlen,
                                          otrng_v3_conn_s *conn) {
-  otrl_message_respond_smp(conn->state->userstate, conn->ops, conn->opdata,
+  otrl_message_respond_smp(conn->state->user_state, conn->ops, conn->opdata,
                            conn->ctx, secret, secretlen);
 
   from_injected_to_send(to_send);
@@ -583,7 +583,7 @@ INTERNAL otrng_err otrng_v3_smp_continue(string_p *to_send,
 }
 
 INTERNAL otrng_err otrng_v3_smp_abort(otrng_v3_conn_s *conn) {
-  otrl_message_abort_smp(conn->state->userstate, conn->ops, conn->opdata,
+  otrl_message_abort_smp(conn->state->user_state, conn->ops, conn->opdata,
                          conn->ctx);
   return SUCCESS;
 }

@@ -74,7 +74,7 @@ void test_client_conversation_api() {
   otrng_assert(alice_to_charlie->conn);
 
   // Free memory
-  otrl_userstate_free(alice_client_state->userstate);
+  otrl_userstate_free(alice_client_state->user_state);
   otrng_client_state_free(alice_client_state);
   otrng_client_free(alice);
 }
@@ -211,9 +211,9 @@ void test_client_api() {
   otrng_assert(!todisplay);
 
   // Free memory
-  otrng_userstate_free_all(alice_client_state->userstate,
-                           bob_client_state->userstate,
-                           charlie_state->userstate);
+  otrng_user_state_free_all(alice_client_state->user_state,
+                           bob_client_state->user_state,
+                           charlie_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state,
                               charlie_state);
   otrng_client_free_all(alice, bob, charlie);
@@ -232,7 +232,7 @@ void test_client_get_our_fingerprint() {
   otrng_assert(!otrng_client_get_our_fingerprint(our_fp, alice));
   otrng_assert_cmpmem(expected_fp, our_fp, sizeof(otrng_fingerprint_p));
 
-  otrl_userstate_free(alice_client_state->userstate);
+  otrl_userstate_free(alice_client_state->user_state);
   otrng_client_state_free(alice_client_state);
   otrng_client_free(alice);
 }
@@ -355,8 +355,8 @@ void test_conversation_with_multiple_locations() {
   from_alice_to_bob = NULL;
 
   // Free memory
-  otrng_userstate_free_all(alice_client_state->userstate,
-                           bob_client_state->userstate);
+  otrng_user_state_free_all(alice_client_state->user_state,
+                           bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }
@@ -498,8 +498,8 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrng_assert(!todisplay);
 
   // Free memory
-  otrng_userstate_free_all(alice_client_state->userstate,
-                           bob_client_state->userstate);
+  otrng_user_state_free_all(alice_client_state->user_state,
+                           bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }
@@ -612,8 +612,8 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   bob_last = NULL;
 
   // Free memory
-  otrng_userstate_free_all(alice_client_state->userstate,
-                           bob_client_state->userstate);
+  otrng_user_state_free_all(alice_client_state->user_state,
+                           bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }
@@ -797,8 +797,8 @@ void test_valid_identity_msg_in_waiting_auth_r() {
     otrng_assert(!todisplay);
   }
   // Free memory
-  otrng_userstate_free_all(alice_client_state->userstate,
-                           bob_client_state->userstate);
+  otrng_user_state_free_all(alice_client_state->user_state,
+                           bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }
@@ -912,8 +912,8 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   bob_last = NULL;
 
   // Free memory
-  otrng_userstate_free_all(alice_client_state->userstate,
-                           bob_client_state->userstate);
+  otrng_user_state_free_all(alice_client_state->user_state,
+                           bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }
@@ -942,7 +942,7 @@ void test_client_receives_fragmented_message(void) {
   todisplay = NULL;
 
   otrng_message_free(fmsg);
-  otrl_userstate_free(alice_client_state->userstate);
+  otrl_userstate_free(alice_client_state->user_state);
   otrng_client_state_free(alice_client_state);
   otrng_client_free(alice);
 }
@@ -1011,8 +1011,8 @@ void test_client_sends_fragmented_message(void) {
   todisplay = NULL;
 
   otrng_message_free(to_send);
-  otrng_userstate_free_all(alice_client_state->userstate,
-                           bob_client_state->userstate);
+  otrng_user_state_free_all(alice_client_state->user_state,
+                           bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_client_free_all(alice, bob);
 }

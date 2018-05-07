@@ -141,7 +141,7 @@ tstatic otrng_s *create_connection_for(const char *recipient,
   otrng_s *conn = NULL;
 
   // TODO: This should receive only the client_state (which should allow
-  // you to get protocol, account, v3 userstate, etc)
+  // you to get protocol, account, v3 user_state, etc)
   v3_conn = otrng_v3_conn_new(client->state, recipient);
   if (!v3_conn)
     return NULL;
@@ -413,26 +413,26 @@ API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
 /*
  *To read stored private keys:
 
-    otrl_privkey_read(userstate, privkeyfilename);
+    otrl_privkey_read(user_state, privkeyfilename);
 
 To read stored instance tags:
 
-    otrl_instag_read(userstate, instagfilename);
+    otrl_instag_read(user_state, instagfilename);
 
         To read stored fingerprints:
 
-    otrl_privkey_read_fingerprints(userstate, fingerprintfilename,
+    otrl_privkey_read_fingerprints(user_state, fingerprintfilename,
             add_app_info, add_app_info_data);
 */
 
 /* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf) { */
-/*   return otrl_privkey_generate_FILEp(client->state->userstate, privf, */
+/*   return otrl_privkey_generate_FILEp(client->state->user_state, privf, */
 /*                                      client->state->account_name, */
 /*                                      client->state->protocol_name); */
 /* } */
 
 /* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf) { */
-/*   return otrl_instag_generate_FILEp(client->state->userstate, privf, */
+/*   return otrl_instag_generate_FILEp(client->state->user_state, privf, */
 /*                                     client->state->account_name, */
 /*                                     client->state->protocol_name); */
 /* } */

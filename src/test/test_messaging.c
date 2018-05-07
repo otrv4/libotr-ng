@@ -32,12 +32,12 @@ static const void *read_client_id_for_privf(FILE *privf) {
   return charlie_account;
 }
 
-void test_userstate_key_management(void) {
+void test_user_state_key_management(void) {
 
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
-  otrng_userstate_s *state = otrng_user_state_new(NULL);
+  otrng_user_state_s *state = otrng_user_state_new(NULL);
   otrng_user_state_add_private_key_v4(state, alice_account, alice_sym);
   otrng_user_state_add_private_key_v4(state, bob_account, bob_sym);
 
@@ -76,7 +76,7 @@ void test_userstate_key_management(void) {
  *   a private key, it seems it should be an argument - neh?
  */
 
-/* static otrng_userstate_s *test_state = NULL; */
+/* static otrng_user_state_s *test_state = NULL; */
 
 /* static void create_privkey_cb(void *client_id) { */
 /*   const uint8_t sym[ED448_PRIVATE_BYTES] = {1}; */
@@ -107,7 +107,7 @@ void test_instance_tag_api(void) {
   unsigned int icq_instag_value = 0x9abcdef0;
 
   otrng_client_state_s *alice = otrng_client_state_new(alice_account);
-  alice->userstate = otrl_userstate_create();
+  alice->user_state = otrl_userstate_create();
   alice->account_name = otrng_strdup(icq_alice_account);
   alice->protocol_name = otrng_strdup(icq_protocol);
 
@@ -127,6 +127,6 @@ void test_instance_tag_api(void) {
 
   g_assert_cmpstr(sone, ==, "9abcdef0");
 
-  otrl_userstate_free(alice->userstate);
+  otrl_userstate_free(alice->user_state);
   otrng_client_state_free(alice);
 }

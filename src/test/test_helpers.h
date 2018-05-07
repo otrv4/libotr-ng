@@ -151,7 +151,7 @@
 
 #define otrng_response_free_all(...) fn_apply(otrng_response_free, __VA_ARGS__);
 
-#define otrng_userstate_free_all(...)                                          \
+#define otrng_user_state_free_all(...)                                          \
   fn_apply(otrl_userstate_free, __VA_ARGS__);
 
 #define otrng_client_state_free_all(...)                                       \

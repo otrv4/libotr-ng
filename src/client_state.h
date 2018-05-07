@@ -51,7 +51,7 @@ typedef struct otrng_client_state_s {
 
   // TODO: We could point it directly to the user state and have access to the
   // callback and v3 user state
-  OtrlUserState userstate;
+  OtrlUserState user_state;
   otrng_keypair_s *keypair;
   otrng_shared_prekey_pair_s *shared_prekey_pair; // TODO: is this something the
                                                   // client will generate? The
