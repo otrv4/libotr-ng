@@ -834,7 +834,7 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
 
-  otrng_key_manager_derive_sending_keys(enc_key, mac_key, otr->keys);
+  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, true);
 
   /* discard this mac key as it is not used */
   sodium_memzero(mac_key, sizeof(m_mac_key_p));
@@ -1283,7 +1283,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
                   HASH_BYTES);
 
-    otrng_key_manager_derive_receiving_keys(enc_key, mac_key, otr->keys);
+    otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, false);
 
     /* discard this mac key as it is not needed */
     sodium_memzero(mac_key, sizeof(m_mac_key_p));
@@ -1899,7 +1899,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, false) == ERROR)
       return ERROR;
 
-    otrng_key_manager_derive_receiving_keys(enc_key, mac_key, otr->keys);
+    otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, false);
     otr->keys->k++;
 
     if (otrng_valid_data_message(mac_key, msg)) {
@@ -2192,7 +2192,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
                                     size_t message_len, otrng_s *otr, int h,
                                     unsigned char flags) {
   data_message_s *data_msg = NULL;
-
   size_t serlen = otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
 
   uint8_t *ser_mac_keys =
@@ -2210,7 +2209,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
 
-  otrng_key_manager_derive_sending_keys(enc_key, mac_key, otr->keys);
+  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, true);
 
   data_msg = generate_data_msg(otr);
   if (!data_msg) {

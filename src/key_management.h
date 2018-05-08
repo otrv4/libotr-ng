@@ -120,14 +120,16 @@ INTERNAL void otrng_key_manager_derive_receiving_keys(m_enc_key_p enc_key,
 INTERNAL otrng_err
 otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager, bool sending);
 
-INTERNAL void otrng_key_manager_derive_sending_keys(m_enc_key_p enc_key,
-                                                    m_mac_key_p mac_key,
-                                                    key_manager_s *manager);
+INTERNAL void otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key,
+                                                  m_mac_key_p mac_key,
+                                                  key_manager_s *manager,
+                                                  bool sending);
 INTERNAL uint8_t *
 otrng_key_manager_old_mac_keys_serialize(list_element_s *old_mac_keys);
 
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
-tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager, bool sending);
+tstatic otrng_err key_manager_derive_ratchet_keys(key_manager_s *manager,
+                                                  bool sending);
 
 // TODO: are we only exporting this for the test?
 tstatic void calculate_ssid(key_manager_s *manager);

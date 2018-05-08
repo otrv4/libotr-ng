@@ -29,7 +29,7 @@ void test_derive_ratchet_keys() {
   root_key_p root_key;
   memset(root_key, 0, sizeof root_key);
 
-  otrng_assert(key_manager_new_ratchet(manager, true) == SUCCESS);
+  otrng_assert(key_manager_derive_ratchet_keys(manager, true) == SUCCESS);
 
   root_key_p expected_root_key;
   sending_chain_key_p expected_chain_key_s;

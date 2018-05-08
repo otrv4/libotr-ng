@@ -183,7 +183,6 @@ tstatic void calculate_shared_secret(key_manager_s *manager, k_ecdh_p k_ecdh) {
   hash_init_with_usage(hd, 0x04);
   hash_update(hd, k_ecdh, sizeof(k_ecdh_p));
   hash_update(hd, manager->brace_key, sizeof(brace_key_p));
-
   hash_final(hd, manager->shared_secret, sizeof(shared_secret_p));
   hash_destroy(hd);
 
@@ -254,43 +253,33 @@ INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
   manager->their_dh = otrng_dh_mpi_copy(their_dh);
 }
 
-tstatic otrng_err key_manager_new_ratchet(key_manager_s *manager,
-                                          bool sending) {
+tstatic otrng_err key_manager_derive_ratchet_keys(key_manager_s *manager,
+                                                  bool sending) {
   ratchet_s *ratchet = ratchet_new();
   if (!ratchet)
     return ERROR;
 
-  uint8_t buff[1] = {0x15};
-
   goldilocks_shake256_ctx_p hd;
-  hash_init_with_dom(hd);
-  hash_update(hd, buff, 1);
+  hash_init_with_usage(hd, 0x15);
   hash_update(hd, manager->current->root_key, sizeof(root_key_p));
   hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
   hash_final(hd, ratchet->root_key, sizeof(root_key_p));
   hash_destroy(hd);
 
-  uint8_t buff2[1] = {0x16};
-
   if (sending) {
-    goldilocks_shake256_ctx_p hd2;
-    hash_init_with_dom(hd2);
-    hash_update(hd2, buff2, 1);
-    hash_update(hd2, manager->current->root_key, sizeof(root_key_p));
-    hash_update(hd2, manager->shared_secret, sizeof(shared_secret_p));
-
-    hash_final(hd2, ratchet->chain_s, sizeof(sending_chain_key_p));
-    hash_destroy(hd2);
+    hash_init_with_usage(hd, 0x16);
+    hash_update(hd, manager->current->root_key, sizeof(root_key_p));
+    hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
+    hash_final(hd, ratchet->chain_s, sizeof(sending_chain_key_p));
+    hash_destroy(hd);
   } else {
-    goldilocks_shake256_ctx_p hd2;
-    hash_init_with_dom(hd2);
-    hash_update(hd2, buff2, 1);
-    hash_update(hd2, manager->current->root_key, sizeof(root_key_p));
-    hash_update(hd2, manager->shared_secret, sizeof(shared_secret_p));
-
-    hash_final(hd2, ratchet->chain_r, sizeof(receiving_chain_key_p));
-    hash_destroy(hd2);
+    hash_init_with_usage(hd, 0x16);
+    hash_update(hd, manager->current->root_key, sizeof(root_key_p));
+    hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
+    hash_final(hd, ratchet->chain_r, sizeof(receiving_chain_key_p));
+    hash_destroy(hd);
   }
+
   ratchet_free(manager->current);
   manager->current = ratchet;
 
@@ -382,7 +371,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool sending) {
   otrng_memdump(manager->brace_key, sizeof(brace_key_p));
 #endif
 
-  if (key_manager_new_ratchet(manager, sending) == ERROR) {
+  if (key_manager_derive_ratchet_keys(manager, sending) == ERROR) {
     sodium_memzero(manager->shared_secret, SHARED_SECRET_BYTES);
     return ERROR;
   }
@@ -443,28 +432,29 @@ tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                                             m_mac_key_p mac_key,
                                             key_manager_s *manager,
                                             bool sending) {
-  // TODO: rename magic or buff to usageID everywhere
   if (sending) {
     shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
                    manager->current->chain_s, sizeof(sending_chain_key_p));
+    shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p), 0x16,
+                   manager->current->chain_s, sizeof(sending_chain_key_p));
+
   } else {
     shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
                    manager->current->chain_r, sizeof(receiving_chain_key_p));
+    shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
+                   0x16, manager->current->chain_r,
+                   sizeof(receiving_chain_key_p));
   }
   shake_256_kdf1(mac_key, sizeof(m_mac_key_p), 0x19, enc_key,
                  sizeof(m_enc_key_p));
 }
 
-INTERNAL void otrng_key_manager_derive_receiving_keys(m_enc_key_p enc_key,
-                                                      m_mac_key_p mac_key,
-                                                      key_manager_s *manager) {
-  derive_encryption_and_mac_keys(enc_key, mac_key, manager, false);
+INTERNAL void otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key,
+                                                  m_mac_key_p mac_key,
+                                                  key_manager_s *manager,
+                                                  bool sending) {
+  derive_encryption_and_mac_keys(enc_key, mac_key, manager, sending);
   calculate_extra_key(manager);
-
-  // Derive next receiving chain key
-  // KDF_1(0x16 || chain_key_r[i-1][j], 64).
-  shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p), 0x16,
-                 manager->current->chain_r, sizeof(receiving_chain_key_p));
 
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
@@ -484,38 +474,16 @@ otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager, bool sending) {
   return SUCCESS;
 }
 
-INTERNAL void otrng_key_manager_derive_sending_keys(m_enc_key_p enc_key,
-                                                    m_mac_key_p mac_key,
-                                                    key_manager_s *manager) {
-  derive_encryption_and_mac_keys(enc_key, mac_key, manager, true);
-  calculate_extra_key(manager);
-
-  // Derive next sending chain key
-  // KDF_1(0x16 || chain_key_s[i-1][j], 64).
-  shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p), 0x16,
-                 manager->current->chain_s, sizeof(sending_chain_key_p));
-
-#ifdef DEBUG
-  printf("GOT SENDING KEYS:\n");
-  printf("enc_key = ");
-  otrng_memdump(enc_key, sizeof(m_enc_key_p));
-  printf("mac_key = ");
-  otrng_memdump(mac_key, sizeof(m_mac_key_p));
-#endif
-}
-
 INTERNAL uint8_t *
 otrng_key_manager_old_mac_keys_serialize(list_element_s *old_mac_keys) {
-  uint num_mac_keys = otrng_list_len(old_mac_keys);
+  size_t num_mac_keys = otrng_list_len(old_mac_keys);
   size_t serlen = num_mac_keys * MAC_KEY_BYTES;
-  if (serlen == 0) {
+  if (serlen == 0)
     return NULL;
-  }
 
   uint8_t *ser_mac_keys = malloc(serlen);
-  if (!ser_mac_keys) {
+  if (!ser_mac_keys)
     return NULL;
-  }
 
   for (unsigned int i = 0; i < num_mac_keys; i++) {
     list_element_s *last = otrng_list_get_last(old_mac_keys);
