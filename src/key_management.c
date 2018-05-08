@@ -313,7 +313,7 @@ tstatic void calculate_ssid(key_manager_s *manager) {
                  manager->shared_secret, sizeof(shared_secret_p));
 }
 
-// TODO: this seems untested and should be derived from the correct chain key
+// TODO: this seems untested
 tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
   goldilocks_shake256_ctx_p hd;
   uint8_t extra_key_buff[HASH_BYTES];
