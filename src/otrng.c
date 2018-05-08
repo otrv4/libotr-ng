@@ -1283,13 +1283,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
                   HASH_BYTES);
 
-    if (otrng_key_manager_derive_receiving_keys(enc_key, mac_key, otr->keys)) {
-      free(t);
-      t = NULL;
-      sodium_memzero(enc_key, sizeof(m_enc_key_p));
-      sodium_memzero(mac_key, sizeof(m_mac_key_p));
-      return otrng_false;
-    }
+    otrng_key_manager_derive_receiving_keys(enc_key, mac_key, otr->keys);
 
     /* discard this mac key as it is not needed */
     sodium_memzero(mac_key, sizeof(m_mac_key_p));
@@ -1866,21 +1860,6 @@ tstatic otrng_err receive_tlvs(tlv_list_s **to_send, otrng_response_s *response,
   return SUCCESS;
 }
 
-tstatic otrng_err get_receiving_msg_keys(m_enc_key_p enc_key,
-                                         m_mac_key_p mac_key, otrng_s *otr) {
-
-  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, false) == ERROR)
-    return ERROR;
-
-  if (otrng_key_manager_derive_receiving_keys(enc_key, mac_key, otr->keys)) {
-    sodium_memzero(enc_key, sizeof(m_enc_key_p));
-    sodium_memzero(mac_key, sizeof(m_mac_key_p));
-    return ERROR;
-  }
-
-  return SUCCESS;
-}
-
 tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
                                              const uint8_t *buff, size_t buflen,
                                              otrng_s *otr) {
@@ -1917,8 +1896,11 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       return SUCCESS;
     }
 
-    if (get_receiving_msg_keys(enc_key, mac_key, otr))
-      continue;
+    if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, false) == ERROR)
+      return ERROR;
+
+    otrng_key_manager_derive_receiving_keys(enc_key, mac_key, otr->keys);
+    otr->keys->k++;
 
     if (otrng_valid_data_message(mac_key, msg)) {
       sodium_memzero(enc_key, sizeof(enc_key));

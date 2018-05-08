@@ -113,8 +113,9 @@ INTERNAL void otrng_ecdh_shared_secret_from_keypair(uint8_t *shared,
                                                     otrng_keypair_s *keypair,
                                                     const ec_point_p their_pub);
 
-INTERNAL otrng_err otrng_key_manager_derive_receiving_keys(
-    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager);
+INTERNAL void otrng_key_manager_derive_receiving_keys(m_enc_key_p enc_key,
+                                                      m_mac_key_p mac_key,
+                                                      key_manager_s *manager);
 
 INTERNAL otrng_err
 otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager, bool sending);

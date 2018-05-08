@@ -412,7 +412,6 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
 // work
 tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
   if (sending) {
-    // TODO: this is not needed
     manager->j = 0;
     manager->k = 0;
 
@@ -456,8 +455,9 @@ tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                  sizeof(m_enc_key_p));
 }
 
-INTERNAL otrng_err otrng_key_manager_derive_receiving_keys(
-    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager) {
+INTERNAL void otrng_key_manager_derive_receiving_keys(m_enc_key_p enc_key,
+                                                      m_mac_key_p mac_key,
+                                                      key_manager_s *manager) {
   derive_encryption_and_mac_keys(enc_key, mac_key, manager, false);
   calculate_extra_key(manager);
 
@@ -473,16 +473,11 @@ INTERNAL otrng_err otrng_key_manager_derive_receiving_keys(
   printf("receiving mac_key = ");
   otrng_memdump(mac_key, sizeof(m_mac_key_p));
 #endif
-
-  // TODO: j is incremented outside.. should be follow the same pattern?
-  manager->k++;
-
-  return SUCCESS;
 }
 
 INTERNAL otrng_err
 otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager, bool sending) {
-  // Derive new ecdh and dh keys
+  // Derive new ECDH and DH keys
   if (manager->j == 0)
     return rotate_keys(manager, sending);
 
