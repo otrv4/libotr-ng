@@ -313,13 +313,17 @@ tstatic void calculate_ssid(key_manager_s *manager) {
                  manager->shared_secret, sizeof(shared_secret_p));
 }
 
-// TODO: add usageID
+// TODO: this seems untested and should be derived from the correct chain key
 tstatic void calculate_extra_key(key_manager_s *manager) {
-  uint8_t magic[1] = {0xFF};
+  goldilocks_shake256_ctx_p hd;
   uint8_t extra_key_buff[HASH_BYTES];
+  uint8_t magic[1] = {0xFF};
 
-  shake_256_kdf(extra_key_buff, HASH_BYTES, magic, manager->current->chain_s,
-                sizeof(sending_chain_key_p));
+  hash_init_with_usage(hd, 0x1A);
+  hash_update(hd, magic, 1);
+  hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
+  hash_final(hd, extra_key_buff, HASH_BYTES);
+  hash_destroy(hd);
 
   memcpy(manager->extra_key, extra_key_buff, sizeof manager->extra_key);
 }
