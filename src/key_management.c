@@ -314,14 +314,18 @@ tstatic void calculate_ssid(key_manager_s *manager) {
 }
 
 // TODO: this seems untested and should be derived from the correct chain key
-tstatic void calculate_extra_key(key_manager_s *manager) {
+tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
   goldilocks_shake256_ctx_p hd;
   uint8_t extra_key_buff[HASH_BYTES];
   uint8_t magic[1] = {0xFF};
 
   hash_init_with_usage(hd, 0x1A);
   hash_update(hd, magic, 1);
-  hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
+  if (sending) {
+    hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
+  } else {
+    hash_update(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
+  }
   hash_final(hd, extra_key_buff, HASH_BYTES);
   hash_destroy(hd);
 
@@ -458,7 +462,7 @@ INTERNAL void otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key,
                                                   key_manager_s *manager,
                                                   bool sending) {
   derive_encryption_and_mac_keys(enc_key, mac_key, manager, sending);
-  calculate_extra_key(manager);
+  calculate_extra_key(manager, sending);
 
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
