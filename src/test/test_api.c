@@ -1135,10 +1135,9 @@ void test_dh_key_rotation(void) {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
 
-  // DAKE HAS FINISHED.
+  // DAKE HAS FINISHED
   do_dake_fixture(alice, bob);
 
-  // int ratchet_id;
   otrng_response_s *response_to_alice = NULL;
   otrng_response_s *response_to_bob = NULL;
   string_p to_send = NULL;
@@ -1150,6 +1149,7 @@ void test_dh_key_rotation(void) {
 
   g_assert_cmpint(alice->keys->i, ==, 1);
   g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->k, ==, 0);
 
   // Bob receives a data message
   response_to_alice = otrng_response_new();
@@ -1160,17 +1160,22 @@ void test_dh_key_rotation(void) {
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 1);
 
+  free_message_and_response(response_to_alice, &to_send);
+
   // Bob sends a data message
   err = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(bob->keys->i, ==, 2);
   g_assert_cmpint(bob->keys->j, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 0);
 
   // Alice receives a data message
   response_to_bob = otrng_response_new();
   err = otrng_receive_message(response_to_bob, to_send, alice);
   assert_msg_rec(err, "hello", response_to_bob);
+
+  free_message_and_response(response_to_bob, &to_send);
 
   g_assert_cmpint(alice->keys->i, ==, 2);
   g_assert_cmpint(alice->keys->j, ==, 0);
@@ -1181,12 +1186,16 @@ void test_dh_key_rotation(void) {
   assert_msg_sent(err, to_send);
 
   g_assert_cmpint(alice->keys->i, ==, 3);
-  // TODO: should we reset?
   g_assert_cmpint(alice->keys->j, ==, 1);
+  // TODO: should we reset the receiving too?
+  g_assert_cmpint(alice->keys->k, ==, 0);
 
   // Bob receives a data message
+  response_to_alice = otrng_response_new();
   err = otrng_receive_message(response_to_alice, to_send, bob);
   assert_msg_rec(err, "hello", response_to_alice);
+
+  free_message_and_response(response_to_alice, &to_send);
 
   g_assert_cmpint(bob->keys->i, ==, 3);
   g_assert_cmpint(bob->keys->j, ==, 0);
@@ -1194,9 +1203,6 @@ void test_dh_key_rotation(void) {
 
   otrng_assert(!bob->keys->our_dh->priv);
   otrng_assert(alice->keys->our_dh->priv);
-
-  free_message_and_response(response_to_bob, &to_send);
-  free_message_and_response(response_to_alice, &to_send);
 
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
