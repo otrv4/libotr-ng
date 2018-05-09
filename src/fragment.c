@@ -26,6 +26,7 @@
 
 #include "fragment.h"
 
+// TODO: check this format
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
 
 API otrng_message_to_send_s *otrng_message_new() {
@@ -86,12 +87,12 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
                                           int our_instance, int their_instance,
                                           const string_p message) {
   size_t msg_len = strlen(message);
-  size_t limit_piece = max_size - FRAGMENT_HEADER_LEN;
+  size_t limit = max_size - FRAGMENT_HEADER_LEN;
   string_p *pieces;
   int piece_len = 0;
 
-  fragments->total = ((msg_len - 1) / (max_size - FRAGMENT_HEADER_LEN)) + 1;
-  if (fragments->total > 65535)
+  fragments->total = ((msg_len - 1) / limit) + 1;
+  if (fragments->total < 1 || fragments->total > 65535)
     return ERROR;
 
   size_t pieces_len = fragments->total * sizeof(string_p);
@@ -99,16 +100,16 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
   if (!pieces)
     return ERROR;
 
-  int current_frag;
-  for (current_frag = 1; current_frag <= fragments->total; current_frag++) {
-    int index_len = 0;
+  for (int current = 1; current <= fragments->total; current++) {
+    int index = 0;
     string_p piece = NULL;
     string_p piece_data = NULL;
 
-    if (msg_len - index_len < limit_piece)
-      piece_len = msg_len - index_len;
+    // TODO: why?
+    if (msg_len - index < limit)
+      piece_len = msg_len - index;
     else
-      piece_len = limit_piece;
+      piece_len = limit;
 
     piece_data = malloc(piece_len + 1);
     if (!piece_data) {
@@ -143,15 +144,15 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     }
 
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN, FRAGMENT_FORMAT,
-             our_instance, their_instance, current_frag, fragments->total,
+             our_instance, their_instance, current, fragments->total,
              piece_data);
     piece[piece_len + FRAGMENT_HEADER_LEN] = 0;
 
-    pieces[current_frag - 1] = piece;
+    pieces[current - 1] = piece;
 
     free(piece_data);
     piece_data = NULL;
-    index_len += piece_len;
+    index += piece_len;
     message += piece_len;
   }
 
@@ -160,6 +161,7 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
   return SUCCESS;
 }
 
+// TODO: why?
 tstatic void initialize_fragment_context(fragment_context_s *context) {
   free(context->fragment);
   context->fragment = NULL;

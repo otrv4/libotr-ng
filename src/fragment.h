@@ -25,6 +25,7 @@
 #include "shared.h"
 #include "str.h"
 
+/* ?OTR| + sender_instance_tag + receiver_instance_tag */
 #define FRAGMENT_HEADER_LEN 37
 
 typedef struct otrng_message_to_send_s {
