@@ -138,11 +138,9 @@ void test_api_interactive_conversation(void) {
     assert_msg_rec(err, "hi", response_to_alice);
     otrng_assert(bob->keys->old_mac_keys);
 
-    // TODO: this is prob wrong
     free_message_and_response(response_to_alice, &to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, message_id);
-
     g_assert_cmpint(bob->keys->i, ==, 1);
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
@@ -168,9 +166,7 @@ void test_api_interactive_conversation(void) {
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
-    // TODO: this is prob wrong
     free_message_and_response(response_to_bob, &to_send);
-
     g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id);
@@ -421,19 +417,19 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(bob->keys->current);
-
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 0);
 
   otrng_assert(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
                                                    bob, "hi") == SUCCESS);
 
-  // Should send an non interactive auth
+  // Should send an non-interactive auth message
   otrng_assert(response_to_alice->to_display == NULL);
   otrng_assert(response_to_alice->to_send);
   otrng_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
 
-  // Alice receives an non interactive auth
+  // Alice receives an non-interactive auth message
   otrng_assert(otrng_receive_message(response_to_bob,
                                      response_to_alice->to_send,
                                      alice) == SUCCESS);
@@ -441,7 +437,6 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrng_assert_ec_public_key_eq(alice->keys->their_ecdh,
                                 bob->keys->our_ecdh->pub);
   otrng_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
-
   otrng_assert_cmpmem("hi", response_to_bob->to_display, 3);
 
   otrng_response_free_all(response_to_alice, response_to_bob);
@@ -451,6 +446,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   free(server);
   server = NULL;
 
+  // TODO: in this case, it should have already ratcheted
   // Check double ratchet is initialized
   otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(alice->keys->current);
@@ -464,8 +460,6 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
                            bob->keys->current->root_key);
 
   int message_id;
-
-  // Bob sends a data message
   string_p to_send = NULL;
   otrng_err err;
 
@@ -476,6 +470,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     tlv_list_s *tlvs = NULL;
+    // Alice sends a data message
     err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
     otrng_tlv_list_free(tlvs);
     assert_msg_sent(err, to_send);
@@ -531,12 +526,10 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
-
   otrng_free_all(alice, bob);
 }
 
 void test_api_conversation_errors(void) {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
@@ -546,26 +539,24 @@ void test_api_conversation_errors(void) {
   bob_client_state->pad = true;
   alice_client_state->pad = true;
 
-  // DAKE HAS FINISHED.
+  // DAKE HAS FINISHED
   do_dake_fixture(alice, bob);
 
-  // int message_id = 2;
   otrng_response_s *response_to_alice = NULL;
   otrng_response_s *response_to_bob = NULL;
 
-  // Alice sends a data message
   string_p to_send = NULL;
   tlv_list_s *tlvs = NULL;
   otrng_err err;
 
+  // Alice sends a data message
   err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
   assert_msg_sent(err, to_send);
   otrng_assert(tlvs);
   otrng_assert(!alice->keys->old_mac_keys);
 
-  // This is a follow up message.
-  // g_assert_cmpint(alice->keys->i, ==, 0);
-  // g_assert_cmpint(alice->keys->j, ==, message_id);
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 1);
 
   // To trigger the error message
   bob->state = OTRNG_STATE_START;
