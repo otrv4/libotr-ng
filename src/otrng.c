@@ -734,7 +734,7 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
 
   // TODO: refactor this
   goldilocks_shake256_ctx_p hd;
-  hash_init_with_dom(hd);
+  hash_init_with_usage(hd, 0x0C);
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
@@ -745,7 +745,7 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
 
 #ifdef DEBUG
   printf("GENERATING TEMP KEY R\n");
-  printf("tmp_key_i = ");
+  printf("tmp_key_r = ");
   otrng_memdump(dst, HASH_BYTES);
 #endif
 
@@ -915,11 +915,10 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
   otrng_ec_point_copy(auth->X, our_ecdh(otr));
   auth->A = otrng_dh_mpi_copy(our_dh(otr));
 
-  /* auth_mac_k = KDF_2(0x01 || tmp_k) */
-  uint8_t magic[1] = {0x01};
+  /* auth_mac_k = KDF_1(0x0D || tmp_k) */
   uint8_t auth_mac_k[HASH_BYTES];
-  shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
-                HASH_BYTES);
+  shake_256_kdf1(auth_mac_k, sizeof(auth_mac_k), 0x0D, otr->keys->tmp_key,
+                 HASH_BYTES);
 
   unsigned char *t = NULL;
   size_t t_len = 0;
@@ -1052,7 +1051,7 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
     return ERROR;
 
   goldilocks_shake256_ctx_p hd;
-  hash_init_with_dom(hd);
+  hash_init_with_usage(hd, 0x0C);
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
@@ -1177,7 +1176,7 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
   memcpy(otr->keys->their_shared_prekey, otr->their_profile->shared_prekey,
          sizeof(otrng_shared_prekey_pub_p));
 
-  /* tmp_k = KDF_2(K_ecdh || ECDH(x, their_shared_prekey) ||
+  /* tmp_k = KDF_1(0x0C || K_ecdh || ECDH(x, their_shared_prekey) ||
    * ECDH(x, Pkb) || brace_key) */
   if (generate_tmp_key_r(otr->keys->tmp_key, otr))
     return err;
@@ -1270,18 +1269,17 @@ tstatic otrng_bool verify_non_interactive_auth_message(
       our_ecdh(otr),                                        /* Y  */
       t, t_len);
 
+  /* auth_mac_k = KDF_1(0x0D || tmp_k) */
+  uint8_t auth_mac_k[HASH_BYTES];
+  shake_256_kdf1(auth_mac_k, sizeof(auth_mac_k), 0x0D, otr->keys->tmp_key,
+                 HASH_BYTES);
+
   if (auth->enc_msg) {
     m_enc_key_p enc_key;
     m_mac_key_p mac_key;
 
     memset(enc_key, 0, sizeof enc_key);
     memset(mac_key, 0, sizeof mac_key);
-
-    /* auth_mac_k = KDF_2(0x01 || tmp_k) */
-    uint8_t magic[1] = {0x01};
-    uint8_t auth_mac_k[HASH_BYTES];
-    shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
-                  HASH_BYTES);
 
     otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, false);
 
@@ -1333,13 +1331,6 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     otr->keys->old_mac_keys =
         otrng_list_add(to_store_mac, otr->keys->old_mac_keys);
   } else {
-
-    /* auth_mac_k = KDF_2(0x01 || tmp_k */
-    uint8_t magic[1] = {0x01};
-    uint8_t auth_mac_k[HASH_BYTES];
-    shake_256_kdf(auth_mac_k, sizeof(auth_mac_k), magic, otr->keys->tmp_key,
-                  HASH_BYTES);
-
     /* Auth MAC = KDF_2(auth_mac_k || t) */
     uint8_t auth_mac[HASH_BYTES];
     shake_256_mac(auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
