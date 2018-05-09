@@ -97,7 +97,7 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   ratchet_free(manager->current);
   manager->current = NULL;
 
-  // TODO: once ake is finished should be wiped out
+  // TODO: once dake is finished should be wiped out
   sodium_memzero(manager->their_shared_prekey, ED448_POINT_BYTES);
   sodium_memzero(manager->our_shared_prekey, ED448_POINT_BYTES);
 
@@ -106,7 +106,7 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
   manager->ssid_half = 0;
   sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
-  // TODO: once ake is finished should be wiped out
+  // TODO: once dake is finished should be wiped out
   sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 
   list_element_s *el;
@@ -117,6 +117,26 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
 
   otrng_list_free_full(manager->old_mac_keys);
   manager->old_mac_keys = NULL;
+}
+
+INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
+                                               dh_public_key_p their_dh,
+                                               key_manager_s *manager) {
+  otrng_ec_point_destroy(manager->their_ecdh);
+  otrng_ec_point_copy(manager->their_ecdh, their_ecdh);
+  otrng_dh_mpi_release(manager->their_dh);
+  manager->their_dh = otrng_dh_mpi_copy(their_dh);
+}
+
+INTERNAL void otrng_key_manager_set_their_ecdh(ec_point_p their,
+                                               key_manager_s *manager) {
+  otrng_ec_point_copy(manager->their_ecdh, their);
+}
+
+INTERNAL void otrng_key_manager_set_their_dh(dh_public_key_p their,
+                                             key_manager_s *manager) {
+  otrng_dh_mpi_release(manager->their_dh);
+  manager->their_dh = otrng_dh_mpi_copy(their);
 }
 
 INTERNAL otrng_err
@@ -174,6 +194,32 @@ INTERNAL otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
 
     manager->their_dh = tmp_their_dh->pub;
   }
+  return SUCCESS;
+}
+
+tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
+  k_dh_p k_dh;
+
+  if (manager->i % 3 == 0) {
+    if (otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), manager->our_dh->priv,
+                               manager->their_dh) == ERROR)
+      return ERROR;
+
+    // Although k_dh has variable length (bc it is mod p), it is considered to
+    // have 384 bytes because otrng_dh_shared_secret adds leading zeroes to the
+    // serialized secret. Note that DH(a, B) (in the spec) does not mandate
+    // doing so.
+    // Also note that OTRv3 serializes DH values in MPI (no leading zeroes).
+    shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x02, k_dh,
+                   sizeof(k_dh_p));
+
+  } else {
+    shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x03,
+                   manager->brace_key, sizeof(brace_key_p));
+  }
+
+  sodium_memzero(k_dh, sizeof(k_dh_p));
+
   return SUCCESS;
 }
 
@@ -244,48 +290,6 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
   return SUCCESS;
 }
 
-INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
-                                               dh_public_key_p their_dh,
-                                               key_manager_s *manager) {
-  otrng_ec_point_destroy(manager->their_ecdh);
-  otrng_ec_point_copy(manager->their_ecdh, their_ecdh);
-  otrng_dh_mpi_release(manager->their_dh);
-  manager->their_dh = otrng_dh_mpi_copy(their_dh);
-}
-
-tstatic otrng_err key_manager_derive_ratchet_keys(key_manager_s *manager,
-                                                  bool sending) {
-  ratchet_s *ratchet = ratchet_new();
-  if (!ratchet)
-    return ERROR;
-
-  goldilocks_shake256_ctx_p hd;
-  hash_init_with_usage(hd, 0x15);
-  hash_update(hd, manager->current->root_key, sizeof(root_key_p));
-  hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
-  hash_final(hd, ratchet->root_key, sizeof(root_key_p));
-  hash_destroy(hd);
-
-  if (sending) {
-    hash_init_with_usage(hd, 0x16);
-    hash_update(hd, manager->current->root_key, sizeof(root_key_p));
-    hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
-    hash_final(hd, ratchet->chain_s, sizeof(sending_chain_key_p));
-    hash_destroy(hd);
-  } else {
-    hash_init_with_usage(hd, 0x16);
-    hash_update(hd, manager->current->root_key, sizeof(root_key_p));
-    hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
-    hash_final(hd, ratchet->chain_r, sizeof(receiving_chain_key_p));
-    hash_destroy(hd);
-  }
-
-  ratchet_free(manager->current);
-  manager->current = ratchet;
-
-  return SUCCESS;
-}
-
 INTERNAL void
 otrng_ecdh_shared_secret_from_prekey(uint8_t *shared_secret,
                                      otrng_shared_prekey_pair_s *shared_prekey,
@@ -313,47 +317,19 @@ tstatic void calculate_ssid(key_manager_s *manager) {
                  manager->shared_secret, sizeof(shared_secret_p));
 }
 
-// TODO: this seems untested
-tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
-  goldilocks_shake256_ctx_p hd;
-  uint8_t extra_key_buff[HASH_BYTES];
-  uint8_t magic[1] = {0xFF};
+INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
+                                                     bool ours) {
+  if (generate_first_ephemeral_keys(manager, ours))
+    return ERROR;
 
-  hash_init_with_usage(hd, 0x1A);
-  hash_update(hd, magic, 1);
-  if (sending) {
-    hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
-  } else {
-    hash_update(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
-  }
-  hash_final(hd, extra_key_buff, HASH_BYTES);
-  hash_destroy(hd);
-
-  memcpy(manager->extra_key, extra_key_buff, sizeof manager->extra_key);
-}
-
-tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
-  k_dh_p k_dh;
-
-  if (manager->i % 3 == 0) {
-    if (otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), manager->our_dh->priv,
-                               manager->their_dh) == ERROR)
-      return ERROR;
-
-    // Although k_dh has variable length (bc it is mod p), it is considered to
-    // have 384 bytes because otrng_dh_shared_secret adds leading zeroes to the
-    // serialized secret. Note that DH(a, B) (in the spec) does not mandate
-    // doing so.
-    // Also note that OTRv3 serializes DH values in MPI (no leading zeroes).
-    shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x02, k_dh,
-                   sizeof(k_dh_p));
-
-  } else {
-    shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x03,
-                   manager->brace_key, sizeof(brace_key_p));
-  }
-
-  sodium_memzero(k_dh, sizeof(k_dh_p));
+  // TODO: this should be already set
+  manager->i = 0;
+  manager->j = 0;
+  manager->k = 0;
+  manager->pn = 0;
+  // TODO: we can assing directly to the root key
+  memcpy(manager->current->root_key, manager->shared_secret, 64);
+  sodium_memzero(manager->shared_secret, 64);
 
   return SUCCESS;
 }
@@ -388,23 +364,6 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool sending) {
   return SUCCESS;
 }
 
-INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
-                                                     bool ours) {
-  if (generate_first_ephemeral_keys(manager, ours))
-    return ERROR;
-
-  // TODO: this should be already set
-  manager->i = 0;
-  manager->j = 0;
-  manager->k = 0;
-  manager->pn = 0;
-  // TODO: we can assing directly to the root key
-  memcpy(manager->current->root_key, manager->shared_secret, 64);
-  sodium_memzero(manager->shared_secret, 64);
-
-  return SUCCESS;
-}
-
 // TODO: not sure about this always return SUCCESS.. maybe some other logic will
 // work
 tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
@@ -436,7 +395,39 @@ tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
   return SUCCESS;
 }
 
-tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
+tstatic otrng_err key_manager_derive_ratchet_keys(key_manager_s *manager,
+                                                  bool sending) {
+  ratchet_s *ratchet = ratchet_new();
+  if (!ratchet)
+    return ERROR;
+
+  goldilocks_shake256_ctx_p hd;
+  hash_init_with_usage(hd, 0x15);
+  hash_update(hd, manager->current->root_key, sizeof(root_key_p));
+  hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
+  hash_final(hd, ratchet->root_key, sizeof(root_key_p));
+  hash_destroy(hd);
+
+  if (sending) {
+    hash_init_with_usage(hd, 0x16);
+    hash_update(hd, manager->current->root_key, sizeof(root_key_p));
+    hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
+    hash_final(hd, ratchet->chain_s, sizeof(sending_chain_key_p));
+    hash_destroy(hd);
+  } else {
+    hash_init_with_usage(hd, 0x16);
+    hash_update(hd, manager->current->root_key, sizeof(root_key_p));
+    hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
+    hash_final(hd, ratchet->chain_r, sizeof(receiving_chain_key_p));
+    hash_destroy(hd);
+  }
+  ratchet_free(manager->current);
+  manager->current = ratchet;
+
+  return SUCCESS;
+}
+
+tstatic void derive_encryption_mac_and_next_chain_keys(m_enc_key_p enc_key,
                                             m_mac_key_p mac_key,
                                             key_manager_s *manager,
                                             bool sending) {
@@ -457,11 +448,30 @@ tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                  sizeof(m_enc_key_p));
 }
 
+// TODO: this seems untested
+tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
+  goldilocks_shake256_ctx_p hd;
+  uint8_t extra_key_buff[HASH_BYTES];
+  uint8_t magic[1] = {0xFF};
+
+  hash_init_with_usage(hd, 0x1A);
+  hash_update(hd, magic, 1);
+  if (sending) {
+    hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
+  } else {
+    hash_update(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
+  }
+  hash_final(hd, extra_key_buff, HASH_BYTES);
+  hash_destroy(hd);
+
+  memcpy(manager->extra_key, extra_key_buff, sizeof manager->extra_key);
+}
+
 INTERNAL void otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key,
                                                   m_mac_key_p mac_key,
                                                   key_manager_s *manager,
                                                   bool sending) {
-  derive_encryption_and_mac_keys(enc_key, mac_key, manager, sending);
+  derive_encryption_mac_and_next_chain_keys(enc_key, mac_key, manager, sending);
   calculate_extra_key(manager, sending);
 
 #ifdef DEBUG
@@ -503,15 +513,4 @@ otrng_key_manager_old_mac_keys_serialize(list_element_s *old_mac_keys) {
   otrng_list_free_nodes(old_mac_keys);
 
   return ser_mac_keys;
-}
-
-INTERNAL void otrng_key_manager_set_their_ecdh(ec_point_p their,
-                                               key_manager_s *manager) {
-  otrng_ec_point_copy(manager->their_ecdh, their);
-}
-
-INTERNAL void otrng_key_manager_set_their_dh(dh_public_key_p their,
-                                             key_manager_s *manager) {
-  otrng_dh_mpi_release(manager->their_dh);
-  manager->their_dh = otrng_dh_mpi_copy(their);
 }
