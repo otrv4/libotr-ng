@@ -630,8 +630,18 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   cursor += len;
   cursor += otrng_serialize_ring_sig(cursor, non_interactive_auth->sigma);
 
+  // TODO: Add
+  // Prekey Message Identifier (INT)
+  // Client Profile Identifier (INT)
+  // Prekey Profile Identifier (INT)
+
+  // Attached XZDH Encrypted Message (XZDH-ENCRYPTED-MSG)
   if (non_interactive_auth->enc_msg) {
+    // TODO: Attached Encrypted Ratchet Id (INT)
+    // TODO: Public ECDH Key (POINT)
+    // TODO: Public DH Key (MPI)
     cursor += otrng_serialize_uint32(cursor, non_interactive_auth->message_id);
+
     cursor += otrng_serialize_bytes_array(cursor, non_interactive_auth->nonce,
                                           DATA_MSG_NONCE_BYTES);
     cursor += otrng_serialize_data(cursor, non_interactive_auth->enc_msg,

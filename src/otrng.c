@@ -905,9 +905,7 @@ non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
 
   auth->sender_instance_tag = otr->our_instance_tag;
   auth->receiver_instance_tag = otr->their_instance_tag;
-
   otrng_user_profile_copy(auth->profile, get_my_user_profile(otr));
-
   otrng_ec_point_copy(auth->X, our_ecdh(otr));
   auth->A = otrng_dh_mpi_copy(our_dh(otr));
 }
@@ -916,6 +914,18 @@ tstatic otrng_err build_non_interactive_auth_message(
     dake_non_interactive_auth_message_p auth, const uint8_t *message,
     size_t msglen, otrng_s *otr) {
   non_interactive_auth_message_init(auth, otr);
+
+  // TODO: Access to Prekey message, Client profile, Prekey profile
+
+  // TODO: Attach the 'Prekey Message Identifier' that is stated in the
+  // retrieved Prekey message.
+  // TODO: Attach the 'Client Profile Message Identifier' that is stated in the
+  // retrieved Client Profile.
+  // TODO: Attach the 'Prekey Profile Message Identifier' that is stated in the
+  // retrieved Prekey Profile.
+
+  // TODO: This assumes tmp_key is properly initialized in the otr state.
+  // This function should only be called if tmp_key is properly initialized.
 
   /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
   uint8_t auth_mac_k[HASH_BYTES];
@@ -952,6 +962,7 @@ tstatic otrng_err build_non_interactive_auth_message(
     uint8_t nonce[DATA_MSG_NONCE_BYTES];
     uint8_t *ser_data_msg = NULL;
 
+    // TODO: This is not random at all.
     memcpy(nonce, t, DATA_MSG_NONCE_BYTES);
 
     if (encrypt_msg_on_non_interactive_auth(auth, message, msglen, nonce,
