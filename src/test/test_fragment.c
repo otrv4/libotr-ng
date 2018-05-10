@@ -178,3 +178,23 @@ void test_defragment_fails_for_invalid_tag(void) {
   unfrag = NULL;
   otrng_fragment_context_free(context);
 }
+
+void test_defragment_regular_otr_message(void) {
+  string_p msg = "?OTR:not a fragmented message.";
+
+  fragment_context_s *context;
+  context = otrng_fragment_context_new();
+
+  char *unfrag = NULL;
+  otrng_assert(otrng_unfragment_message(&unfrag, context, msg, 1) == SUCCESS);
+
+  g_assert_cmpint(context->N, ==, 0);
+  g_assert_cmpint(context->K, ==, 0);
+  g_assert_cmpint(context->fragment_len, ==, 0);
+  g_assert_cmpstr(unfrag, ==, msg);
+  otrng_assert(context->status == FRAGMENT_UNFRAGMENTED);
+
+  free(unfrag);
+  unfrag = NULL;
+  otrng_fragment_context_free(context);
+}

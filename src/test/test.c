@@ -160,6 +160,8 @@ int main(int argc, char **argv) {
                   test_defragment_without_comma_fails);
   g_test_add_func("/fragment/fails_for_invalid_tag",
                   test_defragment_fails_for_invalid_tag);
+  g_test_add_func("/fragment/defragment_regular_otr_message",
+                  test_defragment_regular_otr_message);
 
   g_test_add_func("/key_management/derive_ratchet_keys",
                   test_derive_ratchet_keys);
