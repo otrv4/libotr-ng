@@ -382,9 +382,9 @@ void test_build_auth_message() {
   uint8_t *dst = NULL;
   size_t dstlen = 0;
 
-  err = build_auth_message(&dst, &dstlen, 0x01, initiator_profile,
-                           responder_profile, initiator_ecdh, responder_ecdh,
-                           initiator_dh, responder_dh, "phi");
+  err = build_interactive_rsign_tag(
+      &dst, &dstlen, 0x01, initiator_profile, responder_profile, initiator_ecdh,
+      responder_ecdh, initiator_dh, responder_dh, "phi");
 
   otrng_assert(SUCCESS == err);
   otrng_assert(dstlen == 1083);
@@ -392,9 +392,9 @@ void test_build_auth_message() {
 
   free(dst);
 
-  err = build_auth_message(&dst, &dstlen, 0x02, initiator_profile,
-                           responder_profile, initiator_ecdh, responder_ecdh,
-                           initiator_dh, responder_dh, "phi");
+  err = build_interactive_rsign_tag(
+      &dst, &dstlen, 0x02, initiator_profile, responder_profile, initiator_ecdh,
+      responder_ecdh, initiator_dh, responder_dh, "phi");
 
   otrng_assert(SUCCESS == err);
   otrng_assert(dstlen == 1083);

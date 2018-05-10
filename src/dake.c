@@ -788,13 +788,12 @@ INTERNAL otrng_bool otrng_valid_received_values(const ec_point_p their_ecdh,
   (3 * 64 + 2 * ED448_POINT_BYTES + 2 * DH_MPI_BYTES +                         \
    ED448_SHARED_PREKEY_BYTES)
 
-tstatic otrng_err build_t(uint8_t *dst, size_t dstlen, size_t *written,
-                          uint8_t first_usage, const user_profile_s *i_profile,
-                          const user_profile_s *r_profile,
-                          const ec_point_p i_ecdh, const ec_point_p r_ecdh,
-                          const dh_mpi_p i_dh, const dh_mpi_p r_dh,
-                          const uint8_t *ser_r_shared_prekey,
-                          size_t ser_r_shared_prekey_len, const char *phi) {
+tstatic otrng_err build_rsign_tag(
+    uint8_t *dst, size_t dstlen, size_t *written, uint8_t first_usage,
+    const user_profile_s *i_profile, const user_profile_s *r_profile,
+    const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
+    const dh_mpi_p r_dh, const uint8_t *ser_r_shared_prekey,
+    size_t ser_r_shared_prekey_len, const char *phi) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
@@ -885,7 +884,7 @@ tstatic otrng_err build_t(uint8_t *dst, size_t dstlen, size_t *written,
   return SUCCESS;
 }
 
-INTERNAL otrng_err build_auth_message(
+INTERNAL otrng_err build_interactive_rsign_tag(
     uint8_t **msg, size_t *msg_len, const uint8_t type,
     const user_profile_s *i_profile, const user_profile_s *r_profile,
     const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
@@ -908,8 +907,8 @@ INTERNAL otrng_err build_auth_message(
 
   uint8_t first_usage = 0x06 + type * 3;
   otrng_err err =
-      build_t(buff + 1, MAX_T_LENGTH, &written, first_usage, i_profile,
-              r_profile, i_ecdh, r_ecdh, i_dh, r_dh, NULL, 0, phi);
+      build_rsign_tag(buff + 1, MAX_T_LENGTH, &written, first_usage, i_profile,
+                      r_profile, i_ecdh, r_ecdh, i_dh, r_dh, NULL, 0, phi);
 
   if (err == ERROR) {
     free(buff);
@@ -925,7 +924,7 @@ INTERNAL otrng_err build_auth_message(
   return SUCCESS;
 }
 
-INTERNAL otrng_err build_non_interactive_auth_message(
+INTERNAL otrng_err build_non_interactive_rsig_tag(
     uint8_t **msg, size_t *msg_len, const user_profile_s *i_profile,
     const user_profile_s *r_profile, const ec_point_p i_ecdh,
     const ec_point_p r_ecdh, const dh_mpi_p i_dh, const dh_mpi_p r_dh,
@@ -940,9 +939,9 @@ INTERNAL otrng_err build_non_interactive_auth_message(
 
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_serialize_otrng_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
-  otrng_err err = build_t(*msg, MAX_T_LENGTH, msg_len, 0x0E, i_profile,
-                          r_profile, i_ecdh, r_ecdh, i_dh, r_dh,
-                          ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi);
+  otrng_err err = build_rsign_tag(
+      *msg, MAX_T_LENGTH, msg_len, 0x0E, i_profile, r_profile, i_ecdh, r_ecdh,
+      i_dh, r_dh, ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi);
   sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
   return err;

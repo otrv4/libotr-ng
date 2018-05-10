@@ -669,10 +669,10 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-  if (build_auth_message(&t, &t_len, 0, otr->their_profile,
-                         get_my_user_profile(otr), their_ecdh(otr),
-                         our_ecdh(otr), their_dh(otr), our_dh(otr),
-                         otr->conversation->client->phi))
+  if (build_interactive_rsign_tag(&t, &t_len, 0, otr->their_profile,
+                                  get_my_user_profile(otr), their_ecdh(otr),
+                                  our_ecdh(otr), their_dh(otr), our_dh(otr),
+                                  otr->conversation->client->phi))
     return ERROR;
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
@@ -923,18 +923,16 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-  /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
-   * Y || X || B || A || our_shared_prekey.public */
-  if (build_non_interactive_auth_message(
-          &t, &t_len, otr->their_profile, get_my_user_profile(otr),
-          their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
-          otr->their_profile->shared_prekey, otr->conversation->client->phi)) {
-    if (message) {
-      free(message);
-      message = NULL;
-    }
-    otrng_dake_non_interactive_auth_message_destroy(auth);
+  /* t = KDF_1(0x0E || Bobs_Client_Profile, 64) || KDF_1(0x0F ||
+   * Alices_Client_Profile, 64) || Y || X || B || A || their_shared_prekey ||
+   * KDF_1(0x10 || phi, 64) */
+  otrng_err err = build_non_interactive_rsig_tag(
+      &t, &t_len, otr->their_profile, get_my_user_profile(otr), their_ecdh(otr),
+      our_ecdh(otr), their_dh(otr), our_dh(otr),
+      otr->their_profile->shared_prekey, otr->conversation->client->phi);
 
+  if (err) {
+    otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
 
@@ -999,7 +997,7 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
   free(t);
   t = NULL;
 
-  otrng_err err = serialize_and_encode_non_interactive_auth(dst, auth);
+  err = serialize_and_encode_non_interactive_auth(dst, auth);
 
   if (auth->enc_msg) {
     free(auth->enc_msg);
@@ -1255,7 +1253,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
-  if (build_non_interactive_auth_message(
+  if (build_non_interactive_rsig_tag(
           &t, &t_len, get_my_user_profile(otr), auth->profile, our_ecdh(otr),
           auth->X, our_dh(otr), auth->A, otr->profile->shared_prekey,
           otr->conversation->client->phi)) {
@@ -1538,9 +1536,10 @@ tstatic otrng_err reply_with_auth_i_msg(string_p *dst,
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-  if (build_auth_message(&t, &t_len, 1, get_my_user_profile(otr), their_profile,
-                         our_ecdh(otr), their_ecdh(otr), our_dh(otr),
-                         their_dh(otr), otr->conversation->client->phi))
+  if (build_interactive_rsign_tag(&t, &t_len, 1, get_my_user_profile(otr),
+                                  their_profile, our_ecdh(otr), their_ecdh(otr),
+                                  our_dh(otr), their_dh(otr),
+                                  otr->conversation->client->phi))
     return ERROR;
 
   /* sigma = RSig(H_b, sk_hb, {H_b, H_a, X}, t) */
@@ -1568,9 +1567,9 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   if (otrng_valid_received_values(auth->X, auth->A, auth->profile))
     return otrng_false;
 
-  if (build_auth_message(&t, &t_len, 0, get_my_user_profile(otr), auth->profile,
-                         our_ecdh(otr), auth->X, our_dh(otr), auth->A,
-                         otr->conversation->client->phi))
+  if (build_interactive_rsign_tag(
+          &t, &t_len, 0, get_my_user_profile(otr), auth->profile, our_ecdh(otr),
+          auth->X, our_dh(otr), auth->A, otr->conversation->client->phi))
     return otrng_false;
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */
@@ -1639,10 +1638,10 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
   uint8_t *t = NULL;
   size_t t_len = 0;
 
-  if (build_auth_message(&t, &t_len, 1, otr->their_profile,
-                         get_my_user_profile(otr), their_ecdh(otr),
-                         our_ecdh(otr), their_dh(otr), our_dh(otr),
-                         otr->conversation->client->phi))
+  if (build_interactive_rsign_tag(&t, &t_len, 1, otr->their_profile,
+                                  get_my_user_profile(otr), their_ecdh(otr),
+                                  our_ecdh(otr), their_dh(otr), our_dh(otr),
+                                  otr->conversation->client->phi))
     return otrng_false;
 
   /* RVrf({H_b, H_a, X}, sigma, msg) */
