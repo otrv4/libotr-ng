@@ -571,7 +571,10 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   otrng_ec_point_destroy(non_interactive_auth->X);
   otrng_user_profile_destroy(non_interactive_auth->profile);
   otrng_ring_sig_destroy(non_interactive_auth->sigma);
-  non_interactive_auth->enc_msg = NULL;
+  if (non_interactive_auth->enc_msg) {
+    free(non_interactive_auth->enc_msg);
+    non_interactive_auth->enc_msg = NULL;
+  }
   non_interactive_auth->enc_msg_len = 0;
   sodium_memzero(non_interactive_auth->nonce, DATA_MSG_NONCE_BYTES);
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);

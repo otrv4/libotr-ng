@@ -825,7 +825,7 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
 }
 
 tstatic otrng_err encrypt_msg_on_non_interactive_auth(
-    dake_non_interactive_auth_message_s *auth, uint8_t *message,
+    dake_non_interactive_auth_message_s *auth, const uint8_t *message,
     size_t message_len, uint8_t nonce[DATA_MSG_NONCE_BYTES], otrng_s *otr) {
   auth->message_id = otr->keys->j;
 
@@ -844,8 +844,6 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
   uint8_t *c = NULL;
   c = malloc(message_len);
   if (!c) {
-    free(message);
-    message = NULL;
     return ERROR;
   }
 
@@ -900,7 +898,7 @@ tstatic otrng_err data_message_body_on_non_interactive_asprintf(
 }
 
 tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
-                                                      uint8_t *message,
+                                                      const uint8_t *message,
                                                       size_t msglen,
                                                       otrng_s *otr) {
   dake_non_interactive_auth_message_p auth;
@@ -961,16 +959,9 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
       return ERROR;
     }
 
-    free(message);
-    message = NULL;
-
     size_t bodylen = 0;
     if (data_message_body_on_non_interactive_asprintf(&ser_data_msg, &bodylen,
                                                       auth)) {
-      if (auth->enc_msg) {
-        free(auth->enc_msg);
-        auth->enc_msg = NULL;
-      }
       otrng_dake_non_interactive_auth_message_destroy(auth);
       free(t);
       t = NULL;
@@ -999,10 +990,6 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
 
   err = serialize_and_encode_non_interactive_auth(dst, auth);
 
-  if (auth->enc_msg) {
-    free(auth->enc_msg);
-    auth->enc_msg = NULL;
-  }
   otrng_dake_non_interactive_auth_message_destroy(auth);
 
   return err;
@@ -1193,21 +1180,10 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
 
 API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst, otrng_s *otr,
                                                   const string_p message) {
-  uint8_t *c = NULL;
-  size_t clen = strlen(message) + 1;
-
-  if ((strcmp(message, "") != 0)) {
-    c = malloc(clen);
-    if (!c) {
-      return ERROR;
-    }
-
-    stpcpy((char *)c, message);
-  }
-
   *dst = NULL;
-
-  return reply_with_non_interactive_auth_msg(dst, c, clen, otr);
+  size_t clen = (!message) ? 0 : strlen(message) + 1;
+  return reply_with_non_interactive_auth_msg(dst, (const uint8_t *)message,
+                                             clen, otr);
 }
 
 tstatic otrng_bool valid_data_message_on_non_interactive_auth(
