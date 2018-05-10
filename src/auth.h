@@ -124,6 +124,13 @@ void otrng_rsig_calculate_c(
     const goldilocks_448_point_p T1, const goldilocks_448_point_p T2,
     const goldilocks_448_point_p T3, const uint8_t *msg, size_t msglen);
 
+void otrng_rsig_calculate_c_from_sigma(goldilocks_448_scalar_p c,
+                                       const ring_sig_s *src,
+                                       const rsig_pubkey_p A1,
+                                       const rsig_pubkey_p A2,
+                                       const rsig_pubkey_p A3,
+                                       const uint8_t *msg, size_t msglen);
+
 #ifdef OTRNG_AUTH_PRIVATE
 #endif
 

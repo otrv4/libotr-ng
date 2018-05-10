@@ -231,11 +231,12 @@ INTERNAL otrng_err otrng_rsig_authenticate(
   return SUCCESS;
 }
 
-INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
-                                      const rsig_pubkey_p A1,
-                                      const rsig_pubkey_p A2,
-                                      const rsig_pubkey_p A3,
-                                      const uint8_t *msg, size_t msglen) {
+void otrng_rsig_calculate_c_from_sigma(goldilocks_448_scalar_p c,
+                                       const ring_sig_s *src,
+                                       const rsig_pubkey_p A1,
+                                       const rsig_pubkey_p A2,
+                                       const rsig_pubkey_p A3,
+                                       const uint8_t *msg, size_t msglen) {
   rsig_pubkey_p gr1, gr2, gr3, A1c1, A2c2, A3c3;
 
   goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, src->r1);
@@ -250,8 +251,16 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
   goldilocks_448_point_add(A2c2, A2c2, gr2);
   goldilocks_448_point_add(A3c3, A3c3, gr3);
 
-  goldilocks_448_scalar_p c;
   otrng_rsig_calculate_c(c, A1, A2, A3, A1c1, A2c2, A3c3, msg, msglen);
+}
+
+INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
+                                      const rsig_pubkey_p A1,
+                                      const rsig_pubkey_p A2,
+                                      const rsig_pubkey_p A3,
+                                      const uint8_t *msg, size_t msglen) {
+  goldilocks_448_scalar_p c;
+  otrng_rsig_calculate_c_from_sigma(c, src, A1, A2, A3, msg, msglen);
 
   rsig_privkey_p c1c2c3;
   goldilocks_448_scalar_add(c1c2c3, src->c1, src->c2);
