@@ -900,6 +900,8 @@ tstatic otrng_err data_message_body_on_non_interactive_asprintf(
 tstatic void
 non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
                                   otrng_s *otr) {
+  sodium_memzero(auth->nonce, DATA_MSG_NONCE_BYTES);
+
   auth->enc_msg = NULL;
   auth->enc_msg_len = 0;
 
@@ -956,14 +958,20 @@ tstatic otrng_err build_non_interactive_auth_message(
                           their_ecdh(otr),                          /* Y */
                           t, t_len);
 
-  sodium_memzero(auth->nonce, DATA_MSG_NONCE_BYTES);
-
   if (message) {
-    uint8_t nonce[DATA_MSG_NONCE_BYTES];
     uint8_t *ser_data_msg = NULL;
 
-    // TODO: This is not random at all.
-    memcpy(nonce, t, DATA_MSG_NONCE_BYTES);
+    ec_scalar_p c;
+    otrng_rsig_calculate_c_from_sigma(
+        c, auth->sigma,
+        otr->their_profile->long_term_pub_key,   // A1
+        otr->conversation->client->keypair->pub, // A2
+        their_ecdh(otr),                         // A3
+        t, t_len);
+
+    uint8_t nonce[ED448_SCALAR_BYTES] = {0};
+    otrng_ec_scalar_encode(nonce, c);
+    otrng_ec_scalar_destroy(c);
 
     if (encrypt_msg_on_non_interactive_auth(auth, message, msglen, nonce,
                                             otr)) {
