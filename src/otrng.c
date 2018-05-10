@@ -897,11 +897,9 @@ tstatic otrng_err data_message_body_on_non_interactive_asprintf(
   return SUCCESS;
 }
 
-tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
-                                                      const uint8_t *message,
-                                                      size_t msglen,
-                                                      otrng_s *otr) {
-  dake_non_interactive_auth_message_p auth;
+tstatic void
+non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
+                                  otrng_s *otr) {
   auth->enc_msg = NULL;
   auth->enc_msg_len = 0;
 
@@ -912,11 +910,16 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
 
   otrng_ec_point_copy(auth->X, our_ecdh(otr));
   auth->A = otrng_dh_mpi_copy(our_dh(otr));
+}
 
-  /* auth_mac_k = KDF_1(0x0D || tmp_k) */
+tstatic otrng_err build_non_interactive_auth_message(
+    dake_non_interactive_auth_message_p auth, const uint8_t *message,
+    size_t msglen, otrng_s *otr) {
+  non_interactive_auth_message_init(auth, otr);
+
+  /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
   uint8_t auth_mac_k[HASH_BYTES];
-  shake_256_kdf1(auth_mac_k, sizeof(auth_mac_k), 0x0D, otr->keys->tmp_key,
-                 HASH_BYTES);
+  shake_256_kdf1(auth_mac_k, HASH_BYTES, 0x0D, otr->keys->tmp_key, HASH_BYTES);
 
   unsigned char *t = NULL;
   size_t t_len = 0;
@@ -988,11 +991,23 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
   free(t);
   t = NULL;
 
-  err = serialize_and_encode_non_interactive_auth(dst, auth);
+  return SUCCESS;
+}
+
+tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
+                                                      const uint8_t *message,
+                                                      size_t msglen,
+                                                      otrng_s *otr) {
+  dake_non_interactive_auth_message_p auth;
+  otrng_err ret =
+      build_non_interactive_auth_message(auth, message, msglen, otr);
+
+  if (ret == SUCCESS)
+    ret = serialize_and_encode_non_interactive_auth(dst, auth);
 
   otrng_dake_non_interactive_auth_message_destroy(auth);
 
-  return err;
+  return ret;
 }
 
 tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
