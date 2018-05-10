@@ -42,20 +42,16 @@ static const unsigned char prime_order_bytes_dup[ED448_SCALAR_BYTES] = {
     0x23, 0x78, 0xc2, 0x92, 0xab, 0x58, 0x44, 0xf3,
 };
 
-static void serialize_T(uint8_t dst[ED448_POINT_BYTES],
-                        const goldilocks_448_point_p Ai, uint8_t is_secret,
-                        const goldilocks_448_point_p Ri,
-                        const goldilocks_448_point_p Ti,
-                        const goldilocks_448_scalar_p ci) {
-  goldilocks_448_point_p chosen;
-
+static void choose_T(goldilocks_448_point_p chosen,
+                     const goldilocks_448_point_p Ai, uint8_t is_secret,
+                     const goldilocks_448_point_p Ri,
+                     const goldilocks_448_point_p Ti,
+                     const goldilocks_448_scalar_p ci) {
   // Ti = is_secret_i ? Ti : Ri + Ai * ci
   goldilocks_448_point_scalarmul(chosen, Ai, ci);
   goldilocks_448_point_add(chosen, Ri, chosen);
-  goldilocks_448_point_cond_sel(chosen, chosen, Ti, is_secret);
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(dst, chosen);
 
-  goldilocks_448_point_destroy(chosen);
+  goldilocks_448_point_cond_sel(chosen, chosen, Ti, is_secret);
 }
 
 static void scalar_select(goldilocks_448_scalar_p dst,
@@ -108,15 +104,49 @@ static void calculate_ri(goldilocks_448_scalar_p dst,
   goldilocks_448_scalar_destroy(if_secret);
 }
 
+void otrng_rsig_calculate_c(
+    goldilocks_448_scalar_p dst, const goldilocks_448_point_p A1,
+    const goldilocks_448_point_p A2, const goldilocks_448_point_p A3,
+    const goldilocks_448_point_p T1, const goldilocks_448_point_p T2,
+    const goldilocks_448_point_p T3, const uint8_t *msg, size_t msglen) {
+  goldilocks_shake256_ctx_p hd;
+  uint8_t hash[HASH_BYTES];
+  uint8_t point_buff[ED448_POINT_BYTES];
+
+  hash_init_with_dom(hd);
+  hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
+  hash_update(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
+
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A1);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
+
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A2);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
+
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A3);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
+
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, T1);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
+
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, T2);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
+
+  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, T3);
+  hash_update(hd, point_buff, ED448_POINT_BYTES);
+
+  hash_update(hd, msg, msglen);
+
+  hash_final(hd, hash, sizeof(hash));
+  hash_destroy(hd);
+
+  goldilocks_448_scalar_decode_long(dst, hash, sizeof(hash));
+}
+
 INTERNAL otrng_err otrng_rsig_authenticate(
     ring_sig_s *dst, const rsig_privkey_p secret, const rsig_pubkey_p pub,
     const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
     const uint8_t *msg, size_t msglen) {
-
-  goldilocks_shake256_ctx_p hd;
-  uint8_t hash[HASH_BYTES];
-  unsigned char point_buff[ED448_POINT_BYTES];
-
   goldilocks_bool_t isA1 = goldilocks_448_point_eq(pub, A1);
   goldilocks_bool_t isA2 = goldilocks_448_point_eq(pub, A2);
   goldilocks_bool_t isA3 = goldilocks_448_point_eq(pub, A3);
@@ -148,17 +178,14 @@ INTERNAL otrng_err otrng_rsig_authenticate(
   ed448_random_scalar(c2);
   ed448_random_scalar(c3);
 
-  // serT1 = secretIs1 ? T1 : R1 + A1 * c1
-  // serT2 = secretIs2 ? T2 : R2 + A2 * c2
-  // serT3 = secretIs3 ? T3 : R3 + A3 * c3
+  // chosenT1 = secretIs1 ? T1 : R1 + A1 * c1
+  // chosenT2 = secretIs2 ? T2 : R2 + A2 * c2
+  // chosenT3 = secretIs3 ? T3 : R3 + A3 * c3
 
-  uint8_t serT1[ED448_POINT_BYTES];
-  uint8_t serT2[ED448_POINT_BYTES];
-  uint8_t serT3[ED448_POINT_BYTES];
-
-  serialize_T(serT1, A1, isA1, R1, T1, c1);
-  serialize_T(serT2, A2, isA2, R2, T2, c2);
-  serialize_T(serT3, A3, isA3, R3, T3, c3);
+  goldilocks_448_point_p chosenT1, chosenT2, chosenT3;
+  choose_T(chosenT1, A1, isA1, R1, T1, c1);
+  choose_T(chosenT2, A2, isA2, R2, T2, c2);
+  choose_T(chosenT3, A3, isA3, R3, T3, c3);
 
   goldilocks_448_point_destroy(T1);
   goldilocks_448_point_destroy(T2);
@@ -167,28 +194,13 @@ INTERNAL otrng_err otrng_rsig_authenticate(
   goldilocks_448_point_destroy(R2);
   goldilocks_448_point_destroy(R3);
 
-  hash_init_with_dom(hd);
-  hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
-  hash_update(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
+  goldilocks_448_scalar_p c;
+  otrng_rsig_calculate_c(c, A1, A2, A3, chosenT1, chosenT2, chosenT3, msg,
+                         msglen);
 
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A1);
-  hash_update(hd, point_buff, ED448_POINT_BYTES);
-
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A2);
-  hash_update(hd, point_buff, ED448_POINT_BYTES);
-
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A3);
-  hash_update(hd, point_buff, ED448_POINT_BYTES);
-
-  hash_update(hd, serT1, ED448_POINT_BYTES);
-  hash_update(hd, serT2, ED448_POINT_BYTES);
-  hash_update(hd, serT3, ED448_POINT_BYTES);
-  hash_update(hd, msg, msglen);
-  hash_final(hd, hash, sizeof(hash));
-  hash_destroy(hd);
-
-  rsig_privkey_p c;
-  goldilocks_448_scalar_decode_long(c, hash, sizeof(hash));
+  goldilocks_448_point_destroy(chosenT1);
+  goldilocks_448_point_destroy(chosenT2);
+  goldilocks_448_point_destroy(chosenT3);
 
   // c1 = secretIs1 ? c - c2 - c3 : c1
   // c2 = secretIs2 ? c - c1 - c3 : c2
@@ -223,11 +235,7 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
                                       const rsig_pubkey_p A1,
                                       const rsig_pubkey_p A2,
                                       const rsig_pubkey_p A3,
-                                      const unsigned char *msg, size_t msglen) {
-  goldilocks_shake256_ctx_p hd;
-  uint8_t hash[HASH_BYTES];
-  unsigned char point_buff[ED448_POINT_BYTES];
-
+                                      const uint8_t *msg, size_t msglen) {
   rsig_pubkey_p gr1, gr2, gr3, A1c1, A2c2, A3c3;
 
   goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, src->r1);
@@ -242,36 +250,10 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
   goldilocks_448_point_add(A2c2, A2c2, gr2);
   goldilocks_448_point_add(A3c3, A3c3, gr3);
 
-  hash_init_with_dom(hd);
-  hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
-  hash_update(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
+  goldilocks_448_scalar_p c;
+  otrng_rsig_calculate_c(c, A1, A2, A3, A1c1, A2c2, A3c3, msg, msglen);
 
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A1);
-  hash_update(hd, point_buff, ED448_POINT_BYTES);
-
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A2);
-  hash_update(hd, point_buff, ED448_POINT_BYTES);
-
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A3);
-  hash_update(hd, point_buff, ED448_POINT_BYTES);
-
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A1c1);
-  hash_update(hd, point_buff, ED448_POINT_BYTES);
-
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A2c2);
-  hash_update(hd, point_buff, ED448_POINT_BYTES);
-
-  goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(point_buff, A3c3);
-  hash_update(hd, point_buff, ED448_POINT_BYTES);
-
-  hash_update(hd, msg, msglen);
-
-  hash_final(hd, hash, sizeof(hash));
-  hash_destroy(hd);
-
-  rsig_privkey_p c, c1c2c3;
-  goldilocks_448_scalar_decode_long(c, hash, sizeof(hash));
-
+  rsig_privkey_p c1c2c3;
   goldilocks_448_scalar_add(c1c2c3, src->c1, src->c2);
   goldilocks_448_scalar_add(c1c2c3, c1c2c3, src->c3);
 

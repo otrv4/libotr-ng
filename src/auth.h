@@ -88,7 +88,7 @@ INTERNAL otrng_err otrng_rsig_authenticate(
  * @param [src] The signature of knowledge
  * @param [A1] The first public key.
  * @param [A2] The second public key.
- * @param [A3] The thrid public key.
+ * @param [A3] The third public key.
  * @param [msg] The message to "verify".
  * @param [msg_len] The length of the message.
  */
@@ -104,6 +104,25 @@ INTERNAL otrng_err otrng_rsig_authenticate_generic(
     ring_sig_s *dst, const rsig_privkey_p a, const rsig_pubkey_p pub,
     const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
     const unsigned char *msg, size_t msglen);
+
+/**
+ * @brief Calculates the 'c' parameter used in the Ring Signature.
+ *
+ * @param [dst] The 'c' value to be calculated.
+ * @param [A1] The first public key.
+ * @param [A2] The second public key.
+ * @param [A3] The third public key.
+ * @param [T1] The first T value.
+ * @param [T2] The second T value.
+ * @param [T3] The third T value.
+ * @param [msg] The message to "verify".
+ * @param [msg_len] The length of the message.
+ */
+void otrng_rsig_calculate_c(
+    goldilocks_448_scalar_p dst, const goldilocks_448_point_p A1,
+    const goldilocks_448_point_p A2, const goldilocks_448_point_p A3,
+    const goldilocks_448_point_p T1, const goldilocks_448_point_p T2,
+    const goldilocks_448_point_p T3, const uint8_t *msg, size_t msglen);
 
 #ifdef OTRNG_AUTH_PRIVATE
 #endif
