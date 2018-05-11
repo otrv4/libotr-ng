@@ -825,39 +825,39 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
 }
 
 tstatic otrng_err encrypt_msg_on_non_interactive_auth(
-    dake_non_interactive_auth_message_s *auth, const uint8_t *message,
-    size_t message_len, uint8_t nonce[DATA_MSG_NONCE_BYTES], otrng_s *otr) {
-  auth->message_id = otr->keys->j;
+    dake_non_interactive_auth_message_s *auth,
+    const uint8_t nonce[ED448_SCALAR_BYTES], const uint8_t *message,
+    size_t message_len, const otrng_s *otr) {
+
+  if (!message)
+    return SUCCESS;
+
+  uint8_t *cipher = malloc(message_len);
+  if (!cipher)
+    return ERROR;
 
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
-  memset(enc_key, 0, sizeof enc_key);
-  memset(mac_key, 0, sizeof mac_key);
-
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, true);
 
   /* discard this mac key as it is not used */
   sodium_memzero(mac_key, sizeof(m_mac_key_p));
   memcpy(auth->nonce, nonce, DATA_MSG_NONCE_BYTES);
 
-  int err = 0;
-  uint8_t *c = NULL;
-  c = malloc(message_len);
-  if (!c) {
-    return ERROR;
-  }
-
   // TODO: message is an UTF-8 string. Is there any problem to cast
   // it to (unsigned char *)?
-  err = crypto_stream_xor(c, message, message_len, nonce, enc_key);
+  int err = crypto_stream_xor(cipher, message, message_len, nonce, enc_key);
+  sodium_memzero(enc_key, sizeof(m_enc_key_p));
+
   if (err) {
-    free(c);
-    c = NULL;
+    free(cipher);
+    cipher = NULL;
     return ERROR;
   }
 
+  auth->message_id = otr->keys->j;
   auth->enc_msg_len = message_len;
-  auth->enc_msg = c;
+  auth->enc_msg = cipher;
 
 #ifdef DEBUG
   printf("nonce = ");
@@ -865,10 +865,8 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
   printf("msg = ");
   otrng_memdump(message, message_len);
   printf("cipher = ");
-  otrng_memdump(c, message_len);
+  otrng_memdump(cipher, message_len);
 #endif
-
-  sodium_memzero(enc_key, sizeof(m_enc_key_p));
 
   return SUCCESS;
 }
@@ -998,12 +996,12 @@ tstatic otrng_err build_non_interactive_auth_message(
   /* t = KDF_1(0x0E || Bobs_Client_Profile, 64) || KDF_1(0x0F ||
    * Alices_Client_Profile, 64) || Y || X || B || A || their_shared_prekey ||
    * KDF_1(0x10 || phi, 64) */
-  otrng_err err = build_non_interactive_rsig_tag(
+  otrng_err ret = build_non_interactive_rsig_tag(
       &t, &t_len, otr->their_profile, get_my_user_profile(otr), their_ecdh(otr),
       our_ecdh(otr), their_dh(otr), our_dh(otr),
       otr->their_profile->shared_prekey, otr->conversation->client->phi);
 
-  if (err) {
+  if (ret == ERROR) {
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
@@ -1017,35 +1015,30 @@ tstatic otrng_err build_non_interactive_auth_message(
                           their_ecdh(otr),                          /* Y */
                           t, t_len);
 
-  // TODO: extract to "encrypt attached message" function
-  if (message) {
-    ec_scalar_p c;
-    otrng_rsig_calculate_c_from_sigma(
-        c, auth->sigma,
-        otr->their_profile->long_term_pub_key,   // A1
-        otr->conversation->client->keypair->pub, // A2
-        their_ecdh(otr),                         // A3
-        t, t_len);
+  /* Calculates nonce */
+  ec_scalar_p c;
+  otrng_rsig_calculate_c_from_sigma(
+      c, auth->sigma,
+      otr->their_profile->long_term_pub_key,   // A1
+      otr->conversation->client->keypair->pub, // A2
+      their_ecdh(otr),                         // A3
+      t, t_len);
 
-    uint8_t nonce[ED448_SCALAR_BYTES] = {0};
-    otrng_ec_scalar_encode(nonce, c);
-    otrng_ec_scalar_destroy(c);
+  uint8_t nonce[ED448_SCALAR_BYTES] = {0};
+  otrng_ec_scalar_encode(nonce, c);
+  otrng_ec_scalar_destroy(c);
 
-    if (encrypt_msg_on_non_interactive_auth(auth, message, msglen, nonce,
-                                            otr)) {
-      otrng_dake_non_interactive_auth_message_destroy(auth);
-      free(t);
-      t = NULL;
-      return ERROR;
-    }
-  }
+  ret = encrypt_msg_on_non_interactive_auth(auth, nonce, message, msglen, otr);
+  sodium_memzero(nonce, sizeof(nonce));
 
-  otrng_err ret = otrng_dake_non_interactive_auth_message_authenticator(
-      auth->auth_mac, auth, t, t_len, otr);
+  if (ret == ERROR)
+    otrng_dake_non_interactive_auth_message_destroy(auth);
+  else
+    ret = otrng_dake_non_interactive_auth_message_authenticator(
+        auth->auth_mac, auth, t, t_len, otr);
 
   free(t);
   t = NULL;
-
   return ret;
 }
 
