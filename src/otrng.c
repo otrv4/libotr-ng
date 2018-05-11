@@ -897,6 +897,65 @@ tstatic otrng_err data_message_body_on_non_interactive_asprintf(
   return SUCCESS;
 }
 
+otrng_err otrng_dake_non_interactive_auth_message_authenticator(
+    uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_p auth,
+    const uint8_t *t, size_t t_len, const otrng_s *otr) {
+
+  // OTRv4 section "Non-Interactive-Auth Message"
+  /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
+  uint8_t auth_mac_k[HASH_BYTES];
+  shake_256_kdf1(auth_mac_k, HASH_BYTES, 0x0D, otr->keys->tmp_key, HASH_BYTES);
+
+  // If there is no attached encrypted message
+  if (!auth->enc_msg_len) {
+    // OTRv4 section, "Non-Interactive DAKE Overview"
+    /* Auth MAC = KDF_1(0x12 || auth_mac_k || t, 64) */
+    goldilocks_shake256_ctx_p hd;
+    hash_init_with_usage(hd, 0x12);
+    hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
+    hash_update(hd, t, t_len);
+    hash_final(hd, dst, HASH_BYTES);
+    hash_destroy(hd);
+
+    return SUCCESS;
+  }
+
+  // Otherwise
+  // OTRv4 section, "Non-Interactive DAKE Overview"
+  // extra = KDF_1(0x11 || attached encrypted ratchet id ||
+  // attached encrypted message id || public ecdh key ||
+  // public dh key || nonce || encrypted message, 64)
+  /*   Auth MAC = KDF_1(0x12 || auth_mac_k || t || extra, 64)  */
+
+  uint8_t *ser_data_msg = NULL;
+  size_t bodylen = 0;
+
+  if (data_message_body_on_non_interactive_asprintf(&ser_data_msg, &bodylen,
+                                                    auth)) {
+    return ERROR;
+  }
+
+  uint8_t encrypted_msg_mac[HASH_BYTES];
+  goldilocks_shake256_ctx_p encrypted_msg_hd;
+  hash_init_with_usage(encrypted_msg_hd, 0x11);
+  hash_final(encrypted_msg_hd, ser_data_msg, bodylen);
+  hash_final(encrypted_msg_hd, encrypted_msg_mac, HASH_BYTES);
+  hash_destroy(encrypted_msg_hd);
+  free(ser_data_msg);
+
+  goldilocks_shake256_ctx_p hd;
+  hash_init_with_usage(hd, 0x12);
+  hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
+  hash_update(hd, t, t_len);
+  hash_update(hd, encrypted_msg_mac, HASH_BYTES);
+  hash_final(hd, dst, HASH_BYTES);
+  hash_destroy(hd);
+
+  sodium_memzero(encrypted_msg_mac, HASH_BYTES);
+
+  return SUCCESS;
+}
+
 tstatic void
 non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
                                   otrng_s *otr) {
@@ -958,9 +1017,8 @@ tstatic otrng_err build_non_interactive_auth_message(
                           their_ecdh(otr),                          /* Y */
                           t, t_len);
 
+  // TODO: extract to "encrypt attached message" function
   if (message) {
-    uint8_t *ser_data_msg = NULL;
-
     ec_scalar_p c;
     otrng_rsig_calculate_c_from_sigma(
         c, auth->sigma,
@@ -980,37 +1038,15 @@ tstatic otrng_err build_non_interactive_auth_message(
       t = NULL;
       return ERROR;
     }
-
-    size_t bodylen = 0;
-    if (data_message_body_on_non_interactive_asprintf(&ser_data_msg, &bodylen,
-                                                      auth)) {
-      otrng_dake_non_interactive_auth_message_destroy(auth);
-      free(t);
-      t = NULL;
-      return ERROR;
-    }
-
-    /* Auth MAC = KDF_2(auth_mac_k || t || (message_id || nonce || enc_msg)) */
-    goldilocks_shake256_ctx_p hd;
-    hash_init_with_dom(hd);
-    hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
-    hash_update(hd, t, t_len);
-    hash_update(hd, ser_data_msg, bodylen);
-    hash_final(hd, auth->auth_mac, sizeof(auth->auth_mac));
-    hash_destroy(hd);
-
-    free(ser_data_msg);
-    ser_data_msg = NULL;
-  } else {
-    /* Auth MAC = KDF_2(auth_mac_k || t) */
-    shake_256_mac(auth->auth_mac, sizeof(auth->auth_mac), auth_mac_k,
-                  sizeof(auth_mac_k), t, t_len);
   }
+
+  otrng_err ret = otrng_dake_non_interactive_auth_message_authenticator(
+      auth->auth_mac, auth, t, t_len, otr);
 
   free(t);
   t = NULL;
 
-  return SUCCESS;
+  return ret;
 }
 
 tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
@@ -1220,41 +1256,6 @@ API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst, otrng_s *otr,
                                              clen, otr);
 }
 
-tstatic otrng_bool valid_data_message_on_non_interactive_auth(
-    unsigned char *t, size_t t_len, m_mac_key_p mac_key,
-    const dake_non_interactive_auth_message_s *auth) {
-  uint8_t *enc_msg = NULL;
-  size_t enc_msg_len = 0;
-
-  if (data_message_body_on_non_interactive_asprintf(&enc_msg, &enc_msg_len,
-                                                    auth))
-    return otrng_false;
-
-  uint8_t mac_tag[DATA_MSG_MAC_BYTES];
-  memset(mac_tag, 0, sizeof mac_tag);
-
-  /* Auth MAC = KDF_2(auth_mac_k || t || enc_msg) */
-  goldilocks_shake256_ctx_p hd;
-
-  hash_init_with_dom(hd);
-  hash_update(hd, mac_key, DATA_MSG_MAC_BYTES);
-  hash_update(hd, t, t_len);
-  hash_update(hd, enc_msg, enc_msg_len);
-
-  hash_final(hd, mac_tag, DATA_MSG_MAC_BYTES);
-  hash_destroy(hd);
-
-  free(enc_msg);
-  enc_msg = NULL;
-
-  if (0 != otrl_mem_differ(mac_tag, auth->auth_mac, sizeof mac_tag)) {
-    sodium_memzero(mac_tag, sizeof mac_tag);
-    return otrng_false;
-  }
-
-  return otrng_true;
-}
-
 tstatic otrng_bool verify_non_interactive_auth_message(
     otrng_response_s *response, const dake_non_interactive_auth_message_s *auth,
     otrng_s *otr) {
@@ -1263,98 +1264,91 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
-  if (build_non_interactive_rsig_tag(
-          &t, &t_len, get_my_user_profile(otr), auth->profile, our_ecdh(otr),
-          auth->X, our_dh(otr), auth->A, otr->profile->shared_prekey,
-          otr->conversation->client->phi)) {
+  otrng_err ret = build_non_interactive_rsig_tag(
+      &t, &t_len, get_my_user_profile(otr), auth->profile, our_ecdh(otr),
+      auth->X, our_dh(otr), auth->A, otr->profile->shared_prekey,
+      otr->conversation->client->phi);
+  if (ret == ERROR)
     return otrng_false;
-  }
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */
-  otrng_bool err = otrng_rsig_verify(
+  otrng_bool ok = otrng_rsig_verify(
       auth->sigma, otr->conversation->client->keypair->pub, /* H_b */
       auth->profile->long_term_pub_key,                     /* H_a */
       our_ecdh(otr),                                        /* Y  */
       t, t_len);
 
-  /* auth_mac_k = KDF_1(0x0D || tmp_k) */
-  uint8_t auth_mac_k[HASH_BYTES];
-  shake_256_kdf1(auth_mac_k, sizeof(auth_mac_k), 0x0D, otr->keys->tmp_key,
-                 HASH_BYTES);
-
-  if (auth->enc_msg) {
-    m_enc_key_p enc_key;
-    m_mac_key_p mac_key;
-
-    memset(enc_key, 0, sizeof enc_key);
-    memset(mac_key, 0, sizeof mac_key);
-
-    otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, false);
-
-    /* discard this mac key as it is not needed */
-    sodium_memzero(mac_key, sizeof(m_mac_key_p));
-
-    if (valid_data_message_on_non_interactive_auth(t, t_len, auth_mac_k,
-                                                   auth)) {
-      free(t);
-      t = NULL;
-      sodium_memzero(enc_key, sizeof(m_enc_key_p));
-      /* here no warning should be passed */
-      return otrng_false;
-    }
-
+  if (ok == otrng_false) {
     free(t);
     t = NULL;
 
-    string_p *dst = &response->to_display;
-    uint8_t *plain = malloc(auth->enc_msg_len);
-    if (!plain) {
-      sodium_memzero(enc_key, sizeof(m_enc_key_p));
-      return otrng_false;
-    }
-
-    int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
-                                auth->nonce, enc_key);
-    if (err != 0) {
-      otrng_error_message(dst, ERR_MSG_UNDECRYPTABLE);
-      free(plain);
-      plain = NULL;
-      sodium_memzero(enc_key, sizeof(m_enc_key_p));
-      return otrng_false;
-    }
-
-    if (strnlen((string_p)plain, auth->enc_msg_len))
-      *dst = otrng_strndup((char *)plain, auth->enc_msg_len);
-
-    free(plain);
-    plain = NULL;
-    sodium_memzero(enc_key, sizeof(enc_key));
-
-    uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
-    if (to_store_mac == NULL) {
-      return otrng_false;
-    }
-
-    memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
-    otr->keys->old_mac_keys =
-        otrng_list_add(to_store_mac, otr->keys->old_mac_keys);
-  } else {
-    /* Auth MAC = KDF_2(auth_mac_k || t) */
-    uint8_t auth_mac[HASH_BYTES];
-    shake_256_mac(auth_mac, HASH_BYTES, auth_mac_k, HASH_BYTES, t, t_len);
-    if (0 != otrl_mem_differ(auth_mac, auth->auth_mac, sizeof auth_mac)) {
-      free(t);
-      t = NULL;
-
-      printf("am I here?");
-      return otrng_false;
-    }
+    /* here no warning should be passed */
+    return otrng_false;
   }
 
+  /* Check mac */
+  uint8_t mac_tag[DATA_MSG_MAC_BYTES];
+  ret = otrng_dake_non_interactive_auth_message_authenticator(mac_tag, auth, t,
+                                                              t_len, otr);
   free(t);
   t = NULL;
 
-  return err;
+  if (ret == ERROR) {
+    /* here no warning should be passed */
+    return otrng_false;
+  }
+
+  if (0 != otrl_mem_differ(mac_tag, auth->auth_mac, DATA_MSG_MAC_BYTES)) {
+    sodium_memzero(mac_tag, DATA_MSG_MAC_BYTES);
+    /* here no warning should be passed */
+    return otrng_false;
+  }
+
+  return otrng_true;
+}
+
+tstatic otrng_err decrypt_non_interactive_auth_message(
+    string_p *dst, const dake_non_interactive_auth_message_s *auth,
+    otrng_s *otr) {
+  if (!auth->enc_msg)
+    return SUCCESS;
+
+  uint8_t *plain = malloc(auth->enc_msg_len);
+  if (!plain)
+    return ERROR;
+
+  m_enc_key_p enc_key;
+  m_mac_key_p mac_key;
+  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, false);
+
+  int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
+                              auth->nonce, enc_key);
+  sodium_memzero(enc_key, sizeof(m_enc_key_p));
+
+  if (err) {
+    free(plain);
+    plain = NULL;
+
+    otrng_error_message(dst, ERR_MSG_UNDECRYPTABLE);
+    return ERROR;
+  }
+
+  if (strnlen((string_p)plain, auth->enc_msg_len))
+    *dst = otrng_strndup((char *)plain, auth->enc_msg_len);
+
+  free(plain);
+  plain = NULL;
+
+  uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
+  if (!to_store_mac)
+    return ERROR;
+
+  memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
+  otr->keys->old_mac_keys =
+      otrng_list_add(to_store_mac, otr->keys->old_mac_keys);
+  sodium_memzero(mac_key, sizeof(m_mac_key_p));
+
+  return SUCCESS;
 }
 
 tstatic otrng_err receive_non_interactive_auth_message(
@@ -1365,7 +1359,6 @@ tstatic otrng_err receive_non_interactive_auth_message(
     return SUCCESS; /* ignore the message */
 
   dake_non_interactive_auth_message_p auth;
-  auth->enc_msg = NULL;
 
   if (otrng_dake_non_interactive_auth_message_deserialize(auth, buff, buff_len))
     return ERROR;
@@ -1377,6 +1370,7 @@ tstatic otrng_err receive_non_interactive_auth_message(
 
   received_instance_tag(auth->sender_instance_tag, otr);
 
+  // TODO: Extract function to set_their_profile
   otr->their_profile = malloc(sizeof(user_profile_s));
   if (!otr->their_profile) {
     otrng_dake_non_interactive_auth_message_destroy(auth);
@@ -1406,23 +1400,19 @@ tstatic otrng_err receive_non_interactive_auth_message(
   }
 
   if (verify_non_interactive_auth_message(response, auth, otr) == otrng_false) {
-    free(auth->enc_msg);
-    auth->enc_msg = NULL;
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
 
-  if (auth->enc_msg) {
-    free(auth->enc_msg);
-    auth->enc_msg = NULL;
-  }
+  otrng_err ret =
+      decrypt_non_interactive_auth_message(&response->to_display, auth, otr);
   otrng_dake_non_interactive_auth_message_destroy(auth);
 
   otrng_fingerprint_p fp;
   if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
-  return SUCCESS;
+  return ret;
 }
 
 tstatic otrng_err receive_identity_message_on_state_start(

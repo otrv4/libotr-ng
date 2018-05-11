@@ -730,6 +730,8 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
   cursor += read;
   len -= read;
 
+  // TODO: Extract "deserialize attached encrypted message" function
+  dst->enc_msg = NULL;
   if (len > 64) {
     if (otrng_deserialize_uint32(&dst->message_id, cursor, len, &read))
       return ERROR;
