@@ -1001,10 +1001,8 @@ tstatic otrng_err build_non_interactive_auth_message(
       our_ecdh(otr), their_dh(otr), our_dh(otr),
       otr->their_profile->shared_prekey, otr->conversation->client->phi);
 
-  if (ret == ERROR) {
-    otrng_dake_non_interactive_auth_message_destroy(auth);
+  if (ret == ERROR)
     return ERROR;
-  }
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
   otrng_rsig_authenticate(auth->sigma,
@@ -1031,9 +1029,7 @@ tstatic otrng_err build_non_interactive_auth_message(
   ret = encrypt_msg_on_non_interactive_auth(auth, nonce, message, msglen, otr);
   sodium_memzero(nonce, sizeof(nonce));
 
-  if (ret == ERROR)
-    otrng_dake_non_interactive_auth_message_destroy(auth);
-  else
+  if (ret == SUCCESS)
     ret = otrng_dake_non_interactive_auth_message_authenticator(
         auth->auth_mac, auth, t, t_len, otr);
 
