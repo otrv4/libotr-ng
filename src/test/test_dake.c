@@ -21,11 +21,52 @@
 #include <glib.h>
 #include <string.h>
 
+#define OTRNG_DAKE_PRIVATE
+
 #include "../auth.h"
 #include "../dake.h"
 #include "../serialize.h"
 
-void test_build_auth_message() {
+void test_xzdh_encrypted_message_asprintf() {
+  uint8_t *dst = NULL;
+  size_t dst_len = 0;
+  dake_non_interactive_auth_message_p msg;
+
+  msg->enc_msg = NULL;
+  xzdh_encrypted_message_asprintf(&dst, &dst_len, msg);
+  otrng_assert(dst == NULL);
+  otrng_assert(dst_len == 0);
+
+  uint8_t expected[] = {
+      0x00, 0x00, 0x00, 0x1A, // message id
+
+      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18, // nonce
+      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18,
+      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18,
+
+      0x00, 0x00, 0x00, 0x03, // encrypted message len
+      0xEE, 0xFF, 0xDD,       // encrypted message
+  };
+
+  uint8_t encrypted[3] = {0xEE, 0xFF, 0xDD};
+  uint8_t nonce[24] = {
+      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18, 0x10, 0x11, 0x12, 0x13,
+      0x14, 0x15, 0x17, 0x18, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18,
+  };
+
+  // TODO: Add missing fields
+  msg->enc_msg = encrypted;
+  msg->enc_msg_len = 3;
+  msg->message_id = 0x1A;
+  memcpy(msg->nonce, nonce, 24);
+
+  xzdh_encrypted_message_asprintf(&dst, &dst_len, msg);
+  otrng_assert_cmpmem(expected, dst, sizeof(expected));
+
+  free(dst);
+}
+
+void test_build_interactive_rsign_tag() {
   otrng_err err = ERROR;
 
   // Wow. 1KB

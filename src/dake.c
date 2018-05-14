@@ -570,7 +570,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
 }
 
-static void xzdh_encrypted_message_asprintf(
+tstatic void xzdh_encrypted_message_asprintf(
     uint8_t **dst, size_t *dst_len,
     const dake_non_interactive_auth_message_s *msg) {
   size_t s = 0;
