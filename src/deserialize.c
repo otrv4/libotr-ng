@@ -91,7 +91,7 @@ INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, const uint8_t *buffer,
   uint32_t s = 0;
 
   /* 4 bytes len */
-  if (otrng_deserialize_uint32(&s, buffer, buflen, &r)) {
+  if (!otrng_deserialize_uint32(&s, buffer, buflen, &r)) {
     if (read != NULL)
       *read = r;
 
@@ -170,7 +170,7 @@ INTERNAL otrng_err otrng_deserialize_otrng_public_key(otrng_public_key_p pub,
   if (ED448_PUBKEY_TYPE != pubkey_type)
     return ERROR;
 
-  if (otrng_deserialize_ec_point(pub, cursor))
+  if (!otrng_deserialize_ec_point(pub, cursor))
     return ERROR;
 
   if (read)
@@ -196,7 +196,7 @@ INTERNAL otrng_err otrng_deserialize_otrng_shared_prekey(
   if (ED448_SHARED_PREKEY_TYPE != shared_prekey_type)
     return ERROR;
 
-  if (otrng_deserialize_ec_point(shared_prekey, cursor))
+  if (!otrng_deserialize_ec_point(shared_prekey, cursor))
     return ERROR;
 
   if (read)
@@ -223,37 +223,37 @@ INTERNAL otrng_err otrng_deserialize_ring_sig(ring_sig_s *proof,
     return ERROR;
 
   const uint8_t *cursor = serialized;
-  if (otrng_deserialize_ec_scalar(proof->c1, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->c1, cursor, ser_len))
     return ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (otrng_deserialize_ec_scalar(proof->r1, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->r1, cursor, ser_len))
     return ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (otrng_deserialize_ec_scalar(proof->c2, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->c2, cursor, ser_len))
     return ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (otrng_deserialize_ec_scalar(proof->r2, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->r2, cursor, ser_len))
     return ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (otrng_deserialize_ec_scalar(proof->c3, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->c3, cursor, ser_len))
     return ERROR;
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (otrng_deserialize_ec_scalar(proof->r3, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->r3, cursor, ser_len))
     return ERROR;
 
   if (read)

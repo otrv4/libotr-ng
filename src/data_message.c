@@ -92,8 +92,8 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
 
   // TODO: This could be NULL. We need to test.
   size_t len = 0;
-  if (otrng_serialize_dh_public_key(cursor, (s - (cursor - dst)), &len,
-                                    data_msg->dh)) {
+  if (!otrng_serialize_dh_public_key(cursor, (s - (cursor - dst)), &len,
+                                     data_msg->dh)) {
     free(dst);
     dst = NULL;
     return ERROR;
@@ -122,7 +122,7 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   size_t read = 0;
 
   uint16_t protocol_version = 0;
-  if (otrng_deserialize_uint16(&protocol_version, cursor, len, &read))
+  if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read))
     return ERROR;
 
   cursor += read;
@@ -132,7 +132,7 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
     return ERROR;
 
   uint8_t message_type = 0;
-  if (otrng_deserialize_uint8(&message_type, cursor, len, &read))
+  if (!otrng_deserialize_uint8(&message_type, cursor, len, &read))
     return ERROR;
 
   cursor += read;
@@ -141,50 +141,51 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   if (message_type != DATA_MSG_TYPE)
     return ERROR;
 
-  if (otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read))
+  if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (otrng_deserialize_uint32(&dst->receiver_instance_tag, cursor, len, &read))
+  if (!otrng_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
+                                &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (otrng_deserialize_uint8(&dst->flags, cursor, len, &read))
+  if (!otrng_deserialize_uint8(&dst->flags, cursor, len, &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (otrng_deserialize_uint32(&dst->previous_chain_n, cursor, len, &read))
+  if (!otrng_deserialize_uint32(&dst->previous_chain_n, cursor, len, &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &read))
+  if (!otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (otrng_deserialize_uint32(&dst->message_id, cursor, len, &read))
+  if (!otrng_deserialize_uint32(&dst->message_id, cursor, len, &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (otrng_deserialize_ec_point(dst->ecdh, cursor))
+  if (!otrng_deserialize_ec_point(dst->ecdh, cursor))
     return ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   otrng_mpi_p b_mpi; // no need to free, because nothing is copied now
-  if (otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read))
+  if (!otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read))
     return ERROR;
 
   cursor += read;
@@ -194,20 +195,20 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   // We need to test what otrng_dh_mpi_deserialize does when b_mpi->data is
   // NULL.
 
-  if (otrng_dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read))
+  if (!otrng_dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read))
     return ERROR;
 
   cursor += read;
   len -= read;
 
-  if (otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor,
-                                    len))
+  if (!otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor,
+                                     len))
     return ERROR;
 
   cursor += DATA_MSG_NONCE_BYTES;
   len -= DATA_MSG_NONCE_BYTES;
 
-  if (otrng_deserialize_data(&dst->enc_msg, cursor, len, &read))
+  if (!otrng_deserialize_data(&dst->enc_msg, cursor, len, &read))
     return ERROR;
 
   dst->enc_msg_len = read - 4;
@@ -259,7 +260,7 @@ INTERNAL otrng_bool otrng_valid_data_message(m_mac_key_p mac_key,
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  if (otrng_data_message_body_asprintf(&body, &bodylen, data_msg)) {
+  if (!otrng_data_message_body_asprintf(&body, &bodylen, data_msg)) {
     return otrng_false;
   }
 

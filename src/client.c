@@ -344,7 +344,7 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
 
   conv->conn->supported_versions = policy;
   // TODO: implement policy
-  if (otrng_build_query_message(&ret, message, conv->conn))
+  if (!otrng_build_query_message(&ret, message, conv->conn))
     return ret;
 
   return ret;
@@ -366,7 +366,7 @@ API int otrng_client_disconnect(char **newmsg, const char *recipient,
   if (!conv)
     return 1;
 
-  if (otrng_close(newmsg, conv->conn))
+  if (!otrng_close(newmsg, conv->conn))
     return 2;
 
   destroy_client_conversation(conv, client);

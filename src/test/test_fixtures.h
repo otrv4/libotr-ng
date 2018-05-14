@@ -111,13 +111,13 @@ static void identity_message_fixture_setup(identity_message_fixture_s *fixture,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
   otrng_keypair_generate(fixture->keypair, sym);
-  otrng_assert(otrng_ec_point_valid(fixture->keypair->pub) == SUCCESS);
+  otrng_assert(otrng_ec_point_valid(fixture->keypair->pub) == otrng_true);
 
   fixture->profile = user_profile_new("4");
 
   fixture->shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(fixture->shared_prekey, sym);
-  otrng_assert(otrng_ec_point_valid(fixture->shared_prekey->pub) == SUCCESS);
+  otrng_assert(otrng_ec_point_valid(fixture->shared_prekey->pub) == otrng_true);
 
   memcpy(fixture->profile->shared_prekey, fixture->shared_prekey->pub,
          sizeof(otrng_shared_prekey_pub_p));
@@ -147,13 +147,13 @@ static void prekey_message_fixture_setup(prekey_message_fixture_s *fixture,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
   otrng_keypair_generate(fixture->keypair, sym);
-  otrng_assert(otrng_ec_point_valid(fixture->keypair->pub) == SUCCESS);
+  otrng_assert(otrng_ec_point_valid(fixture->keypair->pub) == otrng_true);
 
   fixture->profile = user_profile_new("4");
 
   fixture->shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(fixture->shared_prekey, sym);
-  otrng_assert(otrng_ec_point_valid(fixture->shared_prekey->pub) == SUCCESS);
+  otrng_assert(otrng_ec_point_valid(fixture->shared_prekey->pub) == otrng_true);
 
   memcpy(fixture->profile->shared_prekey, fixture->shared_prekey->pub,
          sizeof(otrng_shared_prekey_pub_p));

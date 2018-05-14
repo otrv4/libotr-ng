@@ -37,8 +37,8 @@ static const otrng_bool otrng_true = 0;
 static const otrng_bool otrng_false = 1;
 
 typedef enum {
-  SUCCESS = 0,
-  ERROR = 1,
+  SUCCESS = 1,
+  ERROR = 0,
   STATE_NOT_ENCRYPTED = 0x1001,
   MSG_NOT_VALID = 0x1011,
 } otrng_err;

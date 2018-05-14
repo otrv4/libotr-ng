@@ -178,7 +178,7 @@ void test_otrng_serialize_dh_public_key() {
   size_t written = 0;
   otrng_err otr_err =
       otrng_serialize_dh_public_key(dst, DH_MPI_BYTES, &written, TEST_DH);
-  otrng_assert(!otr_err);
+  otrng_assert(otr_err);
   otrng_dh_mpi_release(TEST_DH);
   TEST_DH = NULL;
 

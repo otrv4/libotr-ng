@@ -122,7 +122,7 @@ INTERNAL otrng_err otrng_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
   uint8_t *buff = NULL;
   size_t body_len = 0;
   uint8_t *body = NULL;
-  if (user_profile_body_asprintf(&body, &body_len, profile))
+  if (!user_profile_body_asprintf(&body, &body_len, profile))
     return ERROR;
 
   size_t s = body_len + 4 + sizeof(eddsa_signature_p) +
@@ -162,25 +162,25 @@ INTERNAL otrng_err otrng_user_profile_deserialize(user_profile_s *target,
 
   otrng_err ok = ERROR;
   do {
-    if (otrng_deserialize_otrng_public_key(target->long_term_pub_key, buffer,
-                                           buflen, &read))
+    if (!otrng_deserialize_otrng_public_key(target->long_term_pub_key, buffer,
+                                            buflen, &read))
       continue;
 
     walked += read;
 
-    if (otrng_deserialize_data((uint8_t **)&target->versions, buffer + walked,
-                               buflen - walked, &read))
+    if (!otrng_deserialize_data((uint8_t **)&target->versions, buffer + walked,
+                                buflen - walked, &read))
       continue;
 
     walked += read;
 
-    if (otrng_deserialize_uint64(&target->expires, buffer + walked,
-                                 buflen - walked, &read))
+    if (!otrng_deserialize_uint64(&target->expires, buffer + walked,
+                                  buflen - walked, &read))
       continue;
 
     walked += read;
 
-    if (otrng_deserialize_otrng_shared_prekey(
+    if (!otrng_deserialize_otrng_shared_prekey(
             target->shared_prekey, buffer + walked, buflen - walked, &read))
       continue;
 
@@ -194,8 +194,8 @@ INTERNAL otrng_err otrng_user_profile_deserialize(user_profile_s *target,
 
     walked += sizeof(eddsa_signature_p);
 
-    if (otrng_mpi_deserialize(target->transitional_signature, buffer + walked,
-                              buflen - walked, &read))
+    if (!otrng_mpi_deserialize(target->transitional_signature, buffer + walked,
+                               buflen - walked, &read))
       continue;
 
     walked += read;
@@ -215,7 +215,7 @@ tstatic otrng_err user_profile_sign(user_profile_s *profile,
   size_t bodylen = 0;
 
   otrng_ec_point_copy(profile->long_term_pub_key, keypair->pub);
-  if (user_profile_body_asprintf(&body, &bodylen, profile))
+  if (!user_profile_body_asprintf(&body, &bodylen, profile))
     return ERROR;
 
   uint8_t pubkey[ED448_POINT_BYTES];
@@ -242,10 +242,10 @@ otrng_user_profile_verify_signature(const user_profile_s *profile) {
   if (!(profile->signature > 0))
     return otrng_false;
 
-  if (otrng_ec_point_valid(profile->shared_prekey) == ERROR)
+  if (otrng_ec_point_valid(profile->shared_prekey) == otrng_false)
     return otrng_false;
 
-  if (user_profile_body_asprintf(&body, &bodylen, profile))
+  if (!user_profile_body_asprintf(&body, &bodylen, profile))
     return otrng_false;
 
   uint8_t pubkey[ED448_POINT_BYTES];
@@ -274,7 +274,7 @@ otrng_user_profile_build(const string_p versions,
   memcpy(profile->shared_prekey, shared_prekey_pair->pub,
          sizeof(otrng_shared_prekey_pub_p));
 
-  if (user_profile_sign(profile, keypair)) {
+  if (!user_profile_sign(profile, keypair)) {
     otrng_user_profile_free(profile);
     return NULL;
   }

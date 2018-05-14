@@ -123,7 +123,7 @@ void test_data_message_serializes() {
   size_t mpi_len = 0;
   otrng_err otr_err = otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
                                              &mpi_len, data_msg->dh);
-  otrng_assert(!otr_err);
+  otrng_assert(otr_err);
   // Skip first 4 because they are the size (mpi_len)
   otrng_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
 
@@ -232,8 +232,7 @@ void test_data_message_valid() {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  otrng_assert(otrng_data_message_body_asprintf(&body, &bodylen, data_msg) ==
-               otrng_true);
+  otrng_assert(otrng_data_message_body_asprintf(&body, &bodylen, data_msg));
 
   otrng_assert(otrng_data_message_authenticator(data_msg->mac,
                                                 DATA_MSG_MAC_BYTES, mac_key,
@@ -252,8 +251,7 @@ void test_data_message_valid() {
   otrng_dh_mpi_release(data_msg->dh);
   data_msg->dh = NULL;
 
-  otrng_assert(otrng_data_message_body_asprintf(&body, &bodylen, data_msg) ==
-               otrng_true);
+  otrng_assert(otrng_data_message_body_asprintf(&body, &bodylen, data_msg));
 
   otrng_assert(otrng_data_message_authenticator(data_msg->mac,
                                                 DATA_MSG_MAC_BYTES, mac_key,

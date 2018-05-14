@@ -144,7 +144,7 @@ otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
     return -2;
 
   err = otrng_symmetric_key_serialize(&buff, &s, state->keypair->sym);
-  if (err)
+  if (!err)
     return err;
 
   err = fputs(key, privf);
@@ -197,7 +197,7 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
   free(line);
   line = NULL;
 
-  if (err) {
+  if (!err) {
     otrng_keypair_free(state->keypair);
     state->keypair = NULL;
   }

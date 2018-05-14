@@ -160,8 +160,9 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   if (manager->i % 3 == 0) {
     otrng_dh_keypair_destroy(manager->our_dh);
 
-    if (otrng_dh_keypair_generate(manager->our_dh))
+    if (!otrng_dh_keypair_generate(manager->our_dh)) {
       return ERROR;
+    }
   }
 
   return SUCCESS;
@@ -180,8 +181,8 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     otrng_ecdh_keypair_generate(manager->our_ecdh, random);
 
     otrng_dh_keypair_destroy(manager->our_dh);
-    if (otrng_dh_keypair_generate_from_shared_secret(manager->shared_secret,
-                                                     manager->our_dh, true))
+    if (!otrng_dh_keypair_generate_from_shared_secret(manager->shared_secret,
+                                                      manager->our_dh, true))
       return ERROR;
   } else {
     shake_256_kdf1(random, sizeof random, 0x13, manager->shared_secret,
@@ -194,8 +195,8 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     manager->their_dh = NULL;
     dh_keypair_p tmp_their_dh;
 
-    if (otrng_dh_keypair_generate_from_shared_secret(manager->shared_secret,
-                                                     tmp_their_dh, false))
+    if (!otrng_dh_keypair_generate_from_shared_secret(manager->shared_secret,
+                                                      tmp_their_dh, false))
       return ERROR;
 
     manager->their_dh = tmp_their_dh->pub;
@@ -327,7 +328,7 @@ tstatic void calculate_ssid(key_manager_s *manager) {
 
 INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
                                                      bool ours) {
-  if (generate_first_ephemeral_keys(manager, ours))
+  if (!generate_first_ephemeral_keys(manager, ours))
     return ERROR;
 
   manager->i = 0;
@@ -378,14 +379,14 @@ tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
     manager->j = 0;
     manager->k = 0;
 
-    if (otrng_key_manager_generate_ephemeral_keys(manager))
+    if (!otrng_key_manager_generate_ephemeral_keys(manager))
       return ERROR;
 
-    if (enter_new_ratchet(manager, true))
+    if (!enter_new_ratchet(manager, true))
       return ERROR;
   } else {
     manager->k = 0;
-    if (enter_new_ratchet(manager, false))
+    if (!enter_new_ratchet(manager, false))
       return ERROR;
 
     otrng_ec_scalar_destroy(manager->our_ecdh->priv);

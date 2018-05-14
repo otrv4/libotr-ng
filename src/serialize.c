@@ -99,7 +99,7 @@ INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
   size_t w = 0;
 
   otrng_err err = otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, pub);
-  if (err)
+  if (!err)
     return err;
 
   // To OTR MPI

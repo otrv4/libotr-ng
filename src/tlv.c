@@ -52,7 +52,7 @@ tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *written) {
   const uint8_t *start = src + *written;
   const uint8_t *cursor = start;
 
-  if (otrng_deserialize_uint16(&tlv_type, cursor, len, &w)) {
+  if (!otrng_deserialize_uint16(&tlv_type, cursor, len, &w)) {
     tlv_free(tlv);
     return NULL;
   }
@@ -62,7 +62,7 @@ tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *written) {
   len -= w;
   cursor += w;
 
-  if (otrng_deserialize_uint16(&tlv->len, cursor, len, &w)) {
+  if (!otrng_deserialize_uint16(&tlv->len, cursor, len, &w)) {
     tlv_free(tlv);
     return NULL;
   }

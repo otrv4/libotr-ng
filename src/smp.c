@@ -223,7 +223,7 @@ tstatic otrng_err smp_msg_1_deserialize(smp_msg_1_s *msg, const tlv_s *tlv) {
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
-  if (otrng_deserialize_ec_point(msg->G3a, cursor))
+  if (!otrng_deserialize_ec_point(msg->G3a, cursor))
     return ERROR;
 
   cursor += ED448_POINT_BYTES;
@@ -1088,7 +1088,7 @@ tstatic otrng_smp_event_t receive_smp_msg_4(smp_msg_4_s *msg_4,
   if (smp_msg_4_deserialize(msg_4, tlv) == ERROR)
     return OTRNG_SMPEVENT_ERROR;
 
-  if (otrng_ec_point_valid(msg_4->Rb) == ERROR)
+  if (otrng_ec_point_valid(msg_4->Rb) == otrng_false)
     return OTRNG_SMPEVENT_ERROR;
 
   if (smp_msg_4_validate_zkp(msg_4, smp))
