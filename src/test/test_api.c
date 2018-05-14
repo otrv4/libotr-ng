@@ -259,7 +259,7 @@ void test_api_non_interactive_conversation(void) {
   g_assert_cmpint(bob->keys->k, ==, 0);
 
   otrng_assert(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
-                                                   bob, "") == SUCCESS);
+                                                   "", bob) == SUCCESS);
 
   // Should send an non interactive auth
   otrng_assert(response_to_alice->to_display == NULL);
@@ -422,7 +422,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   g_assert_cmpint(bob->keys->k, ==, 0);
 
   otrng_assert(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
-                                                   bob, "hi") == SUCCESS);
+                                                   "hi", bob) == SUCCESS);
 
   // Should send an non-interactive auth message
   otrng_assert(response_to_alice->to_display == NULL);

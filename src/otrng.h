@@ -204,8 +204,9 @@ API void otrng_reply_with_prekey_msg_from_server(otrng_server_s *server,
 API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
                                                otrng_s *otr);
 
-API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst, otrng_s *otr,
-                                                  const string_p message);
+API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
+                                                  const string_p message,
+                                                  otrng_s *otr);
 
 API otrng_err otrng_heartbeat_checker(string_p *to_send, otrng_s *otr);
 
