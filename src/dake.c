@@ -570,14 +570,46 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
 }
 
+static void xzdh_encrypted_message_asprintf(
+    uint8_t **dst, size_t *dst_len,
+    const dake_non_interactive_auth_message_s *msg) {
+  size_t s = 0;
+  uint8_t *cursor = NULL;
+
+  if (dst && msg->enc_msg) {
+    // len(XZDH-ENCRYPTED-MSG) = 4 + 4 + [ED448_POINT_BYTES + DH_MPI_BYTES] +
+    // DATA_MSG_NONCE_BYTE + (4 + enc_msg_len)
+    s = 4 + DATA_MSG_NONCE_BYTES + 4 + msg->enc_msg_len;
+
+    *dst = cursor = malloc(s);
+    if (!*dst)
+      return;
+
+    // Attached XZDH Encrypted Message (XZDH-ENCRYPTED-MSG)
+    // TODO: Attached Encrypted Ratchet Id (INT)
+    // TODO: Public ECDH Key (POINT)
+    // TODO: Public DH Key (MPI)
+    cursor += otrng_serialize_uint32(cursor, msg->message_id);
+    cursor +=
+        otrng_serialize_bytes_array(cursor, msg->nonce, DATA_MSG_NONCE_BYTES);
+    cursor += otrng_serialize_data(cursor, msg->enc_msg, msg->enc_msg_len);
+  }
+
+  if (dst && dst_len)
+    *dst_len = (cursor - *dst);
+}
+
 INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_s *non_interactive_auth) {
-  size_t data_msg_len = 0;
 
-  if (non_interactive_auth->enc_msg)
-    data_msg_len =
-        4 + DATA_MSG_NONCE_BYTES + non_interactive_auth->enc_msg_len + 4;
+  if (!dst)
+    return ERROR;
+
+  size_t data_msg_len = 0;
+  uint8_t *data_msg = NULL;
+  xzdh_encrypted_message_asprintf(&data_msg, &data_msg_len,
+                                  non_interactive_auth);
 
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
@@ -611,6 +643,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
                                                 &len, non_interactive_auth->A);
   if (err) {
     free(buff);
+    free(data_msg);
     return ERROR;
   }
 
@@ -622,24 +655,13 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   // Client Profile Identifier (INT)
   // Prekey Profile Identifier (INT)
 
-  // Attached XZDH Encrypted Message (XZDH-ENCRYPTED-MSG)
-  if (non_interactive_auth->enc_msg) {
-    // TODO: Attached Encrypted Ratchet Id (INT)
-    // TODO: Public ECDH Key (POINT)
-    // TODO: Public DH Key (MPI)
-    cursor += otrng_serialize_uint32(cursor, non_interactive_auth->message_id);
-
-    cursor += otrng_serialize_bytes_array(cursor, non_interactive_auth->nonce,
-                                          DATA_MSG_NONCE_BYTES);
-    cursor += otrng_serialize_data(cursor, non_interactive_auth->enc_msg,
-                                   non_interactive_auth->enc_msg_len);
-  }
+  cursor += otrng_serialize_bytes_array(cursor, data_msg, data_msg_len);
+  free(data_msg);
 
   cursor += otrng_serialize_bytes_array(cursor, non_interactive_auth->auth_mac,
                                         sizeof(non_interactive_auth->auth_mac));
 
-  if (dst)
-    *dst = buff;
+  *dst = buff;
 
   if (nbytes)
     *nbytes = cursor - buff;
