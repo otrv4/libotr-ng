@@ -1131,8 +1131,9 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
   return SUCCESS;
 }
 
-API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst, otrng_s *otr,
-                                                  const string_p message) {
+API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
+                                                  const string_p message,
+                                                  otrng_s *otr) {
   *dst = NULL;
   size_t clen = (!message) ? 0 : strlen(message) + 1;
   return reply_with_non_interactive_auth_msg(dst, (const uint8_t *)message,

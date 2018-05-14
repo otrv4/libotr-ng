@@ -33,7 +33,8 @@ void test_xzdh_encrypted_message_asprintf() {
   dake_non_interactive_auth_message_p msg;
 
   msg->enc_msg = NULL;
-  otrng_assert(xzdh_encrypted_message_asprintf(&dst, &dst_len, msg) == otrng_true);
+  otrng_assert(xzdh_encrypted_message_asprintf(&dst, &dst_len, msg) ==
+               otrng_true);
   otrng_assert(dst == NULL);
   otrng_assert(dst_len == 0);
 
@@ -60,7 +61,8 @@ void test_xzdh_encrypted_message_asprintf() {
   msg->message_id = 0x1A;
   memcpy(msg->nonce, nonce, 24);
 
-  otrng_assert(xzdh_encrypted_message_asprintf(&dst, &dst_len, msg) == otrng_true);
+  otrng_assert(xzdh_encrypted_message_asprintf(&dst, &dst_len, msg) ==
+               otrng_true);
   otrng_assert_cmpmem(expected, dst, sizeof(expected));
 
   free(dst);
