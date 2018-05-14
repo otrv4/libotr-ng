@@ -208,6 +208,12 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   if (!otr)
     return NULL;
 
+  otr->keys = malloc(sizeof(key_manager_s));
+  if (!otr->keys) {
+    free(otr);
+    return NULL;
+  }
+
   // TODO: Move to constructor
   otr->conversation = malloc(sizeof(otrng_conversation_state_s));
   otr->conversation->client = state;
@@ -221,13 +227,6 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->our_instance_tag = otrng_client_state_get_instance_tag(state);
   otr->profile = NULL;
   otr->their_profile = NULL;
-
-  otr->keys = malloc(sizeof(key_manager_s));
-  if (!otr->keys) {
-    free(otr);
-    otr = NULL;
-    return NULL;
-  }
 
   otrng_key_manager_init(otr->keys);
   otrng_smp_context_init(otr->smp);
@@ -265,13 +264,11 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
 }
 
 INTERNAL void otrng_free(/*@only@ */ otrng_s *otr) {
-  if (otr == NULL) {
+  if (!otr)
     return;
-  }
 
   otrng_destroy(otr);
   free(otr);
-  otr = NULL;
 }
 
 INTERNAL otrng_err otrng_build_query_message(string_p *dst,
@@ -302,7 +299,6 @@ INTERNAL otrng_err otrng_build_query_message(string_p *dst,
   /* Add '\0' */
   if (*stpncpy(cursor, message, qm_size - rem)) {
     free(buff);
-    buff = NULL;
     return ERROR; /* could not zero-terminate the string */
   }
 
@@ -339,7 +335,6 @@ API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
 
   if (*stpncpy(cursor, message, m_size - strlen(buff))) {
     free(buff);
-    buff = NULL;
     return ERROR;
   }
 
@@ -386,8 +381,6 @@ tstatic otrng_err message_to_display_without_tag(otrng_response_s *response,
   response->to_display = otrng_strndup(buff, chars);
 
   free(buff);
-  buff = NULL;
-
   return SUCCESS;
 }
 
@@ -462,7 +455,6 @@ INTERNAL void otrng_response_free(otrng_response_s *response) {
   response->tlvs = NULL;
 
   free(response);
-  response = NULL;
 }
 
 // TODO: Is not receiving a plaintext a problem?
@@ -485,8 +477,6 @@ tstatic otrng_err serialize_and_encode_prekey_message(
   *dst = otrl_base64_otr_encode(buff, len);
 
   free(buff);
-  buff = NULL;
-
   return SUCCESS;
 }
 
@@ -536,8 +526,6 @@ tstatic otrng_err serialize_and_encode_identity_message(
   *dst = otrl_base64_otr_encode(buff, len);
 
   free(buff);
-  buff = NULL;
-
   return SUCCESS;
 }
 
@@ -650,8 +638,6 @@ tstatic otrng_err serialize_and_encode_auth_r(string_p *dst,
   *dst = otrl_base64_otr_encode(buff, len);
 
   free(buff);
-  buff = NULL;
-
   return SUCCESS;
 }
 
@@ -683,9 +669,7 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
                           otr->conversation->client->keypair->pub,  /* H_a */
                           their_ecdh(otr),                          /* Y */
                           t, t_len);
-
   free(t);
-  t = NULL;
 
   otrng_err err = serialize_and_encode_auth_r(dst, msg);
   otrng_dake_auth_r_destroy(msg);
@@ -766,8 +750,6 @@ tstatic otrng_err serialize_and_encode_non_interactive_auth(
   *dst = otrl_base64_otr_encode(buff, len);
 
   free(buff);
-  buff = NULL;
-
   return SUCCESS;
 }
 
@@ -805,7 +787,6 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
   err = crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
   if (err) {
     free(c);
-    c = NULL;
     return ERROR;
   }
 
@@ -851,7 +832,6 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
 
   if (err) {
     free(cipher);
-    cipher = NULL;
     return ERROR;
   }
 
@@ -1034,7 +1014,6 @@ tstatic otrng_err build_non_interactive_auth_message(
         auth->auth_mac, auth, t, t_len, otr);
 
   free(t);
-  t = NULL;
   return ret;
 }
 
@@ -1135,12 +1114,10 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
       strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_1);
       strcat(err_msg, msg);
     }
-    free((char *)msg);
-    msg = NULL;
+    free(msg);
 
     *to_send = otrng_strdup(err_msg);
     free(err_msg);
-    err_msg = NULL;
     break;
   case ERR_MSG_NOT_PRIVATE:
     msg = strdup("OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
@@ -1154,12 +1131,10 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
       strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_2);
       strcat(err_msg, msg);
     }
-    free((char *)msg);
-    msg = NULL;
+    free(msg);
 
     *to_send = otrng_strdup(err_msg);
     free(err_msg);
-    err_msg = NULL;
     break;
   }
 }
@@ -1269,7 +1244,6 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   if (ok == otrng_false) {
     free(t);
-    t = NULL;
 
     /* here no warning should be passed */
     return otrng_false;
@@ -1280,7 +1254,6 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   ret = otrng_dake_non_interactive_auth_message_authenticator(mac_tag, auth, t,
                                                               t_len, otr);
   free(t);
-  t = NULL;
 
   if (ret == ERROR) {
     /* here no warning should be passed */
@@ -1316,8 +1289,6 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
 
   if (err) {
     free(plain);
-    plain = NULL;
-
     otrng_error_message(dst, ERR_MSG_UNDECRYPTABLE);
     return ERROR;
   }
@@ -1326,7 +1297,6 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
     *dst = otrng_strndup((char *)plain, auth->enc_msg_len);
 
   free(plain);
-  plain = NULL;
 
   uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
   if (!to_store_mac)
@@ -1510,8 +1480,6 @@ tstatic otrng_err serialize_and_encode_auth_i(string_p *dst,
   *dst = otrl_base64_otr_encode(buff, len);
 
   free(buff);
-  buff = NULL;
-
   return SUCCESS;
 }
 
@@ -1540,7 +1508,6 @@ tstatic otrng_err reply_with_auth_i_msg(string_p *dst,
                           their_ecdh(otr),                          /* X */
                           t, t_len);
   free(t);
-  t = NULL;
 
   otrng_err err = serialize_and_encode_auth_i(dst, msg);
   otrng_dake_auth_i_destroy(msg);
@@ -1569,8 +1536,6 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
       t, t_len);
 
   free(t);
-  t = NULL;
-
   return err;
 }
 
@@ -1639,9 +1604,8 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
       otr->conversation->client->keypair->pub,            /* H_a */
       our_ecdh(otr),                                      /* X */
       t, t_len);
-  free(t);
-  t = NULL;
 
+  free(t);
   return err;
 }
 
@@ -1729,11 +1693,9 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   extract_tlvs(tlvs, plain, msg->enc_msg_len);
 
   free(plain);
-  plain = NULL;
 
-  if (err == 0) {
+  if (err == 0)
     return SUCCESS;
-  }
 
   // TODO: correctly free
   otrng_tlv_list_free(*tlvs);
@@ -1853,7 +1815,6 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
     otrng_error_message(&response->to_send, ERR_MSG_NOT_PRIVATE);
     free(msg);
-    msg = NULL;
     return ERROR;
   }
 
@@ -2144,13 +2105,11 @@ tstatic otrng_err serialize_and_encode_data_msg(
   uint8_t *ser = malloc(serlen);
   if (!ser) {
     free(body);
-    body = NULL;
     return ERROR;
   }
 
   memcpy(ser, body, bodylen);
   free(body);
-  body = NULL;
 
   otrng_err err = otrng_data_message_authenticator(ser + bodylen, MAC_KEY_BYTES,
                                                    mac_key, ser, bodylen);
@@ -2161,9 +2120,8 @@ tstatic otrng_err serialize_and_encode_data_msg(
                               to_reveal_mac_keys, to_reveal_mac_keys_len);
 
   *dst = otrl_base64_otr_encode(ser, serlen);
-  free(ser);
-  ser = NULL;
 
+  free(ser);
   return SUCCESS;
 }
 
@@ -2179,7 +2137,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, true)) {
     free(ser_mac_keys);
-    ser_mac_keys = NULL;
     return ERROR;
   }
 
@@ -2195,7 +2152,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
     sodium_memzero(enc_key, sizeof(m_enc_key_p));
     sodium_memzero(mac_key, sizeof(m_mac_key_p));
     free(ser_mac_keys);
-    ser_mac_keys = NULL;
     return ERROR;
   }
 
@@ -2225,7 +2181,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
   sodium_memzero(mac_key, sizeof(m_mac_key_p));
   free(ser_mac_keys);
-  ser_mac_keys = NULL;
   otrng_data_message_free(data_msg);
 
   return err;
@@ -2272,14 +2227,12 @@ tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dstlen,
   *dst = malloc(*dstlen);
   if (!*dst) {
     free(ser);
-    ser = NULL;
     return ERROR;
   }
 
   memcpy(stpcpy((char *)*dst, message) + 1, ser, len);
 
   free(ser);
-  ser = NULL;
   return SUCCESS;
 }
 
@@ -2308,9 +2261,8 @@ tstatic otrng_err otrng_prepare_to_send_data_message(string_p *to_send,
 
   otrng_err err =
       send_data_message(to_send, msg, msg_len, otr, is_heartbeat, flags);
-  free(msg);
-  msg = NULL;
 
+  free(msg);
   return err;
 }
 
@@ -2432,7 +2384,7 @@ tstatic otrng_err otrng_send_symkey_message_v4(string_p *to_send,
     tlv_list_s *tlvs = otrng_tlv_list_one(
         otrng_tlv_new(OTRNG_TLV_SYM_KEY, usedatalen + 4, tlv_data));
     free(tlv_data);
-    tlv_data = NULL;
+
     if (!tlvs)
       return ERROR;
 
@@ -2516,7 +2468,6 @@ tstatic tlv_s *otrng_smp_initiate(const user_profile_s *initiator_profile,
 
     otrng_smp_msg_1_destroy(msg);
     free(to_send);
-    to_send = NULL;
     return tlv;
   } while (0);
 
