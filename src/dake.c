@@ -570,7 +570,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
 }
 
-tstatic void xzdh_encrypted_message_asprintf(
+tstatic otrng_err xzdh_encrypted_message_asprintf(
     uint8_t **dst, size_t *dst_len,
     const dake_non_interactive_auth_message_s *msg) {
   size_t s = 0;
@@ -583,7 +583,7 @@ tstatic void xzdh_encrypted_message_asprintf(
 
     *dst = cursor = malloc(s);
     if (!*dst)
-      return;
+      return ERROR;
 
     // Attached XZDH Encrypted Message (XZDH-ENCRYPTED-MSG)
     // TODO: Attached Encrypted Ratchet Id (INT)
@@ -597,6 +597,8 @@ tstatic void xzdh_encrypted_message_asprintf(
 
   if (dst && dst_len)
     *dst_len = (cursor - *dst);
+
+  return SUCCESS;
 }
 
 INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
@@ -966,4 +968,63 @@ INTERNAL otrng_err build_non_interactive_rsig_tag(
   sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
   return err;
+}
+
+INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
+    uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_p auth,
+    const uint8_t *t, size_t t_len, uint8_t tmp_key[HASH_BYTES]) {
+
+  // OTRv4 section "Non-Interactive-Auth Message"
+  /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
+  uint8_t auth_mac_k[HASH_BYTES];
+  shake_256_kdf1(auth_mac_k, HASH_BYTES, 0x0D, tmp_key, HASH_BYTES);
+
+  // If there is no attached encrypted message
+  if (!auth->enc_msg_len) {
+    // OTRv4 section, "Non-Interactive DAKE Overview"
+    /* Auth MAC = KDF_1(0x12 || auth_mac_k || t, 64) */
+    goldilocks_shake256_ctx_p hd;
+    hash_init_with_usage(hd, 0x12);
+    hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
+    hash_update(hd, t, t_len);
+    hash_final(hd, dst, HASH_BYTES);
+    hash_destroy(hd);
+
+    return SUCCESS;
+  }
+
+  // Otherwise
+  // OTRv4 section, "Non-Interactive DAKE Overview"
+  // extra = KDF_1(0x11 || attached encrypted ratchet id ||
+  // attached encrypted message id || public ecdh key ||
+  // public dh key || nonce || encrypted message, 64)
+  /*   Auth MAC = KDF_1(0x12 || auth_mac_k || t || extra, 64)  */
+
+  uint8_t *ser_data_msg = NULL;
+  size_t bodylen = 0;
+
+  otrng_err ret =
+      xzdh_encrypted_message_asprintf(&ser_data_msg, &bodylen, auth);
+  if (ret == ERROR)
+    return ERROR;
+
+  uint8_t encrypted_msg_mac[HASH_BYTES];
+  goldilocks_shake256_ctx_p encrypted_msg_hd;
+  hash_init_with_usage(encrypted_msg_hd, 0x11);
+  hash_final(encrypted_msg_hd, ser_data_msg, bodylen);
+  hash_final(encrypted_msg_hd, encrypted_msg_mac, HASH_BYTES);
+  hash_destroy(encrypted_msg_hd);
+  free(ser_data_msg);
+
+  goldilocks_shake256_ctx_p hd;
+  hash_init_with_usage(hd, 0x12);
+  hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
+  hash_update(hd, t, t_len);
+  hash_update(hd, encrypted_msg_mac, HASH_BYTES);
+  hash_final(hd, dst, HASH_BYTES);
+  hash_destroy(hd);
+
+  sodium_memzero(encrypted_msg_mac, HASH_BYTES);
+
+  return SUCCESS;
 }

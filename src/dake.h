@@ -152,11 +152,16 @@ INTERNAL otrng_err build_non_interactive_rsig_tag(
     const ec_point_p r_ecdh, const dh_mpi_p i_dh, const dh_mpi_p r_dh,
     const otrng_shared_prekey_pub_p r_shared_prekey, char *phi);
 
+INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
+    uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_p auth,
+    const uint8_t *t, size_t t_len, uint8_t tmp_key[HASH_BYTES]);
+
 #ifdef OTRNG_DAKE_PRIVATE
 
-tstatic void
+tstatic otrng_err
 xzdh_encrypted_message_asprintf(uint8_t **dst, size_t *dst_len,
                                 const dake_non_interactive_auth_message_s *msg);
+
 #endif
 
 #endif
