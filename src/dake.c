@@ -566,6 +566,11 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
     non_interactive_auth->enc_msg = NULL;
   }
   non_interactive_auth->enc_msg_len = 0;
+  // TODO: should this be free optionally?
+  otrng_dh_mpi_release(non_interactive_auth->dh);
+  non_interactive_auth->dh = NULL;
+  otrng_ec_point_destroy(non_interactive_auth->ecdh);
+
   sodium_memzero(non_interactive_auth->nonce, DATA_MSG_NONCE_BYTES);
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
 }
@@ -577,19 +582,31 @@ tstatic otrng_err xzdh_encrypted_message_asprintf(
   uint8_t *cursor = NULL;
 
   if (dst && msg->enc_msg) {
+    // TODO: correctly document this
     // len(XZDH-ENCRYPTED-MSG) = 4 + 4 + [ED448_POINT_BYTES + DH_MPI_BYTES] +
     // DATA_MSG_NONCE_BYTE + (4 + enc_msg_len)
-    s = 4 + DATA_MSG_NONCE_BYTES + 4 + msg->enc_msg_len;
+    s = 4 + 4 + ED448_POINT_BYTES + DH_MPI_BYTES + DATA_MSG_NONCE_BYTES + 4 +
+        msg->enc_msg_len;
 
     *dst = cursor = malloc(s);
     if (!*dst)
       return ERROR;
 
     // Attached XZDH Encrypted Message (XZDH-ENCRYPTED-MSG)
-    // TODO: Attached Encrypted Ratchet Id (INT)
-    // TODO: Public ECDH Key (POINT)
-    // TODO: Public DH Key (MPI)
+    cursor += otrng_serialize_uint32(cursor, msg->ratchet_id);
     cursor += otrng_serialize_uint32(cursor, msg->message_id);
+    cursor += otrng_serialize_ec_point(cursor, msg->ecdh);
+
+    size_t len = 0;
+    otrng_err err =
+        otrng_serialize_dh_public_key(cursor, DH_MPI_BYTES, &len, msg->dh);
+    if (err) {
+      free(cursor);
+      cursor = NULL;
+      return ERROR;
+    }
+
+    cursor += len;
     cursor +=
         otrng_serialize_bytes_array(cursor, msg->nonce, DATA_MSG_NONCE_BYTES);
     cursor += otrng_serialize_data(cursor, msg->enc_msg, msg->enc_msg_len);
@@ -743,8 +760,35 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
 
   // TODO: Extract "deserialize attached encrypted message" function
   dst->enc_msg = NULL;
-  if (len > 64) {
+  if (len > 130) {
+    if (otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &read))
+      return ERROR;
+
+    cursor += read;
+    len -= read;
+
     if (otrng_deserialize_uint32(&dst->message_id, cursor, len, &read))
+      return ERROR;
+
+    cursor += read;
+    len -= read;
+
+    if (otrng_deserialize_ec_point(dst->ecdh, cursor))
+      return ERROR;
+
+    cursor += ED448_POINT_BYTES;
+    len -= ED448_POINT_BYTES;
+
+    // TODO: change this name
+    otrng_mpi_p tmp_mpi_2; // no need to free, because nothing is copied now
+    if (otrng_mpi_deserialize_no_copy(tmp_mpi_2, cursor, len, &read))
+      return ERROR;
+
+    cursor += read;
+    len -= read;
+
+    if (otrng_dh_mpi_deserialize(&dst->dh, tmp_mpi_2->data, tmp_mpi_2->len,
+                                 &read))
       return ERROR;
 
     cursor += read;

@@ -817,9 +817,13 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
   if (!cipher)
     return ERROR;
 
+  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, true))
+    return ERROR;
+
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, true);
+  otr->keys->j++;
 
   /* discard this mac key as it is not used */
   sodium_memzero(mac_key, sizeof(m_mac_key_p));
@@ -835,6 +839,8 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
     return ERROR;
   }
 
+  auth->dh = otrng_dh_mpi_copy(otr->keys->our_dh->pub);
+  otrng_ec_point_copy(auth->ecdh, otr->keys->our_ecdh->pub);
   auth->message_id = otr->keys->j;
   auth->enc_msg_len = message_len;
   auth->enc_msg = cipher;
@@ -864,6 +870,11 @@ non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
   otrng_user_profile_copy(auth->profile, get_my_user_profile(otr));
   otrng_ec_point_copy(auth->X, our_ecdh(otr));
   auth->A = otrng_dh_mpi_copy(our_dh(otr));
+
+  auth->ratchet_id = 0;
+  auth->message_id = 0;
+  otrng_ec_bzero(auth->ecdh, ED448_POINT_BYTES);
+  auth->dh = NULL;
 }
 
 tstatic otrng_err build_non_interactive_auth_message(
@@ -919,7 +930,7 @@ tstatic otrng_err build_non_interactive_auth_message(
       their_ecdh(otr),                         // A3
       t, t_len);
 
-  uint8_t nonce[ED448_SCALAR_BYTES] = {0};
+  uint8_t nonce[ED448_SCALAR_BYTES] = {};
   otrng_ec_scalar_encode(nonce, c);
   otrng_ec_scalar_destroy(c);
 
@@ -1199,9 +1210,17 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
   if (!plain)
     return ERROR;
 
+  otrng_dh_mpi_release(otr->keys->their_dh);
+  otr->keys->their_dh = otrng_dh_mpi_copy(auth->dh);
+  otrng_ec_point_copy(otr->keys->their_ecdh, auth->ecdh);
+
+  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, false) == ERROR)
+    return ERROR;
+
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, false);
+  otr->keys->k++;
 
   int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
                               auth->nonce, enc_key);
@@ -1283,6 +1302,7 @@ tstatic otrng_err receive_non_interactive_auth_message(
     return ERROR;
   }
 
+  // TODO: this is always ratcheting even when no message is present
   otrng_err ret =
       decrypt_non_interactive_auth_message(&response->to_display, auth, otr);
   otrng_dake_non_interactive_auth_message_destroy(auth);

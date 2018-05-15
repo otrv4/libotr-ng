@@ -82,7 +82,7 @@ void test_ser_des_otrng_public_key() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
+  uint8_t serialized[ED448_PUBKEY_BYTES] = {};
   g_assert_cmpint(otrng_serialize_otrng_public_key(serialized, keypair->pub),
                   ==, ED448_PUBKEY_BYTES);
   otrng_assert(otrng_deserialize_otrng_public_key(deserialized, serialized,

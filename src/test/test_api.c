@@ -284,9 +284,10 @@ void test_api_non_interactive_conversation(void) {
   otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(alice->keys->current);
 
-  g_assert_cmpint(alice->keys->i, ==, 0);
+  // TODO: this shouldn't be ratcheting
+  g_assert_cmpint(alice->keys->i, ==, 1);
   g_assert_cmpint(alice->keys->j, ==, 0);
-  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->k, ==, 1);
 
   // Both have the same shared secret
   otrng_assert_root_key_eq(alice->keys->current->root_key,
@@ -309,7 +310,7 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_sent(err, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
-    g_assert_cmpint(alice->keys->i, ==, 1);
+    g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, message_id);
     g_assert_cmpint(alice->keys->k, ==, 0);
 
@@ -321,7 +322,7 @@ void test_api_non_interactive_conversation(void) {
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, message_id);
 
-    g_assert_cmpint(bob->keys->i, ==, 1);
+    g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
 
@@ -337,7 +338,7 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
-    g_assert_cmpint(bob->keys->i, ==, 2);
+    g_assert_cmpint(bob->keys->i, ==, 3);
     g_assert_cmpint(bob->keys->j, ==, message_id);
     g_assert_cmpint(bob->keys->k, ==, 0);
 
@@ -347,7 +348,7 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
-    g_assert_cmpint(alice->keys->i, ==, 2);
+    g_assert_cmpint(alice->keys->i, ==, 3);
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id);
 
@@ -451,9 +452,9 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
   otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(alice->keys->current);
 
-  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->i, ==, 1);
   g_assert_cmpint(alice->keys->j, ==, 0);
-  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->k, ==, 1);
 
   // Both have the same shared secret
   otrng_assert_root_key_eq(alice->keys->current->root_key,
@@ -476,7 +477,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
     assert_msg_sent(err, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
-    g_assert_cmpint(alice->keys->i, ==, 1);
+    g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, message_id);
     g_assert_cmpint(alice->keys->k, ==, 0);
 
@@ -490,7 +491,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, message_id);
 
-    g_assert_cmpint(bob->keys->i, ==, 1);
+    g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
   }
@@ -505,7 +506,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
 
     // New ratchet hapenned
-    g_assert_cmpint(bob->keys->i, ==, 2);
+    g_assert_cmpint(bob->keys->i, ==, 3);
     g_assert_cmpint(bob->keys->j, ==, message_id);
     g_assert_cmpint(bob->keys->k, ==, 0);
 
@@ -518,7 +519,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
     free_message_and_response(response_to_bob, &to_send);
 
     // Alice follows the ratchet 1 (and prepares to a new "ratchet")
-    g_assert_cmpint(alice->keys->i, ==, 2);
+    g_assert_cmpint(alice->keys->i, ==, 3);
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id);
   }

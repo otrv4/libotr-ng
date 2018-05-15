@@ -70,8 +70,10 @@ typedef struct dake_non_interactive_auth_message_s {
   ring_sig_p sigma;
 
   /* only used if an ecrypted message is attached */
-  // TODO: Add missing fields
+  uint32_t ratchet_id;
   uint32_t message_id;
+  ec_point_p ecdh;
+  dh_public_key_p dh;
   uint8_t nonce[DATA_MSG_NONCE_BYTES];
   uint8_t *enc_msg;
   size_t enc_msg_len;
