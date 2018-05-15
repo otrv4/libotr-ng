@@ -138,9 +138,8 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     }
 
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN, FRAGMENT_FORMAT,
-             our_instance, their_instance, (unsigned short) current,
-             (unsigned short) fragments->total,
-             piece_data);
+             our_instance, their_instance, (unsigned short)current,
+             (unsigned short)fragments->total, piece_data);
     piece[piece_len + FRAGMENT_HEADER_LEN] = 0;
 
     pieces[current - 1] = piece;
