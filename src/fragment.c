@@ -101,7 +101,6 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     return ERROR;
 
   for (int current = 1; current <= fragments->total; current++) {
-    int index = 0;
     string_p piece = NULL;
     string_p piece_data = NULL;
 
@@ -147,7 +146,6 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
 
     free(piece_data);
     piece_data = NULL;
-    index += piece_len;
     message += piece_len;
   }
 
