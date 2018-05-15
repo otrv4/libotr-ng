@@ -27,7 +27,7 @@
 #include "fragment.h"
 
 // TODO: check this format
-#define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05x,%05x,%s,"
+#define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05hu,%05hu,%s,"
 
 API otrng_message_to_send_s *otrng_message_new() {
   otrng_message_to_send_s *msg = malloc(sizeof(otrng_message_to_send_s));
@@ -221,11 +221,11 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   }
 
   int sender_tag = 0, receiver_tag = 0, start = 0, end = 0;
-  int k = 0, n = 0;
+  unsigned short k = 0, n = 0;
   context->status = FRAGMENT_INCOMPLETE;
 
   // TODO: check this format
-  sscanf(message, "?OTR|%08x|%08x,%05x,%05x,%n%*[^,],%n", &sender_tag,
+  sscanf(message, "?OTR|%08x|%08x,%05hu,%05hu,%n%*[^,],%n", &sender_tag,
          &receiver_tag, &k, &n, &start, &end);
 
   if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
