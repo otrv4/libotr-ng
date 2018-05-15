@@ -105,12 +105,7 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     string_p piece = NULL;
     string_p piece_data = NULL;
 
-    // TODO: why?
-    if (msg_len - index < limit)
-      piece_len = msg_len - index;
-    else
-      piece_len = limit;
-
+    piece_len = msg_len < limit ? msg_len : limit;
     piece_data = malloc(piece_len + 1);
     if (!piece_data) {
       int i;
