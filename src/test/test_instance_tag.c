@@ -23,7 +23,6 @@
 #include "../instance_tag.h"
 
 void test_instance_tag_generates_tag_when_file_empty() {
-
   char *alice_coy_account = "alice@coy.im";
   char *xmpp_protocol = "XMPP";
 

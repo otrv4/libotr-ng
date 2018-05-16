@@ -78,6 +78,12 @@ This style is based on:
 * [llvm coding standars](https://llvm.org/docs/CodingStandards.html)
 * [GNU Coding Standars](https://www.gnu.org/prep/standards/standards.html)
 
+### Malloc and Free
+
+Every time you assign memory to a pointer variable, you should free it.
+Consider nullifying the variable afterwards, if it can be access afterwards by
+something else.
+
 ### Golden Rules
 
 Follow these golden rules (taken from [C Style](https://github.com/mcinglis/c-style):
