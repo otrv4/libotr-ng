@@ -26,8 +26,8 @@
 
 #include "fragment.h"
 
-// TODO: check this format
-#define FRAGMENT_FORMAT "?OTR|%08x|%08x,%05hu,%05hu,%s,"
+#define FRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%s,"
+#define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
 
 API otrng_message_to_send_s *otrng_message_new() {
   otrng_message_to_send_s *msg = malloc(sizeof(otrng_message_to_send_s));
@@ -137,9 +137,11 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
       return ERROR;
     }
 
+    int fragment_identifier = 0;
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN, FRAGMENT_FORMAT,
-             our_instance, their_instance, (unsigned short)current,
-             (unsigned short)fragments->total, piece_data);
+             fragment_identifier, our_instance, their_instance,
+             (unsigned short)current, (unsigned short)fragments->total,
+             piece_data);
     piece[piece_len + FRAGMENT_HEADER_LEN] = 0;
 
     pieces[current - 1] = piece;
@@ -213,12 +215,12 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     return SUCCESS;
   }
 
-  int sender_tag = 0, receiver_tag = 0, start = 0, end = 0;
+  int fragment_identifier, sender_tag = 0, receiver_tag = 0, start = 0, end = 0;
   unsigned short k = 0, n = 0;
+
   context->status = FRAGMENT_INCOMPLETE;
 
-  // TODO: check this format
-  sscanf(message, "?OTR|%08x|%08x,%05hu,%05hu,%n%*[^,],%n", &sender_tag,
+  sscanf(message, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
          &receiver_tag, &k, &n, &start, &end);
 
   if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
