@@ -223,13 +223,19 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
                                    otrng_client_s *client) {
   string_p to_send = NULL;
   otrng_err err = send_message(&to_send, message, recipient, client);
-  if (err != SUCCESS)
+  if (err != SUCCESS) {
+    free(to_send);
+    to_send = NULL;
     return 1;
+  }
 
   otrng_conversation_s *conv = NULL;
   conv = get_or_create_conversation_with(recipient, client);
-  if (!conv)
+  if (!conv) {
+    free(to_send);
+    to_send = NULL;
     return 1;
+  }
 
   uint32_t our_tag = conv->conn->our_instance_tag;
   uint32_t their_tag = conv->conn->their_instance_tag;
