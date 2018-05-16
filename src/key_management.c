@@ -94,6 +94,11 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   gcry_mpi_release(manager->their_dh);
   manager->their_dh = NULL;
 
+  manager->i = 0;
+  manager->j = 0;
+  manager->k = 0;
+  manager->pn = 0;
+
   ratchet_free(manager->current);
   manager->current = NULL;
 
@@ -325,7 +330,6 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
   if (generate_first_ephemeral_keys(manager, ours))
     return ERROR;
 
-  // TODO: this should be already set
   manager->i = 0;
   manager->j = 0;
   manager->k = 0;
@@ -379,8 +383,6 @@ tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
 
     if (enter_new_ratchet(manager, true))
       return ERROR;
-
-    manager->i++;
   } else {
     manager->k = 0;
     if (enter_new_ratchet(manager, false))
@@ -389,11 +391,9 @@ tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
     otrng_ec_scalar_destroy(manager->our_ecdh->priv);
     if (manager->i % 3 == 0)
       otrng_dh_priv_key_destroy(manager->our_dh);
-
-    manager->i++;
-
-    return SUCCESS;
   }
+
+  manager->i++;
 
   return SUCCESS;
 }

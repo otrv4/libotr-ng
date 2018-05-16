@@ -1221,6 +1221,7 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
   m_mac_key_p mac_key;
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, false);
   otr->keys->k++;
+  otr->keys->pn = auth->message_id;
 
   int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
                               auth->nonce, enc_key);
@@ -1766,7 +1767,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
 
   otrng_key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
   otr->keys->j = msg->message_id;
-  otr->keys->pn = otr->keys->j;
+  otr->keys->pn = msg->message_id;
 
   do {
     if (msg->receiver_instance_tag != otr->our_instance_tag) {
