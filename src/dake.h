@@ -164,6 +164,10 @@ tstatic otrng_err
 xzdh_encrypted_message_asprintf(uint8_t **dst, size_t *dst_len,
                                 const dake_non_interactive_auth_message_s *msg);
 
+tstatic size_t xzdh_encrypted_message_deserialize(
+    dake_non_interactive_auth_message_s *dst, const uint8_t *buffer, size_t len,
+    size_t *read);
+
 #endif
 
 #endif

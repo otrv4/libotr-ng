@@ -127,8 +127,18 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/dake/build_interactive_rsign_tag",
                   test_build_interactive_rsign_tag);
-  // g_test_add_func("/dake/xzdh_encrypted_message_asprintf",
-  //                test_xzdh_encrypted_message_asprintf);
+  g_test_add_func("/dake/xzdh_encrypted_message_asprintf",
+                  test_xzdh_encrypted_message_asprintf);
+  g_test_add_func("/dake/xzdh_encrypted_message_deserialize",
+                  test_xzdh_encrypted_message_deserialize);
+
+  WITH_FIXTURE("/dake/non_interactive_auth_message/serialize",
+               test_dake_non_interactive_auth_message_serializes,
+               identity_message_fixture_s, identity_message_fixture);
+  WITH_FIXTURE(
+      "/dake/non_interactive_auth_message_with_encrypted_message/serialize",
+      test_dake_non_interactive_auth_message_with_encrypted_message_serializes,
+      identity_message_fixture_s, identity_message_fixture);
 
   WITH_FIXTURE("/dake/identity_message/serializes",
                test_dake_identity_message_serializes,

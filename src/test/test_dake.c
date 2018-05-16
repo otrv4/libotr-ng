@@ -27,66 +27,6 @@
 #include "../dake.h"
 #include "../serialize.h"
 
-// TODO: make it work
-void test_xzdh_encrypted_message_asprintf() {
-  uint8_t *dst = NULL;
-  size_t dst_len = 0;
-  dake_non_interactive_auth_message_p msg;
-
-  msg->enc_msg = NULL;
-  otrng_assert(xzdh_encrypted_message_asprintf(&dst, &dst_len, msg) ==
-               otrng_true);
-  otrng_assert(dst == NULL);
-  otrng_assert(dst_len == 0);
-
-  uint8_t expected[] = {
-      0x00, 0x00, 0x00, 0x01, // ratchet id
-      0x00, 0x00, 0x00, 0x1A, // message id
-
-      0x15, 0xa9, 0x62, 0xc0, 0xfa, 0x2d, 0xa9, 0x7c, 0x6b, 0x59, 0xab, 0x40,
-      0xe3, 0xe6, 0x4b, 0x52, 0x35, 0xb0, 0x4e, 0x1b, 0x12, 0x77, 0x44, 0x3a,
-
-      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18, // nonce
-      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18, 0x10, 0x11, 0x12, 0x13,
-      0x14, 0x15, 0x17, 0x18,
-
-      0x00, 0x00, 0x00, 0x03, // encrypted message len
-      0xEE, 0xFF, 0xDD,       // encrypted message
-  };
-
-  uint8_t encrypted[3] = {0xEE, 0xFF, 0xDD};
-  uint8_t nonce[24] = {
-      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18, 0x10, 0x11, 0x12, 0x13,
-      0x14, 0x15, 0x17, 0x18, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18,
-  };
-  uint8_t ecdh[ED448_POINT_BYTES] = {0x01};
-  ec_point_p p;
-  otrng_ec_point_decode(p, ecdh);
-
-  dh_mpi_p dh;
-  const char dh_data[DH3072_MOD_LEN_BYTES] = {0x4c};
-  gcry_error_t err =
-      gcry_mpi_scan(&dh, GCRYMPI_FMT_USG, dh_data, DH3072_MOD_LEN_BYTES, NULL);
-  otrng_assert(!err);
-
-  // TODO: Add missing fields
-  msg->ratchet_id = 0x01;
-  msg->message_id = 0x1A;
-  otrng_ec_point_copy(msg->ecdh, p);
-  msg->dh = otrng_dh_mpi_copy(dh);
-  msg->enc_msg = encrypted;
-  msg->enc_msg_len = 3;
-  memcpy(msg->nonce, nonce, 24);
-
-  otrng_assert(xzdh_encrypted_message_asprintf(&dst, &dst_len, msg) ==
-               otrng_true);
-  otrng_assert_cmpmem(expected, dst, sizeof(expected));
-
-  otrng_dh_mpi_release(dh);
-  dh = NULL;
-  free(dst);
-}
-
 void test_build_interactive_rsign_tag() {
   otrng_err err = ERROR;
 

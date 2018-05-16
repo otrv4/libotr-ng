@@ -203,3 +203,5 @@ void test_serializes_fingerprint() {
 
   otrng_assert_cmpmem(expected_fp, dst, sizeof(otrng_fingerprint_p));
 }
+
+// TODO: ADD test for otrng_serialize_ring_sig

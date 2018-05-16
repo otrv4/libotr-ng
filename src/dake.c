@@ -105,7 +105,7 @@ INTERNAL otrng_err otrng_dake_identity_message_asprintf(
   size_t len = 0;
   otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
                                                 &len, identity_message->B);
-  if (!err) {
+  if (err == ERROR) {
     free(buff);
     return ERROR;
   }
@@ -231,7 +231,7 @@ INTERNAL otrng_err otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   size_t len = 0;
   otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
                                                 &len, auth_r->A);
-  if (!err) {
+  if (err == ERROR) {
     free(buff);
     return ERROR;
   }
@@ -472,7 +472,7 @@ INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
   size_t len = 0;
   otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
                                                 &len, prekey_message->B);
-  if (!err) {
+  if (err == ERROR) {
     free(buff);
     return ERROR;
   }
@@ -565,6 +565,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   otrng_ec_point_destroy(non_interactive_auth->X);
   otrng_user_profile_destroy(non_interactive_auth->profile);
   otrng_ring_sig_destroy(non_interactive_auth->sigma);
+
   if (non_interactive_auth->enc_msg) {
     free(non_interactive_auth->enc_msg);
     non_interactive_auth->enc_msg = NULL;
@@ -572,9 +573,9 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
     otrng_dh_mpi_release(non_interactive_auth->dh);
     non_interactive_auth->dh = NULL;
     otrng_ec_point_destroy(non_interactive_auth->ecdh);
+    sodium_memzero(non_interactive_auth->nonce, DATA_MSG_NONCE_BYTES);
   }
 
-  sodium_memzero(non_interactive_auth->nonce, DATA_MSG_NONCE_BYTES);
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
 }
 
@@ -585,9 +586,6 @@ tstatic otrng_err xzdh_encrypted_message_asprintf(
   uint8_t *cursor = NULL;
 
   if (dst && msg->enc_msg) {
-    // TODO: correctly document this
-    // len(XZDH-ENCRYPTED-MSG) = 4 + 4 + [ED448_POINT_BYTES + DH_MPI_BYTES] +
-    // DATA_MSG_NONCE_BYTE + (4 + enc_msg_len)
     s = 4 + 4 + ED448_POINT_BYTES + DH_MPI_BYTES + DATA_MSG_NONCE_BYTES + 4 +
         msg->enc_msg_len;
 
@@ -595,7 +593,6 @@ tstatic otrng_err xzdh_encrypted_message_asprintf(
     if (!*dst)
       return ERROR;
 
-    // Attached XZDH Encrypted Message (XZDH-ENCRYPTED-MSG)
     cursor += otrng_serialize_uint32(cursor, msg->ratchet_id);
     cursor += otrng_serialize_uint32(cursor, msg->message_id);
     cursor += otrng_serialize_ec_point(cursor, msg->ecdh);
@@ -603,13 +600,14 @@ tstatic otrng_err xzdh_encrypted_message_asprintf(
     size_t len = 0;
     otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - *dst)),
                                                   &len, msg->dh);
-    if (!err) {
+    if (err == ERROR) {
       free(*dst);
       *dst = NULL;
       return ERROR;
     }
 
     cursor += len;
+
     cursor +=
         otrng_serialize_bytes_array(cursor, msg->nonce, DATA_MSG_NONCE_BYTES);
     cursor += otrng_serialize_data(cursor, msg->enc_msg, msg->enc_msg_len);
@@ -628,12 +626,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   if (!dst)
     return ERROR;
 
-  size_t data_msg_len = 0;
-  uint8_t *data_msg = NULL;
-
-  xzdh_encrypted_message_asprintf(&data_msg, &data_msg_len,
-                                  non_interactive_auth);
-
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
@@ -641,11 +633,21 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
                                    non_interactive_auth->profile))
     return ERROR;
 
-  size_t s = NON_INT_AUTH_BYTES + our_profile_len + data_msg_len;
+  size_t data_msg_len = 0;
+  uint8_t *data_msg = NULL;
+  otrng_err ret = xzdh_encrypted_message_asprintf(&data_msg, &data_msg_len,
+                                                  non_interactive_auth);
 
+  if (ret == ERROR) {
+    free(our_profile);
+    return ERROR;
+  }
+
+  size_t s = NON_INT_AUTH_BYTES + our_profile_len + data_msg_len;
   uint8_t *buff = malloc(s);
   if (!buff) {
     free(our_profile);
+    free(data_msg);
     return ERROR;
   }
 
@@ -662,9 +664,9 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   free(our_profile);
 
   size_t len = 0;
-  otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
-                                                &len, non_interactive_auth->A);
-  if (!err) {
+  ret = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)), &len,
+                                      non_interactive_auth->A);
+  if (ret == ERROR) {
     free(buff);
     free(data_msg);
     return ERROR;
@@ -677,6 +679,11 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   // Prekey Message Identifier (INT)
   // Client Profile Identifier (INT)
   // Prekey Profile Identifier (INT)
+
+  if (ret == ERROR) {
+    free(buff);
+    return ERROR;
+  }
 
   cursor += otrng_serialize_bytes_array(cursor, data_msg, data_msg_len);
   free(data_msg);
@@ -698,21 +705,47 @@ tstatic size_t xzdh_encrypted_message_deserialize(
   size_t r = 0;
   const uint8_t *cursor = buffer;
 
-  if (otrng_deserialize_uint32(&dst->message_id, cursor, len, &r))
-    return ERROR;
+  if (ERROR == otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &r))
+    return 0;
 
   cursor += r;
   len -= r;
 
-  if (otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor,
-                                    len))
-    return ERROR;
+  if (ERROR == otrng_deserialize_uint32(&dst->message_id, cursor, len, &r))
+    return 0;
+
+  cursor += r;
+  len -= r;
+
+  if (ERROR == otrng_deserialize_ec_point(dst->ecdh, cursor))
+    return 0;
+
+  cursor += ED448_POINT_BYTES;
+  len -= ED448_POINT_BYTES;
+
+  otrng_mpi_p tmp_mpi; // no need to free, because nothing is copied now
+  if (ERROR == otrng_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &r))
+    return 0;
+
+  cursor += r;
+  len -= r;
+
+  if (ERROR ==
+      otrng_dh_mpi_deserialize(&dst->dh, tmp_mpi->data, tmp_mpi->len, &r))
+    return 0;
+
+  cursor += r;
+  len -= r;
+
+  if (ERROR == otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES,
+                                             cursor, len))
+    return 0;
 
   cursor += DATA_MSG_NONCE_BYTES;
   len -= DATA_MSG_NONCE_BYTES;
 
-  if (otrng_deserialize_data(&dst->enc_msg, cursor, len, &r))
-    return ERROR;
+  if (ERROR == otrng_deserialize_data(&dst->enc_msg, cursor, len, &r))
+    return 0;
 
   dst->enc_msg_len = r - 4;
   cursor += r;
@@ -795,7 +828,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
   cursor += read;
   len -= read;
 
-  // TODO: Extract "deserialize attached encrypted message" function
   dst->enc_msg = NULL;
   dst->enc_msg_len = 0;
   if (len > 64) {
@@ -874,20 +906,20 @@ tstatic otrng_err build_rsign_tag(
   otrng_serialize_ec_point(ser_i_ecdh, i_ecdh);
   otrng_serialize_ec_point(ser_r_ecdh, r_ecdh);
 
-  if (!otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_BYTES, &ser_i_dh_len,
+  if (ERROR == otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_BYTES, &ser_i_dh_len,
                                      i_dh))
     return ERROR;
 
-  if (!otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_BYTES, &ser_r_dh_len,
+  if (ERROR == otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_BYTES, &ser_r_dh_len,
                                      r_dh))
     return ERROR;
 
   do {
-    if (!otrng_user_profile_asprintf(&ser_i_profile, &ser_i_profile_len,
+    if (ERROR == otrng_user_profile_asprintf(&ser_i_profile, &ser_i_profile_len,
                                      i_profile))
       continue;
 
-    if (!otrng_user_profile_asprintf(&ser_r_profile, &ser_r_profile_len,
+    if (ERROR == otrng_user_profile_asprintf(&ser_r_profile, &ser_r_profile_len,
                                      r_profile))
       continue;
 

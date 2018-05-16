@@ -966,6 +966,16 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
   return ret;
 }
 
+// TODO: We need a "Prekey Ensemble" to send this message.
+API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
+                                                  const string_p message,
+                                                  otrng_s *otr) {
+  *dst = NULL;
+  size_t clen = (strcmp(message, "") == 0) ? 0 : strlen(message) + 1;
+  return reply_with_non_interactive_auth_msg(dst, (const uint8_t *)message,
+                                             clen, otr);
+}
+
 tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   k_ecdh_p k_ecdh;
   k_dh_p k_dh;
@@ -1143,15 +1153,6 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
   // when the message is attached
 
   return SUCCESS;
-}
-
-API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
-                                                  const string_p message,
-                                                  otrng_s *otr) {
-  *dst = NULL;
-  size_t clen = (strcmp(message, "") == 0) ? 0 : strlen(message) + 1;
-  return reply_with_non_interactive_auth_msg(dst, (const uint8_t *)message,
-                                             clen, otr);
 }
 
 tstatic otrng_bool verify_non_interactive_auth_message(
