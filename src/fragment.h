@@ -27,7 +27,7 @@
 
 /* ?OTR| + fragment_identifier + | + sender_instance_tag + receiver_instance_tag
  */
-#define FRAGMENT_HEADER_LEN 46
+#define FRAGMENT_HEADER_LEN 42
 
 typedef struct otrng_message_to_send_s {
   string_p *pieces;

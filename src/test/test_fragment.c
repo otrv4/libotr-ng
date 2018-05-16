@@ -25,7 +25,7 @@
 #include "../fragment.h"
 
 void test_create_fragments(void) {
-  int mms = 49;
+  int mms = 45;
   char *message = "one two tree";
 
   otrng_message_to_send_s *frag_message =
@@ -35,13 +35,13 @@ void test_create_fragments(void) {
                SUCCESS);
 
   g_assert_cmpstr(frag_message->pieces[0], ==,
-                  "?OTR|00000000|00000001|00000002,00001,00004,one,");
+                  "?OTR|0000|00000001|00000002,00001,00004,one,");
   g_assert_cmpstr(frag_message->pieces[1], ==,
-                  "?OTR|00000000|00000001|00000002,00002,00004, tw,");
+                  "?OTR|0000|00000001|00000002,00002,00004, tw,");
   g_assert_cmpstr(frag_message->pieces[2], ==,
-                  "?OTR|00000000|00000001|00000002,00003,00004,o t,");
+                  "?OTR|0000|00000001|00000002,00003,00004,o t,");
   g_assert_cmpstr(frag_message->pieces[3], ==,
-                  "?OTR|00000000|00000001|00000002,00004,00004,ree,");
+                  "?OTR|0000|00000001|00000002,00004,00004,ree,");
 
   g_assert_cmpint(frag_message->total, ==, 4);
 
@@ -50,8 +50,8 @@ void test_create_fragments(void) {
 
 void test_defragment_valid_message(void) {
   string_p fragments[2];
-  fragments[0] = "?OTR|00000000|00000001|00000002,00001,00002,one ,";
-  fragments[1] = "?OTR|00000000|00000001|00000002,00002,00002,more,";
+  fragments[0] = "?OTR|0000|00000001|00000002,00001,00002,one ,";
+  fragments[1] = "?OTR|0000|00000001|00000002,00002,00002,more,";
 
   fragment_context_s *context;
   context = otrng_fragment_context_new();
@@ -82,7 +82,7 @@ void test_defragment_valid_message(void) {
 }
 
 void test_defragment_single_fragment(void) {
-  string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
+  string_p msg = "?OTR|0000|00000001|00000002,00001,00001,small lol,";
 
   fragment_context_s *context;
   context = otrng_fragment_context_new();
@@ -102,7 +102,7 @@ void test_defragment_single_fragment(void) {
 }
 
 void test_defragment_without_comma_fails(void) {
-  string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,blergh";
+  string_p msg = "?OTR|0000|00000001|00000002,00001,00001,blergh";
 
   fragment_context_s *context;
   context = otrng_fragment_context_new();
@@ -121,9 +121,9 @@ void test_defragment_without_comma_fails(void) {
 
 void test_defragment_clean_context_for_frag_out_of_order(void) {
   string_p fragments[3];
-  fragments[0] = "?OTR|00000000|00000001|00000002,00001,00003,one more ,";
-  fragments[1] = "?OTR|00000000|00000001|00000002,00003,00003,send,";
-  fragments[2] = "?OTR|00000000|00000001|00000002,00002,00003,fragment ,";
+  fragments[0] = "?OTR|0000|00000001|00000002,00001,00003,one more ,";
+  fragments[1] = "?OTR|0000|00000001|00000002,00003,00003,send,";
+  fragments[2] = "?OTR|0000|00000001|00000002,00002,00003,fragment ,";
 
   fragment_context_s *context;
   context = otrng_fragment_context_new();
@@ -160,7 +160,7 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
 }
 
 void test_defragment_fails_for_invalid_tag(void) {
-  string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
+  string_p msg = "?OTR|0000|00000001|00000002,00001,00001,small lol,";
 
   fragment_context_s *context;
   context = otrng_fragment_context_new();
