@@ -692,6 +692,38 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   return SUCCESS;
 }
 
+tstatic size_t xzdh_encrypted_message_deserialize(
+    dake_non_interactive_auth_message_s *dst, const uint8_t *buffer, size_t len,
+    size_t *read) {
+  size_t r = 0;
+  const uint8_t *cursor = buffer;
+
+  if (otrng_deserialize_uint32(&dst->message_id, cursor, len, &r))
+    return ERROR;
+
+  cursor += r;
+  len -= r;
+
+  if (otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor,
+                                    len))
+    return ERROR;
+
+  cursor += DATA_MSG_NONCE_BYTES;
+  len -= DATA_MSG_NONCE_BYTES;
+
+  if (otrng_deserialize_data(&dst->enc_msg, cursor, len, &r))
+    return ERROR;
+
+  dst->enc_msg_len = r - 4;
+  cursor += r;
+  len -= r;
+
+  if (read)
+    *read = cursor - buffer;
+
+  return cursor - buffer;
+}
+
 INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_s *dst, const uint8_t *buffer,
     size_t buflen) {
@@ -767,51 +799,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
   dst->enc_msg = NULL;
   dst->enc_msg_len = 0;
   if (len > 64) {
-    if (!otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &read))
-      return ERROR;
-
-    cursor += read;
-    len -= read;
-
-    if (!otrng_deserialize_uint32(&dst->message_id, cursor, len, &read))
-      return ERROR;
-
-    cursor += read;
-    len -= read;
-
-    if (!otrng_deserialize_ec_point(dst->ecdh, cursor))
-      return ERROR;
-
-    cursor += ED448_POINT_BYTES;
-    len -= ED448_POINT_BYTES;
-
-    // TODO: change this name
-    otrng_mpi_p tmp_mpi_2; // no need to free, because nothing is copied now
-    if (!otrng_mpi_deserialize_no_copy(tmp_mpi_2, cursor, len, &read))
-      return ERROR;
-
-    cursor += read;
-    len -= read;
-
-    if (!otrng_dh_mpi_deserialize(&dst->dh, tmp_mpi_2->data, tmp_mpi_2->len,
-                                  &read))
-      return ERROR;
-
-    cursor += read;
-    len -= read;
-
-    if (!otrng_deserialize_bytes_array((uint8_t *)&dst->nonce,
-                                       DATA_MSG_NONCE_BYTES, cursor, len))
-      return ERROR;
-
-    cursor += DATA_MSG_NONCE_BYTES;
-    len -= DATA_MSG_NONCE_BYTES;
-
-    if (!otrng_deserialize_data(&dst->enc_msg, cursor, len, &read))
-      return ERROR;
-
-    dst->enc_msg_len = read - 4;
-    cursor += read;
+    cursor += xzdh_encrypted_message_deserialize(dst, cursor, len, &read);
     len -= read;
   }
 
