@@ -871,6 +871,10 @@ non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
   auth->message_id = 0;
   otrng_ec_bzero(auth->ecdh, ED448_POINT_BYTES);
   auth->dh = NULL;
+
+  auth->prekey_message_id = 0;
+  auth->long_term_key_id = 0;
+  auth->prekey_profile_id = 0;
 }
 
 tstatic otrng_err build_non_interactive_auth_message(

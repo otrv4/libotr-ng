@@ -282,6 +282,9 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_p msg,
   memcpy(msg->auth_mac, mac_tag, HASH_BYTES);
 
   memset(msg->sigma, 0, sizeof(ring_sig_p));
+  msg->prekey_message_id = 0x0A00000D;
+  msg->long_term_key_id = 0x0B00000E;
+  msg->prekey_profile_id = 0x0C00000F;
 
   otrng_dh_keypair_destroy(dh);
   otrng_ecdh_keypair_destroy(ecdh);
@@ -463,9 +466,23 @@ void test_dake_non_interactive_auth_message_serializes(
   otrng_assert_cmpmem(cursor, serialized_ring_sig, RING_SIG_BYTES);
   cursor += RING_SIG_BYTES;
 
-  // TODO: Prekey Message Identifier
-  // TODO: Client Profile Identifier
-  // TODO: Prekey Profile Identifier
+  // Prekey Message Identifier
+  otrng_assert(*(cursor++) == 0x0A);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x0D);
+
+  // Client Profile Identifier
+  otrng_assert(*(cursor++) == 0x0B);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x0E);
+
+  // Prekey Profile Identifier
+  otrng_assert(*(cursor++) == 0x0C);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x0F);
 
   otrng_assert_cmpmem(cursor, mac_tag, HASH_BYTES);
   cursor += HASH_BYTES;
@@ -534,9 +551,23 @@ void test_dake_non_interactive_auth_message_with_encrypted_message_serializes(
   otrng_assert_cmpmem(cursor, serialized_ring_sig, RING_SIG_BYTES);
   cursor += RING_SIG_BYTES;
 
-  // TODO: Prekey Message Identifier
-  // TODO: Client Profile Identifier
-  // TODO: Prekey Profile Identifier
+  // Prekey Message Identifier
+  otrng_assert(*(cursor++) == 0x0A);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x0D);
+
+  // Client Profile Identifier
+  otrng_assert(*(cursor++) == 0x0B);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x0E);
+
+  // Prekey Profile Identifier
+  otrng_assert(*(cursor++) == 0x0C);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x00);
+  otrng_assert(*(cursor++) == 0x0F);
 
   uint8_t *expected_encrypted_message = NULL;
   size_t expected_encrypted_message_len = 0;
@@ -593,6 +624,10 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
                                                 expected->sigma->c3));
   otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->r3,
                                                 expected->sigma->r3));
+
+  otrng_assert(deserialized->prekey_message_id == expected->prekey_message_id);
+  otrng_assert(deserialized->long_term_key_id == expected->long_term_key_id);
+  otrng_assert(deserialized->prekey_profile_id == expected->prekey_profile_id);
 
   otrng_dake_non_interactive_auth_message_destroy(expected);
   otrng_dake_non_interactive_auth_message_destroy(deserialized);

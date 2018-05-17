@@ -44,7 +44,7 @@
 
 #define NON_INT_AUTH_BYTES                                                     \
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES + RING_SIG_BYTES +     \
-   HASH_BYTES)
+   3 * 4 + HASH_BYTES)
 
 #define DH_KEY_BYTES 384
 #define BRACE_KEY_BYTES 32
