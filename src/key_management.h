@@ -154,10 +154,9 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
  * @param [shared_prekey]   The shared prekey.
  * @param [their_pub]   Their public key.
  */
-INTERNAL void
-otrng_ecdh_shared_secret_from_prekey(uint8_t *shared,
-                                     otrng_shared_prekey_pair_s *shared_prekey,
-                                     const ec_point_p their_pub);
+INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
+    uint8_t *shared, otrng_shared_prekey_pair_s *shared_prekey,
+    const ec_point_p their_pub);
 
 /**
  * @brief Generate a Shared Secret from the keypair.
@@ -166,9 +165,8 @@ otrng_ecdh_shared_secret_from_prekey(uint8_t *shared,
  * @param [shared_prekey]   The keypair.
  * @param [their_pub]   Their public key.
  */
-INTERNAL void otrng_ecdh_shared_secret_from_keypair(uint8_t *shared,
-                                                    otrng_keypair_s *keypair,
-                                                    const ec_point_p their_pub);
+INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
+    uint8_t *shared, otrng_keypair_s *keypair, const ec_point_p their_pub);
 
 /**
  * @brief Initialize the double ratchet algorithm.

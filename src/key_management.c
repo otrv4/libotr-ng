@@ -251,7 +251,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
     otrng_ec_bzero(manager->our_ecdh->priv, sizeof(ec_scalar_p));
 
-    if (otrng_ecdh_valid_secret(k_ecdh))
+    if (otrng_ecdh_valid_secret(k_ecdh) == otrng_false)
       return ERROR;
 
     if (calculate_brace_key(manager) == ERROR)
@@ -296,27 +296,39 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
 }
 
 // TODO: perhaps this only needs the manager
-INTERNAL void
-otrng_ecdh_shared_secret_from_prekey(uint8_t *shared_secret,
-                                     otrng_shared_prekey_pair_s *shared_prekey,
-                                     const ec_point_p their_pub) {
+INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
+    uint8_t *shared_secret, otrng_shared_prekey_pair_s *shared_prekey,
+    const ec_point_p their_pub) {
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, shared_prekey->priv);
 
-  otrng_ec_point_valid(p);
+  if (otrng_ec_point_valid(p) == otrng_false)
+    return ERROR;
+
   otrng_serialize_ec_point(shared_secret, p);
+
+  if (otrng_ecdh_valid_secret(shared_secret) == otrng_false)
+    return ERROR;
+
+  return SUCCESS;
 }
 
 // TODO: perhaps this only needs the manager
-INTERNAL void
-otrng_ecdh_shared_secret_from_keypair(uint8_t *shared_secret,
-                                      otrng_keypair_s *keypair,
-                                      const ec_point_p their_pub) {
+INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
+    uint8_t *shared_secret, otrng_keypair_s *keypair,
+    const ec_point_p their_pub) {
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, keypair->priv);
 
-  otrng_ec_point_valid(p);
+  if (otrng_ec_point_valid(p) == otrng_false)
+    return ERROR;
+
   otrng_serialize_ec_point(shared_secret, p);
+
+  if (otrng_ecdh_valid_secret(shared_secret) == otrng_false)
+    return ERROR;
+
+  return SUCCESS;
 }
 
 tstatic void calculate_ssid(key_manager_s *manager) {
@@ -345,7 +357,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool sending) {
 
   otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
-  if (otrng_ecdh_valid_secret(k_ecdh))
+  if (otrng_ecdh_valid_secret(k_ecdh) == otrng_false)
     return ERROR;
 
   if (calculate_brace_key(manager) == ERROR)

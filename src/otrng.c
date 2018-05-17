@@ -999,15 +999,13 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   otrng_memdump(brace_key, sizeof(brace_key_p));
 #endif
 
-  otrng_ecdh_shared_secret_from_prekey(
-      tmp_ecdh_k1, otr->conversation->client->shared_prekey_pair,
-      their_ecdh(otr));
-  if (otrng_ecdh_valid_secret(k_ecdh))
+  if (!otrng_ecdh_shared_secret_from_prekey(
+          tmp_ecdh_k1, otr->conversation->client->shared_prekey_pair,
+          their_ecdh(otr)))
     return ERROR;
 
-  otrng_ecdh_shared_secret_from_keypair(
-      tmp_ecdh_k2, otr->conversation->client->keypair, their_ecdh(otr));
-  if (otrng_ecdh_valid_secret(k_ecdh))
+  if (!otrng_ecdh_shared_secret_from_keypair(
+          tmp_ecdh_k2, otr->conversation->client->keypair, their_ecdh(otr)))
     return ERROR;
 
   goldilocks_shake256_ctx_p hd;
