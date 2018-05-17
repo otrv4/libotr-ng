@@ -28,45 +28,46 @@
 #include "shared.h"
 #include "str.h"
 
-typedef struct user_profile_s {
+typedef struct client_profile_s {
   otrng_public_key_p long_term_pub_key;
   string_p versions;
   uint64_t expires;
   otrng_shared_prekey_pub_p shared_prekey;
   eddsa_signature_p signature;
   otrng_mpi_p transitional_signature; // TODO: this should be a signature type
-} user_profile_s, user_profile_p[1];
+} client_profile_s, client_profile_p[1];
 
 INTERNAL otrng_bool
-otrng_user_profile_verify_signature(const user_profile_s *profile);
+otrng_client_profile_verify_signature(const client_profile_s *profile);
 
-INTERNAL void otrng_user_profile_copy(user_profile_s *dst,
-                                      const user_profile_s *src);
+INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
+                                        const client_profile_s *src);
 
-INTERNAL void otrng_user_profile_destroy(user_profile_s *profile);
+INTERNAL void otrng_client_profile_destroy(client_profile_s *profile);
 
-INTERNAL void otrng_user_profile_free(user_profile_s *profile);
+INTERNAL void otrng_client_profile_free(client_profile_s *profile);
 
-INTERNAL otrng_err otrng_user_profile_deserialize(user_profile_s *target,
-                                                  const uint8_t *buffer,
-                                                  size_t buflen, size_t *nread);
+INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
+                                                    const uint8_t *buffer,
+                                                    size_t buflen,
+                                                    size_t *nread);
 
-INTERNAL otrng_err otrng_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
-                                               const user_profile_s *profile);
+INTERNAL otrng_err otrng_client_profile_asprintf(
+    uint8_t **dst, size_t *nbytes, const client_profile_s *profile);
 
-INTERNAL user_profile_s *otrng_user_profile_build(
+INTERNAL client_profile_s *otrng_client_profile_build(
     const string_p versions, const otrng_keypair_s *keypair,
     const otrng_shared_prekey_pair_s *shared_prekey_keypair);
 
 #ifdef OTRNG_USER_PROFILE_PRIVATE
 
-tstatic user_profile_s *user_profile_new(const string_p versions);
+tstatic client_profile_s *client_profile_new(const string_p versions);
 
-tstatic otrng_err user_profile_sign(user_profile_s *profile,
-                                    const otrng_keypair_s *keypair);
+tstatic otrng_err client_profile_sign(client_profile_s *profile,
+                                      const otrng_keypair_s *keypair);
 
-tstatic otrng_err user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
-                                             const user_profile_s *profile);
+tstatic otrng_err client_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
+                                               const client_profile_s *profile);
 
 #endif
 

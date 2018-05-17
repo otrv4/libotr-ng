@@ -24,6 +24,7 @@ test_SOURCES = test.c \
 		     ../auth.c \
 		     ../client.c \
 		     ../client_callbacks.c \
+		     ../client_profile.c \
 		     ../client_state.c \
 		     ../dake.c \
 		     ../data_message.c \
@@ -44,8 +45,7 @@ test_SOURCES = test.c \
 		     ../shake.c \
 		     ../smp.c \
 		     ../str.c \
-		     ../tlv.c \
-		     ../user_profile.c
+		     ../tlv.c
 
 test_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CODE_COVERAGE_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \
                                                                   @LIBGCRYPT_CFLAGS@ \

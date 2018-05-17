@@ -77,10 +77,10 @@
     otrng_assert_cmpmem(_m1->data, _m2->data, _m1->len);                       \
   } while (0)
 
-#define otrng_assert_user_profile_eq(p1, p2)                                   \
+#define otrng_assert_client_profile_eq(p1, p2)                                 \
   do {                                                                         \
-    const user_profile_s *_p1 = (p1);                                          \
-    const user_profile_s *_p2 = (p2);                                          \
+    const client_profile_s *_p1 = (p1);                                        \
+    const client_profile_s *_p2 = (p2);                                        \
     otrng_assert_point_equals(_p1->long_term_pub_key, _p2->long_term_pub_key); \
     otrng_assert_cmpmem(_p1->versions, _p2->versions,                          \
                         strlen(_p1->versions) + 1);                            \

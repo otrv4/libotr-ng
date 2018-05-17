@@ -34,7 +34,7 @@
 #define DAKE_HEADER_BYTES (2 + 1 + 4 + 4)
 #define HASH_BYTES 64
 
-/* size of IDENTITY_MESSAGE without user_profile */
+/* size of IDENTITY_MESSAGE without client_profile */
 #define IDENTITY_MIN_BYTES                                                     \
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES)
 #define PRE_KEY_MIN_BYTES (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES)

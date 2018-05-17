@@ -52,7 +52,7 @@
 #include "test_serialize.c"
 #include "test_smp.c"
 #include "test_tlv.c"
-#include "test_user_profile.c"
+#include "test_client_profile.c"
 #include "test_messaging.c"
 #include "test_auth.c"
 
@@ -114,16 +114,16 @@ int main(int argc, char **argv) {
                   test_serialize_otrng_symmetric_key);
   g_test_add_func("/serialize/fingerprint", test_serializes_fingerprint);
 
-  g_test_add_func("/user_profile/create", test_user_profile_create);
-  g_test_add_func("/user_profile/serialize_body",
-                  test_user_profile_serializes_body);
-  g_test_add_func("/user_profile/serialize", test_user_profile_serializes);
-  g_test_add_func("/user_profile/deserializes",
-                  test_otrng_user_profile_deserializes);
-  g_test_add_func("/user_profile/sign_and_verifies",
-                  test_user_profile_signs_and_verify);
-  g_test_add_func("/user_profile/build_user_profile",
-                  test_otrng_user_profile_build);
+  g_test_add_func("/client_profile/create", test_client_profile_create);
+  g_test_add_func("/client_profile/serialize_body",
+                  test_client_profile_serializes_body);
+  g_test_add_func("/client_profile/serialize", test_client_profile_serializes);
+  g_test_add_func("/client_profile/deserializes",
+                  test_otrng_client_profile_deserializes);
+  g_test_add_func("/client_profile/sign_and_verifies",
+                  test_client_profile_signs_and_verify);
+  g_test_add_func("/client_profile/build_client_profile",
+                  test_otrng_client_profile_build);
 
   g_test_add_func("/dake/build_interactive_rsign_tag",
                   test_build_interactive_rsign_tag);

@@ -64,16 +64,16 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_s *f,
   otrng_assert_cmpmem(cursor, expected, 11); /* size of expected */
   cursor += 11;
 
-  size_t user_profile_len = 0;
-  uint8_t *user_profile_serialized = NULL;
-  otrng_assert(otrng_user_profile_asprintf(&user_profile_serialized,
-                                           &user_profile_len,
-                                           prekey_message->profile) == SUCCESS);
-  otrng_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
-  free(user_profile_serialized);
-  user_profile_serialized = NULL;
+  size_t client_profile_len = 0;
+  uint8_t *client_profile_serialized = NULL;
+  otrng_assert(otrng_client_profile_asprintf(
+                   &client_profile_serialized, &client_profile_len,
+                   prekey_message->profile) == SUCCESS);
+  otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
+  free(client_profile_serialized);
+  client_profile_serialized = NULL;
 
-  cursor += user_profile_len;
+  cursor += client_profile_len;
 
   uint8_t serialized_y[PUB_KEY_SER_BYTES];
   int ser_len = otrng_serialize_ec_point(serialized_y, prekey_message->Y);
@@ -124,7 +124,8 @@ void test_otrng_dake_prekey_message_deserializes(prekey_message_fixture_s *f,
                    prekey_message->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==,
                    prekey_message->receiver_instance_tag);
-  otrng_assert_user_profile_eq(deserialized->profile, prekey_message->profile);
+  otrng_assert_client_profile_eq(deserialized->profile,
+                                 prekey_message->profile);
   otrng_assert_ec_public_key_eq(deserialized->Y, prekey_message->Y);
   otrng_assert_dh_public_key_eq(deserialized->B, prekey_message->B);
 
@@ -171,7 +172,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_s *f,
   otrng_shared_prekey_pair_generate(shared_prekey, invalid_sym);
   otrng_assert(otrng_ec_point_valid(shared_prekey->pub) == otrng_true);
 
-  user_profile_s *invalid_profile = user_profile_new("2");
+  client_profile_s *invalid_profile = client_profile_new("2");
   otrng_ec_point_copy(invalid_profile->long_term_pub_key, invalid_ecdh->pub);
   otrng_ec_point_copy(invalid_profile->shared_prekey, shared_prekey->pub);
 
@@ -185,7 +186,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_s *f,
                    invalid_prekey_message->Y, invalid_prekey_message->B,
                    invalid_prekey_message->profile) == otrng_false);
 
-  otrng_user_profile_free(invalid_profile);
+  otrng_client_profile_free(invalid_profile);
   otrng_ecdh_keypair_destroy(invalid_ecdh);
   otrng_dh_keypair_destroy(invalid_dh);
   otrng_shared_prekey_pair_free(shared_prekey);
@@ -275,7 +276,7 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_p msg,
 
   msg->sender_instance_tag = 1;
   msg->receiver_instance_tag = 1;
-  otrng_user_profile_copy(msg->profile, f->profile);
+  otrng_client_profile_copy(msg->profile, f->profile);
   otrng_ec_point_copy(msg->X, ecdh->pub);
   msg->A = otrng_dh_mpi_copy(dh->pub);
   memcpy(msg->auth_mac, mac_tag, HASH_BYTES);
@@ -432,14 +433,14 @@ void test_dake_non_interactive_auth_message_serializes(
   otrng_assert_cmpmem(cursor, expected_header, 11); /* size of expected */
   cursor += 11;
 
-  size_t user_profile_len = 0;
-  uint8_t *user_profile_serialized = NULL;
-  otrng_assert(otrng_user_profile_asprintf(&user_profile_serialized,
-                                           &user_profile_len,
-                                           msg->profile) == SUCCESS);
-  otrng_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
-  free(user_profile_serialized);
-  cursor += user_profile_len;
+  size_t client_profile_len = 0;
+  uint8_t *client_profile_serialized = NULL;
+  otrng_assert(otrng_client_profile_asprintf(&client_profile_serialized,
+                                             &client_profile_len,
+                                             msg->profile) == SUCCESS);
+  otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
+  free(client_profile_serialized);
+  cursor += client_profile_len;
 
   uint8_t serialized_x[PUB_KEY_SER_BYTES];
   size_t ser_len = otrng_serialize_ec_point(serialized_x, msg->X);
@@ -503,14 +504,14 @@ void test_dake_non_interactive_auth_message_with_encrypted_message_serializes(
   otrng_assert_cmpmem(cursor, expected_header, 11); /* size of expected */
   cursor += 11;
 
-  size_t user_profile_len = 0;
-  uint8_t *user_profile_serialized = NULL;
-  otrng_assert(otrng_user_profile_asprintf(&user_profile_serialized,
-                                           &user_profile_len,
-                                           msg->profile) == SUCCESS);
-  otrng_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
-  free(user_profile_serialized);
-  cursor += user_profile_len;
+  size_t client_profile_len = 0;
+  uint8_t *client_profile_serialized = NULL;
+  otrng_assert(otrng_client_profile_asprintf(&client_profile_serialized,
+                                             &client_profile_len,
+                                             msg->profile) == SUCCESS);
+  otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
+  free(client_profile_serialized);
+  cursor += client_profile_len;
 
   uint8_t serialized_x[PUB_KEY_SER_BYTES];
   size_t ser_len = otrng_serialize_ec_point(serialized_x, msg->X);
@@ -575,7 +576,7 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
                    expected->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==,
                    expected->receiver_instance_tag);
-  otrng_assert_user_profile_eq(deserialized->profile, expected->profile);
+  otrng_assert_client_profile_eq(deserialized->profile, expected->profile);
   otrng_assert_ec_public_key_eq(deserialized->X, expected->X);
   otrng_assert_dh_public_key_eq(deserialized->A, expected->A);
   otrng_assert_cmpmem(deserialized->auth_mac, expected->auth_mac, HASH_BYTES);

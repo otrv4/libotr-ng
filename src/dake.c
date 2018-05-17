@@ -33,7 +33,7 @@
 #include "str.h"
 
 INTERNAL dake_identity_message_s *
-otrng_dake_identity_message_new(const user_profile_s *profile) {
+otrng_dake_identity_message_new(const client_profile_s *profile) {
   if (profile == NULL)
     return NULL;
 
@@ -46,7 +46,7 @@ otrng_dake_identity_message_new(const user_profile_s *profile) {
   identity_message->sender_instance_tag = 0;
   identity_message->receiver_instance_tag = 0;
   identity_message->profile->versions = NULL;
-  otrng_user_profile_copy(identity_message->profile, profile);
+  otrng_client_profile_copy(identity_message->profile, profile);
   otrng_ec_bzero(identity_message->Y, ED448_POINT_BYTES);
   identity_message->B = NULL;
 
@@ -57,7 +57,7 @@ INTERNAL void
 otrng_dake_identity_message_destroy(dake_identity_message_s *identity_message) {
   identity_message->sender_instance_tag = 0;
   identity_message->receiver_instance_tag = 0;
-  otrng_user_profile_destroy(identity_message->profile);
+  otrng_client_profile_destroy(identity_message->profile);
   otrng_ec_point_destroy(identity_message->Y);
   otrng_dh_mpi_release(identity_message->B);
   identity_message->B = NULL;
@@ -78,8 +78,8 @@ INTERNAL otrng_err otrng_dake_identity_message_asprintf(
     const dake_identity_message_s *identity_message) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
-  if (!otrng_user_profile_asprintf(&profile, &profile_len,
-                                   identity_message->profile)) {
+  if (!otrng_client_profile_asprintf(&profile, &profile_len,
+                                     identity_message->profile)) {
     return ERROR;
   }
 
@@ -167,7 +167,7 @@ INTERNAL otrng_err otrng_dake_identity_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (!otrng_user_profile_deserialize(dst->profile, cursor, len, &read)) {
+  if (!otrng_client_profile_deserialize(dst->profile, cursor, len, &read)) {
     return ERROR;
   }
 
@@ -196,7 +196,7 @@ INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
   otrng_dh_mpi_release(auth_r->A);
   auth_r->A = NULL;
   otrng_ec_point_destroy(auth_r->X);
-  otrng_user_profile_destroy(auth_r->profile);
+  otrng_client_profile_destroy(auth_r->profile);
   otrng_ring_sig_destroy(auth_r->sigma);
 }
 
@@ -205,8 +205,8 @@ INTERNAL otrng_err otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
-  if (!otrng_user_profile_asprintf(&our_profile, &our_profile_len,
-                                   auth_r->profile)) {
+  if (!otrng_client_profile_asprintf(&our_profile, &our_profile_len,
+                                     auth_r->profile)) {
     return ERROR;
   }
 
@@ -295,7 +295,7 @@ INTERNAL otrng_err otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
   cursor += read;
   len -= read;
 
-  if (!otrng_user_profile_deserialize(dst->profile, cursor, len, &read)) {
+  if (!otrng_client_profile_deserialize(dst->profile, cursor, len, &read)) {
     return ERROR;
   }
 
@@ -405,7 +405,7 @@ INTERNAL otrng_err otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
 }
 
 INTERNAL dake_prekey_message_s *
-otrng_dake_prekey_message_new(const user_profile_s *profile) {
+otrng_dake_prekey_message_new(const client_profile_s *profile) {
   if (profile == NULL)
     return NULL;
 
@@ -419,14 +419,14 @@ otrng_dake_prekey_message_new(const user_profile_s *profile) {
   prekey_message->profile->versions = NULL;
   otrng_ec_bzero(prekey_message->Y, ED448_POINT_BYTES);
   prekey_message->B = NULL;
-  otrng_user_profile_copy(prekey_message->profile, profile);
+  otrng_client_profile_copy(prekey_message->profile, profile);
 
   return prekey_message;
 }
 
 INTERNAL void
 otrng_dake_prekey_message_destroy(dake_prekey_message_s *prekey_message) {
-  otrng_user_profile_destroy(prekey_message->profile);
+  otrng_client_profile_destroy(prekey_message->profile);
   otrng_ec_point_destroy(prekey_message->Y);
   otrng_dh_mpi_release(prekey_message->B);
   prekey_message->B = NULL;
@@ -446,8 +446,8 @@ INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
     const dake_prekey_message_s *prekey_message) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
-  if (!otrng_user_profile_asprintf(&profile, &profile_len,
-                                   prekey_message->profile)) {
+  if (!otrng_client_profile_asprintf(&profile, &profile_len,
+                                     prekey_message->profile)) {
     return ERROR;
   }
 
@@ -533,7 +533,7 @@ INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (!otrng_user_profile_deserialize(dst->profile, cursor, len, &read)) {
+  if (!otrng_client_profile_deserialize(dst->profile, cursor, len, &read)) {
     return ERROR;
   }
 
@@ -563,7 +563,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   otrng_dh_mpi_release(non_interactive_auth->A);
   non_interactive_auth->A = NULL;
   otrng_ec_point_destroy(non_interactive_auth->X);
-  otrng_user_profile_destroy(non_interactive_auth->profile);
+  otrng_client_profile_destroy(non_interactive_auth->profile);
   otrng_ring_sig_destroy(non_interactive_auth->sigma);
 
   if (non_interactive_auth->enc_msg) {
@@ -629,8 +629,8 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
-  if (!otrng_user_profile_asprintf(&our_profile, &our_profile_len,
-                                   non_interactive_auth->profile))
+  if (!otrng_client_profile_asprintf(&our_profile, &our_profile_len,
+                                     non_interactive_auth->profile))
     return ERROR;
 
   size_t data_msg_len = 0;
@@ -797,7 +797,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (!otrng_user_profile_deserialize(dst->profile, cursor, len, &read))
+  if (!otrng_client_profile_deserialize(dst->profile, cursor, len, &read))
     return ERROR;
 
   cursor += read;
@@ -856,9 +856,9 @@ tstatic otrng_bool no_rollback_detected(const char *versions) {
   return otrng_true;
 }
 
-INTERNAL otrng_bool otrng_valid_received_values(const ec_point_p their_ecdh,
-                                                const dh_mpi_p their_dh,
-                                                const user_profile_s *profile) {
+INTERNAL otrng_bool otrng_valid_received_values(
+    const ec_point_p their_ecdh, const dh_mpi_p their_dh,
+    const client_profile_s *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */
   if (otrng_ec_point_valid(their_ecdh) == otrng_false)
     return otrng_false;
@@ -868,7 +868,7 @@ INTERNAL otrng_bool otrng_valid_received_values(const ec_point_p their_ecdh,
     return otrng_false;
 
   /* Verify their profile is valid (and not expired). */
-  if (otrng_user_profile_verify_signature(profile) == otrng_false)
+  if (otrng_client_profile_verify_signature(profile) == otrng_false)
     return otrng_false;
 
   if (not_expired(profile->expires) == otrng_false)
@@ -886,7 +886,7 @@ INTERNAL otrng_bool otrng_valid_received_values(const ec_point_p their_ecdh,
 
 tstatic otrng_err build_rsign_tag(
     uint8_t *dst, size_t dstlen, size_t *written, uint8_t first_usage,
-    const user_profile_s *i_profile, const user_profile_s *r_profile,
+    const client_profile_s *i_profile, const client_profile_s *r_profile,
     const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
     const dh_mpi_p r_dh, const uint8_t *ser_r_shared_prekey,
     size_t ser_r_shared_prekey_len, const char *phi) {
@@ -915,12 +915,12 @@ tstatic otrng_err build_rsign_tag(
     return ERROR;
 
   do {
-    if (ERROR == otrng_user_profile_asprintf(&ser_i_profile, &ser_i_profile_len,
-                                             i_profile))
+    if (ERROR == otrng_client_profile_asprintf(&ser_i_profile,
+                                               &ser_i_profile_len, i_profile))
       continue;
 
-    if (ERROR == otrng_user_profile_asprintf(&ser_r_profile, &ser_r_profile_len,
-                                             r_profile))
+    if (ERROR == otrng_client_profile_asprintf(&ser_r_profile,
+                                               &ser_r_profile_len, r_profile))
       continue;
 
     char *phi_val = otrng_strdup(phi);
@@ -979,7 +979,7 @@ tstatic otrng_err build_rsign_tag(
 
 INTERNAL otrng_err build_interactive_rsign_tag(
     uint8_t **msg, size_t *msg_len, const uint8_t type,
-    const user_profile_s *i_profile, const user_profile_s *r_profile,
+    const client_profile_s *i_profile, const client_profile_s *r_profile,
     const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
     const dh_mpi_p r_dh, const char *phi) {
 
@@ -1018,8 +1018,8 @@ INTERNAL otrng_err build_interactive_rsign_tag(
 }
 
 INTERNAL otrng_err build_non_interactive_rsig_tag(
-    uint8_t **msg, size_t *msg_len, const user_profile_s *i_profile,
-    const user_profile_s *r_profile, const ec_point_p i_ecdh,
+    uint8_t **msg, size_t *msg_len, const client_profile_s *i_profile,
+    const client_profile_s *r_profile, const ec_point_p i_ecdh,
     const ec_point_p r_ecdh, const dh_mpi_p i_dh, const dh_mpi_p r_dh,
     const otrng_shared_prekey_pub_p r_shared_prekey, char *phi) {
 

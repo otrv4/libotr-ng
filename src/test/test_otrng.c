@@ -225,7 +225,7 @@ void test_otrng_destroy() {
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
   otrng_s *otr = otrng_new(state, policy);
 
-  otr->profile = user_profile_new("4");
+  otr->profile = client_profile_new("4");
   otrng_destroy(otr);
 
   otrng_assert(otr->conversation == NULL);

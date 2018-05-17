@@ -21,6 +21,7 @@
 #ifndef OTRNG_OTRNG_H
 #define OTRNG_OTRNG_H
 
+#include "client_profile.h"
 #include "client_state.h"
 #include "fragment.h"
 #include "key_management.h"
@@ -28,7 +29,6 @@
 #include "shared.h"
 #include "smp.h"
 #include "str.h"
-#include "user_profile.h"
 #include "v3.h"
 
 #define UNUSED_ARG(x) (void)(x)
@@ -106,8 +106,8 @@ struct otrng_s {
   uint32_t our_instance_tag;
   uint32_t their_instance_tag;
 
-  user_profile_s *profile;
-  user_profile_s *their_profile;
+  client_profile_s *profile;
+  client_profile_s *their_profile;
 
   otrng_version_t running_version;
 
@@ -221,21 +221,21 @@ tstatic otrng_in_message_type get_message_type(const string_p message);
 tstatic otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
                                  const size_t bufflen);
 
-tstatic tlv_s *otrng_smp_initiate(const user_profile_s *initiator_profile,
-                                  const user_profile_s *responder_profile,
+tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
+                                  const client_profile_s *responder_profile,
                                   const uint8_t *question, const size_t q_len,
                                   const uint8_t *secret, const size_t secretlen,
                                   uint8_t *ssid, smp_context_p smp,
                                   otrng_conversation_state_s *conversation);
 
-tstatic const user_profile_s *get_my_user_profile(otrng_s *otr);
+tstatic const client_profile_s *get_my_client_profile(otrng_s *otr);
 
 tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr);
 
 tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
                                         smp_context_p smp,
-                                        const user_profile_s *our_profile,
-                                        const user_profile_s *their_profile,
+                                        const client_profile_s *our_profile,
+                                        const client_profile_s *their_profile,
                                         uint8_t *ssid, const uint8_t *secret,
                                         const size_t secretlen);
 

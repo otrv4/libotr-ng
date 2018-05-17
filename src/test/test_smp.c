@@ -50,7 +50,7 @@ void test_smp_state_machine(void) {
   const uint8_t *answer = (const uint8_t *)"answer";
 
   tlv_s *tlv_smp_1 = otrng_smp_initiate(
-      get_my_user_profile(alice_otr), alice_otr->their_profile, question, 13,
+      get_my_client_profile(alice_otr), alice_otr->their_profile, question, 13,
       answer, 6, alice_otr->keys->ssid, alice_otr->smp,
       alice_otr->conversation);
   otrng_assert(tlv_smp_1);
@@ -75,7 +75,7 @@ void test_smp_state_machine(void) {
 
   otrng_smp_event_t event = OTRNG_SMPEVENT_NONE;
   tlv_smp_2 = otrng_smp_provide_secret(
-      &event, bob_otr->smp, get_my_user_profile(bob_otr),
+      &event, bob_otr->smp, get_my_client_profile(bob_otr),
       bob_otr->their_profile, bob_otr->keys->ssid, (const uint8_t *)"answer",
       strlen("answer"));
   otrng_assert(tlv_smp_2);

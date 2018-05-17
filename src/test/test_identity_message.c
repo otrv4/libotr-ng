@@ -60,15 +60,15 @@ void test_dake_identity_message_serializes(identity_message_fixture_s *f,
   otrng_assert_cmpmem(cursor, expected, 11); // sizeof(expected));
   cursor += 11;
 
-  size_t user_profile_len = 0;
-  uint8_t *user_profile_serialized = NULL;
-  otrng_assert(
-      otrng_user_profile_asprintf(&user_profile_serialized, &user_profile_len,
-                                  identity_message->profile) == SUCCESS);
-  otrng_assert_cmpmem(cursor, user_profile_serialized, user_profile_len);
-  free(user_profile_serialized);
-  user_profile_serialized = NULL;
-  cursor += user_profile_len;
+  size_t client_profile_len = 0;
+  uint8_t *client_profile_serialized = NULL;
+  otrng_assert(otrng_client_profile_asprintf(
+                   &client_profile_serialized, &client_profile_len,
+                   identity_message->profile) == SUCCESS);
+  otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
+  free(client_profile_serialized);
+  client_profile_serialized = NULL;
+  cursor += client_profile_len;
 
   uint8_t serialized_y[PUB_KEY_SER_BYTES] = {};
   int ser_len = otrng_serialize_ec_point(serialized_y, identity_message->Y);
@@ -122,8 +122,8 @@ void test_otrng_dake_identity_message_deserializes(
                    identity_message->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==,
                    identity_message->receiver_instance_tag);
-  otrng_assert_user_profile_eq(deserialized->profile,
-                               identity_message->profile);
+  otrng_assert_client_profile_eq(deserialized->profile,
+                                 identity_message->profile);
   otrng_assert_ec_public_key_eq(deserialized->Y, identity_message->Y);
   otrng_assert_dh_public_key_eq(deserialized->B, identity_message->B);
 
@@ -166,7 +166,7 @@ void test_dake_identity_message_valid(identity_message_fixture_s *f,
   otrng_ecdh_keypair_generate(invalid_ecdh, invalid_sym);
   otrng_assert(otrng_dh_keypair_generate(invalid_dh) == SUCCESS);
 
-  user_profile_s *invalid_profile = user_profile_new("2");
+  client_profile_s *invalid_profile = client_profile_new("2");
 
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(shared_prekey, invalid_sym);
@@ -185,7 +185,7 @@ void test_dake_identity_message_valid(identity_message_fixture_s *f,
                    invalid_identity_message->Y, invalid_identity_message->B,
                    invalid_identity_message->profile) == otrng_false);
 
-  otrng_user_profile_free(invalid_profile);
+  otrng_client_profile_free(invalid_profile);
   otrng_ecdh_keypair_destroy(invalid_ecdh);
   otrng_dh_keypair_destroy(invalid_dh);
   otrng_shared_prekey_pair_free(shared_prekey);

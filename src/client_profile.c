@@ -26,15 +26,15 @@
 
 #define OTRNG_DESERIALIZE_PRIVATE
 
+#include "client_profile.h"
 #include "deserialize.h"
 #include "serialize.h"
-#include "user_profile.h"
 
-tstatic user_profile_s *user_profile_new(const string_p versions) {
+tstatic client_profile_s *client_profile_new(const string_p versions) {
   if (!versions)
     return NULL;
 
-  user_profile_s *profile = malloc(sizeof(user_profile_s));
+  client_profile_s *profile = malloc(sizeof(client_profile_s));
   if (!profile)
     return NULL;
 
@@ -48,8 +48,8 @@ tstatic user_profile_s *user_profile_new(const string_p versions) {
   return profile;
 }
 
-INTERNAL void otrng_user_profile_copy(user_profile_s *dst,
-                                      const user_profile_s *src) {
+INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
+                                        const client_profile_s *src) {
   // TODO should we set dst to a valid (but empty) profile?
   if (!src)
     return;
@@ -63,7 +63,7 @@ INTERNAL void otrng_user_profile_copy(user_profile_s *dst,
   otrng_mpi_copy(dst->transitional_signature, src->transitional_signature);
 }
 
-INTERNAL void otrng_user_profile_destroy(user_profile_s *profile) {
+INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
   if (!profile)
     return;
 
@@ -75,14 +75,14 @@ INTERNAL void otrng_user_profile_destroy(user_profile_s *profile) {
   otrng_mpi_free(profile->transitional_signature);
 }
 
-INTERNAL void otrng_user_profile_free(user_profile_s *profile) {
-  otrng_user_profile_destroy(profile);
+INTERNAL void otrng_client_profile_free(client_profile_s *profile) {
+  otrng_client_profile_destroy(profile);
   free(profile);
   profile = NULL;
 }
 
-tstatic int user_profile_body_serialize(uint8_t *dst,
-                                        const user_profile_s *profile) {
+tstatic int client_profile_body_serialize(uint8_t *dst,
+                                          const client_profile_s *profile) {
   uint8_t *target = dst;
 
   target +=
@@ -95,8 +95,8 @@ tstatic int user_profile_body_serialize(uint8_t *dst,
   return target - dst;
 }
 
-tstatic otrng_err user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
-                                             const user_profile_s *profile) {
+tstatic otrng_err client_profile_body_asprintf(
+    uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
   size_t s = ED448_PUBKEY_BYTES + strlen(profile->versions) +
              ED448_SHARED_PREKEY_BYTES + 1 + 4 + 8;
 
@@ -104,7 +104,7 @@ tstatic otrng_err user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
   if (!buff)
     return ERROR;
 
-  user_profile_body_serialize(buff, profile);
+  client_profile_body_serialize(buff, profile);
 
   *dst = buff;
   if (nbytes)
@@ -113,8 +113,8 @@ tstatic otrng_err user_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrng_err otrng_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
-                                               const user_profile_s *profile) {
+INTERNAL otrng_err otrng_client_profile_asprintf(
+    uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
   // TODO: should it checked here for signature?
   if (!(profile->signature > 0))
     return ERROR;
@@ -122,7 +122,7 @@ INTERNAL otrng_err otrng_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
   uint8_t *buff = NULL;
   size_t body_len = 0;
   uint8_t *body = NULL;
-  if (!user_profile_body_asprintf(&body, &body_len, profile))
+  if (!client_profile_body_asprintf(&body, &body_len, profile))
     return ERROR;
 
   size_t s = body_len + 4 + sizeof(eddsa_signature_p) +
@@ -150,10 +150,10 @@ INTERNAL otrng_err otrng_user_profile_asprintf(uint8_t **dst, size_t *nbytes,
   return SUCCESS;
 }
 
-INTERNAL otrng_err otrng_user_profile_deserialize(user_profile_s *target,
-                                                  const uint8_t *buffer,
-                                                  size_t buflen,
-                                                  size_t *nread) {
+INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
+                                                    const uint8_t *buffer,
+                                                    size_t buflen,
+                                                    size_t *nread) {
   size_t read = 0;
   int walked = 0;
 
@@ -209,13 +209,13 @@ INTERNAL otrng_err otrng_user_profile_deserialize(user_profile_s *target,
   return ok;
 }
 
-tstatic otrng_err user_profile_sign(user_profile_s *profile,
-                                    const otrng_keypair_s *keypair) {
+tstatic otrng_err client_profile_sign(client_profile_s *profile,
+                                      const otrng_keypair_s *keypair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
   otrng_ec_point_copy(profile->long_term_pub_key, keypair->pub);
-  if (!user_profile_body_asprintf(&body, &bodylen, profile))
+  if (!client_profile_body_asprintf(&body, &bodylen, profile))
     return ERROR;
 
   uint8_t pubkey[ED448_POINT_BYTES];
@@ -235,7 +235,7 @@ tstatic otrng_err user_profile_sign(user_profile_s *profile,
 // TODO: I dont think this needs the data structure. Could verify from the
 // deserialized bytes.
 INTERNAL otrng_bool
-otrng_user_profile_verify_signature(const user_profile_s *profile) {
+otrng_client_profile_verify_signature(const client_profile_s *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
@@ -245,7 +245,7 @@ otrng_user_profile_verify_signature(const user_profile_s *profile) {
   if (otrng_ec_point_valid(profile->shared_prekey) == otrng_false)
     return otrng_false;
 
-  if (!user_profile_body_asprintf(&body, &bodylen, profile))
+  if (!client_profile_body_asprintf(&body, &bodylen, profile))
     return otrng_false;
 
   uint8_t pubkey[ED448_POINT_BYTES];
@@ -259,11 +259,10 @@ otrng_user_profile_verify_signature(const user_profile_s *profile) {
   return valid;
 }
 
-INTERNAL user_profile_s *
-otrng_user_profile_build(const string_p versions,
-                         const otrng_keypair_s *keypair,
-                         const otrng_shared_prekey_pair_s *shared_prekey_pair) {
-  user_profile_s *profile = user_profile_new(versions);
+INTERNAL client_profile_s *otrng_client_profile_build(
+    const string_p versions, const otrng_keypair_s *keypair,
+    const otrng_shared_prekey_pair_s *shared_prekey_pair) {
+  client_profile_s *profile = client_profile_new(versions);
   if (!profile)
     return NULL;
 
@@ -274,8 +273,8 @@ otrng_user_profile_build(const string_p versions,
   memcpy(profile->shared_prekey, shared_prekey_pair->pub,
          sizeof(otrng_shared_prekey_pub_p));
 
-  if (!user_profile_sign(profile, keypair)) {
-    otrng_user_profile_free(profile);
+  if (!client_profile_sign(profile, keypair)) {
+    otrng_client_profile_free(profile);
     return NULL;
   }
 

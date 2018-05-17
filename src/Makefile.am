@@ -23,6 +23,7 @@ lib_LTLIBRARIES = libotr-ng.la
 libotr_ng_la_SOURCES = auth.c \
 		     client.c \
 		     client_callbacks.c \
+		     client_profile.c \
 		     client_state.c \
 		     dake.c \
 		     data_message.c \
@@ -43,8 +44,7 @@ libotr_ng_la_SOURCES = auth.c \
 		     shake.c \
 		     smp.c \
 		     str.c \
-		     tlv.c \
-		     user_profile.c
+		     tlv.c
 
 libotr_ng_la_CFLAGS = $(AM_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \
                                  @LIBSODIUM_CFLAGS@ \

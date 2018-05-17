@@ -24,16 +24,16 @@
 #include <sodium.h>
 
 #include "auth.h"
+#include "client_profile.h"
 #include "constants.h"
 #include "dh.h"
 #include "ed448.h"
 #include "shared.h"
-#include "user_profile.h"
 
 typedef struct dake_identity_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  user_profile_p profile;
+  client_profile_p profile;
   ec_point_p Y;
   dh_public_key_p B;
 } dake_identity_message_s, dake_identity_message_p[1];
@@ -41,7 +41,7 @@ typedef struct dake_identity_message_s {
 typedef struct dake_auth_r_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  user_profile_p profile;
+  client_profile_p profile;
   ec_point_p X;
   dh_public_key_p A;
   ring_sig_p sigma;
@@ -56,7 +56,7 @@ typedef struct dake_auth_i_s {
 typedef struct dake_prekey_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  user_profile_p profile;
+  client_profile_p profile;
   ec_point_p Y;
   dh_public_key_p B;
 } dake_prekey_message_s, dake_prekey_message_p[1];
@@ -64,7 +64,7 @@ typedef struct dake_prekey_message_s {
 typedef struct dake_non_interactive_auth_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  user_profile_p profile;
+  client_profile_p profile;
   ec_point_p X;
   dh_public_key_p A;
   ring_sig_p sigma;
@@ -82,9 +82,9 @@ typedef struct dake_non_interactive_auth_message_s {
   uint8_t auth_mac[DATA_MSG_MAC_BYTES];
 } dake_non_interactive_auth_message_s, dake_non_interactive_auth_message_p[1];
 
-INTERNAL otrng_bool otrng_valid_received_values(const ec_point_p their_ecdh,
-                                                const dh_mpi_p their_dh,
-                                                const user_profile_s *profile);
+INTERNAL otrng_bool otrng_valid_received_values(
+    const ec_point_p their_ecdh, const dh_mpi_p their_dh,
+    const client_profile_s *profile);
 
 INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_s *dst, const uint8_t *buffer,
@@ -98,7 +98,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_s *non_interactive_auth);
 
 INTERNAL dake_identity_message_s *
-otrng_dake_identity_message_new(const user_profile_s *profile);
+otrng_dake_identity_message_new(const client_profile_s *profile);
 
 INTERNAL void
 otrng_dake_identity_message_free(dake_identity_message_s *identity_message);
@@ -130,7 +130,7 @@ INTERNAL otrng_err otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
                                                  size_t buflen);
 
 INTERNAL dake_prekey_message_s *
-otrng_dake_prekey_message_new(const user_profile_s *profile);
+otrng_dake_prekey_message_new(const client_profile_s *profile);
 
 INTERNAL void
 otrng_dake_prekey_message_free(dake_prekey_message_s *prekey_message);
@@ -146,13 +146,13 @@ INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
 
 INTERNAL otrng_err build_interactive_rsign_tag(
     uint8_t **msg, size_t *msg_len, const uint8_t type,
-    const user_profile_s *i_profile, const user_profile_s *r_profile,
+    const client_profile_s *i_profile, const client_profile_s *r_profile,
     const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
     const dh_mpi_p r_dh, const char *phi);
 
 INTERNAL otrng_err build_non_interactive_rsig_tag(
-    uint8_t **msg, size_t *msg_len, const user_profile_s *i_profile,
-    const user_profile_s *r_profile, const ec_point_p i_ecdh,
+    uint8_t **msg, size_t *msg_len, const client_profile_s *i_profile,
+    const client_profile_s *r_profile, const ec_point_p i_ecdh,
     const ec_point_p r_ecdh, const dh_mpi_p i_dh, const dh_mpi_p r_dh,
     const otrng_shared_prekey_pub_p r_shared_prekey, char *phi);
 

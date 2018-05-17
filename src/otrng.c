@@ -183,7 +183,7 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
   *dst = 0;
 }
 
-tstatic const user_profile_s *get_my_user_profile(otrng_s *otr) {
+tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
   if (otr->profile)
     return otr->profile;
 
@@ -197,8 +197,8 @@ tstatic const user_profile_s *get_my_user_profile(otrng_s *otr) {
   otrng_client_state_add_shared_prekey_v4(otr->conversation->client, sym_key);
 
   otr->profile =
-      otrng_user_profile_build(versions, otr->conversation->client->keypair,
-                               otr->conversation->client->shared_prekey_pair);
+      otrng_client_profile_build(versions, otr->conversation->client->keypair,
+                                 otr->conversation->client->shared_prekey_pair);
   return otr->profile;
 }
 
@@ -249,10 +249,10 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   free(otr->keys);
   otr->keys = NULL;
 
-  otrng_user_profile_free(otr->profile);
+  otrng_client_profile_free(otr->profile);
   otr->profile = NULL;
 
-  otrng_user_profile_free(otr->their_profile);
+  otrng_client_profile_free(otr->their_profile);
   otr->their_profile = NULL;
 
   otrng_smp_destroy(otr->smp);
@@ -485,7 +485,7 @@ tstatic otrng_err otrng_build_prekey_message(otrng_server_s *server,
   dake_prekey_message_s *m = NULL;
   otrng_err err = ERROR;
 
-  m = otrng_dake_prekey_message_new(get_my_user_profile(otr));
+  m = otrng_dake_prekey_message_new(get_my_client_profile(otr));
   if (!m)
     return err;
 
@@ -533,7 +533,7 @@ tstatic otrng_err reply_with_identity_msg(otrng_response_s *response,
                                           otrng_s *otr) {
   dake_identity_message_s *m = NULL;
 
-  m = otrng_dake_identity_message_new(get_my_user_profile(otr));
+  m = otrng_dake_identity_message_new(get_my_client_profile(otr));
   if (!m)
     return ERROR;
 
@@ -647,7 +647,7 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
   msg->sender_instance_tag = otr->our_instance_tag;
   msg->receiver_instance_tag = otr->their_instance_tag;
 
-  otrng_user_profile_copy(msg->profile, get_my_user_profile(otr));
+  otrng_client_profile_copy(msg->profile, get_my_client_profile(otr));
 
   otrng_ec_point_copy(msg->X, our_ecdh(otr));
   msg->A = otrng_dh_mpi_copy(our_dh(otr));
@@ -656,7 +656,7 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
   size_t t_len = 0;
 
   if (!build_interactive_rsign_tag(&t, &t_len, 0, otr->their_profile,
-                                   get_my_user_profile(otr), their_ecdh(otr),
+                                   get_my_client_profile(otr), their_ecdh(otr),
                                    our_ecdh(otr), their_dh(otr), our_dh(otr),
                                    otr->conversation->client->phi))
     return ERROR;
@@ -863,7 +863,7 @@ non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
 
   auth->sender_instance_tag = otr->our_instance_tag;
   auth->receiver_instance_tag = otr->their_instance_tag;
-  otrng_user_profile_copy(auth->profile, get_my_user_profile(otr));
+  otrng_client_profile_copy(auth->profile, get_my_client_profile(otr));
   otrng_ec_point_copy(auth->X, our_ecdh(otr));
   auth->A = otrng_dh_mpi_copy(our_dh(otr));
 
@@ -901,8 +901,8 @@ tstatic otrng_err build_non_interactive_auth_message(
    * Alices_Client_Profile, 64) || Y || X || B || A || their_shared_prekey ||
    * KDF_1(0x10 || phi, 64) */
   otrng_err ret = build_non_interactive_rsig_tag(
-      &t, &t_len, otr->their_profile, get_my_user_profile(otr), their_ecdh(otr),
-      our_ecdh(otr), their_dh(otr), our_dh(otr),
+      &t, &t_len, otr->their_profile, get_my_client_profile(otr),
+      their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
       otr->their_profile->shared_prekey, otr->conversation->client->phi);
 
   if (ret == ERROR)
@@ -1112,7 +1112,7 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
     return err;
   }
 
-  otr->their_profile = malloc(sizeof(user_profile_s));
+  otr->their_profile = malloc(sizeof(client_profile_s));
   if (!otr->their_profile) {
     otrng_dake_prekey_message_destroy(m);
     return err;
@@ -1120,7 +1120,7 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
 
   otrng_key_manager_set_their_ecdh(m->Y, otr->keys);
   otrng_key_manager_set_their_dh(m->B, otr->keys);
-  otrng_user_profile_copy(otr->their_profile, m->profile);
+  otrng_client_profile_copy(otr->their_profile, m->profile);
 
   otrng_dake_prekey_message_destroy(m);
 
@@ -1156,7 +1156,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
   otrng_err ret = build_non_interactive_rsig_tag(
-      &t, &t_len, get_my_user_profile(otr), auth->profile, our_ecdh(otr),
+      &t, &t_len, get_my_client_profile(otr), auth->profile, our_ecdh(otr),
       auth->X, our_dh(otr), auth->A, otr->profile->shared_prekey,
       otr->conversation->client->phi);
   if (ret == ERROR)
@@ -1266,7 +1266,7 @@ tstatic otrng_err receive_non_interactive_auth_message(
   received_instance_tag(auth->sender_instance_tag, otr);
 
   // TODO: Extract function to set_their_profile
-  otr->their_profile = malloc(sizeof(user_profile_s));
+  otr->their_profile = malloc(sizeof(client_profile_s));
   if (!otr->their_profile) {
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
@@ -1274,7 +1274,7 @@ tstatic otrng_err receive_non_interactive_auth_message(
 
   otrng_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
-  otrng_user_profile_copy(otr->their_profile, auth->profile);
+  otrng_client_profile_copy(otr->their_profile, auth->profile);
 
   /* tmp_k = KDF_2(K_ecdh ||
    * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
@@ -1314,13 +1314,13 @@ tstatic otrng_err receive_non_interactive_auth_message(
 tstatic otrng_err receive_identity_message_on_state_start(
     string_p *dst, dake_identity_message_s *identity_message, otrng_s *otr) {
 
-  otr->their_profile = malloc(sizeof(user_profile_s));
+  otr->their_profile = malloc(sizeof(client_profile_s));
   if (!otr->their_profile)
     return ERROR;
 
   otrng_key_manager_set_their_ecdh(identity_message->Y, otr->keys);
   otrng_key_manager_set_their_dh(identity_message->B, otr->keys);
-  otrng_user_profile_copy(otr->their_profile, identity_message->profile);
+  otrng_client_profile_copy(otr->their_profile, identity_message->profile);
 
   if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
@@ -1361,7 +1361,7 @@ tstatic otrng_err receive_identity_message_on_waiting_auth_i(
   // Every time we call 'otrng_key_manager_generate_ephemeral_keys'
   // keys get deleted and replaced
   // forget_our_keys(otr);
-  otrng_user_profile_free(otr->their_profile);
+  otrng_client_profile_free(otr->their_profile);
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
@@ -1421,7 +1421,7 @@ tstatic otrng_err serialize_and_encode_auth_i(string_p *dst,
 }
 
 tstatic otrng_err reply_with_auth_i_msg(string_p *dst,
-                                        const user_profile_s *their_profile,
+                                        const client_profile_s *their_profile,
                                         otrng_s *otr) {
   dake_auth_i_p msg;
   msg->sender_instance_tag = otr->our_instance_tag;
@@ -1430,7 +1430,7 @@ tstatic otrng_err reply_with_auth_i_msg(string_p *dst,
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-  if (!build_interactive_rsign_tag(&t, &t_len, 1, get_my_user_profile(otr),
+  if (!build_interactive_rsign_tag(&t, &t_len, 1, get_my_client_profile(otr),
                                    their_profile, our_ecdh(otr),
                                    their_ecdh(otr), our_dh(otr), their_dh(otr),
                                    otr->conversation->client->phi))
@@ -1460,9 +1460,10 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   if (otrng_valid_received_values(auth->X, auth->A, auth->profile))
     return otrng_false;
 
-  if (!build_interactive_rsign_tag(
-          &t, &t_len, 0, get_my_user_profile(otr), auth->profile, our_ecdh(otr),
-          auth->X, our_dh(otr), auth->A, otr->conversation->client->phi))
+  if (!build_interactive_rsign_tag(&t, &t_len, 0, get_my_client_profile(otr),
+                                   auth->profile, our_ecdh(otr), auth->X,
+                                   our_dh(otr), auth->A,
+                                   otr->conversation->client->phi))
     return otrng_false;
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */
@@ -1497,7 +1498,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
     return ERROR;
   }
 
-  otr->their_profile = malloc(sizeof(user_profile_s));
+  otr->their_profile = malloc(sizeof(client_profile_s));
   if (!otr->their_profile) {
     otrng_dake_auth_r_destroy(auth);
     return ERROR;
@@ -1505,7 +1506,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
 
   otrng_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
-  otrng_user_profile_copy(otr->their_profile, auth->profile);
+  otrng_client_profile_copy(otr->their_profile, auth->profile);
 
   if (!reply_with_auth_i_msg(dst, otr->their_profile, otr)) {
     otrng_dake_auth_r_destroy(auth);
@@ -1530,7 +1531,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
   size_t t_len = 0;
 
   if (!build_interactive_rsign_tag(&t, &t_len, 1, otr->their_profile,
-                                   get_my_user_profile(otr), their_ecdh(otr),
+                                   get_my_client_profile(otr), their_ecdh(otr),
                                    our_ecdh(otr), their_dh(otr), our_dh(otr),
                                    otr->conversation->client->phi))
     return otrng_false;
@@ -2363,8 +2364,8 @@ API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
   return ERROR;
 }
 
-tstatic tlv_s *otrng_smp_initiate(const user_profile_s *initiator_profile,
-                                  const user_profile_s *responder_profile,
+tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
+                                  const client_profile_s *responder_profile,
                                   const uint8_t *question, const size_t q_len,
                                   const uint8_t *secret, const size_t secretlen,
                                   uint8_t *ssid, smp_context_p smp,
@@ -2431,7 +2432,7 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
       return ERROR;
 
     tlv_list_s *tlvs = otrng_tlv_list_one(otrng_smp_initiate(
-        get_my_user_profile(otr), otr->their_profile, question, q_len, secret,
+        get_my_client_profile(otr), otr->their_profile, question, q_len, secret,
         secretlen, otr->keys->ssid, otr->smp, otr->conversation));
     if (!tlvs)
       return ERROR;
@@ -2452,8 +2453,8 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
 
 tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
                                         smp_context_p smp,
-                                        const user_profile_s *our_profile,
-                                        const user_profile_s *their_profile,
+                                        const client_profile_s *our_profile,
+                                        const client_profile_s *their_profile,
                                         uint8_t *ssid, const uint8_t *secret,
                                         const size_t secretlen) {
   // TODO: If state is not CONTINUE_SMP then error.
@@ -2478,7 +2479,7 @@ tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
 
   otrng_smp_event_t event = OTRNG_SMPEVENT_NONE;
   tlv_list_s *tlvs = otrng_tlv_list_one(otrng_smp_provide_secret(
-      &event, otr->smp, get_my_user_profile(otr), otr->their_profile,
+      &event, otr->smp, get_my_client_profile(otr), otr->their_profile,
       otr->keys->ssid, secret, secretlen));
   if (!tlvs)
     return ERROR;

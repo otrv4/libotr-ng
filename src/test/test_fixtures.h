@@ -88,19 +88,19 @@ void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture,
 typedef struct identity_message_fixture_s {
   otrng_keypair_s *keypair;
   otrng_shared_prekey_pair_s *shared_prekey;
-  user_profile_s *profile;
+  client_profile_s *profile;
 } identity_message_fixture_s, identity_message_fixture_p[1];
 
 typedef struct prekey_message_fixture_s {
   otrng_keypair_s *keypair;
   otrng_shared_prekey_pair_s *shared_prekey;
-  user_profile_s *profile;
+  client_profile_s *profile;
 } prekey_message_fixture_s, prekey_message_fixture_p[1];
 
 typedef struct non_interactive_auth_message_fixture_s {
   otrng_keypair_s *keypair;
   otrng_shared_prekey_pair_s *shared_prekey;
-  user_profile_s *profile;
+  client_profile_s *profile;
 } non_interactive_auth_message_fixture_s,
     non_interactive_auth_message_fixture_p[1];
 
@@ -113,7 +113,7 @@ static void identity_message_fixture_setup(identity_message_fixture_s *fixture,
   otrng_keypair_generate(fixture->keypair, sym);
   otrng_assert(otrng_ec_point_valid(fixture->keypair->pub) == otrng_true);
 
-  fixture->profile = user_profile_new("4");
+  fixture->profile = client_profile_new("4");
 
   fixture->shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(fixture->shared_prekey, sym);
@@ -124,7 +124,7 @@ static void identity_message_fixture_setup(identity_message_fixture_s *fixture,
 
   otrng_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 60 * 60;
-  otrng_assert(user_profile_sign(fixture->profile, fixture->keypair) ==
+  otrng_assert(client_profile_sign(fixture->profile, fixture->keypair) ==
                SUCCESS);
 }
 
@@ -137,7 +137,7 @@ identity_message_fixture_teardown(identity_message_fixture_s *fixture,
   otrng_shared_prekey_pair_free(fixture->shared_prekey);
   fixture->shared_prekey = NULL;
 
-  otrng_user_profile_free(fixture->profile);
+  otrng_client_profile_free(fixture->profile);
   fixture->profile = NULL;
 }
 
@@ -149,7 +149,7 @@ static void prekey_message_fixture_setup(prekey_message_fixture_s *fixture,
   otrng_keypair_generate(fixture->keypair, sym);
   otrng_assert(otrng_ec_point_valid(fixture->keypair->pub) == otrng_true);
 
-  fixture->profile = user_profile_new("4");
+  fixture->profile = client_profile_new("4");
 
   fixture->shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(fixture->shared_prekey, sym);
@@ -160,7 +160,7 @@ static void prekey_message_fixture_setup(prekey_message_fixture_s *fixture,
 
   otrng_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 60 * 60;
-  otrng_assert(user_profile_sign(fixture->profile, fixture->keypair) ==
+  otrng_assert(client_profile_sign(fixture->profile, fixture->keypair) ==
                SUCCESS);
 }
 
@@ -172,7 +172,7 @@ static void prekey_message_fixture_teardown(prekey_message_fixture_s *fixture,
   otrng_shared_prekey_pair_free(fixture->shared_prekey);
   fixture->shared_prekey = NULL;
 
-  otrng_user_profile_free(fixture->profile);
+  otrng_client_profile_free(fixture->profile);
   fixture->profile = NULL;
 }
 

@@ -309,7 +309,7 @@ void test_build_interactive_rsign_tag() {
       0x1c, 0x6b, 0x13, 0x28, 0xb5, 0x3c, 0xfa, 0xbf, 0x80,
   };
 
-  user_profile_p initiator_profile;
+  client_profile_p initiator_profile;
   uint8_t initiator_profile_s[251] = {
       0x00, 0x10, 0x98, 0x4c, 0x9c, 0x0b, 0xfb, 0x0a, 0x3b, 0x10, 0x52, 0x17,
       0x0d, 0x68, 0xcb, 0xc3, 0x83, 0xa8, 0x94, 0x3d, 0x7e, 0x45, 0x1e, 0xcc,
@@ -334,7 +334,7 @@ void test_build_interactive_rsign_tag() {
       0xd0, 0x1b, 0x2e, 0xfd, 0x15, 0x3b, 0x00, 0x00, 0x00, 0x00, 0x00,
   };
 
-  user_profile_p responder_profile;
+  client_profile_p responder_profile;
   uint8_t responder_profile_s[251] = {
       0x00, 0x10, 0xf2, 0x54, 0x0f, 0x37, 0xd7, 0x72, 0xe9, 0x6a, 0x9e, 0x32,
       0x09, 0x5c, 0x15, 0xfd, 0x48, 0xe3, 0x4c, 0x8e, 0x56, 0xcf, 0x8f, 0xd6,
@@ -373,12 +373,12 @@ void test_build_interactive_rsign_tag() {
   err = otrng_ec_point_decode(responder_ecdh, responder_ecdh_s);
   otrng_assert(SUCCESS == err);
 
-  err = otrng_user_profile_deserialize(initiator_profile, initiator_profile_s,
-                                       sizeof(initiator_profile_s), NULL);
+  err = otrng_client_profile_deserialize(initiator_profile, initiator_profile_s,
+                                         sizeof(initiator_profile_s), NULL);
   otrng_assert(SUCCESS == err);
 
-  err = otrng_user_profile_deserialize(responder_profile, responder_profile_s,
-                                       sizeof(responder_profile_s), NULL);
+  err = otrng_client_profile_deserialize(responder_profile, responder_profile_s,
+                                         sizeof(responder_profile_s), NULL);
   otrng_assert(SUCCESS == err);
 
   uint8_t *dst = NULL;
@@ -406,6 +406,6 @@ void test_build_interactive_rsign_tag() {
 
   otrng_dh_mpi_release(initiator_dh);
   otrng_dh_mpi_release(responder_dh);
-  otrng_user_profile_destroy(initiator_profile);
-  otrng_user_profile_destroy(responder_profile);
+  otrng_client_profile_destroy(initiator_profile);
+  otrng_client_profile_destroy(responder_profile);
 }
