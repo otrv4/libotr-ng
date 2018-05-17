@@ -27,8 +27,8 @@
 
 #include "fragment.h"
 
-#define FRAGMENT_FORMAT "?OTR|%04x|%08x|%08x,%05hu,%05hu,%s,"
-#define UNFRAGMENT_FORMAT "?OTR|%04x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
+#define FRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%s,"
+#define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
 
 API otrng_message_to_send_s *otrng_message_new() {
   otrng_message_to_send_s *msg = malloc(sizeof(otrng_message_to_send_s));
@@ -138,8 +138,8 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
       return ERROR;
     }
 
-    uint16_t identifier =
-        *(uint16_t *)gcry_random_bytes(32, GCRY_STRONG_RANDOM);
+    uint32_t identifier =
+        *(uint32_t *)gcry_random_bytes(32, GCRY_STRONG_RANDOM);
 
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN, FRAGMENT_FORMAT,
              identifier, our_instance, their_instance, (unsigned short)current,
