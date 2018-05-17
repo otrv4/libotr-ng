@@ -266,6 +266,14 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
   }
 
   calculate_ssid(manager);
+
+#ifdef DEBUG
+  printf("THE SHARED SECRET\n");
+  otrng_memdump(manager->shared_secret, sizeof(manager->shared_secret));
+  printf("THE SSID\n");
+  otrng_memdump(manager->ssid, sizeof(manager->ssid));
+#endif
+
   if (gcry_mpi_cmp(manager->our_dh->pub, manager->their_dh) > 0) {
     manager->ssid_half = SESSION_ID_SECOND_HALF_BOLD;
   } else {
@@ -370,6 +378,8 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool sending) {
   otrng_memdump(k_ecdh, sizeof(k_ecdh_p));
   printf("brace_key = ");
   otrng_memdump(manager->brace_key, sizeof(brace_key_p));
+  printf("THE SHARED SECRET\n");
+  otrng_memdump(manager->shared_secret, sizeof(manager->shared_secret));
 #endif
 
   if (key_manager_derive_ratchet_keys(manager, sending) == ERROR) {
@@ -437,6 +447,15 @@ tstatic otrng_err key_manager_derive_ratchet_keys(key_manager_s *manager,
   ratchet_free(manager->current);
   manager->current = ratchet;
 
+#ifdef DEBUG
+  printf("ROOT KEY = ");
+  otrng_memdump(manager->current->root, sizeof(manager->current->root_key));
+  printf("CHAIN_S = ");
+  otrng_memdump(manager->chain_s, sizeof(manager->chain_s));
+  printf("CHAIN_R = ");
+  otrng_memdump(manager->chain_r, sizeof(manager->chain_r));
+#endif
+
   return SUCCESS;
 }
 
@@ -469,6 +488,7 @@ tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
 
   hash_init_with_usage(hd, 0x1A);
   hash_update(hd, magic, 1);
+
   if (sending) {
     hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
   } else {
@@ -478,6 +498,11 @@ tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
   hash_destroy(hd);
 
   memcpy(manager->extra_key, extra_key_buff, sizeof manager->extra_key);
+
+#ifdef DEBUG
+  printf("EXTRA KEY = ");
+  otrng_memdump(manager->extra_key, sizeof(manager->extra_key));
+#endif
 }
 
 INTERNAL void otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key,
@@ -489,9 +514,9 @@ INTERNAL void otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key,
 
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
-  printf("receiving enc_key = ");
+  printf("enc_key = ");
   otrng_memdump(enc_key, sizeof(m_enc_key_p));
-  printf("receiving mac_key = ");
+  printf("mac_key = ");
   otrng_memdump(mac_key, sizeof(m_mac_key_p));
 #endif
 }

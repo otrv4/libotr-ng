@@ -982,6 +982,7 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   k_ecdh_p tmp_ecdh_k1;
   k_ecdh_p tmp_ecdh_k2;
 
+  // TODO: this workaround is not the nicest there is
   // TODO: this will be calculated again later
   if (!otrng_ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh,
                                 otr->keys->their_ecdh))
