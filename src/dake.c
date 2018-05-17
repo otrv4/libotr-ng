@@ -601,11 +601,11 @@ tstatic otrng_err xzdh_encrypted_message_asprintf(
     cursor += otrng_serialize_ec_point(cursor, msg->ecdh);
 
     size_t len = 0;
-    otrng_err err =
-        otrng_serialize_dh_public_key(cursor, DH_MPI_BYTES, &len, msg->dh);
+    otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - *dst)),
+                                                  &len, msg->dh);
     if (!err) {
-      free(cursor);
-      cursor = NULL;
+      free(*dst);
+      *dst = NULL;
       return ERROR;
     }
 
