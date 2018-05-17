@@ -68,6 +68,9 @@ typedef struct dake_non_interactive_auth_message_s {
   ec_point_p X;
   dh_public_key_p A;
   ring_sig_p sigma;
+  uint32_t prekey_message_id;
+  uint32_t long_term_key_id;
+  uint32_t prekey_profile_id;
 
   // TODO: Extract this to a data structure that can be shared with
   // data_message_s
