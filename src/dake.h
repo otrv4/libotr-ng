@@ -69,6 +69,8 @@ typedef struct dake_non_interactive_auth_message_s {
   dh_public_key_p A;
   ring_sig_p sigma;
 
+  // TODO: Extract this to a data structure that can be shared with
+  // data_message_s
   /* only used if an ecrypted message is attached */
   uint32_t ratchet_id;
   uint32_t message_id;
@@ -77,7 +79,7 @@ typedef struct dake_non_interactive_auth_message_s {
   uint8_t nonce[DATA_MSG_NONCE_BYTES];
   uint8_t *enc_msg;
   size_t enc_msg_len;
-  uint8_t auth_mac[HASH_BYTES];
+  uint8_t auth_mac[DATA_MSG_MAC_BYTES];
 } dake_non_interactive_auth_message_s, dake_non_interactive_auth_message_p[1];
 
 INTERNAL otrng_bool otrng_valid_received_values(const ec_point_p their_ecdh,
