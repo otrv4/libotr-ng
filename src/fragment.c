@@ -18,6 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <gcrypt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -137,11 +138,12 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
       return ERROR;
     }
 
-    int fragment_identifier = 0;
+    uint16_t identifier =
+        *(uint16_t *)gcry_random_bytes(32, GCRY_STRONG_RANDOM);
+
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN, FRAGMENT_FORMAT,
-             fragment_identifier, our_instance, their_instance,
-             (unsigned short)current, (unsigned short)fragments->total,
-             piece_data);
+             identifier, our_instance, their_instance, (unsigned short)current,
+             (unsigned short)fragments->total, piece_data);
     piece[piece_len + FRAGMENT_HEADER_LEN] = 0;
 
     pieces[current - 1] = piece;

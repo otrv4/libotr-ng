@@ -27,6 +27,12 @@
 void test_create_fragments(void) {
   int mms = 45;
   char *message = "one two tree";
+  char frag_without_header[35];
+
+  void remove_header_and_id(char *dst, char *fragment) {
+    strncpy(frag_without_header, fragment + 10, 34);
+    frag_without_header[34] = '\0';
+  }
 
   otrng_message_to_send_s *frag_message =
       malloc(sizeof(otrng_message_to_send_s));
@@ -34,14 +40,18 @@ void test_create_fragments(void) {
   otrng_assert(otrng_fragment_message(mms, frag_message, 1, 2, message) ==
                SUCCESS);
 
-  g_assert_cmpstr(frag_message->pieces[0], ==,
-                  "?OTR|0000|00000001|00000002,00001,00004,one,");
-  g_assert_cmpstr(frag_message->pieces[1], ==,
-                  "?OTR|0000|00000001|00000002,00002,00004, tw,");
-  g_assert_cmpstr(frag_message->pieces[2], ==,
-                  "?OTR|0000|00000001|00000002,00003,00004,o t,");
-  g_assert_cmpstr(frag_message->pieces[3], ==,
-                  "?OTR|0000|00000001|00000002,00004,00004,ree,");
+  remove_header_and_id(frag_without_header, frag_message->pieces[0]);
+  g_assert_cmpstr(frag_without_header, ==,
+                  "00000001|00000002,00001,00004,one,");
+  remove_header_and_id(frag_without_header, frag_message->pieces[1]);
+  g_assert_cmpstr(frag_without_header, ==,
+                  "00000001|00000002,00002,00004, tw,");
+  remove_header_and_id(frag_without_header, frag_message->pieces[2]);
+  g_assert_cmpstr(frag_without_header, ==,
+                  "00000001|00000002,00003,00004,o t,");
+  remove_header_and_id(frag_without_header, frag_message->pieces[3]);
+  g_assert_cmpstr(frag_without_header, ==,
+                  "00000001|00000002,00004,00004,ree,");
 
   g_assert_cmpint(frag_message->total, ==, 4);
 
