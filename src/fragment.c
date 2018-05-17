@@ -138,12 +138,12 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
       return ERROR;
     }
 
-    uint32_t identifier =
-        *(uint32_t *)gcry_random_bytes(32, GCRY_STRONG_RANDOM);
+    uint32_t *identifier = gcry_random_bytes(32, GCRY_STRONG_RANDOM);
 
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN, FRAGMENT_FORMAT,
-             identifier, our_instance, their_instance, (unsigned short)current,
-             (unsigned short)fragments->total, piece_data);
+             (uint32_t)*identifier, our_instance, their_instance,
+             (unsigned short)current, (unsigned short)fragments->total,
+             piece_data);
     piece[piece_len + FRAGMENT_HEADER_LEN] = 0;
 
     pieces[current - 1] = piece;
@@ -151,6 +151,9 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     free(piece_data);
     piece_data = NULL;
     message += piece_len;
+
+    gcry_free(identifier);
+    identifier = NULL;
   }
 
   fragments->pieces = pieces;
