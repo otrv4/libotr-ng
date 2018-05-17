@@ -226,9 +226,9 @@ INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret);
  *
  * @warning The symmetric key is stored as the priv part
  */
-INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
-                                       const ecdh_keypair_s *our_keypair,
-                                       const ec_point_p their_pub);
+INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
+                                            const ecdh_keypair_s *our_keypair,
+                                            const ec_point_p their_pub);
 
 /**
  * @brief EdDSA signing.

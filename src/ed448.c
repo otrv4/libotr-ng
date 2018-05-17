@@ -192,14 +192,21 @@ INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret) {
   return otrng_true;
 }
 
-INTERNAL void otrng_ecdh_shared_secret(uint8_t *shared_secret,
-                                       const ecdh_keypair_s *our_keypair,
-                                       const ec_point_p their_pub) {
+INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
+                                            const ecdh_keypair_s *our_keypair,
+                                            const ec_point_p their_pub) {
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, our_keypair->priv);
 
-  otrng_ec_point_valid(p);
+  if (otrng_ec_point_valid(p) == otrng_false)
+    return ERROR;
+
   otrng_ec_point_encode(shared_secret, p);
+
+  if (otrng_ecdh_valid_secret(shared_secret) == otrng_false)
+    return ERROR;
+
+  return SUCCESS;
 }
 
 static const char *ctx = "";
