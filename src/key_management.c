@@ -264,8 +264,6 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
   } else {
     shake_256_kdf1(manager->shared_secret, sizeof(shared_secret_p), 0x04,
                    manager->tmp_key, sizeof(manager->tmp_key));
-
-    sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
   }
 
   calculate_ssid(manager);

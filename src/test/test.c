@@ -230,7 +230,6 @@ int main(int argc, char **argv) {
                   test_api_interactive_conversation);
   g_test_add_func("/api/non_interactive_conversation/v4",
                   test_api_non_interactive_conversation);
-  // TODO: this special case needs checking
   g_test_add_func("/api/non_interactive_conversation_enc_msg/v4",
                   test_api_non_interactive_conversation_with_enc_msg);
   g_test_add_func("/api/conversation_errors", test_api_conversation_errors);

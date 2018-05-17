@@ -935,7 +935,10 @@ tstatic otrng_err build_non_interactive_auth_message(
   otrng_ec_scalar_destroy(c);
 
   /* Encrypts the attached message */
-  ret = encrypt_msg_on_non_interactive_auth(auth, nonce, message, msglen, otr);
+  if (msglen != 0) {
+    ret =
+        encrypt_msg_on_non_interactive_auth(auth, nonce, message, msglen, otr);
+  }
   sodium_memzero(nonce, sizeof(nonce));
 
   /* Creates MAC tag */
@@ -1146,7 +1149,7 @@ API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
                                                   const string_p message,
                                                   otrng_s *otr) {
   *dst = NULL;
-  size_t clen = (!message) ? 0 : strlen(message) + 1;
+  size_t clen = (strcmp(message, "") == 0) ? 0 : strlen(message) + 1;
   return reply_with_non_interactive_auth_msg(dst, (const uint8_t *)message,
                                              clen, otr);
 }
@@ -1186,10 +1189,9 @@ tstatic otrng_bool verify_non_interactive_auth_message(
       mac_tag, auth, t, t_len, otr->keys->tmp_key);
   free(t);
 
-  if (ret == ERROR) {
+  if (ret == ERROR)
     /* here no warning should be passed */
     return otrng_false;
-  }
 
   if (0 != otrl_mem_differ(mac_tag, auth->auth_mac, DATA_MSG_MAC_BYTES)) {
     sodium_memzero(mac_tag, DATA_MSG_MAC_BYTES);

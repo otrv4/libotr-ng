@@ -568,12 +568,11 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   if (non_interactive_auth->enc_msg) {
     free(non_interactive_auth->enc_msg);
     non_interactive_auth->enc_msg = NULL;
+    non_interactive_auth->enc_msg_len = 0;
+    otrng_dh_mpi_release(non_interactive_auth->dh);
+    non_interactive_auth->dh = NULL;
+    otrng_ec_point_destroy(non_interactive_auth->ecdh);
   }
-  non_interactive_auth->enc_msg_len = 0;
-  // TODO: should this be free optionally?
-  otrng_dh_mpi_release(non_interactive_auth->dh);
-  non_interactive_auth->dh = NULL;
-  otrng_ec_point_destroy(non_interactive_auth->ecdh);
 
   sodium_memzero(non_interactive_auth->nonce, DATA_MSG_NONCE_BYTES);
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
@@ -631,6 +630,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
 
   size_t data_msg_len = 0;
   uint8_t *data_msg = NULL;
+
   xzdh_encrypted_message_asprintf(&data_msg, &data_msg_len,
                                   non_interactive_auth);
 
@@ -765,7 +765,8 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
 
   // TODO: Extract "deserialize attached encrypted message" function
   dst->enc_msg = NULL;
-  if (len > 130) {
+  dst->enc_msg_len = 0;
+  if (len > 64) {
     if (!otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &read))
       return ERROR;
 
@@ -1026,6 +1027,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
   // OTRv4 section "Non-Interactive-Auth Message"
   /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
   uint8_t auth_mac_k[HASH_BYTES];
+
   shake_256_kdf1(auth_mac_k, HASH_BYTES, 0x0D, tmp_key, HASH_BYTES);
 
   // If there is no attached encrypted message

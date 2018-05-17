@@ -266,12 +266,12 @@ void test_api_non_interactive_conversation(void) {
   otrng_assert(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
                                                    "", bob) == SUCCESS);
 
-  // Should send an non interactive auth
+  // Should send a non interactive auth
   otrng_assert(response_to_alice->to_display == NULL);
   otrng_assert(response_to_alice->to_send);
   otrng_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
 
-  // Alice receives an non interactive auth
+  // Alice receives a non interactive auth
   otrng_assert(otrng_receive_message(response_to_bob,
                                      response_to_alice->to_send,
                                      alice) == SUCCESS);
@@ -290,10 +290,10 @@ void test_api_non_interactive_conversation(void) {
   otrng_assert(alice->keys->current);
 
   // TODO: this shouldn't be ratcheting
-  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 0);
-  g_assert_cmpint(alice->keys->k, ==, 1);
-  g_assert_cmpint(alice->keys->pn, ==, 1);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
 
   // Both have the same shared secret
   otrng_assert_root_key_eq(alice->keys->current->root_key,
@@ -316,10 +316,10 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_sent(err, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
-    g_assert_cmpint(alice->keys->i, ==, 2);
+    g_assert_cmpint(alice->keys->i, ==, 1);
     g_assert_cmpint(alice->keys->j, ==, message_id);
     g_assert_cmpint(alice->keys->k, ==, 0);
-    g_assert_cmpint(alice->keys->pn, ==, 1);
+    g_assert_cmpint(alice->keys->pn, ==, 0);
 
     // Bob receives a data message
     response_to_alice = otrng_response_new();
@@ -329,7 +329,7 @@ void test_api_non_interactive_conversation(void) {
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, message_id);
 
-    g_assert_cmpint(bob->keys->i, ==, 2);
+    g_assert_cmpint(bob->keys->i, ==, 1);
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
     g_assert_cmpint(bob->keys->pn, ==, message_id - 1);
@@ -346,7 +346,7 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_sent(err, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
-    g_assert_cmpint(bob->keys->i, ==, 3);
+    g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, message_id);
     g_assert_cmpint(bob->keys->k, ==, 0);
     g_assert_cmpint(bob->keys->pn, ==, 2);
@@ -357,7 +357,7 @@ void test_api_non_interactive_conversation(void) {
     assert_msg_rec(err, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
-    g_assert_cmpint(alice->keys->i, ==, 3);
+    g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id);
     g_assert_cmpint(alice->keys->pn, ==, message_id - 1);
