@@ -67,6 +67,10 @@ matrix:
       compiler: gcc
       dist: precise
       env: T=ctgrind
+    - os: linux
+      dist: trusty
+      compiler: gcc
+      env: T=32bit
   allow_failures:
     - os: osx
       compiler: clang
@@ -75,6 +79,7 @@ matrix:
       compiler: gcc
       dist: precise
       env: T=ctgrind
+    - env: T=32bit
 
 sudo: required
 
@@ -100,8 +105,10 @@ before_install:
 - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes; fi
 - if [[ "$T" = "coverage" ]]; then sudo apt-get install splint --quiet --assume-yes; fi
 - if [[ "$T" = "style" ]]; then sudo apt-get install clang-format-3.5 --quiet --assume-yes; fi
+- if [[ "$T" = "32bit" ]]; then sudo apt-get install gcc-multilib --quiet --assume-yes; fi
 
 before_script:
+  - if [[ "$T" = "32bit" ]]; then export CLAFGS="-m32"; fi
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
       brew install libgcrypt || brew outdated libgcrypt || brew upgrade libgcrypt &&
       brew install libsodium || brew outdated libsodium || brew upgrade libsodium;
@@ -157,5 +164,11 @@ script:
       if [ "$T" = "ctgrind" ]; then
            ./autogen.sh
            ./configure --with-ctgrind
+           make ci
+      fi
+  - |
+      if [ "$T" = "32bit" ]; then
+           ./autogen.sh
+           ./configure --disable-shared
            make ci
       fi
