@@ -906,21 +906,21 @@ tstatic otrng_err build_rsign_tag(
   otrng_serialize_ec_point(ser_i_ecdh, i_ecdh);
   otrng_serialize_ec_point(ser_r_ecdh, r_ecdh);
 
-  if (ERROR == otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_BYTES, &ser_i_dh_len,
-                                     i_dh))
+  if (ERROR == otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_BYTES,
+                                             &ser_i_dh_len, i_dh))
     return ERROR;
 
-  if (ERROR == otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_BYTES, &ser_r_dh_len,
-                                     r_dh))
+  if (ERROR == otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_BYTES,
+                                             &ser_r_dh_len, r_dh))
     return ERROR;
 
   do {
     if (ERROR == otrng_user_profile_asprintf(&ser_i_profile, &ser_i_profile_len,
-                                     i_profile))
+                                             i_profile))
       continue;
 
     if (ERROR == otrng_user_profile_asprintf(&ser_r_profile, &ser_r_profile_len,
-                                     r_profile))
+                                             r_profile))
       continue;
 
     char *phi_val = otrng_strdup(phi);
