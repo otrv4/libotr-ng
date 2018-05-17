@@ -135,6 +135,11 @@ int main(int argc, char **argv) {
   WITH_FIXTURE("/dake/non_interactive_auth_message/serialize",
                test_dake_non_interactive_auth_message_serializes,
                identity_message_fixture_s, identity_message_fixture);
+
+  WITH_FIXTURE("/dake/non_interactive_auth_message/deserialize",
+               test_otrng_dake_non_interactive_auth_message_deserializes,
+               identity_message_fixture_s, identity_message_fixture);
+
   WITH_FIXTURE(
       "/dake/non_interactive_auth_message_with_encrypted_message/serialize",
       test_dake_non_interactive_auth_message_with_encrypted_message_serializes,

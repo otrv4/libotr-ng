@@ -555,57 +555,44 @@ void test_dake_non_interactive_auth_message_with_encrypted_message_serializes(
   otrng_dake_non_interactive_auth_message_destroy(msg);
 }
 
-// TODO: Enable this test.
 void test_otrng_dake_non_interactive_auth_message_deserializes(
-    prekey_message_fixture_s *f, gconstpointer data) {
+    identity_message_fixture_s *f, gconstpointer data) {
 
-  ecdh_keypair_p ecdh;
-  dh_keypair_p dh;
-
-  uint8_t sym[ED448_PRIVATE_BYTES] = {0};
-  otrng_ecdh_keypair_generate(ecdh, sym);
-  otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
-
-  dake_non_interactive_auth_message_p msg;
-
-  msg->sender_instance_tag = 1;
-  msg->receiver_instance_tag = 1;
-  otrng_user_profile_copy(msg->profile, f->profile);
-  otrng_ec_point_copy(msg->X, ecdh->pub);
-  msg->A = otrng_dh_mpi_copy(dh->pub);
-  memset(msg->nonce, 0, sizeof(msg->nonce));
-  msg->enc_msg = NULL;
-  msg->enc_msg_len = 0;
-  memset(msg->auth_mac, 0, sizeof(msg->auth_mac));
-
-  uint8_t secret[1] = {0x01};
-  shake_256_hash(msg->auth_mac, HASH_BYTES, secret, 1);
-
-  memset(msg->sigma, 0, sizeof(ring_sig_p));
+  dake_non_interactive_auth_message_p expected;
+  setup_non_interactive_auth_message(expected, f);
 
   uint8_t *serialized = NULL;
   size_t len = 0;
   otrng_assert(otrng_dake_non_interactive_auth_message_asprintf(
-                   &serialized, &len, msg) == SUCCESS);
-
-  otrng_dh_keypair_destroy(dh);
-  otrng_ecdh_keypair_destroy(ecdh);
+                   &serialized, &len, expected) == SUCCESS);
 
   dake_non_interactive_auth_message_p deserialized;
   otrng_assert(otrng_dake_non_interactive_auth_message_deserialize(
                    deserialized, serialized, len) == SUCCESS);
+  free(serialized);
 
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
-                   msg->sender_instance_tag);
+                   expected->sender_instance_tag);
   g_assert_cmpuint(deserialized->receiver_instance_tag, ==,
-                   msg->receiver_instance_tag);
-  otrng_assert_user_profile_eq(deserialized->profile, msg->profile);
-  otrng_assert_ec_public_key_eq(deserialized->X, msg->X);
-  otrng_assert_dh_public_key_eq(deserialized->A, msg->A);
-  otrng_assert(memcmp(deserialized->auth_mac, msg->auth_mac, HASH_BYTES));
-  otrng_assert(memcmp(deserialized->sigma, msg->sigma, RING_SIG_BYTES));
+                   expected->receiver_instance_tag);
+  otrng_assert_user_profile_eq(deserialized->profile, expected->profile);
+  otrng_assert_ec_public_key_eq(deserialized->X, expected->X);
+  otrng_assert_dh_public_key_eq(deserialized->A, expected->A);
+  otrng_assert_cmpmem(deserialized->auth_mac, expected->auth_mac, HASH_BYTES);
 
-  free(serialized);
-  otrng_dake_non_interactive_auth_message_destroy(msg);
+  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->c1,
+                                                expected->sigma->c1));
+  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->r1,
+                                                expected->sigma->r1));
+  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->c2,
+                                                expected->sigma->c2));
+  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->r2,
+                                                expected->sigma->r2));
+  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->c3,
+                                                expected->sigma->c3));
+  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->r3,
+                                                expected->sigma->r3));
+
+  otrng_dake_non_interactive_auth_message_destroy(expected);
   otrng_dake_non_interactive_auth_message_destroy(deserialized);
 }
