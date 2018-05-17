@@ -160,9 +160,8 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   if (manager->i % 3 == 0) {
     otrng_dh_keypair_destroy(manager->our_dh);
 
-    if (!otrng_dh_keypair_generate(manager->our_dh)) {
+    if (!otrng_dh_keypair_generate(manager->our_dh))
       return ERROR;
-    }
   }
 
   return SUCCESS;
