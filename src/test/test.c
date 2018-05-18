@@ -184,6 +184,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/key_management/derive_ratchet_keys",
                   test_derive_ratchet_keys);
   g_test_add_func("/key_management/ssid", test_calculate_ssid);
+  g_test_add_func("/key_management/extra_symm_key",
+                  test_calculate_extra_symm_key);
   g_test_add_func("/key_management/brace_key", test_calculate_brace_key);
 
   g_test_add_func("/smp/state_machine", test_smp_state_machine);
