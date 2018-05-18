@@ -35,6 +35,7 @@ dnl Valgrind: make check-valgrind
 AX_VALGRIND_DFLT([sgcheck], [off])
 AX_VALGRIND_CHECK
 
+AC_USE_SYSTEM_EXTENSIONS
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 #AM_INIT_AUTOMAKE([-Wall -W -Werror foreign subdir-objects]) # Use this to allow Wextra flag
 AM_PROG_AR
@@ -49,6 +50,9 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_PROG_CC_STDC
+# libtoolize: 'AC_PROG_RANLIB' is rendered obsolete by 'LT_INIT'
+#AC_PROG_RANLIB
 
 dnl Check that our compiler can do const and inline
 AC_C_CONST
@@ -67,18 +71,16 @@ AM_PATH_LIBGCRYPT(1:1.8.0,,
 )
 
 dnl Checks for header files.
-AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
+AC_CHECK_HEADERS([stddef.h stdint.h stdlib.h string.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
-AC_C_INLINE
 AC_TYPE_INT64_T
 AC_TYPE_SIZE_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
-AC_PROG_CC_STDC
 
 AX_CFLAGS_GCC_OPTION([-Wall])
 # AX_CFLAGS_GCC_OPTION([-W]) Uncomment this to allow Wextra flag
@@ -106,8 +108,10 @@ dnl Code coverage
 AX_CODE_COVERAGE
 
 dnl Checks for library functions.
+AC_CHECK_FUNCS([memchr memmove memset stpcpy strchr strdup strstr])
+AC_FUNC_STRNLEN
 AC_FUNC_MALLOC
-AC_CHECK_FUNCS([memchr memmove memset stpcpy strchr strstr])
+AC_FUNC_REALLOC
 
 dnl Switches
 AC_ARG_WITH(ctgrind,
