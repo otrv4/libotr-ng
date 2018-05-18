@@ -147,3 +147,25 @@ INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst,
 
   return cursor - dst;
 }
+
+INTERNAL uint8_t *otrng_old_mac_keys_serialize(list_element_s *old_mac_keys) {
+  size_t num_mac_keys = otrng_list_len(old_mac_keys);
+  size_t serlen = num_mac_keys * MAC_KEY_BYTES;
+  if (serlen == 0)
+    return NULL;
+
+  uint8_t *ser_mac_keys = malloc(serlen);
+  if (!ser_mac_keys)
+    return NULL;
+
+  for (unsigned int i = 0; i < num_mac_keys; i++) {
+    list_element_s *last = otrng_list_get_last(old_mac_keys);
+    memcpy(ser_mac_keys + i * MAC_KEY_BYTES, last->data, MAC_KEY_BYTES);
+    old_mac_keys = otrng_list_remove_element(last, old_mac_keys);
+    otrng_list_free_full(last);
+  }
+
+  otrng_list_free_nodes(old_mac_keys);
+
+  return ser_mac_keys;
+}

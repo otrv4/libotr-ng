@@ -118,7 +118,6 @@ void test_api_interactive_conversation(void) {
   string_p to_send = NULL;
   otrng_err err;
 
-  // Alice sends in a ratchet
   for (message_id = 1; message_id < 4; message_id++) {
     tlv_list_s *tlvs = NULL;
     // Alice sends a data message

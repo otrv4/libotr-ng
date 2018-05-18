@@ -198,14 +198,6 @@ INTERNAL void otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key,
 INTERNAL otrng_err
 otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager, bool sending);
 
-/**
- * @brief Serialize old mac keys to reveal.
- *
- * @param [old_mac_keys]   The list of old mac keys.
- */
-INTERNAL uint8_t *
-otrng_key_manager_old_mac_keys_serialize(list_element_s *old_mac_keys);
-
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
 /**
  * @brief Calculate the brace key.

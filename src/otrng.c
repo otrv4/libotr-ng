@@ -2072,10 +2072,10 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
                                     size_t message_len, otrng_s *otr, int h,
                                     unsigned char flags) {
   data_message_s *data_msg = NULL;
-  size_t serlen = otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
 
-  uint8_t *ser_mac_keys =
-      otrng_key_manager_old_mac_keys_serialize(otr->keys->old_mac_keys);
+  size_t ser_mac_keys_len =
+      otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
+  uint8_t *ser_mac_keys = otrng_old_mac_keys_serialize(otr->keys->old_mac_keys);
   otr->keys->old_mac_keys = NULL;
 
   if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, true)) {
@@ -2087,7 +2087,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   m_mac_key_p mac_key;
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
-
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, true);
 
   data_msg = generate_data_msg(otr);
@@ -2111,11 +2110,12 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   otrng_err err = ERROR;
   otr->keys->j++;
 
+  // TODO: mac keys are only revealed on the first message of every
+  // ratchet, not each message
   if (encrypt_data_message(data_msg, message, message_len, enc_key) ==
           SUCCESS &&
-      serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys, serlen,
-                                    data_msg) == SUCCESS) {
-
+      serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
+                                    ser_mac_keys_len, data_msg) == SUCCESS) {
     // TODO: check
     heartbeat(otr)->last_msg_sent = time(NULL);
     err = SUCCESS;

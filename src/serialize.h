@@ -27,6 +27,7 @@
 #include "dh.h"
 #include "ed448.h"
 #include "error.h"
+#include "list.h"
 #include "mpi.h"
 #include "shared.h"
 
@@ -76,6 +77,13 @@ INTERNAL size_t otrng_serialize_otrng_public_key(uint8_t *dst,
 
 INTERNAL size_t otrng_serialize_otrng_shared_prekey(
     uint8_t *dst, const otrng_shared_prekey_pub_p shared_prekey);
+
+/**
+ * @brief Serialize the old mac keys to reveal.
+ *
+ * @param [old_mac_keys]   The list of old mac keys.
+ */
+INTERNAL uint8_t *otrng_old_mac_keys_serialize(list_element_s *old_mac_keys);
 
 #ifdef OTRNG_SERIALIZE_PRIVATE
 #endif
