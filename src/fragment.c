@@ -144,6 +144,10 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
              (uint32_t)*identifier, our_instance, their_instance,
              (unsigned short)current, (unsigned short)fragments->total,
              piece_data);
+
+    gcry_free(identifier);
+    identifier = NULL;
+
     piece[piece_len + FRAGMENT_HEADER_LEN] = 0;
 
     pieces[current - 1] = piece;
@@ -151,9 +155,6 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     free(piece_data);
     piece_data = NULL;
     message += piece_len;
-
-    gcry_free(identifier);
-    identifier = NULL;
   }
 
   fragments->pieces = pieces;

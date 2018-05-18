@@ -1410,6 +1410,7 @@ void test_unreadable_flag() {
   otrng_free_all(alice, bob);
 }
 
+// TODO: this randomly fails
 void test_heartbeat_messages() {
 
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
@@ -1436,7 +1437,8 @@ void test_heartbeat_messages() {
   err = otrng_prepare_to_send_message(&to_send, "hello", NULL, 0, alice);
 
   assert_msg_sent(err, to_send);
-  otrng_assert(alice_client_state->heartbeat->last_msg_sent == time(0));
+  // TODO: it fails here
+  otrng_assert(alice_client_state->heartbeat->last_msg_sent == time(NULL));
 
   // Bob receives the msg
   otrng_response_s *response_to_alice = otrng_response_new();

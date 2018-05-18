@@ -2117,7 +2117,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
                                     data_msg) == SUCCESS) {
 
     // TODO: check
-    heartbeat(otr)->last_msg_sent = time(0);
+    heartbeat(otr)->last_msg_sent = time(NULL);
     err = SUCCESS;
   }
 
