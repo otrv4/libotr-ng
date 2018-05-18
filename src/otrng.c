@@ -1076,6 +1076,23 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
     *to_send = otrng_strdup(err_msg);
     free(err_msg);
     break;
+  case ERR_MSG_ENCRYPTION_ERROR:
+    msg = strdup("OTRNG_ERR_ENCRYPTION_ERROR");
+    err_msg =
+        malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_3) + strlen(msg) + 1);
+    if (!err_msg)
+      return;
+
+    if (err_msg) {
+      strcpy(err_msg, ERROR_PREFIX);
+      strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_3);
+      strcat(err_msg, msg);
+    }
+    free(msg);
+
+    *to_send = otrng_strdup(err_msg);
+    free(err_msg);
+    break;
   }
 }
 
@@ -2056,8 +2073,10 @@ tstatic otrng_err serialize_and_encode_data_msg(
 
   otrng_err err = otrng_data_message_authenticator(ser + bodylen, MAC_KEY_BYTES,
                                                    mac_key, ser, bodylen);
-  if (err == ERROR)
+  if (err == ERROR) {
+
     return ERROR;
+  }
 
   otrng_serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES,
                               to_reveal_mac_keys, to_reveal_mac_keys_len);
@@ -2107,26 +2126,37 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
 
-  otrng_err err = ERROR;
   otr->keys->j++;
 
   // TODO: mac keys are only revealed on the first message of every
   // ratchet, not each message
-  if (encrypt_data_message(data_msg, message, message_len, enc_key) ==
-          SUCCESS &&
-      serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
-                                    ser_mac_keys_len, data_msg) == SUCCESS) {
-    // TODO: check
-    heartbeat(otr)->last_msg_sent = time(NULL);
-    err = SUCCESS;
+  if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {
+
+    sodium_memzero(enc_key, sizeof(m_enc_key_p));
+    sodium_memzero(mac_key, sizeof(m_mac_key_p));
+    free(ser_mac_keys);
+    otrng_data_message_free(data_msg);
+    otrng_error_message(to_send, ERR_MSG_ENCRYPTION_ERROR);
+
+    return ERROR;
   }
 
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
+  if (!serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
+                                     ser_mac_keys_len, data_msg)) {
+    sodium_memzero(mac_key, sizeof(m_mac_key_p));
+    free(ser_mac_keys);
+    otrng_data_message_free(data_msg);
+    return ERROR;
+  }
+
   sodium_memzero(mac_key, sizeof(m_mac_key_p));
   free(ser_mac_keys);
   otrng_data_message_free(data_msg);
 
-  return err;
+  // TODO: check
+  heartbeat(otr)->last_msg_sent = time(NULL);
+  return SUCCESS;
 }
 
 tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
@@ -2206,6 +2236,7 @@ tstatic otrng_err otrng_prepare_to_send_data_message(string_p *to_send,
       send_data_message(to_send, msg, msg_len, otr, is_heartbeat, flags);
 
   free(msg);
+
   return err;
 }
 

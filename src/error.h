@@ -28,6 +28,7 @@
 #define ERROR_PREFIX "?OTR Error: "
 #define ERROR_CODE_1 "ERROR_1: "
 #define ERROR_CODE_2 "ERROR_2: "
+#define ERROR_CODE_3 "ERROR_3: "
 
 // needed for comparing with GOLDILOCKS_TRUE
 typedef uint32_t
@@ -47,6 +48,7 @@ typedef enum {
   ERR_NONE,
   ERR_MSG_NOT_PRIVATE,
   ERR_MSG_UNDECRYPTABLE,
+  ERR_MSG_ENCRYPTION_ERROR,
 } otrng_err_code;
 
 /// Return success if x is true

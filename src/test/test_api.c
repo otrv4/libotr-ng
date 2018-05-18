@@ -565,6 +565,7 @@ void test_api_conversation_errors(void) {
 
   // Alice sends a data message
   err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, alice);
+
   assert_msg_sent(err, to_send);
   otrng_assert(tlvs);
   otrng_assert(!alice->keys->old_mac_keys);
