@@ -78,10 +78,9 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
 INTERNAL void otrng_client_profile_free(client_profile_s *profile) {
   otrng_client_profile_destroy(profile);
   free(profile);
-  profile = NULL;
 }
 
-tstatic int client_profile_body_serialize(uint8_t *dst,
+tstatic size_t client_profile_body_serialize(uint8_t *dst,
                                           const client_profile_s *profile) {
   uint8_t *target = dst;
 
@@ -104,11 +103,11 @@ tstatic otrng_err client_profile_body_asprintf(
   if (!buff)
     return ERROR;
 
-  client_profile_body_serialize(buff, profile);
+  size_t written = client_profile_body_serialize(buff, profile);
 
   *dst = buff;
   if (nbytes)
-    *nbytes = s;
+    *nbytes = written;
 
   return SUCCESS;
 }
@@ -122,7 +121,7 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
   uint8_t *buff = NULL;
   size_t body_len = 0;
   uint8_t *body = NULL;
-  if (!client_profile_body_asprintf(&body, &body_len, profile))
+  if (ERROR == client_profile_body_asprintf(&body, &body_len, profile))
     return ERROR;
 
   size_t s = body_len + 4 + sizeof(eddsa_signature_p) +
@@ -130,7 +129,6 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
   buff = malloc(s);
   if (!buff) {
     free(body);
-    body = NULL;
     return ERROR;
   }
 
@@ -142,11 +140,9 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
 
   *dst = buff;
   if (nbytes)
-    *nbytes = s;
+    *nbytes = (cursor - buff);
 
   free(body);
-  body = NULL;
-
   return SUCCESS;
 }
 
@@ -228,7 +224,6 @@ tstatic otrng_err client_profile_sign(client_profile_s *profile,
                 bodylen);
 
   free(body);
-  body = NULL;
   return SUCCESS;
 }
 
