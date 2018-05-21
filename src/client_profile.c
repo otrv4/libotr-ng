@@ -81,7 +81,7 @@ INTERNAL void otrng_client_profile_free(client_profile_s *profile) {
 }
 
 tstatic size_t client_profile_body_serialize(uint8_t *dst,
-                                          const client_profile_s *profile) {
+                                             const client_profile_s *profile) {
   uint8_t *target = dst;
 
   target +=

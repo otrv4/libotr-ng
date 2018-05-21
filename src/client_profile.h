@@ -29,13 +29,13 @@
 #include "str.h"
 
 typedef struct client_profile_s {
-  //TODO: add instance_tag
+  // TODO: add instance_tag
   otrng_public_key_p long_term_pub_key;
   string_p versions;
   uint64_t expires;
   otrng_shared_prekey_pub_p shared_prekey;
 
-  //TODO: this should be an array of signatures :S
+  // TODO: this should be an array of signatures :S
   eddsa_signature_p signature;
   otrng_mpi_p transitional_signature; // TODO: this should be a signature type
 } client_profile_s, client_profile_p[1];
