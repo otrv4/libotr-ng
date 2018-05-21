@@ -183,6 +183,8 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
   *dst = 0;
 }
 
+// TODO: Add get_my_prekey_profile()
+
 tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
   if (otr->profile)
     return otr->profile;
@@ -192,7 +194,7 @@ tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
   maybe_create_keys(otr->conversation);
 
   // This is a temporary measure for the pidgin plugin to work
-  // This will be removed later
+  // TODO: This will be removed later
   uint8_t sym_key[ED448_PRIVATE_BYTES] = {0x01};
   otrng_client_state_add_shared_prekey_v4(otr->conversation->client, sym_key);
 
@@ -471,7 +473,7 @@ tstatic otrng_err serialize_and_encode_prekey_message(
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (!otrng_dake_prekey_message_asprintf(&buff, &len, m))
+  if (ERROR == otrng_dake_prekey_message_asprintf(&buff, &len, m))
     return ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
@@ -483,11 +485,10 @@ tstatic otrng_err serialize_and_encode_prekey_message(
 tstatic otrng_err otrng_build_prekey_message(otrng_server_s *server,
                                              otrng_s *otr) {
   dake_prekey_message_s *m = NULL;
-  otrng_err err = ERROR;
 
   m = otrng_dake_prekey_message_new(get_my_client_profile(otr));
   if (!m)
-    return err;
+    return ERROR;
 
   m->sender_instance_tag = otr->our_instance_tag;
   m->receiver_instance_tag = otr->their_instance_tag;
@@ -495,14 +496,11 @@ tstatic otrng_err otrng_build_prekey_message(otrng_server_s *server,
   otrng_ec_point_copy(m->Y, our_ecdh(otr));
   m->B = otrng_dh_mpi_copy(our_dh(otr));
 
-  if (!serialize_and_encode_prekey_message(&server->prekey_message, m)) {
-    otrng_dake_prekey_message_free(m);
-    return err;
-  }
-
+  otrng_err err =
+      serialize_and_encode_prekey_message(&server->prekey_message, m);
   otrng_dake_prekey_message_free(m);
 
-  return SUCCESS;
+  return err;
 }
 
 tstatic otrng_err reply_with_prekey_msg_to_server(otrng_server_s *server,
@@ -543,14 +541,9 @@ tstatic otrng_err reply_with_identity_msg(otrng_response_s *response,
   otrng_ec_point_copy(m->Y, our_ecdh(otr));
   m->B = otrng_dh_mpi_copy(our_dh(otr));
 
-  if (!serialize_and_encode_identity_message(&response->to_send, m)) {
-    otrng_dake_identity_message_free(m);
-    return ERROR;
-  }
-
+  otrng_err err = serialize_and_encode_identity_message(&response->to_send, m);
   otrng_dake_identity_message_free(m);
-
-  return SUCCESS;
+  return err;
 }
 
 tstatic otrng_err start_dake(otrng_response_s *response, otrng_s *otr) {
