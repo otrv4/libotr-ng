@@ -364,9 +364,6 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool sending) {
 
   otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
-  if (otrng_ecdh_valid_secret(k_ecdh) == otrng_false)
-    return ERROR;
-
   if (calculate_brace_key(manager) == ERROR)
     return ERROR;
 
@@ -394,17 +391,14 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool sending) {
 // TODO: not sure about this always return SUCCESS.. maybe some other logic will
 // work
 tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
+  manager->k = 0;
   if (sending) {
-    manager->j = 0;
-    manager->k = 0;
-
     if (!otrng_key_manager_generate_ephemeral_keys(manager))
       return ERROR;
 
     if (!enter_new_ratchet(manager, true))
       return ERROR;
   } else {
-    manager->k = 0;
     if (!enter_new_ratchet(manager, false))
       return ERROR;
 
@@ -412,7 +406,6 @@ tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
     if (manager->i % 3 == 0)
       otrng_dh_priv_key_destroy(manager->our_dh);
   }
-
   manager->i++;
 
   return SUCCESS;

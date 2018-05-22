@@ -742,7 +742,8 @@ tstatic otrng_err serialize_and_encode_non_interactive_auth(
   return SUCCESS;
 }
 
-tstatic data_message_s *generate_data_msg(const otrng_s *otr) {
+tstatic data_message_s *generate_data_msg(const otrng_s *otr,
+                                          const uint32_t ratchet_id) {
   data_message_s *data_msg = otrng_data_message_new();
   if (!data_msg)
     return NULL;
@@ -750,7 +751,7 @@ tstatic data_message_s *generate_data_msg(const otrng_s *otr) {
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
   data_msg->previous_chain_n = otr->keys->pn;
-  data_msg->ratchet_id = otr->keys->i;
+  data_msg->ratchet_id = ratchet_id;
   data_msg->message_id = otr->keys->j;
   otrng_ec_point_copy(data_msg->ecdh, our_ecdh(otr));
   data_msg->dh = otrng_dh_mpi_copy(our_dh(otr));
@@ -1862,7 +1863,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     }
 
     uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
-    if (to_store_mac == NULL) {
+    if (!to_store_mac) {
       response->to_display = NULL;
       otrng_data_message_free(msg);
       return ERROR;
@@ -2104,6 +2105,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
       otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
   uint8_t *ser_mac_keys = otrng_old_mac_keys_serialize(otr->keys->old_mac_keys);
   otr->keys->old_mac_keys = NULL;
+  uint32_t ratchet_id = otr->keys->i;
 
   if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, true)) {
     free(ser_mac_keys);
@@ -2116,7 +2118,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   memset(mac_key, 0, sizeof mac_key);
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, true);
 
-  data_msg = generate_data_msg(otr);
+  data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {
     sodium_memzero(enc_key, sizeof(m_enc_key_p));
     sodium_memzero(mac_key, sizeof(m_mac_key_p));
