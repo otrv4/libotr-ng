@@ -57,6 +57,8 @@
 #define ROOT_KEY_BYTES 64
 #define PUB_KEY_SER_BYTES 59
 #define SSID_BYTES 8
+#define EXTRA_SYMMETRIC_KEY_BYTES 32
+
 
 /* header + flags + previous chain number + ratchet id + message id + public
  * ecdh key + nonce */

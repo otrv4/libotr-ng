@@ -41,6 +41,7 @@ typedef uint8_t sending_chain_key_p[CHAIN_KEY_BYTES];
 typedef uint8_t receiving_chain_key_p[CHAIN_KEY_BYTES];
 typedef uint8_t m_enc_key_p[ENC_KEY_BYTES];
 typedef uint8_t m_mac_key_p[MAC_KEY_BYTES];
+typedef uint8_t extra_symmetric_key_p[EXTRA_SYMMETRIC_KEY_BYTES];
 
 /* the different kind of keys needed for a chain ratchet */
 typedef struct ratchet_s {
@@ -83,6 +84,16 @@ typedef struct key_manager_s {
 
   time_t lastgenerated;
 } key_manager_s, key_manager_p[1];
+
+typedef struct otrng_out_of_order_manager {
+
+  int i; // Counter of the ratchet
+  int j; // Counter of the messages
+  extra_symmetric_key_p extra_symetric_key;
+  m_enc_key_p m_enc_key;
+
+} otrng_out_of_order_manager;
+
 
 /**
  * @brief Initialize the key manager.
