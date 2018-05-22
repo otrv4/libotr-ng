@@ -2071,6 +2071,7 @@ tstatic otrng_err serialize_and_encode_data_msg(
     return ERROR;
 
   size_t serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
+
   uint8_t *ser = malloc(serlen);
   if (!ser) {
     free(body);
@@ -2080,15 +2081,14 @@ tstatic otrng_err serialize_and_encode_data_msg(
   memcpy(ser, body, bodylen);
   free(body);
 
-  otrng_err err = otrng_data_message_authenticator(ser + bodylen, MAC_KEY_BYTES,
-                                                   mac_key, ser, bodylen);
-  if (err == ERROR) {
-
+  if (!otrng_data_message_authenticator(ser + bodylen, MAC_KEY_BYTES, mac_key,
+                                        ser, bodylen))
     return ERROR;
-  }
 
-  otrng_serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES,
-                              to_reveal_mac_keys, to_reveal_mac_keys_len);
+  if (to_reveal_mac_keys) {
+    otrng_serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES,
+                                to_reveal_mac_keys, to_reveal_mac_keys_len);
+  }
 
   *dst = otrl_base64_otr_encode(ser, serlen);
 
@@ -2100,17 +2100,10 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
                                     size_t message_len, otrng_s *otr, int h,
                                     unsigned char flags) {
   data_message_s *data_msg = NULL;
-
-  size_t ser_mac_keys_len =
-      otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
-  uint8_t *ser_mac_keys = otrng_old_mac_keys_serialize(otr->keys->old_mac_keys);
-  otr->keys->old_mac_keys = NULL;
   uint32_t ratchet_id = otr->keys->i;
 
-  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, true)) {
-    free(ser_mac_keys);
+  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, true))
     return ERROR;
-  }
 
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
@@ -2122,7 +2115,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   if (!data_msg) {
     sodium_memzero(enc_key, sizeof(m_enc_key_p));
     sodium_memzero(mac_key, sizeof(m_mac_key_p));
-    free(ser_mac_keys);
     return ERROR;
   }
 
@@ -2136,15 +2128,12 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
 
-  otr->keys->j++;
-
   // TODO: mac keys are only revealed on the first message of every
   // ratchet, not each message
   if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {
 
     sodium_memzero(enc_key, sizeof(m_enc_key_p));
     sodium_memzero(mac_key, sizeof(m_mac_key_p));
-    free(ser_mac_keys);
     otrng_data_message_free(data_msg);
     otrng_error_message(to_send, ERR_MSG_ENCRYPTION_ERROR);
 
@@ -2152,16 +2141,32 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   }
 
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
-  if (!serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
-                                     ser_mac_keys_len, data_msg)) {
-    sodium_memzero(mac_key, sizeof(m_mac_key_p));
+
+  if (otr->keys->j == 0) {
+    size_t ser_mac_keys_len =
+        otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
+    uint8_t *ser_mac_keys =
+        otrng_old_mac_keys_serialize(otr->keys->old_mac_keys);
+    otr->keys->old_mac_keys = NULL;
+    if (!serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
+                                       ser_mac_keys_len, data_msg)) {
+      sodium_memzero(mac_key, sizeof(m_mac_key_p));
+      free(ser_mac_keys);
+      otrng_data_message_free(data_msg);
+      return ERROR;
+    }
     free(ser_mac_keys);
-    otrng_data_message_free(data_msg);
-    return ERROR;
+  } else {
+    if (!serialize_and_encode_data_msg(to_send, mac_key, NULL, 0, data_msg)) {
+      sodium_memzero(mac_key, sizeof(m_mac_key_p));
+      otrng_data_message_free(data_msg);
+      return ERROR;
+    }
   }
 
+  otr->keys->j++;
+
   sodium_memzero(mac_key, sizeof(m_mac_key_p));
-  free(ser_mac_keys);
   otrng_data_message_free(data_msg);
 
   // TODO: check
