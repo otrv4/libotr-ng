@@ -94,7 +94,6 @@ typedef struct otrng_out_of_order_manager {
 
 } otrng_out_of_order_manager;
 
-
 /**
  * @brief Initialize the key manager.
  *

@@ -59,7 +59,6 @@
 #define SSID_BYTES 8
 #define EXTRA_SYMMETRIC_KEY_BYTES 32
 
-
 /* header + flags + previous chain number + ratchet id + message id + public
  * ecdh key + nonce */
 #define DATA_MESSAGE_MIN_BYTES                                                 \
