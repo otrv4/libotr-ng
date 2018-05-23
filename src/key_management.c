@@ -406,6 +406,7 @@ tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
     if (manager->i % 3 == 0)
       otrng_dh_priv_key_destroy(manager->our_dh);
   }
+
   manager->i++;
 
   return SUCCESS;

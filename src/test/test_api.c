@@ -393,7 +393,7 @@ void test_api_non_interactive_conversation(void) {
   otrng_free_all(alice, bob);
 }
 
-void test_api_non_interactive_conversation_with_enc_msg(void) {
+void test_api_non_interactive_conversation_with_enc_msg_1(void) {
 
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
@@ -459,6 +459,7 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
 
   otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(alice->keys->current);
+  otrng_assert(alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
   g_assert_cmpint(alice->keys->j, ==, 0);
@@ -535,6 +536,159 @@ void test_api_non_interactive_conversation_with_enc_msg(void) {
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id);
     g_assert_cmpint(alice->keys->pn, ==, message_id - 1);
+  }
+
+  otrng_user_state_free_all(alice_client_state->user_state,
+                            bob_client_state->user_state);
+  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_free_all(alice, bob);
+}
+
+void test_api_non_interactive_conversation_with_enc_msg_2(void) {
+
+  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+
+  otrng_response_s *response_to_bob = otrng_response_new();
+  otrng_response_s *response_to_alice = otrng_response_new();
+
+  otrng_server_s *server = malloc(sizeof(otrng_server_s));
+  server->prekey_message = NULL;
+
+  // Alice uploads prekey message to server
+  otrng_assert(otrng_start_non_interactive_dake(server, alice) == SUCCESS);
+
+  otrng_assert(alice->state == OTRNG_STATE_START);
+  otrng_assert(server->prekey_message != NULL);
+
+  // Bob asks server for prekey message
+  // Server replies with prekey message
+  otrng_reply_with_prekey_msg_from_server(server, response_to_bob);
+  otrng_assert(bob->state == OTRNG_STATE_START);
+  otrng_assert(response_to_bob != NULL);
+
+  otrng_assert_cmpmem("?OTR:AAQP", response_to_bob->to_send, 9);
+
+  // Bob receives prekey message
+  otrng_assert(otrng_receive_message(response_to_alice,
+                                     response_to_bob->to_send, bob) == SUCCESS);
+
+  otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+  otrng_assert(bob->keys->current);
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
+
+  otrng_assert(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
+                                                   "hi", bob) == SUCCESS);
+
+  // Should send an non-interactive auth message
+  otrng_assert(response_to_alice->to_display == NULL);
+  otrng_assert(response_to_alice->to_send);
+  otrng_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
+
+  // Alice receives an non-interactive auth message
+  otrng_assert(otrng_receive_message(response_to_bob,
+                                     response_to_alice->to_send,
+                                     alice) == SUCCESS);
+
+  otrng_assert_ec_public_key_eq(alice->keys->their_ecdh,
+                                bob->keys->our_ecdh->pub);
+  otrng_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
+  otrng_assert_cmpmem("hi", response_to_bob->to_display, 3);
+
+  otrng_response_free_all(response_to_alice, response_to_bob);
+
+  free(server->prekey_message);
+  server->prekey_message = NULL;
+  free(server);
+  server = NULL;
+
+  otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+  otrng_assert(alice->keys->current);
+  otrng_assert(alice->keys->old_mac_keys);
+
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 0);
+  g_assert_cmpint(alice->keys->k, ==, 1);
+  g_assert_cmpint(alice->keys->pn, ==, 1);
+
+  // Both have the same shared secret
+  otrng_assert_root_key_eq(alice->keys->current->root_key,
+                           bob->keys->current->root_key);
+
+  int message_id;
+  string_p to_send = NULL;
+  otrng_err err;
+
+  // TODO: this is usually set up by the querry or whitespace,
+  // this will be defined on the prekey server spec.
+  bob->running_version = OTRNG_VERSION_4;
+  alice->running_version = OTRNG_VERSION_4;
+
+  // A new ratchet does not happen
+  for (message_id = 1; message_id < 4; message_id++) {
+    tlv_list_s *tlvs = NULL;
+    // Bob sends a data message
+    err = otrng_prepare_to_send_message(&to_send, "hi", &tlvs, 0, bob);
+    otrng_tlv_list_free(tlvs);
+    assert_msg_sent(err, to_send);
+    otrng_assert(!bob->keys->old_mac_keys);
+
+    g_assert_cmpint(bob->keys->i, ==, 1);
+    g_assert_cmpint(bob->keys->j, ==, message_id + 1);
+    g_assert_cmpint(bob->keys->k, ==, 0);
+    g_assert_cmpint(bob->keys->pn, ==, 0);
+
+    // Alice receives a data message
+    response_to_bob = otrng_response_new();
+    otrng_err err = otrng_receive_message(response_to_bob, to_send, alice);
+    assert_msg_rec(err, "hi", response_to_bob);
+    otrng_assert(alice->keys->old_mac_keys);
+
+    free_message_and_response(response_to_bob, &to_send);
+
+    g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==,
+                    message_id + 1);
+
+    g_assert_cmpint(alice->keys->i, ==, 1);
+    g_assert_cmpint(alice->keys->j, ==, 0);
+    g_assert_cmpint(alice->keys->k, ==, message_id + 1);
+    g_assert_cmpint(alice->keys->pn, ==, message_id);
+  }
+
+  for (message_id = 1; message_id < 4; message_id++) {
+    // Alice sends a data message
+    tlv_list_s *tlvs = NULL;
+    err = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, alice);
+    otrng_tlv_list_free(tlvs);
+    assert_msg_sent(err, to_send);
+
+    g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 0);
+
+    // New ratchet hapenned
+    g_assert_cmpint(alice->keys->i, ==, 2);
+    g_assert_cmpint(alice->keys->j, ==, message_id);
+    g_assert_cmpint(alice->keys->k, ==, 0);
+    g_assert_cmpint(alice->keys->pn, ==, 3);
+
+    // Bob receives a data message
+    response_to_alice = otrng_response_new();
+    otrng_err err = otrng_receive_message(response_to_alice, to_send, bob);
+    assert_msg_rec(err, "hello", response_to_alice);
+    g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, message_id);
+
+    free_message_and_response(response_to_alice, &to_send);
+
+    // Alice follows the ratchet 1 (and prepares to a new "ratchet")
+    g_assert_cmpint(bob->keys->i, ==, 2);
+    g_assert_cmpint(bob->keys->j, ==, 0);
+    g_assert_cmpint(bob->keys->k, ==, message_id);
+    g_assert_cmpint(bob->keys->pn, ==, message_id - 1);
   }
 
   otrng_user_state_free_all(alice_client_state->user_state,

@@ -941,6 +941,7 @@ tstatic otrng_err build_non_interactive_auth_message(
         auth->auth_mac, auth, t, t_len, otr->keys->tmp_key);
 
   free(t);
+
   return ret;
 }
 
@@ -1873,10 +1874,13 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     otr->keys->old_mac_keys =
         otrng_list_add(to_store_mac, otr->keys->old_mac_keys);
 
+    sodium_memzero(mac_key, sizeof(m_mac_key_p));
     otrng_data_message_free(msg);
+
     return SUCCESS;
   } while (0);
 
+  sodium_memzero(mac_key, sizeof(m_mac_key_p));
   otrng_data_message_free(msg);
 
   return ERROR;
