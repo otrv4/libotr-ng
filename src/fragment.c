@@ -215,7 +215,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
                                             fragment_context_s *context,
                                             const string_p message,
                                             const int our_instance_tag) {
-  if (is_fragment(message)) {
+  if (!is_fragment(message)) {
     *unfrag_msg = otrng_strdup(message);
     initialize_fragment_context(context);
     return SUCCESS;

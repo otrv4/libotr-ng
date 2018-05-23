@@ -880,21 +880,21 @@ INTERNAL otrng_bool otrng_valid_received_values(
     const ec_point_p their_ecdh, const dh_mpi_p their_dh,
     const client_profile_s *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */
-  if (otrng_ec_point_valid(their_ecdh) == otrng_false)
+  if (!otrng_ec_point_valid(their_ecdh))
     return otrng_false;
 
   /* Verify that the DH public key their_dh is from the correct group. */
-  if (otrng_dh_mpi_valid(their_dh) == otrng_false)
+  if (!otrng_dh_mpi_valid(their_dh))
     return otrng_false;
 
   /* Verify their profile is valid (and not expired). */
-  if (otrng_client_profile_verify_signature(profile) == otrng_false)
+  if (!otrng_client_profile_verify_signature(profile))
     return otrng_false;
 
-  if (not_expired(profile->expires) == otrng_false)
+  if (!not_expired(profile->expires))
     return otrng_false;
 
-  if (no_rollback_detected(profile->versions) == otrng_false)
+  if (!no_rollback_detected(profile->versions))
     return otrng_false;
 
   return otrng_true;

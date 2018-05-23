@@ -170,7 +170,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_s *f,
   otrng_assert(otrng_dh_keypair_generate(invalid_dh) == SUCCESS);
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(shared_prekey, invalid_sym);
-  otrng_assert(otrng_ec_point_valid(shared_prekey->pub) == otrng_true);
+  otrng_assert(otrng_ec_point_valid(shared_prekey->pub));
 
   client_profile_s *invalid_profile = client_profile_new("2");
   otrng_ec_point_copy(invalid_profile->long_term_pub_key, invalid_ecdh->pub);
@@ -182,9 +182,9 @@ void test_dake_prekey_message_valid(prekey_message_fixture_s *f,
   otrng_ec_point_copy(invalid_prekey_message->Y, invalid_ecdh->pub);
   invalid_prekey_message->B = otrng_dh_mpi_copy(invalid_dh->pub);
 
-  otrng_assert(otrng_valid_received_values(
-                   invalid_prekey_message->Y, invalid_prekey_message->B,
-                   invalid_prekey_message->profile) == otrng_false);
+  otrng_assert(!otrng_valid_received_values(invalid_prekey_message->Y,
+                                            invalid_prekey_message->B,
+                                            invalid_prekey_message->profile));
 
   otrng_client_profile_free(invalid_profile);
   otrng_ecdh_keypair_destroy(invalid_ecdh);
@@ -399,7 +399,7 @@ void test_xzdh_encrypted_message_deserialize() {
   otrng_assert_cmpmem(msg->enc_msg, expected->enc_msg, msg->enc_msg_len);
   otrng_assert_cmpmem(msg->nonce, expected->nonce, 24);
 
-  otrng_assert(otrng_ec_point_eq(msg->ecdh, expected->ecdh) == otrng_true);
+  otrng_assert(otrng_ec_point_eq(msg->ecdh, expected->ecdh));
   otrng_assert(gcry_mpi_cmp(msg->dh, expected->dh) == 0);
 
   free(dst);
@@ -612,18 +612,18 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
   otrng_assert_dh_public_key_eq(deserialized->A, expected->A);
   otrng_assert_cmpmem(deserialized->auth_mac, expected->auth_mac, HASH_BYTES);
 
-  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->c1,
-                                                expected->sigma->c1));
-  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->r1,
-                                                expected->sigma->r1));
-  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->c2,
-                                                expected->sigma->c2));
-  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->r2,
-                                                expected->sigma->r2));
-  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->c3,
-                                                expected->sigma->c3));
-  otrng_assert(otrng_true == otrng_ec_scalar_eq(deserialized->sigma->r3,
-                                                expected->sigma->r3));
+  otrng_assert(
+      otrng_ec_scalar_eq(deserialized->sigma->c1, expected->sigma->c1));
+  otrng_assert(
+      otrng_ec_scalar_eq(deserialized->sigma->r1, expected->sigma->r1));
+  otrng_assert(
+      otrng_ec_scalar_eq(deserialized->sigma->c2, expected->sigma->c2));
+  otrng_assert(
+      otrng_ec_scalar_eq(deserialized->sigma->r2, expected->sigma->r2));
+  otrng_assert(
+      otrng_ec_scalar_eq(deserialized->sigma->c3, expected->sigma->c3));
+  otrng_assert(
+      otrng_ec_scalar_eq(deserialized->sigma->r3, expected->sigma->r3));
 
   otrng_assert(deserialized->prekey_message_id == expected->prekey_message_id);
   otrng_assert(deserialized->long_term_key_id == expected->long_term_key_id);

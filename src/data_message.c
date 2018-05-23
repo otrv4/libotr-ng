@@ -279,7 +279,7 @@ INTERNAL otrng_bool otrng_valid_data_message(m_mac_key_p mac_key,
     return otrng_false;
   }
 
-  if (otrng_ec_point_valid(data_msg->ecdh))
+  if (!otrng_ec_point_valid(data_msg->ecdh))
     return otrng_false;
 
   if (!data_msg->dh)

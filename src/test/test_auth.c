@@ -81,7 +81,7 @@ void test_rsig_auth() {
 
   ok = otrng_rsig_verify(dst, p1->pub, p2->pub, p3->pub, (unsigned char *)msg,
                          strlen(msg));
-  otrng_assert(ok == otrng_true);
+  otrng_assert(ok);
 
   ok = otrng_rsig_authenticate(dst, p1->priv, p1->pub, p3->pub, p1->pub,
                                p2->pub, (unsigned char *)msg, strlen(msg));
@@ -90,5 +90,5 @@ void test_rsig_auth() {
 
   ok = otrng_rsig_verify(dst, p3->pub, p1->pub, p2->pub, (unsigned char *)msg,
                          strlen(msg));
-  otrng_assert(ok == otrng_true);
+  otrng_assert(ok);
 }

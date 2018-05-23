@@ -35,7 +35,7 @@ void test_instance_tag_generates_tag_when_file_empty() {
 
   fclose(tmpFILEp);
 
-  g_assert_cmpint(err, ==, 0);
+  g_assert_cmpint(err, ==, 1);
   g_assert_cmpint(instag->value, !=, 0);
   g_assert_cmpint(instag->value, >, 0x100);
 
@@ -67,17 +67,17 @@ void test_instance_tag_generates_tag_when_file_is_full() {
   otrng_instag_s *first_instag = malloc(sizeof(otrng_instag_s));
   err =
       otrng_instag_get(first_instag, icq_alice_account, icq_protocol, tmpFILEp);
-  g_assert_cmpint(err, ==, 0);
+  g_assert_cmpint(err, ==, 1);
 
   otrng_instag_s *second_instag = malloc(sizeof(otrng_instag_s));
   err = otrng_instag_get(second_instag, xmpp_alice_account, xmpp_protocol,
                          tmpFILEp);
-  g_assert_cmpint(err, ==, 0);
+  g_assert_cmpint(err, ==, 1);
 
   otrng_instag_s *third_instag = malloc(sizeof(otrng_instag_s));
   err =
       otrng_instag_get(third_instag, irc_alice_account, irc_protocol, tmpFILEp);
-  g_assert_cmpint(err, ==, 0);
+  g_assert_cmpint(err, ==, 1);
 
   fclose(tmpFILEp);
 

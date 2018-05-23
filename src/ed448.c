@@ -198,12 +198,12 @@ INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, our_keypair->priv);
 
-  if (otrng_ec_point_valid(p) == otrng_false)
+  if (!otrng_ec_point_valid(p))
     return ERROR;
 
   otrng_ec_point_encode(shared_secret, p);
 
-  if (otrng_ecdh_valid_secret(shared_secret) == otrng_false)
+  if (!otrng_ecdh_valid_secret(shared_secret))
     return ERROR;
 
   return SUCCESS;

@@ -151,9 +151,8 @@ void test_dake_identity_message_valid(identity_message_fixture_s *f,
   otrng_ec_point_copy(identity_message->Y, ecdh->pub);
   identity_message->B = otrng_dh_mpi_copy(dh->pub);
 
-  otrng_assert(
-      otrng_valid_received_values(identity_message->Y, identity_message->B,
-                                  identity_message->profile) == otrng_true);
+  otrng_assert(otrng_valid_received_values(
+      identity_message->Y, identity_message->B, identity_message->profile));
 
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dh_keypair_destroy(dh);
@@ -170,7 +169,7 @@ void test_dake_identity_message_valid(identity_message_fixture_s *f,
 
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(shared_prekey, invalid_sym);
-  otrng_assert(otrng_ec_point_valid(shared_prekey->pub) == otrng_true);
+  otrng_assert(otrng_ec_point_valid(shared_prekey->pub));
 
   otrng_ec_point_copy(invalid_profile->long_term_pub_key, invalid_ecdh->pub);
   otrng_ec_point_copy(invalid_profile->shared_prekey, shared_prekey->pub);
@@ -181,9 +180,9 @@ void test_dake_identity_message_valid(identity_message_fixture_s *f,
   otrng_ec_point_copy(invalid_identity_message->Y, invalid_ecdh->pub);
   invalid_identity_message->B = otrng_dh_mpi_copy(invalid_dh->pub);
 
-  otrng_assert(otrng_valid_received_values(
-                   invalid_identity_message->Y, invalid_identity_message->B,
-                   invalid_identity_message->profile) == otrng_false);
+  otrng_assert(!otrng_valid_received_values(invalid_identity_message->Y,
+                                            invalid_identity_message->B,
+                                            invalid_identity_message->profile));
 
   otrng_client_profile_free(invalid_profile);
   otrng_ecdh_keypair_destroy(invalid_ecdh);

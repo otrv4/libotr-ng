@@ -262,7 +262,7 @@ tstatic otrng_bool smp_msg_1_valid_zkp(smp_msg_1_s *msg) {
   if (hash_to_scalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == ERROR)
     return otrng_false;
 
-  if (otrng_ec_scalar_eq(temp_scalar, msg->c2))
+  if (!otrng_ec_scalar_eq(temp_scalar, msg->c2))
     return otrng_false;
 
   /* Check that c3 = hash_to_scalar(2 || G * d3 + G3a * c3). */
@@ -276,7 +276,7 @@ tstatic otrng_bool smp_msg_1_valid_zkp(smp_msg_1_s *msg) {
   if (hash_to_scalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == ERROR)
     return otrng_false;
 
-  if (otrng_ec_scalar_eq(temp_scalar, msg->c3))
+  if (!otrng_ec_scalar_eq(temp_scalar, msg->c3))
     return otrng_false;
 
   return otrng_true;
@@ -510,7 +510,7 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
   if (hash_to_scalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == ERROR)
     return otrng_false;
 
-  if (otrng_ec_scalar_eq(temp_scalar, msg->c2))
+  if (!otrng_ec_scalar_eq(temp_scalar, msg->c2))
     return otrng_false;
 
   /* Check that c3 = HashToScalar(4 || G * d3 + G3b * c3). */
@@ -524,7 +524,7 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
   if (hash_to_scalar(hash, ED448_POINT_BYTES + 1, temp_scalar) == ERROR)
     return otrng_false;
 
-  if (otrng_ec_scalar_eq(temp_scalar, msg->c3))
+  if (!otrng_ec_scalar_eq(temp_scalar, msg->c3))
     return otrng_false;
 
   /* Check that cp = HashToScalar(5 || G3 * d5 + Pb * cp || G * d5 + G2 * d6 +
@@ -549,7 +549,7 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
   if (hash_to_scalar(buff, sizeof(buff), temp_scalar) == ERROR)
     return otrng_false;
 
-  if (otrng_ec_scalar_eq(temp_scalar, msg->cp))
+  if (!otrng_ec_scalar_eq(temp_scalar, msg->cp))
     return otrng_false;
 
   return otrng_true;
@@ -748,7 +748,7 @@ tstatic otrng_bool smp_msg_3_validate_zkp(smp_msg_3_s *msg,
   if (hash_to_scalar(buff, sizeof(buff), temp_scalar) == ERROR)
     return otrng_false;
 
-  if (otrng_ec_scalar_eq(temp_scalar, msg->cp))
+  if (!otrng_ec_scalar_eq(temp_scalar, msg->cp))
     return otrng_false;
 
   /* cr = Hash_to_scalar(7 || G * d7 + G3a * cr || (Qa - Qb) * d7 + Ra * cr) */
@@ -770,7 +770,7 @@ tstatic otrng_bool smp_msg_3_validate_zkp(smp_msg_3_s *msg,
   if (hash_to_scalar(buff, sizeof(buff), temp_scalar) == ERROR)
     return otrng_false;
 
-  if (otrng_ec_scalar_eq(temp_scalar, msg->cr))
+  if (!otrng_ec_scalar_eq(temp_scalar, msg->cr))
     return otrng_false;
 
   return otrng_true;
@@ -884,7 +884,7 @@ tstatic otrng_bool smp_msg_4_validate_zkp(smp_msg_4_s *msg,
   if (hash_to_scalar(buff, sizeof(buff), temp_scalar) == ERROR)
     return otrng_false;
 
-  if (otrng_ec_scalar_eq(msg->cr, temp_scalar))
+  if (!otrng_ec_scalar_eq(msg->cr, temp_scalar))
     return otrng_false;
 
   return otrng_true;
@@ -905,7 +905,7 @@ tstatic otrng_bool smp_is_valid_for_msg_3(const smp_msg_3_s *msg,
   /* Pa - Pb == Rab */
   goldilocks_448_point_sub(Pa_Pb, msg->Pa, smp->Pb);
 
-  if ((otrng_ec_point_eq(Pa_Pb, Rab)))
+  if (!otrng_ec_point_eq(Pa_Pb, Rab))
     return otrng_false;
 
   return otrng_true;
@@ -916,7 +916,7 @@ tstatic otrng_bool smp_is_valid_for_msg_4(smp_msg_4_s *msg, smp_context_p smp) {
   /* Compute Rab = Rb * a3. */
   goldilocks_448_point_scalarmul(Rab, msg->Rb, smp->a3);
   /* Pa - Pb == Rab */
-  if (otrng_ec_point_eq(smp->Pa_Pb, Rab))
+  if (!otrng_ec_point_eq(smp->Pa_Pb, Rab))
     return otrng_false;
 
   return otrng_true;
@@ -933,10 +933,10 @@ tstatic otrng_smp_event_t receive_smp_msg_1(const tlv_s *tlv,
     if (smp_msg_1_deserialize(msg_1, tlv) == ERROR)
       continue;
 
-    if (smp_msg_1_valid_points(msg_1))
+    if (!smp_msg_1_valid_points(msg_1))
       continue;
 
-    if (smp_msg_1_valid_zkp(msg_1))
+    if (!smp_msg_1_valid_zkp(msg_1))
       continue;
 
     smp->msg1 = malloc(sizeof(smp_msg_1_s));
@@ -990,13 +990,13 @@ tstatic otrng_smp_event_t receive_smp_msg_2(smp_msg_2_s *msg_2,
   if (smp_msg_2_deserialize(msg_2, tlv) == ERROR)
     return OTRNG_SMPEVENT_ERROR;
 
-  if (smp_msg_2_valid_points(msg_2))
+  if (!smp_msg_2_valid_points(msg_2))
     return OTRNG_SMPEVENT_ERROR;
 
   goldilocks_448_point_scalarmul(smp->G2, msg_2->G2b, smp->a2);
   goldilocks_448_point_scalarmul(smp->G3, msg_2->G3b, smp->a3);
 
-  if (smp_msg_2_valid_zkp(msg_2, smp) == otrng_false)
+  if (!smp_msg_2_valid_zkp(msg_2, smp))
     return OTRNG_SMPEVENT_ERROR;
 
   return OTRNG_SMPEVENT_NONE;
@@ -1039,10 +1039,10 @@ tstatic otrng_smp_event_t receive_smp_msg_3(smp_msg_3_s *msg_3,
   if (smp_msg_3_deserialize(msg_3, tlv) == ERROR)
     return OTRNG_SMPEVENT_ERROR;
 
-  if (smp_msg_3_validate_points(msg_3))
+  if (!smp_msg_3_validate_points(msg_3))
     return OTRNG_SMPEVENT_ERROR;
 
-  if (smp_msg_3_validate_zkp(msg_3, smp))
+  if (!smp_msg_3_validate_zkp(msg_3, smp))
     return OTRNG_SMPEVENT_ERROR;
 
   smp->progress = 75;
@@ -1073,7 +1073,7 @@ tstatic otrng_smp_event_t reply_with_smp_msg_4(tlv_s **to_send,
   /* Validates SMP */
   smp->progress = 100;
   smp->state = SMPSTATE_EXPECT1;
-  if (smp_is_valid_for_msg_3(msg_3, smp))
+  if (!smp_is_valid_for_msg_3(msg_3, smp))
     return OTRNG_SMPEVENT_FAILURE;
 
   return OTRNG_SMPEVENT_SUCCESS;
@@ -1088,15 +1088,15 @@ tstatic otrng_smp_event_t receive_smp_msg_4(smp_msg_4_s *msg_4,
   if (smp_msg_4_deserialize(msg_4, tlv) == ERROR)
     return OTRNG_SMPEVENT_ERROR;
 
-  if (otrng_ec_point_valid(msg_4->Rb) == otrng_false)
+  if (!otrng_ec_point_valid(msg_4->Rb))
     return OTRNG_SMPEVENT_ERROR;
 
-  if (smp_msg_4_validate_zkp(msg_4, smp))
+  if (!smp_msg_4_validate_zkp(msg_4, smp))
     return OTRNG_SMPEVENT_ERROR;
 
   smp->progress = 100;
   smp->state = SMPSTATE_EXPECT1;
-  if (smp_is_valid_for_msg_4(msg_4, smp))
+  if (!smp_is_valid_for_msg_4(msg_4, smp))
     return OTRNG_SMPEVENT_FAILURE;
 
   return OTRNG_SMPEVENT_SUCCESS;

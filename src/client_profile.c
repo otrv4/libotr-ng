@@ -230,7 +230,7 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
   if (!(profile->signature > 0))
     return otrng_false;
 
-  if (otrng_ec_point_valid(profile->shared_prekey) == otrng_false)
+  if (!otrng_ec_point_valid(profile->shared_prekey))
     return otrng_false;
 
   if (!client_profile_body_asprintf(&body, &bodylen, profile))

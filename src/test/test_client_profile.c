@@ -182,11 +182,11 @@ void test_client_profile_signs_and_verify() {
   otrng_assert(profile != NULL);
   client_profile_sign(profile, keypair);
 
-  otrng_assert(otrng_client_profile_verify_signature(profile) == otrng_true);
+  otrng_assert(otrng_client_profile_verify_signature(profile));
 
   memset(profile->signature, 0, sizeof(profile->signature));
 
-  otrng_assert(otrng_client_profile_verify_signature(profile) == otrng_false);
+  otrng_assert(!otrng_client_profile_verify_signature(profile));
 
   otrng_client_profile_free(profile);
 }
@@ -204,7 +204,7 @@ void test_otrng_client_profile_build() {
 
   profile = otrng_client_profile_build("3", keypair, shared_prekey);
   g_assert_cmpstr(profile->versions, ==, "3");
-  otrng_assert(otrng_ec_point_valid(profile->shared_prekey) == otrng_true);
+  otrng_assert(otrng_ec_point_valid(profile->shared_prekey));
 
   otrng_client_profile_free(profile);
 }

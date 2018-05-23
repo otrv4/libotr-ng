@@ -1176,7 +1176,7 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
     return ERROR;
   }
 
-  if (otrng_valid_received_values(m->Y, m->B, m->profile)) {
+  if (!otrng_valid_received_values(m->Y, m->B, m->profile)) {
     otrng_dake_prekey_message_destroy(m);
     return err;
   }
@@ -1239,7 +1239,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
       our_ecdh(otr),                                        /* Y  */
       t, t_len);
 
-  if (ok == otrng_false) {
+  if (!ok) {
     free(t);
 
     /* here no warning should be passed */
@@ -1371,7 +1371,7 @@ tstatic otrng_err receive_non_interactive_auth_message(
     return ERROR;
   }
 
-  if (verify_non_interactive_auth_message(response, auth, otr) == otrng_false) {
+  if (!verify_non_interactive_auth_message(response, auth, otr)) {
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
@@ -1455,7 +1455,7 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
     return SUCCESS;
   }
 
-  if (otrng_valid_received_values(m->Y, m->B, m->profile)) {
+  if (!otrng_valid_received_values(m->Y, m->B, m->profile)) {
     otrng_dake_identity_message_destroy(m);
     return err;
   }
@@ -1538,7 +1538,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   uint8_t *t = NULL;
   size_t t_len = 0;
 
-  if (otrng_valid_received_values(auth->X, auth->A, auth->profile))
+  if (!otrng_valid_received_values(auth->X, auth->A, auth->profile))
     return otrng_false;
 
   if (!build_interactive_rsign_tag(&t, &t_len, 0, get_my_client_profile(otr),
@@ -1577,7 +1577,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
     otrng_dake_auth_r_destroy(auth);
   }
 
-  if (valid_auth_r_message(auth, otr) == otrng_false) {
+  if (!valid_auth_r_message(auth, otr)) {
     otrng_dake_auth_r_destroy(auth);
     return ERROR;
   }
@@ -1645,7 +1645,7 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
     return SUCCESS;
   }
 
-  if (valid_auth_i_message(auth, otr) == otrng_false) {
+  if (!valid_auth_i_message(auth, otr)) {
     otrng_dake_auth_i_destroy(auth);
     return ERROR;
   }
@@ -1867,7 +1867,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
                                         OTRNG_RECEIVING);
     otr->keys->k++;
 
-    if (otrng_valid_data_message(mac_key, msg)) {
+    if (!otrng_valid_data_message(mac_key, msg)) {
       sodium_memzero(enc_key, sizeof(enc_key));
       sodium_memzero(mac_key, sizeof(mac_key));
       response->to_display = NULL;
@@ -2062,7 +2062,7 @@ tstatic otrng_err receive_error_message(otrng_response_s *response,
 }
 
 tstatic otrng_in_message_type get_message_type(const string_p message) {
-  if (message_contains_tag(message) == otrng_false) {
+  if (message_contains_tag(message)) {
     return IN_MSG_TAGGED_PLAINTEXT;
   } else if (message_is_query(message)) {
     return IN_MSG_QUERY_STRING;

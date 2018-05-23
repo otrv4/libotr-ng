@@ -70,7 +70,7 @@ tstatic otrng_bool otr_mpi_read_len(otrng_mpi_p dst, const uint8_t *src,
 
 INTERNAL otrng_err otrng_mpi_deserialize(otrng_mpi_p dst, const uint8_t *src,
                                          size_t src_len, size_t *read) {
-  if (otr_mpi_read_len(dst, src, src_len, read) == otrng_false)
+  if (!otr_mpi_read_len(dst, src, src_len, read))
     return ERROR;
 
   if (dst->len == 0) {
@@ -94,7 +94,7 @@ INTERNAL otrng_err otrng_mpi_deserialize(otrng_mpi_p dst, const uint8_t *src,
 INTERNAL otrng_err otrng_mpi_deserialize_no_copy(otrng_mpi_p dst,
                                                  const uint8_t *src,
                                                  size_t src_len, size_t *read) {
-  if (otr_mpi_read_len(dst, src, src_len, read) == otrng_false)
+  if (!otr_mpi_read_len(dst, src, src_len, read))
     return ERROR;
 
   if (dst->len == 0) {

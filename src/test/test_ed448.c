@@ -42,7 +42,7 @@ void ed448_test_eddsa_serialization() {
   ec_point_p dec;
   otrng_assert(otrng_ec_point_decode(dec, enc) == SUCCESS);
 
-  otrng_assert(otrng_ec_point_eq(p, dec) == otrng_true);
+  otrng_assert(otrng_ec_point_eq(p, dec));
 }
 
 void ed448_test_eddsa_keygen() {
@@ -62,7 +62,7 @@ void ed448_test_eddsa_keygen() {
   goldilocks_448_point_scalarmul(expected, goldilocks_448_point_base,
                                  secret_scalar);
 
-  otrng_assert(otrng_ec_point_eq(expected, p) == otrng_true);
+  otrng_assert(otrng_ec_point_eq(expected, p));
 }
 
 void ed448_test_scalar_serialization() {
@@ -72,7 +72,7 @@ void ed448_test_scalar_serialization() {
   otrng_ec_scalar_encode(buff, goldilocks_448_scalar_one);
 
   otrng_ec_scalar_decode(s, buff);
-  otrng_assert(otrng_ec_scalar_eq(s, goldilocks_448_scalar_one) == otrng_true);
+  otrng_assert(otrng_ec_scalar_eq(s, goldilocks_448_scalar_one));
 }
 
 void ed448_test_signature() {

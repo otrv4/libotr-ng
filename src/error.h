@@ -36,8 +36,8 @@
 typedef uint32_t
     otrng_bool; /* "Boolean" type, will be set to all-zero or all-one */
 
-static const otrng_bool otrng_true = 0;
-static const otrng_bool otrng_false = 1;
+static const otrng_bool otrng_true = 1;
+static const otrng_bool otrng_false = 0;
 
 typedef enum {
   SUCCESS = 1,

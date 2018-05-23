@@ -89,9 +89,9 @@ void test_ser_des_otrng_public_key() {
                                                   ED448_PUBKEY_BYTES,
                                                   NULL) == SUCCESS);
 
-  otrng_assert(otrng_ec_point_valid(deserialized) == otrng_true);
+  otrng_assert(otrng_ec_point_valid(deserialized));
 
-  otrng_assert(otrng_ec_point_eq(deserialized, keypair->pub) == otrng_true);
+  otrng_assert(otrng_ec_point_eq(deserialized, keypair->pub));
 }
 
 void test_ser_des_otrng_shared_prekey() {
@@ -108,7 +108,7 @@ void test_ser_des_otrng_shared_prekey() {
                                                      ED448_PUBKEY_BYTES,
                                                      NULL) == SUCCESS);
 
-  otrng_assert(otrng_ec_point_valid(deserialized) == otrng_true);
+  otrng_assert(otrng_ec_point_valid(deserialized));
 
   otrng_assert(otrng_ec_point_eq(deserialized, shared_prekey->pub) ==
                otrng_true);

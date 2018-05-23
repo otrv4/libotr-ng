@@ -251,7 +251,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
     otrng_ec_bzero(manager->our_ecdh->priv, sizeof(ec_scalar_p));
 
-    if (otrng_ecdh_valid_secret(k_ecdh) == otrng_false)
+    if (!otrng_ecdh_valid_secret(k_ecdh))
       return ERROR;
 
     if (calculate_brace_key(manager) == ERROR)
@@ -310,12 +310,12 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, shared_prekey->priv);
 
-  if (otrng_ec_point_valid(p) == otrng_false)
+  if (!otrng_ec_point_valid(p))
     return ERROR;
 
   otrng_serialize_ec_point(shared_secret, p);
 
-  if (otrng_ecdh_valid_secret(shared_secret) == otrng_false)
+  if (!otrng_ecdh_valid_secret(shared_secret))
     return ERROR;
 
   return SUCCESS;
@@ -328,12 +328,12 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, keypair->priv);
 
-  if (otrng_ec_point_valid(p) == otrng_false)
+  if (!otrng_ec_point_valid(p))
     return ERROR;
 
   otrng_serialize_ec_point(shared_secret, p);
 
-  if (otrng_ecdh_valid_secret(shared_secret) == otrng_false)
+  if (!otrng_ecdh_valid_secret(shared_secret))
     return ERROR;
 
   return SUCCESS;
