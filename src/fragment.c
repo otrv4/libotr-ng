@@ -62,6 +62,7 @@ API void otrng_message_free(otrng_message_to_send_s *message) {
 
 INTERNAL fragment_context_s *otrng_fragment_context_new(void) {
   fragment_context_s *context = malloc(sizeof(fragment_context_s));
+  context->identifier = 0;
   context->K = 0;
   context->N = 0;
   context->fragment = otrng_strdup("");
@@ -72,6 +73,7 @@ INTERNAL fragment_context_s *otrng_fragment_context_new(void) {
 }
 
 INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
+  context->identifier = 0;
   context->K = 0;
   context->N = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
@@ -162,13 +164,13 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
   return SUCCESS;
 }
 
-// TODO: why?
 tstatic void initialize_fragment_context(fragment_context_s *context) {
   free(context->fragment);
   context->fragment = NULL;
   context->fragment = otrng_strdup("");
   context->fragment_len = 0;
 
+  context->identifier = 0;
   context->N = 0;
   context->K = 0;
   context->status = FRAGMENT_UNFRAGMENTED;

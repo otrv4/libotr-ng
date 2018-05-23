@@ -41,6 +41,7 @@ typedef enum {
 } fragment_status;
 
 typedef struct fragment_context_s {
+  uint32_t identifier;
   unsigned int K, N;
   string_p fragment;
   size_t fragment_len;
