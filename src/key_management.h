@@ -77,7 +77,7 @@ typedef struct key_manager_s {
 
   uint8_t ssid[SSID_BYTES];
   session_id_half ssid_half;
-  uint8_t extra_key[HASH_BYTES];
+  extra_symmetric_key_p extra_symetric_key;
   uint8_t tmp_key[HASH_BYTES];
 
   list_element_s *old_mac_keys;
@@ -85,14 +85,12 @@ typedef struct key_manager_s {
   time_t lastgenerated;
 } key_manager_s, key_manager_p[1];
 
-typedef struct otrng_out_of_order_manager {
-
+typedef struct skipped_keys_s {
   int i; // Counter of the ratchet
   int j; // Counter of the messages
   extra_symmetric_key_p extra_symetric_key;
   m_enc_key_p m_enc_key;
-
-} otrng_out_of_order_manager;
+} skipped_keys_s;
 
 /**
  * @brief Initialize the key manager.

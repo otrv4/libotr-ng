@@ -79,7 +79,7 @@ otrng_key_manager_init(key_manager_s *manager) // make like ratchet_new?
 
   memset(manager->ssid, 0, sizeof(manager->ssid));
   manager->ssid_half = 0;
-  memset(manager->extra_key, 0, sizeof(manager->extra_key));
+  memset(manager->extra_symetric_key, 0, sizeof(manager->extra_symetric_key));
   memset(manager->tmp_key, 0, sizeof(manager->tmp_key));
 
   manager->old_mac_keys = NULL;
@@ -110,7 +110,8 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   sodium_memzero(manager->shared_secret, sizeof(manager->shared_secret));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
   manager->ssid_half = 0;
-  sodium_memzero(manager->extra_key, sizeof(manager->extra_key));
+  sodium_memzero(manager->extra_symetric_key,
+                 sizeof(manager->extra_symetric_key));
   // TODO: once dake is finished should be wiped out
   sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 
@@ -477,7 +478,7 @@ tstatic void derive_encryption_mac_and_next_chain_keys(m_enc_key_p enc_key,
 // TODO: this seems untested
 tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
   goldilocks_shake256_ctx_p hd;
-  uint8_t extra_key_buff[HASH_BYTES];
+  uint8_t extra_key_buff[EXTRA_SYMMETRIC_KEY_BYTES];
   uint8_t magic[1] = {0xFF};
 
   hash_init_with_usage(hd, 0x1A);
@@ -488,14 +489,16 @@ tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
   } else {
     hash_update(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
   }
-  hash_final(hd, extra_key_buff, HASH_BYTES);
+  hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
   hash_destroy(hd);
 
-  memcpy(manager->extra_key, extra_key_buff, sizeof manager->extra_key);
+  memcpy(manager->extra_symetric_key, extra_key_buff,
+         sizeof(manager->extra_symetric_key));
 
 #ifdef DEBUG
   printf("EXTRA KEY = ");
-  otrng_memdump(manager->extra_key, sizeof(manager->extra_key));
+  otrng_memdump(manager->extra_symetric->key,
+                sizeof(manager->extra_symetric_key));
 #endif
 }
 
