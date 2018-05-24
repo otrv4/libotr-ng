@@ -2024,6 +2024,8 @@ tstatic otrng_err receive_error_message(otrng_response_s *response,
 
   const char *unreadable_msg_error = "Unreadable message";
   const char *not_in_private_error = "Not in private state message";
+  const char *encryption_error = "Encryption error";
+  const char *malformed_error = "Malformed message";
 
   if (message[18] == '1') {
     response->to_display =
@@ -2033,8 +2035,15 @@ tstatic otrng_err receive_error_message(otrng_response_s *response,
     response->to_display =
         otrng_strndup(not_in_private_error, strlen(not_in_private_error));
     return SUCCESS;
+  } else if (message[18] == '3') {
+    response->to_display =
+        otrng_strndup(encryption_error, strlen(encryption_error));
+    return SUCCESS;
+  } else if (message[18] == '4') {
+    response->to_display =
+        otrng_strndup(malformed_error, strlen(malformed_error));
+    return SUCCESS;
   }
-
   return ERROR;
 }
 
