@@ -25,6 +25,7 @@
 
 #include "shared.h"
 
+// TODO: this probably does not have strlen
 #define ERROR_PREFIX "?OTR Error: "
 #define ERROR_CODE_1 "ERROR_1: "
 #define ERROR_CODE_2 "ERROR_2: "

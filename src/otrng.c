@@ -2027,19 +2027,19 @@ tstatic otrng_err receive_error_message(otrng_response_s *response,
   const char *encryption_error = "Encryption error";
   const char *malformed_error = "Malformed message";
 
-  if (message[18] == '1') {
+  if (strncmp(message, "ERROR_1:", 8) == 0) {
     response->to_display =
         otrng_strndup(unreadable_msg_error, strlen(unreadable_msg_error));
     return SUCCESS;
-  } else if (message[18] == '2') {
+  } else if (strncmp(message, "ERROR_2:", 8) == 0) {
     response->to_display =
         otrng_strndup(not_in_private_error, strlen(not_in_private_error));
     return SUCCESS;
-  } else if (message[18] == '3') {
+  } else if (strncmp(message, "ERROR_3:", 8) == 0) {
     response->to_display =
         otrng_strndup(encryption_error, strlen(encryption_error));
     return SUCCESS;
-  } else if (message[18] == '4') {
+  } else if (strncmp(message, "ERROR_4:", 8) == 0) {
     response->to_display =
         otrng_strndup(malformed_error, strlen(malformed_error));
     return SUCCESS;
@@ -2064,6 +2064,8 @@ tstatic otrng_in_message_type get_message_type(const string_p message) {
 tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
                                           const string_p message,
                                           otrng_s *otr) {
+  string_p str = (void *)message;
+
   switch (get_message_type(message)) {
   case IN_MSG_NONE:
     return ERROR;
@@ -2082,7 +2084,8 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
     return receive_encoded_message(response, message, otr);
 
   case IN_MSG_OTR_ERROR:
-    return receive_error_message(response, message);
+    memmove(str, str + 12, strlen(message) - 12 + 1);
+    return receive_error_message(response, str);
   }
 
   return SUCCESS;
