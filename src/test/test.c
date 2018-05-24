@@ -88,6 +88,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/list/add", test_otrng_list_add);
   g_test_add_func("/list/insert_at_n", test_otrng_list_insert_at_n);
   g_test_add_func("/list/get", test_otrng_list_get_last);
+  g_test_add_func("/list/get_by_value", test_otrng_list_get_by_value);
   g_test_add_func("/list/length", test_otrng_list_len);
   g_test_add_func("/list/empty_size", test_list_empty_size);
 

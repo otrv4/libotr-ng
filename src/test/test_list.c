@@ -106,6 +106,27 @@ void test_otrng_list_get_last() {
   otrng_list_free_nodes(list);
 }
 
+void test_otrng_list_get_by_value() {
+  int one = 1, two = 2;
+  list_element_s *list = NULL;
+  list = otrng_list_add(&one, list);
+
+  otrng_assert(list);
+  g_assert_cmpint(one, ==, *((int *)list->data));
+
+  list = otrng_list_add(&two, list);
+  otrng_assert(list);
+  g_assert_cmpint(one, ==, *((int *)list->data));
+  otrng_assert(list->next);
+  g_assert_cmpint(two, ==, *((int *)list->next->data));
+
+  list_element_s *elem = otrng_list_get_by_value(&one, list);
+  otrng_assert(elem);
+  g_assert_cmpint(one, ==, *((int *)elem->data));
+
+  otrng_list_free_nodes(list);
+}
+
 void test_otrng_list_len() {
   int one = 1, two = 2;
   list_element_s *list = NULL;
