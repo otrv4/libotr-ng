@@ -87,10 +87,11 @@ INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head) {
   return head;
 }
 
-// TODO: return here?
-INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data,
-                                                         int position,
+INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data, int pos,
                                                          list_element_s *head) {
+  if (pos == 0)
+    return NULL;
+
   list_element_s *n = list_new();
   if (!n)
     return NULL;
@@ -104,14 +105,14 @@ INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data,
   if (!head)
     return NULL;
 
-  if (position == 1) {
+  if (pos == 1) {
     n->next = tmp;
     head = n;
 
     return head;
   }
 
-  for (i = 1; i < position - 1; i++) {
+  for (i = 1; i < pos - 1; i++) {
     tmp = tmp->next;
   }
 
