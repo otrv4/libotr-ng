@@ -29,6 +29,7 @@
 #define ERROR_CODE_1 "ERROR_1: "
 #define ERROR_CODE_2 "ERROR_2: "
 #define ERROR_CODE_3 "ERROR_3: "
+#define ERROR_CODE_4 "ERROR_4: "
 
 // needed for comparing with GOLDILOCKS_TRUE
 typedef uint32_t
@@ -49,6 +50,7 @@ typedef enum {
   ERR_MSG_NOT_PRIVATE,
   ERR_MSG_UNDECRYPTABLE,
   ERR_MSG_ENCRYPTION_ERROR,
+  ERR_MSG_MALFORMED,
 } otrng_err_code;
 
 /// Return success if x is true

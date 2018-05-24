@@ -1090,6 +1090,23 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
     *to_send = otrng_strdup(err_msg);
     free(err_msg);
     break;
+  case ERR_MSG_MALFORMED:
+    msg = strdup("OTRNG_ERR_MALFORMED");
+    err_msg =
+        malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_4) + strlen(msg) + 1);
+    if (!err_msg)
+      return;
+
+    if (err_msg) {
+      strcpy(err_msg, ERROR_PREFIX);
+      strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_4);
+      strcat(err_msg, msg);
+    }
+    free(msg);
+
+    *to_send = otrng_strdup(err_msg);
+    free(err_msg);
+    break;
   }
 }
 
@@ -1145,6 +1162,7 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
   }
 
   if (!received_instance_tag(m->sender_instance_tag, otr)) {
+    otrng_error_message(dst, ERR_MSG_MALFORMED);
     otrng_dake_prekey_message_destroy(m);
     return ERROR;
   }
@@ -1265,8 +1283,8 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
 
   if (err) {
-    free(plain);
     otrng_error_message(dst, ERR_MSG_UNDECRYPTABLE);
+    free(plain);
     return ERROR;
   }
 
@@ -1306,6 +1324,7 @@ tstatic otrng_err receive_non_interactive_auth_message(
   }
 
   if (!received_instance_tag(auth->sender_instance_tag, otr)) {
+    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
@@ -1429,6 +1448,7 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
   }
 
   if (!received_instance_tag(m->sender_instance_tag, otr)) {
+    otrng_error_message(dst, ERR_MSG_MALFORMED);
     otrng_dake_identity_message_destroy(m);
     return err;
   }
@@ -1540,6 +1560,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
   }
 
   if (!received_instance_tag(auth->sender_instance_tag, otr)) {
+    otrng_error_message(dst, ERR_MSG_MALFORMED);
     otrng_dake_auth_r_destroy(auth);
   }
 
@@ -2154,12 +2175,11 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   // TODO: mac keys are only revealed on the first message of every
   // ratchet, not each message
   if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {
+    otrng_error_message(to_send, ERR_MSG_ENCRYPTION_ERROR);
 
     sodium_memzero(enc_key, sizeof(m_enc_key_p));
     sodium_memzero(mac_key, sizeof(m_mac_key_p));
     otrng_data_message_free(data_msg);
-    otrng_error_message(to_send, ERR_MSG_ENCRYPTION_ERROR);
-
     return ERROR;
   }
 
