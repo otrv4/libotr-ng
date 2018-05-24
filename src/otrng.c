@@ -32,6 +32,7 @@
 #include "data_message.h"
 #include "deserialize.h"
 #include "gcrypt.h"
+#include "instance_tag.h"
 #include "otrng.h"
 #include "random.h"
 #include "serialize.h"
@@ -227,6 +228,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
 
   otr->their_instance_tag = 0;
   otr->our_instance_tag = otrng_client_state_get_instance_tag(state);
+
   otr->profile = NULL;
   otr->their_profile = NULL;
 
@@ -1101,9 +1103,14 @@ tstatic otrng_err double_ratcheting_init(otrng_s *otr, bool ours) {
   return SUCCESS;
 }
 
-tstatic void received_instance_tag(uint32_t their_instance_tag, otrng_s *otr) {
-  // TODO: should we do any additional check?
+tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
+                                        otrng_s *otr) {
+  if (their_instance_tag < OTRNG_MIN_VALID_INSTAG)
+    return ERROR;
+
   otr->their_instance_tag = their_instance_tag;
+
+  return SUCCESS;
 }
 
 /*
@@ -1137,7 +1144,10 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
     return SUCCESS;
   }
 
-  received_instance_tag(m->sender_instance_tag, otr);
+  if (!received_instance_tag(m->sender_instance_tag, otr)) {
+    otrng_dake_prekey_message_destroy(m);
+    return ERROR;
+  }
 
   if (otrng_valid_received_values(m->Y, m->B, m->profile)) {
     otrng_dake_prekey_message_destroy(m);
@@ -1295,7 +1305,10 @@ tstatic otrng_err receive_non_interactive_auth_message(
     return SUCCESS;
   }
 
-  received_instance_tag(auth->sender_instance_tag, otr);
+  if (!received_instance_tag(auth->sender_instance_tag, otr)) {
+    otrng_dake_non_interactive_auth_message_destroy(auth);
+    return ERROR;
+  }
 
   // TODO: Extract function to set_their_profile
   otr->their_profile = malloc(sizeof(client_profile_s));
@@ -1415,7 +1428,10 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
     return err;
   }
 
-  received_instance_tag(m->sender_instance_tag, otr);
+  if (!received_instance_tag(m->sender_instance_tag, otr)) {
+    otrng_dake_identity_message_destroy(m);
+    return err;
+  }
 
   switch (otr->state) {
   case OTRNG_STATE_START:
@@ -1523,7 +1539,9 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
     return SUCCESS;
   }
 
-  received_instance_tag(auth->sender_instance_tag, otr);
+  if (!received_instance_tag(auth->sender_instance_tag, otr)) {
+    otrng_dake_auth_r_destroy(auth);
+  }
 
   if (valid_auth_r_message(auth, otr) == otrng_false) {
     otrng_dake_auth_r_destroy(auth);

@@ -27,7 +27,7 @@
 #include "error.h"
 #include "shared.h"
 
-#define MIN_VALID_INSTAG 0x00000100
+#define OTRNG_MIN_VALID_INSTAG 0x00000100
 
 typedef struct otrng_instag_s {
   char *account;

@@ -24,20 +24,32 @@
 void test_smp_state_machine(void) {
   OTRNG_INIT;
 
-  otrng_client_state_s *alice_keypair = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_keypair = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
 
   smp_msg_1_p smp_msg_1;
   smp_msg_2_p smp_msg_2;
 
+  alice_state->account_name = otrng_strdup(ALICE_IDENTITY);
+  alice_state->protocol_name = otrng_strdup("otr");
+  bob_state->account_name = otrng_strdup(BOB_IDENTITY);
+  bob_state->protocol_name = otrng_strdup("otr");
+
+  alice_state->user_state = otrl_userstate_create();
+  bob_state->user_state = otrl_userstate_create();
+
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-  otrng_client_state_add_private_key_v4(alice_keypair, alice_sym);
-  otrng_client_state_add_private_key_v4(bob_keypair, bob_sym);
+  otrng_client_state_add_private_key_v4(alice_state, alice_sym);
+  otrng_client_state_add_private_key_v4(bob_state, bob_sym);
+
+  otrng_client_state_add_instance_tag(alice_state, 0x101);
+  otrng_client_state_add_instance_tag(bob_state, 0x102);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
 
-  otrng_s *alice_otr = otrng_new(alice_keypair, policy);
-  otrng_s *bob_otr = otrng_new(bob_keypair, policy);
+  otrng_s *alice_otr = otrng_new(alice_state, policy);
+  otrng_s *bob_otr = otrng_new(bob_state, policy);
+
   g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT1);
   g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT1);
 
@@ -138,8 +150,8 @@ void test_smp_state_machine(void) {
 
   otrng_assert_cmpmem(alice_otr->smp->secret, bob_otr->smp->secret, 64);
 
-  otrng_client_state_free(alice_keypair); // destroy keypair in otr?
-  otrng_client_state_free(bob_keypair);
+  otrng_client_state_free(alice_state); // destroy keypair in otr?
+  otrng_client_state_free(bob_state);
   otrng_free(alice_otr);
   otrng_free(bob_otr);
 };

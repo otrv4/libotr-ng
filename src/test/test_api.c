@@ -18,7 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libotr/b64.h>
+#include <libotr/b64.h> // TODO: we shouldn't be exposing this
 #include <libotr/privkey.h>
 #include <string.h>
 
