@@ -150,10 +150,9 @@ void test_smp_state_machine(void) {
 
   otrng_assert_cmpmem(alice_otr->smp->secret, bob_otr->smp->secret, 64);
 
-  otrng_client_state_free(alice_state); // destroy keypair in otr?
-  otrng_client_state_free(bob_state);
-  otrng_free(alice_otr);
-  otrng_free(bob_otr);
+  otrng_user_state_free_all(alice_state->user_state, bob_state->user_state);
+  otrng_client_state_free_all(alice_state, bob_state);
+  otrng_free_all(alice_otr, bob_otr);
 };
 
 void test_otrng_generate_smp_secret(void) {
