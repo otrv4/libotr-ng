@@ -126,3 +126,9 @@ AC_CACHE_SAVE
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile src/include/Makefile src/test/Makefile pkgconfig/Makefile pkgconfig/libotr-ng.pc])
 AC_OUTPUT
+
+echo \
+"----------------------------------------------------------------------------
+Thank you for installing libotr-ng version ${PACKAGE_VERSION}.
+Installation completed on directory '${prefix}'.
+----------------------------------------------------------------------------"
