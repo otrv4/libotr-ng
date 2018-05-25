@@ -242,9 +242,9 @@ INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
  * @warning It is not prehashed. The context is always an empty string
  */
 INTERNAL void otrng_ec_sign(eddsa_signature_p sig,
-                            uint8_t sym[ED448_PRIVATE_BYTES],
-                            uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg,
-                            size_t msg_len);
+                            const uint8_t sym[ED448_PRIVATE_BYTES],
+                            const uint8_t pub[ED448_POINT_BYTES],
+                            const uint8_t *msg, size_t msg_len);
 
 /**
  * @brief EdDSA signature verification.
