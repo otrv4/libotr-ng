@@ -214,14 +214,7 @@ tstatic otrng_err client_profile_sign(client_profile_s *profile,
   if (!client_profile_body_asprintf(&body, &bodylen, profile))
     return ERROR;
 
-  uint8_t pubkey[ED448_POINT_BYTES];
-  otrng_serialize_ec_point(pubkey, keypair->pub);
-
-  // maybe otrng_ec_derive_public_key again?
-  // TODO: Why does sign() receive both sym and pub if it can derive
-  // the pub form the sym?
-  otrng_ec_sign(profile->signature, (uint8_t *)keypair->sym, pubkey, body,
-                bodylen);
+  otrng_ec_sign_simple(profile->signature, keypair->sym, body, bodylen);
 
   free(body);
   return SUCCESS;

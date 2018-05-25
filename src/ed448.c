@@ -216,6 +216,14 @@ INTERNAL void otrng_ec_sign(eddsa_signature_p sig,
   goldilocks_ed448_sign(sig, sym, pub, msg, msg_len, 0, NULL, 0);
 }
 
+INTERNAL void otrng_ec_sign_simple(eddsa_signature_p sig,
+                                   const uint8_t sym[ED448_PRIVATE_BYTES],
+                                   const uint8_t *msg, size_t msg_len) {
+  uint8_t pub[ED448_POINT_BYTES] = {0};
+  otrng_ec_derive_public_key(pub, sym);
+  otrng_ec_sign(sig, sym, pub, msg, msg_len);
+}
+
 INTERNAL otrng_bool otrng_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
                                     const uint8_t pub[ED448_POINT_BYTES],
                                     const uint8_t *msg, size_t msg_len) {
