@@ -18,6 +18,8 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "otrng.h"
+
 #include <libotr/b64.h>
 #include <libotr/mem.h>
 #include <stdio.h>
@@ -33,7 +35,6 @@
 #include "deserialize.h"
 #include "gcrypt.h"
 #include "instance_tag.h"
-#include "otrng.h"
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
@@ -167,6 +168,16 @@ tstatic void received_symkey_cb_v4(const otrng_conversation_state_s *conv,
 tstatic void maybe_create_keys(const otrng_conversation_state_s *conv) {
   if (!conv->client->keypair)
     create_privkey_cb_v4(conv);
+
+  // Auto creates shared prekey for convenience.
+  // The callback may not be invoked at all if the mode does not
+  // support non-interactive DAKE, but this is for later.
+  // TODO: Add callback to create the key (so the user can se a "please wait"
+  // dialog.
+  if (!conv->client->shared_prekey_pair) {
+    uint8_t sym_key[ED448_PRIVATE_BYTES] = {0x01}; // TODO: insecure
+    otrng_client_state_add_shared_prekey_v4(conv->client, sym_key);
+  }
 }
 
 tstatic int allow_version(const otrng_s *otr, otrng_supported_version version) {
@@ -187,22 +198,22 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
 // TODO: Add get_my_prekey_profile()
 
 tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
-  if (otr->profile)
-    return otr->profile;
+  otrng_client_state_s *state = otr->conversation->client;
+  const client_profile_s *ret = otrng_client_state_get_client_profile(state);
+  if (ret)
+    return ret;
 
-  char versions[3] = {0};
-  allowed_versions(versions, otr);
   maybe_create_keys(otr->conversation);
 
-  // This is a temporary measure for the pidgin plugin to work
-  // TODO: This will be removed later
-  uint8_t sym_key[ED448_PRIVATE_BYTES] = {0x01};
-  otrng_client_state_add_shared_prekey_v4(otr->conversation->client, sym_key);
+  // TODO: invoke callback to generate profile if it is NULL, instead of doing
+  // it here.
+  // TODO: Versions should be configurable
+  char versions[3] = {0};
+  allowed_versions(versions, otr);
 
-  otr->profile =
-      otrng_client_profile_build(versions, otr->conversation->client->keypair,
-                                 otr->conversation->client->shared_prekey_pair);
-  return otr->profile;
+  state->client_profile = otrng_client_profile_build(versions, state->keypair,
+                                                     state->shared_prekey_pair);
+  return state->client_profile;
 }
 
 INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
@@ -229,7 +240,6 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->their_instance_tag = 0;
   otr->our_instance_tag = otrng_client_state_get_instance_tag(state);
 
-  otr->profile = NULL;
   otr->their_profile = NULL;
 
   otrng_key_manager_init(otr->keys);
@@ -252,9 +262,6 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   otrng_key_manager_destroy(otr->keys);
   free(otr->keys);
   otr->keys = NULL;
-
-  otrng_client_profile_free(otr->profile);
-  otr->profile = NULL;
 
   otrng_client_profile_free(otr->their_profile);
   otr->their_profile = NULL;
@@ -1220,7 +1227,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
    * Y || X || B || A || our_shared_prekey.public */
   otrng_err ret = build_non_interactive_rsig_tag(
       &t, &t_len, get_my_client_profile(otr), auth->profile, our_ecdh(otr),
-      auth->X, our_dh(otr), auth->A, otr->profile->shared_prekey,
+      auth->X, our_dh(otr), auth->A, get_my_client_profile(otr)->shared_prekey,
       otr->conversation->client->phi);
   if (ret == ERROR)
     return otrng_false;

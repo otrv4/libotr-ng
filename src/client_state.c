@@ -48,6 +48,7 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->callbacks = NULL;
   state->user_state = NULL;
   state->keypair = NULL;
+  state->client_profile = NULL;
   state->shared_prekey_pair = NULL;
   state->phi = NULL;
   state->pad = false; // TODO: why is this a bool?
@@ -70,6 +71,9 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
 
   otrng_keypair_free(state->keypair);
   state->keypair = NULL;
+
+  otrng_client_profile_free(state->client_profile);
+  state->client_profile = NULL;
 
   otrng_shared_prekey_pair_free(state->shared_prekey_pair);
   state->shared_prekey_pair = NULL;
@@ -203,6 +207,32 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
   }
 
   return err;
+}
+
+API const client_profile_s *
+otrng_client_state_get_client_profile(otrng_client_state_s *state) {
+  if (!state)
+    return NULL;
+
+  // TODO: Invoke callbacks?
+
+  return state->client_profile;
+}
+
+API int otrng_client_state_add_client_profile(otrng_client_state_s *state,
+                                              const client_profile_s *profile) {
+  if (!state)
+    return 1;
+
+  if (state->client_profile)
+    return 2;
+
+  state->client_profile = malloc(sizeof(client_profile_s));
+  if (!state->client_profile)
+    return 3;
+
+  otrng_client_profile_copy(state->client_profile, profile);
+  return 0;
 }
 
 INTERNAL int otrng_client_state_add_shared_prekey_v4(

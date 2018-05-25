@@ -24,10 +24,10 @@
 #include <stdbool.h>
 
 #include <gcrypt.h>
-
 #include <libotr/userstate.h>
 
 #include "client_callbacks.h"
+#include "client_profile.h"
 #include "keys.h"
 #include "shared.h"
 
@@ -53,6 +53,9 @@ typedef struct otrng_client_state_s {
   // callback and v3 user state
   OtrlUserState user_state;
   otrng_keypair_s *keypair;
+
+  // TODO: One or many?
+  client_profile_s *client_profile;
   otrng_shared_prekey_pair_s *shared_prekey_pair; // TODO: is this something the
                                                   // client will generate? The
                                                   // spec does not specify.
@@ -77,6 +80,12 @@ INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
 INTERNAL int
 otrng_client_state_add_shared_prekey_v4(otrng_client_state_s *state,
                                         const uint8_t sym[ED448_PRIVATE_BYTES]);
+
+API const client_profile_s *
+otrng_client_state_get_client_profile(otrng_client_state_s *state);
+
+API int otrng_client_state_add_client_profile(otrng_client_state_s *state,
+                                              const client_profile_s *profile);
 
 INTERNAL int
 otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
