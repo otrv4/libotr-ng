@@ -21,14 +21,22 @@
 #ifndef OTRNG_KEY_MANAGEMENT_H
 #define OTRNG_KEY_MANAGEMENT_H
 
-#include <stdbool.h>
-
 #include "constants.h"
 #include "dh.h"
 #include "ed448.h"
 #include "keys.h"
 #include "list.h"
 #include "shared.h"
+
+typedef enum {
+  OTRNG_INTERACTIVE = 0,
+  OTRNG_NON_INTERACTIVE = 1,
+} otrng_information_flow;
+
+typedef enum {
+  OTRNG_SENDING = 0,
+  OTRNG_RECEIVING = 1,
+} otrng_participant_action;
 
 /* the different kind of keys for the key management */
 typedef uint8_t k_dh_p[DH_KEY_BYTES];
@@ -150,10 +158,10 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
  *        generate it from the tmp key.
  *
  * @param [manager]   The key manager.
- * @param [interactive]   If it is part of the interactive DAKE or not.
+ * @param [flow]      If it is part of the interactive DAKE or not.
  */
 INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
-    key_manager_s *manager, bool interactive);
+    key_manager_s *manager, otrng_information_flow flow);
 
 /**
  * @brief Generate a Shared Secret from the shared prekey.
@@ -179,11 +187,11 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
 /**
  * @brief Initialize the double ratchet algorithm.
  *
- * @param [manager]   The key manager.
- * @param [ours]   If this corresponds to our or their key manager.
+ * @param [manager]       The key manager.
+ * @param [participant]   If this corresponds to our or their key manager.
  */
-INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
-                                                     bool ours);
+INTERNAL otrng_err otrng_key_manager_ratcheting_init(
+    key_manager_s *manager, otrng_participant participant);
 
 /**
  * @brief Derive ratchet chain keys.
@@ -191,20 +199,21 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
  * @param [enc_key]   The encryption key.
  * @param [mac_key]   The mac key.
  * @param [manager]   The key manager.
+ * @param [action]    Defines if this is the sending or receiving chain.
  */
-INTERNAL void otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key,
-                                                  m_mac_key_p mac_key,
-                                                  key_manager_s *manager,
-                                                  bool sending);
+INTERNAL void
+otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key, m_mac_key_p mac_key,
+                                    key_manager_s *manager,
+                                    otrng_participant_action action);
 
 /**
  * @brief Derive the dh ratchet keys.
  *
  * @param [manager]   The key manager.
- * @param [sending]   Is this sending or receiving chain.
+ * @param [action]    Defines if this is the sending or receiving chain.
  */
-INTERNAL otrng_err
-otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager, bool sending);
+INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
+    key_manager_s *manager, otrng_participant_action action);
 
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
 /**
@@ -218,10 +227,10 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager);
  * @brief Derive ratchet keys.
  *
  * @param [manager]   The key manager.
- * @param [sending]   Is this sending or receiving chain.
+ * @param [action]    Defines if this is the sending or receiving chain.
  */
-tstatic otrng_err key_manager_derive_ratchet_keys(key_manager_s *manager,
-                                                  bool sending);
+tstatic otrng_err key_manager_derive_ratchet_keys(
+    key_manager_s *manager, otrng_participant_action action);
 
 /**
  * @brief Calculate the secure session id.
@@ -234,8 +243,10 @@ tstatic void calculate_ssid(key_manager_s *manager);
  * @brief Calculate the extra symmetric key.
  *
  * @param [manager]   The key manager.
+ * @param [action]    Defines if this is the sending or receiving chain.
  */
-tstatic void calculate_extra_key(key_manager_s *manager, bool sending);
+tstatic void calculate_extra_key(key_manager_s *manager,
+                                 otrng_participant_action action);
 
 #endif
 

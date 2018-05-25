@@ -137,7 +137,7 @@ INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair) {
 
 INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
     uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair,
-    bool ours) {
+    otrng_participant participant) {
   gcry_mpi_t privkey = NULL;
   uint8_t random[DH_KEY_SIZE];
 
@@ -149,11 +149,11 @@ INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
   if (err)
     return ERROR;
 
-  if (ours) {
+  if (participant == OTRNG_OURS) {
     keypair->priv = privkey;
     keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
     gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
-  } else {
+  } else if (participant == OTRNG_THEIR) {
     keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
     gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
 

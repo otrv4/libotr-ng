@@ -22,7 +22,6 @@
 #define OTRNG_DH_H
 
 #include <gcrypt.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "constants.h"
@@ -37,6 +36,11 @@
 typedef gcry_mpi_t dh_mpi_p;
 typedef dh_mpi_p dh_private_key_p, dh_public_key_p;
 
+typedef enum {
+  OTRNG_OURS = 0,
+  OTRNG_THEIR = 1,
+} otrng_participant;
+
 typedef struct dh_keypair_s {
   dh_public_key_p pub;
   dh_private_key_p priv;
@@ -50,7 +54,7 @@ INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair);
 
 INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
     uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair,
-    bool ours);
+    otrng_participant participant);
 
 INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_p keypair);
 

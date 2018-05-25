@@ -809,12 +809,13 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
   if (!cipher)
     return ERROR;
 
-  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, true))
+  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, OTRNG_SENDING))
     return ERROR;
 
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
-  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, true);
+  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys,
+                                      OTRNG_SENDING);
   otr->keys->j++;
 
   /* discard this mac key as it is not used */
@@ -1110,8 +1111,9 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   }
 }
 
-tstatic otrng_err double_ratcheting_init(otrng_s *otr, bool ours) {
-  if (!otrng_key_manager_ratcheting_init(otr->keys, ours))
+tstatic otrng_err double_ratcheting_init(otrng_s *otr,
+                                         otrng_participant participant) {
+  if (!otrng_key_manager_ratcheting_init(otr->keys, participant))
     return ERROR;
 
   otr->state = OTRNG_STATE_ENCRYPTED_MESSAGES;
@@ -1195,10 +1197,11 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
   if (!generate_tmp_key_r(otr->keys->tmp_key, otr))
     return err;
 
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, false))
+  if (!otrng_key_manager_generate_shared_secret(otr->keys,
+                                                OTRNG_NON_INTERACTIVE))
     return ERROR;
 
-  if (!double_ratcheting_init(otr, false))
+  if (!double_ratcheting_init(otr, OTRNG_THEIR))
     return err;
 
   // TODO: this should send the non interactive auth and decide
@@ -1269,12 +1272,14 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
   otr->keys->their_dh = otrng_dh_mpi_copy(auth->dh);
   otrng_ec_point_copy(otr->keys->their_ecdh, auth->ecdh);
 
-  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, false) == ERROR)
+  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, OTRNG_RECEIVING) ==
+      ERROR)
     return ERROR;
 
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
-  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, false);
+  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys,
+                                      OTRNG_RECEIVING);
   otr->keys->k++;
   otr->keys->pn = auth->message_id;
 
@@ -1348,12 +1353,13 @@ tstatic otrng_err receive_non_interactive_auth_message(
     return ERROR;
   }
 
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, false)) {
+  if (!otrng_key_manager_generate_shared_secret(otr->keys,
+                                                OTRNG_NON_INTERACTIVE)) {
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
 
-  if (!double_ratcheting_init(otr, true)) {
+  if (!double_ratcheting_init(otr, OTRNG_OURS)) {
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
@@ -1392,7 +1398,7 @@ tstatic otrng_err receive_identity_message_on_state_start(
   if (!reply_with_auth_r_msg(dst, otr))
     return ERROR;
 
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, true))
+  if (!otrng_key_manager_generate_shared_secret(otr->keys, OTRNG_INTERACTIVE))
     return ERROR;
 
   otr->state = OTRNG_STATE_WAITING_AUTH_I;
@@ -1590,10 +1596,10 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
   if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, true))
+  if (!otrng_key_manager_generate_shared_secret(otr->keys, OTRNG_INTERACTIVE))
     return ERROR;
 
-  return double_ratcheting_init(otr, true);
+  return double_ratcheting_init(otr, OTRNG_OURS);
 }
 
 tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
@@ -1643,7 +1649,7 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
   if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
-  return double_ratcheting_init(otr, false);
+  return double_ratcheting_init(otr, OTRNG_THEIR);
 }
 
 // TODO: this is the same as otrng_close
@@ -1846,10 +1852,12 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       return SUCCESS;
     }
 
-    if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, false) == ERROR)
+    if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, OTRNG_RECEIVING) ==
+        ERROR)
       return ERROR;
 
-    otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, false);
+    otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys,
+                                        OTRNG_RECEIVING);
     otr->keys->k++;
 
     if (otrng_valid_data_message(mac_key, msg)) {
@@ -2157,14 +2165,15 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
 
-  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, true))
+  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, OTRNG_SENDING))
     return ERROR;
 
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
-  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, true);
+  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys,
+                                      OTRNG_SENDING);
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {

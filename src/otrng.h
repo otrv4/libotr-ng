@@ -76,7 +76,7 @@ typedef enum {
   OTRNG_VERSION_NONE = 0,
   OTRNG_VERSION_3 = 3,
   OTRNG_VERSION_4 = 4
-} otrng_version_t;
+} otrng_version;
 
 // clang-format off
 typedef struct otrng_policy_s {
@@ -109,7 +109,7 @@ struct otrng_s {
   client_profile_s *profile;
   client_profile_s *their_profile;
 
-  otrng_version_t running_version;
+  otrng_version running_version;
 
   key_manager_s *keys;
   smp_context_p smp;

@@ -170,10 +170,10 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
 
 // Generate the ephemeral keys just as the DAKE is finished
 tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
-                                                bool ours) {
+                                                otrng_participant participant) {
   uint8_t random[ED448_PRIVATE_BYTES];
 
-  if (ours) {
+  if (participant == OTRNG_OURS) {
     shake_256_kdf1(random, sizeof random, 0x13, manager->shared_secret,
                    sizeof(shared_secret_p));
 
@@ -181,10 +181,10 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     otrng_ecdh_keypair_generate(manager->our_ecdh, random);
 
     otrng_dh_keypair_destroy(manager->our_dh);
-    if (!otrng_dh_keypair_generate_from_shared_secret(manager->shared_secret,
-                                                      manager->our_dh, true))
+    if (!otrng_dh_keypair_generate_from_shared_secret(
+            manager->shared_secret, manager->our_dh, participant))
       return ERROR;
-  } else {
+  } else if (participant == OTRNG_THEIR) {
     shake_256_kdf1(random, sizeof random, 0x13, manager->shared_secret,
                    sizeof(shared_secret_p));
 
@@ -195,8 +195,8 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     manager->their_dh = NULL;
     dh_keypair_p tmp_their_dh;
 
-    if (!otrng_dh_keypair_generate_from_shared_secret(manager->shared_secret,
-                                                      tmp_their_dh, false))
+    if (!otrng_dh_keypair_generate_from_shared_secret(
+            manager->shared_secret, tmp_their_dh, participant))
       return ERROR;
 
     manager->their_dh = tmp_their_dh->pub;
@@ -244,8 +244,8 @@ tstatic void calculate_shared_secret(key_manager_s *manager, k_ecdh_p k_ecdh) {
 }
 
 INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
-    key_manager_s *manager, bool interactive) {
-  if (interactive) {
+    key_manager_s *manager, otrng_information_flow flow) {
+  if (flow == OTRNG_INTERACTIVE) {
     k_ecdh_p k_ecdh;
 
     otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
@@ -261,7 +261,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     otrng_dh_priv_key_destroy(manager->our_dh);
 
     calculate_shared_secret(manager, k_ecdh);
-  } else {
+  } else if (flow == OTRNG_NON_INTERACTIVE) {
     shake_256_kdf1(manager->shared_secret, sizeof(shared_secret_p), 0x04,
                    manager->tmp_key, sizeof(manager->tmp_key));
   }
@@ -344,9 +344,9 @@ tstatic void calculate_ssid(key_manager_s *manager) {
                  manager->shared_secret, sizeof(shared_secret_p));
 }
 
-INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
-                                                     bool ours) {
-  if (!generate_first_ephemeral_keys(manager, ours))
+INTERNAL otrng_err otrng_key_manager_ratcheting_init(
+    key_manager_s *manager, otrng_participant participant) {
+  if (!generate_first_ephemeral_keys(manager, participant))
     return ERROR;
 
   manager->i = 0;
@@ -360,7 +360,8 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
   return SUCCESS;
 }
 
-tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool sending) {
+tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
+                                    otrng_participant_action action) {
   k_ecdh_p k_ecdh;
 
   otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
@@ -380,7 +381,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool sending) {
   otrng_memdump(manager->shared_secret, sizeof(manager->shared_secret));
 #endif
 
-  if (key_manager_derive_ratchet_keys(manager, sending) == ERROR) {
+  if (key_manager_derive_ratchet_keys(manager, action) == ERROR) {
     sodium_memzero(manager->shared_secret, SHARED_SECRET_BYTES);
     return ERROR;
   }
@@ -391,16 +392,17 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, bool sending) {
 
 // TODO: not sure about this always return SUCCESS.. maybe some other logic will
 // work
-tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
+tstatic otrng_err rotate_keys(key_manager_s *manager,
+                              otrng_participant_action action) {
   manager->k = 0;
-  if (sending) {
+  if (action == OTRNG_SENDING) {
     if (!otrng_key_manager_generate_ephemeral_keys(manager))
       return ERROR;
 
-    if (!enter_new_ratchet(manager, true))
+    if (!enter_new_ratchet(manager, action))
       return ERROR;
-  } else {
-    if (!enter_new_ratchet(manager, false))
+  } else if (action == OTRNG_RECEIVING) {
+    if (!enter_new_ratchet(manager, action))
       return ERROR;
 
     otrng_ec_scalar_destroy(manager->our_ecdh->priv);
@@ -413,8 +415,8 @@ tstatic otrng_err rotate_keys(key_manager_s *manager, bool sending) {
   return SUCCESS;
 }
 
-tstatic otrng_err key_manager_derive_ratchet_keys(key_manager_s *manager,
-                                                  bool sending) {
+tstatic otrng_err key_manager_derive_ratchet_keys(
+    key_manager_s *manager, otrng_participant_action action) {
   ratchet_s *ratchet = ratchet_new();
   if (!ratchet)
     return ERROR;
@@ -426,13 +428,13 @@ tstatic otrng_err key_manager_derive_ratchet_keys(key_manager_s *manager,
   hash_final(hd, ratchet->root_key, sizeof(root_key_p));
   hash_destroy(hd);
 
-  if (sending) {
+  if (action == OTRNG_SENDING) {
     hash_init_with_usage(hd, 0x16);
     hash_update(hd, manager->current->root_key, sizeof(root_key_p));
     hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
     hash_final(hd, ratchet->chain_s, sizeof(sending_chain_key_p));
     hash_destroy(hd);
-  } else {
+  } else if (action == OTRNG_RECEIVING) {
     hash_init_with_usage(hd, 0x16);
     hash_update(hd, manager->current->root_key, sizeof(root_key_p));
     hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
@@ -454,17 +456,16 @@ tstatic otrng_err key_manager_derive_ratchet_keys(key_manager_s *manager,
   return SUCCESS;
 }
 
-tstatic void derive_encryption_mac_and_next_chain_keys(m_enc_key_p enc_key,
-                                                       m_mac_key_p mac_key,
-                                                       key_manager_s *manager,
-                                                       bool sending) {
-  if (sending) {
+tstatic void derive_encryption_mac_and_next_chain_keys(
+    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
+    otrng_participant_action action) {
+  if (action == OTRNG_SENDING) {
     shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
                    manager->current->chain_s, sizeof(sending_chain_key_p));
     shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p), 0x16,
                    manager->current->chain_s, sizeof(sending_chain_key_p));
 
-  } else {
+  } else if (action == OTRNG_RECEIVING) {
     shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
                    manager->current->chain_r, sizeof(receiving_chain_key_p));
     shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
@@ -476,7 +477,8 @@ tstatic void derive_encryption_mac_and_next_chain_keys(m_enc_key_p enc_key,
 }
 
 // TODO: this seems untested
-tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
+tstatic void calculate_extra_key(key_manager_s *manager,
+                                 otrng_participant_action action) {
   goldilocks_shake256_ctx_p hd;
   uint8_t extra_key_buff[EXTRA_SYMMETRIC_KEY_BYTES];
   uint8_t magic[1] = {0xFF};
@@ -484,9 +486,9 @@ tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
   hash_init_with_usage(hd, 0x1A);
   hash_update(hd, magic, 1);
 
-  if (sending) {
+  if (action == OTRNG_SENDING) {
     hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
-  } else {
+  } else if (action == OTRNG_SENDING) {
     hash_update(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
   }
   hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
@@ -502,12 +504,12 @@ tstatic void calculate_extra_key(key_manager_s *manager, bool sending) {
 #endif
 }
 
-INTERNAL void otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key,
-                                                  m_mac_key_p mac_key,
-                                                  key_manager_s *manager,
-                                                  bool sending) {
-  derive_encryption_mac_and_next_chain_keys(enc_key, mac_key, manager, sending);
-  calculate_extra_key(manager, sending);
+INTERNAL void
+otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key, m_mac_key_p mac_key,
+                                    key_manager_s *manager,
+                                    otrng_participant_action action) {
+  derive_encryption_mac_and_next_chain_keys(enc_key, mac_key, manager, action);
+  calculate_extra_key(manager, action);
 
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
@@ -518,11 +520,11 @@ INTERNAL void otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key,
 #endif
 }
 
-INTERNAL otrng_err
-otrng_key_manager_derive_dh_ratchet_keys(key_manager_s *manager, bool sending) {
+INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
+    key_manager_s *manager, otrng_participant_action action) {
   // Derive new ECDH and DH keys
   if (manager->j == 0)
-    return rotate_keys(manager, sending);
+    return rotate_keys(manager, action);
 
   return SUCCESS;
 }
