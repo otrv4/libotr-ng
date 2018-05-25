@@ -697,7 +697,7 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
   otrng_free_all(alice, bob);
 }
 
-void test_api_conversation_errors(void) {
+void test_api_conversation_errors_1(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
@@ -778,6 +778,97 @@ void test_api_conversation_errors(void) {
   otrng_tlv_list_free(tlvs);
 
   free_message_and_response(response_to_alice, &to_send);
+  otrng_user_state_free_all(alice_client_state->user_state,
+                            bob_client_state->user_state);
+  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_free_all(alice, bob);
+}
+
+void test_api_conversation_errors_2(void) {
+  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+
+  alice_client_state->account_name = otrng_strdup(ALICE_IDENTITY);
+  alice_client_state->protocol_name = otrng_strdup("otr");
+  alice_client_state->user_state = otrl_userstate_create();
+
+  uint8_t sym_key[ED448_PRIVATE_BYTES] = {0x01};
+  otrng_client_state_add_private_key_v4(alice_client_state, sym_key);
+  otrng_client_state_add_shared_prekey_v4(alice_client_state, sym_key);
+  otrng_client_state_add_instance_tag(alice_client_state, 0x00);
+  alice_client_state->phi = otrng_strdup(PHI);
+  alice_client_state->pad = false;
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
+
+  otrng_s *alice = otrng_new(alice_client_state, policy);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+
+  otrng_response_s *response_to_bob = otrng_response_new();
+  otrng_response_s *response_to_alice = otrng_response_new();
+  string_p query_message = NULL;
+
+  otrng_assert(alice->state == OTRNG_STATE_START);
+  otrng_assert(bob->state == OTRNG_STATE_START);
+
+  // Alice sends a query message
+  otrng_assert(otrng_build_query_message(&query_message, "", alice) == SUCCESS);
+  otrng_assert(alice->state == OTRNG_STATE_START);
+  otrng_assert_cmpmem("?OTRv4", query_message, 6);
+
+  // Bob receives a query message
+  otrng_assert(otrng_receive_message(response_to_alice, query_message, bob) ==
+               SUCCESS);
+  free(query_message);
+  query_message = NULL;
+
+  // Bob replies with an identity message
+  otrng_assert(bob->state == OTRNG_STATE_WAITING_AUTH_R);
+  otrng_assert(response_to_alice->to_display == NULL);
+  otrng_assert(response_to_alice->to_send);
+  otrng_assert_cmpmem("?OTR:AAQI", response_to_alice->to_send, 9);
+
+  // Alice receives an identity message
+  otrng_assert(otrng_receive_message(response_to_bob,
+                                     response_to_alice->to_send,
+                                     alice) == SUCCESS);
+  free(response_to_alice->to_send);
+  response_to_alice->to_send = NULL;
+
+  // Alice replies with an auth-r message
+  otrng_assert(alice->state == OTRNG_STATE_WAITING_AUTH_I);
+  otrng_assert(response_to_bob->to_display == NULL);
+  otrng_assert(response_to_bob->to_send);
+  otrng_assert_cmpmem("?OTR:AASR", response_to_bob->to_send, 9);
+
+  otrng_err err;
+  // Bob receives an auth-r message
+  err = otrng_receive_message(response_to_alice, response_to_bob->to_send, bob);
+  otrng_assert(!err);
+  string_p err_code = "?OTR Error: ERROR_4: OTRNG_ERR_MALFORMED";
+  otrng_assert_cmpmem(err_code, response_to_alice->to_send, strlen(err_code));
+
+  free(response_to_bob->to_send);
+  response_to_bob->to_send = NULL;
+
+  // Alice receives an error message
+  otrng_assert(otrng_receive_message(response_to_bob,
+                                     response_to_alice->to_send,
+                                     alice) == SUCCESS);
+
+  otrng_assert(response_to_bob);
+  string_p err_human = "Malformed message";
+  otrng_assert_cmpmem(err_human, response_to_bob->to_display,
+                      strlen(err_human));
+
+  free(response_to_alice->to_send);
+  response_to_alice->to_send = NULL;
+
+  otrng_response_free(response_to_alice);
+  response_to_alice = NULL;
+
+  otrng_response_free(response_to_bob);
+  response_to_bob = NULL;
+
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);

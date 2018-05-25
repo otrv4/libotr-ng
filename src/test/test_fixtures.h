@@ -246,11 +246,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert_cmpmem("?OTR:AASI", response_to_alice->to_send, 9);
 
   // The double ratchet is initialized
-  // otrng_assert(bob->keys->current);
-
-  // for (unsigned int i = 0; i < 64; i++) {
-  //  printf("%x", bob->keys->current->root_key[i]);
-  //}
+  otrng_assert(bob->keys->current);
 
   // Alice receives an auth-i message
   otrng_assert(otrng_receive_message(response_to_bob,
@@ -269,21 +265,11 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   g_assert_cmpint(alice->keys->k, ==, 0);
 
   // The double ratchet is initialized
-  // otrng_assert(alice->keys->current);
+  otrng_assert(alice->keys->current);
 
   // Both have the same shared secret
   otrng_assert_root_key_eq(alice->keys->shared_secret,
                            bob->keys->shared_secret);
-  // otrng_assert_chain_key_eq(alice->keys->current->chain_a->key,
-  //                          bob->keys->current->chain_a->key);
-  // otrng_assert_chain_key_eq(bob->keys->current->chain_b->key,
-  //                          alice->keys->current->chain_b->key);
-
-  // chain_key_p bob_sending_key, alice_receiving_key;
-  // key_manager_get_sending_chain_key(bob_sending_key, bob->keys);
-  // otrng_assert(key_manager_get_receiving_chain_key(alice_receiving_key, 0,
-  //                                                alice->keys) == SUCCESS);
-  // otrng_assert_chain_key_eq(bob_sending_key, alice_receiving_key);
 
   otrng_response_free(response_to_alice);
   response_to_alice = NULL;

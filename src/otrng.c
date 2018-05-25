@@ -2021,7 +2021,6 @@ tstatic otrng_err receive_encoded_message(otrng_response_s *response,
 
 tstatic otrng_err receive_error_message(otrng_response_s *response,
                                         const string_p message) {
-
   const char *unreadable_msg_error = "Unreadable message";
   const char *not_in_private_error = "Not in private state message";
   const char *encryption_error = "Encryption error";

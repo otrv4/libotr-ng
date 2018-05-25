@@ -253,7 +253,8 @@ int main(int argc, char **argv) {
                   test_api_non_interactive_conversation_with_enc_msg_1);
   g_test_add_func("/api/non_interactive_conversation_enc_msg_2/v4",
                   test_api_non_interactive_conversation_with_enc_msg_2);
-  g_test_add_func("/api/conversation_errors", test_api_conversation_errors);
+  g_test_add_func("/api/conversation_errors_1", test_api_conversation_errors_1);
+  g_test_add_func("/api/conversation_errors_2", test_api_conversation_errors_2);
   g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
   g_test_add_func("/api/smp", test_api_smp);
   g_test_add_func("/api/smp_abort", test_api_smp_abort);
