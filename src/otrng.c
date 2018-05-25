@@ -195,7 +195,22 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
   *dst = 0;
 }
 
-// TODO: Add get_my_prekey_profile()
+tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
+  otrng_client_state_s *state = otr->conversation->client;
+  const otrng_prekey_profile_s *ret =
+      otrng_client_state_get_prekey_profile(state);
+  if (ret)
+    return ret;
+
+  maybe_create_keys(otr->conversation);
+
+  // TODO: invoke callback to generate profile if it is NULL, instead of doing
+  // it here.
+  state->prekey_profile =
+      otrng_prekey_profile_build(state->keypair, state->shared_prekey_pair);
+
+  return state->prekey_profile;
+}
 
 tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
   otrng_client_state_s *state = otr->conversation->client;
@@ -917,12 +932,10 @@ tstatic otrng_err build_non_interactive_auth_message(
   /* t = KDF_1(0x0E || Bobs_Client_Profile, 64) || KDF_1(0x0F ||
    * Alices_Client_Profile, 64) || Y || X || B || A || their_shared_prekey ||
    * KDF_1(0x10 || phi, 64) */
-  otrng_err ret = build_non_interactive_rsig_tag(
-      &t, &t_len, otr->their_profile, get_my_client_profile(otr),
-      their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
-      otr->their_profile->shared_prekey, otr->conversation->client->phi);
-
-  if (ret == ERROR)
+  if (!build_non_interactive_rsig_tag(
+          &t, &t_len, otr->their_profile, get_my_client_profile(otr),
+          their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
+          otr->their_profile->shared_prekey, otr->conversation->client->phi))
     return ERROR;
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
@@ -948,11 +961,10 @@ tstatic otrng_err build_non_interactive_auth_message(
   otrng_ec_scalar_destroy(c);
 
   /* Encrypts the attached message */
-  if (msglen != 0) {
+  otrng_err ret = SUCCESS;
+  if (msglen != 0)
     ret =
         encrypt_msg_on_non_interactive_auth(auth, nonce, message, msglen, otr);
-  }
-  sodium_memzero(nonce, sizeof(nonce));
 
   /* Creates MAC tag */
   if (ret == SUCCESS)
@@ -960,6 +972,7 @@ tstatic otrng_err build_non_interactive_auth_message(
         auth->auth_mac, auth, t, t_len, otr->keys->tmp_key);
 
   free(t);
+  sodium_memzero(nonce, sizeof(nonce));
 
   return ret;
 }
@@ -1234,13 +1247,16 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   unsigned char *t = NULL;
   size_t t_len = 0;
 
+  const otrng_prekey_profile_s *prekey_profile = get_my_prekey_profile(otr);
+  if (!prekey_profile)
+    return otrng_false;
+
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
-  if (!build_non_interactive_rsig_tag(&t, &t_len, get_my_client_profile(otr),
-                                      auth->profile, our_ecdh(otr), auth->X,
-                                      our_dh(otr), auth->A,
-                                      get_my_client_profile(otr)->shared_prekey,
-                                      otr->conversation->client->phi))
+  if (!build_non_interactive_rsig_tag(
+          &t, &t_len, get_my_client_profile(otr), auth->profile, our_ecdh(otr),
+          auth->X, our_dh(otr), auth->A, prekey_profile->shared_prekey,
+          otr->conversation->client->phi))
     return otrng_false;
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */

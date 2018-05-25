@@ -49,6 +49,7 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->user_state = NULL;
   state->keypair = NULL;
   state->client_profile = NULL;
+  state->prekey_profile = NULL;
   state->shared_prekey_pair = NULL;
   state->phi = NULL;
   state->max_stored_msg_keys = 100;
@@ -75,6 +76,9 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
 
   otrng_client_profile_free(state->client_profile);
   state->client_profile = NULL;
+
+  otrng_prekey_profile_free(state->prekey_profile);
+  state->prekey_profile = NULL;
 
   otrng_shared_prekey_pair_free(state->shared_prekey_pair);
   state->shared_prekey_pair = NULL;
@@ -250,6 +254,33 @@ INTERNAL int otrng_client_state_add_shared_prekey_v4(
     return 2;
 
   otrng_shared_prekey_pair_generate(state->shared_prekey_pair, sym);
+  return 0;
+}
+
+API const otrng_prekey_profile_s *
+otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
+  if (!state)
+    return NULL;
+
+  // TODO: invoke callback to generate if profile is NULL
+
+  return state->prekey_profile;
+}
+
+API int
+otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
+                                      const otrng_prekey_profile_s *profile) {
+  if (!state)
+    return 1;
+
+  if (state->prekey_profile)
+    return 2;
+
+  state->prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
+  if (!state->prekey_profile)
+    return 3;
+
+  otrng_prekey_profile_copy(state->prekey_profile, profile);
   return 0;
 }
 

@@ -29,6 +29,7 @@
 #include "client_callbacks.h"
 #include "client_profile.h"
 #include "keys.h"
+#include "prekey_profile.h"
 #include "shared.h"
 
 typedef struct heartbeat_s {
@@ -56,6 +57,8 @@ typedef struct otrng_client_state_s {
 
   // TODO: One or many?
   client_profile_s *client_profile;
+  otrng_prekey_profile_s *prekey_profile;
+
   otrng_shared_prekey_pair_s *shared_prekey_pair; // TODO: is this something the
                                                   // client will generate? The
                                                   // spec does not specify.
@@ -87,6 +90,13 @@ otrng_client_state_get_client_profile(otrng_client_state_s *state);
 
 API int otrng_client_state_add_client_profile(otrng_client_state_s *state,
                                               const client_profile_s *profile);
+
+API const otrng_prekey_profile_s *
+otrng_client_state_get_prekey_profile(otrng_client_state_s *state);
+
+API int
+otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
+                                      const otrng_prekey_profile_s *profile);
 
 INTERNAL int
 otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
