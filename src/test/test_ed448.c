@@ -74,3 +74,19 @@ void ed448_test_scalar_serialization() {
   otrng_ec_scalar_decode(s, buff);
   otrng_assert(otrng_ec_scalar_eq(s, goldilocks_448_scalar_one) == otrng_true);
 }
+
+void ed448_test_signature() {
+  uint8_t sym[ED448_PRIVATE_BYTES] = {0x3f};
+  uint8_t pub[ED448_PUBKEY_BYTES] = {0};
+  otrng_keypair_s *pair = otrng_keypair_new();
+  otrng_keypair_generate(pair, sym);
+
+  uint8_t msg[3] = {0x0A, 0x0C, 0x0B};
+  otrng_ec_point_encode(pub, pair->pub);
+
+  eddsa_signature_p sig;
+  otrng_ec_sign(sig, sym, pub, msg, sizeof(msg));
+  otrng_assert(otrng_true == otrng_ec_verify(sig, pub, msg, sizeof(msg)));
+
+  otrng_keypair_free(pair);
+}

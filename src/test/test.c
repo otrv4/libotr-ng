@@ -21,6 +21,7 @@
 #include <glib.h>
 #include <goldilocks.h>
 
+#define OTRNG_DAKE_PRIVATE
 #define OTRNG_DH_PRIVATE
 #define OTRNG_KEY_MANAGEMENT_PRIVATE
 #define OTRNG_LIST_PRIVATE
@@ -84,6 +85,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/edwards448/eddsa_keygen", ed448_test_eddsa_keygen);
   g_test_add_func("/edwards448/scalar_serialization",
                   ed448_test_scalar_serialization);
+  g_test_add_func("/edwards448/signature", ed448_test_signature);
 
   g_test_add_func("/list/add", test_otrng_list_add);
   g_test_add_func("/list/insert_at_n", test_otrng_list_insert_at_n);
