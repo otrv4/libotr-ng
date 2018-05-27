@@ -1225,21 +1225,19 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
-  otrng_err ret = build_non_interactive_rsig_tag(
-      &t, &t_len, get_my_client_profile(otr), auth->profile, our_ecdh(otr),
-      auth->X, our_dh(otr), auth->A, get_my_client_profile(otr)->shared_prekey,
-      otr->conversation->client->phi);
-  if (ret == ERROR)
+  if (!build_non_interactive_rsig_tag(&t, &t_len, get_my_client_profile(otr),
+                                      auth->profile, our_ecdh(otr), auth->X,
+                                      our_dh(otr), auth->A,
+                                      get_my_client_profile(otr)->shared_prekey,
+                                      otr->conversation->client->phi))
     return otrng_false;
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */
-  otrng_bool ok = otrng_rsig_verify(
-      auth->sigma, otr->conversation->client->keypair->pub, /* H_b */
-      auth->profile->long_term_pub_key,                     /* H_a */
-      our_ecdh(otr),                                        /* Y  */
-      t, t_len);
-
-  if (!ok) {
+  if (!otrng_rsig_verify(auth->sigma,
+                         otr->conversation->client->keypair->pub, /* H_b */
+                         auth->profile->long_term_pub_key,        /* H_a */
+                         our_ecdh(otr),                           /* Y  */
+                         t, t_len)) {
     free(t);
 
     /* here no warning should be passed */
@@ -1248,13 +1246,12 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   /* Check mac */
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
-  ret = otrng_dake_non_interactive_auth_message_authenticator(
-      mac_tag, auth, t, t_len, otr->keys->tmp_key);
-  free(t);
-
-  if (ret == ERROR)
+  if (!otrng_dake_non_interactive_auth_message_authenticator(
+          mac_tag, auth, t, t_len, otr->keys->tmp_key)) {
+    free(t);
     /* here no warning should be passed */
     return otrng_false;
+  }
 
   if (0 != otrl_mem_differ(mac_tag, auth->auth_mac, DATA_MSG_MAC_BYTES)) {
     sodium_memzero(mac_tag, DATA_MSG_MAC_BYTES);
