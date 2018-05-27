@@ -783,6 +783,7 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
 
   // TODO: message is an UTF-8 string. Is there any problem to cast
   // it to (unsigned char *)
+  // encrypted_message = XSalsa20_Enc(MKenc, nonce, m)
   err = crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
   if (err) {
     free(c);
@@ -1252,6 +1253,8 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     /* here no warning should be passed */
     return otrng_false;
   }
+
+  free(t);
 
   if (0 != otrl_mem_differ(mac_tag, auth->auth_mac, DATA_MSG_MAC_BYTES)) {
     sodium_memzero(mac_tag, DATA_MSG_MAC_BYTES);
@@ -2170,6 +2173,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
 
+  // if j == 0
   if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, OTRNG_SENDING))
     return ERROR;
 
@@ -2198,8 +2202,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
 
-  // TODO: mac keys are only revealed on the first message of every
-  // ratchet, not each message
   if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {
     otrng_error_message(to_send, ERR_MSG_ENCRYPTION_ERROR);
 
@@ -2211,6 +2213,8 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
 
+  // Authenticator = KDF_1(0x1C || MKmac || KDF_1(0x1B || data_message_sections,
+  // 64), 64)
   if (otr->keys->j == 0) {
     size_t ser_mac_keys_len =
         otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;

@@ -373,11 +373,15 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
                                     otrng_participant_action action) {
   k_ecdh_p k_ecdh;
 
+  // K_ecdh = ECDH(our_ecdh.secret, their_ecdh)
   otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
+  // if i % 3 == 0 : brace_key = KDF_1(0x02 || k_dh, 32)
+  // else brace_key = KDF_1(0x03 || brace_key, 32)
   if (calculate_brace_key(manager) == ERROR)
     return ERROR;
 
+  // K = KDF_1(0x04 || K_ecdh || brace_key, 64)
   calculate_shared_secret(manager, k_ecdh);
 
 #ifdef DEBUG
@@ -405,6 +409,8 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
                               otrng_participant_action action) {
   manager->k = 0;
   if (action == OTRNG_SENDING) {
+    // our_ecdh = generateECDH()
+    // if i % 3 == 0, our_dh = generateDH()
     if (!otrng_key_manager_generate_ephemeral_keys(manager))
       return ERROR;
 
@@ -430,6 +436,9 @@ tstatic otrng_err key_manager_derive_ratchet_keys(
   if (!ratchet)
     return ERROR;
 
+  // root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
+  // root_key[i-1], K) root_key[i] = KDF_1(0x15 || root_key[i-1] || K, 64)
+
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, 0x15);
   hash_update(hd, manager->current->root_key, sizeof(root_key_p));
@@ -437,6 +446,7 @@ tstatic otrng_err key_manager_derive_ratchet_keys(
   hash_final(hd, ratchet->root_key, sizeof(root_key_p));
   hash_destroy(hd);
 
+  // chain_key_purpose[i][j] = KDF_1(0x16 || root_key[i-1] || K, 64)
   if (action == OTRNG_SENDING) {
     hash_init_with_usage(hd, 0x16);
     hash_update(hd, manager->current->root_key, sizeof(root_key_p));
@@ -467,6 +477,7 @@ tstatic otrng_err key_manager_derive_ratchet_keys(
 
 tstatic void derive_next_chain_key(key_manager_s *manager,
                                    otrng_participant_action action) {
+  // chain_key_s[i-1][j+1] = KDF_1(0x17 || chain_key_s[i-1][j], 64)
   if (action == OTRNG_SENDING) {
     shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p), 0x17,
                    manager->current->chain_s, sizeof(sending_chain_key_p));
@@ -482,6 +493,9 @@ tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                                             m_mac_key_p mac_key,
                                             key_manager_s *manager,
                                             otrng_participant_action action) {
+  // MKenc, MKmac = derive_enc_mac_keys(chain_key_s[i-1][j])
+  // MKenc = KDF_1(0x18 || chain_key, 32)
+  // MKmac = KDF_1(0x19 || MKenc, 64)
   if (action == OTRNG_SENDING) {
     shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
                    manager->current->chain_s, sizeof(sending_chain_key_p));
@@ -504,6 +518,7 @@ tstatic void calculate_extra_key(key_manager_s *manager,
   hash_init_with_usage(hd, 0x1A);
   hash_update(hd, magic, 1);
 
+  // extra_symm_key = KDF_1(0x1A || 0xFF || chain_key_s[i-1][j], 32)
   if (action == OTRNG_SENDING) {
     hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
   } else if (action == OTRNG_SENDING) {
