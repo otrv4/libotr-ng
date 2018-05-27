@@ -5,9 +5,9 @@
  *  Copyright (C) 2016-2018, the libotr-ng contributors.
  *
  *  This library is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ *  it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or (at
+ * your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -213,7 +213,7 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
  * @param [action]    Defines if this is the sending or receiving chain.
  */
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
-    key_manager_s *manager, otrng_participant_action action);
+    key_manager_s *manager, int max_skip, otrng_participant_action action);
 
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
 /**

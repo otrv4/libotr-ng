@@ -584,6 +584,17 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
       sodium_memzero(enc_key, sizeof(m_enc_key_p));
       manager->k++;
     }
+    return SUCCESS;
+  }
+  return SUCCESS;
+}
+
+INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
+    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
+    int max_skip, otrng_participant_action action) {
+  if (action == OTRNG_RECEIVING) {
+    if (!store_enc_keys(enc_key, manager, max_skip, manager->j))
+      return ERROR;
   }
 
   derive_encryption_and_mac_keys(enc_key, mac_key, manager, action);
@@ -602,10 +613,17 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
 }
 
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
-    key_manager_s *manager, otrng_participant_action action) {
+    key_manager_s *manager, int max_skip, otrng_participant_action action) {
   // Derive new ECDH and DH keys
-  if (manager->j == 0)
+  m_enc_key_p enc_key;
+  if (manager->j == 0) {
+    if (action == OTRNG_RECEIVING) {
+      if (!store_enc_keys(enc_key, manager, max_skip, manager->pn)) {
+        return ERROR;
+      }
+    }
     return rotate_keys(manager, action);
+  }
 
   return SUCCESS;
 }

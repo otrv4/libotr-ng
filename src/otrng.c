@@ -817,7 +817,7 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
   if (!cipher)
     return ERROR;
 
-  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, OTRNG_SENDING))
+  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, 0, OTRNG_SENDING))
     return ERROR;
 
   m_enc_key_p enc_key;
@@ -1279,7 +1279,7 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
   otr->keys->their_dh = otrng_dh_mpi_copy(auth->dh);
   otrng_ec_point_copy(otr->keys->their_ecdh, auth->ecdh);
 
-  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, OTRNG_RECEIVING) ==
+  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, 0, OTRNG_RECEIVING) ==
       ERROR)
     return ERROR;
 
@@ -1288,6 +1288,7 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, 0,
                                       OTRNG_RECEIVING);
   otr->keys->k++;
+  // TODO: only when dh ratchet
   otr->keys->pn = auth->message_id;
 
   int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
@@ -1849,7 +1850,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
 
   otrng_key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
   otr->keys->j = msg->message_id;
-  otr->keys->pn = msg->message_id;
+  otr->keys->pn = msg->previous_chain_n;
 
   do {
     if (msg->receiver_instance_tag != otr->our_instance_tag) {
@@ -1859,10 +1860,12 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       return SUCCESS;
     }
 
-    if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, OTRNG_RECEIVING) ==
-        ERROR)
+    if (otrng_key_manager_derive_dh_ratchet_keys(
+            otr->keys, otr->conversation->client->max_stored_msg_keys,
+            OTRNG_RECEIVING) == ERROR)
       return ERROR;
 
+    otr->keys->pn = msg->message_id;
     otrng_key_manager_derive_chain_keys(
         enc_key, mac_key, otr->keys,
         otr->conversation->client->max_stored_msg_keys, OTRNG_RECEIVING);
@@ -2174,7 +2177,9 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   uint32_t ratchet_id = otr->keys->i;
 
   // if j == 0
-  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, OTRNG_SENDING))
+  if (!otrng_key_manager_derive_dh_ratchet_keys(
+          otr->keys, otr->conversation->client->max_stored_msg_keys,
+          OTRNG_SENDING))
     return ERROR;
 
   m_enc_key_p enc_key;
