@@ -537,56 +537,52 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 #endif
 }
 
-INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
-    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
-    int max_skip, otrng_participant_action action) {
-  if ((manager->k + max_skip) < manager->j) {
+tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
+                                 int max_skip, int until) {
+  uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
+
+  if ((manager->k + max_skip) < until) {
     // TODO: should we send an error message?
     return ERROR;
   }
 
-  uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
-  if (action == OTRNG_RECEIVING) {
-    if (!(memcmp(manager->current->chain_r, zero_buff,
-                 sizeof(manager->current->chain_r)) == 0)) {
-      while (manager->k < manager->j) {
-        shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
-                       manager->current->chain_r,
-                       sizeof(receiving_chain_key_p));
+  if (!(memcmp(manager->current->chain_r, zero_buff,
+               sizeof(manager->current->chain_r)) == 0)) {
+    while (manager->k < until) {
+      shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
+                     manager->current->chain_r, sizeof(receiving_chain_key_p));
 
-        goldilocks_shake256_ctx_p hd;
-        uint8_t extra_key[EXTRA_SYMMETRIC_KEY_BYTES];
-        uint8_t magic[1] = {0xFF};
+      goldilocks_shake256_ctx_p hd;
+      uint8_t extra_key[EXTRA_SYMMETRIC_KEY_BYTES];
+      uint8_t magic[1] = {0xFF};
 
-        hash_init_with_usage(hd, 0x1A);
-        hash_update(hd, magic, 1);
+      hash_init_with_usage(hd, 0x1A);
+      hash_update(hd, magic, 1);
 
-        hash_update(hd, manager->current->chain_r,
-                    sizeof(receiving_chain_key_p));
-        hash_final(hd, extra_key, EXTRA_SYMMETRIC_KEY_BYTES);
-        hash_destroy(hd);
+      hash_update(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
+      hash_final(hd, extra_key, EXTRA_SYMMETRIC_KEY_BYTES);
+      hash_destroy(hd);
 
-        shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
-                       0x17, manager->current->chain_r,
-                       sizeof(receiving_chain_key_p));
+      shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
+                     0x17, manager->current->chain_r,
+                     sizeof(receiving_chain_key_p));
 
-        skipped_keys_s *skipped_m_enc_key = malloc(sizeof(skipped_keys_s));
-        if (!skipped_m_enc_key)
-          return ERROR;
+      skipped_keys_s *skipped_m_enc_key = malloc(sizeof(skipped_keys_s));
+      if (!skipped_m_enc_key)
+        return ERROR;
 
-        skipped_m_enc_key->i = manager->i;
-        skipped_m_enc_key->j = manager->k;
+      skipped_m_enc_key->i = manager->i;
+      skipped_m_enc_key->j = manager->k;
 
-        memcpy(skipped_m_enc_key->extra_symetric_key, extra_key,
-               EXTRA_SYMMETRIC_KEY_BYTES);
-        memcpy(skipped_m_enc_key->m_enc_key, enc_key, ENC_KEY_BYTES);
+      memcpy(skipped_m_enc_key->extra_symetric_key, extra_key,
+             EXTRA_SYMMETRIC_KEY_BYTES);
+      memcpy(skipped_m_enc_key->m_enc_key, enc_key, ENC_KEY_BYTES);
 
-        manager->skipped_keys =
-            otrng_list_add(skipped_m_enc_key, manager->skipped_keys);
+      manager->skipped_keys =
+          otrng_list_add(skipped_m_enc_key, manager->skipped_keys);
 
-        sodium_memzero(enc_key, sizeof(m_enc_key_p));
-        manager->k++;
-      }
+      sodium_memzero(enc_key, sizeof(m_enc_key_p));
+      manager->k++;
     }
   }
 
