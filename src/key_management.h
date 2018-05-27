@@ -58,6 +58,13 @@ typedef struct ratchet_s {
   receiving_chain_key_p chain_r;
 } ratchet_s, ratchet_p[1];
 
+typedef struct skipped_keys_s {
+  int i; // Counter of the ratchet
+  int j; // Counter of the messages
+  extra_symmetric_key_p extra_symetric_key;
+  m_enc_key_p m_enc_key;
+} skipped_keys_s;
+
 /* define which half of the secure session id should be shown in bold*/
 typedef enum {
   SESSION_ID_FIRST_HALF_BOLD,
@@ -88,17 +95,11 @@ typedef struct key_manager_s {
   extra_symmetric_key_p extra_symetric_key;
   uint8_t tmp_key[HASH_BYTES];
 
+  list_element_s *skipped_keys;
   list_element_s *old_mac_keys;
 
   time_t lastgenerated;
 } key_manager_s, key_manager_p[1];
-
-typedef struct skipped_keys_s {
-  int i; // Counter of the ratchet
-  int j; // Counter of the messages
-  extra_symmetric_key_p extra_symetric_key;
-  m_enc_key_p m_enc_key;
-} skipped_keys_s;
 
 /**
  * @brief Initialize the key manager.
@@ -201,10 +202,9 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(
  * @param [manager]   The key manager.
  * @param [action]    Defines if this is the sending or receiving chain.
  */
-INTERNAL void
-otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key, m_mac_key_p mac_key,
-                                    key_manager_s *manager,
-                                    otrng_participant_action action);
+INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
+    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
+    int max_skip, otrng_participant_action action);
 
 /**
  * @brief Derive the dh ratchet keys.

@@ -61,6 +61,7 @@ typedef struct otrng_client_state_s {
                                                   // spec does not specify.
   char *phi; // this is the shared session state
   bool pad;  // TODO: this can be replaced by length
+  int max_stored_msg_keys;
   heartbeat_s *heartbeat;
 
   // OtrlPrivKey *privkeyv3; // ???

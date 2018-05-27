@@ -51,6 +51,7 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->client_profile = NULL;
   state->shared_prekey_pair = NULL;
   state->phi = NULL;
+  state->max_stored_msg_keys = 100;
   state->pad = false; // TODO: why is this a bool?
   state->heartbeat = set_heartbeat(
       300); // TODO: why is this set here, and not from the client?
@@ -82,6 +83,7 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
   state->phi = NULL;
 
   state->pad = false;
+  state->max_stored_msg_keys = 0;
 
   free(state->heartbeat);
   state->heartbeat = NULL;

@@ -82,6 +82,7 @@ otrng_key_manager_init(key_manager_s *manager) // make like ratchet_new?
   memset(manager->extra_symetric_key, 0, sizeof(manager->extra_symetric_key));
   memset(manager->tmp_key, 0, sizeof(manager->tmp_key));
 
+  manager->skipped_keys = NULL;
   manager->old_mac_keys = NULL;
 }
 
@@ -116,9 +117,18 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 
   list_element_s *el;
-  for (el = manager->old_mac_keys; el; el = el->next) {
-    free((uint8_t *)el->data);
+  for (el = manager->skipped_keys; el; el = el->next) {
+    free((skipped_keys_s *)el->data);
     el->data = NULL;
+  }
+
+  otrng_list_free_full(manager->skipped_keys);
+  manager->skipped_keys = NULL;
+
+  list_element_s *el_2;
+  for (el_2 = manager->old_mac_keys; el_2; el_2 = el_2->next) {
+    free((uint8_t *)el_2->data);
+    el_2->data = NULL;
   }
 
   otrng_list_free_full(manager->old_mac_keys);
@@ -504,10 +514,57 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 #endif
 }
 
-INTERNAL void
-otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key, m_mac_key_p mac_key,
-                                    key_manager_s *manager,
-                                    otrng_participant_action action) {
+INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
+    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
+    int max_skip, otrng_participant_action action) {
+  if ((manager->k + max_skip) < manager->j) {
+    // TODO: should we send an error message?
+    return ERROR;
+  }
+
+  uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
+  if (action == OTRNG_RECEIVING) {
+    if (!(memcmp(manager->current->chain_r, zero_buff,
+                 sizeof(manager->current->chain_r)) == 0)) {
+      while (manager->k < manager->j) {
+        shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
+                       manager->current->chain_r,
+                       sizeof(receiving_chain_key_p));
+        shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
+                       0x16, manager->current->chain_r,
+                       sizeof(receiving_chain_key_p));
+
+        goldilocks_shake256_ctx_p hd;
+        uint8_t extra_key[EXTRA_SYMMETRIC_KEY_BYTES];
+        uint8_t magic[1] = {0xFF};
+
+        hash_init_with_usage(hd, 0x1A);
+        hash_update(hd, magic, 1);
+
+        hash_update(hd, manager->current->chain_r,
+                    sizeof(receiving_chain_key_p));
+        hash_final(hd, extra_key, EXTRA_SYMMETRIC_KEY_BYTES);
+        hash_destroy(hd);
+
+        skipped_keys_s *skipped_m_enc_key = malloc(sizeof(skipped_keys_s));
+        if (!skipped_m_enc_key)
+          return ERROR;
+
+        skipped_m_enc_key->i = manager->i;
+        skipped_m_enc_key->j = manager->k;
+        memcpy(skipped_m_enc_key->extra_symetric_key, extra_key,
+               EXTRA_SYMMETRIC_KEY_BYTES);
+        memcpy(skipped_m_enc_key->m_enc_key, enc_key, ENC_KEY_BYTES);
+
+        manager->skipped_keys =
+            otrng_list_add(skipped_m_enc_key, manager->skipped_keys);
+
+        sodium_memzero(enc_key, sizeof(m_enc_key_p));
+        manager->k++;
+      }
+    }
+  }
+
   derive_encryption_mac_and_next_chain_keys(enc_key, mac_key, manager, action);
   calculate_extra_key(manager, action);
 
@@ -518,6 +575,8 @@ otrng_key_manager_derive_chain_keys(m_enc_key_p enc_key, m_mac_key_p mac_key,
   printf("mac_key = ");
   otrng_memdump(mac_key, sizeof(m_mac_key_p));
 #endif
+
+  return SUCCESS;
 }
 
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(

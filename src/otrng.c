@@ -821,7 +821,7 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
 
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
-  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys,
+  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, 0,
                                       OTRNG_SENDING);
   otr->keys->j++;
 
@@ -1285,7 +1285,7 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
 
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
-  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys,
+  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, 0,
                                       OTRNG_RECEIVING);
   otr->keys->k++;
   otr->keys->pn = auth->message_id;
@@ -1863,8 +1863,9 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
         ERROR)
       return ERROR;
 
-    otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys,
-                                        OTRNG_RECEIVING);
+    otrng_key_manager_derive_chain_keys(
+        enc_key, mac_key, otr->keys,
+        otr->conversation->client->max_stored_msg_keys, OTRNG_RECEIVING);
     otr->keys->k++;
 
     if (!otrng_valid_data_message(mac_key, msg)) {
@@ -2179,8 +2180,9 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   m_mac_key_p mac_key;
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
-  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys,
-                                      OTRNG_SENDING);
+  otrng_key_manager_derive_chain_keys(
+      enc_key, mac_key, otr->keys,
+      otr->conversation->client->max_stored_msg_keys, OTRNG_SENDING);
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {
@@ -2241,6 +2243,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   // TODO: check
   heartbeat(otr)->last_msg_sent = time(NULL);
+
   return SUCCESS;
 }
 
