@@ -249,7 +249,6 @@ tstatic void calculate_shared_secret(key_manager_s *manager, k_ecdh_p k_ecdh) {
   hash_final(hd, manager->shared_secret, sizeof(shared_secret_p));
   hash_destroy(hd);
 
-  sodium_memzero(manager->brace_key, sizeof(brace_key_p));
   sodium_memzero(k_ecdh, sizeof(k_ecdh_p));
 }
 
