@@ -900,6 +900,7 @@ void test_api_new_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 1);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
+  free(to_send_3);
   // Bob receives the previous message
   // response_to_alice = otrng_response_new();
   // err = otrng_receive_message(response_to_alice, to_send_3, bob);
