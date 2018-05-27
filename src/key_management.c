@@ -466,21 +466,30 @@ tstatic otrng_err key_manager_derive_ratchet_keys(
   return SUCCESS;
 }
 
-tstatic void derive_encryption_mac_and_next_chain_keys(
-    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
-    otrng_participant_action action) {
+tstatic void derive_next_chain_key(key_manager_s *manager,
+                                   otrng_participant_action action) {
+  if (action == OTRNG_SENDING) {
+    shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p), 0x17,
+                   manager->current->chain_s, sizeof(sending_chain_key_p));
+
+  } else if (action == OTRNG_RECEIVING) {
+    shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
+                   0x17, manager->current->chain_r,
+                   sizeof(receiving_chain_key_p));
+  }
+}
+
+tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
+                                            m_mac_key_p mac_key,
+                                            key_manager_s *manager,
+                                            otrng_participant_action action) {
   if (action == OTRNG_SENDING) {
     shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
-                   manager->current->chain_s, sizeof(sending_chain_key_p));
-    shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p), 0x16,
                    manager->current->chain_s, sizeof(sending_chain_key_p));
 
   } else if (action == OTRNG_RECEIVING) {
     shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
                    manager->current->chain_r, sizeof(receiving_chain_key_p));
-    shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
-                   0x16, manager->current->chain_r,
-                   sizeof(receiving_chain_key_p));
   }
   shake_256_kdf1(mac_key, sizeof(m_mac_key_p), 0x19, enc_key,
                  sizeof(m_enc_key_p));
@@ -530,9 +539,6 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
         shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
                        manager->current->chain_r,
                        sizeof(receiving_chain_key_p));
-        shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
-                       0x16, manager->current->chain_r,
-                       sizeof(receiving_chain_key_p));
 
         goldilocks_shake256_ctx_p hd;
         uint8_t extra_key[EXTRA_SYMMETRIC_KEY_BYTES];
@@ -546,12 +552,17 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
         hash_final(hd, extra_key, EXTRA_SYMMETRIC_KEY_BYTES);
         hash_destroy(hd);
 
+        shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
+                       0x17, manager->current->chain_r,
+                       sizeof(receiving_chain_key_p));
+
         skipped_keys_s *skipped_m_enc_key = malloc(sizeof(skipped_keys_s));
         if (!skipped_m_enc_key)
           return ERROR;
 
         skipped_m_enc_key->i = manager->i;
         skipped_m_enc_key->j = manager->k;
+
         memcpy(skipped_m_enc_key->extra_symetric_key, extra_key,
                EXTRA_SYMMETRIC_KEY_BYTES);
         memcpy(skipped_m_enc_key->m_enc_key, enc_key, ENC_KEY_BYTES);
@@ -565,8 +576,9 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     }
   }
 
-  derive_encryption_mac_and_next_chain_keys(enc_key, mac_key, manager, action);
+  derive_encryption_and_mac_keys(enc_key, mac_key, manager, action);
   calculate_extra_key(manager, action);
+  derive_next_chain_key(manager, action);
 
 #ifdef DEBUG
   printf("GOT SENDING KEYS:\n");
