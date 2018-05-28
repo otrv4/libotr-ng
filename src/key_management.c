@@ -144,12 +144,12 @@ INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
   manager->their_dh = otrng_dh_mpi_copy(their_dh);
 }
 
-INTERNAL void otrng_key_manager_set_their_ecdh(ec_point_p their_ecdh,
+INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point_p their_ecdh,
                                                key_manager_s *manager) {
   otrng_ec_point_copy(manager->their_ecdh, their_ecdh);
 }
 
-INTERNAL void otrng_key_manager_set_their_dh(dh_public_key_p their_dh,
+INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key_p their_dh,
                                              key_manager_s *manager) {
   otrng_dh_mpi_release(manager->their_dh);
   manager->their_dh = otrng_dh_mpi_copy(their_dh);

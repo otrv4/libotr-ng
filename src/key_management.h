@@ -132,7 +132,7 @@ INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
  * @param [their_ecdh]  The new their_ecdh key.
  * @param [manager]   The key manager.
  */
-INTERNAL void otrng_key_manager_set_their_ecdh(ec_point_p their_ecdh,
+INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point_p their_ecdh,
                                                key_manager_s *manager);
 
 /**
@@ -141,7 +141,7 @@ INTERNAL void otrng_key_manager_set_their_ecdh(ec_point_p their_ecdh,
  * @param [their_ecdh]  The new their_dh key.
  * @param [manager]   The key manager.
  */
-INTERNAL void otrng_key_manager_set_their_dh(dh_public_key_p their_dh,
+INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key_p their_dh,
                                              key_manager_s *manager);
 
 /**
