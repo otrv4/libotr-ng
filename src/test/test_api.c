@@ -83,6 +83,12 @@ static void set_up_client_state(otrng_client_state_s *state,
   otrng_client_state_add_shared_prekey_v4(state, sym_key);
   otrng_client_state_add_instance_tag(state, 0x100 + byte);
 
+  // Create client profile
+  state->client_profile = otrng_client_profile_build("34", state->keypair, state->shared_prekey_pair);
+
+  // Create prekey profile
+  state->prekey_profile = otrng_prekey_profile_build(state->keypair, state->shared_prekey_pair);
+
   // on client this will probably be the jid and the
   // receipient jid for the party
   state->phi = otrng_strdup(phi);
