@@ -255,7 +255,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->their_instance_tag = 0;
   otr->our_instance_tag = otrng_client_state_get_instance_tag(state);
 
-  otr->their_profile = NULL;
+  otr->their_client_profile = NULL;
 
   otrng_key_manager_init(otr->keys);
   otrng_smp_context_init(otr->smp);
@@ -278,8 +278,8 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   free(otr->keys);
   otr->keys = NULL;
 
-  otrng_client_profile_free(otr->their_profile);
-  otr->their_profile = NULL;
+  otrng_client_profile_free(otr->their_client_profile);
+  otr->their_client_profile = NULL;
 
   otrng_smp_destroy(otr->smp);
 
@@ -677,20 +677,20 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-  if (!build_interactive_rsign_tag(&t, &t_len, 0, otr->their_profile,
+  if (!build_interactive_rsign_tag(&t, &t_len, 0, otr->their_client_profile,
                                    get_my_client_profile(otr), their_ecdh(otr),
                                    our_ecdh(otr), their_dh(otr), our_dh(otr),
                                    otr->conversation->client->phi))
     return ERROR;
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
-  otrng_rsig_authenticate(msg->sigma,
-                          otr->conversation->client->keypair->priv, /* sk_ha */
-                          otr->conversation->client->keypair->pub,  /* H_a */
-                          otr->their_profile->long_term_pub_key,    /* H_b */
-                          otr->conversation->client->keypair->pub,  /* H_a */
-                          their_ecdh(otr),                          /* Y */
-                          t, t_len);
+  otrng_rsig_authenticate(
+      msg->sigma, otr->conversation->client->keypair->priv, /* sk_ha */
+      otr->conversation->client->keypair->pub,              /* H_a */
+      otr->their_client_profile->long_term_pub_key,         /* H_b */
+      otr->conversation->client->keypair->pub,              /* H_a */
+      their_ecdh(otr),                                      /* Y */
+      t, t_len);
   free(t);
 
   otrng_err err = serialize_and_encode_auth_r(dst, msg);
@@ -731,7 +731,7 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
     return ERROR;
 
   if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
-                                otr->their_profile->long_term_pub_key))
+                                otr->their_client_profile->long_term_pub_key))
     return ERROR;
 
   // TODO: refactor this
@@ -930,27 +930,28 @@ tstatic otrng_err build_non_interactive_auth_message(
    * Alices_Client_Profile, 64) || Y || X || B || A || their_shared_prekey ||
    * KDF_1(0x10 || phi, 64) */
   if (!build_non_interactive_rsig_tag(
-          &t, &t_len, otr->their_profile, get_my_client_profile(otr),
+          &t, &t_len, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
-          otr->their_profile->shared_prekey, otr->conversation->client->phi))
+          otr->their_client_profile->shared_prekey,
+          otr->conversation->client->phi))
     return ERROR;
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
-  otrng_rsig_authenticate(auth->sigma,
-                          otr->conversation->client->keypair->priv, /* sk_ha */
-                          otr->conversation->client->keypair->pub,  /* H_a */
-                          otr->their_profile->long_term_pub_key,    /* H_b */
-                          otr->conversation->client->keypair->pub,  /* H_a */
-                          their_ecdh(otr),                          /* Y */
-                          t, t_len);
+  otrng_rsig_authenticate(
+      auth->sigma, otr->conversation->client->keypair->priv, /* sk_ha */
+      otr->conversation->client->keypair->pub,               /* H_a */
+      otr->their_client_profile->long_term_pub_key,          /* H_b */
+      otr->conversation->client->keypair->pub,               /* H_a */
+      their_ecdh(otr),                                       /* Y */
+      t, t_len);
 
   /* Calculates nonce */
   ec_scalar_p c;
   otrng_rsig_calculate_c_from_sigma(
       c, auth->sigma,
-      otr->their_profile->long_term_pub_key,   // A1
-      otr->conversation->client->keypair->pub, // A2
-      their_ecdh(otr),                         // A3
+      otr->their_client_profile->long_term_pub_key, // A1
+      otr->conversation->client->keypair->pub,      // A2
+      their_ecdh(otr),                              // A3
       t, t_len);
 
   uint8_t nonce[ED448_SCALAR_BYTES] = {};
@@ -1175,8 +1176,8 @@ tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
  */
 tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
                                           otrng_s *otr) {
-  // TODO: Extract method get_their_profile()
-  if (!otr->their_profile)
+  // TODO: Extract method get_their_client_profile()
+  if (!otr->their_client_profile)
     return ERROR;
 
   if (!received_instance_tag(m->sender_instance_tag, otr))
@@ -1192,7 +1193,8 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
     return ERROR;
 
   // TODO: their shared prekey wont come in the profile anymore.
-  memcpy(otr->keys->their_shared_prekey, otr->their_profile->shared_prekey,
+  memcpy(otr->keys->their_shared_prekey,
+         otr->their_client_profile->shared_prekey,
          sizeof(otrng_shared_prekey_pub_p));
 
   /* tmp_k = KDF_1(0x0C || K_ecdh || ECDH(x, their_shared_prekey) ||
@@ -1360,16 +1362,16 @@ tstatic otrng_err receive_non_interactive_auth_message(
     return ERROR;
   }
 
-  // TODO: Extract function to set_their_profile
-  otr->their_profile = malloc(sizeof(client_profile_s));
-  if (!otr->their_profile) {
+  // TODO: Extract function to set_their_client_profile
+  otr->their_client_profile = malloc(sizeof(client_profile_s));
+  if (!otr->their_client_profile) {
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
 
   otrng_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
-  otrng_client_profile_copy(otr->their_profile, auth->profile);
+  otrng_client_profile_copy(otr->their_client_profile, auth->profile);
 
   /* tmp_k = KDF_2(K_ecdh ||
    * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
@@ -1401,7 +1403,8 @@ tstatic otrng_err receive_non_interactive_auth_message(
   otrng_dake_non_interactive_auth_message_destroy(auth);
 
   otrng_fingerprint_p fp;
-  if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
+  if (!otrng_serialize_fingerprint(
+          fp, otr->their_client_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
   return ret;
@@ -1410,13 +1413,14 @@ tstatic otrng_err receive_non_interactive_auth_message(
 tstatic otrng_err receive_identity_message_on_state_start(
     string_p *dst, dake_identity_message_s *identity_message, otrng_s *otr) {
 
-  otr->their_profile = malloc(sizeof(client_profile_s));
-  if (!otr->their_profile)
+  otr->their_client_profile = malloc(sizeof(client_profile_s));
+  if (!otr->their_client_profile)
     return ERROR;
 
   otrng_key_manager_set_their_ecdh(identity_message->Y, otr->keys);
   otrng_key_manager_set_their_dh(identity_message->B, otr->keys);
-  otrng_client_profile_copy(otr->their_profile, identity_message->profile);
+  otrng_client_profile_copy(otr->their_client_profile,
+                            identity_message->profile);
 
   if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
@@ -1457,7 +1461,7 @@ tstatic otrng_err receive_identity_message_on_waiting_auth_i(
   // Every time we call 'otrng_key_manager_generate_ephemeral_keys'
   // keys get deleted and replaced
   // forget_our_keys(otr);
-  otrng_client_profile_free(otr->their_profile);
+  otrng_client_profile_free(otr->their_client_profile);
   return receive_identity_message_on_state_start(dst, msg, otr);
 }
 
@@ -1520,9 +1524,8 @@ tstatic otrng_err serialize_and_encode_auth_i(string_p *dst,
   return SUCCESS;
 }
 
-tstatic otrng_err reply_with_auth_i_msg(string_p *dst,
-                                        const client_profile_s *their_profile,
-                                        otrng_s *otr) {
+tstatic otrng_err reply_with_auth_i_msg(
+    string_p *dst, const client_profile_s *their_client_profile, otrng_s *otr) {
   dake_auth_i_p msg;
   msg->sender_instance_tag = otr->our_instance_tag;
   msg->receiver_instance_tag = otr->their_instance_tag;
@@ -1531,7 +1534,7 @@ tstatic otrng_err reply_with_auth_i_msg(string_p *dst,
   size_t t_len = 0;
 
   if (!build_interactive_rsign_tag(&t, &t_len, 1, get_my_client_profile(otr),
-                                   their_profile, our_ecdh(otr),
+                                   their_client_profile, our_ecdh(otr),
                                    their_ecdh(otr), our_dh(otr), their_dh(otr),
                                    otr->conversation->client->phi))
     return ERROR;
@@ -1541,7 +1544,7 @@ tstatic otrng_err reply_with_auth_i_msg(string_p *dst,
                           otr->conversation->client->keypair->priv, /* sk_hb */
                           otr->conversation->client->keypair->pub,  /* H_b */
                           otr->conversation->client->keypair->pub,  /* H_b */
-                          their_profile->long_term_pub_key,         /* H_a */
+                          their_client_profile->long_term_pub_key,  /* H_a */
                           their_ecdh(otr),                          /* X */
                           t, t_len);
   free(t);
@@ -1601,17 +1604,17 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
     return ERROR;
   }
 
-  otr->their_profile = malloc(sizeof(client_profile_s));
-  if (!otr->their_profile) {
+  otr->their_client_profile = malloc(sizeof(client_profile_s));
+  if (!otr->their_client_profile) {
     otrng_dake_auth_r_destroy(auth);
     return ERROR;
   }
 
   otrng_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
-  otrng_client_profile_copy(otr->their_profile, auth->profile);
+  otrng_client_profile_copy(otr->their_client_profile, auth->profile);
 
-  if (!reply_with_auth_i_msg(dst, otr->their_profile, otr)) {
+  if (!reply_with_auth_i_msg(dst, otr->their_client_profile, otr)) {
     otrng_dake_auth_r_destroy(auth);
     return ERROR;
   }
@@ -1619,7 +1622,8 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
   otrng_dake_auth_r_destroy(auth);
 
   otrng_fingerprint_p fp;
-  if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
+  if (!otrng_serialize_fingerprint(
+          fp, otr->their_client_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
   if (!otrng_key_manager_generate_shared_secret(otr->keys, OTRNG_INTERACTIVE))
@@ -1633,7 +1637,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
   uint8_t *t = NULL;
   size_t t_len = 0;
 
-  if (!build_interactive_rsign_tag(&t, &t_len, 1, otr->their_profile,
+  if (!build_interactive_rsign_tag(&t, &t_len, 1, otr->their_client_profile,
                                    get_my_client_profile(otr), their_ecdh(otr),
                                    our_ecdh(otr), their_dh(otr), our_dh(otr),
                                    otr->conversation->client->phi))
@@ -1641,9 +1645,9 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
 
   /* RVrf({H_b, H_a, X}, sigma, msg) */
   otrng_bool err = otrng_rsig_verify(
-      auth->sigma, otr->their_profile->long_term_pub_key, /* H_b */
-      otr->conversation->client->keypair->pub,            /* H_a */
-      our_ecdh(otr),                                      /* X */
+      auth->sigma, otr->their_client_profile->long_term_pub_key, /* H_b */
+      otr->conversation->client->keypair->pub,                   /* H_a */
+      our_ecdh(otr),                                             /* X */
       t, t_len);
 
   free(t);
@@ -1672,7 +1676,8 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
   otrng_dake_auth_i_destroy(auth);
 
   otrng_fingerprint_p fp;
-  if (!otrng_serialize_fingerprint(fp, otr->their_profile->long_term_pub_key))
+  if (!otrng_serialize_fingerprint(
+          fp, otr->their_client_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
   return double_ratcheting_init(otr, OTRNG_THEIR);
@@ -2581,8 +2586,8 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
       return ERROR;
 
     tlv_list_s *tlvs = otrng_tlv_list_one(otrng_smp_initiate(
-        get_my_client_profile(otr), otr->their_profile, question, q_len, secret,
-        secretlen, otr->keys->ssid, otr->smp, otr->conversation));
+        get_my_client_profile(otr), otr->their_client_profile, question, q_len,
+        secret, secretlen, otr->keys->ssid, otr->smp, otr->conversation));
     if (!tlvs)
       return ERROR;
 
@@ -2600,18 +2605,19 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
   return ERROR;
 }
 
-tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
-                                        smp_context_p smp,
-                                        const client_profile_s *our_profile,
-                                        const client_profile_s *their_profile,
-                                        uint8_t *ssid, const uint8_t *secret,
-                                        const size_t secretlen) {
+tstatic tlv_s *
+otrng_smp_provide_secret(otrng_smp_event_t *event, smp_context_p smp,
+                         const client_profile_s *our_profile,
+                         const client_profile_s *their_client_profile,
+                         uint8_t *ssid, const uint8_t *secret,
+                         const size_t secretlen) {
   // TODO: If state is not CONTINUE_SMP then error.
   tlv_s *smp_reply = NULL;
 
   otrng_fingerprint_p our_fp, their_fp;
   otrng_serialize_fingerprint(our_fp, our_profile->long_term_pub_key);
-  otrng_serialize_fingerprint(their_fp, their_profile->long_term_pub_key);
+  otrng_serialize_fingerprint(their_fp,
+                              their_client_profile->long_term_pub_key);
   if (!otrng_generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret,
                                  secretlen))
     return NULL;
@@ -2628,7 +2634,7 @@ tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
 
   otrng_smp_event_t event = OTRNG_SMPEVENT_NONE;
   tlv_list_s *tlvs = otrng_tlv_list_one(otrng_smp_provide_secret(
-      &event, otr->smp, get_my_client_profile(otr), otr->their_profile,
+      &event, otr->smp, get_my_client_profile(otr), otr->their_client_profile,
       otr->keys->ssid, secret, secretlen));
   if (!tlvs)
     return ERROR;

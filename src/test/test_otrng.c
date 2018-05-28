@@ -229,7 +229,7 @@ void test_otrng_destroy() {
 
   otrng_assert(otr->conversation == NULL);
   otrng_assert(otr->keys == NULL);
-  otrng_assert(otr->their_profile == NULL);
+  otrng_assert(otr->their_client_profile == NULL);
   otrng_assert(otr->v3_conn == NULL);
 
   free(otr);

@@ -259,9 +259,9 @@ void test_api_non_interactive_conversation(void) {
 
   // Bob receives Alice's profile from the server (we are avoiding the missing
   // ensemble)
-  bob->their_profile = malloc(sizeof(client_profile_s));
+  bob->their_client_profile = malloc(sizeof(client_profile_s));
   otrng_client_profile_copy(
-      bob->their_profile,
+      bob->their_client_profile,
       otrng_client_state_get_client_profile(alice_client_state));
 
   // Bob receives prekey message
@@ -438,9 +438,9 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
 
   // Bob receives Alice's profile from the server (we are avoiding the missing
   // ensemble)
-  bob->their_profile = malloc(sizeof(client_profile_s));
+  bob->their_client_profile = malloc(sizeof(client_profile_s));
   otrng_client_profile_copy(
-      bob->their_profile,
+      bob->their_client_profile,
       otrng_client_state_get_client_profile(alice_client_state));
 
   // Bob receives prekey message
@@ -596,9 +596,9 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
 
   // Bob receives Alice's profile from the server (we are avoiding the missing
   // ensemble)
-  bob->their_profile = malloc(sizeof(client_profile_s));
+  bob->their_client_profile = malloc(sizeof(client_profile_s));
   otrng_client_profile_copy(
-      bob->their_profile,
+      bob->their_client_profile,
       otrng_client_state_get_client_profile(alice_client_state));
 
   // Bob receives prekey message

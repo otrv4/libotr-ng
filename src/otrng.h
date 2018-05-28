@@ -106,7 +106,7 @@ struct otrng_s {
   uint32_t our_instance_tag;
   uint32_t their_instance_tag;
 
-  client_profile_s *their_profile;
+  client_profile_s *their_client_profile;
 
   otrng_version running_version;
 
