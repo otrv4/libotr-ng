@@ -218,8 +218,8 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
   k_dh_p k_dh;
 
   if (manager->i % 3 == 0) {
-    if (otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), manager->our_dh->priv,
-                               manager->their_dh) == ERROR)
+    if (!otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), manager->our_dh->priv,
+                                manager->their_dh))
       return ERROR;
 
     // Although k_dh has variable length (bc it is mod p), it is considered to
@@ -263,7 +263,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     if (!otrng_ecdh_valid_secret(k_ecdh))
       return ERROR;
 
-    if (calculate_brace_key(manager) == ERROR)
+    if (!calculate_brace_key(manager))
       return ERROR;
 
     // TODO: why is this passing the whole struct?
@@ -378,7 +378,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
 
   // if i % 3 == 0 : brace_key = KDF_1(0x02 || k_dh, 32)
   // else brace_key = KDF_1(0x03 || brace_key, 32)
-  if (calculate_brace_key(manager) == ERROR)
+  if (!calculate_brace_key(manager))
     return ERROR;
 
   // K = KDF_1(0x04 || K_ecdh || brace_key, 64)
@@ -394,7 +394,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
   otrng_memdump(manager->shared_secret, sizeof(manager->shared_secret));
 #endif
 
-  if (key_manager_derive_ratchet_keys(manager, action) == ERROR) {
+  if (!key_manager_derive_ratchet_keys(manager, action)) {
     sodium_memzero(manager->shared_secret, SHARED_SECRET_BYTES);
     return ERROR;
   }

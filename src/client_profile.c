@@ -121,7 +121,7 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
   uint8_t *buff = NULL;
   size_t body_len = 0;
   uint8_t *body = NULL;
-  if (ERROR == client_profile_body_asprintf(&body, &body_len, profile))
+  if (!client_profile_body_asprintf(&body, &body_len, profile))
     return ERROR;
 
   size_t s = body_len + 4 + sizeof(eddsa_signature_p) +
@@ -262,7 +262,7 @@ INTERNAL client_profile_s *otrng_client_profile_build(
   memcpy(profile->shared_prekey, shared_prekey_pair->pub,
          sizeof(otrng_shared_prekey_pub_p));
 
-  if (ERROR == client_profile_sign(profile, keypair)) {
+  if (!client_profile_sign(profile, keypair)) {
     otrng_client_profile_free(profile);
     return NULL;
   }

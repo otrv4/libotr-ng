@@ -671,46 +671,45 @@ tstatic size_t xzdh_encrypted_message_deserialize(
   size_t r = 0;
   const uint8_t *cursor = buffer;
 
-  if (ERROR == otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &r))
+  if (!otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &r))
     return 0;
 
   cursor += r;
   len -= r;
 
-  if (ERROR == otrng_deserialize_uint32(&dst->message_id, cursor, len, &r))
+  if (!otrng_deserialize_uint32(&dst->message_id, cursor, len, &r))
     return 0;
 
   cursor += r;
   len -= r;
 
-  if (ERROR == otrng_deserialize_ec_point(dst->ecdh, cursor))
+  if (!otrng_deserialize_ec_point(dst->ecdh, cursor))
     return 0;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   otrng_mpi_p tmp_mpi; // no need to free, because nothing is copied now
-  if (ERROR == otrng_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &r))
+  if (!otrng_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &r))
     return 0;
 
   cursor += r;
   len -= r;
 
-  if (ERROR ==
-      otrng_dh_mpi_deserialize(&dst->dh, tmp_mpi->data, tmp_mpi->len, &r))
+  if (!otrng_dh_mpi_deserialize(&dst->dh, tmp_mpi->data, tmp_mpi->len, &r))
     return 0;
 
   cursor += r;
   len -= r;
 
-  if (ERROR == otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES,
-                                             cursor, len))
+  if (!otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor,
+                                     len))
     return 0;
 
   cursor += DATA_MSG_NONCE_BYTES;
   len -= DATA_MSG_NONCE_BYTES;
 
-  if (ERROR == otrng_deserialize_data(&dst->enc_msg, cursor, len, &r))
+  if (!otrng_deserialize_data(&dst->enc_msg, cursor, len, &r))
     return 0;
 
   dst->enc_msg_len = r - 4;
@@ -893,21 +892,21 @@ tstatic otrng_err build_rsign_tag(
   otrng_serialize_ec_point(ser_i_ecdh, i_ecdh);
   otrng_serialize_ec_point(ser_r_ecdh, r_ecdh);
 
-  if (ERROR == otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_BYTES,
-                                             &ser_i_dh_len, i_dh))
+  if (!otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_BYTES, &ser_i_dh_len,
+                                     i_dh))
     return ERROR;
 
-  if (ERROR == otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_BYTES,
-                                             &ser_r_dh_len, r_dh))
+  if (!otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_BYTES, &ser_r_dh_len,
+                                     r_dh))
     return ERROR;
 
   do {
-    if (ERROR == otrng_client_profile_asprintf(&ser_i_profile,
-                                               &ser_i_profile_len, i_profile))
+    if (!otrng_client_profile_asprintf(&ser_i_profile, &ser_i_profile_len,
+                                       i_profile))
       continue;
 
-    if (ERROR == otrng_client_profile_asprintf(&ser_r_profile,
-                                               &ser_r_profile_len, r_profile))
+    if (!otrng_client_profile_asprintf(&ser_r_profile, &ser_r_profile_len,
+                                       r_profile))
       continue;
 
     char *phi_val = otrng_strdup(phi);

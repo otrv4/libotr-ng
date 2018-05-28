@@ -124,7 +124,7 @@ otrng_prekey_profile_build(const otrng_keypair_s *longterm_pair,
 
   uint8_t *body = NULL;
   size_t bodylen = 0;
-  if (ERROR == otrng_prekey_profile_body_asprint(&body, &bodylen, p)) {
+  if (!otrng_prekey_profile_body_asprint(&body, &bodylen, p)) {
     otrng_prekey_profile_free(p);
     return NULL;
   }

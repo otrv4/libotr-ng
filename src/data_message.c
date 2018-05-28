@@ -242,7 +242,7 @@ INTERNAL otrng_err otrng_data_message_authenticator(uint8_t *dst, size_t dstlen,
   // Authenticator = KDF_1(0x1C || MKmac || KDF_1(0x1B || data_message_sections,
   // 64), 64)
   uint8_t sections[64];
-  if (otrng_data_message_sections_hash(sections, 64, body, bodylen) == ERROR)
+  if (!otrng_data_message_sections_hash(sections, 64, body, bodylen))
     return ERROR;
 
   goldilocks_shake256_ctx_p auth_hash;

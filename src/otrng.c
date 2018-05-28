@@ -497,7 +497,7 @@ tstatic otrng_err serialize_and_encode_prekey_message(
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (ERROR == otrng_dake_prekey_message_asprintf(&buff, &len, m))
+  if (!otrng_dake_prekey_message_asprintf(&buff, &len, m))
     return ERROR;
 
   *dst = otrl_base64_otr_encode(buff, len);
@@ -576,7 +576,7 @@ tstatic otrng_err reply_with_identity_msg(otrng_response_s *response,
 }
 
 tstatic otrng_err start_dake(otrng_response_s *response, otrng_s *otr) {
-  if (otrng_key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
+  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
 
   // TODO: check this function
@@ -591,7 +591,7 @@ tstatic otrng_err start_dake(otrng_response_s *response, otrng_s *otr) {
 
 API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
                                                otrng_s *otr) {
-  if (otrng_key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
+  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
 
   otr->state = OTRNG_STATE_START; // needed?
@@ -607,9 +607,9 @@ tstatic otrng_err receive_tagged_plaintext(otrng_response_s *response,
 
   switch (otr->running_version) {
   case OTRNG_VERSION_4:
-    if (!message_to_display_without_tag(response, message, strlen(message))) {
+    if (!message_to_display_without_tag(response, message, strlen(message)))
       return ERROR;
-    }
+
     otrng_dh_priv_key_destroy(otr->keys->our_dh);
     otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
     return start_dake(response, otr);
@@ -1188,7 +1188,7 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   otrng_key_manager_set_their_ecdh(m->Y, otr->keys);
   otrng_key_manager_set_their_dh(m->B, otr->keys);
 
-  if (otrng_key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
+  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
 
   // TODO: their shared prekey wont come in the profile anymore.
@@ -1298,8 +1298,7 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
   otr->keys->their_dh = otrng_dh_mpi_copy(auth->dh);
   otrng_ec_point_copy(otr->keys->their_ecdh, auth->ecdh);
 
-  if (otrng_key_manager_derive_dh_ratchet_keys(otr->keys, 0, OTRNG_RECEIVING) ==
-      ERROR)
+  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, 0, OTRNG_RECEIVING))
     return ERROR;
 
   m_enc_key_p enc_key;
@@ -1419,7 +1418,7 @@ tstatic otrng_err receive_identity_message_on_state_start(
   otrng_key_manager_set_their_dh(identity_message->B, otr->keys);
   otrng_client_profile_copy(otr->their_profile, identity_message->profile);
 
-  if (otrng_key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
+  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
 
   if (!reply_with_auth_r_msg(dst, otr))
