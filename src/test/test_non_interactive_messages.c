@@ -88,8 +88,7 @@ void test_otrng_dake_prekey_message_deserializes() {
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
-  dake_prekey_message_s *prekey_message =
-      otrng_dake_prekey_message_new();
+  dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
   otrng_ec_point_copy(prekey_message->Y, ecdh->pub);
   prekey_message->B = otrng_dh_mpi_copy(dh->pub);
 
@@ -124,8 +123,7 @@ void test_dake_prekey_message_valid() {
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
-  dake_prekey_message_s *prekey_message =
-      otrng_dake_prekey_message_new();
+  dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
   otrng_assert(prekey_message != NULL);
 
   otrng_ec_point_copy(prekey_message->Y, ecdh->pub);
@@ -136,7 +134,8 @@ void test_dake_prekey_message_valid() {
 
   otrng_dake_prekey_message_free(prekey_message);
 
-  dake_prekey_message_s *invalid_prekey_message = otrng_dake_prekey_message_new();
+  dake_prekey_message_s *invalid_prekey_message =
+      otrng_dake_prekey_message_new();
 
   // Invalid point
   otrng_ec_point_destroy(invalid_prekey_message->Y);

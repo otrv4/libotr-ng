@@ -130,8 +130,7 @@ INTERNAL otrng_err otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
                                                  const uint8_t *buffer,
                                                  size_t buflen);
 
-INTERNAL dake_prekey_message_s *
-otrng_dake_prekey_message_new(void);
+INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void);
 
 INTERNAL void
 otrng_dake_prekey_message_free(dake_prekey_message_s *prekey_message);

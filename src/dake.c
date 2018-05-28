@@ -404,8 +404,7 @@ INTERNAL otrng_err otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
   return otrng_deserialize_ring_sig(dst->sigma, cursor, len, &read);
 }
 
-INTERNAL dake_prekey_message_s *
-otrng_dake_prekey_message_new(void) {
+INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
   dake_prekey_message_s *prekey_message = malloc(sizeof(dake_prekey_message_s));
   if (!prekey_message) {
     return NULL;
