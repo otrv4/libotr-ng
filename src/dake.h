@@ -55,7 +55,6 @@ typedef struct dake_auth_i_s {
 
 typedef struct dake_prekey_message_s {
   uint32_t sender_instance_tag;
-  uint32_t receiver_instance_tag;
   client_profile_p profile;
   ec_point_p Y;
   dh_public_key_p B;
