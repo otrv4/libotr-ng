@@ -706,13 +706,14 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   k_dh_p k_dh;
 
   // TODO: this will be calculated again later
-  if (!otrng_ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh,
-                                otr->keys->their_ecdh))
+  if (ERROR == otrng_ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh,
+                                        otr->keys->their_ecdh))
     return ERROR;
 
   // TODO: this will be calculated again later
-  if (!otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), otr->keys->our_dh->priv,
-                              otr->keys->their_dh))
+  if (ERROR == otrng_dh_shared_secret(k_dh, sizeof(k_dh_p),
+                                      otr->keys->our_dh->priv,
+                                      otr->keys->their_dh))
     return ERROR;
 
   brace_key_p brace_key;
@@ -726,12 +727,12 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   otrng_memdump(brace_key, sizeof(brace_key_p));
 #endif
 
-  if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
-                                otr->keys->their_shared_prekey))
+  if (ERROR == otrng_ecdh_shared_secret(tmp_ecdh_k1, otr->keys->our_ecdh,
+                                        otr->keys->their_shared_prekey))
     return ERROR;
 
-  if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
-                                otr->their_profile->long_term_pub_key))
+  if (ERROR == otrng_ecdh_shared_secret(tmp_ecdh_k2, otr->keys->our_ecdh,
+                                        otr->their_profile->long_term_pub_key))
     return ERROR;
 
   // TODO: refactor this
@@ -1008,13 +1009,14 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
 
   // TODO: this workaround is not the nicest there is
   // TODO: this will be calculated again later
-  if (!otrng_ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh,
-                                otr->keys->their_ecdh))
+  if (ERROR == otrng_ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh,
+                                        otr->keys->their_ecdh))
     return ERROR;
 
   // TODO: this will be calculated again later
-  if (!otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), otr->keys->our_dh->priv,
-                              otr->keys->their_dh))
+  if (ERROR == otrng_dh_shared_secret(k_dh, sizeof(k_dh_p),
+                                      otr->keys->our_dh->priv,
+                                      otr->keys->their_dh))
     return ERROR;
 
   brace_key_p brace_key;
@@ -1028,12 +1030,13 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   otrng_memdump(brace_key, sizeof(brace_key_p));
 #endif
 
-  if (!otrng_ecdh_shared_secret_from_prekey(
-          tmp_ecdh_k1, otr->conversation->client->shared_prekey_pair,
-          their_ecdh(otr)))
+  if (ERROR == otrng_ecdh_shared_secret_from_prekey(
+                   tmp_ecdh_k1, otr->conversation->client->shared_prekey_pair,
+                   their_ecdh(otr)))
     return ERROR;
 
-  if (!otrng_ecdh_shared_secret_from_keypair(
+  if (ERROR ==
+      otrng_ecdh_shared_secret_from_keypair(
           tmp_ecdh_k2, otr->conversation->client->keypair, their_ecdh(otr)))
     return ERROR;
 
