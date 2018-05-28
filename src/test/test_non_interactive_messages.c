@@ -22,8 +22,7 @@
 #include "../dake.h"
 #include "../keys.h"
 
-void test_dake_prekey_message_serializes(prekey_message_fixture_s *f,
-                                         gconstpointer data) {
+void test_dake_prekey_message_serializes() {
 
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
@@ -32,8 +31,7 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_s *f,
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
-  dake_prekey_message_s *prekey_message =
-      otrng_dake_prekey_message_new(f->profile);
+  dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
   prekey_message->sender_instance_tag = 1;
   otrng_ec_point_copy(prekey_message->Y, ecdh->pub);
   prekey_message->B = otrng_dh_mpi_copy(dh->pub);
@@ -81,8 +79,7 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_s *f,
   otrng_dake_prekey_message_free(prekey_message);
 }
 
-void test_otrng_dake_prekey_message_deserializes(prekey_message_fixture_s *f,
-                                                 gconstpointer data) {
+void test_otrng_dake_prekey_message_deserializes() {
 
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
@@ -92,7 +89,7 @@ void test_otrng_dake_prekey_message_deserializes(prekey_message_fixture_s *f,
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
   dake_prekey_message_s *prekey_message =
-      otrng_dake_prekey_message_new(f->profile);
+      otrng_dake_prekey_message_new();
   otrng_ec_point_copy(prekey_message->Y, ecdh->pub);
   prekey_message->B = otrng_dh_mpi_copy(dh->pub);
 
@@ -118,8 +115,7 @@ void test_otrng_dake_prekey_message_deserializes(prekey_message_fixture_s *f,
   otrng_dake_prekey_message_free(deserialized);
 }
 
-void test_dake_prekey_message_valid(prekey_message_fixture_s *f,
-                                    gconstpointer data) {
+void test_dake_prekey_message_valid() {
 
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
@@ -129,7 +125,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_s *f,
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
   dake_prekey_message_s *prekey_message =
-      otrng_dake_prekey_message_new(f->profile);
+      otrng_dake_prekey_message_new();
   otrng_assert(prekey_message != NULL);
 
   otrng_ec_point_copy(prekey_message->Y, ecdh->pub);
@@ -140,8 +136,7 @@ void test_dake_prekey_message_valid(prekey_message_fixture_s *f,
 
   otrng_dake_prekey_message_free(prekey_message);
 
-  dake_prekey_message_s *invalid_prekey_message =
-      otrng_dake_prekey_message_new(NULL);
+  dake_prekey_message_s *invalid_prekey_message = otrng_dake_prekey_message_new();
 
   // Invalid point
   otrng_ec_point_destroy(invalid_prekey_message->Y);

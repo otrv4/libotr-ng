@@ -91,12 +91,6 @@ typedef struct identity_message_fixture_s {
   client_profile_s *profile;
 } identity_message_fixture_s, identity_message_fixture_p[1];
 
-typedef struct prekey_message_fixture_s {
-  otrng_keypair_s *keypair;
-  otrng_shared_prekey_pair_s *shared_prekey;
-  client_profile_s *profile;
-} prekey_message_fixture_s, prekey_message_fixture_p[1];
-
 typedef struct non_interactive_auth_message_fixture_s {
   otrng_keypair_s *keypair;
   otrng_shared_prekey_pair_s *shared_prekey;
@@ -131,41 +125,6 @@ static void identity_message_fixture_setup(identity_message_fixture_s *fixture,
 static void
 identity_message_fixture_teardown(identity_message_fixture_s *fixture,
                                   gconstpointer user_data) {
-  otrng_keypair_free(fixture->keypair);
-  fixture->keypair = NULL;
-
-  otrng_shared_prekey_pair_free(fixture->shared_prekey);
-  fixture->shared_prekey = NULL;
-
-  otrng_client_profile_free(fixture->profile);
-  fixture->profile = NULL;
-}
-
-static void prekey_message_fixture_setup(prekey_message_fixture_s *fixture,
-                                         gconstpointer user_data) {
-  fixture->keypair = otrng_keypair_new();
-
-  uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
-  otrng_keypair_generate(fixture->keypair, sym);
-  otrng_assert(otrng_ec_point_valid(fixture->keypair->pub));
-
-  fixture->profile = client_profile_new("4");
-
-  fixture->shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pair_generate(fixture->shared_prekey, sym);
-  otrng_assert(otrng_ec_point_valid(fixture->shared_prekey->pub));
-
-  memcpy(fixture->profile->shared_prekey, fixture->shared_prekey->pub,
-         sizeof(otrng_shared_prekey_pub_p));
-
-  otrng_assert(fixture->profile != NULL);
-  fixture->profile->expires = time(NULL) + 60 * 60;
-  otrng_assert(client_profile_sign(fixture->profile, fixture->keypair) ==
-               SUCCESS);
-}
-
-static void prekey_message_fixture_teardown(prekey_message_fixture_s *fixture,
-                                            gconstpointer user_data) {
   otrng_keypair_free(fixture->keypair);
   fixture->keypair = NULL;
 

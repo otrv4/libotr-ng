@@ -507,9 +507,7 @@ tstatic otrng_err serialize_and_encode_prekey_message(
 }
 
 tstatic dake_prekey_message_s *build_prekey_message(otrng_s *otr) {
-  dake_prekey_message_s *m = NULL;
-
-  m = otrng_dake_prekey_message_new(get_my_client_profile(otr));
+  dake_prekey_message_s *m = otrng_dake_prekey_message_new();
   if (!m)
     return NULL;
 
