@@ -1163,67 +1163,69 @@ tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
  *
  * I am not sure I like this.
  */
-tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
-                                         size_t buflen, otrng_s *otr) {
-  if (otr->state == OTRNG_STATE_FINISHED)
-    return SUCCESS; /* ignore the message */
-
-  otrng_err err = ERROR;
-  dake_prekey_message_p m;
-
-  if (!otrng_dake_prekey_message_deserialize(m, buff, buflen))
-    return err;
-
-  if (m->receiver_instance_tag != 0) {
-    otrng_dake_prekey_message_destroy(m);
+tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
+                                          otrng_s *otr) {
+  if (m->receiver_instance_tag != 0)
     return SUCCESS;
-  }
 
-  if (!received_instance_tag(m->sender_instance_tag, otr)) {
-    otrng_error_message(dst, ERR_MSG_MALFORMED);
-    otrng_dake_prekey_message_destroy(m);
+  if (!received_instance_tag(m->sender_instance_tag, otr))
+    return MALFORMED;
+
+  if (!otrng_valid_received_values(m->Y, m->B, m->profile))
     return ERROR;
-  }
-
-  if (!otrng_valid_received_values(m->Y, m->B, m->profile)) {
-    otrng_dake_prekey_message_destroy(m);
-    return err;
-  }
 
   otr->their_profile = malloc(sizeof(client_profile_s));
-  if (!otr->their_profile) {
-    otrng_dake_prekey_message_destroy(m);
-    return err;
-  }
+  if (!otr->their_profile)
+    return ERROR;
 
   otrng_key_manager_set_their_ecdh(m->Y, otr->keys);
   otrng_key_manager_set_their_dh(m->B, otr->keys);
   otrng_client_profile_copy(otr->their_profile, m->profile);
 
-  otrng_dake_prekey_message_destroy(m);
-
   if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
-    return err;
+    return ERROR;
 
+  // TODO: their shared prekey wont come in the profile anymore.
   memcpy(otr->keys->their_shared_prekey, otr->their_profile->shared_prekey,
          sizeof(otrng_shared_prekey_pub_p));
 
   /* tmp_k = KDF_1(0x0C || K_ecdh || ECDH(x, their_shared_prekey) ||
    * ECDH(x, Pkb) || brace_key) */
   if (!generate_tmp_key_r(otr->keys->tmp_key, otr))
-    return err;
+    return ERROR;
 
   if (!otrng_key_manager_generate_shared_secret(otr->keys,
                                                 OTRNG_NON_INTERACTIVE))
     return ERROR;
 
   if (!double_ratcheting_init(otr, OTRNG_THEIR))
-    return err;
+    return ERROR;
 
   // TODO: this should send the non interactive auth and decide
   // when the message is attached
 
   return SUCCESS;
+}
+
+tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
+                                         size_t buflen, otrng_s *otr) {
+  if (otr->state == OTRNG_STATE_FINISHED)
+    return SUCCESS; /* ignore the message */
+
+  dake_prekey_message_p m;
+
+  if (!otrng_dake_prekey_message_deserialize(m, buff, buflen))
+    return ERROR;
+
+  otrng_err err = prekey_message_received(m, otr);
+  otrng_dake_prekey_message_destroy(m);
+
+  if (err == MALFORMED) {
+    otrng_error_message(dst, ERR_MSG_MALFORMED);
+    err = ERROR; // TODO: Why can't the error just be MALFORMED?
+  }
+
+  return err;
 }
 
 tstatic otrng_bool verify_non_interactive_auth_message(

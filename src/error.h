@@ -44,6 +44,7 @@ typedef enum {
   ERROR = 0,
   STATE_NOT_ENCRYPTED = 0x1001,
   MSG_NOT_VALID = 0x1011,
+  MALFORMED = 0x1002,
 } otrng_err;
 
 typedef enum {
