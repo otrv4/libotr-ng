@@ -491,19 +491,27 @@ tstatic otrng_err serialize_and_encode_prekey_message(
   return SUCCESS;
 }
 
-tstatic otrng_err otrng_build_prekey_message(otrng_server_s *server,
-                                             otrng_s *otr) {
+tstatic dake_prekey_message_s *build_prekey_message(otrng_s *otr) {
   dake_prekey_message_s *m = NULL;
 
   m = otrng_dake_prekey_message_new(get_my_client_profile(otr));
   if (!m)
-    return ERROR;
+    return NULL;
 
   m->sender_instance_tag = otr->our_instance_tag;
   m->receiver_instance_tag = otr->their_instance_tag;
 
   otrng_ec_point_copy(m->Y, our_ecdh(otr));
   m->B = otrng_dh_mpi_copy(our_dh(otr));
+
+  return m;
+}
+
+tstatic otrng_err otrng_build_prekey_message(otrng_server_s *server,
+                                             otrng_s *otr) {
+  dake_prekey_message_s *m = build_prekey_message(otr);
+  if (!m)
+    return ERROR;
 
   otrng_err err =
       serialize_and_encode_prekey_message(&server->prekey_message, m);
