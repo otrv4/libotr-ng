@@ -72,7 +72,6 @@ int main(int argc, char **argv) {
 
   g_test_init(&argc, &argv, NULL);
 
-  g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
   g_test_add_func("/otrng/instance_tag/generates_when_file_empty",
                   test_instance_tag_generates_tag_when_file_empty);
   g_test_add_func("/otrng/instance_tag/generates_when_file_is_full",
@@ -247,32 +246,6 @@ int main(int argc, char **argv) {
              otrng_fixture_teardown);
   g_test_add_func("/otrng/destroy", test_otrng_destroy);
 
-  g_test_add_func("/api/interactive_conversation/v4",
-                  test_api_interactive_conversation);
-  g_test_add_func("/api/non_interactive_conversation/v4",
-                  test_api_non_interactive_conversation);
-  g_test_add_func("/api/non_interactive_conversation_enc_msg_1/v4",
-                  test_api_non_interactive_conversation_with_enc_msg_1);
-  g_test_add_func("/api/non_interactive_conversation_enc_msg_2/v4",
-                  test_api_non_interactive_conversation_with_enc_msg_2);
-  g_test_add_func("/api/same_ratchet_out_of_order/v4",
-                  test_api_same_ratchet_out_of_order);
-  g_test_add_func("/api/new_ratchet_out_of_order/v4",
-                  test_api_new_ratchet_out_of_order);
-  g_test_add_func("/api/conversation_errors_1", test_api_conversation_errors_1);
-  g_test_add_func("/api/conversation_errors_2", test_api_conversation_errors_2);
-  g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
-  g_test_add_func("/api/smp", test_api_smp);
-  g_test_add_func("/api/smp_abort", test_api_smp_abort);
-  /* g_test_add_func("/api/messaging", test_api_messaging); */
-  g_test_add_func("/api/instance_tag", test_instance_tag_api);
-  g_test_add_func("/api/dh_key_rotation", test_dh_key_rotation);
-  g_test_add_func("/api/extra_symm_key", test_api_extra_sym_key);
-  g_test_add_func("/api/ecdh_keys_destroy",
-                  test_ecdh_priv_keys_destroyed_early);
-  g_test_add_func("/api/unreadable", test_unreadable_flag);
-  g_test_add_func("/api/heartbeat", test_heartbeat_messages);
-
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);
   g_test_add_func("/client/get_our_fingerprint",
@@ -294,6 +267,40 @@ int main(int argc, char **argv) {
                   test_invalid_auth_r_msg_in_not_waiting_auth_r);
   g_test_add_func("/client/invalid_auth_i_msg_in_not_waiting_auth_i",
                   test_invalid_auth_i_msg_in_not_waiting_auth_i);
+
+  // API are supposed to test the public API.
+  // They go to the end because they are integration tests, and we only should
+  // care about them after all the unit tests are working.
+  // TODO: There is TOO MUCH /api tests. They are TOO BIG and hard to
+  // understand (by nature, I think). Let's reconsider what should be here.
+
+  g_test_add_func("/api/interactive_conversation/v4",
+                  test_api_interactive_conversation);
+  g_test_add_func("/api/non_interactive_conversation/v4",
+                  test_api_non_interactive_conversation);
+  g_test_add_func("/api/non_interactive_conversation_enc_msg_1/v4",
+                  test_api_non_interactive_conversation_with_enc_msg_1);
+  g_test_add_func("/api/non_interactive_conversation_enc_msg_2/v4",
+                  test_api_non_interactive_conversation_with_enc_msg_2);
+
+  g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
+  g_test_add_func("/api/same_ratchet_out_of_order/v4",
+                  test_api_same_ratchet_out_of_order);
+  g_test_add_func("/api/new_ratchet_out_of_order/v4",
+                  test_api_new_ratchet_out_of_order);
+  g_test_add_func("/api/conversation_errors_1", test_api_conversation_errors_1);
+  g_test_add_func("/api/conversation_errors_2", test_api_conversation_errors_2);
+  g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
+  g_test_add_func("/api/smp", test_api_smp);
+  g_test_add_func("/api/smp_abort", test_api_smp_abort);
+  /* g_test_add_func("/api/messaging", test_api_messaging); */
+  g_test_add_func("/api/instance_tag", test_instance_tag_api);
+  g_test_add_func("/api/dh_key_rotation", test_dh_key_rotation);
+  g_test_add_func("/api/extra_symm_key", test_api_extra_sym_key);
+  g_test_add_func("/api/ecdh_keys_destroy",
+                  test_ecdh_priv_keys_destroyed_early);
+  g_test_add_func("/api/unreadable", test_unreadable_flag);
+  g_test_add_func("/api/heartbeat", test_heartbeat_messages);
 
   int ret = g_test_run();
   OTRNG_FREE;
