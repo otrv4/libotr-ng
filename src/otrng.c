@@ -1190,7 +1190,7 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   otrng_key_manager_set_their_ecdh(m->Y, otr->keys);
   otrng_key_manager_set_their_dh(m->B, otr->keys);
 
-  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
+  if (otrng_key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
     return ERROR;
 
   // TODO: their shared prekey wont come in the profile anymore.
@@ -1421,7 +1421,7 @@ tstatic otrng_err receive_identity_message_on_state_start(
   otrng_key_manager_set_their_dh(identity_message->B, otr->keys);
   otrng_client_profile_copy(otr->their_profile, identity_message->profile);
 
-  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
+  if (otrng_key_manager_generate_ephemeral_keys(otr->keys) == ERROR)
     return ERROR;
 
   if (!reply_with_auth_r_msg(dst, otr))
