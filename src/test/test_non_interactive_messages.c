@@ -53,16 +53,12 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_s *f,
       0x0,
       0x1, // sender instance tag
 
-      0x0,
-      0x0,
-      0x0,
-      0x0, // receiver instance tag
-
   };
 
   uint8_t *cursor = serialized;
-  otrng_assert_cmpmem(cursor, expected, 11); /* size of expected */
-  cursor += 11;
+  otrng_assert_cmpmem(cursor, expected,
+                      sizeof(expected)); /* size of expected */
+  cursor += sizeof(expected);
 
   size_t client_profile_len = 0;
   uint8_t *client_profile_serialized = NULL;
@@ -122,8 +118,6 @@ void test_otrng_dake_prekey_message_deserializes(prekey_message_fixture_s *f,
 
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
                    prekey_message->sender_instance_tag);
-  g_assert_cmpuint(deserialized->receiver_instance_tag, ==,
-                   prekey_message->receiver_instance_tag);
   otrng_assert_client_profile_eq(deserialized->profile,
                                  prekey_message->profile);
   otrng_assert_ec_public_key_eq(deserialized->Y, prekey_message->Y);

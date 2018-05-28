@@ -415,7 +415,6 @@ otrng_dake_prekey_message_new(const client_profile_s *profile) {
   }
 
   prekey_message->sender_instance_tag = 0;
-  prekey_message->receiver_instance_tag = 0;
   prekey_message->profile->versions = NULL;
   otrng_ec_bzero(prekey_message->Y, ED448_POINT_BYTES);
   prekey_message->B = NULL;
@@ -462,8 +461,6 @@ INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
   cursor += otrng_serialize_uint16(cursor, VERSION);
   cursor += otrng_serialize_uint8(cursor, PRE_KEY_MSG_TYPE);
   cursor += otrng_serialize_uint32(cursor, prekey_message->sender_instance_tag);
-  cursor +=
-      otrng_serialize_uint32(cursor, prekey_message->receiver_instance_tag);
   cursor += otrng_serialize_bytes_array(cursor, profile, profile_len);
   cursor += otrng_serialize_ec_point(cursor, prekey_message->Y);
 
@@ -518,14 +515,6 @@ INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
   }
 
   if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len,
-                                &read)) {
-    return ERROR;
-  }
-
-  cursor += read;
-  len -= read;
-
-  if (!otrng_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
                                 &read)) {
     return ERROR;
   }

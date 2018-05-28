@@ -514,7 +514,6 @@ tstatic dake_prekey_message_s *build_prekey_message(otrng_s *otr) {
     return NULL;
 
   m->sender_instance_tag = otr->our_instance_tag;
-  m->receiver_instance_tag = otr->their_instance_tag;
 
   otrng_ec_point_copy(m->Y, our_ecdh(otr));
   m->B = otrng_dh_mpi_copy(our_dh(otr));
@@ -1178,9 +1177,6 @@ tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
  */
 tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
                                           otrng_s *otr) {
-  if (m->receiver_instance_tag != 0)
-    return SUCCESS;
-
   if (!received_instance_tag(m->sender_instance_tag, otr))
     return MALFORMED;
 
