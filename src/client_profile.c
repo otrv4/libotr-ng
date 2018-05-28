@@ -18,6 +18,8 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "client_profile.h"
+
 #include <sodium.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,8 +27,6 @@
 #include <time.h>
 
 #define OTRNG_DESERIALIZE_PRIVATE
-
-#include "client_profile.h"
 #include "deserialize.h"
 #include "serialize.h"
 
@@ -247,6 +247,7 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
   return valid;
 }
 
+// TODO: REMOVE shared_prekey_pair
 INTERNAL client_profile_s *otrng_client_profile_build(
     const string_p versions, const otrng_keypair_s *keypair,
     const otrng_shared_prekey_pair_s *shared_prekey_pair) {
@@ -261,7 +262,7 @@ INTERNAL client_profile_s *otrng_client_profile_build(
   memcpy(profile->shared_prekey, shared_prekey_pair->pub,
          sizeof(otrng_shared_prekey_pub_p));
 
-  if (!client_profile_sign(profile, keypair)) {
+  if (ERROR == client_profile_sign(profile, keypair)) {
     otrng_client_profile_free(profile);
     return NULL;
   }
