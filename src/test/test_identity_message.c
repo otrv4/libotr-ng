@@ -172,7 +172,6 @@ void test_dake_identity_message_valid(identity_message_fixture_s *f,
   otrng_assert(otrng_ec_point_valid(shared_prekey->pub));
 
   otrng_ec_point_copy(invalid_profile->long_term_pub_key, invalid_ecdh->pub);
-  otrng_ec_point_copy(invalid_profile->shared_prekey, shared_prekey->pub);
 
   dake_identity_message_s *invalid_identity_message =
       otrng_dake_identity_message_new(invalid_profile);

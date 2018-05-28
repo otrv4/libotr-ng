@@ -84,8 +84,7 @@ static void set_up_client_state(otrng_client_state_s *state,
   otrng_client_state_add_instance_tag(state, 0x100 + byte);
 
   // Create client profile
-  state->client_profile = otrng_client_profile_build("34", state->keypair,
-                                                     state->shared_prekey_pair);
+  state->client_profile = otrng_client_profile_build("34", state->keypair);
 
   // Create prekey profile
   state->prekey_profile =

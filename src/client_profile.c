@@ -41,7 +41,6 @@ tstatic client_profile_s *client_profile_new(const string_p versions) {
   otrng_ec_bzero(profile->long_term_pub_key, ED448_POINT_BYTES);
   profile->expires = 0;
   profile->versions = otrng_strdup(versions);
-  otrng_ec_bzero(profile->shared_prekey, ED448_POINT_BYTES);
   memset(profile->signature, 0, sizeof(profile->signature));
   otrng_mpi_init(profile->transitional_signature);
 
@@ -57,7 +56,6 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   otrng_ec_point_copy(dst->long_term_pub_key, src->long_term_pub_key);
   dst->versions = otrng_strdup(src->versions);
   dst->expires = src->expires;
-  otrng_ec_point_copy(dst->shared_prekey, src->shared_prekey);
 
   memcpy(dst->signature, src->signature, sizeof(eddsa_signature_p));
   otrng_mpi_copy(dst->transitional_signature, src->transitional_signature);
@@ -71,7 +69,6 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
   free(profile->versions);
   profile->versions = NULL;
   sodium_memzero(profile->signature, ED448_SIGNATURE_BYTES);
-  otrng_ec_point_destroy(profile->shared_prekey);
   otrng_mpi_free(profile->transitional_signature);
 }
 
@@ -89,7 +86,6 @@ tstatic size_t client_profile_body_serialize(uint8_t *dst,
   target += otrng_serialize_data(target, (uint8_t *)profile->versions,
                                  strlen(profile->versions) + 1);
   target += otrng_serialize_uint64(target, profile->expires);
-  target += otrng_serialize_otrng_shared_prekey(target, profile->shared_prekey);
 
   return target - dst;
 }
@@ -176,12 +172,6 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
 
     walked += read;
 
-    if (!otrng_deserialize_otrng_shared_prekey(
-            target->shared_prekey, buffer + walked, buflen - walked, &read))
-      continue;
-
-    walked += read;
-
     // TODO: check the len
     if (buflen - walked < sizeof(eddsa_signature_p))
       continue;
@@ -230,9 +220,6 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
   if (!(profile->signature > 0))
     return otrng_false;
 
-  if (!otrng_ec_point_valid(profile->shared_prekey))
-    return otrng_false;
-
   if (!client_profile_body_asprintf(&body, &bodylen, profile))
     return otrng_false;
 
@@ -247,10 +234,9 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
   return valid;
 }
 
-// TODO: REMOVE shared_prekey_pair
-INTERNAL client_profile_s *otrng_client_profile_build(
-    const string_p versions, const otrng_keypair_s *keypair,
-    const otrng_shared_prekey_pair_s *shared_prekey_pair) {
+INTERNAL client_profile_s *
+otrng_client_profile_build(const string_p versions,
+                           const otrng_keypair_s *keypair) {
   client_profile_s *profile = client_profile_new(versions);
   if (!profile)
     return NULL;
@@ -258,9 +244,6 @@ INTERNAL client_profile_s *otrng_client_profile_build(
 #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   time_t expires = time(NULL);
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
-
-  memcpy(profile->shared_prekey, shared_prekey_pair->pub,
-         sizeof(otrng_shared_prekey_pub_p));
 
   if (!client_profile_sign(profile, keypair)) {
     otrng_client_profile_free(profile);

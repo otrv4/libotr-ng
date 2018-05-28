@@ -113,9 +113,6 @@ static void identity_message_fixture_setup(identity_message_fixture_s *fixture,
   otrng_shared_prekey_pair_generate(fixture->shared_prekey, sym);
   otrng_assert(otrng_ec_point_valid(fixture->shared_prekey->pub));
 
-  memcpy(fixture->profile->shared_prekey, fixture->shared_prekey->pub,
-         sizeof(otrng_shared_prekey_pub_p));
-
   otrng_assert(fixture->profile != NULL);
   fixture->profile->expires = time(NULL) + 60 * 60;
   otrng_assert(client_profile_sign(fixture->profile, fixture->keypair) ==

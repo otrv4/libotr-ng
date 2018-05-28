@@ -39,11 +39,6 @@ void test_client_profile_serializes_body() {
 
   client_profile_s *profile = client_profile_new("4");
 
-  otrng_shared_prekey_pair_p shared_prekey;
-  otrng_shared_prekey_pair_generate(shared_prekey, sym);
-  memcpy(profile->shared_prekey, shared_prekey->pub,
-         sizeof(otrng_shared_prekey_pub_p));
-
   otrng_assert(profile != NULL);
   profile->expires = 15;
   otrng_assert(client_profile_sign(profile, keypair) == SUCCESS);
@@ -59,7 +54,7 @@ void test_client_profile_serializes_body() {
   uint8_t *serialized = NULL;
   otrng_assert(client_profile_body_asprintf(&serialized, &written, profile) ==
                SUCCESS);
-  g_assert_cmpint(132, ==, written);
+  g_assert_cmpint(73, ==, written);
 
   otrng_assert_cmpmem(expected_pubkey, serialized, ED448_PUBKEY_BYTES);
 
@@ -71,14 +66,6 @@ void test_client_profile_serializes_body() {
 
   otrng_assert_cmpmem(expected, serialized + ED448_PUBKEY_BYTES,
                       sizeof(expected));
-
-  uint8_t expected_shared_prekey[ED448_SHARED_PREKEY_BYTES] = {0};
-  otrng_serialize_otrng_shared_prekey(expected_shared_prekey,
-                                      profile->shared_prekey);
-
-  otrng_assert_cmpmem(expected_shared_prekey,
-                      serialized + ED448_PUBKEY_BYTES + 14,
-                      ED448_SHARED_PREKEY_BYTES);
 
   free(serialized);
   serialized = NULL;
@@ -92,11 +79,6 @@ void test_client_profile_serializes() {
 
   client_profile_s *profile = client_profile_new("4");
 
-  otrng_shared_prekey_pair_p shared_prekey;
-  otrng_shared_prekey_pair_generate(shared_prekey, sym);
-  memcpy(profile->shared_prekey, shared_prekey->pub,
-         sizeof(otrng_shared_prekey_pair_s));
-
   otrng_assert(profile != NULL);
   profile->expires = 15;
 
@@ -109,7 +91,7 @@ void test_client_profile_serializes() {
   uint8_t *serialized = NULL;
   otrng_assert(otrng_client_profile_asprintf(&serialized, &written, profile) ==
                SUCCESS);
-  g_assert_cmpint(written, ==, 290);
+  g_assert_cmpint(written, ==, 231);
 
   // check "body"
   size_t body_len = 0;
@@ -144,11 +126,6 @@ void test_otrng_client_profile_deserializes() {
 
   client_profile_s *profile = client_profile_new("4");
 
-  otrng_shared_prekey_pair_p shared_prekey;
-  otrng_shared_prekey_pair_generate(shared_prekey, sym);
-  memcpy(profile->shared_prekey, shared_prekey->pub,
-         sizeof(otrng_shared_prekey_pub_p));
-
   otrng_assert(profile != NULL);
   client_profile_sign(profile, keypair);
 
@@ -174,11 +151,6 @@ void test_client_profile_signs_and_verify() {
 
   client_profile_s *profile = client_profile_new("4");
 
-  otrng_shared_prekey_pair_p shared_prekey;
-  otrng_shared_prekey_pair_generate(shared_prekey, sym);
-  memcpy(profile->shared_prekey, shared_prekey->pub,
-         sizeof(otrng_shared_prekey_pair_s));
-
   otrng_assert(profile != NULL);
   client_profile_sign(profile, keypair);
 
@@ -192,19 +164,15 @@ void test_client_profile_signs_and_verify() {
 }
 
 void test_otrng_client_profile_build() {
-  client_profile_s *profile = otrng_client_profile_build(NULL, NULL, NULL);
+  client_profile_s *profile = otrng_client_profile_build(NULL, NULL);
   otrng_assert(!profile);
 
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  otrng_shared_prekey_pair_p shared_prekey;
-  otrng_shared_prekey_pair_generate(shared_prekey, sym);
-
-  profile = otrng_client_profile_build("3", keypair, shared_prekey);
+  profile = otrng_client_profile_build("3", keypair);
   g_assert_cmpstr(profile->versions, ==, "3");
-  otrng_assert(otrng_ec_point_valid(profile->shared_prekey));
 
   otrng_client_profile_free(profile);
 }

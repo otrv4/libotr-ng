@@ -60,6 +60,8 @@ static inline dh_public_key_p their_dh(const otrng_s *otr) {
 
 static inline struct goldilocks_448_point_s *
 their_shared_prekey(const otrng_s *otr) {
+  // TODO: This is confusing. Should it return from the profile OR from
+  // the key manager?
   return &otr->their_prekey_profile->shared_prekey[0];
 }
 
@@ -231,8 +233,7 @@ tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
   char versions[3] = {0};
   allowed_versions(versions, otr);
 
-  state->client_profile = otrng_client_profile_build(versions, state->keypair,
-                                                     state->shared_prekey_pair);
+  state->client_profile = otrng_client_profile_build(versions, state->keypair);
   return state->client_profile;
 }
 

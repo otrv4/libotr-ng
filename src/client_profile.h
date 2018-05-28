@@ -33,7 +33,6 @@ typedef struct client_profile_s {
   otrng_public_key_p long_term_pub_key;
   string_p versions;
   uint64_t expires;
-  otrng_shared_prekey_pub_p shared_prekey;
 
   // TODO: this should be an array of signatures :S
   eddsa_signature_p signature;
@@ -58,9 +57,9 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
 INTERNAL otrng_err otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile);
 
-INTERNAL client_profile_s *otrng_client_profile_build(
-    const string_p versions, const otrng_keypair_s *keypair,
-    const otrng_shared_prekey_pair_s *shared_prekey_keypair);
+INTERNAL client_profile_s *
+otrng_client_profile_build(const string_p versions,
+                           const otrng_keypair_s *keypair);
 
 #ifdef OTRNG_USER_PROFILE_PRIVATE
 
