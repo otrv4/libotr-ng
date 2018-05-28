@@ -58,6 +58,11 @@ static inline dh_public_key_p their_dh(const otrng_s *otr) {
   return otr->keys->their_dh;
 }
 
+static inline struct goldilocks_448_point_s *
+their_shared_prekey(const otrng_s *otr) {
+  return &otr->their_prekey_profile->shared_prekey[0];
+}
+
 static inline heartbeat_s *heartbeat(const otrng_s *otr) {
   return otr->conversation->client->heartbeat;
 }
@@ -256,6 +261,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->our_instance_tag = otrng_client_state_get_instance_tag(state);
 
   otr->their_client_profile = NULL;
+  otr->their_prekey_profile = NULL;
 
   otrng_key_manager_init(otr->keys);
   otrng_smp_context_init(otr->smp);
@@ -280,6 +286,9 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
 
   otrng_client_profile_free(otr->their_client_profile);
   otr->their_client_profile = NULL;
+
+  otrng_prekey_profile_free(otr->their_prekey_profile);
+  otr->their_prekey_profile = NULL;
 
   otrng_smp_destroy(otr->smp);
 
@@ -932,8 +941,7 @@ tstatic otrng_err build_non_interactive_auth_message(
   if (!build_non_interactive_rsig_tag(
           &t, &t_len, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
-          otr->their_client_profile->shared_prekey,
-          otr->conversation->client->phi))
+          otr->keys->their_shared_prekey, otr->conversation->client->phi))
     return ERROR;
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
@@ -1180,6 +1188,10 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   if (!otr->their_client_profile)
     return ERROR;
 
+  // TODO: Extract method get_their_prekey_profile()
+  if (!otr->their_prekey_profile)
+    return ERROR;
+
   if (!received_instance_tag(m->sender_instance_tag, otr))
     return MALFORMED;
 
@@ -1192,10 +1204,9 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
 
-  // TODO: their shared prekey wont come in the profile anymore.
-  memcpy(otr->keys->their_shared_prekey,
-         otr->their_client_profile->shared_prekey,
-         sizeof(otrng_shared_prekey_pub_p));
+  // Why do we need to store this, and not just simply use from the
+  // profile?
+  otrng_ec_point_copy(otr->keys->their_shared_prekey, their_shared_prekey(otr));
 
   /* tmp_k = KDF_1(0x0C || K_ecdh || ECDH(x, their_shared_prekey) ||
    * ECDH(x, Pkb) || brace_key) */

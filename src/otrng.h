@@ -26,6 +26,7 @@
 #include "fragment.h"
 #include "key_management.h"
 #include "keys.h"
+#include "prekey_profile.h"
 #include "shared.h"
 #include "smp.h"
 #include "str.h"
@@ -107,6 +108,7 @@ struct otrng_s {
   uint32_t their_instance_tag;
 
   client_profile_s *their_client_profile;
+  otrng_prekey_profile_s *their_prekey_profile;
 
   otrng_version running_version;
 
