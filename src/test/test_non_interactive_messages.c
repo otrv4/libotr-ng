@@ -60,17 +60,6 @@ void test_dake_prekey_message_serializes(prekey_message_fixture_s *f,
                       sizeof(expected)); /* size of expected */
   cursor += sizeof(expected);
 
-  size_t client_profile_len = 0;
-  uint8_t *client_profile_serialized = NULL;
-  otrng_assert(otrng_client_profile_asprintf(
-                   &client_profile_serialized, &client_profile_len,
-                   prekey_message->profile) == SUCCESS);
-  otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
-  free(client_profile_serialized);
-  client_profile_serialized = NULL;
-
-  cursor += client_profile_len;
-
   uint8_t serialized_y[PUB_KEY_SER_BYTES];
   int ser_len = otrng_serialize_ec_point(serialized_y, prekey_message->Y);
   otrng_assert_cmpmem(cursor, serialized_y, ser_len);
@@ -118,8 +107,6 @@ void test_otrng_dake_prekey_message_deserializes(prekey_message_fixture_s *f,
 
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
                    prekey_message->sender_instance_tag);
-  otrng_assert_client_profile_eq(deserialized->profile,
-                                 prekey_message->profile);
   otrng_assert_ec_public_key_eq(deserialized->Y, prekey_message->Y);
   otrng_assert_dh_public_key_eq(deserialized->B, prekey_message->B);
 
@@ -149,41 +136,23 @@ void test_dake_prekey_message_valid(prekey_message_fixture_s *f,
   prekey_message->B = otrng_dh_mpi_copy(dh->pub);
 
   otrng_assert(otrng_valid_received_values(prekey_message->Y, prekey_message->B,
-                                           prekey_message->profile) ==
-               otrng_true);
+                                           NULL) == otrng_true);
+
+  otrng_dake_prekey_message_free(prekey_message);
+
+  dake_prekey_message_s *invalid_prekey_message =
+      otrng_dake_prekey_message_new(NULL);
+
+  // Invalid point
+  otrng_ec_point_destroy(invalid_prekey_message->Y);
+  invalid_prekey_message->B = otrng_dh_mpi_copy(dh->pub);
+
+  otrng_assert(otrng_valid_received_values(invalid_prekey_message->Y,
+                                           invalid_prekey_message->B,
+                                           NULL) == otrng_false);
 
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dh_keypair_destroy(dh);
-  otrng_dake_prekey_message_free(prekey_message);
-
-  ecdh_keypair_p invalid_ecdh;
-  dh_keypair_p invalid_dh;
-
-  uint8_t invalid_sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_ecdh_keypair_generate(invalid_ecdh, invalid_sym);
-  otrng_assert(otrng_dh_keypair_generate(invalid_dh) == SUCCESS);
-  otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pair_generate(shared_prekey, invalid_sym);
-  otrng_assert(otrng_ec_point_valid(shared_prekey->pub));
-
-  client_profile_s *invalid_profile = client_profile_new("2");
-  otrng_ec_point_copy(invalid_profile->long_term_pub_key, invalid_ecdh->pub);
-  otrng_ec_point_copy(invalid_profile->shared_prekey, shared_prekey->pub);
-
-  dake_prekey_message_s *invalid_prekey_message =
-      otrng_dake_prekey_message_new(invalid_profile);
-
-  otrng_ec_point_copy(invalid_prekey_message->Y, invalid_ecdh->pub);
-  invalid_prekey_message->B = otrng_dh_mpi_copy(invalid_dh->pub);
-
-  otrng_assert(!otrng_valid_received_values(invalid_prekey_message->Y,
-                                            invalid_prekey_message->B,
-                                            invalid_prekey_message->profile));
-
-  otrng_client_profile_free(invalid_profile);
-  otrng_ecdh_keypair_destroy(invalid_ecdh);
-  otrng_dh_keypair_destroy(invalid_dh);
-  otrng_shared_prekey_pair_free(shared_prekey);
   otrng_dake_prekey_message_free(invalid_prekey_message);
 }
 

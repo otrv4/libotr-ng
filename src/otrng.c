@@ -1177,19 +1177,18 @@ tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
  */
 tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
                                           otrng_s *otr) {
+  // TODO: Extract method get_their_profile()
+  if (!otr->their_profile)
+    return ERROR;
+
   if (!received_instance_tag(m->sender_instance_tag, otr))
     return MALFORMED;
 
-  if (!otrng_valid_received_values(m->Y, m->B, m->profile))
-    return ERROR;
-
-  otr->their_profile = malloc(sizeof(client_profile_s));
-  if (!otr->their_profile)
+  if (!otrng_valid_received_values(m->Y, m->B, NULL))
     return ERROR;
 
   otrng_key_manager_set_their_ecdh(m->Y, otr->keys);
   otrng_key_manager_set_their_dh(m->B, otr->keys);
-  otrng_client_profile_copy(otr->their_profile, m->profile);
 
   if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
@@ -1278,9 +1277,9 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   free(t);
 
+  /* here no warning should be passed */
   if (0 != otrl_mem_differ(mac_tag, auth->auth_mac, DATA_MSG_MAC_BYTES)) {
     sodium_memzero(mac_tag, DATA_MSG_MAC_BYTES);
-    /* here no warning should be passed */
     return otrng_false;
   }
 

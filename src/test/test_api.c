@@ -249,6 +249,13 @@ void test_api_non_interactive_conversation(void) {
 
   otrng_assert_cmpmem("?OTR:AAQP", response_to_bob->to_send, 9);
 
+  // Bob receives Alice's profile from the server (we are avoiding the missing
+  // ensemble)
+  bob->their_profile = malloc(sizeof(client_profile_s));
+  otrng_client_profile_copy(
+      bob->their_profile,
+      otrng_client_state_get_client_profile(alice_client_state));
+
   // Bob receives prekey message
   otrng_assert(otrng_receive_message(response_to_alice,
                                      response_to_bob->to_send, bob) == SUCCESS);
@@ -421,6 +428,13 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
 
   otrng_assert_cmpmem("?OTR:AAQP", response_to_bob->to_send, 9);
 
+  // Bob receives Alice's profile from the server (we are avoiding the missing
+  // ensemble)
+  bob->their_profile = malloc(sizeof(client_profile_s));
+  otrng_client_profile_copy(
+      bob->their_profile,
+      otrng_client_state_get_client_profile(alice_client_state));
+
   // Bob receives prekey message
   otrng_assert(otrng_receive_message(response_to_alice,
                                      response_to_bob->to_send, bob) == SUCCESS);
@@ -571,6 +585,13 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
   otrng_assert(response_to_bob != NULL);
 
   otrng_assert_cmpmem("?OTR:AAQP", response_to_bob->to_send, 9);
+
+  // Bob receives Alice's profile from the server (we are avoiding the missing
+  // ensemble)
+  bob->their_profile = malloc(sizeof(client_profile_s));
+  otrng_client_profile_copy(
+      bob->their_profile,
+      otrng_client_state_get_client_profile(alice_client_state));
 
   // Bob receives prekey message
   otrng_assert(otrng_receive_message(response_to_alice,

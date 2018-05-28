@@ -406,26 +406,20 @@ INTERNAL otrng_err otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
 
 INTERNAL dake_prekey_message_s *
 otrng_dake_prekey_message_new(const client_profile_s *profile) {
-  if (profile == NULL)
-    return NULL;
-
   dake_prekey_message_s *prekey_message = malloc(sizeof(dake_prekey_message_s));
   if (!prekey_message) {
     return NULL;
   }
 
   prekey_message->sender_instance_tag = 0;
-  prekey_message->profile->versions = NULL;
   otrng_ec_bzero(prekey_message->Y, ED448_POINT_BYTES);
   prekey_message->B = NULL;
-  otrng_client_profile_copy(prekey_message->profile, profile);
 
   return prekey_message;
 }
 
 INTERNAL void
 otrng_dake_prekey_message_destroy(dake_prekey_message_s *prekey_message) {
-  otrng_client_profile_destroy(prekey_message->profile);
   otrng_ec_point_destroy(prekey_message->Y);
   otrng_dh_mpi_release(prekey_message->B);
   prekey_message->B = NULL;
@@ -443,28 +437,17 @@ otrng_dake_prekey_message_free(dake_prekey_message_s *prekey_message) {
 INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_prekey_message_s *prekey_message) {
-  size_t profile_len = 0;
-  uint8_t *profile = NULL;
-  if (!otrng_client_profile_asprintf(&profile, &profile_len,
-                                     prekey_message->profile)) {
-    return ERROR;
-  }
 
-  size_t s = PRE_KEY_MIN_BYTES + profile_len;
+  size_t s = PRE_KEY_MIN_BYTES;
   uint8_t *buff = malloc(s);
-  if (!buff) {
-    free(profile);
+  if (!buff)
     return ERROR;
-  }
 
   uint8_t *cursor = buff;
   cursor += otrng_serialize_uint16(cursor, VERSION);
   cursor += otrng_serialize_uint8(cursor, PRE_KEY_MSG_TYPE);
   cursor += otrng_serialize_uint32(cursor, prekey_message->sender_instance_tag);
-  cursor += otrng_serialize_bytes_array(cursor, profile, profile_len);
   cursor += otrng_serialize_ec_point(cursor, prekey_message->Y);
-
-  free(profile);
 
   size_t len = 0;
   otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
@@ -516,13 +499,6 @@ INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
 
   if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len,
                                 &read)) {
-    return ERROR;
-  }
-
-  cursor += read;
-  len -= read;
-
-  if (!otrng_client_profile_deserialize(dst->profile, cursor, len, &read)) {
     return ERROR;
   }
 
@@ -875,6 +851,9 @@ INTERNAL otrng_bool otrng_valid_received_values(
   /* Verify that the DH public key their_dh is from the correct group. */
   if (!otrng_dh_mpi_valid(their_dh))
     return otrng_false;
+
+  if (!profile)
+    return otrng_true;
 
   /* Verify their profile is valid (and not expired). */
   if (!otrng_client_profile_verify_signature(profile))
