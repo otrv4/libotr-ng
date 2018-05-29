@@ -157,18 +157,13 @@ tstatic void received_symkey_cb_v4(const otrng_conversation_state_s *conv,
   UNUSED_ARG(extra_key);
 
 #ifdef DEBUG
+  printf("\n");
   printf("Received symkey use: %08x\n", use);
   printf("Usedata lenght: %zu\n", usedatalen);
-  printf("Usedata: ");
-  for (unsigned int i = 0; i < usedatalen; i++) {
-    printf("%02x", usedata[i]);
-  }
-  printf("\n");
-  printf("Symkey: ");
-  for (int i = 0; i < HASH_BYTES; i++) {
-    printf("0x%02x, ", extra_key[i]);
-  }
-  printf("\n");
+  printf("Usedata = ");
+  otrng_memdump(usedata, usedatalen);
+  printf("Symkey = ");
+  otrng_memdump(usedata, HASH_BYTES);
 #endif
 }
 
@@ -737,6 +732,7 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   hash_hash(brace_key, sizeof(brace_key_p), k_dh, sizeof(k_dh_p));
 
 #ifdef DEBUG
+  printf("\n");
   printf("GENERATING TEMP KEY R\n");
   printf("K_ecdh = ");
   otrng_memdump(k_ecdh, sizeof(k_ecdh_p));
@@ -764,6 +760,7 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   hash_destroy(hd);
 
 #ifdef DEBUG
+  printf("\n");
   printf("GENERATING TEMP KEY R\n");
   printf("tmp_key_r = ");
   otrng_memdump(dst, HASH_BYTES);
@@ -832,6 +829,7 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
   data_msg->enc_msg = c;
 
 #ifdef DEBUG
+  printf("\n");
   printf("nonce = ");
   otrng_memdump(data_msg->nonce, DATA_MSG_NONCE_BYTES);
   printf("msg = ");
@@ -885,6 +883,7 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
   auth->enc_msg = cipher;
 
 #ifdef DEBUG
+  printf("\n");
   printf("nonce = ");
   otrng_memdump(nonce, DATA_MSG_NONCE_BYTES);
   printf("msg = ");
@@ -1039,6 +1038,7 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   hash_hash(brace_key, sizeof(brace_key_p), k_dh, sizeof(k_dh_p));
 
 #ifdef DEBUG
+  printf("\n");
   printf("GENERATING TEMP KEY I\n");
   printf("K_ecdh = ");
   otrng_memdump(k_ecdh, sizeof(k_ecdh_p));
@@ -1066,6 +1066,7 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   hash_destroy(hd);
 
 #ifdef DEBUG
+  printf("\n");
   printf("GENERATING TEMP KEY I\n");
   printf("tmp_key_i = ");
   otrng_memdump(dst, HASH_BYTES);
@@ -1739,6 +1740,7 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   tlv_list_s **tlvs = &response->tlvs;
 
 #ifdef DEBUG
+  printf("\n");
   printf("DECRYPTING\n");
   printf("enc_key = ");
   otrng_memdump(enc_key, sizeof(m_enc_key_p));

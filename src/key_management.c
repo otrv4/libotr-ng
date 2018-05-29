@@ -278,6 +278,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
   calculate_ssid(manager);
 
 #ifdef DEBUG
+  printf("\n");
   printf("THE SHARED SECRET\n");
   otrng_memdump(manager->shared_secret, sizeof(manager->shared_secret));
   printf("THE SSID\n");
@@ -291,8 +292,10 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
   }
 
 #ifdef DEBUG
+  printf("\n");
   printf("THE SECURE SESSION ID\n");
   printf("ssid: \n");
+
   if (manager->ssid_half == SESSION_ID_FIRST_HALF_BOLD) {
     printf("the first 4 bytes = ");
     printf("0x");
@@ -385,6 +388,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
   calculate_shared_secret(manager, k_ecdh);
 
 #ifdef DEBUG
+  printf("\n");
   printf("ENTERING NEW RATCHET\n");
   printf("K_ecdh = ");
   otrng_memdump(k_ecdh, sizeof(k_ecdh_p));
@@ -464,12 +468,13 @@ tstatic otrng_err key_manager_derive_ratchet_keys(
   manager->current = ratchet;
 
 #ifdef DEBUG
+  printf("\n");
   printf("ROOT KEY = ");
-  otrng_memdump(manager->current->root, sizeof(manager->current->root_key));
+  otrng_memdump(manager->current->root_key, sizeof(manager->current->root_key));
   printf("CHAIN_S = ");
-  otrng_memdump(manager->chain_s, sizeof(manager->chain_s));
+  otrng_memdump(ratchet->chain_s, sizeof(ratchet->chain_s));
   printf("CHAIN_R = ");
-  otrng_memdump(manager->chain_r, sizeof(manager->chain_r));
+  otrng_memdump(ratchet->chain_r, sizeof(ratchet->chain_r));
 #endif
 
   return SUCCESS;
@@ -531,8 +536,9 @@ tstatic void calculate_extra_key(key_manager_s *manager,
          sizeof(manager->extra_symetric_key));
 
 #ifdef DEBUG
+  printf("\n");
   printf("EXTRA KEY = ");
-  otrng_memdump(manager->extra_symetric->key,
+  otrng_memdump(manager->extra_symetric_key,
                 sizeof(manager->extra_symetric_key));
 #endif
 }
@@ -602,6 +608,7 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
   derive_next_chain_key(manager, action);
 
 #ifdef DEBUG
+  printf("\n");
   printf("GOT SENDING KEYS:\n");
   printf("enc_key = ");
   otrng_memdump(enc_key, sizeof(m_enc_key_p));
