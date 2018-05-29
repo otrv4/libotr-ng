@@ -197,6 +197,37 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
   *dst = 0;
 }
 
+tstatic void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
+  if (!s)
+    return;
+
+  otrng_ecdh_keypair_destroy(s->our_ecdh);
+  otrng_dh_keypair_destroy(s->our_dh);
+
+  free(s);
+}
+
+tstatic void store_my_prekey_message(const dake_prekey_message_p msg,
+                                     const ecdh_keypair_p ecdh_pair,
+                                     const dh_keypair_p dh_pair, otrng_s *otr) {
+  // TODO: For now, stores only one and at the protocol state
+  if (otr->our_prekeys) {
+    otrng_stored_prekeys_free(otr->our_prekeys);
+    otr->our_prekeys = NULL;
+  }
+
+  otrng_stored_prekeys_s *s = malloc(sizeof(otrng_stored_prekeys_s));
+  s->id = msg->id;
+  s->sender_instance_tag = msg->sender_instance_tag;
+
+  otrng_ec_scalar_copy(s->our_ecdh->priv, ecdh_pair->priv);
+  otrng_ec_point_copy(s->our_ecdh->pub, ecdh_pair->pub);
+  s->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
+  s->our_dh->pub = otrng_dh_mpi_copy(dh_pair->pub);
+
+  otr->our_prekeys = s;
+}
+
 tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   otrng_client_state_s *state = otr->conversation->client;
   const otrng_prekey_profile_s *ret =
@@ -264,6 +295,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->their_instance_tag = 0;
   otr->our_instance_tag = otrng_client_state_get_instance_tag(state);
 
+  otr->our_prekeys = NULL;
   otr->their_client_profile = NULL;
   otr->their_prekey_profile = NULL;
 
@@ -287,6 +319,9 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   otrng_key_manager_destroy(otr->keys);
   free(otr->keys);
   otr->keys = NULL;
+
+  otrng_stored_prekeys_free(otr->our_prekeys);
+  otr->our_prekeys = NULL;
 
   otrng_client_profile_free(otr->their_client_profile);
   otr->their_client_profile = NULL;
@@ -1007,6 +1042,37 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
   otrng_dake_non_interactive_auth_message_destroy(auth);
 
   return ret;
+}
+
+// TODO: Should maybe return a serialized ensemble, ready to publish to the
+// server
+API prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
+  prekey_ensemble_s *e = malloc(sizeof(prekey_ensemble_s));
+  if (!e)
+    return NULL;
+
+  otrng_client_profile_copy(e->client_profile, get_my_client_profile(otr));
+  otrng_prekey_profile_copy(e->prekey_profile, get_my_prekey_profile(otr));
+
+  // This ensemble has only one prekey message
+  // TODO: receive the number of messages to be generated as parameter.
+  e->num_messages = 1;
+
+  ecdh_keypair_p ecdh;
+  dh_keypair_p dh;
+  otrng_generate_ephemeral_keys(ecdh, dh);
+  e->messages = otrng_dake_prekey_message_build(otr->our_instance_tag,
+                                                ecdh->pub, dh->pub);
+
+  // TODO: should this ID be random? It should probably be unique for us, so
+  // we need to store this in client state (?)
+  e->messages->id = 0x301;
+
+  store_my_prekey_message(e->messages, ecdh, dh, otr);
+  otrng_ecdh_keypair_destroy(ecdh);
+  otrng_dh_keypair_destroy(dh);
+
+  return e;
 }
 
 // TODO: We need a "Prekey Ensemble" to send this message.

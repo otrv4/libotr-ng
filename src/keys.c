@@ -99,6 +99,15 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
   goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
 
+INTERNAL otrng_err otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,
+                                                 dh_keypair_p dh) {
+  uint8_t sym[ED448_PRIVATE_BYTES];
+  random_bytes(sym, ED448_PRIVATE_BYTES);
+
+  otrng_ecdh_keypair_generate(ecdh, sym);
+  return otrng_dh_keypair_generate(dh);
+}
+
 tstatic void
 shared_prekey_pair_destroy(otrng_shared_prekey_pair_s *prekey_pair) {
   goldilocks_bzero(prekey_pair->sym, ED448_PRIVATE_BYTES);

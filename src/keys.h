@@ -21,6 +21,7 @@
 #ifndef OTRNG_KEYS_H
 #define OTRNG_KEYS_H
 
+#include "dh.h"
 #include "ed448.h"
 #include "shared.h"
 
@@ -69,6 +70,9 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
 
 INTERNAL void
 otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair);
+
+INTERNAL otrng_err otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,
+                                                 dh_keypair_p dh);
 
 #ifdef OTRNG_KEYS_PRIVATE
 

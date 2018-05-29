@@ -26,6 +26,7 @@
 #include "fragment.h"
 #include "key_management.h"
 #include "keys.h"
+#include "prekey_ensemble.h"
 #include "prekey_profile.h"
 #include "shared.h"
 #include "smp.h"
@@ -95,6 +96,13 @@ typedef struct otrng_conversation_state_s {
   uint16_t their_instance_tag;
 } otrng_conversation_state_s, otrng_conversation_state_p[1];
 
+typedef struct {
+  uint32_t id;
+  uint32_t sender_instance_tag;
+  ecdh_keypair_p our_ecdh;
+  dh_keypair_p our_dh;
+} otrng_stored_prekeys_s, otrng_stored_prekeys_p[1];
+
 struct otrng_s {
   /* Contains: client (private key, instance tag, and callbacks) and
    conversation state */
@@ -103,6 +111,8 @@ struct otrng_s {
 
   otrng_state state;
   int supported_versions;
+
+  otrng_stored_prekeys_s *our_prekeys;
 
   uint32_t our_instance_tag;
   uint32_t their_instance_tag;
@@ -207,6 +217,8 @@ API void otrng_reply_with_prekey_msg_from_server(otrng_server_s *server,
 // TODO: REMOVE
 API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
                                                otrng_s *otr);
+
+API prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);
 
 API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
                                                   const string_p message,

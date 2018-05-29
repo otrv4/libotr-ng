@@ -168,6 +168,7 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
 
   manager->lastgenerated = now;
 
+  // TODO: If it were not this if, we could use otrng_generate_ephemeral_keys
   if (manager->i % 3 == 0) {
     otrng_dh_keypair_destroy(manager->our_dh);
 

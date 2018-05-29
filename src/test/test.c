@@ -238,6 +238,9 @@ int main(int argc, char **argv) {
              otrng_fixture_teardown);
   g_test_add_func("/otrng/destroy", test_otrng_destroy);
 
+  g_test_add_func("/otrng/build_prekey_ensemble",
+                  test_otrng_build_prekey_ensemble);
+
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);
   g_test_add_func("/client/get_our_fingerprint",

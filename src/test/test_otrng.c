@@ -235,3 +235,44 @@ void test_otrng_destroy() {
   free(otr);
   otrng_client_state_free(state);
 }
+
+void test_otrng_build_prekey_ensemble() {
+  uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {0xA};
+  uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {0XF};
+
+  otrng_client_state_s *state = otrng_client_state_new(NULL);
+  otrng_client_state_add_private_key_v4(state, long_term_priv);
+  otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv);
+  // otrng_client_state_add_instance_tag(state, 0x100A0F);
+
+  state->client_profile = otrng_client_profile_build(1, "34", state->keypair);
+  state->prekey_profile =
+      otrng_prekey_profile_build(state->keypair, state->shared_prekey_pair);
+  state->prekey_profile->id = 1;
+
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
+  otrng_s *otr = otrng_new(state, policy);
+
+  prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(otr);
+  otrng_assert(ensemble);
+
+  // Sends the same stored clients
+  otrng_assert_client_profile_eq(ensemble->client_profile,
+                                 state->client_profile);
+  otrng_assert_prekey_profile_eq(ensemble->prekey_profile,
+                                 state->prekey_profile);
+
+  // Sends one prekey message
+  otrng_assert(ensemble->num_messages == 1);
+
+  // Stores the same prekey message sent
+  // TODO: Assert the private part
+  otrng_assert_ec_public_key_eq(ensemble->messages->Y,
+                                otr->our_prekeys->our_ecdh->pub);
+  otrng_assert_dh_public_key_eq(ensemble->messages->B,
+                                otr->our_prekeys->our_dh->pub);
+
+  otrng_prekey_ensemble_free(ensemble);
+  otrng_free(otr);
+  otrng_client_state_free(state);
+}
