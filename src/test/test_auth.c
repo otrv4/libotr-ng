@@ -63,32 +63,25 @@ void test_rsig_auth() {
   otrng_keypair_generate(p3, sym3);
 
   ring_sig_p dst;
-  otrng_err ok =
-      otrng_rsig_authenticate(dst, p1->priv, p1->pub, p2->pub, p3->pub, p2->pub,
-                              (unsigned char *)msg, strlen(msg));
+  otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p2->pub, p3->pub,
+                                       p2->pub, (unsigned char *)msg,
+                                       strlen(msg)) == ERROR);
 
-  otrng_assert(ok == ERROR);
+  otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p3->pub,
+                                       p1->pub, (unsigned char *)msg,
+                                       strlen(msg)) == ERROR);
 
-  ok = otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p3->pub,
-                               p1->pub, (unsigned char *)msg, strlen(msg));
+  otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p2->pub,
+                                       p3->pub, (unsigned char *)msg,
+                                       strlen(msg)) == SUCCESS);
 
-  otrng_assert(ok == ERROR);
+  otrng_assert(otrng_rsig_verify(dst, p1->pub, p2->pub, p3->pub,
+                                 (unsigned char *)msg, strlen(msg)) == SUCCESS);
 
-  ok = otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p2->pub,
-                               p3->pub, (unsigned char *)msg, strlen(msg));
+  otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p3->pub, p1->pub,
+                                       p2->pub, (unsigned char *)msg,
+                                       strlen(msg)) == SUCCESS);
 
-  otrng_assert(ok == SUCCESS);
-
-  ok = otrng_rsig_verify(dst, p1->pub, p2->pub, p3->pub, (unsigned char *)msg,
-                         strlen(msg));
-  otrng_assert(ok);
-
-  ok = otrng_rsig_authenticate(dst, p1->priv, p1->pub, p3->pub, p1->pub,
-                               p2->pub, (unsigned char *)msg, strlen(msg));
-
-  otrng_assert(ok == SUCCESS);
-
-  ok = otrng_rsig_verify(dst, p3->pub, p1->pub, p2->pub, (unsigned char *)msg,
-                         strlen(msg));
-  otrng_assert(ok);
+  otrng_assert(otrng_rsig_verify(dst, p3->pub, p1->pub, p2->pub,
+                                 (unsigned char *)msg, strlen(msg)) == SUCCESS);
 }

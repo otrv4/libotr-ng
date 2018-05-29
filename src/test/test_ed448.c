@@ -86,7 +86,7 @@ void ed448_test_signature() {
 
   eddsa_signature_p sig;
   otrng_ec_sign(sig, sym, pub, msg, sizeof(msg));
-  otrng_assert(otrng_true == otrng_ec_verify(sig, pub, msg, sizeof(msg)));
+  otrng_assert(otrng_ec_verify(sig, pub, msg, sizeof(msg)) == otrng_true);
 
   otrng_keypair_free(pair);
 }

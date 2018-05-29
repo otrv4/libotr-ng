@@ -149,26 +149,25 @@ void dh_test_serialize() {
   dh_mpi_p mpi = gcry_mpi_new(DH3072_MOD_LEN_BITS);
 
   size_t mpi_len = 0;
-  otrng_err err =
-      otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
-  otrng_assert(err);
+  otrng_assert(otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len,
+                                      mpi) == SUCCESS);
   g_assert_cmpint(mpi_len, ==, 0);
 
   gcry_mpi_set_ui(mpi, 1);
-  err = otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
-  otrng_assert(err);
+  otrng_assert(otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len,
+                                      mpi) == SUCCESS);
   g_assert_cmpint(mpi_len, ==, 1);
 
   gcry_mpi_set_ui(mpi, 0xffffffff);
-  err = otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, mpi);
-  otrng_assert(err);
+  otrng_assert(otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len,
+                                      mpi) == SUCCESS);
   g_assert_cmpint(mpi_len, ==, 4);
 
   gcry_mpi_release(mpi);
   mpi = NULL;
 
-  err = otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, NULL);
-  otrng_assert(err);
+  otrng_assert(otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len,
+                                      NULL) == SUCCESS);
   g_assert_cmpint(mpi_len, ==, 0);
 }
 
