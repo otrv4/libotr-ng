@@ -80,10 +80,24 @@
     otrng_assert_cmpmem(_m1->data, _m2->data, _m1->len);                       \
   } while (0)
 
+#define otrng_assert_prekey_profile_eq(p1, p2)                                 \
+  do {                                                                         \
+    const otrng_prekey_profile_s *_p1 = (p1);                                  \
+    const otrng_prekey_profile_s *_p2 = (p2);                                  \
+    g_assert_cmpuint(_p1->id, ==, _p2->id);                                    \
+    g_assert_cmpuint(_p1->instance_tag, ==, _p2->instance_tag);                \
+    otrng_assert_point_equals(_p1->pub, _p2->pub);                             \
+    otrng_assert_point_equals(_p1->shared_prekey, _p2->shared_prekey);         \
+    otrng_assert_cmpmem(_p1->signature, _p2->signature,                        \
+                        sizeof(eddsa_signature_p));                            \
+  } while (0)
+
 #define otrng_assert_client_profile_eq(p1, p2)                                 \
   do {                                                                         \
     const client_profile_s *_p1 = (p1);                                        \
     const client_profile_s *_p2 = (p2);                                        \
+    g_assert_cmpuint(_p1->id, ==, _p2->id);                                    \
+    g_assert_cmpuint(_p1->sender_instance_tag, ==, _p2->sender_instance_tag);  \
     otrng_assert_point_equals(_p1->long_term_pub_key, _p2->long_term_pub_key); \
     otrng_assert_cmpmem(_p1->versions, _p2->versions,                          \
                         strlen(_p1->versions) + 1);                            \
