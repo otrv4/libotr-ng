@@ -105,6 +105,7 @@ tstatic otrng_err otrng_prekey_profile_body_asprint(uint8_t **dst,
   return SUCCESS;
 }
 
+// TODO: Add id and instance tag as parameter
 INTERNAL otrng_prekey_profile_s *
 otrng_prekey_profile_build(const otrng_keypair_s *longterm_pair,
                            const otrng_shared_prekey_pair_s *prekey_pair) {

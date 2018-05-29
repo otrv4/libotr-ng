@@ -602,6 +602,7 @@ tstatic otrng_err start_dake(otrng_response_s *response, otrng_s *otr) {
   return SUCCESS;
 }
 
+// TODO: REMOVE ME
 API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
                                                otrng_s *otr) {
   if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
@@ -1187,7 +1188,8 @@ tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
  * 3) Set the protocol state (otrng_s*) to know it is talking to one particular
  *    (Client Profile, Prekey Profile) since there's no way this function can
  *    traceback which profiles are associated with this received prekey
- *    message.
+ *    message. This is done by setting otr->their_client_profile and
+ *    otr->their_prekey_profile.
  * 4) After setting up the protocol state, src/client.c will invoke
  *    otrng_receive_message() to process the encoded "?OTR:..." prekey message.
  *
@@ -1195,11 +1197,9 @@ tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
  */
 tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
                                           otrng_s *otr) {
-  // TODO: Extract method get_their_client_profile()
   if (!otr->their_client_profile)
     return ERROR;
 
-  // TODO: Extract method get_their_prekey_profile()
   if (!otr->their_prekey_profile)
     return ERROR;
 
@@ -1237,6 +1237,7 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   return SUCCESS;
 }
 
+// TODO: REMOVE ME
 tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
                                          size_t buflen, otrng_s *otr) {
   if (otr->state == OTRNG_STATE_FINISHED)
@@ -1408,6 +1409,7 @@ tstatic otrng_err receive_non_interactive_auth_message(
     return ERROR;
   }
 
+  // TODO: Why ratcheting BEFORE the message received is valid?
   if (!double_ratcheting_init(otr, OTRNG_US)) {
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
@@ -2050,6 +2052,8 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
   case AUTH_I_MSG_TYPE:
     return receive_auth_i(decoded, dec_len, otr);
   case PRE_KEY_MSG_TYPE:
+    // TODO: Should not receive a prekey message, but a prekey ensemble.
+    // TODO: REMOVE ME
     return receive_prekey_message(&response->to_send, decoded, dec_len, otr);
   case NON_INT_AUTH_MSG_TYPE:
     return receive_non_interactive_auth_message(response, decoded, dec_len,

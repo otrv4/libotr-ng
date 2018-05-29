@@ -247,6 +247,7 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
   return valid;
 }
 
+// TODO: ADD instance tag as parameter
 INTERNAL client_profile_s *
 otrng_client_profile_build(uint32_t id, const string_p versions,
                            const otrng_keypair_s *keypair) {

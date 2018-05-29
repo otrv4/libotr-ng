@@ -81,6 +81,7 @@ otrng_client_state_get_instance_tag(otrng_client_state_s *state);
 INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
                                                  unsigned int instag);
 
+// TODO: remove
 INTERNAL int
 otrng_client_state_add_shared_prekey_v4(otrng_client_state_s *state,
                                         const uint8_t sym[ED448_PRIVATE_BYTES]);
@@ -98,6 +99,7 @@ API int
 otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
                                       const otrng_prekey_profile_s *profile);
 
+// TODO: Read/Write prekey_profiles from/to a file.
 INTERNAL int
 otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
                                              FILE *privf);

@@ -170,6 +170,7 @@ INTERNAL void otrng_response_free(otrng_response_s *response);
 INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
                                          const string_p message, otrng_s *otr);
 
+// TODO: this should be called otrng_send_message()
 INTERNAL otrng_err otrng_prepare_to_send_message(string_p *to_send,
                                                  const string_p message,
                                                  tlv_list_s **tlvs,
@@ -199,9 +200,11 @@ API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr);
 
 // TODO: change to the real func: unexpose these and make them
 // static
+// TODO: REMOVE
 API void otrng_reply_with_prekey_msg_from_server(otrng_server_s *server,
                                                  otrng_response_s *response);
 
+// TODO: REMOVE
 API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
                                                otrng_s *otr);
 
