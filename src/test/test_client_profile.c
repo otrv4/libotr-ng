@@ -38,14 +38,13 @@ void test_client_profile_serializes_body() {
   otrng_keypair_generate(keypair, sym);
 
   client_profile_s *profile = client_profile_new("4");
+  profile->id = 3;
+  profile->sender_instance_tag = 4;
 
   otrng_assert(profile != NULL);
   profile->expires = 15;
-  otrng_assert(client_profile_sign(profile, keypair) == SUCCESS);
 
-  const uint8_t transitional_signature[40] = {0};
-  otrng_mpi_set(profile->transitional_signature, transitional_signature,
-                sizeof(transitional_signature));
+  otrng_ec_point_copy(profile->long_term_pub_key, keypair->pub);
 
   uint8_t expected_pubkey[ED448_PUBKEY_BYTES] = {0};
   otrng_serialize_otrng_public_key(expected_pubkey, keypair->pub);
@@ -54,9 +53,19 @@ void test_client_profile_serializes_body() {
   uint8_t *serialized = NULL;
   otrng_assert(client_profile_body_asprintf(&serialized, &written, profile) ==
                SUCCESS);
-  g_assert_cmpint(73, ==, written);
+  g_assert_cmpint(written, ==, 81);
 
-  otrng_assert_cmpmem(expected_pubkey, serialized, ED448_PUBKEY_BYTES);
+  char expected_header[] = {
+      0x0, 0x0, 0x0, 0x3, // ID
+      0x0, 0x0, 0x0, 0x4, // sender instance tag
+  };
+
+  otrng_assert_cmpmem(expected_header, serialized, sizeof(expected_header));
+
+  uint8_t *pos = serialized + sizeof(expected_header);
+
+  otrng_assert_cmpmem(expected_pubkey, pos, ED448_PUBKEY_BYTES);
+  pos += ED448_PUBKEY_BYTES;
 
   char expected[] = {
       0x0,  0x0, 0x0, 0x2,                      // versions len
@@ -64,11 +73,9 @@ void test_client_profile_serializes_body() {
       0x0,  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0F, // expires
   };
 
-  otrng_assert_cmpmem(expected, serialized + ED448_PUBKEY_BYTES,
-                      sizeof(expected));
+  otrng_assert_cmpmem(expected, pos, sizeof(expected));
 
   free(serialized);
-  serialized = NULL;
   otrng_client_profile_free(profile);
 }
 
@@ -91,7 +98,7 @@ void test_client_profile_serializes() {
   uint8_t *serialized = NULL;
   otrng_assert(otrng_client_profile_asprintf(&serialized, &written, profile) ==
                SUCCESS);
-  g_assert_cmpint(written, ==, 231);
+  g_assert_cmpint(written, ==, 239);
 
   // check "body"
   size_t body_len = 0;
@@ -113,9 +120,7 @@ void test_client_profile_serializes() {
                       sizeof(expected_transitional_signature));
 
   free(body);
-  body = NULL;
   free(serialized);
-  serialized = NULL;
   otrng_client_profile_free(profile);
 }
 
@@ -127,6 +132,9 @@ void test_otrng_client_profile_deserializes() {
   client_profile_s *profile = client_profile_new("4");
 
   otrng_assert(profile != NULL);
+
+  profile->id = 3;
+  profile->sender_instance_tag = 4;
   client_profile_sign(profile, keypair);
 
   size_t written = 0;

@@ -29,7 +29,8 @@
 #include "str.h"
 
 typedef struct client_profile_s {
-  // TODO: add instance_tag
+  uint32_t id;
+  uint32_t sender_instance_tag;
   otrng_public_key_p long_term_pub_key;
   string_p versions;
   uint64_t expires;

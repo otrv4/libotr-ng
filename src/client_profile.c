@@ -38,6 +38,8 @@ tstatic client_profile_s *client_profile_new(const string_p versions) {
   if (!profile)
     return NULL;
 
+  profile->id = 0;
+  profile->sender_instance_tag = 0;
   otrng_ec_bzero(profile->long_term_pub_key, ED448_POINT_BYTES);
   profile->expires = 0;
   profile->versions = otrng_strdup(versions);
@@ -53,6 +55,8 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   if (!src)
     return;
 
+  dst->id = src->id;
+  dst->sender_instance_tag = src->sender_instance_tag;
   otrng_ec_point_copy(dst->long_term_pub_key, src->long_term_pub_key);
   dst->versions = otrng_strdup(src->versions);
   dst->expires = src->expires;
@@ -81,6 +85,8 @@ tstatic size_t client_profile_body_serialize(uint8_t *dst,
                                              const client_profile_s *profile) {
   uint8_t *target = dst;
 
+  target += otrng_serialize_uint32(target, profile->id);
+  target += otrng_serialize_uint32(target, profile->sender_instance_tag);
   target +=
       otrng_serialize_otrng_public_key(target, profile->long_term_pub_key);
   target += otrng_serialize_data(target, (uint8_t *)profile->versions,
@@ -92,8 +98,8 @@ tstatic size_t client_profile_body_serialize(uint8_t *dst,
 
 tstatic otrng_err client_profile_body_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
-  size_t s = ED448_PUBKEY_BYTES + strlen(profile->versions) +
-             ED448_SHARED_PREKEY_BYTES + 1 + 4 + 8;
+  size_t s = 4 + 4 + ED448_PUBKEY_BYTES + (strlen(profile->versions) + 1) +
+             (ED448_SHARED_PREKEY_BYTES + 4) + 8;
 
   uint8_t *buff = malloc(s);
   if (!buff)
@@ -154,8 +160,20 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
 
   otrng_err ok = ERROR;
   do {
-    if (!otrng_deserialize_otrng_public_key(target->long_term_pub_key, buffer,
-                                            buflen, &read))
+    if (!otrng_deserialize_uint32(&target->id, buffer + walked, buflen - walked,
+                                  &read))
+      continue;
+
+    walked += read;
+
+    if (!otrng_deserialize_uint32(&target->sender_instance_tag, buffer + walked,
+                                  buflen - walked, &read))
+      continue;
+
+    walked += read;
+
+    if (!otrng_deserialize_otrng_public_key(
+            target->long_term_pub_key, buffer + walked, buflen - walked, &read))
       continue;
 
     walked += read;
@@ -217,9 +235,6 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  if (!(profile->signature > 0))
-    return otrng_false;
-
   if (!client_profile_body_asprintf(&body, &bodylen, profile))
     return otrng_false;
 
@@ -229,8 +244,6 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
   otrng_bool valid = otrng_ec_verify(profile->signature, pubkey, body, bodylen);
 
   free(body);
-  body = NULL;
-
   return valid;
 }
 
