@@ -181,10 +181,10 @@ tstatic void join_fragments(list_element_s *node, void *context) {
   size_t msg_len = strlen(node->data);
 
   if (ctx->fragment == NULL) {
-    ctx->fragment = malloc(ctx->fragment_len + 1);
+    ctx->fragment = malloc(msg_len + 1);
     memcpy(ctx->fragment, node->data, msg_len);
   } else {
-    ctx->fragment = realloc(ctx->fragment, ctx->fragment_len + msg_len);
+    ctx->fragment = realloc(ctx->fragment, ctx->fragment_len + msg_len + 1);
     memmove(ctx->fragment + ctx->fragment_len, node->data, msg_len);
   }
 
