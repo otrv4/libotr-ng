@@ -590,8 +590,8 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
       sodium_memzero(enc_key, sizeof(m_enc_key_p));
       manager->k++;
     }
-    return SUCCESS;
   }
+
   return SUCCESS;
 }
 
