@@ -410,6 +410,7 @@ INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
     return NULL;
   }
 
+  prekey_message->id = 0;
   prekey_message->sender_instance_tag = 0;
   otrng_ec_bzero(prekey_message->Y, ED448_POINT_BYTES);
   prekey_message->B = NULL;
@@ -419,6 +420,7 @@ INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
 
 INTERNAL void
 otrng_dake_prekey_message_destroy(dake_prekey_message_s *prekey_message) {
+  prekey_message->id = 0;
   otrng_ec_point_destroy(prekey_message->Y);
   otrng_dh_mpi_release(prekey_message->B);
   prekey_message->B = NULL;
@@ -445,6 +447,7 @@ INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
   uint8_t *cursor = buff;
   cursor += otrng_serialize_uint16(cursor, VERSION);
   cursor += otrng_serialize_uint8(cursor, PRE_KEY_MSG_TYPE);
+  cursor += otrng_serialize_uint32(cursor, prekey_message->id);
   cursor += otrng_serialize_uint32(cursor, prekey_message->sender_instance_tag);
   cursor += otrng_serialize_ec_point(cursor, prekey_message->Y);
 
@@ -473,48 +476,46 @@ INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
   size_t read = 0;
 
   uint16_t protocol_version = 0;
-  if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read)) {
+  if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read))
     return ERROR;
-  }
 
   cursor += read;
   len -= read;
 
-  if (protocol_version != VERSION) {
+  if (protocol_version != VERSION)
     return ERROR;
-  }
 
   uint8_t message_type = 0;
-  if (!otrng_deserialize_uint8(&message_type, cursor, len, &read)) {
+  if (!otrng_deserialize_uint8(&message_type, cursor, len, &read))
     return ERROR;
-  }
 
   cursor += read;
   len -= read;
 
-  if (message_type != PRE_KEY_MSG_TYPE) {
+  if (message_type != PRE_KEY_MSG_TYPE)
     return ERROR;
-  }
 
-  if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len,
-                                &read)) {
+  if (!otrng_deserialize_uint32(&dst->id, cursor, len, &read))
     return ERROR;
-  }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(dst->Y, cursor)) {
+  if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read))
     return ERROR;
-  }
+
+  cursor += read;
+  len -= read;
+
+  if (!otrng_deserialize_ec_point(dst->Y, cursor))
+    return ERROR;
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   otrng_mpi_p b_mpi; // no need to free, because nothing is copied now
-  if (!otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
+  if (!otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read))
     return ERROR;
-  }
 
   cursor += read;
   len -= read;

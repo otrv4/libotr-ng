@@ -32,6 +32,7 @@ void test_dake_prekey_message_serializes() {
   otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
 
   dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
+  prekey_message->id = 2;
   prekey_message->sender_instance_tag = 1;
   otrng_ec_point_copy(prekey_message->Y, ecdh->pub);
   prekey_message->B = otrng_dh_mpi_copy(dh->pub);
@@ -49,13 +50,16 @@ void test_dake_prekey_message_serializes() {
       0x0,
       0x0,
       0x0,
-      0x1, // sender instance tag
+      0x2, // id
 
+      0x0,
+      0x0,
+      0x0,
+      0x1, // sender instance tag
   };
 
   uint8_t *cursor = serialized;
-  otrng_assert_cmpmem(cursor, expected,
-                      sizeof(expected)); /* size of expected */
+  otrng_assert_cmpmem(cursor, expected, sizeof(expected));
   cursor += sizeof(expected);
 
   uint8_t serialized_y[PUB_KEY_SER_BYTES];
