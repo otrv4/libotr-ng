@@ -222,9 +222,8 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
                                    const char *recipient,
                                    otrng_client_s *client) {
   string_p to_send = NULL;
-  otrng_err err = send_message(&to_send, message, recipient, client);
-  if (err != SUCCESS) {
-    free(to_send);
+  if (!send_message(&to_send, message, recipient, client)) {
+    free(to_send); // TODO: is it allocated here?
     return 1;
   }
 
@@ -237,10 +236,12 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
 
   uint32_t our_tag = conv->conn->our_instance_tag;
   uint32_t their_tag = conv->conn->their_instance_tag;
-  err = otrng_fragment_message(mms, *newmessage, our_tag, their_tag, to_send);
-  free(to_send);
+  if (!otrng_fragment_message(mms, *newmessage, our_tag, their_tag, to_send)) {
+    free(to_send);
+    return ERROR;
+  }
 
-  return err != SUCCESS;
+  return SUCCESS;
 }
 
 /* tstatic int otrng_client_smp_start(char **tosend, const char *recipient, */

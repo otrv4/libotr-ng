@@ -153,9 +153,9 @@ otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
   if (!state->keypair)
     return -2;
 
-  err = otrng_symmetric_key_serialize(&buff, &s, state->keypair->sym);
-  if (!err)
-    return err;
+  if (!otrng_symmetric_key_serialize(&buff, &s, state->keypair->sym)) {
+    return 1;
+  }
 
   err = fputs(key, privf);
   free(key);
@@ -182,7 +182,6 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
   char *line = NULL;
   size_t cap = 0;
   int len = 0;
-  int err = 0;
 
   if (!privf)
     return -1;
@@ -203,16 +202,19 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
     return -3;
   }
 
-  err = otrng_symmetric_key_deserialize(state->keypair, line, len - 1);
+  if (!otrng_symmetric_key_deserialize(state->keypair, line, len - 1)) {
+    free(line);
+    line = NULL;
+    otrng_keypair_free(state->keypair);
+    state->keypair = NULL;
+
+    return 1;
+  }
+
   free(line);
   line = NULL;
 
-  if (!err) {
-    otrng_keypair_free(state->keypair);
-    state->keypair = NULL;
-  }
-
-  return err;
+  return 0;
 }
 
 API const client_profile_s *

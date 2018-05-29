@@ -30,12 +30,11 @@ void test_instance_tag_generates_tag_when_file_empty() {
   tmpFILEp = tmpfile();
 
   otrng_instag_s *instag = malloc(sizeof(otrng_instag_s));
-  otrng_bool err =
-      otrng_instag_get(instag, alice_coy_account, xmpp_protocol, tmpFILEp);
+  otrng_assert(otrng_instag_get(instag, alice_coy_account, xmpp_protocol,
+                                tmpFILEp) == otrng_true);
 
   fclose(tmpFILEp);
 
-  g_assert_cmpint(err, ==, 1);
   g_assert_cmpint(instag->value, !=, 0);
   g_assert_cmpint(instag->value, >, 0x100);
 
@@ -55,7 +54,6 @@ void test_instance_tag_generates_tag_when_file_is_full() {
   char *irc_protocol = "IRC";
   unsigned int icq_instag_value = 0x9abcdef0;
 
-  int err;
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
 
@@ -65,19 +63,16 @@ void test_instance_tag_generates_tag_when_file_is_full() {
   rewind(tmpFILEp);
 
   otrng_instag_s *first_instag = malloc(sizeof(otrng_instag_s));
-  err =
-      otrng_instag_get(first_instag, icq_alice_account, icq_protocol, tmpFILEp);
-  g_assert_cmpint(err, ==, 1);
+  otrng_assert(otrng_instag_get(first_instag, icq_alice_account, icq_protocol,
+                                tmpFILEp) == otrng_true);
 
   otrng_instag_s *second_instag = malloc(sizeof(otrng_instag_s));
-  err = otrng_instag_get(second_instag, xmpp_alice_account, xmpp_protocol,
-                         tmpFILEp);
-  g_assert_cmpint(err, ==, 1);
+  otrng_assert(otrng_instag_get(second_instag, xmpp_alice_account,
+                                xmpp_protocol, tmpFILEp) == otrng_true);
 
   otrng_instag_s *third_instag = malloc(sizeof(otrng_instag_s));
-  err =
-      otrng_instag_get(third_instag, irc_alice_account, irc_protocol, tmpFILEp);
-  g_assert_cmpint(err, ==, 1);
+  otrng_assert(otrng_instag_get(third_instag, irc_alice_account, irc_protocol,
+                                tmpFILEp) == otrng_true);
 
   fclose(tmpFILEp);
 
