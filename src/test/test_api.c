@@ -78,9 +78,11 @@ static void set_up_client_state(otrng_client_state_s *state,
   state->protocol_name = otrng_strdup("otr");
   state->user_state = otrl_userstate_create();
 
-  uint8_t sym_key[ED448_PRIVATE_BYTES] = {byte};
-  otrng_client_state_add_private_key_v4(state, sym_key);
-  otrng_client_state_add_shared_prekey_v4(state, sym_key);
+  uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
+  uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {byte + 0XF};
+
+  otrng_client_state_add_private_key_v4(state, long_term_priv);
+  otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv);
   otrng_client_state_add_instance_tag(state, 0x100 + byte);
 
   // Create client profile
@@ -89,6 +91,7 @@ static void set_up_client_state(otrng_client_state_s *state,
   // Create prekey profile
   state->prekey_profile =
       otrng_prekey_profile_build(state->keypair, state->shared_prekey_pair);
+  state->prekey_profile->id = 1;
 
   // on client this will probably be the jid and the
   // receipient jid for the party
@@ -285,6 +288,12 @@ void test_api_non_interactive_conversation(void) {
   otrng_assert(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
                                                    "", bob) == SUCCESS);
 
+  // There is no attached encrypted message
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 0);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+
   // Should send a non interactive auth
   otrng_assert(response_to_alice->to_display == NULL);
   otrng_assert(response_to_alice->to_send);
@@ -469,6 +478,7 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
   otrng_assert(response_to_alice->to_send);
   otrng_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
 
+  // There IS an attached encrypted message
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 1);
   g_assert_cmpint(bob->keys->k, ==, 0);
