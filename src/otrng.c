@@ -58,13 +58,6 @@ static inline dh_public_key_p their_dh(const otrng_s *otr) {
   return otr->keys->their_dh;
 }
 
-static inline struct goldilocks_448_point_s *
-their_shared_prekey(const otrng_s *otr) {
-  // TODO: This is confusing. Should it return from the profile OR from
-  // the key manager?
-  return &otr->their_prekey_profile->shared_prekey[0];
-}
-
 static inline heartbeat_s *heartbeat(const otrng_s *otr) {
   return otr->conversation->client->heartbeat;
 }
@@ -197,6 +190,17 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
   *dst = 0;
 }
 
+tstatic const otrng_stored_prekeys_s *get_my_prekeys_by_id(uint32_t id,
+                                                           otrng_s *otr) {
+  if (!otr->our_prekeys)
+    return NULL;
+
+  if (otr->our_prekeys->id != id)
+    return NULL;
+
+  return otr->our_prekeys;
+}
+
 tstatic void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
   if (!s)
     return;
@@ -228,6 +232,17 @@ tstatic void store_my_prekey_message(const dake_prekey_message_p msg,
   otr->our_prekeys = s;
 }
 
+tstatic void delete_my_prekey_message_by_id(uint32_t id, otrng_s *otr) {
+  if (!otr->our_prekeys)
+    return;
+
+  if (otr->our_prekeys->id != id)
+    return;
+
+  otrng_stored_prekeys_free(otr->our_prekeys);
+  otr->our_prekeys = NULL;
+}
+
 tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   otrng_client_state_s *state = otr->conversation->client;
   const otrng_prekey_profile_s *ret =
@@ -247,6 +262,18 @@ tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   state->prekey_profile->id = 0x201;
 
   return state->prekey_profile;
+}
+
+tstatic const otrng_prekey_profile_s *
+get_my_prekey_profile_by_id(uint32_t id, otrng_s *otr) {
+  otrng_client_state_s *state = otr->conversation->client;
+  const otrng_prekey_profile_s *ret =
+      otrng_client_state_get_prekey_profile(state);
+
+  if (ret && ret->id == id)
+    return ret;
+
+  return NULL;
 }
 
 tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
@@ -269,6 +296,17 @@ tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
       otrng_client_profile_build(0x101, versions, state->keypair);
 
   return state->client_profile;
+}
+
+tstatic const client_profile_s *get_my_client_profile_by_id(uint32_t id,
+                                                            otrng_s *otr) {
+  otrng_client_state_s *state = otr->conversation->client;
+  const client_profile_s *ret = otrng_client_state_get_client_profile(state);
+
+  if (ret && ret->id == id)
+    return ret;
+
+  return NULL;
 }
 
 INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
@@ -296,6 +334,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->our_instance_tag = otrng_client_state_get_instance_tag(state);
 
   otr->our_prekeys = NULL;
+  otr->their_prekeys_id = 0;
   otr->their_client_profile = NULL;
   otr->their_prekey_profile = NULL;
 
@@ -554,35 +593,27 @@ tstatic otrng_err serialize_and_encode_prekey_message(
   return SUCCESS;
 }
 
-tstatic dake_prekey_message_s *build_prekey_message(otrng_s *otr) {
-  dake_prekey_message_s *m = otrng_dake_prekey_message_new();
-  if (!m)
-    return NULL;
+// TODO: REMOVE ME
+tstatic otrng_err reply_with_prekey_msg_to_server(otrng_server_s *server,
+                                                  otrng_s *otr) {
+  // TODO: It should not get the message's Y and B from our_ecdh and our_dh,
+  // because ideally this will generate multiple Y's and B's at once.
+  // For now, we keep it as is, and just regenerate our ephemerals
+  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
+    return ERROR;
 
-  m->sender_instance_tag = otr->our_instance_tag;
-
-  otrng_ec_point_copy(m->Y, our_ecdh(otr));
-  m->B = otrng_dh_mpi_copy(our_dh(otr));
-
-  return m;
-}
-
-tstatic otrng_err otrng_build_prekey_message(otrng_server_s *server,
-                                             otrng_s *otr) {
-  dake_prekey_message_s *m = build_prekey_message(otr);
+  dake_prekey_message_s *m = otrng_dake_prekey_message_build(
+      otr->our_instance_tag, our_ecdh(otr), our_dh(otr));
   if (!m)
     return ERROR;
+
+  store_my_prekey_message(m, otr->keys->our_ecdh, otr->keys->our_dh, otr);
 
   otrng_err err =
       serialize_and_encode_prekey_message(&server->prekey_message, m);
   otrng_dake_prekey_message_free(m);
 
   return err;
-}
-
-tstatic otrng_err reply_with_prekey_msg_to_server(otrng_server_s *server,
-                                                  otrng_s *otr) {
-  return otrng_build_prekey_message(server, otr);
 }
 
 API void otrng_reply_with_prekey_msg_from_server(otrng_server_s *server,
@@ -961,14 +992,9 @@ tstatic otrng_err build_non_interactive_auth_message(
     size_t msglen, otrng_s *otr) {
   non_interactive_auth_message_init(auth, otr);
 
-  // TODO: Access to Prekey message, Client profile, Prekey profile
-
-  // TODO: Attach the 'Prekey Message Identifier' that is stated in the
-  // retrieved Prekey message.
-  // TODO: Attach the 'Client Profile Message Identifier' that is stated in the
-  // retrieved Client Profile.
-  // TODO: Attach the 'Prekey Profile Message Identifier' that is stated in the
-  // retrieved Prekey Profile.
+  auth->prekey_message_id = otr->their_prekeys_id;
+  auth->long_term_key_id = otr->their_client_profile->id;
+  auth->prekey_profile_id = otr->their_prekey_profile->id;
 
   // TODO: This assumes tmp_key is properly initialized in the otr state.
   // This function should only be called if tmp_key is properly initialized.
@@ -1032,6 +1058,8 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
                                                       const uint8_t *message,
                                                       size_t msglen,
                                                       otrng_s *otr) {
+  maybe_create_keys(otr->conversation);
+
   dake_non_interactive_auth_message_p auth;
   otrng_err ret =
       build_non_interactive_auth_message(auth, message, msglen, otr);
@@ -1040,7 +1068,6 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
     ret = serialize_and_encode_non_interactive_auth(dst, auth);
 
   otrng_dake_non_interactive_auth_message_destroy(auth);
-
   return ret;
 }
 
@@ -1075,7 +1102,88 @@ API prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   return e;
 }
 
-// TODO: We need a "Prekey Ensemble" to send this message.
+tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
+                                          otrng_s *otr);
+
+tstatic otrng_err set_their_client_profile(const client_profile_s *profile,
+                                           otrng_s *otr) {
+  // The protocol is already committed to a specific profile, and receives an
+  // ensemble with another profile.
+  // How should the protocol behave? I am failling for now.
+  if (otr->their_client_profile)
+    return ERROR;
+
+  otr->their_client_profile = malloc(sizeof(client_profile_s));
+  if (!otr->their_client_profile)
+    return ERROR;
+
+  otrng_client_profile_copy(otr->their_client_profile, profile);
+
+  return SUCCESS;
+}
+
+tstatic otrng_err
+set_their_prekey_profile(const otrng_prekey_profile_s *profile, otrng_s *otr) {
+  // The protocol is already committed to a specific profile, and receives an
+  // ensemble with another profile.
+  // How should the protocol behave? I am failling for now.
+  if (otr->their_prekey_profile)
+    return ERROR;
+
+  otr->their_prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
+  if (!otr->their_prekey_profile)
+    return ERROR;
+
+  otrng_prekey_profile_copy(otr->their_prekey_profile, profile);
+
+  // TODO: Extract otrng_key_manager_set_their_shared_prekey()
+  otrng_ec_point_copy(otr->keys->their_shared_prekey,
+                      otr->their_prekey_profile->shared_prekey);
+
+  return SUCCESS;
+}
+
+tstatic otrng_err receive_prekey_ensemble(const prekey_ensemble_s *ensemble,
+                                          otrng_s *otr) {
+  if (!otrng_prekey_ensemble_validate(ensemble))
+    return ERROR;
+
+  // There is no policy about how to handle multiple messages in an ensemble at
+  // the moment. The spec suggests what could be done, but we have not decided
+  // how we want to implement that.
+  if (ensemble->num_messages != 1)
+    return ERROR;
+
+  if (!set_their_client_profile(ensemble->client_profile, otr))
+    return ERROR;
+
+  if (!set_their_prekey_profile(ensemble->prekey_profile, otr))
+    return ERROR;
+
+  // Set their ephemeral keys, instance tag, and their_prekeys_id
+  if (!prekey_message_received(ensemble->messages, otr))
+    return ERROR;
+
+  return SUCCESS;
+}
+
+API otrng_err otrng_send_offline_message(string_p *dst,
+                                         const prekey_ensemble_s *ensemble,
+                                         const string_p message, otrng_s *otr) {
+  *dst = NULL;
+  size_t clen = (strcmp(message, "") == 0) ? 0 : strlen(message) + 1;
+
+  // TODO: Would deserialize the received ensemble and set the running version
+  otr->running_version = OTRNG_VERSION_4;
+
+  if (!receive_prekey_ensemble(ensemble, otr))
+    return ERROR; // should unset the stored things from ensemble
+
+  return reply_with_non_interactive_auth_msg(dst, (const uint8_t *)message,
+                                             clen, otr);
+}
+
+// TODO: REMOVE
 API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
                                                   const string_p message,
                                                   otrng_s *otr) {
@@ -1275,15 +1383,12 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   if (!otrng_valid_received_values(m->Y, m->B, otr->their_client_profile))
     return ERROR;
 
+  otr->their_prekeys_id = m->id; // Stores to send in the non-interactive-auth
   otrng_key_manager_set_their_ecdh(m->Y, otr->keys);
   otrng_key_manager_set_their_dh(m->B, otr->keys);
 
   if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
     return ERROR;
-
-  // Why do we need to store this, and not just simply use from the
-  // profile?
-  otrng_ec_point_copy(otr->keys->their_shared_prekey, their_shared_prekey(otr));
 
   /* tmp_k = KDF_1(0x0C || K_ecdh || ECDH(x, their_shared_prekey) ||
    * ECDH(x, Pkb) || brace_key) */
@@ -1310,6 +1415,11 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
     return SUCCESS; /* ignore the message */
 
   dake_prekey_message_p m;
+
+  // TODO: This is here just to make tests (that should be removed) pass.
+  // Shared prekey is not part of the prekey message anymore.
+  otrng_ec_point_copy(otr->keys->their_shared_prekey,
+                      otr->their_prekey_profile->shared_prekey);
 
   if (!otrng_dake_prekey_message_deserialize(m, buff, buflen))
     return ERROR;
@@ -1426,75 +1536,130 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
   return SUCCESS;
 }
 
-tstatic otrng_err receive_non_interactive_auth_message(
-    otrng_response_s *response, const uint8_t *buff, size_t buff_len,
+tstatic otrng_err non_interactive_auth_message_received(
+    otrng_response_s *response, const dake_non_interactive_auth_message_p auth,
     otrng_s *otr) {
 
-  if (otr->state == OTRNG_STATE_FINISHED)
-    return SUCCESS; /* ignore the message */
+  const otrng_stored_prekeys_s *stored_prekeys = NULL;
+  const client_profile_s *client_profile = NULL;
+  const otrng_prekey_profile_s *prekey_profile = NULL;
 
-  dake_non_interactive_auth_message_p auth;
+  stored_prekeys = get_my_prekeys_by_id(auth->prekey_message_id, otr);
+  client_profile = get_my_client_profile_by_id(auth->long_term_key_id, otr);
+  prekey_profile = get_my_prekey_profile_by_id(auth->prekey_profile_id, otr);
 
-  if (!otrng_dake_non_interactive_auth_message_deserialize(auth, buff,
-                                                           buff_len))
+  if (!stored_prekeys)
     return ERROR;
 
-  if (auth->receiver_instance_tag != otr->our_instance_tag) {
-    otrng_dake_non_interactive_auth_message_destroy(auth);
+  if (!client_profile)
+    return ERROR;
+
+  if (!prekey_profile)
+    return ERROR;
+
+  // Check if the state is consistent. This must be removed and simplified.
+  // If the state is not, we may need to update our current  (client and/or
+  // prekey) profiles to a profile from the past.
+
+  // Long-term keypair is the same as used to generate my current client
+  // profile.
+  // Should be always true, though.
+  if (!otrng_ec_point_eq(otr->conversation->client->keypair->pub,
+                         get_my_client_profile(otr)->long_term_pub_key))
+    return ERROR;
+
+  // Shared prekey is the same as used to generate my current prekey profile.
+  // Should be always true, though.
+  if (!otrng_ec_point_eq(otr->conversation->client->shared_prekey_pair->pub,
+                         get_my_prekey_profile(otr)->shared_prekey))
+    return ERROR;
+
+  // The client profile in question must also have the same key.
+  if (!otrng_ec_point_eq(client_profile->long_term_pub_key,
+                         get_my_client_profile(otr)->long_term_pub_key))
+    return ERROR;
+
+  // The prekey profile in question must also have the same key.
+  if (!otrng_ec_point_eq(prekey_profile->shared_prekey,
+                         get_my_prekey_profile(otr)->shared_prekey))
+    return ERROR;
+
+  // Set our current ephemeral keys, based on the received message
+  otrng_ecdh_keypair_destroy(otr->keys->our_ecdh);
+  otrng_ec_scalar_copy(otr->keys->our_ecdh->priv,
+                       stored_prekeys->our_ecdh->priv);
+  otrng_ec_point_copy(otr->keys->our_ecdh->pub, stored_prekeys->our_ecdh->pub);
+
+  otrng_dh_keypair_destroy(otr->keys->our_dh);
+  otr->keys->our_dh->priv = otrng_dh_mpi_copy(stored_prekeys->our_dh->priv);
+  otr->keys->our_dh->pub = otrng_dh_mpi_copy(stored_prekeys->our_dh->pub);
+  otr->keys->lastgenerated = time(NULL);
+
+  // Delete the stored prekeys for this ID so they can't be used again.
+  delete_my_prekey_message_by_id(auth->prekey_message_id, otr);
+
+  // TODO: Should probably compare to prekey->sender_instance_tag because
+  // our instance tag may have changed since we generated the prekey message
+  // with ID = X?
+  if (auth->receiver_instance_tag != otr->our_instance_tag)
     return SUCCESS;
-  }
 
   if (!received_instance_tag(auth->sender_instance_tag, otr)) {
     otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
-    otrng_dake_non_interactive_auth_message_destroy(auth);
-    return ERROR;
-  }
-
-  // TODO: Extract function to set_their_client_profile
-  otr->their_client_profile = malloc(sizeof(client_profile_s));
-  if (!otr->their_client_profile) {
-    otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
 
   otrng_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
+
+  // TODO: Extract function to set_their_client_profile
+  otr->their_client_profile = malloc(sizeof(client_profile_s));
+  if (!otr->their_client_profile)
+    return ERROR;
+
   otrng_client_profile_copy(otr->their_client_profile, auth->profile);
 
   /* tmp_k = KDF_2(K_ecdh ||
    * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
    * ECDH(Ska, X) || k_dh) */
-  if (!generate_tmp_key_i(otr->keys->tmp_key, otr)) {
-    otrng_dake_non_interactive_auth_message_destroy(auth);
+  if (!generate_tmp_key_i(otr->keys->tmp_key, otr))
     return ERROR;
-  }
 
   if (!otrng_key_manager_generate_shared_secret(otr->keys,
-                                                OTRNG_NON_INTERACTIVE)) {
-    otrng_dake_non_interactive_auth_message_destroy(auth);
+                                                OTRNG_NON_INTERACTIVE))
     return ERROR;
-  }
 
   // TODO: Why ratcheting BEFORE the message received is valid?
-  if (!double_ratcheting_init(otr, OTRNG_US)) {
-    otrng_dake_non_interactive_auth_message_destroy(auth);
+  if (!double_ratcheting_init(otr, OTRNG_US))
     return ERROR;
-  }
 
-  if (!verify_non_interactive_auth_message(response, auth, otr)) {
-    otrng_dake_non_interactive_auth_message_destroy(auth);
+  if (!verify_non_interactive_auth_message(response, auth, otr))
     return ERROR;
-  }
 
   otrng_err ret =
       decrypt_non_interactive_auth_message(&response->to_display, auth, otr);
-  otrng_dake_non_interactive_auth_message_destroy(auth);
 
   otrng_fingerprint_p fp;
   if (!otrng_serialize_fingerprint(
           fp, otr->their_client_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
+  return ret;
+}
+
+tstatic otrng_err receive_non_interactive_auth_message(
+    otrng_response_s *response, const uint8_t *src, size_t len, otrng_s *otr) {
+
+  if (otr->state == OTRNG_STATE_FINISHED)
+    return SUCCESS; /* ignore the message */
+
+  dake_non_interactive_auth_message_p auth;
+
+  if (!otrng_dake_non_interactive_auth_message_deserialize(auth, src, len))
+    return ERROR;
+
+  otrng_err ret = non_interactive_auth_message_received(response, auth, otr);
+  otrng_dake_non_interactive_auth_message_destroy(auth);
   return ret;
 }
 
@@ -1970,9 +2135,9 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       return SUCCESS;
     }
 
-    if (otrng_key_manager_derive_dh_ratchet_keys(
+    if (!otrng_key_manager_derive_dh_ratchet_keys(
             otr->keys, otr->conversation->client->max_stored_msg_keys,
-            msg->message_id, OTRNG_RECEIVING) == ERROR)
+            msg->message_id, OTRNG_RECEIVING))
       return ERROR;
 
     otrng_key_manager_derive_chain_keys(
@@ -2122,6 +2287,7 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
     // TODO: REMOVE ME
     return receive_prekey_message(&response->to_send, decoded, dec_len, otr);
   case NON_INT_AUTH_MSG_TYPE:
+    otr->running_version = OTRNG_VERSION_4;
     return receive_non_interactive_auth_message(response, decoded, dec_len,
                                                 otr);
   case DATA_MSG_TYPE:

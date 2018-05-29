@@ -113,6 +113,7 @@ struct otrng_s {
   int supported_versions;
 
   otrng_stored_prekeys_s *our_prekeys;
+  uint32_t their_prekeys_id;
 
   uint32_t our_instance_tag;
   uint32_t their_instance_tag;
@@ -219,6 +220,10 @@ API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
                                                otrng_s *otr);
 
 API prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);
+
+API otrng_err otrng_send_offline_message(string_p *dst,
+                                         const prekey_ensemble_s *ensemble,
+                                         const string_p message, otrng_s *otr);
 
 API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
                                                   const string_p message,
