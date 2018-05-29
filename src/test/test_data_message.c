@@ -121,9 +121,8 @@ void test_data_message_serializes() {
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
-  otrng_err otr_err = otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
-                                             &mpi_len, data_msg->dh);
-  otrng_assert(otr_err);
+  otrng_assert(otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
+                                      &mpi_len, data_msg->dh) == SUCCESS);
   // Skip first 4 because they are the size (mpi_len)
   otrng_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
 
@@ -226,7 +225,7 @@ void test_data_message_valid() {
 
   // Should fail because data_msg has a zeroed mac tag.
   m_mac_key_p mac_key = {0};
-  otrng_assert(!otrng_valid_data_message(mac_key, data_msg));
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_false);
 
   // Overwrite the zeroed mac tag
   uint8_t *body = NULL;
@@ -241,11 +240,11 @@ void test_data_message_valid() {
   free(body);
   body = NULL;
 
-  otrng_assert(otrng_valid_data_message(mac_key, data_msg));
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
 
   // Overwrite DH with an invalid value
   gcry_mpi_set_ui(data_msg->dh, 1);
-  otrng_assert(!otrng_valid_data_message(mac_key, data_msg));
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_false);
 
   // A data message without a DH key is also valid.
   otrng_dh_mpi_release(data_msg->dh);
@@ -260,7 +259,7 @@ void test_data_message_valid() {
   free(body);
   body = NULL;
 
-  otrng_assert(otrng_valid_data_message(mac_key, data_msg));
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
 
   otrng_data_message_free(data_msg);
   data_msg = NULL;
