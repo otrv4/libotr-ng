@@ -83,7 +83,12 @@ INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   free(context->fragment);
   context->fragment = NULL;
 
-  otrng_list_free_nodes(context->stored_fragments);
+  list_element_s *el;
+  for (el = context->stored_fragments; el; el = el->next) {
+    free((uint8_t *)el->data);
+    el->data = NULL;
+  }
+  otrng_list_free_full(context->stored_fragments);
   context->stored_fragments = NULL;
 
   free(context);
