@@ -153,9 +153,8 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     uint32_t *identifier = gcry_random_bytes(32, GCRY_STRONG_RANDOM);
 
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN, FRAGMENT_FORMAT,
-             (uint32_t)*identifier, our_instance, their_instance,
-             (unsigned short)current, (unsigned short)fragments->total,
-             piece_data);
+             *identifier, our_instance, their_instance, (unsigned short)current,
+             (unsigned short)fragments->total, piece_data);
 
     gcry_free(identifier);
     identifier = NULL;
