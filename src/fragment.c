@@ -247,6 +247,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     otrng_list_foreach(context->stored_fragments, join_fragments, context);
     *unfrag_msg = otrng_strdup(context->fragment);
     context->status = FRAGMENT_COMPLETE;
+    otrng_list_free_nodes(context->stored_fragments);
   }
 
   return SUCCESS;
