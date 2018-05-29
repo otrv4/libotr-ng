@@ -83,6 +83,9 @@ INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   free(context->fragment);
   context->fragment = NULL;
 
+  otrng_list_free_nodes(context->stored_fragments);
+  context->stored_fragments = NULL;
+
   free(context);
   context = NULL;
 }
@@ -247,7 +250,6 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     otrng_list_foreach(context->stored_fragments, join_fragments, context);
     *unfrag_msg = otrng_strdup(context->fragment);
     context->status = FRAGMENT_COMPLETE;
-    otrng_list_free_nodes(context->stored_fragments);
   }
 
   return SUCCESS;
