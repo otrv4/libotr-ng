@@ -418,6 +418,22 @@ INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
   return prekey_message;
 }
 
+INTERNAL dake_prekey_message_s *
+otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point_p ecdh,
+                                const dh_public_key_p dh) {
+  dake_prekey_message_s *m = otrng_dake_prekey_message_new();
+
+  if (!m)
+    return NULL;
+
+  m->sender_instance_tag = instance_tag;
+
+  otrng_ec_point_copy(m->Y, ecdh);
+  m->B = otrng_dh_mpi_copy(dh);
+
+  return m;
+}
+
 INTERNAL void
 otrng_dake_prekey_message_destroy(dake_prekey_message_s *prekey_message) {
   prekey_message->id = 0;
