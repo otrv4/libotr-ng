@@ -22,6 +22,7 @@
 #define OTRNG_FRAGMENT_H
 
 #include "error.h"
+#include "list.h"
 #include "shared.h"
 #include "str.h"
 
@@ -42,9 +43,10 @@ typedef enum {
 
 typedef struct fragment_context_s {
   uint32_t identifier;
-  unsigned int K, N;
-  string_p fragment;
+  unsigned int T, C;
+  list_element_s *stored_fragments;
   size_t fragment_len;
+  string_p fragment;
   fragment_status status;
 } fragment_context_s, fragment_context_p[1];
 

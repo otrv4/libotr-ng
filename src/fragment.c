@@ -26,6 +26,7 @@
 #define OTRNG_FRAGMENT_PRIVATE
 
 #include "fragment.h"
+#include "list.h"
 
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%s,"
 #define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
@@ -63,19 +64,20 @@ API void otrng_message_free(otrng_message_to_send_s *message) {
 INTERNAL fragment_context_s *otrng_fragment_context_new(void) {
   fragment_context_s *context = malloc(sizeof(fragment_context_s));
   context->identifier = 0;
-  context->K = 0;
-  context->N = 0;
-  context->fragment = otrng_strdup("");
+  context->C = 0;
+  context->T = 0;
   context->fragment_len = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
+  context->fragment = NULL;
+  context->stored_fragments = NULL;
 
   return context;
 }
 
 INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   context->identifier = 0;
-  context->K = 0;
-  context->N = 0;
+  context->C = 0;
+  context->T = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
 
   free(context->fragment);
@@ -165,45 +167,29 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
 }
 
 tstatic void initialize_fragment_context(fragment_context_s *context) {
-  free(context->fragment);
-  context->fragment = NULL;
-  context->fragment = otrng_strdup("");
   context->fragment_len = 0;
 
   context->identifier = 0;
-  context->N = 0;
-  context->K = 0;
+  context->T = 0;
+  context->C = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
+  context->fragment = NULL;
 }
 
-tstatic otrng_err add_first_fragment(const char *msg, int msg_len,
-                                     fragment_context_s *ctx) {
-  char *buff = malloc(msg_len + 1);
-  if (!buff)
-    return ERROR;
+tstatic void join_fragments(list_element_s *node, void *context) {
+  fragment_context_s *ctx = (void *)context;
+  size_t msg_len = strlen(node->data);
 
-  memmove(buff, msg, msg_len);
-  buff[msg_len] = '\0';
+  if (ctx->fragment == NULL) {
+    ctx->fragment = malloc(ctx->fragment_len + 1);
+    memcpy(ctx->fragment, node->data, msg_len);
+  } else {
+    ctx->fragment = realloc(ctx->fragment, ctx->fragment_len + msg_len);
+    memmove(ctx->fragment + ctx->fragment_len, node->data, msg_len);
+  }
+
   ctx->fragment_len += msg_len;
-  free(ctx->fragment);
-  ctx->fragment = buff;
-
-  return SUCCESS;
-}
-
-tstatic otrng_err append_fragment(const char *msg, int msg_len,
-                                  fragment_context_s *ctx) {
-  size_t new_buff_len = ctx->fragment_len + msg_len + 1;
-  char *buff = realloc(ctx->fragment, new_buff_len);
-  if (!buff)
-    return ERROR;
-
-  memmove(buff + ctx->fragment_len, msg, msg_len);
-  ctx->fragment_len += msg_len;
-  buff[ctx->fragment_len] = '\0';
-  ctx->fragment = buff;
-
-  return SUCCESS;
+  ctx->fragment[ctx->fragment_len] = '\0';
 }
 
 tstatic otrng_bool is_fragment(const string_p message) {
@@ -224,19 +210,19 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   }
 
   int fragment_identifier, sender_tag = 0, receiver_tag = 0, start = 0, end = 0;
-  unsigned short k = 0, n = 0;
-
-  context->status = FRAGMENT_INCOMPLETE;
+  unsigned short i = 0, t = 0;
 
   sscanf(message, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
-         &receiver_tag, &k, &n, &start, &end);
+         &receiver_tag, &i, &t, &start, &end);
+
+  context->status = FRAGMENT_INCOMPLETE;
 
   if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
     context->status = FRAGMENT_COMPLETE;
     return ERROR;
   }
 
-  if (k == 0 || n == 0 || k > n) {
+  if (i == 0 || t == 0 || i > t) {
     initialize_fragment_context(context);
     return SUCCESS;
   }
@@ -245,30 +231,21 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   if (end <= start)
     return ERROR;
 
-  otrng_err err;
-  if (k == 1) {
-    err = add_first_fragment(message + start, msg_len, context);
-    if (err != SUCCESS)
-      return err;
+  uint8_t *stored_fragment = malloc(msg_len + 1);
+  if (!stored_fragment)
+    return ERROR;
 
-    context->N = n;
-    context->K = k;
+  memcpy(stored_fragment, message + start, msg_len);
+  stored_fragment[msg_len] = '\0';
 
-  } else {
-    if (n == context->N && k == context->K + 1) {
-      err = append_fragment(message + start, msg_len, context);
-      if (err != SUCCESS)
-        return err;
+  context->stored_fragments =
+      otrng_list_add(stored_fragment, context->stored_fragments);
+  context->T = t;
+  context->C++;
 
-      context->K = k;
-    } else
-      initialize_fragment_context(context);
-  }
-
-  if (context->N == context->K) {
+  if (context->C == t) {
+    otrng_list_foreach(context->stored_fragments, join_fragments, context);
     *unfrag_msg = otrng_strdup(context->fragment);
-    free(context->fragment);
-    context->fragment = NULL;
     context->status = FRAGMENT_COMPLETE;
   }
 
