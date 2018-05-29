@@ -316,6 +316,12 @@ tstatic void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
 
 INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
                                                  unsigned int instag) {
+  if (!state)
+    return 1;
+
+  if (!state->user_state)
+    return 1;
+
   OtrlInsTag *p =
       otrl_instance_tag_new(state->protocol_name, state->account_name, instag);
   if (!p)
