@@ -22,7 +22,7 @@
 #include "../dake.h"
 #include "../keys.h"
 
-void test_dake_identity_message_serializes(identity_message_fixture_s *f,
+void test_dake_identity_message_serializes(dake_fixture_s *f,
                                            gconstpointer data) {
 
   ecdh_keypair_p ecdh;
@@ -90,8 +90,8 @@ void test_dake_identity_message_serializes(identity_message_fixture_s *f,
   free(serialized);
 }
 
-void test_otrng_dake_identity_message_deserializes(
-    identity_message_fixture_s *f, gconstpointer data) {
+void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
+                                                   gconstpointer data) {
 
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
@@ -134,8 +134,7 @@ void test_otrng_dake_identity_message_deserializes(
   free(serialized);
 }
 
-void test_dake_identity_message_valid(identity_message_fixture_s *f,
-                                      gconstpointer data) {
+void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
 
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;

@@ -85,52 +85,43 @@ void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture,
   otrng_fixture->v34 = NULL;
 }
 
-typedef struct identity_message_fixture_s {
+typedef struct dake_fixture_s {
   otrng_keypair_s *keypair;
   otrng_shared_prekey_pair_s *shared_prekey;
   client_profile_s *profile;
-} identity_message_fixture_s, identity_message_fixture_p[1];
+} dake_fixture_s, dake_fixture_p[1];
 
-typedef struct non_interactive_auth_message_fixture_s {
-  otrng_keypair_s *keypair;
-  otrng_shared_prekey_pair_s *shared_prekey;
-  client_profile_s *profile;
-} non_interactive_auth_message_fixture_s,
-    non_interactive_auth_message_fixture_p[1];
-
-// TODO: unify all of these
-static void identity_message_fixture_setup(identity_message_fixture_s *fixture,
-                                           gconstpointer user_data) {
-  fixture->keypair = otrng_keypair_new();
+static void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data) {
+  f->keypair = otrng_keypair_new();
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
-  otrng_keypair_generate(fixture->keypair, sym);
-  otrng_assert(otrng_ec_point_valid(fixture->keypair->pub));
+  otrng_keypair_generate(f->keypair, sym);
+  otrng_assert(otrng_ec_point_valid(f->keypair->pub));
 
-  fixture->profile = client_profile_new("4");
+  f->profile = client_profile_new("4");
 
-  fixture->shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pair_generate(fixture->shared_prekey, sym);
-  otrng_assert(otrng_ec_point_valid(fixture->shared_prekey->pub));
+  f->shared_prekey = otrng_shared_prekey_pair_new();
+  otrng_shared_prekey_pair_generate(f->shared_prekey, sym);
+  otrng_assert(otrng_ec_point_valid(f->shared_prekey->pub));
 
-  otrng_assert(fixture->profile != NULL);
-  fixture->profile->expires = time(NULL) + 60 * 60;
-  otrng_assert(client_profile_sign(fixture->profile, fixture->keypair) ==
-               SUCCESS);
+  otrng_assert(f->profile != NULL);
+  f->profile->expires = time(NULL) + 60 * 60;
+  otrng_assert(client_profile_sign(f->profile, f->keypair) == SUCCESS);
 }
 
-static void
-identity_message_fixture_teardown(identity_message_fixture_s *fixture,
-                                  gconstpointer user_data) {
-  otrng_keypair_free(fixture->keypair);
-  fixture->keypair = NULL;
+static void dake_fixture_teardown(dake_fixture_s *f, gconstpointer user_data) {
+  otrng_keypair_free(f->keypair);
+  f->keypair = NULL;
 
-  otrng_shared_prekey_pair_free(fixture->shared_prekey);
-  fixture->shared_prekey = NULL;
+  otrng_shared_prekey_pair_free(f->shared_prekey);
+  f->shared_prekey = NULL;
 
-  otrng_client_profile_free(fixture->profile);
-  fixture->profile = NULL;
+  otrng_client_profile_free(f->profile);
+  f->profile = NULL;
 }
+
+#define identity_message_fixture_setup dake_fixture_setup
+#define identity_message_fixture_teardown dake_fixture_teardown
 
 void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_response_s *response_to_bob = otrng_response_new();

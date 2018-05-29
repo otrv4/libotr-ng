@@ -220,7 +220,7 @@ setup_attached_encrypted_message(dake_non_interactive_auth_message_p msg) {
 
 static void
 setup_non_interactive_auth_message(dake_non_interactive_auth_message_p msg,
-                                   const identity_message_fixture_s *f) {
+                                   const dake_fixture_s *f) {
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 
@@ -364,8 +364,8 @@ void test_xzdh_encrypted_message_deserialize() {
   otrng_dake_non_interactive_auth_message_destroy(msg);
 }
 
-void test_dake_non_interactive_auth_message_serializes(
-    identity_message_fixture_s *f, gconstpointer data) {
+void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
+                                                       gconstpointer data) {
 
   dake_non_interactive_auth_message_p msg;
   setup_non_interactive_auth_message(msg, f);
@@ -449,7 +449,7 @@ void test_dake_non_interactive_auth_message_serializes(
 }
 
 void test_dake_non_interactive_auth_message_with_encrypted_message_serializes(
-    identity_message_fixture_s *f, gconstpointer data) {
+    dake_fixture_s *f, gconstpointer data) {
 
   dake_non_interactive_auth_message_p msg;
   setup_non_interactive_auth_message(msg, f);
@@ -545,7 +545,7 @@ void test_dake_non_interactive_auth_message_with_encrypted_message_serializes(
 }
 
 void test_otrng_dake_non_interactive_auth_message_deserializes(
-    identity_message_fixture_s *f, gconstpointer data) {
+    dake_fixture_s *f, gconstpointer data) {
 
   dake_non_interactive_auth_message_p expected;
   setup_non_interactive_auth_message(expected, f);

@@ -135,27 +135,20 @@ int main(int argc, char **argv) {
   g_test_add_func("/dake/xzdh_encrypted_message_deserialize",
                   test_xzdh_encrypted_message_deserialize);
 
-  WITH_FIXTURE("/dake/non_interactive_auth_message/serialize",
-               test_dake_non_interactive_auth_message_serializes,
-               identity_message_fixture_s, identity_message_fixture);
-
-  WITH_FIXTURE("/dake/non_interactive_auth_message/deserialize",
-               test_otrng_dake_non_interactive_auth_message_deserializes,
-               identity_message_fixture_s, identity_message_fixture);
-
-  WITH_FIXTURE(
+  WITH_DAKE_FIXTURE("/dake/non_interactive_auth_message/serialize",
+                    test_dake_non_interactive_auth_message_serializes);
+  WITH_DAKE_FIXTURE("/dake/non_interactive_auth_message/deserialize",
+                    test_otrng_dake_non_interactive_auth_message_deserializes);
+  WITH_DAKE_FIXTURE(
       "/dake/non_interactive_auth_message_with_encrypted_message/serialize",
-      test_dake_non_interactive_auth_message_with_encrypted_message_serializes,
-      identity_message_fixture_s, identity_message_fixture);
+      test_dake_non_interactive_auth_message_with_encrypted_message_serializes);
 
-  WITH_FIXTURE("/dake/identity_message/serializes",
-               test_dake_identity_message_serializes,
-               identity_message_fixture_s, identity_message_fixture);
-  WITH_FIXTURE("/dake/identity_message/deserializes",
-               test_otrng_dake_identity_message_deserializes,
-               identity_message_fixture_s, identity_message_fixture);
-  WITH_FIXTURE("/dake/identity_message/valid", test_dake_identity_message_valid,
-               identity_message_fixture_s, identity_message_fixture);
+  WITH_DAKE_FIXTURE("/dake/identity_message/serializes",
+                    test_dake_identity_message_serializes);
+  WITH_DAKE_FIXTURE("/dake/identity_message/deserializes",
+                    test_otrng_dake_identity_message_deserializes);
+  WITH_DAKE_FIXTURE("/dake/identity_message/valid",
+                    test_dake_identity_message_valid);
 
   g_test_add_func("/dake/prekey_message/serializes",
                   test_dake_prekey_message_serializes);
