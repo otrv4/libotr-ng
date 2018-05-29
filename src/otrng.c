@@ -216,6 +216,10 @@ tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   state->prekey_profile =
       otrng_prekey_profile_build(state->keypair, state->shared_prekey_pair);
 
+  // TODO: should this ID be random? It should probably be unique for us, so
+  // we need to store this in client state (?)
+  state->prekey_profile->id = 0x201;
+
   return state->prekey_profile;
 }
 
@@ -233,7 +237,11 @@ tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
   char versions[3] = {0};
   allowed_versions(versions, otr);
 
-  state->client_profile = otrng_client_profile_build(versions, state->keypair);
+  // TODO: should this ID be random? It should probably be unique for us, so
+  // we need to store this in client state (?)
+  state->client_profile =
+      otrng_client_profile_build(0x101, versions, state->keypair);
+
   return state->client_profile;
 }
 
