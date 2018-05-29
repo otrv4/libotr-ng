@@ -183,7 +183,7 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
                                                 otrng_participant participant) {
   uint8_t random[ED448_PRIVATE_BYTES];
 
-  if (participant == OTRNG_OURS) {
+  if (participant == OTRNG_US) {
     shake_256_kdf1(random, sizeof random, 0x13, manager->shared_secret,
                    sizeof(shared_secret_p));
 
@@ -194,7 +194,7 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     if (!otrng_dh_keypair_generate_from_shared_secret(
             manager->shared_secret, manager->our_dh, participant))
       return ERROR;
-  } else if (participant == OTRNG_THEIR) {
+  } else if (participant == OTRNG_THEM) {
     shake_256_kdf1(random, sizeof random, 0x13, manager->shared_secret,
                    sizeof(shared_secret_p));
 

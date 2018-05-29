@@ -37,8 +37,8 @@ typedef gcry_mpi_t dh_mpi_p;
 typedef dh_mpi_p dh_private_key_p, dh_public_key_p;
 
 typedef enum {
-  OTRNG_OURS = 0,
-  OTRNG_THEIR = 1,
+  OTRNG_US = 0,
+  OTRNG_THEM = 1,
 } otrng_participant;
 
 typedef struct dh_keypair_s {

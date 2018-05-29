@@ -1227,7 +1227,7 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
                                                 OTRNG_NON_INTERACTIVE))
     return ERROR;
 
-  if (!double_ratcheting_init(otr, OTRNG_THEIR))
+  if (!double_ratcheting_init(otr, OTRNG_THEM))
     return ERROR;
 
   // TODO: this should send the non interactive auth and decide
@@ -1408,7 +1408,7 @@ tstatic otrng_err receive_non_interactive_auth_message(
     return ERROR;
   }
 
-  if (!double_ratcheting_init(otr, OTRNG_OURS)) {
+  if (!double_ratcheting_init(otr, OTRNG_US)) {
     otrng_dake_non_interactive_auth_message_destroy(auth);
     return ERROR;
   }
@@ -1650,7 +1650,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
   if (!otrng_key_manager_generate_shared_secret(otr->keys, OTRNG_INTERACTIVE))
     return ERROR;
 
-  return double_ratcheting_init(otr, OTRNG_OURS);
+  return double_ratcheting_init(otr, OTRNG_US);
 }
 
 tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
@@ -1701,7 +1701,7 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
           fp, otr->their_client_profile->long_term_pub_key))
     fingerprint_seen_cb_v4(fp, otr->conversation);
 
-  return double_ratcheting_init(otr, OTRNG_THEIR);
+  return double_ratcheting_init(otr, OTRNG_THEM);
 }
 
 // TODO: this is the same as otrng_close

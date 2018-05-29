@@ -149,11 +149,11 @@ INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
   if (err)
     return ERROR;
 
-  if (participant == OTRNG_OURS) {
+  if (participant == OTRNG_US) {
     keypair->priv = privkey;
     keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
     gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
-  } else if (participant == OTRNG_THEIR) {
+  } else if (participant == OTRNG_THEM) {
     keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
     gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
 
