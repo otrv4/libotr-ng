@@ -118,8 +118,7 @@ void test_otrng_dake_prekey_message_deserializes() {
   otrng_dake_prekey_message_free(deserialized);
 }
 
-void test_dake_prekey_message_valid() {
-
+void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 
@@ -134,7 +133,7 @@ void test_dake_prekey_message_valid() {
   prekey_message->B = otrng_dh_mpi_copy(dh->pub);
 
   otrng_assert(otrng_valid_received_values(prekey_message->Y, prekey_message->B,
-                                           NULL) == otrng_true);
+                                           f->profile) == otrng_true);
 
   otrng_dake_prekey_message_free(prekey_message);
 
@@ -147,7 +146,7 @@ void test_dake_prekey_message_valid() {
 
   otrng_assert(otrng_valid_received_values(invalid_prekey_message->Y,
                                            invalid_prekey_message->B,
-                                           NULL) == otrng_false);
+                                           f->profile) == otrng_false);
 
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dh_keypair_destroy(dh);

@@ -154,7 +154,8 @@ int main(int argc, char **argv) {
                   test_dake_prekey_message_serializes);
   g_test_add_func("/dake/prekey_message/deserializes",
                   test_otrng_dake_prekey_message_deserializes);
-  g_test_add_func("/dake/prekey_message/valid", test_dake_prekey_message_valid);
+  WITH_DAKE_FIXTURE("/dake/prekey_message/valid",
+                    test_dake_prekey_message_valid);
 
   g_test_add_func("/data_message/valid", test_data_message_valid);
   g_test_add_func("/data_message/serialize", test_data_message_serializes);

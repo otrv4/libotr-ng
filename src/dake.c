@@ -871,9 +871,6 @@ INTERNAL otrng_bool otrng_valid_received_values(
   if (!otrng_dh_mpi_valid(their_dh))
     return otrng_false;
 
-  if (!profile)
-    return otrng_true;
-
   /* Verify their profile is valid (and not expired). */
   if (!otrng_client_profile_verify_signature(profile))
     return otrng_false;

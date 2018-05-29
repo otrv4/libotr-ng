@@ -1206,7 +1206,7 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   if (!received_instance_tag(m->sender_instance_tag, otr))
     return MALFORMED;
 
-  if (!otrng_valid_received_values(m->Y, m->B, NULL))
+  if (!otrng_valid_received_values(m->Y, m->B, otr->their_client_profile))
     return ERROR;
 
   otrng_key_manager_set_their_ecdh(m->Y, otr->keys);
