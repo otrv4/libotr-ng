@@ -1114,7 +1114,7 @@ void test_api_conversation_errors_1(void) {
   string_p err_code = "?OTR Error: ERROR_2: OTRNG_ERR_MSG_NOT_PRIVATE_STATE";
   otrng_assert_cmpmem(err_code, response_to_alice->to_send, strlen(err_code));
 
-  otrng_assert(otrng_result == ERROR);
+  otrng_assert_error(otrng_result);
   otrng_assert(response_to_alice->to_send != NULL);
   otrng_assert(!bob->keys->old_mac_keys);
   g_assert_cmpint(bob->keys->i, ==, 0);
@@ -1125,7 +1125,7 @@ void test_api_conversation_errors_1(void) {
       otrng_receive_message(response_to_bob, response_to_alice->to_send, alice);
   string_p err_human = "Not in private state message";
 
-  otrng_assert(otrng_result == SUCCESS);
+  otrng_assert_success(otrng_result);
   otrng_assert(response_to_bob);
   otrng_assert_cmpmem(err_human, response_to_bob->to_display,
                       strlen(err_human));

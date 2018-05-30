@@ -72,6 +72,16 @@
                                #expr);                                         \
   } while (0)
 
+#define otrng_assert_success(otrng_result)                                     \
+  do {                                                                         \
+    otrng_assert(otrng_result == SUCCESS);                                     \
+  } while (0)
+
+#define otrng_assert_error(otrng_result)                                       \
+  do {                                                                         \
+    otrng_assert(otrng_result == ERROR);                                       \
+  } while (0)
+
 #define otrng_assert_mpi_eq(m1, m2)                                            \
   do {                                                                         \
     const otrng_mpi_p _m1 = {(m1)[0]};                                         \
