@@ -2135,16 +2135,32 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       return SUCCESS;
     }
 
-    if (!otrng_key_manager_derive_dh_ratchet_keys(
-            otr->keys, otr->conversation->client->max_stored_msg_keys,
-            msg->message_id, OTRNG_RECEIVING))
-      return ERROR;
+    // TODO: extract me
+    list_element_s *temp_list = otr->keys->skipped_keys;
+    while (temp_list) {
+      skipped_keys_s *skipped_keys = temp_list->data;
+      if (skipped_keys->i == msg->ratchet_id) {
+        if (skipped_keys->j == msg->message_id) {
+          memcpy(enc_key, skipped_keys->m_enc_key, ENC_KEY_BYTES);
+          shake_256_kdf1(mac_key, MAC_KEY_BYTES, 0x19, enc_key, ENC_KEY_BYTES);
+        }
+      }
+      temp_list = temp_list->next;
+    }
 
-    otrng_key_manager_derive_chain_keys(
-        enc_key, mac_key, otr->keys,
-        otr->conversation->client->max_stored_msg_keys, msg->message_id,
-        OTRNG_RECEIVING);
-    otr->keys->k++;
+    uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
+    if ((memcmp(enc_key, zero_buff, sizeof(m_enc_key_p)) == 0)) {
+      if (otrng_key_manager_derive_dh_ratchet_keys(
+              otr->keys, otr->conversation->client->max_stored_msg_keys,
+              msg->message_id, OTRNG_RECEIVING) == ERROR)
+        return ERROR;
+
+      otrng_key_manager_derive_chain_keys(
+          enc_key, mac_key, otr->keys,
+          otr->conversation->client->max_stored_msg_keys, msg->message_id,
+          OTRNG_RECEIVING);
+      otr->keys->k++;
+    }
 
     if (!otrng_valid_data_message(mac_key, msg)) {
       sodium_memzero(enc_key, sizeof(enc_key));
@@ -2451,6 +2467,8 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
                                     unsigned char flags) {
   data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
+  m_enc_key_p enc_key;
+  m_mac_key_p mac_key;
 
   // if j == 0
   if (!otrng_key_manager_derive_dh_ratchet_keys(
@@ -2458,8 +2476,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
           otr->keys->j, OTRNG_SENDING))
     return ERROR;
 
-  m_enc_key_p enc_key;
-  m_mac_key_p mac_key;
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
   otrng_key_manager_derive_chain_keys(
@@ -2494,8 +2510,8 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
 
-  // Authenticator = KDF_1(0x1C || MKmac || KDF_1(0x1B || data_message_sections,
-  // 64), 64)
+  // Authenticator = KDF_1(0x1C || MKmac || KDF_1(0x1B ||
+  // data_message_sections, 64), 64)
   if (otr->keys->j == 0) {
     size_t ser_mac_keys_len =
         otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
@@ -2691,7 +2707,8 @@ INTERNAL otrng_err otrng_close(string_p *to_send, otrng_s *otr) {
 
   switch (otr->running_version) {
   case OTRNG_VERSION_3:
-    otrng_v3_close(to_send, otr->v3_conn);  // TODO: This should return an error
+    otrng_v3_close(to_send,
+                   otr->v3_conn);           // TODO: This should return an error
                                             // but errors are reported on a
                                             // callback
     gone_insecure_cb_v4(otr->conversation); // TODO: Only if success
