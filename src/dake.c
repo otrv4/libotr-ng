@@ -830,6 +830,10 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
 
   dst->enc_msg = NULL;
   dst->enc_msg_len = 0;
+  dst->ratchet_id = 0;
+  dst->message_id = 0;
+  dst->dh = NULL;
+
   if (len > 64) {
     cursor += xzdh_encrypted_message_deserialize(dst, cursor, len, &read);
     len -= read;

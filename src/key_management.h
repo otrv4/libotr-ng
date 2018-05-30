@@ -204,7 +204,7 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(
  */
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
-    int max_skip, otrng_participant_action action);
+    int max_skip, int message_id, otrng_participant_action action);
 
 /**
  * @brief Derive the dh ratchet keys.
@@ -213,7 +213,8 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
  * @param [action]    Defines if this is the sending or receiving chain.
  */
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
-    key_manager_s *manager, int max_skip, otrng_participant_action action);
+    key_manager_s *manager, int max_skip, int message_id,
+    otrng_participant_action action);
 
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
 /**

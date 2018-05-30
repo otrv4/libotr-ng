@@ -151,7 +151,7 @@ void test_api_interactive_conversation(void) {
     g_assert_cmpint(bob->keys->i, ==, 1);
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
-    g_assert_cmpint(bob->keys->pn, ==, message_id - 1);
+    g_assert_cmpint(bob->keys->pn, ==, 0);
   }
 
   // Next message Bob sends is a new DH ratchet
@@ -167,7 +167,7 @@ void test_api_interactive_conversation(void) {
     g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, message_id);
     g_assert_cmpint(bob->keys->k, ==, 0);
-    g_assert_cmpint(bob->keys->pn, ==, 2);
+    g_assert_cmpint(bob->keys->pn, ==, 0);
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
@@ -179,7 +179,7 @@ void test_api_interactive_conversation(void) {
     g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id);
-    g_assert_cmpint(alice->keys->pn, ==, message_id - 1);
+    g_assert_cmpint(alice->keys->pn, ==, 3);
   }
 
   const size_t secret_len = 2;
@@ -351,7 +351,7 @@ void test_api_non_interactive_conversation(void) {
     g_assert_cmpint(bob->keys->i, ==, 1);
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
-    g_assert_cmpint(bob->keys->pn, ==, message_id - 1);
+    g_assert_cmpint(bob->keys->pn, ==, 0);
 
     free_message_and_response(response_to_alice, &to_send);
   }
@@ -368,7 +368,7 @@ void test_api_non_interactive_conversation(void) {
     g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, message_id);
     g_assert_cmpint(bob->keys->k, ==, 0);
-    g_assert_cmpint(bob->keys->pn, ==, 2);
+    g_assert_cmpint(bob->keys->pn, ==, 0);
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
@@ -379,7 +379,7 @@ void test_api_non_interactive_conversation(void) {
     g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id);
-    g_assert_cmpint(alice->keys->pn, ==, message_id - 1);
+    g_assert_cmpint(alice->keys->pn, ==, 3);
 
     free_message_and_response(response_to_bob, &to_send);
   }
@@ -460,10 +460,6 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
 
   otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(bob->keys->current);
-  g_assert_cmpint(bob->keys->i, ==, 0);
-  g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 0);
-  g_assert_cmpint(alice->keys->pn, ==, 0);
 
   otrng_assert(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
                                                    "hi", bob) == SUCCESS);
@@ -472,6 +468,11 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
   otrng_assert(response_to_alice->to_display == NULL);
   otrng_assert(response_to_alice->to_send);
   otrng_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
+
+  g_assert_cmpint(bob->keys->i, ==, 1);
+  g_assert_cmpint(bob->keys->j, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 0);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Alice receives an non-interactive auth message
   otrng_assert(otrng_receive_message(response_to_bob,
@@ -497,7 +498,7 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
   g_assert_cmpint(alice->keys->i, ==, 1);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 1);
-  g_assert_cmpint(alice->keys->pn, ==, 1);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
 
   // Both have the same shared secret
   otrng_assert_root_key_eq(alice->keys->current->root_key,
@@ -523,11 +524,11 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
     g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, message_id);
     g_assert_cmpint(alice->keys->k, ==, 0);
-    g_assert_cmpint(alice->keys->pn, ==, 1);
+    g_assert_cmpint(alice->keys->pn, ==, 0);
 
     // Bob receives a data message
     response_to_alice = otrng_response_new();
-    otrng_err err = otrng_receive_message(response_to_alice, to_send, bob);
+    err = otrng_receive_message(response_to_alice, to_send, bob);
     assert_msg_rec(err, "hi", response_to_alice);
     otrng_assert(bob->keys->old_mac_keys);
 
@@ -538,7 +539,7 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
     g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
-    g_assert_cmpint(bob->keys->pn, ==, message_id - 1);
+    g_assert_cmpint(bob->keys->pn, ==, 1);
   }
 
   for (message_id = 1; message_id < 4; message_id++) {
@@ -554,7 +555,7 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
     g_assert_cmpint(bob->keys->i, ==, 3);
     g_assert_cmpint(bob->keys->j, ==, message_id);
     g_assert_cmpint(bob->keys->k, ==, 0);
-    g_assert_cmpint(bob->keys->pn, ==, 2);
+    g_assert_cmpint(bob->keys->pn, ==, 1);
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
@@ -564,11 +565,10 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
 
     free_message_and_response(response_to_bob, &to_send);
 
-    // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(alice->keys->i, ==, 3);
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id);
-    g_assert_cmpint(alice->keys->pn, ==, message_id - 1);
+    g_assert_cmpint(alice->keys->pn, ==, 3);
   }
 
   otrng_user_state_free_all(alice_client_state->user_state,
@@ -661,7 +661,7 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
   g_assert_cmpint(alice->keys->i, ==, 1);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 1);
-  g_assert_cmpint(alice->keys->pn, ==, 1);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
 
   // Both have the same shared secret
   otrng_assert_root_key_eq(alice->keys->current->root_key,
@@ -704,7 +704,7 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
     g_assert_cmpint(alice->keys->i, ==, 1);
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id + 1);
-    g_assert_cmpint(alice->keys->pn, ==, message_id);
+    g_assert_cmpint(alice->keys->pn, ==, 0);
   }
 
   for (message_id = 1; message_id < 4; message_id++) {
@@ -720,7 +720,7 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
     g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, message_id);
     g_assert_cmpint(alice->keys->k, ==, 0);
-    g_assert_cmpint(alice->keys->pn, ==, 3);
+    g_assert_cmpint(alice->keys->pn, ==, 0);
 
     // Bob receives a data message
     response_to_alice = otrng_response_new();
@@ -734,7 +734,7 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
     g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
-    g_assert_cmpint(bob->keys->pn, ==, message_id - 1);
+    g_assert_cmpint(bob->keys->pn, ==, 4);
   }
 
   otrng_user_state_free_all(alice_client_state->user_state,
@@ -826,7 +826,7 @@ void test_api_same_ratchet_out_of_order(void) {
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 3);
-  g_assert_cmpint(bob->keys->pn, ==, 2);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
 
   free(to_send_2);
   otrng_user_state_free_all(alice_client_state->user_state,
@@ -858,6 +858,7 @@ void test_api_new_ratchet_out_of_order(void) {
   otrng_err err;
 
   tlv_list_s *tlvs = NULL;
+
   // Alice sends a data message
   err = otrng_prepare_to_send_message(&to_send_1, "hi", &tlvs, 0, alice);
   assert_msg_sent(err, to_send_1);
@@ -920,7 +921,7 @@ void test_api_new_ratchet_out_of_order(void) {
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 2);
-  g_assert_cmpint(bob->keys->pn, ==, 1);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
 
   tlvs = NULL;
   err = otrng_prepare_to_send_message(&to_send_4, "oh, hi", &tlvs, 0, bob);
@@ -932,7 +933,7 @@ void test_api_new_ratchet_out_of_order(void) {
   g_assert_cmpint(bob->keys->i, ==, 2);
   g_assert_cmpint(bob->keys->j, ==, 1);
   g_assert_cmpint(bob->keys->k, ==, 0);
-  g_assert_cmpint(bob->keys->pn, ==, 1);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Alice receives a data message
   response_to_bob = otrng_response_new();
@@ -944,7 +945,7 @@ void test_api_new_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->i, ==, 2);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 1);
-  g_assert_cmpint(alice->keys->pn, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 3);
 
   free(to_send_3);
   // Bob receives the previous message

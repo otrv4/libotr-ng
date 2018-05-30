@@ -411,7 +411,8 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
 // work
 tstatic otrng_err rotate_keys(key_manager_s *manager,
                               otrng_participant_action action) {
-  manager->k = 0;
+  manager->k = 0; // TODO: not sure about this
+
   if (action == OTRNG_SENDING) {
     // our_ecdh = generateECDH()
     // if i % 3 == 0, our_dh = generateDH()
@@ -427,6 +428,9 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
     otrng_ec_scalar_destroy(manager->our_ecdh->priv);
     if (manager->i % 3 == 0)
       otrng_dh_priv_key_destroy(manager->our_dh);
+
+    manager->pn = manager->j;
+    manager->j = 0;
   }
 
   manager->i++;
@@ -597,9 +601,9 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
 
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
-    int max_skip, otrng_participant_action action) {
+    int max_skip, int message_id, otrng_participant_action action) {
   if (action == OTRNG_RECEIVING) {
-    if (!store_enc_keys(enc_key, manager, max_skip, manager->j))
+    if (!store_enc_keys(enc_key, manager, max_skip, message_id))
       return ERROR;
   }
 
@@ -620,10 +624,11 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
 }
 
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
-    key_manager_s *manager, int max_skip, otrng_participant_action action) {
+    key_manager_s *manager, int max_skip, int message_id,
+    otrng_participant_action action) {
   // Derive new ECDH and DH keys
   m_enc_key_p enc_key;
-  if (manager->j == 0) {
+  if (message_id == 0) {
     if (action == OTRNG_RECEIVING) {
       if (!store_enc_keys(enc_key, manager, max_skip, manager->pn)) {
         return ERROR;
