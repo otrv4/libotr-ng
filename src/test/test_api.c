@@ -920,8 +920,8 @@ void test_api_same_ratchet_out_of_order(void) {
   g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 1);
 
   response_to_alice = otrng_response_new();
-  err = otrng_receive_message(response_to_alice, to_send_2, bob);
-  assert_msg_rec(err, "how are you?", response_to_alice);
+  otrng_result = otrng_receive_message(response_to_alice, to_send_2, bob);
+  assert_msg_rec(otrng_result, "how are you?", response_to_alice);
   otrng_assert(bob->keys->old_mac_keys);
 
   free_message_and_response(response_to_alice, &to_send_2);
