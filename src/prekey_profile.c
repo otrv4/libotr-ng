@@ -24,14 +24,17 @@
 #include <string.h>
 #include <time.h>
 
+INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst) {
+  otrng_ec_point_destroy(dst->pub);
+  otrng_ec_point_destroy(dst->shared_prekey);
+  memset(dst->signature, 0, sizeof(eddsa_signature_p));
+}
+
 INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *dst) {
   if (!dst)
     return;
 
-  otrng_ec_point_destroy(dst->pub);
-  otrng_ec_point_destroy(dst->shared_prekey);
-  memset(dst->signature, 0, sizeof(eddsa_signature_p));
-
+  otrng_prekey_profile_destroy(dst);
   free(dst);
 }
 

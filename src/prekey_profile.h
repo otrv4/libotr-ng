@@ -35,6 +35,8 @@ typedef struct prekey_profile_s {
   eddsa_signature_p signature;
 } otrng_prekey_profile_s, otrng_prekey_profile_p[1];
 
+INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst);
+
 INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *dst);
 
 INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
