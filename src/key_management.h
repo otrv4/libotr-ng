@@ -197,10 +197,12 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(
 /**
  * @brief Derive ratchet chain keys.
  *
- * @param [enc_key]   The encryption key.
- * @param [mac_key]   The mac key.
- * @param [manager]   The key manager.
- * @param [action]    Defines if this is the sending or receiving chain.
+ * @param [enc_key]     The encryption key.
+ * @param [mac_key]     The mac key.
+ * @param [max_skip]    The maximum number of enc_keys to be stored.
+ * @param [message_id]  The receiving message id (j).
+ * @param [manager]     The key manager.
+ * @param [action]      Defines if this is the sending or receiving chain.
  */
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
@@ -209,8 +211,10 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
 /**
  * @brief Derive the dh ratchet keys.
  *
- * @param [manager]   The key manager.
- * @param [action]    Defines if this is the sending or receiving chain.
+ * @param [manager]     The key manager.
+ * @param [max_skip]    The maximum number of enc_keys to be stored.
+ * @param [message_id]  The receiving message id (j).
+ * @param [action]      Defines if this is the sending or receiving chain.
  */
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, int max_skip, int message_id,

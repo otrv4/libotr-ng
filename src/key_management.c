@@ -171,8 +171,9 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   if (manager->i % 3 == 0) {
     otrng_dh_keypair_destroy(manager->our_dh);
 
-    if (!otrng_dh_keypair_generate(manager->our_dh))
+    if (!otrng_dh_keypair_generate(manager->our_dh)) {
       return ERROR;
+    }
   }
 
   return SUCCESS;
@@ -192,8 +193,10 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
 
     otrng_dh_keypair_destroy(manager->our_dh);
     if (!otrng_dh_keypair_generate_from_shared_secret(
-            manager->shared_secret, manager->our_dh, participant))
+            manager->shared_secret, manager->our_dh, participant)) {
       return ERROR;
+    }
+
   } else if (participant == OTRNG_THEM) {
     shake_256_kdf1(random, sizeof random, 0x13, manager->shared_secret,
                    sizeof(shared_secret_p));
@@ -206,8 +209,9 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     dh_keypair_p tmp_their_dh;
 
     if (!otrng_dh_keypair_generate_from_shared_secret(
-            manager->shared_secret, tmp_their_dh, participant))
+            manager->shared_secret, tmp_their_dh, participant)) {
       return ERROR;
+    }
 
     manager->their_dh = tmp_their_dh->pub;
   }
@@ -219,8 +223,9 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
 
   if (manager->i % 3 == 0) {
     if (!otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), manager->our_dh->priv,
-                                manager->their_dh))
+                                manager->their_dh)) {
       return ERROR;
+    }
 
     // Although k_dh has variable length (bc it is mod p), it is considered to
     // have 384 bytes because otrng_dh_shared_secret adds leading zeroes to the
@@ -260,11 +265,13 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
     otrng_ec_bzero(manager->our_ecdh->priv, sizeof(ec_scalar_p));
 
-    if (!otrng_ecdh_valid_secret(k_ecdh))
+    if (!otrng_ecdh_valid_secret(k_ecdh)) {
       return ERROR;
+    }
 
-    if (!calculate_brace_key(manager))
+    if (!calculate_brace_key(manager)) {
       return ERROR;
+    }
 
     // TODO: why is this passing the whole struct?
     otrng_dh_priv_key_destroy(manager->our_dh);
@@ -322,13 +329,15 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, shared_prekey->priv);
 
-  if (!otrng_ec_point_valid(p))
+  if (!otrng_ec_point_valid(p)) {
     return ERROR;
+  }
 
   otrng_serialize_ec_point(shared_secret, p);
 
-  if (!otrng_ecdh_valid_secret(shared_secret))
+  if (!otrng_ecdh_valid_secret(shared_secret)) {
     return ERROR;
+  }
 
   return SUCCESS;
 }
@@ -340,13 +349,15 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, keypair->priv);
 
-  if (!otrng_ec_point_valid(p))
+  if (!otrng_ec_point_valid(p)) {
     return ERROR;
+  }
 
   otrng_serialize_ec_point(shared_secret, p);
 
-  if (!otrng_ecdh_valid_secret(shared_secret))
+  if (!otrng_ecdh_valid_secret(shared_secret)) {
     return ERROR;
+  }
 
   return SUCCESS;
 }
@@ -358,8 +369,9 @@ tstatic void calculate_ssid(key_manager_s *manager) {
 
 INTERNAL otrng_err otrng_key_manager_ratcheting_init(
     key_manager_s *manager, otrng_participant participant) {
-  if (!generate_first_ephemeral_keys(manager, participant))
+  if (!generate_first_ephemeral_keys(manager, participant)) {
     return ERROR;
+  }
 
   manager->i = 0;
   manager->j = 0;
@@ -381,8 +393,9 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
 
   // if i % 3 == 0 : brace_key = KDF_1(0x02 || k_dh, 32)
   // else brace_key = KDF_1(0x03 || brace_key, 32)
-  if (!calculate_brace_key(manager))
+  if (!calculate_brace_key(manager)) {
     return ERROR;
+  }
 
   // K = KDF_1(0x04 || K_ecdh || brace_key, 64)
   calculate_shared_secret(manager, k_ecdh);
@@ -416,18 +429,23 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
   if (action == OTRNG_SENDING) {
     // our_ecdh = generateECDH()
     // if i % 3 == 0, our_dh = generateDH()
-    if (!otrng_key_manager_generate_ephemeral_keys(manager))
+    if (!otrng_key_manager_generate_ephemeral_keys(manager)) {
       return ERROR;
+    }
 
-    if (!enter_new_ratchet(manager, action))
+    if (!enter_new_ratchet(manager, action)) {
       return ERROR;
+    }
+
   } else if (action == OTRNG_RECEIVING) {
-    if (!enter_new_ratchet(manager, action))
+    if (!enter_new_ratchet(manager, action)) {
       return ERROR;
+    }
 
     otrng_ec_scalar_destroy(manager->our_ecdh->priv);
-    if (manager->i % 3 == 0)
+    if (manager->i % 3 == 0) {
       otrng_dh_priv_key_destroy(manager->our_dh);
+    }
 
     manager->pn = manager->j;
     manager->j = 0;
@@ -441,8 +459,9 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
 tstatic otrng_err key_manager_derive_ratchet_keys(
     key_manager_s *manager, otrng_participant_action action) {
   ratchet_s *ratchet = ratchet_new();
-  if (!ratchet)
+  if (!ratchet) {
     return ERROR;
+  }
 
   // root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
   // root_key[i-1], K) root_key[i] = KDF_1(0x15 || root_key[i-1] || K, 64)
@@ -578,8 +597,9 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
                      sizeof(receiving_chain_key_p));
 
       skipped_keys_s *skipped_m_enc_key = malloc(sizeof(skipped_keys_s));
-      if (!skipped_m_enc_key)
+      if (!skipped_m_enc_key) {
         return ERROR;
+      }
 
       skipped_m_enc_key->i = manager->i;
       skipped_m_enc_key->j = manager->k;
@@ -603,8 +623,9 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
     int max_skip, int message_id, otrng_participant_action action) {
   if (action == OTRNG_RECEIVING) {
-    if (!store_enc_keys(enc_key, manager, max_skip, message_id))
+    if (!store_enc_keys(enc_key, manager, max_skip, message_id)) {
       return ERROR;
+    }
   }
 
   derive_encryption_and_mac_keys(enc_key, mac_key, manager, action);
