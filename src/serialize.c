@@ -98,9 +98,10 @@ INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   size_t w = 0;
 
-  otrng_err err = otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, pub);
-  if (!err)
-    return err;
+  otrng_err otrng_result =
+      otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, pub);
+  if (!otrng_result)
+    return otrng_result;
 
   // To OTR MPI
   // TODO: Maybe gcrypt MPI already has some API for this.

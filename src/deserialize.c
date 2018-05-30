@@ -265,23 +265,23 @@ INTERNAL otrng_err otrng_deserialize_ring_sig(ring_sig_s *proof,
 INTERNAL otrng_err otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
                                                    const char *buff,
                                                    size_t len) {
-  otrng_err err = ERROR;
+  otrng_err otrng_result = ERROR;
 
   /* (((base64len+3) / 4) * 3) */
   unsigned char *dec = malloc(((len + 3) / 4) * 3);
   if (!dec)
-    return err;
+    return otrng_result;
 
   size_t written = otrl_base64_decode(dec, buff, len);
 
   if (written == ED448_PRIVATE_BYTES) {
-    err = SUCCESS;
+    otrng_result = SUCCESS;
   }
 
-  if (err == SUCCESS)
+  if (otrng_result == SUCCESS)
     otrng_keypair_generate(pair, dec);
 
   free(dec);
   dec = NULL;
-  return err;
+  return otrng_result;
 }

@@ -103,9 +103,9 @@ INTERNAL otrng_err otrng_dake_identity_message_asprintf(
   free(profile);
 
   size_t len = 0;
-  otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
-                                                &len, identity_message->B);
-  if (err == ERROR) {
+  otrng_err otrng_result = otrng_serialize_dh_public_key(
+      cursor, (s - (cursor - buff)), &len, identity_message->B);
+  if (otrng_result == ERROR) {
     free(buff);
     return ERROR;
   }
@@ -229,9 +229,9 @@ INTERNAL otrng_err otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
   free(our_profile);
 
   size_t len = 0;
-  otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
-                                                &len, auth_r->A);
-  if (err == ERROR) {
+  otrng_err otrng_result = otrng_serialize_dh_public_key(
+      cursor, (s - (cursor - buff)), &len, auth_r->A);
+  if (otrng_result == ERROR) {
     free(buff);
     return ERROR;
   }
@@ -468,9 +468,9 @@ INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
   cursor += otrng_serialize_ec_point(cursor, prekey_message->Y);
 
   size_t len = 0;
-  otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)),
-                                                &len, prekey_message->B);
-  if (err == ERROR) {
+  otrng_err otrng_result = otrng_serialize_dh_public_key(
+      cursor, (s - (cursor - buff)), &len, prekey_message->B);
+  if (otrng_result == ERROR) {
     free(buff);
     return ERROR;
   }
@@ -579,9 +579,9 @@ tstatic otrng_err xzdh_encrypted_message_asprintf(
     cursor += otrng_serialize_ec_point(cursor, msg->ecdh);
 
     size_t len = 0;
-    otrng_err err = otrng_serialize_dh_public_key(cursor, (s - (cursor - *dst)),
-                                                  &len, msg->dh);
-    if (err == ERROR) {
+    otrng_err otrng_result = otrng_serialize_dh_public_key(
+        cursor, (s - (cursor - *dst)), &len, msg->dh);
+    if (otrng_result == ERROR) {
       free(*dst);
       *dst = NULL;
       return ERROR;
@@ -1003,11 +1003,11 @@ INTERNAL otrng_err build_interactive_rsign_tag(
   // Alices_User_Profile, 64) || Y || X || B || A || KDF_1(0x0B || phi, 64)
 
   uint8_t first_usage = 0x06 + type * 3;
-  otrng_err err =
+  otrng_err otrng_result =
       build_rsign_tag(buff + 1, MAX_T_LENGTH, &written, first_usage, i_profile,
                       r_profile, i_ecdh, r_ecdh, i_dh, r_dh, NULL, 0, phi);
 
-  if (err == ERROR) {
+  if (otrng_result == ERROR) {
     free(buff);
     return ERROR;
   }
@@ -1036,12 +1036,12 @@ INTERNAL otrng_err build_non_interactive_rsig_tag(
 
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_serialize_otrng_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
-  otrng_err err = build_rsign_tag(
+  otrng_err otrng_result = build_rsign_tag(
       *msg, MAX_T_LENGTH, msg_len, 0x0E, i_profile, r_profile, i_ecdh, r_ecdh,
       i_dh, r_dh, ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi);
   sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
-  return err;
+  return otrng_result;
 }
 
 INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
@@ -1078,9 +1078,9 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
   uint8_t *ser_data_msg = NULL;
   size_t bodylen = 0;
 
-  otrng_err ret =
+  otrng_err otrng_result =
       xzdh_encrypted_message_asprintf(&ser_data_msg, &bodylen, auth);
-  if (ret == ERROR)
+  if (otrng_result == ERROR)
     return ERROR;
 
   uint8_t encrypted_msg_mac[HASH_BYTES];

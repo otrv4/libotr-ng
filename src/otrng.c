@@ -609,11 +609,11 @@ tstatic otrng_err reply_with_prekey_msg_to_server(otrng_server_s *server,
 
   store_my_prekey_message(m, otr->keys->our_ecdh, otr->keys->our_dh, otr);
 
-  otrng_err err =
+  otrng_err otrng_result =
       serialize_and_encode_prekey_message(&server->prekey_message, m);
   otrng_dake_prekey_message_free(m);
 
-  return err;
+  return otrng_result;
 }
 
 API void otrng_reply_with_prekey_msg_from_server(otrng_server_s *server,
@@ -649,9 +649,10 @@ tstatic otrng_err reply_with_identity_msg(otrng_response_s *response,
   otrng_ec_point_copy(m->Y, our_ecdh(otr));
   m->B = otrng_dh_mpi_copy(our_dh(otr));
 
-  otrng_err err = serialize_and_encode_identity_message(&response->to_send, m);
+  otrng_err otrng_result =
+      serialize_and_encode_identity_message(&response->to_send, m);
   otrng_dake_identity_message_free(m);
-  return err;
+  return otrng_result;
 }
 
 tstatic otrng_err start_dake(otrng_response_s *response, otrng_s *otr) {
@@ -773,10 +774,10 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
       t, t_len);
   free(t);
 
-  otrng_err err = serialize_and_encode_auth_r(dst, msg);
+  otrng_err otrng_result = serialize_and_encode_auth_r(dst, msg);
   otrng_dake_auth_r_destroy(msg);
 
-  return err;
+  return otrng_result;
 }
 
 tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
@@ -1424,15 +1425,15 @@ tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
   if (!otrng_dake_prekey_message_deserialize(m, buff, buflen))
     return ERROR;
 
-  otrng_err err = prekey_message_received(m, otr);
+  otrng_err otrng_result = prekey_message_received(m, otr);
   otrng_dake_prekey_message_destroy(m);
 
-  if (err == MALFORMED) {
+  if (otrng_result == MALFORMED) {
     otrng_error_message(dst, ERR_MSG_MALFORMED);
-    err = ERROR; // TODO: Why can't the error just be MALFORMED?
+    otrng_result = ERROR; // TODO: Why can't the error just be MALFORMED?
   }
 
-  return err;
+  return otrng_result;
 }
 
 tstatic otrng_bool verify_non_interactive_auth_message(
@@ -1720,11 +1721,11 @@ tstatic otrng_err receive_identity_message_on_waiting_auth_i(
 
 tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
                                            size_t buflen, otrng_s *otr) {
-  otrng_err err = ERROR;
+  otrng_err otrng_result = ERROR;
   dake_identity_message_p m;
 
   if (!otrng_dake_identity_message_deserialize(m, buff, buflen))
-    return err;
+    return otrng_result;
 
   if (m->receiver_instance_tag != 0) {
     otrng_dake_identity_message_destroy(m);
@@ -1733,34 +1734,34 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
 
   if (!otrng_valid_received_values(m->Y, m->B, m->profile)) {
     otrng_dake_identity_message_destroy(m);
-    return err;
+    return otrng_result;
   }
 
   if (!received_instance_tag(m->sender_instance_tag, otr)) {
     otrng_error_message(dst, ERR_MSG_MALFORMED);
     otrng_dake_identity_message_destroy(m);
-    return err;
+    return otrng_result;
   }
 
   switch (otr->state) {
   case OTRNG_STATE_START:
-    err = receive_identity_message_on_state_start(dst, m, otr);
+    otrng_result = receive_identity_message_on_state_start(dst, m, otr);
     break;
   case OTRNG_STATE_WAITING_AUTH_R:
-    err = receive_identity_message_on_waiting_auth_r(dst, m, otr);
+    otrng_result = receive_identity_message_on_waiting_auth_r(dst, m, otr);
     break;
   case OTRNG_STATE_WAITING_AUTH_I:
-    err = receive_identity_message_on_waiting_auth_i(dst, m, otr);
+    otrng_result = receive_identity_message_on_waiting_auth_i(dst, m, otr);
     break;
   case OTRNG_STATE_NONE:
   case OTRNG_STATE_ENCRYPTED_MESSAGES:
   case OTRNG_STATE_FINISHED:
     /* Ignore the message, but it is not an error. */
-    err = SUCCESS;
+    otrng_result = SUCCESS;
   }
 
   otrng_dake_identity_message_destroy(m);
-  return err;
+  return otrng_result;
 }
 
 tstatic otrng_err serialize_and_encode_auth_i(string_p *dst,
@@ -1802,10 +1803,10 @@ tstatic otrng_err reply_with_auth_i_msg(
                           t, t_len);
   free(t);
 
-  otrng_err err = serialize_and_encode_auth_i(dst, msg);
+  otrng_err otrng_result = serialize_and_encode_auth_i(dst, msg);
   otrng_dake_auth_i_destroy(msg);
 
-  return err;
+  return otrng_result;
 }
 
 tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
@@ -1942,7 +1943,7 @@ INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr) {
   if (!disconnected)
     return ERROR;
 
-  otrng_err err = otrng_prepare_to_send_message(
+  otrng_err otrng_result = otrng_prepare_to_send_message(
       to_send, "", &disconnected, MSGFLAGS_IGNORE_UNREADABLE, otr);
 
   otrng_tlv_list_free(disconnected);
@@ -1950,7 +1951,7 @@ INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr) {
   otr->state = OTRNG_STATE_START;
   gone_insecure_cb_v4(otr->conversation);
 
-  return err;
+  return otrng_result;
 }
 
 tstatic void extract_tlvs(tlv_list_s **tlvs, const uint8_t *src, size_t len) {
@@ -2281,21 +2282,21 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
   maybe_create_keys(otr->conversation);
 
   response->to_send = NULL;
-  otrng_err err;
+  otrng_err otrng_result;
 
   switch (header.type) {
   case IDENTITY_MSG_TYPE:
     otr->running_version = OTRNG_VERSION_4;
     return receive_identity_message(&response->to_send, decoded, dec_len, otr);
   case AUTH_R_MSG_TYPE:
-    err = receive_auth_r(&response->to_send, decoded, dec_len, otr);
+    otrng_result = receive_auth_r(&response->to_send, decoded, dec_len, otr);
     // TODO: why is this delete here?
     // TODO: this gets deleted regardless of the error?
     // if (otr->state == OTRNG_STATE_ENCRYPTED_MESSAGES) {
     //  otrng_dh_priv_key_destroy(otr->keys->our_dh);
     //  otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
     //}
-    return err;
+    return otrng_result;
   case AUTH_I_MSG_TYPE:
     return receive_auth_i(decoded, dec_len, otr);
   case PRE_KEY_MSG_TYPE:
@@ -2324,10 +2325,11 @@ tstatic otrng_err receive_encoded_message(otrng_response_s *response,
   if (otrl_base64_otr_decode(message, &decoded, &dec_len))
     return ERROR;
 
-  otrng_err err = receive_decoded_message(response, decoded, dec_len, otr);
+  otrng_err otrng_result =
+      receive_decoded_message(response, decoded, dec_len, otr);
   free(decoded);
 
-  return err;
+  return otrng_result;
 }
 
 tstatic otrng_err receive_error_message(otrng_response_s *response,
@@ -2618,12 +2620,12 @@ tstatic otrng_err otrng_prepare_to_send_data_message(string_p *to_send,
   int is_heartbeat =
       strlen(message) == 0 && otr->smp->state == SMPSTATE_EXPECT1 ? 1 : 0;
 
-  otrng_err err =
+  otrng_err otrng_result =
       send_data_message(to_send, msg, msg_len, otr, is_heartbeat, flags);
 
   free(msg);
 
-  return err;
+  return otrng_result;
 }
 
 tstatic size_t tlv_serialized_length(tlv_s *tlv) {
@@ -2690,7 +2692,7 @@ tstatic otrng_err otrng_close_v4(string_p *to_send, otrng_s *otr) {
   if (!disconnected)
     return ERROR;
 
-  otrng_err err = otrng_prepare_to_send_message(
+  otrng_err otrng_result = otrng_prepare_to_send_message(
       to_send, "", &disconnected, MSGFLAGS_IGNORE_UNREADABLE, otr);
 
   otrng_tlv_list_free(disconnected);
@@ -2698,7 +2700,7 @@ tstatic otrng_err otrng_close_v4(string_p *to_send, otrng_s *otr) {
   otr->state = OTRNG_STATE_START;
   gone_insecure_cb_v4(otr->conversation);
 
-  return err;
+  return otrng_result;
 }
 
 INTERNAL otrng_err otrng_close(string_p *to_send, otrng_s *otr) {
