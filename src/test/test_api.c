@@ -1071,7 +1071,7 @@ void test_api_new_sending_ratchet_in_order(void) {
   assert_msg_rec(result, "I'm good", response_to_bob);
   g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 2);
 
-  free_message_and_response(response_to_bob, &to_send_4);
+  free_message_and_response(response_to_bob, &to_send_5);
   g_assert_cmpint(alice->keys->i, ==, 2);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 2);
