@@ -200,14 +200,14 @@ tstatic int send_message(char **newmsg, const char *message,
   if (!conv)
     return 1;
 
-  otrng_err otrng_result =
+  otrng_err result =
       otrng_prepare_to_send_message(newmsg, message, &tlvs, 0, conv->conn);
   otrng_tlv_list_free(tlvs);
 
-  if (otrng_result == STATE_NOT_ENCRYPTED)
+  if (result == STATE_NOT_ENCRYPTED)
     return CLIENT_ERROR_NOT_ENCRYPTED;
   else
-    return SUCCESS != otrng_result;
+    return SUCCESS != result;
 }
 
 API int otrng_client_send(char **newmessage, const char *message,
@@ -278,22 +278,22 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
 
 tstatic int unfragment(char **unfragmented, const char *received,
                        fragment_context_s *ctx, int our_instance_tag) {
-  otrng_err otrng_result =
+  otrng_err result =
       otrng_unfragment_message(unfragmented, ctx, received, our_instance_tag);
-  return otrng_result != SUCCESS || ctx->status == FRAGMENT_INCOMPLETE;
+  return result != SUCCESS || ctx->status == FRAGMENT_INCOMPLETE;
 }
 
 API int otrng_client_receive(char **newmessage, char **todisplay,
                              const char *message, const char *recipient,
                              otrng_client_s *client) {
-  otrng_err otrng_result = ERROR;
+  otrng_err result = ERROR;
   char *unfrag_msg = NULL;
   int should_ignore = 1;
   otrng_response_s *response = NULL;
   otrng_conversation_s *conv = NULL;
 
   if (!newmessage)
-    return otrng_result;
+    return result;
 
   *newmessage = NULL;
 
@@ -306,8 +306,8 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
     return should_ignore;
 
   response = otrng_response_new();
-  otrng_result = otrng_receive_message(response, unfrag_msg, conv->conn);
-  if (otrng_result == MSG_NOT_VALID)
+  result = otrng_receive_message(response, unfrag_msg, conv->conn);
+  if (result == MSG_NOT_VALID)
     return CLIENT_ERROR_MSG_NOT_VALID;
 
   free(unfrag_msg);
@@ -326,7 +326,7 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
 
   otrng_response_free(response);
 
-  if (otrng_result != SUCCESS)
+  if (result != SUCCESS)
     return !should_ignore; // Should this cause the message to be ignored or
                            // not?
 

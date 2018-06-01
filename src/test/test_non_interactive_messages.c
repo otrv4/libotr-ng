@@ -70,9 +70,8 @@ void test_dake_prekey_message_serializes() {
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES];
   size_t mpi_len = 0;
-  otrng_err otrng_result = otrng_dh_mpi_serialize(
-      serialized_b, DH3072_MOD_LEN_BYTES, &mpi_len, prekey_message->B);
-  otrng_assert(otrng_result == SUCCESS);
+  otrng_assert(otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
+                                      &mpi_len, prekey_message->B));
 
   /* Skip first 4 because they are the size (mpi_len) */
   otrng_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
@@ -206,12 +205,10 @@ setup_attached_encrypted_message(dake_non_interactive_auth_message_p msg) {
       0x43, 0xce, 0x4b, 0x51, 0x51, 0x6a, 0x46, 0x90, 0x00,
   };
 
-  otrng_err otrng_result = otrng_dh_mpi_deserialize(&msg->dh, pub_dh_key_s,
-                                                    DH3072_MOD_LEN_BYTES, NULL);
-  otrng_assert(SUCCESS == otrng_result);
+  otrng_assert(otrng_dh_mpi_deserialize(&msg->dh, pub_dh_key_s,
+                                        DH3072_MOD_LEN_BYTES, NULL));
 
-  otrng_result = otrng_ec_point_decode(msg->ecdh, pub_ecdh_key_s);
-  otrng_assert(SUCCESS == otrng_result);
+  otrng_assert(otrng_ec_point_decode(msg->ecdh, pub_ecdh_key_s));
 
   msg->enc_msg = malloc(3);
   memcpy(msg->enc_msg, encrypted, 3);
@@ -411,9 +408,8 @@ void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   cursor += ser_len;
 
   uint8_t serialized_a[DH3072_MOD_LEN_BYTES];
-  otrng_err otrng_result = otrng_dh_mpi_serialize(
-      serialized_a, DH3072_MOD_LEN_BYTES, &ser_len, msg->A);
-  otrng_assert(otrng_result == SUCCESS);
+  otrng_assert(otrng_dh_mpi_serialize(serialized_a, DH3072_MOD_LEN_BYTES,
+                                      &ser_len, msg->A));
 
   /* Skip first 4 because they are the size */
   cursor += 4;
@@ -496,9 +492,8 @@ void test_dake_non_interactive_auth_message_with_encrypted_message_serializes(
   cursor += ser_len;
 
   uint8_t serialized_a[DH3072_MOD_LEN_BYTES];
-  otrng_err otrng_result = otrng_dh_mpi_serialize(
-      serialized_a, DH3072_MOD_LEN_BYTES, &ser_len, msg->A);
-  otrng_assert(otrng_result == SUCCESS);
+  otrng_assert(otrng_dh_mpi_serialize(serialized_a, DH3072_MOD_LEN_BYTES,
+                                      &ser_len, msg->A));
 
   /* Skip first 4 because they are the size */
   cursor += 4;
