@@ -562,7 +562,8 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 }
 
 tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
-                                 int max_skip, int until) {
+                                 int max_skip, int until,
+                                 otrng_ratchet_type type) {
   uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
 
   if ((manager->k + max_skip) < until) {
@@ -597,7 +598,13 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
         return ERROR;
       }
 
-      skipped_m_enc_key->i = manager->i;
+      if (type == OTRNG_DH_RATCHET) {
+        skipped_m_enc_key->i =
+            manager->i - 1; // TODO: this should be - 1 for the dh case
+      } else if (type == OTRNG_CHAIN_RATCHET) {
+        skipped_m_enc_key->i = manager->i;
+      }
+
       skipped_m_enc_key->j = manager->k;
 
       memcpy(skipped_m_enc_key->extra_symetric_key, extra_key,
@@ -620,7 +627,8 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     int max_skip, int message_id, otrng_participant_action action) {
 
   if (action == OTRNG_RECEIVING) {
-    if (!store_enc_keys(enc_key, manager, max_skip, message_id)) {
+    if (!store_enc_keys(enc_key, manager, max_skip, message_id,
+                        OTRNG_CHAIN_RATCHET)) {
       return ERROR;
     }
   }
@@ -649,7 +657,8 @@ INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
 
   if (message_id == 0) {
     if (action == OTRNG_RECEIVING) {
-      if (!store_enc_keys(enc_key, manager, max_skip, previous_n)) {
+      if (!store_enc_keys(enc_key, manager, max_skip, previous_n,
+                          OTRNG_DH_RATCHET)) {
         return ERROR;
       }
     }

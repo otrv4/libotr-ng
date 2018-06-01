@@ -38,6 +38,11 @@ typedef enum {
   OTRNG_RECEIVING = 1,
 } otrng_participant_action;
 
+typedef enum {
+  OTRNG_DH_RATCHET = 0,
+  OTRNG_CHAIN_RATCHET = 1,
+} otrng_ratchet_type;
+
 /* the different kind of keys for the key management */
 typedef uint8_t k_dh_p[DH_KEY_BYTES];
 typedef uint8_t brace_key_p[BRACE_KEY_BYTES];

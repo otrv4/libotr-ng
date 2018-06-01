@@ -2140,7 +2140,9 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     list_element_s *temp_list = otr->keys->skipped_keys;
     while (temp_list) {
       skipped_keys_s *skipped_keys = temp_list->data;
+
       if (skipped_keys->i == msg->ratchet_id) {
+
         if (skipped_keys->j == msg->message_id) {
           memcpy(enc_key, skipped_keys->m_enc_key, ENC_KEY_BYTES);
           shake_256_kdf1(mac_key, MAC_KEY_BYTES, 0x19, enc_key, ENC_KEY_BYTES);
@@ -2511,7 +2513,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
 
-  data_msg->previous_chain_n = otr->keys->j;
   // Authenticator = KDF_1(0x1C || MKmac || KDF_1(0x1B ||
   // data_message_sections, 64), 64)
   if (otr->keys->j == 0) {
