@@ -600,7 +600,7 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
 
       if (type == OTRNG_DH_RATCHET) {
         skipped_m_enc_key->i =
-            manager->i - 1; // TODO: this should be - 1 for the dh case
+            manager->i - 1; // ratchet_id - 1 for the dh ratchet
       } else if (type == OTRNG_CHAIN_RATCHET) {
         skipped_m_enc_key->i = manager->i;
       }
@@ -620,6 +620,29 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
   }
 
   return SUCCESS;
+}
+
+INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
+                                              m_mac_key_p mac_key,
+                                              int ratchet_id, int message_id,
+                                              key_manager_s *manager) {
+  list_element_s *temp_list = manager->skipped_keys;
+  while (temp_list) {
+    skipped_keys_s *skipped_keys = temp_list->data;
+
+    if (skipped_keys->i == ratchet_id) {
+      if (skipped_keys->j == message_id) {
+        memcpy(enc_key, skipped_keys->m_enc_key, ENC_KEY_BYTES);
+        shake_256_kdf1(mac_key, MAC_KEY_BYTES, 0x19, enc_key, ENC_KEY_BYTES);
+        manager->skipped_keys =
+            otrng_list_remove_element(temp_list, manager->skipped_keys);
+        otrng_list_free_full(temp_list);
+        return SUCCESS;
+      }
+    }
+    temp_list = temp_list->next;
+  }
+  return ERROR;
 }
 
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(

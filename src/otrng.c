@@ -2136,23 +2136,8 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       return SUCCESS;
     }
 
-    // TODO: extract me
-    list_element_s *temp_list = otr->keys->skipped_keys;
-    while (temp_list) {
-      skipped_keys_s *skipped_keys = temp_list->data;
-
-      if (skipped_keys->i == msg->ratchet_id) {
-
-        if (skipped_keys->j == msg->message_id) {
-          memcpy(enc_key, skipped_keys->m_enc_key, ENC_KEY_BYTES);
-          shake_256_kdf1(mac_key, MAC_KEY_BYTES, 0x19, enc_key, ENC_KEY_BYTES);
-        }
-      }
-      temp_list = temp_list->next;
-    }
-
-    uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
-    if ((memcmp(enc_key, zero_buff, sizeof(m_enc_key_p)) == 0)) {
+    if (!otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
+                                    msg->message_id, otr->keys)) {
       if (otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->conversation->client->max_stored_msg_keys,
               msg->message_id, msg->previous_chain_n, OTRNG_RECEIVING) == ERROR)
@@ -2476,11 +2461,13 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   // if j == 0
   if (!otrng_key_manager_derive_dh_ratchet_keys(
           otr->keys, otr->conversation->client->max_stored_msg_keys,
-          otr->keys->j, 0, OTRNG_SENDING))
+          otr->keys->j, 0, OTRNG_SENDING)) {
     return ERROR;
+  }
 
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
+
   otrng_key_manager_derive_chain_keys(
       enc_key, mac_key, otr->keys,
       otr->conversation->client->max_stored_msg_keys, 0, OTRNG_SENDING);
@@ -2521,6 +2508,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
     uint8_t *ser_mac_keys =
         otrng_old_mac_keys_serialize(otr->keys->old_mac_keys);
     otr->keys->old_mac_keys = NULL;
+
     if (!serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
                                        ser_mac_keys_len, data_msg)) {
       sodium_memzero(mac_key, sizeof(m_mac_key_p));

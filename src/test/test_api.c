@@ -1232,6 +1232,7 @@ void test_api_new_ratchet_out_of_order(void) {
   result = otrng_receive_message(response_to_alice, to_send_3, bob);
   assert_msg_rec(result, "it's me", response_to_alice);
   otrng_assert(bob->keys->old_mac_keys);
+  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 0);
 
   free_message_and_response(response_to_alice, &to_send_3);
 

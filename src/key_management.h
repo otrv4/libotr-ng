@@ -203,6 +203,20 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(
     key_manager_s *manager, otrng_participant participant);
 
 /**
+ * @brief Get the correct message keys.
+ *
+ * @param [enc_key]     The encryption key.
+ * @param [mac_key]     The mac key.
+ * @param [ratchet_id]  The receiving ratchet id (i).
+ * @param [message_id]  The receiving message id (j).
+ * @param [manager]     The key manager.
+ */
+INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
+                                              m_mac_key_p mac_key,
+                                              int ratchet_id, int message_id,
+                                              key_manager_s *manager);
+
+/**
  * @brief Derive ratchet chain keys.
  *
  * @param [enc_key]     The encryption key.
