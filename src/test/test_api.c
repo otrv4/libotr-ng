@@ -835,8 +835,8 @@ void test_api_same_ratchet_out_of_order(void) {
   string_p to_send_2 = NULL;
   string_p to_send_3 = NULL;
   otrng_err result;
-
   tlv_list_s *tlvs = NULL;
+
   // Alice sends a data message
   result = otrng_prepare_to_send_message(&to_send_1, "hi", &tlvs, 0, alice);
   assert_msg_sent(result, to_send_1);
@@ -922,7 +922,7 @@ void test_api_same_ratchet_out_of_order(void) {
   otrng_free_all(alice, bob);
 }
 
-void test_api_new_ratchet_in_order(void) {
+void test_api_new_sending_ratchet_in_order(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
@@ -942,8 +942,8 @@ void test_api_new_ratchet_in_order(void) {
   string_p to_send_2 = NULL;
   string_p to_send_3 = NULL;
   string_p to_send_4 = NULL;
+  string_p to_send_5 = NULL;
   otrng_err result;
-
   tlv_list_s *tlvs = NULL;
 
   // Alice sends a data message
@@ -1050,6 +1050,31 @@ void test_api_new_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->i, ==, 2);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 1);
+  g_assert_cmpint(alice->keys->pn, ==, 3);
+
+  // Bob sends another data message
+  tlvs = NULL;
+  result = otrng_prepare_to_send_message(&to_send_5, "I'm good", &tlvs, 0, bob);
+  otrng_tlv_list_free(tlvs);
+  assert_msg_sent(result, to_send_5);
+
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+
+  g_assert_cmpint(bob->keys->i, ==, 2);
+  g_assert_cmpint(bob->keys->j, ==, 2);
+  g_assert_cmpint(bob->keys->k, ==, 3);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+
+  // Alice receives the data message
+  response_to_bob = otrng_response_new();
+  result = otrng_receive_message(response_to_bob, to_send_5, alice);
+  assert_msg_rec(result, "I'm good", response_to_bob);
+  g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 2);
+
+  free_message_and_response(response_to_bob, &to_send_4);
+  g_assert_cmpint(alice->keys->i, ==, 2);
+  g_assert_cmpint(alice->keys->j, ==, 0);
+  g_assert_cmpint(alice->keys->k, ==, 2);
   g_assert_cmpint(alice->keys->pn, ==, 3);
 
   otrng_user_state_free_all(alice_client_state->user_state,

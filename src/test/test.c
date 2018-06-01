@@ -282,8 +282,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
   g_test_add_func("/api/same_ratchet_out_of_order/v4",
                   test_api_same_ratchet_out_of_order);
-  g_test_add_func("/api/new_ratchet_in_order/v4",
-                  test_api_new_ratchet_in_order);
+  g_test_add_func("/api/new_sending_ratchet_in_order/v4",
+                  test_api_new_sending_ratchet_in_order);
   g_test_add_func("/api/new_ratchet_out_of_order/v4",
                   test_api_new_ratchet_out_of_order);
   g_test_add_func("/api/conversation_errors_1", test_api_conversation_errors_1);
