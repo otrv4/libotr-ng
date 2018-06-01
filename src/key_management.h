@@ -220,7 +220,7 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
  * @param [action]      Defines if this is the sending or receiving chain.
  */
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
-    key_manager_s *manager, int max_skip, int message_id,
+    key_manager_s *manager, int max_skip, int message_id, int previous_n,
     otrng_participant_action action);
 
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE

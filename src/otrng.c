@@ -921,7 +921,7 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
   if (!cipher)
     return ERROR;
 
-  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, 0, otr->keys->j,
+  if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, 0, otr->keys->j, 0,
                                                 OTRNG_SENDING))
     return ERROR;
 
@@ -1501,7 +1501,7 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
   otrng_ec_point_copy(otr->keys->their_ecdh, auth->ecdh);
 
   if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, 0, auth->message_id,
-                                                OTRNG_RECEIVING))
+                                                0, OTRNG_RECEIVING))
     return ERROR;
 
   m_enc_key_p enc_key;
@@ -2153,7 +2153,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     if ((memcmp(enc_key, zero_buff, sizeof(m_enc_key_p)) == 0)) {
       if (otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->conversation->client->max_stored_msg_keys,
-              msg->message_id, OTRNG_RECEIVING) == ERROR)
+              msg->message_id, msg->previous_chain_n, OTRNG_RECEIVING) == ERROR)
         return ERROR;
 
       otrng_key_manager_derive_chain_keys(
@@ -2475,7 +2475,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   // if j == 0
   if (!otrng_key_manager_derive_dh_ratchet_keys(
           otr->keys, otr->conversation->client->max_stored_msg_keys,
-          otr->keys->j, OTRNG_SENDING))
+          otr->keys->j, 0, OTRNG_SENDING))
     return ERROR;
 
   memset(enc_key, 0, sizeof enc_key);
@@ -2512,6 +2512,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
 
+  data_msg->previous_chain_n = otr->keys->j;
   // Authenticator = KDF_1(0x1C || MKmac || KDF_1(0x1B ||
   // data_message_sections, 64), 64)
   if (otr->keys->j == 0) {

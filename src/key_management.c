@@ -425,7 +425,6 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
 // work
 tstatic otrng_err rotate_keys(key_manager_s *manager,
                               otrng_participant_action action) {
-  manager->k = 0; // TODO: not sure about this
 
   if (action == OTRNG_SENDING) {
     // our_ecdh = generateECDH()
@@ -450,6 +449,7 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
 
     manager->pn = manager->j;
     manager->j = 0;
+    manager->k = 0;
   }
 
   manager->i++;
@@ -459,11 +459,6 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
 
 tstatic otrng_err key_manager_derive_ratchet_keys(
     key_manager_s *manager, otrng_participant_action action) {
-  ratchet_s *ratchet = ratchet_new();
-  if (!ratchet) {
-    return ERROR;
-  }
-
   // root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
   // root_key[i-1], K) root_key[i] = KDF_1(0x15 || root_key[i-1] || K, 64)
 
@@ -471,7 +466,7 @@ tstatic otrng_err key_manager_derive_ratchet_keys(
   hash_init_with_usage(hd, 0x15);
   hash_update(hd, manager->current->root_key, sizeof(root_key_p));
   hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
-  hash_final(hd, ratchet->root_key, sizeof(root_key_p));
+  hash_final(hd, manager->current->root_key, sizeof(root_key_p));
   hash_destroy(hd);
 
   // chain_key_purpose[i][j] = KDF_1(0x16 || root_key[i-1] || K, 64)
@@ -479,17 +474,15 @@ tstatic otrng_err key_manager_derive_ratchet_keys(
     hash_init_with_usage(hd, 0x16);
     hash_update(hd, manager->current->root_key, sizeof(root_key_p));
     hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
-    hash_final(hd, ratchet->chain_s, sizeof(sending_chain_key_p));
+    hash_final(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
     hash_destroy(hd);
   } else if (action == OTRNG_RECEIVING) {
     hash_init_with_usage(hd, 0x16);
     hash_update(hd, manager->current->root_key, sizeof(root_key_p));
     hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
-    hash_final(hd, ratchet->chain_r, sizeof(receiving_chain_key_p));
+    hash_final(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
     hash_destroy(hd);
   }
-  ratchet_free(manager->current);
-  manager->current = ratchet;
 
 #ifdef DEBUG
   printf("\n");
@@ -512,6 +505,7 @@ tstatic void derive_next_chain_key(key_manager_s *manager,
                    manager->current->chain_s, sizeof(sending_chain_key_p));
 
   } else if (action == OTRNG_RECEIVING) {
+
     shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
                    0x17, manager->current->chain_r,
                    sizeof(receiving_chain_key_p));
@@ -578,6 +572,7 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
 
   if (!(memcmp(manager->current->chain_r, zero_buff,
                sizeof(manager->current->chain_r)) == 0)) {
+
     while (manager->k < until) {
       shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
                      manager->current->chain_r, sizeof(receiving_chain_key_p));
@@ -623,6 +618,7 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
     int max_skip, int message_id, otrng_participant_action action) {
+
   if (action == OTRNG_RECEIVING) {
     if (!store_enc_keys(enc_key, manager, max_skip, message_id)) {
       return ERROR;
@@ -646,13 +642,14 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
 }
 
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
-    key_manager_s *manager, int max_skip, int message_id,
+    key_manager_s *manager, int max_skip, int message_id, int previous_n,
     otrng_participant_action action) {
   // Derive new ECDH and DH keys
   m_enc_key_p enc_key;
+
   if (message_id == 0) {
     if (action == OTRNG_RECEIVING) {
-      if (!store_enc_keys(enc_key, manager, max_skip, manager->pn)) {
+      if (!store_enc_keys(enc_key, manager, max_skip, previous_n)) {
         return ERROR;
       }
     }
