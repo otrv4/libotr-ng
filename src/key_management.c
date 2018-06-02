@@ -622,6 +622,8 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
   return SUCCESS;
 }
 
+// MKenc, extra_symm_key = skipped_MKenc[ratchet_id, message_id]
+// MKmac = KDF_1(0x19 || MKenc, 64).
 INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
                                               m_mac_key_p mac_key,
                                               int ratchet_id, int message_id,
@@ -632,7 +634,9 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
 
     if (skipped_keys->i == ratchet_id) {
       if (skipped_keys->j == message_id) {
-        memcpy(enc_key, skipped_keys->m_enc_key, ENC_KEY_BYTES);
+        memcpy(enc_key, skipped_keys->m_enc_key, sizeof(m_enc_key_p));
+        memcpy(manager->extra_symetric_key, skipped_keys->extra_symetric_key,
+               sizeof(extra_symmetric_key_p));
         shake_256_kdf1(mac_key, MAC_KEY_BYTES, 0x19, enc_key, ENC_KEY_BYTES);
         manager->skipped_keys =
             otrng_list_remove_element(temp_list, manager->skipped_keys);
