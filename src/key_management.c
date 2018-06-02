@@ -561,16 +561,30 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 #endif
 }
 
+tstatic void delete_stored_enc_keys(key_manager_s *manager) {
+  list_element_s *el;
+  for (el = manager->skipped_keys; el; el = el->next) {
+    free((skipped_keys_s *)el->data);
+    el->data = NULL;
+  }
+
+  otrng_list_free_full(manager->skipped_keys);
+  manager->skipped_keys = NULL;
+}
+
 tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
                                  int max_skip, int until,
                                  otrng_ratchet_type type) {
-  uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
+  if (manager->i == 100) { // TODO: should we make this optional to the client?
+    delete_stored_enc_keys(manager);
+  }
 
   if ((manager->k + max_skip) < until) {
     // TODO: should we send an error message?
     return ERROR;
   }
 
+  uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
   if (!(memcmp(manager->current->chain_r, zero_buff,
                sizeof(manager->current->chain_r)) == 0)) {
 
