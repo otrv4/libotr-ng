@@ -79,7 +79,7 @@ otrng_key_manager_init(key_manager_s *manager) // make like ratchet_new?
 
   memset(manager->ssid, 0, sizeof(manager->ssid));
   manager->ssid_half = 0;
-  memset(manager->extra_symetric_key, 0, sizeof(manager->extra_symetric_key));
+  memset(manager->extra_symmetric_key, 0, sizeof(manager->extra_symmetric_key));
   memset(manager->tmp_key, 0, sizeof(manager->tmp_key));
 
   manager->skipped_keys = NULL;
@@ -111,8 +111,8 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   sodium_memzero(manager->shared_secret, sizeof(manager->shared_secret));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
   manager->ssid_half = 0;
-  sodium_memzero(manager->extra_symetric_key,
-                 sizeof(manager->extra_symetric_key));
+  sodium_memzero(manager->extra_symmetric_key,
+                 sizeof(manager->extra_symmetric_key));
   // TODO: once dake is finished should be wiped out
   sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 
@@ -550,14 +550,14 @@ tstatic void calculate_extra_key(key_manager_s *manager,
   hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
   hash_destroy(hd);
 
-  memcpy(manager->extra_symetric_key, extra_key_buff,
-         sizeof(manager->extra_symetric_key));
+  memcpy(manager->extra_symmetric_key, extra_key_buff,
+         sizeof(manager->extra_symmetric_key));
 
 #ifdef DEBUG
   printf("\n");
   printf("EXTRA KEY = ");
-  otrng_memdump(manager->extra_symetric_key,
-                sizeof(manager->extra_symetric_key));
+  otrng_memdump(manager->extra_symmetric_key,
+                sizeof(manager->extra_symmetric_key));
 #endif
 }
 
@@ -607,7 +607,7 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
 
       skipped_m_enc_key->j = manager->k;
 
-      memcpy(skipped_m_enc_key->extra_symetric_key, extra_key,
+      memcpy(skipped_m_enc_key->extra_symmetric_key, extra_key,
              EXTRA_SYMMETRIC_KEY_BYTES);
       memcpy(skipped_m_enc_key->m_enc_key, enc_key, ENC_KEY_BYTES);
 
@@ -635,7 +635,7 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
     if (skipped_keys->i == ratchet_id) {
       if (skipped_keys->j == message_id) {
         memcpy(enc_key, skipped_keys->m_enc_key, sizeof(m_enc_key_p));
-        memcpy(manager->extra_symetric_key, skipped_keys->extra_symetric_key,
+        memcpy(manager->extra_symmetric_key, skipped_keys->extra_symmetric_key,
                sizeof(extra_symmetric_key_p));
         shake_256_kdf1(mac_key, MAC_KEY_BYTES, 0x19, enc_key, ENC_KEY_BYTES);
         manager->skipped_keys =

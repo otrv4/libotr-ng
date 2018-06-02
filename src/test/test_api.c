@@ -1903,7 +1903,7 @@ void test_api_extra_sym_key(void) {
   uint8_t usedata[2] = {0x02, 0x04};
   uint16_t usedatalen = 2;
   result = otrng_send_symkey_message(&to_send, use, usedata, usedatalen,
-                                     bob->keys->extra_symetric_key, bob);
+                                     bob->keys->extra_symmetric_key, bob);
   assert_msg_sent(result, to_send);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);

@@ -66,7 +66,7 @@ typedef struct ratchet_s {
 typedef struct skipped_keys_s {
   int i; // Counter of the ratchet
   int j; // Counter of the messages
-  extra_symmetric_key_p extra_symetric_key;
+  extra_symmetric_key_p extra_symmetric_key;
   m_enc_key_p m_enc_key;
 } skipped_keys_s;
 
@@ -100,7 +100,7 @@ typedef struct key_manager_s {
 
   uint8_t ssid[SSID_BYTES];
   session_id_half ssid_half;
-  extra_symmetric_key_p extra_symetric_key;
+  extra_symmetric_key_p extra_symmetric_key;
   uint8_t tmp_key[HASH_BYTES];
 
   list_element_s *skipped_keys;

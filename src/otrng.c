@@ -2067,13 +2067,13 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
   }
 
   if (tlv->type == OTRNG_TLV_SYM_KEY && tlv->len >= 4) {
-    if (otr->keys->extra_symetric_key > 0) {
+    if (otr->keys->extra_symmetric_key > 0) {
       uint32_t use = extract_word(tlv->data);
 
       received_symkey_cb_v4(otr->conversation, use, tlv->data + 4, tlv->len - 4,
-                            otr->keys->extra_symetric_key);
-      sodium_memzero(otr->keys->extra_symetric_key,
-                     sizeof(otr->keys->extra_symetric_key));
+                            otr->keys->extra_symmetric_key);
+      sodium_memzero(otr->keys->extra_symmetric_key,
+                     sizeof(otr->keys->extra_symmetric_key));
     }
     return NULL;
   }
@@ -2725,7 +2725,7 @@ tstatic otrng_err otrng_send_symkey_message_v4(string_p *to_send,
     if (usedatalen > 0)
       memmove(tlv_data + 4, usedata, usedatalen);
 
-    memmove(extra_key, otr->keys->extra_symetric_key,
+    memmove(extra_key, otr->keys->extra_symmetric_key,
             EXTRA_SYMMETRIC_KEY_BYTES);
 
     tlv_list_s *tlvs = otrng_tlv_list_one(
