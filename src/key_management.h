@@ -242,7 +242,16 @@ INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, int max_skip, int message_id, int previous_n,
     otrng_participant_action action);
 
+/**
+ * @brief Store old mac keys to reveal later.
+ *
+ * @param [manager]   The key manager.
+ * @param [mac_key]   The mac key to store.
+ */
+INTERNAL otrng_err otrng_store_old_mac_keys(key_manager_s *manager,
+                                            m_mac_key_p mac_key);
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
+
 /**
  * @brief Calculate the brace key.
  *

@@ -2199,16 +2199,11 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       otrng_tlv_list_free(reply_tlvs);
     }
 
-    uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
-    if (!to_store_mac) {
+    if (!otrng_store_old_mac_keys(otr->keys, mac_key)) {
       response->to_display = NULL;
       otrng_data_message_free(msg);
-      return ERROR;
+      continue;
     }
-
-    memcpy(to_store_mac, mac_key, MAC_KEY_BYTES);
-    otr->keys->old_mac_keys =
-        otrng_list_add(to_store_mac, otr->keys->old_mac_keys);
 
     sodium_memzero(mac_key, sizeof(m_mac_key_p));
     otrng_data_message_free(msg);

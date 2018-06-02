@@ -18,8 +18,9 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "shake.h"
 #include <string.h>
+
+#include "shake.h"
 
 void hash_init_with_dom(goldilocks_shake256_ctx_p hash) {
   hash_init(hash);

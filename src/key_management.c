@@ -19,7 +19,7 @@
  */
 
 #include <sodium.h>
-#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #define OTRNG_KEY_MANAGEMENT_PRIVATE
@@ -687,6 +687,19 @@ INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
     }
     return rotate_keys(manager, action);
   }
+
+  return SUCCESS;
+}
+
+INTERNAL otrng_err otrng_store_old_mac_keys(key_manager_s *manager,
+                                            m_mac_key_p mac_key) {
+  uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
+  if (!to_store_mac) {
+    return ERROR;
+  }
+
+  memcpy(to_store_mac, mac_key, sizeof(m_mac_key_p));
+  manager->old_mac_keys = otrng_list_add(to_store_mac, manager->old_mac_keys);
 
   return SUCCESS;
 }

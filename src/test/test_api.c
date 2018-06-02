@@ -1163,12 +1163,11 @@ void test_api_new_ratchet_out_of_order(void) {
   response_to_alice = otrng_response_new();
   result = otrng_receive_message(response_to_alice, to_send_2, bob);
   assert_msg_rec(result, "how are you?", response_to_alice);
-  otrng_assert(bob->keys->old_mac_keys);
-  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 0);
 
   free_message_and_response(response_to_alice, &to_send_2);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 0);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 2);
@@ -1231,12 +1230,11 @@ void test_api_new_ratchet_out_of_order(void) {
   response_to_alice = otrng_response_new();
   result = otrng_receive_message(response_to_alice, to_send_3, bob);
   assert_msg_rec(result, "it's me", response_to_alice);
-  otrng_assert(bob->keys->old_mac_keys);
-  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 0);
 
   free_message_and_response(response_to_alice, &to_send_3);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 0);
   g_assert_cmpint(
       bob->keys->i, ==,
       3); // TODO: this is odd but the ratchet has indeed move forward
