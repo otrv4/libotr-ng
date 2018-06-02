@@ -26,8 +26,9 @@
 
 tstatic list_element_s *list_new() {
   list_element_s *n = malloc(sizeof(list_element_s));
-  if (!n)
-    return n;
+  if (!n) {
+    return NULL;
+  }
 
   n->data = NULL;
   n->next = NULL;
@@ -43,8 +44,9 @@ INTERNAL void otrng_list_foreach(list_element_s *head,
   while (current) {
     list_element_s *next = current->next;
 
-    if (fn)
+    if (fn) {
       fn(current, context);
+    }
 
     current = next;
   }
@@ -53,8 +55,9 @@ INTERNAL void otrng_list_foreach(list_element_s *head,
 tstatic void call_and_free_node(list_element_s *node, void *context) {
   void (*fn)(void *data) = context;
 
-  if (fn)
+  if (fn) {
     fn(node->data);
+  }
 
   node->data = NULL;
   free(node);
@@ -74,14 +77,16 @@ INTERNAL void otrng_list_free_nodes(list_element_s *head) {
 
 INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head) {
   list_element_s *n = list_new();
-  if (!n)
+  if (!n) {
     return NULL;
+  }
 
   n->data = data;
 
   list_element_s *last = otrng_list_get_last(head);
-  if (!last)
+  if (!last) {
     return n;
+  }
 
   last->next = n;
   return head;
@@ -123,12 +128,14 @@ INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data, int pos,
 }
 
 INTERNAL list_element_s *otrng_list_get_last(list_element_s *head) {
-  if (!head)
+  if (!head) {
     return NULL;
+  }
 
   list_element_s *cursor = head;
-  while (cursor->next)
+  while (cursor->next) {
     cursor = cursor->next;
+  }
 
   return cursor;
 }
