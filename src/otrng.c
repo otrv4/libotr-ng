@@ -2078,6 +2078,8 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
     return NULL;
   }
 
+  sodium_memzero(otr->keys->extra_symmetric_key, sizeof(extra_symmetric_key_p));
+
   tlv_s *out = otrng_process_smp(OTRNG_SMPEVENT_NONE, otr->smp, tlv);
   handle_smp_event_cb_v4(OTRNG_SMPEVENT_NONE, otr->smp->progress,
                          otr->smp->msg1 ? otr->smp->msg1->question : NULL,
