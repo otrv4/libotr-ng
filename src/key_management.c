@@ -580,8 +580,8 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
   }
 
   if ((manager->k + max_skip) < until) {
-    // TODO: should we send an error message?
-    return ERROR;
+    return SUCCESS; // This should not fail, maybe we should send a different
+                    // error code here
   }
 
   uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
