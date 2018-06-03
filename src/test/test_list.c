@@ -55,20 +55,20 @@ void test_otrng_list_insert_at_n() {
   list = otrng_list_insert_at_position_n(&three, 2, list);
   g_assert_cmpint(one, ==, *((int *)list->data));
   otrng_assert(list->next);
-  g_assert_cmpint(three, ==, *((int *)list->next->data));
+  g_assert_cmpint(two, ==, *((int *)list->next->data));
   otrng_assert(list->next->next);
-  g_assert_cmpint(two, ==, *((int *)list->next->next->data));
+  g_assert_cmpint(three, ==, *((int *)list->next->next->data));
 
   otrng_list_free_nodes(list);
 
   list_element_s *list_2 = list_new();
 
   int four = 4, five = 5, six = 6;
-  list_2 = otrng_list_insert_at_position_n(&four, 1, list_2);
+  list_2 = otrng_list_insert_at_position_n(&four, 0, list_2);
   g_assert_cmpint(four, ==, *((int *)list_2->data));
-  list_2 = otrng_list_insert_at_position_n(&six, 3, list_2);
+  list_2 = otrng_list_insert_at_position_n(&six, 2, list_2);
   g_assert_cmpint(six, ==, *((int *)list_2->next->next->data));
-  list_2 = otrng_list_insert_at_position_n(&five, 2, list_2);
+  list_2 = otrng_list_insert_at_position_n(&five, 1, list_2);
   g_assert_cmpint(five, ==, *((int *)list_2->next->data));
 
   otrng_list_free_nodes(list_2);
