@@ -834,6 +834,7 @@ void test_api_same_ratchet_out_of_order(void) {
   string_p to_send_1 = NULL;
   string_p to_send_2 = NULL;
   string_p to_send_3 = NULL;
+  string_p to_send_4 = NULL;
   otrng_err result;
   tlv_list_s *tlvs = NULL;
 
@@ -875,6 +876,18 @@ void test_api_same_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
+  tlvs = NULL;
+  result = otrng_prepare_to_send_message(&to_send_4, "ok?", &tlvs, 0, alice);
+  assert_msg_sent(result, to_send_4);
+  otrng_assert(tlvs);
+  otrng_assert(!alice->keys->old_mac_keys);
+  otrng_tlv_list_free(tlvs);
+
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 4);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
+
   // Bob receives a data message
   response_to_alice = otrng_response_new();
   result = otrng_receive_message(response_to_alice, to_send_1, bob);
@@ -890,16 +903,30 @@ void test_api_same_ratchet_out_of_order(void) {
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   response_to_alice = otrng_response_new();
+  result = otrng_receive_message(response_to_alice, to_send_4, bob);
+  assert_msg_rec(result, "ok?", response_to_alice);
+  otrng_assert(bob->keys->old_mac_keys);
+
+  free_message_and_response(response_to_alice, &to_send_4);
+
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+  g_assert_cmpint(bob->keys->i, ==, 1);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 4);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 2);
+
+  response_to_alice = otrng_response_new();
   result = otrng_receive_message(response_to_alice, to_send_3, bob);
   assert_msg_rec(result, "it's me", response_to_alice);
   otrng_assert(bob->keys->old_mac_keys);
 
   free_message_and_response(response_to_alice, &to_send_3);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 3);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 3);
+  g_assert_cmpint(bob->keys->k, ==, 4);
   g_assert_cmpint(bob->keys->pn, ==, 0);
   g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 1);
 
@@ -910,10 +937,10 @@ void test_api_same_ratchet_out_of_order(void) {
 
   free_message_and_response(response_to_alice, &to_send_2);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 3);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 4);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 3);
+  g_assert_cmpint(bob->keys->k, ==, 4);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   otrng_user_state_free_all(alice_client_state->user_state,
