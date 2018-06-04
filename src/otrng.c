@@ -190,15 +190,29 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
   *dst = 0;
 }
 
+tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
+                                                     list_element_s *l) {
+  while (l) {
+    const otrng_stored_prekeys_s *s = l->data;
+    if (!s)
+      continue;
+
+    if (s->id == id)
+      return l;
+
+    l = l->next;
+  }
+
+  return NULL;
+}
+
 tstatic const otrng_stored_prekeys_s *get_my_prekeys_by_id(uint32_t id,
                                                            otrng_s *otr) {
-  if (!otr->our_prekeys)
+  list_element_s *node = get_stored_prekey_node_by_id(id, otr->our_prekeys);
+  if (!node)
     return NULL;
 
-  if (otr->our_prekeys->id != id)
-    return NULL;
-
-  return otr->our_prekeys;
+  return node->data;
 }
 
 tstatic void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
@@ -214,13 +228,6 @@ tstatic void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
 tstatic void store_my_prekey_message(const dake_prekey_message_p msg,
                                      const ecdh_keypair_p ecdh_pair,
                                      const dh_keypair_p dh_pair, otrng_s *otr) {
-  // TODO: store more than one.
-
-  // TODO: For now, stores only one and at the protocol state
-  if (otr->our_prekeys) {
-    otrng_stored_prekeys_free(otr->our_prekeys);
-    otr->our_prekeys = NULL;
-  }
 
   otrng_stored_prekeys_s *s = malloc(sizeof(otrng_stored_prekeys_s));
   s->id = msg->id;
@@ -231,18 +238,20 @@ tstatic void store_my_prekey_message(const dake_prekey_message_p msg,
   s->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
   s->our_dh->pub = otrng_dh_mpi_copy(dh_pair->pub);
 
-  otr->our_prekeys = s;
+  otr->our_prekeys = otrng_list_add(s, otr->our_prekeys);
+}
+
+static inline void stored_prekeys_free_from_list(void *p) {
+  otrng_stored_prekeys_free((otrng_stored_prekeys_s *)p);
 }
 
 tstatic void delete_my_prekey_message_by_id(uint32_t id, otrng_s *otr) {
-  if (!otr->our_prekeys)
+  list_element_s *node = get_stored_prekey_node_by_id(id, otr->our_prekeys);
+  if (!node)
     return;
 
-  if (otr->our_prekeys->id != id)
-    return;
-
-  otrng_stored_prekeys_free(otr->our_prekeys);
-  otr->our_prekeys = NULL;
+  otr->our_prekeys = otrng_list_remove_element(node, otr->our_prekeys);
+  otrng_list_free(node, stored_prekeys_free_from_list);
 }
 
 tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
@@ -361,7 +370,7 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   free(otr->keys);
   otr->keys = NULL;
 
-  otrng_stored_prekeys_free(otr->our_prekeys);
+  otrng_list_free(otr->our_prekeys, stored_prekeys_free_from_list);
   otr->our_prekeys = NULL;
 
   otrng_client_profile_free(otr->their_client_profile);

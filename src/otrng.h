@@ -112,7 +112,7 @@ struct otrng_s {
   otrng_state state;
   int supported_versions;
 
-  otrng_stored_prekeys_s *our_prekeys;
+  list_element_s *our_prekeys; // otrng_stored_prekeys_s
   uint32_t their_prekeys_id;
 
   uint32_t our_instance_tag;
