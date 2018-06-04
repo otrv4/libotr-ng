@@ -1263,22 +1263,6 @@ tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
   return SUCCESS;
 }
 
-/*
- * Apparently, the API for handling a prekey message is:
- *
- * 1) Talk to the server and get ensembles for a identity.
- * 2) Decide what to do with multiple ensembles (and multiple prekey messages
- *    per ensemble). This decision is probably to be made by src/client.c
- * 3) Set the protocol state (otrng_s*) to know it is talking to one particular
- *    (Client Profile, Prekey Profile) since there's no way this function can
- *    traceback which profiles are associated with this received prekey
- *    message. This is done by setting otr->their_client_profile and
- *    otr->their_prekey_profile.
- * 4) After setting up the protocol state, src/client.c will invoke
- *    otrng_receive_message() to process the encoded "?OTR:..." prekey message.
- *
- * I am not sure I like this.
- */
 tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
                                           otrng_s *otr) {
   if (!otr->their_client_profile)
