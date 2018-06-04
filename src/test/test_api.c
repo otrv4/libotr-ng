@@ -142,6 +142,10 @@ void test_api_interactive_conversation(void) {
     g_assert_cmpint(alice->keys->k, ==, 0);
     g_assert_cmpint(alice->keys->pn, ==, 0);
 
+    // Alice should not delete priv keys
+    otrng_assert_not_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+    otrng_assert(alice->keys->our_dh->priv);
+
     // Bob receives a data message
     response_to_alice = otrng_response_new();
     result = otrng_receive_message(response_to_alice, to_send, bob);
@@ -155,6 +159,10 @@ void test_api_interactive_conversation(void) {
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
     g_assert_cmpint(bob->keys->pn, ==, 0);
+
+    // Bob's priv key should be deleted
+    otrng_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+    otrng_assert(!bob->keys->our_dh->priv);
   }
 
   // Next message Bob sends is a new DH ratchet
@@ -172,6 +180,10 @@ void test_api_interactive_conversation(void) {
     g_assert_cmpint(bob->keys->k, ==, 3);
     g_assert_cmpint(bob->keys->pn, ==, 0);
 
+    // Bob should have a new ECDH priv key but no DH
+    otrng_assert_not_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+    otrng_assert(!bob->keys->our_dh->priv);
+
     // Alice receives a data message
     response_to_bob = otrng_response_new();
     otrng_err result = otrng_receive_message(response_to_bob, to_send, alice);
@@ -179,10 +191,15 @@ void test_api_interactive_conversation(void) {
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
     free_message_and_response(response_to_bob, &to_send);
+
     g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id);
     g_assert_cmpint(alice->keys->pn, ==, 3);
+
+    // Alice should delete the ECDH priv key but not the DH priv key
+    otrng_assert_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+    otrng_assert(alice->keys->our_dh->priv);
   }
 
   const size_t secret_len = 2;
@@ -1942,109 +1959,6 @@ void test_api_extra_sym_key(void) {
   otrng_free_all(alice, bob);
 
   otrng_tlv_list_free(tlvs);
-}
-
-void test_priv_keys_destroyed() {
-
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
-
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
-
-  // DAKE has finished
-  do_dake_fixture(alice, bob);
-
-  otrng_response_s *response_to_bob = NULL;
-  otrng_response_s *response_to_alice = NULL;
-  string_p to_send = NULL;
-  otrng_err result;
-
-  // Alice sends a data message
-  result = otrng_prepare_to_send_message(&to_send, "hi", NULL, 0, alice);
-  assert_msg_sent(result, to_send);
-
-  g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 1);
-  g_assert_cmpint(alice->keys->k, ==, 0);
-
-  // Alice should not delete priv keys
-  otrng_assert_not_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
-  otrng_assert(alice->keys->our_dh->priv);
-
-  // Bob receives a data message
-  response_to_alice = otrng_response_new();
-  result = otrng_receive_message(response_to_alice, to_send, bob);
-  assert_msg_rec(result, "hi", response_to_alice);
-
-  free_message_and_response(response_to_alice, &to_send);
-
-  g_assert_cmpint(bob->keys->i, ==, 1);
-  g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 1);
-
-  // Bob's priv key should be deleted
-  otrng_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
-  otrng_assert(!bob->keys->our_dh->priv);
-
-  // Bob sends a data message
-  result = otrng_prepare_to_send_message(&to_send, "hello", NULL, 0, bob);
-  assert_msg_sent(result, to_send);
-
-  // Bob should have a new ECDH priv key but no DH
-  otrng_assert_not_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
-  otrng_assert(!bob->keys->our_dh->priv);
-
-  g_assert_cmpint(bob->keys->i, ==, 2);
-  g_assert_cmpint(bob->keys->j, ==, 1);
-  g_assert_cmpint(bob->keys->k, ==, 1);
-
-  // Alice receives a data message
-  response_to_bob = otrng_response_new();
-  result = otrng_receive_message(response_to_bob, to_send, alice);
-  assert_msg_rec(result, "hello", response_to_bob);
-
-  free_message_and_response(response_to_bob, &to_send);
-
-  // Alice should delete the ECDH priv key but not the DH priv key
-  otrng_assert_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
-  otrng_assert(alice->keys->our_dh->priv);
-
-  g_assert_cmpint(alice->keys->i, ==, 2);
-  g_assert_cmpint(alice->keys->j, ==, 0);
-  g_assert_cmpint(alice->keys->k, ==, 1);
-
-  // Alice sends a data message
-  result = otrng_prepare_to_send_message(&to_send, "hi", NULL, 0, alice);
-  assert_msg_sent(result, to_send);
-
-  // Alice should have a new priv keys
-  otrng_assert_not_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
-  otrng_assert(alice->keys->our_dh->priv);
-
-  g_assert_cmpint(alice->keys->i, ==, 3);
-  g_assert_cmpint(alice->keys->j, ==, 1);
-  g_assert_cmpint(alice->keys->k, ==, 1);
-
-  // Bob receives a data message
-  response_to_alice = otrng_response_new();
-  result = otrng_receive_message(response_to_alice, to_send, bob);
-  assert_msg_rec(result, "hi", response_to_alice);
-
-  free_message_and_response(response_to_alice, &to_send);
-
-  // Bob should delete the priv keys
-  otrng_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
-  otrng_assert(!bob->keys->our_dh->priv);
-
-  g_assert_cmpint(bob->keys->i, ==, 3);
-  g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 1);
-
-  otrng_user_state_free_all(alice_client_state->user_state,
-                            bob_client_state->user_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
-  otrng_free_all(alice, bob);
 }
 
 void test_unreadable_flag() {
