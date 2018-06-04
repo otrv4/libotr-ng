@@ -122,6 +122,20 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *);
 
 INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id);
 
+INTERNAL const client_profile_s *
+otrng_client_state_get_client_profile_by_id(uint32_t id,
+                                            otrng_client_state_s *state);
+
+INTERNAL const client_profile_s *
+otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state);
+
+INTERNAL const otrng_prekey_profile_s *
+otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state);
+
+INTERNAL const otrng_prekey_profile_s *
+otrng_client_state_get_prekey_profile_by_id(uint32_t id,
+                                            otrng_client_state_s *state);
+
 #ifdef OTRNG_CLIENT_STATE_PRIVATE
 
 tstatic heartbeat_s *set_heartbeat(int wait);

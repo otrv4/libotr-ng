@@ -351,3 +351,62 @@ API int otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
 
   return otrl_instag_read_FILEp(state->user_state, instag);
 }
+
+INTERNAL const client_profile_s *
+otrng_client_state_get_client_profile_by_id(uint32_t id,
+                                            otrng_client_state_s *state) {
+  const client_profile_s *ret = otrng_client_state_get_client_profile(state);
+
+  if (ret && ret->id == id)
+    return ret;
+
+  return NULL;
+}
+
+INTERNAL const client_profile_s *
+otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state) {
+  const client_profile_s *ret = otrng_client_state_get_client_profile(state);
+  if (ret)
+    return ret;
+
+  // TODO: invoke callback to generate profile if it is NULL, instead of doing
+  // it here.
+  // TODO: Versions should be configurable
+  // TODO: should this ID be random? It should probably be unique for us, so
+  // we need to store this in client state (?)
+  state->client_profile =
+      otrng_client_profile_build(0x101, "34", state->keypair);
+
+  return state->client_profile;
+}
+
+INTERNAL const otrng_prekey_profile_s *
+otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
+  const otrng_prekey_profile_s *ret =
+      otrng_client_state_get_prekey_profile(state);
+  if (ret)
+    return ret;
+
+  // TODO: invoke callback to generate profile if it is NULL, instead of doing
+  // it here.
+  state->prekey_profile =
+      otrng_prekey_profile_build(state->keypair, state->shared_prekey_pair);
+
+  // TODO: should this ID be random? It should probably be unique for us, so
+  // we need to store this in client state (?)
+  state->prekey_profile->id = 0x201;
+
+  return state->prekey_profile;
+}
+
+INTERNAL const otrng_prekey_profile_s *
+otrng_client_state_get_prekey_profile_by_id(uint32_t id,
+                                            otrng_client_state_s *state) {
+  const otrng_prekey_profile_s *ret = NULL;
+  ret = otrng_client_state_get_prekey_profile(state);
+
+  if (ret && ret->id == id)
+    return ret;
+
+  return NULL;
+}

@@ -255,69 +255,28 @@ tstatic void delete_my_prekey_message_by_id(uint32_t id, otrng_s *otr) {
 }
 
 tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
-  otrng_client_state_s *state = otr->conversation->client;
-  const otrng_prekey_profile_s *ret =
-      otrng_client_state_get_prekey_profile(state);
-  if (ret)
-    return ret;
-
   maybe_create_keys(otr->conversation);
-
-  // TODO: invoke callback to generate profile if it is NULL, instead of doing
-  // it here.
-  state->prekey_profile =
-      otrng_prekey_profile_build(state->keypair, state->shared_prekey_pair);
-
-  // TODO: should this ID be random? It should probably be unique for us, so
-  // we need to store this in client state (?)
-  state->prekey_profile->id = 0x201;
-
-  return state->prekey_profile;
+  otrng_client_state_s *state = otr->conversation->client;
+  return otrng_client_state_get_or_create_prekey_profile(state);
 }
 
-tstatic const otrng_prekey_profile_s *
+static inline const otrng_prekey_profile_s *
 get_my_prekey_profile_by_id(uint32_t id, otrng_s *otr) {
   otrng_client_state_s *state = otr->conversation->client;
-  const otrng_prekey_profile_s *ret =
-      otrng_client_state_get_prekey_profile(state);
-
-  if (ret && ret->id == id)
-    return ret;
-
-  return NULL;
+  return otrng_client_state_get_prekey_profile_by_id(id, state);
 }
 
 tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
-  otrng_client_state_s *state = otr->conversation->client;
-  const client_profile_s *ret = otrng_client_state_get_client_profile(state);
-  if (ret)
-    return ret;
-
   maybe_create_keys(otr->conversation);
-
-  // TODO: invoke callback to generate profile if it is NULL, instead of doing
-  // it here.
-  // TODO: Versions should be configurable
-  char versions[3] = {0};
-  allowed_versions(versions, otr);
-
-  // TODO: should this ID be random? It should probably be unique for us, so
-  // we need to store this in client state (?)
-  state->client_profile =
-      otrng_client_profile_build(0x101, versions, state->keypair);
-
-  return state->client_profile;
+  otrng_client_state_s *state = otr->conversation->client;
+  return otrng_client_state_get_or_create_client_profile(state);
 }
 
-tstatic const client_profile_s *get_my_client_profile_by_id(uint32_t id,
-                                                            otrng_s *otr) {
+static inline const client_profile_s *
+get_my_client_profile_by_id(uint32_t id, otrng_s *otr) {
+  maybe_create_keys(otr->conversation);
   otrng_client_state_s *state = otr->conversation->client;
-  const client_profile_s *ret = otrng_client_state_get_client_profile(state);
-
-  if (ret && ret->id == id)
-    return ret;
-
-  return NULL;
+  return otrng_client_state_get_client_profile_by_id(id, state);
 }
 
 INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
