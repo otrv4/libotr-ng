@@ -2674,9 +2674,18 @@ tstatic otrng_err otrng_close_v4(string_p *to_send, otrng_s *otr) {
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES)
     return SUCCESS;
 
-  tlv_list_s *disconnected = otrng_tlv_list_one(otrng_tlv_disconnected_new());
-  if (!disconnected)
+  size_t serlen = otrng_list_len(otr->keys->skipped_keys) * MAC_KEY_BYTES;
+  uint8_t *ser_mac_keys = otrng_reveal_mac_keys_on_tlv(otr->keys);
+  otr->keys->skipped_keys = NULL;
+
+  tlv_list_s *disconnected = otrng_tlv_list_one(
+      otrng_tlv_new(OTRNG_TLV_DISCONNECTED, serlen, ser_mac_keys));
+  if (!disconnected) {
+    free(ser_mac_keys);
     return ERROR;
+  }
+
+  free(ser_mac_keys);
 
   otrng_err result = otrng_prepare_to_send_message(
       to_send, "", &disconnected, MSGFLAGS_IGNORE_UNREADABLE, otr);

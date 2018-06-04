@@ -654,6 +654,7 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
         manager->skipped_keys =
             otrng_list_remove_element(temp_list, manager->skipped_keys);
         otrng_list_free_full(temp_list);
+
         return SUCCESS;
       }
     }
@@ -719,4 +720,38 @@ INTERNAL otrng_err otrng_store_old_mac_keys(key_manager_s *manager,
   manager->old_mac_keys = otrng_list_add(to_store_mac, manager->old_mac_keys);
 
   return SUCCESS;
+}
+
+INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
+  size_t num_stored_keys = otrng_list_len(manager->skipped_keys);
+  size_t serlen = num_stored_keys * MAC_KEY_BYTES;
+  uint8_t *ser_mac_keys;
+
+  if (serlen != 0) {
+    ser_mac_keys = malloc(serlen);
+    if (!ser_mac_keys)
+      return NULL;
+
+    m_mac_key_p mac_key;
+    m_enc_key_p enc_key;
+    memset(enc_key, 0, sizeof enc_key);
+    memset(mac_key, 0, sizeof mac_key);
+
+    for (int i = 0; i < num_stored_keys; i++) {
+      list_element_s *last = otrng_list_get_last(manager->skipped_keys);
+      skipped_keys_s *skipped_keys = last->data;
+      memcpy(enc_key, skipped_keys->m_enc_key, sizeof(m_enc_key_p));
+      shake_256_kdf1(mac_key, sizeof(m_mac_key_p), 0x19, enc_key,
+                     sizeof(m_enc_key_p));
+      memcpy(ser_mac_keys + i * MAC_KEY_BYTES, mac_key, MAC_KEY_BYTES);
+      manager->skipped_keys =
+          otrng_list_remove_element(last, manager->skipped_keys);
+      otrng_list_free_full(last);
+    }
+    otrng_list_free_nodes(manager->skipped_keys);
+
+    return ser_mac_keys;
+  }
+
+  return NULL;
 }
