@@ -29,8 +29,16 @@
 #include "client_callbacks.h"
 #include "client_profile.h"
 #include "keys.h"
+#include "list.h"
 #include "prekey_profile.h"
 #include "shared.h"
+
+typedef struct {
+  uint32_t id;
+  uint32_t sender_instance_tag;
+  ecdh_keypair_p our_ecdh;
+  dh_keypair_p our_dh;
+} otrng_stored_prekeys_s, otrng_stored_prekeys_p[1];
 
 typedef struct heartbeat_s {
   int time;
@@ -58,6 +66,7 @@ typedef struct otrng_client_state_s {
   // TODO: One or many?
   client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
+  list_element_s *our_prekeys; // otrng_stored_prekeys_s
 
   otrng_shared_prekey_pair_s *shared_prekey_pair; // TODO: is this something the
                                                   // client will generate? The
@@ -71,6 +80,31 @@ typedef struct otrng_client_state_s {
   // otrng_instag_s *instag; // TODO: Store the instance tag here rather than
   // use v3 User State as a store for instance tags
 } otrng_client_state_s, otrng_client_state_p[1];
+
+static inline void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
+  if (!s)
+    return;
+
+  otrng_ecdh_keypair_destroy(s->our_ecdh);
+  otrng_dh_keypair_destroy(s->our_dh);
+
+  free(s);
+}
+
+static inline void stored_prekeys_free_from_list(void *p) {
+  otrng_stored_prekeys_free((otrng_stored_prekeys_s *)p);
+}
+
+INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
+                                      const ecdh_keypair_p ecdh_pair,
+                                      const dh_keypair_p dh_pair,
+                                      otrng_client_state_s *state);
+
+INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
+                                             otrng_client_state_s *state);
+
+INTERNAL const otrng_stored_prekeys_s *
+get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state);
 
 API int otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
                                                    FILE *instag);

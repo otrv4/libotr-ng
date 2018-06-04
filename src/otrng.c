@@ -190,70 +190,6 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
   *dst = 0;
 }
 
-tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
-                                                     list_element_s *l) {
-  while (l) {
-    const otrng_stored_prekeys_s *s = l->data;
-    if (!s)
-      continue;
-
-    if (s->id == id)
-      return l;
-
-    l = l->next;
-  }
-
-  return NULL;
-}
-
-tstatic const otrng_stored_prekeys_s *get_my_prekeys_by_id(uint32_t id,
-                                                           otrng_s *otr) {
-  list_element_s *node = get_stored_prekey_node_by_id(id, otr->our_prekeys);
-  if (!node)
-    return NULL;
-
-  return node->data;
-}
-
-tstatic void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
-  if (!s)
-    return;
-
-  otrng_ecdh_keypair_destroy(s->our_ecdh);
-  otrng_dh_keypair_destroy(s->our_dh);
-
-  free(s);
-}
-
-tstatic void store_my_prekey_message(const dake_prekey_message_p msg,
-                                     const ecdh_keypair_p ecdh_pair,
-                                     const dh_keypair_p dh_pair, otrng_s *otr) {
-
-  otrng_stored_prekeys_s *s = malloc(sizeof(otrng_stored_prekeys_s));
-  s->id = msg->id;
-  s->sender_instance_tag = msg->sender_instance_tag;
-
-  otrng_ec_scalar_copy(s->our_ecdh->priv, ecdh_pair->priv);
-  otrng_ec_point_copy(s->our_ecdh->pub, ecdh_pair->pub);
-  s->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
-  s->our_dh->pub = otrng_dh_mpi_copy(dh_pair->pub);
-
-  otr->our_prekeys = otrng_list_add(s, otr->our_prekeys);
-}
-
-static inline void stored_prekeys_free_from_list(void *p) {
-  otrng_stored_prekeys_free((otrng_stored_prekeys_s *)p);
-}
-
-tstatic void delete_my_prekey_message_by_id(uint32_t id, otrng_s *otr) {
-  list_element_s *node = get_stored_prekey_node_by_id(id, otr->our_prekeys);
-  if (!node)
-    return;
-
-  otr->our_prekeys = otrng_list_remove_element(node, otr->our_prekeys);
-  otrng_list_free(node, stored_prekeys_free_from_list);
-}
-
 tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   maybe_create_keys(otr->conversation);
   otrng_client_state_s *state = otr->conversation->client;
@@ -303,7 +239,6 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->their_instance_tag = 0;
   otr->our_instance_tag = otrng_client_state_get_instance_tag(state);
 
-  otr->our_prekeys = NULL;
   otr->their_prekeys_id = 0;
   otr->their_client_profile = NULL;
   otr->their_prekey_profile = NULL;
@@ -328,9 +263,6 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   otrng_key_manager_destroy(otr->keys);
   free(otr->keys);
   otr->keys = NULL;
-
-  otrng_list_free(otr->our_prekeys, stored_prekeys_free_from_list);
-  otr->our_prekeys = NULL;
 
   otrng_client_profile_free(otr->their_client_profile);
   otr->their_client_profile = NULL;
@@ -577,7 +509,9 @@ tstatic otrng_err reply_with_prekey_msg_to_server(otrng_server_s *server,
   if (!m)
     return ERROR;
 
-  store_my_prekey_message(m, otr->keys->our_ecdh, otr->keys->our_dh, otr);
+  otrng_client_state_s *state = otr->conversation->client;
+  store_my_prekey_message(m->id, m->sender_instance_tag, otr->keys->our_ecdh,
+                          otr->keys->our_dh, state);
 
   otrng_err result =
       serialize_and_encode_prekey_message(&server->prekey_message, m);
@@ -1069,8 +1003,8 @@ API prekey_ensemble_s *otrng_build_prekey_ensemble(uint8_t num, otrng_s *otr) {
     // TODO: should this ID be random? It should probably be unique for us, so
     // we need to store this in client state (?)
     e->messages[i]->id = 0x300 + i;
-
-    store_my_prekey_message(e->messages[i], ecdh, dh, otr);
+    otrng_client_state_s *state = otr->conversation->client;
+    store_my_prekey_message(0x300 + i, otr->our_instance_tag, ecdh, dh, state);
     otrng_ecdh_keypair_destroy(ecdh);
     otrng_dh_keypair_destroy(dh);
   }
@@ -1516,11 +1450,13 @@ tstatic otrng_err non_interactive_auth_message_received(
     otrng_response_s *response, const dake_non_interactive_auth_message_p auth,
     otrng_s *otr) {
 
+  otrng_client_state_s *state = otr->conversation->client;
+
   const otrng_stored_prekeys_s *stored_prekeys = NULL;
   const client_profile_s *client_profile = NULL;
   const otrng_prekey_profile_s *prekey_profile = NULL;
 
-  stored_prekeys = get_my_prekeys_by_id(auth->prekey_message_id, otr);
+  stored_prekeys = get_my_prekeys_by_id(auth->prekey_message_id, state);
   client_profile = get_my_client_profile_by_id(auth->long_term_key_id, otr);
   prekey_profile = get_my_prekey_profile_by_id(auth->prekey_profile_id, otr);
 
@@ -1572,7 +1508,7 @@ tstatic otrng_err non_interactive_auth_message_received(
   otr->keys->lastgenerated = time(NULL);
 
   // Delete the stored prekeys for this ID so they can't be used again.
-  delete_my_prekey_message_by_id(auth->prekey_message_id, otr);
+  delete_my_prekey_message_by_id(auth->prekey_message_id, state);
 
   // TODO: Should probably compare to prekey->sender_instance_tag because
   // our instance tag may have changed since we generated the prekey message

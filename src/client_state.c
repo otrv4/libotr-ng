@@ -48,6 +48,7 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->callbacks = NULL;
   state->user_state = NULL;
   state->keypair = NULL;
+  state->our_prekeys = NULL;
   state->client_profile = NULL;
   state->prekey_profile = NULL;
   state->shared_prekey_pair = NULL;
@@ -73,6 +74,9 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
 
   otrng_keypair_free(state->keypair);
   state->keypair = NULL;
+
+  otrng_list_free(state->our_prekeys, stored_prekeys_free_from_list);
+  state->our_prekeys = NULL;
 
   otrng_client_profile_free(state->client_profile);
   state->client_profile = NULL;
@@ -409,4 +413,55 @@ otrng_client_state_get_prekey_profile_by_id(uint32_t id,
     return ret;
 
   return NULL;
+}
+
+tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
+                                                     list_element_s *l) {
+  while (l) {
+    const otrng_stored_prekeys_s *s = l->data;
+    if (!s)
+      continue;
+
+    if (s->id == id)
+      return l;
+
+    l = l->next;
+  }
+
+  return NULL;
+}
+
+INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
+                                      const ecdh_keypair_p ecdh_pair,
+                                      const dh_keypair_p dh_pair,
+                                      otrng_client_state_s *state) {
+  otrng_stored_prekeys_s *s = malloc(sizeof(otrng_stored_prekeys_s));
+  s->id = id;
+  s->sender_instance_tag = instance_tag;
+
+  otrng_ec_scalar_copy(s->our_ecdh->priv, ecdh_pair->priv);
+  otrng_ec_point_copy(s->our_ecdh->pub, ecdh_pair->pub);
+  s->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
+  s->our_dh->pub = otrng_dh_mpi_copy(dh_pair->pub);
+
+  state->our_prekeys = otrng_list_add(s, state->our_prekeys);
+}
+
+INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
+                                             otrng_client_state_s *state) {
+  list_element_s *node = get_stored_prekey_node_by_id(id, state->our_prekeys);
+  if (!node)
+    return;
+
+  state->our_prekeys = otrng_list_remove_element(node, state->our_prekeys);
+  otrng_list_free(node, stored_prekeys_free_from_list);
+}
+
+INTERNAL const otrng_stored_prekeys_s *
+get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state) {
+  list_element_s *node = get_stored_prekey_node_by_id(id, state->our_prekeys);
+  if (!node)
+    return NULL;
+
+  return node->data;
 }
