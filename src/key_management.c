@@ -235,7 +235,6 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
     // Also note that OTRv3 serializes DH values in MPI (no leading zeroes).
     shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x02, k_dh,
                    sizeof(k_dh_p));
-
   } else {
     shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x03,
                    manager->brace_key, sizeof(brace_key_p));

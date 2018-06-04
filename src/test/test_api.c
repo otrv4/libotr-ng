@@ -46,8 +46,8 @@
     otrng_assert(_response->to_send == NULL);                                  \
   } while (0)
 
-#define assert_rec_msg_inc_state(result, respond_to, sender, otr_state,        \
-                                 send_response)                                \
+#define assert_rec_msg_in_state(result, respond_to, sender, otr_state,         \
+                                send_response)                                 \
   do {                                                                         \
     const otrng_err _result = (result);                                        \
     const otrng_response_s *_respond_to = (respond_to);                        \
@@ -255,13 +255,13 @@ void test_otrng_send_offline_message() {
   otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(alice->running_version == OTRNG_VERSION_4);
 
-  // There IS an attached encrypted message sent
+  // There is an attached encrypted message sent
   g_assert_cmpint(alice->keys->i, ==, 1);
   g_assert_cmpint(alice->keys->j, ==, 1);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  // Bob receives offline message
+  // Bob receives an offline message
   otrng_response_s *resp = otrng_response_new();
   otrng_assert(SUCCESS == otrng_receive_message(resp, to_bob, bob));
   free(to_bob);
@@ -350,7 +350,6 @@ void test_api_non_interactive_conversation(void) {
 
   otrng_assert(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
                                                    "", bob) == SUCCESS);
-
   // There is no attached encrypted message
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
@@ -375,18 +374,14 @@ void test_api_non_interactive_conversation(void) {
   otrng_assert_ec_public_key_eq(alice->keys->their_ecdh,
                                 bob->keys->our_ecdh->pub);
   otrng_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
-
-  // Check double ratchet is initialized
   otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(alice->keys->current);
-
-  // TODO: this shouldn't be ratcheting
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  // Both have the same shared secret
+  // Both have the same shared secret/root key
   otrng_assert_root_key_eq(alice->keys->current->root_key,
                            bob->keys->current->root_key);
 
@@ -428,7 +423,6 @@ void test_api_non_interactive_conversation(void) {
     free_message_and_response(response_to_alice, &to_send);
   }
 
-  // New ratchet hapenned
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
     tlv_list_s *tlvs = NULL;
@@ -541,7 +535,7 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
   otrng_assert(response_to_alice->to_send);
   otrng_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
 
-  // There IS an attached encrypted message
+  // There is an attached encrypted message
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 1);
   g_assert_cmpint(bob->keys->k, ==, 0);
@@ -623,8 +617,6 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
     assert_msg_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
-
-    // New ratchet hapenned
     g_assert_cmpint(bob->keys->i, ==, 3);
     g_assert_cmpint(bob->keys->j, ==, message_id);
     g_assert_cmpint(bob->keys->k, ==, 3);
@@ -736,7 +728,7 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
   g_assert_cmpint(alice->keys->k, ==, 1);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  // Both have the same shared secret
+  // Both have the same shared secret/root key
   otrng_assert_root_key_eq(alice->keys->current->root_key,
                            bob->keys->current->root_key);
 
@@ -749,7 +741,7 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
   bob->running_version = OTRNG_VERSION_4;
   alice->running_version = OTRNG_VERSION_4;
 
-  // A new ratchet does not happen
+  // A new DH ratchet does not happen
   for (message_id = 1; message_id < 4; message_id++) {
     tlv_list_s *tlvs = NULL;
     // Bob sends a data message
@@ -803,7 +795,6 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
 
     free_message_and_response(response_to_alice, &to_send);
 
-    // Alice follows the ratchet 1 (and prepares to a new "ratchet")
     g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, 0);
     g_assert_cmpint(bob->keys->k, ==, message_id);
@@ -1633,18 +1624,18 @@ void test_api_multiple_clients(void) {
 
   // PC receives query msg and sends identity msg
   result = otrng_receive_message(pc_to_alice, "?OTRv4?", bob_pc);
-  assert_rec_msg_inc_state(result, pc_to_alice, bob_pc,
-                           OTRNG_STATE_WAITING_AUTH_R, send_response);
+  assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
+                          OTRNG_STATE_WAITING_AUTH_R, send_response);
 
   // PHONE receives query msg and sends identity msg
   result = otrng_receive_message(phone_to_alice, "?OTRv4?", bob_phone);
-  assert_rec_msg_inc_state(result, phone_to_alice, bob_phone,
-                           OTRNG_STATE_WAITING_AUTH_R, send_response);
+  assert_rec_msg_in_state(result, phone_to_alice, bob_phone,
+                          OTRNG_STATE_WAITING_AUTH_R, send_response);
 
   // ALICE receives Identity msg from PC and sends AUTH-R
   result = otrng_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
-  assert_rec_msg_inc_state(result, alice_to_pc, alice,
-                           OTRNG_STATE_WAITING_AUTH_I, send_response);
+  assert_rec_msg_in_state(result, alice_to_pc, alice,
+                          OTRNG_STATE_WAITING_AUTH_I, send_response);
   otrng_response_free(pc_to_alice);
 
   // ALICE receives Identity msg from PHONE (on state
@@ -1652,37 +1643,32 @@ void test_api_multiple_clients(void) {
   // profile info from PC with info from PHONE.
   result =
       otrng_receive_message(alice_to_phone, phone_to_alice->to_send, alice);
-  assert_rec_msg_inc_state(result, alice_to_phone, alice,
-                           OTRNG_STATE_WAITING_AUTH_I, send_response);
+  assert_rec_msg_in_state(result, alice_to_phone, alice,
+                          OTRNG_STATE_WAITING_AUTH_I, send_response);
   otrng_response_free(phone_to_alice);
 
   // PC receives AUTH-R succesfully
   pc_to_alice = otrng_response_new();
   result = otrng_receive_message(pc_to_alice, alice_to_pc->to_send, bob_pc);
-  assert_rec_msg_inc_state(result, pc_to_alice, bob_pc,
-                           OTRNG_STATE_ENCRYPTED_MESSAGES, send_response);
+  assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
+                          OTRNG_STATE_ENCRYPTED_MESSAGES, send_response);
 
-  // PC deletes private keys as AUTH-R succesful
-  // TODO: ???!!
+  // PC generates the first keys after AUTH-R has been received
   otrng_assert(bob_pc->keys->our_dh->pub);
   otrng_assert(bob_pc->keys->our_dh->priv);
-
   otrng_assert_not_zero(bob_pc->keys->our_ecdh->pub, ED448_POINT_BYTES);
-  // otrng_assert_zero(bob_pc->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+  otrng_assert_not_zero(bob_pc->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // PHONE receives AUTH-R with PC instance tag - Ignores
   phone_to_alice = otrng_response_new();
   result =
       otrng_receive_message(phone_to_alice, alice_to_pc->to_send, bob_phone);
-  assert_rec_msg_inc_state(result, phone_to_alice, bob_phone,
-                           OTRNG_STATE_WAITING_AUTH_R, !send_response);
+  assert_rec_msg_in_state(result, phone_to_alice, bob_phone,
+                          OTRNG_STATE_WAITING_AUTH_R, !send_response);
   otrng_response_free_all(phone_to_alice, alice_to_pc);
 
-  // PHONE does NOT remove the private keys yet - needed for AUTH-I when it
-  // actually receives an AUTH-R
   otrng_assert(bob_phone->keys->our_dh->pub);
   otrng_assert(bob_phone->keys->our_dh->priv);
-
   otrng_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
   otrng_assert_not_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
@@ -1690,39 +1676,38 @@ void test_api_multiple_clients(void) {
   alice_to_pc = otrng_response_new();
   result = otrng_receive_message(alice_to_pc, pc_to_alice->to_send, alice);
 
-  assert_rec_msg_inc_state(!result, alice_to_pc, alice,
-                           OTRNG_STATE_WAITING_AUTH_I, !send_response);
+  assert_rec_msg_in_state(!result, alice_to_pc, alice,
+                          OTRNG_STATE_WAITING_AUTH_I, !send_response);
 
   otrng_response_free_all(pc_to_alice, alice_to_pc);
 
   // PC receives AUTH-R again - ignores
   pc_to_alice = otrng_response_new();
   result = otrng_receive_message(pc_to_alice, alice_to_phone->to_send, bob_pc);
-  assert_rec_msg_inc_state(result, pc_to_alice, bob_pc,
-                           OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
+  assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
+                          OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
   otrng_response_free(pc_to_alice);
 
   // PHONE receives correct AUTH-R message and sends AUTH-I
   phone_to_alice = otrng_response_new();
   result =
       otrng_receive_message(phone_to_alice, alice_to_phone->to_send, bob_phone);
-  assert_rec_msg_inc_state(result, phone_to_alice, bob_phone,
-                           OTRNG_STATE_ENCRYPTED_MESSAGES, send_response);
+  assert_rec_msg_in_state(result, phone_to_alice, bob_phone,
+                          OTRNG_STATE_ENCRYPTED_MESSAGES, send_response);
   otrng_response_free(alice_to_phone);
 
-  // PHONE can now delete private keys
-  // TODO: ?!!!
+  // PHONE generates the first keys after AUTH-R has been received
   otrng_assert(bob_phone->keys->our_dh->pub);
-  // otrng_assert(!bob_phone->keys->our_dh->priv);
+  otrng_assert(bob_phone->keys->our_dh->priv);
   otrng_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
-  // otrng_assert_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+  otrng_assert_not_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // ALICE receives AUTH-I from PHONE
   alice_to_phone = otrng_response_new();
   result =
       otrng_receive_message(alice_to_phone, phone_to_alice->to_send, alice);
-  assert_rec_msg_inc_state(result, alice_to_phone, alice,
-                           OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
+  assert_rec_msg_in_state(result, alice_to_phone, alice,
+                          OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
 
   // ALICE and PHONE have the same shared secret
   otrng_assert_root_key_eq(alice->keys->current->root_key,
@@ -1959,92 +1944,7 @@ void test_api_extra_sym_key(void) {
   otrng_tlv_list_free(tlvs);
 }
 
-// TODO: this test makes no sense right now
-void test_dh_key_rotation(void) {
-  tlv_list_s *tlvs = NULL;
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
-
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
-
-  // DAKE HAS FINISHED
-  do_dake_fixture(alice, bob);
-
-  otrng_response_s *response_to_alice = NULL;
-  otrng_response_s *response_to_bob = NULL;
-  string_p to_send = NULL;
-  otrng_err result;
-
-  // Alice sends a data message
-  result = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, alice);
-  assert_msg_sent(result, to_send);
-
-  g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 1);
-  g_assert_cmpint(alice->keys->k, ==, 0);
-
-  // Bob receives a data message
-  response_to_alice = otrng_response_new();
-  result = otrng_receive_message(response_to_alice, to_send, bob);
-  assert_msg_rec(result, "hello", response_to_alice);
-
-  g_assert_cmpint(bob->keys->i, ==, 1);
-  g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 1);
-
-  free_message_and_response(response_to_alice, &to_send);
-
-  // Bob sends a data message
-  result = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, bob);
-  assert_msg_sent(result, to_send);
-
-  g_assert_cmpint(bob->keys->i, ==, 2);
-  g_assert_cmpint(bob->keys->j, ==, 1);
-  g_assert_cmpint(bob->keys->k, ==, 1);
-
-  // Alice receives a data message
-  response_to_bob = otrng_response_new();
-  result = otrng_receive_message(response_to_bob, to_send, alice);
-  assert_msg_rec(result, "hello", response_to_bob);
-
-  free_message_and_response(response_to_bob, &to_send);
-
-  g_assert_cmpint(alice->keys->i, ==, 2);
-  g_assert_cmpint(alice->keys->j, ==, 0);
-  g_assert_cmpint(alice->keys->k, ==, 1);
-
-  // Alice sends a data message
-  result = otrng_prepare_to_send_message(&to_send, "hello", &tlvs, 0, alice);
-  assert_msg_sent(result, to_send);
-
-  g_assert_cmpint(alice->keys->i, ==, 3);
-  g_assert_cmpint(alice->keys->j, ==, 1);
-  g_assert_cmpint(alice->keys->k, ==, 1);
-
-  // Bob receives a data message
-  response_to_alice = otrng_response_new();
-  result = otrng_receive_message(response_to_alice, to_send, bob);
-  assert_msg_rec(result, "hello", response_to_alice);
-
-  free_message_and_response(response_to_alice, &to_send);
-
-  g_assert_cmpint(bob->keys->i, ==, 3);
-  g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 1);
-
-  otrng_assert(!bob->keys->our_dh->priv);
-  otrng_assert(alice->keys->our_dh->priv);
-
-  otrng_user_state_free_all(alice_client_state->user_state,
-                            bob_client_state->user_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
-  otrng_free_all(alice, bob);
-  otrng_tlv_list_free(tlvs);
-}
-
-// TODO: check this whole test
-void test_ecdh_priv_keys_destroyed_early() {
+void test_priv_keys_destroyed() {
 
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
@@ -2064,13 +1964,13 @@ void test_ecdh_priv_keys_destroyed_early() {
   result = otrng_prepare_to_send_message(&to_send, "hi", NULL, 0, alice);
   assert_msg_sent(result, to_send);
 
-  // Follow up message
   g_assert_cmpint(alice->keys->i, ==, 1);
   g_assert_cmpint(alice->keys->j, ==, 1);
   g_assert_cmpint(alice->keys->k, ==, 0);
 
-  // Alice should not delete ECDH priv key
+  // Alice should not delete priv keys
   otrng_assert_not_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+  otrng_assert(alice->keys->our_dh->priv);
 
   // Bob receives a data message
   response_to_alice = otrng_response_new();
@@ -2083,20 +1983,21 @@ void test_ecdh_priv_keys_destroyed_early() {
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 1);
 
-  // Bob's ECDH priv key should be zero still from the DAKE
+  // Bob's priv key should be deleted
   otrng_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+  otrng_assert(!bob->keys->our_dh->priv);
 
   // Bob sends a data message
   result = otrng_prepare_to_send_message(&to_send, "hello", NULL, 0, bob);
   assert_msg_sent(result, to_send);
 
-  // New ratchet
+  // Bob should have a new ECDH priv key but no DH
+  otrng_assert_not_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+  otrng_assert(!bob->keys->our_dh->priv);
+
   g_assert_cmpint(bob->keys->i, ==, 2);
   g_assert_cmpint(bob->keys->j, ==, 1);
   g_assert_cmpint(bob->keys->k, ==, 1);
-
-  // Bob's ECDH priv key should not be zero after sending
-  otrng_assert_not_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Alice receives a data message
   response_to_bob = otrng_response_new();
@@ -2105,24 +2006,25 @@ void test_ecdh_priv_keys_destroyed_early() {
 
   free_message_and_response(response_to_bob, &to_send);
 
+  // Alice should delete the ECDH priv key but not the DH priv key
+  otrng_assert_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+  otrng_assert(alice->keys->our_dh->priv);
+
   g_assert_cmpint(alice->keys->i, ==, 2);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 1);
-
-  // Alice should delete ECDH priv key
-  otrng_assert_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Alice sends a data message
   result = otrng_prepare_to_send_message(&to_send, "hi", NULL, 0, alice);
   assert_msg_sent(result, to_send);
 
-  // New ratchet
+  // Alice should have a new priv keys
+  otrng_assert_not_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+  otrng_assert(alice->keys->our_dh->priv);
+
   g_assert_cmpint(alice->keys->i, ==, 3);
   g_assert_cmpint(alice->keys->j, ==, 1);
   g_assert_cmpint(alice->keys->k, ==, 1);
-
-  // Alice should NOT delete ECDH priv key
-  otrng_assert_not_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   // Bob receives a data message
   response_to_alice = otrng_response_new();
@@ -2131,12 +2033,13 @@ void test_ecdh_priv_keys_destroyed_early() {
 
   free_message_and_response(response_to_alice, &to_send);
 
+  // Bob should delete the priv keys
+  otrng_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
+  otrng_assert(!bob->keys->our_dh->priv);
+
   g_assert_cmpint(bob->keys->i, ==, 3);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 1);
-
-  // Bob should delete ECDH priv key
-  otrng_assert_zero(bob->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);

@@ -293,10 +293,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/api/smp_abort", test_api_smp_abort);
   /* g_test_add_func("/api/messaging", test_api_messaging); */
   g_test_add_func("/api/instance_tag", test_instance_tag_api);
-  g_test_add_func("/api/dh_key_rotation", test_dh_key_rotation);
   g_test_add_func("/api/extra_symm_key", test_api_extra_sym_key);
-  g_test_add_func("/api/ecdh_keys_destroy",
-                  test_ecdh_priv_keys_destroyed_early);
+  g_test_add_func("/api/priv_keys_destroy", test_priv_keys_destroyed);
   g_test_add_func("/api/unreadable", test_unreadable_flag);
   g_test_add_func("/api/heartbeat", test_heartbeat_messages);
 
