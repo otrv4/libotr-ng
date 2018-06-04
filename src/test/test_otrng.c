@@ -253,7 +253,7 @@ void test_otrng_build_prekey_ensemble() {
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
   otrng_s *otr = otrng_new(state, policy);
 
-  prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(otr);
+  prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(1, otr);
   otrng_assert(ensemble);
 
   // Sends the same stored clients
@@ -266,10 +266,11 @@ void test_otrng_build_prekey_ensemble() {
   otrng_assert(ensemble->num_messages == 1);
 
   // Stores the same prekey message sent
+  // TODO: Assert the instance tag
   // TODO: Assert the private part
-  otrng_assert_ec_public_key_eq(ensemble->messages->Y,
+  otrng_assert_ec_public_key_eq(ensemble->messages[0]->Y,
                                 otr->our_prekeys->our_ecdh->pub);
-  otrng_assert_dh_public_key_eq(ensemble->messages->B,
+  otrng_assert_dh_public_key_eq(ensemble->messages[0]->B,
                                 otr->our_prekeys->our_dh->pub);
 
   otrng_prekey_ensemble_free(ensemble);

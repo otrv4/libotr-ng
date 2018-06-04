@@ -219,7 +219,7 @@ API void otrng_reply_with_prekey_msg_from_server(otrng_server_s *server,
 API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
                                                otrng_s *otr);
 
-API prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);
+API prekey_ensemble_s *otrng_build_prekey_ensemble(uint8_t num, otrng_s *otr);
 
 API otrng_err otrng_send_offline_message(string_p *dst,
                                          const prekey_ensemble_s *ensemble,

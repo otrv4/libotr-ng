@@ -268,7 +268,7 @@ void test_otrng_send_offline_message() {
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   char *to_bob = NULL;
-  prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(bob);
+  prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(1, bob);
   otrng_assert(bob->running_version == OTRNG_VERSION_NONE);
   otrng_assert(ensemble);
 

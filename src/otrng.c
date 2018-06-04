@@ -214,6 +214,8 @@ tstatic void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
 tstatic void store_my_prekey_message(const dake_prekey_message_p msg,
                                      const ecdh_keypair_p ecdh_pair,
                                      const dh_keypair_p dh_pair, otrng_s *otr) {
+  // TODO: store more than one.
+
   // TODO: For now, stores only one and at the protocol state
   if (otr->our_prekeys) {
     otrng_stored_prekeys_free(otr->our_prekeys);
@@ -1074,7 +1076,7 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
 
 // TODO: Should maybe return a serialized ensemble, ready to publish to the
 // server
-API prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
+API prekey_ensemble_s *otrng_build_prekey_ensemble(uint8_t num, otrng_s *otr) {
   prekey_ensemble_s *e = malloc(sizeof(prekey_ensemble_s));
   if (!e)
     return NULL;
@@ -1082,23 +1084,28 @@ API prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   otrng_client_profile_copy(e->client_profile, get_my_client_profile(otr));
   otrng_prekey_profile_copy(e->prekey_profile, get_my_prekey_profile(otr));
 
-  // This ensemble has only one prekey message
-  // TODO: receive the number of messages to be generated as parameter.
-  e->num_messages = 1;
+  e->messages = malloc(num * sizeof(dake_prekey_message_s *));
+  if (!e->messages) {
+    otrng_prekey_ensemble_free(e);
+    return NULL;
+  }
 
-  ecdh_keypair_p ecdh;
-  dh_keypair_p dh;
-  otrng_generate_ephemeral_keys(ecdh, dh);
-  e->messages = otrng_dake_prekey_message_build(otr->our_instance_tag,
-                                                ecdh->pub, dh->pub);
+  e->num_messages = num;
+  for (uint8_t i = 0; i < e->num_messages; i++) {
+    ecdh_keypair_p ecdh;
+    dh_keypair_p dh;
+    otrng_generate_ephemeral_keys(ecdh, dh);
+    e->messages[i] = otrng_dake_prekey_message_build(otr->our_instance_tag,
+                                                     ecdh->pub, dh->pub);
 
-  // TODO: should this ID be random? It should probably be unique for us, so
-  // we need to store this in client state (?)
-  e->messages->id = 0x301;
+    // TODO: should this ID be random? It should probably be unique for us, so
+    // we need to store this in client state (?)
+    e->messages[i]->id = 0x300 + i;
 
-  store_my_prekey_message(e->messages, ecdh, dh, otr);
-  otrng_ecdh_keypair_destroy(ecdh);
-  otrng_dh_keypair_destroy(dh);
+    store_my_prekey_message(e->messages[i], ecdh, dh, otr);
+    otrng_ecdh_keypair_destroy(ecdh);
+    otrng_dh_keypair_destroy(dh);
+  }
 
   return e;
 }
@@ -1162,7 +1169,7 @@ tstatic otrng_err receive_prekey_ensemble(const prekey_ensemble_s *ensemble,
     return ERROR;
 
   // Set their ephemeral keys, instance tag, and their_prekeys_id
-  if (!prekey_message_received(ensemble->messages, otr))
+  if (!prekey_message_received(ensemble->messages[0], otr))
     return ERROR;
 
   return SUCCESS;
