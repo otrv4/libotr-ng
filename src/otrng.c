@@ -898,6 +898,8 @@ tstatic otrng_err build_non_interactive_auth_message(
   non_interactive_auth_message_init(auth, otr);
 
   auth->prekey_message_id = otr->their_prekeys_id;
+  otr->their_prekeys_id = 0;
+
   auth->long_term_key_id = otr->their_client_profile->id;
   auth->prekey_profile_id = otr->their_prekey_profile->id;
 
