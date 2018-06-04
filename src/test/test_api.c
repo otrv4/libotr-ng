@@ -267,16 +267,16 @@ void test_otrng_send_offline_message() {
   g_assert_cmpint(bob->keys->k, ==, 0);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
-  char *to_bob = NULL;
   prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(1, bob);
-  otrng_assert(bob->running_version == OTRNG_VERSION_NONE);
   otrng_assert(ensemble);
 
+  otrng_assert(bob->running_version == OTRNG_VERSION_NONE);
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 0);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
+  char *to_bob = NULL;
   otrng_assert(SUCCESS ==
                otrng_send_offline_message(&to_bob, ensemble, "hi", alice));
   otrng_prekey_ensemble_free(ensemble);
@@ -306,14 +306,14 @@ void test_otrng_send_offline_message() {
   otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(bob->running_version == OTRNG_VERSION_4);
 
-  otrng_assert_ec_public_key_eq(bob->keys->their_ecdh,
-                                alice->keys->our_ecdh->pub);
-  otrng_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh->pub);
-
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 1);
   g_assert_cmpint(bob->keys->pn, ==, 0);
+
+  otrng_assert_ec_public_key_eq(bob->keys->their_ecdh,
+                                alice->keys->our_ecdh->pub);
+  otrng_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh->pub);
 
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
