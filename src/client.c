@@ -379,32 +379,6 @@ API int otrng_client_disconnect(char **newmsg, const char *recipient,
   return 0;
 }
 
-// TODO: this depends on how is going to be handled: as a different
-// event or inside process_conv_updated?
-/* expiration time should be set on seconds */
-/* tstatic int otrng_encrypted_conversation_expire(char **newmsg, const char
- * *recipient, */
-/*                                        int expiration_time, */
-/*                                        otrng_client_s *client) { */
-/*   otrng_conversation_s *conv = NULL; */
-/*   time_t now; */
-
-/*   conv = get_conversation_with(recipient, client->conversations); */
-/*   if (!conv) */
-/*     return 1; */
-
-/*   now = time(NULL); */
-/*   if (conv->conn->keys->lastgenerated < now - expiration_time) { */
-/*     if (otrng_expire_session(newmsg, conv->conn)) */
-/*       return 2; */
-/*   } */
-
-/*   destroy_client_conversation(conv, client); */
-/*   conversation_free(conv); */
-
-/*   return 0; */
-/* } */
-
 API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                          const otrng_client_s *client) {
   if (!client->state->keypair)

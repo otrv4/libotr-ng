@@ -54,6 +54,7 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->shared_prekey_pair = NULL;
   state->phi = NULL;
   state->max_stored_msg_keys = 100;
+  state->expiration_time = 0;
   state->pad = false; // TODO: why is this a bool?
   state->heartbeat = set_heartbeat(
       300); // TODO: why is this set here, and not from the client?

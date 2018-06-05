@@ -106,7 +106,7 @@ typedef struct key_manager_s {
   list_element_s *skipped_keys;
   list_element_s *old_mac_keys;
 
-  time_t lastgenerated;
+  time_t last_generated;
 } key_manager_s, key_manager_p[1];
 
 /**

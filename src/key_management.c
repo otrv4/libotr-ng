@@ -166,7 +166,7 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   otrng_ec_point_destroy(manager->our_ecdh->pub);
   otrng_ecdh_keypair_generate(manager->our_ecdh, sym);
 
-  manager->lastgenerated = now;
+  manager->last_generated = now;
 
   // TODO: If it were not this if, we could use otrng_generate_ephemeral_keys
   if (manager->i % 3 == 0) {
@@ -431,6 +431,8 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
     if (!otrng_key_manager_generate_ephemeral_keys(manager)) {
       return ERROR;
     }
+
+    manager->last_generated = time(NULL);
 
     if (!enter_new_ratchet(manager, action)) {
       return ERROR;

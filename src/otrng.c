@@ -1491,7 +1491,6 @@ tstatic otrng_err non_interactive_auth_message_received(
   otrng_dh_keypair_destroy(otr->keys->our_dh);
   otr->keys->our_dh->priv = otrng_dh_mpi_copy(stored_prekeys->our_dh->priv);
   otr->keys->our_dh->pub = otrng_dh_mpi_copy(stored_prekeys->our_dh->pub);
-  otr->keys->lastgenerated = time(NULL);
 
   // Delete the stored prekeys for this ID so they can't be used again.
   delete_my_prekey_message_by_id(auth->prekey_message_id, state);
@@ -1836,9 +1835,18 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
 
 // TODO: this is the same as otrng_close
 INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr) {
-  tlv_list_s *disconnected = otrng_tlv_list_one(otrng_tlv_disconnected_new());
-  if (!disconnected)
+  size_t serlen = otrng_list_len(otr->keys->skipped_keys) * MAC_KEY_BYTES;
+  uint8_t *ser_mac_keys = otrng_reveal_mac_keys_on_tlv(otr->keys);
+  otr->keys->skipped_keys = NULL;
+
+  tlv_list_s *disconnected = otrng_tlv_list_one(
+      otrng_tlv_new(OTRNG_TLV_DISCONNECTED, serlen, ser_mac_keys));
+  if (!disconnected) {
+    free(ser_mac_keys);
     return ERROR;
+  }
+
+  free(ser_mac_keys);
 
   otrng_err result = otrng_prepare_to_send_message(
       to_send, "", &disconnected, MSGFLAGS_IGNORE_UNREADABLE, otr);
@@ -2487,6 +2495,14 @@ tstatic otrng_err otrng_prepare_to_send_data_message(string_p *to_send,
                                                      unsigned char flags) {
   uint8_t *msg = NULL;
   size_t msg_len = 0;
+  // time_t now = time(NULL);
+
+  // if (otr->keys->last_generated < now -
+  // otr->conversation->client->expiration_time) {
+  //  if (!otrng_expire_session(to_send, otr)) {
+  //    return ERROR;
+  //  }
+  //}
 
   if (otr->state == OTRNG_STATE_FINISHED)
     return ERROR; // Should restart
