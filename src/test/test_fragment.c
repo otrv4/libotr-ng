@@ -122,11 +122,11 @@ void test_defragment_without_comma_fails(void) {
   otrng_fragment_context_free(context);
 }
 
-void test_defragment_clean_context_for_frag_out_of_order(void) {
+void test_defragment_out_of_order_message(void) {
   string_p fragments[3];
-  fragments[0] = "?OTR|00000000|00000001|00000002,00001,00003,one more ,";
-  fragments[1] = "?OTR|00000000|00000001|00000002,00003,00003,send,";
-  fragments[2] = "?OTR|00000000|00000001|00000002,00002,00003,fragment ,";
+  fragments[0] = "?OTR|00000000|00000001|00000002,00003,00003,send,";
+  fragments[1] = "?OTR|00000000|00000001|00000002,00002,00003,fragment ,";
+  fragments[2] = "?OTR|00000000|00000001|00000002,00001,00003,one more ,";
 
   fragment_context_s *context;
   context = otrng_fragment_context_new();
@@ -138,24 +138,21 @@ void test_defragment_clean_context_for_frag_out_of_order(void) {
   otrng_assert(!unfrag);
   g_assert_cmpint(context->T, ==, 3);
   g_assert_cmpint(context->C, ==, 1);
-  g_assert_cmpstr(context->fragment, ==, "one more ");
-  g_assert_cmpint(context->fragment_len, ==, 9);
 
   otrng_assert(otrng_unfragment_message(&unfrag, context, fragments[1], 2) ==
                SUCCESS);
-  otrng_assert(context->status == FRAGMENT_UNFRAGMENTED);
+  otrng_assert(context->status == FRAGMENT_INCOMPLETE);
   otrng_assert(!unfrag);
-  g_assert_cmpstr(context->fragment, ==, "");
-  g_assert_cmpint(context->T, ==, 0);
-  g_assert_cmpint(context->C, ==, 0);
+  g_assert_cmpint(context->T, ==, 3);
+  g_assert_cmpint(context->C, ==, 2);
 
   otrng_assert(otrng_unfragment_message(&unfrag, context, fragments[2], 2) ==
                SUCCESS);
-  otrng_assert(context->status == FRAGMENT_UNFRAGMENTED);
-  otrng_assert(!unfrag);
-  g_assert_cmpstr(context->fragment, ==, "");
-  g_assert_cmpint(context->T, ==, 0);
-  g_assert_cmpint(context->C, ==, 0);
+  otrng_assert(context->status == FRAGMENT_COMPLETE);
+  g_assert_cmpstr(unfrag, ==, "one more fragment send");
+  g_assert_cmpint(context->T, ==, 3);
+  g_assert_cmpint(context->C, ==, 3);
+  g_assert_cmpint(context->fragment_len, ==, 22);
 
   free(unfrag);
   unfrag = NULL;

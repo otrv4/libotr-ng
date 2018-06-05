@@ -68,8 +68,7 @@ INTERNAL fragment_context_s *otrng_fragment_context_new(void) {
   context->T = 0;
   context->fragment_len = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
-  context->fragment = NULL;
-  context->stored_fragments = NULL;
+  context->fragments = NULL;
 
   return context;
 }
@@ -80,11 +79,8 @@ INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   context->T = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
 
-  free(context->fragment);
-  context->fragment = NULL;
-
-  otrng_list_free_full(context->stored_fragments);
-  context->stored_fragments = NULL;
+  free(context->fragments);
+  context->fragments = NULL;
 
   free(context);
   context = NULL;
@@ -175,23 +171,7 @@ tstatic void initialize_fragment_context(fragment_context_s *context) {
   context->T = 0;
   context->C = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
-  context->fragment = NULL;
-}
-
-tstatic void join_fragments(list_element_s *node, void *context) {
-  fragment_context_s *ctx = (void *)context;
-  size_t msg_len = strlen(node->data);
-
-  if (ctx->fragment == NULL) {
-    ctx->fragment = malloc(msg_len + 1);
-    memcpy(ctx->fragment, node->data, msg_len);
-  } else {
-    ctx->fragment = realloc(ctx->fragment, ctx->fragment_len + msg_len + 1);
-    memmove(ctx->fragment + ctx->fragment_len, node->data, msg_len);
-  }
-
-  ctx->fragment_len += msg_len;
-  ctx->fragment[ctx->fragment_len] = '\0';
+  context->fragments = NULL;
 }
 
 tstatic otrng_bool is_fragment(const string_p message) {
@@ -233,23 +213,32 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   if (end <= start)
     return ERROR;
 
-  uint8_t *stored_fragment = malloc(msg_len + 1);
-  if (!stored_fragment)
+  if (context->fragments == NULL) {
+    context->fragments = malloc(sizeof(string_p) * t);
+    if (!context->fragments)
+        return ERROR;
+  }
+
+  char *fragment = malloc(msg_len + 1);
+  if (!fragment)
     return ERROR;
 
-  memcpy(stored_fragment, message + start, msg_len);
-  stored_fragment[msg_len] = '\0';
+  stpncpy(fragment, message + start, msg_len);
+  fragment[msg_len] = '\0';
 
-  context->stored_fragments =
-      otrng_list_add(stored_fragment, context->stored_fragments);
+  context->fragments[i - 1] = fragment;
+
+  context->fragment_len += msg_len;
   context->T = t;
   context->C++;
 
   if (context->C == t) {
-    otrng_list_foreach(context->stored_fragments, join_fragments, context);
-    *unfrag_msg = otrng_strdup(context->fragment);
+    *unfrag_msg = malloc(context->fragment_len + 1);
+    char *end = *unfrag_msg;
+    for(int j = 0; j < t; j++){
+        end = stpcpy(end, context->fragments[j]);
+    }
     context->status = FRAGMENT_COMPLETE;
   }
-
   return SUCCESS;
 }
