@@ -22,6 +22,16 @@
 
 INTERNAL otrng_err
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
+  /*
+     Check that all the instance tags on the Prekey Ensemble's values are the
+     same. Validate the Client Profile. Validate the Prekey Profile. Check that
+     the Prekey Profile is signed by the same long-term public key stated on it
+     and on the Client Profile. Verify the Prekey message as stated on its
+     section. Check that the OTR version of the prekey message matches one of
+     the versions signed in the Client Profile contained in the Prekey Ensemble.
+     Check if the Client Profile's version is supported by the receiver.
+   */
+
   // TODO
   return SUCCESS;
 }
