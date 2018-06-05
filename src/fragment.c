@@ -228,7 +228,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   if (!fragment)
     return ERROR;
 
-  stpncpy(fragment, message + start, msg_len);
+  memcpy(fragment, message + start, msg_len);
   fragment[msg_len] = '\0';
 
   context->fragments[i - 1] = fragment;
