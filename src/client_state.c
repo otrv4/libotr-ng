@@ -378,8 +378,9 @@ otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state) {
   // TODO: Versions should be configurable
   // TODO: should this ID be random? It should probably be unique for us, so
   // we need to store this in client state (?)
+  uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
   state->client_profile =
-      otrng_client_profile_build(0x101, "34", state->keypair);
+      otrng_client_profile_build(0x101, our_instance_tag, "34", state->keypair);
 
   return state->client_profile;
 }
@@ -393,12 +394,11 @@ otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
 
   // TODO: invoke callback to generate profile if it is NULL, instead of doing
   // it here.
-  state->prekey_profile =
-      otrng_prekey_profile_build(state->keypair, state->shared_prekey_pair);
-
   // TODO: should this ID be random? It should probably be unique for us, so
   // we need to store this in client state (?)
-  state->prekey_profile->id = 0x201;
+  uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
+  state->prekey_profile = otrng_prekey_profile_build(
+      0x102, our_instance_tag, state->keypair, state->shared_prekey_pair);
 
   return state->prekey_profile;
 }

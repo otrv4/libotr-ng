@@ -59,7 +59,8 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile);
 
 INTERNAL client_profile_s *
-otrng_client_profile_build(uint32_t id, const string_p versions,
+otrng_client_profile_build(uint32_t id, uint32_t instance_tag,
+                           const string_p versions,
                            const otrng_keypair_s *keypair);
 
 INTERNAL otrng_bool otrng_client_profile_valid(const client_profile_s *profile);

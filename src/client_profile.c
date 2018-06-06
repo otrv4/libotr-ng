@@ -247,15 +247,16 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
   return valid;
 }
 
-// TODO: ADD instance tag as parameter
 INTERNAL client_profile_s *
-otrng_client_profile_build(uint32_t id, const string_p versions,
+otrng_client_profile_build(uint32_t id, uint32_t instance_tag,
+                           const string_p versions,
                            const otrng_keypair_s *keypair) {
   client_profile_s *profile = client_profile_new(versions);
   if (!profile)
     return NULL;
 
   profile->id = id;
+  profile->sender_instance_tag = instance_tag;
 #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   time_t expires = time(NULL);
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
@@ -268,31 +269,28 @@ otrng_client_profile_build(uint32_t id, const string_p versions,
   return profile;
 }
 
-tstatic otrng_bool not_expired(time_t expires) {
-  if (difftime(expires, time(NULL)) > 0) {
-    return otrng_true;
+tstatic otrng_bool expired(time_t expires) {
+  return difftime(expires, time(NULL)) <= 0;
+}
+
+tstatic otrng_bool rollback_detected(const char *versions) {
+  while (*versions) {
+    if (*versions != '3' && *versions != '4')
+      return otrng_true;
+
+    versions++;
   }
 
   return otrng_false;
 }
 
-tstatic otrng_bool no_rollback_detected(const char *versions) {
-  while (*versions) {
-    if (*versions != '3' && *versions != '4')
-      return otrng_false;
-
-    versions++;
-  }
-  return otrng_true;
-}
-
 // TODO: check if client profile is validate in every place it needs to
 INTERNAL otrng_bool
 otrng_client_profile_valid(const client_profile_s *profile) {
-  if (!not_expired(profile->expires))
+  if (expired(profile->expires))
     return otrng_false;
 
-  if (!no_rollback_detected(profile->versions))
+  if (rollback_detected(profile->versions))
     return otrng_false;
 
   // TODO: Validate that each Ed448 Public Key are on the curve

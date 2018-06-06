@@ -107,33 +107,43 @@ tstatic otrng_err otrng_prekey_profile_body_asprint(
   return SUCCESS;
 }
 
-// TODO: Add id and instance tag as parameter
+INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
+                                       const otrng_keypair_s *longterm_pair) {
+
+  otrng_ec_point_copy(profile->pub, longterm_pair->pub); // Key "H"
+
+  uint8_t *body = NULL;
+  size_t bodylen = 0;
+  if (!otrng_prekey_profile_body_asprint(&body, &bodylen, profile)) {
+    return ERROR;
+  }
+
+  otrng_ec_sign_simple(profile->signature, longterm_pair->sym, body, bodylen);
+  free(body);
+
+  return SUCCESS;
+}
+
 INTERNAL otrng_prekey_profile_s *
-otrng_prekey_profile_build(const otrng_keypair_s *longterm_pair,
+otrng_prekey_profile_build(uint32_t id, uint32_t instance_tag,
+                           const otrng_keypair_s *longterm_pair,
                            const otrng_shared_prekey_pair_s *prekey_pair) {
   otrng_prekey_profile_s *p = malloc(sizeof(otrng_prekey_profile_s));
   if (!p)
     return NULL;
 
-  p->id = 0;
-  p->instance_tag = 0;
+  p->id = id;
+  p->instance_tag = instance_tag;
 
 #define PREKEY_PROFILE_EXPIRATION_SECONDS 1 * 30 * 24 * 60 * 60; /* 1 month */
   time_t expires = time(NULL);
   p->expires = expires + PREKEY_PROFILE_EXPIRATION_SECONDS;
-
-  otrng_ec_point_copy(p->pub, longterm_pair->pub);         // Key "H"
   otrng_ec_point_copy(p->shared_prekey, prekey_pair->pub); // Key "D"
 
-  uint8_t *body = NULL;
-  size_t bodylen = 0;
-  if (!otrng_prekey_profile_body_asprint(&body, &bodylen, p)) {
+  if (!prekey_profile_sign(p, longterm_pair)) {
     otrng_prekey_profile_free(p);
     return NULL;
   }
-
-  otrng_ec_sign_simple(p->signature, longterm_pair->sym, body, bodylen);
-  free(body);
 
   return p;
 }

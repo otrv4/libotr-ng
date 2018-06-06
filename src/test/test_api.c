@@ -85,14 +85,6 @@ static void set_up_client_state(otrng_client_state_s *state,
   otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv);
   otrng_client_state_add_instance_tag(state, 0x100 + byte);
 
-  // Create client profile
-  state->client_profile = otrng_client_profile_build(1, "34", state->keypair);
-
-  // Create prekey profile
-  state->prekey_profile =
-      otrng_prekey_profile_build(state->keypair, state->shared_prekey_pair);
-  state->prekey_profile->id = 1;
-
   // on client this will probably be the jid and the
   // receipient jid for the party
   state->phi = otrng_strdup(phi);
@@ -269,6 +261,7 @@ void test_otrng_send_offline_message() {
 
   prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(1, bob);
   otrng_assert(ensemble);
+  otrng_assert(SUCCESS == otrng_prekey_ensemble_validate(ensemble));
 
   g_assert_cmpint(bob->their_prekeys_id, ==, 0);
   otrng_assert(bob->running_version == OTRNG_VERSION_NONE);
@@ -355,12 +348,12 @@ void test_api_non_interactive_conversation(void) {
   bob->their_client_profile = malloc(sizeof(client_profile_s));
   otrng_client_profile_copy(
       bob->their_client_profile,
-      otrng_client_state_get_client_profile(alice_client_state));
+      otrng_client_state_get_or_create_client_profile(alice_client_state));
 
   bob->their_prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
   otrng_prekey_profile_copy(
       bob->their_prekey_profile,
-      otrng_client_state_get_prekey_profile(alice_client_state));
+      otrng_client_state_get_or_create_prekey_profile(alice_client_state));
 
   // Bob receives prekey message
   otrng_assert(otrng_receive_message(response_to_alice,
@@ -540,12 +533,12 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
   bob->their_client_profile = malloc(sizeof(client_profile_s));
   otrng_client_profile_copy(
       bob->their_client_profile,
-      otrng_client_state_get_client_profile(alice_client_state));
+      otrng_client_state_get_or_create_client_profile(alice_client_state));
 
   bob->their_prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
   otrng_prekey_profile_copy(
       bob->their_prekey_profile,
-      otrng_client_state_get_prekey_profile(alice_client_state));
+      otrng_client_state_get_or_create_prekey_profile(alice_client_state));
 
   // Bob receives prekey message
   otrng_assert(otrng_receive_message(response_to_alice,
@@ -703,12 +696,12 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
   bob->their_client_profile = malloc(sizeof(client_profile_s));
   otrng_client_profile_copy(
       bob->their_client_profile,
-      otrng_client_state_get_client_profile(alice_client_state));
+      otrng_client_state_get_or_create_client_profile(alice_client_state));
 
   bob->their_prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
   otrng_prekey_profile_copy(
       bob->their_prekey_profile,
-      otrng_client_state_get_prekey_profile(alice_client_state));
+      otrng_client_state_get_or_create_prekey_profile(alice_client_state));
 
   // Bob receives prekey message
   otrng_assert(otrng_receive_message(response_to_alice,

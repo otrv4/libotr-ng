@@ -22,17 +22,58 @@
 
 INTERNAL otrng_err
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
-  /*
-     Check that all the instance tags on the Prekey Ensemble's values are the
-     same. Validate the Client Profile. Validate the Prekey Profile. Check that
-     the Prekey Profile is signed by the same long-term public key stated on it
-     and on the Client Profile. Verify the Prekey message as stated on its
-     section. Check that the OTR version of the prekey message matches one of
-     the versions signed in the Client Profile contained in the Prekey Ensemble.
-     Check if the Client Profile's version is supported by the receiver.
-   */
+  // Check that all the instance tags on the Prekey Ensemble's values are the
+  // same.
+  if (dst->client_profile->sender_instance_tag !=
+      dst->prekey_profile->instance_tag) {
+    return ERROR;
+  }
 
-  // TODO
+  for (int i = 0; i < dst->num_messages; i++) {
+    if (dst->client_profile->sender_instance_tag !=
+        dst->messages[i]->sender_instance_tag) {
+      return ERROR;
+    }
+  }
+
+  if (!otrng_client_profile_valid(dst->client_profile)) {
+    return ERROR;
+  }
+
+  if (!otrng_prekey_profile_valid(dst->prekey_profile)) {
+    return ERROR;
+  }
+  if (!otrng_ec_point_eq(dst->client_profile->long_term_pub_key,
+                         dst->prekey_profile->pub)) {
+    return ERROR;
+  }
+
+  for (int i = 0; i < dst->num_messages; i++) {
+    /* Verify that the point their_ecdh received is on curve 448. */
+    if (!otrng_ec_point_valid(dst->messages[i]->Y))
+      return ERROR;
+
+    /* Verify that the DH public key their_dh is from the correct group. */
+    if (!otrng_dh_mpi_valid(dst->messages[i]->B))
+      return ERROR;
+  }
+
+  // At the moment, prekey_ensemble_s->messages only has prekey messages with
+  // VERSION = 4 (we don't know how to deserialize prekey messages form another
+  // version). We only need to check if the profile has 4 in its "versions"
+  // fields to satisfy:
+  //"Check that the OTR version of the prekey message matches one of the
+  // versions signed in the Client Profile contained in the Prekey Ensemble."
+  char *versions = dst->client_profile->versions;
+  otrng_bool found = otrng_false;
+  while (*versions && !found) {
+    found = (*versions == '4');
+    versions++;
+  }
+
+  if (!found)
+    return ERROR;
+
   return SUCCESS;
 }
 

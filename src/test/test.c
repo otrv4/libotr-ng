@@ -50,6 +50,7 @@
 #include "test_list.c"
 #include "test_non_interactive_messages.c"
 #include "test_otrng.c"
+#include "test_prekey_ensemble.c"
 #include "test_prekey_profile.c"
 #include "test_serialize.c"
 #include "test_smp.c"
@@ -245,6 +246,7 @@ int main(int argc, char **argv) {
                   test_otrng_build_prekey_ensemble);
 
   g_test_add_func("/prekey_profile/validates", test_prekey_profile_validates);
+  g_test_add_func("/prekey_ensemble/validate", test_prekey_ensemble_validate);
 
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);

@@ -42,11 +42,15 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
                                         const otrng_prekey_profile_s *src);
 
 INTERNAL otrng_prekey_profile_s *
-otrng_prekey_profile_build(const otrng_keypair_s *longterm_pair,
+otrng_prekey_profile_build(uint32_t id, uint32_t instance_tag,
+                           const otrng_keypair_s *longterm_pair,
                            const otrng_shared_prekey_pair_s *prekey_pair);
 
 INTERNAL otrng_bool
 otrng_prekey_profile_valid(const otrng_prekey_profile_s *profile);
+
+INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
+                                       const otrng_keypair_s *longterm_pair);
 
 #ifdef OTRNG_PREKEY_PROFILE_PRIVATE
 

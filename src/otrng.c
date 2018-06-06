@@ -1060,11 +1060,23 @@ tstatic otrng_err receive_prekey_ensemble(const prekey_ensemble_s *ensemble,
   if (!otrng_prekey_ensemble_validate(ensemble))
     return ERROR;
 
-  // There is no policy about how to handle multiple messages in an ensemble at
-  // the moment. The spec suggests what could be done, but we have not decided
-  // how we want to implement that.
+  // TODO: As part of validating the prekey ensemble, we should also:
+  // 1. If the Transitional Signature is present, verify its validity using the
+  // OTRv3 DSA key.
+  //    (the OTRv3 key needed to validate the signature should be somewhere in
+  //    client_state maybe).
+  // 1. Check if the Client Profile's version is supported by the receiver.
+
+  // TODO: There is no policy about how to handle multiple messages in an
+  // ensemble at the moment. The spec suggests what could be done, but we have
+  // not decided how we want to implement that.
+
   if (ensemble->num_messages != 1)
     return ERROR;
+
+  // TODO: Decide whether to send a message using this Prekey Ensemble if the
+  // long-term key within the Client Profile is trusted or not.
+  // Maybe use a callback for this.
 
   if (!set_their_client_profile(ensemble->client_profile, otr))
     return ERROR;

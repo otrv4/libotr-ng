@@ -243,18 +243,14 @@ void test_otrng_build_prekey_ensemble() {
   otrng_client_state_s *state = otrng_client_state_new(NULL);
   otrng_client_state_add_private_key_v4(state, long_term_priv);
   otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv);
-  // otrng_client_state_add_instance_tag(state, 0x100A0F);
-
-  state->client_profile = otrng_client_profile_build(1, "34", state->keypair);
-  state->prekey_profile =
-      otrng_prekey_profile_build(state->keypair, state->shared_prekey_pair);
-  state->prekey_profile->id = 1;
+  otrng_client_state_add_instance_tag(state, 0x100A0F);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
   otrng_s *otr = otrng_new(state, policy);
 
   prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(1, otr);
   otrng_assert(ensemble);
+  otrng_assert(SUCCESS == otrng_prekey_ensemble_validate(ensemble));
 
   // Sends the same stored clients
   otrng_assert_client_profile_eq(ensemble->client_profile,

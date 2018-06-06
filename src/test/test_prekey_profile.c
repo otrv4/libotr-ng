@@ -27,7 +27,7 @@ void test_prekey_profile_validates() {
   otrng_shared_prekey_pair_s *p2 = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(p2, sym_shared);
 
-  otrng_prekey_profile_s *profile = otrng_prekey_profile_build(p1, p2);
+  otrng_prekey_profile_s *profile = otrng_prekey_profile_build(1, 1, p1, p2);
 
   otrng_assert(otrng_prekey_profile_valid(profile));
 
