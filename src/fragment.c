@@ -80,15 +80,7 @@ INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   }
 
   free(context->fragments);
-  context->fragments = NULL;
-
-  context->identifier = 0;
-  context->C = 0;
-  context->T = 0;
-  context->status = FRAGMENT_UNFRAGMENTED;
-
   free(context);
-  context = NULL;
 }
 
 INTERNAL otrng_err otrng_fragment_message(int max_size,
