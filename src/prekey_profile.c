@@ -138,3 +138,17 @@ otrng_prekey_profile_build(const otrng_keypair_s *longterm_pair,
 
   return p;
 }
+
+INTERNAL otrng_bool
+otrng_prekey_profile_valid(const otrng_prekey_profile_s *profile) {
+  // TODO
+  /*
+   * To validate a Prekey Profile, you must (in this order):
+
+    1. Verify that the Prekey Profile has not expired.
+    2. Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks.
+    3. Verify that the Prekey Profile signature is valid.
+
+   */
+  return otrng_true;
+}

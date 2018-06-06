@@ -29,6 +29,7 @@
 #define OTRNG_SMP_PRIVATE
 #define OTRNG_TLV_PRIVATE
 #define OTRNG_USER_PROFILE_PRIVATE
+#define OTRNG_KEYS_PRIVATE
 
 #include "../otrng.h"
 
@@ -50,6 +51,7 @@
 #include "test_list.c"
 #include "test_non_interactive_messages.c"
 #include "test_otrng.c"
+#include "test_prekey_profile.c"
 #include "test_serialize.c"
 #include "test_smp.c"
 #include "test_tlv.c"
@@ -242,6 +244,8 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/otrng/build_prekey_ensemble",
                   test_otrng_build_prekey_ensemble);
+
+  g_test_add_func("/prekey_profile/validates", test_prekey_profile_validates);
 
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);
