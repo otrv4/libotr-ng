@@ -31,7 +31,7 @@ void test_prekey_profile_validates() {
 
   otrng_assert(otrng_prekey_profile_valid(profile));
 
-  keypair_destroy(p1);
-  shared_prekey_pair_destroy(p2);
+  otrng_keypair_free(p1);
+  otrng_shared_prekey_pair_free(p2);
   otrng_prekey_profile_free(profile);
 }

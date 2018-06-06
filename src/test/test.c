@@ -29,7 +29,6 @@
 #define OTRNG_SMP_PRIVATE
 #define OTRNG_TLV_PRIVATE
 #define OTRNG_USER_PROFILE_PRIVATE
-#define OTRNG_KEYS_PRIVATE
 
 #include "../otrng.h"
 
