@@ -2495,14 +2495,6 @@ tstatic otrng_err otrng_prepare_to_send_data_message(string_p *to_send,
                                                      unsigned char flags) {
   uint8_t *msg = NULL;
   size_t msg_len = 0;
-  // time_t now = time(NULL);
-
-  // if (otr->keys->last_generated < now -
-  // otr->conversation->client->expiration_time) {
-  //  if (!otrng_expire_session(to_send, otr)) {
-  //    return ERROR;
-  //  }
-  //}
 
   if (otr->state == OTRNG_STATE_FINISHED)
     return ERROR; // Should restart

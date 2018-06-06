@@ -93,6 +93,10 @@ API otrng_conversation_s *otrng_client_get_conversation(int force,
 
 /* tstatic int otrng_conversation_is_finished(otrng_conversation_s *conv); */
 
+API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
+                                       int expiration_time,
+                                       otrng_client_s *client);
+
 API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                          const otrng_client_s *client);
 
