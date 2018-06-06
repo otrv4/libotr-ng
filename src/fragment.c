@@ -211,7 +211,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     return ERROR;
 
   if (context->fragments == NULL) {
-    context->fragments = malloc(sizeof(uint8_t) * t);
+    context->fragments = malloc(sizeof(string_p) * t);
     if (!context->fragments)
       return ERROR;
   }
