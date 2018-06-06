@@ -49,8 +49,8 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
   memcpy(dst->signature, src->signature, sizeof(eddsa_signature_p));
 }
 
-tstatic size_t otrng_prekey_profile_body_serialize(uint8_t *dst, size_t dstlen,
-                                                   otrng_prekey_profile_s *p) {
+tstatic size_t otrng_prekey_profile_body_serialize(
+    uint8_t *dst, size_t dstlen, const otrng_prekey_profile_s *p) {
   size_t w = 0;
 
   if (4 > dstlen - w)
@@ -81,9 +81,8 @@ tstatic size_t otrng_prekey_profile_body_serialize(uint8_t *dst, size_t dstlen,
   return w;
 }
 
-tstatic otrng_err otrng_prekey_profile_body_asprint(uint8_t **dst,
-                                                    size_t *dstlen,
-                                                    otrng_prekey_profile_s *p) {
+tstatic otrng_err otrng_prekey_profile_body_asprint(
+    uint8_t **dst, size_t *dstlen, const otrng_prekey_profile_s *p) {
 
 #define PREKEY_PROFILE_BODY_BYTES                                              \
   4 + 4 + ED448_PUBKEY_BYTES + 8 + ED448_PUBKEY_BYTES
@@ -139,16 +138,37 @@ otrng_prekey_profile_build(const otrng_keypair_s *longterm_pair,
   return p;
 }
 
+static otrng_bool
+otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile) {
+  uint8_t *body = NULL;
+  size_t bodylen = 0;
+
+  if (!otrng_prekey_profile_body_asprint(&body, &bodylen, profile))
+    return otrng_false;
+
+  uint8_t pubkey[ED448_POINT_BYTES];
+  otrng_serialize_ec_point(pubkey, profile->pub);
+
+  otrng_bool valid = otrng_ec_verify(profile->signature, pubkey, body, bodylen);
+
+  free(body);
+  return valid;
+}
+
+static otrng_bool expired(time_t expires) {
+  return (difftime(expires, time(NULL)) <= 0);
+}
+
 INTERNAL otrng_bool
 otrng_prekey_profile_valid(const otrng_prekey_profile_s *profile) {
-  // TODO
-  /*
-   * To validate a Prekey Profile, you must (in this order):
+  // 1. Verify that the Prekey Profile has not expired.
+  if (expired(profile->expires))
+    return otrng_false;
 
-    1. Verify that the Prekey Profile has not expired.
-    2. Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks.
-    3. Verify that the Prekey Profile signature is valid.
+  // 2. Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks.
+  if (!otrng_ec_point_valid(profile->shared_prekey))
+    return otrng_false;
 
-   */
-  return otrng_true;
+  // 3. Verify that the Prekey Profile signature is valid.
+  return otrng_prekey_profile_verify_signature(profile);
 }

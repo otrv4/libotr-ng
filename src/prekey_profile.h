@@ -29,9 +29,8 @@ typedef struct prekey_profile_s {
   uint32_t id;
   uint32_t instance_tag;
   uint64_t expires;
-
-  ec_point_p pub;
-  ec_point_p shared_prekey;
+  ec_point_p pub;           // Key "H"
+  ec_point_p shared_prekey; // Key "D"
   eddsa_signature_p signature;
 } otrng_prekey_profile_s, otrng_prekey_profile_p[1];
 
