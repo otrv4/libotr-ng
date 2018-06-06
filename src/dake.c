@@ -842,24 +842,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
   return otrng_deserialize_bytes_array(dst->auth_mac, HASH_BYTES, cursor, len);
 }
 
-tstatic otrng_bool not_expired(time_t expires) {
-  if (difftime(expires, time(NULL)) > 0) {
-    return otrng_true;
-  }
-
-  return otrng_false;
-}
-
-tstatic otrng_bool no_rollback_detected(const char *versions) {
-  while (*versions) {
-    if (*versions != '3' && *versions != '4')
-      return otrng_false;
-
-    versions++;
-  }
-  return otrng_true;
-}
-
 INTERNAL otrng_bool otrng_valid_received_values(
     const ec_point_p their_ecdh, const dh_mpi_p their_dh,
     const client_profile_s *profile) {
@@ -872,13 +854,7 @@ INTERNAL otrng_bool otrng_valid_received_values(
     return otrng_false;
 
   /* Verify their profile is valid (and not expired). */
-  if (!otrng_client_profile_verify_signature(profile))
-    return otrng_false;
-
-  if (!not_expired(profile->expires))
-    return otrng_false;
-
-  if (!no_rollback_detected(profile->versions))
+  if (!otrng_client_profile_valid(profile))
     return otrng_false;
 
   return otrng_true;

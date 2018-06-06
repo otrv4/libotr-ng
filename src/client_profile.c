@@ -267,3 +267,44 @@ otrng_client_profile_build(uint32_t id, const string_p versions,
 
   return profile;
 }
+
+tstatic otrng_bool not_expired(time_t expires) {
+  if (difftime(expires, time(NULL)) > 0) {
+    return otrng_true;
+  }
+
+  return otrng_false;
+}
+
+tstatic otrng_bool no_rollback_detected(const char *versions) {
+  while (*versions) {
+    if (*versions != '3' && *versions != '4')
+      return otrng_false;
+
+    versions++;
+  }
+  return otrng_true;
+}
+
+// TODO: check if client profile is validate in every place it needs to
+INTERNAL otrng_bool
+otrng_client_profile_valid(const client_profile_s *profile) {
+  if (!not_expired(profile->expires))
+    return otrng_false;
+
+  if (!no_rollback_detected(profile->versions))
+    return otrng_false;
+
+  // TODO: Validate that each Ed448 Public Key are on the curve
+  // Ed448-Goldilocks.
+  if (!otrng_ec_point_valid(profile->long_term_pub_key))
+    return otrng_false;
+
+  // TODO: If the Transitional Signature is present, verify its validity using
+  // the OTRv3 DSA key.
+  // TODO: How are we going to have access to the OTRv3 long-term key in order
+  // to validate this signature?
+
+  /* Verify their profile is valid (and not expired). */
+  return otrng_client_profile_verify_signature(profile);
+}

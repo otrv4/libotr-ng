@@ -62,6 +62,8 @@ INTERNAL client_profile_s *
 otrng_client_profile_build(uint32_t id, const string_p versions,
                            const otrng_keypair_s *keypair);
 
+INTERNAL otrng_bool otrng_client_profile_valid(const client_profile_s *profile);
+
 #ifdef OTRNG_USER_PROFILE_PRIVATE
 
 tstatic client_profile_s *client_profile_new(const string_p versions);
