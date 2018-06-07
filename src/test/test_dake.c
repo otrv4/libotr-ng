@@ -391,6 +391,7 @@ void test_build_interactive_rsign_tag() {
   otrng_assert(dstlen == 1083);
   otrng_assert_cmpmem(dst, expected_t2, dstlen);
 
+  free(phi);
   free(dst);
 
   otrng_dh_mpi_release(initiator_dh);
