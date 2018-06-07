@@ -98,8 +98,8 @@ tstatic size_t client_profile_body_serialize(uint8_t *dst,
 
 tstatic otrng_err client_profile_body_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
-  size_t s = 4 + 4 + ED448_PUBKEY_BYTES + (strlen(profile->versions) + 1) +
-             (ED448_SHARED_PREKEY_BYTES + 4) + 8;
+  size_t s =
+      4 + 4 + ED448_PUBKEY_BYTES + (strlen(profile->versions) + 1) + 4 + 8;
 
   uint8_t *buff = malloc(s);
   if (!buff)
