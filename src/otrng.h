@@ -201,18 +201,6 @@ API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
 
 API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr);
 
-// TODO: change to the real func: unexpose these and make them
-// static
-// TODO: REMOVE
-API void otrng_reply_with_prekey_msg_from_server(otrng_server_s *server,
-                                                 otrng_response_s *response);
-
-// TODO: REMOVE
-API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
-                                               otrng_s *otr);
-
-API prekey_ensemble_s *otrng_build_prekey_ensemble(uint8_t num, otrng_s *otr);
-
 API otrng_err otrng_send_offline_message(string_p *dst,
                                          const prekey_ensemble_s *ensemble,
                                          const string_p message, otrng_s *otr);
@@ -251,6 +239,9 @@ tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
                                         const client_profile_s *their_profile,
                                         uint8_t *ssid, const uint8_t *secret,
                                         const size_t secretlen);
+
+tstatic prekey_ensemble_s *otrng_build_prekey_ensemble(uint8_t num,
+                                                       otrng_s *otr);
 
 #endif
 

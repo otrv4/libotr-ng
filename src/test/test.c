@@ -279,12 +279,13 @@ int main(int argc, char **argv) {
   g_test_add_func("/api/interactive_conversation/v4",
                   test_api_interactive_conversation);
   g_test_add_func("/api/send_offline_message", test_otrng_send_offline_message);
-  g_test_add_func("/api/non_interactive_conversation/v4",
-                  test_api_non_interactive_conversation);
-  g_test_add_func("/api/non_interactive_conversation_enc_msg_1/v4",
-                  test_api_non_interactive_conversation_with_enc_msg_1);
-  g_test_add_func("/api/non_interactive_conversation_enc_msg_2/v4",
-                  test_api_non_interactive_conversation_with_enc_msg_2);
+
+  // g_test_add_func("/api/non_interactive_conversation/v4",
+  //                test_api_non_interactive_conversation);
+  // g_test_add_func("/api/non_interactive_conversation_enc_msg_1/v4",
+  //                test_api_non_interactive_conversation_with_enc_msg_1);
+  // g_test_add_func("/api/non_interactive_conversation_enc_msg_2/v4",
+  //                test_api_non_interactive_conversation_with_enc_msg_2);
 
   g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
   g_test_add_func("/api/same_ratchet_out_of_order/v4",

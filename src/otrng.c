@@ -481,50 +481,6 @@ tstatic void receive_plaintext(otrng_response_s *response,
     response->warning = OTRNG_WARN_RECEIVED_UNENCRYPTED;
 }
 
-tstatic otrng_err serialize_and_encode_prekey_message(
-    string_p *dst, const dake_prekey_message_s *m) {
-  uint8_t *buff = NULL;
-  size_t len = 0;
-
-  if (!otrng_dake_prekey_message_asprintf(&buff, &len, m))
-    return ERROR;
-
-  *dst = otrl_base64_otr_encode(buff, len);
-
-  free(buff);
-  return SUCCESS;
-}
-
-// TODO: REMOVE ME
-tstatic otrng_err reply_with_prekey_msg_to_server(otrng_server_s *server,
-                                                  otrng_s *otr) {
-  // TODO: It should not get the message's Y and B from our_ecdh and our_dh,
-  // because ideally this will generate multiple Y's and B's at once.
-  // For now, we keep it as is, and just regenerate our ephemerals
-  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
-    return ERROR;
-
-  dake_prekey_message_s *m = otrng_dake_prekey_message_build(
-      otr->our_instance_tag, our_ecdh(otr), our_dh(otr));
-  if (!m)
-    return ERROR;
-
-  otrng_client_state_s *state = otr->conversation->client;
-  store_my_prekey_message(m->id, m->sender_instance_tag, otr->keys->our_ecdh,
-                          otr->keys->our_dh, state);
-
-  otrng_err result =
-      serialize_and_encode_prekey_message(&server->prekey_message, m);
-  otrng_dake_prekey_message_free(m);
-
-  return result;
-}
-
-API void otrng_reply_with_prekey_msg_from_server(otrng_server_s *server,
-                                                 otrng_response_s *response) {
-  response->to_send = server->prekey_message;
-}
-
 tstatic otrng_err serialize_and_encode_identity_message(
     string_p *dst, const dake_identity_message_s *m) {
   uint8_t *buff = NULL;
@@ -571,18 +527,6 @@ tstatic otrng_err start_dake(otrng_response_s *response, otrng_s *otr) {
   otr->state = OTRNG_STATE_WAITING_AUTH_R;
 
   return SUCCESS;
-}
-
-// TODO: REMOVE ME
-API otrng_err otrng_start_non_interactive_dake(otrng_server_s *server,
-                                               otrng_s *otr) {
-  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys))
-    return ERROR;
-
-  otr->state = OTRNG_STATE_START; // needed?
-  maybe_create_keys(otr->conversation);
-
-  return reply_with_prekey_msg_to_server(server, otr);
 }
 
 tstatic otrng_err receive_tagged_plaintext(otrng_response_s *response,
@@ -1306,33 +1250,6 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   // when the message is attached
 
   return SUCCESS;
-}
-
-// TODO: REMOVE ME
-tstatic otrng_err receive_prekey_message(string_p *dst, const uint8_t *buff,
-                                         size_t buflen, otrng_s *otr) {
-  if (otr->state == OTRNG_STATE_FINISHED)
-    return SUCCESS; /* ignore the message */
-
-  dake_prekey_message_p m;
-
-  // TODO: This is here just to make tests (that should be removed) pass.
-  // Shared prekey is not part of the prekey message anymore.
-  otrng_ec_point_copy(otr->keys->their_shared_prekey,
-                      otr->their_prekey_profile->shared_prekey);
-
-  if (!otrng_dake_prekey_message_deserialize(m, buff, buflen))
-    return ERROR;
-
-  otrng_err result = prekey_message_received(m, otr);
-  otrng_dake_prekey_message_destroy(m);
-
-  if (result == MALFORMED) {
-    otrng_error_message(dst, ERR_MSG_MALFORMED);
-    result = ERROR; // TODO: Why can't the error just be MALFORMED?
-  }
-
-  return result;
 }
 
 tstatic otrng_bool verify_non_interactive_auth_message(
@@ -2192,10 +2109,6 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
     return result;
   case AUTH_I_MSG_TYPE:
     return receive_auth_i(decoded, dec_len, otr);
-  case PRE_KEY_MSG_TYPE:
-    // TODO: Should not receive a prekey message, but a prekey ensemble.
-    // TODO: REMOVE ME
-    return receive_prekey_message(&response->to_send, decoded, dec_len, otr);
   case NON_INT_AUTH_MSG_TYPE:
     otr->running_version = OTRNG_VERSION_4;
     return receive_non_interactive_auth_message(response, decoded, dec_len,

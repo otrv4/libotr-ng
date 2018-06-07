@@ -315,6 +315,11 @@ void test_otrng_send_offline_message() {
   otrng_free_all(alice, bob);
 }
 
+/* TODO: come back to this when we have serialization/deserialization for a
+ * "Prekey Ensemble Retrieval Message"
+ * This is the API that should be tested.
+ */
+/*
 void test_api_non_interactive_conversation(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
@@ -826,6 +831,7 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
+*/
 
 void test_api_same_ratchet_out_of_order(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
