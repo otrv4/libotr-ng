@@ -924,7 +924,7 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
 
 // TODO: Should maybe return a serialized ensemble, ready to publish to the
 // server
-API prekey_ensemble_s *otrng_build_prekey_ensemble(uint8_t num, otrng_s *otr) {
+INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   prekey_ensemble_s *e = malloc(sizeof(prekey_ensemble_s));
   if (!e)
     return NULL;
@@ -932,17 +932,15 @@ API prekey_ensemble_s *otrng_build_prekey_ensemble(uint8_t num, otrng_s *otr) {
   otrng_client_profile_copy(e->client_profile, get_my_client_profile(otr));
   otrng_prekey_profile_copy(e->prekey_profile, get_my_prekey_profile(otr));
 
-  e->message = malloc(num * sizeof(dake_prekey_message_s *));
-  if (!e->message) {
-    otrng_prekey_ensemble_free(e);
-    return NULL;
-  }
-
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
   otrng_generate_ephemeral_keys(ecdh, dh);
   e->message = otrng_dake_prekey_message_build(otr->our_instance_tag, ecdh->pub,
                                                dh->pub);
+  if (!e->message) {
+    otrng_prekey_ensemble_free(e);
+    return NULL;
+  }
 
   // TODO: should this ID be random? It should probably be unique for us, so
   // we need to store this in client state (?)

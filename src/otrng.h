@@ -213,6 +213,8 @@ API otrng_err otrng_heartbeat_checker(string_p *to_send, otrng_s *otr);
 
 API void otrng_v3_init(void);
 
+INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);
+
 #ifdef OTRNG_OTRNG_PRIVATE
 
 tstatic void otrng_destroy(otrng_s *otr);
@@ -239,9 +241,6 @@ tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
                                         const client_profile_s *their_profile,
                                         uint8_t *ssid, const uint8_t *secret,
                                         const size_t secretlen);
-
-tstatic prekey_ensemble_s *otrng_build_prekey_ensemble(uint8_t num,
-                                                       otrng_s *otr);
 
 #endif
 

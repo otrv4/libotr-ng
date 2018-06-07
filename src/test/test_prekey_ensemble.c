@@ -47,7 +47,6 @@ void test_prekey_ensemble_validate(void) {
   otrng_assert(SUCCESS ==
                prekey_profile_sign(ensemble->prekey_profile, keypair));
 
-  ensemble->message = malloc(sizeof(dake_prekey_message_s));
   ensemble->message = otrng_dake_prekey_message_new();
   ensemble->message->sender_instance_tag = 1;
   otrng_ec_point_copy(ensemble->message->Y, keypair2->pub);

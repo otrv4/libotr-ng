@@ -248,7 +248,7 @@ void test_otrng_build_prekey_ensemble() {
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
   otrng_s *otr = otrng_new(state, policy);
 
-  prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(1, otr);
+  prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(otr);
   otrng_assert(ensemble);
   otrng_assert(SUCCESS == otrng_prekey_ensemble_validate(ensemble));
 

@@ -259,7 +259,7 @@ void test_otrng_send_offline_message() {
   g_assert_cmpint(bob->keys->k, ==, 0);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
-  prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(1, bob);
+  prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(bob);
   otrng_assert(ensemble);
   otrng_assert(SUCCESS == otrng_prekey_ensemble_validate(ensemble));
 
