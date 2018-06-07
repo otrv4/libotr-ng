@@ -988,28 +988,27 @@ API prekey_ensemble_s *otrng_build_prekey_ensemble(uint8_t num, otrng_s *otr) {
   otrng_client_profile_copy(e->client_profile, get_my_client_profile(otr));
   otrng_prekey_profile_copy(e->prekey_profile, get_my_prekey_profile(otr));
 
-  e->messages = malloc(num * sizeof(dake_prekey_message_s *));
-  if (!e->messages) {
+  e->message = malloc(num * sizeof(dake_prekey_message_s *));
+  if (!e->message) {
     otrng_prekey_ensemble_free(e);
     return NULL;
   }
 
-  e->num_messages = num;
-  for (uint8_t i = 0; i < e->num_messages; i++) {
-    ecdh_keypair_p ecdh;
-    dh_keypair_p dh;
-    otrng_generate_ephemeral_keys(ecdh, dh);
-    e->messages[i] = otrng_dake_prekey_message_build(otr->our_instance_tag,
-                                                     ecdh->pub, dh->pub);
+  ecdh_keypair_p ecdh;
+  dh_keypair_p dh;
+  otrng_generate_ephemeral_keys(ecdh, dh);
+  e->message = otrng_dake_prekey_message_build(otr->our_instance_tag, ecdh->pub,
+                                               dh->pub);
 
-    // TODO: should this ID be random? It should probably be unique for us, so
-    // we need to store this in client state (?)
-    e->messages[i]->id = 0x300 + i;
-    otrng_client_state_s *state = otr->conversation->client;
-    store_my_prekey_message(0x300 + i, otr->our_instance_tag, ecdh, dh, state);
-    otrng_ecdh_keypair_destroy(ecdh);
-    otrng_dh_keypair_destroy(dh);
-  }
+  // TODO: should this ID be random? It should probably be unique for us, so
+  // we need to store this in client state (?)
+  e->message->id = 0x301;
+
+  otrng_client_state_s *state = otr->conversation->client;
+  store_my_prekey_message(e->message->id, otr->our_instance_tag, ecdh, dh,
+                          state);
+  otrng_ecdh_keypair_destroy(ecdh);
+  otrng_dh_keypair_destroy(dh);
 
   return e;
 }
@@ -1067,13 +1066,6 @@ tstatic otrng_err receive_prekey_ensemble(const prekey_ensemble_s *ensemble,
   //    client_state maybe).
   // 1. Check if the Client Profile's version is supported by the receiver.
 
-  // TODO: There is no policy about how to handle multiple messages in an
-  // ensemble at the moment. The spec suggests what could be done, but we have
-  // not decided how we want to implement that.
-
-  if (ensemble->num_messages != 1)
-    return ERROR;
-
   // TODO: Decide whether to send a message using this Prekey Ensemble if the
   // long-term key within the Client Profile is trusted or not.
   // Maybe use a callback for this.
@@ -1085,7 +1077,7 @@ tstatic otrng_err receive_prekey_ensemble(const prekey_ensemble_s *ensemble,
     return ERROR;
 
   // Set their ephemeral keys, instance tag, and their_prekeys_id
-  if (!prekey_message_received(ensemble->messages[0], otr))
+  if (!prekey_message_received(ensemble->message, otr))
     return ERROR;
 
   return SUCCESS;

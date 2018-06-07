@@ -258,17 +258,13 @@ void test_otrng_build_prekey_ensemble() {
   otrng_assert_prekey_profile_eq(ensemble->prekey_profile,
                                  state->prekey_profile);
 
-  // Sends one prekey message
-  otrng_assert(ensemble->num_messages == 1);
-
   // Stores the same prekey message sent
   // TODO: Assert the instance tag
   // TODO: Assert the private part
   otrng_stored_prekeys_s *stored = state->our_prekeys->data;
   otrng_assert(stored);
-  otrng_assert_ec_public_key_eq(ensemble->messages[0]->Y,
-                                stored->our_ecdh->pub);
-  otrng_assert_dh_public_key_eq(ensemble->messages[0]->B, stored->our_dh->pub);
+  otrng_assert_ec_public_key_eq(ensemble->message->Y, stored->our_ecdh->pub);
+  otrng_assert_dh_public_key_eq(ensemble->message->B, stored->our_dh->pub);
 
   otrng_prekey_ensemble_free(ensemble);
   otrng_free(otr);

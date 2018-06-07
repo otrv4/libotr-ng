@@ -31,9 +31,7 @@
 typedef struct {
   client_profile_p client_profile;
   otrng_prekey_profile_p prekey_profile;
-
-  uint8_t num_messages;
-  dake_prekey_message_s **messages;
+  dake_prekey_message_s *message;
 } prekey_ensemble_s, prekey_ensemble_p[1];
 
 INTERNAL otrng_err otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst);
