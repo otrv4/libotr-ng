@@ -42,9 +42,6 @@ static const otrng_bool otrng_false = 0;
 typedef enum {
   SUCCESS = 1,
   ERROR = 0,
-  STATE_NOT_ENCRYPTED = 0x1001,
-  MSG_NOT_VALID = 0x1011,
-  MALFORMED = 0x1002,
 } otrng_err;
 
 typedef enum {
@@ -54,6 +51,13 @@ typedef enum {
   ERR_MSG_ENCRYPTION_ERROR,
   ERR_MSG_MALFORMED,
 } otrng_err_code;
+
+typedef enum {
+  NOTIF_NONE = 0,
+  NOTIF_STATE_NOT_ENCRYPTED = 0x1001,
+  NOTIF_MALFORMED = 0x1002,
+  NOTIF_MSG_NOT_VALID = 0x1011,
+} otrng_notif;
 
 /// Return success if x is true
 // static otrng_err

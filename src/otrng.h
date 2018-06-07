@@ -142,7 +142,7 @@ typedef enum {
 typedef enum {
   OTRNG_WARN_NONE = 0,
   OTRNG_WARN_RECEIVED_UNENCRYPTED,
-  OTRNG_WARN_RECEIVED_NOT_VALID
+  OTRNG_WARN_RECEIVED_NOT_VALID,
 } otrng_warning;
 
 typedef struct otrng_response_s {
@@ -171,11 +171,13 @@ INTERNAL otrng_response_s *otrng_response_new(void);
 INTERNAL void otrng_response_free(otrng_response_s *response);
 
 INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
+                                         otrng_notif notif,
                                          const string_p message, otrng_s *otr);
 
 // TODO: this should be called otrng_send_message()
 INTERNAL otrng_err otrng_prepare_to_send_message(string_p *to_send,
                                                  const string_p message,
+                                                 otrng_notif notif,
                                                  tlv_list_s **tlvs,
                                                  uint8_t flags, otrng_s *otr);
 

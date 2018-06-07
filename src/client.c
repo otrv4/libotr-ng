@@ -200,14 +200,17 @@ tstatic int send_message(char **newmsg, const char *message,
   if (!conv)
     return 1;
 
-  otrng_err result =
-      otrng_prepare_to_send_message(newmsg, message, &tlvs, 0, conv->conn);
+  otrng_notif notif = NOTIF_NONE;
+
+  otrng_err result = otrng_prepare_to_send_message(newmsg, message, notif,
+                                                   &tlvs, 0, conv->conn);
   otrng_tlv_list_free(tlvs);
 
-  if (result == STATE_NOT_ENCRYPTED)
+  if (notif == NOTIF_STATE_NOT_ENCRYPTED) {
     return CLIENT_ERROR_NOT_ENCRYPTED;
-  else
+  } else {
     return SUCCESS != result;
+  }
 }
 
 API int otrng_client_send(char **newmessage, const char *message,
@@ -306,9 +309,12 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
     return should_ignore;
 
   response = otrng_response_new();
-  result = otrng_receive_message(response, unfrag_msg, conv->conn);
-  if (result == MSG_NOT_VALID)
+  otrng_notif notif = NOTIF_NONE;
+
+  result = otrng_receive_message(response, notif, unfrag_msg, conv->conn);
+  if (notif == NOTIF_MSG_NOT_VALID) {
     return CLIENT_ERROR_MSG_NOT_VALID;
+  }
 
   free(unfrag_msg);
   unfrag_msg = NULL;

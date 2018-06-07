@@ -127,6 +127,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
   string_p query_message = NULL;
+  otrng_notif notif = NOTIF_NONE;
 
   otrng_assert(alice->state == OTRNG_STATE_START);
   otrng_assert(bob->state == OTRNG_STATE_START);
@@ -137,8 +138,8 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert_cmpmem("?OTRv4", query_message, 6);
 
   // Bob receives a query message
-  otrng_assert(otrng_receive_message(response_to_alice, query_message, bob) ==
-               SUCCESS);
+  otrng_assert(otrng_receive_message(response_to_alice, notif, query_message,
+                                     bob) == SUCCESS);
   free(query_message);
   query_message = NULL;
 
@@ -149,7 +150,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert_cmpmem("?OTR:AAQI", response_to_alice->to_send, 9);
 
   // Alice receives an identity message
-  otrng_assert(otrng_receive_message(response_to_bob,
+  otrng_assert(otrng_receive_message(response_to_bob, notif,
                                      response_to_alice->to_send,
                                      alice) == SUCCESS);
   free(response_to_alice->to_send);
@@ -169,7 +170,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert_cmpmem("?OTR:AASR", response_to_bob->to_send, 9);
 
   // Bob receives an auth-r message
-  otrng_assert(otrng_receive_message(response_to_alice,
+  otrng_assert(otrng_receive_message(response_to_alice, notif,
                                      response_to_bob->to_send, bob) == SUCCESS);
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
@@ -196,7 +197,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert(bob->keys->current);
 
   // Alice receives an auth-i message
-  otrng_assert(otrng_receive_message(response_to_bob,
+  otrng_assert(otrng_receive_message(response_to_bob, notif,
                                      response_to_alice->to_send,
                                      alice) == SUCCESS);
   free(response_to_alice->to_send);

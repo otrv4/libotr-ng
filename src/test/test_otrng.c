@@ -80,7 +80,8 @@ void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
 void test_otrng_receives_plaintext_without_ws_tag_on_start(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
-  otrng_assert(otrng_receive_message(response, "Some random text.",
+  otrng_notif notif = NOTIF_NONE;
+  otrng_assert(otrng_receive_message(response, notif, "Some random text.",
                                      otrng_fixture->otr) == SUCCESS);
 
   g_assert_cmpstr(response->to_display, ==, "Some random text.");
@@ -91,9 +92,10 @@ void test_otrng_receives_plaintext_without_ws_tag_on_start(
 void test_otrng_receives_plaintext_without_ws_tag_not_on_start(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_fixture->otr->state = OTRNG_STATE_WAITING_AUTH_I;
+  otrng_notif notif = NOTIF_NONE;
 
   otrng_response_s *response = otrng_response_new();
-  otrng_assert(otrng_receive_message(response, "Some random text.",
+  otrng_assert(otrng_receive_message(response, notif, "Some random text.",
                                      otrng_fixture->otr) == SUCCESS);
 
   g_assert_cmpstr(response->to_display, ==, "Some random text.");
@@ -107,9 +109,10 @@ void test_otrng_receives_plaintext_with_ws_tag(otrng_fixture_s *otrng_fixture,
   otrng_response_s *response = otrng_response_new();
   string_p message =
       " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
+  otrng_notif notif = NOTIF_NONE;
 
-  otrng_assert(otrng_receive_message(response, message, otrng_fixture->otr) ==
-               SUCCESS);
+  otrng_assert(otrng_receive_message(response, notif, message,
+                                     otrng_fixture->otr) == SUCCESS);
   g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
   otrng_assert(response->to_send);
   g_assert_cmpint(otrng_fixture->otr->state, ==, OTRNG_STATE_WAITING_AUTH_R);
@@ -123,9 +126,10 @@ void test_otrng_receives_plaintext_with_ws_tag_after_text(
   otrng_response_s *response = otrng_response_new();
   string_p message =
       "Some random invitation text. \t  \t\t\t\t \t \t \t    \t\t \t  ";
+  otrng_notif notif = NOTIF_NONE;
 
-  otrng_assert(otrng_receive_message(response, message, otrng_fixture->otr) ==
-               SUCCESS);
+  otrng_assert(otrng_receive_message(response, notif, message,
+                                     otrng_fixture->otr) == SUCCESS);
   g_assert_cmpstr(response->to_display, ==, "Some random invitation text.");
   otrng_assert(response->to_send);
   g_assert_cmpint(otrng_fixture->otr->state, ==, OTRNG_STATE_WAITING_AUTH_R);
@@ -139,8 +143,9 @@ void test_otrng_receives_plaintext_with_ws_tag_v3(
   otrng_response_s *response = otrng_response_new();
   string_p message =
       " \t  \t\t\t\t \t \t \t    \t\t  \t\tAnd some random invitation text.";
-  otrng_assert(otrng_receive_message(response, message, otrng_fixture->v3) ==
-               SUCCESS);
+  otrng_notif notif = NOTIF_NONE;
+  otrng_assert(otrng_receive_message(response, notif, message,
+                                     otrng_fixture->v3) == SUCCESS);
 
   // g_assert_cmpstr(response->to_display, ==, "And some random invitation
   // text.");
@@ -154,7 +159,8 @@ void test_otrng_receives_plaintext_with_ws_tag_v3(
 void test_otrng_receives_query_message(otrng_fixture_s *otrng_fixture,
                                        gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
-  otrng_assert(otrng_receive_message(response,
+  otrng_notif notif = NOTIF_NONE;
+  otrng_assert(otrng_receive_message(response, notif,
                                      "?OTRv4? And some random invitation text.",
                                      otrng_fixture->otr) == SUCCESS);
 
@@ -168,7 +174,8 @@ void test_otrng_receives_query_message(otrng_fixture_s *otrng_fixture,
 void test_otrng_receives_query_message_v3(otrng_fixture_s *otrng_fixture,
                                           gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
-  otrng_assert(otrng_receive_message(response,
+  otrng_notif notif = NOTIF_NONE;
+  otrng_assert(otrng_receive_message(response, notif,
                                      "?OTRv3? And some random invitation text.",
                                      otrng_fixture->v3) == SUCCESS);
 
@@ -180,8 +187,9 @@ void test_otrng_receives_query_message_v3(otrng_fixture_s *otrng_fixture,
 void test_otrng_receives_identity_message_invalid_on_start(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
   char *identity_message = "?OTR:";
+  otrng_notif notif = NOTIF_NONE;
   otrng_response_s *response = otrng_response_new();
-  otrng_assert(otrng_receive_message(response, identity_message,
+  otrng_assert(otrng_receive_message(response, notif, identity_message,
                                      otrng_fixture->otr) == SUCCESS);
 
   g_assert_cmpint(otrng_fixture->otr->state, ==, OTRNG_STATE_START);
@@ -196,6 +204,7 @@ void test_otrng_receives_identity_message_validates_instance_tag(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
 
   char *message = "And some random invitation text.";
+  otrng_notif notif = NOTIF_NONE;
 
   // builds a query message
   char *query_message = NULL;
@@ -204,14 +213,14 @@ void test_otrng_receives_identity_message_validates_instance_tag(
   // build an identity message
   otrng_response_s *id_msg = otrng_response_new();
   otrng_fixture->otr->their_instance_tag = 1;
-  otrng_receive_message(id_msg, query_message, otrng_fixture->otr);
+  otrng_receive_message(id_msg, notif, query_message, otrng_fixture->otr);
   free(query_message);
   query_message = NULL;
 
   // receive the identity message with non-zero their instance tag
   otrng_response_s *auth_msg = otrng_response_new();
   char *to_send = otrng_strdup(id_msg->to_send);
-  otrng_receive_message(auth_msg, to_send, otrng_fixture->otr);
+  otrng_receive_message(auth_msg, notif, to_send, otrng_fixture->otr);
   otrng_assert(!auth_msg->to_send);
 
   free(to_send);
