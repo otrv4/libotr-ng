@@ -206,7 +206,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     return SUCCESS;
   }
 
-  int msg_len = end - start - 1;
+  int fragment_len = end - start - 1;
   if (end <= start)
     return ERROR;
 
@@ -216,16 +216,16 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
       return ERROR;
   }
 
-  char *fragment = malloc(msg_len + 1);
+  char *fragment = malloc(fragment_len + 1);
   if (!fragment)
     return ERROR;
 
-  memcpy(fragment, message + start, msg_len);
-  fragment[msg_len] = '\0';
+  memcpy(fragment, message + start, fragment_len);
+  fragment[fragment_len] = '\0';
 
   context->fragments[i - 1] = fragment;
 
-  context->fragment_len += msg_len;
+  context->fragment_len += fragment_len;
   context->T = t;
   context->C++;
 
