@@ -38,6 +38,9 @@ void test_smp_state_machine(void) {
   alice_state->user_state = otrl_userstate_create();
   bob_state->user_state = otrl_userstate_create();
 
+  alice_state->phi = otrng_strdup("alice@jabber.com");
+  bob_state->phi = otrng_strdup("alice@jabber.com");
+
   uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
   otrng_client_state_add_private_key_v4(alice_state, alice_sym);

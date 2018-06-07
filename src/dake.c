@@ -903,16 +903,18 @@ tstatic otrng_err build_rsign_tag(
                                        r_profile))
       continue;
 
-    char *phi_val = otrng_strdup(phi);
-    if (!phi_val)
+    uint8_t *phi_val = malloc(strlen(phi) + 1 + 4);
+    if (!phi_val) {
       continue;
+    }
+
+    otrng_serialize_data(phi_val, (uint8_t *)phi, strlen(phi) + 1);
 
     shake_256_kdf1(hash_ser_i_profile, 64, first_usage, ser_i_profile,
                    ser_i_profile_len);
     shake_256_kdf1(hash_ser_r_profile, 64, first_usage + 1, ser_r_profile,
                    ser_r_profile_len);
-    shake_256_kdf1(hash_phi, 64, first_usage + 2, (uint8_t *)phi_val,
-                   strlen(phi_val) + 1);
+    shake_256_kdf1(hash_phi, 64, first_usage + 2, phi_val, strlen(phi) + 1 + 4);
 
     free(phi_val);
 
@@ -962,9 +964,9 @@ INTERNAL otrng_err build_interactive_rsign_tag(
     const client_profile_s *i_profile, const client_profile_s *r_profile,
     const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
     const dh_mpi_p r_dh, const char *phi) {
-
-  if (!phi)
-    phi = "";
+  if (!phi) {
+    return ERROR;
+  }
 
   size_t written = 0;
   uint8_t *buff = malloc(1 + MAX_T_LENGTH);
@@ -1003,8 +1005,9 @@ INTERNAL otrng_err build_non_interactive_rsig_tag(
     const ec_point_p r_ecdh, const dh_mpi_p i_dh, const dh_mpi_p r_dh,
     const otrng_shared_prekey_pub_p r_shared_prekey, char *phi) {
 
-  if (!phi)
-    phi = "";
+  if (!phi) {
+    return ERROR;
+  }
 
   *msg = malloc(MAX_T_LENGTH);
   if (!*msg)
