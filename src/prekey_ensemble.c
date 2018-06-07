@@ -72,7 +72,6 @@ INTERNAL void otrng_prekey_ensemble_destroy(prekey_ensemble_s *dst) {
   otrng_client_profile_destroy(dst->client_profile);
   otrng_prekey_profile_destroy(dst->prekey_profile);
   otrng_dake_prekey_message_free(dst->message);
-  free(dst->message);
   dst->message = NULL;
 }
 
