@@ -39,7 +39,7 @@ code-check:
 VALGRIND_SUPPRESSIONS = \
 	valgrind.supp
 
-VALGRIND_ARGS = --track-origins=yes --quiet --error-exitcode=2 --leak-check=full \
+VALGRIND_ARGS = --track-origins=yes --quiet --error-exitcode=2 --leak-check=full --read-var-info \
 	--suppressions=$(VALGRIND_SUPPRESSIONS)
 
 mem-check: check
