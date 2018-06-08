@@ -538,9 +538,6 @@ tstatic otrng_err receive_tagged_plaintext(otrng_response_s *response,
   case OTRNG_VERSION_4:
     if (!message_to_display_without_tag(response, message, strlen(message)))
       return ERROR;
-
-    otrng_dh_priv_key_destroy(otr->keys->our_dh);
-    otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
     return start_dake(response, otr);
     break;
   case OTRNG_VERSION_3:
@@ -562,8 +559,8 @@ tstatic otrng_err receive_query_message(otrng_response_s *response,
   switch (otr->running_version) {
   case OTRNG_VERSION_4:
     // TODO: why is this delete here?
-    otrng_dh_priv_key_destroy(otr->keys->our_dh);
-    otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
+    // otrng_dh_priv_key_destroy(otr->keys->our_dh);
+    // otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
     return start_dake(response, otr);
     break;
   case OTRNG_VERSION_3:
@@ -2030,8 +2027,6 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     sodium_memzero(enc_key, sizeof(enc_key));
     sodium_memzero(mac_key, sizeof(mac_key));
 
-    // TODO: Securely delete receiving chain keys older than message_id-1.
-
     if (!receive_tlvs(response, otr))
       continue;
 
@@ -2099,21 +2094,13 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
   maybe_create_keys(otr->conversation);
 
   response->to_send = NULL;
-  otrng_err result;
 
   switch (header.type) {
   case IDENTITY_MSG_TYPE:
     otr->running_version = OTRNG_VERSION_4;
     return receive_identity_message(&response->to_send, decoded, dec_len, otr);
   case AUTH_R_MSG_TYPE:
-    result = receive_auth_r(&response->to_send, decoded, dec_len, otr);
-    // TODO: why is this delete here?
-    // TODO: this gets deleted regardless of the error?
-    // if (otr->state == OTRNG_STATE_ENCRYPTED_MESSAGES) {
-    //  otrng_dh_priv_key_destroy(otr->keys->our_dh);
-    //  otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
-    //}
-    return result;
+    return receive_auth_r(&response->to_send, decoded, dec_len, otr);
   case AUTH_I_MSG_TYPE:
     return receive_auth_i(decoded, dec_len, otr);
   case NON_INT_AUTH_MSG_TYPE:
