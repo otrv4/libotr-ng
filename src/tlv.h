@@ -139,25 +139,8 @@ INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
  **/
 INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *tlvs, tlv_s *tlv);
 
-/**
- * @brief appends a new padding TLV to the given list
- *
- * @param [tlvs]        the list of TLVs to add the TLV to. can be NULL. if
- *    given the last nodes next-pointer will be modified.
- * @param [message_len] the complete length of messages, used to calculate the
- *    amount of padding necessary.
- *
- * @return if given [tlvs], returns it - otherwise a newly created TLV list.
- *    it is the callers responsibility to free it after use.
- *    returns NULL if something goes wrong.
- **/
-INTERNAL tlv_list_s *otrng_append_padding_tlv(tlv_list_s *tlvs,
-                                              int message_len);
+INTERNAL tlv_s *otrng_tlv_padding_new(size_t len);
 
-#ifdef OTRNG_TLV_PRIVATE
-
-tstatic void tlv_free(tlv_s *tlv);
-
-#endif
+INTERNAL void otrng_tlv_free(tlv_s *tlv);
 
 #endif

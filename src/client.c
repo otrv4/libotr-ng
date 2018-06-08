@@ -191,20 +191,18 @@ otrng_client_get_conversation(int force_create, const char *recipient,
   return get_conversation_with(recipient, client->conversations);
 }
 
+// TODO: this should allow TLVs to be added to the message
 tstatic int send_message(char **newmsg, const char *message,
                          const char *recipient, otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
-  tlv_list_s *tlvs = NULL;
+  otrng_notif notif = NOTIF_NONE;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv)
     return 1;
 
-  otrng_notif notif = NOTIF_NONE;
-
-  otrng_err result = otrng_prepare_to_send_message(newmsg, message, notif,
-                                                   &tlvs, 0, conv->conn);
-  otrng_tlv_list_free(tlvs);
+  otrng_err result = otrng_prepare_to_send_message(newmsg, message, notif, NULL,
+                                                   0, conv->conn);
 
   if (notif == NOTIF_STATE_NOT_ENCRYPTED) {
     return CLIENT_ERROR_NOT_ENCRYPTED;

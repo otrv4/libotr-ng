@@ -1764,18 +1764,15 @@ INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr) {
 
   tlv_list_s *disconnected = otrng_tlv_list_one(
       otrng_tlv_new(OTRNG_TLV_DISCONNECTED, serlen, ser_mac_keys));
-  if (!disconnected) {
-    free(ser_mac_keys);
-    return ERROR;
-  }
-
   free(ser_mac_keys);
+
+  if (!disconnected)
+    return ERROR;
 
   otrng_notif notif = NOTIF_NONE;
   otrng_err result = otrng_prepare_to_send_message(
-      to_send, "", notif, &disconnected, MSGFLAGS_IGNORE_UNREADABLE, otr);
+      to_send, "", notif, disconnected, MSGFLAGS_IGNORE_UNREADABLE, otr);
 
-  otrng_tlv_list_free(disconnected);
   forget_our_keys(otr);
   otr->state = OTRNG_STATE_START;
   gone_insecure_cb_v4(otr->conversation);
@@ -1917,21 +1914,37 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
   return out;
 }
 
-tstatic otrng_err receive_tlvs(tlv_list_s **to_send, otrng_response_s *response,
-                               otrng_s *otr) {
+tstatic otrng_err process_received_tlvs(tlv_list_s **to_send,
+                                        otrng_response_s *response,
+                                        otrng_s *otr) {
   const tlv_list_s *current = response->tlvs;
   while (current) {
     tlv_s *ret = process_tlv(current->data, otr);
     current = current->next;
 
-    if (ret) {
-      *to_send = otrng_append_tlv(*to_send, ret);
-      if (!*to_send)
-        return ERROR;
-    }
+    if (!ret)
+      continue;
+
+    *to_send = otrng_append_tlv(*to_send, ret);
+    if (!*to_send)
+      return ERROR;
   }
 
   return SUCCESS;
+}
+
+tstatic otrng_err receive_tlvs(otrng_response_s *response, otrng_s *otr) {
+  tlv_list_s *reply_tlvs = NULL;
+  otrng_err ret = process_received_tlvs(&reply_tlvs, response, otr);
+  if (!reply_tlvs)
+    return ret;
+
+  // Serialize response message to send
+  ret = otrng_prepare_to_send_message(&response->to_send, "", NOTIF_NONE,
+                                      reply_tlvs, MSGFLAGS_IGNORE_UNREADABLE,
+                                      otr);
+  otrng_tlv_list_free(reply_tlvs);
+  return ret;
 }
 
 tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
@@ -1945,10 +1958,12 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
 
+  response->to_display = NULL;
+
   // TODO: check this case with Nik on v3
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
     otrng_error_message(&response->to_send, ERR_MSG_NOT_PRIVATE);
-    free(msg);
+    otrng_data_message_free(msg);
     return ERROR;
   }
 
@@ -1958,13 +1973,15 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     return ERROR;
   }
 
+  // TODO: Do we care if the buffer had more than the data message?
+  // if (read < buffer)
+  //  return ERROR;
+
   otrng_key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
 
   do {
     if (msg->receiver_instance_tag != otr->our_instance_tag) {
-      response->to_display = NULL;
       otrng_data_message_free(msg);
-
       return SUCCESS;
     }
 
@@ -1985,7 +2002,6 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     if (!otrng_valid_data_message(mac_key, msg)) {
       sodium_memzero(enc_key, sizeof(enc_key));
       sodium_memzero(mac_key, sizeof(mac_key));
-      response->to_display = NULL;
       otrng_data_message_free(msg);
 
       response->warning = OTRNG_WARN_RECEIVED_NOT_VALID;
@@ -1999,14 +2015,12 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
         otrng_error_message(&response->to_send, ERR_MSG_UNDECRYPTABLE);
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
-        response->to_display = NULL;
         otrng_data_message_free(msg);
 
         return ERROR;
       } else if (msg->flags == MSGFLAGS_IGNORE_UNREADABLE) {
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
-        response->to_display = NULL;
         otrng_data_message_free(msg);
 
         return ERROR;
@@ -2016,28 +2030,12 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     sodium_memzero(enc_key, sizeof(enc_key));
     sodium_memzero(mac_key, sizeof(mac_key));
 
-    tlv_list_s *reply_tlvs = NULL;
-
     // TODO: Securely delete receiving chain keys older than message_id-1.
-    if (!receive_tlvs(&reply_tlvs, response, otr)) {
-      otrng_tlv_list_free(reply_tlvs);
-      continue;
-    }
 
-    otrng_notif notif = NOTIF_NONE;
-    if (reply_tlvs) {
-      if (!otrng_prepare_to_send_message(&response->to_send, "", notif,
-                                         &reply_tlvs,
-                                         MSGFLAGS_IGNORE_UNREADABLE, otr)) {
-        otrng_tlv_list_free(reply_tlvs);
-        continue;
-      }
-      otrng_tlv_list_free(reply_tlvs);
-    }
+    if (!receive_tlvs(response, otr))
+      continue;
 
     if (!otrng_store_old_mac_keys(otr->keys, mac_key)) {
-      response->to_display = NULL;
-      otrng_data_message_free(msg);
       continue;
     }
 
@@ -2193,6 +2191,7 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
                                           otrng_notif notif,
                                           const string_p message,
                                           otrng_s *otr) {
+  // TODO: If we need to change, we should make a copy and not discard the const
   string_p str = (void *)message;
 
   switch (get_message_type(message)) {
@@ -2368,6 +2367,14 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   return SUCCESS;
 }
 
+tstatic size_t otrng_tlv_serialize(uint8_t *dst, const tlv_s *tlv) {
+  size_t w = 0;
+  w += otrng_serialize_uint16(dst + w, tlv->type);
+  w += otrng_serialize_uint16(dst + w, tlv->len);
+  w += otrng_serialize_bytes_array(dst + w, tlv->data, tlv->len);
+  return w;
+}
+
 tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
                                  const tlv_list_s *tlvs) {
   const tlv_list_s *current = tlvs;
@@ -2387,34 +2394,80 @@ tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
     return ERROR;
 
   cursor = *dst;
-  for (current = tlvs; current; current = current->next) {
-    cursor += otrng_serialize_uint16(cursor, current->data->type);
-    cursor += otrng_serialize_uint16(cursor, current->data->len);
-    cursor += otrng_serialize_bytes_array(cursor, current->data->data,
-                                          current->data->len);
-  }
+  for (current = tlvs; current; current = current->next)
+    cursor += otrng_tlv_serialize(cursor, current->data);
 
   return SUCCESS;
 }
 
+tstatic size_t needed_padding(size_t message_len) {
+  // TODO: This should be configurable
+  const int padding_granularity = 256;
+  const int header_len = 4;
+  const int nul_byte_len = 1;
+
+  return padding_granularity -
+         ((message_len + header_len + nul_byte_len) % padding_granularity);
+}
+
+tstatic otrng_err generate_padding(uint8_t **dst, size_t *dstlen,
+                                   size_t message_len, const otrng_s *otr) {
+  if (!otr->conversation->client->pad)
+    return SUCCESS;
+
+  size_t padding_len = needed_padding(message_len);
+  if (!padding_len)
+    return SUCCESS;
+
+  tlv_s *padding_tlv = otrng_tlv_padding_new(padding_len);
+  if (!padding_tlv)
+    return ERROR;
+
+  *dstlen = padding_tlv->len + 4;
+  *dst = malloc(*dstlen);
+  if (!*dst) {
+    otrng_tlv_free(padding_tlv);
+    return ERROR;
+  }
+
+  otrng_err ret = otrng_tlv_serialize(*dst, padding_tlv);
+  otrng_tlv_free(padding_tlv);
+  return ret;
+}
+
 tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dstlen,
-                              const string_p message, const tlv_list_s *tlvs) {
+                              const string_p message, const tlv_list_s *tlvs,
+                              const otrng_s *otr) {
   uint8_t *ser = NULL;
   size_t len = 0;
 
   if (!serialize_tlvs(&ser, &len, tlvs))
     return ERROR;
 
-  *dstlen = strlen(message) + 1 + len;
+  // Append padding
+  size_t message_len = strlen(message) + 1 + len;
+  uint8_t *padding = NULL;
+  size_t padding_len = 0;
+  if (!generate_padding(&padding, &padding_len, message_len, otr)) {
+    free(ser);
+    return ERROR;
+  }
+
+  *dstlen = message_len + padding_len;
   *dst = malloc(*dstlen);
   if (!*dst) {
     free(ser);
+    free(padding);
     return ERROR;
   }
 
   memcpy(stpcpy((char *)*dst, message) + 1, ser, len);
 
+  if (padding)
+    memcpy(*dst + message_len, padding, padding_len);
+
   free(ser);
+  free(padding);
   return SUCCESS;
 }
 
@@ -2432,7 +2485,7 @@ tstatic otrng_err otrng_prepare_to_send_data_message(
     return ERROR;
   }
 
-  if (!append_tlvs(&msg, &msg_len, message, tlvs))
+  if (!append_tlvs(&msg, &msg_len, message, tlvs, otr))
     return ERROR;
 
   // TODO: due to the addition of the flag to the tlvs, this will
@@ -2449,25 +2502,6 @@ tstatic otrng_err otrng_prepare_to_send_data_message(
   return result;
 }
 
-tstatic size_t tlv_serialized_length(tlv_s *tlv) {
-  size_t result = 0;
-
-  result += 2; // [type] length
-  result += 2; // [len] length
-  result += tlv->len;
-
-  return result;
-}
-
-tstatic size_t tlv_list_serialized_length(tlv_list_s *tlvs) {
-  size_t result = 0;
-
-  for (tlv_list_s *current = tlvs; current; current = current->next)
-    result += tlv_serialized_length(current->data);
-
-  return result;
-}
-
 /**
  * @todo Move this documentation to header file later
  *
@@ -2477,28 +2511,17 @@ tstatic size_t tlv_list_serialized_length(tlv_list_s *tlvs) {
 INTERNAL otrng_err otrng_prepare_to_send_message(string_p *to_send,
                                                  const string_p message,
                                                  otrng_notif notif,
-                                                 tlv_list_s **tlvs,
+                                                 const tlv_list_s *tlvs,
                                                  uint8_t flags, otrng_s *otr) {
   if (!otr)
     return ERROR;
 
-  if (otr->conversation->client->pad) {
-    *tlvs = otrng_append_padding_tlv(
-        *tlvs, strlen(message) + tlv_list_serialized_length(*tlvs));
-    if (!*tlvs)
-      return ERROR;
-  }
-
-  const tlv_list_s *const_tlvs = NULL;
-  if (tlvs)
-    const_tlvs = *tlvs;
-
   switch (otr->running_version) {
   case OTRNG_VERSION_3:
-    return otrng_v3_send_message(to_send, message, const_tlvs, otr->v3_conn);
+    return otrng_v3_send_message(to_send, message, tlvs, otr->v3_conn);
   case OTRNG_VERSION_4:
-    return otrng_prepare_to_send_data_message(to_send, notif, message,
-                                              const_tlvs, otr, flags);
+    return otrng_prepare_to_send_data_message(to_send, notif, message, tlvs,
+                                              otr, flags);
   case OTRNG_VERSION_NONE:
     return ERROR;
   }
@@ -2516,17 +2539,14 @@ tstatic otrng_err otrng_close_v4(string_p *to_send, otrng_s *otr) {
 
   tlv_list_s *disconnected = otrng_tlv_list_one(
       otrng_tlv_new(OTRNG_TLV_DISCONNECTED, serlen, ser_mac_keys));
-  if (!disconnected) {
-    free(ser_mac_keys);
-    return ERROR;
-  }
-
   free(ser_mac_keys);
 
-  otrng_notif notif = NOTIF_NONE;
+  if (!disconnected)
+    return ERROR;
 
+  otrng_notif notif = NOTIF_NONE;
   otrng_err result = otrng_prepare_to_send_message(
-      to_send, "", notif, &disconnected, MSGFLAGS_IGNORE_UNREADABLE, otr);
+      to_send, "", notif, disconnected, MSGFLAGS_IGNORE_UNREADABLE, otr);
 
   otrng_tlv_list_free(disconnected);
   forget_our_keys(otr);
@@ -2564,38 +2584,37 @@ tstatic otrng_err otrng_send_symkey_message_v4(string_p *to_send,
   if (usedatalen > 0 && !usedata)
     return ERROR;
 
-  if (otr->state == OTRNG_STATE_ENCRYPTED_MESSAGES) {
-    unsigned char *tlv_data = malloc(usedatalen + 4);
+  if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES)
+    return ERROR;
 
-    tlv_data[0] = (use >> 24) & 0xff;
-    tlv_data[1] = (use >> 16) & 0xff;
-    tlv_data[2] = (use >> 8) & 0xff;
-    tlv_data[3] = (use)&0xff;
-    if (usedatalen > 0)
-      memmove(tlv_data + 4, usedata, usedatalen);
+  unsigned char *tlv_data = malloc(usedatalen + 4);
 
-    memmove(extra_key, otr->keys->extra_symmetric_key,
-            EXTRA_SYMMETRIC_KEY_BYTES);
+  tlv_data[0] = (use >> 24) & 0xff;
+  tlv_data[1] = (use >> 16) & 0xff;
+  tlv_data[2] = (use >> 8) & 0xff;
+  tlv_data[3] = (use)&0xff;
 
-    tlv_list_s *tlvs = otrng_tlv_list_one(
-        otrng_tlv_new(OTRNG_TLV_SYM_KEY, usedatalen + 4, tlv_data));
-    free(tlv_data);
+  if (usedatalen > 0)
+    memmove(tlv_data + 4, usedata, usedatalen);
 
-    if (!tlvs)
-      return ERROR;
+  memmove(extra_key, otr->keys->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
-    otrng_notif notif = NOTIF_NONE;
-    // TODO: in v3 the extra_key is passed as a param to this
-    // do the same?
-    if (!otrng_prepare_to_send_message(to_send, "", notif, &tlvs,
-                                       MSGFLAGS_IGNORE_UNREADABLE, otr)) {
-      otrng_tlv_list_free(tlvs);
-      return ERROR;
-    }
-    otrng_tlv_list_free(tlvs);
-    return SUCCESS;
-  }
-  return ERROR;
+  tlv_list_s *tlvs = otrng_tlv_list_one(
+      otrng_tlv_new(OTRNG_TLV_SYM_KEY, usedatalen + 4, tlv_data));
+  free(tlv_data);
+
+  // TODO: Should not extra_key be zeroed if any error happens from here on?
+  if (!tlvs)
+    return ERROR;
+
+  otrng_notif notif = NOTIF_NONE;
+  // TODO: in v3 the extra_key is passed as a param to this
+  // do the same?
+  otrng_err ret = otrng_prepare_to_send_message(
+      to_send, "", notif, tlvs, MSGFLAGS_IGNORE_UNREADABLE, otr);
+  otrng_tlv_list_free(tlvs);
+
+  return ret;
 }
 
 API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
@@ -2690,20 +2709,19 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
     if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES)
       return ERROR;
 
-    tlv_list_s *tlvs = otrng_tlv_list_one(otrng_smp_initiate(
+    tlv_s *smp_start_tlv = otrng_smp_initiate(
         get_my_client_profile(otr), otr->their_client_profile, question, q_len,
-        secret, secretlen, otr->keys->ssid, otr->smp, otr->conversation));
+        secret, secretlen, otr->keys->ssid, otr->smp, otr->conversation);
+
+    tlv_list_s *tlvs = otrng_tlv_list_one(smp_start_tlv);
     if (!tlvs)
       return ERROR;
 
     otrng_notif notif = NOTIF_NONE;
-    if (!otrng_prepare_to_send_message(to_send, "", notif, &tlvs,
-                                       MSGFLAGS_IGNORE_UNREADABLE, otr)) {
-      otrng_tlv_list_free(tlvs);
-      return ERROR;
-    }
+    otrng_err ret = otrng_prepare_to_send_message(
+        to_send, "", notif, tlvs, MSGFLAGS_IGNORE_UNREADABLE, otr);
     otrng_tlv_list_free(tlvs);
-    return SUCCESS;
+    return ret;
   case OTRNG_VERSION_NONE:
     return ERROR;
   }
@@ -2742,6 +2760,7 @@ tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
   tlv_list_s *tlvs = otrng_tlv_list_one(otrng_smp_provide_secret(
       &event, otr->smp, get_my_client_profile(otr), otr->their_client_profile,
       otr->keys->ssid, secret, secretlen));
+
   if (!tlvs)
     return ERROR;
 
@@ -2752,15 +2771,11 @@ tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
                          otr->smp->msg1->q_len, otr->conversation);
 
   otrng_notif notif = NOTIF_NONE;
-  if (otrng_prepare_to_send_message(to_send, "", notif, &tlvs,
-                                    MSGFLAGS_IGNORE_UNREADABLE,
-                                    otr) == SUCCESS) {
-    otrng_tlv_list_free(tlvs);
-    return SUCCESS;
-  }
-
+  otrng_err ret = otrng_prepare_to_send_message(
+      to_send, "", notif, tlvs, MSGFLAGS_IGNORE_UNREADABLE, otr);
   otrng_tlv_list_free(tlvs);
-  return ERROR;
+
+  return ret;
 }
 
 INTERNAL otrng_err otrng_smp_continue(string_p *to_send, const uint8_t *secret,
@@ -2787,15 +2802,10 @@ tstatic otrng_err otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
 
   otr->smp->state = SMPSTATE_EXPECT1;
   otrng_notif notif = NOTIF_NONE;
-  if (!otrng_prepare_to_send_message(to_send, "", notif, &tlvs,
-                                     MSGFLAGS_IGNORE_UNREADABLE, otr)) {
-    otrng_tlv_list_free(tlvs);
-    return ERROR;
-  }
-
+  otrng_err ret = otrng_prepare_to_send_message(
+      to_send, "", notif, tlvs, MSGFLAGS_IGNORE_UNREADABLE, otr);
   otrng_tlv_list_free(tlvs);
-
-  return SUCCESS;
+  return ret;
 }
 
 API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr) {

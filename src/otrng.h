@@ -145,6 +145,11 @@ typedef enum {
   OTRNG_WARN_RECEIVED_NOT_VALID,
 } otrng_warning;
 
+// TODO: The use of "response" as the type name is confusing:
+// - to_display is the RECEIVED plaintext
+// - tlvs is the RECEIVED list of TLVs
+// - warning is a warning due the RECEIVAL of the message
+// - to_send is the RESPONSE we send in response to the RECEIVED tlvs.
 typedef struct otrng_response_s {
   string_p to_display;
   string_p to_send;
@@ -178,7 +183,7 @@ INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
 INTERNAL otrng_err otrng_prepare_to_send_message(string_p *to_send,
                                                  const string_p message,
                                                  otrng_notif notif,
-                                                 tlv_list_s **tlvs,
+                                                 const tlv_list_s *tlvs,
                                                  uint8_t flags, otrng_s *otr);
 
 INTERNAL otrng_err otrng_close(string_p *to_send, otrng_s *otr);

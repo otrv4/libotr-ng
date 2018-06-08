@@ -122,14 +122,11 @@ void test_api_interactive_conversation(void) {
   otrng_err result;
 
   for (message_id = 1; message_id < 4; message_id++) {
-    tlv_list_s *tlvs = NULL;
     // Alice sends a data message
     result =
-        otrng_prepare_to_send_message(&to_send, "hi", notif, &tlvs, 0, alice);
+        otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
     assert_msg_sent(result, to_send);
-    otrng_assert(tlvs);
     otrng_assert(!alice->keys->old_mac_keys);
-    otrng_tlv_list_free(tlvs);
 
     g_assert_cmpint(alice->keys->i, ==, 1);
     g_assert_cmpint(alice->keys->j, ==, message_id);
@@ -162,10 +159,8 @@ void test_api_interactive_conversation(void) {
   // Next message Bob sends is a new DH ratchet
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    tlv_list_s *tlvs = NULL;
     result =
-        otrng_prepare_to_send_message(&to_send, "hello", notif, &tlvs, 0, bob);
-    otrng_tlv_list_free(tlvs);
+        otrng_prepare_to_send_message(&to_send, "hello", notif, NULL, 0, bob);
     assert_msg_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -871,15 +866,12 @@ void test_api_conversation_errors_1(void) {
   otrng_notif notif = NOTIF_NONE;
 
   string_p to_send = NULL;
-  tlv_list_s *tlvs = NULL;
   otrng_err result;
 
   // Alice sends a data message
-  result =
-      otrng_prepare_to_send_message(&to_send, "hi", notif, &tlvs, 0, alice);
+  result = otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
 
   assert_msg_sent(result, to_send);
-  otrng_assert(tlvs);
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
@@ -917,10 +909,8 @@ void test_api_conversation_errors_1(void) {
   to_send = NULL;
 
   // Alice sends another data message
-  result =
-      otrng_prepare_to_send_message(&to_send, "hi", notif, &tlvs, 0, alice);
+  result = otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send);
-  otrng_assert(tlvs);
   otrng_assert(!alice->keys->old_mac_keys);
 
   bob->state = OTRNG_STATE_ENCRYPTED_MESSAGES;
@@ -933,8 +923,6 @@ void test_api_conversation_errors_1(void) {
   // otrng_assert(result == MSG_NOT_VALID);
   otrng_assert(response_to_alice->to_send == NULL);
   otrng_assert(response_to_alice->warning == OTRNG_WARN_RECEIVED_NOT_VALID);
-
-  otrng_tlv_list_free(tlvs);
 
   free_message_and_response(response_to_alice, &to_send);
   otrng_user_state_free_all(alice_client_state->user_state,
@@ -1112,8 +1100,6 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
 }
 
 void test_api_conversation_v3(void) {
-  tlv_list_s *tlvs = NULL;
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   set_up_client_state(alice_client_state, ALICE_IDENTITY, PHI, 1);
 
@@ -1155,7 +1141,7 @@ void test_api_conversation_v3(void) {
   otrng_notif notif = NOTIF_NONE;
 
   // Alice sends a data message
-  otrng_assert(otrng_prepare_to_send_message(&to_send, "hi", notif, &tlvs, 0,
+  otrng_assert(otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0,
                                              alice) == SUCCESS);
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAMD", to_send, 9);
@@ -1171,7 +1157,7 @@ void test_api_conversation_v3(void) {
   free_message_and_response(response_to_alice, &to_send);
 
   // Bob sends a data message
-  otrng_assert(otrng_prepare_to_send_message(&to_send, "hi", notif, &tlvs, 0,
+  otrng_assert(otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0,
                                              bob) == SUCCESS);
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAMD", to_send, 9);
@@ -1190,8 +1176,6 @@ void test_api_conversation_v3(void) {
                             bob_client_state->user_state);
   otrng_free_all(alice, bob);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
-
-  otrng_tlv_list_free(tlvs);
 }
 
 void test_api_multiple_clients(void) {
@@ -1467,7 +1451,6 @@ void test_api_smp_abort(void) {
 }
 
 void test_api_extra_sym_key(void) {
-  tlv_list_s *tlvs = NULL;
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
@@ -1485,8 +1468,7 @@ void test_api_extra_sym_key(void) {
   otrng_notif notif = NOTIF_NONE;
   otrng_err result;
 
-  result =
-      otrng_prepare_to_send_message(&to_send, "hi", notif, &tlvs, 0, alice);
+  result = otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -1541,8 +1523,6 @@ void test_api_extra_sym_key(void) {
                             bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
-
-  otrng_tlv_list_free(tlvs);
 }
 
 void test_unreadable_flag() {
@@ -1599,15 +1579,12 @@ void test_unreadable_flag() {
 
   alice_client_state->pad = true;
 
-  tlv_list_s *tlvs = NULL;
-
   // Alice sends a heartbeat message with padding
-  result = otrng_prepare_to_send_message(&to_send, "", notif, &tlvs, 0, alice);
+  result = otrng_prepare_to_send_message(&to_send, "", notif, NULL, 0, alice);
   otrl_base64_otr_decode(to_send, &decoded, &dec_len);
 
   assert_msg_sent(result, to_send);
   otrng_assert(decoded[flag_position] == MSGFLAGS_IGNORE_UNREADABLE);
-  otrng_tlv_list_free(tlvs);
   free(decoded);
   decoded = NULL;
 

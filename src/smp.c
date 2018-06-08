@@ -1022,7 +1022,7 @@ tstatic otrng_smp_event_t reply_with_smp_msg_3(tlv_s **to_send,
   free(buff);
   buff = NULL;
 
-  if (!to_send)
+  if (!*to_send)
     return OTRNG_SMPEVENT_ERROR;
 
   smp->state = SMPSTATE_EXPECT4;
@@ -1067,7 +1067,7 @@ tstatic otrng_smp_event_t reply_with_smp_msg_4(tlv_s **to_send,
   free(buff);
   buff = NULL;
 
-  if (!to_send)
+  if (!*to_send)
     return OTRNG_SMPEVENT_ERROR;
 
   /* Validates SMP */
