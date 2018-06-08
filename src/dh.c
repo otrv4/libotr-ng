@@ -164,7 +164,7 @@ INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
   return SUCCESS;
 }
 
-INTERNAL void dh_pub_key_destroy(dh_keypair_p keypair) {
+tstatic void dh_pub_key_destroy(dh_keypair_p keypair) {
   gcry_mpi_release(keypair->pub);
   keypair->pub = NULL;
 }

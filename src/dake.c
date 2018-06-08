@@ -861,7 +861,7 @@ INTERNAL otrng_bool otrng_valid_received_values(
 }
 
 #define MAX_T_LENGTH                                                           \
-  (3 * 64 + 2 * ED448_POINT_BYTES + 2 * DH_MPI_BYTES +                         \
+  (3 * HASH_BYTES + 2 * ED448_POINT_BYTES + 2 * DH_MPI_BYTES +                         \
    ED448_SHARED_PREKEY_BYTES)
 
 tstatic otrng_err build_rsign_tag(
@@ -876,9 +876,9 @@ tstatic otrng_err build_rsign_tag(
   uint8_t ser_i_dh[DH_MPI_BYTES], ser_r_dh[DH_MPI_BYTES];
   size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
 
-  uint8_t hash_ser_i_profile[64];
-  uint8_t hash_ser_r_profile[64];
-  uint8_t hash_phi[64];
+  uint8_t hash_ser_i_profile[HASH_BYTES];
+  uint8_t hash_ser_r_profile[HASH_BYTES];
+  uint8_t hash_phi[HASH_BYTES];
 
   if (dstlen < MAX_T_LENGTH)
     return ERROR;
@@ -910,20 +910,20 @@ tstatic otrng_err build_rsign_tag(
 
     otrng_serialize_data(phi_val, (uint8_t *)phi, strlen(phi) + 1);
 
-    shake_256_kdf1(hash_ser_i_profile, 64, first_usage, ser_i_profile,
+    shake_256_kdf1(hash_ser_i_profile, HASH_BYTES, first_usage, ser_i_profile,
                    ser_i_profile_len);
-    shake_256_kdf1(hash_ser_r_profile, 64, first_usage + 1, ser_r_profile,
+    shake_256_kdf1(hash_ser_r_profile, HASH_BYTES, first_usage + 1, ser_r_profile,
                    ser_r_profile_len);
-    shake_256_kdf1(hash_phi, 64, first_usage + 2, phi_val, strlen(phi) + 1 + 4);
+    shake_256_kdf1(hash_phi, HASH_BYTES, first_usage + 2, phi_val, strlen(phi) + 1 + 4);
 
     free(phi_val);
 
     uint8_t *cursor = dst;
-    memcpy(cursor, hash_ser_i_profile, 64);
-    cursor += 64;
+    memcpy(cursor, hash_ser_i_profile, HASH_BYTES);
+    cursor += HASH_BYTES;
 
-    memcpy(cursor, hash_ser_r_profile, 64);
-    cursor += 64;
+    memcpy(cursor, hash_ser_r_profile, HASH_BYTES);
+    cursor += HASH_BYTES;
 
     memcpy(cursor, ser_i_ecdh, ED448_POINT_BYTES);
     cursor += ED448_POINT_BYTES;
@@ -941,8 +941,8 @@ tstatic otrng_err build_rsign_tag(
     memcpy(cursor, ser_r_shared_prekey, ser_r_shared_prekey_len);
     cursor += ser_r_shared_prekey_len;
 
-    memcpy(cursor, hash_phi, 64);
-    cursor += 64;
+    memcpy(cursor, hash_phi, HASH_BYTES);
+    cursor += HASH_BYTES;
 
     if (written)
       *written = cursor - dst;
