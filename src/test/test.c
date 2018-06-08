@@ -42,6 +42,7 @@
 #include "test_dake.c"
 #include "test_data_message.c"
 #include "test_dh.c"
+#include "test_double_ratchet.c"
 #include "test_ed448.c"
 #include "test_fragment.c"
 #include "test_identity_message.c"
@@ -276,6 +277,13 @@ int main(int argc, char **argv) {
   // TODO: There is TOO MUCH /api tests. They are TOO BIG and hard to
   // understand (by nature, I think). Let's reconsider what should be here.
 
+  g_test_add_func("/double_ratchet/in_order/new_sending_ratchet/v4",
+                  test_api_new_sending_ratchet_in_order);
+  g_test_add_func("/double_ratchet/out_of_order/same_ratchet/v4",
+                  test_api_same_ratchet_out_of_order);
+  g_test_add_func("/double_ratchet/out_of_order/new_ratchet/v4",
+                  test_api_new_ratchet_out_of_order);
+
   g_test_add_func("/api/interactive_conversation/v4",
                   test_api_interactive_conversation);
   g_test_add_func("/api/send_offline_message", test_otrng_send_offline_message);
@@ -288,12 +296,6 @@ int main(int argc, char **argv) {
   //                test_api_non_interactive_conversation_with_enc_msg_2);
 
   g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
-  g_test_add_func("/api/same_ratchet_out_of_order/v4",
-                  test_api_same_ratchet_out_of_order);
-  g_test_add_func("/api/new_sending_ratchet_in_order/v4",
-                  test_api_new_sending_ratchet_in_order);
-  g_test_add_func("/api/new_ratchet_out_of_order/v4",
-                  test_api_new_ratchet_out_of_order);
   g_test_add_func("/api/conversation_errors_1", test_api_conversation_errors_1);
   g_test_add_func("/api/conversation_errors_2", test_api_conversation_errors_2);
   g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
