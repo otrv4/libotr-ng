@@ -861,7 +861,7 @@ INTERNAL otrng_bool otrng_valid_received_values(
 }
 
 #define MAX_T_LENGTH                                                           \
-  (3 * HASH_BYTES + 2 * ED448_POINT_BYTES + 2 * DH_MPI_BYTES +                         \
+  (3 * HASH_BYTES + 2 * ED448_POINT_BYTES + 2 * DH_MPI_BYTES +                 \
    ED448_SHARED_PREKEY_BYTES)
 
 tstatic otrng_err build_rsign_tag(
@@ -908,13 +908,14 @@ tstatic otrng_err build_rsign_tag(
       continue;
     }
 
-    otrng_serialize_data(phi_val, (uint8_t *)phi, strlen(phi) + 1);
+    otrng_serialize_phi(phi_val, phi);
 
     shake_256_kdf1(hash_ser_i_profile, HASH_BYTES, first_usage, ser_i_profile,
                    ser_i_profile_len);
-    shake_256_kdf1(hash_ser_r_profile, HASH_BYTES, first_usage + 1, ser_r_profile,
-                   ser_r_profile_len);
-    shake_256_kdf1(hash_phi, HASH_BYTES, first_usage + 2, phi_val, strlen(phi) + 1 + 4);
+    shake_256_kdf1(hash_ser_r_profile, HASH_BYTES, first_usage + 1,
+                   ser_r_profile, ser_r_profile_len);
+    shake_256_kdf1(hash_phi, HASH_BYTES, first_usage + 2, phi_val,
+                   strlen(phi) + 1 + 4);
 
     free(phi_val);
 
