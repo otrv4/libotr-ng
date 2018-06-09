@@ -907,8 +907,7 @@ tstatic otrng_err build_rsign_tag(
     if (!phi_val) {
       continue;
     }
-
-    otrng_serialize_phi(phi_val, phi);
+    otrng_serialize_data(phi_val, (uint8_t *)phi, strlen(phi) + 1);
 
     shake_256_kdf1(hash_ser_i_profile, HASH_BYTES, first_usage, ser_i_profile,
                    ser_i_profile_len);
