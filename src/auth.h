@@ -76,7 +76,7 @@ typedef struct ring_sig_s {
  */
 
 INTERNAL otrng_err otrng_rsig_authenticate(
-    ring_sig_s *dst, const rsig_privkey_p priv, const rsig_pubkey_p pub,
+    ring_sig_p dst, const rsig_privkey_p priv, const rsig_pubkey_p pub,
     const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
     const uint8_t *msg, size_t msglen);
 
@@ -92,18 +92,13 @@ INTERNAL otrng_err otrng_rsig_authenticate(
  * @param [msg] The message to "verify".
  * @param [msg_len] The length of the message.
  */
-INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
+INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
                                       const rsig_pubkey_p A1,
                                       const rsig_pubkey_p A2,
                                       const rsig_pubkey_p A3,
                                       const unsigned char *msg, size_t msglen);
 
-INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src);
-
-INTERNAL otrng_err otrng_rsig_authenticate_generic(
-    ring_sig_s *dst, const rsig_privkey_p a, const rsig_pubkey_p pub,
-    const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
-    const unsigned char *msg, size_t msglen);
+INTERNAL void otrng_ring_sig_destroy(ring_sig_p src);
 
 /**
  * @brief Calculates the 'c' parameter used in the Ring Signature.
@@ -125,7 +120,7 @@ void otrng_rsig_calculate_c(
     const goldilocks_448_point_p T3, const uint8_t *msg, size_t msglen);
 
 void otrng_rsig_calculate_c_from_sigma(goldilocks_448_scalar_p c,
-                                       const ring_sig_s *src,
+                                       const ring_sig_p src,
                                        const rsig_pubkey_p A1,
                                        const rsig_pubkey_p A2,
                                        const rsig_pubkey_p A3,

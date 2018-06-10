@@ -55,8 +55,12 @@ void test_rsig_auth() {
   const char *msg = "hi";
 
   otrng_keypair_p p1, p2, p3;
-  uint8_t sym1[ED448_PRIVATE_BYTES] = {1}, sym2[ED448_PRIVATE_BYTES] = {2},
-          sym3[ED448_PRIVATE_BYTES] = {3};
+  uint8_t sym1[ED448_PRIVATE_BYTES] = {}, sym2[ED448_PRIVATE_BYTES] = {},
+          sym3[ED448_PRIVATE_BYTES] = {};
+
+  random_bytes(sym1, ED448_PRIVATE_BYTES);
+  random_bytes(sym2, ED448_PRIVATE_BYTES);
+  random_bytes(sym3, ED448_PRIVATE_BYTES);
 
   otrng_keypair_generate(p1, sym1);
   otrng_keypair_generate(p2, sym2);

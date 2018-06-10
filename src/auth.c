@@ -54,29 +54,10 @@ static void choose_T(goldilocks_448_point_p chosen,
   goldilocks_448_point_cond_sel(chosen, chosen, Ti, is_secret);
 }
 
-static void scalar_select(goldilocks_448_scalar_p dst,
-                          const goldilocks_448_scalar_p a,
-                          const goldilocks_448_scalar_p b, uint8_t select_b) {
-  // TODO: Ideally we want:
-  // goldilocks_448_scalar_cond_sel but it segfaults on some gcc (see build for:
-  // 75493e1a9ab9ebde445f68b3981950aca6c6443b).
-  goldilocks_448_scalar_p select_b_scalar, tmp;
-  goldilocks_448_scalar_set_unsigned(select_b_scalar, select_b & 1);
-
-  // do the constant time select between a and b;
-  // ci = (b * select_b) + (a * (1-select_b));
-  goldilocks_448_scalar_mul(tmp, b, select_b_scalar);
-  goldilocks_448_scalar_add(dst, tmp, a);
-  goldilocks_448_scalar_mul(tmp, a, select_b_scalar);
-  goldilocks_448_scalar_sub(dst, dst, tmp);
-
-  goldilocks_448_scalar_destroy(tmp);
-  goldilocks_448_scalar_destroy(select_b_scalar);
-}
-
 static void calculate_ci(goldilocks_448_scalar_p dst,
                          const goldilocks_448_scalar_p c,
-                         const goldilocks_448_scalar_p ci, uint8_t is_secret,
+                         const goldilocks_448_scalar_p ci,
+                         goldilocks_bool_t is_secret,
                          const goldilocks_448_scalar_p cj,
                          const goldilocks_448_scalar_p ck) {
   // if_secret = c - c2 - c3 or c - c1 - c3 or c - c1 - c2
@@ -84,14 +65,15 @@ static void calculate_ci(goldilocks_448_scalar_p dst,
 
   goldilocks_448_scalar_sub(if_secret, c, cj);
   goldilocks_448_scalar_sub(if_secret, if_secret, ck);
-  scalar_select(dst, ci, if_secret, is_secret & 1);
+  goldilocks_448_scalar_cond_sel(dst, ci, if_secret, is_secret);
 
   goldilocks_448_scalar_destroy(if_secret);
 }
 
 static void calculate_ri(goldilocks_448_scalar_p dst,
                          const goldilocks_448_scalar_p secret,
-                         const goldilocks_448_scalar_p ri, uint8_t is_secret,
+                         const goldilocks_448_scalar_p ri,
+                         goldilocks_bool_t is_secret,
                          const goldilocks_448_scalar_p ci,
                          const goldilocks_448_scalar_p ti) {
   // if_secret = t1 - c1 * secret OR t2 - c2 * secret OR t3 - c3 * secret
@@ -99,11 +81,12 @@ static void calculate_ri(goldilocks_448_scalar_p dst,
   goldilocks_448_scalar_mul(if_secret, ci, secret);
   goldilocks_448_scalar_sub(if_secret, ti, if_secret);
 
-  scalar_select(dst, ri, if_secret, is_secret & 1);
+  goldilocks_448_scalar_cond_sel(dst, ri, if_secret, is_secret);
 
   goldilocks_448_scalar_destroy(if_secret);
 }
 
+// TODO: we are  missing here 0x1D
 void otrng_rsig_calculate_c(
     goldilocks_448_scalar_p dst, const goldilocks_448_point_p A1,
     const goldilocks_448_point_p A2, const goldilocks_448_point_p A3,
@@ -144,20 +127,20 @@ void otrng_rsig_calculate_c(
 }
 
 INTERNAL otrng_err otrng_rsig_authenticate(
-    ring_sig_s *dst, const rsig_privkey_p secret, const rsig_pubkey_p pub,
+    ring_sig_p dst, const rsig_privkey_p secret, const rsig_pubkey_p pub,
     const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
     const uint8_t *msg, size_t msglen) {
-  goldilocks_bool_t isA1 = goldilocks_448_point_eq(pub, A1);
-  goldilocks_bool_t isA2 = goldilocks_448_point_eq(pub, A2);
-  goldilocks_bool_t isA3 = goldilocks_448_point_eq(pub, A3);
+  goldilocks_bool_t is_A1 = goldilocks_448_point_eq(pub, A1);
+  goldilocks_bool_t is_A2 = goldilocks_448_point_eq(pub, A2);
+  goldilocks_bool_t is_A3 = goldilocks_448_point_eq(pub, A3);
 
   // One of A1, A2, A3 is the public counterpart of secret.
-  if (!(isA1 | isA2 | isA3)) {
+  if (!(is_A1 | is_A2 | is_A3)) {
     return ERROR;
   }
 
   // And only one of them is.
-  if (!(isA1 ^ isA2 ^ isA3)) {
+  if (!(is_A1 ^ is_A2 ^ is_A3)) {
     return ERROR;
   }
 
@@ -178,14 +161,14 @@ INTERNAL otrng_err otrng_rsig_authenticate(
   ed448_random_scalar(c2);
   ed448_random_scalar(c3);
 
-  // chosenT1 = secretIs1 ? T1 : R1 + A1 * c1
-  // chosenT2 = secretIs2 ? T2 : R2 + A2 * c2
-  // chosenT3 = secretIs3 ? T3 : R3 + A3 * c3
+  // chosen_T1 = is_A1 ? T1 : R1 + A1 * c1
+  // chosen_T2 = is_A2 ? T2 : R2 + A2 * c2
+  // chosen_T3 = is_A3 ? T3 : R3 + A3 * c3
 
-  goldilocks_448_point_p chosenT1, chosenT2, chosenT3;
-  choose_T(chosenT1, A1, isA1, R1, T1, c1);
-  choose_T(chosenT2, A2, isA2, R2, T2, c2);
-  choose_T(chosenT3, A3, isA3, R3, T3, c3);
+  goldilocks_448_point_p chosen_T1, chosen_T2, chosen_T3;
+  choose_T(chosen_T1, A1, is_A1, R1, T1, c1);
+  choose_T(chosen_T2, A2, is_A2, R2, T2, c2);
+  choose_T(chosen_T3, A3, is_A3, R3, T3, c3);
 
   goldilocks_448_point_destroy(T1);
   goldilocks_448_point_destroy(T2);
@@ -195,19 +178,25 @@ INTERNAL otrng_err otrng_rsig_authenticate(
   goldilocks_448_point_destroy(R3);
 
   goldilocks_448_scalar_p c;
-  otrng_rsig_calculate_c(c, A1, A2, A3, chosenT1, chosenT2, chosenT3, msg,
+  otrng_rsig_calculate_c(c, A1, A2, A3, chosen_T1, chosen_T2, chosen_T3, msg,
                          msglen);
 
-  goldilocks_448_point_destroy(chosenT1);
-  goldilocks_448_point_destroy(chosenT2);
-  goldilocks_448_point_destroy(chosenT3);
+  goldilocks_448_point_destroy(chosen_T1);
+  goldilocks_448_point_destroy(chosen_T2);
+  goldilocks_448_point_destroy(chosen_T3);
 
-  // c1 = secretIs1 ? c - c2 - c3 : c1
-  // c2 = secretIs2 ? c - c1 - c3 : c2
-  // c3 = secretIs3 ? c - c1 - c2 : c3
-  calculate_ci(dst->c1, c, c1, isA1, c2, c3);
-  calculate_ci(dst->c2, c, c2, isA2, c1, c3);
-  calculate_ci(dst->c3, c, c3, isA3, c1, c2);
+  // c1 = is_A1 ? c - c2 - c3 : c1
+  // c2 = is_A2 ? c - c1 - c3 : c2
+  // c3 = is_A3 ? c - c1 - c2 : c3
+
+  goldilocks_448_scalar_p tmp_c1, tmp_c2, tmp_c3;
+  calculate_ci(tmp_c1, c, c1, is_A1, c2, c3);
+  calculate_ci(tmp_c2, c, c2, is_A2, c1, c3);
+  calculate_ci(tmp_c3, c, c3, is_A3, c1, c2);
+
+  goldilocks_448_scalar_copy(dst->c1, tmp_c1);
+  goldilocks_448_scalar_copy(dst->c2, tmp_c2);
+  goldilocks_448_scalar_copy(dst->c3, tmp_c3);
 
   goldilocks_448_scalar_destroy(c);
   goldilocks_448_scalar_destroy(c1);
@@ -217,9 +206,15 @@ INTERNAL otrng_err otrng_rsig_authenticate(
   // t1 = secretIs1 ? t1 - c1 * secret : t1
   // t2 = secretIs2 ? t2 - c2 * secret : t2
   // t3 = secretIs3 ? t3 - c3 * secret : t3
-  calculate_ri(dst->r1, secret, r1, isA1, dst->c1, t1);
-  calculate_ri(dst->r2, secret, r2, isA2, dst->c2, t2);
-  calculate_ri(dst->r3, secret, r3, isA3, dst->c3, t3);
+
+  goldilocks_448_scalar_p tmp_r1, tmp_r2, tmp_r3;
+  calculate_ri(tmp_r1, secret, r1, is_A1, dst->c1, t1);
+  calculate_ri(tmp_r2, secret, r2, is_A2, dst->c2, t2);
+  calculate_ri(tmp_r3, secret, r3, is_A3, dst->c3, t3);
+
+  goldilocks_448_scalar_copy(dst->r1, tmp_r1);
+  goldilocks_448_scalar_copy(dst->r2, tmp_r2);
+  goldilocks_448_scalar_copy(dst->r3, tmp_r3);
 
   goldilocks_448_scalar_destroy(t1);
   goldilocks_448_scalar_destroy(t2);
@@ -232,7 +227,7 @@ INTERNAL otrng_err otrng_rsig_authenticate(
 }
 
 void otrng_rsig_calculate_c_from_sigma(goldilocks_448_scalar_p c,
-                                       const ring_sig_s *src,
+                                       const ring_sig_p src,
                                        const rsig_pubkey_p A1,
                                        const rsig_pubkey_p A2,
                                        const rsig_pubkey_p A3,
@@ -254,7 +249,7 @@ void otrng_rsig_calculate_c_from_sigma(goldilocks_448_scalar_p c,
   otrng_rsig_calculate_c(c, A1, A2, A3, A1c1, A2c2, A3c3, msg, msglen);
 }
 
-INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
+INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
                                       const rsig_pubkey_p A1,
                                       const rsig_pubkey_p A2,
                                       const rsig_pubkey_p A3,
@@ -272,7 +267,7 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
   return otrng_false;
 }
 
-INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src) {
+INTERNAL void otrng_ring_sig_destroy(ring_sig_p src) {
   otrng_ec_scalar_destroy(src->c1);
   otrng_ec_scalar_destroy(src->r1);
   otrng_ec_scalar_destroy(src->c2);

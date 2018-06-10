@@ -26,13 +26,14 @@
 #include "ed448.h"
 #include "shared.h"
 
-static inline void random_bytes(void *const buf, const size_t size) {
+static inline void random_bytes(void *buf, const size_t size) {
   gcry_randomize(buf, size, GCRY_STRONG_RANDOM);
 }
 
 static inline void ed448_random_scalar(goldilocks_448_scalar_p priv) {
   uint8_t sym[ED448_PRIVATE_BYTES];
   random_bytes(sym, ED448_PRIVATE_BYTES);
+
   // TODO: it hashes and clamp as per RFC 8032 keygen method.
   // It may not be what we want where it is used (SMP and RingSignature) since
   // a less strict value "get a random x in Z_q" is required.
