@@ -23,11 +23,11 @@
 void test_rsig_calculate_c() {
   const char *msg = "hey";
   uint8_t expected_c[ED448_SCALAR_BYTES] = {
-      0xd1, 0x87, 0xa3, 0x94, 0x08, 0x15, 0xc5, 0xbd, 0xee, 0xc3, 0x8b, 0x7e,
-      0xe3, 0xcd, 0xdd, 0xe9, 0x4f, 0x5f, 0xff, 0x4a, 0x3e, 0xd4, 0xa4, 0x91,
-      0x57, 0x9d, 0xf9, 0x3a, 0x74, 0x75, 0xc3, 0x13, 0x3b, 0xbd, 0x7d, 0xe3,
-      0xa7, 0x08, 0x00, 0x88, 0xfc, 0x5c, 0x87, 0x1c, 0x16, 0x52, 0x5c, 0xd8,
-      0x1d, 0x90, 0x51, 0x5b, 0xef, 0x09, 0xc8, 0x37,
+      0xc5, 0x42, 0x02, 0x79, 0x30, 0x67, 0x14, 0xce, 0x99, 0x89, 0xfa, 0xab,
+      0x10, 0x24, 0x4e, 0x1d, 0x51, 0x86, 0x3f, 0x36, 0x59, 0xa7, 0x90, 0x8e,
+      0x3c, 0x65, 0x1c, 0x0a, 0x1e, 0x4d, 0x16, 0x22, 0x9c, 0x0a, 0xa7, 0x61,
+      0x31, 0x62, 0xcc, 0x82, 0x2a, 0x7e, 0x31, 0x07, 0x4d, 0x5a, 0x60, 0xff,
+      0x84, 0x87, 0x6b, 0x00, 0xc9, 0xaa, 0x01, 0x2f,
   };
 
   otrng_keypair_p a1, a2, a3, t1, t2, t3;
@@ -67,25 +67,25 @@ void test_rsig_auth() {
   otrng_keypair_generate(p3, sym3);
 
   ring_sig_p dst;
-  otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p2->pub, p3->pub,
-                                       p2->pub, (unsigned char *)msg,
-                                       strlen(msg)) == ERROR);
+  otrng_assert(!otrng_rsig_authenticate(dst, p1->priv, p1->pub, p2->pub,
+                                        p3->pub, p2->pub, (unsigned char *)msg,
+                                        strlen(msg)));
 
-  otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p3->pub,
-                                       p1->pub, (unsigned char *)msg,
-                                       strlen(msg)) == ERROR);
+  otrng_assert(!otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub,
+                                        p3->pub, p1->pub, (unsigned char *)msg,
+                                        strlen(msg)));
 
   otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p2->pub,
                                        p3->pub, (unsigned char *)msg,
-                                       strlen(msg)) == SUCCESS);
+                                       strlen(msg)));
 
   otrng_assert(otrng_rsig_verify(dst, p1->pub, p2->pub, p3->pub,
                                  (unsigned char *)msg, strlen(msg)) == SUCCESS);
 
   otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p3->pub, p1->pub,
                                        p2->pub, (unsigned char *)msg,
-                                       strlen(msg)) == SUCCESS);
+                                       strlen(msg)));
 
   otrng_assert(otrng_rsig_verify(dst, p3->pub, p1->pub, p2->pub,
-                                 (unsigned char *)msg, strlen(msg)) == SUCCESS);
+                                 (unsigned char *)msg, strlen(msg)));
 }

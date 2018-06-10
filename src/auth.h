@@ -98,6 +98,12 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
                                       const rsig_pubkey_p A3,
                                       const unsigned char *msg, size_t msglen);
 
+/**
+ * @brief Zero the values of the Ring Sig.
+ *
+ *
+ * @param [src] The signature of knowledge
+ */
 INTERNAL void otrng_ring_sig_destroy(ring_sig_p src);
 
 /**

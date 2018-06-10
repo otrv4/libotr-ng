@@ -96,7 +96,7 @@ void otrng_rsig_calculate_c(
   uint8_t hash[HASH_BYTES];
   uint8_t point_buff[ED448_POINT_BYTES];
 
-  hash_init_with_dom(hd);
+  hash_init_with_usage(hd, 0x1D);
   hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
   hash_update(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
 
@@ -124,6 +124,29 @@ void otrng_rsig_calculate_c(
   hash_destroy(hd);
 
   goldilocks_448_scalar_decode_long(dst, hash, sizeof(hash));
+}
+
+void otrng_rsig_calculate_c_from_sigma(goldilocks_448_scalar_p c,
+                                       const ring_sig_p src,
+                                       const rsig_pubkey_p A1,
+                                       const rsig_pubkey_p A2,
+                                       const rsig_pubkey_p A3,
+                                       const uint8_t *msg, size_t msglen) {
+  rsig_pubkey_p gr1, gr2, gr3, A1c1, A2c2, A3c3;
+
+  goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, src->r1);
+  goldilocks_448_point_scalarmul(gr2, goldilocks_448_point_base, src->r2);
+  goldilocks_448_point_scalarmul(gr3, goldilocks_448_point_base, src->r3);
+
+  goldilocks_448_point_scalarmul(A1c1, A1, src->c1);
+  goldilocks_448_point_scalarmul(A2c2, A2, src->c2);
+  goldilocks_448_point_scalarmul(A3c3, A3, src->c3);
+
+  goldilocks_448_point_add(A1c1, A1c1, gr1);
+  goldilocks_448_point_add(A2c2, A2c2, gr2);
+  goldilocks_448_point_add(A3c3, A3c3, gr3);
+
+  otrng_rsig_calculate_c(c, A1, A2, A3, A1c1, A2c2, A3c3, msg, msglen);
 }
 
 INTERNAL otrng_err otrng_rsig_authenticate(
@@ -202,6 +225,9 @@ INTERNAL otrng_err otrng_rsig_authenticate(
   goldilocks_448_scalar_destroy(c1);
   goldilocks_448_scalar_destroy(c2);
   goldilocks_448_scalar_destroy(c3);
+  goldilocks_448_scalar_destroy(tmp_c1);
+  goldilocks_448_scalar_destroy(tmp_c2);
+  goldilocks_448_scalar_destroy(tmp_c3);
 
   // t1 = secretIs1 ? t1 - c1 * secret : t1
   // t2 = secretIs2 ? t2 - c2 * secret : t2
@@ -222,31 +248,11 @@ INTERNAL otrng_err otrng_rsig_authenticate(
   goldilocks_448_scalar_destroy(r1);
   goldilocks_448_scalar_destroy(r2);
   goldilocks_448_scalar_destroy(r3);
+  goldilocks_448_scalar_destroy(tmp_r1);
+  goldilocks_448_scalar_destroy(tmp_r2);
+  goldilocks_448_scalar_destroy(tmp_r3);
 
   return SUCCESS;
-}
-
-void otrng_rsig_calculate_c_from_sigma(goldilocks_448_scalar_p c,
-                                       const ring_sig_p src,
-                                       const rsig_pubkey_p A1,
-                                       const rsig_pubkey_p A2,
-                                       const rsig_pubkey_p A3,
-                                       const uint8_t *msg, size_t msglen) {
-  rsig_pubkey_p gr1, gr2, gr3, A1c1, A2c2, A3c3;
-
-  goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, src->r1);
-  goldilocks_448_point_scalarmul(gr2, goldilocks_448_point_base, src->r2);
-  goldilocks_448_point_scalarmul(gr3, goldilocks_448_point_base, src->r3);
-
-  goldilocks_448_point_scalarmul(A1c1, A1, src->c1);
-  goldilocks_448_point_scalarmul(A2c2, A2, src->c2);
-  goldilocks_448_point_scalarmul(A3c3, A3, src->c3);
-
-  goldilocks_448_point_add(A1c1, A1c1, gr1);
-  goldilocks_448_point_add(A2c2, A2c2, gr2);
-  goldilocks_448_point_add(A3c3, A3c3, gr3);
-
-  otrng_rsig_calculate_c(c, A1, A2, A3, A1c1, A2c2, A3c3, msg, msglen);
 }
 
 INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
@@ -261,7 +267,7 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
   goldilocks_448_scalar_add(c1c2c3, src->c1, src->c2);
   goldilocks_448_scalar_add(c1c2c3, c1c2c3, src->c3);
 
-  if (GOLDILOCKS_TRUE == goldilocks_448_scalar_eq(c, c1c2c3))
+  if (goldilocks_succeed_if(goldilocks_448_scalar_eq(c, c1c2c3)))
     return otrng_true;
 
   return otrng_false;
