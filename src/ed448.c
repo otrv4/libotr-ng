@@ -35,8 +35,9 @@ INTERNAL void otrng_ec_scalar_copy(ec_scalar_p dst, const ec_scalar_p a) {
 
 INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar_p a,
                                        const ec_scalar_p b) {
-  if (goldilocks_448_scalar_eq(a, b))
+  if (goldilocks_448_scalar_eq(a, b)) {
     return otrng_true;
+  }
 
   return otrng_false;
 }
@@ -59,15 +60,17 @@ INTERNAL void otrng_ec_point_copy(ec_point_p dst, const ec_point_p p) {
 }
 
 INTERNAL otrng_bool otrng_ec_point_eq(const ec_point_p p, const ec_point_p q) {
-  if (goldilocks_448_point_eq(p, q))
+  if (goldilocks_448_point_eq(p, q)) {
     return otrng_true;
+  }
 
   return otrng_false;
 }
 
 INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p) {
-  if (goldilocks_448_point_valid(p))
+  if (goldilocks_448_point_valid(p)) {
     return otrng_true;
+  }
 
   return otrng_false;
 }
@@ -80,10 +83,11 @@ INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_p p) {
 INTERNAL otrng_err otrng_ec_point_decode(ec_point_p p,
                                          const uint8_t enc[ED448_POINT_BYTES]) {
   goldilocks_448_point_p tmp_p;
-  goldilocks_error_t err =
-      goldilocks_448_point_decode_like_eddsa_and_mul_by_ratio(tmp_p, enc);
-  if (GOLDILOCKS_SUCCESS != err)
+  if (!goldilocks_succeed_if(
+          goldilocks_448_point_decode_like_eddsa_and_mul_by_ratio(tmp_p,
+                                                                  enc))) {
     return ERROR;
+  }
 
   // The decoded point is equal to the original point * 2^2
   goldilocks_448_scalar_p r;
@@ -186,8 +190,9 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {
 INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret) {
   uint8_t zero_buff[ED448_POINT_BYTES] = {};
 
-  if (memcmp(shared_secret, zero_buff, ED448_POINT_BYTES) == 0)
+  if (memcmp(shared_secret, zero_buff, ED448_POINT_BYTES) == 0) {
     return otrng_false;
+  }
 
   return otrng_true;
 }
@@ -198,13 +203,15 @@ INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, our_keypair->priv);
 
-  if (!otrng_ec_point_valid(p))
+  if (!otrng_ec_point_valid(p)) {
     return ERROR;
+  }
 
   otrng_ec_point_encode(shared_secret, p);
 
-  if (!otrng_ecdh_valid_secret(shared_secret))
+  if (!otrng_ecdh_valid_secret(shared_secret)) {
     return ERROR;
+  }
 
   return SUCCESS;
 }
@@ -227,8 +234,9 @@ INTERNAL void otrng_ec_sign_simple(eddsa_signature_p sig,
 INTERNAL otrng_bool otrng_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
                                     const uint8_t pub[ED448_POINT_BYTES],
                                     const uint8_t *msg, size_t msg_len) {
-  if (goldilocks_ed448_verify(sig, pub, msg, msg_len, 0, NULL, 0))
+  if (goldilocks_ed448_verify(sig, pub, msg, msg_len, 0, NULL, 0)) {
     return otrng_true;
+  }
 
   return otrng_false;
 }

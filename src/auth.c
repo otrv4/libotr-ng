@@ -267,8 +267,9 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
   goldilocks_448_scalar_add(c1c2c3, src->c1, src->c2);
   goldilocks_448_scalar_add(c1c2c3, c1c2c3, src->c3);
 
-  if (goldilocks_succeed_if(goldilocks_448_scalar_eq(c, c1c2c3)))
+  if (goldilocks_succeed_if(goldilocks_448_scalar_eq(c, c1c2c3))) {
     return otrng_true;
+  }
 
   return otrng_false;
 }

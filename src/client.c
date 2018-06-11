@@ -56,8 +56,9 @@ tstatic void conversation_free(void *data) {
 
 API otrng_client_s *otrng_client_new(otrng_client_state_s *state) {
   otrng_client_s *client = malloc(sizeof(otrng_client_s));
-  if (!client)
+  if (!client) {
     return NULL;
+  }
 
   client->state = state;
   client->conversations = NULL;
@@ -66,8 +67,9 @@ API otrng_client_s *otrng_client_new(otrng_client_state_s *state) {
 }
 
 API void otrng_client_free(otrng_client_s *client) {
-  if (!client)
+  if (!client) {
     return;
+  }
 
   client->state = NULL;
 
@@ -143,8 +145,9 @@ tstatic otrng_s *create_connection_for(const char *recipient,
   // TODO: This should receive only the client_state (which should allow
   // you to get protocol, account, v3 user_state, etc)
   v3_conn = otrng_v3_conn_new(client->state, recipient);
-  if (!v3_conn)
+  if (!v3_conn) {
     return NULL;
+  }
 
   // TODO: put here policy none
   conn = otrng_new(client->state, get_policy_for(recipient));
@@ -166,16 +169,19 @@ get_or_create_conversation_with(const char *recipient, otrng_client_s *client) {
   otrng_s *conn = NULL;
 
   conv = get_conversation_with(recipient, client->conversations);
-  if (conv)
+  if (conv) {
     return conv;
+  }
 
   conn = create_connection_for(recipient, client);
-  if (!conn)
+  if (!conn) {
     return NULL;
+  }
 
   conv = new_conversation_with(recipient, conn);
-  if (!conv)
+  if (!conv) {
     return NULL;
+  }
 
   client->conversations = otrng_list_add(conv, client->conversations);
 
@@ -185,8 +191,9 @@ get_or_create_conversation_with(const char *recipient, otrng_client_s *client) {
 API otrng_conversation_s *
 otrng_client_get_conversation(int force_create, const char *recipient,
                               otrng_client_s *client) {
-  if (force_create)
+  if (force_create) {
     return get_or_create_conversation_with(recipient, client);
+  }
 
   return get_conversation_with(recipient, client->conversations);
 }
@@ -198,8 +205,9 @@ tstatic int send_message(char **newmsg, const char *message,
   otrng_notif notif = NOTIF_NONE;
 
   conv = get_or_create_conversation_with(recipient, client);
-  if (!conv)
+  if (!conv) {
     return 1;
+  }
 
   otrng_err result = otrng_prepare_to_send_message(newmsg, message, notif, NULL,
                                                    0, conv->conn);
@@ -293,18 +301,21 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
   otrng_response_s *response = NULL;
   otrng_conversation_s *conv = NULL;
 
-  if (!newmessage)
+  if (!newmessage) {
     return result;
+  }
 
   *newmessage = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
-  if (!conv)
+  if (!conv) {
     return should_ignore;
+  }
 
   if (unfragment(&unfrag_msg, message, conv->conn->frag_ctx,
-                 conv->conn->our_instance_tag))
+                 conv->conn->our_instance_tag)) {
     return should_ignore;
+  }
 
   response = otrng_response_new();
   otrng_notif notif = NOTIF_NONE;
@@ -317,8 +328,9 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
   free(unfrag_msg);
   unfrag_msg = NULL;
 
-  if (response->to_send)
+  if (response->to_send) {
     *newmessage = otrng_strdup(response->to_send);
+  }
 
   *todisplay = NULL;
   if (response->to_display) {
@@ -330,9 +342,9 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
 
   otrng_response_free(response);
 
-  if (result != SUCCESS)
-    return !should_ignore; // Should this cause the message to be ignored or
-                           // not?
+  if (result != SUCCESS) {
+    return !should_ignore;
+  } // Should this cause the message to be ignored or not?
 
   return should_ignore;
 }
@@ -344,16 +356,18 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
   char *ret = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
-  if (!conv)
+  if (!conv) {
     return NULL;
+  }
 
   // TODO: add name
   ret = "Failed to start an Off-the-Record private conversation.";
 
   conv->conn->supported_versions = policy;
   // TODO: implement policy
-  if (!otrng_build_query_message(&ret, message, conv->conn))
+  if (!otrng_build_query_message(&ret, message, conv->conn)) {
     return ret;
+  }
 
   return ret;
 }
@@ -371,11 +385,13 @@ API int otrng_client_disconnect(char **newmsg, const char *recipient,
   otrng_conversation_s *conv = NULL;
 
   conv = get_conversation_with(recipient, client->conversations);
-  if (!conv)
+  if (!conv) {
     return 1;
+  }
 
-  if (!otrng_close(newmsg, conv->conn))
+  if (!otrng_close(newmsg, conv->conn)) {
     return 2;
+  }
 
   destroy_client_conversation(conv, client);
   conversation_free(conv);
@@ -393,8 +409,9 @@ API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
   time_t now;
 
   conv = get_conversation_with(recipient, client->conversations);
-  if (!conv)
+  if (!conv) {
     return 1;
+  }
 
   now = time(NULL);
   if (conv->conn->keys->last_generated < now - expiration_time) {
@@ -413,8 +430,9 @@ API int otrng_send_heartbeat_msg(char **newmsg, const char *recipient,
   otrng_conversation_s *conv = NULL;
 
   conv = get_conversation_with(recipient, client->conversations);
-  if (!conv)
+  if (!conv) {
     return 1;
+  }
 
   if (conv->conn->ignore_msg != 1 && conv->conn->keys->their_ecdh > 0) {
     if (conv->conn->last_sent <
@@ -436,8 +454,9 @@ API int otrng_send_heartbeat_msg(char **newmsg, const char *recipient,
 
 API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                          const otrng_client_s *client) {
-  if (!client->state->keypair)
+  if (!client->state->keypair) {
     return -1;
+  }
 
   return otrng_serialize_fingerprint(fp, client->state->keypair->pub);
 }
