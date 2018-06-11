@@ -58,10 +58,6 @@ static inline dh_public_key_p their_dh(const otrng_s *otr) {
   return otr->keys->their_dh;
 }
 
-static inline heartbeat_s *heartbeat(const otrng_s *otr) {
-  return otr->conversation->client->heartbeat;
-}
-
 #define QUERY_MESSAGE_TAG_BYTES 5
 #define WHITESPACE_TAG_BASE_BYTES 16
 #define WHITESPACE_TAG_VERSION_BYTES 8
@@ -248,6 +244,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
 
   otr->frag_ctx = otrng_fragment_context_new();
   otr->v3_conn = NULL;
+  otr->ignore_msg = 0;
 
   return otr;
 }
@@ -2037,6 +2034,25 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     sodium_memzero(mac_key, sizeof(m_mac_key_p));
     otrng_data_message_free(msg);
 
+    // TODO: this displays an event on otrv3..
+    if (!response->to_display) {
+      otr->ignore_msg = 1;
+      return SUCCESS;
+    }
+    // TODO: this will make the tests rotate. Perhaps this can be
+    // done by the client..
+    // else if (otr->ignore_msg != 1 && otr->keys->their_ecdh > 0) {
+    // time_t now = time(NULL);
+    // if (otr->last_sent <
+    //    (now - otr->conversation->client->heartbeat_interval)) {
+    //  string_p to_send = NULL;
+    //  if (!otrng_prepare_to_send_message(&to_send, "", NOTIF_NONE, NULL,
+    //                                MSGFLAGS_IGNORE_UNREADABLE, otr)) {
+    //    return ERROR;
+    //  }
+    //  otr->last_sent = now;
+    //}
+
     return SUCCESS;
   } while (0);
 
@@ -2269,7 +2285,7 @@ tstatic otrng_err serialize_and_encode_data_msg(
 }
 
 tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
-                                    size_t message_len, otrng_s *otr, int h,
+                                    size_t message_len, otrng_s *otr,
                                     unsigned char flags) {
   data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
@@ -2298,12 +2314,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   }
 
   data_msg->flags = flags;
-
-  // TODO: this should already come set
-  if (h) {
-    data_msg->flags = MSGFLAGS_IGNORE_UNREADABLE;
-  }
-
   data_msg->sender_instance_tag = otr->our_instance_tag;
   data_msg->receiver_instance_tag = otr->their_instance_tag;
 
@@ -2347,9 +2357,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   sodium_memzero(mac_key, sizeof(m_mac_key_p));
   otrng_data_message_free(data_msg);
-
-  // TODO: check
-  heartbeat(otr)->last_msg_sent = time(NULL);
 
   return SUCCESS;
 }
@@ -2475,14 +2482,9 @@ tstatic otrng_err otrng_prepare_to_send_data_message(
   if (!append_tlvs(&msg, &msg_len, message, tlvs, otr))
     return ERROR;
 
-  // TODO: due to the addition of the flag to the tlvs, this will
-  // make the extra sym key, the disconneted and smp, a heartbeat
-  // msg as it is right now
-  int is_heartbeat =
-      strlen(message) == 0 && otr->smp->state == SMPSTATE_EXPECT1 ? 1 : 0;
+  otrng_err result = send_data_message(to_send, msg, msg_len, otr, flags);
 
-  otrng_err result =
-      send_data_message(to_send, msg, msg_len, otr, is_heartbeat, flags);
+  otr->last_sent = time(NULL);
 
   free(msg);
 
@@ -2805,17 +2807,6 @@ API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr) {
     return ERROR;
   }
   return ERROR;
-}
-
-API otrng_err otrng_heartbeat_checker(string_p *to_send, otrng_s *otr) {
-  if (difftime(time(0), heartbeat(otr)->last_msg_sent) >=
-      heartbeat(otr)->time) {
-    const string_p heartbeat_msg = "";
-    otrng_notif notif = NOTIF_NONE;
-    return otrng_prepare_to_send_message(to_send, heartbeat_msg, notif, NULL, 0,
-                                         otr);
-  }
-  return SUCCESS;
 }
 
 static int otrl_initialized = 0;

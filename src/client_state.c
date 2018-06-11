@@ -28,15 +28,6 @@
 #include "instance_tag.h"
 #include "str.h"
 
-tstatic heartbeat_s *set_heartbeat(int wait) {
-  heartbeat_s *heartbeat = malloc(sizeof(heartbeat_s));
-  if (!heartbeat)
-    return NULL;
-  heartbeat->time = wait;
-  heartbeat->last_msg_sent = time(0);
-  return heartbeat;
-}
-
 INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   otrng_client_state_s *state = malloc(sizeof(otrng_client_state_s));
   if (!state)
@@ -54,9 +45,8 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->shared_prekey_pair = NULL;
   state->phi = NULL;
   state->max_stored_msg_keys = 100;
+  state->heartbeat_interval = 60;
   state->pad = false; // TODO: why is this a bool?
-  state->heartbeat = set_heartbeat(
-      300); // TODO: why is this set here, and not from the client?
 
   return state;
 }
@@ -92,9 +82,6 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
 
   state->pad = false;
   state->max_stored_msg_keys = 0;
-
-  free(state->heartbeat);
-  state->heartbeat = NULL;
 
   free(state);
   state = NULL;

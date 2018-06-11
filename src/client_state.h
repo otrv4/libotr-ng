@@ -40,11 +40,6 @@ typedef struct {
   dh_keypair_p our_dh;
 } otrng_stored_prekeys_s, otrng_stored_prekeys_p[1];
 
-typedef struct heartbeat_s {
-  int time;
-  time_t last_msg_sent;
-} heartbeat_s, heartbeat_p[1];
-
 typedef struct otrng_client_state_s {
   const void *client_id; /* Data in the messaging application context that
                             represents a client and should map directly to it.
@@ -71,11 +66,13 @@ typedef struct otrng_client_state_s {
   otrng_shared_prekey_pair_s *shared_prekey_pair; // TODO: is this something the
                                                   // client will generate? The
                                                   // spec does not specify.
+  // TODO: this should all come from the client so the new function should pass
+  // them as params
   char *phi; // this is the shared session state
   bool pad;  // TODO: this can be replaced by length
   int max_stored_msg_keys;
   int expiration_time;
-  heartbeat_s *heartbeat;
+  int heartbeat_interval;
 
   // OtrlPrivKey *privkeyv3; // ???
   // otrng_instag_s *instag; // TODO: Store the instance tag here rather than
@@ -172,8 +169,6 @@ otrng_client_state_get_prekey_profile_by_id(uint32_t id,
                                             otrng_client_state_s *state);
 
 #ifdef OTRNG_CLIENT_STATE_PRIVATE
-
-tstatic heartbeat_s *set_heartbeat(int wait);
 
 #endif
 

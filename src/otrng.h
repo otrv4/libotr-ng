@@ -119,7 +119,9 @@ struct otrng_s {
   smp_context_p smp;
 
   fragment_context_s *frag_ctx;
-}; /* otrng_s */
+  time_t last_sent;  // TODO: not sure if the best place to put
+  time_t ignore_msg; // TODO: not sure if the best place to put
+};                   /* otrng_s */
 
 typedef struct otrng_s otrng_p[1];
 
@@ -215,8 +217,6 @@ API otrng_err otrng_send_offline_message(string_p *dst,
 API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
                                                   const string_p message,
                                                   otrng_s *otr);
-
-API otrng_err otrng_heartbeat_checker(string_p *to_send, otrng_s *otr);
 
 API void otrng_v3_init(void);
 
