@@ -158,7 +158,7 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
   if (!target)
     return ERROR;
 
-  otrng_err ok = ERROR;
+  otrng_err result = ERROR;
   do {
     if (!otrng_deserialize_uint32(&target->id, buffer + walked, buflen - walked,
                                   &read))
@@ -204,13 +204,13 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
 
     walked += read;
 
-    ok = SUCCESS;
+    result = SUCCESS;
   } while (0);
 
   if (nread)
     *nread = walked;
 
-  return ok;
+  return result;
 }
 
 tstatic otrng_err client_profile_sign(client_profile_s *profile,

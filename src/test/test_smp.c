@@ -70,7 +70,7 @@ void test_smp_state_machine(void) {
       alice_otr->conversation);
   otrng_assert(tlv_smp_1);
 
-  g_assert_cmpint(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1), ==, SUCCESS);
+  otrng_assert_is_success(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1));
 
   g_assert_cmpint(25, ==, alice_otr->smp->progress);
   g_assert_cmpint(0, ==, bob_otr->smp->progress);
@@ -95,8 +95,7 @@ void test_smp_state_machine(void) {
       (const uint8_t *)"answer", strlen("answer"));
   otrng_assert(tlv_smp_2);
   g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MSG_2);
-
-  g_assert_cmpint(smp_msg_2_deserialize(smp_msg_2, tlv_smp_2), ==, SUCCESS);
+  otrng_assert_is_success(smp_msg_2_deserialize(smp_msg_2, tlv_smp_2));
 
   g_assert_cmpint(25, ==, alice_otr->smp->progress);
   g_assert_cmpint(50, ==, bob_otr->smp->progress);
@@ -216,13 +215,13 @@ void test_otrng_smp_msg_1_asprintf_null_question(void) {
   uint8_t *buff;
   size_t writen = 0;
 
-  otrng_assert(otrng_generate_smp_msg_1(msg, smp) == SUCCESS);
+  otrng_assert_is_success(otrng_generate_smp_msg_1(msg, smp));
   // data_header + question + 2 points + 4 scalars = 4 + 0 + (2*57) + (4*(56))
   size_t expected_size = 342;
   msg->q_len = 0;
   msg->question = NULL;
 
-  otrng_assert(otrng_smp_msg_1_asprintf(&buff, &writen, msg) == SUCCESS);
+  otrng_assert_is_success(otrng_smp_msg_1_asprintf(&buff, &writen, msg));
   g_assert_cmpint(writen, ==, expected_size);
   free(buff);
   buff = NULL;
@@ -230,7 +229,7 @@ void test_otrng_smp_msg_1_asprintf_null_question(void) {
   msg->question = (uint8_t *)"something";
   msg->q_len = 9;
   size_t expected_size_with_question = expected_size + msg->q_len;
-  otrng_assert(otrng_smp_msg_1_asprintf(&buff, &writen, msg) == SUCCESS);
+  otrng_assert_is_success(otrng_smp_msg_1_asprintf(&buff, &writen, msg));
   g_assert_cmpint(writen, ==, expected_size_with_question);
 
   free(buff);

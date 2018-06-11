@@ -265,14 +265,13 @@ INTERNAL otrng_bool otrng_valid_data_message(m_mac_key_p mac_key,
   }
 
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
-  otrng_err ret = otrng_data_message_authenticator(mac_tag, sizeof mac_tag,
-                                                   mac_key, body, bodylen);
+  if (!otrng_data_message_authenticator(mac_tag, sizeof mac_tag, mac_key, body,
+                                        bodylen)) {
+    free(body);
+    return otrng_false;
+  }
 
   free(body);
-  body = NULL;
-
-  if (ret == ERROR)
-    return otrng_false;
 
   if (otrl_mem_differ(mac_tag, data_msg->mac, sizeof mac_tag) != 0) {
     sodium_memzero(mac_tag, sizeof mac_tag);

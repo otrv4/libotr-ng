@@ -29,7 +29,7 @@ void test_dake_prekey_message_serializes() {
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   otrng_ecdh_keypair_generate(ecdh, sym);
-  otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 
   dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
   prekey_message->id = 2;
@@ -38,8 +38,8 @@ void test_dake_prekey_message_serializes() {
   prekey_message->B = otrng_dh_mpi_copy(dh->pub);
 
   uint8_t *serialized = NULL;
-  otrng_assert(otrng_dake_prekey_message_asprintf(&serialized, NULL,
-                                                  prekey_message) == SUCCESS);
+  otrng_assert_is_success(
+      otrng_dake_prekey_message_asprintf(&serialized, NULL, prekey_message));
 
   uint8_t expected[] = {
       0x0,
@@ -70,8 +70,8 @@ void test_dake_prekey_message_serializes() {
 
   uint8_t serialized_b[DH3072_MOD_LEN_BYTES];
   size_t mpi_len = 0;
-  otrng_assert(otrng_dh_mpi_serialize(serialized_b, DH3072_MOD_LEN_BYTES,
-                                      &mpi_len, prekey_message->B));
+  otrng_assert_is_success(otrng_dh_mpi_serialize(
+      serialized_b, DH3072_MOD_LEN_BYTES, &mpi_len, prekey_message->B));
 
   /* Skip first 4 because they are the size (mpi_len) */
   otrng_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
@@ -89,7 +89,7 @@ void test_otrng_dake_prekey_message_deserializes() {
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(ecdh, sym);
-  otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 
   dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
   otrng_ec_point_copy(prekey_message->Y, ecdh->pub);
@@ -97,12 +97,12 @@ void test_otrng_dake_prekey_message_deserializes() {
 
   size_t serialized_len = 0;
   uint8_t *serialized = NULL;
-  otrng_assert(otrng_dake_prekey_message_asprintf(&serialized, &serialized_len,
-                                                  prekey_message) == SUCCESS);
+  otrng_assert_is_success(otrng_dake_prekey_message_asprintf(
+      &serialized, &serialized_len, prekey_message));
 
   dake_prekey_message_s *deserialized = malloc(sizeof(dake_prekey_message_s));
-  otrng_assert(otrng_dake_prekey_message_deserialize(
-                   deserialized, serialized, serialized_len) == SUCCESS);
+  otrng_assert_is_success(otrng_dake_prekey_message_deserialize(
+      deserialized, serialized, serialized_len));
 
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
                    prekey_message->sender_instance_tag);
@@ -123,7 +123,7 @@ void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(ecdh, sym);
-  otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 
   dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
   otrng_assert(prekey_message != NULL);
@@ -205,10 +205,10 @@ setup_attached_encrypted_message(dake_non_interactive_auth_message_p msg) {
       0x43, 0xce, 0x4b, 0x51, 0x51, 0x6a, 0x46, 0x90, 0x00,
   };
 
-  otrng_assert(otrng_dh_mpi_deserialize(&msg->dh, pub_dh_key_s,
-                                        DH3072_MOD_LEN_BYTES, NULL));
+  otrng_assert_is_success(otrng_dh_mpi_deserialize(&msg->dh, pub_dh_key_s,
+                                                   DH3072_MOD_LEN_BYTES, NULL));
 
-  otrng_assert(otrng_ec_point_decode(msg->ecdh, pub_ecdh_key_s));
+  otrng_assert_is_success(otrng_ec_point_decode(msg->ecdh, pub_ecdh_key_s));
 
   msg->enc_msg = malloc(3);
   memcpy(msg->enc_msg, encrypted, 3);
@@ -226,7 +226,7 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_p msg,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   otrng_ecdh_keypair_generate(ecdh, sym);
-  otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 
   msg->enc_msg = NULL;
   msg->enc_msg_len = 0;
@@ -257,8 +257,8 @@ void test_xzdh_encrypted_message_asprintf() {
   otrng_mpi_init(msg->profile->transitional_signature);
   msg->A = NULL;
   msg->enc_msg = NULL;
-  otrng_assert(xzdh_encrypted_message_asprintf(&dst, &dst_len, msg) == SUCCESS);
-  otrng_assert(dst == NULL);
+  otrng_assert_is_success(xzdh_encrypted_message_asprintf(&dst, &dst_len, msg));
+  otrng_assert(!dst);
   otrng_assert(dst_len == 0);
 
   uint8_t expected[] = {
@@ -316,7 +316,7 @@ void test_xzdh_encrypted_message_asprintf() {
 
   setup_attached_encrypted_message(msg);
 
-  otrng_assert(xzdh_encrypted_message_asprintf(&dst, &dst_len, msg) == SUCCESS);
+  otrng_assert_is_success(xzdh_encrypted_message_asprintf(&dst, &dst_len, msg));
   otrng_assert_cmpmem(expected, dst, sizeof(expected));
 
   free(dst);
@@ -340,8 +340,8 @@ void test_xzdh_encrypted_message_deserialize() {
   otrng_mpi_init(msg->profile->transitional_signature);
 
   setup_attached_encrypted_message(expected);
-  otrng_assert(xzdh_encrypted_message_asprintf(&dst, &dst_len, expected) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      xzdh_encrypted_message_asprintf(&dst, &dst_len, expected));
 
   size_t read = 0;
   size_t ret = xzdh_encrypted_message_deserialize(msg, dst, dst_len, &read);
@@ -372,8 +372,8 @@ void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
 
   uint8_t *serialized = NULL;
   size_t len = 0;
-  otrng_assert(otrng_dake_non_interactive_auth_message_asprintf(
-                   &serialized, &len, msg) == SUCCESS);
+  otrng_assert_is_success(
+      otrng_dake_non_interactive_auth_message_asprintf(&serialized, &len, msg));
 
   uint8_t expected_header[] = {
       0x00,
@@ -395,9 +395,8 @@ void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
 
   size_t client_profile_len = 0;
   uint8_t *client_profile_serialized = NULL;
-  otrng_assert(otrng_client_profile_asprintf(&client_profile_serialized,
-                                             &client_profile_len,
-                                             msg->profile) == SUCCESS);
+  otrng_assert_is_success(otrng_client_profile_asprintf(
+      &client_profile_serialized, &client_profile_len, msg->profile));
   otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
   free(client_profile_serialized);
   cursor += client_profile_len;
@@ -408,8 +407,8 @@ void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   cursor += ser_len;
 
   uint8_t serialized_a[DH3072_MOD_LEN_BYTES];
-  otrng_assert(otrng_dh_mpi_serialize(serialized_a, DH3072_MOD_LEN_BYTES,
-                                      &ser_len, msg->A));
+  otrng_assert_is_success(otrng_dh_mpi_serialize(
+      serialized_a, DH3072_MOD_LEN_BYTES, &ser_len, msg->A));
 
   /* Skip first 4 because they are the size */
   cursor += 4;
@@ -479,9 +478,8 @@ void test_dake_non_interactive_auth_message_with_encrypted_message_serializes(
 
   size_t client_profile_len = 0;
   uint8_t *client_profile_serialized = NULL;
-  otrng_assert(otrng_client_profile_asprintf(&client_profile_serialized,
-                                             &client_profile_len,
-                                             msg->profile) == SUCCESS);
+  otrng_assert_is_success(otrng_client_profile_asprintf(
+      &client_profile_serialized, &client_profile_len, msg->profile));
   otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
   free(client_profile_serialized);
   cursor += client_profile_len;
@@ -492,8 +490,8 @@ void test_dake_non_interactive_auth_message_with_encrypted_message_serializes(
   cursor += ser_len;
 
   uint8_t serialized_a[DH3072_MOD_LEN_BYTES];
-  otrng_assert(otrng_dh_mpi_serialize(serialized_a, DH3072_MOD_LEN_BYTES,
-                                      &ser_len, msg->A));
+  otrng_assert_is_success(otrng_dh_mpi_serialize(
+      serialized_a, DH3072_MOD_LEN_BYTES, &ser_len, msg->A));
 
   /* Skip first 4 because they are the size */
   cursor += 4;
@@ -526,9 +524,8 @@ void test_dake_non_interactive_auth_message_with_encrypted_message_serializes(
 
   uint8_t *expected_encrypted_message = NULL;
   size_t expected_encrypted_message_len = 0;
-  otrng_assert(xzdh_encrypted_message_asprintf(&expected_encrypted_message,
-                                               &expected_encrypted_message_len,
-                                               msg) == SUCCESS);
+  otrng_assert_is_success(xzdh_encrypted_message_asprintf(
+      &expected_encrypted_message, &expected_encrypted_message_len, msg));
 
   otrng_assert_cmpmem(cursor, expected_encrypted_message,
                       expected_encrypted_message_len);
@@ -550,12 +547,12 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
 
   uint8_t *serialized = NULL;
   size_t len = 0;
-  otrng_assert(otrng_dake_non_interactive_auth_message_asprintf(
-                   &serialized, &len, expected) == SUCCESS);
+  otrng_assert_is_success(otrng_dake_non_interactive_auth_message_asprintf(
+      &serialized, &len, expected));
 
   dake_non_interactive_auth_message_p deserialized;
-  otrng_assert(otrng_dake_non_interactive_auth_message_deserialize(
-                   deserialized, serialized, len) == SUCCESS);
+  otrng_assert_is_success(otrng_dake_non_interactive_auth_message_deserialize(
+      deserialized, serialized, len));
   free(serialized);
 
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,

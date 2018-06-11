@@ -32,8 +32,8 @@ void test_create_fragments(void) {
   otrng_message_to_send_s *frag_message =
       malloc(sizeof(otrng_message_to_send_s));
 
-  otrng_assert(otrng_fragment_message(mms, frag_message, 1, 2, message) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_fragment_message(mms, frag_message, 1, 2, message));
 
   strncpy(frag_without_header, frag_message->pieces[0] + 14, 35);
   g_assert_cmpstr(frag_without_header, ==,
@@ -62,16 +62,16 @@ void test_defragment_valid_message(void) {
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;
-  otrng_assert(otrng_unfragment_message(&unfrag, context, fragments[0], 2) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, context, fragments[0], 2));
 
   g_assert_cmpint(context->T, ==, 2);
   g_assert_cmpint(context->C, ==, 1);
   otrng_assert(!unfrag);
   otrng_assert(context->status == FRAGMENT_INCOMPLETE);
 
-  otrng_assert(otrng_unfragment_message(&unfrag, context, fragments[1], 2) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, context, fragments[1], 2));
 
   g_assert_cmpint(context->T, ==, 2);
   g_assert_cmpint(context->C, ==, 2);
@@ -91,7 +91,7 @@ void test_defragment_single_fragment(void) {
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;
-  otrng_assert(otrng_unfragment_message(&unfrag, context, msg, 2) == SUCCESS);
+  otrng_assert_is_success(otrng_unfragment_message(&unfrag, context, msg, 2));
 
   g_assert_cmpint(context->T, ==, 1);
   g_assert_cmpint(context->C, ==, 1);
@@ -111,7 +111,7 @@ void test_defragment_without_comma_fails(void) {
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;
-  otrng_assert(otrng_unfragment_message(&unfrag, context, msg, 2) == ERROR);
+  otrng_assert_is_error(otrng_unfragment_message(&unfrag, context, msg, 2));
   g_assert_cmpint(context->T, ==, 0);
   g_assert_cmpint(context->C, ==, 0);
   g_assert_cmpint(context->fragment_len, ==, 0);
@@ -132,22 +132,22 @@ void test_defragment_out_of_order_message(void) {
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;
-  otrng_assert(otrng_unfragment_message(&unfrag, context, fragments[0], 2) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, context, fragments[0], 2));
   otrng_assert(context->status == FRAGMENT_INCOMPLETE);
   otrng_assert(!unfrag);
   g_assert_cmpint(context->T, ==, 3);
   g_assert_cmpint(context->C, ==, 1);
 
-  otrng_assert(otrng_unfragment_message(&unfrag, context, fragments[1], 2) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, context, fragments[1], 2));
   otrng_assert(context->status == FRAGMENT_INCOMPLETE);
   otrng_assert(!unfrag);
   g_assert_cmpint(context->T, ==, 3);
   g_assert_cmpint(context->C, ==, 2);
 
-  otrng_assert(otrng_unfragment_message(&unfrag, context, fragments[2], 2) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, context, fragments[2], 2));
   otrng_assert(context->status == FRAGMENT_COMPLETE);
   g_assert_cmpstr(unfrag, ==, "one more fragment send");
   g_assert_cmpint(context->T, ==, 3);
@@ -166,7 +166,7 @@ void test_defragment_fails_for_invalid_tag(void) {
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;
-  otrng_assert(otrng_unfragment_message(&unfrag, context, msg, 1) == ERROR);
+  otrng_assert_is_error(otrng_unfragment_message(&unfrag, context, msg, 1));
 
   g_assert_cmpint(context->T, ==, 0);
   g_assert_cmpint(context->C, ==, 0);
@@ -186,7 +186,7 @@ void test_defragment_regular_otr_message(void) {
   context = otrng_fragment_context_new();
 
   char *unfrag = NULL;
-  otrng_assert(otrng_unfragment_message(&unfrag, context, msg, 1) == SUCCESS);
+  otrng_assert_is_success(otrng_unfragment_message(&unfrag, context, msg, 1));
 
   g_assert_cmpint(context->T, ==, 0);
   g_assert_cmpint(context->C, ==, 0);

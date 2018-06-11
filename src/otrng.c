@@ -1984,9 +1984,9 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
 
     if (!otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
                                     msg->message_id, otr->keys)) {
-      if (otrng_key_manager_derive_dh_ratchet_keys(
+      if (!otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->conversation->client->max_stored_msg_keys,
-              msg->message_id, msg->previous_chain_n, OTRNG_RECEIVING) == ERROR)
+              msg->message_id, msg->previous_chain_n, OTRNG_RECEIVING))
         return ERROR;
 
       otrng_key_manager_derive_chain_keys(

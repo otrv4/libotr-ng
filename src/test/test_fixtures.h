@@ -106,7 +106,7 @@ static void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data) {
 
   otrng_assert(f->profile != NULL);
   f->profile->expires = time(NULL) + 60 * 60;
-  otrng_assert(client_profile_sign(f->profile, f->keypair) == SUCCESS);
+  otrng_assert_is_success(client_profile_sign(f->profile, f->keypair));
 }
 
 static void dake_fixture_teardown(dake_fixture_s *f, gconstpointer user_data) {
@@ -133,13 +133,13 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert(bob->state == OTRNG_STATE_START);
 
   // Alice sends a query message
-  otrng_assert(otrng_build_query_message(&query_message, "", alice) == SUCCESS);
+  otrng_assert_is_success(otrng_build_query_message(&query_message, "", alice));
   otrng_assert(alice->state == OTRNG_STATE_START);
   otrng_assert_cmpmem("?OTRv4", query_message, 6);
 
   // Bob receives a query message
-  otrng_assert(otrng_receive_message(response_to_alice, notif, query_message,
-                                     bob) == SUCCESS);
+  otrng_assert_is_success(
+      otrng_receive_message(response_to_alice, notif, query_message, bob));
   free(query_message);
   query_message = NULL;
 
@@ -150,9 +150,8 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert_cmpmem("?OTR:AAQI", response_to_alice->to_send, 9);
 
   // Alice receives an identity message
-  otrng_assert(otrng_receive_message(response_to_bob, notif,
-                                     response_to_alice->to_send,
-                                     alice) == SUCCESS);
+  otrng_assert_is_success(otrng_receive_message(
+      response_to_bob, notif, response_to_alice->to_send, alice));
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
@@ -170,8 +169,8 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert_cmpmem("?OTR:AASR", response_to_bob->to_send, 9);
 
   // Bob receives an auth-r message
-  otrng_assert(otrng_receive_message(response_to_alice, notif,
-                                     response_to_bob->to_send, bob) == SUCCESS);
+  otrng_assert_is_success(otrng_receive_message(response_to_alice, notif,
+                                                response_to_bob->to_send, bob));
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
@@ -197,9 +196,8 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert(bob->keys->current);
 
   // Alice receives an auth-i message
-  otrng_assert(otrng_receive_message(response_to_bob, notif,
-                                     response_to_alice->to_send,
-                                     alice) == SUCCESS);
+  otrng_assert_is_success(otrng_receive_message(
+      response_to_bob, notif, response_to_alice->to_send, alice));
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 

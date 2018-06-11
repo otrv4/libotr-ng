@@ -31,8 +31,8 @@ void test_ser_deser_uint() {
   otrng_assert_cmpmem(buf, ser, 1);
 
   uint8_t uint8_des = 0;
-  otrng_assert(otrng_deserialize_uint8(&uint8_des, ser, sizeof(ser), &read) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_deserialize_uint8(&uint8_des, ser, sizeof(ser), &read));
   g_assert_cmpuint(uint8_des, ==, 0x12);
   g_assert_cmpint(read, ==, sizeof(uint8_t));
 
@@ -41,8 +41,8 @@ void test_ser_deser_uint() {
   otrng_assert_cmpmem(buf, ser, 2);
 
   uint16_t uint16_des = 0;
-  otrng_assert(otrng_deserialize_uint16(&uint16_des, ser, sizeof(ser), &read) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_deserialize_uint16(&uint16_des, ser, sizeof(ser), &read));
   g_assert_cmpuint(uint16_des, ==, 0x1234);
   g_assert_cmpint(read, ==, sizeof(uint16_t));
 
@@ -51,8 +51,8 @@ void test_ser_deser_uint() {
   otrng_assert_cmpmem(buf, ser, 4);
 
   uint32_t uint32_des = 0;
-  otrng_assert(otrng_deserialize_uint32(&uint32_des, ser, sizeof(ser), &read) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_deserialize_uint32(&uint32_des, ser, sizeof(ser), &read));
   g_assert_cmpuint(uint32_des, ==, 0x12345678);
   g_assert_cmpint(read, ==, sizeof(uint32_t));
 
@@ -61,8 +61,8 @@ void test_ser_deser_uint() {
   otrng_assert_cmpmem(buf, ser, 8);
 
   uint64_t uint64_des = 0;
-  otrng_assert(otrng_deserialize_uint64(&uint64_des, ser, sizeof(ser), &read) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_deserialize_uint64(&uint64_des, ser, sizeof(ser), &read));
   g_assert_cmpuint(uint64_des, ==, 0x123456789ABCDEF0);
   g_assert_cmpint(read, ==, sizeof(uint64_t));
 }
@@ -85,9 +85,8 @@ void test_ser_des_otrng_public_key() {
   uint8_t serialized[ED448_PUBKEY_BYTES] = {};
   g_assert_cmpint(otrng_serialize_otrng_public_key(serialized, keypair->pub),
                   ==, ED448_PUBKEY_BYTES);
-  otrng_assert(otrng_deserialize_otrng_public_key(deserialized, serialized,
-                                                  ED448_PUBKEY_BYTES,
-                                                  NULL) == SUCCESS);
+  otrng_assert_is_success(otrng_deserialize_otrng_public_key(
+      deserialized, serialized, ED448_PUBKEY_BYTES, NULL));
 
   otrng_assert(otrng_ec_point_valid(deserialized));
 
@@ -104,9 +103,8 @@ void test_ser_des_otrng_shared_prekey() {
   g_assert_cmpint(
       otrng_serialize_otrng_shared_prekey(serialized, shared_prekey->pub), ==,
       ED448_PUBKEY_BYTES);
-  otrng_assert(otrng_deserialize_otrng_shared_prekey(deserialized, serialized,
-                                                     ED448_PUBKEY_BYTES,
-                                                     NULL) == SUCCESS);
+  otrng_assert_is_success(otrng_deserialize_otrng_shared_prekey(
+      deserialized, serialized, ED448_PUBKEY_BYTES, NULL));
 
   otrng_assert(otrng_ec_point_valid(deserialized));
 
@@ -125,8 +123,8 @@ void test_serialize_otrng_symmetric_key() {
 
   char *buffer = NULL;
   size_t buffer_size = 0;
-  otrng_assert(otrng_symmetric_key_serialize(&buffer, &buffer_size, sym) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_symmetric_key_serialize(&buffer, &buffer_size, sym));
 
   g_assert_cmpint(strlen(expected), ==, buffer_size); // 76
   otrng_assert_cmpmem(expected, buffer, buffer_size);
@@ -176,9 +174,8 @@ void test_otrng_serialize_dh_public_key() {
 
   uint8_t dst[DH_MPI_BYTES] = {0};
   size_t written = 0;
-  otrng_err otr_err =
-      otrng_serialize_dh_public_key(dst, DH_MPI_BYTES, &written, TEST_DH);
-  otrng_assert(otr_err);
+  otrng_assert_is_success(
+      otrng_serialize_dh_public_key(dst, DH_MPI_BYTES, &written, TEST_DH));
   otrng_dh_mpi_release(TEST_DH);
   TEST_DH = NULL;
 
@@ -199,6 +196,7 @@ void test_serializes_fingerprint() {
   otrng_keypair_generate(keypair, sym);
 
   otrng_fingerprint_p dst = {0};
+  // TODO: should this return otrng_err ?
   otrng_assert(otrng_serialize_fingerprint(dst, keypair->pub) == 0);
 
   otrng_assert_cmpmem(expected_fp, dst, sizeof(otrng_fingerprint_p));

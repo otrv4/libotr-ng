@@ -37,64 +37,64 @@ void test_prekey_ensemble_validate(void) {
   ensemble->client_profile->sender_instance_tag = 1;
   ensemble->client_profile->expires = time(NULL) + 60 * 60 * 24; // one day
   otrng_mpi_init(ensemble->client_profile->transitional_signature);
-  otrng_assert(SUCCESS ==
-               client_profile_sign(ensemble->client_profile, keypair));
+  otrng_assert_is_success(
+      client_profile_sign(ensemble->client_profile, keypair));
 
   ensemble->prekey_profile->id = 1;
   ensemble->prekey_profile->instance_tag = 1;
   ensemble->prekey_profile->expires = time(NULL) + 60 * 60 * 24; // one day
   otrng_ec_point_copy(ensemble->prekey_profile->shared_prekey, keypair->pub);
-  otrng_assert(SUCCESS ==
-               prekey_profile_sign(ensemble->prekey_profile, keypair));
+  otrng_assert_is_success(
+      prekey_profile_sign(ensemble->prekey_profile, keypair));
 
   ensemble->message = otrng_dake_prekey_message_new();
   ensemble->message->sender_instance_tag = 1;
   otrng_ec_point_copy(ensemble->message->Y, keypair2->pub);
   ensemble->message->B = gcry_mpi_set_ui(NULL, 3);
 
-  otrng_assert(SUCCESS == otrng_prekey_ensemble_validate(ensemble));
+  otrng_assert_is_success(otrng_prekey_ensemble_validate(ensemble));
 
   // Should fail if instance tags do not match
   ensemble->client_profile->sender_instance_tag = 2;
-  otrng_assert(ERROR == otrng_prekey_ensemble_validate(ensemble));
+  otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
   ensemble->client_profile->sender_instance_tag = 1;
 
   ensemble->prekey_profile->instance_tag = 2;
-  otrng_assert(ERROR == otrng_prekey_ensemble_validate(ensemble));
+  otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
   ensemble->prekey_profile->instance_tag = 1;
 
   ensemble->message->sender_instance_tag = 2;
-  otrng_assert(ERROR == otrng_prekey_ensemble_validate(ensemble));
+  otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
   ensemble->message->sender_instance_tag = 1;
 
   // Should fail if client profile is not valid
   ensemble->client_profile->id = 2; // Messes up with the signature
-  otrng_assert(ERROR == otrng_prekey_ensemble_validate(ensemble));
+  otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
   ensemble->client_profile->id = 1;
 
   // Should fail if prekey profile is not valid
   ensemble->prekey_profile->id = 2; // Messes up with the signature
-  otrng_assert(ERROR == otrng_prekey_ensemble_validate(ensemble));
+  otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
   ensemble->prekey_profile->id = 1;
 
   // Should fail if profiles are signed with a different key
-  otrng_assert(SUCCESS ==
-               prekey_profile_sign(ensemble->prekey_profile, keypair2));
-  otrng_assert(ERROR == otrng_prekey_ensemble_validate(ensemble));
-  otrng_assert(SUCCESS ==
-               prekey_profile_sign(ensemble->prekey_profile, keypair));
+  otrng_assert_is_success(
+      prekey_profile_sign(ensemble->prekey_profile, keypair2));
+  otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
+  otrng_assert_is_success(
+      prekey_profile_sign(ensemble->prekey_profile, keypair));
 
   // Should fail if prekey message is not valid
   otrng_dh_mpi_release(ensemble->message->B);
   ensemble->message->B = NULL;
-  otrng_assert(ERROR == otrng_prekey_ensemble_validate(ensemble));
+  otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
   ensemble->message->B = gcry_mpi_set_ui(NULL, 3);
 
   // Should fail if the prekey profile does not contain the prekey message
   // version.
   char *old = ensemble->client_profile->versions;
   ensemble->client_profile->versions = otrng_strdup("3");
-  otrng_assert(ERROR == otrng_prekey_ensemble_validate(ensemble));
+  otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
   free(ensemble->client_profile->versions);
   ensemble->client_profile->versions = old;
 

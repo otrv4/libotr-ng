@@ -28,8 +28,8 @@ void test_derive_ratchet_keys() {
   root_key_p root_key;
   memset(root_key, 0, sizeof root_key);
 
-  otrng_assert(key_manager_derive_ratchet_keys(manager, OTRNG_SENDING) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      key_manager_derive_ratchet_keys(manager, OTRNG_SENDING));
 
   root_key_p expected_root_key;
   sending_chain_key_p expected_chain_key_s;
@@ -106,21 +106,21 @@ void test_calculate_brace_key() {
   const uint8_t their_secret[5] = {0x1};
   uint8_t their_public[DH3072_MOD_LEN_BYTES] = {};
 
-  otrng_assert(otrng_dh_mpi_deserialize(&their_dh_secret, their_secret,
-                                        sizeof their_secret, NULL) == SUCCESS);
-  otrng_assert(otrng_dh_shared_secret(their_public, DH3072_MOD_LEN_BYTES,
-                                      their_dh_secret,
-                                      otrng_dh_mpi_generator()) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_mpi_deserialize(
+      &their_dh_secret, their_secret, sizeof their_secret, NULL));
+  otrng_assert_is_success(
+      otrng_dh_shared_secret(their_public, DH3072_MOD_LEN_BYTES,
+                             their_dh_secret, otrng_dh_mpi_generator()));
   otrng_dh_mpi_release(their_dh_secret);
   their_dh_secret = NULL;
-  otrng_assert(otrng_dh_mpi_deserialize(&manager->their_dh, their_public,
-                                        DH3072_MOD_LEN_BYTES, NULL) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_mpi_deserialize(
+      &manager->their_dh, their_public, DH3072_MOD_LEN_BYTES, NULL));
 
   // Setup a fixed our_dh
   const uint8_t our_secret[5] = {0x2};
   manager->our_dh->pub = NULL;
-  otrng_assert(otrng_dh_mpi_deserialize(&manager->our_dh->priv, our_secret, 5,
-                                        NULL) == SUCCESS);
+  otrng_assert_is_success(
+      otrng_dh_mpi_deserialize(&manager->our_dh->priv, our_secret, 5, NULL));
 
   uint8_t expected_brace_key[BRACE_KEY_BYTES] = {
       0xf8, 0x95, 0x39, 0x90, 0x33, 0x38, 0x5a, 0x4d, 0xf8, 0xba, 0x9a,
@@ -131,7 +131,7 @@ void test_calculate_brace_key() {
 
   // Calculate brace key from k_dh
   manager->i = 0;
-  otrng_assert(calculate_brace_key(manager) == SUCCESS);
+  otrng_assert_is_success(calculate_brace_key(manager));
   otrng_assert_cmpmem(expected_brace_key, manager->brace_key, BRACE_KEY_BYTES);
 
   uint8_t expected_brace_key_2[BRACE_KEY_BYTES] = {
@@ -142,7 +142,7 @@ void test_calculate_brace_key() {
 
   // Calculate brace key from previous brace key
   manager->i = 1;
-  otrng_assert(calculate_brace_key(manager) == SUCCESS);
+  otrng_assert_is_success(calculate_brace_key(manager));
   otrng_assert_cmpmem(expected_brace_key_2, manager->brace_key,
                       BRACE_KEY_BYTES);
 

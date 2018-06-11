@@ -72,12 +72,12 @@
                                #expr);                                         \
   } while (0)
 
-#define otrng_assert_success(otrng_result)                                     \
+#define otrng_assert_is_success(otrng_result)                                  \
   do {                                                                         \
     otrng_assert(otrng_result == SUCCESS);                                     \
   } while (0)
 
-#define otrng_assert_error(otrng_result)                                       \
+#define otrng_assert_is_error(otrng_result)                                    \
   do {                                                                         \
     otrng_assert(otrng_result == ERROR);                                       \
   } while (0)
@@ -164,8 +164,6 @@
     otrng_assert_cmpmem((ck1), (ck2), sizeof(chain_key_p));                    \
   } while (0)
 
-// TODO: here actually use the designated initializers as I was planning to
-// do for the future nonetheless
 #define fn_apply(fn, ...)                                                      \
   {                                                                            \
     void *stopper = (int[]){0};                                                \

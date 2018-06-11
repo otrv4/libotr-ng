@@ -922,7 +922,7 @@ void test_client_receives_fragmented_message(void) {
   char *msg = "Receiving fragmented plaintext";
 
   otrng_message_to_send_s *fmsg = malloc(sizeof(otrng_message_to_send_s));
-  otrng_assert(otrng_fragment_message(60, fmsg, 0, 0, msg) == SUCCESS);
+  otrng_assert_is_success(otrng_fragment_message(60, fmsg, 0, 0, msg));
 
   otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
   otrng_client_s *alice =

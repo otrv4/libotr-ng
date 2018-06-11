@@ -79,8 +79,8 @@ void test_rsig_auth() {
                                        p3->pub, (unsigned char *)msg,
                                        strlen(msg)));
 
-  otrng_assert(otrng_rsig_verify(dst, p1->pub, p2->pub, p3->pub,
-                                 (unsigned char *)msg, strlen(msg)) == SUCCESS);
+  otrng_assert_is_success(otrng_rsig_verify(dst, p1->pub, p2->pub, p3->pub,
+                                            (unsigned char *)msg, strlen(msg)));
 
   otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p3->pub, p1->pub,
                                        p2->pub, (unsigned char *)msg,

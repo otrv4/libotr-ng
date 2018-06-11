@@ -349,44 +349,42 @@ void test_build_interactive_rsign_tag() {
       0x31, 0x38, 0x19, 0x00, 0x00, 0x00, 0x00, 0x00,
   };
 
-  otrng_assert(otrng_dh_mpi_deserialize(&initiator_dh, initiator_dh_s,
-                                        DH3072_MOD_LEN_BYTES, NULL) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_mpi_deserialize(
+      &initiator_dh, initiator_dh_s, DH3072_MOD_LEN_BYTES, NULL));
 
-  otrng_assert(otrng_dh_mpi_deserialize(&responder_dh, responder_dh_s,
-                                        DH3072_MOD_LEN_BYTES, NULL) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_mpi_deserialize(
+      &responder_dh, responder_dh_s, DH3072_MOD_LEN_BYTES, NULL));
 
-  otrng_assert(otrng_ec_point_decode(initiator_ecdh, initiator_ecdh_s) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_ec_point_decode(initiator_ecdh, initiator_ecdh_s));
 
-  otrng_assert(otrng_ec_point_decode(responder_ecdh, responder_ecdh_s) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_ec_point_decode(responder_ecdh, responder_ecdh_s));
 
-  otrng_assert(otrng_client_profile_deserialize(
-                   initiator_profile, initiator_profile_s,
-                   sizeof(initiator_profile_s), NULL) == SUCCESS);
+  otrng_assert_is_success(
+      otrng_client_profile_deserialize(initiator_profile, initiator_profile_s,
+                                       sizeof(initiator_profile_s), NULL));
 
-  otrng_assert(otrng_client_profile_deserialize(
-                   responder_profile, responder_profile_s,
-                   sizeof(responder_profile_s), NULL) == SUCCESS);
+  otrng_assert_is_success(
+      otrng_client_profile_deserialize(responder_profile, responder_profile_s,
+                                       sizeof(responder_profile_s), NULL));
 
   uint8_t *dst = NULL;
   size_t dstlen = 0;
   char *phi = otrng_strdup("phi");
 
-  otrng_assert(build_interactive_rsign_tag(
-                   &dst, &dstlen, 0x01, initiator_profile, responder_profile,
-                   initiator_ecdh, responder_ecdh, initiator_dh, responder_dh,
-                   phi) == SUCCESS);
+  otrng_assert_is_success(build_interactive_rsign_tag(
+      &dst, &dstlen, 0x01, initiator_profile, responder_profile, initiator_ecdh,
+      responder_ecdh, initiator_dh, responder_dh, phi));
 
   otrng_assert(dstlen == 1083);
   otrng_assert_cmpmem(dst, expected_t1, dstlen);
 
   free(dst);
 
-  otrng_assert(build_interactive_rsign_tag(
-                   &dst, &dstlen, 0x02, initiator_profile, responder_profile,
-                   initiator_ecdh, responder_ecdh, initiator_dh, responder_dh,
-                   phi) == SUCCESS);
+  otrng_assert_is_success(build_interactive_rsign_tag(
+      &dst, &dstlen, 0x02, initiator_profile, responder_profile, initiator_ecdh,
+      responder_ecdh, initiator_dh, responder_dh, phi));
 
   otrng_assert(dstlen == 1083);
   otrng_assert_cmpmem(dst, expected_t2, dstlen);
