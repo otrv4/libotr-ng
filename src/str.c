@@ -26,15 +26,18 @@
 #include "str.h"
 
 INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len) {
-  if (s == NULL)
+  if (!s) {
     return NULL;
+  }
 
-  if (strlen(s) < s_len)
+  if (strlen(s) < s_len) {
     s_len = strlen(s);
+  }
 
   void *new = malloc(s_len + 1);
-  if (new == NULL)
+  if (!new) {
     return NULL;
+  }
 
   char *ret = memcpy(new, s, s_len + 1);
   ret[s_len] = 0;
@@ -43,19 +46,22 @@ INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len) {
 }
 
 INTERNAL /*@null@*/ char *otrng_strdup(const char *s) {
-  if (!s)
+  if (!s) {
     return NULL;
+  }
 
   return otrng_strndup(s, strlen(s));
 }
 
 INTERNAL /*@null@*/ uint8_t *otrng_memdup(const uint8_t *s, const size_t len) {
-  if (s == NULL || len == 0)
+  if (!s || len == 0) {
     return NULL;
+  }
 
   uint8_t *d = malloc(len);
-  if (d == NULL)
+  if (!d) {
     return NULL;
+  }
 
   return memcpy(d, s, len);
 }

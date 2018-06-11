@@ -43,8 +43,9 @@ INTERNAL void otrng_mpi_set(otrng_mpi_p dst, const uint8_t *src, size_t len) {
 
   dst->len = len;
   dst->data = malloc(dst->len);
-  if (!dst->data)
+  if (!dst->data) {
     return; // should it be an error?
+  }
 
   memcpy(dst->data, src, dst->len);
 }
@@ -56,22 +57,26 @@ INTERNAL void otrng_mpi_copy(otrng_mpi_p dst, const otrng_mpi_p src) {
 tstatic otrng_bool otr_mpi_read_len(otrng_mpi_p dst, const uint8_t *src,
                                     size_t src_len, size_t *read) {
   size_t r = 0;
-  if (!otrng_deserialize_uint32(&dst->len, src, src_len, &r))
+  if (!otrng_deserialize_uint32(&dst->len, src, src_len, &r)) {
     return otrng_false;
+  }
 
-  if (read != NULL)
+  if (read != NULL) {
     *read = r;
+  }
 
-  if (dst->len > src_len - r)
+  if (dst->len > src_len - r) {
     return otrng_false;
+  }
 
   return otrng_true;
 }
 
 INTERNAL otrng_err otrng_mpi_deserialize(otrng_mpi_p dst, const uint8_t *src,
                                          size_t src_len, size_t *read) {
-  if (!otr_mpi_read_len(dst, src, src_len, read))
+  if (!otr_mpi_read_len(dst, src, src_len, read)) {
     return ERROR;
+  }
 
   if (dst->len == 0) {
     dst->data = NULL;
@@ -85,8 +90,9 @@ INTERNAL otrng_err otrng_mpi_deserialize(otrng_mpi_p dst, const uint8_t *src,
 
   memcpy(dst->data, src + *read, dst->len);
 
-  if (read != NULL)
+  if (read != NULL) {
     *read += dst->len;
+  }
 
   return SUCCESS;
 }
@@ -94,8 +100,9 @@ INTERNAL otrng_err otrng_mpi_deserialize(otrng_mpi_p dst, const uint8_t *src,
 INTERNAL otrng_err otrng_mpi_deserialize_no_copy(otrng_mpi_p dst,
                                                  const uint8_t *src,
                                                  size_t src_len, size_t *read) {
-  if (!otr_mpi_read_len(dst, src, src_len, read))
+  if (!otr_mpi_read_len(dst, src, src_len, read)) {
     return ERROR;
+  }
 
   if (dst->len == 0) {
     dst->data = NULL;

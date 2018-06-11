@@ -55,8 +55,9 @@ INTERNAL size_t otrng_serialize_uint16(uint8_t *dst, const uint16_t data) {
 
 INTERNAL size_t otrng_serialize_bytes_array(uint8_t *target,
                                             const uint8_t *data, size_t len) {
-  if (!data)
+  if (!data) {
     return 0;
+  }
 
   // this is just a memcpy thar returns the ammount copied for convenience
   memcpy(target, data, len);
@@ -91,11 +92,12 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
 INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
                                                  size_t *written,
                                                  const dh_public_key_p pub) {
-  if (dstlen < DH_MPI_BYTES)
+  if (dstlen < DH_MPI_BYTES) {
     return ERROR;
+  }
 
   /* From gcrypt MPI */
-  uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
+  uint8_t buf[DH3072_MOD_LEN_BYTES] = {};
   size_t w = 0;
 
   if (!otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, pub)) {
@@ -110,8 +112,9 @@ INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
   w = otrng_serialize_mpi(dst, mpi);
   otrng_mpi_free(mpi);
 
-  if (written)
+  if (written) {
     *written = w;
+  }
 
   return SUCCESS;
 }
@@ -151,12 +154,14 @@ INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst,
 INTERNAL uint8_t *otrng_old_mac_keys_serialize(list_element_s *old_mac_keys) {
   size_t num_mac_keys = otrng_list_len(old_mac_keys);
   size_t serlen = num_mac_keys * MAC_KEY_BYTES;
-  if (serlen == 0)
+  if (serlen == 0) {
     return NULL;
+  }
 
   uint8_t *ser_mac_keys = malloc(serlen);
-  if (!ser_mac_keys)
+  if (!ser_mac_keys) {
     return NULL;
+  }
 
   for (unsigned int i = 0; i < num_mac_keys; i++) {
     list_element_s *last = otrng_list_get_last(old_mac_keys);

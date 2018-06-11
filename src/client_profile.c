@@ -31,12 +31,14 @@
 #include "serialize.h"
 
 tstatic client_profile_s *client_profile_new(const string_p versions) {
-  if (!versions)
+  if (!versions) {
     return NULL;
+  }
 
   client_profile_s *profile = malloc(sizeof(client_profile_s));
-  if (!profile)
+  if (!profile) {
     return NULL;
+  }
 
   profile->id = 0;
   profile->sender_instance_tag = 0;
@@ -52,8 +54,9 @@ tstatic client_profile_s *client_profile_new(const string_p versions) {
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
                                         const client_profile_s *src) {
   // TODO should we set dst to a valid (but empty) profile?
-  if (!src)
+  if (!src) {
     return;
+  }
 
   dst->id = src->id;
   dst->sender_instance_tag = src->sender_instance_tag;
@@ -66,8 +69,9 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
 }
 
 INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
-  if (!profile)
+  if (!profile) {
     return;
+  }
 
   otrng_ec_point_destroy(profile->long_term_pub_key);
   free(profile->versions);
@@ -102,14 +106,16 @@ tstatic otrng_err client_profile_body_asprintf(
       4 + 4 + ED448_PUBKEY_BYTES + (strlen(profile->versions) + 1) + 4 + 8;
 
   uint8_t *buff = malloc(s);
-  if (!buff)
+  if (!buff) {
     return ERROR;
+  }
 
   size_t written = client_profile_body_serialize(buff, profile);
 
   *dst = buff;
-  if (nbytes)
+  if (nbytes) {
     *nbytes = written;
+  }
 
   return SUCCESS;
 }
@@ -117,14 +123,16 @@ tstatic otrng_err client_profile_body_asprintf(
 INTERNAL otrng_err otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
   // TODO: should it checked here for signature?
-  if (!(profile->signature > 0))
+  if (!(profile->signature > 0)) {
     return ERROR;
+  }
 
   uint8_t *buff = NULL;
   size_t body_len = 0;
   uint8_t *body = NULL;
-  if (!client_profile_body_asprintf(&body, &body_len, profile))
+  if (!client_profile_body_asprintf(&body, &body_len, profile)) {
     return ERROR;
+  }
 
   size_t s = body_len + 4 + sizeof(eddsa_signature_p) +
              profile->transitional_signature->len;
@@ -141,8 +149,9 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
   cursor += otrng_serialize_mpi(cursor, profile->transitional_signature);
 
   *dst = buff;
-  if (nbytes)
+  if (nbytes) {
     *nbytes = (cursor - buff);
+  }
 
   free(body);
   return SUCCESS;
@@ -155,52 +164,61 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
   size_t read = 0;
   int walked = 0;
 
-  if (!target)
+  if (!target) {
     return ERROR;
+  }
 
   otrng_err result = ERROR;
   do {
     if (!otrng_deserialize_uint32(&target->id, buffer + walked, buflen - walked,
-                                  &read))
+                                  &read)) {
       continue;
+    }
 
     walked += read;
 
     if (!otrng_deserialize_uint32(&target->sender_instance_tag, buffer + walked,
-                                  buflen - walked, &read))
+                                  buflen - walked, &read)) {
       continue;
+    }
 
     walked += read;
 
-    if (!otrng_deserialize_otrng_public_key(
-            target->long_term_pub_key, buffer + walked, buflen - walked, &read))
+    if (!otrng_deserialize_otrng_public_key(target->long_term_pub_key,
+                                            buffer + walked, buflen - walked,
+                                            &read)) {
       continue;
+    }
 
     walked += read;
 
     if (!otrng_deserialize_data((uint8_t **)&target->versions, buffer + walked,
-                                buflen - walked, &read))
+                                buflen - walked, &read)) {
       continue;
+    }
 
     walked += read;
 
     if (!otrng_deserialize_uint64(&target->expires, buffer + walked,
-                                  buflen - walked, &read))
+                                  buflen - walked, &read)) {
       continue;
+    }
 
     walked += read;
 
     // TODO: check the len
-    if (buflen - walked < sizeof(eddsa_signature_p))
+    if (buflen - walked < sizeof(eddsa_signature_p)) {
       continue;
+    }
 
     memcpy(target->signature, buffer + walked, sizeof(eddsa_signature_p));
 
     walked += sizeof(eddsa_signature_p);
 
     if (!otrng_mpi_deserialize(target->transitional_signature, buffer + walked,
-                               buflen - walked, &read))
+                               buflen - walked, &read)) {
       continue;
+    }
 
     walked += read;
 
@@ -219,8 +237,9 @@ tstatic otrng_err client_profile_sign(client_profile_s *profile,
   size_t bodylen = 0;
 
   otrng_ec_point_copy(profile->long_term_pub_key, keypair->pub);
-  if (!client_profile_body_asprintf(&body, &bodylen, profile))
+  if (!client_profile_body_asprintf(&body, &bodylen, profile)) {
     return ERROR;
+  }
 
   otrng_ec_sign_simple(profile->signature, keypair->sym, body, bodylen);
 
@@ -235,8 +254,9 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  if (!client_profile_body_asprintf(&body, &bodylen, profile))
+  if (!client_profile_body_asprintf(&body, &bodylen, profile)) {
     return otrng_false;
+  }
 
   uint8_t pubkey[ED448_POINT_BYTES];
   otrng_serialize_ec_point(pubkey, profile->long_term_pub_key);
@@ -252,8 +272,9 @@ otrng_client_profile_build(uint32_t id, uint32_t instance_tag,
                            const string_p versions,
                            const otrng_keypair_s *keypair) {
   client_profile_s *profile = client_profile_new(versions);
-  if (!profile)
+  if (!profile) {
     return NULL;
+  }
 
   profile->id = id;
   profile->sender_instance_tag = instance_tag;
@@ -275,8 +296,9 @@ tstatic otrng_bool expired(time_t expires) {
 
 tstatic otrng_bool rollback_detected(const char *versions) {
   while (*versions) {
-    if (*versions != '3' && *versions != '4')
+    if (*versions != '3' && *versions != '4') {
       return otrng_true;
+    }
 
     versions++;
   }
@@ -287,16 +309,19 @@ tstatic otrng_bool rollback_detected(const char *versions) {
 // TODO: check if client profile is validate in every place it needs to
 INTERNAL otrng_bool
 otrng_client_profile_valid(const client_profile_s *profile) {
-  if (expired(profile->expires))
+  if (expired(profile->expires)) {
     return otrng_false;
+  }
 
-  if (rollback_detected(profile->versions))
+  if (rollback_detected(profile->versions)) {
     return otrng_false;
+  }
 
   // TODO: Validate that each Ed448 Public Key are on the curve
   // Ed448-Goldilocks.
-  if (!otrng_ec_point_valid(profile->long_term_pub_key))
+  if (!otrng_ec_point_valid(profile->long_term_pub_key)) {
     return otrng_false;
+  }
 
   // TODO: If the Transitional Signature is present, verify its validity using
   // the OTRv3 DSA key.

@@ -90,16 +90,19 @@ tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *written) {
 
 INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *head, tlv_s *tlv) {
   tlv_list_s *n = otrng_tlv_list_one(tlv);
-  if (!n)
+  if (!n) {
     return NULL;
+  }
 
-  if (!head)
+  if (!head) {
     return n;
+  }
 
   tlv_list_s *current = head;
 
-  while (current->next)
+  while (current->next) {
     current = current->next;
+  }
 
   current->next = n;
 
@@ -113,8 +116,9 @@ INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len) {
 
   while (data_to_parse > 0) {
     tlv_s *tlv = parse_tlv(src, data_to_parse, &written);
-    if (!tlv)
+    if (!tlv) {
       break;
+    }
 
     ret = otrng_append_tlv(ret, tlv);
     data_to_parse = len - written;
@@ -144,8 +148,9 @@ INTERNAL void otrng_tlv_list_free(tlv_list_s *head) {
 INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
                               const uint8_t *data) {
   tlv_s *tlv = malloc(sizeof(tlv_s));
-  if (!tlv)
+  if (!tlv) {
     return NULL;
+  }
 
   tlv->type = type;
   tlv->len = len;
@@ -174,8 +179,9 @@ INTERNAL tlv_s *otrng_tlv_disconnected_new(void) {
 
 INTERNAL tlv_s *otrng_tlv_padding_new(size_t len) {
   uint8_t *data = malloc(len);
-  if (!data)
+  if (!data) {
     return NULL;
+  }
 
   random_bytes(data, len);
   tlv_s *tlv = otrng_tlv_new(OTRNG_TLV_PADDING, len, data);
@@ -185,12 +191,14 @@ INTERNAL tlv_s *otrng_tlv_padding_new(size_t len) {
 }
 
 INTERNAL tlv_list_s *otrng_tlv_list_one(tlv_s *tlv) {
-  if (!tlv)
+  if (!tlv) {
     return NULL;
+  }
 
   tlv_list_s *tlvs = malloc(sizeof(tlv_list_s));
-  if (!tlvs)
+  if (!tlvs) {
     return NULL;
+  }
 
   tlvs->data = tlv;
   tlvs->next = NULL;

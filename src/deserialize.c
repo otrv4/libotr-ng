@@ -37,8 +37,9 @@ INTERNAL otrng_err otrng_deserialize_uint64(uint64_t *n, const uint8_t *buffer,
        ((uint64_t)buffer[3]) << 32 | ((uint64_t)buffer[2]) << 40 |
        ((uint64_t)buffer[1]) << 48 | ((uint64_t)buffer[0]) << 56;
 
-  if (nread)
+  if (nread) {
     *nread = sizeof(uint64_t);
+  }
 
   return SUCCESS;
 }
@@ -51,8 +52,9 @@ INTERNAL otrng_err otrng_deserialize_uint32(uint32_t *n, const uint8_t *buffer,
 
   *n = buffer[3] | buffer[2] << 8 | buffer[1] << 16 | buffer[0] << 24;
 
-  if (nread)
+  if (nread) {
     *nread = sizeof(uint32_t);
+  }
 
   return SUCCESS;
 }
@@ -92,31 +94,37 @@ INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, const uint8_t *buffer,
 
   /* 4 bytes len */
   if (!otrng_deserialize_uint32(&s, buffer, buflen, &r)) {
-    if (read != NULL)
+    if (read != NULL) {
       *read = r;
+    }
 
     return ERROR;
   }
 
-  if (read)
+  if (read) {
     *read = r;
+  }
 
-  if (!s)
+  if (!s) {
     return SUCCESS;
+  }
 
   buflen -= r;
-  if (buflen < s)
+  if (buflen < s) {
     return ERROR;
+  }
 
   uint8_t *t = malloc(s);
-  if (!t)
+  if (!t) {
     return ERROR;
+  }
 
   memcpy(t, buffer + r, s);
 
   *dst = t;
-  if (read)
+  if (read) {
     *read += s;
+  }
 
   return SUCCESS;
 }
@@ -161,20 +169,24 @@ INTERNAL otrng_err otrng_deserialize_otrng_public_key(otrng_public_key_p pub,
   uint16_t pubkey_type = 0;
 
   // TODO: prob unneccessary
-  if (ser_len < ED448_PUBKEY_BYTES)
+  if (ser_len < ED448_PUBKEY_BYTES) {
     return ERROR;
+  }
 
   otrng_deserialize_uint16(&pubkey_type, cursor, ser_len, &r);
   cursor += r;
 
-  if (ED448_PUBKEY_TYPE != pubkey_type)
+  if (ED448_PUBKEY_TYPE != pubkey_type) {
     return ERROR;
+  }
 
-  if (!otrng_deserialize_ec_point(pub, cursor))
+  if (!otrng_deserialize_ec_point(pub, cursor)) {
     return ERROR;
+  }
 
-  if (read)
+  if (read) {
     *read = ED448_PUBKEY_BYTES;
+  }
 
   return SUCCESS;
 }
@@ -187,20 +199,24 @@ INTERNAL otrng_err otrng_deserialize_otrng_shared_prekey(
   uint16_t shared_prekey_type = 0;
 
   // TODO: prob unneccessary
-  if (ser_len < ED448_PUBKEY_BYTES)
+  if (ser_len < ED448_PUBKEY_BYTES) {
     return ERROR;
+  }
 
   otrng_deserialize_uint16(&shared_prekey_type, cursor, ser_len, &r);
   cursor += r;
 
-  if (ED448_SHARED_PREKEY_TYPE != shared_prekey_type)
+  if (ED448_SHARED_PREKEY_TYPE != shared_prekey_type) {
     return ERROR;
+  }
 
-  if (!otrng_deserialize_ec_point(shared_prekey, cursor))
+  if (!otrng_deserialize_ec_point(shared_prekey, cursor)) {
     return ERROR;
+  }
 
-  if (read)
+  if (read) {
     *read = ED448_SHARED_PREKEY_BYTES;
+  }
 
   return SUCCESS;
 }
@@ -208,8 +224,9 @@ INTERNAL otrng_err otrng_deserialize_otrng_shared_prekey(
 INTERNAL otrng_err otrng_deserialize_ec_scalar(ec_scalar_p scalar,
                                                const uint8_t *serialized,
                                                size_t ser_len) {
-  if (ser_len < ED448_SCALAR_BYTES)
+  if (ser_len < ED448_SCALAR_BYTES) {
     return ERROR;
+  }
 
   otrng_ec_scalar_decode(scalar, serialized);
 
@@ -219,45 +236,53 @@ INTERNAL otrng_err otrng_deserialize_ec_scalar(ec_scalar_p scalar,
 INTERNAL otrng_err otrng_deserialize_ring_sig(ring_sig_s *proof,
                                               const uint8_t *serialized,
                                               size_t ser_len, size_t *read) {
-  if (ser_len < RING_SIG_BYTES)
+  if (ser_len < RING_SIG_BYTES) {
     return ERROR;
+  }
 
   const uint8_t *cursor = serialized;
-  if (!otrng_deserialize_ec_scalar(proof->c1, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->c1, cursor, ser_len)) {
     return ERROR;
+  }
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (!otrng_deserialize_ec_scalar(proof->r1, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->r1, cursor, ser_len)) {
     return ERROR;
+  }
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (!otrng_deserialize_ec_scalar(proof->c2, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->c2, cursor, ser_len)) {
     return ERROR;
+  }
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (!otrng_deserialize_ec_scalar(proof->r2, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->r2, cursor, ser_len)) {
     return ERROR;
+  }
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (!otrng_deserialize_ec_scalar(proof->c3, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->c3, cursor, ser_len)) {
     return ERROR;
+  }
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
-  if (!otrng_deserialize_ec_scalar(proof->r3, cursor, ser_len))
+  if (!otrng_deserialize_ec_scalar(proof->r3, cursor, ser_len)) {
     return ERROR;
+  }
 
-  if (read)
+  if (read) {
     *read = RING_SIG_BYTES;
+  }
 
   return SUCCESS;
 }
@@ -267,8 +292,9 @@ INTERNAL otrng_err otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
                                                    size_t len) {
   /* (((base64len+3) / 4) * 3) */
   unsigned char *dec = malloc(((len + 3) / 4) * 3);
-  if (!dec)
+  if (!dec) {
     return ERROR;
+  }
 
   size_t written = otrl_base64_decode(dec, buff, len);
 
