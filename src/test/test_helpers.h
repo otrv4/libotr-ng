@@ -32,7 +32,8 @@
 #define BOB_IDENTITY "bob@otr.example"
 #define CHARLIE_IDENTITY "charlie@otr.example"
 #define PHI "alice@otr.jabber.net"
-#define FORCE_CREATE_CONVO true
+#define FORCE_CREATE_CONV 1
+#define NOT_FORCE_CREATE_CONV 0
 
 #define WITH_FIXTURE(_p, _c, _t, _f)                                           \
   do {                                                                         \
