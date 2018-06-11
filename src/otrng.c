@@ -717,7 +717,6 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
                                        const uint8_t *message,
                                        size_t message_len,
                                        const m_enc_key_p enc_key) {
-  int err = 0;
   uint8_t *c = NULL;
 
   random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
@@ -729,7 +728,8 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
   // TODO: message is an UTF-8 string. Is there any problem to cast
   // it to (unsigned char *)
   // encrypted_message = XSalsa20_Enc(MKenc, nonce, m)
-  err = crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
+  int err =
+      crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
   if (err) {
     free(c);
     return ERROR;

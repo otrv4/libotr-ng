@@ -91,8 +91,9 @@ INTERNAL void otrng_dh_init(void) {
 }
 
 INTERNAL void otrng_dh_free(void) {
-  if (!dh_initialized)
+  if (!dh_initialized) {
     return;
+  }
 
   gcry_mpi_release(DH3072_MODULUS);
   DH3072_MODULUS = NULL;
@@ -125,8 +126,9 @@ INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair) {
       gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);
   gcry_free(secbuf);
 
-  if (err)
+  if (err) {
     return ERROR;
+  }
 
   keypair->priv = privkey;
   keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
@@ -146,8 +148,9 @@ INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
 
   gcry_error_t err =
       gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random, DH_KEY_SIZE, NULL);
-  if (err)
+  if (err) {
     return ERROR;
+  }
 
   if (participant == OTRNG_US) {
     keypair->priv = privkey;
@@ -194,13 +197,13 @@ INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared, size_t shared_bytes,
 
   gcry_mpi_release(secret);
 
+  if (err) {
+    return ERROR;
+  }
+
   // Replace removed leading zeroes to ensure size is 384
-  // TODO: this is memsetting a uint8_t *
   memset(shared, 0, shared_bytes);
   memcpy(shared + shared_bytes - written, buffer, written);
-
-  if (err)
-    return ERROR;
 
   return SUCCESS;
 }
@@ -216,8 +219,9 @@ INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
 
   gcry_error_t err =
       gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
-  if (err)
+  if (err) {
     return ERROR;
+  }
 
   return SUCCESS;
 }
@@ -225,21 +229,25 @@ INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
 INTERNAL otrng_err otrng_dh_mpi_deserialize(dh_mpi_p *dst,
                                             const uint8_t *buffer,
                                             size_t buflen, size_t *nread) {
-  if (gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread))
+  gcry_error_t err = gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread))
+  if (err) {
     return ERROR;
+  }
 
   return SUCCESS;
 }
 
 INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi) {
   /* Check that pub is in range */
-  if (mpi == NULL)
+  if (mpi == NULL) {
     return otrng_false;
+  }
 
   /* mpi >= 2 and <= dh_p - 2 */
   if ((gcry_mpi_cmp_ui(mpi, 2) < 0 ||
-       gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0))
+       gcry_mpi_cmp(mpi, DH3072_MODULUS_MINUS_2) > 0)) {
     return otrng_false;
+  }
 
   /* slower: x ^ q mod p
   gcry_mpi_t tmp = gcry_mpi_new(DH3072_MOD_LEN_BYTES);
