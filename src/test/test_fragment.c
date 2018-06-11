@@ -25,27 +25,27 @@
 #include "../fragment.h"
 
 void test_create_fragments(void) {
-  int mms = 49;
+  int max_size = 48;
   char *message = "one two tree";
-  char frag_without_header[35];
+  char frag_without_identifier[34];
 
   otrng_message_to_send_s *frag_message =
       malloc(sizeof(otrng_message_to_send_s));
 
   otrng_assert_is_success(
-      otrng_fragment_message(mms, frag_message, 1, 2, message));
+      otrng_fragment_message(max_size, frag_message, 1, 2, message));
 
-  strncpy(frag_without_header, frag_message->pieces[0] + 14, 35);
-  g_assert_cmpstr(frag_without_header, ==,
+  strncpy(frag_without_identifier, frag_message->pieces[0] + 14, 35);
+  g_assert_cmpstr(frag_without_identifier, ==,
                   "00000001|00000002,00001,00004,one,");
-  strncpy(frag_without_header, frag_message->pieces[1] + 14, 35);
-  g_assert_cmpstr(frag_without_header, ==,
+  strncpy(frag_without_identifier, frag_message->pieces[1] + 14, 35);
+  g_assert_cmpstr(frag_without_identifier, ==,
                   "00000001|00000002,00002,00004, tw,");
-  strncpy(frag_without_header, frag_message->pieces[2] + 14, 35);
-  g_assert_cmpstr(frag_without_header, ==,
+  strncpy(frag_without_identifier, frag_message->pieces[2] + 14, 35);
+  g_assert_cmpstr(frag_without_identifier, ==,
                   "00000001|00000002,00003,00004,o t,");
-  strncpy(frag_without_header, frag_message->pieces[3] + 14, 35);
-  g_assert_cmpstr(frag_without_header, ==,
+  strncpy(frag_without_identifier, frag_message->pieces[3] + 14, 35);
+  g_assert_cmpstr(frag_without_identifier, ==,
                   "00000001|00000002,00004,00004,ree,");
 
   g_assert_cmpint(frag_message->total, ==, 4);
