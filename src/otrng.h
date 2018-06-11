@@ -119,9 +119,10 @@ struct otrng_s {
   smp_context_p smp;
 
   fragment_context_s *frag_ctx;
-  time_t last_sent;  // TODO: not sure if the best place to put
-  time_t ignore_msg; // TODO: not sure if the best place to put
-};                   /* otrng_s */
+  time_t last_sent;     // TODO: not sure if the best place to put
+  time_t last_received; // TODO: not sure if the best place to put
+  time_t ignore_msg;    // TODO: not sure if the best place to put
+};                      /* otrng_s */
 
 typedef struct otrng_s otrng_p[1];
 

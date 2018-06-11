@@ -97,6 +97,9 @@ API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
                                        int expiration_time,
                                        otrng_client_s *client);
 
+API int otrng_send_heartbeat_msg(char **newmsg, const char *recipient,
+                                 int expiration_time, otrng_client_s *client);
+
 API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                          const otrng_client_s *client);
 

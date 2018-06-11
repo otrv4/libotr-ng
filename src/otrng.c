@@ -2038,20 +2038,9 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     if (!response->to_display) {
       otr->ignore_msg = 1;
       return SUCCESS;
+    } else if (otr->ignore_msg != 1 && otr->keys->their_ecdh > 0) {
+      otr->last_received = time(NULL);
     }
-    // TODO: this will make the tests rotate. Perhaps this can be
-    // done by the client..
-    // else if (otr->ignore_msg != 1 && otr->keys->their_ecdh > 0) {
-    // time_t now = time(NULL);
-    // if (otr->last_sent <
-    //    (now - otr->conversation->client->heartbeat_interval)) {
-    //  string_p to_send = NULL;
-    //  if (!otrng_prepare_to_send_message(&to_send, "", NOTIF_NONE, NULL,
-    //                                MSGFLAGS_IGNORE_UNREADABLE, otr)) {
-    //    return ERROR;
-    //  }
-    //  otr->last_sent = now;
-    //}
 
     return SUCCESS;
   } while (0);

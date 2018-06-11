@@ -408,6 +408,32 @@ API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
   return 0;
 }
 
+API int otrng_send_heartbeat_msg(char **newmsg, const char *recipient,
+                                 int expiration_time, otrng_client_s *client) {
+  otrng_conversation_s *conv = NULL;
+
+  conv = get_conversation_with(recipient, client->conversations);
+  if (!conv)
+    return 1;
+
+  if (conv->conn->ignore_msg != 1 && conv->conn->keys->their_ecdh > 0) {
+    if (conv->conn->last_sent <
+        (conv->conn->last_received -
+         conv->conn->conversation->client->heartbeat_interval)) {
+      string_p to_send = NULL;
+      if (!otrng_prepare_to_send_message(&to_send, "", NOTIF_NONE, NULL,
+                                         MSGFLAGS_IGNORE_UNREADABLE,
+                                         conv->conn)) {
+        return 1;
+      }
+      time_t now = time(NULL);
+      conv->conn->last_sent = now;
+    }
+  }
+
+  return 0;
+}
+
 API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                          const otrng_client_s *client) {
   if (!client->state->keypair)
