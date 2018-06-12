@@ -84,6 +84,12 @@ otrng_key_manager_init(key_manager_s *manager) // make like ratchet_new?
 
   manager->skipped_keys = NULL;
   manager->old_mac_keys = NULL;
+
+  manager->extra_symm_key_usage->use_extra_symm = 0;
+  manager->extra_symm_key_usage->use = 0;
+  manager->extra_symm_key_usage->use_data = NULL;
+  manager->extra_symm_key_usage->use_data_len = 0;
+  manager->extra_symm_key_usage->extra_symmetric_key = NULL;
 }
 
 INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {

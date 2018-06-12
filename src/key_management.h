@@ -68,7 +68,15 @@ typedef struct skipped_keys_s {
   int j; // Counter of the messages
   extra_symmetric_key_p extra_symmetric_key;
   m_enc_key_p m_enc_key;
-} skipped_keys_s;
+} skipped_keys_s, skipped_keys_p[1];
+
+typedef struct extra_symm_key_usage_s {
+  int use_extra_symm;
+  int use;
+  const unsigned char *use_data;
+  size_t use_data_len;
+  const unsigned char *extra_symmetric_key;
+} extra_symm_key_usage_s, extra_symm_key_usage_p[1];
 
 /* define which half of the secure session id should be shown in bold*/
 typedef enum {
@@ -105,6 +113,8 @@ typedef struct key_manager_s {
 
   list_element_s *skipped_keys;
   list_element_s *old_mac_keys;
+
+  extra_symm_key_usage_p extra_symm_key_usage;
 
   time_t last_generated;
 } key_manager_s, key_manager_p[1];

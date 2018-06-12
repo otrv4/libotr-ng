@@ -73,6 +73,7 @@ typedef struct otrng_client_state_s {
   int max_stored_msg_keys;
   int expiration_time;
   int heartbeat_interval;
+  int use_sym_key;
 
   // OtrlPrivKey *privkeyv3; // ???
   // otrng_instag_s *instag; // TODO: Store the instance tag here rather than

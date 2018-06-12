@@ -134,25 +134,30 @@ tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
   }
 }
 
-tstatic void received_symkey_cb_v4(const otrng_conversation_state_s *conv,
-                                   unsigned int use,
-                                   const unsigned char *usedata,
-                                   size_t usedatalen,
-                                   const unsigned char *extra_key) {
-  UNUSED_ARG(conv);
-  UNUSED_ARG(use);
-  UNUSED_ARG(usedata);
-  UNUSED_ARG(usedatalen);
-  UNUSED_ARG(extra_key);
+tstatic void received_symkey_cb_v4(const otrng_s *otr, unsigned int use,
+                                   const unsigned char *use_data,
+                                   size_t use_data_len,
+                                   const unsigned char *extra_symm_key) {
+  otr->keys->extra_symm_key_usage->use_extra_symm = 1;
+  otr->keys->extra_symm_key_usage->use = use;
+  otr->keys->extra_symm_key_usage->use_data = use_data;
+  otr->keys->extra_symm_key_usage->use_data_len = use_data_len;
+  otr->keys->extra_symm_key_usage->extra_symmetric_key = extra_symm_key;
 
 #ifdef DEBUG
   printf("\n");
-  printf("Received symkey use: %08x\n", use);
-  printf("Usedata lenght: %zu\n", usedatalen);
+  printf("Received symkey use: %08x\n", otr->keys->extra_symm_key_usage->use);
+  printf("Usedata lenght: %zu\n",
+         otr->keys->extra_symm_key_usage->use_data_len);
   printf("Usedata = ");
-  otrng_memdump(usedata, usedatalen);
+  for (int i = 0; i < use_data_len; i++) {
+    printf("%02x", otr->keys->extra_symm_key_usage->use_data[i]);
+  }
+  printf("\n");
   printf("Symkey = ");
-  otrng_memdump(usedata, HASH_BYTES);
+  for (int i = 0; i < EXTRA_SYMMETRIC_KEY_BYTES; i++) {
+    printf("%02x", otr->keys->extra_symm_key_usage->extra_symmetric_key[i]);
+  }
 #endif
 }
 
@@ -1889,8 +1894,7 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
   if (tlv->type == OTRNG_TLV_SYM_KEY && tlv->len >= 4) {
     if (otr->keys->extra_symmetric_key > 0) {
       uint32_t use = extract_word(tlv->data);
-
-      received_symkey_cb_v4(otr->conversation, use, tlv->data + 4, tlv->len - 4,
+      received_symkey_cb_v4(otr, use, tlv->data + 4, tlv->len - 4,
                             otr->keys->extra_symmetric_key);
       sodium_memzero(otr->keys->extra_symmetric_key,
                      sizeof(otr->keys->extra_symmetric_key));
