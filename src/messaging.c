@@ -27,8 +27,9 @@
 API otrng_user_state_s *
 otrng_user_state_new(const otrng_client_callbacks_s *cb) {
   otrng_user_state_s *state = malloc(sizeof(otrng_user_state_s));
-  if (!state)
+  if (!state) {
     return NULL;
+  }
 
   state->states = NULL;
   state->clients = NULL;
@@ -44,8 +45,9 @@ tstatic void free_client_state(void *data) { otrng_client_state_free(data); }
 tstatic void free_client(void *data) { otrng_client_free(data); }
 
 API void otrng_user_state_free(otrng_user_state_s *state) {
-  if (!state)
+  if (!state) {
     return;
+  }
 
   otrng_list_free(state->states, free_client_state);
   state->states = NULL;
@@ -71,12 +73,14 @@ tstatic otrng_client_state_s *get_client_state(otrng_user_state_s *state,
                                                const void *client_id) {
   list_element_s *el =
       otrng_list_get(client_id, state->states, find_state_by_client_id);
-  if (el)
+  if (el) {
     return el->data;
+  }
 
   otrng_client_state_s *s = otrng_client_state_new(client_id);
-  if (!s)
+  if (!s) {
     return NULL;
+  }
 
   s->callbacks = state->callbacks;
   s->user_state = state->user_state_v3;
@@ -185,17 +189,20 @@ otrng_user_state_get_private_key_v4(otrng_user_state_s *state,
 API int otrng_user_state_private_key_v4_read_FILEp(
     otrng_user_state_s *state, FILE *privf,
     const void *(*read_client_id_for_key)(FILE *filep)) {
-  if (!privf)
+  if (!privf) {
     return 1;
+  }
 
   while (!feof(privf)) {
     const void *client_id = read_client_id_for_key(privf);
-    if (!client_id)
+    if (!client_id) {
       continue;
+    }
 
     if (otrng_client_state_private_key_v4_read_FILEp(
-            get_client_state(state, client_id), privf))
+            get_client_state(state, client_id), privf)) {
       continue;
+    }
   }
 
   return 0;

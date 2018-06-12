@@ -48,8 +48,9 @@ INTERNAL int otrng_serialize_fingerprint(otrng_fingerprint_p fp,
                                          const otrng_public_key_p pub) {
   uint8_t serialized[ED448_POINT_BYTES] = {0};
 
-  if (!fp)
+  if (!fp) {
     return 1;
+  }
 
   otrng_serialize_ec_point(serialized, pub);
 

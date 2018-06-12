@@ -89,8 +89,9 @@ get_conversation_with(const char *recipient, list_element_s *conversations) {
 
   for (el = conversations; el; el = el->next) {
     conv = el->data;
-    if (!strcmp(conv->recipient, recipient))
+    if (!strcmp(conv->recipient, recipient)) {
       return conv;
+    }
   }
 
   return NULL;
@@ -415,8 +416,9 @@ API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
 
   now = time(NULL);
   if (conv->conn->keys->last_generated < now - expiration_time) {
-    if (!otrng_expire_session(newmsg, conv->conn))
+    if (!otrng_expire_session(newmsg, conv->conn)) {
       return 2;
+    }
   }
 
   destroy_client_conversation(conv, client);

@@ -29,8 +29,9 @@
 
 INTERNAL otrng_keypair_s *otrng_keypair_new(void) {
   otrng_keypair_s *ret = malloc(sizeof(otrng_keypair_s));
-  if (!ret)
+  if (!ret) {
     return NULL;
+  }
 
   otrng_ec_bzero(ret->priv, ED448_SCALAR_BYTES);
   otrng_ec_bzero(ret->pub, ED448_POINT_BYTES);
@@ -57,8 +58,9 @@ tstatic void keypair_destroy(otrng_keypair_s *keypair) {
 }
 
 INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
-  if (!keypair)
+  if (!keypair) {
     return;
+  }
 
   keypair_destroy(keypair);
   free(keypair);
@@ -68,8 +70,9 @@ INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
 INTERNAL otrng_err otrng_symmetric_key_serialize(
     char **buffer, size_t *written, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   *buffer = malloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
-  if (!*buffer)
+  if (!*buffer) {
     return ERROR;
+  }
 
   *written = otrl_base64_encode(*buffer, sym, ED448_PRIVATE_BYTES);
   return SUCCESS;
@@ -77,8 +80,9 @@ INTERNAL otrng_err otrng_symmetric_key_serialize(
 
 INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void) {
   otrng_shared_prekey_pair_s *ret = malloc(sizeof(otrng_shared_prekey_pair_s));
-  if (!ret)
+  if (!ret) {
     return NULL;
+  }
 
   otrng_ec_bzero(ret->priv, ED448_SCALAR_BYTES);
   otrng_ec_bzero(ret->pub, ED448_POINT_BYTES);
@@ -117,8 +121,9 @@ shared_prekey_pair_destroy(otrng_shared_prekey_pair_s *prekey_pair) {
 
 INTERNAL void
 otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair) {
-  if (!prekey_pair)
+  if (!prekey_pair) {
     return;
+  }
 
   shared_prekey_pair_destroy(prekey_pair);
   free(prekey_pair);

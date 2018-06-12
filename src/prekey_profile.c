@@ -109,8 +109,9 @@ tstatic otrng_err otrng_prekey_profile_body_asprint(
     *dst = NULL;
   }
 
-  if (dstlen)
+  if (dstlen) {
     *dstlen = written;
+  }
 
   return SUCCESS;
 }

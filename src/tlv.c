@@ -44,8 +44,9 @@ tstatic void set_tlv_type(tlv_s *tlv, uint16_t tlv_type) {
 
 tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *written) {
   tlv_s *tlv = malloc(sizeof(tlv_s));
-  if (!tlv)
+  if (!tlv) {
     return NULL;
+  }
 
   size_t w = 0;
   uint16_t tlv_type = -1;

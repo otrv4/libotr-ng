@@ -225,8 +225,9 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
     result = SUCCESS;
   } while (0);
 
-  if (nread)
+  if (nread) {
     *nread = walked;
+  }
 
   return result;
 }

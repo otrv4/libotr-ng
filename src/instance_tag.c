@@ -58,8 +58,9 @@ API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
 }
 
 API void otrng_instag_free(otrng_instag_s *instag) {
-  if (!instag)
+  if (!instag) {
     return;
+  }
 
   free(instag->account);
   instag->account = NULL;

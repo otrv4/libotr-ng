@@ -190,8 +190,9 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {
 INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret) {
   uint8_t zero_buff[ED448_POINT_BYTES] = {0};
 
-  if (memcmp(shared_secret, zero_buff, ED448_POINT_BYTES) == 0)
+  if (memcmp(shared_secret, zero_buff, ED448_POINT_BYTES) == 0) {
     return otrng_false;
+  }
 
   return otrng_true;
 }

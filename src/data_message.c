@@ -30,8 +30,9 @@
 // TODO: add j, i, k, pn here
 INTERNAL data_message_s *otrng_data_message_new() {
   data_message_s *ret = malloc(sizeof(data_message_s));
-  if (!ret)
+  if (!ret) {
     return NULL;
+  }
 
   ret->flags = 0;
   ret->enc_msg = NULL;
@@ -62,8 +63,9 @@ tstatic void data_message_destroy(data_message_s *data_msg) {
 }
 
 INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
-  if (!data_msg)
+  if (!data_msg) {
     return;
+  }
 
   data_message_destroy(data_msg);
 
@@ -76,8 +78,9 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
   // TODO: why is DH_MPI_BYTES + 4 not on the DATA_MESSAGE_MIN_BYTES const?
   size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
-  if (!dst)
+  if (!dst) {
     return ERROR;
+  }
 
   uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, VERSION);
@@ -104,11 +107,13 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
   cursor +=
       otrng_serialize_data(cursor, data_msg->enc_msg, data_msg->enc_msg_len);
 
-  if (body)
+  if (body) {
     *body = dst;
+  }
 
-  if (bodylen)
+  if (bodylen) {
     *bodylen = cursor - dst;
+  }
 
   return SUCCESS;
 }
@@ -122,71 +127,84 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   size_t read = 0;
 
   uint16_t protocol_version = 0;
-  if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read))
+  if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read)) {
     return ERROR;
+  }
 
   cursor += read;
   len -= read;
 
-  if (protocol_version != VERSION)
+  if (protocol_version != VERSION) {
     return ERROR;
+  }
 
   uint8_t message_type = 0;
-  if (!otrng_deserialize_uint8(&message_type, cursor, len, &read))
+  if (!otrng_deserialize_uint8(&message_type, cursor, len, &read)) {
     return ERROR;
+  }
 
   cursor += read;
   len -= read;
 
-  if (message_type != DATA_MSG_TYPE)
+  if (message_type != DATA_MSG_TYPE) {
     return ERROR;
+  }
 
-  if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len, &read))
+  if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len,
+                                &read)) {
     return ERROR;
+  }
 
   cursor += read;
   len -= read;
 
   if (!otrng_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
-                                &read))
+                                &read)) {
     return ERROR;
+  }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_uint8(&dst->flags, cursor, len, &read))
+  if (!otrng_deserialize_uint8(&dst->flags, cursor, len, &read)) {
     return ERROR;
+  }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_uint32(&dst->previous_chain_n, cursor, len, &read))
+  if (!otrng_deserialize_uint32(&dst->previous_chain_n, cursor, len, &read)) {
     return ERROR;
+  }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &read))
+  if (!otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &read)) {
     return ERROR;
+  }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_uint32(&dst->message_id, cursor, len, &read))
+  if (!otrng_deserialize_uint32(&dst->message_id, cursor, len, &read)) {
     return ERROR;
+  }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(dst->ecdh, cursor))
+  if (!otrng_deserialize_ec_point(dst->ecdh, cursor)) {
     return ERROR;
+  }
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
   otrng_mpi_p b_mpi; // no need to free, because nothing is copied now
-  if (!otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read))
+  if (!otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
     return ERROR;
+  }
 
   cursor += read;
   len -= read;
@@ -195,21 +213,24 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   // We need to test what otrng_dh_mpi_deserialize does when b_mpi->data is
   // NULL.
 
-  if (!otrng_dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read))
+  if (!otrng_dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read)) {
     return ERROR;
+  }
 
   cursor += read;
   len -= read;
 
   if (!otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor,
-                                     len))
+                                     len)) {
     return ERROR;
+  }
 
   cursor += DATA_MSG_NONCE_BYTES;
   len -= DATA_MSG_NONCE_BYTES;
 
-  if (!otrng_deserialize_data(&dst->enc_msg, cursor, len, &read))
+  if (!otrng_deserialize_data(&dst->enc_msg, cursor, len, &read)) {
     return ERROR;
+  }
 
   dst->enc_msg_len = read - 4;
   cursor += read;
@@ -223,8 +244,9 @@ INTERNAL static otrng_err otrng_data_message_sections_hash(uint8_t *dst,
                                                            size_t dstlen,
                                                            const uint8_t *body,
                                                            size_t bodylen) {
-  if (dstlen < 64)
+  if (dstlen < 64) {
     return ERROR;
+  }
 
   // KDF_1(0x1B || data_message_sections, 64)
   shake_256_kdf1(dst, 64, 0x1B, body, bodylen);
@@ -236,14 +258,16 @@ INTERNAL otrng_err otrng_data_message_authenticator(uint8_t *dst, size_t dstlen,
                                                     const m_mac_key_p mac_key,
                                                     const uint8_t *body,
                                                     size_t bodylen) {
-  if (dstlen < DATA_MSG_MAC_BYTES)
+  if (dstlen < DATA_MSG_MAC_BYTES) {
     return ERROR;
+  }
 
   // Authenticator = KDF_1(0x1C || MKmac || KDF_1(0x1B || data_message_sections,
   // 64), 64)
   uint8_t sections[64];
-  if (!otrng_data_message_sections_hash(sections, 64, body, bodylen))
+  if (!otrng_data_message_sections_hash(sections, 64, body, bodylen)) {
     return ERROR;
+  }
 
   goldilocks_shake256_ctx_p auth_hash;
   hash_init_with_usage(auth_hash, 0x1C);
@@ -278,11 +302,13 @@ INTERNAL otrng_bool otrng_valid_data_message(m_mac_key_p mac_key,
     return otrng_false;
   }
 
-  if (!otrng_ec_point_valid(data_msg->ecdh))
+  if (!otrng_ec_point_valid(data_msg->ecdh)) {
     return otrng_false;
+  }
 
-  if (!data_msg->dh)
+  if (!data_msg->dh) {
     return otrng_true;
+  }
 
   return otrng_dh_mpi_valid(data_msg->dh);
 }

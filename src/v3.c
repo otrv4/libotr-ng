@@ -24,23 +24,26 @@
 #include "otrng.h"
 
 tstatic void create_privkey_cb_v3(const otrng_conversation_state_s *otr) {
-  if (!otr || !otr->client)
+  if (!otr || !otr->client) {
     return;
+  }
   otrng_client_callbacks_create_privkey(otr->client->callbacks,
                                         otr->client->client_id);
 }
 
 tstatic void gone_secure_cb_v3(const otrng_conversation_state_s *otr) {
-  if (!otr || !otr->client)
+  if (!otr || !otr->client) {
     return;
+  }
   otrng_client_callbacks_gone_secure(
       otr->client->callbacks,
       otr->client->client_id); // TODO: should be conversation_id
 }
 
 tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *otr) {
-  if (!otr || !otr->client)
+  if (!otr || !otr->client) {
     return;
+  }
   otrng_client_callbacks_gone_insecure(
       otr->client->callbacks,
       otr->client->client_id); // TODO: should be conversation_id
@@ -48,8 +51,9 @@ tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *otr) {
 
 tstatic void fingerprint_seen_cb_v3(const v3_fingerprint_p fp,
                                     const otrng_conversation_state_s *otr) {
-  if (!otr || !otr->client)
+  if (!otr || !otr->client) {
     return;
+  }
   otrng_client_callbacks_fingerprint_seen_v3(
       otr->client->callbacks, fp,
       otr->client->client_id); // TODO: should be conversation_id
@@ -59,8 +63,9 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
                                     const uint8_t progress_percent,
                                     const char *question,
                                     const otrng_conversation_state_s *otr) {
-  if (!otr || !otr->client)
+  if (!otr || !otr->client) {
     return;
+  }
   switch (event) {
   case OTRNG_SMPEVENT_ASK_FOR_SECRET:
     otrng_client_callbacks_smp_ask_for_secret(
@@ -118,8 +123,9 @@ tstatic OtrlPolicy op_policy(void *opdata, ConnContext *context) {
 static char *injected_to_send = NULL;
 
 tstatic void from_injected_to_send(char **to_send) {
-  if (!to_send || !injected_to_send)
+  if (!to_send || !injected_to_send) {
     return;
+  }
 
   // TODO: As this is stored from a callback it MAY be the case a message
   // was lost (if the callback was invoked multiple times before we consume
@@ -139,8 +145,9 @@ tstatic void op_inject(void *opdata, const char *accountname,
     injected_to_send = NULL;
   }
 
-  if (message)
+  if (message) {
     injected_to_send = otrng_strdup(message);
+  }
 }
 
 /* Create a private key for the given accountname/protocol if
@@ -443,8 +450,9 @@ static OtrlMessageAppOps null_ops = {
 INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_state_s *state,
                                             const char *peer) {
   otrng_v3_conn_s *ret = malloc(sizeof(otrng_v3_conn_s));
-  if (!ret)
+  if (!ret) {
     return NULL;
+  }
 
   ret->state = state;
   ret->ops = &null_ops; // This cant be null
@@ -457,8 +465,9 @@ INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_state_s *state,
 }
 
 INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn) {
-  if (!conn)
+  if (!conn) {
     return;
+  }
 
   conn->ctx = NULL;
   conn->ops = NULL;
@@ -477,8 +486,9 @@ INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,
   // TODO: convert TLVs
   OtrlTLV *tlvsv3 = NULL;
 
-  if (!conn)
+  if (!conn) {
     return ERROR;
+  }
 
   int err = otrl_message_sending(
       conn->state->user_state, conn->ops, conn->opdata,
@@ -486,8 +496,9 @@ INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,
       OTRL_INSTAG_RECENT, message, tlvsv3, newmessage, OTRL_FRAGMENT_SEND_SKIP,
       &conn->ctx, NULL, NULL);
 
-  if (!err)
+  if (!err) {
     return SUCCESS;
+  }
 
   return ERROR;
 }
@@ -501,8 +512,9 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
   OtrlTLV *tlvsv3 = NULL; // TODO: convert to v4 tlvs
   *to_send = NULL;
 
-  if (!conn)
+  if (!conn) {
     return ERROR;
+  }
 
   char *newmessage = NULL;
   ignore_message = otrl_message_receiving(
@@ -514,8 +526,9 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
 
   from_injected_to_send(to_send);
 
-  if (to_display && newmessage)
+  if (to_display && newmessage) {
     *to_display = otrng_strdup(newmessage);
+  }
 
   otrl_tlv_free(tlvsv3);
   otrl_message_free(newmessage);
@@ -560,12 +573,13 @@ INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
     q[q_len] = 0;
   }
 
-  if (question)
+  if (question) {
     otrl_message_initiate_smp_q(conn->state->user_state, conn->ops,
                                 conn->opdata, conn->ctx, q, secret, secretlen);
-  else
+  } else {
     otrl_message_initiate_smp(conn->state->user_state, conn->ops, conn->opdata,
                               conn->ctx, secret, secretlen);
+  }
 
   from_injected_to_send(to_send);
   return SUCCESS;

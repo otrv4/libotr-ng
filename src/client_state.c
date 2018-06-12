@@ -30,8 +30,9 @@
 
 INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   otrng_client_state_s *state = malloc(sizeof(otrng_client_state_s));
-  if (!state)
+  if (!state) {
     return NULL;
+  }
 
   state->client_id = client_id;
   state->account_name = NULL;
@@ -98,11 +99,13 @@ INTERNAL int otrng_client_state_private_key_v3_generate_FILEp(
 
 INTERNAL otrng_keypair_s *
 otrng_client_state_get_private_key_v4(otrng_client_state_s *state) {
-  if (!state)
+  if (!state) {
     return NULL;
+  }
 
-  if (!state->keypair && state->callbacks && state->callbacks->create_privkey)
+  if (!state->keypair && state->callbacks && state->callbacks->create_privkey) {
     state->callbacks->create_privkey(state->client_id);
+  }
 
   return state->keypair;
 }
@@ -110,15 +113,18 @@ otrng_client_state_get_private_key_v4(otrng_client_state_s *state) {
 INTERNAL int
 otrng_client_state_add_private_key_v4(otrng_client_state_s *state,
                                       const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  if (!state)
+  if (!state) {
     return 1;
+  }
 
-  if (state->keypair)
+  if (state->keypair) {
     return 0;
+  }
 
   state->keypair = otrng_keypair_new();
-  if (!state->keypair)
+  if (!state->keypair) {
     return 2;
+  }
 
   otrng_keypair_generate(state->keypair, sym);
   return 0;
@@ -127,8 +133,9 @@ otrng_client_state_add_private_key_v4(otrng_client_state_s *state,
 INTERNAL int
 otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
                                               FILE *privf) {
-  if (!state->protocol_name || !state->account_name)
+  if (!state->protocol_name || !state->account_name) {
     return 1;
+  }
 
   char *key =
       malloc(strlen(state->protocol_name) + strlen(state->account_name) + 2);
@@ -138,11 +145,13 @@ otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
   size_t s = 0;
   int err = 0;
 
-  if (!privf)
+  if (!privf) {
     return -1;
+  }
 
-  if (!state->keypair)
+  if (!state->keypair) {
     return -2;
+  }
 
   if (!otrng_symmetric_key_serialize(&buff, &s, state->keypair->sym)) {
     return 1;
@@ -152,17 +161,21 @@ otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
   free(key);
   key = NULL;
 
-  if (EOF == err)
+  if (EOF == err) {
     return -3;
+  }
 
-  if (EOF == fputs("\n", privf))
+  if (EOF == fputs("\n", privf)) {
     return -3;
+  }
 
-  if (1 != fwrite(buff, s, 1, privf))
+  if (1 != fwrite(buff, s, 1, privf)) {
     return -3;
+  }
 
-  if (EOF == fputs("\n", privf))
+  if (EOF == fputs("\n", privf)) {
     return -3;
+  }
 
   return 0;
 }
@@ -174,17 +187,21 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
   size_t cap = 0;
   int len = 0;
 
-  if (!privf)
+  if (!privf) {
     return -1;
+  }
 
-  if (feof(privf))
+  if (feof(privf)) {
     return 1;
+  }
 
-  if (!state->keypair)
+  if (!state->keypair) {
     state->keypair = otrng_keypair_new();
+  }
 
-  if (!state->keypair)
+  if (!state->keypair) {
     return -2;
+  }
 
   len = getline(&line, &cap, privf);
   if (len < 0) {
@@ -210,8 +227,9 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
 
 API const client_profile_s *
 otrng_client_state_get_client_profile(otrng_client_state_s *state) {
-  if (!state)
+  if (!state) {
     return NULL;
+  }
 
   // TODO: Invoke callbacks?
 
@@ -220,15 +238,18 @@ otrng_client_state_get_client_profile(otrng_client_state_s *state) {
 
 API int otrng_client_state_add_client_profile(otrng_client_state_s *state,
                                               const client_profile_s *profile) {
-  if (!state)
+  if (!state) {
     return 1;
+  }
 
-  if (state->client_profile)
+  if (state->client_profile) {
     return 2;
+  }
 
   state->client_profile = malloc(sizeof(client_profile_s));
-  if (!state->client_profile)
+  if (!state->client_profile) {
     return 3;
+  }
 
   otrng_client_profile_copy(state->client_profile, profile);
   return 0;
@@ -236,15 +257,18 @@ API int otrng_client_state_add_client_profile(otrng_client_state_s *state,
 
 INTERNAL int otrng_client_state_add_shared_prekey_v4(
     otrng_client_state_s *state, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  if (!state)
+  if (!state) {
     return 1;
+  }
 
-  if (state->shared_prekey_pair)
+  if (state->shared_prekey_pair) {
     return 0;
+  }
 
   state->shared_prekey_pair = otrng_shared_prekey_pair_new();
-  if (!state->shared_prekey_pair)
+  if (!state->shared_prekey_pair) {
     return 2;
+  }
 
   otrng_shared_prekey_pair_generate(state->shared_prekey_pair, sym);
   return 0;
@@ -252,8 +276,9 @@ INTERNAL int otrng_client_state_add_shared_prekey_v4(
 
 API const otrng_prekey_profile_s *
 otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
-  if (!state)
+  if (!state) {
     return NULL;
+  }
 
   // TODO: invoke callback to generate if profile is NULL
 
@@ -263,15 +288,18 @@ otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
 API int
 otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
                                       const otrng_prekey_profile_s *profile) {
-  if (!state)
+  if (!state) {
     return 1;
+  }
 
-  if (state->prekey_profile)
+  if (state->prekey_profile) {
     return 2;
+  }
 
   state->prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
-  if (!state->prekey_profile)
+  if (!state->prekey_profile) {
     return 3;
+  }
 
   otrng_prekey_profile_copy(state->prekey_profile, profile);
   return 0;
@@ -280,12 +308,14 @@ otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
 tstatic OtrlInsTag *otrl_instance_tag_new(const char *protocol,
                                           const char *account,
                                           unsigned int instag) {
-  if (instag < OTRNG_MIN_VALID_INSTAG)
+  if (instag < OTRNG_MIN_VALID_INSTAG) {
     return NULL;
+  }
 
   OtrlInsTag *p = malloc(sizeof(OtrlInsTag));
-  if (!p)
+  if (!p) {
     return NULL;
+  }
 
   p->accountname = otrng_strdup(account);
   p->protocol = otrng_strdup(protocol);
@@ -307,16 +337,19 @@ tstatic void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
 
 INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
                                                  unsigned int instag) {
-  if (!state)
+  if (!state) {
     return 1;
+  }
 
-  if (!state->user_state)
+  if (!state->user_state) {
     return 1;
+  }
 
   OtrlInsTag *p =
       otrl_instance_tag_new(state->protocol_name, state->account_name, instag);
-  if (!p)
+  if (!p) {
     return -1;
+  }
 
   otrl_userstate_instance_tag_add(state->user_state, p);
   return 0;
@@ -324,21 +357,24 @@ INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
 
 INTERNAL unsigned int
 otrng_client_state_get_instance_tag(otrng_client_state_s *state) {
-  if (!state->user_state)
+  if (!state->user_state) {
     return 0;
+  }
 
   OtrlInsTag *instag = otrl_instag_find(state->user_state, state->account_name,
                                         state->protocol_name);
-  if (!instag)
+  if (!instag) {
     return 0;
+  }
 
   return instag->instag;
 }
 
 API int otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
                                                    FILE *instag) {
-  if (!state->user_state)
+  if (!state->user_state) {
     return 1;
+  }
 
   return otrl_instag_read_FILEp(state->user_state, instag);
 }
@@ -348,8 +384,9 @@ otrng_client_state_get_client_profile_by_id(uint32_t id,
                                             otrng_client_state_s *state) {
   const client_profile_s *ret = otrng_client_state_get_client_profile(state);
 
-  if (ret && ret->id == id)
+  if (ret && ret->id == id) {
     return ret;
+  }
 
   return NULL;
 }
@@ -357,8 +394,9 @@ otrng_client_state_get_client_profile_by_id(uint32_t id,
 INTERNAL const client_profile_s *
 otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state) {
   const client_profile_s *ret = otrng_client_state_get_client_profile(state);
-  if (ret)
+  if (ret) {
     return ret;
+  }
 
   // TODO: invoke callback to generate profile if it is NULL, instead of doing
   // it here.
@@ -376,8 +414,9 @@ INTERNAL const otrng_prekey_profile_s *
 otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
   const otrng_prekey_profile_s *ret =
       otrng_client_state_get_prekey_profile(state);
-  if (ret)
+  if (ret) {
     return ret;
+  }
 
   // TODO: invoke callback to generate profile if it is NULL, instead of doing
   // it here.
@@ -396,8 +435,9 @@ otrng_client_state_get_prekey_profile_by_id(uint32_t id,
   const otrng_prekey_profile_s *ret = NULL;
   ret = otrng_client_state_get_prekey_profile(state);
 
-  if (ret && ret->id == id)
+  if (ret && ret->id == id) {
     return ret;
+  }
 
   return NULL;
 }
@@ -406,11 +446,13 @@ tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
                                                      list_element_s *l) {
   while (l) {
     const otrng_stored_prekeys_s *s = l->data;
-    if (!s)
+    if (!s) {
       continue;
+    }
 
-    if (s->id == id)
+    if (s->id == id) {
       return l;
+    }
 
     l = l->next;
   }
@@ -437,8 +479,9 @@ INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
 INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
                                              otrng_client_state_s *state) {
   list_element_s *node = get_stored_prekey_node_by_id(id, state->our_prekeys);
-  if (!node)
+  if (!node) {
     return;
+  }
 
   state->our_prekeys = otrng_list_remove_element(node, state->our_prekeys);
   otrng_list_free(node, stored_prekeys_free_from_list);
@@ -447,8 +490,9 @@ INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
 INTERNAL const otrng_stored_prekeys_s *
 get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state) {
   list_element_s *node = get_stored_prekey_node_by_id(id, state->our_prekeys);
-  if (!node)
+  if (!node) {
     return NULL;
+  }
 
   return node->data;
 }

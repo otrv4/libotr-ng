@@ -33,8 +33,9 @@
 
 API otrng_message_to_send_s *otrng_message_new() {
   otrng_message_to_send_s *msg = malloc(sizeof(otrng_message_to_send_s));
-  if (!msg)
+  if (!msg) {
     return NULL;
+  }
 
   msg->pieces = NULL;
   msg->total = 0;
@@ -43,8 +44,9 @@ API otrng_message_to_send_s *otrng_message_new() {
 }
 
 API void otrng_message_free(otrng_message_to_send_s *message) {
-  if (!message)
+  if (!message) {
     return;
+  }
 
   int i;
   for (i = 0; i < message->total; i++) {
@@ -95,13 +97,15 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
   int piece_len = 0;
 
   fragments->total = ((msg_len - 1) / limit) + 1;
-  if (fragments->total < 1 || fragments->total > 65535)
+  if (fragments->total < 1 || fragments->total > 65535) {
     return ERROR;
+  }
 
   size_t pieces_len = fragments->total * sizeof(string_p);
   pieces = malloc(pieces_len);
-  if (!pieces)
+  if (!pieces) {
     return ERROR;
+  }
 
   for (int current = 1; current <= fragments->total; current++) {
     string_p piece = NULL;
@@ -207,13 +211,15 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
 
   if (context->fragments == NULL) {
     context->fragments = malloc(sizeof(string_p) * t);
-    if (!context->fragments)
+    if (!context->fragments) {
       return ERROR;
+    }
   }
 
   char *fragment = malloc(fragment_len + 1);
-  if (!fragment)
+  if (!fragment) {
     return ERROR;
+  }
 
   memcpy(fragment, message + start, fragment_len);
   fragment[fragment_len] = '\0';

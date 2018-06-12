@@ -24,15 +24,17 @@
 INTERNAL void
 otrng_client_callbacks_create_privkey(const otrng_client_callbacks_s *cb,
                                       const void *client_opdata) {
-  if (!cb)
+  if (!cb) {
     return;
+  }
 }
 
 INTERNAL void
 otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,
                                    const otrng_client_conversation_s *conv) {
-  if (!cb || !cb->gone_secure)
+  if (!cb || !cb->gone_secure) {
     return;
+  }
 
   cb->gone_secure(conv);
 }
@@ -40,8 +42,9 @@ otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,
 INTERNAL void
 otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
                                      const otrng_client_conversation_s *conv) {
-  if (!cb || !cb->gone_insecure)
+  if (!cb || !cb->gone_insecure) {
     return;
+  }
 
   cb->gone_insecure(conv);
 }
@@ -49,34 +52,39 @@ otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
 INTERNAL void otrng_client_callbacks_fingerprint_seen(
     const otrng_client_callbacks_s *cb, const otrng_fingerprint_p fp,
     const otrng_client_conversation_s *conv) {
-  if (!cb)
+  if (!cb) {
     return;
+  }
 }
 
 INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
     const otrng_client_callbacks_s *cb, const v3_fingerprint_p fp,
     const otrng_client_conversation_s *conv) {
-  if (!cb)
+  if (!cb) {
     return;
+  }
 }
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_secret(
     const otrng_client_callbacks_s *cb,
     const otrng_client_conversation_s *conv) {
-  if (!cb)
+  if (!cb) {
     return;
+  }
 }
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_answer(
     const otrng_client_callbacks_s *cb, const char *question,
     const otrng_client_conversation_s *conv) {
-  if (!cb)
+  if (!cb) {
     return;
+  }
 }
 
 INTERNAL void otrng_client_callbacks_smp_update(
     const otrng_client_callbacks_s *cb, const otrng_smp_event_t event,
     const uint8_t progress_percent, const otrng_client_conversation_s *conv) {
-  if (!cb)
+  if (!cb) {
     return;
+  }
 }

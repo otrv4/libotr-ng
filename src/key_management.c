@@ -33,8 +33,9 @@
 
 tstatic ratchet_s *ratchet_new() {
   ratchet_s *ratchet = malloc(sizeof(ratchet_s));
-  if (!ratchet)
+  if (!ratchet) {
     return NULL;
+  }
 
   memset(ratchet->root_key, 0, sizeof(ratchet->root_key));
   memset(ratchet->chain_s, 0, sizeof(ratchet->chain_s));
@@ -44,8 +45,9 @@ tstatic ratchet_s *ratchet_new() {
 }
 
 tstatic void ratchet_free(ratchet_s *ratchet) {
-  if (!ratchet)
+  if (!ratchet) {
     return;
+  }
 
   sodium_memzero(ratchet->root_key, sizeof(root_key_p));
   sodium_memzero(ratchet->chain_s, sizeof(sending_chain_key_p));
@@ -278,11 +280,13 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
     otrng_ec_bzero(manager->our_ecdh->priv, sizeof(ec_scalar_p));
 
-    if (!otrng_ecdh_valid_secret(k_ecdh))
+    if (!otrng_ecdh_valid_secret(k_ecdh)) {
       return ERROR;
+    }
 
-    if (!calculate_brace_key(manager))
+    if (!calculate_brace_key(manager)) {
       return ERROR;
+    }
 
     otrng_dh_priv_key_destroy(manager->our_dh);
     calculate_shared_secret(manager, k_ecdh);
@@ -741,8 +745,9 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
 
   if (serlen != 0) {
     ser_mac_keys = malloc(serlen);
-    if (!ser_mac_keys)
+    if (!ser_mac_keys) {
       return NULL;
+    }
 
     m_mac_key_p mac_key;
     m_enc_key_p enc_key;

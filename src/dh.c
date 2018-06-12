@@ -72,8 +72,9 @@ static gcry_mpi_t DH3072_GENERATOR = NULL;
 static int dh_initialized = 0;
 
 INTERNAL void otrng_dh_init(void) {
-  if (dh_initialized)
+  if (dh_initialized) {
     return;
+  }
 
   dh_initialized = 1;
 
@@ -211,8 +212,9 @@ INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared, size_t shared_bytes,
 INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                           size_t *written, const dh_mpi_p src) {
   if (!src) {
-    if (written)
+    if (written) {
       *written = 0;
+    }
 
     return SUCCESS;
   }

@@ -81,8 +81,9 @@ typedef struct otrng_client_state_s {
 } otrng_client_state_s, otrng_client_state_p[1];
 
 static inline void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
-  if (!s)
+  if (!s) {
     return;
+  }
 
   otrng_ecdh_keypair_destroy(s->our_ecdh);
   otrng_dh_keypair_destroy(s->our_dh);
