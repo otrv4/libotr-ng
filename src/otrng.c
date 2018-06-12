@@ -1185,7 +1185,7 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   case ERR_NONE:
     break;
   case ERR_MSG_UNDECRYPTABLE:
-    msg = strdup("OTRNG_ERR_MSG_READABLE");
+    msg = otrng_strdup("OTRNG_ERR_MSG_READABLE");
     err_msg =
         malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_1) + strlen(msg) + 1);
     if (!err_msg) {
@@ -1203,7 +1203,7 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
     free(err_msg);
     break;
   case ERR_MSG_NOT_PRIVATE:
-    msg = strdup("OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
+    msg = otrng_strdup("OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
     err_msg =
         malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_2) + strlen(msg) + 1);
     if (!err_msg) {
@@ -1221,7 +1221,7 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
     free(err_msg);
     break;
   case ERR_MSG_ENCRYPTION_ERROR:
-    msg = strdup("OTRNG_ERR_ENCRYPTION_ERROR");
+    msg = otrng_strdup("OTRNG_ERR_ENCRYPTION_ERROR");
     err_msg =
         malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_3) + strlen(msg) + 1);
     if (!err_msg) {
@@ -1239,7 +1239,7 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
     free(err_msg);
     break;
   case ERR_MSG_MALFORMED:
-    msg = strdup("OTRNG_ERR_MALFORMED");
+    msg = otrng_strdup("OTRNG_ERR_MALFORMED");
     err_msg =
         malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_4) + strlen(msg) + 1);
     if (!err_msg) {
