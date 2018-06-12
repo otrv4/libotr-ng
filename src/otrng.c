@@ -191,6 +191,11 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
   *dst = 0;
 }
 
+tstatic const otrng_shared_prekey_pair_s *
+our_shared_prekey(const otrng_s *otr) {
+  return otr->conversation->client->shared_prekey_pair;
+}
+
 tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   maybe_create_keys(otr->conversation);
   otrng_client_state_s *state = otr->conversation->client;
@@ -1079,9 +1084,8 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   otrng_memdump(brace_key, sizeof(brace_key_p));
 #endif
 
-  if (!otrng_ecdh_shared_secret_from_prekey(
-          tmp_ecdh_k1, otr->conversation->client->shared_prekey_pair,
-          their_ecdh(otr)))
+  if (!otrng_ecdh_shared_secret_from_prekey(tmp_ecdh_k1, our_shared_prekey(otr),
+                                            their_ecdh(otr)))
     return ERROR;
 
   if (!otrng_ecdh_shared_secret_from_keypair(
@@ -1390,7 +1394,7 @@ tstatic otrng_err non_interactive_auth_message_received(
 
   // Shared prekey is the same as used to generate my current prekey profile.
   // Should be always true, though.
-  if (!otrng_ec_point_eq(otr->conversation->client->shared_prekey_pair->pub,
+  if (!otrng_ec_point_eq(our_shared_prekey(otr)->pub,
                          get_my_prekey_profile(otr)->shared_prekey))
     return ERROR;
 
@@ -1985,6 +1989,14 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   do {
     if (!otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
                                     msg->message_id, otr->keys)) {
+
+      // TODO: Why we do not care if this message is not a duplicated skipped
+      // message and just derive the next ratchet key, and increase the
+      // K (meaning the message was received)?
+      // if (msg->ratchet_id < otr->keys->i) { continue; }
+      // if (msg->ratchet_id == otr->keys->i && msg->message_id < otr->keys->k)
+      //{ continue; }
+
       if (!otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->conversation->client->max_stored_msg_keys,
               msg->message_id, msg->previous_chain_n, OTRNG_RECEIVING))
