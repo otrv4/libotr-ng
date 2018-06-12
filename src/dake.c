@@ -987,6 +987,9 @@ tstatic otrng_err build_rsign_tag(
     cursor += ser_r_dh_len;
 
     // This is only used in the non-interactive t msg
+    // TODO: ser_r_shared_prekey is NULL here in a branch.
+    // error: Null pointer passed as an argument to a 'nonnull' parameter
+    // [clang-analyzer-core.NonNullParamChecker,-warnings-as-errors]
     memcpy(cursor, ser_r_shared_prekey, ser_r_shared_prekey_len);
     cursor += ser_r_shared_prekey_len;
 

@@ -116,6 +116,8 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     if (!piece_data) {
       int i;
       for (i = 0; i < fragments->total; i++) {
+        // TODO: Cant do this. piece[i] is probably uninitialized.
+        // must clear pieces before current, not fragments->total.
         free(pieces[i]);
         pieces[i] = NULL;
       }
@@ -132,6 +134,8 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     if (!piece) {
       int i;
       for (i = 0; i < fragments->total; i++) {
+        // TODO: Cant do this. piece[i] is probably uninitialized.
+        // must clear pieces before current, not fragments->total.
         free(pieces[i]);
         pieces[i] = NULL;
       }
