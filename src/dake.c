@@ -190,9 +190,6 @@ INTERNAL otrng_err otrng_dake_identity_message_deserialize(
     return ERROR;
   }
 
-  cursor += read;
-  len -= read;
-
   return otrng_dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
 
@@ -356,7 +353,7 @@ INTERNAL otrng_err otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
   cursor += otrng_serialize_uint8(cursor, AUTH_I_MSG_TYPE);
   cursor += otrng_serialize_uint32(cursor, auth_i->sender_instance_tag);
   cursor += otrng_serialize_uint32(cursor, auth_i->receiver_instance_tag);
-  cursor += otrng_serialize_ring_sig(cursor, auth_i->sigma);
+  otrng_serialize_ring_sig(cursor, auth_i->sigma);
 
   return SUCCESS;
 }
@@ -554,9 +551,6 @@ INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
   if (!otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
     return ERROR;
   }
-
-  cursor += read;
-  len -= read;
 
   return otrng_dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
 }
@@ -756,7 +750,6 @@ tstatic size_t xzdh_encrypted_message_deserialize(
 
   dst->enc_msg_len = r - 4;
   cursor += r;
-  len -= r;
 
   if (read) {
     *read = cursor - buffer;
