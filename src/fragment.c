@@ -61,15 +61,18 @@ API void otrng_message_free(otrng_message_to_send_s *message) {
   message = NULL;
 }
 
-INTERNAL fragment_context_s *otrng_fragment_context_new(void) {
-  fragment_context_s *context = malloc(sizeof(fragment_context_s));
+tstatic void initialize_fragment_context(fragment_context_s *context) {
   context->identifier = 0;
   context->count = 0;
   context->total = 0;
   context->total_message_len = 0;
   context->status = FRAGMENT_UNFRAGMENTED;
   context->fragments = NULL;
+}
 
+INTERNAL fragment_context_s *otrng_fragment_context_new(void) {
+  fragment_context_s *context = malloc(sizeof(fragment_context_s));
+  initialize_fragment_context(context);
   return context;
 }
 
@@ -160,19 +163,10 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
   return SUCCESS;
 }
 
-tstatic void initialize_fragment_context(fragment_context_s *context) {
-  context->total_message_len = 0;
-
-  context->identifier = 0;
-  context->total = 0;
-  context->count = 0;
-  context->status = FRAGMENT_UNFRAGMENTED;
-  context->fragments = NULL;
-}
-
 tstatic otrng_bool is_fragment(const string_p message) {
-  if (strstr(message, "?OTR|") != NULL)
+  if (strstr(message, "?OTR|") == message) {
     return otrng_true;
+  }
 
   return otrng_false;
 }
@@ -187,13 +181,17 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     return SUCCESS;
   }
 
-  int fragment_identifier, sender_tag = 0, receiver_tag = 0, start = 0, end = 0;
-  unsigned short i = 0, t = 0;
+  uint32_t fragment_identifier, sender_tag, receiver_tag, start = 0, end = 0;
+  unsigned short i, t;
 
   sscanf(message, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
          &receiver_tag, &i, &t, &start, &end);
 
   context->status = FRAGMENT_INCOMPLETE;
+
+  if (end <= start) {
+    return ERROR;
+  }
 
   if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
     context->status = FRAGMENT_COMPLETE;
@@ -206,8 +204,6 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   }
 
   int fragment_len = end - start - 1;
-  if (end <= start)
-    return ERROR;
 
   if (context->fragments == NULL) {
     context->fragments = malloc(sizeof(string_p) * t);
