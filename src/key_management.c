@@ -271,24 +271,22 @@ tstatic void calculate_shared_secret(key_manager_s *manager, k_ecdh_p k_ecdh) {
 
 INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     key_manager_s *manager, otrng_information_flow flow) {
+
   if (flow == OTRNG_INTERACTIVE) {
     k_ecdh_p k_ecdh;
 
     otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
     otrng_ec_bzero(manager->our_ecdh->priv, sizeof(ec_scalar_p));
 
-    if (!otrng_ecdh_valid_secret(k_ecdh)) {
+    if (!otrng_ecdh_valid_secret(k_ecdh))
       return ERROR;
-    }
 
-    if (!calculate_brace_key(manager)) {
+    if (!calculate_brace_key(manager))
       return ERROR;
-    }
 
-    // TODO: why is this passing the whole struct?
     otrng_dh_priv_key_destroy(manager->our_dh);
-
     calculate_shared_secret(manager, k_ecdh);
+
   } else if (flow == OTRNG_NON_INTERACTIVE) {
     shake_256_kdf1(manager->shared_secret, sizeof(shared_secret_p), 0x04,
                    manager->tmp_key, sizeof(manager->tmp_key));
@@ -336,7 +334,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
 
 // TODO: perhaps this only needs the manager
 INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
-    uint8_t *shared_secret, otrng_shared_prekey_pair_s *shared_prekey,
+    uint8_t *shared_secret, const otrng_shared_prekey_pair_s *shared_prekey,
     const ec_point_p their_pub) {
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, shared_prekey->priv);
@@ -389,6 +387,7 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(
   manager->j = 0;
   manager->k = 0;
   manager->pn = 0;
+
   // TODO: we can assing directly to the root key
   memcpy(manager->current->root_key, manager->shared_secret, 64);
   sodium_memzero(manager->shared_secret, 64);
@@ -467,6 +466,7 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
   return SUCCESS;
 }
 
+// TODO: This never fails
 tstatic otrng_err key_manager_derive_ratchet_keys(
     key_manager_s *manager, otrng_participant_action action) {
   // root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
@@ -479,20 +479,18 @@ tstatic otrng_err key_manager_derive_ratchet_keys(
   hash_final(hd, manager->current->root_key, sizeof(root_key_p));
   hash_destroy(hd);
 
+  hash_init_with_usage(hd, 0x16);
+  hash_update(hd, manager->current->root_key, sizeof(root_key_p));
+  hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
+
   // chain_key_purpose[i][j] = KDF_1(0x16 || root_key[i-1] || K, 64)
   if (action == OTRNG_SENDING) {
-    hash_init_with_usage(hd, 0x16);
-    hash_update(hd, manager->current->root_key, sizeof(root_key_p));
-    hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
     hash_final(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
-    hash_destroy(hd);
   } else if (action == OTRNG_RECEIVING) {
-    hash_init_with_usage(hd, 0x16);
-    hash_update(hd, manager->current->root_key, sizeof(root_key_p));
-    hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
     hash_final(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
-    hash_destroy(hd);
   }
+
+  hash_destroy(hd);
 
 #ifdef DEBUG
   printf("\n");

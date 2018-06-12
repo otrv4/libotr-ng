@@ -194,7 +194,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
  * @param [their_pub]   Their public key.
  */
 INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
-    uint8_t *shared, otrng_shared_prekey_pair_s *shared_prekey,
+    uint8_t *shared_secret, const otrng_shared_prekey_pair_s *shared_prekey,
     const ec_point_p their_pub);
 
 /**
