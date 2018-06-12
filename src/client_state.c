@@ -137,44 +137,45 @@ otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
     return 1;
   }
 
+  if (!privf) {
+    return 1;
+  }
+
+  if (!state->keypair) {
+    return 1;
+  }
+
   char *key =
       malloc(strlen(state->protocol_name) + strlen(state->account_name) + 2);
   sprintf(key, "%s:%s", state->protocol_name, state->account_name);
 
-  char *buff = NULL;
-  size_t s = 0;
-  int err = 0;
-
-  if (!privf) {
-    return -1;
-  }
-
-  if (!state->keypair) {
-    return -2;
-  }
-
-  if (!otrng_symmetric_key_serialize(&buff, &s, state->keypair->sym)) {
-    return 1;
-  }
-
-  err = fputs(key, privf);
+  int err = fputs(key, privf);
   free(key);
   key = NULL;
 
   if (EOF == err) {
-    return -3;
+    return 1;
   }
 
   if (EOF == fputs("\n", privf)) {
-    return -3;
+    return 1;
   }
 
-  if (1 != fwrite(buff, s, 1, privf)) {
-    return -3;
+  char *buff = NULL;
+  size_t s = 0;
+  if (!otrng_symmetric_key_serialize(&buff, &s, state->keypair->sym)) {
+    return 1;
+  }
+
+  err = fwrite(buff, s, 1, privf);
+  free(buff);
+
+  if (err != 1) {
+    return 1;
   }
 
   if (EOF == fputs("\n", privf)) {
-    return -3;
+    return 1;
   }
 
   return 0;
