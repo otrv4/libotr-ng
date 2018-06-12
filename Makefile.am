@@ -34,7 +34,7 @@ test: check
 	$(top_builddir)/src/test/test
 
 code-check:
-	splint +trytorecover src/*.h src/**.c `pkg-config --cflags glib-2.0` -preproc
+	clang-tidy src/*.c -warnings-as-errors="readability-*,misc-unused-parameters,hicpp-*,clang-analyzer-*,clang-diagnostic-*,cert-*"  -- -std=c99
 
 VALGRIND_SUPPRESSIONS = \
 	valgrind.supp
