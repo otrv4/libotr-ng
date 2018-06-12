@@ -1975,14 +1975,14 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   // if (read < buffer)
   //  return ERROR;
 
+  if (msg->receiver_instance_tag != otr->our_instance_tag) {
+    otrng_data_message_free(msg);
+    return SUCCESS;
+  }
+
   otrng_key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
 
   do {
-    if (msg->receiver_instance_tag != otr->our_instance_tag) {
-      otrng_data_message_free(msg);
-      return SUCCESS;
-    }
-
     if (!otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
                                     msg->message_id, otr->keys)) {
       if (!otrng_key_manager_derive_dh_ratchet_keys(
