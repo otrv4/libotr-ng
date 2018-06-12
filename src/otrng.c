@@ -84,6 +84,15 @@ tstatic void create_privkey_cb_v4(const otrng_conversation_state_s *conv) {
   conv->client->callbacks->create_privkey(conv->client->client_id);
 }
 
+tstatic void create_shared_prekey(const otrng_conversation_state_s *conv) {
+  if (!conv || !conv->client || !conv->client->callbacks)
+    return;
+
+  // TODO: The callback may not be invoked at all if the mode does not
+  // support non-interactive DAKE, but this is for later.
+  conv->client->callbacks->create_shared_prekey(conv);
+}
+
 tstatic void gone_secure_cb_v4(const otrng_conversation_state_s *conv) {
   if (!conv || !conv->client || !conv->client->callbacks)
     return;
@@ -165,15 +174,8 @@ tstatic void maybe_create_keys(const otrng_conversation_state_s *conv) {
   if (!conv->client->keypair)
     create_privkey_cb_v4(conv);
 
-  // Auto creates shared prekey for convenience.
-  // The callback may not be invoked at all if the mode does not
-  // support non-interactive DAKE, but this is for later.
-  // TODO: Add callback to create the key (so the user can se a "please wait"
-  // dialog.
-  if (!conv->client->shared_prekey_pair) {
-    uint8_t sym_key[ED448_PRIVATE_BYTES] = {0x01}; // TODO: insecure
-    otrng_client_state_add_shared_prekey_v4(conv->client, sym_key);
-  }
+  if (!conv->client->shared_prekey_pair)
+    create_shared_prekey(conv);
 }
 
 tstatic int allow_version(const otrng_s *otr, otrng_supported_version version) {

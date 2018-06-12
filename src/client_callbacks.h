@@ -45,6 +45,10 @@ typedef struct otrng_client_callbacks_s {
                                                      // receive a
                                                      // otrng_client_state_s
 
+  /* Create a shared prekey for the given accountname/protocol if not available.
+   */
+  void (*create_shared_prekey)(const otrng_client_conversation_s *);
+
   /* A connection has entered a secure state. */
   void (*gone_secure)(const otrng_client_conversation_s *);
 
