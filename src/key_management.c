@@ -445,16 +445,13 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
     }
 
     manager->last_generated = time(NULL);
+  }
 
-    if (!enter_new_ratchet(manager, action)) {
-      return ERROR;
-    }
+  if (!enter_new_ratchet(manager, action)) {
+    return ERROR;
+  }
 
-  } else if (action == OTRNG_RECEIVING) {
-    if (!enter_new_ratchet(manager, action)) {
-      return ERROR;
-    }
-
+  if (action == OTRNG_RECEIVING) {
     otrng_ec_scalar_destroy(manager->our_ecdh->priv);
     if (manager->i % 3 == 0) {
       otrng_dh_priv_key_destroy(manager->our_dh);
@@ -654,25 +651,29 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
                                               m_mac_key_p mac_key,
                                               int ratchet_id, int message_id,
                                               key_manager_s *manager) {
-  list_element_s *temp_list = manager->skipped_keys;
-  while (temp_list) {
-    skipped_keys_s *skipped_keys = temp_list->data;
+  list_element_s *current = manager->skipped_keys;
+  while (current) {
+    skipped_keys_s *skipped_keys = current->data;
 
-    if (skipped_keys->i == ratchet_id) {
-      if (skipped_keys->j == message_id) {
-        memcpy(enc_key, skipped_keys->m_enc_key, sizeof(m_enc_key_p));
-        memcpy(manager->extra_symmetric_key, skipped_keys->extra_symmetric_key,
-               sizeof(extra_symmetric_key_p));
-        shake_256_kdf1(mac_key, MAC_KEY_BYTES, 0x19, enc_key, ENC_KEY_BYTES);
-        manager->skipped_keys =
-            otrng_list_remove_element(temp_list, manager->skipped_keys);
-        otrng_list_free_full(temp_list);
+    if (skipped_keys->i == ratchet_id && skipped_keys->j == message_id) {
+      memcpy(enc_key, skipped_keys->m_enc_key, sizeof(m_enc_key_p));
+      shake_256_kdf1(mac_key, MAC_KEY_BYTES, 0x19, enc_key, ENC_KEY_BYTES);
 
-        return SUCCESS;
-      }
+      memcpy(manager->extra_symmetric_key, skipped_keys->extra_symmetric_key,
+             sizeof(extra_symmetric_key_p));
+
+      manager->skipped_keys =
+          otrng_list_remove_element(current, manager->skipped_keys);
+      otrng_list_free_full(current);
+
+      return SUCCESS;
     }
-    temp_list = temp_list->next;
+
+    current = current->next;
   }
+
+  // This is not an actual error, it is just that the key we need was not
+  // skipped
   return ERROR;
 }
 

@@ -100,7 +100,11 @@ typedef struct key_manager_s {
   otrng_shared_prekey_pub_p their_shared_prekey;
 
   /* Data message context */
-  int i, j, k, pn;
+  uint i;  // the ratchet id.
+  uint j;  // the sending message id.
+  uint k;  // the receiving message id.
+  uint pn; // the number of messages in the previous DH ratchet.<Paste>
+
   ratchet_s *current;
 
   brace_key_p brace_key;
