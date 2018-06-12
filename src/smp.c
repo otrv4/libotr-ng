@@ -192,7 +192,9 @@ INTERNAL otrng_err otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
   cursor += otrng_serialize_ec_scalar(cursor, msg->c3);
   cursor += otrng_serialize_ec_scalar(cursor, msg->d3);
 
-  *len = s;
+  if (len) {
+    *len = (cursor - *dst);
+  }
 
   return SUCCESS;
 }
@@ -410,7 +412,6 @@ tstatic otrng_err generate_smp_msg_2(smp_msg_2_s *dst, const smp_msg_1_s *msg_1,
 
 tstatic otrng_err smp_msg_2_asprintf(uint8_t **dst, size_t *len,
                                      const smp_msg_2_s *msg) {
-  uint8_t *cursor;
   size_t s = 0;
   s += (4 * ED448_POINT_BYTES) + (7 * ED448_SCALAR_BYTES);
 
@@ -419,8 +420,7 @@ tstatic otrng_err smp_msg_2_asprintf(uint8_t **dst, size_t *len,
     return ERROR;
   }
 
-  *len = s;
-  cursor = *dst;
+  uint8_t *cursor = *dst;
 
   cursor += otrng_serialize_ec_point(cursor, msg->G2b);
   cursor += otrng_serialize_ec_scalar(cursor, msg->c2);
@@ -433,6 +433,10 @@ tstatic otrng_err smp_msg_2_asprintf(uint8_t **dst, size_t *len,
   cursor += otrng_serialize_ec_scalar(cursor, msg->cp);
   cursor += otrng_serialize_ec_scalar(cursor, msg->d5);
   cursor += otrng_serialize_ec_scalar(cursor, msg->d6);
+
+  if (len) {
+    *len = (cursor - *dst);
+  }
 
   return SUCCESS;
 }
@@ -514,8 +518,6 @@ tstatic otrng_err smp_msg_2_deserialize(smp_msg_2_s *msg, const tlv_s *tlv) {
   if (!otrng_deserialize_ec_scalar(msg->d6, cursor, len)) {
     return ERROR;
   }
-
-  len -= ED448_SCALAR_BYTES;
 
   return SUCCESS;
 }
@@ -683,7 +685,6 @@ tstatic otrng_err generate_smp_msg_3(smp_msg_3_s *dst, const smp_msg_2_s *msg_2,
 
 tstatic otrng_err smp_msg_3_asprintf(uint8_t **dst, size_t *len,
                                      const smp_msg_3_s *msg) {
-  uint8_t *cursor;
   size_t s = 0;
   s += (3 * ED448_POINT_BYTES) + (5 * ED448_SCALAR_BYTES);
 
@@ -692,8 +693,7 @@ tstatic otrng_err smp_msg_3_asprintf(uint8_t **dst, size_t *len,
     return ERROR;
   }
 
-  *len = s;
-  cursor = *dst;
+  uint8_t *cursor = *dst;
 
   cursor += otrng_serialize_ec_point(cursor, msg->Pa);
   cursor += otrng_serialize_ec_point(cursor, msg->Qa);
@@ -703,6 +703,10 @@ tstatic otrng_err smp_msg_3_asprintf(uint8_t **dst, size_t *len,
   cursor += otrng_serialize_ec_point(cursor, msg->Ra);
   cursor += otrng_serialize_ec_scalar(cursor, msg->cr);
   cursor += otrng_serialize_ec_scalar(cursor, msg->d7);
+
+  if (len) {
+    *len = (cursor - *dst);
+  }
 
   return SUCCESS;
 }
@@ -763,8 +767,6 @@ tstatic otrng_err smp_msg_3_deserialize(smp_msg_3_s *dst, const tlv_s *tlv) {
   if (!otrng_deserialize_ec_scalar(dst->d7, cursor, len)) {
     return ERROR;
   }
-
-  len -= ED448_SCALAR_BYTES;
 
   return SUCCESS;
 }
@@ -888,7 +890,9 @@ tstatic otrng_err smp_msg_4_asprintf(uint8_t **dst, size_t *len,
   cursor += otrng_serialize_ec_scalar(cursor, msg->cr);
   cursor += otrng_serialize_ec_scalar(cursor, msg->d7);
 
-  *len = s;
+  if (len) {
+    *len = (cursor - *dst);
+  }
 
   return SUCCESS;
 }
@@ -914,8 +918,6 @@ tstatic otrng_err smp_msg_4_deserialize(smp_msg_4_s *dst, const tlv_s *tlv) {
   if (!otrng_deserialize_ec_scalar(dst->d7, cursor, len)) {
     return ERROR;
   }
-
-  len -= ED448_SCALAR_BYTES;
 
   return SUCCESS;
 }
