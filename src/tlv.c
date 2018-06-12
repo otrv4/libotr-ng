@@ -43,7 +43,7 @@ tstatic void set_tlv_type(tlv_s *tlv, uint16_t tlv_type) {
 }
 
 tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *written) {
-  tlv_s *tlv = malloc(sizeof(tlv_s));
+  tlv_s *tlv = otrng_tlv_new(OTRNG_TLV_NONE, 0, NULL);
   if (!tlv) {
     return NULL;
   }
@@ -113,7 +113,7 @@ INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *head, tlv_s *tlv) {
 INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len) {
   size_t written = 0;
   tlv_list_s *ret = NULL;
-  int data_to_parse = len;
+  size_t data_to_parse = len;
 
   while (data_to_parse > 0) {
     tlv_s *tlv = parse_tlv(src, data_to_parse, &written);
@@ -129,6 +129,10 @@ INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len) {
 }
 
 INTERNAL void otrng_tlv_free(tlv_s *tlv) {
+  if (!tlv) {
+    return;
+  }
+
   free(tlv->data);
   tlv->data = NULL;
   free(tlv);
