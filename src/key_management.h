@@ -263,6 +263,15 @@ INTERNAL otrng_err otrng_store_old_mac_keys(key_manager_s *manager,
 
 INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
 
+/**
+ * @brief Derive keys from the extra symmetric key.
+ *
+ * @param [usage]     The usage for the KDF.
+ * @param [manager]   The key manager.
+ */
+API uint8_t *derive_key_from_extra_symm_key(uint8_t usage,
+                                            key_manager_s *manager);
+
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
 
 /**

@@ -139,6 +139,12 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
 
   otrng_list_free_full(manager->old_mac_keys);
   manager->old_mac_keys = NULL;
+
+  manager->extra_symm_key_usage->use_extra_symm = 0;
+  manager->extra_symm_key_usage->use = 0;
+  manager->extra_symm_key_usage->use_data = NULL;
+  manager->extra_symm_key_usage->use_data_len = 0;
+  manager->extra_symm_key_usage->extra_symmetric_key = NULL;
 }
 
 INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
@@ -538,7 +544,6 @@ tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                  sizeof(m_enc_key_p));
 }
 
-// TODO: this seems untested
 tstatic void calculate_extra_key(key_manager_s *manager,
                                  otrng_participant_action action) {
   goldilocks_shake256_ctx_p hd;
@@ -762,4 +767,26 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   }
 
   return NULL;
+}
+
+// TODO: define this here?
+API uint8_t *derive_key_from_extra_symm_key(uint8_t usage,
+                                            key_manager_s *manager) {
+  uint8_t *derived_key = malloc(EXTRA_SYMMETRIC_KEY_BYTES);
+  if (!derived_key) {
+    return NULL;
+  }
+
+  goldilocks_shake256_ctx_p hd;
+
+  hash_init_with_usage(hd, usage);
+  hash_update(hd, manager->extra_symm_key_usage->use_data,
+              manager->extra_symm_key_usage->use_data_len);
+  hash_update(hd, manager->extra_symm_key_usage->extra_symmetric_key,
+              EXTRA_SYMMETRIC_KEY_BYTES);
+
+  hash_final(hd, derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
+  hash_destroy(hd);
+
+  return derived_key;
 }

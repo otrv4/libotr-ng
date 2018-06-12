@@ -1506,6 +1506,10 @@ void test_api_extra_sym_key(void) {
   g_assert_cmpint(response_to_bob->tlvs->data->len, ==, tlv_len);
   otrng_assert_cmpmem(response_to_bob->tlvs->data->data, tlv_data, tlv_len);
 
+  g_assert_cmpint(alice->keys->extra_symm_key_usage->use_extra_symm, ==, 1);
+  g_assert_cmpint(alice->keys->extra_symm_key_usage->use, ==, 134547712);
+  g_assert_cmpint(alice->keys->extra_symm_key_usage->use_data_len, ==, 2);
+
   otrng_assert(!response_to_bob->tlvs->next);
 
   free_message_and_response(response_to_bob, &to_send);
