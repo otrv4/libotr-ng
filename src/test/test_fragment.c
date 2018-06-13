@@ -27,7 +27,7 @@
 void test_create_fragments(void) {
   int max_size = 48;
   char *message = "one two tree";
-  char frag_without_identifier[34];
+  char frag_without_identifier[35];
 
   otrng_message_to_send_s *frag_message =
       malloc(sizeof(otrng_message_to_send_s));
