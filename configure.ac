@@ -98,6 +98,7 @@ AX_CFLAGS_GCC_OPTION([-Wredundant-decls])
 AX_CFLAGS_GCC_OPTION([-Wlogical-op])
 AX_CFLAGS_GCC_OPTION([-Wbad-cast-qual])
 AX_CFLAGS_GCC_OPTION([-Wformat-nonliteral])
+AX_CFLAGS_GCC_OPTION([-Wbuiltin-memcpy-chk-size])
 dnl for undefined behavior
 # AX_CFLAGS_GCC_OPTION([-fcatch-undefined-behavior])
 # AX_CFLAGS_GCC_OPTION([-fno-delete-null-pointer-checks])
