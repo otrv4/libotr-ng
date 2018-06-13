@@ -335,7 +335,7 @@ INTERNAL otrng_err otrng_build_query_message(string_p *dst,
   int rem = cursor - buff;
 
   /* Add '\0' */
-  if (*stpncpy(cursor, message, qm_size - rem)) {
+  if (*otrng_stpncpy(cursor, message, qm_size - rem)) {
     free(buff);
     return ERROR; /* could not zero-terminate the string */
   }
@@ -376,7 +376,7 @@ API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
     cursor = otrng_stpcpy(cursor, tag_version_v3);
   }
 
-  if (*stpncpy(cursor, message, m_size - strlen(buff))) {
+  if (*otrng_stpncpy(cursor, message, m_size - strlen(buff))) {
     free(buff);
     return ERROR;
   }

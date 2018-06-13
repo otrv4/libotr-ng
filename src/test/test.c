@@ -54,6 +54,7 @@
 #include "test_prekey_ensemble.c"
 #include "test_prekey_profile.c"
 #include "test_serialize.c"
+#include "test_standard.c"
 #include "test_smp.c"
 #include "test_tlv.c"
 #include "test_client_profile.c"
@@ -74,6 +75,9 @@ int main(int argc, char **argv) {
   OTRNG_INIT;
 
   g_test_init(&argc, &argv, NULL);
+
+  g_test_add_func("/standard/stpcpy", test_otrng_stpcpy);
+  g_test_add_func("/standard/stpncpy", test_otrng_stpncpy);
 
   g_test_add_func("/otrng/instance_tag/generates_when_file_empty",
                   test_instance_tag_generates_tag_when_file_empty);

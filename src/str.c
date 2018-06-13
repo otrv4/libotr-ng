@@ -46,10 +46,6 @@ INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len) {
 }
 
 INTERNAL /*@null@*/ char *otrng_strdup(const char *s) {
-  if (!s) {
-    return NULL;
-  }
-
   return otrng_strndup(s, strlen(s));
 }
 
@@ -67,12 +63,20 @@ INTERNAL /*@null@*/ uint8_t *otrng_memdup(const uint8_t *s, const size_t len) {
 }
 
 INTERNAL /*@null@*/ char *otrng_stpcpy(char *dest, const char *src) {
+  return otrng_stpncpy(dest, src, strlen(src) + 1);
+}
+
+INTERNAL /*@null@*/ char *otrng_stpncpy(char *dest, const char *src, size_t n) {
   if (!src) {
     return NULL;
   }
 
-  size_t len = strlen(src) + 1;
-  memcpy(dest, src, len);
+  size_t l = strlen(src);
+  size_t w = l < n ? l : n;
+  memmove(dest, src, w);
 
-  return dest + len - 1;
+  for (char *t = dest + w; t < dest + n; t++)
+    *t = 0;
+
+  return dest + w;
 }
