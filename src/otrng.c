@@ -406,13 +406,13 @@ tstatic otrng_err message_to_display_without_tag(otrng_response_s *response,
     return ERROR;
   }
 
-  string_p buff = malloc(chars + 1);
-  if (buff == NULL) {
+  char *found_at = strstr(message, tag_base);
+  if (!found_at) {
     return ERROR;
   }
 
-  char *found_at = strstr(message, tag_base);
-  if (!found_at) {
+  string_p buff = malloc(chars + 1);
+  if (buff == NULL) {
     return ERROR;
   }
 
