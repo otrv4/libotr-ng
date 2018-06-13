@@ -75,6 +75,7 @@ AC_CHECK_HEADERS([stddef.h stdint.h stdlib.h string.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
+AC_C_INLINE
 AC_TYPE_INT64_T
 AC_TYPE_SIZE_T
 AC_TYPE_UINT16_T
@@ -109,7 +110,7 @@ dnl Code coverage
 AX_CODE_COVERAGE
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS([memchr memmove memset stpcpy strchr strdup strstr])
+AC_CHECK_FUNCS([memchr memmove memset stpcpy strstr])
 AC_FUNC_STRNLEN
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
