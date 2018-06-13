@@ -812,14 +812,14 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
     return SUCCESS;
   }
 
-  uint8_t *cipher = malloc(message_len);
-  if (!cipher) {
-    return ERROR;
-  }
-
   otrng_notif notif = NOTIF_NONE;
   if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, 0, otr->keys->j, 0,
                                                 OTRNG_SENDING, notif)) {
+    return ERROR;
+  }
+
+  uint8_t *cipher = malloc(message_len);
+  if (!cipher) {
     return ERROR;
   }
 
