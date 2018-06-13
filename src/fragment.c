@@ -174,7 +174,7 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
 }
 
 tstatic otrng_bool is_fragment(const string_p message) {
-  if (strstr(message, "?OTR|") == message) {
+  if (message != NULL && strstr(message, "?OTR|") == message) {
     return otrng_true;
   }
 
