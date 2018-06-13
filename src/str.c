@@ -75,8 +75,18 @@ INTERNAL /*@null@*/ char *otrng_stpncpy(char *dest, const char *src, size_t n) {
   size_t w = l < n ? l : n;
   memmove(dest, src, w);
 
-  for (char *t = dest + w; t < dest + n; t++)
+  for (char *t = dest + w; t < dest + n; t++) {
     *t = 0;
+  }
 
   return dest + w;
+}
+
+INTERNAL size_t otrng_strnlen(/*@nonnull@*/ const char *s, size_t maxlen) {
+  size_t l = 0;
+  while (s[l] && l < maxlen) {
+    l++;
+  }
+
+  return l;
 }

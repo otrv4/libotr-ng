@@ -67,10 +67,10 @@ void test_otrng_stpncpy(void) {
 
 void test_otrng_strnlen(void) {
   char *src = "abc";
-  otrng_assert(0 == strnlen(src, 0));
-  otrng_assert(1 == strnlen(src, 1));
-  otrng_assert(2 == strnlen(src, 2));
-  otrng_assert(3 == strnlen(src, 3));
-  otrng_assert(3 == strnlen(src, 4));
-  otrng_assert(3 == strnlen(src, 5));
+  otrng_assert(0 == otrng_strnlen(src, 0));
+  otrng_assert(1 == otrng_strnlen(src, 1));
+  otrng_assert(2 == otrng_strnlen(src, 2));
+  otrng_assert(3 == otrng_strnlen(src, 3));
+  otrng_assert(3 == otrng_strnlen(src, 4));
+  otrng_assert(3 == otrng_strnlen(src, 5));
 }

@@ -1414,7 +1414,7 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
     return ERROR;
   }
 
-  if (strnlen((string_p)plain, auth->enc_msg_len)) {
+  if (otrng_strnlen((string_p)plain, auth->enc_msg_len)) {
     *dst = otrng_strndup((char *)plain, auth->enc_msg_len);
   }
 
@@ -1929,7 +1929,7 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   int err = crypto_stream_xor(plain, msg->enc_msg, msg->enc_msg_len, msg->nonce,
                               enc_key);
 
-  if (strnlen((string_p)plain, msg->enc_msg_len)) {
+  if (otrng_strnlen((string_p)plain, msg->enc_msg_len)) {
     *dst = otrng_strndup((char *)plain, msg->enc_msg_len);
   }
 

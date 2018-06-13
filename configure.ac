@@ -111,7 +111,6 @@ AX_CODE_COVERAGE
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS([memchr memmove memset strstr])
-AC_FUNC_STRNLEN
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
