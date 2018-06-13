@@ -151,7 +151,7 @@ INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst,
   return cursor - dst;
 }
 
-INTERNAL uint8_t *otrng_old_mac_keys_serialize(list_element_s *old_mac_keys) {
+INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys) {
   size_t num_mac_keys = otrng_list_len(old_mac_keys);
   size_t serlen = num_mac_keys * MAC_KEY_BYTES;
   if (serlen == 0) {

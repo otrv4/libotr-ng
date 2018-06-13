@@ -83,7 +83,7 @@ INTERNAL size_t otrng_serialize_otrng_shared_prekey(
  *
  * @param [old_mac_keys]   The list of old mac keys.
  */
-INTERNAL uint8_t *otrng_old_mac_keys_serialize(list_element_s *old_mac_keys);
+INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys);
 
 #ifdef OTRNG_SERIALIZE_PRIVATE
 #endif

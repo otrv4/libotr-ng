@@ -55,21 +55,9 @@ typedef enum {
 typedef enum {
   NOTIF_NONE = 0,
   NOTIF_STATE_NOT_ENCRYPTED = 0x1001,
-  NOTIF_MALFORMED = 0x1002,
-  NOTIF_MSG_NOT_VALID = 0x1011,
+  NOTIF_MALFORMED = 0x1011,
+  NOTIF_MSG_NOT_VALID = 0x1101,
+  NOTIF_MSG_STORAGE_FULL = 0x1111,
 } otrng_notif;
-
-/// Return success if x is true
-// static otrng_err
-// otrng_succeed_if(otrng_bool x) {
-//    return (otrng_err)x;
-//}
-//
-// Return OTRNG_TRUE iff x == SUCCESS
-// static otrng_bool
-// otrng_successful(otrng_err e) {
-//    uint64_t w = ((uint32_t)e) ^  ((uint32_t)SUCCESS);
-//    return (w-1)>>32;
-//}
 
 #endif

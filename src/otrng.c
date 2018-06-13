@@ -816,15 +816,16 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
     return ERROR;
   }
 
+  otrng_notif notif = NOTIF_NONE;
   if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, 0, otr->keys->j, 0,
-                                                OTRNG_SENDING)) {
+                                                OTRNG_SENDING, notif)) {
     return ERROR;
   }
 
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, 0, 0,
-                                      OTRNG_SENDING);
+                                      OTRNG_SENDING, notif);
   auth->message_id = otr->keys->j;
   otr->keys->j++;
 
@@ -1399,15 +1400,16 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
   otr->keys->their_dh = otrng_dh_mpi_copy(auth->dh);
   otrng_ec_point_copy(otr->keys->their_ecdh, auth->ecdh);
 
+  otrng_notif notif = NOTIF_NONE;
   if (!otrng_key_manager_derive_dh_ratchet_keys(otr->keys, 0, auth->message_id,
-                                                0, OTRNG_RECEIVING)) {
+                                                0, OTRNG_RECEIVING, notif)) {
     return ERROR;
   }
 
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, 0, 0,
-                                      OTRNG_RECEIVING);
+                                      OTRNG_RECEIVING, notif);
   otr->keys->k++;
 
   int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
@@ -2112,6 +2114,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   otrng_key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
 
   do {
+    /* Try to decrypt the message with a stored skipped message key */
     if (!otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
                                     msg->message_id, otr->keys)) {
       // TODO: Why we do not care if this message is not a duplicated skipped
@@ -2120,17 +2123,17 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       // if (msg->ratchet_id < otr->keys->i) { continue; }
       // if (msg->ratchet_id == otr->keys->i && msg->message_id < otr->keys->k)
       //{ continue; }
-
+      /* if a new ratchet */
       if (!otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->conversation->client->max_stored_msg_keys,
-              msg->message_id, msg->previous_chain_n, OTRNG_RECEIVING)) {
+              msg->message_id, msg->previous_chain_n, OTRNG_RECEIVING, notif)) {
         return ERROR;
       }
 
       otrng_key_manager_derive_chain_keys(
           enc_key, mac_key, otr->keys,
           otr->conversation->client->max_stored_msg_keys, msg->message_id,
-          OTRNG_RECEIVING);
+          OTRNG_RECEIVING, notif);
       otr->keys->k++;
     }
 
@@ -2438,7 +2441,7 @@ tstatic otrng_err serialize_and_encode_data_msg(
 
 tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
                                     size_t message_len, otrng_s *otr,
-                                    unsigned char flags) {
+                                    unsigned char flags, otrng_notif notif) {
   data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
   m_enc_key_p enc_key;
@@ -2447,7 +2450,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   // if j == 0
   if (!otrng_key_manager_derive_dh_ratchet_keys(
           otr->keys, otr->conversation->client->max_stored_msg_keys,
-          otr->keys->j, 0, OTRNG_SENDING)) {
+          otr->keys->j, 0, OTRNG_SENDING, notif)) {
     return ERROR;
   }
 
@@ -2456,7 +2459,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   otrng_key_manager_derive_chain_keys(
       enc_key, mac_key, otr->keys,
-      otr->conversation->client->max_stored_msg_keys, 0, OTRNG_SENDING);
+      otr->conversation->client->max_stored_msg_keys, 0, OTRNG_SENDING, notif);
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {
@@ -2486,7 +2489,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
     size_t ser_mac_keys_len =
         otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
     uint8_t *ser_mac_keys =
-        otrng_old_mac_keys_serialize(otr->keys->old_mac_keys);
+        otrng_serialize_old_mac_keys(otr->keys->old_mac_keys);
     otr->keys->old_mac_keys = NULL;
 
     if (!serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
@@ -2645,7 +2648,8 @@ tstatic otrng_err otrng_prepare_to_send_data_message(
     return ERROR;
   }
 
-  otrng_err result = send_data_message(to_send, msg, msg_len, otr, flags);
+  otrng_err result =
+      send_data_message(to_send, msg, msg_len, otr, flags, notif);
 
   otr->last_sent = time(NULL);
 
