@@ -176,6 +176,10 @@ int main(int argc, char **argv) {
                   test_defragment_out_of_order_message);
   g_test_add_func("/fragment/defragment_fails_without_comma",
                   test_defragment_without_comma_fails);
+  g_test_add_func("/fragment/defragment_with_different_total_fails",
+                  test_defragment_with_different_total_fails);
+  g_test_add_func("/fragment/defragment_fragment_twice_fails",
+                  test_defragment_fragment_twice_fails);
   g_test_add_func("/fragment/fails_for_invalid_tag",
                   test_defragment_fails_for_invalid_tag);
   g_test_add_func("/fragment/defragment_regular_otr_message",

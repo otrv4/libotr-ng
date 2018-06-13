@@ -80,7 +80,9 @@ INTERNAL fragment_context_s *otrng_fragment_context_new(void) {
 
 INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   for (int i = 0; i < context->total; i++) {
-    free(context->fragments[i]);
+    if (context->fragments[i] != NULL) {
+      free(context->fragments[i]);
+    }
   }
 
   free(context->fragments);
@@ -211,15 +213,27 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     return SUCCESS;
   }
 
-  int fragment_len = end - start - 1;
+  if (context->total != 0 && context->total != t) {
+    return ERROR;
+  }
+  context->total = t;
 
   if (context->fragments == NULL) {
     context->fragments = malloc(sizeof(string_p) * t);
     if (!context->fragments) {
       return ERROR;
     }
+
+    for (int j = 0; j < t; j++) {
+      context->fragments[j] = NULL;
+    }
   }
 
+  if (context->fragments[i - 1] != NULL) {
+    return ERROR;
+  }
+
+  uint32_t fragment_len = end - start - 1;
   char *fragment = malloc(fragment_len + 1);
   if (!fragment) {
     return ERROR;
@@ -231,11 +245,13 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   context->fragments[i - 1] = fragment;
 
   context->total_message_len += fragment_len;
-  context->total = t;
   context->count++;
 
   if (context->count == t) {
     *unfrag_msg = malloc(context->total_message_len + 1);
+    if (!*unfrag_msg) {
+      return ERROR;
+    }
     char *end = *unfrag_msg;
     for (int j = 0; j < t; j++) {
       end = otrng_stpcpy(end, context->fragments[j]);

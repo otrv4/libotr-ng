@@ -122,6 +122,58 @@ void test_defragment_without_comma_fails(void) {
   otrng_fragment_context_free(context);
 }
 
+void test_defragment_with_different_total_fails(void) {
+  string_p fragments[2];
+  fragments[0] = "?OTR|00000000|00000001|00000002,00001,00003,mess with,";
+  fragments[1] = "?OTR|00000000|00000001|00000002,00002,00002,total,";
+
+  fragment_context_s *context;
+  context = otrng_fragment_context_new();
+
+  char *unfrag = NULL;
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, context, fragments[0], 2));
+  otrng_assert(context->status == FRAGMENT_INCOMPLETE);
+  otrng_assert(!unfrag);
+  g_assert_cmpint(context->total, ==, 3);
+  g_assert_cmpint(context->count, ==, 1);
+
+  otrng_assert_is_error(
+      otrng_unfragment_message(&unfrag, context, fragments[1], 2));
+  otrng_assert(context->status == FRAGMENT_INCOMPLETE);
+  otrng_assert(!unfrag);
+  g_assert_cmpint(context->total, ==, 3);
+  g_assert_cmpint(context->count, ==, 1);
+
+  otrng_fragment_context_free(context);
+}
+
+void test_defragment_fragment_twice_fails(void) {
+  string_p fragments[2];
+  fragments[0] = "?OTR|00000000|00000001|00000002,00001,00002,same twice,";
+  fragments[1] = "?OTR|00000000|00000001|00000002,00001,00002,same twice,";
+
+  fragment_context_s *context;
+  context = otrng_fragment_context_new();
+
+  char *unfrag = NULL;
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, context, fragments[0], 2));
+  otrng_assert(context->status == FRAGMENT_INCOMPLETE);
+  otrng_assert(!unfrag);
+  g_assert_cmpint(context->total, ==, 2);
+  g_assert_cmpint(context->count, ==, 1);
+
+  otrng_assert_is_error(
+      otrng_unfragment_message(&unfrag, context, fragments[1], 2));
+  otrng_assert(context->status == FRAGMENT_INCOMPLETE);
+  otrng_assert(!unfrag);
+  g_assert_cmpint(context->total, ==, 2);
+  g_assert_cmpint(context->count, ==, 1);
+
+  otrng_fragment_context_free(context);
+}
+
 void test_defragment_out_of_order_message(void) {
   string_p fragments[3];
   fragments[0] = "?OTR|00000000|00000001|00000002,00003,00003,send,";
