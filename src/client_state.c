@@ -28,6 +28,16 @@
 #include "instance_tag.h"
 #include "str.h"
 
+#define HEARTBEAT_INTERVAL 60
+
+tstatic int should_heartbeat(int last_sent) {
+  time_t now = time(NULL);
+  if (last_sent < (now - HEARTBEAT_INTERVAL)) {
+    return 1;
+  }
+  return 0;
+}
+
 INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   otrng_client_state_s *state = malloc(sizeof(otrng_client_state_s));
   if (!state) {
@@ -46,7 +56,9 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->shared_prekey_pair = NULL;
   state->phi = NULL;
   state->max_stored_msg_keys = 100;
-  state->heartbeat_interval = 60;
+  state->should_heartbeat = should_heartbeat;
+  state->expiration_time = 0;
+  state->use_sym_key = 0;
   state->pad = false; // TODO: why is this a bool?
 
   return state;
@@ -80,9 +92,10 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
 
   free(state->phi);
   state->phi = NULL;
-
-  state->pad = false;
   state->max_stored_msg_keys = 0;
+  state->expiration_time = 0;
+  state->use_sym_key = 0;
+  state->pad = false;
 
   free(state);
   state = NULL;

@@ -71,6 +71,10 @@ static void free_message_and_response(otrng_response_s *response,
   *message = NULL;
 }
 
+static int test_should_not_heartbeat(int last_sent) { return 0; }
+
+static int test_should_heartbeat(int last_sent) { return 1; }
+
 static void set_up_client_state(otrng_client_state_s *state,
                                 const char *account_name, const char *phi,
                                 int byte) {
@@ -89,7 +93,7 @@ static void set_up_client_state(otrng_client_state_s *state,
   // receipient jid for the party
   state->phi = otrng_strdup(phi);
   state->pad = false;
-  // TODO: here we need the heartbeat for tests
+  state->should_heartbeat = test_should_not_heartbeat;
 }
 
 static otrng_s *set_up(otrng_client_state_s *client_state,
@@ -1474,8 +1478,6 @@ void test_api_extra_sym_key(void) {
   otrng_assert(bob->keys->old_mac_keys);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
-
-  // Next message Bob sends is a new "ratchet"
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 1);
@@ -1513,6 +1515,73 @@ void test_api_extra_sym_key(void) {
   otrng_assert(!response_to_bob->tlvs->next);
 
   free_message_and_response(response_to_bob, &to_send);
+
+  otrng_user_state_free_all(alice_client_state->user_state,
+                            bob_client_state->user_state);
+  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_free_all(alice, bob);
+}
+
+void test_heartbeat_messages(void) {
+  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+
+  alice_client_state->should_heartbeat = test_should_heartbeat;
+  bob_client_state->should_heartbeat = test_should_heartbeat;
+
+  // DAKE HAS FINISHED.
+  do_dake_fixture(alice, bob);
+
+  otrng_response_s *response_to_alice = NULL;
+  otrng_response_s *response_to_bob = NULL;
+
+  // Alice sends a data message
+  string_p to_send = NULL;
+  otrng_notif notif = NOTIF_NONE;
+  otrng_err result;
+
+  result = otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
+  assert_msg_sent(result, to_send);
+  otrng_assert(!alice->keys->old_mac_keys);
+
+  alice->last_sent = time(NULL) - 60;
+
+  // This is a follow up message.
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 1);
+
+  // Bob receives a data message
+  // Bob sends a heartbeat message
+  response_to_alice = otrng_response_new();
+  otrng_assert_is_success(
+      otrng_receive_message(response_to_alice, notif, to_send, bob));
+  otrng_assert(!bob->keys->old_mac_keys);
+  otrng_assert_cmpmem("hi", response_to_alice->to_display, strlen("hi") + 1);
+  otrng_assert(response_to_alice->to_send != NULL);
+  g_assert_cmpint(bob->keys->i, ==, 2);
+  g_assert_cmpint(bob->keys->j, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 1);
+
+  free(to_send);
+  to_send = NULL;
+
+  // Alice receives the heatbeat message. Let's force this
+  response_to_bob = otrng_response_new();
+  otrng_assert_is_success(otrng_receive_message(
+      response_to_bob, notif, response_to_alice->to_send, alice));
+  otrng_assert(alice->keys->old_mac_keys);
+  otrng_assert(!response_to_bob->to_display);
+  otrng_assert(!response_to_bob->to_send);
+  g_assert_cmpint(alice->keys->i, ==, 2);
+  g_assert_cmpint(alice->keys->j, ==, 0);
+  g_assert_cmpint(alice->keys->k, ==, 1);
+  g_assert_cmpint(alice->ignore_msg, ==, 1);
+
+  otrng_response_free(response_to_alice);
+  otrng_response_free(response_to_bob);
 
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);

@@ -69,11 +69,11 @@ typedef struct otrng_client_state_s {
   // TODO: this should all come from the client so the new function should pass
   // them as params
   char *phi; // this is the shared session state
-  bool pad;  // TODO: this can be replaced by length
   int max_stored_msg_keys;
+  int (*should_heartbeat)(int last_sent);
   int expiration_time;
-  int heartbeat_interval;
   int use_sym_key;
+  bool pad; // TODO: this can be replaced by length
 
   // OtrlPrivKey *privkeyv3; // ???
   // otrng_instag_s *instag; // TODO: Store the instance tag here rather than

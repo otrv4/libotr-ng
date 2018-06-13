@@ -149,8 +149,8 @@ void test_api_new_sending_ratchet_in_order(void) {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
 
-  bob_client_state->pad = true;
   alice_client_state->pad = true;
+  bob_client_state->pad = true;
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
@@ -245,9 +245,7 @@ void test_api_new_sending_ratchet_in_order(void) {
   free_message_and_response(response_to_alice, &to_send_3);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
-  g_assert_cmpint(
-      bob->keys->i, ==,
-      2); // TODO: this is odd but the ratchet has indeed move forward
+  g_assert_cmpint(bob->keys->i, ==, 2);
   g_assert_cmpint(bob->keys->j, ==, 1);
   g_assert_cmpint(bob->keys->k, ==, 3);
   g_assert_cmpint(bob->keys->pn, ==, 0);

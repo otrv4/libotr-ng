@@ -97,12 +97,10 @@ API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
                                        int expiration_time,
                                        otrng_client_s *client);
 
-API int otrng_send_heartbeat_msg(char **newmsg, const char *recipient,
-                                 int expiration_time, otrng_client_s *client);
-
 API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                          const otrng_client_s *client);
 
+API int should_heartbeat(int last_sent);
 /* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf); */
 
 /* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf); */

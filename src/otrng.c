@@ -1177,6 +1177,7 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   return SUCCESS;
 }
 
+// TODO: check instance tags
 tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   char *msg = NULL;
   char *err_msg = NULL;
@@ -2113,7 +2114,6 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   do {
     if (!otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
                                     msg->message_id, otr->keys)) {
-
       // TODO: Why we do not care if this message is not a duplicated skipped
       // message and just derive the next ratchet key, and increase the
       // K (meaning the message was received)?
@@ -2173,16 +2173,23 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       continue;
     }
 
-    sodium_memzero(mac_key, sizeof(m_mac_key_p));
-    otrng_data_message_free(msg);
-
     // TODO: this displays an event on otrv3..
     if (!response->to_display) {
       otr->ignore_msg = 1;
       return SUCCESS;
     } else if (otr->ignore_msg != 1 && otr->keys->their_ecdh > 0) {
-      otr->last_received = time(NULL);
+      if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
+        if (!otrng_prepare_to_send_message(&response->to_send, "", NOTIF_NONE,
+                                           NULL, MSGFLAGS_IGNORE_UNREADABLE,
+                                           otr)) {
+          return ERROR;
+        }
+        otr->last_sent = time(NULL);
+      }
     }
+
+    sodium_memzero(mac_key, sizeof(m_mac_key_p));
+    otrng_data_message_free(msg);
 
     return SUCCESS;
   } while (0);

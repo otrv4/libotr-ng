@@ -304,6 +304,7 @@ int main(int argc, char **argv) {
   /* g_test_add_func("/api/messaging", test_api_messaging); */
   g_test_add_func("/api/instance_tag", test_instance_tag_api);
   g_test_add_func("/api/extra_symm_key", test_api_extra_sym_key);
+  g_test_add_func("/api/heartbeat_messages", test_heartbeat_messages);
 
   int ret = g_test_run();
   OTRNG_FREE;
