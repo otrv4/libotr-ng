@@ -1568,7 +1568,7 @@ void test_heartbeat_messages(void) {
   free(to_send);
   to_send = NULL;
 
-  // Alice receives the heatbeat message. Let's force this
+  // Alice receives the heatbeat message. Let's force this.
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(otrng_receive_message(
       response_to_bob, notif, response_to_alice->to_send, alice));

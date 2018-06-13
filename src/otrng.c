@@ -2176,12 +2176,16 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     // TODO: this displays an event on otrv3..
     if (!response->to_display) {
       otr->ignore_msg = 1;
+      sodium_memzero(mac_key, sizeof(m_mac_key_p));
+      otrng_data_message_free(msg);
       return SUCCESS;
     } else if (otr->ignore_msg != 1 && otr->keys->their_ecdh > 0) {
       if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
         if (!otrng_prepare_to_send_message(&response->to_send, "", NOTIF_NONE,
                                            NULL, MSGFLAGS_IGNORE_UNREADABLE,
                                            otr)) {
+          sodium_memzero(mac_key, sizeof(m_mac_key_p));
+          otrng_data_message_free(msg);
           return ERROR;
         }
         otr->last_sent = time(NULL);
