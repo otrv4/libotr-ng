@@ -1191,72 +1191,64 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
     err_msg =
         malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_1) + strlen(msg) + 1);
     if (!err_msg) {
+      free(msg);
       return;
     }
 
-    if (err_msg) {
-      strcpy(err_msg, ERROR_PREFIX);
-      strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_1);
-      strcat(err_msg, msg);
-    }
+    strcpy(err_msg, ERROR_PREFIX);
+    strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_1);
+    strcat(err_msg, msg);
     free(msg);
 
-    *to_send = otrng_strdup(err_msg);
-    free(err_msg);
+    *to_send = err_msg;
     break;
   case ERR_MSG_NOT_PRIVATE:
     msg = otrng_strdup("OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
     err_msg =
         malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_2) + strlen(msg) + 1);
     if (!err_msg) {
+      free(msg);
       return;
     }
 
-    if (err_msg) {
-      strcpy(err_msg, ERROR_PREFIX);
-      strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_2);
-      strcat(err_msg, msg);
-    }
+    strcpy(err_msg, ERROR_PREFIX);
+    strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_2);
+    strcat(err_msg, msg);
     free(msg);
 
-    *to_send = otrng_strdup(err_msg);
-    free(err_msg);
+    *to_send = err_msg;
     break;
   case ERR_MSG_ENCRYPTION_ERROR:
     msg = otrng_strdup("OTRNG_ERR_ENCRYPTION_ERROR");
     err_msg =
         malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_3) + strlen(msg) + 1);
     if (!err_msg) {
+      free(msg);
       return;
     }
 
-    if (err_msg) {
-      strcpy(err_msg, ERROR_PREFIX);
-      strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_3);
-      strcat(err_msg, msg);
-    }
+    strcpy(err_msg, ERROR_PREFIX);
+    strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_3);
+    strcat(err_msg, msg);
     free(msg);
 
-    *to_send = otrng_strdup(err_msg);
-    free(err_msg);
+    *to_send = err_msg;
     break;
   case ERR_MSG_MALFORMED:
     msg = otrng_strdup("OTRNG_ERR_MALFORMED");
     err_msg =
         malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_4) + strlen(msg) + 1);
     if (!err_msg) {
+      free(msg);
       return;
     }
 
-    if (err_msg) {
-      strcpy(err_msg, ERROR_PREFIX);
-      strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_4);
-      strcat(err_msg, msg);
-    }
+    strcpy(err_msg, ERROR_PREFIX);
+    strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_4);
+    strcat(err_msg, msg);
     free(msg);
 
-    *to_send = otrng_strdup(err_msg);
-    free(err_msg);
+    *to_send = err_msg;
     break;
   }
 }
@@ -2425,6 +2417,7 @@ tstatic otrng_err serialize_and_encode_data_msg(
 
   if (!otrng_data_message_authenticator(ser + bodylen, MAC_KEY_BYTES, mac_key,
                                         ser, bodylen)) {
+    free(ser);
     return ERROR;
   }
 
