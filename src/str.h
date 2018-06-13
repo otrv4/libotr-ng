@@ -34,6 +34,8 @@ INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len);
 
 INTERNAL char *otrng_strdup(const char *s);
 
+INTERNAL /*@null@*/ char *otrng_stpcpy(char *dest, const char *src);
+
 #ifdef OTRNG_STR_PRIVATE
 #endif
 

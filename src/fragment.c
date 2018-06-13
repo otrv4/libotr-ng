@@ -238,7 +238,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     *unfrag_msg = malloc(context->total_message_len + 1);
     char *end = *unfrag_msg;
     for (int j = 0; j < t; j++) {
-      end = stpcpy(end, context->fragments[j]);
+      end = otrng_stpcpy(end, context->fragments[j]);
     }
     context->status = FRAGMENT_COMPLETE;
   }

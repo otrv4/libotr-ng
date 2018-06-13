@@ -328,9 +328,9 @@ INTERNAL otrng_err otrng_build_query_message(string_p *dst,
 
   allowed_versions(allowed, otr);
 
-  char *cursor = stpcpy(buff, query_header);
-  cursor = stpcpy(cursor, allowed);
-  cursor = stpcpy(cursor, "? ");
+  char *cursor = otrng_stpcpy(buff, query_header);
+  cursor = otrng_stpcpy(cursor, allowed);
+  cursor = otrng_stpcpy(cursor, "? ");
 
   int rem = cursor - buff;
 
@@ -366,14 +366,14 @@ API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
     return ERROR;
   }
 
-  cursor = stpcpy(buff, tag_base);
+  cursor = otrng_stpcpy(buff, tag_base);
 
   if (allows_v4) {
-    cursor = stpcpy(cursor, tag_version_v4);
+    cursor = otrng_stpcpy(cursor, tag_version_v4);
   }
 
   if (allows_v3) {
-    cursor = stpcpy(cursor, tag_version_v3);
+    cursor = otrng_stpcpy(cursor, tag_version_v3);
   }
 
   if (*stpncpy(cursor, message, m_size - strlen(buff))) {
@@ -2615,7 +2615,7 @@ tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dstlen,
     return ERROR;
   }
 
-  memcpy(stpcpy((char *)*dst, message) + 1, ser, len);
+  memcpy(otrng_stpcpy((char *)*dst, message) + 1, ser, len);
 
   if (padding) {
     memcpy(*dst + message_len, padding, padding_len);

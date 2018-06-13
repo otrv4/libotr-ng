@@ -65,3 +65,14 @@ INTERNAL /*@null@*/ uint8_t *otrng_memdup(const uint8_t *s, const size_t len) {
 
   return memcpy(d, s, len);
 }
+
+INTERNAL /*@null@*/ char *otrng_stpcpy(char *dest, const char *src) {
+  if (!src) {
+    return NULL;
+  }
+
+  size_t len = strlen(src) + 1;
+  memcpy(dest, src, len);
+
+  return dest + len - 1;
+}
