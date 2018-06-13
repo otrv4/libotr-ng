@@ -78,6 +78,7 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/standard/stpcpy", test_otrng_stpcpy);
   g_test_add_func("/standard/stpncpy", test_otrng_stpncpy);
+  g_test_add_func("/standard/strnlen", test_otrng_strnlen);
 
   g_test_add_func("/otrng/instance_tag/generates_when_file_empty",
                   test_instance_tag_generates_tag_when_file_empty);
