@@ -231,27 +231,25 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
                                    const char *message, int mms,
                                    const char *recipient,
                                    otrng_client_s *client) {
-  string_p to_send = NULL;
-  if (!send_message(&to_send, message, recipient, client)) {
-    free(to_send); // TODO: is it allocated here?
-    return 1;
-  }
-
   otrng_conversation_s *conv = NULL;
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
-    free(to_send);
+    return 1;
+  }
+
+  string_p to_send = NULL;
+  if (!send_message(&to_send, message, recipient, client)) {
+    free(to_send); // TODO: send_message should free to_send if something fails
     return 1;
   }
 
   uint32_t our_tag = conv->conn->our_instance_tag;
   uint32_t their_tag = conv->conn->their_instance_tag;
-  if (!otrng_fragment_message(mms, *newmessage, our_tag, their_tag, to_send)) {
-    free(to_send);
-    return ERROR;
-  }
 
-  return SUCCESS;
+  otrng_err ret =
+      otrng_fragment_message(mms, *newmessage, our_tag, their_tag, to_send);
+  free(to_send);
+  return ret;
 }
 
 /* tstatic int otrng_client_smp_start(char **tosend, const char *recipient, */
