@@ -142,13 +142,13 @@ INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
     uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair,
     otrng_participant participant) {
   gcry_mpi_t privkey = NULL;
-  uint8_t random[DH_KEY_SIZE];
+  uint8_t random_buff[DH_KEY_SIZE];
 
-  shake_256_kdf1(random, sizeof random, 0x14, shared_secret,
+  shake_256_kdf1(random_buff, sizeof random_buff, 0x14, shared_secret,
                  sizeof(shared_secret_p));
 
   gcry_error_t err =
-      gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random, DH_KEY_SIZE, NULL);
+      gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random_buff, DH_KEY_SIZE, NULL);
   if (err) {
     return ERROR;
   }
