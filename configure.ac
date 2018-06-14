@@ -75,7 +75,7 @@ AM_PATH_LIBOTR(4.0.0,,AC_MSG_ERROR(libotr 4.x >= 4.0.0 is required.))
 # We probably need the config script
 AM_PATH_LIBGCRYPT(1:1.8.0,,
   [AC_DEFINE([HAVE_GCRYPT], [1], [Use GCRYPT])],
-  [AM_PATH_LIBGCRYPT(1:1.6.0,, [AC_MSG_ERROR(libgcrypt 1.6.0 or newer is required.)])]
+  [AM_PATH_LIBGCRYPT(1:1.6.0,, AC_MSG_ERROR(libgcrypt 1.6.0 or newer is required.))]
 )
 
 dnl Checks for header files.
