@@ -210,7 +210,7 @@ tstatic otrng_err join_fragments(char **unfrag_msg,
 }
 
 tstatic otrng_err copy_fragment_to_context(fragment_context_s *context,
-                                           unsigned short index,
+                                           unsigned short i,
                                            const string_p message,
                                            uint32_t fragment_len) {
   char *fragment = malloc(fragment_len + 1);
@@ -220,7 +220,7 @@ tstatic otrng_err copy_fragment_to_context(fragment_context_s *context,
 
   memcpy(fragment, message, fragment_len);
   fragment[fragment_len] = '\0';
-  context->fragments[index - 1] = fragment;
+  context->fragments[i - 1] = fragment;
   context->total_message_len += fragment_len;
   return SUCCESS;
 }
