@@ -29,7 +29,6 @@ AM_SILENT_RULES([no])
 
 dnl Debug
 AX_CHECK_ENABLE_DEBUG([yes])
-AX_CHECK_ENABLE_GPROF
 
 dnl Valgrind: make check-valgrind
 AX_VALGRIND_DFLT([sgcheck], [off])
@@ -135,7 +134,25 @@ AC_ARG_WITH(ctgrind,
   ])
 ])
 
+# Enable gprof profiling
+AC_ARG_ENABLE([gprof],
+    [AS_HELP_STRING([--enable-gprof],
+                    [use gprof profiling compiler flags (default is no)])],
+    [enable_gprof=$enableval],
+    [enable_gprof=no])
 AC_CACHE_SAVE
+
+if test "x$enable_gprof" = xyes; then
+    AX_CHECK_COMPILE_FLAG([-pg],[GPROF_CFLAGS="-pg"],
+        AC_MSG_ERROR(gprof profiling requested but not available))
+
+    AX_CHECK_LINK_FLAG([[-no-pie]], [GPROF_LDFLAGS="-no-pie"])
+    AX_CHECK_LINK_FLAG([[-pg]],[GPROF_LDFLAGS="$GPROF_LDFLAGS -pg"],
+        AC_MSG_ERROR(gprof profiling requested but not available))
+fi
+
+AC_SUBST(GPROF_CFLAGS)
+AC_SUBST(GPROF_LDFLAGS)
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile src/include/Makefile src/test/Makefile pkgconfig/Makefile pkgconfig/libotr-ng.pc])

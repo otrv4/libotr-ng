@@ -49,12 +49,12 @@ test_SOURCES = test.c \
 		     ../str.c \
 		     ../tlv.c
 
-test_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CODE_COVERAGE_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \
-                                                                  @LIBGCRYPT_CFLAGS@ \
-                                                                  @LIBSODIUM_CFLAGS@ \
-                                                                  @LIBOTR_CFLAGS@ \
-                                                                  -DOTRNG_TESTS
-test_LDFLAGS = $(AM_LDFLAGS) $(GLIB_LIBS) $(CODE_COVERAGE_LIBS) @LIBGOLDILOCKS_LIBS@ \
-                                                                @LIBGCRYPT_LIBS@ \
-                                                                @LIBSODIUM_LIBS@ \
-                                                                @LIBOTR_LIBS@
+test_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CODE_COVERAGE_CFLAGS) $(GPROF_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \
+                                                                                  @LIBGCRYPT_CFLAGS@ \
+                                                                                  @LIBSODIUM_CFLAGS@ \
+                                                                                  @LIBOTR_CFLAGS@ \
+                                                                                  -DOTRNG_TESTS
+test_LDFLAGS = $(AM_LDFLAGS) $(GLIB_LIBS) $(CODE_COVERAGE_LIBS) $(GPROF_LDFLAGS) @LIBGOLDILOCKS_LIBS@ \
+                                                                                 @LIBGCRYPT_LIBS@ \
+                                                                                 @LIBSODIUM_LIBS@ \
+                                                                                 @LIBOTR_LIBS@
