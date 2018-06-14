@@ -209,7 +209,7 @@ tstatic otrng_err join_fragments(char **unfrag_msg,
   return SUCCESS;
 }
 
-tstatic otrng_err copy_fragment_to_context(fragment_context_s * context,
+tstatic otrng_err copy_fragment_to_context(fragment_context_s *context,
                                            unsigned short index,
                                            const string_p message,
                                            uint32_t fragment_len) {
@@ -263,7 +263,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
 
   if (context->fragments == NULL) {
     if (!initialize_fragments(context)) {
-        return ERROR;
+      return ERROR;
     }
   }
 
@@ -273,7 +273,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
 
   uint32_t fragment_len = end - start - 1;
   if (!copy_fragment_to_context(context, i, message + start, fragment_len)) {
-      return ERROR;
+    return ERROR;
   }
 
   context->count++;
