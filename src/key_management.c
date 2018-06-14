@@ -185,14 +185,14 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
 // Generate the ephemeral keys just as the DAKE is finished
 tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
                                                 otrng_participant participant) {
-  uint8_t random_bytes[ED448_PRIVATE_BYTES];
+  uint8_t random_buff[ED448_PRIVATE_BYTES];
 
   if (participant == OTRNG_US) {
-    shake_256_kdf1(random_bytes, sizeof random_bytes, 0x13,
+    shake_256_kdf1(random_buff, sizeof random_buff, 0x13,
                    manager->shared_secret, sizeof(shared_secret_p));
 
     otrng_ec_point_destroy(manager->our_ecdh->pub);
-    otrng_ecdh_keypair_generate(manager->our_ecdh, random_bytes);
+    otrng_ecdh_keypair_generate(manager->our_ecdh, random_buff);
 
     otrng_dh_keypair_destroy(manager->our_dh);
     if (!otrng_dh_keypair_generate_from_shared_secret(
@@ -201,11 +201,11 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     }
 
   } else if (participant == OTRNG_THEM) {
-    shake_256_kdf1(random_bytes, sizeof random_bytes, 0x13,
+    shake_256_kdf1(random_buff, sizeof random_buff, 0x13,
                    manager->shared_secret, sizeof(shared_secret_p));
 
     otrng_ec_point_destroy(manager->their_ecdh);
-    otrng_ecdh_keypair_generate_their(manager->their_ecdh, random_bytes);
+    otrng_ecdh_keypair_generate_their(manager->their_ecdh, random_buff);
 
     gcry_mpi_release(manager->their_dh);
     manager->their_dh = NULL;
