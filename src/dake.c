@@ -1113,7 +1113,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
   uint8_t encrypted_msg_mac[HASH_BYTES];
   goldilocks_shake256_ctx_p encrypted_msg_hd;
   hash_init_with_usage(encrypted_msg_hd, 0x11);
-  hash_final(encrypted_msg_hd, ser_data_msg, bodylen);
+  hash_update(encrypted_msg_hd, ser_data_msg, bodylen);
   hash_final(encrypted_msg_hd, encrypted_msg_mac, HASH_BYTES);
   hash_destroy(encrypted_msg_hd);
   free(ser_data_msg);
