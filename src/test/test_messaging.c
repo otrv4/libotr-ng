@@ -101,7 +101,6 @@ void test_user_state_key_management(void) {
 /* } */
 
 void test_instance_tag_api(void) {
-  const char *alice_account = "alice@xmpp";
   char *icq_alice_account = "alice_icq";
   char *icq_protocol = "ICQ";
   unsigned int icq_instag_value = 0x9abcdef0;
