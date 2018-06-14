@@ -180,8 +180,7 @@ void test_api_interactive_conversation(void) {
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
-    result =
-        otrng_receive_message(response_to_bob, notif, to_send, alice);
+    result = otrng_receive_message(response_to_bob, notif, to_send, alice);
     assert_msg_rec(result, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
