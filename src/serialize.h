@@ -85,6 +85,10 @@ INTERNAL size_t otrng_serialize_otrng_shared_prekey(
  */
 INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys);
 
+INTERNAL size_t otrng_serialize_phi(uint8_t *dst, const uint8_t *phi,
+                                    size_t len, uint16_t sender_instance_tag,
+                                    uint16_t receiver_instance_tag);
+
 #ifdef OTRNG_SERIALIZE_PRIVATE
 #endif
 

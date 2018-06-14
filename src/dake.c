@@ -945,18 +945,21 @@ tstatic otrng_err build_rsign_tag(
       continue;
     }
 
-    uint8_t *phi_val = malloc(strlen(phi) + 1 + 4);
+    uint16_t sender = 0x01;
+    uint16_t receiver = 0x02;
+
+    uint8_t *phi_val = malloc(strlen(phi) + 1 + 4 + 4 + 4);
     if (!phi_val) {
       continue;
     }
-    otrng_serialize_data(phi_val, (uint8_t *)phi, strlen(phi) + 1);
+    size_t phi_len = otrng_serialize_phi(phi_val, (uint8_t *)phi,
+                                         strlen(phi) + 1, sender, receiver);
 
     shake_256_kdf1(hash_ser_i_profile, HASH_BYTES, first_usage, ser_i_profile,
                    ser_i_profile_len);
     shake_256_kdf1(hash_ser_r_profile, HASH_BYTES, first_usage + 1,
                    ser_r_profile, ser_r_profile_len);
-    shake_256_kdf1(hash_phi, HASH_BYTES, first_usage + 2, phi_val,
-                   strlen(phi) + 1 + 4);
+    shake_256_kdf1(hash_phi, HASH_BYTES, first_usage + 2, phi_val, phi_len);
 
     free(phi_val);
 

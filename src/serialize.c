@@ -174,3 +174,15 @@ INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys) {
 
   return ser_mac_keys;
 }
+
+INTERNAL size_t otrng_serialize_phi(uint8_t *dst, const uint8_t *phi,
+                                    size_t len, uint16_t sender_instance_tag,
+                                    uint16_t receiver_instance_tag) {
+  uint8_t *cursor = dst;
+
+  cursor += otrng_serialize_uint16(cursor, sender_instance_tag);
+  cursor += otrng_serialize_uint16(cursor, receiver_instance_tag);
+  cursor += otrng_serialize_data(cursor, phi, len);
+
+  return cursor - dst;
+}
