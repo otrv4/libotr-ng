@@ -28,7 +28,6 @@ addons:
         packages:
             - lcov
             - valgrind
-            - clang-tidy-3.9
 
 matrix:
   fast_finish: true
@@ -99,8 +98,7 @@ before_install:
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew cleanup; fi
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint && brew install valgrind && brew install curl && brew install glib; fi
 - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes; fi
-- if [[ "$T" = "coverage" ]]; then sudo apt-get install splint --quiet --assume-yes; fi
-- if [[ "$T" = "style" ]]; then sudo apt-get install clang-format-3.5 --quiet --assume-yes; fi
+- if [[ "$T" = "style" ]]; then sudo apt-get install clang-format-3.5 clang-tidy-3.9 --quiet --assume-yes; fi
 
 before_script:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
