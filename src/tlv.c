@@ -42,7 +42,7 @@ tstatic void set_tlv_type(tlv_s *tlv, uint16_t tlv_type) {
   }
 }
 
-tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *written) {
+tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *read) {
   tlv_s *tlv = otrng_tlv_new(OTRNG_TLV_NONE, 0, NULL);
   if (!tlv) {
     return NULL;
@@ -50,8 +50,7 @@ tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *written) {
 
   size_t w = 0;
   uint16_t tlv_type = -1;
-  const uint8_t *start = src + *written;
-  const uint8_t *cursor = start;
+  const uint8_t *cursor = src;
 
   if (!otrng_deserialize_uint16(&tlv_type, cursor, len, &w)) {
     otrng_tlv_free(tlv);
@@ -84,7 +83,11 @@ tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *written) {
   }
 
   memcpy(tlv->data, cursor, tlv->len);
-  *written += (cursor + tlv->len) - start;
+  cursor += tlv->len;
+
+  if (read) {
+    *read = cursor - src;
+  }
 
   return tlv;
 }
@@ -111,18 +114,17 @@ INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *head, tlv_s *tlv) {
 }
 
 INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len) {
-  size_t written = 0;
   tlv_list_s *ret = NULL;
-  size_t data_to_parse = len;
-
-  while (data_to_parse > 0) {
-    tlv_s *tlv = parse_tlv(src, data_to_parse, &written);
+  while (len > 0) {
+    size_t read = 0;
+    tlv_s *tlv = parse_tlv(src, len, &read);
     if (!tlv) {
       break;
     }
 
     ret = otrng_append_tlv(ret, tlv);
-    data_to_parse = len - written;
+    src += read;
+    len -= read;
   }
 
   return ret;
