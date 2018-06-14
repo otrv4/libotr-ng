@@ -2362,10 +2362,47 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
   return SUCCESS;
 }
 
+tstatic otrng_err receive_possibly_fragment(char **unfragmented,
+                                            const char *received,
+                                            otrng_s *otr) {
+  fragment_context_s *ctx = otr->frag_ctx;
+  int our_instance_tag = otr->our_instance_tag;
+
+  // TODO: Review how this function returns errors:
+  otrng_err result =
+      otrng_unfragment_message(unfragmented, ctx, received, our_instance_tag);
+
+  // TODO: Can be removed if an ERROR is returned when ctx->status =
+  // FRAGMENT_INCOMPLETE
+  if (ctx->status == FRAGMENT_INCOMPLETE) {
+    return ERROR;
+  }
+
+  return result;
+}
+
 /* Receive a possibly OTR message. */
 INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
                                          otrng_notif notif,
                                          const string_p message, otrng_s *otr) {
+  response->warning = OTRNG_WARN_NONE;
+  response->to_display = otrng_strndup(NULL, 0);
+
+  char *defrag = NULL;
+  if (!receive_possibly_fragment(&defrag, message, otr)) {
+    free(defrag);
+    return ERROR;
+  }
+
+  otrng_err ret =
+      otrng_receive_defragmented_message(response, notif, defrag, otr);
+  free(defrag);
+  return ret;
+}
+
+INTERNAL otrng_err otrng_receive_defragmented_message(
+    otrng_response_s *response, otrng_notif notif, const string_p message,
+    otrng_s *otr) {
   // TODO: why it is always mandatory to have a response?
   if (!message || !response) {
     return ERROR;
@@ -2388,7 +2425,7 @@ INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
     return receive_message_v4_only(response, notif, message, otr);
   }
 
-  return SUCCESS;
+  return ERROR;
 }
 
 tstatic otrng_err serialize_and_encode_data_msg(

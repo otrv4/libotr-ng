@@ -177,6 +177,10 @@ INTERNAL otrng_response_s *otrng_response_new(void);
 
 INTERNAL void otrng_response_free(otrng_response_s *response);
 
+INTERNAL otrng_err otrng_receive_defragmented_message(
+    otrng_response_s *response, otrng_notif notif, const string_p message,
+    otrng_s *otr);
+
 INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
                                          otrng_notif notif,
                                          const string_p message, otrng_s *otr);

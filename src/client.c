@@ -284,18 +284,10 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
 /*   return 0; */
 /* } */
 
-tstatic int unfragment(char **unfragmented, const char *received,
-                       fragment_context_s *ctx, int our_instance_tag) {
-  otrng_err result =
-      otrng_unfragment_message(unfragmented, ctx, received, our_instance_tag);
-  return result != SUCCESS || ctx->status == FRAGMENT_INCOMPLETE;
-}
-
 API int otrng_client_receive(char **newmessage, char **todisplay,
                              const char *message, const char *recipient,
                              otrng_client_s *client) {
   otrng_err result = ERROR;
-  char *unfrag_msg = NULL;
   int should_ignore = 1;
   otrng_response_s *response = NULL;
   otrng_conversation_s *conv = NULL;
@@ -311,21 +303,13 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
     return should_ignore;
   }
 
-  if (unfragment(&unfrag_msg, message, conv->conn->frag_ctx,
-                 conv->conn->our_instance_tag)) {
-    return should_ignore;
-  }
-
   response = otrng_response_new();
   otrng_notif notif = NOTIF_NONE;
+  result = otrng_receive_message(response, notif, message, conv->conn);
 
-  result = otrng_receive_message(response, notif, unfrag_msg, conv->conn);
   if (notif == NOTIF_MSG_NOT_VALID) {
     return CLIENT_ERROR_MSG_NOT_VALID;
   }
-
-  free(unfrag_msg);
-  unfrag_msg = NULL;
 
   if (response->to_send) {
     *newmessage = otrng_strdup(response->to_send);
@@ -340,12 +324,7 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
   }
 
   otrng_response_free(response);
-
-  if (result != SUCCESS) {
-    return !should_ignore;
-  } // Should this cause the message to be ignored or not?
-
-  return should_ignore;
+  return result != ERROR;
 }
 
 API char *otrng_client_query_message(const char *recipient, const char *message,
