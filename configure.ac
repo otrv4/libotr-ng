@@ -40,6 +40,9 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AM_PROG_AR
 LT_INIT
 
+dnl ISO Standard C (currently C99), with fall back to ANSI C89 (ISO C90)
+AC_PROG_CC_STDC
+
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
@@ -49,7 +52,6 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_CC_STDC
 # libtoolize: 'AC_PROG_RANLIB' is rendered obsolete by 'LT_INIT'
 #AC_PROG_RANLIB
 
