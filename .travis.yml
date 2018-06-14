@@ -28,7 +28,7 @@ addons:
         packages:
             - lcov
             - valgrind
-            - clang-tidy-3.8
+            - clang-tidy-3.9
 
 matrix:
   fast_finish: true
@@ -151,7 +151,7 @@ script:
       if [ "$T" = "style" ]; then
            ./autogen.sh
            ./configure --disable-shared
-           make code-style-doctor
+           make code-style-doctor code-check
       fi
   - |
       if [ "$T" = "ctgrind" ]; then

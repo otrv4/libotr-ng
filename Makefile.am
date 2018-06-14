@@ -28,7 +28,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 @VALGRIND_CHECK_RULES@
 
-ci: test code-check mem-check
+ci: test mem-check
 
 test: check
 	$(top_builddir)/src/test/test
