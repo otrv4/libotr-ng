@@ -86,12 +86,6 @@ otrng_key_manager_init(key_manager_s *manager) // make like ratchet_new?
 
   manager->skipped_keys = NULL;
   manager->old_mac_keys = NULL;
-
-  manager->extra_symm_key_usage->use_extra_symm = 0;
-  manager->extra_symm_key_usage->use = 0;
-  manager->extra_symm_key_usage->use_data = NULL;
-  manager->extra_symm_key_usage->use_data_len = 0;
-  manager->extra_symm_key_usage->extra_symmetric_key = NULL;
 }
 
 INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
@@ -141,12 +135,6 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
 
   otrng_list_free_full(manager->old_mac_keys);
   manager->old_mac_keys = NULL;
-
-  manager->extra_symm_key_usage->use_extra_symm = 0;
-  manager->extra_symm_key_usage->use = 0;
-  manager->extra_symm_key_usage->use_data = NULL;
-  manager->extra_symm_key_usage->use_data_len = 0;
-  manager->extra_symm_key_usage->extra_symmetric_key = NULL;
 }
 
 INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
@@ -776,9 +764,11 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   return NULL;
 }
 
-// TODO: define this here?
-API uint8_t *derive_key_from_extra_symm_key(uint8_t usage,
-                                            key_manager_s *manager) {
+//// TODO: define this here?
+API uint8_t *
+derive_key_from_extra_symm_key(uint8_t usage, const unsigned char *use_data,
+                               size_t use_data_len,
+                               const unsigned char *extra_symm_key) {
   uint8_t *derived_key = malloc(EXTRA_SYMMETRIC_KEY_BYTES);
   if (!derived_key) {
     return NULL;
@@ -787,10 +777,8 @@ API uint8_t *derive_key_from_extra_symm_key(uint8_t usage,
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage);
-  hash_update(hd, manager->extra_symm_key_usage->use_data,
-              manager->extra_symm_key_usage->use_data_len);
-  hash_update(hd, manager->extra_symm_key_usage->extra_symmetric_key,
-              EXTRA_SYMMETRIC_KEY_BYTES);
+  hash_update(hd, use_data, use_data_len);
+  hash_update(hd, extra_symm_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
   hash_final(hd, derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
   hash_destroy(hd);

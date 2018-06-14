@@ -72,7 +72,6 @@ typedef struct otrng_client_state_s {
   int max_stored_msg_keys;
   int (*should_heartbeat)(int last_sent);
   int expiration_time;
-  int use_sym_key;
   bool pad; // TODO: this can be replaced by length
 
   // OtrlPrivKey *privkeyv3; // ???

@@ -92,6 +92,17 @@ typedef struct otrng_client_callbacks_s {
   void (*smp_update)(const otrng_smp_event_t event,
                      const uint8_t progress_percent,
                      const otrng_client_conversation_s *);
+
+  /* We received a request from the buddy to use the current "extra"
+   * symmetric key.  The key will be passed in symkey, of length
+   * EXTRA_SYMMETRIC_KEY_BYTES.  The requested use, as well as use-specific
+   * data will be passed so that the applications can communicate other
+   * information (some id for the data transfer, for example). */
+  void (*received_extra_symm_key)(const otrng_client_conversation_s *,
+                                  unsigned int use,
+                                  const unsigned char *use_data,
+                                  size_t use_data_len,
+                                  const unsigned char *extra_sym_key);
 } otrng_client_callbacks_s, otrng_client_callbacks_p[1];
 
 INTERNAL void

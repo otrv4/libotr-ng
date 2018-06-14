@@ -58,7 +58,6 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->max_stored_msg_keys = 100;
   state->should_heartbeat = should_heartbeat;
   state->expiration_time = 0;
-  state->use_sym_key = 0;
   state->pad = false; // TODO: why is this a bool?
 
   return state;
@@ -94,7 +93,6 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
   state->phi = NULL;
   state->max_stored_msg_keys = 0;
   state->expiration_time = 0;
-  state->use_sym_key = 0;
   state->pad = false;
 
   free(state);

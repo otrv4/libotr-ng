@@ -70,14 +70,6 @@ typedef struct skipped_keys_s {
   m_enc_key_p m_enc_key;
 } skipped_keys_s, skipped_keys_p[1];
 
-typedef struct extra_symm_key_usage_s {
-  int use_extra_symm;
-  int use;
-  const unsigned char *use_data;
-  size_t use_data_len;
-  const unsigned char *extra_symmetric_key;
-} extra_symm_key_usage_s, extra_symm_key_usage_p[1];
-
 /* define which half of the secure session id should be shown in bold*/
 typedef enum {
   SESSION_ID_FIRST_HALF_BOLD,
@@ -117,8 +109,6 @@ typedef struct key_manager_s {
 
   list_element_s *skipped_keys;
   list_element_s *old_mac_keys;
-
-  extra_symm_key_usage_p extra_symm_key_usage;
 
   time_t last_generated;
 } key_manager_s, key_manager_p[1];
@@ -271,11 +261,15 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
 /**
  * @brief Derive keys from the extra symmetric key.
  *
- * @param [usage]     The usage for the KDF.
- * @param [manager]   The key manager.
+ * @param [usage]          The usage for the KDF.
+ * @param [use_data]       The context from the TLV 7.
+ * @param [use_data_len]   The length of the context.
+ * @param [extra_symm_key] The extra symmetric key.
  */
-API uint8_t *derive_key_from_extra_symm_key(uint8_t usage,
-                                            key_manager_s *manager);
+API uint8_t *
+derive_key_from_extra_symm_key(uint8_t usage, const unsigned char *use_data,
+                               size_t use_data_len,
+                               const unsigned char *extra_symm_key);
 
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
 
