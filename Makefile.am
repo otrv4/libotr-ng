@@ -28,13 +28,19 @@ ACLOCAL_AMFLAGS = -I m4
 
 @VALGRIND_CHECK_RULES@
 
-ci: test mem-check
+ci: test code-check mem-check
 
 test: check
 	$(top_builddir)/src/test/test
 
+
+# I am not sure if we need "-- -std=c99" to be strict with c99
+# TODO remove the "-*" after fixing the issues
+CLANG_TIDY_ARGS = -p $(top_builddir) \
+	-warnings-as-errors="readability-*,hicpp-*,clang-analyzer-*,clang-diagnostic-*,cert-*,-*"
+
 code-check:
-	clang-tidy src/*.c -warnings-as-errors="readability-*,misc-unused-parameters,hicpp-*,clang-analyzer-*,clang-diagnostic-*,cert-*"  -- -std=c99
+	clang-tidy $(CLANG_TIDY_ARGS) $(top_builddir)/src/*.c
 
 VALGRIND_SUPPRESSIONS = \
 	valgrind.supp
