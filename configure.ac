@@ -191,3 +191,12 @@ echo \
 Thank you for installing libotr-ng version ${PACKAGE_VERSION}.
 Installation completed in directory '${prefix}'.
 ----------------------------------------------------------------------------"
+
+echo
+echo "Options used to compile and link:"
+echo "  sanitizers    = $use_sanitizers"
+echo "  gprof enabled = $enable_gprof"
+echo "  CC            = $CC"
+echo "  CFLAGS        = $CFLAGS"
+echo "  LDFLAGS       = $LDFLAGS"
+echo
