@@ -28,7 +28,7 @@ addons:
         packages:
             - lcov
             - valgrind
-            - clang-tidy
+            - clang-tidy-3.9
 
 matrix:
   fast_finish: true
