@@ -26,9 +26,9 @@
 
 void ed448_test_eddsa_serialization() {
   ec_scalar_p s;
-  uint8_t rand[ED448_SCALAR_BYTES];
-  random_bytes(rand, ED448_SCALAR_BYTES);
-  goldilocks_448_scalar_decode_long(s, rand, ED448_SCALAR_BYTES);
+  uint8_t random_buff[ED448_SCALAR_BYTES];
+  random_bytes(random_buff, ED448_SCALAR_BYTES);
+  goldilocks_448_scalar_decode_long(s, random_buff, ED448_SCALAR_BYTES);
 
   // 1. Create a point p
   ec_point_p p;
