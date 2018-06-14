@@ -252,9 +252,9 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     if (!*unfrag_msg) {
       return ERROR;
     }
-    char *end = *unfrag_msg;
+    char *end_msg = *unfrag_msg;
     for (int j = 0; j < t; j++) {
-      end = otrng_stpcpy(end, context->fragments[j]);
+      end_msg = otrng_stpcpy(end_msg, context->fragments[j]);
     }
     context->status = FRAGMENT_COMPLETE;
   }
