@@ -181,6 +181,50 @@ tstatic otrng_bool is_fragment(const string_p message) {
   return otrng_false;
 }
 
+tstatic otrng_err initialize_fragments(fragment_context_s *context) {
+  context->fragments = malloc(sizeof(string_p) * context->total);
+  if (!context->fragments) {
+    return ERROR;
+  }
+
+  for (int i = 0; i < context->total; i++) {
+    context->fragments[i] = NULL;
+  }
+
+  return SUCCESS;
+}
+
+tstatic otrng_err join_fragments(char **unfrag_msg,
+                                 fragment_context_s *context) {
+  *unfrag_msg = malloc(context->total_message_len + 1);
+  if (!*unfrag_msg) {
+    return ERROR;
+  }
+
+  char *end_msg = *unfrag_msg;
+  for (int i = 0; i < context->total; i++) {
+    end_msg = otrng_stpcpy(end_msg, context->fragments[i]);
+  }
+
+  return SUCCESS;
+}
+
+tstatic otrng_err copy_fragment_to_context(fragment_context_s * context,
+                                           unsigned short index,
+                                           const string_p message,
+                                           uint32_t fragment_len) {
+  char *fragment = malloc(fragment_len + 1);
+  if (!fragment) {
+    return ERROR;
+  }
+
+  memcpy(fragment, message, fragment_len);
+  fragment[fragment_len] = '\0';
+  context->fragments[index - 1] = fragment;
+  context->total_message_len += fragment_len;
+  return SUCCESS;
+}
+
 INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
                                             fragment_context_s *context,
                                             const string_p message,
@@ -197,14 +241,11 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   sscanf(message, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
          &receiver_tag, &i, &t, &start, &end);
 
-  context->status = FRAGMENT_INCOMPLETE;
-
   if (end <= start) {
     return ERROR;
   }
 
   if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
-    context->status = FRAGMENT_COMPLETE;
     return ERROR;
   }
 
@@ -216,16 +257,13 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   if (context->total != 0 && context->total != t) {
     return ERROR;
   }
+
   context->total = t;
+  context->status = FRAGMENT_INCOMPLETE;
 
   if (context->fragments == NULL) {
-    context->fragments = malloc(sizeof(string_p) * t);
-    if (!context->fragments) {
-      return ERROR;
-    }
-
-    for (int j = 0; j < t; j++) {
-      context->fragments[j] = NULL;
+    if (!initialize_fragments(context)) {
+        return ERROR;
     }
   }
 
@@ -234,29 +272,19 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   }
 
   uint32_t fragment_len = end - start - 1;
-  char *fragment = malloc(fragment_len + 1);
-  if (!fragment) {
-    return ERROR;
+  if (!copy_fragment_to_context(context, i, message + start, fragment_len)) {
+      return ERROR;
   }
 
-  memcpy(fragment, message + start, fragment_len);
-  fragment[fragment_len] = '\0';
-
-  context->fragments[i - 1] = fragment;
-
-  context->total_message_len += fragment_len;
   context->count++;
 
   if (context->count == t) {
-    *unfrag_msg = malloc(context->total_message_len + 1);
-    if (!*unfrag_msg) {
-      return ERROR;
+    if (join_fragments(unfrag_msg, context)) {
+      context->status = FRAGMENT_COMPLETE;
+      return SUCCESS;
     }
-    char *end_msg = *unfrag_msg;
-    for (int j = 0; j < t; j++) {
-      end_msg = otrng_stpcpy(end_msg, context->fragments[j]);
-    }
-    context->status = FRAGMENT_COMPLETE;
+    return ERROR;
   }
+
   return SUCCESS;
 }

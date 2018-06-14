@@ -224,7 +224,7 @@ void test_defragment_fails_for_invalid_tag(void) {
   g_assert_cmpint(context->count, ==, 0);
   g_assert_cmpint(context->total_message_len, ==, 0);
   g_assert_cmpstr(unfrag, ==, NULL);
-  otrng_assert(context->status == FRAGMENT_COMPLETE);
+  otrng_assert(context->status == FRAGMENT_UNFRAGMENTED);
 
   free(unfrag);
   unfrag = NULL;
