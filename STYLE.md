@@ -88,6 +88,7 @@ something else.
 
 Follow these golden rules (taken from [C Style](https://github.com/mcinglis/c-style):
 
+- Follow the style of C99
 - Follow the style of existing code if you are modifying and extending it.
 - Always develop and compile with all warnings (and more) on
 - Never have more than 79 characters per line
@@ -98,7 +99,8 @@ Follow these golden rules (taken from [C Style](https://github.com/mcinglis/c-st
 - Do not use 'is' or 'has' on booleans naming.
 - Minimize the scope of variables
 - C isn't object-oriented, and you shouldn't pretend it is
-- Always set a pointer to NULL after been freed
+- Set a pointer to NULL after been freed when needed
+- Always use parentheses
 
 ### Naming
 
@@ -122,5 +124,5 @@ Stick to lower case; reserve uppercase for macros.
 ### Language and compiler issues
 
 * Always compile with all the flags we have defined
-* Treat compiler warnings as errors.
-* #include as little as possible.
+* Treat compiler warnings as errors
+* #include as little as possible
