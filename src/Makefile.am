@@ -52,10 +52,12 @@ libotr_ng_la_CFLAGS = $(AM_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \
                                    @LIBSODIUM_CFLAGS@ \
                                    @LIBGCRYPT_CFLAGS@ \
 				   $(CODE_COVERAGE_CFLAGS) \
-                                   $(GPROF_CFLAGS)
+                                   $(GPROF_CFLAGS) \
+                                   $(SANITIZER_CFLAGS)
 
 libotr_ng_la_LDFLAGS = $(AM_LDFLAGS) @LIBGOLDILOCKS_LIBS@ \
                                      @LIBSODIUM_LIBS@ \
                                      @LIBGCRYPT_LIBS@ \
 				     $(CODE_COVERAGE_LIBS) \
-			             $(GPROF_LDFLAGS)
+			             $(GPROF_LDFLAGS) \
+                                     $(SANITIZER_LDFLAGS)
