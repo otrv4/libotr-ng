@@ -58,6 +58,14 @@ dnl Check that our compiler can do const and inline
 AC_C_CONST
 AC_C_INLINE
 
+AC_CANONICAL_HOST
+# Identify which OS we are building and do specific things based on the host
+case $host_os in
+  *linux*)
+    HOST_OS=linux
+    ;;
+esac
+
 dnl Checks for libraries.
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.18])
 PKG_CHECK_MODULES([LIBGOLDILOCKS], [libgoldilocks >= 0.0.1])
@@ -100,6 +108,12 @@ AX_CFLAGS_GCC_OPTION([-Wlogical-op])
 AX_CFLAGS_GCC_OPTION([-Wbad-cast-qual])
 AX_CFLAGS_GCC_OPTION([-Wformat-nonliteral])
 AX_CFLAGS_GCC_OPTION([-Wbuiltin-memcpy-chk-size])
+AX_CFLAGS_GCC_OPTION([-Wfloat-equal])
+AX_CFLAGS_GCC_OPTION([-Wundef])
+AX_CFLAGS_GCC_OPTION([-Wshadow])
+AX_CFLAGS_GCC_OPTION([-Wpointer-arith])
+AX_CFLAGS_GCC_OPTION([-Wcast-align])
+AX_CFLAGS_GCC_OPTION([-Wunreachable-code])
 dnl for undefined behavior
 # AX_CFLAGS_GCC_OPTION([-fcatch-undefined-behavior])
 # AX_CFLAGS_GCC_OPTION([-fno-delete-null-pointer-checks])
