@@ -113,7 +113,6 @@ AX_CFLAGS_GCC_OPTION([-Wundef])
 AX_CFLAGS_GCC_OPTION([-Wshadow])
 AX_CFLAGS_GCC_OPTION([-Wpointer-arith])
 AX_CFLAGS_GCC_OPTION([-Wcast-align])
-AX_CFLAGS_GCC_OPTION([-Wunreachable-code])
 dnl for undefined behavior
 # AX_CFLAGS_GCC_OPTION([-fcatch-undefined-behavior])
 # AX_CFLAGS_GCC_OPTION([-fno-delete-null-pointer-checks])
