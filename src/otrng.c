@@ -1384,11 +1384,6 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
     return SUCCESS;
   }
 
-  uint8_t *plain = malloc(auth->enc_msg_len);
-  if (!plain) {
-    return ERROR;
-  }
-
   otrng_dh_mpi_release(otr->keys->their_dh);
   otr->keys->their_dh = otrng_dh_mpi_copy(auth->dh);
   otrng_ec_point_copy(otr->keys->their_ecdh, auth->ecdh);
@@ -1405,6 +1400,12 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
                                       OTRNG_RECEIVING, notif);
   otr->keys->k++;
 
+  // TODO: What if auth->enc_msg_len == 0?
+  uint8_t *plain = malloc(auth->enc_msg_len);
+  if (!plain) {
+    return ERROR;
+  }
+
   int err = crypto_stream_xor(plain, auth->enc_msg, auth->enc_msg_len,
                               auth->nonce, enc_key);
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
@@ -1415,6 +1416,7 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
     return ERROR;
   }
 
+  /* If plain != "" and auth->enc_msg_len != 0 */
   if (otrng_strnlen((string_p)plain, auth->enc_msg_len)) {
     *dst = otrng_strndup((char *)plain, auth->enc_msg_len);
   }
@@ -1922,6 +1924,7 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   otrng_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
 #endif
 
+  // TODO: What if msg->enc_msg_len == 0?
   uint8_t *plain = malloc(msg->enc_msg_len);
   if (!plain) {
     return ERROR;
@@ -1930,6 +1933,7 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   int err = crypto_stream_xor(plain, msg->enc_msg, msg->enc_msg_len, msg->nonce,
                               enc_key);
 
+  /* If plain != "" and msg->enc_msg_len != 0 */
   if (otrng_strnlen((string_p)plain, msg->enc_msg_len)) {
     *dst = otrng_strndup((char *)plain, msg->enc_msg_len);
   }
