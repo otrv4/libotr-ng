@@ -1895,25 +1895,20 @@ INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr) {
   return result;
 }
 
-tstatic void extract_tlvs(tlv_list_s **tlvs, const uint8_t *src, size_t len) {
-  if (!tlvs) {
-    return;
-  }
-
+tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *src, size_t len) {
   uint8_t *tlvs_start = memchr(src, 0, len);
   if (!tlvs_start) {
-    return;
+    return NULL;
   }
 
   size_t tlvs_len = len - (tlvs_start + 1 - src);
-  *tlvs = otrng_parse_tlvs(tlvs_start + 1, tlvs_len);
+  return otrng_parse_tlvs(tlvs_start + 1, tlvs_len);
 }
 
 tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
                                    const m_enc_key_p enc_key,
                                    const data_message_s *msg) {
   string_p *dst = &response->to_display;
-  tlv_list_s **tlvs = &response->tlvs;
 
 #ifdef DEBUG
   printf("\n");
@@ -1933,22 +1928,19 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   int err = crypto_stream_xor(plain, msg->enc_msg, msg->enc_msg_len, msg->nonce,
                               enc_key);
 
+  if (err) {
+    free(plain);
+    return ERROR;
+  }
+
   /* If plain != "" and msg->enc_msg_len != 0 */
   if (otrng_strnlen((string_p)plain, msg->enc_msg_len)) {
     *dst = otrng_strndup((char *)plain, msg->enc_msg_len);
   }
 
-  extract_tlvs(tlvs, plain, msg->enc_msg_len);
-
+  response->tlvs = deserialize_received_tlvs(plain, msg->enc_msg_len);
   free(plain);
-
-  if (err == 0) {
-    return SUCCESS;
-  }
-
-  // TODO: correctly free
-  otrng_tlv_list_free(*tlvs);
-  return ERROR;
+  return SUCCESS;
 }
 
 tstatic tlv_s *otrng_process_smp(otrng_smp_event_t event, smp_context_p smp,
