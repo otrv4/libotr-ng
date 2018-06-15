@@ -385,6 +385,10 @@ void test_valid_identity_msg_in_waiting_auth_i() {
 
   otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_AUTH_R);
 
+  // TODO: for the moment.. until is known if this will work with the state machine
+  free(bob_to_alice->conn->init_msg);
+  bob_to_alice->conn->init_msg = NULL;
+
   // Alice receives identity message (from Bob), sends Auth-R message
   ignore = otrng_client_receive(&from_alice_to_bob, &to_display, bobs_id,
                                 BOB_IDENTITY, alice);
