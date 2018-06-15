@@ -385,7 +385,8 @@ void test_valid_identity_msg_in_waiting_auth_i() {
 
   otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_AUTH_R);
 
-  // TODO: for the moment.. until is known if this will work with the state machine
+  // TODO: for the moment.. until is known if this will work with the state
+  // machine
   free(bob_to_alice->conn->init_msg);
   bob_to_alice->conn->init_msg = NULL;
 

@@ -601,7 +601,9 @@ tstatic otrng_err receive_tagged_plaintext(otrng_response_s *response,
 tstatic otrng_err receive_query_message(otrng_response_s *response,
                                         const string_p message, otrng_s *otr) {
   set_running_version_from_query_msg(otr, message);
-  otr->init_msg = strdup(message);
+  if (!otr->init_msg) {
+    otr->init_msg = strdup(message);
+  }
 
   switch (otr->running_version) {
   case OTRNG_VERSION_4:
