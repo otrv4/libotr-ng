@@ -266,7 +266,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otrng_key_manager_init(otr->keys);
   otrng_smp_context_init(otr->smp);
 
-  otr->frag_ctx = otrng_fragment_context_new();
+  otr->fragmentation_contexts = NULL;
   otr->v3_conn = NULL;
 
   otr->ignore_msg = 0;
@@ -275,6 +275,8 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
 
   return otr;
 }
+
+static void free_fragment_context(void *p) { otrng_fragment_context_free(p); }
 
 tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   if (otr->conversation) {
@@ -296,8 +298,8 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
 
   otrng_smp_destroy(otr->smp);
 
-  otrng_fragment_context_free(otr->frag_ctx);
-  otr->frag_ctx = NULL;
+  otrng_list_free(otr->fragmentation_contexts, free_fragment_context);
+  otr->fragmentation_contexts = NULL;
 
   free(otr->sending_init_msg); // TODO: should we free this after being used by
                                // phi?
@@ -2386,10 +2388,15 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
 tstatic otrng_err receive_possibly_fragment(char **unfragmented,
                                             const char *received,
                                             otrng_s *otr) {
-  fragment_context_s *ctx = otr->frag_ctx;
+  if (!otr->fragmentation_contexts) {
+    fragment_context_s *ctx = otrng_fragment_context_new();
+    otr->fragmentation_contexts =
+        otrng_list_add(ctx, otr->fragmentation_contexts);
+  }
+
+  fragment_context_s *ctx = otr->fragmentation_contexts->data;
   int our_instance_tag = otr->our_instance_tag;
 
-  // TODO: Review how this function returns errors:
   return otrng_unfragment_message(unfragmented, ctx, received,
                                   our_instance_tag);
 }

@@ -118,7 +118,7 @@ struct otrng_s {
   key_manager_s *keys;
   smp_context_p smp;
 
-  fragment_context_s *frag_ctx;
+  list_element_s *fragmentation_contexts;
 
   string_p sending_init_msg;
   string_p receiving_init_msg;
