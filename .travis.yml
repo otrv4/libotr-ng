@@ -64,6 +64,10 @@ matrix:
       dist: precise
       env: T=full-valgrind-checks
     - os: linux
+      dist: trusty
+      compiler: clang
+      env: T=sanitizer
+    - os: linux
       compiler: gcc
       dist: precise
       env: T=ctgrind
@@ -156,4 +160,10 @@ script:
            ./autogen.sh
            ./configure --with-ctgrind
            make ci
+      fi
+  - |
+      if [ "$T" = "sanitizer" ]; then
+           ./autogen.sh
+           ./configure --with-sanitizers=address,undefined
+           make test
       fi
