@@ -120,6 +120,10 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     return ERROR;
   }
 
+  for (int i = 0; i < fragments->total; i++) {
+    pieces[i] = NULL;
+  }
+
   for (int current = 1; current <= fragments->total; current++) {
     string_p piece = NULL;
     string_p piece_data = NULL;
@@ -127,16 +131,12 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     piece_len = msg_len < limit ? msg_len : limit;
     piece_data = malloc(piece_len + 1);
     if (!piece_data) {
-      int i;
-      for (i = 0; i < fragments->total; i++) {
-        // TODO: Cant do this. piece[i] is probably uninitialized.
-        // must clear pieces before current, not fragments->total.
+      for (int i = 0; i < fragments->total; i++) {
         free(pieces[i]);
         pieces[i] = NULL;
       }
 
       free(pieces);
-      pieces = NULL;
       return ERROR;
     }
 
@@ -145,10 +145,7 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
 
     piece = malloc(piece_len + FRAGMENT_HEADER_LEN + 1);
     if (!piece) {
-      int i;
-      for (i = 0; i < fragments->total; i++) {
-        // TODO: Cant do this. piece[i] is probably uninitialized.
-        // must clear pieces before current, not fragments->total.
+      for (int i = 0; i < fragments->total; i++) {
         free(pieces[i]);
         pieces[i] = NULL;
       }
