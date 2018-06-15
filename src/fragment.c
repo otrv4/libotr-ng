@@ -83,6 +83,11 @@ tstatic void free_fragments_in_context(fragment_context_s *context) {
   }
 }
 
+tstatic void reset_fragment_context(fragment_context_s *context) {
+    free_fragments_in_context(context);
+    initialize_fragment_context(context);
+}
+
 INTERNAL /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
   fragment_context_s *context = malloc(sizeof(fragment_context_s));
   if (!context) {
@@ -239,7 +244,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
                                             const int our_instance_tag) {
   if (!is_fragment(message)) {
     *unfrag_msg = otrng_strdup(message);
-    initialize_fragment_context(context);
+    reset_fragment_context(context);
     return SUCCESS;
   }
 
@@ -258,7 +263,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   }
 
   if (i == 0 || t == 0 || i > t) {
-    initialize_fragment_context(context);
+    reset_fragment_context(context);
     return SUCCESS;
   }
 
