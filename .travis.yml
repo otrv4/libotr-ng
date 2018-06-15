@@ -91,7 +91,7 @@ notifications:
     channels:
       - "irc.oftc.net#cad"
     on_success: change
-    on_failure: always
+    on_failure: change
     skip_join: true
     template:
       - "%{repository_slug}(%{author}): %{message} %{build_url}"
