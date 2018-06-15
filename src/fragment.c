@@ -72,8 +72,12 @@ tstatic void initialize_fragment_context(fragment_context_s *context) {
   context->fragments = NULL;
 }
 
-INTERNAL fragment_context_s *otrng_fragment_context_new(void) {
+INTERNAL /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
   fragment_context_s *context = malloc(sizeof(fragment_context_s));
+  if (!context) {
+    return NULL;
+  }
+
   initialize_fragment_context(context);
   return context;
 }
