@@ -72,6 +72,17 @@ tstatic void initialize_fragment_context(fragment_context_s *context) {
   context->fragments = NULL;
 }
 
+tstatic void free_fragments_in_context(fragment_context_s *context) {
+  if (!context->fragments) {
+    return;
+  }
+
+  for (int i = 0; i < context->total; i++) {
+    free(context->fragments[i]);
+    context->fragments[i] = NULL;
+  }
+}
+
 INTERNAL /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
   fragment_context_s *context = malloc(sizeof(fragment_context_s));
   if (!context) {
@@ -83,15 +94,9 @@ INTERNAL /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
 }
 
 INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
-  for (int i = 0; i < context->total; i++) {
-    if (context->fragments[i] != NULL) {
-      free(context->fragments[i]);
-    }
-  }
-
+  free_fragments_in_context(context);
   free(context->fragments);
   context->fragments = NULL;
-
   free(context);
 }
 
