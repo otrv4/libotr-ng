@@ -297,6 +297,8 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
 
   otrng_fragment_context_free(otr->frag_ctx);
 
+  free(otr->init_msg); // TODO: should we free this after being used by phi?
+
   otrng_v3_conn_free(otr->v3_conn);
   otr->v3_conn = NULL;
 }
@@ -1842,6 +1844,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
       t, t_len);
 
   free(t);
+
   return err;
 }
 
