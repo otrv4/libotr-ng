@@ -119,6 +119,8 @@ struct otrng_s {
   smp_context_p smp;
 
   fragment_context_s *frag_ctx;
+
+  string_p init_msg;
   time_t last_sent; // TODO: not sure if the best place to put
   int ignore_msg;   // TODO: not sure if the best place to put
 };                  /* otrng_s */
@@ -171,7 +173,7 @@ INTERNAL void otrng_free(/*@only@ */ otrng_s *otr);
 
 INTERNAL otrng_err otrng_build_query_message(string_p *dst,
                                              const string_p message,
-                                             const otrng_s *otr);
+                                             otrng_s *otr);
 
 INTERNAL otrng_response_s *otrng_response_new(void);
 

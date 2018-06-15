@@ -622,13 +622,15 @@ void test_valid_identity_msg_in_waiting_auth_r() {
       set_up_client(alice_client_state, ALICE_IDENTITY, PHI, 1);
   otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, PHI, 2);
 
+  // TODO: for the moment I'm changing this, but might be reworth checking at
+  // the protocol level
   // Alice sends a query message to Bob
   char *query_msg_to_bob =
-      otrng_client_query_message(BOB_IDENTITY, "Hi bob", alice, OTRNG_ALLOW_V4);
+      otrng_client_query_message(BOB_IDENTITY, "Hi", alice, OTRNG_ALLOW_V4);
 
   // Bob sends a query message to Alice
-  char *query_msg_to_alice = otrng_client_query_message(
-      ALICE_IDENTITY, "Hi alice", bob, OTRNG_ALLOW_V4);
+  char *query_msg_to_alice =
+      otrng_client_query_message(ALICE_IDENTITY, "Hi", bob, OTRNG_ALLOW_V4);
 
   int ignore = 0;
   char *to_display = NULL, *alices_id = NULL, *bobs_id = NULL,

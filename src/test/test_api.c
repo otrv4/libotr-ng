@@ -1195,15 +1195,26 @@ void test_api_multiple_clients(void) {
   otrng_response_s *alice_to_phone = otrng_response_new();
   otrng_notif notif = NOTIF_NONE;
 
+  string_p query_message = NULL;
+
+  otrng_assert_is_success(
+      otrng_build_query_message(&query_message, "?OTRv4", alice));
+  otrng_assert(alice->state == OTRNG_STATE_START);
+  otrng_assert_cmpmem("?OTRv4", query_message, 6);
+
   // PC receives query msg and sends identity msg
-  result = otrng_receive_message(pc_to_alice, notif, "?OTRv4?", bob_pc);
+  result = otrng_receive_message(pc_to_alice, notif, query_message, bob_pc);
   assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
                           OTRNG_STATE_WAITING_AUTH_R, send_response);
 
   // PHONE receives query msg and sends identity msg
-  result = otrng_receive_message(phone_to_alice, notif, "?OTRv4?", bob_phone);
+  result =
+      otrng_receive_message(phone_to_alice, notif, query_message, bob_phone);
   assert_rec_msg_in_state(result, phone_to_alice, bob_phone,
                           OTRNG_STATE_WAITING_AUTH_R, send_response);
+
+  free(query_message);
+  query_message = NULL;
 
   // ALICE receives Identity msg from PC and sends AUTH-R
   result =

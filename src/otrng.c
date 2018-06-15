@@ -268,7 +268,9 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
 
   otr->frag_ctx = otrng_fragment_context_new();
   otr->v3_conn = NULL;
+
   otr->ignore_msg = 0;
+  otr->init_msg = NULL;
 
   return otr;
 }
@@ -310,7 +312,7 @@ INTERNAL void otrng_free(/*@only@ */ otrng_s *otr) {
 
 INTERNAL otrng_err otrng_build_query_message(string_p *dst,
                                              const string_p message,
-                                             const otrng_s *otr) {
+                                             otrng_s *otr) {
   if (otr->state == OTRNG_STATE_ENCRYPTED_MESSAGES) {
     return ERROR;
   }
@@ -341,7 +343,9 @@ INTERNAL otrng_err otrng_build_query_message(string_p *dst,
     return ERROR; /* could not zero-terminate the string */
   }
 
+  otr->init_msg = otrng_strdup(buff);
   *dst = buff;
+
   return SUCCESS;
 }
 
@@ -549,6 +553,7 @@ tstatic otrng_err reply_with_identity_msg(otrng_response_s *response,
   otrng_err result =
       serialize_and_encode_identity_message(&response->to_send, m);
   otrng_dake_identity_message_free(m);
+
   return result;
 }
 
@@ -557,7 +562,6 @@ tstatic otrng_err start_dake(otrng_response_s *response, otrng_s *otr) {
     return ERROR;
   }
 
-  // TODO: check this function
   maybe_create_keys(otr->conversation);
   if (!reply_with_identity_msg(response, otr)) {
     return ERROR;
@@ -595,12 +599,10 @@ tstatic otrng_err receive_tagged_plaintext(otrng_response_s *response,
 tstatic otrng_err receive_query_message(otrng_response_s *response,
                                         const string_p message, otrng_s *otr) {
   set_running_version_from_query_msg(otr, message);
+  otr->init_msg = strdup(message);
 
   switch (otr->running_version) {
   case OTRNG_VERSION_4:
-    // TODO: why is this delete here?
-    // otrng_dh_priv_key_destroy(otr->keys->our_dh);
-    // otrng_ec_scalar_destroy(otr->keys->our_ecdh->priv);
     return start_dake(response, otr);
     break;
   case OTRNG_VERSION_3:
@@ -648,7 +650,7 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
           &t, &t_len, 0, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
           otr->conversation->client->phi, otr->our_instance_tag,
-          otr->their_instance_tag)) {
+          otr->their_instance_tag, otr->init_msg)) {
     return ERROR;
   }
 
@@ -915,7 +917,7 @@ tstatic otrng_err build_non_interactive_auth_message(
           &t, &t_len, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
           otr->keys->their_shared_prekey, otr->conversation->client->phi,
-          otr->our_instance_tag, otr->their_instance_tag)) {
+          otr->our_instance_tag, otr->their_instance_tag, otr->init_msg)) {
     return ERROR;
   }
 
@@ -1344,7 +1346,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
           &t, &t_len, get_my_client_profile(otr), auth->profile, our_ecdh(otr),
           auth->X, our_dh(otr), auth->A, prekey_profile->shared_prekey,
           otr->conversation->client->phi, otr->their_instance_tag,
-          otr->our_instance_tag)) {
+          otr->our_instance_tag, otr->init_msg)) {
     return otrng_false;
   }
 
@@ -1585,7 +1587,6 @@ tstatic otrng_err receive_non_interactive_auth_message(
 
 tstatic otrng_err receive_identity_message_on_state_start(
     string_p *dst, dake_identity_message_s *identity_message, otrng_s *otr) {
-
   otr->their_client_profile = malloc(sizeof(client_profile_s));
   if (!otr->their_client_profile) {
     return ERROR;
@@ -1716,7 +1717,7 @@ tstatic otrng_err reply_with_auth_i_msg(
           &t, &t_len, 1, get_my_client_profile(otr), their_client_profile,
           our_ecdh(otr), their_ecdh(otr), our_dh(otr), their_dh(otr),
           otr->conversation->client->phi, otr->our_instance_tag,
-          otr->their_instance_tag)) {
+          otr->their_instance_tag, otr->init_msg)) {
     return ERROR;
   }
 
@@ -1749,7 +1750,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
           &t, &t_len, 0, get_my_client_profile(otr), auth->profile,
           our_ecdh(otr), auth->X, our_dh(otr), auth->A,
           otr->conversation->client->phi, otr->their_instance_tag,
-          otr->our_instance_tag)) {
+          otr->our_instance_tag, otr->init_msg)) {
     return otrng_false;
   }
 
@@ -1829,7 +1830,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
           &t, &t_len, 1, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
           otr->conversation->client->phi, otr->their_instance_tag,
-          otr->our_instance_tag)) {
+          otr->our_instance_tag, otr->init_msg)) {
     return otrng_false;
   }
 

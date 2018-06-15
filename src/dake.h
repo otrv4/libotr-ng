@@ -154,14 +154,15 @@ INTERNAL otrng_err build_interactive_rsign_tag(
     const client_profile_s *i_profile, const client_profile_s *r_profile,
     const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
     const dh_mpi_p r_dh, const char *phi, const uint16_t sender_instance_tag,
-    const uint16_t receiver_instance_tag);
+    const uint16_t receiver_instance_tag, string_p init_msg);
 
 INTERNAL otrng_err build_non_interactive_rsig_tag(
     uint8_t **msg, size_t *msg_len, const client_profile_s *i_profile,
     const client_profile_s *r_profile, const ec_point_p i_ecdh,
     const ec_point_p r_ecdh, const dh_mpi_p i_dh, const dh_mpi_p r_dh,
     const otrng_shared_prekey_pub_p r_shared_prekey, char *phi,
-    const uint16_t sender_instance_tag, const uint16_t receiver_instance_tag);
+    const uint16_t sender_instance_tag, const uint16_t receiver_instance_tag,
+    string_p init_msg);
 
 INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
     uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_p auth,

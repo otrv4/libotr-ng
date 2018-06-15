@@ -907,7 +907,8 @@ tstatic otrng_err build_rsign_tag(
     const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
     const dh_mpi_p r_dh, const uint8_t *ser_r_shared_prekey,
     size_t ser_r_shared_prekey_len, const char *phi,
-    const uint16_t sender_instance_tag, const uint16_t receiver_instance_tag) {
+    const uint16_t sender_instance_tag, const uint16_t receiver_instance_tag,
+    string_p init_msg) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
@@ -946,13 +947,29 @@ tstatic otrng_err build_rsign_tag(
       continue;
     }
 
-    uint8_t *phi_val = malloc(strlen(phi) + 1 + 4 + 4 + 4);
+    // TODO: refactor me!
+    size_t s = 0;
+    size_t phi_len = 0;
+    if (init_msg) {
+      s = strlen(phi) + 1 + 4 + 4 + 4 + strlen(init_msg) + 1 + 4;
+    } else {
+      s = strlen(phi) + 1 + 4 + 4 + 4;
+    }
+
+    uint8_t *phi_val = malloc(s);
     if (!phi_val) {
       continue;
     }
-    size_t phi_len =
-        otrng_serialize_phi(phi_val, (uint8_t *)phi, strlen(phi) + 1,
-                            sender_instance_tag, receiver_instance_tag);
+
+    if (init_msg) {
+      phi_len = otrng_serialize_phi(phi_val, (uint8_t *)phi, strlen(phi) + 1,
+                                    (uint8_t *)init_msg, strlen(init_msg) + 1,
+                                    sender_instance_tag, receiver_instance_tag);
+    } else {
+      phi_len =
+          otrng_serialize_phi(phi_val, (uint8_t *)phi, strlen(phi) + 1, NULL, 0,
+                              sender_instance_tag, receiver_instance_tag);
+    }
 
     shake_256_kdf1(hash_ser_i_profile, HASH_BYTES, first_usage, ser_i_profile,
                    ser_i_profile_len);
@@ -1012,7 +1029,7 @@ INTERNAL otrng_err build_interactive_rsign_tag(
     const client_profile_s *i_profile, const client_profile_s *r_profile,
     const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
     const dh_mpi_p r_dh, const char *phi, const uint16_t sender_instance_tag,
-    const uint16_t receiver_instance_tag) {
+    const uint16_t receiver_instance_tag, string_p init_msg) {
   if (!phi) {
     return ERROR;
   }
@@ -1034,7 +1051,7 @@ INTERNAL otrng_err build_interactive_rsign_tag(
   otrng_err result =
       build_rsign_tag(buff + 1, MAX_T_LENGTH, &written, first_usage, i_profile,
                       r_profile, i_ecdh, r_ecdh, i_dh, r_dh, NULL, 0, phi,
-                      sender_instance_tag, receiver_instance_tag);
+                      sender_instance_tag, receiver_instance_tag, init_msg);
 
   if (result == ERROR) {
     free(buff);
@@ -1056,7 +1073,8 @@ INTERNAL otrng_err build_non_interactive_rsig_tag(
     const client_profile_s *r_profile, const ec_point_p i_ecdh,
     const ec_point_p r_ecdh, const dh_mpi_p i_dh, const dh_mpi_p r_dh,
     const otrng_shared_prekey_pub_p r_shared_prekey, char *phi,
-    const uint16_t sender_instance_tag, const uint16_t receiver_instance_tag) {
+    const uint16_t sender_instance_tag, const uint16_t receiver_instance_tag,
+    string_p init_msg) {
 
   if (!phi) {
     return ERROR;
@@ -1072,7 +1090,7 @@ INTERNAL otrng_err build_non_interactive_rsig_tag(
   otrng_err result = build_rsign_tag(
       *msg, MAX_T_LENGTH, msg_len, 0x0E, i_profile, r_profile, i_ecdh, r_ecdh,
       i_dh, r_dh, ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi,
-      sender_instance_tag, receiver_instance_tag);
+      sender_instance_tag, receiver_instance_tag, init_msg);
   sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
   return result;
