@@ -2382,16 +2382,8 @@ tstatic otrng_err receive_possibly_fragment(char **unfragmented,
   int our_instance_tag = otr->our_instance_tag;
 
   // TODO: Review how this function returns errors:
-  otrng_err result =
-      otrng_unfragment_message(unfragmented, ctx, received, our_instance_tag);
-
-  // TODO: Can be removed if an ERROR is returned when ctx->status =
-  // FRAGMENT_INCOMPLETE
-  if (ctx->status == FRAGMENT_INCOMPLETE) {
-    return ERROR;
-  }
-
-  return result;
+  return otrng_unfragment_message(unfragmented, ctx, received,
+                                  our_instance_tag);
 }
 
 /* Receive a possibly OTR message. */
@@ -2402,7 +2394,7 @@ INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
   response->to_display = otrng_strndup(NULL, 0);
 
   char *defrag = NULL;
-  if (!receive_possibly_fragment(&defrag, message, otr)) {
+  if (!receive_possibly_fragment(&defrag, message, otr) || !defrag) {
     free(defrag);
     return ERROR;
   }

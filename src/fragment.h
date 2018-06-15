@@ -35,18 +35,11 @@ typedef struct otrng_message_to_send_s {
   int total;
 } otrng_message_to_send_s, otrng_message_to_send_p[1];
 
-typedef enum {
-  FRAGMENT_UNFRAGMENTED,
-  FRAGMENT_INCOMPLETE,
-  FRAGMENT_COMPLETE
-} fragment_status;
-
 typedef struct fragment_context_s {
   uint32_t identifier;
   unsigned int total, count;
   size_t total_message_len;
   string_p *fragments;
-  fragment_status status;
 } fragment_context_s, fragment_context_p[1];
 
 API otrng_message_to_send_s *otrng_message_new(void);

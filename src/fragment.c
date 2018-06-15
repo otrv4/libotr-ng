@@ -68,7 +68,6 @@ tstatic void initialize_fragment_context(fragment_context_s *context) {
   context->count = 0;
   context->total = 0;
   context->total_message_len = 0;
-  context->status = FRAGMENT_UNFRAGMENTED;
   context->fragments = NULL;
 }
 
@@ -84,8 +83,8 @@ tstatic void free_fragments_in_context(fragment_context_s *context) {
 }
 
 tstatic void reset_fragment_context(fragment_context_s *context) {
-    free_fragments_in_context(context);
-    initialize_fragment_context(context);
+  free_fragments_in_context(context);
+  initialize_fragment_context(context);
 }
 
 INTERNAL /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
@@ -242,6 +241,9 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
                                             fragment_context_s *context,
                                             const string_p message,
                                             const int our_instance_tag) {
+
+  *unfrag_msg = NULL;
+
   if (!is_fragment(message)) {
     *unfrag_msg = otrng_strdup(message);
     reset_fragment_context(context);
@@ -272,7 +274,6 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   }
 
   context->total = t;
-  context->status = FRAGMENT_INCOMPLETE;
 
   if (context->fragments == NULL) {
     if (!initialize_fragments(context)) {
@@ -293,7 +294,6 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
 
   if (context->count == t) {
     if (join_fragments(unfrag_msg, context)) {
-      context->status = FRAGMENT_COMPLETE;
       return SUCCESS;
     }
     return ERROR;
