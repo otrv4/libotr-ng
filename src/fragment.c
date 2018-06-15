@@ -86,6 +86,8 @@ INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   }
 
   free(context->fragments);
+  context->fragments = NULL;
+
   free(context);
 }
 

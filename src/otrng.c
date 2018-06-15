@@ -296,6 +296,7 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   otrng_smp_destroy(otr->smp);
 
   otrng_fragment_context_free(otr->frag_ctx);
+  otr->frag_ctx = NULL;
 
   free(otr->init_msg); // TODO: should we free this after being used by phi?
 
