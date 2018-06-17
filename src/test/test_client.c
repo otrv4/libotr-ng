@@ -385,11 +385,6 @@ void test_valid_identity_msg_in_waiting_auth_i() {
 
   otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_AUTH_R);
 
-  // TODO: for the moment.. until is known if this will work with the state
-  // machine
-  free(bob_to_alice->conn->init_msg);
-  bob_to_alice->conn->init_msg = NULL;
-
   // Alice receives identity message (from Bob), sends Auth-R message
   ignore = otrng_client_receive(&from_alice_to_bob, &to_display, bobs_id,
                                 BOB_IDENTITY, alice);
@@ -630,12 +625,12 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   // TODO: for the moment I'm changing this, but might be reworth checking at
   // the protocol level
   // Alice sends a query message to Bob
-  char *query_msg_to_bob =
-      otrng_client_query_message(BOB_IDENTITY, "Hi", alice, OTRNG_ALLOW_V4);
+  char *query_msg_to_bob = otrng_client_query_message(BOB_IDENTITY, "Hi alice",
+                                                      alice, OTRNG_ALLOW_V4);
 
   // Bob sends a query message to Alice
   char *query_msg_to_alice =
-      otrng_client_query_message(ALICE_IDENTITY, "Hi", bob, OTRNG_ALLOW_V4);
+      otrng_client_query_message(ALICE_IDENTITY, "Hi bob", bob, OTRNG_ALLOW_V4);
 
   int ignore = 0;
   char *to_display = NULL, *alices_id = NULL, *bobs_id = NULL,

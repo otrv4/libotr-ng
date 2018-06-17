@@ -120,7 +120,9 @@ struct otrng_s {
 
   fragment_context_s *frag_ctx;
 
-  string_p init_msg;
+  string_p sending_init_msg;
+  string_p receiving_init_msg;
+
   time_t last_sent; // TODO: not sure if the best place to put
   int ignore_msg;   // TODO: not sure if the best place to put
 };                  /* otrng_s */

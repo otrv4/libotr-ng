@@ -270,7 +270,8 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->v3_conn = NULL;
 
   otr->ignore_msg = 0;
-  otr->init_msg = NULL;
+  otr->sending_init_msg = NULL;
+  otr->receiving_init_msg = NULL;
 
   return otr;
 }
@@ -298,7 +299,10 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   otrng_fragment_context_free(otr->frag_ctx);
   otr->frag_ctx = NULL;
 
-  free(otr->init_msg); // TODO: should we free this after being used by phi?
+  free(otr->sending_init_msg); // TODO: should we free this after being used by
+                               // phi?
+  free(otr->receiving_init_msg); // TODO: should we free this after being used
+                                 // by phi?
 
   otrng_v3_conn_free(otr->v3_conn);
   otr->v3_conn = NULL;
@@ -346,7 +350,7 @@ INTERNAL otrng_err otrng_build_query_message(string_p *dst,
     return ERROR; /* could not zero-terminate the string */
   }
 
-  otr->init_msg = otrng_strdup(buff);
+  otr->sending_init_msg = otrng_strdup(buff);
   *dst = buff;
 
   return SUCCESS;
@@ -455,6 +459,7 @@ tstatic bool message_is_query(const string_p message) {
   return strstr(message, query_header) != NULL;
 }
 
+// TODO: should this error?
 tstatic void set_running_version_from_query_msg(otrng_s *otr,
                                                 const string_p message) {
   if (allow_version(otr, OTRNG_ALLOW_V4) && strstr(message, "4")) {
@@ -602,8 +607,10 @@ tstatic otrng_err receive_tagged_plaintext(otrng_response_s *response,
 tstatic otrng_err receive_query_message(otrng_response_s *response,
                                         const string_p message, otrng_s *otr) {
   set_running_version_from_query_msg(otr, message);
-  if (!otr->init_msg) {
-    otr->init_msg = strdup(message);
+
+  // TODO: still unsure about this
+  if (!otr->receiving_init_msg) {
+    otr->receiving_init_msg = strdup(message);
   }
 
   switch (otr->running_version) {
@@ -655,7 +662,7 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
           &t, &t_len, 0, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
           otr->conversation->client->phi, otr->our_instance_tag,
-          otr->their_instance_tag, otr->init_msg)) {
+          otr->their_instance_tag, otr->sending_init_msg)) {
     return ERROR;
   }
 
@@ -922,7 +929,8 @@ tstatic otrng_err build_non_interactive_auth_message(
           &t, &t_len, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
           otr->keys->their_shared_prekey, otr->conversation->client->phi,
-          otr->our_instance_tag, otr->their_instance_tag, otr->init_msg)) {
+          otr->our_instance_tag, otr->their_instance_tag,
+          otr->receiving_init_msg)) {
     return ERROR;
   }
 
@@ -1351,7 +1359,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
           &t, &t_len, get_my_client_profile(otr), auth->profile, our_ecdh(otr),
           auth->X, our_dh(otr), auth->A, prekey_profile->shared_prekey,
           otr->conversation->client->phi, otr->their_instance_tag,
-          otr->our_instance_tag, otr->init_msg)) {
+          otr->our_instance_tag, otr->sending_init_msg)) {
     return otrng_false;
   }
 
@@ -1722,7 +1730,7 @@ tstatic otrng_err reply_with_auth_i_msg(
           &t, &t_len, 1, get_my_client_profile(otr), their_client_profile,
           our_ecdh(otr), their_ecdh(otr), our_dh(otr), their_dh(otr),
           otr->conversation->client->phi, otr->our_instance_tag,
-          otr->their_instance_tag, otr->init_msg)) {
+          otr->their_instance_tag, otr->receiving_init_msg)) {
     return ERROR;
   }
 
@@ -1755,7 +1763,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
           &t, &t_len, 0, get_my_client_profile(otr), auth->profile,
           our_ecdh(otr), auth->X, our_dh(otr), auth->A,
           otr->conversation->client->phi, otr->their_instance_tag,
-          otr->our_instance_tag, otr->init_msg)) {
+          otr->our_instance_tag, otr->receiving_init_msg)) {
     return otrng_false;
   }
 
@@ -1835,7 +1843,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
           &t, &t_len, 1, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
           otr->conversation->client->phi, otr->their_instance_tag,
-          otr->our_instance_tag, otr->init_msg)) {
+          otr->our_instance_tag, otr->sending_init_msg)) {
     return otrng_false;
   }
 
