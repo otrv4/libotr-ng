@@ -359,8 +359,7 @@ INTERNAL otrng_err otrng_build_query_message(string_p *dst,
 }
 
 API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
-                                         const string_p message,
-                                         const otrng_s *otr) {
+                                         const string_p message, otrng_s *otr) {
   size_t m_size = WHITESPACE_TAG_BASE_BYTES + strlen(message) + 1;
   int allows_v4 = allow_version(otr, OTRNG_ALLOW_V4);
   int allows_v3 = allow_version(otr, OTRNG_ALLOW_V3);
@@ -395,6 +394,7 @@ API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
     return ERROR;
   }
 
+  otr->sending_init_msg = otrng_strdup(buff);
   *whitespace_tag = buff;
   return SUCCESS;
 }
