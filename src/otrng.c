@@ -352,6 +352,11 @@ INTERNAL otrng_err otrng_build_query_message(string_p *dst,
     return ERROR; /* could not zero-terminate the string */
   }
 
+  if (otr->sending_init_msg) {
+    free(otr->sending_init_msg);
+    otr->sending_init_msg = NULL;
+  }
+
   otr->sending_init_msg = otrng_strdup(buff);
   *dst = buff;
 
@@ -392,6 +397,11 @@ API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
   if (*otrng_stpncpy(cursor, message, m_size - strlen(buff))) {
     free(buff);
     return ERROR;
+  }
+
+  if (otr->sending_init_msg) {
+    free(otr->sending_init_msg);
+    otr->sending_init_msg = NULL;
   }
 
   otr->sending_init_msg = otrng_strdup(buff);
