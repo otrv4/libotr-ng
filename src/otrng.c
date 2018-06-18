@@ -2424,8 +2424,7 @@ INTERNAL otrng_err otrng_receive_defragmented_message(
   response->to_display = otrng_strndup(NULL, 0);
 
   /* A DH-Commit sets our running version to 3 */
-  if (otr->running_version == OTRNG_VERSION_NONE &&
-      allow_version(otr, OTRNG_ALLOW_V3) && strstr(message, "?OTR:AAMC")) {
+  if (allow_version(otr, OTRNG_ALLOW_V3) && strstr(message, "?OTR:AAMC")) {
     otr->running_version = OTRNG_VERSION_3;
   }
 
