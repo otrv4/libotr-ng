@@ -258,12 +258,14 @@ void test_defragment_two_messages(void) {
   g_assert_cmpstr(unfrag, ==, "second message");
   otrng_assert(otrng_list_len(list) == 1);
 
+  free(unfrag);
+  unfrag = NULL;
+
   otrng_assert_is_success(
       otrng_unfragment_message(&unfrag, &list, msg1_fragments[1], 2));
   g_assert_cmpstr(unfrag, ==, "first message");
   otrng_assert(otrng_list_len(list) == 0);
 
   free(unfrag);
-  unfrag = NULL;
   otrng_list_free_nodes(list);
 }
