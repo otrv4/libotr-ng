@@ -646,6 +646,9 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   ignore = otrng_client_receive(&alices_id, &to_display, query_msg_to_alice,
                                 BOB_IDENTITY, alice);
 
+  otrng_assert(strcmp(bob_to_alice->conn->sending_init_msg,
+                      alice_to_bob->conn->receiving_init_msg) == 0);
+
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_WAITING_AUTH_R);
 
   otrng_assert(ignore);
@@ -661,6 +664,12 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   // Bob receives query message, sends identity message
   ignore = otrng_client_receive(&bobs_id, &to_display, query_msg_to_bob,
                                 ALICE_IDENTITY, bob);
+
+  otrng_assert(strcmp(bob_to_alice->conn->sending_init_msg,
+                      alice_to_bob->conn->receiving_init_msg) == 0);
+  otrng_assert(strcmp(alice_to_bob->conn->sending_init_msg,
+                      bob_to_alice->conn->receiving_init_msg) == 0);
+
   otrng_assert(ignore);
   otrng_assert(bobs_id);
   otrng_assert(!to_display);
@@ -708,6 +717,10 @@ void test_valid_identity_msg_in_waiting_auth_r() {
     otrng_assert(ignore);
     otrng_assert(!to_display);
 
+    otrng_assert(strcmp(bob_to_alice->conn->sending_init_msg,
+                        alice_to_bob->conn->receiving_init_msg) == 0);
+    otrng_assert(strcmp(alice_to_bob->conn->sending_init_msg,
+                        bob_to_alice->conn->receiving_init_msg) == 0);
     // Alice sends a disconnected to Alice
     int error = otrng_client_disconnect(&alice_last, BOB_IDENTITY, alice);
     otrng_assert(!error);
@@ -769,6 +782,10 @@ void test_valid_identity_msg_in_waiting_auth_r() {
 
     otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
 
+    otrng_assert(strcmp(bob_to_alice->conn->sending_init_msg,
+                        alice_to_bob->conn->receiving_init_msg) == 0);
+    otrng_assert(strcmp(alice_to_bob->conn->sending_init_msg,
+                        bob_to_alice->conn->receiving_init_msg) == 0);
     // Bob sends a disconnected to Alice
     int error = otrng_client_disconnect(&bob_last, ALICE_IDENTITY, bob);
     otrng_assert(!error);
