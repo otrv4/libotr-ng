@@ -128,6 +128,8 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     pieces[i] = NULL;
   }
 
+  uint32_t *identifier = gcry_random_bytes(32, GCRY_STRONG_RANDOM);
+
   for (int current = 1; current <= fragments->total; current++) {
     string_p piece = NULL;
     string_p piece_data = NULL;
@@ -162,14 +164,9 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
       return ERROR;
     }
 
-    uint32_t *identifier = gcry_random_bytes(32, GCRY_STRONG_RANDOM);
-
     snprintf(piece, piece_len + FRAGMENT_HEADER_LEN + 1, FRAGMENT_FORMAT,
              *identifier, our_instance, their_instance, (unsigned short)current,
              (unsigned short)fragments->total, piece_data);
-
-    gcry_free(identifier);
-    identifier = NULL;
 
     piece[piece_len + FRAGMENT_HEADER_LEN] = 0;
 
@@ -179,6 +176,9 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     piece_data = NULL;
     message += piece_len;
   }
+
+  gcry_free(identifier);
+  identifier = NULL;
 
   fragments->pieces = pieces;
 
@@ -238,15 +238,17 @@ tstatic otrng_err copy_fragment_to_context(fragment_context_s *context,
 }
 
 INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
-                                            fragment_context_s *context,
+                                            list_element_s **contexts,
                                             const string_p message,
                                             const int our_instance_tag) {
-
   *unfrag_msg = NULL;
+
+  if (!contexts) {
+    return ERROR;
+  }
 
   if (!is_fragment(message)) {
     *unfrag_msg = otrng_strdup(message);
-    reset_fragment_context(context);
     return SUCCESS;
   }
 
@@ -262,6 +264,25 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
 
   if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
     return ERROR;
+  }
+
+  fragment_context_s *context = NULL;
+  for (list_element_s *current = *contexts; current; current = current->next) {
+    if (!current->data) {
+      continue;
+    }
+
+    fragment_context_s *ctx = current->data;
+    if (ctx->identifier == fragment_identifier) {
+      context = ctx;
+      break;
+    }
+  }
+
+  if (!context) {
+    context = otrng_fragment_context_new();
+    context->identifier = fragment_identifier;
+    *contexts = otrng_list_add(context, *contexts);
   }
 
   if (i == 0 || t == 0 || i > t) {
@@ -294,6 +315,10 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
 
   if (context->count == t) {
     if (join_fragments(unfrag_msg, context)) {
+      list_element_s *to_remove = otrng_list_get_by_value(context, *contexts);
+      *contexts = otrng_list_remove_element(to_remove, *contexts);
+      otrng_fragment_context_free(context);
+      otrng_list_free_nodes(to_remove);
       return SUCCESS;
     }
     return ERROR;

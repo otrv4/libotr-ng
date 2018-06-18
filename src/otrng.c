@@ -2388,17 +2388,10 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
 tstatic otrng_err receive_possibly_fragment(char **unfragmented,
                                             const char *received,
                                             otrng_s *otr) {
-  if (!otr->fragmentation_contexts) {
-    fragment_context_s *ctx = otrng_fragment_context_new();
-    otr->fragmentation_contexts =
-        otrng_list_add(ctx, otr->fragmentation_contexts);
-  }
-
-  fragment_context_s *ctx = otr->fragmentation_contexts->data;
   int our_instance_tag = otr->our_instance_tag;
 
-  return otrng_unfragment_message(unfragmented, ctx, received,
-                                  our_instance_tag);
+  return otrng_unfragment_message(unfragmented, &otr->fragmentation_contexts,
+                                  received, our_instance_tag);
 }
 
 /* Receive a possibly OTR message. */

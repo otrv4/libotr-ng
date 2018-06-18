@@ -56,7 +56,7 @@ INTERNAL otrng_err otrng_fragment_message(int mms,
                                           const string_p message);
 
 INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
-                                            fragment_context_s *context,
+                                            list_element_s **contexts,
                                             const string_p message,
                                             const int our_instance_tag);
 

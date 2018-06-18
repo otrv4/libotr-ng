@@ -189,6 +189,8 @@ int main(int argc, char **argv) {
                   test_defragment_fails_for_invalid_tag);
   g_test_add_func("/fragment/defragment_regular_otr_message",
                   test_defragment_regular_otr_message);
+  g_test_add_func("/fragment/defragment_two_messages",
+                  test_defragment_two_messages);
 
   g_test_add_func("/key_management/derive_ratchet_keys",
                   test_derive_ratchet_keys);

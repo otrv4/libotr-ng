@@ -58,65 +58,57 @@ void test_defragment_valid_message(void) {
   fragments[0] = "?OTR|00000000|00000001|00000002,00001,00002,one ,";
   fragments[1] = "?OTR|00000000|00000001|00000002,00002,00002,more,";
 
-  fragment_context_s *context;
-  context = otrng_fragment_context_new();
+  fragment_context_s *context = NULL;
+  list_element_s *list = NULL;
 
   char *unfrag = NULL;
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, context, fragments[0], 2));
+      otrng_unfragment_message(&unfrag, &list, fragments[0], 2));
 
+  context = list->data;
   g_assert_cmpint(context->total, ==, 2);
   g_assert_cmpint(context->count, ==, 1);
   otrng_assert(!unfrag);
 
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, context, fragments[1], 2));
+      otrng_unfragment_message(&unfrag, &list, fragments[1], 2));
 
-  g_assert_cmpint(context->total, ==, 2);
-  g_assert_cmpint(context->count, ==, 2);
-  g_assert_cmpint(context->total_message_len, ==, 8);
+  otrng_assert(otrng_list_len(list) == 0);
   g_assert_cmpstr(unfrag, ==, "one more");
 
   free(unfrag);
-  unfrag = NULL;
-  otrng_fragment_context_free(context);
+  otrng_list_free_nodes(list);
 }
 
 void test_defragment_single_fragment(void) {
   string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
 
-  fragment_context_s *context;
-  context = otrng_fragment_context_new();
-
+  list_element_s *list = NULL;
   char *unfrag = NULL;
-  otrng_assert_is_success(otrng_unfragment_message(&unfrag, context, msg, 2));
 
-  g_assert_cmpint(context->total, ==, 1);
-  g_assert_cmpint(context->count, ==, 1);
-  g_assert_cmpint(context->total_message_len, ==, 9);
+  otrng_assert_is_success(otrng_unfragment_message(&unfrag, &list, msg, 2));
+
+  otrng_assert(otrng_list_len(list) == 0);
   g_assert_cmpstr(unfrag, ==, "small lol");
 
   free(unfrag);
-  unfrag = NULL;
-  otrng_fragment_context_free(context);
+  otrng_list_free_nodes(list);
 }
 
 void test_defragment_without_comma_fails(void) {
   string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,blergh";
 
-  fragment_context_s *context;
-  context = otrng_fragment_context_new();
+  list_element_s *list = NULL;
 
   char *unfrag = NULL;
-  otrng_assert_is_error(otrng_unfragment_message(&unfrag, context, msg, 2));
-  g_assert_cmpint(context->total, ==, 0);
-  g_assert_cmpint(context->count, ==, 0);
-  g_assert_cmpint(context->total_message_len, ==, 0);
+  otrng_assert_is_error(otrng_unfragment_message(&unfrag, &list, msg, 2));
+
+  otrng_assert(list == NULL);
   g_assert_cmpstr(unfrag, ==, NULL);
 
   free(unfrag);
   unfrag = NULL;
-  otrng_fragment_context_free(context);
+  otrng_list_free_nodes(list);
 }
 
 void test_defragment_with_different_total_fails(void) {
@@ -124,23 +116,28 @@ void test_defragment_with_different_total_fails(void) {
   fragments[0] = "?OTR|00000000|00000001|00000002,00001,00003,mess with,";
   fragments[1] = "?OTR|00000000|00000001|00000002,00002,00002,total,";
 
-  fragment_context_s *context;
-  context = otrng_fragment_context_new();
+  fragment_context_s *context = NULL;
+  list_element_s *list = NULL;
 
   char *unfrag = NULL;
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, context, fragments[0], 2));
+      otrng_unfragment_message(&unfrag, &list, fragments[0], 2));
   otrng_assert(!unfrag);
+
+  context = list->data;
   g_assert_cmpint(context->total, ==, 3);
   g_assert_cmpint(context->count, ==, 1);
 
   otrng_assert_is_error(
-      otrng_unfragment_message(&unfrag, context, fragments[1], 2));
+      otrng_unfragment_message(&unfrag, &list, fragments[1], 2));
+
+  context = list->data;
   otrng_assert(!unfrag);
   g_assert_cmpint(context->total, ==, 3);
   g_assert_cmpint(context->count, ==, 1);
 
   otrng_fragment_context_free(context);
+  otrng_list_free_nodes(list);
 }
 
 void test_defragment_fragment_twice_fails(void) {
@@ -148,23 +145,27 @@ void test_defragment_fragment_twice_fails(void) {
   fragments[0] = "?OTR|00000000|00000001|00000002,00001,00002,same twice,";
   fragments[1] = "?OTR|00000000|00000001|00000002,00001,00002,same twice,";
 
-  fragment_context_s *context;
-  context = otrng_fragment_context_new();
+  fragment_context_s *context = NULL;
+  list_element_s *list = NULL;
 
   char *unfrag = NULL;
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, context, fragments[0], 2));
+      otrng_unfragment_message(&unfrag, &list, fragments[0], 2));
+
+  context = list->data;
   otrng_assert(!unfrag);
   g_assert_cmpint(context->total, ==, 2);
   g_assert_cmpint(context->count, ==, 1);
 
   otrng_assert_is_error(
-      otrng_unfragment_message(&unfrag, context, fragments[1], 2));
+      otrng_unfragment_message(&unfrag, &list, fragments[1], 2));
+
   otrng_assert(!unfrag);
   g_assert_cmpint(context->total, ==, 2);
   g_assert_cmpint(context->count, ==, 1);
 
   otrng_fragment_context_free(context);
+  otrng_list_free_nodes(list);
 }
 
 void test_defragment_out_of_order_message(void) {
@@ -173,68 +174,96 @@ void test_defragment_out_of_order_message(void) {
   fragments[1] = "?OTR|00000000|00000001|00000002,00002,00003,fragment ,";
   fragments[2] = "?OTR|00000000|00000001|00000002,00001,00003,one more ,";
 
-  fragment_context_s *context;
-  context = otrng_fragment_context_new();
+  fragment_context_s *context = NULL;
+  list_element_s *list = NULL;
 
   char *unfrag = NULL;
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, context, fragments[0], 2));
+      otrng_unfragment_message(&unfrag, &list, fragments[0], 2));
+
+  context = list->data;
   otrng_assert(!unfrag);
   g_assert_cmpint(context->total, ==, 3);
   g_assert_cmpint(context->count, ==, 1);
 
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, context, fragments[1], 2));
+      otrng_unfragment_message(&unfrag, &list, fragments[1], 2));
   otrng_assert(!unfrag);
   g_assert_cmpint(context->total, ==, 3);
   g_assert_cmpint(context->count, ==, 2);
 
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, context, fragments[2], 2));
+      otrng_unfragment_message(&unfrag, &list, fragments[2], 2));
   g_assert_cmpstr(unfrag, ==, "one more fragment send");
-  g_assert_cmpint(context->total, ==, 3);
-  g_assert_cmpint(context->count, ==, 3);
-  g_assert_cmpint(context->total_message_len, ==, 22);
+
+  otrng_assert(otrng_list_len(list) == 0);
 
   free(unfrag);
-  unfrag = NULL;
-  otrng_fragment_context_free(context);
+  otrng_list_free_nodes(list);
 }
 
 void test_defragment_fails_for_invalid_tag(void) {
   string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
 
-  fragment_context_s *context;
-  context = otrng_fragment_context_new();
-
+  list_element_s *list = NULL;
   char *unfrag = NULL;
-  otrng_assert_is_error(otrng_unfragment_message(&unfrag, context, msg, 1));
 
-  g_assert_cmpint(context->total, ==, 0);
-  g_assert_cmpint(context->count, ==, 0);
-  g_assert_cmpint(context->total_message_len, ==, 0);
+  otrng_assert_is_error(otrng_unfragment_message(&unfrag, &list, msg, 1));
+
+  otrng_assert(list == NULL);
   g_assert_cmpstr(unfrag, ==, NULL);
 
-  free(unfrag);
-  unfrag = NULL;
-  otrng_fragment_context_free(context);
+  otrng_list_free_nodes(list);
 }
 
 void test_defragment_regular_otr_message(void) {
   string_p msg = "?OTR:not a fragmented message.";
 
-  fragment_context_s *context;
-  context = otrng_fragment_context_new();
-
+  list_element_s *list = NULL;
   char *unfrag = NULL;
-  otrng_assert_is_success(otrng_unfragment_message(&unfrag, context, msg, 1));
 
-  g_assert_cmpint(context->total, ==, 0);
-  g_assert_cmpint(context->count, ==, 0);
-  g_assert_cmpint(context->total_message_len, ==, 0);
+  otrng_assert_is_success(otrng_unfragment_message(&unfrag, &list, msg, 1));
+
+  otrng_assert(list == NULL);
   g_assert_cmpstr(unfrag, ==, msg);
 
   free(unfrag);
+  otrng_list_free_nodes(list);
+}
+
+void test_defragment_two_messages(void) {
+  string_p msg1_fragments[2];
+  string_p msg2_fragments[2];
+  msg1_fragments[0] = "?OTR|00000001|00000001|00000002,00001,00002,first ,";
+  msg1_fragments[1] = "?OTR|00000001|00000001|00000002,00002,00002,message,";
+  msg2_fragments[0] = "?OTR|00000002|00000001|00000002,00001,00002,second ,";
+  msg2_fragments[1] = "?OTR|00000002|00000001|00000002,00002,00002,message,";
+
+  list_element_s *list = NULL;
+
+  char *unfrag = NULL;
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, &list, msg1_fragments[0], 2));
+
+  otrng_assert(!unfrag);
+  otrng_assert(otrng_list_len(list) == 1);
+
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, &list, msg2_fragments[0], 2));
+  otrng_assert(!unfrag);
+  otrng_assert(otrng_list_len(list) == 2);
+
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, &list, msg2_fragments[1], 2));
+  g_assert_cmpstr(unfrag, ==, "second message");
+  otrng_assert(otrng_list_len(list) == 1);
+
+  otrng_assert_is_success(
+      otrng_unfragment_message(&unfrag, &list, msg1_fragments[1], 2));
+  g_assert_cmpstr(unfrag, ==, "first message");
+  otrng_assert(otrng_list_len(list) == 0);
+
+  free(unfrag);
   unfrag = NULL;
-  otrng_fragment_context_free(context);
+  otrng_list_free_nodes(list);
 }
