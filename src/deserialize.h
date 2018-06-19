@@ -49,7 +49,8 @@ INTERNAL otrng_err otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
 /*                                  size_t buflen, size_t *read); */
 
 INTERNAL otrng_err otrng_deserialize_ec_point(ec_point_p point,
-                                              const uint8_t *serialized);
+                                              const uint8_t *serialized,
+                                              size_t buflen);
 
 INTERNAL otrng_err otrng_deserialize_otrng_public_key(otrng_public_key_p pub,
                                                       const uint8_t *serialized,

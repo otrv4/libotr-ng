@@ -156,7 +156,12 @@ INTERNAL otrng_err otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
 /* } */
 
 INTERNAL otrng_err otrng_deserialize_ec_point(ec_point_p point,
-                                              const uint8_t *serialized) {
+                                              const uint8_t *serialized,
+                                              size_t buflen) {
+  if (buflen < ED448_POINT_BYTES) {
+    return ERROR;
+  }
+
   return otrng_ec_point_decode(point, serialized);
 }
 
@@ -168,19 +173,19 @@ INTERNAL otrng_err otrng_deserialize_otrng_public_key(otrng_public_key_p pub,
   size_t r = 0;
   uint16_t pubkey_type = 0;
 
-  // TODO: @refactoring prob unneccessary
   if (ser_len < ED448_PUBKEY_BYTES) {
     return ERROR;
   }
 
   otrng_deserialize_uint16(&pubkey_type, cursor, ser_len, &r);
   cursor += r;
+  ser_len -= r;
 
   if (ED448_PUBKEY_TYPE != pubkey_type) {
     return ERROR;
   }
 
-  if (!otrng_deserialize_ec_point(pub, cursor)) {
+  if (!otrng_deserialize_ec_point(pub, cursor, ser_len)) {
     return ERROR;
   }
 
@@ -205,12 +210,13 @@ INTERNAL otrng_err otrng_deserialize_otrng_shared_prekey(
 
   otrng_deserialize_uint16(&shared_prekey_type, cursor, ser_len, &r);
   cursor += r;
+  ser_len -= r;
 
   if (ED448_SHARED_PREKEY_TYPE != shared_prekey_type) {
     return ERROR;
   }
 
-  if (!otrng_deserialize_ec_point(shared_prekey, cursor)) {
+  if (!otrng_deserialize_ec_point(shared_prekey, cursor, ser_len)) {
     return ERROR;
   }
 

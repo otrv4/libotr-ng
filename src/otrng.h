@@ -23,6 +23,7 @@
 
 #include "client_profile.h"
 #include "client_state.h"
+#include "data_message.h"
 #include "fragment.h"
 #include "key_management.h"
 #include "keys.h"
@@ -256,6 +257,18 @@ tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
                                         uint8_t *ssid, const uint8_t *secret,
                                         const size_t secretlen);
 
+tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
+                                        smp_context_p smp,
+                                        const client_profile_s *our_profile,
+                                        const client_profile_s *their_profile,
+                                        uint8_t *ssid, const uint8_t *secret,
+                                        const size_t secretlen);
+
+tstatic otrng_err serialize_and_encode_data_msg(string_p *dst,
+                                                const m_mac_key_p mac_key,
+                                                uint8_t *to_reveal_mac_keys,
+                                                size_t to_reveal_mac_keys_len,
+                                                const data_message_s *data_msg);
 #endif
 
 #endif

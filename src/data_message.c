@@ -197,7 +197,7 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(dst->ecdh, cursor)) {
+  if (!otrng_deserialize_ec_point(dst->ecdh, cursor, len)) {
     return ERROR;
   }
 

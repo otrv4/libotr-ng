@@ -214,7 +214,7 @@ tstatic otrng_err smp_msg_1_deserialize(smp_msg_1_s *msg, const tlv_s *tlv) {
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(msg->G2a, cursor)) {
+  if (!otrng_deserialize_ec_point(msg->G2a, cursor, len)) {
     return ERROR;
   }
 
@@ -235,7 +235,7 @@ tstatic otrng_err smp_msg_1_deserialize(smp_msg_1_s *msg, const tlv_s *tlv) {
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
-  if (!otrng_deserialize_ec_point(msg->G3a, cursor)) {
+  if (!otrng_deserialize_ec_point(msg->G3a, cursor, len)) {
     return ERROR;
   }
 
@@ -446,7 +446,7 @@ tstatic otrng_err smp_msg_2_deserialize(smp_msg_2_s *msg, const tlv_s *tlv) {
   const uint8_t *cursor = tlv->data;
   uint16_t len = tlv->len;
 
-  if (!otrng_deserialize_ec_point(msg->G2b, cursor)) {
+  if (!otrng_deserialize_ec_point(msg->G2b, cursor, len)) {
     return ERROR;
   }
 
@@ -467,7 +467,7 @@ tstatic otrng_err smp_msg_2_deserialize(smp_msg_2_s *msg, const tlv_s *tlv) {
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
-  if (!otrng_deserialize_ec_point(msg->G3b, cursor)) {
+  if (!otrng_deserialize_ec_point(msg->G3b, cursor, len)) {
     return ERROR;
   }
 
@@ -488,14 +488,14 @@ tstatic otrng_err smp_msg_2_deserialize(smp_msg_2_s *msg, const tlv_s *tlv) {
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
-  if (!otrng_deserialize_ec_point(msg->Pb, cursor)) {
+  if (!otrng_deserialize_ec_point(msg->Pb, cursor, len)) {
     return ERROR;
   }
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  if (!otrng_deserialize_ec_point(msg->Qb, cursor)) {
+  if (!otrng_deserialize_ec_point(msg->Qb, cursor, len)) {
     return ERROR;
   }
 
@@ -716,14 +716,14 @@ tstatic otrng_err smp_msg_3_deserialize(smp_msg_3_s *dst, const tlv_s *tlv) {
   const uint8_t *cursor = tlv->data;
   uint16_t len = tlv->len;
 
-  if (!otrng_deserialize_ec_point(dst->Pa, cursor)) {
+  if (!otrng_deserialize_ec_point(dst->Pa, cursor, len)) {
     return ERROR;
   }
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  if (!otrng_deserialize_ec_point(dst->Qa, cursor)) {
+  if (!otrng_deserialize_ec_point(dst->Qa, cursor, len)) {
     return ERROR;
   }
 
@@ -751,7 +751,7 @@ tstatic otrng_err smp_msg_3_deserialize(smp_msg_3_s *dst, const tlv_s *tlv) {
   cursor += ED448_SCALAR_BYTES;
   len -= ED448_SCALAR_BYTES;
 
-  if (!otrng_deserialize_ec_point(dst->Ra, cursor)) {
+  if (!otrng_deserialize_ec_point(dst->Ra, cursor, len)) {
     return ERROR;
   }
 
@@ -902,7 +902,7 @@ tstatic otrng_err smp_msg_4_deserialize(smp_msg_4_s *dst, const tlv_s *tlv) {
   uint8_t *cursor = tlv->data;
   size_t len = tlv->len;
 
-  if (!otrng_deserialize_ec_point(dst->Rb, cursor)) {
+  if (!otrng_deserialize_ec_point(dst->Rb, cursor, len)) {
     return ERROR;
   }
 

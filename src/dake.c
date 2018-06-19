@@ -178,7 +178,7 @@ INTERNAL otrng_err otrng_dake_identity_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(dst->Y, cursor)) {
+  if (!otrng_deserialize_ec_point(dst->Y, cursor, len)) {
     return ERROR;
   }
 
@@ -306,7 +306,7 @@ INTERNAL otrng_err otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(dst->X, cursor)) {
+  if (!otrng_deserialize_ec_point(dst->X, cursor, len)) {
     return ERROR;
   }
 
@@ -540,7 +540,7 @@ INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(dst->Y, cursor)) {
+  if (!otrng_deserialize_ec_point(dst->Y, cursor, len)) {
     return ERROR;
   }
 
@@ -714,7 +714,7 @@ tstatic size_t xzdh_encrypted_message_deserialize(
   cursor += r;
   len -= r;
 
-  if (!otrng_deserialize_ec_point(dst->ecdh, cursor)) {
+  if (!otrng_deserialize_ec_point(dst->ecdh, cursor, len)) {
     return 0;
   }
 
@@ -812,7 +812,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(dst->X, cursor)) {
+  if (!otrng_deserialize_ec_point(dst->X, cursor, len)) {
     return ERROR;
   }
 
