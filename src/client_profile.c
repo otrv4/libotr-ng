@@ -53,7 +53,7 @@ tstatic client_profile_s *client_profile_new(const string_p versions) {
 
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
                                         const client_profile_s *src) {
-  // TODO should we set dst to a valid (but empty) profile?
+  // TODO: @client_profile should we set dst to a valid (but empty) profile?
   if (!src) {
     return;
   }
@@ -122,7 +122,7 @@ tstatic otrng_err client_profile_body_asprintf(
 
 INTERNAL otrng_err otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
-  // TODO: should it checked here for signature?
+  // TODO: @client_profile should it checked here for signature?
   if (!(profile->signature > 0)) {
     return ERROR;
   }
@@ -206,7 +206,7 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
 
     walked += read;
 
-    // TODO: check the len
+    // TODO: @client_profile check the len
     if (buflen - walked < sizeof(eddsa_signature_p)) {
       continue;
     }
@@ -248,8 +248,8 @@ tstatic otrng_err client_profile_sign(client_profile_s *profile,
   return SUCCESS;
 }
 
-// TODO: I dont think this needs the data structure. Could verify from the
-// deserialized bytes.
+// TODO: @client_profile I dont think this needs the data structure. Could
+// verify from the deserialized bytes.
 INTERNAL otrng_bool
 otrng_client_profile_verify_signature(const client_profile_s *profile) {
   uint8_t *body = NULL;
@@ -307,7 +307,8 @@ tstatic otrng_bool rollback_detected(const char *versions) {
   return otrng_false;
 }
 
-// TODO: check if client profile is validate in every place it needs to
+// TODO: client_profile check if client profile is validate in every place it
+// needs to
 INTERNAL otrng_bool
 otrng_client_profile_valid(const client_profile_s *profile) {
   if (expired(profile->expires)) {
@@ -318,16 +319,14 @@ otrng_client_profile_valid(const client_profile_s *profile) {
     return otrng_false;
   }
 
-  // TODO: Validate that each Ed448 Public Key are on the curve
-  // Ed448-Goldilocks.
   if (!otrng_ec_point_valid(profile->long_term_pub_key)) {
     return otrng_false;
   }
 
-  // TODO: If the Transitional Signature is present, verify its validity using
-  // the OTRv3 DSA key.
-  // TODO: How are we going to have access to the OTRv3 long-term key in order
-  // to validate this signature?
+  // TODO: @client_profile If the Transitional Signature is present, verify its
+  // validity using the OTRv3 DSA key.
+  // TODO: @client_profile @spec How are we going to have access to the OTRv3
+  // long-term key in order to validate this signature?
 
   /* Verify their profile is valid (and not expired). */
   return otrng_client_profile_verify_signature(profile);

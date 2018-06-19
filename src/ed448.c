@@ -76,7 +76,8 @@ INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p) {
 }
 
 INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_p p) {
-  // TODO: this does not check the size of enc and may overflow buffer.
+  // TODO: @sanitizer @refactoring this does not check the size of enc and may
+  // overflow buffer.
   goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(enc, p);
 }
 
@@ -136,9 +137,9 @@ otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
   */
 
   uint8_t h[ED448_PRIVATE_BYTES];
-  shake_256_kdf1(h, ED448_PRIVATE_BYTES, 0x01, sym, ED448_PRIVATE_BYTES);
+  shake_256_kdf1(h, ED448_PRIVATE_BYTES, usage_SK, sym, ED448_PRIVATE_BYTES);
 
-  // TODO: This is not the function we want here.
+  // TODO: @spec @sanitizer This is not the function we want here.
   // It hashes and clamps according to RFC 8032, so `h` will be hashed again,
   // which is not what we say in the spec.
   otrng_ec_scalar_derive_from_secret(keypair->priv, h);
@@ -170,8 +171,9 @@ otrng_ecdh_keypair_generate_their(ec_point_p keypair,
 
   uint8_t h[ED448_PRIVATE_BYTES];
   ec_scalar_p priv;
-  shake_256_kdf1(h, ED448_PRIVATE_BYTES, 0x01, sym, ED448_PRIVATE_BYTES);
-  // TODO: has the same problem already mentioned in otrng_ecdh_keypair_generate
+  shake_256_kdf1(h, ED448_PRIVATE_BYTES, usage_SK, sym, ED448_PRIVATE_BYTES);
+  // TODO: @spec @sanitizer has the same problem already mentioned in
+  // otrng_ecdh_keypair_generate
   otrng_ec_scalar_derive_from_secret(priv, h);
 
   uint8_t pub[ED448_POINT_BYTES];

@@ -49,6 +49,9 @@ INTERNAL void otrng_smp_context_init(smp_context_p smp) {
   otrng_ec_bzero(smp->Qb, ED448_POINT_BYTES);
   otrng_ec_bzero(smp->Pa_Pb, ED448_POINT_BYTES);
   otrng_ec_bzero(smp->Qa_Qb, ED448_POINT_BYTES);
+
+  smp->progress = 0;
+  smp->msg1 = NULL;
 }
 
 INTERNAL void otrng_smp_destroy(smp_context_p smp) {
@@ -1031,7 +1034,7 @@ INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
 
   *to_send = NULL;
 
-  // TODO: this only return error due to deserialization. It
+  // TODO: @erroring @factoring this only return error due to deserialization. It
   // should not happen
   generate_smp_msg_2(msg_2, smp->msg1, smp);
   if (!smp_msg_2_asprintf(&buff, &bufflen, msg_2)) {
@@ -1058,7 +1061,7 @@ tstatic otrng_smp_event_t receive_smp_msg_2(smp_msg_2_s *msg_2,
                                             const tlv_s *tlv,
                                             smp_context_p smp) {
   if (smp->state != SMPSTATE_EXPECT2) {
-    return OTRNG_SMPEVENT_ERROR; // TODO: this should abort
+    return OTRNG_SMPEVENT_ERROR; // TODO: @smp this should abort
   }
 
   if (!smp_msg_2_deserialize(msg_2, tlv)) {
@@ -1114,7 +1117,7 @@ tstatic otrng_smp_event_t receive_smp_msg_3(smp_msg_3_s *msg_3,
                                             const tlv_s *tlv,
                                             smp_context_p smp) {
   if (smp->state != SMPSTATE_EXPECT3) {
-    return OTRNG_SMPEVENT_ERROR; // TODO: this errors, though it should abort
+    return OTRNG_SMPEVENT_ERROR; // TODO: @smp this errors, though it should abort
   }
 
   if (!smp_msg_3_deserialize(msg_3, tlv)) {
@@ -1171,7 +1174,7 @@ tstatic otrng_smp_event_t receive_smp_msg_4(smp_msg_4_s *msg_4,
                                             const tlv_s *tlv,
                                             smp_context_p smp) {
   if (smp->state != SMPSTATE_EXPECT4) {
-    return OTRNG_SMPEVENT_ERROR; // TODO: this should abort
+    return OTRNG_SMPEVENT_ERROR; // TODO: @smp this should abort
   }
 
   if (!smp_msg_4_deserialize(msg_4, tlv)) {

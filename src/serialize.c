@@ -105,7 +105,7 @@ INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
   }
 
   // To OTR MPI
-  // TODO: Maybe gcrypt MPI already has some API for this.
+  // TODO: @refactoring Maybe gcrypt MPI already has some API for this.
   // gcry_mpi_print with a different format, maybe?
   otrng_mpi_p mpi;
   otrng_mpi_set(mpi, buf, w);

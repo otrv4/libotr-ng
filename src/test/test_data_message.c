@@ -76,7 +76,6 @@ static data_message_s *set_up_data_msg() {
 
   memset(data_msg->nonce, 0xF, sizeof(data_msg->nonce));
   data_msg->enc_msg = malloc(3);
-  // TODO: check this memset
   memset(data_msg->enc_msg, 0xE, 3);
   data_msg->enc_msg_len = 3;
 
@@ -188,7 +187,7 @@ void test_otrng_data_message_deserializes() {
       0x8c, 0xd6, 0x1a, 0x08, 0x26, 0x4f, 0x61, 0x32, 0xdb, 0xd2, 0x58,
       0x90, 0x7d, 0x1e, 0x97, 0x35, 0xd2, 0x38, 0x60, 0xa1};
   memcpy(data_msg->mac, mac_data, DATA_MSG_MAC_BYTES);
-  // TODO: realloc here?
+  // TODO: @c_logic realloc here?
   serialized = realloc(serialized, serlen + DATA_MSG_MAC_BYTES);
   memcpy(serialized + serlen, mac_data, DATA_MSG_MAC_BYTES);
 

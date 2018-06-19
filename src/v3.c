@@ -37,7 +37,7 @@ tstatic void gone_secure_cb_v3(const otrng_conversation_state_s *otr) {
   }
   otrng_client_callbacks_gone_secure(
       otr->client->callbacks,
-      otr->client->client_id); // TODO: should be conversation_id
+      otr->client->client_id); // TODO: @client should be conversation_id
 }
 
 tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *otr) {
@@ -46,7 +46,7 @@ tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *otr) {
   }
   otrng_client_callbacks_gone_insecure(
       otr->client->callbacks,
-      otr->client->client_id); // TODO: should be conversation_id
+      otr->client->client_id); // TODO: @client should be conversation_id
 }
 
 tstatic void fingerprint_seen_cb_v3(const v3_fingerprint_p fp,
@@ -56,7 +56,7 @@ tstatic void fingerprint_seen_cb_v3(const v3_fingerprint_p fp,
   }
   otrng_client_callbacks_fingerprint_seen_v3(
       otr->client->callbacks, fp,
-      otr->client->client_id); // TODO: should be conversation_id
+      otr->client->client_id); // TODO: @client should be conversation_id
 }
 
 tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
@@ -70,12 +70,12 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
   case OTRNG_SMPEVENT_ASK_FOR_SECRET:
     otrng_client_callbacks_smp_ask_for_secret(
         otr->client->callbacks,
-        otr->client->client_id); // TODO: should be conversation_id
+        otr->client->client_id); // TODO: @client should be conversation_id
     break;
   case OTRNG_SMPEVENT_ASK_FOR_ANSWER:
     otrng_client_callbacks_smp_ask_for_answer(
         otr->client->callbacks, question,
-        otr->client->client_id); // TODO: should be conversation_id
+        otr->client->client_id); // TODO: @client should be conversation_id
     break;
   case OTRNG_SMPEVENT_CHEATED:
   case OTRNG_SMPEVENT_IN_PROGRESS:
@@ -85,7 +85,7 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
   case OTRNG_SMPEVENT_ERROR:
     otrng_client_callbacks_smp_update(
         otr->client->callbacks, event, progress_percent,
-        otr->client->client_id); // TODO: should be conversation_id
+        otr->client->client_id); // TODO: @client should be conversation_id
     break;
   default:
     // OTRNG_SMPEVENT_NONE. Should not be used.
@@ -115,8 +115,8 @@ tstatic void received_symkey_cb_v3(const otrng_conversation_state_s *otr,
 }
 
 tstatic OtrlPolicy op_policy(void *opdata, ConnContext *context) {
-  // TODO: should we use OTRL_POLICY_DEFAULT?;
-  // TODO: Should an error restart AKE?
+  // TODO: @policy should we use OTRL_POLICY_DEFAULT?;
+  // TODO: @policy Should an error restart AKE?
   return OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_WHITESPACE_START_AKE;
 }
 
@@ -127,7 +127,7 @@ tstatic void from_injected_to_send(char **to_send) {
     return;
   }
 
-  // TODO: As this is stored from a callback it MAY be the case a message
+  // TODO: @client As this is stored from a callback it MAY be the case a message
   // was lost (if the callback was invoked multiple times before we consume
   // this injected_to_send). Ideally this would be a list.
   *to_send = otrng_strdup(injected_to_send);
@@ -138,7 +138,7 @@ tstatic void from_injected_to_send(char **to_send) {
 tstatic void op_inject(void *opdata, const char *accountname,
                        const char *protocol, const char *recipient,
                        const char *message) {
-  // TODO: This is where we should ADD a new element to the list.
+  // TODO: @client This is where we should ADD a new element to the list.
   // We are just ignoring for now.
   if (injected_to_send) {
     free(injected_to_send);
@@ -483,7 +483,7 @@ INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn) {
 INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,
                                          const tlv_list_s *tlvs,
                                          otrng_v3_conn_s *conn) {
-  // TODO: convert TLVs
+  // TODO: @client convert TLVs
   OtrlTLV *tlvsv3 = NULL;
 
   if (!conn) {
@@ -509,7 +509,7 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
                                             const string_p message,
                                             otrng_v3_conn_s *conn) {
   int ignore_message;
-  OtrlTLV *tlvsv3 = NULL; // TODO: convert to v4 tlvs
+  OtrlTLV *tlvsv3 = NULL; // TODO: @client convert to v4 tlvs
   *to_send = NULL;
 
   if (!conn) {
@@ -533,14 +533,14 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
   otrl_tlv_free(tlvsv3);
   otrl_message_free(newmessage);
 
-  // TODO: Here we can use contextp to get information we might need about the
+  // TODO: @client Here we can use contextp to get information we might need about the
   // state, for example (context->msgstate)
 
   return SUCCESS;
 }
 
 INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn) {
-  // TODO: there is also: otrl_message_disconnect, which only disconnects one
+  // TODO: @client there is also: otrl_message_disconnect, which only disconnects one
   // instance
   otrl_message_disconnect_all_instances(conn->state->user_state, conn->ops,
                                         conn->opdata, conn->state->account_name,

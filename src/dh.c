@@ -161,7 +161,7 @@ INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
     keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
     gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
 
-    // TODO: is this needed?
+    // TODO: @freeing is this needed?
     gcry_mpi_release(privkey);
   }
 
@@ -183,8 +183,8 @@ INTERNAL void otrng_dh_keypair_destroy(dh_keypair_p keypair) {
   dh_pub_key_destroy(keypair);
 }
 
-// TODO: This should return how many bytes were  written rather than adding
-// leading zeroes.
+// TODO: @refactoring @sanitizer This should return how many bytes were  written
+// rather than adding leading zeroes.
 INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared, size_t shared_bytes,
                                           const dh_private_key_p our_priv,
                                           const dh_public_key_p their_pub) {

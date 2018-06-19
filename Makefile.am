@@ -80,7 +80,7 @@ check-valgrind-drd: check
 
 # Finds todo items
 TODO_TYPES ?= HACK TODO @todo FIXME BUG XXX PERF FUTURE REMOVE MAGIC UNIFY
-TODO_LOCATIONS ?= src/*.c src/test/*.c Makefile.am
+TODO_LOCATIONS ?= src/*.c src/test/*.c Makefile.am src/*.h src/test/*.h src/test/Makefile.am
 todo:
 	@(find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c') | xargs egrep --color=auto -w \
 		`echo $(TODO_TYPES) | tr ' ' '|'`

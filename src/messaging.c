@@ -208,6 +208,7 @@ API int otrng_user_state_private_key_v4_read_FILEp(
   return 0;
 }
 
+// TODO: @instance_tag
 /* int otrng_user_state_add_instance_tag(otrng_user_state_s *state, void
  * *client_id, */
 /*                                      unsigned int instag) { */
@@ -220,7 +221,6 @@ API int otrng_user_state_private_key_v4_read_FILEp(
 /*                                               void *client_id) { */
 /*   UNUSED_ARG(state); */
 /*   UNUSED_ARG(client_id); */
-/*   // TODO */
 /*   return 0; */
 /* } */
 

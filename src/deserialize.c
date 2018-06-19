@@ -168,7 +168,7 @@ INTERNAL otrng_err otrng_deserialize_otrng_public_key(otrng_public_key_p pub,
   size_t r = 0;
   uint16_t pubkey_type = 0;
 
-  // TODO: prob unneccessary
+  // TODO: @refactoring prob unneccessary
   if (ser_len < ED448_PUBKEY_BYTES) {
     return ERROR;
   }
@@ -198,7 +198,7 @@ INTERNAL otrng_err otrng_deserialize_otrng_shared_prekey(
   size_t r = 0;
   uint16_t shared_prekey_type = 0;
 
-  // TODO: prob unneccessary
+  // TODO: @refactoring prob unneccessary
   if (ser_len < ED448_PUBKEY_BYTES) {
     return ERROR;
   }

@@ -86,7 +86,6 @@ static void calculate_ri(goldilocks_448_scalar_p dst,
   goldilocks_448_scalar_destroy(if_secret);
 }
 
-// TODO: we are  missing here 0x1D
 void otrng_rsig_calculate_c(
     goldilocks_448_scalar_p dst, const goldilocks_448_point_p A1,
     const goldilocks_448_point_p A2, const goldilocks_448_point_p A3,

@@ -81,7 +81,7 @@ tstatic void create_privkey_cb_v4(const otrng_conversation_state_s *conv) {
     return;
   }
 
-  // TODO: Change to receive conv->client
+  // TODO: @client Change to receive conv->client
   conv->client->callbacks->create_privkey(conv->client->client_id);
 }
 
@@ -90,7 +90,7 @@ tstatic void create_shared_prekey(const otrng_conversation_state_s *conv) {
     return;
   }
 
-  // TODO: The callback may not be invoked at all if the mode does not
+  // TODO: @client The callback may not be invoked at all if the mode does not
   // support non-interactive DAKE, but this is for later.
   conv->client->callbacks->create_shared_prekey(conv);
 }
@@ -247,7 +247,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
     return NULL;
   }
 
-  // TODO: Move to constructor
+  // TODO: @refactoring Move to constructor
   otr->conversation = malloc(sizeof(otrng_conversation_state_s));
   otr->conversation->client = state;
   otr->conversation->peer = NULL;
@@ -301,10 +301,10 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   otrng_list_free(otr->fragmentation_contexts, free_fragment_context);
   otr->fragmentation_contexts = NULL;
 
-  free(otr->sending_init_msg); // TODO: should we free this after being used by
-                               // phi?
-  free(otr->receiving_init_msg); // TODO: should we free this after being used
-                                 // by phi?
+  free(otr->sending_init_msg); // TODO: @freeing should we free this after being
+                               // used by phi?
+  free(otr->receiving_init_msg); // TODO: @freeing should we free this after
+                                 // being used by phi?
 
   otrng_v3_conn_free(otr->v3_conn);
   otr->v3_conn = NULL;
@@ -406,6 +406,7 @@ API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
 
   otr->sending_init_msg = otrng_strdup(buff);
   *whitespace_tag = buff;
+
   return SUCCESS;
 }
 
@@ -471,7 +472,7 @@ tstatic bool message_is_query(const string_p message) {
   return strstr(message, query_header) != NULL;
 }
 
-// TODO: should this error?
+// TODO: @refactoring should this error?
 tstatic void set_running_version_from_query_msg(otrng_s *otr,
                                                 const string_p message) {
   if (allow_version(otr, OTRNG_ALLOW_V4) && strstr(message, "4")) {
@@ -530,7 +531,7 @@ INTERNAL void otrng_response_free(otrng_response_s *response) {
   free(response);
 }
 
-// TODO: Is not receiving a plaintext a problem?
+// TODO: @erroing Is not receiving a plaintext a problem?
 tstatic void receive_plaintext(otrng_response_s *response,
                                const string_p message, const otrng_s *otr) {
   set_to_display(response, message);
@@ -620,7 +621,7 @@ tstatic otrng_err receive_query_message(otrng_response_s *response,
                                         const string_p message, otrng_s *otr) {
   set_running_version_from_query_msg(otr, message);
 
-  // TODO: still unsure about this
+  // TODO: @refactoring still unsure about this
   if (!otr->receiving_init_msg) {
     otr->receiving_init_msg = strdup(message);
   }
@@ -700,13 +701,13 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   k_ecdh_p k_ecdh;
   k_dh_p k_dh;
 
-  // TODO: this will be calculated again later
+  // TODO: @refactoring this will be calculated again later
   if (!otrng_ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh,
                                 otr->keys->their_ecdh)) {
     return ERROR;
   }
 
-  // TODO: this will be calculated again later
+  // TODO: @refactoring this will be calculated again later
   if (!otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), otr->keys->our_dh->priv,
                               otr->keys->their_dh)) {
     return ERROR;
@@ -734,7 +735,7 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
     return ERROR;
   }
 
-  // TODO: refactor this
+  // TODO: @refactoring refactor this
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, 0x0C);
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
@@ -804,7 +805,7 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
     return ERROR;
   }
 
-  // TODO: message is an UTF-8 string. Is there any problem to cast
+  // TODO: @c_logic message is an UTF-8 string. Is there any problem to cast
   // it to (unsigned char *)
   // encrypted_message = XSalsa20_Enc(MKenc, nonce, m)
   int err =
@@ -861,7 +862,7 @@ tstatic otrng_err encrypt_msg_on_non_interactive_auth(
   sodium_memzero(mac_key, sizeof(m_mac_key_p));
   memcpy(auth->nonce, nonce, DATA_MSG_NONCE_BYTES);
 
-  // TODO: message is an UTF-8 string. Is there any problem to cast
+  // TODO: c_logic message is an UTF-8 string. Is there any problem to cast
   // it to (unsigned char *)?
   int err = crypto_stream_xor(cipher, message, message_len, nonce, enc_key);
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
@@ -924,8 +925,9 @@ tstatic otrng_err build_non_interactive_auth_message(
   auth->long_term_key_id = otr->their_client_profile->id;
   auth->prekey_profile_id = otr->their_prekey_profile->id;
 
-  // TODO: This assumes tmp_key is properly initialized in the otr state.
-  // This function should only be called if tmp_key is properly initialized.
+  // TODO: @initialization This assumes tmp_key is properly initialized in the
+  // otr state. This function should only be called if tmp_key is properly
+  // initialized.
 
   /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
   uint8_t auth_mac_k[HASH_BYTES];
@@ -1005,8 +1007,8 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
   return ret;
 }
 
-// TODO: Should maybe return a serialized ensemble, ready to publish to the
-// server
+// TODO: @non_interactive Should maybe return a serialized ensemble, ready to
+// publish to the server
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   prekey_ensemble_s *e = malloc(sizeof(prekey_ensemble_s));
   if (!e) {
@@ -1026,8 +1028,8 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
     return NULL;
   }
 
-  // TODO: should this ID be random? It should probably be unique for us, so
-  // we need to store this in client state (?)
+  // TODO: @client @non_interactive should this ID be random? It should probably
+  // be unique for us, so we need to store this in client state (?)
   e->message->id = 0x301;
 
   otrng_client_state_s *state = otr->conversation->client;
@@ -1077,7 +1079,7 @@ set_their_prekey_profile(const otrng_prekey_profile_s *profile, otrng_s *otr) {
 
   otrng_prekey_profile_copy(otr->their_prekey_profile, profile);
 
-  // TODO: Extract otrng_key_manager_set_their_shared_prekey()
+  // TODO: @refactoring Extract otrng_key_manager_set_their_shared_prekey()
   otrng_ec_point_copy(otr->keys->their_shared_prekey,
                       otr->their_prekey_profile->shared_prekey);
 
@@ -1090,15 +1092,16 @@ tstatic otrng_err receive_prekey_ensemble(const prekey_ensemble_s *ensemble,
     return ERROR;
   }
 
-  // TODO: As part of validating the prekey ensemble, we should also:
+  // TODO: @client_profile As part of validating the prekey ensemble, we should
+  // also:
   // 1. If the Transitional Signature is present, verify its validity using the
   // OTRv3 DSA key.
   //    (the OTRv3 key needed to validate the signature should be somewhere in
   //    client_state maybe).
   // 1. Check if the Client Profile's version is supported by the receiver.
 
-  // TODO: Decide whether to send a message using this Prekey Ensemble if the
-  // long-term key within the Client Profile is trusted or not.
+  // TODO: @non_interactive Decide whether to send a message using this Prekey
+  // Ensemble if the long-term key within the Client Profile is trusted or not.
   // Maybe use a callback for this.
 
   if (!set_their_client_profile(ensemble->client_profile, otr)) {
@@ -1123,7 +1126,8 @@ API otrng_err otrng_send_offline_message(string_p *dst,
   *dst = NULL;
   size_t clen = (strcmp(message, "") == 0) ? 0 : strlen(message) + 1;
 
-  // TODO: Would deserialize the received ensemble and set the running version
+  // TODO: @non_interactive Would deserialize the received ensemble and set the
+  // running version
   otr->running_version = OTRNG_VERSION_4;
 
   if (!receive_prekey_ensemble(ensemble, otr)) {
@@ -1134,7 +1138,7 @@ API otrng_err otrng_send_offline_message(string_p *dst,
                                              clen, otr);
 }
 
-// TODO: REMOVE
+// TODO: @non_interactive REMOVE
 API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
                                                   const string_p message,
                                                   otrng_s *otr) {
@@ -1150,14 +1154,12 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   k_ecdh_p tmp_ecdh_k1;
   k_ecdh_p tmp_ecdh_k2;
 
-  // TODO: this workaround is not the nicest there is
-  // TODO: this will be calculated again later
+  // TODO: @refactoring this workaround is not the nicest there is
   if (!otrng_ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh,
                                 otr->keys->their_ecdh)) {
     return ERROR;
   }
 
-  // TODO: this will be calculated again later
   if (!otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), otr->keys->our_dh->priv,
                               otr->keys->their_dh)) {
     return ERROR;
@@ -1208,7 +1210,7 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   return SUCCESS;
 }
 
-// TODO: check instance tags
+// TODO: @instance_tags check instance tags
 tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   char *msg = NULL;
   char *err_msg = NULL;
@@ -1348,7 +1350,7 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
     return ERROR;
   }
 
-  // TODO: this should send the non interactive auth and decide
+  // TODO: @non_interactive this should send the non interactive auth and decide
   // when the message is attached
 
   return SUCCESS;
@@ -1430,7 +1432,7 @@ tstatic otrng_err decrypt_non_interactive_auth_message(
                                       OTRNG_RECEIVING, notif);
   otr->keys->k++;
 
-  // TODO: What if auth->enc_msg_len == 0?
+  // TODO: @initialization What if auth->enc_msg_len == 0?
   uint8_t *plain = malloc(auth->enc_msg_len);
   if (!plain) {
     return ERROR;
@@ -1536,9 +1538,9 @@ tstatic otrng_err non_interactive_auth_message_received(
   // Delete the stored prekeys for this ID so they can't be used again.
   delete_my_prekey_message_by_id(auth->prekey_message_id, state);
 
-  // TODO: Should probably compare to prekey->sender_instance_tag because
-  // our instance tag may have changed since we generated the prekey message
-  // with ID = X?
+  // TODO: @instance_tag Should probably compare to prekey->sender_instance_tag
+  // because our instance tag may have changed since we generated the prekey
+  // message with ID = X?
   if (auth->receiver_instance_tag != otr->our_instance_tag) {
     return SUCCESS;
   }
@@ -1551,7 +1553,7 @@ tstatic otrng_err non_interactive_auth_message_received(
   otrng_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
 
-  // TODO: Extract function to set_their_client_profile
+  // TODO: @client_profile Extract function to set_their_client_profile
   otr->their_client_profile = malloc(sizeof(client_profile_s));
   if (!otr->their_client_profile) {
     return ERROR;
@@ -1571,7 +1573,7 @@ tstatic otrng_err non_interactive_auth_message_received(
     return ERROR;
   }
 
-  // TODO: Why ratcheting BEFORE the message received is valid?
+  // TODO: @non_interactive Why ratcheting BEFORE the message received is valid?
   if (!double_ratcheting_init(otr, OTRNG_US)) {
     return ERROR;
   }
@@ -1649,7 +1651,7 @@ tstatic otrng_err receive_identity_message_on_waiting_auth_r(
 
   /* If our is higher, ignore. */
   if (cmp > 0) {
-    // TODO: this should resend the prev identity message
+    // TODO: @state_machine this should resend the prev identity message
     return SUCCESS;
   }
 
@@ -1903,7 +1905,7 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
   return double_ratcheting_init(otr, OTRNG_THEM);
 }
 
-// TODO: this is the same as otrng_close
+// TODO: @refactoring this is the same as otrng_close
 INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr) {
   size_t serlen = otrng_list_len(otr->keys->skipped_keys) * MAC_KEY_BYTES;
   uint8_t *ser_mac_keys = otrng_reveal_mac_keys_on_tlv(otr->keys);
@@ -1952,7 +1954,7 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   otrng_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
 #endif
 
-  // TODO: What if msg->enc_msg_len == 0?
+  // TODO: @initialization What if msg->enc_msg_len == 0?
   uint8_t *plain = malloc(msg->enc_msg_len);
   if (!plain) {
     return ERROR;
@@ -2111,7 +2113,6 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
 
   response->to_display = NULL;
 
-  // TODO: check this case with Nik on v3
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
     otrng_error_message(&response->to_send, ERR_MSG_NOT_PRIVATE);
     otrng_data_message_free(msg);
@@ -2124,7 +2125,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     return ERROR;
   }
 
-  // TODO: Do we care if the buffer had more than the data message?
+  // TODO: @freeing Do we care if the buffer had more than the data message?
   // if (read < buffer)
   //  return ERROR;
 
@@ -2139,11 +2140,11 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     /* Try to decrypt the message with a stored skipped message key */
     if (!otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
                                     msg->message_id, otr->keys)) {
-      // TODO: Why we do not care if this message is not a duplicated skipped
-      // message and just derive the next ratchet key, and increase the
-      // K (meaning the message was received)?
-      // if (msg->ratchet_id < otr->keys->i) { continue; }
-      // if (msg->ratchet_id == otr->keys->i && msg->message_id < otr->keys->k)
+      // TODO: @double_ratchet Why we do not care if this message is not a
+      // duplicated skipped message and just derive the next ratchet key, and
+      // increase the K (meaning the message was received)? if (msg->ratchet_id
+      // < otr->keys->i) { continue; } if (msg->ratchet_id == otr->keys->i &&
+      // msg->message_id < otr->keys->k)
       //{ continue; }
       /* if a new ratchet */
       if (!otrng_key_manager_derive_dh_ratchet_keys(
@@ -2198,7 +2199,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       continue;
     }
 
-    // TODO: this displays an event on otrv3..
+    // TODO: @client this displays an event on otrv3..
     if (!response->to_display) {
       otr->ignore_msg = 1;
       sodium_memzero(mac_key, sizeof(m_mac_key_p));
@@ -2272,13 +2273,13 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
     return ERROR;
   }
 
-  // TODO: Why the version in the header is a ALLOWED VERSION?
+  // TODO: @refactoring Why the version in the header is a ALLOWED VERSION?
   // This is the message version, not the version the protocol allows
   if (header.version != OTRNG_ALLOW_V4) {
     return ERROR;
   }
 
-  // TODO: how to prevent version rollback?
+  // TODO: @rollback how to prevent version rollback?
   maybe_create_keys(otr->conversation);
 
   response->to_send = NULL;
@@ -2367,7 +2368,8 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
                                           otrng_notif notif,
                                           const string_p message,
                                           otrng_s *otr) {
-  // TODO: If we need to change, we should make a copy and not discard the const
+  // TODO: @refactoring If we need to change, we should make a copy and not
+  // discard the const
   string_p str = (void *)message;
 
   switch (get_message_type(message)) {
@@ -2426,7 +2428,7 @@ INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
 INTERNAL otrng_err otrng_receive_defragmented_message(
     otrng_response_s *response, otrng_notif notif, const string_p message,
     otrng_s *otr) {
-  // TODO: why it is always mandatory to have a response?
+  // TODO: @refactoring why it is always mandatory to have a response?
   if (!message || !response) {
     return ERROR;
   }
@@ -2603,7 +2605,7 @@ tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
 }
 
 tstatic size_t needed_padding(size_t message_len) {
-  // TODO: This should be configurable
+  // TODO: @refactoring This should be configurable
   const int padding_granularity = 256;
   const int header_len = 4;
   const int nul_byte_len = 1;
@@ -2689,7 +2691,7 @@ tstatic otrng_err otrng_prepare_to_send_data_message(
   }
 
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
-    notif = NOTIF_STATE_NOT_ENCRYPTED; // TODO: queue message
+    notif = NOTIF_STATE_NOT_ENCRYPTED; // TODO: @queing queue message
     return ERROR;
   }
 
@@ -2707,12 +2709,6 @@ tstatic otrng_err otrng_prepare_to_send_data_message(
   return result;
 }
 
-/**
- * @todo Move this documentation to header file later
- *
- * @param [tlvs] it is an ERROR to send in null as this parameter.
- *    it can _point_ to NULL though.
- **/
 INTERNAL otrng_err otrng_prepare_to_send_message(string_p *to_send,
                                                  const string_p message,
                                                  otrng_notif notif,
@@ -2771,10 +2767,11 @@ INTERNAL otrng_err otrng_close(string_p *to_send, otrng_s *otr) {
 
   switch (otr->running_version) {
   case OTRNG_VERSION_3:
-    otrng_v3_close(to_send, otr->v3_conn);  // TODO: This should return an error
-                                            // but errors are reported on a
-                                            // callback
-    gone_insecure_cb_v4(otr->conversation); // TODO: Only if success
+    otrng_v3_close(to_send,
+                   otr->v3_conn); // TODO: @client This should return an error
+                                  // but errors are reported on a
+                                  // callback
+    gone_insecure_cb_v4(otr->conversation); // TODO: @client Only if success
     return SUCCESS;
   case OTRNG_VERSION_4:
     return otrng_close_v4(to_send, otr);
@@ -2815,13 +2812,14 @@ tstatic otrng_err otrng_send_symkey_message_v4(string_p *to_send,
       otrng_tlv_new(OTRNG_TLV_SYM_KEY, usedatalen + 4, tlv_data));
   free(tlv_data);
 
-  // TODO: Should not extra_key be zeroed if any error happens from here on?
+  // TODO: @freeing Should not extra_key be zeroed if any error happens from
+  // here on?
   if (!tlvs) {
     return ERROR;
   }
 
   otrng_notif notif = NOTIF_NONE;
-  // TODO: in v3 the extra_key is passed as a param to this
+  // TODO: @refactoring in v3 the extra_key is passed as a param to this
   // do the same?
   otrng_err ret = otrng_prepare_to_send_message(
       to_send, "", notif, tlvs, MSGFLAGS_IGNORE_UNREADABLE, otr);
@@ -2840,11 +2838,11 @@ API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
 
   switch (otr->running_version) {
   case OTRNG_VERSION_3:
-    otrng_v3_send_symkey_message(to_send, otr->v3_conn, use, usedata,
-                                 usedatalen,
-                                 extra_key); // TODO: This should return an
-                                             // error but errors are reported on
-                                             // a callback
+    otrng_v3_send_symkey_message(
+        to_send, otr->v3_conn, use, usedata, usedatalen,
+        extra_key); // TODO: @client This should return an
+                    // error but errors are reported on
+                    // a callback
     return SUCCESS;
   case OTRNG_VERSION_4:
     return otrng_send_symkey_message_v4(to_send, use, usedata, usedatalen, otr,
@@ -2955,7 +2953,7 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_context_p smp,
                          const client_profile_s *their_client_profile,
                          uint8_t *ssid, const uint8_t *secret,
                          const size_t secretlen) {
-  // TODO: If state is not CONTINUE_SMP then error.
+  // TODO: @smp If state is not CONTINUE_SMP then error.
   tlv_s *smp_reply = NULL;
 
   otrng_fingerprint_p our_fp, their_fp;
@@ -3006,7 +3004,7 @@ INTERNAL otrng_err otrng_smp_continue(string_p *to_send, const uint8_t *secret,
                                       const size_t secretlen, otrng_s *otr) {
   switch (otr->running_version) {
   case OTRNG_VERSION_3:
-    // FIXME: missing fragmentation
+    // FIXME: @smp missing fragmentation
     return otrng_v3_smp_continue(to_send, secret, secretlen, otr->v3_conn);
   case OTRNG_VERSION_4:
     return smp_continue_v4(to_send, secret, secretlen, otr);
@@ -3014,7 +3012,7 @@ INTERNAL otrng_err otrng_smp_continue(string_p *to_send, const uint8_t *secret,
     return ERROR;
   }
 
-  return ERROR; // TODO: IMPLEMENT
+  return ERROR; // TODO: @smp IMPLEMENT
 }
 
 tstatic otrng_err otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {

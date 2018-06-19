@@ -58,7 +58,7 @@ void test_user_state_key_management(void) {
   g_assert_cmpint(err, ==, 0);
   fclose(keys);
 
-  // TODO: Assert it is equal to deserializing the symkey
+  // TODO: @test Assert it is equal to deserializing the symkey
   // RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA"
   otrng_assert(otrng_user_state_get_private_key_v4(state, charlie_account));
 
@@ -69,7 +69,7 @@ void test_user_state_key_management(void) {
  * Create callbacks for testing the callbacks API
  */
 
-/* TODO: The below test is commented out because it didn't test anything
+/* TODO: @client @refactoring The below test is commented out because it didn't test anything
  * - plus, the use of a global to manage things imply that these
  * APIs are not well thouht out:
  *   If you need access to the user state in order to reasonable create

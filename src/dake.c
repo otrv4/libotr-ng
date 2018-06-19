@@ -947,7 +947,7 @@ tstatic otrng_err build_rsign_tag(
       continue;
     }
 
-    // TODO: refactor me!
+    // TODO: @refactoring refactor me!
     size_t s = 0;
     size_t phi_len = 0;
     if (init_msg) {
@@ -999,7 +999,7 @@ tstatic otrng_err build_rsign_tag(
     cursor += ser_r_dh_len;
 
     // This is only used in the non-interactive t msg
-    // TODO: ser_r_shared_prekey is NULL here in a branch.
+    // TODO: @sanitizier ser_r_shared_prekey is NULL here in a branch.
     // error: Null pointer passed as an argument to a 'nonnull' parameter
     // [clang-analyzer-core.NonNullParamChecker,-warnings-as-errors]
     memcpy(cursor, ser_r_shared_prekey, ser_r_shared_prekey_len);
@@ -1134,6 +1134,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
     return ERROR;
   }
 
+  // TODO: @non_interactive should be removed
   uint8_t encrypted_msg_mac[HASH_BYTES];
   goldilocks_shake256_ctx_p encrypted_msg_hd;
   hash_init_with_usage(encrypted_msg_hd, 0x11);

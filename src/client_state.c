@@ -58,7 +58,7 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->max_stored_msg_keys = 100;
   state->should_heartbeat = should_heartbeat;
   state->expiration_time = 0;
-  state->pad = false; // TODO: why is this a bool?
+  state->pad = false; // TODO: @client why is this a bool?
 
   return state;
 }
@@ -99,9 +99,9 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
   state = NULL;
 }
 
-// TODO: There's no API that allows us to simply write all private keys to the
-// file.
-// We might want to extract otrl_privkey_generate_finish_FILEp into 2 functions.
+// TODO: @client There's no API that allows us to simply write all private keys
+// to the file. We might want to extract otrl_privkey_generate_finish_FILEp into
+// 2 functions.
 INTERNAL int otrng_client_state_private_key_v3_generate_FILEp(
     const otrng_client_state_s *state, FILE *privf) {
   return otrl_privkey_generate_FILEp(state->user_state, privf,
@@ -243,7 +243,7 @@ otrng_client_state_get_client_profile(otrng_client_state_s *state) {
     return NULL;
   }
 
-  // TODO: Invoke callbacks?
+  // TODO: @client Invoke callbacks?
 
   return state->client_profile;
 }
@@ -292,7 +292,7 @@ otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
     return NULL;
   }
 
-  // TODO: invoke callback to generate if profile is NULL
+  // TODO: @client invoke callback to generate if profile is NULL
 
   return state->prekey_profile;
 }
@@ -410,11 +410,11 @@ otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state) {
     return ret;
   }
 
-  // TODO: invoke callback to generate profile if it is NULL, instead of doing
-  // it here.
-  // TODO: Versions should be configurable
-  // TODO: should this ID be random? It should probably be unique for us, so
-  // we need to store this in client state (?)
+  // TODO: @client invoke callback to generate profile if it is NULL, instead of
+  // doing it here.
+  // TODO: @client @client_profile Versions should be configurable
+  // TODO: @client_profile should this ID be random? It should probably be
+  // unique for us, so we need to store this in client state (?)
   uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
   state->client_profile =
       otrng_client_profile_build(0x101, our_instance_tag, "34", state->keypair);
@@ -430,10 +430,10 @@ otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
     return ret;
   }
 
-  // TODO: invoke callback to generate profile if it is NULL, instead of doing
-  // it here.
-  // TODO: should this ID be random? It should probably be unique for us, so
-  // we need to store this in client state (?)
+  // TODO: @client invoke callback to generate profile if it is NULL, instead of
+  // doing it here.
+  // TODO: @client_profile should this ID be random? It should probably be
+  // unique for us, so we need to store this in client state (?)
   uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
   state->prekey_profile = otrng_prekey_profile_build(
       0x102, our_instance_tag, state->keypair, state->shared_prekey_pair);

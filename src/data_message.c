@@ -27,7 +27,6 @@
 #include "serialize.h"
 #include "shake.h"
 
-// TODO: add j, i, k, pn here
 INTERNAL data_message_s *otrng_data_message_new() {
   data_message_s *ret = malloc(sizeof(data_message_s));
   if (!ret) {
@@ -35,6 +34,9 @@ INTERNAL data_message_s *otrng_data_message_new() {
   }
 
   ret->flags = 0;
+  ret->ratchet_id = 0;
+  ret->message_id = 0;
+
   ret->enc_msg = NULL;
   ret->enc_msg_len = 0;
 
@@ -56,7 +58,7 @@ tstatic void data_message_destroy(data_message_s *data_msg) {
 
   sodium_memzero(data_msg->nonce, sizeof data_msg->nonce);
   data_msg->enc_msg_len = 0;
-  // TODO: check if this free is always needed
+  // TODO: @freeing check if this free is always needed
   free(data_msg->enc_msg);
   data_msg->enc_msg = NULL;
   sodium_memzero(data_msg->mac, sizeof data_msg->mac);
@@ -75,7 +77,8 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
 
 INTERNAL otrng_err otrng_data_message_body_asprintf(
     uint8_t **body, size_t *bodylen, const data_message_s *data_msg) {
-  // TODO: why is DH_MPI_BYTES + 4 not on the DATA_MESSAGE_MIN_BYTES const?
+  // TODO: @refactoring why is DH_MPI_BYTES + 4 not on the
+  // DATA_MESSAGE_MIN_BYTES const?
   size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
   if (!dst) {
@@ -93,7 +96,7 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
   cursor += otrng_serialize_uint32(cursor, data_msg->message_id);
   cursor += otrng_serialize_ec_point(cursor, data_msg->ecdh);
 
-  // TODO: This could be NULL. We need to test.
+  // TODO: @freeing @sanitizer This could be NULL. We need to test.
   size_t len = 0;
   if (!otrng_serialize_dh_public_key(cursor, (s - (cursor - dst)), &len,
                                      data_msg->dh)) {
@@ -209,9 +212,9 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   cursor += read;
   len -= read;
 
-  // TODO: If the DH key is absent the MPI will have a zero length, per spec.
-  // We need to test what otrng_dh_mpi_deserialize does when b_mpi->data is
-  // NULL.
+  // TODO: @refactoring @sanitizer If the DH key is absent the MPI will have a
+  // zero length, per spec. We need to test what otrng_dh_mpi_deserialize does
+  // when b_mpi->data is NULL.
 
   if (!otrng_dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read)) {
     return ERROR;

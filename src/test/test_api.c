@@ -18,7 +18,6 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libotr/b64.h> // TODO: we shouldn't be exposing this
 #include <libotr/privkey.h>
 #include <string.h>
 
@@ -319,7 +318,7 @@ void test_otrng_send_offline_message() {
   otrng_free_all(alice, bob);
 }
 
-/* TODO: come back to this when we have serialization/deserialization for a
+/* TODO: @non_interactive come back to this when we have serialization/deserialization for a
  * "Prekey Ensemble Retrieval Message"
  * This is the API that should be tested.
  */
@@ -420,7 +419,7 @@ void test_api_non_interactive_conversation(void) {
   string_p to_send = NULL;
   otrng_err result;
 
-  // TODO: this is usually set up by the query or whitespace,
+  // TODO: @non_interactive this is usually set up by the query or whitespace,
   // this will be defined on the prekey server spec.
   bob->running_version = OTRNG_VERSION_4;
   alice->running_version = OTRNG_VERSION_4;
@@ -609,7 +608,7 @@ void test_api_non_interactive_conversation_with_enc_msg_1(void) {
   string_p to_send = NULL;
   otrng_err result;
 
-  // TODO: this is usually set up by the querry or whitespace,
+  // TODO: @non_interactive this is usually set up by the querry or whitespace,
   // this will be defined on the prekey server spec.
   bob->running_version = OTRNG_VERSION_4;
   alice->running_version = OTRNG_VERSION_4;
@@ -774,7 +773,7 @@ void test_api_non_interactive_conversation_with_enc_msg_2(void) {
   string_p to_send = NULL;
   otrng_err result;
 
-  // TODO: this is usually set up by the querry or whitespace,
+  // TODO: @non_interactive this is usually set up by the querry or whitespace,
   // this will be defined on the prekey server spec.
   bob->running_version = OTRNG_VERSION_4;
   alice->running_version = OTRNG_VERSION_4;
@@ -1383,7 +1382,7 @@ void test_api_smp(void) {
   otrng_response_free(response_to_alice);
   response_to_alice = NULL;
 
-  // TODO: Should be in the correct state
+  // TODO: @smp Should be in the correct state
   otrng_assert(!response_to_bob->to_send);
 
   otrng_response_free(response_to_bob);
@@ -1431,12 +1430,12 @@ void test_api_smp_abort(void) {
   free_message_and_response(response_to_alice, &to_send);
 
   // From here
-  // Bob sends SMP Abort. TODO: check it does not trigger anything else
+  // Bob sends SMP Abort. TODO: @smp check it does not trigger anything else
   otrng_assert_is_success(otrng_smp_abort(&to_send, bob));
   g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
 
   // Alice receives SMP ABORT, send SMP_ABORT
-  // TODO: Alice probably should not send and abort at this point
+  // TODO: @smp Alice probably should not send and abort at this point
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(
       otrng_receive_message(response_to_bob, notif, to_send, alice));
@@ -1448,7 +1447,7 @@ void test_api_smp_abort(void) {
 
   free_message_and_response(response_to_bob, &to_send);
 
-  // TODO: Alice can restart here the smp. This will mem leak though
+  // TODO: @smp Alice can restart here the smp. This will mem leak though
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);

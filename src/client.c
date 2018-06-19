@@ -80,8 +80,8 @@ API void otrng_client_free(otrng_client_s *client) {
   client = NULL;
 }
 
-// TODO: There may be multiple conversations with the same recipient if they
-// uses multiple instance tags. We are not allowing this yet.
+// TODO: @instance_tag There may be multiple conversations with the same
+// recipient if they use multiple instance tags. We are not allowing this yet.
 tstatic otrng_conversation_s *
 get_conversation_with(const char *recipient, list_element_s *conversations) {
   const list_element_s *el = NULL;
@@ -98,7 +98,7 @@ get_conversation_with(const char *recipient, list_element_s *conversations) {
 }
 
 tstatic otrng_policy_s get_policy_for(const char *recipient) {
-  // TODO: the policy should come from client config.
+  // TODO: @policy the policy should come from client config.
   UNUSED_ARG(recipient);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
 
@@ -143,14 +143,14 @@ tstatic otrng_s *create_connection_for(const char *recipient,
   otrng_v3_conn_s *v3_conn = NULL;
   otrng_s *conn = NULL;
 
-  // TODO: This should receive only the client_state (which should allow
+  // TODO: @client This should receive only the client_state (which should allow
   // you to get protocol, account, v3 user_state, etc)
   v3_conn = otrng_v3_conn_new(client->state, recipient);
   if (!v3_conn) {
     return NULL;
   }
 
-  // TODO: put here policy none
+  // TODO: @policy put here policy none
   conn = otrng_new(client->state, get_policy_for(recipient));
   if (!conn) {
     otrng_v3_conn_free(v3_conn);
@@ -199,7 +199,7 @@ otrng_client_get_conversation(int force_create, const char *recipient,
   return get_conversation_with(recipient, client->conversations);
 }
 
-// TODO: this should allow TLVs to be added to the message
+// TODO: @client this should allow TLVs to be added to the message
 tstatic int send_message(char **newmsg, const char *message,
                          const char *recipient, otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
@@ -239,7 +239,8 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
 
   string_p to_send = NULL;
   if (!send_message(&to_send, message, recipient, client)) {
-    free(to_send); // TODO: send_message should free to_send if something fails
+    free(to_send); // TODO: @freeing send_message should free to_send if
+                   // something fails
     return 1;
   }
 
@@ -338,11 +339,11 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
     return NULL;
   }
 
-  // TODO: add name
+  // TODO: @client add name
   ret = "Failed to start an Off-the-Record private conversation.";
 
   conv->conn->supported_versions = policy;
-  // TODO: implement policy
+  // TODO: @policy implement policy
   if (!otrng_build_query_message(&ret, message, conv->conn)) {
     return ret;
   }
@@ -377,7 +378,7 @@ API int otrng_client_disconnect(char **newmsg, const char *recipient,
   return 0;
 }
 
-// TODO: this depends on how is going to be handled: as a different
+// TODO: @client this depends on how is going to be handled: as a different
 // event or inside process_conv_updated?
 /* expiration time should be set on seconds */
 API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
@@ -413,7 +414,7 @@ API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
   return otrng_serialize_fingerprint(fp, client->state->keypair->pub);
 }
 
-// TODO: Read privkeys, fingerprints, instance tags for v3
+// TODO: @client Read privkeys, fingerprints, instance tags for v3
 /*
  *To read stored private keys:
 

@@ -194,7 +194,7 @@ void test_client_api() {
   otrng_assert(!otrng_client_get_conversation(NOT_FORCE_CREATE_CONV,
                                               BOB_IDENTITY, alice));
 
-  // TODO: Should we keep the conversation and set state to start instead?
+  // TODO: @client Should we keep the conversation and set state to start instead?
   // g_assert_cmpint(alice_to_bob->conn->state, ==, OTRNG_STATE_START);
 
   // Bob receives the disconnected from Alice
@@ -622,8 +622,6 @@ void test_valid_identity_msg_in_waiting_auth_r() {
       set_up_client(alice_client_state, ALICE_IDENTITY, PHI, 1);
   otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, PHI, 2);
 
-  // TODO: for the moment I'm changing this, but might be reworth checking at
-  // the protocol level
   // Alice sends a query message to Bob
   char *query_msg_to_bob = otrng_client_query_message(BOB_IDENTITY, "Hi alice",
                                                       alice, OTRNG_ALLOW_V4);

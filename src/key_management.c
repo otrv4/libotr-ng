@@ -105,7 +105,7 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   ratchet_free(manager->current);
   manager->current = NULL;
 
-  // TODO: once dake is finished should be wiped out
+  // TODO: @freeing once dake is finished should be wiped out
   sodium_memzero(manager->their_shared_prekey, ED448_POINT_BYTES);
   sodium_memzero(manager->our_shared_prekey, ED448_POINT_BYTES);
 
@@ -115,7 +115,7 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   manager->ssid_half = 0;
   sodium_memzero(manager->extra_symmetric_key,
                  sizeof(manager->extra_symmetric_key));
-  // TODO: once dake is finished should be wiped out
+  // TODO: @freeing once dake is finished should be wiped out
   sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 
   list_element_s *el;
@@ -170,7 +170,6 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
 
   manager->last_generated = now;
 
-  // TODO: If it were not this if, we could use otrng_generate_ephemeral_keys
   if (manager->i % 3 == 0) {
     otrng_dh_keypair_destroy(manager->our_dh);
 
@@ -324,7 +323,6 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
   return SUCCESS;
 }
 
-// TODO: perhaps this only needs the manager
 INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
     uint8_t *shared_secret, const otrng_shared_prekey_pair_s *shared_prekey,
     const ec_point_p their_pub) {
@@ -344,7 +342,6 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
   return SUCCESS;
 }
 
-// TODO: perhaps this only needs the manager
 INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
     uint8_t *shared_secret, otrng_keypair_s *keypair,
     const ec_point_p their_pub) {
@@ -380,7 +377,7 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(
   manager->k = 0;
   manager->pn = 0;
 
-  // TODO: we can assing directly to the root key
+  // TODO: @refactoring we can assing directly to the root key
   memcpy(manager->current->root_key, manager->shared_secret, 64);
   sodium_memzero(manager->shared_secret, 64);
 
@@ -423,8 +420,8 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
   return SUCCESS;
 }
 
-// TODO: not sure about this always return SUCCESS.. maybe some other logic will
-// work
+// TODO: @refactoring not sure about this always return SUCCESS.. maybe some
+// other logic will work
 tstatic otrng_err rotate_keys(key_manager_s *manager,
                               otrng_participant_action action) {
 
@@ -458,7 +455,7 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
   return SUCCESS;
 }
 
-// TODO: This never fails
+// TODO: @refactoring This never fails
 tstatic otrng_err key_manager_derive_ratchet_keys(
     key_manager_s *manager, otrng_participant_action action) {
   // root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
@@ -574,7 +571,8 @@ tstatic void delete_stored_enc_keys(key_manager_s *manager) {
 tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
                                  int max_skip, int until,
                                  otrng_ratchet_type type, otrng_notif notif) {
-  if (manager->i == 100) { // TODO: should we make this optional to the client?
+  if (manager->i ==
+      100) { // TODO: @client should we make this optional to the client?
     delete_stored_enc_keys(manager);
   }
 
@@ -764,7 +762,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   return NULL;
 }
 
-//// TODO: define this here?
+// TODO: @refactoring define this here?
 API uint8_t *
 derive_key_from_extra_symm_key(uint8_t usage, const unsigned char *use_data,
                                size_t use_data_len,
