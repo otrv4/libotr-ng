@@ -230,9 +230,9 @@ API void otrng_v3_init(void);
 
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);
 
-#ifdef OTRNG_OTRNG_PRIVATE
+INTERNAL void otrng_destroy(otrng_s *otr);
 
-tstatic void otrng_destroy(otrng_s *otr);
+#ifdef OTRNG_OTRNG_PRIVATE
 
 tstatic otrng_in_message_type get_message_type(const string_p message);
 

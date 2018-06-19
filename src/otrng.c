@@ -278,7 +278,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
 
 static void free_fragment_context(void *p) { otrng_fragment_context_free(p); }
 
-tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
+INTERNAL void otrng_destroy(/*@only@ */ otrng_s *otr) {
   if (otr->conversation) {
     free(otr->conversation->peer);
     otr->conversation->peer = NULL;

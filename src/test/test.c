@@ -290,11 +290,13 @@ int main(int argc, char **argv) {
   // to understand (by nature, I think). Let's reconsider what should be here.
 
   g_test_add_func("/double_ratchet/in_order/new_sending_ratchet/v4",
-                  test_api_new_sending_ratchet_in_order);
+                  test_double_ratchet_new_sending_ratchet_in_order);
   g_test_add_func("/double_ratchet/out_of_order/same_ratchet/v4",
-                  test_api_same_ratchet_out_of_order);
+                  test_double_ratchet_same_ratchet_out_of_order);
   g_test_add_func("/double_ratchet/out_of_order/new_ratchet/v4",
-                  test_api_new_ratchet_out_of_order);
+                  test_double_ratchet_new_ratchet_out_of_order);
+  g_test_add_func("/double_ratchet/corrupted_ratchet/v4",
+                  test_double_ratchet_corrupted_ratchet);
 
   g_test_add_func("/api/interactive_conversation/v4",
                   test_api_interactive_conversation);
