@@ -28,7 +28,7 @@
 #include "fragment.h"
 #include "list.h"
 
-#define FRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%s,"
+#define FRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%.*s,"
 #define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
 
 API otrng_message_to_send_s *otrng_message_new() {
@@ -48,8 +48,7 @@ API void otrng_message_free(otrng_message_to_send_s *message) {
     return;
   }
 
-  int i;
-  for (i = 0; i < message->total; i++) {
+  for (int i = 0; i < message->total; i++) {
     free(message->pieces[i]);
     message->pieces[i] = NULL;
   }
@@ -57,10 +56,7 @@ API void otrng_message_free(otrng_message_to_send_s *message) {
   free(message->pieces);
   message->pieces = NULL;
 
-  message->total = 0;
-
   free(message);
-  message = NULL;
 }
 
 tstatic void initialize_fragment_context(fragment_context_s *context) {
@@ -104,83 +100,81 @@ INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   free(context);
 }
 
+static otrng_err create_fragment_message(char **dst, const char *piece,
+                                         size_t piece_len, uint32_t identifier,
+                                         uint32_t our_instance,
+                                         uint32_t their_instance,
+                                         uint32_t current, uint32_t total) {
+
+  if (strlen(piece) < piece_len) {
+    return ERROR;
+  }
+
+  *dst = malloc(FRAGMENT_HEADER_LEN + piece_len + 1);
+  if (!*dst) {
+    return ERROR;
+  }
+
+  snprintf(*dst, FRAGMENT_HEADER_LEN + piece_len + 1, FRAGMENT_FORMAT,
+           identifier, our_instance, their_instance, current, total,
+           (int)piece_len, piece);
+
+  (*dst)[FRAGMENT_HEADER_LEN + piece_len] = 0;
+
+  return SUCCESS;
+}
+
+static otrng_err
+init_message_to_send_with_total(otrng_message_to_send_s *fragments, int total) {
+  if (total < 1 || total > 65535) {
+    return ERROR;
+  }
+
+  fragments->total = total;
+
+  size_t pieces_len = fragments->total * sizeof(string_p);
+  fragments->pieces = malloc(pieces_len);
+  if (!fragments->pieces) {
+    return ERROR;
+  }
+
+  for (int i = 0; i < fragments->total; i++) {
+    fragments->pieces[i] = NULL;
+  }
+
+  return SUCCESS;
+}
+
 INTERNAL otrng_err otrng_fragment_message(int max_size,
                                           otrng_message_to_send_s *fragments,
                                           int our_instance, int their_instance,
                                           const string_p message) {
   size_t msg_len = strlen(message);
   size_t limit = max_size - FRAGMENT_HEADER_LEN;
-  string_p *pieces;
-  int piece_len = 0;
+  int total = ((msg_len - 1) / limit) + 1;
 
-  fragments->total = ((msg_len - 1) / limit) + 1;
-  if (fragments->total < 1 || fragments->total > 65535) {
+  if (!init_message_to_send_with_total(fragments, total)) {
     return ERROR;
   }
 
-  size_t pieces_len = fragments->total * sizeof(string_p);
-  pieces = malloc(pieces_len);
-  if (!pieces) {
-    return ERROR;
-  }
+  uint32_t *identifier = gcry_random_bytes(4, GCRY_STRONG_RANDOM);
 
   for (int i = 0; i < fragments->total; i++) {
-    pieces[i] = NULL;
-  }
+    int piece_len = msg_len < limit ? msg_len : limit;
+    char **dst = fragments->pieces + i;
 
-  uint32_t *identifier = gcry_random_bytes(32, GCRY_STRONG_RANDOM);
-
-  for (int current = 1; current <= fragments->total; current++) {
-    string_p piece = NULL;
-    string_p piece_data = NULL;
-
-    piece_len = msg_len < limit ? msg_len : limit;
-    piece_data = malloc(piece_len + 1);
-    if (!piece_data) {
-      for (int i = 0; i < fragments->total; i++) {
-        free(pieces[i]);
-        pieces[i] = NULL;
-      }
-
-      free(pieces);
+    if (!create_fragment_message(dst, message, piece_len, *identifier,
+                                 our_instance, their_instance, i + 1,
+                                 fragments->total)) {
+      otrng_message_free(fragments);
       return ERROR;
     }
 
-    strncpy(piece_data, message, piece_len);
-    piece_data[piece_len] = 0;
-
-    piece = malloc(piece_len + FRAGMENT_HEADER_LEN + 1);
-    if (!piece) {
-      for (int i = 0; i < fragments->total; i++) {
-        free(pieces[i]);
-        pieces[i] = NULL;
-      }
-
-      free(piece_data);
-      piece_data = NULL;
-      free(pieces);
-      pieces = NULL;
-
-      return ERROR;
-    }
-
-    snprintf(piece, piece_len + FRAGMENT_HEADER_LEN + 1, FRAGMENT_FORMAT,
-             *identifier, our_instance, their_instance, (unsigned short)current,
-             (unsigned short)fragments->total, piece_data);
-
-    piece[piece_len + FRAGMENT_HEADER_LEN] = 0;
-
-    pieces[current - 1] = piece;
-
-    free(piece_data);
-    piece_data = NULL;
     message += piece_len;
+    msg_len -= piece_len;
   }
 
   gcry_free(identifier);
-  identifier = NULL;
-
-  fragments->pieces = pieces;
 
   return SUCCESS;
 }

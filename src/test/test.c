@@ -172,6 +172,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/data_message/deserialize",
                   test_otrng_data_message_deserializes);
 
+  g_test_add_func("/fragment/create_fragments_smaller_than_max_size",
+                  test_create_fragments_smaller_than_max_size);
   g_test_add_func("/fragment/create_fragments", test_create_fragments);
   g_test_add_func("/fragment/defragment_message",
                   test_defragment_valid_message);
