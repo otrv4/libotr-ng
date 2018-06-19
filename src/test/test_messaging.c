@@ -69,7 +69,8 @@ void test_user_state_key_management(void) {
  * Create callbacks for testing the callbacks API
  */
 
-/* TODO: @client @refactoring The below test is commented out because it didn't test anything
+/* TODO: @client @refactoring The below test is commented out because it didn't
+ * test anything
  * - plus, the use of a global to manage things imply that these
  * APIs are not well thouht out:
  *   If you need access to the user state in order to reasonable create

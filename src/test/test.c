@@ -105,8 +105,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/dh/serialize", dh_test_serialize);
   g_test_add_func("/dh/shared-secret/leading-zeroes",
                   dh_test_shared_secret_adds_leading_zeroes);
-  g_test_add_func("/dh/destroy",
-                  dh_test_keypair_destroy);
+  g_test_add_func("/dh/destroy", dh_test_keypair_destroy);
 
   g_test_add_func("/ring-signature/rsig_auth", test_rsig_auth);
   g_test_add_func("/ring-signature/calculate-c", test_rsig_calculate_c);
@@ -287,8 +286,8 @@ int main(int argc, char **argv) {
   // API are supposed to test the public API.
   // They go to the end because they are integration tests, and we only should
   // care about them after all the unit tests are working.
-  // TODO: @refactoring There is TOO MUCH /api tests. They are TOO BIG and hard to
-  // understand (by nature, I think). Let's reconsider what should be here.
+  // TODO: @refactoring There is TOO MUCH /api tests. They are TOO BIG and hard
+  // to understand (by nature, I think). Let's reconsider what should be here.
 
   g_test_add_func("/double_ratchet/in_order/new_sending_ratchet/v4",
                   test_api_new_sending_ratchet_in_order);

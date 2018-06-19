@@ -194,8 +194,8 @@ void test_client_api() {
   otrng_assert(!otrng_client_get_conversation(NOT_FORCE_CREATE_CONV,
                                               BOB_IDENTITY, alice));
 
-  // TODO: @client Should we keep the conversation and set state to start instead?
-  // g_assert_cmpint(alice_to_bob->conn->state, ==, OTRNG_STATE_START);
+  // TODO: @client Should we keep the conversation and set state to start
+  // instead? g_assert_cmpint(alice_to_bob->conn->state, ==, OTRNG_STATE_START);
 
   // Bob receives the disconnected from Alice
   ignore = otrng_client_receive(&from_bob, &to_display, from_alice_to_bob,

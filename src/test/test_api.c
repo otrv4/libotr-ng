@@ -318,9 +318,9 @@ void test_otrng_send_offline_message() {
   otrng_free_all(alice, bob);
 }
 
-/* TODO: @non_interactive come back to this when we have serialization/deserialization for a
- * "Prekey Ensemble Retrieval Message"
- * This is the API that should be tested.
+/* TODO: @non_interactive come back to this when we have
+ * serialization/deserialization for a "Prekey Ensemble Retrieval Message" This
+ * is the API that should be tested.
  */
 /*
 void test_api_non_interactive_conversation(void) {

@@ -127,9 +127,9 @@ tstatic void from_injected_to_send(char **to_send) {
     return;
   }
 
-  // TODO: @client As this is stored from a callback it MAY be the case a message
-  // was lost (if the callback was invoked multiple times before we consume
-  // this injected_to_send). Ideally this would be a list.
+  // TODO: @client As this is stored from a callback it MAY be the case a
+  // message was lost (if the callback was invoked multiple times before we
+  // consume this injected_to_send). Ideally this would be a list.
   *to_send = otrng_strdup(injected_to_send);
   free(injected_to_send);
   injected_to_send = NULL;
@@ -533,15 +533,15 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
   otrl_tlv_free(tlvsv3);
   otrl_message_free(newmessage);
 
-  // TODO: @client Here we can use contextp to get information we might need about the
-  // state, for example (context->msgstate)
+  // TODO: @client Here we can use contextp to get information we might need
+  // about the state, for example (context->msgstate)
 
   return SUCCESS;
 }
 
 INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn) {
-  // TODO: @client there is also: otrl_message_disconnect, which only disconnects one
-  // instance
+  // TODO: @client there is also: otrl_message_disconnect, which only
+  // disconnects one instance
   otrl_message_disconnect_all_instances(conn->state->user_state, conn->ops,
                                         conn->opdata, conn->state->account_name,
                                         conn->state->protocol_name, conn->peer);

@@ -434,9 +434,7 @@ void test_api_new_ratchet_out_of_order(void) {
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
   g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 0);
-  g_assert_cmpint(
-      bob->keys->i, ==,
-      3);
+  g_assert_cmpint(bob->keys->i, ==, 3);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 1);
   g_assert_cmpint(bob->keys->pn, ==, 1);
