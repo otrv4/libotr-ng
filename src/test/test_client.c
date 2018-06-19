@@ -725,7 +725,8 @@ void test_valid_identity_msg_in_waiting_auth_r() {
                     alice_to_bob->conn->receiving_init_msg);
     g_assert_cmpstr(alice_to_bob->conn->sending_init_msg, ==,
                     bob_to_alice->conn->receiving_init_msg);
-    g_assert_cmpstr(alice_to_bob->conn->sending_init_msg, ==, "?OTRv4? Hi alice");
+    g_assert_cmpstr(alice_to_bob->conn->sending_init_msg, ==,
+                    "?OTRv4? Hi alice");
     g_assert_cmpstr(bob_to_alice->conn->sending_init_msg, ==, "?OTRv4? Hi bob");
 
     // Alice sends a disconnected to Bob
@@ -793,7 +794,8 @@ void test_valid_identity_msg_in_waiting_auth_r() {
                     alice_to_bob->conn->receiving_init_msg);
     g_assert_cmpstr(alice_to_bob->conn->sending_init_msg, ==,
                     bob_to_alice->conn->receiving_init_msg);
-    g_assert_cmpstr(alice_to_bob->conn->sending_init_msg, ==, "?OTRv4? Hi alice");
+    g_assert_cmpstr(alice_to_bob->conn->sending_init_msg, ==,
+                    "?OTRv4? Hi alice");
     g_assert_cmpstr(bob_to_alice->conn->sending_init_msg, ==, "?OTRv4? Hi bob");
 
     // Bob sends a disconnected to Alice
