@@ -329,23 +329,22 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
 }
 
 API char *otrng_client_query_message(const char *recipient, const char *message,
-                                     otrng_client_s *client,
-                                     OtrlPolicy policy) {
+                                     otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
-  char *ret = NULL;
-
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
     return NULL;
   }
 
-  // TODO: @client add name
-  ret = "Failed to start an Off-the-Record private conversation.";
+  char *ret = NULL;
 
-  conv->conn->supported_versions = policy;
-  // TODO: @policy implement policy
+  // TODO: @policy implement public API to set supported versions.
+  conv->conn->supported_versions = OTRNG_ALLOW_V4;
   if (!otrng_build_query_message(&ret, message, conv->conn)) {
-    return ret;
+    // TODO: @client This should come from the client (a callback maybe?)
+    // because it knows in which language this should be sent, for example.
+    return otrng_strdup(
+        "Failed to start an Off-the-Record private conversation.");
   }
 
   return ret;

@@ -54,7 +54,7 @@ API otrng_client_s *otrng_client_new(otrng_client_state_s *);
 API void otrng_client_free(otrng_client_s *client);
 
 API char *otrng_client_query_message(const char *recipient, const char *message,
-                                     otrng_client_s *client, OtrlPolicy policy);
+                                     otrng_client_s *client);
 
 API int otrng_client_send(char **newmessage, const char *message,
                           const char *recipient, otrng_client_s *client);

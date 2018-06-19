@@ -2838,11 +2838,11 @@ API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
 
   switch (otr->running_version) {
   case OTRNG_VERSION_3:
-    otrng_v3_send_symkey_message(
-        to_send, otr->v3_conn, use, usedata, usedatalen,
-        extra_key); // TODO: @client This should return an
-                    // error but errors are reported on
-                    // a callback
+    otrng_v3_send_symkey_message(to_send, otr->v3_conn, use, usedata,
+                                 usedatalen,
+                                 extra_key); // TODO: @client This should return
+                                             // an error but errors are reported
+                                             // on a callback
     return SUCCESS;
   case OTRNG_VERSION_4:
     return otrng_send_symkey_message_v4(to_send, use, usedata, usedatalen, otr,
