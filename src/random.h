@@ -34,7 +34,7 @@ static inline void ed448_random_scalar(goldilocks_448_scalar_p priv) {
   uint8_t sym[ED448_PRIVATE_BYTES];
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
-  // TODO: it hashes and clamp as per RFC 8032 keygen method.
+  // TODO: @refactoring it hashes and clamp as per RFC 8032 keygen method.
   // It may not be what we want where it is used (SMP and RingSignature) since
   // a less strict value "get a random x in Z_q" is required.
   otrng_ec_scalar_derive_from_secret(priv, sym);
@@ -47,7 +47,7 @@ static inline void ed448_random_scalar(goldilocks_448_scalar_p priv) {
  * @param [pub] The public key.
  * @param [priv] The private key.
  *
- * @warning TODO: Is this safe?
+ * @warning TODO: @refactoring Is this safe?
  */
 static inline void otrng_zq_keypair_generate(goldilocks_448_point_p pub,
                                              goldilocks_448_scalar_p priv) {

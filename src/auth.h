@@ -33,12 +33,12 @@
 typedef ec_scalar_p rsig_privkey_p;
 typedef ec_point_p rsig_pubkey_p;
 
-// TODO: This CAN NOT be otrng_keypair_s because they are generated according
-// to RFC 8032, but these keys are expected to be generated following the
-// generateECDH() function in the spec.
-// I dont believe it makes sense to have a type to represent rsig keys since
-// they use different kind of keys (both in the curve ed448, BUT generated
-// differently). We should stick to using scalars and points.
+// TODO: @refactoring This CAN NOT be otrng_keypair_s because they are generated
+// according to RFC 8032, but these keys are expected to be generated following
+// the generateECDH() function in the spec. I dont believe it makes sense to
+// have a type to represent rsig keys since they use different kind of keys
+// (both in the curve ed448, BUT generated differently). We should stick to
+// using scalars and points.
 typedef otrng_keypair_s rsig_keypair_s, rsig_keypair_p[1];
 
 /**

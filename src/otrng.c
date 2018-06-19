@@ -2279,7 +2279,6 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
     return ERROR;
   }
 
-  // TODO: @rollback how to prevent version rollback?
   maybe_create_keys(otr->conversation);
 
   response->to_send = NULL;

@@ -113,7 +113,7 @@ INTERNAL void otrng_smp_msg_1_destroy(smp_msg_1_s *msg);
 INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
                                                       smp_context_p smp);
 
-// TODO: should be exposed?
+// TODO: @refactoring should be exposed?
 INTERNAL otrng_smp_event_t otrng_process_smp_msg1(const tlv_s *tlv,
                                                   smp_context_p smp);
 

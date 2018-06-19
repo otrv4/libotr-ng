@@ -85,7 +85,7 @@ typedef struct key_manager_s {
   ec_point_p their_ecdh;
   dh_public_key_p their_dh;
 
-  // TODO: REMOVE THIS
+  // TODO: @refactoring REMOVE THIS
   // or turn it into a pair and store both this and the long term keypair on
   // this key manager.
   otrng_shared_prekey_pub_p our_shared_prekey;

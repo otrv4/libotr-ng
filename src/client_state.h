@@ -46,37 +46,38 @@ typedef struct otrng_client_state_s {
                             For example, in libpurple-based apps (like Pidgin)
                             this could be a PurpleAccount */
 
-  // TODO: Replace with a callback that knows how to get these from the
+  // TODO: @client Replace with a callback that knows how to get these from the
   // client_id.
   char *account_name;
   char *protocol_name;
 
   const struct otrng_client_callbacks_s *callbacks;
 
-  // TODO: We could point it directly to the user state and have access to the
-  // callback and v3 user state
+  // TODO: @client We could point it directly to the user state and have access
+  // to the callback and v3 user state
   OtrlUserState user_state;
   otrng_keypair_s *keypair;
 
-  // TODO: One or many?
+  // TODO: @client One or many?
   client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
   list_element_s *our_prekeys; // otrng_stored_prekeys_s
 
-  otrng_shared_prekey_pair_s *shared_prekey_pair; // TODO: is this something the
-                                                  // client will generate? The
-                                                  // spec does not specify.
-  // TODO: this should all come from the client so the new function should pass
-  // them as params
+  otrng_shared_prekey_pair_s
+      *shared_prekey_pair; // TODO: @client is this something the
+                           // client will generate? The
+                           // spec does not specify.
+  // TODO: @client this should all come from the client so the new function
+  // should pass them as params
   char *phi; // this is the shared session state
   int max_stored_msg_keys;
   int (*should_heartbeat)(int last_sent);
   int expiration_time;
-  bool pad; // TODO: this can be replaced by length
+  bool pad; // TODO: @client @refactoring this can be replaced by length
 
   // OtrlPrivKey *privkeyv3; // ???
-  // otrng_instag_s *instag; // TODO: Store the instance tag here rather than
-  // use v3 User State as a store for instance tags
+  // otrng_instag_s *instag; // TODO: @client Store the instance tag here rather
+  // than use v3 User State as a store for instance tags
 } otrng_client_state_s, otrng_client_state_p[1];
 
 static inline void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
@@ -114,7 +115,7 @@ otrng_client_state_get_instance_tag(otrng_client_state_s *state);
 INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
                                                  unsigned int instag);
 
-// TODO: remove
+// TODO: @client @refactoring remove
 INTERNAL int
 otrng_client_state_add_shared_prekey_v4(otrng_client_state_s *state,
                                         const uint8_t sym[ED448_PRIVATE_BYTES]);
@@ -132,7 +133,7 @@ API int
 otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
                                       const otrng_prekey_profile_s *profile);
 
-// TODO: Read/Write prekey_profiles from/to a file.
+// TODO: @client Read/Write prekey_profiles from/to a file.
 INTERNAL int
 otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
                                              FILE *privf);

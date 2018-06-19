@@ -21,8 +21,8 @@
 #ifndef OTRNG_CLIENT_H
 #define OTRNG_CLIENT_H
 
+// TODO: @client check the error codes on client
 #define CLIENT_ERROR_NOT_ENCRYPTED 0x1001
-// TODO: check the error codes on client
 #define CLIENT_ERROR_MSG_NOT_VALID 0x1011
 
 #include <libotr/context.h>
@@ -32,7 +32,7 @@
 #include "otrng.h"
 #include "shared.h"
 
-// TODO: REMOVE
+// TODO: @client REMOVE
 typedef struct otrng_conversation_s {
   void *conversation_id; /* Data in the messaging application context that
                           represents a conversation and should map directly to

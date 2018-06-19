@@ -71,7 +71,7 @@ typedef struct dake_non_interactive_auth_message_s {
   uint32_t long_term_key_id;
   uint32_t prekey_profile_id;
 
-  // TODO: Extract this to a data structure that can be shared with
+  // TODO: @refactoring Extract this to a data structure that can be shared with
   // data_message_s
   /* only used if an ecrypted message is attached */
   uint32_t ratchet_id;

@@ -41,9 +41,10 @@ typedef struct otrng_conversation_state_s otrng_client_conversation_s;
 typedef struct otrng_client_callbacks_s {
   /* Create a private key for the given accountname/protocol if
    * desired. */
-  void (*create_privkey)(const void *client_opdata); // TODO: This should
-                                                     // receive a
-                                                     // otrng_client_state_s
+  void (*create_privkey)(
+      const void *client_opdata); // TODO: @client This should
+                                  // receive a
+                                  // otrng_client_state_s
 
   /* Create a shared prekey for the given accountname/protocol if not available.
    */

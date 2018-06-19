@@ -35,9 +35,9 @@ typedef struct client_profile_s {
   string_p versions;
   uint64_t expires;
 
-  // TODO: this should be an array of signatures :S
   eddsa_signature_p signature;
-  otrng_mpi_p transitional_signature; // TODO: this should be a signature type
+  otrng_mpi_p transitional_signature; // TODO: @client_profile this should be a
+                                      // signature type
 } client_profile_s, client_profile_p[1];
 
 INTERNAL otrng_bool

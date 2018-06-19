@@ -46,7 +46,7 @@
     otrng_dh_free();                                                           \
   } while (0)
 
-// TODO: how is this type chosen?
+// TODO: @client how is this type chosen?
 #define POLICY_ALLOW_V3 0x04
 #define POLICY_ALLOW_V4 0x05
 
@@ -86,7 +86,7 @@ typedef struct otrng_policy_s {
 } otrng_policy_s, otrng_policy_p[1];
 // clang-format on
 
-// TODO: This is a single instance conversation. Make it multi-instance.
+// TODO: @client This is a single instance conversation. Make it multi-instance.
 typedef struct otrng_conversation_state_s {
   /* void *opdata; // Could have a conversation opdata to point to a, say
    PurpleConversation */
@@ -123,14 +123,14 @@ struct otrng_s {
   string_p sending_init_msg;
   string_p receiving_init_msg;
 
-  time_t last_sent; // TODO: not sure if the best place to put
-  int ignore_msg;   // TODO: not sure if the best place to put
+  time_t last_sent; // TODO: @refactoring not sure if the best place to put
+  int ignore_msg;   // TODO: @refactoring not sure if the best place to put
 };                  /* otrng_s */
 
 typedef struct otrng_s otrng_p[1];
 
 // clang-format off
-// TODO: this a mock
+// TODO: @non_interactive this a mock
 typedef struct otrng_server_s {
   string_p prekey_message;
 } otrng_server_s, otrng_server_p[1];
@@ -151,7 +151,7 @@ typedef enum {
   OTRNG_WARN_RECEIVED_NOT_VALID,
 } otrng_warning;
 
-// TODO: The use of "response" as the type name is confusing:
+// TODO: @refactoring The use of "response" as the type name is confusing:
 // - to_display is the RECEIVED plaintext
 // - tlvs is the RECEIVED list of TLVs
 // - warning is a warning due the RECEIVAL of the message
@@ -189,7 +189,7 @@ INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
                                          otrng_notif notif,
                                          const string_p message, otrng_s *otr);
 
-// TODO: this should be called otrng_send_message()
+// TODO: @refactoring this should be called otrng_send_message()
 INTERNAL otrng_err otrng_prepare_to_send_message(string_p *to_send,
                                                  const string_p message,
                                                  otrng_notif notif,

@@ -43,7 +43,7 @@
 #define WITH_DAKE_FIXTURE(_p, _c)                                              \
   WITH_FIXTURE(_p, _c, dake_fixture_s, dake_fixture)
 
-// TODO: for structs like scalars and points, use: goldilocks_memeq
+// TODO: @refactoring for structs like scalars and points, use: goldilocks_memeq
 // for the rest use our own implementation of mem_cmp
 #define otrng_assert_cmpmem(s1, s2, len)                                       \
   do {                                                                         \

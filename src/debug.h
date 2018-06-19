@@ -54,6 +54,5 @@ static inline void otrng_memdump(const uint8_t *src, size_t len) {
 }
 
 #else
-// TODO: is this used?
 static inline void otrng_memdump(const uint8_t *src, size_t len) {}
 #endif

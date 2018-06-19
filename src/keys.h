@@ -43,7 +43,7 @@ typedef struct otrng_keypair_s {
   otrng_private_key_p priv;
 } otrng_keypair_s, otrng_keypair_p[1];
 
-// TODO: implement correctly when the spec comes
+// TODO: @refactoring @spec implement correctly when the spec comes
 typedef struct otrng_shared_prekey_pair_s {
   /* the private key is this symmetric key, and not the scalar serialized */
   uint8_t sym[ED448_PRIVATE_BYTES];

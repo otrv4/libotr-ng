@@ -56,7 +56,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_fixture->v34->v3_conn =
       otrng_v3_conn_new(otrng_fixture->state, "they_are_alice");
 
-  // TODO: This should be done automatically
+  // TODO: @refactoring This should be done automatically
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
   otrng_assert(!otrl_privkey_generate_FILEp(
