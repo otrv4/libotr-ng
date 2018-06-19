@@ -33,8 +33,6 @@
 
 INTERNAL void otrng_smp_context_init(smp_context_p smp) {
   smp->state = SMPSTATE_EXPECT1;
-  smp->progress = 0;
-  smp->msg1 = NULL;
   smp->secret = NULL;
 
   otrng_ec_bzero(smp->a2, ED448_SCALAR_BYTES);

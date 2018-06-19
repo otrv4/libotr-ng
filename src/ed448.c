@@ -119,6 +119,8 @@ otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
   goldilocks_ed448_derive_public_key(pub, sym);
 }
 
+static uint8_t usage_SK = 0x01;
+
 INTERNAL void
 otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
                             const uint8_t sym[ED448_PRIVATE_BYTES]) {
@@ -126,7 +128,7 @@ otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
    * The spec requires:
 
    1. r = rand(57)
-   2. h = KDF1(0x01 || r, 57)
+   2. h = KDF1(usage_SK || r, 57)
    3. s = little-endian-decode(clamp(h))
 
    4. secret = s
@@ -159,7 +161,7 @@ otrng_ecdh_keypair_generate_their(ec_point_p keypair,
    * The spec requires, in `generateECDH()`:
 
    1. r = rand(57)
-   2. h = KDF1(0x01 || r, 57)
+   2. h = KDF1(usage_SK || r, 57)
    3. s = little-endian-decode(clamp(h))
 
    4. secret = s

@@ -1103,15 +1103,16 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
   // OTRv4 section "Non-Interactive-Auth Message"
   /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
   uint8_t auth_mac_k[HASH_BYTES];
+  uint8_t usage_auth_mac = 0x11;
 
   shake_256_kdf1(auth_mac_k, HASH_BYTES, 0x0D, tmp_key, HASH_BYTES);
 
   // If there is no attached encrypted message
   if (!auth->enc_msg_len) {
     // OTRv4 section, "Non-Interactive DAKE Overview"
-    /* Auth MAC = KDF_1(0x12 || auth_mac_k || t, 64) */
+    /* Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t, 64) */
     goldilocks_shake256_ctx_p hd;
-    hash_init_with_usage(hd, 0x12);
+    hash_init_with_usage(hd, usage_auth_mac);
     hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
     hash_update(hd, t, t_len);
     hash_final(hd, dst, HASH_BYTES);
@@ -1125,7 +1126,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
   // extra = KDF_1(0x11 || attached encrypted ratchet id ||
   // attached encrypted message id || public ecdh key ||
   // public dh key || nonce || encrypted message, 64)
-  /*   Auth MAC = KDF_1(0x12 || auth_mac_k || t || extra, 64)  */
+  /*   Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t || extra, 64)  */
 
   uint8_t *ser_data_msg = NULL;
   size_t bodylen = 0;
@@ -1144,7 +1145,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
   free(ser_data_msg);
 
   goldilocks_shake256_ctx_p hd;
-  hash_init_with_usage(hd, 0x12);
+  hash_init_with_usage(hd, usage_auth_mac);
   hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
   hash_update(hd, t, t_len);
   hash_update(hd, encrypted_msg_mac, HASH_BYTES);

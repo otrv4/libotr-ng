@@ -187,7 +187,7 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
   uint8_t random_buff[ED448_PRIVATE_BYTES];
 
   if (participant == OTRNG_US) {
-    shake_256_kdf1(random_buff, sizeof random_buff, 0x13,
+    shake_256_kdf1(random_buff, sizeof random_buff, 0x12,
                    manager->shared_secret, sizeof(shared_secret_p));
 
     otrng_ec_point_destroy(manager->our_ecdh->pub);
@@ -200,7 +200,7 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     }
 
   } else if (participant == OTRNG_THEM) {
-    shake_256_kdf1(random_buff, sizeof random_buff, 0x13,
+    shake_256_kdf1(random_buff, sizeof random_buff, 0x12,
                    manager->shared_secret, sizeof(shared_secret_p));
 
     otrng_ec_point_destroy(manager->their_ecdh);
@@ -222,6 +222,8 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
 
 tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
   k_dh_p k_dh;
+  uint8_t usage_third_brace_key = 0x02;
+  uint8_t usage_brace_key = 0x03;
 
   if (manager->i % 3 == 0) {
     if (!otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), manager->our_dh->priv,
@@ -234,10 +236,10 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
     // serialized secret. Note that DH(a, B) (in the spec) does not mandate
     // doing so.
     // Also note that OTRv3 serializes DH values in MPI (no leading zeroes).
-    shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x02, k_dh,
-                   sizeof(k_dh_p));
+    shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, usage_third_brace_key,
+                   k_dh, sizeof(k_dh_p));
   } else {
-    shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, 0x03,
+    shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, usage_brace_key,
                    manager->brace_key, sizeof(brace_key_p));
   }
 
@@ -246,10 +248,12 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
   return SUCCESS;
 }
 
+static uint8_t usage_shared_secret = 0x04;
+
 tstatic void calculate_shared_secret(key_manager_s *manager, k_ecdh_p k_ecdh) {
   goldilocks_shake256_ctx_p hd;
 
-  hash_init_with_usage(hd, 0x04);
+  hash_init_with_usage(hd, usage_shared_secret);
   hash_update(hd, k_ecdh, sizeof(k_ecdh_p));
   hash_update(hd, manager->brace_key, sizeof(brace_key_p));
   hash_final(hd, manager->shared_secret, sizeof(shared_secret_p));
@@ -279,8 +283,9 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     calculate_shared_secret(manager, k_ecdh);
 
   } else if (flow == OTRNG_NON_INTERACTIVE) {
-    shake_256_kdf1(manager->shared_secret, sizeof(shared_secret_p), 0x04,
-                   manager->tmp_key, sizeof(manager->tmp_key));
+    shake_256_kdf1(manager->shared_secret, sizeof(shared_secret_p),
+                   usage_shared_secret, manager->tmp_key,
+                   sizeof(manager->tmp_key));
   }
 
   calculate_ssid(manager);
@@ -362,7 +367,8 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
 }
 
 tstatic void calculate_ssid(key_manager_s *manager) {
-  shake_256_kdf1(manager->ssid, sizeof(manager->ssid), 0x05,
+  uint8_t usage_SSID = 0x05;
+  shake_256_kdf1(manager->ssid, sizeof(manager->ssid), usage_SSID,
                  manager->shared_secret, sizeof(shared_secret_p));
 }
 
@@ -391,13 +397,13 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
   // K_ecdh = ECDH(our_ecdh.secret, their_ecdh)
   otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
-  // if i % 3 == 0 : brace_key = KDF_1(0x02 || k_dh, 32)
-  // else brace_key = KDF_1(0x03 || brace_key, 32)
+  // if i % 3 == 0 : brace_key = KDF_1(usage_third_brace_key || k_dh, 32)
+  // else brace_key = KDF_1(usage_brace_key || brace_key, 32)
   if (!calculate_brace_key(manager)) {
     return ERROR;
   }
 
-  // K = KDF_1(0x04 || K_ecdh || brace_key, 64)
+  // K = KDF_1(usage_shared_secret || K_ecdh || brace_key, 64)
   calculate_shared_secret(manager, k_ecdh);
 
 #ifdef DEBUG

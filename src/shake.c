@@ -25,8 +25,7 @@
 void hash_init_with_dom(goldilocks_shake256_ctx_p hash) {
   hash_init(hash);
 
-  // TODO: This should be "OTRv4", per spec.
-  const char *dom_s = "OTR4";
+  const char *dom_s = "OTRv4";
   hash_update(hash, (const unsigned char *)dom_s, strlen(dom_s));
 }
 
