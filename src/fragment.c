@@ -116,8 +116,8 @@ static otrng_err create_fragment_message(char **dst, const char *piece,
   }
 
   snprintf(*dst, FRAGMENT_HEADER_LEN + piece_len + 1, FRAGMENT_FORMAT,
-           identifier, our_instance, their_instance, current, total,
-           (int)piece_len, piece);
+           identifier, our_instance, their_instance, (unsigned short)current,
+           (unsigned short)total, (int)piece_len, piece);
 
   (*dst)[FRAGMENT_HEADER_LEN + piece_len] = 0;
 
