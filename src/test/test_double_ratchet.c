@@ -484,6 +484,7 @@ void test_double_ratchet_corrupted_ratchet(void) {
   data_message_s *corrupted_data_msg = otrng_data_message_new();
   corrupted_data_msg->ratchet_id = 7;
   corrupted_data_msg->message_id = 9;
+  corrupted_data_msg->sender_instance_tag = alice->our_instance_tag;
   corrupted_data_msg->receiver_instance_tag = bob->our_instance_tag;
   m_mac_key_p mac_key;
   corrupted_data_msg->enc_msg = (uint8_t *)otrng_strdup("hduejo");

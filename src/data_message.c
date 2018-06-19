@@ -36,14 +36,16 @@ INTERNAL data_message_s *otrng_data_message_new() {
   ret->flags = 0;
   ret->ratchet_id = 0;
   ret->message_id = 0;
-
-  ret->enc_msg = NULL;
-  ret->enc_msg_len = 0;
+  ret->previous_chain_n = 0;
 
   ret->dh = NULL;
   otrng_ec_bzero(ret->ecdh, ED448_POINT_BYTES);
 
   memset(ret->nonce, 0, sizeof ret->nonce);
+
+  ret->enc_msg = NULL;
+  ret->enc_msg_len = 0;
+
   memset(ret->mac, 0, sizeof ret->mac);
 
   return ret;
