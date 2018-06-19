@@ -286,8 +286,8 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager);
  * @param [manager]   The key manager.
  * @param [action]    Defines if this is the sending or receiving chain.
  */
-tstatic otrng_err key_manager_derive_ratchet_keys(
-    key_manager_s *manager, otrng_participant_action action);
+tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
+                                             otrng_participant_action action);
 
 /**
  * @brief Calculate the secure session id.

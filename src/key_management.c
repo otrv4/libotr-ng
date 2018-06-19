@@ -418,17 +418,12 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
   otrng_memdump(manager->shared_secret, sizeof(manager->shared_secret));
 #endif
 
-  if (!key_manager_derive_ratchet_keys(manager, action)) {
-    sodium_memzero(manager->shared_secret, SHARED_SECRET_BYTES);
-    return ERROR;
-  }
+  key_manager_derive_ratchet_keys(manager, action);
 
   sodium_memzero(manager->shared_secret, SHARED_SECRET_BYTES);
   return SUCCESS;
 }
 
-// TODO: @refactoring not sure about this always return SUCCESS.. maybe some
-// other logic will work
 tstatic otrng_err rotate_keys(key_manager_s *manager,
                               otrng_participant_action action) {
 
@@ -462,9 +457,8 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
   return SUCCESS;
 }
 
-// TODO: @refactoring This never fails
-tstatic otrng_err key_manager_derive_ratchet_keys(
-    key_manager_s *manager, otrng_participant_action action) {
+tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
+                                             otrng_participant_action action) {
   // root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
   // root_key[i-1], K) root_key[i] = KDF_1(usage_root_key || root_key[i-1] || K,
   // 64)
@@ -501,8 +495,6 @@ tstatic otrng_err key_manager_derive_ratchet_keys(
   printf("CHAIN_R = ");
   otrng_memdump(ratchet->chain_r, sizeof(ratchet->chain_r));
 #endif
-
-  return SUCCESS;
 }
 
 static uint8_t usage_next_chain_key = 0x16;
