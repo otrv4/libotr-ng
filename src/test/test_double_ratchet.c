@@ -484,11 +484,16 @@ void test_double_ratchet_corrupted_ratchet(void) {
   data_message_s *corrupted_data_msg = otrng_data_message_new();
   corrupted_data_msg->ratchet_id = 7;
   corrupted_data_msg->message_id = 9;
+  corrupted_data_msg->previous_chain_n = 1;
   corrupted_data_msg->sender_instance_tag = alice->our_instance_tag;
   corrupted_data_msg->receiver_instance_tag = bob->our_instance_tag;
-  m_mac_key_p mac_key;
   corrupted_data_msg->enc_msg = (uint8_t *)otrng_strdup("hduejo");
+  corrupted_data_msg->enc_msg_len = 7;
   otrng_ec_point_copy(corrupted_data_msg->ecdh, bob->keys->our_ecdh->pub);
+  corrupted_data_msg->dh = otrng_dh_mpi_copy(bob->keys->our_dh->pub);
+  memset(corrupted_data_msg->nonce, 0, DATA_MSG_NONCE_BYTES);
+  m_mac_key_p mac_key;
+  memset(mac_key, 0, sizeof mac_key);
   serialize_and_encode_data_msg(&to_send_2, mac_key, NULL, 0,
                                 corrupted_data_msg);
 
