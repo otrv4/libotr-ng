@@ -971,11 +971,15 @@ tstatic otrng_err build_rsign_tag(
                               sender_instance_tag, receiver_instance_tag);
     }
 
-    shake_256_kdf1(hash_ser_i_profile, HASH_BYTES, first_usage, ser_i_profile,
-                   ser_i_profile_len);
-    shake_256_kdf1(hash_ser_r_profile, HASH_BYTES, first_usage + 1,
+    uint8_t usage_bob_client_profile = first_usage;
+    uint8_t usage_alice_client_profile = first_usage + 1;
+    uint8_t usage_phi = first_usage + 2;
+
+    shake_256_kdf1(hash_ser_i_profile, HASH_BYTES, usage_bob_client_profile,
+                   ser_i_profile, ser_i_profile_len);
+    shake_256_kdf1(hash_ser_r_profile, HASH_BYTES, usage_alice_client_profile,
                    ser_r_profile, ser_r_profile_len);
-    shake_256_kdf1(hash_phi, HASH_BYTES, first_usage + 2, phi_val, phi_len);
+    shake_256_kdf1(hash_phi, HASH_BYTES, usage_phi, phi_val, phi_len);
 
     free(phi_val);
 
@@ -1085,11 +1089,13 @@ INTERNAL otrng_err build_non_interactive_rsig_tag(
     return ERROR;
   }
 
+  uint8_t first_usage = 0x0E;
+
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_serialize_otrng_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
   otrng_err result = build_rsign_tag(
-      *msg, MAX_T_LENGTH, msg_len, 0x0E, i_profile, r_profile, i_ecdh, r_ecdh,
-      i_dh, r_dh, ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi,
+      *msg, MAX_T_LENGTH, msg_len, first_usage, i_profile, r_profile, i_ecdh,
+      r_ecdh, i_dh, r_dh, ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi,
       sender_instance_tag, receiver_instance_tag, init_msg);
   sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
@@ -1104,8 +1110,10 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
   /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
   uint8_t auth_mac_k[HASH_BYTES];
   uint8_t usage_auth_mac = 0x11;
+  uint8_t usage_auth_mac_key = 0x0D;
 
-  shake_256_kdf1(auth_mac_k, HASH_BYTES, 0x0D, tmp_key, HASH_BYTES);
+  shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, tmp_key,
+                 HASH_BYTES);
 
   // If there is no attached encrypted message
   if (!auth->enc_msg_len) {

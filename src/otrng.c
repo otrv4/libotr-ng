@@ -735,9 +735,10 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
     return ERROR;
   }
 
+  uint8_t usage_tmp_key = 0x0C;
   // TODO: @refactoring refactor this
   goldilocks_shake256_ctx_p hd;
-  hash_init_with_usage(hd, 0x0C);
+  hash_init_with_usage(hd, usage_tmp_key);
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
@@ -929,9 +930,11 @@ tstatic otrng_err build_non_interactive_auth_message(
   // otr state. This function should only be called if tmp_key is properly
   // initialized.
 
+  uint8_t usage_auth_mac_key = 0x0D;
   /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
   uint8_t auth_mac_k[HASH_BYTES];
-  shake_256_kdf1(auth_mac_k, HASH_BYTES, 0x0D, otr->keys->tmp_key, HASH_BYTES);
+  shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, otr->keys->tmp_key,
+                 HASH_BYTES);
 
   unsigned char *t = NULL;
   size_t t_len = 0;
@@ -1187,8 +1190,10 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
     return ERROR;
   }
 
+  uint8_t usage_tmp_key = 0x0C;
+
   goldilocks_shake256_ctx_p hd;
-  hash_init_with_usage(hd, 0x0C);
+  hash_init_with_usage(hd, usage_tmp_key);
   hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
@@ -1335,7 +1340,7 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
     return ERROR;
   }
 
-  /* tmp_k = KDF_1(0x0C || K_ecdh || ECDH(x, their_shared_prekey) ||
+  /* tmp_k = KDF_1(usage_tmp_key || K_ecdh || ECDH(x, their_shared_prekey) ||
    * ECDH(x, Pkb) || brace_key) */
   if (!generate_tmp_key_r(otr->keys->tmp_key, otr)) {
     return ERROR;
@@ -2533,7 +2538,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
 
-  // Authenticator = KDF_1(0x1C || MKmac || KDF_1(0x1B ||
+  // Authenticator = KDF_1(0x1C || MKmac || KDF_1(usage_authenticator ||
   // data_message_sections, 64), 64)
   if (otr->keys->j == 0) {
     size_t ser_mac_keys_len =

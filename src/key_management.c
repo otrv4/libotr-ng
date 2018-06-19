@@ -185,9 +185,10 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
 tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
                                                 otrng_participant participant) {
   uint8_t random_buff[ED448_PRIVATE_BYTES];
+  uint8_t usage_ECDH_first_ephemeral = 0x12;
 
   if (participant == OTRNG_US) {
-    shake_256_kdf1(random_buff, sizeof random_buff, 0x12,
+    shake_256_kdf1(random_buff, sizeof random_buff, usage_ECDH_first_ephemeral,
                    manager->shared_secret, sizeof(shared_secret_p));
 
     otrng_ec_point_destroy(manager->our_ecdh->pub);
@@ -200,7 +201,7 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     }
 
   } else if (participant == OTRNG_THEM) {
-    shake_256_kdf1(random_buff, sizeof random_buff, 0x12,
+    shake_256_kdf1(random_buff, sizeof random_buff, usage_ECDH_first_ephemeral,
                    manager->shared_secret, sizeof(shared_secret_p));
 
     otrng_ec_point_destroy(manager->their_ecdh);
@@ -465,20 +466,24 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
 tstatic otrng_err key_manager_derive_ratchet_keys(
     key_manager_s *manager, otrng_participant_action action) {
   // root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
-  // root_key[i-1], K) root_key[i] = KDF_1(0x15 || root_key[i-1] || K, 64)
+  // root_key[i-1], K) root_key[i] = KDF_1(usage_root_key || root_key[i-1] || K,
+  // 64)
+
+  uint8_t usage_root_key = 0x14;
+  uint8_t usage_chain_key = 0x15;
 
   goldilocks_shake256_ctx_p hd;
-  hash_init_with_usage(hd, 0x15);
+  hash_init_with_usage(hd, usage_root_key);
   hash_update(hd, manager->current->root_key, sizeof(root_key_p));
   hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
   hash_final(hd, manager->current->root_key, sizeof(root_key_p));
   hash_destroy(hd);
 
-  hash_init_with_usage(hd, 0x16);
+  hash_init_with_usage(hd, usage_chain_key);
   hash_update(hd, manager->current->root_key, sizeof(root_key_p));
   hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
 
-  // chain_key_purpose[i][j] = KDF_1(0x16 || root_key[i-1] || K, 64)
+  // chain_key_purpose[i][j] = KDF_1(usage_chain_key || root_key[i-1] || K, 64)
   if (action == OTRNG_SENDING) {
     hash_final(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
   } else if (action == OTRNG_RECEIVING) {
@@ -500,17 +505,24 @@ tstatic otrng_err key_manager_derive_ratchet_keys(
   return SUCCESS;
 }
 
+static uint8_t usage_next_chain_key = 0x16;
+static uint8_t usage_message_key = 0x17;
+static uint8_t usage_mac_key = 0x18;
+static uint8_t usage_extra_symm_key = 0x20;
+
 tstatic void derive_next_chain_key(key_manager_s *manager,
                                    otrng_participant_action action) {
-  // chain_key_s[i-1][j+1] = KDF_1(0x17 || chain_key_s[i-1][j], 64)
+  // chain_key_s[i-1][j+1] = KDF_1(usage_next_chain_key || chain_key_s[i-1][j],
+  // 64)
   if (action == OTRNG_SENDING) {
-    shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p), 0x17,
-                   manager->current->chain_s, sizeof(sending_chain_key_p));
+    shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p),
+                   usage_next_chain_key, manager->current->chain_s,
+                   sizeof(sending_chain_key_p));
 
   } else if (action == OTRNG_RECEIVING) {
 
     shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
-                   0x17, manager->current->chain_r,
+                   usage_next_chain_key, manager->current->chain_r,
                    sizeof(receiving_chain_key_p));
   }
 }
@@ -520,17 +532,18 @@ tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                                             key_manager_s *manager,
                                             otrng_participant_action action) {
   // MKenc, MKmac = derive_enc_mac_keys(chain_key_s[i-1][j])
-  // MKenc = KDF_1(0x18 || chain_key, 32)
-  // MKmac = KDF_1(0x19 || MKenc, 64)
+  // MKenc = KDF_1(usage_message_key || chain_key, 32)
+  // MKmac = KDF_1(usage_mac_key || MKenc, 64)
+
   if (action == OTRNG_SENDING) {
-    shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
+    shake_256_kdf1(enc_key, sizeof(m_enc_key_p), usage_message_key,
                    manager->current->chain_s, sizeof(sending_chain_key_p));
 
   } else if (action == OTRNG_RECEIVING) {
-    shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
+    shake_256_kdf1(enc_key, sizeof(m_enc_key_p), usage_message_key,
                    manager->current->chain_r, sizeof(receiving_chain_key_p));
   }
-  shake_256_kdf1(mac_key, sizeof(m_mac_key_p), 0x19, enc_key,
+  shake_256_kdf1(mac_key, sizeof(m_mac_key_p), usage_mac_key, enc_key,
                  sizeof(m_enc_key_p));
 }
 
@@ -540,10 +553,11 @@ tstatic void calculate_extra_key(key_manager_s *manager,
   uint8_t extra_key_buff[EXTRA_SYMMETRIC_KEY_BYTES];
   uint8_t magic[1] = {0xFF};
 
-  hash_init_with_usage(hd, 0x1A);
+  hash_init_with_usage(hd, usage_extra_symm_key);
   hash_update(hd, magic, 1);
 
-  // extra_symm_key = KDF_1(0x1A || 0xFF || chain_key_s[i-1][j], 32)
+  // extra_symm_key = KDF_1(usage_extra_symm_key || 0xFF || chain_key_s[i-1][j],
+  // 32)
   if (action == OTRNG_SENDING) {
     hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
   } else if (action == OTRNG_SENDING) {
@@ -592,14 +606,14 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
                sizeof(manager->current->chain_r)) == 0)) {
 
     while (manager->k < until) {
-      shake_256_kdf1(enc_key, sizeof(m_enc_key_p), 0x18,
+      shake_256_kdf1(enc_key, sizeof(m_enc_key_p), usage_message_key,
                      manager->current->chain_r, sizeof(receiving_chain_key_p));
 
       goldilocks_shake256_ctx_p hd;
       uint8_t extra_key[EXTRA_SYMMETRIC_KEY_BYTES];
       uint8_t magic[1] = {0xFF};
 
-      hash_init_with_usage(hd, 0x1A);
+      hash_init_with_usage(hd, usage_extra_symm_key);
       hash_update(hd, magic, 1);
 
       hash_update(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
@@ -607,7 +621,7 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
       hash_destroy(hd);
 
       shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
-                     0x17, manager->current->chain_r,
+                     usage_next_chain_key, manager->current->chain_r,
                      sizeof(receiving_chain_key_p));
 
       skipped_keys_s *skipped_m_enc_key = malloc(sizeof(skipped_keys_s));
@@ -640,7 +654,7 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
 }
 
 /* MKenc, extra_symm_key = skipped_MKenc[ratchet_id, message_id]
-   MKmac = KDF_1(0x19 || MKenc, 64).
+   MKmac = KDF_1(usage_mac_key || MKenc, 64).
 */
 INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
                                               m_mac_key_p mac_key,
@@ -652,7 +666,8 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
 
     if (skipped_keys->i == ratchet_id && skipped_keys->j == message_id) {
       memcpy(enc_key, skipped_keys->m_enc_key, sizeof(m_enc_key_p));
-      shake_256_kdf1(mac_key, MAC_KEY_BYTES, 0x19, enc_key, ENC_KEY_BYTES);
+      shake_256_kdf1(mac_key, MAC_KEY_BYTES, usage_mac_key, enc_key,
+                     ENC_KEY_BYTES);
 
       memcpy(manager->extra_symmetric_key, skipped_keys->extra_symmetric_key,
              sizeof(extra_symmetric_key_p));
@@ -753,7 +768,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
       list_element_s *last = otrng_list_get_last(manager->skipped_keys);
       skipped_keys_s *skipped_keys = last->data;
       memcpy(enc_key, skipped_keys->m_enc_key, sizeof(m_enc_key_p));
-      shake_256_kdf1(mac_key, sizeof(m_mac_key_p), 0x19, enc_key,
+      shake_256_kdf1(mac_key, sizeof(m_mac_key_p), usage_mac_key, enc_key,
                      sizeof(m_enc_key_p));
       memcpy(ser_mac_keys + i * MAC_KEY_BYTES, mac_key, MAC_KEY_BYTES);
       manager->skipped_keys =
