@@ -947,13 +947,9 @@ tstatic otrng_err build_rsign_tag(
       continue;
     }
 
-    // TODO: @refactoring refactor me!
-    size_t s = 0;
-    size_t phi_len = 0;
+    size_t s = strlen(phi) + 1 + 4 + 4 + 4;
     if (init_msg) {
-      s = strlen(phi) + 1 + 4 + 4 + 4 + strlen(init_msg) + 1 + 4;
-    } else {
-      s = strlen(phi) + 1 + 4 + 4 + 4;
+      s += strlen(init_msg) + 1 + 4;
     }
 
     uint8_t *phi_val = malloc(s);
@@ -961,6 +957,7 @@ tstatic otrng_err build_rsign_tag(
       continue;
     }
 
+    size_t phi_len = 0;
     if (init_msg) {
       phi_len = otrng_serialize_phi(phi_val, (uint8_t *)phi, strlen(phi) + 1,
                                     (uint8_t *)init_msg, strlen(init_msg) + 1,
