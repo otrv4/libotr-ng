@@ -645,6 +645,7 @@ void test_valid_identity_msg_in_waiting_auth_r() {
 
   g_assert_cmpstr(bob_to_alice->conn->sending_init_msg, ==,
                   alice_to_bob->conn->receiving_init_msg);
+  g_assert_cmpstr(bob_to_alice->conn->sending_init_msg, ==, "?OTRv4? Hi bob");
   g_assert_cmpstr(alice_to_bob->conn->sending_init_msg, ==, "?OTRv4? Hi alice");
   otrng_assert(bob_to_alice->conn->receiving_init_msg == NULL);
 
@@ -860,6 +861,9 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
 
   g_assert_cmpstr(alice_to_bob->conn->sending_init_msg, ==,
                   bob_to_alice->conn->receiving_init_msg);
+  g_assert_cmpstr(alice_to_bob->conn->sending_init_msg, ==, "?OTRv4? Hi bob");
+  otrng_assert(bob_to_alice->conn->sending_init_msg == NULL);
+  otrng_assert(alice_to_bob->conn->receiving_init_msg == NULL);
 
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_START);
   otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_AUTH_R);
