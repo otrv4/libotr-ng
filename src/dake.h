@@ -70,17 +70,6 @@ typedef struct dake_non_interactive_auth_message_s {
   uint32_t prekey_message_id;
   uint32_t long_term_key_id;
   uint32_t prekey_profile_id;
-
-  // TODO: @refactoring Extract this to a data structure that can be shared with
-  // data_message_s
-  /* only used if an ecrypted message is attached */
-  uint32_t ratchet_id;
-  uint32_t message_id;
-  ec_point_p ecdh;
-  dh_public_key_p dh;
-  uint8_t nonce[DATA_MSG_NONCE_BYTES];
-  uint8_t *enc_msg;
-  size_t enc_msg_len;
   uint8_t auth_mac[DATA_MSG_MAC_BYTES];
 } dake_non_interactive_auth_message_s, dake_non_interactive_auth_message_p[1];
 
@@ -169,14 +158,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
     const uint8_t *t, size_t t_len, uint8_t tmp_key[HASH_BYTES]);
 
 #ifdef OTRNG_DAKE_PRIVATE
-
-tstatic otrng_err
-xzdh_encrypted_message_asprintf(uint8_t **dst, size_t *dst_len,
-                                const dake_non_interactive_auth_message_s *msg);
-
-tstatic size_t xzdh_encrypted_message_deserialize(
-    dake_non_interactive_auth_message_s *dst, const uint8_t *buffer, size_t len,
-    size_t *read);
 
 #endif
 

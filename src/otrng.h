@@ -220,11 +220,7 @@ API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr);
 
 API otrng_err otrng_send_offline_message(string_p *dst,
                                          const prekey_ensemble_s *ensemble,
-                                         const string_p message, otrng_s *otr);
-
-API otrng_err otrng_send_non_interactive_auth_msg(string_p *dst,
-                                                  const string_p message,
-                                                  otrng_s *otr);
+                                         otrng_s *otr);
 
 API void otrng_v3_init(void);
 

@@ -148,7 +148,7 @@ otrng_prekey_profile_build(uint32_t id, uint32_t instance_tag,
 #define PREKEY_PROFILE_EXPIRATION_SECONDS 1 * 30 * 24 * 60 * 60; /* 1 month */
   time_t expires = time(NULL);
   p->expires = expires + PREKEY_PROFILE_EXPIRATION_SECONDS;
-  otrng_ec_point_copy(p->shared_prekey, prekey_pair->pub); // Key "D"
+  otrng_ec_point_copy(p->shared_prekey, prekey_pair->pub); /* Key "D" */
 
   if (!prekey_profile_sign(p, longterm_pair)) {
     otrng_prekey_profile_free(p);

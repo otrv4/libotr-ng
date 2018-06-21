@@ -274,8 +274,7 @@ void test_otrng_send_offline_message() {
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   char *to_bob = NULL;
-  otrng_assert_is_success(
-      otrng_send_offline_message(&to_bob, ensemble, "hi", alice));
+  otrng_assert_is_success(otrng_send_offline_message(&to_bob, ensemble, alice));
   otrng_prekey_ensemble_free(ensemble);
 
   otrng_assert(to_bob);
@@ -284,9 +283,8 @@ void test_otrng_send_offline_message() {
   otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(alice->running_version == OTRNG_VERSION_4);
 
-  // There is an attached encrypted message sent
-  g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -295,17 +293,16 @@ void test_otrng_send_offline_message() {
   otrng_assert_is_success(otrng_receive_message(resp, notif, to_bob, bob));
   free(to_bob);
 
-  otrng_assert(resp->to_display);
-  otrng_assert_cmpmem(resp->to_display, "hi", 3);
+  otrng_assert(!resp->to_display);
   otrng_assert(!resp->to_send);
   otrng_response_free_all(resp);
 
   g_assert_cmpint(bob->their_prekeys_id, ==, 0);
   otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(bob->running_version == OTRNG_VERSION_4);
-  g_assert_cmpint(bob->keys->i, ==, 1);
+  g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 0);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   otrng_assert_ec_public_key_eq(bob->keys->their_ecdh,
@@ -511,342 +508,6 @@ alice)); g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 4);
   otrng_free_all(alice, bob);
 }
 
-void test_api_non_interactive_conversation_with_enc_msg_1(void) {
-
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
-
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
-
-  otrng_response_s *response_to_bob = otrng_response_new();
-  otrng_response_s *response_to_alice = otrng_response_new();
-
-  otrng_server_s *server = malloc(sizeof(otrng_server_s));
-  server->prekey_message = NULL;
-  otrng_notif notif = NOTIF_NONE;
-
-  // Alice uploads prekey message to server
-  otrng_assert_is_success(otrng_start_non_interactive_dake(server, alice));
-
-  otrng_assert(alice->state == OTRNG_STATE_START);
-  otrng_assert(server->prekey_message != NULL);
-
-  // Bob asks server for prekey message
-  // Server replies with prekey message
-  otrng_reply_with_prekey_msg_from_server(server, response_to_bob);
-  otrng_assert(bob->state == OTRNG_STATE_START);
-  otrng_assert(response_to_bob != NULL);
-
-  otrng_assert_cmpmem("?OTR:AAQP", response_to_bob->to_send, 9);
-
-  // Bob receives Alice's profiles from the server
-  // (they will come from the ensemble, but I don't want to change the API
-  // used here at the moment)
-  bob->their_client_profile = malloc(sizeof(client_profile_s));
-  otrng_client_profile_copy(
-      bob->their_client_profile,
-      otrng_client_state_get_or_create_client_profile(alice_client_state));
-
-  bob->their_prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
-  otrng_prekey_profile_copy(
-      bob->their_prekey_profile,
-      otrng_client_state_get_or_create_prekey_profile(alice_client_state));
-
-  // Bob receives prekey message
-  otrng_assert_is_success(otrng_receive_message(response_to_alice, notif,
-                                     response_to_bob->to_send, bob));
-
-  otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-  otrng_assert(bob->keys->current);
-
-  otrng_assert_is_success(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
-                                                   "hi", bob));
-
-  // Should send an non-interactive auth message
-  otrng_assert(response_to_alice->to_display == NULL);
-  otrng_assert(response_to_alice->to_send);
-  otrng_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
-
-  // There is an attached encrypted message
-  g_assert_cmpint(bob->keys->i, ==, 1);
-  g_assert_cmpint(bob->keys->j, ==, 1);
-  g_assert_cmpint(bob->keys->k, ==, 0);
-  g_assert_cmpint(bob->keys->pn, ==, 0);
-
-  // Alice receives an non-interactive auth message
-  otrng_assert_is_success(otrng_receive_message(response_to_bob, notif,
-                                     response_to_alice->to_send,
-                                     alice));
-
-  otrng_assert_ec_public_key_eq(alice->keys->their_ecdh,
-                                bob->keys->our_ecdh->pub);
-  otrng_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
-  otrng_assert_cmpmem("hi", response_to_bob->to_display, 3);
-
-  otrng_response_free_all(response_to_alice, response_to_bob);
-
-  free(server->prekey_message);
-  server->prekey_message = NULL;
-  free(server);
-  server = NULL;
-
-  otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-  otrng_assert(alice->keys->current);
-  otrng_assert(alice->keys->old_mac_keys);
-
-  g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 0);
-  g_assert_cmpint(alice->keys->k, ==, 1);
-  g_assert_cmpint(alice->keys->pn, ==, 0);
-
-  // Both have the same shared secret
-  otrng_assert_root_key_eq(alice->keys->current->root_key,
-                           bob->keys->current->root_key);
-
-  int message_id;
-  string_p to_send = NULL;
-  otrng_err result;
-
-  // TODO: @non_interactive this is usually set up by the querry or whitespace,
-  // this will be defined on the prekey server spec.
-  bob->running_version = OTRNG_VERSION_4;
-  alice->running_version = OTRNG_VERSION_4;
-
-  for (message_id = 1; message_id < 4; message_id++) {
-    tlv_list_s *tlvs = NULL;
-    // Alice sends a data message
-    result =
-        otrng_prepare_to_send_message(&to_send, "hi", notif, &tlvs, 0, alice);
-    otrng_tlv_list_free(tlvs);
-    assert_msg_sent(result, to_send);
-    otrng_assert(!alice->keys->old_mac_keys);
-
-    g_assert_cmpint(alice->keys->i, ==, 2);
-    g_assert_cmpint(alice->keys->j, ==, message_id);
-    g_assert_cmpint(alice->keys->k, ==, 1);
-    g_assert_cmpint(alice->keys->pn, ==, 0);
-
-    // Bob receives a data message
-    response_to_alice = otrng_response_new();
-    result = otrng_receive_message(response_to_alice, notif, to_send, bob);
-    assert_msg_rec(result, "hi", response_to_alice);
-    otrng_assert(bob->keys->old_mac_keys);
-
-    free_message_and_response(response_to_alice, &to_send);
-
-    g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, message_id);
-
-    g_assert_cmpint(bob->keys->i, ==, 2);
-    g_assert_cmpint(bob->keys->j, ==, 0);
-    g_assert_cmpint(bob->keys->k, ==, message_id);
-    g_assert_cmpint(bob->keys->pn, ==, 1);
-  }
-
-  for (message_id = 1; message_id < 4; message_id++) {
-    // Bob sends a data message
-    tlv_list_s *tlvs = NULL;
-    result =
-        otrng_prepare_to_send_message(&to_send, "hello", notif, &tlvs, 0, bob);
-    otrng_tlv_list_free(tlvs);
-    assert_msg_sent(result, to_send);
-
-    g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
-    g_assert_cmpint(bob->keys->i, ==, 3);
-    g_assert_cmpint(bob->keys->j, ==, message_id);
-    g_assert_cmpint(bob->keys->k, ==, 3);
-    g_assert_cmpint(bob->keys->pn, ==, 1);
-
-    // Alice receives a data message
-    response_to_bob = otrng_response_new();
-    otrng_err result =
-        otrng_receive_message(response_to_bob, notif, to_send, alice);
-    assert_msg_rec(result, "hello", response_to_bob);
-    g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
-
-    free_message_and_response(response_to_bob, &to_send);
-
-    g_assert_cmpint(alice->keys->i, ==, 3);
-    g_assert_cmpint(alice->keys->j, ==, 0);
-    g_assert_cmpint(alice->keys->k, ==, message_id);
-    g_assert_cmpint(alice->keys->pn, ==, 3);
-  }
-
-  otrng_user_state_free_all(alice_client_state->user_state,
-                            bob_client_state->user_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
-  otrng_free_all(alice, bob);
-}
-
-void test_api_non_interactive_conversation_with_enc_msg_2(void) {
-
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
-
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
-
-  otrng_response_s *response_to_bob = otrng_response_new();
-  otrng_response_s *response_to_alice = otrng_response_new();
-
-  otrng_server_s *server = malloc(sizeof(otrng_server_s));
-  server->prekey_message = NULL;
-  otrng_notif notif = NOTIF_NONE;
-
-  // Alice uploads prekey message to server
-  otrng_assert_is_success(otrng_start_non_interactive_dake(server, alice));
-
-  otrng_assert(alice->state == OTRNG_STATE_START);
-  otrng_assert(server->prekey_message != NULL);
-
-  // Bob asks server for prekey message
-  // Server replies with prekey message
-  otrng_reply_with_prekey_msg_from_server(server, response_to_bob);
-  otrng_assert(bob->state == OTRNG_STATE_START);
-  otrng_assert(response_to_bob != NULL);
-
-  otrng_assert_cmpmem("?OTR:AAQP", response_to_bob->to_send, 9);
-
-  // Bob receives Alice's profiles from the server
-  // (they will come from the ensemble, but I don't want to change the API
-  // used here at the moment)
-  bob->their_client_profile = malloc(sizeof(client_profile_s));
-  otrng_client_profile_copy(
-      bob->their_client_profile,
-      otrng_client_state_get_or_create_client_profile(alice_client_state));
-
-  bob->their_prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
-  otrng_prekey_profile_copy(
-      bob->their_prekey_profile,
-      otrng_client_state_get_or_create_prekey_profile(alice_client_state));
-
-  // Bob receives prekey message
-  otrng_assert_is_success(otrng_receive_message(response_to_alice, notif,
-                                     response_to_bob->to_send, bob));
-
-  otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-  otrng_assert(bob->keys->current);
-  g_assert_cmpint(bob->keys->i, ==, 0);
-  g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 0);
-  g_assert_cmpint(alice->keys->pn, ==, 0);
-
-  otrng_assert_is_success(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
-                                                   "hi", bob));
-
-  // Should send an non-interactive auth message
-  otrng_assert(response_to_alice->to_display == NULL);
-  otrng_assert(response_to_alice->to_send);
-  otrng_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
-
-  // Alice receives an non-interactive auth message
-  otrng_assert_is_success(otrng_receive_message(response_to_bob, notif,
-                                     response_to_alice->to_send,
-                                     alice));
-
-  otrng_assert_ec_public_key_eq(alice->keys->their_ecdh,
-                                bob->keys->our_ecdh->pub);
-  otrng_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
-  otrng_assert_cmpmem("hi", response_to_bob->to_display, 3);
-
-  otrng_response_free_all(response_to_alice, response_to_bob);
-
-  free(server->prekey_message);
-  server->prekey_message = NULL;
-  free(server);
-  server = NULL;
-
-  otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-  otrng_assert(alice->keys->current);
-  otrng_assert(alice->keys->old_mac_keys);
-
-  g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 0);
-  g_assert_cmpint(alice->keys->k, ==, 1);
-  g_assert_cmpint(alice->keys->pn, ==, 0);
-
-  // Both have the same shared secret/root key
-  otrng_assert_root_key_eq(alice->keys->current->root_key,
-                           bob->keys->current->root_key);
-
-  int message_id;
-  string_p to_send = NULL;
-  otrng_err result;
-
-  // TODO: @non_interactive this is usually set up by the querry or whitespace,
-  // this will be defined on the prekey server spec.
-  bob->running_version = OTRNG_VERSION_4;
-  alice->running_version = OTRNG_VERSION_4;
-
-  // A new DH ratchet does not happen
-  for (message_id = 1; message_id < 4; message_id++) {
-    tlv_list_s *tlvs = NULL;
-    // Bob sends a data message
-    result =
-        otrng_prepare_to_send_message(&to_send, "hi", notif, &tlvs, 0, bob);
-    otrng_tlv_list_free(tlvs);
-    assert_msg_sent(result, to_send);
-    otrng_assert(!bob->keys->old_mac_keys);
-
-    g_assert_cmpint(bob->keys->i, ==, 1);
-    g_assert_cmpint(bob->keys->j, ==, message_id + 1);
-    g_assert_cmpint(bob->keys->k, ==, 0);
-    g_assert_cmpint(bob->keys->pn, ==, 0);
-
-    // Alice receives a data message
-    response_to_bob = otrng_response_new();
-    otrng_err result =
-        otrng_receive_message(response_to_bob, notif, to_send, alice);
-    assert_msg_rec(result, "hi", response_to_bob);
-    otrng_assert(alice->keys->old_mac_keys);
-
-    free_message_and_response(response_to_bob, &to_send);
-
-    g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==,
-                    message_id + 1);
-
-    g_assert_cmpint(alice->keys->i, ==, 1);
-    g_assert_cmpint(alice->keys->j, ==, 0);
-    g_assert_cmpint(alice->keys->k, ==, message_id + 1);
-    g_assert_cmpint(alice->keys->pn, ==, 0);
-  }
-
-  for (message_id = 1; message_id < 4; message_id++) {
-    // Alice sends a data message
-    tlv_list_s *tlvs = NULL;
-    result = otrng_prepare_to_send_message(&to_send, "hello", notif, &tlvs, 0,
-                                           alice);
-    otrng_tlv_list_free(tlvs);
-    assert_msg_sent(result, to_send);
-
-    g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 0);
-
-    // New ratchet hapenned
-    g_assert_cmpint(alice->keys->i, ==, 2);
-    g_assert_cmpint(alice->keys->j, ==, message_id);
-    g_assert_cmpint(alice->keys->k, ==, 4);
-    g_assert_cmpint(alice->keys->pn, ==, 0);
-
-    // Bob receives a data message
-    response_to_alice = otrng_response_new();
-    otrng_err result =
-        otrng_receive_message(response_to_alice, notif, to_send, bob);
-    assert_msg_rec(result, "hello", response_to_alice);
-    g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, message_id);
-
-    free_message_and_response(response_to_alice, &to_send);
-
-    g_assert_cmpint(bob->keys->i, ==, 2);
-    g_assert_cmpint(bob->keys->j, ==, 0);
-    g_assert_cmpint(bob->keys->k, ==, message_id);
-    g_assert_cmpint(bob->keys->pn, ==, 4);
-  }
-
-  otrng_user_state_free_all(alice_client_state->user_state,
-                            bob_client_state->user_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
-  otrng_free_all(alice, bob);
-}
 */
 
 void test_api_conversation_errors_1(void) {

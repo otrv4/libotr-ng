@@ -164,6 +164,12 @@ INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key_p their_dh,
 INTERNAL otrng_err
 otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
 
+INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
+                                                  k_ecdh_p k_ecdh,
+                                                  brace_key_p brace_key,
+                                                  k_ecdh_p tmp_ecdh_k1,
+                                                  k_ecdh_p tmp_ecdh_k2);
+
 /**
  * @brief Generate the Mixed Shared Secret.
  *        If it is part of the interactive DAKE, generate it

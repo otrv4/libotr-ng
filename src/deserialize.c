@@ -247,6 +247,7 @@ INTERNAL otrng_err otrng_deserialize_ring_sig(ring_sig_s *proof,
   }
 
   const uint8_t *cursor = serialized;
+
   if (!otrng_deserialize_ec_scalar(proof->c1, cursor, ser_len)) {
     return ERROR;
   }

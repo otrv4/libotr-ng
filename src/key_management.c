@@ -181,7 +181,25 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   return SUCCESS;
 }
 
-// Generate the ephemeral keys just as the DAKE is finished
+INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
+                                                  k_ecdh_p k_ecdh,
+                                                  brace_key_p brace_key,
+                                                  k_ecdh_p tmp_ecdh_k1,
+                                                  k_ecdh_p tmp_ecdh_k2) {
+  uint8_t usage_tmp_key = 0x0C;
+  goldilocks_shake256_ctx_p hd;
+
+  hash_init_with_usage(hd, usage_tmp_key);
+  hash_update(hd, k_ecdh, ED448_POINT_BYTES);
+  hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
+  hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
+  hash_update(hd, brace_key, sizeof(brace_key_p));
+
+  hash_final(hd, tmp_key, HASH_BYTES);
+  hash_destroy(hd);
+}
+
+/* Generate the ephemeral keys just as the DAKE is finished */
 tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
                                                 otrng_participant participant) {
   uint8_t random_buff[ED448_PRIVATE_BYTES];
@@ -209,8 +227,8 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
 
     gcry_mpi_release(manager->their_dh);
     manager->their_dh = NULL;
-    dh_keypair_p tmp_their_dh;
 
+    dh_keypair_p tmp_their_dh;
     if (!otrng_dh_keypair_generate_from_shared_secret(
             manager->shared_secret, tmp_their_dh, participant)) {
       return ERROR;

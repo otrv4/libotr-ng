@@ -137,18 +137,11 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/dake/build_interactive_rsign_tag",
                   test_build_interactive_rsign_tag);
-  g_test_add_func("/dake/xzdh_encrypted_message_asprintf",
-                  test_xzdh_encrypted_message_asprintf);
-  g_test_add_func("/dake/xzdh_encrypted_message_deserialize",
-                  test_xzdh_encrypted_message_deserialize);
 
   WITH_DAKE_FIXTURE("/dake/non_interactive_auth_message/serialize",
                     test_dake_non_interactive_auth_message_serializes);
   WITH_DAKE_FIXTURE("/dake/non_interactive_auth_message/deserialize",
                     test_otrng_dake_non_interactive_auth_message_deserializes);
-  WITH_DAKE_FIXTURE(
-      "/dake/non_interactive_auth_message_with_encrypted_message/serialize",
-      test_dake_non_interactive_auth_message_with_encrypted_message_serializes);
 
   WITH_DAKE_FIXTURE("/dake/identity_message/serializes",
                     test_dake_identity_message_serializes);
@@ -304,10 +297,6 @@ int main(int argc, char **argv) {
 
   // g_test_add_func("/api/non_interactive_conversation/v4",
   //                test_api_non_interactive_conversation);
-  // g_test_add_func("/api/non_interactive_conversation_enc_msg_1/v4",
-  //                test_api_non_interactive_conversation_with_enc_msg_1);
-  // g_test_add_func("/api/non_interactive_conversation_enc_msg_2/v4",
-  //                test_api_non_interactive_conversation_with_enc_msg_2);
 
   g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
   g_test_add_func("/api/conversation_errors_1", test_api_conversation_errors_1);

@@ -562,59 +562,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   otrng_ec_point_destroy(non_interactive_auth->X);
   otrng_client_profile_destroy(non_interactive_auth->profile);
   otrng_ring_sig_destroy(non_interactive_auth->sigma);
-
-  if (non_interactive_auth->enc_msg) {
-    free(non_interactive_auth->enc_msg);
-    non_interactive_auth->enc_msg = NULL;
-    non_interactive_auth->enc_msg_len = 0;
-    otrng_dh_mpi_release(non_interactive_auth->dh);
-    non_interactive_auth->dh = NULL;
-    otrng_ec_point_destroy(non_interactive_auth->ecdh);
-    sodium_memzero(non_interactive_auth->nonce, DATA_MSG_NONCE_BYTES);
-  }
-
   sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
-}
-
-tstatic otrng_err xzdh_encrypted_message_asprintf(
-    uint8_t **dst, size_t *dst_len,
-    const dake_non_interactive_auth_message_s *msg) {
-  size_t s = 0;
-  uint8_t *cursor = NULL;
-
-  if (dst && msg->enc_msg) {
-    s = 4 + 4 + ED448_POINT_BYTES + DH_MPI_BYTES + DATA_MSG_NONCE_BYTES + 4 +
-        msg->enc_msg_len;
-
-    *dst = cursor = malloc(s);
-    if (!*dst) {
-      return ERROR;
-    }
-
-    cursor += otrng_serialize_uint32(cursor, msg->ratchet_id);
-    cursor += otrng_serialize_uint32(cursor, msg->message_id);
-    cursor += otrng_serialize_ec_point(cursor, msg->ecdh);
-
-    size_t len = 0;
-    if (!otrng_serialize_dh_public_key(cursor, (s - (cursor - *dst)), &len,
-                                       msg->dh)) {
-      free(*dst);
-      *dst = NULL;
-      return ERROR;
-    }
-
-    cursor += len;
-
-    cursor +=
-        otrng_serialize_bytes_array(cursor, msg->nonce, DATA_MSG_NONCE_BYTES);
-    cursor += otrng_serialize_data(cursor, msg->enc_msg, msg->enc_msg_len);
-  }
-
-  if (dst && dst_len) {
-    *dst_len = (cursor - *dst);
-  }
-
-  return SUCCESS;
 }
 
 INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
@@ -633,19 +581,10 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
     return ERROR;
   }
 
-  size_t data_msg_len = 0;
-  uint8_t *data_msg = NULL;
-  if (!xzdh_encrypted_message_asprintf(&data_msg, &data_msg_len,
-                                       non_interactive_auth)) {
-    free(our_profile);
-    return ERROR;
-  }
-
-  size_t s = NON_INT_AUTH_BYTES + our_profile_len + data_msg_len;
+  size_t s = NON_INT_AUTH_BYTES + our_profile_len;
   uint8_t *buff = malloc(s);
   if (!buff) {
     free(our_profile);
-    free(data_msg);
     return ERROR;
   }
 
@@ -665,7 +604,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   if (!otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)), &len,
                                      non_interactive_auth->A)) {
     free(buff);
-    free(data_msg);
     return ERROR;
   }
 
@@ -679,9 +617,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   cursor +=
       otrng_serialize_uint32(cursor, non_interactive_auth->prekey_profile_id);
 
-  cursor += otrng_serialize_bytes_array(cursor, data_msg, data_msg_len);
-  free(data_msg);
-
   cursor += otrng_serialize_bytes_array(cursor, non_interactive_auth->auth_mac,
                                         sizeof(non_interactive_auth->auth_mac));
 
@@ -692,70 +627,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
   }
 
   return SUCCESS;
-}
-
-tstatic size_t xzdh_encrypted_message_deserialize(
-    dake_non_interactive_auth_message_s *dst, const uint8_t *buffer, size_t len,
-    size_t *read) {
-  size_t r = 0;
-  const uint8_t *cursor = buffer;
-
-  if (!otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &r)) {
-    return 0;
-  }
-
-  cursor += r;
-  len -= r;
-
-  if (!otrng_deserialize_uint32(&dst->message_id, cursor, len, &r)) {
-    return 0;
-  }
-
-  cursor += r;
-  len -= r;
-
-  if (!otrng_deserialize_ec_point(dst->ecdh, cursor, len)) {
-    return 0;
-  }
-
-  cursor += ED448_POINT_BYTES;
-  len -= ED448_POINT_BYTES;
-
-  otrng_mpi_p tmp_mpi; // no need to free, because nothing is copied now
-  if (!otrng_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &r)) {
-    return 0;
-  }
-
-  cursor += r;
-  len -= r;
-
-  if (!otrng_dh_mpi_deserialize(&dst->dh, tmp_mpi->data, tmp_mpi->len, &r)) {
-    return 0;
-  }
-
-  cursor += r;
-  len -= r;
-
-  if (!otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor,
-                                     len)) {
-    return 0;
-  }
-
-  cursor += DATA_MSG_NONCE_BYTES;
-  len -= DATA_MSG_NONCE_BYTES;
-
-  if (!otrng_deserialize_data(&dst->enc_msg, cursor, len, &r)) {
-    return 0;
-  }
-
-  dst->enc_msg_len = r - 4;
-  cursor += r;
-
-  if (read) {
-    *read = cursor - buffer;
-  }
-
-  return cursor - buffer;
 }
 
 INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
@@ -861,17 +732,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
 
   cursor += read;
   len -= read;
-
-  dst->enc_msg = NULL;
-  dst->enc_msg_len = 0;
-  dst->ratchet_id = 0;
-  dst->message_id = 0;
-  dst->dh = NULL;
-
-  if (len > 64) {
-    cursor += xzdh_encrypted_message_deserialize(dst, cursor, len, &read);
-    len -= read;
-  }
 
   return otrng_deserialize_bytes_array(dst->auth_mac, HASH_BYTES, cursor, len);
 }
@@ -1112,52 +972,14 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
   shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, tmp_key,
                  HASH_BYTES);
 
-  // If there is no attached encrypted message
-  if (!auth->enc_msg_len) {
-    // OTRv4 section, "Non-Interactive DAKE Overview"
-    /* Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t, 64) */
-    goldilocks_shake256_ctx_p hd;
-    hash_init_with_usage(hd, usage_auth_mac);
-    hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
-    hash_update(hd, t, t_len);
-    hash_final(hd, dst, HASH_BYTES);
-    hash_destroy(hd);
-
-    return SUCCESS;
-  }
-
-  // Otherwise
   // OTRv4 section, "Non-Interactive DAKE Overview"
-  // extra = KDF_1(0x11 || attached encrypted ratchet id ||
-  // attached encrypted message id || public ecdh key ||
-  // public dh key || nonce || encrypted message, 64)
-  /*   Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t || extra, 64)  */
-
-  uint8_t *ser_data_msg = NULL;
-  size_t bodylen = 0;
-
-  if (!xzdh_encrypted_message_asprintf(&ser_data_msg, &bodylen, auth)) {
-    return ERROR;
-  }
-
-  // TODO: @non_interactive should be removed
-  uint8_t encrypted_msg_mac[HASH_BYTES];
-  goldilocks_shake256_ctx_p encrypted_msg_hd;
-  hash_init_with_usage(encrypted_msg_hd, 0x11);
-  hash_update(encrypted_msg_hd, ser_data_msg, bodylen);
-  hash_final(encrypted_msg_hd, encrypted_msg_mac, HASH_BYTES);
-  hash_destroy(encrypted_msg_hd);
-  free(ser_data_msg);
-
+  /* Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t, 64) */
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, usage_auth_mac);
   hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
   hash_update(hd, t, t_len);
-  hash_update(hd, encrypted_msg_mac, HASH_BYTES);
   hash_final(hd, dst, HASH_BYTES);
   hash_destroy(hd);
-
-  sodium_memzero(encrypted_msg_mac, HASH_BYTES);
 
   return SUCCESS;
 }
