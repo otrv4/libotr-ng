@@ -114,6 +114,8 @@ otrng_client_state_get_private_key_v4(otrng_client_state_s *state) {
     return NULL;
   }
 
+  /* @secret_information: the long-term key pair lives for as long the client
+     decides */
   if (!state->keypair && state->callbacks && state->callbacks->create_privkey) {
     state->callbacks->create_privkey(state->client_id);
   }
@@ -132,6 +134,8 @@ otrng_client_state_add_private_key_v4(otrng_client_state_s *state,
     return 0;
   }
 
+  /* @secret_information: the long-term key pair lives for as long the client
+     decides */
   state->keypair = otrng_keypair_new();
   if (!state->keypair) {
     return 2;
@@ -416,6 +420,8 @@ otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state) {
   // TODO: @client_profile should this ID be random? It should probably be
   // unique for us, so we need to store this in client state (?)
   uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
+  /* @secret_information: the long-term key pair lives for as long the client
+     decides */
   state->client_profile =
       otrng_client_profile_build(0x101, our_instance_tag, "34", state->keypair);
 
@@ -435,6 +441,8 @@ otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
   // TODO: @client_profile should this ID be random? It should probably be
   // unique for us, so we need to store this in client state (?)
   uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
+  /* @secret: the shared prekey should be deleted once the prekey profile
+   * expires */
   state->prekey_profile = otrng_prekey_profile_build(
       0x102, our_instance_tag, state->keypair, state->shared_prekey_pair);
 

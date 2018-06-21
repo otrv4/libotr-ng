@@ -165,7 +165,7 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
   now = time(NULL);
-  otrng_ec_point_destroy(manager->our_ecdh->pub);
+  otrng_ecdh_keypair_destroy(manager->our_ecdh);
   otrng_ecdh_keypair_generate(manager->our_ecdh, sym);
 
   manager->last_generated = now;
@@ -239,6 +239,8 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
     // Also note that OTRv3 serializes DH values in MPI (no leading zeroes).
     shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, usage_third_brace_key,
                    k_dh, sizeof(k_dh_p));
+
+    sodium_memzero(k_dh, sizeof(k_dh_p));
   } else {
     shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, usage_brace_key,
                    manager->brace_key, sizeof(brace_key_p));
@@ -261,6 +263,7 @@ tstatic void calculate_shared_secret(key_manager_s *manager, k_ecdh_p k_ecdh) {
   hash_destroy(hd);
 
   sodium_memzero(k_ecdh, sizeof(k_ecdh_p));
+  sodium_memzero(manager->brace_key, sizeof(brace_key_p));
 }
 
 INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
@@ -279,14 +282,16 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     if (!calculate_brace_key(manager)) {
       return ERROR;
     }
-
     otrng_dh_priv_key_destroy(manager->our_dh);
+
     calculate_shared_secret(manager, k_ecdh);
 
   } else if (flow == OTRNG_NON_INTERACTIVE) {
     shake_256_kdf1(manager->shared_secret, sizeof(shared_secret_p),
                    usage_shared_secret, manager->tmp_key,
                    sizeof(manager->tmp_key));
+
+    sodium_memzero(manager->brace_key, sizeof(brace_key_p));
   }
 
   calculate_ssid(manager);
@@ -384,7 +389,6 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(
   manager->k = 0;
   manager->pn = 0;
 
-  // TODO: @refactoring we can assing directly to the root key
   memcpy(manager->current->root_key, manager->shared_secret, 64);
   sodium_memzero(manager->shared_secret, 64);
 

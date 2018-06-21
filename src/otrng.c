@@ -1629,6 +1629,8 @@ tstatic otrng_err receive_identity_message_on_state_start(
   otrng_client_profile_copy(otr->their_client_profile,
                             identity_message->profile);
 
+  /* @secret the priv parts will be deleted once the mixed shared secret is
+   * derived */
   if (!otrng_key_manager_generate_ephemeral_keys(otr->keys)) {
     return ERROR;
   }

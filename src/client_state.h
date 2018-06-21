@@ -63,6 +63,7 @@ typedef struct otrng_client_state_s {
   otrng_prekey_profile_s *prekey_profile;
   list_element_s *our_prekeys; // otrng_stored_prekeys_s
 
+  /* @secret: this should be deleted once the prekey profile expires */
   otrng_shared_prekey_pair_s
       *shared_prekey_pair; // TODO: @client is this something the
                            // client will generate? The

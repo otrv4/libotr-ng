@@ -95,7 +95,7 @@ typedef struct key_manager_s {
   unsigned int i;  // the ratchet id.
   unsigned int j;  // the sending message id.
   unsigned int k;  // the receiving message id.
-  unsigned int pn; // the number of messages in the previous DH ratchet.<Paste>
+  unsigned int pn; // the number of messages in the previous DH ratchet.
 
   ratchet_s *current;
 

@@ -35,8 +35,9 @@ typedef ec_scalar_p otrng_private_key_p;
 typedef ec_point_p otrng_shared_prekey_pub_p;
 typedef ec_scalar_p otrng_shared_prekey_priv_p;
 
+/* @secret_information: the long-term key pair lives for as long the client
+   decides */
 typedef struct otrng_keypair_s {
-  /* the private key is this symmetric key, and not the scalar serialized */
   uint8_t sym[ED448_PRIVATE_BYTES];
 
   otrng_public_key_p pub;
@@ -45,7 +46,6 @@ typedef struct otrng_keypair_s {
 
 // TODO: @refactoring @spec implement correctly when the spec comes
 typedef struct otrng_shared_prekey_pair_s {
-  /* the private key is this symmetric key, and not the scalar serialized */
   uint8_t sym[ED448_PRIVATE_BYTES];
 
   otrng_shared_prekey_pub_p pub;

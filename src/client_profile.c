@@ -73,6 +73,8 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
     return;
   }
 
+  /* @secret_information: the long-term public key gets deleted with the
+     destruction of the client profile but can live beyond that */
   otrng_ec_point_destroy(profile->long_term_pub_key);
   free(profile->versions);
   profile->versions = NULL;
