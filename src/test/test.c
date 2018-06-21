@@ -179,8 +179,8 @@ int main(int argc, char **argv) {
                   test_defragment_with_different_total_fails);
   g_test_add_func("/fragment/defragment_fragment_twice_fails",
                   test_defragment_fragment_twice_fails);
-  g_test_add_func("/fragment/fails_for_invalid_tag",
-                  test_defragment_fails_for_invalid_tag);
+  g_test_add_func("/fragment/fails_for_another_instance",
+                  test_defragment_fails_for_another_instance);
   g_test_add_func("/fragment/defragment_regular_otr_message",
                   test_defragment_regular_otr_message);
   g_test_add_func("/fragment/defragment_two_messages",

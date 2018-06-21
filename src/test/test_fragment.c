@@ -216,13 +216,13 @@ void test_defragment_out_of_order_message(void) {
   otrng_list_free_nodes(list);
 }
 
-void test_defragment_fails_for_invalid_tag(void) {
+void test_defragment_fails_for_another_instance(void) {
   string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
 
   list_element_s *list = NULL;
   char *unfrag = NULL;
 
-  otrng_assert_is_error(otrng_unfragment_message(&unfrag, &list, msg, 1));
+  otrng_assert_is_success(otrng_unfragment_message(&unfrag, &list, msg, 1));
 
   otrng_assert(list == NULL);
   g_assert_cmpstr(unfrag, ==, NULL);

@@ -252,11 +252,11 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   sscanf(message, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
          &receiver_tag, &i, &t, &start, &end);
 
-  if (end <= start) {
-    return ERROR;
+  if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
+    return SUCCESS;
   }
 
-  if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
+  if (end <= start) {
     return ERROR;
   }
 
