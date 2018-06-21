@@ -242,8 +242,8 @@ void test_api_interactive_conversation(void) {
   otrng_free_all(alice, bob);
 }
 
+/* Specifies the behavior of the API for offline messages */
 void test_otrng_send_offline_message() {
-  /* Specifies the behavior of the API for offline messages */
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
@@ -309,123 +309,21 @@ void test_otrng_send_offline_message() {
                                 alice->keys->our_ecdh->pub);
   otrng_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh->pub);
 
-  otrng_user_state_free_all(alice_client_state->user_state,
-                            bob_client_state->user_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
-  otrng_free_all(alice, bob);
-}
-
-/* TODO: @non_interactive come back to this when we have
- * serialization/deserialization for a "Prekey Ensemble Retrieval Message" This
- * is the API that should be tested.
- */
-/*
-void test_api_non_interactive_conversation(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
-
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+  // Both have the same shared shared secret/root key
+  otrng_assert_root_key_eq(alice->keys->current->root_key,
+                           bob->keys->current->root_key);
 
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
-
-  otrng_server_s *server = malloc(sizeof(otrng_server_s));
-  server->prekey_message = NULL;
-  otrng_notif notif = NOTIF_NONE;
-
-  // Alice uploads a prekey message to the server
-  otrng_assert_is_success(otrng_start_non_interactive_dake(server, alice));
-
-  otrng_assert(alice->state == OTRNG_STATE_START);
-  otrng_assert(server->prekey_message != NULL);
-
-  // Bob asks server for prekey message
-  // Server replies with prekey message
-  otrng_reply_with_prekey_msg_from_server(server, response_to_bob);
-  otrng_assert(bob->state == OTRNG_STATE_START);
-  otrng_assert(response_to_bob != NULL);
-
-  otrng_assert_cmpmem("?OTR:AAQP", response_to_bob->to_send, 9);
-
-  // Bob receives Alice's profiles from the server
-  // (they will come from the ensemble, but I don't want to change the API
-  // used here at the moment)
-  bob->their_client_profile = malloc(sizeof(client_profile_s));
-  otrng_client_profile_copy(
-      bob->their_client_profile,
-      otrng_client_state_get_or_create_client_profile(alice_client_state));
-
-  bob->their_prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
-  otrng_prekey_profile_copy(
-      bob->their_prekey_profile,
-      otrng_client_state_get_or_create_prekey_profile(alice_client_state));
-
-  // Bob receives prekey message
-  otrng_assert_is_success(otrng_receive_message(response_to_alice, notif,
-                                     response_to_bob->to_send, bob));
-  free(response_to_bob->to_send);
-  response_to_bob->to_send = NULL;
-
-  otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-
-  g_assert_cmpint(bob->keys->i, ==, 0);
-  g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 0);
-  g_assert_cmpint(bob->keys->pn, ==, 0);
-
-  otrng_assert_is_success(otrng_send_non_interactive_auth_msg(&response_to_alice->to_send,
-                                                   "", bob));
-  // There is no attached encrypted message
-  g_assert_cmpint(bob->keys->i, ==, 0);
-  g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 0);
-  g_assert_cmpint(bob->keys->pn, ==, 0);
-
-  // Should send a non interactive auth
-  otrng_assert(response_to_alice->to_display == NULL);
-  otrng_assert(response_to_alice->to_send);
-  otrng_assert_cmpmem("?OTR:AASN", response_to_alice->to_send, 9);
-
-  // Alice receives a non interactive auth
-  otrng_assert_is_success(otrng_receive_message(response_to_bob, notif,
-                                     response_to_alice->to_send,
-                                     alice));
-  otrng_assert(response_to_alice->to_display == NULL);
-
-  otrng_response_free_all(response_to_alice, response_to_bob);
-  free(server);
-  server = NULL;
-
-  otrng_assert_ec_public_key_eq(alice->keys->their_ecdh,
-                                bob->keys->our_ecdh->pub);
-  otrng_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
-  otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-  otrng_assert(alice->keys->current);
-  g_assert_cmpint(alice->keys->i, ==, 0);
-  g_assert_cmpint(alice->keys->j, ==, 0);
-  g_assert_cmpint(alice->keys->k, ==, 0);
-  g_assert_cmpint(alice->keys->pn, ==, 0);
-
-  // Both have the same shared secret/root key
-  otrng_assert_root_key_eq(alice->keys->current->root_key,
-                           bob->keys->current->root_key);
 
   // Bob sends a data message
   int message_id;
   string_p to_send = NULL;
   otrng_err result;
 
-  // TODO: @non_interactive this is usually set up by the query or whitespace,
-  // this will be defined on the prekey server spec.
-  bob->running_version = OTRNG_VERSION_4;
-  alice->running_version = OTRNG_VERSION_4;
-
   for (message_id = 1; message_id < 4; message_id++) {
-    tlv_list_s *tlvs = NULL;
     result =
-        otrng_prepare_to_send_message(&to_send, "hi", notif, &tlvs, 0, alice);
-    otrng_tlv_list_free(tlvs);
+        otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
     assert_msg_sent(result, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
@@ -436,8 +334,7 @@ void test_api_non_interactive_conversation(void) {
 
     // Bob receives a data message
     response_to_alice = otrng_response_new();
-    otrng_err result =
-        otrng_receive_message(response_to_alice, notif, to_send, bob);
+    result = otrng_receive_message(response_to_alice, notif, to_send, bob);
     assert_msg_rec(result, "hi", response_to_alice);
     otrng_assert(bob->keys->old_mac_keys);
 
@@ -452,11 +349,9 @@ void test_api_non_interactive_conversation(void) {
   }
 
   for (message_id = 1; message_id < 4; message_id++) {
-    // Bob sends a data message
-    tlv_list_s *tlvs = NULL;
+    // Alice sends a data message
     result =
-        otrng_prepare_to_send_message(&to_send, "hello", notif, &tlvs, 0, bob);
-    otrng_tlv_list_free(tlvs);
+        otrng_prepare_to_send_message(&to_send, "hello", notif, NULL, 0, bob);
     assert_msg_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -465,10 +360,9 @@ void test_api_non_interactive_conversation(void) {
     g_assert_cmpint(bob->keys->k, ==, 3);
     g_assert_cmpint(bob->keys->pn, ==, 0);
 
-    // Alice receives a data message
+    // Bob receives a data message
     response_to_bob = otrng_response_new();
-    otrng_err result =
-        otrng_receive_message(response_to_bob, notif, to_send, alice);
+    result = otrng_receive_message(response_to_bob, notif, to_send, alice);
     assert_msg_rec(result, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
@@ -491,8 +385,9 @@ void test_api_non_interactive_conversation(void) {
 
   // Alice receives a data message with TLV
   response_to_bob = otrng_response_new();
-  otrng_assert_is_success(otrng_receive_message(response_to_bob, notif, to_send,
-alice)); g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 4);
+  otrng_assert_is_success(
+      otrng_receive_message(response_to_bob, notif, to_send, alice));
+  g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 4);
 
   // Check TLVS
   otrng_assert(response_to_bob->tlvs);
@@ -504,11 +399,8 @@ alice)); g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 4);
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
-
   otrng_free_all(alice, bob);
 }
-
-*/
 
 void test_api_conversation_errors_1(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);

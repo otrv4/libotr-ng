@@ -327,6 +327,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
                    usage_shared_secret, manager->tmp_key,
                    sizeof(manager->tmp_key));
 
+    sodium_memzero(manager->tmp_key, sizeof(brace_key_p));
     sodium_memzero(manager->brace_key, sizeof(brace_key_p));
   }
 

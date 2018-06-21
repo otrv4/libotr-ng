@@ -848,7 +848,11 @@ tstatic otrng_err build_non_interactive_auth_message(
   auth->long_term_key_id = otr->their_client_profile->id;
   auth->prekey_profile_id = otr->their_prekey_profile->id;
 
-  if (!(otr->keys->tmp_key > 0)) {
+  /* tmp_k = KDF_1(usage_tmp_key || K_ecdh || ECDH(x, their_shared_prekey) ||
+     ECDH(x, Pkb) || brace_key)
+     @secret this should be deleted when the mixed shared secret is generated
+  */
+  if (!generate_tmp_key_r(otr->keys->tmp_key, otr)) {
     return ERROR;
   }
 
@@ -913,6 +917,11 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
     ret = serialize_and_encode_non_interactive_auth(dst, auth);
   }
 
+  if (!otrng_key_manager_generate_shared_secret(otr->keys,
+                                                OTRNG_NON_INTERACTIVE)) {
+    return ERROR;
+  }
+
   if (!double_ratcheting_init(otr, OTRNG_THEM)) {
     return ERROR;
   }
@@ -924,39 +933,38 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
 // TODO: @non_interactive Should maybe return a serialized ensemble, ready to
 // publish to the server
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
-  prekey_ensemble_s *e = malloc(sizeof(prekey_ensemble_s));
-  if (!e) {
+  prekey_ensemble_s *ensemble = malloc(sizeof(prekey_ensemble_s));
+  if (!ensemble) {
     return NULL;
   }
 
-  otrng_client_profile_copy(e->client_profile, get_my_client_profile(otr));
-  otrng_prekey_profile_copy(e->prekey_profile, get_my_prekey_profile(otr));
+  otrng_client_profile_copy(ensemble->client_profile,
+                            get_my_client_profile(otr));
+  otrng_prekey_profile_copy(ensemble->prekey_profile,
+                            get_my_prekey_profile(otr));
 
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
   otrng_generate_ephemeral_keys(ecdh, dh);
-  e->message = otrng_dake_prekey_message_build(otr->our_instance_tag, ecdh->pub,
-                                               dh->pub);
-  if (!e->message) {
-    otrng_prekey_ensemble_free(e);
+  ensemble->message = otrng_dake_prekey_message_build(otr->our_instance_tag,
+                                                      ecdh->pub, dh->pub);
+  if (!ensemble->message) {
+    otrng_prekey_ensemble_free(ensemble);
     return NULL;
   }
 
   // TODO: @client @non_interactive should this ID be random? It should probably
   // be unique for us, so we need to store this in client state (?)
-  e->message->id = 0x301;
+  ensemble->message->id = 0x301;
 
   otrng_client_state_s *state = otr->conversation->client;
-  store_my_prekey_message(e->message->id, otr->our_instance_tag, ecdh, dh,
-                          state);
+  store_my_prekey_message(ensemble->message->id, otr->our_instance_tag, ecdh,
+                          dh, state);
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dh_keypair_destroy(dh);
 
-  return e;
+  return ensemble;
 }
-
-tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
-                                          otrng_notif notif, otrng_s *otr);
 
 tstatic otrng_err set_their_client_profile(const client_profile_s *profile,
                                            otrng_s *otr) {
@@ -996,6 +1004,47 @@ set_their_prekey_profile(const otrng_prekey_profile_s *profile, otrng_s *otr) {
   // TODO: @refactoring Extract otrng_key_manager_set_their_shared_prekey()
   otrng_ec_point_copy(otr->keys->their_shared_prekey,
                       otr->their_prekey_profile->shared_prekey);
+
+  return SUCCESS;
+}
+
+tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
+                                        otrng_s *otr) {
+  if (their_instance_tag < OTRNG_MIN_VALID_INSTAG) {
+    return ERROR;
+  }
+
+  otr->their_instance_tag = their_instance_tag;
+
+  return SUCCESS;
+}
+
+tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
+                                          otrng_notif notif, otrng_s *otr) {
+  if (!otr->their_client_profile) {
+    return ERROR;
+  }
+
+  if (!otr->their_prekey_profile) {
+    return ERROR;
+  }
+
+  if (!received_instance_tag(m->sender_instance_tag, otr)) {
+    notif = NOTIF_MALFORMED;
+    return ERROR;
+  }
+
+  if (!otrng_valid_received_values(m->Y, m->B, otr->their_client_profile)) {
+    return ERROR;
+  }
+
+  otr->their_prekeys_id = m->id; // Stores to send in the non-interactive-auth
+  otrng_key_manager_set_their_ecdh(m->Y, otr->keys);
+  otrng_key_manager_set_their_dh(m->B, otr->keys);
+
+  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys)) {
+    return ERROR;
+  }
 
   return SUCCESS;
 }
@@ -1178,61 +1227,6 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
     *to_send = err_msg;
     break;
   }
-}
-
-tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
-                                        otrng_s *otr) {
-  if (their_instance_tag < OTRNG_MIN_VALID_INSTAG) {
-    return ERROR;
-  }
-
-  otr->their_instance_tag = their_instance_tag;
-
-  return SUCCESS;
-}
-
-tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
-                                          otrng_notif notif, otrng_s *otr) {
-  if (!otr->their_client_profile) {
-    return ERROR;
-  }
-
-  if (!otr->their_prekey_profile) {
-    return ERROR;
-  }
-
-  if (!received_instance_tag(m->sender_instance_tag, otr)) {
-    notif = NOTIF_MALFORMED;
-    return ERROR;
-  }
-
-  if (!otrng_valid_received_values(m->Y, m->B, otr->their_client_profile)) {
-    return ERROR;
-  }
-
-  otr->their_prekeys_id = m->id; // Stores to send in the non-interactive-auth
-  otrng_key_manager_set_their_ecdh(m->Y, otr->keys);
-  otrng_key_manager_set_their_dh(m->B, otr->keys);
-
-  if (!otrng_key_manager_generate_ephemeral_keys(otr->keys)) {
-    return ERROR;
-  }
-
-  /* tmp_k = KDF_1(usage_tmp_key || K_ecdh || ECDH(x, their_shared_prekey) ||
-   * ECDH(x, Pkb) || brace_key) */
-  if (!generate_tmp_key_r(otr->keys->tmp_key, otr)) {
-    return ERROR;
-  }
-
-  if (!otrng_key_manager_generate_shared_secret(otr->keys,
-                                                OTRNG_NON_INTERACTIVE)) {
-    return ERROR;
-  }
-
-  // TODO: @non_interactive this should send the non interactive auth and decide
-  // when the message is attached
-
-  return SUCCESS;
 }
 
 tstatic otrng_bool verify_non_interactive_auth_message(
@@ -2317,7 +2311,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
 
-  // if j == 0
+  /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(
           otr->keys, otr->conversation->client->max_stored_msg_keys,
           otr->keys->j, 0, OTRNG_SENDING, notif)) {
@@ -2353,8 +2347,8 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   sodium_memzero(enc_key, sizeof(m_enc_key_p));
 
-  // Authenticator = KDF_1(0x1C || MKmac || KDF_1(usage_authenticator ||
-  // data_message_sections, 64), 64)
+  /* Authenticator = KDF_1(0x1C || MKmac || KDF_1(usage_authenticator ||
+   * data_message_sections, 64), 64) */
   if (otr->keys->j == 0) {
     size_t ser_mac_keys_len =
         otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;

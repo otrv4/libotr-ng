@@ -488,6 +488,8 @@ INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
   s->id = id;
   s->sender_instance_tag = instance_tag;
 
+  /* @secret the keypairs should be deleted once the double ratchet gets
+   * initialized */
   otrng_ec_scalar_copy(s->our_ecdh->priv, ecdh_pair->priv);
   otrng_ec_point_copy(s->our_ecdh->pub, ecdh_pair->pub);
   s->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
