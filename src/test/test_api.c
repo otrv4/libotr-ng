@@ -313,8 +313,8 @@ void test_otrng_send_offline_message() {
   otrng_assert_root_key_eq(alice->keys->current->root_key,
                            bob->keys->current->root_key);
 
-  otrng_response_s *response_to_bob = otrng_response_new();
-  otrng_response_s *response_to_alice = otrng_response_new();
+  otrng_response_s *response_to_bob = NULL;
+  otrng_response_s *response_to_alice = NULL;
 
   // Bob sends a data message
   int message_id;
