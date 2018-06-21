@@ -674,8 +674,12 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
   if (!build_interactive_rsign_tag(
           &t, &t_len, 0, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
-          otr->conversation->client->phi, otr->our_instance_tag,
-          otr->their_instance_tag, otr->sending_init_msg)) {
+          (const uint8_t *)otr->conversation->client->phi,
+          otr->conversation->client->phi
+              ? strlen(otr->conversation->client->phi) + 1
+              : 0,
+          otr->our_instance_tag, otr->their_instance_tag,
+          otr->sending_init_msg)) {
     return ERROR;
   }
 
@@ -871,7 +875,11 @@ tstatic otrng_err build_non_interactive_auth_message(
   if (!build_non_interactive_rsig_tag(
           &t, &t_len, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
-          otr->keys->their_shared_prekey, otr->conversation->client->phi,
+          otr->keys->their_shared_prekey,
+          (const uint8_t *)otr->conversation->client->phi,
+          otr->conversation->client->phi
+              ? strlen(otr->conversation->client->phi) + 1
+              : 0,
           otr->our_instance_tag, otr->their_instance_tag,
           otr->receiving_init_msg)) {
     return ERROR;
@@ -1245,8 +1253,12 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   if (!build_non_interactive_rsig_tag(
           &t, &t_len, get_my_client_profile(otr), auth->profile, our_ecdh(otr),
           auth->X, our_dh(otr), auth->A, prekey_profile->shared_prekey,
-          otr->conversation->client->phi, otr->their_instance_tag,
-          otr->our_instance_tag, otr->sending_init_msg)) {
+          (const uint8_t *)otr->conversation->client->phi,
+          otr->conversation->client->phi
+              ? strlen(otr->conversation->client->phi) + 1
+              : 0,
+          otr->their_instance_tag, otr->our_instance_tag,
+          otr->sending_init_msg)) {
     return otrng_false;
   }
 
@@ -1555,8 +1567,12 @@ tstatic otrng_err reply_with_auth_i_msg(
   if (!build_interactive_rsign_tag(
           &t, &t_len, 1, get_my_client_profile(otr), their_client_profile,
           our_ecdh(otr), their_ecdh(otr), our_dh(otr), their_dh(otr),
-          otr->conversation->client->phi, otr->our_instance_tag,
-          otr->their_instance_tag, otr->receiving_init_msg)) {
+          (const uint8_t *)otr->conversation->client->phi,
+          otr->conversation->client->phi
+              ? strlen(otr->conversation->client->phi) + 1
+              : 0,
+          otr->our_instance_tag, otr->their_instance_tag,
+          otr->receiving_init_msg)) {
     return ERROR;
   }
 
@@ -1588,8 +1604,12 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   if (!build_interactive_rsign_tag(
           &t, &t_len, 0, get_my_client_profile(otr), auth->profile,
           our_ecdh(otr), auth->X, our_dh(otr), auth->A,
-          otr->conversation->client->phi, otr->their_instance_tag,
-          otr->our_instance_tag, otr->receiving_init_msg)) {
+          (const uint8_t *)otr->conversation->client->phi,
+          otr->conversation->client->phi
+              ? strlen(otr->conversation->client->phi) + 1
+              : 0,
+          otr->their_instance_tag, otr->our_instance_tag,
+          otr->receiving_init_msg)) {
     return otrng_false;
   }
 
@@ -1670,8 +1690,12 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
   if (!build_interactive_rsign_tag(
           &t, &t_len, 1, otr->their_client_profile, get_my_client_profile(otr),
           their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
-          otr->conversation->client->phi, otr->their_instance_tag,
-          otr->our_instance_tag, otr->sending_init_msg)) {
+          (const uint8_t *)otr->conversation->client->phi,
+          otr->conversation->client->phi
+              ? strlen(otr->conversation->client->phi) + 1
+              : 0,
+          otr->their_instance_tag, otr->our_instance_tag,
+          otr->sending_init_msg)) {
     return otrng_false;
   }
 

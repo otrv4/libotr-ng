@@ -378,8 +378,8 @@ void test_build_interactive_rsign_tag() {
 
   otrng_assert_is_success(build_interactive_rsign_tag(
       &dst, &dstlen, 0x01, initiator_profile, responder_profile, initiator_ecdh,
-      responder_ecdh, initiator_dh, responder_dh, phi, our_instance_tag,
-      their_instance_tag, init_msg));
+      responder_ecdh, initiator_dh, responder_dh, (const uint8_t *)phi, 4,
+      our_instance_tag, their_instance_tag, init_msg));
 
   otrng_assert(dstlen == 1083);
   otrng_assert_cmpmem(dst, expected_t1, dstlen);
@@ -388,8 +388,8 @@ void test_build_interactive_rsign_tag() {
 
   otrng_assert_is_success(build_interactive_rsign_tag(
       &dst, &dstlen, 0x02, initiator_profile, responder_profile, initiator_ecdh,
-      responder_ecdh, initiator_dh, responder_dh, phi, our_instance_tag,
-      their_instance_tag, init_msg));
+      responder_ecdh, initiator_dh, responder_dh, (const uint8_t *)phi, 4,
+      our_instance_tag, their_instance_tag, init_msg));
 
   otrng_assert(dstlen == 1083);
   otrng_assert_cmpmem(dst, expected_t2, dstlen);
