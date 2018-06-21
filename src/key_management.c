@@ -175,9 +175,7 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   manager->last_generated = now;
 
   if (manager->i % 3 == 0) {
-    if (manager->our_dh->priv && manager->our_dh->pub) {
-      otrng_dh_keypair_destroy(manager->our_dh);
-    }
+    otrng_dh_keypair_destroy(manager->our_dh);
 
     /* @secret the dh keypair will last
        1. for the first generation: until the ratchet is initialized
