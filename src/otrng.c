@@ -1448,6 +1448,8 @@ tstatic otrng_err receive_identity_message_on_state_start(
     return ERROR;
   }
 
+  /* @secret the shared secret will be deleted once the double ratchet is
+   * initialized */
   if (!otrng_key_manager_generate_shared_secret(otr->keys, OTRNG_INTERACTIVE)) {
     return ERROR;
   }
@@ -1657,6 +1659,8 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
     fingerprint_seen_cb_v4(fp, otr->conversation);
   }
 
+  /* @secret the shared secret will be deleted once the double ratchet is
+   * initialized */
   if (!otrng_key_manager_generate_shared_secret(otr->keys, OTRNG_INTERACTIVE)) {
     return ERROR;
   }

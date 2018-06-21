@@ -57,8 +57,8 @@ tstatic void ratchet_free(ratchet_s *ratchet) {
   ratchet = NULL;
 }
 
-INTERNAL void
-otrng_key_manager_init(key_manager_s *manager) // make like ratchet_new?
+INTERNAL void otrng_key_manager_init(
+    key_manager_s *manager) // TODO: @refactoring make like ratchet_new?
 {
   otrng_ec_bzero(manager->our_ecdh->pub, ED448_POINT_BYTES);
   manager->our_dh->pub = NULL;
@@ -166,13 +166,23 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
 
   now = time(NULL);
   otrng_ecdh_keypair_destroy(manager->our_ecdh);
+  /* @secret the ecdh keypair will last
+     1. for the first generation: until the ratchet is initialized
+     2. when receiving a new dh ratchet
+  */
   otrng_ecdh_keypair_generate(manager->our_ecdh, sym);
 
   manager->last_generated = now;
 
   if (manager->i % 3 == 0) {
-    otrng_dh_keypair_destroy(manager->our_dh);
+    if (manager->our_dh->priv && manager->our_dh->pub) {
+      otrng_dh_keypair_destroy(manager->our_dh);
+    }
 
+    /* @secret the dh keypair will last
+       1. for the first generation: until the ratchet is initialized
+       2. when receiving a new dh ratchet
+    */
     if (!otrng_dh_keypair_generate(manager->our_dh)) {
       return ERROR;
     }
@@ -210,9 +220,13 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
                    manager->shared_secret, sizeof(shared_secret_p));
 
     otrng_ec_point_destroy(manager->our_ecdh->pub);
+    /* @secret this will be deleted once sent a new data message in a new
+     * ratchet */
     otrng_ecdh_keypair_generate(manager->our_ecdh, random_buff);
 
     otrng_dh_keypair_destroy(manager->our_dh);
+    /* @secret this will be deleted once sent a new data message in a new
+     * ratchet */
     if (!otrng_dh_keypair_generate_from_shared_secret(
             manager->shared_secret, manager->our_dh, participant)) {
       return ERROR;
@@ -223,12 +237,16 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
                    manager->shared_secret, sizeof(shared_secret_p));
 
     otrng_ec_point_destroy(manager->their_ecdh);
+    /* @secret this will be deleted once received a new data message in a new
+     * ratchet */
     otrng_ecdh_keypair_generate_their(manager->their_ecdh, random_buff);
 
     gcry_mpi_release(manager->their_dh);
     manager->their_dh = NULL;
 
     dh_keypair_p tmp_their_dh;
+    /* @secret this will be deleted once received a new data message in a new
+     * ratchet */
     if (!otrng_dh_keypair_generate_from_shared_secret(
             manager->shared_secret, tmp_their_dh, participant)) {
       return ERROR;
@@ -417,16 +435,16 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
                                     otrng_participant_action action) {
   k_ecdh_p k_ecdh;
 
-  // K_ecdh = ECDH(our_ecdh.secret, their_ecdh)
+  /* K_ecdh = ECDH(our_ecdh.secret, their_ecdh) */
   otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
 
-  // if i % 3 == 0 : brace_key = KDF_1(usage_third_brace_key || k_dh, 32)
-  // else brace_key = KDF_1(usage_brace_key || brace_key, 32)
+  /* if i % 3 == 0 : brace_key = KDF_1(usage_third_brace_key || k_dh, 32)
+     else brace_key = KDF_1(usage_brace_key || brace_key, 32) */
   if (!calculate_brace_key(manager)) {
     return ERROR;
   }
 
-  // K = KDF_1(usage_shared_secret || K_ecdh || brace_key, 64)
+  /* K = KDF_1(usage_shared_secret || K_ecdh || brace_key, 64) */
   calculate_shared_secret(manager, k_ecdh);
 
 #ifdef DEBUG
@@ -450,8 +468,8 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
                               otrng_participant_action action) {
 
   if (action == OTRNG_SENDING) {
-    // our_ecdh = generateECDH()
-    // if i % 3 == 0, our_dh = generateDH()
+    /* our_ecdh = generateECDH()
+       if i % 3 == 0, our_dh = generateDH() */
     if (!otrng_key_manager_generate_ephemeral_keys(manager)) {
       return ERROR;
     }
@@ -481,9 +499,11 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
 
 tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
                                              otrng_participant_action action) {
-  // root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
-  // root_key[i-1], K) root_key[i] = KDF_1(usage_root_key || root_key[i-1] || K,
-  // 64)
+  /* root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
+     root_key[i-1], K) root_key[i] = KDF_1(usage_root_key || root_key[i-1] || K,
+     64)
+     @secret should be deleted when the new root key is derived
+  */
 
   uint8_t usage_root_key = 0x14;
   uint8_t usage_chain_key = 0x15;
@@ -499,7 +519,9 @@ tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
   hash_update(hd, manager->current->root_key, sizeof(root_key_p));
   hash_update(hd, manager->shared_secret, sizeof(shared_secret_p));
 
-  // chain_key_purpose[i][j] = KDF_1(usage_chain_key || root_key[i-1] || K, 64)
+  /* chain_key_purpose[i][j] = KDF_1(usage_chain_key || root_key[i-1] || K, 64)
+     @secret: should be deleted when the next chain key is derived
+  */
   if (action == OTRNG_SENDING) {
     hash_final(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
   } else if (action == OTRNG_RECEIVING) {
@@ -526,8 +548,8 @@ static uint8_t usage_extra_symm_key = 0x20;
 
 tstatic void derive_next_chain_key(key_manager_s *manager,
                                    otrng_participant_action action) {
-  // chain_key_s[i-1][j+1] = KDF_1(usage_next_chain_key || chain_key_s[i-1][j],
-  // 64)
+  /* chain_key_s[i-1][j+1] = KDF_1(usage_next_chain_key || chain_key_s[i-1][j],
+   * 64) */
   if (action == OTRNG_SENDING) {
     shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p),
                    usage_next_chain_key, manager->current->chain_s,
@@ -545,9 +567,10 @@ tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                                             m_mac_key_p mac_key,
                                             key_manager_s *manager,
                                             otrng_participant_action action) {
-  // MKenc, MKmac = derive_enc_mac_keys(chain_key_s[i-1][j])
-  // MKenc = KDF_1(usage_message_key || chain_key, 32)
-  // MKmac = KDF_1(usage_mac_key || MKenc, 64)
+  /* MKenc, MKmac = derive_enc_mac_keys(chain_key_s[i-1][j])
+     MKenc = KDF_1(usage_message_key || chain_key, 32)
+     MKmac = KDF_1(usage_mac_key || MKenc, 64)
+  */
 
   if (action == OTRNG_SENDING) {
     shake_256_kdf1(enc_key, sizeof(m_enc_key_p), usage_message_key,
@@ -570,8 +593,8 @@ tstatic void calculate_extra_key(key_manager_s *manager,
   hash_init_with_usage(hd, usage_extra_symm_key);
   hash_update(hd, magic, 1);
 
-  // extra_symm_key = KDF_1(usage_extra_symm_key || 0xFF || chain_key_s[i-1][j],
-  // 32)
+  /* extra_symm_key = KDF_1(usage_extra_symm_key || 0xFF || chain_key_s[i-1][j],
+   * 32) */
   if (action == OTRNG_SENDING) {
     hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
   } else if (action == OTRNG_SENDING) {
@@ -605,8 +628,7 @@ tstatic void delete_stored_enc_keys(key_manager_s *manager) {
 tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
                                  int max_skip, int until,
                                  otrng_ratchet_type type, otrng_notif notif) {
-  if (manager->i ==
-      100) { // TODO: @client should we make this optional to the client?
+  if (manager->i == max_skip) {
     delete_stored_enc_keys(manager);
   }
 
@@ -645,7 +667,7 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
 
       if (type == OTRNG_DH_RATCHET) {
         skipped_m_enc_key->i =
-            manager->i - 1; // ratchet_id - 1 for the dh ratchet
+            manager->i - 1; /* ratchet_id - 1 for the dh ratchet */
       } else if (type == OTRNG_CHAIN_RATCHET) {
         skipped_m_enc_key->i = manager->i;
       }
@@ -656,6 +678,10 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
              EXTRA_SYMMETRIC_KEY_BYTES);
       memcpy(skipped_m_enc_key->m_enc_key, enc_key, ENC_KEY_BYTES);
 
+      /* @secret: should be deleted when:
+         1. session expired
+         2. the key is retrieved
+      */
       manager->skipped_keys =
           otrng_list_add(skipped_m_enc_key, manager->skipped_keys);
 
@@ -667,7 +693,8 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
   return SUCCESS;
 }
 
-/* MKenc, extra_symm_key = skipped_MKenc[ratchet_id, message_id]
+/*
+   MKenc, extra_symm_key = skipped_MKenc[ratchet_id, message_id]
    MKmac = KDF_1(usage_mac_key || MKenc, 64).
 */
 INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
@@ -696,8 +723,8 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
     current = current->next;
   }
 
-  // This is not an actual error, it is just that the key we need was not
-  // skipped
+  /* This is not an actual error, it is just that the key we need was not
+  skipped */
   return ERROR;
 }
 
@@ -713,8 +740,11 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     }
   }
 
+  /* @secret should be deleted after being used to encrypt and mac the message
+   */
   derive_encryption_and_mac_keys(enc_key, mac_key, manager, action);
   calculate_extra_key(manager, action);
+  /* @secret should be deleted when the new chain key is derived */
   derive_next_chain_key(manager, action);
 
 #ifdef DEBUG
