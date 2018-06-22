@@ -185,8 +185,6 @@ int main(int argc, char **argv) {
                   test_defragment_regular_otr_message);
   g_test_add_func("/fragment/defragment_two_messages",
                   test_defragment_two_messages);
-  g_test_add_func("/fragment/expiration_of_fragments",
-                  test_expiration_of_fragments);
 
   g_test_add_func("/key_management/derive_ratchet_keys",
                   test_derive_ratchet_keys);

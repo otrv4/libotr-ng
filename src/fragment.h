@@ -39,7 +39,6 @@ typedef struct fragment_context_s {
   uint32_t identifier;
   unsigned int total, count;
   size_t total_message_len;
-  time_t last_fragment_received_at;
   string_p *fragments;
 } fragment_context_s, fragment_context_p[1];
 
@@ -60,9 +59,6 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
                                             list_element_s **contexts,
                                             const string_p message,
                                             const int our_instance_tag);
-
-INTERNAL otrng_err otrng_fragment_housekeeping(time_t now, int threshold,
-                                               list_element_s **contexts);
 
 #ifdef OTRNG_FRAGMENT_PRIVATE
 #endif

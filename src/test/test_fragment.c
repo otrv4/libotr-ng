@@ -283,24 +283,3 @@ void test_defragment_two_messages(void) {
   free(unfrag);
   otrng_list_free_nodes(list);
 }
-
-void test_expiration_of_fragments(void) {
-  time_t HOUR_IN_SEC = 3600;
-  list_element_s *list = NULL;
-  fragment_context_s *ctx1 = otrng_fragment_context_new();
-  fragment_context_s *ctx2 = otrng_fragment_context_new();
-
-  ctx1->last_fragment_received_at = HOUR_IN_SEC;
-  ctx2->last_fragment_received_at = HOUR_IN_SEC + 2;
-
-  list = otrng_list_add(ctx1, list);
-  list = otrng_list_add(ctx2, list);
-
-  time_t now = HOUR_IN_SEC + 1;
-  otrng_assert_is_success(otrng_fragment_housekeeping(now, 5, &list));
-  otrng_assert(otrng_list_len(list) == 1);
-
-  now = HOUR_IN_SEC + 3;
-  otrng_assert_is_success(otrng_fragment_housekeeping(now, 5, &list));
-  otrng_assert(otrng_list_len(list) == 0);
-}
