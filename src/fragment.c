@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define OTRNG_FRAGMENT_PRIVATE
 
@@ -63,6 +64,7 @@ tstatic void initialize_fragment_context(fragment_context_s *context) {
   context->identifier = 0;
   context->count = 0;
   context->total = 0;
+  context->last_fragment_received_at = 0;
   context->total_message_len = 0;
   context->fragments = NULL;
 }
@@ -306,6 +308,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   }
 
   context->count++;
+  time(&context->last_fragment_received_at);
 
   if (context->count == t) {
     if (join_fragments(unfrag_msg, context)) {
@@ -318,5 +321,21 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     return ERROR;
   }
 
+  return SUCCESS;
+}
+
+INTERNAL otrng_err otrng_fragment_housekeeping(time_t now, int threshold,
+                                               list_element_s **contexts) {
+  for (list_element_s *current = *contexts; current; current = current->next) {
+    if (!current->data) {
+      continue;
+    }
+
+    fragment_context_s *ctx = current->data;
+    if ((now - ctx->last_fragment_received_at) < threshold) {
+      *contexts = otrng_list_remove_element(current, *contexts);
+      otrng_fragment_context_free(ctx);
+    }
+  }
   return SUCCESS;
 }
