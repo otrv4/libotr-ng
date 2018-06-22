@@ -46,8 +46,8 @@ typedef enum {
 
 typedef enum {
   ERR_NONE,
+  ERR_MSG_UNREADABLE,
   ERR_MSG_NOT_PRIVATE,
-  ERR_MSG_UNDECRYPTABLE,
   ERR_MSG_ENCRYPTION_ERROR,
   ERR_MSG_MALFORMED,
 } otrng_err_code;

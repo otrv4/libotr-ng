@@ -1170,8 +1170,8 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   switch (err_code) {
   case ERR_NONE:
     break;
-  case ERR_MSG_UNDECRYPTABLE:
-    msg = otrng_strdup("OTRNG_ERR_MSG_READABLE");
+  case ERR_MSG_UNREADABLE:
+    msg = otrng_strdup("OTRNG_ERR_MSG_UNREADABLE");
     err_msg =
         malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_1) + strlen(msg) + 1);
     if (!err_msg) {
@@ -2011,7 +2011,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
 
     if (!decrypt_data_msg(response, enc_key, msg)) {
       if (msg->flags != MSGFLAGS_IGNORE_UNREADABLE) {
-        otrng_error_message(&response->to_send, ERR_MSG_UNDECRYPTABLE);
+        otrng_error_message(&response->to_send, ERR_MSG_UNREADABLE);
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
         otrng_data_message_free(msg);
