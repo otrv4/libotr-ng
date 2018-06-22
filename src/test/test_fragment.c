@@ -303,5 +303,6 @@ void test_expiration_of_fragments(void) {
   now = HOUR_IN_SEC + 3;
   otrng_assert_is_success(otrng_fragment_housekeeping(now, 5, &list));
   otrng_assert(otrng_list_len(list) == 0);
-  otrng_list_free_full(list);
+
+  otrng_list_free_nodes(list);
 }
