@@ -266,7 +266,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otrng_key_manager_init(otr->keys);
   otrng_smp_context_init(otr->smp);
 
-  otr->fragmentation_contexts = NULL;
+  otr->pending_fragments = NULL;
   otr->v3_conn = NULL;
 
   otr->ignore_msg = 0;
@@ -298,8 +298,8 @@ INTERNAL void otrng_destroy(/*@only@ */ otrng_s *otr) {
 
   otrng_smp_destroy(otr->smp);
 
-  otrng_list_free(otr->fragmentation_contexts, free_fragment_context);
-  otr->fragmentation_contexts = NULL;
+  otrng_list_free(otr->pending_fragments, free_fragment_context);
+  otr->pending_fragments = NULL;
 
   free(otr->sending_init_msg); // TODO: @freeing should we free this after being
                                // used by phi?
@@ -2233,7 +2233,7 @@ tstatic otrng_err receive_possibly_fragment(char **unfragmented,
                                             otrng_s *otr) {
   int our_instance_tag = otr->our_instance_tag;
 
-  return otrng_unfragment_message(unfragmented, &otr->fragmentation_contexts,
+  return otrng_unfragment_message(unfragmented, &otr->pending_fragments,
                                   received, our_instance_tag);
 }
 

@@ -119,7 +119,7 @@ struct otrng_s {
   key_manager_s *keys;
   smp_context_p smp;
 
-  list_element_s *fragmentation_contexts;
+  list_element_s *pending_fragments;
 
   string_p sending_init_msg;
   string_p receiving_init_msg;
