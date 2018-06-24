@@ -30,6 +30,7 @@
 
 #define DH_KEY_SIZE 80
 #define DH3072_MOD_LEN_BITS 3072
+// TODO: we have this constant defined twice
 #define DH3072_MOD_LEN_BYTES 384
 #define DH_MPI_BYTES (4 + DH3072_MOD_LEN_BYTES)
 
@@ -60,7 +61,7 @@ INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_p keypair);
 
 INTERNAL void otrng_dh_keypair_destroy(dh_keypair_p keypair);
 
-INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared, size_t shared_bytes,
+INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared,
                                           const dh_private_key_p our_priv,
                                           const dh_public_key_p their_pub);
 

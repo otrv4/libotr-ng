@@ -119,6 +119,7 @@
                         _p2->transitional_signature);                          \
   } while (0)
 
+// TODO: this is using variable-length array
 #define otrng_assert_not_zero(s, len)                                          \
   do {                                                                         \
     const uint8_t *_s = (uint8_t *)(s);                                        \
@@ -136,6 +137,7 @@
     g_free(__msg);                                                             \
   } while (0)
 
+// TODO: this is using variable-length array
 #define otrng_assert_zero(s, len)                                              \
   do {                                                                         \
     const uint8_t *_s = (uint8_t *)(s);                                        \

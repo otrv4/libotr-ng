@@ -118,7 +118,6 @@ tstatic otrng_err otrng_prekey_profile_body_asprint(
 
 INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
                                        const otrng_keypair_s *longterm_pair) {
-
   otrng_ec_point_copy(profile->pub, longterm_pair->pub); // Key "H"
 
   uint8_t *body = NULL;

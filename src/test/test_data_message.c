@@ -171,7 +171,6 @@ void test_data_message_serializes_absent_dh() {
 }
 
 void test_otrng_data_message_deserializes() {
-
   data_message_s *data_msg = set_up_data_msg();
 
   uint8_t *serialized = NULL;

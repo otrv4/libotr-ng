@@ -32,7 +32,6 @@ int dh_mpi_cmp(const dh_mpi_p m1, const dh_mpi_p m2) {
 }
 
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
-
   otrng_fixture->state = otrng_client_state_new(NULL); // No callbacks
   otrng_fixture->state->user_state = otrl_userstate_create();
   otrng_fixture->state->protocol_name = otrng_strdup("protocol");

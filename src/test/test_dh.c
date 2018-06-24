@@ -31,9 +31,9 @@ void dh_test_api() {
   memset(shared2, 0, sizeof shared2);
 
   otrng_assert_is_success(
-      otrng_dh_shared_secret(shared1, sizeof(shared1), alice->priv, bob->pub));
+      otrng_dh_shared_secret(shared1, alice->priv, bob->pub));
   otrng_assert_is_success(
-      otrng_dh_shared_secret(shared2, sizeof(shared2), bob->priv, alice->pub));
+      otrng_dh_shared_secret(shared2, bob->priv, alice->pub));
 
   otrng_assert_cmpmem(shared1, shared2, sizeof(shared1));
 
@@ -42,7 +42,6 @@ void dh_test_api() {
 }
 
 void dh_test_shared_secret_adds_leading_zeroes() {
-
   // Note the leading 0x0
   uint8_t expected_secret[DH3072_MOD_LEN_BYTES] = {
       0x00, 0x1e, 0xe9, 0xef, 0x72, 0xaf, 0x08, 0x96, 0xd9, 0x2d, 0x1c, 0x9e,
@@ -77,7 +76,6 @@ void dh_test_shared_secret_adds_leading_zeroes() {
       0xa2, 0x29, 0xd1, 0x9b, 0xdc, 0xbc, 0xb2, 0x9d, 0x97, 0x68, 0xb0, 0x93,
       0x5b, 0x25, 0xe0, 0x5c, 0x0d, 0x45, 0xa6, 0xc7, 0x9c, 0x9a, 0xd8, 0x8b,
       0xdf, 0xdc, 0xca, 0x4b, 0x9b, 0x01, 0x1b, 0x09, 0xad, 0x43, 0x3d, 0x1d,
-
   };
 
   uint8_t priv[DH_KEY_SIZE] = {
@@ -132,8 +130,7 @@ void dh_test_shared_secret_adds_leading_zeroes() {
   uint8_t secret[DH3072_MOD_LEN_BYTES] = {0};
   memset(secret, 0xFF, sizeof secret);
 
-  otrng_assert_is_success(
-      otrng_dh_shared_secret(secret, DH3072_MOD_LEN_BYTES, priv_dh, pub_dh));
+  otrng_assert_is_success(otrng_dh_shared_secret(secret, priv_dh, pub_dh));
 
   otrng_assert_cmpmem(expected_secret, secret, DH3072_MOD_LEN_BYTES);
 

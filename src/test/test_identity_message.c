@@ -24,7 +24,6 @@
 
 void test_dake_identity_message_serializes(dake_fixture_s *f,
                                            gconstpointer data) {
-
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 
@@ -91,7 +90,6 @@ void test_dake_identity_message_serializes(dake_fixture_s *f,
 
 void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
                                                    gconstpointer data) {
-
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 
@@ -134,7 +132,6 @@ void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
 }
 
 void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
-
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 

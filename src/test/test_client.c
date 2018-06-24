@@ -37,7 +37,6 @@ static otrng_client_s *set_up_client(otrng_client_state_s *state,
 }
 
 void test_client_conversation_api() {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
 
   otrng_client_s *alice =
@@ -77,7 +76,6 @@ void test_client_conversation_api() {
 }
 
 void test_client_api() {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
   otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
   otrng_client_state_s *charlie_state = otrng_client_state_new("charlie");
@@ -262,7 +260,6 @@ void test_fingerprint_hash_to_human() {
 }
 
 void test_conversation_with_multiple_locations() {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
   otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
 
@@ -356,7 +353,6 @@ void test_conversation_with_multiple_locations() {
 }
 
 void test_valid_identity_msg_in_waiting_auth_i() {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
   otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
 
@@ -499,7 +495,6 @@ void test_valid_identity_msg_in_waiting_auth_i() {
 }
 
 void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
   otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
 
@@ -613,7 +608,6 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
 }
 
 void test_valid_identity_msg_in_waiting_auth_r() {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
   otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
 
@@ -828,7 +822,6 @@ void test_valid_identity_msg_in_waiting_auth_r() {
 }
 
 void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
   otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
 
@@ -983,7 +976,6 @@ void test_client_receives_fragmented_message(void) {
 }
 
 void test_client_sends_fragmented_message(void) {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
   otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
 

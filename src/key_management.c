@@ -57,9 +57,8 @@ tstatic void ratchet_free(ratchet_s *ratchet) {
   ratchet = NULL;
 }
 
-INTERNAL void otrng_key_manager_init(
-    key_manager_s *manager) // TODO: @refactoring make like ratchet_new?
-{
+// TODO: @refactoring make like ratchet_new?
+INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
   otrng_ec_bzero(manager->our_ecdh->pub, ED448_POINT_BYTES);
   manager->our_dh->pub = NULL;
   manager->our_dh->priv = NULL;
@@ -291,7 +290,7 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
   uint8_t usage_brace_key = 0x03;
 
   if (manager->i % 3 == 0) {
-    if (!otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), manager->our_dh->priv,
+    if (!otrng_dh_shared_secret(k_dh, manager->our_dh->priv,
                                 manager->their_dh)) {
       return ERROR;
     }
@@ -495,7 +494,6 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
 
 tstatic otrng_err rotate_keys(key_manager_s *manager,
                               otrng_participant_action action) {
-
   if (action == OTRNG_SENDING) {
     /* our_ecdh = generateECDH()
        if i % 3 == 0, our_dh = generateDH() */
@@ -585,7 +583,6 @@ tstatic void derive_next_chain_key(key_manager_s *manager,
                    sizeof(sending_chain_key_p));
 
   } else if (action == OTRNG_RECEIVING) {
-
     shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
                    usage_next_chain_key, manager->current->chain_r,
                    sizeof(receiving_chain_key_p));
@@ -669,7 +666,6 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
   uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
   if (!(memcmp(manager->current->chain_r, zero_buff,
                sizeof(manager->current->chain_r)) == 0)) {
-
     while (manager->k < until) {
       shake_256_kdf1(enc_key, sizeof(m_enc_key_p), usage_message_key,
                      manager->current->chain_r, sizeof(receiving_chain_key_p));

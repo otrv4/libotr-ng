@@ -21,12 +21,12 @@
 #ifndef OTRNG_PREKEY_ENSEMBLE_H
 #define OTRNG_PREKEY_ENSEMBLE_H
 
+#include <stdint.h>
+
 #include "client_profile.h"
 #include "dake.h"
 #include "error.h"
 #include "prekey_profile.h"
-
-#include <stdint.h>
 
 typedef struct {
   client_profile_p client_profile;

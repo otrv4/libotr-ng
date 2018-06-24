@@ -23,7 +23,6 @@
 #include "../keys.h"
 
 void test_dake_prekey_message_serializes() {
-
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 
@@ -83,7 +82,6 @@ void test_dake_prekey_message_serializes() {
 }
 
 void test_otrng_dake_prekey_message_deserializes() {
-
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 
@@ -182,7 +180,6 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_p msg,
 
 void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
                                                        gconstpointer data) {
-
   dake_non_interactive_auth_message_p msg;
   setup_non_interactive_auth_message(msg, f);
 

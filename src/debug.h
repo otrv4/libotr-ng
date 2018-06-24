@@ -40,9 +40,9 @@ static inline char *_otrng_memdump(const uint8_t *src, size_t len) {
 
   for (i = 0; i < len; i++) {
     if (i % 8 == 0) {
-      cursor += sprintf(cursor, "\n");
+      cursor += snprintf(cursor, s, "\n");
     }
-    cursor += sprintf(cursor, "0x%02x, ", src[i]);
+    cursor += snprintf(cursor, s, "0x%02x, ", src[i]);
   }
 
   return buff;

@@ -947,7 +947,6 @@ void test_api_smp(void) {
 }
 
 void test_api_smp_abort(void) {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 

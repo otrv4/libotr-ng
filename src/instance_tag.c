@@ -29,7 +29,6 @@
 API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
                                 const char *account, const char *protocol,
                                 FILE *filename) {
-
   OtrlUserState us = otrl_userstate_create();
 
   if (otrl_instag_read_FILEp(us, filename)) {

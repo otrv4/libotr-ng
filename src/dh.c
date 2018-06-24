@@ -186,16 +186,16 @@ INTERNAL void otrng_dh_keypair_destroy(dh_keypair_p keypair) {
 
 // TODO: @refactoring @sanitizer This should return how many bytes were  written
 // rather than adding leading zeroes.
-INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared, size_t shared_bytes,
+INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared,
                                           const dh_private_key_p our_priv,
                                           const dh_public_key_p their_pub) {
   size_t written;
-  uint8_t buffer[shared_bytes];
+  uint8_t buffer[DH3072_MOD_LEN_BYTES];
 
   gcry_mpi_t secret = gcry_mpi_snew(DH3072_MOD_LEN_BITS);
   gcry_mpi_powm(secret, their_pub, our_priv, DH3072_MODULUS);
-  gcry_error_t err =
-      gcry_mpi_print(GCRYMPI_FMT_USG, buffer, shared_bytes, &written, secret);
+  gcry_error_t err = gcry_mpi_print(GCRYMPI_FMT_USG, buffer,
+                                    DH3072_MOD_LEN_BYTES, &written, secret);
 
   gcry_mpi_release(secret);
 
@@ -204,8 +204,8 @@ INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared, size_t shared_bytes,
   }
 
   // Replace removed leading zeroes to ensure size is 384
-  memset(shared, 0, shared_bytes);
-  memcpy(shared + shared_bytes - written, buffer, written);
+  memset(shared, 0, DH3072_MOD_LEN_BYTES);
+  memcpy(shared + DH3072_MOD_LEN_BYTES - written, buffer, written);
 
   return SUCCESS;
 }

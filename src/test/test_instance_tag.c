@@ -45,7 +45,6 @@ void test_instance_tag_generates_tag_when_file_empty() {
 }
 
 void test_instance_tag_generates_tag_when_file_is_full() {
-
   char *icq_alice_account = "alice_icq";
   char *icq_protocol = "ICQ";
   char *xmpp_alice_account = "alice_xmpp";

@@ -107,9 +107,8 @@ void test_calculate_brace_key() {
 
   otrng_assert_is_success(otrng_dh_mpi_deserialize(
       &their_dh_secret, their_secret, sizeof their_secret, NULL));
-  otrng_assert_is_success(
-      otrng_dh_shared_secret(their_public, DH3072_MOD_LEN_BYTES,
-                             their_dh_secret, otrng_dh_mpi_generator()));
+  otrng_assert_is_success(otrng_dh_shared_secret(their_public, their_dh_secret,
+                                                 otrng_dh_mpi_generator()));
   otrng_dh_mpi_release(their_dh_secret);
   their_dh_secret = NULL;
   otrng_assert_is_success(otrng_dh_mpi_deserialize(

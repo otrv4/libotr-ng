@@ -712,7 +712,7 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   }
 
   // TODO: @refactoring this will be calculated again later
-  if (!otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), otr->keys->our_dh->priv,
+  if (!otrng_dh_shared_secret(k_dh, otr->keys->our_dh->priv,
                               otr->keys->their_dh)) {
     return ERROR;
   }
@@ -1113,7 +1113,7 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
     return ERROR;
   }
 
-  if (!otrng_dh_shared_secret(k_dh, sizeof(k_dh_p), otr->keys->our_dh->priv,
+  if (!otrng_dh_shared_secret(k_dh, otr->keys->our_dh->priv,
                               otr->keys->their_dh)) {
     return ERROR;
   }

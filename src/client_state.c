@@ -162,7 +162,8 @@ otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
 
   char *key =
       malloc(strlen(state->protocol_name) + strlen(state->account_name) + 2);
-  sprintf(key, "%s:%s", state->protocol_name, state->account_name);
+  snprintf(key, strlen(state->protocol_name) + strlen(state->account_name) + 2,
+           "%s:%s", state->protocol_name, state->account_name);
 
   int err = fputs(key, privf);
   free(key);

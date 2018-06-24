@@ -264,8 +264,7 @@ tstatic otrng_bool smp_msg_1_valid_points(smp_msg_1_s *msg) {
 tstatic otrng_bool smp_msg_1_valid_zkp(smp_msg_1_s *msg) {
   ec_scalar_p temp_scalar;
   ec_point_p Ga_c, G_d;
-  int len = ED448_POINT_BYTES + 1;
-  uint8_t hash[len];
+  uint8_t hash[ED448_POINT_BYTES + 1];
 
   /* Check that c2 = hash_to_scalar(1 || G * d2 + G2a * c2). */
   goldilocks_448_point_scalarmul(Ga_c, msg->G2a, msg->c2);
@@ -533,8 +532,7 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
                                        const smp_context_p smp) {
   ec_scalar_p temp_scalar;
   ec_point_p Gb_c, G_d, point_cp;
-  int len = ED448_POINT_BYTES + 1;
-  uint8_t hash[len];
+  uint8_t hash[ED448_POINT_BYTES + 1];
 
   /* Check that c2 = HashToScalar(3 || G * d2 + G2b * c2). */
   goldilocks_448_point_scalarmul(Gb_c, msg->G2b, msg->c2);
@@ -617,8 +615,7 @@ tstatic otrng_err generate_smp_msg_3(smp_msg_3_s *dst, const smp_msg_2_s *msg_2,
   ecdh_keypair_p pair_r4, pair_r5, pair_r7;
   ec_scalar_p r6, secret_as_scalar;
   ec_point_p temp_point;
-  int len = 1 + (2 * ED448_POINT_BYTES);
-  uint8_t buff[len];
+  uint8_t buff[1 + (2 * ED448_POINT_BYTES)];
 
   ed448_random_scalar(r6);
 
@@ -782,8 +779,7 @@ tstatic otrng_bool smp_msg_3_validate_zkp(smp_msg_3_s *msg,
                                           const smp_context_p smp) {
   ec_point_p temp_point, temp_point_2;
   ec_scalar_p temp_scalar;
-  int len = 1 + (2 * ED448_POINT_BYTES);
-  uint8_t buff[len];
+  uint8_t buff[1 + (2 * ED448_POINT_BYTES)];
 
   /* cp = HashToScalar(6 || G3 * d5 + Pa * cp || G * d5 + G2 * d6 + Qa * cp) */
   buff[0] = 0x06;
@@ -851,8 +847,7 @@ tstatic otrng_err generate_smp_msg_4(smp_msg_4_s *dst, const smp_msg_3_s *msg_3,
   ec_point_p Qa_Qb;
   ecdh_keypair_p pair_r7;
   otrng_zq_keypair_generate(pair_r7->pub, pair_r7->priv);
-  int len = 1 + (2 * ED448_POINT_BYTES);
-  uint8_t buff[len];
+  uint8_t buff[1 + (2 * ED448_POINT_BYTES)];
 
   /* Rb = ((Qa - Qb) * b3) */
   goldilocks_448_point_sub(Qa_Qb, msg_3->Qa, smp->Qb);
@@ -928,8 +923,7 @@ tstatic otrng_bool smp_msg_4_validate_zkp(smp_msg_4_s *msg,
                                           const smp_context_p smp) {
   ec_point_p temp_point, temp_point_2;
   ec_scalar_p temp_scalar;
-  int len = 1 + (2 * ED448_POINT_BYTES);
-  uint8_t buff[len];
+  uint8_t buff[1 + (2 * ED448_POINT_BYTES)];
 
   /* cr = HashToScalar(8 || G * d7 + G3b * cr || (Qa - Qb) * d7 + Rb * cr). */
   goldilocks_448_point_scalarmul(temp_point, smp->G3b, msg->cr);
