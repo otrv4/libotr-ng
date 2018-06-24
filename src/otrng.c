@@ -860,12 +860,6 @@ tstatic otrng_err build_non_interactive_auth_message(
     return ERROR;
   }
 
-  uint8_t usage_auth_mac_key = 0x0D;
-  /* auth_mac_k = KDF_1(usage_auth_mac_key || tmp_k, 64) */
-  uint8_t auth_mac_k[HASH_BYTES];
-  shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, otr->keys->tmp_key,
-                 HASH_BYTES);
-
   unsigned char *t = NULL;
   size_t t_len = 0;
 
