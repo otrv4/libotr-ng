@@ -20,17 +20,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
 
 #define OTRNG_DAKE_PRIVATE
 
 #include "dake.h"
 #include "deserialize.h"
 #include "error.h"
+#include "key_management.h"
 #include "serialize.h"
 #include "shake.h"
-#include "str.h"
 
 INTERNAL dake_identity_message_s *
 otrng_dake_identity_message_new(const client_profile_s *profile) {
@@ -984,7 +982,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
   // OTRv4 section "Non-Interactive-Auth Message"
   /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
   uint8_t auth_mac_k[HASH_BYTES];
-  uint8_t usage_auth_mac = 0x11;
   uint8_t usage_auth_mac_key = 0x0D;
 
   shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, tmp_key,
@@ -992,12 +989,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
 
   // OTRv4 section, "Non-Interactive DAKE Overview"
   /* Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t, 64) */
-  goldilocks_shake256_ctx_p hd;
-  hash_init_with_usage(hd, usage_auth_mac);
-  hash_update(hd, auth_mac_k, sizeof(auth_mac_k));
-  hash_update(hd, t, t_len);
-  hash_final(hd, dst, HASH_BYTES);
-  hash_destroy(hd);
+  otrng_key_manager_calculate_authenticator(dst, auth_mac_k, t, t_len);
 
   return SUCCESS;
 }
