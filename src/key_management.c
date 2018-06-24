@@ -226,7 +226,7 @@ INTERNAL void otrng_key_manager_calculate_auth_mac(uint8_t *auth_mac,
 INTERNAL void otrng_key_manager_calculate_authenticator(
     uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections) {
 
-  static uint8_t usage_authenticator = 0x1B;
+  uint8_t usage_authenticator = 0x1B;
 
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, usage_authenticator);

@@ -81,10 +81,11 @@ INTERNAL otrng_err otrng_generate_smp_secret(unsigned char **secret,
                                              const uint8_t *answer,
                                              size_t answerlen) {
   uint8_t hash[HASH_BYTES];
-  goldilocks_shake256_ctx_p hd;
   uint8_t version[1] = {0x01};
+  uint8_t usage_smp_secret = 0x1C;
+  goldilocks_shake256_ctx_p hd;
 
-  hash_init_with_dom(hd);
+  hash_init_with_usage(hd, usage_smp_secret);
   hash_update(hd, version, 1);
   hash_update(hd, our_fp, sizeof(otrng_fingerprint_p));
   hash_update(hd, their_fp, sizeof(otrng_fingerprint_p));
