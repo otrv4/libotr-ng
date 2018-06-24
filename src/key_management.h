@@ -170,11 +170,13 @@ INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
                                                   k_ecdh_p tmp_ecdh_k1,
                                                   k_ecdh_p tmp_ecdh_k2);
 
-INTERNAL void
-otrng_key_manager_calculate_authenticator(uint8_t *auth_mac,
-                                          const uint8_t *auth_mac_key,
-                                          const uint8_t *t, size_t t_len);
+INTERNAL void otrng_key_manager_calculate_auth_mac(uint8_t *auth_mac,
+                                                   const uint8_t *auth_mac_key,
+                                                   const uint8_t *t,
+                                                   size_t t_len);
 
+INTERNAL void otrng_key_manager_calculate_authenticator(
+    uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections);
 /**
  * @brief Generate the Mixed Shared Secret.
  *        If it is part of the interactive DAKE, generate it

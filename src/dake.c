@@ -989,7 +989,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
 
   // OTRv4 section, "Non-Interactive DAKE Overview"
   /* Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t, 64) */
-  otrng_key_manager_calculate_authenticator(dst, auth_mac_k, t, t_len);
+  otrng_key_manager_calculate_auth_mac(dst, auth_mac_k, t, t_len);
 
   return SUCCESS;
 }

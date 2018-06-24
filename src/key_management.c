@@ -207,10 +207,10 @@ INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
   hash_destroy(hd);
 }
 
-INTERNAL void
-otrng_key_manager_calculate_authenticator(uint8_t *auth_mac,
-                                          const uint8_t *auth_mac_key,
-                                          const uint8_t *t, size_t t_len) {
+INTERNAL void otrng_key_manager_calculate_auth_mac(uint8_t *auth_mac,
+                                                   const uint8_t *auth_mac_key,
+                                                   const uint8_t *t,
+                                                   size_t t_len) {
   uint8_t usage_auth_mac = 0x11;
 
   goldilocks_shake256_ctx_p hd;
@@ -220,6 +220,20 @@ otrng_key_manager_calculate_authenticator(uint8_t *auth_mac,
   hash_update(hd, t, t_len);
 
   hash_final(hd, auth_mac, HASH_BYTES);
+  hash_destroy(hd);
+}
+
+INTERNAL void otrng_key_manager_calculate_authenticator(
+    uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections) {
+
+  static uint8_t usage_authenticator = 0x1B;
+
+  goldilocks_shake256_ctx_p hd;
+  hash_init_with_usage(hd, usage_authenticator);
+  hash_update(hd, mac_key, sizeof(m_mac_key_p));
+  hash_update(hd, sections, HASH_BYTES);
+
+  hash_final(hd, authenticator, DATA_MSG_MAC_BYTES);
   hash_destroy(hd);
 }
 
