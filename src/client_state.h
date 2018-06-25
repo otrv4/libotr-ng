@@ -68,9 +68,7 @@ typedef struct otrng_client_state_s {
       *shared_prekey_pair; // TODO: @client is this something the
                            // client will generate? The
                            // spec does not specify.
-  // TODO: @client this should all come from the client so the new function
-  // should pass them as params
-  char *phi; // this is the shared session state
+
   int max_stored_msg_keys;
   int (*should_heartbeat)(int last_sent);
   bool pad; // TODO: @client @refactoring this can be replaced by length

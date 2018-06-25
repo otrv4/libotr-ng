@@ -279,3 +279,147 @@ void test_otrng_build_prekey_ensemble() {
   otrng_free(otr);
   otrng_client_state_free(state);
 }
+
+static otrng_shared_session_state_s *
+test_get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
+  // TODO: assert if the callback receives the conv it should
+
+  otrng_shared_session_state_s *ret =
+      malloc(sizeof(otrng_shared_session_state_s));
+
+  ret->identifier1 = otrng_strdup("alice");
+  ret->identifier2 = otrng_strdup("bob");
+  ret->password = NULL;
+
+  return ret;
+}
+
+void test_otrng_invokes_shared_session_state_callbacks(void) {
+  otrng_client_state_s *state = otrng_client_state_new(NULL);
+
+  otrng_client_callbacks_p callbacks = {{NULL, // create_privkey
+                                         NULL, // create_shared_prekey
+                                         NULL, // gone_secure
+                                         NULL, // gone_insecure
+                                         NULL, // fingerprint_seen
+                                         NULL, // fingerprint_seen_v3
+                                         NULL, // smp_ask_for_secret
+                                         NULL, // smp_ask_for_answer
+                                         NULL, // smp_update
+                                         NULL, // received_extra_symm_key
+                                         &test_get_shared_session_state_cb}};
+
+  state->callbacks = callbacks;
+
+  otrng_s *protocol = set_up(state, ALICE_IDENTITY, 1);
+
+  otrng_shared_session_state_s *session = NULL;
+
+  session = otrng_get_shared_session_state(protocol);
+  otrng_assert(session != NULL);
+  otrng_assert_cmpmem(session->identifier1, "alice",
+                      strlen(session->identifier1));
+  otrng_assert_cmpmem(session->identifier2, "bob",
+                      strlen(session->identifier2));
+  otrng_assert(session->password == NULL);
+
+  free(session->identifier1);
+  free(session->identifier2);
+  free(session);
+  otrng_user_state_free_all(state->user_state);
+  otrng_client_state_free_all(state);
+  otrng_free_all(protocol);
+}
+
+void test_otrng_invokes_null_shared_session_state_callbacks(void) {
+  otrng_client_state_s *state = otrng_client_state_new(NULL);
+  otrng_s *protocol = set_up(state, ALICE_IDENTITY, 1);
+  otrng_shared_session_state_s *session = NULL;
+
+  state->callbacks = NULL;
+  session = otrng_get_shared_session_state(protocol);
+  otrng_assert(session == NULL);
+
+  otrng_client_callbacks_p callbacks = {{
+      NULL, // create_privkey
+      NULL, // create_shared_prekey
+      NULL, // gone_secure
+      NULL, // gone_insecure
+      NULL, // fingerprint_seen
+      NULL, // fingerprint_seen_v3
+      NULL, // smp_ask_for_secret
+      NULL, // smp_ask_for_answer
+      NULL, // smp_update
+      NULL, // received_extra_symm_key
+      NULL, // get_shared_session_state
+  }};
+
+  state->callbacks = callbacks;
+  session = otrng_get_shared_session_state(protocol);
+  otrng_assert(session == NULL);
+
+  otrng_user_state_free_all(state->user_state);
+  otrng_client_state_free_all(state);
+  otrng_free_all(protocol);
+}
+
+void test_otrng_generates_shared_session_state_string(void) {
+  otrng_shared_session_state_s state1[1];
+  state1->identifier1 = otrng_strdup("alice");
+  state1->identifier2 = otrng_strdup("bob");
+  state1->password = NULL;
+
+  char *state1_str = otrng_generate_session_state_string(state1);
+  otrng_assert(state1_str);
+  otrng_assert_cmpmem(state1_str, "alicebob", strlen("alicebob"));
+
+  free(state1_str);
+  free(state1->identifier1);
+  free(state1->identifier2);
+
+  otrng_shared_session_state_s state2[1];
+  state2->identifier1 = otrng_strdup("bob");
+  state2->identifier2 = otrng_strdup("alice");
+  state2->password = NULL;
+
+  char *state2_str = otrng_generate_session_state_string(state2);
+  otrng_assert(state2_str);
+  otrng_assert_cmpmem(state2_str, "alicebob", strlen("alicebob"));
+
+  free(state2_str);
+  free(state2->identifier1);
+  free(state2->identifier2);
+
+  otrng_shared_session_state_s state3[1];
+  state3->identifier1 = otrng_strdup("bob");
+  state3->identifier2 = otrng_strdup("alice");
+  state3->password = otrng_strdup("passwd");
+
+  char *state3_str = otrng_generate_session_state_string(state3);
+  otrng_assert(state3_str);
+  otrng_assert_cmpmem(state3_str, "alicebobpasswd", strlen("alicebobpasswd"));
+
+  free(state3_str);
+  free(state3->identifier1);
+  free(state3->identifier2);
+  free(state3->password);
+
+  char *state4_str = otrng_generate_session_state_string(NULL);
+  otrng_assert(state4_str == NULL);
+
+  otrng_shared_session_state_s state4[1];
+  state4->identifier1 = otrng_strdup("bob");
+  state4->identifier2 = NULL;
+  state4->password = NULL;
+
+  otrng_assert(otrng_generate_session_state_string(state4) == NULL);
+  free(state4->identifier1);
+
+  otrng_shared_session_state_s state5[1];
+  state5->identifier1 = NULL;
+  state5->identifier2 = otrng_strdup("bob");
+  state5->password = NULL;
+
+  otrng_assert(otrng_generate_session_state_string(state5) == NULL);
+  free(state5->identifier2);
+}

@@ -38,6 +38,12 @@ typedef enum {
 
 typedef struct otrng_conversation_state_s otrng_client_conversation_s;
 
+typedef struct otrng_shared_session_state_s {
+  char *identifier1;
+  char *identifier2;
+  char *password;
+} otrng_shared_session_state_s;
+
 typedef struct otrng_client_callbacks_s {
   /* Create a private key for the given accountname/protocol if
    * desired. */
@@ -102,6 +108,9 @@ typedef struct otrng_client_callbacks_s {
                                   const unsigned char *use_data,
                                   size_t use_data_len,
                                   const unsigned char *extra_sym_key);
+
+  otrng_shared_session_state_s *(*get_shared_session_state)(
+      const otrng_client_conversation_s *conv);
 } otrng_client_callbacks_s, otrng_client_callbacks_p[1];
 
 INTERNAL void

@@ -175,20 +175,25 @@ INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys) {
   return ser_mac_keys;
 }
 
-INTERNAL size_t otrng_serialize_phi(uint8_t *dst, const uint8_t *phi,
-                                    size_t phi_len, const uint8_t *init_msg,
-                                    size_t init_msg_len,
+INTERNAL size_t otrng_serialize_phi(uint8_t *dst,
+                                    const char *shared_session_state,
+                                    const char *init_msg,
                                     uint16_t sender_instance_tag,
                                     uint16_t receiver_instance_tag) {
   uint8_t *cursor = dst;
 
-  cursor += otrng_serialize_uint16(cursor, sender_instance_tag);
-  cursor += otrng_serialize_uint16(cursor, receiver_instance_tag);
-  cursor += otrng_serialize_data(cursor, phi, phi_len);
-
-  if (init_msg) {
-    cursor += otrng_serialize_data(cursor, init_msg, init_msg_len);
+  if (sender_instance_tag < receiver_instance_tag) {
+    cursor += otrng_serialize_uint16(cursor, sender_instance_tag);
+    cursor += otrng_serialize_uint16(cursor, receiver_instance_tag);
+  } else {
+    cursor += otrng_serialize_uint16(cursor, receiver_instance_tag);
+    cursor += otrng_serialize_uint16(cursor, sender_instance_tag);
   }
+
+  cursor += otrng_serialize_data(cursor, (const uint8_t *)shared_session_state,
+                                 strlen(shared_session_state));
+  cursor += otrng_serialize_data(cursor, (const uint8_t *)init_msg,
+                                 init_msg ? strlen(init_msg) : 0);
 
   return cursor - dst;
 }

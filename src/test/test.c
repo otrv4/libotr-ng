@@ -251,6 +251,12 @@ int main(int argc, char **argv) {
              otrng_fixture_teardown);
   g_test_add_func("/otrng/destroy", test_otrng_destroy);
 
+  g_test_add_func("/otrng/callbacks/shared_session_state",
+                  test_otrng_invokes_shared_session_state_callbacks);
+  g_test_add_func("/otrng/callbacks/shared_session_state/valid",
+                  test_otrng_invokes_null_shared_session_state_callbacks);
+  g_test_add_func("/otrng/shared_session_state/serializes",
+                  test_otrng_generates_shared_session_state_string);
   g_test_add_func("/otrng/build_prekey_ensemble",
                   test_otrng_build_prekey_ensemble);
 

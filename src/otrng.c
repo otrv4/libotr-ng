@@ -96,7 +96,8 @@ tstatic void create_shared_prekey(const otrng_conversation_state_s *conv) {
 }
 
 tstatic void gone_secure_cb_v4(const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks) {
+  if (!conv || !conv->client || !conv->client->callbacks ||
+      !conv->client->callbacks->gone_secure) {
     return;
   }
 
@@ -104,7 +105,8 @@ tstatic void gone_secure_cb_v4(const otrng_conversation_state_s *conv) {
 }
 
 tstatic void gone_insecure_cb_v4(const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks) {
+  if (!conv || !conv->client || !conv->client->callbacks ||
+      !conv->client->callbacks->gone_insecure) {
     return;
   }
 
@@ -113,7 +115,8 @@ tstatic void gone_insecure_cb_v4(const otrng_conversation_state_s *conv) {
 
 tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint_p fp,
                                     const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks) {
+  if (!conv || !conv->client || !conv->client->callbacks ||
+      !conv->client->callbacks->fingerprint_seen) {
     return;
   }
 
@@ -125,6 +128,18 @@ tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
                                     const uint8_t *question, const size_t q_len,
                                     const otrng_conversation_state_s *conv) {
   if (!conv || !conv->client || !conv->client->callbacks) {
+    return;
+  }
+
+  if (!conv->client->callbacks->smp_ask_for_secret) {
+    return;
+  }
+
+  if (!conv->client->callbacks->smp_ask_for_answer) {
+    return;
+  }
+
+  if (!conv->client->callbacks->smp_update) {
     return;
   }
 
@@ -155,7 +170,8 @@ tstatic void received_extra_sym_key(const otrng_client_conversation_s *conv,
                                     size_t use_data_len,
                                     const unsigned char *extra_sym_key) {
 
-  if (!conv || !conv->client || !conv->client->callbacks)
+  if (!conv || !conv->client || !conv->client->callbacks ||
+      !conv->client->callbacks->received_extra_symm_key)
     return;
 
   conv->client->callbacks->received_extra_symm_key(conv, use, use_data,
@@ -280,6 +296,8 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->sending_init_msg = NULL;
   otr->receiving_init_msg = NULL;
 
+  otr->shared_session_state = NULL;
+
   return otr;
 }
 
@@ -315,6 +333,9 @@ INTERNAL void otrng_destroy(/*@only@ */ otrng_s *otr) {
 
   otrng_v3_conn_free(otr->v3_conn);
   otr->v3_conn = NULL;
+
+  free(otr->shared_session_state);
+  otr->shared_session_state = NULL;
 }
 
 INTERNAL void otrng_free(/*@only@ */ otrng_s *otr) {
@@ -664,6 +685,117 @@ tstatic otrng_err serialize_and_encode_auth_r(string_p *dst,
   return SUCCESS;
 }
 
+static const char *get_shared_session_state(otrng_s *otr) {
+  if (otr->shared_session_state) {
+    return otr->shared_session_state;
+  }
+
+  otrng_shared_session_state_s *state = otrng_get_shared_session_state(otr);
+  otr->shared_session_state = otrng_generate_session_state_string(state);
+
+  if (state) {
+    free(state->identifier1);
+    free(state->identifier2);
+    free(state->password);
+  }
+
+  free(state);
+
+  return otr->shared_session_state;
+}
+
+static otrng_err generate_phi_serialized(uint8_t **dst, size_t *dst_len,
+                                         const char *phi_prime,
+                                         const char *init_msg,
+                                         uint16_t instance_tag1,
+                                         uint16_t instance_tag2) {
+
+  if (!phi_prime) {
+    return ERROR;
+  }
+
+  /*
+   * phi = smaller instance tag || larger instance tag || DATA(query message)
+   *       || phi'
+   */
+  size_t init_msg_len = init_msg ? strlen(init_msg) + 1 : 0;
+  size_t phi_prime_len = strlen(phi_prime) + 1;
+  size_t s = 4 + 4 + (4 + init_msg_len) + (4 + phi_prime_len);
+  *dst = malloc(s);
+  if (!*dst) {
+    return ERROR;
+  }
+
+  *dst_len = otrng_serialize_phi(*dst, phi_prime, init_msg, instance_tag1,
+                                 instance_tag2);
+
+  return SUCCESS;
+}
+
+static otrng_err generate_phi_receiving(uint8_t **dst, size_t *dst_len,
+                                        otrng_s *otr) {
+  return generate_phi_serialized(dst, dst_len, get_shared_session_state(otr),
+                                 otr->receiving_init_msg, otr->our_instance_tag,
+                                 otr->their_instance_tag);
+}
+
+static otrng_err generate_phi_sending(uint8_t **dst, size_t *dst_len,
+                                      otrng_s *otr) {
+  return generate_phi_serialized(dst, dst_len, get_shared_session_state(otr),
+                                 otr->sending_init_msg, otr->our_instance_tag,
+                                 otr->their_instance_tag);
+}
+
+static otrng_err generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
+                                           otrng_rsign_tag_type_s type,
+                                           otrng_s *otr) {
+  const otrng_dake_participant_data_s initiator = {
+      .client_profile = otr->their_client_profile,
+      .ecdh = *(otr->keys->their_ecdh),
+      .dh = their_dh(otr),
+  };
+
+  const otrng_dake_participant_data_s responder = {
+      .client_profile = get_my_client_profile(otr),
+      .ecdh = *(otr->keys->our_ecdh->pub),
+      .dh = our_dh(otr),
+  };
+
+  uint8_t *phi = NULL;
+  size_t phi_len = 0;
+  if (!generate_phi_sending(&phi, &phi_len, otr)) {
+    return ERROR;
+  }
+
+  otrng_err ret = build_interactive_rsign_tag(dst, dst_len, type, initiator,
+                                              responder, phi, phi_len);
+
+  free(phi);
+  return ret;
+}
+
+static otrng_err generate_receiving_rsig_tag(
+    uint8_t **dst, size_t *dst_len, otrng_rsign_tag_type_s type,
+    const otrng_dake_participant_data_s responder, otrng_s *otr) {
+  const otrng_dake_participant_data_s initiator = {
+      .client_profile = get_my_client_profile(otr),
+      .ecdh = *(otr->keys->our_ecdh->pub),
+      .dh = our_dh(otr),
+  };
+
+  uint8_t *phi = NULL;
+  size_t phi_len = 0;
+  if (!generate_phi_receiving(&phi, &phi_len, otr)) {
+    return ERROR;
+  }
+
+  otrng_err ret = build_interactive_rsign_tag(dst, dst_len, type, initiator,
+                                              responder, phi, phi_len);
+
+  free(phi);
+  return ret;
+}
+
 tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
   dake_auth_r_p msg;
 
@@ -677,16 +809,7 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-
-  if (!build_interactive_rsign_tag(
-          &t, &t_len, 0, otr->their_client_profile, get_my_client_profile(otr),
-          their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
-          (const uint8_t *)otr->conversation->client->phi,
-          otr->conversation->client->phi
-              ? strlen(otr->conversation->client->phi) + 1
-              : 0,
-          otr->our_instance_tag, otr->their_instance_tag,
-          otr->sending_init_msg)) {
+  if (!generate_sending_rsig_tag(&t, &t_len, AUTH_R_RSIGN_TAG, otr)) {
     return ERROR;
   }
 
@@ -867,24 +990,38 @@ tstatic otrng_err build_non_interactive_auth_message(
     return ERROR;
   }
 
+  const otrng_dake_participant_data_s initiator = {
+      .client_profile = otr->their_client_profile,
+      .ecdh = *(otr->keys->their_ecdh),
+      .dh = their_dh(otr),
+  };
+
+  const otrng_dake_participant_data_s responder = {
+      .client_profile = get_my_client_profile(otr),
+      .ecdh = *(otr->keys->our_ecdh->pub),
+      .dh = our_dh(otr),
+  };
+
+  uint8_t *phi = NULL;
+  size_t phi_len = 0;
+  if (!generate_phi_receiving(&phi, &phi_len, otr)) {
+    return ERROR;
+  }
+
   unsigned char *t = NULL;
   size_t t_len = 0;
 
   /* t = KDF_1(0x0E || Bobs_Client_Profile, 64) || KDF_1(0x0F ||
    * Alices_Client_Profile, 64) || Y || X || B || A || their_shared_prekey ||
    * KDF_1(0x10 || phi, 64) */
-  if (!build_non_interactive_rsig_tag(
-          &t, &t_len, otr->their_client_profile, get_my_client_profile(otr),
-          their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
-          otr->keys->their_shared_prekey,
-          (const uint8_t *)otr->conversation->client->phi,
-          otr->conversation->client->phi
-              ? strlen(otr->conversation->client->phi) + 1
-              : 0,
-          otr->our_instance_tag, otr->their_instance_tag,
-          otr->receiving_init_msg)) {
+  if (!build_non_interactive_rsign_tag(&t, &t_len, initiator, responder,
+                                       otr->keys->their_shared_prekey, phi,
+                                       phi_len)) {
+    free(phi);
     return ERROR;
   }
+
+  free(phi);
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
   otrng_rsig_authenticate(
@@ -1241,27 +1378,42 @@ tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
 tstatic otrng_bool verify_non_interactive_auth_message(
     otrng_response_s *response, const dake_non_interactive_auth_message_s *auth,
     otrng_s *otr) {
-  unsigned char *t = NULL;
-  size_t t_len = 0;
-
   const otrng_prekey_profile_s *prekey_profile = get_my_prekey_profile(otr);
   if (!prekey_profile) {
     return otrng_false;
   }
 
+  const otrng_dake_participant_data_s initiator = {
+      .client_profile = get_my_client_profile(otr),
+      .ecdh = *(otr->keys->our_ecdh->pub),
+      .dh = our_dh(otr),
+  };
+
+  const otrng_dake_participant_data_s responder = {
+      .client_profile = auth->profile,
+      .ecdh = *(auth->X),
+      .dh = auth->A,
+  };
+
+  uint8_t *phi = NULL;
+  size_t phi_len = 0;
+  if (!generate_phi_sending(&phi, &phi_len, otr)) {
+    return ERROR;
+  }
+
+  unsigned char *t = NULL;
+  size_t t_len = 0;
+
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
-  if (!build_non_interactive_rsig_tag(
-          &t, &t_len, get_my_client_profile(otr), auth->profile, our_ecdh(otr),
-          auth->X, our_dh(otr), auth->A, prekey_profile->shared_prekey,
-          (const uint8_t *)otr->conversation->client->phi,
-          otr->conversation->client->phi
-              ? strlen(otr->conversation->client->phi) + 1
-              : 0,
-          otr->their_instance_tag, otr->our_instance_tag,
-          otr->sending_init_msg)) {
-    return otrng_false;
+  if (!build_non_interactive_rsign_tag(&t, &t_len, initiator, responder,
+                                       prekey_profile->shared_prekey, phi,
+                                       phi_len)) {
+    free(phi);
+    return ERROR;
   }
+
+  free(phi);
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */
   if (!otrng_rsig_verify(auth->sigma,
@@ -1562,18 +1714,16 @@ tstatic otrng_err reply_with_auth_i_msg(
   msg->sender_instance_tag = otr->our_instance_tag;
   msg->receiver_instance_tag = otr->their_instance_tag;
 
+  const otrng_dake_participant_data_s responder = {
+      .client_profile = their_client_profile,
+      .ecdh = *(otr->keys->their_ecdh),
+      .dh = their_dh(otr),
+  };
+
   unsigned char *t = NULL;
   size_t t_len = 0;
-
-  if (!build_interactive_rsign_tag(
-          &t, &t_len, 1, get_my_client_profile(otr), their_client_profile,
-          our_ecdh(otr), their_ecdh(otr), our_dh(otr), their_dh(otr),
-          (const uint8_t *)otr->conversation->client->phi,
-          otr->conversation->client->phi
-              ? strlen(otr->conversation->client->phi) + 1
-              : 0,
-          otr->our_instance_tag, otr->their_instance_tag,
-          otr->receiving_init_msg)) {
+  if (!generate_receiving_rsig_tag(&t, &t_len, AUTH_I_RSIGN_TAG, responder,
+                                   otr)) {
     return ERROR;
   }
 
@@ -1595,23 +1745,21 @@ tstatic otrng_err reply_with_auth_i_msg(
 
 tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
                                         otrng_s *otr) {
-  uint8_t *t = NULL;
-  size_t t_len = 0;
-
   if (!otrng_valid_received_values(auth->X, auth->A, auth->profile)) {
     return otrng_false;
   }
 
-  if (!build_interactive_rsign_tag(
-          &t, &t_len, 0, get_my_client_profile(otr), auth->profile,
-          our_ecdh(otr), auth->X, our_dh(otr), auth->A,
-          (const uint8_t *)otr->conversation->client->phi,
-          otr->conversation->client->phi
-              ? strlen(otr->conversation->client->phi) + 1
-              : 0,
-          otr->their_instance_tag, otr->our_instance_tag,
-          otr->receiving_init_msg)) {
-    return otrng_false;
+  const otrng_dake_participant_data_s responder = {
+      .client_profile = auth->profile,
+      .ecdh = *(auth->X),
+      .dh = auth->A,
+  };
+
+  unsigned char *t = NULL;
+  size_t t_len = 0;
+  if (!generate_receiving_rsig_tag(&t, &t_len, AUTH_R_RSIGN_TAG, responder,
+                                   otr)) {
+    return ERROR;
   }
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */
@@ -1685,19 +1833,10 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
 
 tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
                                         otrng_s *otr) {
-  uint8_t *t = NULL;
+  unsigned char *t = NULL;
   size_t t_len = 0;
-
-  if (!build_interactive_rsign_tag(
-          &t, &t_len, 1, otr->their_client_profile, get_my_client_profile(otr),
-          their_ecdh(otr), our_ecdh(otr), their_dh(otr), our_dh(otr),
-          (const uint8_t *)otr->conversation->client->phi,
-          otr->conversation->client->phi
-              ? strlen(otr->conversation->client->phi) + 1
-              : 0,
-          otr->their_instance_tag, otr->our_instance_tag,
-          otr->sending_init_msg)) {
-    return otrng_false;
+  if (!generate_sending_rsig_tag(&t, &t_len, AUTH_I_RSIGN_TAG, otr)) {
+    return ERROR;
   }
 
   /* RVrf({H_b, H_a, X}, sigma, msg) */
@@ -2923,4 +3062,45 @@ API void otrng_v3_init(void) {
   }
 
   otrl_initialized = 1;
+}
+
+otrng_shared_session_state_s *otrng_get_shared_session_state(otrng_s *otr) {
+  if (otr->conversation->client->callbacks &&
+      otr->conversation->client->callbacks->get_shared_session_state) {
+    return otr->conversation->client->callbacks->get_shared_session_state(
+        otr->conversation);
+  }
+  return NULL;
+}
+
+char *
+otrng_generate_session_state_string(const otrng_shared_session_state_s *state) {
+  if (!state || !state->identifier1 || !state->identifier2) {
+    return NULL;
+  }
+
+  char *sss;
+  size_t sss_len = strlen(state->identifier1) + strlen(state->identifier2) + 1;
+  if (state->password) {
+    sss_len += strlen(state->password);
+  }
+
+  sss = malloc(sss_len);
+  if (!sss) {
+    return NULL;
+  }
+
+  if (strcmp(state->identifier1, state->identifier2) < 0) {
+    strcpy(sss, state->identifier1);
+    strcat(sss, state->identifier2);
+  } else {
+    strcpy(sss, state->identifier2);
+    strcat(sss, state->identifier1);
+  }
+
+  if (state->password) {
+    strcat(sss, state->password);
+  }
+
+  return sss;
 }

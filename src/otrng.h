@@ -126,7 +126,9 @@ struct otrng_s {
 
   time_t last_sent; // TODO: @refactoring not sure if the best place to put
   int ignore_msg;   // TODO: @refactoring not sure if the best place to put
-};                  /* otrng_s */
+
+  char *shared_session_state;
+}; /* otrng_s */
 
 typedef struct otrng_s otrng_p[1];
 
@@ -224,6 +226,11 @@ API void otrng_v3_init(void);
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);
 
 INTERNAL void otrng_destroy(otrng_s *otr);
+
+otrng_shared_session_state_s *otrng_get_shared_session_state(otrng_s *otr);
+
+char *
+otrng_generate_session_state_string(const otrng_shared_session_state_s *state);
 
 #ifdef OTRNG_OTRNG_PRIVATE
 

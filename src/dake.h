@@ -138,22 +138,30 @@ INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
 INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
     uint8_t **dst, size_t *nbytes, const dake_prekey_message_s *prekey_message);
 
-INTERNAL otrng_err build_interactive_rsign_tag(
-    uint8_t **msg, size_t *msg_len, const uint8_t type,
-    const client_profile_s *i_profile, const client_profile_s *r_profile,
-    const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
-    const dh_mpi_p r_dh, const uint8_t *shared_session_state,
-    size_t shared_session_state_len, const uint16_t sender_instance_tag,
-    const uint16_t receiver_instance_tag, string_p init_msg);
+typedef enum {
+  AUTH_R_RSIGN_TAG = 0,
+  AUTH_I_RSIGN_TAG = 1,
+} otrng_rsign_tag_type_s;
 
-INTERNAL otrng_err build_non_interactive_rsig_tag(
-    uint8_t **msg, size_t *msg_len, const client_profile_s *i_profile,
-    const client_profile_s *r_profile, const ec_point_p i_ecdh,
-    const ec_point_p r_ecdh, const dh_mpi_p i_dh, const dh_mpi_p r_dh,
-    const otrng_shared_prekey_pub_p r_shared_prekey,
-    const uint8_t *shared_session_state, size_t shared_session_state_len,
-    const uint16_t sender_instance_tag, const uint16_t receiver_instance_tag,
-    string_p init_msg);
+typedef struct {
+  const client_profile_s *client_profile;
+  const goldilocks_448_point_s ecdh;
+  const dh_mpi_p dh;
+  const uint16_t instance_tag;
+} otrng_dake_participant_data_s;
+
+INTERNAL otrng_err build_interactive_rsign_tag(
+    uint8_t **msg, size_t *msg_len, const otrng_rsign_tag_type_s type,
+    const otrng_dake_participant_data_s initiator,
+    const otrng_dake_participant_data_s responder, const uint8_t *phi,
+    size_t phi_len);
+
+INTERNAL otrng_err
+build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
+                                const otrng_dake_participant_data_s initiator,
+                                const otrng_dake_participant_data_s responder,
+                                const otrng_shared_prekey_pub_p r_shared_prekey,
+                                const uint8_t *phi, size_t phi_len);
 
 INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
     uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_p auth,

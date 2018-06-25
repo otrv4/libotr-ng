@@ -74,12 +74,38 @@ static int test_should_not_heartbeat(int last_sent) { return 0; }
 
 static int test_should_heartbeat(int last_sent) { return 1; }
 
+static otrng_shared_session_state_s *
+get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
+  otrng_shared_session_state_s *ret =
+      malloc(sizeof(otrng_shared_session_state_s));
+
+  ret->identifier1 = otrng_strdup("alice");
+  ret->identifier2 = otrng_strdup("bob");
+  ret->password = NULL;
+
+  return ret;
+}
+
+static otrng_client_callbacks_p test_callbacks = {{
+    NULL,                         // create_privkey
+    NULL,                         // create_shared_prekey
+    NULL,                         // gone_secure
+    NULL,                         // gone_insecure
+    NULL,                         // fingerprint_seen
+    NULL,                         // fingerprint_seen_v3
+    NULL,                         // smp_ask_for_secret
+    NULL,                         // smp_ask_for_answer
+    NULL,                         // smp_update
+    NULL,                         // received_extra_symm_key
+    &get_shared_session_state_cb, // get_shared_session_state
+}};
+
 static void set_up_client_state(otrng_client_state_s *state,
-                                const char *account_name, const char *phi,
-                                int byte) {
+                                const char *account_name, int byte) {
   state->account_name = otrng_strdup(account_name);
   state->protocol_name = otrng_strdup("otr");
   state->user_state = otrl_userstate_create();
+  state->callbacks = test_callbacks;
 
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
   uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {byte + 0XF};
@@ -87,17 +113,13 @@ static void set_up_client_state(otrng_client_state_s *state,
   otrng_client_state_add_private_key_v4(state, long_term_priv);
   otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv);
   otrng_client_state_add_instance_tag(state, 0x100 + byte);
-
-  // on client this will probably be the jid and the
-  // receipient jid for the party
-  state->phi = otrng_strdup(phi);
   state->pad = false;
   state->should_heartbeat = test_should_not_heartbeat;
 }
 
 static otrng_s *set_up(otrng_client_state_s *client_state,
-                       const char *account_name, const char *phi, int byte) {
-  set_up_client_state(client_state, account_name, phi, byte);
+                       const char *account_name, int byte) {
+  set_up_client_state(client_state, account_name, byte);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
 
   return otrng_new(client_state, policy);
@@ -107,8 +129,8 @@ void test_api_interactive_conversation(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
   bob_client_state->pad = true;
   alice_client_state->pad = true;
@@ -245,8 +267,8 @@ void test_otrng_send_offline_message() {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
   otrng_notif notif = NOTIF_NONE;
 
@@ -402,8 +424,8 @@ void test_api_conversation_errors_1(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
   bob_client_state->pad = true;
   alice_client_state->pad = true;
@@ -492,12 +514,13 @@ void test_api_conversation_errors_2(void) {
   otrng_client_state_add_private_key_v4(alice_client_state, sym_key);
   otrng_client_state_add_shared_prekey_v4(alice_client_state, sym_key);
   otrng_client_state_add_instance_tag(alice_client_state, 0x00);
-  alice_client_state->phi = otrng_strdup(PHI);
   alice_client_state->pad = false;
+  alice_client_state->callbacks = test_callbacks;
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
 
+  // TODO: Why is alice setup manually?
   otrng_s *alice = otrng_new(alice_client_state, policy);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
@@ -644,10 +667,10 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
 
 void test_api_conversation_v3(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  set_up_client_state(alice_client_state, ALICE_IDENTITY, PHI, 1);
+  set_up_client_state(alice_client_state, ALICE_IDENTITY, 1);
 
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
-  set_up_client_state(bob_client_state, BOB_IDENTITY, PHI, 2);
+  set_up_client_state(bob_client_state, BOB_IDENTITY, 2);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3};
   otrng_s *alice = otrng_new(alice_client_state, policy);
@@ -733,9 +756,9 @@ void test_api_multiple_clients(void) {
   // The account name should be the same. The account can be logged
   // on different clients. Instance tags are used for that. This
   // account name can be used as phi.
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob_phone = set_up(bob_phone_state, BOB_IDENTITY, PHI, 2);
-  otrng_s *bob_pc = set_up(bob_pc_state, BOB_IDENTITY, PHI, 3);
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_s *bob_phone = set_up(bob_phone_state, BOB_IDENTITY, 2);
+  otrng_s *bob_pc = set_up(bob_pc_state, BOB_IDENTITY, 3);
 
   otrng_response_s *pc_to_alice = otrng_response_new();
   otrng_response_s *phone_to_alice = otrng_response_new();
@@ -863,8 +886,8 @@ void test_api_smp(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
@@ -946,8 +969,8 @@ void test_api_smp_abort(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
@@ -1006,8 +1029,8 @@ void test_api_extra_sym_key(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -1079,8 +1102,8 @@ void test_heartbeat_messages(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, PHI, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, PHI, 2);
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
   alice_client_state->should_heartbeat = test_should_heartbeat;
   bob_client_state->should_heartbeat = test_should_heartbeat;
