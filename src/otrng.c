@@ -1940,6 +1940,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   m_enc_key_p enc_key;
   m_mac_key_p mac_key;
 
+  // TODO: This hides using uninitialized bytes from keys
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
 
@@ -2336,6 +2337,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
     return ERROR;
   }
 
+  // TODO: This hides using uninitialized bytes from keys
   memset(enc_key, 0, sizeof enc_key);
   memset(mac_key, 0, sizeof mac_key);
 

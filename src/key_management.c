@@ -37,6 +37,7 @@ tstatic ratchet_s *ratchet_new() {
     return NULL;
   }
 
+  // TODO: This hides using uninitialized bytes from keys
   memset(ratchet->root_key, 0, sizeof(ratchet->root_key));
   memset(ratchet->chain_s, 0, sizeof(ratchet->chain_s));
   memset(ratchet->chain_r, 0, sizeof(ratchet->chain_r));
@@ -75,11 +76,14 @@ INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
   manager->pn = 0;
   manager->current = ratchet_new();
 
+  // TODO: This hides using uninitialized bytes from keys
   memset(manager->brace_key, 0, sizeof(manager->brace_key));
   memset(manager->shared_secret, 0, sizeof(manager->shared_secret));
 
   memset(manager->ssid, 0, sizeof(manager->ssid));
   manager->ssid_half = 0;
+
+  // TODO: This hides using uninitialized bytes from keys
   memset(manager->extra_symmetric_key, 0, sizeof(manager->extra_symmetric_key));
   memset(manager->tmp_key, 0, sizeof(manager->tmp_key));
 
@@ -160,6 +164,8 @@ INTERNAL otrng_err
 otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   time_t now;
   uint8_t sym[ED448_PRIVATE_BYTES];
+
+  // TODO: This hides using uninitialized bytes from keys
   memset(sym, 0, sizeof(sym));
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
@@ -830,6 +836,8 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
 
     m_mac_key_p mac_key;
     m_enc_key_p enc_key;
+
+    // TODO: This hides using uninitialized bytes from keys
     memset(enc_key, 0, sizeof enc_key);
     memset(mac_key, 0, sizeof mac_key);
 
