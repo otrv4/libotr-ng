@@ -81,7 +81,7 @@ INTERNAL otrng_err otrng_generate_smp_secret(unsigned char **secret,
                                              otrng_fingerprint_p their_fp,
                                              uint8_t *ssid,
                                              const uint8_t *answer,
-                                             size_t answerlen) {
+                                             size_t answer_len) {
   uint8_t hash[HASH_BYTES];
   uint8_t version[1] = {0x01};
   uint8_t usage_smp_secret = 0x1C;
@@ -92,7 +92,7 @@ INTERNAL otrng_err otrng_generate_smp_secret(unsigned char **secret,
   hash_update(hd, our_fp, sizeof(otrng_fingerprint_p));
   hash_update(hd, their_fp, sizeof(otrng_fingerprint_p));
   hash_update(hd, ssid, sizeof(ssid));
-  hash_update(hd, answer, answerlen);
+  hash_update(hd, answer, answer_len);
 
   hash_final(hd, hash, sizeof(hash));
   hash_destroy(hd);
@@ -193,7 +193,7 @@ INTERNAL otrng_err otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
 
   uint8_t *cursor = *dst;
 
-  cursor += otrng_serialize_data(cursor, (uint8_t *)msg->question, msg->q_len);
+  cursor += otrng_serialize_data(cursor, msg->question, msg->q_len);
   cursor += otrng_serialize_ec_point(cursor, msg->g2a);
   cursor += otrng_serialize_ec_scalar(cursor, msg->c2);
   cursor += otrng_serialize_ec_scalar(cursor, msg->d2);

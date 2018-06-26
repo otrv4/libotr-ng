@@ -2686,8 +2686,9 @@ API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
 tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
                                   const client_profile_s *responder_profile,
                                   const uint8_t *question, const size_t q_len,
-                                  const uint8_t *secret, const size_t secretlen,
-                                  uint8_t *ssid, smp_context_p smp,
+                                  const uint8_t *answer,
+                                  const size_t answer_len, uint8_t *ssid,
+                                  smp_context_p smp,
                                   otrng_conversation_state_s *conversation) {
 
   smp_msg_1_p msg;
@@ -2697,8 +2698,8 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
   otrng_fingerprint_p our_fp, their_fp;
   otrng_serialize_fingerprint(our_fp, initiator_profile->long_term_pub_key);
   otrng_serialize_fingerprint(their_fp, responder_profile->long_term_pub_key);
-  if (!otrng_generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, secret,
-                                 secretlen)) {
+  if (!otrng_generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, answer,
+                                 answer_len)) {
     return NULL;
   }
 
