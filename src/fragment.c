@@ -308,7 +308,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   }
 
   context->count++;
-  time(&context->last_fragment_received_at);
+  context->last_fragment_received_at = time(NULL);
 
   if (context->count == t) {
     if (join_fragments(unfrag_msg, context)) {
@@ -324,18 +324,23 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   return SUCCESS;
 }
 
-INTERNAL otrng_err otrng_fragment_housekeeping(time_t now, int threshold,
+INTERNAL otrng_err otrng_expire_fragments(time_t now, uint32_t threshold,
                                                list_element_s **contexts) {
-  for (list_element_s *current = *contexts; current; current = current->next) {
-    if (!current->data) {
-      continue;
-    }
+  list_element_s *current = *contexts;
 
+  while (current) {
     fragment_context_s *ctx = current->data;
-    if ((now - ctx->last_fragment_received_at) < threshold) {
+
+    list_element_s *to_free = NULL;
+    if (ctx && difftime(now, ctx->last_fragment_received_at) < threshold) {
       *contexts = otrng_list_remove_element(current, *contexts);
       otrng_fragment_context_free(ctx);
+      to_free = current;
     }
+
+    current = current->next;
+    otrng_list_free_nodes(to_free);
   }
+
   return SUCCESS;
 }

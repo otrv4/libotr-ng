@@ -61,8 +61,8 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
                                             const string_p message,
                                             const int our_instance_tag);
 
-INTERNAL otrng_err otrng_fragment_housekeeping(time_t now, int threshold,
-                                               list_element_s **contexts);
+INTERNAL otrng_err otrng_expire_fragments(time_t now, uint32_t threshold,
+                                          list_element_s **contexts);
 
 #ifdef OTRNG_FRAGMENT_PRIVATE
 #endif
