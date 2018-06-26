@@ -103,12 +103,12 @@ void test_smp_state_machine(void) {
   // Should have correct context after generates tlv_smp_2
   g_assert_cmpint(bob_otr->smp->state, ==, SMPSTATE_EXPECT3);
   otrng_assert(bob_otr->smp->secret);
-  otrng_assert_point_equals(bob_otr->smp->G3a, smp_msg_1->G3a);
-  otrng_assert_point_equals(bob_otr->smp->Pb, smp_msg_2->Pb);
-  otrng_assert_point_equals(bob_otr->smp->Qb, smp_msg_2->Qb);
+  otrng_assert_point_equals(bob_otr->smp->g3a, smp_msg_1->g3a);
+  otrng_assert_point_equals(bob_otr->smp->pb, smp_msg_2->pb);
+  otrng_assert_point_equals(bob_otr->smp->qb, smp_msg_2->qb);
   otrng_assert(bob_otr->smp->b3);
-  otrng_assert(bob_otr->smp->G2);
-  otrng_assert(bob_otr->smp->G3);
+  otrng_assert(bob_otr->smp->g2);
+  otrng_assert(bob_otr->smp->g3);
 
   otrng_smp_msg_1_destroy(smp_msg_1);
   smp_msg_2_destroy(smp_msg_2);
@@ -124,9 +124,9 @@ void test_smp_state_machine(void) {
 
   // Should have correct context after generates tlv_smp_3
   g_assert_cmpint(alice_otr->smp->state, ==, SMPSTATE_EXPECT4);
-  otrng_assert(alice_otr->smp->G3b);
-  otrng_assert(alice_otr->smp->Pa_Pb);
-  otrng_assert(alice_otr->smp->Qa_Qb);
+  otrng_assert(alice_otr->smp->g3b);
+  otrng_assert(alice_otr->smp->pa_pb);
+  otrng_assert(alice_otr->smp->qa_qb);
 
   // Receives third message
   tlv_s *tlv_smp_4 = process_tlv(tlv_smp_3, bob_otr);
