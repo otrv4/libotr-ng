@@ -396,7 +396,7 @@ tstatic otrng_err generate_smp_msg_2(smp_msg_2_s *dst, const smp_msg_1_s *msg_1,
   // TODO: extract to a function
   goldilocks_shake256_ctx_p hd_1;
   hash_init(hd_1);
-  hash_update(hd_1, smp->secret, strlen((char *)smp->secret));
+  hash_update(hd_1, smp->secret, HASH_BYTES);
   hash_final(hd_1, ser_secret, HASH_BYTES);
   hash_destroy(hd_1);
 
@@ -692,7 +692,7 @@ tstatic otrng_err generate_smp_msg_3(smp_msg_3_s *dst, const smp_msg_2_s *msg_2,
 
   goldilocks_shake256_ctx_p hd_1;
   hash_init(hd_1);
-  hash_update(hd_1, smp->secret, strlen((char *)smp->secret));
+  hash_update(hd_1, smp->secret, HASH_BYTES);
   hash_final(hd_1, ser_secret, HASH_BYTES);
   hash_destroy(hd_1);
 
