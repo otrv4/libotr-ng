@@ -1752,8 +1752,8 @@ INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr) {
   }
 
   otrng_notif notif = NOTIF_NONE;
-  otrng_err result = otrng_prepare_to_send_message(
-      to_send, "", notif, disconnected, MSGFLAGS_IGNORE_UNREADABLE, otr);
+  otrng_err result = otrng_send_message(to_send, "", notif, disconnected,
+                                        MSGFLAGS_IGNORE_UNREADABLE, otr);
 
   forget_our_keys(otr);
   otr->state = OTRNG_STATE_START;
@@ -1925,9 +1925,8 @@ tstatic otrng_err receive_tlvs(otrng_response_s *response, otrng_s *otr) {
   }
 
   // Serialize response message to send
-  ret = otrng_prepare_to_send_message(&response->to_send, "", NOTIF_NONE,
-                                      reply_tlvs, MSGFLAGS_IGNORE_UNREADABLE,
-                                      otr);
+  ret = otrng_send_message(&response->to_send, "", NOTIF_NONE, reply_tlvs,
+                           MSGFLAGS_IGNORE_UNREADABLE, otr);
   otrng_tlv_list_free(reply_tlvs);
   return ret;
 }
@@ -2040,9 +2039,8 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       return SUCCESS;
     } else if (otr->ignore_msg != 1 && otr->keys->their_ecdh > 0) {
       if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
-        if (!otrng_prepare_to_send_message(&response->to_send, "", NOTIF_NONE,
-                                           NULL, MSGFLAGS_IGNORE_UNREADABLE,
-                                           otr)) {
+        if (!otrng_send_message(&response->to_send, "", NOTIF_NONE, NULL,
+                                MSGFLAGS_IGNORE_UNREADABLE, otr)) {
           sodium_memzero(mac_key, sizeof(m_mac_key_p));
           otrng_data_message_free(msg);
           return ERROR;
@@ -2542,11 +2540,9 @@ tstatic otrng_err otrng_prepare_to_send_data_message(
   return result;
 }
 
-INTERNAL otrng_err otrng_prepare_to_send_message(string_p *to_send,
-                                                 const string_p message,
-                                                 otrng_notif notif,
-                                                 const tlv_list_s *tlvs,
-                                                 uint8_t flags, otrng_s *otr) {
+INTERNAL otrng_err otrng_send_message(string_p *to_send, const string_p message,
+                                      otrng_notif notif, const tlv_list_s *tlvs,
+                                      uint8_t flags, otrng_s *otr) {
   if (!otr) {
     return ERROR;
   }
@@ -2582,8 +2578,8 @@ tstatic otrng_err otrng_close_v4(string_p *to_send, otrng_s *otr) {
   }
 
   otrng_notif notif = NOTIF_NONE;
-  otrng_err result = otrng_prepare_to_send_message(
-      to_send, "", notif, disconnected, MSGFLAGS_IGNORE_UNREADABLE, otr);
+  otrng_err result = otrng_send_message(to_send, "", notif, disconnected,
+                                        MSGFLAGS_IGNORE_UNREADABLE, otr);
 
   otrng_tlv_list_free(disconnected);
   forget_our_keys(otr);
@@ -2654,8 +2650,8 @@ tstatic otrng_err otrng_send_symkey_message_v4(string_p *to_send,
   otrng_notif notif = NOTIF_NONE;
   // TODO: @refactoring in v3 the extra_key is passed as a param to this
   // do the same?
-  otrng_err ret = otrng_prepare_to_send_message(
-      to_send, "", notif, tlvs, MSGFLAGS_IGNORE_UNREADABLE, otr);
+  otrng_err ret = otrng_send_message(to_send, "", notif, tlvs,
+                                     MSGFLAGS_IGNORE_UNREADABLE, otr);
   otrng_tlv_list_free(tlvs);
 
   return ret;
@@ -2769,8 +2765,8 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
     }
 
     otrng_notif notif = NOTIF_NONE;
-    otrng_err ret = otrng_prepare_to_send_message(
-        to_send, "", notif, tlvs, MSGFLAGS_IGNORE_UNREADABLE, otr);
+    otrng_err ret = otrng_send_message(to_send, "", notif, tlvs,
+                                       MSGFLAGS_IGNORE_UNREADABLE, otr);
     otrng_tlv_list_free(tlvs);
     return ret;
   case OTRNG_VERSION_NONE:
@@ -2826,8 +2822,8 @@ tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
                          otr->smp->msg1->q_len, otr->conversation);
 
   otrng_notif notif = NOTIF_NONE;
-  otrng_err ret = otrng_prepare_to_send_message(
-      to_send, "", notif, tlvs, MSGFLAGS_IGNORE_UNREADABLE, otr);
+  otrng_err ret = otrng_send_message(to_send, "", notif, tlvs,
+                                     MSGFLAGS_IGNORE_UNREADABLE, otr);
   otrng_tlv_list_free(tlvs);
 
   return ret;
@@ -2858,8 +2854,8 @@ tstatic otrng_err otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
 
   otr->smp->state = SMPSTATE_EXPECT1;
   otrng_notif notif = NOTIF_NONE;
-  otrng_err ret = otrng_prepare_to_send_message(
-      to_send, "", notif, tlvs, MSGFLAGS_IGNORE_UNREADABLE, otr);
+  otrng_err ret = otrng_send_message(to_send, "", notif, tlvs,
+                                     MSGFLAGS_IGNORE_UNREADABLE, otr);
   otrng_tlv_list_free(tlvs);
   return ret;
 }

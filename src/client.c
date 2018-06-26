@@ -210,8 +210,8 @@ tstatic int send_message(char **newmsg, const char *message,
     return 1;
   }
 
-  otrng_err result = otrng_prepare_to_send_message(newmsg, message, notif, NULL,
-                                                   0, conv->conn);
+  otrng_err result =
+      otrng_send_message(newmsg, message, notif, NULL, 0, conv->conn);
 
   if (notif == NOTIF_STATE_NOT_ENCRYPTED) {
     return CLIENT_ERROR_NOT_ENCRYPTED;

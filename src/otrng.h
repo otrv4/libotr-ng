@@ -190,12 +190,9 @@ INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
                                          otrng_notif notif,
                                          const string_p message, otrng_s *otr);
 
-// TODO: @refactoring this should be called otrng_send_message()
-INTERNAL otrng_err otrng_prepare_to_send_message(string_p *to_send,
-                                                 const string_p message,
-                                                 otrng_notif notif,
-                                                 const tlv_list_s *tlvs,
-                                                 uint8_t flags, otrng_s *otr);
+INTERNAL otrng_err otrng_send_message(string_p *to_send, const string_p message,
+                                      otrng_notif notif, const tlv_list_s *tlvs,
+                                      uint8_t flags, otrng_s *otr);
 
 INTERNAL otrng_err otrng_close(string_p *to_send, otrng_s *otr);
 

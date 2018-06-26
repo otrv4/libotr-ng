@@ -126,8 +126,7 @@ void test_api_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Alice sends a data message
-    result =
-        otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
+    result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
     assert_msg_sent(result, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
@@ -162,8 +161,7 @@ void test_api_interactive_conversation(void) {
   // Next message Bob sends is a new DH ratchet
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    result =
-        otrng_prepare_to_send_message(&to_send, "hello", notif, NULL, 0, bob);
+    result = otrng_send_message(&to_send, "hello", notif, NULL, 0, bob);
     assert_msg_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -322,8 +320,7 @@ void test_otrng_send_offline_message() {
   otrng_err result;
 
   for (message_id = 1; message_id < 4; message_id++) {
-    result =
-        otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
+    result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
     assert_msg_sent(result, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
@@ -350,8 +347,7 @@ void test_otrng_send_offline_message() {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Alice sends a data message
-    result =
-        otrng_prepare_to_send_message(&to_send, "hello", notif, NULL, 0, bob);
+    result = otrng_send_message(&to_send, "hello", notif, NULL, 0, bob);
     assert_msg_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -423,7 +419,7 @@ void test_api_conversation_errors_1(void) {
   otrng_err result;
 
   // Alice sends a data message
-  result = otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
 
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
@@ -462,7 +458,7 @@ void test_api_conversation_errors_1(void) {
   to_send = NULL;
 
   // Alice sends another data message
-  result = otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -689,7 +685,7 @@ void test_api_conversation_v3(void) {
 
   // Alice sends a data message
   otrng_assert_is_success(
-      otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice));
+      otrng_send_message(&to_send, "hi", notif, NULL, 0, alice));
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
@@ -705,7 +701,7 @@ void test_api_conversation_v3(void) {
 
   // Bob sends a data message
   otrng_assert_is_success(
-      otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, bob));
+      otrng_send_message(&to_send, "hi", notif, NULL, 0, bob));
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
@@ -1024,7 +1020,7 @@ void test_api_extra_sym_key(void) {
   otrng_notif notif = NOTIF_NONE;
   otrng_err result;
 
-  result = otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -1100,7 +1096,7 @@ void test_heartbeat_messages(void) {
   otrng_notif notif = NOTIF_NONE;
   otrng_err result;
 
-  result = otrng_prepare_to_send_message(&to_send, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 

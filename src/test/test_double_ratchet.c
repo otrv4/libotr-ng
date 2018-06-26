@@ -44,8 +44,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   otrng_notif notif = NOTIF_NONE;
 
   // Alice sends a data message
-  result =
-      otrng_prepare_to_send_message(&to_send_1, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send_1, "hi", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_1);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -54,8 +53,8 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result = otrng_prepare_to_send_message(&to_send_2, "how are you?", notif,
-                                         NULL, 0, alice);
+  result =
+      otrng_send_message(&to_send_2, "how are you?", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_2);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -64,8 +63,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result = otrng_prepare_to_send_message(&to_send_3, "it's me", notif, NULL, 0,
-                                         alice);
+  result = otrng_send_message(&to_send_3, "it's me", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_3);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -102,8 +100,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Bob sends a data message
-  result =
-      otrng_prepare_to_send_message(&to_send_4, "oh, hi", notif, NULL, 0, bob);
+  result = otrng_send_message(&to_send_4, "oh, hi", notif, NULL, 0, bob);
   assert_msg_sent(result, to_send_4);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -140,8 +137,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->pn, ==, 3);
 
   // Bob sends another data message
-  result = otrng_prepare_to_send_message(&to_send_5, "I'm good", notif, NULL, 0,
-                                         bob);
+  result = otrng_send_message(&to_send_5, "I'm good", notif, NULL, 0, bob);
   assert_msg_sent(result, to_send_5);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
@@ -193,8 +189,7 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   otrng_notif notif = NOTIF_NONE;
 
   // Alice sends a data message
-  result =
-      otrng_prepare_to_send_message(&to_send_1, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send_1, "hi", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_1);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -203,8 +198,8 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result = otrng_prepare_to_send_message(&to_send_2, "how are you?", notif,
-                                         NULL, 0, alice);
+  result =
+      otrng_send_message(&to_send_2, "how are you?", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_2);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -213,8 +208,7 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result = otrng_prepare_to_send_message(&to_send_3, "it's me", notif, NULL, 0,
-                                         alice);
+  result = otrng_send_message(&to_send_3, "it's me", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_3);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -223,8 +217,7 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result =
-      otrng_prepare_to_send_message(&to_send_4, "ok?", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send_4, "ok?", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_4);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -320,8 +313,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   otrng_notif notif = NOTIF_NONE;
 
   // Alice sends a data message
-  result =
-      otrng_prepare_to_send_message(&to_send_1, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send_1, "hi", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_1);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -330,8 +322,8 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result = otrng_prepare_to_send_message(&to_send_2, "how are you?", notif,
-                                         NULL, 0, alice);
+  result =
+      otrng_send_message(&to_send_2, "how are you?", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_2);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -340,8 +332,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result = otrng_prepare_to_send_message(&to_send_3, "it's me", notif, NULL, 0,
-                                         alice);
+  result = otrng_send_message(&to_send_3, "it's me", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_3);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -378,8 +369,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Bob sends a data message
-  result =
-      otrng_prepare_to_send_message(&to_send_4, "oh, hi", notif, NULL, 0, bob);
+  result = otrng_send_message(&to_send_4, "oh, hi", notif, NULL, 0, bob);
   assert_msg_sent(result, to_send_4);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -402,8 +392,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->pn, ==, 3);
 
   // Alice sends a data message
-  result =
-      otrng_prepare_to_send_message(&to_send_5, "good", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send_5, "good", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_5);
 
   g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 0);
@@ -470,8 +459,7 @@ void test_double_ratchet_corrupted_ratchet(void) {
   otrng_notif notif = NOTIF_NONE;
 
   // Alice sends a data message
-  result =
-      otrng_prepare_to_send_message(&to_send_1, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send_1, "hi", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_1);
   otrng_assert(!alice->keys->old_mac_keys);
 
