@@ -324,7 +324,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   return SUCCESS;
 }
 
-INTERNAL otrng_err otrng_expire_fragments(time_t now, uint32_t threshold,
+INTERNAL otrng_err otrng_expire_fragments(time_t now, uint32_t expiration_time,
                                           list_element_s **contexts) {
   list_element_s *current = *contexts;
 
@@ -332,7 +332,8 @@ INTERNAL otrng_err otrng_expire_fragments(time_t now, uint32_t threshold,
     fragment_context_s *ctx = current->data;
 
     list_element_s *to_free = NULL;
-    if (ctx && difftime(now, ctx->last_fragment_received_at) < threshold) {
+    if (ctx &&
+        difftime(now, ctx->last_fragment_received_at) < expiration_time) {
       *contexts = otrng_list_remove_element(current, *contexts);
       otrng_fragment_context_free(ctx);
       to_free = current;

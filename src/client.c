@@ -404,6 +404,24 @@ API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
   return 0;
 }
 
+API int otrng_client_expire_fragments(int expiration_time,
+                                      otrng_client_s *client) {
+  const list_element_s *el = NULL;
+  otrng_conversation_s *conv = NULL;
+  time_t now;
+
+  now = time(NULL);
+  for (el = client->conversations; el; el = el->next) {
+    conv = el->data;
+    if (!otrng_expire_fragments(now, expiration_time,
+                                &conv->conn->pending_fragments)) {
+      return 2;
+    }
+  }
+
+  return 0;
+}
+
 API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                          const otrng_client_s *client) {
   if (!client->state->keypair) {

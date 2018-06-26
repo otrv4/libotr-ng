@@ -975,6 +975,38 @@ void test_client_receives_fragmented_message(void) {
   otrng_client_free(alice);
 }
 
+void test_client_expires_old_fragments(void) {
+  char *msg = "Pending fragmented message";
+
+  otrng_message_to_send_s *fmsg = malloc(sizeof(otrng_message_to_send_s));
+  otrng_assert_is_success(otrng_fragment_message(60, fmsg, 0, 0, msg));
+
+  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
+  otrng_client_s *alice =
+      set_up_client(alice_client_state, ALICE_IDENTITY, PHI, 1);
+
+  char *tosend = NULL, *to_display = NULL;
+  time_t expiration_time;
+
+  expiration_time = time(NULL) - 3600;
+
+  otrng_client_receive(&tosend, &to_display, fmsg->pieces[0], BOB_IDENTITY,
+                       alice);
+
+  otrng_conversation_s *conv =
+      otrng_client_get_conversation(0, BOB_IDENTITY, alice);
+  g_assert_cmpint(otrng_list_len(conv->conn->pending_fragments), ==, 1);
+
+  otrng_client_expire_fragments(expiration_time, alice);
+
+  g_assert_cmpint(otrng_list_len(conv->conn->pending_fragments), ==, 0);
+
+  free(to_display);
+  otrng_message_free(fmsg);
+  otrl_userstate_free(alice_client_state->user_state);
+  otrng_client_state_free(alice_client_state);
+  otrng_client_free(alice);
+}
 void test_client_sends_fragmented_message(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
   otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");

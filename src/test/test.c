@@ -266,6 +266,8 @@ int main(int argc, char **argv) {
                   test_client_sends_fragmented_message);
   g_test_add_func("/client/receives_fragments",
                   test_client_receives_fragmented_message);
+  g_test_add_func("/client/expires_old_fragments",
+                  test_client_expires_old_fragments);
 
   g_test_add_func("/client/conversation_data_message_multiple_locations",
                   test_conversation_with_multiple_locations);
