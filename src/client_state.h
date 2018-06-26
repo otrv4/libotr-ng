@@ -73,7 +73,6 @@ typedef struct otrng_client_state_s {
   char *phi; // this is the shared session state
   int max_stored_msg_keys;
   int (*should_heartbeat)(int last_sent);
-  int expiration_time;
   bool pad; // TODO: @client @refactoring this can be replaced by length
 
   // OtrlPrivKey *privkeyv3; // ???
