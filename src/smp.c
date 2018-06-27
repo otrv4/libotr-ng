@@ -103,6 +103,7 @@ INTERNAL otrng_err otrng_generate_smp_secret(unsigned char **secret,
   }
 
   memcpy(*secret, hash, HASH_BYTES);
+  sodium_memzero(hash, HASH_BYTES);
 
   return SUCCESS;
 }
@@ -389,18 +390,10 @@ tstatic otrng_err generate_smp_msg_2(smp_msg_2_s *dst, const smp_msg_1_s *msg_1,
   goldilocks_448_point_scalarmul(dst->pb, smp->g3, pair_r4->priv);
   otrng_ec_point_copy(smp->pb, dst->pb);
 
-  /* Compute Qb = (G * r4 + G2 * (SHAKE-256(y, 64) mod q)). */
+  /* Compute Qb = (G * r4 + G2 * (y mod q)). */
   ec_scalar_p secret_as_scalar;
-  uint8_t ser_secret[HASH_BYTES];
 
-  // TODO: extract to a function
-  goldilocks_shake256_ctx_p hd_1;
-  hash_init(hd_1);
-  hash_update(hd_1, smp->secret, HASH_BYTES);
-  hash_final(hd_1, ser_secret, HASH_BYTES);
-  hash_destroy(hd_1);
-
-  if (!otrng_deserialize_ec_scalar(secret_as_scalar, ser_secret, HASH_BYTES)) {
+  if (!otrng_deserialize_ec_scalar(secret_as_scalar, smp->secret, HASH_BYTES)) {
     return ERROR;
   }
 
@@ -440,12 +433,11 @@ tstatic otrng_err generate_smp_msg_2(smp_msg_2_s *dst, const smp_msg_1_s *msg_1,
   goldilocks_448_scalar_mul(dst->d5, pair_r4->priv, dst->cp);
   goldilocks_448_scalar_sub(dst->d5, pair_r5->priv, dst->d5);
 
-  /* d6 = r6 - (SHAKE-256(y, 64) mod q) * cp mod q. */
+  /* d6 = (r6 - (y mod q) * cp) mod q. */
   goldilocks_448_scalar_mul(dst->d6, secret_as_scalar, dst->cp);
   goldilocks_448_scalar_sub(dst->d6, r6, dst->d6);
 
-  // TODO: @refactoring should be also deleted the smp->secret?
-  sodium_memzero(secret_as_scalar, HASH_BYTES);
+  otrng_ec_bzero(secret_as_scalar, ED448_SCALAR_BYTES);
 
   return SUCCESS;
 }
@@ -686,17 +678,10 @@ tstatic otrng_err generate_smp_msg_3(smp_msg_3_s *dst, const smp_msg_2_s *msg_2,
   goldilocks_448_point_scalarmul(dst->pa, smp->g3, pair_r4->priv);
   goldilocks_448_point_sub(smp->pa_pb, dst->pa, msg_2->pb);
 
-  /* Qa = G * r4 + G2 * (SHAKE-256(x, 64) mod q) */
+  /* Qa = G * r4 + G2 * (x mod q)) */
   ec_scalar_p secret_as_scalar;
-  uint8_t ser_secret[HASH_BYTES];
 
-  goldilocks_shake256_ctx_p hd_1;
-  hash_init(hd_1);
-  hash_update(hd_1, smp->secret, HASH_BYTES);
-  hash_final(hd_1, ser_secret, HASH_BYTES);
-  hash_destroy(hd_1);
-
-  if (!otrng_deserialize_ec_scalar(secret_as_scalar, ser_secret, HASH_BYTES)) {
+  if (!otrng_deserialize_ec_scalar(secret_as_scalar, smp->secret, HASH_BYTES)) {
     return ERROR;
   }
 
@@ -736,7 +721,7 @@ tstatic otrng_err generate_smp_msg_3(smp_msg_3_s *dst, const smp_msg_2_s *msg_2,
   goldilocks_448_scalar_mul(dst->d5, pair_r4->priv, dst->cp);
   goldilocks_448_scalar_sub(dst->d5, pair_r5->priv, dst->d5);
 
-  /* d6 = (r6 - (SHAKE-256(x, 64) mod q) * cp) mod q. */
+  /* d6 = (r6 - (x mod q) * cp) mod q. */
   goldilocks_448_scalar_mul(dst->d6, secret_as_scalar, dst->cp);
   goldilocks_448_scalar_sub(dst->d6, r6, dst->d6);
 
@@ -775,6 +760,8 @@ tstatic otrng_err generate_smp_msg_3(smp_msg_3_s *dst, const smp_msg_2_s *msg_2,
   /* d7 = (r7 - a3 * cr mod q). */
   goldilocks_448_scalar_mul(dst->d7, smp->a3, dst->cr);
   goldilocks_448_scalar_sub(dst->d7, pair_r7->priv, dst->d7);
+
+  otrng_ec_bzero(secret_as_scalar, ED448_SCALAR_BYTES);
 
   return SUCCESS;
 }

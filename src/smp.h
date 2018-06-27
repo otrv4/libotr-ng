@@ -80,7 +80,7 @@ typedef struct smp_msg_4_s {
 
 typedef struct smp_context_s {
   smp_state_t state;
-  unsigned char *secret;
+  unsigned char *secret; /* already hashed: 64 bytes long */
   ec_scalar_p a2, a3, b3;
   ec_point_p g2, g3;
   ec_point_p g3a, g3b;
