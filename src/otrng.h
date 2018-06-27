@@ -58,6 +58,8 @@ typedef enum {
   OTRNG_STATE_FINISHED = 5
 } otrng_state;
 
+/* TODO: This being an enum looks very strange to me - it should probably be
+ * revisited. */
 typedef enum {
   OTRNG_ALLOW_NONE = 0,
   OTRNG_ALLOW_V3 = 1,
