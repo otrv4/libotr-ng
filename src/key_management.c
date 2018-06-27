@@ -294,12 +294,13 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
 }
 
 tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
-  k_dh_p k_dh;
   uint8_t usage_third_brace_key = 0x02;
   uint8_t usage_brace_key = 0x03;
 
+  dh_shared_secret_p k_dh;
+  size_t k_dh_len = 0;
   if (manager->i % 3 == 0) {
-    if (!otrng_dh_shared_secret(k_dh, manager->our_dh->priv,
+    if (!otrng_dh_shared_secret(k_dh, &k_dh_len, manager->our_dh->priv,
                                 manager->their_dh)) {
       return ERROR;
     }
@@ -310,15 +311,13 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
     // doing so.
     // Also note that OTRv3 serializes DH values in MPI (no leading zeroes).
     shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, usage_third_brace_key,
-                   k_dh, sizeof(k_dh_p));
-
-    sodium_memzero(k_dh, sizeof(k_dh_p));
+                   k_dh, k_dh_len);
   } else {
     shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, usage_brace_key,
                    manager->brace_key, sizeof(brace_key_p));
   }
 
-  sodium_memzero(k_dh, sizeof(k_dh_p));
+  sodium_memzero(k_dh, sizeof(k_dh));
 
   return SUCCESS;
 }

@@ -36,6 +36,7 @@
 
 typedef gcry_mpi_t dh_mpi_p;
 typedef dh_mpi_p dh_private_key_p, dh_public_key_p;
+typedef uint8_t dh_shared_secret_p[DH3072_MOD_LEN_BYTES];
 
 /* typedef enum { */
 /*   OTRNG_US = 0, */
@@ -65,7 +66,8 @@ INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_p keypair);
 
 INTERNAL void otrng_dh_keypair_destroy(dh_keypair_p keypair);
 
-INTERNAL otrng_err otrng_dh_shared_secret(uint8_t *shared,
+INTERNAL otrng_err otrng_dh_shared_secret(dh_shared_secret_p buffer,
+                                          size_t *written,
                                           const dh_private_key_p our_priv,
                                           const dh_public_key_p their_pub);
 

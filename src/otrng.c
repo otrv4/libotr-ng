@@ -836,7 +836,6 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   k_ecdh_p tmp_ecdh_k1;
   k_ecdh_p tmp_ecdh_k2;
   k_ecdh_p k_ecdh;
-  k_dh_p k_dh;
 
   // TODO: @refactoring this will be calculated again later
   if (!otrng_ecdh_shared_secret(k_ecdh, otr->keys->our_ecdh,
@@ -844,14 +843,18 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
     return ERROR;
   }
 
+  dh_shared_secret_p k_dh;
+  size_t k_dh_len = 0;
   // TODO: @refactoring this will be calculated again later
-  if (!otrng_dh_shared_secret(k_dh, otr->keys->our_dh->priv,
+  if (!otrng_dh_shared_secret(k_dh, &k_dh_len, otr->keys->our_dh->priv,
                               otr->keys->their_dh)) {
     return ERROR;
   }
 
   brace_key_p brace_key;
-  hash_hash(brace_key, sizeof(brace_key_p), k_dh, sizeof(k_dh_p));
+  hash_hash(brace_key, sizeof(brace_key_p), k_dh, k_dh_len);
+
+  sodium_memzero(k_dh, sizeof(k_dh));
 
 #ifdef DEBUG
   printf("\n");
@@ -1249,7 +1252,6 @@ API otrng_err otrng_send_offline_message(string_p *dst,
 
 tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   k_ecdh_p k_ecdh;
-  k_dh_p k_dh;
   k_ecdh_p tmp_ecdh_k1;
   k_ecdh_p tmp_ecdh_k2;
 
@@ -1259,13 +1261,17 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
     return ERROR;
   }
 
-  if (!otrng_dh_shared_secret(k_dh, otr->keys->our_dh->priv,
+  dh_shared_secret_p k_dh;
+  size_t k_dh_len = 0;
+  if (!otrng_dh_shared_secret(k_dh, &k_dh_len, otr->keys->our_dh->priv,
                               otr->keys->their_dh)) {
     return ERROR;
   }
 
   brace_key_p brace_key;
-  hash_hash(brace_key, sizeof(brace_key_p), k_dh, sizeof(k_dh_p));
+  hash_hash(brace_key, sizeof(brace_key_p), k_dh, k_dh_len);
+
+  sodium_memzero(k_dh, sizeof(k_dh));
 
 #ifdef DEBUG
   printf("\n");

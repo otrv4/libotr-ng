@@ -29,7 +29,6 @@
 #include "shared.h"
 
 /* the different kind of keys for the key management */
-typedef uint8_t k_dh_p[DH_KEY_BYTES];
 typedef uint8_t brace_key_p[BRACE_KEY_BYTES];
 typedef uint8_t k_ecdh_p[ED448_POINT_BYTES];
 typedef uint8_t shared_secret_p[SHARED_SECRET_BYTES];

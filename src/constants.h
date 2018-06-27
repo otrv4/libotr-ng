@@ -47,10 +47,6 @@
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES + RING_SIG_BYTES + \
    3 * 4 + HASH_BYTES)
 
-// TODO: This is wrong if a DH key must not have leading zeros.
-// Otherwise, we should just use DH_MPI_MAX_BYTES to remind us that is the
-// upper bound.
-#define DH_KEY_BYTES 384
 #define BRACE_KEY_BYTES 32
 #define DATA_MSG_NONCE_BYTES crypto_secretbox_NONCEBYTES
 #define DATA_MSG_MAC_BYTES 64

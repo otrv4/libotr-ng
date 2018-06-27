@@ -102,17 +102,18 @@ void test_calculate_brace_key() {
 
   // Setup a fixed their_dh
   dh_mpi_p their_dh_secret = NULL;
-  const uint8_t their_secret[5] = {0x1};
-  uint8_t their_public[DH3072_MOD_LEN_BYTES] = {};
+  const uint8_t their_public[5] = {0x1};
+  uint8_t secret[DH3072_MOD_LEN_BYTES] = {};
+  size_t secret_len = 0;
 
   otrng_assert_is_success(otrng_dh_mpi_deserialize(
-      &their_dh_secret, their_secret, sizeof their_secret, NULL));
-  otrng_assert_is_success(otrng_dh_shared_secret(their_public, their_dh_secret,
-                                                 otrng_dh_mpi_generator()));
+      &their_dh_secret, their_public, sizeof their_public, NULL));
+  otrng_assert_is_success(otrng_dh_shared_secret(
+      secret, &secret_len, their_dh_secret, otrng_dh_mpi_generator()));
   otrng_dh_mpi_release(their_dh_secret);
   their_dh_secret = NULL;
-  otrng_assert_is_success(otrng_dh_mpi_deserialize(
-      &manager->their_dh, their_public, DH3072_MOD_LEN_BYTES, NULL));
+  otrng_assert_is_success(
+      otrng_dh_mpi_deserialize(&manager->their_dh, secret, secret_len, NULL));
 
   // Setup a fixed our_dh
   const uint8_t our_secret[5] = {0x2};
