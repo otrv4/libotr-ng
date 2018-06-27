@@ -1393,11 +1393,13 @@ tstatic otrng_bool verify_non_interactive_auth_message(
       .dh = our_dh(otr),
   };
 
+  // clang-format off
   const otrng_dake_participant_data_s responder = {
       .client_profile = auth->profile,
       .ecdh = *(auth->X),
       .dh = auth->A,
   };
+  // clang-format on
 
   uint8_t *phi = NULL;
   size_t phi_len = 0;
@@ -1753,11 +1755,13 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
     return otrng_false;
   }
 
+  // clang-format off
   const otrng_dake_participant_data_s responder = {
       .client_profile = auth->profile,
       .ecdh = *(auth->X),
       .dh = auth->A,
   };
+  // clang-format on
 
   unsigned char *t = NULL;
   size_t t_len = 0;
