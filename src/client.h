@@ -64,14 +64,14 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
                                    const char *recipient,
                                    otrng_client_s *client);
 
-/* tstatic int otrng_client_smp_start(char **tosend, const char *recipient, */
-/*                           const char *question, const size_t q_len, */
-/*                           const unsigned char *secret, size_t secretlen, */
-/*                           otrng_client_s *client); */
+API int otrng_client_smp_start(char **tosend, const char *recipient,
+                               const unsigned char *question,
+                               const size_t q_len, const unsigned char *secret,
+                               size_t secretlen, otrng_client_s *client);
 
-/* tstatic int otrng_client_smp_respond(char **tosend, const char *recipient, */
-/*                             const unsigned char *secret, size_t secretlen, */
-/*                             otrng_client_s *client); */
+API int otrng_client_smp_respond(char **tosend, const char *recipient,
+                                 const unsigned char *secret, size_t secretlen,
+                                 otrng_client_s *client);
 
 API int otrng_client_receive(char **newmsg, char **todisplay,
                              const char *message, const char *recipient,

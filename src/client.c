@@ -253,37 +253,40 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
   return ret;
 }
 
-/* tstatic int otrng_client_smp_start(char **tosend, const char *recipient, */
-/*                           const char *question, const size_t q_len, */
-/*                           const unsigned char *secret, size_t secretlen, */
-/*                           otrng_client_s *client) { */
-/*   otrng_conversation_s *conv = NULL; */
+API int otrng_client_smp_start(char **tosend, const char *recipient,
+                               const unsigned char *question,
+                               const size_t q_len, const unsigned char *secret,
+                               size_t secretlen, otrng_client_s *client) {
+  otrng_conversation_s *conv = NULL;
 
-/*   conv = get_or_create_conversation_with(recipient, client); */
-/*   if (!conv) */
-/*     return 1; */
+  conv = get_or_create_conversation_with(recipient, client);
+  if (!conv) {
+    return 1;
+  }
 
-/*   if (otrng_smp_start(tosend, question, q_len, secret, secretlen,
- * conv->conn)) */
-/*     return 1; */
+  if (otrng_smp_start(tosend, question, q_len, secret, secretlen, conv->conn)) {
+    return 1;
+  }
 
-/*   return 0; */
-/* } */
+  return 0;
+}
 
-/* tstatic int otrng_client_smp_respond(char **tosend, const char *recipient, */
-/*                             const unsigned char *secret, size_t secretlen, */
-/*                             otrng_client_s *client) { */
-/*   otrng_conversation_s *conv = NULL; */
+API int otrng_client_smp_respond(char **tosend, const char *recipient,
+                                 const unsigned char *secret, size_t secretlen,
+                                 otrng_client_s *client) {
+  otrng_conversation_s *conv = NULL;
 
-/*   conv = get_or_create_conversation_with(recipient, client); */
-/*   if (!conv) */
-/*     return 1; */
+  conv = get_or_create_conversation_with(recipient, client);
+  if (!conv) {
+    return 1;
+  }
 
-/*   if (otrng_smp_continue(tosend, secret, secretlen, conv->conn)) */
-/*     return 1; */
+  if (otrng_smp_continue(tosend, secret, secretlen, conv->conn)) {
+    return 1;
+  }
 
-/*   return 0; */
-/* } */
+  return 0;
+}
 
 API int otrng_client_receive(char **newmessage, char **todisplay,
                              const char *message, const char *recipient,
