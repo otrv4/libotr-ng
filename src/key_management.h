@@ -55,12 +55,6 @@ typedef struct skipped_keys_s {
   m_enc_key_p m_enc_key;
 } skipped_keys_s, skipped_keys_p[1];
 
-/* define which half of the secure session id should be shown in bold*/
-typedef enum {
-  SESSION_ID_FIRST_HALF_BOLD,
-  SESSION_ID_SECOND_HALF_BOLD
-} session_id_half;
-
 /* represents the different values needed for key management */
 typedef struct key_manager_s {
   /* AKE context */
@@ -88,7 +82,7 @@ typedef struct key_manager_s {
   shared_secret_p shared_secret;
 
   uint8_t ssid[SSID_BYTES];
-  session_id_half ssid_half;
+  otrng_bool ssid_half_first;
   extra_symmetric_key_p extra_symmetric_key;
   uint8_t tmp_key[HASH_BYTES];
 

@@ -82,7 +82,7 @@ INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
   memset(manager->shared_secret, 0, sizeof(manager->shared_secret));
 
   memset(manager->ssid, 0, sizeof(manager->ssid));
-  manager->ssid_half = 0;
+  manager->ssid_half_first = otrng_false;
 
   // TODO: This hides using uninitialized bytes from keys
   memset(manager->extra_symmetric_key, 0, sizeof(manager->extra_symmetric_key));
@@ -116,7 +116,7 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   sodium_memzero(manager->brace_key, sizeof(manager->brace_key));
   sodium_memzero(manager->shared_secret, sizeof(manager->shared_secret));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
-  manager->ssid_half = 0;
+  manager->ssid_half_first = otrng_false;
   sodium_memzero(manager->extra_symmetric_key,
                  sizeof(manager->extra_symmetric_key));
   // TODO: @freeing once dake is finished should be wiped out
@@ -378,9 +378,9 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
 #endif
 
   if (gcry_mpi_cmp(manager->our_dh->pub, manager->their_dh) > 0) {
-    manager->ssid_half = SESSION_ID_SECOND_HALF_BOLD;
+    manager->ssid_half_first = otrng_false;
   } else {
-    manager->ssid_half = SESSION_ID_FIRST_HALF_BOLD;
+    manager->ssid_half_first = otrng_true;
   }
 
 #ifdef DEBUG
@@ -388,7 +388,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
   printf("THE SECURE SESSION ID\n");
   printf("ssid: \n");
 
-  if (manager->ssid_half == SESSION_ID_FIRST_HALF_BOLD) {
+  if (manager->ssid_half_first) {
     printf("the first 4 bytes = ");
     printf("0x");
     for (unsigned int i = 0; i < 4; i++) {
