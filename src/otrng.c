@@ -234,6 +234,16 @@ get_my_client_profile_by_id(uint32_t id, otrng_s *otr) {
   return otrng_client_state_get_client_profile_by_id(id, state);
 }
 
+INTERNAL otrng_conversation_state_s *
+otrng_conversation_new(otrng_client_state_s *state) {
+  otrng_conversation_state_s *conversation =
+      malloc(sizeof(otrng_conversation_state_s));
+  conversation->client = state;
+  conversation->peer = NULL;
+
+  return conversation;
+}
+
 INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
                             otrng_policy_s policy) {
   otrng_s *otr = malloc(sizeof(otrng_s));
@@ -247,10 +257,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
     return NULL;
   }
 
-  // TODO: @refactoring Move to constructor
-  otr->conversation = malloc(sizeof(otrng_conversation_state_s));
-  otr->conversation->client = state;
-  otr->conversation->peer = NULL;
+  otr->conversation = otrng_conversation_new(state);
 
   otr->state = OTRNG_STATE_START;
   otr->running_version = OTRNG_VERSION_NONE;
