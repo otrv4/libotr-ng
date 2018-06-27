@@ -59,7 +59,6 @@ tstatic void ratchet_free(ratchet_s *ratchet) {
   ratchet = NULL;
 }
 
-// TODO: @refactoring make like ratchet_new?
 INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
   otrng_ec_bzero(manager->our_ecdh->pub, ED448_POINT_BYTES);
   manager->our_dh->pub = NULL;
@@ -90,6 +89,16 @@ INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
 
   manager->skipped_keys = NULL;
   manager->old_mac_keys = NULL;
+}
+
+INTERNAL key_manager_s *otrng_key_manager_new(void) {
+  key_manager_s *manager = malloc(sizeof(key_manager_s));
+  if (!manager) {
+    return NULL;
+  }
+
+  otrng_key_manager_init(manager);
+  return manager;
 }
 
 INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
@@ -139,6 +148,11 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
 
   otrng_list_free_full(manager->old_mac_keys);
   manager->old_mac_keys = NULL;
+}
+
+INTERNAL void otrng_key_manager_free(key_manager_s *manager) {
+  otrng_key_manager_destroy(manager);
+  free(manager);
 }
 
 INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,

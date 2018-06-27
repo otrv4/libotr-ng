@@ -91,6 +91,13 @@ typedef struct key_manager_s {
   time_t last_generated;
 } key_manager_s, key_manager_p[1];
 
+/*
+ * @brief Creates a new key manager.
+ *
+ * @return A new key manager [key_manager_s].
+ * */
+INTERNAL key_manager_s *otrng_key_manager_new(void);
+
 /**
  * @brief Initialize the key manager.
  *
@@ -105,6 +112,12 @@ INTERNAL void otrng_key_manager_init(key_manager_s *manager);
  */
 INTERNAL void otrng_key_manager_destroy(key_manager_s *manager);
 
+/**
+ * @brief Free the given key manager.
+ *
+ * @param [manager]   The key manager.
+ */
+INTERNAL void otrng_key_manager_free(key_manager_s *manager);
 /**
  * @brief Securely replace their ecdh and their dh keys.
  *

@@ -274,14 +274,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
     return NULL;
   }
 
-  otr->keys = malloc(sizeof(key_manager_s));
-  if (!otr->keys) {
-    free(otr);
-    return NULL;
-  }
-
   otr->conversation = otrng_conversation_new(state);
-
   otr->state = OTRNG_STATE_START;
   otr->running_version = 0;
   otr->supported_versions = policy.allows;
@@ -293,7 +286,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->their_client_profile = NULL;
   otr->their_prekey_profile = NULL;
 
-  otrng_key_manager_init(otr->keys);
+  otr->keys = otrng_key_manager_new();
   otrng_smp_context_init(otr->smp);
 
   otr->pending_fragments = NULL;
@@ -318,8 +311,7 @@ INTERNAL void otrng_destroy(/*@only@ */ otrng_s *otr) {
     otr->conversation = NULL;
   }
 
-  otrng_key_manager_destroy(otr->keys);
-  free(otr->keys);
+  otrng_key_manager_free(otr->keys);
   otr->keys = NULL;
 
   otrng_client_profile_free(otr->their_client_profile);
