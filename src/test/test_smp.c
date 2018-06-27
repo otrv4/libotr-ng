@@ -152,6 +152,119 @@ void test_smp_state_machine(void) {
   otrng_free_all(alice, bob);
 }
 
+void test_smp_state_machine_abort(void) {
+  OTRNG_INIT;
+
+  otrng_client_state_s *alice_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *bob_state = otrng_client_state_new(NULL);
+
+  smp_msg_1_p smp_msg_1;
+  smp_msg_2_p smp_msg_2;
+
+  alice_state->account_name = otrng_strdup(ALICE_IDENTITY);
+  alice_state->protocol_name = otrng_strdup("otr");
+  bob_state->account_name = otrng_strdup(BOB_IDENTITY);
+  bob_state->protocol_name = otrng_strdup("otr");
+
+  alice_state->user_state = otrl_userstate_create();
+  bob_state->user_state = otrl_userstate_create();
+
+  alice_state->phi = otrng_strdup("alice@jabber.com");
+  bob_state->phi = otrng_strdup("alice@jabber.com");
+
+  uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+  otrng_client_state_add_private_key_v4(alice_state, alice_sym);
+  otrng_client_state_add_private_key_v4(bob_state, bob_sym);
+
+  otrng_client_state_add_instance_tag(alice_state, 0x101);
+  otrng_client_state_add_instance_tag(bob_state, 0x102);
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
+
+  otrng_s *alice = otrng_new(alice_state, policy);
+  otrng_s *bob = otrng_new(bob_state, policy);
+
+  g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
+  g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
+
+  do_dake_fixture(alice, bob);
+
+  g_assert_cmpint(alice->smp->progress, ==, SMP_ZERO_PROGRESS);
+  g_assert_cmpint(bob->smp->progress, ==, SMP_ZERO_PROGRESS);
+
+  const uint8_t *question = (const uint8_t *)"some-question";
+
+  tlv_s *tlv_smp_1 = otrng_smp_initiate(
+      get_my_client_profile(alice), alice->their_client_profile, question, 13,
+      (const uint8_t *)"answer", strlen("answer"), alice->keys->ssid,
+      alice->smp, alice->conversation);
+  otrng_assert(tlv_smp_1);
+
+  otrng_assert_is_success(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1));
+
+  g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
+  g_assert_cmpint(bob->smp->progress, ==, SMP_ZERO_PROGRESS);
+  g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT2);
+  otrng_assert(alice->smp->secret);
+  otrng_assert(alice->smp->a2);
+  otrng_assert(alice->smp->a3);
+
+  // Bob receives first message
+  tlv_s *tlv_smp_2 = process_tlv(tlv_smp_1, bob);
+  otrng_tlv_free(tlv_smp_1);
+  otrng_assert(!tlv_smp_2);
+
+  g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
+  g_assert_cmpint(bob->smp->progress, ==, SMP_QUARTER_PROGRESS);
+
+  otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
+  tlv_smp_2 = otrng_smp_provide_secret(
+      &event, bob->smp, get_my_client_profile(bob), bob->their_client_profile,
+      bob->keys->ssid, (const uint8_t *)"answer", strlen("answer"));
+  otrng_assert(tlv_smp_2);
+  g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MSG_2);
+  otrng_assert_is_success(smp_msg_2_deserialize(smp_msg_2, tlv_smp_2));
+  g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
+  g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
+
+  // Bob should have the correct context after he generates tlv_smp_2
+  g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT3);
+  otrng_assert(bob->smp->secret);
+  otrng_assert_point_equals(bob->smp->g3a, smp_msg_1->g3a);
+  otrng_assert_point_equals(bob->smp->pb, smp_msg_2->pb);
+  otrng_assert_point_equals(bob->smp->qb, smp_msg_2->qb);
+  otrng_assert_not_zero(bob->smp->b3, ED448_SCALAR_BYTES);
+  otrng_assert_not_zero(bob->smp->g2, ED448_POINT_BYTES);
+  otrng_assert_not_zero(bob->smp->g3, ED448_POINT_BYTES);
+
+  otrng_smp_msg_1_destroy(smp_msg_1);
+  smp_msg_2_destroy(smp_msg_2);
+
+  // To trigger the abort
+  alice->smp->state = SMPSTATE_EXPECT1;
+
+  // Alice receives smp 2
+  tlv_s *tlv_abort = process_tlv(tlv_smp_2, alice);
+  otrng_tlv_free(tlv_smp_2);
+  otrng_assert(tlv_abort);
+
+  g_assert_cmpint(tlv_abort->type, ==, OTRNG_TLV_SMP_ABORT);
+  g_assert_cmpint(alice->smp->progress, ==, SMP_ZERO_PROGRESS);
+  g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
+
+  // Alice should have correct context after generates tlv_smp_3
+  g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
+  otrng_assert(alice->smp->g3b);
+  otrng_assert(alice->smp->pa_pb);
+  otrng_assert(alice->smp->qa_qb);
+
+  otrng_tlv_free(tlv_abort);
+
+  otrng_user_state_free_all(alice_state->user_state, bob_state->user_state);
+  otrng_client_state_free_all(alice_state, bob_state);
+  otrng_free_all(alice, bob);
+}
+
 void test_otrng_generate_smp_secret(void) {
   smp_context_p smp;
   smp->msg1 = NULL;

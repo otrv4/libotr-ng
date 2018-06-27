@@ -196,6 +196,7 @@ int main(int argc, char **argv) {
   g_test_add_func("/key_management/brace_key", test_calculate_brace_key);
 
   g_test_add_func("/smp/state_machine", test_smp_state_machine);
+  g_test_add_func("/smp/state_machine_abort", test_smp_state_machine_abort);
   g_test_add_func("/smp/generate_secret", test_otrng_generate_smp_secret);
   g_test_add_func("/smp/msg_1_asprintf_null_question",
                   test_otrng_smp_msg_1_asprintf_null_question);
