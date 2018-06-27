@@ -440,7 +440,7 @@ API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
     return -1;
   }
 
-  return otrng_serialize_fingerprint(fp, client->state->keypair->pub);
+  return otrng_serialize_fingerprint(fp, client->state->keypair->pub) == ERROR;
 }
 
 // TODO: @client Read privkeys, fingerprints, instance tags for v3

@@ -216,8 +216,8 @@ void test_client_get_our_fingerprint() {
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
 
   otrng_fingerprint_p expected_fp = {0};
-  otrng_assert(!otrng_serialize_fingerprint(expected_fp,
-                                            alice_client_state->keypair->pub));
+  otrng_assert(otrng_serialize_fingerprint(expected_fp,
+                                           alice_client_state->keypair->pub));
 
   otrng_fingerprint_p our_fp = {0};
   otrng_assert(!otrng_client_get_our_fingerprint(our_fp, alice));

@@ -1525,7 +1525,7 @@ tstatic otrng_err non_interactive_auth_message_received(
   }
 
   otrng_fingerprint_p fp;
-  if (!otrng_serialize_fingerprint(
+  if (otrng_serialize_fingerprint(
           fp, otr->their_client_profile->long_term_pub_key)) {
     fingerprint_seen_cb_v4(fp, otr->conversation);
   }
@@ -1786,7 +1786,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
   otrng_dake_auth_r_destroy(auth);
 
   otrng_fingerprint_p fp;
-  if (!otrng_serialize_fingerprint(
+  if (otrng_serialize_fingerprint(
           fp, otr->their_client_profile->long_term_pub_key)) {
     fingerprint_seen_cb_v4(fp, otr->conversation);
   }
@@ -1844,7 +1844,7 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
   otrng_dake_auth_i_destroy(auth);
 
   otrng_fingerprint_p fp;
-  if (!otrng_serialize_fingerprint(
+  if (otrng_serialize_fingerprint(
           fp, otr->their_client_profile->long_term_pub_key)) {
     fingerprint_seen_cb_v4(fp, otr->conversation);
   }
@@ -2836,8 +2836,15 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
   size_t len = 0;
 
   otrng_fingerprint_p our_fp, their_fp;
-  otrng_serialize_fingerprint(our_fp, initiator_profile->long_term_pub_key);
-  otrng_serialize_fingerprint(their_fp, responder_profile->long_term_pub_key);
+  if (!otrng_serialize_fingerprint(our_fp,
+                                   initiator_profile->long_term_pub_key)) {
+    return NULL;
+  }
+
+  if (!otrng_serialize_fingerprint(their_fp,
+                                   responder_profile->long_term_pub_key)) {
+    return NULL;
+  }
 
   if (!otrng_generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, answer,
                                  answer_len)) {
@@ -2928,9 +2935,15 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_context_p smp,
   tlv_s *smp_reply = NULL;
 
   otrng_fingerprint_p our_fp, their_fp;
-  otrng_serialize_fingerprint(our_fp, our_profile->long_term_pub_key);
-  otrng_serialize_fingerprint(their_fp,
-                              their_client_profile->long_term_pub_key);
+  if (!otrng_serialize_fingerprint(our_fp, our_profile->long_term_pub_key)) {
+    return NULL;
+  }
+
+  if (!otrng_serialize_fingerprint(their_fp,
+                                   their_client_profile->long_term_pub_key)) {
+    return NULL;
+  }
+
   if (!otrng_generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret,
                                  secretlen)) {
     return NULL;

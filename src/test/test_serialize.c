@@ -196,8 +196,7 @@ void test_serializes_fingerprint() {
   otrng_keypair_generate(keypair, sym);
 
   otrng_fingerprint_p dst = {0};
-  // TODO: should this return otrng_err ?
-  otrng_assert(otrng_serialize_fingerprint(dst, keypair->pub) == 0);
+  otrng_assert(otrng_serialize_fingerprint(dst, keypair->pub));
 
   otrng_assert_cmpmem(expected_fp, dst, sizeof(otrng_fingerprint_p));
 }
