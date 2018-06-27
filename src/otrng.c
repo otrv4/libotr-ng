@@ -159,7 +159,7 @@ tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
     conv->client->callbacks->smp_update(event, progress_percent, conv);
     break;
   default:
-    // OTRNG_SMP_EVENT_NONE. Should not be used.
+    /* OTRNG_SMP_EVENT_NONE. Should not be used. */
     break;
   }
 }
@@ -1968,10 +1968,9 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t event, smp_context_p smp,
     event = otrng_process_smp_msg1(tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state = SMPSTATE_EXPECT1;
-      to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
-      if (!to_send) {
-        return NULL;
-      }
+    } else if (event == OTRNG_SMP_EVENT_ERROR ||
+               event == OTRNG_SMP_EVENT_FAILURE) {
+      smp->state = SMPSTATE_EXPECT1;
     }
     break;
 
@@ -1983,6 +1982,9 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t event, smp_context_p smp,
       if (!to_send) {
         return NULL;
       }
+    } else if (event == OTRNG_SMP_EVENT_ERROR ||
+               event == OTRNG_SMP_EVENT_FAILURE) {
+      smp->state = SMPSTATE_EXPECT1;
     }
     break;
 
@@ -1994,6 +1996,9 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t event, smp_context_p smp,
       if (!to_send) {
         return NULL;
       }
+    } else if (event == OTRNG_SMP_EVENT_ERROR ||
+               event == OTRNG_SMP_EVENT_FAILURE) {
+      smp->state = SMPSTATE_EXPECT1;
     }
     break;
 
