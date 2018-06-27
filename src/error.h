@@ -32,7 +32,7 @@
 #define ERROR_CODE_4 "ERROR_4: "
 
 // needed for comparing with GOLDILOCKS_TRUE
-typedef uint32_t
+typedef uint8_t
     otrng_bool; /* "Boolean" type, will be set to all-zero or all-one */
 
 static const otrng_bool otrng_true = 1;
