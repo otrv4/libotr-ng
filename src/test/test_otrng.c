@@ -215,7 +215,6 @@ void test_otrng_receives_identity_message_validates_instance_tag(
   otrng_fixture->otr->their_instance_tag = 1;
   otrng_receive_message(id_msg, notif, query_message, otrng_fixture->otr);
   free(query_message);
-  query_message = NULL;
 
   // receive the identity message with non-zero their instance tag
   otrng_response_s *auth_msg = otrng_response_new();

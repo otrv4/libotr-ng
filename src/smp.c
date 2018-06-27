@@ -1179,7 +1179,6 @@ INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
   *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_2, bufflen, buff);
 
   free(buff);
-  buff = NULL;
 
   if (!to_send) {
     return OTRNG_SMP_EVENT_ERROR;
@@ -1236,7 +1235,6 @@ tstatic otrng_smp_event_t reply_with_smp_msg_3(tlv_s **to_send,
   *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_3, bufflen, buff);
 
   free(buff);
-  buff = NULL;
 
   if (!*to_send) {
     return OTRNG_SMP_EVENT_ERROR;
@@ -1290,7 +1288,6 @@ tstatic otrng_smp_event_t reply_with_smp_msg_4(tlv_s **to_send,
   *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_4, bufflen, buff);
 
   free(buff);
-  buff = NULL;
 
   if (!*to_send) {
     return OTRNG_SMP_EVENT_ERROR;

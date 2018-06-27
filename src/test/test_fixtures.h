@@ -140,7 +140,6 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert_is_success(
       otrng_receive_message(response_to_alice, notif, query_message, bob));
   free(query_message);
-  query_message = NULL;
 
   // Bob replies with an identity message
   otrng_assert(bob->state == OTRNG_STATE_WAITING_AUTH_R);
@@ -217,8 +216,5 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
                            bob->keys->shared_secret);
 
   otrng_response_free(response_to_alice);
-  response_to_alice = NULL;
-
   otrng_response_free(response_to_bob);
-  response_to_bob = NULL;
 }

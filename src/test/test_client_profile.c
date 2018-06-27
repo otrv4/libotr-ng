@@ -147,7 +147,6 @@ void test_otrng_client_profile_deserializes() {
   otrng_assert_client_profile_eq(deserialized, profile);
 
   free(serialized);
-  serialized = NULL;
   otrng_client_profile_free(profile);
   otrng_client_profile_free(deserialized);
 }

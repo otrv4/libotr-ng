@@ -580,10 +580,7 @@ void test_api_conversation_errors_2(void) {
   response_to_alice->to_send = NULL;
 
   otrng_response_free(response_to_alice);
-  response_to_alice = NULL;
-
   otrng_response_free(response_to_bob);
-  response_to_bob = NULL;
 
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
@@ -784,7 +781,6 @@ void test_api_multiple_clients(void) {
                           OTRNG_STATE_WAITING_AUTH_R, send_response);
 
   free(query_message);
-  query_message = NULL;
 
   // ALICE receives Identity msg from PC and sends AUTH-R
   result =
@@ -949,7 +945,6 @@ void test_api_smp(void) {
   otrng_assert_is_success(otrng_receive_message(
       response_to_bob, notif, response_to_alice->to_send, alice));
   otrng_response_free(response_to_alice);
-  response_to_alice = NULL;
 
   g_assert_cmpint(bob->smp->state_expect, ==, '1');
   g_assert_cmpint(alice->smp->state_expect, ==, '1');
@@ -1144,7 +1139,6 @@ void test_heartbeat_messages(void) {
   g_assert_cmpint(bob->keys->k, ==, 1);
 
   free(to_send);
-  to_send = NULL;
 
   // Alice receives the heatbeat message. Let's force this.
   response_to_bob = otrng_response_new();

@@ -56,7 +56,6 @@ tstatic void ratchet_free(ratchet_s *ratchet) {
   sodium_memzero(ratchet->chain_r, sizeof(receiving_chain_key_p));
 
   free(ratchet);
-  ratchet = NULL;
 }
 
 INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
@@ -131,20 +130,8 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   // TODO: @freeing once dake is finished should be wiped out
   sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 
-  list_element_s *el;
-  for (el = manager->skipped_keys; el; el = el->next) {
-    free((skipped_keys_s *)el->data);
-    el->data = NULL;
-  }
-
   otrng_list_free_full(manager->skipped_keys);
   manager->skipped_keys = NULL;
-
-  list_element_s *el_2;
-  for (el_2 = manager->old_mac_keys; el_2; el_2 = el_2->next) {
-    free((uint8_t *)el_2->data);
-    el_2->data = NULL;
-  }
 
   otrng_list_free_full(manager->old_mac_keys);
   manager->old_mac_keys = NULL;
@@ -664,12 +651,6 @@ tstatic void calculate_extra_key(key_manager_s *manager, const char action) {
 }
 
 tstatic void delete_stored_enc_keys(key_manager_s *manager) {
-  list_element_s *el;
-  for (el = manager->skipped_keys; el; el = el->next) {
-    free((skipped_keys_s *)el->data);
-    el->data = NULL;
-  }
-
   otrng_list_free_full(manager->skipped_keys);
   manager->skipped_keys = NULL;
 }

@@ -121,7 +121,6 @@ void test_defragment_without_comma_fails(void) {
   g_assert_cmpstr(unfrag, ==, NULL);
 
   free(unfrag);
-  unfrag = NULL;
   otrng_list_free_nodes(list);
 }
 

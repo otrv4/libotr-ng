@@ -45,13 +45,8 @@ tstatic void conversation_free(void *data) {
   otrng_conversation_s *conv = data;
 
   free(conv->recipient);
-  conv->recipient = NULL;
-
   otrng_free(conv->conn);
-  conv->conn = NULL;
-
   free(conv);
-  conv = NULL;
 }
 
 API otrng_client_s *otrng_client_new(otrng_client_state_s *state) {
@@ -71,13 +66,8 @@ API void otrng_client_free(otrng_client_s *client) {
     return;
   }
 
-  client->state = NULL;
-
   otrng_list_free(client->conversations, conversation_free);
-  client->conversations = NULL;
-
   free(client);
-  client = NULL;
 }
 
 // TODO: @instance_tag There may be multiple conversations with the same
@@ -337,6 +327,7 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
   }
 
   otrng_response_free(response);
+
   return result != ERROR;
 }
 

@@ -136,7 +136,6 @@ INTERNAL void otrng_tlv_free(tlv_s *tlv) {
   }
 
   free(tlv->data);
-  tlv->data = NULL;
   free(tlv);
 }
 

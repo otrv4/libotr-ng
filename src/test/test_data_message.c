@@ -137,7 +137,6 @@ void test_data_message_serializes() {
 
   otrng_data_message_free(data_msg);
   free(serialized);
-  serialized = NULL;
 }
 
 void test_data_message_serializes_absent_dh() {
@@ -167,7 +166,6 @@ void test_data_message_serializes_absent_dh() {
 
   otrng_data_message_free(data_msg);
   free(serialized);
-  serialized = NULL;
 }
 
 void test_otrng_data_message_deserializes() {
@@ -214,7 +212,6 @@ void test_otrng_data_message_deserializes() {
   otrng_data_message_free(data_msg);
   otrng_data_message_free(deserialized);
   free(serialized);
-  serialized = NULL;
 }
 
 void test_data_message_valid() {
@@ -235,7 +232,6 @@ void test_data_message_valid() {
       data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
 
   free(body);
-  body = NULL;
 
   otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
 
@@ -254,10 +250,8 @@ void test_data_message_valid() {
       data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
 
   free(body);
-  body = NULL;
 
   otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
 
   otrng_data_message_free(data_msg);
-  data_msg = NULL;
 }

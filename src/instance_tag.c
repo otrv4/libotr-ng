@@ -62,11 +62,6 @@ API void otrng_instag_free(otrng_instag_s *instag) {
   }
 
   free(instag->account);
-  instag->account = NULL;
-
   free(instag->protocol);
-  instag->protocol = NULL;
-
   free(instag);
-  instag = NULL;
 }

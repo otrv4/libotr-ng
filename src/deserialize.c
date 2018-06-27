@@ -308,11 +308,9 @@ INTERNAL otrng_err otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
   if (written == ED448_PRIVATE_BYTES) {
     otrng_keypair_generate(pair, dec);
     free(dec);
-    dec = NULL;
     return SUCCESS;
   }
 
   free(dec);
-  dec = NULL;
   return ERROR;
 }

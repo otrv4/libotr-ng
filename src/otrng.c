@@ -306,7 +306,6 @@ static void free_fragment_context(void *p) { otrng_fragment_context_free(p); }
 INTERNAL void otrng_destroy(/*@only@ */ otrng_s *otr) {
   if (otr->conversation) {
     free(otr->conversation->peer);
-    otr->conversation->peer = NULL;
     free(otr->conversation);
     otr->conversation = NULL;
   }
@@ -381,7 +380,6 @@ INTERNAL otrng_err otrng_build_query_message(string_p *dst,
 
   if (otr->sending_init_msg) {
     free(otr->sending_init_msg);
-    otr->sending_init_msg = NULL;
   }
 
   otr->sending_init_msg = otrng_strdup(buff);
@@ -428,7 +426,6 @@ API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
 
   if (otr->sending_init_msg) {
     free(otr->sending_init_msg);
-    otr->sending_init_msg = NULL;
   }
 
   otr->sending_init_msg = otrng_strdup(buff);
@@ -542,18 +539,13 @@ INTERNAL void otrng_response_free(otrng_response_s *response) {
 
   if (response->to_display) {
     free(response->to_display);
-    response->to_display = NULL;
   }
 
   if (response->to_send) {
     free(response->to_send);
-    response->to_send = NULL;
   }
 
-  response->warning = OTRNG_WARN_NONE;
-
   otrng_tlv_list_free(response->tlvs);
-  response->tlvs = NULL;
 
   free(response);
 }

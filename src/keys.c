@@ -64,7 +64,6 @@ INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
 
   keypair_destroy(keypair);
   free(keypair);
-  keypair = NULL;
 }
 
 INTERNAL otrng_err otrng_symmetric_key_serialize(
@@ -127,5 +126,4 @@ otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair) {
 
   shared_prekey_pair_destroy(prekey_pair);
   free(prekey_pair);
-  prekey_pair = NULL;
 }

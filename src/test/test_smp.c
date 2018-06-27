@@ -293,7 +293,6 @@ void test_otrng_smp_msg_1_asprintf_null_question(void) {
   otrng_assert_is_success(otrng_smp_msg_1_asprintf(&buff, &writen, msg));
   g_assert_cmpint(writen, ==, expected_size);
   free(buff);
-  buff = NULL;
 
   msg->question = (uint8_t *)"something";
   msg->q_len = 9;
@@ -302,5 +301,4 @@ void test_otrng_smp_msg_1_asprintf_null_question(void) {
   g_assert_cmpint(writen, ==, expected_len);
 
   free(buff);
-  buff = NULL;
 }

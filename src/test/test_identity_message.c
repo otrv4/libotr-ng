@@ -66,7 +66,6 @@ void test_dake_identity_message_serializes(dake_fixture_s *f,
                    identity_message->profile) == SUCCESS);
   otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
   free(client_profile_serialized);
-  client_profile_serialized = NULL;
   cursor += client_profile_len;
 
   uint8_t serialized_y[PUB_KEY_SER_BYTES] = {};

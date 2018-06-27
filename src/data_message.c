@@ -74,9 +74,7 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
   }
 
   data_message_destroy(data_msg);
-
   free(data_msg);
-  data_msg = NULL;
 }
 
 INTERNAL otrng_err otrng_data_message_body_asprintf(
@@ -103,7 +101,6 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
   if (!otrng_serialize_dh_public_key(cursor, (s - (cursor - dst)), &len,
                                      data_msg->dh)) {
     free(dst);
-    dst = NULL;
     return ERROR;
   }
   cursor += len;

@@ -71,7 +71,6 @@ otrng_dake_identity_message_free(dake_identity_message_s *identity_message) {
 
   otrng_dake_identity_message_destroy(identity_message);
   free(identity_message);
-  identity_message = NULL;
 }
 
 INTERNAL otrng_err otrng_dake_identity_message_asprintf(

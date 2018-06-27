@@ -469,15 +469,8 @@ INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn) {
     return;
   }
 
-  conn->ctx = NULL;
-  conn->ops = NULL;
-  conn->opdata = NULL;
-
   free(conn->peer);
-  conn->peer = NULL;
-
   free(conn);
-  conn = NULL;
 }
 
 INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,

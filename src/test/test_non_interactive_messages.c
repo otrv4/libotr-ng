@@ -108,7 +108,6 @@ void test_otrng_dake_prekey_message_deserializes() {
   otrng_assert_dh_public_key_eq(deserialized->B, prekey_message->B);
 
   free(serialized);
-  serialized = NULL;
   otrng_dh_keypair_destroy(dh);
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dake_prekey_message_free(prekey_message);

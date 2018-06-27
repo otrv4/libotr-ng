@@ -50,18 +50,12 @@ API void otrng_user_state_free(otrng_user_state_s *state) {
   }
 
   otrng_list_free(state->states, free_client_state);
-  state->states = NULL;
 
   otrng_list_free(state->clients, free_client);
-  state->clients = NULL;
-
-  state->callbacks = NULL;
 
   otrl_userstate_free(state->user_state_v3);
-  state->user_state_v3 = NULL;
 
   free(state);
-  state = NULL;
 }
 
 tstatic int find_state_by_client_id(const void *current, const void *wanted) {

@@ -62,36 +62,19 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
 }
 
 INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
-  state->client_id = NULL;
-  state->user_state = NULL;
-
   free(state->protocol_name);
-  state->protocol_name = NULL;
   free(state->account_name);
-  state->account_name = NULL;
-
-  state->callbacks = NULL;
 
   otrng_keypair_free(state->keypair);
-  state->keypair = NULL;
-
   otrng_list_free(state->our_prekeys, stored_prekeys_free_from_list);
-  state->our_prekeys = NULL;
 
   otrng_client_profile_free(state->client_profile);
-  state->client_profile = NULL;
 
   otrng_prekey_profile_free(state->prekey_profile);
-  state->prekey_profile = NULL;
 
   otrng_shared_prekey_pair_free(state->shared_prekey_pair);
-  state->shared_prekey_pair = NULL;
-
-  state->max_stored_msg_keys = 0;
-  state->pad = false;
 
   free(state);
-  state = NULL;
 }
 
 // TODO: @client There's no API that allows us to simply write all private keys
@@ -162,7 +145,6 @@ otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
 
   int err = fputs(key, privf);
   free(key);
-  key = NULL;
 
   if (EOF == err) {
     return 1;
@@ -218,13 +200,11 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
   len = getline(&line, &cap, privf);
   if (len < 0) {
     free(line);
-    line = NULL;
     return -3;
   }
 
   if (!otrng_symmetric_key_deserialize(state->keypair, line, len - 1)) {
     free(line);
-    line = NULL;
     otrng_keypair_free(state->keypair);
     state->keypair = NULL;
 
@@ -232,7 +212,6 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
   }
 
   free(line);
-  line = NULL;
 
   return 0;
 }

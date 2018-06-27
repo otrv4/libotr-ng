@@ -51,12 +51,9 @@ API void otrng_message_free(otrng_message_to_send_s *message) {
 
   for (int i = 0; i < message->total; i++) {
     free(message->pieces[i]);
-    message->pieces[i] = NULL;
   }
 
   free(message->pieces);
-  message->pieces = NULL;
-
   free(message);
 }
 
@@ -98,7 +95,6 @@ INTERNAL /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
 INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   free_fragments_in_context(context);
   free(context->fragments);
-  context->fragments = NULL;
   free(context);
 }
 

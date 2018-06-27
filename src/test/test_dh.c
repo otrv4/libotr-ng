@@ -135,9 +135,6 @@ void dh_test_shared_secret() {
 
   otrng_dh_mpi_release(priv_dh);
   otrng_dh_mpi_release(pub_dh);
-
-  priv_dh = NULL;
-  pub_dh = NULL;
 }
 
 void dh_test_serialize() {
@@ -160,7 +157,6 @@ void dh_test_serialize() {
   g_assert_cmpint(mpi_len, ==, 4);
 
   gcry_mpi_release(mpi);
-  mpi = NULL;
 
   otrng_assert_is_success(
       otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &mpi_len, NULL));
