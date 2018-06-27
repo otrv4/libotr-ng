@@ -21,10 +21,6 @@
 #ifndef OTRNG_CLIENT_H
 #define OTRNG_CLIENT_H
 
-// TODO: @client check the error codes on client
-#define CLIENT_ERROR_NOT_ENCRYPTED 0x1001
-#define CLIENT_ERROR_MSG_NOT_VALID 0x1011
-
 #include <libotr/context.h>
 
 #include "client_state.h"
@@ -48,6 +44,14 @@ typedef struct otrng_client_s {
   otrng_client_state_s *state;
   list_element_s *conversations;
 } otrng_client_s, otrng_client_p[1];
+
+/* Defines the different results that a client operation can give */
+typedef enum {
+  OTRNG_CLIENT_RESULT_OK = 0,
+  OTRNG_CLIENT_RESULT_ERROR = 1,
+  OTRNG_CLIENT_RESULT_ERROR_NOT_ENCRYPTED = 0x1001,
+  OTRNG_CLIENT_RESULT_ERROR_NOT_VALID = 0x1011,
+} otrng_client_result;
 
 API otrng_client_s *otrng_client_new(otrng_client_state_s *);
 

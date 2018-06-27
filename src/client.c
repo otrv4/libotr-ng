@@ -200,23 +200,28 @@ otrng_client_get_conversation(int force_create, const char *recipient,
 }
 
 // TODO: @client this should allow TLVs to be added to the message
-tstatic int send_message(char **newmsg, const char *message,
-                         const char *recipient, otrng_client_s *client) {
+tstatic otrng_client_result send_message(char **newmsg, const char *message,
+                                         const char *recipient,
+                                         otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
   otrng_notif notif = NOTIF_NONE;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
-    return 1;
+    return OTRNG_CLIENT_RESULT_ERROR;
   }
 
   otrng_err result =
       otrng_send_message(newmsg, message, notif, NULL, 0, conv->conn);
 
   if (notif == NOTIF_STATE_NOT_ENCRYPTED) {
-    return CLIENT_ERROR_NOT_ENCRYPTED;
+    return OTRNG_CLIENT_RESULT_ERROR_NOT_ENCRYPTED;
   } else {
-    return SUCCESS != result;
+    if (SUCCESS == result) {
+      return OTRNG_CLIENT_RESULT_OK;
+    } else {
+      return OTRNG_CLIENT_RESULT_ERROR;
+    }
   }
 }
 
@@ -288,6 +293,10 @@ API int otrng_client_smp_respond(char **tosend, const char *recipient,
   return 0;
 }
 
+// TODO: this function is very likely not doing the right thing with
+//   return codes for example, look at the return of
+//   CLIENT_ERROR_MSG_NOT_VALID. this function in general returns
+//   ERROR=0 for errors, so anything not ERROR will be success...
 API int otrng_client_receive(char **newmessage, char **todisplay,
                              const char *message, const char *recipient,
                              otrng_client_s *client) {
@@ -312,7 +321,7 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
   result = otrng_receive_message(response, notif, message, conv->conn);
 
   if (notif == NOTIF_MSG_NOT_VALID) {
-    return CLIENT_ERROR_MSG_NOT_VALID;
+    return OTRNG_CLIENT_RESULT_ERROR_NOT_VALID;
   }
 
   if (response->to_send) {
