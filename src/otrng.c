@@ -2076,7 +2076,6 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
   return out;
 }
 
-// TODO: @smp check this
 tstatic otrng_err process_received_tlvs(tlv_list_s **to_send,
                                         otrng_response_s *response,
                                         otrng_s *otr) {
@@ -2620,16 +2619,6 @@ tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
   return SUCCESS;
 }
 
-tstatic size_t needed_padding(size_t message_len) {
-  // TODO: @refactoring This should be configurable
-  const int padding_granularity = 256;
-  const int header_len = 4;
-  const int nul_byte_len = 1;
-
-  return padding_granularity -
-         ((message_len + header_len + nul_byte_len) % padding_granularity);
-}
-
 tstatic otrng_err generate_padding(uint8_t **dst, size_t *dstlen,
                                    size_t message_len, const otrng_s *otr) {
   if (!otr->conversation->client->pad) {
@@ -2658,7 +2647,7 @@ tstatic otrng_err generate_padding(uint8_t **dst, size_t *dstlen,
   return ret;
 }
 
-tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dstlen,
+tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,
                               const string_p message, const tlv_list_s *tlvs,
                               const otrng_s *otr) {
   uint8_t *ser = NULL;
@@ -2677,8 +2666,8 @@ tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dstlen,
     return ERROR;
   }
 
-  *dstlen = message_len + padding_len;
-  *dst = malloc(*dstlen);
+  *dst_len = message_len + padding_len;
+  *dst = malloc(*dst_len);
   if (!*dst) {
     free(ser);
     free(padding);
@@ -2883,6 +2872,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
   otrng_fingerprint_p our_fp, their_fp;
   otrng_serialize_fingerprint(our_fp, initiator_profile->long_term_pub_key);
   otrng_serialize_fingerprint(their_fp, responder_profile->long_term_pub_key);
+
   if (!otrng_generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, answer,
                                  answer_len)) {
     return NULL;

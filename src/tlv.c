@@ -184,6 +184,15 @@ INTERNAL tlv_s *otrng_tlv_disconnected_new(void) {
   return otrng_tlv_new(OTRNG_TLV_DISCONNECTED, 0, NULL);
 }
 
+INTERNAL size_t needed_padding(size_t message_len) {
+  // TODO: @refactoring This should be configurable
+  const int padding_granularity = 256;
+  const int header_len = 4;
+
+  return padding_granularity -
+         ((message_len + header_len + 1) % padding_granularity);
+}
+
 INTERNAL tlv_s *otrng_tlv_padding_new(size_t len) {
   uint8_t *data = malloc(len);
   if (!data) {
