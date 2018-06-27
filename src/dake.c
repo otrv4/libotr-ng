@@ -18,6 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -858,7 +859,7 @@ tstatic otrng_err build_rsign_tag(
 }
 
 INTERNAL otrng_err build_interactive_rsign_tag(
-    uint8_t **msg, size_t *msg_len, const otrng_rsign_tag_type_s type,
+    uint8_t **msg, size_t *msg_len, const char auth_tag_type,
     const otrng_dake_participant_data_s initiator,
     const otrng_dake_participant_data_s responder, const uint8_t *phi,
     size_t phi_len) {
@@ -870,7 +871,8 @@ INTERNAL otrng_err build_interactive_rsign_tag(
   }
 
   otrng_err result = ERROR;
-  if (type == AUTH_R_RSIGN_TAG) {
+  assert(auth_tag_type == 'i' || auth_tag_type == 'r');
+  if (auth_tag_type == 'r') {
     // t = 0x0 || KDF_1(0x06 || Bobs_User_Profile, 64) || KDF_1(0x07 ||
     // Alices_User_Profile, 64) || Y || X || B || A || KDF_1(0x08 || phi, 64)
     *buff = 0x0;
@@ -878,7 +880,7 @@ INTERNAL otrng_err build_interactive_rsign_tag(
                              initiator.client_profile, responder.client_profile,
                              &initiator.ecdh, &responder.ecdh, initiator.dh,
                              responder.dh, NULL, 0, phi, phi_len);
-  } else if (type == AUTH_I_RSIGN_TAG) {
+  } else if (auth_tag_type == 'i') {
     // t = 0x1 || KDF_1(0x09 || Bobs_User_Profile, 64) || KDF_1(0x0A ||
     // Alices_User_Profile, 64) || Y || X || B || A || KDF_1(0x0B || phi, 64)
     *buff = 0x01;

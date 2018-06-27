@@ -750,7 +750,7 @@ static otrng_err generate_phi_sending(uint8_t **dst, size_t *dst_len,
 }
 
 static otrng_err generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
-                                           otrng_rsign_tag_type_s type,
+                                           const char auth_tag_type,
                                            otrng_s *otr) {
   const otrng_dake_participant_data_s initiator = {
       .client_profile = otr->their_client_profile,
@@ -770,15 +770,15 @@ static otrng_err generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
     return ERROR;
   }
 
-  otrng_err ret = build_interactive_rsign_tag(dst, dst_len, type, initiator,
-                                              responder, phi, phi_len);
+  otrng_err ret = build_interactive_rsign_tag(
+      dst, dst_len, auth_tag_type, initiator, responder, phi, phi_len);
 
   free(phi);
   return ret;
 }
 
 static otrng_err generate_receiving_rsig_tag(
-    uint8_t **dst, size_t *dst_len, otrng_rsign_tag_type_s type,
+    uint8_t **dst, size_t *dst_len, const char auth_tag_type,
     const otrng_dake_participant_data_s responder, otrng_s *otr) {
   const otrng_dake_participant_data_s initiator = {
       .client_profile = get_my_client_profile(otr),
@@ -792,8 +792,8 @@ static otrng_err generate_receiving_rsig_tag(
     return ERROR;
   }
 
-  otrng_err ret = build_interactive_rsign_tag(dst, dst_len, type, initiator,
-                                              responder, phi, phi_len);
+  otrng_err ret = build_interactive_rsign_tag(
+      dst, dst_len, auth_tag_type, initiator, responder, phi, phi_len);
 
   free(phi);
   return ret;
@@ -812,7 +812,7 @@ tstatic otrng_err reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  if (!generate_sending_rsig_tag(&t, &t_len, AUTH_R_RSIGN_TAG, otr)) {
+  if (!generate_sending_rsig_tag(&t, &t_len, 'r', otr)) {
     return ERROR;
   }
 
@@ -1689,8 +1689,7 @@ tstatic otrng_err reply_with_auth_i_msg(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  if (!generate_receiving_rsig_tag(&t, &t_len, AUTH_I_RSIGN_TAG, responder,
-                                   otr)) {
+  if (!generate_receiving_rsig_tag(&t, &t_len, 'i', responder, otr)) {
     return ERROR;
   }
 
@@ -1726,8 +1725,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  if (!generate_receiving_rsig_tag(&t, &t_len, AUTH_R_RSIGN_TAG, responder,
-                                   otr)) {
+  if (!generate_receiving_rsig_tag(&t, &t_len, 'r', responder, otr)) {
     return ERROR;
   }
 
@@ -1804,7 +1802,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
                                         otrng_s *otr) {
   unsigned char *t = NULL;
   size_t t_len = 0;
-  if (!generate_sending_rsig_tag(&t, &t_len, AUTH_I_RSIGN_TAG, otr)) {
+  if (!generate_sending_rsig_tag(&t, &t_len, 'i', otr)) {
     return ERROR;
   }
 
