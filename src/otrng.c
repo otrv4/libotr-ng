@@ -1393,9 +1393,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   };
 
   const otrng_dake_participant_data_s responder = {
-      .client_profile = auth->profile,
-      .ecdh = *(auth->X),
-      .dh = auth->A,
+      .client_profile = auth->profile, .ecdh = *(auth->X), .dh = auth->A,
   };
 
   uint8_t *phi = NULL;
@@ -1753,9 +1751,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   }
 
   const otrng_dake_participant_data_s responder = {
-      .client_profile = auth->profile,
-      .ecdh = *(auth->X),
-      .dh = auth->A,
+      .client_profile = auth->profile, .ecdh = *(auth->X), .dh = auth->A,
   };
 
   unsigned char *t = NULL;
