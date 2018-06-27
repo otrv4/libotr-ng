@@ -663,7 +663,7 @@ tstatic void delete_stored_enc_keys(key_manager_s *manager) {
 
 tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
                                  int max_skip, int until,
-                                 otrng_ratchet_type type, otrng_notif notif) {
+                                 const char ratchet_type, otrng_notif notif) {
   if (manager->i == max_skip) {
     delete_stored_enc_keys(manager);
   }
@@ -700,10 +700,11 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
         return ERROR;
       }
 
-      if (type == OTRNG_DH_RATCHET) {
+      assert(ratchet_type == 'd' || ratchet_type == 'c');
+      if (ratchet_type == 'd') {
         skipped_m_enc_key->i =
             manager->i - 1; /* ratchet_id - 1 for the dh ratchet */
-      } else if (type == OTRNG_CHAIN_RATCHET) {
+      } else if (ratchet_type == 'c') {
         skipped_m_enc_key->i = manager->i;
       }
 
@@ -769,8 +770,7 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
 
   assert(action == 's' || action == 'r');
   if (action == 'r') {
-    if (!store_enc_keys(enc_key, manager, max_skip, message_id,
-                        OTRNG_CHAIN_RATCHET, notif)) {
+    if (!store_enc_keys(enc_key, manager, max_skip, message_id, 'c', notif)) {
       return ERROR;
     }
   }
@@ -804,8 +804,7 @@ INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
     assert(action == 's' || action == 'r');
     if (action == 'r') {
       /* Store any message keys from the previous DH Ratchet */
-      if (!store_enc_keys(enc_key, manager, max_skip, previous_n,
-                          OTRNG_DH_RATCHET, notif)) {
+      if (!store_enc_keys(enc_key, manager, max_skip, previous_n, 'd', notif)) {
         return ERROR;
       }
     }
