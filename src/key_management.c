@@ -339,9 +339,9 @@ tstatic void calculate_shared_secret(key_manager_s *manager, k_ecdh_p k_ecdh) {
 }
 
 INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
-    key_manager_s *manager, otrng_information_flow flow) {
+    key_manager_s *manager, const otrng_bool interactive) {
 
-  if (flow == OTRNG_INTERACTIVE) {
+  if (interactive) {
     k_ecdh_p k_ecdh;
 
     otrng_ecdh_shared_secret(k_ecdh, manager->our_ecdh, manager->their_ecdh);
@@ -358,7 +358,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
 
     calculate_shared_secret(manager, k_ecdh);
 
-  } else if (flow == OTRNG_NON_INTERACTIVE) {
+  } else if (!interactive) {
     shake_256_kdf1(manager->shared_secret, sizeof(shared_secret_p),
                    usage_shared_secret, manager->tmp_key,
                    sizeof(manager->tmp_key));

@@ -29,11 +29,6 @@
 #include "shared.h"
 
 typedef enum {
-  OTRNG_INTERACTIVE = 0,
-  OTRNG_NON_INTERACTIVE = 1,
-} otrng_information_flow;
-
-typedef enum {
   OTRNG_SENDING = 0,
   OTRNG_RECEIVING = 1,
 } otrng_participant_action;
@@ -183,11 +178,11 @@ INTERNAL void otrng_key_manager_calculate_authenticator(
  *        from the shared ecdh and brace keys. If not,
  *        generate it from the tmp key.
  *
- * @param [manager]   The key manager.
- * @param [flow]      If it is part of the interactive DAKE or not.
+ * @param [manager]     The key manager.
+ * @param [interactive] True if interactive DAKE, false otherwise
  */
 INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
-    key_manager_s *manager, otrng_information_flow flow);
+    key_manager_s *manager, const otrng_bool interactive);
 
 /**
  * @brief Generate a Shared Secret from the shared prekey.

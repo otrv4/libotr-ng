@@ -1066,8 +1066,7 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
     ret = serialize_and_encode_non_interactive_auth(dst, auth);
   }
 
-  if (!otrng_key_manager_generate_shared_secret(otr->keys,
-                                                OTRNG_NON_INTERACTIVE)) {
+  if (!otrng_key_manager_generate_shared_secret(otr->keys, false)) {
     return ERROR;
   }
 
@@ -1514,8 +1513,7 @@ tstatic otrng_err non_interactive_auth_message_received(
     return ERROR;
   }
 
-  if (!otrng_key_manager_generate_shared_secret(otr->keys,
-                                                OTRNG_NON_INTERACTIVE)) {
+  if (!otrng_key_manager_generate_shared_secret(otr->keys, false)) {
     return ERROR;
   }
 
@@ -1575,7 +1573,7 @@ tstatic otrng_err receive_identity_message_on_state_start(
 
   /* @secret the shared secret will be deleted once the double ratchet is
    * initialized */
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, OTRNG_INTERACTIVE)) {
+  if (!otrng_key_manager_generate_shared_secret(otr->keys, true)) {
     return ERROR;
   }
 
@@ -1790,7 +1788,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
 
   /* @secret the shared secret will be deleted once the double ratchet is
    * initialized */
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, OTRNG_INTERACTIVE)) {
+  if (!otrng_key_manager_generate_shared_secret(otr->keys, true)) {
     return ERROR;
   }
 
