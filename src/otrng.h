@@ -227,12 +227,13 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);
 
 INTERNAL void otrng_destroy(otrng_s *otr);
 
-otrng_shared_session_state_s *otrng_get_shared_session_state(otrng_s *otr);
-
 char *
 otrng_generate_session_state_string(const otrng_shared_session_state_s *state);
 
 #ifdef OTRNG_OTRNG_PRIVATE
+
+tstatic otrng_shared_session_state_s
+otrng_get_shared_session_state(otrng_s *otr);
 
 tstatic otrng_in_message_type get_message_type(const string_p message);
 

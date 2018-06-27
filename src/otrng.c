@@ -193,6 +193,13 @@ tstatic void received_extra_sym_key(const otrng_client_conversation_s *conv,
 #endif
 }
 
+tstatic otrng_shared_session_state_s
+otrng_get_shared_session_state(otrng_s *otr) {
+  // TODO: this callback is required, so it will segfault if not provided
+  return otr->conversation->client->callbacks->get_shared_session_state(
+      otr->conversation);
+}
+
 tstatic void maybe_create_keys(const otrng_conversation_state_s *conv) {
   if (!conv->client->keypair) {
     create_privkey_cb_v4(conv);
@@ -690,16 +697,12 @@ static const char *get_shared_session_state(otrng_s *otr) {
     return otr->shared_session_state;
   }
 
-  otrng_shared_session_state_s *state = otrng_get_shared_session_state(otr);
-  otr->shared_session_state = otrng_generate_session_state_string(state);
+  otrng_shared_session_state_s state = otrng_get_shared_session_state(otr);
+  otr->shared_session_state = otrng_generate_session_state_string(&state);
 
-  if (state) {
-    free(state->identifier1);
-    free(state->identifier2);
-    free(state->password);
-  }
-
-  free(state);
+  free(state.identifier1);
+  free(state.identifier2);
+  free(state.password);
 
   return otr->shared_session_state;
 }
@@ -3062,15 +3065,6 @@ API void otrng_v3_init(void) {
   }
 
   otrl_initialized = 1;
-}
-
-otrng_shared_session_state_s *otrng_get_shared_session_state(otrng_s *otr) {
-  if (otr->conversation->client->callbacks &&
-      otr->conversation->client->callbacks->get_shared_session_state) {
-    return otr->conversation->client->callbacks->get_shared_session_state(
-        otr->conversation);
-  }
-  return NULL;
 }
 
 char *

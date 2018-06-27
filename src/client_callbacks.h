@@ -109,7 +109,11 @@ typedef struct otrng_client_callbacks_s {
                                   size_t use_data_len,
                                   const unsigned char *extra_sym_key);
 
-  otrng_shared_session_state_s *(*get_shared_session_state)(
+  /* Provide a shared session state from the underlying network protocol.
+   * This is used to authenticate the DAKE. Optionally, a password can be added
+   * to this shared session state.
+   * The protocol will take care of freeing the members of this struct. */
+  otrng_shared_session_state_s (*get_shared_session_state)(
       const otrng_client_conversation_s *conv);
 } otrng_client_callbacks_s, otrng_client_callbacks_p[1];
 

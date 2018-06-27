@@ -74,14 +74,13 @@ static int test_should_not_heartbeat(int last_sent) { return 0; }
 
 static int test_should_heartbeat(int last_sent) { return 1; }
 
-static otrng_shared_session_state_s *
+static otrng_shared_session_state_s
 get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
-  otrng_shared_session_state_s *ret =
-      malloc(sizeof(otrng_shared_session_state_s));
-
-  ret->identifier1 = otrng_strdup("alice");
-  ret->identifier2 = otrng_strdup("bob");
-  ret->password = NULL;
+  otrng_shared_session_state_s ret = {
+      .identifier1 = otrng_strdup("alice"),
+      .identifier2 = otrng_strdup("bob"),
+      .password = NULL,
+  };
 
   return ret;
 }

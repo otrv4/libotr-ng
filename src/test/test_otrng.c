@@ -280,16 +280,15 @@ void test_otrng_build_prekey_ensemble() {
   otrng_client_state_free(state);
 }
 
-static otrng_shared_session_state_s *
+static otrng_shared_session_state_s
 test_get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
   // TODO: assert if the callback receives the conv it should
 
-  otrng_shared_session_state_s *ret =
-      malloc(sizeof(otrng_shared_session_state_s));
-
-  ret->identifier1 = otrng_strdup("alice");
-  ret->identifier2 = otrng_strdup("bob");
-  ret->password = NULL;
+  otrng_shared_session_state_s ret = {
+      .identifier1 = otrng_strdup("alice"),
+      .identifier2 = otrng_strdup("bob"),
+      .password = NULL,
+  };
 
   return ret;
 }
@@ -313,50 +312,16 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
 
   otrng_s *protocol = set_up(state, ALICE_IDENTITY, 1);
 
-  otrng_shared_session_state_s *session = NULL;
-
+  otrng_shared_session_state_s session;
   session = otrng_get_shared_session_state(protocol);
-  otrng_assert(session != NULL);
-  otrng_assert_cmpmem(session->identifier1, "alice",
-                      strlen(session->identifier1));
-  otrng_assert_cmpmem(session->identifier2, "bob",
-                      strlen(session->identifier2));
-  otrng_assert(session->password == NULL);
 
-  free(session->identifier1);
-  free(session->identifier2);
-  free(session);
-  otrng_user_state_free_all(state->user_state);
-  otrng_client_state_free_all(state);
-  otrng_free_all(protocol);
-}
+  otrng_assert_cmpmem(session.identifier1, "alice",
+                      strlen(session.identifier1));
+  otrng_assert_cmpmem(session.identifier2, "bob", strlen(session.identifier2));
+  otrng_assert(session.password == NULL);
 
-void test_otrng_invokes_null_shared_session_state_callbacks(void) {
-  otrng_client_state_s *state = otrng_client_state_new(NULL);
-  otrng_s *protocol = set_up(state, ALICE_IDENTITY, 1);
-  otrng_shared_session_state_s *session = NULL;
-
-  state->callbacks = NULL;
-  session = otrng_get_shared_session_state(protocol);
-  otrng_assert(session == NULL);
-
-  otrng_client_callbacks_p callbacks = {{
-      NULL, // create_privkey
-      NULL, // create_shared_prekey
-      NULL, // gone_secure
-      NULL, // gone_insecure
-      NULL, // fingerprint_seen
-      NULL, // fingerprint_seen_v3
-      NULL, // smp_ask_for_secret
-      NULL, // smp_ask_for_answer
-      NULL, // smp_update
-      NULL, // received_extra_symm_key
-      NULL, // get_shared_session_state
-  }};
-
-  state->callbacks = callbacks;
-  session = otrng_get_shared_session_state(protocol);
-  otrng_assert(session == NULL);
+  free(session.identifier1);
+  free(session.identifier2);
 
   otrng_user_state_free_all(state->user_state);
   otrng_client_state_free_all(state);
