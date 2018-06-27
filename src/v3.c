@@ -67,28 +67,28 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
     return;
   }
   switch (event) {
-  case OTRNG_SMPEVENT_ASK_FOR_SECRET:
+  case OTRNG_SMP_EVENT_ASK_FOR_SECRET:
     otrng_client_callbacks_smp_ask_for_secret(
         otr->client->callbacks,
         otr->client->client_id); // TODO: @client should be conversation_id
     break;
-  case OTRNG_SMPEVENT_ASK_FOR_ANSWER:
+  case OTRNG_SMP_EVENT_ASK_FOR_ANSWER:
     otrng_client_callbacks_smp_ask_for_answer(
         otr->client->callbacks, question,
         otr->client->client_id); // TODO: @client should be conversation_id
     break;
-  case OTRNG_SMPEVENT_CHEATED:
-  case OTRNG_SMPEVENT_IN_PROGRESS:
-  case OTRNG_SMPEVENT_SUCCESS:
-  case OTRNG_SMPEVENT_FAILURE:
-  case OTRNG_SMPEVENT_ABORT:
-  case OTRNG_SMPEVENT_ERROR:
+  case OTRNG_SMP_EVENT_CHEATED:
+  case OTRNG_SMP_EVENT_IN_PROGRESS:
+  case OTRNG_SMP_EVENT_SUCCESS:
+  case OTRNG_SMP_EVENT_FAILURE:
+  case OTRNG_SMP_EVENT_ABORT:
+  case OTRNG_SMP_EVENT_ERROR:
     otrng_client_callbacks_smp_update(
         otr->client->callbacks, event, progress_percent,
         otr->client->client_id); // TODO: @client should be conversation_id
     break;
   default:
-    // OTRNG_SMPEVENT_NONE. Should not be used.
+    /* OTRNG_SMP_EVENT_NONE. Should not be used. */
     break;
   }
 }
@@ -285,34 +285,34 @@ tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
                                  ConnContext *context,
                                  unsigned short progress_percent,
                                  char *question) {
-  otrng_smp_event_t event = OTRNG_SMPEVENT_NONE;
+  otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
   switch (smp_event) {
   case OTRL_SMPEVENT_ASK_FOR_SECRET:
-    event = OTRNG_SMPEVENT_ASK_FOR_SECRET;
+    event = OTRNG_SMP_EVENT_ASK_FOR_SECRET;
     break;
   case OTRL_SMPEVENT_ASK_FOR_ANSWER:
-    event = OTRNG_SMPEVENT_ASK_FOR_ANSWER;
+    event = OTRNG_SMP_EVENT_ASK_FOR_ANSWER;
     break;
   case OTRL_SMPEVENT_CHEATED:
-    event = OTRNG_SMPEVENT_CHEATED;
+    event = OTRNG_SMP_EVENT_CHEATED;
     break;
   case OTRL_SMPEVENT_IN_PROGRESS:
-    event = OTRNG_SMPEVENT_IN_PROGRESS;
+    event = OTRNG_SMP_EVENT_IN_PROGRESS;
     break;
   case OTRL_SMPEVENT_SUCCESS:
-    event = OTRNG_SMPEVENT_SUCCESS;
+    event = OTRNG_SMP_EVENT_SUCCESS;
     break;
   case OTRL_SMPEVENT_FAILURE:
-    event = OTRNG_SMPEVENT_FAILURE;
+    event = OTRNG_SMP_EVENT_FAILURE;
     break;
   case OTRL_SMPEVENT_ABORT:
-    event = OTRNG_SMPEVENT_ABORT;
+    event = OTRNG_SMP_EVENT_ABORT;
     break;
   case OTRL_SMPEVENT_ERROR:
-    event = OTRNG_SMPEVENT_ERROR;
+    event = OTRNG_SMP_EVENT_ERROR;
     break;
   case OTRL_SMPEVENT_NONE:
-    event = OTRNG_SMPEVENT_NONE;
+    event = OTRNG_SMP_EVENT_NONE;
     break;
   }
 

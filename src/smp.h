@@ -30,6 +30,12 @@
 #define SMP_VERSION 0x01
 #define SMP_MIN_SECRET_BYTES (1 + 64 * 2 + 8)
 
+#define SMP_ZERO_PROGRESS 0
+#define SMP_QUARTER_PROGRESS 25
+#define SMP_HALF_PROGRESS 50
+#define SMP_HALF_QUARTER_PROGRESS 75
+#define SMP_TOTAL_PROGRESS 100
+
 typedef enum {
   SMPSTATE_EXPECT1,
   SMPSTATE_EXPECT2,
@@ -80,7 +86,7 @@ typedef struct smp_msg_4_s {
 
 typedef struct smp_context_s {
   smp_state_t state;
-  unsigned char *secret; /* already hashed: 64 bytes long */
+  uint8_t *secret; /* already hashed: 64 bytes long */
   ec_scalar_p a2, a3, b3;
   ec_point_p g2, g3;
   ec_point_p g3a, g3b;
@@ -113,7 +119,6 @@ INTERNAL void otrng_smp_msg_1_destroy(smp_msg_1_s *msg);
 INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
                                                       smp_context_p smp);
 
-// TODO: @refactoring should be exposed?
 INTERNAL otrng_smp_event_t otrng_process_smp_msg1(const tlv_s *tlv,
                                                   smp_context_p smp);
 

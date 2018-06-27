@@ -50,7 +50,7 @@ INTERNAL void otrng_smp_context_init(smp_context_p smp) {
   otrng_ec_bzero(smp->pa_pb, ED448_POINT_BYTES);
   otrng_ec_bzero(smp->qa_qb, ED448_POINT_BYTES);
 
-  smp->progress = 0;
+  smp->progress = SMP_ZERO_PROGRESS;
   smp->msg1 = NULL;
 }
 
@@ -1130,7 +1130,7 @@ tstatic otrng_smp_event_t receive_smp_msg_1(const tlv_s *tlv,
   smp_msg_1_p msg_1;
 
   if (smp->state != SMPSTATE_EXPECT1) {
-    return OTRNG_SMPEVENT_ABORT;
+    return OTRNG_SMP_EVENT_ABORT;
   }
 
   do {
@@ -1153,11 +1153,11 @@ tstatic otrng_smp_event_t receive_smp_msg_1(const tlv_s *tlv,
 
     smp_msg_1_copy(smp->msg1, msg_1);
     otrng_smp_msg_1_destroy(msg_1);
-    return OTRNG_SMPEVENT_NONE;
+    return OTRNG_SMP_EVENT_NONE;
   } while (0);
 
   otrng_smp_msg_1_destroy(msg_1);
-  return OTRNG_SMPEVENT_ERROR;
+  return OTRNG_SMP_EVENT_ERROR;
 }
 
 INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
@@ -1170,7 +1170,7 @@ INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
 
   generate_smp_msg_2(msg_2, smp->msg1, smp);
   if (!smp_msg_2_asprintf(&buff, &bufflen, msg_2)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   smp_msg_2_destroy(msg_2);
@@ -1181,37 +1181,37 @@ INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
   buff = NULL;
 
   if (!to_send) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   smp->state = SMPSTATE_EXPECT3;
-  smp->progress = 50;
-  return OTRNG_SMPEVENT_NONE;
+  smp->progress = SMP_HALF_PROGRESS;
+  return OTRNG_SMP_EVENT_NONE;
 }
 
 tstatic otrng_smp_event_t receive_smp_msg_2(smp_msg_2_s *msg_2,
                                             const tlv_s *tlv,
                                             smp_context_p smp) {
   if (smp->state != SMPSTATE_EXPECT2) {
-    return OTRNG_SMPEVENT_ERROR; // TODO: @smp this should abort
+    return OTRNG_SMP_EVENT_ABORT;
   }
 
   if (!smp_msg_2_deserialize(msg_2, tlv)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   if (!smp_msg_2_valid_points(msg_2)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   goldilocks_448_point_scalarmul(smp->g2, msg_2->g2b, smp->a2);
   goldilocks_448_point_scalarmul(smp->g3, msg_2->g3b, smp->a3);
 
   if (!smp_msg_2_valid_zkp(msg_2, smp)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
-  return OTRNG_SMPEVENT_NONE;
+  return OTRNG_SMP_EVENT_NONE;
 }
 
 tstatic otrng_smp_event_t reply_with_smp_msg_3(tlv_s **to_send,
@@ -1222,11 +1222,11 @@ tstatic otrng_smp_event_t reply_with_smp_msg_3(tlv_s **to_send,
   uint8_t *buff = NULL;
 
   if (!generate_smp_msg_3(msg_3, msg_2, smp)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   if (!smp_msg_3_asprintf(&buff, &bufflen, msg_3)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   smp_msg_3_destroy(msg_3);
@@ -1237,36 +1237,36 @@ tstatic otrng_smp_event_t reply_with_smp_msg_3(tlv_s **to_send,
   buff = NULL;
 
   if (!*to_send) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   smp->state = SMPSTATE_EXPECT4;
-  smp->progress = 50;
-  return OTRNG_SMPEVENT_NONE;
+  smp->progress = SMP_HALF_PROGRESS;
+
+  return OTRNG_SMP_EVENT_NONE;
 }
 
 tstatic otrng_smp_event_t receive_smp_msg_3(smp_msg_3_s *msg_3,
                                             const tlv_s *tlv,
                                             smp_context_p smp) {
   if (smp->state != SMPSTATE_EXPECT3) {
-    return OTRNG_SMPEVENT_ERROR; // TODO: @smp this errors, though it should
-                                 // abort
+    return OTRNG_SMP_EVENT_ABORT;
   }
 
   if (!smp_msg_3_deserialize(msg_3, tlv)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   if (!smp_msg_3_validate_points(msg_3)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   if (!smp_msg_3_validate_zkp(msg_3, smp)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
-  smp->progress = 75;
-  return OTRNG_SMPEVENT_NONE;
+  smp->progress = SMP_HALF_QUARTER_PROGRESS;
+  return OTRNG_SMP_EVENT_NONE;
 }
 
 tstatic otrng_smp_event_t reply_with_smp_msg_4(tlv_s **to_send,
@@ -1277,11 +1277,11 @@ tstatic otrng_smp_event_t reply_with_smp_msg_4(tlv_s **to_send,
   uint8_t *buff = NULL;
 
   if (!generate_smp_msg_4(msg_4, msg_3, smp)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   if (!smp_msg_4_asprintf(&buff, &bufflen, msg_4)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_4, bufflen, buff);
@@ -1290,45 +1290,45 @@ tstatic otrng_smp_event_t reply_with_smp_msg_4(tlv_s **to_send,
   buff = NULL;
 
   if (!*to_send) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   /* Validates SMP */
-  smp->progress = 100;
+  smp->progress = SMP_TOTAL_PROGRESS;
   smp->state = SMPSTATE_EXPECT1;
   if (!smp_is_valid_for_msg_3(msg_3, smp)) {
-    return OTRNG_SMPEVENT_FAILURE;
+    return OTRNG_SMP_EVENT_FAILURE;
   }
 
-  return OTRNG_SMPEVENT_SUCCESS;
+  return OTRNG_SMP_EVENT_SUCCESS;
 }
 
 tstatic otrng_smp_event_t receive_smp_msg_4(smp_msg_4_s *msg_4,
                                             const tlv_s *tlv,
                                             smp_context_p smp) {
   if (smp->state != SMPSTATE_EXPECT4) {
-    return OTRNG_SMPEVENT_ERROR; // TODO: @smp this should abort
+    return OTRNG_SMP_EVENT_ABORT;
   }
 
   if (!smp_msg_4_deserialize(msg_4, tlv)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   if (!otrng_ec_point_valid(msg_4->rb)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
   if (!smp_msg_4_validate_zkp(msg_4, smp)) {
-    return OTRNG_SMPEVENT_ERROR;
+    return OTRNG_SMP_EVENT_ERROR;
   }
 
-  smp->progress = 100;
+  smp->progress = SMP_TOTAL_PROGRESS;
   smp->state = SMPSTATE_EXPECT1;
   if (!smp_is_valid_for_msg_4(msg_4, smp)) {
-    return OTRNG_SMPEVENT_FAILURE;
+    return OTRNG_SMP_EVENT_FAILURE;
   }
 
-  return OTRNG_SMPEVENT_SUCCESS;
+  return OTRNG_SMP_EVENT_SUCCESS;
 }
 
 INTERNAL otrng_smp_event_t otrng_process_smp_msg1(const tlv_s *tlv,
@@ -1336,8 +1336,8 @@ INTERNAL otrng_smp_event_t otrng_process_smp_msg1(const tlv_s *tlv,
   otrng_smp_event_t event = receive_smp_msg_1(tlv, smp);
 
   if (!event) {
-    smp->progress = 25;
-    event = OTRNG_SMPEVENT_ASK_FOR_ANSWER;
+    smp->progress = SMP_QUARTER_PROGRESS;
+    event = OTRNG_SMP_EVENT_ASK_FOR_ANSWER;
   }
 
   return event;

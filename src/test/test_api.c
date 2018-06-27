@@ -895,7 +895,7 @@ void test_api_smp(void) {
 
   free_message_and_response(response_to_alice, &to_send);
 
-  // This will be called by bob when the OTRNG_SMPEVENT_ASK_FOR_SECRET is
+  // This will be called by Bob when the OTRNG_SMPEVENT_ASK_FOR_SECRET is
   // triggered.
   otrng_assert_is_success(
       otrng_smp_continue(&to_send, (uint8_t *)secret, strlen(secret), bob));
