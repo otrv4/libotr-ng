@@ -64,6 +64,12 @@
 #define DATA_MESSAGE_MIN_BYTES                                                 \
   (DAKE_HEADER_BYTES + 1 + 4 + 4 + 4 + ED448_POINT_BYTES + DATA_MSG_NONCE_BYTES)
 
+/* header + flags + previous chain number + ratchet id + message id + public
+ * ecdh key + DH MPI + size + nonce */
+#define DATA_MESSAGE_MAX_BYTES                                                 \
+  (DAKE_HEADER_BYTES + 1 + 4 + 4 + 4 + ED448_POINT_BYTES + DH_MPI_BYTES + 4 +  \
+   DATA_MSG_NONCE_BYTES)
+
 #define MSGFLAGS_IGNORE_UNREADABLE 0x01
 
 #endif

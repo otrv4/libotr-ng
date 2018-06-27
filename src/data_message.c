@@ -81,9 +81,7 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
 
 INTERNAL otrng_err otrng_data_message_body_asprintf(
     uint8_t **body, size_t *bodylen, const data_message_s *data_msg) {
-  // TODO: @refactoring why is DH_MPI_BYTES + 4 not on the
-  // DATA_MESSAGE_MIN_BYTES const?
-  size_t s = DATA_MESSAGE_MIN_BYTES + DH_MPI_BYTES + 4 + data_msg->enc_msg_len;
+  size_t s = DATA_MESSAGE_MAX_BYTES + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
   if (!dst) {
     return ERROR;
