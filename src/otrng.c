@@ -1220,6 +1220,7 @@ tstatic otrng_err receive_prekey_ensemble(const prekey_ensemble_s *ensemble,
 
   // Set their ephemeral keys, instance tag, and their_prekeys_id
   if (!prekey_message_received(ensemble->message, NOTIF_NONE, otr)) {
+    // TODO: if the notif here is MALFORMED, we should send an error..
     return ERROR;
   }
 
@@ -1754,6 +1755,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
   if (!received_instance_tag(auth->sender_instance_tag, otr)) {
     otrng_error_message(dst, ERR_MSG_MALFORMED);
     otrng_dake_auth_r_destroy(auth);
+    return ERROR;
   }
 
   if (!valid_auth_r_message(auth, otr)) {
