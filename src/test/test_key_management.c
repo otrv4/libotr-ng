@@ -28,7 +28,7 @@ void test_derive_ratchet_keys() {
   root_key_p root_key;
   memset(root_key, 0, sizeof root_key);
 
-  key_manager_derive_ratchet_keys(manager, OTRNG_SENDING);
+  key_manager_derive_ratchet_keys(manager, 's');
 
   root_key_p expected_root_key;
   sending_chain_key_p expected_chain_key_s;
@@ -89,7 +89,7 @@ void test_calculate_extra_symm_key() {
 
   memcpy(s, manager->current->chain_s, sizeof(sending_chain_key_p));
 
-  calculate_extra_key(manager, OTRNG_SENDING);
+  calculate_extra_key(manager, 's');
   otrng_assert_cmpmem(expected_extra_key, manager->extra_symmetric_key,
                       EXTRA_SYMMETRIC_KEY_BYTES);
 

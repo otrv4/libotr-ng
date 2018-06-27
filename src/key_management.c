@@ -468,8 +468,7 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
   return SUCCESS;
 }
 
-tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
-                                    otrng_participant_action action) {
+tstatic otrng_err enter_new_ratchet(key_manager_s *manager, const char action) {
   k_ecdh_p k_ecdh;
 
   /* K_ecdh = ECDH(our_ecdh.secret, their_ecdh) */
@@ -501,9 +500,9 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
   return SUCCESS;
 }
 
-tstatic otrng_err rotate_keys(key_manager_s *manager,
-                              otrng_participant_action action) {
-  if (action == OTRNG_SENDING) {
+tstatic otrng_err rotate_keys(key_manager_s *manager, const char action) {
+  assert(action == 's' || action == 'r');
+  if (action == 's') {
     /* our_ecdh = generateECDH()
        if i % 3 == 0, our_dh = generateDH() */
     if (!otrng_key_manager_generate_ephemeral_keys(manager)) {
@@ -517,7 +516,7 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
     return ERROR;
   }
 
-  if (action == OTRNG_RECEIVING) {
+  if (action == 'r') {
     otrng_ec_scalar_destroy(manager->our_ecdh->priv);
     if (manager->i % 3 == 0) {
       otrng_dh_priv_key_destroy(manager->our_dh);
@@ -534,7 +533,7 @@ tstatic otrng_err rotate_keys(key_manager_s *manager,
 }
 
 tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
-                                             otrng_participant_action action) {
+                                             const char action) {
   /* root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
      root_key[i-1], K) root_key[i] = KDF_1(usage_root_key || root_key[i-1] || K,
      64)
@@ -558,9 +557,10 @@ tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
   /* chain_key_purpose[i][j] = KDF_1(usage_chain_key || root_key[i-1] || K, 64)
      @secret: should be deleted when the next chain key is derived
   */
-  if (action == OTRNG_SENDING) {
+  assert(action == 's' || action == 'r');
+  if (action == 's') {
     hash_final(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
-  } else if (action == OTRNG_RECEIVING) {
+  } else if (action == 'r') {
     hash_final(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
   }
 
@@ -582,16 +582,16 @@ static uint8_t usage_message_key = 0x17;
 static uint8_t usage_mac_key = 0x18;
 static uint8_t usage_extra_symm_key = 0x20;
 
-tstatic void derive_next_chain_key(key_manager_s *manager,
-                                   otrng_participant_action action) {
+tstatic void derive_next_chain_key(key_manager_s *manager, const char action) {
   /* chain_key_s[i-1][j+1] = KDF_1(usage_next_chain_key || chain_key_s[i-1][j],
    * 64) */
-  if (action == OTRNG_SENDING) {
+  assert(action == 's' || action == 'r');
+  if (action == 's') {
     shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key_p),
                    usage_next_chain_key, manager->current->chain_s,
                    sizeof(sending_chain_key_p));
 
-  } else if (action == OTRNG_RECEIVING) {
+  } else if (action == 'r') {
     shake_256_kdf1(manager->current->chain_r, sizeof(receiving_chain_key_p),
                    usage_next_chain_key, manager->current->chain_r,
                    sizeof(receiving_chain_key_p));
@@ -601,17 +601,18 @@ tstatic void derive_next_chain_key(key_manager_s *manager,
 tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                                             m_mac_key_p mac_key,
                                             key_manager_s *manager,
-                                            otrng_participant_action action) {
+                                            const char action) {
   /* MKenc, MKmac = derive_enc_mac_keys(chain_key_s[i-1][j])
      MKenc = KDF_1(usage_message_key || chain_key, 32)
      MKmac = KDF_1(usage_mac_key || MKenc, 64)
   */
 
-  if (action == OTRNG_SENDING) {
+  assert(action == 's' || action == 'r');
+  if (action == 's') {
     shake_256_kdf1(enc_key, sizeof(m_enc_key_p), usage_message_key,
                    manager->current->chain_s, sizeof(sending_chain_key_p));
 
-  } else if (action == OTRNG_RECEIVING) {
+  } else if (action == 'r') {
     shake_256_kdf1(enc_key, sizeof(m_enc_key_p), usage_message_key,
                    manager->current->chain_r, sizeof(receiving_chain_key_p));
   }
@@ -619,8 +620,7 @@ tstatic void derive_encryption_and_mac_keys(m_enc_key_p enc_key,
                  sizeof(m_enc_key_p));
 }
 
-tstatic void calculate_extra_key(key_manager_s *manager,
-                                 otrng_participant_action action) {
+tstatic void calculate_extra_key(key_manager_s *manager, const char action) {
   goldilocks_shake256_ctx_p hd;
   uint8_t extra_key_buff[EXTRA_SYMMETRIC_KEY_BYTES];
   uint8_t magic[1] = {0xFF};
@@ -630,9 +630,10 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 
   /* extra_symm_key = KDF_1(usage_extra_symm_key || 0xFF || chain_key_s[i-1][j],
    * 32) */
-  if (action == OTRNG_SENDING) {
+  assert(action == 's' || action == 'r');
+  if (action == 's') {
     hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
-  } else if (action == OTRNG_SENDING) {
+  } else if (action == 'r') {
     hash_update(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
   }
   hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
@@ -764,10 +765,10 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
 
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
-    int max_skip, int message_id, otrng_participant_action action,
-    otrng_notif notif) {
+    int max_skip, int message_id, const char action, otrng_notif notif) {
 
-  if (action == OTRNG_RECEIVING) {
+  assert(action == 's' || action == 'r');
+  if (action == 'r') {
     if (!store_enc_keys(enc_key, manager, max_skip, message_id,
                         OTRNG_CHAIN_RATCHET, notif)) {
       return ERROR;
@@ -795,12 +796,13 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
 
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, int max_skip, int message_id, int previous_n,
-    otrng_participant_action action, otrng_notif notif) {
+    const char action, otrng_notif notif) {
   /* Derive new ECDH and DH keys */
   m_enc_key_p enc_key;
 
   if (message_id == 0) {
-    if (action == OTRNG_RECEIVING) {
+    assert(action == 's' || action == 'r');
+    if (action == 'r') {
       /* Store any message keys from the previous DH Ratchet */
       if (!store_enc_keys(enc_key, manager, max_skip, previous_n,
                           OTRNG_DH_RATCHET, notif)) {

@@ -29,11 +29,6 @@
 #include "shared.h"
 
 typedef enum {
-  OTRNG_SENDING = 0,
-  OTRNG_RECEIVING = 1,
-} otrng_participant_action;
-
-typedef enum {
   OTRNG_DH_RATCHET = 0,
   OTRNG_CHAIN_RATCHET = 1,
 } otrng_ratchet_type;
@@ -237,12 +232,11 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
  * @param [max_skip]    The maximum number of enc_keys to be stored.
  * @param [message_id]  The receiving message id (j).
  * @param [manager]     The key manager.
- * @param [action]      Defines if this is the sending or receiving chain.
+ * @param [action]      's' for sending chain, 'r' for receiving
  */
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
-    int max_skip, int message_id, otrng_participant_action action,
-    otrng_notif notif);
+    int max_skip, int message_id, const char action, otrng_notif notif);
 
 /**
  * @brief Derive the dh ratchet keys.
@@ -250,11 +244,11 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
  * @param [manager]     The key manager.
  * @param [max_skip]    The maximum number of enc_keys to be stored.
  * @param [message_id]  The receiving message id (j).
- * @param [action]      Defines if this is the sending or receiving chain.
+ * @param [action]      's' for sending chain, 'r' for receiving
  */
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, int max_skip, int message_id, int previous_n,
-    otrng_participant_action action, otrng_notif notif);
+    const char action, otrng_notif notif);
 
 /**
  * @brief Store old mac keys to reveal later.
@@ -293,10 +287,10 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager);
  * @brief Derive ratchet keys.
  *
  * @param [manager]   The key manager.
- * @param [action]    Defines if this is the sending or receiving chain.
+ * @param [action]    's' for sending chain, 'r' for receiving
  */
 tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
-                                             otrng_participant_action action);
+                                             const char action);
 
 /**
  * @brief Calculate the secure session id.
@@ -309,10 +303,9 @@ tstatic void calculate_ssid(key_manager_s *manager);
  * @brief Calculate the extra symmetric key.
  *
  * @param [manager]   The key manager.
- * @param [action]    Defines if this is the sending or receiving chain.
+ * @param [action]    's' for sending chain, 'r' for receiving
  */
-tstatic void calculate_extra_key(key_manager_s *manager,
-                                 otrng_participant_action action);
+tstatic void calculate_extra_key(key_manager_s *manager, const char action);
 
 #endif
 

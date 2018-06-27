@@ -2126,14 +2126,14 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       /* if a new ratchet */
       if (!otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->conversation->client->max_stored_msg_keys,
-              msg->message_id, msg->previous_chain_n, OTRNG_RECEIVING, notif)) {
+              msg->message_id, msg->previous_chain_n, 'r', notif)) {
         return ERROR;
       }
 
       otrng_key_manager_derive_chain_keys(
           enc_key, mac_key, otr->keys,
-          otr->conversation->client->max_stored_msg_keys, msg->message_id,
-          OTRNG_RECEIVING, notif);
+          otr->conversation->client->max_stored_msg_keys, msg->message_id, 'r',
+          notif);
       otr->keys->k++;
     }
 
@@ -2476,7 +2476,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(
           otr->keys, otr->conversation->client->max_stored_msg_keys,
-          otr->keys->j, 0, OTRNG_SENDING, notif)) {
+          otr->keys->j, 0, 's', notif)) {
     return ERROR;
   }
 
@@ -2486,7 +2486,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   otrng_key_manager_derive_chain_keys(
       enc_key, mac_key, otr->keys,
-      otr->conversation->client->max_stored_msg_keys, 0, OTRNG_SENDING, notif);
+      otr->conversation->client->max_stored_msg_keys, 0, 's', notif);
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {
