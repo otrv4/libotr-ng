@@ -1304,77 +1304,38 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   return SUCCESS;
 }
 
+static char *build_error_message(const char *error_code,
+                                 const char *error_name) {
+  size_t s = strlen(ERROR_PREFIX) + strlen(error_code) + strlen(error_name) + 1;
+  char *err_msg = malloc(s);
+  if (!err_msg) {
+    return NULL;
+  }
+
+  strcpy(err_msg, ERROR_PREFIX);
+  strcpy(err_msg + strlen(ERROR_PREFIX), error_code);
+  strcat(err_msg, error_name);
+
+  return err_msg;
+}
+
 // TODO: @instance_tags check instance tags
 tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
-  char *msg = NULL;
-  char *err_msg = NULL;
-
   switch (err_code) {
   case ERR_NONE:
     break;
   case ERR_MSG_UNREADABLE:
-    msg = otrng_strdup("OTRNG_ERR_MSG_UNREADABLE");
-    err_msg =
-        malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_1) + strlen(msg) + 1);
-    if (!err_msg) {
-      free(msg);
-      return;
-    }
-
-    strcpy(err_msg, ERROR_PREFIX);
-    strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_1);
-    strcat(err_msg, msg);
-    free(msg);
-
-    *to_send = err_msg;
+    *to_send = build_error_message(ERROR_CODE_1, "OTRNG_ERR_MSG_UNREADABLE");
     break;
   case ERR_MSG_NOT_PRIVATE:
-    msg = otrng_strdup("OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
-    err_msg =
-        malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_2) + strlen(msg) + 1);
-    if (!err_msg) {
-      free(msg);
-      return;
-    }
-
-    strcpy(err_msg, ERROR_PREFIX);
-    strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_2);
-    strcat(err_msg, msg);
-    free(msg);
-
-    *to_send = err_msg;
+    *to_send =
+        build_error_message(ERROR_CODE_2, "OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
     break;
   case ERR_MSG_ENCRYPTION_ERROR:
-    msg = otrng_strdup("OTRNG_ERR_ENCRYPTION_ERROR");
-    err_msg =
-        malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_3) + strlen(msg) + 1);
-    if (!err_msg) {
-      free(msg);
-      return;
-    }
-
-    strcpy(err_msg, ERROR_PREFIX);
-    strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_3);
-    strcat(err_msg, msg);
-    free(msg);
-
-    *to_send = err_msg;
+    *to_send = build_error_message(ERROR_CODE_3, "OTRNG_ERR_ENCRYPTION_ERROR");
     break;
   case ERR_MSG_MALFORMED:
-    msg = otrng_strdup("OTRNG_ERR_MALFORMED");
-    err_msg =
-        malloc(strlen(ERROR_PREFIX) + strlen(ERROR_CODE_4) + strlen(msg) + 1);
-    if (!err_msg) {
-      free(msg);
-      return;
-    }
-
-    strcpy(err_msg, ERROR_PREFIX);
-    strcpy(err_msg + strlen(ERROR_PREFIX), ERROR_CODE_4);
-    strcat(err_msg, msg);
-    free(msg);
-
-    *to_send = err_msg;
+    *to_send = build_error_message(ERROR_CODE_4, "OTRNG_ERR_MALFORMED");
     break;
   }
 }
