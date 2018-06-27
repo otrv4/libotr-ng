@@ -2903,6 +2903,10 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
         get_my_client_profile(otr), otr->their_client_profile, question, q_len,
         answer, answer_len, otr->keys->ssid, otr->smp, otr->conversation);
 
+    if (!smp_start_tlv) {
+      return ERROR;
+    }
+
     tlv_list_s *tlvs = otrng_tlv_list_one(smp_start_tlv);
     if (!tlvs) {
       return ERROR;
