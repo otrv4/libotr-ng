@@ -2325,18 +2325,24 @@ tstatic otrng_err receive_error_message(otrng_response_s *response,
   return ERROR;
 }
 
-tstatic otrng_in_message_type get_message_type(const string_p message) {
+#define MSG_PLAINTEXT 1
+#define MSG_TAGGED_PLAINTEXT 2
+#define MSG_QUERY_STRING 3
+#define MSG_OTR_ENCODED 4
+#define MSG_OTR_ERROR 5
+
+tstatic int get_message_type(const string_p message) {
   if (message_contains_tag(message)) {
-    return IN_MSG_TAGGED_PLAINTEXT;
+    return MSG_TAGGED_PLAINTEXT;
   } else if (message_is_query(message)) {
-    return IN_MSG_QUERY_STRING;
+    return MSG_QUERY_STRING;
   } else if (message_is_otr_error(message)) {
-    return IN_MSG_OTR_ERROR;
+    return MSG_OTR_ERROR;
   } else if (message_is_otr_encoded(message)) {
-    return IN_MSG_OTR_ENCODED;
+    return MSG_OTR_ENCODED;
   }
 
-  return IN_MSG_PLAINTEXT;
+  return MSG_PLAINTEXT;
 }
 
 tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
@@ -2348,23 +2354,20 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
   string_p str = (void *)message;
 
   switch (get_message_type(message)) {
-  case IN_MSG_NONE:
-    return ERROR;
-
-  case IN_MSG_PLAINTEXT:
+  case MSG_PLAINTEXT:
     receive_plaintext(response, message, otr);
     return SUCCESS;
 
-  case IN_MSG_TAGGED_PLAINTEXT:
+  case MSG_TAGGED_PLAINTEXT:
     return receive_tagged_plaintext(response, message, otr);
 
-  case IN_MSG_QUERY_STRING:
+  case MSG_QUERY_STRING:
     return receive_query_message(response, message, otr);
 
-  case IN_MSG_OTR_ENCODED:
+  case MSG_OTR_ENCODED:
     return receive_encoded_message(response, notif, message, otr);
 
-  case IN_MSG_OTR_ERROR:
+  case MSG_OTR_ERROR:
     memmove(str, str + 12, strlen(message) - 12 + 1);
     return receive_error_message(response, str);
   }

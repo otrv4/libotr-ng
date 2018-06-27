@@ -134,15 +134,6 @@ typedef struct otrng_server_s {
 // clang-format on
 
 typedef enum {
-  IN_MSG_NONE = 0,
-  IN_MSG_PLAINTEXT = 1,
-  IN_MSG_TAGGED_PLAINTEXT = 2,
-  IN_MSG_QUERY_STRING = 3,
-  IN_MSG_OTR_ENCODED = 4,
-  IN_MSG_OTR_ERROR = 5
-} otrng_in_message_type;
-
-typedef enum {
   OTRNG_WARN_NONE = 0,
   OTRNG_WARN_RECEIVED_UNENCRYPTED,
   OTRNG_WARN_RECEIVED_NOT_VALID,
@@ -229,7 +220,7 @@ otrng_generate_session_state_string(const otrng_shared_session_state_s *state);
 tstatic otrng_shared_session_state_s
 otrng_get_shared_session_state(otrng_s *otr);
 
-tstatic otrng_in_message_type get_message_type(const string_p message);
+tstatic int get_message_type(const string_p message);
 
 tstatic otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
                                  const size_t bufflen);
