@@ -83,7 +83,7 @@ INTERNAL otrng_err otrng_dake_identity_message_asprintf(
     return ERROR;
   }
 
-  size_t s = IDENTITY_MIN_BYTES + profile_len;
+  size_t s = IDENTITY_MAX_BYTES + profile_len;
   uint8_t *buff = malloc(s);
   if (!buff) {
     free(profile);
@@ -209,7 +209,7 @@ INTERNAL otrng_err otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
     return ERROR;
   }
 
-  size_t s = AUTH_R_MIN_BYTES + our_profile_len;
+  size_t s = AUTH_R_MAX_BYTES + our_profile_len;
 
   uint8_t *buff = malloc(s);
   if (!buff) {
@@ -458,7 +458,7 @@ INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_prekey_message_s *prekey_message) {
 
-  size_t s = PRE_KEY_MIN_BYTES;
+  size_t s = PRE_KEY_MAX_BYTES;
   uint8_t *buff = malloc(s);
   if (!buff) {
     return ERROR;
@@ -578,7 +578,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
     return ERROR;
   }
 
-  size_t s = NON_INT_AUTH_BYTES + our_profile_len;
+  size_t s = NON_INT_AUTH_MAX_BYTES + our_profile_len;
   uint8_t *buff = malloc(s);
   if (!buff) {
     free(our_profile);
@@ -755,7 +755,7 @@ INTERNAL otrng_bool otrng_valid_received_values(
 }
 
 #define MAX_T_LENGTH                                                           \
-  (3 * HASH_BYTES + 2 * ED448_POINT_BYTES + 2 * DH_MPI_BYTES +                 \
+  (3 * HASH_BYTES + 2 * ED448_POINT_BYTES + 2 * DH_MPI_MAX_BYTES +             \
    ED448_SHARED_PREKEY_BYTES)
 
 tstatic otrng_err build_rsign_tag(
@@ -767,7 +767,7 @@ tstatic otrng_err build_rsign_tag(
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
-  uint8_t ser_i_dh[DH_MPI_BYTES], ser_r_dh[DH_MPI_BYTES];
+  uint8_t ser_i_dh[DH_MPI_MAX_BYTES], ser_r_dh[DH_MPI_MAX_BYTES];
   size_t ser_i_dh_len = 0, ser_r_dh_len = 0;
 
   uint8_t hash_ser_i_profile[HASH_BYTES];
@@ -781,12 +781,12 @@ tstatic otrng_err build_rsign_tag(
   otrng_serialize_ec_point(ser_i_ecdh, i_ecdh);
   otrng_serialize_ec_point(ser_r_ecdh, r_ecdh);
 
-  if (!otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_BYTES, &ser_i_dh_len,
+  if (!otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_MAX_BYTES, &ser_i_dh_len,
                                      i_dh)) {
     return ERROR;
   }
 
-  if (!otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_BYTES, &ser_r_dh_len,
+  if (!otrng_serialize_dh_public_key(ser_r_dh, DH_MPI_MAX_BYTES, &ser_r_dh_len,
                                      r_dh)) {
     return ERROR;
   }

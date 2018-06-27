@@ -966,6 +966,7 @@ non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
   auth->sender_instance_tag = otr->our_instance_tag;
   auth->receiver_instance_tag = otr->their_instance_tag;
   otrng_client_profile_copy(auth->profile, get_my_client_profile(otr));
+
   // TODO: is this set?
   otrng_ec_point_copy(auth->X, our_ecdh(otr));
   auth->A = otrng_dh_mpi_copy(our_dh(otr));
@@ -1393,7 +1394,9 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   };
 
   const otrng_dake_participant_data_s responder = {
-      .client_profile = auth->profile, .ecdh = *(auth->X), .dh = auth->A,
+      .client_profile = auth->profile,
+      .ecdh = *(auth->X),
+      .dh = auth->A,
   };
 
   uint8_t *phi = NULL;
@@ -1751,7 +1754,9 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   }
 
   const otrng_dake_participant_data_s responder = {
-      .client_profile = auth->profile, .ecdh = *(auth->X), .dh = auth->A,
+      .client_profile = auth->profile,
+      .ecdh = *(auth->X),
+      .dh = auth->A,
   };
 
   unsigned char *t = NULL;

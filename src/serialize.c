@@ -92,7 +92,7 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
 INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
                                                  size_t *written,
                                                  const dh_public_key_p pub) {
-  if (dstlen < DH_MPI_BYTES) {
+  if (dstlen < DH_MPI_MAX_BYTES) {
     return ERROR;
   }
 

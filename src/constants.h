@@ -35,17 +35,21 @@
 #define HASH_BYTES 64
 
 /* size of IDENTITY_MESSAGE without client_profile */
-#define IDENTITY_MIN_BYTES                                                     \
-  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES)
-#define PRE_KEY_MIN_BYTES (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES)
+#define IDENTITY_MAX_BYTES                                                     \
+  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES)
+#define PRE_KEY_MAX_BYTES                                                      \
+  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES)
 
-#define AUTH_R_MIN_BYTES                                                       \
-  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES + RING_SIG_BYTES)
+#define AUTH_R_MAX_BYTES                                                       \
+  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES + RING_SIG_BYTES)
 
-#define NON_INT_AUTH_BYTES                                                     \
-  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_BYTES + RING_SIG_BYTES +     \
+#define NON_INT_AUTH_MAX_BYTES                                                 \
+  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES + RING_SIG_BYTES + \
    3 * 4 + HASH_BYTES)
 
+// TODO: This is wrong if a DH key must not have leading zeros.
+// Otherwise, we should just use DH_MPI_MAX_BYTES to remind us that is the
+// upper bound.
 #define DH_KEY_BYTES 384
 #define BRACE_KEY_BYTES 32
 #define DATA_MSG_NONCE_BYTES crypto_secretbox_NONCEBYTES
@@ -67,8 +71,8 @@
 /* header + flags + previous chain number + ratchet id + message id + public
  * ecdh key + DH MPI + size + nonce */
 #define DATA_MESSAGE_MAX_BYTES                                                 \
-  (DAKE_HEADER_BYTES + 1 + 4 + 4 + 4 + ED448_POINT_BYTES + DH_MPI_BYTES + 4 +  \
-   DATA_MSG_NONCE_BYTES)
+  (DAKE_HEADER_BYTES + 1 + 4 + 4 + 4 + ED448_POINT_BYTES + DH_MPI_MAX_BYTES +  \
+   4 + DATA_MSG_NONCE_BYTES)
 
 #define MSGFLAGS_IGNORE_UNREADABLE 0x01
 

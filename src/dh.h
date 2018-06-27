@@ -32,7 +32,7 @@
 #define DH3072_MOD_LEN_BITS 3072
 // TODO: we have this constant defined twice
 #define DH3072_MOD_LEN_BYTES 384
-#define DH_MPI_BYTES (4 + DH3072_MOD_LEN_BYTES)
+#define DH_MPI_MAX_BYTES (4 + DH3072_MOD_LEN_BYTES)
 
 typedef gcry_mpi_t dh_mpi_p;
 typedef dh_mpi_p dh_private_key_p, dh_public_key_p;
