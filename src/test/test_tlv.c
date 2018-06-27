@@ -20,7 +20,7 @@
 
 #include "../tlv.h"
 
-void assert_tlv_structure(tlv_list_s *tlvs, tlv_type_t type, uint16_t len,
+void assert_tlv_structure(tlv_list_s *tlvs, otrng_tlv_type_t type, uint16_t len,
                           uint8_t *data, bool next) {
   otrng_assert(tlvs);
   otrng_assert(tlvs->data);

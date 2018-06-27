@@ -36,18 +36,18 @@ typedef enum {
   OTRNG_TLV_SMP_MSG_4 = 5,
   OTRNG_TLV_SMP_ABORT = 6,
   OTRNG_TLV_SYM_KEY = 7
-} tlv_type_t;
+} otrng_tlv_type_t;
 
 /**
  * @brief The tlv_s structure represents one TLV from a data message.
  *
- *  [type] this will always be one of the valid types from tlv_type_t
+ *  [type] this will always be one of the valid types from otrng_tlv_type_t
  *  [len]  the length of the associated data
  *  [data] if there is associated data, this buffer will be [len] bytes long
  *         if [len] is zero, the buffer can be NULL or a zero length pointer
  **/
 typedef struct tlv_s {
-  tlv_type_t type;
+  otrng_tlv_type_t type;
   uint16_t len;
   uint8_t *data;
 } tlv_s;
@@ -114,7 +114,8 @@ INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len);
 /**
  * @brief creates a new TLV from the given data.
  *
- * @param [type] the type of the TLV to create. should be one of tlv_type_t
+ * @param [type] the type of the TLV to create. should be one of
+ *otrng_tlv_type_t
  * @param [len]  the amount of data to associate with this TLV. can be 0
  * @param [data] the data to put in the TLV. [len] bytes from this buffer will
  *    be copied into the TLV. can be NULL, but only if [len] is 0.
