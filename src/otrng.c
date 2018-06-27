@@ -2010,15 +2010,14 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t event, smp_context_p smp,
       if (!to_send) {
         return NULL;
       }
+    } else if (event == OTRNG_SMP_EVENT_ERROR ||
+               event == OTRNG_SMP_EVENT_FAILURE) {
+      smp->state = SMPSTATE_EXPECT1;
     }
     break;
 
   case OTRNG_TLV_SMP_ABORT:
     smp->state = SMPSTATE_EXPECT1;
-    to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
-    if (!to_send) {
-      return NULL;
-    }
     event = OTRNG_SMP_EVENT_ABORT;
     break;
   case OTRNG_TLV_NONE:
