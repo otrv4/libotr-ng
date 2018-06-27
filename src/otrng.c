@@ -2915,8 +2915,8 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
 }
 
 INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
-                                   const size_t q_len, const uint8_t *secret,
-                                   const size_t secretlen, otrng_s *otr) {
+                                   const size_t q_len, const uint8_t *answer,
+                                   const size_t answer_len, otrng_s *otr) {
   if (!otr) {
     return ERROR;
   }
@@ -2924,7 +2924,7 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
   switch (otr->running_version) {
   case OTRNG_VERSION_3:
     // FIXME: missing fragmentation
-    return otrng_v3_smp_start(to_send, question, q_len, secret, secretlen,
+    return otrng_v3_smp_start(to_send, question, q_len, answer, answer_len,
                               otr->v3_conn);
   case OTRNG_VERSION_4:
     if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
@@ -2933,7 +2933,7 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
 
     tlv_s *smp_start_tlv = otrng_smp_initiate(
         get_my_client_profile(otr), otr->their_client_profile, question, q_len,
-        secret, secretlen, otr->keys->ssid, otr->smp, otr->conversation);
+        answer, answer_len, otr->keys->ssid, otr->smp, otr->conversation);
 
     tlv_list_s *tlvs = otrng_tlv_list_one(smp_start_tlv);
     if (!tlvs) {

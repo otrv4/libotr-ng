@@ -881,7 +881,6 @@ void test_api_multiple_clients(void) {
 }
 
 void test_api_smp(void) {
-
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
   otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
 
@@ -912,7 +911,6 @@ void test_api_smp(void) {
   response_to_alice = otrng_response_new();
   otrng_assert_is_success(
       otrng_receive_message(response_to_alice, notif, to_send, bob));
-
   otrng_assert(!response_to_alice->to_send);
 
   free_message_and_response(response_to_alice, &to_send);
@@ -953,11 +951,12 @@ void test_api_smp(void) {
   otrng_response_free(response_to_alice);
   response_to_alice = NULL;
 
-  // TODO: @smp Should be in the correct state
+  g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
+  g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
+
   otrng_assert(!response_to_bob->to_send);
 
   otrng_response_free(response_to_bob);
-
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
@@ -999,25 +998,29 @@ void test_api_smp_abort(void) {
   otrng_assert(!response_to_alice->to_send);
   free_message_and_response(response_to_alice, &to_send);
 
-  // From here
-  // Bob sends SMP Abort. TODO: @smp check it does not trigger anything else
+  // Bob sends SMP Abort
   otrng_assert_is_success(otrng_smp_abort(&to_send, bob));
   g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT1);
 
-  // Alice receives SMP ABORT, send SMP_ABORT
-  // TODO: @smp Alice probably should not send and abort at this point
+  // Alice receives SMP ABORT
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(
       otrng_receive_message(response_to_bob, notif, to_send, alice));
 
-  otrng_assert(response_to_bob->to_send);
-
-  otrng_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9);
+  otrng_assert(!response_to_bob->to_send);
   g_assert_cmpint(alice->smp->state, ==, SMPSTATE_EXPECT1);
 
   free_message_and_response(response_to_bob, &to_send);
 
-  // TODO: @smp Alice can restart here the smp. This will mem leak though
+  // Bob restarts and sends SMP 1
+  otrng_assert_is_success(otrng_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
+                                          strlen(secret), bob));
+  otrng_assert(to_send);
+  otrng_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
+  g_assert_cmpint(bob->smp->state, ==, SMPSTATE_EXPECT2);
+
+  free(to_send);
+
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
