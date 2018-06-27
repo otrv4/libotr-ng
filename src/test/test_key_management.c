@@ -111,7 +111,7 @@ void test_calculate_brace_key() {
       secret, &secret_len, their_dh_secret, otrng_dh_mpi_generator()));
   otrng_dh_mpi_release(their_dh_secret);
   otrng_assert_is_success(otrng_dh_mpi_deserialize(
-      &manager->their_dh, their_public, DH3072_MOD_LEN_BYTES, NULL));
+      &manager->their_dh, secret, secret_len, NULL));
 
   // Setup a fixed our_dh
   const uint8_t our_secret[5] = {0x2};
