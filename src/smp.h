@@ -36,13 +36,6 @@
 #define SMP_HALF_QUARTER_PROGRESS 75
 #define SMP_TOTAL_PROGRESS 100
 
-typedef enum {
-  SMPSTATE_EXPECT1,
-  SMPSTATE_EXPECT2,
-  SMPSTATE_EXPECT3,
-  SMPSTATE_EXPECT4
-} smp_state_t;
-
 /**
  * @warning the [question] field is NOT zero terminated, and can't be relied on
  *    to be. the length of this field is contained in the [q_len] field.
@@ -85,7 +78,7 @@ typedef struct smp_msg_4_s {
 } smp_msg_4_s, smp_msg_4_p[1];
 
 typedef struct smp_context_s {
-  smp_state_t state;
+  char state_expect;
   uint8_t *secret; /* already hashed: 64 bytes long */
   ec_scalar_p a2, a3, b3;
   ec_point_p g2, g3;

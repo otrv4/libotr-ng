@@ -34,7 +34,7 @@
 #include "debug.h"
 
 INTERNAL void otrng_smp_context_init(smp_context_p smp) {
-  smp->state = SMPSTATE_EXPECT1;
+  smp->state_expect = '1';
   smp->secret = NULL;
 
   otrng_ec_bzero(smp->a2, ED448_SCALAR_BYTES);
@@ -1129,7 +1129,7 @@ tstatic otrng_smp_event_t receive_smp_msg_1(const tlv_s *tlv,
                                             smp_context_p smp) {
   smp_msg_1_p msg_1;
 
-  if (smp->state != SMPSTATE_EXPECT1) {
+  if (smp->state_expect != '1') {
     smp->progress = SMP_ZERO_PROGRESS;
     return OTRNG_SMP_EVENT_ABORT;
   }
@@ -1185,7 +1185,7 @@ INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
     return OTRNG_SMP_EVENT_ERROR;
   }
 
-  smp->state = SMPSTATE_EXPECT3;
+  smp->state_expect = '3';
   smp->progress = SMP_HALF_PROGRESS;
   return OTRNG_SMP_EVENT_NONE;
 }
@@ -1193,7 +1193,7 @@ INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
 tstatic otrng_smp_event_t receive_smp_msg_2(smp_msg_2_s *msg_2,
                                             const tlv_s *tlv,
                                             smp_context_p smp) {
-  if (smp->state != SMPSTATE_EXPECT2) {
+  if (smp->state_expect != '2') {
     smp->progress = SMP_ZERO_PROGRESS;
     return OTRNG_SMP_EVENT_ABORT;
   }
@@ -1242,7 +1242,7 @@ tstatic otrng_smp_event_t reply_with_smp_msg_3(tlv_s **to_send,
     return OTRNG_SMP_EVENT_ERROR;
   }
 
-  smp->state = SMPSTATE_EXPECT4;
+  smp->state_expect = '4';
   smp->progress = SMP_HALF_PROGRESS;
 
   return OTRNG_SMP_EVENT_NONE;
@@ -1251,7 +1251,7 @@ tstatic otrng_smp_event_t reply_with_smp_msg_3(tlv_s **to_send,
 tstatic otrng_smp_event_t receive_smp_msg_3(smp_msg_3_s *msg_3,
                                             const tlv_s *tlv,
                                             smp_context_p smp) {
-  if (smp->state != SMPSTATE_EXPECT3) {
+  if (smp->state_expect != '3') {
     smp->progress = SMP_ZERO_PROGRESS;
     return OTRNG_SMP_EVENT_ABORT;
   }
@@ -1298,7 +1298,7 @@ tstatic otrng_smp_event_t reply_with_smp_msg_4(tlv_s **to_send,
 
   /* Validates SMP */
   smp->progress = SMP_TOTAL_PROGRESS;
-  smp->state = SMPSTATE_EXPECT1;
+  smp->state_expect = '1';
   if (!smp_is_valid_for_msg_3(msg_3, smp)) {
     return OTRNG_SMP_EVENT_FAILURE;
   }
@@ -1309,7 +1309,7 @@ tstatic otrng_smp_event_t reply_with_smp_msg_4(tlv_s **to_send,
 tstatic otrng_smp_event_t receive_smp_msg_4(smp_msg_4_s *msg_4,
                                             const tlv_s *tlv,
                                             smp_context_p smp) {
-  if (smp->state != SMPSTATE_EXPECT4) {
+  if (smp->state_expect != '4') {
     smp->progress = SMP_ZERO_PROGRESS;
     return OTRNG_SMP_EVENT_ABORT;
   }
@@ -1327,7 +1327,7 @@ tstatic otrng_smp_event_t receive_smp_msg_4(smp_msg_4_s *msg_4,
   }
 
   smp->progress = SMP_TOTAL_PROGRESS;
-  smp->state = SMPSTATE_EXPECT1;
+  smp->state_expect = '1';
   if (!smp_is_valid_for_msg_4(msg_4, smp)) {
     return OTRNG_SMP_EVENT_FAILURE;
   }
