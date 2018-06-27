@@ -37,10 +37,10 @@
 typedef gcry_mpi_t dh_mpi_p;
 typedef dh_mpi_p dh_private_key_p, dh_public_key_p;
 
-typedef enum {
-  OTRNG_US = 0,
-  OTRNG_THEM = 1,
-} otrng_participant;
+/* typedef enum { */
+/*   OTRNG_US = 0, */
+/*   OTRNG_THEM = 1, */
+/* } otrng_participant; */
 
 typedef struct dh_keypair_s {
   dh_public_key_p pub;
@@ -53,9 +53,13 @@ INTERNAL void otrng_dh_free(void);
 
 INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair);
 
+/**
+ * @param [participant]   If this corresponds to our or their key manager. 'u'
+ * for us, 't' for them
+ */
 INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
     uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair,
-    otrng_participant participant);
+    const char participant);
 
 INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_p keypair);
 

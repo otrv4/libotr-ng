@@ -18,6 +18,8 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
+
 #define OTRNG_DH_PRIVATE
 
 #include "dh.h"
@@ -140,7 +142,7 @@ INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair) {
 
 INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
     uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair,
-    otrng_participant participant) {
+    const char participant) {
   gcry_mpi_t privkey = NULL;
   uint8_t random_buff[DH_KEY_SIZE];
   uint8_t usage_DH_first_ephemeral = 0x13;
@@ -154,11 +156,13 @@ INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
     return ERROR;
   }
 
-  if (participant == OTRNG_US) {
+  assert(participant == 'u' || participant == 't');
+
+  if (participant == 'u') {
     keypair->priv = privkey;
     keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
     gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
-  } else if (participant == OTRNG_THEM) {
+  } else if (participant == 't') {
     keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
     gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
 

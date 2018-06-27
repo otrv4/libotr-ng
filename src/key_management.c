@@ -18,6 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <sodium.h>
 #include <string.h>
 #include <time.h>
@@ -244,11 +245,13 @@ INTERNAL void otrng_key_manager_calculate_authenticator(
 
 /* Generate the ephemeral keys just as the DAKE is finished */
 tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
-                                                otrng_participant participant) {
+                                                const char participant) {
   uint8_t random_buff[ED448_PRIVATE_BYTES];
   uint8_t usage_ECDH_first_ephemeral = 0x12;
 
-  if (participant == OTRNG_US) {
+  assert(participant == 'u' || participant == 't');
+
+  if (participant == 'u') {
     shake_256_kdf1(random_buff, sizeof random_buff, usage_ECDH_first_ephemeral,
                    manager->shared_secret, sizeof(shared_secret_p));
 
@@ -265,7 +268,7 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
       return ERROR;
     }
 
-  } else if (participant == OTRNG_THEM) {
+  } else if (participant == 't') {
     shake_256_kdf1(random_buff, sizeof random_buff, usage_ECDH_first_ephemeral,
                    manager->shared_secret, sizeof(shared_secret_p));
 
@@ -448,8 +451,8 @@ tstatic void calculate_ssid(key_manager_s *manager) {
                  manager->shared_secret, sizeof(shared_secret_p));
 }
 
-INTERNAL otrng_err otrng_key_manager_ratcheting_init(
-    key_manager_s *manager, otrng_participant participant) {
+INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
+                                                     const char participant) {
   if (!generate_first_ephemeral_keys(manager, participant)) {
     return ERROR;
   }

@@ -1044,8 +1044,7 @@ tstatic otrng_err build_non_interactive_auth_message(
   return ret;
 }
 
-tstatic otrng_err double_ratcheting_init(otrng_s *otr,
-                                         otrng_participant participant) {
+tstatic otrng_err double_ratcheting_init(otrng_s *otr, const char participant) {
   if (!otrng_key_manager_ratcheting_init(otr->keys, participant)) {
     return ERROR;
   }
@@ -1072,7 +1071,7 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
     return ERROR;
   }
 
-  if (!double_ratcheting_init(otr, OTRNG_THEM)) {
+  if (!double_ratcheting_init(otr, 't')) {
     return ERROR;
   }
 
@@ -1520,7 +1519,7 @@ tstatic otrng_err non_interactive_auth_message_received(
     return ERROR;
   }
 
-  if (!double_ratcheting_init(otr, OTRNG_US)) {
+  if (!double_ratcheting_init(otr, 'u')) {
     return ERROR;
   }
 
@@ -1795,7 +1794,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
     return ERROR;
   }
 
-  return double_ratcheting_init(otr, OTRNG_US);
+  return double_ratcheting_init(otr, 'u');
 }
 
 tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
@@ -1847,7 +1846,7 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
     fingerprint_seen_cb_v4(fp, otr->conversation);
   }
 
-  return double_ratcheting_init(otr, OTRNG_THEM);
+  return double_ratcheting_init(otr, 't');
 }
 
 // TODO: @refactoring this is the same as otrng_close

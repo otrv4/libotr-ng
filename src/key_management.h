@@ -214,10 +214,11 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
  * @brief Initialize the double ratchet algorithm.
  *
  * @param [manager]       The key manager.
- * @param [participant]   If this corresponds to our or their key manager.
+ * @param [participant]   If this corresponds to our or their key manager. 'u'
+ * for us, 't' for them
  */
-INTERNAL otrng_err otrng_key_manager_ratcheting_init(
-    key_manager_s *manager, otrng_participant participant);
+INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
+                                                     const char participant);
 
 /**
  * @brief Get the correct message keys.
