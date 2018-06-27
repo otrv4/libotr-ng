@@ -98,15 +98,15 @@ API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
                                        otrng_client_s *client);
 
 /**
-  * @brief Expires old fragments based on a threshhold in seconds.
-  *
-  *  @params
-  *  [expiration_time] The expiration time in seconds
-  *  [client] The otrng client instance.
-  *
-  * @return 0 if success, 2 if any error happened.
-  *
-  * @details Details around this function if any
+ * @brief Expires old fragments based on a threshhold in seconds.
+ *
+ *  @params
+ *  [expiration_time] The expiration time in seconds
+ *  [client] The otrng client instance.
+ *
+ * @return 0 if success, 2 if any error happened.
+ *
+ * @details Details around this function if any
  **/
 API int otrng_client_expire_fragments(int expiration_time,
                                       otrng_client_s *client);
