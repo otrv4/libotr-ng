@@ -47,17 +47,6 @@
     otrng_dh_free();                                                           \
   } while (0)
 
-// TODO: @client how is this type chosen?
-#define POLICY_ALLOW_V3 0x04
-#define POLICY_ALLOW_V4 0x05
-
-/* Analogous to v1 and v3 policies */
-#define POLICY_NEVER 0x00
-#define POLICY_OPPORTUNISTIC (POLICY_ALLOW_V3 | POLICY_ALLOW_V4)
-#define POLICY_MANUAL (OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_ALLOW_V4)
-#define POLICY_ALWAYS (OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_ALLOW_V4)
-#define POLICY_DEFAULT POLICY_OPPORTUNISTIC
-
 typedef struct otrng_s otrng_s; /* Forward declare */
 
 typedef enum {
