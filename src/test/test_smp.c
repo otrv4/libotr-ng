@@ -58,7 +58,7 @@ void test_smp_state_machine(void) {
 
   do_dake_fixture(alice, bob);
 
-  g_assert_cmpint(alice->smp->progress, == , SMP_ZERO_PROGRESS);
+  g_assert_cmpint(alice->smp->progress, ==, SMP_ZERO_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_ZERO_PROGRESS);
 
   const uint8_t *question = (const uint8_t *)"some-question";

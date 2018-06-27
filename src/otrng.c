@@ -1812,24 +1812,51 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
 
 tstatic tlv_s *otrng_process_smp(otrng_smp_event_t event, smp_context_p smp,
                                  const tlv_s *tlv) {
-  event = OTRNG_SMPEVENT_NONE;
   tlv_s *to_send = NULL;
 
   switch (tlv->type) {
   case OTRNG_TLV_SMP_MSG_1:
     event = otrng_process_smp_msg1(tlv, smp);
+    if (event == OTRNG_SMP_EVENT_ABORT) {
+      smp->state = SMPSTATE_EXPECT1;
+      to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
+      if (!to_send) {
+        return NULL;
+      }
+    }
     break;
 
   case OTRNG_TLV_SMP_MSG_2:
     event = otrng_process_smp_msg2(&to_send, tlv, smp);
+    if (event == OTRNG_SMP_EVENT_ABORT) {
+      smp->state = SMPSTATE_EXPECT1;
+      to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
+      if (!to_send) {
+        return NULL;
+      }
+    }
     break;
 
   case OTRNG_TLV_SMP_MSG_3:
     event = otrng_process_smp_msg3(&to_send, tlv, smp);
+    if (event == OTRNG_SMP_EVENT_ABORT) {
+      smp->state = SMPSTATE_EXPECT1;
+      to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
+      if (!to_send) {
+        return NULL;
+      }
+    }
     break;
 
   case OTRNG_TLV_SMP_MSG_4:
     event = otrng_process_smp_msg4(tlv, smp);
+    if (event == OTRNG_SMP_EVENT_ABORT) {
+      smp->state = SMPSTATE_EXPECT1;
+      to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
+      if (!to_send) {
+        return NULL;
+      }
+    }
     break;
 
   case OTRNG_TLV_SMP_ABORT:
