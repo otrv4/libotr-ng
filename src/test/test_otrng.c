@@ -116,7 +116,7 @@ void test_otrng_receives_plaintext_with_ws_tag(otrng_fixture_s *otrng_fixture,
   g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
   otrng_assert(response->to_send);
   g_assert_cmpint(otrng_fixture->otr->state, ==, OTRNG_STATE_WAITING_AUTH_R);
-  g_assert_cmpint(otrng_fixture->otr->running_version, ==, OTRNG_VERSION_4);
+  g_assert_cmpint(otrng_fixture->otr->running_version, ==, 4);
 
   otrng_response_free(response);
 }
@@ -133,7 +133,7 @@ void test_otrng_receives_plaintext_with_ws_tag_after_text(
   g_assert_cmpstr(response->to_display, ==, "Some random invitation text.");
   otrng_assert(response->to_send);
   g_assert_cmpint(otrng_fixture->otr->state, ==, OTRNG_STATE_WAITING_AUTH_R);
-  g_assert_cmpint(otrng_fixture->otr->running_version, ==, OTRNG_VERSION_4);
+  g_assert_cmpint(otrng_fixture->otr->running_version, ==, 4);
 
   otrng_response_free(response);
 }
@@ -151,7 +151,7 @@ void test_otrng_receives_plaintext_with_ws_tag_v3(
   // text.");
   // g_assert_cmpint(otrng_fixture->otr->state, ==,
   // OTRNG_STATE_AKE_IN_PROGRESS);
-  g_assert_cmpint(otrng_fixture->v3->running_version, ==, OTRNG_VERSION_3);
+  g_assert_cmpint(otrng_fixture->v3->running_version, ==, 3);
 
   otrng_response_free(response);
 }
@@ -166,7 +166,7 @@ void test_otrng_receives_query_message(otrng_fixture_s *otrng_fixture,
 
   otrng_assert(response->to_send);
   g_assert_cmpint(otrng_fixture->otr->state, ==, OTRNG_STATE_WAITING_AUTH_R);
-  g_assert_cmpint(otrng_fixture->otr->running_version, ==, OTRNG_VERSION_4);
+  g_assert_cmpint(otrng_fixture->otr->running_version, ==, 4);
 
   otrng_response_free(response);
 }
@@ -179,7 +179,7 @@ void test_otrng_receives_query_message_v3(otrng_fixture_s *otrng_fixture,
       response, notif, "?OTRv3? And some random invitation text.",
       otrng_fixture->v3));
 
-  g_assert_cmpint(otrng_fixture->v3->running_version, ==, OTRNG_VERSION_3);
+  g_assert_cmpint(otrng_fixture->v3->running_version, ==, 3);
 
   otrng_response_free(response);
 }
@@ -193,7 +193,7 @@ void test_otrng_receives_identity_message_invalid_on_start(
       response, notif, identity_message, otrng_fixture->otr));
 
   g_assert_cmpint(otrng_fixture->otr->state, ==, OTRNG_STATE_START);
-  g_assert_cmpint(otrng_fixture->otr->running_version, ==, OTRNG_VERSION_4);
+  g_assert_cmpint(otrng_fixture->otr->running_version, ==, 4);
   otrng_assert(!response->to_display);
   otrng_assert(!response->to_send);
 

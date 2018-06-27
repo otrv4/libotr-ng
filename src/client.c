@@ -110,11 +110,11 @@ tstatic otrng_policy_s get_policy_for(const char *recipient) {
 /*     return 0; */
 
 /*   switch (conv->conn->running_version) { */
-/*   case OTRNG_VERSION_NONE: */
+/*   case 0: */
 /*     return 0; */
-/*   case OTRNG_VERSION_4: */
+/*   case 4: */
 /*     return conv->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES; */
-/*   case OTRNG_VERSION_3: */
+/*   case 3: */
 /*     return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
  */
 /*   } */
@@ -127,11 +127,11 @@ tstatic otrng_policy_s get_policy_for(const char *recipient) {
 /*     return 0; */
 
 /*   switch (conv->conn->running_version) { */
-/*   case OTRNG_VERSION_NONE: */
+/*   case 0: */
 /*     return 0; */
-/*   case OTRNG_VERSION_4: */
+/*   case 4: */
 /*     return conv->conn->state == OTRNG_STATE_FINISHED; */
-/*   case OTRNG_VERSION_3: */
+/*   case 3: */
 /*     return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_FINISHED; */
 /*   } */
 

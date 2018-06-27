@@ -283,7 +283,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->conversation = otrng_conversation_new(state);
 
   otr->state = OTRNG_STATE_START;
-  otr->running_version = OTRNG_VERSION_NONE;
+  otr->running_version = 0;
   otr->supported_versions = policy.allows;
 
   otr->their_instance_tag = 0;
@@ -493,12 +493,12 @@ tstatic otrng_err message_to_display_without_tag(otrng_response_s *response,
 tstatic void set_running_version_from_tag(otrng_s *otr,
                                           const string_p message) {
   if (allow_version(otr, OTRNG_ALLOW_V4) && strstr(message, tag_version_v4)) {
-    otr->running_version = OTRNG_VERSION_4;
+    otr->running_version = 4;
     return;
   }
 
   if (allow_version(otr, OTRNG_ALLOW_V3) && strstr(message, tag_version_v3)) {
-    otr->running_version = OTRNG_VERSION_3;
+    otr->running_version = 3;
     return;
   }
 }
@@ -511,12 +511,12 @@ tstatic bool message_is_query(const string_p message) {
 tstatic void set_running_version_from_query_msg(otrng_s *otr,
                                                 const string_p message) {
   if (allow_version(otr, OTRNG_ALLOW_V4) && strstr(message, "4")) {
-    otr->running_version = OTRNG_VERSION_4;
+    otr->running_version = 4;
     return;
   }
 
   if (allow_version(otr, OTRNG_ALLOW_V3) && strstr(message, "3")) {
-    otr->running_version = OTRNG_VERSION_3;
+    otr->running_version = 3;
     return;
   }
 }
@@ -634,17 +634,17 @@ tstatic otrng_err receive_tagged_plaintext(otrng_response_s *response,
   set_running_version_from_tag(otr, message);
 
   switch (otr->running_version) {
-  case OTRNG_VERSION_4:
+  case 4:
     if (!message_to_display_without_tag(response, message, strlen(message))) {
       return ERROR;
     }
     return start_dake(response, otr);
     break;
-  case OTRNG_VERSION_3:
+  case 3:
     return otrng_v3_receive_message(&response->to_send, &response->to_display,
                                     &response->tlvs, message, otr->v3_conn);
     break;
-  case OTRNG_VERSION_NONE:
+  case 0:
     /* ignore */
     return SUCCESS;
   }
@@ -662,14 +662,14 @@ tstatic otrng_err receive_query_message(otrng_response_s *response,
   }
 
   switch (otr->running_version) {
-  case OTRNG_VERSION_4:
+  case 4:
     return start_dake(response, otr);
     break;
-  case OTRNG_VERSION_3:
+  case 3:
     return otrng_v3_receive_message(&response->to_send, &response->to_display,
                                     &response->tlvs, message, otr->v3_conn);
     break;
-  case OTRNG_VERSION_NONE:
+  case 0:
     /* ignore */
     return SUCCESS;
   }
@@ -1238,7 +1238,7 @@ API otrng_err otrng_send_offline_message(string_p *dst,
 
   // TODO: @non_interactive Would deserialize the received ensemble and set the
   // running version
-  otr->running_version = OTRNG_VERSION_4;
+  otr->running_version = 4;
 
   if (!receive_prekey_ensemble(ensemble, otr)) {
     return ERROR; // should unset the stored things from ensemble
@@ -2261,14 +2261,14 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
 
   switch (header.type) {
   case IDENTITY_MSG_TYPE:
-    otr->running_version = OTRNG_VERSION_4;
+    otr->running_version = 4;
     return receive_identity_message(&response->to_send, decoded, dec_len, otr);
   case AUTH_R_MSG_TYPE:
     return receive_auth_r(&response->to_send, decoded, dec_len, otr);
   case AUTH_I_MSG_TYPE:
     return receive_auth_i(decoded, dec_len, otr);
   case NON_INT_AUTH_MSG_TYPE:
-    otr->running_version = OTRNG_VERSION_4;
+    otr->running_version = 4;
     return receive_non_interactive_auth_message(response, decoded, dec_len,
                                                 otr);
   case DATA_MSG_TYPE:
@@ -2412,15 +2412,15 @@ INTERNAL otrng_err otrng_receive_defragmented_message(
 
   /* A DH-Commit sets our running version to 3 */
   if (allow_version(otr, OTRNG_ALLOW_V3) && strstr(message, "?OTR:AAMC")) {
-    otr->running_version = OTRNG_VERSION_3;
+    otr->running_version = 3;
   }
 
   switch (otr->running_version) {
-  case OTRNG_VERSION_3:
+  case 3:
     return otrng_v3_receive_message(&response->to_send, &response->to_display,
                                     &response->tlvs, message, otr->v3_conn);
-  case OTRNG_VERSION_4:
-  case OTRNG_VERSION_NONE:
+  case 4:
+  case 0:
     return receive_message_v4_only(response, notif, message, otr);
   }
 
@@ -2683,12 +2683,12 @@ INTERNAL otrng_err otrng_send_message(string_p *to_send, const string_p message,
   }
 
   switch (otr->running_version) {
-  case OTRNG_VERSION_3:
+  case 3:
     return otrng_v3_send_message(to_send, message, tlvs, otr->v3_conn);
-  case OTRNG_VERSION_4:
+  case 4:
     return otrng_prepare_to_send_data_message(to_send, notif, message, tlvs,
                                               otr, flags);
-  case OTRNG_VERSION_NONE:
+  case 0:
     return ERROR;
   }
 
@@ -2730,16 +2730,16 @@ INTERNAL otrng_err otrng_close(string_p *to_send, otrng_s *otr) {
   }
 
   switch (otr->running_version) {
-  case OTRNG_VERSION_3:
+  case 3:
     otrng_v3_close(to_send,
                    otr->v3_conn); // TODO: @client This should return an error
                                   // but errors are reported on a
                                   // callback
     gone_insecure_cb_v4(otr->conversation); // TODO: @client Only if success
     return SUCCESS;
-  case OTRNG_VERSION_4:
+  case 4:
     return otrng_close_v4(to_send, otr);
-  case OTRNG_VERSION_NONE:
+  case 0:
     return ERROR;
   }
 
@@ -2801,17 +2801,17 @@ API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
   }
 
   switch (otr->running_version) {
-  case OTRNG_VERSION_3:
+  case 3:
     otrng_v3_send_symkey_message(to_send, otr->v3_conn, use, usedata,
                                  usedatalen,
                                  extra_key); // TODO: @client This should return
                                              // an error but errors are reported
                                              // on a callback
     return SUCCESS;
-  case OTRNG_VERSION_4:
+  case 4:
     return otrng_send_symkey_message_v4(to_send, use, usedata, usedatalen, otr,
                                         extra_key);
-  case OTRNG_VERSION_NONE:
+  case 0:
     return ERROR;
   }
 
@@ -2890,11 +2890,11 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
   }
 
   switch (otr->running_version) {
-  case OTRNG_VERSION_3:
+  case 3:
     // FIXME: missing fragmentation
     return otrng_v3_smp_start(to_send, question, q_len, answer, answer_len,
                               otr->v3_conn);
-  case OTRNG_VERSION_4:
+  case 4:
     if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
       return ERROR;
     }
@@ -2917,7 +2917,7 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
                                        MSGFLAGS_IGNORE_UNREADABLE, otr);
     otrng_tlv_list_free(tlvs);
     return ret;
-  case OTRNG_VERSION_NONE:
+  case 0:
     return ERROR;
   }
 
@@ -2986,12 +2986,12 @@ tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
 INTERNAL otrng_err otrng_smp_continue(string_p *to_send, const uint8_t *secret,
                                       const size_t secretlen, otrng_s *otr) {
   switch (otr->running_version) {
-  case OTRNG_VERSION_3:
+  case 3:
     // FIXME: @smp missing fragmentation
     return otrng_v3_smp_continue(to_send, secret, secretlen, otr->v3_conn);
-  case OTRNG_VERSION_4:
+  case 4:
     return smp_continue_v4(to_send, secret, secretlen, otr);
-  case OTRNG_VERSION_NONE:
+  case 0:
     return ERROR;
   }
 
@@ -3016,11 +3016,11 @@ tstatic otrng_err otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
 
 API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr) {
   switch (otr->running_version) {
-  case OTRNG_VERSION_3:
+  case 3:
     return otrng_v3_smp_abort(otr->v3_conn);
-  case OTRNG_VERSION_4:
+  case 4:
     return otrng_smp_abort_v4(to_send, otr);
-  case OTRNG_VERSION_NONE:
+  case 0:
     return ERROR;
   }
   return ERROR;

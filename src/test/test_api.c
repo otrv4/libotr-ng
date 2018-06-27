@@ -286,7 +286,7 @@ void test_otrng_send_offline_message() {
   otrng_assert_is_success(otrng_prekey_ensemble_validate(ensemble));
 
   g_assert_cmpint(bob->their_prekeys_id, ==, 0);
-  otrng_assert(bob->running_version == OTRNG_VERSION_NONE);
+  otrng_assert(bob->running_version == 0);
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 0);
@@ -300,7 +300,7 @@ void test_otrng_send_offline_message() {
   otrng_assert_cmpmem("?OTR:AASN", to_bob, 9);
 
   otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-  otrng_assert(alice->running_version == OTRNG_VERSION_4);
+  otrng_assert(alice->running_version == 4);
 
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 0);
@@ -318,7 +318,7 @@ void test_otrng_send_offline_message() {
 
   g_assert_cmpint(bob->their_prekeys_id, ==, 0);
   otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-  otrng_assert(bob->running_version == OTRNG_VERSION_4);
+  otrng_assert(bob->running_version == 4);
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
   g_assert_cmpint(bob->keys->k, ==, 0);

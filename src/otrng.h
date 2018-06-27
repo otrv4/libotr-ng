@@ -75,12 +75,6 @@ typedef enum {
   OTRNG_ALLOW_V4 = 2
 } otrng_supported_version;
 
-typedef enum {
-  OTRNG_VERSION_NONE = 0,
-  OTRNG_VERSION_3 = 3,
-  OTRNG_VERSION_4 = 4
-} otrng_version;
-
 // clang-format off
 typedef struct otrng_policy_s {
   int allows;
@@ -114,7 +108,7 @@ struct otrng_s {
   client_profile_s *their_client_profile;
   otrng_prekey_profile_s *their_prekey_profile;
 
-  otrng_version running_version;
+  uint8_t running_version;
 
   key_manager_s *keys;
   smp_context_p smp;
