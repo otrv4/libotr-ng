@@ -1178,9 +1178,13 @@ set_their_prekey_profile(const otrng_prekey_profile_s *profile, otrng_s *otr) {
   return SUCCESS;
 }
 
+static otrng_bool valid_instance_tag(uint32_t instance_tag) {
+  return (instance_tag > OTRNG_MIN_VALID_INSTAG);
+}
+
 tstatic otrng_err received_sender_instance_tag(uint32_t their_instance_tag,
                                                otrng_s *otr) {
-  if (their_instance_tag < OTRNG_MIN_VALID_INSTAG) {
+  if (!valid_instance_tag(their_instance_tag)) {
     return ERROR;
   }
 
@@ -1189,12 +1193,8 @@ tstatic otrng_err received_sender_instance_tag(uint32_t their_instance_tag,
   return SUCCESS;
 }
 
-tstatic otrng_err received_receiver_instance_tag(uint32_t our_instance_tag) {
-  if (our_instance_tag > 0 && our_instance_tag < OTRNG_MIN_VALID_INSTAG) {
-    return ERROR;
-  }
-
-  return SUCCESS;
+static otrng_bool valid_receiver_instance_tag(uint32_t instance_tag) {
+  return (instance_tag == 0 || valid_instance_tag(instance_tag));
 }
 
 tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
@@ -1476,7 +1476,7 @@ tstatic otrng_err non_interactive_auth_message_received(
     return ERROR;
   }
 
-  if (!received_receiver_instance_tag(auth->receiver_instance_tag)) {
+  if (!valid_receiver_instance_tag(auth->receiver_instance_tag)) {
     otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
     return ERROR;
   }
@@ -1766,7 +1766,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
     return ERROR;
   }
 
-  if (!received_receiver_instance_tag(auth->receiver_instance_tag)) {
+  if (!valid_receiver_instance_tag(auth->receiver_instance_tag)) {
     otrng_error_message(dst, ERR_MSG_MALFORMED);
     otrng_dake_auth_r_destroy(auth);
     return ERROR;
@@ -1850,7 +1850,7 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
     return ERROR;
   }
 
-  if (!received_receiver_instance_tag(auth->receiver_instance_tag)) {
+  if (!valid_receiver_instance_tag(auth->receiver_instance_tag)) {
     otrng_dake_auth_i_destroy(auth);
     return ERROR;
   }
