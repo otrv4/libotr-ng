@@ -29,18 +29,18 @@ void test_prekey_profile_validates() {
 
   otrng_prekey_profile_s *profile = otrng_prekey_profile_build(1, 1, p1, p2);
 
-  otrng_assert(otrng_prekey_profile_valid(profile));
+  otrng_assert(otrng_prekey_profile_valid(profile, 1));
 
   time_t t = profile->expires;
   profile->expires = time(NULL) - 1;
-  otrng_assert(!otrng_prekey_profile_valid(profile));
+  otrng_assert(!otrng_prekey_profile_valid(profile, 1));
   profile->expires = t;
 
   // TODO: Create an invalid point
 
   // Change the profile to mess up with the signature
   profile->expires = profile->expires - 60;
-  otrng_assert(!otrng_prekey_profile_valid(profile));
+  otrng_assert(!otrng_prekey_profile_valid(profile, 1));
 
   otrng_keypair_free(p1);
   otrng_shared_prekey_pair_free(p2);

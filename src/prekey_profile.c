@@ -179,18 +179,26 @@ static otrng_bool expired(time_t expires) {
   return (difftime(expires, time(NULL)) <= 0);
 }
 
-INTERNAL otrng_bool
-otrng_prekey_profile_valid(const otrng_prekey_profile_s *profile) {
-  // 1. Verify that the Prekey Profile has not expired.
+INTERNAL otrng_bool otrng_prekey_profile_valid(
+    const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag) {
+  /* 1. Verify that the Prekey Profile owner's instance tag is equal to the
+   * Sender Instance tag of the person that sent the DAKE message in which the
+   * Prekey Profile is received. */
+  if (sender_instance_tag != profile->instance_tag) {
+    return otrng_false;
+  }
+
+  /* 2. Verify that the Prekey Profile has not expired. */
   if (expired(profile->expires)) {
     return otrng_false;
   }
 
-  // 2. Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks.
+  /* 3. Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks.
+   */
   if (!otrng_ec_point_valid(profile->shared_prekey)) {
     return otrng_false;
   }
 
-  // 3. Verify that the Prekey Profile signature is valid.
+  /* 4. Verify that the Prekey Profile signature is valid. */
   return otrng_prekey_profile_verify_signature(profile);
 }

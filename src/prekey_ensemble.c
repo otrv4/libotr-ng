@@ -38,7 +38,8 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
     return ERROR;
   }
 
-  if (!otrng_prekey_profile_valid(dst->prekey_profile)) {
+  if (!otrng_prekey_profile_valid(dst->prekey_profile,
+                                  dst->message->sender_instance_tag)) {
     return ERROR;
   }
 
