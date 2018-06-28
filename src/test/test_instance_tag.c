@@ -36,7 +36,7 @@ void test_instance_tag_generates_tag_when_file_empty() {
   fclose(tmpFILEp);
 
   g_assert_cmpint(instag->value, !=, 0);
-  g_assert_cmpint(instag->value, >, 0x100);
+  g_assert_cmpint(instag->value, >, OTRNG_MIN_VALID_INSTAG);
 
   g_assert_cmpstr(instag->account, ==, alice_coy_account);
   g_assert_cmpstr(instag->protocol, ==, xmpp_protocol);
@@ -81,18 +81,18 @@ void test_instance_tag_generates_tag_when_file_is_full() {
   g_assert_cmpstr(first_instag->account, ==, icq_alice_account);
   g_assert_cmpstr(first_instag->protocol, ==, icq_protocol);
   g_assert_cmpint(first_instag->value, !=, 0);
-  g_assert_cmpint(first_instag->value, >, 0x100);
+  g_assert_cmpint(first_instag->value, >, OTRNG_MIN_VALID_INSTAG);
   g_assert_cmpstr(sone, ==, "9abcdef0");
 
   g_assert_cmpstr(second_instag->account, ==, xmpp_alice_account);
   g_assert_cmpstr(second_instag->protocol, ==, xmpp_protocol);
   g_assert_cmpint(second_instag->value, !=, 0);
-  g_assert_cmpint(second_instag->value, >, 0x100);
+  g_assert_cmpint(second_instag->value, >, OTRNG_MIN_VALID_INSTAG);
 
   g_assert_cmpstr(third_instag->account, ==, irc_alice_account);
   g_assert_cmpstr(third_instag->protocol, ==, irc_protocol);
   g_assert_cmpint(third_instag->value, !=, 0);
-  g_assert_cmpint(third_instag->value, >, 0x100);
+  g_assert_cmpint(third_instag->value, >, OTRNG_MIN_VALID_INSTAG);
 
   otrng_instag_free(first_instag);
   otrng_instag_free(second_instag);

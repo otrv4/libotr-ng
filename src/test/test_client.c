@@ -27,7 +27,7 @@
 #include "../serialize.h"
 #include "../shake.h"
 
-// TODO: This function is duplicate. See test_api.c
+// TODO: @refactoring This function is duplicate. See test_api.c
 static otrng_client_s *set_up_client(otrng_client_state_s *state,
                                      const char *account_name, uint8_t byte) {
   set_up_client_state(state, account_name, byte);
@@ -262,6 +262,7 @@ void test_conversation_with_multiple_locations() {
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
   otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2);
 
+  // Alice sends a query message
   char *query_msg = otrng_client_query_message(BOB_IDENTITY, "Hi bob", alice);
 
   int ignore = 0;
@@ -290,9 +291,8 @@ void test_conversation_with_multiple_locations() {
   free(from_bob);
   from_bob = NULL;
 
-  char *message = "hello";
-
   // Alice sends a message with original instance tag
+  char *message = "hello";
   otrng_client_send(&from_alice_to_bob, message, BOB_IDENTITY, alice);
 
   // Bob receives the message.
@@ -314,7 +314,7 @@ void test_conversation_with_multiple_locations() {
   conv->conn->their_instance_tag = conv->conn->their_instance_tag + 1;
   otrng_client_send(&from_alice_to_bob, "hello again", BOB_IDENTITY, alice);
 
-  // Bob receives and ignore the message.
+  // Bob receives and ignores the message.
   ignore = otrng_client_receive(&from_bob, &to_display, from_alice_to_bob,
                                 ALICE_IDENTITY, bob);
   free(from_alice_to_bob);

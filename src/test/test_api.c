@@ -741,8 +741,7 @@ void test_api_conversation_v3(void) {
 }
 
 void test_api_multiple_clients(void) {
-
-  bool send_response = true;
+  int send_response = 1;
   otrng_err result;
 
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
@@ -764,6 +763,7 @@ void test_api_multiple_clients(void) {
 
   string_p query_message = NULL;
 
+  // Alice sends a query message
   otrng_assert_is_success(
       otrng_build_query_message(&query_message, "?OTRv4", alice));
   otrng_assert(alice->state == OTRNG_STATE_START);
@@ -798,20 +798,20 @@ void test_api_multiple_clients(void) {
                           OTRNG_STATE_WAITING_AUTH_I, send_response);
   otrng_response_free(phone_to_alice);
 
-  // PC receives AUTH-R succesfully
+  // PC receives Auth-R succesfully and sends an Auth-I
   pc_to_alice = otrng_response_new();
   result =
       otrng_receive_message(pc_to_alice, notif, alice_to_pc->to_send, bob_pc);
   assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
                           OTRNG_STATE_ENCRYPTED_MESSAGES, send_response);
 
-  // PC generates the first keys after AUTH-R has been received
+  // PC generates the first keys after Auth-R has been received
   otrng_assert(bob_pc->keys->our_dh->pub);
   otrng_assert(bob_pc->keys->our_dh->priv);
   otrng_assert_not_zero(bob_pc->keys->our_ecdh->pub, ED448_POINT_BYTES);
   otrng_assert_not_zero(bob_pc->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
-  // PHONE receives AUTH-R with PC instance tag - Ignores
+  // PHONE receives Auth-R with PC instance tag - Ignores
   phone_to_alice = otrng_response_new();
   result = otrng_receive_message(phone_to_alice, notif, alice_to_pc->to_send,
                                  bob_phone);
@@ -824,7 +824,7 @@ void test_api_multiple_clients(void) {
   otrng_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
   otrng_assert_not_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
-  // ALICE receives AUTH-I from PC - Authentication fails
+  // ALICE receives Auth-I from PC - Authentication fails
   alice_to_pc = otrng_response_new();
   result =
       otrng_receive_message(alice_to_pc, notif, pc_to_alice->to_send, alice);
@@ -834,7 +834,7 @@ void test_api_multiple_clients(void) {
 
   otrng_response_free_all(pc_to_alice, alice_to_pc);
 
-  // PC receives AUTH-R again - ignores
+  // PC receives Auth-R again - ignores
   pc_to_alice = otrng_response_new();
   result = otrng_receive_message(pc_to_alice, notif, alice_to_phone->to_send,
                                  bob_pc);
@@ -842,7 +842,7 @@ void test_api_multiple_clients(void) {
                           OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
   otrng_response_free(pc_to_alice);
 
-  // PHONE receives correct AUTH-R message and sends AUTH-I
+  // PHONE receives correct Auth-R message and sends Auth-I
   phone_to_alice = otrng_response_new();
   result = otrng_receive_message(phone_to_alice, notif, alice_to_phone->to_send,
                                  bob_phone);
@@ -850,13 +850,13 @@ void test_api_multiple_clients(void) {
                           OTRNG_STATE_ENCRYPTED_MESSAGES, send_response);
   otrng_response_free(alice_to_phone);
 
-  // PHONE generates the first keys after AUTH-R has been received
+  // PHONE generates the first keys after Auth-R has been received
   otrng_assert(bob_phone->keys->our_dh->pub);
   otrng_assert(bob_phone->keys->our_dh->priv);
   otrng_assert_not_zero(bob_phone->keys->our_ecdh->pub, ED448_POINT_BYTES);
   otrng_assert_not_zero(bob_phone->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
 
-  // ALICE receives AUTH-I from PHONE
+  // ALICE receives Auth-I from PHONE
   alice_to_phone = otrng_response_new();
   result = otrng_receive_message(alice_to_phone, notif, phone_to_alice->to_send,
                                  alice);
