@@ -1407,12 +1407,25 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 tstatic otrng_err non_interactive_auth_message_received(
     otrng_response_s *response, const dake_non_interactive_auth_message_p auth,
     otrng_s *otr) {
-
   otrng_client_state_s *state = otr->conversation->client;
 
   const otrng_stored_prekeys_s *stored_prekey = NULL;
   const client_profile_s *client_profile = NULL;
   const otrng_prekey_profile_s *prekey_profile = NULL;
+
+  if (!received_sender_instance_tag(auth->sender_instance_tag, otr)) {
+    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
+    return ERROR;
+  }
+
+  if (!valid_receiver_instance_tag(auth->receiver_instance_tag)) {
+    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
+    return ERROR;
+  }
+  if (!otrng_valid_received_values(auth->sender_instance_tag, auth->X, auth->A,
+                                   auth->profile)) {
+    return ERROR;
+  }
 
   stored_prekey = get_my_prekeys_by_id(auth->prekey_message_id, state);
   client_profile = get_my_client_profile_by_id(auth->long_term_key_id, otr);
@@ -1458,16 +1471,6 @@ tstatic otrng_err non_interactive_auth_message_received(
   /* The prekey profile in question must also have the same key. */
   if (!otrng_ec_point_eq(prekey_profile->shared_prekey,
                          get_my_prekey_profile(otr)->shared_prekey)) {
-    return ERROR;
-  }
-
-  if (!received_sender_instance_tag(auth->sender_instance_tag, otr)) {
-    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
-    return ERROR;
-  }
-
-  if (!valid_receiver_instance_tag(auth->receiver_instance_tag)) {
-    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
     return ERROR;
   }
 

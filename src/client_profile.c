@@ -309,8 +309,6 @@ tstatic otrng_bool rollback_detected(const char *versions) {
   return otrng_false;
 }
 
-// TODO: @client_profile check if client profile is validate in every place it
-// needs to
 INTERNAL otrng_bool otrng_client_profile_valid(
     const client_profile_s *profile, const uint32_t sender_instance_tag) {
   if (sender_instance_tag != profile->sender_instance_tag) {
