@@ -29,6 +29,8 @@
 #include "fragment.h"
 #include "list.h"
 
+// Example:
+//?OTR|00000000|00000001|00000002,00001,00002,one ,
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%.*s,"
 #define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
 
@@ -244,8 +246,9 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
     return SUCCESS;
   }
 
-  uint32_t fragment_identifier, sender_tag, receiver_tag, start = 0, end = 0;
-  unsigned short i, t;
+  int start = 0, end = 0;
+  uint32_t fragment_identifier, sender_tag, receiver_tag;
+  uint16_t i, t;
 
   sscanf(message, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
          &receiver_tag, &i, &t, &start, &end);
