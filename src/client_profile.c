@@ -64,6 +64,7 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   dst->versions = otrng_strdup(src->versions);
   dst->expires = src->expires;
 
+  dst->signature = NULL;
   if (src->signature) {
     dst->signature = malloc(sizeof(eddsa_signature_p));
     if (!dst->signature) {
