@@ -190,7 +190,7 @@ INTERNAL tlv_s *otrng_tlv_padding_new(size_t len) {
     return NULL;
   }
 
-  random_bytes(data, len);
+  memset(data, 0, len);
   tlv_s *tlv = otrng_tlv_new(OTRNG_TLV_PADDING, len, data);
   free(data);
 

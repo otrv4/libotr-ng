@@ -168,6 +168,9 @@ INTERNAL const otrng_prekey_profile_s *
 otrng_client_state_get_prekey_profile_by_id(uint32_t id,
                                             otrng_client_state_s *state);
 
+API void otrng_client_state_set_padding(size_t granularity,
+                                        otrng_client_state_s *state);
+
 #ifdef OTRNG_CLIENT_STATE_PRIVATE
 
 #endif

@@ -493,3 +493,8 @@ get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state) {
 
   return node->data;
 }
+
+API void otrng_client_state_set_padding(size_t granularity,
+                                        otrng_client_state_s *state) {
+  state->padding = granularity;
+}

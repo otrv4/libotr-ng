@@ -131,10 +131,8 @@ void test_api_interactive_conversation(void) {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
-  // TODO otrng_client_state_set_padding(256, alice_client_state);
-  alice_client_state->padding = 256;
-  // TODO otrng_client_state_set_padding(256, bob_client_state);
-  bob_client_state->padding = 256;
+  otrng_client_state_set_padding(256, alice_client_state);
+  otrng_client_state_set_padding(256, bob_client_state);
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
