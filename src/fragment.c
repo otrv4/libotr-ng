@@ -30,7 +30,7 @@
 #include "list.h"
 
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%.*s,"
-#define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
+#define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%u%*[^,],%u"
 
 API otrng_message_to_send_s *otrng_message_new() {
   otrng_message_to_send_s *msg = malloc(sizeof(otrng_message_to_send_s));
