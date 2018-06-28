@@ -631,7 +631,7 @@ tstatic otrng_err receive_query_message(otrng_response_s *response,
 
   // TODO: @refactoring still unsure about this
   if (!otr->receiving_init_msg) {
-    otr->receiving_init_msg = strdup(message);
+    otr->receiving_init_msg = otrng_strdup(message);
   }
 
   switch (otr->running_version) {
