@@ -125,8 +125,7 @@ tstatic otrng_err client_profile_body_asprintf(
 INTERNAL otrng_err otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
   // TODO: @client_profile should it checked here for signature?
-  // TODO: If this is optional it should be pointer not an array
-  if (!profile->signature[0]) {
+  if (!(profile->signature > 0)) {
     return ERROR;
   }
 

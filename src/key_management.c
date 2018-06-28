@@ -667,7 +667,7 @@ tstatic otrng_err store_enc_keys(m_enc_key_p enc_key, key_manager_s *manager,
     return SUCCESS;
   }
 
-  uint8_t zero_buff[CHAIN_KEY_BYTES] = {0};
+  uint8_t zero_buff[CHAIN_KEY_BYTES] = {};
   if (!(memcmp(manager->current->chain_r, zero_buff,
                sizeof(manager->current->chain_r)) == 0)) {
     while (manager->k < until) {
