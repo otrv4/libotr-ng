@@ -725,8 +725,6 @@ tstatic otrng_err generate_smp_msg_3(smp_msg_3_s *dst, const smp_msg_2_s *msg_2,
   goldilocks_448_scalar_mul(dst->d6, secret_as_scalar, dst->cp);
   goldilocks_448_scalar_sub(dst->d6, r6, dst->d6);
 
-  sodium_memzero(secret_as_scalar, HASH_BYTES);
-
   /* Ra = ((Qa - Qb) * a3) */
   goldilocks_448_point_sub(smp->qa_qb, dst->qa, msg_2->qb);
   goldilocks_448_point_scalarmul(dst->ra, smp->qa_qb, smp->a3);
