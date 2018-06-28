@@ -2035,11 +2035,13 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
   }
 
   if (tlv->type == OTRNG_TLV_SYM_KEY && tlv->len >= 4) {
-    uint32_t use = extract_word(tlv->data);
-    received_extra_sym_key(otr->conversation, use, tlv->data + 4, tlv->len - 4,
-                           otr->keys->extra_symmetric_key);
-    sodium_memzero(otr->keys->extra_symmetric_key,
-                   sizeof(otr->keys->extra_symmetric_key));
+    if (otr->keys->extra_symmetric_key > 0) {
+      uint32_t use = extract_word(tlv->data);
+      received_extra_sym_key(otr->conversation, use, tlv->data + 4,
+                             tlv->len - 4, otr->keys->extra_symmetric_key);
+      sodium_memzero(otr->keys->extra_symmetric_key,
+                     sizeof(otr->keys->extra_symmetric_key));
+    }
     return NULL;
   }
 
@@ -2210,7 +2212,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       sodium_memzero(mac_key, sizeof(m_mac_key_p));
       otrng_data_message_free(msg);
       return SUCCESS;
-    } else if (otr->ignore_msg != 1) {
+    } else if (otr->ignore_msg != 1 && otr->keys->their_ecdh > 0) {
       if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
         if (!otrng_send_message(&response->to_send, "", NOTIF_NONE, NULL,
                                 MSGFLAGS_IGNORE_UNREADABLE, otr)) {

@@ -52,7 +52,9 @@ INTERNAL void otrng_list_foreach(list_element_s *head,
   }
 }
 
-tstatic void call_and_free_node(list_element_s *node, void (*fn)(void *data)) {
+tstatic void call_and_free_node(list_element_s *node, void *context) {
+  void (*fn)(void *data) = context;
+
   if (fn) {
     fn(node->data);
   }
@@ -62,16 +64,7 @@ tstatic void call_and_free_node(list_element_s *node, void (*fn)(void *data)) {
 }
 
 INTERNAL void otrng_list_free(list_element_s *head, void (*fn)(void *data)) {
-  list_element_s *current = head;
-  while (current) {
-    list_element_s *next = current->next;
-
-    if (fn) {
-      call_and_free_node(current, fn);
-    }
-
-    current = next;
-  }
+  otrng_list_foreach(head, call_and_free_node, fn);
 }
 
 INTERNAL void otrng_list_free_full(list_element_s *head) {

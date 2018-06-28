@@ -36,7 +36,7 @@ static data_message_s *set_up_data_msg() {
   data_msg->message_id = 99;
   otrng_ec_point_copy(data_msg->ecdh, ecdh->pub);
 
-  uint8_t dh_data[383] = {
+  const char dh_data[383] = {
       0x4c, 0x4e, 0x7b, 0xbd, 0x33, 0xd0, 0x9e, 0x63, 0xfd, 0xe4, 0x67, 0xee,
       0x6c, 0x65, 0x47, 0xc4, 0xe2, 0x1f, 0xaa, 0xb1, 0x90, 0x56, 0x8a, 0x7d,
       0x16, 0x7c, 0x3a, 0xc,  0xb5, 0xcf, 0xdf, 0xbc, 0x5,  0x44, 0xf0, 0x89,
@@ -112,13 +112,13 @@ void test_data_message_serializes() {
   otrng_assert_cmpmem(cursor, expected, 24);
   cursor += 24;
 
-  uint8_t serialized_y[PUB_KEY_SER_BYTES] = {0};
+  uint8_t serialized_y[PUB_KEY_SER_BYTES] = {};
   int ser_len = otrng_serialize_ec_point(serialized_y, data_msg->ecdh);
   otrng_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
 
   cursor += ser_len;
 
-  uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
+  uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {};
   size_t mpi_len = 0;
   otrng_assert_is_success(otrng_dh_mpi_serialize(
       serialized_b, DH3072_MOD_LEN_BYTES, &mpi_len, data_msg->dh));
