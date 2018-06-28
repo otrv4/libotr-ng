@@ -294,10 +294,10 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->v3_conn = NULL;
 
   otr->ignore_msg = 0;
-  otr->sending_init_msg = NULL;
-  otr->receiving_init_msg = NULL;
 
   otr->shared_session_state = NULL;
+  otr->sending_init_msg = NULL;
+  otr->receiving_init_msg = NULL;
 
   return otr;
 }
@@ -325,16 +325,19 @@ INTERNAL void otrng_destroy(/*@only@ */ otrng_s *otr) {
   otrng_list_free(otr->pending_fragments, free_fragment_context);
   otr->pending_fragments = NULL;
 
-  free(otr->sending_init_msg); // TODO: @freeing should we free this after being
-                               // used by phi?
-  free(otr->receiving_init_msg); // TODO: @freeing should we free this after
-                                 // being used by phi?
-
   otrng_v3_conn_free(otr->v3_conn);
   otr->v3_conn = NULL;
 
   free(otr->shared_session_state);
   otr->shared_session_state = NULL;
+
+  // TODO: @freeing should we free this after being used by phi?
+  free(otr->sending_init_msg);
+  otr->sending_init_msg = NULL;
+
+  // TODO: @freeing should we free this after being used by phi?;
+  free(otr->receiving_init_msg);
+  otr->receiving_init_msg = NULL;
 }
 
 INTERNAL void otrng_free(/*@only@ */ otrng_s *otr) {
@@ -391,21 +394,13 @@ INTERNAL otrng_err otrng_build_query_message(string_p *dst,
 
 API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
                                          const string_p message, otrng_s *otr) {
-  size_t m_size = WHITESPACE_TAG_BASE_BYTES + strlen(message) + 1;
   int allows_v4 = allow_version(otr, OTRNG_ALLOW_V4);
   int allows_v3 = allow_version(otr, OTRNG_ALLOW_V3);
-  string_p buff = NULL;
   string_p cursor = NULL;
 
-  if (allows_v4) {
-    m_size += WHITESPACE_TAG_VERSION_BYTES;
-  }
-
-  if (allows_v3) {
-    m_size += WHITESPACE_TAG_VERSION_BYTES;
-  }
-
-  buff = malloc(m_size);
+#define WHITESPACE_TAG_MAX_BYTES                                               \
+  (WHITESPACE_TAG_BASE_BYTES + 2 * WHITESPACE_TAG_VERSION_BYTES)
+  char *buff = malloc(WHITESPACE_TAG_MAX_BYTES + strlen(message) + 1);
   if (!buff) {
     return ERROR;
   }
@@ -420,10 +415,7 @@ API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
     cursor = otrng_stpcpy(cursor, tag_version_v3);
   }
 
-  if (*otrng_stpncpy(cursor, message, m_size - strlen(buff))) {
-    free(buff);
-    return ERROR;
-  }
+  otrng_stpcpy(cursor, message);
 
   if (otr->sending_init_msg) {
     free(otr->sending_init_msg);
@@ -448,6 +440,7 @@ tstatic void set_to_display(otrng_response_s *response,
 tstatic otrng_err message_to_display_without_tag(otrng_response_s *response,
                                                  const string_p message,
                                                  size_t msg_len) {
+  // TODO: What if there is more than one VERSION TAG?
   size_t tag_length = WHITESPACE_TAG_BASE_BYTES + WHITESPACE_TAG_VERSION_BYTES;
   size_t chars = msg_len - tag_length;
 
@@ -497,17 +490,12 @@ tstatic bool message_is_query(const string_p message) {
   return strstr(message, query_header) != NULL;
 }
 
-// TODO: @refactoring should this error?
 tstatic void set_running_version_from_query_msg(otrng_s *otr,
                                                 const string_p message) {
   if (allow_version(otr, OTRNG_ALLOW_V4) && strstr(message, "4")) {
     otr->running_version = 4;
-    return;
-  }
-
-  if (allow_version(otr, OTRNG_ALLOW_V3) && strstr(message, "3")) {
+  } else if (allow_version(otr, OTRNG_ALLOW_V3) && strstr(message, "3")) {
     otr->running_version = 3;
-    return;
   }
 }
 
@@ -2374,10 +2362,6 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
                                           otrng_notif notif,
                                           const string_p message,
                                           otrng_s *otr) {
-  // TODO: @refactoring If we need to change, we should make a copy and not
-  // discard the const
-  string_p str = (void *)message;
-
   switch (get_message_type(message)) {
   case MSG_PLAINTEXT:
     receive_plaintext(response, message, otr);
@@ -2393,20 +2377,10 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
     return receive_encoded_message(response, notif, message, otr);
 
   case MSG_OTR_ERROR:
-    memmove(str, str + 12, strlen(message) - 12 + 1);
-    return receive_error_message(response, str);
+    return receive_error_message(response, message + strlen(ERROR_PREFIX));
   }
 
   return SUCCESS;
-}
-
-tstatic otrng_err receive_possibly_fragment(char **unfragmented,
-                                            const char *received,
-                                            otrng_s *otr) {
-  int our_instance_tag = otr->our_instance_tag;
-
-  return otrng_unfragment_message(unfragmented, &otr->pending_fragments,
-                                  received, our_instance_tag);
 }
 
 /* Receive a possibly OTR message. */
@@ -2417,8 +2391,8 @@ INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
   response->to_display = otrng_strndup(NULL, 0);
 
   char *defrag = NULL;
-  if (!receive_possibly_fragment(&defrag, message, otr) || !defrag) {
-    free(defrag);
+  if (!otrng_unfragment_message(&defrag, &otr->pending_fragments, message,
+                                otr->our_instance_tag)) {
     return ERROR;
   }
 
@@ -2431,12 +2405,12 @@ INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
 INTERNAL otrng_err otrng_receive_defragmented_message(
     otrng_response_s *response, otrng_notif notif, const string_p message,
     otrng_s *otr) {
-  // TODO: @refactoring why it is always mandatory to have a response?
+
   if (!message || !response) {
     return ERROR;
   }
 
-  response->to_display = otrng_strndup(NULL, 0);
+  response->to_display = NULL;
 
   /* A DH-Commit sets our running version to 3 */
   if (allow_version(otr, OTRNG_ALLOW_V3) && strstr(message, "?OTR:AAMC")) {
