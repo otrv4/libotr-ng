@@ -734,8 +734,8 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
 }
 
 INTERNAL otrng_bool otrng_valid_received_values(
-    const ec_point_p their_ecdh, const dh_mpi_p their_dh,
-    const client_profile_s *profile) {
+    const uint32_t sender_instance_tag, const ec_point_p their_ecdh,
+    const dh_mpi_p their_dh, const client_profile_s *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */
   if (!otrng_ec_point_valid(their_ecdh)) {
     return otrng_false;
@@ -747,7 +747,7 @@ INTERNAL otrng_bool otrng_valid_received_values(
   }
 
   /* Verify their profile is valid (and not expired). */
-  if (!otrng_client_profile_valid(profile)) {
+  if (!otrng_client_profile_valid(profile, sender_instance_tag)) {
     return otrng_false;
   }
 

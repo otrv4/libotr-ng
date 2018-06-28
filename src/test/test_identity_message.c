@@ -146,7 +146,8 @@ void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
   identity_message->B = otrng_dh_mpi_copy(dh->pub);
 
   otrng_assert(otrng_valid_received_values(
-      identity_message->Y, identity_message->B, identity_message->profile));
+      identity_message->sender_instance_tag, identity_message->Y,
+      identity_message->B, identity_message->profile));
 
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dh_keypair_destroy(dh);
@@ -173,9 +174,10 @@ void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
   otrng_ec_point_copy(invalid_identity_message->Y, invalid_ecdh->pub);
   invalid_identity_message->B = otrng_dh_mpi_copy(invalid_dh->pub);
 
-  otrng_assert(!otrng_valid_received_values(invalid_identity_message->Y,
-                                            invalid_identity_message->B,
-                                            invalid_identity_message->profile));
+  otrng_assert(!otrng_valid_received_values(
+      invalid_identity_message->sender_instance_tag,
+      invalid_identity_message->Y, invalid_identity_message->B,
+      invalid_identity_message->profile));
 
   otrng_client_profile_free(invalid_profile);
   otrng_ecdh_keypair_destroy(invalid_ecdh);

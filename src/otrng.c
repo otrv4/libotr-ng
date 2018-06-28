@@ -1201,7 +1201,8 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
     return ERROR;
   }
 
-  if (!otrng_valid_received_values(m->Y, m->B, otr->their_client_profile)) {
+  if (!otrng_valid_received_values(m->sender_instance_tag, m->Y, m->B,
+                                   otr->their_client_profile)) {
     return ERROR;
   }
 
@@ -1627,7 +1628,8 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
     return result;
   }
 
-  if (!otrng_valid_received_values(m->Y, m->B, m->profile)) {
+  if (!otrng_valid_received_values(m->sender_instance_tag, m->Y, m->B,
+                                   m->profile)) {
     otrng_dake_identity_message_destroy(m);
     return result;
   }
@@ -1704,7 +1706,8 @@ tstatic otrng_err reply_with_auth_i_msg(
 
 tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
                                         otrng_s *otr) {
-  if (!otrng_valid_received_values(auth->X, auth->A, auth->profile)) {
+  if (!otrng_valid_received_values(auth->sender_instance_tag, auth->X, auth->A,
+                                   auth->profile)) {
     return otrng_false;
   }
 
