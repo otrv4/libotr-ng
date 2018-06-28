@@ -1042,6 +1042,41 @@ tstatic otrng_err double_ratcheting_init(otrng_s *otr, const char participant) {
   return SUCCESS;
 }
 
+static char *build_error_message(const char *error_code,
+                                 const char *error_name) {
+  size_t s = strlen(ERROR_PREFIX) + strlen(error_code) + strlen(error_name) + 1;
+  char *err_msg = malloc(s);
+  if (!err_msg) {
+    return NULL;
+  }
+
+  strcpy(err_msg, ERROR_PREFIX);
+  strcpy(err_msg + strlen(ERROR_PREFIX), error_code);
+  strcat(err_msg, error_name);
+
+  return err_msg;
+}
+
+tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
+  switch (err_code) {
+  case ERR_NONE:
+    break;
+  case ERR_MSG_UNREADABLE:
+    *to_send = build_error_message(ERROR_CODE_1, "OTRNG_ERR_MSG_UNREADABLE");
+    break;
+  case ERR_MSG_NOT_PRIVATE:
+    *to_send =
+        build_error_message(ERROR_CODE_2, "OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
+    break;
+  case ERR_MSG_ENCRYPTION_ERROR:
+    *to_send = build_error_message(ERROR_CODE_3, "OTRNG_ERR_ENCRYPTION_ERROR");
+    break;
+  case ERR_MSG_MALFORMED:
+    *to_send = build_error_message(ERROR_CODE_4, "OTRNG_ERR_MALFORMED");
+    break;
+  }
+}
+
 tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
                                                       otrng_s *otr) {
   maybe_create_keys(otr->conversation);
@@ -1143,13 +1178,21 @@ set_their_prekey_profile(const otrng_prekey_profile_s *profile, otrng_s *otr) {
   return SUCCESS;
 }
 
-tstatic otrng_err received_instance_tag(uint32_t their_instance_tag,
-                                        otrng_s *otr) {
+tstatic otrng_err received_sender_instance_tag(uint32_t their_instance_tag,
+                                               otrng_s *otr) {
   if (their_instance_tag < OTRNG_MIN_VALID_INSTAG) {
     return ERROR;
   }
 
   otr->their_instance_tag = their_instance_tag;
+
+  return SUCCESS;
+}
+
+tstatic otrng_err received_receiver_instance_tag(uint32_t our_instance_tag) {
+  if (our_instance_tag > 0 && our_instance_tag < OTRNG_MIN_VALID_INSTAG) {
+    return ERROR;
+  }
 
   return SUCCESS;
 }
@@ -1164,7 +1207,7 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
     return ERROR;
   }
 
-  if (!received_instance_tag(m->sender_instance_tag, otr)) {
+  if (!received_sender_instance_tag(m->sender_instance_tag, otr)) {
     notif = NOTIF_MALFORMED;
     return ERROR;
   }
@@ -1184,7 +1227,8 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   return SUCCESS;
 }
 
-tstatic otrng_err receive_prekey_ensemble(const prekey_ensemble_s *ensemble,
+tstatic otrng_err receive_prekey_ensemble(string_p *dst,
+                                          const prekey_ensemble_s *ensemble,
                                           otrng_s *otr) {
   if (!otrng_prekey_ensemble_validate(ensemble)) {
     return ERROR;
@@ -1210,9 +1254,12 @@ tstatic otrng_err receive_prekey_ensemble(const prekey_ensemble_s *ensemble,
     return ERROR;
   }
 
+  otrng_notif notif = NOTIF_NONE;
   // Set their ephemeral keys, instance tag, and their_prekeys_id
-  if (!prekey_message_received(ensemble->message, NOTIF_NONE, otr)) {
-    // TODO: if the notif here is MALFORMED, we should send an error..
+  if (!prekey_message_received(ensemble->message, notif, otr)) {
+    if (notif == NOTIF_MALFORMED) {
+      otrng_error_message(dst, ERR_MSG_MALFORMED);
+    }
     return ERROR;
   }
 
@@ -1228,7 +1275,7 @@ API otrng_err otrng_send_offline_message(string_p *dst,
   // running version
   otr->running_version = 4;
 
-  if (!receive_prekey_ensemble(ensemble, otr)) {
+  if (!receive_prekey_ensemble(dst, ensemble, otr)) {
     return ERROR; // should unset the stored things from ensemble
   }
 
@@ -1291,42 +1338,6 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
 
   return SUCCESS;
-}
-
-static char *build_error_message(const char *error_code,
-                                 const char *error_name) {
-  size_t s = strlen(ERROR_PREFIX) + strlen(error_code) + strlen(error_name) + 1;
-  char *err_msg = malloc(s);
-  if (!err_msg) {
-    return NULL;
-  }
-
-  strcpy(err_msg, ERROR_PREFIX);
-  strcpy(err_msg + strlen(ERROR_PREFIX), error_code);
-  strcat(err_msg, error_name);
-
-  return err_msg;
-}
-
-// TODO: @instance_tags check instance tags
-tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
-  switch (err_code) {
-  case ERR_NONE:
-    break;
-  case ERR_MSG_UNREADABLE:
-    *to_send = build_error_message(ERROR_CODE_1, "OTRNG_ERR_MSG_UNREADABLE");
-    break;
-  case ERR_MSG_NOT_PRIVATE:
-    *to_send =
-        build_error_message(ERROR_CODE_2, "OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
-    break;
-  case ERR_MSG_ENCRYPTION_ERROR:
-    *to_send = build_error_message(ERROR_CODE_3, "OTRNG_ERR_ENCRYPTION_ERROR");
-    break;
-  case ERR_MSG_MALFORMED:
-    *to_send = build_error_message(ERROR_CODE_4, "OTRNG_ERR_MALFORMED");
-    break;
-  }
 }
 
 tstatic otrng_bool verify_non_interactive_auth_message(
@@ -1460,6 +1471,16 @@ tstatic otrng_err non_interactive_auth_message_received(
     return ERROR;
   }
 
+  if (!received_sender_instance_tag(auth->sender_instance_tag, otr)) {
+    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
+    return ERROR;
+  }
+
+  if (!received_receiver_instance_tag(auth->receiver_instance_tag)) {
+    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
+    return ERROR;
+  }
+
   /* Set our current ephemeral keys, based on the received message */
   otrng_ecdh_keypair_destroy(otr->keys->our_ecdh);
   otrng_ec_scalar_copy(otr->keys->our_ecdh->priv,
@@ -1476,11 +1497,6 @@ tstatic otrng_err non_interactive_auth_message_received(
 
   /* Delete the stored prekeys for this ID so they can't be used again. */
   delete_my_prekey_message_by_id(auth->prekey_message_id, state);
-
-  if (!received_instance_tag(auth->sender_instance_tag, otr)) {
-    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
-    return ERROR;
-  }
 
   otrng_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
@@ -1616,13 +1632,13 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
     return SUCCESS;
   }
 
-  if (!otrng_valid_received_values(m->Y, m->B, m->profile)) {
+  if (!received_sender_instance_tag(m->sender_instance_tag, otr)) {
+    otrng_error_message(dst, ERR_MSG_MALFORMED);
     otrng_dake_identity_message_destroy(m);
     return result;
   }
 
-  if (!received_instance_tag(m->sender_instance_tag, otr)) {
-    otrng_error_message(dst, ERR_MSG_MALFORMED);
+  if (!otrng_valid_received_values(m->Y, m->B, m->profile)) {
     otrng_dake_identity_message_destroy(m);
     return result;
   }
@@ -1744,7 +1760,13 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
     return SUCCESS;
   }
 
-  if (!received_instance_tag(auth->sender_instance_tag, otr)) {
+  if (!received_sender_instance_tag(auth->sender_instance_tag, otr)) {
+    otrng_error_message(dst, ERR_MSG_MALFORMED);
+    otrng_dake_auth_r_destroy(auth);
+    return ERROR;
+  }
+
+  if (!received_receiver_instance_tag(auth->receiver_instance_tag)) {
     otrng_error_message(dst, ERR_MSG_MALFORMED);
     otrng_dake_auth_r_destroy(auth);
     return ERROR;
@@ -1821,6 +1843,16 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
   if (auth->receiver_instance_tag != otr->our_instance_tag) {
     otrng_dake_auth_i_destroy(auth);
     return SUCCESS;
+  }
+
+  if (!received_sender_instance_tag(auth->sender_instance_tag, otr)) {
+    otrng_dake_auth_i_destroy(auth);
+    return ERROR;
+  }
+
+  if (!received_receiver_instance_tag(auth->receiver_instance_tag)) {
+    otrng_dake_auth_i_destroy(auth);
+    return ERROR;
   }
 
   if (!valid_auth_i_message(auth, otr)) {
