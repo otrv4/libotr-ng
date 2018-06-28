@@ -35,6 +35,7 @@
 #include "deserialize.h"
 #include "gcrypt.h"
 #include "instance_tag.h"
+#include "padding.h"
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
@@ -2570,14 +2571,6 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   return SUCCESS;
 }
 
-tstatic size_t otrng_tlv_serialize(uint8_t *dst, const tlv_s *tlv) {
-  size_t w = 0;
-  w += otrng_serialize_uint16(dst + w, tlv->type);
-  w += otrng_serialize_uint16(dst + w, tlv->len);
-  w += otrng_serialize_bytes_array(dst + w, tlv->data, tlv->len);
-  return w;
-}
-
 tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
                                  const tlv_list_s *tlvs) {
   const tlv_list_s *current = tlvs;
@@ -2605,34 +2598,6 @@ tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
   }
 
   return SUCCESS;
-}
-
-tstatic otrng_err generate_padding(uint8_t **dst, size_t *dstlen,
-                                   size_t message_len, const otrng_s *otr) {
-  if (!otr->conversation->client->pad) {
-    return SUCCESS;
-  }
-
-  size_t padding_len = needed_padding(message_len);
-  if (!padding_len) {
-    return SUCCESS;
-  }
-
-  tlv_s *padding_tlv = otrng_tlv_padding_new(padding_len);
-  if (!padding_tlv) {
-    return ERROR;
-  }
-
-  *dstlen = padding_tlv->len + 4;
-  *dst = malloc(*dstlen);
-  if (!*dst) {
-    otrng_tlv_free(padding_tlv);
-    return ERROR;
-  }
-
-  otrng_err ret = otrng_tlv_serialize(*dst, padding_tlv);
-  otrng_tlv_free(padding_tlv);
-  return ret;
 }
 
 tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,

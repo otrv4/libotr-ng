@@ -26,9 +26,6 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
-  alice_client_state->pad = true;
-  bob_client_state->pad = true;
-
   // DAKE has finished
   do_dake_fixture(alice, bob);
 
@@ -173,9 +170,6 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
-  bob_client_state->pad = true;
-  alice_client_state->pad = true;
-
   // DAKE has finished
   do_dake_fixture(alice, bob);
 
@@ -294,9 +288,6 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
-
-  bob_client_state->pad = true;
-  alice_client_state->pad = true;
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
@@ -444,9 +435,6 @@ void test_double_ratchet_corrupted_ratchet(void) {
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
-
-  bob_client_state->pad = true;
-  alice_client_state->pad = true;
 
   // DAKE has finished
   do_dake_fixture(alice, bob);

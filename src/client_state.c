@@ -56,7 +56,7 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->shared_prekey_pair = NULL;
   state->max_stored_msg_keys = 100;
   state->should_heartbeat = should_heartbeat;
-  state->pad = false; // TODO: @client why is this a bool?
+  state->padding = 0;
 
   return state;
 }

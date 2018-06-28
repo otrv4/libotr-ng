@@ -71,7 +71,7 @@ typedef struct otrng_client_state_s {
 
   int max_stored_msg_keys;
   int (*should_heartbeat)(int last_sent);
-  bool pad; // TODO: @client @refactoring this can be replaced by length
+  size_t padding;
 
   // OtrlPrivKey *privkeyv3; // ???
   // otrng_instag_s *instag; // TODO: @client Store the instance tag here rather

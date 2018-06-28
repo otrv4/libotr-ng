@@ -140,10 +140,10 @@ INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
  **/
 INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *tlvs, tlv_s *tlv);
 
-INTERNAL size_t needed_padding(size_t message_len);
-
 INTERNAL tlv_s *otrng_tlv_padding_new(size_t len);
 
 INTERNAL void otrng_tlv_free(tlv_s *tlv);
+
+INTERNAL size_t otrng_tlv_serialize(uint8_t *dst, const tlv_s *tlv);
 
 #endif

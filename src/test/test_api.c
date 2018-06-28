@@ -112,7 +112,7 @@ static void set_up_client_state(otrng_client_state_s *state,
   otrng_client_state_add_private_key_v4(state, long_term_priv);
   otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv);
   otrng_client_state_add_instance_tag(state, 0x100 + byte);
-  state->pad = false;
+
   state->should_heartbeat = test_should_not_heartbeat;
 }
 
@@ -131,8 +131,10 @@ void test_api_interactive_conversation(void) {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
-  bob_client_state->pad = true;
-  alice_client_state->pad = true;
+  // TODO otrng_client_state_set_padding(256, alice_client_state);
+  alice_client_state->padding = 256;
+  // TODO otrng_client_state_set_padding(256, bob_client_state);
+  bob_client_state->padding = 256;
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
@@ -426,9 +428,6 @@ void test_api_conversation_errors_1(void) {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
-  bob_client_state->pad = true;
-  alice_client_state->pad = true;
-
   // DAKE HAS FINISHED
   do_dake_fixture(alice, bob);
 
@@ -513,7 +512,6 @@ void test_api_conversation_errors_2(void) {
   otrng_client_state_add_private_key_v4(alice_client_state, sym_key);
   otrng_client_state_add_shared_prekey_v4(alice_client_state, sym_key);
   otrng_client_state_add_instance_tag(alice_client_state, 0x00);
-  alice_client_state->pad = false;
   alice_client_state->callbacks = test_callbacks;
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
 
