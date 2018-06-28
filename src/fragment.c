@@ -248,7 +248,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
 
   int start = 0, end = 0;
   uint32_t fragment_identifier, sender_tag, receiver_tag;
-  unsigned short i, t;
+  uint16_t i, t;
 
   sscanf(message, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
          &receiver_tag, &i, &t, &start, &end);
