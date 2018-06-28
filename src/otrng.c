@@ -1422,6 +1422,7 @@ tstatic otrng_err non_interactive_auth_message_received(
     otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
     return ERROR;
   }
+
   if (!otrng_valid_received_values(auth->sender_instance_tag, auth->X, auth->A,
                                    auth->profile)) {
     return ERROR;
@@ -2128,6 +2129,16 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   if (msg->receiver_instance_tag != otr->our_instance_tag) {
     otrng_data_message_free(msg);
     return SUCCESS;
+  }
+
+  if (!received_sender_instance_tag(msg->sender_instance_tag, otr)) {
+    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
+    return ERROR;
+  }
+
+  if (!valid_receiver_instance_tag(msg->receiver_instance_tag)) {
+    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
+    return ERROR;
   }
 
   otrng_key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
