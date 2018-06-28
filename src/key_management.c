@@ -857,25 +857,3 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
 
   return NULL;
 }
-
-// TODO: @refactoring define this here?
-API uint8_t *
-derive_key_from_extra_symm_key(uint8_t usage, const unsigned char *use_data,
-                               size_t use_data_len,
-                               const unsigned char *extra_symm_key) {
-  uint8_t *derived_key = malloc(EXTRA_SYMMETRIC_KEY_BYTES);
-  if (!derived_key) {
-    return NULL;
-  }
-
-  goldilocks_shake256_ctx_p hd;
-
-  hash_init_with_usage(hd, usage);
-  hash_update(hd, use_data, use_data_len);
-  hash_update(hd, extra_symm_key, EXTRA_SYMMETRIC_KEY_BYTES);
-
-  hash_final(hd, derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
-  hash_destroy(hd);
-
-  return derived_key;
-}

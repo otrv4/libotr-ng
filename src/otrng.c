@@ -3009,6 +3009,26 @@ API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr) {
   return ERROR;
 }
 
+API uint8_t *otrng_derive_key_from_extra_symm_key(
+    uint8_t usage, const unsigned char *use_data, size_t use_data_len,
+    const unsigned char *extra_symm_key) {
+  uint8_t *derived_key = malloc(EXTRA_SYMMETRIC_KEY_BYTES);
+  if (!derived_key) {
+    return NULL;
+  }
+
+  goldilocks_shake256_ctx_p hd;
+
+  hash_init_with_usage(hd, usage);
+  hash_update(hd, use_data, use_data_len);
+  hash_update(hd, extra_symm_key, EXTRA_SYMMETRIC_KEY_BYTES);
+
+  hash_final(hd, derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
+  hash_destroy(hd);
+
+  return derived_key;
+}
+
 static int otrl_initialized = 0;
 API void otrng_v3_init(void) {
   if (otrl_initialized) {
