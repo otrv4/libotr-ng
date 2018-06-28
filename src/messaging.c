@@ -202,24 +202,22 @@ API int otrng_user_state_private_key_v4_read_FILEp(
   return 0;
 }
 
-// TODO: @instance_tag
-/* int otrng_user_state_add_instance_tag(otrng_user_state_s *state, void
- * *client_id, */
-/*                                      unsigned int instag) { */
-/*   return otrng_client_state_add_instance_tag(get_client_state(state,
- * client_id), */
-/*                                             instag); */
-/* } */
+API int otrng_user_state_add_instance_tag(otrng_user_state_s *state,
+                                          void *client_id,
+                                          unsigned int instag) {
+  return otrng_client_state_add_instance_tag(get_client_state(state, client_id),
+                                             instag);
+}
 
-/* unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state, */
-/*                                               void *client_id) { */
-/*   UNUSED_ARG(state); */
-/*   UNUSED_ARG(client_id); */
-/*   return 0; */
-/* } */
+API unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state,
+                                                   void *client_id) {
+  UNUSED_ARG(state);
+  UNUSED_ARG(client_id);
+  return 0;
+}
 
-/* int otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state, */
-/*                                              FILE *instag) { */
-/*   // We use v3 user_state also for v4 instance tags, for now. */
-/*   return otrl_instag_read_FILEp(state->user_state_v3, instag); */
-/* } */
+API int otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state,
+                                                  FILE *instag) {
+  // We use v3 user_state also for v4 instance tags, for now. */
+  return otrl_instag_read_FILEp(state->user_state_v3, instag);
+}

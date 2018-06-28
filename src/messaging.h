@@ -72,15 +72,14 @@ typedef struct otrng_user_state_s {
  * *state, */
 /*                                                FILE *privf); */
 
-/* int otrng_user_state_add_instance_tag(otrng_user_state_s *state, void
- * *client_id, */
-/*                                      unsigned int instag); */
+int otrng_user_state_add_instance_tag(otrng_user_state_s *state,
+                                      void *client_id, unsigned int instag);
 
-/* unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state, */
-/*                                               void *client_id); */
+unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state,
+                                               void *client_id);
 
-/* int otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state, */
-/*                                              FILE *instag); */
+int otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state,
+                                              FILE *instag);
 
 /* otrng_messaging_client_t *otrng_messaging_client_get(otrng_user_state_s
  * *state,
