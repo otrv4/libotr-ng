@@ -141,7 +141,8 @@ void test_otrng_client_profile_deserializes() {
   uint8_t *serialized = NULL;
   otrng_client_profile_asprintf(&serialized, &written, profile);
 
-  client_profile_s *deserialized = malloc(sizeof(client_profile_s));
+  client_profile_s *deserialized = NULL;
+  deserialized = malloc(sizeof(client_profile_s));
   otrng_assert(otrng_client_profile_deserialize(deserialized, serialized,
                                                 written, NULL) == SUCCESS);
   otrng_assert_client_profile_eq(deserialized, profile);

@@ -835,8 +835,10 @@ tstatic otrng_err build_rsign_tag(
     // TODO: @sanitizier ser_r_shared_prekey is NULL here in a branch.
     // error: Null pointer passed as an argument to a 'nonnull' parameter
     // [clang-analyzer-core.NonNullParamChecker,-warnings-as-errors]
-    memcpy(cursor, ser_r_shared_prekey, ser_r_shared_prekey_len);
-    cursor += ser_r_shared_prekey_len;
+    if (ser_r_shared_prekey) {
+      memcpy(cursor, ser_r_shared_prekey, ser_r_shared_prekey_len);
+      cursor += ser_r_shared_prekey_len;
+    }
 
     memcpy(cursor, hash_phi, HASH_BYTES);
     cursor += HASH_BYTES;
