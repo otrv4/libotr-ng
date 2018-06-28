@@ -102,8 +102,8 @@ void test_user_state_key_management(void) {
 /* } */
 
 void test_instance_tag_api(void) {
-  char *icq_alice_account = "alice_icq";
-  char *icq_protocol = "ICQ";
+  const char *icq_alice_account = "alice_icq";
+  const char *icq_protocol = "ICQ";
   unsigned int icq_instag_value = 0x9abcdef0;
 
   otrng_client_state_s *alice = otrng_client_state_new(alice_account);

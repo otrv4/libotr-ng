@@ -229,10 +229,10 @@ void test_client_get_our_fingerprint() {
 }
 
 void test_fingerprint_hash_to_human() {
-  char *expected_fp = "00010203 04050607 08090A0B 0C0D0E0F "
-                      "10111213 14151617 18191A1B 1C1D1E1F "
-                      "20212223 24252627 28292A2B 2C2D2E2F "
-                      "30313233 34353637";
+  const char *expected_fp = "00010203 04050607 08090A0B 0C0D0E0F "
+                            "10111213 14151617 18191A1B 1C1D1E1F "
+                            "20212223 24252627 28292A2B 2C2D2E2F "
+                            "30313233 34353637";
 
   uint8_t fp_hash[FPRINT_LEN_BYTES] = {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -292,7 +292,7 @@ void test_conversation_with_multiple_locations() {
   from_bob = NULL;
 
   // Alice sends a message with original instance tag
-  char *message = "hello";
+  const char *message = "hello";
   otrng_client_send(&from_alice_to_bob, message, BOB_IDENTITY, alice);
 
   // Bob receives the message.
@@ -938,7 +938,7 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
 }
 
 void test_client_receives_fragmented_message(void) {
-  char *msg = "Receiving fragmented plaintext";
+  const char *msg = "Receiving fragmented plaintext";
 
   otrng_message_to_send_s *fmsg = malloc(sizeof(otrng_message_to_send_s));
   otrng_assert_is_success(otrng_fragment_message(60, fmsg, 0, 0, msg));
@@ -966,7 +966,7 @@ void test_client_receives_fragmented_message(void) {
 }
 
 void test_client_expires_old_fragments(void) {
-  char *msg = "Pending fragmented message";
+  const char *msg = "Pending fragmented message";
 
   otrng_message_to_send_s *fmsg = malloc(sizeof(otrng_message_to_send_s));
   otrng_assert_is_success(otrng_fragment_message(60, fmsg, 0, 0, msg));
@@ -1036,7 +1036,7 @@ void test_client_sends_fragmented_message(void) {
   from_bob = NULL;
 
   otrng_message_to_send_s *to_send = otrng_message_new();
-  char *message = "We should fragment when is needed";
+  const char *message = "We should fragment when is needed";
 
   // Alice fragments the message
   otrng_client_send_fragment(&to_send, message, 100, BOB_IDENTITY, alice);

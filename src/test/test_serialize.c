@@ -117,8 +117,9 @@ void test_serialize_otrng_symmetric_key() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  char *expected = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                   "AAAAAAAAAAAAAAAAA";
+  const char *expected =
+      "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAA";
 
   char *buffer = NULL;
   size_t buffer_size = 0;

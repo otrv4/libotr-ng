@@ -453,7 +453,8 @@ void test_api_conversation_errors_1(void) {
   otrng_assert_is_error(
       otrng_receive_message(response_to_alice, notif, to_send, bob));
 
-  string_p err_code = "?OTR Error: ERROR_2: OTRNG_ERR_MSG_NOT_PRIVATE_STATE";
+  const string_p err_code =
+      "?OTR Error: ERROR_2: OTRNG_ERR_MSG_NOT_PRIVATE_STATE";
   otrng_assert_cmpmem(err_code, response_to_alice->to_send, strlen(err_code));
 
   otrng_assert(response_to_alice->to_send != NULL);
@@ -464,7 +465,7 @@ void test_api_conversation_errors_1(void) {
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(otrng_receive_message(
       response_to_bob, notif, response_to_alice->to_send, alice));
-  string_p err_human = "Not in private state message";
+  const string_p err_human = "Not in private state message";
 
   otrng_assert(response_to_bob);
   otrng_assert_cmpmem(err_human, response_to_bob->to_display,
@@ -557,7 +558,7 @@ void test_api_conversation_errors_2(void) {
   // Bob receives an auth-r message
   otrng_assert_is_error(otrng_receive_message(response_to_alice, notif,
                                               response_to_bob->to_send, bob));
-  string_p err_code = "?OTR Error: ERROR_4: OTRNG_ERR_MALFORMED";
+  const string_p err_code = "?OTR Error: ERROR_4: OTRNG_ERR_MALFORMED";
   otrng_assert_cmpmem(err_code, response_to_alice->to_send, strlen(err_code));
 
   free(response_to_bob->to_send);
@@ -568,7 +569,7 @@ void test_api_conversation_errors_2(void) {
       response_to_bob, notif, response_to_alice->to_send, alice));
 
   otrng_assert(response_to_bob);
-  string_p err_human = "Malformed message";
+  const string_p err_human = "Malformed message";
   otrng_assert_cmpmem(err_human, response_to_bob->to_display,
                       strlen(err_human));
 

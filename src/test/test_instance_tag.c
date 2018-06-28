@@ -23,8 +23,8 @@
 #include "../instance_tag.h"
 
 void test_instance_tag_generates_tag_when_file_empty() {
-  char *alice_coy_account = "alice@coy.im";
-  char *xmpp_protocol = "XMPP";
+  const char *alice_coy_account = "alice@coy.im";
+  const char *xmpp_protocol = "XMPP";
 
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
@@ -45,12 +45,12 @@ void test_instance_tag_generates_tag_when_file_empty() {
 }
 
 void test_instance_tag_generates_tag_when_file_is_full() {
-  char *icq_alice_account = "alice_icq";
-  char *icq_protocol = "ICQ";
-  char *xmpp_alice_account = "alice_xmpp";
-  char *xmpp_protocol = "XMPP";
-  char *irc_alice_account = "alice_irc";
-  char *irc_protocol = "IRC";
+  const char *icq_alice_account = "alice_icq";
+  const char *icq_protocol = "ICQ";
+  const char *xmpp_alice_account = "alice_xmpp";
+  const char *xmpp_protocol = "XMPP";
+  const char *irc_alice_account = "alice_irc";
+  const char *irc_protocol = "IRC";
   unsigned int icq_instag_value = 0x9abcdef0;
 
   FILE *tmpFILEp;
