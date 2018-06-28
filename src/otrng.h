@@ -197,18 +197,6 @@ API otrng_err otrng_send_offline_message(string_p *dst,
                                          const prekey_ensemble_s *ensemble,
                                          otrng_s *otr);
 
-/**
- * @brief Derive keys from the extra symmetric key.
- *
- * @param [usage]          The usage for the KDF.
- * @param [use_data]       The context from the TLV 7.
- * @param [use_data_len]   The length of the context.
- * @param [extra_symm_key] The extra symmetric key.
- */
-API uint8_t *otrng_derive_key_from_extra_symm_key(
-    uint8_t usage, const unsigned char *use_data, size_t use_data_len,
-    const unsigned char *extra_symm_key);
-
 API void otrng_v3_init(void);
 
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);

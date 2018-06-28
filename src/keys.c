@@ -26,6 +26,7 @@
 
 #include "keys.h"
 #include "random.h"
+#include "shake.h"
 
 INTERNAL otrng_keypair_s *otrng_keypair_new(void) {
   otrng_keypair_s *ret = malloc(sizeof(otrng_keypair_s));
@@ -126,4 +127,24 @@ otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair) {
 
   shared_prekey_pair_destroy(prekey_pair);
   free(prekey_pair);
+}
+
+INTERNAL uint8_t *otrng_derive_key_from_extra_symm_key(
+    uint8_t usage, const unsigned char *use_data, size_t use_data_len,
+    const unsigned char *extra_symm_key) {
+  uint8_t *derived_key = malloc(EXTRA_SYMMETRIC_KEY_BYTES);
+  if (!derived_key) {
+    return NULL;
+  }
+
+  goldilocks_shake256_ctx_p hd;
+
+  hash_init_with_usage(hd, usage);
+  hash_update(hd, use_data, use_data_len);
+  hash_update(hd, extra_symm_key, EXTRA_SYMMETRIC_KEY_BYTES);
+
+  hash_final(hd, derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
+  hash_destroy(hd);
+
+  return derived_key;
 }

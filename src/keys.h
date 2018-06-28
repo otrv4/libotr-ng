@@ -74,6 +74,18 @@ otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair);
 INTERNAL otrng_err otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,
                                                  dh_keypair_p dh);
 
+/**
+ * @brief Derive keys from the extra symmetric key.
+ *
+ * @param [usage]          The usage for the KDF.
+ * @param [use_data]       The context from the TLV 7.
+ * @param [use_data_len]   The length of the context.
+ * @param [extra_symm_key] The extra symmetric key.
+ */
+API uint8_t *otrng_derive_key_from_extra_symm_key(
+    uint8_t usage, const unsigned char *use_data, size_t use_data_len,
+    const unsigned char *extra_symm_key);
+
 #ifdef OTRNG_KEYS_PRIVATE
 
 tstatic void keypair_destroy(otrng_keypair_s *keypair);
