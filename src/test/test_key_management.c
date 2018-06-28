@@ -62,7 +62,7 @@ void test_calculate_ssid() {
   key_manager_p manager;
   otrng_key_manager_init(manager);
 
-  shared_secret_p s = {};
+  shared_secret_p s = {0};
   uint8_t expected_ssid[8] = {
       0x78, 0x68, 0x17, 0x67, 0xfc, 0xf6, 0x72, 0x54,
   };
@@ -79,7 +79,7 @@ void test_calculate_extra_symm_key() {
   key_manager_p manager;
   otrng_key_manager_init(manager);
 
-  shared_secret_p s = {};
+  shared_secret_p s = {0};
   uint8_t expected_extra_key[EXTRA_SYMMETRIC_KEY_BYTES] = {
       0x65, 0x62, 0x04, 0x13, 0xc3, 0xf3, 0xa9, 0x37, 0x50, 0x59, 0x4e,
       0x97, 0xa6, 0xd6, 0xd1, 0x29, 0x9f, 0x6a, 0x6f, 0x83, 0xb6, 0x4d,
@@ -102,7 +102,7 @@ void test_calculate_brace_key() {
   // Setup a fixed their_dh
   dh_mpi_p their_dh_secret = NULL;
   const uint8_t their_public[5] = {0x1};
-  uint8_t secret[DH3072_MOD_LEN_BYTES] = {};
+  uint8_t secret[DH3072_MOD_LEN_BYTES] = {0};
   size_t secret_len = 0;
 
   otrng_assert_is_success(otrng_dh_mpi_deserialize(

@@ -25,7 +25,7 @@ void test_ser_deser_uint() {
   const uint8_t ser[8] = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0};
 
   size_t read = 0;
-  uint8_t buf[8] = {};
+  uint8_t buf[8] = {0};
 
   otrng_serialize_uint8(buf, 0x12);
   otrng_assert_cmpmem(buf, ser, 1);
@@ -81,7 +81,7 @@ void test_ser_des_otrng_public_key() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  uint8_t serialized[ED448_PUBKEY_BYTES] = {};
+  uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
   g_assert_cmpint(otrng_serialize_otrng_public_key(serialized, keypair->pub),
                   ==, ED448_PUBKEY_BYTES);
   otrng_assert_is_success(otrng_deserialize_otrng_public_key(
@@ -134,7 +134,7 @@ void test_serialize_otrng_symmetric_key() {
 
 void test_otrng_serialize_dh_public_key() {
   dh_mpi_p TEST_DH;
-  const char dh_data[383] = {
+  uint8_t dh_data[383] = {
       0x4c, 0x4e, 0x7b, 0xbd, 0x33, 0xd0, 0x9e, 0x63, 0xfd, 0xe4, 0x67, 0xee,
       0x6c, 0x65, 0x47, 0xc4, 0xe2, 0x1f, 0xaa, 0xb1, 0x90, 0x56, 0x8a, 0x7d,
       0x16, 0x7c, 0x3a, 0x0c, 0xb5, 0xcf, 0xdf, 0xbc, 0x05, 0x44, 0xf0, 0x89,
