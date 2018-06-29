@@ -555,6 +555,7 @@ void test_api_conversation_errors_2(void) {
   otrng_user_state_free_all(alice_client_state->user_state);
   otrng_client_state_free_all(alice_client_state);
   otrng_free_all(alice);
+  otrng_free_all(bob);
 }
 
 static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
