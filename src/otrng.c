@@ -1940,8 +1940,9 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   return SUCCESS;
 }
 
-tstatic tlv_s *otrng_process_smp(otrng_smp_event_t event, smp_context_p smp,
+tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_context_p smp,
                                  const tlv_s *tlv) {
+  otrng_smp_event_t event = *ret;
   tlv_s *to_send = NULL;
 
   switch (tlv->type) {
@@ -2013,6 +2014,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t event, smp_context_p smp,
     event = OTRNG_SMP_EVENT_IN_PROGRESS;
   }
 
+  *ret = event;
   return to_send;
 }
 
@@ -2047,8 +2049,8 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
 
   // TODO: @smp: what happens with the error and failure?
   otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
-  tlv_s *out = otrng_process_smp(event, otr->smp, tlv);
-  handle_smp_event_cb_v4(OTRNG_SMP_EVENT_NONE, otr->smp->progress,
+  tlv_s *out = otrng_process_smp(&event, otr->smp, tlv);
+  handle_smp_event_cb_v4(event, otr->smp->progress,
                          otr->smp->msg1 ? otr->smp->msg1->question : NULL,
                          otr->smp->msg1 ? otr->smp->msg1->q_len : 0,
                          otr->conversation);
