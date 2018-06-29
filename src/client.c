@@ -25,6 +25,7 @@
 
 #include "client.h"
 #include "serialize.h"
+#include "smp.h"
 #include "str.h"
 
 tstatic otrng_conversation_s *new_conversation_with(const char *recipient,

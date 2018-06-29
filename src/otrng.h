@@ -29,8 +29,9 @@
 #include "keys.h"
 #include "prekey_ensemble.h"
 #include "prekey_profile.h"
+#include "protocol.h"
 #include "shared.h"
-#include "smp_protocol.h"
+#include "smp.h"
 #include "str.h"
 #include "v3.h"
 
@@ -46,76 +47,6 @@
   do {                                                                         \
     otrng_dh_free();                                                           \
   } while (0)
-
-typedef struct otrng_s otrng_s; /* Forward declare */
-
-typedef enum {
-  OTRNG_STATE_NONE = 0,
-  OTRNG_STATE_START = 1,
-  OTRNG_STATE_ENCRYPTED_MESSAGES = 2,
-  OTRNG_STATE_WAITING_AUTH_I = 3,
-  OTRNG_STATE_WAITING_AUTH_R = 4,
-  OTRNG_STATE_FINISHED = 5
-} otrng_state;
-
-/* TODO: This being an enum looks very strange to me - it should probably be
- * revisited. */
-typedef enum {
-  OTRNG_ALLOW_NONE = 0,
-  OTRNG_ALLOW_V3 = 1,
-  OTRNG_ALLOW_V4 = 2
-} otrng_supported_version;
-
-// clang-format off
-typedef struct otrng_policy_s {
-  int allows;
-} otrng_policy_s, otrng_policy_p[1];
-// clang-format on
-
-// TODO: @client This is a single instance conversation. Make it multi-instance.
-typedef struct otrng_conversation_state_s {
-  /* void *opdata; // Could have a conversation opdata to point to a, say
-   PurpleConversation */
-
-  otrng_client_state_s *client;
-  char *peer;
-  uint16_t their_instance_tag;
-} otrng_conversation_state_s, otrng_conversation_state_p[1];
-
-struct otrng_s {
-  /* Contains: client (private key, instance tag, and callbacks) and
-   conversation state */
-  otrng_conversation_state_s *conversation;
-  otrng_v3_conn_s *v3_conn;
-
-  otrng_state state;
-  int supported_versions;
-
-  uint32_t their_prekeys_id;
-
-  uint32_t our_instance_tag;
-  uint32_t their_instance_tag;
-
-  client_profile_s *their_client_profile;
-  otrng_prekey_profile_s *their_prekey_profile;
-
-  uint8_t running_version;
-
-  key_manager_s *keys;
-  smp_protocol_p smp;
-
-  list_element_s *pending_fragments;
-
-  string_p sending_init_msg;
-  string_p receiving_init_msg;
-
-  time_t last_sent; // TODO: @refactoring not sure if the best place to put
-  int ignore_msg;   // TODO: @refactoring not sure if the best place to put
-
-  char *shared_session_state;
-}; /* otrng_s */
-
-typedef struct otrng_s otrng_p[1];
 
 // clang-format off
 // TODO: @non_interactive this a mock
@@ -174,13 +105,6 @@ INTERNAL otrng_err otrng_send_message(string_p *to_send, const string_p message,
 
 INTERNAL otrng_err otrng_close(string_p *to_send, otrng_s *otr);
 
-INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
-                                   const size_t q_len, const uint8_t *secret,
-                                   const size_t secretlen, otrng_s *otr);
-
-INTERNAL otrng_err otrng_smp_continue(string_p *to_send, const uint8_t *secret,
-                                      const size_t secretlen, otrng_s *otr);
-
 INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr);
 
 API otrng_err otrng_build_whitespace_tag(string_p *whitespace_tag,
@@ -190,8 +114,6 @@ API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
                                         const unsigned char *usedata,
                                         size_t usedatalen, uint8_t *extra_key,
                                         otrng_s *otr);
-
-API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr);
 
 API otrng_err otrng_send_offline_message(string_p *dst,
                                          const prekey_ensemble_s *ensemble,
@@ -216,29 +138,8 @@ tstatic int get_message_type(const string_p message);
 tstatic otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
                                  const size_t bufflen);
 
-tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
-                                  const client_profile_s *responder_profile,
-                                  const uint8_t *question, const size_t q_len,
-                                  const uint8_t *secret, const size_t secretlen,
-                                  uint8_t *ssid, smp_protocol_p smp,
-                                  otrng_conversation_state_s *conversation);
-
-tstatic const client_profile_s *get_my_client_profile(otrng_s *otr);
-
 tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr);
 
-tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
-                                        smp_protocol_p smp,
-                                        const client_profile_s *our_profile,
-                                        const client_profile_s *their_profile,
-                                        uint8_t *ssid, const uint8_t *secret,
-                                        const size_t secretlen);
-
-tstatic otrng_err serialize_and_encode_data_msg(string_p *dst,
-                                                const m_mac_key_p mac_key,
-                                                uint8_t *to_reveal_mac_keys,
-                                                size_t to_reveal_mac_keys_len,
-                                                const data_message_s *data_msg);
 #endif
 
 #endif

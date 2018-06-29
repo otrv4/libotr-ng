@@ -39,17 +39,10 @@
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
+#include "smp.h"
 #include "tlv.h"
 
 #include "debug.h"
-
-static inline struct goldilocks_448_point_s *our_ecdh(const otrng_s *otr) {
-  return &otr->keys->our_ecdh->pub[0];
-}
-
-static inline dh_public_key_p our_dh(const otrng_s *otr) {
-  return otr->keys->our_dh->pub;
-}
 
 static inline struct goldilocks_448_point_s *their_ecdh(const otrng_s *otr) {
   return &otr->keys->their_ecdh[0];
@@ -77,25 +70,6 @@ static const string_p query_header = "?OTRv";
 static const string_p otr_error_header = "?OTR Error:";
 static const string_p otr_header = "?OTR:";
 
-tstatic void create_privkey_cb_v4(const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks) {
-    return;
-  }
-
-  // TODO: @client Change to receive conv->client
-  conv->client->callbacks->create_privkey(conv->client->client_id);
-}
-
-tstatic void create_shared_prekey(const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks) {
-    return;
-  }
-
-  // TODO: @client The callback may not be invoked at all if the mode does not
-  // support non-interactive DAKE, but this is for later.
-  conv->client->callbacks->create_shared_prekey(conv);
-}
-
 tstatic void gone_secure_cb_v4(const otrng_conversation_state_s *conv) {
   if (!conv || !conv->client || !conv->client->callbacks ||
       !conv->client->callbacks->gone_secure) {
@@ -122,47 +96,6 @@ tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint_p fp,
   }
 
   conv->client->callbacks->fingerprint_seen(fp, conv);
-}
-
-tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
-                                    const uint8_t progress_percent,
-                                    const uint8_t *question, const size_t q_len,
-                                    const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks) {
-    return;
-  }
-
-  if (!conv->client->callbacks->smp_ask_for_secret) {
-    return;
-  }
-
-  if (!conv->client->callbacks->smp_ask_for_answer) {
-    return;
-  }
-
-  if (!conv->client->callbacks->smp_update) {
-    return;
-  }
-
-  switch (event) {
-  case OTRNG_SMP_EVENT_ASK_FOR_SECRET:
-    conv->client->callbacks->smp_ask_for_secret(conv);
-    break;
-  case OTRNG_SMP_EVENT_ASK_FOR_ANSWER:
-    conv->client->callbacks->smp_ask_for_answer(question, q_len, conv);
-    break;
-  case OTRNG_SMP_EVENT_CHEATED:
-  case OTRNG_SMP_EVENT_IN_PROGRESS:
-  case OTRNG_SMP_EVENT_SUCCESS:
-  case OTRNG_SMP_EVENT_FAILURE:
-  case OTRNG_SMP_EVENT_ABORT:
-  case OTRNG_SMP_EVENT_ERROR:
-    conv->client->callbacks->smp_update(event, progress_percent, conv);
-    break;
-  default:
-    /* OTRNG_SMP_EVENT_NONE. Should not be used. */
-    break;
-  }
 }
 
 tstatic void received_extra_sym_key(const otrng_client_conversation_s *conv,
@@ -201,16 +134,6 @@ otrng_get_shared_session_state(otrng_s *otr) {
       otr->conversation);
 }
 
-tstatic void maybe_create_keys(const otrng_conversation_state_s *conv) {
-  if (!conv->client->keypair) {
-    create_privkey_cb_v4(conv);
-  }
-
-  if (!conv->client->shared_prekey_pair) {
-    create_shared_prekey(conv);
-  }
-}
-
 tstatic int allow_version(const otrng_s *otr, otrng_supported_version version) {
   return (otr->supported_versions & version);
 }
@@ -243,12 +166,6 @@ static inline const otrng_prekey_profile_s *
 get_my_prekey_profile_by_id(uint32_t id, otrng_s *otr) {
   otrng_client_state_s *state = otr->conversation->client;
   return otrng_client_state_get_prekey_profile_by_id(id, state);
-}
-
-tstatic const client_profile_s *get_my_client_profile(otrng_s *otr) {
-  maybe_create_keys(otr->conversation);
-  otrng_client_state_s *state = otr->conversation->client;
-  return otrng_client_state_get_or_create_client_profile(state);
 }
 
 static inline const client_profile_s *
@@ -879,63 +796,6 @@ tstatic otrng_err serialize_and_encode_non_interactive_auth(
   return SUCCESS;
 }
 
-tstatic data_message_s *generate_data_msg(const otrng_s *otr,
-                                          const uint32_t ratchet_id) {
-  data_message_s *data_msg = otrng_data_message_new();
-  if (!data_msg) {
-    return NULL;
-  }
-
-  data_msg->sender_instance_tag = otr->our_instance_tag;
-  data_msg->receiver_instance_tag = otr->their_instance_tag;
-  data_msg->previous_chain_n = otr->keys->pn;
-  data_msg->ratchet_id = ratchet_id;
-  data_msg->message_id = otr->keys->j;
-  otrng_ec_point_copy(data_msg->ecdh, our_ecdh(otr));
-  data_msg->dh = otrng_dh_mpi_copy(our_dh(otr));
-
-  return data_msg;
-}
-
-tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
-                                       const uint8_t *message,
-                                       size_t message_len,
-                                       const m_enc_key_p enc_key) {
-  uint8_t *c = NULL;
-
-  random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
-
-  c = malloc(message_len);
-  if (!c) {
-    return ERROR;
-  }
-
-  // TODO: @c_logic message is an UTF-8 string. Is there any problem to cast
-  // it to (unsigned char *)
-  // encrypted_message = XSalsa20_Enc(MKenc, nonce, m)
-  int err =
-      crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
-  if (err) {
-    free(c);
-    return ERROR;
-  }
-
-  data_msg->enc_msg_len = message_len;
-  data_msg->enc_msg = c;
-
-#ifdef DEBUG
-  printf("\n");
-  printf("nonce = ");
-  otrng_memdump(data_msg->nonce, DATA_MSG_NONCE_BYTES);
-  printf("msg = ");
-  otrng_memdump(message, message_len);
-  printf("cipher = ");
-  otrng_memdump(c, message_len);
-#endif
-
-  return SUCCESS;
-}
-
 tstatic void
 non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
                                   otrng_s *otr) {
@@ -1030,41 +890,6 @@ tstatic otrng_err double_ratcheting_init(otrng_s *otr, const char participant) {
   otrng_key_manager_wipe_shared_prekeys(otr->keys);
 
   return SUCCESS;
-}
-
-static char *build_error_message(const char *error_code,
-                                 const char *error_name) {
-  size_t s = strlen(ERROR_PREFIX) + strlen(error_code) + strlen(error_name) + 1;
-  char *err_msg = malloc(s);
-  if (!err_msg) {
-    return NULL;
-  }
-
-  strcpy(err_msg, ERROR_PREFIX);
-  strcpy(err_msg + strlen(ERROR_PREFIX), error_code);
-  strcat(err_msg, error_name);
-
-  return err_msg;
-}
-
-tstatic void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
-  switch (err_code) {
-  case ERR_NONE:
-    break;
-  case ERR_MSG_UNREADABLE:
-    *to_send = build_error_message(ERROR_CODE_1, "OTRNG_ERR_MSG_UNREADABLE");
-    break;
-  case ERR_MSG_NOT_PRIVATE:
-    *to_send =
-        build_error_message(ERROR_CODE_2, "OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
-    break;
-  case ERR_MSG_ENCRYPTION_ERROR:
-    *to_send = build_error_message(ERROR_CODE_3, "OTRNG_ERR_ENCRYPTION_ERROR");
-    break;
-  case ERR_MSG_MALFORMED:
-    *to_send = build_error_message(ERROR_CODE_4, "OTRNG_ERR_MALFORMED");
-    break;
-  }
 }
 
 tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
@@ -1941,84 +1766,6 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   return SUCCESS;
 }
 
-tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_p smp,
-                                 const tlv_s *tlv) {
-  otrng_smp_event_t event = *ret;
-  tlv_s *to_send = NULL;
-
-  switch (tlv->type) {
-  case OTRNG_TLV_SMP_MSG_1:
-    event = otrng_process_smp_msg1(tlv, smp);
-    if (event == OTRNG_SMP_EVENT_ABORT) {
-      smp->state_expect = '1';
-    } else if (event == OTRNG_SMP_EVENT_ERROR ||
-               event == OTRNG_SMP_EVENT_FAILURE) {
-      smp->state_expect = '1';
-    }
-    break;
-
-  case OTRNG_TLV_SMP_MSG_2:
-    event = otrng_process_smp_msg2(&to_send, tlv, smp);
-    if (event == OTRNG_SMP_EVENT_ABORT) {
-      smp->state_expect = '1';
-      to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
-      if (!to_send) {
-        return NULL;
-      }
-    } else if (event == OTRNG_SMP_EVENT_ERROR ||
-               event == OTRNG_SMP_EVENT_FAILURE) {
-      smp->state_expect = '1';
-    }
-    break;
-
-  case OTRNG_TLV_SMP_MSG_3:
-    event = otrng_process_smp_msg3(&to_send, tlv, smp);
-    if (event == OTRNG_SMP_EVENT_ABORT) {
-      smp->state_expect = '1';
-      to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
-      if (!to_send) {
-        return NULL;
-      }
-    } else if (event == OTRNG_SMP_EVENT_ERROR ||
-               event == OTRNG_SMP_EVENT_FAILURE) {
-      smp->state_expect = '1';
-    }
-    break;
-
-  case OTRNG_TLV_SMP_MSG_4:
-    event = otrng_process_smp_msg4(tlv, smp);
-    if (event == OTRNG_SMP_EVENT_ABORT) {
-      smp->state_expect = '1';
-      to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
-      if (!to_send) {
-        return NULL;
-      }
-    } else if (event == OTRNG_SMP_EVENT_ERROR ||
-               event == OTRNG_SMP_EVENT_FAILURE) {
-      smp->state_expect = '1';
-    }
-    break;
-
-  case OTRNG_TLV_SMP_ABORT:
-    smp->state_expect = '1';
-    event = OTRNG_SMP_EVENT_ABORT;
-    break;
-  case OTRNG_TLV_NONE:
-  case OTRNG_TLV_PADDING:
-  case OTRNG_TLV_DISCONNECTED:
-  case OTRNG_TLV_SYM_KEY:
-    /* Ignore. They should not be passed to this function. */
-    break;
-  }
-
-  if (!event) {
-    event = OTRNG_SMP_EVENT_IN_PROGRESS;
-  }
-
-  *ret = event;
-  return to_send;
-}
-
 tstatic unsigned int extract_word(unsigned char *bufp) {
   unsigned int use =
       (bufp[0] << 24) | (bufp[1] << 16) | (bufp[2] << 8) | bufp[3];
@@ -2048,14 +1795,7 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
 
   sodium_memzero(otr->keys->extra_symmetric_key, sizeof(extra_symmetric_key_p));
 
-  // TODO: @smp: what happens with the error and failure?
-  otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
-  tlv_s *out = otrng_process_smp(&event, otr->smp, tlv);
-  handle_smp_event_cb_v4(event, otr->smp->progress,
-                         otr->smp->msg1 ? otr->smp->msg1->question : NULL,
-                         otr->smp->msg1 ? otr->smp->msg1->q_len : 0,
-                         otr->conversation);
-  return out;
+  return otrng_process_smp_tlv(tlv, otr);
 }
 
 tstatic otrng_err process_received_tlvs(tlv_list_s **to_send,
@@ -2447,218 +2187,6 @@ INTERNAL otrng_err otrng_receive_defragmented_message(
   return ERROR;
 }
 
-tstatic otrng_err serialize_and_encode_data_msg(
-    string_p *dst, const m_mac_key_p mac_key, uint8_t *to_reveal_mac_keys,
-    size_t to_reveal_mac_keys_len, const data_message_s *data_msg) {
-  uint8_t *body = NULL;
-  size_t bodylen = 0;
-
-  if (!otrng_data_message_body_asprintf(&body, &bodylen, data_msg)) {
-    return ERROR;
-  }
-
-  size_t serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
-
-  uint8_t *ser = malloc(serlen);
-  if (!ser) {
-    free(body);
-    return ERROR;
-  }
-
-  memcpy(ser, body, bodylen);
-  free(body);
-
-  if (!otrng_data_message_authenticator(ser + bodylen, MAC_KEY_BYTES, mac_key,
-                                        ser, bodylen)) {
-    free(ser);
-    return ERROR;
-  }
-
-  if (to_reveal_mac_keys) {
-    otrng_serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES,
-                                to_reveal_mac_keys, to_reveal_mac_keys_len);
-  }
-
-  *dst = otrl_base64_otr_encode(ser, serlen);
-
-  free(ser);
-  return SUCCESS;
-}
-
-tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
-                                    size_t message_len, otrng_s *otr,
-                                    unsigned char flags, otrng_notif notif) {
-  data_message_s *data_msg = NULL;
-  uint32_t ratchet_id = otr->keys->i;
-  m_enc_key_p enc_key;
-  m_mac_key_p mac_key;
-
-  /* if j == 0 */
-  if (!otrng_key_manager_derive_dh_ratchet_keys(
-          otr->keys, otr->conversation->client->max_stored_msg_keys,
-          otr->keys->j, 0, 's', notif)) {
-    return ERROR;
-  }
-
-  // TODO: This hides using uninitialized bytes from keys
-  memset(enc_key, 0, sizeof enc_key);
-  memset(mac_key, 0, sizeof mac_key);
-
-  otrng_key_manager_derive_chain_keys(
-      enc_key, mac_key, otr->keys,
-      otr->conversation->client->max_stored_msg_keys, 0, 's', notif);
-
-  data_msg = generate_data_msg(otr, ratchet_id);
-  if (!data_msg) {
-    sodium_memzero(enc_key, sizeof(m_enc_key_p));
-    sodium_memzero(mac_key, sizeof(m_mac_key_p));
-    return ERROR;
-  }
-
-  data_msg->flags = flags;
-  data_msg->sender_instance_tag = otr->our_instance_tag;
-  data_msg->receiver_instance_tag = otr->their_instance_tag;
-
-  if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {
-    otrng_error_message(to_send, ERR_MSG_ENCRYPTION_ERROR);
-
-    sodium_memzero(enc_key, sizeof(m_enc_key_p));
-    sodium_memzero(mac_key, sizeof(m_mac_key_p));
-    otrng_data_message_free(data_msg);
-    return ERROR;
-  }
-
-  sodium_memzero(enc_key, sizeof(m_enc_key_p));
-
-  /* Authenticator = KDF_1(0x1C || MKmac || KDF_1(usage_authenticator ||
-   * data_message_sections, 64), 64) */
-  if (otr->keys->j == 0) {
-    size_t ser_mac_keys_len =
-        otrng_list_len(otr->keys->old_mac_keys) * MAC_KEY_BYTES;
-    uint8_t *ser_mac_keys =
-        otrng_serialize_old_mac_keys(otr->keys->old_mac_keys);
-    otr->keys->old_mac_keys = NULL;
-
-    if (!serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
-                                       ser_mac_keys_len, data_msg)) {
-      sodium_memzero(mac_key, sizeof(m_mac_key_p));
-      free(ser_mac_keys);
-      otrng_data_message_free(data_msg);
-      return ERROR;
-    }
-    free(ser_mac_keys);
-  } else {
-    if (!serialize_and_encode_data_msg(to_send, mac_key, NULL, 0, data_msg)) {
-      sodium_memzero(mac_key, sizeof(m_mac_key_p));
-      otrng_data_message_free(data_msg);
-      return ERROR;
-    }
-  }
-
-  otr->keys->j++;
-
-  sodium_memzero(mac_key, sizeof(m_mac_key_p));
-  otrng_data_message_free(data_msg);
-
-  return SUCCESS;
-}
-
-tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
-                                 const tlv_list_s *tlvs) {
-  const tlv_list_s *current = tlvs;
-  uint8_t *cursor = NULL;
-
-  *dst = NULL;
-  *dstlen = 0;
-
-  if (!tlvs) {
-    return SUCCESS;
-  }
-
-  for (*dstlen = 0; current; current = current->next) {
-    *dstlen += current->data->len + 4;
-  }
-
-  *dst = malloc(*dstlen);
-  if (!*dst) {
-    return ERROR;
-  }
-
-  cursor = *dst;
-  for (current = tlvs; current; current = current->next) {
-    cursor += otrng_tlv_serialize(cursor, current->data);
-  }
-
-  return SUCCESS;
-}
-
-tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,
-                              const string_p message, const tlv_list_s *tlvs,
-                              const otrng_s *otr) {
-  uint8_t *ser = NULL;
-  size_t len = 0;
-
-  if (!serialize_tlvs(&ser, &len, tlvs)) {
-    return ERROR;
-  }
-
-  // Append padding
-  size_t message_len = strlen(message) + 1 + len;
-  uint8_t *padding = NULL;
-  size_t padding_len = 0;
-  if (!generate_padding(&padding, &padding_len, message_len, otr)) {
-    free(ser);
-    return ERROR;
-  }
-
-  *dst_len = message_len + padding_len;
-  *dst = malloc(*dst_len);
-  if (!*dst) {
-    free(ser);
-    free(padding);
-    return ERROR;
-  }
-
-  memcpy(otrng_stpcpy((char *)*dst, message) + 1, ser, len);
-
-  if (padding) {
-    memcpy(*dst + message_len, padding, padding_len);
-  }
-
-  free(ser);
-  free(padding);
-  return SUCCESS;
-}
-
-tstatic otrng_err otrng_prepare_to_send_data_message(
-    string_p *to_send, otrng_notif notif, const string_p message,
-    const tlv_list_s *tlvs, otrng_s *otr, unsigned char flags) {
-  uint8_t *msg = NULL;
-  size_t msg_len = 0;
-
-  if (otr->state == OTRNG_STATE_FINISHED) {
-    return ERROR; // Should restart
-  }
-
-  if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
-    notif = NOTIF_STATE_NOT_ENCRYPTED; // TODO: @queing queue message
-    return ERROR;
-  }
-
-  if (!append_tlvs(&msg, &msg_len, message, tlvs, otr)) {
-    return ERROR;
-  }
-
-  otrng_err result =
-      send_data_message(to_send, msg, msg_len, otr, flags, notif);
-
-  otr->last_sent = time(NULL);
-
-  free(msg);
-
-  return result;
-}
-
 INTERNAL otrng_err otrng_send_message(string_p *to_send, const string_p message,
                                       otrng_notif notif, const tlv_list_s *tlvs,
                                       uint8_t flags, otrng_s *otr) {
@@ -2799,214 +2327,6 @@ API otrng_err otrng_send_symkey_message(string_p *to_send, unsigned int use,
     return ERROR;
   }
 
-  return ERROR;
-}
-
-tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
-                                  const client_profile_s *responder_profile,
-                                  const uint8_t *question, const size_t q_len,
-                                  const uint8_t *answer,
-                                  const size_t answer_len, uint8_t *ssid,
-                                  smp_protocol_p smp,
-                                  otrng_conversation_state_s *conversation) {
-
-  smp_msg_1_p msg;
-  uint8_t *to_send = NULL;
-  size_t len = 0;
-
-  otrng_fingerprint_p our_fp, their_fp;
-  if (!otrng_serialize_fingerprint(our_fp,
-                                   initiator_profile->long_term_pub_key)) {
-    return NULL;
-  }
-
-  if (!otrng_serialize_fingerprint(their_fp,
-                                   responder_profile->long_term_pub_key)) {
-    return NULL;
-  }
-
-  if (!otrng_generate_smp_secret(&smp->secret, our_fp, their_fp, ssid, answer,
-                                 answer_len)) {
-    return NULL;
-  }
-
-  do {
-    if (!otrng_generate_smp_msg_1(msg, smp)) {
-      continue;
-    }
-
-    msg->q_len = q_len;
-    msg->question = otrng_memdup(question, q_len);
-
-    if (!otrng_smp_msg_1_asprintf(&to_send, &len, msg)) {
-      continue;
-    }
-
-    smp->state_expect = '2';
-    smp->progress = 25;
-    handle_smp_event_cb_v4(OTRNG_SMP_EVENT_IN_PROGRESS, smp->progress, question,
-                           q_len, conversation);
-
-    tlv_s *tlv = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, len, to_send);
-    if (!tlv) {
-      otrng_smp_msg_1_destroy(msg);
-      free(to_send);
-      return NULL;
-    }
-
-    otrng_smp_msg_1_destroy(msg);
-    free(to_send);
-    return tlv;
-  } while (0);
-
-  otrng_smp_msg_1_destroy(msg);
-  handle_smp_event_cb_v4(OTRNG_SMP_EVENT_ERROR, smp->progress,
-                         smp->msg1->question, smp->msg1->q_len, conversation);
-
-  return NULL;
-}
-
-INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
-                                   const size_t q_len, const uint8_t *answer,
-                                   const size_t answer_len, otrng_s *otr) {
-  if (!otr) {
-    return ERROR;
-  }
-
-  switch (otr->running_version) {
-  case 3:
-    // FIXME: missing fragmentation
-    return otrng_v3_smp_start(to_send, question, q_len, answer, answer_len,
-                              otr->v3_conn);
-  case 4:
-    if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
-      return ERROR;
-    }
-
-    tlv_s *smp_start_tlv = otrng_smp_initiate(
-        get_my_client_profile(otr), otr->their_client_profile, question, q_len,
-        answer, answer_len, otr->keys->ssid, otr->smp, otr->conversation);
-
-    if (!smp_start_tlv) {
-      return ERROR;
-    }
-
-    tlv_list_s *tlvs = otrng_tlv_list_one(smp_start_tlv);
-    if (!tlvs) {
-      return ERROR;
-    }
-
-    otrng_notif notif = NOTIF_NONE;
-    otrng_err ret = otrng_send_message(to_send, "", notif, tlvs,
-                                       MSGFLAGS_IGNORE_UNREADABLE, otr);
-    otrng_tlv_list_free(tlvs);
-    return ret;
-  case 0:
-    return ERROR;
-  }
-
-  return ERROR;
-}
-
-tstatic tlv_s *
-otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_p smp,
-                         const client_profile_s *our_profile,
-                         const client_profile_s *their_client_profile,
-                         uint8_t *ssid, const uint8_t *secret,
-                         const size_t secretlen) {
-  // TODO: @smp If state is not CONTINUE_SMP then error.
-  tlv_s *smp_reply = NULL;
-
-  otrng_fingerprint_p our_fp, their_fp;
-  if (!otrng_serialize_fingerprint(our_fp, our_profile->long_term_pub_key)) {
-    return NULL;
-  }
-
-  if (!otrng_serialize_fingerprint(their_fp,
-                                   their_client_profile->long_term_pub_key)) {
-    return NULL;
-  }
-
-  if (!otrng_generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret,
-                                 secretlen)) {
-    return NULL;
-  }
-
-  *event = otrng_reply_with_smp_msg_2(&smp_reply, smp);
-
-  return smp_reply;
-}
-
-tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
-                                  const size_t secretlen, otrng_s *otr) {
-  if (!otr) {
-    return ERROR;
-  }
-
-  otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
-  tlv_list_s *tlvs = otrng_tlv_list_one(otrng_smp_provide_secret(
-      &event, otr->smp, get_my_client_profile(otr), otr->their_client_profile,
-      otr->keys->ssid, secret, secretlen));
-
-  if (!tlvs) {
-    return ERROR;
-  }
-
-  if (!event) {
-    event = OTRNG_SMP_EVENT_IN_PROGRESS;
-  }
-
-  handle_smp_event_cb_v4(event, otr->smp->progress, otr->smp->msg1->question,
-                         otr->smp->msg1->q_len, otr->conversation);
-
-  otrng_notif notif = NOTIF_NONE;
-  otrng_err ret = otrng_send_message(to_send, "", notif, tlvs,
-                                     MSGFLAGS_IGNORE_UNREADABLE, otr);
-  otrng_tlv_list_free(tlvs);
-
-  return ret;
-}
-
-INTERNAL otrng_err otrng_smp_continue(string_p *to_send, const uint8_t *secret,
-                                      const size_t secretlen, otrng_s *otr) {
-  switch (otr->running_version) {
-  case 3:
-    // FIXME: @smp missing fragmentation
-    return otrng_v3_smp_continue(to_send, secret, secretlen, otr->v3_conn);
-  case 4:
-    return smp_continue_v4(to_send, secret, secretlen, otr);
-  case 0:
-    return ERROR;
-  }
-
-  return ERROR; // TODO: @smp IMPLEMENT
-}
-
-tstatic otrng_err otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
-  tlv_list_s *tlvs =
-      otrng_tlv_list_one(otrng_tlv_new(OTRL_TLV_SMP_ABORT, 0, NULL));
-
-  if (!tlvs) {
-    return ERROR;
-  }
-
-  otr->smp->state_expect = '1';
-  otrng_notif notif = NOTIF_NONE;
-  otrng_err ret = otrng_send_message(to_send, "", notif, tlvs,
-                                     MSGFLAGS_IGNORE_UNREADABLE, otr);
-  otrng_tlv_list_free(tlvs);
-  return ret;
-}
-
-API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr) {
-  switch (otr->running_version) {
-  case 3:
-    return otrng_v3_smp_abort(otr->v3_conn);
-  case 4:
-    return otrng_smp_abort_v4(to_send, otr);
-  case 0:
-    return ERROR;
-  }
   return ERROR;
 }
 
