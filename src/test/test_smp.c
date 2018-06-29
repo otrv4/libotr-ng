@@ -18,7 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../smp.h"
+#include "../smp_protocol.h"
 #include "../tlv.h"
 
 void test_smp_state_machine(void) {

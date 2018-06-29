@@ -45,7 +45,7 @@ libotr_ng_la_SOURCES = auth.c \
 		     prekey_profile.c \
 		     serialize.c \
 		     shake.c \
-		     smp.c \
+		     smp_protocol.c \
 		     str.c \
 		     tlv.c
 

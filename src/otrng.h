@@ -30,7 +30,7 @@
 #include "prekey_ensemble.h"
 #include "prekey_profile.h"
 #include "shared.h"
-#include "smp.h"
+#include "smp_protocol.h"
 #include "str.h"
 #include "v3.h"
 

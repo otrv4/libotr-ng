@@ -46,7 +46,7 @@ test_SOURCES = test.c \
 		     ../prekey_profile.c \
 		     ../serialize.c \
 		     ../shake.c \
-		     ../smp.c \
+		     ../smp_protocol.c \
 		     ../str.c \
 		     ../tlv.c
 
