@@ -501,88 +501,57 @@ void test_api_conversation_errors_1(void) {
 
 void test_api_conversation_errors_2(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_s *alice = set_up(alice_client_state, BOB_IDENTITY, 2);
 
-  alice_client_state->account_name = otrng_strdup(ALICE_IDENTITY);
-  alice_client_state->protocol_name = otrng_strdup("otr");
-  alice_client_state->user_state = otrl_userstate_create();
-
-  uint8_t sym_key[ED448_PRIVATE_BYTES] = {0x01};
-  otrng_client_state_add_private_key_v4(alice_client_state, sym_key);
-  otrng_client_state_add_shared_prekey_v4(alice_client_state, sym_key);
-  otrng_client_state_add_instance_tag(alice_client_state, 0x00);
-  alice_client_state->callbacks = test_callbacks;
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
-
-  // TODO: Why is alice setup manually?
-  otrng_s *alice = otrng_new(alice_client_state, policy);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
-
-  otrng_response_s *response_to_bob = otrng_response_new();
-  otrng_response_s *response_to_alice = otrng_response_new();
-  string_p query_message = NULL;
+  otrng_response_s *response = otrng_response_new();
   otrng_notif notif = NOTIF_NONE;
 
   otrng_assert(alice->state == OTRNG_STATE_START);
-  otrng_assert(bob->state == OTRNG_STATE_START);
 
-  // Alice sends a query message
-  otrng_assert_is_success(otrng_build_query_message(&query_message, "", alice));
-  otrng_assert(alice->state == OTRNG_STATE_START);
-  otrng_assert_cmpmem("?OTRv4", query_message, 6);
+  const char *malformed =
+      "?OTR:AAQIAAAAAAAAAAAAAAEBAAABAgAQXaS4pTGfRolFC5WuliYvxJJcwqpOQeeO4/"
+      "1zoKokDoUE/"
+      "OnFdvBBv09zDtDvneIbzfs56QHpWGuAAAAAAzM0AAAAAABbSMuiJZfVAhREsc6c6WG7NSVNN"
+      "F58mInKArRia8avA5ZazE7HUNkZ8BWPsouNbLoTYTxViDtavlEpHfCAOqsXGRwAO0H/"
+      "kQNgRJr2ZWTF1AEs1BHP7r+tu/muOUx/7wqh/"
+      "itf9au4j3LO5b1AMCV5tIIpmQcAAAAAAIyDWg5gjDdOL+yYsZs1QdRaNWf6Bb+"
+      "t3R6XAd3kv+AFibvTomYi/OL8j3eM65prcjSOMIDJMbxigAAAAYAPNegWVf5E9/"
+      "rOgH48feVb3m3EP3L0Ln6lgNdcxATBI6AmqvJwYaTwrDGnhOggj6PUC/USidH/"
+      "pUQ2Ht7QnSVqFEgxCttt/"
+      "oRtcd7oiso9wYEgcMQrToZLF3URJEQUFC6TzyCkPPOcoSGCAkJvqpgwp6xCHza7qvFGvlsE4"
+      "RUNj5/09SU0GDIvZkROwmMa14OlHu0Zb84ttyicohcxGmOdTi/c4XPVu5NO2vc/j/"
+      "Px28qWCFy8ZdUdKN1QFhrtU/y2K0jcFsvifJmc1puBjoQvbg51s/"
+      "M9+LNDJhJUN4OUMybqTpnztt2+Jl8FFV+Wg8f6E52gM4rODoc4NWatDc+t9p+"
+      "SiqbSKueci04yIue+5N057t7TT0nh9WEZnom3gbwkmS6b4yz/"
+      "xSssNlgx1+Tnk3oXiJO+SO8znlZ6lkxmhZgrqG1u8abBO9YG6DC4gz9s3sBCJDA+"
+      "eF08cb9C7RwGpebYgJMNZ3PgwVy6s6H5yoD0c2PcqF50hspJu+2oA1A=.";
 
-  // Bob receives a query message
-  otrng_assert_is_success(
-      otrng_receive_message(response_to_alice, notif, query_message, bob));
-  free(query_message);
-  query_message = NULL;
-
-  // Bob replies with an identity message
-  otrng_assert(bob->state == OTRNG_STATE_WAITING_AUTH_R);
-  otrng_assert(response_to_alice->to_display == NULL);
-  otrng_assert(response_to_alice->to_send);
-  otrng_assert_cmpmem("?OTR:AAQI", response_to_alice->to_send, 9);
-
-  // Alice receives an identity message
-  otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, notif, response_to_alice->to_send, alice));
-  free(response_to_alice->to_send);
-  response_to_alice->to_send = NULL;
-
-  // Alice replies with an auth-r message
-  otrng_assert(alice->state == OTRNG_STATE_WAITING_AUTH_I);
-  otrng_assert(response_to_bob->to_display == NULL);
-  otrng_assert(response_to_bob->to_send);
-  otrng_assert_cmpmem("?OTR:AASR", response_to_bob->to_send, 9);
-
-  // Bob receives an auth-r message
-  otrng_assert_is_error(otrng_receive_message(response_to_alice, notif,
-                                              response_to_bob->to_send, bob));
+  // Alice receives malformed Identity message
+  otrng_assert_is_error(
+      otrng_receive_message(response, notif, malformed, alice));
   const string_p err_code = "?OTR Error: ERROR_4: OTRNG_ERR_MALFORMED";
-  otrng_assert_cmpmem(err_code, response_to_alice->to_send, strlen(err_code));
+  otrng_assert_cmpmem(err_code, response->to_send, strlen(err_code));
 
-  free(response_to_bob->to_send);
-  response_to_bob->to_send = NULL;
+  // TODO: everything from here should be a separate test:
+  // For example, otrng_test_receive_error_message.
 
   // Alice receives an error message
-  otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, notif, response_to_alice->to_send, alice));
+  // otrng_assert_is_success(otrng_receive_message(
+  //    response_to_bob, notif, response_to_alice->to_send, alice));
 
-  otrng_assert(response_to_bob);
-  const string_p err_human = "Malformed message";
-  otrng_assert_cmpmem(err_human, response_to_bob->to_display,
-                      strlen(err_human));
+  // otrng_assert(response_to_bob);
+  // const string_p err_human = "Malformed message";
+  // otrng_assert_cmpmem(err_human, response_to_bob->to_display,
+  //                    strlen(err_human));
 
-  free(response_to_alice->to_send);
-  response_to_alice->to_send = NULL;
+  // free(response_to_alice->to_send);
+  // response_to_alice->to_send = NULL;
 
-  otrng_response_free(response_to_alice);
-  otrng_response_free(response_to_bob);
+  otrng_response_free(response);
 
-  otrng_user_state_free_all(alice_client_state->user_state,
-                            bob_client_state->user_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
-  otrng_free_all(alice, bob);
+  otrng_user_state_free_all(alice_client_state->user_state);
+  otrng_client_state_free_all(alice_client_state);
+  otrng_free_all(alice);
 }
 
 static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
