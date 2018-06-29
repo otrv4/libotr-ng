@@ -555,6 +555,8 @@ void test_api_conversation_errors_2(void) {
   otrng_user_state_free_all(alice_client_state->user_state);
   otrng_client_state_free_all(alice_client_state);
   otrng_free_all(alice);
+  otrng_user_state_free_all(bob_client_state->user_state);
+  otrng_client_state_free_all(bob_client_state);
   otrng_free_all(bob);
 }
 
