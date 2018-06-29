@@ -203,11 +203,6 @@ int main(int argc, char **argv) {
   g_test_add_func("/tlv/append", test_otrng_append_tlv);
   g_test_add_func("/tlv/append_padding", test_otrng_append_padding_tlv);
 
-  // TODO: @refactoring why we have this?
-  // g_test_add_func("/otrng/starts_protocol", test_otrng_starts_protocol);
-  // g_test_add("/otrng/version_supports_v34", otrng_fixture_s, NULL,
-  // otrng_fixture_set_up, test_otrng_version_supports_v34,
-  // otrng_fixture_teardown );
   g_test_add("/otrng/builds_query_message", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_builds_query_message,
              otrng_fixture_teardown);
