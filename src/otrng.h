@@ -102,7 +102,7 @@ struct otrng_s {
   uint8_t running_version;
 
   key_manager_s *keys;
-  smp_context_p smp;
+  smp_protocol_p smp;
 
   list_element_s *pending_fragments;
 
@@ -220,7 +220,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
                                   const client_profile_s *responder_profile,
                                   const uint8_t *question, const size_t q_len,
                                   const uint8_t *secret, const size_t secretlen,
-                                  uint8_t *ssid, smp_context_p smp,
+                                  uint8_t *ssid, smp_protocol_p smp,
                                   otrng_conversation_state_s *conversation);
 
 tstatic const client_profile_s *get_my_client_profile(otrng_s *otr);
@@ -228,7 +228,7 @@ tstatic const client_profile_s *get_my_client_profile(otrng_s *otr);
 tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr);
 
 tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
-                                        smp_context_p smp,
+                                        smp_protocol_p smp,
                                         const client_profile_s *our_profile,
                                         const client_profile_s *their_profile,
                                         uint8_t *ssid, const uint8_t *secret,

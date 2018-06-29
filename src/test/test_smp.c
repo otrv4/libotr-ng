@@ -226,7 +226,7 @@ void test_smp_state_machine_abort(void) {
 }
 
 void test_otrng_generate_smp_secret(void) {
-  smp_context_p smp;
+  smp_protocol_p smp;
   smp->msg1 = NULL;
   otrng_fingerprint_p our = {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -278,7 +278,7 @@ void test_otrng_generate_smp_secret(void) {
 
 void test_otrng_smp_msg_1_asprintf_null_question(void) {
   smp_msg_1_p msg;
-  smp_context_p smp;
+  smp_protocol_p smp;
   smp->msg1 = NULL;
   uint8_t *buff;
   size_t writen = 0;

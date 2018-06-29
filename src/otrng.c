@@ -288,7 +288,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->their_prekey_profile = NULL;
 
   otr->keys = otrng_key_manager_new();
-  otrng_smp_context_init(otr->smp);
+  otrng_smp_protocol_init(otr->smp);
 
   otr->pending_fragments = NULL;
   otr->v3_conn = NULL;
@@ -1941,7 +1941,7 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   return SUCCESS;
 }
 
-tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_context_p smp,
+tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_p smp,
                                  const tlv_s *tlv) {
   otrng_smp_event_t event = *ret;
   tlv_s *to_send = NULL;
@@ -2807,7 +2807,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
                                   const uint8_t *question, const size_t q_len,
                                   const uint8_t *answer,
                                   const size_t answer_len, uint8_t *ssid,
-                                  smp_context_p smp,
+                                  smp_protocol_p smp,
                                   otrng_conversation_state_s *conversation) {
 
   smp_msg_1_p msg;
@@ -2909,7 +2909,7 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
 }
 
 tstatic tlv_s *
-otrng_smp_provide_secret(otrng_smp_event_t *event, smp_context_p smp,
+otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_p smp,
                          const client_profile_s *our_profile,
                          const client_profile_s *their_client_profile,
                          uint8_t *ssid, const uint8_t *secret,
