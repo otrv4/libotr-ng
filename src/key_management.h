@@ -118,6 +118,14 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager);
  * @param [manager]   The key manager.
  */
 INTERNAL void otrng_key_manager_free(key_manager_s *manager);
+
+/**
+ * @brief Securely deletes the shared prekeys used in the Dake.
+ *
+ * @param [manager]   The key manager.
+ */
+INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager);
+
 /**
  * @brief Securely replace their ecdh and their dh keys.
  *

@@ -117,18 +117,12 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   ratchet_free(manager->current);
   manager->current = NULL;
 
-  // TODO: @freeing once dake is finished should be wiped out
-  sodium_memzero(manager->their_shared_prekey, ED448_POINT_BYTES);
-  sodium_memzero(manager->our_shared_prekey, ED448_POINT_BYTES);
-
   sodium_memzero(manager->brace_key, sizeof(manager->brace_key));
   sodium_memzero(manager->shared_secret, sizeof(manager->shared_secret));
   sodium_memzero(manager->ssid, sizeof(manager->ssid));
   manager->ssid_half_first = otrng_false;
   sodium_memzero(manager->extra_symmetric_key,
                  sizeof(manager->extra_symmetric_key));
-  // TODO: @freeing once dake is finished should be wiped out
-  sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 
   otrng_list_free_full(manager->skipped_keys);
   manager->skipped_keys = NULL;
@@ -140,6 +134,12 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
 INTERNAL void otrng_key_manager_free(key_manager_s *manager) {
   otrng_key_manager_destroy(manager);
   free(manager);
+}
+
+INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager) {
+  sodium_memzero(manager->their_shared_prekey, ED448_POINT_BYTES);
+  sodium_memzero(manager->our_shared_prekey, ED448_POINT_BYTES);
+  sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 }
 
 INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,

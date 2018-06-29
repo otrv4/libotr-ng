@@ -1027,6 +1027,7 @@ tstatic otrng_err double_ratcheting_init(otrng_s *otr, const char participant) {
 
   otr->state = OTRNG_STATE_ENCRYPTED_MESSAGES;
   gone_secure_cb_v4(otr->conversation);
+  otrng_key_manager_wipe_shared_prekeys(otr->keys);
 
   return SUCCESS;
 }
