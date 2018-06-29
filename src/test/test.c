@@ -67,13 +67,11 @@ int main(int argc, char **argv) {
   if (!gcry_check_version(GCRYPT_VERSION))
     return 2;
 
-  // TODO: @api we are using gcry_mpi_snew, so we might need this
-  // gcry_control (GCRYCTL_INIT_SECMEM, 1);
-  // gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
-  // gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
-
-  /* Set to quick random so we don't wait on /dev/random. */
+  gcry_control(GCRYCTL_INIT_SECMEM, 0); // disable secure memory for tests
+  gcry_control(GCRYCTL_RESUME_SECMEM_WARN);
   gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
+  gcry_control(GCRYCTL_INITIALIZATION_FINISHED);
+
   OTRNG_INIT;
 
   g_test_init(&argc, &argv, NULL);
