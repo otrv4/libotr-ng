@@ -501,7 +501,7 @@ void test_api_conversation_errors_1(void) {
 
 void test_api_conversation_errors_2(void) {
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_s *alice = set_up(alice_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
 
   otrng_response_s *response = otrng_response_new();
   otrng_notif notif = NOTIF_NONE;
