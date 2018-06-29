@@ -197,6 +197,8 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
     return -2;
   }
 
+  // TODO: we need to remove getline. It is not c99.
+  // OR ignore if this will be moved to the plugin.
   len = getline(&line, &cap, privf);
   if (len < 0) {
     free(line);
