@@ -23,7 +23,7 @@
 #include "tlv.h"
 
 static size_t calculate_padding_len(size_t message_len, size_t max) {
-  if (!max) {
+  if (max == 0) {
     return 0;
   }
 

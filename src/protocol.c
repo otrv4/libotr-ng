@@ -107,7 +107,7 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
 tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
                                        const uint8_t *message,
                                        size_t message_len,
-                                       const m_enc_key_p enc_key) {
+                                       const msg_enc_key_p enc_key) {
   uint8_t *c = NULL;
 
   random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
@@ -162,7 +162,7 @@ tstatic data_message_s *generate_data_msg(const otrng_s *otr,
 }
 
 tstatic otrng_err serialize_and_encode_data_msg(
-    string_p *dst, const m_mac_key_p mac_key, uint8_t *to_reveal_mac_keys,
+    string_p *dst, const msg_mac_key_p mac_key, uint8_t *to_reveal_mac_keys,
     size_t to_reveal_mac_keys_len, const data_message_s *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
@@ -204,8 +204,8 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
                                     unsigned char flags, otrng_notif notif) {
   data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
-  m_enc_key_p enc_key;
-  m_mac_key_p mac_key;
+  msg_enc_key_p enc_key;
+  msg_mac_key_p mac_key;
 
   /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(
@@ -224,8 +224,8 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {
-    sodium_memzero(enc_key, sizeof(m_enc_key_p));
-    sodium_memzero(mac_key, sizeof(m_mac_key_p));
+    sodium_memzero(enc_key, sizeof(msg_enc_key_p));
+    sodium_memzero(mac_key, sizeof(msg_mac_key_p));
     return ERROR;
   }
 
@@ -236,13 +236,13 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {
     otrng_error_message(to_send, ERR_MSG_ENCRYPTION_ERROR);
 
-    sodium_memzero(enc_key, sizeof(m_enc_key_p));
-    sodium_memzero(mac_key, sizeof(m_mac_key_p));
+    sodium_memzero(enc_key, sizeof(msg_enc_key_p));
+    sodium_memzero(mac_key, sizeof(msg_mac_key_p));
     otrng_data_message_free(data_msg);
     return ERROR;
   }
 
-  sodium_memzero(enc_key, sizeof(m_enc_key_p));
+  sodium_memzero(enc_key, sizeof(msg_enc_key_p));
 
   /* Authenticator = KDF_1(0x1C || MKmac || KDF_1(usage_authenticator ||
    * data_message_sections, 64), 64) */
@@ -255,7 +255,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
     if (!serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
                                        ser_mac_keys_len, data_msg)) {
-      sodium_memzero(mac_key, sizeof(m_mac_key_p));
+      sodium_memzero(mac_key, sizeof(msg_mac_key_p));
       free(ser_mac_keys);
       otrng_data_message_free(data_msg);
       return ERROR;
@@ -263,7 +263,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
     free(ser_mac_keys);
   } else {
     if (!serialize_and_encode_data_msg(to_send, mac_key, NULL, 0, data_msg)) {
-      sodium_memzero(mac_key, sizeof(m_mac_key_p));
+      sodium_memzero(mac_key, sizeof(msg_mac_key_p));
       otrng_data_message_free(data_msg);
       return ERROR;
     }
@@ -271,7 +271,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   otr->keys->j++;
 
-  sodium_memzero(mac_key, sizeof(m_mac_key_p));
+  sodium_memzero(mac_key, sizeof(msg_mac_key_p));
   otrng_data_message_free(data_msg);
 
   return SUCCESS;

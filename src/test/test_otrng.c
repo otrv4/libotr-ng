@@ -257,6 +257,7 @@ void test_otrng_build_prekey_ensemble() {
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
   otrng_s *otr = otrng_new(state, policy);
 
+  // TODO: @sanitizer add a client profile
   prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(otr);
   otrng_assert(ensemble);
   otrng_assert_is_success(otrng_prekey_ensemble_validate(ensemble));

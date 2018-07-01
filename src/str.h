@@ -38,7 +38,7 @@ INTERNAL /*@null@*/ char *otrng_stpcpy(char *dest, const char *src);
 
 INTERNAL /*@null@*/ char *otrng_stpncpy(char *dest, const char *src, size_t n);
 
-INTERNAL size_t otrng_strnlen(/*@nonnull@*/ const char *s, size_t maxlen);
+INTERNAL size_t otrng_strnlen(const char *s, size_t maxlen);
 
 #ifdef OTRNG_STR_PRIVATE
 #endif

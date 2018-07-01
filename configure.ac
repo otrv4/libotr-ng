@@ -167,7 +167,7 @@ fi
 if test x$use_sanitizers != x; then
   # First check if the compiler accepts flags. If an incompatible pair like
   # -fsanitize=address,thread is used here, this check will fail. This will also
-  # fail if a bad argument is passed, e.g. -fsanitize=undfeined
+  # fail if a bad argument is passed, e.g. -fsanitize=undefined
   AX_CHECK_COMPILE_FLAG(
     [[-fsanitize=$use_sanitizers]],
     [[SANITIZER_CFLAGS=-fsanitize=$use_sanitizers]],

@@ -36,8 +36,8 @@ typedef uint8_t shared_secret_p[SHARED_SECRET_BYTES];
 typedef uint8_t root_key_p[ROOT_KEY_BYTES];
 typedef uint8_t sending_chain_key_p[CHAIN_KEY_BYTES];
 typedef uint8_t receiving_chain_key_p[CHAIN_KEY_BYTES];
-typedef uint8_t m_enc_key_p[ENC_KEY_BYTES];
-typedef uint8_t m_mac_key_p[MAC_KEY_BYTES];
+typedef uint8_t msg_enc_key_p[ENC_KEY_BYTES];
+typedef uint8_t msg_mac_key_p[MAC_KEY_BYTES];
 typedef uint8_t extra_symmetric_key_p[EXTRA_SYMMETRIC_KEY_BYTES];
 
 /* the different kind of keys needed for a chain ratchet */
@@ -51,7 +51,7 @@ typedef struct skipped_keys_s {
   int i; // Counter of the ratchet
   int j; // Counter of the messages
   extra_symmetric_key_p extra_symmetric_key;
-  m_enc_key_p m_enc_key;
+  msg_enc_key_p enc_key;
 } skipped_keys_s, skipped_keys_p[1];
 
 /* represents the different values needed for key management */
@@ -228,8 +228,8 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
  * @param [message_id]  The receiving message id (j).
  * @param [manager]     The key manager.
  */
-INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
-                                              m_mac_key_p mac_key,
+INTERNAL otrng_err otrng_key_get_skipped_keys(msg_enc_key_p enc_key,
+                                              msg_mac_key_p mac_key,
                                               int ratchet_id, int message_id,
                                               key_manager_s *manager);
 
@@ -244,7 +244,7 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(m_enc_key_p enc_key,
  * @param [action]      's' for sending chain, 'r' for receiving
  */
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
-    m_enc_key_p enc_key, m_mac_key_p mac_key, key_manager_s *manager,
+    msg_enc_key_p enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
     int max_skip, int message_id, const char action, otrng_notif notif);
 
 /**
@@ -266,7 +266,7 @@ INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
  * @param [mac_key]   The mac key to store.
  */
 INTERNAL otrng_err otrng_store_old_mac_keys(key_manager_s *manager,
-                                            m_mac_key_p mac_key);
+                                            msg_mac_key_p mac_key);
 
 INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
 

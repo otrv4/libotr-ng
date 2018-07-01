@@ -25,9 +25,8 @@
 #include "shake.h"
 
 /* Convert a 56-byte hash value to a 126-byte human-readable value */
-API void
-otrng_fingerprint_hash_to_human(char human[FPRINT_HUMAN_LEN],
-                                const unsigned char hash[FPRINT_LEN_BYTES]) {
+API void otrng_fingerprint_hash_to_human(char *human,
+                                         const unsigned char *hash) {
   int word, byte;
   char *p = human;
 

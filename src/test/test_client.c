@@ -248,7 +248,7 @@ void test_fingerprint_hash_to_human() {
   };
 
   char fp_human[FPRINT_HUMAN_LEN];
-  memset(fp_human, 0, sizeof fp_human);
+  memset(fp_human, 0, sizeof fp_hash);
 
   otrng_fingerprint_hash_to_human(fp_human, fp_hash);
 

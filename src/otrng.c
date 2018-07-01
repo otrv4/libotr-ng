@@ -1729,7 +1729,7 @@ tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *src, size_t len) {
 }
 
 tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
-                                   const m_enc_key_p enc_key,
+                                   const msg_enc_key_p enc_key,
                                    const data_message_s *msg) {
   string_p *dst = &response->to_display;
 
@@ -1737,7 +1737,7 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   printf("\n");
   printf("DECRYPTING\n");
   printf("enc_key = ");
-  otrng_memdump(enc_key, sizeof(m_enc_key_p));
+  otrng_memdump(enc_key, sizeof(msg_enc_key_p));
   printf("nonce = ");
   otrng_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
 #endif
@@ -1842,8 +1842,8 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
                                              const uint8_t *buff, size_t buflen,
                                              otrng_s *otr) {
   data_message_s *msg = otrng_data_message_new();
-  m_enc_key_p enc_key;
-  m_mac_key_p mac_key;
+  msg_enc_key_p enc_key;
+  msg_mac_key_p mac_key;
 
   // TODO: This hides using uninitialized bytes from keys
   memset(enc_key, 0, sizeof enc_key);
@@ -1950,14 +1950,14 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
     // TODO: @client this displays an event on otrv3..
     if (!response->to_display) {
       otr->ignore_msg = 1;
-      sodium_memzero(mac_key, sizeof(m_mac_key_p));
+      sodium_memzero(mac_key, sizeof(msg_mac_key_p));
       otrng_data_message_free(msg);
       return SUCCESS;
     } else if (otr->ignore_msg != 1) {
       if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
         if (!otrng_send_message(&response->to_send, "", NOTIF_NONE, NULL,
                                 MSGFLAGS_IGNORE_UNREADABLE, otr)) {
-          sodium_memzero(mac_key, sizeof(m_mac_key_p));
+          sodium_memzero(mac_key, sizeof(msg_mac_key_p));
           otrng_data_message_free(msg);
           return ERROR;
         }
@@ -1965,13 +1965,13 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       }
     }
 
-    sodium_memzero(mac_key, sizeof(m_mac_key_p));
+    sodium_memzero(mac_key, sizeof(msg_mac_key_p));
     otrng_data_message_free(msg);
 
     return SUCCESS;
   } while (0);
 
-  sodium_memzero(mac_key, sizeof(m_mac_key_p));
+  sodium_memzero(mac_key, sizeof(msg_mac_key_p));
   otrng_data_message_free(msg);
 
   return ERROR;

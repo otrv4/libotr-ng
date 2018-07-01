@@ -21,6 +21,9 @@
 #ifndef OTRNG_KEYS_H
 #define OTRNG_KEYS_H
 
+#include <goldilocks.h>
+#include <goldilocks/ed448.h>
+
 #include "dh.h"
 #include "ed448.h"
 #include "shared.h"

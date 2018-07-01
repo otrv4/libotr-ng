@@ -28,7 +28,7 @@
 #include "shared.h"
 #include "str.h"
 
-static inline char *_otrng_memdump(const uint8_t *src, size_t len) {
+static inline /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
   if (src == NULL) {
     return otrng_strndup("(NULL)", 6);
   }

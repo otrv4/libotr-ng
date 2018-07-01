@@ -72,7 +72,7 @@ INTERNAL void otrng_list_free_full(list_element_s *head) {
   otrng_list_free(head, free);
 }
 
-INTERNAL void otrng_list_free_nodes(list_element_s *head) {
+INTERNAL /*@null@*/ void otrng_list_free_nodes(list_element_s *head) {
   otrng_list_free(head, NULL);
 }
 

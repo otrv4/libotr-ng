@@ -18,6 +18,8 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <goldilocks/common.h>
+#include <goldilocks/point_448.h>
 #include <string.h>
 
 #define OTRNG_ED448_PRIVATE
