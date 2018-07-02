@@ -35,15 +35,15 @@
 #define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
 
 API otrng_message_to_send_s *otrng_message_new() {
-  otrng_message_to_send_s *msg = malloc(sizeof(otrng_message_to_send_s));
-  if (!msg) {
+  otrng_message_to_send_s *message = malloc(sizeof(otrng_message_to_send_s));
+  if (!message) {
     return NULL;
   }
 
-  msg->pieces = NULL;
-  msg->total = 0;
+  message->pieces = NULL;
+  message->total = 0;
 
-  return msg;
+  return message;
 }
 
 API void otrng_message_free(otrng_message_to_send_s *message) {
@@ -149,9 +149,9 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
                                           otrng_message_to_send_s *fragments,
                                           int our_instance, int their_instance,
                                           const string_p message) {
-  size_t msg_len = strlen(message);
+  size_t mesage_len = strlen(message);
   size_t limit = max_size - FRAGMENT_HEADER_LEN;
-  int total = ((msg_len - 1) / limit) + 1;
+  int total = ((message_len - 1) / limit) + 1;
 
   if (!init_message_to_send_with_total(fragments, total)) {
     return ERROR;
@@ -160,7 +160,7 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
   uint32_t *identifier = gcry_random_bytes(4, GCRY_STRONG_RANDOM);
 
   for (int i = 0; i < fragments->total; i++) {
-    int piece_len = msg_len < limit ? msg_len : limit;
+    int piece_len = message_len < limit ? message_len : limit;
     char **dst = fragments->pieces + i;
 
     if (!create_fragment_message(dst, message, piece_len, *identifier,
@@ -171,7 +171,7 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
     }
 
     message += piece_len;
-    msg_len -= piece_len;
+    message_len -= piece_len;
   }
 
   gcry_free(identifier);
@@ -200,16 +200,16 @@ tstatic otrng_err initialize_fragments(fragment_context_s *context) {
   return SUCCESS;
 }
 
-tstatic otrng_err join_fragments(char **unfrag_msg,
+tstatic otrng_err join_fragments(char **unfrag_message,
                                  fragment_context_s *context) {
-  *unfrag_msg = malloc(context->total_message_len + 1);
-  if (!*unfrag_msg) {
+  *unfrag_message = malloc(context->total_message_len + 1);
+  if (!*unfrag_message) {
     return ERROR;
   }
 
-  char *end_msg = *unfrag_msg;
+  char *end_message = *unfrag_message;
   for (int i = 0; i < context->total; i++) {
-    end_msg = otrng_stpcpy(end_msg, context->fragments[i]);
+    end_message = otrng_stpcpy(end_message, context->fragments[i]);
   }
 
   return SUCCESS;
@@ -231,18 +231,18 @@ tstatic otrng_err copy_fragment_to_context(fragment_context_s *context,
   return SUCCESS;
 }
 
-INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
+INTERNAL otrng_err otrng_unfragment_message(char **unfrag_message,
                                             list_element_s **contexts,
                                             const string_p message,
                                             const int our_instance_tag) {
-  *unfrag_msg = NULL;
+  *unfrag_message = NULL;
 
   if (!contexts) {
     return ERROR;
   }
 
   if (!is_fragment(message)) {
-    *unfrag_msg = otrng_strdup(message);
+    *unfrag_message = otrng_strdup(message);
     return SUCCESS;
   }
 
@@ -310,7 +310,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
   context->last_fragment_received_at = time(NULL);
 
   if (context->count == t) {
-    if (join_fragments(unfrag_msg, context)) {
+    if (join_fragments(unfrag_message, context)) {
       list_element_s *to_remove = otrng_list_get_by_value(context, *contexts);
       *contexts = otrng_list_remove_element(to_remove, *contexts);
       otrng_fragment_context_free(context);
