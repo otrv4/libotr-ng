@@ -250,7 +250,7 @@ INTERNAL static otrng_err otrng_data_message_sections_hash(uint8_t *dst,
     return ERROR;
   }
 
-  static uint8_t usage_data_msg_sections = 0x1A;
+  static uint8_t usage_data_msg_sections = 0x19;
   // KDF_1(usage_data_msg_sections || data_message_sections, 64)
   shake_256_kdf1(dst, HASH_BYTES, usage_data_msg_sections, body, bodylen);
 

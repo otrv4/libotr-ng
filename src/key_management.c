@@ -202,7 +202,7 @@ INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
                                                   brace_key_p brace_key,
                                                   k_ecdh_p tmp_ecdh_k1,
                                                   k_ecdh_p tmp_ecdh_k2) {
-  uint8_t usage_tmp_key = 0x0C;
+  uint8_t usage_tmp_key = 0x0B;
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage_tmp_key);
@@ -219,7 +219,7 @@ INTERNAL void otrng_key_manager_calculate_auth_mac(uint8_t *auth_mac,
                                                    const uint8_t *auth_mac_key,
                                                    const uint8_t *t,
                                                    size_t t_len) {
-  uint8_t usage_auth_mac = 0x11;
+  uint8_t usage_auth_mac = 0x10;
 
   goldilocks_shake256_ctx_p hd;
 
@@ -234,7 +234,7 @@ INTERNAL void otrng_key_manager_calculate_auth_mac(uint8_t *auth_mac,
 INTERNAL void otrng_key_manager_calculate_authenticator(
     uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections) {
 
-  uint8_t usage_authenticator = 0x1B;
+  uint8_t usage_authenticator = 0x1A;
 
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, usage_authenticator);
@@ -249,7 +249,7 @@ INTERNAL void otrng_key_manager_calculate_authenticator(
 tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
                                                 const char participant) {
   uint8_t random_buff[ED448_PRIVATE_BYTES];
-  uint8_t usage_ECDH_first_ephemeral = 0x12;
+  uint8_t usage_ECDH_first_ephemeral = 0x11;
 
   assert(participant == 'u' || participant == 't');
 
@@ -298,8 +298,8 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
 }
 
 tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
-  uint8_t usage_third_brace_key = 0x02;
-  uint8_t usage_brace_key = 0x03;
+  uint8_t usage_third_brace_key = 0x01;
+  uint8_t usage_brace_key = 0x02;
 
   dh_shared_secret_p k_dh;
   size_t k_dh_len = 0;
@@ -326,7 +326,7 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
   return SUCCESS;
 }
 
-static uint8_t usage_shared_secret = 0x04;
+static uint8_t usage_shared_secret = 0x03;
 
 tstatic void calculate_shared_secret(key_manager_s *manager, k_ecdh_p k_ecdh) {
   goldilocks_shake256_ctx_p hd;
@@ -449,7 +449,7 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
 }
 
 tstatic void calculate_ssid(key_manager_s *manager) {
-  uint8_t usage_SSID = 0x05;
+  uint8_t usage_SSID = 0x04;
   shake_256_kdf1(manager->ssid, sizeof(manager->ssid), usage_SSID,
                  manager->shared_secret, sizeof(shared_secret_p));
 }
@@ -543,8 +543,8 @@ tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
      @secret should be deleted when the new root key is derived
   */
 
-  uint8_t usage_root_key = 0x14;
-  uint8_t usage_chain_key = 0x15;
+  uint8_t usage_root_key = 0x13;
+  uint8_t usage_chain_key = 0x14;
 
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, usage_root_key);
@@ -580,10 +580,10 @@ tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
 #endif
 }
 
-static uint8_t usage_next_chain_key = 0x16;
-static uint8_t usage_message_key = 0x17;
-static uint8_t usage_mac_key = 0x18;
-static uint8_t usage_extra_symm_key = 0x20;
+static uint8_t usage_next_chain_key = 0x15;
+static uint8_t usage_message_key = 0x16;
+static uint8_t usage_mac_key = 0x17;
+static uint8_t usage_extra_symm_key = 0x18;
 
 tstatic void derive_next_chain_key(key_manager_s *manager, const char action) {
   /* chain_key_s[i-1][j+1] = KDF_1(usage_next_chain_key || chain_key_s[i-1][j],

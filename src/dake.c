@@ -870,18 +870,18 @@ INTERNAL otrng_err build_interactive_rsign_tag(
   otrng_err result = ERROR;
   assert(auth_tag_type == 'i' || auth_tag_type == 'r');
   if (auth_tag_type == 'r') {
-    // t = 0x0 || KDF_1(0x06 || Bobs_User_Profile, 64) || KDF_1(0x07 ||
-    // Alices_User_Profile, 64) || Y || X || B || A || KDF_1(0x08 || phi, 64)
+    // t = 0x0 || KDF_1(0x05 || Bobs_Client_Profile, 64) || KDF_1(0x06 ||
+    // Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x07 || phi, 64)
     *buff = 0x0;
-    result = build_rsign_tag(buff + 1, MAX_T_LENGTH, &written, 0x06,
+    result = build_rsign_tag(buff + 1, MAX_T_LENGTH, &written, 0x05,
                              initiator.client_profile, responder.client_profile,
                              &initiator.ecdh, &responder.ecdh, initiator.dh,
                              responder.dh, NULL, 0, phi, phi_len);
   } else if (auth_tag_type == 'i') {
-    // t = 0x1 || KDF_1(0x09 || Bobs_User_Profile, 64) || KDF_1(0x0A ||
-    // Alices_User_Profile, 64) || Y || X || B || A || KDF_1(0x0B || phi, 64)
+    // t = 0x1 || KDF_1(0x08 || Bobs_Client_Profile, 64) || KDF_1(0x09 ||
+    // Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x0A || phi, 64)
     *buff = 0x01;
-    result = build_rsign_tag(buff + 1, MAX_T_LENGTH, &written, 0x09,
+    result = build_rsign_tag(buff + 1, MAX_T_LENGTH, &written, 0x08,
                              initiator.client_profile, responder.client_profile,
                              &initiator.ecdh, &responder.ecdh, initiator.dh,
                              responder.dh, NULL, 0, phi, phi_len);
@@ -912,7 +912,7 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
     return ERROR;
   }
 
-  uint8_t first_usage = 0x0E;
+  uint8_t first_usage = 0x0D;
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_serialize_otrng_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
 
@@ -932,9 +932,9 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_authenticator(
     const uint8_t *t, size_t t_len, uint8_t tmp_key[HASH_BYTES]) {
 
   // OTRv4 section "Non-Interactive-Auth Message"
-  /* auth_mac_k = KDF_1(0x0D || tmp_k, 64) */
+  /* auth_mac_k = KDF_1(0x0C || tmp_k, 64) */
   uint8_t auth_mac_k[HASH_BYTES];
-  uint8_t usage_auth_mac_key = 0x0D;
+  uint8_t usage_auth_mac_key = 0x0C;
 
   shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, tmp_key,
                  HASH_BYTES);

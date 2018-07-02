@@ -244,7 +244,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   sodium_memzero(enc_key, sizeof(msg_enc_key_p));
 
-  /* Authenticator = KDF_1(0x1C || MKmac || KDF_1(usage_authenticator ||
+  /* Authenticator = KDF_1(0x1A || MKmac || KDF_1(usage_authenticator ||
    * data_message_sections, 64), 64) */
   if (otr->keys->j == 0) {
     size_t ser_mac_keys_len =

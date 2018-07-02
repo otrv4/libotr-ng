@@ -145,7 +145,7 @@ INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
     const char participant) {
   gcry_mpi_t privkey = NULL;
   uint8_t random_buff[DH_KEY_SIZE];
-  uint8_t usage_DH_first_ephemeral = 0x13;
+  uint8_t usage_DH_first_ephemeral = 0x12;
 
   shake_256_kdf1(random_buff, sizeof random_buff, usage_DH_first_ephemeral,
                  shared_secret, sizeof(shared_secret_p));

@@ -851,9 +851,9 @@ tstatic otrng_err build_non_interactive_auth_message(
   unsigned char *t = NULL;
   size_t t_len = 0;
 
-  /* t = KDF_1(0x0E || Bobs_Client_Profile, 64) || KDF_1(0x0F ||
-   * Alices_Client_Profile, 64) || Y || X || B || A || their_shared_prekey ||
-   * KDF_1(0x10 || phi, 64) */
+  /* t = KDF_1(0x0D || Bob_Client_Profile, 64) || KDF_1(0x0E ||
+   * Alice_Client_Profile, 64) || Y || X || B || A || their_shared_prekey ||
+   * KDF_1(0x0F || phi, 64) */
   if (!build_non_interactive_rsign_tag(&t, &t_len, initiator, responder,
                                        otr->keys->their_shared_prekey, phi,
                                        phi_len)) {
