@@ -31,6 +31,7 @@
 #define OTRNG_SMP_PROTOCOL_PRIVATE
 #define OTRNG_TLV_PRIVATE
 #define OTRNG_USER_PROFILE_PRIVATE
+#define OTRNG_MESSAGING_PRIVATE
 
 #include "../otrng.h"
 

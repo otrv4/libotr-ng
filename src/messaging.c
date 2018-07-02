@@ -137,7 +137,7 @@ API int otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state,
   return otrl_privkey_read_FILEp(state->user_state_v3, keys);
 }
 
-API int
+tstatic int
 otrng_user_state_add_private_key_v4(otrng_user_state_s *state,
                                     const void *clientop,
                                     const uint8_t sym[ED448_PRIVATE_BYTES]) {
@@ -150,6 +150,15 @@ API int otrng_user_state_generate_private_key(otrng_user_state_s *state,
   uint8_t sym[ED448_PRIVATE_BYTES];
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
   return otrng_user_state_add_private_key_v4(state, client_id, sym);
+}
+
+API int otrng_user_state_generate_shared_prekey(otrng_user_state_s *state,
+                                                void *client_id) {
+  uint8_t sym[ED448_PRIVATE_BYTES];
+  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
+
+  return otrng_client_state_add_shared_prekey_v4(
+      get_client_state(state, client_id), sym);
 }
 
 API otrng_keypair_s *
