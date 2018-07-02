@@ -1845,9 +1845,8 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   msg_enc_key_p enc_key;
   msg_mac_key_p mac_key;
 
-  // TODO: This hides using uninitialized bytes from keys
-  memset(enc_key, 0, sizeof enc_key);
-  memset(mac_key, 0, sizeof mac_key);
+  memset(enc_key, 0, sizeof(enc_key));
+  memset(mac_key, 0, sizeof(mac_key));
 
   response->to_display = NULL;
 
@@ -2282,7 +2281,8 @@ tstatic otrng_err otrng_send_symkey_message_v4(string_p *to_send,
     memmove(tlv_data + 4, usedata, usedatalen);
   }
 
-  memmove(extra_key, otr->keys->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
+  memmove(extra_key, otr->keys->extra_symmetric_key,
+          sizeof(extra_symmetric_key_p));
 
   tlv_list_s *tlvs = otrng_tlv_list_one(
       otrng_tlv_new(OTRNG_TLV_SYM_KEY, usedatalen + 4, tlv_data));

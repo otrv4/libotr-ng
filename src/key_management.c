@@ -39,9 +39,9 @@ tstatic ratchet_s *ratchet_new() {
   }
 
   // TODO: This hides using uninitialized bytes from keys
-  memset(ratchet->root_key, 0, sizeof(ratchet->root_key));
-  memset(ratchet->chain_s, 0, sizeof(ratchet->chain_s));
-  memset(ratchet->chain_r, 0, sizeof(ratchet->chain_r));
+  memset(ratchet->root_key, 0, sizeof(root_key_p));
+  memset(ratchet->chain_s, 0, sizeof(sending_chain_key_p));
+  memset(ratchet->chain_r, 0, sizeof(receiving_chain_key_p));
 
   return ratchet;
 }
@@ -75,15 +75,13 @@ INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
   manager->pn = 0;
   manager->current = ratchet_new();
 
-  // TODO: This hides using uninitialized bytes from keys
-  memset(manager->brace_key, 0, sizeof(manager->brace_key));
-  memset(manager->shared_secret, 0, sizeof(manager->shared_secret));
+  memset(manager->brace_key, 0, sizeof(brace_key_p));
+  memset(manager->shared_secret, 0, sizeof(shared_secret_p));
 
   memset(manager->ssid, 0, sizeof(manager->ssid));
   manager->ssid_half_first = otrng_false;
 
-  // TODO: This hides using uninitialized bytes from keys
-  memset(manager->extra_symmetric_key, 0, sizeof(manager->extra_symmetric_key));
+  memset(manager->extra_symmetric_key, 0, sizeof(extra_symmetric_key_p));
   memset(manager->tmp_key, 0, sizeof(manager->tmp_key));
 
   manager->skipped_keys = NULL;
@@ -137,8 +135,9 @@ INTERNAL void otrng_key_manager_free(key_manager_s *manager) {
 }
 
 INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager) {
-  sodium_memzero(manager->their_shared_prekey, ED448_POINT_BYTES);
-  sodium_memzero(manager->our_shared_prekey, ED448_POINT_BYTES);
+  sodium_memzero(manager->their_shared_prekey,
+                 sizeof(otrng_shared_prekey_pub_p));
+  sodium_memzero(manager->our_shared_prekey, sizeof(otrng_shared_prekey_pub_p));
   sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
 }
 
@@ -465,8 +464,9 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
   manager->k = 0;
   manager->pn = 0;
 
-  memcpy(manager->current->root_key, manager->shared_secret, 64);
-  sodium_memzero(manager->shared_secret, 64);
+  memcpy(manager->current->root_key, manager->shared_secret,
+         sizeof(root_key_p));
+  sodium_memzero(manager->shared_secret, sizeof(shared_secret_p));
 
   return OTRNG_SUCCESS;
 }
@@ -499,7 +499,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, const char action) {
 
   key_manager_derive_ratchet_keys(manager, action);
 
-  sodium_memzero(manager->shared_secret, SHARED_SECRET_BYTES);
+  sodium_memzero(manager->shared_secret, sizeof(shared_secret_p));
   return OTRNG_SUCCESS;
 }
 
@@ -572,11 +572,11 @@ tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
 #ifdef DEBUG
   printf("\n");
   printf("ROOT KEY = ");
-  otrng_memdump(manager->current->root_key, sizeof(manager->current->root_key));
+  otrng_memdump(manager->current->root_key, sizeof(root_key_p));
   printf("CHAIN_S = ");
-  otrng_memdump(ratchet->chain_s, sizeof(ratchet->chain_s));
+  otrng_memdump(ratchet->chain_s, sizeof(sending_chain_key_p));
   printf("CHAIN_R = ");
-  otrng_memdump(ratchet->chain_r, sizeof(ratchet->chain_r));
+  otrng_memdump(ratchet->chain_r, sizeof(receiving_chain_key_p));
 #endif
 }
 
@@ -643,7 +643,7 @@ tstatic void calculate_extra_key(key_manager_s *manager, const char action) {
   hash_destroy(hd);
 
   memcpy(manager->extra_symmetric_key, extra_key_buff,
-         sizeof(manager->extra_symmetric_key));
+         sizeof(extra_symmetric_key_p));
 
 #ifdef DEBUG
   printf("\n");
@@ -708,8 +708,8 @@ tstatic otrng_err store_enc_keys(msg_enc_key_p enc_key, key_manager_s *manager,
       skipped_msg_enc_key->j = manager->k;
 
       memcpy(skipped_msg_enc_key->extra_symmetric_key, extra_key,
-             EXTRA_SYMMETRIC_KEY_BYTES);
-      memcpy(skipped_msg_enc_key->enc_key, enc_key, ENC_KEY_BYTES);
+             sizeof(extra_symmetric_key_p));
+      memcpy(skipped_msg_enc_key->enc_key, enc_key, sizeof(msg_enc_key_p));
 
       /* @secret: should be deleted when:
          1. session expired
@@ -838,9 +838,8 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
     msg_mac_key_p mac_key;
     msg_enc_key_p enc_key;
 
-    // TODO: This hides using uninitialized bytes from keys
-    memset(enc_key, 0, sizeof enc_key);
-    memset(mac_key, 0, sizeof mac_key);
+    memset(enc_key, 0, sizeof(msg_mac_key_p));
+    memset(mac_key, 0, sizeof(msg_mac_key_p));
 
     for (int i = 0; i < num_stored_keys; i++) {
       list_element_s *last = otrng_list_get_last(manager->skipped_keys);

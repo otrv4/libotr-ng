@@ -41,14 +41,12 @@ INTERNAL data_message_s *otrng_data_message_new() {
   ret->dh = NULL;
   otrng_ec_bzero(ret->ecdh, ED448_POINT_BYTES);
 
-  // TODO: This hides using uninitialized bytes from keys
-  memset(ret->nonce, 0, sizeof ret->nonce);
+  memset(ret->nonce, 0, sizeof(ret->nonce));
 
   ret->enc_msg = NULL;
   ret->enc_msg_len = 0;
 
-  // TODO: This hides using uninitialized bytes from keys
-  memset(ret->mac, 0, sizeof ret->mac);
+  memset(ret->mac, 0, sizeof(ret->mac));
 
   return ret;
 }
