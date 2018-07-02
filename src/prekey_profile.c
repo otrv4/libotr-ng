@@ -25,7 +25,6 @@
 #include <time.h>
 
 INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst) {
-  otrng_ec_point_destroy(dst->pub);
   otrng_ec_point_destroy(dst->shared_prekey);
   memset(dst->signature, 0, sizeof(eddsa_signature_p));
 }
@@ -45,40 +44,33 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
   dst->instance_tag = src->instance_tag;
   dst->expires = src->expires;
 
-  otrng_ec_point_copy(dst->pub, src->pub);
   otrng_ec_point_copy(dst->shared_prekey, src->shared_prekey);
   memcpy(dst->signature, src->signature, sizeof(eddsa_signature_p));
 }
 
 tstatic size_t otrng_prekey_profile_body_serialize(
-    uint8_t *dst, size_t dstlen, const otrng_prekey_profile_s *p) {
+    uint8_t *dst, size_t dst_len, const otrng_prekey_profile_s *p) {
   size_t w = 0;
 
-  if (4 > dstlen - w) {
+  if (4 > dst_len - w) {
     return 0;
   }
 
   w += otrng_serialize_uint32(dst + w, p->id);
 
-  if (4 > dstlen - w) {
+  if (4 > dst_len - w) {
     return 0;
   }
 
   w += otrng_serialize_uint32(dst + w, p->instance_tag);
 
-  if (ED448_PUBKEY_BYTES > dstlen - w) {
-    return 0;
-  }
-
-  w += otrng_serialize_otrng_public_key(dst + w, p->pub);
-
-  if (8 > dstlen - w) {
+  if (8 > dst_len - w) {
     return 0;
   }
 
   w += otrng_serialize_uint64(dst + w, p->expires);
 
-  if (ED448_PUBKEY_BYTES > dstlen - w) {
+  if (ED448_SHARED_PREKEY_BYTES > dst_len - w) {
     return 0;
   }
 
@@ -90,15 +82,14 @@ tstatic size_t otrng_prekey_profile_body_serialize(
 tstatic otrng_err otrng_prekey_profile_body_asprint(
     uint8_t **dst, size_t *dstlen, const otrng_prekey_profile_s *p) {
 
-#define PREKEY_PROFILE_BODY_BYTES                                              \
-  4 + 4 + ED448_PUBKEY_BYTES + 8 + ED448_PUBKEY_BYTES
+#define PREKEY_PROFILE_BODY_BYTES 4 + 4 + 8 + ED448_PUBKEY_BYTES
 
   if (!dst) {
     return OTRNG_ERROR;
   }
 
   *dst = malloc(PREKEY_PROFILE_BODY_BYTES);
-  if (*dst == NULL) {
+  if (!*dst) {
     return OTRNG_ERROR;
   }
 
@@ -118,8 +109,6 @@ tstatic otrng_err otrng_prekey_profile_body_asprint(
 
 INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
                                        const otrng_keypair_s *longterm_pair) {
-  otrng_ec_point_copy(profile->pub, longterm_pair->pub); // Key "H"
-
   uint8_t *body = NULL;
   size_t bodylen = 0;
   if (!otrng_prekey_profile_body_asprint(&body, &bodylen, profile)) {
@@ -158,7 +147,8 @@ otrng_prekey_profile_build(uint32_t id, uint32_t instance_tag,
 }
 
 static otrng_bool
-otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile) {
+otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
+                                      const otrng_public_key_p pub) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
@@ -167,7 +157,7 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile) {
   }
 
   uint8_t pubkey[ED448_POINT_BYTES];
-  otrng_serialize_ec_point(pubkey, profile->pub);
+  otrng_serialize_ec_point(pubkey, pub);
 
   otrng_bool valid = otrng_ec_verify(profile->signature, pubkey, body, bodylen);
 
@@ -179,8 +169,10 @@ static otrng_bool expired(time_t expires) {
   return (difftime(expires, time(NULL)) <= 0);
 }
 
+// TODO: @refactoring we are never using this function
 INTERNAL otrng_bool otrng_prekey_profile_valid(
-    const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag) {
+    const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
+    const otrng_public_key_p pub) {
   /* 1. Verify that the Prekey Profile owner's instance tag is equal to the
    * Sender Instance tag of the person that sent the DAKE message in which the
    * Prekey Profile is received. */
@@ -200,5 +192,5 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
   }
 
   /* 4. Verify that the Prekey Profile signature is valid. */
-  return otrng_prekey_profile_verify_signature(profile);
+  return otrng_prekey_profile_verify_signature(profile, pub);
 }

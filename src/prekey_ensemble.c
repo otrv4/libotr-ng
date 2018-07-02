@@ -39,12 +39,8 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
   }
 
   if (!otrng_prekey_profile_valid(dst->prekey_profile,
-                                  dst->message->sender_instance_tag)) {
-    return OTRNG_ERROR;
-  }
-
-  if (!otrng_ec_point_eq(dst->client_profile->long_term_pub_key,
-                         dst->prekey_profile->pub)) {
+                                  dst->message->sender_instance_tag,
+                                  dst->client_profile->long_term_pub_key)) {
     return OTRNG_ERROR;
   }
 
