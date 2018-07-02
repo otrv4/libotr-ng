@@ -1074,7 +1074,7 @@ tstatic otrng_err receive_prekey_ensemble(string_p *dst,
   // Set their ephemeral keys, instance tag, and their_prekeys_id
   if (!prekey_message_received(ensemble->message, notif, otr)) {
     if (notif == NOTIF_MALFORMED) {
-      otrng_error_message(dst, ERR_MSG_MALFORMED);
+      otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     }
     return OTRNG_ERROR;
   }
@@ -1240,12 +1240,12 @@ tstatic otrng_err non_interactive_auth_message_received(
   const otrng_prekey_profile_s *prekey_profile = NULL;
 
   if (!received_sender_instance_tag(auth->sender_instance_tag, otr)) {
-    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
+    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
 
   if (!valid_receiver_instance_tag(auth->receiver_instance_tag)) {
-    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
+    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
 
@@ -1453,7 +1453,7 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
   }
 
   if (!received_sender_instance_tag(m->sender_instance_tag, otr)) {
-    otrng_error_message(dst, ERR_MSG_MALFORMED);
+    otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     otrng_dake_identity_message_destroy(m);
     return result;
   }
@@ -1583,13 +1583,13 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
   }
 
   if (!received_sender_instance_tag(auth->sender_instance_tag, otr)) {
-    otrng_error_message(dst, ERR_MSG_MALFORMED);
+    otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     otrng_dake_auth_r_destroy(auth);
     return OTRNG_ERROR;
   }
 
   if (!valid_receiver_instance_tag(auth->receiver_instance_tag)) {
-    otrng_error_message(dst, ERR_MSG_MALFORMED);
+    otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     otrng_dake_auth_r_destroy(auth);
     return OTRNG_ERROR;
   }
@@ -1852,7 +1852,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   response->to_display = NULL;
 
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
-    otrng_error_message(&response->to_send, ERR_MSG_NOT_PRIVATE);
+    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_NOT_PRIVATE);
     otrng_data_message_free(msg);
     return OTRNG_ERROR;
   }
@@ -1873,12 +1873,12 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   }
 
   if (!received_sender_instance_tag(msg->sender_instance_tag, otr)) {
-    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
+    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
 
   if (!valid_receiver_instance_tag(msg->receiver_instance_tag)) {
-    otrng_error_message(&response->to_send, ERR_MSG_MALFORMED);
+    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
 
@@ -1921,7 +1921,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
 
     if (!decrypt_data_msg(response, enc_key, msg)) {
       if (msg->flags != MSGFLAGS_IGNORE_UNREADABLE) {
-        otrng_error_message(&response->to_send, ERR_MSG_UNREADABLE);
+        otrng_error_message(&response->to_send, OTRNG_ERR_MSG_UNREADABLE);
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
         otrng_data_message_free(msg);

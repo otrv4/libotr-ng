@@ -86,19 +86,19 @@ static char *build_error_message(const char *error_code,
 
 INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   switch (err_code) {
-  case ERR_NONE:
+  case OTRNG_ERR_MSG_NONE:
     break;
-  case ERR_MSG_UNREADABLE:
+  case OTRNG_ERR_MSG_UNREADABLE:
     *to_send = build_error_message(ERROR_CODE_1, "OTRNG_ERR_MSG_UNREADABLE");
     break;
-  case ERR_MSG_NOT_PRIVATE:
+  case OTRNG_ERR_MSG_NOT_PRIVATE:
     *to_send =
         build_error_message(ERROR_CODE_2, "OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
     break;
-  case ERR_MSG_ENCRYPTION_ERROR:
+  case OTRNG_ERR_MSG_ENCRYPTION_ERROR:
     *to_send = build_error_message(ERROR_CODE_3, "OTRNG_ERR_ENCRYPTION_ERROR");
     break;
-  case ERR_MSG_MALFORMED:
+  case OTRNG_ERR_MSG_MALFORMED:
     *to_send = build_error_message(ERROR_CODE_4, "OTRNG_ERR_MALFORMED");
     break;
   }
@@ -234,7 +234,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   data_msg->receiver_instance_tag = otr->their_instance_tag;
 
   if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {
-    otrng_error_message(to_send, ERR_MSG_ENCRYPTION_ERROR);
+    otrng_error_message(to_send, OTRNG_ERR_MSG_ENCRYPTION_ERROR);
 
     sodium_memzero(enc_key, sizeof(msg_enc_key_p));
     sodium_memzero(mac_key, sizeof(msg_mac_key_p));
