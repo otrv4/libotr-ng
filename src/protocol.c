@@ -53,6 +53,12 @@ INTERNAL void maybe_create_keys(const otrng_conversation_state_s *conv) {
   if (!conv->client->shared_prekey_pair) {
     create_shared_prekey(conv);
   }
+
+  uint32_t instance_tag = otrng_client_state_get_instance_tag(conv->client);
+  if (!instance_tag) {
+    // TODO: invoke callback
+    // create_instance_tag(conv);
+  }
 }
 
 INTERNAL struct goldilocks_448_point_s *our_ecdh(const otrng_s *otr) {
@@ -67,6 +73,10 @@ INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr) {
   maybe_create_keys(otr->conversation);
   otrng_client_state_s *state = otr->conversation->client;
   return otrng_client_state_get_or_create_client_profile(state);
+}
+
+INTERNAL uint32_t our_instance_tag(const otrng_s *otr) {
+  return otrng_client_state_get_instance_tag(otr->conversation->client);
 }
 
 static char *build_error_message(const char *error_code,
@@ -150,7 +160,7 @@ tstatic data_message_s *generate_data_msg(const otrng_s *otr,
     return NULL;
   }
 
-  data_msg->sender_instance_tag = otr->our_instance_tag;
+  data_msg->sender_instance_tag = our_instance_tag(otr);
   data_msg->receiver_instance_tag = otr->their_instance_tag;
   data_msg->previous_chain_n = otr->keys->pn;
   data_msg->ratchet_id = ratchet_id;
@@ -229,7 +239,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   }
 
   data_msg->flags = flags;
-  data_msg->sender_instance_tag = otr->our_instance_tag;
+  data_msg->sender_instance_tag = our_instance_tag(otr);
   data_msg->receiver_instance_tag = otr->their_instance_tag;
 
   if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {

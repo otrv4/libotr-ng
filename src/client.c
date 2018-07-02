@@ -239,7 +239,7 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
     return 1;
   }
 
-  uint32_t our_tag = conv->conn->our_instance_tag;
+  uint32_t our_tag = otrng_client_state_get_instance_tag(client->state);
   uint32_t their_tag = conv->conn->their_instance_tag;
 
   otrng_err ret =

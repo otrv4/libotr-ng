@@ -68,7 +68,6 @@ typedef struct otrng_s {
 
   uint32_t their_prekeys_id;
 
-  uint32_t our_instance_tag;
   uint32_t their_instance_tag;
 
   client_profile_s *their_client_profile;
@@ -97,6 +96,8 @@ INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr);
 INTERNAL struct goldilocks_448_point_s *our_ecdh(const otrng_s *otr);
 
 INTERNAL dh_public_key_p our_dh(const otrng_s *otr);
+
+INTERNAL uint32_t our_instance_tag(const otrng_s *otr);
 
 INTERNAL otrng_err otrng_prepare_to_send_data_message(
     string_p *to_send, otrng_notif notif, const string_p message,
