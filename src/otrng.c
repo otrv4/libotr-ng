@@ -1023,7 +1023,7 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   }
 
   if (!received_sender_instance_tag(m->sender_instance_tag, otr)) {
-    notif = NOTIF_MALFORMED;
+    notif = OTRNG_NOTIF_MALFORMED;
     return OTRNG_ERROR;
   }
 
@@ -1070,10 +1070,10 @@ tstatic otrng_err receive_prekey_ensemble(string_p *dst,
     return OTRNG_ERROR;
   }
 
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
   // Set their ephemeral keys, instance tag, and their_prekeys_id
   if (!prekey_message_received(ensemble->message, notif, otr)) {
-    if (notif == NOTIF_MALFORMED) {
+    if (notif == OTRNG_NOTIF_MALFORMED) {
       otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     }
     return OTRNG_ERROR;
@@ -1707,7 +1707,7 @@ INTERNAL otrng_err otrng_expire_session(string_p *to_send, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
   otrng_err result = otrng_send_message(to_send, "", notif, disconnected,
                                         MSGFLAGS_IGNORE_UNREADABLE, otr);
 
@@ -1831,7 +1831,7 @@ tstatic otrng_err receive_tlvs(otrng_response_s *response, otrng_s *otr) {
   }
 
   // Serialize response message to send
-  ret = otrng_send_message(&response->to_send, "", NOTIF_NONE, reply_tlvs,
+  ret = otrng_send_message(&response->to_send, "", OTRNG_NOTIF_NONE, reply_tlvs,
                            MSGFLAGS_IGNORE_UNREADABLE, otr);
   otrng_tlv_list_free(reply_tlvs);
   return ret;
@@ -1914,7 +1914,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       otrng_data_message_free(msg);
 
       response->warning = OTRNG_WARN_RECEIVED_NOT_VALID;
-      notif = NOTIF_MSG_NOT_VALID;
+      notif = OTRNG_NOTIF_MSG_NOT_VALID;
 
       return OTRNG_ERROR;
     }
@@ -1955,7 +1955,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
       return OTRNG_SUCCESS;
     } else if (otr->ignore_msg != 1) {
       if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
-        if (!otrng_send_message(&response->to_send, "", NOTIF_NONE, NULL,
+        if (!otrng_send_message(&response->to_send, "", OTRNG_NOTIF_NONE, NULL,
                                 MSGFLAGS_IGNORE_UNREADABLE, otr)) {
           sodium_memzero(mac_key, sizeof(msg_mac_key_p));
           otrng_data_message_free(msg);
@@ -2224,7 +2224,7 @@ tstatic otrng_err otrng_close_v4(string_p *to_send, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
   otrng_err result = otrng_send_message(to_send, "", notif, disconnected,
                                         MSGFLAGS_IGNORE_UNREADABLE, otr);
 
@@ -2294,7 +2294,7 @@ tstatic otrng_err otrng_send_symkey_message_v4(string_p *to_send,
     return OTRNG_ERROR;
   }
 
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
   // TODO: @refactoring in v3 the extra_key is passed as a param to this
   // do the same?
   otrng_err ret = otrng_send_message(to_send, "", notif, tlvs,

@@ -140,7 +140,7 @@ void test_api_interactive_conversation(void) {
   int message_id;
   otrng_response_s *response_to_bob = NULL;
   otrng_response_s *response_to_alice = NULL;
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
 
   string_p to_send = NULL;
   otrng_err result;
@@ -269,7 +269,7 @@ void test_otrng_send_offline_message() {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
 
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 0);
@@ -431,7 +431,7 @@ void test_api_conversation_errors_1(void) {
 
   otrng_response_s *response_to_alice = NULL;
   otrng_response_s *response_to_bob = NULL;
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
 
   string_p to_send = NULL;
   otrng_err result;
@@ -508,7 +508,7 @@ void test_api_conversation_errors_2(void) {
 
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
 
   otrng_assert(alice->state == OTRNG_STATE_START);
   otrng_assert(bob->state == OTRNG_STATE_START);
@@ -563,7 +563,7 @@ void test_api_conversation_errors_2(void) {
 static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
 
   // Alice sends query message
   string_p query_message = NULL;
@@ -672,7 +672,7 @@ void test_api_conversation_v3(void) {
   otrng_response_s *response_to_bob = NULL;
   otrng_response_s *response_to_alice = NULL;
   string_p to_send = NULL;
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
 
   // Alice sends a data message
   otrng_assert_is_success(
@@ -731,7 +731,7 @@ void test_api_multiple_clients(void) {
   otrng_response_s *phone_to_alice = otrng_response_new();
   otrng_response_s *alice_to_pc = otrng_response_new();
   otrng_response_s *alice_to_phone = otrng_response_new();
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
 
   string_p query_message = NULL;
 
@@ -866,7 +866,7 @@ void test_api_smp(void) {
   otrng_response_s *response_to_alice = NULL;
   string_p to_send = NULL;
   const char *secret = "secret";
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
 
   // Alice sends SMP1
   otrng_assert_is_success(otrng_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
@@ -948,7 +948,7 @@ void test_api_smp_abort(void) {
   otrng_response_s *response_to_alice = NULL;
   string_p to_send = NULL;
   const char *secret = "secret";
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
 
   // Alice sends SMP1
   otrng_assert_is_success(otrng_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
@@ -1009,7 +1009,7 @@ void test_api_extra_sym_key(void) {
 
   // Alice sends a data message
   string_p to_send = NULL;
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
   otrng_err result;
 
   result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
@@ -1085,7 +1085,7 @@ void test_heartbeat_messages(void) {
 
   // Alice sends a data message
   string_p to_send = NULL;
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
   otrng_err result;
 
   result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);

@@ -666,7 +666,7 @@ tstatic otrng_err store_enc_keys(msg_enc_key_p enc_key, key_manager_s *manager,
   }
 
   if ((manager->k + max_skip) < until) {
-    notif = NOTIF_MSG_STORAGE_FULL;
+    notif = OTRNG_NOTIF_MSG_STORAGE_FULL;
     return OTRNG_SUCCESS;
   }
 

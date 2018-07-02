@@ -355,7 +355,7 @@ INTERNAL otrng_err otrng_prepare_to_send_data_message(
   }
 
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
-    notif = NOTIF_STATE_NOT_ENCRYPTED; // TODO: @queing queue message
+    notif = OTRNG_NOTIF_STATE_NOT_ENCRYPTED; // TODO: @queing queue message
     return OTRNG_ERROR;
   }
 

@@ -245,7 +245,7 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
       return OTRNG_ERROR;
     }
 
-    otrng_notif notif = NOTIF_NONE;
+    otrng_notif notif = OTRNG_NOTIF_NONE;
     otrng_err ret = otrng_prepare_to_send_data_message(
         to_send, notif, "", tlvs, otr, MSGFLAGS_IGNORE_UNREADABLE);
     otrng_tlv_list_free(tlvs);
@@ -308,7 +308,7 @@ tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
   handle_smp_event_cb_v4(event, otr->smp->progress, otr->smp->msg1->question,
                          otr->smp->msg1->q_len, otr->conversation);
 
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
   otrng_err ret = otrng_prepare_to_send_data_message(
       to_send, notif, "", tlvs, otr, MSGFLAGS_IGNORE_UNREADABLE);
   otrng_tlv_list_free(tlvs);
@@ -340,7 +340,7 @@ tstatic otrng_err otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
   }
 
   otr->smp->state_expect = '1';
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
   otrng_err ret = otrng_prepare_to_send_data_message(
       to_send, notif, "", tlvs, otr, MSGFLAGS_IGNORE_UNREADABLE);
   otrng_tlv_list_free(tlvs);

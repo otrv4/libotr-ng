@@ -126,7 +126,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
   string_p query_message = NULL;
-  otrng_notif notif = NOTIF_NONE;
+  otrng_notif notif = OTRNG_NOTIF_NONE;
 
   otrng_assert(alice->state == OTRNG_STATE_START);
   otrng_assert(bob->state == OTRNG_STATE_START);
