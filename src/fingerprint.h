@@ -28,7 +28,7 @@
 #include "shared.h"
 
 #define FPRINT_LEN_BYTES 56
-#define FPRINT_HUMAN_LEN 126 // 56 / 4 * 9
+#define OTRNG_FPRINT_HUMAN_LEN 126 // 56 / 4 * 9
 
 typedef uint8_t otrng_fingerprint_p[FPRINT_LEN_BYTES];
 typedef uint8_t v3_fingerprint_p[20];

@@ -247,12 +247,13 @@ void test_fingerprint_hash_to_human() {
       0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
   };
 
-  char fp_human[FPRINT_HUMAN_LEN];
+  char fp_human[OTRNG_FPRINT_HUMAN_LEN];
   memset(fp_human, 0, sizeof fp_hash);
 
   otrng_fingerprint_hash_to_human(fp_human, fp_hash);
 
-  g_assert_cmpint(0, ==, strncmp(expected_fp, fp_human, FPRINT_HUMAN_LEN));
+  g_assert_cmpint(0, ==,
+                  strncmp(expected_fp, fp_human, OTRNG_FPRINT_HUMAN_LEN));
 }
 
 void test_conversation_with_multiple_locations() {

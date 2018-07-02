@@ -32,7 +32,7 @@ API void otrng_fingerprint_hash_to_human(char *human,
 
   for (word = 0; word < 14; ++word) {
     for (byte = 0; byte < 4; ++byte) {
-      snprintf(p, FPRINT_HUMAN_LEN, "%02X", hash[word * 4 + byte]);
+      snprintf(p, OTRNG_FPRINT_HUMAN_LEN, "%02X", hash[word * 4 + byte]);
       p += 2;
     }
     *(p++) = ' ';
