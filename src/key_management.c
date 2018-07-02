@@ -178,6 +178,7 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
      2. when receiving a new dh ratchet
   */
   otrng_ecdh_keypair_generate(manager->our_ecdh, sym);
+  goldilocks_bzero(sym, ED448_PRIVATE_BYTES);
 
   manager->last_generated = now;
 
@@ -260,6 +261,7 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     /* @secret this will be deleted once sent a new data message in a new
      * ratchet */
     otrng_ecdh_keypair_generate(manager->our_ecdh, random_buff);
+    goldilocks_bzero(random_buff, ED448_PRIVATE_BYTES);
 
     otrng_dh_keypair_destroy(manager->our_dh);
     /* @secret this will be deleted once sent a new data message in a new
@@ -277,6 +279,7 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
     /* @secret this will be deleted once received a new data message in a new
      * ratchet */
     otrng_ecdh_keypair_generate_their(manager->their_ecdh, random_buff);
+    goldilocks_bzero(random_buff, ED448_PRIVATE_BYTES);
 
     gcry_mpi_release(manager->their_dh);
     manager->their_dh = NULL;

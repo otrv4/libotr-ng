@@ -109,6 +109,8 @@ INTERNAL otrng_err otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
   otrng_ecdh_keypair_generate(ecdh, sym);
+  goldilocks_bzero(sym, ED448_PRIVATE_BYTES);
+
   return otrng_dh_keypair_generate(dh);
 }
 
