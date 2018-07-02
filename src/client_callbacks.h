@@ -65,7 +65,7 @@ typedef struct otrng_client_callbacks_s {
                            const otrng_client_conversation_s *);
 
   /* A v3 fingerprint was seen in this connection. */
-  void (*fingerprint_seen_v3)(const v3_fingerprint_p,
+  void (*fingerprint_seen_v3)(const otrng_fingerprint_v3_p,
                               const otrng_client_conversation_s *);
 
   /* Update the authentication UI and prompt the user to enter a shared secret.
@@ -134,7 +134,7 @@ INTERNAL void otrng_client_callbacks_fingerprint_seen(
     const otrng_client_conversation_s *conv);
 
 INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
-    const otrng_client_callbacks_s *cb, const v3_fingerprint_p fp,
+    const otrng_client_callbacks_s *cb, const otrng_fingerprint_v3_p fp,
     const otrng_client_conversation_s *conv);
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_answer(

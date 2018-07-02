@@ -49,7 +49,7 @@ tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *otr) {
       otr->client->client_id); // TODO: @client should be conversation_id
 }
 
-tstatic void fingerprint_seen_cb_v3(const v3_fingerprint_p fp,
+tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3_p fp,
                                     const otrng_conversation_state_s *otr) {
   if (!otr || !otr->client) {
     return;

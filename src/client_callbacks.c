@@ -58,7 +58,7 @@ INTERNAL void otrng_client_callbacks_fingerprint_seen(
 }
 
 INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
-    const otrng_client_callbacks_s *cb, const v3_fingerprint_p fp,
+    const otrng_client_callbacks_s *cb, const otrng_fingerprint_v3_p fp,
     const otrng_client_conversation_s *conv) {
   if (!cb) {
     return;
