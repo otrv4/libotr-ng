@@ -81,10 +81,8 @@ unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state,
 int otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state,
                                               FILE *instag);
 
-/* otrng_messaging_client_t *otrng_messaging_client_get(otrng_user_state_s
- * *state,
- */
-/*                                                    void *client_id); */
+otrng_messaging_client_s *otrng_messaging_client_get(otrng_user_state_s *state,
+                                                     void *client_id);
 
 API int otrng_user_state_private_key_v4_read_FILEp(
     otrng_user_state_s *state, FILE *keys,

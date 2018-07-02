@@ -83,50 +83,47 @@ tstatic otrng_client_state_s *get_client_state(otrng_user_state_s *state,
   return s;
 }
 
-/* tstatic int find_client_by_client_id(const void *current, const void *wanted)
- * { */
-/*   const otrng_client_s *s = current; */
-/*   return s && s->state && s->state->client_id == wanted; */
-/* } */
+tstatic int find_client_by_client_id(const void *current, const void *wanted) {
+  const otrng_client_s *s = current;
+  return s && s->state && s->state->client_id == wanted;
+}
 
-/* tstatic otrng_messaging_client_t
- * *otrng_messaging_client_new(otrng_user_state_s *state, */
-/*                                                    void *client_id) { */
-/*   if (!client_id) { */
-/*     return NULL; */
-/*   } */
+tstatic otrng_messaging_client_s *
+otrng_messaging_client_new(otrng_user_state_s *state, void *client_id) {
+  if (!client_id) {
+    return NULL;
+  }
 
-/*   list_element_s *e = */
-/*       otrng_list_get(client_id, state->clients, find_client_by_client_id); */
+  list_element_s *e =
+      otrng_list_get(client_id, state->clients, find_client_by_client_id);
 
-/*   if (e) { */
-/*     return e->data; */
-/*   } else { */
-/*     otrng_client_state_s *s = get_client_state(state, client_id); */
-/*     if (!s) */
-/*       return NULL; */
+  if (e) {
+    return e->data;
+  } else {
+    otrng_client_state_s *s = get_client_state(state, client_id);
+    if (!s)
+      return NULL;
 
-/*     otrng_client_s *c = otrng_client_new(s); */
-/*     if (!c) */
-/*       return NULL; */
+    otrng_client_s *c = otrng_client_new(s);
+    if (!c)
+      return NULL;
 
-/*     state->clients = otrng_list_add(c, state->clients); */
+    state->clients = otrng_list_add(c, state->clients);
 
-/*     return c; */
-/*   } */
-/* } */
+    return c;
+  }
+}
 
-/* otrng_messaging_client_t *otrng_messaging_client_get(otrng_user_state_s
- * *state,
- */
-/*                                                    void *client_id) { */
-/*   list_element_s *el = */
-/*       otrng_list_get(client_id, state->clients, find_client_by_client_id); */
-/*   if (el) */
-/*     return el->data; */
+otrng_messaging_client_s *otrng_messaging_client_get(otrng_user_state_s *state,
 
-/*   return otrng_messaging_client_new(state, client_id); */
-/* } */
+                                                     void *client_id) {
+  list_element_s *el =
+      otrng_list_get(client_id, state->clients, find_client_by_client_id);
+  if (el)
+    return el->data;
+
+  return otrng_messaging_client_new(state, client_id);
+}
 
 /* int otrng_user_state_private_key_v3_generate_FILEp(otrng_user_state_s *state,
  */
