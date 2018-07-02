@@ -57,20 +57,19 @@ typedef struct otrng_user_state_s {
   void *user_state_v3; /* OtrlUserState */
 } otrng_user_state_s, otrng_user_state_p[1];
 
-/* int otrng_user_state_private_key_v3_generate_FILEp(otrng_user_state_s *state,
- */
-/*                                                   void *client_id, FILE
- * *privf); */
+API int
+otrng_user_state_private_key_v3_generate_FILEp(otrng_user_state_s *state,
+                                               void *client_id, FILE *privf);
 
-int otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state,
-                                               FILE *keys);
+API int otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state,
+                                                   FILE *keys);
 
-/* int otrng_user_state_generate_private_key(otrng_user_state_s *state, */
-/*                                          void *client_id); */
+API int otrng_user_state_generate_private_key(otrng_user_state_s *state,
+                                              void *client_id);
 
-/* int otrng_user_state_private_key_v4_write_FILEp(const otrng_user_state_s
- * *state, */
-/*                                                FILE *privf); */
+API int
+otrng_user_state_private_key_v4_write_FILEp(const otrng_user_state_s *state,
+                                            FILE *privf);
 
 int otrng_user_state_add_instance_tag(otrng_user_state_s *state,
                                       void *client_id, unsigned int instag);

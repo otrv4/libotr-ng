@@ -96,38 +96,37 @@ tstatic otrng_policy_s get_policy_for(const char *recipient) {
   return policy;
 }
 
-/* tstatic int otrng_conversation_is_encrypted(otrng_conversation_s *conv) { */
-/*   if (!conv) */
-/*     return 0; */
+API int otrng_conversation_is_encrypted(otrng_conversation_s *conv) {
+  if (!conv)
+    return 0;
 
-/*   switch (conv->conn->running_version) { */
-/*   case 0: */
-/*     return 0; */
-/*   case 4: */
-/*     return conv->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES; */
-/*   case 3: */
-/*     return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
- */
-/*   } */
+  switch (conv->conn->running_version) {
+  case 0:
+    return 0;
+  case 4:
+    return conv->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES;
+  case 3:
+    return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
+  }
 
-/*   return 0; */
-/* } */
+  return 0;
+}
 
-/* tstatic int otrng_conversation_is_finished(otrng_conversation_s *conv) { */
-/*   if (!conv) */
-/*     return 0; */
+API int otrng_conversation_is_finished(otrng_conversation_s *conv) {
+  if (!conv)
+    return 0;
 
-/*   switch (conv->conn->running_version) { */
-/*   case 0: */
-/*     return 0; */
-/*   case 4: */
-/*     return conv->conn->state == OTRNG_STATE_FINISHED; */
-/*   case 3: */
-/*     return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_FINISHED; */
-/*   } */
+  switch (conv->conn->running_version) {
+  case 0:
+    return 0;
+  case 4:
+    return conv->conn->state == OTRNG_STATE_FINISHED;
+  case 3:
+    return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_FINISHED;
+  }
 
-/*   return 0; */
-/* } */
+  return 0;
+}
 
 tstatic otrng_s *create_connection_for(const char *recipient,
                                        otrng_client_s *client) {

@@ -93,9 +93,9 @@ API otrng_conversation_s *otrng_client_get_conversation(int force,
                                                         const char *recipient,
                                                         otrng_client_s *client);
 
-/* tstatic int otrng_conversation_is_encrypted(otrng_conversation_s *conv); */
+API int otrng_conversation_is_encrypted(otrng_conversation_s *conv);
 
-/* tstatic int otrng_conversation_is_finished(otrng_conversation_s *conv); */
+API int otrng_conversation_is_finished(otrng_conversation_s *conv);
 
 API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
                                        int expiration_time,

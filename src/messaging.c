@@ -125,16 +125,15 @@ otrng_messaging_client_s *otrng_messaging_client_get(otrng_user_state_s *state,
   return otrng_messaging_client_new(state, client_id);
 }
 
-/* int otrng_user_state_private_key_v3_generate_FILEp(otrng_user_state_s *state,
- */
-/*                                                   void *client_id, */
-/*                                                   FILE *privf) { */
-/*   return otrng_client_state_private_key_v3_generate_FILEp( */
-/*       get_client_state(state, client_id), privf); */
-/* } */
+API int
+otrng_user_state_private_key_v3_generate_FILEp(otrng_user_state_s *state,
+                                               void *client_id, FILE *privf) {
+  return otrng_client_state_private_key_v3_generate_FILEp(
+      get_client_state(state, client_id), privf);
+}
 
-int otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state,
-                                               FILE *keys) {
+API int otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state,
+                                                   FILE *keys) {
   return otrl_privkey_read_FILEp(state->user_state_v3, keys);
 }
 
@@ -146,12 +145,12 @@ otrng_user_state_add_private_key_v4(otrng_user_state_s *state,
       get_client_state(state, clientop), sym);
 }
 
-/* int otrng_user_state_generate_private_key(otrng_user_state_s *state, */
-/*                                          void *client_id) { */
-/*   uint8_t sym[ED448_PRIVATE_BYTES]; */
-/*   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM); */
-/*   return otrng_user_state_add_private_key_v4(state, client_id, sym); */
-/* } */
+API int otrng_user_state_generate_private_key(otrng_user_state_s *state,
+                                              void *client_id) {
+  uint8_t sym[ED448_PRIVATE_BYTES];
+  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
+  return otrng_user_state_add_private_key_v4(state, client_id, sym);
+}
 
 API otrng_keypair_s *
 otrng_user_state_get_private_key_v4(otrng_user_state_s *state,
@@ -160,22 +159,21 @@ otrng_user_state_get_private_key_v4(otrng_user_state_s *state,
       get_client_state(state, client_id));
 }
 
-/* tstatic void add_private_key_v4_to_FILEp(list_element_s *node, void *context)
- * { */
-/*   FILE *privf = context; */
-/*   otrng_client_state_s *state = node->data; */
-/*   otrng_client_state_private_key_v4_write_FILEp(state, privf); */
-/* } */
+tstatic void add_private_key_v4_to_FILEp(list_element_s *node, void *context) {
+  FILE *privf = context;
+  otrng_client_state_s *state = node->data;
+  otrng_client_state_private_key_v4_write_FILEp(state, privf);
+}
 
-/* int otrng_user_state_private_key_v4_write_FILEp(const otrng_user_state_s
- * *state, */
-/*                                                FILE *privf) { */
-/*   if (!privf) */
-/*     return -1; */
+API int
+otrng_user_state_private_key_v4_write_FILEp(const otrng_user_state_s *state,
+                                            FILE *privf) {
+  if (!privf)
+    return -1;
 
-/*   otrng_list_foreach(state->states, add_private_key_v4_to_FILEp, privf); */
-/*   return 0; */
-/* } */
+  otrng_list_foreach(state->states, add_private_key_v4_to_FILEp, privf);
+  return 0;
+}
 
 API int otrng_user_state_private_key_v4_read_FILEp(
     otrng_user_state_s *state, FILE *privf,
