@@ -86,7 +86,7 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
   }
 
   uint8_t *cursor = dst;
-  cursor += otrng_serialize_uint16(cursor, VERSION);
+  cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION);
   cursor += otrng_serialize_uint8(cursor, DATA_MSG_TYPE);
   cursor += otrng_serialize_uint32(cursor, data_msg->sender_instance_tag);
   cursor += otrng_serialize_uint32(cursor, data_msg->receiver_instance_tag);
@@ -136,7 +136,7 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   cursor += read;
   len -= read;
 
-  if (protocol_version != VERSION) {
+  if (protocol_version != OTRNG_PROTOCOL_VERSION) {
     return ERROR;
   }
 
