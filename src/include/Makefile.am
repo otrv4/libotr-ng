@@ -30,7 +30,6 @@ otrnginc_HEADERS = ../auth.h \
                    ../client_state.h \
                    ../constants.h \
                    ../dake.h \
-                   ../dake_protocol.h \
                    ../data_message.h \
                    ../debug.h \
                    ../deserialize.h \
