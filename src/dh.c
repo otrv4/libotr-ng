@@ -130,14 +130,14 @@ INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair) {
   gcry_free(secbuf);
 
   if (err) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   keypair->priv = privkey;
   keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
   gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
@@ -153,7 +153,7 @@ INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
   gcry_error_t err =
       gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random_buff, DH_KEY_SIZE, NULL);
   if (err) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   assert(participant == 'u' || participant == 't');
@@ -170,7 +170,7 @@ INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
     gcry_mpi_release(privkey);
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 tstatic void dh_pub_key_destroy(dh_keypair_p keypair) {
@@ -200,10 +200,10 @@ INTERNAL otrng_err otrng_dh_shared_secret(dh_shared_secret_p buffer,
   gcry_mpi_release(secret);
 
   if (err) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
@@ -213,16 +213,16 @@ INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
       *written = 0;
     }
 
-    return SUCCESS;
+    return OTRNG_SUCCESS;
   }
 
   gcry_error_t err =
       gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
   if (err) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_dh_mpi_deserialize(dh_mpi_p *dst,
@@ -230,10 +230,10 @@ INTERNAL otrng_err otrng_dh_mpi_deserialize(dh_mpi_p *dst,
                                             size_t buflen, size_t *nread) {
   gcry_error_t err = gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread);
   if (err) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi) {
@@ -253,7 +253,7 @@ INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi) {
   gcry_mpi_powm(tmp, mpi, DH3072_MODULUS_Q, DH3072_MODULUS);
 
   if (gcry_mpi_cmp_ui(tmp, 1) == 0)
-    return ERROR;
+    return OTRNG_ERROR;
   */
 
   return otrng_true;

@@ -39,8 +39,8 @@ static const otrng_bool otrng_true = 1;
 static const otrng_bool otrng_false = 0;
 
 typedef enum {
-  SUCCESS = 1,
-  ERROR = 0,
+  OTRNG_SUCCESS = 1,
+  OTRNG_ERROR = 0,
 } otrng_err;
 
 typedef enum {

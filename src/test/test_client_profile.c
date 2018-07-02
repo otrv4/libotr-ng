@@ -51,8 +51,8 @@ void test_client_profile_serializes_body() {
 
   size_t written = 0;
   uint8_t *serialized = NULL;
-  otrng_assert(client_profile_body_asprintf(&serialized, &written, profile) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      client_profile_body_asprintf(&serialized, &written, profile));
   g_assert_cmpint(written, ==, 81);
 
   char expected_header[] = {
@@ -96,15 +96,15 @@ void test_client_profile_serializes() {
 
   size_t written = 0;
   uint8_t *serialized = NULL;
-  otrng_assert(otrng_client_profile_asprintf(&serialized, &written, profile) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      otrng_client_profile_asprintf(&serialized, &written, profile));
   g_assert_cmpint(written, ==, 239);
 
   // check "body"
   size_t body_len = 0;
   uint8_t *body = NULL;
-  otrng_assert(client_profile_body_asprintf(&body, &body_len, profile) ==
-               SUCCESS);
+  otrng_assert_is_success(
+      client_profile_body_asprintf(&body, &body_len, profile));
   otrng_assert_cmpmem(body, serialized, body_len);
 
   char expected_transitional_signature[] = {
@@ -144,8 +144,8 @@ void test_otrng_client_profile_deserializes() {
   // TODO: @sanitizer why?
   client_profile_s *deserialized = NULL;
   deserialized = malloc(sizeof(client_profile_s));
-  otrng_assert(otrng_client_profile_deserialize(deserialized, serialized,
-                                                written, NULL) == SUCCESS);
+  otrng_assert_is_success(otrng_client_profile_deserialize(
+      deserialized, serialized, written, NULL));
   otrng_assert_client_profile_eq(deserialized, profile);
 
   free(serialized);

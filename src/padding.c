@@ -36,19 +36,19 @@ INTERNAL otrng_err generate_padding(uint8_t **dst, size_t *dstlen,
   size_t padding_len =
       calculate_padding_len(message_len, otr->conversation->client->padding);
   if (!padding_len) {
-    return SUCCESS;
+    return OTRNG_SUCCESS;
   }
 
   tlv_s *padding_tlv = otrng_tlv_padding_new(padding_len);
   if (!padding_tlv) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   *dstlen = padding_tlv->len + 4;
   *dst = malloc(*dstlen);
   if (!*dst) {
     otrng_tlv_free(padding_tlv);
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_err ret = otrng_tlv_serialize(*dst, padding_tlv);

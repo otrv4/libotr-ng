@@ -64,7 +64,7 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
  * @param [written] How many bytes were written to dst.
  * @param [pub] The DH public key.
  *
- * @out SUCCESS or ERROR.
+ * @out OTRNG_SUCCESS or OTRNG_ERROR.
  */
 INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
                                                  size_t *written,

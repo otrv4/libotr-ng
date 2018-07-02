@@ -219,7 +219,7 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
                                    const size_t q_len, const uint8_t *answer,
                                    const size_t answer_len, otrng_s *otr) {
   if (!otr) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   switch (otr->running_version) {
@@ -229,7 +229,7 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
                               otr->v3_conn);
   case 4:
     if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
 
     tlv_s *smp_start_tlv = otrng_smp_initiate(
@@ -237,12 +237,12 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
         answer, answer_len, otr->keys->ssid, otr->smp, otr->conversation);
 
     if (!smp_start_tlv) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
 
     tlv_list_s *tlvs = otrng_tlv_list_one(smp_start_tlv);
     if (!tlvs) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
 
     otrng_notif notif = NOTIF_NONE;
@@ -251,10 +251,10 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
     otrng_tlv_list_free(tlvs);
     return ret;
   case 0:
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
-  return ERROR;
+  return OTRNG_ERROR;
 }
 
 tstatic tlv_s *
@@ -289,7 +289,7 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_p smp,
 tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
                                   const size_t secretlen, otrng_s *otr) {
   if (!otr) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
@@ -298,7 +298,7 @@ tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
       otr->keys->ssid, secret, secretlen));
 
   if (!tlvs) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (!event) {
@@ -325,10 +325,10 @@ INTERNAL otrng_err otrng_smp_continue(string_p *to_send, const uint8_t *secret,
   case 4:
     return smp_continue_v4(to_send, secret, secretlen, otr);
   case 0:
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
-  return ERROR; // TODO: @smp IMPLEMENT
+  return OTRNG_ERROR; // TODO: @smp IMPLEMENT
 }
 
 tstatic otrng_err otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
@@ -336,7 +336,7 @@ tstatic otrng_err otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
       otrng_tlv_list_one(otrng_tlv_new(OTRL_TLV_SMP_ABORT, 0, NULL));
 
   if (!tlvs) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otr->smp->state_expect = '1';
@@ -354,7 +354,7 @@ API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr) {
   case 4:
     return otrng_smp_abort_v4(to_send, otr);
   case 0:
-    return ERROR;
+    return OTRNG_ERROR;
   }
-  return ERROR;
+  return OTRNG_ERROR;
 }

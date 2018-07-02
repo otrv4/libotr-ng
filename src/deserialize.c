@@ -29,7 +29,7 @@
 INTERNAL otrng_err otrng_deserialize_uint64(uint64_t *n, const uint8_t *buffer,
                                             size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint64_t)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   *n = ((uint64_t)buffer[7]) | ((uint64_t)buffer[6]) << 8 |
@@ -41,13 +41,13 @@ INTERNAL otrng_err otrng_deserialize_uint64(uint64_t *n, const uint8_t *buffer,
     *nread = sizeof(uint64_t);
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_deserialize_uint32(uint32_t *n, const uint8_t *buffer,
                                             size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint32_t)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   *n = buffer[3] | buffer[2] << 8 | buffer[1] << 16 | buffer[0] << 24;
@@ -56,13 +56,13 @@ INTERNAL otrng_err otrng_deserialize_uint32(uint32_t *n, const uint8_t *buffer,
     *nread = sizeof(uint32_t);
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_deserialize_uint16(uint16_t *n, const uint8_t *buffer,
                                             size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint16_t)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   *n = buffer[1] | buffer[0] << 8;
@@ -70,13 +70,13 @@ INTERNAL otrng_err otrng_deserialize_uint16(uint16_t *n, const uint8_t *buffer,
   if (nread != NULL) {
     *nread = sizeof(uint16_t);
   }
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
                                            size_t buflen, size_t *nread) {
   if (buflen < sizeof(uint8_t)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   *n = buffer[0];
@@ -84,7 +84,7 @@ INTERNAL otrng_err otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
   if (nread != NULL) {
     *nread = sizeof(uint8_t);
   }
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, const uint8_t *buffer,
@@ -98,7 +98,7 @@ INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, const uint8_t *buffer,
       *read = r;
     }
 
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (read) {
@@ -106,17 +106,17 @@ INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, const uint8_t *buffer,
   }
 
   if (!s) {
-    return SUCCESS;
+    return OTRNG_SUCCESS;
   }
 
   buflen -= r;
   if (buflen < s) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   uint8_t *t = malloc(s);
   if (!t) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   memcpy(t, buffer + r, s);
@@ -126,18 +126,18 @@ INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, const uint8_t *buffer,
     *read += s;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
                                                  const uint8_t *buffer,
                                                  size_t buflen) {
   if (buflen < dstlen) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   memcpy(dst, buffer, dstlen);
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 /* otrng_err deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer, */
@@ -145,21 +145,21 @@ INTERNAL otrng_err otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
 /*   otrng_mpi_p mpi; // no need to free, because nothing is copied now */
 
 /*   if (otrng_mpi_deserialize_no_copy(mpi, buffer, buflen, read)) { */
-/*     return ERROR; /\* only mpi len has been read *\/ */
+/*     return OTRNG_ERROR; /\* only mpi len has been read *\/ */
 /*   } */
 
 /*   size_t r = otrng_mpi_memcpy(dst, mpi); */
 /*   if (read != NULL) { */
 /*     *read += r; */
 /*   } */
-/*   return SUCCESS; */
+/*   return OTRNG_SUCCESS; */
 /* } */
 
 INTERNAL otrng_err otrng_deserialize_ec_point(ec_point_p point,
                                               const uint8_t *serialized,
                                               size_t buflen) {
   if (buflen < ED448_POINT_BYTES) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   return otrng_ec_point_decode(point, serialized);
@@ -174,7 +174,7 @@ INTERNAL otrng_err otrng_deserialize_otrng_public_key(otrng_public_key_p pub,
   uint16_t pubkey_type = 0;
 
   if (ser_len < ED448_PUBKEY_BYTES) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_deserialize_uint16(&pubkey_type, cursor, ser_len, &r);
@@ -182,18 +182,18 @@ INTERNAL otrng_err otrng_deserialize_otrng_public_key(otrng_public_key_p pub,
   ser_len -= r;
 
   if (ED448_PUBKEY_TYPE != pubkey_type) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (!otrng_deserialize_ec_point(pub, cursor, ser_len)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (read) {
     *read = ED448_PUBKEY_BYTES;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_deserialize_otrng_shared_prekey(
@@ -205,7 +205,7 @@ INTERNAL otrng_err otrng_deserialize_otrng_shared_prekey(
 
   // TODO: @refactoring prob unneccessary
   if (ser_len < ED448_PUBKEY_BYTES) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_deserialize_uint16(&shared_prekey_type, cursor, ser_len, &r);
@@ -213,85 +213,85 @@ INTERNAL otrng_err otrng_deserialize_otrng_shared_prekey(
   ser_len -= r;
 
   if (ED448_SHARED_PREKEY_TYPE != shared_prekey_type) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (!otrng_deserialize_ec_point(shared_prekey, cursor, ser_len)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (read) {
     *read = ED448_SHARED_PREKEY_BYTES;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_deserialize_ec_scalar(ec_scalar_p scalar,
                                                const uint8_t *serialized,
                                                size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_ec_scalar_decode(scalar, serialized);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_deserialize_ring_sig(ring_sig_s *proof,
                                               const uint8_t *serialized,
                                               size_t ser_len, size_t *read) {
   if (ser_len < RING_SIG_BYTES) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   const uint8_t *cursor = serialized;
 
   if (!otrng_deserialize_ec_scalar(proof->c1, cursor, ser_len)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
   if (!otrng_deserialize_ec_scalar(proof->r1, cursor, ser_len)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
   if (!otrng_deserialize_ec_scalar(proof->c2, cursor, ser_len)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
   if (!otrng_deserialize_ec_scalar(proof->r2, cursor, ser_len)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
   if (!otrng_deserialize_ec_scalar(proof->c3, cursor, ser_len)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += ED448_SCALAR_BYTES;
   ser_len -= ED448_SCALAR_BYTES;
 
   if (!otrng_deserialize_ec_scalar(proof->r3, cursor, ser_len)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (read) {
     *read = RING_SIG_BYTES;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
@@ -300,7 +300,7 @@ INTERNAL otrng_err otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
   /* (((base64len+3) / 4) * 3) */
   unsigned char *dec = malloc(((len + 3) / 4) * 3);
   if (!dec) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   size_t written = otrl_base64_decode(dec, buff, len);
@@ -308,9 +308,9 @@ INTERNAL otrng_err otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
   if (written == ED448_PRIVATE_BYTES) {
     otrng_keypair_generate(pair, dec);
     free(dec);
-    return SUCCESS;
+    return OTRNG_SUCCESS;
   }
 
   free(dec);
-  return ERROR;
+  return OTRNG_ERROR;
 }

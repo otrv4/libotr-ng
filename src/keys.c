@@ -71,11 +71,11 @@ INTERNAL otrng_err otrng_symmetric_key_serialize(
     char **buffer, size_t *written, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   *buffer = malloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
   if (!*buffer) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   *written = otrl_base64_encode(*buffer, sym, ED448_PRIVATE_BYTES);
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void) {

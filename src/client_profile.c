@@ -68,7 +68,7 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   if (src->signature) {
     dst->signature = malloc(sizeof(eddsa_signature_p));
     if (!dst->signature) {
-      return; // ERROR
+      return; // OTRNG_ERROR
     }
     memcpy(dst->signature, src->signature, sizeof(eddsa_signature_p));
   }
@@ -118,7 +118,7 @@ tstatic otrng_err client_profile_body_asprintf(
 
   uint8_t *buff = malloc(s);
   if (!buff) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   size_t written = client_profile_body_serialize(buff, profile);
@@ -128,21 +128,21 @@ tstatic otrng_err client_profile_body_asprintf(
     *nbytes = written;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
 
   if (!profile->signature) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   uint8_t *buff = NULL;
   size_t body_len = 0;
   uint8_t *body = NULL;
   if (!client_profile_body_asprintf(&body, &body_len, profile)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   size_t s = body_len + 4 + sizeof(eddsa_signature_p) +
@@ -150,7 +150,7 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
   buff = malloc(s);
   if (!buff) {
     free(body);
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   uint8_t *cursor = buff;
@@ -165,7 +165,7 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
   }
 
   free(body);
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
@@ -176,10 +176,10 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
   int walked = 0;
 
   if (!target) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
-  otrng_err result = ERROR;
+  otrng_err result = OTRNG_ERROR;
   do {
     if (!otrng_deserialize_uint32(&target->id, buffer + walked, buflen - walked,
                                   &read)) {
@@ -237,7 +237,7 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
 
     walked += read;
 
-    result = SUCCESS;
+    result = OTRNG_SUCCESS;
   } while (0);
 
   if (nread) {
@@ -254,20 +254,20 @@ tstatic otrng_err client_profile_sign(client_profile_s *profile,
 
   profile->signature = malloc(sizeof(eddsa_signature_p));
   if (!profile->signature) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_ec_point_copy(profile->long_term_pub_key, keypair->pub);
   if (!client_profile_body_asprintf(&body, &bodylen, profile)) {
     free(profile->signature);
     profile->signature = NULL;
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_ec_sign_simple(profile->signature, keypair->sym, body, bodylen);
 
   free(body);
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 // TODO: @client_profile I dont think this needs the data structure. Could

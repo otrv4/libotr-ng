@@ -74,12 +74,12 @@
 
 #define otrng_assert_is_success(otrng_result)                                  \
   do {                                                                         \
-    otrng_assert(otrng_result == SUCCESS);                                     \
+    otrng_assert(otrng_result == OTRNG_SUCCESS);                               \
   } while (0)
 
 #define otrng_assert_is_error(otrng_result)                                    \
   do {                                                                         \
-    otrng_assert(otrng_result == ERROR);                                       \
+    otrng_assert(otrng_result == OTRNG_ERROR);                                 \
   } while (0)
 
 #define otrng_assert_mpi_eq(m1, m2)                                            \

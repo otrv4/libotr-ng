@@ -159,12 +159,12 @@ INTERNAL otrng_err otrng_rsig_authenticate(
 
   // One of A1, A2, A3 is the public counterpart of secret.
   if (!(is_A1 | is_A2 | is_A3)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   // And only one of them is.
   if (!(is_A1 ^ is_A2 ^ is_A3)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   goldilocks_448_scalar_p t1, t2, t3;
@@ -252,7 +252,7 @@ INTERNAL otrng_err otrng_rsig_authenticate(
   goldilocks_448_scalar_destroy(tmp_r2);
   goldilocks_448_scalar_destroy(tmp_r3);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_bool otrng_rsig_verify(

@@ -190,11 +190,11 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
        2. when receiving a new dh ratchet
     */
     if (!otrng_dh_keypair_generate(manager->our_dh)) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
@@ -268,7 +268,7 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
      * ratchet */
     if (!otrng_dh_keypair_generate_from_shared_secret(
             manager->shared_secret, manager->our_dh, participant)) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
 
   } else if (participant == 't') {
@@ -289,12 +289,12 @@ tstatic otrng_err generate_first_ephemeral_keys(key_manager_s *manager,
      * ratchet */
     if (!otrng_dh_keypair_generate_from_shared_secret(
             manager->shared_secret, tmp_their_dh, participant)) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
 
     manager->their_dh = tmp_their_dh->pub;
   }
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
@@ -306,7 +306,7 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
   if (manager->i % 3 == 0) {
     if (!otrng_dh_shared_secret(k_dh, &k_dh_len, manager->our_dh->priv,
                                 manager->their_dh)) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
 
     // Although k_dh has variable length (bc it is mod p), it is considered to
@@ -323,7 +323,7 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager) {
 
   sodium_memzero(k_dh, sizeof(k_dh));
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 static uint8_t usage_shared_secret = 0x03;
@@ -351,11 +351,11 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
     otrng_ec_bzero(manager->our_ecdh->priv, sizeof(ec_scalar_p));
 
     if (!otrng_ecdh_valid_secret(k_ecdh)) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
 
     if (!calculate_brace_key(manager)) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
     otrng_dh_priv_key_destroy(manager->our_dh);
 
@@ -407,7 +407,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
   }
 #endif
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
@@ -417,16 +417,16 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
   goldilocks_448_point_scalarmul(p, their_pub, shared_prekey->priv);
 
   if (!otrng_ec_point_valid(p)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_serialize_ec_point(shared_secret, p);
 
   if (!otrng_ecdh_valid_secret(shared_secret)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
@@ -436,16 +436,16 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
   goldilocks_448_point_scalarmul(p, their_pub, keypair->priv);
 
   if (!otrng_ec_point_valid(p)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_serialize_ec_point(shared_secret, p);
 
   if (!otrng_ecdh_valid_secret(shared_secret)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 tstatic void calculate_ssid(key_manager_s *manager) {
@@ -457,7 +457,7 @@ tstatic void calculate_ssid(key_manager_s *manager) {
 INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
                                                      const char participant) {
   if (!generate_first_ephemeral_keys(manager, participant)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   manager->i = 0;
@@ -468,7 +468,7 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
   memcpy(manager->current->root_key, manager->shared_secret, 64);
   sodium_memzero(manager->shared_secret, 64);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_err enter_new_ratchet(key_manager_s *manager, const char action) {
@@ -480,7 +480,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, const char action) {
   /* if i % 3 == 0 : brace_key = KDF_1(usage_third_brace_key || k_dh, 32)
      else brace_key = KDF_1(usage_brace_key || brace_key, 32) */
   if (!calculate_brace_key(manager)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   /* K = KDF_1(usage_shared_secret || K_ecdh || brace_key, 64) */
@@ -500,7 +500,7 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager, const char action) {
   key_manager_derive_ratchet_keys(manager, action);
 
   sodium_memzero(manager->shared_secret, SHARED_SECRET_BYTES);
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_err rotate_keys(key_manager_s *manager, const char action) {
@@ -509,14 +509,14 @@ tstatic otrng_err rotate_keys(key_manager_s *manager, const char action) {
     /* our_ecdh = generateECDH()
        if i % 3 == 0, our_dh = generateDH() */
     if (!otrng_key_manager_generate_ephemeral_keys(manager)) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
 
     manager->last_generated = time(NULL);
   }
 
   if (!enter_new_ratchet(manager, action)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (action == 'r') {
@@ -532,7 +532,7 @@ tstatic otrng_err rotate_keys(key_manager_s *manager, const char action) {
 
   manager->i++;
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
@@ -667,7 +667,7 @@ tstatic otrng_err store_enc_keys(msg_enc_key_p enc_key, key_manager_s *manager,
 
   if ((manager->k + max_skip) < until) {
     notif = NOTIF_MSG_STORAGE_FULL;
-    return SUCCESS;
+    return OTRNG_SUCCESS;
   }
 
   uint8_t zero_buff[CHAIN_KEY_BYTES] = {0};
@@ -694,7 +694,7 @@ tstatic otrng_err store_enc_keys(msg_enc_key_p enc_key, key_manager_s *manager,
 
       skipped_keys_s *skipped_msg_enc_key = malloc(sizeof(skipped_keys_s));
       if (!skipped_msg_enc_key) {
-        return ERROR;
+        return OTRNG_ERROR;
       }
 
       assert(ratchet_type == 'd' || ratchet_type == 'c');
@@ -723,7 +723,7 @@ tstatic otrng_err store_enc_keys(msg_enc_key_p enc_key, key_manager_s *manager,
     }
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 /*
@@ -750,7 +750,7 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(msg_enc_key_p enc_key,
           otrng_list_remove_element(current, manager->skipped_keys);
       otrng_list_free_full(current);
 
-      return SUCCESS;
+      return OTRNG_SUCCESS;
     }
 
     current = current->next;
@@ -758,7 +758,7 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(msg_enc_key_p enc_key,
 
   /* This is not an actual error, it is just that the key we need was not
   skipped */
-  return ERROR;
+  return OTRNG_ERROR;
 }
 
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
@@ -768,7 +768,7 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
   assert(action == 's' || action == 'r');
   if (action == 'r') {
     if (!store_enc_keys(enc_key, manager, max_skip, message_id, 'c', notif)) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
   }
 
@@ -788,7 +788,7 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
   otrng_memdump(mac_key, sizeof(msg_mac_key_p));
 #endif
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
@@ -802,26 +802,26 @@ INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
     if (action == 'r') {
       /* Store any message keys from the previous DH Ratchet */
       if (!store_enc_keys(enc_key, manager, max_skip, previous_n, 'd', notif)) {
-        return ERROR;
+        return OTRNG_ERROR;
       }
     }
     return rotate_keys(manager, action);
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_store_old_mac_keys(key_manager_s *manager,
                                             msg_mac_key_p mac_key) {
   uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
   if (!to_store_mac) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   memcpy(to_store_mac, mac_key, sizeof(msg_mac_key_p));
   manager->old_mac_keys = otrng_list_add(to_store_mac, manager->old_mac_keys);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {

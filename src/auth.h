@@ -71,8 +71,8 @@ typedef struct ring_sig_s {
  * @param [msg] The message to "sign".
  * @param [msg_len] The length of the message.
  *
- * @return SUCCESS if pub is one of (A1, A2, A3) and a signature of knowledge
- * could be created. Returns ERROR otherwise.
+ * @return OTRNG_SUCCESS if pub is one of (A1, A2, A3) and a signature of
+ * knowledge could be created. Returns OTRNG_ERROR otherwise.
  */
 
 INTERNAL otrng_err otrng_rsig_authenticate(

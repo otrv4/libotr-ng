@@ -94,12 +94,12 @@ tstatic otrng_err otrng_prekey_profile_body_asprint(
   4 + 4 + ED448_PUBKEY_BYTES + 8 + ED448_PUBKEY_BYTES
 
   if (!dst) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   *dst = malloc(PREKEY_PROFILE_BODY_BYTES);
   if (*dst == NULL) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   size_t written =
@@ -113,7 +113,7 @@ tstatic otrng_err otrng_prekey_profile_body_asprint(
     *dstlen = written;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
@@ -123,13 +123,13 @@ INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
   uint8_t *body = NULL;
   size_t bodylen = 0;
   if (!otrng_prekey_profile_body_asprint(&body, &bodylen, profile)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_ec_sign_simple(profile->signature, longterm_pair->sym, body, bodylen);
   free(body);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_prekey_profile_s *

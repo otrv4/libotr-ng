@@ -49,7 +49,7 @@ INTERNAL otrng_err otrng_serialize_fingerprint(otrng_fingerprint_p fp,
   uint8_t usage_fingerprint = 0x00;
 
   if (!fp) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_serialize_ec_point(serialized, pub);
@@ -62,5 +62,5 @@ INTERNAL otrng_err otrng_serialize_fingerprint(otrng_fingerprint_p fp,
   hash_final(hd, fp, FPRINT_LEN_BYTES);
   hash_destroy(hd);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }

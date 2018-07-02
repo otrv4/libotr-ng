@@ -29,7 +29,7 @@ void test_dake_identity_message_serializes(dake_fixture_s *f,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   otrng_ecdh_keypair_generate(ecdh, sym);
-  otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 
   dake_identity_message_s *identity_message =
       otrng_dake_identity_message_new(f->profile);
@@ -38,8 +38,8 @@ void test_dake_identity_message_serializes(dake_fixture_s *f,
   identity_message->B = otrng_dh_mpi_copy(dh->pub);
 
   uint8_t *serialized = NULL;
-  otrng_assert(otrng_dake_identity_message_asprintf(
-                   &serialized, NULL, identity_message) == SUCCESS);
+  otrng_assert_is_success(otrng_dake_identity_message_asprintf(
+      &serialized, NULL, identity_message));
 
   char expected[] = {
       0x0,
@@ -61,9 +61,9 @@ void test_dake_identity_message_serializes(dake_fixture_s *f,
 
   size_t client_profile_len = 0;
   uint8_t *client_profile_serialized = NULL;
-  otrng_assert(otrng_client_profile_asprintf(
-                   &client_profile_serialized, &client_profile_len,
-                   identity_message->profile) == SUCCESS);
+  otrng_assert_is_success(otrng_client_profile_asprintf(
+      &client_profile_serialized, &client_profile_len,
+      identity_message->profile));
   otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
   free(client_profile_serialized);
   cursor += client_profile_len;
@@ -94,7 +94,7 @@ void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(ecdh, sym);
-  otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 
   dake_identity_message_s *identity_message =
       otrng_dake_identity_message_new(f->profile);
@@ -104,14 +104,14 @@ void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
 
   size_t serialized_len = 0;
   uint8_t *serialized = NULL;
-  otrng_assert(otrng_dake_identity_message_asprintf(
-                   &serialized, &serialized_len, identity_message) == SUCCESS);
+  otrng_assert_is_success(otrng_dake_identity_message_asprintf(
+      &serialized, &serialized_len, identity_message));
 
   dake_identity_message_s *deserialized =
       malloc(sizeof(dake_identity_message_s));
 
-  otrng_assert(otrng_dake_identity_message_deserialize(
-                   deserialized, serialized, serialized_len) == SUCCESS);
+  otrng_assert_is_success(otrng_dake_identity_message_deserialize(
+      deserialized, serialized, serialized_len));
 
   // assert prekey eq
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
@@ -136,7 +136,7 @@ void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(ecdh, sym);
-  otrng_assert(otrng_dh_keypair_generate(dh) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 
   dake_identity_message_s *identity_message =
       otrng_dake_identity_message_new(f->profile);
@@ -158,7 +158,7 @@ void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
 
   uint8_t invalid_sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(invalid_ecdh, invalid_sym);
-  otrng_assert(otrng_dh_keypair_generate(invalid_dh) == SUCCESS);
+  otrng_assert_is_success(otrng_dh_keypair_generate(invalid_dh));
 
   client_profile_s *invalid_profile = client_profile_new("2");
 

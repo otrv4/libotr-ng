@@ -82,7 +82,7 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
   size_t s = DATA_MESSAGE_MAX_BYTES + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
   if (!dst) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   uint8_t *cursor = dst;
@@ -101,7 +101,7 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
   if (!otrng_serialize_dh_public_key(cursor, (s - (cursor - dst)), &len,
                                      data_msg->dh)) {
     free(dst);
-    return ERROR;
+    return OTRNG_ERROR;
   }
   cursor += len;
   cursor += otrng_serialize_bytes_array(cursor, data_msg->nonce,
@@ -117,7 +117,7 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
     *bodylen = cursor - dst;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
@@ -130,31 +130,31 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
 
   uint16_t protocol_version = 0;
   if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (protocol_version != OTRNG_PROTOCOL_VERSION) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   uint8_t message_type = 0;
   if (!otrng_deserialize_uint8(&message_type, cursor, len, &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (message_type != DATA_MSG_TYPE) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len,
                                 &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += read;
@@ -162,42 +162,42 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
 
   if (!otrng_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
                                 &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (!otrng_deserialize_uint8(&dst->flags, cursor, len, &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (!otrng_deserialize_uint32(&dst->previous_chain_n, cursor, len, &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (!otrng_deserialize_uint32(&dst->ratchet_id, cursor, len, &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (!otrng_deserialize_uint32(&dst->message_id, cursor, len, &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
   if (!otrng_deserialize_ec_point(dst->ecdh, cursor, len)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += ED448_POINT_BYTES;
@@ -205,7 +205,7 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
 
   otrng_mpi_p b_mpi; // no need to free, because nothing is copied now
   if (!otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += read;
@@ -216,7 +216,7 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   // when b_mpi->data is NULL.
 
   if (!otrng_dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += read;
@@ -224,14 +224,14 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
 
   if (!otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor,
                                      len)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor += DATA_MSG_NONCE_BYTES;
   len -= DATA_MSG_NONCE_BYTES;
 
   if (!otrng_deserialize_data(&dst->enc_msg, cursor, len, &read)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   dst->enc_msg_len = read - 4;
@@ -247,14 +247,14 @@ INTERNAL static otrng_err otrng_data_message_sections_hash(uint8_t *dst,
                                                            const uint8_t *body,
                                                            size_t bodylen) {
   if (dstlen < HASH_BYTES) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   static uint8_t usage_data_msg_sections = 0x19;
   // KDF_1(usage_data_msg_sections || data_message_sections, 64)
   shake_256_kdf1(dst, HASH_BYTES, usage_data_msg_sections, body, bodylen);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_data_message_authenticator(uint8_t *dst, size_t dstlen,
@@ -262,20 +262,20 @@ INTERNAL otrng_err otrng_data_message_authenticator(uint8_t *dst, size_t dstlen,
                                                     const uint8_t *body,
                                                     size_t bodylen) {
   if (dstlen < DATA_MSG_MAC_BYTES) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   /* Authenticator = KDF_1(usage_authenticator || MKmac ||
    * KDF_1(usage_data_msg_sections || data_message_sections, 64), 64) */
   uint8_t sections[HASH_BYTES];
   if (!otrng_data_message_sections_hash(sections, HASH_BYTES, body, bodylen)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_key_manager_calculate_authenticator(dst, mac_key, sections);
   sodium_memzero(sections, HASH_BYTES);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key_p mac_key,

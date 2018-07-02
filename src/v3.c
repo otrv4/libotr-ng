@@ -480,7 +480,7 @@ INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,
   OtrlTLV *tlvsv3 = NULL;
 
   if (!conn) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   int err = otrl_message_sending(
@@ -490,10 +490,10 @@ INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,
       &conn->ctx, NULL, NULL);
 
   if (!err) {
-    return SUCCESS;
+    return OTRNG_SUCCESS;
   }
 
-  return ERROR;
+  return OTRNG_ERROR;
 }
 
 INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
@@ -506,7 +506,7 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
   *to_send = NULL;
 
   if (!conn) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   char *newmessage = NULL;
@@ -529,7 +529,7 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
   // TODO: @client Here we can use contextp to get information we might need
   // about the state, for example (context->msgstate)
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn) {
@@ -549,7 +549,7 @@ INTERNAL otrng_err otrng_v3_send_symkey_message(
                       conn->ctx, use, usedata, usedatalen, extra_key);
   from_injected_to_send(to_send);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
@@ -560,7 +560,7 @@ INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
   if (question && q_len > 0) {
     q = malloc(q_len + 1);
     if (!q) {
-      return ERROR;
+      return OTRNG_ERROR;
     }
     q = memcpy(q, question, q_len);
     q[q_len] = 0;
@@ -575,7 +575,7 @@ INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
   }
 
   from_injected_to_send(to_send);
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_v3_smp_continue(string_p *to_send,
@@ -586,11 +586,11 @@ INTERNAL otrng_err otrng_v3_smp_continue(string_p *to_send,
                            conn->ctx, secret, secretlen);
 
   from_injected_to_send(to_send);
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_v3_smp_abort(otrng_v3_conn_s *conn) {
   otrl_message_abort_smp(conn->state->user_state, conn->ops, conn->opdata,
                          conn->ctx);
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }

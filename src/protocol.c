@@ -114,7 +114,7 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
 
   c = malloc(message_len);
   if (!c) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   // TODO: @c_logic message is an UTF-8 string. Is there any problem to cast
@@ -124,7 +124,7 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
       crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
   if (err) {
     free(c);
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   data_msg->enc_msg_len = message_len;
@@ -140,7 +140,7 @@ tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
   otrng_memdump(c, message_len);
 #endif
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 tstatic data_message_s *generate_data_msg(const otrng_s *otr,
@@ -168,7 +168,7 @@ tstatic otrng_err serialize_and_encode_data_msg(
   size_t bodylen = 0;
 
   if (!otrng_data_message_body_asprintf(&body, &bodylen, data_msg)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   size_t serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
@@ -176,7 +176,7 @@ tstatic otrng_err serialize_and_encode_data_msg(
   uint8_t *ser = malloc(serlen);
   if (!ser) {
     free(body);
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   memcpy(ser, body, bodylen);
@@ -185,7 +185,7 @@ tstatic otrng_err serialize_and_encode_data_msg(
   if (!otrng_data_message_authenticator(ser + bodylen, MAC_KEY_BYTES, mac_key,
                                         ser, bodylen)) {
     free(ser);
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (to_reveal_mac_keys) {
@@ -196,7 +196,7 @@ tstatic otrng_err serialize_and_encode_data_msg(
   *dst = otrl_base64_otr_encode(ser, serlen);
 
   free(ser);
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
@@ -211,7 +211,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   if (!otrng_key_manager_derive_dh_ratchet_keys(
           otr->keys, otr->conversation->client->max_stored_msg_keys,
           otr->keys->j, 0, 's', notif)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   // TODO: This hides using uninitialized bytes from keys
@@ -226,7 +226,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   if (!data_msg) {
     sodium_memzero(enc_key, sizeof(msg_enc_key_p));
     sodium_memzero(mac_key, sizeof(msg_mac_key_p));
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   data_msg->flags = flags;
@@ -239,7 +239,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
     sodium_memzero(enc_key, sizeof(msg_enc_key_p));
     sodium_memzero(mac_key, sizeof(msg_mac_key_p));
     otrng_data_message_free(data_msg);
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   sodium_memzero(enc_key, sizeof(msg_enc_key_p));
@@ -258,14 +258,14 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
       sodium_memzero(mac_key, sizeof(msg_mac_key_p));
       free(ser_mac_keys);
       otrng_data_message_free(data_msg);
-      return ERROR;
+      return OTRNG_ERROR;
     }
     free(ser_mac_keys);
   } else {
     if (!serialize_and_encode_data_msg(to_send, mac_key, NULL, 0, data_msg)) {
       sodium_memzero(mac_key, sizeof(msg_mac_key_p));
       otrng_data_message_free(data_msg);
-      return ERROR;
+      return OTRNG_ERROR;
     }
   }
 
@@ -274,7 +274,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   sodium_memzero(mac_key, sizeof(msg_mac_key_p));
   otrng_data_message_free(data_msg);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
@@ -286,7 +286,7 @@ tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
   *dstlen = 0;
 
   if (!tlvs) {
-    return SUCCESS;
+    return OTRNG_SUCCESS;
   }
 
   for (*dstlen = 0; current; current = current->next) {
@@ -295,7 +295,7 @@ tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
 
   *dst = malloc(*dstlen);
   if (!*dst) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   cursor = *dst;
@@ -303,7 +303,7 @@ tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
     cursor += otrng_tlv_serialize(cursor, current->data);
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,
@@ -313,7 +313,7 @@ tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,
   size_t len = 0;
 
   if (!serialize_tlvs(&ser, &len, tlvs)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   // Append padding
@@ -322,7 +322,7 @@ tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,
   size_t padding_len = 0;
   if (!generate_padding(&padding, &padding_len, message_len, otr)) {
     free(ser);
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   *dst_len = message_len + padding_len;
@@ -330,7 +330,7 @@ tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,
   if (!*dst) {
     free(ser);
     free(padding);
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   memcpy(otrng_stpcpy((char *)*dst, message) + 1, ser, len);
@@ -341,7 +341,7 @@ tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,
 
   free(ser);
   free(padding);
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_prepare_to_send_data_message(
@@ -351,16 +351,16 @@ INTERNAL otrng_err otrng_prepare_to_send_data_message(
   size_t msg_len = 0;
 
   if (otr->state == OTRNG_STATE_FINISHED) {
-    return ERROR; // Should restart
+    return OTRNG_ERROR; // Should restart
   }
 
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
     notif = NOTIF_STATE_NOT_ENCRYPTED; // TODO: @queing queue message
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (!append_tlvs(&msg, &msg_len, message, tlvs, otr)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_err result =

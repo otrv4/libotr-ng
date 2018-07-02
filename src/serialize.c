@@ -93,7 +93,7 @@ INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
                                                  size_t *written,
                                                  const dh_public_key_p pub) {
   if (dstlen < DH_MPI_MAX_BYTES) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   /* From gcrypt MPI */
@@ -101,7 +101,7 @@ INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
   size_t w = 0;
 
   if (!otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, pub)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   // To OTR MPI
@@ -116,7 +116,7 @@ INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
     *written = w;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL size_t otrng_serialize_otrng_public_key(uint8_t *dst,

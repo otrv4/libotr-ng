@@ -26,36 +26,36 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
   // same.
   uint32_t instance = dst->client_profile->sender_instance_tag;
   if (instance != dst->prekey_profile->instance_tag) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (instance != dst->message->sender_instance_tag) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (!otrng_client_profile_valid(dst->client_profile,
                                   dst->message->sender_instance_tag)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (!otrng_prekey_profile_valid(dst->prekey_profile,
                                   dst->message->sender_instance_tag)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   if (!otrng_ec_point_eq(dst->client_profile->long_term_pub_key,
                          dst->prekey_profile->pub)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   /* Verify that the point their_ecdh received is on curve 448. */
   if (!otrng_ec_point_valid(dst->message->Y)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   /* Verify that the DH public key their_dh is from the correct group. */
   if (!otrng_dh_mpi_valid(dst->message->B)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   // At the moment, prekey_ensemble_s->message can only have VERSION = 4
@@ -72,10 +72,10 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
   }
 
   if (!found) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL void otrng_prekey_ensemble_destroy(prekey_ensemble_s *dst) {

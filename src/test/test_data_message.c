@@ -89,8 +89,8 @@ void test_data_message_serializes() {
 
   uint8_t *serialized = NULL;
   size_t serlen = 0;
-  otrng_assert(otrng_data_message_body_asprintf(&serialized, &serlen,
-                                                data_msg) == SUCCESS);
+  otrng_assert_is_success(
+      otrng_data_message_body_asprintf(&serialized, &serlen, data_msg));
 
   const int OUR_DH_LEN = 4 + 383;
   const int MSG_AS_DATA = 4 + 3;

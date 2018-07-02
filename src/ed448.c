@@ -89,7 +89,7 @@ INTERNAL otrng_err otrng_ec_point_decode(ec_point_p p,
   if (!goldilocks_succeed_if(
           goldilocks_448_point_decode_like_eddsa_and_mul_by_ratio(tmp_p,
                                                                   enc))) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   // The decoded point is equal to the original point * 2^2
@@ -100,7 +100,7 @@ INTERNAL otrng_err otrng_ec_point_decode(ec_point_p p,
 
   goldilocks_448_point_scalarmul(p, tmp_p, r);
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL void otrng_ec_point_destroy(ec_point_p p) {
@@ -185,16 +185,16 @@ INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
   goldilocks_448_point_scalarmul(p, their_pub, our_keypair->priv);
 
   if (!otrng_ec_point_valid(p)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_ec_point_encode(shared_secret, p);
 
   if (!otrng_ecdh_valid_secret(shared_secret)) {
-    return ERROR;
+    return OTRNG_ERROR;
   }
 
-  return SUCCESS;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL void otrng_ec_sign(eddsa_signature_p sig,

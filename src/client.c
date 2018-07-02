@@ -207,7 +207,7 @@ tstatic otrng_client_result send_message(char **newmsg, const char *message,
   if (notif == NOTIF_STATE_NOT_ENCRYPTED) {
     return OTRNG_CLIENT_RESULT_ERROR_NOT_ENCRYPTED;
   } else {
-    if (SUCCESS == result) {
+    if (OTRNG_SUCCESS == result) {
       return OTRNG_CLIENT_RESULT_OK;
     } else {
       return OTRNG_CLIENT_RESULT_ERROR;
@@ -290,7 +290,7 @@ API int otrng_client_smp_respond(char **tosend, const char *recipient,
 API int otrng_client_receive(char **newmessage, char **todisplay,
                              const char *message, const char *recipient,
                              otrng_client_s *client) {
-  otrng_err result = ERROR;
+  otrng_err result = OTRNG_ERROR;
   int should_ignore = 1;
   otrng_response_s *response = NULL;
   otrng_conversation_s *conv = NULL;
@@ -328,7 +328,7 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
 
   otrng_response_free(response);
 
-  return result != ERROR;
+  return result != OTRNG_ERROR;
 }
 
 API char *otrng_client_query_message(const char *recipient, const char *message,
@@ -431,7 +431,8 @@ API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
     return -1;
   }
 
-  return otrng_serialize_fingerprint(fp, client->state->keypair->pub) == ERROR;
+  return otrng_serialize_fingerprint(fp, client->state->keypair->pub) ==
+         OTRNG_ERROR;
 }
 
 // TODO: @client Read privkeys, fingerprints, instance tags for v3
