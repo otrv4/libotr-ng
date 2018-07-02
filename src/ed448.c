@@ -121,8 +121,6 @@ otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
   goldilocks_ed448_derive_public_key(pub, sym);
 }
 
-static uint8_t usage_SK = 0x01;
-
 INTERNAL void
 otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
                             const uint8_t sym[ED448_PRIVATE_BYTES]) {
@@ -140,19 +138,19 @@ otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
    this is under control of libgoldilocks.
   */
 
-  uint8_t h[ED448_PRIVATE_BYTES];
-  shake_256_kdf1(h, ED448_PRIVATE_BYTES, usage_SK, sym, ED448_PRIVATE_BYTES);
+  // uint8_t h[ED448_PRIVATE_BYTES];
+  // shake_256_kdf1(h, ED448_PRIVATE_BYTES, usage_SK, sym, ED448_PRIVATE_BYTES);
 
   // TODO: @spec @sanitizer This is not the function we want here.
   // It hashes and clamps according to RFC 8032, so `h` will be hashed again,
   // which is not what we say in the spec.
-  otrng_ec_scalar_derive_from_secret(keypair->priv, h);
+  otrng_ec_scalar_derive_from_secret(keypair->priv, sym);
 
   uint8_t pub[ED448_POINT_BYTES];
-  otrng_ec_derive_public_key(pub, h);
+  otrng_ec_derive_public_key(pub, sym);
   otrng_ec_point_decode(keypair->pub, pub);
 
-  goldilocks_bzero(h, ED448_PRIVATE_BYTES);
+  // goldilocks_bzero(sym, ED448_PRIVATE_BYTES);
   goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
 
@@ -173,18 +171,18 @@ otrng_ecdh_keypair_generate_their(ec_point_p keypair,
    this is under control of libgoldilocks.
   */
 
-  uint8_t h[ED448_PRIVATE_BYTES];
+  // uint8_t h[ED448_PRIVATE_BYTES];
   ec_scalar_p priv;
-  shake_256_kdf1(h, ED448_PRIVATE_BYTES, usage_SK, sym, ED448_PRIVATE_BYTES);
+  // shake_256_kdf1(h, ED448_PRIVATE_BYTES, usage_SK, sym, ED448_PRIVATE_BYTES);
   // TODO: @spec @sanitizer has the same problem already mentioned in
   // otrng_ecdh_keypair_generate
-  otrng_ec_scalar_derive_from_secret(priv, h);
+  otrng_ec_scalar_derive_from_secret(priv, sym);
 
   uint8_t pub[ED448_POINT_BYTES];
-  otrng_ec_derive_public_key(pub, h);
+  otrng_ec_derive_public_key(pub, sym);
   otrng_ec_point_decode(keypair, pub);
 
-  goldilocks_bzero(h, ED448_PRIVATE_BYTES);
+  // goldilocks_bzero(sym, ED448_PRIVATE_BYTES);
   goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
 

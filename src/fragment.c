@@ -149,7 +149,7 @@ INTERNAL otrng_err otrng_fragment_message(int max_size,
                                           otrng_message_to_send_s *fragments,
                                           int our_instance, int their_instance,
                                           const string_p message) {
-  size_t mesage_len = strlen(message);
+  size_t message_len = strlen(message);
   size_t limit = max_size - FRAGMENT_HEADER_LEN;
   int total = ((message_len - 1) / limit) + 1;
 
