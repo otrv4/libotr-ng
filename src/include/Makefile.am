@@ -19,3 +19,43 @@
 #
 
 nobase_include_HEADERS = libotr-ng.h
+
+#TODO: This will be removed once we have a clear API defined.
+#We need this for now otherwie the plugin won't compile.
+otrngincdir = $(includedir)/libotr-ng
+otrnginc_HEADERS = ../auth.h \
+                   ../client_callbacks.h \
+                   ../client.h \
+                   ../client_profile.h \
+                   ../client_state.h \
+                   ../constants.h \
+                   ../dake.h \
+                   ../dake_protocol.h \
+                   ../data_message.h \
+                   ../debug.h \
+                   ../deserialize.h \
+                   ../dh.h \
+                   ../ed448.h \
+                   ../error.h \
+                   ../fingerprint.h \
+                   ../fragment.h \
+                   ../instance_tag.h \
+                   ../key_management.h \
+                   ../keys.h \
+                   ../list.h \
+                   ../messaging.h \
+                   ../mpi.h \
+                   ../otrng.h \
+                   ../padding.h \
+                   ../prekey_ensemble.h \
+                   ../prekey_profile.h \
+                   ../protocol.h \
+                   ../random.h \
+                   ../serialize.h \
+                   ../shake.h \
+                   ../shared.h \
+                   ../smp.h \
+                   ../smp_protocol.h \
+                   ../str.h \
+                   ../tlv.h \
+                   ../v3.h
