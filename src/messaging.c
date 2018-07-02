@@ -133,10 +133,10 @@ otrng_messaging_client_s *otrng_messaging_client_get(otrng_user_state_s *state,
 /*       get_client_state(state, client_id), privf); */
 /* } */
 
-/* int otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state, */
-/*                                               FILE *keys) { */
-/*   return otrl_privkey_read_FILEp(state->user_state_v3, keys); */
-/* } */
+int otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state,
+                                               FILE *keys) {
+  return otrl_privkey_read_FILEp(state->user_state_v3, keys);
+}
 
 API int
 otrng_user_state_add_private_key_v4(otrng_user_state_s *state,

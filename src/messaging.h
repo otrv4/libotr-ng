@@ -62,8 +62,8 @@ typedef struct otrng_user_state_s {
 /*                                                   void *client_id, FILE
  * *privf); */
 
-/* int otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state, */
-/*                                               FILE *keys); */
+int otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state,
+                                               FILE *keys);
 
 /* int otrng_user_state_generate_private_key(otrng_user_state_s *state, */
 /*                                          void *client_id); */
