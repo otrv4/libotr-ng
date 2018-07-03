@@ -1722,12 +1722,8 @@ tstatic otrng_err receive_auth_i(char **dst, const uint8_t *buff,
   }
 
   // Reply with initial data message
-  if (!otrng_send_message(dst, "", OTRNG_NOTIF_NONE, NULL,
-                          MSGFLAGS_IGNORE_UNREADABLE, otr)) {
-    return OTRNG_ERROR;
-  }
-
-  return OTRNG_SUCCESS;
+  return otrng_send_message(dst, "", OTRNG_NOTIF_NONE, NULL,
+                            MSGFLAGS_IGNORE_UNREADABLE, otr);
 }
 
 // TODO: @refactoring this is the same as otrng_close
