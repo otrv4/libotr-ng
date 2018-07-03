@@ -18,6 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <libotr/b64.h>
 #include <libotr/privkey.h>
 #include <string.h>
 
@@ -481,8 +482,18 @@ void test_api_conversation_errors_1(void) {
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
+  // Restore Bob's state
   bob->state = OTRNG_STATE_ENCRYPTED_MESSAGES;
-  bob->keys->j = 15;
+
+  // Corrupt message
+  size_t dec_len = 0;
+  uint8_t *decoded = NULL;
+  otrl_base64_otr_decode(to_send, &decoded, &dec_len);
+  free(to_send);
+
+  decoded[dec_len - 1] = decoded[dec_len - 1] + 3;
+  to_send = otrl_base64_otr_encode(decoded, dec_len);
+  free(decoded);
 
   // Bob receives a non valid data message
   response_to_alice = otrng_response_new();
