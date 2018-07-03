@@ -1853,8 +1853,8 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   msg_enc_key_p enc_key;
   msg_mac_key_p mac_key;
 
-  memset(enc_key, 0, sizeof(enc_key));
-  memset(mac_key, 0, sizeof(mac_key));
+  memset(enc_key, 0, sizeof(msg_enc_key_p));
+  memset(mac_key, 0, sizeof(msg_mac_key_p));
 
   response->to_display = NULL;
 

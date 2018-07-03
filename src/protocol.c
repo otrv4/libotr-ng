@@ -225,7 +225,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   }
 
   memset(enc_key, 0, sizeof(msg_enc_key_p));
-  memset(mac_key, 0, sizeof(msg_enc_key_p));
+  memset(mac_key, 0, sizeof(msg_mac_key_p));
 
   otrng_key_manager_derive_chain_keys(
       enc_key, mac_key, otr->keys,
