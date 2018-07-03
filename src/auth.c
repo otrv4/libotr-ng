@@ -98,8 +98,9 @@ void otrng_rsig_calculate_c(goldilocks_448_scalar_p dst,
   goldilocks_shake256_ctx_p hd;
   uint8_t hash[HASH_BYTES];
   uint8_t point_buff[ED448_POINT_BYTES];
+  uint8_t usage_auth = 0x1D;
 
-  hash_init_with_usage(hd, 0x1D);
+  hash_init_with_usage(hd, usage_auth);
   hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES);
   hash_update(hd, prime_order_bytes_dup, ED448_SCALAR_BYTES);
 
