@@ -153,7 +153,7 @@ void test_api_interactive_conversation(void) {
     otrng_assert(!alice->keys->old_mac_keys);
 
     g_assert_cmpint(alice->keys->i, ==, 1);
-    g_assert_cmpint(alice->keys->j, ==, message_id);
+    g_assert_cmpint(alice->keys->j, ==, message_id + 1);
     g_assert_cmpint(alice->keys->k, ==, 0);
     g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -169,10 +169,11 @@ void test_api_interactive_conversation(void) {
 
     free_message_and_response(response_to_alice, &to_send);
 
-    g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, message_id);
+    g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==,
+                    message_id + 1);
     g_assert_cmpint(bob->keys->i, ==, 1);
     g_assert_cmpint(bob->keys->j, ==, 0);
-    g_assert_cmpint(bob->keys->k, ==, message_id);
+    g_assert_cmpint(bob->keys->k, ==, message_id + 1);
     g_assert_cmpint(bob->keys->pn, ==, 0);
 
     // Bob's priv key should be deleted
@@ -190,7 +191,7 @@ void test_api_interactive_conversation(void) {
 
     g_assert_cmpint(bob->keys->i, ==, 2);
     g_assert_cmpint(bob->keys->j, ==, message_id);
-    g_assert_cmpint(bob->keys->k, ==, 3);
+    g_assert_cmpint(bob->keys->k, ==, 4);
     g_assert_cmpint(bob->keys->pn, ==, 0);
 
     // Bob should have a new ECDH priv key but no DH
@@ -208,7 +209,7 @@ void test_api_interactive_conversation(void) {
     g_assert_cmpint(alice->keys->i, ==, 2);
     g_assert_cmpint(alice->keys->j, ==, 0);
     g_assert_cmpint(alice->keys->k, ==, message_id);
-    g_assert_cmpint(alice->keys->pn, ==, 3);
+    g_assert_cmpint(alice->keys->pn, ==, 4);
 
     // Alice should delete the ECDH priv key but not the DH priv key
     otrng_assert_zero(alice->keys->our_ecdh->priv, ED448_SCALAR_BYTES);
@@ -444,7 +445,7 @@ void test_api_conversation_errors_1(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 2);
 
   // To trigger the error message
   bob->state = OTRNG_STATE_START;
@@ -459,15 +460,15 @@ void test_api_conversation_errors_1(void) {
   otrng_assert_cmpmem(err_code, response_to_alice->to_send, strlen(err_code));
 
   otrng_assert(response_to_alice->to_send != NULL);
-  otrng_assert(!bob->keys->old_mac_keys);
-  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
 
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(otrng_receive_message(
       response_to_bob, notif, response_to_alice->to_send, alice));
-  const string_p err_human = "Not in private state message";
 
+  const string_p err_human = "Not in private state message";
   otrng_assert(response_to_bob);
   otrng_assert_cmpmem(err_human, response_to_bob->to_display,
                       strlen(err_human));
@@ -1034,7 +1035,7 @@ void test_api_extra_sym_key(void) {
 
   // This is a follow up message.
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 2);
 
   // Bob receives a data message
   response_to_alice = otrng_response_new();
@@ -1042,10 +1043,10 @@ void test_api_extra_sym_key(void) {
   assert_msg_rec(result, "hi", response_to_alice);
   otrng_assert(bob->keys->old_mac_keys);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 2);
 
   free_message_and_response(response_to_alice, &to_send);
 
@@ -1123,7 +1124,8 @@ void test_heartbeat_messages(void) {
   response_to_alice = otrng_response_new();
   otrng_assert_is_success(
       otrng_receive_message(response_to_alice, notif, to_send, bob));
-  otrng_assert(!bob->keys->old_mac_keys);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+
   otrng_assert_cmpmem("hi", response_to_alice->to_display, strlen("hi") + 1);
   otrng_assert(response_to_alice->to_send != NULL);
   g_assert_cmpint(bob->keys->i, ==, 2);

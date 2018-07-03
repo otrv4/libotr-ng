@@ -46,7 +46,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 2);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -56,7 +56,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 2);
+  g_assert_cmpint(alice->keys->j, ==, 3);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -65,7 +65,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 3);
+  g_assert_cmpint(alice->keys->j, ==, 4);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -77,10 +77,10 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
 
   free_message_and_response(response_to_alice, &to_send_1);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 2);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   response_to_alice = otrng_response_new();
@@ -90,10 +90,10 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
 
   free_message_and_response(response_to_alice, &to_send_2);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 3);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 2);
+  g_assert_cmpint(bob->keys->k, ==, 3);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Bob sends a data message
@@ -104,7 +104,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
 
   g_assert_cmpint(bob->keys->i, ==, 2);
   g_assert_cmpint(bob->keys->j, ==, 1);
-  g_assert_cmpint(bob->keys->k, ==, 2);
+  g_assert_cmpint(bob->keys->k, ==, 3);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Bob receives the previous data message
@@ -118,7 +118,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
   g_assert_cmpint(bob->keys->i, ==, 2);
   g_assert_cmpint(bob->keys->j, ==, 1);
-  g_assert_cmpint(bob->keys->k, ==, 3);
+  g_assert_cmpint(bob->keys->k, ==, 4);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Alice receives a data message
@@ -131,7 +131,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->i, ==, 2);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 1);
-  g_assert_cmpint(alice->keys->pn, ==, 3);
+  g_assert_cmpint(alice->keys->pn, ==, 4);
 
   // Bob sends another data message
   result = otrng_send_message(&to_send_5, "I'm good", notif, NULL, 0, bob);
@@ -141,7 +141,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
 
   g_assert_cmpint(bob->keys->i, ==, 2);
   g_assert_cmpint(bob->keys->j, ==, 2);
-  g_assert_cmpint(bob->keys->k, ==, 3);
+  g_assert_cmpint(bob->keys->k, ==, 4);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Alice receives the data message
@@ -154,7 +154,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->i, ==, 2);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 2);
-  g_assert_cmpint(alice->keys->pn, ==, 3);
+  g_assert_cmpint(alice->keys->pn, ==, 4);
 
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
@@ -188,7 +188,7 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 2);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -198,7 +198,7 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 2);
+  g_assert_cmpint(alice->keys->j, ==, 3);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -207,7 +207,7 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 3);
+  g_assert_cmpint(alice->keys->j, ==, 4);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -216,7 +216,7 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 4);
+  g_assert_cmpint(alice->keys->j, ==, 5);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -228,10 +228,10 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
 
   free_message_and_response(response_to_alice, &to_send_1);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 2);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   response_to_alice = otrng_response_new();
@@ -241,10 +241,10 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
 
   free_message_and_response(response_to_alice, &to_send_4);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 3);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 4);
+  g_assert_cmpint(bob->keys->k, ==, 5);
   g_assert_cmpint(bob->keys->pn, ==, 0);
   g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 2);
 
@@ -255,10 +255,10 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
 
   free_message_and_response(response_to_alice, &to_send_3);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 3);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 4);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 4);
+  g_assert_cmpint(bob->keys->k, ==, 5);
   g_assert_cmpint(bob->keys->pn, ==, 0);
   g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 1);
 
@@ -269,10 +269,10 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
 
   free_message_and_response(response_to_alice, &to_send_2);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 4);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 5);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 4);
+  g_assert_cmpint(bob->keys->k, ==, 5);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   otrng_user_state_free_all(alice_client_state->user_state,
@@ -309,7 +309,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 2);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -319,7 +319,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 2);
+  g_assert_cmpint(alice->keys->j, ==, 3);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -328,7 +328,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 3);
+  g_assert_cmpint(alice->keys->j, ==, 4);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -340,10 +340,10 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
 
   free_message_and_response(response_to_alice, &to_send_1);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 2);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   response_to_alice = otrng_response_new();
@@ -352,11 +352,11 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
 
   free_message_and_response(response_to_alice, &to_send_2);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 3);
   g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 0);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 2);
+  g_assert_cmpint(bob->keys->k, ==, 3);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Bob sends a data message
@@ -367,7 +367,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
 
   g_assert_cmpint(bob->keys->i, ==, 2);
   g_assert_cmpint(bob->keys->j, ==, 1);
-  g_assert_cmpint(bob->keys->k, ==, 2);
+  g_assert_cmpint(bob->keys->k, ==, 3);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Alice receives a data message
@@ -380,7 +380,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->i, ==, 2);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 1);
-  g_assert_cmpint(alice->keys->pn, ==, 3);
+  g_assert_cmpint(alice->keys->pn, ==, 4);
 
   // Alice sends a data message
   result = otrng_send_message(&to_send_5, "good", notif, NULL, 0, alice);
@@ -391,7 +391,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->i, ==, 3);
   g_assert_cmpint(alice->keys->j, ==, 1);
   g_assert_cmpint(alice->keys->k, ==, 1);
-  g_assert_cmpint(alice->keys->pn, ==, 3);
+  g_assert_cmpint(alice->keys->pn, ==, 4);
 
   // Bob receives the data message
   response_to_alice = otrng_response_new();
@@ -452,7 +452,7 @@ void test_double_ratchet_corrupted_ratchet(void) {
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
-  g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 2);
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
@@ -483,10 +483,10 @@ void test_double_ratchet_corrupted_ratchet(void) {
 
   free_message_and_response(response_to_alice, &to_send_1);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 2);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Bob receives the corrupted data message
@@ -495,9 +495,9 @@ void test_double_ratchet_corrupted_ratchet(void) {
       otrng_receive_message(response_to_alice, notif, to_send_2, bob));
   free_message_and_response(response_to_alice, &to_send_2);
 
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
   // TODO: @double_ratchet the ratchet indeed moved and stored invalid keys
-  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 8);
+  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 7);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
   // TODO: @double_ratchet the ratchet indeed moved

@@ -185,7 +185,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   g_assert_cmpint(bob->keys->k, ==, 0);
 
   // Bob replies with an auth-i message
-  otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+  otrng_assert(bob->state == OTRNG_STATE_WAITING_DATA);
   otrng_assert(response_to_alice->to_display == NULL);
   otrng_assert(response_to_alice->to_send);
   otrng_assert_cmpmem("?OTR:AASI", response_to_alice->to_send, 9);
@@ -199,21 +199,37 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
-  // Alice does not reply
-  otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-  otrng_assert(response_to_bob->to_display == NULL);
-  otrng_assert(!response_to_bob->to_send);
-
-  g_assert_cmpint(alice->keys->i, ==, 0);
-  g_assert_cmpint(alice->keys->j, ==, 0);
-  g_assert_cmpint(alice->keys->k, ==, 0);
-
   // The double ratchet is initialized
   otrng_assert(alice->keys->current);
 
   // Both have the same shared secret
   otrng_assert_root_key_eq(alice->keys->shared_secret,
                            bob->keys->shared_secret);
+
+  // Alice replies with initial data message "Data-0"
+  otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+  otrng_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9);
+  otrng_assert(response_to_bob->to_display == NULL);
+
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+
+  // Bob receives the initial data message
+  otrng_assert_is_success(otrng_receive_message(response_to_alice, notif,
+                                                response_to_bob->to_send, bob));
+  free(response_to_bob->to_send);
+  response_to_bob->to_send = NULL;
+
+  otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+  otrng_assert(response_to_alice->to_send == NULL);
+  otrng_assert(response_to_alice->to_display == NULL);
+
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(bob->keys->i, ==, 1);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
 
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);
