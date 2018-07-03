@@ -169,7 +169,6 @@ static otrng_bool expired(time_t expires) {
   return (difftime(expires, time(NULL)) <= 0);
 }
 
-// TODO: @refactoring we are never using this function
 INTERNAL otrng_bool otrng_prekey_profile_valid(
     const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
     const otrng_public_key_p pub) {

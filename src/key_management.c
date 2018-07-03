@@ -838,7 +838,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
     msg_mac_key_p mac_key;
     msg_enc_key_p enc_key;
 
-    memset(enc_key, 0, sizeof(msg_mac_key_p));
+    memset(enc_key, 0, sizeof(msg_enc_key_p));
     memset(mac_key, 0, sizeof(msg_mac_key_p));
 
     for (int i = 0; i < num_stored_keys; i++) {
