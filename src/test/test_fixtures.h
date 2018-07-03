@@ -185,7 +185,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   g_assert_cmpint(bob->keys->k, ==, 0);
 
   // Bob replies with an auth-i message
-  otrng_assert(bob->state == OTRNG_STATE_WAITING_DATA);
+  otrng_assert(bob->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
   otrng_assert(response_to_alice->to_display == NULL);
   otrng_assert(response_to_alice->to_send);
   otrng_assert_cmpmem("?OTR:AASI", response_to_alice->to_send, 9);

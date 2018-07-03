@@ -1479,7 +1479,7 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
   case OTRNG_STATE_WAITING_AUTH_R:
     result = receive_identity_message_on_waiting_auth_r(dst, m, otr);
     break;
-  case OTRNG_STATE_WAITING_DATA:
+  case OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE:
   case OTRNG_STATE_WAITING_AUTH_I:
     result = receive_identity_message_on_waiting_auth_i(dst, m, otr);
     break;
@@ -1581,7 +1581,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
   // It means the other side received 2 identity messages from us.
   // Can it happen?
   // We just keept the behavior to not break existing tests.
-  if (otr->state == OTRNG_STATE_WAITING_DATA) {
+  if (otr->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE) {
     return OTRNG_SUCCESS; /* ignore the message */
   }
 
@@ -1647,7 +1647,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
 
   // TODO: Refactor
   otrng_err ret = double_ratcheting_init(otr, 'u');
-  otr->state = OTRNG_STATE_WAITING_DATA;
+  otr->state = OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE;
   return ret;
 }
 
@@ -1676,7 +1676,7 @@ tstatic otrng_err receive_auth_i(char **dst, const uint8_t *buff,
   // TODO: I am not sure if we considered the implications of this state
   // It means we changed roles (initiator <-> responder) in the middle of
   // a DAKE. Can it happen? Maybe if both send query messages?
-  if (otr->state == OTRNG_STATE_WAITING_DATA) {
+  if (otr->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE) {
     return OTRNG_ERROR;
   }
 
@@ -2006,7 +2006,7 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
                                              otrng_notif notif,
                                              const uint8_t *buff, size_t buflen,
                                              otrng_s *otr) {
-  if (otr->state == OTRNG_STATE_WAITING_DATA) {
+  if (otr->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE) {
     if (otrng_receive_data_message_after_dake(response, notif, buff, buflen,
                                               otr)) {
       otr->state = OTRNG_STATE_ENCRYPTED_MESSAGES;

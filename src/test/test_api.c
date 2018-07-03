@@ -792,8 +792,8 @@ void test_api_multiple_clients(void) {
   pc_to_alice = otrng_response_new();
   result =
       otrng_receive_message(pc_to_alice, notif, alice_to_pc->to_send, bob_pc);
-  assert_rec_msg_in_state(result, pc_to_alice, bob_pc, OTRNG_STATE_WAITING_DATA,
-                          send_response);
+  assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
+                          OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE, send_response);
 
   // PC generates the first keys after Auth-R has been received
   otrng_assert(bob_pc->keys->our_dh->pub);

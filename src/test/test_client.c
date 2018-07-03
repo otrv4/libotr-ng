@@ -472,7 +472,8 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrng_assert(bobs_auth_i);
   otrng_assert(!to_display);
 
-  otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_DATA);
+  otrng_assert(bob_to_alice->conn->state ==
+               OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
 
   // Alice receives auth-i message (from Bob)
   ignore = otrng_client_receive(&from_alice_to_bob, &to_display, bobs_auth_i,
@@ -576,7 +577,8 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrng_assert(bobs_auth_i);
   otrng_assert(!to_display);
 
-  otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_DATA);
+  otrng_assert(bob_to_alice->conn->state ==
+               OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
 
   // Bob receives again Auth-R message, ignores
   ignore = otrng_client_receive(&ignore_msg, &to_display, alices_auth_r,
@@ -588,7 +590,8 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrng_assert(!ignore_msg);
   otrng_assert(!to_display);
 
-  otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_DATA);
+  otrng_assert(bob_to_alice->conn->state ==
+               OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
 
   // Alice receives Auth-I message, sends initial data message
   ignore = otrng_client_receive(&alice_last, &to_display, bobs_auth_i,
@@ -932,7 +935,8 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   otrng_assert(bobs_auth_i);
   otrng_assert(!to_display);
 
-  otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_DATA);
+  otrng_assert(bob_to_alice->conn->state ==
+               OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
 
   // Alice receives Auth-I message, sends initial data message
   ignore = otrng_client_receive(&alice_last, &to_display, bobs_auth_i,
