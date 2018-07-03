@@ -1722,8 +1722,12 @@ tstatic otrng_err receive_auth_i(char **dst, const uint8_t *buff,
   }
 
   // Reply with initial data message
-  return otrng_send_message(dst, "", OTRNG_NOTIF_NONE, NULL,
-                            MSGFLAGS_IGNORE_UNREADABLE, otr);
+  if (!otrng_send_message(dst, "", OTRNG_NOTIF_NONE, NULL,
+                          MSGFLAGS_IGNORE_UNREADABLE, otr)) {
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
 }
 
 // TODO: @refactoring this is the same as otrng_close
@@ -1972,22 +1976,21 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
       continue;
     }
 
+    // otr->ignore_msg = 0;
     // TODO: @client this displays an event on otrv3..
     if (!response->to_display) {
-      otr->ignore_msg = 1;
+      // otr->ignore_msg = 1;
       sodium_memzero(mac_key, sizeof(msg_mac_key_p));
       otrng_data_message_free(msg);
       return OTRNG_SUCCESS;
-    } else if (otr->ignore_msg != 1) {
-      if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
-        if (!otrng_send_message(&response->to_send, "", OTRNG_NOTIF_NONE, NULL,
-                                MSGFLAGS_IGNORE_UNREADABLE, otr)) {
-          sodium_memzero(mac_key, sizeof(msg_mac_key_p));
-          otrng_data_message_free(msg);
-          return OTRNG_ERROR;
-        }
-        otr->last_sent = time(NULL);
+    } else if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
+      if (!otrng_send_message(&response->to_send, "", OTRNG_NOTIF_NONE, NULL,
+                              MSGFLAGS_IGNORE_UNREADABLE, otr)) {
+        sodium_memzero(mac_key, sizeof(msg_mac_key_p));
+        otrng_data_message_free(msg);
+        return OTRNG_ERROR;
       }
+      otr->last_sent = time(NULL);
     }
 
     sodium_memzero(mac_key, sizeof(msg_mac_key_p));

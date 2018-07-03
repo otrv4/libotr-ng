@@ -1091,10 +1091,10 @@ void test_heartbeat_messages(void) {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
-  alice_client_state->should_heartbeat = test_should_heartbeat;
+  alice_client_state->should_heartbeat = test_should_not_heartbeat;
   bob_client_state->should_heartbeat = test_should_heartbeat;
 
-  // DAKE HAS FINISHED.
+  // DAKE HAS FINISHED
   do_dake_fixture(alice, bob);
 
   otrng_response_s *response_to_alice = NULL;
@@ -1109,28 +1109,25 @@ void test_heartbeat_messages(void) {
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
-  alice->last_sent = time(NULL) - 60;
+  // bob->last_sent = time(NULL) - 60;
 
-  // This is a follow up message.
   g_assert_cmpint(alice->keys->i, ==, 1);
   g_assert_cmpint(alice->keys->j, ==, 2);
 
-  // TODO: Bob never sends a heartbeat again after he sends the first data
-  // message.
-  return;
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
 
   // Bob receives a data message
   // Bob sends a heartbeat message
   response_to_alice = otrng_response_new();
   otrng_assert_is_success(
       otrng_receive_message(response_to_alice, notif, to_send, bob));
-  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
 
   otrng_assert_cmpmem("hi", response_to_alice->to_display, strlen("hi") + 1);
   otrng_assert(response_to_alice->to_send != NULL);
   g_assert_cmpint(bob->keys->i, ==, 2);
   g_assert_cmpint(bob->keys->j, ==, 1);
-  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 2);
 
   free(to_send);
 
@@ -1144,7 +1141,7 @@ void test_heartbeat_messages(void) {
   g_assert_cmpint(alice->keys->i, ==, 2);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 1);
-  g_assert_cmpint(alice->ignore_msg, ==, 1);
+  // g_assert_cmpint(alice->ignore_msg, ==, 1);
 
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);
