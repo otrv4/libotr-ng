@@ -52,7 +52,7 @@
     const otrng_response_s *_respond_to = (respond_to);                        \
     const otrng_s *_sender = (sender);                                         \
     const otrng_state _otr_state = (otr_state);                                \
-    const bool _send_response = (send_response);                               \
+    const otrng_bool _send_response = (send_response);                         \
     otrng_assert_is_success(_result);                                          \
     otrng_assert(!_respond_to->to_display);                                    \
     otrng_assert(_sender->state == _otr_state);                                \
@@ -713,7 +713,7 @@ void test_api_conversation_v3(void) {
 }
 
 void test_api_multiple_clients(void) {
-  int send_response = 1;
+  otrng_bool send_response = otrng_true;
   otrng_err result;
 
   otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);

@@ -402,8 +402,11 @@ tstatic void set_running_version_from_tag(otrng_s *otr,
   }
 }
 
-tstatic bool message_is_query(const string_p message) {
-  return strstr(message, query_header) != NULL;
+tstatic otrng_bool message_is_query(const string_p message) {
+  if (strstr(message, query_header) != NULL) {
+    return otrng_true;
+  }
+  return otrng_false;
 }
 
 tstatic void set_running_version_from_query_msg(otrng_s *otr,
@@ -415,12 +418,18 @@ tstatic void set_running_version_from_query_msg(otrng_s *otr,
   }
 }
 
-tstatic bool message_is_otr_encoded(const string_p message) {
-  return strstr(message, otr_header) != NULL;
+tstatic otrng_bool message_is_otr_encoded(const string_p message) {
+  if (strstr(message, otr_header) != NULL) {
+    return otrng_true;
+  }
+  return otrng_false;
 }
 
-tstatic bool message_is_otr_error(const string_p message) {
-  return strncmp(message, otr_error_header, strlen(otr_error_header)) == 0;
+tstatic otrng_bool message_is_otr_error(const string_p message) {
+  if (strncmp(message, otr_error_header, strlen(otr_error_header)) == 0) {
+    return otrng_true;
+  }
+  return otrng_false;
 }
 
 INTERNAL otrng_response_s *otrng_response_new(void) {
@@ -902,7 +911,7 @@ tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
     ret = serialize_and_encode_non_interactive_auth(dst, auth);
   }
 
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, false)) {
+  if (!otrng_key_manager_generate_shared_secret(otr->keys, otrng_false)) {
     return OTRNG_ERROR;
   }
 
@@ -1339,7 +1348,7 @@ tstatic otrng_err non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, false)) {
+  if (!otrng_key_manager_generate_shared_secret(otr->keys, otrng_false)) {
     return OTRNG_ERROR;
   }
 
@@ -1399,7 +1408,7 @@ tstatic otrng_err receive_identity_message_on_state_start(
 
   /* @secret the shared secret will be deleted once the double ratchet is
    * initialized */
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, true)) {
+  if (!otrng_key_manager_generate_shared_secret(otr->keys, otrng_true)) {
     return OTRNG_ERROR;
   }
 
@@ -1623,7 +1632,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
 
   /* @secret the shared secret will be deleted once the double ratchet is
    * initialized */
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, true)) {
+  if (!otrng_key_manager_generate_shared_secret(otr->keys, otrng_true)) {
     return OTRNG_ERROR;
   }
 

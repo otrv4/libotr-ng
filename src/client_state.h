@@ -21,8 +21,6 @@
 #ifndef OTRNG_CLIENT_STATE_H
 #define OTRNG_CLIENT_STATE_H
 
-#include <stdbool.h>
-
 #include <gcrypt.h>
 #include <libotr/userstate.h>
 
