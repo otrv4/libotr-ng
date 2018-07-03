@@ -1479,6 +1479,7 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
   case OTRNG_STATE_WAITING_AUTH_R:
     result = receive_identity_message_on_waiting_auth_r(dst, m, otr);
     break;
+  case OTRNG_STATE_WAITING_DATA:
   case OTRNG_STATE_WAITING_AUTH_I:
     result = receive_identity_message_on_waiting_auth_i(dst, m, otr);
     break;
@@ -1576,6 +1577,14 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
 
 tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
                                  size_t buff_len, otrng_s *otr) {
+  // TODO: I am not sure if we considered the implications of this state
+  // It means the other side received 2 identity messages from us.
+  // Can it happen?
+  // We just keept the behavior to not break existing tests.
+  if (otr->state == OTRNG_STATE_WAITING_DATA) {
+    return OTRNG_SUCCESS; /* ignore the message */
+  }
+
   if (otr->state != OTRNG_STATE_WAITING_AUTH_R) {
     return OTRNG_SUCCESS; /* ignore the message */
   }
@@ -1636,7 +1645,10 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
     return OTRNG_ERROR;
   }
 
-  return double_ratcheting_init(otr, 'u');
+  // TODO: Refactor
+  otrng_err ret = double_ratcheting_init(otr, 'u');
+  otr->state = OTRNG_STATE_WAITING_DATA;
+  return ret;
 }
 
 tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
@@ -1659,8 +1671,15 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
   return err;
 }
 
-tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
-                                 otrng_s *otr) {
+tstatic otrng_err receive_auth_i(char **dst, const uint8_t *buff,
+                                 size_t buff_len, otrng_s *otr) {
+  // TODO: I am not sure if we considered the implications of this state
+  // It means we changed roles (initiator <-> responder) in the middle of
+  // a DAKE. Can it happen? Maybe if both send query messages?
+  if (otr->state == OTRNG_STATE_WAITING_DATA) {
+    return OTRNG_ERROR;
+  }
+
   if (otr->state != OTRNG_STATE_WAITING_AUTH_I) {
     return OTRNG_SUCCESS; /* Ignore the message */
   }
@@ -1698,7 +1717,13 @@ tstatic otrng_err receive_auth_i(const uint8_t *buff, size_t buff_len,
     fingerprint_seen_cb_v4(fp, otr->conversation);
   }
 
-  return double_ratcheting_init(otr, 't');
+  if (!double_ratcheting_init(otr, 't')) {
+    return OTRNG_ERROR;
+  }
+
+  // Reply with initial data message
+  return otrng_send_message(dst, "", OTRNG_NOTIF_NONE, NULL,
+                            MSGFLAGS_IGNORE_UNREADABLE, otr);
 }
 
 // TODO: @refactoring this is the same as otrng_close
@@ -1845,10 +1870,9 @@ tstatic otrng_err receive_tlvs(otrng_response_s *response, otrng_s *otr) {
   return ret;
 }
 
-tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
-                                             otrng_notif notif,
-                                             const uint8_t *buff, size_t buflen,
-                                             otrng_s *otr) {
+tstatic otrng_err otrng_receive_data_message_after_dake(
+    otrng_response_s *response, otrng_notif notif, const uint8_t *buff,
+    size_t buflen, otrng_s *otr) {
   data_message_s *msg = otrng_data_message_new();
   msg_enc_key_p enc_key;
   msg_mac_key_p mac_key;
@@ -1857,12 +1881,6 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   memset(mac_key, 0, sizeof(msg_mac_key_p));
 
   response->to_display = NULL;
-
-  if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
-    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_NOT_PRIVATE);
-    otrng_data_message_free(msg);
-    return OTRNG_ERROR;
-  }
 
   size_t read = 0;
   if (!otrng_data_message_deserialize(msg, buff, buflen, &read)) {
@@ -1984,6 +2002,29 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
   return OTRNG_ERROR;
 }
 
+tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
+                                             otrng_notif notif,
+                                             const uint8_t *buff, size_t buflen,
+                                             otrng_s *otr) {
+  if (otr->state == OTRNG_STATE_WAITING_DATA) {
+    if (otrng_receive_data_message_after_dake(response, notif, buff, buflen,
+                                              otr)) {
+      otr->state = OTRNG_STATE_ENCRYPTED_MESSAGES;
+      return OTRNG_SUCCESS;
+    }
+
+    return OTRNG_ERROR;
+  }
+
+  if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
+    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_NOT_PRIVATE);
+    return OTRNG_ERROR;
+  }
+
+  return otrng_receive_data_message_after_dake(response, notif, buff, buflen,
+                                               otr);
+}
+
 tstatic otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
                                  const size_t bufflen) {
   if (bufflen == 0) {
@@ -2044,7 +2085,7 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
   case AUTH_R_MSG_TYPE:
     return receive_auth_r(&response->to_send, decoded, dec_len, otr);
   case AUTH_I_MSG_TYPE:
-    return receive_auth_i(decoded, dec_len, otr);
+    return receive_auth_i(&response->to_send, decoded, dec_len, otr);
   case NON_INT_AUTH_MSG_TYPE:
     otr->running_version = 4;
     return receive_non_interactive_auth_message(response, decoded, dec_len,
