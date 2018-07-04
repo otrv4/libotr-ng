@@ -38,7 +38,6 @@ tstatic ratchet_s *ratchet_new() {
     return NULL;
   }
 
-  // TODO: This hides using uninitialized bytes from keys
   memset(ratchet->root_key, 0, sizeof(root_key_p));
   memset(ratchet->chain_s, 0, sizeof(sending_chain_key_p));
   memset(ratchet->chain_r, 0, sizeof(receiving_chain_key_p));
@@ -138,7 +137,57 @@ INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager) {
   sodium_memzero(manager->their_shared_prekey,
                  sizeof(otrng_shared_prekey_pub_p));
   sodium_memzero(manager->our_shared_prekey, sizeof(otrng_shared_prekey_pub_p));
-  sodium_memzero(manager->tmp_key, sizeof(manager->tmp_key));
+}
+
+INTERNAL receiving_ratchet_s *otrng_receiving_ratchet_new(void) {
+  receiving_ratchet_s *ratchet = malloc(sizeof(receiving_ratchet_s));
+  if (!ratchet) {
+    return NULL;
+  }
+
+  ratchet->i = 0;
+  ratchet->k = 0;
+  ratchet->pn = 0;
+
+  memset(ratchet->root_key, 0, sizeof(root_key_p));
+  memset(ratchet->chain_r, 0, sizeof(receiving_chain_key_p));
+
+  ratchet->skipped_keys = NULL;
+  ratchet->old_mac_keys = NULL;
+
+  return ratchet;
+}
+
+// i, k, root key, receiving chain, list of enc keys, list of extra sym key
+INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
+                                           const receiving_ratchet_s *src) {
+  if (!dst || !src) {
+    return;
+  }
+
+  dst->i = src->i;
+  dst->k = src->k;
+  dst->pn = src->pn;
+
+  memcpy(dst->current->root_key, src->root_key, ROOT_KEY_BYTES);
+  memcpy(dst->current->chain_r, src->chain_r, CHAIN_KEY_BYTES);
+
+  // TODO: copy lists
+}
+
+INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {
+  ratchet->i = 0;
+  ratchet->k = 0;
+  ratchet->pn = 0;
+
+  sodium_memzero(ratchet->root_key, sizeof(root_key_p));
+  sodium_memzero(ratchet->chain_r, sizeof(receiving_chain_key_p));
+
+  otrng_list_free_full(ratchet->skipped_keys);
+  ratchet->skipped_keys = NULL;
+
+  otrng_list_free_full(ratchet->old_mac_keys);
+  ratchet->old_mac_keys = NULL;
 }
 
 INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,

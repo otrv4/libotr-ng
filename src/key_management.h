@@ -47,12 +47,24 @@ typedef struct ratchet_s {
   receiving_chain_key_p chain_r;
 } ratchet_s, ratchet_p[1];
 
+/* the list of stored message and extra symmetric keys */
 typedef struct skipped_keys_s {
-  int i; // Counter of the ratchet
-  int j; // Counter of the messages
+  unsigned int i; /* Counter of the ratchet */
+  unsigned int j; /* Counter of the sending messages */
   extra_symmetric_key_p extra_symmetric_key;
   msg_enc_key_p enc_key;
 } skipped_keys_s, skipped_keys_p[1];
+
+/* a temporary structure used to hold the values of the receiving ratchet */
+typedef struct receiving_ratchet_s {
+  unsigned int i;  /* Counter of the ratchet */
+  unsigned int k;  /* Counter of the receiving ratchet */
+  unsigned int pn; /* the number of messages in the previous DH ratchet. */
+  root_key_p root_key;
+  receiving_chain_key_p chain_r;
+  list_element_s *skipped_keys;
+  list_element_s *old_mac_keys;
+} receiving_ratchet_s, receiving_ratchet_p[1];
 
 /* represents the different values needed for key management */
 typedef struct key_manager_s {
@@ -70,10 +82,10 @@ typedef struct key_manager_s {
   otrng_shared_prekey_pub_p their_shared_prekey;
 
   /* Data message context */
-  unsigned int i;  // the ratchet id.
-  unsigned int j;  // the sending message id.
-  unsigned int k;  // the receiving message id.
-  unsigned int pn; // the number of messages in the previous DH ratchet.
+  unsigned int i;  /* the ratchet id. */
+  unsigned int j;  /* the sending message id. */
+  unsigned int k;  /* the receiving message id. */
+  unsigned int pn; /* the number of messages in the previous DH ratchet. */
 
   ratchet_s *current;
 
@@ -120,18 +132,43 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager);
 INTERNAL void otrng_key_manager_free(key_manager_s *manager);
 
 /**
- * @brief Securely deletes the shared prekeys used in the Dake.
+ * @brief Securely deletes the shared prekeys used in the DAKE.
  *
  * @param [manager]   The key manager.
  */
 INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager);
 
 /**
+ * @brief Create a temporary receiving ratchet to be used to prevent a ratchet
+ * corruption.
+ *
+ * @return [manager]   The receiving ratchet [receiving_ratchet_s].
+ */
+INTERNAL receiving_ratchet_s *otrng_receiving_ratchet_new(void);
+
+/**
+ * @brief Copy a temporary receiving ratchet into the key manager.
+ *
+ * @param [dst]   The key manager.
+ * @param [src]   The receiving ratchet.
+ */
+INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
+                                           const receiving_ratchet_s *src);
+
+/**
+ * @brief Destroy a temporary receiving ratchet to be used to prevent a ratchet
+ * corruption.
+ *
+ * @param [manager]   The receiving ratchet.
+ */
+INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet);
+
+/**
  * @brief Securely replace their ecdh and their dh keys.
  *
  * @param [their_ecdh]  The new their_ecdh key.
- * @param [their_dh]  The new their_dh key.
- * @param [manager]   The key manager.
+ * @param [their_dh]    The new their_dh key.
+ * @param [manager]     The key manager.
  */
 INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
                                                dh_public_key_p their_dh,
@@ -141,7 +178,7 @@ INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
  * @brief Securely replace their ecdh keys.
  *
  * @param [their_ecdh]  The new their_ecdh key.
- * @param [manager]   The key manager.
+ * @param [manager]     The key manager.
  */
 INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point_p their_ecdh,
                                                key_manager_s *manager);
@@ -150,7 +187,7 @@ INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point_p their_ecdh,
  * @brief Securely replace their dh keys.
  *
  * @param [their_ecdh]  The new their_dh key.
- * @param [manager]   The key manager.
+ * @param [manager]     The key manager.
  */
 INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key_p their_dh,
                                              key_manager_s *manager);
@@ -163,19 +200,44 @@ INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key_p their_dh,
 INTERNAL otrng_err
 otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
 
+/**
+ * @brief Generate the temporary key to be used by the non-interactive DAKE.
+ *
+ * @param [tmp_key]      The tmp manager.
+ * @param [k_ecdh]       The K_ecdh manager.
+ * @param [brace_key]    The brackey manager.
+ * @param [tmp_ecdh_k1]  A temporary ecdh key.
+ * @param [tmp_ecdh_k2]  A temporary ecdh key.
+ */
 INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
                                                   k_ecdh_p k_ecdh,
                                                   brace_key_p brace_key,
                                                   k_ecdh_p tmp_ecdh_k1,
                                                   k_ecdh_p tmp_ecdh_k2);
 
+/**
+ * @brief Generate the auth_mac to be used by the non-interactive DAKE.
+ *
+ * @param [auth_mac]      The auth mac.
+ * @param [auth_mac_key]  The auth mac key.
+ * @param [t]             The message to mac.
+ * @param [t_len]         The length of the message to mac.
+ */
 INTERNAL void otrng_key_manager_calculate_auth_mac(uint8_t *auth_mac,
                                                    const uint8_t *auth_mac_key,
                                                    const uint8_t *t,
                                                    size_t t_len);
 
+/**
+ * @brief Generate the data message authenticator.
+ *
+ * @param [authenticator]  The authenticator.
+ * @param [mac_key]        The mac key.
+ * @param [sections]       The data message sections to mac.
+ */
 INTERNAL void otrng_key_manager_calculate_authenticator(
     uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections);
+
 /**
  * @brief Generate the Mixed Shared Secret.
  *        If it is part of the interactive DAKE, generate it
@@ -193,7 +255,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
  *
  * @param [shared_secret]   The shared secret.
  * @param [shared_prekey]   The shared prekey.
- * @param [their_pub]   Their public key.
+ * @param [their_pub]       Their public key.
  */
 INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
     uint8_t *shared_secret, const otrng_shared_prekey_pair_s *shared_prekey,
@@ -204,7 +266,7 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
  *
  * @param [shared_secret]   The shared secret.
  * @param [shared_prekey]   The keypair.
- * @param [their_pub]   Their public key.
+ * @param [their_pub]       Their public key.
  */
 INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
     uint8_t *shared, otrng_keypair_s *keypair, const ec_point_p their_pub);
