@@ -259,7 +259,8 @@ API int otrng_client_smp_start(char **tosend, const char *recipient,
     return 1;
   }
 
-  if (otrng_smp_start(tosend, question, q_len, secret, secretlen, conv->conn)) {
+  if (!otrng_smp_start(tosend, question, q_len, secret, secretlen,
+                       conv->conn)) {
     return 1;
   }
 
