@@ -277,7 +277,7 @@ API int otrng_client_smp_respond(char **tosend, const char *recipient,
     return 1;
   }
 
-  if (otrng_smp_continue(tosend, secret, secretlen, conv->conn)) {
+  if (!otrng_smp_continue(tosend, secret, secretlen, conv->conn)) {
     return 1;
   }
 
