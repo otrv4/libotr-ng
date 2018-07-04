@@ -76,6 +76,29 @@ INTERNAL /*@null@*/ void otrng_list_free_nodes(list_element_s *head) {
   otrng_list_free(head, NULL);
 }
 
+INTERNAL list_element_s *otrng_list_copy(list_element_s *head) {
+  list_element_s *cursor = head;
+  list_element_s *copy = list_new();
+  if (!copy) {
+    return NULL;
+  }
+  copy->data = cursor->data;
+  copy->next = NULL;
+
+  list_element_s *ret = copy;
+
+  cursor = cursor->next;
+  while (cursor) {
+    copy = copy->next = list_new();
+    copy->data = cursor->data;
+    copy->next = NULL;
+
+    cursor = cursor->next;
+  }
+
+  return ret;
+}
+
 INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head) {
   list_element_s *n = list_new();
   if (!n) {
@@ -180,7 +203,8 @@ INTERNAL list_element_s *otrng_list_remove_element(const list_element_s *wanted,
       list_element_s *found = cursor->next;
       cursor->next = wanted->next;
       found->next =
-          NULL; /* the element found should not point to anything in the list */
+          NULL; /* the element found should not point to anything in the list
+                 */
       break;
     }
 

@@ -44,6 +44,8 @@ INTERNAL void otrng_list_free_full(list_element_s *head);
 // Free list but does not free the nodes' data
 INTERNAL void otrng_list_free_nodes(list_element_s *head);
 
+INTERNAL list_element_s *otrng_list_copy(list_element_s *head);
+
 INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head);
 
 INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data, size_t pos,
