@@ -1141,7 +1141,6 @@ void test_heartbeat_messages(void) {
   g_assert_cmpint(alice->keys->i, ==, 2);
   g_assert_cmpint(alice->keys->j, ==, 0);
   g_assert_cmpint(alice->keys->k, ==, 1);
-  // g_assert_cmpint(alice->ignore_msg, ==, 1);
 
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);

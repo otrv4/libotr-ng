@@ -209,8 +209,6 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otr->pending_fragments = NULL;
   otr->v3_conn = NULL;
 
-  otr->ignore_msg = 0;
-
   otr->shared_session_state = NULL;
   otr->sending_init_msg = NULL;
   otr->receiving_init_msg = NULL;
@@ -1972,14 +1970,14 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
       continue;
     }
 
-    // otr->ignore_msg = 0;
     // TODO: @client this displays an event on otrv3..
     if (!response->to_display) {
-      // otr->ignore_msg = 1;
       sodium_memzero(mac_key, sizeof(msg_mac_key_p));
       otrng_data_message_free(msg);
       return OTRNG_SUCCESS;
-    } else if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
+    }
+
+    if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
       if (!otrng_send_message(&response->to_send, "", OTRNG_NOTIF_NONE, NULL,
                               MSGFLAGS_IGNORE_UNREADABLE, otr)) {
         sodium_memzero(mac_key, sizeof(msg_mac_key_p));
