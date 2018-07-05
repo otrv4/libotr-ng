@@ -269,7 +269,8 @@ INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
  * @param [their_pub]       Their public key.
  */
 INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
-    uint8_t *shared, otrng_keypair_s *keypair, const ec_point_p their_pub);
+    uint8_t *shared_secret, otrng_keypair_s *keypair,
+    const ec_point_p their_pub);
 
 /**
  * @brief Initialize the double ratchet algorithm.

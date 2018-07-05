@@ -97,8 +97,9 @@ tstatic otrng_policy_s get_policy_for(const char *recipient) {
 }
 
 API int otrng_conversation_is_encrypted(otrng_conversation_s *conv) {
-  if (!conv)
+  if (!conv) {
     return 0;
+  }
 
   switch (conv->conn->running_version) {
   case 0:
@@ -113,8 +114,9 @@ API int otrng_conversation_is_encrypted(otrng_conversation_s *conv) {
 }
 
 API int otrng_conversation_is_finished(otrng_conversation_s *conv) {
-  if (!conv)
+  if (!conv) {
     return 0;
+  }
 
   switch (conv->conn->running_version) {
   case 0:
@@ -206,13 +208,11 @@ tstatic otrng_client_result send_message(char **newmsg, const char *message,
 
   if (notif == OTRNG_NOTIF_STATE_NOT_ENCRYPTED) {
     return OTRNG_CLIENT_RESULT_ERROR_NOT_ENCRYPTED;
-  } else {
-    if (OTRNG_SUCCESS == result) {
-      return OTRNG_CLIENT_RESULT_OK;
-    } else {
-      return OTRNG_CLIENT_RESULT_ERROR;
-    }
   }
+  if (OTRNG_SUCCESS == result) {
+    return OTRNG_CLIENT_RESULT_OK;
+  }
+  return OTRNG_CLIENT_RESULT_ERROR;
 }
 
 API int otrng_client_send(char **newmessage, const char *message,

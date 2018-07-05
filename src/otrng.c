@@ -105,8 +105,9 @@ tstatic void received_extra_sym_key(const otrng_client_conversation_s *conv,
                                     const unsigned char *extra_sym_key) {
 
   if (!conv || !conv->client || !conv->client->callbacks ||
-      !conv->client->callbacks->received_extra_symm_key)
+      !conv->client->callbacks->received_extra_symm_key) {
     return;
+  }
 
   conv->client->callbacks->received_extra_symm_key(conv, use, use_data,
                                                    use_data_len, extra_sym_key);
@@ -1797,7 +1798,7 @@ tstatic otrng_err decrypt_data_msg(otrng_response_s *response,
   return OTRNG_SUCCESS;
 }
 
-tstatic unsigned int extract_word(unsigned char *bufp) {
+tstatic unsigned int extract_word(const unsigned char *bufp) {
   unsigned int use =
       (bufp[0] << 24) | (bufp[1] << 16) | (bufp[2] << 8) | bufp[3];
   return use;
@@ -1950,7 +1951,8 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
         otrng_data_message_free(msg);
 
         return OTRNG_ERROR;
-      } else if (msg->flags == MSGFLAGS_IGNORE_UNREADABLE) {
+      }
+      if (msg->flags == MSGFLAGS_IGNORE_UNREADABLE) {
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
         otrng_data_message_free(msg);
@@ -2125,7 +2127,8 @@ tstatic otrng_err receive_error_message(otrng_response_s *response,
     response->to_display =
         otrng_strndup(unreadable_msg_error, strlen(unreadable_msg_error));
     return OTRNG_SUCCESS;
-  } else if (strncmp(message, "ERROR_2:", 8) == 0) {
+  }
+  if (strncmp(message, "ERROR_2:", 8) == 0) {
     response->to_display =
         otrng_strndup(not_in_private_error, strlen(not_in_private_error));
     return OTRNG_SUCCESS;
@@ -2150,7 +2153,8 @@ tstatic otrng_err receive_error_message(otrng_response_s *response,
 tstatic int get_message_type(const string_p message) {
   if (message_contains_tag(message)) {
     return MSG_TAGGED_PLAINTEXT;
-  } else if (message_is_query(message)) {
+  }
+  if (message_is_query(message)) {
     return MSG_QUERY_STRING;
   } else if (message_is_otr_error(message)) {
     return MSG_OTR_ERROR;

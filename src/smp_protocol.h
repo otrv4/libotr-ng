@@ -99,7 +99,7 @@ INTERNAL otrng_err otrng_generate_smp_secret(unsigned char **secret,
                                              otrng_fingerprint_p their_fp,
                                              uint8_t *ssid,
                                              const uint8_t *answer,
-                                             size_t answerlen);
+                                             size_t answer_len);
 
 INTERNAL otrng_err otrng_generate_smp_msg_1(smp_msg_1_s *dst,
                                             smp_protocol_p smp);
@@ -133,7 +133,7 @@ tstatic otrng_err smp_msg_1_deserialize(smp_msg_1_s *msg, const tlv_s *tlv);
 tstatic otrng_err generate_smp_msg_2(smp_msg_2_s *dst, const smp_msg_1_s *msg_1,
                                      smp_protocol_p smp);
 
-tstatic otrng_err smp_msg_2_deserialize(smp_msg_2_s *dst, const tlv_s *tlv);
+tstatic otrng_err smp_msg_2_deserialize(smp_msg_2_s *msg, const tlv_s *tlv);
 
 tstatic void smp_msg_2_destroy(smp_msg_2_s *msg);
 

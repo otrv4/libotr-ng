@@ -77,7 +77,7 @@ API int otrng_client_smp_respond(char **tosend, const char *recipient,
                                  const unsigned char *secret, size_t secretlen,
                                  otrng_client_s *client);
 
-API int otrng_client_receive(char **newmsg, char **todisplay,
+API int otrng_client_receive(char **newmessage, char **todisplay,
                              const char *message, const char *recipient,
                              otrng_client_s *client);
 
@@ -89,7 +89,7 @@ API int otrng_client_disconnect(char **newmsg, const char *recipient,
 /*                                        int expiration_time, */
 /*                                        otrng_client_s *client); */
 
-API otrng_conversation_s *otrng_client_get_conversation(int force,
+API otrng_conversation_s *otrng_client_get_conversation(int force_create,
                                                         const char *recipient,
                                                         otrng_client_s *client);
 

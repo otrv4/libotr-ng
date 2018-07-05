@@ -51,17 +51,17 @@ INTERNAL fragment_context_s *otrng_fragment_context_new(void);
 
 INTERNAL void otrng_fragment_context_free(fragment_context_s *context);
 
-INTERNAL otrng_err otrng_fragment_message(int mms,
+INTERNAL otrng_err otrng_fragment_message(int max_size,
                                           otrng_message_to_send_s *fragments,
                                           int our_instance, int their_instance,
                                           const string_p message);
 
-INTERNAL otrng_err otrng_unfragment_message(char **unfrag_msg,
+INTERNAL otrng_err otrng_unfragment_message(char **unfrag_message,
                                             list_element_s **contexts,
                                             const string_p message,
                                             const int our_instance_tag);
 
-INTERNAL otrng_err otrng_expire_fragments(time_t now, uint32_t threshold,
+INTERNAL otrng_err otrng_expire_fragments(time_t now, uint32_t expiration_time,
                                           list_element_s **contexts);
 
 #ifdef OTRNG_FRAGMENT_PRIVATE

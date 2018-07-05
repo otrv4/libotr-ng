@@ -99,19 +99,20 @@ otrng_messaging_client_new(otrng_user_state_s *state, void *client_id) {
 
   if (e) {
     return e->data;
-  } else {
-    otrng_client_state_s *s = get_client_state(state, client_id);
-    if (!s)
-      return NULL;
-
-    otrng_client_s *c = otrng_client_new(s);
-    if (!c)
-      return NULL;
-
-    state->clients = otrng_list_add(c, state->clients);
-
-    return c;
   }
+  otrng_client_state_s *s = get_client_state(state, client_id);
+  if (!s) {
+    return NULL;
+  }
+
+  otrng_client_s *c = otrng_client_new(s);
+  if (!c) {
+    return NULL;
+  }
+
+  state->clients = otrng_list_add(c, state->clients);
+
+  return c;
 }
 
 otrng_messaging_client_s *otrng_messaging_client_get(otrng_user_state_s *state,
@@ -119,8 +120,9 @@ otrng_messaging_client_s *otrng_messaging_client_get(otrng_user_state_s *state,
                                                      void *client_id) {
   list_element_s *el =
       otrng_list_get(client_id, state->clients, find_client_by_client_id);
-  if (el)
+  if (el) {
     return el->data;
+  }
 
   return otrng_messaging_client_new(state, client_id);
 }
@@ -177,8 +179,9 @@ tstatic void add_private_key_v4_to_FILEp(list_element_s *node, void *context) {
 API int
 otrng_user_state_private_key_v4_write_FILEp(const otrng_user_state_s *state,
                                             FILE *privf) {
-  if (!privf)
+  if (!privf) {
     return -1;
+  }
 
   otrng_list_foreach(state->states, add_private_key_v4_to_FILEp, privf);
   return 0;
