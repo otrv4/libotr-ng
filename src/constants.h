@@ -22,11 +22,11 @@
 #define OTRNG_CONSTANTS_H
 
 #define OTRNG_PROTOCOL_VERSION 4
-#define IDENTITY_MSG_TYPE 0x08
-#define AUTH_R_MSG_TYPE 0x91
-#define AUTH_I_MSG_TYPE 0x88
+#define IDENTITY_MSG_TYPE 0x35
+#define AUTH_R_MSG_TYPE 0x36
+#define AUTH_I_MSG_TYPE 0x37
 #define PRE_KEY_MSG_TYPE 0x0F
-#define NON_INT_AUTH_MSG_TYPE 0x8D
+#define NON_INT_AUTH_MSG_TYPE 0x0D
 #define DATA_MSG_TYPE 0x03
 
 /* protocol version + message type + sender's instance tag + receiver's instance

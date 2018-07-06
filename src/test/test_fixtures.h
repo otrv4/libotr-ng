@@ -145,7 +145,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert(bob->state == OTRNG_STATE_WAITING_AUTH_R);
   otrng_assert(response_to_alice->to_display == NULL);
   otrng_assert(response_to_alice->to_send);
-  otrng_assert_cmpmem("?OTR:AAQI", response_to_alice->to_send, 9);
+  otrng_assert_cmpmem("?OTR:AAQ1", response_to_alice->to_send, 9);
 
   // Alice receives an identity message
   otrng_assert_is_success(otrng_receive_message(
@@ -164,7 +164,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert(alice->state == OTRNG_STATE_WAITING_AUTH_I);
   otrng_assert(response_to_bob->to_display == NULL);
   otrng_assert(response_to_bob->to_send);
-  otrng_assert_cmpmem("?OTR:AASR", response_to_bob->to_send, 9);
+  otrng_assert_cmpmem("?OTR:AAQ2", response_to_bob->to_send, 9);
 
   // Bob receives an auth-r message
   otrng_assert_is_success(otrng_receive_message(response_to_alice, notif,
@@ -188,7 +188,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert(bob->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
   otrng_assert(response_to_alice->to_display == NULL);
   otrng_assert(response_to_alice->to_send);
-  otrng_assert_cmpmem("?OTR:AASI", response_to_alice->to_send, 9);
+  otrng_assert_cmpmem("?OTR:AAQ3", response_to_alice->to_send, 9);
 
   // The double ratchet is initialized
   otrng_assert(bob->keys->current);

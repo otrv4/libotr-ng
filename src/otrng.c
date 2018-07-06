@@ -2108,7 +2108,6 @@ tstatic otrng_err receive_encoded_message(otrng_response_s *response,
   if (otrl_base64_otr_decode(message, &decoded, &dec_len)) {
     return OTRNG_ERROR;
   }
-
   otrng_err result =
       receive_decoded_message(response, notif, decoded, dec_len, otr);
   free(decoded);

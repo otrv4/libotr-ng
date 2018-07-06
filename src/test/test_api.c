@@ -299,7 +299,7 @@ void test_otrng_send_offline_message() {
   otrng_prekey_ensemble_free(ensemble);
 
   otrng_assert(to_bob);
-  otrng_assert_cmpmem("?OTR:AASN", to_bob, 9);
+  otrng_assert_cmpmem("?OTR:AAQN", to_bob, 9);
 
   otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
   otrng_assert(alice->running_version == 4);
@@ -526,7 +526,7 @@ void test_api_conversation_errors_2(void) {
   otrng_assert(bob->state == OTRNG_STATE_START);
 
   const char *malformed =
-      "?OTR:AAQIAAAAAAAAAAAAAAEBAAABAgAQXaS4pTGfRolFC5WuliYvxJJcwqpOQeeO4/"
+      "?OTR:AAQ1AAAAAAAAAAAAAAEBAAABAgAQXaS4pTGfRolFC5WuliYvxJJcwqpOQeeO4/"
       "1zoKokDoUE/"
       "OnFdvBBv09zDtDvneIbzfs56QHpWGuAAAAAAzM0AAAAAABbSMuiJZfVAhREsc6c6WG7NSVNN"
       "F58mInKArRia8avA5ZazE7HUNkZ8BWPsouNbLoTYTxViDtavlEpHfCAOqsXGRwAO0H/"
