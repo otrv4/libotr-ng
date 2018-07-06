@@ -65,8 +65,6 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   }
 
   state->client_id = client_id;
-  state->account_name = NULL;
-  state->protocol_name = NULL;
   state->callbacks = NULL;
   state->user_state = NULL;
   state->keypair = NULL;
@@ -82,12 +80,6 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
 }
 
 INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
-  free(state->protocol_name);
-  state->protocol_name = NULL;
-
-  free(state->account_name);
-  state->account_name = NULL;
-
   otrng_keypair_free(state->keypair);
   otrng_list_free(state->our_prekeys, stored_prekeys_free_from_list);
 

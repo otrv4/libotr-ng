@@ -102,22 +102,19 @@ void test_user_state_key_management(void) {
 /* } */
 
 void test_instance_tag_api(void) {
-  const char *icq_alice_account = "alice_icq";
-  const char *icq_protocol =
-      "otr"; // to match was is returned in get_account_and_protocol_cb
-  unsigned int icq_instag_value = 0x9abcdef0;
+  // to match was is returned in get_account_and_protocol_cb
+  const char *alice_protocol = "otr";
+  unsigned int instance_tag = 0x9abcdef0;
 
   // to match was is returned in get_account_and_protocol_cb
-  otrng_client_state_s *alice = otrng_client_state_new(icq_alice_account);
+  otrng_client_state_s *alice = otrng_client_state_new(alice_account);
   alice->callbacks = test_callbacks;
   alice->user_state = otrl_userstate_create();
-  alice->account_name = otrng_strdup(icq_alice_account);
-  alice->protocol_name = otrng_strdup(icq_protocol);
 
   FILE *instagFILEp = tmpfile();
 
-  fprintf(instagFILEp, "%s\t%s\t%08x\n", icq_alice_account, icq_protocol,
-          icq_instag_value);
+  fprintf(instagFILEp, "%s\t%s\t%08x\n", alice_account, alice_protocol,
+          instance_tag);
   rewind(instagFILEp);
   otrng_client_state_instance_tag_read_FILEp(alice, instagFILEp);
   fclose(instagFILEp);

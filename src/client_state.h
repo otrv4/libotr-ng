@@ -44,11 +44,6 @@ typedef struct otrng_client_state_s {
                             For example, in libpurple-based apps (like Pidgin)
                             this could be a PurpleAccount */
 
-  // TODO: @client Replace with a callback that knows how to get these from the
-  // client_id.
-  char *account_name;
-  char *protocol_name;
-
   const struct otrng_client_callbacks_s *callbacks;
 
   // TODO: @client We could point it directly to the user state and have access
