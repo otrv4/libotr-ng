@@ -115,6 +115,9 @@ typedef struct otrng_client_callbacks_s {
    * The protocol will take care of freeing the members of this struct. */
   otrng_shared_session_state_s (*get_shared_session_state)(
       const otrng_client_conversation_s *conv);
+
+  int (*get_account_and_protocol)(char **account, char **protocol,
+                                  const void *client_id);
 } otrng_client_callbacks_s, otrng_client_callbacks_p[1];
 
 INTERNAL void

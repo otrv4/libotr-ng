@@ -165,6 +165,7 @@ tstatic void op_create_privkey(void *opdata, const char *accountname,
  * logged in" errors if you're wrong. */
 tstatic int op_is_logged_in(void *opdata, const char *accountname,
                             const char *protocol, const char *recipient) {
+  // TODO
   return 1; // We always think the person is logged in, otherwise it wont send
             // disconnect TLVs, for example.
 }
@@ -202,6 +203,7 @@ tstatic void op_still_secure(void *opdata, ConnContext *context, int is_reply) {
 
 /* Find the maximum message size supported by this protocol. */
 tstatic int op_max_message_size(void *opdata, ConnContext *context) {
+  // TODO
   return 10000;
 }
 
@@ -209,11 +211,14 @@ tstatic int op_max_message_size(void *opdata, ConnContext *context) {
  * representation for the given account */
 tstatic const char *op_account_name(void *opdata, const char *account,
                                     const char *protocol) {
+  // TODO
   return "ACCOUNT NAME";
 }
 
 /* Deallocate a string returned by account_name */
-tstatic void op_account_name_free(void *opdata, const char *account_name) {}
+tstatic void op_account_name_free(void *opdata, const char *account_name) {
+  // TODO
+}
 
 /* We received a request from the buddy to use the current "extra"
  * symmetric key.  The key will be passed in symkey, of length
@@ -483,11 +488,20 @@ INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,
     return OTRNG_ERROR;
   }
 
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  if (!otrng_client_state_get_account_and_protocol(
+          &account_name, &protocol_name, conn->state)) {
+    return OTRNG_ERROR;
+  }
+
   int err = otrl_message_sending(
-      conn->state->user_state, conn->ops, conn->opdata,
-      conn->state->account_name, conn->state->protocol_name, conn->peer,
-      OTRL_INSTAG_RECENT, message, tlvsv3, newmessage, OTRL_FRAGMENT_SEND_SKIP,
-      &conn->ctx, NULL, NULL);
+      conn->state->user_state, conn->ops, conn->opdata, account_name,
+      protocol_name, conn->peer, OTRL_INSTAG_RECENT, message, tlvsv3,
+      newmessage, OTRL_FRAGMENT_SEND_SKIP, &conn->ctx, NULL, NULL);
+
+  free(account_name);
+  free(protocol_name);
 
   if (!err) {
     return OTRNG_SUCCESS;
@@ -509,11 +523,21 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
     return OTRNG_ERROR;
   }
 
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  if (!otrng_client_state_get_account_and_protocol(
+          &account_name, &protocol_name, conn->state)) {
+    return OTRNG_ERROR;
+  }
+
   char *newmessage = NULL;
-  ignore_message = otrl_message_receiving(
-      conn->state->user_state, conn->ops, conn->opdata,
-      conn->state->account_name, conn->state->protocol_name, conn->peer,
-      message, &newmessage, &tlvsv3, &conn->ctx, NULL, NULL);
+  ignore_message =
+      otrl_message_receiving(conn->state->user_state, conn->ops, conn->opdata,
+                             account_name, protocol_name, conn->peer, message,
+                             &newmessage, &tlvsv3, &conn->ctx, NULL, NULL);
+
+  free(account_name);
+  free(protocol_name);
 
   (void)ignore_message;
 
@@ -535,9 +559,19 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
 INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn) {
   // TODO: @client there is also: otrl_message_disconnect, which only
   // disconnects one instance
+
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+
+  // TODO: Error?
+  otrng_client_state_get_account_and_protocol(&account_name, &protocol_name,
+                                              conn->state);
+
   otrl_message_disconnect_all_instances(conn->state->user_state, conn->ops,
-                                        conn->opdata, conn->state->account_name,
-                                        conn->state->protocol_name, conn->peer);
+                                        conn->opdata, account_name,
+                                        protocol_name, conn->peer);
+  free(account_name);
+  free(protocol_name);
 
   from_injected_to_send(to_send);
 }

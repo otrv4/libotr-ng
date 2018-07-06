@@ -38,6 +38,26 @@ tstatic int should_heartbeat(int last_sent) {
   return 0;
 }
 
+tstatic otrng_err get_account_and_protocol_cb(
+    char **account, char **protocol, const otrng_client_state_s *state) {
+  if (!state->callbacks || !state->callbacks->get_account_and_protocol) {
+    return OTRNG_ERROR;
+  }
+
+  int err = state->callbacks->get_account_and_protocol(account, protocol,
+                                                       state->client_id);
+  if (err) {
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_err otrng_client_state_get_account_and_protocol(
+    char **account, char **protocol, const otrng_client_state_s *state) {
+  return get_account_and_protocol_cb(account, protocol, state);
+}
+
 INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   otrng_client_state_s *state = malloc(sizeof(otrng_client_state_s));
   if (!state) {
@@ -63,7 +83,10 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
 
 INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
   free(state->protocol_name);
+  state->protocol_name = NULL;
+
   free(state->account_name);
+  state->account_name = NULL;
 
   otrng_keypair_free(state->keypair);
   otrng_list_free(state->our_prekeys, stored_prekeys_free_from_list);
@@ -82,8 +105,21 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
 // 2 functions.
 INTERNAL int otrng_client_state_private_key_v3_generate_FILEp(
     const otrng_client_state_s *state, FILE *privf) {
-  return otrl_privkey_generate_FILEp(state->user_state, privf,
-                                     state->account_name, state->protocol_name);
+
+  // TODO: We could use a "get storage key" callback and use it as
+  // account_name plus an arbitrary "libotrng-storage" protocol.
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
+    return 1;
+  }
+
+  int err = otrl_privkey_generate_FILEp(state->user_state, privf, account_name,
+                                        protocol_name);
+
+  free(account_name);
+  free(protocol_name);
+  return err;
 }
 
 INTERNAL otrng_keypair_s *
@@ -126,10 +162,6 @@ otrng_client_state_add_private_key_v4(otrng_client_state_s *state,
 INTERNAL int
 otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
                                               FILE *privf) {
-  if (!state->protocol_name || !state->account_name) {
-    return 1;
-  }
-
   if (!privf) {
     return 1;
   }
@@ -138,10 +170,20 @@ otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
     return 1;
   }
 
-  char *key =
-      malloc(strlen(state->protocol_name) + strlen(state->account_name) + 2);
-  snprintf(key, strlen(state->protocol_name) + strlen(state->account_name) + 2,
-           "%s:%s", state->protocol_name, state->account_name);
+  // TODO: We could use a "get storage key" callback and use it as
+  // account_name plus an arbitrary "libotrng-storage" protocol.
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
+    return 1;
+  }
+
+  size_t n = strlen(protocol_name) + strlen(account_name) + 2;
+  char *key = malloc(n);
+  snprintf(key, n, "%s:%s", protocol_name, account_name);
+
+  free(account_name);
+  free(protocol_name);
 
   int err = fputs(key, privf);
   free(key);
@@ -298,9 +340,9 @@ otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
   return 0;
 }
 
-tstatic OtrlInsTag *otrl_instance_tag_new(const char *protocol,
-                                          const char *account,
-                                          unsigned int instag) {
+tstatic OtrlInsTag *otrng_instance_tag_new(const char *protocol,
+                                           const char *account,
+                                           unsigned int instag) {
   if (instag < OTRNG_MIN_VALID_INSTAG) {
     return NULL;
   }
@@ -338,8 +380,18 @@ INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
     return 1;
   }
 
-  OtrlInsTag *p =
-      otrl_instance_tag_new(state->protocol_name, state->account_name, instag);
+  // TODO: We could use a "get storage key" callback and use it as
+  // account_name plus an arbitrary "libotrng-storage" protocol.
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
+    return 1;
+  }
+
+  OtrlInsTag *p = otrng_instance_tag_new(protocol_name, account_name, instag);
+
+  free(account_name);
+  free(protocol_name);
   if (!p) {
     return -1;
   }
@@ -354,8 +406,20 @@ otrng_client_state_get_instance_tag(otrng_client_state_s *state) {
     return 0;
   }
 
-  OtrlInsTag *instag = otrl_instag_find(state->user_state, state->account_name,
-                                        state->protocol_name);
+  // TODO: We could use a "get storage key" callback and use it as
+  // account_name plus an arbitrary "libotrng-storage" protocol.
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
+    return 1;
+  }
+
+  OtrlInsTag *instag =
+      otrl_instag_find(state->user_state, account_name, protocol_name);
+
+  free(account_name);
+  free(protocol_name);
+
   if (!instag) {
     return 0;
   }

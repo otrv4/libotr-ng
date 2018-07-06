@@ -169,6 +169,9 @@ otrng_client_state_get_prekey_profile_by_id(uint32_t id,
 API void otrng_client_state_set_padding(size_t granularity,
                                         otrng_client_state_s *state);
 
+INTERNAL otrng_err otrng_client_state_get_account_and_protocol(
+    char **account, char **protocol, const otrng_client_state_s *state);
+
 #ifdef OTRNG_CLIENT_STATE_PRIVATE
 
 #endif
