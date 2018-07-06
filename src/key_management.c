@@ -145,6 +145,15 @@ INTERNAL receiving_ratchet_s *otrng_receiving_ratchet_new(void) {
     return NULL;
   }
 
+  otrng_ec_bzero(ratchet->our_ecdh->pub, ED448_POINT_BYTES);
+  ratchet->our_dh->pub = NULL;
+  ratchet->our_dh->priv = NULL;
+
+  otrng_ec_bzero(ratchet->their_ecdh, ED448_POINT_BYTES);
+  ratchet->their_dh = NULL;
+
+  memset(ratchet->brace_key, 0, sizeof(brace_key_p));
+
   ratchet->i = 0;
   ratchet->k = 0;
   ratchet->pn = 0;
@@ -158,12 +167,20 @@ INTERNAL receiving_ratchet_s *otrng_receiving_ratchet_new(void) {
   return ratchet;
 }
 
-// i, k, root key, receiving chain, list of enc keys, list of extra sym key
 INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
                                            const receiving_ratchet_s *src) {
   if (!dst || !src) {
     return;
   }
+  otrng_ec_point_copy(dst->our_ecdh->pub, src->our_ecdh->pub);
+  otrng_ec_point_copy(dst->their_ecdh, src->their_ecdh);
+  otrng_ec_scalar_copy(dst->our_ecdh->priv, src->our_ecdh->priv);
+
+  dst->our_dh->pub = otrng_dh_mpi_copy(src->our_dh->pub);
+  dst->their_dh = otrng_dh_mpi_copy(src->their_dh);
+  dst->our_dh->priv = otrng_dh_mpi_copy(src->our_dh->priv);
+
+  memcpy(dst->brace_key, src->brace_key, sizeof(brace_key_p));
 
   dst->i = src->i;
   dst->k = src->k;
@@ -172,17 +189,26 @@ INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
   memcpy(dst->current->root_key, src->root_key, ROOT_KEY_BYTES);
   memcpy(dst->current->chain_r, src->chain_r, CHAIN_KEY_BYTES);
 
-  // TODO: copy lists
+  dst->skipped_keys = otrng_list_copy(src->skipped_keys);
+  dst->old_mac_keys = otrng_list_copy(src->old_mac_keys);
 }
 
 INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {
+  otrng_ec_bzero(ratchet->our_ecdh->pub, ED448_POINT_BYTES);
+  ratchet->our_dh->pub = NULL;
+  ratchet->our_dh->priv = NULL;
+
+  otrng_ec_bzero(ratchet->their_ecdh, ED448_POINT_BYTES);
+  ratchet->their_dh = NULL;
+
+  memset(ratchet->brace_key, 0, sizeof(brace_key_p));
+
   ratchet->i = 0;
   ratchet->k = 0;
   ratchet->pn = 0;
 
   sodium_memzero(ratchet->root_key, sizeof(root_key_p));
   sodium_memzero(ratchet->chain_r, sizeof(receiving_chain_key_p));
-
   otrng_list_free_full(ratchet->skipped_keys);
   ratchet->skipped_keys = NULL;
 

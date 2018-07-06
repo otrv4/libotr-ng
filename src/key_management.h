@@ -57,6 +57,14 @@ typedef struct skipped_keys_s {
 
 /* a temporary structure used to hold the values of the receiving ratchet */
 typedef struct receiving_ratchet_s {
+  ecdh_keypair_p our_ecdh;
+  dh_keypair_p our_dh;
+
+  ec_point_p their_ecdh;
+  dh_public_key_p their_dh;
+
+  brace_key_p brace_key;
+
   unsigned int i;  /* Counter of the ratchet */
   unsigned int k;  /* Counter of the receiving ratchet */
   unsigned int pn; /* the number of messages in the previous DH ratchet. */

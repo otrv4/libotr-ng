@@ -38,11 +38,6 @@ typedef gcry_mpi_t dh_mpi_p;
 typedef dh_mpi_p dh_private_key_p, dh_public_key_p;
 typedef uint8_t dh_shared_secret_p[DH3072_MOD_LEN_BYTES];
 
-/* typedef enum { */
-/*   OTRNG_US = 0, */
-/*   OTRNG_THEM = 1, */
-/* } otrng_participant; */
-
 typedef struct dh_keypair_s {
   dh_public_key_p pub;
   dh_private_key_p priv;
