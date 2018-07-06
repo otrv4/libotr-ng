@@ -20,8 +20,9 @@
 
 /* Test the an in-order sending and receiving double ratchet */
 void test_double_ratchet_new_sending_ratchet_in_order(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
@@ -164,8 +165,9 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
 
 /* Test the out-of-order on the same DH ratchet */
 void test_double_ratchet_same_ratchet_out_of_order(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
@@ -283,8 +285,9 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
 
 /* Test the out-of-order when a new DH ratchet has happened */
 void test_double_ratchet_new_ratchet_out_of_order(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
@@ -430,8 +433,9 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
 
 /* Test the double ratchet when a corrupted message arrives */
 void test_double_ratchet_corrupted_ratchet(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);

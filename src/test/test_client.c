@@ -37,7 +37,8 @@ static otrng_client_s *set_up_client(otrng_client_state_s *state,
 }
 
 void test_client_conversation_api() {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
 
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
   otrng_assert(!alice->conversations);
@@ -75,9 +76,11 @@ void test_client_conversation_api() {
 }
 
 void test_client_api() {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
-  otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
-  otrng_client_state_s *charlie_state = otrng_client_state_new("charlie");
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_state_s *charlie_state =
+      otrng_client_state_new(CHARLIE_IDENTITY);
 
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
   otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2);
@@ -232,7 +235,8 @@ void test_client_api() {
 }
 
 void test_client_get_our_fingerprint() {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
 
   otrng_fingerprint_p expected_fp = {0};
@@ -277,8 +281,9 @@ void test_fingerprint_hash_to_human() {
 }
 
 void test_conversation_with_multiple_locations() {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
-  otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
   otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2);
@@ -375,8 +380,9 @@ void test_conversation_with_multiple_locations() {
 }
 
 void test_valid_identity_msg_in_waiting_auth_i() {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
-  otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
   otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2);
@@ -525,8 +531,9 @@ void test_valid_identity_msg_in_waiting_auth_i() {
 }
 
 void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
-  otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
   otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2);
@@ -645,8 +652,9 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
 }
 
 void test_valid_identity_msg_in_waiting_auth_r() {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
-  otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
   otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2);
@@ -874,8 +882,9 @@ void test_valid_identity_msg_in_waiting_auth_r() {
 }
 
 void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
-  otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
   otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2);
@@ -1011,7 +1020,8 @@ void test_client_receives_fragmented_message(void) {
   otrng_message_to_send_s *fmsg = malloc(sizeof(otrng_message_to_send_s));
   otrng_assert_is_success(otrng_fragment_message(60, fmsg, 0, 0, msg));
 
-  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
 
   char *tosend = NULL, *to_display = NULL;
@@ -1039,7 +1049,8 @@ void test_client_expires_old_fragments(void) {
   otrng_message_to_send_s *fmsg = malloc(sizeof(otrng_message_to_send_s));
   otrng_assert_is_success(otrng_fragment_message(60, fmsg, 0, 0, msg));
 
-  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
 
   char *tosend = NULL, *to_display = NULL;
@@ -1065,8 +1076,9 @@ void test_client_expires_old_fragments(void) {
   otrng_client_free(alice);
 }
 void test_client_sends_fragmented_message(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new("alice");
-  otrng_client_state_s *bob_client_state = otrng_client_state_new("bob");
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
   otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2);

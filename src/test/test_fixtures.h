@@ -31,11 +31,50 @@ int dh_mpi_cmp(const dh_mpi_p m1, const dh_mpi_p m2) {
   return gcry_mpi_cmp(m1, m2);
 }
 
+static otrng_shared_session_state_s
+get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
+  otrng_shared_session_state_s ret = {
+      .identifier1 = otrng_strdup("alice"),
+      .identifier2 = otrng_strdup("bob"),
+      .password = NULL,
+  };
+
+  return ret;
+}
+
+static int get_account_and_protocol_cb(char **account_name,
+                                       char **protocol_name,
+                                       const void *client_id) {
+  const char *account = client_id; // tests use client_name as client_id.
+
+  if (!client_id) {
+    return 1;
+  }
+
+  *account_name = otrng_strdup(account);
+  *protocol_name = otrng_strdup("otr");
+  return 0;
+}
+
+static otrng_client_callbacks_p test_callbacks = {{
+    NULL,                         // create_privkey
+    NULL,                         // create_shared_prekey
+    NULL,                         // gone_secure
+    NULL,                         // gone_insecure
+    NULL,                         // fingerprint_seen
+    NULL,                         // fingerprint_seen_v3
+    NULL,                         // smp_ask_for_secret
+    NULL,                         // smp_ask_for_answer
+    NULL,                         // smp_update
+    NULL,                         // received_extra_symm_key
+    &get_shared_session_state_cb, // get_shared_session_state
+    &get_account_and_protocol_cb, // get_account_and_protocol
+}};
+
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
-  otrng_fixture->state = otrng_client_state_new(NULL); // No callbacks
+  otrng_fixture->state = otrng_client_state_new("account");
+  otrng_fixture->state->callbacks = test_callbacks;
   otrng_fixture->state->user_state = otrl_userstate_create();
-  otrng_fixture->state->protocol_name = otrng_strdup("protocol");
-  otrng_fixture->state->account_name = otrng_strdup("account@protocol");
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
   otrng_client_state_add_private_key_v4(otrng_fixture->state, sym);
@@ -58,9 +97,8 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   // TODO: @refactoring This should be done automatically
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
-  otrng_assert(!otrl_privkey_generate_FILEp(
-      otrng_fixture->state->user_state, tmpFILEp,
-      otrng_fixture->state->account_name, otrng_fixture->state->protocol_name));
+  otrng_assert(!otrl_privkey_generate_FILEp(otrng_fixture->state->user_state,
+                                            tmpFILEp, "account", "otr"));
   fclose(tmpFILEp);
 
   // Generate instance tag

@@ -75,51 +75,11 @@ static int test_should_not_heartbeat(int last_sent) { return 0; }
 
 static int test_should_heartbeat(int last_sent) { return 1; }
 
-static otrng_shared_session_state_s
-get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
-  otrng_shared_session_state_s ret = {
-      .identifier1 = otrng_strdup("alice"),
-      .identifier2 = otrng_strdup("bob"),
-      .password = NULL,
-  };
-
-  return ret;
-}
-
-static int get_account_and_protocol_cb(char **account_name,
-                                       char **protocol_name,
-                                       const void *client_id) {
-  const char *account = client_id; // tests use client_name as client_id.
-
-  if (!client_id) {
-    return 1;
-  }
-
-  *account_name = otrng_strdup(account);
-  *protocol_name = otrng_strdup("otr");
-  return 0;
-}
-
-static otrng_client_callbacks_p test_callbacks = {{
-    NULL,                         // create_privkey
-    NULL,                         // create_shared_prekey
-    NULL,                         // gone_secure
-    NULL,                         // gone_insecure
-    NULL,                         // fingerprint_seen
-    NULL,                         // fingerprint_seen_v3
-    NULL,                         // smp_ask_for_secret
-    NULL,                         // smp_ask_for_answer
-    NULL,                         // smp_update
-    NULL,                         // received_extra_symm_key
-    &get_shared_session_state_cb, // get_shared_session_state
-    &get_account_and_protocol_cb, // get_account_and_protocol
-}};
-
 static void set_up_client_state(otrng_client_state_s *state,
                                 const char *account_name, int byte) {
-  state->account_name = otrng_strdup(account_name);
-  state->protocol_name = otrng_strdup("otr");
   state->user_state = otrl_userstate_create();
+  state->client_id =
+      account_name; // TODO: Update every otrng_client_state_new(NULL)
   state->callbacks = test_callbacks;
 
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
@@ -141,8 +101,9 @@ static otrng_s *set_up(otrng_client_state_s *client_state,
 }
 
 void test_api_interactive_conversation(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
@@ -280,8 +241,9 @@ void test_api_interactive_conversation(void) {
 
 /* Specifies the behavior of the API for offline messages */
 void test_otrng_send_offline_message() {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
@@ -437,8 +399,9 @@ void test_otrng_send_offline_message() {
 }
 
 void test_api_conversation_errors_1(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
@@ -527,8 +490,9 @@ void test_api_conversation_errors_1(void) {
 }
 
 void test_api_conversation_errors_2(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
@@ -661,10 +625,11 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
 }
 
 void test_api_conversation_v3(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  set_up_client_state(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  set_up_client_state(alice_client_state, ALICE_IDENTITY, 1);
   set_up_client_state(bob_client_state, BOB_IDENTITY, 2);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3};
@@ -678,15 +643,13 @@ void test_api_conversation_v3(void) {
   // Generate long term private key.
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
-  otrng_assert(!otrl_privkey_generate_FILEp(
-      alice_client_state->user_state, tmpFILEp,
-      alice_client_state->account_name, alice_client_state->protocol_name));
+  otrng_assert(!otrl_privkey_generate_FILEp(alice_client_state->user_state,
+                                            tmpFILEp, ALICE_IDENTITY, "otr"));
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrng_assert(!otrl_privkey_generate_FILEp(
-      bob_client_state->user_state, tmpFILEp, bob_client_state->account_name,
-      bob_client_state->protocol_name));
+  otrng_assert(!otrl_privkey_generate_FILEp(bob_client_state->user_state,
+                                            tmpFILEp, BOB_IDENTITY, "otr"));
   fclose(tmpFILEp);
 
   // Generate instance tag
@@ -881,8 +844,9 @@ void test_api_multiple_clients(void) {
 }
 
 void test_api_smp(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
@@ -963,8 +927,9 @@ void test_api_smp(void) {
 }
 
 void test_api_smp_abort(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
@@ -1027,8 +992,9 @@ void test_api_smp_abort(void) {
 }
 
 void test_api_extra_sym_key(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
@@ -1100,8 +1066,9 @@ void test_api_extra_sym_key(void) {
 }
 
 void test_heartbeat_messages(void) {
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(NULL);
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);

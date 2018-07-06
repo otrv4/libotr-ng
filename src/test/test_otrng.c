@@ -295,7 +295,7 @@ test_get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
 }
 
 void test_otrng_invokes_shared_session_state_callbacks(void) {
-  otrng_client_state_s *state = otrng_client_state_new(NULL);
+  otrng_client_state_s *state = otrng_client_state_new(ALICE_IDENTITY);
 
   otrng_client_callbacks_p callbacks = {{NULL, // create_privkey
                                          NULL, // create_shared_prekey
