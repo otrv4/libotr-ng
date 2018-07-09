@@ -35,19 +35,13 @@ typedef enum {
   OTRNG_STATE_FINISHED = 6
 } otrng_state;
 
-/* TODO: This being an enum looks very strange to me - it should probably be
- * revisited. */
-typedef enum {
-  OTRNG_ALLOW_NONE = 0,
-  OTRNG_ALLOW_V3 = 1,
-  OTRNG_ALLOW_V4 = 2
-} otrng_supported_version;
+#define OTRNG_ALLOW_NONE 0
+#define OTRNG_ALLOW_V3 1
+#define OTRNG_ALLOW_V4 2
 
-// clang-format off
 typedef struct otrng_policy_s {
-  int allows;
+  uint8_t allows;
 } otrng_policy_s, otrng_policy_p[1];
-// clang-format on
 
 typedef struct otrng_conversation_state_s {
   /* void *opdata; // Could have a conversation opdata to point to a, say
@@ -65,7 +59,7 @@ typedef struct otrng_s {
   otrng_v3_conn_s *v3_conn;
 
   otrng_state state;
-  int supported_versions;
+  uint8_t supported_versions;
 
   uint32_t their_prekeys_id;
 

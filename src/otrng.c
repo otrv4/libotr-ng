@@ -135,7 +135,7 @@ otrng_get_shared_session_state(otrng_s *otr) {
       otr->conversation);
 }
 
-tstatic int allow_version(const otrng_s *otr, otrng_supported_version version) {
+tstatic int allow_version(const otrng_s *otr, uint8_t version) {
   return (otr->supported_versions & version);
 }
 

@@ -74,7 +74,7 @@ typedef struct otrng_response_s {
 } otrng_response_s, otrng_response_p[1];
 
 typedef struct otrng_header_s {
-  otrng_supported_version version;
+  uint16_t version;
   uint8_t type;
 } otrng_header_s, otrng_header_p[1];
 
