@@ -90,6 +90,7 @@ get_conversation_with(const char *recipient, list_element_s *conversations) {
 
 tstatic otrng_policy_s get_policy_for(const char *recipient) {
   // TODO: @policy the policy should come from client config.
+  // or a callback.
   UNUSED_ARG(recipient);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
 
@@ -135,14 +136,11 @@ tstatic otrng_s *create_connection_for(const char *recipient,
   otrng_v3_conn_s *v3_conn = NULL;
   otrng_s *conn = NULL;
 
-  // TODO: @client This should receive only the client_state (which should allow
-  // you to get protocol, account, v3 user_state, etc)
   v3_conn = otrng_v3_conn_new(client->state, recipient);
   if (!v3_conn) {
     return NULL;
   }
 
-  // TODO: @policy put here policy none
   conn = otrng_new(client->state, get_policy_for(recipient));
   if (!conn) {
     otrng_v3_conn_free(v3_conn);
@@ -341,9 +339,6 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
   }
 
   char *ret = NULL;
-
-  // TODO: @policy implement public API to set supported versions.
-  conv->conn->supported_versions = OTRNG_ALLOW_V4;
   if (!otrng_build_query_message(&ret, message, conv->conn)) {
     // TODO: @client This should come from the client (a callback maybe?)
     // because it knows in which language this should be sent, for example.
