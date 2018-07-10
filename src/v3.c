@@ -23,59 +23,62 @@
 #include "v3.h"
 #include "otrng.h"
 
-tstatic void create_privkey_cb_v3(const otrng_conversation_state_s *otr) {
-  if (!otr || !otr->client) {
+tstatic void create_privkey_cb_v3(const otrng_conversation_state_s *conv) {
+  if (!conv || !conv->client) {
     return;
   }
-  otrng_client_callbacks_create_privkey(otr->client->callbacks,
-                                        otr->client->client_id);
+
+  otrng_client_callbacks_create_privkey(conv->client->callbacks,
+                                        conv->client->client_id);
 }
 
-tstatic void gone_secure_cb_v3(const otrng_conversation_state_s *otr) {
-  if (!otr || !otr->client) {
+tstatic void gone_secure_cb_v3(const otrng_conversation_state_s *conv) {
+  if (!conv || !conv->client) {
     return;
   }
-  otrng_client_callbacks_gone_secure(
-      otr->client->callbacks,
-      otr->client->client_id); // TODO: @client should be conversation_id
+
+  otrng_client_callbacks_gone_secure(conv->client->callbacks, conv);
 }
 
-tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *otr) {
-  if (!otr || !otr->client) {
+tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *conv) {
+  if (!conv || !conv->client) {
     return;
   }
+
   otrng_client_callbacks_gone_insecure(
-      otr->client->callbacks,
-      otr->client->client_id); // TODO: @client should be conversation_id
+      conv->client->callbacks,
+      conv->client->client_id); // TODO: @client should be conversation_id
 }
 
 tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3_p fp,
-                                    const otrng_conversation_state_s *otr) {
-  if (!otr || !otr->client) {
+                                    const otrng_conversation_state_s *conv) {
+  if (!conv || !conv->client) {
     return;
   }
+
   otrng_client_callbacks_fingerprint_seen_v3(
-      otr->client->callbacks, fp,
-      otr->client->client_id); // TODO: @client should be conversation_id
+      conv->client->callbacks, fp,
+      conv->client->client_id); // TODO: @client should be conversation_id
 }
 
 tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
                                     const uint8_t progress_percent,
                                     const char *question,
-                                    const otrng_conversation_state_s *otr) {
-  if (!otr || !otr->client) {
+                                    const otrng_conversation_state_s *conv) {
+  if (!conv || !conv->client) {
     return;
   }
+
   switch (event) {
   case OTRNG_SMP_EVENT_ASK_FOR_SECRET:
     otrng_client_callbacks_smp_ask_for_secret(
-        otr->client->callbacks,
-        otr->client->client_id); // TODO: @client should be conversation_id
+        conv->client->callbacks,
+        conv->client->client_id); // TODO: @client should be conversation_id
     break;
   case OTRNG_SMP_EVENT_ASK_FOR_ANSWER:
     otrng_client_callbacks_smp_ask_for_answer(
-        otr->client->callbacks, question,
-        otr->client->client_id); // TODO: @client should be conversation_id
+        conv->client->callbacks, question,
+        conv->client->client_id); // TODO: @client should be conversation_id
     break;
   case OTRNG_SMP_EVENT_CHEATED:
   case OTRNG_SMP_EVENT_IN_PROGRESS:
@@ -84,8 +87,8 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
   case OTRNG_SMP_EVENT_ABORT:
   case OTRNG_SMP_EVENT_ERROR:
     otrng_client_callbacks_smp_update(
-        otr->client->callbacks, event, progress_percent,
-        otr->client->client_id); // TODO: @client should be conversation_id
+        conv->client->callbacks, event, progress_percent,
+        conv->client->client_id); // TODO: @client should be conversation_id
     break;
   default:
     /* OTRNG_SMP_EVENT_NONE. Should not be used. */
@@ -93,7 +96,7 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
   }
 }
 
-tstatic void received_symkey_cb_v3(const otrng_conversation_state_s *otr,
+tstatic void received_symkey_cb_v3(const otrng_conversation_state_s *conv,
                                    unsigned int use,
                                    const unsigned char *usedata,
                                    size_t usedatalen,
@@ -102,14 +105,18 @@ tstatic void received_symkey_cb_v3(const otrng_conversation_state_s *otr,
   printf("Received symkey use: %08x\n", use);
   printf("Usedata lenght: %zu\n", usedatalen);
   printf("Usedata: ");
+
   for (int i = 0; i < usedatalen; i++) {
     printf("%02x", usedata[i]);
   }
+
   printf("\n");
   printf("Symkey: ");
+
   for (int i = 0; i < HASH_BYTES; i++) {
     printf("0x%02x, ", extra_key[i]);
   }
+
   printf("\n");
 #endif
 }
