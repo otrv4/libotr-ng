@@ -71,12 +71,11 @@ static const string_p otr_error_header = "?OTR Error:";
 static const string_p otr_header = "?OTR:";
 
 tstatic void gone_secure_cb_v4(const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks ||
-      !conv->client->callbacks->gone_secure) {
+  if (!conv || !conv->client) {
     return;
   }
 
-  conv->client->callbacks->gone_secure(conv);
+  otrng_client_callbacks_gone_secure(conv->client->callbacks, conv);
 }
 
 tstatic void gone_insecure_cb_v4(const otrng_conversation_state_s *conv) {

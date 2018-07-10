@@ -44,10 +44,8 @@ typedef struct otrng_policy_s {
 } otrng_policy_s, otrng_policy_p[1];
 
 typedef struct otrng_conversation_state_s {
-  /* void *opdata; // Could have a conversation opdata to point to a, say
-   PurpleConversation */
-
   otrng_client_state_s *client;
+
   char *peer;
   uint16_t their_instance_tag;
 } otrng_conversation_state_s, otrng_conversation_state_p[1];
