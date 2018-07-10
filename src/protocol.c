@@ -26,35 +26,20 @@
 #include "serialize.h"
 #include <libotr/b64.h>
 
-tstatic void create_privkey_cb_v4(const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks) {
-    return;
+INTERNAL void maybe_create_keys(const otrng_client_state_s *state) {
+  const otrng_client_callbacks_s *cb = state->callbacks;
+  const void *client_id = state->client_id;
+
+  if (!state->keypair) {
+    otrng_client_callbacks_create_privkey(cb, client_id);
   }
 
-  // TODO: @client Change to receive conv->client
-  conv->client->callbacks->create_privkey(conv->client->client_id);
-}
-
-tstatic void create_shared_prekey(const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks) {
-    return;
+  if (!state->shared_prekey_pair) {
+    otrng_client_callbacks_create_shared_prekey(cb, client_id);
   }
 
-  // TODO: @client The callback may not be invoked at all if the mode does not
-  // support non-interactive DAKE, but this is for later.
-  conv->client->callbacks->create_shared_prekey(conv);
-}
-
-INTERNAL void maybe_create_keys(const otrng_conversation_state_s *conv) {
-  if (!conv->client->keypair) {
-    create_privkey_cb_v4(conv);
-  }
-
-  if (!conv->client->shared_prekey_pair) {
-    create_shared_prekey(conv);
-  }
-
-  uint32_t instance_tag = otrng_client_state_get_instance_tag(conv->client);
+  // TODO: ADD instance_tag_callback
+  uint32_t instance_tag = otrng_client_state_get_instance_tag(state);
   if (!instance_tag) {
     // TODO: invoke callback
     // create_instance_tag(conv);
@@ -70,7 +55,7 @@ INTERNAL dh_public_key_p our_dh(const otrng_s *otr) {
 }
 
 INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr) {
-  maybe_create_keys(otr->conversation);
+  maybe_create_keys(otr->conversation->client);
   otrng_client_state_s *state = otr->conversation->client;
   return otrng_client_state_get_or_create_client_profile(state);
 }

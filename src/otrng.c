@@ -158,7 +158,7 @@ our_shared_prekey(const otrng_s *otr) {
 }
 
 tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
-  maybe_create_keys(otr->conversation);
+  maybe_create_keys(otr->conversation->client);
   otrng_client_state_s *state = otr->conversation->client;
   return otrng_client_state_get_or_create_prekey_profile(state);
 }
@@ -171,7 +171,7 @@ get_my_prekey_profile_by_id(uint32_t id, otrng_s *otr) {
 
 static inline const client_profile_s *
 get_my_client_profile_by_id(uint32_t id, otrng_s *otr) {
-  maybe_create_keys(otr->conversation);
+  maybe_create_keys(otr->conversation->client);
   otrng_client_state_s *state = otr->conversation->client;
   return otrng_client_state_get_client_profile_by_id(id, state);
 }
@@ -515,7 +515,7 @@ tstatic otrng_err start_dake(otrng_response_s *response, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  maybe_create_keys(otr->conversation);
+  maybe_create_keys(otr->conversation->client);
   if (!reply_with_identity_msg(response, otr)) {
     return OTRNG_ERROR;
   }
@@ -901,7 +901,7 @@ tstatic otrng_err double_ratcheting_init(otrng_s *otr, const char participant) {
 
 tstatic otrng_err reply_with_non_interactive_auth_msg(string_p *dst,
                                                       otrng_s *otr) {
-  maybe_create_keys(otr->conversation);
+  maybe_create_keys(otr->conversation->client);
 
   dake_non_interactive_auth_message_p auth;
   otrng_err ret = build_non_interactive_auth_message(auth, otr);
@@ -2073,7 +2073,7 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
     return OTRNG_ERROR;
   }
 
-  maybe_create_keys(otr->conversation);
+  maybe_create_keys(otr->conversation->client);
 
   response->to_send = NULL;
 
