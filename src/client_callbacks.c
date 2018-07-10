@@ -27,6 +27,23 @@ otrng_client_callbacks_create_privkey(const otrng_client_callbacks_s *cb,
   if (!cb) {
     return;
   }
+
+  // This callback is required and is expected to segfault if not provided.
+  cb->create_privkey(client_opdata);
+}
+
+INTERNAL void
+otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
+                                            const void *client_opdata) {
+  if (!cb) {
+    return;
+  }
+
+  // TODO: @client The callback may not need to be invoked at all (if the mode
+  // does not support non-interactive DAKE, for example).
+
+  // This callback is required and is expected to segfault if not provided.
+  cb->create_shared_prekey(client_opdata);
 }
 
 INTERNAL void

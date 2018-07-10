@@ -47,12 +47,11 @@ typedef struct otrng_shared_session_state_s {
 typedef struct otrng_client_callbacks_s {
   /* Create a private key for the given accountname/protocol if
    * desired. */
-  void (*create_privkey)(const void *client_opdata); // TODO: @client This
-                                                     // should receive a
-                                                     // otrng_client_state_s
+  void (*create_privkey)(const void *client_opdata);
+
   /* Create a shared prekey for the given accountname/protocol if not available.
    */
-  void (*create_shared_prekey)(const otrng_client_conversation_s *);
+  void (*create_shared_prekey)(const void *client_opdata);
 
   /* A connection has entered a secure state. */
   void (*gone_secure)(const otrng_client_conversation_s *);
@@ -123,6 +122,10 @@ typedef struct otrng_client_callbacks_s {
 INTERNAL void
 otrng_client_callbacks_create_privkey(const otrng_client_callbacks_s *cb,
                                       const void *client_opdata);
+
+INTERNAL void
+otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
+                                            const void *client_opdata);
 
 INTERNAL void
 otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,
