@@ -194,7 +194,12 @@ tstatic void op_write_fingerprints(void *opdata) {}
 
 /* A ConnContext has entered a secure state. */
 tstatic void op_gone_secure(void *opdata, ConnContext *context) {
-  gone_secure_cb_v3(opdata);
+  otrng_s *otr = opdata;
+  if (!otr) {
+    return;
+  }
+
+  gone_secure_cb_v3(otr->conversation);
 }
 
 /* A ConnContext has left a secure state. */
@@ -205,7 +210,12 @@ tstatic void op_gone_insecure(void *opdata, ConnContext *context) {
 /* We have completed an authentication, using the D-H keys we
  * already knew.  is_reply indicates whether we initiated the AKE. */
 tstatic void op_still_secure(void *opdata, ConnContext *context, int is_reply) {
-  gone_secure_cb_v3(opdata);
+  otrng_s *otr = opdata;
+
+  if (!otr) {
+    return;
+  }
+  gone_secure_cb_v3(otr->conversation);
 }
 
 /* Find the maximum message size supported by this protocol. */
@@ -432,7 +442,10 @@ tstatic void op_convert_free(void *opdata, ConnContext *context, char *dest) {}
  */
 tstatic void op_timer_control(void *opdata, unsigned int interval) {}
 
-static OtrlMessageAppOps null_ops = {
+// For every callback, we se opdata = otrng_s*
+// TODO: This callback adapter should be in client.c, since it is who knows
+// what type opdata is.
+static OtrlMessageAppOps v3_callbacks = {
     op_policy,
     op_create_privkey,
     op_is_logged_in,
@@ -467,7 +480,7 @@ INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_state_s *state,
   }
 
   ret->state = state;
-  ret->ops = &null_ops; // This cant be null
+  ret->ops = &v3_callbacks;
   ret->ctx = NULL;
   ret->opdata = NULL;
 
