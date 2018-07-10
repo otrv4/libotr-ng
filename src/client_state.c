@@ -393,7 +393,7 @@ INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
 }
 
 INTERNAL unsigned int
-otrng_client_state_get_instance_tag(otrng_client_state_s *state) {
+otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
   if (!state->user_state) {
     return 0;
   }

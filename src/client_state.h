@@ -39,10 +39,10 @@ typedef struct {
 } otrng_stored_prekeys_s, otrng_stored_prekeys_p[1];
 
 typedef struct otrng_client_state_s {
-  const void *client_id; /* Data in the messaging application context that
-                            represents a client and should map directly to it.
-                            For example, in libpurple-based apps (like Pidgin)
-                            this could be a PurpleAccount */
+  /* Data in the messaging application context that represents a client and
+   * should map directly to it. For example, in libpurple-based apps (like
+   * Pidgin) this could be a PurpleAccount */
+  const void *client_id;
 
   const struct otrng_client_callbacks_s *callbacks;
 
@@ -101,7 +101,7 @@ API int otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
                                                    FILE *instag);
 
 INTERNAL unsigned int
-otrng_client_state_get_instance_tag(otrng_client_state_s *state);
+otrng_client_state_get_instance_tag(const otrng_client_state_s *state);
 
 INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
                                                  unsigned int instag);
