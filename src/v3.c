@@ -161,7 +161,13 @@ tstatic void op_inject(void *opdata, const char *accountname,
  * desired. */
 tstatic void op_create_privkey(void *opdata, const char *accountname,
                                const char *protocol) {
-  create_privkey_cb_v3(opdata);
+  otrng_s *otr = opdata;
+
+  if (!otr) {
+    return;
+  }
+
+  create_privkey_cb_v3(otr->conversation);
 }
 
 /* Report whether you think the given user is online.  Return 1 if
@@ -186,7 +192,13 @@ tstatic void op_new_fingerprint(void *opdata, OtrlUserState us,
                                 const char *accountname, const char *protocol,
                                 const char *username,
                                 unsigned char fingerprint[20]) {
-  fingerprint_seen_cb_v3(fingerprint, opdata);
+  otrng_s *otr = opdata;
+
+  if (!otr) {
+    return;
+  }
+
+  fingerprint_seen_cb_v3(fingerprint, otr->conversation);
 }
 
 /* The list of known fingerprints has changed.  Write them to disk. */
@@ -195,6 +207,7 @@ tstatic void op_write_fingerprints(void *opdata) {}
 /* A ConnContext has entered a secure state. */
 tstatic void op_gone_secure(void *opdata, ConnContext *context) {
   otrng_s *otr = opdata;
+
   if (!otr) {
     return;
   }
@@ -204,7 +217,13 @@ tstatic void op_gone_secure(void *opdata, ConnContext *context) {
 
 /* A ConnContext has left a secure state. */
 tstatic void op_gone_insecure(void *opdata, ConnContext *context) {
-  gone_insecure_cb_v3(opdata);
+  otrng_s *otr = opdata;
+
+  if (!otr) {
+    return;
+  }
+
+  gone_insecure_cb_v3(otr->conversation);
 }
 
 /* We have completed an authentication, using the D-H keys we
@@ -215,6 +234,7 @@ tstatic void op_still_secure(void *opdata, ConnContext *context, int is_reply) {
   if (!otr) {
     return;
   }
+
   gone_secure_cb_v3(otr->conversation);
 }
 
@@ -246,7 +266,13 @@ tstatic void op_received_symkey(void *opdata, ConnContext *context,
                                 unsigned int use, const unsigned char *usedata,
                                 size_t usedatalen,
                                 const unsigned char *extra_key) {
-  received_symkey_cb_v3(opdata, use, usedata, usedatalen, extra_key);
+  otrng_s *otr = opdata;
+
+  if (!otr) {
+    return;
+  }
+
+  received_symkey_cb_v3(otr->conversation, use, usedata, usedatalen, extra_key);
 }
 
 /* Return a string according to the error event. This string will then
@@ -281,6 +307,40 @@ tstatic const char *op_resent_msg_prefix(void *opdata, ConnContext *context) {
 /* Deallocate a string returned by resent_msg_prefix */
 tstatic void op_resent_msg_prefix_free(void *opdata, const char *prefix) {}
 
+static otrng_smp_event_t convert_smp_event(OtrlSMPEvent smp_event) {
+  switch (smp_event) {
+  case OTRL_SMPEVENT_ASK_FOR_SECRET:
+    return OTRNG_SMP_EVENT_ASK_FOR_SECRET;
+    break;
+  case OTRL_SMPEVENT_ASK_FOR_ANSWER:
+    return OTRNG_SMP_EVENT_ASK_FOR_ANSWER;
+    break;
+  case OTRL_SMPEVENT_CHEATED:
+    return OTRNG_SMP_EVENT_CHEATED;
+    break;
+  case OTRL_SMPEVENT_IN_PROGRESS:
+    return OTRNG_SMP_EVENT_IN_PROGRESS;
+    break;
+  case OTRL_SMPEVENT_SUCCESS:
+    return OTRNG_SMP_EVENT_SUCCESS;
+    break;
+  case OTRL_SMPEVENT_FAILURE:
+    return OTRNG_SMP_EVENT_FAILURE;
+    break;
+  case OTRL_SMPEVENT_ABORT:
+    return OTRNG_SMP_EVENT_ABORT;
+    break;
+  case OTRL_SMPEVENT_ERROR:
+    return OTRNG_SMP_EVENT_ERROR;
+    break;
+  case OTRL_SMPEVENT_NONE:
+  default:
+    return OTRNG_SMP_EVENT_NONE;
+  }
+
+  return OTRNG_SMP_EVENT_NONE;
+}
+
 /* Update the authentication UI with respect to SMP events
  * These are the possible events:
  * - OTRL_SMPEVENT_ASK_FOR_SECRET
@@ -307,38 +367,14 @@ tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
                                  ConnContext *context,
                                  unsigned short progress_percent,
                                  char *question) {
-  otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
-  switch (smp_event) {
-  case OTRL_SMPEVENT_ASK_FOR_SECRET:
-    event = OTRNG_SMP_EVENT_ASK_FOR_SECRET;
-    break;
-  case OTRL_SMPEVENT_ASK_FOR_ANSWER:
-    event = OTRNG_SMP_EVENT_ASK_FOR_ANSWER;
-    break;
-  case OTRL_SMPEVENT_CHEATED:
-    event = OTRNG_SMP_EVENT_CHEATED;
-    break;
-  case OTRL_SMPEVENT_IN_PROGRESS:
-    event = OTRNG_SMP_EVENT_IN_PROGRESS;
-    break;
-  case OTRL_SMPEVENT_SUCCESS:
-    event = OTRNG_SMP_EVENT_SUCCESS;
-    break;
-  case OTRL_SMPEVENT_FAILURE:
-    event = OTRNG_SMP_EVENT_FAILURE;
-    break;
-  case OTRL_SMPEVENT_ABORT:
-    event = OTRNG_SMP_EVENT_ABORT;
-    break;
-  case OTRL_SMPEVENT_ERROR:
-    event = OTRNG_SMP_EVENT_ERROR;
-    break;
-  case OTRL_SMPEVENT_NONE:
-    event = OTRNG_SMP_EVENT_NONE;
-    break;
+  otrng_s *otr = opdata;
+
+  if (!otr) {
+    return;
   }
 
-  handle_smp_event_cb_v3(event, progress_percent, question, opdata);
+  handle_smp_event_cb_v3(convert_smp_event(smp_event), progress_percent,
+                         question, otr->conversation);
 }
 
 /* Handle and send the appropriate message(s) to the sender/recipient
