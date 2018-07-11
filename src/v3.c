@@ -45,9 +45,7 @@ tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *conv) {
     return;
   }
 
-  otrng_client_callbacks_gone_insecure(
-      conv->client->callbacks,
-      conv->client->client_id); // TODO: @client should be conversation_id
+  otrng_client_callbacks_gone_insecure(conv->client->callbacks, conv);
 }
 
 tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3_p fp,
@@ -56,9 +54,7 @@ tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3_p fp,
     return;
   }
 
-  otrng_client_callbacks_fingerprint_seen_v3(
-      conv->client->callbacks, fp,
-      conv->client->client_id); // TODO: @client should be conversation_id
+  otrng_client_callbacks_fingerprint_seen_v3(conv->client->callbacks, fp, conv);
 }
 
 tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
@@ -71,14 +67,11 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
 
   switch (event) {
   case OTRNG_SMP_EVENT_ASK_FOR_SECRET:
-    otrng_client_callbacks_smp_ask_for_secret(
-        conv->client->callbacks,
-        conv->client->client_id); // TODO: @client should be conversation_id
+    otrng_client_callbacks_smp_ask_for_secret(conv->client->callbacks, conv);
     break;
   case OTRNG_SMP_EVENT_ASK_FOR_ANSWER:
-    otrng_client_callbacks_smp_ask_for_answer(
-        conv->client->callbacks, question,
-        conv->client->client_id); // TODO: @client should be conversation_id
+    otrng_client_callbacks_smp_ask_for_answer(conv->client->callbacks, question,
+                                              conv);
     break;
   case OTRNG_SMP_EVENT_CHEATED:
   case OTRNG_SMP_EVENT_IN_PROGRESS:
@@ -86,9 +79,8 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
   case OTRNG_SMP_EVENT_FAILURE:
   case OTRNG_SMP_EVENT_ABORT:
   case OTRNG_SMP_EVENT_ERROR:
-    otrng_client_callbacks_smp_update(
-        conv->client->callbacks, event, progress_percent,
-        conv->client->client_id); // TODO: @client should be conversation_id
+    otrng_client_callbacks_smp_update(conv->client->callbacks, event,
+                                      progress_percent, conv);
     break;
   default:
     /* OTRNG_SMP_EVENT_NONE. Should not be used. */
