@@ -57,6 +57,7 @@ static int get_account_and_protocol_cb(char **account_name,
 }
 
 static otrng_client_callbacks_p test_callbacks = {{
+    &get_account_and_protocol_cb, // get_account_and_protocol
     NULL,                         // create_privkey
     NULL,                         // create_shared_prekey
     NULL,                         // gone_secure
@@ -68,7 +69,6 @@ static otrng_client_callbacks_p test_callbacks = {{
     NULL,                         // smp_update
     NULL,                         // received_extra_symm_key
     &get_shared_session_state_cb, // get_shared_session_state
-    &get_account_and_protocol_cb, // get_account_and_protocol
 }};
 
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {

@@ -45,6 +45,10 @@ typedef struct otrng_shared_session_state_s {
 } otrng_shared_session_state_s;
 
 typedef struct otrng_client_callbacks_s {
+  /* Get account and protocol from a given client_id */
+  int (*get_account_and_protocol)(char **account, char **protocol,
+                                  const void *client_id);
+
   /* Create a private key for the given accountname/protocol if
    * desired. */
   void (*create_privkey)(const void *client_opdata);
@@ -115,8 +119,6 @@ typedef struct otrng_client_callbacks_s {
   otrng_shared_session_state_s (*get_shared_session_state)(
       const otrng_client_conversation_s *conv);
 
-  int (*get_account_and_protocol)(char **account, char **protocol,
-                                  const void *client_id);
 } otrng_client_callbacks_s, otrng_client_callbacks_p[1];
 
 INTERNAL void
