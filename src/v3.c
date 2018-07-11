@@ -404,7 +404,57 @@ tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
 tstatic void op_handle_msg_event(void *opdata, OtrlMessageEvent msg_event,
                                  ConnContext *context, const char *message,
                                  gcry_error_t err) {
-  printf("MSG EVENT V3\n");
+  switch (msg_event) {
+  case OTRL_MSGEVENT_ENCRYPTION_REQUIRED:
+    printf("OTRL_MSGEVENT_ENCRYPTION_REQUIRED");
+    break;
+  case OTRL_MSGEVENT_ENCRYPTION_ERROR:
+    printf("OTRL_MSGEVENT_ENCRYPTION_ERROR");
+    break;
+  case OTRL_MSGEVENT_CONNECTION_ENDED:
+    printf("OTRL_MSGEVENT_CONNECTION_ENDED");
+    break;
+  case OTRL_MSGEVENT_SETUP_ERROR:
+    printf("OTRL_MSGEVENT_SETUP_ERROR");
+    break;
+  case OTRL_MSGEVENT_MSG_REFLECTED:
+    printf("OTRL_MSGEVENT_MSG_REFLECTED");
+    break;
+  case OTRL_MSGEVENT_MSG_RESENT:
+    printf("OTRL_MSGEVENT_MSG_RESENT");
+    break;
+  case OTRL_MSGEVENT_RCVDMSG_NOT_IN_PRIVATE:
+    printf("OTRL_MSGEVENT_RCVDMSG_NOT_IN_PRIVATE");
+    break;
+  case OTRL_MSGEVENT_RCVDMSG_UNREADABLE:
+    printf("OTRL_MSGEVENT_RCVDMSG_UNREADABLE");
+    break;
+  case OTRL_MSGEVENT_RCVDMSG_MALFORMED:
+    printf("OTRL_MSGEVENT_RCVDMSG_MALFORMED");
+    break;
+  case OTRL_MSGEVENT_LOG_HEARTBEAT_RCVD:
+    printf("OTRL_MSGEVENT_LOG_HEARTBEAT_RCVD");
+    break;
+  case OTRL_MSGEVENT_LOG_HEARTBEAT_SENT:
+    printf("OTRL_MSGEVENT_LOG_HEARTBEAT_SENT");
+    break;
+  case OTRL_MSGEVENT_RCVDMSG_GENERAL_ERR:
+    printf("OTRL_MSGEVENT_RCVDMSG_GENERAL_ERR");
+    break;
+  case OTRL_MSGEVENT_RCVDMSG_UNENCRYPTED:
+    printf("OTRL_MSGEVENT_RCVDMSG_UNENCRYPTED");
+    break;
+  case OTRL_MSGEVENT_RCVDMSG_UNRECOGNIZED:
+    printf("OTRL_MSGEVENT_RCVDMSG_UNRECOGNIZED");
+    break;
+  case OTRL_MSGEVENT_RCVDMSG_FOR_OTHER_INSTANCE:
+    printf("OTRL_MSGEVENT_RCVDMSG_FOR_OTHER_INSTANCE");
+    break;
+  case OTRL_MSGEVENT_NONE:
+    printf("OTRL_MSGEVENT_NONE");
+  }
+
+  printf(" received\n");
 }
 
 /* Create a instance tag for the given accountname/protocol if
