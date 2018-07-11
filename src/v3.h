@@ -36,6 +36,7 @@ typedef struct otrng_v3_conn_s {
   otrng_client_state_s *state;
   char *peer;
 
+  char *injected_message;
   void *opdata; // v4 conn for use in callbacks
 
   OtrlMessageAppOps *ops;
@@ -51,31 +52,34 @@ INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,
                                          const tlv_list_s *tlvs,
                                          otrng_v3_conn_s *conn);
 
-INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
-                                            string_p *to_display,
+INTERNAL otrng_err otrng_v3_receive_message(char **to_send, char **to_display,
                                             tlv_list_s **tlvs,
-                                            const string_p message,
+                                            const char *message,
                                             otrng_v3_conn_s *conn);
 
-INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn);
+INTERNAL void otrng_v3_close(char **to_send, otrng_v3_conn_s *conn);
 
 INTERNAL otrng_err otrng_v3_send_symkey_message(
-    string_p *to_send, otrng_v3_conn_s *conn, unsigned int use,
+    char **to_send, otrng_v3_conn_s *conn, unsigned int use,
     const unsigned char *usedata, size_t usedatalen, unsigned char *symkey);
 
-INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
-                                      const uint8_t *question, size_t q_len,
-                                      const uint8_t *secret, size_t secretlen,
-                                      otrng_v3_conn_s *conn);
+INTERNAL otrng_err otrng_v3_smp_start(char **to_send, const uint8_t *question,
+                                      size_t q_len, const uint8_t *secret,
+                                      size_t secretlen, otrng_v3_conn_s *conn);
 
-INTERNAL otrng_err otrng_v3_smp_continue(string_p *to_send,
-                                         const uint8_t *secret,
+INTERNAL otrng_err otrng_v3_smp_continue(char **to_send, const uint8_t *secret,
                                          const size_t secretlen,
                                          otrng_v3_conn_s *conn);
 
 INTERNAL otrng_err otrng_v3_smp_abort(otrng_v3_conn_s *conn);
 
 #ifdef OTRNG_V3_PRIVATE
+
+tstatic void otrng_v3_store_injected_message(const char *message,
+                                             otrng_v3_conn_s *conn);
+
+tstatic char *otrng_v3_retrieve_injected_message(otrng_v3_conn_s *conn);
+
 #endif
 
 #endif

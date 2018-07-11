@@ -127,34 +127,16 @@ tstatic OtrlPolicy op_policy(void *opdata, ConnContext *context) {
   return OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_WHITESPACE_START_AKE;
 }
 
-static char *injected_to_send = NULL;
-
-tstatic void from_injected_to_send(char **to_send) {
-  if (!to_send || !injected_to_send) {
-    return;
-  }
-
-  // TODO: @client As this is stored from a callback it MAY be the case a
-  // message was lost (if the callback was invoked multiple times before we
-  // consume this injected_to_send). Ideally this would be a list.
-  *to_send = otrng_strdup(injected_to_send);
-  free(injected_to_send);
-  injected_to_send = NULL;
-}
-
 tstatic void op_inject(void *opdata, const char *accountname,
                        const char *protocol, const char *recipient,
                        const char *message) {
-  // TODO: @client This is where we should ADD a new element to the list.
-  // We are just ignoring for now.
-  if (injected_to_send) {
-    free(injected_to_send);
-    injected_to_send = NULL;
+  otrng_s *otr = opdata;
+
+  if (!opdata) {
+    return;
   }
 
-  if (message) {
-    injected_to_send = otrng_strdup(message);
-  }
+  otrng_v3_store_injected_message(message, otr->v3_conn);
 }
 
 /* Create a private key for the given accountname/protocol if
@@ -519,6 +501,7 @@ INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_state_s *state,
   ret->ops = &v3_callbacks;
   ret->ctx = NULL;
   ret->opdata = NULL;
+  ret->injected_message = NULL;
 
   ret->peer = otrng_strdup(peer);
 
@@ -530,7 +513,12 @@ INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn) {
     return;
   }
 
+  free(conn->injected_message);
+  conn->injected_message = NULL;
+
   free(conn->peer);
+  conn->peer = NULL;
+
   free(conn);
 }
 
@@ -566,10 +554,9 @@ INTERNAL otrng_err otrng_v3_send_message(char **newmessage, const char *message,
   return OTRNG_ERROR;
 }
 
-INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
-                                            string_p *to_display,
+INTERNAL otrng_err otrng_v3_receive_message(char **to_send, char **to_display,
                                             tlv_list_s **tlvs,
-                                            const string_p message,
+                                            const char *message,
                                             otrng_v3_conn_s *conn) {
   int ignore_message;
   OtrlTLV *tlvsv3 = NULL; // TODO: @client convert to v4 tlvs
@@ -597,7 +584,7 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
 
   (void)ignore_message;
 
-  from_injected_to_send(to_send);
+  *to_send = otrng_v3_retrieve_injected_message(conn);
 
   if (to_display && newmessage) {
     *to_display = otrng_strdup(newmessage);
@@ -612,7 +599,7 @@ INTERNAL otrng_err otrng_v3_receive_message(string_p *to_send,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn) {
+INTERNAL void otrng_v3_close(char **to_send, otrng_v3_conn_s *conn) {
   // TODO: @client there is also: otrl_message_disconnect, which only
   // disconnects one instance
 
@@ -629,24 +616,23 @@ INTERNAL void otrng_v3_close(string_p *to_send, otrng_v3_conn_s *conn) {
   free(account_name);
   free(protocol_name);
 
-  from_injected_to_send(to_send);
+  *to_send = otrng_v3_retrieve_injected_message(conn);
 }
 
 INTERNAL otrng_err otrng_v3_send_symkey_message(
-    string_p *to_send, otrng_v3_conn_s *conn, unsigned int use,
+    char **to_send, otrng_v3_conn_s *conn, unsigned int use,
     const unsigned char *usedata, size_t usedatalen, unsigned char *extra_key) {
   otrl_message_symkey(conn->state->user_state, conn->ops, conn->opdata,
                       conn->ctx, use, usedata, usedatalen, extra_key);
-  from_injected_to_send(to_send);
 
+  *to_send = otrng_v3_retrieve_injected_message(conn);
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
-                                      const uint8_t *question, size_t q_len,
-                                      const uint8_t *secret, size_t secretlen,
-                                      otrng_v3_conn_s *conn) {
-  string_p q = NULL;
+INTERNAL otrng_err otrng_v3_smp_start(char **to_send, const uint8_t *question,
+                                      size_t q_len, const uint8_t *secret,
+                                      size_t secretlen, otrng_v3_conn_s *conn) {
+  char *q = NULL;
   if (question && q_len > 0) {
     q = malloc(q_len + 1);
     if (!q) {
@@ -664,18 +650,17 @@ INTERNAL otrng_err otrng_v3_smp_start(string_p *to_send,
                               conn->ctx, secret, secretlen);
   }
 
-  from_injected_to_send(to_send);
+  *to_send = otrng_v3_retrieve_injected_message(conn);
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_v3_smp_continue(string_p *to_send,
-                                         const uint8_t *secret,
+INTERNAL otrng_err otrng_v3_smp_continue(char **to_send, const uint8_t *secret,
                                          const size_t secretlen,
                                          otrng_v3_conn_s *conn) {
   otrl_message_respond_smp(conn->state->user_state, conn->ops, conn->opdata,
                            conn->ctx, secret, secretlen);
 
-  from_injected_to_send(to_send);
+  *to_send = otrng_v3_retrieve_injected_message(conn);
   return OTRNG_SUCCESS;
 }
 
@@ -683,4 +668,29 @@ INTERNAL otrng_err otrng_v3_smp_abort(otrng_v3_conn_s *conn) {
   otrl_message_abort_smp(conn->state->user_state, conn->ops, conn->opdata,
                          conn->ctx);
   return OTRNG_SUCCESS;
+}
+
+tstatic void otrng_v3_store_injected_message(const char *message,
+                                             otrng_v3_conn_s *conn) {
+  if (!message) {
+    return;
+  }
+
+  // TODO: @client This is where we should ADD a new element to the list.
+  // We are just ignoring for now.
+  if (conn->injected_message && message) {
+    free(conn->injected_message);
+  }
+
+  conn->injected_message = otrng_strdup(message);
+}
+
+tstatic char *otrng_v3_retrieve_injected_message(otrng_v3_conn_s *conn) {
+  // TODO: @client As this is stored from a callback it MAY be the case a
+  // message was lost (if the callback was invoked multiple times before we
+  // consume this injected_message). Ideally this would be a list.
+  char *to_send = conn->injected_message;
+  conn->injected_message = NULL;
+
+  return to_send;
 }

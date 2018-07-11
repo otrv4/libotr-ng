@@ -637,8 +637,11 @@ void test_api_conversation_v3(void) {
   otrng_s *bob = otrng_new(bob_client_state, policy);
 
   // Set up v3 context
+  // TODO: This initialization should be automatic
   alice->v3_conn = otrng_v3_conn_new(alice_client_state, "bob");
   bob->v3_conn = otrng_v3_conn_new(bob_client_state, "alice");
+  alice->v3_conn->opdata = alice;
+  bob->v3_conn->opdata = bob;
 
   // Generate long term private key.
   FILE *tmpFILEp;
