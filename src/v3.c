@@ -604,7 +604,7 @@ INTERNAL otrng_err otrng_v3_receive_message(char **to_send, char **to_display,
                                             const char *message,
                                             otrng_v3_conn_s *conn) {
   int ignore_message;
-  OtrlTLV *tlvsv3 = NULL; // TODO: @client convert to v4 tlvs
+  OtrlTLV *tlvs_v3 = NULL;
   *to_send = NULL;
 
   if (!conn) {
@@ -622,7 +622,7 @@ INTERNAL otrng_err otrng_v3_receive_message(char **to_send, char **to_display,
   ignore_message =
       otrl_message_receiving(conn->state->user_state, conn->ops, conn->opdata,
                              account_name, protocol_name, conn->peer, message,
-                             &newmessage, &tlvsv3, &conn->ctx, NULL, NULL);
+                             &newmessage, &tlvs_v3, &conn->ctx, NULL, NULL);
 
   free(account_name);
   free(protocol_name);
@@ -635,7 +635,21 @@ INTERNAL otrng_err otrng_v3_receive_message(char **to_send, char **to_display,
     *to_display = otrng_strdup(newmessage);
   }
 
-  otrl_tlv_free(tlvsv3);
+  if (otrl_tlv_find(tlvs_v3, OTRL_TLV_DISCONNECTED)) {
+    // Recreates what is should be because we dont have access to it from
+    // otrng_s
+    otrng_conversation_state_p s = {{
+        .client = conn->state,
+        .peer = conn->peer,
+        .their_instance_tag = 0, // TODO: Is it used?
+    }};
+
+    gone_insecure_cb_v3(s);
+  }
+
+  // TODO: Copy from tlvs_v3 to tlvs.
+
+  otrl_tlv_free(tlvs_v3);
   otrl_message_free(newmessage);
 
   // TODO: @client Here we can use contextp to get information we might need
