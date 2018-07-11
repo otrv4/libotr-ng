@@ -23,13 +23,13 @@
 #include "v3.h"
 #include "otrng.h"
 
-tstatic void create_privkey_cb_v3(const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client) {
+tstatic void create_privkey_cb_v3(const otrng_v3_conn_s *conn) {
+  if (!conn || !conn->state) {
     return;
   }
 
-  otrng_client_callbacks_create_privkey(conv->client->callbacks,
-                                        conv->client->client_id);
+  otrng_client_callbacks_create_privkey(conn->state->callbacks,
+                                        conn->state->client_id);
 }
 
 tstatic void gone_secure_cb_v3(const otrng_conversation_state_s *conv) {
@@ -149,7 +149,7 @@ tstatic void op_create_privkey(void *opdata, const char *accountname,
     return;
   }
 
-  create_privkey_cb_v3(otr->conversation);
+  create_privkey_cb_v3(otr->v3_conn);
 }
 
 /* Report whether you think the given user is online.  Return 1 if
