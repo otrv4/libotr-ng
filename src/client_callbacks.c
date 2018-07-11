@@ -72,6 +72,8 @@ INTERNAL void otrng_client_callbacks_fingerprint_seen(
   if (!cb) {
     return;
   }
+
+  // TODO: Add callback
 }
 
 INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
@@ -80,6 +82,8 @@ INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
   if (!cb) {
     return;
   }
+
+  // TODO: Add callback
 }
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_secret(
@@ -88,6 +92,8 @@ INTERNAL void otrng_client_callbacks_smp_ask_for_secret(
   if (!cb) {
     return;
   }
+
+  // TODO: Add callback
 }
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_answer(
@@ -96,6 +102,8 @@ INTERNAL void otrng_client_callbacks_smp_ask_for_answer(
   if (!cb) {
     return;
   }
+
+  // TODO: Add callback
 }
 
 INTERNAL void otrng_client_callbacks_smp_update(
@@ -104,4 +112,6 @@ INTERNAL void otrng_client_callbacks_smp_update(
   if (!cb) {
     return;
   }
+
+  // TODO: Add callback
 }
