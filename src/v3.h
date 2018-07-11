@@ -34,6 +34,12 @@
 
 typedef struct otrng_v3_conn_s {
   otrng_client_state_s *state;
+
+  // TODO This is in a higher level of abstraction when compared to otrng_s.
+  // It needs to know who (at the network level) it is talking to, in order to
+  // retrieve the apropriate ConnContext.
+  // If we could remove this member and provide it via a callback, this struct
+  // could be initialized by otrng_s.
   char *peer;
 
   char *injected_message;

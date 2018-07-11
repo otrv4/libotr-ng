@@ -207,6 +207,9 @@ INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
   otrng_smp_protocol_init(otr->smp);
 
   otr->pending_fragments = NULL;
+
+  // TODO: Why is not this automatically generated?
+  // Probably because it expects to receive a peer name.
   otr->v3_conn = NULL;
 
   otr->shared_session_state = NULL;
