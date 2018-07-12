@@ -47,6 +47,16 @@ otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
 }
 
 INTERNAL void
+otrng_client_callbacks_create_instag(const otrng_client_callbacks_s *cb,
+                                     const void *client_opdata) {
+  if (!cb) {
+    return;
+  }
+
+  cb->create_instag(client_opdata);
+}
+
+INTERNAL void
 otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,
                                    const otrng_client_conversation_s *conv) {
   if (!cb || !cb->gone_secure) {

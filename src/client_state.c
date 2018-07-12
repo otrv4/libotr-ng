@@ -252,6 +252,24 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
   return 0;
 }
 
+API int otrng_client_state_instag_generate_FILEp(otrng_client_state_s *state,
+                                                 FILE *instagf) {
+  // TODO: We could use a "get storage key" callback and use it as
+  // account_name plus an arbitrary "libotrng-storage" protocol.
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
+    return 1;
+  }
+
+  gcry_error_t ret = otrl_instag_generate_FILEp(state->user_state, instagf,
+                                                account_name, protocol_name);
+
+  free(account_name);
+  free(protocol_name);
+  return ret;
+}
+
 API const client_profile_s *
 otrng_client_state_get_client_profile(otrng_client_state_s *state) {
   if (!state) {

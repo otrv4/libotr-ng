@@ -223,6 +223,13 @@ API unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state,
   return 0;
 }
 
+API int
+otrng_user_state_instag_generate_generate_FILEp(otrng_user_state_s *state,
+                                                void *client_id, FILE *instag) {
+  UNUSED_ARG(client_id);
+  return otrng_client_state_instag_generate_FILEp(state->user_state_v3, instag);
+}
+
 API int otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state,
                                                   FILE *instag) {
   // We use v3 user_state also for v4 instance tags, for now. */

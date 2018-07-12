@@ -97,6 +97,9 @@ INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
 INTERNAL const otrng_stored_prekeys_s *
 get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state);
 
+API int otrng_client_state_instag_generate_FILEp(otrng_client_state_s *state,
+                                                 FILE *instagf);
+
 API int otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
                                                    FILE *instag);
 

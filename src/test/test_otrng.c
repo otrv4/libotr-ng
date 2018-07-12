@@ -300,6 +300,7 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
   otrng_client_callbacks_p callbacks = {{NULL, // get_account_and_protocol
                                          NULL, // create_privkey
                                          NULL, // create_shared_prekey
+                                         NULL, // create_instag
                                          NULL, // gone_secure
                                          NULL, // gone_insecure
                                          NULL, // fingerprint_seen

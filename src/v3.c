@@ -32,6 +32,15 @@ tstatic void create_privkey_cb_v3(const otrng_v3_conn_s *conn) {
                                         conn->state->client_id);
 }
 
+tstatic void create_instag_cb_v3(const otrng_conversation_state_s *conv) {
+  if (!conv || !conv->client) {
+    return;
+  }
+
+  otrng_client_callbacks_create_instag(conv->client->callbacks,
+                                       conv->client->client_id);
+}
+
 tstatic void gone_secure_cb_v3(const otrng_conversation_state_s *conv) {
   if (!conv || !conv->client) {
     return;
@@ -455,7 +464,9 @@ tstatic void op_handle_msg_event(void *opdata, OtrlMessageEvent msg_event,
 /* Create a instance tag for the given accountname/protocol if
  * desired. */
 tstatic void op_create_instag(void *opdata, const char *accountname,
-                              const char *protocol) {}
+                              const char *protocol) {
+  create_instag_cb_v3(opdata);
+}
 
 /* Called immediately before a data message is encrypted, and after a data
  * message is decrypted. The OtrlConvertType parameter has the value

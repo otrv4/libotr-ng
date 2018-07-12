@@ -38,11 +38,9 @@ INTERNAL void maybe_create_keys(const otrng_client_state_s *state) {
     otrng_client_callbacks_create_shared_prekey(cb, client_id);
   }
 
-  // TODO: ADD instance_tag_callback
   uint32_t instance_tag = otrng_client_state_get_instance_tag(state);
   if (!instance_tag) {
-    // TODO: invoke callback
-    // create_instance_tag(conv);
+    otrng_client_callbacks_create_instag(cb, client_id);
   }
 }
 

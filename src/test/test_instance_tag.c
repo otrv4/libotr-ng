@@ -44,6 +44,29 @@ void test_instance_tag_generates_tag_when_file_empty() {
   otrng_instag_free(instag);
 }
 
+static int INSTAG_CB_CALLED = 0;
+static void test_create_instag_cb(const void *client_opdata) {
+  INSTAG_CB_CALLED = 1;
+}
+
+void test_invokes_create_instag_callbacks(void) {
+  otrng_client_callbacks_p callbacks = {{NULL, // create_privkey
+                                         NULL, // create_shared_prekey
+                                         &test_create_instag_cb,
+                                         NULL,   // gone_secure
+                                         NULL,   // gone_insecure
+                                         NULL,   // fingerprint_seen
+                                         NULL,   // fingerprint_seen_v3
+                                         NULL,   // smp_ask_for_secret
+                                         NULL,   // smp_ask_for_answer
+                                         NULL,   // smp_update
+                                         NULL,   // received_extra_symm_key
+                                         NULL}}; // get_shared_session_state
+
+  otrng_client_callbacks_create_instag(callbacks, NULL);
+  otrng_assert(INSTAG_CB_CALLED);
+}
+
 void test_instance_tag_generates_tag_when_file_is_full() {
   const char *icq_alice_account = "alice_icq";
   const char *icq_protocol = "ICQ";

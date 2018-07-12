@@ -60,6 +60,7 @@ static otrng_client_callbacks_p test_callbacks = {{
     &get_account_and_protocol_cb, // get_account_and_protocol
     NULL,                         // create_privkey
     NULL,                         // create_shared_prekey
+    NULL,                         // create_instag
     NULL,                         // gone_secure
     NULL,                         // gone_insecure
     NULL,                         // fingerprint_seen

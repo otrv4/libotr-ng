@@ -80,6 +80,10 @@ int otrng_user_state_add_instance_tag(otrng_user_state_s *state,
 unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state,
                                                void *client_id);
 
+API int
+otrng_user_state_instag_generate_generate_FILEp(otrng_user_state_s *state,
+                                                void *client_id, FILE *instag);
+
 int otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state,
                                               FILE *instag);
 
