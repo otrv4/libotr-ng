@@ -69,49 +69,50 @@ otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
 INTERNAL void otrng_client_callbacks_fingerprint_seen(
     const otrng_client_callbacks_s *cb, const otrng_fingerprint_p fp,
     const otrng_client_conversation_s *conv) {
-  if (!cb) {
+  if (!cb || !cb->fingerprint_seen) {
     return;
   }
 
-  // TODO: Add callback
+  cb->fingerprint_seen(fp, conv);
 }
 
 INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
     const otrng_client_callbacks_s *cb, const otrng_fingerprint_v3_p fp,
     const otrng_client_conversation_s *conv) {
-  if (!cb) {
+  if (!cb || !cb->fingerprint_seen_v3) {
     return;
   }
 
-  // TODO: Add callback
+  cb->fingerprint_seen_v3(fp, conv);
 }
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_secret(
     const otrng_client_callbacks_s *cb,
     const otrng_client_conversation_s *conv) {
-  if (!cb) {
+  if (!cb || !cb->smp_ask_for_secret) {
     return;
   }
 
-  // TODO: Add callback
+  cb->smp_ask_for_secret(conv);
 }
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_answer(
     const otrng_client_callbacks_s *cb, const char *question,
     const otrng_client_conversation_s *conv) {
-  if (!cb) {
+  if (!cb || !cb->smp_ask_for_answer) {
     return;
   }
 
-  // TODO: Add callback
+  // TODO: The question should be a string
+  cb->smp_ask_for_answer((const uint8_t *)question, strlen(question + 1), conv);
 }
 
 INTERNAL void otrng_client_callbacks_smp_update(
     const otrng_client_callbacks_s *cb, const otrng_smp_event_t event,
     const uint8_t progress_percent, const otrng_client_conversation_s *conv) {
-  if (!cb) {
+  if (!cb || !cb->smp_update) {
     return;
   }
 
-  // TODO: Add callback
+  cb->smp_update(event, progress_percent, conv);
 }
