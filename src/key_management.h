@@ -153,13 +153,13 @@ INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager);
  * @brief Create a temporary receiving ratchet to be used to prevent a ratchet
  * corruption.
  *
+ * @param [manager]    The current key manager.
+ *
  * @return [manager]   The receiving ratchet [receiving_ratchet_s].
  */
 
-INTERNAL receiving_ratchet_s *otrng_receiving_ratchet_new(
-    receiving_chain_key_p chain_r, root_key_p root_key, int j, int i, int k,
-    int pn, ec_scalar_p our_ecdh_priv, dh_private_key_p our_dh_priv,
-    list_element_s *skipped_keys);
+INTERNAL receiving_ratchet_s *
+otrng_receiving_ratchet_new(key_manager_s *manager);
 
 /**
  * @brief Copy a temporary receiving ratchet into the key manager.

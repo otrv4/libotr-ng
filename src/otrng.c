@@ -1908,11 +1908,9 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
     return OTRNG_ERROR;
   }
 
+  // TODO: we still need to persist our_dh->priv
   receiving_ratchet_s *tmp_receiving_ratchet;
-  tmp_receiving_ratchet = otrng_receiving_ratchet_new(
-      otr->keys->current->chain_r, otr->keys->current->root_key, otr->keys->j,
-      otr->keys->i, otr->keys->k, otr->keys->pn, otr->keys->our_ecdh->priv,
-      otr->keys->our_dh->priv, otr->keys->skipped_keys);
+  tmp_receiving_ratchet = otrng_receiving_ratchet_new(otr->keys);
 
   otrng_key_manager_set_their_tmp_keys(msg->ecdh, msg->dh,
                                        tmp_receiving_ratchet);
@@ -1927,7 +1925,8 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
               otr->keys, otr->conversation->client->max_stored_msg_keys,
               tmp_receiving_ratchet, msg->message_id, msg->previous_chain_n,
               'r', notif)) {
-        // otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
+        otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
+
         return OTRNG_ERROR;
       }
 
@@ -1960,6 +1959,12 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
         otrng_error_message(&response->to_send, OTRNG_ERR_MSG_UNREADABLE);
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
+
+        if (tmp_receiving_ratchet->skipped_keys) {
+          otrng_list_free_full(tmp_receiving_ratchet->skipped_keys);
+        }
+        otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
+
         otrng_data_message_free(msg);
 
         return OTRNG_ERROR;
@@ -1967,6 +1972,10 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
       if (msg->flags == MSGFLAGS_IGNORE_UNREADABLE) {
         sodium_memzero(enc_key, sizeof(enc_key));
         sodium_memzero(mac_key, sizeof(mac_key));
+        if (tmp_receiving_ratchet->skipped_keys) {
+          otrng_list_free_full(tmp_receiving_ratchet->skipped_keys);
+        }
+        otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
         otrng_data_message_free(msg);
 
         return OTRNG_ERROR;
@@ -2012,6 +2021,7 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
 
   sodium_memzero(mac_key, sizeof(msg_mac_key_p));
   otrng_data_message_free(msg);
+  // TODO: destroy the tmp skipped?
   otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
   return OTRNG_ERROR;
