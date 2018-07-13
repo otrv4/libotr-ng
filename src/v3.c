@@ -465,7 +465,13 @@ tstatic void op_handle_msg_event(void *opdata, OtrlMessageEvent msg_event,
  * desired. */
 tstatic void op_create_instag(void *opdata, const char *accountname,
                               const char *protocol) {
-  create_instag_cb_v3(opdata);
+  otrng_s *otr = opdata;
+
+  if (!otr) {
+    return;
+  }
+
+  create_instag_cb_v3(otr->conversation);
 }
 
 /* Called immediately before a data message is encrypted, and after a data

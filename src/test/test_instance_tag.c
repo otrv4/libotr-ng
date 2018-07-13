@@ -50,7 +50,8 @@ static void test_create_instag_cb(const void *client_opdata) {
 }
 
 void test_invokes_create_instag_callbacks(void) {
-  otrng_client_callbacks_p callbacks = {{NULL, // create_privkey
+  otrng_client_callbacks_p callbacks = {{NULL, // get_account_and_protocol
+                                         NULL, // create_privkey
                                          NULL, // create_shared_prekey
                                          &test_create_instag_cb,
                                          NULL,   // gone_secure

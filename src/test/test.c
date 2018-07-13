@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
                   test_instance_tag_generates_tag_when_file_empty);
   g_test_add_func("/otrng/instance_tag/generates_when_file_is_full",
                   test_instance_tag_generates_tag_when_file_is_full);
-  g_test_add_func("/otrng/callbacks/otrng_invokes_create_instag",
+  g_test_add_func("/otrng/instance_tag/otrng_invokes_create_instag",
                   test_invokes_create_instag_callbacks);
 
   g_test_add_func("/user_state/key_management", test_user_state_key_management);
