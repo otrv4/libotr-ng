@@ -77,6 +77,10 @@ INTERNAL /*@null@*/ void otrng_list_free_nodes(list_element_s *head) {
 }
 
 INTERNAL list_element_s *otrng_list_copy(list_element_s *head) {
+  if (otrng_list_len(head) == 0) {
+    return NULL;
+  }
+
   list_element_s *cursor = head;
   list_element_s *copy = list_new();
   if (!copy) {

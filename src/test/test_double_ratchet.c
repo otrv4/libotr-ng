@@ -185,6 +185,7 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   otrng_notif notif = OTRNG_NOTIF_NONE;
 
   // Alice sends a data message
+
   result = otrng_send_message(&to_send_1, "hi", notif, NULL, 0, alice);
   assert_msg_sent(result, to_send_1);
   otrng_assert(!alice->keys->old_mac_keys);
@@ -500,12 +501,10 @@ void test_double_ratchet_corrupted_ratchet(void) {
   free_message_and_response(response_to_alice, &to_send_2);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
-  // TODO: @double_ratchet the ratchet indeed moved and stored invalid keys
-  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 7);
+  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 0);
   g_assert_cmpint(bob->keys->i, ==, 1);
   g_assert_cmpint(bob->keys->j, ==, 0);
-  // TODO: @double_ratchet the ratchet indeed moved
-  g_assert_cmpint(bob->keys->k, ==, 10);
+  g_assert_cmpint(bob->keys->k, ==, 2);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   otrng_data_message_free(corrupted_data_msg);

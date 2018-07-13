@@ -1908,36 +1908,45 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
     return OTRNG_ERROR;
   }
 
-  otrng_key_manager_set_their_keys(msg->ecdh, msg->dh, otr->keys);
+  receiving_ratchet_s *tmp_receiving_ratchet;
+  tmp_receiving_ratchet = otrng_receiving_ratchet_new(
+      otr->keys->current->chain_r, otr->keys->current->root_key, otr->keys->j,
+      otr->keys->i, otr->keys->k, otr->keys->pn, otr->keys->our_ecdh->priv,
+      otr->keys->our_dh->priv, otr->keys->skipped_keys);
+
+  otrng_key_manager_set_their_tmp_keys(msg->ecdh, msg->dh,
+                                       tmp_receiving_ratchet);
 
   do {
     /* Try to decrypt the message with a stored skipped message key */
     if (!otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
-                                    msg->message_id, otr->keys)) {
-      // TODO: @double_ratchet Why we do not care if this message is not a
-      // duplicated skipped message and just derive the next ratchet key, and
-      // increase the K (meaning the message was received)? if (msg->ratchet_id
-      // < otr->keys->i) { continue; } if (msg->ratchet_id == otr->keys->i &&
-      // msg->message_id < otr->keys->k)
-      //{ continue; }
+                                    msg->message_id, otr->keys,
+                                    tmp_receiving_ratchet)) {
       /* if a new ratchet */
       if (!otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->conversation->client->max_stored_msg_keys,
-              msg->message_id, msg->previous_chain_n, 'r', notif)) {
+              tmp_receiving_ratchet, msg->message_id, msg->previous_chain_n,
+              'r', notif)) {
+        // otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
         return OTRNG_ERROR;
       }
 
       otrng_key_manager_derive_chain_keys(
-          enc_key, mac_key, otr->keys,
+          enc_key, mac_key, otr->keys, tmp_receiving_ratchet,
           otr->conversation->client->max_stored_msg_keys, msg->message_id, 'r',
           notif);
-      otr->keys->k++;
+      tmp_receiving_ratchet->k = tmp_receiving_ratchet->k + 1;
     }
 
     if (!otrng_valid_data_message(mac_key, msg)) {
       sodium_memzero(enc_key, sizeof(enc_key));
       sodium_memzero(mac_key, sizeof(mac_key));
       otrng_data_message_free(msg);
+
+      if (tmp_receiving_ratchet->skipped_keys) {
+        otrng_list_free_full(tmp_receiving_ratchet->skipped_keys);
+      }
+      otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
       response->warning = OTRNG_WARN_RECEIVED_NOT_VALID;
       notif = OTRNG_NOTIF_MSG_NOT_VALID;
@@ -1946,6 +1955,7 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
     }
 
     if (!decrypt_data_msg(response, enc_key, msg)) {
+
       if (msg->flags != MSGFLAGS_IGNORE_UNREADABLE) {
         otrng_error_message(&response->to_send, OTRNG_ERR_MSG_UNREADABLE);
         sodium_memzero(enc_key, sizeof(enc_key));
@@ -1964,15 +1974,18 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
     }
 
     sodium_memzero(enc_key, sizeof(enc_key));
-    sodium_memzero(mac_key, sizeof(mac_key));
 
     if (!receive_tlvs(response, otr)) {
       continue;
     }
 
+    // this too
     if (!otrng_store_old_mac_keys(otr->keys, mac_key)) {
       continue;
     }
+
+    otrng_receiving_ratchet_copy(otr->keys, tmp_receiving_ratchet);
+    otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
     // TODO: @client this displays an event on otrv3..
     if (!response->to_display) {
@@ -1999,6 +2012,7 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
 
   sodium_memzero(mac_key, sizeof(msg_mac_key_p));
   otrng_data_message_free(msg);
+  otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
   return OTRNG_ERROR;
 }

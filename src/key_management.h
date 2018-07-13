@@ -57,21 +57,24 @@ typedef struct skipped_keys_s {
 
 /* a temporary structure used to hold the values of the receiving ratchet */
 typedef struct receiving_ratchet_s {
-  ecdh_keypair_p our_ecdh;
-  dh_keypair_p our_dh;
+  ec_scalar_p our_ecdh_priv;
+  dh_private_key_p our_dh_priv;
 
   ec_point_p their_ecdh;
   dh_public_key_p their_dh;
 
   brace_key_p brace_key;
+  shared_secret_p shared_secret;
 
   unsigned int i;  /* Counter of the ratchet */
   unsigned int k;  /* Counter of the receiving ratchet */
+  unsigned int j;  /* Counter of the sending ratchet */
   unsigned int pn; /* the number of messages in the previous DH ratchet. */
   root_key_p root_key;
   receiving_chain_key_p chain_r;
   list_element_s *skipped_keys;
   list_element_s *old_mac_keys;
+
 } receiving_ratchet_s, receiving_ratchet_p[1];
 
 /* represents the different values needed for key management */
@@ -152,7 +155,11 @@ INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager);
  *
  * @return [manager]   The receiving ratchet [receiving_ratchet_s].
  */
-INTERNAL receiving_ratchet_s *otrng_receiving_ratchet_new(void);
+
+INTERNAL receiving_ratchet_s *otrng_receiving_ratchet_new(
+    receiving_chain_key_p chain_r, root_key_p root_key, int j, int i, int k,
+    int pn, ec_scalar_p our_ecdh_priv, dh_private_key_p our_dh_priv,
+    list_element_s *skipped_keys);
 
 /**
  * @brief Copy a temporary receiving ratchet into the key manager.
@@ -161,7 +168,7 @@ INTERNAL receiving_ratchet_s *otrng_receiving_ratchet_new(void);
  * @param [src]   The receiving ratchet.
  */
 INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
-                                           const receiving_ratchet_s *src);
+                                           receiving_ratchet_s *src);
 
 /**
  * @brief Destroy a temporary receiving ratchet to be used to prevent a ratchet
@@ -174,13 +181,13 @@ INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet);
 /**
  * @brief Securely replace their ecdh and their dh keys.
  *
- * @param [their_ecdh]  The new their_ecdh key.
- * @param [their_dh]    The new their_dh key.
- * @param [manager]     The key manager.
+ * @param [their_ecdh]               The new their_ecdh key.
+ * @param [their_dh]                 The new their_dh key.
+ * @param [tmp_receiving_ratchet]    The receiving ratchet.
  */
-INTERNAL void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
-                                               dh_public_key_p their_dh,
-                                               key_manager_s *manager);
+INTERNAL void otrng_key_manager_set_their_tmp_keys(
+    ec_point_p their_ecdh, dh_public_key_p their_dh,
+    receiving_ratchet_s *tmp_receiving_ratchet);
 
 /**
  * @brief Securely replace their ecdh keys.
@@ -299,10 +306,10 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
  * @param [message_id]  The receiving message id (j).
  * @param [manager]     The key manager.
  */
-INTERNAL otrng_err otrng_key_get_skipped_keys(msg_enc_key_p enc_key,
-                                              msg_mac_key_p mac_key,
-                                              int ratchet_id, int message_id,
-                                              key_manager_s *manager);
+INTERNAL otrng_err otrng_key_get_skipped_keys(
+    msg_enc_key_p enc_key, msg_mac_key_p mac_key, int ratchet_id,
+    int message_id, key_manager_s *manager,
+    receiving_ratchet_s *tmp_receiving_ratchet);
 
 /**
  * @brief Derive ratchet chain keys.
@@ -316,7 +323,8 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(msg_enc_key_p enc_key,
  */
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     msg_enc_key_p enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
-    int max_skip, int message_id, const char action, otrng_notif notif);
+    receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int message_id,
+    const char action, otrng_notif notif);
 
 /**
  * @brief Derive the dh ratchet keys.
@@ -327,7 +335,8 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
  * @param [action]      's' for sending chain, 'r' for receiving
  */
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
-    key_manager_s *manager, int max_skip, int message_id, int previous_n,
+    key_manager_s *manager, int max_skip,
+    receiving_ratchet_s *tmp_receiving_ratchet, int message_id, int previous_n,
     const char action, otrng_notif notif);
 
 /**
@@ -348,7 +357,9 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
  *
  * @param [manager]   The key manager.
  */
-tstatic otrng_err calculate_brace_key(key_manager_s *manager);
+tstatic otrng_err calculate_brace_key(
+    key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
+    const char action);
 
 /**
  * @brief Derive ratchet keys.
@@ -356,8 +367,10 @@ tstatic otrng_err calculate_brace_key(key_manager_s *manager);
  * @param [manager]   The key manager.
  * @param [action]    's' for sending chain, 'r' for receiving
  */
-tstatic void key_manager_derive_ratchet_keys(key_manager_s *manager,
-                                             const char action);
+tstatic void
+key_manager_derive_ratchet_keys(key_manager_s *manager,
+                                receiving_ratchet_s *tmp_receiving_ratchet,
+                                const char action);
 
 /**
  * @brief Calculate the secure session id.

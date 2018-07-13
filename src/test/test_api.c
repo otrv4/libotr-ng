@@ -329,7 +329,7 @@ void test_otrng_send_offline_message() {
     g_assert_cmpint(alice->keys->k, ==, 0);
     g_assert_cmpint(alice->keys->pn, ==, 0);
 
-    // Bob receives a data message
+    // Alice receives a data message
     response_to_alice = otrng_response_new();
     result = otrng_receive_message(response_to_alice, notif, to_send, bob);
     assert_msg_rec(result, "hi", response_to_alice);

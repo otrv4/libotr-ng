@@ -28,7 +28,7 @@ void test_derive_ratchet_keys() {
   root_key_p root_key;
   memset(root_key, 0, sizeof root_key);
 
-  key_manager_derive_ratchet_keys(manager, 's');
+  key_manager_derive_ratchet_keys(manager, NULL, 's');
 
   root_key_p expected_root_key;
   sending_chain_key_p expected_chain_key_s;
@@ -127,7 +127,7 @@ void test_calculate_brace_key() {
 
   // Calculate brace key from k_dh
   manager->i = 0;
-  otrng_assert_is_success(calculate_brace_key(manager));
+  otrng_assert_is_success(calculate_brace_key(manager, NULL, 's'));
   otrng_assert_cmpmem(expected_brace_key, manager->brace_key, BRACE_KEY_BYTES);
 
   uint8_t expected_brace_key_2[BRACE_KEY_BYTES] = {
@@ -138,7 +138,7 @@ void test_calculate_brace_key() {
 
   // Calculate brace key from previous brace key
   manager->i = 1;
-  otrng_assert_is_success(calculate_brace_key(manager));
+  otrng_assert_is_success(calculate_brace_key(manager, NULL, 's'));
   otrng_assert_cmpmem(expected_brace_key_2, manager->brace_key,
                       BRACE_KEY_BYTES);
 
