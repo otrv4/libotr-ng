@@ -44,7 +44,7 @@ typedef struct otrng_client_state_s {
    * Pidgin) this could be a PurpleAccount */
   const void *client_id;
 
-  const struct otrng_client_callbacks_s *callbacks;
+  const otrng_client_callbacks_s *callbacks;
 
   // TODO: @client We could point it directly to the user state and have access
   // to the callback and v3 user state

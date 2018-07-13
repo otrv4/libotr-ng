@@ -54,7 +54,7 @@ typedef struct otrng_user_state_s {
   list_element_s *clients;
 
   const otrng_client_callbacks_s *callbacks;
-  void *user_state_v3; /* OtrlUserState */
+  OtrlUserState user_state_v3;
 } otrng_user_state_s, otrng_user_state_p[1];
 
 API int

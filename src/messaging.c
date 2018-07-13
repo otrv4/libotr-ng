@@ -34,7 +34,6 @@ otrng_user_state_new(const otrng_client_callbacks_s *cb) {
   state->states = NULL;
   state->clients = NULL;
   state->callbacks = cb;
-
   state->user_state_v3 = otrl_userstate_create();
 
   return state;
@@ -226,8 +225,8 @@ API unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state,
 API int
 otrng_user_state_instag_generate_generate_FILEp(otrng_user_state_s *state,
                                                 void *client_id, FILE *instag) {
-  UNUSED_ARG(client_id);
-  return otrng_client_state_instag_generate_FILEp(state->user_state_v3, instag);
+  return otrng_client_state_instag_generate_FILEp(
+      get_client_state(state, client_id), instag);
 }
 
 API int otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state,
