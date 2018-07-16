@@ -40,7 +40,6 @@ tstatic client_profile_s *client_profile_new(const string_p versions) {
     return NULL;
   }
 
-  profile->id = 0;
   profile->sender_instance_tag = 0;
   otrng_ec_bzero(profile->long_term_pub_key, ED448_POINT_BYTES);
   profile->expires = 0;
@@ -58,7 +57,6 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
     return;
   }
 
-  dst->id = src->id;
   dst->sender_instance_tag = src->sender_instance_tag;
   otrng_ec_point_copy(dst->long_term_pub_key, src->long_term_pub_key);
   dst->versions = otrng_strdup(src->versions);
@@ -393,7 +391,6 @@ otrng_client_profile_build(uint32_t id, uint32_t instance_tag,
     return NULL;
   }
 
-  profile->id = id;
   profile->sender_instance_tag = instance_tag;
 #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   time_t expires = time(NULL);

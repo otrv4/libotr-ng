@@ -168,13 +168,6 @@ get_my_prekey_profile_by_id(uint32_t id, otrng_s *otr) {
   return otrng_client_state_get_prekey_profile_by_id(id, state);
 }
 
-static inline const client_profile_s *
-get_my_client_profile_by_id(uint32_t id, otrng_s *otr) {
-  maybe_create_keys(otr->conversation->client);
-  otrng_client_state_s *state = otr->conversation->client;
-  return otrng_client_state_get_client_profile_by_id(id, state);
-}
-
 INTERNAL otrng_conversation_state_s *
 otrng_conversation_new(otrng_client_state_s *state) {
   otrng_conversation_state_s *conversation =
@@ -828,7 +821,7 @@ tstatic otrng_err build_non_interactive_auth_message(
   auth->prekey_message_id = otr->their_prekeys_id;
   otr->their_prekeys_id = 0;
 
-  auth->long_term_key_id = otr->their_client_profile->id;
+  auth->long_term_key_id = 0;
   auth->prekey_profile_id = otr->their_prekey_profile->id;
 
   /* tmp_k = KDF_1(usage_tmp_key || K_ecdh || ECDH(x, their_shared_prekey) ||
@@ -1245,7 +1238,6 @@ tstatic otrng_err non_interactive_auth_message_received(
   otrng_client_state_s *state = otr->conversation->client;
 
   const otrng_stored_prekeys_s *stored_prekey = NULL;
-  const client_profile_s *client_profile = NULL;
   const otrng_prekey_profile_s *prekey_profile = NULL;
 
   if (!received_sender_instance_tag(auth->sender_instance_tag, otr)) {
@@ -1264,14 +1256,9 @@ tstatic otrng_err non_interactive_auth_message_received(
   }
 
   stored_prekey = get_my_prekeys_by_id(auth->prekey_message_id, state);
-  client_profile = get_my_client_profile_by_id(auth->long_term_key_id, otr);
   prekey_profile = get_my_prekey_profile_by_id(auth->prekey_profile_id, otr);
 
   if (!stored_prekey) {
-    return OTRNG_ERROR;
-  }
-
-  if (!client_profile) {
     return OTRNG_ERROR;
   }
 
@@ -1295,12 +1282,6 @@ tstatic otrng_err non_interactive_auth_message_received(
   // Should be always true, though.
   if (!otrng_ec_point_eq(our_shared_prekey(otr)->pub,
                          get_my_prekey_profile(otr)->shared_prekey)) {
-    return OTRNG_ERROR;
-  }
-
-  // The client profile in question must also have the same key.
-  if (!otrng_ec_point_eq(client_profile->long_term_pub_key,
-                         get_my_client_profile(otr)->long_term_pub_key)) {
     return OTRNG_ERROR;
   }
 

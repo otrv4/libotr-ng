@@ -32,7 +32,6 @@ void test_prekey_ensemble_validate(void) {
   prekey_ensemble_s *ensemble = malloc(sizeof(prekey_ensemble_s));
   otrng_assert(ensemble);
 
-  ensemble->client_profile->id = 1;
   ensemble->client_profile->versions = otrng_strdup("4");
   ensemble->client_profile->sender_instance_tag = 1;
   ensemble->client_profile->expires = time(NULL) + 60 * 60 * 24; // one day

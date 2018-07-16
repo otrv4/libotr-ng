@@ -448,18 +448,6 @@ API int otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
 }
 
 INTERNAL const client_profile_s *
-otrng_client_state_get_client_profile_by_id(uint32_t id,
-                                            otrng_client_state_s *state) {
-  const client_profile_s *ret = otrng_client_state_get_client_profile(state);
-
-  if (ret && ret->id == id) {
-    return ret;
-  }
-
-  return NULL;
-}
-
-INTERNAL const client_profile_s *
 otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state) {
   const client_profile_s *ret = otrng_client_state_get_client_profile(state);
   if (ret) {

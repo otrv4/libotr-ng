@@ -38,7 +38,6 @@ void test_client_profile_serializes_body() {
   otrng_keypair_generate(keypair, sym);
 
   client_profile_s *profile = client_profile_new("4");
-  profile->id = 3;
   profile->sender_instance_tag = 4;
 
   otrng_assert(profile != NULL);
@@ -131,7 +130,6 @@ void test_otrng_client_profile_deserializes() {
 
   otrng_assert(profile != NULL);
 
-  profile->id = 3;
   profile->sender_instance_tag = 4;
   client_profile_sign(profile, keypair);
 
@@ -180,7 +178,6 @@ void test_otrng_client_profile_build() {
   otrng_keypair_generate(keypair, sym);
 
   profile = otrng_client_profile_build(1, 0, "3", keypair);
-  g_assert_cmpint(profile->id, ==, 1);
   g_assert_cmpstr(profile->versions, ==, "3");
 
   otrng_client_profile_free(profile);
