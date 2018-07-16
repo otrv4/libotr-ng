@@ -31,7 +31,7 @@ INTERNAL void maybe_create_keys(const otrng_client_state_s *state) {
   const void *client_id = state->client_id;
 
   if (!state->keypair) {
-    otrng_client_callbacks_create_privkey(cb, client_id);
+    otrng_client_callbacks_create_privkey_v4(cb, client_id);
   }
 
   if (!state->shared_prekey_pair) {

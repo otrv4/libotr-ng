@@ -28,8 +28,8 @@ tstatic void create_privkey_cb_v3(const otrng_v3_conn_s *conn) {
     return;
   }
 
-  otrng_client_callbacks_create_privkey(conn->state->callbacks,
-                                        conn->state->client_id);
+  otrng_client_callbacks_create_privkey_v3(conn->state->callbacks,
+                                           conn->state->client_id);
 }
 
 tstatic void create_instag_cb_v3(const otrng_conversation_state_s *conv) {

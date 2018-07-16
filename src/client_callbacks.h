@@ -49,9 +49,11 @@ typedef struct otrng_client_callbacks_s {
   int (*get_account_and_protocol)(char **account, char **protocol,
                                   const void *client_id);
 
-  /* Create a private key for the given accountname/protocol if
-   * desired. */
-  void (*create_privkey)(const void *client_opdata);
+  /* Create a OTRv4 private key */
+  void (*create_privkey_v4)(const void *client_opdata);
+
+  /* Create a OTRv3 private key */
+  void (*create_privkey_v3)(const void *client_opdata);
 
   /* Create a shared prekey for the given accountname/protocol if not available.
    */
@@ -124,8 +126,12 @@ typedef struct otrng_client_callbacks_s {
 } otrng_client_callbacks_s, otrng_client_callbacks_p[1];
 
 INTERNAL void
-otrng_client_callbacks_create_privkey(const otrng_client_callbacks_s *cb,
-                                      const void *client_opdata);
+otrng_client_callbacks_create_privkey_v4(const otrng_client_callbacks_s *cb,
+                                         const void *client_opdata);
+
+INTERNAL void
+otrng_client_callbacks_create_privkey_v3(const otrng_client_callbacks_s *cb,
+                                         const void *client_opdata);
 
 INTERNAL void
 otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,

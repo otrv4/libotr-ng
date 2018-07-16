@@ -58,7 +58,8 @@ static int get_account_and_protocol_cb(char **account_name,
 
 static otrng_client_callbacks_p test_callbacks = {{
     &get_account_and_protocol_cb, // get_account_and_protocol
-    NULL,                         // create_privkey
+    NULL,                         // create_privkey v4
+    NULL,                         // create_privkey v3
     NULL,                         // create_shared_prekey
     NULL,                         // create_instag
     NULL,                         // gone_secure

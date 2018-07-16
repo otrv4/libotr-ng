@@ -122,8 +122,9 @@ otrng_client_state_get_private_key_v4(otrng_client_state_s *state) {
 
   /* @secret_information: the long-term key pair lives for as long the client
      decides */
-  if (!state->keypair && state->callbacks && state->callbacks->create_privkey) {
-    state->callbacks->create_privkey(state->client_id);
+  if (!state->keypair) {
+    otrng_client_callbacks_create_privkey_v4(state->callbacks,
+                                             state->client_id);
   }
 
   return state->keypair;

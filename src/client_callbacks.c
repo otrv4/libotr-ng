@@ -22,14 +22,25 @@
 #include "client_callbacks.h"
 
 INTERNAL void
-otrng_client_callbacks_create_privkey(const otrng_client_callbacks_s *cb,
-                                      const void *client_opdata) {
+otrng_client_callbacks_create_privkey_v4(const otrng_client_callbacks_s *cb,
+                                         const void *client_opdata) {
   if (!cb) {
     return;
   }
 
   // This callback is required and is expected to segfault if not provided.
-  cb->create_privkey(client_opdata);
+  cb->create_privkey_v4(client_opdata);
+}
+
+INTERNAL void
+otrng_client_callbacks_create_privkey_v3(const otrng_client_callbacks_s *cb,
+                                         const void *client_opdata) {
+  if (!cb) {
+    return;
+  }
+
+  // This callback is required and is expected to segfault if not provided.
+  cb->create_privkey_v3(client_opdata);
 }
 
 INTERNAL void
