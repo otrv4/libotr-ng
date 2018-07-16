@@ -1376,6 +1376,7 @@ tstatic otrng_err receive_non_interactive_auth_message(
   dake_non_interactive_auth_message_p auth;
 
   if (!otrng_dake_non_interactive_auth_message_deserialize(auth, src, len)) {
+    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
 
@@ -1453,6 +1454,7 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
   dake_identity_message_p m;
 
   if (!otrng_dake_identity_message_deserialize(m, buff, buflen)) {
+    otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     return result;
   }
 
@@ -1592,6 +1594,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
 
   dake_auth_r_p auth;
   if (!otrng_dake_auth_r_deserialize(auth, buff, buff_len)) {
+    otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
 
@@ -1687,6 +1690,7 @@ tstatic otrng_err receive_auth_i(char **dst, const uint8_t *buff,
 
   dake_auth_i_p auth;
   if (!otrng_dake_auth_i_deserialize(auth, buff, buff_len)) {
+    otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
 
@@ -1885,6 +1889,7 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
 
   size_t read = 0;
   if (!otrng_data_message_deserialize(msg, buff, buflen, &read)) {
+    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     otrng_data_message_free(msg);
     return OTRNG_ERROR;
   }
@@ -2217,7 +2222,7 @@ INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
                                          otrng_notif notif,
                                          const string_p message, otrng_s *otr) {
   response->warning = OTRNG_WARN_NONE;
-  response->to_display = otrng_strndup(NULL, 0);
+  response->to_display = NULL;
 
   char *defrag = NULL;
   if (!otrng_unfragment_message(&defrag, &otr->pending_fragments, message,
