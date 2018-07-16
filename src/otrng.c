@@ -1456,10 +1456,10 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
     return result;
   }
 
-  if (m->receiver_instance_tag != 0) {
-    otrng_dake_identity_message_destroy(m);
-    return OTRNG_SUCCESS;
-  }
+  // if (m->receiver_instance_tag != 0) {
+  //  otrng_dake_identity_message_destroy(m);
+  //  return OTRNG_SUCCESS;
+  //}
 
   if (!received_sender_instance_tag(m->sender_instance_tag, otr)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
@@ -1487,8 +1487,8 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
   case OTRNG_STATE_NONE:
   case OTRNG_STATE_ENCRYPTED_MESSAGES:
   case OTRNG_STATE_FINISHED:
-    /* Ignore the message, but it is not an error. */
-    result = OTRNG_SUCCESS;
+    result = receive_identity_message_on_state_start(dst, m, otr);
+    break;
   }
 
   otrng_dake_identity_message_destroy(m);
