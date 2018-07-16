@@ -73,7 +73,6 @@ typedef struct receiving_ratchet_s {
   root_key_p root_key;
   receiving_chain_key_p chain_r;
   list_element_s *skipped_keys;
-  list_element_s *old_mac_keys;
 
 } receiving_ratchet_s, receiving_ratchet_p[1];
 

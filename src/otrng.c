@@ -1984,17 +1984,16 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
 
     sodium_memzero(enc_key, sizeof(enc_key));
 
+    otrng_receiving_ratchet_copy(otr->keys, tmp_receiving_ratchet);
+    otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
+
     if (!receive_tlvs(response, otr)) {
       continue;
     }
 
-    // this too
     if (!otrng_store_old_mac_keys(otr->keys, mac_key)) {
       continue;
     }
-
-    otrng_receiving_ratchet_copy(otr->keys, tmp_receiving_ratchet);
-    otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
     // TODO: @client this displays an event on otrv3..
     if (!response->to_display) {
@@ -2021,8 +2020,6 @@ tstatic otrng_err otrng_receive_data_message_after_dake(
 
   sodium_memzero(mac_key, sizeof(msg_mac_key_p));
   otrng_data_message_free(msg);
-  // TODO: destroy the tmp skipped?
-  otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
   return OTRNG_ERROR;
 }

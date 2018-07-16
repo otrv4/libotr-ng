@@ -164,7 +164,6 @@ otrng_receiving_ratchet_new(key_manager_s *manager) {
          sizeof(receiving_chain_key_p));
 
   ratchet->skipped_keys = manager->skipped_keys;
-  ratchet->old_mac_keys = NULL;
 
   return ratchet;
 }
@@ -224,7 +223,6 @@ INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {
   sodium_memzero(ratchet->chain_r, sizeof(receiving_chain_key_p));
 
   ratchet->skipped_keys = NULL;
-  ratchet->old_mac_keys = NULL;
 
   free(ratchet);
   ratchet = NULL;
