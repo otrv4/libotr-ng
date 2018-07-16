@@ -88,7 +88,7 @@ void test_calculate_extra_symm_key() {
 
   memcpy(s, manager->current->chain_s, sizeof(sending_chain_key_p));
 
-  calculate_extra_key(manager, 's');
+  calculate_extra_key(manager, NULL, 's');
   otrng_assert_cmpmem(expected_extra_key, manager->extra_symmetric_key,
                       EXTRA_SYMMETRIC_KEY_BYTES);
 

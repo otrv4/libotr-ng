@@ -163,6 +163,9 @@ otrng_receiving_ratchet_new(key_manager_s *manager) {
   memcpy(ratchet->chain_r, manager->current->chain_r,
          sizeof(receiving_chain_key_p));
 
+  memcpy(ratchet->extra_symmetric_key, manager->extra_symmetric_key,
+         sizeof(extra_symmetric_key_p));
+
   ratchet->skipped_keys = manager->skipped_keys;
 
   return ratchet;
@@ -197,6 +200,9 @@ INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
   memcpy(dst->current->root_key, src->root_key, ROOT_KEY_BYTES);
   memcpy(dst->current->chain_r, src->chain_r, CHAIN_KEY_BYTES);
 
+  memcpy(dst->extra_symmetric_key, src->extra_symmetric_key,
+         sizeof(extra_symmetric_key_p));
+
   dst->skipped_keys = src->skipped_keys;
 }
 
@@ -221,6 +227,8 @@ INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {
 
   sodium_memzero(ratchet->root_key, sizeof(root_key_p));
   sodium_memzero(ratchet->chain_r, sizeof(receiving_chain_key_p));
+
+  sodium_memzero(ratchet->extra_symmetric_key, sizeof(extra_symmetric_key_p));
 
   ratchet->skipped_keys = NULL;
 
@@ -772,7 +780,9 @@ tstatic void derive_encryption_and_mac_keys(
                  sizeof(msg_enc_key_p));
 }
 
-tstatic void calculate_extra_key(key_manager_s *manager, const char action) {
+tstatic void calculate_extra_key(key_manager_s *manager,
+                                 receiving_ratchet_s *tmp_receiving_ratchet,
+                                 const char action) {
   goldilocks_shake256_ctx_p hd;
   uint8_t extra_key_buff[EXTRA_SYMMETRIC_KEY_BYTES];
   uint8_t magic[1] = {0xFF};
@@ -785,16 +795,24 @@ tstatic void calculate_extra_key(key_manager_s *manager, const char action) {
   assert(action == 's' || action == 'r');
   if (action == 's') {
     hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key_p));
+
+    hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
+    hash_destroy(hd);
+
+    memcpy(manager->extra_symmetric_key, extra_key_buff,
+           sizeof(extra_symmetric_key_p));
   } else if (action == 'r') {
-    hash_update(hd, manager->current->chain_r, sizeof(receiving_chain_key_p));
+    hash_update(hd, tmp_receiving_ratchet->chain_r,
+                sizeof(receiving_chain_key_p));
+
+    hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
+    hash_destroy(hd);
+
+    memcpy(tmp_receiving_ratchet->extra_symmetric_key, extra_key_buff,
+           sizeof(extra_symmetric_key_p));
   }
-  hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
-  hash_destroy(hd);
 
-  // TODO: add to tmp
-  memcpy(manager->extra_symmetric_key, extra_key_buff,
-         sizeof(extra_symmetric_key_p));
-
+// TODO: add to tmp
 #ifdef DEBUG
   printf("\n");
   printf("EXTRA KEY = ");
@@ -892,9 +910,8 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(
       memcpy(enc_key, skipped_keys->enc_key, sizeof(msg_enc_key_p));
       shake_256_kdf1(mac_key, MAC_KEY_BYTES, usage_mac_key, enc_key,
                      ENC_KEY_BYTES);
-      // TODO: add to tmp struct
-      memcpy(manager->extra_symmetric_key, skipped_keys->extra_symmetric_key,
-             sizeof(extra_symmetric_key_p));
+      memcpy(tmp_receiving_ratchet->extra_symmetric_key,
+             skipped_keys->extra_symmetric_key, sizeof(extra_symmetric_key_p));
 
       tmp_receiving_ratchet->skipped_keys = otrng_list_remove_element(
           current, tmp_receiving_ratchet->skipped_keys);
@@ -928,7 +945,7 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
    */
   derive_encryption_and_mac_keys(enc_key, mac_key, manager,
                                  tmp_receiving_ratchet, action);
-  calculate_extra_key(manager, action);
+  calculate_extra_key(manager, tmp_receiving_ratchet, action);
   /* @secret should be deleted when the new chain key is derived */
   derive_next_chain_key(manager, tmp_receiving_ratchet, action);
 

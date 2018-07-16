@@ -72,8 +72,10 @@ typedef struct receiving_ratchet_s {
   unsigned int pn; /* the number of messages in the previous DH ratchet. */
   root_key_p root_key;
   receiving_chain_key_p chain_r;
-  list_element_s *skipped_keys;
 
+  extra_symmetric_key_p extra_symmetric_key;
+
+  list_element_s *skipped_keys;
 } receiving_ratchet_s, receiving_ratchet_p[1];
 
 /* represents the different values needed for key management */
@@ -384,7 +386,9 @@ tstatic void calculate_ssid(key_manager_s *manager);
  * @param [manager]   The key manager.
  * @param [action]    's' for sending chain, 'r' for receiving
  */
-tstatic void calculate_extra_key(key_manager_s *manager, const char action);
+tstatic void calculate_extra_key(key_manager_s *manager,
+                                 receiving_ratchet_s *tmp_receiving_ratchet,
+                                 const char action);
 
 #endif
 
