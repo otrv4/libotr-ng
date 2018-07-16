@@ -68,9 +68,9 @@ void test_prekey_ensemble_validate(void) {
   ensemble->message->sender_instance_tag = 1;
 
   // Should fail if client profile is not valid
-  ensemble->client_profile->id = 2; // Messes up with the signature
+  ensemble->client_profile->expires -= 1; // Messes up with the signature
   otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
-  ensemble->client_profile->id = 1;
+  ensemble->client_profile->expires += 1;
 
   // Should fail if prekey profile is not valid
   ensemble->prekey_profile->id = 2; // Messes up with the signature

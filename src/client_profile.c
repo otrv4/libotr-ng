@@ -96,32 +96,82 @@ INTERNAL void otrng_client_profile_free(client_profile_s *profile) {
   free(profile);
 }
 
-tstatic size_t client_profile_body_serialize(uint8_t *dst,
-                                             const client_profile_s *profile) {
-  uint8_t *target = dst;
+// This serializes the body WITHOUT the signature
+tstatic otrng_err
+client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
+                              const client_profile_s *profile) {
+  size_t w = 4;
+  uint32_t num_fields = 0;
 
-  target += otrng_serialize_uint32(target, profile->id);
-  target += otrng_serialize_uint32(target, profile->sender_instance_tag);
-  target +=
-      otrng_serialize_otrng_public_key(target, profile->long_term_pub_key);
-  target += otrng_serialize_data(target, (uint8_t *)profile->versions,
-                                 strlen(profile->versions) + 1);
-  target += otrng_serialize_uint64(target, profile->expires);
+  // TODO: Add error checking for writing more than what is allocated
 
-  return target - dst;
+  // Instance tag
+  w += otrng_serialize_uint16(dst + w, 0x01);
+  w += otrng_serialize_uint32(dst + w, profile->sender_instance_tag);
+  num_fields++;
+
+  // Ed448 public key
+  w += otrng_serialize_uint16(dst + w, 0x02);
+  w += otrng_serialize_otrng_public_key(dst + w, profile->long_term_pub_key);
+  num_fields++;
+
+  // TODO: Forger public key
+
+  // Versions
+  w += otrng_serialize_uint16(dst + w, 0x04);
+  w += otrng_serialize_data(dst + w, (uint8_t *)profile->versions,
+                            strlen(profile->versions) + 1);
+  num_fields++;
+
+  // Expiration
+  w += otrng_serialize_uint16(dst + w, 0x05);
+  w += otrng_serialize_uint64(dst + w, profile->expires);
+  num_fields++;
+
+  // TODO: DSA key
+
+  // Transitional Signature
+  w += otrng_serialize_uint16(dst + w, 0x08);
+  w += otrng_serialize_mpi(dst + w, profile->transitional_signature);
+  num_fields++;
+
+  // Writes the number of fields at the beginning
+  otrng_serialize_uint32(dst, num_fields);
+
+  if (nbytes) {
+    *nbytes = w;
+  }
+
+  return OTRNG_SUCCESS;
 }
 
+// Serializes client profile without signature
 tstatic otrng_err client_profile_body_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
-  size_t s =
-      4 + 4 + ED448_PUBKEY_BYTES + (strlen(profile->versions) + 1) + 4 + 8;
+
+  size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
+
+#define DH1536_MOD_LEN_BYTES 192
+  size_t s = 4                        /* num fields */
+             + 2 + 4                  /* instance tag */
+             + 2 + ED448_PUBKEY_BYTES /* Ed448 pub key */
+             + 0                      /* TODO: Forger Public key */
+             + 2 + versions_len       /* Versions */
+             + 2 + 8                  /* Expiration */
+             + 2 + (2 + 4 * (4 + DH1536_MOD_LEN_BYTES)) /* DSA public key */
+             + 2 + (2 * 20) /* Transitional signature */;
 
   uint8_t *buff = malloc(s);
   if (!buff) {
     return OTRNG_ERROR;
   }
 
-  size_t written = client_profile_body_serialize(buff, profile);
+  size_t written = 0;
+
+  if (!client_profile_body_serialize(buff, s, &written, profile)) {
+    free(buff);
+    return OTRNG_ERROR;
+  }
 
   *dst = buff;
   if (nbytes) {
@@ -138,33 +188,108 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
     return OTRNG_ERROR;
   }
 
-  uint8_t *buff = NULL;
-  size_t body_len = 0;
-  uint8_t *body = NULL;
-  if (!client_profile_body_asprintf(&body, &body_len, profile)) {
-    return OTRNG_ERROR;
-  }
+  size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
+  size_t fields_len =
+      2 + 4                                        /* instance tag */
+      + 2 + ED448_PUBKEY_BYTES /* Ed448 pub key */ /* TODO: Forger Public key */
+      + 2 + versions_len                           /* Versions */
+      + 2 + 8                                      /* Expiration */
+      + 2 + (2 + 4 * (4 + DH1536_MOD_LEN_BYTES))   /* DSA public key */
+      + 2 + (2 * 20) /* Transitional signature */;
 
-  size_t s = body_len + 4 + sizeof(eddsa_signature_p) +
-             profile->transitional_signature->len;
-  buff = malloc(s);
+  size_t s = fields_len + ED448_SIGNATURE_BYTES;
+
+  uint8_t *buff = malloc(s);
   if (!buff) {
-    free(body);
     return OTRNG_ERROR;
   }
 
-  uint8_t *cursor = buff;
-  cursor += otrng_serialize_bytes_array(cursor, body, body_len);
-  cursor += otrng_serialize_bytes_array(cursor, profile->signature,
-                                        sizeof(eddsa_signature_p));
-  cursor += otrng_serialize_mpi(cursor, profile->transitional_signature);
+  size_t written = 0;
+  if (!client_profile_body_serialize(buff, s, &written, profile)) {
+    free(buff);
+    return OTRNG_ERROR;
+  }
+
+  if (s - written < sizeof(eddsa_signature_p)) {
+    free(buff);
+    return OTRNG_ERROR;
+  }
+
+  written += otrng_serialize_bytes_array(buff + written, profile->signature,
+                                         sizeof(eddsa_signature_p));
 
   *dst = buff;
   if (nbytes) {
-    *nbytes = (cursor - buff);
+    *nbytes = written;
   }
 
-  free(body);
+  return OTRNG_SUCCESS;
+}
+
+tstatic otrng_err deserialize_field(client_profile_s *target,
+                                    const uint8_t *buffer, size_t buflen,
+                                    size_t *nread) {
+  size_t read = 0;
+  size_t w = 0;
+
+  uint16_t field_type = 0;
+
+  if (!otrng_deserialize_uint16(&field_type, buffer + w, buflen - w, &read)) {
+    return OTRNG_ERROR;
+  }
+
+  w += read;
+
+  switch (field_type) {
+  case 0x01: // Owner Instance Tag
+    if (!otrng_deserialize_uint32(&target->sender_instance_tag, buffer + w,
+                                  buflen - w, &read)) {
+      return OTRNG_ERROR;
+    }
+    break;
+  case 0x02: // Ed448 public key
+    if (!otrng_deserialize_otrng_public_key(target->long_term_pub_key,
+                                            buffer + w, buflen - w, &read)) {
+      return OTRNG_ERROR;
+    }
+    break;
+  case 0x03: // Forger public key
+    // TODO add field and deserialize
+    break;
+  case 0x04: // Versions
+    if (!otrng_deserialize_data((uint8_t **)&target->versions, buffer + w,
+                                buflen - w, &read)) {
+      return OTRNG_ERROR;
+    }
+    break;
+  case 0x05: // Expiration
+    // TODO: Double check if the format is the same
+    if (!otrng_deserialize_uint64(&target->expires, buffer + w, buflen - w,
+                                  &read)) {
+      return OTRNG_ERROR;
+    }
+    break;
+  case 0x06: // DSA key
+    // TODO add field
+    break;
+  case 0x07: //???
+    // ???
+    break;
+  case 0x08: // Transitional Signature
+    // TODO Double check format: Is CLIENT-SIG a MPI?
+    if (!otrng_mpi_deserialize(target->transitional_signature, buffer + w,
+                               buflen - w, &read)) {
+      return OTRNG_ERROR;
+    }
+    break;
+  }
+
+  w += read;
+
+  if (nread) {
+    *nread = w;
+  }
+
   return OTRNG_SUCCESS;
 }
 
@@ -173,78 +298,47 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
                                                     size_t buflen,
                                                     size_t *nread) {
   size_t read = 0;
-  int walked = 0;
+  int w = 0;
 
   if (!target) {
     return OTRNG_ERROR;
   }
 
-  otrng_err result = OTRNG_ERROR;
-  do {
-    if (!otrng_deserialize_uint32(&target->id, buffer + walked, buflen - walked,
-                                  &read)) {
-      continue;
-    }
-
-    walked += read;
-
-    if (!otrng_deserialize_uint32(&target->sender_instance_tag, buffer + walked,
-                                  buflen - walked, &read)) {
-      continue;
-    }
-
-    walked += read;
-
-    if (!otrng_deserialize_otrng_public_key(target->long_term_pub_key,
-                                            buffer + walked, buflen - walked,
-                                            &read)) {
-      continue;
-    }
-
-    walked += read;
-
-    if (!otrng_deserialize_data((uint8_t **)&target->versions, buffer + walked,
-                                buflen - walked, &read)) {
-      continue;
-    }
-
-    walked += read;
-
-    if (!otrng_deserialize_uint64(&target->expires, buffer + walked,
-                                  buflen - walked, &read)) {
-      continue;
-    }
-
-    walked += read;
-
-    // TODO: @client_profile check the len
-    if (buflen - walked < sizeof(eddsa_signature_p)) {
-      continue;
-    }
-
-    target->signature = malloc(sizeof(eddsa_signature_p));
-    if (!target->signature) {
-      continue;
-    }
-    memcpy(target->signature, buffer + walked, sizeof(eddsa_signature_p));
-
-    walked += sizeof(eddsa_signature_p);
-
-    if (!otrng_mpi_deserialize(target->transitional_signature, buffer + walked,
-                               buflen - walked, &read)) {
-      continue;
-    }
-
-    walked += read;
-
-    result = OTRNG_SUCCESS;
-  } while (0);
-
-  if (nread) {
-    *nread = walked;
+  uint32_t num_fields = 0;
+  if (!otrng_deserialize_uint32(&num_fields, buffer + w, buflen - w, &read)) {
+    return OTRNG_ERROR;
   }
 
-  return result;
+  w += read;
+
+  for (; num_fields; num_fields--) {
+    if (!deserialize_field(target, buffer + w, buflen - w, &read)) {
+      return OTRNG_ERROR;
+    }
+
+    w += read;
+  }
+
+  // TODO: Extract function deserialize_transitional_signature
+  // TODO: Double check format: is CLIENT-EDDSA-SIG a eddsa_signature_p?
+  if (buflen - w < sizeof(eddsa_signature_p)) {
+    return OTRNG_ERROR;
+  }
+
+  target->signature = malloc(sizeof(eddsa_signature_p));
+  if (!target->signature) {
+    return OTRNG_ERROR;
+  }
+
+  memcpy(target->signature, buffer + w, sizeof(eddsa_signature_p));
+
+  w += sizeof(eddsa_signature_p);
+
+  if (nread) {
+    *nread = w;
+  }
+
+  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_err client_profile_sign(client_profile_s *profile,
@@ -281,7 +375,7 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
     return otrng_false;
   }
 
-  uint8_t pubkey[ED448_POINT_BYTES];
+  uint8_t pubkey[ED448_POINT_BYTES] = {0};
   otrng_serialize_ec_point(pubkey, profile->long_term_pub_key);
 
   otrng_bool valid = otrng_ec_verify(profile->signature, pubkey, body, bodylen);

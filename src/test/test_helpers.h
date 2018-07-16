@@ -105,7 +105,6 @@
   do {                                                                         \
     const client_profile_s *_p1 = (p1);                                        \
     const client_profile_s *_p2 = (p2);                                        \
-    g_assert_cmpuint(_p1->id, ==, _p2->id);                                    \
     g_assert_cmpuint(_p1->sender_instance_tag, ==, _p2->sender_instance_tag);  \
     otrng_assert_point_equals(_p1->long_term_pub_key, _p2->long_term_pub_key); \
     otrng_assert_cmpmem(_p1->versions, _p2->versions,                          \
