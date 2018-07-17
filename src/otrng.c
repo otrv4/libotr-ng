@@ -1439,11 +1439,6 @@ tstatic otrng_err receive_identity_message(string_p *dst, const uint8_t *buff,
     return result;
   }
 
-  // if (m->receiver_instance_tag != 0) {
-  //  otrng_dake_identity_message_destroy(m);
-  //  return OTRNG_SUCCESS;
-  //}
-
   if (!received_sender_instance_tag(m->sender_instance_tag, otr)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     otrng_dake_identity_message_destroy(m);
