@@ -162,12 +162,6 @@ tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   return otrng_client_state_get_or_create_prekey_profile(state);
 }
 
-static inline const otrng_prekey_profile_s *
-get_my_prekey_profile_by_id(uint32_t id, otrng_s *otr) {
-  otrng_client_state_s *state = otr->conversation->client;
-  return otrng_client_state_get_prekey_profile_by_id(id, state);
-}
-
 INTERNAL otrng_conversation_state_s *
 otrng_conversation_new(otrng_client_state_s *state) {
   otrng_conversation_state_s *conversation =
@@ -822,7 +816,6 @@ tstatic otrng_err build_non_interactive_auth_message(
   otr->their_prekeys_id = 0;
 
   auth->long_term_key_id = 0;
-  auth->prekey_profile_id = otr->their_prekey_profile->id;
 
   /* tmp_k = KDF_1(usage_tmp_key || K_ecdh || ECDH(x, their_shared_prekey) ||
      ECDH(x, Pkb) || brace_key)
@@ -1238,7 +1231,6 @@ tstatic otrng_err non_interactive_auth_message_received(
   otrng_client_state_s *state = otr->conversation->client;
 
   const otrng_stored_prekeys_s *stored_prekey = NULL;
-  const otrng_prekey_profile_s *prekey_profile = NULL;
 
   if (!received_sender_instance_tag(auth->sender_instance_tag, otr)) {
     otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
@@ -1256,13 +1248,8 @@ tstatic otrng_err non_interactive_auth_message_received(
   }
 
   stored_prekey = get_my_prekeys_by_id(auth->prekey_message_id, state);
-  prekey_profile = get_my_prekey_profile_by_id(auth->prekey_profile_id, otr);
 
   if (!stored_prekey) {
-    return OTRNG_ERROR;
-  }
-
-  if (!prekey_profile) {
     return OTRNG_ERROR;
   }
 
@@ -1281,12 +1268,6 @@ tstatic otrng_err non_interactive_auth_message_received(
   // Shared prekey is the same as used to generate my current prekey profile.
   // Should be always true, though.
   if (!otrng_ec_point_eq(our_shared_prekey(otr)->pub,
-                         get_my_prekey_profile(otr)->shared_prekey)) {
-    return OTRNG_ERROR;
-  }
-
-  /* The prekey profile in question must also have the same key. */
-  if (!otrng_ec_point_eq(prekey_profile->shared_prekey,
                          get_my_prekey_profile(otr)->shared_prekey)) {
     return OTRNG_ERROR;
   }

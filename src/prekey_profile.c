@@ -40,7 +40,6 @@ INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *dst) {
 
 INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
                                         const otrng_prekey_profile_s *src) {
-  dst->id = src->id;
   dst->instance_tag = src->instance_tag;
   dst->expires = src->expires;
 
@@ -51,12 +50,6 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
 tstatic size_t otrng_prekey_profile_body_serialize(
     uint8_t *dst, size_t dst_len, const otrng_prekey_profile_s *p) {
   size_t w = 0;
-
-  if (4 > dst_len - w) {
-    return 0;
-  }
-
-  w += otrng_serialize_uint32(dst + w, p->id);
 
   if (4 > dst_len - w) {
     return 0;
@@ -82,7 +75,7 @@ tstatic size_t otrng_prekey_profile_body_serialize(
 tstatic otrng_err otrng_prekey_profile_body_asprint(
     uint8_t **dst, size_t *dstlen, const otrng_prekey_profile_s *p) {
 
-#define PREKEY_PROFILE_BODY_BYTES 4 + 4 + 8 + ED448_PUBKEY_BYTES
+#define PREKEY_PROFILE_BODY_BYTES 4 + 8 + ED448_PUBKEY_BYTES
 
   if (!dst) {
     return OTRNG_ERROR;
@@ -122,7 +115,7 @@ INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
 }
 
 INTERNAL otrng_prekey_profile_s *
-otrng_prekey_profile_build(uint32_t id, uint32_t instance_tag,
+otrng_prekey_profile_build(uint32_t instance_tag,
                            const otrng_keypair_s *longterm_pair,
                            const otrng_shared_prekey_pair_s *prekey_pair) {
   otrng_prekey_profile_s *p = malloc(sizeof(otrng_prekey_profile_s));
@@ -130,7 +123,6 @@ otrng_prekey_profile_build(uint32_t id, uint32_t instance_tag,
     return NULL;
   }
 
-  p->id = id;
   p->instance_tag = instance_tag;
 
 #define PREKEY_PROFILE_EXPIRATION_SECONDS 1 * 30 * 24 * 60 * 60; /* 1 month */

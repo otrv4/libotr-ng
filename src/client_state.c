@@ -484,22 +484,9 @@ otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
   /* @secret: the shared prekey should be deleted once the prekey profile
    * expires */
   state->prekey_profile = otrng_prekey_profile_build(
-      0x102, our_instance_tag, state->keypair, state->shared_prekey_pair);
+      our_instance_tag, state->keypair, state->shared_prekey_pair);
 
   return state->prekey_profile;
-}
-
-INTERNAL const otrng_prekey_profile_s *
-otrng_client_state_get_prekey_profile_by_id(uint32_t id,
-                                            otrng_client_state_s *state) {
-  const otrng_prekey_profile_s *ret = NULL;
-  ret = otrng_client_state_get_prekey_profile(state);
-
-  if (ret && ret->id == id) {
-    return ret;
-  }
-
-  return NULL;
 }
 
 tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,

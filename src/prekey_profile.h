@@ -26,7 +26,6 @@
 #include <stdint.h>
 
 typedef struct prekey_profile_s {
-  uint32_t id;
   uint32_t instance_tag;
   uint64_t expires;
   ec_point_p shared_prekey; /* Key "D" */
@@ -41,7 +40,7 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
                                         const otrng_prekey_profile_s *src);
 
 INTERNAL otrng_prekey_profile_s *
-otrng_prekey_profile_build(uint32_t id, uint32_t instance_tag,
+otrng_prekey_profile_build(uint32_t instance_tag,
                            const otrng_keypair_s *longterm_pair,
                            const otrng_shared_prekey_pair_s *prekey_pair);
 

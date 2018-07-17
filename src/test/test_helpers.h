@@ -94,7 +94,6 @@
   do {                                                                         \
     const otrng_prekey_profile_s *_p1 = (p1);                                  \
     const otrng_prekey_profile_s *_p2 = (p2);                                  \
-    g_assert_cmpuint(_p1->id, ==, _p2->id);                                    \
     g_assert_cmpuint(_p1->instance_tag, ==, _p2->instance_tag);                \
     otrng_assert_point_equals(_p1->shared_prekey, _p2->shared_prekey);         \
     otrng_assert_cmpmem(_p1->signature, _p2->signature,                        \
