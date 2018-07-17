@@ -609,10 +609,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_asprintf(
 
   cursor +=
       otrng_serialize_uint32(cursor, non_interactive_auth->prekey_message_id);
-  cursor +=
-      otrng_serialize_uint32(cursor, non_interactive_auth->long_term_key_id);
-  cursor +=
-      otrng_serialize_uint32(cursor, non_interactive_auth->prekey_profile_id);
 
   cursor += otrng_serialize_bytes_array(cursor, non_interactive_auth->auth_mac,
                                         sizeof(non_interactive_auth->auth_mac));
@@ -710,20 +706,6 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
   len -= read;
 
   if (!otrng_deserialize_uint32(&dst->prekey_message_id, cursor, len, &read)) {
-    return OTRNG_ERROR;
-  }
-
-  cursor += read;
-  len -= read;
-
-  if (!otrng_deserialize_uint32(&dst->long_term_key_id, cursor, len, &read)) {
-    return OTRNG_ERROR;
-  }
-
-  cursor += read;
-  len -= read;
-
-  if (!otrng_deserialize_uint32(&dst->prekey_profile_id, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 

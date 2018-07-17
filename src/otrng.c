@@ -804,8 +804,6 @@ non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
   auth->A = otrng_dh_mpi_copy(our_dh(otr));
 
   auth->prekey_message_id = 0;
-  auth->long_term_key_id = 0;
-  auth->prekey_profile_id = 0;
 }
 
 tstatic otrng_err build_non_interactive_auth_message(
@@ -814,8 +812,6 @@ tstatic otrng_err build_non_interactive_auth_message(
 
   auth->prekey_message_id = otr->their_prekeys_id;
   otr->their_prekeys_id = 0;
-
-  auth->long_term_key_id = 0;
 
   /* tmp_k = KDF_1(usage_tmp_key || K_ecdh || ECDH(x, their_shared_prekey) ||
      ECDH(x, Pkb) || brace_key)
