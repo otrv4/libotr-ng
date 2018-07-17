@@ -201,34 +201,6 @@ void test_otrng_receives_identity_message_invalid_on_start(
   otrng_response_free(response);
 }
 
-void test_otrng_receives_identity_message_validates_instance_tag(
-    otrng_fixture_s *otrng_fixture, gconstpointer data) {
-
-  const char *message = "And some random invitation text.";
-  otrng_notif notif = OTRNG_NOTIF_NONE;
-
-  // builds a query message
-  char *query_message = NULL;
-  otrng_build_query_message(&query_message, message, otrng_fixture->otr);
-
-  // build an identity message
-  otrng_response_s *id_msg = otrng_response_new();
-  otrng_fixture->otr->their_instance_tag = 1;
-  otrng_receive_message(id_msg, notif, query_message, otrng_fixture->otr);
-  free(query_message);
-
-  // TODO: this can happen
-  // receive the identity message with non-zero their instance tag
-  otrng_response_s *auth_msg = otrng_response_new();
-  char *to_send = otrng_strdup(id_msg->to_send);
-  otrng_receive_message(auth_msg, notif, to_send, otrng_fixture->otr);
-  otrng_assert(auth_msg->to_send);
-
-  free(to_send);
-  otrng_response_free(id_msg);
-  otrng_response_free(auth_msg);
-}
-
 void test_otrng_destroy() {
   otrng_client_state_s *state = otrng_client_state_new(NULL);
 

@@ -243,10 +243,6 @@ int main(int argc, char **argv) {
   g_test_add("/otrng/receives_query_message_v3", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_receives_query_message_v3,
              otrng_fixture_teardown);
-  g_test_add("/otrng/receives_invalid_instance_tag_on_identity_message",
-             otrng_fixture_s, NULL, otrng_fixture_set_up,
-             test_otrng_receives_identity_message_validates_instance_tag,
-             otrng_fixture_teardown);
   g_test_add_func("/otrng/destroy", test_otrng_destroy);
 
   g_test_add_func("/otrng/callbacks/shared_session_state",
