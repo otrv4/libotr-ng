@@ -383,8 +383,7 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
 }
 
 INTERNAL client_profile_s *
-otrng_client_profile_build(uint32_t id, uint32_t instance_tag,
-                           const string_p versions,
+otrng_client_profile_build(uint32_t instance_tag, const string_p versions,
                            const otrng_keypair_s *keypair) {
   client_profile_s *profile = client_profile_new(versions);
   if (!profile) {

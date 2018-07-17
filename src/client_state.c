@@ -463,7 +463,7 @@ otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state) {
   /* @secret_information: the long-term key pair lives for as long the client
      decides */
   state->client_profile =
-      otrng_client_profile_build(0x101, our_instance_tag, "34", state->keypair);
+      otrng_client_profile_build(our_instance_tag, "34", state->keypair);
 
   return state->client_profile;
 }
