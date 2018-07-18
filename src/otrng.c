@@ -1533,14 +1533,6 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
 
 tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
                                  size_t buff_len, otrng_s *otr) {
-  // TODO: I am not sure if we considered the implications of this state
-  // It means the other side received 2 identity messages from us.
-  // Can it happen?
-  // We just keept the behavior to not break existing tests.
-  if (otr->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE) {
-    return OTRNG_SUCCESS; /* ignore the message */
-  }
-
   if (otr->state != OTRNG_STATE_WAITING_AUTH_R) {
     return OTRNG_SUCCESS; /* ignore the message */
   }
@@ -1630,13 +1622,6 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
 
 tstatic otrng_err receive_auth_i(char **dst, const uint8_t *buff,
                                  size_t buff_len, otrng_s *otr) {
-  // TODO: I am not sure if we considered the implications of this state
-  // It means we changed roles (initiator <-> responder) in the middle of
-  // a DAKE. Can it happen? Maybe if both send query messages?
-  if (otr->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE) {
-    return OTRNG_ERROR;
-  }
-
   if (otr->state != OTRNG_STATE_WAITING_AUTH_I) {
     return OTRNG_SUCCESS; /* Ignore the message */
   }
