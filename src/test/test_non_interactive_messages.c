@@ -92,6 +92,7 @@ void test_otrng_dake_prekey_message_deserializes() {
   dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
   otrng_ec_point_copy(prekey_message->Y, ecdh->pub);
   prekey_message->B = otrng_dh_mpi_copy(dh->pub);
+  prekey_message->id = 2;
 
   size_t serialized_len = 0;
   uint8_t *serialized = NULL;

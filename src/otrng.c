@@ -929,10 +929,6 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
     return NULL;
   }
 
-  // TODO: @client @non_interactive should this ID be random? It should probably
-  // be unique for us, so we need to store this in client state (?)
-  ensemble->message->id = 0x301;
-
   otrng_client_state_s *state = otr->conversation->client;
   store_my_prekey_message(ensemble->message->id, our_instance_tag(otr), ecdh,
                           dh, state);
