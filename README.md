@@ -1,6 +1,7 @@
 # OTR Next Generation library
 
 [![Build Status](https://travis-ci.org/otrv4/libotr-ng.svg?branch=master)](https://travis-ci.org/otrv4/libotr-ng)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fotrv4%2Flibotr-ng.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fotrv4%2Flibotr-ng?ref=badge_shield)
 
 ## Build
 Before you try to build libotr-ng, verify you have installed:
@@ -74,3 +75,7 @@ Install:
 * clang-format-3.5
 
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fotrv4%2Flibotr-ng.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fotrv4%2Flibotr-ng?ref=badge_large)
