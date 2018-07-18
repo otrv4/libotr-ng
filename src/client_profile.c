@@ -439,8 +439,6 @@ INTERNAL otrng_bool otrng_client_profile_valid(
 
   // TODO: @client_profile If the Transitional Signature is present, verify its
   // validity using the OTRv3 DSA key.
-  // TODO: @client_profile @spec How are we going to have access to the OTRv3
-  // long-term key in order to validate this signature?
 
   /* Verify their profile is valid (and not expired). */
   return otrng_client_profile_verify_signature(profile);

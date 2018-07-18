@@ -973,7 +973,6 @@ set_their_prekey_profile(const otrng_prekey_profile_s *profile, otrng_s *otr) {
 
   otrng_prekey_profile_copy(otr->their_prekey_profile, profile);
 
-  // TODO: @refactoring Extract otrng_key_manager_set_their_shared_prekey()
   otrng_ec_point_copy(otr->keys->their_shared_prekey,
                       otr->their_prekey_profile->shared_prekey);
 
@@ -1019,7 +1018,7 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
     return OTRNG_ERROR;
   }
 
-  otr->their_prekeys_id = m->id; // Stores to send in the non-interactive-auth
+  otr->their_prekeys_id = m->id; /* Store for the non-interactive-auth */
   otrng_key_manager_set_their_ecdh(m->Y, otr->keys);
   otrng_key_manager_set_their_dh(m->B, otr->keys);
 
@@ -1048,7 +1047,6 @@ tstatic otrng_err receive_prekey_ensemble(string_p *dst,
   // TODO: @non_interactive Decide whether to send a message using this Prekey
   // Ensemble if the long-term key within the Client Profile is trusted or not.
   // Maybe use a callback for this.
-
   if (!set_their_client_profile(ensemble->client_profile, otr)) {
     return OTRNG_ERROR;
   }
@@ -1058,7 +1056,7 @@ tstatic otrng_err receive_prekey_ensemble(string_p *dst,
   }
 
   otrng_notif notif = OTRNG_NOTIF_NONE;
-  // Set their ephemeral keys, instance tag, and their_prekeys_id
+  /* Set their ephemeral keys, instance tag, and their_prekeys_id */
   if (!prekey_message_received(ensemble->message, notif, otr)) {
     if (notif == OTRNG_NOTIF_MALFORMED) {
       otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
@@ -1082,6 +1080,7 @@ API otrng_err otrng_send_offline_message(string_p *dst,
     return OTRNG_ERROR; // should unset the stored things from ensemble
   }
 
+  // TODO: send the data msg as well
   return reply_with_non_interactive_auth_msg(dst, otr);
 }
 

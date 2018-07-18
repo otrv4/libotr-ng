@@ -54,11 +54,12 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
     return OTRNG_ERROR;
   }
 
+  // TODO: @discussion
   // At the moment, prekey_ensemble_s->message can only have VERSION = 4
   // (we don't know how to deserialize prekey messages form another
   // version). We only need to check if the profile has 4 in its "versions"
   // fields to satisfy:
-  //"Check that the OTR version of the prekey message matches one of the
+  // "Check that the OTR version of the prekey message matches one of the
   // versions signed in the Client Profile contained in the Prekey Ensemble."
   char *versions = dst->client_profile->versions;
   otrng_bool found = otrng_false;

@@ -420,7 +420,6 @@ INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
   return prekey_message;
 }
 
-// TODO: @discussion we have to persist this prekey message localy
 INTERNAL dake_prekey_message_s *
 otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point_p ecdh,
                                 const dh_public_key_p dh) {
