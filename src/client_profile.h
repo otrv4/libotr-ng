@@ -88,6 +88,12 @@ otrng_client_profile_build(uint32_t instance_tag, const string_p versions,
 INTERNAL otrng_bool otrng_client_profile_valid(
     const client_profile_s *profile, const uint32_t sender_instance_tag);
 
+INTERNAL otrng_err otrng_client_profile_transitional_sign(
+    client_profile_s *profile, OtrlPrivKey *privkey);
+
+INTERNAL otrng_err otrng_client_profile_verify_transitional_signature(
+    const client_profile_s *profile);
+
 #ifdef OTRNG_USER_PROFILE_PRIVATE
 
 tstatic client_profile_s *client_profile_new(const string_p versions);

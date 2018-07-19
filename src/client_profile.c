@@ -115,10 +115,10 @@ INTERNAL void otrng_client_profile_free(client_profile_s *profile) {
   free(profile);
 }
 
-tstatic otrng_err
-client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
-                              const client_profile_s *profile) {
-  size_t w = 4;
+tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
+    uint8_t *dst, size_t dst_len, size_t *nbytes,
+    const client_profile_s *profile) {
+  size_t w = 0;
   uint32_t num_fields = 0;
 
   // TODO: Check for buffer overflows
@@ -153,6 +153,23 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
                                      profile->dsa_key_len);
     num_fields++;
   }
+
+  if (nbytes) {
+    *nbytes = w;
+  }
+
+  return num_fields;
+}
+
+tstatic otrng_err
+client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
+                              const client_profile_s *profile) {
+  size_t w = 0;
+  uint32_t num_fields = 0;
+
+  num_fields = client_profile_body_serialize_pre_transitional_signature(
+      dst + 4, dst_len - 4, &w, profile);
+  w += 4;
 
   // Transitional Signature
   if (profile->transitional_signature) {
@@ -499,4 +516,137 @@ INTERNAL otrng_bool otrng_client_profile_valid(
 
   /* Verify their profile is valid (and not expired). */
   return otrng_client_profile_verify_signature(profile);
+}
+
+INTERNAL otrng_err otrng_client_profile_transitional_sign(
+    client_profile_s *profile, OtrlPrivKey *privkey) {
+
+  size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
+  size_t s = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
+
+  uint8_t *data = malloc(s);
+  if (!data) {
+    return OTRNG_ERROR;
+  }
+
+  size_t datalen = 0;
+  client_profile_body_serialize_pre_transitional_signature(data, s, &datalen,
+                                                           profile);
+
+  size_t written = 0;
+  otrng_err ret = otrl_privkey_sign(&profile->transitional_signature, &written,
+                                    privkey, data, datalen);
+  free(data);
+
+  if (!ret) {
+    return OTRNG_ERROR;
+  }
+
+  if (written != 40) {
+    free(profile->transitional_signature);
+    profile->transitional_signature = NULL;
+    return OTRNG_ERROR;
+  }
+
+  // The public key is serialized as PUBKEY in pubkey_data;
+  profile->dsa_key_len = privkey->pubkey_datalen;
+  profile->dsa_key = malloc(profile->dsa_key_len);
+  if (!profile->dsa_key) {
+    free(profile->transitional_signature);
+    profile->transitional_signature = NULL;
+    return OTRNG_ERROR;
+  }
+
+  memcpy(profile->dsa_key, privkey->pubkey_data, profile->dsa_key_len);
+
+  return OTRNG_SUCCESS;
+}
+
+static otrng_err generate_dsa_key_sexp(gcry_sexp_t *pubs, const uint8_t *buffer,
+                                       size_t buflen) {
+  if (!buffer || !buflen) {
+    return OTRNG_ERROR;
+  }
+
+  dh_mpi_p p = NULL, q = NULL, g = NULL, y = NULL;
+  dh_mpi_p *mpis[4] = {&p, &q, &g, &y};
+
+  size_t read = 0;
+  size_t w = 0;
+
+  uint16_t key_type = 0xFF;
+  if (!otrng_deserialize_uint16(&key_type, buffer + w, buflen - w, &read)) {
+    return OTRNG_ERROR;
+  }
+
+  w += read;
+
+  if (key_type != OTRL_PUBKEY_TYPE_DSA) {
+    // Not a DSA public key, so we dont know what to do from here
+    return OTRNG_ERROR;
+  }
+
+  for (int i = 0; i < 4 && w < buflen; i++) {
+    if (!otrng_deserialize_dh_mpi_otr(mpis[i], buffer + w, buflen - w, &read)) {
+      otrng_dh_mpi_release(p);
+      otrng_dh_mpi_release(q);
+      otrng_dh_mpi_release(g);
+      otrng_dh_mpi_release(y);
+
+      return OTRNG_ERROR;
+    }
+
+    w += read;
+  }
+
+#define DSA_PUBKEY_SEXP "(public-key (dsa (p %m)(q %m)(g %m)(y %m)))"
+  gcry_error_t ret = gcry_sexp_build(pubs, NULL, DSA_PUBKEY_SEXP, p, q, g, y);
+
+  otrng_dh_mpi_release(p);
+  otrng_dh_mpi_release(q);
+  otrng_dh_mpi_release(g);
+  otrng_dh_mpi_release(y);
+
+  if (ret) {
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_err otrng_client_profile_verify_transitional_signature(
+    const client_profile_s *profile) {
+
+  if (!profile->transitional_signature || !profile->dsa_key ||
+      !profile->dsa_key_len) {
+    return OTRNG_ERROR;
+  }
+
+  gcry_sexp_t pubs = NULL;
+  if (!generate_dsa_key_sexp(&pubs, profile->dsa_key, profile->dsa_key_len)) {
+    return OTRNG_ERROR;
+  }
+
+  size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
+  size_t s = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
+
+  uint8_t *data = malloc(s);
+  if (!data) {
+    return OTRNG_ERROR;
+  }
+
+  size_t datalen = 0;
+  client_profile_body_serialize_pre_transitional_signature(data, s, &datalen,
+                                                           profile);
+
+  gcry_error_t err =
+      otrl_privkey_verify(profile->transitional_signature, OTRv3_DSA_SIG_BYTES,
+                          OTRL_PUBKEY_TYPE_DSA, pubs, data, datalen);
+
+  free(data);
+  if (err) {
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
 }
