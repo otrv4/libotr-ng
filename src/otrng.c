@@ -1077,7 +1077,7 @@ API otrng_err otrng_send_offline_message(string_p *dst,
   otr->running_version = 4;
 
   if (!receive_prekey_ensemble(dst, ensemble, otr)) {
-    return OTRNG_ERROR; // should unset the stored things from ensemble
+    return OTRNG_ERROR; // TODO: should unset the stored things from ensemble
   }
 
   // TODO: send the data msg as well
@@ -1321,7 +1321,6 @@ tstatic otrng_err non_interactive_auth_message_received(
 
 tstatic otrng_err receive_non_interactive_auth_message(
     otrng_response_s *response, const uint8_t *src, size_t len, otrng_s *otr) {
-
   if (otr->state == OTRNG_STATE_FINISHED) {
     return OTRNG_SUCCESS; /* ignore the message */
   }
@@ -1335,6 +1334,8 @@ tstatic otrng_err receive_non_interactive_auth_message(
 
   otrng_err ret = non_interactive_auth_message_received(response, auth, otr);
   otrng_dake_non_interactive_auth_message_destroy(auth);
+
+  otr->state = OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE;
 
   return ret;
 }
@@ -1592,6 +1593,7 @@ tstatic otrng_err receive_auth_r(string_p *dst, const uint8_t *buff,
   // TODO: Refactor
   otrng_err ret = double_ratcheting_init(otr, 'u');
   otr->state = OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE;
+
   return ret;
 }
 

@@ -297,7 +297,7 @@ void test_otrng_send_offline_message() {
   otrng_response_free_all(resp);
 
   g_assert_cmpint(bob->their_prekeys_id, ==, 0);
-  otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+  otrng_assert(bob->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
   otrng_assert(bob->running_version == 4);
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
