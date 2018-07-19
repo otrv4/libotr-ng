@@ -205,6 +205,7 @@ tstatic otrng_err deserialize_field(client_profile_s *target,
 
   w += read;
 
+  read = 0;
   switch (field_type) {
   case 0x01: // Owner Instance Tag
     if (!otrng_deserialize_uint32(&target->sender_instance_tag, buffer + w,
