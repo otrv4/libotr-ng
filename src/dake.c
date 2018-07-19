@@ -183,12 +183,7 @@ INTERNAL otrng_err otrng_dake_identity_message_deserialize(
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  otrng_mpi_p b_mpi; // no need to free, because nothing is copied now
-  if (!otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
-    return OTRNG_ERROR;
-  }
-
-  return otrng_dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
+  return otrng_deserialize_dh_mpi_otr(&dst->B, cursor, len, &read);
 }
 
 INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
@@ -311,15 +306,7 @@ INTERNAL otrng_err otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  otrng_mpi_p tmp_mpi; // no need to free, because nothing is copied now
-  if (!otrng_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
-    return OTRNG_ERROR;
-  }
-
-  cursor += read;
-  len -= read;
-
-  if (!otrng_dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read)) {
+  if (!otrng_deserialize_dh_mpi_otr(&dst->A, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
@@ -549,12 +536,7 @@ INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  otrng_mpi_p b_mpi; // no need to free, because nothing is copied now
-  if (!otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
-    return OTRNG_ERROR;
-  }
-
-  return otrng_dh_mpi_deserialize(&dst->B, b_mpi->data, b_mpi->len, &read);
+  return otrng_deserialize_dh_mpi_otr(&dst->B, cursor, len, &read);
 }
 
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
@@ -688,15 +670,7 @@ INTERNAL otrng_err otrng_dake_non_interactive_auth_message_deserialize(
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  otrng_mpi_p tmp_mpi; // no need to free, because nothing is copied now
-  if (!otrng_mpi_deserialize_no_copy(tmp_mpi, cursor, len, &read)) {
-    return OTRNG_ERROR;
-  }
-
-  cursor += read;
-  len -= read;
-
-  if (!otrng_dh_mpi_deserialize(&dst->A, tmp_mpi->data, tmp_mpi->len, &read)) {
+  if (!otrng_deserialize_dh_mpi_otr(&dst->A, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 

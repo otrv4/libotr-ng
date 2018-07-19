@@ -201,19 +201,11 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  otrng_mpi_p b_mpi; // no need to free, because nothing is copied now
-  if (!otrng_mpi_deserialize_no_copy(b_mpi, cursor, len, &read)) {
-    return OTRNG_ERROR;
-  }
-
-  cursor += read;
-  len -= read;
-
   // TODO: @refactoring @sanitizer If the DH key is absent the MPI will have a
   // zero length, per spec. We need to test what otrng_dh_mpi_deserialize does
   // when b_mpi->data is NULL.
 
-  if (!otrng_dh_mpi_deserialize(&dst->dh, b_mpi->data, b_mpi->len, &read)) {
+  if (!otrng_deserialize_dh_mpi_otr(&dst->dh, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
