@@ -54,6 +54,8 @@ typedef struct client_profile_s {
   otrng_public_key_p long_term_pub_key;
   string_p versions;
   uint64_t expires;
+  uint8_t *dsa_key;
+  size_t dsa_key_len;
   uint8_t *transitional_signature;
 
   eddsa_signature_p signature;

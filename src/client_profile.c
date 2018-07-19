@@ -36,6 +36,8 @@ static client_profile_s *client_profile_init(client_profile_s *profile,
   otrng_ec_bzero(profile->long_term_pub_key, ED448_POINT_BYTES);
   profile->expires = 0;
   profile->versions = versions ? otrng_strdup(versions) : NULL;
+  profile->dsa_key = NULL;
+  profile->dsa_key_len = 0;
   profile->transitional_signature = NULL;
 
   return profile;
@@ -79,6 +81,16 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
     memcpy(dst->transitional_signature, src->transitional_signature,
            OTRv3_DSA_SIG_BYTES);
   }
+
+  if (src->dsa_key && src->dsa_key_len) {
+    dst->dsa_key_len = src->dsa_key_len;
+    dst->dsa_key = malloc(dst->dsa_key_len);
+    if (!src->dsa_key_len) {
+      return; // TODO: ERROR
+    }
+
+    memcpy(dst->dsa_key, src->dsa_key, dst->dsa_key_len);
+  }
 }
 
 INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
@@ -93,6 +105,8 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
   profile->versions = NULL;
   free(profile->transitional_signature);
   profile->transitional_signature = NULL;
+  free(profile->dsa_key);
+  profile->dsa_key = NULL;
 }
 
 INTERNAL void otrng_client_profile_free(client_profile_s *profile) {
