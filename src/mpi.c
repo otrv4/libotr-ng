@@ -29,7 +29,7 @@ INTERNAL void otrng_mpi_init(otrng_mpi_p mpi) {
   mpi->data = NULL;
 }
 
-INTERNAL void otrng_mpi_free(otrng_mpi_p mpi) {
+INTERNAL void otrng_mpi_destroy(otrng_mpi_p mpi) {
   free(mpi->data);
   mpi->data = NULL;
 }

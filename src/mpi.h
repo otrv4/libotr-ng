@@ -34,7 +34,7 @@ typedef struct otrng_mpi_s {
 
 INTERNAL void otrng_mpi_init(otrng_mpi_p mpi);
 
-INTERNAL void otrng_mpi_free(otrng_mpi_p mpi);
+INTERNAL void otrng_mpi_destroy(otrng_mpi_p mpi);
 
 INTERNAL void otrng_mpi_set(otrng_mpi_p mpi, const uint8_t *src, size_t len);
 

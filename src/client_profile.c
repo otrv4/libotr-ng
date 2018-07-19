@@ -75,7 +75,7 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
   otrng_ec_point_destroy(profile->long_term_pub_key);
   free(profile->versions);
   profile->versions = NULL;
-  otrng_mpi_free(profile->transitional_signature);
+  otrng_mpi_destroy(profile->transitional_signature);
 }
 
 INTERNAL void otrng_client_profile_free(client_profile_s *profile) {
