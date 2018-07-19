@@ -140,20 +140,23 @@ INTERNAL otrng_err otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
   return OTRNG_SUCCESS;
 }
 
-/* otrng_err deserialize_mpi_data(uint8_t *dst, const uint8_t *buffer, */
-/*                                  size_t buflen, size_t *read) { */
-/*   otrng_mpi_p mpi; // no need to free, because nothing is copied now */
+otrng_err otrng_deserialize_dh_mpi_otr(dh_mpi_p *dst, const uint8_t *buffer,
+                                       size_t buflen, size_t *read) {
+  otrng_mpi_p mpi; // no need to free, because nothing is copied now
 
-/*   if (otrng_mpi_deserialize_no_copy(mpi, buffer, buflen, read)) { */
-/*     return OTRNG_ERROR; /\* only mpi len has been read *\/ */
-/*   } */
+  if (!otrng_mpi_deserialize_no_copy(mpi, buffer, buflen, NULL)) {
+    return OTRNG_ERROR;
+  }
 
-/*   size_t r = otrng_mpi_memcpy(dst, mpi); */
-/*   if (read != NULL) { */
-/*     *read += r; */
-/*   } */
-/*   return OTRNG_SUCCESS; */
-/* } */
+  size_t w = 0;
+  otrng_err ret = otrng_dh_mpi_deserialize(dst, mpi->data, mpi->len, &w);
+
+  if (read) {
+    *read = w + 4;
+  }
+
+  return ret;
+}
 
 INTERNAL otrng_err otrng_deserialize_ec_point(ec_point_p point,
                                               const uint8_t *serialized,

@@ -100,16 +100,23 @@ INTERNAL otrng_err otrng_mpi_deserialize(otrng_mpi_p dst, const uint8_t *src,
 INTERNAL otrng_err otrng_mpi_deserialize_no_copy(otrng_mpi_p dst,
                                                  const uint8_t *src,
                                                  size_t src_len, size_t *read) {
-  if (!otr_mpi_read_len(dst, src, src_len, read)) {
+  size_t r = 0;
+  if (!otr_mpi_read_len(dst, src, src_len, &r)) {
     return OTRNG_ERROR;
+  }
+
+  if (read) {
+    *read = r;
   }
 
   if (dst->len == 0) {
     dst->data = NULL;
     return OTRNG_SUCCESS;
   }
+
   /* points to original buffer without copying */
-  dst->data = (uint8_t *)src + *read;
+  dst->data = (uint8_t *)src + r;
+
   return OTRNG_SUCCESS;
 }
 

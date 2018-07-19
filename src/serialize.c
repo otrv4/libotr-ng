@@ -89,9 +89,10 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
   return ED448_SCALAR_BYTES;
 }
 
-INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
-                                                 size_t *written,
-                                                 const dh_public_key_p pub) {
+// Serializes a DH MPI as an OTR MPI data type
+INTERNAL otrng_err otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
+                                              size_t *written,
+                                              const dh_mpi_p mpi) {
   if (dstlen < DH_MPI_MAX_BYTES) {
     return OTRNG_ERROR;
   }
@@ -100,23 +101,28 @@ INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   size_t w = 0;
 
-  if (!otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, pub)) {
+  if (!otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, mpi)) {
     return OTRNG_ERROR;
   }
 
   // To OTR MPI
-  // TODO: @refactoring Maybe gcrypt MPI already has some API for this.
-  // gcry_mpi_print with a different format, maybe?
-  otrng_mpi_p mpi;
-  otrng_mpi_set(mpi, buf, w);
-  w = otrng_serialize_mpi(dst, mpi);
-  otrng_mpi_free(mpi);
+  otrng_mpi_p otr_mpi;
+  otrng_mpi_set(otr_mpi, buf, w);
+  w = otrng_serialize_mpi(dst, otr_mpi);
+  otrng_mpi_destroy(otr_mpi);
 
   if (written) {
     *written = w;
   }
 
   return OTRNG_SUCCESS;
+}
+
+// TODO: REMOVE THIS
+INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
+                                                 size_t *written,
+                                                 const dh_public_key_p pub) {
+  return otrng_serialize_dh_mpi_otr(dst, dstlen, written, pub);
 }
 
 INTERNAL size_t otrng_serialize_otrng_public_key(uint8_t *dst,

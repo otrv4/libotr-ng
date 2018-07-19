@@ -54,6 +54,10 @@ INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_p point);
 INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
                                           const ec_scalar_p scalar);
 
+INTERNAL otrng_err otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
+                                              size_t *written,
+                                              const dh_mpi_p mpi);
+
 /**
  * @brief Serializes a DH public key as an MPI.
  *
