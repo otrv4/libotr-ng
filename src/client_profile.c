@@ -94,14 +94,13 @@ INTERNAL void otrng_client_profile_free(client_profile_s *profile) {
   free(profile);
 }
 
-// This serializes the body WITHOUT the signature
 tstatic otrng_err
 client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
                               const client_profile_s *profile) {
   size_t w = 4;
   uint32_t num_fields = 0;
 
-  // TODO: Add error checking for writing more than what is allocated
+  // TODO: Check for buffer overflows
 
   // Instance tag
   w += otrng_serialize_uint16(dst + w, 0x01);
@@ -148,16 +147,7 @@ tstatic otrng_err client_profile_body_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
 
   size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
-
-#define DH1536_MOD_LEN_BYTES 192
-  size_t s = 4                        /* num fields */
-             + 2 + 4                  /* instance tag */
-             + 2 + ED448_PUBKEY_BYTES /* Ed448 pub key */
-             + 0                      /* TODO: Forger Public key */
-             + 2 + versions_len       /* Versions */
-             + 2 + 8                  /* Expiration */
-             + 2 + (2 + 4 * (4 + DH1536_MOD_LEN_BYTES)) /* DSA public key */
-             + 2 + (2 * 20) /* Transitional signature */;
+  size_t s = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
 
   uint8_t *buff = malloc(s);
   if (!buff) {
@@ -187,15 +177,7 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
   }
 
   size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
-  size_t fields_len =
-      2 + 4                                        /* instance tag */
-      + 2 + ED448_PUBKEY_BYTES /* Ed448 pub key */ /* TODO: Forger Public key */
-      + 2 + versions_len                           /* Versions */
-      + 2 + 8                                      /* Expiration */
-      + 2 + (2 + 4 * (4 + DH1536_MOD_LEN_BYTES))   /* DSA public key */
-      + 2 + (2 * 20) /* Transitional signature */;
-
-  size_t s = fields_len + ED448_SIGNATURE_BYTES;
+  size_t s = OTRNG_CLIENT_PROFILE_MAX_BYTES(versions_len);
 
   uint8_t *buff = malloc(s);
   if (!buff) {

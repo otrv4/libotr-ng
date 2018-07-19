@@ -28,6 +28,26 @@
 #include "shared.h"
 #include "str.h"
 
+#define OTRNG_DH1536_MOD_LEN_BYTES 192
+
+#define DSA_PUBKEY_MAX_BYTES (2 + 4 * (4 + OTRNG_DH1536_MOD_LEN_BYTES))
+
+#define OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(v)                               \
+  (2 + 4                      /* instance tag */                               \
+   + 2 + ED448_PUBKEY_BYTES   /* Ed448 pub key */                              \
+   + 0                        /* TODO: Forger Public key */                    \
+   + 2 + v                    /* Versions */                                   \
+   + 2 + 8                    /* Expiration */                                 \
+   + 2 + DSA_PUBKEY_MAX_BYTES /* DSA pubkey */                                 \
+   + 2 + (2 * 20)             /* Transitional signature */                     \
+  )
+
+#define OTRNG_CLIENT_PROFILE_MAX_BYTES(v)                                      \
+  (4 +                                      /* num fields */                   \
+   OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(v) /* Fields */                       \
+   + ED448_SIGNATURE_BYTES                  /* Client Profile Signature */     \
+  )
+
 typedef struct client_profile_s {
   uint32_t sender_instance_tag;
   otrng_public_key_p long_term_pub_key;
