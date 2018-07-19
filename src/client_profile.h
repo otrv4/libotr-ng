@@ -53,8 +53,7 @@ typedef struct client_profile_s {
   otrng_public_key_p long_term_pub_key;
   string_p versions;
   uint64_t expires;
-
-  uint8_t *signature;
+  eddsa_signature_p signature;
   otrng_mpi_p transitional_signature; // TODO: @client_profile this should be a
                                       // signature type
 } client_profile_s, client_profile_p[1];

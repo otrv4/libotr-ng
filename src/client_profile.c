@@ -44,7 +44,6 @@ tstatic client_profile_s *client_profile_new(const string_p versions) {
   otrng_ec_bzero(profile->long_term_pub_key, ED448_POINT_BYTES);
   profile->expires = 0;
   profile->versions = otrng_strdup(versions);
-  profile->signature = NULL;
   otrng_mpi_init(profile->transitional_signature);
 
   return profile;
@@ -61,15 +60,7 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   otrng_ec_point_copy(dst->long_term_pub_key, src->long_term_pub_key);
   dst->versions = otrng_strdup(src->versions);
   dst->expires = src->expires;
-
-  dst->signature = NULL;
-  if (src->signature) {
-    dst->signature = malloc(sizeof(eddsa_signature_p));
-    if (!dst->signature) {
-      return; // OTRNG_ERROR
-    }
-    memcpy(dst->signature, src->signature, sizeof(eddsa_signature_p));
-  }
+  memcpy(dst->signature, src->signature, sizeof(eddsa_signature_p));
 
   otrng_mpi_copy(dst->transitional_signature, src->transitional_signature);
 }
@@ -84,8 +75,6 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
   otrng_ec_point_destroy(profile->long_term_pub_key);
   free(profile->versions);
   profile->versions = NULL;
-  free(profile->signature);
-  profile->signature = NULL;
   otrng_mpi_free(profile->transitional_signature);
 }
 
@@ -171,10 +160,6 @@ tstatic otrng_err client_profile_body_asprintf(
 
 INTERNAL otrng_err otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
-
-  if (!profile->signature) {
-    return OTRNG_ERROR;
-  }
 
   size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
   size_t s = OTRNG_CLIENT_PROFILE_MAX_BYTES(versions_len);
@@ -305,11 +290,6 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
     return OTRNG_ERROR;
   }
 
-  target->signature = malloc(sizeof(eddsa_signature_p));
-  if (!target->signature) {
-    return OTRNG_ERROR;
-  }
-
   memcpy(target->signature, buffer + w, sizeof(eddsa_signature_p));
 
   w += sizeof(eddsa_signature_p);
@@ -326,15 +306,8 @@ tstatic otrng_err client_profile_sign(client_profile_s *profile,
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  profile->signature = malloc(sizeof(eddsa_signature_p));
-  if (!profile->signature) {
-    return OTRNG_ERROR;
-  }
-
   otrng_ec_point_copy(profile->long_term_pub_key, keypair->pub);
   if (!client_profile_body_asprintf(&body, &bodylen, profile)) {
-    free(profile->signature);
-    profile->signature = NULL;
     return OTRNG_ERROR;
   }
 
