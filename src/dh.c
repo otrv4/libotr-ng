@@ -228,6 +228,11 @@ INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
 INTERNAL otrng_err otrng_dh_mpi_deserialize(dh_mpi_p *dst,
                                             const uint8_t *buffer,
                                             size_t buflen, size_t *nread) {
+  if (!buflen) {
+    gcry_mpi_set_ui(*dst, 0);
+    return OTRNG_SUCCESS;
+  }
+
   gcry_error_t err = gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread);
   if (err) {
     return OTRNG_ERROR;
