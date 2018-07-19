@@ -52,13 +52,13 @@ void test_client_profile_serializes_body() {
   uint8_t *serialized = NULL;
   otrng_assert_is_success(
       client_profile_body_asprintf(&serialized, &written, profile));
-  g_assert_cmpint(written, ==, 95);
+  g_assert_cmpint(written, ==, 89);
 
   char expected_header[] = {
-      0x00, 0x00, 0x00, 0x05, // Num fields
+      0x00, 0x00, 0x00, 0x04, // Num fields
       0x00, 0x01,             // Instance tag field type
       0x00, 0x00, 0x00, 0x04, // sender instance tag
-      0x0,  0x2,              // Ppubke field type
+      0x0,  0x2,              // Pubke field type
   };
 
   otrng_assert_cmpmem(expected_header, serialized, sizeof(expected_header));
@@ -93,23 +93,21 @@ void test_client_profile_serializes() {
   profile->expires = 15;
 
   client_profile_sign(profile, keypair);
-  const uint8_t transitional_signature[40] = {0};
-  otrng_mpi_set(profile->transitional_signature, transitional_signature,
-                sizeof(transitional_signature));
+  profile->transitional_signature = malloc(OTRv3_DSA_SIG_BYTES);
+  memset(profile->transitional_signature, 0, OTRv3_DSA_SIG_BYTES);
 
   size_t written = 0;
   uint8_t *serialized = NULL;
   otrng_assert_is_success(
       client_profile_body_asprintf(&serialized, &written, profile));
-  g_assert_cmpint(written, ==, 135);
+  g_assert_cmpint(written, ==, 131);
 
   char expected_transitional_signature[] = {
-      0x0, 0x8,            // Transitional signature field type
-      0x0, 0x0, 0x0, 0x28, // len
-      0x0, 0x0, 0x0, 0x0,  0x0, 0x0, 0x0, 0x0, // transitional signature
-      0x0, 0x0, 0x0, 0x0,  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-      0x0, 0x0, 0x0, 0x0,  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-      0x0, 0x0, 0x0, 0x0,  0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+      0x0, 0x8, // Transitional signature field type
+      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, // transitional signature
+      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 
   // transitional signature
   otrng_assert_cmpmem(expected_transitional_signature,
@@ -137,9 +135,7 @@ void test_otrng_client_profile_deserializes() {
   uint8_t *serialized = NULL;
   otrng_client_profile_asprintf(&serialized, &written, profile);
 
-  // TODO: @sanitizer why?
-  client_profile_s *deserialized = NULL;
-  deserialized = malloc(sizeof(client_profile_s));
+  client_profile_p deserialized;
 
   otrng_assert_is_success(otrng_client_profile_deserialize(
       deserialized, serialized, written, NULL));
@@ -147,7 +143,7 @@ void test_otrng_client_profile_deserializes() {
 
   free(serialized);
   otrng_client_profile_free(profile);
-  otrng_client_profile_free(deserialized);
+  otrng_client_profile_destroy(deserialized);
 }
 
 void test_client_profile_signs_and_verify() {

@@ -30,7 +30,18 @@
 #include "deserialize.h"
 #include "serialize.h"
 
-tstatic client_profile_s *client_profile_new(const string_p versions) {
+static client_profile_s *client_profile_init(client_profile_s *profile,
+                                             const char *versions) {
+  profile->sender_instance_tag = 0;
+  otrng_ec_bzero(profile->long_term_pub_key, ED448_POINT_BYTES);
+  profile->expires = 0;
+  profile->versions = versions ? otrng_strdup(versions) : NULL;
+  profile->transitional_signature = NULL;
+
+  return profile;
+}
+
+tstatic client_profile_s *client_profile_new(const char *versions) {
   if (!versions) {
     return NULL;
   }
@@ -40,18 +51,14 @@ tstatic client_profile_s *client_profile_new(const string_p versions) {
     return NULL;
   }
 
-  profile->sender_instance_tag = 0;
-  otrng_ec_bzero(profile->long_term_pub_key, ED448_POINT_BYTES);
-  profile->expires = 0;
-  profile->versions = otrng_strdup(versions);
-  otrng_mpi_init(profile->transitional_signature);
-
-  return profile;
+  return client_profile_init(profile, versions);
 }
 
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
                                         const client_profile_s *src) {
-  // TODO: @client_profile should we set dst to a valid (but empty) profile?
+  // So if there are fields not present they do not point to invalid memory
+  client_profile_init(dst, NULL);
+
   if (!src) {
     return;
   }
@@ -62,7 +69,16 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   dst->expires = src->expires;
   memcpy(dst->signature, src->signature, sizeof(eddsa_signature_p));
 
-  otrng_mpi_copy(dst->transitional_signature, src->transitional_signature);
+  if (src->transitional_signature) {
+    dst->transitional_signature = malloc(OTRv3_DSA_SIG_BYTES);
+
+    if (!dst->transitional_signature) {
+      return; // TODO: ERROR
+    }
+
+    memcpy(dst->transitional_signature, src->transitional_signature,
+           OTRv3_DSA_SIG_BYTES);
+  }
 }
 
 INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
@@ -75,7 +91,8 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
   otrng_ec_point_destroy(profile->long_term_pub_key);
   free(profile->versions);
   profile->versions = NULL;
-  otrng_mpi_destroy(profile->transitional_signature);
+  free(profile->transitional_signature);
+  profile->transitional_signature = NULL;
 }
 
 INTERNAL void otrng_client_profile_free(client_profile_s *profile) {
@@ -117,9 +134,12 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
   // TODO: DSA key
 
   // Transitional Signature
-  w += otrng_serialize_uint16(dst + w, 0x08);
-  w += otrng_serialize_mpi(dst + w, profile->transitional_signature);
-  num_fields++;
+  if (profile->transitional_signature) {
+    w += otrng_serialize_uint16(dst + w, 0x08);
+    w += otrng_serialize_bytes_array(dst + w, profile->transitional_signature,
+                                     OTRv3_DSA_SIG_BYTES);
+    num_fields++;
+  }
 
   // Writes the number of fields at the beginning
   otrng_serialize_uint32(dst, num_fields);
@@ -242,11 +262,19 @@ tstatic otrng_err deserialize_field(client_profile_s *target,
     // ???
     break;
   case 0x08: // Transitional Signature
-    // TODO Double check format: Is CLIENT-SIG a MPI?
-    if (!otrng_mpi_deserialize(target->transitional_signature, buffer + w,
-                               buflen - w, &read)) {
+    target->transitional_signature = malloc(OTRv3_DSA_SIG_BYTES);
+    if (!target->transitional_signature) {
       return OTRNG_ERROR;
     }
+
+    if (!otrng_deserialize_bytes_array(target->transitional_signature,
+                                       OTRv3_DSA_SIG_BYTES, buffer + w,
+                                       buflen - w)) {
+      return OTRNG_ERROR;
+    }
+
+    read = OTRv3_DSA_SIG_BYTES;
+
     break;
   }
 
@@ -269,6 +297,9 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
   if (!target) {
     return OTRNG_ERROR;
   }
+
+  // So if there are fields not present they do not point to invalid memory
+  client_profile_init(target, NULL);
 
   uint32_t num_fields = 0;
   if (!otrng_deserialize_uint32(&num_fields, buffer + w, buflen - w, &read)) {
@@ -339,7 +370,7 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
 }
 
 INTERNAL client_profile_s *
-otrng_client_profile_build(uint32_t instance_tag, const string_p versions,
+otrng_client_profile_build(uint32_t instance_tag, const char *versions,
                            const otrng_keypair_s *keypair) {
   client_profile_s *profile = client_profile_new(versions);
   if (!profile) {

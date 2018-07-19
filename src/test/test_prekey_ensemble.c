@@ -35,7 +35,7 @@ void test_prekey_ensemble_validate(void) {
   ensemble->client_profile->versions = otrng_strdup("4");
   ensemble->client_profile->sender_instance_tag = 1;
   ensemble->client_profile->expires = time(NULL) + 60 * 60 * 24; // one day
-  otrng_mpi_init(ensemble->client_profile->transitional_signature);
+  ensemble->client_profile->transitional_signature = NULL;
   otrng_assert_is_success(
       client_profile_sign(ensemble->client_profile, keypair));
 

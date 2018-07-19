@@ -54,7 +54,8 @@
     char *__msg = g_strdup_printf(                                             \
         "assertion failed: (%s)\n\n%s (%p): %s\n\n%s (%p): %s\n",              \
         #s1 " ==  " #s2, #s1, _s1_evaled, __s1, #s2, _s2_evaled, __s2);        \
-    if (memcmp(_s1_evaled, _s2_evaled, _len_evaled) == 0)                      \
+    if ((_s1_evaled == NULL && _s2_evaled == NULL) ||                          \
+        memcmp(_s1_evaled, _s2_evaled, _len_evaled) == 0)                      \
       ;                                                                        \
     else                                                                       \
       g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, __msg); \
@@ -111,8 +112,8 @@
     g_assert_cmpuint(_p1->expires, ==, _p2->expires);                          \
     otrng_assert_cmpmem(_p1->signature, _p2->signature,                        \
                         ED448_SIGNATURE_BYTES);                                \
-    otrng_assert_mpi_eq(_p1->transitional_signature,                           \
-                        _p2->transitional_signature);                          \
+    otrng_assert_cmpmem(_p1->transitional_signature,                           \
+                        _p2->transitional_signature, OTRv3_DSA_SIG_BYTES);     \
   } while (0)
 
 // TODO: this is using variable-length array

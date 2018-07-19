@@ -31,6 +31,7 @@
 #define OTRNG_DH1536_MOD_LEN_BYTES 192
 
 #define DSA_PUBKEY_MAX_BYTES (2 + 4 * (4 + OTRNG_DH1536_MOD_LEN_BYTES))
+#define OTRv3_DSA_SIG_BYTES 40
 
 #define OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(v)                               \
   (2 + 4                      /* instance tag */                               \
@@ -39,7 +40,7 @@
    + 2 + v                    /* Versions */                                   \
    + 2 + 8                    /* Expiration */                                 \
    + 2 + DSA_PUBKEY_MAX_BYTES /* DSA pubkey */                                 \
-   + 2 + (2 * 20)             /* Transitional signature */                     \
+   + 2 + OTRv3_DSA_SIG_BYTES  /* Transitional signature */                     \
   )
 
 #define OTRNG_CLIENT_PROFILE_MAX_BYTES(v)                                      \
@@ -53,9 +54,9 @@ typedef struct client_profile_s {
   otrng_public_key_p long_term_pub_key;
   string_p versions;
   uint64_t expires;
+  uint8_t *transitional_signature;
+
   eddsa_signature_p signature;
-  otrng_mpi_p transitional_signature; // TODO: @client_profile this should be a
-                                      // signature type
 } client_profile_s, client_profile_p[1];
 
 INTERNAL otrng_bool
