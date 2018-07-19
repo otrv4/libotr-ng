@@ -20,11 +20,12 @@
 
 #include "client_profile.h"
 
-#include <sodium.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include <sodium.h>
 
 #define OTRNG_DESERIALIZE_PRIVATE
 #include "deserialize.h"
@@ -145,7 +146,13 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
   w += otrng_serialize_uint64(dst + w, profile->expires);
   num_fields++;
 
-  // TODO: DSA key
+  // DSA key
+  if (profile->dsa_key && profile->dsa_key_len) {
+    w += otrng_serialize_uint16(dst + w, 0x06);
+    w += otrng_serialize_bytes_array(dst + w, profile->dsa_key,
+                                     profile->dsa_key_len);
+    num_fields++;
+  }
 
   // Transitional Signature
   if (profile->transitional_signature) {
@@ -225,6 +232,51 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
   return OTRNG_SUCCESS;
 }
 
+static otrng_err deserialize_dsa_key_field(client_profile_s *target,
+                                           const uint8_t *buffer, size_t buflen,
+                                           size_t *nread) {
+  size_t read = 0;
+  size_t w = 0;
+
+  uint16_t key_type = 0xFF;
+  if (!otrng_deserialize_uint16(&key_type, buffer + w, buflen - w, &read)) {
+    return OTRNG_ERROR;
+  }
+
+  w += read;
+
+  if (key_type != OTRL_PUBKEY_TYPE_DSA) {
+    // Not a DSA public key, so we dont know what to do from here
+    return OTRNG_ERROR;
+  }
+
+  // We dont care about the individual p, q, g, y
+  // We just care about finding the end of this key
+
+  for (int i = 0; i < 4; i++) {
+    otrng_mpi_p mpi;
+    if (!otrng_mpi_deserialize_no_copy(mpi, buffer + w, buflen - w, &read)) {
+      return OTRNG_ERROR;
+    }
+
+    w += read + mpi->len;
+  }
+
+  target->dsa_key = malloc(w);
+  if (!target->dsa_key) {
+    return OTRNG_ERROR;
+  }
+
+  target->dsa_key_len = w;
+  memcpy(target->dsa_key, buffer, w);
+
+  if (nread) {
+    *nread = w;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
 tstatic otrng_err deserialize_field(client_profile_s *target,
                                     const uint8_t *buffer, size_t buflen,
                                     size_t *nread) {
@@ -270,7 +322,9 @@ tstatic otrng_err deserialize_field(client_profile_s *target,
     }
     break;
   case 0x06: // DSA key
-    // TODO add field
+    if (!deserialize_dsa_key_field(target, buffer + w, buflen - w, &read)) {
+      return OTRNG_ERROR;
+    }
     break;
   case 0x07: //???
     // ???
@@ -294,6 +348,8 @@ tstatic otrng_err deserialize_field(client_profile_s *target,
 
   w += read;
 
+  // TODO: This is only reported if no error happened. It would be nice to
+  // report how much bytes were read before an error was found.
   if (nread) {
     *nread = w;
   }

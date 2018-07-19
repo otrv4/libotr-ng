@@ -23,6 +23,8 @@
 
 #include <stdint.h>
 
+#include <libotr/privkey.h>
+
 #include "keys.h"
 #include "mpi.h"
 #include "shared.h"
