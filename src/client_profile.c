@@ -521,6 +521,25 @@ INTERNAL otrng_bool otrng_client_profile_valid(
 INTERNAL otrng_err otrng_client_profile_transitional_sign(
     client_profile_s *profile, OtrlPrivKey *privkey) {
 
+  if (!profile || !privkey) {
+    return OTRNG_ERROR;
+  }
+
+  if (privkey->pubkey_type != OTRL_PUBKEY_TYPE_DSA) {
+    // Not a DSA public key, so we dont know what to do from here
+    return OTRNG_ERROR;
+  }
+
+  // The public key is serialized as PUBKEY in pubkey_data;
+  profile->dsa_key_len = privkey->pubkey_datalen + 2;
+  profile->dsa_key = malloc(profile->dsa_key_len);
+  if (!profile->dsa_key) {
+    return OTRNG_ERROR;
+  }
+
+  size_t w = otrng_serialize_uint16(profile->dsa_key, OTRL_PUBKEY_TYPE_DSA);
+  memcpy(profile->dsa_key + w, privkey->pubkey_data, profile->dsa_key_len - w);
+
   size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
   size_t s = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
 
@@ -534,11 +553,11 @@ INTERNAL otrng_err otrng_client_profile_transitional_sign(
                                                            profile);
 
   size_t written = 0;
-  otrng_err ret = otrl_privkey_sign(&profile->transitional_signature, &written,
-                                    privkey, data, datalen);
+  gcry_error_t err = otrl_privkey_sign(&profile->transitional_signature,
+                                       &written, privkey, data, datalen);
   free(data);
 
-  if (!ret) {
+  if (err) {
     return OTRNG_ERROR;
   }
 
@@ -547,17 +566,6 @@ INTERNAL otrng_err otrng_client_profile_transitional_sign(
     profile->transitional_signature = NULL;
     return OTRNG_ERROR;
   }
-
-  // The public key is serialized as PUBKEY in pubkey_data;
-  profile->dsa_key_len = privkey->pubkey_datalen;
-  profile->dsa_key = malloc(profile->dsa_key_len);
-  if (!profile->dsa_key) {
-    free(profile->transitional_signature);
-    profile->transitional_signature = NULL;
-    return OTRNG_ERROR;
-  }
-
-  memcpy(profile->dsa_key, privkey->pubkey_data, profile->dsa_key_len);
 
   return OTRNG_SUCCESS;
 }
