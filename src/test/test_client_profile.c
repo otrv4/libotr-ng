@@ -204,5 +204,6 @@ void test_otrng_client_profile_transitional_signature(void) {
       otrng_client_profile_verify_transitional_signature(profile));
 
   otrng_client_profile_free(profile);
+  otrng_client_state_free(client);
   otrl_userstate_free(client->user_state);
 }
