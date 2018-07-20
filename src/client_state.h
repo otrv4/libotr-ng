@@ -136,6 +136,9 @@ INTERNAL int
 otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
                                               FILE *privf);
 
+INTERNAL OtrlPrivKey *
+otrng_client_state_get_private_key_v3(const otrng_client_state_s *state);
+
 INTERNAL int otrng_client_state_private_key_v3_generate_FILEp(
     const otrng_client_state_s *state, FILE *privf);
 

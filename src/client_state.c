@@ -92,6 +92,25 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
   free(state);
 }
 
+INTERNAL OtrlPrivKey *
+otrng_client_state_get_private_key_v3(const otrng_client_state_s *state) {
+  OtrlPrivKey *ret = NULL;
+
+  // TODO: We could use a "get storage key" callback and use it as
+  // account_name plus an arbitrary "libotrng-storage" protocol.
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
+    return ret;
+  }
+
+  ret = otrl_privkey_find(state->user_state, account_name, protocol_name);
+
+  free(account_name);
+  free(protocol_name);
+  return ret;
+}
+
 // TODO: @client There's no API that allows us to simply write all private keys
 // to the file. We might want to extract otrl_privkey_generate_finish_FILEp into
 // 2 functions.
