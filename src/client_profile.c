@@ -517,6 +517,23 @@ tstatic otrng_bool rollback_detected(const char *versions) {
   return otrng_false;
 }
 
+static otrng_bool
+verify_transitional_signature(const client_profile_s *profile) {
+  if (!profile->dsa_key || !profile->dsa_key_len) {
+    return otrng_true;
+  }
+
+  if (!profile->transitional_signature) {
+    return otrng_true;
+  }
+
+  if (!otrng_client_profile_verify_transitional_signature(profile)) {
+    return otrng_false;
+  }
+
+  return otrng_true;
+}
+
 INTERNAL otrng_bool otrng_client_profile_valid(
     const client_profile_s *profile, const uint32_t sender_instance_tag) {
   if (sender_instance_tag != profile->sender_instance_tag) {
@@ -535,8 +552,9 @@ INTERNAL otrng_bool otrng_client_profile_valid(
     return otrng_false;
   }
 
-  // TODO: @client_profile If the Transitional Signature is present, verify its
-  // validity using the OTRv3 DSA key.
+  if (!verify_transitional_signature(profile)) {
+    return otrng_false;
+  }
 
   /* Verify their profile is valid (and not expired). */
   return otrng_client_profile_verify_signature(profile);
