@@ -676,6 +676,7 @@ INTERNAL otrng_err otrng_client_profile_verify_transitional_signature(
 
   uint8_t *data = malloc(s);
   if (!data) {
+    gcry_sexp_release(pubs);
     return OTRNG_ERROR;
   }
 
@@ -688,6 +689,7 @@ INTERNAL otrng_err otrng_client_profile_verify_transitional_signature(
                           OTRL_PUBKEY_TYPE_DSA, pubs, data, datalen);
 
   free(data);
+  gcry_sexp_release(pubs);
   if (err) {
     return OTRNG_ERROR;
   }
