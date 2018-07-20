@@ -178,3 +178,31 @@ void test_otrng_client_profile_build() {
 
   otrng_client_profile_free(profile);
 }
+
+void test_otrng_client_profile_transitional_signature(void) {
+  otrng_client_state_s *client = otrng_client_state_new(ALICE_IDENTITY);
+  client->user_state = otrl_userstate_create();
+  client->callbacks = test_callbacks;
+
+  // Generate DSA key
+  FILE *tmpFILEp = tmpfile();
+  otrng_assert(
+      !otrng_client_state_private_key_v3_generate_FILEp(client, tmpFILEp));
+  fclose(tmpFILEp);
+
+  OtrlPrivKey *dsa_key = otrng_client_state_get_private_key_v3(client);
+
+  otrng_keypair_p keypair;
+  uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+  otrng_keypair_generate(keypair, sym);
+
+  client_profile_s *profile =
+      otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1234, "43", keypair);
+  otrng_assert_is_success(
+      otrng_client_profile_transitional_sign(profile, dsa_key));
+  otrng_assert_is_success(
+      otrng_client_profile_verify_transitional_signature(profile));
+
+  otrng_client_profile_free(profile);
+  otrl_userstate_free(client->user_state);
+}

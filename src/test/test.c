@@ -127,6 +127,8 @@ int main(int argc, char **argv) {
                   test_serialize_otrng_symmetric_key);
   g_test_add_func("/serialize/fingerprint", test_serializes_fingerprint);
 
+  g_test_add_func("/client_profile/build_client_profile",
+                  test_otrng_client_profile_build);
   g_test_add_func("/client_profile/create", test_client_profile_create);
   g_test_add_func("/client_profile/serialize_body",
                   test_client_profile_serializes_body);
@@ -135,8 +137,8 @@ int main(int argc, char **argv) {
                   test_otrng_client_profile_deserializes);
   g_test_add_func("/client_profile/sign_and_verifies",
                   test_client_profile_signs_and_verify);
-  g_test_add_func("/client_profile/build_client_profile",
-                  test_otrng_client_profile_build);
+  g_test_add_func("/client_profile/transitional_signature",
+                  test_otrng_client_profile_transitional_signature);
 
   g_test_add_func("/dake/build_interactive_rsign_tag",
                   test_build_interactive_rsign_tag);
