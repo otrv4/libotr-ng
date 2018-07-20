@@ -57,6 +57,45 @@ tstatic client_profile_s *client_profile_new(const char *versions) {
   return client_profile_init(profile, versions);
 }
 
+static void copy_transitional_signature(client_profile_s *dst,
+                                        const client_profile_s *src) {
+  if (!src->transitional_signature) {
+    return;
+  }
+
+  dst->transitional_signature = malloc(OTRv3_DSA_SIG_BYTES);
+
+  if (!dst->transitional_signature) {
+    return; // TODO: ERROR
+  }
+
+  memcpy(dst->transitional_signature, src->transitional_signature,
+         OTRv3_DSA_SIG_BYTES);
+}
+
+static void copy_dsa_key(client_profile_s *dst, const client_profile_s *src) {
+  if (!src->dsa_key || !src->dsa_key_len) {
+    return;
+  }
+
+  size_t read = 0;
+  uint16_t key_type = 0xFF;
+  if (!otrng_deserialize_uint16(&key_type, src->dsa_key, src->dsa_key_len,
+                                &read)) {
+    return; // TODO: ERROR
+  }
+
+  if (key_type != OTRL_PUBKEY_TYPE_DSA) {
+    // Not a DSA public key, so we dont know what to do from here
+    return; // TODO: ERROR
+  }
+
+  if (!otrng_client_profile_set_dsa_key_mpis(dst, src->dsa_key + read,
+                                             src->dsa_key_len - read)) {
+    return; // TODO: ERROR
+  }
+}
+
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
                                         const client_profile_s *src) {
   // So if there are fields not present they do not point to invalid memory
@@ -70,28 +109,10 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   otrng_ec_point_copy(dst->long_term_pub_key, src->long_term_pub_key);
   dst->versions = otrng_strdup(src->versions);
   dst->expires = src->expires;
+  copy_dsa_key(dst, src);
+  copy_transitional_signature(dst, src);
+
   memcpy(dst->signature, src->signature, sizeof(eddsa_signature_p));
-
-  if (src->transitional_signature) {
-    dst->transitional_signature = malloc(OTRv3_DSA_SIG_BYTES);
-
-    if (!dst->transitional_signature) {
-      return; // TODO: ERROR
-    }
-
-    memcpy(dst->transitional_signature, src->transitional_signature,
-           OTRv3_DSA_SIG_BYTES);
-  }
-
-  if (src->dsa_key && src->dsa_key_len) {
-    dst->dsa_key_len = src->dsa_key_len;
-    dst->dsa_key = malloc(dst->dsa_key_len);
-    if (!src->dsa_key_len) {
-      return; // TODO: ERROR
-    }
-
-    memcpy(dst->dsa_key, src->dsa_key, dst->dsa_key_len);
-  }
 }
 
 INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
@@ -102,12 +123,15 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
   /* @secret_information: the long-term public key gets deleted with the
      destruction of the client profile but can live beyond that */
   otrng_ec_point_destroy(profile->long_term_pub_key);
+
   free(profile->versions);
   profile->versions = NULL;
-  free(profile->transitional_signature);
-  profile->transitional_signature = NULL;
+
   free(profile->dsa_key);
   profile->dsa_key = NULL;
+
+  free(profile->transitional_signature);
+  profile->transitional_signature = NULL;
 }
 
 INTERNAL void otrng_client_profile_free(client_profile_s *profile) {
