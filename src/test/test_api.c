@@ -77,9 +77,11 @@ static int test_should_heartbeat(int last_sent) { return 1; }
 
 static void set_up_client_state(otrng_client_state_s *state,
                                 const char *account_name, int byte) {
+  // TODO: I dont think we are calling otrl_userstate_free() for this, so
+  // there may be a supression rule hiding this problem from valgrind.
   state->user_state = otrl_userstate_create();
-  state->client_id =
-      account_name; // TODO: Update every otrng_client_state_new(NULL)
+  // TODO: REMOVE after updating every otrng_client_state_new(NULL)
+  state->client_id = account_name;
   state->callbacks = test_callbacks;
 
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
