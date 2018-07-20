@@ -647,18 +647,20 @@ void test_api_conversation_v3(void) {
   bob->v3_conn->opdata = bob;
 
   // Generate long term private key.
+  // TODO: use callback?
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
-  otrng_assert(!otrl_privkey_generate_FILEp(alice_client_state->user_state,
-                                            tmpFILEp, ALICE_IDENTITY, "otr"));
+  otrng_assert(!otrng_client_state_private_key_v3_generate_FILEp(
+      alice_client_state, tmpFILEp));
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrng_assert(!otrl_privkey_generate_FILEp(bob_client_state->user_state,
-                                            tmpFILEp, BOB_IDENTITY, "otr"));
+  otrng_assert(!otrng_client_state_private_key_v3_generate_FILEp(
+      bob_client_state, tmpFILEp));
   fclose(tmpFILEp);
 
   // Generate instance tag
+  // TODO: use callback?
   otrng_client_state_add_instance_tag(alice_client_state, 0x100 + 1);
   otrng_client_state_add_instance_tag(bob_client_state, 0x100 + 2);
 

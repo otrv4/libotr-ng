@@ -97,10 +97,9 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
       otrng_v3_conn_new(otrng_fixture->state, "they_are_alice");
 
   // TODO: @refactoring This should be done automatically
-  FILE *tmpFILEp;
-  tmpFILEp = tmpfile();
-  otrng_assert(!otrl_privkey_generate_FILEp(otrng_fixture->state->user_state,
-                                            tmpFILEp, "account", "otr"));
+  FILE *tmpFILEp = tmpfile();
+  otrng_assert(!otrng_client_state_private_key_v3_generate_FILEp(
+      otrng_fixture->state, tmpFILEp));
   fclose(tmpFILEp);
 
   // Generate instance tag
