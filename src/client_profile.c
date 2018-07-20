@@ -518,6 +518,23 @@ INTERNAL otrng_bool otrng_client_profile_valid(
   return otrng_client_profile_verify_signature(profile);
 }
 
+INTERNAL otrng_err otrng_client_profile_set_dsa_key_mpis(
+    client_profile_s *profile, const uint8_t *mpis, size_t mpis_len) {
+
+  // mpis* points to a PUBKEY structure AFTER the "Pubkey type" field
+  // We need to allocate 2 extra bytes for the "Pubkey type" field
+  profile->dsa_key_len = mpis_len + 2;
+  profile->dsa_key = malloc(profile->dsa_key_len);
+  if (!profile->dsa_key) {
+    return OTRNG_ERROR;
+  }
+
+  size_t w = otrng_serialize_uint16(profile->dsa_key, OTRL_PUBKEY_TYPE_DSA);
+  memcpy(profile->dsa_key + w, mpis, mpis_len);
+
+  return OTRNG_SUCCESS;
+}
+
 INTERNAL otrng_err otrng_client_profile_transitional_sign(
     client_profile_s *profile, OtrlPrivKey *privkey) {
 
@@ -530,15 +547,10 @@ INTERNAL otrng_err otrng_client_profile_transitional_sign(
     return OTRNG_ERROR;
   }
 
-  // The public key is serialized as PUBKEY in pubkey_data;
-  profile->dsa_key_len = privkey->pubkey_datalen + 2;
-  profile->dsa_key = malloc(profile->dsa_key_len);
-  if (!profile->dsa_key) {
+  if (!otrng_client_profile_set_dsa_key_mpis(profile, privkey->pubkey_data,
+                                             privkey->pubkey_datalen)) {
     return OTRNG_ERROR;
   }
-
-  size_t w = otrng_serialize_uint16(profile->dsa_key, OTRL_PUBKEY_TYPE_DSA);
-  memcpy(profile->dsa_key + w, privkey->pubkey_data, profile->dsa_key_len - w);
 
   size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
   size_t s = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);

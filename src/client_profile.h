@@ -88,6 +88,9 @@ otrng_client_profile_build(uint32_t instance_tag, const string_p versions,
 INTERNAL otrng_bool otrng_client_profile_valid(
     const client_profile_s *profile, const uint32_t sender_instance_tag);
 
+INTERNAL otrng_err otrng_client_profile_set_dsa_key_mpis(
+    client_profile_s *profile, const uint8_t *mpis, size_t mpis_len);
+
 INTERNAL otrng_err otrng_client_profile_transitional_sign(
     client_profile_s *profile, OtrlPrivKey *privkey);
 
