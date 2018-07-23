@@ -299,7 +299,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/api/interactive_conversation/v4",
                   test_api_interactive_conversation);
   g_test_add_func("/api/send_offline_message", test_otrng_send_offline_message);
-  g_test_add_func("/api/incorrect_offline_dake", test_otrng_incorrect_offline_dake);
+  g_test_add_func("/api/incorrect_offline_dake",
+                  test_otrng_incorrect_offline_dake);
 
   g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
   g_test_add_func("/api/conversation_errors_1", test_api_conversation_errors_1);
