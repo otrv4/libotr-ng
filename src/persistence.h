@@ -45,6 +45,13 @@ INTERNAL int
 otrng_client_state_private_key_v3_write_FILEp(const otrng_client_state_s *state,
                                               FILE *privf);
 
+INTERNAL int
+otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
+                                             FILE *privf);
+
+INTERNAL int
+otrng_client_state_client_profile_write_FILEp(const otrng_client_state_s *state,
+                                              FILE *privf);
 #endif
 
 #endif

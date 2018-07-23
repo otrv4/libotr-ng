@@ -20,6 +20,8 @@
 
 #include "persistence.h"
 
+#include <libotr/b64.h>
+
 #include "deserialize.h"
 
 /*
@@ -187,4 +189,105 @@ otrng_client_state_private_key_v3_write_FILEp(const otrng_client_state_s *state,
   free(account_name);
   free(protocol_name);
   return err;
+}
+
+INTERNAL int
+otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
+                                             FILE *privf) {
+  char *line = NULL;
+  size_t cap = 0;
+  int len = 0;
+
+  if (!privf) {
+    return -1;
+  }
+
+  if (feof(privf)) {
+    return 1;
+  }
+
+  otrng_client_profile_destroy(state->client_profile);
+
+  // TODO: we need to remove getline. It is not c99.
+  // OR ignore if this will be moved to the plugin.
+  len = getline(&line, &cap, privf);
+  if (len < 0) {
+    free(line);
+    return 1;
+  }
+
+  uint8_t *dec = malloc(((len + 3) / 4) * 3);
+  if (!dec) {
+    free(line);
+    return 1;
+  }
+
+  size_t dec_len = otrl_base64_decode(dec, line, len);
+  free(line);
+
+  otrng_err ret = otrng_client_profile_deserialize(state->client_profile, dec,
+                                                   dec_len, NULL);
+  free(dec);
+
+  return ret == OTRNG_ERROR;
+}
+
+INTERNAL int
+otrng_client_state_client_profile_write_FILEp(const otrng_client_state_s *state,
+                                              FILE *privf) {
+  if (!privf) {
+    return 1;
+  }
+
+  if (!state->client_profile) {
+    return 1;
+  }
+
+  uint8_t *buff = NULL;
+  size_t s = 0;
+  if (!otrng_client_profile_asprintf(&buff, &s, state->client_profile)) {
+    return 1;
+  }
+
+  size_t written = 0;
+  char *encoded = malloc((s + 2) / 3 * 4);
+  if (!encoded) {
+    free(buff);
+    return 1;
+  }
+
+  written = otrl_base64_encode(encoded, buff, s);
+  free(buff);
+
+  char *key = otrng_client_state_get_storage_id(state);
+  if (!key) {
+    free(encoded);
+    return 1;
+  }
+
+  int err = fputs(key, privf);
+  free(key);
+
+  if (EOF == err) {
+    free(encoded);
+    return 1;
+  }
+
+  if (EOF == fputs("\n", privf)) {
+    free(encoded);
+    return 1;
+  }
+
+  err = fwrite(encoded, written, 1, privf);
+  free(encoded);
+
+  if (err != 1) {
+    return 1;
+  }
+
+  if (EOF == fputs("\n", privf)) {
+    return 1;
+  }
+
+  return 0;
 }
