@@ -44,6 +44,7 @@ test_SOURCES = test.c \
 		     ../padding.c \
 		     ../prekey_ensemble.c \
 		     ../prekey_profile.c \
+		     ../persistence.c \
 		     ../protocol.c \
 		     ../serialize.c \
 		     ../shake.c \

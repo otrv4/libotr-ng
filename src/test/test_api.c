@@ -742,13 +742,13 @@ void test_api_conversation_v3(void) {
   // TODO: use callback?
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
-  otrng_assert(!otrng_client_state_private_key_v3_generate_FILEp(
+  otrng_assert(!otrng_client_state_private_key_v3_write_FILEp(
       alice_client_state, tmpFILEp));
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrng_assert(!otrng_client_state_private_key_v3_generate_FILEp(
-      bob_client_state, tmpFILEp));
+  otrng_assert(!otrng_client_state_private_key_v3_write_FILEp(bob_client_state,
+                                                              tmpFILEp));
   fclose(tmpFILEp);
 
   // Generate instance tag

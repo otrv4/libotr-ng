@@ -46,6 +46,7 @@ otrnginc_HEADERS = ../auth.h \
                    ../mpi.h \
                    ../otrng.h \
                    ../padding.h \
+		   ../persistence.h \
                    ../prekey_ensemble.h \
                    ../prekey_profile.h \
                    ../protocol.h \

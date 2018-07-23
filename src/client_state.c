@@ -111,28 +111,6 @@ otrng_client_state_get_private_key_v3(const otrng_client_state_s *state) {
   return ret;
 }
 
-// TODO: @client There's no API that allows us to simply write all private keys
-// to the file. We might want to extract otrl_privkey_generate_finish_FILEp into
-// 2 functions.
-INTERNAL int otrng_client_state_private_key_v3_generate_FILEp(
-    const otrng_client_state_s *state, FILE *privf) {
-
-  // TODO: We could use a "get storage key" callback and use it as
-  // account_name plus an arbitrary "libotrng-storage" protocol.
-  char *account_name = NULL;
-  char *protocol_name = NULL;
-  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
-    return 1;
-  }
-
-  int err = otrl_privkey_generate_FILEp(state->user_state, privf, account_name,
-                                        protocol_name);
-
-  free(account_name);
-  free(protocol_name);
-  return err;
-}
-
 INTERNAL otrng_keypair_s *
 otrng_client_state_get_private_key_v4(otrng_client_state_s *state) {
   if (!state) {
@@ -169,125 +147,6 @@ otrng_client_state_add_private_key_v4(otrng_client_state_s *state,
 
   otrng_keypair_generate(state->keypair, sym);
   return 0;
-}
-
-INTERNAL int
-otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
-                                              FILE *privf) {
-  if (!privf) {
-    return 1;
-  }
-
-  if (!state->keypair) {
-    return 1;
-  }
-
-  // TODO: We could use a "get storage key" callback and use it as
-  // account_name plus an arbitrary "libotrng-storage" protocol.
-  char *account_name = NULL;
-  char *protocol_name = NULL;
-  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
-    return 1;
-  }
-
-  size_t n = strlen(protocol_name) + strlen(account_name) + 2;
-  char *key = malloc(n);
-  snprintf(key, n, "%s:%s", protocol_name, account_name);
-
-  free(account_name);
-  free(protocol_name);
-
-  int err = fputs(key, privf);
-  free(key);
-
-  if (EOF == err) {
-    return 1;
-  }
-
-  if (EOF == fputs("\n", privf)) {
-    return 1;
-  }
-
-  char *buff = NULL;
-  size_t s = 0;
-  if (!otrng_symmetric_key_serialize(&buff, &s, state->keypair->sym)) {
-    return 1;
-  }
-
-  err = fwrite(buff, s, 1, privf);
-  free(buff);
-
-  if (err != 1) {
-    return 1;
-  }
-
-  if (EOF == fputs("\n", privf)) {
-    return 1;
-  }
-
-  return 0;
-}
-
-INTERNAL int
-otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
-                                             FILE *privf) {
-  char *line = NULL;
-  size_t cap = 0;
-  int len = 0;
-
-  if (!privf) {
-    return -1;
-  }
-
-  if (feof(privf)) {
-    return 1;
-  }
-
-  if (!state->keypair) {
-    state->keypair = otrng_keypair_new();
-  }
-
-  if (!state->keypair) {
-    return -2;
-  }
-
-  // TODO: we need to remove getline. It is not c99.
-  // OR ignore if this will be moved to the plugin.
-  len = getline(&line, &cap, privf);
-  if (len < 0) {
-    free(line);
-    return -3;
-  }
-
-  if (!otrng_symmetric_key_deserialize(state->keypair, line, len - 1)) {
-    free(line);
-    otrng_keypair_free(state->keypair);
-    state->keypair = NULL;
-
-    return 1;
-  }
-
-  free(line);
-
-  return 0;
-}
-
-API int otrng_client_state_instag_generate_FILEp(otrng_client_state_s *state,
-                                                 FILE *instagf) {
-  // TODO: We could use a "get storage key" callback and use it as
-  // account_name plus an arbitrary "libotrng-storage" protocol.
-  char *account_name = NULL;
-  char *protocol_name = NULL;
-  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
-    return 1;
-  }
-
-  gcry_error_t ret = otrl_instag_generate_FILEp(state->user_state, instagf,
-                                                account_name, protocol_name);
-
-  free(account_name);
-  free(protocol_name);
-  return ret;
 }
 
 API const client_profile_s *
@@ -455,15 +314,6 @@ otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
   }
 
   return instag->instag;
-}
-
-API int otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
-                                                   FILE *instag) {
-  if (!state->user_state) {
-    return 1;
-  }
-
-  return otrl_instag_read_FILEp(state->user_state, instag);
 }
 
 INTERNAL const client_profile_s *

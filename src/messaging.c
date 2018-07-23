@@ -21,8 +21,11 @@
 #include <libotr/privkey.h>
 
 #define OTRNG_MESSAGING_PRIVATE
+#define OTRNG_PERSISTENCE_PRIVATE
 
 #include "messaging.h"
+
+#include "persistence.h"
 
 API otrng_user_state_s *
 otrng_user_state_new(const otrng_client_callbacks_s *cb) {
@@ -132,7 +135,7 @@ otrng_messaging_client_s *otrng_messaging_client_get(otrng_user_state_s *state,
 API int
 otrng_user_state_private_key_v3_generate_FILEp(otrng_user_state_s *state,
                                                void *client_id, FILE *privf) {
-  return otrng_client_state_private_key_v3_generate_FILEp(
+  return otrng_client_state_private_key_v3_write_FILEp(
       get_client_state(state, client_id), privf);
 }
 
@@ -196,18 +199,24 @@ API int otrng_user_state_private_key_v4_read_FILEp(
     return 1;
   }
 
+  // Scan the whole file for a private key for this client
   while (!feof(privf)) {
     const void *client_id = read_client_id_for_key(privf);
     if (!client_id) {
       continue;
     }
 
-    if (otrng_client_state_private_key_v4_read_FILEp(
-            get_client_state(state, client_id), privf)) {
+    otrng_client_state_s *client_state = get_client_state(state, client_id);
+    if (otrng_client_state_private_key_v4_read_FILEp(client_state, privf)) {
       continue;
+    }
+
+    if (client_state->keypair) {
+      return 0;
     }
   }
 
+  // TODO: Should return an error code saying no key was found
   return 0;
 }
 
@@ -228,7 +237,7 @@ API unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state,
 API int
 otrng_user_state_instag_generate_generate_FILEp(otrng_user_state_s *state,
                                                 void *client_id, FILE *instag) {
-  return otrng_client_state_instag_generate_FILEp(
+  return otrng_client_state_instance_tag_write_FILEp(
       get_client_state(state, client_id), instag);
 }
 

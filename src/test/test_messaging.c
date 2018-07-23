@@ -19,6 +19,7 @@
  */
 
 #include "../messaging.h"
+#include "../persistence.h"
 
 // These must be fixed pointers managed by the messaging app
 static const char *alice_account = "alice@xmpp";

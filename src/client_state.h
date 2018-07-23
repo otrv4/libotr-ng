@@ -97,12 +97,6 @@ INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
 INTERNAL const otrng_stored_prekeys_s *
 get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state);
 
-API int otrng_client_state_instag_generate_FILEp(otrng_client_state_s *state,
-                                                 FILE *instagf);
-
-API int otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
-                                                   FILE *instag);
-
 INTERNAL unsigned int
 otrng_client_state_get_instance_tag(const otrng_client_state_s *state);
 
@@ -128,19 +122,9 @@ otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
                                       const otrng_prekey_profile_s *profile);
 
 // TODO: @client Read/Write prekey_profiles from/to a file.
-INTERNAL int
-otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
-                                             FILE *privf);
-
-INTERNAL int
-otrng_client_state_private_key_v4_write_FILEp(otrng_client_state_s *state,
-                                              FILE *privf);
 
 INTERNAL OtrlPrivKey *
 otrng_client_state_get_private_key_v3(const otrng_client_state_s *state);
-
-INTERNAL int otrng_client_state_private_key_v3_generate_FILEp(
-    const otrng_client_state_s *state, FILE *privf);
 
 INTERNAL otrng_keypair_s *
 otrng_client_state_get_private_key_v4(otrng_client_state_s *state);

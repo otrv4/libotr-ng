@@ -187,7 +187,7 @@ void test_otrng_client_profile_transitional_signature(void) {
   // Generate DSA key
   FILE *tmpFILEp = tmpfile();
   otrng_assert(
-      !otrng_client_state_private_key_v3_generate_FILEp(client, tmpFILEp));
+      !otrng_client_state_private_key_v3_write_FILEp(client, tmpFILEp));
   fclose(tmpFILEp);
 
   OtrlPrivKey *dsa_key = otrng_client_state_get_private_key_v3(client);
