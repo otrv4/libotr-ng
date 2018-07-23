@@ -290,13 +290,13 @@ void test_otrng_send_offline_message() {
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
   // Bob receives an offline message
-  otrng_response_s *resp = otrng_response_new();
-  otrng_assert_is_success(otrng_receive_message(resp, notif, to_bob, bob));
+  otrng_response_s *response = otrng_response_new();
+  otrng_assert_is_success(otrng_receive_message(response, notif, to_bob, bob));
   free(to_bob);
 
-  otrng_assert(!resp->to_display);
-  otrng_assert(!resp->to_send);
-  otrng_response_free_all(resp);
+  otrng_assert(!response->to_display);
+  otrng_assert(!response->to_send);
+  otrng_response_free_all(response);
 
   g_assert_cmpint(bob->their_prekeys_id, ==, 0);
   otrng_assert(bob->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
@@ -394,6 +394,98 @@ void test_otrng_send_offline_message() {
   g_assert_cmpint(response_to_bob->tlvs->data->len, ==, 342);
 
   free_message_and_response(response_to_bob, &to_send);
+
+  otrng_user_state_free_all(alice_client_state->user_state,
+                            bob_client_state->user_state);
+  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_free_all(alice, bob);
+}
+
+void test_otrng_incorrect_offline_dake() {
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+
+  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+
+  otrng_notif notif = OTRNG_NOTIF_NONE;
+
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 0);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
+
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 0);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+
+  prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(bob);
+  otrng_assert(ensemble);
+  // TODO: @non_interactive should this validation happen outside?
+  otrng_assert_is_success(otrng_prekey_ensemble_validate(ensemble));
+
+  g_assert_cmpint(bob->their_prekeys_id, ==, 0);
+  otrng_assert(bob->running_version == 0);
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 0);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+
+  char *to_bob = NULL;
+  otrng_assert_is_success(otrng_send_offline_message(&to_bob, ensemble, alice));
+  otrng_prekey_ensemble_free(ensemble);
+
+  otrng_assert(to_bob);
+  otrng_assert_cmpmem("?OTR:AAQN", to_bob, 9);
+  otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+  otrng_assert(alice->running_version == 4);
+
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 0);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
+
+  // Bob receives an offline message
+  otrng_response_s *response = otrng_response_new();
+  otrng_assert_is_success(otrng_receive_message(response, notif, to_bob, bob));
+  free(to_bob);
+
+  otrng_assert(!response->to_display);
+  otrng_assert(!response->to_send);
+  otrng_response_free_all(response);
+
+  g_assert_cmpint(bob->their_prekeys_id, ==, 0);
+  otrng_assert(bob->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
+  otrng_assert(bob->running_version == 4);
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 0);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+
+  otrng_assert_ec_public_key_eq(bob->keys->their_ecdh,
+                                alice->keys->our_ecdh->pub);
+  otrng_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh->pub);
+
+  // Both have the same shared shared secret/root key
+  otrng_assert_root_key_eq(alice->keys->current->root_key,
+                           bob->keys->current->root_key);
+
+  string_p to_send = NULL;
+  otrng_err result;
+
+  // Alice is unable to send a data msg
+  result = otrng_send_message(&to_send, "hi", notif, NULL, 0, bob);
+  otrng_assert_is_error(result);
+  otrng_assert(!to_send);
+  // TODO: weird
+  g_assert_cmpint(notif, ==, OTRNG_NOTIF_NONE);
+
+  g_assert_cmpint(alice->keys->i, ==, 0);
+  g_assert_cmpint(alice->keys->j, ==, 0);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
 
   otrng_user_state_free_all(alice_client_state->user_state,
                             bob_client_state->user_state);
