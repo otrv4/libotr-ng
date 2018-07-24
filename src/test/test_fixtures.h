@@ -58,12 +58,34 @@ static int get_account_and_protocol_cb(char **account_name,
   return 0;
 }
 
+static void create_client_profile_cb(struct otrng_client_state_s *state,
+                                     const void *client_opdata) {
+  const char *allowed_versions = "34";
+
+  // TODO: The callback probably wants to invoke
+  // otrng_client_state_create_client_profile(allowed_versions);
+  // to create a profile with the current instance tag and long-term-key and
+  // a reasonable expiration.
+  uint32_t instance_tag = otrng_client_state_get_instance_tag(state);
+  otrng_keypair_s *keypair = otrng_client_state_get_keypair_v4(state);
+
+  client_profile_s *profile =
+      otrng_client_profile_build(instance_tag, allowed_versions, keypair);
+
+  if (!instance_tag || !keypair || !profile) {
+    return;
+  }
+
+  otrng_client_state_add_client_profile(state, profile);
+}
+
 static otrng_client_callbacks_p test_callbacks = {{
     &get_account_and_protocol_cb, // get_account_and_protocol
-    NULL,                         // create_privkey v4
-    NULL,                         // create_privkey v3
-    NULL,                         // create_shared_prekey
     NULL,                         // create_instag
+    NULL,                         // create_privkey v3
+    NULL,                         // create_privkey v4
+    &create_client_profile_cb,    // create_client_profile
+    NULL,                         // create_shared_prekey
     NULL,                         // gone_secure
     NULL,                         // gone_insecure
     NULL,                         // fingerprint_seen

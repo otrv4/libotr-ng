@@ -171,8 +171,7 @@ API int otrng_user_state_generate_shared_prekey(otrng_user_state_s *state,
 API otrng_keypair_s *
 otrng_user_state_get_private_key_v4(otrng_user_state_s *state,
                                     const void *client_id) {
-  return otrng_client_state_get_private_key_v4(
-      get_client_state(state, client_id));
+  return otrng_client_state_get_keypair_v4(get_client_state(state, client_id));
 }
 
 tstatic void add_private_key_v4_to_FILEp(list_element_s *node, void *context) {

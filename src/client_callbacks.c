@@ -44,6 +44,18 @@ otrng_client_callbacks_create_privkey_v3(const otrng_client_callbacks_s *cb,
 }
 
 INTERNAL void
+otrng_client_callbacks_create_client_profile(const otrng_client_callbacks_s *cb,
+                                             struct otrng_client_state_s *state,
+                                             const void *client_opdata) {
+  if (!cb) {
+    return;
+  }
+
+  // This callback is required and is expected to segfault if not provided.
+  cb->create_client_profile(state, client_opdata);
+}
+
+INTERNAL void
 otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
                                             const void *client_opdata) {
   if (!cb) {

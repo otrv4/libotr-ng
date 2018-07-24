@@ -112,7 +112,7 @@ otrng_client_state_get_private_key_v3(const otrng_client_state_s *state) {
 }
 
 INTERNAL otrng_keypair_s *
-otrng_client_state_get_private_key_v4(otrng_client_state_s *state) {
+otrng_client_state_get_keypair_v4(otrng_client_state_s *state) {
   if (!state) {
     return NULL;
   }
@@ -318,21 +318,17 @@ otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
 
 INTERNAL const client_profile_s *
 otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state) {
+  if (!state) {
+    return NULL;
+  }
+
   const client_profile_s *ret = otrng_client_state_get_client_profile(state);
   if (ret) {
     return ret;
   }
 
-  // TODO: @client invoke callback to generate profile if it is NULL, instead of
-  // doing it here.
-  // TODO: @client @client_profile Versions should be configurable
-  // TODO: @client_profile should this ID be random? It should probably be
-  // unique for us, so we need to store this in client state (?)
-  uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
-  /* @secret_information: the long-term key pair lives for as long the client
-     decides */
-  state->client_profile =
-      otrng_client_profile_build(our_instance_tag, "34", state->keypair);
+  otrng_client_callbacks_create_client_profile(state->callbacks, state,
+                                               state->client_id);
 
   return state->client_profile;
 }

@@ -127,7 +127,7 @@ INTERNAL OtrlPrivKey *
 otrng_client_state_get_private_key_v3(const otrng_client_state_s *state);
 
 INTERNAL otrng_keypair_s *
-otrng_client_state_get_private_key_v4(otrng_client_state_s *state);
+otrng_client_state_get_keypair_v4(otrng_client_state_s *state);
 
 INTERNAL int
 otrng_client_state_add_private_key_v4(otrng_client_state_s *state,

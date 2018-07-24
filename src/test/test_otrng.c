@@ -222,10 +222,18 @@ void test_otrng_build_prekey_ensemble() {
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {0xA};
   uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {0XF};
 
-  otrng_client_state_s *state = otrng_client_state_new(NULL);
-  otrng_client_state_add_private_key_v4(state, long_term_priv);
-  otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv);
-  otrng_client_state_add_instance_tag(state, 0x100A0F);
+  otrng_client_state_s *state = otrng_client_state_new("some client");
+  state->callbacks = test_callbacks;
+  state->user_state = otrl_userstate_create();
+
+  otrng_assert(!otrng_client_state_add_private_key_v4(state, long_term_priv));
+  otrng_assert(
+      !otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv));
+  otrng_assert(!otrng_client_state_add_instance_tag(state, 0x100A0F));
+
+  otrng_keypair_s *keypair = otrng_client_state_get_keypair_v4(state);
+  otrng_client_state_add_client_profile(
+      state, otrng_client_profile_build(0x100A0F, "34", keypair));
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
   otrng_s *otr = otrng_new(state, policy);
@@ -251,6 +259,7 @@ void test_otrng_build_prekey_ensemble() {
 
   otrng_prekey_ensemble_free(ensemble);
   otrng_free(otr);
+  otrl_userstate_free(state->user_state);
   otrng_client_state_free(state);
 }
 
@@ -271,10 +280,11 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
   otrng_client_state_s *state = otrng_client_state_new(ALICE_IDENTITY);
 
   otrng_client_callbacks_p callbacks = {{NULL, // get_account_and_protocol
-                                         NULL, // create_privkey v4
-                                         NULL, // create_privkey v3
-                                         NULL, // create_shared_prekey
                                          NULL, // create_instag
+                                         NULL, // create_privkey v3
+                                         NULL, // create_privkey v4
+                                         NULL, // create_client_profile
+                                         NULL, // create_shared_prekey
                                          NULL, // gone_secure
                                          NULL, // gone_insecure
                                          NULL, // fingerprint_seen

@@ -44,22 +44,29 @@ typedef struct otrng_shared_session_state_s {
   char *password;
 } otrng_shared_session_state_s;
 
+// Forward declaration
+struct otrng_client_state_s;
+
 typedef struct otrng_client_callbacks_s {
   /* Get account and protocol from a given client_id */
   int (*get_account_and_protocol)(char **account, char **protocol,
                                   const void *client_id);
 
-  /* Create a OTRv4 private key */
-  void (*create_privkey_v4)(const void *client_opdata);
+  /* Create an instance tag */
+  void (*create_instag)(const void *client_opdata);
 
   /* Create a OTRv3 private key */
   void (*create_privkey_v3)(const void *client_opdata);
 
-  /* Create a shared prekey for the given accountname/protocol if not available.
-   */
-  void (*create_shared_prekey)(const void *client_opdata);
+  /* Create a OTRv4 private key */
+  void (*create_privkey_v4)(const void *client_opdata);
 
-  void (*create_instag)(const void *client_opdata);
+  /* Create a client profile */
+  void (*create_client_profile)(struct otrng_client_state_s *state,
+                                const void *client_opdata);
+
+  /* Create a shared prekey */
+  void (*create_shared_prekey)(const void *client_opdata);
 
   /* A connection has entered a secure state. */
   void (*gone_secure)(const otrng_client_conversation_s *);
@@ -132,6 +139,11 @@ otrng_client_callbacks_create_privkey_v4(const otrng_client_callbacks_s *cb,
 INTERNAL void
 otrng_client_callbacks_create_privkey_v3(const otrng_client_callbacks_s *cb,
                                          const void *client_opdata);
+
+INTERNAL void
+otrng_client_callbacks_create_client_profile(const otrng_client_callbacks_s *cb,
+                                             struct otrng_client_state_s *state,
+                                             const void *client_opdata);
 
 INTERNAL void
 otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
