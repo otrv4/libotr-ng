@@ -135,8 +135,8 @@ otrng_get_shared_session_state(otrng_s *otr);
 
 tstatic int get_message_type(const string_p message);
 
-tstatic otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
-                                 const size_t bufflen);
+API otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
+                             const size_t bufflen);
 
 tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr);
 

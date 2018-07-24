@@ -1987,8 +1987,8 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
                                                otr);
 }
 
-tstatic otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
-                                 const size_t bufflen) {
+API otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
+                             const size_t bufflen) {
   if (bufflen == 0) {
     return OTRNG_ERROR;
   }
