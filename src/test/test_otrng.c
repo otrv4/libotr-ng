@@ -232,8 +232,10 @@ void test_otrng_build_prekey_ensemble() {
   otrng_assert(!otrng_client_state_add_instance_tag(state, 0x100A0F));
 
   otrng_keypair_s *keypair = otrng_client_state_get_keypair_v4(state);
-  otrng_client_state_add_client_profile(
-      state, otrng_client_profile_build(0x100A0F, "34", keypair));
+  client_profile_s *profile =
+      otrng_client_profile_build(0x100A0F, "34", keypair);
+  otrng_client_state_add_client_profile(state, profile);
+  otrng_client_profile_free(profile);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
   otrng_s *otr = otrng_new(state, policy);
