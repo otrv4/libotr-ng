@@ -159,6 +159,14 @@ API int otrng_user_state_generate_private_key(otrng_user_state_s *state,
   return otrng_user_state_add_private_key_v4(state, client_id, sym);
 }
 
+API int otrng_user_state_generate_client_profile(otrng_user_state_s *state,
+                                                 void *client_id) {
+  otrng_client_state_s *client = get_client_state(state, client_id);
+  client_profile_s *profile =
+      otrng_client_state_build_default_client_profile(client);
+  return otrng_client_state_add_client_profile(client, profile);
+}
+
 API int otrng_user_state_generate_shared_prekey(otrng_user_state_s *state,
                                                 void *client_id) {
   uint8_t sym[ED448_PRIVATE_BYTES];
