@@ -160,6 +160,20 @@ otrng_client_state_get_client_profile(otrng_client_state_s *state) {
   return state->client_profile;
 }
 
+API client_profile_s *
+otrng_client_state_build_default_client_profile(otrng_client_state_s *state) {
+  // TODO: Get allowed versions from the policy
+  const char *allowed_versions = "34";
+  uint32_t instance_tag = otrng_client_state_get_instance_tag(state);
+  otrng_keypair_s *keypair = otrng_client_state_get_keypair_v4(state);
+
+  if (!instance_tag || !keypair) {
+    return NULL;
+  }
+
+  return otrng_client_profile_build(instance_tag, allowed_versions, keypair);
+}
+
 API int otrng_client_state_add_client_profile(otrng_client_state_s *state,
                                               const client_profile_s *profile) {
   if (!state) {

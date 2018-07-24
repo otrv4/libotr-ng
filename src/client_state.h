@@ -108,6 +108,9 @@ INTERNAL int
 otrng_client_state_add_shared_prekey_v4(otrng_client_state_s *state,
                                         const uint8_t sym[ED448_PRIVATE_BYTES]);
 
+API client_profile_s *
+otrng_client_state_build_default_client_profile(otrng_client_state_s *state);
+
 API const client_profile_s *
 otrng_client_state_get_client_profile(otrng_client_state_s *state);
 
