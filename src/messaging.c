@@ -199,6 +199,23 @@ otrng_user_state_private_key_v4_write_FILEp(const otrng_user_state_s *state,
   return 0;
 }
 
+tstatic void add_client_profile_to_FILEp(list_element_s *node, void *context) {
+  FILE *privf = context;
+  otrng_client_state_s *state = node->data;
+  otrng_client_state_client_profile_write_FILEp(state, privf);
+}
+
+API int
+otrng_user_state_client_profile_write_FILEp(const otrng_user_state_s *state,
+                                            FILE *privf) {
+  if (!privf) {
+    return -1;
+  }
+
+  otrng_list_foreach(state->states, add_client_profile_to_FILEp, privf);
+  return 0;
+}
+
 API int otrng_user_state_private_key_v4_read_FILEp(
     otrng_user_state_s *state, FILE *privf,
     const void *(*read_client_id_for_key)(FILE *filep)) {
@@ -219,6 +236,35 @@ API int otrng_user_state_private_key_v4_read_FILEp(
     }
 
     if (client_state->keypair) {
+      return 0;
+    }
+  }
+
+  // TODO: Should return an error code saying no key was found
+  return 0;
+}
+
+API int otrng_user_state_client_profile_read_FILEp(
+    otrng_user_state_s *state, FILE *profile_filep,
+    const void *(*read_client_id_for_key)(FILE *filep)) {
+  if (!profile_filep) {
+    return 1;
+  }
+
+  // Scan the whole file for a private key for this client
+  while (!feof(profile_filep)) {
+    const void *client_id = read_client_id_for_key(profile_filep);
+    if (!client_id) {
+      continue;
+    }
+
+    otrng_client_state_s *client_state = get_client_state(state, client_id);
+    if (otrng_client_state_client_profile_read_FILEp(client_state,
+                                                     profile_filep)) {
+      continue;
+    }
+
+    if (client_state->client_profile) {
       return 0;
     }
   }

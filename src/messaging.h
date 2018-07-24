@@ -77,6 +77,14 @@ API int
 otrng_user_state_private_key_v4_write_FILEp(const otrng_user_state_s *state,
                                             FILE *privf);
 
+API int otrng_user_state_client_profile_read_FILEp(
+    otrng_user_state_s *state, FILE *profile_filep,
+    const void *(*read_client_id_for_key)(FILE *filep));
+
+API int
+otrng_user_state_client_profile_write_FILEp(const otrng_user_state_s *state,
+                                            FILE *privf);
+
 int otrng_user_state_add_instance_tag(otrng_user_state_s *state,
                                       void *client_id, unsigned int instag);
 
