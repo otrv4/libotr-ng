@@ -1987,8 +1987,8 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
                                                otr);
 }
 
-API otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
-                             const size_t bufflen) {
+API otrng_err otrng_extract_header(otrng_header_s *dst, const uint8_t *buffer,
+                                   const size_t bufflen) {
   if (bufflen == 0) {
     return OTRNG_ERROR;
   }
@@ -2022,7 +2022,7 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
                                           const uint8_t *decoded,
                                           size_t dec_len, otrng_s *otr) {
   otrng_header_s header;
-  if (!extract_header(&header, decoded, dec_len)) {
+  if (!otrng_extract_header(&header, decoded, dec_len)) {
     return OTRNG_ERROR;
   }
 

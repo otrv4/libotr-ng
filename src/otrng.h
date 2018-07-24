@@ -128,15 +128,14 @@ INTERNAL void otrng_destroy(otrng_s *otr);
 char *
 otrng_generate_session_state_string(const otrng_shared_session_state_s *state);
 
+API otrng_err otrng_extract_header(otrng_header_s *dst, const uint8_t *buffer,
+                                   const size_t bufflen);
 #ifdef OTRNG_OTRNG_PRIVATE
 
 tstatic otrng_shared_session_state_s
 otrng_get_shared_session_state(otrng_s *otr);
 
 tstatic int get_message_type(const string_p message);
-
-API otrng_err extract_header(otrng_header_s *dst, const uint8_t *buffer,
-                             const size_t bufflen);
 
 tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr);
 
