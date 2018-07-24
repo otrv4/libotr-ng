@@ -77,6 +77,8 @@ static void create_client_profile_cb(struct otrng_client_state_s *state,
   }
 
   otrng_client_state_add_client_profile(state, profile);
+
+  otrng_client_profile_free(profile);
 }
 
 static otrng_client_callbacks_p test_callbacks = {{
