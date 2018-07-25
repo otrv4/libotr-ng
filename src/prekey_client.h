@@ -84,11 +84,16 @@ typedef enum {
 
 typedef struct {
   uint32_t instance_tag;
-  client_profile_p client_profile;
+  const client_profile_s *client_profile;
   ecdh_keypair_p ephemeral_ecdh;
 
   otrng_prekey_next_message_t after_dake;
 } otrng_prekey_client_s;
+
+API otrng_prekey_client_s *
+otrng_prekey_client_new(uint32_t instance_tag, const client_profile_s *profile);
+
+API void otrng_prekey_client_free(otrng_prekey_client_s *client);
 
 API char *
 otrng_prekey_client_request_storage_status(otrng_prekey_client_s *client);

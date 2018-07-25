@@ -44,6 +44,8 @@ typedef struct otrng_conversation_s {
 typedef struct otrng_client_s {
   otrng_client_state_s *state;
   list_element_s *conversations;
+
+  otrng_prekey_client_s *prekey_client;
 } otrng_client_s, otrng_client_p[1];
 
 /* Defines the different results that a client operation can give */
