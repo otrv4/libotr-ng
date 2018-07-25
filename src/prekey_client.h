@@ -78,10 +78,27 @@ typedef struct {
   uint8_t mac[DATA_MSG_MAC_BYTES];
 } otrng_prekey_failure_message_s;
 
+typedef enum {
+  OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST = 1,
+} otrng_prekey_next_message_t;
+
 typedef struct {
+  uint32_t instance_tag;
+  client_profile_p client_profile;
+  ecdh_keypair_p ephemeral_ecdh;
+
+  otrng_prekey_next_message_t after_dake;
 } otrng_prekey_client_s;
 
 API char *
 otrng_prekey_client_request_storage_status(otrng_prekey_client_s *client);
+
+INTERNAL
+otrng_err
+otrng_prekey_dake1_message_asprint(uint8_t **serialized, size_t *serialized_len,
+                                   const otrng_prekey_dake1_message_s *msg);
+
+INTERNAL
+void otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *msg);
 
 #endif
