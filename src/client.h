@@ -26,6 +26,7 @@
 #include "client_state.h"
 #include "list.h"
 #include "otrng.h"
+#include "prekey_client.h"
 #include "shared.h"
 
 // TODO: @client REMOVE
@@ -122,6 +123,9 @@ API int should_heartbeat(int last_sent);
 /* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf); */
 
 /* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf); */
+
+API otrng_prekey_client_s *
+otrng_client_get_prekey_client(otrng_client_s *client);
 
 #ifdef OTRNG_CLIENT_PRIVATE
 #endif
