@@ -206,7 +206,7 @@ otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
     return 1;
   }
 
-  otrng_client_profile_destroy(state->client_profile);
+  otrng_client_profile_free(state->client_profile);
 
   // TODO: we need to remove getline. It is not c99.
   // OR ignore if this will be moved to the plugin.
@@ -225,11 +225,18 @@ otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
   size_t dec_len = otrl_base64_decode(dec, line, len);
   free(line);
 
-  otrng_err ret = otrng_client_profile_deserialize(state->client_profile, dec,
-                                                   dec_len, NULL);
+  client_profile_s profile[1];
+  otrng_err ret = otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
   free(dec);
 
-  return ret == OTRNG_ERROR;
+  int err = (ret == OTRNG_ERROR);
+
+  if (!err) {
+    err = otrng_client_state_add_client_profile(state, profile);
+    otrng_client_profile_destroy(profile);
+  }
+
+  return err;
 }
 
 INTERNAL int
