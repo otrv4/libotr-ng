@@ -102,9 +102,6 @@ tstatic void received_symkey_cb_v3(const otrng_conversation_state_s *conv,
                                    const unsigned char *usedata,
                                    size_t usedatalen,
                                    const unsigned char *extra_key) {
-
-// TODO: Add a callback
-
 #ifdef DEBUG
   printf("Received symkey use: %08x\n", use);
   printf("Usedata lenght: %zu\n", usedatalen);
@@ -123,6 +120,8 @@ tstatic void received_symkey_cb_v3(const otrng_conversation_state_s *conv,
 
   printf("\n");
 #endif
+
+  // TODO: Add a callback
 }
 
 tstatic OtrlPolicy op_policy(void *opdata, ConnContext *context) {
