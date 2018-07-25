@@ -25,6 +25,9 @@
 
 #include "auth.h"
 #include "client_profile.h"
+#include "constants.h"
+#include "dake.h"
+#include "prekey_profile.h"
 #include "shared.h"
 
 typedef struct {
@@ -46,6 +49,34 @@ typedef struct {
   uint8_t *message;
   size_t message_len;
 } otrng_prekey_dake3_message_s;
+
+typedef struct {
+  uint8_t num_prekeys;
+  dake_prekey_message_s **prekey_messages;
+  client_profile_s *client_profile;
+  otrng_prekey_profile_s *prekey_profile;
+  uint8_t mac[DATA_MSG_MAC_BYTES];
+} otrng_prekey_publication_message_s;
+
+typedef struct {
+  uint8_t mac[DATA_MSG_MAC_BYTES];
+} otrng_prekey_storage_information_request_message_s;
+
+typedef struct {
+  uint32_t client_instance_tag;
+  uint32_t stored_prekeys;
+  uint8_t mac[DATA_MSG_MAC_BYTES];
+} otrng_prekey_storage_status_message_s;
+
+typedef struct {
+  uint32_t client_instance_tag;
+  uint8_t mac[DATA_MSG_MAC_BYTES];
+} otrng_prekey_success_message_s;
+
+typedef struct {
+  uint32_t client_instance_tag;
+  uint8_t mac[DATA_MSG_MAC_BYTES];
+} otrng_prekey_failure_message_s;
 
 typedef struct {
 } otrng_prekey_client_s;
