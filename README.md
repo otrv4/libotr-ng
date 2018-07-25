@@ -58,16 +58,6 @@ To configure project with debug option:
 $ ./configure --enable-debug
 ```
 
-To configure project with code-coverage option:
-
-Install:
-* lcov
-* genhtml
-
-```
-$ ./configure --enable-code-coverage
-```
-
 To run `make code-style`:
 
 Install:
