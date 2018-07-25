@@ -1989,7 +1989,11 @@ tstatic otrng_err otrng_receive_data_message(otrng_response_s *response,
 
 API otrng_err otrng_extract_header(otrng_header_s *dst, const uint8_t *buffer,
                                    const size_t bufflen) {
-  if (bufflen == 0) {
+  if (bufflen < 3) {
+    return OTRNG_ERROR;
+  }
+
+  if (!dst) {
     return OTRNG_ERROR;
   }
 
