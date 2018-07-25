@@ -21,7 +21,31 @@
 #ifndef OTRNG_PREKEY_CLIENT_H
 #define OTRNG_PREKEY_CLIENT_H
 
+#include <stdint.h>
+
+#include "auth.h"
+#include "client_profile.h"
 #include "shared.h"
+
+typedef struct {
+  uint32_t client_instance_tag;
+  client_profile_p client_profile;
+  ec_point_p I;
+} otrng_prekey_dake1_message_s;
+
+typedef struct {
+  uint32_t client_instance_tag;
+  uint8_t *server_identity;
+  ec_point_p S;
+  ring_sig_p sigma;
+} otrng_prekey_dake2_message_s;
+
+typedef struct {
+  uint32_t client_instance_tag;
+  ring_sig_p sigma;
+  uint8_t *message;
+  size_t message_len;
+} otrng_prekey_dake3_message_s;
 
 typedef struct {
 } otrng_prekey_client_s;
