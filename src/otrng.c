@@ -2012,9 +2012,9 @@ API otrng_err otrng_extract_header(otrng_header_s *dst, const uint8_t *buffer,
 
   dst->version = OTRNG_ALLOW_NONE;
   if (version == 0x04) {
-    dst->version = OTRNG_ALLOW_V4;
+    dst->version = 4;
   } else if (version == 0x03) {
-    dst->version = OTRNG_ALLOW_V3;
+    dst->version = 3;
   }
   dst->type = type;
 
@@ -2030,13 +2030,11 @@ tstatic otrng_err receive_decoded_message(otrng_response_s *response,
     return OTRNG_ERROR;
   }
 
-  if (!allow_version(otr, header.version)) {
-    return OTRNG_ERROR;
-  }
+  int version_allowed =
+      (header.version == 3 && allow_version(otr, OTRNG_ALLOW_V3)) ||
+      (header.version == 4 && allow_version(otr, OTRNG_ALLOW_V4));
 
-  // TODO: @refactoring Why the version in the header is a ALLOWED VERSION?
-  // This is the message version, not the version the protocol allows
-  if (header.version != OTRNG_ALLOW_V4) {
+  if (!version_allowed) {
     return OTRNG_ERROR;
   }
 
