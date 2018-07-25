@@ -1998,25 +1998,15 @@ API otrng_err otrng_extract_header(otrng_header_s *dst, const uint8_t *buffer,
   }
 
   size_t read = 0;
-  uint16_t version = 0;
-  uint8_t type = 0;
-  if (!otrng_deserialize_uint16(&version, buffer, bufflen, &read)) {
+  if (!otrng_deserialize_uint16(&dst->version, buffer, bufflen, &read)) {
     return OTRNG_ERROR;
   }
 
   buffer += read;
 
-  if (!otrng_deserialize_uint8(&type, buffer, bufflen - read, &read)) {
+  if (!otrng_deserialize_uint8(&dst->type, buffer, bufflen - read, &read)) {
     return OTRNG_ERROR;
   }
-
-  dst->version = OTRNG_ALLOW_NONE;
-  if (version == 0x04) {
-    dst->version = 4;
-  } else if (version == 0x03) {
-    dst->version = 3;
-  }
-  dst->type = type;
 
   return OTRNG_SUCCESS;
 }
