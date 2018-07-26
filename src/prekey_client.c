@@ -32,6 +32,14 @@ otrng_prekey_client_new(uint32_t instance_tag,
     return NULL;
   }
 
+  if (!instance_tag) {
+    return NULL;
+  }
+
+  if (!profile) {
+    return NULL;
+  }
+
   ret->instance_tag = instance_tag;
   ret->client_profile = profile;
   otrng_ecdh_keypair_destroy(ret->ephemeral_ecdh);
