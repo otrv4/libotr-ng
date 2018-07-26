@@ -52,10 +52,6 @@ static inline dh_public_key_p their_dh(const otrng_s *otr) {
   return otr->keys->their_dh;
 }
 
-#define QUERY_MESSAGE_TAG_BYTES 5
-#define WHITESPACE_TAG_BASE_BYTES 16
-#define WHITESPACE_TAG_VERSION_BYTES 8
-
 static const char tag_base[] = {'\x20', '\x09', '\x20', '\x20', '\x09', '\x09',
                                 '\x09', '\x09', '\x20', '\x09', '\x20', '\x09',
                                 '\x20', '\x09', '\x20', '\x20', '\0'};
