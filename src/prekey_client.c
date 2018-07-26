@@ -87,6 +87,7 @@ otrng_prekey_dake1_message_asprint(uint8_t **serialized, size_t *serialized_len,
   w += otrng_serialize_ec_point(ret + w, msg->I);
   free(client_profile_buff);
 
+  *serialized = ret;
   if (serialized_len) {
     *serialized_len = w;
   }
@@ -104,9 +105,9 @@ static char *prekey_encode(const uint8_t *buffer, size_t buffer_len) {
     return NULL;
   }
 
-  otrl_base64_encode(ret, buffer, buffer_len);
-  ret[base64_len + 1] = '.';
-  ret[base64_len + 2] = 0;
+  size_t l = otrl_base64_encode(ret, buffer, buffer_len);
+  ret[l] = '.';
+  ret[l + 1] = 0;
 
   return ret;
 }
