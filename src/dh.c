@@ -241,7 +241,7 @@ INTERNAL otrng_err otrng_dh_mpi_deserialize(dh_mpi_p *dst,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi) {
+API otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi) {
   /* Check that pub is in range */
   if (mpi == NULL) {
     return otrng_false;

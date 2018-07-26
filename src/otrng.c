@@ -2107,7 +2107,7 @@ tstatic otrng_err receive_error_message(otrng_response_s *response,
 #define MSG_OTR_ENCODED 4
 #define MSG_OTR_ERROR 5
 
-tstatic int get_message_type(const string_p message) {
+API int otrng_get_message_type(const string_p message) {
   if (message_contains_tag(message)) {
     return MSG_TAGGED_PLAINTEXT;
   }
@@ -2126,7 +2126,7 @@ tstatic otrng_err receive_message_v4_only(otrng_response_s *response,
                                           otrng_notif notif,
                                           const string_p message,
                                           otrng_s *otr) {
-  switch (get_message_type(message)) {
+  switch (otrng_get_message_type(message)) {
   case MSG_PLAINTEXT:
     receive_plaintext(response, message, otr);
     return OTRNG_SUCCESS;

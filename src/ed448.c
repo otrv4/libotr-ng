@@ -77,7 +77,7 @@ INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p) {
   return otrng_false;
 }
 
-INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_p p) {
+API void otrng_ec_point_encode(uint8_t *enc, const ec_point_p p) {
   // TODO: @sanitizer @refactoring this does not check the size of enc and may
   // overflow buffer.
   goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(enc, p);

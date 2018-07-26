@@ -35,6 +35,15 @@
 #include "str.h"
 #include "v3.h"
 
+#define MSG_PLAINTEXT 1
+#define MSG_TAGGED_PLAINTEXT 2
+#define MSG_QUERY_STRING 3
+#define MSG_OTR_ENCODED 4
+#define MSG_OTR_ERROR 5
+#define QUERY_MESSAGE_TAG_BYTES 5
+#define WHITESPACE_TAG_BASE_BYTES 16
+#define WHITESPACE_TAG_VERSION_BYTES 8
+
 #define UNUSED_ARG(x) (void)(x)
 
 #define OTRNG_INIT                                                             \
@@ -130,12 +139,12 @@ otrng_generate_session_state_string(const otrng_shared_session_state_s *state);
 
 API otrng_err otrng_extract_header(otrng_header_s *dst, const uint8_t *buffer,
                                    const size_t bufflen);
+
+API int otrng_get_message_type(const string_p message);
 #ifdef OTRNG_OTRNG_PRIVATE
 
 tstatic otrng_shared_session_state_s
 otrng_get_shared_session_state(otrng_s *otr);
-
-tstatic int get_message_type(const string_p message);
 
 tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr);
 
