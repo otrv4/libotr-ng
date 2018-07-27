@@ -25,13 +25,8 @@
 #include <libotr/b64.h>
 
 API otrng_prekey_client_s *
-otrng_prekey_client_new(uint32_t instance_tag,
+otrng_prekey_client_new(const char *server, uint32_t instance_tag,
                         const client_profile_s *profile) {
-  otrng_prekey_client_s *ret = malloc(sizeof(otrng_prekey_client_s));
-  if (!ret) {
-    return NULL;
-  }
-
   if (!instance_tag) {
     return NULL;
   }
@@ -40,8 +35,18 @@ otrng_prekey_client_new(uint32_t instance_tag,
     return NULL;
   }
 
+  if (!server) {
+    return NULL;
+  }
+
+  otrng_prekey_client_s *ret = malloc(sizeof(otrng_prekey_client_s));
+  if (!ret) {
+    return NULL;
+  }
+
   ret->instance_tag = instance_tag;
   ret->client_profile = profile;
+  ret->server_identity = otrng_strdup(server);
   otrng_ecdh_keypair_destroy(ret->ephemeral_ecdh);
 
   return ret;
@@ -54,6 +59,9 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
 
   otrng_ecdh_keypair_destroy(client->ephemeral_ecdh);
   client->client_profile = NULL;
+
+  free(client->server_identity);
+  client->server_identity = NULL;
 }
 
 #define OTRNG_PREKEY_DAKE1_MSG 0x35

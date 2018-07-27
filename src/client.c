@@ -440,13 +440,14 @@ API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
 }
 
 API otrng_prekey_client_s *
-otrng_client_get_prekey_client(otrng_client_s *client) {
+otrng_client_get_prekey_client(const char *server_identity,
+                               otrng_client_s *client) {
   if (client->prekey_client) {
     return client->prekey_client;
   }
 
   client->prekey_client = otrng_prekey_client_new(
-      otrng_client_state_get_instance_tag(client->state),
+      server_identity, otrng_client_state_get_instance_tag(client->state),
       otrng_client_state_get_client_profile(client->state));
 
   return client->prekey_client;

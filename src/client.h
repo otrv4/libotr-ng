@@ -127,7 +127,8 @@ API int should_heartbeat(int last_sent);
 /* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf); */
 
 API otrng_prekey_client_s *
-otrng_client_get_prekey_client(otrng_client_s *client);
+otrng_client_get_prekey_client(const char *server_identity,
+                               otrng_client_s *client);
 
 #ifdef OTRNG_CLIENT_PRIVATE
 #endif

@@ -87,11 +87,13 @@ typedef struct {
   const client_profile_s *client_profile;
   ecdh_keypair_p ephemeral_ecdh;
 
+  char *server_identity;
   otrng_prekey_next_message_t after_dake;
 } otrng_prekey_client_s;
 
 API otrng_prekey_client_s *
-otrng_prekey_client_new(uint32_t instance_tag, const client_profile_s *profile);
+otrng_prekey_client_new(const char *server, uint32_t instance_tag,
+                        const client_profile_s *profile);
 
 API void otrng_prekey_client_free(otrng_prekey_client_s *client);
 
