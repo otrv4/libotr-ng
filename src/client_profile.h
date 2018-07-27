@@ -54,7 +54,7 @@
 typedef struct client_profile_s {
   uint32_t sender_instance_tag;
   otrng_public_key_p long_term_pub_key;
-  string_p versions;
+  char *versions;
   uint64_t expires;
   uint8_t *dsa_key;
   size_t dsa_key_len;
@@ -82,7 +82,7 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile);
 
 INTERNAL client_profile_s *
-otrng_client_profile_build(uint32_t instance_tag, const string_p versions,
+otrng_client_profile_build(uint32_t instance_tag, const char *versions,
                            const otrng_keypair_s *keypair);
 
 INTERNAL otrng_bool otrng_client_profile_valid(
@@ -99,7 +99,7 @@ INTERNAL otrng_err otrng_client_profile_verify_transitional_signature(
 
 #ifdef OTRNG_USER_PROFILE_PRIVATE
 
-tstatic client_profile_s *client_profile_new(const string_p versions);
+tstatic client_profile_s *client_profile_new(const char *versions);
 
 tstatic otrng_err client_profile_sign(client_profile_s *profile,
                                       const otrng_keypair_s *keypair);

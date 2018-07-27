@@ -350,11 +350,17 @@ tstatic otrng_err deserialize_field(client_profile_s *target,
     // TODO add field and deserialize
     break;
   case 0x04: // Versions
-    if (!otrng_deserialize_data((uint8_t **)&target->versions, buffer + w,
+  {
+    uint8_t *versions = NULL;
+    size_t versions_len = 0;
+    if (!otrng_deserialize_data(&versions, &versions_len, buffer + w,
                                 buflen - w, &read)) {
       return OTRNG_ERROR;
     }
-    break;
+
+    target->versions = otrng_strndup((char *)versions, versions_len);
+    free(versions);
+  } break;
   case 0x05: // Expiration
     // TODO: Double check if the format is the same
     if (!otrng_deserialize_uint64(&target->expires, buffer + w, buflen - w,

@@ -38,8 +38,9 @@ INTERNAL otrng_err otrng_deserialize_uint16(uint16_t *n, const uint8_t *buffer,
 INTERNAL otrng_err otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
                                            size_t buflen, size_t *nread);
 
-INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, const uint8_t *buffer,
-                                          size_t buflen, size_t *read);
+INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, size_t *dst_len,
+                                          const uint8_t *buffer, size_t buflen,
+                                          size_t *read);
 
 INTERNAL otrng_err otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
                                                  const uint8_t *buffer,

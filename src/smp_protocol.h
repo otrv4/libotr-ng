@@ -41,8 +41,8 @@
  *    to be. the length of this field is contained in the [q_len] field.
  **/
 typedef struct smp_msg_1_s {
-  uint32_t q_len;
   uint8_t *question;
+  size_t q_len;
   ec_point_p g2a;
   ec_scalar_p c2;
   ec_scalar_p d2;

@@ -220,11 +220,11 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
   cursor += DATA_MSG_NONCE_BYTES;
   len -= DATA_MSG_NONCE_BYTES;
 
-  if (!otrng_deserialize_data(&dst->enc_msg, cursor, len, &read)) {
+  if (!otrng_deserialize_data(&dst->enc_msg, &dst->enc_msg_len, cursor, len,
+                              &read)) {
     return OTRNG_ERROR;
   }
 
-  dst->enc_msg_len = read - 4;
   cursor += read;
   len -= read;
 

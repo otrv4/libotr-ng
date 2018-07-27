@@ -87,8 +87,9 @@ INTERNAL otrng_err otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, const uint8_t *buffer,
-                                          size_t buflen, size_t *read) {
+INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, size_t *dstlen,
+                                          const uint8_t *buffer, size_t buflen,
+                                          size_t *read) {
   size_t r = 0;
   uint32_t s = 0;
 
@@ -124,6 +125,10 @@ INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, const uint8_t *buffer,
   *dst = t;
   if (read) {
     *read += s;
+  }
+
+  if (dstlen) {
+    *dstlen = s;
   }
 
   return OTRNG_SUCCESS;
