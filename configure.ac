@@ -195,8 +195,8 @@ AC_OUTPUT
 
 echo \
 "----------------------------------------------------------------------------
-Thank you for installing libotr-ng version ${PACKAGE_VERSION}.
-Installation completed in directory '${prefix}'.
+Thank you for configuring libotr-ng version ${PACKAGE_VERSION}.
+Configuration completed in directory '${prefix}'.
 ----------------------------------------------------------------------------"
 
 echo
