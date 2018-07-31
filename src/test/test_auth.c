@@ -204,6 +204,6 @@ void test_rsig_compat() {
 
   // This FAILS
   // (I tried considering the message with and without the \0)
-  otrng_assert(otrng_rsig_verify_with_usage(0x11, proof, p1->pub, p2->pub,
+  otrng_assert(otrng_rsig_verify_with_usage_and_domain(0x11, "OTR-Prekey-Server", proof, p1->pub, p2->pub,
                                             p3->pub, (const uint8_t *)msg, 2));
 }
