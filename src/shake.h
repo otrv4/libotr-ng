@@ -32,6 +32,10 @@
 
 void hash_init_with_dom(goldilocks_shake256_ctx_p hash);
 
+void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
+                                                uint8_t usage,
+                                                const char *domain);
+
 void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage);
 
 void shake_kkdf(uint8_t *dst, size_t dstlen, const uint8_t *key, size_t keylen,

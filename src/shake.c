@@ -29,6 +29,14 @@ void hash_init_with_dom(goldilocks_shake256_ctx_p hash) {
   hash_update(hash, (const unsigned char *)dom_s, strlen(dom_s));
 }
 
+void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
+                                                uint8_t usage,
+                                                const char *domain) {
+  hash_init(hash);
+  hash_update(hash, (const unsigned char *)domain, strlen(domain));
+  hash_update(hash, &usage, 1);
+}
+
 void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage) {
   uint8_t buff[1] = {0};
   *buff = usage;
