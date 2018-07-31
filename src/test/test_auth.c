@@ -43,8 +43,9 @@ void test_rsig_calculate_c() {
   otrng_keypair_generate(t3, sym6);
 
   goldilocks_448_scalar_p c;
-  otrng_rsig_calculate_c(c, a1->pub, a2->pub, a3->pub, t1->pub, t2->pub,
-                         t3->pub, (const uint8_t *)msg, strlen(msg));
+  otrng_rsig_calculate_c_with_usage(OTRNG_DEFAULT_USAGE_AUTH, c, a1->pub,
+                                    a2->pub, a3->pub, t1->pub, t2->pub, t3->pub,
+                                    (const uint8_t *)msg, strlen(msg));
 
   uint8_t serialized_c[ED448_SCALAR_BYTES] = {0};
   goldilocks_448_scalar_encode(serialized_c, c);

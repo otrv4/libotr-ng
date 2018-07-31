@@ -27,6 +27,9 @@
 #include "keys.h"
 #include "shared.h"
 
+// TODO: By the spec, this is wrong. Should be 0x1C.
+#define OTRNG_DEFAULT_USAGE_AUTH 0x1D
+
 /* The size of the ring signature. */
 #define RING_SIG_BYTES 6 * ED448_SCALAR_BYTES
 
@@ -54,6 +57,18 @@ typedef struct ring_sig_s {
   ec_scalar_p c3;
   ec_scalar_p r3;
 } ring_sig_s, ring_sig_p[1];
+
+INTERNAL void otrng_rsig_calculate_c_with_usage(
+    uint8_t usage_auth, goldilocks_448_scalar_p dst,
+    const goldilocks_448_point_p A1, const goldilocks_448_point_p A2,
+    const goldilocks_448_point_p A3, const goldilocks_448_point_p T1,
+    const goldilocks_448_point_p T2, const goldilocks_448_point_p T3,
+    const uint8_t *message, size_t message_len);
+
+INTERNAL otrng_err otrng_rsig_authenticate_with_usage(
+    uint8_t usage, ring_sig_p dst, const rsig_privkey_p secret,
+    const rsig_pubkey_p pub, const rsig_pubkey_p A1, const rsig_pubkey_p A2,
+    const rsig_pubkey_p A3, const uint8_t *message, size_t message_len);
 
 /**
  * @brief The Authentication function of the Ring Sig.
@@ -119,18 +134,15 @@ INTERNAL void otrng_ring_sig_destroy(ring_sig_p src);
  * @param [msg] The message to "verify".
  * @param [msg_len] The length of the message.
  */
-void otrng_rsig_calculate_c(
-    goldilocks_448_scalar_p dst, const goldilocks_448_point_p A1,
-    const goldilocks_448_point_p A2, const goldilocks_448_point_p A3,
-    const goldilocks_448_point_p T1, const goldilocks_448_point_p T2,
-    const goldilocks_448_point_p T3, const uint8_t *msg, size_t msglen);
+INTERNAL void otrng_rsig_calculate_c_from_sigma_with_usage(
+    uint8_t usage, goldilocks_448_scalar_p c, const ring_sig_p src,
+    const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
+    const uint8_t *message, size_t message_len);
 
-void otrng_rsig_calculate_c_from_sigma(goldilocks_448_scalar_p c,
-                                       const ring_sig_p src,
-                                       const rsig_pubkey_p A1,
-                                       const rsig_pubkey_p A2,
-                                       const rsig_pubkey_p A3,
-                                       const uint8_t *msg, size_t msglen);
+INTERNAL otrng_bool otrng_rsig_verify_with_usage(
+    uint8_t usage, const ring_sig_p src, const rsig_pubkey_p A1,
+    const rsig_pubkey_p A2, const rsig_pubkey_p A3, const uint8_t *message,
+    size_t message_len);
 
 #ifdef OTRNG_AUTH_PRIVATE
 #endif
