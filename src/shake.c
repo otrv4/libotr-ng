@@ -38,11 +38,8 @@ void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
 }
 
 void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage) {
-  uint8_t buff[1] = {0};
-  *buff = usage;
-
   hash_init_with_dom(hash);
-  hash_update(hash, buff, 1);
+  hash_update(hash, &usage, 1);
 }
 
 void shake_kkdf(uint8_t *dst, size_t dstlen, const uint8_t *key, size_t keylen,
