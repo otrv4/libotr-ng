@@ -353,7 +353,7 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   if (client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
     if (!otrng_prekey_dake3_message_append_storage_information_request(
             msg, prekey_mac)) {
-      return OTRNG_ERROR;
+      return NULL;
     }
   } else {
     return NULL;
@@ -584,8 +584,8 @@ void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg) {
     return;
   }
 
-  msg->composite_identity = NULL;
   free(msg->composite_identity);
+  msg->composite_identity = NULL;
 
   free(msg->server_identity);
   msg->server_identity = NULL;
@@ -621,5 +621,12 @@ otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,
 
 INTERNAL
 void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *msg) {
-  // TODO
+  if (!msg) {
+    return;
+  }
+
+  free(msg->message);
+  msg->message = NULL;
+
+  otrng_ring_sig_destroy(msg->sigma);
 }

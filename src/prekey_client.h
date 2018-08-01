@@ -54,7 +54,6 @@ typedef struct {
   ring_sig_p sigma;
   uint8_t *message;
   size_t message_len;
-  uint8_t mac[DATA_MSG_MAC_BYTES];
 } otrng_prekey_dake3_message_s;
 
 typedef struct {
@@ -63,10 +62,6 @@ typedef struct {
   client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
 } otrng_prekey_publication_message_s;
-
-// TODO: remove
-typedef struct {
-} otrng_prekey_storage_information_request_message_s;
 
 typedef struct {
   uint32_t client_instance_tag;
