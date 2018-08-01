@@ -446,9 +446,22 @@ otrng_client_get_prekey_client(const char *server_identity,
     return client->prekey_client;
   }
 
+  char *account = NULL;
+  char *protocol = NULL;
+  if (!otrng_client_state_get_account_and_protocol(&account, &protocol,
+                                                   client->state)) {
+    return NULL;
+  }
+
+  // TODO: this should be a hashmap, since it its one client PER server
   client->prekey_client = otrng_prekey_client_new(
-      server_identity, otrng_client_state_get_instance_tag(client->state),
+      server_identity, account,
+      otrng_client_state_get_instance_tag(client->state),
+      otrng_client_state_get_keypair_v4(client->state),
       otrng_client_state_get_client_profile(client->state));
+
+  free(account);
+  free(protocol);
 
   return client->prekey_client;
 }

@@ -64,6 +64,7 @@
 #include "test_client_profile.c"
 #include "test_messaging.c"
 #include "test_auth.c"
+#include "test_prekey_server_client.c"
 
 int main(int argc, char **argv) {
   if (!gcry_check_version(GCRYPT_VERSION))
@@ -258,6 +259,13 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/prekey_profile/validates", test_prekey_profile_validates);
   g_test_add_func("/prekey_ensemble/validate", test_prekey_ensemble_validate);
+
+  g_test_add_func("/prekey_server/dake/dake-1/serialize",
+                  test_prekey_dake1_message_serialize);
+  g_test_add_func("/prekey_server/dake/dake-2/deserialize",
+                  test_prekey_dake2_message_deserialize);
+  g_test_add_func("/prekey_server/dake/dake-3/serialize",
+                  test_prekey_dake3_message_serialize);
 
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);

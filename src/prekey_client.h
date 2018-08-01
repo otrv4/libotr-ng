@@ -38,7 +38,13 @@ typedef struct {
 
 typedef struct {
   uint32_t client_instance_tag;
+
+  uint8_t *composite_identity;
+  size_t composite_identity_len;
+
   uint8_t *server_identity;
+  size_t server_identity_len;
+  otrng_public_key_p server_pub_key;
   ec_point_p S;
   ring_sig_p sigma;
 } otrng_prekey_dake2_message_s;
@@ -48,6 +54,7 @@ typedef struct {
   ring_sig_p sigma;
   uint8_t *message;
   size_t message_len;
+  uint8_t mac[DATA_MSG_MAC_BYTES];
 } otrng_prekey_dake3_message_s;
 
 typedef struct {
@@ -55,17 +62,14 @@ typedef struct {
   dake_prekey_message_s **prekey_messages;
   client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
-  uint8_t mac[DATA_MSG_MAC_BYTES];
 } otrng_prekey_publication_message_s;
 
 typedef struct {
-  uint8_t mac[DATA_MSG_MAC_BYTES];
 } otrng_prekey_storage_information_request_message_s;
 
 typedef struct {
   uint32_t client_instance_tag;
   uint32_t stored_prekeys;
-  uint8_t mac[DATA_MSG_MAC_BYTES];
 } otrng_prekey_storage_status_message_s;
 
 typedef struct {
@@ -83,16 +87,21 @@ typedef enum {
 } otrng_prekey_next_message_t;
 
 typedef struct {
+  char *our_identity;
   uint32_t instance_tag;
+  const otrng_keypair_s *keypair;
   const client_profile_s *client_profile;
-  ecdh_keypair_p ephemeral_ecdh;
+  ec_point_p ephemeral_ecdh;
 
   char *server_identity;
+  otrng_public_key_p pub;
+
   otrng_prekey_next_message_t after_dake;
 } otrng_prekey_client_s;
 
 API otrng_prekey_client_s *
-otrng_prekey_client_new(const char *server, uint32_t instance_tag,
+otrng_prekey_client_new(const char *server, const char *our_identity,
+                        uint32_t instance_tag, const otrng_keypair_s *keypair,
                         const client_profile_s *profile);
 
 API void otrng_prekey_client_free(otrng_prekey_client_s *client);
@@ -100,12 +109,32 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client);
 API char *
 otrng_prekey_client_request_storage_status(otrng_prekey_client_s *client);
 
-INTERNAL
-otrng_err
+API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
+                                          const char *message,
+                                          otrng_prekey_client_s *client);
+
+INTERNAL otrng_err
 otrng_prekey_dake1_message_asprint(uint8_t **serialized, size_t *serialized_len,
                                    const otrng_prekey_dake1_message_s *msg);
 
 INTERNAL
 void otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *msg);
+
+INTERNAL otrng_err otrng_prekey_dake2_message_deserialize(
+    otrng_prekey_dake2_message_s *dst, const uint8_t *serialized,
+    size_t serialized_len);
+
+INTERNAL
+void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg);
+
+INTERNAL void kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
+                                  uint8_t usage);
+
+INTERNAL otrng_err
+otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,
+                                   const otrng_prekey_dake3_message_s *msg);
+
+INTERNAL
+void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *msg);
 
 #endif
