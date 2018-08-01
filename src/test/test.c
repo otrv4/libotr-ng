@@ -268,6 +268,8 @@ int main(int argc, char **argv) {
                   test_prekey_dake3_message_append_storage_info_req);
   g_test_add_func("/prekey_server/dake/dake-3/serialize",
                   test_prekey_dake3_message_serialize);
+  g_test_add_func("/prekey_server/dake/storage-status/deserialize",
+                  test_prekey_storage_status_message_deserialize);
 
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);

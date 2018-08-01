@@ -17,15 +17,14 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include <libotr/mem.h>
-
 #define OTRNG_DATA_MESSAGE_PRIVATE
-
 #include "data_message.h"
+
 #include "deserialize.h"
 #include "serialize.h"
 #include "shake.h"
+
+#include <libotr/mem.h>
 
 INTERNAL data_message_s *otrng_data_message_new() {
   data_message_s *ret = malloc(sizeof(data_message_s));
