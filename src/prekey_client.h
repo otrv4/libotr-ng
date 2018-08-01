@@ -64,6 +64,7 @@ typedef struct {
   otrng_prekey_profile_s *prekey_profile;
 } otrng_prekey_publication_message_s;
 
+// TODO: remove
 typedef struct {
 } otrng_prekey_storage_information_request_message_s;
 
@@ -129,6 +130,10 @@ void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg);
 
 INTERNAL void kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
                                   uint8_t usage);
+
+INTERNAL otrng_err
+otrng_prekey_dake3_message_append_storage_information_request(
+    otrng_prekey_dake3_message_s *msg, uint8_t prekey_mac[64]);
 
 INTERNAL otrng_err
 otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,

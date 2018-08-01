@@ -243,9 +243,28 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
   return ret;
 }
 
-static void otrng_prekey_dake3_message_append_storage_information_request(
-    otrng_prekey_dake3_message_s *msg) {
-  // TODO
+INTERNAL otrng_err
+otrng_prekey_dake3_message_append_storage_information_request(
+    otrng_prekey_dake3_message_s *msg, uint8_t prekey_mac[64]) {
+  msg->message = malloc(2 + 1 + 64);
+  msg->message_len = 67;
+  if (!msg->message) {
+    return OTRNG_ERROR;
+  }
+  uint8_t msg_type = 0x09;
+  size_t w = 0;
+  w += otrng_serialize_uint16(msg->message, OTRNG_PROTOCOL_VERSION_4);
+  w += otrng_serialize_uint8(msg->message + w, msg_type);
+
+  // MAC: KDF(usage_storage_info_MAC, prekey_mac_k || message type, 64)
+  goldilocks_shake256_ctx_p hmac;
+  kdf_init_with_usage(hmac, 0x0A);
+  hash_update(hmac, prekey_mac, 64);
+  hash_update(hmac, &msg_type, 1);
+  hash_final(hmac, msg->message + w, 64);
+  hash_destroy(hmac);
+
+  return OTRNG_SUCCESS;
 }
 
 static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
@@ -253,14 +272,6 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   otrng_prekey_dake3_message_s msg[1];
 
   msg->client_instance_tag = client->instance_tag;
-
-  if (client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
-    otrng_prekey_dake3_message_append_storage_information_request(msg);
-  } else {
-    return NULL;
-  }
-
-  client->after_dake = 0;
 
   size_t composite_phi_len = 0;
   uint8_t *composite_phi = otrng_prekey_client_get_expected_composite_phi(
@@ -318,6 +329,38 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
       t, tlen);
   free(t);
 
+  // ECDH(i, S)
+  uint8_t shared_secret[64] = {0};
+  uint8_t ecdh_shared[ED448_POINT_BYTES] = {0};
+  otrng_ecdh_shared_secret(ecdh_shared, client->ephemeral_ecdh, msg2->S);
+
+  // SK = KDF(0x01, ECDH(i, S), 64)
+  goldilocks_shake256_ctx_p hsk;
+  kdf_init_with_usage(hsk, 0x01);
+  hash_update(hsk, ecdh_shared, ED448_POINT_BYTES);
+  hash_final(hsk, shared_secret, 64);
+  hash_destroy(hsk);
+
+  // prekey_mac_k = KDF(0x08, SK, 64)
+  uint8_t prekey_mac[64] = {0};
+  goldilocks_shake256_ctx_p hpk;
+  kdf_init_with_usage(hpk, 0x08);
+  hash_update(hpk, shared_secret, 64);
+  hash_final(hpk, prekey_mac, 64);
+  hash_destroy(hpk);
+
+  // Put the MESSAGE in the message
+  if (client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
+    if (!otrng_prekey_dake3_message_append_storage_information_request(
+            msg, prekey_mac)) {
+      return OTRNG_ERROR;
+    }
+  } else {
+    return NULL;
+  }
+
+  client->after_dake = 0;
+
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
   otrng_err success =
@@ -340,12 +383,7 @@ static char *receive_dake2(const otrng_prekey_dake2_message_s *msg,
     return NULL;
   }
 
-  send_dake3(msg, client);
-
-  // TODO send DAKE-3
-  // TODO: store the server's public key?
-
-  return NULL;
+  return send_dake3(msg, client);
 }
 
 static otrng_err parse_header(uint8_t *message_type, const uint8_t *buf,
@@ -430,6 +468,7 @@ API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
 }
 
 #define OTRNG_PREKEY_DAKE1_MSG 0x35
+#define OTRNG_PREKEY_DAKE3_MSG 0x37
 
 INTERNAL
 otrng_err
@@ -558,7 +597,26 @@ void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg) {
 INTERNAL otrng_err
 otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,
                                    const otrng_prekey_dake3_message_s *msg) {
-  return OTRNG_ERROR;
+  size_t ret_len =
+      2 + 1 + 4 + RING_SIG_BYTES + (4 + msg->message_len) + ED448_POINT_BYTES;
+  uint8_t *ret = malloc(ret_len);
+  if (!ret) {
+    return OTRNG_ERROR;
+  }
+
+  size_t w = 0;
+  w += otrng_serialize_uint16(ret + w, OTRNG_PROTOCOL_VERSION_4);
+  w += otrng_serialize_uint8(ret + w, OTRNG_PREKEY_DAKE3_MSG);
+  w += otrng_serialize_uint32(ret + w, msg->client_instance_tag);
+  w += otrng_serialize_ring_sig(ret + w, msg->sigma);
+  w += otrng_serialize_data(ret + w, msg->message, msg->message_len);
+
+  *serialized = ret;
+  if (serialized_len) {
+    *serialized_len = w;
+  }
+
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL
