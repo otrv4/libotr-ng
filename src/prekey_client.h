@@ -91,7 +91,7 @@ typedef struct {
   uint32_t instance_tag;
   const otrng_keypair_s *keypair;
   const client_profile_s *client_profile;
-  ec_point_p ephemeral_ecdh;
+  ecdh_keypair_p ephemeral_ecdh;
 
   char *server_identity;
   otrng_public_key_p pub;

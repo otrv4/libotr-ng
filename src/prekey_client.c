@@ -57,7 +57,7 @@ otrng_prekey_client_new(const char *server, const char *our_identity,
   ret->keypair = keypair;
   ret->server_identity = otrng_strdup(server);
   ret->our_identity = otrng_strdup(our_identity);
-  otrng_ec_point_destroy(ret->ephemeral_ecdh);
+  otrng_ecdh_keypair_destroy(ret->ephemeral_ecdh);
 
   return ret;
 }
@@ -67,7 +67,7 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
     return;
   }
 
-  otrng_ec_point_destroy(client->ephemeral_ecdh);
+  otrng_ecdh_keypair_destroy(client->ephemeral_ecdh);
   client->client_profile = NULL;
 
   free(client->server_identity);
@@ -114,16 +114,11 @@ static char *start_dake_and_then_send(otrng_prekey_client_s *client,
   msg->client_instance_tag = client->instance_tag;
   otrng_client_profile_copy(msg->client_profile, client->client_profile);
 
-  ecdh_keypair_p ephemeral_pair;
-
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   random_bytes(sym, ED448_PRIVATE_BYTES);
-  otrng_ecdh_keypair_generate(ephemeral_pair, sym);
+  otrng_ecdh_keypair_generate(client->ephemeral_ecdh, sym);
   goldilocks_bzero(sym, ED448_PRIVATE_BYTES);
-
-  otrng_ec_point_copy(client->ephemeral_ecdh, ephemeral_pair->pub);
-  otrng_ec_point_copy(msg->I, client->ephemeral_ecdh);
-  otrng_ecdh_keypair_destroy(ephemeral_pair);
+  otrng_ec_point_copy(msg->I, client->ephemeral_ecdh->pub);
 
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
@@ -230,7 +225,7 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
 
   w += 64;
 
-  w += otrng_serialize_ec_point(t + w, client->ephemeral_ecdh);
+  w += otrng_serialize_ec_point(t + w, client->ephemeral_ecdh->pub);
   w += otrng_serialize_ec_point(t + w, msg->S);
 
   goldilocks_shake256_ctx_p h3;
@@ -242,7 +237,7 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
 
   otrng_bool ret = otrng_rsig_verify_with_usage_and_domain(
       0x11, "OTR-Prekey-Server", msg->sigma, client->keypair->pub,
-      msg->server_pub_key, client->ephemeral_ecdh, t, tlen);
+      msg->server_pub_key, client->ephemeral_ecdh->pub, t, tlen);
   free(t);
 
   return ret;
@@ -306,7 +301,7 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
 
   w += 64;
 
-  w += otrng_serialize_ec_point(t + w, client->ephemeral_ecdh);
+  w += otrng_serialize_ec_point(t + w, client->ephemeral_ecdh->pub);
   w += otrng_serialize_ec_point(t + w, msg2->S);
 
   goldilocks_shake256_ctx_p h3;
