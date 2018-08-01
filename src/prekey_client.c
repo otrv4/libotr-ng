@@ -29,6 +29,12 @@
 #include <libotr/b64.h>
 #include <libotr/mem.h>
 
+#define OTRNG_PREKEY_DAKE1_MSG 0x35
+#define OTRNG_PREKEY_DAKE2_MSG 0x36
+#define OTRNG_PREKEY_DAKE3_MSG 0x37
+#define OTRNG_PREKEY_STORAGE_INFO_REQ_MSG 0x09
+#define OTRNG_PREKEY_STORAGE_STATUS_MSG 0x0B
+
 API otrng_prekey_client_s *
 otrng_prekey_client_new(const char *server, const char *our_identity,
                         uint32_t instance_tag, const otrng_keypair_s *keypair,
@@ -253,7 +259,8 @@ otrng_prekey_dake3_message_append_storage_information_request(
   if (!msg->message) {
     return OTRNG_ERROR;
   }
-  uint8_t msg_type = 0x09;
+
+  uint8_t msg_type = OTRNG_PREKEY_STORAGE_INFO_REQ_MSG;
   size_t w = 0;
   w += otrng_serialize_uint16(msg->message, OTRNG_PROTOCOL_VERSION_4);
   w += otrng_serialize_uint8(msg->message + w, msg_type);
@@ -401,7 +408,7 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
     return otrng_false;
   }
 
-  *buf = 0x0b; // message type
+  *buf = OTRNG_PREKEY_STORAGE_STATUS_MSG; // message type
   otrng_serialize_uint32(buf + 1, msg->client_instance_tag);
   otrng_serialize_uint32(buf + 5, msg->stored_prekeys);
 
@@ -478,7 +485,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
   char *ret = NULL;
 
   // DAKE 2
-  if (message_type == 0x36) {
+  if (message_type == OTRNG_PREKEY_DAKE2_MSG) {
     otrng_prekey_dake2_message_s msg[1];
 
     if (!otrng_prekey_dake2_message_deserialize(msg, decoded, decoded_len)) {
@@ -487,7 +494,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
 
     ret = receive_dake2(msg, client);
     otrng_prekey_dake2_message_destroy(msg);
-  } else if (message_type == 0x0B) {
+  } else if (message_type == OTRNG_PREKEY_STORAGE_STATUS_MSG) {
     otrng_prekey_storage_status_message_s msg[1];
 
     if (!otrng_prekey_storage_status_message_deserialize(msg, decoded,
@@ -513,6 +520,8 @@ API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
     return OTRNG_ERROR;
   }
 
+  // TODO: process fragmented messages
+
   // If it fails to decode it was not a prekey server message.
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
@@ -521,15 +530,13 @@ API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
   }
 
   // Everything else, returns SUCCESS because we processed the message.
-  // Even if there was na error processing it.
+  // Even if there was na error processing it. We should consider informing
+  // error while processing using callbacks.
   *tosend = receive_decoded(serialized, serialized_len, client);
   free(serialized);
 
   return OTRNG_SUCCESS;
 }
-
-#define OTRNG_PREKEY_DAKE1_MSG 0x35
-#define OTRNG_PREKEY_DAKE3_MSG 0x37
 
 INTERNAL
 otrng_err
@@ -590,7 +597,7 @@ INTERNAL otrng_err otrng_prekey_dake2_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (message_type != 0x36) {
+  if (message_type != OTRNG_PREKEY_DAKE2_MSG) {
     return OTRNG_ERROR;
   }
 
@@ -703,7 +710,7 @@ INTERNAL otrng_err otrng_prekey_storage_status_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (message_type != 0x0b) {
+  if (message_type != OTRNG_PREKEY_STORAGE_STATUS_MSG) {
     return OTRNG_ERROR;
   }
 
