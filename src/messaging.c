@@ -235,15 +235,10 @@ API int otrng_user_state_private_key_v4_read_FILEp(
 
     otrng_client_state_s *client_state = get_client_state(state, client_id);
     if (otrng_client_state_private_key_v4_read_FILEp(client_state, privf)) {
-      continue;
-    }
-
-    if (client_state->keypair) {
-      return 0;
+      return 1; // We decide to abort, since this means the file is malformed
     }
   }
 
-  // TODO: Should return an error code saying no key was found
   return 0;
 }
 
@@ -264,15 +259,10 @@ API int otrng_user_state_client_profile_read_FILEp(
     otrng_client_state_s *client_state = get_client_state(state, client_id);
     if (otrng_client_state_client_profile_read_FILEp(client_state,
                                                      profile_filep)) {
-      continue;
-    }
-
-    if (client_state->client_profile) {
-      return 0;
+      return 1; // We decide to abort, since this means the file is malformed
     }
   }
 
-  // TODO: Should return an error code saying no key was found
   return 0;
 }
 
