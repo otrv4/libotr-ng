@@ -27,8 +27,7 @@
 #include "keys.h"
 #include "shared.h"
 
-// TODO: By the spec, this is wrong. Should be 0x1C.
-#define OTRNG_PROTOCOL_USAGE_AUTH 0x1D
+#define OTRNG_PROTOCOL_USAGE_AUTH 0x1C
 #define OTRNG_PROTOCOL_DOMAIN_SEPARATION "OTRv4"
 
 /* The size of the ring signature. */
