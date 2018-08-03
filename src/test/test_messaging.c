@@ -46,7 +46,7 @@ void test_user_state_key_management(void) {
   otrng_assert(otrng_user_state_get_private_key_v4(state, bob_account));
   otrng_assert(!otrng_user_state_get_private_key_v4(state, charlie_account));
 
-  // Generate file
+  /* Generate file */
   FILE *keys = tmpfile();
   fputs("charlie@xmpp:"
         "RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+"
@@ -56,12 +56,12 @@ void test_user_state_key_management(void) {
 
   int err = otrng_user_state_private_key_v4_read_FILEp(
       state, keys, read_client_id_for_privf);
-  g_assert_cmpint(err, ==, 0);
+  g_assert_cmpint(err, ==, 1);
   fclose(keys);
 
   // TODO: @test Assert it is equal to deserializing the symkey
   // RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA"
-  otrng_assert(otrng_user_state_get_private_key_v4(state, charlie_account));
+  otrng_assert(!otrng_user_state_get_private_key_v4(state, charlie_account));
 
   otrng_user_state_free(state);
 }

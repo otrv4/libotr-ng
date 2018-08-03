@@ -235,7 +235,7 @@ API int otrng_user_state_private_key_v4_read_FILEp(
 
     otrng_client_state_s *client_state = get_client_state(state, client_id);
     if (otrng_client_state_private_key_v4_read_FILEp(client_state, privf)) {
-      return 1; // We decide to abort, since this means the file is malformed
+      return 1; /* We decide to abort, since this means the file is malformed */
     }
   }
 
