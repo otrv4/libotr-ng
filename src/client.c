@@ -113,10 +113,10 @@ API int otrng_conversation_is_encrypted(otrng_conversation_s *conv) {
   switch (conv->conn->running_version) {
   case 0:
     return 0;
-  case 4:
-    return conv->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES;
   case 3:
     return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
+  case 4:
+    return conv->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES;
   }
 
   return 0;

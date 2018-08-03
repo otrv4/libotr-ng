@@ -163,9 +163,9 @@ tstatic void op_create_privkey(void *opdata, const char *accountname,
  * logged in" errors if you're wrong. */
 tstatic int op_is_logged_in(void *opdata, const char *accountname,
                             const char *protocol, const char *recipient) {
-  // TODO
-  return 1; // We always think the person is logged in, otherwise it wont send
-            // disconnect TLVs, for example.
+  // TODO: implement
+  return 1; /* We always think the person is logged in, otherwise it wont send
+               disconnect TLVs, for example. */
 }
 
 /* When the list of ConnContexts changes (including a change in
