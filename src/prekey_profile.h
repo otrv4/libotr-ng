@@ -51,6 +51,9 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
 INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
                                        const otrng_keypair_s *longterm_pair);
 
+INTERNAL otrng_err otrng_prekey_profile_asprint(uint8_t **dst, size_t *dstlen,
+                                                otrng_prekey_profile_s *p);
+
 #ifdef OTRNG_PREKEY_PROFILE_PRIVATE
 
 tstatic otrng_err otrng_prekey_profile_body_asprint(uint8_t **dst,

@@ -57,7 +57,7 @@ typedef struct {
 } otrng_prekey_dake3_message_s;
 
 typedef struct {
-  uint8_t num_prekeys;
+  uint8_t num_prekey_messages;
   dake_prekey_message_s **prekey_messages;
   client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
@@ -81,6 +81,7 @@ typedef struct {
 
 typedef enum {
   OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST = 1,
+  OTRNG_PREKEY_PREKEY_PUBLICATION = 2,
 } otrng_prekey_next_message_t;
 
 typedef struct {
@@ -88,6 +89,7 @@ typedef struct {
   uint32_t instance_tag;
   const otrng_keypair_s *keypair;
   const client_profile_s *client_profile;
+  const otrng_prekey_profile_s *prekey_profile;
   ecdh_keypair_p ephemeral_ecdh;
 
   char *server_identity;
@@ -100,12 +102,15 @@ typedef struct {
 API otrng_prekey_client_s *
 otrng_prekey_client_new(const char *server, const char *our_identity,
                         uint32_t instance_tag, const otrng_keypair_s *keypair,
-                        const client_profile_s *profile);
+                        const client_profile_s *client_profile,
+                        const otrng_prekey_profile_s *prekey_profile);
 
 API void otrng_prekey_client_free(otrng_prekey_client_s *client);
 
 API char *
 otrng_prekey_client_request_storage_status(otrng_prekey_client_s *client);
+
+API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client);
 
 API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
                                           const char *message,
@@ -146,5 +151,9 @@ INTERNAL otrng_err otrng_prekey_storage_status_message_deserialize(
 INTERNAL
 void otrng_prekey_storage_status_message_destroy(
     otrng_prekey_storage_status_message_s *msg);
+
+INTERNAL
+void otrng_prekey_publication_message_destroy(
+    otrng_prekey_publication_message_s *msg);
 
 #endif

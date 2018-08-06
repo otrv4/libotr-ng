@@ -20,6 +20,7 @@
 
 #include "prekey_client.h"
 
+#include "dake.h"
 #include "deserialize.h"
 #include "fingerprint.h"
 #include "random.h"
@@ -34,11 +35,13 @@
 #define OTRNG_PREKEY_DAKE3_MSG 0x37
 #define OTRNG_PREKEY_STORAGE_INFO_REQ_MSG 0x09
 #define OTRNG_PREKEY_STORAGE_STATUS_MSG 0x0B
+#define OTRNG_PREKEY_PUBLICATION_MSG 0x08
 
 API otrng_prekey_client_s *
 otrng_prekey_client_new(const char *server, const char *our_identity,
                         uint32_t instance_tag, const otrng_keypair_s *keypair,
-                        const client_profile_s *profile) {
+                        const client_profile_s *client_profile,
+                        const otrng_prekey_profile_s *prekey_profile) {
   if (!server) {
     return NULL;
   }
@@ -51,7 +54,7 @@ otrng_prekey_client_new(const char *server, const char *our_identity,
     return NULL;
   }
 
-  if (!profile) {
+  if (!client_profile) {
     return NULL;
   }
 
@@ -61,7 +64,9 @@ otrng_prekey_client_new(const char *server, const char *our_identity,
   }
 
   ret->instance_tag = instance_tag;
-  ret->client_profile = profile;
+  ret->client_profile = client_profile;
+  // TODO: Can be null if you dont want to publish it
+  ret->prekey_profile = prekey_profile;
   ret->keypair = keypair;
   ret->server_identity = otrng_strdup(server);
   ret->our_identity = otrng_strdup(our_identity);
@@ -145,11 +150,25 @@ static char *start_dake_and_then_send(otrng_prekey_client_s *client,
   return ret;
 }
 
+// TODO: rename
+// this sends a "Storage Information Request" but it is used to "request storage
+// information"(?)
 API char *
 otrng_prekey_client_request_storage_status(otrng_prekey_client_s *client) {
   return start_dake_and_then_send(client,
                                   OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST);
 }
+
+// TODO: this can publish up to 255 prekeys. How will this be handled? via
+// callback? Via parameter?
+API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client) {
+  return start_dake_and_then_send(client, OTRNG_PREKEY_PREKEY_PUBLICATION);
+}
+
+// What if we want to publish ONLY the profiles?
+// API char *
+// otrng_prekey_client_publish_profiles(otrng_prekey_client_s *client) {
+//}
 
 static uint8_t *otrng_prekey_client_get_expected_composite_phi(
     size_t *len, const otrng_prekey_client_s *client) {
@@ -276,6 +295,127 @@ otrng_prekey_dake3_message_append_storage_information_request(
   return OTRNG_SUCCESS;
 }
 
+INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
+    otrng_prekey_publication_message_s *pub_msg,
+    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[64]) {
+
+  uint8_t *client_profile = NULL;
+  size_t client_profile_len = 0;
+  if (!otrng_client_profile_asprintf(&client_profile, &client_profile_len,
+                                     pub_msg->client_profile)) {
+    return OTRNG_ERROR;
+  }
+
+  uint8_t *prekey_profile = NULL;
+  size_t prekey_profile_len = 0;
+  if (!otrng_prekey_profile_asprint(&prekey_profile, &prekey_profile_len,
+                                    pub_msg->prekey_profile)) {
+    free(client_profile);
+    return OTRNG_ERROR;
+  }
+
+  size_t s = 2 + 1 + 1 +
+             (4 + pub_msg->num_prekey_messages * PRE_KEY_MAX_BYTES) + 1 +
+             client_profile_len + 1 + prekey_profile_len + 64;
+  msg->message = malloc(s);
+  if (!msg->message) {
+    free(client_profile);
+    free(prekey_profile);
+    return OTRNG_ERROR;
+  }
+
+  uint8_t msg_type = OTRNG_PREKEY_PUBLICATION_MSG;
+  size_t w = 0;
+  w += otrng_serialize_uint16(msg->message, OTRNG_PROTOCOL_VERSION_4);
+  w += otrng_serialize_uint8(msg->message + w, msg_type);
+
+  w += otrng_serialize_uint8(msg->message + w, pub_msg->num_prekey_messages);
+
+  const uint8_t *prekey_messages_beginning = msg->message + w;
+  for (int i = 0; i < pub_msg->num_prekey_messages; i++) {
+    size_t w2 = 0;
+    if (!otrng_dake_prekey_message_serialize(msg->message + w, s - w, &w2,
+                                             pub_msg->prekey_messages[i])) {
+      free(client_profile);
+      free(prekey_profile);
+      return OTRNG_ERROR;
+    }
+    w += w2;
+  }
+
+  //TODO: the spec also implies that either you have ONLY prekey messages OR
+  //you have prekey messages AND both profiles (see how the mac is explained at
+  //the spec). So J and K can only be both 1 or both 0, and I don't know why
+  //there is J and K as separate variables.
+
+  // The MAC could be a KDF over the entire message, but this "conditional
+  // nested KDF" structure makes it uneccessarily complicated.
+  uint8_t prekey_messages_kdf[64] = {0};
+  goldilocks_shake256_ctx_p hmac;
+  kdf_init_with_usage(hmac, 0x0E);
+  hash_update(hmac, prekey_messages_beginning,
+              msg->message + w - prekey_messages_beginning);
+  hash_final(hmac, prekey_messages_kdf, 64);
+  hash_destroy(hmac);
+
+  w += otrng_serialize_uint8(msg->message + w, pub_msg->client_profile ? 1 : 0);
+  w += otrng_serialize_bytes_array(msg->message + w, client_profile,
+                                   client_profile_len);
+
+  w += otrng_serialize_uint8(msg->message + w, pub_msg->prekey_profile ? 1 : 0);
+  w += otrng_serialize_bytes_array(msg->message + w, prekey_profile,
+                                   prekey_profile_len);
+
+  // MAC: KDF(usage_preMAC, prekey_mac_k || message type
+  //          || N || KDF(usage_prekey_message, Prekey Messages, 64)
+  //          || K || KDF(usage_client_profile, Client Profile, 64)
+  //          || J || KDF(usage_prekey_profile, Prekey Profile, 64),
+  //      64)
+
+  uint8_t client_profile_kdf[64] = {0};
+  if (pub_msg->client_profile) {
+    kdf_init_with_usage(hmac, 0x0F);
+    hash_update(hmac, client_profile, client_profile_len);
+    hash_final(hmac, client_profile_kdf, 64);
+    hash_destroy(hmac);
+  }
+
+  uint8_t prekey_profile_kdf[64] = {0};
+  if (pub_msg->prekey_profile) {
+    kdf_init_with_usage(hmac, 0x10);
+    hash_update(hmac, prekey_profile, prekey_profile_len);
+    hash_final(hmac, prekey_profile_kdf, 64);
+    hash_destroy(hmac);
+  }
+
+  uint8_t one = 1, zero = 0;
+  kdf_init_with_usage(hmac, 0x09);
+  hash_update(hmac, mac_key, 64);
+  hash_update(hmac, &msg_type, 1);
+  hash_update(hmac, &pub_msg->num_prekey_messages, 1);
+  hash_update(hmac, prekey_messages_kdf, 64);
+
+  if (pub_msg->client_profile) {
+    hash_update(hmac, &one, 1);
+    hash_update(hmac, client_profile_kdf, 64);
+  } else {
+    hash_update(hmac, &zero, 1);
+  }
+
+  if (pub_msg->prekey_profile) {
+    hash_update(hmac, &one, 1);
+    hash_update(hmac, prekey_profile_kdf, 64);
+  } else {
+    hash_update(hmac, &zero, 1);
+  }
+  hash_final(hmac, msg->message + w, 64);
+  hash_destroy(hmac);
+
+  msg->message_len = w + 64;
+
+  return OTRNG_SUCCESS;
+}
+
 static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
                         otrng_prekey_client_s *client) {
   otrng_prekey_dake3_message_s msg[1];
@@ -363,6 +503,40 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
             msg, client->mac_key)) {
       return NULL;
     }
+  } else if (client->after_dake == OTRNG_PREKEY_PREKEY_PUBLICATION) {
+    otrng_prekey_publication_message_s pub_msg[1];
+
+    // TODO: They need to be stored somewhere, so it will probably be
+    // a callback. This way the plugin can decide where to store this.
+    ecdh_keypair_p ecdh;
+    dh_keypair_p dh;
+    otrng_generate_ephemeral_keys(ecdh, dh);
+
+    // Create a single prekey message
+    dake_prekey_message_s *prekey_msg = otrng_dake_prekey_message_build(
+        client->instance_tag, ecdh->pub, dh->pub);
+    if (!prekey_msg) {
+      return NULL; // error
+    }
+
+    // TODO: We create a sample publication message
+    // We may invoke a callback that knows what should be put here
+    pub_msg->num_prekey_messages = 1;
+    pub_msg->prekey_messages = malloc(sizeof(dake_prekey_message_s *));
+    pub_msg->prekey_messages[0] = prekey_msg;
+    pub_msg->client_profile = malloc(sizeof(client_profile_s));
+    otrng_client_profile_copy(pub_msg->client_profile, client->client_profile);
+    pub_msg->prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
+    otrng_prekey_profile_copy(pub_msg->prekey_profile, client->prekey_profile);
+
+    otrng_err success =
+        otrng_prekey_dake3_message_append_prekey_publication_message(
+            pub_msg, msg, client->mac_key);
+    otrng_prekey_publication_message_destroy(pub_msg);
+
+    if (!success) {
+      return NULL;
+    }
   } else {
     return NULL;
   }
@@ -412,7 +586,8 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
   otrng_serialize_uint32(buf + 1, msg->client_instance_tag);
   otrng_serialize_uint32(buf + 5, msg->stored_prekeys);
 
-  // KDF(usage_status_MAC, prekey_mac_k || message type || receiver instance tag
+  // KDF(usage_status_MAC, prekey_mac_k || message type || receiver instance
+  // tag
   // || Stored Prekey Messages Number, 64)
   uint8_t mac_tag[64];
   goldilocks_shake256_ctx_p hmac;
@@ -431,6 +606,18 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
   return otrng_true;
 }
 
+/*
+ * Fora:
+ * send_storage_status_request
+ * send_prekey_storage_message
+ * send_prekey_request_message
+ *
+ * LOOP(
+ *   to_send = receive_prekey_server_msg()
+ *   send_prekey_server_msg(to_send) if to_send
+ * )
+ */
+
 static char *
 receive_storage_status(const otrng_prekey_storage_status_message_s *msg,
                        otrng_prekey_client_s *client) {
@@ -442,7 +629,9 @@ receive_storage_status(const otrng_prekey_storage_status_message_s *msg,
     return NULL; // TODO: error callback?
   }
 
-  // TODO: invoke a callback to notify the plugin?
+  // TODO: Probably we want to invoke a callback to notify the plugin.
+  printf("Received Prekey Storage Status message: %d\n", msg->stored_prekeys);
+
   return NULL;
 }
 
@@ -742,4 +931,27 @@ INTERNAL
 void otrng_prekey_storage_status_message_destroy(
     otrng_prekey_storage_status_message_s *msg) {
   // TODO
+}
+
+INTERNAL
+void otrng_prekey_publication_message_destroy(
+    otrng_prekey_publication_message_s *msg) {
+  if (!msg) {
+    return;
+  }
+
+  if (msg->prekey_messages) {
+    for (int i = 0; i < msg->num_prekey_messages; i++) {
+      free(msg->prekey_messages[i]);
+    }
+
+    free(msg->prekey_messages);
+    msg->prekey_messages = NULL;
+  }
+
+  otrng_client_profile_free(msg->client_profile);
+  msg->client_profile = NULL;
+
+  otrng_prekey_profile_free(msg->prekey_profile);
+  msg->prekey_profile = NULL;
 }

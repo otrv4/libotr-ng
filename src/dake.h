@@ -136,6 +136,10 @@ INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
 INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
     uint8_t **dst, size_t *nbytes, const dake_prekey_message_s *prekey_message);
 
+INTERNAL otrng_err otrng_dake_prekey_message_serialize(
+    uint8_t *dst, size_t dstlen, size_t *written,
+    const dake_prekey_message_s *src);
+
 typedef struct {
   const client_profile_s *client_profile;
   const goldilocks_448_point_s ecdh;

@@ -100,6 +100,33 @@ tstatic otrng_err otrng_prekey_profile_body_asprint(
   return OTRNG_SUCCESS;
 }
 
+INTERNAL otrng_err otrng_prekey_profile_asprint(uint8_t **dst, size_t *dstlen,
+                                                otrng_prekey_profile_s *p) {
+  if (!dst) {
+    return OTRNG_ERROR;
+  }
+
+  *dst = malloc(PREKEY_PROFILE_BODY_BYTES + sizeof(eddsa_signature_p));
+  if (!*dst) {
+    return OTRNG_ERROR;
+  }
+
+  size_t written =
+      otrng_prekey_profile_body_serialize(*dst, PREKEY_PROFILE_BODY_BYTES, p);
+  if (written == 0) {
+    free(*dst);
+    *dst = NULL;
+  }
+
+  memcpy(*dst + written, p->signature, sizeof(eddsa_signature_p));
+
+  if (dstlen) {
+    *dstlen = written + sizeof(eddsa_signature_p);
+  }
+
+  return OTRNG_SUCCESS;
+}
+
 INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
                                        const otrng_keypair_s *longterm_pair) {
   uint8_t *body = NULL;

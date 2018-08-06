@@ -347,6 +347,29 @@ otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state) {
   return state->client_profile;
 }
 
+INTERNAL const otrng_shared_prekey_pair_s *
+get_or_create_shared_prekey_pair(otrng_client_state_s *state) {
+  if (state->shared_prekey_pair) {
+    return state->shared_prekey_pair;
+  }
+
+  otrng_client_callbacks_create_shared_prekey(state->callbacks,
+                                              state->client_id);
+
+  return state->shared_prekey_pair;
+}
+
+INTERNAL const otrng_keypair_s *
+get_or_create_keypair(otrng_client_state_s *state) {
+  if (state->keypair) {
+    return state->keypair;
+  }
+
+  otrng_client_callbacks_create_privkey_v4(state->callbacks, state->client_id);
+
+  return state->keypair;
+}
+
 INTERNAL const otrng_prekey_profile_s *
 otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
   const otrng_prekey_profile_s *ret =
@@ -355,15 +378,29 @@ otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
     return ret;
   }
 
-  // TODO: @client invoke callback to generate profile if it is NULL, instead of
-  // doing it here.
-  // TODO: @client_profile should this ID be random? It should probably be
-  // unique for us, so we need to store this in client state (?)
+  // TODO: @client invoke callback to generate profile if it is NULL, instead
+  // of doing it here.
+
+  const otrng_shared_prekey_pair_s *shared_prekey_pair =
+      get_or_create_shared_prekey_pair(state);
+  if (!shared_prekey_pair) {
+    return NULL;
+  }
+
+  const otrng_keypair_s *keypair = get_or_create_keypair(state);
+  if (!keypair) {
+    return NULL;
+  }
+
   uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
+  // if (!valid_instance_tag(our_instance_tag)) {
+  //  return NULL;
+  //}
+
   /* @secret: the shared prekey should be deleted once the prekey profile
    * expires */
-  state->prekey_profile = otrng_prekey_profile_build(
-      our_instance_tag, state->keypair, state->shared_prekey_pair);
+  state->prekey_profile =
+      otrng_prekey_profile_build(our_instance_tag, keypair, shared_prekey_pair);
 
   return state->prekey_profile;
 }

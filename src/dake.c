@@ -451,34 +451,33 @@ INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
     const dake_prekey_message_s *prekey_message) {
 
   size_t s = PRE_KEY_MAX_BYTES;
-  uint8_t *buff = malloc(s);
-  if (!buff) {
+  *dst = malloc(s);
+  if (!*dst) {
     return OTRNG_ERROR;
   }
 
-  uint8_t *cursor = buff;
-  cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
-  cursor += otrng_serialize_uint8(cursor, PRE_KEY_MSG_TYPE);
-  cursor += otrng_serialize_uint32(cursor, prekey_message->id);
-  cursor += otrng_serialize_uint32(cursor, prekey_message->sender_instance_tag);
-  cursor += otrng_serialize_ec_point(cursor, prekey_message->Y);
+  return otrng_dake_prekey_message_serialize(*dst, s, nbytes, prekey_message);
+}
+
+INTERNAL otrng_err otrng_dake_prekey_message_serialize(
+    uint8_t *dst, size_t dstlen, size_t *written,
+    const dake_prekey_message_s *src) {
+  size_t w = 0;
+  w += otrng_serialize_uint16(dst + w, OTRNG_PROTOCOL_VERSION_4);
+  w += otrng_serialize_uint8(dst + w, PRE_KEY_MSG_TYPE);
+  w += otrng_serialize_uint32(dst + w, src->id);
+  w += otrng_serialize_uint32(dst + w, src->sender_instance_tag);
+  w += otrng_serialize_ec_point(dst + w, src->Y);
 
   size_t len = 0;
-  if (!otrng_serialize_dh_public_key(cursor, (s - (cursor - buff)), &len,
-                                     prekey_message->B)) {
-    free(buff);
-    return OTRNG_ERROR;
-  }
-  cursor += len;
-
-  if (dst) {
-    *dst = buff;
-  } else {
+  if (!otrng_serialize_dh_public_key(dst + w, dstlen - w, &len, src->B)) {
     return OTRNG_ERROR;
   }
 
-  if (nbytes) {
-    *nbytes = cursor - buff;
+  w += len;
+
+  if (written) {
+    *written = w;
   }
 
   return OTRNG_SUCCESS;

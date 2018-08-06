@@ -454,11 +454,15 @@ otrng_client_get_prekey_client(const char *server_identity,
   }
 
   // TODO: this should be a hashmap, since it its one client PER server
+  // TODO: should also get_or_create instance tag AND keypair.
+  // We just rely they are loaded from the files where they are stored BEFORE
+  // this function is called.
   client->prekey_client = otrng_prekey_client_new(
       server_identity, account,
       otrng_client_state_get_instance_tag(client->state),
       otrng_client_state_get_keypair_v4(client->state),
-      otrng_client_state_get_client_profile(client->state));
+      otrng_client_state_get_or_create_client_profile(client->state),
+      otrng_client_state_get_or_create_prekey_profile(client->state));
 
   free(account);
   free(protocol);
