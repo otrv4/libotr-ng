@@ -696,6 +696,33 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
 
     ret = receive_storage_status(msg, client);
     otrng_prekey_storage_status_message_destroy(msg);
+  } else if (message_type == 0x06) {
+    if (decoded_len < 71) {
+      // TODO: The success message is wrong, should we tell the plugin about
+      // it via a callback?
+      printf("Received an INVALID success message\n");
+      return NULL;
+    }
+
+    uint8_t mac_tag[64] = {0};
+    goldilocks_shake256_ctx_p hash;
+    kdf_init_with_usage(hash, 0x0C);
+    hash_update(hash, client->mac_key, 64);
+    hash_update(hash, decoded + 2, 5);
+    hash_final(hash, mac_tag, 64);
+    hash_destroy(hash);
+
+    if (otrl_mem_differ(mac_tag, decoded + 7, 64) != 0) {
+      // TODO: The success message is wrong, should we tell the plugin about
+      // it via a callback?
+      printf("Received an INVALID success message\n");
+    } else {
+      // TODO: The success message is correct, should we tell the plugin about
+      // it via a callback?
+      printf("Received an VALID success message\n");
+    }
+
+    sodium_memzero(mac_tag, sizeof(mac_tag));
   }
 
   return ret;
