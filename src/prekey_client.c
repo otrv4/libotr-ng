@@ -343,10 +343,10 @@ INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
     w += w2;
   }
 
-  //TODO: the spec also implies that either you have ONLY prekey messages OR
-  //you have prekey messages AND both profiles (see how the mac is explained at
-  //the spec). So J and K can only be both 1 or both 0, and I don't know why
-  //there is J and K as separate variables.
+  // TODO: the spec also implies that either you have ONLY prekey messages OR
+  // you have prekey messages AND both profiles (see how the mac is explained at
+  // the spec). So J and K can only be both 1 or both 0, and I don't know why
+  // there is J and K as separate variables.
 
   // The MAC could be a KDF over the entire message, but this "conditional
   // nested KDF" structure makes it uneccessarily complicated.
@@ -626,7 +626,10 @@ receive_storage_status(const otrng_prekey_storage_status_message_s *msg,
   }
 
   if (!otrng_prekey_storage_status_message_valid(msg, client->mac_key)) {
-    return NULL; // TODO: error callback?
+    // TODO: Prekey storage status received is invalid, should it warn
+    // the plugin via a callback?
+    printf("Received an INVALID storage status message\n");
+    return NULL;
   }
 
   // TODO: Probably we want to invoke a callback to notify the plugin.
