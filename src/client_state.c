@@ -167,14 +167,9 @@ API client_profile_s *
 otrng_client_state_build_default_client_profile(otrng_client_state_s *state) {
   // TODO: Get allowed versions from the policy
   const char *allowed_versions = "34";
-  uint32_t instance_tag = otrng_client_state_get_instance_tag(state);
-  otrng_keypair_s *keypair = otrng_client_state_get_keypair_v4(state);
-
-  if (!instance_tag || !keypair) {
-    return NULL;
-  }
-
-  return otrng_client_profile_build(instance_tag, allowed_versions, keypair);
+  return otrng_client_profile_build(otrng_client_state_get_instance_tag(state),
+                                    allowed_versions,
+                                    otrng_client_state_get_keypair_v4(state));
 }
 
 API int otrng_client_state_add_client_profile(otrng_client_state_s *state,
@@ -227,17 +222,13 @@ get_shared_prekey_pair(otrng_client_state_s *state) {
   return state->shared_prekey_pair;
 }
 
-// TODO: This should be done in a callback, but client_callbacks_s does not have
-// any.
-static void create_default_prekey_profile(otrng_client_state_s *state) {
+API otrng_prekey_profile_s *
+otrng_client_state_build_default_prekey_profile(otrng_client_state_s *state) {
   /* @secret: the shared prekey should be deleted once the prekey profile
    * expires */
-  otrng_prekey_profile_s *p = otrng_prekey_profile_build(
-      otrng_client_state_get_instance_tag(state),
-      otrng_client_state_get_keypair_v4(state), get_shared_prekey_pair(state));
-
-  otrng_client_state_add_prekey_profile(state, p);
-  otrng_prekey_profile_free(p);
+  return otrng_prekey_profile_build(otrng_client_state_get_instance_tag(state),
+                                    otrng_client_state_get_keypair_v4(state),
+                                    get_shared_prekey_pair(state));
 }
 
 API const otrng_prekey_profile_s *
@@ -250,8 +241,12 @@ otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
     return state->prekey_profile;
   }
 
-  // TODO: @client invoke callback to generate if profile is NULL
-  create_default_prekey_profile(state);
+  // TODO: @client invoke This should be done in a callback, but
+  // client_callbacks_s does not have any.
+  otrng_prekey_profile_s *p =
+      otrng_client_state_build_default_prekey_profile(state);
+  otrng_client_state_add_prekey_profile(state, p);
+  otrng_prekey_profile_free(p);
 
   return state->prekey_profile;
 }
