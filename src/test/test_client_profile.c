@@ -46,7 +46,7 @@ void test_client_profile_serializes_body() {
   otrng_ec_point_copy(profile->long_term_pub_key, keypair->pub);
 
   uint8_t expected_pubkey[ED448_PUBKEY_BYTES] = {0};
-  otrng_serialize_otrng_public_key(expected_pubkey, keypair->pub);
+  otrng_serialize_public_key(expected_pubkey, keypair->pub);
 
   size_t written = 0;
   uint8_t *serialized = NULL;

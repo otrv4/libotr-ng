@@ -900,8 +900,8 @@ INTERNAL otrng_err otrng_prekey_dake2_message_deserialize(
 
   w += read;
 
-  if (!otrng_deserialize_otrng_public_key(dst->server_pub_key, serialized + w,
-                                          serialized_len - w, &read)) {
+  if (!otrng_deserialize_public_key(dst->server_pub_key, serialized + w,
+                                    serialized_len - w, &read)) {
     return OTRNG_ERROR;
   }
 

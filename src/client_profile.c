@@ -155,7 +155,7 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
 
   // Ed448 public key
   w += otrng_serialize_uint16(dst + w, 0x02);
-  w += otrng_serialize_otrng_public_key(dst + w, profile->long_term_pub_key);
+  w += otrng_serialize_public_key(dst + w, profile->long_term_pub_key);
   num_fields++;
 
   // TODO: Forger public key
@@ -342,8 +342,8 @@ tstatic otrng_err deserialize_field(client_profile_s *target,
     }
     break;
   case 0x02: // Ed448 public key
-    if (!otrng_deserialize_otrng_public_key(target->long_term_pub_key,
-                                            buffer + w, buflen - w, &read)) {
+    if (!otrng_deserialize_public_key(target->long_term_pub_key, buffer + w,
+                                      buflen - w, &read)) {
       return OTRNG_ERROR;
     }
     break;

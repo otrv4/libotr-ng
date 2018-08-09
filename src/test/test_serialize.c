@@ -82,9 +82,9 @@ void test_ser_des_otrng_public_key() {
   otrng_keypair_generate(keypair, sym);
 
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(otrng_serialize_otrng_public_key(serialized, keypair->pub),
-                  ==, ED448_PUBKEY_BYTES);
-  otrng_assert_is_success(otrng_deserialize_otrng_public_key(
+  g_assert_cmpint(otrng_serialize_public_key(serialized, keypair->pub), ==,
+                  ED448_PUBKEY_BYTES);
+  otrng_assert_is_success(otrng_deserialize_public_key(
       deserialized, serialized, ED448_PUBKEY_BYTES, NULL));
 
   otrng_assert(otrng_ec_point_valid(deserialized));
@@ -99,10 +99,9 @@ void test_ser_des_otrng_shared_prekey() {
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
 
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(
-      otrng_serialize_otrng_shared_prekey(serialized, shared_prekey->pub), ==,
-      ED448_PUBKEY_BYTES);
-  otrng_assert_is_success(otrng_deserialize_otrng_shared_prekey(
+  g_assert_cmpint(otrng_serialize_shared_prekey(serialized, shared_prekey->pub),
+                  ==, ED448_PUBKEY_BYTES);
+  otrng_assert_is_success(otrng_deserialize_shared_prekey(
       deserialized, serialized, ED448_PUBKEY_BYTES, NULL));
 
   otrng_assert(otrng_ec_point_valid(deserialized));

@@ -129,8 +129,8 @@ INTERNAL otrng_err otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
   return otrng_serialize_dh_mpi_otr(dst, dstlen, written, pub);
 }
 
-INTERNAL size_t otrng_serialize_otrng_public_key(uint8_t *dst,
-                                                 const otrng_public_key_p pub) {
+INTERNAL size_t otrng_serialize_public_key(uint8_t *dst,
+                                           const otrng_public_key_p pub) {
   uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, ED448_PUBKEY_TYPE);
   cursor += otrng_serialize_ec_point(cursor, pub);
@@ -138,7 +138,7 @@ INTERNAL size_t otrng_serialize_otrng_public_key(uint8_t *dst,
   return cursor - dst;
 }
 
-INTERNAL size_t otrng_serialize_otrng_shared_prekey(
+INTERNAL size_t otrng_serialize_shared_prekey(
     uint8_t *dst, const otrng_shared_prekey_pub_p shared_prekey) {
   uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, ED448_SHARED_PREKEY_TYPE);

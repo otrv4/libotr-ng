@@ -69,7 +69,7 @@ tstatic size_t otrng_prekey_profile_body_serialize(
     return 0;
   }
 
-  w += otrng_serialize_otrng_shared_prekey(dst + w, p->shared_prekey);
+  w += otrng_serialize_shared_prekey(dst + w, p->shared_prekey);
 
   return w;
 }

@@ -874,7 +874,7 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
 
   uint8_t first_usage = 0x0D;
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
-  otrng_serialize_otrng_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
+  otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
 
   otrng_err result = build_rsign_tag(
       *msg, MAX_T_LENGTH, msg_len, first_usage, initiator.client_profile,
