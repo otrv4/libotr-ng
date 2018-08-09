@@ -140,9 +140,6 @@ INTERNAL void otrng_client_state_free(otrng_client_state_s *);
 
 INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id);
 
-INTERNAL const otrng_prekey_profile_s *
-otrng_client_state_get_prekey_profile(otrng_client_state_s *state);
-
 API void otrng_client_state_set_padding(size_t granularity,
                                         otrng_client_state_s *state);
 
