@@ -386,9 +386,9 @@ otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
   }
 
   uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
-  // if (!valid_instance_tag(our_instance_tag)) {
-  //  return NULL;
-  //}
+  if (!otrng_instance_tag_valid(our_instance_tag)) {
+    return NULL;
+  }
 
   /* @secret: the shared prekey should be deleted once the prekey profile
    * expires */

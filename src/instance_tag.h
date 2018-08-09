@@ -41,6 +41,8 @@ API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
 
 API void otrng_instag_free(otrng_instag_s *instag);
 
+INTERNAL otrng_bool otrng_instance_tag_valid(uint32_t instance_tag);
+
 #ifdef OTRNG_INSTANCE_TAG_PRIVATE
 #endif
 

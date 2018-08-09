@@ -65,3 +65,7 @@ API void otrng_instag_free(otrng_instag_s *instag) {
   free(instag->protocol);
   free(instag);
 }
+
+INTERNAL otrng_bool otrng_instance_tag_valid(uint32_t instance_tag) {
+  return (instance_tag > OTRNG_MIN_VALID_INSTAG);
+}

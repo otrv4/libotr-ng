@@ -975,13 +975,9 @@ set_their_prekey_profile(const otrng_prekey_profile_s *profile, otrng_s *otr) {
   return OTRNG_SUCCESS;
 }
 
-static otrng_bool valid_instance_tag(uint32_t instance_tag) {
-  return (instance_tag > OTRNG_MIN_VALID_INSTAG);
-}
-
 tstatic otrng_err received_sender_instance_tag(uint32_t their_instance_tag,
                                                otrng_s *otr) {
-  if (!valid_instance_tag(their_instance_tag)) {
+  if (!otrng_instance_tag_valid(their_instance_tag)) {
     return OTRNG_ERROR;
   }
 
@@ -991,7 +987,7 @@ tstatic otrng_err received_sender_instance_tag(uint32_t their_instance_tag,
 }
 
 static otrng_bool valid_receiver_instance_tag(uint32_t instance_tag) {
-  return (instance_tag == 0 || valid_instance_tag(instance_tag));
+  return (instance_tag == 0 || otrng_instance_tag_valid(instance_tag));
 }
 
 tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
