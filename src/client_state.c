@@ -293,7 +293,15 @@ INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
     return 1;
   }
 
-  OtrlInsTag *p = otrng_instance_tag_new(protocol_name, account_name, instag);
+  OtrlInsTag *p =
+      otrl_instag_find(state->user_state, account_name, protocol_name);
+  if (p) {
+    free(account_name);
+    free(protocol_name);
+    return 1;
+  }
+
+  p = otrng_instance_tag_new(protocol_name, account_name, instag);
 
   free(account_name);
   free(protocol_name);
