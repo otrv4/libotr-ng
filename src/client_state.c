@@ -82,11 +82,8 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
 INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
   otrng_keypair_free(state->keypair);
   otrng_list_free(state->our_prekeys, stored_prekeys_free_from_list);
-
   otrng_client_profile_free(state->client_profile);
-
   otrng_prekey_profile_free(state->prekey_profile);
-
   otrng_shared_prekey_pair_free(state->shared_prekey_pair);
 
   free(state);
@@ -135,14 +132,14 @@ otrng_client_state_add_private_key_v4(otrng_client_state_s *state,
   }
 
   if (state->keypair) {
-    return 0;
+    return 1;
   }
 
   /* @secret_information: the long-term key pair lives for as long the client
      decides */
   state->keypair = otrng_keypair_new();
   if (!state->keypair) {
-    return 2;
+    return 1;
   }
 
   otrng_keypair_generate(state->keypair, sym);
@@ -186,12 +183,12 @@ API int otrng_client_state_add_client_profile(otrng_client_state_s *state,
   }
 
   if (state->client_profile) {
-    return 2;
+    return 1;
   }
 
   state->client_profile = malloc(sizeof(client_profile_s));
   if (!state->client_profile) {
-    return 3;
+    return 1;
   }
 
   otrng_client_profile_copy(state->client_profile, profile);
@@ -205,12 +202,12 @@ INTERNAL int otrng_client_state_add_shared_prekey_v4(
   }
 
   if (state->shared_prekey_pair) {
-    return 0;
+    return 1;
   }
 
   state->shared_prekey_pair = otrng_shared_prekey_pair_new();
   if (!state->shared_prekey_pair) {
-    return 2;
+    return 1;
   }
 
   otrng_shared_prekey_pair_generate(state->shared_prekey_pair, sym);
@@ -236,12 +233,12 @@ otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
   }
 
   if (state->prekey_profile) {
-    return 2;
+    return 1;
   }
 
   state->prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
   if (!state->prekey_profile) {
-    return 3;
+    return 1;
   }
 
   otrng_prekey_profile_copy(state->prekey_profile, profile);
@@ -301,7 +298,7 @@ INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
   free(account_name);
   free(protocol_name);
   if (!p) {
-    return -1;
+    return 1;
   }
 
   otrl_userstate_instance_tag_add(state->user_state, p);
