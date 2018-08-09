@@ -77,10 +77,15 @@ INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p) {
   return otrng_false;
 }
 
-API void otrng_ec_point_encode(uint8_t *enc, const ec_point_p p) {
-  // TODO: @sanitizer @refactoring this does not check the size of enc and may
-  // overflow buffer.
+API otrng_err otrng_ec_point_encode(uint8_t *enc, size_t len,
+                                    const ec_point_p p) {
+  if (len < ED448_POINT_BYTES) {
+    return OTRNG_ERROR;
+  }
+
   goldilocks_448_point_mul_by_ratio_and_encode_like_eddsa(enc, p);
+
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_ec_point_decode(ec_point_p p,
@@ -188,7 +193,9 @@ INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
     return OTRNG_ERROR;
   }
 
-  otrng_ec_point_encode(shared_secret, p);
+  if (!otrng_ec_point_encode(shared_secret, ED448_POINT_BYTES, p)) {
+    return OTRNG_ERROR;
+  }
 
   if (!otrng_ecdh_valid_secret(shared_secret)) {
     return OTRNG_ERROR;

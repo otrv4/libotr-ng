@@ -151,9 +151,11 @@ INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p);
  * representation doesn't track it.
  *
  * @param [enc] The encoded point.
+ * @param [enc] The lenght of the encoded point.
  * @param [p]   The point.
  */
-INTERNAL void otrng_ec_point_encode(uint8_t *enc, const ec_point_p p);
+INTERNAL otrng_err otrng_ec_point_encode(uint8_t *enc, size_t len,
+                                         const ec_point_p p);
 
 /**
  * @brief EdDSA point decoding.
