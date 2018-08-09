@@ -173,9 +173,13 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {
   otrng_ec_point_destroy(keypair->pub);
 }
 
-INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret) {
-  uint8_t zero_buff[ED448_POINT_BYTES] = {0};
+INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
+                                            size_t shared_secret_len) {
+  if (shared_secret_len < ED448_POINT_BYTES) {
+    return otrng_false;
+  }
 
+  uint8_t zero_buff[ED448_POINT_BYTES] = {0};
   if (memcmp(shared_secret, zero_buff, ED448_POINT_BYTES) == 0) {
     return otrng_false;
   }
@@ -184,6 +188,7 @@ INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret) {
 }
 
 INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
+                                            size_t shared_secret_len,
                                             const ecdh_keypair_s *our_keypair,
                                             const ec_point_p their_pub) {
   goldilocks_448_point_p p;
@@ -193,11 +198,11 @@ INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
     return OTRNG_ERROR;
   }
 
-  if (!otrng_ec_point_encode(shared_secret, ED448_POINT_BYTES, p)) {
+  if (!otrng_ec_point_encode(shared_secret, shared_secret_len, p)) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_ecdh_valid_secret(shared_secret)) {
+  if (!otrng_ecdh_valid_secret(shared_secret, shared_secret_len)) {
     return OTRNG_ERROR;
   }
 

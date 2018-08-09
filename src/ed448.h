@@ -217,7 +217,8 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair);
  * @param [shared_secret] The shared_secret.
  *
  */
-INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret);
+INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
+                                            size_t shared_secret_len);
 
 /**
  * @brief ECDH shared secret generation.
@@ -229,6 +230,7 @@ INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret);
  * @warning The symmetric key is stored as the priv part
  */
 INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
+                                            size_t shared_secret_len,
                                             const ecdh_keypair_s *our_keypair,
                                             const ec_point_p their_pub);
 
