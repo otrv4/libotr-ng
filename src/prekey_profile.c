@@ -20,9 +20,11 @@
 
 #include "prekey_profile.h"
 
-#include "serialize.h"
 #include <string.h>
 #include <time.h>
+
+#include "instance_tag.h"
+#include "serialize.h"
 
 INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst) {
   otrng_ec_point_destroy(dst->shared_prekey);
@@ -145,6 +147,11 @@ INTERNAL otrng_prekey_profile_s *
 otrng_prekey_profile_build(uint32_t instance_tag,
                            const otrng_keypair_s *longterm_pair,
                            const otrng_shared_prekey_pair_s *prekey_pair) {
+  if (!prekey_pair || !longterm_pair ||
+      !otrng_instance_tag_valid(instance_tag)) {
+    return NULL;
+  }
+
   otrng_prekey_profile_s *p = malloc(sizeof(otrng_prekey_profile_s));
   if (!p) {
     return NULL;
@@ -194,6 +201,7 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
   /* 1. Verify that the Prekey Profile owner's instance tag is equal to the
    * Sender Instance tag of the person that sent the DAKE message in which the
    * Prekey Profile is received. */
+  // TODO: This should be validated OUTSIDE of here
   if (sender_instance_tag != profile->instance_tag) {
     return otrng_false;
   }

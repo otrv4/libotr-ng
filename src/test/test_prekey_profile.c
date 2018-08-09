@@ -27,21 +27,27 @@ void test_prekey_profile_validates() {
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(shared_prekey, sym_shared);
 
-  otrng_prekey_profile_s *profile =
-      otrng_prekey_profile_build(0x01, long_term, shared_prekey);
+  otrng_prekey_profile_s *profile = otrng_prekey_profile_build(
+      OTRNG_MIN_VALID_INSTAG + 0x01, long_term, shared_prekey);
 
-  otrng_assert(otrng_prekey_profile_valid(profile, 0x01, long_term->pub));
+  otrng_assert(otrng_prekey_profile_valid(profile, profile->instance_tag,
+                                          long_term->pub));
+
+  otrng_assert(!otrng_prekey_profile_valid(profile, profile->instance_tag + 1,
+                                           long_term->pub));
 
   time_t t = profile->expires;
   profile->expires = time(NULL) - 1;
-  otrng_assert(!otrng_prekey_profile_valid(profile, 0x01, long_term->pub));
+  otrng_assert(!otrng_prekey_profile_valid(profile, profile->instance_tag,
+                                           long_term->pub));
   profile->expires = t;
 
   // TODO: Create an invalid point
 
   // Change the profile to mess up with the signature
   profile->expires = profile->expires - 60;
-  otrng_assert(!otrng_prekey_profile_valid(profile, 0x01, long_term->pub));
+  otrng_assert(!otrng_prekey_profile_valid(profile, profile->instance_tag,
+                                           long_term->pub));
 
   otrng_keypair_free(long_term);
   otrng_shared_prekey_pair_free(shared_prekey);
