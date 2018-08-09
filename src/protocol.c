@@ -55,7 +55,7 @@ INTERNAL dh_public_key_p our_dh(const otrng_s *otr) {
 INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr) {
   maybe_create_keys(otr->conversation->client);
   otrng_client_state_s *state = otr->conversation->client;
-  return otrng_client_state_get_or_create_client_profile(state);
+  return otrng_client_state_get_client_profile(state);
 }
 
 INTERNAL uint32_t our_instance_tag(const otrng_s *otr) {

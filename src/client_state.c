@@ -155,7 +155,12 @@ otrng_client_state_get_client_profile(otrng_client_state_s *state) {
     return NULL;
   }
 
-  // TODO: @client Invoke callbacks?
+  if (state->client_profile) {
+    return state->client_profile;
+  }
+
+  otrng_client_callbacks_create_client_profile(state->callbacks, state,
+                                               state->client_id);
 
   return state->client_profile;
 }
@@ -328,23 +333,6 @@ otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
   }
 
   return instag->instag;
-}
-
-INTERNAL const client_profile_s *
-otrng_client_state_get_or_create_client_profile(otrng_client_state_s *state) {
-  if (!state) {
-    return NULL;
-  }
-
-  const client_profile_s *ret = otrng_client_state_get_client_profile(state);
-  if (ret) {
-    return ret;
-  }
-
-  otrng_client_callbacks_create_client_profile(state->callbacks, state,
-                                               state->client_id);
-
-  return state->client_profile;
 }
 
 INTERNAL const otrng_shared_prekey_pair_s *
