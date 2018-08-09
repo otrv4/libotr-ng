@@ -114,12 +114,13 @@ otrng_client_state_get_keypair_v4(otrng_client_state_s *state) {
     return NULL;
   }
 
+  if (state->keypair) {
+    return state->keypair;
+  }
+
   /* @secret_information: the long-term key pair lives for as long the client
      decides */
-  if (!state->keypair) {
-    otrng_client_callbacks_create_privkey_v4(state->callbacks,
-                                             state->client_id);
-  }
+  otrng_client_callbacks_create_privkey_v4(state->callbacks, state->client_id);
 
   return state->keypair;
 }
@@ -340,8 +341,8 @@ otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
   return instag->instag;
 }
 
-INTERNAL const otrng_shared_prekey_pair_s *
-get_or_create_shared_prekey_pair(otrng_client_state_s *state) {
+static const otrng_shared_prekey_pair_s *
+get_shared_prekey_pair(otrng_client_state_s *state) {
   if (state->shared_prekey_pair) {
     return state->shared_prekey_pair;
   }
@@ -350,17 +351,6 @@ get_or_create_shared_prekey_pair(otrng_client_state_s *state) {
                                               state->client_id);
 
   return state->shared_prekey_pair;
-}
-
-INTERNAL const otrng_keypair_s *
-get_or_create_keypair(otrng_client_state_s *state) {
-  if (state->keypair) {
-    return state->keypair;
-  }
-
-  otrng_client_callbacks_create_privkey_v4(state->callbacks, state->client_id);
-
-  return state->keypair;
 }
 
 INTERNAL const otrng_prekey_profile_s *
@@ -375,18 +365,12 @@ otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
   // of doing it here.
 
   const otrng_shared_prekey_pair_s *shared_prekey_pair =
-      get_or_create_shared_prekey_pair(state);
-  if (!shared_prekey_pair) {
-    return NULL;
-  }
-
-  const otrng_keypair_s *keypair = get_or_create_keypair(state);
-  if (!keypair) {
-    return NULL;
-  }
-
+      get_shared_prekey_pair(state);
+  const otrng_keypair_s *keypair = otrng_client_state_get_keypair_v4(state);
   uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
-  if (!otrng_instance_tag_valid(our_instance_tag)) {
+
+  if (!shared_prekey_pair || !keypair ||
+      !otrng_instance_tag_valid(our_instance_tag)) {
     return NULL;
   }
 
