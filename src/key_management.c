@@ -465,7 +465,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
   if (interactive) {
     k_ecdh_p k_ecdh;
 
-    otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), manager->our_ecdh,
+    otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), manager->our_ecdh->priv,
                              manager->their_ecdh);
     otrng_ec_bzero(manager->our_ecdh->priv, sizeof(ec_scalar_p));
 
@@ -526,53 +526,6 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_ecdh_shared_secret_from_prekey(
-    uint8_t *shared_secret, const otrng_shared_prekey_pair_s *shared_prekey,
-    const ec_point_p their_pub) {
-
-  // TODO: This whole function is a duplication of otrng_ecdh_shared_secret()
-  // just because otrng_ecdh_shared_secret receives the ecdh_keypair_s rather
-  // than the private key directly.
-  goldilocks_448_point_p p;
-  goldilocks_448_point_scalarmul(p, their_pub, shared_prekey->priv);
-
-  if (!otrng_ec_point_valid(p)) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_serialize_ec_point(shared_secret, p);
-
-  if (!otrng_ecdh_valid_secret(shared_secret, ED448_POINT_BYTES)) {
-    return OTRNG_ERROR;
-  }
-
-  return OTRNG_SUCCESS;
-}
-
-INTERNAL otrng_err otrng_ecdh_shared_secret_from_keypair(
-    uint8_t *shared_secret, otrng_keypair_s *keypair,
-    const ec_point_p their_pub) {
-
-  // TODO: This whole function is a duplication of otrng_ecdh_shared_secret()
-  // just because otrng_ecdh_shared_secret receives the ecdh_keypair_s rather
-  // than the private key directly.
-
-  goldilocks_448_point_p p;
-  goldilocks_448_point_scalarmul(p, their_pub, keypair->priv);
-
-  if (!otrng_ec_point_valid(p)) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_serialize_ec_point(shared_secret, p);
-
-  if (!otrng_ecdh_valid_secret(shared_secret, ED448_POINT_BYTES)) {
-    return OTRNG_ERROR;
-  }
-
-  return OTRNG_SUCCESS;
-}
-
 tstatic void calculate_ssid(key_manager_s *manager) {
   uint8_t usage_SSID = 0x04;
   shake_256_kdf1(manager->ssid, sizeof(manager->ssid), usage_SSID,
@@ -605,10 +558,10 @@ tstatic otrng_err enter_new_ratchet(key_manager_s *manager,
   /* K_ecdh = ECDH(our_ecdh.secret, their_ecdh) */
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), manager->our_ecdh,
+    otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), manager->our_ecdh->priv,
                              manager->their_ecdh);
   } else if (action == 'r') {
-    otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), manager->our_ecdh,
+    otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), manager->our_ecdh->priv,
                              tmp_receiving_ratchet->their_ecdh);
   }
 

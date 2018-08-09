@@ -720,7 +720,8 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   k_ecdh_p k_ecdh;
 
   // TODO: @refactoring this will be calculated again later
-  if (!otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), otr->keys->our_ecdh,
+  if (!otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh),
+                                otr->keys->our_ecdh->priv,
                                 otr->keys->their_ecdh)) {
     return OTRNG_ERROR;
   }
@@ -748,13 +749,13 @@ tstatic otrng_err generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
 #endif
 
   if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, sizeof(tmp_ecdh_k1),
-                                otr->keys->our_ecdh,
+                                otr->keys->our_ecdh->priv,
                                 otr->keys->their_shared_prekey)) {
     return OTRNG_ERROR;
   }
 
   if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, sizeof(tmp_ecdh_k2),
-                                otr->keys->our_ecdh,
+                                otr->keys->our_ecdh->priv,
                                 otr->their_client_profile->long_term_pub_key)) {
     return OTRNG_ERROR;
   }
@@ -1084,7 +1085,8 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   k_ecdh_p tmp_ecdh_k2;
 
   // TODO: @refactoring this workaround is not the nicest there is
-  if (!otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), otr->keys->our_ecdh,
+  if (!otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh),
+                                otr->keys->our_ecdh->priv,
                                 otr->keys->their_ecdh)) {
     return OTRNG_ERROR;
   }
@@ -1110,13 +1112,15 @@ tstatic otrng_err generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   otrng_memdump(brace_key, sizeof(brace_key_p));
 #endif
 
-  if (!otrng_ecdh_shared_secret_from_prekey(tmp_ecdh_k1, our_shared_prekey(otr),
-                                            their_ecdh(otr))) {
+  if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, sizeof(tmp_ecdh_k1),
+                                our_shared_prekey(otr)->priv,
+                                their_ecdh(otr))) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_ecdh_shared_secret_from_keypair(
-          tmp_ecdh_k2, otr->conversation->client->keypair, their_ecdh(otr))) {
+  if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, sizeof(tmp_ecdh_k1),
+                                otr->conversation->client->keypair->priv,
+                                their_ecdh(otr))) {
     return OTRNG_ERROR;
   }
 

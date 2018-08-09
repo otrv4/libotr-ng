@@ -546,7 +546,7 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   uint8_t shared_secret[64] = {0};
   uint8_t ecdh_shared[ED448_POINT_BYTES] = {0};
   otrng_ecdh_shared_secret(ecdh_shared, sizeof(ecdh_shared),
-                           client->ephemeral_ecdh, msg2->S);
+                           client->ephemeral_ecdh->priv, msg2->S);
 
   // SK = KDF(0x01, ECDH(i, S), 64)
   goldilocks_shake256_ctx_p hsk;

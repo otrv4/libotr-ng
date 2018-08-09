@@ -173,8 +173,8 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {
   otrng_ec_point_destroy(keypair->pub);
 }
 
-INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
-                                            size_t shared_secret_len) {
+static otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
+                                          size_t shared_secret_len) {
   if (shared_secret_len < ED448_POINT_BYTES) {
     return otrng_false;
   }
@@ -189,10 +189,10 @@ INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
 
 INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                             size_t shared_secret_len,
-                                            const ecdh_keypair_s *our_keypair,
+                                            const ec_scalar_p our_priv,
                                             const ec_point_p their_pub) {
   goldilocks_448_point_p p;
-  goldilocks_448_point_scalarmul(p, their_pub, our_keypair->priv);
+  goldilocks_448_point_scalarmul(p, their_pub, our_priv);
 
   if (!otrng_ec_point_valid(p)) {
     return OTRNG_ERROR;

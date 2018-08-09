@@ -212,26 +212,17 @@ otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
 INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair);
 
 /**
- * @brief Check that a shared secret is not a all-zero buff.
- *
- * @param [shared_secret] The shared_secret.
- *
- */
-INTERNAL otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
-                                            size_t shared_secret_len);
-
-/**
  * @brief ECDH shared secret generation.
  *
  * @param [shared_secret] The shared secret.
- * @param [our_keypair]   Our keypair.
+ * @param [our_priv]      Our private key.
  * @param [their_pub]     The other party's public key.
  *
  * @warning The symmetric key is stored as the priv part
  */
 INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                             size_t shared_secret_len,
-                                            const ecdh_keypair_s *our_keypair,
+                                            const ec_scalar_p our_priv,
                                             const ec_point_p their_pub);
 
 /**
