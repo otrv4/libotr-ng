@@ -166,14 +166,19 @@ void test_client_profile_signs_and_verify() {
 }
 
 void test_otrng_client_profile_build() {
-  client_profile_s *profile = otrng_client_profile_build(0, NULL, NULL);
-  otrng_assert(!profile);
-
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  profile = otrng_client_profile_build(0, "3", keypair);
+  otrng_assert(
+      !otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, "3", NULL));
+  otrng_assert(
+      !otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, NULL, keypair));
+  otrng_assert(
+      !otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG, "3", keypair));
+
+  client_profile_s *profile =
+      otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, "3", keypair);
   g_assert_cmpstr(profile->versions, ==, "3");
 
   otrng_client_profile_free(profile);

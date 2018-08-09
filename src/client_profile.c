@@ -29,6 +29,7 @@
 
 #define OTRNG_DESERIALIZE_PRIVATE
 #include "deserialize.h"
+#include "instance_tag.h"
 #include "serialize.h"
 
 static client_profile_s *client_profile_init(client_profile_s *profile,
@@ -489,6 +490,11 @@ otrng_client_profile_verify_signature(const client_profile_s *profile) {
 INTERNAL client_profile_s *
 otrng_client_profile_build(uint32_t instance_tag, const char *versions,
                            const otrng_keypair_s *keypair) {
+
+  if (!otrng_instance_tag_valid(instance_tag) || !versions || !keypair) {
+    return NULL;
+  }
+
   client_profile_s *profile = client_profile_new(versions);
   if (!profile) {
     return NULL;
