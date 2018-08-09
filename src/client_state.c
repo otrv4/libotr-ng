@@ -215,13 +215,43 @@ INTERNAL int otrng_client_state_add_shared_prekey_v4(
   return 0;
 }
 
+static const otrng_shared_prekey_pair_s *
+get_shared_prekey_pair(otrng_client_state_s *state) {
+  if (state->shared_prekey_pair) {
+    return state->shared_prekey_pair;
+  }
+
+  otrng_client_callbacks_create_shared_prekey(state->callbacks,
+                                              state->client_id);
+
+  return state->shared_prekey_pair;
+}
+
+// TODO: This should be done in a callback, but client_callbacks_s does not have
+// any.
+static void create_default_prekey_profile(otrng_client_state_s *state) {
+  /* @secret: the shared prekey should be deleted once the prekey profile
+   * expires */
+  otrng_prekey_profile_s *p = otrng_prekey_profile_build(
+      otrng_client_state_get_instance_tag(state),
+      otrng_client_state_get_keypair_v4(state), get_shared_prekey_pair(state));
+
+  otrng_client_state_add_prekey_profile(state, p);
+  otrng_prekey_profile_free(p);
+}
+
 API const otrng_prekey_profile_s *
 otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
   if (!state) {
     return NULL;
   }
 
+  if (state->prekey_profile) {
+    return state->prekey_profile;
+  }
+
   // TODO: @client invoke callback to generate if profile is NULL
+  create_default_prekey_profile(state);
 
   return state->prekey_profile;
 }
@@ -339,47 +369,6 @@ otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
   }
 
   return instag->instag;
-}
-
-static const otrng_shared_prekey_pair_s *
-get_shared_prekey_pair(otrng_client_state_s *state) {
-  if (state->shared_prekey_pair) {
-    return state->shared_prekey_pair;
-  }
-
-  otrng_client_callbacks_create_shared_prekey(state->callbacks,
-                                              state->client_id);
-
-  return state->shared_prekey_pair;
-}
-
-INTERNAL const otrng_prekey_profile_s *
-otrng_client_state_get_or_create_prekey_profile(otrng_client_state_s *state) {
-  const otrng_prekey_profile_s *ret =
-      otrng_client_state_get_prekey_profile(state);
-  if (ret) {
-    return ret;
-  }
-
-  // TODO: @client invoke callback to generate profile if it is NULL, instead
-  // of doing it here.
-
-  const otrng_shared_prekey_pair_s *shared_prekey_pair =
-      get_shared_prekey_pair(state);
-  const otrng_keypair_s *keypair = otrng_client_state_get_keypair_v4(state);
-  uint32_t our_instance_tag = otrng_client_state_get_instance_tag(state);
-
-  if (!shared_prekey_pair || !keypair ||
-      !otrng_instance_tag_valid(our_instance_tag)) {
-    return NULL;
-  }
-
-  /* @secret: the shared prekey should be deleted once the prekey profile
-   * expires */
-  state->prekey_profile =
-      otrng_prekey_profile_build(our_instance_tag, keypair, shared_prekey_pair);
-
-  return state->prekey_profile;
 }
 
 tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,

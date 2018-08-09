@@ -155,7 +155,7 @@ our_shared_prekey(const otrng_s *otr) {
 tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   maybe_create_keys(otr->conversation->client);
   otrng_client_state_s *state = otr->conversation->client;
-  return otrng_client_state_get_or_create_prekey_profile(state);
+  return otrng_client_state_get_prekey_profile(state);
 }
 
 INTERNAL otrng_conversation_state_s *
