@@ -79,6 +79,12 @@ typedef struct {
   uint8_t mac[DATA_MSG_MAC_BYTES];
 } otrng_prekey_failure_message_s;
 
+typedef struct {
+  char *identity;
+  char *versions;
+  uint32_t instance_tag;
+} otrng_prekey_ensemble_query_retrieval_message_s;
+
 typedef enum {
   OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST = 1,
   OTRNG_PREKEY_PREKEY_PUBLICATION = 2,
@@ -155,5 +161,16 @@ void otrng_prekey_storage_status_message_destroy(
 INTERNAL
 void otrng_prekey_publication_message_destroy(
     otrng_prekey_publication_message_s *msg);
+
+API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
+                                               const char *versions,
+                                               otrng_prekey_client_s *client);
+
+INTERNAL otrng_err otrng_prekey_ensemble_query_retrieval_message_asprint(
+    uint8_t **dst, size_t *len,
+    const otrng_prekey_ensemble_query_retrieval_message_s *msg);
+
+INTERNAL void otrng_prekey_ensemble_query_retrieval_message_destroy(
+    otrng_prekey_ensemble_query_retrieval_message_s *msg);
 
 #endif

@@ -170,6 +170,70 @@ API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client) {
 // otrng_prekey_client_publish_profiles(otrng_prekey_client_s *client) {
 //}
 
+// instance tag, jid,
+API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
+                                               const char *versions,
+                                               otrng_prekey_client_s *client) {
+  otrng_prekey_ensemble_query_retrieval_message_s msg[1];
+
+  msg->identity = otrng_strdup(identity);
+  msg->versions = otrng_strdup(versions);
+  msg->instance_tag = client->instance_tag;
+
+  uint8_t *serialized = NULL;
+  size_t serialized_len = 0;
+  otrng_err success = otrng_prekey_ensemble_query_retrieval_message_asprint(
+      &serialized, &serialized_len, msg);
+
+  otrng_prekey_ensemble_query_retrieval_message_destroy(msg);
+
+  if (!success) {
+    return NULL;
+  }
+
+  char *ret = prekey_encode(serialized, serialized_len);
+  free(serialized);
+  return ret;
+}
+
+INTERNAL otrng_err otrng_prekey_ensemble_query_retrieval_message_asprint(
+    uint8_t **dst, size_t *len,
+    const otrng_prekey_ensemble_query_retrieval_message_s *msg) {
+  if (!len || !dst) {
+    return OTRNG_ERROR;
+  }
+
+  *len = 2 + 1 + 4 + (4 + strlen(msg->identity)) + (4 + strlen(msg->versions));
+  *dst = malloc(*len);
+  if (!*dst) {
+    return OTRNG_ERROR;
+  }
+
+  size_t w = 0;
+  w += otrng_serialize_uint16(*dst, 0x04);
+  w += otrng_serialize_uint8(*dst + w, 0x10);
+  w += otrng_serialize_uint32(*dst + w, msg->instance_tag);
+  w += otrng_serialize_data(*dst + w, (uint8_t *)msg->identity,
+                            strlen(msg->identity));
+  w += otrng_serialize_data(*dst + w, (uint8_t *)msg->versions,
+                            strlen(msg->versions));
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL void otrng_prekey_ensemble_query_retrieval_message_destroy(
+    otrng_prekey_ensemble_query_retrieval_message_s *msg) {
+  if (!msg) {
+    return;
+  }
+
+  free(msg->identity);
+  msg->identity = NULL;
+
+  free(msg->versions);
+  msg->versions = NULL;
+}
+
 static uint8_t *otrng_prekey_client_get_expected_composite_phi(
     size_t *len, const otrng_prekey_client_s *client) {
   if (!client->server_identity || !client->our_identity) {
