@@ -365,6 +365,10 @@ otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
   free(protocol_name);
 
   if (!instag) {
+    otrng_client_callbacks_create_instag(state->callbacks, state->client_id);
+  }
+
+  if (!instag) {
     return 0;
   }
 
