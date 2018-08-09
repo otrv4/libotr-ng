@@ -26,5 +26,6 @@ includedir=@includedir@
 Name: libotr-ng
 Description: Off-the-Record Messaging Library
 Version: @PACKAGE_VERSION@
+Requires: libotr >= 4.0.0, libgoldilocks >= 0.0.1, libsodium >= 1.0.0
 Libs: -L${libdir} -lotr-ng
 Cflags: -I${includedir}
