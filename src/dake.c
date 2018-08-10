@@ -484,7 +484,8 @@ INTERNAL otrng_err otrng_dake_prekey_message_serialize(
 }
 
 INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
-    dake_prekey_message_s *dst, const uint8_t *src, size_t src_len) {
+    dake_prekey_message_s *dst, const uint8_t *src, size_t src_len,
+    size_t *nread) {
   const uint8_t *cursor = src;
   int64_t len = src_len;
   size_t read = 0;
@@ -535,7 +536,13 @@ INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  return otrng_deserialize_dh_mpi_otr(&dst->B, cursor, len, &read);
+  otrng_err ret = otrng_deserialize_dh_mpi_otr(&dst->B, cursor, len, &read);
+
+  if (nread) {
+    *nread = cursor - src + read;
+  }
+
+  return ret;
 }
 
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(

@@ -131,7 +131,8 @@ INTERNAL void
 otrng_dake_prekey_message_destroy(dake_prekey_message_s *prekey_message);
 
 INTERNAL otrng_err otrng_dake_prekey_message_deserialize(
-    dake_prekey_message_s *dst, const uint8_t *src, size_t src_len);
+    dake_prekey_message_s *dst, const uint8_t *src, size_t src_len,
+    size_t *nread);
 
 INTERNAL otrng_err otrng_dake_prekey_message_asprintf(
     uint8_t **dst, size_t *nbytes, const dake_prekey_message_s *prekey_message);

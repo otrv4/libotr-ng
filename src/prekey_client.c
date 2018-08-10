@@ -170,7 +170,6 @@ API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client) {
 // otrng_prekey_client_publish_profiles(otrng_prekey_client_s *client) {
 //}
 
-// instance tag, jid,
 API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
                                                const char *versions,
                                                otrng_prekey_client_s *client) {
@@ -791,6 +790,23 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
     }
 
     sodium_memzero(mac_tag, sizeof(mac_tag));
+  } else if (message_type == 0x0e) {
+    uint32_t instance_tag = 0;
+    size_t read = 0;
+    if (!otrng_deserialize_uint32(&instance_tag, decoded + 3, decoded_len - 3,
+                                  &read)) {
+      return NULL;
+    }
+
+    if (instance_tag != client->instance_tag) {
+      return NULL;
+    }
+
+    // This message will always be "No Prekey
+    //   Messages available for this identity" (per spec). What is the point of
+    //   receiving it? Should I do anything if it is NOT what the spec said it
+    //   should be?
+    printf("No Prekey Messages available for this identity\n");
   }
 
   return ret;
@@ -1052,4 +1068,93 @@ void otrng_prekey_publication_message_destroy(
 
   otrng_prekey_profile_free(msg->prekey_profile);
   msg->prekey_profile = NULL;
+}
+
+INTERNAL otrng_err otrng_prekey_ensemble_retrieval_message_deserialize(
+    otrng_prekey_ensemble_retrieval_message_s *dst, const uint8_t *serialized,
+    size_t serialized_len) {
+  size_t w = 0;
+  size_t read = 0;
+
+  uint8_t message_type = 0;
+  if (!parse_header(&message_type, serialized, serialized_len, &w)) {
+    return OTRNG_ERROR;
+  }
+
+  if (message_type != 0x13) {
+    return OTRNG_ERROR;
+  }
+
+  if (!otrng_deserialize_uint32(&dst->instance_tag, serialized + w,
+                                serialized_len - w, &read)) {
+    return OTRNG_ERROR;
+  }
+
+  w += read;
+
+  uint8_t l;
+  if (!otrng_deserialize_uint8(&l, serialized + w, serialized_len - w, &read)) {
+    return OTRNG_ERROR;
+  }
+
+  w += read;
+
+  dst->ensembles = malloc(sizeof(prekey_ensemble_s *) * l);
+  if (!dst->ensembles) {
+    return OTRNG_ERROR;
+  }
+
+  dst->num_ensembles = l;
+
+  for (int i = 0; i < l; i++) {
+    dst->ensembles[i] = malloc(sizeof(prekey_ensemble_s));
+    if (!dst->ensembles[i]) {
+      return OTRNG_ERROR;
+    }
+
+    if (!otrng_client_profile_deserialize(dst->ensembles[i]->client_profile,
+                                          serialized + w, serialized_len - w,
+                                          &read)) {
+      return OTRNG_ERROR;
+    }
+
+    w += read;
+
+    if (!otrng_prekey_profile_deserialize(dst->ensembles[i]->prekey_profile,
+                                          serialized + w, serialized_len - w,
+                                          &read)) {
+      return OTRNG_ERROR;
+    }
+
+    w += read;
+
+    dst->ensembles[i]->message = malloc(sizeof(dake_prekey_message_s));
+    if (!dst->ensembles[i]->message) {
+      return OTRNG_ERROR;
+    }
+
+    if (!otrng_dake_prekey_message_deserialize(dst->ensembles[i]->message,
+                                               serialized + w,
+                                               serialized_len - w, &read)) {
+      return OTRNG_ERROR;
+    }
+
+    w += read;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL
+void otrng_prekey_ensemble_retrieval_message_destroy(
+    otrng_prekey_ensemble_retrieval_message_s *msg) {
+  if (!msg) {
+    return;
+  }
+
+  for (int i = 0; i < msg->num_ensembles; i++) {
+    otrng_prekey_ensemble_free(msg->ensembles[i]);
+  }
+  free(msg->ensembles);
+  msg->ensembles = NULL;
 }

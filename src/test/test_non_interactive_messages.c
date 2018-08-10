@@ -101,7 +101,7 @@ void test_otrng_dake_prekey_message_deserializes() {
 
   dake_prekey_message_s *deserialized = malloc(sizeof(dake_prekey_message_s));
   otrng_assert_is_success(otrng_dake_prekey_message_deserialize(
-      deserialized, serialized, serialized_len));
+      deserialized, serialized, serialized_len, NULL));
 
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
                    prekey_message->sender_instance_tag);

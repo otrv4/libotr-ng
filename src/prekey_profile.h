@@ -54,6 +54,10 @@ INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
 INTERNAL otrng_err otrng_prekey_profile_asprint(uint8_t **dst, size_t *dstlen,
                                                 otrng_prekey_profile_s *p);
 
+INTERNAL otrng_err otrng_prekey_profile_deserialize(
+    otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
+    size_t *nread);
+
 #ifdef OTRNG_PREKEY_PROFILE_PRIVATE
 
 tstatic otrng_err otrng_prekey_profile_body_asprint(uint8_t **dst,

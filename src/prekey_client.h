@@ -27,6 +27,7 @@
 #include "client_profile.h"
 #include "constants.h"
 #include "dake.h"
+#include "prekey_ensemble.h"
 #include "prekey_profile.h"
 #include "shared.h"
 
@@ -84,6 +85,12 @@ typedef struct {
   char *versions;
   uint32_t instance_tag;
 } otrng_prekey_ensemble_query_retrieval_message_s;
+
+typedef struct {
+  uint32_t instance_tag;
+  prekey_ensemble_s **ensembles;
+  size_t num_ensembles;
+} otrng_prekey_ensemble_retrieval_message_s;
 
 typedef enum {
   OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST = 1,
@@ -172,5 +179,13 @@ INTERNAL otrng_err otrng_prekey_ensemble_query_retrieval_message_asprint(
 
 INTERNAL void otrng_prekey_ensemble_query_retrieval_message_destroy(
     otrng_prekey_ensemble_query_retrieval_message_s *msg);
+
+INTERNAL otrng_err otrng_prekey_ensemble_retrieval_message_deserialize(
+    otrng_prekey_ensemble_retrieval_message_s *dst, const uint8_t *serialized,
+    size_t serialized_len);
+
+INTERNAL
+void otrng_prekey_ensemble_retrieval_message_destroy(
+    otrng_prekey_ensemble_retrieval_message_s *msg);
 
 #endif

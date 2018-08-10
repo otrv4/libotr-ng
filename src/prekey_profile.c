@@ -23,6 +23,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "deserialize.h"
 #include "instance_tag.h"
 #include "serialize.h"
 
@@ -72,6 +73,52 @@ tstatic size_t otrng_prekey_profile_body_serialize(
   w += otrng_serialize_shared_prekey(dst + w, p->shared_prekey);
 
   return w;
+}
+
+INTERNAL otrng_err otrng_prekey_profile_deserialize(
+    otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
+    size_t *nread) {
+  size_t read = 0;
+  size_t w = 0;
+
+  if (!target) {
+    return OTRNG_ERROR;
+  }
+
+  if (!otrng_deserialize_uint32(&target->instance_tag, buffer + w, buflen - w,
+                                &read)) {
+    return OTRNG_ERROR;
+  }
+
+  w += read;
+
+  if (!otrng_deserialize_uint64(&target->expires, buffer + w, buflen - w,
+                                &read)) {
+    return OTRNG_ERROR;
+  }
+
+  w += read;
+
+  if (!otrng_deserialize_otrng_shared_prekey(target->shared_prekey, buffer + w,
+                                             buflen - w, &read)) {
+    return OTRNG_ERROR;
+  }
+
+  w += read;
+
+  if (!otrng_deserialize_bytes_array(target->signature,
+                                     sizeof(eddsa_signature_p), buffer + w,
+                                     buflen - w)) {
+    return OTRNG_ERROR;
+  }
+
+  w += sizeof(eddsa_signature_p);
+
+  if (nread) {
+    *nread = w;
+  }
+
+  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_err otrng_prekey_profile_body_asprint(
