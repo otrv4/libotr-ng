@@ -101,7 +101,7 @@ typedef struct {
   char *server_identity;
   otrng_public_key_p pub;
 
-  uint8_t mac_key[64];
+  uint8_t mac_key[MAC_KEY_BYTES];
   otrng_prekey_next_message_t after_dake;
 } otrng_prekey_client_s;
 
@@ -141,7 +141,7 @@ INTERNAL void kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
 
 INTERNAL otrng_err
 otrng_prekey_dake3_message_append_storage_information_request(
-    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[64]);
+    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]);
 
 INTERNAL otrng_err
 otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,

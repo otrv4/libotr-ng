@@ -291,7 +291,7 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
     return otrng_false;
   }
 
-  size_t tlen = 1 + 3 * 64 + 2 * ED448_POINT_BYTES;
+  size_t tlen = 1 + 3 * HASH_BYTES + 2 * ED448_POINT_BYTES;
   uint8_t *t = malloc(tlen);
   if (!t) {
     free(our_profile);
@@ -304,20 +304,20 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
   goldilocks_shake256_ctx_p h1;
   kdf_init_with_usage(h1, 0x02);
   hash_update(h1, our_profile, our_profile_len);
-  hash_final(h1, t + w, 64);
+  hash_final(h1, t + w, HASH_BYTES);
   hash_destroy(h1);
   free(our_profile);
 
-  w += 64;
+  w += HASH_BYTES;
 
   // Both composite identity AND composite phi have the server's bare JID
   goldilocks_shake256_ctx_p h2;
   kdf_init_with_usage(h2, 0x03);
   hash_update(h2, msg->composite_identity, msg->composite_identity_len);
-  hash_final(h2, t + w, 64);
+  hash_final(h2, t + w, HASH_BYTES);
   hash_destroy(h2);
 
-  w += 64;
+  w += HASH_BYTES;
 
   w += otrng_serialize_ec_point(t + w, client->ephemeral_ecdh->pub);
   w += otrng_serialize_ec_point(t + w, msg->S);
@@ -325,7 +325,7 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
   goldilocks_shake256_ctx_p h3;
   kdf_init_with_usage(h3, 0x04);
   hash_update(h3, composite_phi, composite_phi_len);
-  hash_final(h3, t + w, 64);
+  hash_final(h3, t + w, HASH_BYTES);
   hash_destroy(h3);
   free(composite_phi);
 
@@ -339,8 +339,8 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
 
 INTERNAL otrng_err
 otrng_prekey_dake3_message_append_storage_information_request(
-    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[64]) {
-  msg->message = malloc(2 + 1 + 64);
+    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]) {
+  msg->message = malloc(2 + 1 + MAC_KEY_BYTES);
   msg->message_len = 67;
   if (!msg->message) {
     return OTRNG_ERROR;
@@ -354,9 +354,9 @@ otrng_prekey_dake3_message_append_storage_information_request(
   // MAC: KDF(usage_storage_info_MAC, prekey_mac_k || message type, 64)
   goldilocks_shake256_ctx_p hmac;
   kdf_init_with_usage(hmac, 0x0A);
-  hash_update(hmac, mac_key, 64);
+  hash_update(hmac, mac_key, MAC_KEY_BYTES);
   hash_update(hmac, &msg_type, 1);
-  hash_final(hmac, msg->message + w, 64);
+  hash_final(hmac, msg->message + w, HASH_BYTES);
   hash_destroy(hmac);
 
   return OTRNG_SUCCESS;
@@ -364,7 +364,7 @@ otrng_prekey_dake3_message_append_storage_information_request(
 
 INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
     otrng_prekey_publication_message_s *pub_msg,
-    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[64]) {
+    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]) {
 
   uint8_t *client_profile = NULL;
   size_t client_profile_len = 0;
@@ -383,7 +383,7 @@ INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
 
   size_t s = 2 + 1 + 1 +
              (4 + pub_msg->num_prekey_messages * PRE_KEY_MAX_BYTES) + 1 +
-             client_profile_len + 1 + prekey_profile_len + 64;
+             client_profile_len + 1 + prekey_profile_len + MAC_KEY_BYTES;
   msg->message = malloc(s);
   if (!msg->message) {
     free(client_profile);
@@ -417,12 +417,12 @@ INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
 
   // The MAC could be a KDF over the entire message, but this "conditional
   // nested KDF" structure makes it uneccessarily complicated.
-  uint8_t prekey_messages_kdf[64] = {0};
+  uint8_t prekey_messages_kdf[HASH_BYTES] = {0};
   goldilocks_shake256_ctx_p hmac;
   kdf_init_with_usage(hmac, 0x0E);
   hash_update(hmac, prekey_messages_beginning,
               msg->message + w - prekey_messages_beginning);
-  hash_final(hmac, prekey_messages_kdf, 64);
+  hash_final(hmac, prekey_messages_kdf, HASH_BYTES);
   hash_destroy(hmac);
 
   w += otrng_serialize_uint8(msg->message + w, pub_msg->client_profile ? 1 : 0);
@@ -433,52 +433,52 @@ INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
   w += otrng_serialize_bytes_array(msg->message + w, prekey_profile,
                                    prekey_profile_len);
 
-  // MAC: KDF(usage_preMAC, prekey_mac_k || message type
-  //          || N || KDF(usage_prekey_message, Prekey Messages, 64)
-  //          || K || KDF(usage_client_profile, Client Profile, 64)
-  //          || J || KDF(usage_prekey_profile, Prekey Profile, 64),
-  //      64)
+  /* MAC: KDF(usage_preMAC, prekey_mac_k || message type
+            || N || KDF(usage_prekey_message, Prekey Messages, 64)
+            || K || KDF(usage_client_profile, Client Profile, 64)
+            || J || KDF(usage_prekey_profile, Prekey Profile, 64),
+        64) */
 
-  uint8_t client_profile_kdf[64] = {0};
+  uint8_t client_profile_kdf[HASH_BYTES] = {0};
   if (pub_msg->client_profile) {
     kdf_init_with_usage(hmac, 0x0F);
     hash_update(hmac, client_profile, client_profile_len);
-    hash_final(hmac, client_profile_kdf, 64);
+    hash_final(hmac, client_profile_kdf, HASH_BYTES);
     hash_destroy(hmac);
   }
 
-  uint8_t prekey_profile_kdf[64] = {0};
+  uint8_t prekey_profile_kdf[HASH_BYTES] = {0};
   if (pub_msg->prekey_profile) {
     kdf_init_with_usage(hmac, 0x10);
     hash_update(hmac, prekey_profile, prekey_profile_len);
-    hash_final(hmac, prekey_profile_kdf, 64);
+    hash_final(hmac, prekey_profile_kdf, HASH_BYTES);
     hash_destroy(hmac);
   }
 
   uint8_t one = 1, zero = 0;
   kdf_init_with_usage(hmac, 0x09);
-  hash_update(hmac, mac_key, 64);
+  hash_update(hmac, mac_key, MAC_KEY_BYTES);
   hash_update(hmac, &msg_type, 1);
   hash_update(hmac, &pub_msg->num_prekey_messages, 1);
-  hash_update(hmac, prekey_messages_kdf, 64);
+  hash_update(hmac, prekey_messages_kdf, HASH_BYTES);
 
   if (pub_msg->client_profile) {
     hash_update(hmac, &one, 1);
-    hash_update(hmac, client_profile_kdf, 64);
+    hash_update(hmac, client_profile_kdf, HASH_BYTES);
   } else {
     hash_update(hmac, &zero, 1);
   }
 
   if (pub_msg->prekey_profile) {
     hash_update(hmac, &one, 1);
-    hash_update(hmac, prekey_profile_kdf, 64);
+    hash_update(hmac, prekey_profile_kdf, HASH_BYTES);
   } else {
     hash_update(hmac, &zero, 1);
   }
-  hash_final(hmac, msg->message + w, 64);
+  hash_final(hmac, msg->message + w, HASH_BYTES);
   hash_destroy(hmac);
 
-  msg->message_len = w + 64;
+  msg->message_len = w + HASH_BYTES;
 
   return OTRNG_SUCCESS;
 }
@@ -500,7 +500,7 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
     return NULL;
   }
 
-  size_t tlen = 1 + 3 * 64 + 2 * ED448_POINT_BYTES;
+  size_t tlen = 1 + 3 * HASH_BYTES + 2 * ED448_POINT_BYTES;
   uint8_t *t = malloc(tlen);
   if (!t) {
     free(our_profile);
@@ -513,20 +513,20 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   goldilocks_shake256_ctx_p h1;
   kdf_init_with_usage(h1, 0x05);
   hash_update(h1, our_profile, our_profile_len);
-  hash_final(h1, t + w, 64);
+  hash_final(h1, t + w, HASH_BYTES);
   hash_destroy(h1);
   free(our_profile);
 
-  w += 64;
+  w += HASH_BYTES;
 
   // Both composite identity AND composite phi have the server's bare JID
   goldilocks_shake256_ctx_p h2;
   kdf_init_with_usage(h2, 0x06);
   hash_update(h2, msg2->composite_identity, msg2->composite_identity_len);
-  hash_final(h2, t + w, 64);
+  hash_final(h2, t + w, HASH_BYTES);
   hash_destroy(h2);
 
-  w += 64;
+  w += HASH_BYTES;
 
   w += otrng_serialize_ec_point(t + w, client->ephemeral_ecdh->pub);
   w += otrng_serialize_ec_point(t + w, msg2->S);
@@ -534,35 +534,35 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   goldilocks_shake256_ctx_p h3;
   kdf_init_with_usage(h3, 0x07);
   hash_update(h3, composite_phi, composite_phi_len);
-  hash_final(h3, t + w, 64);
+  hash_final(h3, t + w, HASH_BYTES);
   hash_destroy(h3);
   free(composite_phi);
 
-  // H_a, sk_ha, {H_a, H_s, S}, t
+  /* H_a, sk_ha, {H_a, H_s, S}, t */
   otrng_rsig_authenticate_with_usage_and_domain(
       usage_auth, prekey_hash_domain, msg->sigma, client->keypair->priv,
       client->keypair->pub, client->keypair->pub, msg2->server_pub_key, msg2->S,
       t, tlen);
   free(t);
 
-  // ECDH(i, S)
-  uint8_t shared_secret[64] = {0};
+  /* ECDH(i, S) */
+  uint8_t shared_secret[HASH_BYTES] = {0};
   uint8_t ecdh_shared[ED448_POINT_BYTES] = {0};
   otrng_ecdh_shared_secret(ecdh_shared, sizeof(ecdh_shared),
                            client->ephemeral_ecdh->priv, msg2->S);
 
-  // SK = KDF(0x01, ECDH(i, S), 64)
+  /* SK = KDF(0x01, ECDH(i, S), 64) */
   goldilocks_shake256_ctx_p hsk;
   kdf_init_with_usage(hsk, 0x01);
   hash_update(hsk, ecdh_shared, ED448_POINT_BYTES);
-  hash_final(hsk, shared_secret, 64);
+  hash_final(hsk, shared_secret, HASH_BYTES);
   hash_destroy(hsk);
 
-  // prekey_mac_k = KDF(0x08, SK, 64)
+  /* prekey_mac_k = KDF(0x08, SK, 64) */
   goldilocks_shake256_ctx_p hpk;
   kdf_init_with_usage(hpk, 0x08);
-  hash_update(hpk, shared_secret, 64);
-  hash_final(hpk, client->mac_key, 64);
+  hash_update(hpk, shared_secret, HASH_BYTES);
+  hash_final(hpk, client->mac_key, MAC_KEY_BYTES);
   hash_destroy(hpk);
 
   // Put the MESSAGE in the message
@@ -642,7 +642,7 @@ static char *receive_dake2(const otrng_prekey_dake2_message_s *msg,
 
 static otrng_bool otrng_prekey_storage_status_message_valid(
     const otrng_prekey_storage_status_message_s *msg,
-    const uint8_t mac_key[64]) {
+    const uint8_t mac_key[MAC_KEY_BYTES]) {
 
   size_t bufl = 1 + 4 + 4;
   uint8_t *buf = malloc(bufl);
@@ -654,15 +654,15 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
   otrng_serialize_uint32(buf + 1, msg->client_instance_tag);
   otrng_serialize_uint32(buf + 5, msg->stored_prekeys);
 
-  // KDF(usage_status_MAC, prekey_mac_k || message type || receiver instance
-  // tag
-  // || Stored Prekey Messages Number, 64)
-  uint8_t mac_tag[64];
+  /* KDF(usage_status_MAC, prekey_mac_k || message type || receiver instance
+   tag
+   || Stored Prekey Messages Number, 64) */
+  uint8_t mac_tag[HASH_BYTES];
   goldilocks_shake256_ctx_p hmac;
   kdf_init_with_usage(hmac, 0x0B);
-  hash_update(hmac, mac_key, 64);
+  hash_update(hmac, mac_key, MAC_KEY_BYTES);
   hash_update(hmac, buf, bufl);
-  hash_final(hmac, mac_tag, 64);
+  hash_final(hmac, mac_tag, HASH_BYTES);
   hash_destroy(hmac);
   free(buf);
 
@@ -772,15 +772,15 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
       return NULL;
     }
 
-    uint8_t mac_tag[64] = {0};
+    uint8_t mac_tag[HASH_BYTES] = {0};
     goldilocks_shake256_ctx_p hash;
     kdf_init_with_usage(hash, 0x0C);
-    hash_update(hash, client->mac_key, 64);
+    hash_update(hash, client->mac_key, MAC_KEY_BYTES);
     hash_update(hash, decoded + 2, 5);
-    hash_final(hash, mac_tag, 64);
+    hash_final(hash, mac_tag, HASH_BYTES);
     hash_destroy(hash);
 
-    if (otrl_mem_differ(mac_tag, decoded + 7, 64) != 0) {
+    if (otrl_mem_differ(mac_tag, decoded + 7, HASH_BYTES) != 0) {
       // TODO: The success message is wrong, should we tell the plugin about
       // it via a callback?
       printf("Received an INVALID success message\n");
