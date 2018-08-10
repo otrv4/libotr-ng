@@ -100,7 +100,7 @@ INTERNAL otrng_err otrng_prekey_profile_deserialize(
   w += read;
 
   if (!otrng_deserialize_shared_prekey(target->shared_prekey, buffer + w,
-                                             buflen - w, &read)) {
+                                       buflen - w, &read)) {
     return OTRNG_ERROR;
   }
 

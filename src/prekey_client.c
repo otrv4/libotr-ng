@@ -35,6 +35,9 @@
 #define OTRNG_PREKEY_DAKE3_MSG 0x37
 #define OTRNG_PREKEY_STORAGE_INFO_REQ_MSG 0x09
 #define OTRNG_PREKEY_STORAGE_STATUS_MSG 0x0B
+#define OTRNG_PREKEY_SUCCESS_MSG 0x06
+#define OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG 0x13
+#define OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG 0x0E
 #define OTRNG_PREKEY_PUBLICATION_MSG 0x08
 
 API otrng_prekey_client_s *
@@ -743,7 +746,6 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
 
   char *ret = NULL;
 
-  // DAKE 2
   if (message_type == OTRNG_PREKEY_DAKE2_MSG) {
     otrng_prekey_dake2_message_s msg[1];
 
@@ -763,7 +765,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
 
     ret = receive_storage_status(msg, client);
     otrng_prekey_storage_status_message_destroy(msg);
-  } else if (message_type == 0x06) {
+  } else if (message_type == OTRNG_PREKEY_SUCCESS_MSG) {
     if (decoded_len < 71) {
       // TODO: The success message is wrong, should we tell the plugin about
       // it via a callback?
@@ -790,7 +792,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
     }
 
     sodium_memzero(mac_tag, sizeof(mac_tag));
-  } else if (message_type == 0x0e) {
+  } else if (message_type == OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG) {
     uint32_t instance_tag = 0;
     size_t read = 0;
     if (!otrng_deserialize_uint32(&instance_tag, decoded + 3, decoded_len - 3,
@@ -1081,7 +1083,7 @@ INTERNAL otrng_err otrng_prekey_ensemble_retrieval_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (message_type != 0x13) {
+  if (message_type != OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG) {
     return OTRNG_ERROR;
   }
 
