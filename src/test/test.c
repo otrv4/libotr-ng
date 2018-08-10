@@ -113,8 +113,9 @@ int main(int argc, char **argv) {
   g_test_add_func("/dh/destroy", dh_test_keypair_destroy);
 
   g_test_add_func("/ring-signature/rsig_auth", test_rsig_auth);
-  g_test_add_func("/ring-signature/calculate-c", test_rsig_calculate_c);
-  g_test_add_func("/ring-signature/compat", test_rsig_compat);
+  g_test_add_func("/ring-signature/calculate_c", test_rsig_calculate_c);
+  g_test_add_func("/ring-signature/compatible_with_prekey_server",
+                  test_rsig_compatible_with_prekey_server);
 
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
   g_test_add_func("/serialize_and_deserialize/data",

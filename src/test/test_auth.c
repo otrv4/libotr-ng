@@ -92,7 +92,7 @@ void test_rsig_auth() {
                                  (unsigned char *)msg, strlen(msg)));
 }
 
-void test_rsig_compat() {
+void test_rsig_compatible_with_prekey_server() {
   otrng_keypair_p p1, p2, p3;
 
   // Copied from
@@ -202,9 +202,7 @@ void test_rsig_compat() {
   otrng_assert_is_success(
       otrng_deserialize_ring_sig(proof, rsig, sizeof(rsig), NULL));
 
-  // This FAILS
-  // (I tried considering the message with and without the \0)
-  otrng_assert(otrng_rsig_verify_with_usage_and_domain(
+  otrng_assert_is_success(otrng_rsig_verify_with_usage_and_domain(
       0x11, "OTR-Prekey-Server", proof, p1->pub, p2->pub, p3->pub,
       (const uint8_t *)msg, 2));
 }
