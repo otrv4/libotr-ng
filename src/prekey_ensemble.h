@@ -36,6 +36,11 @@ typedef struct {
 
 INTERNAL otrng_err otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst);
 
+INTERNAL otrng_err otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
+                                                     const uint8_t *src,
+                                                     size_t src_len,
+                                                     size_t *nread);
+
 INTERNAL void otrng_prekey_ensemble_free(prekey_ensemble_s *dst);
 
 INTERNAL void otrng_prekey_ensemble_destroy(prekey_ensemble_s *dst);

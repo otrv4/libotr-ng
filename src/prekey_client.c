@@ -1114,30 +1114,8 @@ INTERNAL otrng_err otrng_prekey_ensemble_retrieval_message_deserialize(
       return OTRNG_ERROR;
     }
 
-    if (!otrng_client_profile_deserialize(dst->ensembles[i]->client_profile,
-                                          serialized + w, serialized_len - w,
-                                          &read)) {
-      return OTRNG_ERROR;
-    }
-
-    w += read;
-
-    if (!otrng_prekey_profile_deserialize(dst->ensembles[i]->prekey_profile,
-                                          serialized + w, serialized_len - w,
-                                          &read)) {
-      return OTRNG_ERROR;
-    }
-
-    w += read;
-
-    dst->ensembles[i]->message = malloc(sizeof(dake_prekey_message_s));
-    if (!dst->ensembles[i]->message) {
-      return OTRNG_ERROR;
-    }
-
-    if (!otrng_dake_prekey_message_deserialize(dst->ensembles[i]->message,
-                                               serialized + w,
-                                               serialized_len - w, &read)) {
+    if (!otrng_prekey_ensemble_deserialize(dst->ensembles[i], serialized + w,
+                                           serialized_len - w, &read)) {
       return OTRNG_ERROR;
     }
 
