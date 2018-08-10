@@ -265,6 +265,9 @@ INTERNAL void kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
   hash_init_with_usage_and_domain_separation(hash, usage, "OTR-Prekey-Server");
 }
 
+static uint8_t usage_auth = 0x11;
+static const char *prekey_hash_domain = "OTR-Prekey-Server";
+
 static otrng_bool
 otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
                                  const otrng_prekey_client_s *client) {
@@ -327,7 +330,7 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
   free(composite_phi);
 
   otrng_bool ret = otrng_rsig_verify_with_usage_and_domain(
-      0x11, "OTR-Prekey-Server", msg->sigma, client->keypair->pub,
+      usage_auth, prekey_hash_domain, msg->sigma, client->keypair->pub,
       msg->server_pub_key, client->ephemeral_ecdh->pub, t, tlen);
   free(t);
 
@@ -537,7 +540,7 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
 
   // H_a, sk_ha, {H_a, H_s, S}, t
   otrng_rsig_authenticate_with_usage_and_domain(
-      0x11, "OTR-Prekey-Server", msg->sigma, client->keypair->priv,
+      usage_auth, prekey_hash_domain, msg->sigma, client->keypair->priv,
       client->keypair->pub, client->keypair->pub, msg2->server_pub_key, msg2->S,
       t, tlen);
   free(t);

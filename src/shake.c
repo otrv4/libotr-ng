@@ -33,6 +33,7 @@ void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
                                                 uint8_t usage,
                                                 const char *domain) {
   hash_init(hash);
+  // TODO: why we cast here?
   hash_update(hash, (const unsigned char *)domain, strlen(domain));
   hash_update(hash, &usage, 1);
 }
