@@ -2099,12 +2099,6 @@ tstatic otrng_err receive_error_message(otrng_response_s *response,
   return OTRNG_ERROR;
 }
 
-#define MSG_PLAINTEXT 1
-#define MSG_TAGGED_PLAINTEXT 2
-#define MSG_QUERY_STRING 3
-#define MSG_OTR_ENCODED 4
-#define MSG_OTR_ERROR 5
-
 API int otrng_get_message_type(const string_p message) {
   if (message_contains_tag(message)) {
     return MSG_TAGGED_PLAINTEXT;
