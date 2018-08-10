@@ -485,6 +485,35 @@ INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
   return OTRNG_SUCCESS;
 }
 
+static otrng_err callback_to_decide_what_is_published(
+    otrng_prekey_publication_message_s *pub_msg,
+    const otrng_prekey_client_s *client) {
+  // TODO: They need to be stored somewhere, so it will probably be
+  // a callback. This way the plugin can decide where to store this.
+  ecdh_keypair_p ecdh;
+  dh_keypair_p dh;
+  otrng_generate_ephemeral_keys(ecdh, dh);
+
+  // Create a single prekey message
+  dake_prekey_message_s *prekey_msg =
+      otrng_dake_prekey_message_build(client->instance_tag, ecdh->pub, dh->pub);
+  if (!prekey_msg) {
+    return OTRNG_ERROR;
+  }
+
+  // TODO: We create a sample publication message
+  // We may invoke a callback that knows what should be put here
+  pub_msg->num_prekey_messages = 1;
+  pub_msg->prekey_messages = malloc(sizeof(dake_prekey_message_s *));
+  pub_msg->prekey_messages[0] = prekey_msg;
+  pub_msg->client_profile = malloc(sizeof(client_profile_s));
+  otrng_client_profile_copy(pub_msg->client_profile, client->client_profile);
+  pub_msg->prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
+  otrng_prekey_profile_copy(pub_msg->prekey_profile, client->prekey_profile);
+
+  return OTRNG_SUCCESS;
+}
+
 static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
                         otrng_prekey_client_s *client) {
   otrng_prekey_dake3_message_s msg[1];
@@ -575,29 +604,9 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
     }
   } else if (client->after_dake == OTRNG_PREKEY_PREKEY_PUBLICATION) {
     otrng_prekey_publication_message_s pub_msg[1];
-
-    // TODO: They need to be stored somewhere, so it will probably be
-    // a callback. This way the plugin can decide where to store this.
-    ecdh_keypair_p ecdh;
-    dh_keypair_p dh;
-    otrng_generate_ephemeral_keys(ecdh, dh);
-
-    // Create a single prekey message
-    dake_prekey_message_s *prekey_msg = otrng_dake_prekey_message_build(
-        client->instance_tag, ecdh->pub, dh->pub);
-    if (!prekey_msg) {
-      return NULL; // error
+    if (!callback_to_decide_what_is_published(pub_msg, client)) {
+      return NULL;
     }
-
-    // TODO: We create a sample publication message
-    // We may invoke a callback that knows what should be put here
-    pub_msg->num_prekey_messages = 1;
-    pub_msg->prekey_messages = malloc(sizeof(dake_prekey_message_s *));
-    pub_msg->prekey_messages[0] = prekey_msg;
-    pub_msg->client_profile = malloc(sizeof(client_profile_s));
-    otrng_client_profile_copy(pub_msg->client_profile, client->client_profile);
-    pub_msg->prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
-    otrng_prekey_profile_copy(pub_msg->prekey_profile, client->prekey_profile);
 
     otrng_err success =
         otrng_prekey_dake3_message_append_prekey_publication_message(
