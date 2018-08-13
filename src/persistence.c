@@ -127,6 +127,7 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
     return 1;
   }
 
+  // line includes the /n
   if (!otrng_symmetric_key_deserialize(keypair, line, len - 1)) {
     free(line);
     otrng_keypair_free(keypair);

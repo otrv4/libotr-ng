@@ -27,15 +27,21 @@ static const char *bob_account = "bob@xmpp";
 static const char *charlie_account = "charlie@xmpp";
 
 static const void *read_client_id_for_privf(FILE *privf) {
-  // Uses the file pointer to read and locate the appropriate client_id in your
-  // mesaging app
-  fseek(privf, strlen(charlie_account) + 1, SEEK_CUR);
+  char *line = NULL;
+  size_t n = 0;
+  ssize_t len = getline(&line, &n, privf);
+
+  if (len != strlen(charlie_account) + 1) {
+    return NULL;
+  }
+
+  free(line);
+
+  // The account name acts as client_id (PidginAccount* for pidgin)
   return charlie_account;
 }
 
 void test_user_state_key_management(void) {
-  return; //
-
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
@@ -49,7 +55,7 @@ void test_user_state_key_management(void) {
 
   /* Generate file */
   FILE *keys = tmpfile();
-  fputs("charlie@xmpp:"
+  fputs("charlie@xmpp\n"
         "RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+"
         "pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA\n",
         keys);
@@ -57,12 +63,12 @@ void test_user_state_key_management(void) {
 
   int err = otrng_user_state_private_key_v4_read_FILEp(
       state, keys, read_client_id_for_privf);
-  g_assert_cmpint(err, ==, 1);
+  g_assert_cmpint(err, ==, 0);
   fclose(keys);
 
   // TODO: @test Assert it is equal to deserializing the symkey
   // RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA"
-  otrng_assert(!otrng_user_state_get_private_key_v4(state, charlie_account));
+  otrng_assert(otrng_user_state_get_private_key_v4(state, charlie_account));
 
   otrng_user_state_free(state);
 }
