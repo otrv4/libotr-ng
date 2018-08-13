@@ -28,7 +28,7 @@
 
 #define string_p char *
 
-INTERNAL /*@null@*/ uint8_t *otrng_memdup(const uint8_t *s, const size_t len);
+INTERNAL /*@null@*/ void *otrng_memdup(const void *s, const size_t len);
 
 INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len);
 
