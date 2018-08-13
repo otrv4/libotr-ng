@@ -103,7 +103,7 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
   int len = 0;
 
   if (!privf) {
-    return -1;
+    return 1;
   }
 
   if (feof(privf)) {
