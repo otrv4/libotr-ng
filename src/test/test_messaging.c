@@ -30,12 +30,11 @@ static const void *read_client_id_for_privf(FILE *privf) {
   char *line = NULL;
   size_t n = 0;
   ssize_t len = getline(&line, &n, privf);
+  free(line); // We are not using the read line for anything
 
   if (len != strlen(charlie_account) + 1) {
     return NULL;
   }
-
-  free(line);
 
   // The account name acts as client_id (PidginAccount* for pidgin)
   return charlie_account;
