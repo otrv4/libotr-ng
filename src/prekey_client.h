@@ -105,7 +105,7 @@ typedef struct {
   void (*success_received)(void *ctx);
   void (*no_prekey_in_storage_received)(void *ctx);
   void (*prekey_ensembles_received)(prekey_ensemble_s *const *const ensembles,
-                                    size_t num_ensembles, void *ctx);
+                                    uint8_t num_ensembles, void *ctx);
 } otrng_prekey_client_callbacks_s;
 
 typedef struct {

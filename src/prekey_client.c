@@ -67,7 +67,7 @@ no_prekey_in_storage_received_callback(otrng_prekey_client_s *client) {
 static void
 prekey_ensembles_received_callback(otrng_prekey_client_s *client,
                                    prekey_ensemble_s *const *const ensembles,
-                                   size_t num_ensembles) {
+                                   uint8_t num_ensembles) {
   client->callbacks->prekey_ensembles_received(ensembles, num_ensembles,
                                                client->callbacks->ctx);
 }
