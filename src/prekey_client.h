@@ -98,6 +98,17 @@ typedef enum {
 } otrng_prekey_next_message_t;
 
 typedef struct {
+  void *ctx; // How calbacks can keep state
+  void (*notify_error)(int error, void *ctx);
+  void (*storage_status_received)(
+      const otrng_prekey_storage_status_message_s *msg, void *ctx);
+  void (*success_received)(void *ctx);
+  void (*no_prekey_in_storage_received)(void *ctx);
+  void (*prekey_ensembles_received)(prekey_ensemble_s *const *const ensembles,
+                                    size_t num_ensembles, void *ctx);
+} otrng_prekey_client_callbacks_s;
+
+typedef struct {
   char *our_identity;
   uint32_t instance_tag;
   const otrng_keypair_s *keypair;
@@ -110,6 +121,8 @@ typedef struct {
 
   uint8_t mac_key[MAC_KEY_BYTES];
   otrng_prekey_next_message_t after_dake;
+
+  otrng_prekey_client_callbacks_s *callbacks;
 } otrng_prekey_client_s;
 
 API otrng_prekey_client_s *

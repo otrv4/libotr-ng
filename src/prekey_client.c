@@ -46,29 +46,30 @@
 #define OTRNG_PREKEY_CLIENT_INVALID_SUCCESS 4
 
 static void notify_error_callback(otrng_prekey_client_s *client, int error) {
-  // TODO
+  client->callbacks->notify_error(error, client->callbacks->ctx);
 }
 
 static void prekey_storage_status_received_callback(
     otrng_prekey_client_s *client,
     const otrng_prekey_storage_status_message_s *msg) {
-  // TODO
+  client->callbacks->storage_status_received(msg, client->callbacks->ctx);
 }
 
 static void success_received_callback(otrng_prekey_client_s *client) {
-  // TODO
+  client->callbacks->success_received(client->callbacks->ctx);
 }
 
 static void
 no_prekey_in_storage_received_callback(otrng_prekey_client_s *client) {
-  // TODO
+  client->callbacks->no_prekey_in_storage_received(client->callbacks->ctx);
 }
 
 static void
 prekey_ensembles_received_callback(otrng_prekey_client_s *client,
                                    prekey_ensemble_s *const *const ensembles,
                                    size_t num_ensembles) {
-  // TODO
+  client->callbacks->prekey_ensembles_received(ensembles, num_ensembles,
+                                               client->callbacks->ctx);
 }
 
 API otrng_prekey_client_s *
