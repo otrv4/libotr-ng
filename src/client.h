@@ -128,6 +128,7 @@ API int should_heartbeat(int last_sent);
 
 API otrng_prekey_client_s *
 otrng_client_get_prekey_client(const char *server_identity,
+                               otrng_prekey_client_callbacks_s *callbacks,
                                otrng_client_s *client);
 
 #ifdef OTRNG_CLIENT_PRIVATE

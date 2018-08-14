@@ -441,6 +441,7 @@ API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
 
 API otrng_prekey_client_s *
 otrng_client_get_prekey_client(const char *server_identity,
+                               otrng_prekey_client_callbacks_s *callbacks,
                                otrng_client_s *client) {
   if (client->prekey_client) {
     return client->prekey_client;
@@ -463,6 +464,8 @@ otrng_client_get_prekey_client(const char *server_identity,
 
   free(account);
   free(protocol);
+
+  client->prekey_client->callbacks = callbacks;
 
   return client->prekey_client;
 }
