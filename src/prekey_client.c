@@ -662,8 +662,8 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   return ret;
 }
 
-static char *receive_dake2(const otrng_prekey_dake2_message_s *msg,
-                           otrng_prekey_client_s *client) {
+static char *process_received_dake2(const otrng_prekey_dake2_message_s *msg,
+                                    otrng_prekey_client_s *client) {
   if (msg->client_instance_tag != client->instance_tag) {
     return NULL;
   }
@@ -674,6 +674,20 @@ static char *receive_dake2(const otrng_prekey_dake2_message_s *msg,
   }
 
   return send_dake3(msg, client);
+}
+
+static char *receive_dake2(const uint8_t *decoded, size_t decoded_len,
+                           otrng_prekey_client_s *client) {
+  otrng_prekey_dake2_message_s msg[1];
+
+  if (!otrng_prekey_dake2_message_deserialize(msg, decoded, decoded_len)) {
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    return NULL;
+  }
+
+  char *ret = process_received_dake2(msg, client);
+  otrng_prekey_dake2_message_destroy(msg);
+  return ret;
 }
 
 static otrng_bool otrng_prekey_storage_status_message_valid(
@@ -710,9 +724,9 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
   return otrng_true;
 }
 
-static char *
-receive_storage_status(const otrng_prekey_storage_status_message_s *msg,
-                       otrng_prekey_client_s *client) {
+static char *process_received_storage_status(
+    const otrng_prekey_storage_status_message_s *msg,
+    otrng_prekey_client_s *client) {
   if (msg->client_instance_tag != client->instance_tag) {
     return NULL;
   }
@@ -723,6 +737,67 @@ receive_storage_status(const otrng_prekey_storage_status_message_s *msg,
   }
 
   prekey_storage_status_received_callback(client, msg);
+  return NULL;
+}
+
+static char *receive_storage_status(const uint8_t *decoded, size_t decoded_len,
+                                    otrng_prekey_client_s *client) {
+  otrng_prekey_storage_status_message_s msg[1];
+
+  if (!otrng_prekey_storage_status_message_deserialize(msg, decoded,
+                                                       decoded_len)) {
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    return NULL;
+  }
+
+  char *ret = process_received_storage_status(msg, client);
+  otrng_prekey_storage_status_message_destroy(msg);
+  return ret;
+}
+
+static char *receive_success(const uint8_t *decoded, size_t decoded_len,
+                             otrng_prekey_client_s *client) {
+  if (decoded_len < 71) {
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    return NULL;
+  }
+
+  // TODO: Should check for instance tag
+
+  uint8_t mac_tag[HASH_BYTES] = {0};
+  goldilocks_shake256_ctx_p hash;
+  kdf_init_with_usage(hash, 0x0C);
+  hash_update(hash, client->mac_key, MAC_KEY_BYTES);
+  hash_update(hash, decoded + 2, 5);
+  hash_final(hash, mac_tag, HASH_BYTES);
+  hash_destroy(hash);
+
+  if (otrl_mem_differ(mac_tag, decoded + 7, HASH_BYTES) != 0) {
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_INVALID_SUCCESS);
+  } else {
+    success_received_callback(client);
+  }
+
+  sodium_memzero(mac_tag, sizeof(mac_tag));
+  return NULL;
+}
+
+static char *receive_no_prekey_in_storage(const uint8_t *decoded,
+                                          size_t decoded_len,
+                                          otrng_prekey_client_s *client) {
+  uint32_t instance_tag = 0;
+  size_t read = 0;
+  if (!otrng_deserialize_uint32(&instance_tag, decoded + 3, decoded_len - 3,
+                                &read)) {
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    return NULL;
+  }
+
+  if (instance_tag != client->instance_tag) {
+    return NULL;
+  }
+
+  no_prekey_in_storage_received_callback(client);
   return NULL;
 }
 
@@ -765,64 +840,17 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
 
   char *ret = NULL;
 
+  // TODO: Receive ERROR message
   if (message_type == OTRNG_PREKEY_DAKE2_MSG) {
-    otrng_prekey_dake2_message_s msg[1];
-
-    if (!otrng_prekey_dake2_message_deserialize(msg, decoded, decoded_len)) {
-      notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
-      return NULL;
-    }
-
-    ret = receive_dake2(msg, client);
-    otrng_prekey_dake2_message_destroy(msg);
-  } else if (message_type == OTRNG_PREKEY_STORAGE_STATUS_MSG) {
-    otrng_prekey_storage_status_message_s msg[1];
-
-    if (!otrng_prekey_storage_status_message_deserialize(msg, decoded,
-                                                         decoded_len)) {
-      notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
-      return NULL;
-    }
-
-    ret = receive_storage_status(msg, client);
-    otrng_prekey_storage_status_message_destroy(msg);
+    ret = receive_dake2(decoded, decoded_len, client);
   } else if (message_type == OTRNG_PREKEY_SUCCESS_MSG) {
-    if (decoded_len < 71) {
-      notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
-      return NULL;
-    }
-
-    // TODO: Should check for instance tag
-
-    uint8_t mac_tag[HASH_BYTES] = {0};
-    goldilocks_shake256_ctx_p hash;
-    kdf_init_with_usage(hash, 0x0C);
-    hash_update(hash, client->mac_key, MAC_KEY_BYTES);
-    hash_update(hash, decoded + 2, 5);
-    hash_final(hash, mac_tag, HASH_BYTES);
-    hash_destroy(hash);
-
-    if (otrl_mem_differ(mac_tag, decoded + 7, HASH_BYTES) != 0) {
-      notify_error_callback(client, OTRNG_PREKEY_CLIENT_INVALID_SUCCESS);
-    } else {
-      success_received_callback(client);
-    }
-
-    sodium_memzero(mac_tag, sizeof(mac_tag));
+    ret = receive_success(decoded, decoded_len, client);
   } else if (message_type == OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG) {
-    uint32_t instance_tag = 0;
-    size_t read = 0;
-    if (!otrng_deserialize_uint32(&instance_tag, decoded + 3, decoded_len - 3,
-                                  &read)) {
-      notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
-      return NULL;
-    }
-
-    if (instance_tag != client->instance_tag) {
-      return NULL;
-    }
-
-    no_prekey_in_storage_received_callback(client);
+    ret = receive_no_prekey_in_storage(decoded, decoded_len, client);
+  } else if (message_type == OTRNG_PREKEY_STORAGE_STATUS_MSG) {
+    ret = receive_storage_status(decoded, decoded_len, client);
+  } else {
+    // TODO: Notify that received an unexpected message
   }
 
   return ret;
