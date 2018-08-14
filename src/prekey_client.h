@@ -89,7 +89,7 @@ typedef struct {
 typedef struct {
   uint32_t instance_tag;
   prekey_ensemble_s **ensembles;
-  size_t num_ensembles;
+  uint8_t num_ensembles;
 } otrng_prekey_ensemble_retrieval_message_s;
 
 typedef enum {
