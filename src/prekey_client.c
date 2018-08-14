@@ -40,6 +40,30 @@
 #define OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG 0x0E
 #define OTRNG_PREKEY_PUBLICATION_MSG 0x08
 
+#define OTRNG_PREKEY_CLIENT_MALFORMED_MSG 1
+#define OTRNG_PREKEY_CLIENT_INVALID_DAKE2 2
+#define OTRNG_PREKEY_CLIENT_INVALID_STORAGE_STATUS 3
+#define OTRNG_PREKEY_CLIENT_INVALID_SUCCESS 4
+
+static void notify_error_callback(otrng_prekey_client_s *client, int error) {
+  // TODO
+}
+
+static void prekey_storage_status_received_callback(
+    otrng_prekey_client_s *client,
+    const otrng_prekey_storage_status_message_s *msg) {
+  // TODO
+}
+
+static void success_received_callback(otrng_prekey_client_s *client) {
+  // TODO
+}
+
+static void
+no_prekey_in_storage_received_callback(otrng_prekey_client_s *client) {
+  // TODO
+}
+
 API otrng_prekey_client_s *
 otrng_prekey_client_new(const char *server, const char *our_identity,
                         uint32_t instance_tag, const otrng_keypair_s *keypair,
@@ -645,6 +669,7 @@ static char *receive_dake2(const otrng_prekey_dake2_message_s *msg,
   }
 
   if (!otrng_prekey_dake2_message_valid(msg, client)) {
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_INVALID_DAKE2);
     return NULL;
   }
 
@@ -685,18 +710,6 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
   return otrng_true;
 }
 
-/*
- * Fora:
- * send_storage_status_request
- * send_prekey_storage_message
- * send_prekey_request_message
- *
- * LOOP(
- *   to_send = receive_prekey_server_msg()
- *   send_prekey_server_msg(to_send) if to_send
- * )
- */
-
 static char *
 receive_storage_status(const otrng_prekey_storage_status_message_s *msg,
                        otrng_prekey_client_s *client) {
@@ -705,15 +718,11 @@ receive_storage_status(const otrng_prekey_storage_status_message_s *msg,
   }
 
   if (!otrng_prekey_storage_status_message_valid(msg, client->mac_key)) {
-    // TODO: Prekey storage status received is invalid, should it warn
-    // the plugin via a callback?
-    printf("Received an INVALID storage status message\n");
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_INVALID_STORAGE_STATUS);
     return NULL;
   }
 
-  // TODO: Probably we want to invoke a callback to notify the plugin.
-  printf("Received Prekey Storage Status message: %d\n", msg->stored_prekeys);
-
+  prekey_storage_status_received_callback(client, msg);
   return NULL;
 }
 
@@ -750,6 +759,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
                              otrng_prekey_client_s *client) {
   uint8_t message_type = 0;
   if (!parse_header(&message_type, decoded, decoded_len, NULL)) {
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
@@ -759,6 +769,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
     otrng_prekey_dake2_message_s msg[1];
 
     if (!otrng_prekey_dake2_message_deserialize(msg, decoded, decoded_len)) {
+      notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
       return NULL;
     }
 
@@ -769,6 +780,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
 
     if (!otrng_prekey_storage_status_message_deserialize(msg, decoded,
                                                          decoded_len)) {
+      notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
       return NULL;
     }
 
@@ -776,11 +788,11 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
     otrng_prekey_storage_status_message_destroy(msg);
   } else if (message_type == OTRNG_PREKEY_SUCCESS_MSG) {
     if (decoded_len < 71) {
-      // TODO: The success message is wrong, should we tell the plugin about
-      // it via a callback?
-      printf("Received an INVALID success message\n");
+      notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
       return NULL;
     }
+
+    // TODO: Should check for instance tag
 
     uint8_t mac_tag[HASH_BYTES] = {0};
     goldilocks_shake256_ctx_p hash;
@@ -791,13 +803,9 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
     hash_destroy(hash);
 
     if (otrl_mem_differ(mac_tag, decoded + 7, HASH_BYTES) != 0) {
-      // TODO: The success message is wrong, should we tell the plugin about
-      // it via a callback?
-      printf("Received an INVALID success message\n");
+      notify_error_callback(client, OTRNG_PREKEY_CLIENT_INVALID_SUCCESS);
     } else {
-      // TODO: The success message is correct, should we tell the plugin about
-      // it via a callback?
-      printf("Received an VALID success message\n");
+      success_received_callback(client);
     }
 
     sodium_memzero(mac_tag, sizeof(mac_tag));
@@ -806,6 +814,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
     size_t read = 0;
     if (!otrng_deserialize_uint32(&instance_tag, decoded + 3, decoded_len - 3,
                                   &read)) {
+      notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
       return NULL;
     }
 
@@ -813,11 +822,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
       return NULL;
     }
 
-    // This message will always be "No Prekey
-    //   Messages available for this identity" (per spec). What is the point of
-    //   receiving it? Should I do anything if it is NOT what the spec said it
-    //   should be?
-    printf("No Prekey Messages available for this identity\n");
+    no_prekey_in_storage_received_callback(client);
   }
 
   return ret;
