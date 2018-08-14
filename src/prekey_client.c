@@ -64,6 +64,13 @@ no_prekey_in_storage_received_callback(otrng_prekey_client_s *client) {
   // TODO
 }
 
+static void
+prekey_ensembles_received_callback(otrng_prekey_client_s *client,
+                                   prekey_ensemble_s *const *const ensembles,
+                                   size_t num_ensembles) {
+  // TODO
+}
+
 API otrng_prekey_client_s *
 otrng_prekey_client_new(const char *server, const char *our_identity,
                         uint32_t instance_tag, const otrng_keypair_s *keypair,
@@ -801,6 +808,36 @@ static char *receive_no_prekey_in_storage(const uint8_t *decoded,
   return NULL;
 }
 
+static void process_received_prekey_ensemble_retrieval(
+    otrng_prekey_ensemble_retrieval_message_s *msg,
+    otrng_prekey_client_s *client) {
+
+  if (msg->instance_tag != client->instance_tag) {
+    return;
+  }
+
+  // TODO: Validate the received ensembles and filter out any invalid ensemble
+
+  prekey_ensembles_received_callback(client, msg->ensembles,
+                                     msg->num_ensembles);
+}
+
+static char *receive_prekey_ensemble_retrieval(const uint8_t *decoded,
+                                               size_t decoded_len,
+                                               otrng_prekey_client_s *client) {
+  otrng_prekey_ensemble_retrieval_message_s msg[1];
+
+  if (!otrng_prekey_ensemble_retrieval_message_deserialize(msg, decoded,
+                                                           decoded_len)) {
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    return NULL;
+  }
+
+  process_received_prekey_ensemble_retrieval(msg, client);
+  otrng_prekey_ensemble_retrieval_message_destroy(msg);
+  return NULL;
+}
+
 static otrng_err parse_header(uint8_t *message_type, const uint8_t *buf,
                               size_t buflen, size_t *read) {
   size_t r = 0; // read
@@ -847,6 +884,8 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
     ret = receive_success(decoded, decoded_len, client);
   } else if (message_type == OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG) {
     ret = receive_no_prekey_in_storage(decoded, decoded_len, client);
+  } else if (message_type == OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG) {
+    ret = receive_prekey_ensemble_retrieval(decoded, decoded_len, client);
   } else if (message_type == OTRNG_PREKEY_STORAGE_STATUS_MSG) {
     ret = receive_storage_status(decoded, decoded_len, client);
   } else {
