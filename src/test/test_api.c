@@ -275,7 +275,8 @@ void test_otrng_send_offline_message() {
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   char *to_bob = NULL;
-  otrng_assert_is_success(otrng_send_offline_message(&to_bob, ensemble, alice));
+  otrng_assert_is_success(
+      otrng_send_non_interactive_auth(&to_bob, ensemble, alice));
   otrng_prekey_ensemble_free(ensemble);
 
   otrng_assert(to_bob);
@@ -434,7 +435,8 @@ void test_otrng_incorrect_offline_dake() {
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   char *to_bob = NULL;
-  otrng_assert_is_success(otrng_send_offline_message(&to_bob, ensemble, alice));
+  otrng_assert_is_success(
+      otrng_send_non_interactive_auth(&to_bob, ensemble, alice));
   otrng_prekey_ensemble_free(ensemble);
 
   otrng_assert(to_bob);

@@ -1062,20 +1062,26 @@ tstatic otrng_err receive_prekey_ensemble(string_p *dst,
   return OTRNG_SUCCESS;
 }
 
-API otrng_err otrng_send_offline_message(string_p *dst,
+// TODO: Will this exist?
+API otrng_err otrng_send_offline_message(char **dst,
                                          const prekey_ensemble_s *ensemble,
-                                         otrng_s *otr) {
-  *dst = NULL;
+                                         const char *plaintext, otrng_s *otr) {
+  // This was supposed to send the non interactive auth AND the encrypted data
+  // message on the same network message.
+  return OTRNG_ERROR;
+}
 
-  // TODO: @non_interactive Would deserialize the received ensemble and set the
-  // running version
-  otr->running_version = OTRNG_PROTOCOL_VERSION_4;
+API otrng_err otrng_send_non_interactive_auth(char **dst,
+                                              const prekey_ensemble_s *ensemble,
+                                              otrng_s *otr) {
+  *dst = NULL;
 
   if (!receive_prekey_ensemble(dst, ensemble, otr)) {
     return OTRNG_ERROR; // TODO: should unset the stored things from ensemble
   }
 
-  // TODO: send the data msg as well
+  otr->running_version = OTRNG_PROTOCOL_VERSION_4;
+
   return reply_with_non_interactive_auth_msg(dst, otr);
 }
 
