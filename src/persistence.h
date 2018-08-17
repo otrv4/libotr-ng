@@ -52,6 +52,11 @@ otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
 INTERNAL int
 otrng_client_state_client_profile_write_FILEp(const otrng_client_state_s *state,
                                               FILE *privf);
+
+INTERNAL int
+otrng_client_state_prekeys_write_FILEp(const otrng_client_state_s *state,
+                                       FILE *privf);
+
 #endif
 
 #endif

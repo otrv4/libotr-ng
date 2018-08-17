@@ -131,6 +131,10 @@ otrng_client_get_prekey_client(const char *server_identity,
                                otrng_prekey_client_callbacks_s *callbacks,
                                otrng_client_s *client);
 
+API dake_prekey_message_s **
+otrng_client_build_prekey_messages(uint8_t num_messages,
+                                   otrng_client_s *client);
+
 #ifdef OTRNG_CLIENT_PRIVATE
 #endif
 

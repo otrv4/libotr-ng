@@ -224,6 +224,23 @@ otrng_user_state_client_profile_write_FILEp(const otrng_user_state_s *state,
   return 0;
 }
 
+tstatic void add_prekey_messages_to_FILEp(list_element_s *node, void *context) {
+  FILE *privf = context;
+  otrng_client_state_s *state = node->data;
+  otrng_client_state_prekeys_write_FILEp(state, privf);
+}
+
+API int
+otrng_user_state_prekey_messages_write_FILEp(const otrng_user_state_s *state,
+                                             FILE *privf) {
+  if (!privf) {
+    return -1;
+  }
+
+  otrng_list_foreach(state->states, add_prekey_messages_to_FILEp, privf);
+  return 0;
+}
+
 API int otrng_user_state_private_key_v4_read_FILEp(
     otrng_user_state_s *state, FILE *privf,
     const void *(*read_client_id_for_key)(FILE *filep)) {

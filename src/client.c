@@ -470,6 +470,46 @@ otrng_client_get_prekey_client(const char *server_identity,
   return client->prekey_client;
 }
 
+API dake_prekey_message_s **
+otrng_client_build_prekey_messages(uint8_t num_messages,
+                                   otrng_client_s *client) {
+  uint32_t instance_tag = otrng_client_state_get_instance_tag(client->state);
+
+  dake_prekey_message_s **messages =
+      malloc(num_messages * sizeof(dake_prekey_message_s *));
+  if (!messages) {
+    return NULL;
+  }
+
+  for (int i = 0; i < num_messages; i++) {
+    messages[i] = NULL;
+  }
+
+  for (int i = 0; i < num_messages; i++) {
+    ecdh_keypair_p ecdh;
+    dh_keypair_p dh;
+    otrng_generate_ephemeral_keys(ecdh, dh);
+
+    messages[i] =
+        otrng_dake_prekey_message_build(instance_tag, ecdh->pub, dh->pub);
+    if (!messages[i]) {
+      for (int j = 0; j < num_messages; j++) {
+        otrng_dake_prekey_message_free(messages[j]);
+      }
+      free(messages);
+      return NULL;
+    }
+
+    store_my_prekey_message(messages[i]->id, messages[i]->sender_instance_tag,
+                            ecdh, dh, client->state);
+
+    // TODO: ecdh_keypair_destroy()
+    // dh_keypair_detroy()
+  }
+
+  return messages;
+}
+
 // TODO: @client Read privkeys, fingerprints, instance tags for v3
 /*
  *To read stored private keys:

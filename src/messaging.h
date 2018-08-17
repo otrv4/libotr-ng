@@ -85,6 +85,10 @@ API int
 otrng_user_state_client_profile_write_FILEp(const otrng_user_state_s *state,
                                             FILE *privf);
 
+API int
+otrng_user_state_prekey_messages_write_FILEp(const otrng_user_state_s *state,
+                                             FILE *privf);
+
 int otrng_user_state_add_instance_tag(otrng_user_state_s *state,
                                       void *client_id, unsigned int instag);
 

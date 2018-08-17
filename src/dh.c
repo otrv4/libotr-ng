@@ -118,7 +118,7 @@ INTERNAL const dh_mpi_p otrng_dh_mpi_generator(void) {
 }
 
 INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair) {
-  uint8_t hash[DH_KEY_SIZE];
+  uint8_t hash[DH_KEY_SIZE] = {0};
   gcry_mpi_t privkey = NULL;
   uint8_t *secbuf = NULL;
 

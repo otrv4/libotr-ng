@@ -255,15 +255,11 @@ otrng_client_state_client_profile_write_FILEp(const otrng_client_state_s *state,
     return 1;
   }
 
-  size_t written = 0;
-  char *encoded = malloc((s + 2) / 3 * 4);
+  char *encoded = otrng_base64_encode(buff, s);
+  free(buff);
   if (!encoded) {
-    free(buff);
     return 1;
   }
-
-  written = otrl_base64_encode(encoded, buff, s);
-  free(buff);
 
   char *key = otrng_client_state_get_storage_id(state);
   if (!key) {
@@ -271,29 +267,88 @@ otrng_client_state_client_profile_write_FILEp(const otrng_client_state_s *state,
     return 1;
   }
 
-  int err = fputs(key, privf);
-  free(key);
-
-  if (EOF == err) {
+  if (0 > fprintf(privf, "%s\n%s\n", key, encoded)) {
     free(encoded);
     return 1;
   }
 
-  if (EOF == fputs("\n", privf)) {
-    free(encoded);
-    return 1;
-  }
-
-  err = fwrite(encoded, written, 1, privf);
   free(encoded);
 
-  if (err != 1) {
+  return 0;
+}
+
+static otrng_err
+serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
+                           const char *storage_id, FILE *privf) {
+  if (0 > fprintf(privf, "%s\n", storage_id)) {
+    return OTRNG_ERROR;
+  }
+
+  uint8_t ecdh_secret_k[ED448_SCALAR_BYTES] = {0};
+  otrng_ec_scalar_encode(ecdh_secret_k, prekey->our_ecdh->priv);
+
+  char *ecdh_symkey = otrng_base64_encode(ecdh_secret_k, ED448_SCALAR_BYTES);
+  if (!ecdh_symkey) {
+    return OTRNG_ERROR;
+  }
+
+  // TODO: securely erase ecdh_secret_k
+
+  uint8_t dh_secret_k[DH3072_MOD_LEN_BYTES] = {0};
+  size_t dh_secret_k_len = 0;
+  if (!otrng_dh_mpi_serialize(dh_secret_k, DH3072_MOD_LEN_BYTES,
+                              &dh_secret_k_len, prekey->our_dh->priv)) {
+    free(ecdh_symkey);
+    return OTRNG_ERROR;
+  }
+
+  char *dh_symkey = otrng_base64_encode(dh_secret_k, dh_secret_k_len);
+  if (!dh_symkey) {
+    free(ecdh_symkey);
+    return OTRNG_ERROR;
+  }
+
+  // TODO: securely erase dh_secret_k
+
+  int ret = fprintf(privf, "%x\n%x\n%s\n%s\n", prekey->id, prekey->sender_instance_tag,
+                    ecdh_symkey, dh_symkey);
+  free(ecdh_symkey);
+  free(dh_symkey);
+
+  if (0 > ret) {
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL int
+otrng_client_state_prekeys_write_FILEp(const otrng_client_state_s *state,
+                                       FILE *privf) {
+  if (!privf) {
     return 1;
   }
 
-  if (EOF == fputs("\n", privf)) {
+  // list_element_s *our_prekeys; // otrng_stored_prekeys_s
+  if (!state->our_prekeys) {
     return 1;
   }
 
+  char *storage_id = otrng_client_state_get_storage_id(state);
+  if (!storage_id) {
+    return 1;
+  }
+
+  list_element_s *current = state->our_prekeys;
+  while (current) {
+    if (!serialize_and_store_prekey(current->data, storage_id, privf)) {
+      free(storage_id);
+      return 1;
+    }
+
+    current = current->next;
+  }
+
+  free(storage_id);
   return 0;
 }
