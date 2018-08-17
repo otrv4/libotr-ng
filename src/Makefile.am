@@ -21,6 +21,7 @@
 lib_LTLIBRARIES = libotr-ng.la
 
 libotr_ng_la_SOURCES = auth.c \
+		     base64.c \
 		     client.c \
 		     client_callbacks.c \
 		     client_profile.c \

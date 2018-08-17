@@ -20,6 +20,7 @@
 
 #include "prekey_client.h"
 
+#include "base64.h"
 #include "dake.h"
 #include "deserialize.h"
 #include "fingerprint.h"
@@ -27,7 +28,6 @@
 #include "serialize.h"
 #include "shake.h"
 
-#include <libotr/b64.h>
 #include <libotr/mem.h>
 
 #define OTRNG_PREKEY_DAKE1_MSG 0x35

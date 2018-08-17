@@ -22,6 +22,7 @@ check_PROGRAMS = test
 
 test_SOURCES = test.c \
 		     ../auth.c \
+		     ../base64.c \
 		     ../client.c \
 		     ../client_callbacks.c \
 		     ../client_profile.c \
