@@ -310,8 +310,8 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
 
   // TODO: securely erase dh_secret_k
 
-  int ret = fprintf(privf, "%x\n%x\n%s\n%s\n", prekey->id, prekey->sender_instance_tag,
-                    ecdh_symkey, dh_symkey);
+  int ret = fprintf(privf, "%x\n%x\n%s\n%s\n", prekey->id,
+                    prekey->sender_instance_tag, ecdh_symkey, dh_symkey);
   free(ecdh_symkey);
   free(dh_symkey);
 
