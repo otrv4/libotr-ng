@@ -66,6 +66,10 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
 API int otrng_client_send(char **newmessage, const char *message,
                           const char *recipient, otrng_client_s *client);
 
+API int otrng_client_send_non_interactive_auth(
+    char **newmessage, const prekey_ensemble_s *ensemble, const char *recipient,
+    otrng_client_s *client);
+
 API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
                                    const char *message, int mms,
                                    const char *recipient,

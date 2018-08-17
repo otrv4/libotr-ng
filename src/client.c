@@ -228,6 +228,19 @@ API int otrng_client_send(char **newmessage, const char *message,
   return send_message(newmessage, message, recipient, client);
 }
 
+API int otrng_client_send_non_interactive_auth(
+    char **newmessage, const prekey_ensemble_s *ensemble, const char *recipient,
+    otrng_client_s *client) {
+
+  otrng_conversation_s *conv =
+      get_or_create_conversation_with(recipient, client);
+  if (!conv) {
+    return OTRNG_CLIENT_RESULT_ERROR;
+  }
+
+  return !otrng_send_non_interactive_auth(newmessage, ensemble, conv->conn);
+}
+
 API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
                                    const char *message, int mms,
                                    const char *recipient,
