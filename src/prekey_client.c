@@ -134,18 +134,18 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
 
 static otrng_err prekey_decode(const char *message, uint8_t **buffer,
                                size_t *buffer_len) {
-  size_t l = strlen(message);
+  size_t len = strlen(message);
 
-  if (!l || '.' != message[l - 1]) {
+  if (!len || '.' != message[len - 1]) {
     return OTRNG_ERROR;
   }
 
-  *buffer = malloc(((l - 1 + 3) / 4) * 3);
+  *buffer = malloc(((len - 1 + 3) / 4) * 3);
   if (!*buffer) {
     return OTRNG_ERROR;
   }
 
-  *buffer_len = otrl_base64_decode(*buffer, message, l - 1);
+  *buffer_len = otrl_base64_decode(*buffer, message, len - 1);
   return OTRNG_SUCCESS;
 }
 
@@ -550,6 +550,7 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   *t = 0x1;
   size_t w = 1;
 
+  // TODO: extract
   goldilocks_shake256_ctx_p h1;
   kdf_init_with_usage(h1, 0x05);
   hash_update(h1, our_profile, our_profile_len);
@@ -672,6 +673,7 @@ static char *receive_dake2(const uint8_t *decoded, size_t decoded_len,
 
   char *ret = process_received_dake2(msg, client);
   otrng_prekey_dake2_message_destroy(msg);
+
   return ret;
 }
 
@@ -818,8 +820,8 @@ static char *receive_prekey_ensemble_retrieval(const uint8_t *decoded,
 
 static otrng_err parse_header(uint8_t *message_type, const uint8_t *buf,
                               size_t buflen, size_t *read) {
-  size_t r = 0; // read
-  size_t w = 0; // walked
+  size_t r = 0; /* read */
+  size_t w = 0; /* walked */
 
   uint16_t protocol_version = 0;
   if (!otrng_deserialize_uint16(&protocol_version, buf, buflen, &r)) {
@@ -855,7 +857,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
 
   char *ret = NULL;
 
-  // TODO: Receive ERROR message
+  // TODO: Receive FAILURE message
   if (message_type == OTRNG_PREKEY_DAKE2_MSG) {
     ret = receive_dake2(decoded, decoded_len, client);
   } else if (message_type == OTRNG_PREKEY_SUCCESS_MSG) {
@@ -877,25 +879,26 @@ API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
                                           const char *message,
                                           otrng_prekey_client_s *client) {
 
-  // I should only process prekey server messages from who I am expecting.
-  // This avoids treating a plaintext message "casa." from alice@itr.im as a
-  // malformed prekey server message.
+  /* It should only process prekey server messages from the expected server.
+     This avoids processing any plaintext message from a party as a
+     malformed prekey server message. */
   if (strcmp(client->server_identity, server)) {
     return OTRNG_ERROR;
   }
 
   // TODO: process fragmented messages
 
-  // If it fails to decode it was not a prekey server message.
+  /* If it fails to decode it was not a prekey server message. */
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
   if (!prekey_decode(message, &serialized, &serialized_len)) {
     return OTRNG_ERROR;
   }
 
-  // Everything else, returns SUCCESS because we processed the message.
-  // Even if there was na error processing it. We should consider informing
-  // error while processing using callbacks.
+  /* In any other case, it returns SUCCESS because we processed the message.
+     Even if there was an error processing it. We should consider informing the
+     error while processing using callbacks.
+  */
   *tosend = receive_decoded(serialized, serialized_len, client);
   free(serialized);
 

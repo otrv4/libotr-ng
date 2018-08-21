@@ -731,7 +731,6 @@ tstatic void derive_encryption_and_mac_keys(
   if (action == 's') {
     shake_256_kdf1(enc_key, sizeof(msg_enc_key_p), usage_message_key,
                    manager->current->chain_s, sizeof(sending_chain_key_p));
-
   } else if (action == 'r') {
     shake_256_kdf1(enc_key, sizeof(msg_enc_key_p), usage_message_key,
                    tmp_receiving_ratchet->chain_r,
