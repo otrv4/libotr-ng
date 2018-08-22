@@ -231,7 +231,6 @@ API int otrng_client_send(char **newmessage, const char *message,
 API int otrng_client_send_non_interactive_auth(
     char **newmessage, const prekey_ensemble_s *ensemble, const char *recipient,
     otrng_client_s *client) {
-
   otrng_conversation_s *conv =
       get_or_create_conversation_with(recipient, client);
   if (!conv) {

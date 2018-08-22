@@ -98,11 +98,12 @@ typedef enum {
 } otrng_prekey_next_message_t;
 
 typedef struct {
-  void *ctx; // How calbacks can keep state
+  void *ctx; /* How calbacks can keep state */
   void (*notify_error)(int error, void *ctx);
   void (*storage_status_received)(
       const otrng_prekey_storage_status_message_s *msg, void *ctx);
   void (*success_received)(void *ctx);
+  void (*failure_received)(void *ctx);
   void (*no_prekey_in_storage_received)(void *ctx);
   void (*prekey_ensembles_received)(prekey_ensemble_s *const *const ensembles,
                                     uint8_t num_ensembles, void *ctx);
