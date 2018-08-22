@@ -34,6 +34,7 @@
 #define OTRNG_PREKEY_DAKE2_MSG 0x36
 #define OTRNG_PREKEY_DAKE3_MSG 0x37
 #define OTRNG_PREKEY_STORAGE_INFO_REQ_MSG 0x09
+#define OTRNG_PREKEY_ENSEMBLE_QUERY_RETRIEVAL_MSG 0x10
 #define OTRNG_PREKEY_STORAGE_STATUS_MSG 0x0B
 #define OTRNG_PREKEY_SUCCESS_MSG 0x06
 #define OTRNG_PREKEY_FAILURE_MSG 0x05
@@ -253,8 +254,9 @@ INTERNAL otrng_err otrng_prekey_ensemble_query_retrieval_message_asprint(
   }
 
   size_t w = 0;
-  w += otrng_serialize_uint16(*dst, 0x04);
-  w += otrng_serialize_uint8(*dst + w, 0x10);
+  w += otrng_serialize_uint16(*dst, OTRNG_PROTOCOL_VERSION_4);
+  w += otrng_serialize_uint8(*dst + w,
+                             OTRNG_PREKEY_ENSEMBLE_QUERY_RETRIEVAL_MSG);
   w += otrng_serialize_uint32(*dst + w, msg->instance_tag);
   w += otrng_serialize_data(*dst + w, (uint8_t *)msg->identity,
                             strlen(msg->identity));
@@ -303,13 +305,13 @@ static uint8_t *otrng_prekey_client_get_expected_composite_phi(
   return dst;
 }
 
-INTERNAL void kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
-                                  uint8_t usage) {
-  hash_init_with_usage_and_domain_separation(hash, usage, "OTR-Prekey-Server");
-}
-
 static uint8_t usage_auth = 0x11;
 static const char *prekey_hash_domain = "OTR-Prekey-Server";
+
+INTERNAL void kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
+                                  uint8_t usage) {
+  hash_init_with_usage_and_domain_separation(hash, usage, prekey_hash_domain);
+}
 
 static otrng_bool
 otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
