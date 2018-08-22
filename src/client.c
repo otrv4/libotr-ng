@@ -465,6 +465,7 @@ otrng_client_get_prekey_client(const char *server_identity,
                                                    client->state)) {
     return NULL;
   }
+  free(protocol);
 
   // TODO: this should be a hashmap, since it its one client PER server
   client->prekey_client = otrng_prekey_client_new(
@@ -475,7 +476,6 @@ otrng_client_get_prekey_client(const char *server_identity,
       otrng_client_state_get_prekey_profile(client->state));
 
   free(account);
-  free(protocol);
 
   client->prekey_client->callbacks = callbacks;
 
