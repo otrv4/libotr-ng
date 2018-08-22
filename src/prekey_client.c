@@ -195,6 +195,7 @@ static char *start_dake_and_then_send(otrng_prekey_client_s *client,
   free(serialized);
 
   client->after_dake = next;
+
   return ret;
 }
 

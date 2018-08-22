@@ -34,11 +34,13 @@ void test_prekey_ensemble_publishing(void) {
       otrng_client_state_get_client_profile(alice->state),
       otrng_client_state_get_prekey_profile(alice->state));
 
-  char *message = NULL;
-  message = otrng_prekey_client_publish_prekeys(alice->prekey_client);
+  char *dake_1 = NULL;
+  dake_1 = otrng_prekey_client_publish_prekeys(alice->prekey_client);
 
-  free(message);
+  otrng_assert(dake_1);
+  free(dake_1);
 
   otrl_userstate_free(alice_client_state->user_state);
   otrng_client_state_free(alice_client_state);
+  otrng_client_free(alice);
 }
