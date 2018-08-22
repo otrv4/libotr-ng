@@ -137,7 +137,7 @@ otrng_prekey_client_new(const char *server, const char *our_identity,
 API void otrng_prekey_client_free(otrng_prekey_client_s *client);
 
 API char *
-otrng_prekey_client_request_storage_status(otrng_prekey_client_s *client);
+otrng_prekey_client_request_storage_information(otrng_prekey_client_s *client);
 
 API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client);
 

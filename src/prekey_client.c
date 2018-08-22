@@ -197,11 +197,8 @@ static char *start_dake_and_then_send(otrng_prekey_client_s *client,
   return ret;
 }
 
-// TODO: rename
-// this sends a "Storage Information Request" but it is used to "request storage
-// information"(?)
 API char *
-otrng_prekey_client_request_storage_status(otrng_prekey_client_s *client) {
+otrng_prekey_client_request_storage_information(otrng_prekey_client_s *client) {
   return start_dake_and_then_send(client,
                                   OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST);
 }
