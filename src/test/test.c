@@ -27,6 +27,7 @@
 #define OTRNG_LIST_PRIVATE
 #define OTRNG_OTRNG_PRIVATE
 #define OTRNG_PERSISTENCE_PRIVATE
+#define OTRNG_PREKEY_CLIENT_PRIVATE
 #define OTRNG_PROTOCOL_PRIVATE
 #define OTRNG_SMP_PRIVATE
 #define OTRNG_SMP_PROTOCOL_PRIVATE
@@ -275,8 +276,10 @@ int main(int argc, char **argv) {
   g_test_add_func("/prekey_server/dake/ensemble-retrieval/deserialize",
                   test_prekey_ensemble_retrieval_message_deserialize);
 
-  g_test_add_func("/prekey_server_client/prekey_ensemble_publishing",
-                  test_prekey_ensemble_publishing);
+  g_test_add_func("/prekey_server_client/send_dake_1_message",
+                  test_send_dake_1_message);
+  g_test_add_func("/prekey_server_client/send_dake_3_message",
+                  test_send_dake_3_message);
   g_test_add_func("/prekey_server_client/receive_prekey_server_messages",
                   test_receive_prekey_server_messages);
 

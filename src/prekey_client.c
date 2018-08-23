@@ -363,6 +363,7 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
 
   shake_256_prekey_server_kdf(t + w, HASH_BYTES, usage_initator_client_profile,
                               our_profile, our_profile_len);
+  free(our_profile);
 
   w += HASH_BYTES;
 
@@ -535,8 +536,8 @@ INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
   return OTRNG_SUCCESS;
 }
 
-static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
-                        otrng_prekey_client_s *client) {
+tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
+                         otrng_prekey_client_s *client) {
   otrng_prekey_dake3_message_s msg[1];
 
   msg->client_instance_tag = client->instance_tag;
@@ -544,6 +545,9 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   size_t composite_phi_len = 0;
   uint8_t *composite_phi = otrng_prekey_client_get_expected_composite_phi(
       &composite_phi_len, client);
+  if (!composite_phi) {
+    return NULL;
+  }
 
   uint8_t *our_profile = NULL;
   size_t our_profile_len = 0;
@@ -555,6 +559,7 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   size_t tlen = 1 + 3 * HASH_BYTES + 2 * ED448_POINT_BYTES;
   uint8_t *t = malloc(tlen);
   if (!t) {
+    free(composite_phi);
     free(our_profile);
     return NULL;
   }
@@ -562,33 +567,29 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   *t = 0x1;
   size_t w = 1;
 
-  // TODO: extract
-  goldilocks_shake256_ctx_p h1;
-  kdf_init_with_usage(h1, 0x05);
-  hash_update(h1, our_profile, our_profile_len);
-  hash_final(h1, t + w, HASH_BYTES);
-  hash_destroy(h1);
+  uint8_t usage_receiver_client_profile = 0x05;
+  uint8_t usage_receiver_prekey_composite_identity = 0x06;
+  uint8_t usage_receiver_prekey_composite_phi = 0x07;
+
+  shake_256_prekey_server_kdf(t + w, HASH_BYTES, usage_receiver_client_profile,
+                              our_profile, our_profile_len);
   free(our_profile);
 
   w += HASH_BYTES;
 
-  // Both composite identity AND composite phi have the server's bare JID
-  goldilocks_shake256_ctx_p h2;
-  kdf_init_with_usage(h2, 0x06);
-  hash_update(h2, msg2->composite_identity, msg2->composite_identity_len);
-  hash_final(h2, t + w, HASH_BYTES);
-  hash_destroy(h2);
+  /* Both composite identity AND composite phi have the server's bare JID */
+  shake_256_prekey_server_kdf(
+      t + w, HASH_BYTES, usage_receiver_prekey_composite_identity,
+      msg2->composite_identity, msg2->composite_identity_len);
 
   w += HASH_BYTES;
 
   w += otrng_serialize_ec_point(t + w, client->ephemeral_ecdh->pub);
   w += otrng_serialize_ec_point(t + w, msg2->S);
 
-  goldilocks_shake256_ctx_p h3;
-  kdf_init_with_usage(h3, 0x07);
-  hash_update(h3, composite_phi, composite_phi_len);
-  hash_final(h3, t + w, HASH_BYTES);
-  hash_destroy(h3);
+  shake_256_prekey_server_kdf(t + w, HASH_BYTES,
+                              usage_receiver_prekey_composite_phi,
+                              composite_phi, composite_phi_len);
   free(composite_phi);
 
   /* H_a, sk_ha, {H_a, H_s, S}, t */
@@ -599,26 +600,24 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   free(t);
 
   /* ECDH(i, S) */
+  // TODO: check is the ephemeral is erased
   uint8_t shared_secret[HASH_BYTES] = {0};
   uint8_t ecdh_shared[ED448_POINT_BYTES] = {0};
   otrng_ecdh_shared_secret(ecdh_shared, sizeof(ecdh_shared),
                            client->ephemeral_ecdh->priv, msg2->S);
 
+  uint8_t usage_SK = 0x01;
+  uint8_t usage_preMAC_key = 0x08;
+
   /* SK = KDF(0x01, ECDH(i, S), 64) */
-  goldilocks_shake256_ctx_p hsk;
-  kdf_init_with_usage(hsk, 0x01);
-  hash_update(hsk, ecdh_shared, ED448_POINT_BYTES);
-  hash_final(hsk, shared_secret, HASH_BYTES);
-  hash_destroy(hsk);
+  shake_256_prekey_server_kdf(shared_secret, HASH_BYTES, usage_SK, ecdh_shared,
+                              ED448_POINT_BYTES);
 
   /* prekey_mac_k = KDF(0x08, SK, 64) */
-  goldilocks_shake256_ctx_p hpk;
-  kdf_init_with_usage(hpk, 0x08);
-  hash_update(hpk, shared_secret, HASH_BYTES);
-  hash_final(hpk, client->mac_key, MAC_KEY_BYTES);
-  hash_destroy(hpk);
+  shake_256_prekey_server_kdf(client->mac_key, MAC_KEY_BYTES, usage_preMAC_key,
+                              shared_secret, HASH_BYTES);
 
-  // Put the MESSAGE in the message
+  /* Attach MESSAGE in the message */
   if (client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
     if (!otrng_prekey_dake3_message_append_storage_information_request(
             msg, client->mac_key)) {
@@ -1051,7 +1050,7 @@ INTERNAL otrng_err otrng_prekey_dake2_message_deserialize(
 
   w += read;
 
-  /*Store the composite identity, so we can use it to generate `t` */
+  /* Store the composite identity, so we can use it to generate `t` */
   dst->composite_identity_len = serialized + w - composite_identity_start;
   dst->composite_identity = malloc(dst->composite_identity_len);
   if (!dst->composite_identity) {

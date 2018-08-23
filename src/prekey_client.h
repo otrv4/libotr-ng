@@ -204,4 +204,11 @@ INTERNAL
 void otrng_prekey_ensemble_retrieval_message_destroy(
     otrng_prekey_ensemble_retrieval_message_s *msg);
 
+#ifdef OTRNG_PREKEY_CLIENT_PRIVATE
+
+tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
+                         otrng_prekey_client_s *client);
+
+#endif
+
 #endif
