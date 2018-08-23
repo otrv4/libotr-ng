@@ -98,7 +98,7 @@ void test_send_dake_3_message(void) {
       0xf3, 0x90, 0x46, 0x21, 0xfb, 0x2c, 0xb8, 0x94, 0x0,
   };
   msg->composite_identity_len = 86;
-  msg->composite_identity = malloc(dst->composite_identity_len);
+  msg->composite_identity = malloc(msg->composite_identity_len);
   memcpy(msg->composite_identity, composite_identity,
          msg->composite_identity_len);
 
