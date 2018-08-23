@@ -420,7 +420,6 @@ otrng_prekey_dake3_message_append_storage_information_request(
 INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
     otrng_prekey_publication_message_s *pub_msg,
     otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]) {
-
   uint8_t *client_profile = NULL;
   size_t client_profile_len = 0;
   if (!otrng_client_profile_asprintf(&client_profile, &client_profile_len,
@@ -469,9 +468,6 @@ INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
   // you have prekey messages AND both profiles (see how the mac is explained at
   // the spec). So J and K can only be both 1 or both 0, and I don't know why
   // there is J and K as separate variables.
-
-  // The MAC could be a KDF over the entire message, but this "conditional
-  // nested KDF" structure makes it uneccessarily complicated.
   uint8_t prekey_messages_kdf[HASH_BYTES] = {0};
   goldilocks_shake256_ctx_p hmac;
   kdf_init_with_usage(hmac, 0x0E);
