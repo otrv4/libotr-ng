@@ -137,6 +137,8 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
 
   free(client->our_identity);
   client->our_identity = NULL;
+
+  free(client);
 }
 
 static otrng_err prekey_decode(const char *message, uint8_t **buffer,
