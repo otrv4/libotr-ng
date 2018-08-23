@@ -108,6 +108,7 @@ void test_send_dake_3_message(void) {
   otrng_assert(alice->prekey_client->after_dake == 0);
   free(dake_3);
 
+  otrng_prekey_dake2_message_destroy(msg);
   otrl_userstate_free(alice_client_state->user_state);
   otrng_client_state_free(alice_client_state);
   otrng_client_free(alice);
