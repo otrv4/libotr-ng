@@ -149,12 +149,14 @@ static otrng_err prekey_decode(const char *message, uint8_t **buffer,
     return OTRNG_ERROR;
   }
 
+  /* (((base64len+3) / 4) * 3) */
   *buffer = malloc(((len - 1 + 3) / 4) * 3);
   if (!*buffer) {
     return OTRNG_ERROR;
   }
 
   *buffer_len = otrl_base64_decode(*buffer, message, len - 1);
+
   return OTRNG_SUCCESS;
 }
 
@@ -677,6 +679,7 @@ static char *receive_dake2(const uint8_t *decoded, size_t decoded_len,
 
   if (!otrng_prekey_dake2_message_deserialize(msg, decoded, decoded_len)) {
     notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    otrng_prekey_dake2_message_destroy(msg);
     return NULL;
   }
 
@@ -938,7 +941,7 @@ API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
   /* It should only process prekey server messages from the expected server.
      This avoids processing any plaintext message from a party as a
      malformed prekey server message. */
-  if (strcmp(client->server_identity, server)) {
+  if (strcmp(client->server_identity, server) != 0) {
     return OTRNG_ERROR;
   }
 
@@ -1046,7 +1049,7 @@ INTERNAL otrng_err otrng_prekey_dake2_message_deserialize(
 
   w += read;
 
-  // Store the composite identity, so we can use it to generate `t`
+  /*Store the composite identity, so we can use it to generate `t` */
   dst->composite_identity_len = serialized + w - composite_identity_start;
   dst->composite_identity = malloc(dst->composite_identity_len);
   if (!dst->composite_identity) {
@@ -1075,11 +1078,15 @@ void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg) {
     return;
   }
 
-  free(msg->composite_identity);
-  msg->composite_identity = NULL;
+  if (msg->composite_identity) {
+    free(msg->composite_identity);
+    msg->composite_identity = NULL;
+  }
 
-  free(msg->server_identity);
-  msg->server_identity = NULL;
+  if (msg->server_identity) {
+    free(msg->server_identity);
+    msg->server_identity = NULL;
+  }
 
   otrng_ec_point_destroy(msg->S);
   otrng_ring_sig_destroy(msg->sigma);
