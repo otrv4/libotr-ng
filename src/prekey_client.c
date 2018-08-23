@@ -286,13 +286,14 @@ INTERNAL void otrng_prekey_ensemble_query_retrieval_message_destroy(
 
 static uint8_t *otrng_prekey_client_get_expected_composite_phi(
     size_t *len, const otrng_prekey_client_s *client) {
+  uint8_t *dst = NULL;
   if (!client->server_identity || !client->our_identity) {
     return NULL;
   }
 
   size_t s =
       4 + strlen(client->server_identity) + 4 + strlen(client->our_identity);
-  uint8_t *dst = malloc(s);
+  dst = malloc(s);
   if (!dst) {
     return NULL;
   }
@@ -333,17 +334,22 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
   size_t composite_phi_len = 0;
   uint8_t *composite_phi = otrng_prekey_client_get_expected_composite_phi(
       &composite_phi_len, client);
+  if (!composite_phi) {
+    return otrng_false;
+  }
 
   uint8_t *our_profile = NULL;
   size_t our_profile_len = 0;
   if (!otrng_client_profile_asprintf(&our_profile, &our_profile_len,
                                      client->client_profile)) {
+    free(composite_phi);
     return otrng_false;
   }
 
   size_t tlen = 1 + 3 * HASH_BYTES + 2 * ED448_POINT_BYTES;
   uint8_t *t = malloc(tlen);
   if (!t) {
+    free(composite_phi);
     free(our_profile);
     return otrng_false;
   }
@@ -351,32 +357,28 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
   *t = 0x0;
   size_t w = 1;
 
-  goldilocks_shake256_ctx_p h1;
-  kdf_init_with_usage(h1, 0x02);
-  hash_update(h1, our_profile, our_profile_len);
-  hash_final(h1, t + w, HASH_BYTES);
-  hash_destroy(h1);
-  free(our_profile);
+  uint8_t usage_initator_client_profile = 0x02;
+  uint8_t usage_initiator_prekey_composite_identity = 0x03;
+  uint8_t usage_initiator_prekey_composite_phi = 0x04;
+
+  shake_256_prekey_server_kdf(t + w, HASH_BYTES, usage_initator_client_profile,
+                              our_profile, our_profile_len);
 
   w += HASH_BYTES;
 
-  // Both composite identity AND composite phi have the server's bare JID
-  goldilocks_shake256_ctx_p h2;
-  kdf_init_with_usage(h2, 0x03);
-  hash_update(h2, msg->composite_identity, msg->composite_identity_len);
-  hash_final(h2, t + w, HASH_BYTES);
-  hash_destroy(h2);
+  /* Both composite identity AND composite phi have the server's bare JID */
+  shake_256_prekey_server_kdf(
+      t + w, HASH_BYTES, usage_initiator_prekey_composite_identity,
+      msg->composite_identity, msg->composite_identity_len);
 
   w += HASH_BYTES;
 
   w += otrng_serialize_ec_point(t + w, client->ephemeral_ecdh->pub);
   w += otrng_serialize_ec_point(t + w, msg->S);
 
-  goldilocks_shake256_ctx_p h3;
-  kdf_init_with_usage(h3, 0x04);
-  hash_update(h3, composite_phi, composite_phi_len);
-  hash_final(h3, t + w, HASH_BYTES);
-  hash_destroy(h3);
+  shake_256_prekey_server_kdf(t + w, HASH_BYTES,
+                              usage_initiator_prekey_composite_phi,
+                              composite_phi, composite_phi_len);
   free(composite_phi);
 
   otrng_bool ret = otrng_rsig_verify_with_usage_and_domain(

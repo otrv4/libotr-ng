@@ -77,7 +77,6 @@ static void test_prekey_dake1_message_serialize(void) {
 }
 
 static void test_prekey_dake2_message_deserialize(void) {
-
   uint8_t serialized[] = {
       0x00, 0x04,             // protocol version
       0x36,                   // message type

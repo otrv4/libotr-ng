@@ -25,8 +25,8 @@
 void hash_init_with_dom(goldilocks_shake256_ctx_p hash) {
   hash_init(hash);
 
-  const char *dom_s = "OTRv4";
-  hash_update(hash, (const unsigned char *)dom_s, strlen(dom_s));
+  const char *domain = "OTRv4";
+  hash_update(hash, (const unsigned char *)domain, strlen(domain));
 }
 
 void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
@@ -36,6 +36,12 @@ void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
   // TODO: why we cast here?
   hash_update(hash, (const unsigned char *)domain, strlen(domain));
   hash_update(hash, &usage, 1);
+}
+
+void hash_init_with_usage_prekey_server(goldilocks_shake256_ctx_p hash,
+                                        uint8_t usage) {
+  const char *domain = "OTR-Prekey-Server";
+  hash_init_with_usage_and_domain_separation(hash, usage, domain);
 }
 
 void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage) {
@@ -55,11 +61,20 @@ void shake_kkdf(uint8_t *dst, size_t dstlen, const uint8_t *key, size_t keylen,
   hash_destroy(hd);
 }
 
-// KDF_1(usageID || values, 64)
 void shake_256_kdf1(uint8_t *dst, size_t dstlen, uint8_t usage,
                     const uint8_t *values, size_t valueslen) {
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, usage);
+
+  hash_update(hd, values, valueslen);
+  hash_final(hd, dst, dstlen);
+  hash_destroy(hd);
+}
+
+void shake_256_prekey_server_kdf(uint8_t *dst, size_t dstlen, uint8_t usage,
+                                 const uint8_t *values, size_t valueslen) {
+  goldilocks_shake256_ctx_p hd;
+  hash_init_with_usage_prekey_server(hd, usage);
 
   hash_update(hd, values, valueslen);
   hash_final(hd, dst, dstlen);
