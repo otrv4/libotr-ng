@@ -394,19 +394,21 @@ INTERNAL otrng_err
 otrng_prekey_dake3_message_append_storage_information_request(
     otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]) {
   msg->message = malloc(2 + 1 + MAC_KEY_BYTES);
-  msg->message_len = 67;
   if (!msg->message) {
     return OTRNG_ERROR;
   }
+  msg->message_len = 67; // TODO: extract this
 
   uint8_t msg_type = OTRNG_PREKEY_STORAGE_INFO_REQ_MSG;
   size_t w = 0;
   w += otrng_serialize_uint16(msg->message, OTRNG_PROTOCOL_VERSION_4);
   w += otrng_serialize_uint8(msg->message + w, msg_type);
 
-  // MAC: KDF(usage_storage_info_MAC, prekey_mac_k || message type, 64)
+  /* MAC: KDF(usage_storage_info_MAC, prekey_mac_k || message type, 64) */
+  uint8_t usage_receiver_client_profile = 0x0A;
+
   goldilocks_shake256_ctx_p hmac;
-  kdf_init_with_usage(hmac, 0x0A);
+  kdf_init_with_usage(hmac, usage_receiver_client_profile);
   hash_update(hmac, mac_key, MAC_KEY_BYTES);
   hash_update(hmac, &msg_type, 1);
   hash_final(hmac, msg->message + w, HASH_BYTES);
