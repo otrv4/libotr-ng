@@ -277,6 +277,8 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/prekey_server_client/prekey_ensemble_publishing",
                   test_prekey_ensemble_publishing);
+  g_test_add_func("/prekey_server_client/receive_prekey_server_messages",
+                  test_receive_prekey_server_messages);
 
   g_test_add_func("/client/conversation_api", test_client_conversation_api);
   g_test_add_func("/client/api", test_client_api);

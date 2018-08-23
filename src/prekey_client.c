@@ -658,6 +658,7 @@ static char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
 
 static char *process_received_dake2(const otrng_prekey_dake2_message_s *msg,
                                     otrng_prekey_client_s *client) {
+
   if (msg->client_instance_tag != client->instance_tag) {
     return NULL;
   }
@@ -934,7 +935,6 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
 API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
                                           const char *message,
                                           otrng_prekey_client_s *client) {
-
   /* It should only process prekey server messages from the expected server.
      This avoids processing any plaintext message from a party as a
      malformed prekey server message. */
