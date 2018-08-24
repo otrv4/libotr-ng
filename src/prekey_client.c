@@ -1242,7 +1242,7 @@ INTERNAL otrng_err otrng_prekey_ensemble_retrieval_message_deserialize(
 
   dst->num_ensembles = l;
 
-  for (int i = 0; i <= l; i++) {
+  for (int i = 0; i < l; i++) {
     dst->ensembles[i] = malloc(sizeof(prekey_ensemble_s));
     if (!dst->ensembles[i]) {
       return OTRNG_ERROR;
@@ -1267,7 +1267,7 @@ void otrng_prekey_ensemble_retrieval_message_destroy(
   }
 
   if (msg->ensembles) {
-    for (int i = 0; i <= msg->num_ensembles; i++) {
+    for (int i = 0; i < msg->num_ensembles; i++) {
       otrng_prekey_ensemble_free(msg->ensembles[i]);
     }
     free(msg->ensembles);
