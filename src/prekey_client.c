@@ -464,17 +464,12 @@ INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
     w += w2;
   }
 
-  // TODO: the spec also implies that either you have ONLY prekey messages OR
-  // you have prekey messages AND both profiles (see how the mac is explained at
-  // the spec). So J and K can only be both 1 or both 0, and I don't know why
-  // there is J and K as separate variables.
+  uint8_t usage_prekey_message = 0x0E;
   uint8_t prekey_messages_kdf[HASH_BYTES] = {0};
-  goldilocks_shake256_ctx_p hmac;
-  kdf_init_with_usage(hmac, 0x0E);
-  hash_update(hmac, prekey_messages_beginning,
-              msg->message + w - prekey_messages_beginning);
-  hash_final(hmac, prekey_messages_kdf, HASH_BYTES);
-  hash_destroy(hmac);
+
+  shake_256_prekey_server_kdf(prekey_messages_kdf, HASH_BYTES,
+                              usage_prekey_message, prekey_messages_beginning,
+                              msg->message + w - prekey_messages_beginning);
 
   w += otrng_serialize_uint8(msg->message + w, pub_msg->client_profile ? 1 : 0);
   w += otrng_serialize_bytes_array(msg->message + w, client_profile,
@@ -490,44 +485,45 @@ INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
             || J || KDF(usage_prekey_profile, Prekey Profile, 64),
         64) */
 
-  uint8_t client_profile_kdf[HASH_BYTES] = {0};
-  if (pub_msg->client_profile) {
-    kdf_init_with_usage(hmac, 0x0F);
-    hash_update(hmac, client_profile, client_profile_len);
-    hash_final(hmac, client_profile_kdf, HASH_BYTES);
-    hash_destroy(hmac);
-  }
-
-  uint8_t prekey_profile_kdf[HASH_BYTES] = {0};
-  if (pub_msg->prekey_profile) {
-    kdf_init_with_usage(hmac, 0x10);
-    hash_update(hmac, prekey_profile, prekey_profile_len);
-    hash_final(hmac, prekey_profile_kdf, HASH_BYTES);
-    hash_destroy(hmac);
-  }
-
+  uint8_t usage_pre_MAC = 0x09;
   uint8_t one = 1, zero = 0;
-  kdf_init_with_usage(hmac, 0x09);
-  hash_update(hmac, mac_key, MAC_KEY_BYTES);
-  hash_update(hmac, &msg_type, 1);
-  hash_update(hmac, &pub_msg->num_prekey_messages, 1);
-  hash_update(hmac, prekey_messages_kdf, HASH_BYTES);
+
+  goldilocks_shake256_ctx_p hd;
+  kdf_init_with_usage(hd, usage_pre_MAC);
+  hash_update(hd, mac_key, MAC_KEY_BYTES);
+  hash_update(hd, &msg_type, 1);
+  hash_update(hd, &pub_msg->num_prekey_messages, 1);
+  hash_update(hd, prekey_messages_kdf, HASH_BYTES);
 
   if (pub_msg->client_profile) {
-    hash_update(hmac, &one, 1);
-    hash_update(hmac, client_profile_kdf, HASH_BYTES);
+    uint8_t usage_client_profile = 0x0F;
+    uint8_t client_profile_kdf[HASH_BYTES] = {0};
+
+    shake_256_prekey_server_kdf(client_profile_kdf, HASH_BYTES,
+                                usage_client_profile, client_profile,
+                                client_profile_len);
+
+    hash_update(hd, &one, 1);
+    hash_update(hd, client_profile_kdf, HASH_BYTES);
   } else {
-    hash_update(hmac, &zero, 1);
+    hash_update(hd, &zero, 1);
   }
 
   if (pub_msg->prekey_profile) {
-    hash_update(hmac, &one, 1);
-    hash_update(hmac, prekey_profile_kdf, HASH_BYTES);
+    uint8_t prekey_profile_kdf[HASH_BYTES] = {0};
+    uint8_t usage_prekey_profile = 0x10;
+
+    shake_256_prekey_server_kdf(prekey_profile_kdf, HASH_BYTES,
+                                usage_prekey_profile, prekey_profile,
+                                prekey_profile_len);
+
+    hash_update(hd, &one, 1);
+    hash_update(hd, prekey_profile_kdf, HASH_BYTES);
   } else {
-    hash_update(hmac, &zero, 1);
+    hash_update(hd, &zero, 1);
   }
-  hash_final(hmac, msg->message + w, HASH_BYTES);
-  hash_destroy(hmac);
+  hash_final(hd, msg->message + w, HASH_BYTES);
+  hash_destroy(hd);
 
   msg->message_len = w + HASH_BYTES;
 
