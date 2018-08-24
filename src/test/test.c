@@ -278,8 +278,9 @@ int main(int argc, char **argv) {
 
   g_test_add_func("/prekey_server_client/send_dake_1_message",
                   test_send_dake_1_message);
-  g_test_add_func("/prekey_server_client/send_dake_3_message",
-                  test_send_dake_3_message);
+  g_test_add_func(
+      "/prekey_server_client/send_dake_3_message_with_storage_info_request",
+      test_send_dake_3_message_with_storage_info_request);
   g_test_add_func("/prekey_server_client/receive_prekey_server_messages",
                   test_receive_prekey_server_messages);
 

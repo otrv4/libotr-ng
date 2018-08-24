@@ -43,7 +43,7 @@ void test_send_dake_1_message(void) {
   otrng_client_free(alice);
 }
 
-void test_send_dake_3_message(void) {
+void test_send_dake_3_message_with_storage_info_request(void) {
   otrng_client_state_s *alice_client_state =
       otrng_client_state_new(ALICE_IDENTITY);
 

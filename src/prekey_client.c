@@ -694,7 +694,7 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
     return otrng_false;
   }
 
-  *buf = OTRNG_PREKEY_STORAGE_STATUS_MSG; // message type
+  *buf = OTRNG_PREKEY_STORAGE_STATUS_MSG; /* message type */
   otrng_serialize_uint32(buf + 1, msg->client_instance_tag);
   otrng_serialize_uint32(buf + 5, msg->stored_prekeys);
 
@@ -702,12 +702,15 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
    tag
    || Stored Prekey Messages Number, 64) */
   uint8_t mac_tag[HASH_BYTES];
+  uint8_t usage_status_MAC = 0x0B;
+
   goldilocks_shake256_ctx_p hmac;
-  kdf_init_with_usage(hmac, 0x0B);
+  kdf_init_with_usage(hmac, usage_status_MAC);
   hash_update(hmac, mac_key, MAC_KEY_BYTES);
   hash_update(hmac, buf, bufl);
   hash_final(hmac, mac_tag, HASH_BYTES);
   hash_destroy(hmac);
+
   free(buf);
 
   if (otrl_mem_differ(mac_tag, msg->mac, sizeof(mac_tag)) != 0) {
@@ -769,8 +772,10 @@ static char *receive_success(const uint8_t *decoded, size_t decoded_len,
   }
 
   uint8_t mac_tag[HASH_BYTES] = {0};
+  uint8_t usage_success_MAC = 0x0C;
+
   goldilocks_shake256_ctx_p hash;
-  kdf_init_with_usage(hash, 0x0C);
+  kdf_init_with_usage(hash, usage_success_MAC);
   hash_update(hash, client->mac_key, MAC_KEY_BYTES);
   hash_update(hash, decoded + 2, 5);
   hash_final(hash, mac_tag, HASH_BYTES);
@@ -806,8 +811,10 @@ static char *receive_failure(const uint8_t *decoded, size_t decoded_len,
   }
 
   uint8_t mac_tag[HASH_BYTES] = {0};
+  uint8_t usage_failure_MAC = 0x0D;
+
   goldilocks_shake256_ctx_p hash;
-  kdf_init_with_usage(hash, 0x0D);
+  kdf_init_with_usage(hash, usage_failure_MAC);
   hash_update(hash, client->mac_key, MAC_KEY_BYTES);
   hash_update(hash, decoded + 2, 5);
   hash_final(hash, mac_tag, HASH_BYTES);
@@ -864,6 +871,7 @@ static char *receive_prekey_ensemble_retrieval(const uint8_t *decoded,
   if (!otrng_prekey_ensemble_retrieval_message_deserialize(msg, decoded,
                                                            decoded_len)) {
     notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    otrng_prekey_ensemble_retrieval_message_destroy(msg);
     return NULL;
   }
 
@@ -924,7 +932,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
   } else if (message_type == OTRNG_PREKEY_STORAGE_STATUS_MSG) {
     ret = receive_storage_status(decoded, decoded_len, client);
   } else {
-    // TODO: Notify that received an unexpected message
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
   }
 
   return ret;
@@ -1166,7 +1174,13 @@ INTERNAL otrng_err otrng_prekey_storage_status_message_deserialize(
 INTERNAL
 void otrng_prekey_storage_status_message_destroy(
     otrng_prekey_storage_status_message_s *msg) {
-  // TODO
+  if (!msg) {
+    return;
+  }
+
+  msg->client_instance_tag = 0;
+  msg->stored_prekeys = 0;
+  sodium_memzero(msg->mac, sizeof(msg->mac));
 }
 
 INTERNAL
@@ -1228,7 +1242,7 @@ INTERNAL otrng_err otrng_prekey_ensemble_retrieval_message_deserialize(
 
   dst->num_ensembles = l;
 
-  for (int i = 0; i < l; i++) {
+  for (int i = 0; i <= l; i++) {
     dst->ensembles[i] = malloc(sizeof(prekey_ensemble_s));
     if (!dst->ensembles[i]) {
       return OTRNG_ERROR;
@@ -1252,9 +1266,12 @@ void otrng_prekey_ensemble_retrieval_message_destroy(
     return;
   }
 
-  for (int i = 0; i < msg->num_ensembles; i++) {
-    otrng_prekey_ensemble_free(msg->ensembles[i]);
+  if (msg->ensembles) {
+    for (int i = 0; i <= msg->num_ensembles; i++) {
+      otrng_prekey_ensemble_free(msg->ensembles[i]);
+    }
+    free(msg->ensembles);
   }
-  free(msg->ensembles);
+
   msg->ensembles = NULL;
 }
