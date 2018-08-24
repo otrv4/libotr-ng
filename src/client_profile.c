@@ -158,8 +158,6 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
   w += otrng_serialize_public_key(dst + w, profile->long_term_pub_key);
   num_fields++;
 
-  // TODO: Forger public key
-
   // Versions
   w += otrng_serialize_uint16(dst + w, 0x04);
   w += otrng_serialize_data(dst + w, (uint8_t *)profile->versions,
@@ -346,9 +344,6 @@ tstatic otrng_err deserialize_field(client_profile_s *target,
                                       buflen - w, &read)) {
       return OTRNG_ERROR;
     }
-    break;
-  case 0x03: // Forger public key
-    // TODO add field and deserialize
     break;
   case 0x04: // Versions
   {

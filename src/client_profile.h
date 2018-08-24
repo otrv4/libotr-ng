@@ -38,7 +38,6 @@
 #define OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(v)                               \
   (2 + 4                      /* instance tag */                               \
    + 2 + ED448_PUBKEY_BYTES   /* Ed448 pub key */                              \
-   + 0                        /* TODO: Forger Public key */                    \
    + 2 + v                    /* Versions */                                   \
    + 2 + 8                    /* Expiration */                                 \
    + 2 + DSA_PUBKEY_MAX_BYTES /* DSA pubkey */                                 \
