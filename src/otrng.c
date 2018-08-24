@@ -1082,6 +1082,12 @@ API otrng_err otrng_send_non_interactive_auth(char **dst,
 
   otr->running_version = OTRNG_PROTOCOL_VERSION_4;
 
+  otrng_fingerprint_p fp;
+  if (otrng_serialize_fingerprint(
+          fp, otr->their_client_profile->long_term_pub_key)) {
+    fingerprint_seen_cb_v4(fp, otr->conversation);
+  }
+
   return reply_with_non_interactive_auth_msg(dst, otr);
 }
 
