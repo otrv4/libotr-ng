@@ -72,6 +72,12 @@ no_prekey_in_storage_received_callback(otrng_prekey_client_s *client) {
 }
 
 static void
+low_prekey_messages_in_storage_callback(otrng_prekey_client_s *client) {
+  client->callbacks->low_prekey_messages_in_storage(client->server_identity,
+                                                    client->callbacks->ctx);
+}
+
+static void
 prekey_ensembles_received_callback(otrng_prekey_client_s *client,
                                    prekey_ensemble_s *const *const ensembles,
                                    uint8_t num_ensembles) {
@@ -748,6 +754,12 @@ static char *receive_storage_status(const uint8_t *decoded, size_t decoded_len,
   }
 
   char *ret = process_received_storage_status(msg, client);
+
+  // TODO: this number should be configurable by the client
+  if (msg->stored_prekeys < 2000) {
+    low_prekey_messages_in_storage_callback(client);
+  }
+
   otrng_prekey_storage_status_message_destroy(msg);
   return ret;
 }

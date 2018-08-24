@@ -105,6 +105,7 @@ typedef struct {
   void (*success_received)(void *ctx);
   void (*failure_received)(void *ctx);
   void (*no_prekey_in_storage_received)(void *ctx);
+  void (*low_prekey_messages_in_storage)(char *server_identity, void *ctx);
   void (*prekey_ensembles_received)(prekey_ensemble_s *const *const ensembles,
                                     uint8_t num_ensembles, void *ctx);
   int (*build_prekey_publication_message)(
