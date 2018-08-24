@@ -395,7 +395,7 @@ void test_build_interactive_rsign_tag() {
   };
 
   otrng_assert_is_success(build_interactive_rsign_tag(
-      &dst, &dstlen, 'i', initiator, responder, phi, sizeof(phi)));
+      &dst, &dstlen, 'i', &initiator, &responder, phi, sizeof(phi)));
 
   otrng_assert(dstlen == 1083);
   otrng_assert_cmpmem(dst, expected_t1, dstlen);
@@ -403,7 +403,7 @@ void test_build_interactive_rsign_tag() {
   free(dst);
 
   otrng_assert_is_success(build_interactive_rsign_tag(
-      &dst, &dstlen, 'r', initiator, responder, phi, sizeof(phi)));
+      &dst, &dstlen, 'r', &initiator, &responder, phi, sizeof(phi)));
 
   otrng_assert(dstlen == 1083);
   otrng_assert_cmpmem(dst, expected_t2, dstlen);

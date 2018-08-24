@@ -824,8 +824,8 @@ tstatic otrng_err build_rsign_tag(
 
 INTERNAL otrng_err build_interactive_rsign_tag(
     uint8_t **msg, size_t *msg_len, const char auth_tag_type,
-    const otrng_dake_participant_data_s initiator,
-    const otrng_dake_participant_data_s responder, const uint8_t *phi,
+    const otrng_dake_participant_data_s *initiator,
+    const otrng_dake_participant_data_s *responder, const uint8_t *phi,
     size_t phi_len) {
 
   size_t written = 0;
@@ -841,17 +841,17 @@ INTERNAL otrng_err build_interactive_rsign_tag(
     // Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x07 || phi, 64)
     *buff = 0x0;
     result = build_rsign_tag(buff + 1, MAX_T_LENGTH, &written, 0x05,
-                             initiator.client_profile, responder.client_profile,
-                             &initiator.ecdh, &responder.ecdh, initiator.dh,
-                             responder.dh, NULL, 0, phi, phi_len);
+                             initiator->client_profile, responder->client_profile,
+                             &initiator->ecdh, &responder->ecdh, initiator->dh,
+                             responder->dh, NULL, 0, phi, phi_len);
   } else if (auth_tag_type == 'i') {
     // t = 0x1 || KDF_1(0x08 || Bobs_Client_Profile, 64) || KDF_1(0x09 ||
     // Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x0A || phi, 64)
     *buff = 0x01;
     result = build_rsign_tag(buff + 1, MAX_T_LENGTH, &written, 0x08,
-                             initiator.client_profile, responder.client_profile,
-                             &initiator.ecdh, &responder.ecdh, initiator.dh,
-                             responder.dh, NULL, 0, phi, phi_len);
+                             initiator->client_profile, responder->client_profile,
+                             &initiator->ecdh, &responder->ecdh, initiator->dh,
+                             responder->dh, NULL, 0, phi, phi_len);
   }
 
   if (result == OTRNG_ERROR) {
@@ -869,8 +869,8 @@ INTERNAL otrng_err build_interactive_rsign_tag(
 
 INTERNAL otrng_err
 build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
-                                const otrng_dake_participant_data_s initiator,
-                                const otrng_dake_participant_data_s responder,
+                                const otrng_dake_participant_data_s *initiator,
+                                const otrng_dake_participant_data_s *responder,
                                 const otrng_shared_prekey_pub_p r_shared_prekey,
                                 const uint8_t *phi, size_t phi_len) {
 
@@ -884,9 +884,9 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
   otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
 
   otrng_err result = build_rsign_tag(
-      *msg, MAX_T_LENGTH, msg_len, first_usage, initiator.client_profile,
-      responder.client_profile, &initiator.ecdh, &responder.ecdh, initiator.dh,
-      responder.dh, ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi,
+      *msg, MAX_T_LENGTH, msg_len, first_usage, initiator->client_profile,
+      responder->client_profile, &initiator->ecdh, &responder->ecdh, initiator->dh,
+      responder->dh, ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi,
       phi_len);
 
   sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);

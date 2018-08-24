@@ -653,7 +653,7 @@ static otrng_err generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
   }
 
   otrng_err ret = build_interactive_rsign_tag(
-      dst, dst_len, auth_tag_type, initiator, responder, phi, phi_len);
+      dst, dst_len, auth_tag_type, &initiator, &responder, phi, phi_len);
 
   free(phi);
   return ret;
@@ -661,7 +661,7 @@ static otrng_err generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
 
 static otrng_err generate_receiving_rsig_tag(
     uint8_t **dst, size_t *dst_len, const char auth_tag_type,
-    const otrng_dake_participant_data_s responder, otrng_s *otr) {
+    const otrng_dake_participant_data_s *responder, otrng_s *otr) {
   const otrng_dake_participant_data_s initiator = {
       .client_profile = get_my_client_profile(otr),
       .ecdh = *(otr->keys->our_ecdh->pub),
@@ -675,7 +675,7 @@ static otrng_err generate_receiving_rsig_tag(
   }
 
   otrng_err ret = build_interactive_rsign_tag(
-      dst, dst_len, auth_tag_type, initiator, responder, phi, phi_len);
+      dst, dst_len, auth_tag_type, &initiator, responder, phi, phi_len);
 
   free(phi);
   return ret;
@@ -844,7 +844,7 @@ tstatic otrng_err build_non_interactive_auth_message(
   /* t = KDF_1(0x0D || Bob_Client_Profile, 64) || KDF_1(0x0E ||
    * Alice_Client_Profile, 64) || Y || X || B || A || their_shared_prekey ||
    * KDF_1(0x0F || phi, 64) */
-  if (!build_non_interactive_rsign_tag(&t, &t_len, initiator, responder,
+  if (!build_non_interactive_rsign_tag(&t, &t_len, &initiator, &responder,
                                        otr->keys->their_shared_prekey, phi,
                                        phi_len)) {
     free(phi);
@@ -1179,7 +1179,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
-  if (!build_non_interactive_rsign_tag(&t, &t_len, initiator, responder,
+  if (!build_non_interactive_rsign_tag(&t, &t_len, &initiator, &responder,
                                        prekey_profile->shared_prekey, phi,
                                        phi_len)) {
     free(phi);
@@ -1479,7 +1479,7 @@ tstatic otrng_err reply_with_auth_i_msg(
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  if (!generate_receiving_rsig_tag(&t, &t_len, 'i', responder, otr)) {
+  if (!generate_receiving_rsig_tag(&t, &t_len, 'i', &responder, otr)) {
     return OTRNG_ERROR;
   }
 
@@ -1516,7 +1516,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
 
   unsigned char *t = NULL;
   size_t t_len = 0;
-  if (!generate_receiving_rsig_tag(&t, &t_len, 'r', responder, otr)) {
+  if (!generate_receiving_rsig_tag(&t, &t_len, 'r', &responder, otr)) {
     return OTRNG_ERROR;
   }
 
