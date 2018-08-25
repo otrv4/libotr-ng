@@ -467,12 +467,12 @@ client_profile_verify_signature(const client_profile_s *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  if (!client_profile_body_asprintf(&body, &bodylen, profile)) {
+  uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
+  if (memcmp(profile->signature, zero_buff, ED448_SIGNATURE_BYTES) == 0) {
     return otrng_false;
   }
 
-  uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
-  if (memcmp(profile->signature, zero_buff, ED448_SIGNATURE_BYTES) == 0) {
+  if (!client_profile_body_asprintf(&body, &bodylen, profile)) {
     return otrng_false;
   }
 
