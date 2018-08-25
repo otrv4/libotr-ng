@@ -212,7 +212,7 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
   return OTRNG_SUCCESS;
 }
 
-// Serializes client profile without signature
+/* Serializes client profile without the signature */
 tstatic otrng_err client_profile_body_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
 
@@ -462,19 +462,17 @@ tstatic otrng_err client_profile_sign(client_profile_s *profile,
   return OTRNG_SUCCESS;
 }
 
-// TODO: @client_profile I dont think this needs the data structure. Could
-// verify from the deserialized bytes.
 tstatic otrng_bool
 client_profile_verify_signature(const client_profile_s *profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
-  if (memcmp(profile->signature, zero_buff, ED448_SIGNATURE_BYTES) == 0) {
+  if (!client_profile_body_asprintf(&body, &bodylen, profile)) {
     return otrng_false;
   }
 
-  if (!client_profile_body_asprintf(&body, &bodylen, profile)) {
+  uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
+  if (memcmp(profile->signature, zero_buff, ED448_SIGNATURE_BYTES) == 0) {
     return otrng_false;
   }
 

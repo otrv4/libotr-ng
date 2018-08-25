@@ -225,6 +225,11 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
+  uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
+  if (memcmp(profile->signature, zero_buff, ED448_SIGNATURE_BYTES) == 0) {
+    return otrng_false;
+  }
+
   if (!otrng_prekey_profile_body_asprint(&body, &bodylen, profile)) {
     return otrng_false;
   }
@@ -245,25 +250,28 @@ static otrng_bool expired(time_t expires) {
 INTERNAL otrng_bool otrng_prekey_profile_valid(
     const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
     const otrng_public_key_p pub) {
-  /* 1. Verify that the Prekey Profile owner's instance tag is equal to the
+  /* 1. Verify that the Prekey Profile signature is valid. */
+  if (!otrng_prekey_profile_verify_signature(profile, pub)) {
+    return otrng_false;
+  }
+
+  /* 2. Verify that the Prekey Profile owner's instance tag is equal to the
    * Sender Instance tag of the person that sent the DAKE message in which the
    * Prekey Profile is received. */
-  // TODO: This should be validated OUTSIDE of here
   if (sender_instance_tag != profile->instance_tag) {
     return otrng_false;
   }
 
-  /* 2. Verify that the Prekey Profile has not expired. */
+  /* 3. Verify that the Prekey Profile has not expired. */
   if (expired(profile->expires)) {
     return otrng_false;
   }
 
-  /* 3. Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks.
+  /* 4. Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks.
    */
   if (!otrng_ec_point_valid(profile->shared_prekey)) {
     return otrng_false;
   }
 
-  /* 4. Verify that the Prekey Profile signature is valid. */
-  return otrng_prekey_profile_verify_signature(profile, pub);
+  return otrng_true;
 }

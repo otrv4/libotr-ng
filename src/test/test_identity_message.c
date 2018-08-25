@@ -160,7 +160,9 @@ void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
   otrng_ecdh_keypair_generate(invalid_ecdh, invalid_sym);
   otrng_assert_is_success(otrng_dh_keypair_generate(invalid_dh));
 
+  uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
   client_profile_s *invalid_profile = client_profile_new("2");
+  memcpy(invalid_profile->signature, zero_buff, ED448_SIGNATURE_BYTES);
 
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(shared_prekey, invalid_sym);
