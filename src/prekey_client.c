@@ -96,7 +96,9 @@ API otrng_prekey_client_s *
 otrng_prekey_client_new(const char *server, const char *our_identity,
                         uint32_t instance_tag, const otrng_keypair_s *keypair,
                         const client_profile_s *client_profile,
-                        const otrng_prekey_profile_s *prekey_profile) {
+                        const otrng_prekey_profile_s *prekey_profile,
+                        unsigned int max_published_prekey_msg,
+                        unsigned int minimum_stored_prekey_msg) {
   if (!server) {
     return NULL;
   }
@@ -126,6 +128,8 @@ otrng_prekey_client_new(const char *server, const char *our_identity,
   ret->server_identity = otrng_strdup(server);
   ret->our_identity = otrng_strdup(our_identity);
   otrng_ecdh_keypair_destroy(ret->ephemeral_ecdh);
+  ret->max_published_prekey_msg = max_published_prekey_msg;
+  ret->minimum_stored_prekey_msg = minimum_stored_prekey_msg;
 
   return ret;
 }
@@ -756,7 +760,7 @@ static char *receive_storage_status(const uint8_t *decoded, size_t decoded_len,
   char *ret = process_received_storage_status(msg, client);
 
   // TODO: this number should be configurable by the client
-  if (msg->stored_prekeys < 2000) {
+  if (msg->stored_prekeys < client->minimum_stored_prekey_msg) {
     low_prekey_messages_in_storage_callback(client);
   }
 

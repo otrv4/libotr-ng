@@ -30,7 +30,9 @@ void test_send_dake_1_message(void) {
       otrng_client_state_get_instance_tag(alice->state),
       otrng_client_state_get_keypair_v4(alice->state),
       otrng_client_state_get_client_profile(alice->state),
-      otrng_client_state_get_prekey_profile(alice->state));
+      otrng_client_state_get_prekey_profile(alice->state),
+      otrng_client_state_get_max_published_prekey_msg(alice->state),
+      otrng_client_state_get_minimum_stored_prekey_msg(alice->state));
 
   char *dake_1 = NULL;
   dake_1 = otrng_prekey_client_publish_prekeys(alice->prekey_client);
@@ -55,7 +57,9 @@ void test_send_dake_3_message_with_storage_info_request(void) {
       otrng_client_state_get_instance_tag(alice->state),
       otrng_client_state_get_keypair_v4(alice->state),
       otrng_client_state_get_client_profile(alice->state),
-      otrng_client_state_get_prekey_profile(alice->state));
+      otrng_client_state_get_prekey_profile(alice->state),
+      otrng_client_state_get_max_published_prekey_msg(alice->state),
+      otrng_client_state_get_minimum_stored_prekey_msg(alice->state));
 
   alice->prekey_client->after_dake = OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST;
 
@@ -127,7 +131,9 @@ void test_receive_prekey_server_messages(void) {
       otrng_client_state_get_instance_tag(alice->state),
       otrng_client_state_get_keypair_v4(alice->state),
       otrng_client_state_get_client_profile(alice->state),
-      otrng_client_state_get_prekey_profile(alice->state));
+      otrng_client_state_get_prekey_profile(alice->state),
+      otrng_client_state_get_max_published_prekey_msg(alice->state),
+      otrng_client_state_get_minimum_stored_prekey_msg(alice->state));
 
   char *dake_2 = otrng_strndup(
       "AAQ2bQJzmAAAABFwcmVrZXlzLmxvY2FsaG9zdAAQrC8mmPzxUoSAeFBbBBeR40JJ+"

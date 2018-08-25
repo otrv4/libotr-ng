@@ -120,6 +120,9 @@ typedef struct {
   const otrng_prekey_profile_s *prekey_profile;
   ecdh_keypair_p ephemeral_ecdh;
 
+  unsigned int max_published_prekey_msg;
+  unsigned int minimum_stored_prekey_msg;
+
   char *server_identity;
   otrng_public_key_p pub;
 
@@ -133,7 +136,9 @@ API otrng_prekey_client_s *
 otrng_prekey_client_new(const char *server, const char *our_identity,
                         uint32_t instance_tag, const otrng_keypair_s *keypair,
                         const client_profile_s *client_profile,
-                        const otrng_prekey_profile_s *prekey_profile);
+                        const otrng_prekey_profile_s *prekey_profile,
+                        unsigned int max_published_prekey_msg,
+                        unsigned int minimum_stored_prekey_msg);
 
 API void otrng_prekey_client_free(otrng_prekey_client_s *client);
 

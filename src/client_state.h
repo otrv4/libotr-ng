@@ -57,12 +57,11 @@ typedef struct otrng_client_state_s {
   list_element_s *our_prekeys; // otrng_stored_prekeys_s
 
   /* @secret: this should be deleted once the prekey profile expires */
-  otrng_shared_prekey_pair_s
-      *shared_prekey_pair; // TODO: @client is this something the
-                           // client will generate? The
-                           // spec does not specify.
+  otrng_shared_prekey_pair_s *shared_prekey_pair;
 
-  int max_stored_msg_keys;
+  unsigned int max_stored_msg_keys;
+  unsigned int max_published_prekey_msg;
+  unsigned int minimum_stored_prekey_msg;
   int (*should_heartbeat)(int last_sent);
   size_t padding;
 
@@ -71,6 +70,7 @@ typedef struct otrng_client_state_s {
   // than use v3 User State as a store for instance tags
 } otrng_client_state_s, otrng_client_state_p[1];
 
+// TODO: move
 static inline void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
   if (!s) {
     return;
@@ -85,6 +85,9 @@ static inline void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
 static inline void stored_prekeys_free_from_list(void *p) {
   otrng_stored_prekeys_free((otrng_stored_prekeys_s *)p);
 }
+
+INTERNAL otrng_err otrng_client_state_get_account_and_protocol(
+    char **account, char **protocol, const otrng_client_state_s *state);
 
 INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
                                       const ecdh_keypair_p ecdh_pair,
@@ -146,8 +149,21 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id);
 API void otrng_client_state_set_padding(size_t granularity,
                                         otrng_client_state_s *state);
 
-INTERNAL otrng_err otrng_client_state_get_account_and_protocol(
-    char **account, char **protocol, const otrng_client_state_s *state);
+API void
+otrng_client_state_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
+                                           otrng_client_state_s *state);
+
+API void otrng_client_state_set_max_published_prekey_msg(
+    unsigned int max_published_prekey_msg, otrng_client_state_s *state);
+
+API unsigned int
+otrng_client_state_get_max_published_prekey_msg(otrng_client_state_s *state);
+
+API void otrng_client_state_set_minimum_stored_prekey_msg(
+    unsigned int minimum_stored_prekey_msg, otrng_client_state_s *state);
+
+API unsigned int
+otrng_client_state_get_minimum_stored_prekey_msg(otrng_client_state_s *state);
 
 #ifdef OTRNG_CLIENT_STATE_PRIVATE
 

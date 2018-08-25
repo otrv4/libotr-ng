@@ -473,7 +473,9 @@ otrng_client_get_prekey_client(const char *server_identity,
       otrng_client_state_get_instance_tag(client->state),
       otrng_client_state_get_keypair_v4(client->state),
       otrng_client_state_get_client_profile(client->state),
-      otrng_client_state_get_prekey_profile(client->state));
+      otrng_client_state_get_prekey_profile(client->state),
+      otrng_client_state_get_max_published_prekey_msg(client->state),
+      otrng_client_state_get_minimum_stored_prekey_msg(client->state));
 
   free(account);
 

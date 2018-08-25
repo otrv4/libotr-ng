@@ -72,7 +72,9 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->client_profile = NULL;
   state->prekey_profile = NULL;
   state->shared_prekey_pair = NULL;
-  state->max_stored_msg_keys = 100;
+  state->max_stored_msg_keys = 1000; // TODO: is this good enough default?
+  state->max_published_prekey_msg = 100;
+  state->minimum_stored_prekey_msg = 20;
   state->should_heartbeat = should_heartbeat;
   state->padding = 0;
 
@@ -430,4 +432,38 @@ get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state) {
 API void otrng_client_state_set_padding(size_t granularity,
                                         otrng_client_state_s *state) {
   state->padding = granularity;
+}
+
+API void
+otrng_client_state_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
+                                           otrng_client_state_s *state) {
+  state->max_stored_msg_keys = max_stored_msg_keys;
+}
+
+API void otrng_client_state_set_max_published_prekey_msg(
+    unsigned int max_published_prekey_msg, otrng_client_state_s *state) {
+  state->max_published_prekey_msg = max_published_prekey_msg;
+}
+
+API unsigned int
+otrng_client_state_get_max_published_prekey_msg(otrng_client_state_s *state) {
+  if (!state) {
+    return 0;
+  }
+
+  return state->max_published_prekey_msg;
+}
+
+API void otrng_client_state_set_minimum_stored_prekey_msg(
+    unsigned int minimum_stored_prekey_msg, otrng_client_state_s *state) {
+  state->minimum_stored_prekey_msg = minimum_stored_prekey_msg;
+}
+
+API unsigned int
+otrng_client_state_get_minimum_stored_prekey_msg(otrng_client_state_s *state) {
+  if (!state) {
+    return 0;
+  }
+
+  return state->minimum_stored_prekey_msg;
 }
