@@ -62,9 +62,6 @@ typedef struct client_profile_s {
   eddsa_signature_p signature;
 } client_profile_s, client_profile_p[1];
 
-INTERNAL otrng_bool
-otrng_client_profile_verify_signature(const client_profile_s *profile);
-
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
                                         const client_profile_s *src);
 
@@ -93,9 +90,6 @@ INTERNAL otrng_err otrng_client_profile_set_dsa_key_mpis(
 INTERNAL otrng_err otrng_client_profile_transitional_sign(
     client_profile_s *profile, OtrlPrivKey *privkey);
 
-INTERNAL otrng_err otrng_client_profile_verify_transitional_signature(
-    const client_profile_s *profile);
-
 #ifdef OTRNG_USER_PROFILE_PRIVATE
 
 tstatic client_profile_s *client_profile_new(const char *versions);
@@ -105,6 +99,12 @@ tstatic otrng_err client_profile_sign(client_profile_s *profile,
 
 tstatic otrng_err client_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
                                                const client_profile_s *profile);
+
+tstatic otrng_bool
+client_profile_verify_signature(const client_profile_s *profile);
+
+tstatic otrng_err
+client_profile_verify_transitional_signature(const client_profile_s *profile);
 
 #endif
 

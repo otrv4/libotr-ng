@@ -22,8 +22,8 @@
 
 INTERNAL otrng_err
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
-  // Check that all the instance tags on the Prekey Ensemble's values are the
-  // same.
+  /* Check that all the instance tags on the Prekey Ensemble's values are the
+   * same. */
   uint32_t instance = dst->client_profile->sender_instance_tag;
   if (instance != dst->prekey_profile->instance_tag) {
     return OTRNG_ERROR;

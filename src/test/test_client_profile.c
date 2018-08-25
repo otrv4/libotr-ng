@@ -156,11 +156,11 @@ void test_client_profile_signs_and_verify() {
   otrng_assert(profile != NULL);
   client_profile_sign(profile, keypair);
 
-  otrng_assert(otrng_client_profile_verify_signature(profile));
+  otrng_assert(client_profile_verify_signature(profile));
 
   memset(profile->signature, 0, sizeof(eddsa_signature_p));
 
-  otrng_assert(!otrng_client_profile_verify_signature(profile));
+  otrng_assert(!client_profile_verify_signature(profile));
 
   otrng_client_profile_free(profile);
 }
@@ -206,7 +206,7 @@ void test_otrng_client_profile_transitional_signature(void) {
   otrng_assert_is_success(
       otrng_client_profile_transitional_sign(profile, dsa_key));
   otrng_assert_is_success(
-      otrng_client_profile_verify_transitional_signature(profile));
+      client_profile_verify_transitional_signature(profile));
 
   otrl_userstate_free(client->user_state);
   otrng_client_profile_free(profile);
