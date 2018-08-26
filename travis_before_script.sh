@@ -39,6 +39,7 @@ if [[ "$T" = "ctgrind" ]]; then
     if [[ -f $CTGRIND_DIR/memcheck/vgpreload_memcheck-amd64-linux.so ]]; then
         (cd $CTGRIND_DIR && sudo make install)
     else
+        rm -rf $CTGRIND_DIR
         git clone --depth=1 https://github.com/claucece/ctgrind $CTGRIND_DIR
         (cd $CTGRIND_DIR && ./autogen.sh && ./configure && make && sudo make install)
     fi
@@ -47,13 +48,16 @@ fi
 # if [[ -f $LIBOTR_DIR/src/.libs/libotr.so ]]; then
 #     (cd $LIBOTR_DIR && sudo make install)
 # else
-git clone --depth=1 https://bugs.otr.im/lib/libotr.git $LIBOTR_DIR
+if [[ ! -e $LIBOTR_DIR ]]; then
+    git clone --depth=1 https://bugs.otr.im/lib/libotr.git $LIBOTR_DIR
+fi
 (cd $LIBOTR_DIR && ./bootstrap && ./configure && make && sudo make install)
 # fi
 
 if [[ -f $LIBGOLDILOCKS_DIR/src/.libs/libgoldilocks.so ]]; then
     (cd $LIBGOLDILOCKS_DIR && sudo make install)
 else
+    rm -rf $LIBGOLDILOCKS_DIR
     git clone --depth=1 https://github.com/otrv4/libgoldilocks $LIBGOLDILOCKS_DIR
     (cd $LIBGOLDILOCKS_DIR && ./autogen.sh && ./configure && make && sudo make install)
 fi
