@@ -72,7 +72,7 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
   state->client_profile = NULL;
   state->prekey_profile = NULL;
   state->shared_prekey_pair = NULL;
-  state->max_stored_msg_keys = 1000; // TODO: is this good enough default?
+  state->max_stored_msg_keys = 1000;
   state->max_published_prekey_msg = 100;
   state->minimum_stored_prekey_msg = 20;
   state->should_heartbeat = should_heartbeat;

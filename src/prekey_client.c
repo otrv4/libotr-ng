@@ -485,9 +485,13 @@ INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
   w += otrng_serialize_bytes_array(msg->message + w, client_profile,
                                    client_profile_len);
 
+  free(client_profile);
+
   w += otrng_serialize_uint8(msg->message + w, pub_msg->prekey_profile ? 1 : 0);
   w += otrng_serialize_bytes_array(msg->message + w, prekey_profile,
                                    prekey_profile_len);
+
+  free(prekey_profile);
 
   /* MAC: KDF(usage_preMAC, prekey_mac_k || message type
             || N || KDF(usage_prekey_message, Prekey Messages, 64)
