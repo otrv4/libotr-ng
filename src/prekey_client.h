@@ -109,7 +109,8 @@ typedef struct {
   void (*prekey_ensembles_received)(prekey_ensemble_s *const *const ensembles,
                                     uint8_t num_ensembles, void *ctx);
   int (*build_prekey_publication_message)(
-      otrng_prekey_publication_message_s *pub_msg, void *ctx);
+      otrng_prekey_publication_message_s *pub_msg,
+      unsigned int max_published_prekey_msg, void *ctx);
 } otrng_prekey_client_callbacks_s;
 
 typedef struct {

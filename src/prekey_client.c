@@ -89,7 +89,7 @@ static int build_prekey_publication_message_callback(
     otrng_prekey_publication_message_s *pub_msg,
     const otrng_prekey_client_s *client) {
   return client->callbacks->build_prekey_publication_message(
-      pub_msg, client->callbacks->ctx);
+      pub_msg, client->max_published_prekey_msg, client->callbacks->ctx);
 }
 
 API otrng_prekey_client_s *

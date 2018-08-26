@@ -487,6 +487,11 @@ otrng_client_get_prekey_client(const char *server_identity,
 API dake_prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages,
                                    otrng_client_s *client) {
+  if (num_messages > 255) {
+    // TODO: notify error
+    return NULL;
+  }
+
   uint32_t instance_tag = otrng_client_state_get_instance_tag(client->state);
 
   dake_prekey_message_s **messages =
