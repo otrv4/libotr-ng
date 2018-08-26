@@ -3,6 +3,7 @@
 #define OTRNG_B64_H
 
 #define OTRNG_BASE64_ENCODE_LEN(x) (((x + 2) / 3) * 4)
+#define OTRNG_BASE64_DECODE_LEN(x) (((x + 3) / 4) * 3)
 
 #include <libotr/b64.h>
 #include <stdint.h>

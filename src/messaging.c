@@ -67,8 +67,8 @@ tstatic int find_state_by_client_id(const void *current, const void *wanted) {
   return s->client_id == wanted;
 }
 
-tstatic otrng_client_state_s *get_client_state(otrng_user_state_s *state,
-                                               const void *client_id) {
+otrng_client_state_s *get_client_state(otrng_user_state_s *state,
+                                       const void *client_id) {
   list_element_s *el =
       otrng_list_get(client_id, state->states, find_state_by_client_id);
   if (el) {

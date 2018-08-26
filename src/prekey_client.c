@@ -759,7 +759,6 @@ static char *receive_storage_status(const uint8_t *decoded, size_t decoded_len,
 
   char *ret = process_received_storage_status(msg, client);
 
-  // TODO: this number should be configurable by the client
   if (msg->stored_prekeys < client->minimum_stored_prekey_msg) {
     low_prekey_messages_in_storage_callback(client);
   }

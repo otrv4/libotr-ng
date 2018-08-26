@@ -294,6 +294,7 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
 
   // TODO: securely erase ecdh_secret_k
 
+  // TODO: the dh secret is 80 bytes long. The size is wrong here
   uint8_t dh_secret_k[DH3072_MOD_LEN_BYTES] = {0};
   size_t dh_secret_k_len = 0;
   if (!otrng_dh_mpi_serialize(dh_secret_k, DH3072_MOD_LEN_BYTES,

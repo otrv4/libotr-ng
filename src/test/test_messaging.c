@@ -21,7 +21,6 @@
 #include "../messaging.h"
 #include "../persistence.h"
 
-// These must be fixed pointers managed by the messaging app
 static const char *alice_account = "alice@xmpp";
 static const char *bob_account = "bob@xmpp";
 static const char *charlie_account = "charlie@xmpp";
@@ -30,13 +29,13 @@ static const void *read_client_id_for_privf(FILE *privf) {
   char *line = NULL;
   size_t n = 0;
   ssize_t len = getline(&line, &n, privf);
-  free(line); // We are not using the read line for anything
+  free(line);
 
   if (len != strlen(charlie_account) + 1) {
     return NULL;
   }
 
-  // The account name acts as client_id (PidginAccount* for pidgin)
+  /* The account name acts as client_id (PidginAccount* for pidgin) */
   return charlie_account;
 }
 
@@ -65,55 +64,25 @@ void test_user_state_key_management(void) {
   g_assert_cmpint(err, ==, 0);
   fclose(keys);
 
-  // TODO: @test Assert it is equal to deserializing the symkey
-  // RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA"
-  otrng_assert(otrng_user_state_get_private_key_v4(state, charlie_account));
+  otrng_keypair_s *keypair =
+      otrng_user_state_get_private_key_v4(state, charlie_account);
 
+  char *buffer = NULL;
+  size_t s = 0;
+  otrng_symmetric_key_serialize(&buffer, &s, keypair->sym);
+
+  const char *expected = "RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+"
+                         "pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA";
+  otrng_assert_cmpmem(expected, buffer, s);
+
+  free(buffer);
   otrng_user_state_free(state);
 }
 
-/*
- * Create callbacks for testing the callbacks API
- */
-
-/* TODO: @client @refactoring The below test is commented out because it didn't
- * test anything
- * - plus, the use of a global to manage things imply that these
- * APIs are not well thouht out:
- *   If you need access to the user state in order to reasonable create
- *   a private key, it seems it should be an argument - neh?
- */
-
-/* static otrng_user_state_s *test_state = NULL; */
-
-/* static void create_privkey_cb(void *client_id) { */
-/*   const uint8_t sym[ED448_PRIVATE_BYTES] = {1}; */
-/*   otrng_user_state_add_private_key_v4(test_state, client_id, sym); */
-/* } */
-
-/* static otrng_client_callbacks_s test_calbacks = { */
-/*     create_privkey_cb, NULL, NULL, NULL, NULL, NULL, NULL, NULL, */
-/* }; */
-
-/* void test_api_messaging(void) { */
-
-/*   test_state = otrng_user_state_new(&test_calbacks); */
-
-/*   // This will invoke create_privkey_cb() to create the private keys */
-/*   otrng_assert(otrng_user_state_get_private_key_v4(test_state,
- * alice_account)); */
-/*   otrng_assert(otrng_user_state_get_private_key_v4(test_state, bob_account));
- */
-
-/*   otrng_user_state_free(test_state); */
-/* } */
-
 void test_instance_tag_api(void) {
-  // to match was is returned in get_account_and_protocol_cb
   const char *alice_protocol = "otr";
   unsigned int instance_tag = 0x9abcdef0;
 
-  // to match was is returned in get_account_and_protocol_cb
   otrng_client_state_s *alice = otrng_client_state_new(alice_account);
   alice->callbacks = test_callbacks;
   alice->user_state = otrl_userstate_create();
