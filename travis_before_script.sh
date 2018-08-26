@@ -44,12 +44,12 @@ if [[ "$T" = "ctgrind" ]]; then
     fi
 fi
 
-if [[ -f $LIBOTR_DIR/src/.libs/libotr.so ]]; then
-    (cd $LIBOTR_DIR && sudo make install)
-else
-    git clone --depth=1 https://bugs.otr.im/lib/libotr.git $LIBOTR_DIR
-    (cd $LIBOTR_DIR && ./bootstrap && ./configure && make && sudo make install)
-fi
+# if [[ -f $LIBOTR_DIR/src/.libs/libotr.so ]]; then
+#     (cd $LIBOTR_DIR && sudo make install)
+# else
+git clone --depth=1 https://bugs.otr.im/lib/libotr.git $LIBOTR_DIR
+(cd $LIBOTR_DIR && ./bootstrap && ./configure && make && sudo make install)
+# fi
 
 if [[ -f $LIBGOLDILOCKS_DIR/src/.libs/libgoldilocks.so ]]; then
     (cd $LIBGOLDILOCKS_DIR && sudo make install)
