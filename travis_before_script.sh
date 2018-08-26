@@ -21,12 +21,12 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
         (cd $GPG_ERROR_DIR && ./configure && make && sudo make install)
     fi
 
-    if [[ -f $LIBGCRYPT_DIR/src/.libs/libgcrypt.so ]]; then
-        (cd $LIBGCRYPT_DIR && ./configure && sudo make install)
-    else
-        curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps
-        (cd $LIBGCRYPT_DIR && ./configure && make && sudo make install)
-    fi
+    # if [[ -f $LIBGCRYPT_DIR/src/.libs/libgcrypt.so ]]; then
+    #     (cd $LIBGCRYPT_DIR && sudo make install)
+    # else
+    curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps
+    (cd $LIBGCRYPT_DIR && ./configure && make && sudo make install)
+    # fi
 
     if [[ -f $LIBSODIUM_DIR/src/libsodium/.libs/libsodium.so ]]; then
         (cd $LIBSODIUM_DIR && sudo make install)
