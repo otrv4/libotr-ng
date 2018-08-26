@@ -119,7 +119,7 @@ before_script:
           pushd .deps/libgpg-error-1.26 && ./configure && make && sudo make install && popd &&
       curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps &&
           pushd .deps/libgcrypt-1.8.1 && ./configure && make && sudo make install && popd &&
-      git clone -b stable --depth=1 https://github.com/jedisct1/libsodium.git .deps/libsodium &&
+      curl https://download.libsodium.org/libsodium/releases/LATEST.tar.gz | tar xzf - -C .deps &&
           pushd .deps/libsodium && ./autogen.sh && ./configure && make && sudo make install && popd;
     fi
   - if [[ "$T" = "ctgrind" ]]; then
