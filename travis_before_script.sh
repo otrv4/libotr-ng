@@ -11,6 +11,8 @@ CTGRIND_DIR=.deps/ctgrind
 LIBOTR_DIR=.deps/libotr
 LIBGOLDILOCKS_DIR=.deps/libgoldilocks
 
+echo `which clang`
+
 if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
     if [[ -f $GPG_ERROR_DIR/src/.libs/libgpg-error.so ]]; then
         (cd $GPG_ERROR_DIR && sudo make install)
