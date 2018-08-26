@@ -2,7 +2,7 @@
 
 set -ex
 
-mkdir .deps
+mkdir -p .deps
 
 GPG_ERROR_DIR=.deps/libgpg-error-1.26
 LIBGCRYPT_DIR=.deps/libgcrypt-1.8.1
