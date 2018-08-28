@@ -454,7 +454,6 @@ otrng_client_state_get_max_published_prekey_msg(otrng_client_state_s *state) {
   return state->max_published_prekey_msg;
 }
 
-// TODO: move this to only prekey client
 API void otrng_client_state_set_minimum_stored_prekey_msg(
     unsigned int minimum_stored_prekey_msg, otrng_client_state_s *state) {
   state->minimum_stored_prekey_msg = minimum_stored_prekey_msg;
