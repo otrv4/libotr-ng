@@ -361,12 +361,13 @@ otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
   size_t line_len = 0;
 
   otrng_stored_prekeys_s *prekey_msg = malloc(sizeof(otrng_stored_prekeys_s));
-
+  if (!prekey_msg) {
+    return OTRNG_ERROR;
+  }
   // TODO: we need to remove getline. It is not c99.
   // OR ignore if this will be moved to the plugin.
   line_len = 0;
   if (getline(&line, &line_len, privf) < 0) {
-    free(line);
     return OTRNG_ERROR;
   }
   prekey_msg->id = strtol(line, NULL, 16);
@@ -375,7 +376,6 @@ otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
 
   line_len = 0;
   if (getline(&line, &line_len, privf) < 0) {
-    free(line);
     return OTRNG_ERROR;
   }
   prekey_msg->sender_instance_tag = strtol(line, NULL, 16);
@@ -385,13 +385,11 @@ otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
   int dec_len = OTRNG_BASE64_DECODE_LEN(line_len);
   uint8_t *dec = malloc(dec_len);
   if (!dec) {
-    free(line);
     return OTRNG_ERROR;
   }
 
   line_len = 0;
   if (getline(&line, &line_len, privf) < 0) {
-    free(line);
     return OTRNG_ERROR;
   }
 
@@ -410,7 +408,6 @@ otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
 
   line_len = 0;
   if (getline(&line, &line_len, privf) < 0) {
-    free(line);
     return OTRNG_ERROR;
   }
 
@@ -444,10 +441,6 @@ otrng_client_state_prekey_messages_read_FILEp(otrng_client_state_s *state,
                                               FILE *privf) {
   if (!privf) {
     return -1;
-  }
-
-  if (feof(privf)) {
-    return 1;
   }
 
   if (!read_and_deserialize_prekey(state, privf)) {
