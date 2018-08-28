@@ -355,7 +355,8 @@ otrng_client_state_prekeys_write_FILEp(const otrng_client_state_s *state,
   return 0;
 }
 
-otrng_err read_and_deserialize_prekey(otrng_client_state_s *state, FILE *privf) {
+otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
+                                      FILE *privf) {
   char *line = NULL;
   size_t line_len = 0;
 
