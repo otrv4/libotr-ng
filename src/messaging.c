@@ -288,6 +288,30 @@ API int otrng_user_state_client_profile_read_FILEp(
   return 0;
 }
 
+API int otrng_user_state_prekeys_read_FILEp(
+    otrng_user_state_s *state, FILE *prekey_filep,
+    const void *(*read_client_id_for_prekey)(FILE *filep)) {
+  if (!prekey_filep) {
+    return 1;
+  }
+
+  while (!feof(prekey_filep)) {
+    const void *client_id = read_client_id_for_prekey(prekey_filep);
+    if (!client_id) {
+      continue;
+    }
+
+    otrng_client_state_s *client_state = get_client_state(state, client_id);
+
+    if (otrng_client_state_prekey_messages_read_FILEp(client_state,
+                                                      prekey_filep)) {
+      return 1; /* We decide to abort, since this means the file is malformed */
+    }
+  }
+
+  return 0;
+}
+
 API int otrng_user_state_add_instance_tag(otrng_user_state_s *state,
                                           void *client_id,
                                           unsigned int instag) {

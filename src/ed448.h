@@ -28,7 +28,7 @@
 #include "error.h"
 #include "shared.h"
 
-/* ec_scalar_t represents a scalar. */
+/* ec_scalar_p represents a scalar. */
 typedef goldilocks_448_scalar_p ec_scalar_p;
 /* ec_point_p represents a ed488 point. It is in the twisted ed448-goldilocks,
    curve representation following the decaf technique. */
@@ -190,6 +190,9 @@ otrng_ec_scalar_derive_from_secret(ec_scalar_p priv,
 INTERNAL void
 otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
                            const uint8_t sym[ED448_PRIVATE_BYTES]);
+
+INTERNAL void otrng_ec_calculate_public_key(ec_point_p pub,
+                                            const ec_scalar_p priv);
 
 /**
  * @brief Keypair generation.

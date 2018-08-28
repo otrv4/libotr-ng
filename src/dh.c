@@ -117,6 +117,12 @@ INTERNAL const dh_mpi_p otrng_dh_mpi_generator(void) {
   return DH3072_GENERATOR;
 }
 
+INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
+                                            const dh_private_key_p priv) {
+  pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  gcry_mpi_powm(pub, DH3072_GENERATOR, priv, DH3072_MODULUS);
+}
+
 INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair) {
   uint8_t hash[DH_KEY_SIZE] = {0};
   gcry_mpi_t privkey = NULL;

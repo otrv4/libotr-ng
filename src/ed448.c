@@ -126,6 +126,12 @@ otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
   goldilocks_ed448_derive_public_key(pub, sym);
 }
 
+INTERNAL void otrng_ec_calculate_public_key(ec_point_p pub,
+                                            const ec_scalar_p priv) {
+  goldilocks_448_precomputed_scalarmul(pub, goldilocks_448_precomputed_base,
+                                       priv);
+}
+
 INTERNAL void
 otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
                             const uint8_t sym[ED448_PRIVATE_BYTES]) {

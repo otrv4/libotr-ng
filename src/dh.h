@@ -47,6 +47,9 @@ INTERNAL void otrng_dh_init(void);
 
 INTERNAL void otrng_dh_free(void);
 
+INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
+                                            const dh_private_key_p priv);
+
 INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair);
 
 /**
