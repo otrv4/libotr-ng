@@ -994,7 +994,7 @@ static otrng_bool valid_receiver_instance_tag(uint32_t instance_tag) {
 }
 
 tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
-                                          otrng_notif notif, otrng_s *otr) {
+                                          otrng_warning *warn, otrng_s *otr) {
   if (!otr->their_client_profile) {
     return OTRNG_ERROR;
   }
@@ -1004,7 +1004,9 @@ tstatic otrng_err prekey_message_received(const dake_prekey_message_s *m,
   }
 
   if (!received_sender_instance_tag(m->sender_instance_tag, otr)) {
-    notif = OTRNG_NOTIF_MALFORMED;
+    if (warn) {
+      *warn = OTRNG_WARN_MALFORMED;
+    }
     return OTRNG_ERROR;
   }
 
@@ -1050,10 +1052,10 @@ tstatic otrng_err receive_prekey_ensemble(string_p *dst,
     return OTRNG_ERROR;
   }
 
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
   /* Set their ephemeral keys, instance tag, and their_prekeys_id */
-  if (!prekey_message_received(ensemble->message, notif, otr)) {
-    if (notif == OTRNG_NOTIF_MALFORMED) {
+  if (!prekey_message_received(ensemble->message, &warn, otr)) {
+    if (warn == OTRNG_WARN_MALFORMED) {
       otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     }
     return OTRNG_ERROR;
@@ -1671,7 +1673,9 @@ tstatic otrng_err receive_auth_i(char **dst, const uint8_t *buff,
   }
 
   // Reply with initial data message
-  return otrng_send_message(dst, "", OTRNG_NOTIF_NONE, NULL,
+  // TODO: this ignores the warning received. that might
+  // be valid, but should be investigated.
+  return otrng_send_message(dst, "", NULL, NULL,
                             MSGFLAGS_IGNORE_UNREADABLE, otr);
 }
 
@@ -1814,7 +1818,9 @@ tstatic otrng_err receive_tlvs(otrng_response_s *response, otrng_s *otr) {
   }
 
   // Serialize response message to send
-  ret = otrng_send_message(&response->to_send, "", OTRNG_NOTIF_NONE, reply_tlvs,
+  // TODO: this ignores the warning received. that might
+  // be valid, but should be investigated.
+  ret = otrng_send_message(&response->to_send, "", NULL, reply_tlvs,
                            MSGFLAGS_IGNORE_UNREADABLE, otr);
   otrng_tlv_list_free(reply_tlvs);
   return ret;

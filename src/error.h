@@ -52,15 +52,4 @@ typedef enum {
   OTRNG_ERR_MSG_MALFORMED,
 } otrng_err_code;
 
-// TODO[OB]: We are going to remove this
-// Gradually moving over to the warning structs. We will make sure to carefully
-// document what each warning does through this process.
-typedef enum {
-  OTRNG_NOTIF_NONE = 0,
-  OTRNG_NOTIF_STATE_NOT_ENCRYPTED = 0x1001,
-  OTRNG_NOTIF_MALFORMED = 0x1011,
-  OTRNG_NOTIF_MSG_NOT_VALID = 0x1101,
-  OTRNG_NOTIF_MSG_STORAGE_FULL = 0x1111,
-} otrng_notif;
-
 #endif

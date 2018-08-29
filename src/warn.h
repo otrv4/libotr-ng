@@ -33,6 +33,9 @@ typedef enum {
   // This happens when we are asked to prepare a data message
   // for sending, but we are not in fact in encrypted state.
   OTRNG_WARN_SEND_NOT_ENCRYPTED,
+  // This happens when we receive an invalid instance tag in a
+  // prekey message
+  OTRNG_WARN_MALFORMED,
 } otrng_warning;
 
 
