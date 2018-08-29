@@ -71,9 +71,9 @@ static void free_message_and_response(otrng_response_s *response,
   *message = NULL;
 }
 
-static int test_should_not_heartbeat(int last_sent) { return 0; }
+static otrng_bool test_should_not_heartbeat(int last_sent) { return otrng_false; }
 
-static int test_should_heartbeat(int last_sent) { return 1; }
+static otrng_bool test_should_heartbeat(int last_sent) { return otrng_true; }
 
 static void set_up_client_state(otrng_client_state_s *state,
                                 const char *account_name, int byte) {

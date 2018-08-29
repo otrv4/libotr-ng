@@ -67,7 +67,7 @@ API int otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state,
 API int otrng_user_state_generate_private_key(otrng_user_state_s *state,
                                               void *client_id);
 
-API int otrng_user_state_generate_client_profile(otrng_user_state_s *state,
+API otrng_err otrng_user_state_generate_client_profile(otrng_user_state_s *state,
                                                  void *client_id);
 
 API int otrng_user_state_generate_shared_prekey(otrng_user_state_s *state,

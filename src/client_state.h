@@ -62,7 +62,7 @@ typedef struct otrng_client_state_s {
   unsigned int max_stored_msg_keys;
   unsigned int max_published_prekey_msg;
   unsigned int minimum_stored_prekey_msg;
-  int (*should_heartbeat)(int last_sent);
+  otrng_bool (*should_heartbeat)(int last_sent);
   size_t padding;
 
   // OtrlPrivKey *privkeyv3; // ???
@@ -120,7 +120,7 @@ otrng_client_state_build_default_prekey_profile(otrng_client_state_s *state);
 API const client_profile_s *
 otrng_client_state_get_client_profile(otrng_client_state_s *state);
 
-API int otrng_client_state_add_client_profile(otrng_client_state_s *state,
+API otrng_err otrng_client_state_add_client_profile(otrng_client_state_s *state,
                                               const client_profile_s *profile);
 
 API const otrng_prekey_profile_s *

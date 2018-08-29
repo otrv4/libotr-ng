@@ -30,12 +30,12 @@
 
 #define HEARTBEAT_INTERVAL 60
 
-tstatic int should_heartbeat(int last_sent) {
+tstatic otrng_bool should_heartbeat(int last_sent) {
   time_t now = time(NULL);
   if (last_sent < (now - HEARTBEAT_INTERVAL)) {
-    return 1;
+    return otrng_true;
   }
-  return 0;
+  return otrng_false;
 }
 
 tstatic otrng_err get_account_and_protocol_cb(
@@ -174,23 +174,23 @@ otrng_client_state_build_default_client_profile(otrng_client_state_s *state) {
                                     otrng_client_state_get_keypair_v4(state));
 }
 
-API int otrng_client_state_add_client_profile(otrng_client_state_s *state,
+API otrng_err otrng_client_state_add_client_profile(otrng_client_state_s *state,
                                               const client_profile_s *profile) {
   if (!state) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   if (state->client_profile) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   state->client_profile = malloc(sizeof(client_profile_s));
   if (!state->client_profile) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   otrng_client_profile_copy(state->client_profile, profile);
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL int otrng_client_state_add_shared_prekey_v4(

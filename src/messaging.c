@@ -159,17 +159,17 @@ API int otrng_user_state_generate_private_key(otrng_user_state_s *state,
   return otrng_user_state_add_private_key_v4(state, client_id, sym);
 }
 
-API int otrng_user_state_generate_client_profile(otrng_user_state_s *state,
+API otrng_err otrng_user_state_generate_client_profile(otrng_user_state_s *state,
                                                  void *client_id) {
   otrng_client_state_s *client = get_client_state(state, client_id);
   client_profile_s *profile =
       otrng_client_state_build_default_client_profile(client);
 
   if (!profile) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
-  int err = otrng_client_state_add_client_profile(client, profile);
+  otrng_err err = otrng_client_state_add_client_profile(client, profile);
   otrng_client_profile_free(profile);
 
   return err;

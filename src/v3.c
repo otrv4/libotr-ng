@@ -155,16 +155,16 @@ tstatic void op_create_privkey(void *opdata, const char *accountname,
   create_privkey_cb_v3(otr->v3_conn);
 }
 
-/* Report whether you think the given user is online.  Return 1 if
- * you think he is, 0 if you think he isn't, -1 if you're not sure.
+/* Report whether you think the given user is online.  Return true if
+ * you think he is, false if you think he isn't, -1 if you're not sure.
  *
- * If you return 1, messages such as heartbeats or other
+ * If you return true, messages such as heartbeats or other
  * notifications may be sent to the user, which could result in "not
  * logged in" errors if you're wrong. */
 tstatic int op_is_logged_in(void *opdata, const char *accountname,
                             const char *protocol, const char *recipient) {
   // TODO: implement
-  return 1; /* We always think the person is logged in, otherwise it wont send
+  return otrng_true; /* We always think the person is logged in, otherwise it wont send
                disconnect TLVs, for example. */
 }
 
