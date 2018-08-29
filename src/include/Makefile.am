@@ -59,4 +59,5 @@ otrnginc_HEADERS = ../auth.h \
                    ../smp_protocol.h \
                    ../str.h \
                    ../tlv.h \
-                   ../v3.h
+                   ../v3.h \
+                   ../warn.h
