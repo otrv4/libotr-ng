@@ -51,15 +51,15 @@ INTERNAL data_message_s *otrng_data_message_new(void);
 
 INTERNAL void otrng_data_message_free(data_message_s *data_msg);
 
-INTERNAL otrng_err otrng_data_message_body_asprintf(
+INTERNAL otrng_result otrng_data_message_body_asprintf(
     uint8_t **body, size_t *bodylen, const data_message_s *data_msg);
 
-INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
+INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
                                                   const uint8_t *buff,
                                                   size_t bufflen,
                                                   size_t *nread);
 
-INTERNAL otrng_err otrng_data_message_authenticator(uint8_t *dst, size_t dstlen,
+INTERNAL otrng_result otrng_data_message_authenticator(uint8_t *dst, size_t dstlen,
                                                     const msg_mac_key_p mac_key,
                                                     const uint8_t *body,
                                                     size_t bodylen);

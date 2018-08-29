@@ -69,12 +69,12 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *profile);
 
 INTERNAL void otrng_client_profile_free(client_profile_s *profile);
 
-INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
+INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
                                                     const uint8_t *buffer,
                                                     size_t buflen,
                                                     size_t *nread);
 
-INTERNAL otrng_err otrng_client_profile_asprintf(
+INTERNAL otrng_result otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile);
 
 INTERNAL client_profile_s *
@@ -84,26 +84,26 @@ otrng_client_profile_build(uint32_t instance_tag, const char *versions,
 INTERNAL otrng_bool otrng_client_profile_valid(
     const client_profile_s *profile, const uint32_t sender_instance_tag);
 
-INTERNAL otrng_err otrng_client_profile_set_dsa_key_mpis(
+INTERNAL otrng_result otrng_client_profile_set_dsa_key_mpis(
     client_profile_s *profile, const uint8_t *mpis, size_t mpis_len);
 
-INTERNAL otrng_err otrng_client_profile_transitional_sign(
+INTERNAL otrng_result otrng_client_profile_transitional_sign(
     client_profile_s *profile, OtrlPrivKey *privkey);
 
 #ifdef OTRNG_USER_PROFILE_PRIVATE
 
 tstatic client_profile_s *client_profile_new(const char *versions);
 
-tstatic otrng_err client_profile_sign(client_profile_s *profile,
+tstatic otrng_result client_profile_sign(client_profile_s *profile,
                                       const otrng_keypair_s *keypair);
 
-tstatic otrng_err client_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
+tstatic otrng_result client_profile_body_asprintf(uint8_t **dst, size_t *nbytes,
                                                const client_profile_s *profile);
 
 tstatic otrng_bool
 client_profile_verify_signature(const client_profile_s *profile);
 
-tstatic otrng_err
+tstatic otrng_result
 client_profile_verify_transitional_signature(const client_profile_s *profile);
 
 #endif

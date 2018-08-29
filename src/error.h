@@ -41,7 +41,7 @@ static const otrng_bool otrng_false = 0;
 typedef enum {
   OTRNG_SUCCESS = 1,
   OTRNG_ERROR = 0,
-} otrng_err;
+} otrng_result;
 
 // TODO[OB]: do we really need this too?
 typedef enum {

@@ -38,7 +38,7 @@ tstatic otrng_bool should_heartbeat(int last_sent) {
   return otrng_false;
 }
 
-tstatic otrng_err get_account_and_protocol_cb(
+tstatic otrng_result get_account_and_protocol_cb(
     char **account, char **protocol, const otrng_client_state_s *state) {
   if (!state->callbacks || !state->callbacks->get_account_and_protocol) {
     return OTRNG_ERROR;
@@ -48,7 +48,7 @@ tstatic otrng_err get_account_and_protocol_cb(
                                                        state->client_id);
 }
 
-INTERNAL otrng_err otrng_client_state_get_account_and_protocol(
+INTERNAL otrng_result otrng_client_state_get_account_and_protocol(
     char **account, char **protocol, const otrng_client_state_s *state) {
   return get_account_and_protocol_cb(account, protocol, state);
 }
@@ -122,7 +122,7 @@ otrng_client_state_get_keypair_v4(otrng_client_state_s *state) {
   return state->keypair;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_add_private_key_v4(otrng_client_state_s *state,
                                       const uint8_t sym[ED448_PRIVATE_BYTES]) {
   if (!state) {
@@ -169,7 +169,7 @@ otrng_client_state_build_default_client_profile(otrng_client_state_s *state) {
                                     otrng_client_state_get_keypair_v4(state));
 }
 
-API otrng_err otrng_client_state_add_client_profile(otrng_client_state_s *state,
+API otrng_result otrng_client_state_add_client_profile(otrng_client_state_s *state,
                                               const client_profile_s *profile) {
   if (!state) {
     return OTRNG_ERROR;
@@ -188,7 +188,7 @@ API otrng_err otrng_client_state_add_client_profile(otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_client_state_add_shared_prekey_v4(
+INTERNAL otrng_result otrng_client_state_add_shared_prekey_v4(
     otrng_client_state_s *state, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   if (!state) {
     return OTRNG_ERROR;
@@ -248,7 +248,7 @@ otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
   return state->prekey_profile;
 }
 
-API otrng_err
+API otrng_result
 otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
                                       const otrng_prekey_profile_s *profile) {
   if (!state) {
@@ -298,7 +298,7 @@ tstatic void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
   us->instag_root = p;
 }
 
-INTERNAL otrng_err otrng_client_state_add_instance_tag(otrng_client_state_s *state,
+INTERNAL otrng_result otrng_client_state_add_instance_tag(otrng_client_state_s *state,
                                                  unsigned int instag) {
   if (!state) {
     return OTRNG_ERROR;

@@ -75,7 +75,7 @@ tstatic size_t otrng_prekey_profile_body_serialize(
   return w;
 }
 
-INTERNAL otrng_err otrng_prekey_profile_deserialize(
+INTERNAL otrng_result otrng_prekey_profile_deserialize(
     otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
     size_t *nread) {
   size_t read = 0;
@@ -121,7 +121,7 @@ INTERNAL otrng_err otrng_prekey_profile_deserialize(
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_err otrng_prekey_profile_body_asprint(
+tstatic otrng_result otrng_prekey_profile_body_asprint(
     uint8_t **dst, size_t *dstlen, const otrng_prekey_profile_s *p) {
 
 #define PREKEY_PROFILE_BODY_BYTES 4 + 8 + ED448_PUBKEY_BYTES
@@ -149,7 +149,7 @@ tstatic otrng_err otrng_prekey_profile_body_asprint(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_prekey_profile_asprint(uint8_t **dst, size_t *dstlen,
+INTERNAL otrng_result otrng_prekey_profile_asprint(uint8_t **dst, size_t *dstlen,
                                                 otrng_prekey_profile_s *p) {
   if (!dst) {
     return OTRNG_ERROR;
@@ -176,7 +176,7 @@ INTERNAL otrng_err otrng_prekey_profile_asprint(uint8_t **dst, size_t *dstlen,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err prekey_profile_sign(otrng_prekey_profile_s *profile,
+INTERNAL otrng_result prekey_profile_sign(otrng_prekey_profile_s *profile,
                                        const otrng_keypair_s *longterm_pair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;

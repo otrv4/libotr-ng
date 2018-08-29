@@ -100,7 +100,7 @@ INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   free(context);
 }
 
-static otrng_err create_fragment_message(char **dst, const char *piece,
+static otrng_result create_fragment_message(char **dst, const char *piece,
                                          size_t piece_len, uint32_t identifier,
                                          uint32_t our_instance,
                                          uint32_t their_instance,
@@ -124,7 +124,7 @@ static otrng_err create_fragment_message(char **dst, const char *piece,
   return OTRNG_SUCCESS;
 }
 
-static otrng_err
+static otrng_result
 init_message_to_send_with_total(otrng_message_to_send_s *fragments, int total) {
   if (total < 1 || total > 65535) {
     return OTRNG_ERROR;
@@ -145,7 +145,7 @@ init_message_to_send_with_total(otrng_message_to_send_s *fragments, int total) {
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_fragment_message(int max_size,
+INTERNAL otrng_result otrng_fragment_message(int max_size,
                                           otrng_message_to_send_s *fragments,
                                           int our_instance, int their_instance,
                                           const string_p message) {
@@ -187,7 +187,7 @@ tstatic otrng_bool is_fragment(const string_p message) {
   return otrng_false;
 }
 
-tstatic otrng_err initialize_fragments(fragment_context_s *context) {
+tstatic otrng_result initialize_fragments(fragment_context_s *context) {
   context->fragments = malloc(sizeof(string_p) * context->total);
   if (!context->fragments) {
     return OTRNG_ERROR;
@@ -200,7 +200,7 @@ tstatic otrng_err initialize_fragments(fragment_context_s *context) {
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_err join_fragments(char **unfrag_message,
+tstatic otrng_result join_fragments(char **unfrag_message,
                                  fragment_context_s *context) {
   *unfrag_message = malloc(context->total_message_len + 1);
   if (!*unfrag_message) {
@@ -215,7 +215,7 @@ tstatic otrng_err join_fragments(char **unfrag_message,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_err copy_fragment_to_context(fragment_context_s *context,
+tstatic otrng_result copy_fragment_to_context(fragment_context_s *context,
                                            unsigned short i,
                                            const string_p message,
                                            uint32_t fragment_len) {
@@ -231,7 +231,7 @@ tstatic otrng_err copy_fragment_to_context(fragment_context_s *context,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_unfragment_message(char **unfrag_message,
+INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
                                             list_element_s **contexts,
                                             const string_p message,
                                             const int our_instance_tag) {
@@ -323,7 +323,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_message,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_expire_fragments(time_t now, uint32_t expiration_time,
+INTERNAL otrng_result otrng_expire_fragments(time_t now, uint32_t expiration_time,
                                           list_element_s **contexts) {
   list_element_s *current = *contexts;
 

@@ -28,7 +28,7 @@
 
 #define assert_msg_sent(result, to_send)                                       \
   do {                                                                         \
-    const otrng_err _result = (result);                                        \
+    const otrng_result _result = (result);                                        \
     const char *_to_send = (to_send);                                          \
     otrng_assert_is_success(_result);                                          \
     otrng_assert(_to_send);                                                    \
@@ -37,7 +37,7 @@
 
 #define assert_msg_rec(result, message, response)                              \
   do {                                                                         \
-    const otrng_err _result = (result);                                        \
+    const otrng_result _result = (result);                                        \
     const char *_message = (message);                                          \
     const otrng_response_s *_response = (response);                            \
     otrng_assert_is_success(_result);                                          \
@@ -49,7 +49,7 @@
 #define assert_rec_msg_in_state(result, respond_to, sender, otr_state,         \
                                 send_response)                                 \
   do {                                                                         \
-    const otrng_err _result = (result);                                        \
+    const otrng_result _result = (result);                                        \
     const otrng_response_s *_respond_to = (respond_to);                        \
     const otrng_s *_sender = (sender);                                         \
     const otrng_state _otr_state = (otr_state);                                \
@@ -122,7 +122,7 @@ void test_api_interactive_conversation(void) {
   otrng_warning warn = OTRNG_WARN_NONE;
 
   string_p to_send = NULL;
-  otrng_err result;
+  otrng_result result;
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Alice sends a data message
@@ -321,7 +321,7 @@ void test_otrng_send_offline_message() {
   // Bob sends a data message
   int message_id;
   string_p to_send = NULL;
-  otrng_err result;
+  otrng_result result;
 
   for (message_id = 1; message_id < 4; message_id++) {
     result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
@@ -475,7 +475,7 @@ void test_otrng_incorrect_offline_dake() {
                            bob->keys->current->root_key);
 
   string_p to_send = NULL;
-  otrng_err result;
+  otrng_result result;
 
   // Alice is unable to send a data msg
   result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, bob);
@@ -510,7 +510,7 @@ void test_api_conversation_errors_1(void) {
   otrng_warning warn = OTRNG_WARN_NONE;
 
   string_p to_send = NULL;
-  otrng_err result;
+  otrng_result result;
 
   // Alice sends a data message
   result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
@@ -805,7 +805,7 @@ void test_api_conversation_v3(void) {
 
 void test_api_multiple_clients(void) {
   otrng_bool send_response = otrng_true;
-  otrng_err result;
+  otrng_result result;
 
   // TODO: The next comment is WRONG.
   // There should be 2 separate protocols, one for each instance tag
@@ -1109,7 +1109,7 @@ void test_api_extra_sym_key(void) {
   // Alice sends a data message
   string_p to_send = NULL;
   otrng_warning warn = OTRNG_WARN_NONE;
-  otrng_err result;
+  otrng_result result;
 
   result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
   assert_msg_sent(result, to_send);
@@ -1186,7 +1186,7 @@ void test_heartbeat_messages(void) {
   // Alice sends a data message
   string_p to_send = NULL;
   otrng_warning warn = OTRNG_WARN_NONE;
-  otrng_err result;
+  otrng_result result;
 
   result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
   assert_msg_sent(result, to_send);

@@ -26,50 +26,50 @@
 #include "error.h"
 #include "shared.h"
 
-INTERNAL otrng_err otrng_deserialize_uint64(uint64_t *n, const uint8_t *buffer,
+INTERNAL otrng_result otrng_deserialize_uint64(uint64_t *n, const uint8_t *buffer,
                                             size_t buflen, size_t *nread);
 
-INTERNAL otrng_err otrng_deserialize_uint32(uint32_t *n, const uint8_t *buffer,
+INTERNAL otrng_result otrng_deserialize_uint32(uint32_t *n, const uint8_t *buffer,
                                             size_t buflen, size_t *nread);
 
-INTERNAL otrng_err otrng_deserialize_uint16(uint16_t *n, const uint8_t *buffer,
+INTERNAL otrng_result otrng_deserialize_uint16(uint16_t *n, const uint8_t *buffer,
                                             size_t buflen, size_t *nread);
 
-INTERNAL otrng_err otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
+INTERNAL otrng_result otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
                                            size_t buflen, size_t *nread);
 
-INTERNAL otrng_err otrng_deserialize_data(uint8_t **dst, size_t *dst_len,
+INTERNAL otrng_result otrng_deserialize_data(uint8_t **dst, size_t *dst_len,
                                           const uint8_t *buffer, size_t buflen,
                                           size_t *read);
 
-INTERNAL otrng_err otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
+INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
                                                  const uint8_t *buffer,
                                                  size_t buflen);
 
-otrng_err otrng_deserialize_dh_mpi_otr(dh_mpi_p *dst, const uint8_t *buffer,
+otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_p *dst, const uint8_t *buffer,
                                        size_t buflen, size_t *read);
 
-INTERNAL otrng_err otrng_deserialize_ec_point(ec_point_p point,
+INTERNAL otrng_result otrng_deserialize_ec_point(ec_point_p point,
                                               const uint8_t *serialized,
                                               size_t buflen);
 
-INTERNAL otrng_err otrng_deserialize_public_key(otrng_public_key_p pub,
+INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key_p pub,
                                                 const uint8_t *serialized,
                                                 size_t ser_len, size_t *read);
 
-INTERNAL otrng_err otrng_deserialize_shared_prekey(
+INTERNAL otrng_result otrng_deserialize_shared_prekey(
     otrng_shared_prekey_pub_p shared_prekey, const uint8_t *serialized,
     size_t ser_len, size_t *read);
 
-INTERNAL otrng_err otrng_deserialize_ec_scalar(ec_scalar_p scalar,
+INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar_p scalar,
                                                const uint8_t *serialized,
                                                size_t ser_len);
 
-INTERNAL otrng_err otrng_deserialize_ring_sig(ring_sig_s *proof,
+INTERNAL otrng_result otrng_deserialize_ring_sig(ring_sig_s *proof,
                                               const uint8_t *serialized,
                                               size_t ser_len, size_t *read);
 
-INTERNAL otrng_err otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
+INTERNAL otrng_result otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
                                                    const char *buff,
                                                    size_t len);
 

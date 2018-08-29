@@ -151,7 +151,7 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
   free(client);
 }
 
-static otrng_err prekey_decode(const char *message, uint8_t **buffer,
+static otrng_result prekey_decode(const char *message, uint8_t **buffer,
                                size_t *buffer_len) {
   size_t len = strlen(message);
 
@@ -197,7 +197,7 @@ static char *start_dake_and_then_send(otrng_prekey_client_s *client,
 
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
-  otrng_err success =
+  otrng_result success =
       otrng_prekey_dake1_message_asprint(&serialized, &serialized_len, msg);
   otrng_prekey_dake1_message_destroy(msg);
 
@@ -241,7 +241,7 @@ API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
 
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
-  otrng_err success = otrng_prekey_ensemble_query_retrieval_message_asprint(
+  otrng_result success = otrng_prekey_ensemble_query_retrieval_message_asprint(
       &serialized, &serialized_len, msg);
 
   otrng_prekey_ensemble_query_retrieval_message_destroy(msg);
@@ -255,7 +255,7 @@ API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
   return ret;
 }
 
-INTERNAL otrng_err otrng_prekey_ensemble_query_retrieval_message_asprint(
+INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_asprint(
     uint8_t **dst, size_t *len,
     const otrng_prekey_ensemble_query_retrieval_message_s *msg) {
   if (!len || !dst) {
@@ -400,7 +400,7 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
   return ret;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_prekey_dake3_message_append_storage_information_request(
     otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]) {
   msg->message = malloc(2 + 1 + MAC_KEY_BYTES);
@@ -427,7 +427,7 @@ otrng_prekey_dake3_message_append_storage_information_request(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_prekey_dake3_message_append_prekey_publication_message(
+INTERNAL otrng_result otrng_prekey_dake3_message_append_prekey_publication_message(
     otrng_prekey_publication_message_s *pub_msg,
     otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]) {
   uint8_t *client_profile = NULL;
@@ -637,7 +637,7 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
       return NULL;
     }
 
-    otrng_err success =
+    otrng_result success =
         otrng_prekey_dake3_message_append_prekey_publication_message(
             pub_msg, msg, client->mac_key);
     otrng_prekey_publication_message_destroy(pub_msg);
@@ -653,7 +653,7 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
 
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
-  otrng_err success =
+  otrng_result success =
       otrng_prekey_dake3_message_asprint(&serialized, &serialized_len, msg);
   otrng_prekey_dake3_message_destroy(msg);
 
@@ -899,7 +899,7 @@ static char *receive_prekey_ensemble_retrieval(const uint8_t *decoded,
   return NULL;
 }
 
-static otrng_err parse_header(uint8_t *message_type, const uint8_t *buf,
+static otrng_result parse_header(uint8_t *message_type, const uint8_t *buf,
                               size_t buflen, size_t *read) {
   size_t r = 0; /* read */
   size_t w = 0; /* walked */
@@ -957,7 +957,7 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
   return ret;
 }
 
-API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
+API otrng_result otrng_prekey_client_receive(char **tosend, const char *server,
                                           const char *message,
                                           otrng_prekey_client_s *client) {
   /* It should only process prekey server messages from the expected server.
@@ -987,7 +987,7 @@ API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
 }
 
 INTERNAL
-otrng_err
+otrng_result
 otrng_prekey_dake1_message_asprint(uint8_t **serialized, size_t *serialized_len,
                                    const otrng_prekey_dake1_message_s *msg) {
 
@@ -1033,7 +1033,7 @@ void otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *msg) {
   otrng_ec_point_destroy(msg->I);
 }
 
-INTERNAL otrng_err otrng_prekey_dake2_message_deserialize(
+INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
     otrng_prekey_dake2_message_s *dst, const uint8_t *serialized,
     size_t serialized_len) {
 
@@ -1114,7 +1114,7 @@ void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg) {
   otrng_ring_sig_destroy(msg->sigma);
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,
                                    const otrng_prekey_dake3_message_s *msg) {
   size_t ret_len =
@@ -1151,7 +1151,7 @@ void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *msg) {
   otrng_ring_sig_destroy(msg->sigma);
 }
 
-INTERNAL otrng_err otrng_prekey_storage_status_message_deserialize(
+INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(
     otrng_prekey_storage_status_message_s *dst, const uint8_t *serialized,
     size_t serialized_len) {
   size_t w = 0;
@@ -1225,7 +1225,7 @@ void otrng_prekey_publication_message_destroy(
   msg->prekey_profile = NULL;
 }
 
-INTERNAL otrng_err otrng_prekey_ensemble_retrieval_message_deserialize(
+INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
     otrng_prekey_ensemble_retrieval_message_s *dst, const uint8_t *serialized,
     size_t serialized_len) {
   size_t w = 0;

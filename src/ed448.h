@@ -154,7 +154,7 @@ INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p);
  * @param [enc] The lenght of the encoded point.
  * @param [p]   The point.
  */
-INTERNAL otrng_err otrng_ec_point_encode(uint8_t *enc, size_t len,
+INTERNAL otrng_result otrng_ec_point_encode(uint8_t *enc, size_t len,
                                          const ec_point_p p);
 
 /**
@@ -163,7 +163,7 @@ INTERNAL otrng_err otrng_ec_point_encode(uint8_t *enc, size_t len,
  * @param [enc] The encoded point.
  * @param [p]   The point.
  */
-INTERNAL otrng_err otrng_ec_point_decode(ec_point_p p,
+INTERNAL otrng_result otrng_ec_point_decode(ec_point_p p,
                                          const uint8_t enc[ED448_POINT_BYTES]);
 
 /** Securely erase a point by overwriting it with zeros.
@@ -223,7 +223,7 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair);
  *
  * @warning The symmetric key is stored as the priv part
  */
-INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
+INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                             size_t shared_secret_len,
                                             const ec_scalar_p our_priv,
                                             const ec_point_p their_pub);

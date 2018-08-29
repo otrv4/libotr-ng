@@ -40,10 +40,10 @@ INTERNAL void otrng_mpi_set(otrng_mpi_p mpi, const uint8_t *src, size_t len);
 
 INTERNAL void otrng_mpi_copy(otrng_mpi_p dst, const otrng_mpi_p src);
 
-INTERNAL otrng_err otrng_mpi_deserialize(otrng_mpi_p dst, const uint8_t *src,
+INTERNAL otrng_result otrng_mpi_deserialize(otrng_mpi_p dst, const uint8_t *src,
                                          size_t src_len, size_t *read);
 
-INTERNAL otrng_err otrng_mpi_deserialize_no_copy(otrng_mpi_p dst,
+INTERNAL otrng_result otrng_mpi_deserialize_no_copy(otrng_mpi_p dst,
                                                  const uint8_t *src,
                                                  size_t src_len, size_t *read);
 

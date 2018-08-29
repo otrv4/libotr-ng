@@ -148,18 +148,18 @@ otrng_prekey_client_request_storage_information(otrng_prekey_client_s *client);
 
 API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client);
 
-API otrng_err otrng_prekey_client_receive(char **tosend, const char *server,
+API otrng_result otrng_prekey_client_receive(char **tosend, const char *server,
                                           const char *message,
                                           otrng_prekey_client_s *client);
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_prekey_dake1_message_asprint(uint8_t **serialized, size_t *serialized_len,
                                    const otrng_prekey_dake1_message_s *msg);
 
 INTERNAL
 void otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *msg);
 
-INTERNAL otrng_err otrng_prekey_dake2_message_deserialize(
+INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
     otrng_prekey_dake2_message_s *dst, const uint8_t *serialized,
     size_t serialized_len);
 
@@ -169,18 +169,18 @@ void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg);
 INTERNAL void kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
                                   uint8_t usage);
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_prekey_dake3_message_append_storage_information_request(
     otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]);
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,
                                    const otrng_prekey_dake3_message_s *msg);
 
 INTERNAL
 void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *msg);
 
-INTERNAL otrng_err otrng_prekey_storage_status_message_deserialize(
+INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(
     otrng_prekey_storage_status_message_s *dst, const uint8_t *serialized,
     size_t serialized_len);
 
@@ -196,14 +196,14 @@ API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
                                                const char *versions,
                                                otrng_prekey_client_s *client);
 
-INTERNAL otrng_err otrng_prekey_ensemble_query_retrieval_message_asprint(
+INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_asprint(
     uint8_t **dst, size_t *len,
     const otrng_prekey_ensemble_query_retrieval_message_s *msg);
 
 INTERNAL void otrng_prekey_ensemble_query_retrieval_message_destroy(
     otrng_prekey_ensemble_query_retrieval_message_s *msg);
 
-INTERNAL otrng_err otrng_prekey_ensemble_retrieval_message_deserialize(
+INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
     otrng_prekey_ensemble_retrieval_message_s *dst, const uint8_t *serialized,
     size_t serialized_len);
 

@@ -132,14 +132,14 @@ otrng_messaging_client_s *otrng_messaging_client_get(otrng_user_state_s *state,
   return otrng_messaging_client_new(state, client_id);
 }
 
-API otrng_err
+API otrng_result
 otrng_user_state_private_key_v3_generate_FILEp(otrng_user_state_s *state,
                                                void *client_id, FILE *privf) {
   return otrng_client_state_private_key_v3_write_FILEp(
       get_client_state(state, client_id), privf);
 }
 
-API otrng_err otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state,
+API otrng_result otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *state,
                                                    FILE *keys) {
   gcry_error_t res = otrl_privkey_read_FILEp(state->user_state_v3, keys);
   if (res) {
@@ -148,7 +148,7 @@ API otrng_err otrng_user_state_private_key_v3_read_FILEp(otrng_user_state_s *sta
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_err
+tstatic otrng_result
 otrng_user_state_add_private_key_v4(otrng_user_state_s *state,
                                     const void *clientop,
                                     const uint8_t sym[ED448_PRIVATE_BYTES]) {
@@ -156,14 +156,14 @@ otrng_user_state_add_private_key_v4(otrng_user_state_s *state,
       get_client_state(state, clientop), sym);
 }
 
-API otrng_err otrng_user_state_generate_private_key(otrng_user_state_s *state,
+API otrng_result otrng_user_state_generate_private_key(otrng_user_state_s *state,
                                               void *client_id) {
   uint8_t sym[ED448_PRIVATE_BYTES];
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
   return otrng_user_state_add_private_key_v4(state, client_id, sym);
 }
 
-API otrng_err otrng_user_state_generate_client_profile(otrng_user_state_s *state,
+API otrng_result otrng_user_state_generate_client_profile(otrng_user_state_s *state,
                                                  void *client_id) {
   otrng_client_state_s *client = get_client_state(state, client_id);
   client_profile_s *profile =
@@ -173,13 +173,13 @@ API otrng_err otrng_user_state_generate_client_profile(otrng_user_state_s *state
     return OTRNG_ERROR;
   }
 
-  otrng_err err = otrng_client_state_add_client_profile(client, profile);
+  otrng_result err = otrng_client_state_add_client_profile(client, profile);
   otrng_client_profile_free(profile);
 
   return err;
 }
 
-API otrng_err otrng_user_state_generate_shared_prekey(otrng_user_state_s *state,
+API otrng_result otrng_user_state_generate_shared_prekey(otrng_user_state_s *state,
                                                 void *client_id) {
   uint8_t sym[ED448_PRIVATE_BYTES];
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
@@ -200,7 +200,7 @@ tstatic void add_private_key_v4_to_FILEp(list_element_s *node, void *context) {
   otrng_client_state_private_key_v4_write_FILEp(state, privf);
 }
 
-API otrng_err
+API otrng_result
 otrng_user_state_private_key_v4_write_FILEp(const otrng_user_state_s *state,
                                             FILE *privf) {
   if (!privf) {
@@ -217,7 +217,7 @@ tstatic void add_client_profile_to_FILEp(list_element_s *node, void *context) {
   otrng_client_state_client_profile_write_FILEp(state, privf);
 }
 
-API otrng_err
+API otrng_result
 otrng_user_state_client_profile_write_FILEp(const otrng_user_state_s *state,
                                             FILE *privf) {
   if (!privf) {
@@ -234,7 +234,7 @@ tstatic void add_prekey_messages_to_FILEp(list_element_s *node, void *context) {
   otrng_client_state_prekeys_write_FILEp(state, privf);
 }
 
-API otrng_err
+API otrng_result
 otrng_user_state_prekey_messages_write_FILEp(const otrng_user_state_s *state,
                                              FILE *privf) {
   if (!privf) {
@@ -245,7 +245,7 @@ otrng_user_state_prekey_messages_write_FILEp(const otrng_user_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-API otrng_err otrng_user_state_private_key_v4_read_FILEp(
+API otrng_result otrng_user_state_private_key_v4_read_FILEp(
     otrng_user_state_s *state, FILE *privf,
     const void *(*read_client_id_for_key)(FILE *filep)) {
   if (!privf) {
@@ -268,7 +268,7 @@ API otrng_err otrng_user_state_private_key_v4_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_err otrng_user_state_client_profile_read_FILEp(
+API otrng_result otrng_user_state_client_profile_read_FILEp(
     otrng_user_state_s *state, FILE *profile_filep,
     const void *(*read_client_id_for_key)(FILE *filep)) {
   if (!profile_filep) {
@@ -292,7 +292,7 @@ API otrng_err otrng_user_state_client_profile_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_err otrng_user_state_prekeys_read_FILEp(
+API otrng_result otrng_user_state_prekeys_read_FILEp(
     otrng_user_state_s *state, FILE *prekey_filep,
     const void *(*read_client_id_for_prekey)(FILE *filep)) {
   if (!prekey_filep) {
@@ -316,7 +316,7 @@ API otrng_err otrng_user_state_prekeys_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_err otrng_user_state_add_instance_tag(otrng_user_state_s *state,
+API otrng_result otrng_user_state_add_instance_tag(otrng_user_state_s *state,
                                           void *client_id,
                                           unsigned int instag) {
   return otrng_client_state_add_instance_tag(get_client_state(state, client_id),
@@ -330,14 +330,14 @@ API unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state,
   return 0;
 }
 
-API otrng_err
+API otrng_result
 otrng_user_state_instag_generate_generate_FILEp(otrng_user_state_s *state,
                                                 void *client_id, FILE *instag) {
   return otrng_client_state_instance_tag_write_FILEp(
       get_client_state(state, client_id), instag);
 }
 
-API otrng_err otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state,
+API otrng_result otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state,
                                                   FILE *instag) {
   // We use v3 user_state also for v4 instance tags, for now. */
   gcry_error_t res = otrl_instag_read_FILEp(state->user_state_v3, instag);

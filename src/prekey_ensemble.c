@@ -20,7 +20,7 @@
 
 #include "prekey_ensemble.h"
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
   /* Check that all the instance tags on the Prekey Ensemble's values are the
    * same. */
@@ -71,7 +71,7 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
+INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
                                                      const uint8_t *src,
                                                      size_t src_len,
                                                      size_t *nread) {

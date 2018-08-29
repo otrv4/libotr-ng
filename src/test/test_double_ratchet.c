@@ -38,7 +38,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   string_p to_send_3 = NULL;
   string_p to_send_4 = NULL;
   string_p to_send_5 = NULL;
-  otrng_err result;
+  otrng_result result;
   otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends a data message
@@ -181,7 +181,7 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   string_p to_send_2 = NULL;
   string_p to_send_3 = NULL;
   string_p to_send_4 = NULL;
-  otrng_err result;
+  otrng_result result;
   otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends a data message
@@ -304,7 +304,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   string_p to_send_3 = NULL;
   string_p to_send_4 = NULL;
   string_p to_send_5 = NULL;
-  otrng_err result;
+  otrng_result result;
   otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends a data message
@@ -448,7 +448,7 @@ void test_double_ratchet_corrupted_ratchet(void) {
 
   string_p to_send_1 = NULL;
   string_p to_send_2 = NULL;
-  otrng_err result;
+  otrng_result result;
   otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends a data message

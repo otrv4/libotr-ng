@@ -46,7 +46,7 @@ char *otrng_client_state_get_storage_id(const otrng_client_state_s *state) {
   return key;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_private_key_v4_write_FILEp(const otrng_client_state_s *state,
                                               FILE *privf) {
   if (!privf) {
@@ -93,7 +93,7 @@ otrng_client_state_private_key_v4_write_FILEp(const otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
                                              FILE *privf) {
   char *line = NULL;
@@ -139,7 +139,7 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_instance_tag_write_FILEp(otrng_client_state_s *state,
                                             FILE *instagf) {
   // TODO: We could use a "get storage key" callback and use it as
@@ -163,7 +163,7 @@ otrng_client_state_instance_tag_write_FILEp(otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
                                            FILE *instag) {
   if (!state->user_state) {
@@ -178,7 +178,7 @@ otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_private_key_v3_write_FILEp(const otrng_client_state_s *state,
                                               FILE *privf) {
 
@@ -203,7 +203,7 @@ otrng_client_state_private_key_v3_write_FILEp(const otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
                                              FILE *privf) {
   char *line = NULL;
@@ -238,10 +238,10 @@ otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
   free(line);
 
   client_profile_s profile[1];
-  otrng_err ret = otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
+  otrng_result ret = otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
   free(dec);
 
-  otrng_err err = OTRNG_SUCCESS;
+  otrng_result err = OTRNG_SUCCESS;
   if (ret == OTRNG_ERROR) {
     err = ret;
   }
@@ -254,7 +254,7 @@ otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
   return err;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_client_profile_write_FILEp(const otrng_client_state_s *state,
                                               FILE *privf) {
   if (!privf) {
@@ -293,8 +293,14 @@ otrng_client_state_client_profile_write_FILEp(const otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
+<<<<<<< HEAD
 INTERNAL otrng_err serialize_and_store_prekey(
     const otrng_stored_prekeys_s *prekey, const char *storage_id, FILE *privf) {
+=======
+static otrng_result
+serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
+                           const char *storage_id, FILE *privf) {
+>>>>>>> Rename otrng_err to otrng_result, since that's a signifanctly more correct name for what the type represents
   if (0 > fprintf(privf, "%s\n", storage_id)) {
     return OTRNG_ERROR;
   }
@@ -338,7 +344,7 @@ INTERNAL otrng_err serialize_and_store_prekey(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_prekeys_write_FILEp(const otrng_client_state_s *state,
                                        FILE *privf) {
   if (!privf) {
@@ -369,7 +375,7 @@ otrng_client_state_prekeys_write_FILEp(const otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
+otrng_result read_and_deserialize_prekey(otrng_client_state_s *state,
                                       FILE *privf) {
   char *line = NULL;
   int line_len = 0;
@@ -447,8 +453,8 @@ otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
   prekey_msg->our_dh->priv = NULL;
   prekey_msg->our_dh->pub = NULL;
 
-  otrng_err success =
-      otrng_dh_mpi_deserialize(&prekey_msg->our_dh->priv, dec, priv_len, NULL);
+  otrng_result success =
+      otrng_dh_mpi_deserialize(&prekey_msg->our_dh->priv, dec, real_len, NULL);
 
   free(dec);
 
@@ -465,7 +471,7 @@ otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_prekey_messages_read_FILEp(otrng_client_state_s *state,
                                               FILE *privf) {
   if (!privf) {

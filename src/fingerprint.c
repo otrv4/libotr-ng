@@ -43,7 +43,7 @@ API void otrng_fingerprint_hash_to_human(char *human,
   *p = '\0';
 }
 
-INTERNAL otrng_err otrng_serialize_fingerprint(otrng_fingerprint_p fp,
+INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint_p fp,
                                                const otrng_public_key_p pub) {
   uint8_t serialized[ED448_POINT_BYTES] = {0};
   uint8_t usage_fingerprint = 0x00;

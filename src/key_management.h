@@ -214,7 +214,7 @@ INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key_p their_dh,
  *
  * @param [manager]   The key manager.
  */
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
 
 /**
@@ -264,7 +264,7 @@ INTERNAL void otrng_key_manager_calculate_authenticator(
  * @param [manager]     The key manager.
  * @param [interactive] True if interactive DAKE, false otherwise
  */
-INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
+INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
     key_manager_s *manager, const otrng_bool interactive);
 
 /**
@@ -274,7 +274,7 @@ INTERNAL otrng_err otrng_key_manager_generate_shared_secret(
  * @param [participant]   If this corresponds to our or their key manager. 'u'
  * for us, 't' for them
  */
-INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
+INTERNAL otrng_result otrng_key_manager_ratcheting_init(key_manager_s *manager,
                                                      const char participant);
 
 /**
@@ -286,7 +286,7 @@ INTERNAL otrng_err otrng_key_manager_ratcheting_init(key_manager_s *manager,
  * @param [message_id]  The receiving message id (j).
  * @param [manager]     The key manager.
  */
-INTERNAL otrng_err otrng_key_get_skipped_keys(
+INTERNAL otrng_result otrng_key_get_skipped_keys(
     msg_enc_key_p enc_key, msg_mac_key_p mac_key, int ratchet_id,
     int message_id, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet);
@@ -301,7 +301,7 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(
  * @param [manager]     The key manager.
  * @param [action]      's' for sending chain, 'r' for receiving
  */
-INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
+INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
     msg_enc_key_p enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int message_id,
     const char action, otrng_warning *warn);
@@ -314,7 +314,7 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
  * @param [message_id]  The receiving message id (j).
  * @param [action]      's' for sending chain, 'r' for receiving
  */
-INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
+INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, int max_skip,
     receiving_ratchet_s *tmp_receiving_ratchet, int message_id, int previous_n,
     const char action, otrng_warning *warn);
@@ -325,7 +325,7 @@ INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
  * @param [manager]   The key manager.
  * @param [mac_key]   The mac key to store.
  */
-INTERNAL otrng_err otrng_store_old_mac_keys(key_manager_s *manager,
+INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
                                             msg_mac_key_p mac_key);
 
 INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
@@ -337,7 +337,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
  *
  * @param [manager]   The key manager.
  */
-tstatic otrng_err calculate_brace_key(
+tstatic otrng_result calculate_brace_key(
     key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
     const char action);
 

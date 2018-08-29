@@ -77,7 +77,7 @@ INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p) {
   return otrng_false;
 }
 
-API otrng_err otrng_ec_point_encode(uint8_t *enc, size_t len,
+API otrng_result otrng_ec_point_encode(uint8_t *enc, size_t len,
                                     const ec_point_p p) {
   if (len < ED448_POINT_BYTES) {
     return OTRNG_ERROR;
@@ -88,7 +88,7 @@ API otrng_err otrng_ec_point_encode(uint8_t *enc, size_t len,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_ec_point_decode(ec_point_p p,
+INTERNAL otrng_result otrng_ec_point_decode(ec_point_p p,
                                          const uint8_t enc[ED448_POINT_BYTES]) {
   goldilocks_448_point_p tmp_p;
   if (!goldilocks_succeed_if(
@@ -193,7 +193,7 @@ static otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
   return otrng_true;
 }
 
-INTERNAL otrng_err otrng_ecdh_shared_secret(uint8_t *shared_secret,
+INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                             size_t shared_secret_len,
                                             const ec_scalar_p our_priv,
                                             const ec_point_p their_pub) {

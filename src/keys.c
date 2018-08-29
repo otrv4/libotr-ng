@@ -67,7 +67,7 @@ INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
   free(keypair);
 }
 
-INTERNAL otrng_err otrng_symmetric_key_serialize(
+INTERNAL otrng_result otrng_symmetric_key_serialize(
     char **buffer, size_t *written, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   *buffer = malloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
   if (!*buffer) {
@@ -103,7 +103,7 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
   goldilocks_bzero(pub, ED448_POINT_BYTES);
 }
 
-INTERNAL otrng_err otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,
+INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,
                                                  dh_keypair_p dh) {
   uint8_t sym[ED448_PRIVATE_BYTES];
   random_bytes(sym, ED448_PRIVATE_BYTES);

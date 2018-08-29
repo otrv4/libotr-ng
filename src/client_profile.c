@@ -184,7 +184,7 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
   return num_fields;
 }
 
-tstatic otrng_err
+tstatic otrng_result
 client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
                               const client_profile_s *profile) {
   size_t w = 0;
@@ -213,7 +213,7 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
 }
 
 /* Serializes client profile without the signature */
-tstatic otrng_err client_profile_body_asprintf(
+tstatic otrng_result client_profile_body_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
 
   size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
@@ -239,7 +239,7 @@ tstatic otrng_err client_profile_body_asprintf(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_client_profile_asprintf(
+INTERNAL otrng_result otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile) {
 
   size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
@@ -272,7 +272,7 @@ INTERNAL otrng_err otrng_client_profile_asprintf(
   return OTRNG_SUCCESS;
 }
 
-static otrng_err deserialize_dsa_key_field(client_profile_s *target,
+static otrng_result deserialize_dsa_key_field(client_profile_s *target,
                                            const uint8_t *buffer, size_t buflen,
                                            size_t *nread) {
   size_t read = 0;
@@ -317,7 +317,7 @@ static otrng_err deserialize_dsa_key_field(client_profile_s *target,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_err deserialize_field(client_profile_s *target,
+tstatic otrng_result deserialize_field(client_profile_s *target,
                                     const uint8_t *buffer, size_t buflen,
                                     size_t *nread) {
   size_t read = 0;
@@ -400,7 +400,7 @@ tstatic otrng_err deserialize_field(client_profile_s *target,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
+INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
                                                     const uint8_t *buffer,
                                                     size_t buflen,
                                                     size_t *nread) {
@@ -446,7 +446,7 @@ INTERNAL otrng_err otrng_client_profile_deserialize(client_profile_s *target,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_err client_profile_sign(client_profile_s *profile,
+tstatic otrng_result client_profile_sign(client_profile_s *profile,
                                       const otrng_keypair_s *keypair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
@@ -527,7 +527,7 @@ tstatic otrng_bool rollback_detected(const char *versions) {
   return otrng_false;
 }
 
-static otrng_err generate_dsa_key_sexp(gcry_sexp_t *pubs, const uint8_t *buffer,
+static otrng_result generate_dsa_key_sexp(gcry_sexp_t *pubs, const uint8_t *buffer,
                                        size_t buflen) {
   if (!buffer || !buflen) {
     return OTRNG_ERROR;
@@ -579,7 +579,7 @@ static otrng_err generate_dsa_key_sexp(gcry_sexp_t *pubs, const uint8_t *buffer,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_err
+tstatic otrng_result
 client_profile_verify_transitional_signature(const client_profile_s *profile) {
 
   if (!profile->transitional_signature || !profile->dsa_key ||
@@ -664,7 +664,7 @@ INTERNAL otrng_bool otrng_client_profile_valid(
   return otrng_true;
 }
 
-INTERNAL otrng_err otrng_client_profile_set_dsa_key_mpis(
+INTERNAL otrng_result otrng_client_profile_set_dsa_key_mpis(
     client_profile_s *profile, const uint8_t *mpis, size_t mpis_len) {
 
   // mpis* points to a PUBKEY structure AFTER the "Pubkey type" field
@@ -681,7 +681,7 @@ INTERNAL otrng_err otrng_client_profile_set_dsa_key_mpis(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_client_profile_transitional_sign(
+INTERNAL otrng_result otrng_client_profile_transitional_sign(
     client_profile_s *profile, OtrlPrivKey *privkey) {
 
   if (!profile || !privkey) {

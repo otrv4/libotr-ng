@@ -97,7 +97,7 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   }
 }
 
-tstatic otrng_err encrypt_data_message(data_message_s *data_msg,
+tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
                                        const uint8_t *message,
                                        size_t message_len,
                                        const msg_enc_key_p enc_key) {
@@ -154,7 +154,7 @@ tstatic data_message_s *generate_data_msg(const otrng_s *otr,
   return data_msg;
 }
 
-tstatic otrng_err serialize_and_encode_data_msg(
+tstatic otrng_result serialize_and_encode_data_msg(
     string_p *dst, const msg_mac_key_p mac_key, uint8_t *to_reveal_mac_keys,
     size_t to_reveal_mac_keys_len, const data_message_s *data_msg) {
   uint8_t *body = NULL;
@@ -192,7 +192,7 @@ tstatic otrng_err serialize_and_encode_data_msg(
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
+tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *message,
                                     size_t message_len, otrng_s *otr,
                                     unsigned char flags, otrng_warning *warn) {
   data_message_s *data_msg = NULL;
@@ -269,7 +269,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
+tstatic otrng_result serialize_tlvs(uint8_t **dst, size_t *dstlen,
                                  const tlv_list_s *tlvs) {
   const tlv_list_s *current = tlvs;
   uint8_t *cursor = NULL;
@@ -298,7 +298,7 @@ tstatic otrng_err serialize_tlvs(uint8_t **dst, size_t *dstlen,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,
+tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
                               const string_p message, const tlv_list_s *tlvs,
                               const otrng_s *otr) {
   uint8_t *ser = NULL;
@@ -336,7 +336,7 @@ tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_prepare_to_send_data_message(
+INTERNAL otrng_result otrng_prepare_to_send_data_message(
     string_p *to_send, otrng_warning *warn, const string_p message,
     const tlv_list_s *tlvs, otrng_s *otr, unsigned char flags) {
   uint8_t *msg = NULL;
@@ -357,7 +357,7 @@ INTERNAL otrng_err otrng_prepare_to_send_data_message(
     return OTRNG_ERROR;
   }
 
-  otrng_err result = send_data_message(to_send, msg, msg_len, otr, flags, warn);
+  otrng_result result = send_data_message(to_send, msg, msg_len, otr, flags, warn);
 
   otr->last_sent = time(NULL);
 

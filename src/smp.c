@@ -215,7 +215,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
   return NULL;
 }
 
-INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
+INTERNAL otrng_result otrng_smp_start(string_p *to_send, const uint8_t *question,
                                    const size_t q_len, const uint8_t *answer,
                                    const size_t answer_len, otrng_s *otr) {
   if (!otr) {
@@ -247,7 +247,7 @@ INTERNAL otrng_err otrng_smp_start(string_p *to_send, const uint8_t *question,
 
     otrng_warning warn = OTRNG_WARN_NONE;
     // TODO: do something about warn
-    otrng_err ret = otrng_prepare_to_send_data_message(
+    otrng_result ret = otrng_prepare_to_send_data_message(
         to_send, &warn, "", tlvs, otr, MSGFLAGS_IGNORE_UNREADABLE);
     otrng_tlv_list_free(tlvs);
     return ret;
@@ -287,7 +287,7 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_p smp,
   return smp_reply;
 }
 
-tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
+tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
                                   const size_t secretlen, otrng_s *otr) {
   if (!otr) {
     return OTRNG_ERROR;
@@ -311,14 +311,14 @@ tstatic otrng_err smp_continue_v4(string_p *to_send, const uint8_t *secret,
 
   otrng_warning warn = OTRNG_WARN_NONE;
   // TODO: warn
-  otrng_err ret = otrng_prepare_to_send_data_message(
+  otrng_result ret = otrng_prepare_to_send_data_message(
       to_send, &warn, "", tlvs, otr, MSGFLAGS_IGNORE_UNREADABLE);
   otrng_tlv_list_free(tlvs);
 
   return ret;
 }
 
-INTERNAL otrng_err otrng_smp_continue(string_p *to_send, const uint8_t *secret,
+INTERNAL otrng_result otrng_smp_continue(string_p *to_send, const uint8_t *secret,
                                       const size_t secretlen, otrng_s *otr) {
   switch (otr->running_version) {
   case 3:
@@ -333,7 +333,7 @@ INTERNAL otrng_err otrng_smp_continue(string_p *to_send, const uint8_t *secret,
   return OTRNG_ERROR; // TODO: @smp IMPLEMENT
 }
 
-tstatic otrng_err otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
+tstatic otrng_result otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
   tlv_list_s *tlvs =
       otrng_tlv_list_one(otrng_tlv_new(OTRL_TLV_SMP_ABORT, 0, NULL));
 
@@ -344,13 +344,13 @@ tstatic otrng_err otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
   otr->smp->state_expect = '1';
   otrng_warning warn = OTRNG_WARN_NONE;
   // TODO: warn
-  otrng_err ret = otrng_prepare_to_send_data_message(
+  otrng_result ret = otrng_prepare_to_send_data_message(
       to_send, &warn, "", tlvs, otr, MSGFLAGS_IGNORE_UNREADABLE);
   otrng_tlv_list_free(tlvs);
   return ret;
 }
 
-API otrng_err otrng_smp_abort(string_p *to_send, otrng_s *otr) {
+API otrng_result otrng_smp_abort(string_p *to_send, otrng_s *otr) {
   switch (otr->running_version) {
   case 3:
     return otrng_v3_smp_abort(otr->v3_conn);

@@ -50,13 +50,13 @@ INTERNAL void otrng_dh_free(void);
 INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
                                             const dh_private_key_p priv);
 
-INTERNAL otrng_err otrng_dh_keypair_generate(dh_keypair_p keypair);
+INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_p keypair);
 
 /**
  * @param [participant]   If this corresponds to our or their key manager. 'u'
  * for us, 't' for them
  */
-INTERNAL otrng_err otrng_dh_keypair_generate_from_shared_secret(
+INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
     uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair,
     const char participant);
 
@@ -64,15 +64,15 @@ INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_p keypair);
 
 INTERNAL void otrng_dh_keypair_destroy(dh_keypair_p keypair);
 
-INTERNAL otrng_err otrng_dh_shared_secret(dh_shared_secret_p buffer,
+INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_p buffer,
                                           size_t *written,
                                           const dh_private_key_p our_priv,
                                           const dh_public_key_p their_pub);
 
-INTERNAL otrng_err otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
+INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                           size_t *written, const dh_mpi_p src);
 
-INTERNAL otrng_err otrng_dh_mpi_deserialize(dh_mpi_p *dst,
+INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_p *dst,
                                             const uint8_t *buffer,
                                             size_t buflen, size_t *nread);
 

@@ -86,7 +86,7 @@ static inline void stored_prekeys_free_from_list(void *p) {
   otrng_stored_prekeys_free((otrng_stored_prekeys_s *)p);
 }
 
-INTERNAL otrng_err otrng_client_state_get_account_and_protocol(
+INTERNAL otrng_result otrng_client_state_get_account_and_protocol(
     char **account, char **protocol, const otrng_client_state_s *state);
 
 INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
@@ -103,11 +103,11 @@ get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state);
 INTERNAL unsigned int
 otrng_client_state_get_instance_tag(const otrng_client_state_s *state);
 
-INTERNAL otrng_err otrng_client_state_add_instance_tag(otrng_client_state_s *state,
+INTERNAL otrng_result otrng_client_state_add_instance_tag(otrng_client_state_s *state,
                                                  unsigned int instag);
 
 // TODO: @client @refactoring remove
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_add_shared_prekey_v4(otrng_client_state_s *state,
                                         const uint8_t sym[ED448_PRIVATE_BYTES]);
 
@@ -120,13 +120,13 @@ otrng_client_state_build_default_prekey_profile(otrng_client_state_s *state);
 API const client_profile_s *
 otrng_client_state_get_client_profile(otrng_client_state_s *state);
 
-API otrng_err otrng_client_state_add_client_profile(otrng_client_state_s *state,
+API otrng_result otrng_client_state_add_client_profile(otrng_client_state_s *state,
                                               const client_profile_s *profile);
 
 API const otrng_prekey_profile_s *
 otrng_client_state_get_prekey_profile(otrng_client_state_s *state);
 
-API otrng_err
+API otrng_result
 otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
                                       const otrng_prekey_profile_s *profile);
 
@@ -138,7 +138,7 @@ otrng_client_state_get_private_key_v3(const otrng_client_state_s *state);
 INTERNAL otrng_keypair_s *
 otrng_client_state_get_keypair_v4(otrng_client_state_s *state);
 
-INTERNAL otrng_err
+INTERNAL otrng_result
 otrng_client_state_add_private_key_v4(otrng_client_state_s *state,
                                       const uint8_t sym[ED448_PRIVATE_BYTES]);
 

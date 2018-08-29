@@ -31,7 +31,7 @@ static size_t calculate_padding_len(size_t message_len, size_t max) {
   return max - ((message_len + tlv_header_len + 1) % max);
 }
 
-INTERNAL otrng_err generate_padding(uint8_t **dst, size_t *dstlen,
+INTERNAL otrng_result generate_padding(uint8_t **dst, size_t *dstlen,
                                     size_t message_len, const otrng_s *otr) {
   size_t padding_len =
       calculate_padding_len(message_len, otr->conversation->client->padding);

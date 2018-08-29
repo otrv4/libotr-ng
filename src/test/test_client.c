@@ -204,7 +204,7 @@ void test_client_api() {
   otrng_assert(!to_display);
 
   // Alice sends a disconnected to Bob
-  otrng_err err = otrng_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
+  otrng_result err = otrng_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
   otrng_assert_is_success(err);
   otrng_assert(from_alice_to_bob);
 
@@ -505,7 +505,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrng_assert(!to_display);
 
   // Alice sends a disconnected to Bob
-  otrng_err err = otrng_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
+  otrng_result err = otrng_client_disconnect(&from_alice_to_bob, BOB_IDENTITY, alice);
   otrng_assert_is_success(err);
   otrng_assert(from_alice_to_bob);
 
@@ -623,7 +623,7 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrng_assert(!to_display);
 
   // Alice sends a disconnected to Bob
-  otrng_err error = otrng_client_disconnect(&alice_last, BOB_IDENTITY, alice);
+  otrng_result error = otrng_client_disconnect(&alice_last, BOB_IDENTITY, alice);
   otrng_assert_is_success(error);
   otrng_assert(alice_last);
 
@@ -775,7 +775,7 @@ void test_valid_identity_msg_in_waiting_auth_r() {
     otrng_assert(!to_display);
 
     // Alice sends a disconnected to Bob
-    otrng_err error = otrng_client_disconnect(&alice_last, BOB_IDENTITY, alice);
+    otrng_result error = otrng_client_disconnect(&alice_last, BOB_IDENTITY, alice);
     otrng_assert_is_success(error);
     otrng_assert(alice_last);
 
@@ -855,7 +855,7 @@ void test_valid_identity_msg_in_waiting_auth_r() {
     otrng_assert(!to_display);
 
     // Bob sends a disconnected to Alice
-    otrng_err error = otrng_client_disconnect(&bob_last, ALICE_IDENTITY, bob);
+    otrng_result error = otrng_client_disconnect(&bob_last, ALICE_IDENTITY, bob);
     otrng_assert_is_success(error);
     otrng_assert(bob_last);
 
@@ -988,7 +988,7 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   bobs_auth_i = NULL;
 
   // Alice sends a disconnected to Bob
-  otrng_err error = otrng_client_disconnect(&alice_last, BOB_IDENTITY, alice);
+  otrng_result error = otrng_client_disconnect(&alice_last, BOB_IDENTITY, alice);
   otrng_assert_is_success(error);
   otrng_assert(alice_last);
 

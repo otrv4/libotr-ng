@@ -74,7 +74,7 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
   free(data_msg);
 }
 
-INTERNAL otrng_err otrng_data_message_body_asprintf(
+INTERNAL otrng_result otrng_data_message_body_asprintf(
     uint8_t **body, size_t *bodylen, const data_message_s *data_msg) {
   size_t s = DATA_MESSAGE_MAX_BYTES + data_msg->enc_msg_len;
   uint8_t *dst = malloc(s);
@@ -117,7 +117,7 @@ INTERNAL otrng_err otrng_data_message_body_asprintf(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
+INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
                                                   const uint8_t *buff,
                                                   size_t bufflen,
                                                   size_t *nread) {
@@ -231,7 +231,7 @@ INTERNAL otrng_err otrng_data_message_deserialize(data_message_s *dst,
                                        cursor, len);
 }
 
-INTERNAL static otrng_err otrng_data_message_sections_hash(uint8_t *dst,
+INTERNAL static otrng_result otrng_data_message_sections_hash(uint8_t *dst,
                                                            size_t dstlen,
                                                            const uint8_t *body,
                                                            size_t bodylen) {
@@ -246,7 +246,7 @@ INTERNAL static otrng_err otrng_data_message_sections_hash(uint8_t *dst,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_err otrng_data_message_authenticator(uint8_t *dst, size_t dstlen,
+INTERNAL otrng_result otrng_data_message_authenticator(uint8_t *dst, size_t dstlen,
                                                     const msg_mac_key_p mac_key,
                                                     const uint8_t *body,
                                                     size_t bodylen) {

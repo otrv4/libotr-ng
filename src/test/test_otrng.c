@@ -112,7 +112,7 @@ void test_otrng_receives_plaintext_with_ws_tag(otrng_fixture_s *otrng_fixture,
       " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
   otrng_warning warn = OTRNG_WARN_NONE;
 
-  otrng_err res = otrng_receive_message(response, &warn, message, otrng_fixture->otr);
+  otrng_result res = otrng_receive_message(response, &warn, message, otrng_fixture->otr);
   otrng_assert_is_success(res);
   g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
   otrng_assert(response->to_send);

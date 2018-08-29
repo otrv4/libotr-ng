@@ -78,7 +78,7 @@ typedef struct ring_sig_s {
  * knowledge could be created. Returns OTRNG_ERROR otherwise.
  */
 
-INTERNAL otrng_err otrng_rsig_authenticate(
+INTERNAL otrng_result otrng_rsig_authenticate(
     ring_sig_p dst, const rsig_privkey_p priv, const rsig_pubkey_p pub,
     const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
     const uint8_t *msg, size_t msglen);
@@ -134,7 +134,7 @@ INTERNAL void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
     const ring_sig_p src, const rsig_pubkey_p A1, const rsig_pubkey_p A2,
     const rsig_pubkey_p A3, const uint8_t *message, size_t message_len);
 
-INTERNAL otrng_err otrng_rsig_authenticate_with_usage_and_domain(
+INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, ring_sig_p dst,
     const rsig_privkey_p secret, const rsig_pubkey_p pub,
     const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
