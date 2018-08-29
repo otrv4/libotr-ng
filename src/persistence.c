@@ -428,6 +428,9 @@ otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
   size_t priv_len = otrl_base64_decode(dec, line, line_len - 1);
   free(line);
 
+  prekey_msg->our_dh->priv = NULL;
+  prekey_msg->our_dh->pub = NULL;
+
   otrng_err success =
       otrng_dh_mpi_deserialize(&prekey_msg->our_dh->priv, dec, priv_len, NULL);
 
@@ -437,6 +440,7 @@ otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
     return OTRNG_ERROR;
   }
 
+  prekey_msg->our_dh->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
   otrng_dh_calculate_public_key(prekey_msg->our_dh->pub,
                                 prekey_msg->our_dh->priv);
 
