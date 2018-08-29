@@ -37,7 +37,7 @@ API void otrng_fingerprint_hash_to_human(char *human,
                                          const unsigned char *hash);
 
 INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint_p fp,
-                                               const otrng_public_key_p pub);
+                                                  const otrng_public_key_p pub);
 
 #ifdef OTRNG_FINGERPRINT_PRIVATE
 #endif

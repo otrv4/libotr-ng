@@ -54,14 +54,16 @@ INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_state_s *state,
 
 INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn);
 
-INTERNAL otrng_result otrng_v3_send_message(char **newmessage, const char *message,
-                                         const tlv_list_s *tlvs,
-                                         otrng_v3_conn_s *conn);
-
-INTERNAL otrng_result otrng_v3_receive_message(char **to_send, char **to_display,
-                                            tlv_list_s **tlvs,
+INTERNAL otrng_result otrng_v3_send_message(char **newmessage,
                                             const char *message,
+                                            const tlv_list_s *tlvs,
                                             otrng_v3_conn_s *conn);
+
+INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
+                                               char **to_display,
+                                               tlv_list_s **tlvs,
+                                               const char *message,
+                                               otrng_v3_conn_s *conn);
 
 INTERNAL void otrng_v3_close(char **to_send, otrng_v3_conn_s *conn);
 
@@ -69,13 +71,16 @@ INTERNAL otrng_result otrng_v3_send_symkey_message(
     char **to_send, otrng_v3_conn_s *conn, unsigned int use,
     const unsigned char *usedata, size_t usedatalen, unsigned char *symkey);
 
-INTERNAL otrng_result otrng_v3_smp_start(char **to_send, const uint8_t *question,
-                                      size_t q_len, const uint8_t *secret,
-                                      size_t secretlen, otrng_v3_conn_s *conn);
-
-INTERNAL otrng_result otrng_v3_smp_continue(char **to_send, const uint8_t *secret,
-                                         const size_t secretlen,
+INTERNAL otrng_result otrng_v3_smp_start(char **to_send,
+                                         const uint8_t *question, size_t q_len,
+                                         const uint8_t *secret,
+                                         size_t secretlen,
                                          otrng_v3_conn_s *conn);
+
+INTERNAL otrng_result otrng_v3_smp_continue(char **to_send,
+                                            const uint8_t *secret,
+                                            const size_t secretlen,
+                                            otrng_v3_conn_s *conn);
 
 INTERNAL otrng_result otrng_v3_smp_abort(otrng_v3_conn_s *conn);
 

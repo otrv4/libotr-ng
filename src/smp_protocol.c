@@ -77,11 +77,11 @@ INTERNAL void otrng_smp_destroy(smp_protocol_p smp) {
 }
 
 INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
-                                             otrng_fingerprint_p our_fp,
-                                             otrng_fingerprint_p their_fp,
-                                             uint8_t *ssid,
-                                             const uint8_t *answer,
-                                             size_t answer_len) {
+                                                otrng_fingerprint_p our_fp,
+                                                otrng_fingerprint_p their_fp,
+                                                uint8_t *ssid,
+                                                const uint8_t *answer,
+                                                size_t answer_len) {
   uint8_t hash[HASH_BYTES];
   uint8_t version[1] = {0x01};
   uint8_t usage_smp_secret = 0x1B;
@@ -109,7 +109,7 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
 }
 
 tstatic otrng_result hash_to_scalar(ec_scalar_p dst, uint8_t *ser_p,
-                                 size_t ser_p_len, const uint8_t usage_smp) {
+                                    size_t ser_p_len, const uint8_t usage_smp) {
   goldilocks_shake256_ctx_p hd;
   uint8_t hash[HASH_BYTES];
 
@@ -127,7 +127,7 @@ tstatic otrng_result hash_to_scalar(ec_scalar_p dst, uint8_t *ser_p,
 }
 
 INTERNAL otrng_result otrng_generate_smp_msg_1(smp_msg_1_s *dst,
-                                            smp_protocol_p smp) {
+                                               smp_protocol_p smp) {
   ecdh_keypair_p pair_r2, pair_r3;
   ec_scalar_p a3c3, a2c2;
 
@@ -183,7 +183,7 @@ tstatic void smp_msg_1_copy(smp_msg_1_s *dst, const smp_msg_1_s *src) {
 }
 
 INTERNAL otrng_result otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
-                                            const smp_msg_1_s *msg) {
+                                               const smp_msg_1_s *msg) {
   size_t s = 0;
   s = 4 + msg->q_len + (2 * ED448_POINT_BYTES) + (4 * ED448_SCALAR_BYTES);
 
@@ -335,8 +335,9 @@ INTERNAL void otrng_smp_msg_1_destroy(smp_msg_1_s *msg) {
   otrng_ec_scalar_destroy(msg->d3);
 }
 
-tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst, const smp_msg_1_s *msg_1,
-                                     smp_protocol_p smp) {
+tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
+                                        const smp_msg_1_s *msg_1,
+                                        smp_protocol_p smp) {
   ec_scalar_p b2, r6;
   ec_scalar_p temp_scalar;
   ecdh_keypair_p pair_r2, pair_r3, pair_r4, pair_r5;
@@ -443,7 +444,7 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst, const smp_msg_1_s *msg
 }
 
 tstatic otrng_result smp_msg_2_asprintf(uint8_t **dst, size_t *len,
-                                     const smp_msg_2_s *msg) {
+                                        const smp_msg_2_s *msg) {
   size_t s = 0;
   s += (4 * ED448_POINT_BYTES) + (7 * ED448_SCALAR_BYTES);
 
@@ -660,8 +661,9 @@ tstatic void smp_msg_2_destroy(smp_msg_2_s *msg) {
   otrng_ec_scalar_destroy(msg->d6);
 }
 
-tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst, const smp_msg_2_s *msg_2,
-                                     smp_protocol_p smp) {
+tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
+                                        const smp_msg_2_s *msg_2,
+                                        smp_protocol_p smp) {
   ecdh_keypair_p pair_r4, pair_r5, pair_r7;
   ec_scalar_p r6;
   ec_point_p temp_point;
@@ -765,7 +767,7 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst, const smp_msg_2_s *msg
 }
 
 tstatic otrng_result smp_msg_3_asprintf(uint8_t **dst, size_t *len,
-                                     const smp_msg_3_s *msg) {
+                                        const smp_msg_3_s *msg) {
   size_t s = 0;
   s += (3 * ED448_POINT_BYTES) + (5 * ED448_SCALAR_BYTES);
 
@@ -953,8 +955,9 @@ tstatic void smp_msg_3_destroy(smp_msg_3_s *msg) {
   otrng_ec_scalar_destroy(msg->d7);
 }
 
-tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst, const smp_msg_3_s *msg_3,
-                                     smp_protocol_p smp) {
+tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
+                                        const smp_msg_3_s *msg_3,
+                                        smp_protocol_p smp) {
   ec_point_p qa_qb;
   ecdh_keypair_p pair_r7;
   otrng_zq_keypair_generate(pair_r7->pub, pair_r7->priv);
@@ -997,7 +1000,7 @@ tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst, const smp_msg_3_s *msg
 }
 
 tstatic otrng_result smp_msg_4_asprintf(uint8_t **dst, size_t *len,
-                                     smp_msg_4_s *msg) {
+                                        smp_msg_4_s *msg) {
   size_t s = 0;
   s = ED448_POINT_BYTES + (2 * ED448_SCALAR_BYTES);
 

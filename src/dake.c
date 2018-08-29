@@ -195,7 +195,7 @@ INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
 }
 
 INTERNAL otrng_result otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
-                                              const dake_auth_r_s *auth_r) {
+                                                 const dake_auth_r_s *auth_r) {
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
 
@@ -246,8 +246,8 @@ INTERNAL otrng_result otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
 }
 
 INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
-                                                 const uint8_t *buffer,
-                                                 size_t buflen) {
+                                                    const uint8_t *buffer,
+                                                    size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
   size_t read = 0;
@@ -321,7 +321,7 @@ INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_s *auth_i) {
 }
 
 INTERNAL otrng_result otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
-                                              const dake_auth_i_s *auth_i) {
+                                                 const dake_auth_i_s *auth_i) {
   size_t s = DAKE_HEADER_BYTES + RING_SIG_BYTES;
   *dst = malloc(s);
 
@@ -344,8 +344,8 @@ INTERNAL otrng_result otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
 }
 
 INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
-                                                 const uint8_t *buffer,
-                                                 size_t buflen) {
+                                                    const uint8_t *buffer,
+                                                    size_t buflen) {
   const uint8_t *cursor = buffer;
   int64_t len = buflen;
   size_t read = 0;

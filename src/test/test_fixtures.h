@@ -45,8 +45,8 @@ get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
 }
 
 static otrng_result get_account_and_protocol_cb(char **account_name,
-                                       char **protocol_name,
-                                       const void *client_id) {
+                                                char **protocol_name,
+                                                const void *client_id) {
   const char *account = client_id; // tests use client_name as client_id.
 
   if (!client_id) {

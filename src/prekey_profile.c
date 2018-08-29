@@ -149,8 +149,9 @@ tstatic otrng_result otrng_prekey_profile_body_asprint(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_prekey_profile_asprint(uint8_t **dst, size_t *dstlen,
-                                                otrng_prekey_profile_s *p) {
+INTERNAL otrng_result otrng_prekey_profile_asprint(uint8_t **dst,
+                                                   size_t *dstlen,
+                                                   otrng_prekey_profile_s *p) {
   if (!dst) {
     return OTRNG_ERROR;
   }
@@ -176,8 +177,8 @@ INTERNAL otrng_result otrng_prekey_profile_asprint(uint8_t **dst, size_t *dstlen
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result prekey_profile_sign(otrng_prekey_profile_s *profile,
-                                       const otrng_keypair_s *longterm_pair) {
+INTERNAL otrng_result prekey_profile_sign(
+    otrng_prekey_profile_s *profile, const otrng_keypair_s *longterm_pair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
   if (!otrng_prekey_profile_body_asprint(&body, &bodylen, profile)) {

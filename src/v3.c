@@ -164,8 +164,8 @@ tstatic void op_create_privkey(void *opdata, const char *accountname,
 tstatic int op_is_logged_in(void *opdata, const char *accountname,
                             const char *protocol, const char *recipient) {
   // TODO: implement
-  return otrng_true; /* We always think the person is logged in, otherwise it wont send
-               disconnect TLVs, for example. */
+  return otrng_true; /* We always think the person is logged in, otherwise it
+               wont send disconnect TLVs, for example. */
 }
 
 /* When the list of ConnContexts changes (including a change in
@@ -583,9 +583,10 @@ INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn) {
   free(conn);
 }
 
-INTERNAL otrng_result otrng_v3_send_message(char **newmessage, const char *message,
-                                         const tlv_list_s *tlvs,
-                                         otrng_v3_conn_s *conn) {
+INTERNAL otrng_result otrng_v3_send_message(char **newmessage,
+                                            const char *message,
+                                            const tlv_list_s *tlvs,
+                                            otrng_v3_conn_s *conn) {
   // TODO: @client convert TLVs
   OtrlTLV *tlvsv3 = NULL;
 
@@ -615,10 +616,11 @@ INTERNAL otrng_result otrng_v3_send_message(char **newmessage, const char *messa
   return OTRNG_ERROR;
 }
 
-INTERNAL otrng_result otrng_v3_receive_message(char **to_send, char **to_display,
-                                            tlv_list_s **tlvs,
-                                            const char *message,
-                                            otrng_v3_conn_s *conn) {
+INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
+                                               char **to_display,
+                                               tlv_list_s **tlvs,
+                                               const char *message,
+                                               otrng_v3_conn_s *conn) {
   int ignore_message;
   OtrlTLV *tlvs_v3 = NULL;
   *to_send = NULL;
@@ -704,9 +706,11 @@ INTERNAL otrng_result otrng_v3_send_symkey_message(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_v3_smp_start(char **to_send, const uint8_t *question,
-                                      size_t q_len, const uint8_t *secret,
-                                      size_t secretlen, otrng_v3_conn_s *conn) {
+INTERNAL otrng_result otrng_v3_smp_start(char **to_send,
+                                         const uint8_t *question, size_t q_len,
+                                         const uint8_t *secret,
+                                         size_t secretlen,
+                                         otrng_v3_conn_s *conn) {
   char *q = NULL;
   if (question && q_len > 0) {
     q = malloc(q_len + 1);
@@ -729,9 +733,10 @@ INTERNAL otrng_result otrng_v3_smp_start(char **to_send, const uint8_t *question
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_v3_smp_continue(char **to_send, const uint8_t *secret,
-                                         const size_t secretlen,
-                                         otrng_v3_conn_s *conn) {
+INTERNAL otrng_result otrng_v3_smp_continue(char **to_send,
+                                            const uint8_t *secret,
+                                            const size_t secretlen,
+                                            otrng_v3_conn_s *conn) {
   otrl_message_respond_smp(conn->state->user_state, conn->ops, conn->opdata,
                            conn->ctx, secret, secretlen);
 

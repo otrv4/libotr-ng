@@ -340,7 +340,7 @@ INTERNAL void otrng_key_manager_calculate_authenticator(
 
 /* Generate the ephemeral keys just as the DAKE is finished */
 tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
-                                                const char participant) {
+                                                   const char participant) {
   uint8_t random_buff[ED448_PRIVATE_BYTES];
   uint8_t usage_ECDH_first_ephemeral = 0x11;
 
@@ -533,8 +533,8 @@ tstatic void calculate_ssid(key_manager_s *manager) {
                  manager->shared_secret, sizeof(shared_secret_p));
 }
 
-INTERNAL otrng_result otrng_key_manager_ratcheting_init(key_manager_s *manager,
-                                                     const char participant) {
+INTERNAL otrng_result otrng_key_manager_ratcheting_init(
+    key_manager_s *manager, const char participant) {
   if (!generate_first_ephemeral_keys(manager, participant)) {
     return OTRNG_ERROR;
   }
@@ -551,9 +551,9 @@ INTERNAL otrng_result otrng_key_manager_ratcheting_init(key_manager_s *manager,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result enter_new_ratchet(key_manager_s *manager,
-                                    receiving_ratchet_s *tmp_receiving_ratchet,
-                                    const char action) {
+tstatic otrng_result enter_new_ratchet(
+    key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
+    const char action) {
   k_ecdh_p k_ecdh;
 
   /* K_ecdh = ECDH(our_ecdh.secret, their_ecdh) */
@@ -592,8 +592,8 @@ tstatic otrng_result enter_new_ratchet(key_manager_s *manager,
 }
 
 tstatic otrng_result rotate_keys(key_manager_s *manager,
-                              receiving_ratchet_s *tmp_receiving_ratchet,
-                              const char action) {
+                                 receiving_ratchet_s *tmp_receiving_ratchet,
+                                 const char action) {
   assert(action == 's' || action == 'r');
   if (action == 's') {
     /* our_ecdh = generateECDH()
@@ -788,9 +788,10 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 //}
 
 tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
-                                 receiving_ratchet_s *tmp_receiving_ratchet,
-                                 const int until, const int max_skip,
-                                 const char ratchet_type, otrng_warning *warn) {
+                                    receiving_ratchet_s *tmp_receiving_ratchet,
+                                    const int until, const int max_skip,
+                                    const char ratchet_type,
+                                    otrng_warning *warn) {
   if ((tmp_receiving_ratchet->k + max_skip) < until) {
     if (warn) {
       *warn = OTRNG_WARN_STORAGE_FULL;
@@ -948,7 +949,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
 }
 
 INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
-                                            msg_mac_key_p mac_key) {
+                                               msg_mac_key_p mac_key) {
   uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
   if (!to_store_mac) {
     return OTRNG_ERROR;

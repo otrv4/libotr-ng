@@ -72,9 +72,9 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
 }
 
 INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
-                                                     const uint8_t *src,
-                                                     size_t src_len,
-                                                     size_t *nread) {
+                                                        const uint8_t *src,
+                                                        size_t src_len,
+                                                        size_t *nread) {
   size_t w = 0;
   size_t read = 0;
 

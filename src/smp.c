@@ -215,9 +215,10 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
   return NULL;
 }
 
-INTERNAL otrng_result otrng_smp_start(string_p *to_send, const uint8_t *question,
-                                   const size_t q_len, const uint8_t *answer,
-                                   const size_t answer_len, otrng_s *otr) {
+INTERNAL otrng_result otrng_smp_start(string_p *to_send,
+                                      const uint8_t *question,
+                                      const size_t q_len, const uint8_t *answer,
+                                      const size_t answer_len, otrng_s *otr) {
   if (!otr) {
     return OTRNG_ERROR;
   }
@@ -288,7 +289,7 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_p smp,
 }
 
 tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
-                                  const size_t secretlen, otrng_s *otr) {
+                                     const size_t secretlen, otrng_s *otr) {
   if (!otr) {
     return OTRNG_ERROR;
   }
@@ -318,8 +319,9 @@ tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
   return ret;
 }
 
-INTERNAL otrng_result otrng_smp_continue(string_p *to_send, const uint8_t *secret,
-                                      const size_t secretlen, otrng_s *otr) {
+INTERNAL otrng_result otrng_smp_continue(string_p *to_send,
+                                         const uint8_t *secret,
+                                         const size_t secretlen, otrng_s *otr) {
   switch (otr->running_version) {
   case 3:
     // FIXME: @smp missing fragmentation

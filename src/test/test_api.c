@@ -28,7 +28,7 @@
 
 #define assert_msg_sent(result, to_send)                                       \
   do {                                                                         \
-    const otrng_result _result = (result);                                        \
+    const otrng_result _result = (result);                                     \
     const char *_to_send = (to_send);                                          \
     otrng_assert_is_success(_result);                                          \
     otrng_assert(_to_send);                                                    \
@@ -37,7 +37,7 @@
 
 #define assert_msg_rec(result, message, response)                              \
   do {                                                                         \
-    const otrng_result _result = (result);                                        \
+    const otrng_result _result = (result);                                     \
     const char *_message = (message);                                          \
     const otrng_response_s *_response = (response);                            \
     otrng_assert_is_success(_result);                                          \
@@ -49,7 +49,7 @@
 #define assert_rec_msg_in_state(result, respond_to, sender, otr_state,         \
                                 send_response)                                 \
   do {                                                                         \
-    const otrng_result _result = (result);                                        \
+    const otrng_result _result = (result);                                     \
     const otrng_response_s *_respond_to = (respond_to);                        \
     const otrng_s *_sender = (sender);                                         \
     const otrng_state _otr_state = (otr_state);                                \
@@ -71,7 +71,9 @@ static void free_message_and_response(otrng_response_s *response,
   *message = NULL;
 }
 
-static otrng_bool test_should_not_heartbeat(int last_sent) { return otrng_false; }
+static otrng_bool test_should_not_heartbeat(int last_sent) {
+  return otrng_false;
+}
 
 static otrng_bool test_should_heartbeat(int last_sent) { return otrng_true; }
 
@@ -748,8 +750,8 @@ void test_api_conversation_v3(void) {
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrng_assert_is_success(otrng_client_state_private_key_v3_write_FILEp(bob_client_state,
-                                                              tmpFILEp));
+  otrng_assert_is_success(otrng_client_state_private_key_v3_write_FILEp(
+      bob_client_state, tmpFILEp));
   fclose(tmpFILEp);
 
   // Generate instance tag

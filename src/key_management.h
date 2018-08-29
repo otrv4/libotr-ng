@@ -275,7 +275,7 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
  * for us, 't' for them
  */
 INTERNAL otrng_result otrng_key_manager_ratcheting_init(key_manager_s *manager,
-                                                     const char participant);
+                                                        const char participant);
 
 /**
  * @brief Get the correct message keys.
@@ -326,7 +326,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
  * @param [mac_key]   The mac key to store.
  */
 INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
-                                            msg_mac_key_p mac_key);
+                                               msg_mac_key_p mac_key);
 
 INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
 

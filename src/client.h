@@ -70,26 +70,30 @@ API int otrng_client_send_non_interactive_auth(
     char **newmessage, const prekey_ensemble_s *ensemble, const char *recipient,
     otrng_client_s *client);
 
-API otrng_result otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
-                                   const char *message, int mms,
-                                   const char *recipient,
-                                   otrng_client_s *client);
+API otrng_result otrng_client_send_fragment(
+    otrng_message_to_send_s **newmessage, const char *message, int mms,
+    const char *recipient, otrng_client_s *client);
 
 API otrng_result otrng_client_smp_start(char **tosend, const char *recipient,
-                               const unsigned char *question,
-                               const size_t q_len, const unsigned char *secret,
-                               size_t secretlen, otrng_client_s *client);
+                                        const unsigned char *question,
+                                        const size_t q_len,
+                                        const unsigned char *secret,
+                                        size_t secretlen,
+                                        otrng_client_s *client);
 
 API otrng_result otrng_client_smp_respond(char **tosend, const char *recipient,
-                                 const unsigned char *secret, size_t secretlen,
-                                 otrng_client_s *client);
+                                          const unsigned char *secret,
+                                          size_t secretlen,
+                                          otrng_client_s *client);
 
 API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
-                             const char *message, const char *recipient,
-                                   otrng_client_s *client, otrng_bool *should_ignore);
+                                      const char *message,
+                                      const char *recipient,
+                                      otrng_client_s *client,
+                                      otrng_bool *should_ignore);
 
 API otrng_result otrng_client_disconnect(char **newmsg, const char *recipient,
-                                otrng_client_s *client);
+                                         otrng_client_s *client);
 
 /* tstatic int otrng_encrypted_conversation_expire(char **newmsg, const char
  * *recipient, */
@@ -104,9 +108,10 @@ API otrng_bool otrng_conversation_is_encrypted(otrng_conversation_s *conv);
 
 API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv);
 
-API otrng_result otrng_expire_encrypted_session(char **newmsg, const char *recipient,
-                                       int expiration_time,
-                                       otrng_client_s *client);
+API otrng_result otrng_expire_encrypted_session(char **newmsg,
+                                                const char *recipient,
+                                                int expiration_time,
+                                                otrng_client_s *client);
 
 /**
  * @brief Expires old fragments based on a threshhold in seconds.
@@ -120,10 +125,10 @@ API otrng_result otrng_expire_encrypted_session(char **newmsg, const char *recip
  * @details Details around this function if any
  **/
 API otrng_result otrng_client_expire_fragments(int expiration_time,
-                                      otrng_client_s *client);
+                                               otrng_client_s *client);
 
 API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
-                                         const otrng_client_s *client);
+                                                  const otrng_client_s *client);
 
 API int should_heartbeat(int last_sent);
 /* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf); */

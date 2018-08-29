@@ -49,10 +49,11 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
     const otrng_public_key_p pub);
 
 INTERNAL otrng_result prekey_profile_sign(otrng_prekey_profile_s *profile,
-                                       const otrng_keypair_s *longterm_pair);
+                                          const otrng_keypair_s *longterm_pair);
 
-INTERNAL otrng_result otrng_prekey_profile_asprint(uint8_t **dst, size_t *dstlen,
-                                                otrng_prekey_profile_s *p);
+INTERNAL otrng_result otrng_prekey_profile_asprint(uint8_t **dst,
+                                                   size_t *dstlen,
+                                                   otrng_prekey_profile_s *p);
 
 INTERNAL otrng_result otrng_prekey_profile_deserialize(
     otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
@@ -60,9 +61,8 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
 
 #ifdef OTRNG_PREKEY_PROFILE_PRIVATE
 
-tstatic otrng_result otrng_prekey_profile_body_asprint(uint8_t **dst,
-                                                    size_t *dstlen,
-                                                    otrng_prekey_profile_s *p);
+tstatic otrng_result otrng_prekey_profile_body_asprint(
+    uint8_t **dst, size_t *dstlen, otrng_prekey_profile_s *p);
 
 tstatic size_t otrng_prekey_profile_body_serialize(uint8_t *dst, size_t dstlen,
                                                    otrng_prekey_profile_s *p);

@@ -50,7 +50,7 @@ struct otrng_client_state_s;
 typedef struct otrng_client_callbacks_s {
   /* Get account and protocol from a given client_id */
   otrng_result (*get_account_and_protocol)(char **account, char **protocol,
-                                  const void *client_id);
+                                           const void *client_id);
 
   /* Create an instance tag */
   void (*create_instag)(const void *client_opdata);

@@ -55,8 +55,8 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
                                           const ec_scalar_p scalar);
 
 INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
-                                              size_t *written,
-                                              const dh_mpi_p mpi);
+                                                 size_t *written,
+                                                 const dh_mpi_p mpi);
 
 /**
  * @brief Serializes a DH public key as an MPI.
@@ -71,8 +71,8 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
  * @out OTRNG_SUCCESS or OTRNG_ERROR.
  */
 INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
-                                                 size_t *written,
-                                                 const dh_public_key_p pub);
+                                                    size_t *written,
+                                                    const dh_public_key_p pub);
 
 INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst, const ring_sig_s *proof);
 

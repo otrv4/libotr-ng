@@ -149,8 +149,8 @@ otrng_prekey_client_request_storage_information(otrng_prekey_client_s *client);
 API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client);
 
 API otrng_result otrng_prekey_client_receive(char **tosend, const char *server,
-                                          const char *message,
-                                          otrng_prekey_client_s *client);
+                                             const char *message,
+                                             otrng_prekey_client_s *client);
 
 INTERNAL otrng_result
 otrng_prekey_dake1_message_asprint(uint8_t **serialized, size_t *serialized_len,

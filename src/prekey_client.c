@@ -152,7 +152,7 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
 }
 
 static otrng_result prekey_decode(const char *message, uint8_t **buffer,
-                               size_t *buffer_len) {
+                                  size_t *buffer_len) {
   size_t len = strlen(message);
 
   if (!len || '.' != message[len - 1]) {
@@ -427,7 +427,8 @@ otrng_prekey_dake3_message_append_storage_information_request(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_prekey_dake3_message_append_prekey_publication_message(
+INTERNAL otrng_result
+otrng_prekey_dake3_message_append_prekey_publication_message(
     otrng_prekey_publication_message_s *pub_msg,
     otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]) {
   uint8_t *client_profile = NULL;
@@ -900,7 +901,7 @@ static char *receive_prekey_ensemble_retrieval(const uint8_t *decoded,
 }
 
 static otrng_result parse_header(uint8_t *message_type, const uint8_t *buf,
-                              size_t buflen, size_t *read) {
+                                 size_t buflen, size_t *read) {
   size_t r = 0; /* read */
   size_t w = 0; /* walked */
 
@@ -958,8 +959,8 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
 }
 
 API otrng_result otrng_prekey_client_receive(char **tosend, const char *server,
-                                          const char *message,
-                                          otrng_prekey_client_s *client) {
+                                             const char *message,
+                                             otrng_prekey_client_s *client) {
   /* It should only process prekey server messages from the expected server.
      This avoids processing any plaintext message from a party as a
      malformed prekey server message. */

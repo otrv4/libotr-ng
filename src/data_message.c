@@ -118,9 +118,9 @@ INTERNAL otrng_result otrng_data_message_body_asprintf(
 }
 
 INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
-                                                  const uint8_t *buff,
-                                                  size_t bufflen,
-                                                  size_t *nread) {
+                                                     const uint8_t *buff,
+                                                     size_t bufflen,
+                                                     size_t *nread) {
   const uint8_t *cursor = buff;
   int64_t len = bufflen;
   size_t read = 0;
@@ -231,10 +231,9 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
                                        cursor, len);
 }
 
-INTERNAL static otrng_result otrng_data_message_sections_hash(uint8_t *dst,
-                                                           size_t dstlen,
-                                                           const uint8_t *body,
-                                                           size_t bodylen) {
+INTERNAL static otrng_result
+otrng_data_message_sections_hash(uint8_t *dst, size_t dstlen,
+                                 const uint8_t *body, size_t bodylen) {
   if (dstlen < HASH_BYTES) {
     return OTRNG_ERROR;
   }
@@ -246,10 +245,9 @@ INTERNAL static otrng_result otrng_data_message_sections_hash(uint8_t *dst,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_data_message_authenticator(uint8_t *dst, size_t dstlen,
-                                                    const msg_mac_key_p mac_key,
-                                                    const uint8_t *body,
-                                                    size_t bodylen) {
+INTERNAL otrng_result otrng_data_message_authenticator(
+    uint8_t *dst, size_t dstlen, const msg_mac_key_p mac_key,
+    const uint8_t *body, size_t bodylen) {
   if (dstlen < DATA_MSG_MAC_BYTES) {
     return OTRNG_ERROR;
   }

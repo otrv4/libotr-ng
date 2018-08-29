@@ -78,7 +78,7 @@ INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p) {
 }
 
 API otrng_result otrng_ec_point_encode(uint8_t *enc, size_t len,
-                                    const ec_point_p p) {
+                                       const ec_point_p p) {
   if (len < ED448_POINT_BYTES) {
     return OTRNG_ERROR;
   }
@@ -88,8 +88,8 @@ API otrng_result otrng_ec_point_encode(uint8_t *enc, size_t len,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_ec_point_decode(ec_point_p p,
-                                         const uint8_t enc[ED448_POINT_BYTES]) {
+INTERNAL otrng_result
+otrng_ec_point_decode(ec_point_p p, const uint8_t enc[ED448_POINT_BYTES]) {
   goldilocks_448_point_p tmp_p;
   if (!goldilocks_succeed_if(
           goldilocks_448_point_decode_like_eddsa_and_mul_by_ratio(tmp_p,
@@ -194,9 +194,9 @@ static otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
 }
 
 INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
-                                            size_t shared_secret_len,
-                                            const ec_scalar_p our_priv,
-                                            const ec_point_p their_pub) {
+                                               size_t shared_secret_len,
+                                               const ec_scalar_p our_priv,
+                                               const ec_point_p their_pub) {
   goldilocks_448_point_p p;
   goldilocks_448_point_scalarmul(p, their_pub, our_priv);
 

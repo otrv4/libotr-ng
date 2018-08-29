@@ -27,12 +27,14 @@
 
 INTERNAL tlv_s *otrng_process_smp_tlv(const tlv_s *tlv, otrng_s *otr);
 
-INTERNAL otrng_result otrng_smp_start(string_p *to_send, const uint8_t *question,
-                                   const size_t q_len, const uint8_t *answer,
-                                   const size_t answer_len, otrng_s *otr);
+INTERNAL otrng_result otrng_smp_start(string_p *to_send,
+                                      const uint8_t *question,
+                                      const size_t q_len, const uint8_t *answer,
+                                      const size_t answer_len, otrng_s *otr);
 
-INTERNAL otrng_result otrng_smp_continue(string_p *to_send, const uint8_t *secret,
-                                      const size_t secretlen, otrng_s *otr);
+INTERNAL otrng_result otrng_smp_continue(string_p *to_send,
+                                         const uint8_t *secret,
+                                         const size_t secretlen, otrng_s *otr);
 
 API otrng_result otrng_smp_abort(string_p *to_send, otrng_s *otr);
 

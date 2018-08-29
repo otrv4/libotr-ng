@@ -273,8 +273,8 @@ INTERNAL otrng_result otrng_client_profile_asprintf(
 }
 
 static otrng_result deserialize_dsa_key_field(client_profile_s *target,
-                                           const uint8_t *buffer, size_t buflen,
-                                           size_t *nread) {
+                                              const uint8_t *buffer,
+                                              size_t buflen, size_t *nread) {
   size_t read = 0;
   size_t w = 0;
 
@@ -318,8 +318,8 @@ static otrng_result deserialize_dsa_key_field(client_profile_s *target,
 }
 
 tstatic otrng_result deserialize_field(client_profile_s *target,
-                                    const uint8_t *buffer, size_t buflen,
-                                    size_t *nread) {
+                                       const uint8_t *buffer, size_t buflen,
+                                       size_t *nread) {
   size_t read = 0;
   size_t w = 0;
 
@@ -401,9 +401,9 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
 }
 
 INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
-                                                    const uint8_t *buffer,
-                                                    size_t buflen,
-                                                    size_t *nread) {
+                                                       const uint8_t *buffer,
+                                                       size_t buflen,
+                                                       size_t *nread) {
   size_t read = 0;
   int w = 0;
 
@@ -447,7 +447,7 @@ INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
 }
 
 tstatic otrng_result client_profile_sign(client_profile_s *profile,
-                                      const otrng_keypair_s *keypair) {
+                                         const otrng_keypair_s *keypair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
@@ -527,8 +527,8 @@ tstatic otrng_bool rollback_detected(const char *versions) {
   return otrng_false;
 }
 
-static otrng_result generate_dsa_key_sexp(gcry_sexp_t *pubs, const uint8_t *buffer,
-                                       size_t buflen) {
+static otrng_result
+generate_dsa_key_sexp(gcry_sexp_t *pubs, const uint8_t *buffer, size_t buflen) {
   if (!buffer || !buflen) {
     return OTRNG_ERROR;
   }
