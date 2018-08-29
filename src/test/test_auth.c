@@ -69,22 +69,22 @@ void test_rsig_auth() {
   otrng_keypair_generate(p3, sym3);
 
   ring_sig_p dst;
-  otrng_assert(!otrng_rsig_authenticate(dst, p1->priv, p1->pub, p2->pub,
+  otrng_assert_is_error(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p2->pub,
                                         p3->pub, p2->pub, (unsigned char *)msg,
                                         strlen(msg)));
 
-  otrng_assert(!otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub,
+  otrng_assert_is_error(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub,
                                         p3->pub, p1->pub, (unsigned char *)msg,
                                         strlen(msg)));
 
-  otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p2->pub,
+  otrng_assert_is_success(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p2->pub,
                                        p3->pub, (unsigned char *)msg,
                                        strlen(msg)));
 
-  otrng_assert_is_success(otrng_rsig_verify(dst, p1->pub, p2->pub, p3->pub,
+  otrng_assert(otrng_rsig_verify(dst, p1->pub, p2->pub, p3->pub,
                                             (unsigned char *)msg, strlen(msg)));
 
-  otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p3->pub, p1->pub,
+  otrng_assert_is_success(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p3->pub, p1->pub,
                                        p2->pub, (unsigned char *)msg,
                                        strlen(msg)));
 
@@ -202,7 +202,7 @@ void test_rsig_compatible_with_prekey_server() {
   otrng_assert_is_success(
       otrng_deserialize_ring_sig(proof, rsig, sizeof(rsig), NULL));
 
-  otrng_assert_is_success(otrng_rsig_verify_with_usage_and_domain(
+  otrng_assert(otrng_rsig_verify_with_usage_and_domain(
       0x11, "OTR-Prekey-Server", proof, p1->pub, p2->pub, p3->pub,
       (const uint8_t *)msg, 2));
 }

@@ -51,7 +51,11 @@ INTERNAL otrng_err generate_padding(uint8_t **dst, size_t *dstlen,
     return OTRNG_ERROR;
   }
 
-  otrng_err ret = otrng_tlv_serialize(*dst, padding_tlv);
+  size_t ret = otrng_tlv_serialize(*dst, padding_tlv);
   otrng_tlv_free(padding_tlv);
-  return ret;
+
+  if (ret == 0) {
+    return OTRNG_ERROR;
+  }
+  return OTRNG_SUCCESS;
 }

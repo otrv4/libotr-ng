@@ -44,18 +44,18 @@ get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
   return ret;
 }
 
-static int get_account_and_protocol_cb(char **account_name,
+static otrng_err get_account_and_protocol_cb(char **account_name,
                                        char **protocol_name,
                                        const void *client_id) {
   const char *account = client_id; // tests use client_name as client_id.
 
   if (!client_id) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   *account_name = otrng_strdup(account);
   *protocol_name = otrng_strdup("otr");
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
 static void create_client_profile_cb(struct otrng_client_state_s *state,
@@ -124,7 +124,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
 
   // TODO: @refactoring This should be done automatically
   FILE *tmpFILEp = tmpfile();
-  otrng_assert(!otrng_client_state_private_key_v3_write_FILEp(
+  otrng_assert_is_success(otrng_client_state_private_key_v3_write_FILEp(
       otrng_fixture->state, tmpFILEp));
   fclose(tmpFILEp);
 

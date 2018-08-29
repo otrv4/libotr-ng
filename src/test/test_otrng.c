@@ -112,8 +112,8 @@ void test_otrng_receives_plaintext_with_ws_tag(otrng_fixture_s *otrng_fixture,
       " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
   otrng_warning warn = OTRNG_WARN_NONE;
 
-  otrng_assert_is_success(
-      otrng_receive_message(response, &warn, message, otrng_fixture->otr));
+  otrng_err res = otrng_receive_message(response, &warn, message, otrng_fixture->otr);
+  otrng_assert_is_success(res);
   g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
   otrng_assert(response->to_send);
   g_assert_cmpint(otrng_fixture->otr->state, ==, OTRNG_STATE_WAITING_AUTH_R);
@@ -191,7 +191,7 @@ void test_otrng_receives_identity_message_invalid_on_start(
   otrng_warning warn = OTRNG_WARN_NONE;
   otrng_response_s *response = otrng_response_new();
   otrng_assert_is_success(otrng_receive_message(
-      response, &warn, identity_message, otrng_fixture->otr));
+      response, &warn,  identity_message, otrng_fixture->otr));
 
   g_assert_cmpint(otrng_fixture->otr->state, ==, OTRNG_STATE_START);
   g_assert_cmpint(otrng_fixture->otr->running_version, ==, 4);
@@ -226,10 +226,10 @@ void test_otrng_build_prekey_ensemble() {
   state->callbacks = test_callbacks;
   state->user_state = otrl_userstate_create();
 
-  otrng_assert(!otrng_client_state_add_private_key_v4(state, long_term_priv));
-  otrng_assert(
-      !otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv));
-  otrng_assert(!otrng_client_state_add_instance_tag(state, 0x100A0F));
+  otrng_assert_is_success(otrng_client_state_add_private_key_v4(state, long_term_priv));
+  otrng_assert_is_success(
+      otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv));
+  otrng_assert_is_success(otrng_client_state_add_instance_tag(state, 0x100A0F));
 
   otrng_keypair_s *keypair = otrng_client_state_get_keypair_v4(state);
   client_profile_s *profile =

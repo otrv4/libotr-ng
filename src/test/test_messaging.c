@@ -60,9 +60,9 @@ void test_user_state_key_management(void) {
         keys);
   rewind(keys);
 
-  int err = otrng_user_state_private_key_v4_read_FILEp(
+  otrng_err err = otrng_user_state_private_key_v4_read_FILEp(
       state, keys, read_client_id_for_privf);
-  g_assert_cmpint(err, ==, 0);
+  otrng_assert_is_success(err);
   fclose(keys);
 
   otrng_keypair_s *keypair =

@@ -50,7 +50,7 @@
   do {                                                                         \
     otrng_v3_init();                                                           \
     otrng_dh_init();                                                           \
-  } while (0)
+} while (0)
 
 #define OTRNG_FREE                                                             \
   do {                                                                         \

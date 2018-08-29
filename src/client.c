@@ -107,38 +107,38 @@ tstatic otrng_policy_s get_policy_for(const char *recipient) {
   return policy;
 }
 
-API int otrng_conversation_is_encrypted(otrng_conversation_s *conv) {
+API otrng_bool otrng_conversation_is_encrypted(otrng_conversation_s *conv) {
   if (!conv) {
-    return 0;
+    return otrng_false;
   }
 
   switch (conv->conn->running_version) {
   case 0:
-    return 0;
+    return otrng_false;
   case 3:
     return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
   case 4:
     return conv->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES;
   }
 
-  return 0;
+  return otrng_false;
 }
 
-API int otrng_conversation_is_finished(otrng_conversation_s *conv) {
+API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv) {
   if (!conv) {
-    return 0;
+    return otrng_false;
   }
 
   switch (conv->conn->running_version) {
   case 0:
-    return 0;
+    return otrng_false;
   case 4:
     return conv->conn->state == OTRNG_STATE_FINISHED;
   case 3:
     return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_FINISHED;
   }
 
-  return 0;
+  return otrng_false;
 }
 
 tstatic otrng_s *create_connection_for(const char *recipient,
@@ -242,21 +242,21 @@ API int otrng_client_send_non_interactive_auth(
   return !otrng_send_non_interactive_auth(newmessage, ensemble, conv->conn);
 }
 
-API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
+API otrng_err otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
                                    const char *message, int mms,
                                    const char *recipient,
                                    otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   string_p to_send = NULL;
   if (!send_message(&to_send, message, recipient, client)) {
     free(to_send); // TODO: @freeing send_message should free to_send if
                    // something fails
-    return 1;
+    return OTRNG_ERROR;
   }
 
   uint32_t our_tag = otrng_client_state_get_instance_tag(client->state);
@@ -268,7 +268,7 @@ API int otrng_client_send_fragment(otrng_message_to_send_s **newmessage,
   return ret;
 }
 
-API int otrng_client_smp_start(char **tosend, const char *recipient,
+API otrng_err otrng_client_smp_start(char **tosend, const char *recipient,
                                const unsigned char *question,
                                const size_t q_len, const unsigned char *secret,
                                size_t secretlen, otrng_client_s *client) {
@@ -276,45 +276,46 @@ API int otrng_client_smp_start(char **tosend, const char *recipient,
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   if (!otrng_smp_start(tosend, question, q_len, secret, secretlen,
                        conv->conn)) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
-API int otrng_client_smp_respond(char **tosend, const char *recipient,
+API otrng_err otrng_client_smp_respond(char **tosend, const char *recipient,
                                  const unsigned char *secret, size_t secretlen,
                                  otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   if (!otrng_smp_continue(tosend, secret, secretlen, conv->conn)) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
 // TODO: this function is very likely not doing the right thing with
 //   return codes for example, look at the return of
 //   CLIENT_ERROR_MSG_NOT_VALID. this function in general returns
 //   ERROR=0 for errors, so anything not ERROR will be success...
-API int otrng_client_receive(char **newmessage, char **todisplay,
+API otrng_err otrng_client_receive(char **newmessage, char **todisplay,
                              const char *message, const char *recipient,
-                             otrng_client_s *client) {
+                                   otrng_client_s *client,
+                                   otrng_bool *should_ignore) {
   otrng_err result = OTRNG_ERROR;
-  int should_ignore = 1;
   otrng_response_s *response = NULL;
   otrng_conversation_s *conv = NULL;
+  *should_ignore = otrng_false;
 
   if (!newmessage) {
     return result;
@@ -324,7 +325,8 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
-    return should_ignore;
+    *should_ignore = otrng_true;
+    return OTRNG_SUCCESS;
   }
 
   response = otrng_response_new();
@@ -332,7 +334,9 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
   result = otrng_receive_message(response, &warn, message, conv->conn);
 
   if (warn == OTRNG_WARN_RECEIVED_NOT_VALID) {
-    return OTRNG_CLIENT_RESULT_ERROR_NOT_VALID;
+    //    return OTRNG_CLIENT_RESULT_ERROR_NOT_VALID;
+    // TODO: fix this
+    return OTRNG_ERROR;
   }
 
   if (response->to_send) {
@@ -344,12 +348,12 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
     char *plain = otrng_strdup(response->to_display);
     *todisplay = plain;
     otrng_response_free(response);
-    return !should_ignore;
+    return OTRNG_SUCCESS;
   }
 
   otrng_response_free(response);
 
-  return result != OTRNG_ERROR;
+  return result;
 }
 
 API char *otrng_client_query_message(const char *recipient, const char *message,
@@ -379,29 +383,29 @@ tstatic void destroy_client_conversation(const otrng_conversation_s *conv,
   otrng_list_free_nodes(elem);
 }
 
-API int otrng_client_disconnect(char **newmsg, const char *recipient,
+API otrng_err otrng_client_disconnect(char **newmsg, const char *recipient,
                                 otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
 
   conv = get_conversation_with(recipient, client->conversations);
   if (!conv) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   if (!otrng_close(newmsg, conv->conn)) {
-    return 2;
+    return OTRNG_ERROR;
   }
 
   destroy_client_conversation(conv, client);
   conversation_free(conv);
 
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
 // TODO: @client this depends on how is going to be handled: as a different
 // event or inside process_conv_updated?
 /* expiration time should be set on seconds */
-API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
+API otrng_err otrng_expire_encrypted_session(char **newmsg, const char *recipient,
                                        int expiration_time,
                                        otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
@@ -409,23 +413,23 @@ API int otrng_expire_encrypted_session(char **newmsg, const char *recipient,
 
   conv = get_conversation_with(recipient, client->conversations);
   if (!conv) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   now = time(NULL);
   if (conv->conn->keys->last_generated < now - expiration_time) {
     if (!otrng_expire_session(newmsg, conv->conn)) {
-      return 2;
+      return OTRNG_ERROR;
     }
   }
 
   destroy_client_conversation(conv, client);
   conversation_free(conv);
 
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
-API int otrng_client_expire_fragments(int expiration_time,
+API otrng_err otrng_client_expire_fragments(int expiration_time,
                                       otrng_client_s *client) {
   const list_element_s *el = NULL;
   otrng_conversation_s *conv = NULL;
@@ -436,21 +440,20 @@ API int otrng_client_expire_fragments(int expiration_time,
     conv = el->data;
     if (!otrng_expire_fragments(now, expiration_time,
                                 &conv->conn->pending_fragments)) {
-      return 2;
+      return OTRNG_ERROR;
     }
   }
 
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
-API int otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
+API otrng_err otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                          const otrng_client_s *client) {
   if (!client->state->keypair) {
-    return -1;
+    return OTRNG_ERROR;
   }
 
-  return otrng_serialize_fingerprint(fp, client->state->keypair->pub) ==
-         OTRNG_ERROR;
+  return otrng_serialize_fingerprint(fp, client->state->keypair->pub);
 }
 
 API otrng_prekey_client_s *

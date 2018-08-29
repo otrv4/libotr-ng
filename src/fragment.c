@@ -302,7 +302,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_message,
   }
 
   uint32_t fragment_len = end - start - 1;
-  if (!copy_fragment_to_context(context, i, message + start, fragment_len)) {
+  if (copy_fragment_to_context(context, i, message + start, fragment_len) != OTRNG_SUCCESS) {
     return OTRNG_ERROR;
   }
 
@@ -310,7 +310,7 @@ INTERNAL otrng_err otrng_unfragment_message(char **unfrag_message,
   context->last_fragment_received_at = time(NULL);
 
   if (context->count == t) {
-    if (join_fragments(unfrag_message, context)) {
+    if (join_fragments(unfrag_message, context) == OTRNG_SUCCESS) {
       list_element_s *to_remove = otrng_list_get_by_value(context, *contexts);
       *contexts = otrng_list_remove_element(to_remove, *contexts);
       otrng_fragment_context_free(context);

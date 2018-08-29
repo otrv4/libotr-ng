@@ -25,39 +25,39 @@
 
 #ifdef OTRNG_PERSISTENCE_PRIVATE
 
-INTERNAL int
+INTERNAL otrng_err
 otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
                                              FILE *privf);
 
-INTERNAL int
+INTERNAL otrng_err
 otrng_client_state_private_key_v4_write_FILEp(const otrng_client_state_s *state,
                                               FILE *privf);
 
-INTERNAL int
+INTERNAL otrng_err
 otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
                                            FILE *instag);
 
-INTERNAL int
+INTERNAL otrng_err
 otrng_client_state_instance_tag_write_FILEp(otrng_client_state_s *state,
                                             FILE *instagf);
 
-INTERNAL int
+INTERNAL otrng_err
 otrng_client_state_private_key_v3_write_FILEp(const otrng_client_state_s *state,
                                               FILE *privf);
 
-INTERNAL int
+INTERNAL otrng_err
 otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
                                              FILE *privf);
 
-INTERNAL int
+INTERNAL otrng_err
 otrng_client_state_client_profile_write_FILEp(const otrng_client_state_s *state,
                                               FILE *privf);
 
-INTERNAL int
+INTERNAL otrng_err
 otrng_client_state_prekeys_write_FILEp(const otrng_client_state_s *state,
                                        FILE *privf);
 
-INTERNAL int
+INTERNAL otrng_err
 otrng_client_state_prekey_messages_read_FILEp(otrng_client_state_s *state,
                                               FILE *privf);
 

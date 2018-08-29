@@ -44,13 +44,8 @@ tstatic otrng_err get_account_and_protocol_cb(
     return OTRNG_ERROR;
   }
 
-  int err = state->callbacks->get_account_and_protocol(account, protocol,
+  return state->callbacks->get_account_and_protocol(account, protocol,
                                                        state->client_id);
-  if (err) {
-    return OTRNG_ERROR;
-  }
-
-  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_err otrng_client_state_get_account_and_protocol(
@@ -127,26 +122,26 @@ otrng_client_state_get_keypair_v4(otrng_client_state_s *state) {
   return state->keypair;
 }
 
-INTERNAL int
+INTERNAL otrng_err
 otrng_client_state_add_private_key_v4(otrng_client_state_s *state,
                                       const uint8_t sym[ED448_PRIVATE_BYTES]) {
   if (!state) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   if (state->keypair) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   /* @secret_information: the long-term key pair lives for as long the client
      decides */
   state->keypair = otrng_keypair_new();
   if (!state->keypair) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   otrng_keypair_generate(state->keypair, sym);
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
 API const client_profile_s *
@@ -193,23 +188,23 @@ API otrng_err otrng_client_state_add_client_profile(otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL int otrng_client_state_add_shared_prekey_v4(
+INTERNAL otrng_err otrng_client_state_add_shared_prekey_v4(
     otrng_client_state_s *state, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   if (!state) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   if (state->shared_prekey_pair) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   state->shared_prekey_pair = otrng_shared_prekey_pair_new();
   if (!state->shared_prekey_pair) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   otrng_shared_prekey_pair_generate(state->shared_prekey_pair, sym);
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
 static const otrng_shared_prekey_pair_s *
@@ -253,24 +248,24 @@ otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
   return state->prekey_profile;
 }
 
-API int
+API otrng_err
 otrng_client_state_add_prekey_profile(otrng_client_state_s *state,
                                       const otrng_prekey_profile_s *profile) {
   if (!state) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   if (state->prekey_profile) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   state->prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
   if (!state->prekey_profile) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   otrng_prekey_profile_copy(state->prekey_profile, profile);
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
 tstatic OtrlInsTag *otrng_instance_tag_new(const char *protocol,
@@ -303,14 +298,14 @@ tstatic void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
   us->instag_root = p;
 }
 
-INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
+INTERNAL otrng_err otrng_client_state_add_instance_tag(otrng_client_state_s *state,
                                                  unsigned int instag) {
   if (!state) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   if (!state->user_state) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   // TODO: We could use a "get storage key" callback and use it as
@@ -318,7 +313,7 @@ INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
   char *account_name = NULL;
   char *protocol_name = NULL;
   if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   OtrlInsTag *p =
@@ -326,7 +321,7 @@ INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
   if (p) {
     free(account_name);
     free(protocol_name);
-    return 1;
+    return OTRNG_ERROR;
   }
 
   p = otrng_instance_tag_new(protocol_name, account_name, instag);
@@ -334,17 +329,17 @@ INTERNAL int otrng_client_state_add_instance_tag(otrng_client_state_s *state,
   free(account_name);
   free(protocol_name);
   if (!p) {
-    return 1;
+    return OTRNG_ERROR;
   }
 
   otrl_userstate_instance_tag_add(state->user_state, p);
-  return 0;
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL unsigned int
 otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
   if (!state->user_state) {
-    return 0;
+    return (unsigned int)0;
   }
 
   // TODO: We could use a "get storage key" callback and use it as
@@ -352,7 +347,7 @@ otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
   char *account_name = NULL;
   char *protocol_name = NULL;
   if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
-    return 1;
+    return (unsigned int)1;
   }
 
   OtrlInsTag *instag =
@@ -366,7 +361,7 @@ otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
   }
 
   if (!instag) {
-    return 0;
+    return (unsigned int)0;
   }
 
   return instag->instag;

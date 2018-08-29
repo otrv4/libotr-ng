@@ -743,12 +743,12 @@ void test_api_conversation_v3(void) {
   // TODO: use callback?
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
-  otrng_assert(!otrng_client_state_private_key_v3_write_FILEp(
+  otrng_assert_is_success(otrng_client_state_private_key_v3_write_FILEp(
       alice_client_state, tmpFILEp));
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrng_assert(!otrng_client_state_private_key_v3_write_FILEp(bob_client_state,
+  otrng_assert_is_success(otrng_client_state_private_key_v3_write_FILEp(bob_client_state,
                                                               tmpFILEp));
   fclose(tmpFILEp);
 
@@ -898,7 +898,7 @@ void test_api_multiple_clients(void) {
   result =
       otrng_receive_message(alice_to_pc, &warn, pc_to_alice->to_send, alice);
 
-  assert_rec_msg_in_state(!result, alice_to_pc, alice,
+  assert_rec_msg_in_state(result, alice_to_pc, alice,
                           OTRNG_STATE_WAITING_AUTH_I, !send_response);
 
   otrng_response_free_all(pc_to_alice, alice_to_pc);
