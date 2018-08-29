@@ -46,9 +46,8 @@ char *otrng_client_state_get_storage_id(const otrng_client_state_s *state) {
   return key;
 }
 
-INTERNAL otrng_result
-otrng_client_state_private_key_v4_write_FILEp(const otrng_client_state_s *state,
-                                              FILE *privf) {
+INTERNAL otrng_result otrng_client_state_private_key_v4_write_FILEp(
+    const otrng_client_state_s *state, FILE *privf) {
   if (!privf) {
     return OTRNG_ERROR;
   }
@@ -93,9 +92,8 @@ otrng_client_state_private_key_v4_write_FILEp(const otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
-                                             FILE *privf) {
+INTERNAL otrng_result otrng_client_state_private_key_v4_read_FILEp(
+    otrng_client_state_s *state, FILE *privf) {
   char *line = NULL;
   size_t cap = 0;
   int len = 0;
@@ -139,9 +137,8 @@ otrng_client_state_private_key_v4_read_FILEp(otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_state_instance_tag_write_FILEp(otrng_client_state_s *state,
-                                            FILE *instagf) {
+INTERNAL otrng_result otrng_client_state_instance_tag_write_FILEp(
+    otrng_client_state_s *state, FILE *instagf) {
   // TODO: We could use a "get storage key" callback and use it as
   // account_name plus an arbitrary "libotrng-storage" protocol.
   char *account_name = NULL;
@@ -163,9 +160,8 @@ otrng_client_state_instance_tag_write_FILEp(otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
-                                           FILE *instag) {
+INTERNAL otrng_result otrng_client_state_instance_tag_read_FILEp(
+    otrng_client_state_s *state, FILE *instag) {
   if (!state->user_state) {
     return OTRNG_ERROR;
   }
@@ -178,9 +174,8 @@ otrng_client_state_instance_tag_read_FILEp(otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_state_private_key_v3_write_FILEp(const otrng_client_state_s *state,
-                                              FILE *privf) {
+INTERNAL otrng_result otrng_client_state_private_key_v3_write_FILEp(
+    const otrng_client_state_s *state, FILE *privf) {
 
   // TODO: We could use a "get storage key" callback and use it as
   // account_name plus an arbitrary "libotrng-storage" protocol.
@@ -191,8 +186,8 @@ otrng_client_state_private_key_v3_write_FILEp(const otrng_client_state_s *state,
     return OTRNG_ERROR;
   }
 
-  gcry_error_t ret = otrl_privkey_generate_FILEp(state->user_state, privf, account_name,
-                                              protocol_name);
+  gcry_error_t ret = otrl_privkey_generate_FILEp(state->user_state, privf,
+                                                 account_name, protocol_name);
 
   free(account_name);
   free(protocol_name);
@@ -203,9 +198,8 @@ otrng_client_state_private_key_v3_write_FILEp(const otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
-                                             FILE *privf) {
+INTERNAL otrng_result otrng_client_state_client_profile_read_FILEp(
+    otrng_client_state_s *state, FILE *privf) {
   char *line = NULL;
   size_t cap = 0;
   int len = 0;
@@ -238,7 +232,8 @@ otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
   free(line);
 
   client_profile_s profile[1];
-  otrng_result ret = otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
+  otrng_result ret =
+      otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
   free(dec);
 
   otrng_result err = OTRNG_SUCCESS;
@@ -254,9 +249,8 @@ otrng_client_state_client_profile_read_FILEp(otrng_client_state_s *state,
   return err;
 }
 
-INTERNAL otrng_result
-otrng_client_state_client_profile_write_FILEp(const otrng_client_state_s *state,
-                                              FILE *privf) {
+INTERNAL otrng_result otrng_client_state_client_profile_write_FILEp(
+    const otrng_client_state_s *state, FILE *privf) {
   if (!privf) {
     return OTRNG_ERROR;
   }
@@ -339,9 +333,8 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_state_prekeys_write_FILEp(const otrng_client_state_s *state,
-                                       FILE *privf) {
+INTERNAL otrng_result otrng_client_state_prekeys_write_FILEp(
+    const otrng_client_state_s *state, FILE *privf) {
   if (!privf) {
     return OTRNG_ERROR;
   }
@@ -371,7 +364,7 @@ otrng_client_state_prekeys_write_FILEp(const otrng_client_state_s *state,
 }
 
 otrng_result read_and_deserialize_prekey(otrng_client_state_s *state,
-                                      FILE *privf) {
+                                         FILE *privf) {
   char *line = NULL;
   int line_len = 0;
   size_t cap;
@@ -466,9 +459,8 @@ otrng_result read_and_deserialize_prekey(otrng_client_state_s *state,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_state_prekey_messages_read_FILEp(otrng_client_state_s *state,
-                                              FILE *privf) {
+INTERNAL otrng_result otrng_client_state_prekey_messages_read_FILEp(
+    otrng_client_state_s *state, FILE *privf) {
   if (!privf) {
     return OTRNG_ERROR;
   }

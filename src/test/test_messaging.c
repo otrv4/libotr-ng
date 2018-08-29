@@ -104,8 +104,8 @@ void test_user_state_prekey_message_management(void) {
         prekey);
   rewind(prekey);
 
-  otrng_result res = otrng_user_state_prekeys_read_FILEp(state, prekey,
-                                                read_client_id_for_privf);
+  otrng_result res = otrng_user_state_prekeys_read_FILEp(
+      state, prekey, read_client_id_for_privf);
   otrng_assert_is_success(res);
 
   fclose(prekey);
