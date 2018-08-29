@@ -277,9 +277,8 @@ otrng_client_state_client_profile_write_FILEp(const otrng_client_state_s *state,
   return 0;
 }
 
-static otrng_err
-serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
-                           const char *storage_id, FILE *privf) {
+INTERNAL otrng_err serialize_and_store_prekey(
+    const otrng_stored_prekeys_s *prekey, const char *storage_id, FILE *privf) {
   if (0 > fprintf(privf, "%s\n", storage_id)) {
     return OTRNG_ERROR;
   }
@@ -373,6 +372,7 @@ otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
     return OTRNG_ERROR;
   }
   prekey_msg->id = strtol(line, NULL, 16);
+
   free(line);
   line = NULL;
 

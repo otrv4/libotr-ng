@@ -60,6 +60,9 @@ otrng_client_state_prekeys_write_FILEp(const otrng_client_state_s *state,
 INTERNAL int
 otrng_client_state_prekey_messages_read_FILEp(otrng_client_state_s *state,
                                               FILE *privf);
+
+INTERNAL otrng_err serialize_and_store_prekey(
+    const otrng_stored_prekeys_s *prekey, const char *storage_id, FILE *privf);
 #endif
 
 #endif

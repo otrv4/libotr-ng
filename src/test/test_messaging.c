@@ -18,6 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "../base64.h"
 #include "../messaging.h"
 #include "../persistence.h"
 
@@ -112,6 +113,35 @@ void test_user_state_prekey_message_management(void) {
   otrng_client_state_s *client_state = get_client_state(state, charlie_account);
 
   otrng_assert(client_state->our_prekeys);
+
+  uint32_t message_id = 4047093956;
+  const otrng_stored_prekeys_s *stored_prekey = NULL;
+  stored_prekey = get_my_prekeys_by_id(message_id, client_state);
+
+  uint8_t ecdh_secret_k[ED448_SCALAR_BYTES] = {0};
+  otrng_ec_scalar_encode(ecdh_secret_k, stored_prekey->our_ecdh->priv);
+
+  char *ecdh_symkey = otrng_base64_encode(ecdh_secret_k, ED448_SCALAR_BYTES);
+
+  const char *expected_ecdh = "/j+dnA2sffO2yDwB3rOVPEzeCDsFfTss8NCwHsQaN4Hjsn/"
+                              "NpstdI0vbcFPUApJsK70NzpaTZjU=";
+  otrng_assert_cmpmem(expected_ecdh, ecdh_symkey, 76);
+
+  free(ecdh_symkey);
+
+  uint8_t dh_secret_k[DH_KEY_SIZE] = {0};
+  size_t dh_secret_k_len = 0;
+  otrng_dh_mpi_serialize(dh_secret_k, DH_KEY_SIZE, &dh_secret_k_len,
+                         stored_prekey->our_dh->priv);
+
+  char *dh_symkey = otrng_base64_encode(dh_secret_k, dh_secret_k_len);
+
+  const char *expected_dh =
+      "ZwK68U7e8nicaW1EqcZUfZnoLPzkyQqJcvtv1c6AS5M6uqFdH3PIjwup81/"
+      "dpOTgSesSPWaW/J79884Dnn3FDudlXVq9kH4K+xABjgekNGk=";
+  otrng_assert_cmpmem(expected_dh, dh_symkey, 108);
+
+  free(dh_symkey);
 
   otrng_user_state_free(state);
 }

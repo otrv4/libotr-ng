@@ -1249,7 +1249,6 @@ tstatic otrng_err non_interactive_auth_message_received(
   }
 
   stored_prekey = get_my_prekeys_by_id(auth->prekey_message_id, state);
-
   if (!stored_prekey) {
     return OTRNG_ERROR;
   }
