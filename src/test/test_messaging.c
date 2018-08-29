@@ -79,6 +79,43 @@ void test_user_state_key_management(void) {
   otrng_user_state_free(state);
 }
 
+void test_user_state_prekey_message_management(void) {
+  const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+
+  otrng_user_state_s *state = otrng_user_state_new(NULL);
+  otrng_user_state_add_private_key_v4(state, alice_account, alice_sym);
+  otrng_user_state_add_private_key_v4(state, bob_account, bob_sym);
+
+  otrng_assert(otrng_user_state_get_private_key_v4(state, alice_account));
+  otrng_assert(otrng_user_state_get_private_key_v4(state, bob_account));
+  otrng_assert(!otrng_user_state_get_private_key_v4(state, charlie_account));
+
+  /* Generate file */
+  FILE *prekey = tmpfile();
+  fputs("charlie@xmpp\n"
+        "f139c0c4\n"
+        "dba14ff1\n"
+        "/j+dnA2sffO2yDwB3rOVPEzeCDsFfTss8NCwHsQaN4Hjsn/"
+        "NpstdI0vbcFPUApJsK70NzpaTZjU=\n"
+        "ZwK68U7e8nicaW1EqcZUfZnoLPzkyQqJcvtv1c6AS5M6uqFdH3PIjwup81/"
+        "dpOTgSesSPWaW/J79884Dnn3FDudlXVq9kH4K+xABjgekNGk=\n",
+        prekey);
+  rewind(prekey);
+
+  int err = otrng_user_state_prekeys_read_FILEp(state, prekey,
+                                                read_client_id_for_privf);
+  g_assert_cmpint(err, ==, 0);
+
+  fclose(prekey);
+
+  otrng_client_state_s *client_state = get_client_state(state, charlie_account);
+
+  otrng_assert(client_state->our_prekeys);
+
+  otrng_user_state_free(state);
+}
+
 void test_instance_tag_api(void) {
   const char *alice_protocol = "otr";
   unsigned int instance_tag = 0x9abcdef0;

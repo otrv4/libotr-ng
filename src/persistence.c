@@ -294,7 +294,6 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
 
   // TODO: securely erase ecdh_secret_k
 
-  // TODO: the dh secret is 80 bytes long. The size is wrong here
   uint8_t dh_secret_k[DH_KEY_SIZE] = {0};
   size_t dh_secret_k_len = 0;
   // this should be 80 + 4
@@ -358,47 +357,53 @@ otrng_client_state_prekeys_write_FILEp(const otrng_client_state_s *state,
 otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
                                       FILE *privf) {
   char *line = NULL;
-  size_t line_len = 0;
+  int line_len = 0;
+  size_t cap;
 
   otrng_stored_prekeys_s *prekey_msg = malloc(sizeof(otrng_stored_prekeys_s));
   if (!prekey_msg) {
     return OTRNG_ERROR;
   }
+
   // TODO: we need to remove getline. It is not c99.
   // OR ignore if this will be moved to the plugin.
-  line_len = 0;
-  if (getline(&line, &line_len, privf) < 0) {
+  line_len = getline(&line, &cap, privf);
+  if (line_len < 0) {
+    free(line);
     return OTRNG_ERROR;
   }
   prekey_msg->id = strtol(line, NULL, 16);
   free(line);
   line = NULL;
 
-  line_len = 0;
-  if (getline(&line, &line_len, privf) < 0) {
+  line_len = getline(&line, &cap, privf);
+  if (line_len < 0) {
+    free(line);
     return OTRNG_ERROR;
   }
   prekey_msg->sender_instance_tag = strtol(line, NULL, 16);
   free(line);
   line = NULL;
 
-  int dec_len = OTRNG_BASE64_DECODE_LEN(line_len);
+  line_len = getline(&line, &cap, privf);
+  if (line_len < 0) {
+    free(line);
+    return OTRNG_ERROR;
+  }
+
+  // TODO: check this
+  int dec_len = OTRNG_BASE64_DECODE_LEN(line_len - 1);
   uint8_t *dec = malloc(dec_len);
   if (!dec) {
+    free(line);
     return OTRNG_ERROR;
   }
 
-  line_len = 0;
-  if (getline(&line, &line_len, privf) < 0) {
-    return OTRNG_ERROR;
-  }
-
-  dec_len = OTRNG_BASE64_DECODE_LEN(line_len);
-  otrl_base64_decode(dec, line, dec_len);
+  size_t scalar_len = otrl_base64_decode(dec, line, line_len);
   free(line);
   line = NULL;
 
-  otrng_deserialize_ec_scalar(prekey_msg->our_ecdh->priv, dec, dec_len);
+  otrng_deserialize_ec_scalar(prekey_msg->our_ecdh->priv, dec, scalar_len);
   free(dec);
   dec = NULL;
   dec_len = 0;
@@ -406,24 +411,28 @@ otrng_err read_and_deserialize_prekey(otrng_client_state_s *state,
   otrng_ec_calculate_public_key(prekey_msg->our_ecdh->pub,
                                 prekey_msg->our_ecdh->priv);
 
-  line_len = 0;
-  if (getline(&line, &line_len, privf) < 0) {
+  line_len = getline(&line, &cap, privf);
+  if (line_len < 0) {
+    free(line);
     return OTRNG_ERROR;
   }
 
-  dec = malloc(((line_len - 1 + 3) / 4) * 3);
+  // TODO: check this
+  dec_len = OTRNG_BASE64_DECODE_LEN(line_len - 1);
+  dec = malloc(dec_len);
   if (!dec) {
     free(line);
-    return 1;
+    return OTRNG_ERROR;
   }
 
-  size_t real_len = otrl_base64_decode(dec, line, line_len - 1);
+  size_t priv_len = otrl_base64_decode(dec, line, line_len - 1);
   free(line);
 
   otrng_err success =
-      otrng_dh_mpi_deserialize(&prekey_msg->our_dh->priv, dec, real_len, NULL);
+      otrng_dh_mpi_deserialize(&prekey_msg->our_dh->priv, dec, priv_len, NULL);
 
   free(dec);
+
   if (!success) {
     return OTRNG_ERROR;
   }
@@ -440,7 +449,7 @@ INTERNAL int
 otrng_client_state_prekey_messages_read_FILEp(otrng_client_state_s *state,
                                               FILE *privf) {
   if (!privf) {
-    return -1;
+    return 1;
   }
 
   if (!read_and_deserialize_prekey(state, privf)) {

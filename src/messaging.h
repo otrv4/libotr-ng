@@ -109,6 +109,10 @@ API int otrng_user_state_private_key_v4_read_FILEp(
     otrng_user_state_s *state, FILE *privf,
     const void *(*read_client_id_for_key)(FILE *filep));
 
+API int otrng_user_state_prekeys_read_FILEp(
+    otrng_user_state_s *state, FILE *prekey_filep,
+    const void *(*read_client_id_for_prekey)(FILE *filep));
+
 API otrng_keypair_s *
 otrng_user_state_get_private_key_v4(otrng_user_state_s *state,
                                     const void *client_id);
@@ -125,6 +129,8 @@ otrng_user_state_add_private_key_v4(otrng_user_state_s *state,
                                     const void *clientop,
                                     const uint8_t sym[ED448_PRIVATE_BYTES]);
 
+tstatic otrng_client_state_s *get_client_state(otrng_user_state_s *state,
+                                               const void *client_id);
 /* tstatic otrng_messaging_client_t
  * *otrng_messaging_client_new(otrng_user_state_s *state, */
 /*                                                    void *client_id); */
