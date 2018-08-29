@@ -1675,8 +1675,8 @@ tstatic otrng_err receive_auth_i(char **dst, const uint8_t *buff,
   // Reply with initial data message
   // TODO: this ignores the warning received. that might
   // be valid, but should be investigated.
-  return otrng_send_message(dst, "", NULL, NULL,
-                            MSGFLAGS_IGNORE_UNREADABLE, otr);
+  return otrng_send_message(dst, "", NULL, NULL, MSGFLAGS_IGNORE_UNREADABLE,
+                            otr);
 }
 
 // TODO: @refactoring this is the same as otrng_close
@@ -2207,8 +2207,9 @@ INTERNAL otrng_err otrng_receive_defragmented_message(
 }
 
 INTERNAL otrng_err otrng_send_message(string_p *to_send, const string_p message,
-                                      otrng_warning *warn, const tlv_list_s *tlvs,
-                                      uint8_t flags, otrng_s *otr) {
+                                      otrng_warning *warn,
+                                      const tlv_list_s *tlvs, uint8_t flags,
+                                      otrng_s *otr) {
   if (!otr) {
     return OTRNG_ERROR;
   }
@@ -2217,8 +2218,8 @@ INTERNAL otrng_err otrng_send_message(string_p *to_send, const string_p message,
   case OTRNG_PROTOCOL_VERSION_3:
     return otrng_v3_send_message(to_send, message, tlvs, otr->v3_conn);
   case OTRNG_PROTOCOL_VERSION_4:
-    return otrng_prepare_to_send_data_message(to_send, warn, message, tlvs,
-                                              otr, flags);
+    return otrng_prepare_to_send_data_message(to_send, warn, message, tlvs, otr,
+                                              flags);
   default:
     return OTRNG_ERROR;
   }

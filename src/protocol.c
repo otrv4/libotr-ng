@@ -357,8 +357,7 @@ INTERNAL otrng_err otrng_prepare_to_send_data_message(
     return OTRNG_ERROR;
   }
 
-  otrng_err result =
-      send_data_message(to_send, msg, msg_len, otr, flags, warn);
+  otrng_err result = send_data_message(to_send, msg, msg_len, otr, flags, warn);
 
   otr->last_sent = time(NULL);
 

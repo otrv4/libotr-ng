@@ -38,5 +38,4 @@ typedef enum {
   OTRNG_WARN_MALFORMED,
 } otrng_warning;
 
-
 #endif /* OTRNG_WARN_H */
