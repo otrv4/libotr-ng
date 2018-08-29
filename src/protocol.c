@@ -194,7 +194,7 @@ tstatic otrng_err serialize_and_encode_data_msg(
 
 tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
                                     size_t message_len, otrng_s *otr,
-                                    unsigned char flags, otrng_notif notif) {
+                                    unsigned char flags, otrng_warning *warn) {
   data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
   msg_enc_key_p enc_key;
@@ -203,7 +203,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
   /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(
           otr->keys, otr->conversation->client->max_stored_msg_keys, NULL,
-          otr->keys->j, 0, 's', notif)) {
+          otr->keys->j, 0, 's', warn)) {
     return OTRNG_ERROR;
   }
 
@@ -212,7 +212,7 @@ tstatic otrng_err send_data_message(string_p *to_send, const uint8_t *message,
 
   otrng_key_manager_derive_chain_keys(
       enc_key, mac_key, otr->keys, NULL,
-      otr->conversation->client->max_stored_msg_keys, 0, 's', notif);
+      otr->conversation->client->max_stored_msg_keys, 0, 's', warn);
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {
@@ -337,7 +337,7 @@ tstatic otrng_err append_tlvs(uint8_t **dst, size_t *dst_len,
 }
 
 INTERNAL otrng_err otrng_prepare_to_send_data_message(
-    string_p *to_send, otrng_notif notif, const string_p message,
+    string_p *to_send, otrng_warning *warn, const string_p message,
     const tlv_list_s *tlvs, otrng_s *otr, unsigned char flags) {
   uint8_t *msg = NULL;
   size_t msg_len = 0;
@@ -347,7 +347,9 @@ INTERNAL otrng_err otrng_prepare_to_send_data_message(
   }
 
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
-    notif = OTRNG_NOTIF_STATE_NOT_ENCRYPTED; // TODO: @queing queue message
+    if (warn) {
+      *warn = OTRNG_WARN_SEND_NOT_ENCRYPTED; // TODO: @queing queue message
+    }
     return OTRNG_ERROR;
   }
 
@@ -356,7 +358,7 @@ INTERNAL otrng_err otrng_prepare_to_send_data_message(
   }
 
   otrng_err result =
-      send_data_message(to_send, msg, msg_len, otr, flags, notif);
+      send_data_message(to_send, msg, msg_len, otr, flags, warn);
 
   otr->last_sent = time(NULL);
 

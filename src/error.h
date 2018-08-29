@@ -43,6 +43,7 @@ typedef enum {
   OTRNG_ERROR = 0,
 } otrng_err;
 
+// TODO[OB]: do we really need this too?
 typedef enum {
   OTRNG_ERR_MSG_NONE,
   OTRNG_ERR_MSG_UNREADABLE,
@@ -51,6 +52,9 @@ typedef enum {
   OTRNG_ERR_MSG_MALFORMED,
 } otrng_err_code;
 
+// TODO[OB]: We are going to remove this
+// Gradually moving over to the warning structs. We will make sure to carefully
+// document what each warning does through this process.
 typedef enum {
   OTRNG_NOTIF_NONE = 0,
   OTRNG_NOTIF_STATE_NOT_ENCRYPTED = 0x1001,

@@ -27,6 +27,7 @@
 #include "keys.h"
 #include "list.h"
 #include "shared.h"
+#include "warn.h"
 
 /* the different kind of keys for the key management */
 typedef uint8_t brace_key_p[BRACE_KEY_BYTES];
@@ -303,7 +304,7 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     msg_enc_key_p enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int message_id,
-    const char action, otrng_notif notif);
+    const char action, otrng_warning *warn);
 
 /**
  * @brief Derive the dh ratchet keys.
@@ -316,7 +317,7 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, int max_skip,
     receiving_ratchet_s *tmp_receiving_ratchet, int message_id, int previous_n,
-    const char action, otrng_notif notif);
+    const char action, otrng_warning *warn);
 
 /**
  * @brief Store old mac keys to reveal later.

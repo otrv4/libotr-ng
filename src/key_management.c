@@ -29,6 +29,7 @@
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
+#include "warn.h"
 
 #include "debug.h"
 
@@ -789,9 +790,12 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 tstatic otrng_err store_enc_keys(msg_enc_key_p enc_key,
                                  receiving_ratchet_s *tmp_receiving_ratchet,
                                  const int until, const int max_skip,
-                                 const char ratchet_type, otrng_notif notif) {
+                                 const char ratchet_type, otrng_warning *warn) {
   if ((tmp_receiving_ratchet->k + max_skip) < until) {
-    notif = OTRNG_NOTIF_MSG_STORAGE_FULL;
+    if (warn) {
+      *warn = OTRNG_WARN_STORAGE_FULL;
+    }
+    // TODO: should we really return success here?
     return OTRNG_SUCCESS;
   }
 
@@ -891,12 +895,12 @@ INTERNAL otrng_err otrng_key_get_skipped_keys(
 INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
     msg_enc_key_p enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int message_id,
-    const char action, otrng_notif notif) {
+    const char action, otrng_warning *warn) {
 
   assert(action == 's' || action == 'r');
   if (action == 'r') {
     if (!store_enc_keys(enc_key, tmp_receiving_ratchet, message_id, max_skip,
-                        'c', notif)) {
+                        'c', warn)) {
       return OTRNG_ERROR;
     }
   }
@@ -924,7 +928,7 @@ INTERNAL otrng_err otrng_key_manager_derive_chain_keys(
 INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, int max_skip,
     receiving_ratchet_s *tmp_receiving_ratchet, int message_id, int previous_n,
-    const char action, otrng_notif notif) {
+    const char action, otrng_warning *warn) {
   /* Derive new ECDH and DH keys */
   msg_enc_key_p enc_key;
 
@@ -933,7 +937,7 @@ INTERNAL otrng_err otrng_key_manager_derive_dh_ratchet_keys(
     if (action == 'r') {
       /* Store any message keys from the previous DH Ratchet */
       if (!store_enc_keys(enc_key, tmp_receiving_ratchet, previous_n, max_skip,
-                          'd', notif)) {
+                          'd', warn)) {
         return OTRNG_ERROR;
       }
     }

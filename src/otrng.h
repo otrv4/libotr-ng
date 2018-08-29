@@ -64,12 +64,6 @@ typedef struct otrng_server_s {
 } otrng_server_s, otrng_server_p[1];
 // clang-format on
 
-typedef enum {
-  OTRNG_WARN_NONE = 0,
-  OTRNG_WARN_RECEIVED_UNENCRYPTED,
-  OTRNG_WARN_RECEIVED_NOT_VALID,
-} otrng_warning;
-
 // TODO: @refactoring The use of "response" as the type name is confusing:
 // - to_display is the RECEIVED plaintext
 // - tlvs is the RECEIVED list of TLVs
@@ -101,15 +95,15 @@ INTERNAL otrng_response_s *otrng_response_new(void);
 INTERNAL void otrng_response_free(otrng_response_s *response);
 
 INTERNAL otrng_err otrng_receive_defragmented_message(
-    otrng_response_s *response, otrng_notif notif, const string_p message,
+    otrng_response_s *response, otrng_warning *warn, const string_p message,
     otrng_s *otr);
 
 INTERNAL otrng_err otrng_receive_message(otrng_response_s *response,
-                                         otrng_notif notif,
+                                         otrng_warning *warn,
                                          const string_p message, otrng_s *otr);
 
 INTERNAL otrng_err otrng_send_message(string_p *to_send, const string_p message,
-                                      otrng_notif notif, const tlv_list_s *tlvs,
+                                      otrng_warning *warn, const tlv_list_s *tlvs,
                                       uint8_t flags, otrng_s *otr);
 
 INTERNAL otrng_err otrng_close(string_p *to_send, otrng_s *otr);

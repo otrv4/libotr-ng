@@ -204,7 +204,7 @@ tstatic otrng_client_result send_message(char **newmsg, const char *message,
                                          const char *recipient,
                                          otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
@@ -212,9 +212,9 @@ tstatic otrng_client_result send_message(char **newmsg, const char *message,
   }
 
   otrng_err result =
-      otrng_send_message(newmsg, message, notif, NULL, 0, conv->conn);
+      otrng_send_message(newmsg, message, &warn, NULL, 0, conv->conn);
 
-  if (notif == OTRNG_NOTIF_STATE_NOT_ENCRYPTED) {
+  if (warn == OTRNG_WARN_SEND_NOT_ENCRYPTED) {
     return OTRNG_CLIENT_RESULT_ERROR_NOT_ENCRYPTED;
   }
   if (OTRNG_SUCCESS == result) {
@@ -328,10 +328,10 @@ API int otrng_client_receive(char **newmessage, char **todisplay,
   }
 
   response = otrng_response_new();
-  otrng_notif notif = OTRNG_NOTIF_NONE;
-  result = otrng_receive_message(response, notif, message, conv->conn);
+  otrng_warning warn = OTRNG_WARN_NONE;
+  result = otrng_receive_message(response, &warn, message, conv->conn);
 
-  if (notif == OTRNG_NOTIF_MSG_NOT_VALID) {
+  if (warn == OTRNG_WARN_RECEIVED_NOT_VALID) {
     return OTRNG_CLIENT_RESULT_ERROR_NOT_VALID;
   }
 

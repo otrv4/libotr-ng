@@ -92,7 +92,7 @@ INTERNAL dh_public_key_p our_dh(const otrng_s *otr);
 INTERNAL uint32_t our_instance_tag(const otrng_s *otr);
 
 INTERNAL otrng_err otrng_prepare_to_send_data_message(
-    string_p *to_send, otrng_notif notif, const string_p message,
+    string_p *to_send, otrng_warning *warn, const string_p message,
     const tlv_list_s *tlvs, otrng_s *otr, unsigned char flags);
 
 INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code);

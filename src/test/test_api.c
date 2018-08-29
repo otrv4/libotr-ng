@@ -119,14 +119,14 @@ void test_api_interactive_conversation(void) {
   int message_id;
   otrng_response_s *response_to_bob = NULL;
   otrng_response_s *response_to_alice = NULL;
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   string_p to_send = NULL;
   otrng_err result;
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Alice sends a data message
-    result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
+    result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
     assert_msg_sent(result, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
@@ -141,7 +141,7 @@ void test_api_interactive_conversation(void) {
 
     // Bob receives a data message
     response_to_alice = otrng_response_new();
-    result = otrng_receive_message(response_to_alice, notif, to_send, bob);
+    result = otrng_receive_message(response_to_alice, &warn, to_send, bob);
     assert_msg_rec(result, "hi", response_to_alice);
     otrng_assert(bob->keys->old_mac_keys);
 
@@ -162,7 +162,7 @@ void test_api_interactive_conversation(void) {
   // Next message Bob sends is a new DH ratchet
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    result = otrng_send_message(&to_send, "hello", notif, NULL, 0, bob);
+    result = otrng_send_message(&to_send, "hello", &warn, NULL, 0, bob);
     assert_msg_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -178,7 +178,7 @@ void test_api_interactive_conversation(void) {
 
     // Alice receives a data message
     response_to_bob = otrng_response_new();
-    result = otrng_receive_message(response_to_bob, notif, to_send, alice);
+    result = otrng_receive_message(response_to_bob, &warn, to_send, alice);
     assert_msg_rec(result, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
@@ -206,7 +206,7 @@ void test_api_interactive_conversation(void) {
   // Alice receives a data message with TLV
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(
-      otrng_receive_message(response_to_bob, notif, to_send, alice));
+      otrng_receive_message(response_to_bob, &warn, to_send, alice));
   g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 4);
 
   // Check TLVs
@@ -227,7 +227,7 @@ void test_api_interactive_conversation(void) {
 
   // Alice receives a disconnected TLV from Bob
   response_to_bob = otrng_response_new();
-  otrng_receive_message(response_to_bob, notif, to_send, alice);
+  otrng_receive_message(response_to_bob, &warn, to_send, alice);
 
   otrng_assert(response_to_bob->tlvs);
   g_assert_cmpint(response_to_bob->tlvs->data->type, ==,
@@ -250,7 +250,7 @@ void test_otrng_send_offline_message() {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 0);
@@ -292,7 +292,7 @@ void test_otrng_send_offline_message() {
 
   // Bob receives an offline message
   otrng_response_s *response = otrng_response_new();
-  otrng_assert_is_success(otrng_receive_message(response, notif, to_bob, bob));
+  otrng_assert_is_success(otrng_receive_message(response, &warn, to_bob, bob));
   free(to_bob);
 
   otrng_assert(!response->to_display);
@@ -324,7 +324,7 @@ void test_otrng_send_offline_message() {
   otrng_err result;
 
   for (message_id = 1; message_id < 4; message_id++) {
-    result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
+    result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
     assert_msg_sent(result, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
@@ -335,7 +335,7 @@ void test_otrng_send_offline_message() {
 
     // Alice receives a data message
     response_to_alice = otrng_response_new();
-    result = otrng_receive_message(response_to_alice, notif, to_send, bob);
+    result = otrng_receive_message(response_to_alice, &warn, to_send, bob);
     assert_msg_rec(result, "hi", response_to_alice);
     otrng_assert(bob->keys->old_mac_keys);
 
@@ -351,7 +351,7 @@ void test_otrng_send_offline_message() {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Alice sends a data message
-    result = otrng_send_message(&to_send, "hello", notif, NULL, 0, bob);
+    result = otrng_send_message(&to_send, "hello", &warn, NULL, 0, bob);
     assert_msg_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -362,7 +362,7 @@ void test_otrng_send_offline_message() {
 
     // Bob receives a data message
     response_to_bob = otrng_response_new();
-    result = otrng_receive_message(response_to_bob, notif, to_send, alice);
+    result = otrng_receive_message(response_to_bob, &warn, to_send, alice);
     assert_msg_rec(result, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
@@ -386,7 +386,7 @@ void test_otrng_send_offline_message() {
   // Alice receives a data message with TLV
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(
-      otrng_receive_message(response_to_bob, notif, to_send, alice));
+      otrng_receive_message(response_to_bob, &warn, to_send, alice));
   g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 4);
 
   // Check TLVS
@@ -410,7 +410,7 @@ void test_otrng_incorrect_offline_dake() {
   otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
   otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
 
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 0);
@@ -451,7 +451,7 @@ void test_otrng_incorrect_offline_dake() {
 
   // Bob receives an offline message
   otrng_response_s *response = otrng_response_new();
-  otrng_assert_is_success(otrng_receive_message(response, notif, to_bob, bob));
+  otrng_assert_is_success(otrng_receive_message(response, &warn, to_bob, bob));
   free(to_bob);
 
   otrng_assert(!response->to_display);
@@ -478,11 +478,10 @@ void test_otrng_incorrect_offline_dake() {
   otrng_err result;
 
   // Alice is unable to send a data msg
-  result = otrng_send_message(&to_send, "hi", notif, NULL, 0, bob);
+  result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, bob);
   otrng_assert_is_error(result);
   otrng_assert(!to_send);
-  // TODO: weird
-  g_assert_cmpint(notif, ==, OTRNG_NOTIF_NONE);
+  g_assert_cmpint(warn, ==, OTRNG_WARN_SEND_NOT_ENCRYPTED);
 
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 0);
@@ -508,13 +507,13 @@ void test_api_conversation_errors_1(void) {
 
   otrng_response_s *response_to_alice = NULL;
   otrng_response_s *response_to_bob = NULL;
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   string_p to_send = NULL;
   otrng_err result;
 
   // Alice sends a data message
-  result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
 
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
@@ -528,7 +527,7 @@ void test_api_conversation_errors_1(void) {
   // Bob receives a data message in the incorrect state
   response_to_alice = otrng_response_new();
   otrng_assert_is_error(
-      otrng_receive_message(response_to_alice, notif, to_send, bob));
+      otrng_receive_message(response_to_alice, &warn, to_send, bob));
 
   const string_p err_code =
       "?OTR Error: ERROR_2: OTRNG_ERR_MSG_NOT_PRIVATE_STATE";
@@ -541,7 +540,7 @@ void test_api_conversation_errors_1(void) {
 
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, notif, response_to_alice->to_send, alice));
+      response_to_bob, &warn, response_to_alice->to_send, alice));
 
   const string_p err_human = "Not in private state message";
   otrng_assert(response_to_bob);
@@ -554,7 +553,7 @@ void test_api_conversation_errors_1(void) {
   to_send = NULL;
 
   // Alice sends another data message
-  result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -573,7 +572,7 @@ void test_api_conversation_errors_1(void) {
 
   // Bob receives a non valid data message
   response_to_alice = otrng_response_new();
-  result = otrng_receive_message(response_to_alice, notif, to_send, bob);
+  result = otrng_receive_message(response_to_alice, &warn, to_send, bob);
 
   // otrng_assert(result == MSG_NOT_VALID);
   otrng_assert(response_to_alice->to_send == NULL);
@@ -596,7 +595,7 @@ void test_api_conversation_errors_2(void) {
 
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   otrng_assert(alice->state == OTRNG_STATE_START);
   otrng_assert(bob->state == OTRNG_STATE_START);
@@ -621,12 +620,12 @@ void test_api_conversation_errors_2(void) {
 
   // Alice receives malformed Identity message
   otrng_assert_is_error(
-      otrng_receive_message(response_to_alice, notif, malformed, alice));
+      otrng_receive_message(response_to_alice, &warn, malformed, alice));
   const string_p err_code = "?OTR Error: ERROR_4: OTRNG_ERR_MALFORMED";
   otrng_assert_cmpmem(err_code, response_to_alice->to_send, strlen(err_code));
 
   otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, notif, response_to_alice->to_send, alice));
+      response_to_bob, &warn, response_to_alice->to_send, alice));
 
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
@@ -651,7 +650,7 @@ void test_api_conversation_errors_2(void) {
 static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends query message
   string_p query_message = NULL;
@@ -660,7 +659,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
 
   // Bob receives query message
   otrng_assert_is_success(
-      otrng_receive_message(response_to_alice, notif, query_message, bob));
+      otrng_receive_message(response_to_alice, &warn, query_message, bob));
   free(query_message);
   query_message = NULL;
 
@@ -671,7 +670,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
 
   // Alice receives DH-Commit
   otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, notif, response_to_alice->to_send, alice));
+      response_to_bob, &warn, response_to_alice->to_send, alice));
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
@@ -681,7 +680,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
   otrng_assert_cmpmem("?OTR:AAMK", response_to_bob->to_send, 9);
 
   // Bob receives a DH Key
-  otrng_assert_is_success(otrng_receive_message(response_to_alice, notif,
+  otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
                                                 response_to_bob->to_send, bob));
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
@@ -693,7 +692,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
 
   // Alice receives Reveal Sig
   otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, notif, response_to_alice->to_send, alice));
+      response_to_bob, &warn, response_to_alice->to_send, alice));
   free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
@@ -706,7 +705,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
   g_assert_cmpint(OTRL_MSGSTATE_ENCRYPTED, ==, alice->v3_conn->ctx->msgstate);
 
   // Bob receives a Sig
-  otrng_assert_is_success(otrng_receive_message(response_to_alice, notif,
+  otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
                                                 response_to_bob->to_send, bob));
   free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
@@ -764,18 +763,18 @@ void test_api_conversation_v3(void) {
   otrng_response_s *response_to_bob = NULL;
   otrng_response_s *response_to_alice = NULL;
   string_p to_send = NULL;
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends a data message
   otrng_assert_is_success(
-      otrng_send_message(&to_send, "hi", notif, NULL, 0, alice));
+      otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice));
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
   // Bob receives a data message
   response_to_alice = otrng_response_new();
   otrng_assert_is_success(
-      otrng_receive_message(response_to_alice, notif, to_send, bob));
+      otrng_receive_message(response_to_alice, &warn, to_send, bob));
 
   otrng_assert(response_to_alice->to_display);
   otrng_assert_cmpmem("hi", response_to_alice->to_display, 3);
@@ -784,14 +783,14 @@ void test_api_conversation_v3(void) {
 
   // Bob sends a data message
   otrng_assert_is_success(
-      otrng_send_message(&to_send, "hi", notif, NULL, 0, bob));
+      otrng_send_message(&to_send, "hi", &warn, NULL, 0, bob));
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
   // Alice receives a data message
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(
-      otrng_receive_message(response_to_bob, notif, to_send, alice));
+      otrng_receive_message(response_to_bob, &warn, to_send, alice));
 
   otrng_assert(response_to_bob->to_display);
   otrng_assert_cmpmem("hi", response_to_bob->to_display, 3);
@@ -829,7 +828,7 @@ void test_api_multiple_clients(void) {
   otrng_response_s *phone_to_alice = otrng_response_new();
   otrng_response_s *alice_to_pc = otrng_response_new();
   otrng_response_s *alice_to_phone = otrng_response_new();
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   string_p query_message = NULL;
 
@@ -840,13 +839,13 @@ void test_api_multiple_clients(void) {
   otrng_assert_cmpmem("?OTRv4", query_message, 6);
 
   // PC receives query msg and sends identity msg
-  result = otrng_receive_message(pc_to_alice, notif, query_message, bob_pc);
+  result = otrng_receive_message(pc_to_alice, &warn, query_message, bob_pc);
   assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
                           OTRNG_STATE_WAITING_AUTH_R, send_response);
 
   // PHONE receives query msg and sends identity msg
   result =
-      otrng_receive_message(phone_to_alice, notif, query_message, bob_phone);
+      otrng_receive_message(phone_to_alice, &warn, query_message, bob_phone);
   assert_rec_msg_in_state(result, phone_to_alice, bob_phone,
                           OTRNG_STATE_WAITING_AUTH_R, send_response);
 
@@ -854,7 +853,7 @@ void test_api_multiple_clients(void) {
 
   // ALICE receives Identity msg from PC and sends AUTH-R
   result =
-      otrng_receive_message(alice_to_pc, notif, pc_to_alice->to_send, alice);
+      otrng_receive_message(alice_to_pc, &warn, pc_to_alice->to_send, alice);
   assert_rec_msg_in_state(result, alice_to_pc, alice,
                           OTRNG_STATE_WAITING_AUTH_I, send_response);
   otrng_response_free(pc_to_alice);
@@ -862,7 +861,7 @@ void test_api_multiple_clients(void) {
   // ALICE receives Identity msg from PHONE (on state
   // OTRNG_STATE_WAITING_AUTH_I) and sends AUTH-R. ALICE will replace keys and
   // profile info from PC with info from PHONE.
-  result = otrng_receive_message(alice_to_phone, notif, phone_to_alice->to_send,
+  result = otrng_receive_message(alice_to_phone, &warn, phone_to_alice->to_send,
                                  alice);
   assert_rec_msg_in_state(result, alice_to_phone, alice,
                           OTRNG_STATE_WAITING_AUTH_I, send_response);
@@ -871,7 +870,7 @@ void test_api_multiple_clients(void) {
   // PC receives Auth-R succesfully and sends an Auth-I
   pc_to_alice = otrng_response_new();
   result =
-      otrng_receive_message(pc_to_alice, notif, alice_to_pc->to_send, bob_pc);
+      otrng_receive_message(pc_to_alice, &warn, alice_to_pc->to_send, bob_pc);
   assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
                           OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE, send_response);
 
@@ -883,7 +882,7 @@ void test_api_multiple_clients(void) {
 
   // PHONE receives Auth-R with PC instance tag - Ignores
   phone_to_alice = otrng_response_new();
-  result = otrng_receive_message(phone_to_alice, notif, alice_to_pc->to_send,
+  result = otrng_receive_message(phone_to_alice, &warn, alice_to_pc->to_send,
                                  bob_phone);
   assert_rec_msg_in_state(result, phone_to_alice, bob_phone,
                           OTRNG_STATE_WAITING_AUTH_R, !send_response);
@@ -897,7 +896,7 @@ void test_api_multiple_clients(void) {
   // ALICE receives Auth-I from PC - Authentication fails
   alice_to_pc = otrng_response_new();
   result =
-      otrng_receive_message(alice_to_pc, notif, pc_to_alice->to_send, alice);
+      otrng_receive_message(alice_to_pc, &warn, pc_to_alice->to_send, alice);
 
   assert_rec_msg_in_state(!result, alice_to_pc, alice,
                           OTRNG_STATE_WAITING_AUTH_I, !send_response);
@@ -906,7 +905,7 @@ void test_api_multiple_clients(void) {
 
   // PC receives Auth-R again - ignores
   pc_to_alice = otrng_response_new();
-  result = otrng_receive_message(pc_to_alice, notif, alice_to_phone->to_send,
+  result = otrng_receive_message(pc_to_alice, &warn, alice_to_phone->to_send,
                                  bob_pc);
   assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
                           OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
@@ -914,7 +913,7 @@ void test_api_multiple_clients(void) {
 
   // PHONE receives correct Auth-R message and sends Auth-I
   phone_to_alice = otrng_response_new();
-  result = otrng_receive_message(phone_to_alice, notif, alice_to_phone->to_send,
+  result = otrng_receive_message(phone_to_alice, &warn, alice_to_phone->to_send,
                                  bob_phone);
   assert_rec_msg_in_state(result, phone_to_alice, bob_phone,
                           OTRNG_STATE_ENCRYPTED_MESSAGES, send_response);
@@ -928,7 +927,7 @@ void test_api_multiple_clients(void) {
 
   // ALICE receives Auth-I from PHONE
   alice_to_phone = otrng_response_new();
-  result = otrng_receive_message(alice_to_phone, notif, phone_to_alice->to_send,
+  result = otrng_receive_message(alice_to_phone, &warn, phone_to_alice->to_send,
                                  alice);
   assert_rec_msg_in_state(result, alice_to_phone, alice,
                           OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
@@ -964,7 +963,7 @@ void test_api_smp(void) {
   otrng_response_s *response_to_alice = NULL;
   string_p to_send = NULL;
   const char *secret = "secret";
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends SMP1
   otrng_assert_is_success(otrng_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
@@ -976,7 +975,7 @@ void test_api_smp(void) {
   // Bob receives SMP1
   response_to_alice = otrng_response_new();
   otrng_assert_is_success(
-      otrng_receive_message(response_to_alice, notif, to_send, bob));
+      otrng_receive_message(response_to_alice, &warn, to_send, bob));
   otrng_assert(!response_to_alice->to_send);
 
   free_message_and_response(response_to_alice, &to_send);
@@ -992,7 +991,7 @@ void test_api_smp(void) {
   // Alice receives SMP2
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(
-      otrng_receive_message(response_to_bob, notif, to_send, alice));
+      otrng_receive_message(response_to_bob, &warn, to_send, alice));
 
   otrng_assert(response_to_bob->to_send);
   otrng_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9); // SMP3
@@ -1002,7 +1001,7 @@ void test_api_smp(void) {
 
   // Bob receives SMP3
   response_to_alice = otrng_response_new();
-  otrng_assert_is_success(otrng_receive_message(response_to_alice, notif,
+  otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
                                                 response_to_bob->to_send, bob));
   otrng_response_free(response_to_bob);
 
@@ -1013,7 +1012,7 @@ void test_api_smp(void) {
   // Alice receives SMP4
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, notif, response_to_alice->to_send, alice));
+      response_to_bob, &warn, response_to_alice->to_send, alice));
   otrng_response_free(response_to_alice);
 
   g_assert_cmpint(bob->smp->state_expect, ==, '1');
@@ -1047,7 +1046,7 @@ void test_api_smp_abort(void) {
   otrng_response_s *response_to_alice = NULL;
   string_p to_send = NULL;
   const char *secret = "secret";
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends SMP1
   otrng_assert_is_success(otrng_smp_start(&to_send, NULL, 0, (uint8_t *)secret,
@@ -1059,7 +1058,7 @@ void test_api_smp_abort(void) {
   // Bob receives SMP1
   response_to_alice = otrng_response_new();
   otrng_assert_is_success(
-      otrng_receive_message(response_to_alice, notif, to_send, bob));
+      otrng_receive_message(response_to_alice, &warn, to_send, bob));
 
   otrng_assert(!response_to_alice->to_send);
   free_message_and_response(response_to_alice, &to_send);
@@ -1071,7 +1070,7 @@ void test_api_smp_abort(void) {
   // Alice receives SMP ABORT
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(
-      otrng_receive_message(response_to_bob, notif, to_send, alice));
+      otrng_receive_message(response_to_bob, &warn, to_send, alice));
 
   otrng_assert(!response_to_bob->to_send);
   g_assert_cmpint(alice->smp->state_expect, ==, '1');
@@ -1109,10 +1108,10 @@ void test_api_extra_sym_key(void) {
 
   // Alice sends a data message
   string_p to_send = NULL;
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
   otrng_err result;
 
-  result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -1122,7 +1121,7 @@ void test_api_extra_sym_key(void) {
 
   // Bob receives a data message
   response_to_alice = otrng_response_new();
-  result = otrng_receive_message(response_to_alice, notif, to_send, bob);
+  result = otrng_receive_message(response_to_alice, &warn, to_send, bob);
   assert_msg_rec(result, "hi", response_to_alice);
   otrng_assert(bob->keys->old_mac_keys);
 
@@ -1148,7 +1147,7 @@ void test_api_extra_sym_key(void) {
   // Alice receives a data message with TLV
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(
-      otrng_receive_message(response_to_bob, notif, to_send, alice));
+      otrng_receive_message(response_to_bob, &warn, to_send, alice));
   g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 1);
 
   // Check TLVS
@@ -1186,10 +1185,10 @@ void test_heartbeat_messages(void) {
 
   // Alice sends a data message
   string_p to_send = NULL;
-  otrng_notif notif = OTRNG_NOTIF_NONE;
+  otrng_warning warn = OTRNG_WARN_NONE;
   otrng_err result;
 
-  result = otrng_send_message(&to_send, "hi", notif, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
   assert_msg_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -1204,7 +1203,7 @@ void test_heartbeat_messages(void) {
   // Bob sends a heartbeat message
   response_to_alice = otrng_response_new();
   otrng_assert_is_success(
-      otrng_receive_message(response_to_alice, notif, to_send, bob));
+      otrng_receive_message(response_to_alice, &warn, to_send, bob));
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
 
   otrng_assert_cmpmem("hi", response_to_alice->to_display, strlen("hi") + 1);
@@ -1218,7 +1217,7 @@ void test_heartbeat_messages(void) {
   // Alice receives the heatbeat message. Let's force this.
   response_to_bob = otrng_response_new();
   otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, notif, response_to_alice->to_send, alice));
+      response_to_bob, &warn, response_to_alice->to_send, alice));
   otrng_assert(alice->keys->old_mac_keys);
   otrng_assert(!response_to_bob->to_display);
   otrng_assert(!response_to_bob->to_send);
