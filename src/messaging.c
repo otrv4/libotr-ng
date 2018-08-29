@@ -306,7 +306,7 @@ API otrng_result otrng_user_state_prekeys_read_FILEp(
     otrng_client_state_s *client_state = get_client_state(state, client_id);
 
     if (otrng_client_state_prekey_messages_read_FILEp(client_state,
-                                                      prekey_filep)) {
+                                                      prekey_filep) != OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
     }

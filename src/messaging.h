@@ -106,7 +106,7 @@ API otrng_result otrng_user_state_private_key_v4_read_FILEp(
     otrng_user_state_s *state, FILE *privf,
     const void *(*read_client_id_for_key)(FILE *filep));
 
-API int otrng_user_state_prekeys_read_FILEp(
+API otrng_result otrng_user_state_prekeys_read_FILEp(
     otrng_user_state_s *state, FILE *prekey_filep,
     const void *(*read_client_id_for_prekey)(FILE *filep));
 

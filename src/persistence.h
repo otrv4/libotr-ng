@@ -53,7 +53,7 @@ INTERNAL otrng_result
 otrng_client_state_prekey_messages_read_FILEp(otrng_client_state_s *state,
                                               FILE *privf);
 
-INTERNAL otrng_err serialize_and_store_prekey(
+INTERNAL otrng_result serialize_and_store_prekey(
     const otrng_stored_prekeys_s *prekey, const char *storage_id, FILE *privf);
 
 #endif
