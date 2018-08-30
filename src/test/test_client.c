@@ -1089,80 +1089,80 @@ void test_client_expires_old_fragments(void) {
 }
 
 void test_client_sends_fragmented_message(void) {
-  // TODO: this test is failing - after the boolean/error refactorings
-  // However, the previous test never did what the tester thought it was doing
-  // Thus, I think this is a real failure, and needs to be investigated.
+  otrng_bool ignore = otrng_false;
+  otrng_client_state_s *alice_client_state =
+      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
 
-  /* otrng_bool ignore = otrng_false; */
-  /* otrng_client_state_s *alice_client_state = */
-  /*     otrng_client_state_new(ALICE_IDENTITY); */
-  /* otrng_client_state_s *bob_client_state =
-   * otrng_client_state_new(BOB_IDENTITY); */
+  otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2);
 
-  /* otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY,
-   * 1); */
-  /* otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2); */
+  char *query_msg_to_bob =
+      otrng_client_query_message(BOB_IDENTITY, "Hi bob", alice);
+  otrng_assert(query_msg_to_bob);
 
-  /* char *query_msg_to_bob = */
-  /*     otrng_client_query_message(BOB_IDENTITY, "Hi bob", alice); */
-  /* otrng_assert(query_msg_to_bob); */
+  char *from_alice_to_bob = NULL, *from_bob = NULL, *to_display = NULL;
 
-  /* char *from_alice_to_bob = NULL, *from_bob = NULL, *to_display = NULL; */
+  /* Bob receives query message, sends identity msg */
+  otrng_client_receive(&from_bob, &to_display, query_msg_to_bob, ALICE_IDENTITY,
+                       bob, &ignore);
+  free(query_msg_to_bob);
+  query_msg_to_bob = NULL;
 
-  /* // Bob receives query message, sends identity msg */
-  /* otrng_client_receive(&from_bob, &to_display, query_msg_to_bob,
-   * ALICE_IDENTITY, */
-  /*                      bob, &ignore); */
-  /* free(query_msg_to_bob); */
-  /* query_msg_to_bob = NULL; */
+  /* Alice receives identity message (from Bob), sends Auth-R message */
+  otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_IDENTITY,
+                       alice, &ignore);
+  free(from_bob);
+  from_bob = NULL;
 
-  /* // Alice receives identity message (from Bob), sends Auth-R message */
-  /* otrng_client_receive(&from_alice_to_bob, &to_display, from_bob,
-   * BOB_IDENTITY, */
-  /*                      alice, &ignore); */
-  /* free(from_bob); */
-  /* from_bob = NULL; */
+  /* Bob receives Auth-R message, sends Auth-I message */
+  otrng_client_receive(&from_bob, &to_display, from_alice_to_bob,
+                       ALICE_IDENTITY, bob, &ignore);
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
 
-  /* // Bob receives Auth-R message, sends Auth-I message */
-  /* otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, */
-  /*                      ALICE_IDENTITY, bob, &ignore); */
-  /* free(from_alice_to_bob); */
-  /* from_alice_to_bob = NULL; */
+  /* Alice receives Auth-I message (from Bob) */
+  otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_IDENTITY,
+                       alice, &ignore);
+  free(from_bob);
+  from_bob = NULL;
 
-  /* // Alice receives Auth-I message (from Bob) */
-  /* otrng_client_receive(&from_alice_to_bob, &to_display, from_bob,
-   * BOB_IDENTITY, */
-  /*                      alice, &ignore); */
-  /* free(from_alice_to_bob); */
-  /* from_alice_to_bob = NULL; */
-  /* free(from_bob); */
-  /* from_bob = NULL; */
+  /* Bob receives the initial data message */
+  otrng_client_receive(&from_bob, &to_display, from_alice_to_bob,
+                       ALICE_IDENTITY, bob, &ignore);
+  free(from_alice_to_bob);
+  from_alice_to_bob = NULL;
 
-  /* otrng_message_to_send_s *to_send = otrng_message_new(); */
-  /* const char *message = "We should fragment when is needed"; */
+  otrng_assert(!ignore);
+  otrng_assert(!from_bob);
+  otrng_assert(!to_display);
 
-  /* // Alice fragments the message */
-  /* otrng_client_send_fragment(&to_send, message, 100, BOB_IDENTITY, alice); */
+  otrng_message_to_send_s *to_send = otrng_message_new();
+  const char *message = "We should fragment when is needed";
 
-  /* for (int i = 0; i < to_send->total; i++) { */
-  /*   // Bob receives the fragments */
-  /*   otrng_client_receive(&from_bob, &to_display, to_send->pieces[i], */
-  /*                        ALICE_IDENTITY, bob, &ignore); */
-  /*   otrng_assert(!from_bob); */
+  /* Alice fragments the message */
+  otrng_client_send_fragment(&to_send, message, 100, BOB_IDENTITY, alice);
 
-  /*   if (to_send->total - 1 == i) */
-  /*     g_assert_cmpstr(to_display, ==, message); */
-  /* } */
+  for (int i = 0; i < to_send->total; i++) {
+    /* Bob receives the fragments */
+    otrng_client_receive(&from_bob, &to_display, to_send->pieces[i],
+                         ALICE_IDENTITY, bob, &ignore);
+    otrng_assert(!from_bob);
 
-  /* free(from_bob); */
-  /* from_bob = NULL; */
+    if (to_send->total - 1 == i) {
+      g_assert_cmpstr(to_display, ==, message);
+    }
+  }
 
-  /* free(to_display); */
-  /* to_display = NULL; */
+  free(from_bob);
+  from_bob = NULL;
 
-  /* otrng_message_free(to_send); */
-  /* otrng_user_state_free_all(alice_client_state->user_state, */
-  /*                           bob_client_state->user_state); */
-  /* otrng_client_state_free_all(alice_client_state, bob_client_state); */
-  /* otrng_client_free_all(alice, bob); */
+  free(to_display);
+  to_display = NULL;
+
+  otrng_message_free(to_send);
+  otrng_user_state_free_all(alice_client_state->user_state,
+                            bob_client_state->user_state);
+  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_client_free_all(alice, bob);
 }
