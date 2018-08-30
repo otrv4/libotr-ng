@@ -201,8 +201,8 @@ otrng_client_get_conversation(int force_create, const char *recipient,
 
 // TODO: @client this should allow TLVs to be added to the message
 tstatic otrng_result send_message(char **newmsg, const char *message,
-                                         const char *recipient,
-                                         otrng_client_s *client) {
+                                  const char *recipient,
+                                  otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
   otrng_warning warn = OTRNG_WARN_NONE;
 
@@ -224,7 +224,8 @@ tstatic otrng_result send_message(char **newmsg, const char *message,
 }
 
 API otrng_result otrng_client_send(char **newmessage, const char *message,
-                          const char *recipient, otrng_client_s *client) {
+                                   const char *recipient,
+                                   otrng_client_s *client) {
   /* v4 client will know how to transition to v3 if a v3 conversation is
    started */
   return send_message(newmessage, message, recipient, client);
@@ -462,8 +463,8 @@ otrng_client_get_prekey_client(const char *server_identity,
 
   char *account = NULL;
   char *protocol = NULL;
-  if (otrng_failed(otrng_client_state_get_account_and_protocol(&account, &protocol,
-                                                               client->state))) {
+  if (otrng_failed(otrng_client_state_get_account_and_protocol(
+          &account, &protocol, client->state))) {
     return NULL;
   }
   free(protocol);

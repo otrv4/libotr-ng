@@ -1866,7 +1866,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     return OTRNG_SUCCESS;
   }
 
-  if (otrng_failed(received_sender_instance_tag(msg->sender_instance_tag, otr))) {
+  if (otrng_failed(
+          received_sender_instance_tag(msg->sender_instance_tag, otr))) {
     otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
@@ -1885,9 +1886,9 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
   do {
     /* Try to decrypt the message with a stored skipped message key */
-    if (otrng_failed(otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
-                                    msg->message_id, otr->keys,
-                                                tmp_receiving_ratchet))) {
+    if (otrng_failed(otrng_key_get_skipped_keys(
+            enc_key, mac_key, msg->ratchet_id, msg->message_id, otr->keys,
+            tmp_receiving_ratchet))) {
       /* if a new ratchet */
       if (otrng_failed(otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->conversation->client->max_stored_msg_keys,
@@ -2180,8 +2181,8 @@ INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
   response->to_display = NULL;
 
   char *defrag = NULL;
-  if (otrng_failed(otrng_unfragment_message(&defrag, &otr->pending_fragments, message,
-                                            our_instance_tag(otr)))) {
+  if (otrng_failed(otrng_unfragment_message(&defrag, &otr->pending_fragments,
+                                            message, our_instance_tag(otr)))) {
     return OTRNG_ERROR;
   }
 

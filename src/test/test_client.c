@@ -1093,13 +1093,14 @@ void test_client_sends_fragmented_message(void) {
   // However, the previous test never did what the tester thought it was doing
   // Thus, I think this is a real failure, and needs to be investigated.
 
-
   /* otrng_bool ignore = otrng_false; */
   /* otrng_client_state_s *alice_client_state = */
   /*     otrng_client_state_new(ALICE_IDENTITY); */
-  /* otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY); */
+  /* otrng_client_state_s *bob_client_state =
+   * otrng_client_state_new(BOB_IDENTITY); */
 
-  /* otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1); */
+  /* otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY,
+   * 1); */
   /* otrng_client_s *bob = set_up_client(bob_client_state, BOB_IDENTITY, 2); */
 
   /* char *query_msg_to_bob = */
@@ -1109,13 +1110,15 @@ void test_client_sends_fragmented_message(void) {
   /* char *from_alice_to_bob = NULL, *from_bob = NULL, *to_display = NULL; */
 
   /* // Bob receives query message, sends identity msg */
-  /* otrng_client_receive(&from_bob, &to_display, query_msg_to_bob, ALICE_IDENTITY, */
+  /* otrng_client_receive(&from_bob, &to_display, query_msg_to_bob,
+   * ALICE_IDENTITY, */
   /*                      bob, &ignore); */
   /* free(query_msg_to_bob); */
   /* query_msg_to_bob = NULL; */
 
   /* // Alice receives identity message (from Bob), sends Auth-R message */
-  /* otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_IDENTITY, */
+  /* otrng_client_receive(&from_alice_to_bob, &to_display, from_bob,
+   * BOB_IDENTITY, */
   /*                      alice, &ignore); */
   /* free(from_bob); */
   /* from_bob = NULL; */
@@ -1127,7 +1130,8 @@ void test_client_sends_fragmented_message(void) {
   /* from_alice_to_bob = NULL; */
 
   /* // Alice receives Auth-I message (from Bob) */
-  /* otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_IDENTITY, */
+  /* otrng_client_receive(&from_alice_to_bob, &to_display, from_bob,
+   * BOB_IDENTITY, */
   /*                      alice, &ignore); */
   /* free(from_alice_to_bob); */
   /* from_alice_to_bob = NULL; */

@@ -165,9 +165,9 @@ INTERNAL otrng_result otrng_fragment_message(int max_size,
     int piece_len = message_len < limit ? message_len : limit;
     char **dst = fragments->pieces + i;
 
-    if (otrng_failed(create_fragment_message(dst, message, piece_len, *identifier,
-                                             our_instance, their_instance, i + 1,
-                                             fragments->total))) {
+    if (otrng_failed(create_fragment_message(
+            dst, message, piece_len, *identifier, our_instance, their_instance,
+            i + 1, fragments->total))) {
       otrng_message_free(fragments);
       return OTRNG_ERROR;
     }
@@ -304,7 +304,8 @@ INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
   }
 
   uint32_t fragment_len = end - start - 1;
-  if (otrng_failed(copy_fragment_to_context(context, i, message + start, fragment_len))) {
+  if (otrng_failed(copy_fragment_to_context(context, i, message + start,
+                                            fragment_len))) {
     return OTRNG_ERROR;
   }
 

@@ -175,8 +175,8 @@ tstatic otrng_result serialize_and_encode_data_msg(
   memcpy(ser, body, bodylen);
   free(body);
 
-  if (otrng_failed(otrng_data_message_authenticator(ser + bodylen, MAC_KEY_BYTES, mac_key,
-                                                    ser, bodylen))) {
+  if (otrng_failed(otrng_data_message_authenticator(
+          ser + bodylen, MAC_KEY_BYTES, mac_key, ser, bodylen))) {
     free(ser);
     return OTRNG_ERROR;
   }
