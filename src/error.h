@@ -38,10 +38,25 @@ typedef uint8_t
 static const otrng_bool otrng_true = 1;
 static const otrng_bool otrng_false = 0;
 
+static inline int otrng_is_true(otrng_bool b) { return b == otrng_true; }
+
 typedef enum {
   OTRNG_SUCCESS = 1,
   OTRNG_ERROR = 0,
 } otrng_result;
+
+static inline int otrng_is_success(otrng_result v) {
+  return v == OTRNG_SUCCESS;
+}
+
+static inline int otrng_is_failure(otrng_result v) { return v == OTRNG_ERROR; }
+
+static inline otrng_bool otrng_result_to_bool(otrng_result v) {
+  if (v == OTRNG_SUCCESS) {
+    return otrng_true;
+  }
+  return otrng_false;
+}
 
 // TODO[OB]: do we really need this too?
 typedef enum {
