@@ -155,7 +155,7 @@ INTERNAL otrng_result otrng_fragment_message(int max_size,
   size_t limit = max_size - FRAGMENT_HEADER_LEN;
   int total = ((message_len - 1) / limit) + 1;
 
-  if (!init_message_to_send_with_total(fragments, total)) {
+  if (otrng_failed(init_message_to_send_with_total(fragments, total))) {
     return OTRNG_ERROR;
   }
 
@@ -165,9 +165,9 @@ INTERNAL otrng_result otrng_fragment_message(int max_size,
     int piece_len = message_len < limit ? message_len : limit;
     char **dst = fragments->pieces + i;
 
-    if (!create_fragment_message(dst, message, piece_len, *identifier,
-                                 our_instance, their_instance, i + 1,
-                                 fragments->total)) {
+    if (otrng_failed(create_fragment_message(dst, message, piece_len, *identifier,
+                                             our_instance, their_instance, i + 1,
+                                             fragments->total))) {
       otrng_message_free(fragments);
       return OTRNG_ERROR;
     }
@@ -294,7 +294,7 @@ INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
   context->total = t;
 
   if (context->fragments == NULL) {
-    if (!initialize_fragments(context)) {
+    if (otrng_failed(initialize_fragments(context))) {
       return OTRNG_ERROR;
     }
   }
@@ -304,8 +304,7 @@ INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
   }
 
   uint32_t fragment_len = end - start - 1;
-  if (copy_fragment_to_context(context, i, message + start, fragment_len) !=
-      OTRNG_SUCCESS) {
+  if (otrng_failed(copy_fragment_to_context(context, i, message + start, fragment_len))) {
     return OTRNG_ERROR;
   }
 
@@ -313,7 +312,7 @@ INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
   context->last_fragment_received_at = time(NULL);
 
   if (context->count == t) {
-    if (join_fragments(unfrag_message, context) == OTRNG_SUCCESS) {
+    if (otrng_succeeded(join_fragments(unfrag_message, context))) {
       list_element_s *to_remove = otrng_list_get_by_value(context, *contexts);
       *contexts = otrng_list_remove_element(to_remove, *contexts);
       otrng_fragment_context_free(context);

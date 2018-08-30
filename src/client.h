@@ -48,14 +48,6 @@ typedef struct otrng_client_s {
   otrng_prekey_client_s *prekey_client;
 } otrng_client_s, otrng_client_p[1];
 
-/* Defines the different results that a client operation can give */
-typedef enum {
-  OTRNG_CLIENT_RESULT_OK = 0,
-  OTRNG_CLIENT_RESULT_ERROR = 1,
-  OTRNG_CLIENT_RESULT_ERROR_NOT_ENCRYPTED = 0x1001,
-  OTRNG_CLIENT_RESULT_ERROR_NOT_VALID = 0x1011,
-} otrng_client_result;
-
 API otrng_client_s *otrng_client_new(otrng_client_state_s *);
 
 API void otrng_client_free(otrng_client_s *client);
@@ -63,10 +55,10 @@ API void otrng_client_free(otrng_client_s *client);
 API char *otrng_client_query_message(const char *recipient, const char *message,
                                      otrng_client_s *client);
 
-API int otrng_client_send(char **newmessage, const char *message,
+API otrng_result otrng_client_send(char **newmessage, const char *message,
                           const char *recipient, otrng_client_s *client);
 
-API int otrng_client_send_non_interactive_auth(
+API otrng_result otrng_client_send_non_interactive_auth(
     char **newmessage, const prekey_ensemble_s *ensemble, const char *recipient,
     otrng_client_s *client);
 
@@ -130,7 +122,7 @@ API otrng_result otrng_client_expire_fragments(int expiration_time,
 API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                                   const otrng_client_s *client);
 
-API int should_heartbeat(int last_sent);
+API otrng_bool should_heartbeat(int last_sent);
 /* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf); */
 
 /* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf); */

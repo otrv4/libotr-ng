@@ -200,7 +200,7 @@ otrng_client_get_conversation(int force_create, const char *recipient,
 }
 
 // TODO: @client this should allow TLVs to be added to the message
-tstatic otrng_client_result send_message(char **newmsg, const char *message,
+tstatic otrng_result send_message(char **newmsg, const char *message,
                                          const char *recipient,
                                          otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
@@ -208,38 +208,38 @@ tstatic otrng_client_result send_message(char **newmsg, const char *message,
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
-    return OTRNG_CLIENT_RESULT_ERROR;
+    return OTRNG_ERROR;
   }
 
   otrng_result result =
       otrng_send_message(newmsg, message, &warn, NULL, 0, conv->conn);
 
   if (warn == OTRNG_WARN_SEND_NOT_ENCRYPTED) {
-    return OTRNG_CLIENT_RESULT_ERROR_NOT_ENCRYPTED;
+    // TODO: we need to signal this a different way than by return values
+    /* return OTRNG_CLIENT_RESULT_ERROR_NOT_ENCRYPTED; */
+    return OTRNG_ERROR;
   }
-  if (OTRNG_SUCCESS == result) {
-    return OTRNG_CLIENT_RESULT_OK;
-  }
-  return OTRNG_CLIENT_RESULT_ERROR;
+
+  return result;
 }
 
-API int otrng_client_send(char **newmessage, const char *message,
+API otrng_result otrng_client_send(char **newmessage, const char *message,
                           const char *recipient, otrng_client_s *client) {
   /* v4 client will know how to transition to v3 if a v3 conversation is
    started */
   return send_message(newmessage, message, recipient, client);
 }
 
-API int otrng_client_send_non_interactive_auth(
+API otrng_result otrng_client_send_non_interactive_auth(
     char **newmessage, const prekey_ensemble_s *ensemble, const char *recipient,
     otrng_client_s *client) {
   otrng_conversation_s *conv =
       get_or_create_conversation_with(recipient, client);
   if (!conv) {
-    return OTRNG_CLIENT_RESULT_ERROR;
+    return OTRNG_ERROR;
   }
 
-  return !otrng_send_non_interactive_auth(newmessage, ensemble, conv->conn);
+  return otrng_send_non_interactive_auth(newmessage, ensemble, conv->conn);
 }
 
 API otrng_result otrng_client_send_fragment(
@@ -252,7 +252,7 @@ API otrng_result otrng_client_send_fragment(
   }
 
   string_p to_send = NULL;
-  if (!send_message(&to_send, message, recipient, client)) {
+  if (otrng_failed(send_message(&to_send, message, recipient, client))) {
     free(to_send); // TODO: @freeing send_message should free to_send if
                    // something fails
     return OTRNG_ERROR;
@@ -280,12 +280,8 @@ API otrng_result otrng_client_smp_start(char **tosend, const char *recipient,
     return OTRNG_ERROR;
   }
 
-  if (!otrng_smp_start(tosend, question, q_len, secret, secretlen,
-                       conv->conn)) {
-    return OTRNG_ERROR;
-  }
-
-  return OTRNG_SUCCESS;
+  return otrng_smp_start(tosend, question, q_len, secret, secretlen,
+                         conv->conn);
 }
 
 API otrng_result otrng_client_smp_respond(char **tosend, const char *recipient,
@@ -299,11 +295,7 @@ API otrng_result otrng_client_smp_respond(char **tosend, const char *recipient,
     return OTRNG_ERROR;
   }
 
-  if (!otrng_smp_continue(tosend, secret, secretlen, conv->conn)) {
-    return OTRNG_ERROR;
-  }
-
-  return OTRNG_SUCCESS;
+  return otrng_smp_continue(tosend, secret, secretlen, conv->conn);
 }
 
 // TODO: this function is very likely not doing the right thing with
@@ -368,7 +360,7 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
   }
 
   char *ret = NULL;
-  if (!otrng_build_query_message(&ret, message, conv->conn)) {
+  if (otrng_failed(otrng_build_query_message(&ret, message, conv->conn))) {
     // TODO: @client This should come from the client (a callback maybe?)
     // because it knows in which language this should be sent, for example.
     return otrng_strdup(
@@ -395,7 +387,7 @@ API otrng_result otrng_client_disconnect(char **newmsg, const char *recipient,
     return OTRNG_ERROR;
   }
 
-  if (!otrng_close(newmsg, conv->conn)) {
+  if (otrng_failed(otrng_close(newmsg, conv->conn))) {
     return OTRNG_ERROR;
   }
 
@@ -422,7 +414,7 @@ API otrng_result otrng_expire_encrypted_session(char **newmsg,
 
   now = time(NULL);
   if (conv->conn->keys->last_generated < now - expiration_time) {
-    if (!otrng_expire_session(newmsg, conv->conn)) {
+    if (otrng_failed(otrng_expire_session(newmsg, conv->conn))) {
       return OTRNG_ERROR;
     }
   }
@@ -442,8 +434,8 @@ API otrng_result otrng_client_expire_fragments(int expiration_time,
   now = time(NULL);
   for (el = client->conversations; el; el = el->next) {
     conv = el->data;
-    if (!otrng_expire_fragments(now, expiration_time,
-                                &conv->conn->pending_fragments)) {
+    if (otrng_failed(otrng_expire_fragments(now, expiration_time,
+                                            &conv->conn->pending_fragments))) {
       return OTRNG_ERROR;
     }
   }
@@ -470,8 +462,8 @@ otrng_client_get_prekey_client(const char *server_identity,
 
   char *account = NULL;
   char *protocol = NULL;
-  if (!otrng_client_state_get_account_and_protocol(&account, &protocol,
-                                                   client->state)) {
+  if (otrng_failed(otrng_client_state_get_account_and_protocol(&account, &protocol,
+                                                               client->state))) {
     return NULL;
   }
   free(protocol);

@@ -1851,8 +1851,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
   response->to_display = NULL;
 
   size_t read = 0;
-  if (otrng_data_message_deserialize(msg, buff, buflen, &read) !=
-      OTRNG_SUCCESS) {
+  if (otrng_failed(otrng_data_message_deserialize(msg, buff, buflen, &read))) {
     otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     otrng_data_message_free(msg);
     return OTRNG_ERROR;
@@ -1867,8 +1866,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     return OTRNG_SUCCESS;
   }
 
-  if (received_sender_instance_tag(msg->sender_instance_tag, otr) !=
-      OTRNG_SUCCESS) {
+  if (otrng_failed(received_sender_instance_tag(msg->sender_instance_tag, otr))) {
     otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
@@ -1887,14 +1885,14 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
   do {
     /* Try to decrypt the message with a stored skipped message key */
-    if (!otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
+    if (otrng_failed(otrng_key_get_skipped_keys(enc_key, mac_key, msg->ratchet_id,
                                     msg->message_id, otr->keys,
-                                    tmp_receiving_ratchet)) {
+                                                tmp_receiving_ratchet))) {
       /* if a new ratchet */
-      if (!otrng_key_manager_derive_dh_ratchet_keys(
+      if (otrng_failed(otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->conversation->client->max_stored_msg_keys,
               tmp_receiving_ratchet, msg->message_id, msg->previous_chain_n,
-              'r', warn)) {
+              'r', warn))) {
         otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
         return OTRNG_ERROR;
@@ -1906,7 +1904,6 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
           warn);
       tmp_receiving_ratchet->k = tmp_receiving_ratchet->k + 1;
     }
-
     if (!otrng_valid_data_message(mac_key, msg)) {
       sodium_memzero(enc_key, sizeof(enc_key));
       sodium_memzero(mac_key, sizeof(mac_key));
@@ -1925,7 +1922,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       return OTRNG_ERROR;
     }
 
-    if (!decrypt_data_msg(response, enc_key, msg)) {
+    if (otrng_failed(decrypt_data_msg(response, enc_key, msg))) {
 
       if (msg->flags != MSGFLAGS_IGNORE_UNREADABLE) {
         otrng_error_message(&response->to_send, OTRNG_ERR_MSG_UNREADABLE);
@@ -1959,11 +1956,11 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     otrng_receiving_ratchet_copy(otr->keys, tmp_receiving_ratchet);
     otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
-    if (!receive_tlvs(response, otr)) {
+    if (otrng_failed(receive_tlvs(response, otr))) {
       continue;
     }
 
-    if (!otrng_store_old_mac_keys(otr->keys, mac_key)) {
+    if (otrng_failed(otrng_store_old_mac_keys(otr->keys, mac_key))) {
       continue;
     }
 
@@ -2049,7 +2046,7 @@ tstatic otrng_result receive_decoded_message(otrng_response_s *response,
                                              const uint8_t *decoded,
                                              size_t dec_len, otrng_s *otr) {
   otrng_header_s header;
-  if (!otrng_extract_header(&header, decoded, dec_len)) {
+  if (otrng_failed(otrng_extract_header(&header, decoded, dec_len))) {
     return OTRNG_ERROR;
   }
 
@@ -2183,8 +2180,8 @@ INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
   response->to_display = NULL;
 
   char *defrag = NULL;
-  if (otrng_unfragment_message(&defrag, &otr->pending_fragments, message,
-                               our_instance_tag(otr)) != OTRNG_SUCCESS) {
+  if (otrng_failed(otrng_unfragment_message(&defrag, &otr->pending_fragments, message,
+                                            our_instance_tag(otr)))) {
     return OTRNG_ERROR;
   }
 
