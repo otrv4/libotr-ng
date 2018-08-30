@@ -195,6 +195,7 @@ otrng_user_state_get_private_key_v4(otrng_user_state_s *state,
 tstatic void add_private_key_v4_to_FILEp(list_element_s *node, void *context) {
   FILE *privf = context;
   otrng_client_state_s *state = node->data;
+  // TODO: check the return value
   otrng_client_state_private_key_v4_write_FILEp(state, privf);
 }
 

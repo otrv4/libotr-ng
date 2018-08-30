@@ -241,7 +241,10 @@ otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
   // client_callbacks_s does not have any.
   otrng_prekey_profile_s *p =
       otrng_client_state_build_default_prekey_profile(state);
-  otrng_client_state_add_prekey_profile(state, p);
+  if (!otrng_client_state_add_prekey_profile(state, p)) {
+    return NULL;
+  }
+
   otrng_prekey_profile_free(p);
 
   return state->prekey_profile;
