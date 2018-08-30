@@ -45,11 +45,9 @@ typedef enum {
   OTRNG_ERROR = 0,
 } otrng_result;
 
-static inline int otrng_is_success(otrng_result v) {
-  return v == OTRNG_SUCCESS;
-}
+static inline int otrng_succeeded(otrng_result v) { return v == OTRNG_SUCCESS; }
 
-static inline int otrng_is_failure(otrng_result v) { return v == OTRNG_ERROR; }
+static inline int otrng_failed(otrng_result v) { return v == OTRNG_ERROR; }
 
 static inline otrng_bool otrng_result_to_bool(otrng_result v) {
   if (v == OTRNG_SUCCESS) {
