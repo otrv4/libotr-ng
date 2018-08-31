@@ -288,6 +288,7 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
                                          NULL, // create_privkey v3
                                          NULL, // create_privkey v4
                                          NULL, // create_client_profile
+                                         NULL, // create_prekey_profile
                                          NULL, // create_shared_prekey
                                          NULL, // gone_secure
                                          NULL, // gone_insecure

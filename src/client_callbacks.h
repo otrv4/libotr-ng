@@ -65,6 +65,10 @@ typedef struct otrng_client_callbacks_s {
   void (*create_client_profile)(struct otrng_client_state_s *state,
                                 const void *client_opdata);
 
+  /* Create a prekey profile */
+  void (*create_prekey_profile)(struct otrng_client_state_s *state,
+                                const void *client_opdata);
+
   /* Create a shared prekey */
   void (*create_shared_prekey)(const void *client_opdata);
 

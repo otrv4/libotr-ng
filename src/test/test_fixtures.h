@@ -87,6 +87,7 @@ static otrng_client_callbacks_p test_callbacks = {{
     NULL,                         // create_privkey v3
     NULL,                         // create_privkey v4
     &create_client_profile_cb,    // create_client_profile
+    NULL,                         // create_prekey_profile
     NULL,                         // create_shared_prekey
     NULL,                         // gone_secure
     NULL,                         // gone_insecure
