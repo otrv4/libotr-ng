@@ -150,6 +150,11 @@ otrng_client_callbacks_create_client_profile(const otrng_client_callbacks_s *cb,
                                              const void *client_opdata);
 
 INTERNAL void
+otrng_client_callbacks_create_prekey_profile(const otrng_client_callbacks_s *cb,
+                                             struct otrng_client_state_s *state,
+                                             const void *client_opdata);
+
+INTERNAL void
 otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
                                             const void *client_opdata);
 

@@ -23,6 +23,7 @@
 
 #define OTRNG_CLIENT_STATE_PRIVATE
 
+#include "client_callbacks.h"
 #include "client_state.h"
 #include "deserialize.h"
 #include "instance_tag.h"
@@ -237,15 +238,7 @@ otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
     return state->prekey_profile;
   }
 
-  // TODO: @client invoke This should be done in a callback, but
-  // client_callbacks_s does not have any.
-  otrng_prekey_profile_s *p =
-      otrng_client_state_build_default_prekey_profile(state);
-  if (!otrng_client_state_add_prekey_profile(state, p)) {
-    return NULL;
-  }
-
-  otrng_prekey_profile_free(p);
+  otrng_client_callbacks_create_prekey_profile(state->callbacks, state, NULL);
 
   return state->prekey_profile;
 }

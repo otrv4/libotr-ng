@@ -81,13 +81,19 @@ static void create_client_profile_cb(struct otrng_client_state_s *state,
   otrng_client_profile_free(profile);
 }
 
+static void create_prekey_profile_cb(struct otrng_client_state_s *state,
+                                     const void *client_opdata) {
+  otrng_prekey_profile_s *p =
+      otrng_client_state_build_default_prekey_profile(state);
+  otrng_client_state_add_prekey_profile(state, p);
+}
 static otrng_client_callbacks_p test_callbacks = {{
     &get_account_and_protocol_cb, // get_account_and_protocol
     NULL,                         // create_instag
     NULL,                         // create_privkey v3
     NULL,                         // create_privkey v4
     &create_client_profile_cb,    // create_client_profile
-    NULL,                         // create_prekey_profile
+    &create_prekey_profile_cb,    // create_prekey_profile
     NULL,                         // create_shared_prekey
     NULL,                         // gone_secure
     NULL,                         // gone_insecure
