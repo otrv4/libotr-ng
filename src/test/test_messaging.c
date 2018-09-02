@@ -94,35 +94,40 @@ void test_user_state_client_profile_management(void) {
 
   /* Generate file */
   FILE *client_profile = tmpfile();
-  fputs(
-      "charlie@xmpp\n"
-      "AAAABAAB26FP8QACABA7tTzNTkCSyKHJ/"
-      "OSxJvdNXa6yLZG2KRVbqpF0mBbm8SMsHVcQ3xaeJIqzAsFFB5e1ZNqJ750yhoAABAAAAAMzN"
-      "AAABQAAAABbnAjOrEwcQzBe+9o6cGg3oj4PE5nVa3JHAtRTZGtmzeaf9kflizHWBGWg6/"
-      "M07dncQ8NiQ3ft+fy0/amAx5FFUVK/\n",
-      client_profile);
+  fputs("charlie@xmpp\n"
+        "AAAABAAB26FP8QACABA7tTzNTkCSyKHJ/"
+        "OSxJvdNXa6yLZG2KRVbqpF0mBbm8SMsHVcQ3xaeJIqzAsFFB5e1ZNqJ750yhoAABAAAAAM"
+        "zNAAABQAAAABbnbX8F1Jf/8JRR20QtKJ+8RJw2lfuRMtaPKlaGPkoK/76VSPXS/"
+        "rwyWpXmXcE6CMaWLBs6z4ccGJOz+"
+        "EARUYZBZ2Kvob3InDvlXnPGu91U7OjGadUVPJN2QdtANwF6pV+"
+        "qNRpGTnUDwHq9wgblNT0WAzlHSwA\n",
+        client_profile);
   rewind(client_profile);
 
-  otrng_result err = otrng_user_state_client_profile_read_FILEp(
+  otrng_result result = otrng_user_state_client_profile_read_FILEp(
       state, client_profile, read_client_id_for_privf);
-  otrng_assert_is_success(err);
+  otrng_assert_is_success(result);
   fclose(client_profile);
 
   otrng_client_state_s *client_state = get_client_state(state, charlie_account);
 
   otrng_assert(client_state->client_profile);
 
-  // uint8_t *buffer = NULL;
-  // size_t s = 0;
-  // otrng_client_profile_asprintf(&buffer, &s, client_state->client_profile);
-  // char *encoded = otrng_base64_encode(buffer, s);
-  // const char *expected =
-  // "AAAABAAB26FP8QACABA7tTzNTkCSyKHJ/OSxJvdNXa6yLZG2KRVbqpF0mBbm8SMsHVcQ3xaeJIqzAsFFB5e1ZNqJ750yhoAABAAAAAMzNAAABQAAAABbnAjOrEwcQzBe+9o6cGg3oj4PE5nVa3JHAtRTZGtmzeaf9kflizHWBGWg6/M07dncQ8NiQ3ft+fy0/amAx5FFUVK/";
+  uint8_t *buffer = NULL;
+  size_t s = 0;
+  otrng_client_profile_asprintf(&buffer, &s, client_state->client_profile);
+  char *encoded = otrng_base64_encode(buffer, s);
+  const char *expected =
+      "AAAABAAB26FP8QACABA7tTzNTkCSyKHJ/"
+      "OSxJvdNXa6yLZG2KRVbqpF0mBbm8SMsHVcQ3xaeJIqzAsFFB5e1ZNqJ750yhoAABAAAAAMzN"
+      "AAABQAAAABbnbX8F1Jf/8JRR20QtKJ+8RJw2lfuRMtaPKlaGPkoK/76VSPXS/"
+      "rwyWpXmXcE6CMaWLBs6z4ccGJOz+"
+      "EARUYZBZ2Kvob3InDvlXnPGu91U7OjGadUVPJN2QdtANwF6pV+"
+      "qNRpGTnUDwHq9wgblNT0WAzlHSwA";
 
-  // printf("\n %s \n", encoded);
-  // otrng_assert_cmpmem(expected, encoded, s);
+  otrng_assert_cmpmem(expected, encoded, s);
 
-  // free(buffer);
+  free(buffer);
   otrng_user_state_free(state);
 }
 

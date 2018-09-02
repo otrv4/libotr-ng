@@ -236,17 +236,14 @@ INTERNAL otrng_result otrng_client_state_client_profile_read_FILEp(
       otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
   free(dec);
 
-  otrng_result err = OTRNG_SUCCESS;
   if (ret == OTRNG_ERROR) {
-    err = ret;
+    return ret;
   }
 
-  if (!err) {
-    err = otrng_client_state_add_client_profile(state, profile);
-    otrng_client_profile_destroy(profile);
-  }
+  otrng_result result = otrng_client_state_add_client_profile(state, profile);
+  otrng_client_profile_destroy(profile);
 
-  return err;
+  return result;
 }
 
 INTERNAL otrng_result otrng_client_state_client_profile_write_FILEp(
