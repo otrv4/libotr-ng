@@ -80,6 +80,52 @@ void test_user_state_key_management(void) {
   otrng_user_state_free(state);
 }
 
+void test_user_state_client_profile_management(void) {
+  const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+
+  otrng_user_state_s *state = otrng_user_state_new(NULL);
+  otrng_user_state_add_private_key_v4(state, alice_account, alice_sym);
+  otrng_user_state_add_private_key_v4(state, bob_account, bob_sym);
+
+  otrng_assert(otrng_user_state_get_private_key_v4(state, alice_account));
+  otrng_assert(otrng_user_state_get_private_key_v4(state, bob_account));
+  otrng_assert(!otrng_user_state_get_private_key_v4(state, charlie_account));
+
+  /* Generate file */
+  FILE *client_profile = tmpfile();
+  fputs(
+      "charlie@xmpp\n"
+      "AAAABAAB26FP8QACABA7tTzNTkCSyKHJ/"
+      "OSxJvdNXa6yLZG2KRVbqpF0mBbm8SMsHVcQ3xaeJIqzAsFFB5e1ZNqJ750yhoAABAAAAAMzN"
+      "AAABQAAAABbnAjOrEwcQzBe+9o6cGg3oj4PE5nVa3JHAtRTZGtmzeaf9kflizHWBGWg6/"
+      "M07dncQ8NiQ3ft+fy0/amAx5FFUVK/\n",
+      client_profile);
+  rewind(client_profile);
+
+  otrng_result err = otrng_user_state_client_profile_read_FILEp(
+      state, client_profile, read_client_id_for_privf);
+  otrng_assert_is_success(err);
+  fclose(client_profile);
+
+  otrng_client_state_s *client_state = get_client_state(state, charlie_account);
+
+  otrng_assert(client_state->client_profile);
+
+  // uint8_t *buffer = NULL;
+  // size_t s = 0;
+  // otrng_client_profile_asprintf(&buffer, &s, client_state->client_profile);
+  // char *encoded = otrng_base64_encode(buffer, s);
+  // const char *expected =
+  // "AAAABAAB26FP8QACABA7tTzNTkCSyKHJ/OSxJvdNXa6yLZG2KRVbqpF0mBbm8SMsHVcQ3xaeJIqzAsFFB5e1ZNqJ750yhoAABAAAAAMzNAAABQAAAABbnAjOrEwcQzBe+9o6cGg3oj4PE5nVa3JHAtRTZGtmzeaf9kflizHWBGWg6/M07dncQ8NiQ3ft+fy0/amAx5FFUVK/";
+
+  // printf("\n %s \n", encoded);
+  // otrng_assert_cmpmem(expected, encoded, s);
+
+  // free(buffer);
+  otrng_user_state_free(state);
+}
+
 void test_user_state_prekey_message_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};

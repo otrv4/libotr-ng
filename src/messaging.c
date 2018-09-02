@@ -281,8 +281,8 @@ API otrng_result otrng_user_state_client_profile_read_FILEp(
     }
 
     otrng_client_state_s *client_state = get_client_state(state, client_id);
-    if (otrng_client_state_client_profile_read_FILEp(client_state,
-                                                     profile_filep)) {
+    if (otrng_client_state_client_profile_read_FILEp(
+            client_state, profile_filep) != OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
     }

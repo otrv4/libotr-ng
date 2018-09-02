@@ -93,6 +93,8 @@ int main(int argc, char **argv) {
                   test_invokes_create_instag_callbacks);
 
   g_test_add_func("/user_state/key_management", test_user_state_key_management);
+  g_test_add_func("/user_state/client_profilte",
+                  test_user_state_client_profile_management);
   g_test_add_func("/user_state/prekey_message_management",
                   test_user_state_prekey_message_management);
 
