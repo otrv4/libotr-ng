@@ -127,6 +127,7 @@ void test_user_state_client_profile_management(void) {
 
   otrng_assert_cmpmem(expected, encoded, s);
 
+  free(encoded);
   free(buffer);
   otrng_user_state_free(state);
 }
