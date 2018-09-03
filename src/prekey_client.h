@@ -43,6 +43,8 @@
 #define OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG 0x0E
 #define OTRNG_PREKEY_PUBLICATION_MSG 0x08
 
+#define OTRNG_PREKEY_SUCCESS_MSG_LEN 71
+
 typedef struct {
   uint32_t client_instance_tag;
   client_profile_p client_profile;
@@ -84,8 +86,8 @@ typedef struct {
 
 typedef struct {
   uint32_t client_instance_tag;
-  uint8_t mac[DATA_MSG_MAC_BYTES];
-} otrng_prekey_success_message_s;
+  uint8_t success_mac[DATA_MSG_MAC_BYTES];
+} otrng_prekey_success_message_s, otrng_prekey_success_message_p[1];
 
 typedef struct {
   uint32_t client_instance_tag;

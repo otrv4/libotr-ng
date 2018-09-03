@@ -43,6 +43,7 @@ libotr_ng_la_SOURCES = auth.c \
 		     otrng.c \
 		     padding.c \
 		     prekey_client.c \
+		     prekey_messages.c \
 		     prekey_ensemble.c \
 		     prekey_profile.c \
 		     persistence.c \

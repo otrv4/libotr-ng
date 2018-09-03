@@ -762,7 +762,7 @@ static char *receive_storage_status(const uint8_t *decoded, size_t decoded_len,
 
 static char *receive_success(const uint8_t *decoded, size_t decoded_len,
                              otrng_prekey_client_s *client) {
-  if (decoded_len < 71) { // TODO: check this number
+  if (decoded_len < OTRNG_PREKEY_SUCCESS_MSG_LEN) {
     notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
