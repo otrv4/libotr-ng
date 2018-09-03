@@ -31,6 +31,18 @@
 #include "prekey_profile.h"
 #include "shared.h"
 
+#define OTRNG_PREKEY_DAKE1_MSG 0x35
+#define OTRNG_PREKEY_DAKE2_MSG 0x36
+#define OTRNG_PREKEY_DAKE3_MSG 0x37
+#define OTRNG_PREKEY_STORAGE_INFO_REQ_MSG 0x09
+#define OTRNG_PREKEY_ENSEMBLE_QUERY_RETRIEVAL_MSG 0x10
+#define OTRNG_PREKEY_STORAGE_STATUS_MSG 0x0B
+#define OTRNG_PREKEY_SUCCESS_MSG 0x06
+#define OTRNG_PREKEY_FAILURE_MSG 0x05
+#define OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG 0x13
+#define OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG 0x0E
+#define OTRNG_PREKEY_PUBLICATION_MSG 0x08
+
 typedef struct {
   uint32_t client_instance_tag;
   client_profile_p client_profile;
@@ -151,6 +163,9 @@ API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client);
 API otrng_result otrng_prekey_client_receive(char **tosend, const char *server,
                                              const char *message,
                                              otrng_prekey_client_s *client);
+
+API otrng_result otrng_parse_header(uint8_t *message_type, const uint8_t *buf,
+                                    size_t buflen, size_t *read);
 
 INTERNAL otrng_result
 otrng_prekey_dake1_message_asprint(uint8_t **serialized, size_t *serialized_len,

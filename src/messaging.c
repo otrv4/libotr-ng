@@ -228,7 +228,9 @@ API otrng_result otrng_user_state_client_profile_write_FILEp(
 tstatic void add_prekey_messages_to_FILEp(list_element_s *node, void *context) {
   FILE *privf = context;
   otrng_client_state_s *state = node->data;
-  otrng_client_state_prekeys_write_FILEp(state, privf);
+  if (!otrng_client_state_prekeys_write_FILEp(state, privf)) {
+    return;
+  }
 }
 
 API otrng_result otrng_user_state_prekey_messages_write_FILEp(
@@ -292,7 +294,7 @@ API otrng_result otrng_user_state_client_profile_read_FILEp(
 }
 
 API otrng_result otrng_user_state_prekeys_read_FILEp(
-    otrng_user_state_s *state, FILE *prekey_filep,
+    otrng_user_state_s *user_state, FILE *prekey_filep,
     const void *(*read_client_id_for_prekey)(FILE *filep)) {
   if (!prekey_filep) {
     return OTRNG_ERROR;
@@ -304,7 +306,8 @@ API otrng_result otrng_user_state_prekeys_read_FILEp(
       continue;
     }
 
-    otrng_client_state_s *client_state = get_client_state(state, client_id);
+    otrng_client_state_s *client_state =
+        get_client_state(user_state, client_id);
 
     if (otrng_client_state_prekey_messages_read_FILEp(
             client_state, prekey_filep) != OTRNG_SUCCESS) {

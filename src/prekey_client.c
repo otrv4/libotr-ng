@@ -30,18 +30,6 @@
 
 #include <libotr/mem.h>
 
-#define OTRNG_PREKEY_DAKE1_MSG 0x35
-#define OTRNG_PREKEY_DAKE2_MSG 0x36
-#define OTRNG_PREKEY_DAKE3_MSG 0x37
-#define OTRNG_PREKEY_STORAGE_INFO_REQ_MSG 0x09
-#define OTRNG_PREKEY_ENSEMBLE_QUERY_RETRIEVAL_MSG 0x10
-#define OTRNG_PREKEY_STORAGE_STATUS_MSG 0x0B
-#define OTRNG_PREKEY_SUCCESS_MSG 0x06
-#define OTRNG_PREKEY_FAILURE_MSG 0x05
-#define OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG 0x13
-#define OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG 0x0E
-#define OTRNG_PREKEY_PUBLICATION_MSG 0x08
-
 #define OTRNG_PREKEY_CLIENT_MALFORMED_MSG 1
 #define OTRNG_PREKEY_CLIENT_INVALID_DAKE2 2
 #define OTRNG_PREKEY_CLIENT_INVALID_STORAGE_STATUS 3
@@ -900,8 +888,8 @@ static char *receive_prekey_ensemble_retrieval(const uint8_t *decoded,
   return NULL;
 }
 
-static otrng_result parse_header(uint8_t *message_type, const uint8_t *buf,
-                                 size_t buflen, size_t *read) {
+API otrng_result otrng_parse_header(uint8_t *message_type, const uint8_t *buf,
+                                    size_t buflen, size_t *read) {
   size_t r = 0; /* read */
   size_t w = 0; /* walked */
 
@@ -932,7 +920,7 @@ static otrng_result parse_header(uint8_t *message_type, const uint8_t *buf,
 static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
                              otrng_prekey_client_s *client) {
   uint8_t message_type = 0;
-  if (!parse_header(&message_type, decoded, decoded_len, NULL)) {
+  if (!otrng_parse_header(&message_type, decoded, decoded_len, NULL)) {
     notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
@@ -1042,7 +1030,7 @@ INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
   size_t read = 0;
 
   uint8_t message_type = 0;
-  if (!parse_header(&message_type, serialized, serialized_len, &w)) {
+  if (!otrng_parse_header(&message_type, serialized, serialized_len, &w)) {
     return OTRNG_ERROR;
   }
 
@@ -1159,7 +1147,7 @@ INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(
   size_t read = 0;
 
   uint8_t message_type = 0;
-  if (!parse_header(&message_type, serialized, serialized_len, &w)) {
+  if (!otrng_parse_header(&message_type, serialized, serialized_len, &w)) {
     return OTRNG_ERROR;
   }
 
@@ -1233,7 +1221,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
   size_t read = 0;
 
   uint8_t message_type = 0;
-  if (!parse_header(&message_type, serialized, serialized_len, &w)) {
+  if (!otrng_parse_header(&message_type, serialized, serialized_len, &w)) {
     return OTRNG_ERROR;
   }
 
