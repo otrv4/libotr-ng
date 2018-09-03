@@ -207,8 +207,6 @@ otrng_prekey_client_request_storage_information(otrng_prekey_client_s *client) {
                                   OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST);
 }
 
-// TODO: this can publish up to 255 prekeys. How will this be handled? via
-// callback? Via parameter?
 API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client) {
   return start_dake_and_then_send(client, OTRNG_PREKEY_PREKEY_PUBLICATION);
 }
@@ -865,7 +863,12 @@ static void process_received_prekey_ensemble_retrieval(
     return;
   }
 
-  // TODO: Validate the received ensembles and filter out any invalid ensemble
+  for (int i = 0; i < msg->num_ensembles; i++) {
+    if (!otrng_prekey_ensemble_validate(msg->ensembles[i])) {
+      otrng_prekey_ensemble_destroy(msg->ensembles[i]);
+      msg->ensembles[i] = NULL;
+    }
+  }
 
   prekey_ensembles_received_callback(client, msg->ensembles,
                                      msg->num_ensembles);
