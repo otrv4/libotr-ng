@@ -20,8 +20,8 @@
 
 nobase_include_HEADERS = libotr-ng.h
 
-#TODO: This will be removed once we have a clear API defined.
-#We need this for now otherwie the plugin won't compile.
+# TODO: This will be removed once we have a clear API defined.
+# We need this for now otherwise the plugin won't compile.
 otrngincdir = $(includedir)/libotr-ng
 otrnginc_HEADERS = ../auth.h \
                    ../client_callbacks.h \
@@ -48,6 +48,7 @@ otrnginc_HEADERS = ../auth.h \
                    ../padding.h \
 		   ../persistence.h \
                    ../prekey_client.h \
+                   ../prekey_messages.h \
                    ../prekey_ensemble.h \
                    ../prekey_profile.h \
                    ../protocol.h \
