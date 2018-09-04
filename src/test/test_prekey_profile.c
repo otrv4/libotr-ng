@@ -53,3 +53,49 @@ void test_prekey_profile_validates() {
   otrng_shared_prekey_pair_free(shared_prekey);
   otrng_prekey_profile_free(profile);
 }
+
+void test_prekey_profile_serializes_body() {
+  uint32_t instance_tag = OTRNG_MIN_VALID_INSTAG + 0x01;
+
+  otrng_keypair_p keypair;
+  uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+  otrng_keypair_generate(keypair, sym);
+
+  otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
+  otrng_shared_prekey_pair_generate(shared_prekey, sym);
+
+  otrng_prekey_profile_s *profile =
+      otrng_prekey_profile_build(instance_tag, keypair, shared_prekey);
+
+  otrng_assert(profile != NULL);
+
+  otrng_ec_point_copy(profile->shared_prekey, shared_prekey->pub);
+  profile->expires = 15;
+  memset(profile->signature, 0, ED448_SIGNATURE_BYTES);
+
+  uint8_t expected_shared_prekey[ED448_SHARED_PREKEY_BYTES] = {0};
+  otrng_serialize_shared_prekey(expected_shared_prekey, shared_prekey->pub);
+
+  size_t written = 0;
+  uint8_t *serialized = NULL;
+  otrng_assert_is_success(
+      otrng_prekey_profile_asprint(&serialized, &written, profile));
+  g_assert_cmpint(written, ==, 185);
+
+  char expected[] = {
+      0x0, 0x0, 0x01, 0x01,                      // Instance tag
+      0x0, 0x0, 0x0,  0x0,  0x0, 0x0, 0x0, 0x0F, // expiration
+  };
+
+  otrng_assert_cmpmem(expected, serialized, sizeof(expected));
+
+  uint8_t *pos = serialized + sizeof(expected);
+  otrng_assert_cmpmem(expected_shared_prekey, pos, ED448_SHARED_PREKEY_BYTES);
+  pos += ED448_SHARED_PREKEY_BYTES;
+
+  char expected_signature[ED448_SIGNATURE_BYTES] = {0};
+  otrng_assert_cmpmem(expected_signature, pos, ED448_SIGNATURE_BYTES);
+
+  free(serialized);
+  otrng_prekey_profile_free(profile);
+}
