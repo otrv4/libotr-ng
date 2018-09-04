@@ -163,15 +163,19 @@ API otrng_result otrng_user_state_generate_private_key(
 
 API otrng_result otrng_user_state_generate_client_profile(
     otrng_user_state_s *state, void *client_id) {
-  otrng_client_state_s *client = get_client_state(state, client_id);
-  client_profile_s *profile =
-      otrng_client_state_build_default_client_profile(client);
+  otrng_client_state_s *client_state = get_client_state(state, client_id);
+  if (!client_state) {
+    return OTRNG_ERROR;
+  }
 
+  client_profile_s *profile =
+      otrng_client_state_build_default_client_profile(client_state);
   if (!profile) {
     return OTRNG_ERROR;
   }
 
-  otrng_result err = otrng_client_state_add_client_profile(client, profile);
+  otrng_result err =
+      otrng_client_state_add_client_profile(client_state, profile);
   otrng_client_profile_free(profile);
 
   return err;
@@ -182,8 +186,12 @@ API otrng_result otrng_user_state_generate_shared_prekey(
   uint8_t sym[ED448_PRIVATE_BYTES];
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
 
-  return otrng_client_state_add_shared_prekey_v4(
-      get_client_state(state, client_id), sym);
+  otrng_client_state_s *client_state = get_client_state(state, client_id);
+  if (!client_state) {
+    return OTRNG_ERROR;
+  }
+
+  return otrng_client_state_add_shared_prekey_v4(client_state, sym);
 }
 
 API otrng_keypair_s *

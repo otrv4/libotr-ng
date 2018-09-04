@@ -209,6 +209,10 @@ INTERNAL otrng_result otrng_client_state_add_shared_prekey_v4(
 
 static const otrng_shared_prekey_pair_s *
 get_shared_prekey_pair(otrng_client_state_s *state) {
+  if (!state) {
+    return NULL;
+  }
+
   if (state->shared_prekey_pair) {
     return state->shared_prekey_pair;
   }

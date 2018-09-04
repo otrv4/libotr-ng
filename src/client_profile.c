@@ -99,7 +99,7 @@ static void copy_dsa_key(client_profile_s *dst, const client_profile_s *src) {
 
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
                                         const client_profile_s *src) {
-  // So if there are fields not present they do not point to invalid memory
+  /* If there are no fields present, do not point to invalid memory */
   client_profile_init(dst, NULL);
 
   if (!src) {

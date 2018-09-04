@@ -27,6 +27,15 @@
 #include "instance_tag.h"
 #include "serialize.h"
 
+static otrng_prekey_profile_s *
+prekey_profile_init(otrng_prekey_profile_s *profile, const char *versions) {
+  profile->instance_tag = 0;
+  otrng_ec_bzero(profile->shared_prekey, ED448_POINT_BYTES);
+  profile->expires = 0;
+
+  return profile;
+}
+
 INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst) {
   otrng_ec_point_destroy(dst->shared_prekey);
   memset(dst->signature, 0, sizeof(eddsa_signature_p));
@@ -43,6 +52,12 @@ INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *dst) {
 
 INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
                                         const otrng_prekey_profile_s *src) {
+  prekey_profile_init(dst, NULL);
+
+  if (!src) {
+    return;
+  }
+
   dst->instance_tag = src->instance_tag;
   dst->expires = src->expires;
 
