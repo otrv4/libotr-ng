@@ -266,8 +266,9 @@ int main(int argc, char **argv) {
                   test_otrng_build_prekey_ensemble);
 
   g_test_add_func("/prekey_profile/validates", test_prekey_profile_validates);
-  g_test_add_func("/prekey_profile/serializes_body",
-                  test_prekey_profile_serializes_body);
+  g_test_add_func("/prekey_profile/serialize", test_prekey_profile_serialize);
+  g_test_add_func("/prekey_profile/deserialize",
+                  test_prekey_profile_deserialize);
   g_test_add_func("/prekey_ensemble/validate", test_prekey_ensemble_validate);
 
   g_test_add_func("/prekey_server/dake/dake-1/serialize",

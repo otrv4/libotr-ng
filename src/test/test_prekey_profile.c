@@ -54,9 +54,8 @@ void test_prekey_profile_validates() {
   otrng_prekey_profile_free(profile);
 }
 
-void test_prekey_profile_serializes_body() {
+void test_prekey_profile_serialize() {
   uint32_t instance_tag = OTRNG_MIN_VALID_INSTAG + 0x01;
-
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
@@ -98,4 +97,33 @@ void test_prekey_profile_serializes_body() {
 
   free(serialized);
   otrng_prekey_profile_free(profile);
+}
+
+void test_prekey_profile_deserialize() {
+  uint32_t instance_tag = OTRNG_MIN_VALID_INSTAG + 0x01;
+  otrng_keypair_p keypair;
+  uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+  otrng_keypair_generate(keypair, sym);
+
+  otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
+  otrng_shared_prekey_pair_generate(shared_prekey, sym);
+
+  otrng_prekey_profile_s *profile =
+      otrng_prekey_profile_build(instance_tag, keypair, shared_prekey);
+
+  otrng_assert(profile != NULL);
+
+  size_t written = 0;
+  uint8_t *serialized = NULL;
+  otrng_prekey_profile_asprint(&serialized, &written, profile);
+
+  otrng_prekey_profile_s *deserialized = malloc(sizeof(otrng_prekey_profile_s));
+
+  otrng_assert_is_success(otrng_prekey_profile_deserialize(
+      deserialized, serialized, written, NULL));
+  otrng_assert_prekey_profile_eq(deserialized, profile);
+
+  free(serialized);
+  otrng_prekey_profile_free(profile);
+  otrng_prekey_profile_free(deserialized);
 }
