@@ -82,6 +82,9 @@ API otrng_result otrng_user_state_client_profile_read_FILEp(
 API otrng_result otrng_user_state_client_profile_write_FILEp(
     const otrng_user_state_s *state, FILE *privf);
 
+API otrng_result otrng_user_state_prekey_profile_write_FILEp(
+    const otrng_user_state_s *state, FILE *privf);
+
 API otrng_result otrng_user_state_prekey_messages_write_FILEp(
     const otrng_user_state_s *state, FILE *privf);
 

@@ -287,7 +287,7 @@ INTERNAL otrng_result otrng_client_state_client_profile_write_FILEp(
 static otrng_result
 serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
                            const char *storage_id, FILE *privf) {
-  if (0 > fprintf(privf, "%s\n", storage_id)) {
+  if (fprintf(privf, "%s\n", storage_id) < 0) {
     return OTRNG_ERROR;
   }
 
@@ -323,7 +323,7 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
   free(ecdh_symkey);
   free(dh_symkey);
 
-  if (0 > ret) {
+  if (ret < 0) {
     return OTRNG_ERROR;
   }
 
@@ -463,6 +463,39 @@ INTERNAL otrng_result otrng_client_state_prekey_messages_read_FILEp(
   }
 
   if (!read_and_deserialize_prekey(state, privf)) {
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result otrng_client_state_prekey_profile_write_FILEp(
+    otrng_client_state_s *state, FILE *privf) {
+  if (!privf) {
+    return OTRNG_ERROR;
+  }
+
+  char *storage_id = otrng_client_state_get_storage_id(state);
+  if (!storage_id) {
+    return OTRNG_ERROR;
+  }
+
+  uint8_t *buff = NULL;
+  size_t s = 0;
+  if (!otrng_prekey_profile_asprint(&buff, &s, state->prekey_profile)) {
+    return OTRNG_ERROR;
+  }
+
+  char *encoded = otrng_base64_encode(buff, s);
+  free(buff);
+  if (!encoded) {
+    return OTRNG_ERROR;
+  }
+
+  int ret = fprintf(privf, "%s\n%s\n", storage_id, encoded);
+  free(encoded);
+
+  if (ret < 0) {
     return OTRNG_ERROR;
   }
 
