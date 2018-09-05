@@ -257,8 +257,8 @@ otrng_client_state_get_prekey_profile(otrng_client_state_s *client_state) {
     return client_state->prekey_profile;
   }
 
-  otrng_client_callbacks_create_prekey_profile(client_state->callbacks,
-                                               client_state, NULL);
+  otrng_client_callbacks_create_prekey_profile(
+      client_state->callbacks, client_state, client_state->client_id);
 
   return client_state->prekey_profile;
 }
