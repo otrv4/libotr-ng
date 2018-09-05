@@ -40,66 +40,69 @@ tstatic otrng_bool should_heartbeat(int last_sent) {
 }
 
 tstatic otrng_result get_account_and_protocol_cb(
-    char **account, char **protocol, const otrng_client_state_s *state) {
-  if (!state->callbacks || !state->callbacks->get_account_and_protocol) {
+    char **account, char **protocol, const otrng_client_state_s *client_state) {
+  if (!client_state->callbacks ||
+      !client_state->callbacks->get_account_and_protocol) {
     return OTRNG_ERROR;
   }
 
-  return state->callbacks->get_account_and_protocol(account, protocol,
-                                                    state->client_id);
+  return client_state->callbacks->get_account_and_protocol(
+      account, protocol, client_state->client_id);
 }
 
 INTERNAL otrng_result otrng_client_state_get_account_and_protocol(
-    char **account, char **protocol, const otrng_client_state_s *state) {
-  return get_account_and_protocol_cb(account, protocol, state);
+    char **account, char **protocol, const otrng_client_state_s *client_state) {
+  return get_account_and_protocol_cb(account, protocol, client_state);
 }
 
 INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
-  otrng_client_state_s *state = malloc(sizeof(otrng_client_state_s));
-  if (!state) {
+  otrng_client_state_s *client_state = malloc(sizeof(otrng_client_state_s));
+  if (!client_state) {
     return NULL;
   }
 
-  state->client_id = client_id;
-  state->callbacks = NULL;
-  state->user_state = NULL;
-  state->keypair = NULL;
-  state->our_prekeys = NULL;
-  state->client_profile = NULL;
-  state->prekey_profile = NULL;
-  state->shared_prekey_pair = NULL;
-  state->max_stored_msg_keys = 1000;
-  state->max_published_prekey_msg = 100;
-  state->minimum_stored_prekey_msg = 20;
-  state->should_heartbeat = should_heartbeat;
-  state->padding = 0;
+  client_state->client_id = client_id;
+  client_state->callbacks = NULL;
+  client_state->user_state = NULL;
+  client_state->keypair = NULL;
+  client_state->our_prekeys = NULL;
+  client_state->client_profile = NULL;
+  client_state->prekey_profile = NULL;
+  client_state->shared_prekey_pair = NULL;
+  client_state->max_stored_msg_keys = 1000;
+  client_state->max_published_prekey_msg = 100;
+  client_state->minimum_stored_prekey_msg = 20;
+  client_state->should_heartbeat = should_heartbeat;
+  client_state->padding = 0;
 
-  return state;
+  return client_state;
 }
 
-INTERNAL void otrng_client_state_free(otrng_client_state_s *state) {
-  otrng_keypair_free(state->keypair);
-  otrng_list_free(state->our_prekeys, stored_prekeys_free_from_list);
-  otrng_client_profile_free(state->client_profile);
-  otrng_prekey_profile_free(state->prekey_profile);
-  otrng_shared_prekey_pair_free(state->shared_prekey_pair);
+INTERNAL void otrng_client_state_free(otrng_client_state_s *client_state) {
+  otrng_keypair_free(client_state->keypair);
+  otrng_list_free(client_state->our_prekeys, stored_prekeys_free_from_list);
+  otrng_client_profile_free(client_state->client_profile);
+  otrng_prekey_profile_free(client_state->prekey_profile);
+  otrng_shared_prekey_pair_free(client_state->shared_prekey_pair);
 
-  free(state);
+  free(client_state);
 }
 
-INTERNAL OtrlPrivKey *
-otrng_client_state_get_private_key_v3(const otrng_client_state_s *state) {
+INTERNAL OtrlPrivKey *otrng_client_state_get_private_key_v3(
+    const otrng_client_state_s *client_state) {
   OtrlPrivKey *ret = NULL;
 
   // TODO: We could use a "get storage key" callback and use it as
   // account_name plus an arbitrary "libotrng-storage" protocol.
   char *account_name = NULL;
   char *protocol_name = NULL;
-  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
+  if (!get_account_and_protocol_cb(&account_name, &protocol_name,
+                                   client_state)) {
     return ret;
   }
 
-  ret = otrl_privkey_find(state->user_state, account_name, protocol_name);
+  ret =
+      otrl_privkey_find(client_state->user_state, account_name, protocol_name);
 
   free(account_name);
   free(protocol_name);
@@ -107,162 +110,175 @@ otrng_client_state_get_private_key_v3(const otrng_client_state_s *state) {
 }
 
 INTERNAL otrng_keypair_s *
-otrng_client_state_get_keypair_v4(otrng_client_state_s *state) {
-  if (!state) {
+otrng_client_state_get_keypair_v4(otrng_client_state_s *client_state) {
+  if (!client_state) {
     return NULL;
   }
 
-  if (state->keypair) {
-    return state->keypair;
+  if (client_state->keypair) {
+    return client_state->keypair;
   }
 
   /* @secret_information: the long-term key pair lives for as long the client
      decides */
-  otrng_client_callbacks_create_privkey_v4(state->callbacks, state->client_id);
+  otrng_client_callbacks_create_privkey_v4(client_state->callbacks,
+                                           client_state->client_id);
 
-  return state->keypair;
+  return client_state->keypair;
 }
 
-INTERNAL otrng_result otrng_client_state_add_private_key_v4(
-    otrng_client_state_s *state, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  if (!state) {
+INTERNAL otrng_result
+otrng_client_state_add_private_key_v4(otrng_client_state_s *client_state,
+                                      const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  if (!client_state) {
     return OTRNG_ERROR;
   }
 
-  if (state->keypair) {
+  if (client_state->keypair) {
     return OTRNG_ERROR;
   }
 
   /* @secret_information: the long-term key pair lives for as long the client
      decides */
-  state->keypair = otrng_keypair_new();
-  if (!state->keypair) {
+  client_state->keypair = otrng_keypair_new();
+  if (!client_state->keypair) {
     return OTRNG_ERROR;
   }
 
-  otrng_keypair_generate(state->keypair, sym);
+  otrng_keypair_generate(client_state->keypair, sym);
   return OTRNG_SUCCESS;
 }
 
 API const client_profile_s *
-otrng_client_state_get_client_profile(otrng_client_state_s *state) {
-  if (!state) {
+otrng_client_state_get_client_profile(otrng_client_state_s *client_state) {
+  if (!client_state) {
     return NULL;
   }
 
-  if (state->client_profile) {
-    return state->client_profile;
+  if (client_state->client_profile) {
+    return client_state->client_profile;
   }
 
-  otrng_client_callbacks_create_client_profile(state->callbacks, state,
-                                               state->client_id);
+  otrng_client_callbacks_create_client_profile(
+      client_state->callbacks, client_state, client_state->client_id);
 
-  return state->client_profile;
+  return client_state->client_profile;
 }
 
-API client_profile_s *
-otrng_client_state_build_default_client_profile(otrng_client_state_s *state) {
+API client_profile_s *otrng_client_state_build_default_client_profile(
+    otrng_client_state_s *client_state) {
   // TODO: Get allowed versions from the policy
+  if (!client_state) {
+    return NULL;
+  }
+
   const char *allowed_versions = "34";
-  return otrng_client_profile_build(otrng_client_state_get_instance_tag(state),
-                                    allowed_versions,
-                                    otrng_client_state_get_keypair_v4(state));
+  return otrng_client_profile_build(
+      otrng_client_state_get_instance_tag(client_state), allowed_versions,
+      otrng_client_state_get_keypair_v4(client_state));
 }
 
 API otrng_result otrng_client_state_add_client_profile(
-    otrng_client_state_s *state, const client_profile_s *profile) {
-  if (!state) {
+    otrng_client_state_s *client_state, const client_profile_s *profile) {
+  if (!client_state) {
     return OTRNG_ERROR;
   }
 
-  if (state->client_profile) {
+  if (client_state->client_profile) {
     return OTRNG_ERROR;
   }
 
-  state->client_profile = malloc(sizeof(client_profile_s));
-  if (!state->client_profile) {
+  client_state->client_profile = malloc(sizeof(client_profile_s));
+  if (!client_state->client_profile) {
     return OTRNG_ERROR;
   }
 
-  otrng_client_profile_copy(state->client_profile, profile);
+  otrng_client_profile_copy(client_state->client_profile, profile);
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_client_state_add_shared_prekey_v4(
-    otrng_client_state_s *state, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  if (!state) {
+    otrng_client_state_s *client_state,
+    const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  if (!client_state) {
     return OTRNG_ERROR;
   }
 
-  if (state->shared_prekey_pair) {
+  if (client_state->shared_prekey_pair) {
     return OTRNG_ERROR;
   }
 
-  state->shared_prekey_pair = otrng_shared_prekey_pair_new();
-  if (!state->shared_prekey_pair) {
+  client_state->shared_prekey_pair = otrng_shared_prekey_pair_new();
+  if (!client_state->shared_prekey_pair) {
     return OTRNG_ERROR;
   }
 
-  otrng_shared_prekey_pair_generate(state->shared_prekey_pair, sym);
+  otrng_shared_prekey_pair_generate(client_state->shared_prekey_pair, sym);
   return OTRNG_SUCCESS;
 }
 
 static const otrng_shared_prekey_pair_s *
-get_shared_prekey_pair(otrng_client_state_s *state) {
-  if (!state) {
+get_shared_prekey_pair(otrng_client_state_s *client_state) {
+  if (!client_state) {
     return NULL;
   }
 
-  if (state->shared_prekey_pair) {
-    return state->shared_prekey_pair;
+  if (client_state->shared_prekey_pair) {
+    return client_state->shared_prekey_pair;
   }
 
-  otrng_client_callbacks_create_shared_prekey(state->callbacks,
-                                              state->client_id);
+  otrng_client_callbacks_create_shared_prekey(client_state->callbacks,
+                                              client_state->client_id);
 
-  return state->shared_prekey_pair;
+  return client_state->shared_prekey_pair;
 }
 
-API otrng_prekey_profile_s *
-otrng_client_state_build_default_prekey_profile(otrng_client_state_s *state) {
+API otrng_prekey_profile_s *otrng_client_state_build_default_prekey_profile(
+    otrng_client_state_s *client_state) {
+  if (!client_state) {
+    return NULL;
+  }
+
   /* @secret: the shared prekey should be deleted once the prekey profile
    * expires */
-  return otrng_prekey_profile_build(otrng_client_state_get_instance_tag(state),
-                                    otrng_client_state_get_keypair_v4(state),
-                                    get_shared_prekey_pair(state));
+  return otrng_prekey_profile_build(
+      otrng_client_state_get_instance_tag(client_state),
+      otrng_client_state_get_keypair_v4(client_state),
+      get_shared_prekey_pair(client_state));
 }
 
 API const otrng_prekey_profile_s *
-otrng_client_state_get_prekey_profile(otrng_client_state_s *state) {
-  if (!state) {
+otrng_client_state_get_prekey_profile(otrng_client_state_s *client_state) {
+  if (!client_state) {
     return NULL;
   }
 
-  if (state->prekey_profile) {
-    return state->prekey_profile;
+  if (client_state->prekey_profile) {
+    return client_state->prekey_profile;
   }
 
-  otrng_client_callbacks_create_prekey_profile(state->callbacks, state, NULL);
+  otrng_client_callbacks_create_prekey_profile(client_state->callbacks,
+                                               client_state, NULL);
 
-  return state->prekey_profile;
+  return client_state->prekey_profile;
 }
 
 API otrng_result otrng_client_state_add_prekey_profile(
-    otrng_client_state_s *state, const otrng_prekey_profile_s *profile) {
-  if (!state) {
+    otrng_client_state_s *client_state, const otrng_prekey_profile_s *profile) {
+  if (!client_state) {
     return OTRNG_ERROR;
   }
 
-  if (state->prekey_profile) {
+  if (client_state->prekey_profile) {
     return OTRNG_ERROR;
   }
 
-  state->prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
-  if (!state->prekey_profile) {
+  client_state->prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
+  if (!client_state->prekey_profile) {
     return OTRNG_ERROR;
   }
 
-  otrng_prekey_profile_copy(state->prekey_profile, profile);
+  otrng_prekey_profile_copy(client_state->prekey_profile, profile);
   return OTRNG_SUCCESS;
 }
 
@@ -297,12 +313,12 @@ tstatic void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
 }
 
 INTERNAL otrng_result otrng_client_state_add_instance_tag(
-    otrng_client_state_s *state, unsigned int instag) {
-  if (!state) {
+    otrng_client_state_s *client_state, unsigned int instag) {
+  if (!client_state) {
     return OTRNG_ERROR;
   }
 
-  if (!state->user_state) {
+  if (!client_state->user_state) {
     return OTRNG_ERROR;
   }
 
@@ -310,12 +326,13 @@ INTERNAL otrng_result otrng_client_state_add_instance_tag(
   // account_name plus an arbitrary "libotrng-storage" protocol.
   char *account_name = NULL;
   char *protocol_name = NULL;
-  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
+  if (!get_account_and_protocol_cb(&account_name, &protocol_name,
+                                   client_state)) {
     return OTRNG_ERROR;
   }
 
   OtrlInsTag *p =
-      otrl_instag_find(state->user_state, account_name, protocol_name);
+      otrl_instag_find(client_state->user_state, account_name, protocol_name);
   if (p) {
     free(account_name);
     free(protocol_name);
@@ -330,13 +347,13 @@ INTERNAL otrng_result otrng_client_state_add_instance_tag(
     return OTRNG_ERROR;
   }
 
-  otrl_userstate_instance_tag_add(state->user_state, p);
+  otrl_userstate_instance_tag_add(client_state->user_state, p);
   return OTRNG_SUCCESS;
 }
 
 INTERNAL unsigned int
-otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
-  if (!state->user_state) {
+otrng_client_state_get_instance_tag(const otrng_client_state_s *client_state) {
+  if (!client_state->user_state) {
     return (unsigned int)0;
   }
 
@@ -344,18 +361,20 @@ otrng_client_state_get_instance_tag(const otrng_client_state_s *state) {
   // account_name plus an arbitrary "libotrng-storage" protocol.
   char *account_name = NULL;
   char *protocol_name = NULL;
-  if (!get_account_and_protocol_cb(&account_name, &protocol_name, state)) {
+  if (!get_account_and_protocol_cb(&account_name, &protocol_name,
+                                   client_state)) {
     return (unsigned int)1;
   }
 
   OtrlInsTag *instag =
-      otrl_instag_find(state->user_state, account_name, protocol_name);
+      otrl_instag_find(client_state->user_state, account_name, protocol_name);
 
   free(account_name);
   free(protocol_name);
 
   if (!instag) {
-    otrng_client_callbacks_create_instag(state->callbacks, state->client_id);
+    otrng_client_callbacks_create_instag(client_state->callbacks,
+                                         client_state->client_id);
   }
 
   if (!instag) {
@@ -386,7 +405,11 @@ tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
 INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
                                       const ecdh_keypair_p ecdh_pair,
                                       const dh_keypair_p dh_pair,
-                                      otrng_client_state_s *state) {
+                                      otrng_client_state_s *client_state) {
+  if (!client_state) {
+    return;
+  }
+
   otrng_stored_prekeys_s *s = malloc(sizeof(otrng_stored_prekeys_s));
   s->id = id;
   s->sender_instance_tag = instance_tag;
@@ -398,23 +421,27 @@ INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
   s->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
   s->our_dh->pub = otrng_dh_mpi_copy(dh_pair->pub);
 
-  state->our_prekeys = otrng_list_add(s, state->our_prekeys);
+  client_state->our_prekeys = otrng_list_add(s, client_state->our_prekeys);
 }
 
-INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
-                                             otrng_client_state_s *state) {
-  list_element_s *node = get_stored_prekey_node_by_id(id, state->our_prekeys);
+INTERNAL void
+delete_my_prekey_message_by_id(uint32_t id,
+                               otrng_client_state_s *client_state) {
+  list_element_s *node =
+      get_stored_prekey_node_by_id(id, client_state->our_prekeys);
   if (!node) {
     return;
   }
 
-  state->our_prekeys = otrng_list_remove_element(node, state->our_prekeys);
+  client_state->our_prekeys =
+      otrng_list_remove_element(node, client_state->our_prekeys);
   otrng_list_free(node, stored_prekeys_free_from_list);
 }
 
 INTERNAL const otrng_stored_prekeys_s *
-get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state) {
-  list_element_s *node = get_stored_prekey_node_by_id(id, state->our_prekeys);
+get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *client_state) {
+  list_element_s *node =
+      get_stored_prekey_node_by_id(id, client_state->our_prekeys);
   if (!node) {
     return NULL;
   }
@@ -423,40 +450,41 @@ get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state) {
 }
 
 API void otrng_client_state_set_padding(size_t granularity,
-                                        otrng_client_state_s *state) {
-  state->padding = granularity;
+                                        otrng_client_state_s *client_state) {
+  client_state->padding = granularity;
 }
 
 API void
 otrng_client_state_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
-                                           otrng_client_state_s *state) {
-  state->max_stored_msg_keys = max_stored_msg_keys;
+                                           otrng_client_state_s *client_state) {
+  client_state->max_stored_msg_keys = max_stored_msg_keys;
 }
 
 API void otrng_client_state_set_max_published_prekey_msg(
-    unsigned int max_published_prekey_msg, otrng_client_state_s *state) {
-  state->max_published_prekey_msg = max_published_prekey_msg;
+    unsigned int max_published_prekey_msg, otrng_client_state_s *client_state) {
+  client_state->max_published_prekey_msg = max_published_prekey_msg;
 }
 
-API unsigned int
-otrng_client_state_get_max_published_prekey_msg(otrng_client_state_s *state) {
-  if (!state) {
-    return 0;
+API otrng_result otrng_client_state_get_max_published_prekey_msg(
+    otrng_client_state_s *client_state) {
+  if (!client_state) {
+    return OTRNG_ERROR;
   }
 
-  return state->max_published_prekey_msg;
+  return client_state->max_published_prekey_msg;
 }
 
 API void otrng_client_state_set_minimum_stored_prekey_msg(
-    unsigned int minimum_stored_prekey_msg, otrng_client_state_s *state) {
-  state->minimum_stored_prekey_msg = minimum_stored_prekey_msg;
+    unsigned int minimum_stored_prekey_msg,
+    otrng_client_state_s *client_state) {
+  client_state->minimum_stored_prekey_msg = minimum_stored_prekey_msg;
 }
 
-API unsigned int
-otrng_client_state_get_minimum_stored_prekey_msg(otrng_client_state_s *state) {
-  if (!state) {
-    return 0;
+API otrng_result otrng_client_state_get_minimum_stored_prekey_msg(
+    otrng_client_state_s *client_state) {
+  if (!client_state) {
+    return OTRNG_ERROR;
   }
 
-  return state->minimum_stored_prekey_msg;
+  return client_state->minimum_stored_prekey_msg;
 }

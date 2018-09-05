@@ -87,80 +87,80 @@ static inline void stored_prekeys_free_from_list(void *p) {
 }
 
 INTERNAL otrng_result otrng_client_state_get_account_and_protocol(
-    char **account, char **protocol, const otrng_client_state_s *state);
+    char **account, char **protocol, const otrng_client_state_s *client_state);
 
 INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
                                       const ecdh_keypair_p ecdh_pair,
                                       const dh_keypair_p dh_pair,
-                                      otrng_client_state_s *state);
+                                      otrng_client_state_s *client_state);
 
-INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
-                                             otrng_client_state_s *state);
+INTERNAL void
+delete_my_prekey_message_by_id(uint32_t id, otrng_client_state_s *client_state);
 
 INTERNAL const otrng_stored_prekeys_s *
-get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *state);
+get_my_prekeys_by_id(uint32_t id, const otrng_client_state_s *client_state);
 
 INTERNAL unsigned int
-otrng_client_state_get_instance_tag(const otrng_client_state_s *state);
+otrng_client_state_get_instance_tag(const otrng_client_state_s *client_state);
 
 INTERNAL otrng_result otrng_client_state_add_instance_tag(
-    otrng_client_state_s *state, unsigned int instag);
+    otrng_client_state_s *client_state, unsigned int instag);
 
 // TODO: @client @refactoring remove
 INTERNAL otrng_result otrng_client_state_add_shared_prekey_v4(
-    otrng_client_state_s *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
+    otrng_client_state_s *client_state, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-API client_profile_s *
-otrng_client_state_build_default_client_profile(otrng_client_state_s *state);
+API client_profile_s *otrng_client_state_build_default_client_profile(
+    otrng_client_state_s *client_state);
 
-API otrng_prekey_profile_s *
-otrng_client_state_build_default_prekey_profile(otrng_client_state_s *state);
+API otrng_prekey_profile_s *otrng_client_state_build_default_prekey_profile(
+    otrng_client_state_s *client_state);
 
 API const client_profile_s *
-otrng_client_state_get_client_profile(otrng_client_state_s *state);
+otrng_client_state_get_client_profile(otrng_client_state_s *client_state);
 
 API otrng_result otrng_client_state_add_client_profile(
-    otrng_client_state_s *state, const client_profile_s *profile);
+    otrng_client_state_s *client_state, const client_profile_s *profile);
 
 API const otrng_prekey_profile_s *
-otrng_client_state_get_prekey_profile(otrng_client_state_s *state);
+otrng_client_state_get_prekey_profile(otrng_client_state_s *client_state);
 
 API otrng_result otrng_client_state_add_prekey_profile(
-    otrng_client_state_s *state, const otrng_prekey_profile_s *profile);
+    otrng_client_state_s *client_state, const otrng_prekey_profile_s *profile);
 
 // TODO: @client Read/Write prekey_profiles from/to a file.
 
 INTERNAL OtrlPrivKey *
-otrng_client_state_get_private_key_v3(const otrng_client_state_s *state);
+otrng_client_state_get_private_key_v3(const otrng_client_state_s *client_state);
 
 INTERNAL otrng_keypair_s *
-otrng_client_state_get_keypair_v4(otrng_client_state_s *state);
+otrng_client_state_get_keypair_v4(otrng_client_state_s *client_state);
 
 INTERNAL otrng_result otrng_client_state_add_private_key_v4(
-    otrng_client_state_s *state, const uint8_t sym[ED448_PRIVATE_BYTES]);
+    otrng_client_state_s *client_state, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-INTERNAL void otrng_client_state_free(otrng_client_state_s *);
+INTERNAL void otrng_client_state_free(otrng_client_state_s *client_state);
 
 INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id);
 
 API void otrng_client_state_set_padding(size_t granularity,
-                                        otrng_client_state_s *state);
+                                        otrng_client_state_s *client_state);
 
 API void
 otrng_client_state_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
-                                           otrng_client_state_s *state);
+                                           otrng_client_state_s *client_state);
 
 API void otrng_client_state_set_max_published_prekey_msg(
-    unsigned int max_published_prekey_msg, otrng_client_state_s *state);
+    unsigned int max_published_prekey_msg, otrng_client_state_s *client_state);
 
-API unsigned int
-otrng_client_state_get_max_published_prekey_msg(otrng_client_state_s *state);
+API otrng_result otrng_client_state_get_max_published_prekey_msg(
+    otrng_client_state_s *client_state);
 
 API void otrng_client_state_set_minimum_stored_prekey_msg(
-    unsigned int minimum_stored_prekey_msg, otrng_client_state_s *state);
+    unsigned int minimum_stored_prekey_msg, otrng_client_state_s *client_state);
 
-API unsigned int
-otrng_client_state_get_minimum_stored_prekey_msg(otrng_client_state_s *state);
+API otrng_result otrng_client_state_get_minimum_stored_prekey_msg(
+    otrng_client_state_s *client_state);
 
 #ifdef OTRNG_CLIENT_STATE_PRIVATE
 
