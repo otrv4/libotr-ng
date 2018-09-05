@@ -82,8 +82,8 @@ void test_prekey_profile_serialize() {
   g_assert_cmpint(written, ==, 185);
 
   char expected[] = {
-      0x0, 0x0, 0x01, 0x01,                      // Instance tag
-      0x0, 0x0, 0x0,  0x0,  0x0, 0x0, 0x0, 0x0F, // expiration
+      0x0, 0x0, 0x01, 0x01,                      /* Instance tag */
+      0x0, 0x0, 0x0,  0x0,  0x0, 0x0, 0x0, 0x0F, /* Expiration */
   };
 
   otrng_assert_cmpmem(expected, serialized, sizeof(expected));
@@ -97,6 +97,7 @@ void test_prekey_profile_serialize() {
 
   free(serialized);
   otrng_prekey_profile_free(profile);
+  otrng_shared_prekey_pair_free(shared_prekey);
 }
 
 void test_prekey_profile_deserialize() {
@@ -126,4 +127,5 @@ void test_prekey_profile_deserialize() {
   free(serialized);
   otrng_prekey_profile_free(profile);
   otrng_prekey_profile_free(deserialized);
+  otrng_shared_prekey_pair_free(shared_prekey);
 }
