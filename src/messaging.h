@@ -69,6 +69,9 @@ API otrng_result otrng_user_state_generate_private_key(
 API otrng_result otrng_user_state_generate_client_profile(
     otrng_user_state_s *state, void *client_id);
 
+API otrng_result otrng_user_state_generate_prekey_profile(
+    otrng_user_state_s *state, void *client_id);
+
 API otrng_result otrng_user_state_generate_shared_prekey(
     otrng_user_state_s *state, void *client_id);
 

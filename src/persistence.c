@@ -268,13 +268,13 @@ INTERNAL otrng_result otrng_client_state_client_profile_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  char *key = otrng_client_state_get_storage_id(state);
-  if (!key) {
+  char *storage_id = otrng_client_state_get_storage_id(state);
+  if (!storage_id) {
     free(encoded);
     return OTRNG_ERROR;
   }
 
-  if (0 > fprintf(privf, "%s\n%s\n", key, encoded)) {
+  if (0 > fprintf(privf, "%s\n%s\n", storage_id, encoded)) {
     free(encoded);
     return OTRNG_ERROR;
   }
@@ -475,8 +475,7 @@ INTERNAL otrng_result otrng_client_state_prekey_profile_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  char *storage_id = otrng_client_state_get_storage_id(state);
-  if (!storage_id) {
+  if (!state->prekey_profile) {
     return OTRNG_ERROR;
   }
 
@@ -492,12 +491,18 @@ INTERNAL otrng_result otrng_client_state_prekey_profile_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  int ret = fprintf(privf, "%s\n%s\n", storage_id, encoded);
-  free(encoded);
-
-  if (ret < 0) {
+  char *storage_id = otrng_client_state_get_storage_id(state);
+  if (!storage_id) {
+    free(encoded);
     return OTRNG_ERROR;
   }
+
+  if (0 > fprintf(privf, "%s\n%s\n", storage_id, encoded)) {
+    free(encoded);
+    return OTRNG_ERROR;
+  }
+
+  free(encoded);
 
   return OTRNG_SUCCESS;
 }

@@ -181,6 +181,26 @@ API otrng_result otrng_user_state_generate_client_profile(
   return err;
 }
 
+API otrng_result otrng_user_state_generate_prekey_profile(
+    otrng_user_state_s *state, void *client_id) {
+  otrng_client_state_s *client_state = get_client_state(state, client_id);
+  if (!client_state) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_prekey_profile_s *profile =
+      otrng_client_state_build_default_prekey_profile(client_state);
+  if (!profile) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_result err =
+      otrng_client_state_add_prekey_profile(client_state, profile);
+  otrng_prekey_profile_free(profile);
+
+  return err;
+}
+
 API otrng_result otrng_user_state_generate_shared_prekey(
     otrng_user_state_s *state, void *client_id) {
   uint8_t sym[ED448_PRIVATE_BYTES];

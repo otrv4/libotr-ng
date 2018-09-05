@@ -94,7 +94,7 @@ void test_prekey_profile_serialize() {
   cursor += ED448_SHARED_PREKEY_BYTES;
 
   char expected_signature[ED448_SIGNATURE_BYTES] = {0};
-  otrng_assert_cmpmem(expected_signature, pos, ED448_SIGNATURE_BYTES);
+  otrng_assert_cmpmem(expected_signature, cursor, ED448_SIGNATURE_BYTES);
 
   free(serialized);
   otrng_prekey_profile_free(profile);
