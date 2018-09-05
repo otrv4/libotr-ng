@@ -319,7 +319,6 @@ API otrng_result otrng_user_state_client_profile_read_FILEp(
     return OTRNG_ERROR;
   }
 
-  // Scan the whole file for a private key for this client
   while (!feof(profile_filep)) {
     const void *client_id = read_client_id_for_key(profile_filep);
     if (!client_id) {
@@ -328,6 +327,30 @@ API otrng_result otrng_user_state_client_profile_read_FILEp(
 
     otrng_client_state_s *client_state = get_client_state(state, client_id);
     if (otrng_client_state_client_profile_read_FILEp(
+            client_state, profile_filep) != OTRNG_SUCCESS) {
+      return OTRNG_ERROR; /* We decide to abort, since this means the file is
+                             malformed */
+    }
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+API otrng_result otrng_user_state_prekey_profile_read_FILEp(
+    otrng_user_state_s *state, FILE *profile_filep,
+    const void *(*read_client_id_for_key)(FILE *filep)) {
+  if (!profile_filep) {
+    return OTRNG_ERROR;
+  }
+
+  while (!feof(profile_filep)) {
+    const void *client_id = read_client_id_for_key(profile_filep);
+    if (!client_id) {
+      continue;
+    }
+
+    otrng_client_state_s *client_state = get_client_state(state, client_id);
+    if (otrng_client_state_prekey_profile_read_FILEp(
             client_state, profile_filep) != OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */

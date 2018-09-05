@@ -222,7 +222,7 @@ INTERNAL otrng_result otrng_client_state_client_profile_read_FILEp(
     return OTRNG_ERROR;
   }
 
-  uint8_t *dec = malloc(((len + 3) / 4) * 3);
+  uint8_t *dec = malloc(OTRNG_BASE64_DECODE_LEN(len));
   if (!dec) {
     free(line);
     return OTRNG_ERROR;
@@ -505,4 +505,50 @@ INTERNAL otrng_result otrng_client_state_prekey_profile_write_FILEp(
   free(encoded);
 
   return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result otrng_client_state_prekey_profile_read_FILEp(
+    otrng_client_state_s *state, FILE *privf) {
+  char *line = NULL;
+  size_t cap = 0;
+  int len = 0;
+
+  if (!privf) {
+    return OTRNG_ERROR;
+  }
+
+  if (feof(privf)) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_prekey_profile_free(state->prekey_profile);
+
+  len = getline(&line, &cap, privf);
+  if (len < 0) {
+    free(line);
+    return OTRNG_ERROR;
+  }
+
+  uint8_t *dec = malloc(OTRNG_BASE64_DECODE_LEN(len));
+  if (!dec) {
+    free(line);
+    return OTRNG_ERROR;
+  }
+
+  size_t dec_len = otrl_base64_decode(dec, line, len);
+  free(line);
+
+  otrng_prekey_profile_s profile[1];
+  otrng_result ret =
+      otrng_prekey_profile_deserialize(profile, dec, dec_len, NULL);
+  free(dec);
+
+  if (ret == OTRNG_ERROR) {
+    return ret;
+  }
+
+  otrng_result result = otrng_client_state_add_prekey_profile(state, profile);
+  otrng_prekey_profile_destroy(profile);
+
+  return result;
 }
