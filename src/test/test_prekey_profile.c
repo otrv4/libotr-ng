@@ -88,9 +88,10 @@ void test_prekey_profile_serialize() {
 
   otrng_assert_cmpmem(expected, serialized, sizeof(expected));
 
-  uint8_t *pos = serialized + sizeof(expected);
-  otrng_assert_cmpmem(expected_shared_prekey, pos, ED448_SHARED_PREKEY_BYTES);
-  pos += ED448_SHARED_PREKEY_BYTES;
+  uint8_t *cursor = serialized + sizeof(expected);
+  otrng_assert_cmpmem(expected_shared_prekey, cursor,
+                      ED448_SHARED_PREKEY_BYTES);
+  cursor += ED448_SHARED_PREKEY_BYTES;
 
   char expected_signature[ED448_SIGNATURE_BYTES] = {0};
   otrng_assert_cmpmem(expected_signature, pos, ED448_SIGNATURE_BYTES);
