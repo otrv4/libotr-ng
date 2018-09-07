@@ -528,11 +528,11 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   hash_destroy(hd);
 
   // uncomment me!
-  // printf("\n MAC \n");
-  // for (int i = 0; i < 64; i++) {
-  //  printf("%x", msg->message+w);
-  //}
-  // printf("\n");
+  /* printf("\n MAC \n"); */
+  /* for (int i = 0; i < 64; i++) { */
+  /*   printf("%02x", (unsigned int)(msg->message+w)[i]); */
+  /* } */
+  /* printf("\n"); */
 
   msg->message_len = w + HASH_BYTES;
 
@@ -621,11 +621,11 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
                               shared_secret, HASH_BYTES);
 
   // uncomment me!
-  // printf("\n MAC KEY \n");
-  // for (int i = 0; i < 64; i++) {
-  //  printf("%x", client->mac_key);
-  //}
-  // printf("\n");
+  /* printf("\n MAC KEY \n"); */
+  /* for (int i = 0; i < 64; i++) { */
+  /*   printf("%02x", (unsigned int)client->mac_key[i]); */
+  /* } */
+  /* printf("\n"); */
 
   /* Attach MESSAGE in the message */
   if (client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
