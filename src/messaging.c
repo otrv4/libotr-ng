@@ -435,7 +435,8 @@ API void otrng_user_state_debug_print(FILE *f, int indent, otrng_user_state_s *s
     otrng_client_state_debug_print(f, indent+6, curr->data);
     otrng_print_indent(f, indent+4);
     fprintf(f, "} // [%d]\n", ix);
-    ix++
+    curr = curr->next;
+    ix++;
   }
 
 

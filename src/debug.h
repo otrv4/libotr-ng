@@ -60,7 +60,7 @@ static inline void otrng_print_indent(FILE *f, int indent) {
   }
 }
 
-static inline void otrng_debug_print_pointer(FILE *f, void *p) {
+static inline void otrng_debug_print_pointer(FILE *f, const void *p) {
   if (p == NULL) {
     fprintf(f, "NULL");
   } else {

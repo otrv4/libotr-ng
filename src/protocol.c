@@ -24,6 +24,7 @@
 #include "padding.h"
 #include "random.h"
 #include "serialize.h"
+#include "debug.h"
 #include <libotr/b64.h>
 
 INTERNAL void maybe_create_keys(const otrng_client_state_s *state) {

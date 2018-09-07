@@ -116,10 +116,10 @@ tstatic void received_extra_sym_key(const otrng_client_conversation_s *conv,
     printf("%02x", use_data[i]);
   }
   printf("\n");
-  printf("Symkey = ");
-  for (int i = 0; i < EXTRA_SYMMETRIC_KEY_BYTES; i++) {
-    printf("%02x", extra_symm_key[i]);
-  }
+  /* printf("Symkey = "); */
+  /* for (int i = 0; i < EXTRA_SYMMETRIC_KEY_BYTES; i++) { */
+  /*   printf("%02x", extra_symm_key[i]); */
+  /* } */
 #endif
 }
 

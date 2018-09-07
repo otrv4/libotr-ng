@@ -690,10 +690,10 @@ key_manager_derive_ratchet_keys(key_manager_s *manager,
   printf("\n");
   printf("ROOT KEY = ");
   otrng_memdump(manager->current->root_key, sizeof(root_key_p));
-  printf("CHAIN_S = ");
-  otrng_memdump(ratchet->chain_s, sizeof(sending_chain_key_p));
-  printf("CHAIN_R = ");
-  otrng_memdump(ratchet->chain_r, sizeof(receiving_chain_key_p));
+  /* printf("CHAIN_S = "); */
+  /* otrng_memdump(ratchet->chain_s, sizeof(sending_chain_key_p)); */
+  /* printf("CHAIN_R = "); */
+  /* otrng_memdump(ratchet->chain_r, sizeof(receiving_chain_key_p)); */
 #endif
 }
 
