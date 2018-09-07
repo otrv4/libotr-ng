@@ -472,13 +472,11 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   w += otrng_serialize_bytes_array(msg->message + w, client_profile,
                                    client_profile_len);
 
-  free(client_profile);
 
   w += otrng_serialize_uint8(msg->message + w, pub_msg->prekey_profile ? 1 : 0);
   w += otrng_serialize_bytes_array(msg->message + w, prekey_profile,
                                    prekey_profile_len);
 
-  free(prekey_profile);
 
   /* MAC: KDF(usage_preMAC, prekey_mac_k || message type
             || N || KDF(usage_prekey_message, Prekey Messages, 64)
@@ -510,6 +508,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   } else {
     hash_update(hd, &zero, 1);
   }
+  free(client_profile);
 
   if (pub_msg->prekey_profile) {
     uint8_t prekey_profile_kdf[HASH_BYTES] = {0};
@@ -524,15 +523,10 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   } else {
     hash_update(hd, &zero, 1);
   }
+  free(prekey_profile);
+
   hash_final(hd, msg->message + w, HASH_BYTES);
   hash_destroy(hd);
-
-  // uncomment me!
-  /* printf("\n MAC \n"); */
-  /* for (int i = 0; i < 64; i++) { */
-  /*   printf("%02x", (unsigned int)(msg->message+w)[i]); */
-  /* } */
-  /* printf("\n"); */
 
   msg->message_len = w + HASH_BYTES;
 
@@ -619,13 +613,6 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   /* prekey_mac_k = KDF(0x08, SK, 64) */
   shake_256_prekey_server_kdf(client->mac_key, MAC_KEY_BYTES, usage_preMAC_key,
                               shared_secret, HASH_BYTES);
-
-  // uncomment me!
-  /* printf("\n MAC KEY \n"); */
-  /* for (int i = 0; i < 64; i++) { */
-  /*   printf("%02x", (unsigned int)client->mac_key[i]); */
-  /* } */
-  /* printf("\n"); */
 
   /* Attach MESSAGE in the message */
   if (client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
