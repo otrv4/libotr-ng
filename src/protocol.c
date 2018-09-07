@@ -27,7 +27,7 @@
 #include "serialize.h"
 #include <libotr/b64.h>
 
-INTERNAL void maybe_create_keys(const otrng_client_state_s *state) {
+INTERNAL void maybe_create_keys(otrng_client_state_s *state) {
   const otrng_client_callbacks_s *cb = state->callbacks;
   const void *client_id = state->client_id;
 
@@ -36,7 +36,7 @@ INTERNAL void maybe_create_keys(const otrng_client_state_s *state) {
   }
 
   if (!state->shared_prekey_pair) {
-    otrng_client_callbacks_create_shared_prekey(cb, client_id);
+    otrng_client_callbacks_create_shared_prekey(cb, state, client_id);
   }
 
   uint32_t instance_tag = otrng_client_state_get_instance_tag(state);

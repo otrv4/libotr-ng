@@ -1239,6 +1239,9 @@ tstatic otrng_result non_interactive_auth_message_received(
     otrng_response_s *response, const dake_non_interactive_auth_message_p auth,
     otrng_s *otr) {
   otrng_client_state_s *state = otr->conversation->client;
+  if (!state) {
+    return OTRNG_ERROR;
+  }
 
   const otrng_stored_prekeys_s *stored_prekey = NULL;
 
@@ -1258,8 +1261,10 @@ tstatic otrng_result non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
-  stored_prekey = get_my_prekeys_by_id(auth->prekey_message_id, state);
+  stored_prekey =
+      get_my_prekeys_by_id(auth->prekey_message_id, otr->conversation->client);
   if (!stored_prekey) {
+    // TODO: this should send an error to the plugin
     return OTRNG_ERROR;
   }
 
@@ -2100,6 +2105,7 @@ tstatic otrng_result receive_encoded_message(otrng_response_s *response,
   if (otrl_base64_otr_decode(message, &decoded, &dec_len)) {
     return OTRNG_ERROR;
   }
+
   otrng_result result =
       receive_decoded_message(response, warn, decoded, dec_len, otr);
   free(decoded);

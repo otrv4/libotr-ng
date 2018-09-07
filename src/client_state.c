@@ -227,8 +227,8 @@ get_shared_prekey_pair(otrng_client_state_s *client_state) {
     return client_state->shared_prekey_pair;
   }
 
-  otrng_client_callbacks_create_shared_prekey(client_state->callbacks,
-                                              client_state->client_id);
+  otrng_client_callbacks_create_shared_prekey(
+      client_state->callbacks, client_state, client_state->client_id);
 
   return client_state->shared_prekey_pair;
 }

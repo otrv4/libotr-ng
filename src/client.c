@@ -313,6 +313,10 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
   otrng_conversation_s *conv = NULL;
   *should_ignore = otrng_false;
 
+  if (!client) {
+    return OTRNG_ERROR;
+  }
+
   if (!newmessage) {
     return result;
   }
@@ -327,6 +331,7 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
 
   response = otrng_response_new();
   otrng_warning warn = OTRNG_WARN_NONE;
+
   result = otrng_receive_message(response, &warn, message, conv->conn);
 
   if (warn == OTRNG_WARN_RECEIVED_NOT_VALID) {
