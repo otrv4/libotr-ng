@@ -59,6 +59,11 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
     otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
     size_t *nread);
 
+#ifdef DEBUG_API
+API void otrng_prekey_profile_debug_print(FILE *, int,
+                                          otrng_prekey_profile_s *);
+#endif
+
 #ifdef OTRNG_PREKEY_PROFILE_PRIVATE
 
 tstatic otrng_result otrng_prekey_profile_body_asprint(

@@ -496,7 +496,9 @@ API otrng_result otrng_client_state_get_minimum_stored_prekey_msg(
 API void otrng_client_state_debug_print(FILE *f, int indent,
                                         otrng_client_state_s *state) {
   otrng_print_indent(f, indent);
-  fprintf(f, "client_state {\n");
+  fprintf(f, "client_state(");
+  otrng_debug_print_pointer(f, state);
+  fprintf(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
   fprintf(f, "client_id = ");
@@ -516,20 +518,26 @@ API void otrng_client_state_debug_print(FILE *f, int indent,
   otrng_print_indent(f, indent + 2);
   fprintf(f, "} // keypair\n");
 
-  /* otrng_print_indent(f, indent + 2); */
-  /* fprintf(f, "client_profile = {\n"); */
-  /* otrng_client_profile_debug_print(f, indent + 4, state->client_profile); */
-  /* otrng_print_indent(f, indent + 2); */
-  /* fprintf(f, "} // client_profile\n"); */
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "client_profile = {\n");
+  otrng_client_profile_debug_print(f, indent + 4, state->client_profile);
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // client_profile\n");
 
-  /* otrng_print_indent(f, indent + 2); */
-  /* fprintf(f, "prekey_profile = {\n"); */
-  /* otrng_prekey_profile_debug_print(f, indent + 4, state->prekey_profile); */
-  /* otrng_print_indent(f, indent + 2); */
-  /* fprintf(f, "} // prekey_profile\n"); */
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "prekey_profile = {\n");
+  otrng_prekey_profile_debug_print(f, indent + 4, state->prekey_profile);
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // prekey_profile\n");
 
   /* list_element_s *our_prekeys; // otrng_stored_prekeys_s */
-  /* otrng_shared_prekey_pair_s *shared_prekey_pair; */
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "shared_prekey_pair = {\n");
+  otrng_shared_prekey_pair_debug_print(f, indent + 4,
+                                       state->shared_prekey_pair);
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // shared_prekey_pair\n");
 
   otrng_print_indent(f, indent + 2);
   fprintf(f, "max_stored_msg_keys = %u\n", state->max_stored_msg_keys);

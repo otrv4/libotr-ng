@@ -727,3 +727,51 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
 
   return OTRNG_SUCCESS;
 }
+
+#ifdef DEBUG_API
+
+#include "debug.h"
+
+API void otrng_client_profile_debug_print(FILE *f, int indent,
+                                          client_profile_s *cp) {
+  otrng_print_indent(f, indent);
+  fprintf(f, "client_profile(");
+  otrng_debug_print_pointer(f, cp);
+  fprintf(f, ") {\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "sender_instance_tag = %x\n", cp->sender_instance_tag);
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "long_term_pub_key = ");
+  otrng_public_key_debug_print(f, cp->long_term_pub_key);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "versions = %s\n", cp->versions);
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "expires = ");
+  otrng_debug_print_data(f, (uint8_t *)&(cp->expires), 8);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "dsa_key = ");
+  otrng_debug_print_data(f, cp->dsa_key, cp->dsa_key_len);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "transitional_signature = ");
+  otrng_debug_print_data(f, cp->transitional_signature, OTRv3_DSA_SIG_BYTES);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "signature = ");
+  otrng_debug_print_data(f, cp->signature, ED448_SIGNATURE_BYTES);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent);
+  fprintf(f, "} // client_profile\n");
+}
+
+#endif

@@ -424,7 +424,9 @@ API void otrng_user_state_debug_print(FILE *f, int indent,
   list_element_s *curr;
 
   otrng_print_indent(f, indent);
-  fprintf(f, "user_state {\n");
+  fprintf(f, "user_state(");
+  otrng_debug_print_pointer(f, state);
+  fprintf(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
   fprintf(f, "states = {\n");

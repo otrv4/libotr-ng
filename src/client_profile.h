@@ -90,6 +90,10 @@ INTERNAL otrng_result otrng_client_profile_set_dsa_key_mpis(
 INTERNAL otrng_result otrng_client_profile_transitional_sign(
     client_profile_s *profile, OtrlPrivKey *privkey);
 
+#ifdef DEBUG_API
+API void otrng_client_profile_debug_print(FILE *, int, client_profile_s *);
+#endif
+
 #ifdef OTRNG_USER_PROFILE_PRIVATE
 
 tstatic client_profile_s *client_profile_new(const char *versions);
