@@ -129,6 +129,10 @@ otrng_user_state_new(const otrng_client_callbacks_s *cb);
 
 API void otrng_user_state_free(otrng_user_state_s *);
 
+#ifdef DEBUG
+API void otrng_user_state_debug_print(FILE *, int, otrng_user_state_s *);
+#endif
+
 #ifdef OTRNG_MESSAGING_PRIVATE
 
 tstatic otrng_result otrng_user_state_add_private_key_v4(

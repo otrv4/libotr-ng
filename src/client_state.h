@@ -162,6 +162,10 @@ API void otrng_client_state_set_minimum_stored_prekey_msg(
 API otrng_result otrng_client_state_get_minimum_stored_prekey_msg(
     otrng_client_state_s *client_state);
 
+#ifdef DEBUG
+API void otrng_client_state_debug_print(FILE *, int, otrng_client_state_s *);
+#endif
+
 #ifdef OTRNG_CLIENT_STATE_PRIVATE
 
 #endif

@@ -128,7 +128,6 @@ otrng_messaging_client_s *otrng_messaging_client_get(otrng_user_state_s *state,
   if (el) {
     return el->data;
   }
-
   return otrng_messaging_client_new(state, client_id);
 }
 
@@ -348,7 +347,6 @@ API otrng_result otrng_user_state_prekey_profile_read_FILEp(
     if (!client_id) {
       continue;
     }
-
     otrng_client_state_s *client_state = get_client_state(state, client_id);
     if (otrng_client_state_prekey_profile_read_FILEp(
             client_state, profile_filep) != OTRNG_SUCCESS) {
@@ -415,3 +413,43 @@ API otrng_result otrng_user_state_instance_tags_read_FILEp(
   }
   return OTRNG_SUCCESS;
 }
+
+#ifdef DEBUG
+
+#include "debug.h"
+
+API void otrng_user_state_debug_print(FILE *f, int indent, otrng_user_state_s *state) {
+  int ix;
+  list_element_s *curr;
+
+  otrng_print_indent(f, indent);
+  fprintf(f, "user_state {\n");
+
+  otrng_print_indent(f, indent+2);
+  fprintf(f, "states = {\n");
+  ix = 0;
+  curr = state->states;
+  while(curr) {
+    otrng_print_indent(f, indent+4);
+    fprintf(f, "[%d] = {\n", ix);
+    otrng_client_state_debug_print(f, indent+6, curr->data);
+    otrng_print_indent(f, indent+4);
+    fprintf(f, "} // [%d]\n", ix);
+    ix++
+  }
+
+
+  otrng_print_indent(f, indent+2);
+  fprintf(f, "} //state\n");
+  // states
+
+
+  // clients
+  // callbacks
+  // user_state_v3
+
+  otrng_print_indent(f, indent);
+  fprintf(f, "} // user_state\n");
+}
+
+#endif /* DEBUG */

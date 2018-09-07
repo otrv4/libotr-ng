@@ -548,6 +548,8 @@ INTERNAL otrng_result otrng_client_state_prekey_profile_read_FILEp(
   }
 
   otrng_result result = otrng_client_state_add_prekey_profile(state, profile);
+
+  // TODO: This is not necessary, and probably dangerous...
   otrng_prekey_profile_destroy(profile);
 
   return result;

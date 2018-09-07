@@ -53,6 +53,21 @@ static inline void otrng_memdump(const uint8_t *src, size_t len) {
   printf("%s\n", _otrng_memdump(src, len));
 }
 
+static inline void otrng_print_indent(FILE *f, int indent) {
+  int i;
+  for(i = 0; i<indent; i++) {
+    fputc(' ', f);
+  }
+}
+
+static inline void otrng_debug_print_pointer(FILE *f, void *p) {
+  if (p == NULL) {
+    fprintf(f, "NULL");
+  } else {
+    fprintf(f, "%p", p);
+  }
+}
+
 #else
 static inline void otrng_memdump(const uint8_t *src, size_t len) {}
 #endif
