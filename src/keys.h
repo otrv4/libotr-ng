@@ -89,6 +89,17 @@ API uint8_t *otrng_derive_key_from_extra_symm_key(
     uint8_t usage, const unsigned char *use_data, size_t use_data_len,
     const unsigned char *extra_symm_key);
 
+#ifdef DEBUG_API
+API void otrng_keypair_debug_print(FILE *, int, otrng_keypair_s *);
+API void otrng_shared_prekey_pair_debug_print(FILE *, int,
+                                              otrng_shared_prekey_pair_s *);
+API void otrng_public_key_debug_print(FILE *, otrng_public_key_p);
+API void otrng_private_key_debug_print(FILE *, otrng_private_key_p);
+API void otrng_shared_prekey_pub_debug_print(FILE *, otrng_shared_prekey_pub_p);
+API void otrng_shared_prekey_priv_debug_print(FILE *,
+                                              otrng_shared_prekey_priv_p);
+#endif
+
 #ifdef OTRNG_KEYS_PRIVATE
 
 tstatic void keypair_destroy(otrng_keypair_s *keypair);

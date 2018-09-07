@@ -129,7 +129,7 @@ otrng_user_state_new(const otrng_client_callbacks_s *cb);
 
 API void otrng_user_state_free(otrng_user_state_s *);
 
-#ifdef DEBUG
+#ifdef DEBUG_API
 API void otrng_user_state_debug_print(FILE *, int, otrng_user_state_s *);
 #endif
 

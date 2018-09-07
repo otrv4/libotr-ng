@@ -150,3 +150,115 @@ INTERNAL uint8_t *otrng_derive_key_from_extra_symm_key(
 
   return derived_key;
 }
+
+#ifdef DEBUG_API
+
+#include "debug.h"
+
+API void otrng_keypair_debug_print(FILE *f, int indent, otrng_keypair_s *k) {
+  otrng_print_indent(f, indent);
+  fprintf(f, "keypair {\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "sym = ");
+  otrng_debug_print_data(f, k->sym, ED448_PRIVATE_BYTES);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "pub = ");
+  otrng_public_key_debug_print(f, k->pub);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "priv = ");
+  otrng_private_key_debug_print(f, k->priv);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent);
+  fprintf(f, "} // keypair\n");
+}
+
+API void otrng_shared_prekey_pair_debug_print(FILE *f, int indent,
+                                              otrng_shared_prekey_pair_s *k) {
+  otrng_print_indent(f, indent);
+  fprintf(f, "shared_prekey_pair {\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "sym = ");
+  otrng_debug_print_data(f, k->sym, ED448_PRIVATE_BYTES);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "pub = ");
+  otrng_shared_prekey_pub_debug_print(f, k->pub);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "priv = ");
+  otrng_shared_prekey_priv_debug_print(f, k->priv);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent);
+  fprintf(f, "} // shared_prekey_pair\n");
+}
+
+API void otrng_public_key_debug_print(FILE *f, otrng_public_key_p k) {
+  uint8_t *r = malloc(ED448_POINT_BYTES);
+  if (!r) {
+    fprintf(f, "ERROR!!");
+    return;
+  }
+  if (!otrng_ec_point_encode(r, ED448_POINT_BYTES, k)) {
+    free(r);
+    fprintf(f, "ERROR!!");
+    return;
+  }
+
+  otrng_debug_print_data(f, r, ED448_POINT_BYTES);
+  free(r);
+}
+
+API void otrng_private_key_debug_print(FILE *f, otrng_private_key_p k) {
+  uint8_t *r = malloc(ED448_SCALAR_BYTES);
+  if (!r) {
+    fprintf(f, "ERROR!!");
+    return;
+  }
+
+  otrng_ec_scalar_encode(r, k);
+
+  otrng_debug_print_data(f, r, ED448_SCALAR_BYTES);
+  free(r);
+}
+
+API void otrng_shared_prekey_pub_debug_print(FILE *f,
+                                             otrng_shared_prekey_pub_p k) {
+  uint8_t *r = malloc(ED448_POINT_BYTES);
+  if (!r) {
+    fprintf(f, "ERROR!!");
+    return;
+  }
+  if (!otrng_ec_point_encode(r, ED448_POINT_BYTES, k)) {
+    free(r);
+    fprintf(f, "ERROR!!");
+    return;
+  }
+
+  otrng_debug_print_data(f, r, ED448_POINT_BYTES);
+  free(r);
+}
+
+API void otrng_shared_prekey_priv_debug_print(FILE *f,
+                                              otrng_shared_prekey_priv_p k) {
+  uint8_t *r = malloc(ED448_SCALAR_BYTES);
+  if (!r) {
+    fprintf(f, "ERROR!!");
+    return;
+  }
+  otrng_ec_scalar_encode(r, k);
+
+  otrng_debug_print_data(f, r, ED448_SCALAR_BYTES);
+  free(r);
+}
+
+#endif /* DEBUG */

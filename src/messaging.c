@@ -414,7 +414,7 @@ API otrng_result otrng_user_state_instance_tags_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-#ifdef DEBUG
+#ifdef DEBUG_API
 
 #include "debug.h"
 
@@ -445,7 +445,11 @@ API void otrng_user_state_debug_print(FILE *f, int indent,
 
   // clients
   // callbacks
-  // user_state_v3
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "user_state_v3 = ");
+  otrng_debug_print_pointer(f, state->user_state_v3);
+  fprintf(f, "\n");
 
   otrng_print_indent(f, indent);
   fprintf(f, "} // user_state\n");

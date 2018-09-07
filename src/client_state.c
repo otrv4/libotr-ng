@@ -489,7 +489,7 @@ API otrng_result otrng_client_state_get_minimum_stored_prekey_msg(
   return client_state->minimum_stored_prekey_msg;
 }
 
-#ifdef DEBUG
+#ifdef DEBUG_API
 
 #include "debug.h"
 
@@ -504,13 +504,30 @@ API void otrng_client_state_debug_print(FILE *f, int indent,
   fprintf(f, "\n");
 
   /* const otrng_client_callbacks_s *callbacks; */
+
   otrng_print_indent(f, indent + 2);
   fprintf(f, "v3_user_state = ");
   otrng_debug_print_pointer(f, state->user_state);
   fprintf(f, "\n");
-  /* otrng_keypair_s *keypair; */
-  /* client_profile_s *client_profile; */
-  /* otrng_prekey_profile_s *prekey_profile; */
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "keypair = {\n");
+  otrng_keypair_debug_print(f, indent + 4, state->keypair);
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // keypair\n");
+
+  /* otrng_print_indent(f, indent + 2); */
+  /* fprintf(f, "client_profile = {\n"); */
+  /* otrng_client_profile_debug_print(f, indent + 4, state->client_profile); */
+  /* otrng_print_indent(f, indent + 2); */
+  /* fprintf(f, "} // client_profile\n"); */
+
+  /* otrng_print_indent(f, indent + 2); */
+  /* fprintf(f, "prekey_profile = {\n"); */
+  /* otrng_prekey_profile_debug_print(f, indent + 4, state->prekey_profile); */
+  /* otrng_print_indent(f, indent + 2); */
+  /* fprintf(f, "} // prekey_profile\n"); */
+
   /* list_element_s *our_prekeys; // otrng_stored_prekeys_s */
   /* otrng_shared_prekey_pair_s *shared_prekey_pair; */
 
