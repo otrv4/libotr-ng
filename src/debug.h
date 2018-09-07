@@ -55,7 +55,7 @@ static inline void otrng_memdump(const uint8_t *src, size_t len) {
 
 static inline void otrng_print_indent(FILE *f, int indent) {
   int i;
-  for(i = 0; i<indent; i++) {
+  for (i = 0; i < indent; i++) {
     fputc(' ', f);
   }
 }

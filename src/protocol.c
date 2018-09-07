@@ -21,10 +21,10 @@
 #include "protocol.h"
 
 #include "data_message.h"
+#include "debug.h"
 #include "padding.h"
 #include "random.h"
 #include "serialize.h"
-#include "debug.h"
 #include <libotr/b64.h>
 
 INTERNAL void maybe_create_keys(const otrng_client_state_s *state) {

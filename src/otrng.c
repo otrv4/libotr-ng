@@ -1277,7 +1277,8 @@ tstatic otrng_result non_interactive_auth_message_received(
 
   // Shared prekey is the same as used to generate my current prekey profile.
   // Should be always true, though.
-  // TODO: it seems people ignore the error message returned from this function...
+  // TODO: it seems people ignore the error message returned from this
+  // function...
   if (!otrng_ec_point_eq(our_shared_prekey(otr)->pub,
                          get_my_prekey_profile(otr)->shared_prekey)) {
     return OTRNG_ERROR;
@@ -1354,7 +1355,8 @@ tstatic otrng_result receive_non_interactive_auth_message(
     return OTRNG_ERROR;
   }
 
-  // TODO: we should actually care about the result here before setting the state
+  // TODO: we should actually care about the result here before setting the
+  // state
   otrng_result ret = non_interactive_auth_message_received(response, auth, otr);
   otrng_dake_non_interactive_auth_message_destroy(auth);
 

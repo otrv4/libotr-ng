@@ -418,32 +418,30 @@ API otrng_result otrng_user_state_instance_tags_read_FILEp(
 
 #include "debug.h"
 
-API void otrng_user_state_debug_print(FILE *f, int indent, otrng_user_state_s *state) {
+API void otrng_user_state_debug_print(FILE *f, int indent,
+                                      otrng_user_state_s *state) {
   int ix;
   list_element_s *curr;
 
   otrng_print_indent(f, indent);
   fprintf(f, "user_state {\n");
 
-  otrng_print_indent(f, indent+2);
+  otrng_print_indent(f, indent + 2);
   fprintf(f, "states = {\n");
   ix = 0;
   curr = state->states;
-  while(curr) {
-    otrng_print_indent(f, indent+4);
+  while (curr) {
+    otrng_print_indent(f, indent + 4);
     fprintf(f, "[%d] = {\n", ix);
-    otrng_client_state_debug_print(f, indent+6, curr->data);
-    otrng_print_indent(f, indent+4);
+    otrng_client_state_debug_print(f, indent + 6, curr->data);
+    otrng_print_indent(f, indent + 4);
     fprintf(f, "} // [%d]\n", ix);
     curr = curr->next;
     ix++;
   }
 
-
-  otrng_print_indent(f, indent+2);
-  fprintf(f, "} //state\n");
-  // states
-
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // states\n");
 
   // clients
   // callbacks

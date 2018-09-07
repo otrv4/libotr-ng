@@ -493,27 +493,43 @@ API otrng_result otrng_client_state_get_minimum_stored_prekey_msg(
 
 #include "debug.h"
 
-API void otrng_client_state_debug_print(FILE *f, int indent, otrng_client_state_s *state) {
+API void otrng_client_state_debug_print(FILE *f, int indent,
+                                        otrng_client_state_s *state) {
   otrng_print_indent(f, indent);
   fprintf(f, "client_state {\n");
 
-  otrng_print_indent(f, indent+2);
+  otrng_print_indent(f, indent + 2);
   fprintf(f, "client_id = ");
   otrng_debug_print_pointer(f, state->client_id);
   fprintf(f, "\n");
 
   /* const otrng_client_callbacks_s *callbacks; */
-  /* OtrlUserState user_state; */
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "v3_user_state = ");
+  otrng_debug_print_pointer(f, state->user_state);
+  fprintf(f, "\n");
   /* otrng_keypair_s *keypair; */
   /* client_profile_s *client_profile; */
   /* otrng_prekey_profile_s *prekey_profile; */
   /* list_element_s *our_prekeys; // otrng_stored_prekeys_s */
   /* otrng_shared_prekey_pair_s *shared_prekey_pair; */
-  /* unsigned int max_stored_msg_keys; */
-  /* unsigned int max_published_prekey_msg; */
-  /* unsigned int minimum_stored_prekey_msg; */
-  /* otrng_bool (*should_heartbeat)(int last_sent); */
-  /* size_t padding; */
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "max_stored_msg_keys = %u\n", state->max_stored_msg_keys);
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "max_published_prekey_msg = %u\n",
+          state->max_published_prekey_msg);
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "minimum_stored_prekey_msg = %u\n",
+          state->minimum_stored_prekey_msg);
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "should_heartbeat = ");
+  otrng_debug_print_pointer(f, state->should_heartbeat);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "padding = %ld\n", state->padding);
 
   otrng_print_indent(f, indent);
   fprintf(f, "} // client_state\n");
