@@ -492,6 +492,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   goldilocks_shake256_ctx_p hd;
   kdf_init_with_usage(hd, usage_pre_MAC);
   hash_update(hd, mac_key, MAC_KEY_BYTES);
+
   hash_update(hd, &msg_type, 1);
   hash_update(hd, &pub_msg->num_prekey_messages, 1);
   hash_update(hd, prekey_messages_kdf, HASH_BYTES);
@@ -525,6 +526,13 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   }
   hash_final(hd, msg->message + w, HASH_BYTES);
   hash_destroy(hd);
+
+  // uncomment me!
+  // printf("\n MAC \n");
+  // for (int i = 0; i < 64; i++) {
+  //  printf("%x", msg->message+w);
+  //}
+  // printf("\n");
 
   msg->message_len = w + HASH_BYTES;
 
@@ -611,6 +619,13 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   /* prekey_mac_k = KDF(0x08, SK, 64) */
   shake_256_prekey_server_kdf(client->mac_key, MAC_KEY_BYTES, usage_preMAC_key,
                               shared_secret, HASH_BYTES);
+
+  // uncomment me!
+  // printf("\n MAC KEY \n");
+  // for (int i = 0; i < 64; i++) {
+  //  printf("%x", client->mac_key);
+  //}
+  // printf("\n");
 
   /* Attach MESSAGE in the message */
   if (client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
