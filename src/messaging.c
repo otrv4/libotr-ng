@@ -223,7 +223,9 @@ tstatic void add_private_key_v4_to_FILEp(list_element_s *node, void *context) {
   FILE *privf = context;
   otrng_client_state_s *state = node->data;
   // TODO: check the return value
-  otrng_client_state_private_key_v4_write_FILEp(state, privf);
+  if (!otrng_client_state_private_key_v4_write_FILEp(state, privf)) {
+    return;
+  }
 }
 
 API otrng_result otrng_user_state_private_key_v4_write_FILEp(
@@ -233,6 +235,28 @@ API otrng_result otrng_user_state_private_key_v4_write_FILEp(
   }
 
   otrng_list_foreach(state->states, add_private_key_v4_to_FILEp, privf);
+
+  return OTRNG_SUCCESS;
+}
+
+tstatic void add_shared_prekey_to_FILEp(list_element_s *node, void *context) {
+  FILE *privf = context;
+  otrng_client_state_s *state = node->data;
+  // TODO: check the return value
+  if (!otrng_client_state_shared_prekey_write_FILEp(state, privf)) {
+    return;
+  }
+}
+
+API otrng_result otrng_user_state_shared_prekey_write_FILEp(
+    const otrng_user_state_s *state, FILE *shared_prekey_f) {
+  if (!shared_prekey_f) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_list_foreach(state->states, add_shared_prekey_to_FILEp,
+                     shared_prekey_f);
+
   return OTRNG_SUCCESS;
 }
 

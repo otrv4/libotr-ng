@@ -23,8 +23,8 @@
 #include "deserialize.h"
 
 /*
- * Provides sample FILE-based persistence mechanism.
- */
+  Provides sample FILE-based persistence mechanism.
+*/
 
 char *otrng_client_state_get_storage_id(const otrng_client_state_s *state) {
   char *account_name = NULL;
@@ -133,6 +133,53 @@ INTERNAL otrng_result otrng_client_state_private_key_v4_read_FILEp(
   free(line);
 
   state->keypair = keypair;
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result otrng_client_state_shared_prekey_write_FILEp(
+    const otrng_client_state_s *state, FILE *shared_prekey_f) {
+  if (!shared_prekey_f) {
+    return OTRNG_ERROR;
+  }
+
+  if (!state->shared_prekey_pair) {
+    return OTRNG_ERROR;
+  }
+
+  char *storage_id = otrng_client_state_get_storage_id(state);
+  if (!storage_id) {
+    return OTRNG_ERROR;
+  }
+
+  int err = fputs(storage_id, shared_prekey_f);
+  free(storage_id);
+
+  if (EOF == err) {
+    return OTRNG_ERROR;
+  }
+
+  if (EOF == fputs("\n", shared_prekey_f)) {
+    return OTRNG_ERROR;
+  }
+
+  char *buff = NULL;
+  size_t s = 0;
+  if (!otrng_symmetric_key_serialize(&buff, &s,
+                                     state->shared_prekey_pair->sym)) {
+    return OTRNG_ERROR;
+  }
+
+  err = fwrite(buff, s, 1, shared_prekey_f);
+  free(buff);
+
+  if (err != 1) {
+    return OTRNG_ERROR;
+  }
+
+  if (EOF == fputs("\n", shared_prekey_f)) {
+    return OTRNG_ERROR;
+  }
 
   return OTRNG_SUCCESS;
 }

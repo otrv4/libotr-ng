@@ -139,6 +139,9 @@ otrng_client_state_get_keypair_v4(otrng_client_state_s *client_state);
 INTERNAL otrng_result otrng_client_state_add_private_key_v4(
     otrng_client_state_s *client_state, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
+INTERNAL otrng_result otrng_client_state_shared_prekey_write_FILEp(
+    const otrng_client_state_s *state, FILE *shared_prekey_f);
+
 INTERNAL void otrng_client_state_free(otrng_client_state_s *client_state);
 
 INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id);

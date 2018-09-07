@@ -208,6 +208,8 @@ INTERNAL otrng_result otrng_client_state_add_shared_prekey_v4(
     return OTRNG_ERROR;
   }
 
+  /* @secret_information: the shared keypair lives for as long the client
+     decides */
   client_state->shared_prekey_pair = otrng_shared_prekey_pair_new();
   if (!client_state->shared_prekey_pair) {
     return OTRNG_ERROR;

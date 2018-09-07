@@ -78,6 +78,9 @@ API otrng_result otrng_user_state_generate_shared_prekey(
 API otrng_result otrng_user_state_private_key_v4_write_FILEp(
     const otrng_user_state_s *state, FILE *privf);
 
+API otrng_result otrng_user_state_shared_prekey_write_FILEp(
+    const otrng_user_state_s *state, FILE *shared_prekey_f);
+
 API otrng_result otrng_user_state_client_profile_read_FILEp(
     otrng_user_state_s *state, FILE *profile_filep,
     const void *(*read_client_id_for_key)(FILE *filep));
