@@ -193,7 +193,8 @@ INTERNAL void otrng_client_callbacks_smp_update(
     const uint8_t progress_percent, const otrng_client_conversation_s *conv);
 
 #ifdef DEBUG_API
-API void otrng_client_callbacks_debug_print(FILE *, int, const otrng_client_callbacks_s *);
+API void otrng_client_callbacks_debug_print(FILE *, int,
+                                            const otrng_client_callbacks_s *);
 #endif
 
 #ifdef OTRNG_CLIENT_CALLBACKS_PRIVATE

@@ -496,7 +496,7 @@ API otrng_result otrng_client_state_get_minimum_stored_prekey_msg(
 #include "debug.h"
 
 API void otrng_stored_prekeys_debug_print(FILE *f, int indent,
-                                        otrng_stored_prekeys_s *s) {
+                                          otrng_stored_prekeys_s *s) {
   otrng_print_indent(f, indent);
   fprintf(f, "stored_prekeys(");
   otrng_debug_print_pointer(f, s);

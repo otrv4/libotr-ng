@@ -240,13 +240,13 @@ INTERNAL otrng_bool otrng_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
   return otrng_false;
 }
 
-
 #ifdef DEBUG_API
 
 #include "debug.h"
 #include "keys.h"
 
-API void otrng_ecdh_keypair_debug_print(FILE *f, int indent, ecdh_keypair_s *k) {
+API void otrng_ecdh_keypair_debug_print(FILE *f, int indent,
+                                        ecdh_keypair_s *k) {
   otrng_print_indent(f, indent);
   fprintf(f, "ecdh_keypair {\n");
 

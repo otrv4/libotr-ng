@@ -162,13 +162,12 @@ INTERNAL void otrng_client_callbacks_smp_update(
   cb->smp_update(event, progress_percent, conv);
 }
 
-
 #ifdef DEBUG_API
 
 #include "debug.h"
 
 API void otrng_client_callbacks_debug_print(FILE *f, int indent,
-                                      const otrng_client_callbacks_s *c) {
+                                            const otrng_client_callbacks_s *c) {
   otrng_print_indent(f, indent);
   fprintf(f, "client_callbacks(");
   otrng_debug_print_pointer(f, c);

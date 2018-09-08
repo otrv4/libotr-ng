@@ -564,13 +564,11 @@ To read stored instance tags:
 /*                                     client->state->protocol_name); */
 /* } */
 
-
 #ifdef DEBUG_API
 
 #include "debug.h"
 
-API void otrng_client_debug_print(FILE *f, int indent,
-                                      otrng_client_s *c) {
+API void otrng_client_debug_print(FILE *f, int indent, otrng_client_s *c) {
   int ix;
   list_element_s *curr;
 
@@ -608,7 +606,7 @@ API void otrng_client_debug_print(FILE *f, int indent,
 }
 
 API void otrng_conversation_debug_print(FILE *f, int indent,
-                                      otrng_conversation_s *c) {
+                                        otrng_conversation_s *c) {
   otrng_print_indent(f, indent);
   fprintf(f, "conversation(");
   otrng_debug_print_pointer(f, c);

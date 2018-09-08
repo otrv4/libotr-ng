@@ -469,7 +469,8 @@ API otrng_result otrng_user_state_instance_tags_read_FILEp(
 
 static void (*client_id_debug_printer)(FILE *, const void *);
 
-API void otrng_register_client_id_debug_printer(void (*printer)(FILE *, const void *)) {
+API void otrng_register_client_id_debug_printer(void (*printer)(FILE *,
+                                                                const void *)) {
   client_id_debug_printer = printer;
 }
 
