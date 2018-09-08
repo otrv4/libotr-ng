@@ -24,6 +24,7 @@
 #include <goldilocks.h>
 #include <goldilocks/ed448.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "error.h"
 #include "shared.h"
@@ -265,6 +266,10 @@ INTERNAL otrng_bool otrng_ec_verify(
 INTERNAL void
 otrng_ecdh_keypair_generate_their(ec_point_p keypair,
                                   const uint8_t sym[ED448_PRIVATE_BYTES]);
+
+#ifdef DEBUG_API
+API void otrng_ecdh_keypair_debug_print(FILE *, int, ecdh_keypair_s *);
+#endif
 
 #ifdef OTRNG_ED448_PRIVATE
 #endif

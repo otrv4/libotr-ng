@@ -467,6 +467,20 @@ API otrng_result otrng_user_state_instance_tags_read_FILEp(
 
 #include "debug.h"
 
+static void (*client_id_debug_printer)(FILE *, const void *);
+
+API void otrng_register_client_id_debug_printer(void (*printer)(FILE *, const void *)) {
+  client_id_debug_printer = printer;
+}
+
+API void otrng_client_id_debug_print(FILE *f, const void *client_id) {
+  if (client_id_debug_printer) {
+    client_id_debug_printer(f, client_id);
+  } else {
+    otrng_debug_print_pointer(f, client_id);
+  }
+}
+
 API void otrng_user_state_debug_print(FILE *f, int indent,
                                       otrng_user_state_s *state) {
   int ix;
@@ -494,8 +508,28 @@ API void otrng_user_state_debug_print(FILE *f, int indent,
   otrng_print_indent(f, indent + 2);
   fprintf(f, "} // states\n");
 
-  // clients
-  // callbacks
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "clients = {\n");
+  ix = 0;
+  curr = state->clients;
+  while (curr) {
+    otrng_print_indent(f, indent + 4);
+    fprintf(f, "[%d] = {\n", ix);
+    otrng_client_debug_print(f, indent + 6, curr->data);
+    otrng_print_indent(f, indent + 4);
+    fprintf(f, "} // [%d]\n", ix);
+    curr = curr->next;
+    ix++;
+  }
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // clients\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "callbacks = {\n");
+  otrng_client_callbacks_debug_print(f, indent + 4, state->callbacks);
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // callbacks\n");
 
   otrng_print_indent(f, indent + 2);
   fprintf(f, "user_state_v3 = ");
@@ -506,4 +540,4 @@ API void otrng_user_state_debug_print(FILE *f, int indent,
   fprintf(f, "} // user_state\n");
 }
 
-#endif /* DEBUG */
+#endif /* DEBUG_API */

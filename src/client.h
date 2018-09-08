@@ -137,6 +137,11 @@ API dake_prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages,
                                    otrng_client_s *client);
 
+#ifdef DEBUG_API
+API void otrng_client_debug_print(FILE *, int, otrng_client_s *);
+API void otrng_conversation_debug_print(FILE *, int, otrng_conversation_s *);
+#endif
+
 #ifdef OTRNG_CLIENT_PRIVATE
 #endif
 

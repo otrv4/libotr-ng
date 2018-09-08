@@ -49,6 +49,9 @@ static inline /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
 }
 
 #ifdef DEBUG_API
+API void otrng_register_client_id_debug_printer(void (*printer)(FILE *, const void *));
+API void otrng_client_id_debug_print(FILE *, const void *);
+
 static inline void otrng_print_indent(FILE *f, int indent) {
   int i;
   for (i = 0; i < indent; i++) {

@@ -161,3 +161,101 @@ INTERNAL void otrng_client_callbacks_smp_update(
 
   cb->smp_update(event, progress_percent, conv);
 }
+
+
+#ifdef DEBUG_API
+
+#include "debug.h"
+
+API void otrng_client_callbacks_debug_print(FILE *f, int indent,
+                                      const otrng_client_callbacks_s *c) {
+  otrng_print_indent(f, indent);
+  fprintf(f, "client_callbacks(");
+  otrng_debug_print_pointer(f, c);
+  fprintf(f, ") {\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "get_account_and_protocol = ");
+  otrng_debug_print_pointer(f, c->get_account_and_protocol);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "create_instag = ");
+  otrng_debug_print_pointer(f, c->create_instag);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "create_privkey_v3 = ");
+  otrng_debug_print_pointer(f, c->create_privkey_v3);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "create_privkey_v4 = ");
+  otrng_debug_print_pointer(f, c->create_privkey_v4);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "create_client_profile = ");
+  otrng_debug_print_pointer(f, c->create_client_profile);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "create_prekey_profile = ");
+  otrng_debug_print_pointer(f, c->create_prekey_profile);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "create_shared_prekey = ");
+  otrng_debug_print_pointer(f, c->create_shared_prekey);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "gone_secure = ");
+  otrng_debug_print_pointer(f, c->gone_secure);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "gone_insecure = ");
+  otrng_debug_print_pointer(f, c->gone_insecure);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "fingerprint_seen = ");
+  otrng_debug_print_pointer(f, c->fingerprint_seen);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "fingerprint_seen_v3 = ");
+  otrng_debug_print_pointer(f, c->fingerprint_seen_v3);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "smp_ask_for_secret = ");
+  otrng_debug_print_pointer(f, c->smp_ask_for_secret);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "smp_ask_for_answer = ");
+  otrng_debug_print_pointer(f, c->smp_ask_for_answer);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "smp_update = ");
+  otrng_debug_print_pointer(f, c->smp_update);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "received_extra_symm_key = ");
+  otrng_debug_print_pointer(f, c->received_extra_symm_key);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "get_shared_session_state = ");
+  otrng_debug_print_pointer(f, c->get_shared_session_state);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent);
+  fprintf(f, "} // client_callbacks\n");
+}
+
+#endif /* DEBUG_API */

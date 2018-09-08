@@ -563,3 +563,70 @@ To read stored instance tags:
 /*                                     client->state->account_name, */
 /*                                     client->state->protocol_name); */
 /* } */
+
+
+#ifdef DEBUG_API
+
+#include "debug.h"
+
+API void otrng_client_debug_print(FILE *f, int indent,
+                                      otrng_client_s *c) {
+  int ix;
+  list_element_s *curr;
+
+  otrng_print_indent(f, indent);
+  fprintf(f, "client(");
+  otrng_debug_print_pointer(f, c);
+  fprintf(f, ") {\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "state = ");
+  otrng_debug_print_pointer(f, c->state);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "conversations = {\n");
+  ix = 0;
+  curr = c->conversations;
+  while (curr) {
+    otrng_print_indent(f, indent + 4);
+    fprintf(f, "[%d] = {\n", ix);
+    otrng_conversation_debug_print(f, indent + 6, curr->data);
+    otrng_print_indent(f, indent + 4);
+    fprintf(f, "} // [%d]\n", ix);
+    curr = curr->next;
+    ix++;
+  }
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // conversations\n");
+
+  // TODO / DEBUG_API: implement
+  /* otrng_prekey_client_s *prekey_client; */
+
+  otrng_print_indent(f, indent);
+  fprintf(f, "} // client\n");
+}
+
+API void otrng_conversation_debug_print(FILE *f, int indent,
+                                      otrng_conversation_s *c) {
+  otrng_print_indent(f, indent);
+  fprintf(f, "conversation(");
+  otrng_debug_print_pointer(f, c);
+  fprintf(f, ") {\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "conversation_id = ");
+  otrng_debug_print_pointer(f, c->conversation_id);
+  fprintf(f, "\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "recipient = %s\n", c->recipient);
+
+  // TODO / DEBUG_API: implement
+  /* otrng_s *conn */
+
+  otrng_print_indent(f, indent);
+  fprintf(f, "} // conversation\n");
+}
+
+#endif /* DEBUG */

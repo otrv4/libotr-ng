@@ -495,8 +495,40 @@ API otrng_result otrng_client_state_get_minimum_stored_prekey_msg(
 
 #include "debug.h"
 
+API void otrng_stored_prekeys_debug_print(FILE *f, int indent,
+                                        otrng_stored_prekeys_s *s) {
+  otrng_print_indent(f, indent);
+  fprintf(f, "stored_prekeys(");
+  otrng_debug_print_pointer(f, s);
+  fprintf(f, ") {\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "id = %x\n", s->id);
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "sender_instance_tag = %x\n", s->sender_instance_tag);
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "our_ecdh = {\n");
+  otrng_ecdh_keypair_debug_print(f, indent + 4, s->our_ecdh);
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // our_ecdh\n");
+
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "our_dh = {\n");
+  otrng_dh_keypair_debug_print(f, indent + 4, s->our_dh);
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // our_dh\n");
+
+  otrng_print_indent(f, indent);
+  fprintf(f, "} // stored_prekeys\n");
+}
+
 API void otrng_client_state_debug_print(FILE *f, int indent,
                                         otrng_client_state_s *state) {
+  int ix;
+  list_element_s *curr;
+
   otrng_print_indent(f, indent);
   fprintf(f, "client_state(");
   otrng_debug_print_pointer(f, state);
@@ -504,10 +536,14 @@ API void otrng_client_state_debug_print(FILE *f, int indent,
 
   otrng_print_indent(f, indent + 2);
   fprintf(f, "client_id = ");
-  otrng_debug_print_pointer(f, state->client_id);
+  otrng_client_id_debug_print(f, state->client_id);
   fprintf(f, "\n");
 
-  /* const otrng_client_callbacks_s *callbacks; */
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "callbacks = {\n");
+  otrng_client_callbacks_debug_print(f, indent + 4, state->callbacks);
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // callbacks\n");
 
   otrng_print_indent(f, indent + 2);
   fprintf(f, "v3_user_state = ");
@@ -532,7 +568,21 @@ API void otrng_client_state_debug_print(FILE *f, int indent,
   otrng_print_indent(f, indent + 2);
   fprintf(f, "} // prekey_profile\n");
 
-  /* list_element_s *our_prekeys; // otrng_stored_prekeys_s */
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "our_prekeys = {\n");
+  ix = 0;
+  curr = state->our_prekeys;
+  while (curr) {
+    otrng_print_indent(f, indent + 4);
+    fprintf(f, "[%d] = {\n", ix);
+    otrng_stored_prekeys_debug_print(f, indent + 6, curr->data);
+    otrng_print_indent(f, indent + 4);
+    fprintf(f, "} // [%d]\n", ix);
+    curr = curr->next;
+    ix++;
+  }
+  otrng_print_indent(f, indent + 2);
+  fprintf(f, "} // our_prekeys\n");
 
   otrng_print_indent(f, indent + 2);
   fprintf(f, "shared_prekey_pair = {\n");
