@@ -60,9 +60,9 @@ void test_user_state_key_management(void) {
         keys);
   rewind(keys);
 
-  otrng_result err = otrng_user_state_private_key_v4_read_FILEp(
+  otrng_result result = otrng_user_state_private_key_v4_read_FILEp(
       state, keys, read_client_id_for_privf);
-  otrng_assert_is_success(err);
+  otrng_assert_is_success(result);
   fclose(keys);
 
   otrng_keypair_s *keypair =
@@ -74,6 +74,48 @@ void test_user_state_key_management(void) {
 
   const char *expected = "RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+"
                          "pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA";
+  otrng_assert_cmpmem(expected, buffer, s);
+
+  free(buffer);
+  otrng_user_state_free(state);
+}
+
+void test_user_state_shared_prekey_management(void) {
+  const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+
+  otrng_user_state_s *state = otrng_user_state_new(NULL);
+  otrng_user_state_add_private_key_v4(state, alice_account, alice_sym);
+  otrng_user_state_add_private_key_v4(state, bob_account, bob_sym);
+
+  otrng_assert(otrng_user_state_get_private_key_v4(state, alice_account));
+  otrng_assert(otrng_user_state_get_private_key_v4(state, bob_account));
+  otrng_assert(!otrng_user_state_get_private_key_v4(state, charlie_account));
+
+  /* Generate file */
+  FILE *keys = tmpfile();
+  fputs("charlie@xmpp\n"
+        "mgRi+jOWSHludTU/v0QE/"
+        "6W88WmxUmKMh1QpRbrEw4LESkL0mnOgZBbqpInVFJGy3v2aKbBFj4c0\n",
+        keys);
+  rewind(keys);
+
+  otrng_result result = otrng_user_state_shared_prekey_read_FILEp(
+      state, keys, read_client_id_for_privf);
+  otrng_assert_is_success(result);
+  fclose(keys);
+
+  otrng_client_state_s *client_state = get_client_state(state, charlie_account);
+
+  char *buffer = NULL;
+  size_t s = 0;
+  otrng_symmetric_key_serialize(&buffer, &s,
+                                client_state->shared_prekey_pair->sym);
+
+  const char *expected =
+      "mgRi+jOWSHludTU/v0QE/"
+      "6W88WmxUmKMh1QpRbrEw4LESkL0mnOgZBbqpInVFJGy3v2aKbBFj4c0";
+
   otrng_assert_cmpmem(expected, buffer, s);
 
   free(buffer);
@@ -156,9 +198,9 @@ void test_user_state_prekey_message_management(void) {
         prekey);
   rewind(prekey);
 
-  otrng_result res = otrng_user_state_prekeys_read_FILEp(
+  otrng_result result = otrng_user_state_prekeys_read_FILEp(
       state, prekey, read_client_id_for_privf);
-  otrng_assert_is_success(res);
+  otrng_assert_is_success(result);
 
   fclose(prekey);
 
