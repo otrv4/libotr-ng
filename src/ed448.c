@@ -247,18 +247,30 @@ INTERNAL otrng_bool otrng_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
 
 API void otrng_ecdh_keypair_debug_print(FILE *f, int indent,
                                         ecdh_keypair_s *k) {
+  if (otrng_debug_print_should_ignore("ecdh_keypair")) {
+    return;
+  }
+
   otrng_print_indent(f, indent);
   fprintf(f, "ecdh_keypair {\n");
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "pub = ");
-  otrng_public_key_debug_print(f, k->pub);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("ecdh_keypair->pub")) {
+    fprintf(f, "pub = IGNORED\n");
+  } else {
+    fprintf(f, "pub = ");
+    otrng_public_key_debug_print(f, k->pub);
+    fprintf(f, "\n");
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "priv = ");
-  otrng_private_key_debug_print(f, k->priv);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("ecdh_keypair->priv")) {
+    fprintf(f, "priv = IGNORED\n");
+  } else {
+    fprintf(f, "priv = ");
+    otrng_private_key_debug_print(f, k->priv);
+    fprintf(f, "\n");
+  }
 
   otrng_print_indent(f, indent);
   fprintf(f, "} // ecdh_keypair\n");

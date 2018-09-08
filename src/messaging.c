@@ -467,6 +467,39 @@ API otrng_result otrng_user_state_instance_tags_read_FILEp(
 
 #include "debug.h"
 
+static const char **debug_print_ignores = NULL;
+static size_t debug_print_ignores_len;
+static size_t debug_print_ignores_cap;
+
+API void otrng_add_debug_print_ignore(const char *ign) {
+  if (debug_print_ignores == NULL) {
+    debug_print_ignores = malloc(7 * sizeof(char *));
+    debug_print_ignores_len = 0;
+    debug_print_ignores_cap = 7;
+  }
+
+  if (debug_print_ignores_len + 1 >= debug_print_ignores_cap) {
+    debug_print_ignores_cap += 13;
+    debug_print_ignores =
+        realloc(debug_print_ignores, debug_print_ignores_cap * sizeof(char *));
+  }
+
+  debug_print_ignores[debug_print_ignores_len] = ign;
+  debug_print_ignores_len++;
+}
+
+API void otrng_clear_debug_print_ignores() { debug_print_ignores_len = 0; }
+
+API otrng_bool otrng_debug_print_should_ignore(const char *ign) {
+  int ix;
+  for (ix = 0; ix < debug_print_ignores_len; ix++) {
+    if (strcmp(ign, debug_print_ignores[ix]) == 0) {
+      return otrng_true;
+    }
+  }
+  return otrng_false;
+}
+
 static void (*client_id_debug_printer)(FILE *, const void *);
 
 API void otrng_register_client_id_debug_printer(void (*printer)(FILE *,
@@ -487,55 +520,78 @@ API void otrng_user_state_debug_print(FILE *f, int indent,
   int ix;
   list_element_s *curr;
 
+  if (otrng_debug_print_should_ignore("user_state")) {
+    return;
+  }
+
   otrng_print_indent(f, indent);
   fprintf(f, "user_state(");
   otrng_debug_print_pointer(f, state);
   fprintf(f, ") {\n");
 
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "states = {\n");
-  ix = 0;
-  curr = state->states;
-  while (curr) {
-    otrng_print_indent(f, indent + 4);
-    fprintf(f, "[%d] = {\n", ix);
-    otrng_client_state_debug_print(f, indent + 6, curr->data);
-    otrng_print_indent(f, indent + 4);
-    fprintf(f, "} // [%d]\n", ix);
-    curr = curr->next;
-    ix++;
+  if (otrng_debug_print_should_ignore("user_state->states")) {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "states = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "states = {\n");
+    ix = 0;
+    curr = state->states;
+    while (curr) {
+      otrng_print_indent(f, indent + 4);
+      fprintf(f, "[%d] = {\n", ix);
+      otrng_client_state_debug_print(f, indent + 6, curr->data);
+      otrng_print_indent(f, indent + 4);
+      fprintf(f, "} // [%d]\n", ix);
+      curr = curr->next;
+      ix++;
+    }
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // states\n");
   }
 
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // states\n");
+  if (otrng_debug_print_should_ignore("user_state->clients")) {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "clients = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "clients = {\n");
+    ix = 0;
+    curr = state->clients;
+    while (curr) {
+      otrng_print_indent(f, indent + 4);
+      fprintf(f, "[%d] = {\n", ix);
+      otrng_client_debug_print(f, indent + 6, curr->data);
+      otrng_print_indent(f, indent + 4);
+      fprintf(f, "} // [%d]\n", ix);
+      curr = curr->next;
+      ix++;
+    }
 
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "clients = {\n");
-  ix = 0;
-  curr = state->clients;
-  while (curr) {
-    otrng_print_indent(f, indent + 4);
-    fprintf(f, "[%d] = {\n", ix);
-    otrng_client_debug_print(f, indent + 6, curr->data);
-    otrng_print_indent(f, indent + 4);
-    fprintf(f, "} // [%d]\n", ix);
-    curr = curr->next;
-    ix++;
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // clients\n");
   }
 
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // clients\n");
+  if (otrng_debug_print_should_ignore("user_state->callbacks")) {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "callbacks = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "callbacks = {\n");
+    otrng_client_callbacks_debug_print(f, indent + 4, state->callbacks);
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // callbacks\n");
+  }
 
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "callbacks = {\n");
-  otrng_client_callbacks_debug_print(f, indent + 4, state->callbacks);
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // callbacks\n");
-
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "user_state_v3 = ");
-  otrng_debug_print_pointer(f, state->user_state_v3);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("user_state->user_state_v3")) {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "user_state_v3 = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "user_state_v3 = ");
+    otrng_debug_print_pointer(f, state->user_state_v3);
+    fprintf(f, "\n");
+  }
 
   otrng_print_indent(f, indent);
   fprintf(f, "} // user_state\n");

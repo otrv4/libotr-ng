@@ -281,24 +281,42 @@ INTERNAL void otrng_dh_mpi_release(dh_mpi_p mpi) { gcry_mpi_release(mpi); }
 #include "debug.h"
 
 API void otrng_dh_keypair_debug_print(FILE *f, int indent, dh_keypair_s *k) {
+  if (otrng_debug_print_should_ignore("dh_keypair")) {
+    return;
+  }
+
   otrng_print_indent(f, indent);
   fprintf(f, "dh_keypair {\n");
 
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "pub = ");
-  otrng_dh_public_key_debug_print(f, k->pub);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("dh_keypair->pub")) {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "pub = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "pub = ");
+    otrng_dh_public_key_debug_print(f, k->pub);
+    fprintf(f, "\n");
+  }
 
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "priv = ");
-  otrng_dh_private_key_debug_print(f, k->priv);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("dh_keypair->priv")) {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "pub = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "priv = ");
+    otrng_dh_private_key_debug_print(f, k->priv);
+    fprintf(f, "\n");
+  }
 
   otrng_print_indent(f, indent);
   fprintf(f, "} // dh_keypair\n");
 }
 
 API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key_p k) {
+  if (otrng_debug_print_should_ignore("dh_public_key")) {
+    return;
+  }
+
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   size_t w = 0;
   otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, k);
@@ -306,6 +324,10 @@ API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key_p k) {
 }
 
 API void otrng_dh_private_key_debug_print(FILE *f, dh_private_key_p k) {
+  if (otrng_debug_print_should_ignore("dh_private_key")) {
+    return;
+  }
+
   uint8_t buf[DH_KEY_SIZE] = {0};
   size_t w = 0;
   otrng_dh_mpi_serialize(buf, DH_KEY_SIZE, &w, k);

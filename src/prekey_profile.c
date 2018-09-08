@@ -304,28 +304,48 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
 
 API void otrng_prekey_profile_debug_print(FILE *f, int indent,
                                           otrng_prekey_profile_s *pp) {
+  if (otrng_debug_print_should_ignore("prekey_profile")) {
+    return;
+  }
+
   otrng_print_indent(f, indent);
   fprintf(f, "prekey_profile(");
   otrng_debug_print_pointer(f, pp);
   fprintf(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "instance_tag = %x\n", pp->instance_tag);
+  if (otrng_debug_print_should_ignore("prekey_profile->instance_tag")) {
+    fprintf(f, "instance_tag = IGNORED\n");
+  } else {
+    fprintf(f, "instance_tag = %x\n", pp->instance_tag);
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "expires = ");
-  otrng_debug_print_data(f, (uint8_t *)&(pp->expires), 8);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("prekey_profile->expires")) {
+    fprintf(f, "expires = IGNORED\n");
+  } else {
+    fprintf(f, "expires = ");
+    otrng_debug_print_data(f, (uint8_t *)&(pp->expires), 8);
+    fprintf(f, "\n");
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "shared_prekey = ");
-  otrng_public_key_debug_print(f, pp->shared_prekey);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("prekey_profile->shared_prekey")) {
+    fprintf(f, "shared_prekey = IGNORED\n");
+  } else {
+    fprintf(f, "shared_prekey = ");
+    otrng_public_key_debug_print(f, pp->shared_prekey);
+    fprintf(f, "\n");
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "signature = ");
-  otrng_debug_print_data(f, pp->signature, ED448_SIGNATURE_BYTES);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("prekey_profile->signature")) {
+    fprintf(f, "signature = IGNORED\n");
+  } else {
+    fprintf(f, "signature = ");
+    otrng_debug_print_data(f, pp->signature, ED448_SIGNATURE_BYTES);
+    fprintf(f, "\n");
+  }
 
   otrng_print_indent(f, indent);
   fprintf(f, "} // client_profile\n");

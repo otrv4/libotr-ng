@@ -572,31 +572,43 @@ API void otrng_client_debug_print(FILE *f, int indent, otrng_client_s *c) {
   int ix;
   list_element_s *curr;
 
+  if (otrng_debug_print_should_ignore("client")) {
+    return;
+  }
+
   otrng_print_indent(f, indent);
   fprintf(f, "client(");
   otrng_debug_print_pointer(f, c);
   fprintf(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "state = ");
-  otrng_debug_print_pointer(f, c->state);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("client->state")) {
+    fprintf(f, "state = IGNORED\n");
+  } else {
+    fprintf(f, "state = ");
+    otrng_debug_print_pointer(f, c->state);
+    fprintf(f, "\n");
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "conversations = {\n");
-  ix = 0;
-  curr = c->conversations;
-  while (curr) {
-    otrng_print_indent(f, indent + 4);
-    fprintf(f, "[%d] = {\n", ix);
-    otrng_conversation_debug_print(f, indent + 6, curr->data);
-    otrng_print_indent(f, indent + 4);
-    fprintf(f, "} // [%d]\n", ix);
-    curr = curr->next;
-    ix++;
+  if (otrng_debug_print_should_ignore("client->conversations")) {
+    fprintf(f, "conversations = IGNORED\n");
+  } else {
+    fprintf(f, "conversations = {\n");
+    ix = 0;
+    curr = c->conversations;
+    while (curr) {
+      otrng_print_indent(f, indent + 4);
+      fprintf(f, "[%d] = {\n", ix);
+      otrng_conversation_debug_print(f, indent + 6, curr->data);
+      otrng_print_indent(f, indent + 4);
+      fprintf(f, "} // [%d]\n", ix);
+      curr = curr->next;
+      ix++;
+    }
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // conversations\n");
   }
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // conversations\n");
 
   // TODO / DEBUG_API: implement
   /* otrng_prekey_client_s *prekey_client; */
@@ -607,18 +619,30 @@ API void otrng_client_debug_print(FILE *f, int indent, otrng_client_s *c) {
 
 API void otrng_conversation_debug_print(FILE *f, int indent,
                                         otrng_conversation_s *c) {
+  if (otrng_debug_print_should_ignore("conversation")) {
+    return;
+  }
+
   otrng_print_indent(f, indent);
   fprintf(f, "conversation(");
   otrng_debug_print_pointer(f, c);
   fprintf(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "conversation_id = ");
-  otrng_debug_print_pointer(f, c->conversation_id);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("conversation->conversation_id")) {
+    fprintf(f, "conversation_id = IGNORED\n");
+  } else {
+    fprintf(f, "conversation_id = ");
+    otrng_debug_print_pointer(f, c->conversation_id);
+    fprintf(f, "\n");
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "recipient = %s\n", c->recipient);
+  if (otrng_debug_print_should_ignore("conversation->recipient")) {
+    fprintf(f, "recipient = IGNORED\n");
+  } else {
+    fprintf(f, "recipient = %s\n", c->recipient);
+  }
 
   // TODO / DEBUG_API: implement
   /* otrng_s *conn */

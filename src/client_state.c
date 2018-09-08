@@ -497,28 +497,48 @@ API otrng_result otrng_client_state_get_minimum_stored_prekey_msg(
 
 API void otrng_stored_prekeys_debug_print(FILE *f, int indent,
                                           otrng_stored_prekeys_s *s) {
+  if (otrng_debug_print_should_ignore("stored_prekeys")) {
+    return;
+  }
+
   otrng_print_indent(f, indent);
   fprintf(f, "stored_prekeys(");
   otrng_debug_print_pointer(f, s);
   fprintf(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "id = %x\n", s->id);
+  if (otrng_debug_print_should_ignore("stored_prekeys->id")) {
+    fprintf(f, "id = IGNORED\n");
+  } else {
+    fprintf(f, "id = %x\n", s->id);
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "sender_instance_tag = %x\n", s->sender_instance_tag);
+  if (otrng_debug_print_should_ignore("stored_prekeys->sender_instance_tag")) {
+    fprintf(f, "sender_instance_tag = IGNORED\n");
+  } else {
+    fprintf(f, "sender_instance_tag = %x\n", s->sender_instance_tag);
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "our_ecdh = {\n");
-  otrng_ecdh_keypair_debug_print(f, indent + 4, s->our_ecdh);
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // our_ecdh\n");
+  if (otrng_debug_print_should_ignore("stored_prekeys->our_ecdh")) {
+    fprintf(f, "our_ecdh = IGNORED\n");
+  } else {
+    fprintf(f, "our_ecdh = {\n");
+    otrng_ecdh_keypair_debug_print(f, indent + 4, s->our_ecdh);
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // our_ecdh\n");
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "our_dh = {\n");
-  otrng_dh_keypair_debug_print(f, indent + 4, s->our_dh);
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // our_dh\n");
+  if (otrng_debug_print_should_ignore("stored_prekeys->our_dh")) {
+    fprintf(f, "our_dh = IGNORED\n");
+  } else {
+    fprintf(f, "our_dh = {\n");
+    otrng_dh_keypair_debug_print(f, indent + 4, s->our_dh);
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // our_dh\n");
+  }
 
   otrng_print_indent(f, indent);
   fprintf(f, "} // stored_prekeys\n");
@@ -529,84 +549,144 @@ API void otrng_client_state_debug_print(FILE *f, int indent,
   int ix;
   list_element_s *curr;
 
+  if (otrng_debug_print_should_ignore("client_state")) {
+    return;
+  }
+
   otrng_print_indent(f, indent);
   fprintf(f, "client_state(");
   otrng_debug_print_pointer(f, state);
   fprintf(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "client_id = ");
-  otrng_client_id_debug_print(f, state->client_id);
-  fprintf(f, "\n");
-
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "callbacks = {\n");
-  otrng_client_callbacks_debug_print(f, indent + 4, state->callbacks);
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // callbacks\n");
-
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "v3_user_state = ");
-  otrng_debug_print_pointer(f, state->user_state);
-  fprintf(f, "\n");
-
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "keypair = {\n");
-  otrng_keypair_debug_print(f, indent + 4, state->keypair);
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // keypair\n");
-
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "client_profile = {\n");
-  otrng_client_profile_debug_print(f, indent + 4, state->client_profile);
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // client_profile\n");
-
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "prekey_profile = {\n");
-  otrng_prekey_profile_debug_print(f, indent + 4, state->prekey_profile);
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // prekey_profile\n");
-
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "our_prekeys = {\n");
-  ix = 0;
-  curr = state->our_prekeys;
-  while (curr) {
-    otrng_print_indent(f, indent + 4);
-    fprintf(f, "[%d] = {\n", ix);
-    otrng_stored_prekeys_debug_print(f, indent + 6, curr->data);
-    otrng_print_indent(f, indent + 4);
-    fprintf(f, "} // [%d]\n", ix);
-    curr = curr->next;
-    ix++;
+  if (otrng_debug_print_should_ignore("client_state->client_id")) {
+    fprintf(f, "client_id = IGNORED\n");
+  } else {
+    fprintf(f, "client_id = ");
+    otrng_client_id_debug_print(f, state->client_id);
+    fprintf(f, "\n");
   }
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // our_prekeys\n");
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "shared_prekey_pair = {\n");
-  otrng_shared_prekey_pair_debug_print(f, indent + 4,
-                                       state->shared_prekey_pair);
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "} // shared_prekey_pair\n");
+  if (otrng_debug_print_should_ignore("client_state->callbacks")) {
+    fprintf(f, "callbacks = IGNORED\n");
+  } else {
+    fprintf(f, "callbacks = {\n");
+    otrng_client_callbacks_debug_print(f, indent + 4, state->callbacks);
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // callbacks\n");
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "max_stored_msg_keys = %u\n", state->max_stored_msg_keys);
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "max_published_prekey_msg = %u\n",
-          state->max_published_prekey_msg);
-  otrng_print_indent(f, indent + 2);
-  fprintf(f, "minimum_stored_prekey_msg = %u\n",
-          state->minimum_stored_prekey_msg);
+  if (otrng_debug_print_should_ignore("client_state->v3_user_state")) {
+    fprintf(f, "v3_user_state = IGNORED\n");
+  } else {
+    fprintf(f, "v3_user_state = ");
+    otrng_debug_print_pointer(f, state->user_state);
+    fprintf(f, "\n");
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "should_heartbeat = ");
-  otrng_debug_print_pointer(f, state->should_heartbeat);
-  fprintf(f, "\n");
+  if (otrng_debug_print_should_ignore("client_state->keypair")) {
+    fprintf(f, "keypair = IGNORED\n");
+  } else {
+    fprintf(f, "keypair = {\n");
+    otrng_keypair_debug_print(f, indent + 4, state->keypair);
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // keypair\n");
+  }
 
   otrng_print_indent(f, indent + 2);
-  fprintf(f, "padding = %ld\n", state->padding);
+  if (otrng_debug_print_should_ignore("client_state->client_profile")) {
+    fprintf(f, "client_profile = IGNORED\n");
+  } else {
+    fprintf(f, "client_profile = {\n");
+    otrng_client_profile_debug_print(f, indent + 4, state->client_profile);
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // client_profile\n");
+  }
+
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore("client_state->prekey_profile")) {
+    fprintf(f, "prekey_profile = IGNORED\n");
+  } else {
+    fprintf(f, "prekey_profile = {\n");
+    otrng_prekey_profile_debug_print(f, indent + 4, state->prekey_profile);
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // prekey_profile\n");
+  }
+
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore("client_state->our_prekeys")) {
+    fprintf(f, "our_prekeys = IGNORED\n");
+  } else {
+    fprintf(f, "our_prekeys = {\n");
+    ix = 0;
+    curr = state->our_prekeys;
+    while (curr) {
+      otrng_print_indent(f, indent + 4);
+      fprintf(f, "[%d] = {\n", ix);
+      otrng_stored_prekeys_debug_print(f, indent + 6, curr->data);
+      otrng_print_indent(f, indent + 4);
+      fprintf(f, "} // [%d]\n", ix);
+      curr = curr->next;
+      ix++;
+    }
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // our_prekeys\n");
+  }
+
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore("client_state->shared_prekey_pair")) {
+    fprintf(f, "shared_prekey_pair = IGNORED\n");
+  } else {
+    fprintf(f, "shared_prekey_pair = {\n");
+    otrng_shared_prekey_pair_debug_print(f, indent + 4,
+                                         state->shared_prekey_pair);
+    otrng_print_indent(f, indent + 2);
+    fprintf(f, "} // shared_prekey_pair\n");
+  }
+
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore("client_state->max_stored_msg_keys")) {
+    fprintf(f, "max_stored_msg_keys = IGNORED\n");
+  } else {
+    fprintf(f, "max_stored_msg_keys = %u\n", state->max_stored_msg_keys);
+  }
+
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore(
+          "client_state->max_published_prekey_msg")) {
+    fprintf(f, "max_published_prekey_msg = IGNORED\n");
+  } else {
+    fprintf(f, "max_published_prekey_msg = %u\n",
+            state->max_published_prekey_msg);
+  }
+
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore(
+          "client_state->minimum_stored_prekey_msg")) {
+    fprintf(f, "minimum_stored_prekey_msg = IGNORED\n");
+  } else {
+    fprintf(f, "minimum_stored_prekey_msg = %u\n",
+            state->minimum_stored_prekey_msg);
+  }
+
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore("client_state->should_heartbeat")) {
+    fprintf(f, "should_heartbeat = IGNORED\n");
+  } else {
+    fprintf(f, "should_heartbeat = ");
+    otrng_debug_print_pointer(f, state->should_heartbeat);
+    fprintf(f, "\n");
+  }
+
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore("client_state->padding")) {
+    fprintf(f, "padding = IGNORED\n");
+  } else {
+    fprintf(f, "padding = %ld\n", state->padding);
+  }
 
   otrng_print_indent(f, indent);
   fprintf(f, "} // client_state\n");
