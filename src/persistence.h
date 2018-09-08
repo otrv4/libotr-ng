@@ -31,6 +31,9 @@ INTERNAL otrng_result otrng_client_state_private_key_v4_read_FILEp(
 INTERNAL otrng_result otrng_client_state_private_key_v4_write_FILEp(
     const otrng_client_state_s *state, FILE *privf);
 
+INTERNAL otrng_result otrng_client_state_shared_prekey_read_FILEp(
+    otrng_client_state_s *state, FILE *shared_prekeyf);
+
 INTERNAL otrng_result otrng_client_state_instance_tag_read_FILEp(
     otrng_client_state_s *state, FILE *instag);
 

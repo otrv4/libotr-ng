@@ -325,3 +325,23 @@ INTERNAL otrng_result otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
   free(dec);
   return OTRNG_ERROR;
 }
+
+INTERNAL otrng_result otrng_symmetric_shared_prekey_deserialize(
+    otrng_shared_prekey_pair_s *pair, const char *buff, size_t len) {
+  /* (((base64len+3) / 4) * 3) */
+  unsigned char *dec = malloc(((len + 3) / 4) * 3);
+  if (!dec) {
+    return OTRNG_ERROR;
+  }
+
+  size_t written = otrl_base64_decode(dec, buff, len);
+
+  if (written == ED448_PRIVATE_BYTES) {
+    otrng_shared_prekey_pair_generate(pair, dec);
+    free(dec);
+    return OTRNG_SUCCESS;
+  }
+
+  free(dec);
+  return OTRNG_ERROR;
+}

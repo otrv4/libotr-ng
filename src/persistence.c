@@ -184,6 +184,53 @@ INTERNAL otrng_result otrng_client_state_shared_prekey_write_FILEp(
   return OTRNG_SUCCESS;
 }
 
+INTERNAL otrng_result otrng_client_state_shared_prekey_read_FILEp(
+    otrng_client_state_s *state, FILE *shared_prekeyf) {
+  char *line = NULL;
+  size_t cap = 0;
+  int len = 0;
+
+  if (!shared_prekeyf) {
+    return OTRNG_ERROR;
+  }
+
+  if (feof(shared_prekeyf)) {
+    return OTRNG_ERROR;
+  }
+
+  /* Free current keypair if any */
+  otrng_shared_prekey_pair_free(state->shared_prekey_pair);
+  state->shared_prekey_pair = NULL;
+
+  otrng_shared_prekey_pair_s *shared_prekey_pair =
+      otrng_shared_prekey_pair_new();
+  if (!shared_prekey_pair) {
+    return OTRNG_ERROR;
+  }
+
+  // TODO: we need to remove getline. It is not c99.
+  // OR ignore if this will be moved to the plugin.
+  len = getline(&line, &cap, shared_prekeyf);
+  if (len < 0) {
+    free(line);
+    return OTRNG_ERROR;
+  }
+
+  /* line has the /n */
+  if (!otrng_symmetric_shared_prekey_deserialize(shared_prekey_pair, line,
+                                                 len - 1)) {
+    free(line);
+    otrng_shared_prekey_pair_free(state->shared_prekey_pair);
+    return OTRNG_ERROR;
+  }
+
+  free(line);
+
+  state->shared_prekey_pair = shared_prekey_pair;
+
+  return OTRNG_SUCCESS;
+}
+
 INTERNAL otrng_result otrng_client_state_instance_tag_write_FILEp(
     otrng_client_state_s *state, FILE *instagf) {
   // TODO: We could use a "get storage key" callback and use it as
