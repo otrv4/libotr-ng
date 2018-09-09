@@ -58,99 +58,99 @@ typedef struct otrng_user_state_s {
 } otrng_user_state_s, otrng_user_state_p[1];
 
 API otrng_result otrng_user_state_private_key_v3_generate_FILEp(
-    otrng_user_state_s *state, void *client_id, FILE *privf);
+    otrng_user_state_s *user_state, void *client_id, FILE *privf);
 
 API otrng_result otrng_user_state_private_key_v3_read_FILEp(
-    otrng_user_state_s *state, FILE *keys);
+    otrng_user_state_s *user_state, FILE *keys);
 
 API otrng_result otrng_user_state_generate_private_key(
-    otrng_user_state_s *state, void *client_id);
+    otrng_user_state_s *user_state, void *client_id);
 
 API otrng_result otrng_user_state_generate_client_profile(
-    otrng_user_state_s *state, void *client_id);
+    otrng_user_state_s *user_state, void *client_id);
 
 API otrng_result otrng_user_state_generate_prekey_profile(
-    otrng_user_state_s *state, void *client_id);
+    otrng_user_state_s *user_state, void *client_id);
 
 API otrng_result otrng_user_state_generate_shared_prekey(
-    otrng_user_state_s *state, void *client_id);
+    otrng_user_state_s *user_state, void *client_id);
 
 API otrng_result otrng_user_state_private_key_v4_write_FILEp(
-    const otrng_user_state_s *state, FILE *privf);
+    const otrng_user_state_s *user_state, FILE *privf);
 
 API otrng_result otrng_user_state_shared_prekey_write_FILEp(
-    const otrng_user_state_s *state, FILE *shared_prekey_f);
+    const otrng_user_state_s *user_state, FILE *shared_prekey_f);
 
 API otrng_result otrng_user_state_client_profile_read_FILEp(
-    otrng_user_state_s *state, FILE *profile_filep,
+    otrng_user_state_s *user_state, FILE *profile_filep,
     const void *(*read_client_id_for_key)(FILE *filep));
 
 API otrng_result otrng_user_state_shared_prekey_read_FILEp(
-    otrng_user_state_s *state, FILE *shared_prekeyf,
+    otrng_user_state_s *user_state, FILE *shared_prekeyf,
     const void *(*read_client_id_for_key)(FILE *filep));
 
 API otrng_result otrng_user_state_prekey_profile_read_FILEp(
-    otrng_user_state_s *state, FILE *profile_filep,
+    otrng_user_state_s *user_state, FILE *profile_filep,
     const void *(*read_client_id_for_key)(FILE *filep));
 
 API otrng_result otrng_user_state_client_profile_write_FILEp(
-    const otrng_user_state_s *state, FILE *privf);
+    const otrng_user_state_s *user_state, FILE *privf);
 
 API otrng_result otrng_user_state_prekey_profile_write_FILEp(
-    const otrng_user_state_s *state, FILE *privf);
+    const otrng_user_state_s *user_state, FILE *privf);
 
 API otrng_result otrng_user_state_prekey_messages_write_FILEp(
-    const otrng_user_state_s *state, FILE *privf);
+    const otrng_user_state_s *user_state, FILE *privf);
 
-otrng_result otrng_user_state_add_instance_tag(otrng_user_state_s *state,
+otrng_result otrng_user_state_add_instance_tag(otrng_user_state_s *user_state,
                                                void *client_id,
                                                unsigned int instag);
 
-unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *state,
+unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *user_state,
                                                void *client_id);
 
 API otrng_result otrng_user_state_instag_generate_generate_FILEp(
-    otrng_user_state_s *state, void *client_id, FILE *instag);
+    otrng_user_state_s *user_state, void *client_id, FILE *instag);
 
 otrng_result
-otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *state,
+otrng_user_state_instance_tags_read_FILEp(otrng_user_state_s *user_state,
                                           FILE *instag);
 
-otrng_messaging_client_s *otrng_messaging_client_get(otrng_user_state_s *state,
-                                                     void *client_id);
+otrng_messaging_client_s *
+otrng_messaging_client_get(otrng_user_state_s *user_state, void *client_id);
 
 API otrng_result otrng_user_state_private_key_v4_read_FILEp(
-    otrng_user_state_s *state, FILE *privf,
+    otrng_user_state_s *user_state, FILE *privf,
     const void *(*read_client_id_for_key)(FILE *filep));
 
 API otrng_result otrng_user_state_prekeys_read_FILEp(
-    otrng_user_state_s *state, FILE *prekey_filep,
+    otrng_user_state_s *user_state, FILE *prekey_filep,
     const void *(*read_client_id_for_prekey)(FILE *filep));
 
 API otrng_keypair_s *
-otrng_user_state_get_private_key_v4(otrng_user_state_s *state,
+otrng_user_state_get_private_key_v4(otrng_user_state_s *user_state,
                                     const void *client_id);
 
 API otrng_user_state_s *
 otrng_user_state_new(const otrng_client_callbacks_s *cb);
 
-API void otrng_user_state_free(otrng_user_state_s *);
+API void otrng_user_state_free(otrng_user_state_s *user_state);
 
 #ifdef DEBUG_API
-API void otrng_user_state_debug_print(FILE *, int, otrng_user_state_s *);
+
+API void otrng_user_state_debug_print(FILE *, int,
+                                      otrng_user_state_s *user_state);
+
 #endif
 
 #ifdef OTRNG_MESSAGING_PRIVATE
 
 tstatic otrng_result otrng_user_state_add_private_key_v4(
-    otrng_user_state_s *state, const void *clientop,
+    otrng_user_state_s *user_state, const void *clientop,
     const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-tstatic otrng_client_state_s *get_client_state(otrng_user_state_s *state,
+tstatic otrng_client_state_s *get_client_state(otrng_user_state_s *user_state,
                                                const void *client_id);
-/* tstatic otrng_messaging_client_t
- * *otrng_messaging_client_new(otrng_user_state_s *state, */
-/*                                                    void *client_id); */
 
 #endif
 

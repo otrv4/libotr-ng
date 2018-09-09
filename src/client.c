@@ -52,13 +52,13 @@ tstatic void conversation_free(void *data) {
   free(conv);
 }
 
-API otrng_client_s *otrng_client_new(otrng_client_state_s *state) {
+API otrng_client_s *otrng_client_new(otrng_client_state_s *client_state) {
   otrng_client_s *client = malloc(sizeof(otrng_client_s));
   if (!client) {
     return NULL;
   }
 
-  client->state = state;
+  client->state = client_state;
   client->conversations = NULL;
   client->prekey_client = NULL;
 

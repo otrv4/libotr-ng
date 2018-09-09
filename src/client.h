@@ -48,7 +48,7 @@ typedef struct otrng_client_s {
   otrng_prekey_client_s *prekey_client;
 } otrng_client_s, otrng_client_p[1];
 
-API otrng_client_s *otrng_client_new(otrng_client_state_s *);
+API otrng_client_s *otrng_client_new(otrng_client_state_s *client_state);
 
 API void otrng_client_free(otrng_client_s *client);
 
