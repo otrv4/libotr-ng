@@ -536,6 +536,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
   return messages;
 }
 
+// clang-format off
 // TODO: @client Read privkeys, fingerprints, instance tags for v3
 /*
  *To read stored private keys:
@@ -563,6 +564,7 @@ To read stored instance tags:
 /*                                     client->state->account_name, */
 /*                                     client->state->protocol_name); */
 /* } */
+// clang-format on
 
 #ifdef DEBUG_API
 
