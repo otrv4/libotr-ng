@@ -1203,7 +1203,7 @@ void otrng_prekey_publication_message_destroy(
 
   if (msg->prekey_messages) {
     for (int i = 0; i < msg->num_prekey_messages; i++) {
-      free(msg->prekey_messages[i]);
+      otrng_dake_prekey_message_free(msg->prekey_messages[i]);
     }
 
     free(msg->prekey_messages);
