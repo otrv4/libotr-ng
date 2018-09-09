@@ -536,35 +536,32 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
   return messages;
 }
 
-// clang-format off
 // TODO: @client Read privkeys, fingerprints, instance tags for v3
-/*
- *To read stored private keys:
-
-    otrl_privkey_read(user_state, privkeyfilename);
-
-To read stored instance tags:
-
-    otrl_instag_read(user_state, instagfilename);
-
-        To read stored fingerprints:
-
-    otrl_privkey_read_fingerprints(user_state, fingerprintfilename,
-            add_app_info, add_app_info_data);
-*/
-
-/* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf) { */
-/*   return otrl_privkey_generate_FILEp(client->state->user_state, privf, */
-/*                                      client->state->account_name, */
-/*                                      client->state->protocol_name); */
-/* } */
-
-/* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf) { */
-/*   return otrl_instag_generate_FILEp(client->state->user_state, privf, */
-/*                                     client->state->account_name, */
-/*                                     client->state->protocol_name); */
-/* } */
-// clang-format on
+// To read stored private keys:
+//
+//    otrl_privkey_read(user_state, privkeyfilename);
+//
+// To read stored instance tags:
+//
+//    otrl_instag_read(user_state, instagfilename);
+//
+//        To read stored fingerprints:
+//
+//    otrl_privkey_read_fingerprints(user_state, fingerprintfilename,
+//            add_app_info, add_app_info_data);
+//
+//
+// tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf) {
+//   return otrl_privkey_generate_FILEp(client->state->user_state, privf,
+//                                      client->state->account_name,
+//                                      client->state->protocol_name);
+//}
+//
+// tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf) {
+//   return otrl_instag_generate_FILEp(client->state->user_state, privf,
+//                                     client->state->account_name,
+//                                     client->state->protocol_name);
+//}
 
 #ifdef DEBUG_API
 
