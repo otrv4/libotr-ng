@@ -544,7 +544,7 @@ API void otrng_user_state_debug_print(FILE *f, int indent,
     otrng_print_indent(f, indent + 2);
     fprintf(f, "states = {\n");
     ix = 0;
-    curr = state->states;
+    curr = user_state->states;
     while (curr) {
       otrng_print_indent(f, indent + 4);
       fprintf(f, "[%d] = {\n", ix);
@@ -565,7 +565,7 @@ API void otrng_user_state_debug_print(FILE *f, int indent,
     otrng_print_indent(f, indent + 2);
     fprintf(f, "clients = {\n");
     ix = 0;
-    curr = state->clients;
+    curr = user_state->clients;
     while (curr) {
       otrng_print_indent(f, indent + 4);
       fprintf(f, "[%d] = {\n", ix);
