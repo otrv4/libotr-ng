@@ -35,8 +35,6 @@ typedef struct data_message_s {
   uint8_t flags;
   uint32_t previous_chain_n;
 
-  // TODO: @non_interactive Extract this to a data structure that can be shared
-  // with dake_non_interactive_auth_message_s
   uint32_t ratchet_id;
   uint32_t message_id;
   ec_point_p ecdh;
