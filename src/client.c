@@ -254,8 +254,7 @@ API otrng_result otrng_client_send_fragment(
 
   string_p to_send = NULL;
   if (otrng_failed(send_message(&to_send, message, recipient, client))) {
-    free(to_send); // TODO: @freeing send_message should free to_send if
-                   // something fails
+    free(to_send);
     return OTRNG_ERROR;
   }
 
