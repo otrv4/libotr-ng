@@ -33,17 +33,6 @@
 /* The size of the ring signature. */
 #define RING_SIG_BYTES 6 * ED448_SCALAR_BYTES
 
-typedef ec_scalar_p rsig_privkey_p;
-typedef ec_point_p rsig_pubkey_p;
-
-// TODO: @refactoring This CAN NOT be otrng_keypair_s because they are generated
-// according to RFC 8032, but these keys are expected to be generated following
-// the generateECDH() function in the spec. I dont believe it makes sense to
-// have a type to represent rsig keys since they use different kind of keys
-// (both in the curve ed448, BUT generated differently). We should stick to
-// using scalars and points.
-typedef otrng_keypair_s rsig_keypair_s, rsig_keypair_p[1];
-
 /**
  * @brief The ring_sig_s structure represents the ring signature.
  *
@@ -79,8 +68,8 @@ typedef struct ring_sig_s {
  */
 
 INTERNAL otrng_result otrng_rsig_authenticate(
-    ring_sig_p dst, const rsig_privkey_p priv, const rsig_pubkey_p pub,
-    const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
+    ring_sig_p dst, const otrng_private_key_p priv, const otrng_public_key_p pub,
+    const otrng_public_key_p A1, const otrng_public_key_p A2, const otrng_public_key_p A3,
     const uint8_t *msg, size_t msglen);
 
 /**
@@ -96,9 +85,9 @@ INTERNAL otrng_result otrng_rsig_authenticate(
  * @param [msg_len] The length of the message.
  */
 INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
-                                      const rsig_pubkey_p A1,
-                                      const rsig_pubkey_p A2,
-                                      const rsig_pubkey_p A3,
+                                      const otrng_public_key_p A1,
+                                      const otrng_public_key_p A2,
+                                      const otrng_public_key_p A3,
                                       const unsigned char *msg, size_t msglen);
 
 /**
@@ -131,18 +120,18 @@ INTERNAL void otrng_rsig_calculate_c_with_usage_and_domain(
 
 INTERNAL void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, goldilocks_448_scalar_p c,
-    const ring_sig_p src, const rsig_pubkey_p A1, const rsig_pubkey_p A2,
-    const rsig_pubkey_p A3, const uint8_t *message, size_t message_len);
+    const ring_sig_p src, const otrng_public_key_p A1, const otrng_public_key_p A2,
+    const otrng_public_key_p A3, const uint8_t *message, size_t message_len);
 
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, ring_sig_p dst,
-    const rsig_privkey_p secret, const rsig_pubkey_p pub,
-    const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
+    const otrng_private_key_p secret, const otrng_public_key_p pub,
+    const otrng_public_key_p A1, const otrng_public_key_p A2, const otrng_public_key_p A3,
     const uint8_t *message, size_t message_len);
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, const ring_sig_p src,
-    const rsig_pubkey_p A1, const rsig_pubkey_p A2, const rsig_pubkey_p A3,
+    const otrng_public_key_p A1, const otrng_public_key_p A2, const otrng_public_key_p A3,
     const uint8_t *message, size_t message_len);
 
 #ifdef OTRNG_AUTH_PRIVATE
