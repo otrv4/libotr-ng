@@ -184,7 +184,6 @@ void test_otrng_data_message_deserializes() {
       0x8c, 0xd6, 0x1a, 0x08, 0x26, 0x4f, 0x61, 0x32, 0xdb, 0xd2, 0x58,
       0x90, 0x7d, 0x1e, 0x97, 0x35, 0xd2, 0x38, 0x60, 0xa1};
   memcpy(data_msg->mac, mac_data, DATA_MSG_MAC_BYTES);
-  // TODO: @c_logic realloc here?
   serialized = realloc(serialized, serlen + DATA_MSG_MAC_BYTES);
   memcpy(serialized + serlen, mac_data, DATA_MSG_MAC_BYTES);
 
