@@ -57,13 +57,6 @@
     otrng_dh_free();                                                           \
   } while (0)
 
-// clang-format off
-// TODO: @non_interactive this a mock
-typedef struct otrng_server_s {
-  string_p prekey_message;
-} otrng_server_s, otrng_server_p[1];
-// clang-format on
-
 // TODO: @refactoring The use of "response" as the type name is confusing:
 // - to_display is the RECEIVED plaintext
 // - tlvs is the RECEIVED list of TLVs
