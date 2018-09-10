@@ -170,8 +170,6 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
   } else if (participant == 't') {
     keypair->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
     gcry_mpi_powm(keypair->pub, DH3072_GENERATOR, privkey, DH3072_MODULUS);
-
-    // TODO: @freeing is this needed?
     gcry_mpi_release(privkey);
   }
 
