@@ -358,7 +358,6 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
     free(versions);
   } break;
   case 0x05: // Expiration
-    // TODO: Double check if the format is the same
     if (!otrng_deserialize_uint64(&target->expires, buffer + w, buflen - w,
                                   &read)) {
       return OTRNG_ERROR;
