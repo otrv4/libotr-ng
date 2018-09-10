@@ -57,11 +57,6 @@
     otrng_dh_free();                                                           \
   } while (0)
 
-// TODO: @refactoring The use of "response" as the type name is confusing:
-// - to_display is the RECEIVED plaintext
-// - tlvs is the RECEIVED list of TLVs
-// - warning is a warning due the RECEIVAL of the message
-// - to_send is the RESPONSE we send in response to the RECEIVED tlvs.
 typedef struct otrng_response_s {
   string_p to_display;
   string_p to_send;
