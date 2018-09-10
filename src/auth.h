@@ -68,8 +68,9 @@ typedef struct ring_sig_s {
  */
 
 INTERNAL otrng_result otrng_rsig_authenticate(
-    ring_sig_p dst, const otrng_private_key_p priv, const otrng_public_key_p pub,
-    const otrng_public_key_p A1, const otrng_public_key_p A2, const otrng_public_key_p A3,
+    ring_sig_p dst, const otrng_private_key_p priv,
+    const otrng_public_key_p pub, const otrng_public_key_p A1,
+    const otrng_public_key_p A2, const otrng_public_key_p A3,
     const uint8_t *msg, size_t msglen);
 
 /**
@@ -120,19 +121,20 @@ INTERNAL void otrng_rsig_calculate_c_with_usage_and_domain(
 
 INTERNAL void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, goldilocks_448_scalar_p c,
-    const ring_sig_p src, const otrng_public_key_p A1, const otrng_public_key_p A2,
-    const otrng_public_key_p A3, const uint8_t *message, size_t message_len);
+    const ring_sig_p src, const otrng_public_key_p A1,
+    const otrng_public_key_p A2, const otrng_public_key_p A3,
+    const uint8_t *message, size_t message_len);
 
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, ring_sig_p dst,
     const otrng_private_key_p secret, const otrng_public_key_p pub,
-    const otrng_public_key_p A1, const otrng_public_key_p A2, const otrng_public_key_p A3,
-    const uint8_t *message, size_t message_len);
+    const otrng_public_key_p A1, const otrng_public_key_p A2,
+    const otrng_public_key_p A3, const uint8_t *message, size_t message_len);
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, const ring_sig_p src,
-    const otrng_public_key_p A1, const otrng_public_key_p A2, const otrng_public_key_p A3,
-    const uint8_t *message, size_t message_len);
+    const otrng_public_key_p A1, const otrng_public_key_p A2,
+    const otrng_public_key_p A3, const uint8_t *message, size_t message_len);
 
 #ifdef OTRNG_AUTH_PRIVATE
 #endif
