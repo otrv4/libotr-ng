@@ -390,8 +390,6 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
 
   w += read;
 
-  // TODO: This is only reported if no error happened. It would be nice to
-  // report how much bytes were read before an error was found.
   if (nread) {
     *nread = w;
   }
