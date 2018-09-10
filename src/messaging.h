@@ -106,9 +106,6 @@ otrng_result otrng_user_state_add_instance_tag(otrng_user_state_s *user_state,
                                                void *client_id,
                                                unsigned int instag);
 
-unsigned int otrng_user_state_get_instance_tag(otrng_user_state_s *user_state,
-                                               void *client_id);
-
 API otrng_result otrng_user_state_instag_generate_generate_FILEp(
     otrng_user_state_s *user_state, void *client_id, FILE *instag);
 

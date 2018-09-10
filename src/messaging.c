@@ -446,15 +446,6 @@ API otrng_result otrng_user_state_add_instance_tag(
       get_client_state(user_state, client_id), instag);
 }
 
-// TODO: why we have this?
-API unsigned int
-otrng_user_state_get_instance_tag(otrng_user_state_s *user_state,
-                                  void *client_id) {
-  UNUSED_ARG(user_state);
-  UNUSED_ARG(client_id);
-  return 0;
-}
-
 API otrng_result otrng_user_state_instag_generate_generate_FILEp(
     otrng_user_state_s *user_state, void *client_id, FILE *instag) {
   return otrng_client_state_instance_tag_write_FILEp(
