@@ -78,7 +78,6 @@ INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_p mpi) {
   return otrng_serialize_data(dst, mpi->data, mpi->len);
 }
 
-// TODO: what happens when the zero is returned?
 INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_p point) {
   if (!otrng_ec_point_encode(dst, ED448_POINT_BYTES, point)) {
     return 0;
