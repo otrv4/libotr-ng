@@ -427,7 +427,6 @@ INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
   }
 
   // TODO: Extract function deserialize_transitional_signature
-  // TODO: Double check format: is CLIENT-EDDSA-SIG a eddsa_signature_p?
   if (buflen - w < sizeof(eddsa_signature_p)) {
     return OTRNG_ERROR;
   }
