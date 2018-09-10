@@ -111,9 +111,6 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
     return OTRNG_ERROR;
   }
 
-  // TODO: @c_logic message is an UTF-8 string. Is there any problem to cast
-  // it to (unsigned char *)
-  // encrypted_message = XSalsa20_Enc(MKenc, nonce, m)
   int err =
       crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
   if (err) {
