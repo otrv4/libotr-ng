@@ -29,9 +29,8 @@
 #include "shared.h"
 
 #define DH_KEY_SIZE 80
-#define DH3072_MOD_LEN_BITS 3072
-// TODO: we have this constant defined twice
 #define DH3072_MOD_LEN_BYTES 384
+#define DH3072_MOD_LEN_BITS (DH3072_MOD_LEN_BYTES * 8)
 #define DH_MPI_MAX_BYTES (4 + DH3072_MOD_LEN_BYTES)
 
 typedef gcry_mpi_t dh_mpi_p;
