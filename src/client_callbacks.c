@@ -74,9 +74,6 @@ otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
     return;
   }
 
-  // TODO: @client The callback may not need to be invoked at all (if the mode
-  // does not support non-interactive DAKE, for example).
-
   // This callback is required and is expected to segfault if not provided.
   cb->create_shared_prekey(state, client_opdata);
 }
