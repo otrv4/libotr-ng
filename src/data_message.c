@@ -59,7 +59,6 @@ tstatic void data_message_destroy(data_message_s *data_msg) {
 
   sodium_memzero(data_msg->nonce, sizeof data_msg->nonce);
   data_msg->enc_msg_len = 0;
-  // TODO: @freeing check if this free is always needed
   free(data_msg->enc_msg);
   data_msg->enc_msg = NULL;
   sodium_memzero(data_msg->mac, sizeof data_msg->mac);
