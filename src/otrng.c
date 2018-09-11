@@ -1344,7 +1344,6 @@ tstatic otrng_result non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
-
   return OTRNG_SUCCESS;
 }
 
