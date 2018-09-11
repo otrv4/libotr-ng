@@ -1330,6 +1330,12 @@ tstatic otrng_result non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
+  otrng_fingerprint_p fp;
+  if (otrng_serialize_fingerprint(
+          fp, otr->their_client_profile->long_term_pub_key)) {
+    fingerprint_seen_cb_v4(fp, otr->conversation);
+  }
+
   if (!otrng_key_manager_generate_shared_secret(otr->keys, otrng_false)) {
     return OTRNG_ERROR;
   }
@@ -1338,11 +1344,6 @@ tstatic otrng_result non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
-  otrng_fingerprint_p fp;
-  if (otrng_serialize_fingerprint(
-          fp, otr->their_client_profile->long_term_pub_key)) {
-    fingerprint_seen_cb_v4(fp, otr->conversation);
-  }
 
   return OTRNG_SUCCESS;
 }
