@@ -52,7 +52,7 @@
     const otrng_result _result = (result);                                     \
     const otrng_response_s *_respond_to = (respond_to);                        \
     const otrng_s *_sender = (sender);                                         \
-    const otrng_state _otr_state = (otr_state);                                \
+    const otrng_state_e _otr_state = (otr_state);                              \
     const otrng_bool _send_response = (send_response);                         \
     otrng_assert_is_success(_result);                                          \
     otrng_assert(!_respond_to->to_display);                                    \

@@ -33,7 +33,7 @@ typedef enum {
   OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE = 4,
   OTRNG_STATE_ENCRYPTED_MESSAGES = 5,
   OTRNG_STATE_FINISHED = 6
-} otrng_state;
+} otrng_state_e;
 
 #define OTRNG_ALLOW_NONE 0
 #define OTRNG_ALLOW_V3 1
@@ -56,7 +56,7 @@ typedef struct otrng_s {
   otrng_conversation_state_s *conversation;
   otrng_v3_conn_s *v3_conn;
 
-  otrng_state state;
+  otrng_state_e state;
   uint8_t supported_versions;
 
   uint32_t their_prekeys_id;
