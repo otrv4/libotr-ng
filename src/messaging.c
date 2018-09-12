@@ -90,18 +90,12 @@ tstatic int find_client_by_client_id(const void *current, const void *wanted) {
   return client && client->state && client->state->client_id == wanted;
 }
 
-tstatic otrng_messaging_client_s *
-otrng_messaging_client_new(otrng_global_state_s *gs, void *client_id) {
+tstatic otrng_client_s *
+create_client_from_global_state(otrng_global_state_s *gs, void *client_id) {
   if (!client_id) {
     return NULL;
   }
 
-  list_element_s *e =
-      otrng_list_get(client_id, gs->clients, find_client_by_client_id);
-
-  if (e) {
-    return e->data;
-  }
   otrng_client_state_s *client_state = get_client_state(gs, client_id);
   if (!client_state) {
     return NULL;
@@ -117,15 +111,15 @@ otrng_messaging_client_new(otrng_global_state_s *gs, void *client_id) {
   return client;
 }
 
-otrng_messaging_client_s *otrng_messaging_client_get(otrng_global_state_s *gs,
+otrng_client_s *otrng_client_get(otrng_global_state_s *gs,
 
-                                                     void *client_id) {
+                                 void *client_id) {
   list_element_s *el =
       otrng_list_get(client_id, gs->clients, find_client_by_client_id);
   if (el) {
     return el->data;
   }
-  return otrng_messaging_client_new(gs, client_id);
+  return create_client_from_global_state(gs, client_id);
 }
 
 API otrng_result otrng_global_state_private_key_v3_generate_FILEp(

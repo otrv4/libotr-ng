@@ -33,11 +33,10 @@
  * otrng_global_state_add_private_key_v3(state, alice_xmpp, alice_priv3);
  *
  * PurpleAccount *alice_xmpp;
- * client = otrng_messaging_client_new(state, alice_xmpp);
- *
- * client = otrng_messaging_client_get(alice_xmpp);
+ * client = otrng_client_get(state, alice_xmpp);
  *
  * PurpleConversation *alice_talking_to_bob;
+ * TODO: fix the below comment, since it doesn't match existing functions
  * otrng_messaging_client_sending(client, alice_talking_to_bob, instance, "hi");
  * otrng_messaging_client_receiving(client, alice_talking_to_bob);
  */
@@ -45,9 +44,6 @@
 #include "client.h"
 #include "list.h"
 #include "shared.h"
-
-// TODO: Remove?
-typedef otrng_client_s otrng_messaging_client_s;
 
 typedef struct otrng_global_state_s {
   list_element_s *states;
@@ -113,8 +109,7 @@ otrng_result
 otrng_global_state_instance_tags_read_FILEp(otrng_global_state_s *gs,
                                             FILE *instag);
 
-otrng_messaging_client_s *otrng_messaging_client_get(otrng_global_state_s *gs,
-                                                     void *client_id);
+otrng_client_s *otrng_client_get(otrng_global_state_s *gs, void *client_id);
 
 API otrng_result otrng_global_state_private_key_v4_read_FILEp(
     otrng_global_state_s *gs, FILE *privf,
