@@ -103,18 +103,18 @@ API otrng_result otrng_global_state_prekey_messages_write_FILEp(
     const otrng_global_state_s *gs, FILE *privf);
 
 otrng_result otrng_global_state_add_instance_tag(otrng_global_state_s *gs,
-                                               void *client_id,
-                                               unsigned int instag);
+                                                 void *client_id,
+                                                 unsigned int instag);
 
 API otrng_result otrng_global_state_instag_generate_generate_FILEp(
     otrng_global_state_s *gs, void *client_id, FILE *instag);
 
 otrng_result
 otrng_global_state_instance_tags_read_FILEp(otrng_global_state_s *gs,
-                                          FILE *instag);
+                                            FILE *instag);
 
-otrng_messaging_client_s *
-otrng_messaging_client_get(otrng_global_state_s *gs, void *client_id);
+otrng_messaging_client_s *otrng_messaging_client_get(otrng_global_state_s *gs,
+                                                     void *client_id);
 
 API otrng_result otrng_global_state_private_key_v4_read_FILEp(
     otrng_global_state_s *gs, FILE *privf,
@@ -126,7 +126,7 @@ API otrng_result otrng_global_state_prekeys_read_FILEp(
 
 API otrng_keypair_s *
 otrng_global_state_get_private_key_v4(otrng_global_state_s *gs,
-                                    const void *client_id);
+                                      const void *client_id);
 
 API otrng_global_state_s *
 otrng_global_state_new(const otrng_client_callbacks_s *cb);
@@ -135,8 +135,7 @@ API void otrng_global_state_free(otrng_global_state_s *gs);
 
 #ifdef DEBUG_API
 
-API void otrng_global_state_debug_print(FILE *, int,
-                                      otrng_global_state_s *gs);
+API void otrng_global_state_debug_print(FILE *, int, otrng_global_state_s *gs);
 
 #endif
 

@@ -93,7 +93,8 @@ int main(int argc, char **argv) {
   g_test_add_func("/otrng/instance_tag/otrng_invokes_create_instag",
                   test_invokes_create_instag_callbacks);
 
-  g_test_add_func("/user_state/key_management", test_global_state_key_management);
+  g_test_add_func("/user_state/key_management",
+                  test_global_state_key_management);
   g_test_add_func("/user_state/shared_prekey_management",
                   test_global_state_shared_prekey_management);
   g_test_add_func("/user_state/client_profilte",

@@ -117,10 +117,9 @@ otrng_messaging_client_new(otrng_global_state_s *gs, void *client_id) {
   return client;
 }
 
-otrng_messaging_client_s *
-otrng_messaging_client_get(otrng_global_state_s *gs,
+otrng_messaging_client_s *otrng_messaging_client_get(otrng_global_state_s *gs,
 
-                           void *client_id) {
+                                                     void *client_id) {
   list_element_s *el =
       otrng_list_get(client_id, gs->clients, find_client_by_client_id);
   if (el) {
@@ -147,8 +146,8 @@ API otrng_result otrng_global_state_private_key_v3_read_FILEp(
 tstatic otrng_result otrng_global_state_add_private_key_v4(
     otrng_global_state_s *gs, const void *clientop,
     const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  return otrng_client_state_add_private_key_v4(
-      get_client_state(gs, clientop), sym);
+  return otrng_client_state_add_private_key_v4(get_client_state(gs, clientop),
+                                               sym);
 }
 
 API otrng_result otrng_global_state_generate_private_key(
@@ -213,9 +212,8 @@ API otrng_result otrng_global_state_generate_shared_prekey(
 
 API otrng_keypair_s *
 otrng_global_state_get_private_key_v4(otrng_global_state_s *gs,
-                                    const void *client_id) {
-  return otrng_client_state_get_keypair_v4(
-      get_client_state(gs, client_id));
+                                      const void *client_id) {
+  return otrng_client_state_get_keypair_v4(get_client_state(gs, client_id));
 }
 
 tstatic void add_private_key_v4_to_FILEp(list_element_s *node, void *context) {
@@ -253,8 +251,7 @@ API otrng_result otrng_global_state_shared_prekey_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->states, add_shared_prekey_to_FILEp,
-                     shared_prekey_f);
+  otrng_list_foreach(gs->states, add_shared_prekey_to_FILEp, shared_prekey_f);
 
   return OTRNG_SUCCESS;
 }
@@ -323,8 +320,7 @@ API otrng_result otrng_global_state_private_key_v4_read_FILEp(
       continue;
     }
 
-    otrng_client_state_s *client_state =
-        get_client_state(gs, client_id);
+    otrng_client_state_s *client_state = get_client_state(gs, client_id);
     if (otrng_client_state_private_key_v4_read_FILEp(client_state, privf) !=
         OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
@@ -348,8 +344,7 @@ API otrng_result otrng_global_state_client_profile_read_FILEp(
       continue;
     }
 
-    otrng_client_state_s *client_state =
-        get_client_state(gs, client_id);
+    otrng_client_state_s *client_state = get_client_state(gs, client_id);
     if (otrng_client_state_client_profile_read_FILEp(
             client_state, profile_filep) != OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
@@ -374,8 +369,7 @@ API otrng_result otrng_global_state_shared_prekey_read_FILEp(
       continue;
     }
 
-    otrng_client_state_s *client_state =
-        get_client_state(gs, client_id);
+    otrng_client_state_s *client_state = get_client_state(gs, client_id);
     if (otrng_client_state_shared_prekey_read_FILEp(
             client_state, shared_prekeyf) != OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
@@ -398,8 +392,7 @@ API otrng_result otrng_global_state_prekey_profile_read_FILEp(
     if (!client_id) {
       continue;
     }
-    otrng_client_state_s *client_state =
-        get_client_state(gs, client_id);
+    otrng_client_state_s *client_state = get_client_state(gs, client_id);
     if (otrng_client_state_prekey_profile_read_FILEp(
             client_state, profile_filep) != OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
@@ -423,8 +416,7 @@ API otrng_result otrng_global_state_prekeys_read_FILEp(
       continue;
     }
 
-    otrng_client_state_s *client_state =
-        get_client_state(gs, client_id);
+    otrng_client_state_s *client_state = get_client_state(gs, client_id);
 
     if (otrng_client_state_prekey_messages_read_FILEp(
             client_state, prekey_filep) != OTRNG_SUCCESS) {
@@ -436,10 +428,11 @@ API otrng_result otrng_global_state_prekeys_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_global_state_add_instance_tag(
-    otrng_global_state_s *gs, void *client_id, unsigned int instag) {
-  return otrng_client_state_add_instance_tag(
-      get_client_state(gs, client_id), instag);
+API otrng_result otrng_global_state_add_instance_tag(otrng_global_state_s *gs,
+                                                     void *client_id,
+                                                     unsigned int instag) {
+  return otrng_client_state_add_instance_tag(get_client_state(gs, client_id),
+                                             instag);
 }
 
 API otrng_result otrng_global_state_instag_generate_generate_FILEp(
@@ -511,7 +504,7 @@ API void otrng_client_id_debug_print(FILE *f, const void *client_id) {
 }
 
 API void otrng_global_state_debug_print(FILE *f, int indent,
-                                      otrng_global_state_s *gs) {
+                                        otrng_global_state_s *gs) {
   int ix;
   list_element_s *curr;
 
