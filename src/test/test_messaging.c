@@ -40,17 +40,17 @@ static const void *read_client_id_for_privf(FILE *privf) {
   return charlie_account;
 }
 
-void test_user_state_key_management(void) {
+void test_global_state_key_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
-  otrng_user_state_s *state = otrng_user_state_new(NULL);
-  otrng_user_state_add_private_key_v4(state, alice_account, alice_sym);
-  otrng_user_state_add_private_key_v4(state, bob_account, bob_sym);
+  otrng_global_state_s *state = otrng_global_state_new(NULL);
+  otrng_global_state_add_private_key_v4(state, alice_account, alice_sym);
+  otrng_global_state_add_private_key_v4(state, bob_account, bob_sym);
 
-  otrng_assert(otrng_user_state_get_private_key_v4(state, alice_account));
-  otrng_assert(otrng_user_state_get_private_key_v4(state, bob_account));
-  otrng_assert(!otrng_user_state_get_private_key_v4(state, charlie_account));
+  otrng_assert(otrng_global_state_get_private_key_v4(state, alice_account));
+  otrng_assert(otrng_global_state_get_private_key_v4(state, bob_account));
+  otrng_assert(!otrng_global_state_get_private_key_v4(state, charlie_account));
 
   /* Generate file */
   FILE *keys = tmpfile();
@@ -60,13 +60,13 @@ void test_user_state_key_management(void) {
         keys);
   rewind(keys);
 
-  otrng_result result = otrng_user_state_private_key_v4_read_FILEp(
+  otrng_result result = otrng_global_state_private_key_v4_read_FILEp(
       state, keys, read_client_id_for_privf);
   otrng_assert_is_success(result);
   fclose(keys);
 
   otrng_keypair_s *keypair =
-      otrng_user_state_get_private_key_v4(state, charlie_account);
+      otrng_global_state_get_private_key_v4(state, charlie_account);
 
   char *buffer = NULL;
   size_t s = 0;
@@ -77,20 +77,20 @@ void test_user_state_key_management(void) {
   otrng_assert_cmpmem(expected, buffer, s);
 
   free(buffer);
-  otrng_user_state_free(state);
+  otrng_global_state_free(state);
 }
 
-void test_user_state_shared_prekey_management(void) {
+void test_global_state_shared_prekey_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
-  otrng_user_state_s *state = otrng_user_state_new(NULL);
-  otrng_user_state_add_private_key_v4(state, alice_account, alice_sym);
-  otrng_user_state_add_private_key_v4(state, bob_account, bob_sym);
+  otrng_global_state_s *state = otrng_global_state_new(NULL);
+  otrng_global_state_add_private_key_v4(state, alice_account, alice_sym);
+  otrng_global_state_add_private_key_v4(state, bob_account, bob_sym);
 
-  otrng_assert(otrng_user_state_get_private_key_v4(state, alice_account));
-  otrng_assert(otrng_user_state_get_private_key_v4(state, bob_account));
-  otrng_assert(!otrng_user_state_get_private_key_v4(state, charlie_account));
+  otrng_assert(otrng_global_state_get_private_key_v4(state, alice_account));
+  otrng_assert(otrng_global_state_get_private_key_v4(state, bob_account));
+  otrng_assert(!otrng_global_state_get_private_key_v4(state, charlie_account));
 
   /* Generate file */
   FILE *keys = tmpfile();
@@ -100,7 +100,7 @@ void test_user_state_shared_prekey_management(void) {
         keys);
   rewind(keys);
 
-  otrng_result result = otrng_user_state_shared_prekey_read_FILEp(
+  otrng_result result = otrng_global_state_shared_prekey_read_FILEp(
       state, keys, read_client_id_for_privf);
   otrng_assert_is_success(result);
   fclose(keys);
@@ -119,20 +119,20 @@ void test_user_state_shared_prekey_management(void) {
   otrng_assert_cmpmem(expected, buffer, s);
 
   free(buffer);
-  otrng_user_state_free(state);
+  otrng_global_state_free(state);
 }
 
-void test_user_state_client_profile_management(void) {
+void test_global_state_client_profile_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
-  otrng_user_state_s *state = otrng_user_state_new(NULL);
-  otrng_user_state_add_private_key_v4(state, alice_account, alice_sym);
-  otrng_user_state_add_private_key_v4(state, bob_account, bob_sym);
+  otrng_global_state_s *state = otrng_global_state_new(NULL);
+  otrng_global_state_add_private_key_v4(state, alice_account, alice_sym);
+  otrng_global_state_add_private_key_v4(state, bob_account, bob_sym);
 
-  otrng_assert(otrng_user_state_get_private_key_v4(state, alice_account));
-  otrng_assert(otrng_user_state_get_private_key_v4(state, bob_account));
-  otrng_assert(!otrng_user_state_get_private_key_v4(state, charlie_account));
+  otrng_assert(otrng_global_state_get_private_key_v4(state, alice_account));
+  otrng_assert(otrng_global_state_get_private_key_v4(state, bob_account));
+  otrng_assert(!otrng_global_state_get_private_key_v4(state, charlie_account));
 
   /* Generate file */
   FILE *client_profile = tmpfile();
@@ -146,7 +146,7 @@ void test_user_state_client_profile_management(void) {
         client_profile);
   rewind(client_profile);
 
-  otrng_result result = otrng_user_state_client_profile_read_FILEp(
+  otrng_result result = otrng_global_state_client_profile_read_FILEp(
       state, client_profile, read_client_id_for_privf);
   otrng_assert_is_success(result);
   fclose(client_profile);
@@ -171,20 +171,20 @@ void test_user_state_client_profile_management(void) {
 
   free(encoded);
   free(buffer);
-  otrng_user_state_free(state);
+  otrng_global_state_free(state);
 }
 
-void test_user_state_prekey_message_management(void) {
+void test_global_state_prekey_message_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
-  otrng_user_state_s *state = otrng_user_state_new(NULL);
-  otrng_user_state_add_private_key_v4(state, alice_account, alice_sym);
-  otrng_user_state_add_private_key_v4(state, bob_account, bob_sym);
+  otrng_global_state_s *state = otrng_global_state_new(NULL);
+  otrng_global_state_add_private_key_v4(state, alice_account, alice_sym);
+  otrng_global_state_add_private_key_v4(state, bob_account, bob_sym);
 
-  otrng_assert(otrng_user_state_get_private_key_v4(state, alice_account));
-  otrng_assert(otrng_user_state_get_private_key_v4(state, bob_account));
-  otrng_assert(!otrng_user_state_get_private_key_v4(state, charlie_account));
+  otrng_assert(otrng_global_state_get_private_key_v4(state, alice_account));
+  otrng_assert(otrng_global_state_get_private_key_v4(state, bob_account));
+  otrng_assert(!otrng_global_state_get_private_key_v4(state, charlie_account));
 
   /* Generate file */
   FILE *prekey = tmpfile();
@@ -198,7 +198,7 @@ void test_user_state_prekey_message_management(void) {
         prekey);
   rewind(prekey);
 
-  otrng_result result = otrng_user_state_prekeys_read_FILEp(
+  otrng_result result = otrng_global_state_prekeys_read_FILEp(
       state, prekey, read_client_id_for_privf);
   otrng_assert_is_success(result);
 
@@ -237,7 +237,7 @@ void test_user_state_prekey_message_management(void) {
 
   free(dh_symkey);
 
-  otrng_user_state_free(state);
+  otrng_global_state_free(state);
 }
 
 void test_instance_tag_api(void) {
