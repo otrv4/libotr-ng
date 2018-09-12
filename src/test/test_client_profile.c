@@ -186,8 +186,7 @@ void test_otrng_client_profile_build() {
 
 void test_otrng_client_profile_transitional_signature(void) {
   otrng_client_state_s *client = otrng_client_state_new(ALICE_IDENTITY);
-  client->user_state = otrl_userstate_create();
-  client->callbacks = test_callbacks;
+  client->global_state = otrng_global_state_new(test_callbacks);
 
   // Generate DSA key
   FILE *tmpFILEp = tmpfile();
@@ -208,7 +207,7 @@ void test_otrng_client_profile_transitional_signature(void) {
   otrng_assert_is_success(
       client_profile_verify_transitional_signature(profile));
 
-  otrl_userstate_free(client->user_state);
+  otrng_global_state_free(client->global_state);
   otrng_client_profile_free(profile);
   otrng_client_state_free(client);
 }

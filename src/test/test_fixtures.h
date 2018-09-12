@@ -20,6 +20,7 @@
 
 #include <libotr/privkey.h>
 
+#include "../messaging.h"
 #include "../persistence.h"
 
 typedef struct otrng_fixture_s {
@@ -27,6 +28,7 @@ typedef struct otrng_fixture_s {
   otrng_s *v3;
   otrng_s *v34;
   otrng_client_state_s *state;
+  otrng_global_state_s *gs;
 } otrng_fixture_s, otrng_fixture_p[1];
 
 int dh_mpi_cmp(const dh_mpi_p m1, const dh_mpi_p m2) {
@@ -110,9 +112,9 @@ static otrng_client_callbacks_p test_callbacks = {{
 }};
 
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
+  otrng_fixture->gs = otrng_global_state_new(test_callbacks);
   otrng_fixture->state = otrng_client_state_new("account");
-  otrng_fixture->state->callbacks = test_callbacks;
-  otrng_fixture->state->user_state = otrl_userstate_create();
+  otrng_fixture->state->global_state = otrng_fixture->gs;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
   otrng_client_state_add_private_key_v4(otrng_fixture->state, sym);
@@ -144,8 +146,6 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
 
 void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture,
                             gconstpointer data) {
-  otrl_userstate_free(otrng_fixture->state->user_state);
-
   otrng_client_state_free(otrng_fixture->state);
   otrng_fixture->state = NULL;
 

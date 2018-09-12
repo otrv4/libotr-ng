@@ -127,7 +127,8 @@ void test_smp_state_machine(void) {
   g_assert_cmpint(alice->smp->state_expect, ==, '1');
   otrng_assert_cmpmem(alice->smp->secret, bob->smp->secret, HASH_BYTES);
 
-  otrng_user_state_free_all(alice_state->user_state, bob_state->user_state);
+  otrng_global_state_free(alice_state->global_state);
+  otrng_global_state_free(bob_state->global_state);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
 }
@@ -220,7 +221,8 @@ void test_smp_state_machine_abort(void) {
 
   otrng_tlv_free(tlv_abort);
 
-  otrng_user_state_free_all(alice_state->user_state, bob_state->user_state);
+  otrng_global_state_free(alice_state->global_state);
+  otrng_global_state_free(bob_state->global_state);
   otrng_client_state_free_all(alice_state, bob_state);
   otrng_free_all(alice, bob);
 }

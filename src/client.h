@@ -123,7 +123,6 @@ API otrng_result otrng_client_expire_fragments(int expiration_time,
 API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                                   const otrng_client_s *client);
 
-API otrng_bool should_heartbeat(int last_sent);
 /* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf); */
 
 /* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf); */

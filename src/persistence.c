@@ -21,6 +21,7 @@
 #include "persistence.h"
 #include "base64.h"
 #include "deserialize.h"
+#include "messaging.h"
 
 /*
   Provides sample FILE-based persistence mechanism.
@@ -242,8 +243,8 @@ INTERNAL otrng_result otrng_client_state_instance_tag_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  gcry_error_t ret = otrl_instag_generate_FILEp(state->user_state, instagf,
-                                                account_name, protocol_name);
+  gcry_error_t ret = otrl_instag_generate_FILEp(
+      state->global_state->user_state_v3, instagf, account_name, protocol_name);
 
   free(account_name);
   free(protocol_name);
@@ -256,11 +257,12 @@ INTERNAL otrng_result otrng_client_state_instance_tag_write_FILEp(
 
 INTERNAL otrng_result otrng_client_state_instance_tag_read_FILEp(
     otrng_client_state_s *state, FILE *instag) {
-  if (!state->user_state) {
+  if (!state->global_state->user_state_v3) {
     return OTRNG_ERROR;
   }
 
-  gcry_error_t ret = otrl_instag_read_FILEp(state->user_state, instag);
+  gcry_error_t ret =
+      otrl_instag_read_FILEp(state->global_state->user_state_v3, instag);
 
   if (ret) {
     return OTRNG_ERROR;
@@ -280,8 +282,8 @@ INTERNAL otrng_result otrng_client_state_private_key_v3_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  gcry_error_t ret = otrl_privkey_generate_FILEp(state->user_state, privf,
-                                                 account_name, protocol_name);
+  gcry_error_t ret = otrl_privkey_generate_FILEp(
+      state->global_state->user_state_v3, privf, account_name, protocol_name);
 
   free(account_name);
   free(protocol_name);

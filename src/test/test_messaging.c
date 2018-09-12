@@ -245,8 +245,7 @@ void test_instance_tag_api(void) {
   unsigned int instance_tag = 0x9abcdef0;
 
   otrng_client_state_s *alice = otrng_client_state_new(alice_account);
-  alice->callbacks = test_callbacks;
-  alice->user_state = otrl_userstate_create();
+  alice->global_state = otrng_global_state_new(test_callbacks);
 
   FILE *instagFILEp = tmpfile();
 
@@ -264,6 +263,6 @@ void test_instance_tag_api(void) {
 
   g_assert_cmpstr(sone, ==, "9abcdef0");
 
-  otrl_userstate_free(alice->user_state);
+  otrng_global_state_free(alice->global_state);
   otrng_client_state_free(alice);
 }

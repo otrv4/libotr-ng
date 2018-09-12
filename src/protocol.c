@@ -22,13 +22,14 @@
 
 #include "data_message.h"
 #include "debug.h"
+#include "messaging.h"
 #include "padding.h"
 #include "random.h"
 #include "serialize.h"
 #include <libotr/b64.h>
 
 INTERNAL void maybe_create_keys(otrng_client_state_s *state) {
-  const otrng_client_callbacks_s *cb = state->callbacks;
+  const otrng_client_callbacks_s *cb = state->global_state->callbacks;
   const void *client_id = state->client_id;
 
   if (!state->keypair) {

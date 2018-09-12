@@ -40,7 +40,7 @@ void test_send_dake_1_message(void) {
   otrng_assert(dake_1);
   free(dake_1);
 
-  otrl_userstate_free(alice_client_state->user_state);
+  otrng_global_state_free(alice_client_state->global_state);
   otrng_client_state_free(alice_client_state);
   otrng_client_free(alice);
 }
@@ -114,7 +114,7 @@ void test_send_dake_3_message_with_storage_info_request(void) {
   free(msg->composite_identity);
   free(dake_3);
 
-  otrl_userstate_free(alice_client_state->user_state);
+  otrng_global_state_free(alice_client_state->global_state);
   otrng_client_state_free(alice_client_state);
   otrng_client_free(alice);
 }
@@ -170,7 +170,7 @@ void test_receive_prekey_server_messages(void) {
 
   free(success);
 
-  otrl_userstate_free(alice_client_state->user_state);
+  otrng_global_state_free(alice_client_state->global_state);
   otrng_client_state_free(alice_client_state);
   otrng_client_free(alice);
 }

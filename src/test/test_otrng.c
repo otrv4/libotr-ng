@@ -224,8 +224,7 @@ void test_otrng_build_prekey_ensemble() {
   uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {0XF};
 
   otrng_client_state_s *state = otrng_client_state_new("some client");
-  state->callbacks = test_callbacks;
-  state->user_state = otrl_userstate_create();
+  state->global_state = otrng_global_state_new(test_callbacks);
 
   otrng_assert_is_success(
       otrng_client_state_add_private_key_v4(state, long_term_priv));
@@ -263,7 +262,7 @@ void test_otrng_build_prekey_ensemble() {
 
   otrng_prekey_ensemble_free(ensemble);
   otrng_free(otr);
-  otrl_userstate_free(state->user_state);
+  otrng_global_state_free(state->global_state);
   otrng_client_state_free(state);
 }
 
@@ -300,7 +299,7 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
                                          NULL, // received_extra_symm_key
                                          &test_get_shared_session_state_cb}};
 
-  state->callbacks = callbacks;
+  state->global_state = otrng_global_state_new(callbacks);
 
   otrng_s *protocol = set_up(state, ALICE_IDENTITY, 1);
 
@@ -315,7 +314,7 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
   free(session.identifier1);
   free(session.identifier2);
 
-  otrng_user_state_free_all(state->user_state);
+  otrng_global_state_free(state->global_state);
   otrng_client_state_free_all(state);
   otrng_free_all(protocol);
 }

@@ -157,8 +157,8 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 2);
   g_assert_cmpint(alice->keys->pn, ==, 4);
 
-  otrng_user_state_free_all(alice_client_state->user_state,
-                            bob_client_state->user_state);
+  otrng_global_state_free(alice_client_state->global_state);
+  otrng_global_state_free(bob_client_state->global_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
@@ -278,8 +278,8 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   g_assert_cmpint(bob->keys->k, ==, 5);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
-  otrng_user_state_free_all(alice_client_state->user_state,
-                            bob_client_state->user_state);
+  otrng_global_state_free(alice_client_state->global_state);
+  otrng_global_state_free(bob_client_state->global_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
@@ -426,8 +426,8 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(bob->keys->k, ==, 1);
   g_assert_cmpint(bob->keys->pn, ==, 1);
 
-  otrng_user_state_free_all(alice_client_state->user_state,
-                            bob_client_state->user_state);
+  otrng_global_state_free(alice_client_state->global_state);
+  otrng_global_state_free(bob_client_state->global_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }
@@ -509,8 +509,8 @@ void test_double_ratchet_corrupted_ratchet(void) {
 
   otrng_data_message_free(corrupted_data_msg);
 
-  otrng_user_state_free_all(alice_client_state->user_state,
-                            bob_client_state->user_state);
+  otrng_global_state_free(alice_client_state->global_state);
+  otrng_global_state_free(bob_client_state->global_state);
   otrng_client_state_free_all(alice_client_state, bob_client_state);
   otrng_free_all(alice, bob);
 }

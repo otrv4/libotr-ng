@@ -21,6 +21,7 @@
 #define OTRNG_V3_PRIVATE
 
 #include "v3.h"
+#include "messaging.h"
 #include "otrng.h"
 
 tstatic void create_privkey_cb_v3(const otrng_v3_conn_s *conn) {
@@ -28,7 +29,7 @@ tstatic void create_privkey_cb_v3(const otrng_v3_conn_s *conn) {
     return;
   }
 
-  otrng_client_callbacks_create_privkey_v3(conn->state->callbacks,
+  otrng_client_callbacks_create_privkey_v3(conn->state->global_state->callbacks,
                                            conn->state->client_id);
 }
 
@@ -37,7 +38,7 @@ tstatic void create_instag_cb_v3(const otrng_conversation_state_s *conv) {
     return;
   }
 
-  otrng_client_callbacks_create_instag(conv->client->callbacks,
+  otrng_client_callbacks_create_instag(conv->client->global_state->callbacks,
                                        conv->client->client_id);
 }
 
@@ -46,7 +47,8 @@ tstatic void gone_secure_cb_v3(const otrng_conversation_state_s *conv) {
     return;
   }
 
-  otrng_client_callbacks_gone_secure(conv->client->callbacks, conv);
+  otrng_client_callbacks_gone_secure(conv->client->global_state->callbacks,
+                                     conv);
 }
 
 tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *conv) {
@@ -54,7 +56,8 @@ tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *conv) {
     return;
   }
 
-  otrng_client_callbacks_gone_insecure(conv->client->callbacks, conv);
+  otrng_client_callbacks_gone_insecure(conv->client->global_state->callbacks,
+                                       conv);
 }
 
 tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3_p fp,
@@ -63,7 +66,8 @@ tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3_p fp,
     return;
   }
 
-  otrng_client_callbacks_fingerprint_seen_v3(conv->client->callbacks, fp, conv);
+  otrng_client_callbacks_fingerprint_seen_v3(
+      conv->client->global_state->callbacks, fp, conv);
 }
 
 tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
@@ -76,11 +80,12 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
 
   switch (event) {
   case OTRNG_SMP_EVENT_ASK_FOR_SECRET:
-    otrng_client_callbacks_smp_ask_for_secret(conv->client->callbacks, conv);
+    otrng_client_callbacks_smp_ask_for_secret(
+        conv->client->global_state->callbacks, conv);
     break;
   case OTRNG_SMP_EVENT_ASK_FOR_ANSWER:
-    otrng_client_callbacks_smp_ask_for_answer(conv->client->callbacks, question,
-                                              conv);
+    otrng_client_callbacks_smp_ask_for_answer(
+        conv->client->global_state->callbacks, question, conv);
     break;
   case OTRNG_SMP_EVENT_CHEATED:
   case OTRNG_SMP_EVENT_IN_PROGRESS:
@@ -88,8 +93,8 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
   case OTRNG_SMP_EVENT_FAILURE:
   case OTRNG_SMP_EVENT_ABORT:
   case OTRNG_SMP_EVENT_ERROR:
-    otrng_client_callbacks_smp_update(conv->client->callbacks, event,
-                                      progress_percent, conv);
+    otrng_client_callbacks_smp_update(conv->client->global_state->callbacks,
+                                      event, progress_percent, conv);
     break;
   default:
     /* OTRNG_SMP_EVENT_NONE. Should not be used. */
@@ -602,9 +607,9 @@ INTERNAL otrng_result otrng_v3_send_message(char **newmessage,
   }
 
   int err = otrl_message_sending(
-      conn->state->user_state, conn->ops, conn->opdata, account_name,
-      protocol_name, conn->peer, OTRL_INSTAG_RECENT, message, tlvsv3,
-      newmessage, OTRL_FRAGMENT_SEND_SKIP, &conn->ctx, NULL, NULL);
+      conn->state->global_state->user_state_v3, conn->ops, conn->opdata,
+      account_name, protocol_name, conn->peer, OTRL_INSTAG_RECENT, message,
+      tlvsv3, newmessage, OTRL_FRAGMENT_SEND_SKIP, &conn->ctx, NULL, NULL);
 
   free(account_name);
   free(protocol_name);
@@ -637,10 +642,10 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
   }
 
   char *newmessage = NULL;
-  ignore_message =
-      otrl_message_receiving(conn->state->user_state, conn->ops, conn->opdata,
-                             account_name, protocol_name, conn->peer, message,
-                             &newmessage, &tlvs_v3, &conn->ctx, NULL, NULL);
+  ignore_message = otrl_message_receiving(
+      conn->state->global_state->user_state_v3, conn->ops, conn->opdata,
+      account_name, protocol_name, conn->peer, message, &newmessage, &tlvs_v3,
+      &conn->ctx, NULL, NULL);
 
   free(account_name);
   free(protocol_name);
@@ -687,9 +692,9 @@ INTERNAL void otrng_v3_close(char **to_send, otrng_v3_conn_s *conn) {
   otrng_client_state_get_account_and_protocol(&account_name, &protocol_name,
                                               conn->state);
 
-  otrl_message_disconnect_all_instances(conn->state->user_state, conn->ops,
-                                        conn->opdata, account_name,
-                                        protocol_name, conn->peer);
+  otrl_message_disconnect_all_instances(
+      conn->state->global_state->user_state_v3, conn->ops, conn->opdata,
+      account_name, protocol_name, conn->peer);
   free(account_name);
   free(protocol_name);
 
@@ -699,8 +704,9 @@ INTERNAL void otrng_v3_close(char **to_send, otrng_v3_conn_s *conn) {
 INTERNAL otrng_result otrng_v3_send_symkey_message(
     char **to_send, otrng_v3_conn_s *conn, unsigned int use,
     const unsigned char *usedata, size_t usedatalen, unsigned char *extra_key) {
-  otrl_message_symkey(conn->state->user_state, conn->ops, conn->opdata,
-                      conn->ctx, use, usedata, usedatalen, extra_key);
+  otrl_message_symkey(conn->state->global_state->user_state_v3, conn->ops,
+                      conn->opdata, conn->ctx, use, usedata, usedatalen,
+                      extra_key);
 
   *to_send = otrng_v3_retrieve_injected_message(conn);
   return OTRNG_SUCCESS;
@@ -722,11 +728,13 @@ INTERNAL otrng_result otrng_v3_smp_start(char **to_send,
   }
 
   if (question) {
-    otrl_message_initiate_smp_q(conn->state->user_state, conn->ops,
-                                conn->opdata, conn->ctx, q, secret, secretlen);
+    otrl_message_initiate_smp_q(conn->state->global_state->user_state_v3,
+                                conn->ops, conn->opdata, conn->ctx, q, secret,
+                                secretlen);
   } else {
-    otrl_message_initiate_smp(conn->state->user_state, conn->ops, conn->opdata,
-                              conn->ctx, secret, secretlen);
+    otrl_message_initiate_smp(conn->state->global_state->user_state_v3,
+                              conn->ops, conn->opdata, conn->ctx, secret,
+                              secretlen);
   }
 
   *to_send = otrng_v3_retrieve_injected_message(conn);
@@ -737,16 +745,16 @@ INTERNAL otrng_result otrng_v3_smp_continue(char **to_send,
                                             const uint8_t *secret,
                                             const size_t secretlen,
                                             otrng_v3_conn_s *conn) {
-  otrl_message_respond_smp(conn->state->user_state, conn->ops, conn->opdata,
-                           conn->ctx, secret, secretlen);
+  otrl_message_respond_smp(conn->state->global_state->user_state_v3, conn->ops,
+                           conn->opdata, conn->ctx, secret, secretlen);
 
   *to_send = otrng_v3_retrieve_injected_message(conn);
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_v3_smp_abort(otrng_v3_conn_s *conn) {
-  otrl_message_abort_smp(conn->state->user_state, conn->ops, conn->opdata,
-                         conn->ctx);
+  otrl_message_abort_smp(conn->state->global_state->user_state_v3, conn->ops,
+                         conn->opdata, conn->ctx);
   return OTRNG_SUCCESS;
 }
 

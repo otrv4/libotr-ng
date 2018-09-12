@@ -27,6 +27,7 @@
 #include "client_state.h"
 #include "deserialize.h"
 #include "instance_tag.h"
+#include "messaging.h"
 #include "str.h"
 
 #define HEARTBEAT_INTERVAL 60
@@ -41,12 +42,12 @@ tstatic otrng_bool should_heartbeat(int last_sent) {
 
 tstatic otrng_result get_account_and_protocol_cb(
     char **account, char **protocol, const otrng_client_state_s *client_state) {
-  if (!client_state->callbacks ||
-      !client_state->callbacks->get_account_and_protocol) {
+  if (!client_state->global_state->callbacks ||
+      !client_state->global_state->callbacks->get_account_and_protocol) {
     return OTRNG_ERROR;
   }
 
-  return client_state->callbacks->get_account_and_protocol(
+  return client_state->global_state->callbacks->get_account_and_protocol(
       account, protocol, client_state->client_id);
 }
 
@@ -61,19 +62,13 @@ INTERNAL otrng_client_state_s *otrng_client_state_new(const void *client_id) {
     return NULL;
   }
 
+  memset(client_state, 0, sizeof(otrng_client_state_s));
+
   client_state->client_id = client_id;
-  client_state->callbacks = NULL;
-  client_state->user_state = NULL;
-  client_state->keypair = NULL;
-  client_state->our_prekeys = NULL;
-  client_state->client_profile = NULL;
-  client_state->prekey_profile = NULL;
-  client_state->shared_prekey_pair = NULL;
   client_state->max_stored_msg_keys = 1000;
   client_state->max_published_prekey_msg = 100;
   client_state->minimum_stored_prekey_msg = 20;
   client_state->should_heartbeat = should_heartbeat;
-  client_state->padding = 0;
 
   return client_state;
 }
@@ -101,8 +96,8 @@ INTERNAL OtrlPrivKey *otrng_client_state_get_private_key_v3(
     return ret;
   }
 
-  ret =
-      otrl_privkey_find(client_state->user_state, account_name, protocol_name);
+  ret = otrl_privkey_find(client_state->global_state->user_state_v3,
+                          account_name, protocol_name);
 
   free(account_name);
   free(protocol_name);
@@ -121,8 +116,8 @@ otrng_client_state_get_keypair_v4(otrng_client_state_s *client_state) {
 
   /* @secret_information: the long-term key pair lives for as long the client
      decides */
-  otrng_client_callbacks_create_privkey_v4(client_state->callbacks,
-                                           client_state->client_id);
+  otrng_client_callbacks_create_privkey_v4(
+      client_state->global_state->callbacks, client_state->client_id);
 
   return client_state->keypair;
 }
@@ -160,7 +155,8 @@ otrng_client_state_get_client_profile(otrng_client_state_s *client_state) {
   }
 
   otrng_client_callbacks_create_client_profile(
-      client_state->callbacks, client_state, client_state->client_id);
+      client_state->global_state->callbacks, client_state,
+      client_state->client_id);
 
   return client_state->client_profile;
 }
@@ -230,7 +226,8 @@ get_shared_prekey_pair(otrng_client_state_s *client_state) {
   }
 
   otrng_client_callbacks_create_shared_prekey(
-      client_state->callbacks, client_state, client_state->client_id);
+      client_state->global_state->callbacks, client_state,
+      client_state->client_id);
 
   return client_state->shared_prekey_pair;
 }
@@ -260,7 +257,8 @@ otrng_client_state_get_prekey_profile(otrng_client_state_s *client_state) {
   }
 
   otrng_client_callbacks_create_prekey_profile(
-      client_state->callbacks, client_state, client_state->client_id);
+      client_state->global_state->callbacks, client_state,
+      client_state->client_id);
 
   return client_state->prekey_profile;
 }
@@ -320,7 +318,7 @@ INTERNAL otrng_result otrng_client_state_add_instance_tag(
     return OTRNG_ERROR;
   }
 
-  if (!client_state->user_state) {
+  if (!client_state->global_state->user_state_v3) {
     return OTRNG_ERROR;
   }
 
@@ -333,8 +331,8 @@ INTERNAL otrng_result otrng_client_state_add_instance_tag(
     return OTRNG_ERROR;
   }
 
-  OtrlInsTag *p =
-      otrl_instag_find(client_state->user_state, account_name, protocol_name);
+  OtrlInsTag *p = otrl_instag_find(client_state->global_state->user_state_v3,
+                                   account_name, protocol_name);
   if (p) {
     free(account_name);
     free(protocol_name);
@@ -349,13 +347,13 @@ INTERNAL otrng_result otrng_client_state_add_instance_tag(
     return OTRNG_ERROR;
   }
 
-  otrl_userstate_instance_tag_add(client_state->user_state, p);
+  otrl_userstate_instance_tag_add(client_state->global_state->user_state_v3, p);
   return OTRNG_SUCCESS;
 }
 
 INTERNAL unsigned int
 otrng_client_state_get_instance_tag(const otrng_client_state_s *client_state) {
-  if (!client_state->user_state) {
+  if (!client_state->global_state->user_state_v3) {
     return (unsigned int)0;
   }
 
@@ -368,14 +366,14 @@ otrng_client_state_get_instance_tag(const otrng_client_state_s *client_state) {
     return (unsigned int)1;
   }
 
-  OtrlInsTag *instag =
-      otrl_instag_find(client_state->user_state, account_name, protocol_name);
+  OtrlInsTag *instag = otrl_instag_find(
+      client_state->global_state->user_state_v3, account_name, protocol_name);
 
   free(account_name);
   free(protocol_name);
 
   if (!instag) {
-    otrng_client_callbacks_create_instag(client_state->callbacks,
+    otrng_client_callbacks_create_instag(client_state->global_state->callbacks,
                                          client_state->client_id);
   }
 
@@ -567,24 +565,25 @@ API void otrng_client_state_debug_print(FILE *f, int indent,
     fprintf(f, "\n");
   }
 
-  otrng_print_indent(f, indent + 2);
-  if (otrng_debug_print_should_ignore("client_state->callbacks")) {
-    fprintf(f, "callbacks = IGNORED\n");
-  } else {
-    fprintf(f, "callbacks = {\n");
-    otrng_client_callbacks_debug_print(f, indent + 4, state->callbacks);
-    otrng_print_indent(f, indent + 2);
-    fprintf(f, "} // callbacks\n");
-  }
+  // TODO: fix up and print the link to global state
+  /* otrng_print_indent(f, indent + 2); */
+  /* if (otrng_debug_print_should_ignore("client_state->callbacks")) { */
+  /*   fprintf(f, "callbacks = IGNORED\n"); */
+  /* } else { */
+  /*   fprintf(f, "callbacks = {\n"); */
+  /*   otrng_client_callbacks_debug_print(f, indent + 4, state->callbacks); */
+  /*   otrng_print_indent(f, indent + 2); */
+  /*   fprintf(f, "} // callbacks\n"); */
+  /* } */
 
-  otrng_print_indent(f, indent + 2);
-  if (otrng_debug_print_should_ignore("client_state->v3_user_state")) {
-    fprintf(f, "v3_user_state = IGNORED\n");
-  } else {
-    fprintf(f, "v3_user_state = ");
-    otrng_debug_print_pointer(f, state->user_state);
-    fprintf(f, "\n");
-  }
+  /* otrng_print_indent(f, indent + 2); */
+  /* if (otrng_debug_print_should_ignore("client_state->v3_user_state")) { */
+  /*   fprintf(f, "v3_user_state = IGNORED\n"); */
+  /* } else { */
+  /*   fprintf(f, "v3_user_state = "); */
+  /*   otrng_debug_print_pointer(f, state->user_state); */
+  /*   fprintf(f, "\n"); */
+  /* } */
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("client_state->keypair")) {

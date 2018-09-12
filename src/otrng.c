@@ -35,6 +35,7 @@
 #include "deserialize.h"
 #include "gcrypt.h"
 #include "instance_tag.h"
+#include "messaging.h"
 #include "padding.h"
 #include "random.h"
 #include "serialize.h"
@@ -71,26 +72,27 @@ tstatic void gone_secure_cb_v4(const otrng_conversation_state_s *conv) {
     return;
   }
 
-  otrng_client_callbacks_gone_secure(conv->client->callbacks, conv);
+  otrng_client_callbacks_gone_secure(conv->client->global_state->callbacks,
+                                     conv);
 }
 
 tstatic void gone_insecure_cb_v4(const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks ||
-      !conv->client->callbacks->gone_insecure) {
+  if (!conv || !conv->client || !conv->client->global_state->callbacks ||
+      !conv->client->global_state->callbacks->gone_insecure) {
     return;
   }
 
-  conv->client->callbacks->gone_insecure(conv);
+  conv->client->global_state->callbacks->gone_insecure(conv);
 }
 
 tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint_p fp,
                                     const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks ||
-      !conv->client->callbacks->fingerprint_seen) {
+  if (!conv || !conv->client || !conv->client->global_state->callbacks ||
+      !conv->client->global_state->callbacks->fingerprint_seen) {
     return;
   }
 
-  conv->client->callbacks->fingerprint_seen(fp, conv);
+  conv->client->global_state->callbacks->fingerprint_seen(fp, conv);
 }
 
 tstatic void received_extra_sym_key(const otrng_client_conversation_s *conv,
@@ -99,13 +101,13 @@ tstatic void received_extra_sym_key(const otrng_client_conversation_s *conv,
                                     size_t use_data_len,
                                     const unsigned char *extra_sym_key) {
 
-  if (!conv || !conv->client || !conv->client->callbacks ||
-      !conv->client->callbacks->received_extra_symm_key) {
+  if (!conv || !conv->client || !conv->client->global_state->callbacks ||
+      !conv->client->global_state->callbacks->received_extra_symm_key) {
     return;
   }
 
-  conv->client->callbacks->received_extra_symm_key(conv, use, use_data,
-                                                   use_data_len, extra_sym_key);
+  conv->client->global_state->callbacks->received_extra_symm_key(
+      conv, use, use_data, use_data_len, extra_sym_key);
 
 #ifdef DEBUG
   printf("\n");
@@ -126,8 +128,8 @@ tstatic void received_extra_sym_key(const otrng_client_conversation_s *conv,
 tstatic otrng_shared_session_state_s
 otrng_get_shared_session_state(otrng_s *otr) {
   // TODO: this callback is required, so it will segfault if not provided
-  return otr->conversation->client->callbacks->get_shared_session_state(
-      otr->conversation);
+  return otr->conversation->client->global_state->callbacks
+      ->get_shared_session_state(otr->conversation);
 }
 
 tstatic int allow_version(const otrng_s *otr, uint8_t version) {

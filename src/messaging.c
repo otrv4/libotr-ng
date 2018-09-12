@@ -76,10 +76,7 @@ tstatic otrng_client_state_s *get_client_state(otrng_global_state_s *gs,
     return NULL;
   }
 
-  // TODO: @architecture why is this necessary?
-  client_state->callbacks = gs->callbacks;
-  client_state->user_state = gs->user_state_v3;
-
+  client_state->global_state = gs;
   gs->states = otrng_list_add(client_state, gs->states);
 
   return client_state;

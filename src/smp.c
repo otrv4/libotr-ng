@@ -19,33 +19,35 @@
  */
 
 #include "smp.h"
+#include "messaging.h"
 
 tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
                                     const uint8_t progress_percent,
                                     const uint8_t *question, const size_t q_len,
                                     const otrng_conversation_state_s *conv) {
-  if (!conv || !conv->client || !conv->client->callbacks) {
+  if (!conv || !conv->client || !conv->client->global_state->callbacks) {
     return;
   }
 
-  if (!conv->client->callbacks->smp_ask_for_secret) {
+  if (!conv->client->global_state->callbacks->smp_ask_for_secret) {
     return;
   }
 
-  if (!conv->client->callbacks->smp_ask_for_answer) {
+  if (!conv->client->global_state->callbacks->smp_ask_for_answer) {
     return;
   }
 
-  if (!conv->client->callbacks->smp_update) {
+  if (!conv->client->global_state->callbacks->smp_update) {
     return;
   }
 
   switch (event) {
   case OTRNG_SMP_EVENT_ASK_FOR_SECRET:
-    conv->client->callbacks->smp_ask_for_secret(conv);
+    conv->client->global_state->callbacks->smp_ask_for_secret(conv);
     break;
   case OTRNG_SMP_EVENT_ASK_FOR_ANSWER:
-    conv->client->callbacks->smp_ask_for_answer(question, q_len, conv);
+    conv->client->global_state->callbacks->smp_ask_for_answer(question, q_len,
+                                                              conv);
     break;
   case OTRNG_SMP_EVENT_CHEATED:
   case OTRNG_SMP_EVENT_IN_PROGRESS:
@@ -53,7 +55,8 @@ tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
   case OTRNG_SMP_EVENT_FAILURE:
   case OTRNG_SMP_EVENT_ABORT:
   case OTRNG_SMP_EVENT_ERROR:
-    conv->client->callbacks->smp_update(event, progress_percent, conv);
+    conv->client->global_state->callbacks->smp_update(event, progress_percent,
+                                                      conv);
     break;
   default:
     /* OTRNG_SMP_EVENT_NONE. Should not be used. */
