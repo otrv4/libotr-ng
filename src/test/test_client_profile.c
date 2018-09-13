@@ -185,16 +185,16 @@ void test_otrng_client_profile_build() {
 }
 
 void test_otrng_client_profile_transitional_signature(void) {
-  otrng_client_state_s *client = otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
   client->global_state = otrng_global_state_new(test_callbacks);
 
   // Generate DSA key
   FILE *tmpFILEp = tmpfile();
   otrng_assert_is_success(
-      otrng_client_state_private_key_v3_write_FILEp(client, tmpFILEp));
+      otrng_client_private_key_v3_write_FILEp(client, tmpFILEp));
   fclose(tmpFILEp);
 
-  OtrlPrivKey *dsa_key = otrng_client_state_get_private_key_v3(client);
+  OtrlPrivKey *dsa_key = otrng_client_get_private_key_v3(client);
 
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
@@ -209,5 +209,5 @@ void test_otrng_client_profile_transitional_signature(void) {
 
   otrng_global_state_free(client->global_state);
   otrng_client_profile_free(profile);
-  otrng_client_state_free(client);
+  otrng_client_free(client);
 }

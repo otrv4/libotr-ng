@@ -22,7 +22,6 @@
 #define OTRNG_OTRNG_H
 
 #include "client_profile.h"
-#include "client_state.h"
 #include "data_message.h"
 #include "fragment.h"
 #include "key_management.h"
@@ -69,7 +68,7 @@ typedef struct otrng_header_s {
   uint8_t type;
 } otrng_header_s, otrng_header_p[1];
 
-INTERNAL otrng_s *otrng_new(struct otrng_client_state_s *state,
+INTERNAL otrng_s *otrng_new(struct otrng_client_s *client,
                             otrng_policy_s policy);
 
 INTERNAL void otrng_free(/*@only@ */ otrng_s *otr);

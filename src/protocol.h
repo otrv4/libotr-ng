@@ -21,7 +21,9 @@
 #ifndef OTRNG_PROTOCOL_H
 #define OTRNG_PROTOCOL_H
 
+#include "client_profile.h"
 #include "key_management.h"
+#include "prekey_profile.h"
 #include "smp_protocol.h"
 #include "v3.h"
 
@@ -44,7 +46,7 @@ typedef struct otrng_policy_s {
 } otrng_policy_s, otrng_policy_p[1];
 
 typedef struct otrng_conversation_state_s {
-  otrng_client_state_s *client;
+  struct otrng_client_s *client;
 
   char *peer;
   uint16_t their_instance_tag;
@@ -81,7 +83,7 @@ typedef struct otrng_s {
   char *shared_session_state;
 } otrng_s, otrng_p[1];
 
-INTERNAL void maybe_create_keys(otrng_client_state_s *state);
+INTERNAL void maybe_create_keys(struct otrng_client_s *client);
 
 INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr);
 

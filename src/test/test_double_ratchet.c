@@ -20,12 +20,11 @@
 
 /* Test the an in-order sending and receiving double ratchet */
 void test_double_ratchet_new_sending_ratchet_in_order(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
@@ -157,20 +156,19 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 2);
   g_assert_cmpint(alice->keys->pn, ==, 4);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
 /* Test the out-of-order on the same DH ratchet */
 void test_double_ratchet_same_ratchet_out_of_order(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
@@ -278,20 +276,19 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
   g_assert_cmpint(bob->keys->k, ==, 5);
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
 /* Test the out-of-order when a new DH ratchet has happened */
 void test_double_ratchet_new_ratchet_out_of_order(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
@@ -426,20 +423,19 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(bob->keys->k, ==, 1);
   g_assert_cmpint(bob->keys->pn, ==, 1);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
 /* Test the double ratchet when a corrupted message arrives */
 void test_double_ratchet_corrupted_ratchet(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
@@ -467,9 +463,9 @@ void test_double_ratchet_corrupted_ratchet(void) {
   corrupted_data_msg->message_id = 9;
   corrupted_data_msg->previous_chain_n = 1;
   corrupted_data_msg->sender_instance_tag =
-      otrng_client_state_get_instance_tag(alice_client_state);
+      otrng_client_get_instance_tag(alice_client);
   corrupted_data_msg->receiver_instance_tag =
-      otrng_client_state_get_instance_tag(bob_client_state);
+      otrng_client_get_instance_tag(bob_client);
   corrupted_data_msg->enc_msg = (uint8_t *)otrng_strdup("hduejo");
   corrupted_data_msg->enc_msg_len = 7;
   otrng_ec_point_copy(corrupted_data_msg->ecdh, bob->keys->our_ecdh->pub);
@@ -509,8 +505,8 @@ void test_double_ratchet_corrupted_ratchet(void) {
 
   otrng_data_message_free(corrupted_data_msg);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }

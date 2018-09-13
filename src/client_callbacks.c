@@ -20,6 +20,7 @@
 
 #define OTRNG_CLIENT_CALLBACKS_PRIVATE
 #include "client_callbacks.h"
+#include "client.h"
 
 INTERNAL void
 otrng_client_callbacks_create_privkey_v4(const otrng_client_callbacks_s *cb,
@@ -45,37 +46,37 @@ otrng_client_callbacks_create_privkey_v3(const otrng_client_callbacks_s *cb,
 
 INTERNAL void
 otrng_client_callbacks_create_client_profile(const otrng_client_callbacks_s *cb,
-                                             struct otrng_client_state_s *state,
+                                             otrng_client_s *client,
                                              const void *client_opdata) {
   if (!cb) {
     return;
   }
 
   // This callback is required and is expected to segfault if not provided.
-  cb->create_client_profile(state, client_opdata);
+  cb->create_client_profile(client, client_opdata);
 }
 
 INTERNAL void
 otrng_client_callbacks_create_prekey_profile(const otrng_client_callbacks_s *cb,
-                                             struct otrng_client_state_s *state,
+                                             otrng_client_s *client,
                                              const void *client_opdata) {
   if (!cb) {
     return;
   }
 
-  cb->create_prekey_profile(state, client_opdata);
+  cb->create_prekey_profile(client, client_opdata);
 }
 
 INTERNAL void
 otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
-                                            struct otrng_client_state_s *state,
+                                            otrng_client_s *client,
                                             const void *client_opdata) {
   if (!cb) {
     return;
   }
 
   // This callback is required and is expected to segfault if not provided.
-  cb->create_shared_prekey(state, client_opdata);
+  cb->create_shared_prekey(client, client_opdata);
 }
 
 INTERNAL void

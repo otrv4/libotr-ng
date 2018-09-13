@@ -30,10 +30,9 @@
 #include "error.h"
 #include "str.h"
 #include "tlv.h"
-#include "client_state.h"
 
 typedef struct otrng_v3_conn_s {
-  otrng_client_state_s *state;
+  struct otrng_client_s *client;
 
   // TODO This is in a higher level of abstraction when compared to otrng_s.
   // It needs to know who (at the network level) it is talking to, in order to
@@ -49,7 +48,7 @@ typedef struct otrng_v3_conn_s {
   ConnContext *ctx;
 } otrng_v3_conn_s, otrng_v3_conn_p[1];
 
-INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_state_s *state,
+INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(struct otrng_client_s *client,
                                             const char *peer);
 
 INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn);

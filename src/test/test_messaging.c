@@ -105,12 +105,11 @@ void test_global_state_shared_prekey_management(void) {
   otrng_assert_is_success(result);
   fclose(keys);
 
-  otrng_client_state_s *client_state = get_client_state(state, charlie_account);
+  otrng_client_s *client = get_client(state, charlie_account);
 
   char *buffer = NULL;
   size_t s = 0;
-  otrng_symmetric_key_serialize(&buffer, &s,
-                                client_state->shared_prekey_pair->sym);
+  otrng_symmetric_key_serialize(&buffer, &s, client->shared_prekey_pair->sym);
 
   const char *expected =
       "mgRi+jOWSHludTU/v0QE/"
@@ -151,13 +150,13 @@ void test_global_state_client_profile_management(void) {
   otrng_assert_is_success(result);
   fclose(client_profile);
 
-  otrng_client_state_s *client_state = get_client_state(state, charlie_account);
+  otrng_client_s *client = get_client(state, charlie_account);
 
-  otrng_assert(client_state->client_profile);
+  otrng_assert(client->client_profile);
 
   uint8_t *buffer = NULL;
   size_t s = 0;
-  otrng_client_profile_asprintf(&buffer, &s, client_state->client_profile);
+  otrng_client_profile_asprintf(&buffer, &s, client->client_profile);
   char *encoded = otrng_base64_encode(buffer, s);
   const char *expected =
       "AAAABAAB26FP8QACABA7tTzNTkCSyKHJ/"
@@ -204,13 +203,13 @@ void test_global_state_prekey_message_management(void) {
 
   fclose(prekey);
 
-  otrng_client_state_s *client_state = get_client_state(state, charlie_account);
+  otrng_client_s *client = get_client(state, charlie_account);
 
-  otrng_assert(client_state->our_prekeys);
+  otrng_assert(client->our_prekeys);
 
   uint32_t message_id = 4047093956;
   const otrng_stored_prekeys_s *stored_prekey = NULL;
-  stored_prekey = get_my_prekeys_by_id(message_id, client_state);
+  stored_prekey = get_my_prekeys_by_id(message_id, client);
 
   uint8_t ecdh_secret_k[ED448_SCALAR_BYTES] = {0};
   otrng_ec_scalar_encode(ecdh_secret_k, stored_prekey->our_ecdh->priv);
@@ -244,7 +243,7 @@ void test_instance_tag_api(void) {
   const char *alice_protocol = "otr";
   unsigned int instance_tag = 0x9abcdef0;
 
-  otrng_client_state_s *alice = otrng_client_state_new(alice_account);
+  otrng_client_s *alice = otrng_client_new(alice_account);
   alice->global_state = otrng_global_state_new(test_callbacks);
 
   FILE *instagFILEp = tmpfile();
@@ -252,10 +251,10 @@ void test_instance_tag_api(void) {
   fprintf(instagFILEp, "%s\t%s\t%08x\n", alice_account, alice_protocol,
           instance_tag);
   rewind(instagFILEp);
-  otrng_client_state_instance_tag_read_FILEp(alice, instagFILEp);
+  otrng_client_instance_tag_read_FILEp(alice, instagFILEp);
   fclose(instagFILEp);
 
-  unsigned int alice_instag = otrng_client_state_get_instance_tag(alice);
+  unsigned int alice_instag = otrng_client_get_instance_tag(alice);
   otrng_assert(alice_instag);
 
   char sone[9];
@@ -264,5 +263,5 @@ void test_instance_tag_api(void) {
   g_assert_cmpstr(sone, ==, "9abcdef0");
 
   otrng_global_state_free(alice->global_state);
-  otrng_client_state_free(alice);
+  otrng_client_free(alice);
 }

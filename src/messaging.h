@@ -140,8 +140,8 @@ tstatic otrng_result otrng_global_state_add_private_key_v4(
     otrng_global_state_s *gs, const void *clientop,
     const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-tstatic otrng_client_state_s *get_client_state(otrng_global_state_s *gs,
-                                               const void *client_id);
+tstatic otrng_client_s *get_client(otrng_global_state_s *gs,
+                                   const void *client_id);
 
 #endif
 

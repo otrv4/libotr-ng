@@ -45,7 +45,7 @@ typedef struct otrng_shared_session_state_s {
 } otrng_shared_session_state_s;
 
 // Forward declaration
-struct otrng_client_state_s;
+struct otrng_client_s;
 
 typedef struct otrng_client_callbacks_s {
   /* Get account and protocol from a given client_id */
@@ -62,15 +62,15 @@ typedef struct otrng_client_callbacks_s {
   void (*create_privkey_v4)(const void *client_opdata);
 
   /* Create a client profile */
-  void (*create_client_profile)(struct otrng_client_state_s *state,
+  void (*create_client_profile)(struct otrng_client_s *client,
                                 const void *client_opdata);
 
   /* Create a prekey profile */
-  void (*create_prekey_profile)(struct otrng_client_state_s *state,
+  void (*create_prekey_profile)(struct otrng_client_s *client,
                                 const void *client_opdata);
 
   /* Create a shared prekey */
-  void (*create_shared_prekey)(struct otrng_client_state_s *state,
+  void (*create_shared_prekey)(struct otrng_client_s *client,
                                const void *client_opdata);
 
   /* A connection has entered a secure state. */
@@ -147,17 +147,17 @@ otrng_client_callbacks_create_privkey_v3(const otrng_client_callbacks_s *cb,
 
 INTERNAL void
 otrng_client_callbacks_create_client_profile(const otrng_client_callbacks_s *cb,
-                                             struct otrng_client_state_s *state,
+                                             struct otrng_client_s *client,
                                              const void *client_opdata);
 
 INTERNAL void
 otrng_client_callbacks_create_prekey_profile(const otrng_client_callbacks_s *cb,
-                                             struct otrng_client_state_s *state,
+                                             struct otrng_client_s *client,
                                              const void *client_opdata);
 
 INTERNAL void
 otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
-                                            struct otrng_client_state_s *state,
+                                            struct otrng_client_s *client,
                                             const void *client_opdata);
 
 INTERNAL void

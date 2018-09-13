@@ -19,7 +19,7 @@
  */
 
 #include "padding.h"
-
+#include "client.h"
 #include "tlv.h"
 
 static size_t calculate_padding_len(size_t message_len, size_t max) {

@@ -27,7 +27,7 @@ typedef struct otrng_fixture_s {
   otrng_s *otr;
   otrng_s *v3;
   otrng_s *v34;
-  otrng_client_state_s *state;
+  otrng_client_s *client;
   otrng_global_state_s *gs;
 } otrng_fixture_s, otrng_fixture_p[1];
 
@@ -60,7 +60,7 @@ static otrng_result get_account_and_protocol_cb(char **account_name,
   return OTRNG_SUCCESS;
 }
 
-static void create_client_profile_cb(struct otrng_client_state_s *state,
+static void create_client_profile_cb(struct otrng_client_s *client,
                                      const void *client_opdata) {
   const char *allowed_versions = "34";
 
@@ -68,8 +68,8 @@ static void create_client_profile_cb(struct otrng_client_state_s *state,
   // otrng_client_state_create_client_profile(allowed_versions);
   // to create a profile with the current instance tag and long-term-key and
   // a reasonable expiration.
-  uint32_t instance_tag = otrng_client_state_get_instance_tag(state);
-  otrng_keypair_s *keypair = otrng_client_state_get_keypair_v4(state);
+  uint32_t instance_tag = otrng_client_get_instance_tag(client);
+  otrng_keypair_s *keypair = otrng_client_get_keypair_v4(client);
 
   client_profile_s *profile =
       otrng_client_profile_build(instance_tag, allowed_versions, keypair);
@@ -78,16 +78,16 @@ static void create_client_profile_cb(struct otrng_client_state_s *state,
     return;
   }
 
-  otrng_client_state_add_client_profile(state, profile);
+  otrng_client_add_client_profile(client, profile);
 
   otrng_client_profile_free(profile);
 }
 
-static void create_prekey_profile_cb(struct otrng_client_state_s *state,
+static void create_prekey_profile_cb(struct otrng_client_s *client,
                                      const void *client_opdata) {
   otrng_prekey_profile_s *profile =
-      otrng_client_state_build_default_prekey_profile(state);
-  otrng_client_state_add_prekey_profile(state, profile);
+      otrng_client_build_default_prekey_profile(client);
+  otrng_client_add_prekey_profile(client, profile);
 
   otrng_prekey_profile_free(profile);
 }
@@ -113,41 +113,41 @@ static otrng_client_callbacks_p test_callbacks = {{
 
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_fixture->gs = otrng_global_state_new(test_callbacks);
-  otrng_fixture->state = otrng_client_state_new("account");
-  otrng_fixture->state->global_state = otrng_fixture->gs;
+  otrng_fixture->client = otrng_client_new("account");
+  otrng_fixture->client->global_state = otrng_fixture->gs;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
-  otrng_client_state_add_private_key_v4(otrng_fixture->state, sym);
+  otrng_client_add_private_key_v4(otrng_fixture->client, sym);
 
-  otrng_client_state_add_shared_prekey_v4(otrng_fixture->state, sym);
+  otrng_client_add_shared_prekey_v4(otrng_fixture->client, sym);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
-  otrng_fixture->otr = otrng_new(otrng_fixture->state, policy);
+  otrng_fixture->otr = otrng_new(otrng_fixture->client, policy);
 
   otrng_policy_s policyv3 = {.allows = OTRNG_ALLOW_V3};
-  otrng_fixture->v3 = otrng_new(otrng_fixture->state, policyv3);
+  otrng_fixture->v3 = otrng_new(otrng_fixture->client, policyv3);
   otrng_fixture->v3->v3_conn =
-      otrng_v3_conn_new(otrng_fixture->state, "they_are_bob");
+      otrng_v3_conn_new(otrng_fixture->client, "they_are_bob");
 
   otrng_policy_s policyv34 = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
-  otrng_fixture->v34 = otrng_new(otrng_fixture->state, policyv34);
+  otrng_fixture->v34 = otrng_new(otrng_fixture->client, policyv34);
   otrng_fixture->v34->v3_conn =
-      otrng_v3_conn_new(otrng_fixture->state, "they_are_alice");
+      otrng_v3_conn_new(otrng_fixture->client, "they_are_alice");
 
   // TODO: @refactoring This should be done automatically
   FILE *tmpFILEp = tmpfile();
-  otrng_assert_is_success(otrng_client_state_private_key_v3_write_FILEp(
-      otrng_fixture->state, tmpFILEp));
+  otrng_assert_is_success(
+      otrng_client_private_key_v3_write_FILEp(otrng_fixture->client, tmpFILEp));
   fclose(tmpFILEp);
 
   // Generate instance tag
-  otrng_client_state_add_instance_tag(otrng_fixture->state, 0x100 + 1);
+  otrng_client_add_instance_tag(otrng_fixture->client, 0x100 + 1);
 }
 
 void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture,
                             gconstpointer data) {
-  otrng_client_state_free(otrng_fixture->state);
-  otrng_fixture->state = NULL;
+  otrng_client_free(otrng_fixture->client);
+  otrng_fixture->client = NULL;
 
   otrng_free(otrng_fixture->otr);
   otrng_fixture->otr = NULL;
@@ -308,4 +308,25 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
 
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);
+}
+
+static otrng_bool test_should_not_heartbeat(int last_sent) {
+  return otrng_false;
+}
+
+static void set_up_client(otrng_client_s *client, const char *account_name,
+                          int byte) {
+  client->global_state = otrng_global_state_new(test_callbacks);
+
+  // TODO: REMOVE after updating every otrng_client_state_new(NULL)
+  client->client_id = account_name;
+
+  uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
+  uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {byte + 0XF};
+
+  otrng_client_add_private_key_v4(client, long_term_priv);
+  otrng_client_add_shared_prekey_v4(client, shared_prekey_priv);
+  otrng_client_add_instance_tag(client, 0x100 + byte);
+
+  client->should_heartbeat = test_should_not_heartbeat;
 }

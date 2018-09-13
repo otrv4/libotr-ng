@@ -203,10 +203,10 @@ void test_otrng_receives_identity_message_invalid_on_start(
 }
 
 void test_otrng_destroy() {
-  otrng_client_state_s *state = otrng_client_state_new(NULL);
+  otrng_client_s *client = otrng_client_new(NULL);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
-  otrng_s *otr = otrng_new(state, policy);
+  otrng_s *otr = otrng_new(client, policy);
 
   otrng_destroy(otr);
 
@@ -216,30 +216,30 @@ void test_otrng_destroy() {
   otrng_assert(otr->v3_conn == NULL);
 
   free(otr);
-  otrng_client_state_free(state);
+  otrng_client_free(client);
 }
 
 void test_otrng_build_prekey_ensemble() {
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {0xA};
   uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {0XF};
 
-  otrng_client_state_s *state = otrng_client_state_new("some client");
-  state->global_state = otrng_global_state_new(test_callbacks);
+  otrng_client_s *client = otrng_client_new("some client");
+  client->global_state = otrng_global_state_new(test_callbacks);
 
   otrng_assert_is_success(
-      otrng_client_state_add_private_key_v4(state, long_term_priv));
+      otrng_client_add_private_key_v4(client, long_term_priv));
   otrng_assert_is_success(
-      otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv));
-  otrng_assert_is_success(otrng_client_state_add_instance_tag(state, 0x100A0F));
+      otrng_client_add_shared_prekey_v4(client, shared_prekey_priv));
+  otrng_assert_is_success(otrng_client_add_instance_tag(client, 0x100A0F));
 
-  otrng_keypair_s *keypair = otrng_client_state_get_keypair_v4(state);
+  otrng_keypair_s *keypair = otrng_client_get_keypair_v4(client);
   client_profile_s *profile =
       otrng_client_profile_build(0x100A0F, "34", keypair);
-  otrng_client_state_add_client_profile(state, profile);
+  otrng_client_add_client_profile(client, profile);
   otrng_client_profile_free(profile);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
-  otrng_s *otr = otrng_new(state, policy);
+  otrng_s *otr = otrng_new(client, policy);
 
   // TODO: @sanitizer add a client profile
   prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(otr);
@@ -248,22 +248,22 @@ void test_otrng_build_prekey_ensemble() {
 
   // Sends the same stored clients
   otrng_assert_client_profile_eq(ensemble->client_profile,
-                                 state->client_profile);
+                                 client->client_profile);
   otrng_assert_prekey_profile_eq(ensemble->prekey_profile,
-                                 state->prekey_profile);
+                                 client->prekey_profile);
 
   // Stores the same prekey message sent
   // TODO: Assert the instance tag
   // TODO: Assert the private part
-  otrng_stored_prekeys_s *stored = state->our_prekeys->data;
+  otrng_stored_prekeys_s *stored = client->our_prekeys->data;
   otrng_assert(stored);
   otrng_assert_ec_public_key_eq(ensemble->message->Y, stored->our_ecdh->pub);
   otrng_assert_dh_public_key_eq(ensemble->message->B, stored->our_dh->pub);
 
   otrng_prekey_ensemble_free(ensemble);
   otrng_free(otr);
-  otrng_global_state_free(state->global_state);
-  otrng_client_state_free(state);
+  otrng_global_state_free(client->global_state);
+  otrng_client_free(client);
 }
 
 static otrng_shared_session_state_s
@@ -280,7 +280,7 @@ test_get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
 }
 
 void test_otrng_invokes_shared_session_state_callbacks(void) {
-  otrng_client_state_s *state = otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
 
   otrng_client_callbacks_p callbacks = {{NULL, // get_account_and_protocol
                                          NULL, // create_instag
@@ -299,9 +299,9 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
                                          NULL, // received_extra_symm_key
                                          &test_get_shared_session_state_cb}};
 
-  state->global_state = otrng_global_state_new(callbacks);
+  client->global_state = otrng_global_state_new(callbacks);
 
-  otrng_s *protocol = set_up(state, ALICE_IDENTITY, 1);
+  otrng_s *protocol = set_up(client, ALICE_IDENTITY, 1);
 
   otrng_shared_session_state_s session;
   session = otrng_get_shared_session_state(protocol);
@@ -314,8 +314,8 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
   free(session.identifier1);
   free(session.identifier2);
 
-  otrng_global_state_free(state->global_state);
-  otrng_client_state_free_all(state);
+  otrng_global_state_free(client->global_state);
+  otrng_client_free_all(client);
   otrng_free_all(protocol);
 }
 

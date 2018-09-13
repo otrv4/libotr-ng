@@ -71,47 +71,25 @@ static void free_message_and_response(otrng_response_s *response,
   *message = NULL;
 }
 
-static otrng_bool test_should_not_heartbeat(int last_sent) {
-  return otrng_false;
-}
-
 static otrng_bool test_should_heartbeat(int last_sent) { return otrng_true; }
 
-static void set_up_client_state(otrng_client_state_s *state,
-                                const char *account_name, int byte) {
-  state->global_state = otrng_global_state_new(test_callbacks);
-
-  // TODO: REMOVE after updating every otrng_client_state_new(NULL)
-  state->client_id = account_name;
-
-  uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
-  uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {byte + 0XF};
-
-  otrng_client_state_add_private_key_v4(state, long_term_priv);
-  otrng_client_state_add_shared_prekey_v4(state, shared_prekey_priv);
-  otrng_client_state_add_instance_tag(state, 0x100 + byte);
-
-  state->should_heartbeat = test_should_not_heartbeat;
-}
-
-static otrng_s *set_up(otrng_client_state_s *client_state,
-                       const char *account_name, int byte) {
-  set_up_client_state(client_state, account_name, byte);
+static otrng_s *set_up(otrng_client_s *client, const char *account_name,
+                       int byte) {
+  set_up_client(client, account_name, byte);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
 
-  return otrng_new(client_state, policy);
+  return otrng_new(client, policy);
 }
 
 void test_api_interactive_conversation(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
-  otrng_client_state_set_padding(256, alice_client_state);
-  otrng_client_state_set_padding(256, bob_client_state);
+  otrng_client_set_padding(256, alice_client);
+  otrng_client_set_padding(256, bob_client);
 
   // DAKE has finished
   do_dake_fixture(alice, bob);
@@ -235,20 +213,19 @@ void test_api_interactive_conversation(void) {
   otrng_assert(alice->state == OTRNG_STATE_FINISHED);
 
   free_message_and_response(response_to_bob, &to_send);
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
 /* Specifies the behavior of the API for offline messages */
 void test_otrng_send_offline_message() {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   otrng_warning warn = OTRNG_WARN_NONE;
 
@@ -396,19 +373,18 @@ void test_otrng_send_offline_message() {
 
   free_message_and_response(response_to_bob, &to_send);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
 void test_otrng_incorrect_offline_dake() {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   otrng_warning warn = OTRNG_WARN_NONE;
 
@@ -488,19 +464,18 @@ void test_otrng_incorrect_offline_dake() {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
 void test_api_conversation_errors_1(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   // DAKE HAS FINISHED
   do_dake_fixture(alice, bob);
@@ -579,19 +554,18 @@ void test_api_conversation_errors_1(void) {
   otrng_assert(response_to_alice->warning == OTRNG_WARN_RECEIVED_NOT_VALID);
 
   free_message_and_response(response_to_alice, &to_send);
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
 void test_api_conversation_errors_2(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
@@ -639,9 +613,9 @@ void test_api_conversation_errors_2(void) {
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
@@ -719,21 +693,20 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
 }
 
 void test_api_conversation_v3(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  set_up_client_state(alice_client_state, ALICE_IDENTITY, 1);
-  set_up_client_state(bob_client_state, BOB_IDENTITY, 2);
+  set_up_client(alice_client, ALICE_IDENTITY, 1);
+  set_up_client(bob_client, BOB_IDENTITY, 2);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3};
-  otrng_s *alice = otrng_new(alice_client_state, policy);
-  otrng_s *bob = otrng_new(bob_client_state, policy);
+  otrng_s *alice = otrng_new(alice_client, policy);
+  otrng_s *bob = otrng_new(bob_client, policy);
 
   // Set up v3 context
   // TODO: This initialization should be automatic
-  alice->v3_conn = otrng_v3_conn_new(alice_client_state, "bob");
-  bob->v3_conn = otrng_v3_conn_new(bob_client_state, "alice");
+  alice->v3_conn = otrng_v3_conn_new(alice_client, "bob");
+  bob->v3_conn = otrng_v3_conn_new(bob_client, "alice");
   alice->v3_conn->opdata = alice;
   bob->v3_conn->opdata = bob;
 
@@ -741,19 +714,19 @@ void test_api_conversation_v3(void) {
   // TODO: use callback?
   FILE *tmpFILEp;
   tmpFILEp = tmpfile();
-  otrng_assert_is_success(otrng_client_state_private_key_v3_write_FILEp(
-      alice_client_state, tmpFILEp));
+  otrng_assert_is_success(
+      otrng_client_private_key_v3_write_FILEp(alice_client, tmpFILEp));
   fclose(tmpFILEp);
 
   tmpFILEp = tmpfile();
-  otrng_assert_is_success(otrng_client_state_private_key_v3_write_FILEp(
-      bob_client_state, tmpFILEp));
+  otrng_assert_is_success(
+      otrng_client_private_key_v3_write_FILEp(bob_client, tmpFILEp));
   fclose(tmpFILEp);
 
   // Generate instance tag
   // TODO: use callback?
-  otrng_client_state_add_instance_tag(alice_client_state, 0x100 + 1);
-  otrng_client_state_add_instance_tag(bob_client_state, 0x100 + 2);
+  otrng_client_add_instance_tag(alice_client, 0x100 + 1);
+  otrng_client_add_instance_tag(bob_client, 0x100 + 2);
 
   // AKE HAS FINISHED.
   do_ake_v3(alice, bob);
@@ -795,10 +768,10 @@ void test_api_conversation_v3(void) {
   otrng_assert(!response_to_bob->to_send);
   free_message_and_response(response_to_bob, &to_send);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
   otrng_free_all(alice, bob);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_client_free_all(alice_client, bob_client);
 }
 
 void test_api_multiple_clients(void) {
@@ -811,14 +784,14 @@ void test_api_multiple_clients(void) {
   // We will postpone fixing this test until we implement this behavior.
   return;
 
-  otrng_client_state_s *alice_client_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_phone_state = otrng_client_state_new(NULL);
-  otrng_client_state_s *bob_pc_state = otrng_client_state_new(NULL);
+  otrng_client_s *alice_client = otrng_client_new(NULL);
+  otrng_client_s *bob_phone_state = otrng_client_new(NULL);
+  otrng_client_s *bob_pc_state = otrng_client_new(NULL);
 
   // The account name should be the same. The account can be logged
   // on different clients. Instance tags are used for that. This
   // account name can be used as phi.
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
   otrng_s *bob_phone = set_up(bob_phone_state, BOB_IDENTITY, 2);
   otrng_s *bob_pc = set_up(bob_pc_state, BOB_IDENTITY, 3);
 
@@ -934,21 +907,19 @@ void test_api_multiple_clients(void) {
   otrng_assert_root_key_eq(alice->keys->current->root_key,
                            bob_phone->keys->current->root_key);
   otrng_response_free_all(phone_to_alice, alice_to_phone);
-  otrng_global_state_free(alice_client_state->global_state);
+  otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_phone_state->global_state);
   otrng_global_state_free(bob_pc_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_pc_state,
-                              bob_phone_state);
+  otrng_client_free_all(alice_client, bob_pc_state, bob_phone_state);
   otrng_free_all(alice, bob_pc, bob_phone);
 }
 
 void test_api_smp(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state_expect, ==, '1');
@@ -1019,19 +990,18 @@ void test_api_smp(void) {
   otrng_assert(!response_to_bob->to_send);
 
   otrng_response_free(response_to_bob);
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
 void test_api_smp_abort(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state_expect, ==, '1');
@@ -1084,19 +1054,18 @@ void test_api_smp_abort(void) {
 
   free(to_send);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
 void test_api_extra_sym_key(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -1158,22 +1127,21 @@ void test_api_extra_sym_key(void) {
 
   free_message_and_response(response_to_bob, &to_send);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }
 
 void test_heartbeat_messages(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
-  otrng_client_state_s *bob_client_state = otrng_client_state_new(BOB_IDENTITY);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
+  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
 
-  alice_client_state->should_heartbeat = test_should_not_heartbeat;
-  bob_client_state->should_heartbeat = test_should_heartbeat;
+  alice_client->should_heartbeat = test_should_not_heartbeat;
+  bob_client->should_heartbeat = test_should_heartbeat;
 
   // DAKE HAS FINISHED
   do_dake_fixture(alice, bob);
@@ -1226,8 +1194,8 @@ void test_heartbeat_messages(void) {
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_global_state_free(bob_client_state->global_state);
-  otrng_client_state_free_all(alice_client_state, bob_client_state);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
 }

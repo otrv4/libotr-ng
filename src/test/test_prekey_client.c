@@ -19,20 +19,18 @@
  */
 
 void test_send_dake_1_message(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
+  set_up_client(alice, ALICE_IDENTITY, 1);
   otrng_assert(!alice->conversations);
 
   alice->prekey_client = otrng_prekey_client_new(
       "prekey@localhost", "alice@localhost",
-      otrng_client_state_get_instance_tag(alice->state),
-      otrng_client_state_get_keypair_v4(alice->state),
-      otrng_client_state_get_client_profile(alice->state),
-      otrng_client_state_get_prekey_profile(alice->state),
-      otrng_client_state_get_max_published_prekey_msg(alice->state),
-      otrng_client_state_get_minimum_stored_prekey_msg(alice->state));
+      otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
+      otrng_client_get_client_profile(alice),
+      otrng_client_get_prekey_profile(alice),
+      otrng_client_get_max_published_prekey_msg(alice),
+      otrng_client_get_minimum_stored_prekey_msg(alice));
 
   char *dake_1 = NULL;
   dake_1 = otrng_prekey_client_publish_prekeys(alice->prekey_client);
@@ -40,26 +38,23 @@ void test_send_dake_1_message(void) {
   otrng_assert(dake_1);
   free(dake_1);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_client_state_free(alice_client_state);
+  otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
 }
 
 void test_send_dake_3_message_with_storage_info_request(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
+  set_up_client(alice, ALICE_IDENTITY, 1);
   otrng_assert(!alice->conversations);
 
   alice->prekey_client = otrng_prekey_client_new(
       "prekey@localhost", "alice@localhost",
-      otrng_client_state_get_instance_tag(alice->state),
-      otrng_client_state_get_keypair_v4(alice->state),
-      otrng_client_state_get_client_profile(alice->state),
-      otrng_client_state_get_prekey_profile(alice->state),
-      otrng_client_state_get_max_published_prekey_msg(alice->state),
-      otrng_client_state_get_minimum_stored_prekey_msg(alice->state));
+      otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
+      otrng_client_get_client_profile(alice),
+      otrng_client_get_prekey_profile(alice),
+      otrng_client_get_max_published_prekey_msg(alice),
+      otrng_client_get_minimum_stored_prekey_msg(alice));
 
   alice->prekey_client->after_dake = OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST;
 
@@ -114,26 +109,23 @@ void test_send_dake_3_message_with_storage_info_request(void) {
   free(msg->composite_identity);
   free(dake_3);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_client_state_free(alice_client_state);
+  otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
 }
 
 void test_receive_prekey_server_messages(void) {
-  otrng_client_state_s *alice_client_state =
-      otrng_client_state_new(ALICE_IDENTITY);
+  otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  otrng_client_s *alice = set_up_client(alice_client_state, ALICE_IDENTITY, 1);
+  set_up_client(alice, ALICE_IDENTITY, 1);
   otrng_assert(!alice->conversations);
 
   alice->prekey_client = otrng_prekey_client_new(
       "prekey@localhost", "alice@localhost",
-      otrng_client_state_get_instance_tag(alice->state),
-      otrng_client_state_get_keypair_v4(alice->state),
-      otrng_client_state_get_client_profile(alice->state),
-      otrng_client_state_get_prekey_profile(alice->state),
-      otrng_client_state_get_max_published_prekey_msg(alice->state),
-      otrng_client_state_get_minimum_stored_prekey_msg(alice->state));
+      otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
+      otrng_client_get_client_profile(alice),
+      otrng_client_get_prekey_profile(alice),
+      otrng_client_get_max_published_prekey_msg(alice),
+      otrng_client_get_minimum_stored_prekey_msg(alice));
 
   char *dake_2 = otrng_strndup(
       "AAQ2bQJzmAAAABFwcmVrZXlzLmxvY2FsaG9zdAAQrC8mmPzxUoSAeFBbBBeR40JJ+"
@@ -170,7 +162,6 @@ void test_receive_prekey_server_messages(void) {
 
   free(success);
 
-  otrng_global_state_free(alice_client_state->global_state);
-  otrng_client_state_free(alice_client_state);
+  otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
 }

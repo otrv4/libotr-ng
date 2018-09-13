@@ -21,48 +21,46 @@
 #ifndef OTRNG_PERSISTENCE_H
 #define OTRNG_PERSISTENCE_H
 
-#include "client_state.h"
-
 #ifdef OTRNG_PERSISTENCE_PRIVATE
 
-INTERNAL otrng_result otrng_client_state_private_key_v4_read_FILEp(
-    otrng_client_state_s *state, FILE *privf);
+INTERNAL otrng_result
+otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf);
 
-INTERNAL otrng_result otrng_client_state_private_key_v4_write_FILEp(
-    const otrng_client_state_s *state, FILE *privf);
+INTERNAL otrng_result otrng_client_private_key_v4_write_FILEp(
+    const otrng_client_s *client, FILE *privf);
 
-INTERNAL otrng_result otrng_client_state_shared_prekey_read_FILEp(
-    otrng_client_state_s *state, FILE *shared_prekeyf);
+INTERNAL otrng_result otrng_client_shared_prekey_read_FILEp(
+    otrng_client_s *client, FILE *shared_prekeyf);
 
-INTERNAL otrng_result otrng_client_state_instance_tag_read_FILEp(
-    otrng_client_state_s *state, FILE *instag);
+INTERNAL otrng_result
+otrng_client_instance_tag_read_FILEp(otrng_client_s *client, FILE *instag);
 
-INTERNAL otrng_result otrng_client_state_instance_tag_write_FILEp(
-    otrng_client_state_s *state, FILE *instagf);
+INTERNAL otrng_result
+otrng_client_instance_tag_write_FILEp(otrng_client_s *client, FILE *instagf);
 
-INTERNAL otrng_result otrng_client_state_private_key_v3_write_FILEp(
-    const otrng_client_state_s *state, FILE *privf);
+INTERNAL otrng_result otrng_client_private_key_v3_write_FILEp(
+    const otrng_client_s *client, FILE *privf);
 
-INTERNAL otrng_result otrng_client_state_client_profile_read_FILEp(
-    otrng_client_state_s *state, FILE *privf);
+INTERNAL otrng_result
+otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf);
 
-INTERNAL otrng_result otrng_client_state_client_profile_write_FILEp(
-    const otrng_client_state_s *state, FILE *privf);
+INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
+    const otrng_client_s *client, FILE *privf);
 
-INTERNAL otrng_result otrng_client_state_prekeys_write_FILEp(
-    const otrng_client_state_s *state, FILE *privf);
+INTERNAL otrng_result
+otrng_client_prekeys_write_FILEp(const otrng_client_s *client, FILE *privf);
 
-INTERNAL otrng_result otrng_client_state_prekey_messages_read_FILEp(
-    otrng_client_state_s *state, FILE *privf);
+INTERNAL otrng_result
+otrng_client_prekey_messages_read_FILEp(otrng_client_s *client, FILE *privf);
 
 INTERNAL otrng_result serialize_and_store_prekey(
     const otrng_stored_prekeys_s *prekey, const char *storage_id, FILE *privf);
 
-INTERNAL otrng_result otrng_client_state_prekey_profile_read_FILEp(
-    otrng_client_state_s *state, FILE *privf);
+INTERNAL otrng_result
+otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf);
 
-INTERNAL otrng_result otrng_client_state_prekey_profile_write_FILEp(
-    otrng_client_state_s *state, FILE *privf);
+INTERNAL otrng_result
+otrng_client_prekey_profile_write_FILEp(otrng_client_s *client, FILE *privf);
 #endif
 
 #endif

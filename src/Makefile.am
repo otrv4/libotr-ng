@@ -25,7 +25,6 @@ libotr_ng_la_SOURCES = auth.c \
 		     client.c \
 		     client_callbacks.c \
 		     client_profile.c \
-		     client_state.c \
 		     dake.c \
 		     data_message.c \
 		     deserialize.c \

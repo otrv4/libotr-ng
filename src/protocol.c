@@ -28,19 +28,19 @@
 #include "serialize.h"
 #include <libotr/b64.h>
 
-INTERNAL void maybe_create_keys(otrng_client_state_s *state) {
-  const otrng_client_callbacks_s *cb = state->global_state->callbacks;
-  const void *client_id = state->client_id;
+INTERNAL void maybe_create_keys(otrng_client_s *client) {
+  const otrng_client_callbacks_s *cb = client->global_state->callbacks;
+  const void *client_id = client->client_id;
 
-  if (!state->keypair) {
+  if (!client->keypair) {
     otrng_client_callbacks_create_privkey_v4(cb, client_id);
   }
 
-  if (!state->shared_prekey_pair) {
-    otrng_client_callbacks_create_shared_prekey(cb, state, client_id);
+  if (!client->shared_prekey_pair) {
+    otrng_client_callbacks_create_shared_prekey(cb, client, client_id);
   }
 
-  uint32_t instance_tag = otrng_client_state_get_instance_tag(state);
+  uint32_t instance_tag = otrng_client_get_instance_tag(client);
   if (!instance_tag) {
     otrng_client_callbacks_create_instag(cb, client_id);
   }
@@ -56,12 +56,12 @@ INTERNAL dh_public_key_p our_dh(const otrng_s *otr) {
 
 INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr) {
   maybe_create_keys(otr->conversation->client);
-  otrng_client_state_s *state = otr->conversation->client;
-  return otrng_client_state_get_client_profile(state);
+  otrng_client_s *client = otr->conversation->client;
+  return otrng_client_get_client_profile(client);
 }
 
 INTERNAL uint32_t our_instance_tag(const otrng_s *otr) {
-  return otrng_client_state_get_instance_tag(otr->conversation->client);
+  return otrng_client_get_instance_tag(otr->conversation->client);
 }
 
 static char *build_error_message(const char *error_code,

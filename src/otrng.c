@@ -155,29 +155,28 @@ our_shared_prekey(const otrng_s *otr) {
 }
 
 tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
-  otrng_client_state_s *state = otr->conversation->client;
-  maybe_create_keys(state);
-  return otrng_client_state_get_prekey_profile(state);
+  otrng_client_s *client = otr->conversation->client;
+  maybe_create_keys(client);
+  return otrng_client_get_prekey_profile(client);
 }
 
 INTERNAL otrng_conversation_state_s *
-otrng_conversation_new(otrng_client_state_s *state) {
+otrng_conversation_new(otrng_client_s *client) {
   otrng_conversation_state_s *conversation =
       malloc(sizeof(otrng_conversation_state_s));
-  conversation->client = state;
+  conversation->client = client;
   conversation->peer = NULL;
 
   return conversation;
 }
 
-INTERNAL otrng_s *otrng_new(otrng_client_state_s *state,
-                            otrng_policy_s policy) {
+INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
   otrng_s *otr = malloc(sizeof(otrng_s));
   if (!otr) {
     return NULL;
   }
 
-  otr->conversation = otrng_conversation_new(state);
+  otr->conversation = otrng_conversation_new(client);
   otr->state = OTRNG_STATE_START;
   otr->running_version = 0;
   otr->supported_versions = policy.allows;
@@ -935,9 +934,9 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
     return NULL;
   }
 
-  otrng_client_state_s *state = otr->conversation->client;
+  otrng_client_s *client = otr->conversation->client;
   store_my_prekey_message(ensemble->message->id, our_instance_tag(otr), ecdh,
-                          dh, state);
+                          dh, client);
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dh_keypair_destroy(dh);
 
@@ -1047,7 +1046,7 @@ tstatic otrng_result receive_prekey_ensemble(string_p *dst,
   // 1. If the Transitional Signature is present, verify its validity using the
   // OTRv3 DSA key.
   //    (the OTRv3 key needed to validate the signature should be somewhere in
-  //    client_state maybe).
+  //    client maybe).
   // 1. Check if the Client Profile's version is supported by the receiver.
 
   // TODO: @non_interactive Decide whether to send a message using this Prekey
@@ -1240,8 +1239,8 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 tstatic otrng_result non_interactive_auth_message_received(
     otrng_response_s *response, const dake_non_interactive_auth_message_p auth,
     otrng_s *otr) {
-  otrng_client_state_s *state = otr->conversation->client;
-  if (!state) {
+  otrng_client_s *client = otr->conversation->client;
+  if (!client) {
     return OTRNG_ERROR;
   }
 
@@ -1307,7 +1306,7 @@ tstatic otrng_result non_interactive_auth_message_received(
   }
 
   /* Delete the stored prekeys for this ID so they can't be used again. */
-  delete_my_prekey_message_by_id(auth->prekey_message_id, state);
+  delete_my_prekey_message_by_id(auth->prekey_message_id, client);
 
   otrng_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
