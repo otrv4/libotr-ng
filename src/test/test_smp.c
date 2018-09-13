@@ -27,8 +27,8 @@ void test_smp_state_machine(void) {
   otrng_client_s *alice_state = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_state = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_state, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_state, BOB_ACCOUNT, 2);
 
   smp_msg_1_p smp_msg_1;
   smp_msg_2_p smp_msg_2;
@@ -139,8 +139,8 @@ void test_smp_state_machine_abort(void) {
   otrng_client_s *alice_state = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_state = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_state, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_state, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_state, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_state, BOB_ACCOUNT, 2);
 
   smp_msg_1_p smp_msg_1;
   smp_msg_2_p smp_msg_2;

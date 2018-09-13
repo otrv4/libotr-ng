@@ -39,16 +39,18 @@ typedef struct otrng_conversation_s {
   otrng_s *conn;
 } otrng_conversation_s, otrng_conversation_p[1];
 
+typedef struct otrng_client_id_s {
+  const char *protocol;
+  const char *account;
+} otrng_client_id_s;
+
 /* A client handle messages from/to a sender to/from multiple recipients. */
 typedef struct otrng_client_s {
   list_element_s *conversations;
 
   otrng_prekey_client_s *prekey_client;
 
-  /* Data in the messaging application context that represents a client and
-   * should map directly to it. For example, in libpurple-based apps (like
-   * Pidgin) this could be a PurpleAccount */
-  const void *client_id;
+  otrng_client_id_s client_id;
 
   struct otrng_global_state_s *global_state;
   otrng_keypair_s *keypair;
@@ -95,7 +97,7 @@ static inline void stored_prekeys_free_from_list(void *p) {
   otrng_stored_prekeys_free((otrng_stored_prekeys_s *)p);
 }
 
-API otrng_client_s *otrng_client_new(const void *client_id);
+API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id);
 
 API void otrng_client_free(otrng_client_s *client);
 

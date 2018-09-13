@@ -35,6 +35,15 @@ int dh_mpi_cmp(const dh_mpi_p m1, const dh_mpi_p m2) {
   return gcry_mpi_cmp(m1, m2);
 }
 
+static const otrng_client_id_s create_client_id(const char *protocol,
+                                                const char *account) {
+  const otrng_client_id_s cid = {
+      .protocol = protocol,
+      .account = account,
+  };
+  return cid;
+}
+
 static otrng_shared_session_state_s
 get_shared_session_state_cb(const otrng_s *conv) {
   otrng_shared_session_state_s ret = {
@@ -46,14 +55,11 @@ get_shared_session_state_cb(const otrng_s *conv) {
   return ret;
 }
 
-static otrng_result get_account_and_protocol_cb(char **account_name,
-                                                char **protocol_name,
-                                                const void *client_id) {
-  const char *account = client_id; // tests use client_name as client_id.
-
-  if (!client_id) {
-    return OTRNG_ERROR;
-  }
+static otrng_result
+get_account_and_protocol_cb(char **account_name, char **protocol_name,
+                            const otrng_client_id_s client_id) {
+  const char *account =
+      client_id.account; // tests use client_name as client_id.
 
   *account_name = otrng_strdup(account);
   *protocol_name = otrng_strdup("otr");
@@ -61,7 +67,7 @@ static otrng_result get_account_and_protocol_cb(char **account_name,
 }
 
 static void create_client_profile_cb(struct otrng_client_s *client,
-                                     const void *client_opdata) {
+                                     const otrng_client_id_s client_opdata) {
   const char *allowed_versions = "34";
 
   // TODO: The callback probably wants to invoke
@@ -84,7 +90,7 @@ static void create_client_profile_cb(struct otrng_client_s *client,
 }
 
 static void create_prekey_profile_cb(struct otrng_client_s *client,
-                                     const void *client_opdata) {
+                                     const otrng_client_id_s client_opdata) {
   otrng_prekey_profile_s *profile =
       otrng_client_build_default_prekey_profile(client);
   otrng_client_add_prekey_profile(client, profile);
@@ -113,7 +119,8 @@ static otrng_client_callbacks_p test_callbacks = {{
 
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_fixture->gs = otrng_global_state_new(test_callbacks);
-  otrng_fixture->client = otrng_client_new("account");
+  otrng_fixture->client =
+      otrng_client_new(create_client_id("proto-test", "account"));
   otrng_fixture->client->global_state = otrng_fixture->gs;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
@@ -319,7 +326,7 @@ static void set_up_client(otrng_client_s *client, const char *account_name,
   client->global_state = otrng_global_state_new(test_callbacks);
 
   // TODO: REMOVE after updating every otrng_client_state_new(NULL)
-  client->client_id = account_name;
+  client->client_id = create_client_id("proto-test", account_name);
 
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
   uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {byte + 0XF};

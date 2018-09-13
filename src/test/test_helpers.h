@@ -28,9 +28,12 @@
 
 #include "../debug.h"
 
-#define ALICE_IDENTITY "alice@otr.example"
-#define BOB_IDENTITY "bob@otr.example"
-#define CHARLIE_IDENTITY "charlie@otr.example"
+#define ALICE_ACCOUNT "alice@otr.example"
+#define BOB_ACCOUNT "bob@otr.example"
+#define CHARLIE_ACCOUNT "charlie@otr.example"
+#define ALICE_IDENTITY create_client_id("otr", ALICE_ACCOUNT)
+#define BOB_IDENTITY create_client_id("otr", BOB_ACCOUNT)
+#define CHARLIE_IDENTITY create_client_id("otr", CHARLIE_ACCOUNT)
 #define FORCE_CREATE_CONV 1
 #define NOT_FORCE_CREATE_CONV 0
 

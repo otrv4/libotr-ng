@@ -66,7 +66,7 @@ tstatic otrng_bool should_heartbeat(int last_sent) {
   return otrng_false;
 }
 
-API otrng_client_s *otrng_client_new(const void *client_id) {
+API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
   otrng_client_s *client = malloc(sizeof(otrng_client_s));
   if (!client) {
     return NULL;

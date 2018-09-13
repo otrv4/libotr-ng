@@ -203,7 +203,7 @@ void test_otrng_receives_identity_message_invalid_on_start(
 }
 
 void test_otrng_destroy() {
-  otrng_client_s *client = otrng_client_new(NULL);
+  otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
   otrng_s *otr = otrng_new(client, policy);
@@ -222,7 +222,7 @@ void test_otrng_build_prekey_ensemble() {
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {0xA};
   uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {0XF};
 
-  otrng_client_s *client = otrng_client_new("some client");
+  otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
   client->global_state = otrng_global_state_new(test_callbacks);
 
   otrng_assert_is_success(
@@ -300,7 +300,7 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
 
   client->global_state = otrng_global_state_new(callbacks);
 
-  otrng_s *protocol = set_up(client, ALICE_IDENTITY, 1);
+  otrng_s *protocol = set_up(client, ALICE_ACCOUNT, 1);
 
   otrng_shared_session_state_s session;
   session = otrng_get_shared_session_state(protocol);

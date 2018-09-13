@@ -45,7 +45,7 @@ void test_instance_tag_generates_tag_when_file_empty() {
 }
 
 static int INSTAG_CB_CALLED = 0;
-static void test_create_instag_cb(const void *client_opdata) {
+static void test_create_instag_cb(const otrng_client_id_s client_opdata) {
   INSTAG_CB_CALLED = 1;
 }
 
@@ -66,7 +66,8 @@ void test_invokes_create_instag_callbacks(void) {
                                          NULL,   // received_extra_symm_key
                                          NULL}}; // get_shared_session_state
 
-  otrng_client_callbacks_create_instag(callbacks, NULL);
+  otrng_client_id_s tmp_id;
+  otrng_client_callbacks_create_instag(callbacks, tmp_id);
   otrng_assert(INSTAG_CB_CALLED);
 }
 

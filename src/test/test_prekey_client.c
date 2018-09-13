@@ -21,7 +21,7 @@
 void test_send_dake_1_message(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  set_up_client(alice, ALICE_IDENTITY, 1);
+  set_up_client(alice, ALICE_ACCOUNT, 1);
   otrng_assert(!alice->conversations);
 
   alice->prekey_client = otrng_prekey_client_new(
@@ -45,7 +45,7 @@ void test_send_dake_1_message(void) {
 void test_send_dake_3_message_with_storage_info_request(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  set_up_client(alice, ALICE_IDENTITY, 1);
+  set_up_client(alice, ALICE_ACCOUNT, 1);
   otrng_assert(!alice->conversations);
 
   alice->prekey_client = otrng_prekey_client_new(
@@ -116,7 +116,7 @@ void test_send_dake_3_message_with_storage_info_request(void) {
 void test_receive_prekey_server_messages(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  set_up_client(alice, ALICE_IDENTITY, 1);
+  set_up_client(alice, ALICE_ACCOUNT, 1);
   otrng_assert(!alice->conversations);
 
   alice->prekey_client = otrng_prekey_client_new(

@@ -30,7 +30,7 @@
 
 INTERNAL void maybe_create_keys(otrng_client_s *client) {
   const otrng_client_callbacks_s *cb = client->global_state->callbacks;
-  const void *client_id = client->client_id;
+  const otrng_client_id_s client_id = client->client_id;
 
   if (!client->keypair) {
     otrng_client_callbacks_create_privkey_v4(cb, client_id);

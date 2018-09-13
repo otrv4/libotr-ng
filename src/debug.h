@@ -49,9 +49,8 @@ static inline /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
 }
 
 #ifdef DEBUG_API
-API void otrng_register_client_id_debug_printer(void (*printer)(FILE *,
-                                                                const void *));
-API void otrng_client_id_debug_print(FILE *, const void *);
+struct otrng_client_id_s;
+API void otrng_client_id_debug_print(FILE *, const struct otrng_client_id_s);
 API void otrng_add_debug_print_ignore(const char *);
 API void otrng_clear_debug_print_ignores();
 API otrng_bool otrng_debug_print_should_ignore(const char *);

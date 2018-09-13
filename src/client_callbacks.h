@@ -45,32 +45,34 @@ typedef struct otrng_shared_session_state_s {
 // Forward declaration
 struct otrng_client_s;
 struct otrng_s;
+struct otrng_client_id_s;
 
 typedef struct otrng_client_callbacks_s {
   /* Get account and protocol from a given client_id */
-  otrng_result (*get_account_and_protocol)(char **account, char **protocol,
-                                           const void *client_id);
+  otrng_result (*get_account_and_protocol)(
+      char **account, char **protocol,
+      const struct otrng_client_id_s client_id);
 
   /* Create an instance tag */
-  void (*create_instag)(const void *client_opdata);
+  void (*create_instag)(const struct otrng_client_id_s client_opdata);
 
   /* Create a OTRv3 private key */
-  void (*create_privkey_v3)(const void *client_opdata);
+  void (*create_privkey_v3)(const struct otrng_client_id_s client_opdata);
 
   /* Create a OTRv4 private key */
-  void (*create_privkey_v4)(const void *client_opdata);
+  void (*create_privkey_v4)(const struct otrng_client_id_s client_opdata);
 
   /* Create a client profile */
   void (*create_client_profile)(struct otrng_client_s *client,
-                                const void *client_opdata);
+                                const struct otrng_client_id_s client_opdata);
 
   /* Create a prekey profile */
   void (*create_prekey_profile)(struct otrng_client_s *client,
-                                const void *client_opdata);
+                                const struct otrng_client_id_s client_opdata);
 
   /* Create a shared prekey */
   void (*create_shared_prekey)(struct otrng_client_s *client,
-                               const void *client_opdata);
+                               const struct otrng_client_id_s client_opdata);
 
   /* A connection has entered a secure state. */
   void (*gone_secure)(const struct otrng_s *);
@@ -133,32 +135,29 @@ typedef struct otrng_client_callbacks_s {
 
 } otrng_client_callbacks_s, otrng_client_callbacks_p[1];
 
-INTERNAL void
-otrng_client_callbacks_create_privkey_v4(const otrng_client_callbacks_s *cb,
-                                         const void *client_opdata);
+INTERNAL void otrng_client_callbacks_create_privkey_v4(
+    const otrng_client_callbacks_s *cb,
+    const struct otrng_client_id_s client_opdata);
 
-INTERNAL void
-otrng_client_callbacks_create_privkey_v3(const otrng_client_callbacks_s *cb,
-                                         const void *client_opdata);
+INTERNAL void otrng_client_callbacks_create_privkey_v3(
+    const otrng_client_callbacks_s *cb,
+    const struct otrng_client_id_s client_opdata);
 
-INTERNAL void
-otrng_client_callbacks_create_client_profile(const otrng_client_callbacks_s *cb,
-                                             struct otrng_client_s *client,
-                                             const void *client_opdata);
+INTERNAL void otrng_client_callbacks_create_client_profile(
+    const otrng_client_callbacks_s *cb, struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata);
 
-INTERNAL void
-otrng_client_callbacks_create_prekey_profile(const otrng_client_callbacks_s *cb,
-                                             struct otrng_client_s *client,
-                                             const void *client_opdata);
+INTERNAL void otrng_client_callbacks_create_prekey_profile(
+    const otrng_client_callbacks_s *cb, struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata);
 
-INTERNAL void
-otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
-                                            struct otrng_client_s *client,
-                                            const void *client_opdata);
+INTERNAL void otrng_client_callbacks_create_shared_prekey(
+    const otrng_client_callbacks_s *cb, struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata);
 
-INTERNAL void
-otrng_client_callbacks_create_instag(const otrng_client_callbacks_s *cb,
-                                     const void *client_opdata);
+INTERNAL void otrng_client_callbacks_create_instag(
+    const otrng_client_callbacks_s *cb,
+    const struct otrng_client_id_s client_opdata);
 
 INTERNAL void
 otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,

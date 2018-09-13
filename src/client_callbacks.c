@@ -22,9 +22,8 @@
 #include "client_callbacks.h"
 #include "client.h"
 
-INTERNAL void
-otrng_client_callbacks_create_privkey_v4(const otrng_client_callbacks_s *cb,
-                                         const void *client_opdata) {
+INTERNAL void otrng_client_callbacks_create_privkey_v4(
+    const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
   if (!cb) {
     return;
   }
@@ -33,9 +32,8 @@ otrng_client_callbacks_create_privkey_v4(const otrng_client_callbacks_s *cb,
   cb->create_privkey_v4(client_opdata);
 }
 
-INTERNAL void
-otrng_client_callbacks_create_privkey_v3(const otrng_client_callbacks_s *cb,
-                                         const void *client_opdata) {
+INTERNAL void otrng_client_callbacks_create_privkey_v3(
+    const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
   if (!cb) {
     return;
   }
@@ -44,10 +42,9 @@ otrng_client_callbacks_create_privkey_v3(const otrng_client_callbacks_s *cb,
   cb->create_privkey_v3(client_opdata);
 }
 
-INTERNAL void
-otrng_client_callbacks_create_client_profile(const otrng_client_callbacks_s *cb,
-                                             otrng_client_s *client,
-                                             const void *client_opdata) {
+INTERNAL void otrng_client_callbacks_create_client_profile(
+    const otrng_client_callbacks_s *cb, otrng_client_s *client,
+    const otrng_client_id_s client_opdata) {
   if (!cb) {
     return;
   }
@@ -56,10 +53,9 @@ otrng_client_callbacks_create_client_profile(const otrng_client_callbacks_s *cb,
   cb->create_client_profile(client, client_opdata);
 }
 
-INTERNAL void
-otrng_client_callbacks_create_prekey_profile(const otrng_client_callbacks_s *cb,
-                                             otrng_client_s *client,
-                                             const void *client_opdata) {
+INTERNAL void otrng_client_callbacks_create_prekey_profile(
+    const otrng_client_callbacks_s *cb, otrng_client_s *client,
+    const otrng_client_id_s client_opdata) {
   if (!cb) {
     return;
   }
@@ -67,10 +63,9 @@ otrng_client_callbacks_create_prekey_profile(const otrng_client_callbacks_s *cb,
   cb->create_prekey_profile(client, client_opdata);
 }
 
-INTERNAL void
-otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
-                                            otrng_client_s *client,
-                                            const void *client_opdata) {
+INTERNAL void otrng_client_callbacks_create_shared_prekey(
+    const otrng_client_callbacks_s *cb, otrng_client_s *client,
+    const otrng_client_id_s client_opdata) {
   if (!cb) {
     return;
   }
@@ -81,7 +76,7 @@ otrng_client_callbacks_create_shared_prekey(const otrng_client_callbacks_s *cb,
 
 INTERNAL void
 otrng_client_callbacks_create_instag(const otrng_client_callbacks_s *cb,
-                                     const void *client_opdata) {
+                                     const otrng_client_id_s client_opdata) {
   if (!cb || !cb->create_instag) {
     return;
   }

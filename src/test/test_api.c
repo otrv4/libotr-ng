@@ -85,8 +85,8 @@ void test_api_interactive_conversation(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   otrng_client_set_padding(256, alice_client);
   otrng_client_set_padding(256, bob_client);
@@ -224,8 +224,8 @@ void test_otrng_send_offline_message() {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   otrng_warning warn = OTRNG_WARN_NONE;
 
@@ -383,8 +383,8 @@ void test_otrng_incorrect_offline_dake() {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   otrng_warning warn = OTRNG_WARN_NONE;
 
@@ -474,8 +474,8 @@ void test_api_conversation_errors_1(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   // DAKE HAS FINISHED
   do_dake_fixture(alice, bob);
@@ -564,8 +564,8 @@ void test_api_conversation_errors_2(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
@@ -696,8 +696,8 @@ void test_api_conversation_v3(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  set_up_client(alice_client, ALICE_IDENTITY, 1);
-  set_up_client(bob_client, BOB_IDENTITY, 2);
+  set_up_client(alice_client, ALICE_ACCOUNT, 1);
+  set_up_client(bob_client, BOB_ACCOUNT, 2);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3};
   otrng_s *alice = otrng_new(alice_client, policy);
@@ -784,16 +784,16 @@ void test_api_multiple_clients(void) {
   // We will postpone fixing this test until we implement this behavior.
   return;
 
-  otrng_client_s *alice_client = otrng_client_new(NULL);
-  otrng_client_s *bob_phone_state = otrng_client_new(NULL);
-  otrng_client_s *bob_pc_state = otrng_client_new(NULL);
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_phone_state = otrng_client_new(BOB_IDENTITY);
+  otrng_client_s *bob_pc_state = otrng_client_new(BOB_IDENTITY);
 
   // The account name should be the same. The account can be logged
   // on different clients. Instance tags are used for that. This
   // account name can be used as phi.
-  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
-  otrng_s *bob_phone = set_up(bob_phone_state, BOB_IDENTITY, 2);
-  otrng_s *bob_pc = set_up(bob_pc_state, BOB_IDENTITY, 3);
+  otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
+  otrng_s *bob_phone = set_up(bob_phone_state, BOB_ACCOUNT, 2);
+  otrng_s *bob_pc = set_up(bob_pc_state, BOB_ACCOUNT, 3);
 
   otrng_response_s *pc_to_alice = otrng_response_new();
   otrng_response_s *phone_to_alice = otrng_response_new();
@@ -918,8 +918,8 @@ void test_api_smp(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state_expect, ==, '1');
@@ -1000,8 +1000,8 @@ void test_api_smp_abort(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   // Starts an smp state machine
   g_assert_cmpint(alice->smp->state_expect, ==, '1');
@@ -1064,8 +1064,8 @@ void test_api_extra_sym_key(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -1137,8 +1137,8 @@ void test_heartbeat_messages(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_client, ALICE_IDENTITY, 1);
-  otrng_s *bob = set_up(bob_client, BOB_IDENTITY, 2);
+  otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
+  otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   alice_client->should_heartbeat = test_should_not_heartbeat;
   bob_client->should_heartbeat = test_should_heartbeat;
