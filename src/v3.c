@@ -72,8 +72,7 @@ tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3_p fp,
 
 tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
                                     const uint8_t progress_percent,
-                                    const char *question,
-                                    const otrng_s *conv) {
+                                    const char *question, const otrng_s *conv) {
   if (!conv || !conv->client) {
     return;
   }
@@ -102,8 +101,7 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
   }
 }
 
-tstatic void received_symkey_cb_v3(const otrng_s *conv,
-                                   unsigned int use,
+tstatic void received_symkey_cb_v3(const otrng_s *conv, unsigned int use,
                                    const unsigned char *usedata,
                                    size_t usedatalen,
                                    const unsigned char *extra_key) {

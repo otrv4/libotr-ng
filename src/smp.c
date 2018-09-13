@@ -148,8 +148,7 @@ INTERNAL tlv_s *otrng_process_smp_tlv(const tlv_s *tlv, otrng_s *otr) {
   tlv_s *out = otrng_process_smp(&event, otr->smp, tlv);
   handle_smp_event_cb_v4(event, otr->smp->progress,
                          otr->smp->msg1 ? otr->smp->msg1->question : NULL,
-                         otr->smp->msg1 ? otr->smp->msg1->q_len : 0,
-                         otr);
+                         otr->smp->msg1 ? otr->smp->msg1->q_len : 0, otr);
 
   return out;
 }
@@ -159,8 +158,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
                                   const uint8_t *question, const size_t q_len,
                                   const uint8_t *answer,
                                   const size_t answer_len, uint8_t *ssid,
-                                  smp_protocol_p smp,
-                                  otrng_s *conversation) {
+                                  smp_protocol_p smp, otrng_s *conversation) {
 
   smp_msg_1_p msg;
   uint8_t *to_send = NULL;

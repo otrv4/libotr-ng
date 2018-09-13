@@ -203,17 +203,17 @@ tstatic otrng_result send_data_message(string_p *to_send,
 
   /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(
-          otr->keys, otr->client->max_stored_msg_keys, NULL,
-          otr->keys->j, 0, 's', warn)) {
+          otr->keys, otr->client->max_stored_msg_keys, NULL, otr->keys->j, 0,
+          's', warn)) {
     return OTRNG_ERROR;
   }
 
   memset(enc_key, 0, sizeof(msg_enc_key_p));
   memset(mac_key, 0, sizeof(msg_mac_key_p));
 
-  otrng_key_manager_derive_chain_keys(
-      enc_key, mac_key, otr->keys, NULL,
-      otr->client->max_stored_msg_keys, 0, 's', warn);
+  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, NULL,
+                                      otr->client->max_stored_msg_keys, 0, 's',
+                                      warn);
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {

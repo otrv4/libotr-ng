@@ -79,8 +79,7 @@ typedef struct otrng_client_callbacks_s {
   void (*gone_insecure)(const struct otrng_s *);
 
   /* A fingerprint was seen in this connection. */
-  void (*fingerprint_seen)(const otrng_fingerprint_p,
-                           const struct otrng_s *);
+  void (*fingerprint_seen)(const otrng_fingerprint_p, const struct otrng_s *);
 
   /* A v3 fingerprint was seen in this connection. */
   void (*fingerprint_seen_v3)(const otrng_fingerprint_v3_p,
@@ -113,16 +112,14 @@ typedef struct otrng_client_callbacks_s {
    *      (same as OTRL_SMPEVENT_CHEATED)
    * */
   void (*smp_update)(const otrng_smp_event_t event,
-                     const uint8_t progress_percent,
-                     const struct otrng_s *);
+                     const uint8_t progress_percent, const struct otrng_s *);
 
   /* We received a request from the buddy to use the current "extra"
    * symmetric key.  The key will be passed in symkey, of length
    * EXTRA_SYMMETRIC_KEY_BYTES.  The requested use, as well as use-specific
    * data will be passed so that the applications can communicate other
    * information (some id for the data transfer, for example). */
-  void (*received_extra_symm_key)(const struct otrng_s *,
-                                  unsigned int use,
+  void (*received_extra_symm_key)(const struct otrng_s *, unsigned int use,
                                   const unsigned char *use_data,
                                   size_t use_data_len,
                                   const unsigned char *extra_sym_key);
@@ -171,21 +168,24 @@ INTERNAL void
 otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
                                      const struct otrng_s *conv);
 
-INTERNAL void otrng_client_callbacks_fingerprint_seen(
-    const otrng_client_callbacks_s *cb, const otrng_fingerprint_p fp,
-    const struct otrng_s *conv);
+INTERNAL void
+otrng_client_callbacks_fingerprint_seen(const otrng_client_callbacks_s *cb,
+                                        const otrng_fingerprint_p fp,
+                                        const struct otrng_s *conv);
 
-INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
-    const otrng_client_callbacks_s *cb, const otrng_fingerprint_v3_p fp,
-    const struct otrng_s *conv);
+INTERNAL void
+otrng_client_callbacks_fingerprint_seen_v3(const otrng_client_callbacks_s *cb,
+                                           const otrng_fingerprint_v3_p fp,
+                                           const struct otrng_s *conv);
 
-INTERNAL void otrng_client_callbacks_smp_ask_for_answer(
-    const otrng_client_callbacks_s *cb, const char *question,
-    const struct otrng_s *conv);
+INTERNAL void
+otrng_client_callbacks_smp_ask_for_answer(const otrng_client_callbacks_s *cb,
+                                          const char *question,
+                                          const struct otrng_s *conv);
 
-INTERNAL void otrng_client_callbacks_smp_ask_for_secret(
-    const otrng_client_callbacks_s *cb,
-    const struct otrng_s *conv);
+INTERNAL void
+otrng_client_callbacks_smp_ask_for_secret(const otrng_client_callbacks_s *cb,
+                                          const struct otrng_s *conv);
 
 INTERNAL void otrng_client_callbacks_smp_update(
     const otrng_client_callbacks_s *cb, const otrng_smp_event_t event,

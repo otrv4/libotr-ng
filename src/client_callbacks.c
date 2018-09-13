@@ -109,9 +109,10 @@ otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
   cb->gone_insecure(conv);
 }
 
-INTERNAL void otrng_client_callbacks_fingerprint_seen(
-    const otrng_client_callbacks_s *cb, const otrng_fingerprint_p fp,
-    const otrng_s *conv) {
+INTERNAL void
+otrng_client_callbacks_fingerprint_seen(const otrng_client_callbacks_s *cb,
+                                        const otrng_fingerprint_p fp,
+                                        const otrng_s *conv) {
   if (!cb || !cb->fingerprint_seen) {
     return;
   }
@@ -119,9 +120,10 @@ INTERNAL void otrng_client_callbacks_fingerprint_seen(
   cb->fingerprint_seen(fp, conv);
 }
 
-INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
-    const otrng_client_callbacks_s *cb, const otrng_fingerprint_v3_p fp,
-    const otrng_s *conv) {
+INTERNAL void
+otrng_client_callbacks_fingerprint_seen_v3(const otrng_client_callbacks_s *cb,
+                                           const otrng_fingerprint_v3_p fp,
+                                           const otrng_s *conv) {
   if (!cb || !cb->fingerprint_seen_v3) {
     return;
   }
@@ -129,9 +131,9 @@ INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
   cb->fingerprint_seen_v3(fp, conv);
 }
 
-INTERNAL void otrng_client_callbacks_smp_ask_for_secret(
-    const otrng_client_callbacks_s *cb,
-    const otrng_s *conv) {
+INTERNAL void
+otrng_client_callbacks_smp_ask_for_secret(const otrng_client_callbacks_s *cb,
+                                          const otrng_s *conv) {
   if (!cb || !cb->smp_ask_for_secret) {
     return;
   }
@@ -139,9 +141,10 @@ INTERNAL void otrng_client_callbacks_smp_ask_for_secret(
   cb->smp_ask_for_secret(conv);
 }
 
-INTERNAL void otrng_client_callbacks_smp_ask_for_answer(
-    const otrng_client_callbacks_s *cb, const char *question,
-    const otrng_s *conv) {
+INTERNAL void
+otrng_client_callbacks_smp_ask_for_answer(const otrng_client_callbacks_s *cb,
+                                          const char *question,
+                                          const otrng_s *conv) {
   if (!cb || !cb->smp_ask_for_answer) {
     return;
   }

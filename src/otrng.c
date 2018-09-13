@@ -95,8 +95,7 @@ tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint_p fp,
   conv->client->global_state->callbacks->fingerprint_seen(fp, conv);
 }
 
-tstatic void received_extra_sym_key(const otrng_s *conv,
-                                    unsigned int use,
+tstatic void received_extra_sym_key(const otrng_s *conv, unsigned int use,
                                     const unsigned char *use_data,
                                     size_t use_data_len,
                                     const unsigned char *extra_sym_key) {
@@ -128,8 +127,7 @@ tstatic void received_extra_sym_key(const otrng_s *conv,
 tstatic otrng_shared_session_state_s
 otrng_get_shared_session_state(otrng_s *otr) {
   // TODO: this callback is required, so it will segfault if not provided
-  return otr->client->global_state->callbacks
-      ->get_shared_session_state(otr);
+  return otr->client->global_state->callbacks->get_shared_session_state(otr);
 }
 
 tstatic int allow_version(const otrng_s *otr, uint8_t version) {
@@ -692,11 +690,11 @@ tstatic otrng_result reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
   otrng_rsig_authenticate(
-      msg->sigma, otr->client->keypair->priv, /* sk_ha */
-      otr->client->keypair->pub,              /* H_a */
-      otr->their_client_profile->long_term_pub_key,         /* H_b */
-      otr->client->keypair->pub,              /* H_a */
-      their_ecdh(otr),                                      /* Y */
+      msg->sigma, otr->client->keypair->priv,       /* sk_ha */
+      otr->client->keypair->pub,                    /* H_a */
+      otr->their_client_profile->long_term_pub_key, /* H_b */
+      otr->client->keypair->pub,                    /* H_a */
+      their_ecdh(otr),                              /* Y */
       t, t_len);
   free(t);
 
@@ -847,11 +845,11 @@ tstatic otrng_result build_non_interactive_auth_message(
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
   otrng_rsig_authenticate(
-      auth->sigma, otr->client->keypair->priv, /* sk_ha */
-      otr->client->keypair->pub,               /* H_a */
-      otr->their_client_profile->long_term_pub_key,          /* H_b */
-      otr->client->keypair->pub,               /* H_a */
-      their_ecdh(otr),                                       /* Y */
+      auth->sigma, otr->client->keypair->priv,      /* sk_ha */
+      otr->client->keypair->pub,                    /* H_a */
+      otr->their_client_profile->long_term_pub_key, /* H_b */
+      otr->client->keypair->pub,                    /* H_a */
+      their_ecdh(otr),                              /* Y */
       t, t_len);
 
   otrng_result ret = otrng_dake_non_interactive_auth_message_authenticator(
@@ -1128,8 +1126,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   }
 
   if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, sizeof(tmp_ecdh_k1),
-                                otr->client->keypair->priv,
-                                their_ecdh(otr))) {
+                                otr->client->keypair->priv, their_ecdh(otr))) {
     return OTRNG_ERROR;
   }
 
@@ -1192,10 +1189,9 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   free(phi);
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */
-  if (!otrng_rsig_verify(auth->sigma,
-                         otr->client->keypair->pub, /* H_b */
-                         auth->profile->long_term_pub_key,        /* H_a */
-                         our_ecdh(otr),                           /* Y  */
+  if (!otrng_rsig_verify(auth->sigma, otr->client->keypair->pub, /* H_b */
+                         auth->profile->long_term_pub_key,       /* H_a */
+                         our_ecdh(otr),                          /* Y  */
                          t, t_len)) {
     free(t);
 
@@ -1249,8 +1245,7 @@ tstatic otrng_result non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
-  stored_prekey =
-      get_my_prekeys_by_id(auth->prekey_message_id, otr->client);
+  stored_prekey = get_my_prekeys_by_id(auth->prekey_message_id, otr->client);
   if (!stored_prekey) {
     // TODO: this should send an error to the plugin
     return OTRNG_ERROR;
@@ -1500,12 +1495,11 @@ tstatic otrng_result reply_with_auth_i_msg(
   }
 
   /* sigma = RSig(H_b, sk_hb, {H_b, H_a, X}, t) */
-  otrng_rsig_authenticate(msg->sigma,
-                          otr->client->keypair->priv, /* sk_hb */
-                          otr->client->keypair->pub,  /* H_b */
-                          otr->client->keypair->pub,  /* H_b */
-                          their_client_profile->long_term_pub_key,  /* H_a */
-                          their_ecdh(otr),                          /* X */
+  otrng_rsig_authenticate(msg->sigma, otr->client->keypair->priv,  /* sk_hb */
+                          otr->client->keypair->pub,               /* H_b */
+                          otr->client->keypair->pub,               /* H_b */
+                          their_client_profile->long_term_pub_key, /* H_a */
+                          their_ecdh(otr),                         /* X */
                           t, t_len);
   free(t);
 
@@ -1537,11 +1531,11 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   }
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */
-  otrng_bool err = otrng_rsig_verify(
-      auth->sigma, otr->client->keypair->pub, /* H_b */
-      auth->profile->long_term_pub_key,                     /* H_a */
-      our_ecdh(otr),                                        /* Y */
-      t, t_len);
+  otrng_bool err =
+      otrng_rsig_verify(auth->sigma, otr->client->keypair->pub, /* H_b */
+                        auth->profile->long_term_pub_key,       /* H_a */
+                        our_ecdh(otr),                          /* Y */
+                        t, t_len);
 
   free(t);
   return err;
@@ -1629,7 +1623,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
   /* RVrf({H_b, H_a, X}, sigma, msg) */
   otrng_bool err = otrng_rsig_verify(
       auth->sigma, otr->their_client_profile->long_term_pub_key, /* H_b */
-      otr->client->keypair->pub,                   /* H_a */
+      otr->client->keypair->pub,                                 /* H_a */
       our_ecdh(otr),                                             /* X */
       t, t_len);
 
@@ -1900,8 +1894,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
       otrng_key_manager_derive_chain_keys(
           enc_key, mac_key, otr->keys, tmp_receiving_ratchet,
-          otr->client->max_stored_msg_keys, msg->message_id, 'r',
-          warn);
+          otr->client->max_stored_msg_keys, msg->message_id, 'r', warn);
       tmp_receiving_ratchet->k = tmp_receiving_ratchet->k + 1;
     }
     if (!otrng_valid_data_message(mac_key, msg)) {
@@ -2284,7 +2277,7 @@ INTERNAL otrng_result otrng_close(string_p *to_send, otrng_s *otr) {
                    otr->v3_conn); // TODO: @client This should return an error
                                   // but errors are reported on a
                                   // callback
-    gone_insecure_cb_v4(otr); // TODO: @client Only if success
+    gone_insecure_cb_v4(otr);     // TODO: @client Only if success
     return OTRNG_SUCCESS;
   case OTRNG_PROTOCOL_VERSION_4:
     return otrng_close_v4(to_send, otr);
