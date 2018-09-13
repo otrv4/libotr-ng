@@ -67,7 +67,7 @@ static const string_p query_header = "?OTRv";
 static const string_p otr_error_header = "?OTR Error:";
 static const string_p otr_header = "?OTR:";
 
-tstatic void gone_secure_cb_v4(const otrng_conversation_state_s *conv) {
+tstatic void gone_secure_cb_v4(const otrng_s *conv) {
   if (!conv || !conv->client) {
     return;
   }
@@ -76,7 +76,7 @@ tstatic void gone_secure_cb_v4(const otrng_conversation_state_s *conv) {
                                      conv);
 }
 
-tstatic void gone_insecure_cb_v4(const otrng_conversation_state_s *conv) {
+tstatic void gone_insecure_cb_v4(const otrng_s *conv) {
   if (!conv || !conv->client || !conv->client->global_state->callbacks ||
       !conv->client->global_state->callbacks->gone_insecure) {
     return;
@@ -86,7 +86,7 @@ tstatic void gone_insecure_cb_v4(const otrng_conversation_state_s *conv) {
 }
 
 tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint_p fp,
-                                    const otrng_conversation_state_s *conv) {
+                                    const otrng_s *conv) {
   if (!conv || !conv->client || !conv->client->global_state->callbacks ||
       !conv->client->global_state->callbacks->fingerprint_seen) {
     return;
@@ -95,7 +95,7 @@ tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint_p fp,
   conv->client->global_state->callbacks->fingerprint_seen(fp, conv);
 }
 
-tstatic void received_extra_sym_key(const otrng_client_conversation_s *conv,
+tstatic void received_extra_sym_key(const otrng_s *conv,
                                     unsigned int use,
                                     const unsigned char *use_data,
                                     size_t use_data_len,
@@ -128,8 +128,8 @@ tstatic void received_extra_sym_key(const otrng_client_conversation_s *conv,
 tstatic otrng_shared_session_state_s
 otrng_get_shared_session_state(otrng_s *otr) {
   // TODO: this callback is required, so it will segfault if not provided
-  return otr->conversation->client->global_state->callbacks
-      ->get_shared_session_state(otr->conversation);
+  return otr->client->global_state->callbacks
+      ->get_shared_session_state(otr);
 }
 
 tstatic int allow_version(const otrng_s *otr, uint8_t version) {
@@ -151,23 +151,13 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
 
 tstatic const otrng_shared_prekey_pair_s *
 our_shared_prekey(const otrng_s *otr) {
-  return otr->conversation->client->shared_prekey_pair;
+  return otr->client->shared_prekey_pair;
 }
 
 tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
-  otrng_client_s *client = otr->conversation->client;
+  otrng_client_s *client = otr->client;
   maybe_create_keys(client);
   return otrng_client_get_prekey_profile(client);
-}
-
-INTERNAL otrng_conversation_state_s *
-otrng_conversation_new(otrng_client_s *client) {
-  otrng_conversation_state_s *conversation =
-      malloc(sizeof(otrng_conversation_state_s));
-  conversation->client = client;
-  conversation->peer = NULL;
-
-  return conversation;
 }
 
 INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
@@ -176,7 +166,8 @@ INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
     return NULL;
   }
 
-  otr->conversation = otrng_conversation_new(client);
+  otr->client = client;
+  otr->peer = NULL;
   otr->state = OTRNG_STATE_START;
   otr->running_version = 0;
   otr->supported_versions = policy.allows;
@@ -206,11 +197,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
 static void free_fragment_context(void *p) { otrng_fragment_context_free(p); }
 
 INTERNAL void otrng_destroy(/*@only@ */ otrng_s *otr) {
-  if (otr->conversation) {
-    free(otr->conversation->peer);
-    free(otr->conversation);
-    otr->conversation = NULL;
-  }
+  free(otr->peer);
 
   otrng_key_manager_free(otr->keys);
   otr->keys = NULL;
@@ -502,7 +489,7 @@ tstatic otrng_result start_dake(otrng_response_s *response, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  maybe_create_keys(otr->conversation->client);
+  maybe_create_keys(otr->client);
   if (reply_with_identity_msg(response, otr) == OTRNG_ERROR) {
     return OTRNG_ERROR;
   }
@@ -705,10 +692,10 @@ tstatic otrng_result reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
   otrng_rsig_authenticate(
-      msg->sigma, otr->conversation->client->keypair->priv, /* sk_ha */
-      otr->conversation->client->keypair->pub,              /* H_a */
+      msg->sigma, otr->client->keypair->priv, /* sk_ha */
+      otr->client->keypair->pub,              /* H_a */
       otr->their_client_profile->long_term_pub_key,         /* H_b */
-      otr->conversation->client->keypair->pub,              /* H_a */
+      otr->client->keypair->pub,              /* H_a */
       their_ecdh(otr),                                      /* Y */
       t, t_len);
   free(t);
@@ -860,10 +847,10 @@ tstatic otrng_result build_non_interactive_auth_message(
 
   /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
   otrng_rsig_authenticate(
-      auth->sigma, otr->conversation->client->keypair->priv, /* sk_ha */
-      otr->conversation->client->keypair->pub,               /* H_a */
+      auth->sigma, otr->client->keypair->priv, /* sk_ha */
+      otr->client->keypair->pub,               /* H_a */
       otr->their_client_profile->long_term_pub_key,          /* H_b */
-      otr->conversation->client->keypair->pub,               /* H_a */
+      otr->client->keypair->pub,               /* H_a */
       their_ecdh(otr),                                       /* Y */
       t, t_len);
 
@@ -882,7 +869,7 @@ tstatic otrng_result double_ratcheting_init(otrng_s *otr,
   }
 
   otr->state = OTRNG_STATE_ENCRYPTED_MESSAGES;
-  gone_secure_cb_v4(otr->conversation);
+  gone_secure_cb_v4(otr);
   otrng_key_manager_wipe_shared_prekeys(otr->keys);
 
   return OTRNG_SUCCESS;
@@ -890,7 +877,7 @@ tstatic otrng_result double_ratcheting_init(otrng_s *otr,
 
 tstatic otrng_result reply_with_non_interactive_auth_msg(string_p *dst,
                                                          otrng_s *otr) {
-  maybe_create_keys(otr->conversation->client);
+  maybe_create_keys(otr->client);
 
   dake_non_interactive_auth_message_p auth;
   otrng_result ret = build_non_interactive_auth_message(auth, otr);
@@ -934,7 +921,7 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
     return NULL;
   }
 
-  otrng_client_s *client = otr->conversation->client;
+  otrng_client_s *client = otr->client;
   store_my_prekey_message(ensemble->message->id, our_instance_tag(otr), ecdh,
                           dh, client);
   otrng_ecdh_keypair_destroy(ecdh);
@@ -1095,7 +1082,7 @@ API otrng_result otrng_send_non_interactive_auth(
   otrng_fingerprint_p fp;
   if (otrng_serialize_fingerprint(
           fp, otr->their_client_profile->long_term_pub_key)) {
-    fingerprint_seen_cb_v4(fp, otr->conversation);
+    fingerprint_seen_cb_v4(fp, otr);
   }
 
   return reply_with_non_interactive_auth_msg(dst, otr);
@@ -1141,7 +1128,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   }
 
   if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, sizeof(tmp_ecdh_k1),
-                                otr->conversation->client->keypair->priv,
+                                otr->client->keypair->priv,
                                 their_ecdh(otr))) {
     return OTRNG_ERROR;
   }
@@ -1206,7 +1193,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */
   if (!otrng_rsig_verify(auth->sigma,
-                         otr->conversation->client->keypair->pub, /* H_b */
+                         otr->client->keypair->pub, /* H_b */
                          auth->profile->long_term_pub_key,        /* H_a */
                          our_ecdh(otr),                           /* Y  */
                          t, t_len)) {
@@ -1239,7 +1226,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 tstatic otrng_result non_interactive_auth_message_received(
     otrng_response_s *response, const dake_non_interactive_auth_message_p auth,
     otrng_s *otr) {
-  otrng_client_s *client = otr->conversation->client;
+  otrng_client_s *client = otr->client;
   if (!client) {
     return OTRNG_ERROR;
   }
@@ -1263,7 +1250,7 @@ tstatic otrng_result non_interactive_auth_message_received(
   }
 
   stored_prekey =
-      get_my_prekeys_by_id(auth->prekey_message_id, otr->conversation->client);
+      get_my_prekeys_by_id(auth->prekey_message_id, otr->client);
   if (!stored_prekey) {
     // TODO: this should send an error to the plugin
     return OTRNG_ERROR;
@@ -1276,7 +1263,7 @@ tstatic otrng_result non_interactive_auth_message_received(
   // Long-term keypair is the same as used to generate my current client
   // profile.
   // Should be always true, though.
-  if (!otrng_ec_point_eq(otr->conversation->client->keypair->pub,
+  if (!otrng_ec_point_eq(otr->client->keypair->pub,
                          get_my_client_profile(otr)->long_term_pub_key)) {
     return OTRNG_ERROR;
   }
@@ -1334,7 +1321,7 @@ tstatic otrng_result non_interactive_auth_message_received(
   otrng_fingerprint_p fp;
   if (otrng_serialize_fingerprint(
           fp, otr->their_client_profile->long_term_pub_key)) {
-    fingerprint_seen_cb_v4(fp, otr->conversation);
+    fingerprint_seen_cb_v4(fp, otr);
   }
 
   if (!otrng_key_manager_generate_shared_secret(otr->keys, otrng_false)) {
@@ -1514,9 +1501,9 @@ tstatic otrng_result reply_with_auth_i_msg(
 
   /* sigma = RSig(H_b, sk_hb, {H_b, H_a, X}, t) */
   otrng_rsig_authenticate(msg->sigma,
-                          otr->conversation->client->keypair->priv, /* sk_hb */
-                          otr->conversation->client->keypair->pub,  /* H_b */
-                          otr->conversation->client->keypair->pub,  /* H_b */
+                          otr->client->keypair->priv, /* sk_hb */
+                          otr->client->keypair->pub,  /* H_b */
+                          otr->client->keypair->pub,  /* H_b */
                           their_client_profile->long_term_pub_key,  /* H_a */
                           their_ecdh(otr),                          /* X */
                           t, t_len);
@@ -1551,7 +1538,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
 
   /* RVrf({H_b, H_a, Y}, sigma, msg) */
   otrng_bool err = otrng_rsig_verify(
-      auth->sigma, otr->conversation->client->keypair->pub, /* H_b */
+      auth->sigma, otr->client->keypair->pub, /* H_b */
       auth->profile->long_term_pub_key,                     /* H_a */
       our_ecdh(otr),                                        /* Y */
       t, t_len);
@@ -1615,7 +1602,7 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buff,
   otrng_fingerprint_p fp;
   if (otrng_serialize_fingerprint(
           fp, otr->their_client_profile->long_term_pub_key)) {
-    fingerprint_seen_cb_v4(fp, otr->conversation);
+    fingerprint_seen_cb_v4(fp, otr);
   }
 
   /* @secret the shared secret will be deleted once the double ratchet is
@@ -1642,7 +1629,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
   /* RVrf({H_b, H_a, X}, sigma, msg) */
   otrng_bool err = otrng_rsig_verify(
       auth->sigma, otr->their_client_profile->long_term_pub_key, /* H_b */
-      otr->conversation->client->keypair->pub,                   /* H_a */
+      otr->client->keypair->pub,                   /* H_a */
       our_ecdh(otr),                                             /* X */
       t, t_len);
 
@@ -1689,7 +1676,7 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buff,
   otrng_fingerprint_p fp;
   if (otrng_serialize_fingerprint(
           fp, otr->their_client_profile->long_term_pub_key)) {
-    fingerprint_seen_cb_v4(fp, otr->conversation);
+    fingerprint_seen_cb_v4(fp, otr);
   }
 
   if (!double_ratcheting_init(otr, 't')) {
@@ -1724,7 +1711,7 @@ INTERNAL otrng_result otrng_expire_session(string_p *to_send, otrng_s *otr) {
 
   forget_our_keys(otr);
   otr->state = OTRNG_STATE_START;
-  gone_insecure_cb_v4(otr->conversation);
+  gone_insecure_cb_v4(otr);
 
   return result;
 }
@@ -1791,13 +1778,13 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
   if (tlv->type == OTRNG_TLV_DISCONNECTED) {
     forget_our_keys(otr);
     otr->state = OTRNG_STATE_FINISHED;
-    gone_insecure_cb_v4(otr->conversation);
+    gone_insecure_cb_v4(otr);
     return NULL;
   }
 
   if (tlv->type == OTRNG_TLV_SYM_KEY && tlv->len >= 4) {
     uint32_t use = extract_word(tlv->data);
-    received_extra_sym_key(otr->conversation, use, tlv->data + 4, tlv->len - 4,
+    received_extra_sym_key(otr, use, tlv->data + 4, tlv->len - 4,
                            otr->keys->extra_symmetric_key);
     sodium_memzero(otr->keys->extra_symmetric_key,
                    sizeof(otr->keys->extra_symmetric_key));
@@ -1903,7 +1890,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
             tmp_receiving_ratchet))) {
       /* if a new ratchet */
       if (otrng_failed(otrng_key_manager_derive_dh_ratchet_keys(
-              otr->keys, otr->conversation->client->max_stored_msg_keys,
+              otr->keys, otr->client->max_stored_msg_keys,
               tmp_receiving_ratchet, msg->message_id, msg->previous_chain_n,
               'r', warn))) {
         otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
@@ -1913,7 +1900,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
       otrng_key_manager_derive_chain_keys(
           enc_key, mac_key, otr->keys, tmp_receiving_ratchet,
-          otr->conversation->client->max_stored_msg_keys, msg->message_id, 'r',
+          otr->client->max_stored_msg_keys, msg->message_id, 'r',
           warn);
       tmp_receiving_ratchet->k = tmp_receiving_ratchet->k + 1;
     }
@@ -1984,7 +1971,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       return OTRNG_SUCCESS;
     }
 
-    if (otr->conversation->client->should_heartbeat(otr->last_sent)) {
+    if (otr->client->should_heartbeat(otr->last_sent)) {
       if (!otrng_send_message(&response->to_send, "", warn, NULL,
                               MSGFLAGS_IGNORE_UNREADABLE, otr)) {
         sodium_memzero(mac_key, sizeof(msg_mac_key_p));
@@ -2071,7 +2058,7 @@ tstatic otrng_result receive_decoded_message(otrng_response_s *response,
     return OTRNG_ERROR;
   }
 
-  maybe_create_keys(otr->conversation->client);
+  maybe_create_keys(otr->client);
 
   response->to_send = NULL;
 
@@ -2281,7 +2268,7 @@ tstatic otrng_result otrng_close_v4(string_p *to_send, otrng_s *otr) {
   otrng_tlv_list_free(disconnected);
   forget_our_keys(otr);
   otr->state = OTRNG_STATE_START;
-  gone_insecure_cb_v4(otr->conversation);
+  gone_insecure_cb_v4(otr);
 
   return result;
 }
@@ -2297,7 +2284,7 @@ INTERNAL otrng_result otrng_close(string_p *to_send, otrng_s *otr) {
                    otr->v3_conn); // TODO: @client This should return an error
                                   // but errors are reported on a
                                   // callback
-    gone_insecure_cb_v4(otr->conversation); // TODO: @client Only if success
+    gone_insecure_cb_v4(otr); // TODO: @client Only if success
     return OTRNG_SUCCESS;
   case OTRNG_PROTOCOL_VERSION_4:
     return otrng_close_v4(to_send, otr);

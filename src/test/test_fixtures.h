@@ -36,7 +36,7 @@ int dh_mpi_cmp(const dh_mpi_p m1, const dh_mpi_p m2) {
 }
 
 static otrng_shared_session_state_s
-get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
+get_shared_session_state_cb(const otrng_s *conv) {
   otrng_shared_session_state_s ret = {
       .identifier1 = otrng_strdup("alice"),
       .identifier2 = otrng_strdup("bob"),

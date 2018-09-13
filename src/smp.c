@@ -24,7 +24,7 @@
 tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
                                     const uint8_t progress_percent,
                                     const uint8_t *question, const size_t q_len,
-                                    const otrng_conversation_state_s *conv) {
+                                    const otrng_s *conv) {
   if (!conv || !conv->client || !conv->client->global_state->callbacks) {
     return;
   }
@@ -149,7 +149,7 @@ INTERNAL tlv_s *otrng_process_smp_tlv(const tlv_s *tlv, otrng_s *otr) {
   handle_smp_event_cb_v4(event, otr->smp->progress,
                          otr->smp->msg1 ? otr->smp->msg1->question : NULL,
                          otr->smp->msg1 ? otr->smp->msg1->q_len : 0,
-                         otr->conversation);
+                         otr);
 
   return out;
 }
@@ -160,7 +160,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
                                   const uint8_t *answer,
                                   const size_t answer_len, uint8_t *ssid,
                                   smp_protocol_p smp,
-                                  otrng_conversation_state_s *conversation) {
+                                  otrng_s *conversation) {
 
   smp_msg_1_p msg;
   uint8_t *to_send = NULL;
@@ -238,7 +238,7 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
 
     tlv_s *smp_start_tlv = otrng_smp_initiate(
         get_my_client_profile(otr), otr->their_client_profile, question, q_len,
-        answer, answer_len, otr->keys->ssid, otr->smp, otr->conversation);
+        answer, answer_len, otr->keys->ssid, otr->smp, otr);
 
     if (!smp_start_tlv) {
       return OTRNG_ERROR;
@@ -311,7 +311,7 @@ tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
   }
 
   handle_smp_event_cb_v4(event, otr->smp->progress, otr->smp->msg1->question,
-                         otr->smp->msg1->q_len, otr->conversation);
+                         otr->smp->msg1->q_len, otr);
 
   otrng_warning warn = OTRNG_WARN_NONE;
   // TODO: warn

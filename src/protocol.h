@@ -45,17 +45,11 @@ typedef struct otrng_policy_s {
   uint8_t allows;
 } otrng_policy_s, otrng_policy_p[1];
 
-typedef struct otrng_conversation_state_s {
+typedef struct otrng_s {
   struct otrng_client_s *client;
 
   char *peer;
-  uint16_t their_instance_tag;
-} otrng_conversation_state_s, otrng_conversation_state_p[1];
 
-typedef struct otrng_s {
-  /* Contains: client (private key, instance tag, and callbacks) and
-   conversation state */
-  otrng_conversation_state_s *conversation;
   otrng_v3_conn_s *v3_conn;
 
   otrng_state_e state;

@@ -55,13 +55,13 @@ INTERNAL dh_public_key_p our_dh(const otrng_s *otr) {
 }
 
 INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr) {
-  maybe_create_keys(otr->conversation->client);
-  otrng_client_s *client = otr->conversation->client;
+  maybe_create_keys(otr->client);
+  otrng_client_s *client = otr->client;
   return otrng_client_get_client_profile(client);
 }
 
 INTERNAL uint32_t our_instance_tag(const otrng_s *otr) {
-  return otrng_client_get_instance_tag(otr->conversation->client);
+  return otrng_client_get_instance_tag(otr->client);
 }
 
 static char *build_error_message(const char *error_code,
@@ -203,7 +203,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
 
   /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(
-          otr->keys, otr->conversation->client->max_stored_msg_keys, NULL,
+          otr->keys, otr->client->max_stored_msg_keys, NULL,
           otr->keys->j, 0, 's', warn)) {
     return OTRNG_ERROR;
   }
@@ -213,7 +213,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
 
   otrng_key_manager_derive_chain_keys(
       enc_key, mac_key, otr->keys, NULL,
-      otr->conversation->client->max_stored_msg_keys, 0, 's', warn);
+      otr->client->max_stored_msg_keys, 0, 's', warn);
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {

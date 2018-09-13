@@ -46,7 +46,7 @@ void test_smp_state_machine(void) {
   tlv_s *tlv_smp_1 = otrng_smp_initiate(
       get_my_client_profile(alice), alice->their_client_profile, question, 13,
       (const uint8_t *)"answer", strlen("answer"), alice->keys->ssid,
-      alice->smp, alice->conversation);
+      alice->smp, alice);
   otrng_assert(tlv_smp_1);
 
   otrng_assert_is_success(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1));
@@ -158,7 +158,7 @@ void test_smp_state_machine_abort(void) {
   tlv_s *tlv_smp_1 = otrng_smp_initiate(
       get_my_client_profile(alice), alice->their_client_profile, question, 13,
       (const uint8_t *)"answer", strlen("answer"), alice->keys->ssid,
-      alice->smp, alice->conversation);
+      alice->smp, alice);
   otrng_assert(tlv_smp_1);
 
   otrng_assert_is_success(smp_msg_1_deserialize(smp_msg_1, tlv_smp_1));

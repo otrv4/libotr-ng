@@ -91,7 +91,7 @@ otrng_client_callbacks_create_instag(const otrng_client_callbacks_s *cb,
 
 INTERNAL void
 otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,
-                                   const otrng_client_conversation_s *conv) {
+                                   const otrng_s *conv) {
   if (!cb || !cb->gone_secure) {
     return;
   }
@@ -101,7 +101,7 @@ otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,
 
 INTERNAL void
 otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
-                                     const otrng_client_conversation_s *conv) {
+                                     const otrng_s *conv) {
   if (!cb || !cb->gone_insecure) {
     return;
   }
@@ -111,7 +111,7 @@ otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
 
 INTERNAL void otrng_client_callbacks_fingerprint_seen(
     const otrng_client_callbacks_s *cb, const otrng_fingerprint_p fp,
-    const otrng_client_conversation_s *conv) {
+    const otrng_s *conv) {
   if (!cb || !cb->fingerprint_seen) {
     return;
   }
@@ -121,7 +121,7 @@ INTERNAL void otrng_client_callbacks_fingerprint_seen(
 
 INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
     const otrng_client_callbacks_s *cb, const otrng_fingerprint_v3_p fp,
-    const otrng_client_conversation_s *conv) {
+    const otrng_s *conv) {
   if (!cb || !cb->fingerprint_seen_v3) {
     return;
   }
@@ -131,7 +131,7 @@ INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_secret(
     const otrng_client_callbacks_s *cb,
-    const otrng_client_conversation_s *conv) {
+    const otrng_s *conv) {
   if (!cb || !cb->smp_ask_for_secret) {
     return;
   }
@@ -141,7 +141,7 @@ INTERNAL void otrng_client_callbacks_smp_ask_for_secret(
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_answer(
     const otrng_client_callbacks_s *cb, const char *question,
-    const otrng_client_conversation_s *conv) {
+    const otrng_s *conv) {
   if (!cb || !cb->smp_ask_for_answer) {
     return;
   }
@@ -152,7 +152,7 @@ INTERNAL void otrng_client_callbacks_smp_ask_for_answer(
 
 INTERNAL void otrng_client_callbacks_smp_update(
     const otrng_client_callbacks_s *cb, const otrng_smp_event_t event,
-    const uint8_t progress_percent, const otrng_client_conversation_s *conv) {
+    const uint8_t progress_percent, const otrng_s *conv) {
   if (!cb || !cb->smp_update) {
     return;
   }

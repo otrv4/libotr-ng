@@ -36,8 +36,6 @@ typedef enum {
   OTRNG_SMP_EVENT_ERROR = 8,
 } otrng_smp_event_t;
 
-typedef struct otrng_conversation_state_s otrng_client_conversation_s;
-
 typedef struct otrng_shared_session_state_s {
   char *identifier1;
   char *identifier2;
@@ -46,6 +44,7 @@ typedef struct otrng_shared_session_state_s {
 
 // Forward declaration
 struct otrng_client_s;
+struct otrng_s;
 
 typedef struct otrng_client_callbacks_s {
   /* Get account and protocol from a given client_id */
@@ -74,30 +73,30 @@ typedef struct otrng_client_callbacks_s {
                                const void *client_opdata);
 
   /* A connection has entered a secure state. */
-  void (*gone_secure)(const otrng_client_conversation_s *);
+  void (*gone_secure)(const struct otrng_s *);
 
   /* A connection has left a secure state. */
-  void (*gone_insecure)(const otrng_client_conversation_s *);
+  void (*gone_insecure)(const struct otrng_s *);
 
   /* A fingerprint was seen in this connection. */
   void (*fingerprint_seen)(const otrng_fingerprint_p,
-                           const otrng_client_conversation_s *);
+                           const struct otrng_s *);
 
   /* A v3 fingerprint was seen in this connection. */
   void (*fingerprint_seen_v3)(const otrng_fingerprint_v3_p,
-                              const otrng_client_conversation_s *);
+                              const struct otrng_s *);
 
   /* Update the authentication UI and prompt the user to enter a shared secret.
    *      The sender application should call otrl_message_initiate_smp,
    *      passing NULL as the question.
    *      When the receiver application resumes the SM protocol by calling
    *      otrl_message_respond_smp with the secret answer. */
-  void (*smp_ask_for_secret)(const otrng_client_conversation_s *);
+  void (*smp_ask_for_secret)(const struct otrng_s *);
 
   /* Same as smp_ask_for_secret but sender calls otrl_message_initiate_smp_q
    * instead) */
   void (*smp_ask_for_answer)(const uint8_t *question, const size_t q_len,
-                             const otrng_client_conversation_s *);
+                             const struct otrng_s *);
 
   /* Update the authentication UI with respect to SMP events
    * These are the possible events:
@@ -115,14 +114,14 @@ typedef struct otrng_client_callbacks_s {
    * */
   void (*smp_update)(const otrng_smp_event_t event,
                      const uint8_t progress_percent,
-                     const otrng_client_conversation_s *);
+                     const struct otrng_s *);
 
   /* We received a request from the buddy to use the current "extra"
    * symmetric key.  The key will be passed in symkey, of length
    * EXTRA_SYMMETRIC_KEY_BYTES.  The requested use, as well as use-specific
    * data will be passed so that the applications can communicate other
    * information (some id for the data transfer, for example). */
-  void (*received_extra_symm_key)(const otrng_client_conversation_s *,
+  void (*received_extra_symm_key)(const struct otrng_s *,
                                   unsigned int use,
                                   const unsigned char *use_data,
                                   size_t use_data_len,
@@ -133,7 +132,7 @@ typedef struct otrng_client_callbacks_s {
    * to this shared session state.
    * The protocol will take care of freeing the members of this struct. */
   otrng_shared_session_state_s (*get_shared_session_state)(
-      const otrng_client_conversation_s *conv);
+      const struct otrng_s *conv);
 
 } otrng_client_callbacks_s, otrng_client_callbacks_p[1];
 
@@ -166,31 +165,31 @@ otrng_client_callbacks_create_instag(const otrng_client_callbacks_s *cb,
 
 INTERNAL void
 otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,
-                                   const otrng_client_conversation_s *conv);
+                                   const struct otrng_s *conv);
 
 INTERNAL void
 otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
-                                     const otrng_client_conversation_s *conv);
+                                     const struct otrng_s *conv);
 
 INTERNAL void otrng_client_callbacks_fingerprint_seen(
     const otrng_client_callbacks_s *cb, const otrng_fingerprint_p fp,
-    const otrng_client_conversation_s *conv);
+    const struct otrng_s *conv);
 
 INTERNAL void otrng_client_callbacks_fingerprint_seen_v3(
     const otrng_client_callbacks_s *cb, const otrng_fingerprint_v3_p fp,
-    const otrng_client_conversation_s *conv);
+    const struct otrng_s *conv);
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_answer(
     const otrng_client_callbacks_s *cb, const char *question,
-    const otrng_client_conversation_s *conv);
+    const struct otrng_s *conv);
 
 INTERNAL void otrng_client_callbacks_smp_ask_for_secret(
     const otrng_client_callbacks_s *cb,
-    const otrng_client_conversation_s *conv);
+    const struct otrng_s *conv);
 
 INTERNAL void otrng_client_callbacks_smp_update(
     const otrng_client_callbacks_s *cb, const otrng_smp_event_t event,
-    const uint8_t progress_percent, const otrng_client_conversation_s *conv);
+    const uint8_t progress_percent, const struct otrng_s *conv);
 
 #ifdef DEBUG_API
 API void otrng_client_callbacks_debug_print(FILE *, int,

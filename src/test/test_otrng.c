@@ -210,7 +210,6 @@ void test_otrng_destroy() {
 
   otrng_destroy(otr);
 
-  otrng_assert(otr->conversation == NULL);
   otrng_assert(otr->keys == NULL);
   otrng_assert(otr->their_client_profile == NULL);
   otrng_assert(otr->v3_conn == NULL);
@@ -267,7 +266,7 @@ void test_otrng_build_prekey_ensemble() {
 }
 
 static otrng_shared_session_state_s
-test_get_shared_session_state_cb(const otrng_client_conversation_s *conv) {
+test_get_shared_session_state_cb(const otrng_s *conv) {
   // TODO: assert if the callback receives the conv it should
 
   otrng_shared_session_state_s ret = {

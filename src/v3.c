@@ -33,7 +33,7 @@ tstatic void create_privkey_cb_v3(const otrng_v3_conn_s *conn) {
       conn->client->global_state->callbacks, conn->client->client_id);
 }
 
-tstatic void create_instag_cb_v3(const otrng_conversation_state_s *conv) {
+tstatic void create_instag_cb_v3(const otrng_s *conv) {
   if (!conv || !conv->client) {
     return;
   }
@@ -42,7 +42,7 @@ tstatic void create_instag_cb_v3(const otrng_conversation_state_s *conv) {
                                        conv->client->client_id);
 }
 
-tstatic void gone_secure_cb_v3(const otrng_conversation_state_s *conv) {
+tstatic void gone_secure_cb_v3(const otrng_s *conv) {
   if (!conv || !conv->client) {
     return;
   }
@@ -51,7 +51,7 @@ tstatic void gone_secure_cb_v3(const otrng_conversation_state_s *conv) {
                                      conv);
 }
 
-tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *conv) {
+tstatic void gone_insecure_cb_v3(const otrng_s *conv) {
   if (!conv || !conv->client) {
     return;
   }
@@ -61,7 +61,7 @@ tstatic void gone_insecure_cb_v3(const otrng_conversation_state_s *conv) {
 }
 
 tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3_p fp,
-                                    const otrng_conversation_state_s *conv) {
+                                    const otrng_s *conv) {
   if (!conv || !conv->client) {
     return;
   }
@@ -73,7 +73,7 @@ tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3_p fp,
 tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
                                     const uint8_t progress_percent,
                                     const char *question,
-                                    const otrng_conversation_state_s *conv) {
+                                    const otrng_s *conv) {
   if (!conv || !conv->client) {
     return;
   }
@@ -102,7 +102,7 @@ tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
   }
 }
 
-tstatic void received_symkey_cb_v3(const otrng_conversation_state_s *conv,
+tstatic void received_symkey_cb_v3(const otrng_s *conv,
                                    unsigned int use,
                                    const unsigned char *usedata,
                                    size_t usedatalen,
@@ -188,7 +188,7 @@ tstatic void op_new_fingerprint(void *opdata, OtrlUserState us,
     return;
   }
 
-  fingerprint_seen_cb_v3(fingerprint, otr->conversation);
+  fingerprint_seen_cb_v3(fingerprint, otr);
 }
 
 /* The list of known fingerprints has changed.  Write them to disk. */
@@ -202,7 +202,7 @@ tstatic void op_gone_secure(void *opdata, ConnContext *context) {
     return;
   }
 
-  gone_secure_cb_v3(otr->conversation);
+  gone_secure_cb_v3(otr);
 }
 
 /* A ConnContext has left a secure state. */
@@ -213,7 +213,7 @@ tstatic void op_gone_insecure(void *opdata, ConnContext *context) {
     return;
   }
 
-  gone_insecure_cb_v3(otr->conversation);
+  gone_insecure_cb_v3(otr);
 }
 
 /* We have completed an authentication, using the D-H keys we
@@ -225,7 +225,7 @@ tstatic void op_still_secure(void *opdata, ConnContext *context, int is_reply) {
     return;
   }
 
-  gone_secure_cb_v3(otr->conversation);
+  gone_secure_cb_v3(otr);
 }
 
 /* Find the maximum message size supported by this protocol. */
@@ -262,7 +262,7 @@ tstatic void op_received_symkey(void *opdata, ConnContext *context,
     return;
   }
 
-  received_symkey_cb_v3(otr->conversation, use, usedata, usedatalen, extra_key);
+  received_symkey_cb_v3(otr, use, usedata, usedatalen, extra_key);
 }
 
 /* Return a string according to the error event. This string will then
@@ -364,7 +364,7 @@ tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
   }
 
   handle_smp_event_cb_v3(convert_smp_event(smp_event), progress_percent,
-                         question, otr->conversation);
+                         question, otr);
 }
 
 /* Handle and send the appropriate message(s) to the sender/recipient
@@ -475,7 +475,7 @@ tstatic void op_create_instag(void *opdata, const char *accountname,
     return;
   }
 
-  create_instag_cb_v3(otr->conversation);
+  create_instag_cb_v3(otr);
 }
 
 /* Called immediately before a data message is encrypted, and after a data
@@ -657,13 +657,14 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
   if (otrl_tlv_find(tlvs_v3, OTRL_TLV_DISCONNECTED)) {
     // Recreates what is should be because we dont have access to it from
     // otrng_s
-    otrng_conversation_state_p s = {{
-        .client = conn->client,
-        .peer = conn->peer,
-        .their_instance_tag = 0, // TODO: Is it used?
-    }};
+    // TODO: this needs to be refactored so we have access to otrng_s
+    /* otrng_conversation_state_p s = {{ */
+    /*     .client = conn->client, */
+    /*     .peer = conn->peer, */
+    /*     .their_instance_tag = 0, // TODO: Is it used? */
+    /* }}; */
 
-    gone_insecure_cb_v3(s);
+    /* gone_insecure_cb_v3(s); */
   }
 
   // TODO: Copy from tlvs_v3 to tlvs.

@@ -175,7 +175,7 @@ tstatic otrng_s *create_connection_for(const char *recipient,
     return NULL;
   }
 
-  conn->conversation->peer = otrng_strdup(recipient);
+  conn->peer = otrng_strdup(recipient);
   v3_conn->opdata = conn; /* For use in callbacks */
   conn->v3_conn = v3_conn;
 
