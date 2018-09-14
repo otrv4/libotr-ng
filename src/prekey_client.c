@@ -261,8 +261,8 @@ INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_asprint(
   w += otrng_serialize_uint32(*dst + w, msg->instance_tag);
   w += otrng_serialize_data(*dst + w, (uint8_t *)msg->identity,
                             strlen(msg->identity));
-  w += otrng_serialize_data(*dst + w, (uint8_t *)msg->versions,
-                            strlen(msg->versions));
+  otrng_serialize_data(*dst + w, (uint8_t *)msg->versions,
+                       strlen(msg->versions));
 
   return OTRNG_SUCCESS;
 }
@@ -675,7 +675,6 @@ static char *receive_dake2(const uint8_t *decoded, size_t decoded_len,
 
   if (!otrng_prekey_dake2_message_deserialize(msg, decoded, decoded_len)) {
     notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
-    otrng_prekey_dake2_message_destroy(msg);
     return NULL;
   }
 

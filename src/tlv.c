@@ -123,6 +123,7 @@ INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len) {
       break;
     }
 
+    // TODO: this could be a potential mem leak
     ret = otrng_append_tlv(ret, tlv);
     src += read;
     len -= read;

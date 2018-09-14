@@ -148,28 +148,29 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
 
   // TODO: Check for buffer overflows
 
-  // Instance tag
+  /* Instance tag */
   w += otrng_serialize_uint16(dst + w, 0x01);
   w += otrng_serialize_uint32(dst + w, profile->sender_instance_tag);
   num_fields++;
 
-  // Ed448 public key
+  /* Ed448 public key */
   w += otrng_serialize_uint16(dst + w, 0x02);
   w += otrng_serialize_public_key(dst + w, profile->long_term_pub_key);
   num_fields++;
 
-  // Versions
+  /* Versions */
+  size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
   w += otrng_serialize_uint16(dst + w, 0x04);
-  w += otrng_serialize_data(dst + w, (uint8_t *)profile->versions,
-                            strlen(profile->versions) + 1);
+  w +=
+      otrng_serialize_data(dst + w, (uint8_t *)profile->versions, versions_len);
   num_fields++;
 
-  // Expiration
+  /* Expiration */
   w += otrng_serialize_uint16(dst + w, 0x05);
   w += otrng_serialize_uint64(dst + w, profile->expires);
   num_fields++;
 
-  // DSA key
+  /* DSA key */
   if (profile->dsa_key && profile->dsa_key_len) {
     w += otrng_serialize_uint16(dst + w, 0x06);
     w += otrng_serialize_bytes_array(dst + w, profile->dsa_key,

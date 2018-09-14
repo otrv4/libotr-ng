@@ -73,7 +73,7 @@ static void free_message_and_response(otrng_response_s *response,
 
 static otrng_bool test_should_heartbeat(int last_sent) { return otrng_true; }
 
-static otrng_s *set_up(otrng_client_s *client, const char *account_name,
+static otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
                        int byte) {
   set_up_client(client, account_name, byte);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};

@@ -383,6 +383,7 @@ INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
     return OTRNG_ERROR;
   }
 
+  free(storage_id);
   free(encoded);
 
   return OTRNG_SUCCESS;
@@ -478,6 +479,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   // OR ignore if this will be moved to the plugin.
   line_len = getline(&line, &cap, privf);
   if (line_len < 0) {
+    free(prekey_msg);
     free(line);
     return OTRNG_ERROR;
   }
@@ -488,6 +490,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
 
   line_len = getline(&line, &cap, privf);
   if (line_len < 0) {
+    free(prekey_msg);
     free(line);
     return OTRNG_ERROR;
   }
@@ -497,6 +500,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
 
   line_len = getline(&line, &cap, privf);
   if (line_len < 0) {
+    free(prekey_msg);
     free(line);
     return OTRNG_ERROR;
   }
@@ -505,6 +509,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   int dec_len = OTRNG_BASE64_DECODE_LEN(line_len - 1);
   uint8_t *dec = malloc(dec_len);
   if (!dec) {
+    free(prekey_msg);
     free(line);
     return OTRNG_ERROR;
   }
@@ -522,6 +527,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
 
   line_len = getline(&line, &cap, privf);
   if (line_len < 0) {
+    free(prekey_msg);
     free(line);
     return OTRNG_ERROR;
   }
@@ -530,6 +536,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   dec_len = OTRNG_BASE64_DECODE_LEN(line_len - 1);
   dec = malloc(dec_len);
   if (!dec) {
+    free(prekey_msg);
     free(line);
     return OTRNG_ERROR;
   }
@@ -546,6 +553,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   free(dec);
 
   if (!success) {
+    free(prekey_msg);
     return OTRNG_ERROR;
   }
 
@@ -601,10 +609,12 @@ otrng_client_prekey_profile_write_FILEp(otrng_client_s *client, FILE *privf) {
 
   if (0 > fprintf(privf, "%s\n%s\n", storage_id, encoded)) {
     free(encoded);
+    free(storage_id);
     return OTRNG_ERROR;
   }
 
   free(encoded);
+  free(storage_id);
 
   return OTRNG_SUCCESS;
 }
