@@ -42,8 +42,14 @@ char *otrng_client_get_storage_id(const otrng_client_s *client) {
     snprintf(key, n, "%s:%s", protocol_name, account_name);
   }
 
-  free(account_name);
-  free(protocol_name);
+  if (account_name) {
+    free(account_name);
+  }
+
+  if (protocol_name) {
+    free(protocol_name);
+  }
+
   return key;
 }
 
@@ -372,6 +378,7 @@ INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
   }
 
   if (0 > fprintf(privf, "%s\n%s\n", storage_id, encoded)) {
+    free(storage_id);
     free(encoded);
     return OTRNG_ERROR;
   }
@@ -509,7 +516,6 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   otrng_deserialize_ec_scalar(prekey_msg->our_ecdh->priv, dec, scalar_len);
   free(dec);
   dec = NULL;
-  dec_len = 0;
 
   otrng_ec_calculate_public_key(prekey_msg->our_ecdh->pub,
                                 prekey_msg->our_ecdh->priv);

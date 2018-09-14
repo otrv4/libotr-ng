@@ -145,7 +145,7 @@ script:
       if [ "$T" = "style" ]; then
            ./autogen.sh
            ./configure --disable-shared
-           make code-style-doctor code-check
+           make code-style-doctor code-check test-check
       fi
   - |
       if [ "$T" = "ctgrind" ]; then

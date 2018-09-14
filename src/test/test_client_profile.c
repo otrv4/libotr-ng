@@ -207,7 +207,7 @@ void test_otrng_client_profile_transitional_signature(void) {
   otrng_assert_is_success(
       client_profile_verify_transitional_signature(profile));
 
-  otrng_global_state_free(client->global_state);
   otrng_client_profile_free(profile);
+  otrng_global_state_free(client->global_state);
   otrng_client_free(client);
 }

@@ -42,6 +42,9 @@ CLANG_TIDY_ARGS = -p $(top_builddir) \
 code-check:
 	clang-tidy $(CLANG_TIDY_ARGS) $(top_builddir)/src/*.c
 
+test-check:
+	clang-tidy $(CLANG_TIDY_ARGS) $(top_builddir)/src/test/*.c
+
 VALGRIND_SUPPRESSIONS = \
 	valgrind.supp
 
