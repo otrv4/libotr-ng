@@ -267,9 +267,6 @@ void test_otrng_build_prekey_ensemble() {
 
 void test_otrng_invokes_shared_session_state_callbacks(void) {
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
-
-  client->global_state = otrng_global_state_new(test_callbacks);
-
   otrng_s *protocol = set_up(client, ALICE_ACCOUNT, 1);
 
   otrng_shared_session_state_s session;
