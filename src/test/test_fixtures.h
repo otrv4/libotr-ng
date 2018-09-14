@@ -153,6 +153,9 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
 
 void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture,
                             gconstpointer data) {
+  otrng_global_state_free(otrng_fixture->client->global_state);
+  otrng_fixture->client->global_state = NULL;
+
   otrng_client_free(otrng_fixture->client);
   otrng_fixture->client = NULL;
 

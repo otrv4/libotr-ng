@@ -313,9 +313,10 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
   free(session.identifier1);
   free(session.identifier2);
 
+  // TODO: this is not freeing
   otrng_global_state_free(client->global_state);
-  otrng_client_free_all(client);
-  otrng_free_all(protocol);
+  otrng_client_free(client);
+  otrng_free(protocol);
 }
 
 void test_otrng_generates_shared_session_state_string(void) {
