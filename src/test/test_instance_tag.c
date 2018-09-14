@@ -66,8 +66,7 @@ void test_invokes_create_instag_callbacks(void) {
                                          NULL,   // received_extra_symm_key
                                          NULL}}; // get_shared_session_state
 
-  otrng_client_id_s tmp_id;
-  otrng_client_callbacks_create_instag(callbacks, tmp_id);
+  otrng_client_callbacks_create_instag(callbacks, ALICE_IDENTITY);
   otrng_assert(INSTAG_CB_CALLED);
 }
 
