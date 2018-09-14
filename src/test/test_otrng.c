@@ -265,40 +265,10 @@ void test_otrng_build_prekey_ensemble() {
   otrng_client_free(client);
 }
 
-static otrng_shared_session_state_s
-test_get_shared_session_state_cb(const otrng_s *conv) {
-  // TODO: assert if the callback receives the conv it should
-
-  otrng_shared_session_state_s ret = {
-      .identifier1 = otrng_strdup("alice"),
-      .identifier2 = otrng_strdup("bob"),
-      .password = NULL,
-  };
-
-  return ret;
-}
-
 void test_otrng_invokes_shared_session_state_callbacks(void) {
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
 
-  otrng_client_callbacks_p callbacks = {{NULL, // get_account_and_protocol
-                                         NULL, // create_instag
-                                         NULL, // create_privkey v3
-                                         NULL, // create_privkey v4
-                                         NULL, // create_client_profile
-                                         NULL, // create_prekey_profile
-                                         NULL, // create_shared_prekey
-                                         NULL, // gone_secure
-                                         NULL, // gone_insecure
-                                         NULL, // fingerprint_seen
-                                         NULL, // fingerprint_seen_v3
-                                         NULL, // smp_ask_for_secret
-                                         NULL, // smp_ask_for_answer
-                                         NULL, // smp_update
-                                         NULL, // received_extra_symm_key
-                                         &test_get_shared_session_state_cb}};
-
-  client->global_state = otrng_global_state_new(callbacks);
+  client->global_state = otrng_global_state_new(test_callbacks);
 
   otrng_s *protocol = set_up(client, ALICE_ACCOUNT, 1);
 
@@ -313,10 +283,9 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
   free(session.identifier1);
   free(session.identifier2);
 
-  // TODO: this is not freeing
+  otrng_free(protocol);
   otrng_global_state_free(client->global_state);
   otrng_client_free(client);
-  otrng_free(protocol);
 }
 
 void test_otrng_generates_shared_session_state_string(void) {
