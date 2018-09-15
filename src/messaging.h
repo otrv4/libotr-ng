@@ -46,7 +46,6 @@
 #include "shared.h"
 
 typedef struct otrng_global_state_s {
-  list_element_s *states;
   list_element_s *clients;
 
   const otrng_client_callbacks_s *callbacks;
@@ -76,6 +75,9 @@ API otrng_result otrng_global_state_generate_shared_prekey(
 
 API otrng_result otrng_global_state_private_key_v4_write_FILEp(
     const otrng_global_state_s *gs, FILE *privf);
+
+API otrng_result otrng_global_state_forging_key_write_FILEp(
+    const otrng_global_state_s *gs, FILE *f);
 
 API otrng_result otrng_global_state_shared_prekey_write_FILEp(
     const otrng_global_state_s *gs, FILE *shared_prekey_f);
@@ -119,6 +121,10 @@ otrng_client_s *otrng_client_get(otrng_global_state_s *gs,
 API otrng_result otrng_global_state_private_key_v4_read_FILEp(
     otrng_global_state_s *gs, FILE *privf,
     const otrng_client_id_s (*read_client_id_for_key)(FILE *filep));
+
+API otrng_result otrng_global_state_forging_key_read_FILEp(
+    otrng_global_state_s *gs, FILE *f,
+    const otrng_client_id_s (*read_client_id_for_key)(FILE *f));
 
 API otrng_result otrng_global_state_prekeys_read_FILEp(
     otrng_global_state_s *gs, FILE *prekey_filep,

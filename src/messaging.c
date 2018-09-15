@@ -34,7 +34,6 @@ otrng_global_state_new(const otrng_client_callbacks_s *cb) {
     return NULL;
   }
 
-  /* gs->states = NULL; */
   gs->clients = NULL;
   gs->callbacks = cb;
   gs->user_state_v3 = otrl_userstate_create();
@@ -212,7 +211,26 @@ API otrng_result otrng_global_state_private_key_v4_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->states, add_private_key_v4_to_FILEp, privf);
+  otrng_list_foreach(gs->clients, add_private_key_v4_to_FILEp, privf);
+
+  return OTRNG_SUCCESS;
+}
+
+tstatic void add_forging_key_to_FILEp(list_element_s *node, void *context) {
+  otrng_client_s *client = node->data;
+  // TODO: check the return value
+  if (!otrng_client_forging_key_write_FILEp(client, context)) {
+    return;
+  }
+}
+
+API otrng_result otrng_global_state_forging_key_write_FILEp(
+    const otrng_global_state_s *gs, FILE *f) {
+  if (!f) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_list_foreach(gs->clients, add_forging_key_to_FILEp, f);
 
   return OTRNG_SUCCESS;
 }
@@ -231,7 +249,7 @@ API otrng_result otrng_global_state_shared_prekey_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->states, add_shared_prekey_to_FILEp, shared_prekey_f);
+  otrng_list_foreach(gs->clients, add_shared_prekey_to_FILEp, shared_prekey_f);
 
   return OTRNG_SUCCESS;
 }
@@ -246,7 +264,7 @@ API otrng_result otrng_global_state_client_profile_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->states, add_client_profile_to_FILEp, privf);
+  otrng_list_foreach(gs->clients, add_client_profile_to_FILEp, privf);
   return OTRNG_SUCCESS;
 }
 
@@ -261,7 +279,7 @@ API otrng_result otrng_global_state_prekey_profile_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->states, add_prekey_profile_to_FILEp, privf);
+  otrng_list_foreach(gs->clients, add_prekey_profile_to_FILEp, privf);
   return OTRNG_SUCCESS;
 }
 
@@ -277,7 +295,7 @@ API otrng_result otrng_global_state_prekey_messages_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->states, add_prekey_messages_to_FILEp, privf);
+  otrng_list_foreach(gs->clients, add_prekey_messages_to_FILEp, privf);
   return OTRNG_SUCCESS;
 }
 
@@ -298,6 +316,30 @@ API otrng_result otrng_global_state_private_key_v4_read_FILEp(
     otrng_client_s *client = get_client(gs, client_id);
     if (otrng_client_private_key_v4_read_FILEp(client, privf) !=
         OTRNG_SUCCESS) {
+      return OTRNG_ERROR; /* We decide to abort, since this means the file is
+                             malformed */
+    }
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+API otrng_result otrng_global_state_forging_key_read_FILEp(
+    otrng_global_state_s *gs, FILE *f,
+    const otrng_client_id_s (*read_client_id_for_key)(FILE *f)) {
+  if (!f) {
+    return OTRNG_ERROR;
+  }
+
+  // Scan the whole file for a private key for this client
+  while (!feof(f)) {
+    const otrng_client_id_s client_id = read_client_id_for_key(f);
+    if (!client_id.protocol || !client_id.account) {
+      continue;
+    }
+
+    otrng_client_s *client = get_client(gs, client_id);
+    if (otrng_failed(otrng_client_forging_key_read_FILEp(client, f))) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
     }

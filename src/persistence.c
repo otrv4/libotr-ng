@@ -21,6 +21,7 @@
 #include "persistence.h"
 #include "base64.h"
 #include "deserialize.h"
+#include "serialize.h"
 #include "messaging.h"
 
 /*
@@ -99,6 +100,46 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_FILEp(
   return OTRNG_SUCCESS;
 }
 
+INTERNAL otrng_result otrng_client_forging_key_write_FILEp(
+    const otrng_client_s *client, FILE *f) {
+  if (!f) {
+    return OTRNG_ERROR;
+  }
+
+  if (!client->forging_key) {
+    return OTRNG_ERROR;
+  }
+
+  uint8_t *buff = malloc((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
+  size_t s = otrng_serialize_forging_key(buff, *client->forging_key);
+  if (s == 0) {
+    return OTRNG_ERROR;
+  }
+
+  char *encoded = otrng_base64_encode(buff, s);
+  free(buff);
+  if (!encoded) {
+    return OTRNG_ERROR;
+  }
+
+  char *storage_id = otrng_client_get_storage_id(client);
+  if (!storage_id) {
+    free(encoded);
+    return OTRNG_ERROR;
+  }
+
+  if (0 > fprintf(f, "%s\n%s\n", storage_id, encoded)) {
+    free(storage_id);
+    free(encoded);
+    return OTRNG_ERROR;
+  }
+
+  free(storage_id);
+  free(encoded);
+
+  return OTRNG_SUCCESS;
+}
+
 INTERNAL otrng_result
 otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
@@ -142,6 +183,46 @@ otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf) {
   client->keypair = keypair;
 
   return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result
+otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
+  char *line = NULL;
+  size_t cap = 0;
+  int len = 0;
+
+  if (!f || feof(f)) {
+    return OTRNG_ERROR;
+  }
+
+  if (client->forging_key) {
+    otrng_ec_point_destroy(*client->forging_key);
+  }
+
+  len = getline(&line, &cap, f);
+  if (len < 0) {
+    free(line);
+    return OTRNG_ERROR;
+  }
+
+  uint8_t *dec = malloc(OTRNG_BASE64_DECODE_LEN(len));
+  if (!dec) {
+    free(line);
+    return OTRNG_ERROR;
+  }
+
+  size_t dec_len = otrl_base64_decode(dec, line, len);
+  free(line);
+
+  otrng_public_key_p key;
+  otrng_result ret = otrng_deserialize_forging_key(key, dec, dec_len, NULL);
+  free(dec);
+
+  if (ret == OTRNG_ERROR) {
+    return ret;
+  }
+
+  return otrng_client_add_forging_key(client, key);
 }
 
 INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
