@@ -32,6 +32,16 @@ INTERNAL void otrng_client_callbacks_create_privkey_v4(
   cb->create_privkey_v4(client_opdata);
 }
 
+INTERNAL void otrng_client_callbacks_create_forging_key(
+    const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
+  if (!cb) {
+    return;
+  }
+
+  // This callback is required and is expected to segfault if not provided.
+  cb->create_forging_key(client_opdata);
+}
+
 INTERNAL void otrng_client_callbacks_create_privkey_v3(
     const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
   if (!cb) {

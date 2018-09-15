@@ -36,6 +36,10 @@ INTERNAL void maybe_create_keys(otrng_client_s *client) {
     otrng_client_callbacks_create_privkey_v4(cb, client_id);
   }
 
+  if (!client->forging_key) {
+    otrng_client_callbacks_create_forging_key(cb, client_id);
+  }
+
   if (!client->shared_prekey_pair) {
     otrng_client_callbacks_create_shared_prekey(cb, client, client_id);
   }

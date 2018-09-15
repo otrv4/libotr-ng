@@ -688,14 +688,13 @@ tstatic otrng_result reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
-  otrng_rsig_authenticate(
-      msg->sigma, otr->client->keypair->priv,       /* sk_ha */
-      otr->client->keypair->pub,                    /* H_a */
-      otr->their_client_profile->long_term_pub_key, /* H_b */
-      otr->client->keypair->pub,                    /* H_a */
-      their_ecdh(otr),                              /* Y */
-      t, t_len);
+  /* sigma = RSig(H_a, sk_ha, {F_b, H_a, Y}, t) */
+  otrng_rsig_authenticate(msg->sigma, otr->client->keypair->priv, /* sk_ha */
+                          otr->client->keypair->pub,              /* H_a */
+                          otr->their_client_profile->forging_pub_key, /* F_b */
+                          otr->client->keypair->pub,                  /* H_a */
+                          their_ecdh(otr),                            /* Y */
+                          t, t_len);
   free(t);
 
   otrng_result result = serialize_and_encode_auth_r(dst, msg);
@@ -843,14 +842,13 @@ tstatic otrng_result build_non_interactive_auth_message(
 
   free(phi);
 
-  /* sigma = RSig(H_a, sk_ha, {H_b, H_a, Y}, t) */
-  otrng_rsig_authenticate(
-      auth->sigma, otr->client->keypair->priv,      /* sk_ha */
-      otr->client->keypair->pub,                    /* H_a */
-      otr->their_client_profile->long_term_pub_key, /* H_b */
-      otr->client->keypair->pub,                    /* H_a */
-      their_ecdh(otr),                              /* Y */
-      t, t_len);
+  /* sigma = RSig(H_a, sk_ha, {F_b, H_a, Y}, t) */
+  otrng_rsig_authenticate(auth->sigma, otr->client->keypair->priv, /* sk_ha */
+                          otr->client->keypair->pub,               /* H_a */
+                          otr->their_client_profile->forging_pub_key, /* F_b */
+                          otr->client->keypair->pub,                  /* H_a */
+                          their_ecdh(otr),                            /* Y */
+                          t, t_len);
 
   otrng_result ret = otrng_dake_non_interactive_auth_message_authenticator(
       auth->auth_mac, auth, t, t_len, otr->keys->tmp_key);
@@ -1188,8 +1186,8 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   free(phi);
 
-  /* RVrf({H_b, H_a, Y}, sigma, msg) */
-  if (!otrng_rsig_verify(auth->sigma, otr->client->keypair->pub, /* H_b */
+  /* RVrf({F_b, H_a, Y}, sigma, msg) */
+  if (!otrng_rsig_verify(auth->sigma, *otr->client->forging_key, /* H_b */
                          auth->profile->long_term_pub_key,       /* H_a */
                          our_ecdh(otr),                          /* Y  */
                          t, t_len)) {
@@ -1494,12 +1492,12 @@ tstatic otrng_result reply_with_auth_i_msg(
     return OTRNG_ERROR;
   }
 
-  /* sigma = RSig(H_b, sk_hb, {H_b, H_a, X}, t) */
-  otrng_rsig_authenticate(msg->sigma, otr->client->keypair->priv,  /* sk_hb */
-                          otr->client->keypair->pub,               /* H_b */
-                          otr->client->keypair->pub,               /* H_b */
-                          their_client_profile->long_term_pub_key, /* H_a */
-                          their_ecdh(otr),                         /* X */
+  /* sigma = RSig(H_b, sk_hb, {H_b, F_a, X}, t) */
+  otrng_rsig_authenticate(msg->sigma, otr->client->keypair->priv, /* sk_hb */
+                          otr->client->keypair->pub,              /* H_b */
+                          otr->client->keypair->pub,              /* H_b */
+                          their_client_profile->forging_pub_key,  /* F_a */
+                          their_ecdh(otr),                        /* X */
                           t, t_len);
   free(t);
 
@@ -1530,9 +1528,9 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
     return otrng_false;
   }
 
-  /* RVrf({H_b, H_a, Y}, sigma, msg) */
+  /* RVrf({F_b, H_a, Y}, sigma, msg) */
   otrng_bool err =
-      otrng_rsig_verify(auth->sigma, otr->client->keypair->pub, /* H_b */
+      otrng_rsig_verify(auth->sigma, *otr->client->forging_key, /* F_b */
                         auth->profile->long_term_pub_key,       /* H_a */
                         our_ecdh(otr),                          /* Y */
                         t, t_len);
@@ -1620,10 +1618,10 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
     return otrng_false;
   }
 
-  /* RVrf({H_b, H_a, X}, sigma, msg) */
+  /* RVrf({H_b, F_a, X}, sigma, msg) */
   otrng_bool err = otrng_rsig_verify(
       auth->sigma, otr->their_client_profile->long_term_pub_key, /* H_b */
-      otr->client->keypair->pub,                                 /* H_a */
+      *otr->client->forging_key,                                 /* F_a */
       our_ecdh(otr),                                             /* X */
       t, t_len);
 

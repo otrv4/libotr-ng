@@ -89,6 +89,9 @@ API void otrng_client_free(otrng_client_s *client) {
   }
 
   otrng_keypair_free(client->keypair);
+  if (client->forging_key) {
+    otrng_ec_point_destroy(*client->forging_key);
+  }
   otrng_list_free(client->our_prekeys, stored_prekeys_free_from_list);
   otrng_client_profile_free(client->client_profile);
   otrng_prekey_profile_free(client->prekey_profile);
@@ -708,6 +711,29 @@ INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client) {
   return client->keypair;
 }
 
+INTERNAL otrng_public_key_p *
+otrng_client_get_forging_key(otrng_client_s *client) {
+  if (!client) {
+    return NULL;
+  }
+
+  if (!client->forging_key) {
+    otrng_client_callbacks_create_forging_key(client->global_state->callbacks,
+                                              client->client_id);
+  }
+
+  return client->forging_key;
+}
+
+INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client) {
+  if (!client || client->forging_key) {
+    return;
+  }
+
+  otrng_client_callbacks_create_forging_key(client->global_state->callbacks,
+                                            client->client_id);
+}
+
 INTERNAL otrng_result otrng_client_add_private_key_v4(
     otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   if (!client) {
@@ -726,6 +752,26 @@ INTERNAL otrng_result otrng_client_add_private_key_v4(
   }
 
   otrng_keypair_generate(client->keypair, sym);
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result otrng_client_add_forging_key(
+    otrng_client_s *client, const otrng_public_key_p key) {
+  if (!client) {
+    return OTRNG_ERROR;
+  }
+
+  if (client->forging_key) {
+    return OTRNG_ERROR;
+  }
+
+  client->forging_key = malloc(sizeof(otrng_public_key_p));
+  if (!client->forging_key) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_ec_point_copy(*client->forging_key, key);
+
   return OTRNG_SUCCESS;
 }
 
@@ -753,9 +799,10 @@ otrng_client_build_default_client_profile(otrng_client_s *client) {
   }
 
   const char *allowed_versions = "34";
-  return otrng_client_profile_build(otrng_client_get_instance_tag(client),
-                                    allowed_versions,
-                                    otrng_client_get_keypair_v4(client));
+  otrng_client_ensure_forging_key(client);
+  return otrng_client_profile_build(
+      otrng_client_get_instance_tag(client), allowed_versions,
+      otrng_client_get_keypair_v4(client), client->forging_key);
 }
 
 API otrng_result otrng_client_add_client_profile(

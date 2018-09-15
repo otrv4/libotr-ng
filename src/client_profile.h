@@ -38,6 +38,7 @@
 #define OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(v)                               \
   (2 + 4                      /* instance tag */                               \
    + 2 + ED448_PUBKEY_BYTES   /* Ed448 pub key */                              \
+   + 2 + ED448_PUBKEY_BYTES   /* Ed448 pub forging key */                      \
    + 2 + v                    /* Versions */                                   \
    + 2 + 8                    /* Expiration */                                 \
    + 2 + DSA_PUBKEY_MAX_BYTES /* DSA pubkey */                                 \
@@ -50,9 +51,18 @@
    + ED448_SIGNATURE_BYTES                  /* Client Profile Signature */     \
   )
 
+#define OTRNG_CLIENT_PROFILE_FIELD_INSTANCE_TAG 0x01
+#define OTRNG_CLIENT_PROFILE_FIELD_PUBLIC_KEY 0x02
+#define OTRNG_CLIENT_PROFILE_FIELD_FORGING_KEY 0x03
+#define OTRNG_CLIENT_PROFILE_FIELD_VERSIONS 0x04
+#define OTRNG_CLIENT_PROFILE_FIELD_EXPIRATION 0x05
+#define OTRNG_CLIENT_PROFILE_FIELD_DSA_KEY 0x06
+#define OTRNG_CLIENT_PROFILE_FIELD_TRANSITIONAL_SIGNATURE 0x07
+
 typedef struct client_profile_s {
   uint32_t sender_instance_tag;
   otrng_public_key_p long_term_pub_key;
+  otrng_public_key_p forging_pub_key;
   char *versions;
   uint64_t expires;
   uint8_t *dsa_key;
@@ -79,7 +89,8 @@ INTERNAL otrng_result otrng_client_profile_asprintf(
 
 INTERNAL client_profile_s *
 otrng_client_profile_build(uint32_t instance_tag, const char *versions,
-                           const otrng_keypair_s *keypair);
+                           const otrng_keypair_s *keypair,
+                           const otrng_public_key_p *forging_key);
 
 INTERNAL otrng_bool otrng_client_profile_valid(
     const client_profile_s *profile, const uint32_t sender_instance_tag);

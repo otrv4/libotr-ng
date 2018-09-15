@@ -34,13 +34,9 @@
 
 static client_profile_s *client_profile_init(client_profile_s *profile,
                                              const char *versions) {
-  profile->sender_instance_tag = 0;
-  otrng_ec_bzero(profile->long_term_pub_key, ED448_POINT_BYTES);
-  profile->expires = 0;
+  memset(profile, 0, sizeof(client_profile_s));
+
   profile->versions = versions ? otrng_strdup(versions) : NULL;
-  profile->dsa_key = NULL;
-  profile->dsa_key_len = 0;
-  profile->transitional_signature = NULL;
 
   return profile;
 }
@@ -108,6 +104,7 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
 
   dst->sender_instance_tag = src->sender_instance_tag;
   otrng_ec_point_copy(dst->long_term_pub_key, src->long_term_pub_key);
+  otrng_ec_point_copy(dst->forging_pub_key, src->forging_pub_key);
   dst->versions = otrng_strdup(src->versions);
   dst->expires = src->expires;
   copy_dsa_key(dst, src);
@@ -124,6 +121,8 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *profile) {
   /* @secret_information: the long-term public key gets deleted with the
      destruction of the client profile but can live beyond that */
   otrng_ec_point_destroy(profile->long_term_pub_key);
+
+  otrng_ec_point_destroy(profile->forging_pub_key);
 
   free(profile->versions);
   profile->versions = NULL;
@@ -149,30 +148,35 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
   // TODO: Check for buffer overflows
 
   /* Instance tag */
-  w += otrng_serialize_uint16(dst + w, 0x01);
+  w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_INSTANCE_TAG);
   w += otrng_serialize_uint32(dst + w, profile->sender_instance_tag);
   num_fields++;
 
   /* Ed448 public key */
-  w += otrng_serialize_uint16(dst + w, 0x02);
+  w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_PUBLIC_KEY);
   w += otrng_serialize_public_key(dst + w, profile->long_term_pub_key);
+  num_fields++;
+
+  /* Ed448 forging key */
+  w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_FORGING_KEY);
+  w += otrng_serialize_forging_key(dst + w, profile->forging_pub_key);
   num_fields++;
 
   /* Versions */
   size_t versions_len = profile->versions ? strlen(profile->versions) + 1 : 1;
-  w += otrng_serialize_uint16(dst + w, 0x04);
+  w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_VERSIONS);
   w +=
       otrng_serialize_data(dst + w, (uint8_t *)profile->versions, versions_len);
   num_fields++;
 
   /* Expiration */
-  w += otrng_serialize_uint16(dst + w, 0x05);
+  w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_EXPIRATION);
   w += otrng_serialize_uint64(dst + w, profile->expires);
   num_fields++;
 
   /* DSA key */
   if (profile->dsa_key && profile->dsa_key_len) {
-    w += otrng_serialize_uint16(dst + w, 0x06);
+    w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_DSA_KEY);
     w += otrng_serialize_bytes_array(dst + w, profile->dsa_key,
                                      profile->dsa_key_len);
     num_fields++;
@@ -197,7 +201,8 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
 
   // Transitional Signature
   if (profile->transitional_signature) {
-    w += otrng_serialize_uint16(dst + w, 0x08);
+    w += otrng_serialize_uint16(
+        dst + w, OTRNG_CLIENT_PROFILE_FIELD_TRANSITIONAL_SIGNATURE);
     w += otrng_serialize_bytes_array(dst + w, profile->transitional_signature,
                                      OTRv3_DSA_SIG_BYTES);
     num_fields++;
@@ -334,19 +339,25 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
 
   read = 0;
   switch (field_type) {
-  case 0x01: // Owner Instance Tag
+  case OTRNG_CLIENT_PROFILE_FIELD_INSTANCE_TAG: // Owner Instance Tag
     if (!otrng_deserialize_uint32(&target->sender_instance_tag, buffer + w,
                                   buflen - w, &read)) {
       return OTRNG_ERROR;
     }
     break;
-  case 0x02: // Ed448 public key
+  case OTRNG_CLIENT_PROFILE_FIELD_PUBLIC_KEY: // Ed448 public key
     if (!otrng_deserialize_public_key(target->long_term_pub_key, buffer + w,
                                       buflen - w, &read)) {
       return OTRNG_ERROR;
     }
     break;
-  case 0x04: // Versions
+  case OTRNG_CLIENT_PROFILE_FIELD_FORGING_KEY: // Ed448 forging key
+    if (!otrng_deserialize_forging_key(target->forging_pub_key, buffer + w,
+                                       buflen - w, &read)) {
+      return OTRNG_ERROR;
+    }
+    break;
+  case OTRNG_CLIENT_PROFILE_FIELD_VERSIONS: // Versions
   {
     uint8_t *versions = NULL;
     size_t versions_len = 0;
@@ -358,21 +369,19 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
     target->versions = otrng_strndup((char *)versions, versions_len);
     free(versions);
   } break;
-  case 0x05: // Expiration
+  case OTRNG_CLIENT_PROFILE_FIELD_EXPIRATION: // Expiration
     if (!otrng_deserialize_uint64(&target->expires, buffer + w, buflen - w,
                                   &read)) {
       return OTRNG_ERROR;
     }
     break;
-  case 0x06: // DSA key
+  case OTRNG_CLIENT_PROFILE_FIELD_DSA_KEY: // DSA key
     if (!deserialize_dsa_key_field(target, buffer + w, buflen - w, &read)) {
       return OTRNG_ERROR;
     }
     break;
-  case 0x07: //???
-    // ???
-    break;
-  case 0x08: // Transitional Signature
+  case OTRNG_CLIENT_PROFILE_FIELD_TRANSITIONAL_SIGNATURE: // Transitional
+                                                          // Signature
     target->transitional_signature = malloc(OTRv3_DSA_SIG_BYTES);
     if (!target->transitional_signature) {
       return OTRNG_ERROR;
@@ -484,7 +493,8 @@ client_profile_verify_signature(const client_profile_s *profile) {
 
 INTERNAL client_profile_s *
 otrng_client_profile_build(uint32_t instance_tag, const char *versions,
-                           const otrng_keypair_s *keypair) {
+                           const otrng_keypair_s *keypair,
+                           const otrng_public_key_p *forging_key) {
 
   if (!otrng_instance_tag_valid(instance_tag) || !versions || !keypair) {
     return NULL;
@@ -499,6 +509,8 @@ otrng_client_profile_build(uint32_t instance_tag, const char *versions,
 #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   time_t expires = time(NULL);
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
+
+  otrng_ec_point_copy(profile->forging_pub_key, *forging_key);
 
   if (!client_profile_sign(profile, keypair)) {
     otrng_client_profile_free(profile);
@@ -651,6 +663,10 @@ INTERNAL otrng_bool otrng_client_profile_valid(
   }
 
   if (!otrng_ec_point_valid(profile->long_term_pub_key)) {
+    return otrng_false;
+  }
+
+  if (!otrng_ec_point_valid(profile->forging_pub_key)) {
     return otrng_false;
   }
 

@@ -221,19 +221,24 @@ void test_otrng_destroy() {
 void test_otrng_build_prekey_ensemble() {
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {0xA};
   uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {0XF};
+  uint8_t forging_priv[ED448_PRIVATE_BYTES] = {
+      2}; // non-random forging key on purpose
+  otrng_keypair_s *kforging = otrng_keypair_new();
+  otrng_keypair_generate(kforging, forging_priv);
 
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
   client->global_state = otrng_global_state_new(test_callbacks);
 
   otrng_assert_is_success(
       otrng_client_add_private_key_v4(client, long_term_priv));
+  otrng_assert_is_success(otrng_client_add_forging_key(client, kforging->pub));
   otrng_assert_is_success(
       otrng_client_add_shared_prekey_v4(client, shared_prekey_priv));
   otrng_assert_is_success(otrng_client_add_instance_tag(client, 0x100A0F));
 
   otrng_keypair_s *keypair = otrng_client_get_keypair_v4(client);
-  client_profile_s *profile =
-      otrng_client_profile_build(0x100A0F, "34", keypair);
+  client_profile_s *profile = otrng_client_profile_build(
+      0x100A0F, "34", keypair, otrng_client_get_forging_key(client));
   otrng_client_add_client_profile(client, profile);
   otrng_client_profile_free(profile);
 

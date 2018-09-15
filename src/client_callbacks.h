@@ -62,6 +62,9 @@ typedef struct otrng_client_callbacks_s {
   /* Create a OTRv4 private key */
   void (*create_privkey_v4)(const struct otrng_client_id_s client_opdata);
 
+  /* Create a OTRv4 forging key */
+  void (*create_forging_key)(const struct otrng_client_id_s client_opdata);
+
   /* Create a client profile */
   void (*create_client_profile)(struct otrng_client_s *client,
                                 const struct otrng_client_id_s client_opdata);
@@ -136,6 +139,10 @@ typedef struct otrng_client_callbacks_s {
 } otrng_client_callbacks_s, otrng_client_callbacks_p[1];
 
 INTERNAL void otrng_client_callbacks_create_privkey_v4(
+    const otrng_client_callbacks_s *cb,
+    const struct otrng_client_id_s client_opdata);
+
+INTERNAL void otrng_client_callbacks_create_forging_key(
     const otrng_client_callbacks_s *cb,
     const struct otrng_client_id_s client_opdata);
 

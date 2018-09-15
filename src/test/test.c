@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
                   test_global_state_key_management);
   g_test_add_func("/user_state/shared_prekey_management",
                   test_global_state_shared_prekey_management);
-  g_test_add_func("/user_state/client_profilte",
+  g_test_add_func("/user_state/client_profile",
                   test_global_state_client_profile_management);
   g_test_add_func("/user_state/prekey_message_management",
                   test_global_state_prekey_message_management);

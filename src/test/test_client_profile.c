@@ -44,6 +44,8 @@ void test_client_profile_serializes_body() {
   profile->expires = 15;
 
   otrng_ec_point_copy(profile->long_term_pub_key, keypair->pub);
+  const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
+  otrng_ec_point_copy(profile->forging_pub_key, *create_forging_key_from(fsym));
 
   uint8_t expected_pubkey[ED448_PUBKEY_BYTES] = {0};
   otrng_serialize_public_key(expected_pubkey, keypair->pub);
@@ -52,10 +54,10 @@ void test_client_profile_serializes_body() {
   uint8_t *serialized = NULL;
   otrng_assert_is_success(
       client_profile_body_asprintf(&serialized, &written, profile));
-  g_assert_cmpint(written, ==, 89);
+  g_assert_cmpint(written, ==, 150);
 
   char expected_header[] = {
-      0x00, 0x00, 0x00, 0x04, // Num fields
+      0x00, 0x00, 0x00, 0x05, // Num fields
       0x00, 0x01,             // Instance tag field type
       0x00, 0x00, 0x00, 0x04, // sender instance tag
       0x0,  0x2,              // Pubke field type
@@ -67,6 +69,8 @@ void test_client_profile_serializes_body() {
 
   otrng_assert_cmpmem(expected_pubkey, pos, ED448_PUBKEY_BYTES);
   pos += ED448_PUBKEY_BYTES;
+
+  pos += ED448_PUBKEY_BYTES + 2;
 
   char expected[] = {
       0x0,  0x4,                                // Versions field type
@@ -92,6 +96,9 @@ void test_client_profile_serializes() {
   otrng_assert(profile != NULL);
   profile->expires = 15;
 
+  const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
+  otrng_ec_point_copy(profile->forging_pub_key, *create_forging_key_from(fsym));
+
   client_profile_sign(profile, keypair);
   profile->transitional_signature = malloc(OTRv3_DSA_SIG_BYTES);
   memset(profile->transitional_signature, 0, OTRv3_DSA_SIG_BYTES);
@@ -100,10 +107,10 @@ void test_client_profile_serializes() {
   uint8_t *serialized = NULL;
   otrng_assert_is_success(
       client_profile_body_asprintf(&serialized, &written, profile));
-  g_assert_cmpint(written, ==, 131);
+  g_assert_cmpint(written, ==, 192);
 
   char expected_transitional_signature[] = {
-      0x0, 0x8, // Transitional signature field type
+      0x0, 0x7, // Transitional signature field type
       0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, // transitional signature
       0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
       0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
@@ -127,6 +134,9 @@ void test_otrng_client_profile_deserializes() {
   client_profile_s *profile = client_profile_new("4");
 
   otrng_assert(profile != NULL);
+
+  const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
+  otrng_ec_point_copy(profile->forging_pub_key, *create_forging_key_from(fsym));
 
   profile->sender_instance_tag = 4;
   client_profile_sign(profile, keypair);
@@ -153,6 +163,9 @@ void test_client_profile_signs_and_verify() {
 
   client_profile_s *profile = client_profile_new("4");
 
+  const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
+  otrng_ec_point_copy(profile->forging_pub_key, *create_forging_key_from(fsym));
+
   otrng_assert(profile != NULL);
   client_profile_sign(profile, keypair);
 
@@ -170,15 +183,19 @@ void test_otrng_client_profile_build() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  otrng_assert(
-      !otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, "3", NULL));
-  otrng_assert(
-      !otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, NULL, keypair));
-  otrng_assert(
-      !otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG, "3", keypair));
+  otrng_keypair_p keypair2;
+  uint8_t sym2[ED448_PRIVATE_BYTES] = {2};
+  otrng_keypair_generate(keypair2, sym2);
 
-  client_profile_s *profile =
-      otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, "3", keypair);
+  otrng_assert(
+      !otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, "3", NULL, NULL));
+  otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, NULL,
+                                           keypair, &keypair2->pub));
+  otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG, "3", keypair,
+                                           &keypair2->pub));
+
+  client_profile_s *profile = otrng_client_profile_build(
+      OTRNG_MIN_VALID_INSTAG + 1, "3", keypair, &keypair2->pub);
   g_assert_cmpstr(profile->versions, ==, "3");
 
   otrng_client_profile_free(profile);
@@ -200,8 +217,12 @@ void test_otrng_client_profile_transitional_signature(void) {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
 
-  client_profile_s *profile =
-      otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1234, "43", keypair);
+  otrng_keypair_p keypair2;
+  uint8_t sym2[ED448_PRIVATE_BYTES] = {2};
+  otrng_keypair_generate(keypair2, sym2);
+
+  client_profile_s *profile = otrng_client_profile_build(
+      OTRNG_MIN_VALID_INSTAG + 1234, "43", keypair, &keypair2->pub);
   otrng_assert_is_success(
       otrng_client_profile_transitional_sign(profile, dsa_key));
   otrng_assert_is_success(

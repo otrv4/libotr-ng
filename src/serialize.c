@@ -137,6 +137,15 @@ INTERNAL size_t otrng_serialize_public_key(uint8_t *dst,
   return cursor - dst;
 }
 
+INTERNAL size_t otrng_serialize_forging_key(uint8_t *dst,
+                                            const otrng_public_key_p pub) {
+  uint8_t *cursor = dst;
+  cursor += otrng_serialize_uint16(cursor, ED448_FORGINGKEY_TYPE);
+  cursor += otrng_serialize_ec_point(cursor, pub);
+
+  return cursor - dst;
+}
+
 INTERNAL size_t otrng_serialize_shared_prekey(
     uint8_t *dst, const otrng_shared_prekey_pub_p shared_prekey) {
   uint8_t *cursor = dst;

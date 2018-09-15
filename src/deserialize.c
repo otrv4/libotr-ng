@@ -207,6 +207,37 @@ INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key_p pub,
   return OTRNG_SUCCESS;
 }
 
+INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key_p pub,
+                                                    const uint8_t *serialized,
+                                                    size_t ser_len,
+                                                    size_t *read) {
+  const uint8_t *cursor = serialized;
+  size_t r = 0;
+  uint16_t pubkey_type = 0;
+
+  if (ser_len < ED448_PUBKEY_BYTES) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_deserialize_uint16(&pubkey_type, cursor, ser_len, &r);
+  cursor += r;
+  ser_len -= r;
+
+  if (ED448_FORGINGKEY_TYPE != pubkey_type) {
+    return OTRNG_ERROR;
+  }
+
+  if (!otrng_deserialize_ec_point(pub, cursor, ser_len)) {
+    return OTRNG_ERROR;
+  }
+
+  if (read) {
+    *read = ED448_PUBKEY_BYTES;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
 INTERNAL otrng_result otrng_deserialize_shared_prekey(
     otrng_shared_prekey_pub_p shared_prekey, const uint8_t *serialized,
     size_t ser_len, size_t *read) {

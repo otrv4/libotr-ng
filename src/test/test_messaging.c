@@ -141,12 +141,20 @@ void test_global_state_shared_prekey_management(void) {
 void test_global_state_client_profile_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+  const uint8_t alice_fsym[ED448_PRIVATE_BYTES] = {3};
+  const uint8_t bob_fsym[ED448_PRIVATE_BYTES] = {5};
 
   otrng_global_state_s *state = otrng_global_state_new(NULL);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", alice_account), alice_sym);
+  otrng_global_state_add_forging_key(state,
+                                     create_client_id("otr", alice_account),
+                                     create_forging_key_from(alice_fsym));
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", bob_account), bob_sym);
+  otrng_global_state_add_forging_key(state,
+                                     create_client_id("otr", bob_account),
+                                     create_forging_key_from(bob_fsym));
 
   otrng_assert(otrng_global_state_get_private_key_v4(
       state, create_client_id("otr", alice_account)));
@@ -158,12 +166,16 @@ void test_global_state_client_profile_management(void) {
   /* Generate file */
   FILE *client_profile = tmpfile();
   fputs("charlie@xmpp\n"
-        "AAAABAAB26FP8QACABA7tTzNTkCSyKHJ/"
-        "OSxJvdNXa6yLZG2KRVbqpF0mBbm8SMsHVcQ3xaeJIqzAsFFB5e1ZNqJ750yhoAABAAAAAM"
-        "zNAAABQAAAABbnbX8F1Jf/8JRR20QtKJ+8RJw2lfuRMtaPKlaGPkoK/76VSPXS/"
-        "rwyWpXmXcE6CMaWLBs6z4ccGJOz+"
-        "EARUYZBZ2Kvob3InDvlXnPGu91U7OjGadUVPJN2QdtANwF6pV+"
-        "qNRpGTnUDwHq9wgblNT0WAzlHSwA\n",
+        "AAAABQABAAAABAACABAFcsFMsTB3RLkvO"
+        "Df5ljmruyD/xHHYnZ1UU0nccA4BJ0kfBhMU+viahccHYL0BiKVmnRpDk/CDS4AAAwASmJc"
+        "x7rsKG6WmkEPIwSUWsWi+oSN0ZUsE6LPThZO6NwsHGky+PyCO4eIOl31h5R/8yn"
+        "+HFQwYpfwAAAQAAAACNAAABQAAAA"
+        "AAAAAADUwrQkA131HHDGqpPpkVYz"
+        "K6wxkiey41VEP627vvMiat5eTSRT"
+        "qy/mGfdgACg1PqeNp5RNxqlR+AvE"
+        "c7I9d71XiJykzb/w40+F8R1PD+qZ"
+        "PeXjol7p0sWSVfr+d1xw9sk6aL0r"
+        "dspG3NtxBaAIodSgcA\n",
         client_profile);
   rewind(client_profile);
 
@@ -182,12 +194,16 @@ void test_global_state_client_profile_management(void) {
   otrng_client_profile_asprintf(&buffer, &s, client->client_profile);
   char *encoded = otrng_base64_encode(buffer, s);
   const char *expected =
-      "AAAABAAB26FP8QACABA7tTzNTkCSyKHJ/"
-      "OSxJvdNXa6yLZG2KRVbqpF0mBbm8SMsHVcQ3xaeJIqzAsFFB5e1ZNqJ750yhoAABAAAAAMzN"
-      "AAABQAAAABbnbX8F1Jf/8JRR20QtKJ+8RJw2lfuRMtaPKlaGPkoK/76VSPXS/"
-      "rwyWpXmXcE6CMaWLBs6z4ccGJOz+"
-      "EARUYZBZ2Kvob3InDvlXnPGu91U7OjGadUVPJN2QdtANwF6pV+"
-      "qNRpGTnUDwHq9wgblNT0WAzlHSwA";
+      "AAAABQABAAAABAACABAFcsFMsTB3RLkvO"
+      "Df5ljmruyD/xHHYnZ1UU0nccA4BJ0kfBhMU+viahccHYL0BiKVmnRpDk/CDS4AAAwASmJc"
+      "x7rsKG6WmkEPIwSUWsWi+oSN0ZUsE6LPThZO6NwsHGky+PyCO4eIOl31h5R/8yn"
+      "+HFQwYpfwAAAQAAAACNAAABQAAAA"
+      "AAAAAADUwrQkA131HHDGqpPpkVYz"
+      "K6wxkiey41VEP627vvMiat5eTSRT"
+      "qy/mGfdgACg1PqeNp5RNxqlR+AvE"
+      "c7I9d71XiJykzb/w40+F8R1PD+qZ"
+      "PeXjol7p0sWSVfr+d1xw9sk6aL0r"
+      "dspG3NtxBaAIodSgcA";
 
   otrng_assert_cmpmem(expected, encoded, s);
 

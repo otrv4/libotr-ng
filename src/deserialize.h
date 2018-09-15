@@ -61,6 +61,11 @@ INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key_p pub,
                                                    size_t ser_len,
                                                    size_t *read);
 
+INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key_p pub,
+                                                    const uint8_t *serialized,
+                                                    size_t ser_len,
+                                                    size_t *read);
+
 INTERNAL otrng_result otrng_deserialize_shared_prekey(
     otrng_shared_prekey_pub_p shared_prekey, const uint8_t *serialized,
     size_t ser_len, size_t *read);

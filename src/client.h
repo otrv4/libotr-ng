@@ -54,6 +54,7 @@ typedef struct otrng_client_s {
 
   struct otrng_global_state_s *global_state;
   otrng_keypair_s *keypair;
+  otrng_public_key_p *forging_key;
 
   // TODO: @client One or many?
   client_profile_s *client_profile;
@@ -233,9 +234,15 @@ INTERNAL OtrlPrivKey *
 otrng_client_get_private_key_v3(const otrng_client_s *client);
 
 INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client);
+INTERNAL otrng_public_key_p *
+otrng_client_get_forging_key(otrng_client_s *client);
+INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client);
 
 INTERNAL otrng_result otrng_client_add_private_key_v4(
     otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]);
+
+INTERNAL otrng_result otrng_client_add_forging_key(
+    otrng_client_s *client, const otrng_public_key_p key);
 
 INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
     const otrng_client_s *client, FILE *shared_prekey_f);

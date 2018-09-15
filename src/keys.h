@@ -32,6 +32,7 @@
 #define ED448_PUBKEY_BYTES 2 + ED448_POINT_BYTES
 #define ED448_SHARED_PREKEY_TYPE 0x0011
 #define ED448_SHARED_PREKEY_BYTES 2 + ED448_POINT_BYTES
+#define ED448_FORGINGKEY_TYPE 0x0012
 
 typedef ec_point_p otrng_public_key_p;
 typedef ec_scalar_p otrng_private_key_p;

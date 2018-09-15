@@ -29,6 +29,8 @@ void test_prekey_ensemble_validate(void) {
   otrng_keypair_s *keypair2 = otrng_keypair_new();
   otrng_keypair_generate(keypair2, sym2);
 
+  uint8_t sym3[ED448_PRIVATE_BYTES] = {0xA2};
+
   prekey_ensemble_s *ensemble = malloc(sizeof(prekey_ensemble_s));
   otrng_assert(ensemble);
 
@@ -37,6 +39,9 @@ void test_prekey_ensemble_validate(void) {
   ensemble->client_profile->expires = time(NULL) + 60 * 60 * 24; // one day
   ensemble->client_profile->transitional_signature = NULL;
   ensemble->client_profile->dsa_key = NULL;
+  otrng_ec_point_copy(ensemble->client_profile->forging_pub_key,
+                      *create_forging_key_from(sym3));
+
   otrng_assert_is_success(
       client_profile_sign(ensemble->client_profile, keypair));
 

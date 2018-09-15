@@ -113,11 +113,33 @@ tstatic otrng_result otrng_global_state_add_private_key_v4(
   return otrng_client_add_private_key_v4(get_client(gs, clientop), sym);
 }
 
+tstatic otrng_result otrng_global_state_add_forging_key(
+    otrng_global_state_s *gs, const otrng_client_id_s clientop,
+    otrng_public_key_p *fk) {
+  return otrng_client_add_forging_key(get_client(gs, clientop), *fk);
+}
+
 API otrng_result otrng_global_state_generate_private_key(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
   uint8_t sym[ED448_PRIVATE_BYTES];
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
   return otrng_global_state_add_private_key_v4(gs, client_id, sym);
+}
+
+API otrng_result otrng_global_state_generate_forging_key(
+    otrng_global_state_s *gs, const otrng_client_id_s client_id) {
+  // This function generates the forging key by
+  // generating a full keypair and then deleting the secret material
+  // A better way would be to just generate the public material directly
+  uint8_t sym[ED448_PRIVATE_BYTES];
+  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
+  otrng_keypair_s *k = otrng_keypair_new();
+  otrng_keypair_generate(k, sym);
+  otrng_result r = otrng_global_state_add_forging_key(gs, client_id, &k->pub);
+  // At this point you can add printing of the secret key material
+  // if you ever need to use the forging key.
+  otrng_keypair_free(k);
+  return r;
 }
 
 API otrng_result otrng_global_state_generate_client_profile(
