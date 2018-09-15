@@ -21,8 +21,8 @@
 #include "persistence.h"
 #include "base64.h"
 #include "deserialize.h"
-#include "serialize.h"
 #include "messaging.h"
+#include "serialize.h"
 
 /*
   Provides sample FILE-based persistence mechanism.
@@ -100,8 +100,8 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_FILEp(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_client_forging_key_write_FILEp(
-    const otrng_client_s *client, FILE *f) {
+INTERNAL otrng_result
+otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f) {
   if (!f) {
     return OTRNG_ERROR;
   }
