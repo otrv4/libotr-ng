@@ -239,7 +239,7 @@ void test_otrng_build_prekey_ensemble() {
 
   otrng_keypair_s *keypair = otrng_client_get_keypair_v4(client);
   client_profile_s *profile = otrng_client_profile_build(
-      0x100A0F, "34", keypair, otrng_client_get_forging_key(client));
+      0x100A0F, "34", keypair, *otrng_client_get_forging_key(client));
   otrng_client_add_client_profile(client, profile);
   otrng_client_profile_free(profile);
 

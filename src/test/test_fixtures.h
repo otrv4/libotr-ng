@@ -79,7 +79,7 @@ static void create_client_profile_cb(struct otrng_client_s *client,
 
   client_profile_s *profile =
       otrng_client_profile_build(instance_tag, allowed_versions, keypair,
-                                 otrng_client_get_forging_key(client));
+                                 *otrng_client_get_forging_key(client));
 
   if (!instance_tag || !keypair || !profile) {
     return;

@@ -803,7 +803,7 @@ otrng_client_build_default_client_profile(otrng_client_s *client) {
   otrng_client_ensure_forging_key(client);
   return otrng_client_profile_build(
       otrng_client_get_instance_tag(client), allowed_versions,
-      otrng_client_get_keypair_v4(client), client->forging_key);
+      otrng_client_get_keypair_v4(client), *client->forging_key);
 }
 
 API otrng_result otrng_client_add_client_profile(

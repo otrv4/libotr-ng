@@ -494,7 +494,7 @@ client_profile_verify_signature(const client_profile_s *profile) {
 INTERNAL client_profile_s *
 otrng_client_profile_build(uint32_t instance_tag, const char *versions,
                            const otrng_keypair_s *keypair,
-                           const otrng_public_key_p *forging_key) {
+                           const otrng_public_key_p forging_key) {
 
   if (!otrng_instance_tag_valid(instance_tag) || !versions || !keypair) {
     return NULL;
@@ -510,7 +510,7 @@ otrng_client_profile_build(uint32_t instance_tag, const char *versions,
   time_t expires = time(NULL);
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
 
-  otrng_ec_point_copy(profile->forging_pub_key, *forging_key);
+  otrng_ec_point_copy(profile->forging_pub_key, forging_key);
 
   if (!client_profile_sign(profile, keypair)) {
     otrng_client_profile_free(profile);
