@@ -232,6 +232,7 @@ void test_otrng_build_prekey_ensemble() {
   otrng_assert_is_success(
       otrng_client_add_private_key_v4(client, long_term_priv));
   otrng_assert_is_success(otrng_client_add_forging_key(client, kforging->pub));
+  otrng_keypair_free(kforging);
   otrng_assert_is_success(
       otrng_client_add_shared_prekey_v4(client, shared_prekey_priv));
   otrng_assert_is_success(otrng_client_add_instance_tag(client, 0x100A0F));
