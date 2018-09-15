@@ -330,7 +330,10 @@ tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
     return OTRNG_ERROR;
   }
 
-  memcpy(otrng_stpcpy((char *)*dst, message) + 1, ser, len);
+  char *res = otrng_stpcpy((char *)*dst, message);
+  if (ser) {
+    memcpy(res + 1, ser, len);
+  }
 
   if (padding) {
     memcpy(*dst + message_len, padding, padding_len);
