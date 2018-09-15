@@ -39,8 +39,10 @@ void test_prekey_ensemble_validate(void) {
   ensemble->client_profile->expires = time(NULL) + 60 * 60 * 24; // one day
   ensemble->client_profile->transitional_signature = NULL;
   ensemble->client_profile->dsa_key = NULL;
+  otrng_public_key_p *fk = create_forging_key_from(sym3);
   otrng_ec_point_copy(ensemble->client_profile->forging_pub_key,
-                      *create_forging_key_from(sym3));
+                      *fk);
+  free(fk);
 
   otrng_assert_is_success(
       client_profile_sign(ensemble->client_profile, keypair));

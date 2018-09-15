@@ -92,6 +92,7 @@ API void otrng_client_free(otrng_client_s *client) {
   if (client->forging_key) {
     otrng_ec_point_destroy(*client->forging_key);
   }
+  free(client->forging_key);
   otrng_list_free(client->our_prekeys, stored_prekeys_free_from_list);
   otrng_client_profile_free(client->client_profile);
   otrng_prekey_profile_free(client->prekey_profile);

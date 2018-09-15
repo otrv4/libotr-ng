@@ -147,14 +147,18 @@ void test_global_state_client_profile_management(void) {
   otrng_global_state_s *state = otrng_global_state_new(NULL);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", alice_account), alice_sym);
+  otrng_public_key_p *fk = create_forging_key_from(alice_fsym);
   otrng_global_state_add_forging_key(state,
                                      create_client_id("otr", alice_account),
-                                     create_forging_key_from(alice_fsym));
+                                     fk);
+  free(fk);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", bob_account), bob_sym);
+  fk = create_forging_key_from(bob_fsym);
   otrng_global_state_add_forging_key(state,
                                      create_client_id("otr", bob_account),
-                                     create_forging_key_from(bob_fsym));
+                                     fk);
+  free(fk);
 
   otrng_assert(otrng_global_state_get_private_key_v4(
       state, create_client_id("otr", alice_account)));
