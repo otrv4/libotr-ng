@@ -140,8 +140,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   const uint8_t sym2[ED448_PRIVATE_BYTES] = {
       2}; // non-random forging key on purpose
   otrng_public_key_p *fk = create_forging_key_from(sym2);
-  otrng_client_add_forging_key(otrng_fixture->client,
-                               *fk);
+  otrng_client_add_forging_key(otrng_fixture->client, *fk);
   free(fk);
   otrng_client_add_shared_prekey_v4(otrng_fixture->client, sym);
 
@@ -207,8 +206,7 @@ static void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data) {
 
   const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
   otrng_public_key_p *fk = create_forging_key_from(fsym);
-  otrng_ec_point_copy(f->profile->forging_pub_key,
-                      *fk);
+  otrng_ec_point_copy(f->profile->forging_pub_key, *fk);
   free(fk);
 
   otrng_assert(f->profile != NULL);

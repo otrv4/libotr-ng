@@ -52,7 +52,8 @@ INTERNAL otrng_result otrng_deserialize_uint32(uint32_t *n,
     return OTRNG_ERROR;
   }
 
-  *n = (uint32_t)buffer[3] | ((uint32_t)buffer[2]) << 8 | ((uint32_t)buffer[1]) << 16 | ((uint32_t)buffer[0]) << 24;
+  *n = (uint32_t)buffer[3] | ((uint32_t)buffer[2]) << 8 |
+       ((uint32_t)buffer[1]) << 16 | ((uint32_t)buffer[0]) << 24;
 
   if (nread) {
     *nread = sizeof(uint32_t);
