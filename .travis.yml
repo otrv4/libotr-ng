@@ -157,5 +157,6 @@ script:
       if [ "$T" = "sanitizer" ]; then
            ./autogen.sh
            ./configure --with-sanitizers=address,undefined
+           export LSAN_OPTIONS=suppressions=lsan.supp
            make test
       fi
