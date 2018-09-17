@@ -506,6 +506,7 @@ otrng_client_profile_build(uint32_t instance_tag, const char *versions,
   }
 
   profile->sender_instance_tag = instance_tag;
+// TODO: this should be configurable
 #define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   time_t expires = time(NULL);
   profile->expires = expires + PROFILE_EXPIRATION_SECONDS;

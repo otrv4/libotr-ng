@@ -67,6 +67,7 @@ typedef struct otrng_client_s {
   unsigned int max_stored_msg_keys;
   unsigned int max_published_prekey_msg;
   unsigned int minimum_stored_prekey_msg;
+  uint64_t extra_client_profile_validity;
   otrng_bool (*should_heartbeat)(int last_sent);
   size_t padding;
 

@@ -421,10 +421,13 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
   free(dec);
 
   if (otrng_client_profile_expired(profile->expires)) {
-    // TODO: add extra validity
-    // TODO: I'm suspecting this will make a lot of tests fail,
-    /// let's just print this for the moment
-    printf("\n expired client profile \n");
+// TODO: this should be configurable
+#define EXTRA_CLIENT_PROFILE_EXPIRATION_SECONDS 2 * 24 * 60 * 60; /* 2 days */
+    time_t extra_validity = time(NULL);
+    client->extra_client_profile_validity =
+        extra_validity + EXTRA_CLIENT_PROFILE_EXPIRATION_SECONDS;
+    // TODO: I'm suspecting this will make a lot of tests fail, so
+    // no return for the moment
     // return OTRNG_SUCCESS;
   }
 
