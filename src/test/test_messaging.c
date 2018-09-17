@@ -214,6 +214,72 @@ void test_global_state_client_profile_management(void) {
   otrng_global_state_free(state);
 }
 
+void test_global_state_prekey_profile_management(void) {
+  const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
+  const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
+  const uint8_t alice_fsym[ED448_PRIVATE_BYTES] = {3};
+  const uint8_t bob_fsym[ED448_PRIVATE_BYTES] = {5};
+
+  otrng_global_state_s *state = otrng_global_state_new(NULL);
+  otrng_global_state_add_private_key_v4(
+      state, create_client_id("otr", alice_account), alice_sym);
+  otrng_public_key_p *fk = create_forging_key_from(alice_fsym);
+  otrng_global_state_add_forging_key(
+      state, create_client_id("otr", alice_account), fk);
+  free(fk);
+  otrng_global_state_add_private_key_v4(
+      state, create_client_id("otr", bob_account), bob_sym);
+  fk = create_forging_key_from(bob_fsym);
+  otrng_global_state_add_forging_key(state,
+                                     create_client_id("otr", bob_account), fk);
+  free(fk);
+
+  otrng_assert(otrng_global_state_get_private_key_v4(
+      state, create_client_id("otr", alice_account)));
+  otrng_assert(otrng_global_state_get_private_key_v4(
+      state, create_client_id("otr", bob_account)));
+  otrng_assert(!otrng_global_state_get_private_key_v4(
+      state, create_client_id("otr", charlie_account)));
+
+  /* Generate file */
+  FILE *prekey_profile = tmpfile();
+  fputs("charlie@xmpp\n"
+        "26FP8QAAAABbxy5lABFQAQ3a/"
+        "s1vlz8xF+vPV82xSwmEA65IyR3ZaR6NzZNNAznBrXXb7YjvMuYtTtKnp+"
+        "LZfUSYFcjoZACAqnA8V5fDvuuCFFMINr6rKZihf4wTVOKO+hO+"
+        "rMWi7dsYeLu3eee7fZ9LsHUuriHxadL6mW0J6QAPeo2n75TnDUt1aVpjCK0Mrut0hTstbD"
+        "oyyEVaVNh2Rx87o30YStXn92fDNCBsGHU+F2xv/ZQ2OQA=\n",
+        prekey_profile);
+  rewind(prekey_profile);
+
+  otrng_result result = otrng_global_state_prekey_profile_read_FILEp(
+      state, prekey_profile, read_client_id_for_privf);
+  otrng_assert_is_success(result);
+  fclose(prekey_profile);
+
+  otrng_client_s *client =
+      get_client(state, create_client_id("otr", charlie_account));
+
+  otrng_assert(client->prekey_profile);
+
+  uint8_t *buffer = NULL;
+  size_t s = 0;
+  otrng_prekey_profile_asprint(&buffer, &s, client->prekey_profile);
+  char *encoded = otrng_base64_encode(buffer, s);
+  const char *expected =
+      "26FP8QAAAABbxy5lABFQAQ3a/"
+      "s1vlz8xF+vPV82xSwmEA65IyR3ZaR6NzZNNAznBrXXb7YjvMuYtTtKnp+"
+      "LZfUSYFcjoZACAqnA8V5fDvuuCFFMINr6rKZihf4wTVOKO+hO+"
+      "rMWi7dsYeLu3eee7fZ9LsHUuriHxadL6mW0J6QAPeo2n75TnDUt1aVpjCK0Mrut0hTstbDoy"
+      "yEVaVNh2Rx87o30YStXn92fDNCBsGHU+F2xv/ZQ2OQA=";
+
+  otrng_assert_cmpmem(expected, encoded, s);
+
+  free(encoded);
+  free(buffer);
+  otrng_global_state_free(state);
+}
+
 void test_global_state_prekey_message_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};

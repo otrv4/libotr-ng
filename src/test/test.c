@@ -93,13 +93,15 @@ int main(int argc, char **argv) {
   g_test_add_func("/otrng/instance_tag/otrng_invokes_create_instag",
                   test_invokes_create_instag_callbacks);
 
-  g_test_add_func("/user_state/key_management",
+  g_test_add_func("/global_state/key_management",
                   test_global_state_key_management);
-  g_test_add_func("/user_state/shared_prekey_management",
+  g_test_add_func("/global_state/shared_prekey_management",
                   test_global_state_shared_prekey_management);
-  g_test_add_func("/user_state/client_profile",
+  g_test_add_func("/global_state/client_profile",
                   test_global_state_client_profile_management);
-  g_test_add_func("/user_state/prekey_message_management",
+  g_test_add_func("/global_state/prekey_profile",
+                  test_global_state_prekey_profile_management);
+  g_test_add_func("/global_state/prekey_message_management",
                   test_global_state_prekey_message_management);
 
   g_test_add_func("/edwards448/eddsa_serialization",
