@@ -339,25 +339,25 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
 
   read = 0;
   switch (field_type) {
-  case OTRNG_CLIENT_PROFILE_FIELD_INSTANCE_TAG: // Owner Instance Tag
+  case OTRNG_CLIENT_PROFILE_FIELD_INSTANCE_TAG: /* Owner Instance Tag */
     if (!otrng_deserialize_uint32(&target->sender_instance_tag, buffer + w,
                                   buflen - w, &read)) {
       return OTRNG_ERROR;
     }
     break;
-  case OTRNG_CLIENT_PROFILE_FIELD_PUBLIC_KEY: // Ed448 public key
+  case OTRNG_CLIENT_PROFILE_FIELD_PUBLIC_KEY: /* Ed448 public key */
     if (!otrng_deserialize_public_key(target->long_term_pub_key, buffer + w,
                                       buflen - w, &read)) {
       return OTRNG_ERROR;
     }
     break;
-  case OTRNG_CLIENT_PROFILE_FIELD_FORGING_KEY: // Ed448 forging key
+  case OTRNG_CLIENT_PROFILE_FIELD_FORGING_KEY: /* Ed448 forging key */
     if (!otrng_deserialize_forging_key(target->forging_pub_key, buffer + w,
                                        buflen - w, &read)) {
       return OTRNG_ERROR;
     }
     break;
-  case OTRNG_CLIENT_PROFILE_FIELD_VERSIONS: // Versions
+  case OTRNG_CLIENT_PROFILE_FIELD_VERSIONS: /* Versions */
   {
     uint8_t *versions = NULL;
     size_t versions_len = 0;
@@ -369,19 +369,19 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
     target->versions = otrng_strndup((char *)versions, versions_len);
     free(versions);
   } break;
-  case OTRNG_CLIENT_PROFILE_FIELD_EXPIRATION: // Expiration
+  case OTRNG_CLIENT_PROFILE_FIELD_EXPIRATION: /* Expiration */
     if (!otrng_deserialize_uint64(&target->expires, buffer + w, buflen - w,
                                   &read)) {
       return OTRNG_ERROR;
     }
     break;
-  case OTRNG_CLIENT_PROFILE_FIELD_DSA_KEY: // DSA key
+  case OTRNG_CLIENT_PROFILE_FIELD_DSA_KEY: /* DSA key */
     if (!deserialize_dsa_key_field(target, buffer + w, buflen - w, &read)) {
       return OTRNG_ERROR;
     }
     break;
-  case OTRNG_CLIENT_PROFILE_FIELD_TRANSITIONAL_SIGNATURE: // Transitional
-                                                          // Signature
+  case OTRNG_CLIENT_PROFILE_FIELD_TRANSITIONAL_SIGNATURE: /* Transitional
+                                                             Signature */
     target->transitional_signature = malloc(OTRv3_DSA_SIG_BYTES);
     if (!target->transitional_signature) {
       return OTRNG_ERROR;
@@ -520,7 +520,7 @@ otrng_client_profile_build(uint32_t instance_tag, const char *versions,
   return profile;
 }
 
-tstatic otrng_bool expired(time_t expires) {
+INTERNAL otrng_bool otrng_client_profile_expired(time_t expires) {
   return difftime(expires, time(NULL)) <= 0;
 }
 
@@ -654,7 +654,7 @@ INTERNAL otrng_bool otrng_client_profile_valid(
     return otrng_false;
   }
 
-  if (expired(profile->expires)) {
+  if (otrng_client_profile_expired(profile->expires)) {
     return otrng_false;
   }
 

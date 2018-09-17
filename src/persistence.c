@@ -420,6 +420,14 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
       otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
   free(dec);
 
+  if (otrng_client_profile_expired(profile->expires)) {
+    // TODO: add extra validity
+    // TODO: I'm suspecting this will make a lot of tests fail,
+    /// let's just print this for the moment
+    printf("\n expired client profile \n");
+    // return OTRNG_SUCCESS;
+  }
+
   if (ret == OTRNG_ERROR) {
     return ret;
   }

@@ -92,6 +92,8 @@ otrng_client_profile_build(uint32_t instance_tag, const char *versions,
                            const otrng_keypair_s *keypair,
                            const otrng_public_key_p forging_key);
 
+INTERNAL otrng_bool otrng_client_profile_expired(time_t expires);
+
 INTERNAL otrng_bool otrng_client_profile_valid(
     const client_profile_s *profile, const uint32_t sender_instance_tag);
 

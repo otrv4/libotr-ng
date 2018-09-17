@@ -127,9 +127,9 @@ API otrng_result otrng_global_state_generate_private_key(
 
 API otrng_result otrng_global_state_generate_forging_key(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
-  // This function generates the forging key by
-  // generating a full keypair and then deleting the secret material
-  // A better way would be to just generate the public material directly
+  /* This function generates the forging key by
+     generating a full keypair and then deleting the secret material
+     A better way would be to just generate the public material directly */
   uint8_t sym[ED448_PRIVATE_BYTES];
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
   otrng_keypair_s *k = otrng_keypair_new();
