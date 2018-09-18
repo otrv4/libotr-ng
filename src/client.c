@@ -80,6 +80,10 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
   client->minimum_stored_prekey_msg = 20;
   client->should_heartbeat = should_heartbeat;
 
+#define EXTRA_CLIENT_PROFILE_EXPIRATION_SECONDS 2 * 24 * 60 * 60; /* 2 days */
+  client->client_profile_extra_valid_time =
+      EXTRA_CLIENT_PROFILE_EXPIRATION_SECONDS;
+
   return client;
 }
 
@@ -1053,6 +1057,11 @@ API void otrng_client_set_padding(size_t granularity, otrng_client_s *client) {
   client->padding = granularity;
 }
 
+API void otrng_client_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
+                                              otrng_client_s *client) {
+  client->max_stored_msg_keys = max_stored_msg_keys;
+}
+
 API otrng_result
 otrng_client_get_max_published_prekey_msg(otrng_client_s *client) {
   if (!client) {
@@ -1060,6 +1069,12 @@ otrng_client_get_max_published_prekey_msg(otrng_client_s *client) {
   }
 
   return client->max_published_prekey_msg;
+}
+
+API void
+otrng_client_set_max_published_prekey_msg(unsigned int max_published_prekey_msg,
+                                          otrng_client_s *client) {
+  client->max_published_prekey_msg = max_published_prekey_msg;
 }
 
 API otrng_result
@@ -1071,14 +1086,14 @@ otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client) {
   return client->minimum_stored_prekey_msg;
 }
 
-API void otrng_client_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
-                                              otrng_client_s *client) {
-  client->max_stored_msg_keys = max_stored_msg_keys;
+API void otrng_client_state_set_minimum_stored_prekey_msg(
+    unsigned int minimum_stored_prekey_msg, otrng_client_s *client) {
+  client->minimum_stored_prekey_msg = minimum_stored_prekey_msg;
 }
 
-API void otrng_client_state_set_max_published_prekey_msg(
-    unsigned int max_published_prekey_msg, otrng_client_s *client) {
-  client->max_published_prekey_msg = max_published_prekey_msg;
+API void otrng_client_set_client_profile_extra_valid_time(
+    unsigned int client_profile_extra_valid_time, otrng_client_s *client) {
+  client->client_profile_extra_valid_time = client_profile_extra_valid_time;
 }
 
 #ifdef DEBUG_API

@@ -67,8 +67,12 @@ typedef struct otrng_client_s {
   unsigned int max_stored_msg_keys;
   unsigned int max_published_prekey_msg;
   unsigned int minimum_stored_prekey_msg;
+
   uint64_t extra_client_profile_validity; // TODO: unsure of putting here, what
                                           // about multiple instace tags?
+  unsigned int client_profile_exp_time;
+  unsigned int client_profile_extra_valid_time;
+
   otrng_bool (*should_heartbeat)(int last_sent);
   size_t padding;
 
@@ -251,17 +255,23 @@ INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
 
 API void otrng_client_set_padding(size_t granularity, otrng_client_s *client);
 
-API otrng_result
-otrng_client_get_max_published_prekey_msg(otrng_client_s *client);
-
-API otrng_result
-otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
-
 API void otrng_client_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
                                               otrng_client_s *client);
 
+API otrng_result
+otrng_client_get_max_published_prekey_msg(otrng_client_s *client);
+
 API void otrng_client_state_set_max_published_prekey_msg(
     unsigned int max_published_prekey_msg, otrng_client_s *client);
+
+API void otrng_client_state_set_minimum_stored_prekey_msg(
+    unsigned int minimum_stored_prekey_msg, otrng_client_s *client);
+
+API void otrng_client_set_client_profile_extra_valid_time(
+    unsigned int client_profile_extra_valid_time, otrng_client_s *client);
+
+API otrng_result
+otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
 
 #ifdef DEBUG_API
 API void otrng_client_debug_print(FILE *, int, otrng_client_s *);
