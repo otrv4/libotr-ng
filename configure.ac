@@ -141,7 +141,7 @@ AC_ARG_WITH(ctgrind,
   ])
 ])
 
-# Enable gprof profiling
+dnl Enable gprof profiling
 AC_ARG_ENABLE([gprof],
     [AS_HELP_STRING([--enable-gprof],
                     [use gprof profiling compiler flags (default is no)])],
@@ -149,7 +149,7 @@ AC_ARG_ENABLE([gprof],
     [enable_gprof=no])
 AC_CACHE_SAVE
 
-# Enable different -fsanitize options
+dnl Enable different -fsanitize options
 AC_ARG_WITH([sanitizers],
     [AS_HELP_STRING([--with-sanitizers],
                     [comma separated list of extra sanitizers to build with (default is none enabled)])],
@@ -159,9 +159,8 @@ if test "x$enable_gprof" = xyes; then
     AX_CHECK_COMPILE_FLAG([-pg],[GPROF_CFLAGS="-pg"],
         AC_MSG_ERROR(gprof profiling requested but not available))
 
-    AX_CHECK_LINK_FLAG([[-no-pie]], [GPROF_LDFLAGS="-no-pie"])
     AX_CHECK_LINK_FLAG([[-pg]],[GPROF_LDFLAGS="$GPROF_LDFLAGS -pg"],
-        AC_MSG_ERROR(gprof profiling requested but not available))
+        AC_MSG_ERROR(gprof profiling requested but not available), [[$GPROF_LDFLAGS]])
 fi
 
 if test x$use_sanitizers != x; then
