@@ -87,10 +87,9 @@ INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
 INTERNAL otrng_result otrng_client_profile_asprintf(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile);
 
-INTERNAL client_profile_s *
-otrng_client_profile_build(uint32_t instance_tag, const char *versions,
-                           const otrng_keypair_s *keypair,
-                           const otrng_public_key_p forging_key);
+INTERNAL client_profile_s *otrng_client_profile_build(
+    uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
+    const otrng_public_key_p forging_key, unsigned int expiration_time);
 
 INTERNAL otrng_bool otrng_client_profile_expired(time_t expires);
 

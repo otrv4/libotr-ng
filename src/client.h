@@ -70,7 +70,7 @@ typedef struct otrng_client_s {
 
   uint64_t extra_client_profile_validity; // TODO: unsure of putting here, what
                                           // about multiple instace tags?
-  unsigned int client_profile_exp_time;
+  uint64_t client_profile_exp_time;
   unsigned int client_profile_extra_valid_time;
 
   otrng_bool (*should_heartbeat)(int last_sent);
@@ -272,6 +272,13 @@ API void otrng_client_set_client_profile_extra_valid_time(
 
 API otrng_result
 otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
+
+API otrng_result
+otrng_client_get_client_profile_exp_time(otrng_client_s *client);
+
+API void
+otrng_client_set_client_profile_exp_time(unsigned int client_profile_exp_time,
+                                         otrng_client_s *client);
 
 #ifdef DEBUG_API
 API void otrng_client_debug_print(FILE *, int, otrng_client_s *);

@@ -84,6 +84,9 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
   client->client_profile_extra_valid_time =
       EXTRA_CLIENT_PROFILE_EXPIRATION_SECONDS;
 
+#define CLIENT_PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
+  client->client_profile_exp_time = CLIENT_PROFILE_EXPIRATION_SECONDS;
+
   return client;
 }
 
@@ -807,7 +810,8 @@ otrng_client_build_default_client_profile(otrng_client_s *client) {
   otrng_client_ensure_forging_key(client);
   return otrng_client_profile_build(
       otrng_client_get_instance_tag(client), allowed_versions,
-      otrng_client_get_keypair_v4(client), *client->forging_key);
+      otrng_client_get_keypair_v4(client), *client->forging_key,
+      otrng_client_get_client_profile_exp_time(client));
 }
 
 API otrng_result otrng_client_add_client_profile(
@@ -1094,6 +1098,21 @@ API void otrng_client_state_set_minimum_stored_prekey_msg(
 API void otrng_client_set_client_profile_extra_valid_time(
     unsigned int client_profile_extra_valid_time, otrng_client_s *client) {
   client->client_profile_extra_valid_time = client_profile_extra_valid_time;
+}
+
+API otrng_result
+otrng_client_get_client_profile_exp_time(otrng_client_s *client) {
+  if (!client) {
+    return OTRNG_ERROR;
+  }
+
+  return client->client_profile_exp_time;
+}
+
+API void
+otrng_client_set_client_profile_exp_time(unsigned int client_profile_exp_time,
+                                         otrng_client_s *client) {
+  client->client_profile_exp_time = client_profile_exp_time;
 }
 
 #ifdef DEBUG_API

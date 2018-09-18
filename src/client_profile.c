@@ -496,11 +496,9 @@ client_profile_verify_signature(const client_profile_s *client_profile) {
   return valid;
 }
 
-INTERNAL client_profile_s *
-otrng_client_profile_build(uint32_t instance_tag, const char *versions,
-                           const otrng_keypair_s *keypair,
-                           const otrng_public_key_p forging_key) {
-
+INTERNAL client_profile_s *otrng_client_profile_build(
+    uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
+    const otrng_public_key_p forging_key, unsigned int expiration_time) {
   if (!otrng_instance_tag_valid(instance_tag) || !versions || !keypair) {
     return NULL;
   }
@@ -511,10 +509,10 @@ otrng_client_profile_build(uint32_t instance_tag, const char *versions,
   }
 
   client_profile->sender_instance_tag = instance_tag;
-// TODO: this should be configurable
-#define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
+  // TODO: this should be configurable
+  //#define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   time_t expires = time(NULL);
-  client_profile->expires = expires + PROFILE_EXPIRATION_SECONDS;
+  client_profile->expires = expires + expiration_time;
 
   otrng_ec_point_copy(client_profile->forging_pub_key, forging_key);
 

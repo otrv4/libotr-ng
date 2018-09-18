@@ -195,15 +195,17 @@ void test_otrng_client_profile_build() {
   uint8_t sym2[ED448_PRIVATE_BYTES] = {2};
   otrng_keypair_generate(keypair2, sym2);
 
-  otrng_assert(
-      !otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, "3", NULL, NULL));
+  uint64_t expiration = 1000;
+
+  otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, "3",
+                                           NULL, NULL, expiration));
   otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, NULL,
-                                           keypair, keypair2->pub));
+                                           keypair, keypair2->pub, expiration));
   otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG, "3", keypair,
-                                           keypair2->pub));
+                                           keypair2->pub, expiration));
 
   client_profile_s *profile = otrng_client_profile_build(
-      OTRNG_MIN_VALID_INSTAG + 1, "3", keypair, keypair2->pub);
+      OTRNG_MIN_VALID_INSTAG + 1, "3", keypair, keypair2->pub, expiration);
   g_assert_cmpstr(profile->versions, ==, "3");
 
   otrng_client_profile_free(profile);
@@ -230,7 +232,8 @@ void test_otrng_client_profile_transitional_signature(void) {
   otrng_keypair_generate(keypair2, sym2);
 
   client_profile_s *profile = otrng_client_profile_build(
-      OTRNG_MIN_VALID_INSTAG + 1234, "43", keypair, keypair2->pub);
+      OTRNG_MIN_VALID_INSTAG + 1234, "43", keypair, keypair2->pub,
+      otrng_client_get_client_profile_exp_time(client));
   otrng_assert_is_success(
       otrng_client_profile_transitional_sign(profile, dsa_key));
   otrng_assert_is_success(
