@@ -116,6 +116,13 @@ typedef enum {
 } otrng_prekey_next_message_t;
 
 typedef struct {
+  unsigned int max_published_prekey_msg;
+  unsigned int minimum_stored_prekey_msg;
+  otrng_bool publish_client_profile;
+  otrng_bool publish_prekey_profile;
+} otrng_prekey_publication_policy_s;
+
+typedef struct {
   void *ctx; /* How calbacks can keep state */
   void (*notify_error)(int error, void *ctx);
   void (*storage_status_received)(
@@ -128,7 +135,7 @@ typedef struct {
                                     uint8_t num_ensembles, void *ctx);
   int (*build_prekey_publication_message)(
       otrng_prekey_publication_message_s *pub_msg,
-      unsigned int max_published_prekey_msg, void *ctx);
+      otrng_prekey_publication_policy_s *publication_policy, void *ctx);
 } otrng_prekey_client_callbacks_s;
 
 typedef struct {
@@ -139,8 +146,7 @@ typedef struct {
   const otrng_prekey_profile_s *prekey_profile;
   ecdh_keypair_p ephemeral_ecdh;
 
-  unsigned int max_published_prekey_msg;
-  unsigned int minimum_stored_prekey_msg;
+  otrng_prekey_publication_policy_s *publication_policy;
 
   char *server_identity;
   otrng_public_key_p pub;
@@ -151,13 +157,16 @@ typedef struct {
   otrng_prekey_client_callbacks_s *callbacks;
 } otrng_prekey_client_s;
 
-API otrng_prekey_client_s *
-otrng_prekey_client_new(const char *server, const char *our_identity,
-                        uint32_t instance_tag, const otrng_keypair_s *keypair,
-                        const client_profile_s *client_profile,
-                        const otrng_prekey_profile_s *prekey_profile,
-                        unsigned int max_published_prekey_msg,
-                        unsigned int minimum_stored_prekey_msg);
+API void otrng_prekey_client_init(otrng_prekey_client_s *prekey_client,
+                                  const char *server, const char *our_identity,
+                                  uint32_t instance_tag,
+                                  const otrng_keypair_s *keypair,
+                                  const client_profile_s *client_profile,
+                                  const otrng_prekey_profile_s *prekey_profile,
+                                  unsigned int max_published_prekey_msg,
+                                  unsigned int minimum_stored_prekey_msg);
+
+API otrng_prekey_client_s *otrng_prekey_client_new();
 
 API void otrng_prekey_client_free(otrng_prekey_client_s *client);
 
@@ -172,6 +181,12 @@ API otrng_result otrng_prekey_client_receive(char **tosend, const char *server,
 
 API otrng_result otrng_parse_header(uint8_t *message_type, const uint8_t *buf,
                                     size_t buflen, size_t *read);
+
+API void otrng_prekey_client_set_prekey_profile_publication(
+    otrng_prekey_client_s *client);
+
+API void otrng_prekey_client_set_client_profile_publication(
+    otrng_prekey_client_s *client);
 
 INTERNAL otrng_result
 otrng_prekey_dake1_message_asprint(uint8_t **serialized, size_t *serialized_len,

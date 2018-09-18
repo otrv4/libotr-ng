@@ -81,50 +81,62 @@ static int build_prekey_publication_message_callback(
     otrng_prekey_publication_message_s *pub_msg,
     const otrng_prekey_client_s *client) {
   return client->callbacks->build_prekey_publication_message(
-      pub_msg, client->max_published_prekey_msg, client->callbacks->ctx);
+      pub_msg, client->publication_policy, client->callbacks->ctx);
 }
 
-API otrng_prekey_client_s *
-otrng_prekey_client_new(const char *server, const char *our_identity,
-                        uint32_t instance_tag, const otrng_keypair_s *keypair,
-                        const client_profile_s *client_profile,
-                        const otrng_prekey_profile_s *prekey_profile,
-                        unsigned int max_published_prekey_msg,
-                        unsigned int minimum_stored_prekey_msg) {
-  otrng_prekey_client_s *ret;
+API otrng_prekey_client_s *otrng_prekey_client_new() {
+  otrng_prekey_client_s *client = otrng_xmalloc(sizeof(otrng_prekey_client_s));
+
+  client->publication_policy =
+      otrng_xmalloc(sizeof(otrng_prekey_publication_policy_s));
+
+  memset(client->publication_policy, 0, sizeof(client->publication_policy));
+
+  return client;
+}
+
+API void otrng_prekey_client_init(otrng_prekey_client_s *client,
+                                  const char *server, const char *our_identity,
+                                  uint32_t instance_tag,
+                                  const otrng_keypair_s *keypair,
+                                  const client_profile_s *client_profile,
+                                  const otrng_prekey_profile_s *prekey_profile,
+                                  unsigned int max_published_prekey_msg,
+                                  unsigned int minimum_stored_prekey_msg) {
+  if (!client) {
+    return;
+  }
 
   if (!server) {
-    return NULL;
+    return;
   }
 
   if (!our_identity) {
-    return NULL;
+    return;
   }
 
   if (!instance_tag) {
-    return NULL;
+    return;
   }
 
   if (!client_profile) {
-    return NULL;
+    return;
   }
 
-  ret = otrng_xmalloc(sizeof(otrng_prekey_client_s));
-
-  ret->instance_tag = instance_tag;
-  ret->client_profile = client_profile;
+  client->instance_tag = instance_tag;
+  client->client_profile = client_profile;
+  
   // TODO: Can be null if you dont want to publish it
-  ret->prekey_profile = prekey_profile;
-  ret->keypair = keypair;
-  ret->server_identity = otrng_xstrdup(server);
+  client->server_identity = otrng_xstrdup(server);
+  client->our_identity = otrng_xstrdup(our_identity);
+  client->prekey_profile = prekey_profile;
+  client->keypair = keypair;
 
-  ret->our_identity = otrng_xstrdup(our_identity);
-
-  otrng_ecdh_keypair_destroy(ret->ephemeral_ecdh);
-  ret->max_published_prekey_msg = max_published_prekey_msg;
-  ret->minimum_stored_prekey_msg = minimum_stored_prekey_msg;
-
-  return ret;
+  otrng_ecdh_keypair_destroy(client->ephemeral_ecdh);
+  client->publication_policy->max_published_prekey_msg =
+      max_published_prekey_msg;
+  client->publication_policy->minimum_stored_prekey_msg =
+      minimum_stored_prekey_msg;
 }
 
 API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
@@ -135,6 +147,9 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
   otrng_ecdh_keypair_destroy(client->ephemeral_ecdh);
   free(client->server_identity);
   free(client->our_identity);
+
+  free(client->publication_policy);
+  client->publication_policy = NULL;
 
   free(client);
 }
@@ -240,6 +255,16 @@ API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
   ret = prekey_encode(serialized, serialized_len);
   free(serialized);
   return ret;
+}
+
+API void otrng_prekey_client_set_client_profile_publication(
+    otrng_prekey_client_s *client) {
+  client->publication_policy->publish_client_profile = otrng_true;
+}
+
+API void otrng_prekey_client_set_prekey_profile_publication(
+    otrng_prekey_client_s *client) {
+  client->publication_policy->publish_prekey_profile = otrng_true;
 }
 
 INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_asprint(
@@ -447,15 +472,19 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
 
   int i;
 
-  if (!otrng_client_profile_asprintf(&client_profile, &client_profile_len,
-                                     pub_msg->client_profile)) {
-    return OTRNG_ERROR;
+  if (pub_msg->client_profile) {
+    if (!otrng_client_profile_asprintf(&client_profile, &client_profile_len,
+                                       pub_msg->client_profile)) {
+      return OTRNG_ERROR;
+    }
   }
 
-  if (!otrng_prekey_profile_asprint(&prekey_profile, &prekey_profile_len,
-                                    pub_msg->prekey_profile)) {
-    free(client_profile);
-    return OTRNG_ERROR;
+  if (pub_msg->prekey_profile) {
+    if (!otrng_prekey_profile_asprint(&prekey_profile, &prekey_profile_len,
+                                      pub_msg->prekey_profile)) {
+      free(client_profile);
+      return OTRNG_ERROR;
+    }
   }
 
   if (pub_msg->num_prekey_messages > 0) {
@@ -870,7 +899,8 @@ static char *receive_storage_status(const uint8_t *decoded, size_t decoded_len,
 
   ret = process_received_storage_status(msg, client);
 
-  if (msg->stored_prekeys < client->minimum_stored_prekey_msg) {
+  if (msg->stored_prekeys <
+      client->publication_policy->minimum_stored_prekey_msg) {
     low_prekey_messages_in_storage_callback(client);
   }
 

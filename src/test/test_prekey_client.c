@@ -24,8 +24,9 @@ void test_send_dake_1_message(void) {
   set_up_client(alice, ALICE_ACCOUNT, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = otrng_prekey_client_new(
-      "prekey@localhost", "alice@localhost",
+  alice->prekey_client = otrng_prekey_client_new();
+  otrng_prekey_client_init(
+      alice->prekey_client, "prekey@localhost", "alice@localhost",
       otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
       otrng_client_get_client_profile(alice),
       otrng_client_get_prekey_profile(alice),
@@ -48,8 +49,9 @@ void test_send_dake_3_message_with_storage_info_request(void) {
   set_up_client(alice, ALICE_ACCOUNT, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = otrng_prekey_client_new(
-      "prekey@localhost", "alice@localhost",
+  alice->prekey_client = otrng_prekey_client_new();
+  otrng_prekey_client_init(
+      alice->prekey_client, "prekey@localhost", "alice@localhost",
       otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
       otrng_client_get_client_profile(alice),
       otrng_client_get_prekey_profile(alice),
@@ -119,8 +121,9 @@ void test_receive_prekey_server_messages(void) {
   set_up_client(alice, ALICE_ACCOUNT, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = otrng_prekey_client_new(
-      "prekey@localhost", "alice@localhost",
+  alice->prekey_client = otrng_prekey_client_new();
+  otrng_prekey_client_init(
+      alice->prekey_client, "prekey@localhost", "alice@localhost",
       otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
       otrng_client_get_client_profile(alice),
       otrng_client_get_prekey_profile(alice),
