@@ -202,6 +202,7 @@ echo
 echo "Options used to compile and link:"
 echo "  sanitizers    = $use_sanitizers"
 echo "  gprof enabled = $enable_gprof"
+echo "  with ctgrind  = $with_ctgrind"
 echo "  CC            = $CC"
 echo "  CFLAGS        = $CFLAGS"
 echo "  LDFLAGS       = $LDFLAGS"

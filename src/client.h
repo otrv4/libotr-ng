@@ -257,6 +257,12 @@ otrng_client_get_max_published_prekey_msg(otrng_client_s *client);
 API otrng_result
 otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
 
+API void otrng_client_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
+                                              otrng_client_s *client);
+
+API void otrng_client_state_set_max_published_prekey_msg(
+    unsigned int max_published_prekey_msg, otrng_client_s *client);
+
 #ifdef DEBUG_API
 API void otrng_client_debug_print(FILE *, int, otrng_client_s *);
 API void otrng_conversation_debug_print(FILE *, int, otrng_conversation_s *);
