@@ -144,13 +144,13 @@ tstatic otrng_result otrng_prekey_profile_body_asprint(
     return OTRNG_ERROR;
   }
 
-  size_t s = PREKEY_PROFILE_BODY_BYTES;
-  uint8_t *buff = malloc(s);
+  size_t size = PREKEY_PROFILE_BODY_BYTES;
+  uint8_t *buff = malloc(size);
   if (!buff) {
     return OTRNG_ERROR;
   }
 
-  size_t written = otrng_prekey_profile_body_serialize(buff, s, profile);
+  size_t written = otrng_prekey_profile_body_serialize(buff, size, profile);
   if (written == 0) {
     free(buff);
     return OTRNG_ERROR;
@@ -167,8 +167,8 @@ tstatic otrng_result otrng_prekey_profile_body_asprint(
 
 INTERNAL otrng_result otrng_prekey_profile_asprint(
     uint8_t **dst, size_t *nbytes, otrng_prekey_profile_s *profile) {
-  size_t s = PREKEY_PROFILE_BODY_BYTES + sizeof(eddsa_signature_p);
-  uint8_t *buff = malloc(s);
+  size_t size = PREKEY_PROFILE_BODY_BYTES + sizeof(eddsa_signature_p);
+  uint8_t *buff = malloc(size);
   if (!buff) {
     return OTRNG_ERROR;
   }
@@ -180,7 +180,7 @@ INTERNAL otrng_result otrng_prekey_profile_asprint(
     return OTRNG_ERROR;
   }
 
-  if (s - written < sizeof(eddsa_signature_p)) {
+  if (size - written < sizeof(eddsa_signature_p)) {
     free(buff);
     return OTRNG_ERROR;
   }
@@ -221,24 +221,26 @@ otrng_prekey_profile_build(uint32_t instance_tag,
     return NULL;
   }
 
-  otrng_prekey_profile_s *p = malloc(sizeof(otrng_prekey_profile_s));
-  if (!p) {
+  otrng_prekey_profile_s *prekey_profile =
+      malloc(sizeof(otrng_prekey_profile_s));
+  if (!prekey_profile) {
     return NULL;
   }
 
-  p->instance_tag = instance_tag;
+  prekey_profile->instance_tag = instance_tag;
 
 #define PREKEY_PROFILE_EXPIRATION_SECONDS 1 * 30 * 24 * 60 * 60; /* 1 month */
   time_t expires = time(NULL);
-  p->expires = expires + PREKEY_PROFILE_EXPIRATION_SECONDS;
-  otrng_ec_point_copy(p->shared_prekey, prekey_pair->pub); /* Key "D" */
+  prekey_profile->expires = expires + PREKEY_PROFILE_EXPIRATION_SECONDS;
+  otrng_ec_point_copy(prekey_profile->shared_prekey,
+                      prekey_pair->pub); /* Key "D" */
 
-  if (!prekey_profile_sign(p, longterm_pair)) {
-    otrng_prekey_profile_free(p);
+  if (!prekey_profile_sign(prekey_profile, longterm_pair)) {
+    otrng_prekey_profile_free(prekey_profile);
     return NULL;
   }
 
-  return p;
+  return prekey_profile;
 }
 
 static otrng_bool

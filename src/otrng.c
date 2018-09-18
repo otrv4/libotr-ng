@@ -341,7 +341,7 @@ tstatic otrng_result message_to_display_without_tag(otrng_response_s *response,
   }
 
   string_p buff = malloc(chars + 1);
-  if (buff == NULL) {
+  if (!buff) {
     return OTRNG_ERROR;
   }
 
@@ -595,8 +595,8 @@ static otrng_result generate_phi_serialized(uint8_t **dst, size_t *dst_len,
    */
   size_t init_msg_len = init_msg ? strlen(init_msg) + 1 : 0;
   size_t phi_prime_len = strlen(phi_prime) + 1;
-  size_t s = 4 + 4 + (4 + init_msg_len) + (4 + phi_prime_len);
-  *dst = malloc(s);
+  size_t size = 4 + 4 + (4 + init_msg_len) + (4 + phi_prime_len);
+  *dst = malloc(size);
   if (!*dst) {
     return OTRNG_ERROR;
   }
@@ -2298,6 +2298,9 @@ tstatic otrng_result otrng_send_symkey_message_v4(
   }
 
   unsigned char *tlv_data = malloc(usedatalen + 4);
+  if (!tlv_data) {
+    return OTRNG_ERROR;
+  }
 
   tlv_data[0] = (use >> 24) & 0xff;
   tlv_data[1] = (use >> 16) & 0xff;

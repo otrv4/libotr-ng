@@ -40,6 +40,10 @@ char *otrng_client_get_storage_id(const otrng_client_s *client) {
   if (account_name && protocol_name) {
     size_t n = strlen(protocol_name) + strlen(account_name) + 2;
     key = malloc(n);
+    if (!key) {
+      return NULL;
+    }
+
     snprintf(key, n, "%s:%s", protocol_name, account_name);
   }
 
@@ -111,12 +115,16 @@ otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f) {
   }
 
   uint8_t *buff = malloc((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
-  size_t s = otrng_serialize_forging_key(buff, *client->forging_key);
-  if (s == 0) {
+  if (!buff) {
     return OTRNG_ERROR;
   }
 
-  char *encoded = otrng_base64_encode(buff, s);
+  size_t size = otrng_serialize_forging_key(buff, *client->forging_key);
+  if (size == 0) {
+    return OTRNG_ERROR;
+  }
+
+  char *encoded = otrng_base64_encode(buff, size);
   free(buff);
   if (!encoded) {
     return OTRNG_ERROR;

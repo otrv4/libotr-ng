@@ -287,9 +287,9 @@ static uint8_t *otrng_prekey_client_get_expected_composite_phi(
     return NULL;
   }
 
-  size_t s =
+  size_t size =
       4 + strlen(client->server_identity) + 4 + strlen(client->our_identity);
-  dst = malloc(s);
+  dst = malloc(size);
   if (!dst) {
     return NULL;
   }
@@ -301,7 +301,7 @@ static uint8_t *otrng_prekey_client_get_expected_composite_phi(
                             strlen(client->server_identity));
 
   if (len) {
-    *len = s;
+    *len = size;
   }
 
   return dst;
@@ -393,6 +393,7 @@ otrng_prekey_dake3_message_append_storage_information_request(
   if (!msg->message) {
     return OTRNG_ERROR;
   }
+
   msg->message_len = 67; // TODO: extract this
 
   uint8_t msg_type = OTRNG_PREKEY_STORAGE_INFO_REQ_MSG;
@@ -432,10 +433,10 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
     return OTRNG_ERROR;
   }
 
-  size_t s = 2 + 1 + 1 +
-             (4 + pub_msg->num_prekey_messages * PRE_KEY_MAX_BYTES) + 1 +
-             client_profile_len + 1 + prekey_profile_len + MAC_KEY_BYTES;
-  msg->message = malloc(s);
+  size_t size = 2 + 1 + 1 +
+                (4 + pub_msg->num_prekey_messages * PRE_KEY_MAX_BYTES) + 1 +
+                client_profile_len + 1 + prekey_profile_len + MAC_KEY_BYTES;
+  msg->message = malloc(size);
   if (!msg->message) {
     free(client_profile);
     free(prekey_profile);
@@ -452,7 +453,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   const uint8_t *prekey_messages_beginning = msg->message + w;
   for (int i = 0; i < pub_msg->num_prekey_messages; i++) {
     size_t w2 = 0;
-    if (!otrng_dake_prekey_message_serialize(msg->message + w, s - w, &w2,
+    if (!otrng_dake_prekey_message_serialize(msg->message + w, size - w, &w2,
                                              pub_msg->prekey_messages[i])) {
       free(client_profile);
       free(prekey_profile);

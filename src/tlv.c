@@ -77,7 +77,6 @@ tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *read) {
   }
 
   tlv->data = malloc(tlv->len);
-
   if (!tlv->data) {
     otrng_tlv_free(tlv);
     return NULL;

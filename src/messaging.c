@@ -478,6 +478,10 @@ static size_t debug_print_ignores_cap;
 API void otrng_add_debug_print_ignore(const char *ign) {
   if (debug_print_ignores == NULL) {
     debug_print_ignores = malloc(7 * sizeof(char *));
+    if (!debuf_print_ignores) {
+      return;
+    }
+
     debug_print_ignores_len = 0;
     debug_print_ignores_cap = 7;
   }

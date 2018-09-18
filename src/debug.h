@@ -35,6 +35,10 @@ static inline /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
   /* each char is represented by "0x00, " */
   size_t s = len * 6 + len / 8 + 2;
   char *buff = malloc(s);
+  if (!s) {
+    return NULL;
+  }
+
   char *cursor = buff;
   unsigned int i = 0;
 

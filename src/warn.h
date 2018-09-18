@@ -24,17 +24,17 @@
 typedef enum {
   OTRNG_WARN_NONE = 0,
   OTRNG_WARN_RECEIVED_UNENCRYPTED,
-  // This warning happens when we receive a message that is not
-  // valid, for example by not having a valid MAC.
+  /* This warning happens when we receive a message that is not
+      valid, for example by not having a valid MAC. */
   OTRNG_WARN_RECEIVED_NOT_VALID,
-  // This warning will be emitted when we have tried to store
-  // more old keys while ratcheting than we support.
+  /* This warning will be emitted when we have tried to store
+     more old keys while ratcheting than we support. */
   OTRNG_WARN_STORAGE_FULL,
-  // This happens when we are asked to prepare a data message
-  // for sending, but we are not in fact in encrypted state.
+  /* This happens when we are asked to prepare a data message
+     for sending, but we are not in fact in encrypted state. */
   OTRNG_WARN_SEND_NOT_ENCRYPTED,
-  // This happens when we receive an invalid instance tag in a
-  // prekey message
+  /* This happens when we receive an invalid instance tag in a
+     prekey message */
   OTRNG_WARN_MALFORMED,
 } otrng_warning;
 

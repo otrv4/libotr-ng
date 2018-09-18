@@ -75,8 +75,8 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
 
 INTERNAL otrng_result otrng_data_message_body_asprintf(
     uint8_t **body, size_t *bodylen, const data_message_s *data_msg) {
-  size_t s = DATA_MESSAGE_MAX_BYTES + data_msg->enc_msg_len;
-  uint8_t *dst = malloc(s);
+  size_t size = DATA_MESSAGE_MAX_BYTES + data_msg->enc_msg_len;
+  uint8_t *dst = malloc(size);
   if (!dst) {
     return OTRNG_ERROR;
   }
@@ -94,7 +94,7 @@ INTERNAL otrng_result otrng_data_message_body_asprintf(
 
   // TODO: @freeing @sanitizer This could be NULL. We need to test.
   size_t len = 0;
-  if (!otrng_serialize_dh_public_key(cursor, (s - (cursor - dst)), &len,
+  if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - dst)), &len,
                                      data_msg->dh)) {
     free(dst);
     return OTRNG_ERROR;

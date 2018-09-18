@@ -84,7 +84,7 @@ INTERNAL otrng_result otrng_mpi_deserialize(otrng_mpi_p dst, const uint8_t *src,
   }
 
   dst->data = malloc(dst->len);
-  if (dst->data == NULL) {
+  if (!dst->data) {
     return OTRNG_ERROR;
   }
 

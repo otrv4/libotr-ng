@@ -184,10 +184,10 @@ tstatic void smp_msg_1_copy(smp_msg_1_s *dst, const smp_msg_1_s *src) {
 
 INTERNAL otrng_result otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
                                                const smp_msg_1_s *msg) {
-  size_t s = 0;
-  s = 4 + msg->q_len + (2 * ED448_POINT_BYTES) + (4 * ED448_SCALAR_BYTES);
+  size_t size = 0;
+  size = 4 + msg->q_len + (2 * ED448_POINT_BYTES) + (4 * ED448_SCALAR_BYTES);
 
-  *dst = malloc(s);
+  *dst = malloc(size);
   if (!*dst) {
     return OTRNG_ERROR;
   }
@@ -445,10 +445,10 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
 
 tstatic otrng_result smp_msg_2_asprintf(uint8_t **dst, size_t *len,
                                         const smp_msg_2_s *msg) {
-  size_t s = 0;
-  s += (4 * ED448_POINT_BYTES) + (7 * ED448_SCALAR_BYTES);
+  size_t size = 0;
+  size += (4 * ED448_POINT_BYTES) + (7 * ED448_SCALAR_BYTES);
 
-  *dst = malloc(s);
+  *dst = malloc(size);
   if (!*dst) {
     return OTRNG_ERROR;
   }
@@ -768,10 +768,10 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
 
 tstatic otrng_result smp_msg_3_asprintf(uint8_t **dst, size_t *len,
                                         const smp_msg_3_s *msg) {
-  size_t s = 0;
-  s += (3 * ED448_POINT_BYTES) + (5 * ED448_SCALAR_BYTES);
+  size_t size = 0;
+  size += (3 * ED448_POINT_BYTES) + (5 * ED448_SCALAR_BYTES);
 
-  *dst = malloc(s);
+  *dst = malloc(size);
   if (!*dst) {
     return OTRNG_ERROR;
   }
@@ -1001,10 +1001,10 @@ tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
 
 tstatic otrng_result smp_msg_4_asprintf(uint8_t **dst, size_t *len,
                                         smp_msg_4_s *msg) {
-  size_t s = 0;
-  s = ED448_POINT_BYTES + (2 * ED448_SCALAR_BYTES);
+  size_t size = 0;
+  size = ED448_POINT_BYTES + (2 * ED448_SCALAR_BYTES);
 
-  *dst = malloc(s);
+  *dst = malloc(size);
   if (!*dst) {
     return OTRNG_ERROR;
   }

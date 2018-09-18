@@ -608,16 +608,16 @@ tstatic otrng_result client_profile_verify_transitional_signature(
 
   size_t versions_len =
       client_profile->versions ? strlen(client_profile->versions) + 1 : 1;
-  size_t s = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
+  size_t size = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
 
-  uint8_t *data = malloc(s);
+  uint8_t *data = malloc(size);
   if (!data) {
     gcry_sexp_release(pubs);
     return OTRNG_ERROR;
   }
 
   size_t datalen = 0;
-  client_profile_body_serialize_pre_transitional_signature(data, s, &datalen,
+  client_profile_body_serialize_pre_transitional_signature(data, size, &datalen,
                                                            client_profile);
 
   gcry_error_t err = otrl_privkey_verify(
@@ -721,15 +721,15 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
 
   size_t versions_len =
       client_profile->versions ? strlen(client_profile->versions) + 1 : 1;
-  size_t s = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
+  size_t size = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
 
-  uint8_t *data = malloc(s);
+  uint8_t *data = malloc(size);
   if (!data) {
     return OTRNG_ERROR;
   }
 
   size_t datalen = 0;
-  client_profile_body_serialize_pre_transitional_signature(data, s, &datalen,
+  client_profile_body_serialize_pre_transitional_signature(data, size, &datalen,
                                                            client_profile);
 
   size_t written = 0;

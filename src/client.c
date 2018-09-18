@@ -526,18 +526,23 @@ INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
     return;
   }
 
-  otrng_stored_prekeys_s *s = malloc(sizeof(otrng_stored_prekeys_s));
-  s->id = id;
-  s->sender_instance_tag = instance_tag;
+  otrng_stored_prekeys_s *stored_prekey_msg =
+      malloc(sizeof(otrng_stored_prekeys_s));
+  if (!stored_prekey_msg) {
+    return;
+  }
+
+  stored_prekey_msg->id = id;
+  stored_prekey_msg->sender_instance_tag = instance_tag;
 
   /* @secret the keypairs should be deleted once the double ratchet gets
    * initialized */
-  otrng_ec_scalar_copy(s->our_ecdh->priv, ecdh_pair->priv);
-  otrng_ec_point_copy(s->our_ecdh->pub, ecdh_pair->pub);
-  s->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
-  s->our_dh->pub = otrng_dh_mpi_copy(dh_pair->pub);
+  otrng_ec_scalar_copy(stored_prekey_msg->our_ecdh->priv, ecdh_pair->priv);
+  otrng_ec_point_copy(stored_prekey_msg->our_ecdh->pub, ecdh_pair->pub);
+  stored_prekey_msg->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
+  stored_prekey_msg->our_dh->pub = otrng_dh_mpi_copy(dh_pair->pub);
 
-  client->our_prekeys = otrng_list_add(s, client->our_prekeys);
+  client->our_prekeys = otrng_list_add(stored_prekey_msg, client->our_prekeys);
 }
 
 API dake_prekey_message_s **
@@ -552,7 +557,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
 
   dake_prekey_message_s **messages =
       malloc(num_messages * sizeof(dake_prekey_message_s *));
-  if (!messages) {
+  if (!*messages) {
     return NULL;
   }
 

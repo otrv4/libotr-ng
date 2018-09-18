@@ -70,8 +70,9 @@ INTERNAL uint32_t our_instance_tag(const otrng_s *otr) {
 
 static char *build_error_message(const char *error_code,
                                  const char *error_name) {
-  size_t s = strlen(ERROR_PREFIX) + strlen(error_code) + strlen(error_name) + 1;
-  char *err_msg = malloc(s);
+  size_t size =
+      strlen(ERROR_PREFIX) + strlen(error_code) + strlen(error_name) + 1;
+  char *err_msg = malloc(size);
   if (!err_msg) {
     return NULL;
   }
