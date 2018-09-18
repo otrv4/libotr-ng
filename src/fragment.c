@@ -245,6 +245,10 @@ INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
 
   if (!is_fragment(message)) {
     *unfrag_message = otrng_strdup(message);
+    if (!*unfrag_message) {
+      return OTRNG_ERROR;
+    }
+
     return OTRNG_SUCCESS;
   }
 

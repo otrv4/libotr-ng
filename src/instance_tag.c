@@ -51,7 +51,17 @@ API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
   }
 
   otrng_instag->account = otrng_strdup(tmp_instag->accountname);
+  if (!otrng_instag->account) {
+    otrl_userstate_free(us);
+    return otrng_false;
+  }
+
   otrng_instag->protocol = otrng_strdup(tmp_instag->protocol);
+  if (!otrng_instag->account) {
+    otrl_userstate_free(us);
+    return otrng_false;
+  }
+
   otrng_instag->value = tmp_instag->instag;
 
   otrl_userstate_free(us);

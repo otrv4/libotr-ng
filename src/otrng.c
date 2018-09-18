@@ -273,6 +273,11 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
   }
 
   otr->sending_init_msg = otrng_strdup(buff);
+  if (!otr->sending_init_msg) {
+    free(buff);
+    return OTRNG_ERROR;
+  }
+
   *dst = buff;
 
   return OTRNG_SUCCESS;
@@ -309,6 +314,11 @@ API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
   }
 
   otr->sending_init_msg = otrng_strdup(buff);
+  if (!otr->sending_init_msg) {
+    free(buff);
+    return OTRNG_ERROR;
+  }
+
   *whitespace_tag = buff;
 
   return OTRNG_SUCCESS;
@@ -531,6 +541,9 @@ tstatic otrng_result receive_query_message(otrng_response_s *response,
   // TODO: @refactoring still unsure about this
   if (!otr->receiving_init_msg) {
     otr->receiving_init_msg = otrng_strdup(message);
+    if (!otr->receiving_init_msg) {
+      return OTRNG_ERROR;
+    }
   }
 
   switch (otr->running_version) {

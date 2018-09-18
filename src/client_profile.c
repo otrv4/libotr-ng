@@ -37,6 +37,9 @@ static client_profile_s *client_profile_init(client_profile_s *client_profile,
   memset(client_profile, 0, sizeof(client_profile_s));
 
   client_profile->versions = versions ? otrng_strdup(versions) : NULL;
+  if (!client_profile->versions) {
+    return NULL;
+  }
 
   return client_profile;
 }
@@ -96,7 +99,7 @@ static void copy_dsa_key(client_profile_s *dst, const client_profile_s *src) {
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
                                         const client_profile_s *src) {
   /* If there are no fields present, do not point to invalid memory */
-  client_profile_init(dst, NULL);
+  memset(dst, 0, sizeof(client_profile_s));
 
   if (!src) {
     return;
@@ -106,6 +109,10 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   otrng_ec_point_copy(dst->long_term_pub_key, src->long_term_pub_key);
   otrng_ec_point_copy(dst->forging_pub_key, src->forging_pub_key);
   dst->versions = otrng_strdup(src->versions);
+  if (!dst->versions) {
+    return;
+  }
+
   dst->expires = src->expires;
   copy_dsa_key(dst, src);
   copy_transitional_signature(dst, src);
@@ -421,8 +428,8 @@ INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
     return OTRNG_ERROR;
   }
 
-  // So if there are fields not present they do not point to invalid memory
-  client_profile_init(target, NULL);
+  /* So if there are fields not present they do not point to invalid memory */
+  memset(target, 0, sizeof(client_profile_s));
 
   uint32_t num_fields = 0;
   if (!otrng_deserialize_uint32(&num_fields, buffer + w, buflen - w, &read)) {

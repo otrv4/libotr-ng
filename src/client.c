@@ -43,6 +43,10 @@ tstatic otrng_conversation_s *new_conversation_with(const char *recipient,
   }
 
   conv->recipient = otrng_strdup(recipient);
+  if (!conv->recipient) {
+    return NULL;
+  }
+
   conv->conn = conn;
 
   return conv;
@@ -187,6 +191,11 @@ tstatic otrng_s *create_connection_for(const char *recipient,
   }
 
   conn->peer = otrng_strdup(recipient);
+  if (!conn->peer) {
+    otrng_v3_conn_free(v3_conn);
+    return NULL;
+  }
+
   v3_conn->opdata = conn; /* For use in callbacks */
   conn->v3_conn = v3_conn;
 
@@ -365,16 +374,25 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
   if (warn == OTRNG_WARN_RECEIVED_NOT_VALID) {
     //    return OTRNG_CLIENT_RESULT_ERROR_NOT_VALID;
     // TODO: fix this
+    otrng_response_free(response);
     return OTRNG_ERROR;
   }
 
   if (response->to_send) {
     *newmessage = otrng_strdup(response->to_send);
+    if (!*newmessage) {
+      otrng_response_free(response);
+      return OTRNG_ERROR;
+    }
   }
 
   *todisplay = NULL;
   if (response->to_display) {
     char *plain = otrng_strdup(response->to_display);
+    if (!*plain) {
+      otrng_response_free(response);
+      return OTRNG_ERROR;
+    }
     *todisplay = plain;
     otrng_response_free(response);
     return OTRNG_SUCCESS;
@@ -397,8 +415,12 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
   if (otrng_failed(otrng_build_query_message(&ret, message, conv->conn))) {
     // TODO: @client This should come from the client (a callback maybe?)
     // because it knows in which language this should be sent, for example.
-    return otrng_strdup(
-        "Failed to start an Off-the-Record private conversation.");
+    char *error =
+        otrng_strdup("Failed to start an Off-the-Record private conversation.");
+    if (!error) {
+      return NULL;
+    }
+    return error;
   }
 
   return ret;
@@ -936,7 +958,17 @@ tstatic OtrlInsTag *otrng_instance_tag_new(const char *protocol,
   }
 
   p->accountname = otrng_strdup(account);
+  if (!p->accountname) {
+    free(p);
+    return NULL;
+  }
+
   p->protocol = otrng_strdup(protocol);
+  if (!p->protocol) {
+    free(p);
+    return NULL;
+  }
+
   p->instag = instag;
 
   return p;
