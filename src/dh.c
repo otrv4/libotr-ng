@@ -80,16 +80,35 @@ INTERNAL void otrng_dh_init(void) {
 
   dh_initialized = 1;
 
-  gcry_mpi_scan(&DH3072_MODULUS, GCRYMPI_FMT_HEX,
-                (const unsigned char *)DH3072_MODULUS_S, 0, NULL);
+  gcry_error_t err;
+  err = gcry_mpi_scan(&DH3072_MODULUS, GCRYMPI_FMT_HEX,
+                      (const unsigned char *)DH3072_MODULUS_S, 0, NULL);
+  if (err) {
+    return;
+  }
 
-  gcry_mpi_scan(&DH3072_MODULUS_Q, GCRYMPI_FMT_HEX,
-                (const unsigned char *)DH3072_MODULUS_SQ, 0, NULL);
+  err = gcry_mpi_scan(&DH3072_MODULUS_Q, GCRYMPI_FMT_HEX,
+                      (const unsigned char *)DH3072_MODULUS_SQ, 0, NULL);
+  if (err) {
+    gcry_mpi_release(DH3072_MODULUS);
+    return;
+  }
 
-  gcry_mpi_scan(&DH3072_GENERATOR, GCRYMPI_FMT_HEX,
-                (const unsigned char *)DH3072_GENERATOR_S, 0, NULL);
+  err = gcry_mpi_scan(&DH3072_GENERATOR, GCRYMPI_FMT_HEX,
+                      (const unsigned char *)DH3072_GENERATOR_S, 0, NULL);
+  if (err) {
+    gcry_mpi_release(DH3072_MODULUS);
+    gcry_mpi_release(DH3072_MODULUS_Q);
+    return;
+  }
 
   DH3072_MODULUS_MINUS_2 = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  if (!DH3072_MODULUS_MINUS_2) {
+    gcry_mpi_release(DH3072_MODULUS);
+    gcry_mpi_release(DH3072_MODULUS_Q);
+    gcry_mpi_release(DH3072_GENERATOR);
+  }
+
   gcry_mpi_sub_ui(DH3072_MODULUS_MINUS_2, DH3072_MODULUS, 2);
 }
 
@@ -196,6 +215,10 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_p buffer,
                                              const dh_private_key_p our_priv,
                                              const dh_public_key_p their_pub) {
   gcry_mpi_t secret = gcry_mpi_snew(DH3072_MOD_LEN_BITS);
+  if (!secret) {
+    return OTRNG_ERROR;
+  }
+
   gcry_mpi_powm(secret, their_pub, our_priv, DH3072_MODULUS);
   gcry_error_t err = gcry_mpi_print(GCRYMPI_FMT_USG, buffer,
                                     DH3072_MOD_LEN_BYTES, written, secret);
@@ -233,7 +256,7 @@ INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_p *dst,
                                                const uint8_t *buffer,
                                                size_t buflen, size_t *nread) {
   if (!buflen) {
-    gcry_mpi_set_ui(*dst, 0);
+    gcry_mpi_set_ui(*dst, 0); // TODO: can this fail?
     return OTRNG_SUCCESS;
   }
 
@@ -268,6 +291,7 @@ API otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi) {
   return otrng_true;
 }
 
+// TODO: check the return
 INTERNAL dh_mpi_p otrng_dh_mpi_copy(const dh_mpi_p src) {
   return gcry_mpi_copy(src);
 }
