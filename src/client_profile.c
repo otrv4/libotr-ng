@@ -516,8 +516,6 @@ INTERNAL client_profile_s *otrng_client_profile_build(
   }
 
   client_profile->sender_instance_tag = instance_tag;
-  // TODO: this should be configurable
-  //#define PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   time_t expires = time(NULL);
   client_profile->expires = expires + expiration_time;
 
