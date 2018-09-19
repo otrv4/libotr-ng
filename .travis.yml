@@ -108,7 +108,7 @@ before_install:
 
 # Dependencies
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew cleanup; fi
-- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install valgrind && brew install curl && brew install glib; fi
+- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install --HEAD valgrind && brew install curl && brew install glib; fi
 # - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint && brew install valgrind && brew install curl && brew install glib; fi
 # - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes; fi
 - if [[ "$T" = "style" ]]; then sudo apt-get install clang-format-3.5 clang-tidy-3.9 --quiet --assume-yes; fi
