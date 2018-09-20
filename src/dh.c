@@ -74,13 +74,14 @@ static gcry_mpi_t DH3072_GENERATOR = NULL;
 static int dh_initialized = 0;
 
 INTERNAL void otrng_dh_init(void) {
+  gcry_error_t err;
+
   if (dh_initialized) {
     return;
   }
 
   dh_initialized = 1;
 
-  gcry_error_t err;
   err = gcry_mpi_scan(&DH3072_MODULUS, GCRYMPI_FMT_HEX,
                       (const unsigned char *)DH3072_MODULUS_S, 0, NULL);
   if (err) {
