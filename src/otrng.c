@@ -2451,16 +2451,18 @@ otrng_generate_session_state_string(const otrng_shared_session_state_s *state) {
     return NULL;
   }
 
+  /* The below calls to strncpy and strncat will always be safe with sss_len as
+     the argument, since it's calculated based on the strlen of both things */
   if (strcmp(state->identifier1, state->identifier2) < 0) {
-    strcpy(sss, state->identifier1);
-    strcat(sss, state->identifier2);
+    strncpy(sss, state->identifier1, sss_len);
+    strncat(sss, state->identifier2, sss_len);
   } else {
-    strcpy(sss, state->identifier2);
-    strcat(sss, state->identifier1);
+    strncpy(sss, state->identifier2, sss_len);
+    strncat(sss, state->identifier1, sss_len);
   }
 
   if (state->password) {
-    strcat(sss, state->password);
+    strncat(sss, state->password, sss_len);
   }
 
   return sss;

@@ -74,16 +74,16 @@ INTERNAL uint32_t our_instance_tag(const otrng_s *otr) {
 
 static char *build_error_message(const char *error_code,
                                  const char *error_name) {
-  size_t size =
-      strlen(ERROR_PREFIX) + strlen(error_code) + strlen(error_name) + 1;
+  size_t prefix_len = strlen(ERROR_PREFIX);
+  size_t size = prefix_len + strlen(error_code) + strlen(error_name) + 1;
   char *err_msg = malloc(size);
   if (!err_msg) {
     return NULL;
   }
 
-  strcpy(err_msg, ERROR_PREFIX);
-  strcpy(err_msg + strlen(ERROR_PREFIX), error_code);
-  strcat(err_msg, error_name);
+  strncpy(err_msg, ERROR_PREFIX, size);
+  strncpy(err_msg + prefix_len, error_code, size - prefix_len);
+  strncat(err_msg, error_name, size - prefix_len);
 
   return err_msg;
 }
