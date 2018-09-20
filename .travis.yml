@@ -128,7 +128,6 @@ script:
       if [ "$T" = "coverage" ]; then
            ./autogen.sh
            ./configure --disable-shared --enable-code-coverage
-           make test
            make coverage-check
       fi
   - |
