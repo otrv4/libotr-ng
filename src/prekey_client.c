@@ -119,11 +119,13 @@ otrng_prekey_client_new(const char *server, const char *our_identity,
   ret->keypair = keypair;
   ret->server_identity = otrng_strdup(server);
   if (!ret->server_identity) {
+    free(ret);
     return NULL;
   }
 
   ret->our_identity = otrng_strdup(our_identity);
   if (!ret->our_identity) {
+    free(ret);
     return NULL;
   }
 
@@ -326,8 +328,8 @@ static uint8_t *otrng_prekey_client_get_expected_composite_phi(
 
   w += otrng_serialize_data(dst + w, (const uint8_t *)client->our_identity,
                             strlen(client->our_identity));
-  w += otrng_serialize_data(dst + w, (const uint8_t *)client->server_identity,
-                            strlen(client->server_identity));
+  otrng_serialize_data(dst + w, (const uint8_t *)client->server_identity,
+                       strlen(client->server_identity));
 
   if (len) {
     *len = size;

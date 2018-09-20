@@ -569,6 +569,7 @@ INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_s *client,
 
   ret->peer = otrng_strdup(peer);
   if (!ret->peer) {
+    free(ret);
     return NULL;
   }
 

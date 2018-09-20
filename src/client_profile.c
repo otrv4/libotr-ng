@@ -38,6 +38,7 @@ static client_profile_s *client_profile_init(client_profile_s *client_profile,
 
   client_profile->versions = versions ? otrng_strdup(versions) : NULL;
   if (!client_profile->versions) {
+    free(client_profile);
     return NULL;
   }
 

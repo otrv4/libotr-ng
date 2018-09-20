@@ -115,7 +115,7 @@ INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *head, tlv_s *tlv) {
 }
 
 INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len) {
-  tlv_list_s *ret = NULL;
+  tlv_list_s *ret = NULL, *tmp = NULL;
   while (len > 0) {
     size_t read = 0;
     tlv_s *tlv = parse_tlv(src, len, &read);
@@ -124,7 +124,10 @@ INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len) {
     }
 
     // TODO: this could be a potential mem leak
-    ret = otrng_append_tlv(ret, tlv);
+    tmp = otrng_append_tlv(ret, tlv);
+    if (tmp != NULL) {
+      ret = tmp;
+    }
     src += read;
     len -= read;
   }

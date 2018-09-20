@@ -590,12 +590,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
   instance_tag = otrng_client_get_instance_tag(client);
 
   messages = malloc(num_messages * sizeof(dake_prekey_message_s *));
-  if (!*messages) {
+  if (!messages) {
     return NULL;
-  }
-
-  for (i = 0; i < num_messages; i++) {
-    messages[i] = NULL;
   }
 
   for (i = 0; i < num_messages; i++) {
@@ -606,7 +602,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
     messages[i] =
         otrng_dake_prekey_message_build(instance_tag, ecdh->pub, dh->pub);
     if (!messages[i]) {
-      for (j = 0; j < num_messages; j++) {
+      for (j = 0; j < i; j++) {
         otrng_dake_prekey_message_free(messages[j]);
       }
       free(messages);
