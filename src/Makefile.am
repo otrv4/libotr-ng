@@ -20,39 +20,39 @@
 
 lib_LTLIBRARIES = libotr-ng.la
 
-libotr_ng_la_SOURCES = auth.c \
-		     base64.c \
-		     client.c \
-		     client_callbacks.c \
-		     client_profile.c \
-		     dake.c \
-		     data_message.c \
-		     deserialize.c \
-		     dh.c \
-		     ed448.c \
-		     fingerprint.c \
-		     fragment.c \
-		     instance_tag.c \
-		     keys.c \
-		     key_management.c \
-		     list.c \
-		     messaging.c \
-		     mpi.c \
-		     v3.c \
-		     otrng.c \
-		     padding.c \
-		     prekey_client.c \
-		     prekey_messages.c \
-		     prekey_ensemble.c \
-		     prekey_profile.c \
-		     persistence.c \
-		     protocol.c \
-		     serialize.c \
-		     shake.c \
-		     smp.c \
-		     smp_protocol.c \
-		     str.c \
-		     tlv.c
+libotr_ng_la_SOURCES = $(top_builddir)/src/auth.c \
+		     $(top_builddir)/src/base64.c \
+		     $(top_builddir)/src/client.c \
+		     $(top_builddir)/src/client_callbacks.c \
+		     $(top_builddir)/src/client_profile.c \
+		     $(top_builddir)/src/dake.c \
+		     $(top_builddir)/src/data_message.c \
+		     $(top_builddir)/src/deserialize.c \
+		     $(top_builddir)/src/dh.c \
+		     $(top_builddir)/src/ed448.c \
+		     $(top_builddir)/src/fingerprint.c \
+		     $(top_builddir)/src/fragment.c \
+		     $(top_builddir)/src/instance_tag.c \
+		     $(top_builddir)/src/keys.c \
+		     $(top_builddir)/src/key_management.c \
+		     $(top_builddir)/src/list.c \
+		     $(top_builddir)/src/messaging.c \
+		     $(top_builddir)/src/mpi.c \
+		     $(top_builddir)/src/v3.c \
+		     $(top_builddir)/src/otrng.c \
+		     $(top_builddir)/src/padding.c \
+		     $(top_builddir)/src/prekey_client.c \
+		     $(top_builddir)/src/prekey_messages.c \
+		     $(top_builddir)/src/prekey_ensemble.c \
+		     $(top_builddir)/src/prekey_profile.c \
+		     $(top_builddir)/src/persistence.c \
+		     $(top_builddir)/src/protocol.c \
+		     $(top_builddir)/src/serialize.c \
+		     $(top_builddir)/src/shake.c \
+		     $(top_builddir)/src/smp.c \
+		     $(top_builddir)/src/smp_protocol.c \
+		     $(top_builddir)/src/str.c \
+		     $(top_builddir)/src/tlv.c
 
 libotr_ng_la_CFLAGS = $(AM_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \
                                    @LIBSODIUM_CFLAGS@ \

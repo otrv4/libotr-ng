@@ -24,6 +24,8 @@
 SUBDIRS = src src/include src/test pkgconfig
 ACLOCAL_AMFLAGS = -I m4
 
+CODE_COVERAGE_LCOV_SHOPTS = -b src/test
+
 @CODE_COVERAGE_RULES@
 
 @VALGRIND_CHECK_RULES@
