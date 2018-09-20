@@ -94,6 +94,10 @@ INTERNAL list_element_s *otrng_list_copy(list_element_s *head) {
   cursor = cursor->next;
   while (cursor) {
     copy->next = list_new();
+    if (!copy->next) {
+      return NULL;
+    }
+
     copy = copy->next;
     copy->data = cursor->data;
     copy->next = NULL;
