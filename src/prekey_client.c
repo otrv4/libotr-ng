@@ -769,7 +769,8 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
       return NULL;
     }
   } else if (client->after_dake == OTRNG_PREKEY_PREKEY_PUBLICATION) {
-    otrng_prekey_publication_message_s pub_msg[1];
+    otrng_prekey_publication_message_s *pub_msg =
+        otrng_prekey_publication_message_new();
     if (!build_prekey_publication_message_callback(pub_msg, client)) {
       return NULL;
     }
@@ -1342,6 +1343,21 @@ void otrng_prekey_storage_status_message_destroy(
   msg->client_instance_tag = 0;
   msg->stored_prekeys = 0;
   sodium_memzero(msg->mac, sizeof(msg->mac));
+}
+
+INTERNAL otrng_prekey_publication_message_s *
+otrng_prekey_publication_message_new() {
+  otrng_prekey_publication_message_s *msg =
+      malloc(sizeof(otrng_prekey_publication_message_s));
+  if (!msg) {
+    return NULL;
+  }
+
+  msg->client_profile = NULL;
+  msg->prekey_profile = NULL;
+  msg->prekey_messages = NULL;
+
+  return msg;
 }
 
 INTERNAL

@@ -224,6 +224,9 @@ INTERNAL
 void otrng_prekey_storage_status_message_destroy(
     otrng_prekey_storage_status_message_s *msg);
 
+INTERNAL otrng_prekey_publication_message_s *
+otrng_prekey_publication_message_new();
+
 INTERNAL
 void otrng_prekey_publication_message_destroy(
     otrng_prekey_publication_message_s *msg);
