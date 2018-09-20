@@ -29,3 +29,54 @@
 -booltype otrng_bool
 -booltrue otrng_true
 -boolfalse otrng_false
+
+
+# These are temporary suppressions of different issues so we don't have a lot of noice
+# In order to work on this, comment one of them away, and work on the things exposed
+# If it REALLY should be suppressed, put it somewhere else in this file
++boolint
++charint
++matchanyintegral
++voidabstract
+-boolcompare
+-boolops
+-branchstate
+-compdef
+-compdestroy
+-compmempass
+-exitarg
+-exportlocal
+-fcnuse
+-fixedformalarray
+-fullinitblock
+-globstate
+-immediatetrans
+-incondefs
+-initallelements
+-kepttrans
+-mayaliasunique
+-mustfreefresh
+-mustfreeonly
+-noeffect
+-nullassign
+-nullderef
+-nullpass
+-nullret
+-nullstate
+-observertrans
+-paramuse
+-predboolothers
+-retvalint
+-retvalother
+-shadow
+-shiftnegative
+-statictrans
+-temptrans
+-type
+-unqualifiedtrans
+-unreachable
+-unrecog
+-unrecogcomments
+-unsignedcompare
+-usedef
+-usereleased
