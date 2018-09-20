@@ -41,12 +41,12 @@ tstatic otrng_conversation_s *new_conversation_with(const char *recipient,
                                                     otrng_s *conn) {
   otrng_conversation_s *conv = malloc(sizeof(otrng_conversation_s));
   if (!conv) {
-    free(conn);
     return NULL;
   }
 
   conv->recipient = otrng_strdup(recipient);
   if (!conv->recipient) {
+    free(conv);
     return NULL;
   }
 
@@ -222,6 +222,7 @@ get_or_create_conversation_with(const char *recipient, otrng_client_s *client) {
 
   conv = new_conversation_with(recipient, conn);
   if (!conv) {
+    free(conn);
     return NULL;
   }
 
