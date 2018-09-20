@@ -5,7 +5,7 @@
 -D__restrict__=
 -D__uint128_t=uint64_t
 -D__int128_t=int64_t
--Dgcry_mpi_t=int *
+-Dgcry_mpi_t=int*
 -Dgcry_error_t=int
 -Dgcry_sexp_t=struct{}
 -DOtrlPrivKey=struct{}
