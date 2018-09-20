@@ -29,18 +29,20 @@
 #include "str.h"
 
 static inline /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
+  size_t s = len * 6 + len / 8 + 2;
+  char *buff, *cursor;
+  unsigned int i;
+
   if (src == NULL) {
     return otrng_strndup("(NULL)", 6);
   }
   /* each char is represented by "0x00, " */
-  size_t s = len * 6 + len / 8 + 2;
-  char *buff = malloc(s);
+  buff = malloc(s);
   if (!s) {
     return NULL;
   }
 
-  char *cursor = buff;
-  unsigned int i = 0;
+  cursor = buff;
 
   for (i = 0; i < len; i++) {
     if (i % 8 == 0) {

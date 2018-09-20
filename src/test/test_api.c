@@ -18,8 +18,11 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef S_SPLINT_S
 #include <libotr/b64.h>
 #include <libotr/privkey.h>
+#endif
+
 #include <string.h>
 
 #include "../list.h"

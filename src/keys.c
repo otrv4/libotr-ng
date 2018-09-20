@@ -19,7 +19,11 @@
  */
 
 #include <assert.h>
+
+#ifndef S_SPLINT_S
 #include <libotr/b64.h>
+#endif
+
 #include <stdlib.h>
 
 #define OTRNG_KEYS_PRIVATE
@@ -42,10 +46,11 @@ INTERNAL otrng_keypair_s *otrng_keypair_new(void) {
 
 INTERNAL void otrng_keypair_generate(otrng_keypair_s *keypair,
                                      const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  uint8_t pub[ED448_POINT_BYTES];
+
   memcpy(keypair->sym, sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_derive_from_secret(keypair->priv, keypair->sym);
 
-  uint8_t pub[ED448_POINT_BYTES];
   otrng_ec_derive_public_key(pub, keypair->sym);
   otrng_ec_point_decode(keypair->pub, pub);
 
@@ -93,10 +98,11 @@ INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void) {
 INTERNAL void
 otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
                                   const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  uint8_t pub[ED448_POINT_BYTES];
+
   memcpy(prekey_pair->sym, sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_derive_from_secret(prekey_pair->priv, prekey_pair->sym);
 
-  uint8_t pub[ED448_POINT_BYTES];
   otrng_ec_derive_public_key(pub, sym);
   otrng_ec_point_decode(prekey_pair->pub, pub);
 
@@ -134,12 +140,11 @@ otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair) {
 INTERNAL uint8_t *otrng_derive_key_from_extra_symm_key(
     uint8_t usage, const unsigned char *use_data, size_t use_data_len,
     const unsigned char *extra_symm_key) {
+  goldilocks_shake256_ctx_p hd;
   uint8_t *derived_key = malloc(EXTRA_SYMMETRIC_KEY_BYTES);
   if (!derived_key) {
     return NULL;
   }
-
-  goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage);
   hash_update(hd, use_data, use_data_len);

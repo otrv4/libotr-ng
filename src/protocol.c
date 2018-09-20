@@ -26,11 +26,15 @@
 #include "padding.h"
 #include "random.h"
 #include "serialize.h"
+
+#ifndef S_SPLINT_S
 #include <libotr/b64.h>
+#endif
 
 INTERNAL void maybe_create_keys(otrng_client_s *client) {
   const otrng_client_callbacks_s *cb = client->global_state->callbacks;
   const otrng_client_id_s client_id = client->client_id;
+  uint32_t instance_tag;
 
   if (!client->keypair) {
     otrng_client_callbacks_create_privkey_v4(cb, client_id);
@@ -44,7 +48,7 @@ INTERNAL void maybe_create_keys(otrng_client_s *client) {
     otrng_client_callbacks_create_shared_prekey(cb, client, client_id);
   }
 
-  uint32_t instance_tag = otrng_client_get_instance_tag(client);
+  instance_tag = otrng_client_get_instance_tag(client);
   if (!instance_tag) {
     otrng_client_callbacks_create_instag(cb, client_id);
   }
@@ -59,8 +63,8 @@ INTERNAL dh_public_key_p our_dh(const otrng_s *otr) {
 }
 
 INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr) {
-  maybe_create_keys(otr->client);
   otrng_client_s *client = otr->client;
+  maybe_create_keys(client);
   return otrng_client_get_client_profile(client);
 }
 
@@ -109,6 +113,7 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
                                           size_t message_len,
                                           const msg_enc_key_p enc_key) {
   uint8_t *c = NULL;
+  int err;
 
   random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
 
@@ -117,8 +122,7 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
     return OTRNG_ERROR;
   }
 
-  int err =
-      crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
+  err = crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
   if (err) {
     free(c);
     return OTRNG_ERROR;
@@ -163,14 +167,16 @@ tstatic otrng_result serialize_and_encode_data_msg(
     size_t to_reveal_mac_keys_len, const data_message_s *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
+  size_t serlen;
+  uint8_t *ser;
 
   if (!otrng_data_message_body_asprintf(&body, &bodylen, data_msg)) {
     return OTRNG_ERROR;
   }
 
-  size_t serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
+  serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
 
-  uint8_t *ser = malloc(serlen);
+  ser = malloc(serlen);
   if (!ser) {
     free(body);
     return OTRNG_ERROR;
@@ -309,15 +315,17 @@ tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
                                  const otrng_s *otr) {
   uint8_t *ser = NULL;
   size_t len = 0;
+  size_t message_len;
+  uint8_t *padding = NULL;
+  size_t padding_len = 0;
+  char *res;
 
   if (!serialize_tlvs(&ser, &len, tlvs)) {
     return OTRNG_ERROR;
   }
 
   // Append padding
-  size_t message_len = strlen(message) + 1 + len;
-  uint8_t *padding = NULL;
-  size_t padding_len = 0;
+  message_len = strlen(message) + 1 + len;
   if (!generate_padding(&padding, &padding_len, message_len, otr)) {
     free(ser);
     return OTRNG_ERROR;
@@ -331,7 +339,7 @@ tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
     return OTRNG_ERROR;
   }
 
-  char *res = otrng_stpcpy((char *)*dst, message);
+  res = otrng_stpcpy((char *)*dst, message);
   if (ser) {
     memcpy(res + 1, ser, len);
   }
@@ -350,6 +358,7 @@ INTERNAL otrng_result otrng_prepare_to_send_data_message(
     const tlv_list_s *tlvs, otrng_s *otr, unsigned char flags) {
   uint8_t *msg = NULL;
   size_t msg_len = 0;
+  otrng_result result;
 
   if (otr->state == OTRNG_STATE_FINISHED) {
     return OTRNG_ERROR; // Should restart
@@ -366,8 +375,7 @@ INTERNAL otrng_result otrng_prepare_to_send_data_message(
     return OTRNG_ERROR;
   }
 
-  otrng_result result =
-      send_data_message(to_send, msg, msg_len, otr, flags, warn);
+  result = send_data_message(to_send, msg, msg_len, otr, flags, warn);
 
   otr->last_sent = time(NULL);
 

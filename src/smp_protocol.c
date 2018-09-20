@@ -130,6 +130,10 @@ INTERNAL otrng_result otrng_generate_smp_msg_1(smp_msg_1_s *dst,
                                                smp_protocol_p smp) {
   ecdh_keypair_p pair_r2, pair_r3;
   ec_scalar_p a3c3, a2c2;
+  uint8_t ser_point_1[ED448_POINT_BYTES];
+  uint8_t usage_smp_1 = 0x01;
+  uint8_t ser_point_2[ED448_POINT_BYTES];
+  uint8_t usage_smp_2 = 0x02;
 
   dst->q_len = 0;
   dst->question = NULL;
@@ -141,11 +145,9 @@ INTERNAL otrng_result otrng_generate_smp_msg_1(smp_msg_1_s *dst,
   otrng_zq_keypair_generate(pair_r2->pub, pair_r2->priv);
   otrng_zq_keypair_generate(pair_r3->pub, pair_r3->priv);
 
-  uint8_t ser_point_1[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_1, pair_r2->pub);
 
   /* c2 = hash_to_scalar(0x01 || G * r2) */
-  uint8_t usage_smp_1 = 0x01;
   if (!hash_to_scalar(dst->c2, ser_point_1, ED448_POINT_BYTES, usage_smp_1)) {
     return OTRNG_ERROR;
   }
@@ -154,11 +156,9 @@ INTERNAL otrng_result otrng_generate_smp_msg_1(smp_msg_1_s *dst,
   goldilocks_448_scalar_mul(a2c2, smp->a2, dst->c2);
   goldilocks_448_scalar_sub(dst->d2, pair_r2->priv, a2c2);
 
-  uint8_t ser_point_2[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_2, pair_r3->pub);
 
   /* c3 = hash_to_scalar(0x02 || G * r3) */
-  uint8_t usage_smp_2 = 0x02;
   if (!hash_to_scalar(dst->c3, ser_point_2, ED448_POINT_BYTES, usage_smp_2)) {
     return OTRNG_ERROR;
   }
@@ -185,6 +185,7 @@ tstatic void smp_msg_1_copy(smp_msg_1_s *dst, const smp_msg_1_s *src) {
 INTERNAL otrng_result otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
                                                const smp_msg_1_s *msg) {
   size_t size = 0;
+  uint8_t *cursor;
   size = 4 + msg->q_len + (2 * ED448_POINT_BYTES) + (4 * ED448_SCALAR_BYTES);
 
   *dst = malloc(size);
@@ -192,7 +193,7 @@ INTERNAL otrng_result otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
     return OTRNG_ERROR;
   }
 
-  uint8_t *cursor = *dst;
+  cursor = *dst;
 
   cursor += otrng_serialize_data(cursor, msg->question, msg->q_len);
   cursor += otrng_serialize_ec_point(cursor, msg->g2a);
@@ -272,16 +273,18 @@ tstatic otrng_bool smp_msg_1_valid_points(smp_msg_1_s *msg) {
 tstatic otrng_bool smp_msg_1_valid_zkp(smp_msg_1_s *msg) {
   ec_scalar_p temp_scalar;
   ec_point_p ga_c, g_d;
+  uint8_t ser_point_3[ED448_POINT_BYTES];
+  uint8_t usage_zkp_smp_1 = 0x01;
+  uint8_t usage_zkp_smp_2 = 0x02;
+  uint8_t ser_point_4[ED448_POINT_BYTES];
 
   /* Check that c2 = hash_to_scalar(1 || G * d2 + G2a * c2). */
   goldilocks_448_point_scalarmul(ga_c, msg->g2a, msg->c2);
   goldilocks_448_point_scalarmul(g_d, goldilocks_448_point_base, msg->d2);
   goldilocks_448_point_add(g_d, g_d, ga_c);
 
-  uint8_t ser_point_3[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_3, g_d);
 
-  uint8_t usage_zkp_smp_1 = 0x01;
   if (!hash_to_scalar(temp_scalar, ser_point_3, ED448_POINT_BYTES,
                       usage_zkp_smp_1)) {
     return otrng_false;
@@ -298,10 +301,8 @@ tstatic otrng_bool smp_msg_1_valid_zkp(smp_msg_1_s *msg) {
   goldilocks_448_point_scalarmul(g_d, goldilocks_448_point_base, msg->d3);
   goldilocks_448_point_add(g_d, g_d, ga_c);
 
-  uint8_t ser_point_4[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_4, g_d);
 
-  uint8_t usage_zkp_smp_2 = 0x02;
   if (!hash_to_scalar(temp_scalar, ser_point_4, ED448_POINT_BYTES,
                       usage_zkp_smp_2)) {
     return otrng_false;
@@ -342,6 +343,16 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
   ec_scalar_p temp_scalar;
   ecdh_keypair_p pair_r2, pair_r3, pair_r4, pair_r5;
   ec_point_p temp_point;
+  uint8_t ser_point_1[ED448_POINT_BYTES];
+  uint8_t usage_smp_3 = 0x03;
+  uint8_t ser_point_2[ED448_POINT_BYTES];
+  uint8_t usage_smp_4 = 0x04;
+  ec_scalar_p secret_as_scalar;
+  uint8_t ser_point_3[ED448_POINT_BYTES];
+  uint8_t ser_point_4[ED448_POINT_BYTES];
+  uint8_t hash[HASH_BYTES];
+  goldilocks_shake256_ctx_p hd_2;
+  uint8_t usage_smp_5 = 0x05;
 
   /* G2b = G * b2 and G3b = G * b3 */
   otrng_zq_keypair_generate(dst->g2b, b2);
@@ -354,11 +365,9 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
 
   ed448_random_scalar(r6);
 
-  uint8_t ser_point_1[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_1, pair_r2->pub);
 
   /* c2 = HashToScalar(3 || G * r2) */
-  uint8_t usage_smp_3 = 0x03;
   if (!hash_to_scalar(dst->c2, ser_point_1, ED448_POINT_BYTES, usage_smp_3)) {
     return OTRNG_ERROR;
   }
@@ -367,11 +376,9 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
   goldilocks_448_scalar_mul(temp_scalar, b2, dst->c2);
   goldilocks_448_scalar_sub(dst->d2, pair_r2->priv, temp_scalar);
 
-  uint8_t ser_point_2[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_2, pair_r3->pub);
 
   /* c3 = HashToScalar(4 || G * r3) */
-  uint8_t usage_smp_4 = 0x04;
   if (!hash_to_scalar(dst->c3, ser_point_2, ED448_POINT_BYTES, usage_smp_4)) {
     return OTRNG_ERROR;
   }
@@ -392,7 +399,6 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
   otrng_ec_point_copy(smp->pb, dst->pb);
 
   /* Compute Qb = (G * r4 + G2 * (y mod q)). */
-  ec_scalar_p secret_as_scalar;
 
   if (!otrng_deserialize_ec_scalar(secret_as_scalar, smp->secret, HASH_BYTES)) {
     return OTRNG_ERROR;
@@ -404,18 +410,13 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
 
   /* cp = HashToScalar(5 || G3 * r5 || G * r5 + G2 * r6) */
   goldilocks_448_point_scalarmul(temp_point, smp->g3, pair_r5->priv);
-  uint8_t ser_point_3[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_3, temp_point);
 
   goldilocks_448_point_scalarmul(temp_point, smp->g2, r6);
   goldilocks_448_point_add(temp_point, pair_r5->pub, temp_point);
 
-  uint8_t ser_point_4[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_4, temp_point);
 
-  uint8_t hash[HASH_BYTES];
-
-  goldilocks_shake256_ctx_p hd_2;
   hash_init(hd_2);
   hash_update(hd_2, ser_point_3, ED448_POINT_BYTES);
   hash_update(hd_2, ser_point_4, ED448_POINT_BYTES);
@@ -425,7 +426,6 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
   sodium_memzero(ser_point_3, ED448_POINT_BYTES);
   sodium_memzero(ser_point_4, ED448_POINT_BYTES);
 
-  uint8_t usage_smp_5 = 0x05;
   if (!hash_to_scalar(dst->cp, hash, HASH_BYTES, usage_smp_5)) {
     return OTRNG_ERROR;
   }
@@ -446,6 +446,7 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
 tstatic otrng_result smp_msg_2_asprintf(uint8_t **dst, size_t *len,
                                         const smp_msg_2_s *msg) {
   size_t size = 0;
+  uint8_t *cursor;
   size += (4 * ED448_POINT_BYTES) + (7 * ED448_SCALAR_BYTES);
 
   *dst = malloc(size);
@@ -453,7 +454,7 @@ tstatic otrng_result smp_msg_2_asprintf(uint8_t **dst, size_t *len,
     return OTRNG_ERROR;
   }
 
-  uint8_t *cursor = *dst;
+  cursor = *dst;
 
   cursor += otrng_serialize_ec_point(cursor, msg->g2b);
   cursor += otrng_serialize_ec_scalar(cursor, msg->c2);
@@ -564,16 +565,23 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
                                        const smp_protocol_p smp) {
   ec_scalar_p temp_scalar;
   ec_point_p gb_c, g_d, point_cp;
+  uint8_t ser_point_1[ED448_POINT_BYTES];
+  uint8_t usage_zkp_smp_3 = 0x03;
+  uint8_t ser_point_2[ED448_POINT_BYTES];
+  uint8_t usage_smp_zkp_4 = 0x04;
+  uint8_t ser_point_3[ED448_POINT_BYTES];
+  uint8_t ser_point_4[ED448_POINT_BYTES];
+  uint8_t hash[HASH_BYTES];
+  goldilocks_shake256_ctx_p hd;
+  uint8_t usage_zkp_smp_5 = 0x05;
 
   /* Check that c2 = HashToScalar(3 || G * d2 + G2b * c2). */
   goldilocks_448_point_scalarmul(gb_c, msg->g2b, msg->c2);
   goldilocks_448_point_scalarmul(g_d, goldilocks_448_point_base, msg->d2);
   goldilocks_448_point_add(g_d, g_d, gb_c);
 
-  uint8_t ser_point_1[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_1, g_d);
 
-  uint8_t usage_zkp_smp_3 = 0x03;
   if (!hash_to_scalar(temp_scalar, ser_point_1, ED448_POINT_BYTES,
                       usage_zkp_smp_3)) {
     return otrng_false;
@@ -590,10 +598,8 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
   goldilocks_448_point_scalarmul(g_d, goldilocks_448_point_base, msg->d3);
   goldilocks_448_point_add(g_d, g_d, gb_c);
 
-  uint8_t ser_point_2[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_2, g_d);
 
-  uint8_t usage_smp_zkp_4 = 0x04;
   if (!hash_to_scalar(temp_scalar, ser_point_2, ED448_POINT_BYTES,
                       usage_smp_zkp_4)) {
     return otrng_false;
@@ -611,7 +617,6 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
   goldilocks_448_point_scalarmul(g_d, smp->g3, msg->d5);
   goldilocks_448_point_add(g_d, g_d, point_cp);
 
-  uint8_t ser_point_3[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_3, g_d);
 
   goldilocks_448_point_scalarmul(point_cp, msg->qb, msg->cp);
@@ -620,11 +625,7 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
   goldilocks_448_point_scalarmul(point_cp, goldilocks_448_point_base, msg->d5);
   goldilocks_448_point_add(g_d, g_d, point_cp);
 
-  uint8_t ser_point_4[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_4, g_d);
-
-  uint8_t hash[HASH_BYTES];
-  goldilocks_shake256_ctx_p hd;
 
   hash_init(hd);
   hash_update(hd, ser_point_3, ED448_POINT_BYTES);
@@ -635,7 +636,6 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
   sodium_memzero(ser_point_3, ED448_POINT_BYTES);
   sodium_memzero(ser_point_4, ED448_POINT_BYTES);
 
-  uint8_t usage_zkp_smp_5 = 0x05;
   if (!hash_to_scalar(temp_scalar, hash, HASH_BYTES, usage_zkp_smp_5)) {
     return otrng_false;
   }
@@ -667,6 +667,17 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
   ecdh_keypair_p pair_r4, pair_r5, pair_r7;
   ec_scalar_p r6;
   ec_point_p temp_point;
+  ec_scalar_p secret_as_scalar;
+  uint8_t ser_point_1[ED448_POINT_BYTES];
+  uint8_t ser_point_2[ED448_POINT_BYTES];
+  uint8_t hash_1[HASH_BYTES];
+  goldilocks_shake256_ctx_p hd_2;
+  uint8_t usage_smp_6 = 0x06;
+  uint8_t ser_point_3[ED448_POINT_BYTES];
+  uint8_t ser_point_4[ED448_POINT_BYTES];
+  uint8_t hash_2[HASH_BYTES];
+  goldilocks_shake256_ctx_p hd_3;
+  uint8_t usage_smp_7 = 0x07;
 
   ed448_random_scalar(r6);
 
@@ -681,7 +692,6 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
   goldilocks_448_point_sub(smp->pa_pb, dst->pa, msg_2->pb);
 
   /* Qa = G * r4 + G2 * (x mod q)) */
-  ec_scalar_p secret_as_scalar;
 
   if (!otrng_deserialize_ec_scalar(secret_as_scalar, smp->secret, HASH_BYTES)) {
     return OTRNG_ERROR;
@@ -693,17 +703,12 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
   /* cp = HashToScalar(6 || G3 * r5 || G * r5 + G2 * r6) */
   goldilocks_448_point_scalarmul(temp_point, smp->g3, pair_r5->priv);
 
-  uint8_t ser_point_1[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_1, temp_point);
 
   goldilocks_448_point_scalarmul(temp_point, smp->g2, r6);
   goldilocks_448_point_add(temp_point, pair_r5->pub, temp_point);
 
-  uint8_t ser_point_2[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_2, temp_point);
-
-  uint8_t hash_1[HASH_BYTES];
-  goldilocks_shake256_ctx_p hd_2;
 
   hash_init(hd_2);
   hash_update(hd_2, ser_point_1, ED448_POINT_BYTES);
@@ -714,7 +719,6 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
   sodium_memzero(ser_point_1, ED448_POINT_BYTES);
   sodium_memzero(ser_point_2, ED448_POINT_BYTES);
 
-  uint8_t usage_smp_6 = 0x06;
   if (!hash_to_scalar(dst->cp, hash_1, HASH_BYTES, usage_smp_6)) {
     return OTRNG_ERROR;
   }
@@ -732,16 +736,10 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
   goldilocks_448_point_scalarmul(dst->ra, smp->qa_qb, smp->a3);
 
   /* cr = HashToScalar(7 || G * r7 || (Qa - Qb) * r7) */
-  uint8_t ser_point_3[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_3, pair_r7->pub);
 
   goldilocks_448_point_scalarmul(temp_point, smp->qa_qb, pair_r7->priv);
-
-  uint8_t ser_point_4[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_4, temp_point);
-
-  uint8_t hash_2[HASH_BYTES];
-  goldilocks_shake256_ctx_p hd_3;
 
   hash_init(hd_3);
   hash_update(hd_3, ser_point_3, ED448_POINT_BYTES);
@@ -752,7 +750,6 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
   sodium_memzero(ser_point_3, ED448_POINT_BYTES);
   sodium_memzero(ser_point_4, ED448_POINT_BYTES);
 
-  uint8_t usage_smp_7 = 0x07;
   if (!hash_to_scalar(dst->cr, hash_2, HASH_BYTES, usage_smp_7)) {
     return OTRNG_ERROR;
   }
@@ -769,6 +766,7 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
 tstatic otrng_result smp_msg_3_asprintf(uint8_t **dst, size_t *len,
                                         const smp_msg_3_s *msg) {
   size_t size = 0;
+  uint8_t *cursor;
   size += (3 * ED448_POINT_BYTES) + (5 * ED448_SCALAR_BYTES);
 
   *dst = malloc(size);
@@ -776,7 +774,7 @@ tstatic otrng_result smp_msg_3_asprintf(uint8_t **dst, size_t *len,
     return OTRNG_ERROR;
   }
 
-  uint8_t *cursor = *dst;
+  cursor = *dst;
 
   cursor += otrng_serialize_ec_point(cursor, msg->pa);
   cursor += otrng_serialize_ec_point(cursor, msg->qa);
@@ -863,13 +861,22 @@ tstatic otrng_bool smp_msg_3_validate_zkp(smp_msg_3_s *msg,
                                           const smp_protocol_p smp) {
   ec_point_p temp_point, temp_point_2;
   ec_scalar_p temp_scalar;
+  uint8_t ser_point_1[ED448_POINT_BYTES];
+  uint8_t ser_point_2[ED448_POINT_BYTES];
+  uint8_t hash_1[HASH_BYTES];
+  goldilocks_shake256_ctx_p hd_1;
+  uint8_t usage_zkp_smp_6 = 0x06;
+  uint8_t ser_point_3[ED448_POINT_BYTES];
+  uint8_t ser_point_4[ED448_POINT_BYTES];
+  uint8_t hash_2[HASH_BYTES];
+  goldilocks_shake256_ctx_p hd_2;
+  uint8_t usage_zkp_smp_7 = 0x07;
 
   /* cp = HashToScalar(6 || G3 * d5 + Pa * cp || G * d5 + G2 * d6 + Qa * cp) */
   goldilocks_448_point_scalarmul(temp_point, msg->pa, msg->cp);
   goldilocks_448_point_scalarmul(temp_point_2, smp->g3, msg->d5);
   goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
 
-  uint8_t ser_point_1[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_1, temp_point);
 
   goldilocks_448_point_scalarmul(temp_point, msg->qa, msg->cp);
@@ -879,11 +886,7 @@ tstatic otrng_bool smp_msg_3_validate_zkp(smp_msg_3_s *msg,
                                  msg->d5);
   goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
 
-  uint8_t ser_point_2[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_2, temp_point);
-
-  uint8_t hash_1[HASH_BYTES];
-  goldilocks_shake256_ctx_p hd_1;
 
   hash_init(hd_1);
   hash_update(hd_1, ser_point_1, ED448_POINT_BYTES);
@@ -894,7 +897,6 @@ tstatic otrng_bool smp_msg_3_validate_zkp(smp_msg_3_s *msg,
   sodium_memzero(ser_point_1, ED448_POINT_BYTES);
   sodium_memzero(ser_point_2, ED448_POINT_BYTES);
 
-  uint8_t usage_zkp_smp_6 = 0x06;
   if (!hash_to_scalar(temp_scalar, hash_1, HASH_BYTES, usage_zkp_smp_6)) {
     return otrng_false;
   }
@@ -909,19 +911,13 @@ tstatic otrng_bool smp_msg_3_validate_zkp(smp_msg_3_s *msg,
                                  msg->d7);
   goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
 
-  uint8_t ser_point_3[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_3, temp_point);
 
   goldilocks_448_point_scalarmul(temp_point, msg->ra, msg->cr);
   goldilocks_448_point_sub(temp_point_2, msg->qa, smp->qb);
   goldilocks_448_point_scalarmul(temp_point_2, temp_point_2, msg->d7);
   goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
-
-  uint8_t ser_point_4[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_4, temp_point);
-
-  uint8_t hash_2[HASH_BYTES];
-  goldilocks_shake256_ctx_p hd_2;
 
   hash_init(hd_2);
   hash_update(hd_2, ser_point_3, ED448_POINT_BYTES);
@@ -932,7 +928,6 @@ tstatic otrng_bool smp_msg_3_validate_zkp(smp_msg_3_s *msg,
   sodium_memzero(ser_point_3, ED448_POINT_BYTES);
   sodium_memzero(ser_point_4, ED448_POINT_BYTES);
 
-  uint8_t usage_zkp_smp_7 = 0x07;
   if (!hash_to_scalar(temp_scalar, hash_2, HASH_BYTES, usage_zkp_smp_7)) {
     return otrng_false;
   }
@@ -960,6 +955,12 @@ tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
                                         smp_protocol_p smp) {
   ec_point_p qa_qb;
   ecdh_keypair_p pair_r7;
+  uint8_t ser_point_1[ED448_POINT_BYTES];
+  uint8_t ser_point_2[ED448_POINT_BYTES];
+  uint8_t hash[HASH_BYTES];
+  goldilocks_shake256_ctx_p hd;
+  uint8_t usage_smp_8 = 0x08;
+
   otrng_zq_keypair_generate(pair_r7->pub, pair_r7->priv);
 
   /* Rb = ((Qa - Qb) * b3) */
@@ -967,16 +968,11 @@ tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
   goldilocks_448_point_scalarmul(dst->rb, qa_qb, smp->b3);
 
   /* cr = HashToScalar(8 || G * r7 || (Qa - Qb) * r7) */
-  uint8_t ser_point_1[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_1, pair_r7->pub);
 
   goldilocks_448_point_scalarmul(qa_qb, qa_qb, pair_r7->priv);
 
-  uint8_t ser_point_2[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_2, qa_qb);
-
-  uint8_t hash[HASH_BYTES];
-  goldilocks_shake256_ctx_p hd;
 
   hash_init(hd);
   hash_update(hd, ser_point_1, ED448_POINT_BYTES);
@@ -987,7 +983,6 @@ tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
   sodium_memzero(ser_point_1, ED448_POINT_BYTES);
   sodium_memzero(ser_point_2, ED448_POINT_BYTES);
 
-  uint8_t usage_smp_8 = 0x08;
   if (!hash_to_scalar(dst->cr, hash, HASH_BYTES, usage_smp_8)) {
     return OTRNG_ERROR;
   }
@@ -1002,6 +997,7 @@ tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
 tstatic otrng_result smp_msg_4_asprintf(uint8_t **dst, size_t *len,
                                         smp_msg_4_s *msg) {
   size_t size = 0;
+  uint8_t *cursor;
   size = ED448_POINT_BYTES + (2 * ED448_SCALAR_BYTES);
 
   *dst = malloc(size);
@@ -1009,7 +1005,7 @@ tstatic otrng_result smp_msg_4_asprintf(uint8_t **dst, size_t *len,
     return OTRNG_ERROR;
   }
 
-  uint8_t *cursor = *dst;
+  cursor = *dst;
 
   cursor += otrng_serialize_ec_point(cursor, msg->rb);
   cursor += otrng_serialize_ec_scalar(cursor, msg->cr);
@@ -1051,6 +1047,11 @@ tstatic otrng_bool smp_msg_4_validate_zkp(smp_msg_4_s *msg,
                                           const smp_protocol_p smp) {
   ec_point_p temp_point, temp_point_2;
   ec_scalar_p temp_scalar;
+  uint8_t ser_point_1[ED448_POINT_BYTES];
+  uint8_t ser_point_2[ED448_POINT_BYTES];
+  uint8_t hash[HASH_BYTES];
+  goldilocks_shake256_ctx_p hd;
+  uint8_t usage_zkp_smp_8 = 0x08;
 
   /* cr = HashToScalar(8 || G * d7 + G3b * cr || (Qa - Qb) * d7 + Rb * cr). */
   goldilocks_448_point_scalarmul(temp_point, smp->g3b, msg->cr);
@@ -1058,18 +1059,12 @@ tstatic otrng_bool smp_msg_4_validate_zkp(smp_msg_4_s *msg,
                                  msg->d7);
   goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
 
-  uint8_t ser_point_1[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_1, temp_point);
 
   goldilocks_448_point_scalarmul(temp_point, msg->rb, msg->cr);
   goldilocks_448_point_scalarmul(temp_point_2, smp->qa_qb, msg->d7);
   goldilocks_448_point_add(temp_point, temp_point, temp_point_2);
-
-  uint8_t ser_point_2[ED448_POINT_BYTES];
   otrng_serialize_ec_point(ser_point_2, temp_point);
-
-  uint8_t hash[HASH_BYTES];
-  goldilocks_shake256_ctx_p hd;
 
   hash_init(hd);
   hash_update(hd, ser_point_1, ED448_POINT_BYTES);
@@ -1080,7 +1075,6 @@ tstatic otrng_bool smp_msg_4_validate_zkp(smp_msg_4_s *msg,
   sodium_memzero(ser_point_1, ED448_POINT_BYTES);
   sodium_memzero(ser_point_2, ED448_POINT_BYTES);
 
-  uint8_t usage_zkp_smp_8 = 0x08;
   if (!hash_to_scalar(temp_scalar, hash, HASH_BYTES, usage_zkp_smp_8)) {
     return otrng_false;
   }

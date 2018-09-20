@@ -181,6 +181,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
   }
 
   do {
+    tlv_s *tlv;
     if (!otrng_generate_smp_msg_1(msg, smp)) {
       continue;
     }
@@ -197,7 +198,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
     handle_smp_event_cb_v4(OTRNG_SMP_EVENT_IN_PROGRESS, smp->progress, question,
                            q_len, conversation);
 
-    tlv_s *tlv = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, len, to_send);
+    tlv = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, len, to_send);
     if (!tlv) {
       otrng_smp_msg_1_destroy(msg);
       free(to_send);
@@ -220,6 +221,11 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
                                       const uint8_t *question,
                                       const size_t q_len, const uint8_t *answer,
                                       const size_t answer_len, otrng_s *otr) {
+  tlv_s *smp_start_tlv;
+  tlv_list_s *tlvs;
+  otrng_warning warn;
+  otrng_result ret;
+
   if (!otr) {
     return OTRNG_ERROR;
   }
@@ -234,7 +240,7 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
       return OTRNG_ERROR;
     }
 
-    tlv_s *smp_start_tlv = otrng_smp_initiate(
+    smp_start_tlv = otrng_smp_initiate(
         get_my_client_profile(otr), otr->their_client_profile, question, q_len,
         answer, answer_len, otr->keys->ssid, otr->smp, otr);
 
@@ -242,15 +248,15 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
       return OTRNG_ERROR;
     }
 
-    tlv_list_s *tlvs = otrng_tlv_list_one(smp_start_tlv);
+    tlvs = otrng_tlv_list_one(smp_start_tlv);
     if (!tlvs) {
       return OTRNG_ERROR;
     }
 
-    otrng_warning warn = OTRNG_WARN_NONE;
+    warn = OTRNG_WARN_NONE;
     // TODO: do something about warn
-    otrng_result ret = otrng_prepare_to_send_data_message(
-        to_send, &warn, "", tlvs, otr, MSGFLAGS_IGNORE_UNREADABLE);
+    ret = otrng_prepare_to_send_data_message(to_send, &warn, "", tlvs, otr,
+                                             MSGFLAGS_IGNORE_UNREADABLE);
     otrng_tlv_list_free(tlvs);
     return ret;
   case 0:
@@ -291,12 +297,17 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_p smp,
 
 tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
                                      const size_t secretlen, otrng_s *otr) {
+  otrng_smp_event_t event;
+  tlv_list_s *tlvs;
+  otrng_warning warn;
+  otrng_result ret;
+
   if (!otr) {
     return OTRNG_ERROR;
   }
 
-  otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
-  tlv_list_s *tlvs = otrng_tlv_list_one(otrng_smp_provide_secret(
+  event = OTRNG_SMP_EVENT_NONE;
+  tlvs = otrng_tlv_list_one(otrng_smp_provide_secret(
       &event, otr->smp, get_my_client_profile(otr), otr->their_client_profile,
       otr->keys->ssid, secret, secretlen));
 
@@ -311,10 +322,10 @@ tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
   handle_smp_event_cb_v4(event, otr->smp->progress, otr->smp->msg1->question,
                          otr->smp->msg1->q_len, otr);
 
-  otrng_warning warn = OTRNG_WARN_NONE;
+  warn = OTRNG_WARN_NONE;
   // TODO: warn
-  otrng_result ret = otrng_prepare_to_send_data_message(
-      to_send, &warn, "", tlvs, otr, MSGFLAGS_IGNORE_UNREADABLE);
+  ret = otrng_prepare_to_send_data_message(to_send, &warn, "", tlvs, otr,
+                                           MSGFLAGS_IGNORE_UNREADABLE);
   otrng_tlv_list_free(tlvs);
 
   return ret;
@@ -339,16 +350,18 @@ INTERNAL otrng_result otrng_smp_continue(string_p *to_send,
 tstatic otrng_result otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
   tlv_list_s *tlvs =
       otrng_tlv_list_one(otrng_tlv_new(OTRL_TLV_SMP_ABORT, 0, NULL));
+  otrng_warning warn;
+  otrng_result ret;
 
   if (!tlvs) {
     return OTRNG_ERROR;
   }
 
   otr->smp->state_expect = '1';
-  otrng_warning warn = OTRNG_WARN_NONE;
+  warn = OTRNG_WARN_NONE;
   // TODO: warn
-  otrng_result ret = otrng_prepare_to_send_data_message(
-      to_send, &warn, "", tlvs, otr, MSGFLAGS_IGNORE_UNREADABLE);
+  ret = otrng_prepare_to_send_data_message(to_send, &warn, "", tlvs, otr,
+                                           MSGFLAGS_IGNORE_UNREADABLE);
   otrng_tlv_list_free(tlvs);
   return ret;
 }

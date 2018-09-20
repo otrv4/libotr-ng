@@ -168,6 +168,15 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   goldilocks_bool_t is_A1 = goldilocks_448_point_eq(pub, A1);
   goldilocks_bool_t is_A2 = goldilocks_448_point_eq(pub, A2);
   goldilocks_bool_t is_A3 = goldilocks_448_point_eq(pub, A3);
+  goldilocks_448_scalar_p t1, t2, t3;
+  goldilocks_448_point_p T1, T2, T3;
+  goldilocks_448_scalar_p r1, r2, r3;
+  goldilocks_448_point_p R1, R2, R3;
+  goldilocks_448_scalar_p c1, c2, c3;
+  goldilocks_448_point_p chosen_T1, chosen_T2, chosen_T3;
+  goldilocks_448_scalar_p tmp_c1, tmp_c2, tmp_c3;
+  goldilocks_448_scalar_p tmp_r1, tmp_r2, tmp_r3;
+  goldilocks_448_scalar_p c;
 
   // One of A1, A2, A3 is the public counterpart of secret.
   if (!(is_A1 | is_A2 | is_A3)) {
@@ -179,19 +188,14 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     return OTRNG_ERROR;
   }
 
-  goldilocks_448_scalar_p t1, t2, t3;
-  goldilocks_448_point_p T1, T2, T3;
   otrng_zq_keypair_generate(T1, t1);
   otrng_zq_keypair_generate(T2, t2);
   otrng_zq_keypair_generate(T3, t3);
 
-  goldilocks_448_scalar_p r1, r2, r3;
-  goldilocks_448_point_p R1, R2, R3;
   otrng_zq_keypair_generate(R1, r1);
   otrng_zq_keypair_generate(R2, r2);
   otrng_zq_keypair_generate(R3, r3);
 
-  goldilocks_448_scalar_p c1, c2, c3;
   ed448_random_scalar(c1);
   ed448_random_scalar(c2);
   ed448_random_scalar(c3);
@@ -199,8 +203,6 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   // chosen_T1 = is_A1 ? T1 : R1 + A1 * c1
   // chosen_T2 = is_A2 ? T2 : R2 + A2 * c2
   // chosen_T3 = is_A3 ? T3 : R3 + A3 * c3
-
-  goldilocks_448_point_p chosen_T1, chosen_T2, chosen_T3;
   choose_T(chosen_T1, A1, is_A1, R1, T1, c1);
   choose_T(chosen_T2, A2, is_A2, R2, T2, c2);
   choose_T(chosen_T3, A3, is_A3, R3, T3, c3);
@@ -212,7 +214,6 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   goldilocks_448_point_destroy(R2);
   goldilocks_448_point_destroy(R3);
 
-  goldilocks_448_scalar_p c;
   otrng_rsig_calculate_c_with_usage_and_domain(usage, domain_sep, c, A1, A2, A3,
                                                chosen_T1, chosen_T2, chosen_T3,
                                                message, message_len);
@@ -225,7 +226,6 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   // c2 = is_A2 ? c - c1 - c3 : c2
   // c3 = is_A3 ? c - c1 - c2 : c3
 
-  goldilocks_448_scalar_p tmp_c1, tmp_c2, tmp_c3;
   calculate_ci(tmp_c1, c, c1, is_A1, c2, c3);
   calculate_ci(tmp_c2, c, c2, is_A2, c1, c3);
   calculate_ci(tmp_c3, c, c3, is_A3, c1, c2);
@@ -246,7 +246,6 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   // t2 = secretIs2 ? t2 - c2 * secret : t2
   // t3 = secretIs3 ? t3 - c3 * secret : t3
 
-  goldilocks_448_scalar_p tmp_r1, tmp_r2, tmp_r3;
   calculate_ri(tmp_r1, secret, r1, is_A1, dst->c1, t1);
   calculate_ri(tmp_r2, secret, r2, is_A2, dst->c2, t2);
   calculate_ri(tmp_r3, secret, r3, is_A3, dst->c3, t3);
@@ -284,10 +283,11 @@ INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
     const otrng_public_key_p A1, const otrng_public_key_p A2,
     const otrng_public_key_p A3, const uint8_t *message, size_t message_len) {
   goldilocks_448_scalar_p c;
+  otrng_private_key_p c1c2c3;
+
   otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
       usage, domain_sep, c, src, A1, A2, A3, message, message_len);
 
-  otrng_private_key_p c1c2c3;
   goldilocks_448_scalar_add(c1c2c3, src->c1, src->c2);
   goldilocks_448_scalar_add(c1c2c3, c1c2c3, src->c3);
 

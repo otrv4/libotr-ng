@@ -18,7 +18,10 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef S_SPLINT_S
 #include <libotr/instag.h>
+#endif
+
 #include <string.h>
 
 #define OTRNG_INSTANCE_TAG_PRIVATE
@@ -29,7 +32,9 @@
 API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
                                 const char *account, const char *protocol,
                                 FILE *filename) {
+  OtrlInsTag *tmp_instag;
   OtrlUserState us = otrl_userstate_create();
+
   if (!us) {
     return otrng_false;
   }
@@ -39,7 +44,6 @@ API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
     return otrng_false;
   }
 
-  OtrlInsTag *tmp_instag;
   tmp_instag = otrl_instag_find(us, account, protocol);
 
   if (!tmp_instag) {

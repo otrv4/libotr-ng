@@ -21,7 +21,9 @@
 #ifndef OTRNG_RANDOM_H
 #define OTRNG_RANDOM_H
 
+#ifndef S_SPLINT_S
 #include <gcrypt.h>
+#endif
 
 #include "ed448.h"
 #include "shared.h"

@@ -21,7 +21,10 @@
 #ifndef OTRNG_DH_H
 #define OTRNG_DH_H
 
+#ifndef S_SPLINT_S
 #include <gcrypt.h>
+#endif
+
 #include <stdint.h>
 
 #include "constants.h"

@@ -21,7 +21,9 @@
 #ifndef OTRNG_CLIENT_H
 #define OTRNG_CLIENT_H
 
+#ifndef S_SPLINT_S
 #include <libotr/context.h>
+#endif
 
 #include "list.h"
 #include "otrng.h"

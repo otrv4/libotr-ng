@@ -31,12 +31,13 @@
 char *otrng_client_get_storage_id(const otrng_client_s *client) {
   char *account_name = NULL;
   char *protocol_name = NULL;
+  char *key = NULL;
+
   if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
                                              client)) {
     return NULL;
   }
 
-  char *key = NULL;
   if (account_name && protocol_name) {
     size_t n = strlen(protocol_name) + strlen(account_name) + 2;
     key = malloc(n);
@@ -60,6 +61,11 @@ char *otrng_client_get_storage_id(const otrng_client_s *client) {
 
 INTERNAL otrng_result otrng_client_private_key_v4_write_FILEp(
     const otrng_client_s *client, FILE *privf) {
+  char *key;
+  int err;
+  char *buff = NULL;
+  size_t s = 0;
+
   if (!privf) {
     return OTRNG_ERROR;
   }
@@ -68,12 +74,12 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  char *key = otrng_client_get_storage_id(client);
+  key = otrng_client_get_storage_id(client);
   if (!key) {
     return OTRNG_ERROR;
   }
 
-  int err = fputs(key, privf);
+  err = fputs(key, privf);
   free(key);
 
   if (EOF == err) {
@@ -84,8 +90,6 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  char *buff = NULL;
-  size_t s = 0;
   if (!otrng_symmetric_key_serialize(&buff, &s, client->keypair->sym)) {
     return OTRNG_ERROR;
   }
@@ -106,6 +110,11 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_FILEp(
 
 INTERNAL otrng_result
 otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f) {
+  uint8_t *buff;
+  size_t size;
+  char *encoded;
+  char *storage_id;
+
   if (!f) {
     return OTRNG_ERROR;
   }
@@ -114,23 +123,23 @@ otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f) {
     return OTRNG_ERROR;
   }
 
-  uint8_t *buff = malloc((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
+  buff = malloc((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
   if (!buff) {
     return OTRNG_ERROR;
   }
 
-  size_t size = otrng_serialize_forging_key(buff, *client->forging_key);
+  size = otrng_serialize_forging_key(buff, *client->forging_key);
   if (size == 0) {
     return OTRNG_ERROR;
   }
 
-  char *encoded = otrng_base64_encode(buff, size);
+  encoded = otrng_base64_encode(buff, size);
   free(buff);
   if (!encoded) {
     return OTRNG_ERROR;
   }
 
-  char *storage_id = otrng_client_get_storage_id(client);
+  storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
     free(encoded);
     return OTRNG_ERROR;
@@ -153,6 +162,7 @@ otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
   size_t cap = 0;
   int len = 0;
+  otrng_keypair_s *keypair;
 
   if (!privf) {
     return OTRNG_ERROR;
@@ -166,7 +176,7 @@ otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf) {
   otrng_keypair_free(client->keypair);
   client->keypair = NULL;
 
-  otrng_keypair_s *keypair = otrng_keypair_new();
+  keypair = otrng_keypair_new();
   if (!keypair) {
     return OTRNG_ERROR;
   }
@@ -198,6 +208,10 @@ otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
   char *line = NULL;
   size_t cap = 0;
   int len = 0;
+  uint8_t *dec;
+  size_t dec_len;
+  otrng_public_key_p key;
+  otrng_result ret;
 
   if (!f || feof(f)) {
     return OTRNG_ERROR;
@@ -213,17 +227,16 @@ otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
     return OTRNG_ERROR;
   }
 
-  uint8_t *dec = malloc(OTRNG_BASE64_DECODE_LEN(len));
+  dec = malloc(OTRNG_BASE64_DECODE_LEN(len));
   if (!dec) {
     free(line);
     return OTRNG_ERROR;
   }
 
-  size_t dec_len = otrl_base64_decode(dec, line, len);
+  dec_len = otrl_base64_decode(dec, line, len);
   free(line);
 
-  otrng_public_key_p key;
-  otrng_result ret = otrng_deserialize_forging_key(key, dec, dec_len, NULL);
+  ret = otrng_deserialize_forging_key(key, dec, dec_len, NULL);
   free(dec);
 
   if (ret == OTRNG_ERROR) {
@@ -235,6 +248,11 @@ otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
 
 INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
     const otrng_client_s *client, FILE *shared_prekey_f) {
+  char *storage_id;
+  int err;
+  char *buff = NULL;
+  size_t s = 0;
+
   if (!shared_prekey_f) {
     return OTRNG_ERROR;
   }
@@ -243,12 +261,12 @@ INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  char *storage_id = otrng_client_get_storage_id(client);
+  storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
     return OTRNG_ERROR;
   }
 
-  int err = fputs(storage_id, shared_prekey_f);
+  err = fputs(storage_id, shared_prekey_f);
   free(storage_id);
 
   if (EOF == err) {
@@ -259,8 +277,6 @@ INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  char *buff = NULL;
-  size_t s = 0;
   if (!otrng_symmetric_key_serialize(&buff, &s,
                                      client->shared_prekey_pair->sym)) {
     return OTRNG_ERROR;
@@ -285,6 +301,7 @@ INTERNAL otrng_result otrng_client_shared_prekey_read_FILEp(
   char *line = NULL;
   size_t cap = 0;
   int len = 0;
+  otrng_shared_prekey_pair_s *shared_prekey_pair;
 
   if (!shared_prekeyf) {
     return OTRNG_ERROR;
@@ -298,8 +315,7 @@ INTERNAL otrng_result otrng_client_shared_prekey_read_FILEp(
   otrng_shared_prekey_pair_free(client->shared_prekey_pair);
   client->shared_prekey_pair = NULL;
 
-  otrng_shared_prekey_pair_s *shared_prekey_pair =
-      otrng_shared_prekey_pair_new();
+  shared_prekey_pair = otrng_shared_prekey_pair_new();
   if (!shared_prekey_pair) {
     return OTRNG_ERROR;
   }
@@ -333,14 +349,15 @@ otrng_client_instance_tag_write_FILEp(otrng_client_s *client, FILE *instagf) {
   // account_name plus an arbitrary "libotrng-storage" protocol.
   char *account_name = NULL;
   char *protocol_name = NULL;
+  gcry_error_t ret;
+
   if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
                                              client)) {
     return OTRNG_ERROR;
   }
 
-  gcry_error_t ret =
-      otrl_instag_generate_FILEp(client->global_state->user_state_v3, instagf,
-                                 account_name, protocol_name);
+  ret = otrl_instag_generate_FILEp(client->global_state->user_state_v3, instagf,
+                                   account_name, protocol_name);
 
   free(account_name);
   free(protocol_name);
@@ -353,12 +370,13 @@ otrng_client_instance_tag_write_FILEp(otrng_client_s *client, FILE *instagf) {
 
 INTERNAL otrng_result
 otrng_client_instance_tag_read_FILEp(otrng_client_s *client, FILE *instag) {
+  gcry_error_t ret;
+
   if (!client->global_state->user_state_v3) {
     return OTRNG_ERROR;
   }
 
-  gcry_error_t ret =
-      otrl_instag_read_FILEp(client->global_state->user_state_v3, instag);
+  ret = otrl_instag_read_FILEp(client->global_state->user_state_v3, instag);
 
   if (ret) {
     return OTRNG_ERROR;
@@ -373,13 +391,15 @@ INTERNAL otrng_result otrng_client_private_key_v3_write_FILEp(
   // account_name plus an arbitrary "libotrng-storage" protocol.
   char *account_name = NULL;
   char *protocol_name = NULL;
+  gcry_error_t ret;
+
   if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
                                              client)) {
     return OTRNG_ERROR;
   }
 
-  gcry_error_t ret = otrl_privkey_generate_FILEp(
-      client->global_state->user_state_v3, privf, account_name, protocol_name);
+  ret = otrl_privkey_generate_FILEp(client->global_state->user_state_v3, privf,
+                                    account_name, protocol_name);
 
   free(account_name);
   free(protocol_name);
@@ -395,6 +415,10 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
   size_t cap = 0;
   int len = 0;
+  uint8_t *dec;
+  size_t dec_len;
+  client_profile_s profile[1];
+  otrng_result result;
 
   if (!privf) {
     return OTRNG_ERROR;
@@ -414,18 +438,16 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  uint8_t *dec = malloc(OTRNG_BASE64_DECODE_LEN(len));
+  dec = malloc(OTRNG_BASE64_DECODE_LEN(len));
   if (!dec) {
     free(line);
     return OTRNG_ERROR;
   }
 
-  size_t dec_len = otrl_base64_decode(dec, line, len);
+  dec_len = otrl_base64_decode(dec, line, len);
   free(line);
 
-  client_profile_s profile[1];
-  otrng_result ret =
-      otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
+  result = otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
   free(dec);
 
   if (otrng_client_profile_expired(profile->expires)) {
@@ -437,11 +459,11 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
     // return OTRNG_SUCCESS;
   }
 
-  if (ret == OTRNG_ERROR) {
-    return ret;
+  if (result == OTRNG_ERROR) {
+    return result;
   }
 
-  otrng_result result = otrng_client_add_client_profile(client, profile);
+  result = otrng_client_add_client_profile(client, profile);
   otrng_client_profile_destroy(profile);
 
   return result;
@@ -449,6 +471,11 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
 
 INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
     const otrng_client_s *client, FILE *privf) {
+  uint8_t *buff = NULL;
+  size_t s = 0;
+  char *encoded;
+  char *storage_id;
+
   if (!privf) {
     return OTRNG_ERROR;
   }
@@ -457,19 +484,17 @@ INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  uint8_t *buff = NULL;
-  size_t s = 0;
   if (!otrng_client_profile_asprintf(&buff, &s, client->client_profile)) {
     return OTRNG_ERROR;
   }
 
-  char *encoded = otrng_base64_encode(buff, s);
+  encoded = otrng_base64_encode(buff, s);
   free(buff);
   if (!encoded) {
     return OTRNG_ERROR;
   }
 
-  char *storage_id = otrng_client_get_storage_id(client);
+  storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
     free(encoded);
     return OTRNG_ERROR;
@@ -490,22 +515,26 @@ INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
 static otrng_result
 serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
                            const char *storage_id, FILE *privf) {
+  uint8_t ecdh_secret_k[ED448_SCALAR_BYTES] = {0};
+  char *ecdh_symkey;
+  uint8_t dh_secret_k[DH_KEY_SIZE] = {0};
+  size_t dh_secret_k_len = 0;
+  char *dh_symkey;
+  int ret;
+
   if (fprintf(privf, "%s\n", storage_id) < 0) {
     return OTRNG_ERROR;
   }
 
-  uint8_t ecdh_secret_k[ED448_SCALAR_BYTES] = {0};
   otrng_ec_scalar_encode(ecdh_secret_k, prekey->our_ecdh->priv);
 
-  char *ecdh_symkey = otrng_base64_encode(ecdh_secret_k, ED448_SCALAR_BYTES);
+  ecdh_symkey = otrng_base64_encode(ecdh_secret_k, ED448_SCALAR_BYTES);
   if (!ecdh_symkey) {
     return OTRNG_ERROR;
   }
 
   // TODO: securely erase ecdh_secret_k
 
-  uint8_t dh_secret_k[DH_KEY_SIZE] = {0};
-  size_t dh_secret_k_len = 0;
   // this should be 80 + 4
   if (!otrng_dh_mpi_serialize(dh_secret_k, DH_KEY_SIZE, &dh_secret_k_len,
                               prekey->our_dh->priv)) {
@@ -513,7 +542,7 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
     return OTRNG_ERROR;
   }
 
-  char *dh_symkey = otrng_base64_encode(dh_secret_k, dh_secret_k_len);
+  dh_symkey = otrng_base64_encode(dh_secret_k, dh_secret_k_len);
   if (!dh_symkey) {
     free(ecdh_symkey);
     return OTRNG_ERROR;
@@ -521,8 +550,8 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
 
   // TODO: securely erase dh_secret_k
 
-  int ret = fprintf(privf, "%x\n%x\n%s\n%s\n", prekey->id,
-                    prekey->sender_instance_tag, ecdh_symkey, dh_symkey);
+  ret = fprintf(privf, "%x\n%x\n%s\n%s\n", prekey->id,
+                prekey->sender_instance_tag, ecdh_symkey, dh_symkey);
   free(ecdh_symkey);
   free(dh_symkey);
 
@@ -535,6 +564,9 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
 
 INTERNAL otrng_result
 otrng_client_prekeys_write_FILEp(const otrng_client_s *client, FILE *privf) {
+  char *storage_id;
+  list_element_s *current;
+
   if (!privf) {
     return OTRNG_ERROR;
   }
@@ -544,12 +576,12 @@ otrng_client_prekeys_write_FILEp(const otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  char *storage_id = otrng_client_get_storage_id(client);
+  storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
     return OTRNG_ERROR;
   }
 
-  list_element_s *current = client->our_prekeys;
+  current = client->our_prekeys;
   while (current) {
     if (!serialize_and_store_prekey(current->data, storage_id, privf)) {
       free(storage_id);
@@ -567,6 +599,11 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
   int line_len = 0;
   size_t cap;
+  int dec_len;
+  uint8_t *dec;
+  size_t scalar_len;
+  size_t priv_len;
+  otrng_result success;
 
   otrng_stored_prekeys_s *prekey_msg = malloc(sizeof(otrng_stored_prekeys_s));
   if (!prekey_msg) {
@@ -604,15 +641,15 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   }
 
   // TODO: check this
-  int dec_len = OTRNG_BASE64_DECODE_LEN(line_len - 1);
-  uint8_t *dec = malloc(dec_len);
+  dec_len = OTRNG_BASE64_DECODE_LEN(line_len - 1);
+  dec = malloc(dec_len);
   if (!dec) {
     free(prekey_msg);
     free(line);
     return OTRNG_ERROR;
   }
 
-  size_t scalar_len = otrl_base64_decode(dec, line, line_len);
+  scalar_len = otrl_base64_decode(dec, line, line_len);
   free(line);
   line = NULL;
 
@@ -639,13 +676,13 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  size_t priv_len = otrl_base64_decode(dec, line, line_len - 1);
+  priv_len = otrl_base64_decode(dec, line, line_len - 1);
   free(line);
 
   prekey_msg->our_dh->priv = NULL;
   prekey_msg->our_dh->pub = NULL;
 
-  otrng_result success =
+  success =
       otrng_dh_mpi_deserialize(&prekey_msg->our_dh->priv, dec, priv_len, NULL);
 
   free(dec);
@@ -679,6 +716,11 @@ otrng_client_prekey_messages_read_FILEp(otrng_client_s *client, FILE *privf) {
 
 INTERNAL otrng_result
 otrng_client_prekey_profile_write_FILEp(otrng_client_s *client, FILE *privf) {
+  uint8_t *buff = NULL;
+  size_t s = 0;
+  char *encoded;
+  char *storage_id;
+
   if (!privf) {
     return OTRNG_ERROR;
   }
@@ -687,19 +729,17 @@ otrng_client_prekey_profile_write_FILEp(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  uint8_t *buff = NULL;
-  size_t s = 0;
   if (!otrng_prekey_profile_asprint(&buff, &s, client->prekey_profile)) {
     return OTRNG_ERROR;
   }
 
-  char *encoded = otrng_base64_encode(buff, s);
+  encoded = otrng_base64_encode(buff, s);
   free(buff);
   if (!encoded) {
     return OTRNG_ERROR;
   }
 
-  char *storage_id = otrng_client_get_storage_id(client);
+  storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
     free(encoded);
     return OTRNG_ERROR;
@@ -722,6 +762,10 @@ otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
   size_t cap = 0;
   int len = 0;
+  uint8_t *dec;
+  size_t dec_len;
+  otrng_prekey_profile_s profile[1];
+  otrng_result ret;
 
   if (!privf) {
     return OTRNG_ERROR;
@@ -739,18 +783,16 @@ otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  uint8_t *dec = malloc(OTRNG_BASE64_DECODE_LEN(len));
+  dec = malloc(OTRNG_BASE64_DECODE_LEN(len));
   if (!dec) {
     free(line);
     return OTRNG_ERROR;
   }
 
-  size_t dec_len = otrl_base64_decode(dec, line, len);
+  dec_len = otrl_base64_decode(dec, line, len);
   free(line);
 
-  otrng_prekey_profile_s profile[1];
-  otrng_result ret =
-      otrng_prekey_profile_deserialize(profile, dec, dec_len, NULL);
+  ret = otrng_prekey_profile_deserialize(profile, dec, dec_len, NULL);
   free(dec);
 
   if (ret == OTRNG_ERROR) {

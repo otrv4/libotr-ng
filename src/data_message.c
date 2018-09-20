@@ -24,7 +24,9 @@
 #include "serialize.h"
 #include "shake.h"
 
+#ifndef S_SPLINT_S
 #include <libotr/mem.h>
+#endif
 
 INTERNAL data_message_s *otrng_data_message_new() {
   data_message_s *ret = malloc(sizeof(data_message_s));
@@ -76,12 +78,14 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
 INTERNAL otrng_result otrng_data_message_body_asprintf(
     uint8_t **body, size_t *bodylen, const data_message_s *data_msg) {
   size_t size = DATA_MESSAGE_MAX_BYTES + data_msg->enc_msg_len;
+  uint8_t *cursor;
+  size_t len = 0;
   uint8_t *dst = malloc(size);
   if (!dst) {
     return OTRNG_ERROR;
   }
 
-  uint8_t *cursor = dst;
+  cursor = dst;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
   cursor += otrng_serialize_uint8(cursor, DATA_MSG_TYPE);
   cursor += otrng_serialize_uint32(cursor, data_msg->sender_instance_tag);
@@ -93,7 +97,6 @@ INTERNAL otrng_result otrng_data_message_body_asprintf(
   cursor += otrng_serialize_ec_point(cursor, data_msg->ecdh);
 
   // TODO: @freeing @sanitizer This could be NULL. We need to test.
-  size_t len = 0;
   if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - dst)), &len,
                                      data_msg->dh)) {
     free(dst);
@@ -123,8 +126,9 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
   const uint8_t *cursor = buff;
   int64_t len = bufflen;
   size_t read = 0;
-
   uint16_t protocol_version = 0;
+  uint8_t message_type = 0;
+
   if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
@@ -136,7 +140,6 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
     return OTRNG_ERROR;
   }
 
-  uint8_t message_type = 0;
   if (!otrng_deserialize_uint8(&message_type, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
@@ -233,11 +236,12 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
 INTERNAL static otrng_result
 otrng_data_message_sections_hash(uint8_t *dst, size_t dstlen,
                                  const uint8_t *body, size_t bodylen) {
+  static uint8_t usage_data_msg_sections = 0x19;
+
   if (dstlen < HASH_BYTES) {
     return OTRNG_ERROR;
   }
 
-  static uint8_t usage_data_msg_sections = 0x19;
   // KDF_1(usage_data_msg_sections || data_message_sections, 64)
   shake_256_kdf1(dst, HASH_BYTES, usage_data_msg_sections, body, bodylen);
 
@@ -247,13 +251,14 @@ otrng_data_message_sections_hash(uint8_t *dst, size_t dstlen,
 INTERNAL otrng_result otrng_data_message_authenticator(
     uint8_t *dst, size_t dstlen, const msg_mac_key_p mac_key,
     const uint8_t *body, size_t bodylen) {
+  uint8_t sections[HASH_BYTES];
+
   if (dstlen < DATA_MSG_MAC_BYTES) {
     return OTRNG_ERROR;
   }
 
   /* Authenticator = KDF_1(usage_authenticator || MKmac ||
    * KDF_1(usage_data_msg_sections || data_message_sections, 64), 64) */
-  uint8_t sections[HASH_BYTES];
   if (!otrng_data_message_sections_hash(sections, HASH_BYTES, body, bodylen)) {
     return OTRNG_ERROR;
   }
@@ -268,12 +273,12 @@ INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key_p mac_key,
                                              const data_message_s *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
+  uint8_t mac_tag[DATA_MSG_MAC_BYTES];
 
   if (!otrng_data_message_body_asprintf(&body, &bodylen, data_msg)) {
     return otrng_false;
   }
 
-  uint8_t mac_tag[DATA_MSG_MAC_BYTES];
   if (!otrng_data_message_authenticator(mac_tag, sizeof mac_tag, mac_key, body,
                                         bodylen)) {
     free(body);

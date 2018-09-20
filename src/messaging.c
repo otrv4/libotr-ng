@@ -18,7 +18,9 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef S_SPLINT_S
 #include <libotr/privkey.h>
+#endif
 
 #define OTRNG_MESSAGING_PRIVATE
 #define OTRNG_PERSISTENCE_PRIVATE
@@ -63,13 +65,14 @@ tstatic int find_client_by_client_id(const void *current, const void *wanted) {
 
 tstatic otrng_client_s *get_client(otrng_global_state_s *gs,
                                    const otrng_client_id_s client_id) {
+  otrng_client_s *client;
   list_element_s *el =
       otrng_list_get(&client_id, gs->clients, find_client_by_client_id);
   if (el) {
     return el->data;
   }
 
-  otrng_client_s *client = otrng_client_new(client_id);
+  client = otrng_client_new(client_id);
   if (!client) {
     return NULL;
   }
@@ -131,10 +134,13 @@ API otrng_result otrng_global_state_generate_forging_key(
      generating a full keypair and then deleting the secret material
      A better way would be to just generate the public material directly */
   uint8_t sym[ED448_PRIVATE_BYTES];
+  otrng_keypair_s *k;
+  otrng_result r;
+
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
-  otrng_keypair_s *k = otrng_keypair_new();
+  k = otrng_keypair_new();
   otrng_keypair_generate(k, sym);
-  otrng_result r = otrng_global_state_add_forging_key(gs, client_id, &k->pub);
+  r = otrng_global_state_add_forging_key(gs, client_id, &k->pub);
   // At this point you can add printing of the secret key material
   // if you ever need to use the forging key.
   otrng_keypair_free(k);
@@ -143,17 +149,19 @@ API otrng_result otrng_global_state_generate_forging_key(
 
 API otrng_result otrng_global_state_generate_client_profile(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
+  client_profile_s *profile;
+  otrng_result err;
   otrng_client_s *client = get_client(gs, client_id);
   if (!client) {
     return OTRNG_ERROR;
   }
 
-  client_profile_s *profile = otrng_client_build_default_client_profile(client);
+  profile = otrng_client_build_default_client_profile(client);
   if (!profile) {
     return OTRNG_ERROR;
   }
 
-  otrng_result err = otrng_client_add_client_profile(client, profile);
+  err = otrng_client_add_client_profile(client, profile);
   otrng_client_profile_free(profile);
 
   return err;
@@ -162,17 +170,19 @@ API otrng_result otrng_global_state_generate_client_profile(
 API otrng_result otrng_global_state_generate_prekey_profile(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
   otrng_client_s *client = get_client(gs, client_id);
+  otrng_prekey_profile_s *profile;
+  otrng_result err;
+
   if (!client) {
     return OTRNG_ERROR;
   }
 
-  otrng_prekey_profile_s *profile =
-      otrng_client_build_default_prekey_profile(client);
+  profile = otrng_client_build_default_prekey_profile(client);
   if (!profile) {
     return OTRNG_ERROR;
   }
 
-  otrng_result err = otrng_client_add_prekey_profile(client, profile);
+  err = otrng_client_add_prekey_profile(client, profile);
   otrng_prekey_profile_free(profile);
 
   return err;
@@ -181,9 +191,10 @@ API otrng_result otrng_global_state_generate_prekey_profile(
 API otrng_result otrng_global_state_generate_shared_prekey(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
   uint8_t sym[ED448_PRIVATE_BYTES];
+  otrng_client_s *client;
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
 
-  otrng_client_s *client = get_client(gs, client_id);
+  client = get_client(gs, client_id);
   if (!client) {
     return OTRNG_ERROR;
   }
@@ -308,12 +319,13 @@ API otrng_result otrng_global_state_private_key_v4_read_FILEp(
 
   // Scan the whole file for a private key for this client
   while (!feof(privf)) {
+    otrng_client_s *client;
     const otrng_client_id_s client_id = read_client_id_for_key(privf);
     if (!client_id.protocol || !client_id.account) {
       continue;
     }
 
-    otrng_client_s *client = get_client(gs, client_id);
+    client = get_client(gs, client_id);
     if (otrng_client_private_key_v4_read_FILEp(client, privf) !=
         OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
@@ -333,12 +345,13 @@ API otrng_result otrng_global_state_forging_key_read_FILEp(
 
   // Scan the whole file for a private key for this client
   while (!feof(f)) {
+    otrng_client_s *client;
     const otrng_client_id_s client_id = read_client_id_for_key(f);
     if (!client_id.protocol || !client_id.account) {
       continue;
     }
 
-    otrng_client_s *client = get_client(gs, client_id);
+    client = get_client(gs, client_id);
     if (otrng_failed(otrng_client_forging_key_read_FILEp(client, f))) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
@@ -356,12 +369,13 @@ API otrng_result otrng_global_state_client_profile_read_FILEp(
   }
 
   while (!feof(profile_filep)) {
+    otrng_client_s *client;
     const otrng_client_id_s client_id = read_client_id_for_key(profile_filep);
     if (!client_id.protocol || !client_id.account) {
       continue;
     }
 
-    otrng_client_s *client = get_client(gs, client_id);
+    client = get_client(gs, client_id);
     if (otrng_client_client_profile_read_FILEp(client, profile_filep) !=
         OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
@@ -381,12 +395,13 @@ API otrng_result otrng_global_state_shared_prekey_read_FILEp(
 
   // Scan the whole file for a private key for this client
   while (!feof(shared_prekeyf)) {
+    otrng_client_s *client;
     const otrng_client_id_s client_id = read_client_id_for_key(shared_prekeyf);
     if (!client_id.protocol || !client_id.account) {
       continue;
     }
 
-    otrng_client_s *client = get_client(gs, client_id);
+    client = get_client(gs, client_id);
     if (otrng_client_shared_prekey_read_FILEp(client, shared_prekeyf) !=
         OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
@@ -405,11 +420,12 @@ API otrng_result otrng_global_state_prekey_profile_read_FILEp(
   }
 
   while (!feof(profile_filep)) {
+    otrng_client_s *client;
     const otrng_client_id_s client_id = read_client_id_for_key(profile_filep);
     if (!client_id.protocol || !client_id.account) {
       continue;
     }
-    otrng_client_s *client = get_client(gs, client_id);
+    client = get_client(gs, client_id);
     if (otrng_client_prekey_profile_read_FILEp(client, profile_filep) !=
         OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
@@ -428,12 +444,13 @@ API otrng_result otrng_global_state_prekeys_read_FILEp(
   }
 
   while (!feof(prekey_filep)) {
+    otrng_client_s *client;
     const otrng_client_id_s client_id = read_client_id_for_prekey(prekey_filep);
     if (!client_id.protocol || !client_id.account) {
       continue;
     }
 
-    otrng_client_s *client = get_client(gs, client_id);
+    client = get_client(gs, client_id);
 
     if (otrng_client_prekey_messages_read_FILEp(client, prekey_filep) !=
         OTRNG_SUCCESS) {
@@ -478,7 +495,7 @@ static size_t debug_print_ignores_cap;
 API void otrng_add_debug_print_ignore(const char *ign) {
   if (debug_print_ignores == NULL) {
     debug_print_ignores = malloc(7 * sizeof(char *));
-    if (!debuf_print_ignores) {
+    if (!debug_print_ignores) {
       return;
     }
 

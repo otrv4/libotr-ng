@@ -21,10 +21,12 @@
 #ifndef OTRNG_V3_H
 #define OTRNG_V3_H
 
+#ifndef S_SPLINT_S
 // clang-format off
 #include <libotr/proto.h>
 #include <libotr/message.h>
 // clang-format on
+#endif
 
 #include "shared.h"
 #include "error.h"

@@ -18,7 +18,10 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef S_SPLINT_S
 #include <libotr/b64.h>
+#endif
+
 #include <string.h>
 
 #define OTRNG_DESERIALIZE_PRIVATE
@@ -96,6 +99,7 @@ INTERNAL otrng_result otrng_deserialize_data(uint8_t **dst, size_t *dstlen,
                                              size_t buflen, size_t *read) {
   size_t r = 0;
   uint32_t s = 0;
+  uint8_t *t;
 
   /* 4 bytes len */
   if (!otrng_deserialize_uint32(&s, buffer, buflen, &r)) {
@@ -119,7 +123,7 @@ INTERNAL otrng_result otrng_deserialize_data(uint8_t **dst, size_t *dstlen,
     return OTRNG_ERROR;
   }
 
-  uint8_t *t = malloc(s);
+  t = malloc(s);
   if (!t) {
     return OTRNG_ERROR;
   }
@@ -152,13 +156,14 @@ INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
 otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_p *dst, const uint8_t *buffer,
                                           size_t buflen, size_t *read) {
   otrng_mpi_p mpi; // no need to free, because nothing is copied now
+  size_t w = 0;
+  otrng_result ret;
 
   if (!otrng_mpi_deserialize_no_copy(mpi, buffer, buflen, NULL)) {
     return OTRNG_ERROR;
   }
 
-  size_t w = 0;
-  otrng_result ret = otrng_dh_mpi_deserialize(dst, mpi->data, mpi->len, &w);
+  ret = otrng_dh_mpi_deserialize(dst, mpi->data, mpi->len, &w);
 
   if (read) {
     *read = w + 4;
@@ -285,11 +290,11 @@ INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar_p scalar,
 INTERNAL otrng_result otrng_deserialize_ring_sig(ring_sig_s *proof,
                                                  const uint8_t *serialized,
                                                  size_t ser_len, size_t *read) {
+  const uint8_t *cursor = serialized;
+
   if (ser_len < RING_SIG_BYTES) {
     return OTRNG_ERROR;
   }
-
-  const uint8_t *cursor = serialized;
 
   if (!otrng_deserialize_ec_scalar(proof->c1, cursor, ser_len)) {
     return OTRNG_ERROR;
@@ -342,11 +347,13 @@ INTERNAL otrng_result otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
                                                       size_t len) {
   /* (((base64len+3) / 4) * 3) */
   unsigned char *dec = malloc(((len + 3) / 4) * 3);
+  size_t written;
+
   if (!dec) {
     return OTRNG_ERROR;
   }
 
-  size_t written = otrl_base64_decode(dec, buff, len);
+  written = otrl_base64_decode(dec, buff, len);
 
   if (written == ED448_PRIVATE_BYTES) {
     otrng_keypair_generate(pair, dec);
@@ -362,11 +369,13 @@ INTERNAL otrng_result otrng_symmetric_shared_prekey_deserialize(
     otrng_shared_prekey_pair_s *pair, const char *buff, size_t len) {
   /* (((base64len+3) / 4) * 3) */
   unsigned char *dec = malloc(((len + 3) / 4) * 3);
+  size_t written;
+
   if (!dec) {
     return OTRNG_ERROR;
   }
 
-  size_t written = otrl_base64_decode(dec, buff, len);
+  written = otrl_base64_decode(dec, buff, len);
 
   if (written == ED448_PRIVATE_BYTES) {
     otrng_shared_prekey_pair_generate(pair, dec);

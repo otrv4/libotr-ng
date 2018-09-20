@@ -24,6 +24,8 @@ INTERNAL otrng_result
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
   /* Check that all the instance tags on the Prekey Ensemble's values are the
    * same. */
+  char *versions;
+  otrng_bool found;
   uint32_t instance = dst->client_profile->sender_instance_tag;
   if (instance != dst->prekey_profile->instance_tag) {
     return OTRNG_ERROR;
@@ -57,8 +59,8 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
 
   /* Check that the OTR version of the prekey message matches one of the
   versions signed in the Client Profile contained in the Prekey Ensemble. */
-  char *versions = dst->client_profile->versions;
-  otrng_bool found = otrng_false;
+  versions = dst->client_profile->versions;
+  found = otrng_false;
   while (*versions && !found) {
     found = (*versions == '4');
     versions++;

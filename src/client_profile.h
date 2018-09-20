@@ -23,7 +23,9 @@
 
 #include <stdint.h>
 
+#ifndef S_SPLINT_S
 #include <libotr/privkey.h>
+#endif
 
 #include "keys.h"
 #include "mpi.h"

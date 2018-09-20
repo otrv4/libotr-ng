@@ -18,7 +18,10 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef S_SPLINT_S
 #include <gcrypt.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,11 +50,13 @@ API otrng_message_to_send_s *otrng_message_new() {
 }
 
 API void otrng_message_free(otrng_message_to_send_s *message) {
+  int i;
+
   if (!message) {
     return;
   }
 
-  for (int i = 0; i < message->total; i++) {
+  for (i = 0; i < message->total; i++) {
     free(message->pieces[i]);
   }
 
@@ -69,11 +74,13 @@ tstatic void initialize_fragment_context(fragment_context_s *context) {
 }
 
 tstatic void free_fragments_in_context(fragment_context_s *context) {
+  int i;
+
   if (!context->fragments) {
     return;
   }
 
-  for (int i = 0; i < context->total; i++) {
+  for (i = 0; i < context->total; i++) {
     free(context->fragments[i]);
     context->fragments[i] = NULL;
   }
@@ -127,19 +134,22 @@ static otrng_result create_fragment_message(char **dst, const char *piece,
 
 static otrng_result
 init_message_to_send_with_total(otrng_message_to_send_s *fragments, int total) {
+  size_t pieces_len;
+  int i;
+
   if (total < 1 || total > 65535) {
     return OTRNG_ERROR;
   }
 
   fragments->total = total;
 
-  size_t pieces_len = fragments->total * sizeof(string_p);
+  pieces_len = fragments->total * sizeof(string_p);
   fragments->pieces = malloc(pieces_len);
   if (!fragments->pieces) {
     return OTRNG_ERROR;
   }
 
-  for (int i = 0; i < fragments->total; i++) {
+  for (i = 0; i < fragments->total; i++) {
     fragments->pieces[i] = NULL;
   }
 
@@ -154,14 +164,16 @@ INTERNAL otrng_result otrng_fragment_message(int max_size,
   size_t message_len = strlen(message);
   size_t limit = max_size - FRAGMENT_HEADER_LEN;
   int total = ((message_len - 1) / limit) + 1;
+  uint32_t *identifier;
+  int i;
 
   if (otrng_failed(init_message_to_send_with_total(fragments, total))) {
     return OTRNG_ERROR;
   }
 
-  uint32_t *identifier = gcry_random_bytes(4, GCRY_STRONG_RANDOM);
+  identifier = gcry_random_bytes(4, GCRY_STRONG_RANDOM);
 
-  for (int i = 0; i < fragments->total; i++) {
+  for (i = 0; i < fragments->total; i++) {
     int piece_len = message_len < limit ? message_len : limit;
     char **dst = fragments->pieces + i;
 
@@ -190,12 +202,14 @@ tstatic otrng_bool is_fragment(const string_p message) {
 }
 
 tstatic otrng_result initialize_fragments(fragment_context_s *context) {
+  int i;
+
   context->fragments = malloc(sizeof(string_p) * context->total);
   if (!context->fragments) {
     return OTRNG_ERROR;
   }
 
-  for (int i = 0; i < context->total; i++) {
+  for (i = 0; i < context->total; i++) {
     context->fragments[i] = NULL;
   }
 
@@ -204,13 +218,16 @@ tstatic otrng_result initialize_fragments(fragment_context_s *context) {
 
 tstatic otrng_result join_fragments(char **unfrag_message,
                                     fragment_context_s *context) {
+  char *end_message;
+  int i;
+
   *unfrag_message = malloc(context->total_message_len + 1);
   if (!*unfrag_message) {
     return OTRNG_ERROR;
   }
 
-  char *end_message = *unfrag_message;
-  for (int i = 0; i < context->total; i++) {
+  end_message = *unfrag_message;
+  for (i = 0; i < context->total; i++) {
     end_message = otrng_stpcpy(end_message, context->fragments[i]);
   }
 
@@ -237,6 +254,14 @@ INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
                                                list_element_s **contexts,
                                                const string_p message,
                                                const int our_instance_tag) {
+  int start = 0, end = 0;
+  uint32_t fragment_identifier, sender_tag, receiver_tag;
+  uint16_t i, t;
+  fragment_context_s *context = NULL;
+  list_element_s *current;
+  fragment_context_s *ctx;
+  uint32_t fragment_len;
+
   *unfrag_message = NULL;
 
   if (!contexts) {
@@ -252,10 +277,6 @@ INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
     return OTRNG_SUCCESS;
   }
 
-  int start = 0, end = 0;
-  uint32_t fragment_identifier, sender_tag, receiver_tag;
-  uint16_t i, t;
-
   sscanf(message, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
          &receiver_tag, &i, &t, &start, &end);
 
@@ -267,13 +288,12 @@ INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
     return OTRNG_ERROR;
   }
 
-  fragment_context_s *context = NULL;
-  for (list_element_s *current = *contexts; current; current = current->next) {
+  for (current = *contexts; current; current = current->next) {
     if (!current->data) {
       continue;
     }
 
-    fragment_context_s *ctx = current->data;
+    ctx = current->data;
     if (ctx->identifier == fragment_identifier) {
       context = ctx;
       break;
@@ -307,7 +327,7 @@ INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
     return OTRNG_ERROR;
   }
 
-  uint32_t fragment_len = end - start - 1;
+  fragment_len = end - start - 1;
   if (otrng_failed(copy_fragment_to_context(context, i, message + start,
                                             fragment_len))) {
     return OTRNG_ERROR;

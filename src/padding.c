@@ -23,22 +23,25 @@
 #include "tlv.h"
 
 static size_t calculate_padding_len(size_t message_len, size_t max) {
+  size_t tlv_header_len = 4;
+
   if (max == 0) {
     return 0;
   }
 
-  size_t tlv_header_len = 4;
   return max - ((message_len + tlv_header_len + 1) % max);
 }
 
 INTERNAL otrng_result generate_padding(uint8_t **dst, size_t *dstlen,
                                        size_t message_len, const otrng_s *otr) {
+  tlv_s *padding_tlv;
+  size_t ret;
   size_t padding_len = calculate_padding_len(message_len, otr->client->padding);
   if (!padding_len) {
     return OTRNG_SUCCESS;
   }
 
-  tlv_s *padding_tlv = otrng_tlv_padding_new(padding_len);
+  padding_tlv = otrng_tlv_padding_new(padding_len);
   if (!padding_tlv) {
     return OTRNG_ERROR;
   }
@@ -50,7 +53,7 @@ INTERNAL otrng_result generate_padding(uint8_t **dst, size_t *dstlen,
     return OTRNG_ERROR;
   }
 
-  size_t ret = otrng_tlv_serialize(*dst, padding_tlv);
+  ret = otrng_tlv_serialize(*dst, padding_tlv);
   otrng_tlv_free(padding_tlv);
 
   if (ret == 0) {

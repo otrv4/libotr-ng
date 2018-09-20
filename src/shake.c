@@ -23,9 +23,9 @@
 #include "shake.h"
 
 void hash_init_with_dom(goldilocks_shake256_ctx_p hash) {
-  hash_init(hash);
-
   const char *domain = "OTRv4";
+
+  hash_init(hash);
   hash_update(hash, (const unsigned char *)domain, strlen(domain));
 }
 

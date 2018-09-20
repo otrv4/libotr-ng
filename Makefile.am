@@ -81,6 +81,10 @@ check-valgrind-helgrind: check
 check-valgrind-drd: check
 	valgrind --tool=drd $(top_builddir)/src/test/test
 
+# We don't check test files for now
+splint:
+	splint $(top_builddir)/src/*.{c,h}
+
 # Finds todo items
 TODO_TYPES ?= HACK TODO @todo FIXME BUG XXX PERF FUTURE REMOVE MAGIC UNIFY
 TODO_LOCATIONS ?= src/*.c src/test/*.c Makefile.am src/*.h src/test/*.h src/test/Makefile.am

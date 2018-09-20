@@ -140,17 +140,20 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
 
 tstatic otrng_result otrng_prekey_profile_body_asprint(
     uint8_t **dst, size_t *nbytes, const otrng_prekey_profile_s *profile) {
+  size_t size = PREKEY_PROFILE_BODY_BYTES;
+  uint8_t *buff;
+  size_t written;
+
   if (!dst) {
     return OTRNG_ERROR;
   }
 
-  size_t size = PREKEY_PROFILE_BODY_BYTES;
-  uint8_t *buff = malloc(size);
+  buff = malloc(size);
   if (!buff) {
     return OTRNG_ERROR;
   }
 
-  size_t written = otrng_prekey_profile_body_serialize(buff, size, profile);
+  written = otrng_prekey_profile_body_serialize(buff, size, profile);
   if (written == 0) {
     free(buff);
     return OTRNG_ERROR;
@@ -169,12 +172,14 @@ INTERNAL otrng_result otrng_prekey_profile_asprint(
     uint8_t **dst, size_t *nbytes, otrng_prekey_profile_s *profile) {
   size_t size = PREKEY_PROFILE_BODY_BYTES + sizeof(eddsa_signature_p);
   uint8_t *buff = malloc(size);
+  size_t written;
+
   if (!buff) {
     return OTRNG_ERROR;
   }
 
-  size_t written = otrng_prekey_profile_body_serialize(
-      buff, PREKEY_PROFILE_BODY_BYTES, profile);
+  written = otrng_prekey_profile_body_serialize(buff, PREKEY_PROFILE_BODY_BYTES,
+                                                profile);
   if (written == 0) {
     free(buff);
     return OTRNG_ERROR;
@@ -216,13 +221,15 @@ INTERNAL otrng_prekey_profile_s *
 otrng_prekey_profile_build(uint32_t instance_tag,
                            const otrng_keypair_s *longterm_pair,
                            const otrng_shared_prekey_pair_s *prekey_pair) {
+  otrng_prekey_profile_s *prekey_profile;
+  time_t expires = time(NULL);
+
   if (!prekey_pair || !longterm_pair ||
       !otrng_instance_tag_valid(instance_tag)) {
     return NULL;
   }
 
-  otrng_prekey_profile_s *prekey_profile =
-      malloc(sizeof(otrng_prekey_profile_s));
+  prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
   if (!prekey_profile) {
     return NULL;
   }
@@ -230,7 +237,6 @@ otrng_prekey_profile_build(uint32_t instance_tag,
   prekey_profile->instance_tag = instance_tag;
 
 #define PREKEY_PROFILE_EXPIRATION_SECONDS 1 * 30 * 24 * 60 * 60; /* 1 month */
-  time_t expires = time(NULL);
   prekey_profile->expires = expires + PREKEY_PROFILE_EXPIRATION_SECONDS;
   otrng_ec_point_copy(prekey_profile->shared_prekey,
                       prekey_pair->pub); /* Key "D" */
@@ -248,8 +254,10 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
                                       const otrng_public_key_p pub) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
-
   uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
+  uint8_t pubkey[ED448_POINT_BYTES];
+  otrng_bool valid;
+
   if (memcmp(profile->signature, zero_buff, ED448_SIGNATURE_BYTES) == 0) {
     return otrng_false;
   }
@@ -258,10 +266,9 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
     return otrng_false;
   }
 
-  uint8_t pubkey[ED448_POINT_BYTES];
   otrng_serialize_ec_point(pubkey, pub);
 
-  otrng_bool valid = otrng_ec_verify(profile->signature, pubkey, body, bodylen);
+  valid = otrng_ec_verify(profile->signature, pubkey, body, bodylen);
 
   free(body);
   return valid;

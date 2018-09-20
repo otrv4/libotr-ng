@@ -45,13 +45,13 @@ tstatic void set_tlv_type(tlv_s *tlv, uint16_t tlv_type) {
 
 tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *read) {
   tlv_s *tlv = otrng_tlv_new(OTRNG_TLV_NONE, 0, NULL);
-  if (!tlv) {
-    return NULL;
-  }
-
   size_t w = 0;
   uint16_t tlv_type = -1;
   const uint8_t *cursor = src;
+
+  if (!tlv) {
+    return NULL;
+  }
 
   if (!otrng_deserialize_uint16(&tlv_type, cursor, len, &w)) {
     otrng_tlv_free(tlv);
@@ -93,6 +93,7 @@ tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *read) {
 }
 
 INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *head, tlv_s *tlv) {
+  tlv_list_s *current;
   tlv_list_s *n = otrng_tlv_list_one(tlv);
   if (!n) {
     return NULL;
@@ -102,7 +103,7 @@ INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *head, tlv_s *tlv) {
     return n;
   }
 
-  tlv_list_s *current = head;
+  current = head;
 
   while (current->next) {
     current = current->next;
@@ -186,23 +187,25 @@ INTERNAL tlv_s *otrng_tlv_disconnected_new(void) {
 
 INTERNAL tlv_s *otrng_tlv_padding_new(size_t len) {
   uint8_t *data = malloc(len);
+  tlv_s *tlv;
   if (!data) {
     return NULL;
   }
 
   memset(data, 0, len);
-  tlv_s *tlv = otrng_tlv_new(OTRNG_TLV_PADDING, len, data);
+  tlv = otrng_tlv_new(OTRNG_TLV_PADDING, len, data);
   free(data);
 
   return tlv;
 }
 
 INTERNAL tlv_list_s *otrng_tlv_list_one(tlv_s *tlv) {
+  tlv_list_s *tlvs;
   if (!tlv) {
     return NULL;
   }
 
-  tlv_list_s *tlvs = malloc(sizeof(tlv_list_s));
+  tlvs = malloc(sizeof(tlv_list_s));
   if (!tlvs) {
     return NULL;
   }

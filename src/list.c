@@ -77,19 +77,21 @@ INTERNAL /*@null@*/ void otrng_list_free_nodes(list_element_s *head) {
 }
 
 INTERNAL list_element_s *otrng_list_copy(list_element_s *head) {
+  list_element_s *cursor, *copy, *ret;
+
   if (otrng_list_len(head) == 0) {
     return NULL;
   }
 
-  list_element_s *cursor = head;
-  list_element_s *copy = list_new();
+  cursor = head;
+  copy = list_new();
   if (!copy) {
     return NULL;
   }
   copy->data = cursor->data;
   copy->next = NULL;
 
-  list_element_s *ret = copy;
+  ret = copy;
 
   cursor = cursor->next;
   while (cursor) {
@@ -109,6 +111,7 @@ INTERNAL list_element_s *otrng_list_copy(list_element_s *head) {
 }
 
 INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head) {
+  list_element_s *last;
   list_element_s *n = list_new();
   if (!n) {
     return NULL;
@@ -116,7 +119,7 @@ INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head) {
 
   n->data = data;
 
-  list_element_s *last = otrng_list_get_last(head);
+  last = otrng_list_get_last(head);
   if (!last) {
     return n;
   }
@@ -127,7 +130,10 @@ INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head) {
 
 INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data, size_t pos,
                                                          list_element_s *head) {
+  list_element_s *tmp;
   list_element_s *n = list_new();
+  int i;
+
   if (!n) {
     return NULL;
   }
@@ -139,8 +145,7 @@ INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data, size_t pos,
     return n;
   }
 
-  int i;
-  list_element_s *tmp = head;
+  tmp = head;
 
   if (pos == 0) {
     n->next = tmp;
@@ -160,11 +165,13 @@ INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data, size_t pos,
 }
 
 INTERNAL list_element_s *otrng_list_get_last(list_element_s *head) {
+  list_element_s *cursor;
+
   if (!head) {
     return NULL;
   }
 
-  list_element_s *cursor = head;
+  cursor = head;
   while (cursor->next) {
     cursor = cursor->next;
   }

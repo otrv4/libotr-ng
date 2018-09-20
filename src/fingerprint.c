@@ -47,6 +47,7 @@ INTERNAL otrng_result otrng_serialize_fingerprint(
     otrng_fingerprint_p fp, const otrng_public_key_p pub) {
   uint8_t serialized[ED448_POINT_BYTES] = {0};
   uint8_t usage_fingerprint = 0x00;
+  goldilocks_shake256_ctx_p hd;
 
   if (!fp) {
     return OTRNG_ERROR;
@@ -55,7 +56,6 @@ INTERNAL otrng_result otrng_serialize_fingerprint(
   otrng_serialize_ec_point(serialized, pub);
 
   // KDF_1(usage_fingerprint || byte(H), 56)
-  goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, usage_fingerprint);
   hash_update(hd, serialized, ED448_POINT_BYTES);
 

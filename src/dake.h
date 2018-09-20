@@ -142,10 +142,10 @@ INTERNAL otrng_result otrng_dake_prekey_message_serialize(
     const dake_prekey_message_s *src);
 
 typedef struct {
-  const client_profile_s *client_profile;
-  const goldilocks_448_point_s ecdh;
-  const dh_mpi_p dh;
-  const uint16_t instance_tag;
+  client_profile_s *client_profile;
+  goldilocks_448_point_s ecdh;
+  dh_mpi_p dh;
+  uint16_t instance_tag;
 } otrng_dake_participant_data_s;
 
 /*

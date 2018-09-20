@@ -18,7 +18,10 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef S_SPLINT_S
 #include <libotr/privkey.h>
+#endif
+
 #include <time.h>
 
 #define OTRNG_CLIENT_PRIVATE
@@ -134,8 +137,8 @@ get_conversation_with(const char *recipient, list_element_s *conversations) {
 tstatic otrng_policy_s get_policy_for(const char *recipient) {
   // TODO: @policy the policy should come from client config.
   // or a callback.
-  UNUSED_ARG(recipient);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
+  UNUSED_ARG(recipient);
 
   return policy;
 }
@@ -243,14 +246,14 @@ tstatic otrng_result send_message(char **newmsg, const char *message,
                                   otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
   otrng_warning warn = OTRNG_WARN_NONE;
+  otrng_result result;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
     return OTRNG_ERROR;
   }
 
-  otrng_result result =
-      otrng_send_message(newmsg, message, &warn, NULL, 0, conv->conn);
+  result = otrng_send_message(newmsg, message, &warn, NULL, 0, conv->conn);
 
   if (warn == OTRNG_WARN_SEND_NOT_ENCRYPTED) {
     // TODO: we need to signal this a different way than by return values
@@ -285,22 +288,24 @@ API otrng_result otrng_client_send_fragment(
     otrng_message_to_send_s **newmessage, const char *message, int mms,
     const char *recipient, otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
+  string_p to_send = NULL;
+  uint32_t our_tag, their_tag;
+  otrng_result ret;
+
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
     return OTRNG_ERROR;
   }
 
-  string_p to_send = NULL;
   if (otrng_failed(send_message(&to_send, message, recipient, client))) {
     free(to_send);
     return OTRNG_ERROR;
   }
 
-  uint32_t our_tag = otrng_client_get_instance_tag(client);
-  uint32_t their_tag = conv->conn->their_instance_tag;
+  our_tag = otrng_client_get_instance_tag(client);
+  their_tag = conv->conn->their_instance_tag;
 
-  otrng_result ret =
-      otrng_fragment_message(mms, *newmessage, our_tag, their_tag, to_send);
+  ret = otrng_fragment_message(mms, *newmessage, our_tag, their_tag, to_send);
   free(to_send);
   return ret;
 }
@@ -348,6 +353,8 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
   otrng_result result = OTRNG_ERROR;
   otrng_response_s *response = NULL;
   otrng_conversation_s *conv = NULL;
+  otrng_warning warn;
+
   *should_ignore = otrng_false;
 
   if (!client) {
@@ -367,7 +374,7 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
   }
 
   response = otrng_response_new();
-  otrng_warning warn = OTRNG_WARN_NONE;
+  warn = OTRNG_WARN_NONE;
 
   result = otrng_receive_message(response, &warn, message, conv->conn);
 
@@ -405,13 +412,13 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
 
 API char *otrng_client_query_message(const char *recipient, const char *message,
                                      otrng_client_s *client) {
+  char *ret = NULL;
   otrng_conversation_s *conv = NULL;
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
     return NULL;
   }
 
-  char *ret = NULL;
   if (otrng_failed(otrng_build_query_message(&ret, message, conv->conn))) {
     // TODO: @client This should come from the client (a callback maybe?)
     // because it knows in which language this should be sent, for example.
@@ -512,12 +519,12 @@ API otrng_prekey_client_s *
 otrng_client_get_prekey_client(const char *server_identity,
                                otrng_prekey_client_callbacks_s *callbacks,
                                otrng_client_s *client) {
+  char *account = NULL;
+  char *protocol = NULL;
+
   if (client->prekey_client) {
     return client->prekey_client;
   }
-
-  char *account = NULL;
-  char *protocol = NULL;
   if (otrng_failed(
           otrng_client_get_account_and_protocol(&account, &protocol, client))) {
     return NULL;
@@ -544,12 +551,12 @@ INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
                                       const ecdh_keypair_p ecdh_pair,
                                       const dh_keypair_p dh_pair,
                                       otrng_client_s *client) {
+  otrng_stored_prekeys_s *stored_prekey_msg;
   if (!client) {
     return;
   }
 
-  otrng_stored_prekeys_s *stored_prekey_msg =
-      malloc(sizeof(otrng_stored_prekeys_s));
+  stored_prekey_msg = malloc(sizeof(otrng_stored_prekeys_s));
   if (!stored_prekey_msg) {
     return;
   }
@@ -570,24 +577,27 @@ INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
 API dake_prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages,
                                    otrng_client_s *client) {
+  uint32_t instance_tag;
+  dake_prekey_message_s **messages;
+  int i, j;
+
   if (num_messages > MAX_NUMBER_PUBLISHED_PREKEY_MESSAGES) {
     // TODO: notify error
     return NULL;
   }
 
-  uint32_t instance_tag = otrng_client_get_instance_tag(client);
+  instance_tag = otrng_client_get_instance_tag(client);
 
-  dake_prekey_message_s **messages =
-      malloc(num_messages * sizeof(dake_prekey_message_s *));
+  messages = malloc(num_messages * sizeof(dake_prekey_message_s *));
   if (!*messages) {
     return NULL;
   }
 
-  for (int i = 0; i < num_messages; i++) {
+  for (i = 0; i < num_messages; i++) {
     messages[i] = NULL;
   }
 
-  for (int i = 0; i < num_messages; i++) {
+  for (i = 0; i < num_messages; i++) {
     ecdh_keypair_p ecdh;
     dh_keypair_p dh;
     otrng_generate_ephemeral_keys(ecdh, dh);
@@ -595,7 +605,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
     messages[i] =
         otrng_dake_prekey_message_build(instance_tag, ecdh->pub, dh->pub);
     if (!messages[i]) {
-      for (int j = 0; j < num_messages; j++) {
+      for (j = 0; j < num_messages; j++) {
         otrng_dake_prekey_message_free(messages[j]);
       }
       free(messages);
@@ -829,11 +839,11 @@ otrng_client_get_client_profile(otrng_client_s *client) {
 API client_profile_s *
 otrng_client_build_default_client_profile(otrng_client_s *client) {
   // TODO: Get allowed versions from the policy
+  const char *allowed_versions = "34";
   if (!client) {
     return NULL;
   }
 
-  const char *allowed_versions = "34";
   otrng_client_ensure_forging_key(client);
   return otrng_client_profile_build(
       otrng_client_get_instance_tag(client), allowed_versions,
@@ -948,11 +958,12 @@ API otrng_result otrng_client_add_prekey_profile(
 tstatic OtrlInsTag *otrng_instance_tag_new(const char *protocol,
                                            const char *account,
                                            unsigned int instag) {
+  OtrlInsTag *p;
   if (instag < OTRNG_MIN_VALID_INSTAG) {
     return NULL;
   }
 
-  OtrlInsTag *p = malloc(sizeof(OtrlInsTag));
+  p = malloc(sizeof(OtrlInsTag));
   if (!p) {
     return NULL;
   }
@@ -987,6 +998,10 @@ tstatic void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
 
 INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
                                                     unsigned int instag) {
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  OtrlInsTag *p;
+
   if (!client) {
     return OTRNG_ERROR;
   }
@@ -997,14 +1012,12 @@ INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
 
   // TODO: We could use a "get storage key" callback and use it as
   // account_name plus an arbitrary "libotrng-storage" protocol.
-  char *account_name = NULL;
-  char *protocol_name = NULL;
   if (!get_account_and_protocol_cb(&account_name, &protocol_name, client)) {
     return OTRNG_ERROR;
   }
 
-  OtrlInsTag *p = otrl_instag_find(client->global_state->user_state_v3,
-                                   account_name, protocol_name);
+  p = otrl_instag_find(client->global_state->user_state_v3, account_name,
+                       protocol_name);
   if (p) {
     free(account_name);
     free(protocol_name);
@@ -1025,20 +1038,22 @@ INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
 
 INTERNAL unsigned int
 otrng_client_get_instance_tag(const otrng_client_s *client) {
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  OtrlInsTag *instag;
+
   if (!client->global_state->user_state_v3) {
     return (unsigned int)0;
   }
 
   // TODO: We could use a "get storage key" callback and use it as
   // account_name plus an arbitrary "libotrng-storage" protocol.
-  char *account_name = NULL;
-  char *protocol_name = NULL;
   if (!get_account_and_protocol_cb(&account_name, &protocol_name, client)) {
     return (unsigned int)1;
   }
 
-  OtrlInsTag *instag = otrl_instag_find(client->global_state->user_state_v3,
-                                        account_name, protocol_name);
+  instag = otrl_instag_find(client->global_state->user_state_v3, account_name,
+                            protocol_name);
 
   free(account_name);
   free(protocol_name);

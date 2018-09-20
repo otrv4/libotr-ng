@@ -28,6 +28,7 @@ INTERNAL otrng_result otrng_prekey_success_message_deserialize(
   const uint8_t *cursor = src;
   int64_t len = src_len;
   size_t read = 0;
+  uint8_t message_type = 0;
 
   uint16_t protocol_version = 0;
   if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read)) {
@@ -41,7 +42,6 @@ INTERNAL otrng_result otrng_prekey_success_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  uint8_t message_type = 0;
   if (!otrng_deserialize_uint8(&message_type, cursor, len, &read)) {
     return OTRNG_ERROR;
   }

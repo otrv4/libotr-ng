@@ -91,6 +91,8 @@ API otrng_result otrng_ec_point_encode(uint8_t *enc, size_t len,
 INTERNAL otrng_result
 otrng_ec_point_decode(ec_point_p p, const uint8_t enc[ED448_POINT_BYTES]) {
   goldilocks_448_point_p tmp_p;
+  goldilocks_448_scalar_p r;
+
   if (!goldilocks_succeed_if(
           goldilocks_448_point_decode_like_eddsa_and_mul_by_ratio(tmp_p,
                                                                   enc))) {
@@ -98,7 +100,6 @@ otrng_ec_point_decode(ec_point_p p, const uint8_t enc[ED448_POINT_BYTES]) {
   }
 
   // The decoded point is equal to the original point * 2^2
-  goldilocks_448_scalar_p r;
   goldilocks_448_scalar_copy(r, goldilocks_448_scalar_one);
   goldilocks_448_scalar_halve(r, r);
   goldilocks_448_scalar_halve(r, r);
@@ -144,10 +145,10 @@ otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
    3. secret = s
    4. public = G * s
   */
+  uint8_t pub[ED448_POINT_BYTES];
 
   otrng_ec_scalar_derive_from_secret(keypair->priv, sym);
 
-  uint8_t pub[ED448_POINT_BYTES];
   otrng_ec_derive_public_key(pub, sym);
   otrng_ec_point_decode(keypair->pub, pub);
 
@@ -181,11 +182,12 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {
 
 static otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
                                           size_t shared_secret_len) {
+  uint8_t zero_buff[ED448_POINT_BYTES] = {0};
+
   if (shared_secret_len < ED448_POINT_BYTES) {
     return otrng_false;
   }
 
-  uint8_t zero_buff[ED448_POINT_BYTES] = {0};
   if (memcmp(shared_secret, zero_buff, ED448_POINT_BYTES) == 0) {
     return otrng_false;
   }

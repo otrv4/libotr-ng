@@ -145,12 +145,12 @@ INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_p keypair) {
   uint8_t hash[DH_KEY_SIZE] = {0};
   gcry_mpi_t privkey = NULL;
   uint8_t *secbuf = NULL;
+  gcry_error_t err;
 
   secbuf = gcry_random_bytes_secure(DH_KEY_SIZE, GCRY_STRONG_RANDOM);
   shake_256_hash(hash, sizeof(hash), secbuf, DH_KEY_SIZE);
 
-  gcry_error_t err =
-      gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);
+  err = gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);
   gcry_free(secbuf);
 
   if (err) {
@@ -170,11 +170,12 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
   gcry_mpi_t privkey = NULL;
   uint8_t random_buff[DH_KEY_SIZE];
   uint8_t usage_DH_first_ephemeral = 0x12;
+  gcry_error_t err;
 
   shake_256_kdf1(random_buff, sizeof random_buff, usage_DH_first_ephemeral,
                  shared_secret, sizeof(shared_secret_p));
 
-  gcry_error_t err =
+  err =
       gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random_buff, DH_KEY_SIZE, NULL);
   if (err) {
     return OTRNG_ERROR;
@@ -214,14 +215,15 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_p buffer,
                                              size_t *written,
                                              const dh_private_key_p our_priv,
                                              const dh_public_key_p their_pub) {
+  gcry_error_t err;
   gcry_mpi_t secret = gcry_mpi_snew(DH3072_MOD_LEN_BITS);
   if (!secret) {
     return OTRNG_ERROR;
   }
 
   gcry_mpi_powm(secret, their_pub, our_priv, DH3072_MODULUS);
-  gcry_error_t err = gcry_mpi_print(GCRYMPI_FMT_USG, buffer,
-                                    DH3072_MOD_LEN_BYTES, written, secret);
+  err = gcry_mpi_print(GCRYMPI_FMT_USG, buffer, DH3072_MOD_LEN_BYTES, written,
+                       secret);
 
   gcry_mpi_release(secret);
 
@@ -235,6 +237,7 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_p buffer,
 INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                              size_t *written,
                                              const dh_mpi_p src) {
+  gcry_error_t err;
   if (!src) {
     if (written) {
       *written = 0;
@@ -243,8 +246,7 @@ INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
     return OTRNG_SUCCESS;
   }
 
-  gcry_error_t err =
-      gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
+  err = gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
   if (err) {
     return OTRNG_ERROR;
   }
@@ -255,12 +257,14 @@ INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
 INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_p *dst,
                                                const uint8_t *buffer,
                                                size_t buflen, size_t *nread) {
+  gcry_error_t err;
+
   if (!buflen) {
     gcry_mpi_set_ui(*dst, 0); // TODO: can this fail?
     return OTRNG_SUCCESS;
   }
 
-  gcry_error_t err = gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread);
+  err = gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread);
   if (err) {
     return OTRNG_ERROR;
   }
@@ -335,23 +339,25 @@ API void otrng_dh_keypair_debug_print(FILE *f, int indent, dh_keypair_s *k) {
 }
 
 API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key_p k) {
+  uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
+  size_t w = 0;
+
   if (otrng_debug_print_should_ignore("dh_public_key")) {
     return;
   }
 
-  uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
-  size_t w = 0;
   otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, k);
   otrng_debug_print_data(f, buf, w);
 }
 
 API void otrng_dh_private_key_debug_print(FILE *f, dh_private_key_p k) {
+  uint8_t buf[DH_KEY_SIZE] = {0};
+  size_t w = 0;
+
   if (otrng_debug_print_should_ignore("dh_private_key")) {
     return;
   }
 
-  uint8_t buf[DH_KEY_SIZE] = {0};
-  size_t w = 0;
   otrng_dh_mpi_serialize(buf, DH_KEY_SIZE, &w, k);
   otrng_debug_print_data(f, buf, w);
 }

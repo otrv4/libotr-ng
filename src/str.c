@@ -26,6 +26,9 @@
 #include "str.h"
 
 INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len) {
+  void *new;
+  char *ret;
+
   if (!s) {
     return NULL;
   }
@@ -34,12 +37,12 @@ INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len) {
     s_len = strlen(s);
   }
 
-  void *new = malloc(s_len + 1);
+  new = malloc(s_len + 1);
   if (!new) {
     return NULL;
   }
 
-  char *ret = memcpy(new, s, s_len + 1);
+  ret = memcpy(new, s, s_len + 1);
   ret[s_len] = 0;
 
   return ret;
@@ -50,11 +53,13 @@ INTERNAL /*@null@*/ char *otrng_strdup(const char *s) {
 }
 
 INTERNAL /*@null@*/ void *otrng_memdup(const void *s, const size_t len) {
+  void *d;
+
   if (!s || len == 0) {
     return NULL;
   }
 
-  void *d = malloc(len);
+  d = malloc(len);
   if (!d) {
     return NULL;
   }
@@ -67,15 +72,18 @@ INTERNAL /*@null@*/ char *otrng_stpcpy(char *dest, const char *src) {
 }
 
 INTERNAL /*@null@*/ char *otrng_stpncpy(char *dest, const char *src, size_t n) {
+  size_t l, w;
+  char *t;
+
   if (!src) {
     return NULL;
   }
 
-  size_t l = strlen(src);
-  size_t w = l < n ? l : n;
+  l = strlen(src);
+  w = l < n ? l : n;
   memmove(dest, src, w);
 
-  for (char *t = dest + w; t < dest + n; t++) {
+  for (t = dest + w; t < dest + n; t++) {
     *t = 0;
   }
 

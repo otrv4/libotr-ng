@@ -365,6 +365,8 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
     }
 
   } else if (participant == 't') {
+    dh_keypair_p tmp_their_dh;
+
     shake_256_kdf1(random_buff, sizeof random_buff, usage_ECDH_first_ephemeral,
                    manager->shared_secret, sizeof(shared_secret_p));
 
@@ -377,7 +379,6 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
     gcry_mpi_release(manager->their_dh);
     manager->their_dh = NULL;
 
-    dh_keypair_p tmp_their_dh;
     /* @secret this will be deleted once received a new data message in a new
      * ratchet */
     if (!otrng_dh_keypair_generate_from_shared_secret(
@@ -792,6 +793,12 @@ tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
                                     const int until, const int max_skip,
                                     const char ratchet_type,
                                     otrng_warning *warn) {
+  uint8_t zero_buff[CHAIN_KEY_BYTES] = {0};
+  goldilocks_shake256_ctx_p hd;
+  uint8_t extra_key[EXTRA_SYMMETRIC_KEY_BYTES];
+  uint8_t magic[1] = {0xFF};
+  skipped_keys_s *skipped_msg_enc_key;
+
   if ((tmp_receiving_ratchet->k + max_skip) < until) {
     if (warn) {
       *warn = OTRNG_WARN_STORAGE_FULL;
@@ -800,17 +807,12 @@ tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
     return OTRNG_SUCCESS;
   }
 
-  uint8_t zero_buff[CHAIN_KEY_BYTES] = {0};
   if (!(memcmp(tmp_receiving_ratchet->chain_r, zero_buff,
                sizeof(receiving_chain_key_p)) == 0)) {
     while (tmp_receiving_ratchet->k < until) {
       shake_256_kdf1(enc_key, sizeof(msg_enc_key_p), usage_message_key,
                      tmp_receiving_ratchet->chain_r,
                      sizeof(receiving_chain_key_p));
-
-      goldilocks_shake256_ctx_p hd;
-      uint8_t extra_key[EXTRA_SYMMETRIC_KEY_BYTES];
-      uint8_t magic[1] = {0xFF};
 
       hash_init_with_usage(hd, usage_extra_symm_key);
       hash_update(hd, magic, 1);
@@ -825,7 +827,7 @@ tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
                      tmp_receiving_ratchet->chain_r,
                      sizeof(receiving_chain_key_p));
 
-      skipped_keys_s *skipped_msg_enc_key = malloc(sizeof(skipped_keys_s));
+      skipped_msg_enc_key = malloc(sizeof(skipped_keys_s));
       if (!skipped_msg_enc_key) {
         return OTRNG_ERROR;
       }
@@ -965,6 +967,9 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   size_t num_stored_keys = otrng_list_len(manager->skipped_keys);
   size_t serlen = num_stored_keys * MAC_KEY_BYTES;
   uint8_t *ser_mac_keys;
+  msg_mac_key_p mac_key;
+  msg_enc_key_p enc_key;
+  int i;
 
   if (serlen != 0) {
     ser_mac_keys = malloc(serlen);
@@ -972,13 +977,10 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
       return NULL;
     }
 
-    msg_mac_key_p mac_key;
-    msg_enc_key_p enc_key;
-
     memset(enc_key, 0, sizeof(msg_enc_key_p));
     memset(mac_key, 0, sizeof(msg_mac_key_p));
 
-    for (int i = 0; i < num_stored_keys; i++) {
+    for (i = 0; i < num_stored_keys; i++) {
       list_element_s *last = otrng_list_get_last(manager->skipped_keys);
       skipped_keys_s *skipped_keys = last->data;
       memcpy(enc_key, skipped_keys->enc_key, sizeof(msg_enc_key_p));
