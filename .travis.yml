@@ -80,6 +80,10 @@ matrix:
       compiler: gcc
       dist: precise
       env: T=ctgrind
+    - os: linux
+      compiler: gcc
+      dist: precise
+      env: T=splint
   allow_failures:
     - os: osx
       compiler: clang
@@ -92,6 +96,10 @@ matrix:
       dist: trusty
       compiler: clang
       env: T=sanitizer
+    - os: linux
+      compiler: gcc
+      dist: precise
+      env: T=splint
 
 sudo: required
 
@@ -115,7 +123,7 @@ before_install:
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew cleanup; fi
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install --HEAD valgrind && brew install curl && brew install glib; fi
 # - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint && brew install valgrind && brew install curl && brew install glib; fi
-# - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install splint --quiet --assume-yes; fi
+- if [[ "$T" == "splint" ]]; then sudo apt-get install splint --quiet --assume-yes; fi
 - if [[ "$T" = "style" ]]; then sudo apt-get install clang-format-3.5 clang-tidy-3.9 --quiet --assume-yes; fi
 
 before_script:
@@ -170,4 +178,10 @@ script:
            ./configure --with-sanitizers=address,undefined
            export LSAN_OPTIONS=suppressions=lsan.supp
            make test
+      fi
+  - |
+      if [ "$T" = "splint" ]; then
+           ./autogen.sh
+           ./configure --with-ctgrind
+           make splint
       fi
