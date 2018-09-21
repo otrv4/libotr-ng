@@ -446,6 +446,46 @@
    fun:g_test_run_suite_internal
 }
 {
+   initializer_timing_1
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN13list_array_ttIm15protocol_list_tE11attachListsEPKPS0_j
+   ...
+   fun:call_load_methods
+   fun:load_images
+   fun:_ZN4dyldL12notifySingleE17dyld_image_statesPK11ImageLoaderPNS1_21InitializerTimingListE
+}
+{
+   initializer_timing_2
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:call_load_methods
+   fun:load_images
+   fun:_ZN4dyldL12notifySingleE17dyld_image_statesPK11ImageLoaderPNS1_21InitializerTimingListE
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjPKcRNS_21InitializerTimingListERNS_15UninitedUpwardsE
+}
+{
+   class_initialize_1
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:CALLING_SOME_+initialize_METHOD
+   fun:_class_initialize
+}
+{
+   class_initialize_2
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_class_initialize
+   fun:_class_initialize
+   fun:lookUpImpOrForward
+   fun:_objc_msgSend_uncached
+   fun:+[NSMutableString initialize]
+   fun:CALLING_SOME_+initialize_METHOD
+}
+{
    gcry_pk_genkey_2
    Memcheck:Leak
    fun:malloc
