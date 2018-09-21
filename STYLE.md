@@ -126,3 +126,28 @@ Stick to lower case; reserve uppercase for macros.
 * Always compile with all the flags we have defined
 * Treat compiler warnings as errors
 * #include as little as possible
+
+## Development tips
+
+### Compiling for debugging
+
+Run `configure with --enable-debug` to add additional compiler flags.
+
+### Compiling for gprof profiling
+
+Run `configure with the --enable-gprof` option, then `make profile`.
+
+### Compiling for test coverage
+
+LCOV can be used to generate a test coverage report. LCOV must be installed on
+your system.
+
+Run `configure with the --enable-lcov` option, then `make profile`.
+To enable LCOV report generation during test, run:
+
+```
+./configure --enable-lcov
+make coverage-check
+```
+
+# A coverage report will now be accessible at `./test_bitcoin.coverage/index.html`.
