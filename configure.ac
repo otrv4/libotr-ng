@@ -174,9 +174,7 @@ if test x$use_sanitizers != x; then
 
   # Some compilers (e.g. GCC) require additional libraries like libasan,
   # libtsan, libubsan, etc. Make sure linking still works with the sanitize
-  # flag. This is a separate check so we can give a better error message when
-  # the sanitize flags are supported by the compiler but the actual sanitizer
-  # libs are missing.
+  # flag.
   AX_CHECK_LINK_FLAG(
     [[-fsanitize=$use_sanitizers]],
     [[SANITIZER_LDFLAGS=-fsanitize=$use_sanitizers]],

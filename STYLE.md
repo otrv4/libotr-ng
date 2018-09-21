@@ -149,5 +149,3 @@ To enable LCOV report generation during test, run:
 ./configure --enable-lcov
 make coverage-check
 ```
-
-# A coverage report will now be accessible at `./test_bitcoin.coverage/index.html`.
