@@ -157,10 +157,36 @@ otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f) {
   return OTRNG_SUCCESS;
 }
 
+#define MAX_LINE_LENGTH 500
+
+static int get_limited_line(char **buf, FILE *f) {
+  char *res = NULL;
+  int len = 0;
+
+  if (buf == NULL) {
+    return -1;
+  }
+
+  *buf = malloc(MAX_LINE_LENGTH * sizeof(char));
+
+  res = fgets(*buf, MAX_LINE_LENGTH, f);
+  if (res == NULL) {
+    free(*buf);
+    return -1;
+  }
+
+  len = strlen(*buf);
+  if (len == MAX_LINE_LENGTH) {
+    free(*buf);
+    return -1;
+  }
+
+  return len;
+}
+
 INTERNAL otrng_result
 otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
-  size_t cap = 0;
   int len = 0;
   otrng_keypair_s *keypair;
 
@@ -181,16 +207,13 @@ otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  // TODO: we need to remove getline. It is not c99.
-  // OR ignore if this will be moved to the plugin.
-  len = getline(&line, &cap, privf);
+  len = get_limited_line(&line, privf);
   if (len < 0) {
     free(line);
     return OTRNG_ERROR;
   }
 
-  // line includes the /n
-  if (!otrng_symmetric_key_deserialize(keypair, line, len - 1)) {
+  if (!otrng_symmetric_key_deserialize(keypair, line, len)) {
     free(line);
     otrng_keypair_free(keypair);
     return OTRNG_ERROR;
@@ -206,7 +229,6 @@ otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf) {
 INTERNAL otrng_result
 otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
   char *line = NULL;
-  size_t cap = 0;
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
@@ -221,7 +243,7 @@ otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
     otrng_ec_point_destroy(*client->forging_key);
   }
 
-  len = getline(&line, &cap, f);
+  len = get_limited_line(&line, f);
   if (len < 0) {
     free(line);
     return OTRNG_ERROR;
@@ -299,7 +321,6 @@ INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
 INTERNAL otrng_result otrng_client_shared_prekey_read_FILEp(
     otrng_client_s *client, FILE *shared_prekeyf) {
   char *line = NULL;
-  size_t cap = 0;
   int len = 0;
   otrng_shared_prekey_pair_s *shared_prekey_pair;
 
@@ -320,9 +341,7 @@ INTERNAL otrng_result otrng_client_shared_prekey_read_FILEp(
     return OTRNG_ERROR;
   }
 
-  // TODO: we need to remove getline. It is not c99.
-  // OR ignore if this will be moved to the plugin.
-  len = getline(&line, &cap, shared_prekeyf);
+  len = get_limited_line(&line, shared_prekeyf);
   if (len < 0) {
     free(line);
     return OTRNG_ERROR;
@@ -330,7 +349,7 @@ INTERNAL otrng_result otrng_client_shared_prekey_read_FILEp(
 
   /* line has the /n */
   if (!otrng_symmetric_shared_prekey_deserialize(shared_prekey_pair, line,
-                                                 len - 1)) {
+                                                 len)) {
     free(line);
     otrng_shared_prekey_pair_free(client->shared_prekey_pair);
     return OTRNG_ERROR;
@@ -413,7 +432,6 @@ INTERNAL otrng_result otrng_client_private_key_v3_write_FILEp(
 INTERNAL otrng_result
 otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
-  size_t cap = 0;
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
@@ -430,9 +448,7 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
 
   otrng_client_profile_free(client->client_profile);
 
-  // TODO: we need to remove getline. It is not c99.
-  // OR ignore if this will be moved to the plugin.
-  len = getline(&line, &cap, privf);
+  len = get_limited_line(&line, privf);
   if (len < 0) {
     free(line);
     return OTRNG_ERROR;
@@ -601,7 +617,6 @@ otrng_client_prekeys_write_FILEp(const otrng_client_s *client, FILE *privf) {
 otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
   int line_len = 0;
-  size_t cap;
   int dec_len;
   uint8_t *dec;
   size_t scalar_len;
@@ -613,9 +628,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  // TODO: we need to remove getline. It is not c99.
-  // OR ignore if this will be moved to the plugin.
-  line_len = getline(&line, &cap, privf);
+  line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
     free(prekey_msg);
     free(line);
@@ -626,17 +639,18 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   free(line);
   line = NULL;
 
-  line_len = getline(&line, &cap, privf);
+  line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
     free(prekey_msg);
     free(line);
     return OTRNG_ERROR;
   }
+
   prekey_msg->sender_instance_tag = strtol(line, NULL, 16);
   free(line);
   line = NULL;
 
-  line_len = getline(&line, &cap, privf);
+  line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
     free(prekey_msg);
     free(line);
@@ -644,7 +658,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   }
 
   // TODO: check this
-  dec_len = OTRNG_BASE64_DECODE_LEN(line_len - 1);
+  dec_len = OTRNG_BASE64_DECODE_LEN(line_len);
   dec = malloc(dec_len);
   if (!dec) {
     free(prekey_msg);
@@ -663,7 +677,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   otrng_ec_calculate_public_key(prekey_msg->our_ecdh->pub,
                                 prekey_msg->our_ecdh->priv);
 
-  line_len = getline(&line, &cap, privf);
+  line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
     free(prekey_msg);
     free(line);
@@ -671,7 +685,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   }
 
   // TODO: check this
-  dec_len = OTRNG_BASE64_DECODE_LEN(line_len - 1);
+  dec_len = OTRNG_BASE64_DECODE_LEN(line_len);
   dec = malloc(dec_len);
   if (!dec) {
     free(prekey_msg);
@@ -763,7 +777,6 @@ otrng_client_prekey_profile_write_FILEp(otrng_client_s *client, FILE *privf) {
 INTERNAL otrng_result
 otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
-  size_t cap = 0;
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
@@ -780,7 +793,7 @@ otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
 
   otrng_prekey_profile_free(client->prekey_profile);
 
-  len = getline(&line, &cap, privf);
+  len = get_limited_line(&line, privf);
   if (len < 0) {
     free(line);
     return OTRNG_ERROR;

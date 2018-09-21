@@ -27,9 +27,10 @@ static const char *bob_account = "bob@xmpp";
 static const char *charlie_account = "charlie@xmpp";
 
 static const otrng_client_id_s read_client_id_for_privf(FILE *privf) {
-  char *line = NULL;
-  size_t n = 0;
-  ssize_t len = getline(&line, &n, privf);
+  char *line = malloc(50 * sizeof(char));
+  int len;
+  fgets(line, 50, privf);
+  len = strlen(line);
   free(line);
 
   otrng_client_id_s result = {
