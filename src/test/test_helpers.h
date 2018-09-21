@@ -56,7 +56,8 @@
     char *__s2 = _otrng_memdump(_s2_evaled, _len_evaled);                      \
     char *__msg = g_strdup_printf(                                             \
         "assertion failed: (%s)\n\n%s (%p): %s\n\n%s (%p): %s\n",              \
-        #s1 " ==  " #s2, #s1, _s1_evaled, __s1, #s2, _s2_evaled, __s2);        \
+        #s1 " ==  " #s2, #s1, (void *)_s1_evaled, __s1, #s2,                   \
+        (void *)_s2_evaled, __s2);                                             \
     if ((_s1_evaled == NULL && _s2_evaled == NULL) ||                          \
         memcmp(_s1_evaled, _s2_evaled, _len_evaled) == 0)                      \
       ;                                                                        \
@@ -128,7 +129,7 @@
     char zero_value[_len];                                                     \
     memset(zero_value, 0, sizeof zero_value);                                  \
     char *__msg = g_strdup_printf("assertion failed: (%s)\nRESULT (%p): %s\n", \
-                                  #s " is zero", _s, __s);                     \
+                                  #s " is zero", (void *)_s, __s);             \
     if (goldilocks_memeq(_s, zero_value, _len) == 0)                           \
       ;                                                                        \
     else                                                                       \

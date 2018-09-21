@@ -92,6 +92,9 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
+AX_CFLAGS_GCC_OPTION([-std=c99])
+AX_CFLAGS_GCC_OPTION([-pedantic-errors])
+
 AX_CFLAGS_GCC_OPTION([-Wall])
 # AX_CFLAGS_GCC_OPTION([-W]) Uncomment this to allow Wextra flag
 AX_CFLAGS_GCC_OPTION([-Werror])
