@@ -182,6 +182,6 @@ script:
   - |
       if [ "$T" = "splint" ]; then
            ./autogen.sh
-           ./configure --with-ctgrind
+           ./configure
            make splint
       fi

@@ -142,10 +142,24 @@ Run `configure with the --enable-gprof` option, then `make profile`.
 LCOV can be used to generate a test coverage report. LCOV must be installed on
 your system.
 
-Run `configure with the --enable-lcov` option, then `make profile`.
-To enable LCOV report generation during test, run:
+Run `configure with the --enable-code-coverage` option, then `make coverage-check`.
+
+### Compiling with Sanitizers
+
+The library can be compiled with various "sanitizers" enabled, which add
+instrumentation for issues regarding things like memory safety, thread race
+conditions, or undefined behavior. This is controlled with the --with-sanitizers
+configure flag, which should be a comma separated list of sanitizers to enable.
+The sanitizer list should correspond to supported -fsanitize= options in your
+compiler. These sanitizers have runtime overhead, so they are most useful when
+testing changes or producing debugging builds.
+
+Some examples:
 
 ```
-./configure --enable-lcov
-make coverage-check
+# Enable both the address sanitizer and the undefined behavior sanitizer
+./configure --with-sanitizers=address,undefined
+
+# Enable the thread sanitizer
+./configure --with-sanitizers=thread
 ```
