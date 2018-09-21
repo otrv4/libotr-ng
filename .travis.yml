@@ -30,6 +30,7 @@ addons:
         sources:
             - ubuntu-toolchain-r-test
         packages:
+            - gprof
             - lcov
             - valgrind
 
@@ -60,6 +61,10 @@ matrix:
       compiler: gcc
       dist: precise
       env: T=coverage
+    - os: linux
+      compiler: gcc
+      dist: precise
+      env: T=profile
     - os: linux
       dist: trusty
       compiler: clang
@@ -102,8 +107,8 @@ notifications:
       - "%{repository_slug}(%{author}): %{message} %{build_url}"
 
 before_install:
-# Update the repo
 
+# Update the repo
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew update; fi
 - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get update --quiet --assume-yes; fi
 
@@ -129,6 +134,12 @@ script:
            ./autogen.sh
            ./configure --disable-shared --enable-code-coverage
            make coverage-check
+      fi
+  - |
+      if [ "$T" = "profile" ]; then
+           ./autogen.sh
+           ./configure --disable-shared --enable-gprof
+           make profile
       fi
   - |
       if [ "$T" = "full-valgrind-checks" ]; then

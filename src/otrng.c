@@ -1749,10 +1749,6 @@ tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *src, size_t len) {
   uint8_t *tlvs_start = NULL;
   size_t tlvs_len;
 
-  if (!src) {
-    return NULL;
-  }
-
   tlvs_start = memchr(src, 0, len);
   if (!tlvs_start) {
     return NULL;
