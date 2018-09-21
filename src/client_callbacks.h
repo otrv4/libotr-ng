@@ -69,6 +69,11 @@ typedef struct otrng_client_callbacks_s {
   void (*create_client_profile)(struct otrng_client_s *client,
                                 const struct otrng_client_id_s client_opdata);
 
+  /* Write the expired client profile with extra validity */
+  void (*write_expired_client_profile)(
+      struct otrng_client_s *client,
+      const struct otrng_client_id_s client_opdata);
+
   /* Create a prekey profile */
   void (*create_prekey_profile)(struct otrng_client_s *client,
                                 const struct otrng_client_id_s client_opdata);
@@ -151,6 +156,10 @@ INTERNAL void otrng_client_callbacks_create_privkey_v3(
     const struct otrng_client_id_s client_opdata);
 
 INTERNAL void otrng_client_callbacks_create_client_profile(
+    const otrng_client_callbacks_s *cb, struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata);
+
+INTERNAL void otrng_client_callbacks_write_expired_client_profile(
     const otrng_client_callbacks_s *cb, struct otrng_client_s *client,
     const struct otrng_client_id_s client_opdata);
 
