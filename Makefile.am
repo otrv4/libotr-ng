@@ -63,6 +63,9 @@ cache-check: check
 coverage-check: test
 	@make check-code-coverage
 
+profile: test
+	gprof src/test/test
+
 code-style-doctor: code-style
 	git diff --exit-code .
 

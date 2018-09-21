@@ -55,3 +55,5 @@ coverage.info
 .deps
 
 */.dirstamp
+
+gmon.out
