@@ -63,8 +63,11 @@ void test_global_state_key_management(void) {
       state, create_client_id("otr", bob_account)));
   otrng_assert(!otrng_global_state_get_private_key_v4(
       state, create_client_id("otr", charlie_account)));
+
   /* Generate file */
-  FILE *keys = tmpfile();
+  FILE *keys = NULL;
+  keys = tmpfile();
+
   fputs("charlie@xmpp\n"
         "RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+"
         "pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA\n",
@@ -109,7 +112,9 @@ void test_global_state_shared_prekey_management(void) {
       state, create_client_id("otr", charlie_account)));
 
   /* Generate file */
-  FILE *keys = tmpfile();
+  FILE *keys = NULL;
+  keys = tmpfile();
+
   fputs("charlie@xmpp\n"
         "mgRi+jOWSHludTU/v0QE/"
         "6W88WmxUmKMh1QpRbrEw4LESkL0mnOgZBbqpInVFJGy3v2aKbBFj4c0\n",
@@ -166,7 +171,9 @@ void test_global_state_client_profile_management(void) {
       state, create_client_id("otr", charlie_account)));
 
   /* Generate file */
-  FILE *client_profile = tmpfile();
+  FILE *client_profile = NULL;
+  client_profile = tmpfile();
+
   fputs("charlie@xmpp\n"
         "AAAABQABAAAABAACABAFcsFMsTB3RLkvO"
         "Df5ljmruyD/xHHYnZ1UU0nccA4BJ0kfBhMU+viahccHYL0BiKVmnRpDk/CDS4AAAwASmJc"
@@ -242,7 +249,9 @@ void test_global_state_prekey_profile_management(void) {
       state, create_client_id("otr", charlie_account)));
 
   /* Generate file */
-  FILE *prekey_profile = tmpfile();
+  FILE *prekey_profile = NULL;
+  prekey_profile = tmpfile();
+
   fputs("charlie@xmpp\n"
         "26FP8QAAAABbxy5lABFQAQ3a/"
         "s1vlz8xF+vPV82xSwmEA65IyR3ZaR6NzZNNAznBrXXb7YjvMuYtTtKnp+"
@@ -298,7 +307,9 @@ void test_global_state_prekey_message_management(void) {
       state, create_client_id("otr", charlie_account)));
 
   /* Generate file */
-  FILE *prekey = tmpfile();
+  FILE *prekey = NULL;
+  prekey = tmpfile();
+
   fputs("charlie@xmpp\n"
         "f139c0c4\n"
         "dba14ff1\n"
@@ -360,7 +371,8 @@ void test_instance_tag_api(void) {
       otrng_client_new(create_client_id("otr", alice_account));
   alice->global_state = otrng_global_state_new(test_callbacks);
 
-  FILE *instagFILEp = tmpfile();
+  FILE *instagFILEp = NULL;
+  instagFILEp = tmpfile();
 
   fprintf(instagFILEp, "%s\t%s\t%08x\n", alice_account, alice_protocol,
           instance_tag);

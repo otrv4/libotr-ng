@@ -162,7 +162,9 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
       otrng_v3_conn_new(otrng_fixture->client, "they_are_alice");
 
   // TODO: @refactoring This should be done automatically
-  FILE *tmpFILEp = tmpfile();
+  FILE *tmpFILEp = NULL;
+  tmpFILEp = tmpfile();
+
   otrng_assert_is_success(
       otrng_client_private_key_v3_write_FILEp(otrng_fixture->client, tmpFILEp));
   fclose(tmpFILEp);

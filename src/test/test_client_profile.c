@@ -216,7 +216,9 @@ void test_otrng_client_profile_transitional_signature(void) {
   client->global_state = otrng_global_state_new(test_callbacks);
 
   // Generate DSA key
-  FILE *tmpFILEp = tmpfile();
+  FILE *tmpFILEp = NULL;
+  tmpFILEp = tmpfile();
+
   otrng_assert_is_success(
       otrng_client_private_key_v3_write_FILEp(client, tmpFILEp));
   fclose(tmpFILEp);

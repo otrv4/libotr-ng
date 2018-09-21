@@ -715,13 +715,15 @@ void test_api_conversation_v3(void) {
 
   // Generate long term private key.
   // TODO: use callback?
-  FILE *tmpFILEp;
+  FILE *tmpFILEp = NULL;
   tmpFILEp = tmpfile();
   otrng_assert_is_success(
       otrng_client_private_key_v3_write_FILEp(alice_client, tmpFILEp));
   fclose(tmpFILEp);
 
+  tmpFILEp = NULL;
   tmpFILEp = tmpfile();
+
   otrng_assert_is_success(
       otrng_client_private_key_v3_write_FILEp(bob_client, tmpFILEp));
   fclose(tmpFILEp);
