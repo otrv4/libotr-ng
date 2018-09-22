@@ -84,8 +84,8 @@ INTERNAL dh_mpi_p otrng_dh_mpi_copy(const dh_mpi_p src);
 
 INTERNAL void otrng_dh_mpi_release(dh_mpi_p mpi);
 
-INTERNAL dh_mpi_p otrng_dh_modulus_q();
-INTERNAL dh_mpi_p otrng_dh_modulus_p();
+INTERNAL dh_mpi_p otrng_dh_modulus_q(void);
+INTERNAL dh_mpi_p otrng_dh_modulus_p(void);
 
 #ifdef DEBUG_API
 API void otrng_dh_keypair_debug_print(FILE *, int, dh_keypair_s *);
