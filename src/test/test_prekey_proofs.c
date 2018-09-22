@@ -82,4 +82,16 @@ void test_dh_proof_generation_and_validation(void) {
   pubs[1] = otrng_dh_mpi_copy(v4->pub);
 
   otrng_assert(!dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
+
+  otrng_dh_keypair_destroy(v1);
+  otrng_dh_keypair_destroy(v2);
+  otrng_dh_keypair_destroy(v3);
+  otrng_dh_keypair_destroy(v4);
+
+  otrng_dh_keypair_destroy(privs[0]);
+  otrng_dh_keypair_destroy(privs[1]);
+  otrng_dh_keypair_destroy(privs[2]);
+  otrng_dh_keypair_destroy(pub[0]);
+  otrng_dh_keypair_destroy(pub[1]);
+  otrng_dh_keypair_destroy(pub[2]);
 }
