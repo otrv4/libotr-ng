@@ -481,10 +481,10 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
   calculate_ssid(manager);
 
 #ifdef DEBUG
-  printf("\n");
-  printf("THE SHARED SECRET\n");
+  debug_print("\n");
+  debug_print("THE SHARED SECRET\n");
   otrng_memdump(manager->shared_secret, sizeof(manager->shared_secret));
-  printf("THE SSID\n");
+  debug_print("THE SSID\n");
   otrng_memdump(manager->ssid, sizeof(manager->ssid));
 #endif
 
@@ -495,23 +495,23 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
   }
 
 #ifdef DEBUG
-  printf("\n");
-  printf("THE SECURE SESSION ID\n");
-  printf("ssid: \n");
+  debug_print("\n");
+  debug_print("THE SECURE SESSION ID\n");
+  debug_print("ssid: \n");
 
   if (manager->ssid_half_first) {
-    printf("the first 4 bytes = ");
-    printf("0x");
+    debug_print("the first 4 bytes = ");
+    debug_print("0x");
     for (unsigned int i = 0; i < 4; i++) {
-      printf("%x", manager->ssid[i]);
+      debug_print("%x", manager->ssid[i]);
     }
   } else {
-    printf("the last 4 bytes = ");
-    printf("0x");
+    debug_print("the last 4 bytes = ");
+    debug_print("0x");
     for (unsigned int i = 4; i < 8; i++) {
-      printf("%x", manager->ssid[i]);
+      debug_print("%x", manager->ssid[i]);
     }
-    printf("\n");
+    debug_print("\n");
   }
 #endif
 
@@ -567,13 +567,13 @@ tstatic otrng_result enter_new_ratchet(
   calculate_shared_secret(manager, tmp_receiving_ratchet, k_ecdh, action);
 
 #ifdef DEBUG
-  printf("\n");
-  printf("ENTERING NEW RATCHET\n");
-  printf("K_ecdh = ");
+  debug_print("\n");
+  debug_print("ENTERING NEW RATCHET\n");
+  debug_print("K_ecdh = ");
   otrng_memdump(k_ecdh, sizeof(k_ecdh_p));
-  printf("brace_key = ");
+  debug_print("brace_key = ");
   otrng_memdump(manager->brace_key, sizeof(brace_key_p));
-  printf("THE SHARED SECRET\n");
+  debug_print("THE SHARED SECRET\n");
   otrng_memdump(manager->shared_secret, sizeof(manager->shared_secret));
 #endif
 
@@ -678,12 +678,12 @@ key_manager_derive_ratchet_keys(key_manager_s *manager,
   hash_destroy(hd);
 
 #ifdef DEBUG
-  printf("\n");
-  printf("ROOT KEY = ");
+  debug_print("\n");
+  debug_print("ROOT KEY = ");
   otrng_memdump(manager->current->root_key, sizeof(root_key_p));
-  /* printf("CHAIN_S = "); */
+  /* debug_print("CHAIN_S = "); */
   /* otrng_memdump(ratchet->chain_s, sizeof(sending_chain_key_p)); */
-  /* printf("CHAIN_R = "); */
+  /* debug_print("CHAIN_R = "); */
   /* otrng_memdump(ratchet->chain_r, sizeof(receiving_chain_key_p)); */
 #endif
 }
@@ -766,8 +766,8 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 
 // TODO: add to tmp
 #ifdef DEBUG
-  printf("\n");
-  printf("EXTRA KEY = ");
+  debug_print("\n");
+  debug_print("EXTRA KEY = ");
   otrng_memdump(manager->extra_symmetric_key,
                 sizeof(manager->extra_symmetric_key));
 #endif
@@ -906,11 +906,11 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
   derive_next_chain_key(manager, tmp_receiving_ratchet, action);
 
 #ifdef DEBUG
-  printf("\n");
-  printf("GOT SENDING KEYS:\n");
-  printf("enc_key = ");
+  debug_print("\n");
+  debug_print("GOT SENDING KEYS:\n");
+  debug_print("enc_key = ");
   otrng_memdump(enc_key, sizeof(msg_enc_key_p));
-  printf("mac_key = ");
+  debug_print("mac_key = ");
   otrng_memdump(mac_key, sizeof(msg_mac_key_p));
 #endif
 

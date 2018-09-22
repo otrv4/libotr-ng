@@ -33,7 +33,7 @@
 typedef uint8_t otrng_fingerprint_p[FPRINT_LEN_BYTES];
 typedef uint8_t otrng_fingerprint_v3_p[20];
 
-API void otrng_fingerprint_hash_to_human(char *human,
+API otrng_result otrng_fingerprint_hash_to_human(char *human,
                                          const unsigned char *hash);
 
 INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint_p fp,

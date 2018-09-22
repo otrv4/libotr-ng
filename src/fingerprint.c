@@ -25,14 +25,16 @@
 #include "shake.h"
 
 /* Convert a 56-byte hash value to a 126-byte human-readable value */
-API void otrng_fingerprint_hash_to_human(char *human,
+API otrng_result otrng_fingerprint_hash_to_human(char *human,
                                          const unsigned char *hash) {
   int word, byte;
   char *p = human;
 
   for (word = 0; word < 14; ++word) {
     for (byte = 0; byte < 4; ++byte) {
-      snprintf(p, OTRNG_FPRINT_HUMAN_LEN, "%02X", hash[word * 4 + byte]);
+      if (snprintf(p, OTRNG_FPRINT_HUMAN_LEN, "%02X", hash[word * 4 + byte]) < 0) {
+        return OTRNG_ERROR;
+      }
       p += 2;
     }
     *(p++) = ' ';
@@ -41,6 +43,7 @@ API void otrng_fingerprint_hash_to_human(char *human,
   /* Change that last ' ' to a '\0' */
   --p;
   *p = '\0';
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_serialize_fingerprint(

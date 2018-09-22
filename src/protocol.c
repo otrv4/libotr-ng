@@ -126,12 +126,12 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
   data_msg->enc_msg = c;
 
 #ifdef DEBUG
-  printf("\n");
-  printf("nonce = ");
+  debug_print("\n");
+  debug_print("nonce = ");
   otrng_memdump(data_msg->nonce, DATA_MSG_NONCE_BYTES);
-  printf("msg = ");
+  debug_print("msg = ");
   otrng_memdump(message, message_len);
-  printf("cipher = ");
+  debug_print("cipher = ");
   otrng_memdump(c, message_len);
 #endif
 

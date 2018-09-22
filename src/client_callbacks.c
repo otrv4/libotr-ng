@@ -190,179 +190,179 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "client_callbacks(");
+  debug_api_print(f, "client_callbacks(");
   otrng_debug_print_pointer(f, c);
-  fprintf(f, ") {\n");
+  debug_api_print(f, ") {\n");
 
   if (otrng_debug_print_should_ignore(
           "client_callbacks->get_account_and_protocol")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "get_account_and_protocol = IGNORED\n");
+    debug_api_print(f, "get_account_and_protocol = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "get_account_and_protocol = ");
+    debug_api_print(f, "get_account_and_protocol = ");
     otrng_debug_print_pointer(f, c->get_account_and_protocol);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("client_callbacks->create_instag")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_instag = IGNORED\n");
+    debug_api_print(f, "create_instag = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_instag = ");
+    debug_api_print(f, "create_instag = ");
     otrng_debug_print_pointer(f, c->create_instag);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("client_callbacks->create_privkey_v3")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_privkey_v3 = IGNORED\n");
+    debug_api_print(f, "create_privkey_v3 = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_privkey_v3 = ");
+    debug_api_print(f, "create_privkey_v3 = ");
     otrng_debug_print_pointer(f, c->create_privkey_v3);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("client_callbacks->create_privkey_v4")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_privkey_v4 = IGNORED\n");
+    debug_api_print(f, "create_privkey_v4 = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_privkey_v4 = ");
+    debug_api_print(f, "create_privkey_v4 = ");
     otrng_debug_print_pointer(f, c->create_privkey_v4);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore(
           "client_callbacks->create_client_profile")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_client_profile = IGNORED\n");
+    debug_api_print(f, "create_client_profile = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_client_profile = ");
+    debug_api_print(f, "create_client_profile = ");
     otrng_debug_print_pointer(f, c->create_client_profile);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore(
           "client_callbacks->create_prekey_profile")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_prekey_profile = IGNORED\n");
+    debug_api_print(f, "create_prekey_profile = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_prekey_profile = ");
+    debug_api_print(f, "create_prekey_profile = ");
     otrng_debug_print_pointer(f, c->create_prekey_profile);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore(
           "client_callbacks->create_shared_prekey")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_shared_prekey = IGNORED\n");
+    debug_api_print(f, "create_shared_prekey = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "create_shared_prekey = ");
+    debug_api_print(f, "create_shared_prekey = ");
     otrng_debug_print_pointer(f, c->create_shared_prekey);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("client_callbacks->gone_secure")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "gone_secure = IGNORED\n");
+    debug_api_print(f, "gone_secure = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "gone_secure = ");
+    debug_api_print(f, "gone_secure = ");
     otrng_debug_print_pointer(f, c->gone_secure);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("client_callbacks->gone_insecure")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "gone_insecure = IGNORED\n");
+    debug_api_print(f, "gone_insecure = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "gone_insecure = ");
+    debug_api_print(f, "gone_insecure = ");
     otrng_debug_print_pointer(f, c->gone_insecure);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("client_callbacks->fingerprint_seen")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "fingerprint_seen = IGNORED\n");
+    debug_api_print(f, "fingerprint_seen = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "fingerprint_seen = ");
+    debug_api_print(f, "fingerprint_seen = ");
     otrng_debug_print_pointer(f, c->fingerprint_seen);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore(
           "client_callbacks->fingerprint_seen_v3")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "fingerprint_seen_v3 = IGNORED\n");
+    debug_api_print(f, "fingerprint_seen_v3 = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "fingerprint_seen_v3 = ");
+    debug_api_print(f, "fingerprint_seen_v3 = ");
     otrng_debug_print_pointer(f, c->fingerprint_seen_v3);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("client_callbacks->smp_ask_for_secret")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "smp_ask_for_secret = IGNORED\n");
+    debug_api_print(f, "smp_ask_for_secret = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "smp_ask_for_secret = ");
+    debug_api_print(f, "smp_ask_for_secret = ");
     otrng_debug_print_pointer(f, c->smp_ask_for_secret);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("client_callbacks->smp_ask_for_answer")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "smp_ask_for_answer = IGNORED\n");
+    debug_api_print(f, "smp_ask_for_answer = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "smp_ask_for_answer = ");
+    debug_api_print(f, "smp_ask_for_answer = ");
     otrng_debug_print_pointer(f, c->smp_ask_for_answer);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("client_callbacks->smp_update")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "smp_update = IGNORED\n");
+    debug_api_print(f, "smp_update = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "smp_update = ");
+    debug_api_print(f, "smp_update = ");
     otrng_debug_print_pointer(f, c->smp_update);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore(
           "client_callbacks->received_extra_symm_key")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "received_extra_symm_key = IGNORED\n");
+    debug_api_print(f, "received_extra_symm_key = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "received_extra_symm_key = ");
+    debug_api_print(f, "received_extra_symm_key = ");
     otrng_debug_print_pointer(f, c->received_extra_symm_key);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore(
           "client_callbacks->get_shared_session_state")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "get_shared_session_state = IGNORED\n");
+    debug_api_print(f, "get_shared_session_state = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "get_shared_session_state = ");
+    debug_api_print(f, "get_shared_session_state = ");
     otrng_debug_print_pointer(f, c->get_shared_session_state);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "} // client_callbacks\n");
+  debug_api_print(f, "} // client_callbacks\n");
 }
 
 #endif /* DEBUG_API */

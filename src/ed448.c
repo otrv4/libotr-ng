@@ -254,28 +254,28 @@ API void otrng_ecdh_keypair_debug_print(FILE *f, int indent,
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "ecdh_keypair {\n");
+  debug_api_print(f, "ecdh_keypair {\n");
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("ecdh_keypair->pub")) {
-    fprintf(f, "pub = IGNORED\n");
+    debug_api_print(f, "pub = IGNORED\n");
   } else {
-    fprintf(f, "pub = ");
+    debug_api_print(f, "pub = ");
     otrng_public_key_debug_print(f, k->pub);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("ecdh_keypair->priv")) {
-    fprintf(f, "priv = IGNORED\n");
+    debug_api_print(f, "priv = IGNORED\n");
   } else {
-    fprintf(f, "priv = ");
+    debug_api_print(f, "priv = ");
     otrng_private_key_debug_print(f, k->priv);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "} // ecdh_keypair\n");
+  debug_api_print(f, "} // ecdh_keypair\n");
 }
 
 #endif /* DEBUG */

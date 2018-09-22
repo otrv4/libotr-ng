@@ -602,35 +602,35 @@ API void otrng_client_debug_print(FILE *f, int indent, otrng_client_s *c) {
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "client(");
+  debug_api_print(f, "client(");
   otrng_debug_print_pointer(f, c);
-  fprintf(f, ") {\n");
+  debug_api_print(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("client->conversations")) {
-    fprintf(f, "conversations = IGNORED\n");
+    debug_api_print(f, "conversations = IGNORED\n");
   } else {
-    fprintf(f, "conversations = {\n");
+    debug_api_print(f, "conversations = {\n");
     ix = 0;
     curr = c->conversations;
     while (curr) {
       otrng_print_indent(f, indent + 4);
-      fprintf(f, "[%d] = {\n", ix);
+      debug_api_print(f, "[%d] = {\n", ix);
       otrng_conversation_debug_print(f, indent + 6, curr->data);
       otrng_print_indent(f, indent + 4);
-      fprintf(f, "} // [%d]\n", ix);
+      debug_api_print(f, "} // [%d]\n", ix);
       curr = curr->next;
       ix++;
     }
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "} // conversations\n");
+    debug_api_print(f, "} // conversations\n");
   }
 
   // TODO / DEBUG_API: implement
   /* otrng_prekey_client_s *prekey_client; */
 
   otrng_print_indent(f, indent);
-  fprintf(f, "} // client\n");
+  debug_api_print(f, "} // client\n");
 }
 
 API void otrng_conversation_debug_print(FILE *f, int indent,
@@ -640,31 +640,31 @@ API void otrng_conversation_debug_print(FILE *f, int indent,
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "conversation(");
+  debug_api_print(f, "conversation(");
   otrng_debug_print_pointer(f, c);
-  fprintf(f, ") {\n");
+  debug_api_print(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("conversation->conversation_id")) {
-    fprintf(f, "conversation_id = IGNORED\n");
+    debug_api_print(f, "conversation_id = IGNORED\n");
   } else {
-    fprintf(f, "conversation_id = ");
+    debug_api_print(f, "conversation_id = ");
     otrng_debug_print_pointer(f, c->conversation_id);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("conversation->recipient")) {
-    fprintf(f, "recipient = IGNORED\n");
+    debug_api_print(f, "recipient = IGNORED\n");
   } else {
-    fprintf(f, "recipient = %s\n", c->recipient);
+    debug_api_print(f, "recipient = %s\n", c->recipient);
   }
 
   // TODO / DEBUG_API: implement
   /* otrng_s *conn */
 
   otrng_print_indent(f, indent);
-  fprintf(f, "} // conversation\n");
+  debug_api_print(f, "} // conversation\n");
 }
 
 #endif /* DEBUG */
@@ -1121,46 +1121,46 @@ API void otrng_stored_prekeys_debug_print(FILE *f, int indent,
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "stored_prekeys(");
+  debug_api_print(f, "stored_prekeys(");
   otrng_debug_print_pointer(f, s);
-  fprintf(f, ") {\n");
+  debug_api_print(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("stored_prekeys->id")) {
-    fprintf(f, "id = IGNORED\n");
+    debug_api_print(f, "id = IGNORED\n");
   } else {
-    fprintf(f, "id = %x\n", s->id);
+    debug_api_print(f, "id = %x\n", s->id);
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("stored_prekeys->sender_instance_tag")) {
-    fprintf(f, "sender_instance_tag = IGNORED\n");
+    debug_api_print(f, "sender_instance_tag = IGNORED\n");
   } else {
-    fprintf(f, "sender_instance_tag = %x\n", s->sender_instance_tag);
+    debug_api_print(f, "sender_instance_tag = %x\n", s->sender_instance_tag);
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("stored_prekeys->our_ecdh")) {
-    fprintf(f, "our_ecdh = IGNORED\n");
+    debug_api_print(f, "our_ecdh = IGNORED\n");
   } else {
-    fprintf(f, "our_ecdh = {\n");
+    debug_api_print(f, "our_ecdh = {\n");
     otrng_ecdh_keypair_debug_print(f, indent + 4, s->our_ecdh);
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "} // our_ecdh\n");
+    debug_api_print(f, "} // our_ecdh\n");
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("stored_prekeys->our_dh")) {
-    fprintf(f, "our_dh = IGNORED\n");
+    debug_api_print(f, "our_dh = IGNORED\n");
   } else {
-    fprintf(f, "our_dh = {\n");
+    debug_api_print(f, "our_dh = {\n");
     otrng_dh_keypair_debug_print(f, indent + 4, s->our_dh);
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "} // our_dh\n");
+    debug_api_print(f, "} // our_dh\n");
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "} // stored_prekeys\n");
+  debug_api_print(f, "} // stored_prekeys\n");
 }
 
 #endif /* DEBUG */

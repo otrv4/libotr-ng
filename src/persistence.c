@@ -33,6 +33,7 @@ char *otrng_client_get_storage_id(const otrng_client_s *client) {
   char *account_name = NULL;
   char *protocol_name = NULL;
   char *key = NULL;
+  int res;
 
   if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
                                              client)) {
@@ -43,7 +44,10 @@ char *otrng_client_get_storage_id(const otrng_client_s *client) {
     size_t n = strlen(protocol_name) + strlen(account_name) + 2;
     key = otrng_xmalloc(n);
 
-    snprintf(key, n, "%s:%s", protocol_name, account_name);
+    res = snprintf(key, n, "%s:%s", protocol_name, account_name);
+    if (res < 0) {
+      return NULL;
+    }
   }
 
   if (account_name) {
@@ -140,7 +144,7 @@ otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f) {
     return OTRNG_ERROR;
   }
 
-  if (0 > fprintf(f, "%s\n%s\n", storage_id, encoded)) {
+  if (fprintf(f, "%s\n%s\n", storage_id, encoded) < 0) {
     free(storage_id);
     free(encoded);
     return OTRNG_ERROR;
@@ -506,7 +510,7 @@ INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  if (0 > fprintf(privf, "%s\n%s\n", storage_id, encoded)) {
+  if (fprintf(privf, "%s\n%s\n", storage_id, encoded) < 0) {
     free(storage_id);
     free(encoded);
     return OTRNG_ERROR;
@@ -737,7 +741,7 @@ otrng_client_prekey_profile_write_FILEp(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  if (0 > fprintf(privf, "%s\n%s\n", storage_id, encoded)) {
+  if (fprintf(privf, "%s\n%s\n", storage_id, encoded) < 0) {
     free(encoded);
     free(storage_id);
     return OTRNG_ERROR;

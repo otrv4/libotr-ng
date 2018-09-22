@@ -330,30 +330,30 @@ API void otrng_dh_keypair_debug_print(FILE *f, int indent, dh_keypair_s *k) {
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "dh_keypair {\n");
+  debug_api_print(f, "dh_keypair {\n");
 
   if (otrng_debug_print_should_ignore("dh_keypair->pub")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "pub = IGNORED\n");
+    debug_api_print(f, "pub = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "pub = ");
+    debug_api_print(f, "pub = ");
     otrng_dh_public_key_debug_print(f, k->pub);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("dh_keypair->priv")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "pub = IGNORED\n");
+    debug_api_print(f, "pub = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "priv = ");
+    debug_api_print(f, "priv = ");
     otrng_dh_private_key_debug_print(f, k->priv);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "} // dh_keypair\n");
+  debug_api_print(f, "} // dh_keypair\n");
 }
 
 API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key_p k) {

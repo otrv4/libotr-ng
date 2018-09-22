@@ -24,6 +24,7 @@
 #include "alloc.h"
 #include "messaging.h"
 #include "otrng.h"
+#include "debug.h"
 
 tstatic void create_privkey_cb_v3(const otrng_v3_conn_s *conn) {
   if (!conn || !conn->client) {
@@ -107,22 +108,22 @@ tstatic void received_symkey_cb_v3(const otrng_s *conv, unsigned int use,
                                    size_t usedatalen,
                                    const unsigned char *extra_key) {
 #ifdef DEBUG
-  printf("Received symkey use: %08x\n", use);
-  printf("Usedata lenght: %zu\n", usedatalen);
-  printf("Usedata: ");
+  debug_print("Received symkey use: %08x\n", use);
+  debug_print("Usedata lenght: %zu\n", usedatalen);
+  debug_print("Usedata: ");
 
   for (int i = 0; i < usedatalen; i++) {
-    printf("%02x", usedata[i]);
+    debug_print("%02x", usedata[i]);
   }
 
-  printf("\n");
-  printf("Symkey: ");
+  debug_print("\n");
+  debug_print("Symkey: ");
 
   for (int i = 0; i < HASH_BYTES; i++) {
-    printf("0x%02x, ", extra_key[i]);
+    debug_print("0x%02x, ", extra_key[i]);
   }
 
-  printf("\n");
+  debug_print("\n");
 #endif
   (void)conv;
   (void)use;
@@ -321,7 +322,7 @@ tstatic const char *op_otr_error_message(void *opdata, ConnContext *context,
   (void)opdata;
   (void)context;
   (void)err_code;
-  printf("ERROR MESSAGE CB V3\n");
+  debug_print("ERROR MESSAGE CB V3\n");
   return "ERROR MESSAGE";
 }
 
@@ -470,55 +471,55 @@ tstatic void op_handle_msg_event(void *opdata, OtrlMessageEvent msg_event,
   (void)err;
   switch (msg_event) {
   case OTRL_MSGEVENT_ENCRYPTION_REQUIRED:
-    printf("OTRL_MSGEVENT_ENCRYPTION_REQUIRED");
+    debug_print("OTRL_MSGEVENT_ENCRYPTION_REQUIRED");
     break;
   case OTRL_MSGEVENT_ENCRYPTION_ERROR:
-    printf("OTRL_MSGEVENT_ENCRYPTION_ERROR");
+    debug_print("OTRL_MSGEVENT_ENCRYPTION_ERROR");
     break;
   case OTRL_MSGEVENT_CONNECTION_ENDED:
-    printf("OTRL_MSGEVENT_CONNECTION_ENDED");
+    debug_print("OTRL_MSGEVENT_CONNECTION_ENDED");
     break;
   case OTRL_MSGEVENT_SETUP_ERROR:
-    printf("OTRL_MSGEVENT_SETUP_ERROR");
+    debug_print("OTRL_MSGEVENT_SETUP_ERROR");
     break;
   case OTRL_MSGEVENT_MSG_REFLECTED:
-    printf("OTRL_MSGEVENT_MSG_REFLECTED");
+    debug_print("OTRL_MSGEVENT_MSG_REFLECTED");
     break;
   case OTRL_MSGEVENT_MSG_RESENT:
-    printf("OTRL_MSGEVENT_MSG_RESENT");
+    debug_print("OTRL_MSGEVENT_MSG_RESENT");
     break;
   case OTRL_MSGEVENT_RCVDMSG_NOT_IN_PRIVATE:
-    printf("OTRL_MSGEVENT_RCVDMSG_NOT_IN_PRIVATE");
+    debug_print("OTRL_MSGEVENT_RCVDMSG_NOT_IN_PRIVATE");
     break;
   case OTRL_MSGEVENT_RCVDMSG_UNREADABLE:
-    printf("OTRL_MSGEVENT_RCVDMSG_UNREADABLE");
+    debug_print("OTRL_MSGEVENT_RCVDMSG_UNREADABLE");
     break;
   case OTRL_MSGEVENT_RCVDMSG_MALFORMED:
-    printf("OTRL_MSGEVENT_RCVDMSG_MALFORMED");
+    debug_print("OTRL_MSGEVENT_RCVDMSG_MALFORMED");
     break;
   case OTRL_MSGEVENT_LOG_HEARTBEAT_RCVD:
-    printf("OTRL_MSGEVENT_LOG_HEARTBEAT_RCVD");
+    debug_print("OTRL_MSGEVENT_LOG_HEARTBEAT_RCVD");
     break;
   case OTRL_MSGEVENT_LOG_HEARTBEAT_SENT:
-    printf("OTRL_MSGEVENT_LOG_HEARTBEAT_SENT");
+    debug_print("OTRL_MSGEVENT_LOG_HEARTBEAT_SENT");
     break;
   case OTRL_MSGEVENT_RCVDMSG_GENERAL_ERR:
-    printf("OTRL_MSGEVENT_RCVDMSG_GENERAL_ERR");
+    debug_print("OTRL_MSGEVENT_RCVDMSG_GENERAL_ERR");
     break;
   case OTRL_MSGEVENT_RCVDMSG_UNENCRYPTED:
-    printf("OTRL_MSGEVENT_RCVDMSG_UNENCRYPTED");
+    debug_print("OTRL_MSGEVENT_RCVDMSG_UNENCRYPTED");
     break;
   case OTRL_MSGEVENT_RCVDMSG_UNRECOGNIZED:
-    printf("OTRL_MSGEVENT_RCVDMSG_UNRECOGNIZED");
+    debug_print("OTRL_MSGEVENT_RCVDMSG_UNRECOGNIZED");
     break;
   case OTRL_MSGEVENT_RCVDMSG_FOR_OTHER_INSTANCE:
-    printf("OTRL_MSGEVENT_RCVDMSG_FOR_OTHER_INSTANCE");
+    debug_print("OTRL_MSGEVENT_RCVDMSG_FOR_OTHER_INSTANCE");
     break;
   case OTRL_MSGEVENT_NONE:
-    printf("OTRL_MSGEVENT_NONE");
+    debug_print("OTRL_MSGEVENT_NONE");
   }
 
-  printf(" received\n");
+  debug_print(" received\n");
 }
 
 /* Create a instance tag for the given accountname/protocol if

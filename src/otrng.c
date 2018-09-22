@@ -112,17 +112,17 @@ tstatic void received_extra_sym_key(const otrng_s *conv, unsigned int use,
       conv, use, use_data, use_data_len, extra_sym_key);
 
 #ifdef DEBUG
-  printf("\n");
-  printf("Received symkey use: %08x\n", use);
-  printf("Usedata lenght: %zu\n", use_data_len);
-  printf("Usedata = ");
+  debug_print("\n");
+  debug_print("Received symkey use: %08x\n", use);
+  debug_print("Usedata lenght: %zu\n", use_data_len);
+  debug_print("Usedata = ");
   for (int i = 0; i < use_data_len; i++) {
-    printf("%02x", use_data[i]);
+    debug_print("%02x", use_data[i]);
   }
-  printf("\n");
-  /* printf("Symkey = "); */
+  debug_print("\n");
+  /* debug_print("Symkey = "); */
   /* for (int i = 0; i < EXTRA_SYMMETRIC_KEY_BYTES; i++) { */
-  /*   printf("%02x", extra_symm_key[i]); */
+  /*   debug_print("%02x", extra_symm_key[i]); */
   /* } */
 #endif
 }
@@ -727,11 +727,11 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   sodium_memzero(k_dh, sizeof(k_dh));
 
 #ifdef DEBUG
-  printf("\n");
-  printf("GENERATING TEMP KEY R\n");
-  printf("K_ecdh = ");
+  debug_print("\n");
+  debug_print("GENERATING TEMP KEY R\n");
+  debug_print("K_ecdh = ");
   otrng_memdump(k_ecdh, sizeof(k_ecdh_p));
-  printf("brace_key = ");
+  debug_print("brace_key = ");
   otrng_memdump(brace_key, sizeof(brace_key_p));
 #endif
 
@@ -751,9 +751,9 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
                                       tmp_ecdh_k2);
 
 #ifdef DEBUG
-  printf("\n");
-  printf("GENERATING TEMP KEY R\n");
-  printf("tmp_key_r = ");
+  debug_print("\n");
+  debug_print("GENERATING TEMP KEY R\n");
+  debug_print("tmp_key_r = ");
   otrng_memdump(dst, HASH_BYTES);
 #endif
 
@@ -1106,11 +1106,11 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   sodium_memzero(k_dh, sizeof(k_dh));
 
 #ifdef DEBUG
-  printf("\n");
-  printf("GENERATING TEMP KEY I\n");
-  printf("K_ecdh = ");
+  debug_print("\n");
+  debug_print("GENERATING TEMP KEY I\n");
+  debug_print("K_ecdh = ");
   otrng_memdump(k_ecdh, sizeof(k_ecdh_p));
-  printf("brace_key = ");
+  debug_print("brace_key = ");
   otrng_memdump(brace_key, sizeof(brace_key_p));
 #endif
 
@@ -1129,9 +1129,9 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
                                       tmp_ecdh_k2);
 
 #ifdef DEBUG
-  printf("\n");
-  printf("GENERATING TEMP KEY I\n");
-  printf("tmp_key_i = ");
+  debug_print("\n");
+  debug_print("GENERATING TEMP KEY I\n");
+  debug_print("tmp_key_i = ");
   otrng_memdump(dst, HASH_BYTES);
 #endif
 
@@ -1724,11 +1724,11 @@ tstatic otrng_result decrypt_data_msg(otrng_response_s *response,
   int err;
 
 #ifdef DEBUG
-  printf("\n");
-  printf("DECRYPTING\n");
-  printf("enc_key = ");
+  debug_print("\n");
+  debug_print("DECRYPTING\n");
+  debug_print("enc_key = ");
   otrng_memdump(enc_key, sizeof(msg_enc_key_p));
-  printf("nonce = ");
+  debug_print("nonce = ");
   otrng_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
 #endif
 

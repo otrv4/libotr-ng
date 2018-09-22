@@ -539,55 +539,55 @@ API void otrng_global_state_debug_print(FILE *f, int indent,
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "global_state(");
+  debug_api_print(f, "global_state(");
   otrng_debug_print_pointer(f, gs);
-  fprintf(f, ") {\n");
+  debug_api_print(f, ") {\n");
 
   if (otrng_debug_print_should_ignore("global_state->clients")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "clients = IGNORED\n");
+    debug_api_print(f, "clients = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "clients = {\n");
+    debug_api_print(f, "clients = {\n");
     ix = 0;
     curr = gs->clients;
     while (curr) {
       otrng_print_indent(f, indent + 4);
-      fprintf(f, "[%d] = {\n", ix);
+      debug_api_print(f, "[%d] = {\n", ix);
       otrng_client_debug_print(f, indent + 6, curr->data);
       otrng_print_indent(f, indent + 4);
-      fprintf(f, "} // [%d]\n", ix);
+      debug_api_print(f, "} // [%d]\n", ix);
       curr = curr->next;
       ix++;
     }
 
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "} // clients\n");
+    debug_api_print(f, "} // clients\n");
   }
 
   if (otrng_debug_print_should_ignore("global_state->callbacks")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "callbacks = IGNORED\n");
+    debug_api_print(f, "callbacks = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "callbacks = {\n");
+    debug_api_print(f, "callbacks = {\n");
     otrng_client_callbacks_debug_print(f, indent + 4, gs->callbacks);
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "} // callbacks\n");
+    debug_api_print(f, "} // callbacks\n");
   }
 
   if (otrng_debug_print_should_ignore("global_state->user_state_v3")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "user_state_v3 = IGNORED\n");
+    debug_api_print(f, "user_state_v3 = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "user_state_v3 = ");
+    debug_api_print(f, "user_state_v3 = ");
     otrng_debug_print_pointer(f, gs->user_state_v3);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "} // global_state\n");
+  debug_api_print(f, "} // global_state\n");
 }
 
 #endif /* DEBUG_API */

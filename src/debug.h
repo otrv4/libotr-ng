@@ -53,6 +53,7 @@ static inline /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
 }
 
 #ifdef DEBUG_API
+#define debug_api_print fprintf
 struct otrng_client_id_s;
 API void otrng_client_id_debug_print(FILE *, const struct otrng_client_id_s);
 API void otrng_add_debug_print_ignore(const char *);
@@ -68,9 +69,9 @@ static inline void otrng_print_indent(FILE *f, int indent) {
 
 static inline void otrng_debug_print_pointer(FILE *f, const void *p) {
   if (p == NULL) {
-    fprintf(f, "NULL");
+    debug_api_print(f, "NULL");
   } else {
-    fprintf(f, "%p", p);
+    debug_api_print(f, "%p", p);
   }
 }
 
@@ -78,19 +79,20 @@ static inline void otrng_debug_print_data(FILE *f, const uint8_t *p,
                                           size_t len) {
   int i;
   if (p == NULL) {
-    fprintf(f, "NULL");
+    debug_api_print(f, "NULL");
   } else {
-    fprintf(f, "0x");
+    debug_api_print(f, "0x");
     for (i = 0; i < len; i++) {
-      fprintf(f, "%02X", p[i]);
+      debug_api_print(f, "%02X", p[i]);
     }
   }
 }
 #endif
 
+#define debug_print printf
 #ifdef DEBUG
 static inline void otrng_memdump(const uint8_t *src, size_t len) {
-  printf("%s\n", _otrng_memdump(src, len));
+  debug_print("%s\n", _otrng_memdump(src, len));
 }
 
 #else

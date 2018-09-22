@@ -108,6 +108,7 @@ static otrng_result create_fragment_message(char **dst, const char *piece,
                                             uint32_t our_instance,
                                             uint32_t their_instance,
                                             uint16_t current, uint16_t total) {
+  int res;
 
   if (strlen(piece) < piece_len) {
     return OTRNG_ERROR;
@@ -115,9 +116,12 @@ static otrng_result create_fragment_message(char **dst, const char *piece,
 
   *dst = otrng_xmalloc(FRAGMENT_HEADER_LEN + piece_len + 1);
 
-  snprintf(*dst, FRAGMENT_HEADER_LEN + piece_len + 1, FRAGMENT_FORMAT,
+  res = snprintf(*dst, FRAGMENT_HEADER_LEN + piece_len + 1, FRAGMENT_FORMAT,
            identifier, our_instance, their_instance, current, total,
            (int)piece_len, piece);
+  if (res < 0) {
+    return OTRNG_ERROR;
+  }
 
   (*dst)[FRAGMENT_HEADER_LEN + piece_len] = 0;
 

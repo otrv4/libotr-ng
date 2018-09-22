@@ -155,37 +155,37 @@ API void otrng_keypair_debug_print(FILE *f, int indent, otrng_keypair_s *k) {
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "keypair {\n");
+  debug_api_print(f, "keypair {\n");
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("keypair->sym")) {
-    fprintf(f, "sym = IGNORED\n");
+    debug_api_print(f, "sym = IGNORED\n");
   } else {
-    fprintf(f, "sym = ");
+    debug_api_print(f, "sym = ");
     otrng_debug_print_data(f, k->sym, ED448_PRIVATE_BYTES);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("keypair->pub")) {
-    fprintf(f, "pub = IGNORED\n");
+    debug_api_print(f, "pub = IGNORED\n");
   } else {
-    fprintf(f, "pub = ");
+    debug_api_print(f, "pub = ");
     otrng_public_key_debug_print(f, k->pub);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("keypair->priv")) {
-    fprintf(f, "priv = IGNORED\n");
+    debug_api_print(f, "priv = IGNORED\n");
   } else {
-    fprintf(f, "priv = ");
+    debug_api_print(f, "priv = ");
     otrng_private_key_debug_print(f, k->priv);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "} // keypair\n");
+  debug_api_print(f, "} // keypair\n");
 }
 
 API void otrng_shared_prekey_pair_debug_print(FILE *f, int indent,
@@ -195,40 +195,40 @@ API void otrng_shared_prekey_pair_debug_print(FILE *f, int indent,
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "shared_prekey_pair {\n");
+  debug_api_print(f, "shared_prekey_pair {\n");
 
   if (otrng_debug_print_should_ignore("shared_prekey_pair->sym")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "sym = IGNORED\n");
+    debug_api_print(f, "sym = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "sym = ");
+    debug_api_print(f, "sym = ");
     otrng_debug_print_data(f, k->sym, ED448_PRIVATE_BYTES);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("shared_prekey_pair->pub")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "pub = IGNORED\n");
+    debug_api_print(f, "pub = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "pub = ");
+    debug_api_print(f, "pub = ");
     otrng_shared_prekey_pub_debug_print(f, k->pub);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   if (otrng_debug_print_should_ignore("shared_prekey_pair->priv")) {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "priv = IGNORED\n");
+    debug_api_print(f, "priv = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
-    fprintf(f, "priv = ");
+    debug_api_print(f, "priv = ");
     otrng_shared_prekey_priv_debug_print(f, k->priv);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "} // shared_prekey_pair\n");
+  debug_api_print(f, "} // shared_prekey_pair\n");
 }
 
 API void otrng_public_key_debug_print(FILE *f, otrng_public_key_p k) {
@@ -239,7 +239,7 @@ API void otrng_public_key_debug_print(FILE *f, otrng_public_key_p k) {
   uint8_t *r = otrng_xmalloc(ED448_POINT_BYTES);
   if (!otrng_ec_point_encode(r, ED448_POINT_BYTES, k)) {
     free(r);
-    fprintf(f, "ERROR!!");
+    debug_api_print(f, "ERROR!!");
     return;
   }
 
@@ -269,7 +269,7 @@ API void otrng_shared_prekey_pub_debug_print(FILE *f,
   uint8_t *r = otrng_xmalloc(ED448_POINT_BYTES);
   if (!otrng_ec_point_encode(r, ED448_POINT_BYTES, k)) {
     free(r);
-    fprintf(f, "ERROR!!");
+    debug_api_print(f, "ERROR!!");
     return;
   }
 

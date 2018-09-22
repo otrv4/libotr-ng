@@ -750,72 +750,72 @@ API void otrng_client_profile_debug_print(FILE *f, int indent,
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "client_profile(");
+  debug_api_print(f, "client_profile(");
   otrng_debug_print_pointer(f, cp);
-  fprintf(f, ") {\n");
+  debug_api_print(f, ") {\n");
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("client_profile->sender_instance_tag")) {
-    fprintf(f, "sender_instance_tag = IGNORED\n");
+    debug_api_print(f, "sender_instance_tag = IGNORED\n");
   } else {
-    fprintf(f, "sender_instance_tag = %x\n", cp->sender_instance_tag);
+    debug_api_print(f, "sender_instance_tag = %x\n", cp->sender_instance_tag);
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("client_profile->long_term_pub_key")) {
-    fprintf(f, "long_term_pub_key = IGNORED\n");
+    debug_api_print(f, "long_term_pub_key = IGNORED\n");
   } else {
-    fprintf(f, "long_term_pub_key = ");
+    debug_api_print(f, "long_term_pub_key = ");
     otrng_public_key_debug_print(f, cp->long_term_pub_key);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("client_profile->versions")) {
-    fprintf(f, "versions = IGNORED\n");
+    debug_api_print(f, "versions = IGNORED\n");
   } else {
-    fprintf(f, "versions = %s\n", cp->versions);
+    debug_api_print(f, "versions = %s\n", cp->versions);
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("client_profile->expires")) {
-    fprintf(f, "expires = IGNORED\n");
+    debug_api_print(f, "expires = IGNORED\n");
   } else {
-    fprintf(f, "expires = ");
+    debug_api_print(f, "expires = ");
     otrng_debug_print_data(f, (uint8_t *)&(cp->expires), 8);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("client_profile->dsa_key")) {
-    fprintf(f, "dsa_key = IGNORED\n");
+    debug_api_print(f, "dsa_key = IGNORED\n");
   } else {
-    fprintf(f, "dsa_key = ");
+    debug_api_print(f, "dsa_key = ");
     otrng_debug_print_data(f, cp->dsa_key, cp->dsa_key_len);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore(
           "client_profile->transitional_signature")) {
-    fprintf(f, "transitional_signature = IGNORED\n");
+    debug_api_print(f, "transitional_signature = IGNORED\n");
   } else {
-    fprintf(f, "transitional_signature = ");
+    debug_api_print(f, "transitional_signature = ");
     otrng_debug_print_data(f, cp->transitional_signature, OTRv3_DSA_SIG_BYTES);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent + 2);
   if (otrng_debug_print_should_ignore("client_profile->signature")) {
-    fprintf(f, "signature = IGNORED\n");
+    debug_api_print(f, "signature = IGNORED\n");
   } else {
-    fprintf(f, "signature = ");
+    debug_api_print(f, "signature = ");
     otrng_debug_print_data(f, cp->signature, ED448_SIGNATURE_BYTES);
-    fprintf(f, "\n");
+    debug_api_print(f, "\n");
   }
 
   otrng_print_indent(f, indent);
-  fprintf(f, "} // client_profile\n");
+  debug_api_print(f, "} // client_profile\n");
 }
 
 #endif
