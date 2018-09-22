@@ -157,7 +157,7 @@ INTERNAL otrng_bool ecdh_proof_verify(ecdh_proof_p px,
   if (!otrng_ec_point_encode(cbuf_curr, ED448_POINT_BYTES, a)) {
     free(cbuf);
     goldilocks_448_point_destroy(a);
-    return OTRNG_ERROR;
+    return otrng_false;
   }
   goldilocks_448_point_destroy(a);
 
@@ -166,7 +166,7 @@ INTERNAL otrng_bool ecdh_proof_verify(ecdh_proof_p px,
   for (i = 0; i < values_len; i++) {
     if (!otrng_ec_point_encode(cbuf_curr, ED448_POINT_BYTES, values_pub[i])) {
       free(cbuf);
-      return OTRNG_ERROR;
+      return otrng_false;
     }
     cbuf_curr += ED448_POINT_BYTES;
   }
@@ -182,7 +182,152 @@ INTERNAL otrng_bool ecdh_proof_verify(ecdh_proof_p px,
   return otrng_false;
 }
 
-/* func generateDhProof(wr gotrax.WithRandom, valuesPrivate []*big.Int,
- * valuesPublic []*big.Int, m []byte, usageID uint8) (*dhProof, error) { */
-/* func (px *dhProof) verify(values []*big.Int, m []byte, usageID uint8) bool {
- */
+INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
+                                        const dh_mpi_p *values_priv,
+                                        const dh_mpi_p *values_pub,
+                                        const size_t values_len,
+                                        const uint8_t *m, const uint8_t usage) {
+  uint8_t *p;
+  uint8_t rhash[DH_KEY_SIZE] = {0};
+  uint8_t *rbuf;
+  gcry_error_t err;
+  gcry_mpi_t r, a, q;
+  size_t i;
+  uint8_t *cbuf;
+  uint8_t *cbuf_curr;
+  uint8_t *p_curr;
+  size_t w;
+  size_t total = 0;
+  size_t cbuf_len = ((values_len + 1) * DH3072_MOD_LEN_BYTES) + 64;
+  size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
+
+  q = otrng_dh_modulus_q();
+
+  rbuf = gcry_random_bytes_secure(DH_KEY_SIZE, GCRY_STRONG_RANDOM);
+  shake_256_hash(rhash, sizeof(rhash), rbuf, DH_KEY_SIZE);
+  err = gcry_mpi_scan(&r, GCRYMPI_FMT_USG, rhash, DH_KEY_SIZE, NULL);
+  gcry_free(rbuf);
+
+  if (err) {
+    return OTRNG_ERROR;
+  }
+
+  a = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  otrng_dh_calculate_public_key(a, r);
+
+  cbuf = otrng_xmalloc(cbuf_len * sizeof(uint8_t));
+  cbuf_curr = cbuf;
+  if (otrng_failed(
+          otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w, a))) {
+    free(cbuf);
+    return OTRNG_ERROR;
+  }
+  cbuf_curr += w;
+  total += w;
+
+  for (i = 0; i < values_len; i++) {
+    if (otrng_failed(otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w,
+                                            values_pub[i]))) {
+      free(cbuf);
+      return OTRNG_ERROR;
+    }
+    cbuf_curr += w;
+    total += w;
+  }
+
+  memcpy(cbuf_curr, m, 64);
+  total += 64;
+  shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf, cbuf_len);
+  free(cbuf);
+
+  p = otrng_xmalloc(p_len * sizeof(uint8_t));
+  shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
+                              PROOF_C_SIZE);
+
+  dst->v = otrng_dh_mpi_copy(r);
+  p_curr = p;
+  for (i = 0; i < values_len; i++) {
+    gcry_mpi_t t;
+    if (!otrng_dh_mpi_deserialize(&t, p_curr, PREKEY_PROOF_LAMBDA, &w)) {
+      return OTRNG_ERROR;
+    }
+    p_curr += w;
+    gcry_mpi_mulm(t, t, values_priv[i], q);
+    gcry_mpi_addm(dst->v, dst->v, t, q);
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_bool dh_proof_verify(dh_proof_p px, const dh_mpi_p *values_pub,
+                                    const size_t values_len, const uint8_t *m,
+                                    const uint8_t usage) {
+  uint8_t *p;
+  gcry_mpi_t a, mod, curr;
+  size_t i;
+  uint8_t *cbuf;
+  uint8_t *cbuf_curr;
+  uint8_t *p_curr;
+  size_t w;
+  size_t total = 0;
+  size_t cbuf_len = ((values_len + 1) * DH3072_MOD_LEN_BYTES) + 64;
+  size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
+  uint8_t c2[PROOF_C_SIZE];
+
+  p = otrng_xmalloc(p_len * sizeof(uint8_t));
+  shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, px->c,
+                              PROOF_C_SIZE);
+
+  a = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  otrng_dh_calculate_public_key(a, px->v);
+
+  mod = otrng_dh_modulus_p();
+
+  curr = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  gcry_mpi_set_ui(curr, 1);
+
+  p_curr = p;
+  for (i = 0; i < values_len; i++) {
+    gcry_mpi_t t;
+    if (!otrng_dh_mpi_deserialize(&t, p_curr, PREKEY_PROOF_LAMBDA, &w)) {
+      return otrng_false;
+    }
+    p_curr += w;
+
+    gcry_mpi_powm(t, values_pub[i], t, mod);
+    gcry_mpi_mulm(curr, curr, t, mod);
+  }
+  gcry_mpi_invm(curr, curr, mod);
+  gcry_mpi_mulm(a, a, curr, mod);
+
+  cbuf = otrng_xmalloc(cbuf_len * sizeof(uint8_t));
+  cbuf_curr = cbuf;
+  if (otrng_failed(
+          otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w, a))) {
+    free(cbuf);
+    return otrng_false;
+  }
+  cbuf_curr += w;
+  total += w;
+
+  for (i = 0; i < values_len; i++) {
+    if (otrng_failed(otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w,
+                                            values_pub[i]))) {
+      free(cbuf);
+      return otrng_false;
+    }
+    cbuf_curr += w;
+    total += w;
+  }
+
+  memcpy(cbuf_curr, m, 64);
+  total += 64;
+  shake_256_prekey_server_kdf(c2, PROOF_C_SIZE, usage, cbuf, cbuf_len);
+  free(cbuf);
+
+  if (goldilocks_memeq(px->c, c2, PROOF_C_SIZE)) {
+    return otrng_true;
+  }
+
+  return otrng_false;
+}

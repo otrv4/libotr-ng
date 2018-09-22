@@ -50,6 +50,16 @@ INTERNAL otrng_bool ecdh_proof_verify(ecdh_proof_p px,
                                       const size_t values_len, const uint8_t *m,
                                       const uint8_t usage);
 
+INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
+                                        const dh_mpi_p *values_priv,
+                                        const dh_mpi_p *values_pub,
+                                        const size_t values_len,
+                                        const uint8_t *m, const uint8_t usage);
+
+INTERNAL otrng_bool dh_proof_verify(dh_proof_p px, const dh_mpi_p *values_pub,
+                                    const size_t values_len, const uint8_t *m,
+                                    const uint8_t usage);
+
 #ifdef OTRNG_PREKEY_PROOFS_PRIVATE
 #endif
 

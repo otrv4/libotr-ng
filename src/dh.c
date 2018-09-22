@@ -320,6 +320,10 @@ INTERNAL dh_mpi_p otrng_dh_mpi_copy(const dh_mpi_p src) {
 
 INTERNAL void otrng_dh_mpi_release(dh_mpi_p mpi) { gcry_mpi_release(mpi); }
 
+INTERNAL dh_mpi_p otrng_dh_modulus_p() { return DH3072_MODULUS; }
+
+INTERNAL dh_mpi_p otrng_dh_modulus_q() { return DH3072_MODULUS_Q; }
+
 #ifdef DEBUG_API
 
 #include "debug.h"

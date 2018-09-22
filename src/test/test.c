@@ -289,6 +289,8 @@ int main(int argc, char **argv) {
                   test_prekey_storage_status_message_deserialize);
   g_test_add_func("/prekey_server/dake/ensemble-retrieval/deserialize",
                   test_prekey_ensemble_retrieval_message_deserialize);
+  g_test_add_func("/prekey_server/proofs/dh_gen_validation",
+                  test_dh_proof_generation_and_validation);
   g_test_add_func("/prekey_server/proofs/ecdh_gen_validation",
                   test_ecdh_proof_generation_and_validation);
 
