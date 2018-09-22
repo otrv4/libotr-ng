@@ -129,7 +129,7 @@ tstatic void received_symkey_cb_v3(const otrng_s *conv, unsigned int use,
   (void)usedata;
   (void)usedatalen;
   (void)extra_key;
-  
+
   // TODO: Add a callback
 }
 
@@ -149,7 +149,7 @@ tstatic void op_inject(void *opdata, const char *accountname,
   (void)accountname;
   (void)protocol;
   (void)recipient;
-  
+
   if (!opdata) {
     return;
   }
@@ -165,7 +165,7 @@ tstatic void op_create_privkey(void *opdata, const char *accountname,
 
   (void)accountname;
   (void)protocol;
-  
+
   if (!otr) {
     return;
   }
@@ -193,9 +193,7 @@ tstatic int op_is_logged_in(void *opdata, const char *accountname,
 
 /* When the list of ConnContexts changes (including a change in
  * state), this is called so the UI can be updated. */
-tstatic void op_update_context_list(void *opdata) {
-  (void)opdata;
-}
+tstatic void op_update_context_list(void *opdata) { (void)opdata; }
 
 /* A new fingerprint for the given user has been received. */
 tstatic void op_new_fingerprint(void *opdata, OtrlUserState us,
@@ -217,16 +215,14 @@ tstatic void op_new_fingerprint(void *opdata, OtrlUserState us,
 }
 
 /* The list of known fingerprints has changed.  Write them to disk. */
-tstatic void op_write_fingerprints(void *opdata) {
-  (void)opdata;
-}
+tstatic void op_write_fingerprints(void *opdata) { (void)opdata; }
 
 /* A ConnContext has entered a secure state. */
 tstatic void op_gone_secure(void *opdata, ConnContext *context) {
   otrng_s *otr = opdata;
 
   (void)context;
-  
+
   if (!otr) {
     return;
   }
@@ -239,7 +235,7 @@ tstatic void op_gone_insecure(void *opdata, ConnContext *context) {
   otrng_s *otr = opdata;
 
   (void)context;
-  
+
   if (!otr) {
     return;
   }
@@ -254,7 +250,7 @@ tstatic void op_still_secure(void *opdata, ConnContext *context, int is_reply) {
 
   (void)context;
   (void)is_reply;
-  
+
   if (!otr) {
     return;
   }
@@ -300,7 +296,7 @@ tstatic void op_received_symkey(void *opdata, ConnContext *context,
   otrng_s *otr = opdata;
 
   (void)context;
-  
+
   if (!otr) {
     return;
   }
@@ -414,7 +410,7 @@ tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
   otrng_s *otr = opdata;
 
   (void)context;
-  
+
   if (!otr) {
     return;
   }
@@ -533,7 +529,7 @@ tstatic void op_create_instag(void *opdata, const char *accountname,
 
   (void)accountname;
   (void)protocol;
-  
+
   if (!otr) {
     return;
   }
@@ -668,7 +664,7 @@ INTERNAL otrng_result otrng_v3_send_message(char **newmessage,
   int err;
 
   (void)tlvs;
-  
+
   if (!conn) {
     return OTRNG_ERROR;
   }
@@ -705,7 +701,7 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
   char *newmessage = NULL;
 
   (void)tlvs;
-  
+
   *to_send = NULL;
 
   if (!conn) {

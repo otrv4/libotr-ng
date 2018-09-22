@@ -251,7 +251,7 @@ void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
 
 void test_otrng_dake_non_interactive_auth_message_deserializes(
     dake_fixture_s *f, gconstpointer data) {
-  (void) data;
+  (void)data;
   dake_non_interactive_auth_message_p expected;
   setup_non_interactive_auth_message(expected, f);
 

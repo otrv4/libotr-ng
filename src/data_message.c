@@ -125,7 +125,7 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
   uint8_t message_type = 0;
 
   (void)nread;
-  
+
   if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read)) {
     return OTRNG_ERROR;
   }

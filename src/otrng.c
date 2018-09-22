@@ -1153,7 +1153,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
 
   (void)response;
-  
+
   if (!prekey_profile) {
     return otrng_false;
   }

@@ -780,8 +780,8 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 
 tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
                                     receiving_ratchet_s *tmp_receiving_ratchet,
-                                    const unsigned int until, const int max_skip,
-                                    const char ratchet_type,
+                                    const unsigned int until,
+                                    const int max_skip, const char ratchet_type,
                                     otrng_warning *warn) {
   uint8_t zero_buff[CHAIN_KEY_BYTES] = {0};
   goldilocks_shake256_ctx_p hd;
@@ -858,7 +858,7 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
     receiving_ratchet_s *tmp_receiving_ratchet) {
   list_element_s *current = tmp_receiving_ratchet->skipped_keys;
   (void)manager;
-  
+
   while (current) {
     skipped_keys_s *skipped_keys = current->data;
 

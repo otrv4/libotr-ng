@@ -38,7 +38,7 @@ int dh_mpi_cmp(const dh_mpi_p m1, const dh_mpi_p m2) {
 }
 
 static otrng_client_id_s create_client_id(const char *protocol,
-                                                const char *account) {
+                                          const char *account) {
   const otrng_client_id_s cid = {
       .protocol = protocol,
       .account = account,

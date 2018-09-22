@@ -230,10 +230,9 @@ tstatic otrng_result copy_fragment_to_context(fragment_context_s *context,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
-                                               list_element_s **contexts,
-                                               const string_p message,
-                                               const uint32_t our_instance_tag) {
+INTERNAL otrng_result otrng_unfragment_message(
+    char **unfrag_message, list_element_s **contexts, const string_p message,
+    const uint32_t our_instance_tag) {
   int start = 0, end = 0;
   uint32_t fragment_identifier, sender_tag, receiver_tag;
   uint16_t i, t;

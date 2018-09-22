@@ -152,9 +152,7 @@ INTERNAL void otrng_dh_free(void) {
   dh_initialized = 0;
 }
 
-INTERNAL dh_mpi_p otrng_dh_mpi_generator(void) {
-  return DH3072_GENERATOR;
-}
+INTERNAL dh_mpi_p otrng_dh_mpi_generator(void) { return DH3072_GENERATOR; }
 
 INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
                                             const dh_private_key_p priv) {
