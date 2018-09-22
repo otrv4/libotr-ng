@@ -124,13 +124,20 @@ tstatic void received_symkey_cb_v3(const otrng_s *conv, unsigned int use,
 
   printf("\n");
 #endif
-
+  (void)conv;
+  (void)use;
+  (void)usedata;
+  (void)usedatalen;
+  (void)extra_key;
+  
   // TODO: Add a callback
 }
 
 tstatic OtrlPolicy op_policy(void *opdata, ConnContext *context) {
   // TODO: @policy should we use OTRL_POLICY_DEFAULT?;
   // TODO: @policy Should an error restart AKE?
+  (void)opdata;
+  (void)context;
   return OTRL_POLICY_ALLOW_V3 | OTRL_POLICY_WHITESPACE_START_AKE;
 }
 
@@ -139,6 +146,10 @@ tstatic void op_inject(void *opdata, const char *accountname,
                        const char *message) {
   otrng_s *otr = opdata;
 
+  (void)accountname;
+  (void)protocol;
+  (void)recipient;
+  
   if (!opdata) {
     return;
   }
@@ -152,6 +163,9 @@ tstatic void op_create_privkey(void *opdata, const char *accountname,
                                const char *protocol) {
   otrng_s *otr = opdata;
 
+  (void)accountname;
+  (void)protocol;
+  
   if (!otr) {
     return;
   }
@@ -167,6 +181,11 @@ tstatic void op_create_privkey(void *opdata, const char *accountname,
  * logged in" errors if you're wrong. */
 tstatic int op_is_logged_in(void *opdata, const char *accountname,
                             const char *protocol, const char *recipient) {
+  (void)opdata;
+  (void)accountname;
+  (void)protocol;
+  (void)recipient;
+
   // TODO: implement
   return otrng_true; /* We always think the person is logged in, otherwise it
                wont send disconnect TLVs, for example. */
@@ -174,7 +193,9 @@ tstatic int op_is_logged_in(void *opdata, const char *accountname,
 
 /* When the list of ConnContexts changes (including a change in
  * state), this is called so the UI can be updated. */
-tstatic void op_update_context_list(void *opdata) {}
+tstatic void op_update_context_list(void *opdata) {
+  (void)opdata;
+}
 
 /* A new fingerprint for the given user has been received. */
 tstatic void op_new_fingerprint(void *opdata, OtrlUserState us,
@@ -182,6 +203,11 @@ tstatic void op_new_fingerprint(void *opdata, OtrlUserState us,
                                 const char *username,
                                 unsigned char fingerprint[20]) {
   otrng_s *otr = opdata;
+
+  (void)us;
+  (void)accountname;
+  (void)protocol;
+  (void)username;
 
   if (!otr) {
     return;
@@ -191,12 +217,16 @@ tstatic void op_new_fingerprint(void *opdata, OtrlUserState us,
 }
 
 /* The list of known fingerprints has changed.  Write them to disk. */
-tstatic void op_write_fingerprints(void *opdata) {}
+tstatic void op_write_fingerprints(void *opdata) {
+  (void)opdata;
+}
 
 /* A ConnContext has entered a secure state. */
 tstatic void op_gone_secure(void *opdata, ConnContext *context) {
   otrng_s *otr = opdata;
 
+  (void)context;
+  
   if (!otr) {
     return;
   }
@@ -208,6 +238,8 @@ tstatic void op_gone_secure(void *opdata, ConnContext *context) {
 tstatic void op_gone_insecure(void *opdata, ConnContext *context) {
   otrng_s *otr = opdata;
 
+  (void)context;
+  
   if (!otr) {
     return;
   }
@@ -220,6 +252,9 @@ tstatic void op_gone_insecure(void *opdata, ConnContext *context) {
 tstatic void op_still_secure(void *opdata, ConnContext *context, int is_reply) {
   otrng_s *otr = opdata;
 
+  (void)context;
+  (void)is_reply;
+  
   if (!otr) {
     return;
   }
@@ -229,6 +264,8 @@ tstatic void op_still_secure(void *opdata, ConnContext *context, int is_reply) {
 
 /* Find the maximum message size supported by this protocol. */
 tstatic int op_max_message_size(void *opdata, ConnContext *context) {
+  (void)opdata;
+  (void)context;
   // TODO
   return 10000;
 }
@@ -237,12 +274,17 @@ tstatic int op_max_message_size(void *opdata, ConnContext *context) {
  * representation for the given account */
 tstatic const char *op_account_name(void *opdata, const char *account,
                                     const char *protocol) {
+  (void)opdata;
+  (void)account;
+  (void)protocol;
   // TODO
   return "ACCOUNT NAME";
 }
 
 /* Deallocate a string returned by account_name */
 tstatic void op_account_name_free(void *opdata, const char *account_name) {
+  (void)opdata;
+  (void)account_name;
   // TODO
 }
 
@@ -257,6 +299,8 @@ tstatic void op_received_symkey(void *opdata, ConnContext *context,
                                 const unsigned char *extra_key) {
   otrng_s *otr = opdata;
 
+  (void)context;
+  
   if (!otr) {
     return;
   }
@@ -278,23 +322,34 @@ tstatic void op_received_symkey(void *opdata, ConnContext *context,
  * 		message sent is malformed */
 tstatic const char *op_otr_error_message(void *opdata, ConnContext *context,
                                          OtrlErrorCode err_code) {
+  (void)opdata;
+  (void)context;
+  (void)err_code;
   printf("ERROR MESSAGE CB V3\n");
   return "ERROR MESSAGE";
 }
 
 /* Deallocate a string returned by otr_error_message */
-tstatic void op_otr_error_message_free(void *opdata, const char *err_msg) {}
+tstatic void op_otr_error_message_free(void *opdata, const char *err_msg) {
+  (void)opdata;
+  (void)err_msg;
+}
 
 /* Return a string that will be prefixed to any resent message. If this
  * function is not provided by the application then the default prefix,
  * "[resent]", will be used.
  * */
 tstatic const char *op_resent_msg_prefix(void *opdata, ConnContext *context) {
+  (void)opdata;
+  (void)context;
   return NULL;
 }
 
 /* Deallocate a string returned by resent_msg_prefix */
-tstatic void op_resent_msg_prefix_free(void *opdata, const char *prefix) {}
+tstatic void op_resent_msg_prefix_free(void *opdata, const char *prefix) {
+  (void)opdata;
+  (void)prefix;
+}
 
 static otrng_smp_event_t convert_smp_event(OtrlSMPEvent smp_event) {
   switch (smp_event) {
@@ -358,6 +413,8 @@ tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
                                  char *question) {
   otrng_s *otr = opdata;
 
+  (void)context;
+  
   if (!otr) {
     return;
   }
@@ -411,6 +468,10 @@ tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
 tstatic void op_handle_msg_event(void *opdata, OtrlMessageEvent msg_event,
                                  ConnContext *context, const char *message,
                                  gcry_error_t err) {
+  (void)opdata;
+  (void)context;
+  (void)message;
+  (void)err;
   switch (msg_event) {
   case OTRL_MSGEVENT_ENCRYPTION_REQUIRED:
     printf("OTRL_MSGEVENT_ENCRYPTION_REQUIRED");
@@ -470,6 +531,9 @@ tstatic void op_create_instag(void *opdata, const char *accountname,
                               const char *protocol) {
   otrng_s *otr = opdata;
 
+  (void)accountname;
+  (void)protocol;
+  
   if (!otr) {
     return;
   }
@@ -483,10 +547,20 @@ tstatic void op_create_instag(void *opdata, const char *accountname,
  * cases. */
 tstatic void op_convert_msg(void *opdata, ConnContext *context,
                             OtrlConvertType convert_type, char **dest,
-                            const char *src) {}
+                            const char *src) {
+  (void)opdata;
+  (void)context;
+  (void)convert_type;
+  (void)dest;
+  (void)src;
+}
 
 /* Deallocate a string returned by convert_msg. */
-tstatic void op_convert_free(void *opdata, ConnContext *context, char *dest) {}
+tstatic void op_convert_free(void *opdata, ConnContext *context, char *dest) {
+  (void)opdata;
+  (void)context;
+  (void)dest;
+}
 
 /* When timer_control is called, turn off any existing periodic
  * timer.
@@ -523,7 +597,10 @@ tstatic void op_convert_free(void *opdata, ConnContext *context, char *dest) {}
  * of long-past messages (the first messages of an OTR
  * conversation).
  */
-tstatic void op_timer_control(void *opdata, unsigned int interval) {}
+tstatic void op_timer_control(void *opdata, unsigned int interval) {
+  (void)opdata;
+  (void)interval;
+}
 
 // For every callback, we se opdata = otrng_s*
 // TODO: This callback adapter should be in client.c, since it is who knows
@@ -590,6 +667,8 @@ INTERNAL otrng_result otrng_v3_send_message(char **newmessage,
   char *protocol_name = NULL;
   int err;
 
+  (void)tlvs;
+  
   if (!conn) {
     return OTRNG_ERROR;
   }
@@ -625,6 +704,8 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
   char *protocol_name = NULL;
   char *newmessage = NULL;
 
+  (void)tlvs;
+  
   *to_send = NULL;
 
   if (!conn) {

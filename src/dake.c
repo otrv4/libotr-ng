@@ -888,6 +888,8 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
   uint8_t auth_mac_k[HASH_BYTES];
   uint8_t usage_auth_mac_key = 0x0C;
 
+  (void)auth;
+  
   shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, tmp_key,
                  HASH_BYTES);
 

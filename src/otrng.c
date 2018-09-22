@@ -1053,6 +1053,10 @@ API otrng_result otrng_send_offline_message(char **dst,
                                             const prekey_ensemble_s *ensemble,
                                             const char *plaintext,
                                             otrng_s *otr) {
+  (void)dst;
+  (void)ensemble;
+  (void)plaintext;
+  (void)otr;
   // This was supposed to send the non interactive auth AND the encrypted data
   // message on the same network message.
   return OTRNG_ERROR;
@@ -1148,6 +1152,8 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   size_t t_len = 0;
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
 
+  (void)response;
+  
   if (!prekey_profile) {
     return otrng_false;
   }

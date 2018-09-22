@@ -28,6 +28,7 @@ void test_dake_identity_message_serializes(dake_fixture_s *f,
   dh_keypair_p dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
+  (void)data;
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 
@@ -93,6 +94,7 @@ void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
   dh_keypair_p dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+  (void)data;
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 
@@ -135,6 +137,7 @@ void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
   dh_keypair_p dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+  (void)data;
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 

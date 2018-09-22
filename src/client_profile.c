@@ -142,6 +142,7 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
     const client_profile_s *client_profile) {
   size_t w = 0, versions_len;
   uint32_t num_fields = 0;
+  (void)dst_len;
 
   // TODO: Check for buffer overflows
 

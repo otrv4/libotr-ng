@@ -73,7 +73,7 @@ tstatic void initialize_fragment_context(fragment_context_s *context) {
 }
 
 tstatic void free_fragments_in_context(fragment_context_s *context) {
-  int i;
+  unsigned int i;
 
   if (!context->fragments) {
     return;
@@ -191,7 +191,7 @@ tstatic otrng_bool is_fragment(const string_p message) {
 }
 
 tstatic otrng_result initialize_fragments(fragment_context_s *context) {
-  int i;
+  unsigned int i;
 
   context->fragments = otrng_xmalloc(sizeof(string_p) * context->total);
 
@@ -205,7 +205,7 @@ tstatic otrng_result initialize_fragments(fragment_context_s *context) {
 tstatic otrng_result join_fragments(char **unfrag_message,
                                     fragment_context_s *context) {
   char *end_message;
-  int i;
+  unsigned int i;
 
   *unfrag_message = otrng_xmalloc(context->total_message_len + 1);
 
@@ -233,7 +233,7 @@ tstatic otrng_result copy_fragment_to_context(fragment_context_s *context,
 INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
                                                list_element_s **contexts,
                                                const string_p message,
-                                               const int our_instance_tag) {
+                                               const uint32_t our_instance_tag) {
   int start = 0, end = 0;
   uint32_t fragment_identifier, sender_tag, receiver_tag;
   uint16_t i, t;

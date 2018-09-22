@@ -287,8 +287,8 @@ INTERNAL otrng_result otrng_key_manager_ratcheting_init(key_manager_s *manager,
  * @param [manager]     The key manager.
  */
 INTERNAL otrng_result otrng_key_get_skipped_keys(
-    msg_enc_key_p enc_key, msg_mac_key_p mac_key, int ratchet_id,
-    int message_id, key_manager_s *manager,
+    msg_enc_key_p enc_key, msg_mac_key_p mac_key, unsigned int ratchet_id,
+    unsigned int message_id, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet);
 
 /**

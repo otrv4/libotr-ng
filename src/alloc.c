@@ -24,9 +24,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void (*oom_handler)() = NULL;
+static void (*oom_handler)(void) = NULL;
 
-API void otrng_register_out_of_memory_handler(void (*handler)()) {
+API void otrng_register_out_of_memory_handler(void (*handler)(void)) {
   oom_handler = handler;
 }
 

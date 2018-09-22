@@ -37,7 +37,7 @@ int dh_mpi_cmp(const dh_mpi_p m1, const dh_mpi_p m2) {
   return gcry_mpi_cmp(m1, m2);
 }
 
-static const otrng_client_id_s create_client_id(const char *protocol,
+static otrng_client_id_s create_client_id(const char *protocol,
                                                 const char *account) {
   const otrng_client_id_s cid = {
       .protocol = protocol,
@@ -48,6 +48,7 @@ static const otrng_client_id_s create_client_id(const char *protocol,
 
 static otrng_shared_session_state_s
 get_shared_session_state_cb(const otrng_s *conv) {
+  (void)conv;
   otrng_shared_session_state_s ret = {
       .identifier1 = otrng_xstrdup("alice"),
       .identifier2 = otrng_xstrdup("bob"),
@@ -84,6 +85,8 @@ static void create_client_profile_cb(struct otrng_client_s *client,
       *otrng_client_get_forging_key(client),
       otrng_client_get_client_profile_exp_time(client));
 
+  (void)client_opdata;
+
   if (!instance_tag || !keypair || !profile) {
     return;
   }
@@ -97,6 +100,9 @@ static void create_prekey_profile_cb(struct otrng_client_s *client,
                                      const otrng_client_id_s client_opdata) {
   otrng_prekey_profile_s *profile =
       otrng_client_build_default_prekey_profile(client);
+
+  (void)client_opdata;
+
   otrng_client_add_prekey_profile(client, profile);
 
   otrng_prekey_profile_free(profile);
@@ -134,6 +140,7 @@ create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
 }
 
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
+  (void)data;
   otrng_fixture->gs = otrng_global_state_new(test_callbacks);
   otrng_fixture->client =
       otrng_client_new(create_client_id("proto-test", "account"));
@@ -175,6 +182,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
 
 void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture,
                             gconstpointer data) {
+  (void)data;
   otrng_global_state_free(otrng_fixture->client->global_state);
   otrng_fixture->client->global_state = NULL;
 
@@ -198,6 +206,7 @@ typedef struct dake_fixture_s {
 } dake_fixture_s, dake_fixture_p[1];
 
 static void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data) {
+  (void)user_data;
   f->keypair = otrng_keypair_new();
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1}; // non-random private key on purpose
@@ -221,6 +230,7 @@ static void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data) {
 }
 
 static void dake_fixture_teardown(dake_fixture_s *f, gconstpointer user_data) {
+  (void)user_data;
   otrng_keypair_free(f->keypair);
   f->keypair = NULL;
 
@@ -348,6 +358,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
 }
 
 static otrng_bool test_should_not_heartbeat(int last_sent) {
+  (void)last_sent;
   return otrng_false;
 }
 

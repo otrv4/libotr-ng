@@ -60,7 +60,7 @@ INTERNAL otrng_result otrng_fragment_message(int max_size,
 INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
                                                list_element_s **contexts,
                                                const string_p message,
-                                               const int our_instance_tag);
+                                               const uint32_t our_instance_tag);
 
 INTERNAL otrng_result otrng_expire_fragments(time_t now,
                                              uint32_t expiration_time,

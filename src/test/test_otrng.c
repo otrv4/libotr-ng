@@ -28,6 +28,7 @@ void test_otrng_builds_query_message(otrng_fixture_s *otrng_fixture,
   const char *message = "And some random invitation text.";
 
   char *query_message = NULL;
+  (void)data;
   otrng_assert_is_success(
       otrng_build_query_message(&query_message, message, otrng_fixture->otr));
 
@@ -42,6 +43,7 @@ void test_otrng_builds_query_message_v34(otrng_fixture_s *otrng_fixture,
   const char *message = "And some random invitation text.";
 
   char *query_message = NULL;
+  (void)data;
   otrng_assert_is_success(
       otrng_build_query_message(&query_message, message, otrng_fixture->v34));
 
@@ -58,6 +60,7 @@ void test_otrng_builds_whitespace_tag(otrng_fixture_s *otrng_fixture,
   const char *message = "And some random invitation text.";
 
   char *whitespace_tag = NULL;
+  (void)data;
   otrng_assert_is_success(
       otrng_build_whitespace_tag(&whitespace_tag, message, otrng_fixture->otr));
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
@@ -72,6 +75,7 @@ void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
   const char *message = "And some random invitation text";
 
   char *whitespace_tag = NULL;
+  (void)data;
   otrng_assert_is_success(
       otrng_build_whitespace_tag(&whitespace_tag, message, otrng_fixture->v34));
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
@@ -80,6 +84,7 @@ void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
 
 void test_otrng_receives_plaintext_without_ws_tag_on_start(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
+  (void)data;
   otrng_response_s *response = otrng_response_new();
   otrng_warning warn = OTRNG_WARN_NONE;
   otrng_assert_is_success(otrng_receive_message(
@@ -92,6 +97,7 @@ void test_otrng_receives_plaintext_without_ws_tag_on_start(
 
 void test_otrng_receives_plaintext_without_ws_tag_not_on_start(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
+  (void)data;
   otrng_fixture->otr->state = OTRNG_STATE_WAITING_AUTH_I;
   otrng_warning warn = OTRNG_WARN_NONE;
 
@@ -114,6 +120,7 @@ void test_otrng_receives_plaintext_with_ws_tag(otrng_fixture_s *otrng_fixture,
 
   otrng_result res =
       otrng_receive_message(response, &warn, message, otrng_fixture->otr);
+  (void)data;
   otrng_assert_is_success(res);
   g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
   otrng_assert(response->to_send);
@@ -130,6 +137,7 @@ void test_otrng_receives_plaintext_with_ws_tag_after_text(
       "Some random invitation text. \t  \t\t\t\t \t \t \t    \t\t \t  ";
   otrng_warning warn = OTRNG_WARN_NONE;
 
+  (void)data;
   otrng_assert_is_success(
       otrng_receive_message(response, &warn, message, otrng_fixture->otr));
   g_assert_cmpstr(response->to_display, ==, "Some random invitation text.");
@@ -146,6 +154,7 @@ void test_otrng_receives_plaintext_with_ws_tag_v3(
   const string_p message =
       " \t  \t\t\t\t \t \t \t    \t\t  \t\tAnd some random invitation text.";
   otrng_warning warn = OTRNG_WARN_NONE;
+  (void)data;
   otrng_assert_is_success(
       otrng_receive_message(response, &warn, message, otrng_fixture->v3));
 
@@ -162,6 +171,7 @@ void test_otrng_receives_query_message(otrng_fixture_s *otrng_fixture,
                                        gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   otrng_warning warn = OTRNG_WARN_NONE;
+  (void)data;
   otrng_assert_is_success(otrng_receive_message(
       response, &warn, "?OTRv4? And some random invitation text.",
       otrng_fixture->otr));
@@ -177,6 +187,7 @@ void test_otrng_receives_query_message_v3(otrng_fixture_s *otrng_fixture,
                                           gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   otrng_warning warn = OTRNG_WARN_NONE;
+  (void)data;
   otrng_assert_is_success(otrng_receive_message(
       response, &warn, "?OTRv3? And some random invitation text.",
       otrng_fixture->v3));
@@ -191,6 +202,7 @@ void test_otrng_receives_identity_message_invalid_on_start(
   const char *identity_message = "?OTR:";
   otrng_warning warn = OTRNG_WARN_NONE;
   otrng_response_s *response = otrng_response_new();
+  (void)data;
   otrng_assert_is_success(otrng_receive_message(
       response, &warn, identity_message, otrng_fixture->otr));
 

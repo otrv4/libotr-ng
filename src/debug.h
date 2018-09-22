@@ -94,5 +94,8 @@ static inline void otrng_memdump(const uint8_t *src, size_t len) {
 }
 
 #else
-static inline void otrng_memdump(const uint8_t *src, size_t len) {}
+static inline void otrng_memdump(const uint8_t *src, size_t len) {
+  (void)src;
+  (void)len;
+}
 #endif

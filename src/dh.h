@@ -92,7 +92,7 @@ API void otrng_dh_private_key_debug_print(FILE *, dh_private_key_p);
 
 #ifdef OTRNG_DH_PRIVATE
 
-INTERNAL const dh_mpi_p otrng_dh_mpi_generator(void);
+INTERNAL dh_mpi_p otrng_dh_mpi_generator(void);
 
 #endif
 

@@ -310,7 +310,7 @@ API otrng_result otrng_global_state_prekey_messages_write_FILEp(
 
 API otrng_result otrng_global_state_private_key_v4_read_FILEp(
     otrng_global_state_s *gs, FILE *privf,
-    const otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   if (!privf) {
     return OTRNG_ERROR;
   }
@@ -336,7 +336,7 @@ API otrng_result otrng_global_state_private_key_v4_read_FILEp(
 
 API otrng_result otrng_global_state_forging_key_read_FILEp(
     otrng_global_state_s *gs, FILE *f,
-    const otrng_client_id_s (*read_client_id_for_key)(FILE *f)) {
+    otrng_client_id_s (*read_client_id_for_key)(FILE *f)) {
   if (!f) {
     return OTRNG_ERROR;
   }
@@ -361,7 +361,7 @@ API otrng_result otrng_global_state_forging_key_read_FILEp(
 
 API otrng_result otrng_global_state_client_profile_read_FILEp(
     otrng_global_state_s *gs, FILE *profile_filep,
-    const otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   if (!profile_filep) {
     return OTRNG_ERROR;
   }
@@ -386,7 +386,7 @@ API otrng_result otrng_global_state_client_profile_read_FILEp(
 
 API otrng_result otrng_global_state_shared_prekey_read_FILEp(
     otrng_global_state_s *gs, FILE *shared_prekeyf,
-    const otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   if (!shared_prekeyf) {
     return OTRNG_ERROR;
   }
@@ -412,7 +412,7 @@ API otrng_result otrng_global_state_shared_prekey_read_FILEp(
 
 API otrng_result otrng_global_state_prekey_profile_read_FILEp(
     otrng_global_state_s *gs, FILE *profile_filep,
-    const otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   if (!profile_filep) {
     return OTRNG_ERROR;
   }
@@ -436,7 +436,7 @@ API otrng_result otrng_global_state_prekey_profile_read_FILEp(
 
 API otrng_result otrng_global_state_prekeys_read_FILEp(
     otrng_global_state_s *gs, FILE *prekey_filep,
-    const otrng_client_id_s (*read_client_id_for_prekey)(FILE *filep)) {
+    otrng_client_id_s (*read_client_id_for_prekey)(FILE *filep)) {
   if (!prekey_filep) {
     return OTRNG_ERROR;
   }

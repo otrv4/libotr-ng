@@ -121,6 +121,7 @@ void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
   dh_keypair_p dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+  (void)d;
   otrng_ecdh_keypair_generate(ecdh, sym);
   otrng_assert_is_success(otrng_dh_keypair_generate(dh));
 
@@ -186,6 +187,7 @@ void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
 
   uint8_t *serialized = NULL;
   size_t len = 0;
+  (void)data;
   otrng_assert_is_success(
       otrng_dake_non_interactive_auth_message_asprintf(&serialized, &len, msg));
 
@@ -249,7 +251,7 @@ void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
 
 void test_otrng_dake_non_interactive_auth_message_deserializes(
     dake_fixture_s *f, gconstpointer data) {
-
+  (void) data;
   dake_non_interactive_auth_message_p expected;
   setup_non_interactive_auth_message(expected, f);
 

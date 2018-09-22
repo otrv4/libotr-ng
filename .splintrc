@@ -48,6 +48,7 @@
 -exportlocal
 -fcnuse
 -fixedformalarray
+-formatcode
 -fullinitblock
 -globstate
 -immediatetrans

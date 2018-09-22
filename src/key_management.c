@@ -780,7 +780,7 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 
 tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
                                     receiving_ratchet_s *tmp_receiving_ratchet,
-                                    const int until, const int max_skip,
+                                    const unsigned int until, const int max_skip,
                                     const char ratchet_type,
                                     otrng_warning *warn) {
   uint8_t zero_buff[CHAIN_KEY_BYTES] = {0};
@@ -853,10 +853,12 @@ tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
    MKmac = KDF_1(usage_mac_key || MKenc, 64).
 */
 INTERNAL otrng_result otrng_key_get_skipped_keys(
-    msg_enc_key_p enc_key, msg_mac_key_p mac_key, int ratchet_id,
-    int message_id, key_manager_s *manager,
+    msg_enc_key_p enc_key, msg_mac_key_p mac_key, unsigned int ratchet_id,
+    unsigned int message_id, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet) {
   list_element_s *current = tmp_receiving_ratchet->skipped_keys;
+  (void)manager;
+  
   while (current) {
     skipped_keys_s *skipped_keys = current->data;
 
@@ -953,7 +955,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   uint8_t *ser_mac_keys;
   msg_mac_key_p mac_key;
   msg_enc_key_p enc_key;
-  int i;
+  size_t i;
 
   if (serlen != 0) {
     ser_mac_keys = otrng_xmalloc(serlen);

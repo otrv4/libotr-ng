@@ -131,7 +131,7 @@ INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data, size_t pos,
                                                          list_element_s *head) {
   list_element_s *tmp;
   list_element_s *n = list_new();
-  int i;
+  size_t i;
 
   if (!n) {
     return NULL;

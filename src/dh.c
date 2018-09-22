@@ -152,7 +152,7 @@ INTERNAL void otrng_dh_free(void) {
   dh_initialized = 0;
 }
 
-INTERNAL const dh_mpi_p otrng_dh_mpi_generator(void) {
+INTERNAL dh_mpi_p otrng_dh_mpi_generator(void) {
   return DH3072_GENERATOR;
 }
 
