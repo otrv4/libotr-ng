@@ -117,8 +117,8 @@ static otrng_result create_fragment_message(char **dst, const char *piece,
   *dst = otrng_xmalloc(FRAGMENT_HEADER_LEN + piece_len + 1);
 
   res = snprintf(*dst, FRAGMENT_HEADER_LEN + piece_len + 1, FRAGMENT_FORMAT,
-           identifier, our_instance, their_instance, current, total,
-           (int)piece_len, piece);
+                 identifier, our_instance, their_instance, current, total,
+                 (int)piece_len, piece);
   if (res < 0) {
     return OTRNG_ERROR;
   }

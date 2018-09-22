@@ -22,9 +22,9 @@
 
 #include "v3.h"
 #include "alloc.h"
+#include "debug.h"
 #include "messaging.h"
 #include "otrng.h"
-#include "debug.h"
 
 tstatic void create_privkey_cb_v3(const otrng_v3_conn_s *conn) {
   if (!conn || !conn->client) {
