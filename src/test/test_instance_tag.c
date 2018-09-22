@@ -26,8 +26,7 @@ void test_instance_tag_generates_tag_when_file_empty() {
   const char *alice_coy_account = "alice@coy.im";
   const char *xmpp_protocol = "XMPP";
 
-  FILE *tmpFILEp = NULL;
-  tmpFILEp = tmpfile();
+  FILE *tmpFILEp = tmpfile();
 
   otrng_instag_s *instag = otrng_xmalloc(sizeof(otrng_instag_s));
   otrng_assert(otrng_instag_get(instag, alice_coy_account, xmpp_protocol,
@@ -85,8 +84,7 @@ void test_instance_tag_generates_tag_when_file_is_full() {
   const char *irc_protocol = "IRC";
   unsigned int icq_instag_value = 0x9abcdef0;
 
-  FILE *tmpFILEp = NULL;
-  tmpFILEp = tmpfile();
+  FILE *tmpFILEp = tmpfile();
 
   fprintf(tmpFILEp, "%s\t%s\t%08x\n", icq_alice_account, icq_protocol,
           icq_instag_value);

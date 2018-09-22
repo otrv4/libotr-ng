@@ -68,8 +68,7 @@ void test_global_state_key_management(void) {
       state, create_client_id("otr", charlie_account)));
 
   /* Generate file */
-  FILE *keys = NULL;
-  keys = tmpfile();
+  FILE *keys = tmpfile();
 
   fputs("charlie@xmpp\n"
         "RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+"
@@ -115,8 +114,7 @@ void test_global_state_shared_prekey_management(void) {
       state, create_client_id("otr", charlie_account)));
 
   /* Generate file */
-  FILE *keys = NULL;
-  keys = tmpfile();
+  FILE *keys = tmpfile();
 
   fputs("charlie@xmpp\n"
         "mgRi+jOWSHludTU/v0QE/"
@@ -174,8 +172,7 @@ void test_global_state_client_profile_management(void) {
       state, create_client_id("otr", charlie_account)));
 
   /* Generate file */
-  FILE *client_profile = NULL;
-  client_profile = tmpfile();
+  FILE *client_profile = tmpfile();
 
   fputs("charlie@xmpp\n"
         "AAAABQABAAAABAACABAFcsFMsTB3RLkvO"
@@ -252,8 +249,7 @@ void test_global_state_prekey_profile_management(void) {
       state, create_client_id("otr", charlie_account)));
 
   /* Generate file */
-  FILE *prekey_profile = NULL;
-  prekey_profile = tmpfile();
+  FILE *prekey_profile = tmpfile();
 
   fputs("charlie@xmpp\n"
         "26FP8QAAAABbxy5lABFQAQ3a/"
@@ -310,8 +306,7 @@ void test_global_state_prekey_message_management(void) {
       state, create_client_id("otr", charlie_account)));
 
   /* Generate file */
-  FILE *prekey = NULL;
-  prekey = tmpfile();
+  FILE *prekey = tmpfile();
 
   fputs("charlie@xmpp\n"
         "f139c0c4\n"
@@ -374,8 +369,7 @@ void test_instance_tag_api(void) {
       otrng_client_new(create_client_id("otr", alice_account));
   alice->global_state = otrng_global_state_new(test_callbacks);
 
-  FILE *instagFILEp = NULL;
-  instagFILEp = tmpfile();
+  FILE *instagFILEp = tmpfile();
 
   fprintf(instagFILEp, "%s\t%s\t%08x\n", alice_account, alice_protocol,
           instance_tag);

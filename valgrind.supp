@@ -501,3 +501,20 @@
    fun:random_bytes
    ...
 }
+{
+   osx_libcorecrypto_1
+   Memcheck:Cond
+   fun:generate_block
+   fun:drbg_update
+   ...
+   fun:otrng_fixture_set_up
+   ...
+}
+{
+   osx_tmpfile
+   ...
+   fun:tmpfile
+   ...
+   fun:g_test_run
+   fun:main
+}
