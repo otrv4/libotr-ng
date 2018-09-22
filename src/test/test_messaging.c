@@ -32,8 +32,8 @@ static const otrng_client_id_s read_client_id_for_privf(FILE *privf) {
   char *line2 = fgets(line, 50, privf);
   if (line2 != NULL) {
     len = strlen(line2);
-    free(line);
   }
+  free(line);
 
   otrng_client_id_s result = {
       .protocol = NULL,
