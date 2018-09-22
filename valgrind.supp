@@ -528,3 +528,10 @@
    fun:g_test_run
    fun:main
 }
+{
+   opt_memchr_3
+   Memcheck:Addr16
+   fun:_platform_memchr$VARIANT$Base
+   fun:deserialize_received_tlvs
+   ...
+}
