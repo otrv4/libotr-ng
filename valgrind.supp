@@ -512,6 +512,7 @@
 }
 {
    osx_tmpfile
+   Memcheck:Value8
    ...
    fun:tmpfile
    ...
