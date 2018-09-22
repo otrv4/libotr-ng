@@ -72,11 +72,9 @@ PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.18])
 PKG_CHECK_MODULES([LIBGOLDILOCKS], [libgoldilocks >= 0.0.1])
 PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 1.0.0])
 AM_PATH_LIBOTR(4.0.0,,AC_MSG_ERROR(libotr 4.x >= 4.0.0 is required.))
-# TODO: this seems to be not correctly working on Darwin.
-# We probably need the config script
-AM_PATH_LIBGCRYPT(1:1.8.0,,
+AM_PATH_LIBGCRYPT(1:1.6.0,
   [AC_DEFINE([HAVE_GCRYPT], [1], [Use GCRYPT])],
-  [AM_PATH_LIBGCRYPT(1:1.6.0,, AC_MSG_ERROR(libgcrypt 1.6.0 or newer is required.))]
+  AC_MSG_ERROR(libgcrypt 1.6.0 or newer is required.)
 )
 
 dnl Checks for header files.
@@ -92,8 +90,14 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
-AX_CHECK_COMPILE_FLAG([-std=c99],[AX_APPEND_FLAG([-std=c99])],[])
-AX_CHECK_COMPILE_FLAG([-pedantic-errors],[AX_APPEND_FLAG([-pedantic-errors])],[])
+AX_CHECK_COMPILE_FLAG([-std=c99],
+    [AX_APPEND_FLAG([-std=c99])],
+    [AC_MSG_NOTICE(No support for -std=c99 flag)]
+)
+AX_CHECK_COMPILE_FLAG([-pedantic-errors],
+    [AX_APPEND_FLAG([-pedantic-errors])],
+    [AC_MSG_NOTICE(No support for -pedantic-errors flag)]
+)
 
 AX_CFLAGS_GCC_OPTION([-Wall])
 # AX_CFLAGS_GCC_OPTION([-W]) Uncomment this to allow Wextra flag
