@@ -99,7 +99,7 @@ void test_otrng_dake_prekey_message_deserializes() {
   otrng_assert_is_success(otrng_dake_prekey_message_asprintf(
       &serialized, &serialized_len, prekey_message));
 
-  dake_prekey_message_s *deserialized = malloc(sizeof(dake_prekey_message_s));
+  dake_prekey_message_s *deserialized = otrng_xmalloc(sizeof(dake_prekey_message_s));
   otrng_assert_is_success(otrng_dake_prekey_message_deserialize(
       deserialized, serialized, serialized_len, NULL));
 

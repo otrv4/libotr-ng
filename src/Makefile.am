@@ -20,7 +20,8 @@
 
 lib_LTLIBRARIES = libotr-ng.la
 
-libotr_ng_la_SOURCES = auth.c \
+libotr_ng_la_SOURCES = alloc.c \
+	         auth.c \
 		     base64.c \
 		     client.c \
 		     client_callbacks.c \

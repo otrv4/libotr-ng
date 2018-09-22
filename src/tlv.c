@@ -23,6 +23,7 @@
 
 #define OTRNG_TLV_PRIVATE
 
+#include "alloc.h"
 #include "deserialize.h"
 #include "random.h"
 #include "serialize.h"
@@ -76,11 +77,7 @@ tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *read) {
     return NULL;
   }
 
-  tlv->data = malloc(tlv->len);
-  if (!tlv->data) {
-    otrng_tlv_free(tlv);
-    return NULL;
-  }
+  tlv->data = otrng_xmalloc(tlv->len);
 
   memcpy(tlv->data, cursor, tlv->len);
   cursor += tlv->len;
@@ -157,10 +154,7 @@ INTERNAL void otrng_tlv_list_free(tlv_list_s *head) {
 
 INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
                               const uint8_t *data) {
-  tlv_s *tlv = malloc(sizeof(tlv_s));
-  if (!tlv) {
-    return NULL;
-  }
+  tlv_s *tlv = otrng_xmalloc(sizeof(tlv_s));
 
   tlv->type = type;
   tlv->len = len;
@@ -172,11 +166,7 @@ INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
       return NULL;
     }
 
-    tlv->data = malloc(tlv->len);
-    if (!tlv->data) {
-      otrng_tlv_free(tlv);
-      return NULL;
-    }
+    tlv->data = otrng_xmalloc(tlv->len);
     memcpy(tlv->data, data, tlv->len);
   }
 
@@ -188,11 +178,8 @@ INTERNAL tlv_s *otrng_tlv_disconnected_new(void) {
 }
 
 INTERNAL tlv_s *otrng_tlv_padding_new(size_t len) {
-  uint8_t *data = malloc(len);
+  uint8_t *data = otrng_xmalloc(len);
   tlv_s *tlv;
-  if (!data) {
-    return NULL;
-  }
 
   memset(data, 0, len);
   tlv = otrng_tlv_new(OTRNG_TLV_PADDING, len, data);
@@ -207,10 +194,7 @@ INTERNAL tlv_list_s *otrng_tlv_list_one(tlv_s *tlv) {
     return NULL;
   }
 
-  tlvs = malloc(sizeof(tlv_list_s));
-  if (!tlvs) {
-    return NULL;
-  }
+  tlvs = otrng_xmalloc(sizeof(tlv_list_s));
 
   tlvs->data = tlv;
   tlvs->next = NULL;

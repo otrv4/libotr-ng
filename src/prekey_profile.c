@@ -23,6 +23,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "alloc.h"
 #include "deserialize.h"
 #include "instance_tag.h"
 #include "serialize.h"
@@ -148,10 +149,7 @@ tstatic otrng_result otrng_prekey_profile_body_asprint(
     return OTRNG_ERROR;
   }
 
-  buff = malloc(size);
-  if (!buff) {
-    return OTRNG_ERROR;
-  }
+  buff = otrng_xmalloc(size);
 
   written = otrng_prekey_profile_body_serialize(buff, size, profile);
   if (written == 0) {
@@ -171,12 +169,8 @@ tstatic otrng_result otrng_prekey_profile_body_asprint(
 INTERNAL otrng_result otrng_prekey_profile_asprint(
     uint8_t **dst, size_t *nbytes, otrng_prekey_profile_s *profile) {
   size_t size = PREKEY_PROFILE_BODY_BYTES + sizeof(eddsa_signature_p);
-  uint8_t *buff = malloc(size);
+  uint8_t *buff = otrng_xmalloc(size);
   size_t written;
-
-  if (!buff) {
-    return OTRNG_ERROR;
-  }
 
   written = otrng_prekey_profile_body_serialize(buff, PREKEY_PROFILE_BODY_BYTES,
                                                 profile);
@@ -229,10 +223,7 @@ otrng_prekey_profile_build(uint32_t instance_tag,
     return NULL;
   }
 
-  prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
-  if (!prekey_profile) {
-    return NULL;
-  }
+  prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
 
   prekey_profile->instance_tag = instance_tag;
 

@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "alloc.h"
 #include "shared.h"
 #include "str.h"
 
@@ -37,10 +38,7 @@ static inline /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
     return otrng_strndup("(NULL)", 6);
   }
   /* each char is represented by "0x00, " */
-  buff = malloc(s);
-  if (!s) {
-    return NULL;
-  }
+  buff = otrng_xmalloc(s);
 
   cursor = buff;
 

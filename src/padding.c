@@ -18,6 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "alloc.h"
 #include "padding.h"
 #include "client.h"
 #include "tlv.h"
@@ -47,11 +48,7 @@ INTERNAL otrng_result generate_padding(uint8_t **dst, size_t *dstlen,
   }
 
   *dstlen = padding_tlv->len + 4;
-  *dst = malloc(*dstlen);
-  if (!*dst) {
-    otrng_tlv_free(padding_tlv);
-    return OTRNG_ERROR;
-  }
+  *dst = otrng_xmalloc(*dstlen);
 
   ret = otrng_tlv_serialize(*dst, padding_tlv);
   otrng_tlv_free(padding_tlv);

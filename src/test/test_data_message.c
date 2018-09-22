@@ -75,7 +75,7 @@ static data_message_s *set_up_data_msg() {
   otrng_assert(!err);
 
   memset(data_msg->nonce, 0xF, sizeof(data_msg->nonce));
-  data_msg->enc_msg = malloc(3);
+  data_msg->enc_msg = otrng_xmalloc(3);
   memset(data_msg->enc_msg, 0xE, 3);
   data_msg->enc_msg_len = 3;
 

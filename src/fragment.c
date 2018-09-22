@@ -29,6 +29,7 @@
 
 #define OTRNG_FRAGMENT_PRIVATE
 
+#include "alloc.h"
 #include "fragment.h"
 #include "list.h"
 
@@ -38,10 +39,7 @@
 #define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
 
 API otrng_message_to_send_s *otrng_message_new() {
-  otrng_message_to_send_s *message = malloc(sizeof(otrng_message_to_send_s));
-  if (!message) {
-    return NULL;
-  }
+  otrng_message_to_send_s *message = otrng_xmalloc(sizeof(otrng_message_to_send_s));
 
   message->pieces = NULL;
   message->total = 0;
@@ -92,11 +90,7 @@ tstatic void reset_fragment_context(fragment_context_s *context) {
 }
 
 INTERNAL /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
-  fragment_context_s *context = malloc(sizeof(fragment_context_s));
-  if (!context) {
-    return NULL;
-  }
-
+  fragment_context_s *context = otrng_xmalloc(sizeof(fragment_context_s));
   initialize_fragment_context(context);
   return context;
 }
@@ -118,10 +112,7 @@ static otrng_result create_fragment_message(char **dst, const char *piece,
     return OTRNG_ERROR;
   }
 
-  *dst = malloc(FRAGMENT_HEADER_LEN + piece_len + 1);
-  if (!*dst) {
-    return OTRNG_ERROR;
-  }
+  *dst = otrng_xmalloc(FRAGMENT_HEADER_LEN + piece_len + 1);
 
   snprintf(*dst, FRAGMENT_HEADER_LEN + piece_len + 1, FRAGMENT_FORMAT,
            identifier, our_instance, their_instance, current, total,
@@ -144,10 +135,7 @@ init_message_to_send_with_total(otrng_message_to_send_s *fragments, int total) {
   fragments->total = total;
 
   pieces_len = fragments->total * sizeof(string_p);
-  fragments->pieces = malloc(pieces_len);
-  if (!fragments->pieces) {
-    return OTRNG_ERROR;
-  }
+  fragments->pieces = otrng_xmalloc(pieces_len);
 
   for (i = 0; i < fragments->total; i++) {
     fragments->pieces[i] = NULL;
@@ -204,10 +192,7 @@ tstatic otrng_bool is_fragment(const string_p message) {
 tstatic otrng_result initialize_fragments(fragment_context_s *context) {
   int i;
 
-  context->fragments = malloc(sizeof(string_p) * context->total);
-  if (!context->fragments) {
-    return OTRNG_ERROR;
-  }
+  context->fragments = otrng_xmalloc(sizeof(string_p) * context->total);
 
   for (i = 0; i < context->total; i++) {
     context->fragments[i] = NULL;
@@ -221,10 +206,7 @@ tstatic otrng_result join_fragments(char **unfrag_message,
   char *end_message;
   int i;
 
-  *unfrag_message = malloc(context->total_message_len + 1);
-  if (!*unfrag_message) {
-    return OTRNG_ERROR;
-  }
+  *unfrag_message = otrng_xmalloc(context->total_message_len + 1);
 
   end_message = *unfrag_message;
   for (i = 0; i < context->total; i++) {
@@ -238,10 +220,7 @@ tstatic otrng_result copy_fragment_to_context(fragment_context_s *context,
                                               unsigned short i,
                                               const string_p message,
                                               uint32_t fragment_len) {
-  char *fragment = malloc(fragment_len + 1);
-  if (!fragment) {
-    return OTRNG_ERROR;
-  }
+  char *fragment = otrng_xmalloc(fragment_len + 1);
 
   memcpy(fragment, message, fragment_len);
   fragment[fragment_len] = '\0';

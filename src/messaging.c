@@ -25,16 +25,14 @@
 #define OTRNG_MESSAGING_PRIVATE
 #define OTRNG_PERSISTENCE_PRIVATE
 
+#include "alloc.h"
 #include "messaging.h"
 
 #include "persistence.h"
 
 API otrng_global_state_s *
 otrng_global_state_new(const otrng_client_callbacks_s *cb) {
-  otrng_global_state_s *gs = malloc(sizeof(otrng_global_state_s));
-  if (!gs) {
-    return NULL;
-  }
+  otrng_global_state_s *gs = otrng_xmalloc(sizeof(otrng_global_state_s));
 
   gs->clients = NULL;
   gs->callbacks = cb;
@@ -494,10 +492,7 @@ static size_t debug_print_ignores_cap;
 
 API void otrng_add_debug_print_ignore(const char *ign) {
   if (debug_print_ignores == NULL) {
-    debug_print_ignores = malloc(7 * sizeof(char *));
-    if (!debug_print_ignores) {
-      return;
-    }
+    debug_print_ignores = otrng_xmalloc(7 * sizeof(char *));
 
     debug_print_ignores_len = 0;
     debug_print_ignores_cap = 7;

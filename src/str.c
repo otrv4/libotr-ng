@@ -23,6 +23,7 @@
 
 #define OTRNG_STR_PRIVATE
 
+#include "alloc.h"
 #include "str.h"
 
 INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len) {
@@ -37,11 +38,7 @@ INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len) {
     s_len = strlen(s);
   }
 
-  new = malloc(s_len + 1);
-  if (!new) {
-    return NULL;
-  }
-
+  new = otrng_xmalloc(s_len + 1);
   ret = memcpy(new, s, s_len + 1);
   ret[s_len] = 0;
 
@@ -59,11 +56,7 @@ INTERNAL /*@null@*/ void *otrng_memdup(const void *s, const size_t len) {
     return NULL;
   }
 
-  d = malloc(len);
-  if (!d) {
-    return NULL;
-  }
-
+  d = otrng_xmalloc(len);
   return memcpy(d, s, len);
 }
 

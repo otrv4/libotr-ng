@@ -26,6 +26,7 @@
 
 #define OTRNG_DESERIALIZE_PRIVATE
 
+#include "alloc.h"
 #include "deserialize.h"
 #include "mpi.h"
 
@@ -123,10 +124,7 @@ INTERNAL otrng_result otrng_deserialize_data(uint8_t **dst, size_t *dstlen,
     return OTRNG_ERROR;
   }
 
-  t = malloc(s);
-  if (!t) {
-    return OTRNG_ERROR;
-  }
+  t = otrng_xmalloc(s);
 
   memcpy(t, buffer + r, s);
 
@@ -346,12 +344,8 @@ INTERNAL otrng_result otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
                                                       const char *buff,
                                                       size_t len) {
   /* (((base64len+3) / 4) * 3) */
-  unsigned char *dec = malloc(((len + 3) / 4) * 3);
+  unsigned char *dec = otrng_xmalloc(((len + 3) / 4) * 3);
   size_t written;
-
-  if (!dec) {
-    return OTRNG_ERROR;
-  }
 
   written = otrl_base64_decode(dec, buff, len);
 
@@ -368,12 +362,8 @@ INTERNAL otrng_result otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
 INTERNAL otrng_result otrng_symmetric_shared_prekey_deserialize(
     otrng_shared_prekey_pair_s *pair, const char *buff, size_t len) {
   /* (((base64len+3) / 4) * 3) */
-  unsigned char *dec = malloc(((len + 3) / 4) * 3);
+  unsigned char *dec = otrng_xmalloc(((len + 3) / 4) * 3);
   size_t written;
-
-  if (!dec) {
-    return OTRNG_ERROR;
-  }
 
   written = otrl_base64_decode(dec, buff, len);
 

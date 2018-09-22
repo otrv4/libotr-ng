@@ -20,6 +20,7 @@
 #define OTRNG_DATA_MESSAGE_PRIVATE
 #include "data_message.h"
 
+#include "alloc.h"
 #include "deserialize.h"
 #include "serialize.h"
 #include "shake.h"
@@ -29,10 +30,7 @@
 #endif
 
 INTERNAL data_message_s *otrng_data_message_new() {
-  data_message_s *ret = malloc(sizeof(data_message_s));
-  if (!ret) {
-    return NULL;
-  }
+  data_message_s *ret = otrng_xmalloc(sizeof(data_message_s));
 
   ret->flags = 0;
   ret->ratchet_id = 0;
@@ -80,10 +78,7 @@ INTERNAL otrng_result otrng_data_message_body_asprintf(
   size_t size = DATA_MESSAGE_MAX_BYTES + data_msg->enc_msg_len;
   uint8_t *cursor;
   size_t len = 0;
-  uint8_t *dst = malloc(size);
-  if (!dst) {
-    return OTRNG_ERROR;
-  }
+  uint8_t *dst = otrng_xmalloc(size);
 
   cursor = dst;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);

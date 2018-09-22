@@ -76,10 +76,7 @@ static char *build_error_message(const char *error_code,
                                  const char *error_name) {
   size_t prefix_len = strlen(ERROR_PREFIX);
   size_t size = prefix_len + strlen(error_code) + strlen(error_name) + 1;
-  char *err_msg = malloc(size);
-  if (!err_msg) {
-    return NULL;
-  }
+  char *err_msg = otrng_xmalloc(size);
 
   strncpy(err_msg, ERROR_PREFIX, size);
   strncpy(err_msg + prefix_len, error_code, size - prefix_len);
@@ -117,10 +114,7 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
 
   random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
 
-  c = malloc(message_len);
-  if (!c) {
-    return OTRNG_ERROR;
-  }
+  c = otrng_xmalloc(message_len);
 
   err = crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
   if (err) {
@@ -176,11 +170,7 @@ tstatic otrng_result serialize_and_encode_data_msg(
 
   serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
 
-  ser = malloc(serlen);
-  if (!ser) {
-    free(body);
-    return OTRNG_ERROR;
-  }
+  ser = otrng_xmalloc(serlen);
 
   memcpy(ser, body, bodylen);
   free(body);
@@ -297,10 +287,7 @@ tstatic otrng_result serialize_tlvs(uint8_t **dst, size_t *dstlen,
     *dstlen += current->data->len + 4;
   }
 
-  *dst = malloc(*dstlen);
-  if (!*dst) {
-    return OTRNG_ERROR;
-  }
+  *dst = otrng_xmalloc(*dstlen);
 
   cursor = *dst;
   for (current = tlvs; current; current = current->next) {
@@ -332,12 +319,7 @@ tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
   }
 
   *dst_len = message_len + padding_len;
-  *dst = malloc(*dst_len);
-  if (!*dst) {
-    free(ser);
-    free(padding);
-    return OTRNG_ERROR;
-  }
+  *dst = otrng_xmalloc(*dst_len);
 
   res = otrng_stpcpy((char *)*dst, message);
   if (ser) {

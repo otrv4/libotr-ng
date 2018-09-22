@@ -20,6 +20,7 @@
 
 #define OTRNG_MPI_PRIVATE
 
+#include "alloc.h"
 #include "mpi.h"
 #include "deserialize.h"
 #include "serialize.h" // just for memcpy
@@ -42,10 +43,7 @@ INTERNAL void otrng_mpi_set(otrng_mpi_p dst, const uint8_t *src, size_t len) {
   }
 
   dst->len = len;
-  dst->data = malloc(dst->len);
-  if (!dst->data) {
-    return; // should it be an error?
-  }
+  dst->data = otrng_xmalloc(dst->len);
 
   memcpy(dst->data, src, dst->len);
 }
@@ -83,10 +81,7 @@ INTERNAL otrng_result otrng_mpi_deserialize(otrng_mpi_p dst, const uint8_t *src,
     return OTRNG_SUCCESS;
   }
 
-  dst->data = malloc(dst->len);
-  if (!dst->data) {
-    return OTRNG_ERROR;
-  }
+  dst->data = otrng_xmalloc(dst->len);
 
   memcpy(dst->data, src + *read, dst->len);
 

@@ -22,13 +22,11 @@
 
 #define OTRNG_LIST_PRIVATE
 
+#include "alloc.h"
 #include "list.h"
 
 tstatic list_element_s *list_new() {
-  list_element_s *n = malloc(sizeof(list_element_s));
-  if (!n) {
-    return NULL;
-  }
+  list_element_s *n = otrng_xmalloc(sizeof(list_element_s));
 
   n->data = NULL;
   n->next = NULL;

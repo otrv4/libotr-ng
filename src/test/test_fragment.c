@@ -29,7 +29,7 @@ void test_create_fragments(void) {
   const char *message = "one two tree";
 
   otrng_message_to_send_s *frag_message =
-      malloc(sizeof(otrng_message_to_send_s));
+      otrng_xmalloc(sizeof(otrng_message_to_send_s));
 
   otrng_assert_is_success(
       otrng_fragment_message(max_size, frag_message, 1, 2, message));
@@ -53,7 +53,7 @@ void test_create_fragments_smaller_than_max_size(void) {
   const char *message = "one two";
 
   otrng_message_to_send_s *frag_message =
-      malloc(sizeof(otrng_message_to_send_s));
+      otrng_xmalloc(sizeof(otrng_message_to_send_s));
 
   otrng_assert_is_success(
       otrng_fragment_message(max_size, frag_message, 1, 2, message));

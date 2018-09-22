@@ -18,6 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "alloc.h"
 #include "prekey_ensemble.h"
 
 INTERNAL otrng_result
@@ -92,10 +93,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
 
   w += read;
 
-  dst->message = malloc(sizeof(dake_prekey_message_s));
-  if (!dst->message) {
-    return OTRNG_ERROR;
-  }
+  dst->message = otrng_xmalloc(sizeof(dake_prekey_message_s));
 
   if (!otrng_dake_prekey_message_deserialize(dst->message, src + w, src_len - w,
                                              &read)) {

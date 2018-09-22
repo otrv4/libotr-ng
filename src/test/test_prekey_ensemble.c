@@ -31,7 +31,7 @@ void test_prekey_ensemble_validate(void) {
 
   uint8_t sym3[ED448_PRIVATE_BYTES] = {0xA2};
 
-  prekey_ensemble_s *ensemble = malloc(sizeof(prekey_ensemble_s));
+  prekey_ensemble_s *ensemble = otrng_xmalloc(sizeof(prekey_ensemble_s));
   otrng_assert(ensemble);
 
   ensemble->client_profile->versions = otrng_strdup("4");

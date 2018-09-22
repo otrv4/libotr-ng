@@ -26,6 +26,7 @@
 
 #define OTRNG_CLIENT_PRIVATE
 
+#include "alloc.h"
 #include "client.h"
 #include "client_callbacks.h"
 #include "deserialize.h"
@@ -39,10 +40,7 @@
 
 tstatic otrng_conversation_s *new_conversation_with(const char *recipient,
                                                     otrng_s *conn) {
-  otrng_conversation_s *conv = malloc(sizeof(otrng_conversation_s));
-  if (!conv) {
-    return NULL;
-  }
+  otrng_conversation_s *conv = otrng_xmalloc(sizeof(otrng_conversation_s));
 
   conv->recipient = otrng_strdup(recipient);
   if (!conv->recipient) {
@@ -74,10 +72,7 @@ tstatic otrng_bool should_heartbeat(int last_sent) {
 }
 
 API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
-  otrng_client_s *client = malloc(sizeof(otrng_client_s));
-  if (!client) {
-    return NULL;
-  }
+  otrng_client_s *client = otrng_xmalloc(sizeof(otrng_client_s));
 
   memset(client, 0, sizeof(otrng_client_s));
 
@@ -557,10 +552,7 @@ INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
     return;
   }
 
-  stored_prekey_msg = malloc(sizeof(otrng_stored_prekeys_s));
-  if (!stored_prekey_msg) {
-    return;
-  }
+  stored_prekey_msg = otrng_xmalloc(sizeof(otrng_stored_prekeys_s));
 
   stored_prekey_msg->id = id;
   stored_prekey_msg->sender_instance_tag = instance_tag;
@@ -589,10 +581,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
 
   instance_tag = otrng_client_get_instance_tag(client);
 
-  messages = malloc(num_messages * sizeof(dake_prekey_message_s *));
-  if (!messages) {
-    return NULL;
-  }
+  messages = otrng_xmalloc(num_messages * sizeof(dake_prekey_message_s *));
 
   for (i = 0; i < num_messages; i++) {
     ecdh_keypair_p ecdh;
@@ -807,10 +796,7 @@ INTERNAL otrng_result otrng_client_add_forging_key(
     return OTRNG_ERROR;
   }
 
-  client->forging_key = malloc(sizeof(otrng_public_key_p));
-  if (!client->forging_key) {
-    return OTRNG_ERROR;
-  }
+  client->forging_key = otrng_xmalloc(sizeof(otrng_public_key_p));
 
   otrng_ec_point_copy(*client->forging_key, key);
 
@@ -858,10 +844,7 @@ API otrng_result otrng_client_add_client_profile(
     return OTRNG_ERROR;
   }
 
-  client->client_profile = malloc(sizeof(client_profile_s));
-  if (!client->client_profile) {
-    return OTRNG_ERROR;
-  }
+  client->client_profile = otrng_xmalloc(sizeof(client_profile_s));
 
   otrng_client_profile_copy(client->client_profile, profile);
   return OTRNG_SUCCESS;
@@ -943,10 +926,7 @@ API otrng_result otrng_client_add_prekey_profile(
     return OTRNG_ERROR;
   }
 
-  client->prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
-  if (!client->prekey_profile) {
-    return OTRNG_ERROR;
-  }
+  client->prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
 
   otrng_prekey_profile_copy(client->prekey_profile, profile);
   return OTRNG_SUCCESS;
@@ -960,10 +940,7 @@ tstatic OtrlInsTag *otrng_instance_tag_new(const char *protocol,
     return NULL;
   }
 
-  p = malloc(sizeof(OtrlInsTag));
-  if (!p) {
-    return NULL;
-  }
+  p = otrng_xmalloc(sizeof(OtrlInsTag));
 
   p->accountname = otrng_strdup(account);
   if (!p->accountname) {

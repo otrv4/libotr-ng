@@ -20,6 +20,7 @@
 
 #define OTRNG_V3_PRIVATE
 
+#include "alloc.h"
 #include "v3.h"
 #include "messaging.h"
 #include "otrng.h"
@@ -556,10 +557,7 @@ static OtrlMessageAppOps v3_callbacks = {
 
 INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_s *client,
                                             const char *peer) {
-  otrng_v3_conn_s *ret = malloc(sizeof(otrng_v3_conn_s));
-  if (!ret) {
-    return NULL;
-  }
+  otrng_v3_conn_s *ret = otrng_xmalloc(sizeof(otrng_v3_conn_s));
 
   ret->client = client;
   ret->ops = &v3_callbacks;
@@ -723,10 +721,7 @@ INTERNAL otrng_result otrng_v3_smp_start(char **to_send,
                                          otrng_v3_conn_s *conn) {
   char *q = NULL;
   if (question && q_len > 0) {
-    q = malloc(q_len + 1);
-    if (!q) {
-      return OTRNG_ERROR;
-    }
+    q = otrng_xmalloc(q_len + 1);
     q = memcpy(q, question, q_len);
     q[q_len] = 0;
   }

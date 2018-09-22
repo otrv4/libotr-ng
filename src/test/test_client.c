@@ -996,7 +996,7 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
 void test_client_receives_fragmented_message(void) {
   const char *msg = "Receiving fragmented plaintext";
 
-  otrng_message_to_send_s *fmsg = malloc(sizeof(otrng_message_to_send_s));
+  otrng_message_to_send_s *fmsg = otrng_xmalloc(sizeof(otrng_message_to_send_s));
   otrng_assert_is_success(otrng_fragment_message(60, fmsg, 0, 0, msg));
 
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
@@ -1024,7 +1024,7 @@ void test_client_receives_fragmented_message(void) {
 void test_client_expires_old_fragments(void) {
   const char *msg = "Pending fragmented message";
 
-  otrng_message_to_send_s *fmsg = malloc(sizeof(otrng_message_to_send_s));
+  otrng_message_to_send_s *fmsg = otrng_xmalloc(sizeof(otrng_message_to_send_s));
   otrng_assert_is_success(otrng_fragment_message(60, fmsg, 0, 0, msg));
 
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);

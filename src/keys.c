@@ -28,15 +28,13 @@
 
 #define OTRNG_KEYS_PRIVATE
 
+#include "alloc.h"
 #include "keys.h"
 #include "random.h"
 #include "shake.h"
 
 INTERNAL otrng_keypair_s *otrng_keypair_new(void) {
-  otrng_keypair_s *ret = malloc(sizeof(otrng_keypair_s));
-  if (!ret) {
-    return NULL;
-  }
+  otrng_keypair_s *ret = otrng_xmalloc(sizeof(otrng_keypair_s));
 
   otrng_ec_bzero(ret->priv, ED448_SCALAR_BYTES);
   otrng_ec_bzero(ret->pub, ED448_POINT_BYTES);
@@ -74,20 +72,13 @@ INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
 
 INTERNAL otrng_result otrng_symmetric_key_serialize(
     char **buffer, size_t *written, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  *buffer = malloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
-  if (!*buffer) {
-    return OTRNG_ERROR;
-  }
-
+  *buffer = otrng_xmalloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
   *written = otrl_base64_encode(*buffer, sym, ED448_PRIVATE_BYTES);
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void) {
-  otrng_shared_prekey_pair_s *ret = malloc(sizeof(otrng_shared_prekey_pair_s));
-  if (!ret) {
-    return NULL;
-  }
+  otrng_shared_prekey_pair_s *ret = otrng_xmalloc(sizeof(otrng_shared_prekey_pair_s));
 
   otrng_ec_bzero(ret->priv, ED448_SCALAR_BYTES);
   otrng_ec_bzero(ret->pub, ED448_POINT_BYTES);
@@ -141,10 +132,7 @@ INTERNAL uint8_t *otrng_derive_key_from_extra_symm_key(
     uint8_t usage, const unsigned char *use_data, size_t use_data_len,
     const unsigned char *extra_symm_key) {
   goldilocks_shake256_ctx_p hd;
-  uint8_t *derived_key = malloc(EXTRA_SYMMETRIC_KEY_BYTES);
-  if (!derived_key) {
-    return NULL;
-  }
+  uint8_t *derived_key = otrng_xmalloc(EXTRA_SYMMETRIC_KEY_BYTES);
 
   hash_init_with_usage(hd, usage);
   hash_update(hd, use_data, use_data_len);
@@ -247,11 +235,7 @@ API void otrng_public_key_debug_print(FILE *f, otrng_public_key_p k) {
     return;
   }
 
-  uint8_t *r = malloc(ED448_POINT_BYTES);
-  if (!r) {
-    fprintf(f, "ERROR!!");
-    return;
-  }
+  uint8_t *r = otrng_xmalloc(ED448_POINT_BYTES);
   if (!otrng_ec_point_encode(r, ED448_POINT_BYTES, k)) {
     free(r);
     fprintf(f, "ERROR!!");
@@ -267,11 +251,7 @@ API void otrng_private_key_debug_print(FILE *f, otrng_private_key_p k) {
     return;
   }
 
-  uint8_t *r = malloc(ED448_SCALAR_BYTES);
-  if (!r) {
-    fprintf(f, "ERROR!!");
-    return;
-  }
+  uint8_t *r = otrng_xmalloc(ED448_SCALAR_BYTES);
 
   otrng_ec_scalar_encode(r, k);
 
@@ -285,11 +265,7 @@ API void otrng_shared_prekey_pub_debug_print(FILE *f,
     return;
   }
 
-  uint8_t *r = malloc(ED448_POINT_BYTES);
-  if (!r) {
-    fprintf(f, "ERROR!!");
-    return;
-  }
+  uint8_t *r = otrng_xmalloc(ED448_POINT_BYTES);
   if (!otrng_ec_point_encode(r, ED448_POINT_BYTES, k)) {
     free(r);
     fprintf(f, "ERROR!!");
@@ -306,11 +282,7 @@ API void otrng_shared_prekey_priv_debug_print(FILE *f,
     return;
   }
 
-  uint8_t *r = malloc(ED448_SCALAR_BYTES);
-  if (!r) {
-    fprintf(f, "ERROR!!");
-    return;
-  }
+  uint8_t *r = otrng_xmalloc(ED448_SCALAR_BYTES);
   otrng_ec_scalar_encode(r, k);
 
   otrng_debug_print_data(f, r, ED448_SCALAR_BYTES);

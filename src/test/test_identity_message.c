@@ -108,7 +108,7 @@ void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
       &serialized, &serialized_len, identity_message));
 
   dake_identity_message_s *deserialized =
-      malloc(sizeof(dake_identity_message_s));
+      otrng_xmalloc(sizeof(dake_identity_message_s));
 
   otrng_assert_is_success(otrng_dake_identity_message_deserialize(
       deserialized, serialized, serialized_len));

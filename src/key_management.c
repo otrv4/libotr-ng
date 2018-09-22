@@ -25,6 +25,7 @@
 
 #define OTRNG_KEY_MANAGEMENT_PRIVATE
 
+#include "alloc.h"
 #include "key_management.h"
 #include "random.h"
 #include "serialize.h"
@@ -34,10 +35,7 @@
 #include "debug.h"
 
 tstatic ratchet_s *ratchet_new() {
-  ratchet_s *ratchet = malloc(sizeof(ratchet_s));
-  if (!ratchet) {
-    return NULL;
-  }
+  ratchet_s *ratchet = otrng_xmalloc(sizeof(ratchet_s));
 
   memset(ratchet->root_key, 0, sizeof(root_key_p));
   memset(ratchet->chain_s, 0, sizeof(sending_chain_key_p));
@@ -89,11 +87,7 @@ INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
 }
 
 INTERNAL key_manager_s *otrng_key_manager_new(void) {
-  key_manager_s *manager = malloc(sizeof(key_manager_s));
-  if (!manager) {
-    return NULL;
-  }
-
+  key_manager_s *manager = otrng_xmalloc(sizeof(key_manager_s));
   otrng_key_manager_init(manager);
   return manager;
 }
@@ -142,11 +136,7 @@ INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager) {
 
 INTERNAL receiving_ratchet_s *
 otrng_receiving_ratchet_new(key_manager_s *manager) {
-  receiving_ratchet_s *ratchet = malloc(sizeof(receiving_ratchet_s));
-  if (!ratchet) {
-    return NULL;
-  }
-
+  receiving_ratchet_s *ratchet = otrng_xmalloc(sizeof(receiving_ratchet_s));
   otrng_ec_scalar_copy(ratchet->our_ecdh_priv, manager->our_ecdh->priv);
   ratchet->our_dh_priv = NULL;
 
@@ -827,10 +817,7 @@ tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
                      tmp_receiving_ratchet->chain_r,
                      sizeof(receiving_chain_key_p));
 
-      skipped_msg_enc_key = malloc(sizeof(skipped_keys_s));
-      if (!skipped_msg_enc_key) {
-        return OTRNG_ERROR;
-      }
+      skipped_msg_enc_key = otrng_xmalloc(sizeof(skipped_keys_s));
 
       assert(ratchet_type == 'd' || ratchet_type == 'c');
       if (ratchet_type == 'd') {
@@ -952,10 +939,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
 
 INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
                                                msg_mac_key_p mac_key) {
-  uint8_t *to_store_mac = malloc(MAC_KEY_BYTES);
-  if (!to_store_mac) {
-    return OTRNG_ERROR;
-  }
+  uint8_t *to_store_mac = otrng_xmalloc(MAC_KEY_BYTES);
 
   memcpy(to_store_mac, mac_key, sizeof(msg_mac_key_p));
   manager->old_mac_keys = otrng_list_add(to_store_mac, manager->old_mac_keys);
@@ -972,10 +956,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   int i;
 
   if (serlen != 0) {
-    ser_mac_keys = malloc(serlen);
-    if (!ser_mac_keys) {
-      return NULL;
-    }
+    ser_mac_keys = otrng_xmalloc(serlen);
 
     memset(enc_key, 0, sizeof(msg_enc_key_p));
     memset(mac_key, 0, sizeof(msg_mac_key_p));

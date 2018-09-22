@@ -20,6 +20,7 @@
 
 #include "prekey_client.h"
 
+#include "alloc.h"
 #include "base64.h"
 #include "dake.h"
 #include "deserialize.h"
@@ -107,10 +108,7 @@ otrng_prekey_client_new(const char *server, const char *our_identity,
     return NULL;
   }
 
-  ret = malloc(sizeof(otrng_prekey_client_s));
-  if (!ret) {
-    return NULL;
-  }
+  ret = otrng_xmalloc(sizeof(otrng_prekey_client_s));
 
   ret->instance_tag = instance_tag;
   ret->client_profile = client_profile;
@@ -162,10 +160,7 @@ static otrng_result prekey_decode(const char *message, uint8_t **buffer,
   }
 
   /* (((base64len+3) / 4) * 3) */
-  *buffer = malloc(((len - 1 + 3) / 4) * 3);
-  if (!*buffer) {
-    return OTRNG_ERROR;
-  }
+  *buffer = otrng_xmalloc(((len - 1 + 3) / 4) * 3);
 
   *buffer_len = otrl_base64_decode(*buffer, message, len - 1);
 
@@ -173,12 +168,8 @@ static otrng_result prekey_decode(const char *message, uint8_t **buffer,
 }
 
 static char *prekey_encode(const uint8_t *buffer, size_t buffer_len) {
-  char *ret = malloc(OTRNG_BASE64_ENCODE_LEN(buffer_len) + 2);
+  char *ret = otrng_xmalloc(OTRNG_BASE64_ENCODE_LEN(buffer_len) + 2);
   size_t l;
-
-  if (!ret) {
-    return NULL;
-  }
 
   l = otrl_base64_encode(ret, buffer, buffer_len);
   ret[l] = '.';
@@ -281,10 +272,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_asprint(
   }
 
   *len = 2 + 1 + 4 + (4 + strlen(msg->identity)) + (4 + strlen(msg->versions));
-  *dst = malloc(*len);
-  if (!*dst) {
-    return OTRNG_ERROR;
-  }
+  *dst = otrng_xmalloc(*len);
 
   w += otrng_serialize_uint16(*dst, OTRNG_PROTOCOL_VERSION_4);
   w += otrng_serialize_uint8(*dst + w,
@@ -321,10 +309,7 @@ static uint8_t *otrng_prekey_client_get_expected_composite_phi(
   }
 
   size = 4 + strlen(client->server_identity) + 4 + strlen(client->our_identity);
-  dst = malloc(size);
-  if (!dst) {
-    return NULL;
-  }
+  dst = otrng_xmalloc(size);
 
   w += otrng_serialize_data(dst + w, (const uint8_t *)client->our_identity,
                             strlen(client->our_identity));
@@ -381,12 +366,7 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
   }
 
   tlen = 1 + 3 * HASH_BYTES + 2 * ED448_POINT_BYTES;
-  t = malloc(tlen);
-  if (!t) {
-    free(composite_phi);
-    free(our_profile);
-    return otrng_false;
-  }
+  t = otrng_xmalloc(tlen);
 
   *t = 0x0;
   w = 1;
@@ -428,10 +408,7 @@ otrng_prekey_dake3_message_append_storage_information_request(
   uint8_t usage_receiver_client_profile = 0x0A;
   goldilocks_shake256_ctx_p hmac;
 
-  msg->message = malloc(2 + 1 + MAC_KEY_BYTES);
-  if (!msg->message) {
-    return OTRNG_ERROR;
-  }
+  msg->message = otrng_xmalloc(2 + 1 + MAC_KEY_BYTES);
 
   msg->message_len = 67; // TODO: extract this
 
@@ -484,12 +461,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
 
   size = 2 + 1 + 1 + (4 + pub_msg->num_prekey_messages * PRE_KEY_MAX_BYTES) +
          1 + client_profile_len + 1 + prekey_profile_len + MAC_KEY_BYTES;
-  msg->message = malloc(size);
-  if (!msg->message) {
-    free(client_profile);
-    free(prekey_profile);
-    return OTRNG_ERROR;
-  }
+  msg->message = otrng_xmalloc(size);
 
   w += otrng_serialize_uint16(msg->message, OTRNG_PROTOCOL_VERSION_4);
   w += otrng_serialize_uint8(msg->message + w, msg_type);
@@ -607,12 +579,7 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   }
 
   tlen = 1 + 3 * HASH_BYTES + 2 * ED448_POINT_BYTES;
-  t = malloc(tlen);
-  if (!t) {
-    free(composite_phi);
-    free(our_profile);
-    return NULL;
-  }
+  t = otrng_xmalloc(tlen);
 
   *t = 0x1;
 
@@ -732,14 +699,10 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
     const uint8_t mac_key[MAC_KEY_BYTES]) {
 
   size_t bufl = 1 + 4 + 4;
-  uint8_t *buf = malloc(bufl);
+  uint8_t *buf = otrng_xmalloc(bufl);
   uint8_t mac_tag[HASH_BYTES];
   uint8_t usage_status_MAC = 0x0B;
   goldilocks_shake256_ctx_p hmac;
-
-  if (!buf) {
-    return otrng_false;
-  }
 
   *buf = OTRNG_PREKEY_STORAGE_STATUS_MSG; /* message type */
   otrng_serialize_uint32(buf + 1, msg->client_instance_tag);
@@ -1045,11 +1008,7 @@ otrng_prekey_dake1_message_asprint(uint8_t **serialized, size_t *serialized_len,
   }
 
   ret_len = 2 + 1 + 4 + client_profile_buff_len + ED448_POINT_BYTES;
-  ret = malloc(ret_len);
-  if (!ret) {
-    free(client_profile_buff);
-    return OTRNG_ERROR;
-  }
+  ret = otrng_xmalloc(ret_len);
 
   w += otrng_serialize_uint16(ret + w, OTRNG_PROTOCOL_VERSION_4);
   w += otrng_serialize_uint8(ret + w, OTRNG_PREKEY_DAKE1_MSG);
@@ -1118,10 +1077,7 @@ INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
 
   /* Store the composite identity, so we can use it to generate `t` */
   dst->composite_identity_len = serialized + w - composite_identity_start;
-  dst->composite_identity = malloc(dst->composite_identity_len);
-  if (!dst->composite_identity) {
-    return OTRNG_ERROR;
-  }
+  dst->composite_identity = otrng_xmalloc(dst->composite_identity_len);
   memcpy(dst->composite_identity, composite_identity_start,
          dst->composite_identity_len);
 
@@ -1164,12 +1120,8 @@ otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,
                                    const otrng_prekey_dake3_message_s *msg) {
   size_t ret_len =
       2 + 1 + 4 + RING_SIG_BYTES + (4 + msg->message_len) + ED448_POINT_BYTES;
-  uint8_t *ret = malloc(ret_len);
+  uint8_t *ret = otrng_xmalloc(ret_len);
   size_t w = 0;
-
-  if (!ret) {
-    return OTRNG_ERROR;
-  }
 
   w += otrng_serialize_uint16(ret + w, OTRNG_PROTOCOL_VERSION_4);
   w += otrng_serialize_uint8(ret + w, OTRNG_PREKEY_DAKE3_MSG);
@@ -1306,18 +1258,12 @@ INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
 
   w += read;
 
-  dst->ensembles = malloc(sizeof(prekey_ensemble_s *) * l);
-  if (!dst->ensembles) {
-    return OTRNG_ERROR;
-  }
+  dst->ensembles = otrng_xmalloc(sizeof(prekey_ensemble_s *) * l);
 
   dst->num_ensembles = l;
 
   for (i = 0; i < l; i++) {
-    dst->ensembles[i] = malloc(sizeof(prekey_ensemble_s));
-    if (!dst->ensembles[i]) {
-      return OTRNG_ERROR;
-    }
+    dst->ensembles[i] = otrng_xmalloc(sizeof(prekey_ensemble_s));
 
     if (!otrng_prekey_ensemble_deserialize(dst->ensembles[i], serialized + w,
                                            serialized_len - w, &read)) {

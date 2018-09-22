@@ -22,6 +22,7 @@
 
 #define OTRNG_SERIALIZE_PRIVATE
 
+#include "alloc.h"
 #include "serialize.h"
 
 INTERNAL size_t serialize_uint(uint8_t *target, const uint64_t data,
@@ -180,10 +181,7 @@ INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys) {
     return NULL;
   }
 
-  ser_mac_keys = malloc(serlen);
-  if (!ser_mac_keys) {
-    return NULL;
-  }
+  ser_mac_keys = otrng_xmalloc(serlen);
 
   for (i = 0; i < num_mac_keys; i++) {
     list_element_s *last = otrng_list_get_last(old_mac_keys);

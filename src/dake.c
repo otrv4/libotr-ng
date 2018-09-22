@@ -24,6 +24,7 @@
 
 #define OTRNG_DAKE_PRIVATE
 
+#include "alloc.h"
 #include "dake.h"
 #include "deserialize.h"
 #include "error.h"
@@ -39,10 +40,7 @@ otrng_dake_identity_message_new(const client_profile_s *profile) {
     return NULL;
   }
 
-  identity_message = malloc(sizeof(dake_identity_message_s));
-  if (!identity_message) {
-    return NULL;
-  }
+  identity_message = otrng_xmalloc(sizeof(dake_identity_message_s));
 
   identity_message->sender_instance_tag = 0;
   identity_message->receiver_instance_tag = 0;
@@ -88,11 +86,7 @@ INTERNAL otrng_result otrng_dake_identity_message_asprintf(
   }
 
   size = IDENTITY_MAX_BYTES + profile_len;
-  buff = malloc(size);
-  if (!buff) {
-    free(profile);
-    return OTRNG_ERROR;
-  }
+  buff = otrng_xmalloc(size);
 
   cursor = buff;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
@@ -212,11 +206,7 @@ INTERNAL otrng_result otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
 
   size = AUTH_R_MAX_BYTES + our_profile_len;
 
-  buff = malloc(size);
-  if (!buff) {
-    free(our_profile);
-    return OTRNG_ERROR;
-  }
+  buff = otrng_xmalloc(size);
 
   cursor = buff;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
@@ -331,10 +321,7 @@ INTERNAL otrng_result otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
   size_t size = DAKE_HEADER_BYTES + RING_SIG_BYTES;
   uint8_t *cursor;
 
-  *dst = malloc(size);
-  if (!*dst) {
-    return OTRNG_ERROR;
-  }
+  *dst = otrng_xmalloc(size);
 
   if (nbytes) {
     *nbytes = size;
@@ -401,10 +388,7 @@ INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
 }
 
 INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
-  dake_prekey_message_s *prekey_message = malloc(sizeof(dake_prekey_message_s));
-  if (!prekey_message) {
-    return NULL;
-  }
+  dake_prekey_message_s *prekey_message = otrng_xmalloc(sizeof(dake_prekey_message_s));
 
   prekey_message->id = 0;
   prekey_message->sender_instance_tag = 0;
@@ -459,10 +443,7 @@ INTERNAL otrng_result otrng_dake_prekey_message_asprintf(
     const dake_prekey_message_s *prekey_message) {
 
   size_t size = PRE_KEY_MAX_BYTES;
-  *dst = malloc(size);
-  if (!*dst) {
-    return OTRNG_ERROR;
-  }
+  *dst = otrng_xmalloc(size);
 
   return otrng_dake_prekey_message_serialize(*dst, size, nbytes,
                                              prekey_message);
@@ -582,11 +563,7 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_asprintf(
   }
 
   size = NON_INT_AUTH_MAX_BYTES + our_profile_len;
-  buff = malloc(size);
-  if (!buff) {
-    free(our_profile);
-    return OTRNG_ERROR;
-  }
+  buff = otrng_xmalloc(size);
 
   cursor = buff;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
@@ -841,10 +818,7 @@ INTERNAL otrng_result build_interactive_rsign_tag(
 
   size_t written = 0;
   otrng_result result = OTRNG_ERROR;
-  uint8_t *buff = malloc(1 + MAX_T_LENGTH);
-  if (!buff) {
-    return OTRNG_ERROR;
-  }
+  uint8_t *buff = otrng_xmalloc(1 + MAX_T_LENGTH);
 
   assert(auth_tag_type == 'i' || auth_tag_type == 'r');
   if (auth_tag_type == 'r') {
@@ -889,10 +863,7 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_result result;
 
-  *msg = malloc(MAX_T_LENGTH);
-  if (!*msg) {
-    return OTRNG_ERROR;
-  }
+  *msg = otrng_xmalloc(MAX_T_LENGTH);
 
   otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
 

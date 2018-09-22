@@ -162,10 +162,7 @@ tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
 }
 
 INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
-  otrng_s *otr = malloc(sizeof(otrng_s));
-  if (!otr) {
-    return NULL;
-  }
+  otrng_s *otr = otrng_xmalloc(sizeof(otrng_s));
 
   otr->client = client;
   otr->peer = NULL;
@@ -254,10 +251,7 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
     return OTRNG_ERROR;
   }
 
-  buff = malloc(qm_size);
-  if (!buff) {
-    return OTRNG_ERROR;
-  }
+  buff = otrng_xmalloc(qm_size);
 
   allowed_versions(allowed, otr);
 
@@ -297,10 +291,7 @@ API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
 
 #define WHITESPACE_TAG_MAX_BYTES                                               \
   (WHITESPACE_TAG_BASE_BYTES + 2 * WHITESPACE_TAG_VERSION_BYTES)
-  char *buff = malloc(WHITESPACE_TAG_MAX_BYTES + strlen(message) + 1);
-  if (!buff) {
-    return OTRNG_ERROR;
-  }
+  char *buff = otrng_xmalloc(WHITESPACE_TAG_MAX_BYTES + strlen(message) + 1);
 
   cursor = otrng_stpcpy(buff, tag_base);
 
@@ -358,10 +349,7 @@ tstatic otrng_result message_to_display_without_tag(otrng_response_s *response,
     return OTRNG_ERROR;
   }
 
-  buff = malloc(chars + 1);
-  if (!buff) {
-    return OTRNG_ERROR;
-  }
+  buff = otrng_xmalloc(chars + 1);
 
   bytes_before_tag = found_at - message;
   if (!bytes_before_tag) {
@@ -422,10 +410,7 @@ tstatic otrng_bool message_is_otr_error(const string_p message) {
 }
 
 INTERNAL otrng_response_s *otrng_response_new(void) {
-  otrng_response_s *response = malloc(sizeof(otrng_response_s));
-  if (!response) {
-    return NULL;
-  }
+  otrng_response_s *response = otrng_xmalloc(sizeof(otrng_response_s));
 
   response->to_display = NULL;
   response->to_send = NULL;
@@ -620,10 +605,7 @@ static otrng_result generate_phi_serialized(uint8_t **dst, size_t *dst_len,
   init_msg_len = init_msg ? strlen(init_msg) + 1 : 0;
   phi_prime_len = strlen(phi_prime) + 1;
   size = 4 + 4 + (4 + init_msg_len) + (4 + phi_prime_len);
-  *dst = malloc(size);
-  if (!*dst) {
-    return OTRNG_ERROR;
-  }
+  *dst = otrng_xmalloc(size);
 
   *dst_len = otrng_serialize_phi(*dst, phi_prime, init_msg, instance_tag1,
                                  instance_tag2);
@@ -928,10 +910,7 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   dh_keypair_p dh;
   otrng_client_s *client;
 
-  prekey_ensemble_s *ensemble = malloc(sizeof(prekey_ensemble_s));
-  if (!ensemble) {
-    return NULL;
-  }
+  prekey_ensemble_s *ensemble = otrng_xmalloc(sizeof(prekey_ensemble_s));
 
   otrng_client_profile_copy(ensemble->client_profile,
                             get_my_client_profile(otr));
@@ -964,10 +943,7 @@ tstatic otrng_result set_their_client_profile(const client_profile_s *profile,
     return OTRNG_ERROR;
   }
 
-  otr->their_client_profile = malloc(sizeof(client_profile_s));
-  if (!otr->their_client_profile) {
-    return OTRNG_ERROR;
-  }
+  otr->their_client_profile = otrng_xmalloc(sizeof(client_profile_s));
 
   otrng_client_profile_copy(otr->their_client_profile, profile);
 
@@ -983,10 +959,7 @@ set_their_prekey_profile(const otrng_prekey_profile_s *profile, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otr->their_prekey_profile = malloc(sizeof(otrng_prekey_profile_s));
-  if (!otr->their_prekey_profile) {
-    return OTRNG_ERROR;
-  }
+  otr->their_prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
 
   otrng_prekey_profile_copy(otr->their_prekey_profile, profile);
 
@@ -1319,10 +1292,7 @@ tstatic otrng_result non_interactive_auth_message_received(
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
 
   // TODO: @client_profile Extract function to set_their_client_profile
-  otr->their_client_profile = malloc(sizeof(client_profile_s));
-  if (!otr->their_client_profile) {
-    return OTRNG_ERROR;
-  }
+  otr->their_client_profile = otrng_xmalloc(sizeof(client_profile_s));
 
   otrng_client_profile_copy(otr->their_client_profile, auth->profile);
 
@@ -1380,10 +1350,7 @@ tstatic otrng_result receive_non_interactive_auth_message(
 
 tstatic otrng_result receive_identity_message_on_state_start(
     string_p *dst, dake_identity_message_s *identity_message, otrng_s *otr) {
-  otr->their_client_profile = malloc(sizeof(client_profile_s));
-  if (!otr->their_client_profile) {
-    return OTRNG_ERROR;
-  }
+  otr->their_client_profile = otrng_xmalloc(sizeof(client_profile_s));
 
   otrng_key_manager_set_their_ecdh(identity_message->Y, otr->keys);
   otrng_key_manager_set_their_dh(identity_message->B, otr->keys);
@@ -1605,11 +1572,7 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buff,
     return OTRNG_ERROR;
   }
 
-  otr->their_client_profile = malloc(sizeof(client_profile_s));
-  if (!otr->their_client_profile) {
-    otrng_dake_auth_r_destroy(auth);
-    return OTRNG_ERROR;
-  }
+  otr->their_client_profile = otrng_xmalloc(sizeof(client_profile_s));
 
   otrng_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
@@ -1775,10 +1738,7 @@ tstatic otrng_result decrypt_data_msg(otrng_response_s *response,
 #endif
 
   // TODO: @initialization What if msg->enc_msg_len == 0?
-  plain = malloc(msg->enc_msg_len);
-  if (!plain) {
-    return OTRNG_ERROR;
-  }
+  plain = otrng_xmalloc(msg->enc_msg_len);
 
   err = crypto_stream_xor(plain, msg->enc_msg, msg->enc_msg_len, msg->nonce,
                           enc_key);
@@ -2355,10 +2315,7 @@ tstatic otrng_result otrng_send_symkey_message_v4(
     return OTRNG_ERROR;
   }
 
-  tlv_data = malloc(usedatalen + 4);
-  if (!tlv_data) {
-    return OTRNG_ERROR;
-  }
+  tlv_data = otrng_xmalloc(usedatalen + 4);
 
   tlv_data[0] = (use >> 24) & 0xff;
   tlv_data[1] = (use >> 16) & 0xff;
@@ -2487,10 +2444,7 @@ otrng_generate_session_state_string(const otrng_shared_session_state_s *state) {
     sss_len += strlen(state->password);
   }
 
-  sss = malloc(sss_len);
-  if (!sss) {
-    return NULL;
-  }
+  sss = otrng_xmalloc(sss_len);
 
   /* The below calls to strncpy and strncat will always be safe with sss_len as
      the argument, since it's calculated based on the strlen of both things */
