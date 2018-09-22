@@ -519,3 +519,12 @@
    fun:g_test_run
    fun:main
 }
+{
+   osx_tmpfile_2
+   Memcheck:Cond
+   ...
+   fun:tmpfile
+   ...
+   fun:g_test_run
+   fun:main
+}
