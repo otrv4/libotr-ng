@@ -20,9 +20,9 @@
 
 #define OTRNG_ALLOC_PRIVATE
 
-#include <stdlib.h>
-#include <stdio.h>
 #include "alloc.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 static void (*oom_handler)() = NULL;
 

@@ -20,8 +20,8 @@
 
 #define OTRNG_MPI_PRIVATE
 
-#include "alloc.h"
 #include "mpi.h"
+#include "alloc.h"
 #include "deserialize.h"
 #include "serialize.h" // just for memcpy
 

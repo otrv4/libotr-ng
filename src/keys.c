@@ -78,7 +78,8 @@ INTERNAL otrng_result otrng_symmetric_key_serialize(
 }
 
 INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void) {
-  otrng_shared_prekey_pair_s *ret = otrng_xmalloc(sizeof(otrng_shared_prekey_pair_s));
+  otrng_shared_prekey_pair_s *ret =
+      otrng_xmalloc(sizeof(otrng_shared_prekey_pair_s));
 
   otrng_ec_bzero(ret->priv, ED448_SCALAR_BYTES);
   otrng_ec_bzero(ret->pub, ED448_POINT_BYTES);

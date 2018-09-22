@@ -18,8 +18,8 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "alloc.h"
 #include "padding.h"
+#include "alloc.h"
 #include "client.h"
 #include "tlv.h"
 

@@ -18,8 +18,8 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "alloc.h"
 #include "persistence.h"
+#include "alloc.h"
 #include "base64.h"
 #include "deserialize.h"
 #include "messaging.h"
@@ -610,7 +610,8 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   size_t priv_len;
   otrng_result success;
 
-  otrng_stored_prekeys_s *prekey_msg = otrng_xmalloc(sizeof(otrng_stored_prekeys_s));
+  otrng_stored_prekeys_s *prekey_msg =
+      otrng_xmalloc(sizeof(otrng_stored_prekeys_s));
 
   line_len = get_limited_line(&line, privf);
   if (line_len < 0) {

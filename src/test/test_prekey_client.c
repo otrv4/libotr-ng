@@ -150,10 +150,11 @@ void test_receive_prekey_server_messages(void) {
 
   free(dake_2);
 
-  char *success = otrng_xstrndup("AAQGbQJzmIlxG+O+"
-                                "2z7bcBMm5pWSQ2FqVbIrXLiJTaDsgfETk59Dnxa5US0avH"
-                                "pUD6qTyooaIh2Mqg6PXojQOmWKnj3LqBM=.",
-                                98);
+  char *success =
+      otrng_xstrndup("AAQGbQJzmIlxG+O+"
+                     "2z7bcBMm5pWSQ2FqVbIrXLiJTaDsgfETk59Dnxa5US0avH"
+                     "pUD6qTyooaIh2Mqg6PXojQOmWKnj3LqBM=.",
+                     98);
 
   otrng_assert_is_success(otrng_prekey_client_receive(
       &to_send, "prekey@localhost", success, alice->prekey_client));

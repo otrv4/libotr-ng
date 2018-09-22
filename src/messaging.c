@@ -500,8 +500,8 @@ API void otrng_add_debug_print_ignore(const char *ign) {
 
   if (debug_print_ignores_len + 1 >= debug_print_ignores_cap) {
     debug_print_ignores_cap += 13;
-    debug_print_ignores =
-        otrng_xrealloc(debug_print_ignores, debug_print_ignores_cap * sizeof(char *));
+    debug_print_ignores = otrng_xrealloc(
+        debug_print_ignores, debug_print_ignores_cap * sizeof(char *));
   }
 
   debug_print_ignores[debug_print_ignores_len] = ign;

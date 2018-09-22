@@ -18,8 +18,8 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "alloc.h"
 #include "prekey_ensemble.h"
+#include "alloc.h"
 
 INTERNAL otrng_result
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {

@@ -20,8 +20,8 @@
 
 #define OTRNG_V3_PRIVATE
 
-#include "alloc.h"
 #include "v3.h"
+#include "alloc.h"
 #include "messaging.h"
 #include "otrng.h"
 

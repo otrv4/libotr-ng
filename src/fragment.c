@@ -39,7 +39,8 @@
 #define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
 
 API otrng_message_to_send_s *otrng_message_new() {
-  otrng_message_to_send_s *message = otrng_xmalloc(sizeof(otrng_message_to_send_s));
+  otrng_message_to_send_s *message =
+      otrng_xmalloc(sizeof(otrng_message_to_send_s));
 
   message->pieces = NULL;
   message->total = 0;

@@ -402,8 +402,8 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
   if (otrng_failed(otrng_build_query_message(&ret, message, conv->conn))) {
     // TODO: @client This should come from the client (a callback maybe?)
     // because it knows in which language this should be sent, for example.
-    char *error =
-        otrng_xstrdup("Failed to start an Off-the-Record private conversation.");
+    char *error = otrng_xstrdup(
+        "Failed to start an Off-the-Record private conversation.");
     return error;
   }
 

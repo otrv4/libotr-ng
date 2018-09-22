@@ -388,7 +388,8 @@ INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
 }
 
 INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
-  dake_prekey_message_s *prekey_message = otrng_xmalloc(sizeof(dake_prekey_message_s));
+  dake_prekey_message_s *prekey_message =
+      otrng_xmalloc(sizeof(dake_prekey_message_s));
 
   prekey_message->id = 0;
   prekey_message->sender_instance_tag = 0;
