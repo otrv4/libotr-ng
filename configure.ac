@@ -92,8 +92,8 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
-AX_CHECK_COMPILE_FLAG([-std=c99],[CFLAGS="$CFLAGS -std=c99"],[])
-AX_CHECK_COMPILE_FLAG([-pedantic-errors],[CFLAGS="$CFLAGS -pedantic-errors"],[])
+AX_CHECK_COMPILE_FLAG([-std=c99],[AX_APPEND_FLAG([-std=c99])],[])
+AX_CHECK_COMPILE_FLAG([-pedantic-errors],[AX_APPEND_FLAG([-pedantic-errors])],[])
 
 AX_CFLAGS_GCC_OPTION([-Wall])
 # AX_CFLAGS_GCC_OPTION([-W]) Uncomment this to allow Wextra flag
