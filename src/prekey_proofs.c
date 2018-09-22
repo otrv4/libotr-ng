@@ -209,7 +209,7 @@ INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
   gcry_free(rbuf);
 
   if (err) {
-    otrng_dh_keypair_destroy(r);
+    otrng_dh_mpi_release(r);
     return OTRNG_ERROR;
   }
 
@@ -221,7 +221,7 @@ INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
   if (otrng_failed(
           otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w, a))) {
     free(cbuf);
-    otrng_dh_keypair_destroy(r);
+    otrng_dh_mpi_release(r);
     return OTRNG_ERROR;
   }
   cbuf_curr += w;
@@ -231,7 +231,7 @@ INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
     if (otrng_failed(otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w,
                                             values_pub[i]))) {
       free(cbuf);
-      otrng_dh_keypair_destroy(r);
+      otrng_dh_mpi_release(r);
       return OTRNG_ERROR;
     }
     cbuf_curr += w;
@@ -248,7 +248,7 @@ INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
                               PROOF_C_SIZE);
 
   dst->v = otrng_dh_mpi_copy(r);
-  otrng_dh_keypair_destroy(r);
+  otrng_dh_mpi_release(r);
   p_curr = p;
   for (i = 0; i < values_len; i++) {
     gcry_mpi_t t;

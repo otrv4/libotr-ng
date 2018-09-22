@@ -88,10 +88,10 @@ void test_dh_proof_generation_and_validation(void) {
   otrng_dh_keypair_destroy(v3);
   otrng_dh_keypair_destroy(v4);
 
-  otrng_dh_keypair_destroy(privs[0]);
-  otrng_dh_keypair_destroy(privs[1]);
-  otrng_dh_keypair_destroy(privs[2]);
-  otrng_dh_keypair_destroy(pub[0]);
-  otrng_dh_keypair_destroy(pub[1]);
-  otrng_dh_keypair_destroy(pub[2]);
+  otrng_dh_mpi_release(privs[0]);
+  otrng_dh_mpi_release(privs[1]);
+  otrng_dh_mpi_release(privs[2]);
+  otrng_dh_mpi_release(pubs[0]);
+  otrng_dh_mpi_release(pubs[1]);
+  otrng_dh_mpi_release(pubs[2]);
 }
