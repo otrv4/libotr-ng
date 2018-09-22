@@ -90,22 +90,6 @@ typedef struct {
   dh_keypair_p our_dh;
 } otrng_stored_prekeys_s, otrng_stored_prekeys_p[1];
 
-// TODO: move
-static inline void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
-  if (!s) {
-    return;
-  }
-
-  otrng_ecdh_keypair_destroy(s->our_ecdh);
-  otrng_dh_keypair_destroy(s->our_dh);
-
-  free(s);
-}
-
-static inline void stored_prekeys_free_from_list(void *p) {
-  otrng_stored_prekeys_free((otrng_stored_prekeys_s *)p);
-}
-
 API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id);
 
 API void otrng_client_free(otrng_client_s *client);

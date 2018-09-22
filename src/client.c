@@ -54,6 +54,7 @@ tstatic void conversation_free(void *data) {
 
   free(conv->recipient);
   otrng_free(conv->conn);
+
   free(conv);
 }
 
@@ -61,7 +62,8 @@ tstatic void conversation_free(void *data) {
 
 tstatic otrng_bool should_heartbeat(int last_sent) {
   time_t now = time(NULL);
-  if (last_sent < (now - HEARTBEAT_INTERVAL)) {
+  int interval = now - HEARTBEAT_INTERVAL;
+  if (last_sent < interval) {
     return otrng_true;
   }
   return otrng_false;
@@ -86,6 +88,21 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
   client->client_profile_exp_time = CLIENT_PROFILE_EXPIRATION_SECONDS;
 
   return client;
+}
+
+tstatic void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
+  if (!s) {
+    return;
+  }
+
+  otrng_ecdh_keypair_destroy(s->our_ecdh);
+  otrng_dh_keypair_destroy(s->our_dh);
+
+  free(s);
+}
+
+tstatic void stored_prekeys_free_from_list(void *p) {
+  otrng_stored_prekeys_free((otrng_stored_prekeys_s *)p);
 }
 
 API void otrng_client_free(otrng_client_s *client) {
