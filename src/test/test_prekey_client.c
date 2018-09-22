@@ -127,7 +127,7 @@ void test_receive_prekey_server_messages(void) {
       otrng_client_get_max_published_prekey_msg(alice),
       otrng_client_get_minimum_stored_prekey_msg(alice));
 
-  char *dake_2 = otrng_strndup(
+  char *dake_2 = otrng_xstrndup(
       "AAQ2bQJzmAAAABFwcmVrZXlzLmxvY2FsaG9zdAAQrC8mmPzxUoSAeFBbBBeR40JJ+"
       "wKa13H392zJMcy1LdsHAYqWsSjOm0HtipeiNtb06vTmtS0eCuSAFOnQ3NGhoDG0o+"
       "LAdCMHrcz9TUACdMkMK4ikUa49KYexpGDrsVRLNiH8ts8P/"
@@ -150,7 +150,7 @@ void test_receive_prekey_server_messages(void) {
 
   free(dake_2);
 
-  char *success = otrng_strndup("AAQGbQJzmIlxG+O+"
+  char *success = otrng_xstrndup("AAQGbQJzmIlxG+O+"
                                 "2z7bcBMm5pWSQ2FqVbIrXLiJTaDsgfETk59Dnxa5US0avH"
                                 "pUD6qTyooaIh2Mqg6PXojQOmWKnj3LqBM=.",
                                 98);

@@ -38,11 +38,7 @@ static client_profile_s *client_profile_init(client_profile_s *client_profile,
                                              const char *versions) {
   memset(client_profile, 0, sizeof(client_profile_s));
 
-  client_profile->versions = versions ? otrng_strdup(versions) : NULL;
-  if (!client_profile->versions) {
-    free(client_profile);
-    return NULL;
-  }
+  client_profile->versions = versions ? otrng_xstrdup(versions) : NULL;
 
   return client_profile;
 }
@@ -106,10 +102,7 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   dst->sender_instance_tag = src->sender_instance_tag;
   otrng_ec_point_copy(dst->long_term_pub_key, src->long_term_pub_key);
   otrng_ec_point_copy(dst->forging_pub_key, src->forging_pub_key);
-  dst->versions = otrng_strdup(src->versions);
-  if (!dst->versions) {
-    return;
-  }
+  dst->versions = otrng_xstrdup(src->versions);
 
   dst->expires = src->expires;
   copy_dsa_key(dst, src);
@@ -365,7 +358,7 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
       return OTRNG_ERROR;
     }
 
-    target->versions = otrng_strndup((char *)versions, versions_len);
+    target->versions = otrng_xstrndup((char *)versions, versions_len);
     free(versions);
   } break;
   case OTRNG_CLIENT_PROFILE_FIELD_EXPIRATION: /* Expiration */

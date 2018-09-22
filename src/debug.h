@@ -35,7 +35,7 @@ static inline /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
   unsigned int i;
 
   if (src == NULL) {
-    return otrng_strndup("(NULL)", 6);
+    return otrng_xstrndup("(NULL)", 6);
   }
   /* each char is represented by "0x00, " */
   buff = otrng_xmalloc(s);

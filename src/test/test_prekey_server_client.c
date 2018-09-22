@@ -185,7 +185,7 @@ static void test_prekey_dake3_message_serialize(void) {
   otrng_assert_is_success(otrng_deserialize_ring_sig(msg->sigma, sigma_ser,
                                                      sizeof(sigma_ser), NULL));
 
-  msg->message = (uint8_t *)otrng_strdup("hi");
+  msg->message = (uint8_t *)otrng_xstrdup("hi");
   msg->message_len = 3;
 
   uint8_t header[] = {

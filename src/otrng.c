@@ -271,11 +271,7 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
     free(otr->sending_init_msg);
   }
 
-  otr->sending_init_msg = otrng_strdup(buff);
-  if (!otr->sending_init_msg) {
-    free(buff);
-    return OTRNG_ERROR;
-  }
+  otr->sending_init_msg = otrng_xstrdup(buff);
 
   *dst = buff;
 
@@ -309,11 +305,7 @@ API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
     free(otr->sending_init_msg);
   }
 
-  otr->sending_init_msg = otrng_strdup(buff);
-  if (!otr->sending_init_msg) {
-    free(buff);
-    return OTRNG_ERROR;
-  }
+  otr->sending_init_msg = otrng_xstrdup(buff);
 
   *whitespace_tag = buff;
 
@@ -327,7 +319,7 @@ tstatic otrng_bool message_contains_tag(const string_p message) {
 tstatic void set_to_display(otrng_response_s *response,
                             const string_p message) {
   size_t msg_len = strlen(message);
-  response->to_display = otrng_strndup(message, msg_len);
+  response->to_display = otrng_xstrndup(message, msg_len);
 }
 
 tstatic otrng_result message_to_display_without_tag(otrng_response_s *response,
@@ -360,7 +352,7 @@ tstatic otrng_result message_to_display_without_tag(otrng_response_s *response,
   }
   buff[chars] = '\0';
 
-  response->to_display = otrng_strndup(buff, chars);
+  response->to_display = otrng_xstrndup(buff, chars);
 
   free(buff);
   return OTRNG_SUCCESS;
@@ -533,10 +525,7 @@ tstatic otrng_result receive_query_message(otrng_response_s *response,
 
   // TODO: @refactoring still unsure about this
   if (!otr->receiving_init_msg) {
-    otr->receiving_init_msg = otrng_strdup(message);
-    if (!otr->receiving_init_msg) {
-      return OTRNG_ERROR;
-    }
+    otr->receiving_init_msg = otrng_xstrdup(message);
   }
 
   switch (otr->running_version) {
@@ -1750,7 +1739,7 @@ tstatic otrng_result decrypt_data_msg(otrng_response_s *response,
 
   /* If plain != "" and msg->enc_msg_len != 0 */
   if (otrng_strnlen((string_p)plain, msg->enc_msg_len)) {
-    *dst = otrng_strndup((char *)plain, msg->enc_msg_len);
+    *dst = otrng_xstrndup((char *)plain, msg->enc_msg_len);
   }
 
   response->tlvs = deserialize_received_tlvs(plain, msg->enc_msg_len);
@@ -2110,19 +2099,19 @@ tstatic otrng_result receive_error_message(otrng_response_s *response,
 
   if (strncmp(message, "ERROR_1:", 8) == 0) {
     response->to_display =
-        otrng_strndup(unreadable_msg_error, strlen(unreadable_msg_error));
+        otrng_xstrndup(unreadable_msg_error, strlen(unreadable_msg_error));
     return OTRNG_SUCCESS;
   } else if (strncmp(message, "ERROR_2:", 8) == 0) {
     response->to_display =
-        otrng_strndup(not_in_private_error, strlen(not_in_private_error));
+        otrng_xstrndup(not_in_private_error, strlen(not_in_private_error));
     return OTRNG_SUCCESS;
   } else if (strncmp(message, "ERROR_3:", 8) == 0) {
     response->to_display =
-        otrng_strndup(encryption_error, strlen(encryption_error));
+        otrng_xstrndup(encryption_error, strlen(encryption_error));
     return OTRNG_SUCCESS;
   } else if (strncmp(message, "ERROR_4:", 8) == 0) {
     response->to_display =
-        otrng_strndup(malformed_error, strlen(malformed_error));
+        otrng_xstrndup(malformed_error, strlen(malformed_error));
     return OTRNG_SUCCESS;
   }
 

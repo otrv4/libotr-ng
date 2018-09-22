@@ -294,8 +294,8 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
 
 void test_otrng_generates_shared_session_state_string(void) {
   otrng_shared_session_state_s state1[1];
-  state1->identifier1 = otrng_strdup("alice");
-  state1->identifier2 = otrng_strdup("bob");
+  state1->identifier1 = otrng_xstrdup("alice");
+  state1->identifier2 = otrng_xstrdup("bob");
   state1->password = NULL;
 
   char *state1_str = otrng_generate_session_state_string(state1);
@@ -307,8 +307,8 @@ void test_otrng_generates_shared_session_state_string(void) {
   free(state1->identifier2);
 
   otrng_shared_session_state_s state2[1];
-  state2->identifier1 = otrng_strdup("bob");
-  state2->identifier2 = otrng_strdup("alice");
+  state2->identifier1 = otrng_xstrdup("bob");
+  state2->identifier2 = otrng_xstrdup("alice");
   state2->password = NULL;
 
   char *state2_str = otrng_generate_session_state_string(state2);
@@ -320,9 +320,9 @@ void test_otrng_generates_shared_session_state_string(void) {
   free(state2->identifier2);
 
   otrng_shared_session_state_s state3[1];
-  state3->identifier1 = otrng_strdup("bob");
-  state3->identifier2 = otrng_strdup("alice");
-  state3->password = otrng_strdup("passwd");
+  state3->identifier1 = otrng_xstrdup("bob");
+  state3->identifier2 = otrng_xstrdup("alice");
+  state3->password = otrng_xstrdup("passwd");
 
   char *state3_str = otrng_generate_session_state_string(state3);
   otrng_assert(state3_str);
@@ -337,7 +337,7 @@ void test_otrng_generates_shared_session_state_string(void) {
   otrng_assert(state4_str == NULL);
 
   otrng_shared_session_state_s state4[1];
-  state4->identifier1 = otrng_strdup("bob");
+  state4->identifier1 = otrng_xstrdup("bob");
   state4->identifier2 = NULL;
   state4->password = NULL;
 
@@ -346,7 +346,7 @@ void test_otrng_generates_shared_session_state_string(void) {
 
   otrng_shared_session_state_s state5[1];
   state5->identifier1 = NULL;
-  state5->identifier2 = otrng_strdup("bob");
+  state5->identifier2 = otrng_xstrdup("bob");
   state5->password = NULL;
 
   otrng_assert(otrng_generate_session_state_string(state5) == NULL);

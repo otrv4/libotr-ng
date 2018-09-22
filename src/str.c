@@ -26,7 +26,7 @@
 #include "alloc.h"
 #include "str.h"
 
-INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len) {
+INTERNAL /*@null@*/ char *otrng_xstrndup(const char *s, size_t s_len) {
   void *new;
   char *ret;
 
@@ -45,11 +45,11 @@ INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len) {
   return ret;
 }
 
-INTERNAL /*@null@*/ char *otrng_strdup(const char *s) {
-  return otrng_strndup(s, strlen(s));
+INTERNAL /*@null@*/ char *otrng_xstrdup(const char *s) {
+  return otrng_xstrndup(s, strlen(s));
 }
 
-INTERNAL /*@null@*/ void *otrng_memdup(const void *s, const size_t len) {
+INTERNAL /*@null@*/ void *otrng_xmemdup(const void *s, const size_t len) {
   void *d;
 
   if (!s || len == 0) {

@@ -49,8 +49,8 @@ static const otrng_client_id_s create_client_id(const char *protocol,
 static otrng_shared_session_state_s
 get_shared_session_state_cb(const otrng_s *conv) {
   otrng_shared_session_state_s ret = {
-      .identifier1 = otrng_strdup("alice"),
-      .identifier2 = otrng_strdup("bob"),
+      .identifier1 = otrng_xstrdup("alice"),
+      .identifier2 = otrng_xstrdup("bob"),
       .password = NULL,
   };
 
@@ -63,8 +63,8 @@ get_account_and_protocol_cb(char **account_name, char **protocol_name,
   const char *account =
       client_id.account; // tests use client_name as client_id.
 
-  *account_name = otrng_strdup(account);
-  *protocol_name = otrng_strdup("otr");
+  *account_name = otrng_xstrdup(account);
+  *protocol_name = otrng_xstrdup("otr");
   return OTRNG_SUCCESS;
 }
 

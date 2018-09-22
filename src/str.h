@@ -28,11 +28,11 @@
 
 #define string_p char *
 
-INTERNAL /*@null@*/ void *otrng_memdup(const void *s, const size_t len);
+INTERNAL /*@null@*/ void *otrng_xmemdup(const void *s, const size_t len);
 
-INTERNAL /*@null@*/ char *otrng_strndup(const char *s, size_t s_len);
+INTERNAL /*@null@*/ char *otrng_xstrndup(const char *s, size_t s_len);
 
-INTERNAL char *otrng_strdup(const char *s);
+INTERNAL char *otrng_xstrdup(const char *s);
 
 INTERNAL /*@null@*/ char *otrng_stpcpy(char *dest, const char *src);
 

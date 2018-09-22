@@ -19,8 +19,8 @@
  */
 
 void test_otrng_stpcpy(void) {
-  char *dst = otrng_strdup("abcd");
-  char *src = otrng_strdup("12");
+  char *dst = otrng_xstrdup("abcd");
+  char *src = otrng_xstrdup("12");
   char *ret = otrng_stpcpy(dst, src);
 
   otrng_assert(ret == dst + 2);
@@ -35,8 +35,8 @@ void test_otrng_stpcpy(void) {
 }
 
 void test_otrng_stpncpy(void) {
-  char *dst = otrng_strdup("abcd");
-  char *src = otrng_strdup("123");
+  char *dst = otrng_xstrdup("abcd");
+  char *src = otrng_xstrdup("123");
   char *ret = otrng_stpncpy(dst, src, 2);
 
   otrng_assert(ret == dst + 2);
@@ -49,8 +49,8 @@ void test_otrng_stpncpy(void) {
   free(dst);
   free(src);
 
-  dst = otrng_strdup("abcde");
-  src = otrng_strdup("12");
+  dst = otrng_xstrdup("abcde");
+  src = otrng_xstrdup("12");
   ret = otrng_stpncpy(dst, src, 4);
 
   otrng_assert(ret == dst + 2);

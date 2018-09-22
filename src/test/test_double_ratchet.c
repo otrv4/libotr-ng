@@ -466,7 +466,7 @@ void test_double_ratchet_corrupted_ratchet(void) {
       otrng_client_get_instance_tag(alice_client);
   corrupted_data_msg->receiver_instance_tag =
       otrng_client_get_instance_tag(bob_client);
-  corrupted_data_msg->enc_msg = (uint8_t *)otrng_strdup("hduejo");
+  corrupted_data_msg->enc_msg = (uint8_t *)otrng_xstrdup("hduejo");
   corrupted_data_msg->enc_msg_len = 7;
   otrng_ec_point_copy(corrupted_data_msg->ecdh, bob->keys->our_ecdh->pub);
   corrupted_data_msg->dh = otrng_dh_mpi_copy(bob->keys->our_dh->pub);

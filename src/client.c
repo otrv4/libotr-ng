@@ -42,11 +42,7 @@ tstatic otrng_conversation_s *new_conversation_with(const char *recipient,
                                                     otrng_s *conn) {
   otrng_conversation_s *conv = otrng_xmalloc(sizeof(otrng_conversation_s));
 
-  conv->recipient = otrng_strdup(recipient);
-  if (!conv->recipient) {
-    free(conv);
-    return NULL;
-  }
+  conv->recipient = otrng_xstrdup(recipient);
 
   conv->conn = conn;
 
@@ -188,11 +184,7 @@ tstatic otrng_s *create_connection_for(const char *recipient,
     return NULL;
   }
 
-  conn->peer = otrng_strdup(recipient);
-  if (!conn->peer) {
-    otrng_v3_conn_free(v3_conn);
-    return NULL;
-  }
+  conn->peer = otrng_xstrdup(recipient);
 
   v3_conn->opdata = conn; /* For use in callbacks */
   conn->v3_conn = v3_conn;
@@ -382,20 +374,12 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
   }
 
   if (response->to_send) {
-    *newmessage = otrng_strdup(response->to_send);
-    if (!*newmessage) {
-      otrng_response_free(response);
-      return OTRNG_ERROR;
-    }
+    *newmessage = otrng_xstrdup(response->to_send);
   }
 
   *todisplay = NULL;
   if (response->to_display) {
-    char *plain = otrng_strdup(response->to_display);
-    if (!*plain) {
-      otrng_response_free(response);
-      return OTRNG_ERROR;
-    }
+    char *plain = otrng_xstrdup(response->to_display);
     *todisplay = plain;
     otrng_response_free(response);
     return OTRNG_SUCCESS;
@@ -419,10 +403,7 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
     // TODO: @client This should come from the client (a callback maybe?)
     // because it knows in which language this should be sent, for example.
     char *error =
-        otrng_strdup("Failed to start an Off-the-Record private conversation.");
-    if (!error) {
-      return NULL;
-    }
+        otrng_xstrdup("Failed to start an Off-the-Record private conversation.");
     return error;
   }
 
@@ -942,18 +923,8 @@ tstatic OtrlInsTag *otrng_instance_tag_new(const char *protocol,
 
   p = otrng_xmalloc(sizeof(OtrlInsTag));
 
-  p->accountname = otrng_strdup(account);
-  if (!p->accountname) {
-    free(p);
-    return NULL;
-  }
-
-  p->protocol = otrng_strdup(protocol);
-  if (!p->protocol) {
-    free(p);
-    return NULL;
-  }
-
+  p->accountname = otrng_xstrdup(account);
+  p->protocol = otrng_xstrdup(protocol);
   p->instag = instag;
 
   return p;

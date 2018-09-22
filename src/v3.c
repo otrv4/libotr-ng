@@ -565,11 +565,7 @@ INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_s *client,
   ret->opdata = NULL;
   ret->injected_message = NULL;
 
-  ret->peer = otrng_strdup(peer);
-  if (!ret->peer) {
-    free(ret);
-    return NULL;
-  }
+  ret->peer = otrng_xstrdup(peer);
 
   return ret;
 }
@@ -653,10 +649,7 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
   *to_send = otrng_v3_retrieve_injected_message(conn);
 
   if (to_display && newmessage) {
-    *to_display = otrng_strdup(newmessage);
-    if (!*to_display) {
-      return OTRNG_ERROR;
-    }
+    *to_display = otrng_xstrdup(newmessage);
   }
 
   if (otrl_tlv_find(tlvs_v3, OTRL_TLV_DISCONNECTED)) {
@@ -769,10 +762,7 @@ tstatic void otrng_v3_store_injected_message(const char *message,
     free(conn->injected_message);
   }
 
-  conn->injected_message = otrng_strdup(message);
-  if (conn->injected_message) {
-    return;
-  }
+  conn->injected_message = otrng_xstrdup(message);
 }
 
 tstatic char *otrng_v3_retrieve_injected_message(otrng_v3_conn_s *conn) {

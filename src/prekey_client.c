@@ -115,17 +115,9 @@ otrng_prekey_client_new(const char *server, const char *our_identity,
   // TODO: Can be null if you dont want to publish it
   ret->prekey_profile = prekey_profile;
   ret->keypair = keypair;
-  ret->server_identity = otrng_strdup(server);
-  if (!ret->server_identity) {
-    free(ret);
-    return NULL;
-  }
+  ret->server_identity = otrng_xstrdup(server);
 
-  ret->our_identity = otrng_strdup(our_identity);
-  if (!ret->our_identity) {
-    free(ret);
-    return NULL;
-  }
+  ret->our_identity = otrng_xstrdup(our_identity);
 
   otrng_ecdh_keypair_destroy(ret->ephemeral_ecdh);
   ret->max_published_prekey_msg = max_published_prekey_msg;
@@ -236,15 +228,9 @@ API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
 
   otrng_prekey_ensemble_query_retrieval_message_s msg[1];
 
-  msg->identity = otrng_strdup(identity);
-  if (!msg->identity) {
-    return NULL;
-  }
+  msg->identity = otrng_xstrdup(identity);
 
-  msg->versions = otrng_strdup(versions);
-  if (!msg->versions) {
-    return NULL;
-  }
+  msg->versions = otrng_xstrdup(versions);
 
   msg->instance_tag = client->instance_tag;
 

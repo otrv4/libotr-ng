@@ -187,7 +187,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
     }
 
     msg->q_len = q_len;
-    msg->question = otrng_memdup(question, q_len);
+    msg->question = otrng_xmemdup(question, q_len);
 
     if (!otrng_smp_msg_1_asprintf(&to_send, &len, msg)) {
       continue;

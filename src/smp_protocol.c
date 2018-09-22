@@ -169,7 +169,7 @@ INTERNAL otrng_result otrng_generate_smp_msg_1(smp_msg_1_s *dst,
 
 tstatic void smp_msg_1_copy(smp_msg_1_s *dst, const smp_msg_1_s *src) {
   dst->q_len = src->q_len;
-  dst->question = otrng_memdup(src->question, src->q_len);
+  dst->question = otrng_xmemdup(src->question, src->q_len);
 
   otrng_ec_point_copy(dst->g2a, src->g2a);
   otrng_ec_scalar_copy(dst->c2, src->c2);
