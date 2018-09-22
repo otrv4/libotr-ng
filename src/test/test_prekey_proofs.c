@@ -79,6 +79,7 @@ void test_dh_proof_generation_and_validation(void) {
   otrng_assert(!dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x14));
   otrng_assert(!dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m2, 0x13));
 
+  otrng_dh_mpi_release(pubs[1]);
   pubs[1] = otrng_dh_mpi_copy(v4->pub);
 
   otrng_assert(!dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
