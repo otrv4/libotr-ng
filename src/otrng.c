@@ -2420,17 +2420,57 @@ API otrng_result otrng_send_symkey_message(string_p *to_send, unsigned int use,
   return OTRNG_ERROR;
 }
 
+#define GCRYPT_WANTED_VERSION_16 "1.6.4"
+#define GCRYPT_WANTED_VERSION_17 "1.7.6"
+#define GCRYPT_WANTED_VERSION_18 "1.8.0"
+
+API otrng_result otrng_init(otrng_bool die) {
+  const char *real;
+  otrng_result r;
+
+  if (gcry_check_version(GCRYPT_WANTED_VERSION_18) == NULL) {
+    if (gcry_check_version(GCRYPT_WANTED_VERSION_17) == NULL) {
+      if (gcry_check_version(GCRYPT_WANTED_VERSION_16) == NULL) {
+        real = gcry_check_version(NULL);
+
+        fprintf(stderr,
+                "gcrypt initialization failed - we need versions larger than "
+                "%s, %s or %s - but your version is %s\n",
+                GCRYPT_WANTED_VERSION_18, GCRYPT_WANTED_VERSION_17,
+                GCRYPT_WANTED_VERSION_16, real);
+        if (die) {
+          exit(1);
+        }
+        return OTRNG_ERROR;
+      }
+    }
+  }
+
+  r = otrng_v3_init(die);
+
+  if (otrng_failed(r)) {
+    return r;
+  }
+  return otrng_dh_init(die);
+}
+
 static int otrl_initialized = 0;
-API void otrng_v3_init(void) {
+API otrng_result otrng_v3_init(otrng_bool die) {
   if (otrl_initialized) {
-    return;
+    return OTRNG_SUCCESS;
   }
 
   if (otrl_init(OTRL_VERSION_MAJOR, OTRL_VERSION_MINOR, OTRL_VERSION_SUB)) {
-    exit(1);
+    fprintf(stderr, "otrv3 initialization failed\n");
+    if (die) {
+      exit(1);
+    }
+    return OTRNG_ERROR;
   }
 
   otrl_initialized = 1;
+
+  return OTRNG_SUCCESS;
 }
 
 char *

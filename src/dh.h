@@ -45,8 +45,7 @@ typedef struct dh_keypair_s {
   dh_private_key_p priv;
 } dh_keypair_s, dh_keypair_p[1];
 
-INTERNAL void otrng_dh_init(void);
-
+INTERNAL otrng_result otrng_dh_init(otrng_bool die);
 INTERNAL void otrng_dh_free(void);
 
 INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,

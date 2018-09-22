@@ -45,16 +45,8 @@
 
 #define UNUSED_ARG(x) (void)(x)
 
-#define OTRNG_INIT                                                             \
-  do {                                                                         \
-    otrng_v3_init();                                                           \
-    otrng_dh_init();                                                           \
-  } while (0)
-
-#define OTRNG_FREE                                                             \
-  do {                                                                         \
-    otrng_dh_free();                                                           \
-  } while (0)
+#define OTRNG_INIT otrng_init(otrng_true)
+#define OTRNG_FREE otrng_dh_free()
 
 typedef struct otrng_response_s {
   string_p to_display;
@@ -117,7 +109,8 @@ API otrng_result otrng_send_offline_message(char **dst,
 API otrng_result otrng_send_non_interactive_auth(
     char **dst, const prekey_ensemble_s *ensemble, otrng_s *otr);
 
-API void otrng_v3_init(void);
+API otrng_result otrng_init(otrng_bool die);
+API otrng_result otrng_v3_init(otrng_bool die);
 
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);
 

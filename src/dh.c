@@ -73,11 +73,11 @@ static gcry_mpi_t DH3072_GENERATOR = NULL;
 
 static int dh_initialized = 0;
 
-INTERNAL void otrng_dh_init(void) {
+INTERNAL otrng_result otrng_dh_init(otrng_bool die) {
   gcry_error_t err;
 
   if (dh_initialized) {
-    return;
+    return OTRNG_SUCCESS;
   }
 
   dh_initialized = 1;
@@ -85,14 +85,22 @@ INTERNAL void otrng_dh_init(void) {
   err = gcry_mpi_scan(&DH3072_MODULUS, GCRYMPI_FMT_HEX,
                       (const unsigned char *)DH3072_MODULUS_S, 0, NULL);
   if (err) {
-    return;
+    fprintf(stderr, "dh - s - initialization failed\n");
+    if (die) {
+      exit(1);
+    }
+    return OTRNG_ERROR;
   }
 
   err = gcry_mpi_scan(&DH3072_MODULUS_Q, GCRYMPI_FMT_HEX,
                       (const unsigned char *)DH3072_MODULUS_SQ, 0, NULL);
   if (err) {
     gcry_mpi_release(DH3072_MODULUS);
-    return;
+    fprintf(stderr, "dh - sq - initialization failed\n");
+    if (die) {
+      exit(1);
+    }
+    return OTRNG_ERROR;
   }
 
   err = gcry_mpi_scan(&DH3072_GENERATOR, GCRYMPI_FMT_HEX,
@@ -100,7 +108,11 @@ INTERNAL void otrng_dh_init(void) {
   if (err) {
     gcry_mpi_release(DH3072_MODULUS);
     gcry_mpi_release(DH3072_MODULUS_Q);
-    return;
+    fprintf(stderr, "dh - gen s - initialization failed\n");
+    if (die) {
+      exit(1);
+    }
+    return OTRNG_ERROR;
   }
 
   DH3072_MODULUS_MINUS_2 = gcry_mpi_new(DH3072_MOD_LEN_BITS);
@@ -108,9 +120,16 @@ INTERNAL void otrng_dh_init(void) {
     gcry_mpi_release(DH3072_MODULUS);
     gcry_mpi_release(DH3072_MODULUS_Q);
     gcry_mpi_release(DH3072_GENERATOR);
+    fprintf(stderr, "dh - minus 2 - initialization failed\n");
+    if (die) {
+      exit(1);
+    }
+    return OTRNG_ERROR;
   }
 
   gcry_mpi_sub_ui(DH3072_MODULUS_MINUS_2, DH3072_MODULUS, 2);
+
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL void otrng_dh_free(void) {
