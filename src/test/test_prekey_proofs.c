@@ -94,4 +94,5 @@ void test_dh_proof_generation_and_validation(void) {
   otrng_dh_mpi_release(pubs[0]);
   otrng_dh_mpi_release(pubs[1]);
   otrng_dh_mpi_release(pubs[2]);
+  otrng_dh_mpi_release(res->v);
 }

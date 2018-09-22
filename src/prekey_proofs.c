@@ -258,6 +258,7 @@ INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
     p_curr += w;
     gcry_mpi_mulm(t, t, values_priv[i], q);
     gcry_mpi_addm(dst->v, dst->v, t, q);
+    otrng_dh_mpi_release(t);
   }
 
   return OTRNG_SUCCESS;
@@ -300,6 +301,7 @@ INTERNAL otrng_bool dh_proof_verify(dh_proof_p px, const dh_mpi_p *values_pub,
 
     gcry_mpi_powm(t, values_pub[i], t, mod);
     gcry_mpi_mulm(curr, curr, t, mod);
+    otrng_dh_mpi_release(t);
   }
   gcry_mpi_invm(curr, curr, mod);
   gcry_mpi_mulm(a, a, curr, mod);
