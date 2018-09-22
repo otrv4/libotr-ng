@@ -505,6 +505,22 @@
    osx_libcorecrypto_1
    Memcheck:Cond
    fun:generate_block
+   ...
+   fun:otrng_fixture_set_up
+   ...
+}
+{
+   osx_libcorecrypto_2
+   Memcheck:Cond
+   fun:generate_block
+   fun:drbg_update
+   ...
+   fun:otrng_fixture_set_up
+   ...
+}
+{
+   osx_libcorecrypto_3
+   Memcheck:Cond
    fun:drbg_update
    ...
    fun:otrng_fixture_set_up
