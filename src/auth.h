@@ -89,7 +89,7 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
                                       const otrng_public_key_p A1,
                                       const otrng_public_key_p A2,
                                       const otrng_public_key_p A3,
-                                      const unsigned char *msg, size_t msglen);
+                                      const uint8_t *message, size_t msglen);
 
 /**
  * @brief Zero the values of the Ring Sig.

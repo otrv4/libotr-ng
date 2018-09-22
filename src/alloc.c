@@ -37,7 +37,7 @@ INTERNAL void *otrng_xmalloc(size_t size) {
       oom_handler();
     }
     fprintf(stderr, "fatal: memory exhausted (xmalloc of %zu bytes).\n", size);
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   return result;
@@ -50,7 +50,7 @@ INTERNAL void *otrng_xrealloc(void *ptr, size_t size) {
       oom_handler();
     }
     fprintf(stderr, "fatal: memory exhausted (xrealloc of %zu bytes).\n", size);
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   return result;

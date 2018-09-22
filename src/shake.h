@@ -41,18 +41,6 @@ void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage);
 void shake_kkdf(uint8_t *dst, size_t dstlen, const uint8_t *key, size_t keylen,
                 const uint8_t *secret, size_t secretlen);
 
-static inline void shake_256_mac(uint8_t *dst, size_t dstlen,
-                                 const uint8_t *key, size_t keylen,
-                                 const uint8_t *msg, size_t msglen) {
-  shake_kkdf(dst, dstlen, key, keylen, msg, msglen);
-}
-
-static inline void shake_256_kdf(uint8_t *key, size_t keylen,
-                                 const uint8_t magic[1], const uint8_t *secret,
-                                 size_t secretlen) {
-  shake_kkdf(key, keylen, magic, 1, secret, secretlen);
-}
-
 /* KDF_1("OTRv4" || usageID || values, len) */
 void shake_256_kdf1(uint8_t *dst, size_t dstlen, uint8_t usage,
                     const uint8_t *values, size_t valueslen);
