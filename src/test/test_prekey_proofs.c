@@ -244,4 +244,5 @@ void test_dh_proof_deserialization(void) {
   otrng_assert_dh_public_key_eq(px->v, expected_v);
 
   otrng_dh_mpi_release(px->v);
+  otrng_dh_mpi_release(expected_v);
 }
