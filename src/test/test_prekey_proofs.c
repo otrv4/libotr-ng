@@ -42,15 +42,19 @@ void test_ecdh_proof_generation_and_validation(void) {
   goldilocks_448_point_copy(pubs[1], v2->pub);
   goldilocks_448_point_copy(pubs[2], v3->pub);
 
-  otrng_assert_is_success(ecdh_proof_generate(
+  otrng_assert_is_success(otrng_ecdh_proof_generate(
       res, (const ec_scalar_p *)privs, (const ec_point_p *)pubs, 3, m, 0x13));
-  otrng_assert(ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m, 0x13));
-  otrng_assert(!ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m, 0x14));
-  otrng_assert(!ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m2, 0x13));
+  otrng_assert(
+      otrng_ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m, 0x13));
+  otrng_assert(
+      !otrng_ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m, 0x14));
+  otrng_assert(
+      !otrng_ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m2, 0x13));
 
   goldilocks_448_point_copy(pubs[1], v4->pub);
 
-  otrng_assert(!ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m, 0x13));
+  otrng_assert(
+      !otrng_ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m, 0x13));
 }
 
 void test_dh_proof_generation_and_validation(void) {
@@ -73,16 +77,20 @@ void test_dh_proof_generation_and_validation(void) {
   pubs[1] = otrng_dh_mpi_copy(v2->pub);
   pubs[2] = otrng_dh_mpi_copy(v3->pub);
 
-  otrng_assert_is_success(dh_proof_generate(
+  otrng_assert_is_success(otrng_dh_proof_generate(
       res, (const gcry_mpi_t *)privs, (const gcry_mpi_t *)pubs, 3, m, 0x13));
-  otrng_assert(dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
-  otrng_assert(!dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x14));
-  otrng_assert(!dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m2, 0x13));
+  otrng_assert(
+      otrng_dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
+  otrng_assert(
+      !otrng_dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x14));
+  otrng_assert(
+      !otrng_dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m2, 0x13));
 
   otrng_dh_mpi_release(pubs[1]);
   pubs[1] = otrng_dh_mpi_copy(v4->pub);
 
-  otrng_assert(!dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
+  otrng_assert(
+      !otrng_dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
 
   otrng_dh_keypair_destroy(v1);
   otrng_dh_keypair_destroy(v2);

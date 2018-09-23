@@ -38,27 +38,28 @@ typedef struct dh_proof_s {
   dh_mpi_p v;
 } dh_proof_s, dh_proof_p[1];
 
-INTERNAL otrng_result ecdh_proof_generate(ecdh_proof_p dst,
-                                          const ec_scalar_p *values_priv,
-                                          const ec_point_p *values_pub,
+INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_p dst,
+                                                const ec_scalar_p *values_priv,
+                                                const ec_point_p *values_pub,
+                                                const size_t values_len,
+                                                const uint8_t *m,
+                                                const uint8_t usage);
+
+INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_p px,
+                                            const ec_point_p *values_pub,
+                                            const size_t values_len,
+                                            const uint8_t *m,
+                                            const uint8_t usage);
+
+INTERNAL otrng_result otrng_dh_proof_generate(
+    dh_proof_p dst, const dh_mpi_p *values_priv, const dh_mpi_p *values_pub,
+    const size_t values_len, const uint8_t *m, const uint8_t usage);
+
+INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_p px,
+                                          const dh_mpi_p *values_pub,
                                           const size_t values_len,
                                           const uint8_t *m,
                                           const uint8_t usage);
-
-INTERNAL otrng_bool ecdh_proof_verify(ecdh_proof_p px,
-                                      const ec_point_p *values_pub,
-                                      const size_t values_len, const uint8_t *m,
-                                      const uint8_t usage);
-
-INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
-                                        const dh_mpi_p *values_priv,
-                                        const dh_mpi_p *values_pub,
-                                        const size_t values_len,
-                                        const uint8_t *m, const uint8_t usage);
-
-INTERNAL otrng_bool dh_proof_verify(dh_proof_p px, const dh_mpi_p *values_pub,
-                                    const size_t values_len, const uint8_t *m,
-                                    const uint8_t usage);
 
 #ifdef OTRNG_PREKEY_PROOFS_PRIVATE
 #endif
