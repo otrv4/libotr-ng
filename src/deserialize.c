@@ -151,8 +151,10 @@ INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
   return OTRNG_SUCCESS;
 }
 
-otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_p *dst, const uint8_t *buffer,
-                                          size_t buflen, size_t *read) {
+INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_p *dst,
+                                                   const uint8_t *buffer,
+                                                   size_t buflen,
+                                                   size_t *read) {
   otrng_mpi_p mpi; // no need to free, because nothing is copied now
   size_t w = 0;
   otrng_result ret;

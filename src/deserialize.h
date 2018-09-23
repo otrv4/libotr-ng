@@ -49,8 +49,9 @@ INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
                                                     const uint8_t *buffer,
                                                     size_t buflen);
 
-otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_p *dst, const uint8_t *buffer,
-                                          size_t buflen, size_t *read);
+INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_p *dst,
+                                                   const uint8_t *buffer,
+                                                   size_t buflen, size_t *read);
 
 INTERNAL otrng_result otrng_deserialize_ec_point(ec_point_p point,
                                                  const uint8_t *serialized,

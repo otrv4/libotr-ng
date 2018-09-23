@@ -61,6 +61,16 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_p px,
                                           const uint8_t *m,
                                           const uint8_t usage);
 
+INTERNAL size_t otrng_ecdh_proof_serialize(uint8_t *dst, const ecdh_proof_p px);
+INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_p px);
+INTERNAL otrng_result otrng_ecdh_proof_deserialize(ecdh_proof_p px,
+                                                   const uint8_t *serialized,
+                                                   size_t ser_len,
+                                                   size_t *read);
+INTERNAL otrng_result otrng_dh_proof_deserialize(dh_proof_p px,
+                                                 const uint8_t *serialized,
+                                                 size_t ser_len, size_t *read);
+
 #ifdef OTRNG_PREKEY_PROOFS_PRIVATE
 #endif
 

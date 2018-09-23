@@ -22,7 +22,9 @@
 
 #include "prekey_proofs.h"
 #include "alloc.h"
+#include "deserialize.h"
 #include "random.h"
+#include "serialize.h"
 #include "shake.h"
 
 #define PREKEY_PROOF_LAMBDA 44 // 352 / 8
@@ -340,4 +342,78 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_p px,
   }
 
   return otrng_false;
+}
+
+INTERNAL size_t otrng_ecdh_proof_serialize(uint8_t *dst,
+                                           const ecdh_proof_p px) {
+  uint8_t *cursor = dst;
+
+  cursor += otrng_serialize_bytes_array(cursor, px->c, PROOF_C_SIZE);
+  cursor += otrng_serialize_ec_scalar(cursor, px->v);
+
+  return cursor - dst;
+}
+
+INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_p px) {
+  uint8_t *cursor = dst;
+  size_t len;
+
+  cursor += otrng_serialize_bytes_array(cursor, px->c, PROOF_C_SIZE);
+  otrng_serialize_dh_mpi_otr(cursor, DH_MPI_MAX_BYTES, &len, px->v);
+  cursor += len;
+
+  return cursor - dst;
+}
+
+INTERNAL otrng_result otrng_ecdh_proof_deserialize(ecdh_proof_p px,
+                                                   const uint8_t *serialized,
+                                                   size_t ser_len,
+                                                   size_t *read) {
+  const uint8_t *cursor = serialized;
+  if (ser_len < PROOF_C_SIZE + ED448_SCALAR_BYTES) {
+    return OTRNG_ERROR;
+  }
+
+  if (!otrng_deserialize_bytes_array(px->c, PROOF_C_SIZE, cursor, ser_len)) {
+    return OTRNG_ERROR;
+  }
+  cursor += PROOF_C_SIZE;
+  ser_len -= PROOF_C_SIZE;
+
+  if (!otrng_deserialize_ec_scalar(px->v, cursor, ser_len)) {
+    return OTRNG_ERROR;
+  }
+
+  if (read) {
+    *read = PROOF_C_SIZE + ED448_SCALAR_BYTES;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result otrng_dh_proof_deserialize(dh_proof_p px,
+                                                 const uint8_t *serialized,
+                                                 size_t ser_len, size_t *read) {
+  const uint8_t *cursor = serialized;
+  size_t n;
+
+  if (ser_len < PROOF_C_SIZE) {
+    return OTRNG_ERROR;
+  }
+
+  if (!otrng_deserialize_bytes_array(px->c, PROOF_C_SIZE, cursor, ser_len)) {
+    return OTRNG_ERROR;
+  }
+  cursor += PROOF_C_SIZE;
+  ser_len -= PROOF_C_SIZE;
+
+  if (!otrng_deserialize_dh_mpi_otr(&px->v, cursor, ser_len, &n)) {
+    return OTRNG_ERROR;
+  }
+
+  if (read) {
+    *read = PROOF_C_SIZE + n;
+  }
+
+  return OTRNG_SUCCESS;
 }
