@@ -41,7 +41,7 @@ test: check
 CLANG_TIDY_ARGS = -p $(top_builddir) \
 	-warnings-as-errors="readability-*,hicpp-*,clang-analyzer-*,clang-diagnostic-*,cert-*,-*"
 
-code-check:
+code-check: check
 	clang-tidy $(CLANG_TIDY_ARGS) $(top_builddir)/src/*.c
 
 VALGRIND_SUPPRESSIONS = \

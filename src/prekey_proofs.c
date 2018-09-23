@@ -337,7 +337,6 @@ INTERNAL otrng_bool dh_proof_verify(dh_proof_p px, const dh_mpi_p *values_pub,
   }
 
   memcpy(cbuf_curr, m, 64);
-  total += 64;
   shake_256_prekey_server_kdf(c2, PROOF_C_SIZE, usage, cbuf, cbuf_len);
   free(cbuf);
 
