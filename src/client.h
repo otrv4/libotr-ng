@@ -70,8 +70,6 @@ typedef struct otrng_client_s {
   unsigned int max_published_prekey_msg;
   unsigned int minimum_stored_prekey_msg;
 
-  uint64_t extra_client_profile_validity; // TODO: unsure of putting here, what
-                                          // about multiple instace tags?
   uint64_t client_profile_exp_time;
   unsigned int client_profile_extra_valid_time;
 

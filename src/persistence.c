@@ -454,9 +454,6 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
   free(dec);
 
   if (otrng_client_profile_expired(profile->expires)) {
-    time_t extra_validity = time(NULL);
-    client->extra_client_profile_validity =
-        extra_validity + client->client_profile_extra_valid_time;
     otrng_client_callbacks_write_expired_client_profile(
         client->global_state->callbacks, client, client->client_id);
 
