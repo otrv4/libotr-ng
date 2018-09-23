@@ -242,4 +242,6 @@ void test_dh_proof_deserialization(void) {
   g_assert_cmpuint(147, ==, read);
   otrng_assert_cmpmem(expected_c, px->c, 64);
   otrng_assert_dh_public_key_eq(px->v, expected_v);
+
+  otrng_dh_mpi_release(px->v);
 }
