@@ -197,7 +197,6 @@ INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
   uint8_t *cbuf_curr;
   uint8_t *p_curr;
   size_t w;
-  size_t total = 0;
   size_t cbuf_len = ((values_len + 1) * DH3072_MOD_LEN_BYTES) + 64;
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
 
@@ -227,7 +226,6 @@ INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
   }
   otrng_dh_mpi_release(a);
   cbuf_curr += w;
-  total += w;
 
   for (i = 0; i < values_len; i++) {
     if (otrng_failed(otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w,
@@ -237,7 +235,6 @@ INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
       return OTRNG_ERROR;
     }
     cbuf_curr += w;
-    total += w;
   }
 
   memcpy(cbuf_curr, m, 64);
@@ -277,7 +274,6 @@ INTERNAL otrng_bool dh_proof_verify(dh_proof_p px, const dh_mpi_p *values_pub,
   uint8_t *cbuf_curr;
   uint8_t *p_curr;
   size_t w;
-  size_t total = 0;
   size_t cbuf_len = ((values_len + 1) * DH3072_MOD_LEN_BYTES) + 64;
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
   uint8_t c2[PROOF_C_SIZE];
@@ -324,7 +320,6 @@ INTERNAL otrng_bool dh_proof_verify(dh_proof_p px, const dh_mpi_p *values_pub,
   gcry_mpi_release(a);
 
   cbuf_curr += w;
-  total += w;
 
   for (i = 0; i < values_len; i++) {
     if (otrng_failed(otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w,
@@ -333,7 +328,6 @@ INTERNAL otrng_bool dh_proof_verify(dh_proof_p px, const dh_mpi_p *values_pub,
       return otrng_false;
     }
     cbuf_curr += w;
-    total += w;
   }
 
   memcpy(cbuf_curr, m, 64);
