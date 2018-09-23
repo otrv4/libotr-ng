@@ -83,7 +83,7 @@ INTERNAL /*@null@*/ char *otrng_stpncpy(char *dest, const char *src, size_t n) {
   return dest + w;
 }
 
-INTERNAL size_t otrng_strnlen(/*@nonnull@*/ const char *s, size_t maxlen) {
+INTERNAL size_t otrng_strnlen(const char *s, size_t maxlen) {
   size_t l = 0;
   while (s[l] && l < maxlen) {
     l++;

@@ -47,7 +47,7 @@ API otrng_message_to_send_s *otrng_message_new(void);
 
 API void otrng_message_free(otrng_message_to_send_s *message);
 
-INTERNAL fragment_context_s *otrng_fragment_context_new(void);
+INTERNAL /*@null@*/ fragment_context_s *otrng_fragment_context_new(void);
 
 INTERNAL void otrng_fragment_context_free(fragment_context_s *context);
 

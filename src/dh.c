@@ -110,7 +110,7 @@ INTERNAL otrng_result otrng_dh_init(otrng_bool die) {
     gcry_mpi_release(DH3072_MODULUS_Q);
     fprintf(stderr, "dh - gen s - initialization failed\n");
     if (die) {
-      exit(1);
+      exit(EXIT_FAILURE);
     }
     return OTRNG_ERROR;
   }
@@ -122,7 +122,7 @@ INTERNAL otrng_result otrng_dh_init(otrng_bool die) {
     gcry_mpi_release(DH3072_GENERATOR);
     fprintf(stderr, "dh - minus 2 - initialization failed\n");
     if (die) {
-      exit(1);
+      exit(EXIT_FAILURE);
     }
     return OTRNG_ERROR;
   }

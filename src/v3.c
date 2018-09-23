@@ -352,34 +352,24 @@ static otrng_smp_event_t convert_smp_event(OtrlSMPEvent smp_event) {
   switch (smp_event) {
   case OTRL_SMPEVENT_ASK_FOR_SECRET:
     return OTRNG_SMP_EVENT_ASK_FOR_SECRET;
-    break;
   case OTRL_SMPEVENT_ASK_FOR_ANSWER:
     return OTRNG_SMP_EVENT_ASK_FOR_ANSWER;
-    break;
   case OTRL_SMPEVENT_CHEATED:
     return OTRNG_SMP_EVENT_CHEATED;
-    break;
   case OTRL_SMPEVENT_IN_PROGRESS:
     return OTRNG_SMP_EVENT_IN_PROGRESS;
-    break;
   case OTRL_SMPEVENT_SUCCESS:
     return OTRNG_SMP_EVENT_SUCCESS;
-    break;
   case OTRL_SMPEVENT_FAILURE:
     return OTRNG_SMP_EVENT_FAILURE;
-    break;
   case OTRL_SMPEVENT_ABORT:
     return OTRNG_SMP_EVENT_ABORT;
-    break;
   case OTRL_SMPEVENT_ERROR:
     return OTRNG_SMP_EVENT_ERROR;
-    break;
   case OTRL_SMPEVENT_NONE:
   default:
     return OTRNG_SMP_EVENT_NONE;
   }
-
-  return OTRNG_SMP_EVENT_NONE;
 }
 
 /* Update the authentication UI with respect to SMP events

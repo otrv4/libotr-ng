@@ -457,8 +457,12 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
   if (interactive) {
     k_ecdh_p k_ecdh;
 
-    otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), manager->our_ecdh->priv,
-                             manager->their_ecdh);
+    if (!otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh),
+                                  manager->our_ecdh->priv,
+                                  manager->their_ecdh)) {
+      return OTRNG_ERROR;
+    }
+
     otrng_ec_bzero(manager->our_ecdh->priv, sizeof(ec_scalar_p));
 
     if (!calculate_brace_key(manager, NULL, 's')) {
@@ -550,11 +554,17 @@ tstatic otrng_result enter_new_ratchet(
   /* K_ecdh = ECDH(our_ecdh.secret, their_ecdh) */
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), manager->our_ecdh->priv,
-                             manager->their_ecdh);
+    if (!otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh),
+                                  manager->our_ecdh->priv,
+                                  manager->their_ecdh)) {
+      return OTRNG_ERROR;
+    }
   } else if (action == 'r') {
-    otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh), manager->our_ecdh->priv,
-                             tmp_receiving_ratchet->their_ecdh);
+    if (!otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh),
+                                  manager->our_ecdh->priv,
+                                  tmp_receiving_ratchet->their_ecdh)) {
+      return OTRNG_ERROR;
+    }
   }
 
   /* if i % 3 == 0 : brace_key = KDF_1(usage_third_brace_key || k_dh, 32)

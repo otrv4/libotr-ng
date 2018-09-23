@@ -733,8 +733,13 @@ tstatic otrng_result build_rsign_tag(
     return OTRNG_ERROR;
   }
 
-  otrng_serialize_ec_point(ser_i_ecdh, i_ecdh);
-  otrng_serialize_ec_point(ser_r_ecdh, r_ecdh);
+  if (otrng_serialize_ec_point(ser_i_ecdh, i_ecdh) != ED448_POINT_BYTES) {
+    return OTRNG_ERROR;
+  }
+
+  if (otrng_serialize_ec_point(ser_r_ecdh, r_ecdh) != ED448_POINT_BYTES) {
+    return OTRNG_ERROR;
+  }
 
   if (!otrng_serialize_dh_public_key(ser_i_dh, DH_MPI_MAX_BYTES, &ser_i_dh_len,
                                      i_dh)) {

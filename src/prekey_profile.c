@@ -258,7 +258,9 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
     return otrng_false;
   }
 
-  otrng_serialize_ec_point(pubkey, pub);
+  if (otrng_serialize_ec_point(pubkey, pub) != ED448_POINT_BYTES) {
+    return otrng_false;
+  }
 
   valid = otrng_ec_verify(profile->signature, pubkey, body, bodylen);
 

@@ -234,17 +234,11 @@ INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
  *
  * @param [sig]     The signature.
  * @param [sym]     The symmetric key.
- * @param [pub]     The public key.
  * @param [msg]     The message to sign.
  * @param [msg_len] The length of the message.
  *
  * @warning It is not prehashed. The context is always an empty string
  */
-INTERNAL void otrng_ec_sign(eddsa_signature_p sig,
-                            const uint8_t sym[ED448_PRIVATE_BYTES],
-                            const uint8_t pub[ED448_POINT_BYTES],
-                            const uint8_t *msg, size_t msg_len);
-
 INTERNAL void otrng_ec_sign_simple(eddsa_signature_p sig,
                                    const uint8_t sym[ED448_PRIVATE_BYTES],
                                    const uint8_t *msg, size_t msg_len);
@@ -272,6 +266,23 @@ API void otrng_ecdh_keypair_debug_print(FILE *, int, ecdh_keypair_s *);
 #endif
 
 #ifdef OTRNG_ED448_PRIVATE
+
+/**
+ * @brief EdDSA signing.
+ *
+ * @param [sig]     The signature.
+ * @param [sym]     The symmetric key.
+ * @param [pub]     The public key.
+ * @param [msg]     The message to sign.
+ * @param [msg_len] The length of the message.
+ *
+ * @warning It is not prehashed. The context is always an empty string
+ */
+tstatic void otrng_ec_sign(eddsa_signature_p sig,
+                           const uint8_t sym[ED448_PRIVATE_BYTES],
+                           const uint8_t pub[ED448_POINT_BYTES],
+                           const uint8_t *msg, size_t msg_len);
+
 #endif
 
 #endif

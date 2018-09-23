@@ -257,8 +257,10 @@ INTERNAL otrng_result otrng_unfragment_message(
     return OTRNG_SUCCESS;
   }
 
-  sscanf(message, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
-         &receiver_tag, &i, &t, &start, &end);
+  if (sscanf(message, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
+             &receiver_tag, &i, &t, &start, &end) == EOF) {
+    return OTRNG_ERROR;
+  }
 
   if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
     return OTRNG_SUCCESS;

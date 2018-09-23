@@ -599,8 +599,11 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
 
   /* ECDH(i, S) */
   // TODO: check is the ephemeral is erased
-  otrng_ecdh_shared_secret(ecdh_shared, sizeof(ecdh_shared),
-                           client->ephemeral_ecdh->priv, msg2->S);
+  if (otrng_failed(otrng_ecdh_shared_secret(ecdh_shared, sizeof(ecdh_shared),
+                                            client->ephemeral_ecdh->priv,
+                                            msg2->S))) {
+    return NULL;
+  }
 
   /* SK = KDF(0x01, ECDH(i, S), 64) */
   shake_256_prekey_server_kdf(shared_secret, HASH_BYTES, usage_SK, ecdh_shared,

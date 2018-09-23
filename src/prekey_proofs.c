@@ -253,7 +253,7 @@ INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
   otrng_dh_mpi_release(r);
   p_curr = p;
   for (i = 0; i < values_len; i++) {
-    gcry_mpi_t t;
+    gcry_mpi_t t = NULL;
     if (!otrng_dh_mpi_deserialize(&t, p_curr, PREKEY_PROOF_LAMBDA, &w)) {
       free(p);
       return OTRNG_ERROR;

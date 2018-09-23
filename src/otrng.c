@@ -505,17 +505,13 @@ tstatic otrng_result receive_tagged_plaintext(otrng_response_s *response,
     }
 
     return start_dake(response, otr);
-    break;
   case OTRNG_PROTOCOL_VERSION_3:
     return otrng_v3_receive_message(&response->to_send, &response->to_display,
                                     &response->tlvs, message, otr->v3_conn);
-    break;
   default:
     /* ignore */
     return OTRNG_SUCCESS;
   }
-
-  return OTRNG_ERROR;
 }
 
 tstatic otrng_result receive_query_message(otrng_response_s *response,
@@ -531,17 +527,13 @@ tstatic otrng_result receive_query_message(otrng_response_s *response,
   switch (otr->running_version) {
   case OTRNG_PROTOCOL_VERSION_4:
     return start_dake(response, otr);
-    break;
   case OTRNG_PROTOCOL_VERSION_3:
     return otrng_v3_receive_message(&response->to_send, &response->to_display,
                                     &response->tlvs, message, otr->v3_conn);
-    break;
   default:
     /* ignore */
     return OTRNG_SUCCESS;
   }
-
-  return OTRNG_ERROR;
 }
 
 tstatic otrng_result serialize_and_encode_auth_r(string_p *dst,
@@ -687,12 +679,17 @@ tstatic otrng_result reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
   }
 
   /* sigma = RSig(H_a, sk_ha, {F_b, H_a, Y}, t) */
-  otrng_rsig_authenticate(msg->sigma, otr->client->keypair->priv, /* sk_ha */
-                          otr->client->keypair->pub,              /* H_a */
-                          otr->their_client_profile->forging_pub_key, /* F_b */
-                          otr->client->keypair->pub,                  /* H_a */
-                          their_ecdh(otr),                            /* Y */
-                          t, t_len);
+  if (!otrng_rsig_authenticate(
+          msg->sigma, otr->client->keypair->priv,     /* sk_ha */
+          otr->client->keypair->pub,                  /* H_a */
+          otr->their_client_profile->forging_pub_key, /* F_b */
+          otr->client->keypair->pub,                  /* H_a */
+          their_ecdh(otr),                            /* Y */
+          t, t_len)) {
+    free(t);
+    return OTRNG_ERROR;
+  }
+
   free(t);
 
   result = serialize_and_encode_auth_r(dst, msg);
@@ -839,12 +836,16 @@ tstatic otrng_result build_non_interactive_auth_message(
   free(phi);
 
   /* sigma = RSig(H_a, sk_ha, {F_b, H_a, Y}, t) */
-  otrng_rsig_authenticate(auth->sigma, otr->client->keypair->priv, /* sk_ha */
-                          otr->client->keypair->pub,               /* H_a */
-                          otr->their_client_profile->forging_pub_key, /* F_b */
-                          otr->client->keypair->pub,                  /* H_a */
-                          their_ecdh(otr),                            /* Y */
-                          t, t_len);
+  if (!otrng_rsig_authenticate(
+          auth->sigma, otr->client->keypair->priv,    /* sk_ha */
+          otr->client->keypair->pub,                  /* H_a */
+          otr->their_client_profile->forging_pub_key, /* F_b */
+          otr->client->keypair->pub,                  /* H_a */
+          their_ecdh(otr),                            /* Y */
+          t, t_len)) {
+    free(t);
+    return OTRNG_ERROR;
+  }
 
   ret = otrng_dake_non_interactive_auth_message_authenticator(
       auth->auth_mac, auth, t, t_len, otr->keys->tmp_key);
@@ -906,7 +907,11 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   otrng_prekey_profile_copy(ensemble->prekey_profile,
                             get_my_prekey_profile(otr));
 
-  otrng_generate_ephemeral_keys(ecdh, dh);
+  if (!otrng_generate_ephemeral_keys(ecdh, dh)) {
+    otrng_prekey_ensemble_free(ensemble);
+    return NULL;
+  }
+
   ensemble->message = otrng_dake_prekey_message_build(our_instance_tag(otr),
                                                       ecdh->pub, dh->pub);
   if (!ensemble->message) {
@@ -1485,12 +1490,17 @@ tstatic otrng_result reply_with_auth_i_msg(
   }
 
   /* sigma = RSig(H_b, sk_hb, {H_b, F_a, X}, t) */
-  otrng_rsig_authenticate(msg->sigma, otr->client->keypair->priv, /* sk_hb */
-                          otr->client->keypair->pub,              /* H_b */
-                          otr->client->keypair->pub,              /* H_b */
-                          their_client_profile->forging_pub_key,  /* F_a */
-                          their_ecdh(otr),                        /* X */
-                          t, t_len);
+  if (!otrng_rsig_authenticate(msg->sigma,
+                               otr->client->keypair->priv, /* sk_hb */
+                               otr->client->keypair->pub,  /* H_b */
+                               otr->client->keypair->pub,  /* H_b */
+                               their_client_profile->forging_pub_key, /* F_a */
+                               their_ecdh(otr),                       /* X */
+                               t, t_len)) {
+    free(t);
+    return OTRNG_ERROR;
+  }
+
   free(t);
 
   result = serialize_and_encode_auth_i(dst, msg);
@@ -1887,9 +1897,12 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
         return OTRNG_ERROR;
       }
 
-      otrng_key_manager_derive_chain_keys(
-          enc_key, mac_key, otr->keys, tmp_receiving_ratchet,
-          otr->client->max_stored_msg_keys, msg->message_id, 'r', warn);
+      if (otrng_failed(otrng_key_manager_derive_chain_keys(
+              enc_key, mac_key, otr->keys, tmp_receiving_ratchet,
+              otr->client->max_stored_msg_keys, msg->message_id, 'r', warn))) {
+        return OTRNG_ERROR;
+      }
+
       tmp_receiving_ratchet->k = tmp_receiving_ratchet->k + 1;
     }
     if (!otrng_valid_data_message(mac_key, msg)) {
@@ -2071,8 +2084,6 @@ tstatic otrng_result receive_decoded_message(otrng_response_s *response,
     /* error. bad message type */
     return OTRNG_ERROR;
   }
-
-  return OTRNG_ERROR;
 }
 
 tstatic otrng_result receive_encoded_message(otrng_response_s *response,
@@ -2209,8 +2220,6 @@ INTERNAL otrng_result otrng_receive_defragmented_message(
     // V4 handles every message BUT v3 messages
     return receive_message_v4_only(response, warn, message, otr);
   }
-
-  return OTRNG_ERROR;
 }
 
 INTERNAL otrng_result otrng_send_message(string_p *to_send,
@@ -2231,8 +2240,6 @@ INTERNAL otrng_result otrng_send_message(string_p *to_send,
   default:
     return OTRNG_ERROR;
   }
-
-  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_result otrng_close_v4(string_p *to_send, otrng_s *otr) {
@@ -2290,8 +2297,6 @@ INTERNAL otrng_result otrng_close(string_p *to_send, otrng_s *otr) {
   default:
     return OTRNG_ERROR;
   }
-
-  return OTRNG_ERROR;
 }
 
 tstatic otrng_result otrng_send_symkey_message_v4(
@@ -2368,8 +2373,6 @@ API otrng_result otrng_send_symkey_message(string_p *to_send, unsigned int use,
   default:
     return OTRNG_ERROR;
   }
-
-  return OTRNG_ERROR;
 }
 
 #define GCRYPT_WANTED_VERSION_16 "1.6.4"
@@ -2391,7 +2394,7 @@ API otrng_result otrng_init(otrng_bool die) {
                 GCRYPT_WANTED_VERSION_18, GCRYPT_WANTED_VERSION_17,
                 GCRYPT_WANTED_VERSION_16, real);
         if (die) {
-          exit(1);
+          exit(EXIT_FAILURE);
         }
         return OTRNG_ERROR;
       }
@@ -2415,7 +2418,7 @@ API otrng_result otrng_v3_init(otrng_bool die) {
   if (otrl_init(OTRL_VERSION_MAJOR, OTRL_VERSION_MINOR, OTRL_VERSION_SUB)) {
     fprintf(stderr, "otrv3 initialization failed\n");
     if (die) {
-      exit(1);
+      exit(EXIT_FAILURE);
     }
     return OTRNG_ERROR;
   }

@@ -475,7 +475,10 @@ client_profile_verify_signature(const client_profile_s *client_profile) {
     return otrng_false;
   }
 
-  otrng_serialize_ec_point(pubkey, client_profile->long_term_pub_key);
+  if (otrng_serialize_ec_point(pubkey, client_profile->long_term_pub_key) !=
+      ED448_POINT_BYTES) {
+    return otrng_false;
+  }
 
   valid = otrng_ec_verify(client_profile->signature, pubkey, body, bodylen);
 
@@ -605,8 +608,12 @@ tstatic otrng_result client_profile_verify_transitional_signature(
 
   data = otrng_xmalloc(size);
 
-  client_profile_body_serialize_pre_transitional_signature(data, size, &datalen,
-                                                           client_profile);
+  if (client_profile_body_serialize_pre_transitional_signature(
+          data, size, &datalen, client_profile) < 5) {
+    free(data);
+    gcry_sexp_release(pubs);
+    return OTRNG_ERROR;
+  }
 
   err = otrl_privkey_verify(client_profile->transitional_signature,
                             OTRv3_DSA_SIG_BYTES, OTRL_PUBKEY_TYPE_DSA, pubs,

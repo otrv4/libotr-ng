@@ -59,9 +59,6 @@ otrng_client_prekeys_write_FILEp(const otrng_client_s *client, FILE *privf);
 INTERNAL otrng_result
 otrng_client_prekey_messages_read_FILEp(otrng_client_s *client, FILE *privf);
 
-INTERNAL otrng_result serialize_and_store_prekey(
-    const otrng_stored_prekeys_s *prekey, const char *storage_id, FILE *privf);
-
 INTERNAL otrng_result
 otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf);
 

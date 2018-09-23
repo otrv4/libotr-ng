@@ -57,7 +57,9 @@ INTERNAL otrng_result otrng_serialize_fingerprint(
     return OTRNG_ERROR;
   }
 
-  otrng_serialize_ec_point(serialized, pub);
+  if (otrng_serialize_ec_point(serialized, pub) != ED448_POINT_BYTES) {
+    return OTRNG_ERROR;
+  }
 
   // KDF_1(usage_fingerprint || byte(H), 56)
   hash_init_with_usage(hd, usage_fingerprint);
