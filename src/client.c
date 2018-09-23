@@ -572,6 +572,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
   uint32_t instance_tag;
   dake_prekey_message_s **messages;
   int i, j;
+  ec_scalar_p *ke;
+  dh_mpi_p *kd;
 
   if (num_messages > MAX_NUMBER_PUBLISHED_PREKEY_MESSAGES) {
     // TODO: notify error
@@ -581,8 +583,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
   instance_tag = otrng_client_get_instance_tag(client);
 
   messages = otrng_xmalloc(num_messages * sizeof(dake_prekey_message_s *));
-  *ecdh_keys = otrng_xmalloc(num_messages * sizeof(ec_scalar_p));
-  *dh_keys = otrng_xmalloc(num_messages * sizeof(dh_mpi_p));
+  ke = otrng_xmalloc(num_messages * sizeof(ec_scalar_p));
+  kd = otrng_xmalloc(num_messages * sizeof(dh_mpi_p));
 
   for (i = 0; i < num_messages; i++) {
     ecdh_keypair_p ecdh;
@@ -598,8 +600,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
       free(messages);
       return NULL;
     }
-    goldilocks_448_scalar_copy(*ecdh_keys[i], ecdh->priv);
-    *dh_keys[i] = otrng_dh_mpi_copy(dh->priv);
+    goldilocks_448_scalar_copy(ke[i], ecdh->priv);
+    kd[i] = otrng_dh_mpi_copy(dh->priv);
 
     store_my_prekey_message(messages[i]->id, messages[i]->sender_instance_tag,
                             ecdh, dh, client);
@@ -607,6 +609,9 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
     // TODO: ecdh_keypair_destroy()
     // dh_keypair_detroy()
   }
+
+  *ecdh_keys = ke;
+  *dh_keys = kd;
 
   return messages;
 }

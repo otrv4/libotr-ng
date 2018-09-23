@@ -458,8 +458,16 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
     return OTRNG_ERROR;
   }
 
+  if (pub_msg->num_prekey_messages > 0) {
+    proof_buf_len += PROOF_C_SIZE + ED448_SCALAR_BYTES;
+    proof_buf_len += PROOF_C_SIZE + DH_MPI_MAX_BYTES;
+  }
+  if (pub_msg->prekey_profile != NULL) {
+    proof_buf_len += PROOF_C_SIZE + ED448_SCALAR_BYTES;
+  }
+
   size = 2 + 1 + 1 + (4 + pub_msg->num_prekey_messages * PRE_KEY_MAX_BYTES) +
-         1 + client_profile_len + 1 + prekey_profile_len + MAC_KEY_BYTES;
+         1 + client_profile_len + 1 + prekey_profile_len + proof_buf_len + MAC_KEY_BYTES;
   msg->message = otrng_xmalloc(size);
 
   w += otrng_serialize_uint16(msg->message, OTRNG_PROTOCOL_VERSION_4);
@@ -480,18 +488,16 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   }
 
   if (pub_msg->num_prekey_messages > 0) {
-    proof_buf_len += PROOF_C_SIZE + ED448_SCALAR_BYTES;
-    proof_buf_len += PROOF_C_SIZE + DH_MPI_MAX_BYTES;
     values_priv_ecdh =
         otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(ec_scalar_p));
     values_pub_ecdh =
         otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(ec_point_p));
-    ;
+
     values_priv_dh =
         otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
     values_pub_dh =
         otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
-    ;
+
     for (i = 0; i < pub_msg->num_prekey_messages; i++) {
       *values_pub_ecdh[i] = *pub_msg->prekey_messages[i]->Y;
       *values_priv_ecdh[i] = *pub_msg->ecdh_keys[i];
@@ -534,7 +540,6 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
     proof_buf_len += PROOF_C_SIZE + ED448_SCALAR_BYTES;
     values_priv_ecdh = otrng_xmalloc(1 * sizeof(ec_scalar_p));
     values_pub_ecdh = otrng_xmalloc(1 * sizeof(ec_point_p));
-    ;
 
     *values_pub_ecdh[0] = *pub_msg->prekey_profile->shared_prekey;
     *values_priv_ecdh[0] = *pub_msg->prekey_profile_key;
