@@ -86,6 +86,10 @@ API otrng_result otrng_global_state_client_profile_read_FILEp(
     otrng_global_state_s *gs, FILE *profile_filep,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep));
 
+API otrng_result otrng_global_state_expired_client_profile_read_FILEp(
+    otrng_global_state_s *gs, FILE *exp_profile_filep,
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep));
+
 API otrng_result otrng_global_state_shared_prekey_read_FILEp(
     otrng_global_state_s *gs, FILE *shared_prekeyf,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep));

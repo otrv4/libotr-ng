@@ -855,6 +855,24 @@ API otrng_result otrng_client_add_client_profile(
   client->client_profile = otrng_xmalloc(sizeof(client_profile_s));
 
   otrng_client_profile_copy(client->client_profile, profile);
+
+  return OTRNG_SUCCESS;
+}
+
+API otrng_result otrng_client_add_exp_client_profile(
+    otrng_client_s *client, const client_profile_s *exp_profile) {
+  if (!client) {
+    return OTRNG_ERROR;
+  }
+
+  if (client->exp_client_profile) {
+    return OTRNG_ERROR;
+  }
+
+  client->exp_client_profile = otrng_xmalloc(sizeof(client_profile_s));
+
+  otrng_client_profile_copy(client->exp_client_profile, exp_profile);
+
   return OTRNG_SUCCESS;
 }
 

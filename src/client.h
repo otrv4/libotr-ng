@@ -60,6 +60,7 @@ typedef struct otrng_client_s {
 
   // TODO: @client One or many?
   client_profile_s *client_profile;
+  client_profile_s *exp_client_profile;
   otrng_prekey_profile_s *prekey_profile;
   list_element_s *our_prekeys; // otrng_stored_prekeys_s
 
@@ -211,6 +212,9 @@ otrng_client_get_client_profile(otrng_client_s *client);
 
 API otrng_result otrng_client_add_client_profile(
     otrng_client_s *client, const client_profile_s *profile);
+
+API otrng_result otrng_client_add_exp_client_profile(
+    otrng_client_s *client, const client_profile_s *exp_profile);
 
 API const otrng_prekey_profile_s *
 otrng_client_get_prekey_profile(otrng_client_s *client);

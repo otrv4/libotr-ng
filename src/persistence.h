@@ -48,7 +48,10 @@ INTERNAL otrng_result otrng_client_private_key_v3_write_FILEp(
     const otrng_client_s *client, FILE *privf);
 
 INTERNAL otrng_result
-otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf);
+otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *profilef);
+
+INTERNAL otrng_result otrng_client_expired_client_profile_read_FILEp(
+    otrng_client_s *client, FILE *exp_profilef);
 
 INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
     const otrng_client_s *client, FILE *privf);

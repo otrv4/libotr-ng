@@ -422,7 +422,7 @@ INTERNAL otrng_result otrng_client_private_key_v3_write_FILEp(
 }
 
 INTERNAL otrng_result
-otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
+otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *profilef) {
   char *line = NULL;
   int len = 0;
   uint8_t *dec;
@@ -430,17 +430,17 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
   client_profile_s profile[1];
   otrng_result result;
 
-  if (!privf) {
+  if (!profilef) {
     return OTRNG_ERROR;
   }
 
-  if (feof(privf)) {
+  if (feof(profilef)) {
     return OTRNG_ERROR;
   }
 
   otrng_client_profile_free(client->client_profile);
 
-  len = get_limited_line(&line, privf);
+  len = get_limited_line(&line, profilef);
   if (len < 0) {
     return OTRNG_ERROR;
   }
@@ -453,6 +453,10 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
   result = otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
   free(dec);
 
+  if (result == OTRNG_ERROR) {
+    return result;
+  }
+
   if (otrng_client_profile_expired(profile->expires)) {
     otrng_client_callbacks_write_expired_client_profile(
         client->global_state->callbacks, client, client->client_id);
@@ -462,12 +466,59 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
     // return OTRNG_SUCCESS;
   }
 
+  result = otrng_client_add_client_profile(client, profile);
+  otrng_client_profile_destroy(profile);
+
+  return result;
+}
+
+INTERNAL otrng_result otrng_client_expired_client_profile_read_FILEp(
+    otrng_client_s *client, FILE *exp_profilef) {
+  char *line = NULL;
+  int len = 0;
+  uint8_t *dec;
+  size_t dec_len;
+  client_profile_s exp_profile[1];
+  otrng_result result;
+
+  if (!exp_profilef) {
+    return OTRNG_ERROR;
+  }
+
+  if (feof(exp_profilef)) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_client_profile_free(client->exp_client_profile);
+
+  len = get_limited_line(&line, exp_profilef);
+  if (len < 0) {
+    return OTRNG_ERROR;
+  }
+
+  dec = otrng_xmalloc(OTRNG_BASE64_DECODE_LEN(len));
+
+  dec_len = otrl_base64_decode(dec, line, len);
+  free(line);
+
+  result = otrng_client_profile_deserialize(exp_profile, dec, dec_len, NULL);
+  free(dec);
+
   if (result == OTRNG_ERROR) {
     return result;
   }
 
-  result = otrng_client_add_client_profile(client, profile);
-  otrng_client_profile_destroy(profile);
+  // TODO: remove and return
+  // if (otrng_client_profile_dead(profile->expires)) {
+  //  otrng_client_callbacks_remove_expired_client_profile(
+  //     client->global_state->callbacks, client, client->client_id);
+
+  // return OTRNG_SUCCESS;
+  //}
+
+  result = otrng_client_add_exp_client_profile(client, exp_profile);
+
+  otrng_client_profile_destroy(exp_profile);
 
   return result;
 }
