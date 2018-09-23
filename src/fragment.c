@@ -38,7 +38,7 @@
 #define FRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%.*s,"
 #define UNFRAGMENT_FORMAT "?OTR|%08x|%08x|%08x,%05hu,%05hu,%n%*[^,],%n"
 
-API otrng_message_to_send_s *otrng_message_new() {
+otrng_message_to_send_s *otrng_message_new(void) {
   otrng_message_to_send_s *message =
       otrng_xmalloc(sizeof(otrng_message_to_send_s));
 
@@ -48,7 +48,7 @@ API otrng_message_to_send_s *otrng_message_new() {
   return message;
 }
 
-API void otrng_message_free(otrng_message_to_send_s *message) {
+tstatic void otrng_message_free(otrng_message_to_send_s *message) {
   int i;
 
   if (!message) {
@@ -90,7 +90,7 @@ tstatic void reset_fragment_context(fragment_context_s *context) {
   initialize_fragment_context(context);
 }
 
-INTERNAL /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
+/*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
   fragment_context_s *context = otrng_xmalloc(sizeof(fragment_context_s));
   initialize_fragment_context(context);
   return context;

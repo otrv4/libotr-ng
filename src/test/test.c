@@ -21,9 +21,11 @@
 #include <glib.h>
 #include <goldilocks.h>
 
+#define OTRNG_AUTH_PRIVATE
 #define OTRNG_DAKE_PRIVATE
 #define OTRNG_DH_PRIVATE
 #define OTRNG_ED448_PRIVATE
+#define OTRNG_FRAGMENT_PRIVATE
 #define OTRNG_KEY_MANAGEMENT_PRIVATE
 #define OTRNG_LIST_PRIVATE
 #define OTRNG_OTRNG_PRIVATE

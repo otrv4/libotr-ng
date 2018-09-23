@@ -66,6 +66,22 @@ static void copy_transitional_signature(client_profile_s *dst,
          OTRv3_DSA_SIG_BYTES);
 }
 
+otrng_result
+otrng_client_profile_set_dsa_key_mpis(client_profile_s *client_profile,
+                                      const uint8_t *mpis, size_t mpis_len) {
+  size_t w;
+
+  // mpis* points to a PUBKEY structure AFTER the "Pubkey type" field
+  // We need to allocate 2 extra bytes for the "Pubkey type" field
+  client_profile->dsa_key_len = mpis_len + 2;
+  client_profile->dsa_key = otrng_xmalloc(client_profile->dsa_key_len);
+
+  w = otrng_serialize_uint16(client_profile->dsa_key, OTRL_PUBKEY_TYPE_DSA);
+  memcpy(client_profile->dsa_key + w, mpis, mpis_len);
+
+  return OTRNG_SUCCESS;
+}
+
 static void copy_dsa_key(client_profile_s *dst, const client_profile_s *src) {
   size_t read = 0;
   uint16_t key_type = 0xFF;
@@ -677,21 +693,6 @@ otrng_client_profile_valid(const client_profile_s *client_profile,
   }
 
   return otrng_true;
-}
-
-INTERNAL otrng_result otrng_client_profile_set_dsa_key_mpis(
-    client_profile_s *client_profile, const uint8_t *mpis, size_t mpis_len) {
-  size_t w;
-
-  // mpis* points to a PUBKEY structure AFTER the "Pubkey type" field
-  // We need to allocate 2 extra bytes for the "Pubkey type" field
-  client_profile->dsa_key_len = mpis_len + 2;
-  client_profile->dsa_key = otrng_xmalloc(client_profile->dsa_key_len);
-
-  w = otrng_serialize_uint16(client_profile->dsa_key, OTRL_PUBKEY_TYPE_DSA);
-  memcpy(client_profile->dsa_key + w, mpis, mpis_len);
-
-  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_client_profile_transitional_sign(

@@ -99,32 +99,6 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
  */
 INTERNAL void otrng_ring_sig_destroy(ring_sig_p src);
 
-/**
- * @brief Calculates the 'c' parameter used in the Ring Signature.
- *
- * @param [dst] The 'c' value to be calculated.
- * @param [A1] The first public key.
- * @param [A2] The second public key.
- * @param [A3] The third public key.
- * @param [T1] The first T value.
- * @param [T2] The second T value.
- * @param [T3] The third T value.
- * @param [msg] The message to "verify".
- * @param [msg_len] The length of the message.
- */
-INTERNAL void otrng_rsig_calculate_c_with_usage_and_domain(
-    uint8_t usage_auth, const char *domain_sep, goldilocks_448_scalar_p dst,
-    const goldilocks_448_point_p A1, const goldilocks_448_point_p A2,
-    const goldilocks_448_point_p A3, const goldilocks_448_point_p T1,
-    const goldilocks_448_point_p T2, const goldilocks_448_point_p T3,
-    const uint8_t *message, size_t message_len);
-
-INTERNAL void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
-    uint8_t usage, const char *domain_sep, goldilocks_448_scalar_p c,
-    const ring_sig_p src, const otrng_public_key_p A1,
-    const otrng_public_key_p A2, const otrng_public_key_p A3,
-    const uint8_t *message, size_t message_len);
-
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, ring_sig_p dst,
     const otrng_private_key_p secret, const otrng_public_key_p pub,
@@ -137,6 +111,27 @@ INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
     const otrng_public_key_p A3, const uint8_t *message, size_t message_len);
 
 #ifdef OTRNG_AUTH_PRIVATE
+
+/**
+ * @brief Calculate the 'c' parameter used in the Ring Signature.
+ *
+ * @param [dst] The 'c' value to be calculated.
+ * @param [A1] The first public key.
+ * @param [A2] The second public key.
+ * @param [A3] The third public key.
+ * @param [T1] The first T value.
+ * @param [T2] The second T value.
+ * @param [T3] The third T value.
+ * @param [msg] The message to "verify".
+ * @param [msg_len] The length of the message.
+ */
+tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
+    uint8_t usage_auth, const char *domain_sep, goldilocks_448_scalar_p dst,
+    const goldilocks_448_point_p A1, const goldilocks_448_point_p A2,
+    const goldilocks_448_point_p A3, const goldilocks_448_point_p T1,
+    const goldilocks_448_point_p T2, const goldilocks_448_point_p T3,
+    const uint8_t *message, size_t message_len);
+
 #endif
 
 #endif

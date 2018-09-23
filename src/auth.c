@@ -87,7 +87,7 @@ static void calculate_ri(goldilocks_448_scalar_p dst,
   goldilocks_448_scalar_destroy(if_secret);
 }
 
-INTERNAL void otrng_rsig_calculate_c_with_usage_and_domain(
+tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
     uint8_t usage_auth, const char *domain_sep, goldilocks_448_scalar_p dst,
     const goldilocks_448_point_p A1, const goldilocks_448_point_p A2,
     const goldilocks_448_point_p A3, const goldilocks_448_point_p T1,
@@ -127,7 +127,7 @@ INTERNAL void otrng_rsig_calculate_c_with_usage_and_domain(
   goldilocks_448_scalar_decode_long(dst, hash, sizeof(hash));
 }
 
-INTERNAL void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
+static void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, goldilocks_448_scalar_p c,
     const ring_sig_p src, const otrng_public_key_p A1,
     const otrng_public_key_p A2, const otrng_public_key_p A3,

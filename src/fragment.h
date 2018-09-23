@@ -43,12 +43,6 @@ typedef struct fragment_context_s {
   string_p *fragments;
 } fragment_context_s, fragment_context_p[1];
 
-API otrng_message_to_send_s *otrng_message_new(void);
-
-API void otrng_message_free(otrng_message_to_send_s *message);
-
-INTERNAL /*@null@*/ fragment_context_s *otrng_fragment_context_new(void);
-
 INTERNAL void otrng_fragment_context_free(fragment_context_s *context);
 
 INTERNAL otrng_result otrng_fragment_message(int max_size,
@@ -67,6 +61,13 @@ INTERNAL otrng_result otrng_expire_fragments(time_t now,
                                              list_element_s **contexts);
 
 #ifdef OTRNG_FRAGMENT_PRIVATE
+
+otrng_message_to_send_s *otrng_message_new(void);
+
+tstatic void otrng_message_free(otrng_message_to_send_s *message);
+
+/*@null@*/ fragment_context_s *otrng_fragment_context_new(void);
+
 #endif
 
 #endif
