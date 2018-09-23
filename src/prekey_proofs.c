@@ -241,7 +241,6 @@ INTERNAL otrng_result dh_proof_generate(dh_proof_p dst,
   }
 
   memcpy(cbuf_curr, m, 64);
-  total += 64;
   shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf, cbuf_len);
   free(cbuf);
 

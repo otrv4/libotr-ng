@@ -208,7 +208,6 @@ otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf) {
 
   len = get_limited_line(&line, privf);
   if (len < 0) {
-    free(line);
     return OTRNG_ERROR;
   }
 
@@ -244,7 +243,6 @@ otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
 
   len = get_limited_line(&line, f);
   if (len < 0) {
-    free(line);
     return OTRNG_ERROR;
   }
 
@@ -338,7 +336,6 @@ INTERNAL otrng_result otrng_client_shared_prekey_read_FILEp(
 
   len = get_limited_line(&line, shared_prekeyf);
   if (len < 0) {
-    free(line);
     return OTRNG_ERROR;
   }
 
@@ -445,7 +442,6 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
 
   len = get_limited_line(&line, privf);
   if (len < 0) {
-    free(line);
     return OTRNG_ERROR;
   }
 
@@ -620,7 +616,6 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
     free(prekey_msg);
-    free(line);
     return OTRNG_ERROR;
   }
   prekey_msg->id = strtol(line, NULL, 16);
@@ -631,7 +626,6 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
     free(prekey_msg);
-    free(line);
     return OTRNG_ERROR;
   }
 
@@ -642,7 +636,6 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
     free(prekey_msg);
-    free(line);
     return OTRNG_ERROR;
   }
 
@@ -664,7 +657,6 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
     free(prekey_msg);
-    free(line);
     return OTRNG_ERROR;
   }
 
@@ -774,7 +766,6 @@ otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
 
   len = get_limited_line(&line, privf);
   if (len < 0) {
-    free(line);
     return OTRNG_ERROR;
   }
 
