@@ -467,7 +467,8 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   }
 
   size = 2 + 1 + 1 + (4 + pub_msg->num_prekey_messages * PRE_KEY_MAX_BYTES) +
-         1 + client_profile_len + 1 + prekey_profile_len + proof_buf_len + MAC_KEY_BYTES;
+         1 + client_profile_len + 1 + prekey_profile_len + proof_buf_len +
+         MAC_KEY_BYTES;
   msg->message = otrng_xmalloc(size);
 
   w += otrng_serialize_uint16(msg->message, OTRNG_PROTOCOL_VERSION_4);
