@@ -86,14 +86,6 @@ int main(int argc, char **argv) {
 
   g_test_init(&argc, &argv, NULL);
 
-  g_test_add_func("/prekey_server/proofs/ecdh/serialization",
-                  test_ecdh_proof_serialization);
-  g_test_add_func("/prekey_server/proofs/dh/serialization",
-                  test_dh_proof_serialization);
-  g_test_add_func("/prekey_server/proofs/ecdh/deserialization",
-                  test_ecdh_proof_deserialization);
-  g_test_add_func("/prekey_server/proofs/dh/deserialization",
-                  test_dh_proof_deserialization);
   g_test_add_func("/standard/stpcpy", test_otrng_stpcpy);
   g_test_add_func("/standard/stpncpy", test_otrng_stpncpy);
   g_test_add_func("/standard/strnlen", test_otrng_strnlen);
@@ -304,6 +296,14 @@ int main(int argc, char **argv) {
                   test_dh_proof_generation_and_validation);
   g_test_add_func("/prekey_server/proofs/ecdh_gen_validation",
                   test_ecdh_proof_generation_and_validation);
+  g_test_add_func("/prekey_server/proofs/ecdh/serialization",
+                  test_ecdh_proof_serialization);
+  g_test_add_func("/prekey_server/proofs/dh/serialization",
+                  test_dh_proof_serialization);
+  g_test_add_func("/prekey_server/proofs/ecdh/deserialization",
+                  test_ecdh_proof_deserialization);
+  g_test_add_func("/prekey_server/proofs/dh/deserialization",
+                  test_dh_proof_deserialization);
 
   g_test_add_func("/prekey_server_client/send_dake_1_message",
                   test_send_dake_1_message);

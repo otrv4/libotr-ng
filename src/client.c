@@ -566,8 +566,9 @@ INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
 }
 
 API dake_prekey_message_s **
-otrng_client_build_prekey_messages(uint8_t num_messages,
-                                   otrng_client_s *client) {
+otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
+                                   ec_scalar_p **ecdh_keys,
+                                   dh_mpi_p **dh_keys) {
   uint32_t instance_tag;
   dake_prekey_message_s **messages;
   int i, j;
@@ -580,6 +581,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
   instance_tag = otrng_client_get_instance_tag(client);
 
   messages = otrng_xmalloc(num_messages * sizeof(dake_prekey_message_s *));
+  *ecdh_keys = otrng_xmalloc(num_messages * sizeof(ec_scalar_p));
+  *dh_keys = otrng_xmalloc(num_messages * sizeof(dh_mpi_p));
 
   for (i = 0; i < num_messages; i++) {
     ecdh_keypair_p ecdh;
@@ -595,6 +598,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
       free(messages);
       return NULL;
     }
+    goldilocks_448_scalar_copy(*ecdh_keys[i], ecdh->priv);
+    *dh_keys[i] = otrng_dh_mpi_copy(dh->priv);
 
     store_my_prekey_message(messages[i]->id, messages[i]->sender_instance_tag,
                             ecdh, dh, client);

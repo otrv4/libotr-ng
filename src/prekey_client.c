@@ -25,6 +25,7 @@
 #include "dake.h"
 #include "deserialize.h"
 #include "fingerprint.h"
+#include "prekey_proofs.h"
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
@@ -132,13 +133,8 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
   }
 
   otrng_ecdh_keypair_destroy(client->ephemeral_ecdh);
-  client->client_profile = NULL;
-
   free(client->server_identity);
-  client->server_identity = NULL;
-
   free(client->our_identity);
-  client->our_identity = NULL;
 
   free(client);
 }
@@ -229,9 +225,7 @@ API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
   otrng_prekey_ensemble_query_retrieval_message_s msg[1];
 
   msg->identity = otrng_xstrdup(identity);
-
   msg->versions = otrng_xstrdup(versions);
-
   msg->instance_tag = client->instance_tag;
 
   success = otrng_prekey_ensemble_query_retrieval_message_asprint(
@@ -412,13 +406,17 @@ otrng_prekey_dake3_message_append_storage_information_request(
   return OTRNG_SUCCESS;
 }
 
+// TODO: make sure that the message buffer is large enough
 INTERNAL otrng_result
 otrng_prekey_dake3_message_append_prekey_publication_message(
     otrng_prekey_publication_message_s *pub_msg,
-    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]) {
+    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES],
+    uint8_t m[64]) {
   uint8_t *client_profile = NULL;
   size_t client_profile_len = 0;
   uint8_t *prekey_profile = NULL;
+  uint8_t *proofs = NULL;
+  size_t proof_buf_len = 0;
   size_t prekey_profile_len = 0;
   size_t size;
   uint8_t msg_type = OTRNG_PREKEY_PUBLICATION_MSG;
@@ -426,9 +424,24 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   const uint8_t *prekey_messages_beginning;
   uint8_t usage_prekey_message = 0x0E;
   uint8_t prekey_messages_kdf[HASH_BYTES] = {0};
+  uint8_t prekey_proofs_kdf[HASH_BYTES] = {0};
 
   uint8_t usage_pre_MAC = 0x09;
+  uint8_t usage_proof_message_ecdh = 0x13;
+  uint8_t usage_proof_message_dh = 0x14;
+  uint8_t usage_proof_shared_ecdh = 0x15;
+  uint8_t usage_mac_proofs = 0x16;
   uint8_t one = 1, zero = 0;
+
+  ec_scalar_p *values_priv_ecdh;
+  ec_point_p *values_pub_ecdh;
+  dh_mpi_p *values_priv_dh;
+  dh_mpi_p *values_pub_dh;
+  size_t proof_index = 0;
+
+  ecdh_proof_p prekey_message_proof_ecdh;
+  dh_proof_p prekey_message_proof_dh;
+  ecdh_proof_p prekey_profile_proof;
 
   goldilocks_shake256_ctx_p hd;
 
@@ -466,6 +479,98 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
     w += w2;
   }
 
+  if (pub_msg->num_prekey_messages > 0) {
+    proof_buf_len += PROOF_C_SIZE + ED448_SCALAR_BYTES;
+    proof_buf_len += PROOF_C_SIZE + DH_MPI_MAX_BYTES;
+    values_priv_ecdh =
+        otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(ec_scalar_p));
+    values_pub_ecdh =
+        otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(ec_point_p));
+    ;
+    values_priv_dh =
+        otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
+    values_pub_dh =
+        otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
+    ;
+    for (i = 0; i < pub_msg->num_prekey_messages; i++) {
+      *values_pub_ecdh[i] = *pub_msg->prekey_messages[i]->Y;
+      *values_priv_ecdh[i] = *pub_msg->ecdh_keys[i];
+      values_pub_dh[i] = pub_msg->prekey_messages[i]->B;
+      values_priv_dh[i] = pub_msg->dh_keys[i];
+    }
+
+    if (!otrng_ecdh_proof_generate(
+            prekey_message_proof_ecdh, (const ec_scalar_p *)values_priv_ecdh,
+            (const ec_point_p *)values_pub_ecdh, pub_msg->num_prekey_messages,
+            m, usage_proof_message_ecdh)) {
+      free(client_profile);
+      free(prekey_profile);
+      free(values_priv_ecdh);
+      free(values_pub_ecdh);
+      free(values_priv_dh);
+      free(values_pub_dh);
+      return OTRNG_ERROR;
+    }
+
+    if (!otrng_dh_proof_generate(prekey_message_proof_dh, values_priv_dh,
+                                 values_pub_dh, pub_msg->num_prekey_messages, m,
+                                 usage_proof_message_dh)) {
+      free(client_profile);
+      free(prekey_profile);
+      free(values_priv_ecdh);
+      free(values_pub_ecdh);
+      free(values_priv_dh);
+      free(values_pub_dh);
+      return OTRNG_ERROR;
+    }
+
+    free(values_priv_ecdh);
+    free(values_pub_ecdh);
+    free(values_priv_dh);
+    free(values_pub_dh);
+  }
+
+  if (pub_msg->prekey_profile != NULL) {
+    proof_buf_len += PROOF_C_SIZE + ED448_SCALAR_BYTES;
+    values_priv_ecdh = otrng_xmalloc(1 * sizeof(ec_scalar_p));
+    values_pub_ecdh = otrng_xmalloc(1 * sizeof(ec_point_p));
+    ;
+
+    *values_pub_ecdh[0] = *pub_msg->prekey_profile->shared_prekey;
+    *values_priv_ecdh[0] = *pub_msg->prekey_profile_key;
+
+    if (!otrng_ecdh_proof_generate(prekey_profile_proof,
+                                   (const ec_scalar_p *)values_priv_ecdh,
+                                   (const ec_point_p *)values_pub_ecdh, 1, m,
+                                   usage_proof_shared_ecdh)) {
+      free(client_profile);
+      free(prekey_profile);
+      free(values_priv_ecdh);
+      free(values_pub_ecdh);
+      return OTRNG_ERROR;
+    }
+
+    free(values_priv_ecdh);
+    free(values_pub_ecdh);
+  }
+
+  proofs = otrng_xmalloc(proof_buf_len * sizeof(uint8_t));
+
+  if (pub_msg->num_prekey_messages > 0) {
+    proof_index += otrng_ecdh_proof_serialize(proofs + proof_index,
+                                              prekey_message_proof_ecdh);
+    proof_index +=
+        otrng_dh_proof_serialize(proofs + proof_index, prekey_message_proof_dh);
+  }
+
+  if (pub_msg->prekey_profile != NULL) {
+    proof_index +=
+        otrng_ecdh_proof_serialize(proofs + proof_index, prekey_profile_proof);
+  }
+
+  shake_256_prekey_server_kdf(prekey_proofs_kdf, HASH_BYTES, usage_mac_proofs,
+                              proofs, proof_index);
+
   shake_256_prekey_server_kdf(prekey_messages_kdf, HASH_BYTES,
                               usage_prekey_message, prekey_messages_beginning,
                               msg->message + w - prekey_messages_beginning);
@@ -478,10 +583,15 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   w += otrng_serialize_bytes_array(msg->message + w, prekey_profile,
                                    prekey_profile_len);
 
+  w += otrng_serialize_bytes_array(msg->message + w, proofs, proof_index);
+
+  free(proofs);
+
   /* MAC: KDF(usage_preMAC, prekey_mac_k || message type
             || N || KDF(usage_prekey_message, Prekey Messages, 64)
             || K || KDF(usage_client_profile, Client Profile, 64)
-            || J || KDF(usage_prekey_profile, Prekey Profile, 64),
+            || J || KDF(usage_prekey_profile, Prekey Profile, 64)
+            || KDF(usage_mac_proofs, Proofs, 64),
         64) */
 
   kdf_init_with_usage(hd, usage_pre_MAC);
@@ -521,6 +631,8 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   }
   free(prekey_profile);
 
+  hash_update(hd, prekey_proofs_kdf, HASH_BYTES);
+
   hash_final(hd, msg->message + w, HASH_BYTES);
   hash_destroy(hd);
 
@@ -546,10 +658,12 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   uint8_t ecdh_shared[ED448_POINT_BYTES] = {0};
   uint8_t usage_SK = 0x01;
   uint8_t usage_preMAC_key = 0x08;
+  uint8_t usage_proof_context = 0x12;
   otrng_result success;
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
   char *ret;
+  uint8_t m[64];
 
   msg->client_instance_tag = client->instance_tag;
 
@@ -625,8 +739,12 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
       return NULL;
     }
 
+    /* m for proofs = KDF(0x12, SK, 64) */
+    shake_256_prekey_server_kdf(m, 64, usage_proof_context, shared_secret,
+                                HASH_BYTES);
+
     success = otrng_prekey_dake3_message_append_prekey_publication_message(
-        pub_msg, msg, client->mac_key);
+        pub_msg, msg, client->mac_key, m);
     otrng_prekey_publication_message_destroy(pub_msg);
 
     if (!success) {
