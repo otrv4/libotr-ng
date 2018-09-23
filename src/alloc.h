@@ -25,9 +25,10 @@
 
 #include "shared.h"
 
-API void otrng_register_out_of_memory_handler(void (*handler)(void));
+API void otrng_register_out_of_memory_handler(/*@null@*/ void (*handler)(void));
 
-INTERNAL void *otrng_xmalloc(size_t size);
-INTERNAL void *otrng_xrealloc(void *ptr, size_t size);
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc(size_t size);
+INTERNAL /*@only@*/ /*@notnull@*/ void *
+otrng_xrealloc(/*@only@*/ /*@null@*/ void *ptr, size_t size);
 
 #endif // OTRNG_ALLOC_H

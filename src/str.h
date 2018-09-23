@@ -28,17 +28,24 @@
 
 #define string_p char *
 
-INTERNAL /*@null@*/ void *otrng_xmemdup(const void *s, const size_t len);
+INTERNAL /*@notnull@*/ /*@only@*/ void *
+otrng_xmemdup(/*@notnull@*/ const void *s, const size_t len);
 
-INTERNAL /*@null@*/ char *otrng_xstrndup(const char *s, size_t s_len);
+INTERNAL /*@notnull@*/ /*@only@*/ char *
+otrng_xstrndup(/*@notnull@*/ const char *s, const size_t s_len);
 
-INTERNAL char *otrng_xstrdup(const char *s);
+INTERNAL /*@notnull@*/ /*@only@*/ char *
+otrng_xstrdup(/*@notnull@*/ const char *s);
 
-INTERNAL /*@null@*/ char *otrng_stpcpy(char *dest, const char *src);
+INTERNAL /*@notnull@*/ /*@only@*/ char *
+otrng_stpcpy(/*@notnull@*/ char *dest,
+             /*@notnull@*/ const char *src) /*@modifies dest@*/;
 
-INTERNAL /*@null@*/ char *otrng_stpncpy(char *dest, const char *src, size_t n);
+INTERNAL /*@notnull@*/ /*@only@*/ char *
+otrng_stpncpy(/*@notnull@*/ char *dest, /*@notnull@*/ const char *src,
+              const size_t n) /*@modifies dest@*/;
 
-INTERNAL size_t otrng_strnlen(const char *s, size_t maxlen);
+INTERNAL size_t otrng_strnlen(/*@notnull@*/ const char *s, const size_t maxlen);
 
 #ifdef OTRNG_STR_PRIVATE
 #endif

@@ -26,11 +26,12 @@
 
 static void (*oom_handler)(void) = NULL;
 
-API void otrng_register_out_of_memory_handler(void (*handler)(void)) {
+API void otrng_register_out_of_memory_handler(
+    /*@null@*/ void (*handler)(void)) /*@modifies oom_handler@*/ {
   oom_handler = handler;
 }
 
-INTERNAL void *otrng_xmalloc(size_t size) {
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc(size_t size) {
   void *result = malloc(size);
   if (result == NULL) {
     if (oom_handler != NULL) {
@@ -43,7 +44,8 @@ INTERNAL void *otrng_xmalloc(size_t size) {
   return result;
 }
 
-INTERNAL void *otrng_xrealloc(void *ptr, size_t size) {
+INTERNAL /*@only@*/ /*@notnull@*/ void *
+otrng_xrealloc(/*@only@*/ /*@null@*/ void *ptr, size_t size) {
   void *result = realloc(ptr, size);
   if (result == NULL) {
     if (oom_handler != NULL) {

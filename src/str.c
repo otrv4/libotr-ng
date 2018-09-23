@@ -26,13 +26,10 @@
 #include "alloc.h"
 #include "str.h"
 
-INTERNAL /*@null@*/ char *otrng_xstrndup(const char *s, size_t s_len) {
+INTERNAL /*@notnull@*/ /*@only@*/ char *
+otrng_xstrndup(/*@notnull@*/ const char *s, size_t s_len) {
   void *new;
   char *ret;
-
-  if (!s) {
-    return NULL;
-  }
 
   if (strlen(s) < s_len) {
     s_len = strlen(s);
@@ -45,32 +42,30 @@ INTERNAL /*@null@*/ char *otrng_xstrndup(const char *s, size_t s_len) {
   return ret;
 }
 
-INTERNAL /*@null@*/ char *otrng_xstrdup(const char *s) {
+INTERNAL /*@notnull@*/ /*@only@*/ char *
+otrng_xstrdup(/*@notnull@*/ const char *s) {
   return otrng_xstrndup(s, strlen(s));
 }
 
-INTERNAL /*@null@*/ void *otrng_xmemdup(const void *s, const size_t len) {
+INTERNAL /*@notnull@*/ /*@only@*/ void *
+otrng_xmemdup(/*@notnull@*/ const void *s, const size_t len) {
   void *d;
-
-  if (!s || len == 0) {
-    return NULL;
-  }
 
   d = otrng_xmalloc(len);
   return memcpy(d, s, len);
 }
 
-INTERNAL /*@null@*/ char *otrng_stpcpy(char *dest, const char *src) {
+INTERNAL /*@notnull@*/ /*@only@*/ char *
+otrng_stpcpy(/*@notnull@*/ char *dest,
+             /*@notnull@*/ const char *src) /*@modifies dest@*/ {
   return otrng_stpncpy(dest, src, strlen(src) + 1);
 }
 
-INTERNAL /*@null@*/ char *otrng_stpncpy(char *dest, const char *src, size_t n) {
+INTERNAL /*@notnull@*/ /*@only@*/ char *
+otrng_stpncpy(/*@notnull@*/ char *dest, /*@notnull@*/ const char *src,
+              const size_t n) /*@modifies dest@*/ {
   size_t l, w;
   char *t;
-
-  if (!src) {
-    return NULL;
-  }
 
   l = strlen(src);
   w = l < n ? l : n;
@@ -83,7 +78,8 @@ INTERNAL /*@null@*/ char *otrng_stpncpy(char *dest, const char *src, size_t n) {
   return dest + w;
 }
 
-INTERNAL size_t otrng_strnlen(const char *s, size_t maxlen) {
+INTERNAL size_t otrng_strnlen(/*@notnull@*/ const char *s,
+                              const size_t maxlen) {
   size_t l = 0;
   while (s[l] && l < maxlen) {
     l++;
