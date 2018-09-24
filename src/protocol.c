@@ -73,6 +73,17 @@ INTERNAL const client_profile_s *get_my_exp_client_profile(otrng_s *otr) {
   return otrng_client_get_exp_client_profile(client);
 }
 
+INTERNAL const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
+  otrng_client_s *client = otr->client;
+  maybe_create_keys(client);
+  return otrng_client_get_prekey_profile(client);
+}
+
+INTERNAL const otrng_prekey_profile_s *get_my_exp_prekey_profile(otrng_s *otr) {
+  otrng_client_s *client = otr->client;
+  return otrng_client_get_exp_prekey_profile(client);
+}
+
 INTERNAL uint32_t our_instance_tag(const otrng_s *otr) {
   return otrng_client_get_instance_tag(otr->client);
 }

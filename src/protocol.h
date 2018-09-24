@@ -83,6 +83,10 @@ INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr);
 
 INTERNAL const client_profile_s *get_my_exp_client_profile(otrng_s *otr);
 
+INTERNAL const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr);
+
+INTERNAL const otrng_prekey_profile_s *get_my_exp_prekey_profile(otrng_s *otr);
+
 INTERNAL struct goldilocks_448_point_s *our_ecdh(const otrng_s *otr);
 
 INTERNAL dh_public_key_p our_dh(const otrng_s *otr);

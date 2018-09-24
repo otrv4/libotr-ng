@@ -28,6 +28,7 @@
 #include "constants.h"
 #include "dh.h"
 #include "ed448.h"
+#include "prekey_profile.h"
 #include "shared.h"
 
 typedef struct dake_identity_message_s {
@@ -144,6 +145,8 @@ INTERNAL otrng_result otrng_dake_prekey_message_serialize(
 typedef struct {
   client_profile_s *client_profile;
   client_profile_s *exp_client_profile;
+  otrng_prekey_profile_s *prekey_profile;
+  otrng_prekey_profile_s *exp_prekey_profile;
   goldilocks_448_point_s ecdh;
   dh_mpi_p dh;
 } otrng_dake_participant_data_s;

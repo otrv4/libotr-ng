@@ -155,17 +155,6 @@ our_shared_prekey(const otrng_s *otr) {
   return otr->client->shared_prekey_pair;
 }
 
-tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
-  otrng_client_s *client = otr->client;
-  maybe_create_keys(client);
-  return otrng_client_get_prekey_profile(client);
-}
-
-tstatic const otrng_prekey_profile_s *get_my_exp_prekey_profile(otrng_s *otr) {
-  otrng_client_s *client = otr->client;
-  return otrng_client_get_exp_prekey_profile(client);
-}
-
 INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
   otrng_s *otr = otrng_xmalloc(sizeof(otrng_s));
 
@@ -619,6 +608,8 @@ static otrng_result generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
   const otrng_dake_participant_data_s initiator = {
       .client_profile = otr->their_client_profile,
       .exp_client_profile = NULL,
+      .prekey_profile = NULL,
+      .exp_prekey_profile = NULL,
       .ecdh = *(otr->keys->their_ecdh),
       .dh = their_dh(otr),
   };
@@ -626,6 +617,8 @@ static otrng_result generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
   const otrng_dake_participant_data_s responder = {
       .client_profile = (client_profile_s *)get_my_client_profile(otr),
       .exp_client_profile = NULL,
+      .prekey_profile = NULL,
+      .exp_prekey_profile = NULL,
       .ecdh = *(otr->keys->our_ecdh->pub),
       .dh = our_dh(otr),
   };
@@ -650,6 +643,8 @@ static otrng_result generate_receiving_rsig_tag(
   const otrng_dake_participant_data_s initiator = {
       .client_profile = (client_profile_s *)get_my_client_profile(otr),
       .exp_client_profile = NULL,
+      .prekey_profile = NULL,
+      .exp_prekey_profile = NULL,
       .ecdh = *(otr->keys->our_ecdh->pub),
       .dh = our_dh(otr),
   };
@@ -799,7 +794,6 @@ non_interactive_auth_message_init(dake_non_interactive_auth_message_p auth,
 
 tstatic otrng_result build_non_interactive_auth_message(
     dake_non_interactive_auth_message_p auth, otrng_s *otr) {
-  otrng_dake_participant_data_s initiator, responder;
   uint8_t *phi = NULL;
   size_t phi_len = 0;
   unsigned char *t = NULL;
@@ -807,9 +801,26 @@ tstatic otrng_result build_non_interactive_auth_message(
   otrng_result ret;
 
   non_interactive_auth_message_init(auth, otr);
-
   auth->prekey_message_id = otr->their_prekeys_id;
   otr->their_prekeys_id = 0;
+
+  const otrng_dake_participant_data_s initiator = {
+      .client_profile = otr->their_client_profile,
+      .exp_client_profile = NULL,
+      .prekey_profile = NULL,
+      .exp_prekey_profile = NULL,
+      .ecdh = *(otr->keys->their_ecdh),
+      .dh = their_dh(otr),
+  };
+
+  const otrng_dake_participant_data_s responder = {
+      .client_profile = (client_profile_s *)get_my_client_profile(otr),
+      .exp_client_profile = NULL,
+      .prekey_profile = NULL,
+      .exp_prekey_profile = NULL,
+      .ecdh = *(otr->keys->our_ecdh->pub),
+      .dh = our_dh(otr),
+  };
 
   /* tmp_k = KDF_1(usage_tmp_key || K_ecdh || ECDH(x, their_shared_prekey) ||
      ECDH(x, Pkb) || brace_key)
@@ -818,16 +829,6 @@ tstatic otrng_result build_non_interactive_auth_message(
   if (!generate_tmp_key_r(otr->keys->tmp_key, otr)) {
     return OTRNG_ERROR;
   }
-
-  initiator.client_profile = otr->their_client_profile;
-  initiator.exp_client_profile = NULL;
-  initiator.ecdh = *(otr->keys->their_ecdh);
-  initiator.dh = their_dh(otr);
-
-  responder.client_profile = (client_profile_s *)get_my_client_profile(otr);
-  responder.exp_client_profile = NULL;
-  responder.ecdh = *(otr->keys->our_ecdh->pub);
-  responder.dh = our_dh(otr);
 
   if (!generate_phi_receiving(&phi, &phi_len, otr)) {
     return OTRNG_ERROR;
@@ -1159,14 +1160,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
 tstatic otrng_bool verify_non_interactive_auth_message(
     otrng_response_s *response, const dake_non_interactive_auth_message_s *auth,
     otrng_s *otr) {
-  otrng_dake_participant_data_s initiator, responder;
-  const otrng_prekey_profile_s
-      *prekey_profile; // TODO: @refactoring this should be part of the
-                       // participant data struct
-  const otrng_prekey_profile_s
-      *exp_prekey_profile; // TODO: @refactoring this should be part of the
-                           // participant data struct
-
+  const otrng_prekey_profile_s *prekey_profile;
   uint8_t *phi = NULL;
   size_t phi_len = 0;
   unsigned char *t = NULL;
@@ -1180,19 +1174,24 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     return otrng_false;
   }
 
-  exp_prekey_profile = get_my_exp_prekey_profile(otr);
+  const otrng_dake_participant_data_s initiator = {
+      .client_profile = (client_profile_s *)get_my_client_profile(otr),
+      .exp_client_profile = (client_profile_s *)get_my_exp_client_profile(otr),
+      .prekey_profile = (otrng_prekey_profile_s *)prekey_profile,
+      .exp_prekey_profile =
+          (otrng_prekey_profile_s *)get_my_exp_client_profile(otr),
+      .ecdh = *(otr->keys->our_ecdh->pub),
+      .dh = our_dh(otr),
+  };
 
-  // TODO: @refactor
-  initiator.client_profile = (client_profile_s *)get_my_client_profile(otr);
-  initiator.exp_client_profile =
-      (client_profile_s *)get_my_exp_client_profile(otr);
-  initiator.ecdh = *(otr->keys->our_ecdh->pub);
-  initiator.dh = our_dh(otr);
-
-  responder.client_profile = (client_profile_s *)auth->profile;
-  responder.exp_client_profile = NULL;
-  responder.ecdh = *(auth->X);
-  responder.dh = auth->A;
+  const otrng_dake_participant_data_s responder = {
+      .client_profile = (client_profile_s *)auth->profile,
+      .exp_client_profile = NULL,
+      .prekey_profile = NULL,
+      .exp_prekey_profile = NULL,
+      .ecdh = *(auth->X),
+      .dh = auth->A,
+  };
 
   if (!generate_phi_sending(&phi, &phi_len, otr)) {
     return otrng_false;
@@ -1215,11 +1214,11 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     free(t);
     t = NULL;
 
-    if (initiator.exp_client_profile && exp_prekey_profile) {
+    if (initiator.exp_client_profile && initiator.exp_prekey_profile) {
       /* the fallback */
       if (!build_fallback_non_interactive_rsign_tag(
               &t, &t_len, &initiator, &responder,
-              exp_prekey_profile->shared_prekey, phi, phi_len)) {
+              initiator.exp_prekey_profile->shared_prekey, phi, phi_len)) {
         free(phi);
         return otrng_false;
       }
@@ -1232,6 +1231,9 @@ tstatic otrng_bool verify_non_interactive_auth_message(
         free(t);
         return otrng_false;
       }
+
+      free(phi);
+      return otrng_false;
     }
   }
 
@@ -1515,6 +1517,8 @@ tstatic otrng_result reply_with_auth_i_msg(
   const otrng_dake_participant_data_s responder = {
       .client_profile = (client_profile_s *)their_client_profile,
       .exp_client_profile = NULL,
+      .prekey_profile = NULL,
+      .exp_prekey_profile = NULL,
       .ecdh = *(otr->keys->their_ecdh),
       .dh = their_dh(otr),
   };
@@ -1552,7 +1556,6 @@ tstatic otrng_result reply_with_auth_i_msg(
 
 tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
                                         otrng_s *otr) {
-  otrng_dake_participant_data_s responder;
   unsigned char *t = NULL;
   size_t t_len = 0;
   otrng_bool err;
@@ -1562,10 +1565,14 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
     return otrng_false;
   }
 
-  responder.client_profile = (client_profile_s *)auth->profile;
-  responder.exp_client_profile = NULL;
-  responder.ecdh = *(auth->X);
-  responder.dh = auth->A;
+  const otrng_dake_participant_data_s responder = {
+      .client_profile = (client_profile_s *)auth->profile,
+      .exp_client_profile = NULL,
+      .prekey_profile = NULL,
+      .exp_prekey_profile = NULL,
+      .ecdh = *(auth->X),
+      .dh = auth->A,
+  };
 
   if (!generate_receiving_rsig_tag(&t, &t_len, 'r', &responder, otr)) {
     return otrng_false;
