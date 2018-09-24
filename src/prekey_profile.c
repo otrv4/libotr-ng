@@ -268,7 +268,7 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
   return valid;
 }
 
-static otrng_bool expired(time_t expires) {
+INTERNAL otrng_bool otrng_prekey_profile_expired(time_t expires) {
   return (difftime(expires, time(NULL)) <= 0);
 }
 
@@ -288,7 +288,7 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
   }
 
   /* 3. Verify that the Prekey Profile has not expired. */
-  if (expired(profile->expires)) {
+  if (otrng_prekey_profile_expired(profile->expires)) {
     return otrng_false;
   }
 

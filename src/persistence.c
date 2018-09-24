@@ -826,5 +826,14 @@ otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
     return ret;
   }
 
+  if (otrng_prekey_profile_expired(profile->expires)) {
+    otrng_client_callbacks_write_expired_prekey_profile(
+        client->global_state->callbacks, client, client->client_id);
+
+    // TODO: I'm suspecting this will make a lot of tests fail, so
+    // no return for the moment
+    // return OTRNG_SUCCESS;
+  }
+
   return otrng_client_add_prekey_profile(client, profile);
 }

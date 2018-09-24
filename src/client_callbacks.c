@@ -74,6 +74,17 @@ INTERNAL void otrng_client_callbacks_write_expired_client_profile(
   cb->write_expired_client_profile(client, client_opdata);
 }
 
+INTERNAL void otrng_client_callbacks_write_expired_prekey_profile(
+    const otrng_client_callbacks_s *cb, otrng_client_s *client,
+    const otrng_client_id_s client_opdata) {
+  if (!cb) {
+    return;
+  }
+
+  // This callback is required and is expected to segfault if not provided.
+  cb->write_expired_prekey_profile(client, client_opdata);
+}
+
 INTERNAL void otrng_client_callbacks_create_prekey_profile(
     const otrng_client_callbacks_s *cb, otrng_client_s *client,
     const otrng_client_id_s client_opdata) {

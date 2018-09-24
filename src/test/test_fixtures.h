@@ -117,6 +117,7 @@ static otrng_client_callbacks_p test_callbacks = {{
     &create_client_profile_cb,    /* create_client_profile */
     NULL,                         /* write_expired_client_profile */
     &create_prekey_profile_cb,    /* create_prekey_profile */
+    NULL,                         /* write_expired_prekey_profile */
     NULL,                         /* create_shared_prekey */
     NULL,                         /* gone_secure */
     NULL,                         /* gone_insecure */

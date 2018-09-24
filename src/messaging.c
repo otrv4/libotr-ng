@@ -315,7 +315,7 @@ API otrng_result otrng_global_state_private_key_v4_read_FILEp(
     return OTRNG_ERROR;
   }
 
-  // Scan the whole file for a private key for this client
+  /* Scan the whole file for a private key for this client */
   while (!feof(privf)) {
     otrng_client_s *client;
     const otrng_client_id_s client_id = read_client_id_for_key(privf);
