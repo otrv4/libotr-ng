@@ -37,6 +37,7 @@
 #include "str.h"
 
 #define MAX_NUMBER_PUBLISHED_PREKEY_MESSAGES 255
+#define HEARTBEAT_INTERVAL 60
 
 tstatic otrng_conversation_s *new_conversation_with(const char *recipient,
                                                     otrng_s *conn) {
@@ -58,8 +59,6 @@ tstatic void conversation_free(void *data) {
   free(conv);
 }
 
-#define HEARTBEAT_INTERVAL 60
-
 tstatic otrng_bool should_heartbeat(int last_sent) {
   time_t now = time(NULL);
   int interval = now - HEARTBEAT_INTERVAL;
@@ -71,7 +70,6 @@ tstatic otrng_bool should_heartbeat(int last_sent) {
 
 API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
   otrng_client_s *client = otrng_xmalloc(sizeof(otrng_client_s));
-
   memset(client, 0, sizeof(otrng_client_s));
 
   client->client_id = client_id;
@@ -270,6 +268,26 @@ tstatic otrng_result send_message(char **newmsg, const char *message,
   return result;
 }
 
+API char *otrng_client_query_message(const char *recipient, const char *message,
+                                     otrng_client_s *client) {
+  char *ret = NULL;
+  otrng_conversation_s *conv = NULL;
+  conv = get_or_create_conversation_with(recipient, client);
+  if (!conv) {
+    return NULL;
+  }
+
+  if (otrng_failed(otrng_build_query_message(&ret, message, conv->conn))) {
+    // TODO: @client This should come from the client (a callback maybe?)
+    // because it knows in which language this should be sent, for example.
+    char *error = otrng_xstrdup(
+        "Failed to start an Off-the-Record private conversation.");
+    return error;
+  }
+
+  return ret;
+}
+
 API otrng_result otrng_client_send(char **newmessage, const char *message,
                                    const char *recipient,
                                    otrng_client_s *client) {
@@ -313,6 +331,7 @@ API otrng_result otrng_client_send_fragment(
 
   ret = otrng_fragment_message(mms, *newmessage, our_tag, their_tag, to_send);
   free(to_send);
+
   return ret;
 }
 
@@ -347,10 +366,6 @@ API otrng_result otrng_client_smp_respond(char **tosend, const char *recipient,
   return otrng_smp_continue(tosend, secret, secretlen, conv->conn);
 }
 
-// TODO: this function is very likely not doing the right thing with
-//   return codes for example, look at the return of
-//   CLIENT_ERROR_MSG_NOT_VALID. this function in general returns
-//   ERROR=0 for errors, so anything not ERROR will be success...
 API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
                                       const char *message,
                                       const char *recipient,
@@ -406,26 +421,6 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
   otrng_response_free(response);
 
   return result;
-}
-
-API char *otrng_client_query_message(const char *recipient, const char *message,
-                                     otrng_client_s *client) {
-  char *ret = NULL;
-  otrng_conversation_s *conv = NULL;
-  conv = get_or_create_conversation_with(recipient, client);
-  if (!conv) {
-    return NULL;
-  }
-
-  if (otrng_failed(otrng_build_query_message(&ret, message, conv->conn))) {
-    // TODO: @client This should come from the client (a callback maybe?)
-    // because it knows in which language this should be sent, for example.
-    char *error = otrng_xstrdup(
-        "Failed to start an Off-the-Record private conversation.");
-    return error;
-  }
-
-  return ret;
 }
 
 tstatic void destroy_client_conversation(const otrng_conversation_s *conv,
@@ -543,10 +538,9 @@ otrng_client_get_prekey_client(const char *server_identity,
   return client->prekey_client;
 }
 
-INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
-                                      const ecdh_keypair_p ecdh_pair,
-                                      const dh_keypair_p dh_pair,
-                                      otrng_client_s *client) {
+INTERNAL void otrng_client_store_my_prekey_message(
+    uint32_t id, uint32_t instance_tag, const ecdh_keypair_p ecdh_pair,
+    const dh_keypair_p dh_pair, otrng_client_s *client) {
   otrng_stored_prekeys_s *stored_prekey_msg;
   if (!client) {
     return;
@@ -605,8 +599,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
     goldilocks_448_scalar_copy(ke[i], ecdh->priv);
     kd[i] = otrng_dh_mpi_copy(dh->priv);
 
-    store_my_prekey_message(messages[i]->id, messages[i]->sender_instance_tag,
-                            ecdh, dh, client);
+    otrng_client_store_my_prekey_message(
+        messages[i]->id, messages[i]->sender_instance_tag, ecdh, dh, client);
 
     // TODO: ecdh_keypair_destroy()
     // dh_keypair_detroy()
@@ -752,6 +746,27 @@ INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client) {
   return client->keypair;
 }
 
+INTERNAL otrng_result otrng_client_add_private_key_v4(
+    otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  if (!client) {
+    return OTRNG_ERROR;
+  }
+
+  if (client->keypair) {
+    return OTRNG_ERROR;
+  }
+
+  /* @secret_information: the long-term key pair lives for as long the client
+     decides */
+  client->keypair = otrng_keypair_new();
+  if (!client->keypair) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_keypair_generate(client->keypair, sym);
+  return OTRNG_SUCCESS;
+}
+
 INTERNAL otrng_public_key_p *
 otrng_client_get_forging_key(otrng_client_s *client) {
   if (!client) {
@@ -773,27 +788,6 @@ INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client) {
 
   otrng_client_callbacks_create_forging_key(client->global_state->callbacks,
                                             client->client_id);
-}
-
-INTERNAL otrng_result otrng_client_add_private_key_v4(
-    otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
-
-  if (client->keypair) {
-    return OTRNG_ERROR;
-  }
-
-  /* @secret_information: the long-term key pair lives for as long the client
-     decides */
-  client->keypair = otrng_keypair_new();
-  if (!client->keypair) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_keypair_generate(client->keypair, sym);
-  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_client_add_forging_key(
@@ -829,19 +823,6 @@ otrng_client_get_client_profile(otrng_client_s *client) {
   return client->client_profile;
 }
 
-API const client_profile_s *
-otrng_client_get_exp_client_profile(otrng_client_s *client) {
-  if (!client) {
-    return NULL;
-  }
-
-  if (client->exp_client_profile) {
-    return client->exp_client_profile;
-  }
-
-  return NULL;
-}
-
 API client_profile_s *
 otrng_client_build_default_client_profile(otrng_client_s *client) {
   // TODO: Get allowed versions from the policy
@@ -872,6 +853,19 @@ API otrng_result otrng_client_add_client_profile(
   otrng_client_profile_copy(client->client_profile, profile);
 
   return OTRNG_SUCCESS;
+}
+
+API const client_profile_s *
+otrng_client_get_exp_client_profile(otrng_client_s *client) {
+  if (!client) {
+    return NULL;
+  }
+
+  if (client->exp_client_profile) {
+    return client->exp_client_profile;
+  }
+
+  return NULL;
 }
 
 API otrng_result otrng_client_add_exp_client_profile(
@@ -928,19 +922,6 @@ get_shared_prekey_pair(otrng_client_s *client) {
   return client->shared_prekey_pair;
 }
 
-API otrng_prekey_profile_s *
-otrng_client_build_default_prekey_profile(otrng_client_s *client) {
-  if (!client) {
-    return NULL;
-  }
-
-  /* @secret: the shared prekey should be deleted once the prekey profile
-   * expires */
-  return otrng_prekey_profile_build(otrng_client_get_instance_tag(client),
-                                    otrng_client_get_keypair_v4(client),
-                                    get_shared_prekey_pair(client));
-}
-
 API const otrng_prekey_profile_s *
 otrng_client_get_prekey_profile(otrng_client_s *client) {
   if (!client) {
@@ -957,17 +938,17 @@ otrng_client_get_prekey_profile(otrng_client_s *client) {
   return client->prekey_profile;
 }
 
-API const otrng_prekey_profile_s *
-otrng_client_get_exp_prekey_profile(otrng_client_s *client) {
+API otrng_prekey_profile_s *
+otrng_client_build_default_prekey_profile(otrng_client_s *client) {
   if (!client) {
     return NULL;
   }
 
-  if (client->exp_prekey_profile) {
-    return client->prekey_profile;
-  }
-
-  return NULL;
+  /* @secret: the shared prekey should be deleted once the prekey profile
+   * expires */
+  return otrng_prekey_profile_build(otrng_client_get_instance_tag(client),
+                                    otrng_client_get_keypair_v4(client),
+                                    get_shared_prekey_pair(client));
 }
 
 API otrng_result otrng_client_add_prekey_profile(
@@ -985,6 +966,19 @@ API otrng_result otrng_client_add_prekey_profile(
   otrng_prekey_profile_copy(client->prekey_profile, profile);
 
   return OTRNG_SUCCESS;
+}
+
+API const otrng_prekey_profile_s *
+otrng_client_get_exp_prekey_profile(otrng_client_s *client) {
+  if (!client) {
+    return NULL;
+  }
+
+  if (client->exp_prekey_profile) {
+    return client->prekey_profile;
+  }
+
+  return NULL;
 }
 
 API otrng_result otrng_client_add_exp_prekey_profile(
@@ -1032,6 +1026,40 @@ tstatic void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
   us->instag_root = p;
 }
 
+INTERNAL unsigned int
+otrng_client_get_instance_tag(const otrng_client_s *client) {
+  char *account_name = NULL;
+  char *protocol_name = NULL;
+  OtrlInsTag *instag;
+
+  if (!client->global_state->user_state_v3) {
+    return (unsigned int)0;
+  }
+
+  // TODO: We could use a "get storage key" callback and use it as
+  // account_name plus an arbitrary "libotrng-storage" protocol.
+  if (!get_account_and_protocol_cb(&account_name, &protocol_name, client)) {
+    return (unsigned int)1;
+  }
+
+  instag = otrl_instag_find(client->global_state->user_state_v3, account_name,
+                            protocol_name);
+
+  free(account_name);
+  free(protocol_name);
+
+  if (!instag) {
+    otrng_client_callbacks_create_instag(client->global_state->callbacks,
+                                         client->client_id);
+  }
+
+  if (!instag) {
+    return (unsigned int)0;
+  }
+
+  return instag->instag;
+}
+
 INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
                                                     unsigned int instag) {
   char *account_name = NULL;
@@ -1072,40 +1100,6 @@ INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL unsigned int
-otrng_client_get_instance_tag(const otrng_client_s *client) {
-  char *account_name = NULL;
-  char *protocol_name = NULL;
-  OtrlInsTag *instag;
-
-  if (!client->global_state->user_state_v3) {
-    return (unsigned int)0;
-  }
-
-  // TODO: We could use a "get storage key" callback and use it as
-  // account_name plus an arbitrary "libotrng-storage" protocol.
-  if (!get_account_and_protocol_cb(&account_name, &protocol_name, client)) {
-    return (unsigned int)1;
-  }
-
-  instag = otrl_instag_find(client->global_state->user_state_v3, account_name,
-                            protocol_name);
-
-  free(account_name);
-  free(protocol_name);
-
-  if (!instag) {
-    otrng_client_callbacks_create_instag(client->global_state->callbacks,
-                                         client->client_id);
-  }
-
-  if (!instag) {
-    return (unsigned int)0;
-  }
-
-  return instag->instag;
-}
-
 tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
                                                      list_element_s *l) {
   while (l) {
@@ -1124,8 +1118,19 @@ tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
   return NULL;
 }
 
-INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
-                                             otrng_client_s *client) {
+INTERNAL const otrng_stored_prekeys_s *
+otrng_client_get_my_prekeys_by_id(uint32_t id, const otrng_client_s *client) {
+  list_element_s *node = get_stored_prekey_node_by_id(id, client->our_prekeys);
+  if (!node) {
+    return NULL;
+  }
+
+  return node->data;
+}
+
+INTERNAL void
+otrng_client_delete_my_prekey_message_by_id(uint32_t id,
+                                            otrng_client_s *client) {
   list_element_s *node = get_stored_prekey_node_by_id(id, client->our_prekeys);
   if (!node) {
     return;
@@ -1133,16 +1138,6 @@ INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
 
   client->our_prekeys = otrng_list_remove_element(node, client->our_prekeys);
   otrng_list_free(node, stored_prekeys_free_from_list);
-}
-
-INTERNAL const otrng_stored_prekeys_s *
-get_my_prekeys_by_id(uint32_t id, const otrng_client_s *client) {
-  list_element_s *node = get_stored_prekey_node_by_id(id, client->our_prekeys);
-  if (!node) {
-    return NULL;
-  }
-
-  return node->data;
 }
 
 API void otrng_client_set_padding(size_t granularity, otrng_client_s *client) {

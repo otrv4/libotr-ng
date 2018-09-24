@@ -331,7 +331,7 @@ void test_global_state_prekey_message_management(void) {
 
   uint32_t message_id = 4047093956;
   const otrng_stored_prekeys_s *stored_prekey = NULL;
-  stored_prekey = get_my_prekeys_by_id(message_id, client);
+  stored_prekey = otrng_client_get_my_prekeys_by_id(message_id, client);
 
   uint8_t ecdh_secret_k[ED448_SCALAR_BYTES] = {0};
   otrng_ec_scalar_encode(ecdh_secret_k, stored_prekey->our_ecdh->priv);

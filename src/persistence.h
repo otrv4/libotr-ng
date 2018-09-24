@@ -35,6 +35,9 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_FILEp(
 INTERNAL otrng_result
 otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f);
 
+INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
+    const otrng_client_s *client, FILE *shared_prekey_f);
+
 INTERNAL otrng_result otrng_client_shared_prekey_read_FILEp(
     otrng_client_s *client, FILE *shared_prekeyf);
 

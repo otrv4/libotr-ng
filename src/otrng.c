@@ -931,8 +931,8 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   }
 
   client = otr->client;
-  store_my_prekey_message(ensemble->message->id, our_instance_tag(otr), ecdh,
-                          dh, client);
+  otrng_client_store_my_prekey_message(ensemble->message->id,
+                                       our_instance_tag(otr), ecdh, dh, client);
   otrng_ecdh_keypair_destroy(ecdh);
   otrng_dh_keypair_destroy(dh);
 
@@ -1285,7 +1285,8 @@ tstatic otrng_result non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
-  stored_prekey = get_my_prekeys_by_id(auth->prekey_message_id, otr->client);
+  stored_prekey =
+      otrng_client_get_my_prekeys_by_id(auth->prekey_message_id, otr->client);
   if (!stored_prekey) {
     // TODO: this should send an error to the plugin
     return OTRNG_ERROR;
@@ -1328,7 +1329,7 @@ tstatic otrng_result non_interactive_auth_message_received(
   }
 
   /* Delete the stored prekeys for this ID so they can't be used again. */
-  delete_my_prekey_message_by_id(auth->prekey_message_id, client);
+  otrng_client_delete_my_prekey_message_by_id(auth->prekey_message_id, client);
 
   otrng_key_manager_set_their_ecdh(auth->X, otr->keys);
   otrng_key_manager_set_their_dh(auth->A, otr->keys);

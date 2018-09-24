@@ -95,6 +95,14 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id);
 
 API void otrng_client_free(otrng_client_s *client);
 
+API otrng_conversation_s *otrng_client_get_conversation(int force_create,
+                                                        const char *recipient,
+                                                        otrng_client_s *client);
+
+API otrng_bool otrng_conversation_is_encrypted(otrng_conversation_s *conv);
+
+API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv);
+
 API char *otrng_client_query_message(const char *recipient, const char *message,
                                      otrng_client_s *client);
 
@@ -102,13 +110,13 @@ API otrng_result otrng_client_send(char **newmessage, const char *message,
                                    const char *recipient,
                                    otrng_client_s *client);
 
-API otrng_result otrng_client_send_non_interactive_auth(
-    char **newmessage, const prekey_ensemble_s *ensemble, const char *recipient,
-    otrng_client_s *client);
-
 API otrng_result otrng_client_send_fragment(
     otrng_message_to_send_s **newmessage, const char *message, int mms,
     const char *recipient, otrng_client_s *client);
+
+API otrng_result otrng_client_send_non_interactive_auth(
+    char **newmessage, const prekey_ensemble_s *ensemble, const char *recipient,
+    otrng_client_s *client);
 
 API otrng_result otrng_client_smp_start(char **tosend, const char *recipient,
                                         const unsigned char *question,
@@ -130,19 +138,6 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
 
 API otrng_result otrng_client_disconnect(char **newmsg, const char *recipient,
                                          otrng_client_s *client);
-
-/* tstatic int otrng_encrypted_conversation_expire(char **newmsg, const char
- * *recipient, */
-/*                                        int expiration_time, */
-/*                                        otrng_client_s *client); */
-
-API otrng_conversation_s *otrng_client_get_conversation(int force_create,
-                                                        const char *recipient,
-                                                        otrng_client_s *client);
-
-API otrng_bool otrng_conversation_is_encrypted(otrng_conversation_s *conv);
-
-API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv);
 
 API otrng_result otrng_expire_encrypted_session(char **newmsg,
                                                 const char *recipient,
@@ -166,14 +161,14 @@ API otrng_result otrng_client_expire_fragments(int expiration_time,
 API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
                                                   const otrng_client_s *client);
 
-/* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf); */
-
-/* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf); */
-
 API otrng_prekey_client_s *
 otrng_client_get_prekey_client(const char *server_identity,
                                otrng_prekey_client_callbacks_s *callbacks,
                                otrng_client_s *client);
+
+INTERNAL void otrng_client_store_my_prekey_message(
+    uint32_t id, uint32_t instance_tag, const ecdh_keypair_p ecdh_pair,
+    const dh_keypair_p dh_pair, otrng_client_s *client);
 
 API dake_prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
@@ -182,16 +177,54 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
 INTERNAL otrng_result otrng_client_get_account_and_protocol(
     char **account, char **protocol, const otrng_client_s *client);
 
-INTERNAL void store_my_prekey_message(uint32_t id, uint32_t instance_tag,
-                                      const ecdh_keypair_p ecdh_pair,
-                                      const dh_keypair_p dh_pair,
-                                      otrng_client_s *client);
+INTERNAL OtrlPrivKey *
+otrng_client_get_private_key_v3(const otrng_client_s *client);
 
-INTERNAL void delete_my_prekey_message_by_id(uint32_t id,
-                                             otrng_client_s *client);
+INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client);
 
-INTERNAL const otrng_stored_prekeys_s *
-get_my_prekeys_by_id(uint32_t id, const otrng_client_s *client);
+INTERNAL otrng_result otrng_client_add_private_key_v4(
+    otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]);
+
+INTERNAL otrng_public_key_p *
+otrng_client_get_forging_key(otrng_client_s *client);
+
+INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client);
+
+INTERNAL otrng_result otrng_client_add_forging_key(
+    otrng_client_s *client, const otrng_public_key_p key);
+
+API const client_profile_s *
+otrng_client_get_client_profile(otrng_client_s *client);
+
+API client_profile_s *
+otrng_client_build_default_client_profile(otrng_client_s *client);
+
+API otrng_result otrng_client_add_client_profile(
+    otrng_client_s *client, const client_profile_s *profile);
+
+API const client_profile_s *
+otrng_client_get_exp_client_profile(otrng_client_s *client);
+
+API otrng_result otrng_client_add_exp_client_profile(
+    otrng_client_s *client, const client_profile_s *exp_profile);
+
+INTERNAL otrng_result otrng_client_add_shared_prekey_v4(
+    otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]);
+
+API const otrng_prekey_profile_s *
+otrng_client_get_prekey_profile(otrng_client_s *client);
+
+API otrng_prekey_profile_s *
+otrng_client_build_default_prekey_profile(otrng_client_s *client);
+
+API otrng_result otrng_client_add_prekey_profile(
+    otrng_client_s *client, const otrng_prekey_profile_s *profile);
+
+API const otrng_prekey_profile_s *
+otrng_client_get_exp_prekey_profile(otrng_client_s *client);
+
+API otrng_result otrng_client_add_exp_prekey_profile(
+    otrng_client_s *client, const otrng_prekey_profile_s *exp_profile);
 
 INTERNAL unsigned int
 otrng_client_get_instance_tag(const otrng_client_s *client);
@@ -199,56 +232,12 @@ otrng_client_get_instance_tag(const otrng_client_s *client);
 INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
                                                     unsigned int instag);
 
-// TODO: @client @refactoring remove
-INTERNAL otrng_result otrng_client_add_shared_prekey_v4(
-    otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]);
+INTERNAL const otrng_stored_prekeys_s *
+otrng_client_get_my_prekeys_by_id(uint32_t id, const otrng_client_s *client);
 
-API client_profile_s *
-otrng_client_build_default_client_profile(otrng_client_s *client);
-
-API otrng_prekey_profile_s *
-otrng_client_build_default_prekey_profile(otrng_client_s *client);
-
-API const client_profile_s *
-otrng_client_get_client_profile(otrng_client_s *client);
-
-API const client_profile_s *
-otrng_client_get_exp_client_profile(otrng_client_s *client);
-
-API otrng_result otrng_client_add_client_profile(
-    otrng_client_s *client, const client_profile_s *profile);
-
-API otrng_result otrng_client_add_exp_client_profile(
-    otrng_client_s *client, const client_profile_s *exp_profile);
-
-API const otrng_prekey_profile_s *
-otrng_client_get_prekey_profile(otrng_client_s *client);
-
-API const otrng_prekey_profile_s *
-otrng_client_get_exp_prekey_profile(otrng_client_s *client);
-
-API otrng_result otrng_client_add_prekey_profile(
-    otrng_client_s *client, const otrng_prekey_profile_s *profile);
-
-API otrng_result otrng_client_add_exp_prekey_profile(
-    otrng_client_s *client, const otrng_prekey_profile_s *exp_profile);
-
-INTERNAL OtrlPrivKey *
-otrng_client_get_private_key_v3(const otrng_client_s *client);
-
-INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client);
-INTERNAL otrng_public_key_p *
-otrng_client_get_forging_key(otrng_client_s *client);
-INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client);
-
-INTERNAL otrng_result otrng_client_add_private_key_v4(
-    otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]);
-
-INTERNAL otrng_result otrng_client_add_forging_key(
-    otrng_client_s *client, const otrng_public_key_p key);
-
-INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
-    const otrng_client_s *client, FILE *shared_prekey_f);
+INTERNAL void
+otrng_client_delete_my_prekey_message_by_id(uint32_t id,
+                                            otrng_client_s *client);
 
 API void otrng_client_set_padding(size_t granularity, otrng_client_s *client);
 
@@ -264,12 +253,12 @@ API void otrng_client_state_set_max_published_prekey_msg(
 API void otrng_client_state_set_minimum_stored_prekey_msg(
     unsigned int minimum_stored_prekey_msg, otrng_client_s *client);
 
+API otrng_result
+otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
+
 API void
 otrng_client_set_profiles_extra_valid_time(uint64_t profiles_extra_valid_time,
                                            otrng_client_s *client);
-
-API otrng_result
-otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
 
 API otrng_result
 otrng_client_get_client_profile_exp_time(otrng_client_s *client);
@@ -285,6 +274,10 @@ API void
 otrng_client_set_prekey_profile_exp_time(uint64_t prekey_profile_exp_time,
                                          otrng_client_s *client);
 
+/* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf); */
+
+/* tstatic int v3_instag_generate(otrng_client_s *client, FILE *privf); */
+
 #ifdef DEBUG_API
 
 API void otrng_client_debug_print(FILE *, int, otrng_client_s *);
@@ -294,6 +287,7 @@ API void otrng_conversation_debug_print(FILE *, int, otrng_conversation_s *);
 /* API void otrng_client_debug_print(FILE *, int, otrng_client_s *); */
 API void otrng_stored_prekeys_debug_print(FILE *, int,
                                           otrng_stored_prekeys_s *);
+
 #endif
 
 #ifdef OTRNG_CLIENT_PRIVATE
