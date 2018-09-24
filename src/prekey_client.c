@@ -90,7 +90,8 @@ API otrng_prekey_client_s *otrng_prekey_client_new() {
   client->publication_policy =
       otrng_xmalloc(sizeof(otrng_prekey_publication_policy_s));
 
-  memset(client->publication_policy, 0, sizeof(otrng_prekey_publication_policy_s));
+  memset(client->publication_policy, 0,
+         sizeof(otrng_prekey_publication_policy_s));
 
   return client;
 }
@@ -125,7 +126,7 @@ API void otrng_prekey_client_init(otrng_prekey_client_s *client,
 
   client->instance_tag = instance_tag;
   client->client_profile = client_profile;
-  
+
   // TODO: Can be null if you dont want to publish it
   client->server_identity = otrng_xstrdup(server);
   client->our_identity = otrng_xstrdup(our_identity);

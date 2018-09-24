@@ -166,7 +166,7 @@ API void otrng_prekey_client_init(otrng_prekey_client_s *prekey_client,
                                   unsigned int max_published_prekey_msg,
                                   unsigned int minimum_stored_prekey_msg);
 
-API otrng_prekey_client_s *otrng_prekey_client_new();
+API otrng_prekey_client_s *otrng_prekey_client_new(void);
 
 API void otrng_prekey_client_free(otrng_prekey_client_s *client);
 
