@@ -223,6 +223,9 @@ API otrng_result otrng_client_add_exp_client_profile(
 API const otrng_prekey_profile_s *
 otrng_client_get_prekey_profile(otrng_client_s *client);
 
+API const otrng_prekey_profile_s *
+otrng_client_get_exp_prekey_profile(otrng_client_s *client);
+
 API otrng_result otrng_client_add_prekey_profile(
     otrng_client_s *client, const otrng_prekey_profile_s *profile);
 

@@ -161,6 +161,11 @@ tstatic const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   return otrng_client_get_prekey_profile(client);
 }
 
+tstatic const otrng_prekey_profile_s *get_my_exp_prekey_profile(otrng_s *otr) {
+  otrng_client_s *client = otr->client;
+  return otrng_client_get_exp_prekey_profile(client);
+}
+
 INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
   otrng_s *otr = otrng_xmalloc(sizeof(otrng_s));
 
@@ -1155,7 +1160,13 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     otrng_response_s *response, const dake_non_interactive_auth_message_s *auth,
     otrng_s *otr) {
   otrng_dake_participant_data_s initiator, responder;
-  const otrng_prekey_profile_s *prekey_profile = get_my_prekey_profile(otr);
+  const otrng_prekey_profile_s
+      *prekey_profile; // TODO: @refactoring this should be part of the
+                       // participant data struct
+  const otrng_prekey_profile_s
+      *exp_prekey_profile; // TODO: @refactoring this should be part of the
+                           // participant data struct
+
   uint8_t *phi = NULL;
   size_t phi_len = 0;
   unsigned char *t = NULL;
@@ -1164,10 +1175,14 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   (void)response;
 
+  prekey_profile = get_my_prekey_profile(otr);
   if (!prekey_profile) {
     return otrng_false;
   }
 
+  exp_prekey_profile = get_my_exp_prekey_profile(otr);
+
+  // TODO: @refactor
   initiator.client_profile = (client_profile_s *)get_my_client_profile(otr);
   initiator.exp_client_profile =
       (client_profile_s *)get_my_exp_client_profile(otr);
@@ -1200,21 +1215,23 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     free(t);
     t = NULL;
 
-    /* the fallback */
-    if (!build_fallback_non_interactive_rsign_tag(
-            &t, &t_len, &initiator, &responder, prekey_profile->shared_prekey,
-            phi, phi_len)) {
-      free(phi);
-      return otrng_false;
-    }
+    if (initiator.exp_client_profile && exp_prekey_profile) {
+      /* the fallback */
+      if (!build_fallback_non_interactive_rsign_tag(
+              &t, &t_len, &initiator, &responder,
+              exp_prekey_profile->shared_prekey, phi, phi_len)) {
+        free(phi);
+        return otrng_false;
+      }
 
-    if (!otrng_rsig_verify(auth->sigma, *otr->client->forging_key, /* H_b */
-                           auth->profile->long_term_pub_key,       /* H_a */
-                           our_ecdh(otr),                          /* Y  */
-                           t, t_len)) {
-      free(phi);
-      free(t);
-      return otrng_false;
+      if (!otrng_rsig_verify(auth->sigma, *otr->client->forging_key, /* H_b */
+                             auth->profile->long_term_pub_key,       /* H_a */
+                             our_ecdh(otr),                          /* Y  */
+                             t, t_len)) {
+        free(phi);
+        free(t);
+        return otrng_false;
+      }
     }
   }
 
