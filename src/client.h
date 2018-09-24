@@ -72,8 +72,9 @@ typedef struct otrng_client_s {
   unsigned int max_published_prekey_msg;
   unsigned int minimum_stored_prekey_msg;
 
+  uint64_t profiles_extra_valid_time;
   uint64_t client_profile_exp_time;
-  uint64_t client_profile_extra_valid_time;
+  uint64_t prekey_profile_exp_time;
 
   otrng_bool (*should_heartbeat)(int last_sent);
   size_t padding;
@@ -263,8 +264,9 @@ API void otrng_client_state_set_max_published_prekey_msg(
 API void otrng_client_state_set_minimum_stored_prekey_msg(
     unsigned int minimum_stored_prekey_msg, otrng_client_s *client);
 
-API void otrng_client_set_client_profile_extra_valid_time(
-    unsigned int client_profile_extra_valid_time, otrng_client_s *client);
+API void
+otrng_client_set_profiles_extra_valid_time(uint64_t profiles_extra_valid_time,
+                                           otrng_client_s *client);
 
 API otrng_result
 otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
@@ -273,12 +275,22 @@ API otrng_result
 otrng_client_get_client_profile_exp_time(otrng_client_s *client);
 
 API void
-otrng_client_set_client_profile_exp_time(unsigned int client_profile_exp_time,
+otrng_client_set_client_profile_exp_time(uint64_t client_profile_exp_time,
+                                         otrng_client_s *client);
+
+API otrng_result
+otrng_client_get_prekey_profile_exp_time(otrng_client_s *client);
+
+API void
+otrng_client_set_prekey_profile_exp_time(uint64_t prekey_profile_exp_time,
                                          otrng_client_s *client);
 
 #ifdef DEBUG_API
+
 API void otrng_client_debug_print(FILE *, int, otrng_client_s *);
+
 API void otrng_conversation_debug_print(FILE *, int, otrng_conversation_s *);
+
 /* API void otrng_client_debug_print(FILE *, int, otrng_client_s *); */
 API void otrng_stored_prekeys_debug_print(FILE *, int,
                                           otrng_stored_prekeys_s *);

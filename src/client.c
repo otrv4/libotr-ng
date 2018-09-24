@@ -81,8 +81,7 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
   client->should_heartbeat = should_heartbeat;
 
 #define EXTRA_CLIENT_PROFILE_EXPIRATION_SECONDS 2 * 24 * 60 * 60; /* 2 days */
-  client->client_profile_extra_valid_time =
-      EXTRA_CLIENT_PROFILE_EXPIRATION_SECONDS;
+  client->profiles_extra_valid_time = EXTRA_CLIENT_PROFILE_EXPIRATION_SECONDS;
 
 #define CLIENT_PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   client->client_profile_exp_time = CLIENT_PROFILE_EXPIRATION_SECONDS;
@@ -1184,9 +1183,10 @@ API void otrng_client_state_set_minimum_stored_prekey_msg(
   client->minimum_stored_prekey_msg = minimum_stored_prekey_msg;
 }
 
-API void otrng_client_set_client_profile_extra_valid_time(
-    unsigned int client_profile_extra_valid_time, otrng_client_s *client) {
-  client->client_profile_extra_valid_time = client_profile_extra_valid_time;
+API void
+otrng_client_set_profiles_extra_valid_time(uint64_t profiles_extra_valid_time,
+                                           otrng_client_s *client) {
+  client->profiles_extra_valid_time = profiles_extra_valid_time;
 }
 
 API otrng_result
@@ -1199,9 +1199,24 @@ otrng_client_get_client_profile_exp_time(otrng_client_s *client) {
 }
 
 API void
-otrng_client_set_client_profile_exp_time(unsigned int client_profile_exp_time,
+otrng_client_set_client_profile_exp_time(uint64_t client_profile_exp_time,
                                          otrng_client_s *client) {
   client->client_profile_exp_time = client_profile_exp_time;
+}
+
+API otrng_result
+otrng_client_get_prekey_profile_exp_time(otrng_client_s *client) {
+  if (!client) {
+    return OTRNG_ERROR;
+  }
+
+  return client->prekey_profile_exp_time;
+}
+
+API void
+otrng_client_set_prekey_profile_exp_time(uint64_t prekey_profile_exp_time,
+                                         otrng_client_s *client) {
+  client->prekey_profile_exp_time = prekey_profile_exp_time;
 }
 
 #ifdef DEBUG_API

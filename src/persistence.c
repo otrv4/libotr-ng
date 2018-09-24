@@ -509,7 +509,7 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_FILEp(
   }
 
   if (otrng_client_profile_invalid(exp_profile->expires,
-                                   client->client_profile_extra_valid_time)) {
+                                   client->profiles_extra_valid_time)) {
     return OTRNG_ERROR;
   }
 
@@ -875,7 +875,7 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_read_FILEp(
   }
 
   if (otrng_prekey_profile_invalid(exp_profile->expires,
-                                   client->client_profile_extra_valid_time)) {
+                                   client->profiles_extra_valid_time)) {
     return OTRNG_ERROR;
   }
 
