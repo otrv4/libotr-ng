@@ -90,7 +90,7 @@ API otrng_prekey_client_s *otrng_prekey_client_new() {
   client->publication_policy =
       otrng_xmalloc(sizeof(otrng_prekey_publication_policy_s));
 
-  memset(client->publication_policy, 0, sizeof(client->publication_policy));
+  memset(client->publication_policy, 0, sizeof(otrng_prekey_publication_policy_s));
 
   return client;
 }
