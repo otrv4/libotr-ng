@@ -521,7 +521,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
 
     if (!otrng_dh_proof_generate(prekey_message_proof_dh, values_priv_dh,
                                  values_pub_dh, pub_msg->num_prekey_messages, m,
-                                 usage_proof_message_dh)) {
+                                 usage_proof_message_dh, NULL)) {
       free(client_profile);
       free(prekey_profile);
       free(values_priv_ecdh);

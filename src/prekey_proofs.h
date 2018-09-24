@@ -25,6 +25,7 @@
 
 #include "dh.h"
 #include "ed448.h"
+#include "random.h"
 
 #define PROOF_C_SIZE 64
 
@@ -53,7 +54,8 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_p px,
 
 INTERNAL otrng_result otrng_dh_proof_generate(
     dh_proof_p dst, const dh_mpi_p *values_priv, const dh_mpi_p *values_pub,
-    const size_t values_len, const uint8_t *m, const uint8_t usage);
+    const size_t values_len, const uint8_t *m, const uint8_t usage,
+    random_generator gen);
 
 INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_p px,
                                           const dh_mpi_p *values_pub,

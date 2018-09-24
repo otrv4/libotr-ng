@@ -296,6 +296,10 @@ int main(int argc, char **argv) {
                   test_dh_proof_generation_and_validation);
   g_test_add_func("/prekey_server/proofs/ecdh_gen_validation",
                   test_ecdh_proof_generation_and_validation);
+  /* g_test_add_func("/prekey_server/proofs/dh/verify/fixed", */
+  /*                 test_dh_proof_validates_specific_values); */
+  g_test_add_func("/prekey_server/proofs/dh/gen_and_verify/fixed",
+                  test_dh_proof_generation_and_validation_specific_values);
   g_test_add_func("/prekey_server/proofs/ecdh/serialization",
                   test_ecdh_proof_serialization);
   g_test_add_func("/prekey_server/proofs/dh/serialization",

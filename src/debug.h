@@ -29,7 +29,7 @@
 #include "shared.h"
 #include "str.h"
 
-static inline /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
+static /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
   size_t s = len * 6 + len / 8 + 2;
   char *buff, *cursor;
   unsigned int i;
@@ -60,7 +60,7 @@ API void otrng_add_debug_print_ignore(const char *);
 API void otrng_clear_debug_print_ignores();
 API otrng_bool otrng_debug_print_should_ignore(const char *);
 
-static inline void otrng_print_indent(FILE *f, int indent) {
+static void otrng_print_indent(FILE *f, int indent) {
   int i;
   for (i = 0; i < indent; i++) {
     fputc(' ', f);
@@ -99,5 +99,6 @@ static inline void otrng_memdump(const uint8_t *src, size_t len) {
 static inline void otrng_memdump(const uint8_t *src, size_t len) {
   (void)src;
   (void)len;
+  (void)_otrng_memdump;
 }
 #endif

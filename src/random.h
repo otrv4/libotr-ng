@@ -28,6 +28,8 @@
 #include "ed448.h"
 #include "shared.h"
 
+typedef void *(*random_generator)(size_t);
+
 static inline void random_bytes(void *buf, const size_t size) {
   gcry_randomize(buf, size, GCRY_STRONG_RANDOM);
 }

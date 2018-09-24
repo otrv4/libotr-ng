@@ -185,11 +185,23 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_p px,
   return otrng_false;
 }
 
+tstatic void *gen_random_data(size_t n, random_generator gen) {
+  if (gen == NULL) {
+    void *rhash, *rbuf;
+    rbuf = gcry_random_bytes_secure(n, GCRY_STRONG_RANDOM);
+    rhash = otrng_xmalloc(n * sizeof(uint8_t));
+    shake_256_hash(rhash, sizeof(rhash), rbuf, n);
+    gcry_free(rbuf);
+    return rhash;
+  }
+  return gen(n);
+}
+
 INTERNAL otrng_result otrng_dh_proof_generate(
     dh_proof_p dst, const dh_mpi_p *values_priv, const dh_mpi_p *values_pub,
-    const size_t values_len, const uint8_t *m, const uint8_t usage) {
+    const size_t values_len, const uint8_t *m, const uint8_t usage,
+    random_generator gen) {
   uint8_t *p;
-  uint8_t rhash[DH_KEY_SIZE] = {0};
   uint8_t *rbuf;
   gcry_error_t err;
   gcry_mpi_t r, a, q;
@@ -198,15 +210,14 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   uint8_t *cbuf_curr;
   uint8_t *p_curr;
   size_t w;
-  size_t cbuf_len = ((values_len + 1) * DH3072_MOD_LEN_BYTES) + 64;
+  size_t cbuf_len = ((values_len + 1) * DH_MPI_MAX_BYTES) + 64;
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
 
   q = otrng_dh_modulus_q();
 
-  rbuf = gcry_random_bytes_secure(DH_KEY_SIZE, GCRY_STRONG_RANDOM);
-  shake_256_hash(rhash, sizeof(rhash), rbuf, DH_KEY_SIZE);
-  err = gcry_mpi_scan(&r, GCRYMPI_FMT_USG, rhash, DH_KEY_SIZE, NULL);
-  gcry_free(rbuf);
+  rbuf = gen_random_data(DH_KEY_SIZE, gen);
+  err = gcry_mpi_scan(&r, GCRYMPI_FMT_USG, rbuf, DH_KEY_SIZE, NULL);
+  free(rbuf);
 
   if (err) {
     otrng_dh_mpi_release(r);
@@ -219,7 +230,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   cbuf = otrng_xmalloc(cbuf_len * sizeof(uint8_t));
   cbuf_curr = cbuf;
   if (otrng_failed(
-          otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w, a))) {
+          otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w, a))) {
     free(cbuf);
     otrng_dh_mpi_release(r);
     otrng_dh_mpi_release(a);
@@ -229,8 +240,8 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   cbuf_curr += w;
 
   for (i = 0; i < values_len; i++) {
-    if (otrng_failed(otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w,
-                                            values_pub[i]))) {
+    if (otrng_failed(otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w,
+                                                values_pub[i]))) {
       free(cbuf);
       otrng_dh_mpi_release(r);
       return OTRNG_ERROR;
@@ -239,6 +250,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   }
 
   memcpy(cbuf_curr, m, 64);
+
   shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf, cbuf_len);
   free(cbuf);
 
@@ -277,7 +289,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_p px,
   uint8_t *cbuf_curr;
   uint8_t *p_curr;
   size_t w;
-  size_t cbuf_len = ((values_len + 1) * DH3072_MOD_LEN_BYTES) + 64;
+  size_t cbuf_len = ((values_len + 1) * DH_MPI_MAX_BYTES) + 64;
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
   uint8_t c2[PROOF_C_SIZE];
 
@@ -314,7 +326,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_p px,
   cbuf = otrng_xmalloc(cbuf_len * sizeof(uint8_t));
   cbuf_curr = cbuf;
   if (otrng_failed(
-          otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w, a))) {
+          otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w, a))) {
     free(cbuf);
     gcry_mpi_release(a);
     return otrng_false;
@@ -325,8 +337,8 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_p px,
   cbuf_curr += w;
 
   for (i = 0; i < values_len; i++) {
-    if (otrng_failed(otrng_dh_mpi_serialize(cbuf_curr, DH3072_MOD_LEN_BYTES, &w,
-                                            values_pub[i]))) {
+    if (otrng_failed(otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w,
+                                                values_pub[i]))) {
       free(cbuf);
       return otrng_false;
     }
