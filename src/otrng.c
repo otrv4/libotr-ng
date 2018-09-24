@@ -800,10 +800,6 @@ tstatic otrng_result build_non_interactive_auth_message(
   size_t t_len = 0;
   otrng_result ret;
 
-  non_interactive_auth_message_init(auth, otr);
-  auth->prekey_message_id = otr->their_prekeys_id;
-  otr->their_prekeys_id = 0;
-
   const otrng_dake_participant_data_s initiator = {
       .client_profile = otr->their_client_profile,
       .exp_client_profile = NULL,
@@ -821,6 +817,10 @@ tstatic otrng_result build_non_interactive_auth_message(
       .ecdh = *(otr->keys->our_ecdh->pub),
       .dh = our_dh(otr),
   };
+
+  non_interactive_auth_message_init(auth, otr);
+  auth->prekey_message_id = otr->their_prekeys_id;
+  otr->their_prekeys_id = 0;
 
   /* tmp_k = KDF_1(usage_tmp_key || K_ecdh || ECDH(x, their_shared_prekey) ||
      ECDH(x, Pkb) || brace_key)
@@ -1167,19 +1167,13 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   size_t t_len = 0;
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
 
-  (void)response;
-
-  prekey_profile = get_my_prekey_profile(otr);
-  if (!prekey_profile) {
-    return otrng_false;
-  }
-
   const otrng_dake_participant_data_s initiator = {
       .client_profile = (client_profile_s *)get_my_client_profile(otr),
       .exp_client_profile = (client_profile_s *)get_my_exp_client_profile(otr),
-      .prekey_profile = (otrng_prekey_profile_s *)prekey_profile,
+      .prekey_profile =
+          (otrng_prekey_profile_s *)get_my_exp_prekey_profile(otr),
       .exp_prekey_profile =
-          (otrng_prekey_profile_s *)get_my_exp_client_profile(otr),
+          (otrng_prekey_profile_s *)get_my_exp_prekey_profile(otr),
       .ecdh = *(otr->keys->our_ecdh->pub),
       .dh = our_dh(otr),
   };
@@ -1192,6 +1186,12 @@ tstatic otrng_bool verify_non_interactive_auth_message(
       .ecdh = *(auth->X),
       .dh = auth->A,
   };
+
+  (void)response;
+
+  if (!initiator.prekey_profile) {
+    return otrng_false;
+  }
 
   if (!generate_phi_sending(&phi, &phi_len, otr)) {
     return otrng_false;
@@ -1561,11 +1561,6 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   size_t t_len = 0;
   otrng_bool err;
 
-  if (!otrng_valid_received_values(auth->sender_instance_tag, auth->X, auth->A,
-                                   auth->profile)) {
-    return otrng_false;
-  }
-
   const otrng_dake_participant_data_s responder = {
       .client_profile = (client_profile_s *)auth->profile,
       .exp_client_profile = NULL,
@@ -1574,6 +1569,11 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
       .ecdh = *(auth->X),
       .dh = auth->A,
   };
+
+  if (!otrng_valid_received_values(auth->sender_instance_tag, auth->X, auth->A,
+                                   auth->profile)) {
+    return otrng_false;
+  }
 
   if (!generate_receiving_rsig_tag(&t, &t_len, 'r', &responder, otr)) {
     return otrng_false;
