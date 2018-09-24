@@ -1160,7 +1160,6 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
 tstatic otrng_bool verify_non_interactive_auth_message(
     otrng_response_s *response, const dake_non_interactive_auth_message_s *auth,
     otrng_s *otr) {
-  const otrng_prekey_profile_s *prekey_profile;
   uint8_t *phi = NULL;
   size_t phi_len = 0;
   unsigned char *t = NULL;
@@ -1170,8 +1169,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   const otrng_dake_participant_data_s initiator = {
       .client_profile = (client_profile_s *)get_my_client_profile(otr),
       .exp_client_profile = (client_profile_s *)get_my_exp_client_profile(otr),
-      .prekey_profile =
-          (otrng_prekey_profile_s *)get_my_exp_prekey_profile(otr),
+      .prekey_profile = (otrng_prekey_profile_s *)get_my_prekey_profile(otr),
       .exp_prekey_profile =
           (otrng_prekey_profile_s *)get_my_exp_prekey_profile(otr),
       .ecdh = *(otr->keys->our_ecdh->pub),
@@ -1200,8 +1198,8 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   /* t = KDF_2(Bobs_User_Profile) || KDF_2(Alices_User_Profile) ||
    * Y || X || B || A || our_shared_prekey.public */
   if (!build_non_interactive_rsign_tag(&t, &t_len, &initiator, &responder,
-                                       prekey_profile->shared_prekey, phi,
-                                       phi_len)) {
+                                       initiator.prekey_profile->shared_prekey,
+                                       phi, phi_len)) {
     free(phi);
     return otrng_false;
   }
