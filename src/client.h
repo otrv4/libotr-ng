@@ -62,7 +62,8 @@ typedef struct otrng_client_s {
   client_profile_s *client_profile;
   client_profile_s *exp_client_profile;
   otrng_prekey_profile_s *prekey_profile;
-  list_element_s *our_prekeys; // otrng_stored_prekeys_s
+  otrng_prekey_profile_s *exp_prekey_profile;
+  list_element_s *our_prekeys; /* otrng_stored_prekeys_s */
 
   /* @secret: this should be deleted once the prekey profile expires */
   otrng_shared_prekey_pair_s *shared_prekey_pair;
@@ -225,7 +226,8 @@ otrng_client_get_prekey_profile(otrng_client_s *client);
 API otrng_result otrng_client_add_prekey_profile(
     otrng_client_s *client, const otrng_prekey_profile_s *profile);
 
-/* // TODO: @client Read/Write prekey_profiles from/to a file. */
+API otrng_result otrng_client_add_exp_prekey_profile(
+    otrng_client_s *client, const otrng_prekey_profile_s *exp_profile);
 
 INTERNAL OtrlPrivKey *
 otrng_client_get_private_key_v3(const otrng_client_s *client);

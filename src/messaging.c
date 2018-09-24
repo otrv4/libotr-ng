@@ -461,6 +461,33 @@ API otrng_result otrng_global_state_prekey_profile_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
+API otrng_result otrng_global_state_expired_prekey_profile_read_FILEp(
+    otrng_global_state_s *gs, FILE *exp_profile_filep,
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
+  if (!exp_profile_filep) {
+    return OTRNG_ERROR; // TODO: @refactoring maybe this should be success on
+                        // every case
+  }
+
+  while (!feof(exp_profile_filep)) {
+    otrng_client_s *client;
+    const otrng_client_id_s client_id =
+        read_client_id_for_key(exp_profile_filep);
+    if (!client_id.protocol || !client_id.account) {
+      continue;
+    }
+
+    client = get_client(gs, client_id);
+    if (otrng_client_expired_prekey_profile_read_FILEp(
+            client, exp_profile_filep) != OTRNG_SUCCESS) {
+      return OTRNG_ERROR; /* We decide to abort, since this means the file is
+                             malformed */
+    }
+  }
+
+  return OTRNG_SUCCESS;
+}
+
 API otrng_result otrng_global_state_prekeys_read_FILEp(
     otrng_global_state_s *gs, FILE *prekey_filep,
     otrng_client_id_s (*read_client_id_for_prekey)(FILE *filep)) {

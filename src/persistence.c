@@ -837,3 +837,51 @@ otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
 
   return otrng_client_add_prekey_profile(client, profile);
 }
+
+INTERNAL otrng_result otrng_client_expired_prekey_profile_read_FILEp(
+    otrng_client_s *client, FILE *exp_profilef) {
+  char *line = NULL;
+  int len = 0;
+  uint8_t *dec;
+  size_t dec_len;
+  otrng_prekey_profile_s exp_profile[1];
+  otrng_result result;
+
+  if (!exp_profilef) {
+    return OTRNG_ERROR;
+  }
+
+  if (feof(exp_profilef)) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_prekey_profile_free(client->exp_prekey_profile);
+
+  len = get_limited_line(&line, exp_profilef);
+  if (len < 0) {
+    return OTRNG_ERROR;
+  }
+
+  dec = otrng_xmalloc(OTRNG_BASE64_DECODE_LEN(len));
+
+  dec_len = otrl_base64_decode(dec, line, len);
+  free(line);
+
+  result = otrng_prekey_profile_deserialize(exp_profile, dec, dec_len, NULL);
+  free(dec);
+
+  if (result == OTRNG_ERROR) {
+    return result;
+  }
+
+  if (otrng_prekey_profile_invalid(exp_profile->expires,
+                                   client->client_profile_extra_valid_time)) {
+    return OTRNG_ERROR;
+  }
+
+  result = otrng_client_add_exp_prekey_profile(client, exp_profile);
+
+  otrng_prekey_profile_destroy(exp_profile);
+
+  return result;
+}

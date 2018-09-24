@@ -119,6 +119,7 @@ API void otrng_client_free(otrng_client_s *client) {
   otrng_client_profile_free(client->client_profile);
   otrng_client_profile_free(client->exp_client_profile);
   otrng_prekey_profile_free(client->prekey_profile);
+  otrng_prekey_profile_free(client->exp_prekey_profile);
   otrng_shared_prekey_pair_free(client->shared_prekey_pair);
   otrng_list_free(client->conversations, conversation_free);
   otrng_prekey_client_free(client->prekey_client);
@@ -970,6 +971,24 @@ API otrng_result otrng_client_add_prekey_profile(
   client->prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
 
   otrng_prekey_profile_copy(client->prekey_profile, profile);
+
+  return OTRNG_SUCCESS;
+}
+
+API otrng_result otrng_client_add_exp_prekey_profile(
+    otrng_client_s *client, const otrng_prekey_profile_s *exp_profile) {
+  if (!client) {
+    return OTRNG_ERROR;
+  }
+
+  if (client->exp_prekey_profile) {
+    return OTRNG_ERROR;
+  }
+
+  client->exp_prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
+
+  otrng_prekey_profile_copy(client->exp_prekey_profile, exp_profile);
+
   return OTRNG_SUCCESS;
 }
 

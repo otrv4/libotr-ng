@@ -65,6 +65,9 @@ otrng_client_prekey_messages_read_FILEp(otrng_client_s *client, FILE *privf);
 INTERNAL otrng_result
 otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf);
 
+INTERNAL otrng_result otrng_client_expired_prekey_profile_read_FILEp(
+    otrng_client_s *client, FILE *privf);
+
 INTERNAL otrng_result
 otrng_client_prekey_profile_write_FILEp(otrng_client_s *client, FILE *privf);
 #endif

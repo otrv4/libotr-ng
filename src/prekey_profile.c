@@ -272,6 +272,11 @@ INTERNAL otrng_bool otrng_prekey_profile_expired(time_t expires) {
   return (difftime(expires, time(NULL)) <= 0);
 }
 
+INTERNAL otrng_bool otrng_prekey_profile_invalid(time_t expires,
+                                                 uint64_t extra_valid_time) {
+  return difftime(expires + extra_valid_time, time(NULL)) <= 0;
+}
+
 INTERNAL otrng_bool otrng_prekey_profile_valid(
     const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
     const otrng_public_key_p pub) {
