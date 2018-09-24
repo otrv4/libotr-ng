@@ -190,6 +190,7 @@ tstatic void *gen_random_data(size_t n, random_generator gen) {
     void *rhash, *rbuf;
     rbuf = gcry_random_bytes_secure(n, GCRY_STRONG_RANDOM);
     rhash = otrng_xmalloc(n * sizeof(uint8_t));
+    memset(rhash, 0, n);
     shake_256_hash(rhash, sizeof(rhash), rbuf, n);
     gcry_free(rbuf);
     return rhash;
