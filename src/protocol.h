@@ -81,6 +81,8 @@ INTERNAL void maybe_create_keys(struct otrng_client_s *client);
 
 INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr);
 
+INTERNAL const client_profile_s *get_my_exp_client_profile(otrng_s *otr);
+
 INTERNAL struct goldilocks_448_point_s *our_ecdh(const otrng_s *otr);
 
 INTERNAL dh_public_key_p our_dh(const otrng_s *otr);

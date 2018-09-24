@@ -143,9 +143,9 @@ INTERNAL otrng_result otrng_dake_prekey_message_serialize(
 
 typedef struct {
   client_profile_s *client_profile;
+  client_profile_s *exp_client_profile;
   goldilocks_448_point_s ecdh;
   dh_mpi_p dh;
-  uint16_t instance_tag;
 } otrng_dake_participant_data_s;
 
 /*
@@ -164,6 +164,13 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
                                 const otrng_dake_participant_data_s *responder,
                                 const otrng_shared_prekey_pub_p r_shared_prekey,
                                 const uint8_t *phi, size_t phi_len);
+
+INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
+    uint8_t **msg, size_t *msg_len,
+    const otrng_dake_participant_data_s *initiator,
+    const otrng_dake_participant_data_s *responder,
+    const otrng_shared_prekey_pub_p r_shared_prekey, const uint8_t *phi,
+    size_t phi_len);
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
     uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_p auth,

@@ -48,7 +48,6 @@
 -fcnuse
 -fixedformalarray
 -formatcode
--fullinitblock
 -globstate
 -immediatetrans
 -incondefs

@@ -117,6 +117,7 @@ API void otrng_client_free(otrng_client_s *client) {
   free(client->forging_key);
   otrng_list_free(client->our_prekeys, stored_prekeys_free_from_list);
   otrng_client_profile_free(client->client_profile);
+  otrng_client_profile_free(client->exp_client_profile);
   otrng_prekey_profile_free(client->prekey_profile);
   otrng_shared_prekey_pair_free(client->shared_prekey_pair);
   otrng_list_free(client->conversations, conversation_free);
@@ -825,6 +826,19 @@ otrng_client_get_client_profile(otrng_client_s *client) {
                                                client, client->client_id);
 
   return client->client_profile;
+}
+
+API const client_profile_s *
+otrng_client_get_exp_client_profile(otrng_client_s *client) {
+  if (!client) {
+    return NULL;
+  }
+
+  if (client->exp_client_profile) {
+    return client->exp_client_profile;
+  }
+
+  return NULL;
 }
 
 API client_profile_s *

@@ -508,13 +508,10 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_FILEp(
     return result;
   }
 
-  // TODO: remove and return
-  // if (otrng_client_profile_dead(profile->expires)) {
-  //  otrng_client_callbacks_remove_expired_client_profile(
-  //     client->global_state->callbacks, client, client->client_id);
-
-  // return OTRNG_SUCCESS;
-  //}
+  if (otrng_client_profile_invalid(exp_profile->expires,
+                                   client->client_profile_extra_valid_time)) {
+    return OTRNG_ERROR;
+  }
 
   result = otrng_client_add_exp_client_profile(client, exp_profile);
 

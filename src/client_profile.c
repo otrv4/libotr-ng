@@ -534,6 +534,11 @@ INTERNAL otrng_bool otrng_client_profile_expired(time_t expires) {
   return difftime(expires, time(NULL)) <= 0;
 }
 
+INTERNAL otrng_bool otrng_client_profile_invalid(time_t expires,
+                                                 uint64_t extra_valid_time) {
+  return difftime(expires + extra_valid_time, time(NULL)) <= 0;
+}
+
 tstatic otrng_bool rollback_detected(const char *versions) {
   while (*versions) {
     if (*versions != '3' && *versions != '4') {

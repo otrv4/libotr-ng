@@ -72,7 +72,7 @@ typedef struct otrng_client_s {
   unsigned int minimum_stored_prekey_msg;
 
   uint64_t client_profile_exp_time;
-  unsigned int client_profile_extra_valid_time;
+  uint64_t client_profile_extra_valid_time;
 
   otrng_bool (*should_heartbeat)(int last_sent);
   size_t padding;
@@ -209,6 +209,9 @@ otrng_client_build_default_prekey_profile(otrng_client_s *client);
 
 API const client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client);
+
+API const client_profile_s *
+otrng_client_get_exp_client_profile(otrng_client_s *client);
 
 API otrng_result otrng_client_add_client_profile(
     otrng_client_s *client, const client_profile_s *profile);

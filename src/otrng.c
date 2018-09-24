@@ -613,12 +613,14 @@ static otrng_result generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
                                               otrng_s *otr) {
   const otrng_dake_participant_data_s initiator = {
       .client_profile = otr->their_client_profile,
+      .exp_client_profile = NULL,
       .ecdh = *(otr->keys->their_ecdh),
       .dh = their_dh(otr),
   };
 
   const otrng_dake_participant_data_s responder = {
       .client_profile = (client_profile_s *)get_my_client_profile(otr),
+      .exp_client_profile = NULL,
       .ecdh = *(otr->keys->our_ecdh->pub),
       .dh = our_dh(otr),
   };
@@ -642,6 +644,7 @@ static otrng_result generate_receiving_rsig_tag(
     const otrng_dake_participant_data_s *responder, otrng_s *otr) {
   const otrng_dake_participant_data_s initiator = {
       .client_profile = (client_profile_s *)get_my_client_profile(otr),
+      .exp_client_profile = NULL,
       .ecdh = *(otr->keys->our_ecdh->pub),
       .dh = our_dh(otr),
   };
@@ -812,10 +815,12 @@ tstatic otrng_result build_non_interactive_auth_message(
   }
 
   initiator.client_profile = otr->their_client_profile;
+  initiator.exp_client_profile = NULL;
   initiator.ecdh = *(otr->keys->their_ecdh);
   initiator.dh = their_dh(otr);
 
   responder.client_profile = (client_profile_s *)get_my_client_profile(otr);
+  responder.exp_client_profile = NULL;
   responder.ecdh = *(otr->keys->our_ecdh->pub);
   responder.dh = our_dh(otr);
 
@@ -1164,10 +1169,13 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   }
 
   initiator.client_profile = (client_profile_s *)get_my_client_profile(otr);
+  initiator.exp_client_profile =
+      (client_profile_s *)get_my_exp_client_profile(otr);
   initiator.ecdh = *(otr->keys->our_ecdh->pub);
   initiator.dh = our_dh(otr);
 
   responder.client_profile = (client_profile_s *)auth->profile;
+  responder.exp_client_profile = NULL;
   responder.ecdh = *(auth->X);
   responder.dh = auth->A;
 
@@ -1184,18 +1192,33 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     return otrng_false;
   }
 
-  free(phi);
-
   /* RVrf({F_b, H_a, Y}, sigma, msg) */
   if (!otrng_rsig_verify(auth->sigma, *otr->client->forging_key, /* H_b */
                          auth->profile->long_term_pub_key,       /* H_a */
                          our_ecdh(otr),                          /* Y  */
                          t, t_len)) {
     free(t);
+    t = NULL;
 
-    /* here no warning should be passed */
-    return otrng_false;
+    /* the fallback */
+    if (!build_fallback_non_interactive_rsign_tag(
+            &t, &t_len, &initiator, &responder, prekey_profile->shared_prekey,
+            phi, phi_len)) {
+      free(phi);
+      return otrng_false;
+    }
+
+    if (!otrng_rsig_verify(auth->sigma, *otr->client->forging_key, /* H_b */
+                           auth->profile->long_term_pub_key,       /* H_a */
+                           our_ecdh(otr),                          /* Y  */
+                           t, t_len)) {
+      free(phi);
+      free(t);
+      return otrng_false;
+    }
   }
+
+  free(phi);
 
   /* Check mac */
   if (!otrng_dake_non_interactive_auth_message_authenticator(
@@ -1474,6 +1497,7 @@ tstatic otrng_result reply_with_auth_i_msg(
 
   const otrng_dake_participant_data_s responder = {
       .client_profile = (client_profile_s *)their_client_profile,
+      .exp_client_profile = NULL,
       .ecdh = *(otr->keys->their_ecdh),
       .dh = their_dh(otr),
   };
@@ -1522,6 +1546,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   }
 
   responder.client_profile = (client_profile_s *)auth->profile;
+  responder.exp_client_profile = NULL;
   responder.ecdh = *(auth->X);
   responder.dh = auth->A;
 

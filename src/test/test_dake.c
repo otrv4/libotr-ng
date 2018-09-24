@@ -385,12 +385,14 @@ void test_build_interactive_rsign_tag() {
 
   const otrng_dake_participant_data_s initiator = {
       .client_profile = initiator_profile,
+      .exp_client_profile = NULL,
       .ecdh = *(initiator_ecdh),
       .dh = initiator_dh,
   };
 
   const otrng_dake_participant_data_s responder = {
       .client_profile = responder_profile,
+      .exp_client_profile = NULL,
       .ecdh = *(responder_ecdh),
       .dh = responder_dh,
   };

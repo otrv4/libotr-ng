@@ -884,6 +884,32 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
   return result;
 }
 
+INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
+    uint8_t **msg, size_t *msg_len,
+    const otrng_dake_participant_data_s *initiator,
+    const otrng_dake_participant_data_s *responder,
+    const otrng_shared_prekey_pub_p r_shared_prekey, const uint8_t *phi,
+    size_t phi_len) {
+
+  uint8_t first_usage = 0x0D;
+  uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
+  otrng_result result;
+
+  *msg = otrng_xmalloc(MAX_T_LENGTH);
+
+  otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
+
+  result = build_rsign_tag(
+      *msg, MAX_T_LENGTH, msg_len, first_usage, initiator->exp_client_profile,
+      responder->client_profile, &initiator->ecdh, &responder->ecdh,
+      initiator->dh, responder->dh, ser_r_shared_prekey,
+      ED448_SHARED_PREKEY_BYTES, phi, phi_len);
+
+  sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
+
+  return result;
+}
+
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
     uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_p auth,
     const uint8_t *t, size_t t_len, uint8_t tmp_key[HASH_BYTES]) {
