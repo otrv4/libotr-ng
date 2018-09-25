@@ -740,6 +740,9 @@ INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client) {
 
   /* @secret_information: the long-term key pair lives for as long the client
      decides */
+  // TODO @orchestration remove this when orchestration is done
+  fprintf(stderr,
+          "client.c otrng_client_get_keypair_v4 -> creating private key\n");
   otrng_client_callbacks_create_privkey_v4(client->global_state->callbacks,
                                            client->client_id);
 

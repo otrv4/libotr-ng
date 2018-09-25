@@ -70,6 +70,7 @@ void test_invokes_create_instag_callbacks(void) {
       NULL,                   /* smp_update */
       NULL,                   /* received_extra_symm_key */
       NULL,                   /* get_shared_session_state */
+      NULL,                   /* load_privkey_v4*/
   }};
 
   otrng_client_callbacks_create_instag(callbacks, ALICE_IDENTITY);

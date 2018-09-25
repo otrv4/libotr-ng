@@ -127,6 +127,17 @@ otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,
 }
 
 INTERNAL void
+otrng_client_callbacks_load_privkey_v4(const otrng_client_callbacks_s *cb,
+                                       const otrng_client_id_s client_opdata) {
+  if (!cb) {
+    return;
+  }
+
+  // This callback is required and is expected to segfault if not provided.
+  cb->load_privkey_v4(client_opdata);
+}
+
+INTERNAL void
 otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
                                      const otrng_s *conv) {
   if (!cb || !cb->gone_insecure) {

@@ -128,6 +128,7 @@ static otrng_client_callbacks_p test_callbacks = {{
     NULL,                         /* smp_update */
     NULL,                         /* received_extra_symm_key */
     &get_shared_session_state_cb, /* get_shared_session_state */
+    NULL,                         /* load_privkey_v4*/
 }};
 
 static otrng_public_key_p *

@@ -27,6 +27,7 @@ otrnginc_HEADERS = ../auth.h \
                    ../client_callbacks.h \
                    ../client.h \
                    ../client_profile.h \
+                   ../client_orchestration.h \
                    ../constants.h \
                    ../dake.h \
                    ../data_message.h \

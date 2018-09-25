@@ -146,6 +146,8 @@ typedef struct otrng_client_callbacks_s {
   otrng_shared_session_state_s (*get_shared_session_state)(
       const struct otrng_s *conv);
 
+  void (*load_privkey_v4)(const struct otrng_client_id_s client_opdata);
+
 } otrng_client_callbacks_s, otrng_client_callbacks_p[1];
 
 INTERNAL void otrng_client_callbacks_create_privkey_v4(
@@ -181,6 +183,10 @@ INTERNAL void otrng_client_callbacks_create_shared_prekey(
     const struct otrng_client_id_s client_opdata);
 
 INTERNAL void otrng_client_callbacks_create_instag(
+    const otrng_client_callbacks_s *cb,
+    const struct otrng_client_id_s client_opdata);
+
+INTERNAL void otrng_client_callbacks_load_privkey_v4(
     const otrng_client_callbacks_s *cb,
     const struct otrng_client_id_s client_opdata);
 

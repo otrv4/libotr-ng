@@ -25,6 +25,7 @@ libotr_ng_la_SOURCES = alloc.c \
 		     base64.c \
 		     client.c \
 		     client_callbacks.c \
+		     client_orchestration.c \
 		     client_profile.c \
 		     dake.c \
 		     data_message.c \

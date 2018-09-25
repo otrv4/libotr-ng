@@ -37,6 +37,8 @@ INTERNAL void maybe_create_keys(otrng_client_s *client) {
   uint32_t instance_tag;
 
   if (!client->keypair) {
+    // TODO @orchestration Remove this when orchestration is done
+    fprintf(stderr, "protocol.c maybe_create_keys -> creating private key\n");
     otrng_client_callbacks_create_privkey_v4(cb, client_id);
   }
 
