@@ -229,6 +229,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   otrng_dh_calculate_public_key(a, r);
 
   cbuf = otrng_xmalloc(cbuf_len * sizeof(uint8_t));
+  memset(cbuf, 0, cbuf_len);
   cbuf_curr = cbuf;
   if (otrng_failed(
           otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w, a))) {
@@ -256,6 +257,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   free(cbuf);
 
   p = otrng_xmalloc(p_len * sizeof(uint8_t));
+  memset(p, 0, p_len);
   shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
                               PROOF_C_SIZE);
 
