@@ -50,28 +50,8 @@ static void test_create_instag_cb(const otrng_client_id_s client_opdata) {
 }
 
 void test_invokes_create_instag_callbacks(void) {
-  otrng_client_callbacks_p callbacks = {{
-      NULL,                   /* get_account_and_protocol */
-      &test_create_instag_cb, /* create_instag */
-      NULL,                   /* create_privkey v3 */
-      NULL,                   /* create_privkey v4 */
-      NULL,                   /* create_forging_key */
-      NULL,                   /* create_client_profile */
-      NULL,                   /* write_expired_client_profile */
-      NULL,                   /* create_prekey_profile */
-      NULL,                   /* write_expired_prekey_profile */
-      NULL,                   /* create_shared_prekey */
-      NULL,                   /* gone_secure */
-      NULL,                   /* gone_insecure */
-      NULL,                   /* fingerprint_seen */
-      NULL,                   /* fingerprint_seen_v3 */
-      NULL,                   /* smp_ask_for_secret */
-      NULL,                   /* smp_ask_for_answer */
-      NULL,                   /* smp_update */
-      NULL,                   /* received_extra_symm_key */
-      NULL,                   /* get_shared_session_state */
-      NULL,                   /* load_privkey_v4*/
-  }};
+  otrng_client_callbacks_p callbacks = {
+      {.create_instag = &test_create_instag_cb}};
 
   otrng_client_callbacks_create_instag(callbacks, ALICE_IDENTITY);
   otrng_assert(INSTAG_CB_CALLED);

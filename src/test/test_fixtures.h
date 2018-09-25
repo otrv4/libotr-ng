@@ -108,28 +108,11 @@ static void create_prekey_profile_cb(struct otrng_client_s *client,
   otrng_prekey_profile_free(profile);
 }
 
-static otrng_client_callbacks_p test_callbacks = {{
-    &get_account_and_protocol_cb, /* get_account_and_protocol */
-    NULL,                         /* create_instag */
-    NULL,                         /* create_privkey v3 */
-    NULL,                         /* create_privkey v4 */
-    NULL,                         /* create_forging_key */
-    &create_client_profile_cb,    /* create_client_profile */
-    NULL,                         /* write_expired_client_profile */
-    &create_prekey_profile_cb,    /* create_prekey_profile */
-    NULL,                         /* write_expired_prekey_profile */
-    NULL,                         /* create_shared_prekey */
-    NULL,                         /* gone_secure */
-    NULL,                         /* gone_insecure */
-    NULL,                         /* fingerprint_seen */
-    NULL,                         /* fingerprint_seen_v3 */
-    NULL,                         /* smp_ask_for_secret */
-    NULL,                         /* smp_ask_for_answer */
-    NULL,                         /* smp_update */
-    NULL,                         /* received_extra_symm_key */
-    &get_shared_session_state_cb, /* get_shared_session_state */
-    NULL,                         /* load_privkey_v4*/
-}};
+static otrng_client_callbacks_p test_callbacks = {
+    {.get_account_and_protocol = &get_account_and_protocol_cb,
+     .create_client_profile = &create_client_profile_cb,
+     .create_prekey_profile = &create_prekey_profile_cb,
+     .get_shared_session_state = &get_shared_session_state_cb}};
 
 static otrng_public_key_p *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
