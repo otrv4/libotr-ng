@@ -793,11 +793,13 @@ tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
                                     const unsigned int until,
                                     const int max_skip, const char ratchet_type,
                                     otrng_warning *warn) {
-  uint8_t zero_buff[CHAIN_KEY_BYTES] = {0};
+  uint8_t zero_buff[CHAIN_KEY_BYTES];
   goldilocks_shake256_ctx_p hd;
   uint8_t extra_key[EXTRA_SYMMETRIC_KEY_BYTES];
   uint8_t magic[1] = {0xFF};
   skipped_keys_s *skipped_msg_enc_key;
+
+  memset(zero_buff, 0, CHAIN_KEY_BYTES);
 
   if ((tmp_receiving_ratchet->k + max_skip) < until) {
     if (warn) {

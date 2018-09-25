@@ -184,13 +184,14 @@ static char *prekey_encode(const uint8_t *buffer, size_t buffer_len) {
 
 static char *start_dake_and_then_send(otrng_prekey_client_s *client,
                                       otrng_prekey_next_message_t next) {
-  uint8_t sym[ED448_PRIVATE_BYTES] = {0};
+  uint8_t sym[ED448_PRIVATE_BYTES];
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
   otrng_result success;
   char *ret;
-
   otrng_prekey_dake1_message_s msg[1];
+
+  memset(sym, 0, ED448_PRIVATE_BYTES);
   msg->client_instance_tag = client->instance_tag;
   otrng_client_profile_copy(msg->client_profile, client->client_profile);
 
@@ -449,8 +450,8 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   size_t w = 0;
   const uint8_t *prekey_messages_beginning;
   uint8_t usage_prekey_message = 0x0E;
-  uint8_t prekey_messages_kdf[HASH_BYTES] = {0};
-  uint8_t prekey_proofs_kdf[HASH_BYTES] = {0};
+  uint8_t prekey_messages_kdf[HASH_BYTES];
+  uint8_t prekey_proofs_kdf[HASH_BYTES];
 
   uint8_t usage_pre_MAC = 0x09;
   uint8_t usage_proof_message_ecdh = 0x13;
@@ -472,6 +473,9 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   goldilocks_shake256_ctx_p hd;
 
   int i;
+
+  memset(prekey_messages_kdf, 0, HASH_BYTES);
+  memset(prekey_proofs_kdf, 0, HASH_BYTES);
 
   if (pub_msg->client_profile) {
     if (!otrng_client_profile_asprintf(&client_profile, &client_profile_len,
@@ -639,7 +643,9 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
 
   if (pub_msg->client_profile) {
     uint8_t usage_client_profile = 0x0F;
-    uint8_t client_profile_kdf[HASH_BYTES] = {0};
+    uint8_t client_profile_kdf[HASH_BYTES];
+
+    memset(client_profile_kdf, 0, HASH_BYTES);
 
     shake_256_prekey_server_kdf(client_profile_kdf, HASH_BYTES,
                                 usage_client_profile, client_profile,
@@ -653,8 +659,10 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   free(client_profile);
 
   if (pub_msg->prekey_profile) {
-    uint8_t prekey_profile_kdf[HASH_BYTES] = {0};
+    uint8_t prekey_profile_kdf[HASH_BYTES];
     uint8_t usage_prekey_profile = 0x10;
+
+    memset(prekey_profile_kdf, 0, HASH_BYTES);
 
     shake_256_prekey_server_kdf(prekey_profile_kdf, HASH_BYTES,
                                 usage_prekey_profile, prekey_profile,
@@ -690,8 +698,8 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   uint8_t usage_receiver_client_profile = 0x05;
   uint8_t usage_receiver_prekey_composite_identity = 0x06;
   uint8_t usage_receiver_prekey_composite_phi = 0x07;
-  uint8_t shared_secret[HASH_BYTES] = {0};
-  uint8_t ecdh_shared[ED448_POINT_BYTES] = {0};
+  uint8_t shared_secret[HASH_BYTES];
+  uint8_t ecdh_shared[ED448_POINT_BYTES];
   uint8_t usage_SK = 0x01;
   uint8_t usage_preMAC_key = 0x08;
   uint8_t usage_proof_context = 0x12;
@@ -700,6 +708,9 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   size_t serialized_len = 0;
   char *ret;
   uint8_t m[64];
+
+  memset(shared_secret, 0, HASH_BYTES);
+  memset(ecdh_shared, 0, ED448_POINT_BYTES);
 
   msg->client_instance_tag = client->instance_tag;
 
@@ -914,9 +925,11 @@ static char *receive_success(const uint8_t *decoded, size_t decoded_len,
                              otrng_prekey_client_s *client) {
   uint32_t instance_tag = 0;
   size_t read = 0;
-  uint8_t mac_tag[HASH_BYTES] = {0};
+  uint8_t mac_tag[HASH_BYTES];
   uint8_t usage_success_MAC = 0x0C;
   goldilocks_shake256_ctx_p hash;
+
+  memset(mac_tag, 0, HASH_BYTES);
 
   if (decoded_len < OTRNG_PREKEY_SUCCESS_MSG_LEN) {
     notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
@@ -953,10 +966,12 @@ static char *receive_failure(const uint8_t *decoded, size_t decoded_len,
                              otrng_prekey_client_s *client) {
   uint32_t instance_tag = 0;
   size_t read = 0;
-  uint8_t mac_tag[HASH_BYTES] = {0};
+  uint8_t mac_tag[HASH_BYTES];
   uint8_t usage_failure_MAC = 0x0D;
 
   goldilocks_shake256_ctx_p hash;
+
+  memset(mac_tag, 0, HASH_BYTES);
 
   if (decoded_len < 71) {
     notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);

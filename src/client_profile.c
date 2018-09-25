@@ -478,10 +478,13 @@ tstatic otrng_bool
 client_profile_verify_signature(const client_profile_s *client_profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
-  uint8_t pubkey[ED448_POINT_BYTES] = {0};
+  uint8_t pubkey[ED448_POINT_BYTES];
   otrng_bool valid;
+  uint8_t zero_buff[ED448_SIGNATURE_BYTES];
 
-  uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
+  memset(pubkey, 0, ED448_POINT_BYTES);
+  memset(zero_buff, 0, ED448_SIGNATURE_BYTES);
+
   if (memcmp(client_profile->signature, zero_buff, ED448_SIGNATURE_BYTES) ==
       0) {
     return otrng_false;

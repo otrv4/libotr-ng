@@ -160,10 +160,12 @@ INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
 }
 
 INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_p keypair) {
-  uint8_t hash[DH_KEY_SIZE] = {0};
+  uint8_t hash[DH_KEY_SIZE];
   gcry_mpi_t privkey = NULL;
   uint8_t *secbuf = NULL;
   gcry_error_t err;
+
+  memset(hash, 0, DH_KEY_SIZE);
 
   secbuf = gcry_random_bytes_secure(DH_KEY_SIZE, GCRY_STRONG_RANDOM);
   shake_256_hash(hash, sizeof(hash), secbuf, DH_KEY_SIZE);

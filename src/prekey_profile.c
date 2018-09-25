@@ -246,9 +246,11 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
                                       const otrng_public_key_p pub) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
-  uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
+  uint8_t zero_buff[ED448_SIGNATURE_BYTES];
   uint8_t pubkey[ED448_POINT_BYTES];
   otrng_bool valid;
+
+  memset(zero_buff, 0, ED448_SIGNATURE_BYTES);
 
   if (memcmp(profile->signature, zero_buff, ED448_SIGNATURE_BYTES) == 0) {
     return otrng_false;

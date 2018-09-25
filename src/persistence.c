@@ -566,12 +566,15 @@ INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
 static otrng_result
 serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
                            const char *storage_id, FILE *privf) {
-  uint8_t ecdh_secret_k[ED448_SCALAR_BYTES] = {0};
+  uint8_t ecdh_secret_k[ED448_SCALAR_BYTES];
   char *ecdh_symkey;
-  uint8_t dh_secret_k[DH_KEY_SIZE] = {0};
+  uint8_t dh_secret_k[DH_KEY_SIZE];
   size_t dh_secret_k_len = 0;
   char *dh_symkey;
   int ret;
+
+  memset(ecdh_secret_k, 0, ED448_SCALAR_BYTES);
+  memset(dh_secret_k, 0, DH_KEY_SIZE);
 
   if (fprintf(privf, "%s\n", storage_id) < 0) {
     return OTRNG_ERROR;

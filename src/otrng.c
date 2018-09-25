@@ -236,10 +236,12 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
    * + question mark + whitespace + null byte */
   size_t qm_size = QUERY_MESSAGE_TAG_BYTES + 3 + strlen(message) + 2 + 1;
   string_p buff = NULL;
-  char allowed[3] = {0};
+  char allowed[3];
   char *cursor;
   int rem;
   *dst = NULL;
+
+  memset(allowed, 0, 3);
 
   if (otr->state == OTRNG_STATE_ENCRYPTED_MESSAGES) {
     return OTRNG_ERROR;

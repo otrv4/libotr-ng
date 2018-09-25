@@ -97,9 +97,11 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
 INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
                                                  size_t *written,
                                                  const dh_mpi_p mpi) {
-  uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
+  uint8_t buf[DH3072_MOD_LEN_BYTES];
   size_t w = 0;
   otrng_mpi_p otr_mpi;
+
+  memset(buf, 0, DH3072_MOD_LEN_BYTES);
 
   if (dstlen < DH_MPI_MAX_BYTES) {
     return OTRNG_ERROR;

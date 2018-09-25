@@ -182,7 +182,9 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {
 
 static otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
                                           size_t shared_secret_len) {
-  uint8_t zero_buff[ED448_POINT_BYTES] = {0};
+  uint8_t zero_buff[ED448_POINT_BYTES];
+
+  memset(zero_buff, 0, ED448_POINT_BYTES);
 
   if (shared_secret_len < ED448_POINT_BYTES) {
     return otrng_false;
@@ -227,7 +229,9 @@ tstatic void otrng_ec_sign(eddsa_signature_p sig,
 INTERNAL void otrng_ec_sign_simple(eddsa_signature_p sig,
                                    const uint8_t sym[ED448_PRIVATE_BYTES],
                                    const uint8_t *msg, size_t msg_len) {
-  uint8_t pub[ED448_POINT_BYTES] = {0};
+  uint8_t pub[ED448_POINT_BYTES];
+
+  memset(pub, 0, ED448_POINT_BYTES);
   otrng_ec_derive_public_key(pub, sym);
   otrng_ec_sign(sig, sym, pub, msg, msg_len);
 }

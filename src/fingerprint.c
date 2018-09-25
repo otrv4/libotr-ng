@@ -49,9 +49,11 @@ API otrng_result otrng_fingerprint_hash_to_human(char *human,
 
 INTERNAL otrng_result otrng_serialize_fingerprint(
     otrng_fingerprint_p fp, const otrng_public_key_p pub) {
-  uint8_t serialized[ED448_POINT_BYTES] = {0};
+  uint8_t serialized[ED448_POINT_BYTES];
   uint8_t usage_fingerprint = 0x00;
   goldilocks_shake256_ctx_p hd;
+
+  memset(serialized, 0, ED448_POINT_BYTES);
 
   if (!fp) {
     return OTRNG_ERROR;

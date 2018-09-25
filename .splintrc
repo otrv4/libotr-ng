@@ -51,7 +51,6 @@
 -globstate
 -immediatetrans
 -incondefs
--initallelements
 -kepttrans
 -mayaliasunique
 -mustfreefresh
