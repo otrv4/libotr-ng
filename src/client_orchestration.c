@@ -24,6 +24,14 @@
 #include "messaging.h"
 #include <stdio.h>
 
+tstatic void signal_error_in_state_management(otrng_client_s *client,
+                                              const char *area) {
+  (void)client;
+  // TODO: this should probably have a better implementation later
+  fprintf(stderr, "encountered error when trying to ensure OTR state: %s\n",
+          area);
+}
+
 tstatic void load_long_term_keys_from_storage(otrng_client_s *client) {
   fprintf(stderr, "orchestration.load_long_term_keys_from_storage\n");
   otrng_client_callbacks_load_privkey_v4(client->global_state->callbacks,
@@ -36,14 +44,6 @@ tstatic void create_long_term_keys(otrng_client_s *client) {
                                            client->client_id);
 }
 
-tstatic void signal_error_in_state_management(otrng_client_s *client,
-                                              const char *area) {
-  (void)client;
-  // TOOD> this should probably have a better implementation later
-  fprintf(stderr, "encountered error when trying to ensure OTR state: %s\n",
-          area);
-}
-
 tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
   if (client->keypair == NULL) {
     load_long_term_keys_from_storage(client);
@@ -51,16 +51,48 @@ tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
     fprintf(stderr, "orchestration.ensure_valid_long_term_key - we already "
                     "have a keypair! Hurrah\n");
   }
+
   if (client->keypair == NULL) {
     create_long_term_keys(client);
   }
-  // TODO: we should persist the newly created long term key as well
+
   if (client->keypair == NULL) {
     signal_error_in_state_management(client, "long term key pair");
   }
 }
 
+tstatic void load_client_profile_from_storage(otrng_client_s *client) {
+  otrng_client_callbacks_load_client_profile(client->global_state->callbacks,
+                                             client->client_id);
+}
+
+tstatic void create_client_profile(otrng_client_s *client) {
+  fprintf(stderr, "orchestration.create_long_term_keys\n");
+  otrng_client_callbacks_create_client_profile(client->global_state->callbacks,
+                                               client, client->client_id);
+}
+
+tstatic void ensure_client_profile(otrng_client_s *client) {
+  if (client->client_profile == NULL) {
+    load_client_profile_from_storage(client);
+  }
+
+  if (client->client_profile == NULL) {
+    create_client_profile(client);
+  }
+
+  if (client->client_profile == NULL) {
+    signal_error_in_state_management(client, "client profile");
+  }
+}
+
 API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   fprintf(stderr, "otrng_client_ensure_correct_state()\n");
+
   ensure_valid_long_term_key(client);
+  ensure_client_profile(client);
+  //
+  // if ANY dependent values changed
+  //    - save away a list of the changes somewhere, so that next time
+  //    publication is triggered, this process knows what to do
 }
