@@ -34,24 +34,9 @@
 #include "debug.h"
 
 INTERNAL void otrng_smp_protocol_init(smp_protocol_p smp) {
+  memset(smp, 0, sizeof(smp_protocol_p));
   smp->state_expect = '1';
-  smp->secret = NULL;
-
-  otrng_ec_bzero(smp->a2, ED448_SCALAR_BYTES);
-  otrng_ec_bzero(smp->a3, ED448_SCALAR_BYTES);
-  otrng_ec_bzero(smp->b3, ED448_SCALAR_BYTES);
-
-  otrng_ec_bzero(smp->g2, ED448_POINT_BYTES);
-  otrng_ec_bzero(smp->g3, ED448_POINT_BYTES);
-  otrng_ec_bzero(smp->g3a, ED448_POINT_BYTES);
-  otrng_ec_bzero(smp->g3b, ED448_POINT_BYTES);
-  otrng_ec_bzero(smp->pb, ED448_POINT_BYTES);
-  otrng_ec_bzero(smp->qb, ED448_POINT_BYTES);
-  otrng_ec_bzero(smp->pa_pb, ED448_POINT_BYTES);
-  otrng_ec_bzero(smp->qa_qb, ED448_POINT_BYTES);
-
   smp->progress = SMP_ZERO_PROGRESS;
-  smp->msg1 = NULL;
 }
 
 INTERNAL void otrng_smp_destroy(smp_protocol_p smp) {
@@ -82,7 +67,7 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
                                                 uint8_t *ssid,
                                                 const uint8_t *answer,
                                                 size_t answer_len) {
-  uint8_t hash[HASH_BYTES];
+  uint8_t *hash = otrng_secure_alloc(HASH_BYTES);
   uint8_t version[1] = {0x01};
   uint8_t usage_smp_secret = 0x1B;
   goldilocks_shake256_ctx_p hd;
@@ -97,10 +82,11 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
   hash_final(hd, hash, sizeof(hash));
   hash_destroy(hd);
 
-  *secret = otrng_xmalloc(HASH_BYTES);
+  *secret = otrng_secure_alloc(HASH_BYTES);
 
   memcpy(*secret, hash, HASH_BYTES);
-  sodium_memzero(hash, HASH_BYTES);
+  otrng_secure_wipe(hash, HASH_BYTES);
+  free(hash);
 
   return OTRNG_SUCCESS;
 }
@@ -108,7 +94,7 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
 tstatic otrng_result hash_to_scalar(ec_scalar_p dst, uint8_t *ser_p,
                                     size_t ser_p_len, const uint8_t usage_smp) {
   goldilocks_shake256_ctx_p hd;
-  uint8_t hash[HASH_BYTES];
+  uint8_t *hash = otrng_secure_alloc(HASH_BYTES);
 
   hash_init_with_usage(hd, usage_smp);
   hash_update(hd, ser_p, ser_p_len);
@@ -116,9 +102,14 @@ tstatic otrng_result hash_to_scalar(ec_scalar_p dst, uint8_t *ser_p,
   hash_destroy(hd);
 
   if (!otrng_deserialize_ec_scalar(dst, hash, ED448_SCALAR_BYTES)) {
+    otrng_secure_wipe(hash, HASH_BYTES);
+    free(hash);
     return OTRNG_ERROR;
   }
-  sodium_memzero(ser_p, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_p, ED448_POINT_BYTES);
+
+  otrng_secure_wipe(hash, HASH_BYTES);
+  free(hash);
 
   return OTRNG_SUCCESS;
 }
@@ -441,8 +432,8 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
   hash_final(hd_2, hash, HASH_BYTES);
   hash_destroy(hd_2);
 
-  sodium_memzero(ser_point_3, ED448_POINT_BYTES);
-  sodium_memzero(ser_point_4, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_3, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_4, ED448_POINT_BYTES);
 
   if (!hash_to_scalar(dst->cp, hash, HASH_BYTES, usage_smp_5)) {
     return OTRNG_ERROR;
@@ -605,10 +596,10 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
   }
 
   if (!otrng_ec_scalar_eq(temp_scalar, msg->c2)) {
-    sodium_memzero(temp_scalar, ED448_SCALAR_BYTES);
+    otrng_secure_wipe(temp_scalar, ED448_SCALAR_BYTES);
     return otrng_false;
   }
-  sodium_memzero(temp_scalar, ED448_SCALAR_BYTES);
+  otrng_secure_wipe(temp_scalar, ED448_SCALAR_BYTES);
 
   /* c3 = HashToScalar(4 || G * d3 + G3b * c3). */
   goldilocks_448_point_scalarmul(gb_c, msg->g3b, msg->c3);
@@ -625,10 +616,10 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
   }
 
   if (!otrng_ec_scalar_eq(temp_scalar, msg->c3)) {
-    sodium_memzero(temp_scalar, ED448_SCALAR_BYTES);
+    otrng_secure_wipe(temp_scalar, ED448_SCALAR_BYTES);
     return otrng_false;
   }
-  sodium_memzero(temp_scalar, ED448_SCALAR_BYTES);
+  otrng_secure_wipe(temp_scalar, ED448_SCALAR_BYTES);
 
   /* cp = HashToScalar(5 || G3 * d5 + Pb * cp || G * d5 + G2 * d6 +
    Qb * cp) */
@@ -656,8 +647,8 @@ tstatic otrng_bool smp_msg_2_valid_zkp(smp_msg_2_s *msg,
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
-  sodium_memzero(ser_point_3, ED448_POINT_BYTES);
-  sodium_memzero(ser_point_4, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_3, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_4, ED448_POINT_BYTES);
 
   if (!hash_to_scalar(temp_scalar, hash, HASH_BYTES, usage_zkp_smp_5)) {
     return otrng_false;
@@ -743,8 +734,8 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
   hash_final(hd_2, hash_1, HASH_BYTES);
   hash_destroy(hd_2);
 
-  sodium_memzero(ser_point_1, ED448_POINT_BYTES);
-  sodium_memzero(ser_point_2, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_1, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_2, ED448_POINT_BYTES);
 
   if (!hash_to_scalar(dst->cp, hash_1, HASH_BYTES, usage_smp_6)) {
     return OTRNG_ERROR;
@@ -779,8 +770,8 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
   hash_final(hd_3, hash_2, HASH_BYTES);
   hash_destroy(hd_3);
 
-  sodium_memzero(ser_point_3, ED448_POINT_BYTES);
-  sodium_memzero(ser_point_4, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_3, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_4, ED448_POINT_BYTES);
 
   if (!hash_to_scalar(dst->cr, hash_2, HASH_BYTES, usage_smp_7)) {
     return OTRNG_ERROR;
@@ -927,8 +918,8 @@ tstatic otrng_bool smp_msg_3_validate_zkp(smp_msg_3_s *msg,
   hash_final(hd_1, hash_1, HASH_BYTES);
   hash_destroy(hd_1);
 
-  sodium_memzero(ser_point_1, ED448_POINT_BYTES);
-  sodium_memzero(ser_point_2, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_1, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_2, ED448_POINT_BYTES);
 
   if (!hash_to_scalar(temp_scalar, hash_1, HASH_BYTES, usage_zkp_smp_6)) {
     return otrng_false;
@@ -963,8 +954,8 @@ tstatic otrng_bool smp_msg_3_validate_zkp(smp_msg_3_s *msg,
   hash_final(hd_2, hash_2, HASH_BYTES);
   hash_destroy(hd_2);
 
-  sodium_memzero(ser_point_3, ED448_POINT_BYTES);
-  sodium_memzero(ser_point_4, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_3, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_4, ED448_POINT_BYTES);
 
   if (!hash_to_scalar(temp_scalar, hash_2, HASH_BYTES, usage_zkp_smp_7)) {
     return otrng_false;
@@ -1023,8 +1014,8 @@ tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
-  sodium_memzero(ser_point_1, ED448_POINT_BYTES);
-  sodium_memzero(ser_point_2, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_1, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_2, ED448_POINT_BYTES);
 
   if (!hash_to_scalar(dst->cr, hash, HASH_BYTES, usage_smp_8)) {
     return OTRNG_ERROR;
@@ -1116,8 +1107,8 @@ tstatic otrng_bool smp_msg_4_validate_zkp(smp_msg_4_s *msg,
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
-  sodium_memzero(ser_point_1, ED448_POINT_BYTES);
-  sodium_memzero(ser_point_2, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_1, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_point_2, ED448_POINT_BYTES);
 
   if (!hash_to_scalar(temp_scalar, hash, HASH_BYTES, usage_zkp_smp_8)) {
     return otrng_false;

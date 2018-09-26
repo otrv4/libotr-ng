@@ -31,9 +31,7 @@
 static otrng_prekey_profile_s *
 prekey_profile_init(otrng_prekey_profile_s *profile, const char *versions) {
   (void)versions;
-  profile->instance_tag = 0;
-  otrng_ec_bzero(profile->shared_prekey, ED448_POINT_BYTES);
-  profile->expires = 0;
+  memset(profile, 0, sizeof(otrng_prekey_profile_s));
 
   return profile;
 }

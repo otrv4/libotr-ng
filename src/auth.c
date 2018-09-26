@@ -125,6 +125,8 @@ tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
   hash_destroy(hd);
 
   goldilocks_448_scalar_decode_long(dst, hash, sizeof(hash));
+  otrng_secure_wipe(hash, sizeof(hash));
+  otrng_secure_wipe(point_buff, sizeof(point_buff));
 }
 
 static void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
@@ -148,6 +150,8 @@ static void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
 
   otrng_rsig_calculate_c_with_usage_and_domain(
       usage, domain_sep, c, A1, A2, A3, A1c1, A2c2, A3c3, message, message_len);
+
+  // TODO: do we need to wipe the public keys used here?
 }
 
 INTERNAL otrng_result otrng_rsig_authenticate(

@@ -125,7 +125,7 @@ otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f) {
     return OTRNG_ERROR;
   }
 
-  buff = otrng_xmalloc((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
+  buff = otrng_secure_alloc((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
 
   size = otrng_serialize_forging_key(buff, *client->forging_key);
   if (size == 0) {
@@ -133,6 +133,7 @@ otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f) {
   }
 
   encoded = otrng_base64_encode(buff, size);
+  otrng_secure_wipe(buff, (2 + ED448_POINT_BYTES) * sizeof(uint8_t));
   free(buff);
   if (!encoded) {
     return OTRNG_ERROR;
@@ -140,17 +141,20 @@ otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f) {
 
   storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
+    otrng_secure_wipe(encoded, strlen(encoded));
     free(encoded);
     return OTRNG_ERROR;
   }
 
   if (fprintf(f, "%s\n%s\n", storage_id, encoded) < 0) {
     free(storage_id);
+    otrng_secure_wipe(encoded, strlen(encoded));
     free(encoded);
     return OTRNG_ERROR;
   }
 
   free(storage_id);
+  otrng_secure_wipe(encoded, strlen(encoded));
   free(encoded);
 
   return OTRNG_SUCCESS;
@@ -566,15 +570,12 @@ INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
 static otrng_result
 serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
                            const char *storage_id, FILE *privf) {
-  uint8_t ecdh_secret_k[ED448_SCALAR_BYTES];
+  uint8_t *ecdh_secret_k = otrng_secure_alloc(ED448_SCALAR_BYTES);
   char *ecdh_symkey;
-  uint8_t dh_secret_k[DH_KEY_SIZE];
+  uint8_t *dh_secret_k = otrng_secure_alloc(DH_KEY_SIZE);
   size_t dh_secret_k_len = 0;
   char *dh_symkey;
   int ret;
-
-  memset(ecdh_secret_k, 0, ED448_SCALAR_BYTES);
-  memset(dh_secret_k, 0, DH_KEY_SIZE);
 
   if (fprintf(privf, "%s\n", storage_id) < 0) {
     return OTRNG_ERROR;
@@ -587,7 +588,8 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
     return OTRNG_ERROR;
   }
 
-  // TODO: securely erase ecdh_secret_k
+  otrng_secure_wipe(ecdh_secret_k, ED448_SCALAR_BYTES);
+  free(ecdh_secret_k);
 
   // this should be 80 + 4
   if (!otrng_dh_mpi_serialize(dh_secret_k, DH_KEY_SIZE, &dh_secret_k_len,
@@ -602,11 +604,14 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
     return OTRNG_ERROR;
   }
 
-  // TODO: securely erase dh_secret_k
+  otrng_secure_wipe(dh_secret_k, DH_KEY_SIZE);
+  free(dh_secret_k);
 
   ret = fprintf(privf, "%x\n%x\n%s\n%s\n", prekey->id,
                 prekey->sender_instance_tag, ecdh_symkey, dh_symkey);
+  otrng_secure_wipe(ecdh_symkey, strlen(ecdh_symkey));
   free(ecdh_symkey);
+  otrng_secure_wipe(dh_symkey, strlen(dh_symkey));
   free(dh_symkey);
 
   if (ret < 0) {

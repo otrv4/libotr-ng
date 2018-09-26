@@ -579,7 +579,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
   instance_tag = otrng_client_get_instance_tag(client);
 
   messages = otrng_xmalloc(num_messages * sizeof(dake_prekey_message_s *));
-  ke = otrng_xmalloc(num_messages * sizeof(ec_scalar_p));
+  ke = otrng_secure_alloc(num_messages * sizeof(ec_scalar_p));
   kd = otrng_xmalloc(num_messages * sizeof(dh_mpi_p));
 
   for (i = 0; i < num_messages; i++) {

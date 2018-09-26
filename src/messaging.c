@@ -121,9 +121,13 @@ tstatic otrng_result otrng_global_state_add_forging_key(
 
 API otrng_result otrng_global_state_generate_private_key(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
-  uint8_t sym[ED448_PRIVATE_BYTES];
+  otrng_result res;
+  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
-  return otrng_global_state_add_private_key_v4(gs, client_id, sym);
+  res = otrng_global_state_add_private_key_v4(gs, client_id, sym);
+  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+  free(sym);
+  return res;
 }
 
 API otrng_result otrng_global_state_generate_forging_key(
@@ -131,7 +135,7 @@ API otrng_result otrng_global_state_generate_forging_key(
   /* This function generates the forging key by
      generating a full keypair and then deleting the secret material
      A better way would be to just generate the public material directly */
-  uint8_t sym[ED448_PRIVATE_BYTES];
+  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   otrng_keypair_s *k;
   otrng_result r;
 
@@ -142,6 +146,8 @@ API otrng_result otrng_global_state_generate_forging_key(
   // At this point you can add printing of the secret key material
   // if you ever need to use the forging key.
   otrng_keypair_free(k);
+  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+  free(sym);
   return r;
 }
 
@@ -188,7 +194,8 @@ API otrng_result otrng_global_state_generate_prekey_profile(
 
 API otrng_result otrng_global_state_generate_shared_prekey(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
-  uint8_t sym[ED448_PRIVATE_BYTES];
+  otrng_result r;
+  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   otrng_client_s *client;
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
 
@@ -197,7 +204,10 @@ API otrng_result otrng_global_state_generate_shared_prekey(
     return OTRNG_ERROR;
   }
 
-  return otrng_client_add_shared_prekey_v4(client, sym);
+  r = otrng_client_add_shared_prekey_v4(client, sym);
+  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+  free(sym);
+  return r;
 }
 
 API otrng_keypair_s *

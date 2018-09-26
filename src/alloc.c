@@ -21,8 +21,10 @@
 #define OTRNG_ALLOC_PRIVATE
 
 #include "alloc.h"
+#include <sodium.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static void (*oom_handler)(void) = NULL;
 
@@ -56,4 +58,15 @@ otrng_xrealloc(/*@only@*/ /*@null@*/ void *ptr, size_t size) {
   }
 
   return result;
+}
+
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc(size_t size) {
+  void *result = otrng_xmalloc(size);
+  memset(result, 0, size);
+  return result;
+}
+
+INTERNAL void otrng_secure_wipe(/*@null@*/ /*@out@*/ /*@only@*/ void *p,
+                                size_t size) /*@modifies p@*/ {
+  sodium_memzero(p, size);
 }

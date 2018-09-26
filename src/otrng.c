@@ -157,31 +157,14 @@ our_shared_prekey(const otrng_s *otr) {
 
 INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
   otrng_s *otr = otrng_xmalloc(sizeof(otrng_s));
+  memset(otr, 0, sizeof(otrng_s));
 
   otr->client = client;
-  otr->peer = NULL;
   otr->state = OTRNG_STATE_START;
-  otr->running_version = 0;
   otr->supported_versions = policy.allows;
-
-  otr->their_instance_tag = 0;
-
-  otr->their_prekeys_id = 0;
-  otr->their_client_profile = NULL;
-  otr->their_prekey_profile = NULL;
 
   otr->keys = otrng_key_manager_new();
   otrng_smp_protocol_init(otr->smp);
-
-  otr->pending_fragments = NULL;
-
-  // TODO: Why is not this automatically generated?
-  // Probably because it expects to receive a peer name.
-  otr->v3_conn = NULL;
-
-  otr->shared_session_state = NULL;
-  otr->sending_init_msg = NULL;
-  otr->receiving_init_msg = NULL;
 
   return otr;
 }
@@ -399,11 +382,9 @@ tstatic otrng_bool message_is_otr_error(const string_p message) {
 
 INTERNAL otrng_response_s *otrng_response_new(void) {
   otrng_response_s *response = otrng_xmalloc(sizeof(otrng_response_s));
+  memset(response, 0, sizeof(otrng_response_s));
 
-  response->to_display = NULL;
-  response->to_send = NULL;
   response->warning = OTRNG_WARN_NONE;
-  response->tlvs = NULL;
 
   return response;
 }
@@ -413,13 +394,8 @@ INTERNAL void otrng_response_free(otrng_response_s *response) {
     return;
   }
 
-  if (response->to_display) {
-    free(response->to_display);
-  }
-
-  if (response->to_send) {
-    free(response->to_send);
-  }
+  free(response->to_display);
+  free(response->to_send);
 
   otrng_tlv_list_free(response->tlvs);
 
@@ -726,7 +702,7 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
 
   hash_hash(brace_key, sizeof(brace_key_p), k_dh, k_dh_len);
 
-  sodium_memzero(k_dh, sizeof(k_dh));
+  otrng_secure_wipe(k_dh, sizeof(k_dh));
 
 #ifdef DEBUG
   debug_print("\n");
@@ -752,6 +728,8 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   otrng_key_manager_calculate_tmp_key(dst, k_ecdh, brace_key, tmp_ecdh_k1,
                                       tmp_ecdh_k2);
 
+  otrng_secure_wipe(brace_key, sizeof(brace_key_p));
+
 #ifdef DEBUG
   debug_print("\n");
   debug_print("GENERATING TEMP KEY R\n");
@@ -759,8 +737,8 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   otrng_memdump(dst, HASH_BYTES);
 #endif
 
-  sodium_memzero(tmp_ecdh_k1, ED448_POINT_BYTES);
-  sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
+  otrng_secure_wipe(tmp_ecdh_k1, ED448_POINT_BYTES);
+  otrng_secure_wipe(tmp_ecdh_k2, ED448_POINT_BYTES);
 
   return OTRNG_SUCCESS;
 }
@@ -1121,7 +1099,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
 
   hash_hash(brace_key, sizeof(brace_key_p), k_dh, k_dh_len);
 
-  sodium_memzero(k_dh, sizeof(k_dh));
+  otrng_secure_wipe(k_dh, sizeof(k_dh));
 
 #ifdef DEBUG
   debug_print("\n");
@@ -1146,6 +1124,8 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   otrng_key_manager_calculate_tmp_key(dst, k_ecdh, brace_key, tmp_ecdh_k1,
                                       tmp_ecdh_k2);
 
+  otrng_secure_wipe(brace_key, sizeof(brace_key_p));
+
 #ifdef DEBUG
   debug_print("\n");
   debug_print("GENERATING TEMP KEY I\n");
@@ -1153,8 +1133,8 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   otrng_memdump(dst, HASH_BYTES);
 #endif
 
-  sodium_memzero(tmp_ecdh_k1, ED448_POINT_BYTES);
-  sodium_memzero(tmp_ecdh_k2, ED448_POINT_BYTES);
+  otrng_secure_wipe(tmp_ecdh_k1, ED448_POINT_BYTES);
+  otrng_secure_wipe(tmp_ecdh_k2, ED448_POINT_BYTES);
 
   return OTRNG_SUCCESS;
 }
@@ -1251,7 +1231,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
 
   /* here no warning should be passed */
   if (0 != otrl_mem_differ(mac_tag, auth->auth_mac, DATA_MSG_MAC_BYTES)) {
-    sodium_memzero(mac_tag, DATA_MSG_MAC_BYTES);
+    otrng_secure_wipe(mac_tag, DATA_MSG_MAC_BYTES);
     return otrng_false;
   }
 
@@ -1793,7 +1773,7 @@ tstatic otrng_result decrypt_data_msg(otrng_response_s *response,
 #endif
 
   // TODO: @initialization What if msg->enc_msg_len == 0?
-  plain = otrng_xmalloc(msg->enc_msg_len);
+  plain = otrng_secure_alloc(msg->enc_msg_len);
 
   err = crypto_stream_xor(plain, msg->enc_msg, msg->enc_msg_len, msg->nonce,
                           enc_key);
@@ -1809,6 +1789,7 @@ tstatic otrng_result decrypt_data_msg(otrng_response_s *response,
   }
 
   response->tlvs = deserialize_received_tlvs(plain, msg->enc_msg_len);
+  otrng_secure_wipe(plain, msg->enc_msg_len);
   free(plain);
   return OTRNG_SUCCESS;
 }
@@ -1835,12 +1816,13 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
     uint32_t use = extract_word(tlv->data);
     received_extra_sym_key(otr, use, tlv->data + 4, tlv->len - 4,
                            otr->keys->extra_symmetric_key);
-    sodium_memzero(otr->keys->extra_symmetric_key,
-                   sizeof(otr->keys->extra_symmetric_key));
+    otrng_secure_wipe(otr->keys->extra_symmetric_key,
+                      sizeof(otr->keys->extra_symmetric_key));
     return NULL;
   }
 
-  sodium_memzero(otr->keys->extra_symmetric_key, sizeof(extra_symmetric_key_p));
+  otrng_secure_wipe(otr->keys->extra_symmetric_key,
+                    sizeof(extra_symmetric_key_p));
 
   return otrng_process_smp_tlv(tlv, otr);
 }
@@ -1956,8 +1938,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       tmp_receiving_ratchet->k = tmp_receiving_ratchet->k + 1;
     }
     if (!otrng_valid_data_message(mac_key, msg)) {
-      sodium_memzero(enc_key, sizeof(enc_key));
-      sodium_memzero(mac_key, sizeof(mac_key));
+      otrng_secure_wipe(enc_key, sizeof(enc_key));
+      otrng_secure_wipe(mac_key, sizeof(mac_key));
       otrng_data_message_free(msg);
 
       if (tmp_receiving_ratchet->skipped_keys) {
@@ -1977,8 +1959,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
       if (msg->flags != MSGFLAGS_IGNORE_UNREADABLE) {
         otrng_error_message(&response->to_send, OTRNG_ERR_MSG_UNREADABLE);
-        sodium_memzero(enc_key, sizeof(enc_key));
-        sodium_memzero(mac_key, sizeof(mac_key));
+        otrng_secure_wipe(enc_key, sizeof(enc_key));
+        otrng_secure_wipe(mac_key, sizeof(mac_key));
 
         if (tmp_receiving_ratchet->skipped_keys) {
           otrng_list_free_full(tmp_receiving_ratchet->skipped_keys);
@@ -1990,8 +1972,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
         return OTRNG_ERROR;
       }
       if (msg->flags == MSGFLAGS_IGNORE_UNREADABLE) {
-        sodium_memzero(enc_key, sizeof(enc_key));
-        sodium_memzero(mac_key, sizeof(mac_key));
+        otrng_secure_wipe(enc_key, sizeof(enc_key));
+        otrng_secure_wipe(mac_key, sizeof(mac_key));
         if (tmp_receiving_ratchet->skipped_keys) {
           otrng_list_free_full(tmp_receiving_ratchet->skipped_keys);
         }
@@ -2002,7 +1984,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       }
     }
 
-    sodium_memzero(enc_key, sizeof(enc_key));
+    otrng_secure_wipe(enc_key, sizeof(enc_key));
 
     otrng_receiving_ratchet_copy(otr->keys, tmp_receiving_ratchet);
     otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
@@ -2017,7 +1999,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
     // TODO: @client this displays an event on otrv3..
     if (!response->to_display) {
-      sodium_memzero(mac_key, sizeof(msg_mac_key_p));
+      otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
       otrng_data_message_free(msg);
       return OTRNG_SUCCESS;
     }
@@ -2025,20 +2007,20 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     if (otr->client->should_heartbeat(otr->last_sent)) {
       if (!otrng_send_message(&response->to_send, "", warn, NULL,
                               MSGFLAGS_IGNORE_UNREADABLE, otr)) {
-        sodium_memzero(mac_key, sizeof(msg_mac_key_p));
+        otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
         otrng_data_message_free(msg);
         return OTRNG_ERROR;
       }
       otr->last_sent = time(NULL);
     }
 
-    sodium_memzero(mac_key, sizeof(msg_mac_key_p));
+    otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
     otrng_data_message_free(msg);
 
     return OTRNG_SUCCESS;
   } while (0);
 
-  sodium_memzero(mac_key, sizeof(msg_mac_key_p));
+  otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
   otrng_data_message_free(msg);
 
   return OTRNG_ERROR;

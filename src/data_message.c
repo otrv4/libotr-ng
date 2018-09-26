@@ -32,20 +32,7 @@
 INTERNAL data_message_s *otrng_data_message_new() {
   data_message_s *ret = otrng_xmalloc(sizeof(data_message_s));
 
-  ret->flags = 0;
-  ret->ratchet_id = 0;
-  ret->message_id = 0;
-  ret->previous_chain_n = 0;
-
-  ret->dh = NULL;
-  otrng_ec_bzero(ret->ecdh, ED448_POINT_BYTES);
-
-  memset(ret->nonce, 0, sizeof(ret->nonce));
-
-  ret->enc_msg = NULL;
-  ret->enc_msg_len = 0;
-
-  memset(ret->mac, 0, sizeof(ret->mac));
+  memset(ret, 0, sizeof(data_message_s));
 
   return ret;
 }
@@ -57,11 +44,11 @@ tstatic void data_message_destroy(data_message_s *data_msg) {
   otrng_dh_mpi_release(data_msg->dh);
   data_msg->dh = NULL;
 
-  sodium_memzero(data_msg->nonce, sizeof data_msg->nonce);
+  otrng_secure_wipe(data_msg->nonce, sizeof data_msg->nonce);
   data_msg->enc_msg_len = 0;
   free(data_msg->enc_msg);
   data_msg->enc_msg = NULL;
-  sodium_memzero(data_msg->mac, sizeof data_msg->mac);
+  otrng_secure_wipe(data_msg->mac, sizeof data_msg->mac);
 }
 
 INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
@@ -248,7 +235,7 @@ otrng_data_message_sections_hash(uint8_t *dst, size_t dstlen,
 INTERNAL otrng_result otrng_data_message_authenticator(
     uint8_t *dst, size_t dstlen, const msg_mac_key_p mac_key,
     const uint8_t *body, size_t bodylen) {
-  uint8_t sections[HASH_BYTES];
+  uint8_t *sections = otrng_secure_alloc(HASH_BYTES);
 
   if (dstlen < DATA_MSG_MAC_BYTES) {
     return OTRNG_ERROR;
@@ -261,7 +248,7 @@ INTERNAL otrng_result otrng_data_message_authenticator(
   }
 
   otrng_key_manager_calculate_authenticator(dst, mac_key, sections);
-  sodium_memzero(sections, HASH_BYTES);
+  otrng_secure_wipe(sections, HASH_BYTES);
 
   return OTRNG_SUCCESS;
 }
@@ -270,6 +257,7 @@ INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key_p mac_key,
                                              const data_message_s *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
+  // We don't need this tag to be in secure memory
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
 
   if (!otrng_data_message_body_asprintf(&body, &bodylen, data_msg)) {
@@ -285,7 +273,7 @@ INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key_p mac_key,
   free(body);
 
   if (otrl_mem_differ(mac_tag, data_msg->mac, sizeof mac_tag) != 0) {
-    sodium_memzero(mac_tag, sizeof mac_tag);
+    otrng_secure_wipe(mac_tag, sizeof mac_tag);
     return otrng_false;
   }
 

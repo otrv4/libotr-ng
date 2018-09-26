@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 
-char *otrng_base64_encode(uint8_t *src, size_t src_len);
+#include "shared.h"
+
+INTERNAL char *otrng_base64_encode(uint8_t *src, size_t src_len);
 
 #endif

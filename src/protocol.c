@@ -236,8 +236,8 @@ tstatic otrng_result send_data_message(string_p *to_send,
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {
-    sodium_memzero(enc_key, sizeof(msg_enc_key_p));
-    sodium_memzero(mac_key, sizeof(msg_mac_key_p));
+    otrng_secure_wipe(enc_key, sizeof(msg_enc_key_p));
+    otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
     return OTRNG_ERROR;
   }
 
@@ -248,13 +248,13 @@ tstatic otrng_result send_data_message(string_p *to_send,
   if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {
     otrng_error_message(to_send, OTRNG_ERR_MSG_ENCRYPTION_ERROR);
 
-    sodium_memzero(enc_key, sizeof(msg_enc_key_p));
-    sodium_memzero(mac_key, sizeof(msg_mac_key_p));
+    otrng_secure_wipe(enc_key, sizeof(msg_enc_key_p));
+    otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
     otrng_data_message_free(data_msg);
     return OTRNG_ERROR;
   }
 
-  sodium_memzero(enc_key, sizeof(msg_enc_key_p));
+  otrng_secure_wipe(enc_key, sizeof(msg_enc_key_p));
 
   /* Authenticator = KDF_1(0x1A || MKmac || KDF_1(usage_authenticator ||
    * data_message_sections, 64), 64) */
@@ -267,7 +267,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
 
     if (!serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
                                        ser_mac_keys_len, data_msg)) {
-      sodium_memzero(mac_key, sizeof(msg_mac_key_p));
+      otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
       free(ser_mac_keys);
       otrng_data_message_free(data_msg);
       return OTRNG_ERROR;
@@ -275,7 +275,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
     free(ser_mac_keys);
   } else {
     if (!serialize_and_encode_data_msg(to_send, mac_key, NULL, 0, data_msg)) {
-      sodium_memzero(mac_key, sizeof(msg_mac_key_p));
+      otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
       otrng_data_message_free(data_msg);
       return OTRNG_ERROR;
     }
@@ -283,7 +283,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
 
   otr->keys->j++;
 
-  sodium_memzero(mac_key, sizeof(msg_mac_key_p));
+  otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
   otrng_data_message_free(data_msg);
 
   return OTRNG_SUCCESS;

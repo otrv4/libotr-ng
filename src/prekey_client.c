@@ -85,7 +85,8 @@ static int build_prekey_publication_message_callback(
 }
 
 API otrng_prekey_client_s *otrng_prekey_client_new() {
-  otrng_prekey_client_s *client = otrng_xmalloc(sizeof(otrng_prekey_client_s));
+  otrng_prekey_client_s *client =
+      otrng_secure_alloc(sizeof(otrng_prekey_client_s));
 
   client->publication_policy =
       otrng_xmalloc(sizeof(otrng_prekey_publication_policy_s));
@@ -148,9 +149,9 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
   otrng_ecdh_keypair_destroy(client->ephemeral_ecdh);
   free(client->server_identity);
   free(client->our_identity);
-
   free(client->publication_policy);
-  client->publication_policy = NULL;
+
+  otrng_secure_wipe(client, sizeof(otrng_prekey_client_s));
 
   free(client);
 }
@@ -184,20 +185,20 @@ static char *prekey_encode(const uint8_t *buffer, size_t buffer_len) {
 
 static char *start_dake_and_then_send(otrng_prekey_client_s *client,
                                       otrng_prekey_next_message_t next) {
-  uint8_t sym[ED448_PRIVATE_BYTES];
+  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   uint8_t *serialized = NULL;
   size_t serialized_len = 0;
   otrng_result success;
   char *ret;
   otrng_prekey_dake1_message_s msg[1];
 
-  memset(sym, 0, ED448_PRIVATE_BYTES);
   msg->client_instance_tag = client->instance_tag;
   otrng_client_profile_copy(msg->client_profile, client->client_profile);
 
   random_bytes(sym, ED448_PRIVATE_BYTES);
   otrng_ecdh_keypair_generate(client->ephemeral_ecdh, sym);
-  goldilocks_bzero(sym, ED448_PRIVATE_BYTES);
+  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+  free(sym);
   otrng_ec_point_copy(msg->I, client->ephemeral_ecdh->pub);
 
   success =
@@ -524,12 +525,12 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
 
   if (pub_msg->num_prekey_messages > 0) {
     values_priv_ecdh =
-        otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(ec_scalar_p));
+        otrng_secure_alloc(pub_msg->num_prekey_messages * sizeof(ec_scalar_p));
     values_pub_ecdh =
         otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(ec_point_p));
 
     values_priv_dh =
-        otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
+        otrng_secure_alloc(pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
     values_pub_dh =
         otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
 
@@ -546,8 +547,12 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
             m, usage_proof_message_ecdh)) {
       free(client_profile);
       free(prekey_profile);
+      otrng_secure_wipe(values_priv_ecdh,
+                        pub_msg->num_prekey_messages * sizeof(ec_scalar_p));
       free(values_priv_ecdh);
       free(values_pub_ecdh);
+      otrng_secure_wipe(values_priv_dh,
+                        pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
       free(values_priv_dh);
       free(values_pub_dh);
       return OTRNG_ERROR;
@@ -558,22 +563,30 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
                                  usage_proof_message_dh, NULL)) {
       free(client_profile);
       free(prekey_profile);
+      otrng_secure_wipe(values_priv_ecdh,
+                        pub_msg->num_prekey_messages * sizeof(ec_scalar_p));
       free(values_priv_ecdh);
       free(values_pub_ecdh);
+      otrng_secure_wipe(values_priv_dh,
+                        pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
       free(values_priv_dh);
       free(values_pub_dh);
       return OTRNG_ERROR;
     }
 
+    otrng_secure_wipe(values_priv_ecdh,
+                      pub_msg->num_prekey_messages * sizeof(ec_scalar_p));
     free(values_priv_ecdh);
     free(values_pub_ecdh);
+    otrng_secure_wipe(values_priv_dh,
+                      pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
     free(values_priv_dh);
     free(values_pub_dh);
   }
 
   if (pub_msg->prekey_profile != NULL) {
     proof_buf_len += PROOF_C_SIZE + ED448_SCALAR_BYTES;
-    values_priv_ecdh = otrng_xmalloc(1 * sizeof(ec_scalar_p));
+    values_priv_ecdh = otrng_secure_alloc(1 * sizeof(ec_scalar_p));
     values_pub_ecdh = otrng_xmalloc(1 * sizeof(ec_point_p));
 
     *values_pub_ecdh[0] = *pub_msg->prekey_profile->shared_prekey;
@@ -585,11 +598,13 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
                                    usage_proof_shared_ecdh)) {
       free(client_profile);
       free(prekey_profile);
+      otrng_secure_wipe(values_priv_ecdh, 1 * sizeof(ec_scalar_p));
       free(values_priv_ecdh);
       free(values_pub_ecdh);
       return OTRNG_ERROR;
     }
 
+    otrng_secure_wipe(values_priv_ecdh, 1 * sizeof(ec_scalar_p));
     free(values_priv_ecdh);
     free(values_pub_ecdh);
   }
@@ -698,8 +713,8 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   uint8_t usage_receiver_client_profile = 0x05;
   uint8_t usage_receiver_prekey_composite_identity = 0x06;
   uint8_t usage_receiver_prekey_composite_phi = 0x07;
-  uint8_t shared_secret[HASH_BYTES];
-  uint8_t ecdh_shared[ED448_POINT_BYTES];
+  uint8_t *shared_secret = otrng_secure_alloc(HASH_BYTES);
+  uint8_t *ecdh_shared = otrng_secure_alloc(ED448_POINT_BYTES);
   uint8_t usage_SK = 0x01;
   uint8_t usage_preMAC_key = 0x08;
   uint8_t usage_proof_context = 0x12;
@@ -709,19 +724,20 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   char *ret;
   uint8_t m[64];
 
-  memset(shared_secret, 0, HASH_BYTES);
-  memset(ecdh_shared, 0, ED448_POINT_BYTES);
-
   msg->client_instance_tag = client->instance_tag;
 
   composite_phi = otrng_prekey_client_get_expected_composite_phi(
       &composite_phi_len, client);
   if (!composite_phi) {
+    free(shared_secret);
+    free(ecdh_shared);
     return NULL;
   }
 
   if (!otrng_client_profile_asprintf(&our_profile, &our_profile_len,
                                      client->client_profile)) {
+    free(shared_secret);
+    free(ecdh_shared);
     return NULL;
   }
 
@@ -760,9 +776,11 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
 
   /* ECDH(i, S) */
   // TODO: check is the ephemeral is erased
-  if (otrng_failed(otrng_ecdh_shared_secret(ecdh_shared, sizeof(ecdh_shared),
+  if (otrng_failed(otrng_ecdh_shared_secret(ecdh_shared, ED448_POINT_BYTES,
                                             client->ephemeral_ecdh->priv,
                                             msg2->S))) {
+    free(shared_secret);
+    free(ecdh_shared);
     return NULL;
   }
 
@@ -778,12 +796,20 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   if (client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
     if (!otrng_prekey_dake3_message_append_storage_information_request(
             msg, client->mac_key)) {
+      otrng_secure_wipe(shared_secret, HASH_BYTES);
+      free(shared_secret);
+      otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
+      free(ecdh_shared);
       return NULL;
     }
   } else if (client->after_dake == OTRNG_PREKEY_PREKEY_PUBLICATION) {
     otrng_prekey_publication_message_s *pub_msg =
         otrng_prekey_publication_message_new();
     if (!build_prekey_publication_message_callback(pub_msg, client)) {
+      otrng_secure_wipe(shared_secret, HASH_BYTES);
+      free(shared_secret);
+      otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
+      free(ecdh_shared);
       return NULL;
     }
 
@@ -796,9 +822,17 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
     otrng_prekey_publication_message_destroy(pub_msg);
 
     if (!success) {
+      otrng_secure_wipe(shared_secret, HASH_BYTES);
+      free(shared_secret);
+      otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
+      free(ecdh_shared);
       return NULL;
     }
   } else {
+    otrng_secure_wipe(shared_secret, HASH_BYTES);
+    free(shared_secret);
+    otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
+    free(ecdh_shared);
     return NULL;
   }
 
@@ -809,11 +843,19 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   otrng_prekey_dake3_message_destroy(msg);
 
   if (!success) {
+    otrng_secure_wipe(shared_secret, HASH_BYTES);
+    free(shared_secret);
+    otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
+    free(ecdh_shared);
     return NULL;
   }
 
   ret = prekey_encode(serialized, serialized_len);
   free(serialized);
+  otrng_secure_wipe(shared_secret, HASH_BYTES);
+  free(shared_secret);
+  otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
+  free(ecdh_shared);
 
   return ret;
 }
@@ -876,7 +918,7 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
   free(buf);
 
   if (otrl_mem_differ(mac_tag, msg->mac, sizeof(mac_tag)) != 0) {
-    sodium_memzero(mac_tag, sizeof(mac_tag));
+    otrng_secure_wipe(mac_tag, sizeof(mac_tag));
     return otrng_false;
   }
 
@@ -958,7 +1000,7 @@ static char *receive_success(const uint8_t *decoded, size_t decoded_len,
     success_received_callback(client);
   }
 
-  sodium_memzero(mac_tag, sizeof(mac_tag));
+  otrng_secure_wipe(mac_tag, sizeof(mac_tag));
   return NULL;
 }
 
@@ -1000,7 +1042,7 @@ static char *receive_failure(const uint8_t *decoded, size_t decoded_len,
     failure_received_callback(client);
   }
 
-  sodium_memzero(mac_tag, sizeof(mac_tag));
+  otrng_secure_wipe(mac_tag, sizeof(mac_tag));
   return NULL;
 }
 
@@ -1358,7 +1400,7 @@ void otrng_prekey_storage_status_message_destroy(
 
   msg->client_instance_tag = 0;
   msg->stored_prekeys = 0;
-  sodium_memzero(msg->mac, sizeof(msg->mac));
+  otrng_secure_wipe(msg->mac, sizeof(msg->mac));
 }
 
 INTERNAL otrng_prekey_publication_message_s *

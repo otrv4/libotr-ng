@@ -160,17 +160,18 @@ INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
 }
 
 INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_p keypair) {
-  uint8_t hash[DH_KEY_SIZE];
+  uint8_t *hash = otrng_secure_alloc(DH_KEY_SIZE);
   gcry_mpi_t privkey = NULL;
   uint8_t *secbuf = NULL;
   gcry_error_t err;
-
-  memset(hash, 0, DH_KEY_SIZE);
 
   secbuf = gcry_random_bytes_secure(DH_KEY_SIZE, GCRY_STRONG_RANDOM);
   shake_256_hash(hash, sizeof(hash), secbuf, DH_KEY_SIZE);
 
   err = gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);
+  otrng_secure_wipe(hash, DH_KEY_SIZE);
+  free(hash);
+  otrng_secure_wipe(secbuf, DH_KEY_SIZE);
   gcry_free(secbuf);
 
   if (err) {
@@ -188,7 +189,7 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
     uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair,
     const char participant) {
   gcry_mpi_t privkey = NULL;
-  uint8_t random_buff[DH_KEY_SIZE];
+  uint8_t *random_buff = otrng_secure_alloc(DH_KEY_SIZE);
   uint8_t usage_DH_first_ephemeral = 0x12;
   gcry_error_t err;
 
@@ -197,6 +198,10 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
 
   err =
       gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random_buff, DH_KEY_SIZE, NULL);
+
+  otrng_secure_wipe(random_buff, DH_KEY_SIZE);
+  free(random_buff);
+
   if (err) {
     return OTRNG_ERROR;
   }

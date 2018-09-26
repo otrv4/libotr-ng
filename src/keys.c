@@ -34,10 +34,7 @@
 #include "shake.h"
 
 INTERNAL otrng_keypair_s *otrng_keypair_new(void) {
-  otrng_keypair_s *ret = otrng_xmalloc(sizeof(otrng_keypair_s));
-
-  otrng_ec_bzero(ret->priv, ED448_SCALAR_BYTES);
-  otrng_ec_bzero(ret->pub, ED448_POINT_BYTES);
+  otrng_keypair_s *ret = otrng_secure_alloc(sizeof(otrng_keypair_s));
 
   return ret;
 }
@@ -56,7 +53,7 @@ INTERNAL void otrng_keypair_generate(otrng_keypair_s *keypair,
 }
 
 tstatic void keypair_destroy(otrng_keypair_s *keypair) {
-  goldilocks_bzero(keypair->sym, ED448_PRIVATE_BYTES);
+  otrng_secure_wipe(keypair->sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_destroy(keypair->priv);
   otrng_ec_point_destroy(keypair->pub);
 }
@@ -72,17 +69,14 @@ INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
 
 INTERNAL otrng_result otrng_symmetric_key_serialize(
     char **buffer, size_t *written, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  *buffer = otrng_xmalloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
+  *buffer = otrng_secure_alloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
   *written = otrl_base64_encode(*buffer, sym, ED448_PRIVATE_BYTES);
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void) {
   otrng_shared_prekey_pair_s *ret =
-      otrng_xmalloc(sizeof(otrng_shared_prekey_pair_s));
-
-  otrng_ec_bzero(ret->priv, ED448_SCALAR_BYTES);
-  otrng_ec_bzero(ret->pub, ED448_POINT_BYTES);
+      otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
 
   return ret;
 }
@@ -103,18 +97,19 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
 
 INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,
                                                     dh_keypair_p dh) {
-  uint8_t sym[ED448_PRIVATE_BYTES];
+  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
   otrng_ecdh_keypair_generate(ecdh, sym);
-  goldilocks_bzero(sym, ED448_PRIVATE_BYTES);
+  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+  free(sym);
 
   return otrng_dh_keypair_generate(dh);
 }
 
 tstatic void
 shared_prekey_pair_destroy(otrng_shared_prekey_pair_s *prekey_pair) {
-  goldilocks_bzero(prekey_pair->sym, ED448_PRIVATE_BYTES);
+  otrng_secure_wipe(prekey_pair->sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_destroy(prekey_pair->priv);
   otrng_ec_point_destroy(prekey_pair->pub);
 }
@@ -133,7 +128,7 @@ INTERNAL uint8_t *otrng_derive_key_from_extra_symm_key(
     uint8_t usage, const unsigned char *use_data, size_t use_data_len,
     const unsigned char *extra_symm_key) {
   goldilocks_shake256_ctx_p hd;
-  uint8_t *derived_key = otrng_xmalloc(EXTRA_SYMMETRIC_KEY_BYTES);
+  uint8_t *derived_key = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
 
   hash_init_with_usage(hd, usage);
   hash_update(hd, use_data, use_data_len);

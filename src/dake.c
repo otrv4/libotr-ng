@@ -543,7 +543,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   otrng_ec_point_destroy(non_interactive_auth->X);
   otrng_client_profile_destroy(non_interactive_auth->profile);
   otrng_ring_sig_destroy(non_interactive_auth->sigma);
-  sodium_memzero(non_interactive_auth->auth_mac, HASH_BYTES);
+  otrng_secure_wipe(non_interactive_auth->auth_mac, HASH_BYTES);
 }
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_asprintf(
@@ -808,10 +808,11 @@ tstatic otrng_result build_rsign_tag(
   free(ser_i_profile);
   free(ser_r_profile);
 
-  sodium_memzero(ser_i_ecdh, ED448_POINT_BYTES);
-  sodium_memzero(ser_r_ecdh, ED448_POINT_BYTES);
-  sodium_memzero(ser_i_dh, DH3072_MOD_LEN_BYTES);
-  sodium_memzero(ser_r_dh, DH3072_MOD_LEN_BYTES);
+  // I don't _think_ these are necessary, since the points are public values
+  otrng_secure_wipe(ser_i_ecdh, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_r_ecdh, ED448_POINT_BYTES);
+  otrng_secure_wipe(ser_i_dh, DH3072_MOD_LEN_BYTES);
+  otrng_secure_wipe(ser_r_dh, DH3072_MOD_LEN_BYTES);
 
   return OTRNG_SUCCESS;
 }
@@ -879,7 +880,8 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
                            responder->dh, ser_r_shared_prekey,
                            ED448_SHARED_PREKEY_BYTES, phi, phi_len);
 
-  sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
+  // This is probably not necessary, since the shared prekey is a public value
+  otrng_secure_wipe(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
   return result;
 }
@@ -905,7 +907,8 @@ INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
       initiator->dh, responder->dh, ser_r_shared_prekey,
       ED448_SHARED_PREKEY_BYTES, phi, phi_len);
 
-  sodium_memzero(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
+  // Probably not necessary
+  otrng_secure_wipe(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
   return result;
 }
@@ -916,8 +919,8 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
 
   // OTRv4 section "Non-Interactive-Auth Message"
   /* auth_mac_k = KDF_1(0x0C || tmp_k, 64) */
-  uint8_t auth_mac_k[HASH_BYTES];
   uint8_t usage_auth_mac_key = 0x0C;
+  uint8_t *auth_mac_k = otrng_secure_alloc(HASH_BYTES);
 
   (void)auth;
 
@@ -927,6 +930,8 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
   // OTRv4 section, "Non-Interactive DAKE Overview"
   /* Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t, 64) */
   otrng_key_manager_calculate_auth_mac(dst, auth_mac_k, t, t_len);
+
+  otrng_secure_wipe(auth_mac_k, HASH_BYTES);
 
   return OTRNG_SUCCESS;
 }

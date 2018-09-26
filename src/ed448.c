@@ -190,6 +190,7 @@ static otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
     return otrng_false;
   }
 
+  // TODO: I think this is a horrible way to check for zero values
   if (memcmp(shared_secret, zero_buff, ED448_POINT_BYTES) == 0) {
     return otrng_false;
   }
