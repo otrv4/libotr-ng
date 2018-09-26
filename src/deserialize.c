@@ -374,6 +374,7 @@ INTERNAL otrng_result otrng_symmetric_shared_prekey_deserialize(
   if (written == ED448_PRIVATE_BYTES) {
     otrng_shared_prekey_pair_generate(pair, dec);
     otrng_secure_wipe(dec, ((len + 3) / 4) * 3);
+    free(dec);
     return OTRNG_SUCCESS;
   }
 
