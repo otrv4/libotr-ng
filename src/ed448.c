@@ -26,10 +26,7 @@
 
 #include "ed448.h"
 #include "shake.h"
-
-INTERNAL void otrng_ec_bzero(void *data, size_t size) {
-  goldilocks_bzero(data, size);
-}
+#include "alloc.h"
 
 INTERNAL void otrng_ec_scalar_copy(ec_scalar_p dst, const ec_scalar_p a) {
   goldilocks_448_scalar_copy(dst, a);
@@ -152,7 +149,7 @@ otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
   otrng_ec_derive_public_key(pub, sym);
   otrng_ec_point_decode(keypair->pub, pub);
 
-  goldilocks_bzero(pub, ED448_POINT_BYTES);
+  otrng_secure_wipe(pub, ED448_POINT_BYTES);
 }
 
 INTERNAL void
@@ -172,7 +169,7 @@ otrng_ecdh_keypair_generate_their(ec_point_p keypair,
   otrng_ec_derive_public_key(pub, sym);
   otrng_ec_point_decode(keypair, pub);
 
-  goldilocks_bzero(pub, ED448_POINT_BYTES);
+  otrng_secure_wipe(pub, ED448_POINT_BYTES);
 }
 
 INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {

@@ -46,7 +46,7 @@ otrng_dake_identity_message_new(const client_profile_s *profile) {
   identity_message->receiver_instance_tag = 0;
   identity_message->profile->versions = NULL;
   otrng_client_profile_copy(identity_message->profile, profile);
-  otrng_ec_bzero(identity_message->Y, ED448_POINT_BYTES);
+  otrng_secure_wipe(identity_message->Y, ED448_POINT_BYTES);
   identity_message->B = NULL;
 
   return identity_message;
@@ -393,7 +393,7 @@ INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
 
   prekey_message->id = 0;
   prekey_message->sender_instance_tag = 0;
-  otrng_ec_bzero(prekey_message->Y, ED448_POINT_BYTES);
+  otrng_secure_wipe(prekey_message->Y, ED448_POINT_BYTES);
   prekey_message->B = NULL;
 
   return prekey_message;

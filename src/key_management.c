@@ -116,7 +116,7 @@ otrng_receiving_ratchet_new(key_manager_s *manager) {
   otrng_ec_scalar_copy(ratchet->our_ecdh_priv, manager->our_ecdh->priv);
   ratchet->our_dh_priv = NULL;
 
-  otrng_ec_bzero(ratchet->their_ecdh, ED448_POINT_BYTES);
+  otrng_secure_wipe(ratchet->their_ecdh, ED448_POINT_BYTES);
   ratchet->their_dh = NULL;
 
   memset(ratchet->brace_key, 0, sizeof(brace_key_p));
@@ -174,13 +174,13 @@ INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
 }
 
 INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {
-  otrng_ec_bzero(ratchet->our_ecdh_priv, ED448_SCALAR_BYTES);
+  otrng_secure_wipe(ratchet->our_ecdh_priv, ED448_SCALAR_BYTES);
 
   if (ratchet->our_dh_priv) {
     gcry_mpi_release(ratchet->our_dh_priv);
   }
 
-  otrng_ec_bzero(ratchet->their_ecdh, ED448_POINT_BYTES);
+  otrng_secure_wipe(ratchet->their_ecdh, ED448_POINT_BYTES);
 
   gcry_mpi_release(ratchet->their_dh);
 
@@ -434,7 +434,7 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
       return OTRNG_ERROR;
     }
 
-    otrng_ec_bzero(manager->our_ecdh->priv, sizeof(ec_scalar_p));
+    otrng_secure_wipe(manager->our_ecdh->priv, sizeof(ec_scalar_p));
 
     if (!calculate_brace_key(manager, NULL, 's')) {
       return OTRNG_ERROR;

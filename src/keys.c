@@ -49,7 +49,7 @@ INTERNAL void otrng_keypair_generate(otrng_keypair_s *keypair,
   otrng_ec_derive_public_key(pub, keypair->sym);
   otrng_ec_point_decode(keypair->pub, pub);
 
-  goldilocks_bzero(pub, ED448_POINT_BYTES);
+  otrng_secure_wipe(pub, ED448_POINT_BYTES);
 }
 
 tstatic void keypair_destroy(otrng_keypair_s *keypair) {
@@ -92,7 +92,7 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
   otrng_ec_derive_public_key(pub, sym);
   otrng_ec_point_decode(prekey_pair->pub, pub);
 
-  goldilocks_bzero(pub, ED448_POINT_BYTES);
+  otrng_secure_wipe(pub, ED448_POINT_BYTES);
 }
 
 INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,

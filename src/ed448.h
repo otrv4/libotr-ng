@@ -62,14 +62,6 @@ typedef struct ecdh_keypair_s {
 } ecdh_keypair_s, ecdh_keypair_p[1];
 
 /**
- * @brief Overwrite data with zeros.  Uses memset_s if available.
- *
- * @param [data] The data to be zeroed.
- * @param [size] The size of the data.
- */
-INTERNAL void otrng_ec_bzero(void *data, size_t size);
-
-/**
  * @brief Copy a scalar.  The scalars may use the same memory, in which
  *    case this function does nothing.
  *
