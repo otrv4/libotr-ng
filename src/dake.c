@@ -932,6 +932,7 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
   otrng_key_manager_calculate_auth_mac(dst, auth_mac_k, t, t_len);
 
   otrng_secure_wipe(auth_mac_k, HASH_BYTES);
+  free(auth_mac_k);
 
   return OTRNG_SUCCESS;
 }
