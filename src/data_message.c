@@ -249,6 +249,7 @@ INTERNAL otrng_result otrng_data_message_authenticator(
 
   otrng_key_manager_calculate_authenticator(dst, mac_key, sections);
   otrng_secure_wipe(sections, HASH_BYTES);
+  free(sections);
 
   return OTRNG_SUCCESS;
 }

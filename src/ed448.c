@@ -24,9 +24,9 @@
 
 #define OTRNG_ED448_PRIVATE
 
+#include "alloc.h"
 #include "ed448.h"
 #include "shake.h"
-#include "alloc.h"
 
 INTERNAL void otrng_ec_scalar_copy(ec_scalar_p dst, const ec_scalar_p a) {
   goldilocks_448_scalar_copy(dst, a);
