@@ -33,7 +33,7 @@ otrng_xrealloc(/*@only@*/ /*@null@*/ void *ptr, size_t size);
 
 INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc(size_t size);
 
-INTERNAL void otrng_secure_wipe(/*@null@*/ /*@out@*/ /*@only@*/ void *p,
+INTERNAL void otrng_secure_wipe(/*@notnull@*/ /*@only@*/ void *p,
                                 size_t size) /*@modifies p@*/;
 
 #endif // OTRNG_ALLOC_H

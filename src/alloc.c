@@ -68,7 +68,7 @@ INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc(size_t size) {
   return result;
 }
 
-INTERNAL void otrng_secure_wipe(/*@null@*/ /*@out@*/ /*@only@*/ void *p,
+INTERNAL void otrng_secure_wipe(/*@notnull@*/ /*@only@*/ void *p,
                                 size_t size) /*@modifies p@*/ {
   sodium_memzero(p, size);
 }
