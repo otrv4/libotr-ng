@@ -61,6 +61,8 @@ otrng_xrealloc(/*@only@*/ /*@null@*/ void *ptr, size_t size) {
 }
 
 INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc(size_t size) {
+  // TODO: this should be implemented
+  // more properly
   void *result = otrng_xmalloc(size);
   memset(result, 0, size);
   return result;
