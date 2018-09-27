@@ -463,7 +463,17 @@
    fun:g_test_run_suite_internal
 }
 {
-   opt_random_1
+   opt_random_2
+   Memcheck:Cond
+   fun:generate_block
+   ...
+   fun:arc4random_uniform
+   ...
+   fun:g_test_run_suite
+   fun:g_test_run
+}
+{
+   opt_random_3
    Memcheck:Cond
    fun:drbg_update
    fun:generate
