@@ -64,7 +64,7 @@ tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
   }
 }
 
-tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_p smp,
+tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
                                  const tlv_s *tlv) {
   otrng_smp_event_t event = *ret;
   tlv_s *to_send = NULL;
@@ -158,9 +158,9 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
                                   const uint8_t *question, const size_t q_len,
                                   const uint8_t *answer,
                                   const size_t answer_len, uint8_t *ssid,
-                                  smp_protocol_p smp, otrng_s *conversation) {
+                                  smp_protocol_s *smp, otrng_s *conversation) {
 
-  smp_msg_1_p msg;
+  smp_msg_1_s msg;
   uint8_t *to_send = NULL;
   size_t len = 0;
 
@@ -182,14 +182,14 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
 
   do {
     tlv_s *tlv;
-    if (!otrng_generate_smp_msg_1(msg, smp)) {
+    if (!otrng_generate_smp_msg_1(&msg, smp)) {
       continue;
     }
 
-    msg->q_len = q_len;
-    msg->question = otrng_xmemdup(question, q_len);
+    msg.q_len = q_len;
+    msg.question = otrng_xmemdup(question, q_len);
 
-    if (!otrng_smp_msg_1_asprintf(&to_send, &len, msg)) {
+    if (!otrng_smp_msg_1_asprintf(&to_send, &len, &msg)) {
       continue;
     }
 
@@ -199,18 +199,12 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
                            q_len, conversation);
 
     tlv = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, len, to_send);
-    if (!tlv) {
-      otrng_smp_msg_1_destroy(msg);
-      free(to_send);
-      return NULL;
-    }
-
-    otrng_smp_msg_1_destroy(msg);
+    otrng_smp_msg_1_destroy(&msg);
     free(to_send);
     return tlv;
   } while (0);
 
-  otrng_smp_msg_1_destroy(msg);
+  otrng_smp_msg_1_destroy(&msg);
   handle_smp_event_cb_v4(OTRNG_SMP_EVENT_ERROR, smp->progress,
                          smp->msg1->question, smp->msg1->q_len, conversation);
 
@@ -267,7 +261,7 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
 }
 
 tstatic tlv_s *
-otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_p smp,
+otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_s *smp,
                          const client_profile_s *our_profile,
                          const client_profile_s *their_client_profile,
                          uint8_t *ssid, const uint8_t *secret,

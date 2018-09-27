@@ -53,10 +53,9 @@ static void test_create_instag_cb(const otrng_client_id_s client_opdata) {
 }
 
 static void test_invokes_create_instag_callbacks(void) {
-  otrng_client_callbacks_p callbacks = {
-      {.create_instag = &test_create_instag_cb}};
+  otrng_client_callbacks_s callbacks = {.create_instag = &test_create_instag_cb};
 
-  otrng_client_callbacks_create_instag(callbacks, ALICE_IDENTITY);
+  otrng_client_callbacks_create_instag(&callbacks, ALICE_IDENTITY);
   otrng_assert(INSTAG_CB_CALLED);
 }
 

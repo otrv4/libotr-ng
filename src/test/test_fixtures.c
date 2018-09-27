@@ -102,7 +102,7 @@ void create_prekey_profile_cb(struct otrng_client_s *client,
   otrng_prekey_profile_free(profile);
 }
 
-otrng_client_callbacks_p test_callbacks = {
+otrng_client_callbacks_s test_callbacks[1] = {
     {.get_account_and_protocol = &get_account_and_protocol_cb,
      .create_client_profile = &create_client_profile_cb,
      .create_prekey_profile = &create_prekey_profile_cb,

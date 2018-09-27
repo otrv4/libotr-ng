@@ -164,6 +164,8 @@ INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
   otr->supported_versions = policy.allows;
 
   otr->keys = otrng_key_manager_new();
+  otr->smp = otrng_secure_alloc(sizeof(smp_protocol_s));
+
   otrng_smp_protocol_init(otr->smp);
 
   return otr;

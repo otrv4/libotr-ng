@@ -43,7 +43,7 @@ typedef enum {
 
 typedef struct otrng_policy_s {
   uint8_t allows;
-} otrng_policy_s, otrng_policy_p[1];
+} otrng_policy_s;
 
 typedef struct otrng_s {
   struct otrng_client_s *client;
@@ -65,7 +65,7 @@ typedef struct otrng_s {
   uint8_t running_version;
 
   key_manager_s *keys;
-  smp_protocol_p smp;
+  smp_protocol_s *smp;
 
   list_element_s *pending_fragments;
 
@@ -75,7 +75,7 @@ typedef struct otrng_s {
   time_t last_sent; // TODO: @refactoring not sure if the best place to put
 
   char *shared_session_state;
-} otrng_s, otrng_p[1];
+} otrng_s;
 
 INTERNAL void maybe_create_keys(struct otrng_client_s *client);
 

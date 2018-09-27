@@ -48,7 +48,7 @@ typedef struct otrng_v3_conn_s {
 
   OtrlMessageAppOps *ops;
   ConnContext *ctx;
-} otrng_v3_conn_s, otrng_v3_conn_p[1];
+} otrng_v3_conn_s;
 
 INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(struct otrng_client_s *client,
                                             const char *peer);

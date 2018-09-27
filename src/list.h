@@ -28,7 +28,7 @@
 typedef struct list_element_s {
   void *data;
   struct list_element_s *next;
-} list_element_s, list_element_p[1];
+} list_element_s;
 
 INTERNAL void otrng_list_foreach(list_element_s *head,
                                  void (*fn)(list_element_s *node,

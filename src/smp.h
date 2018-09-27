@@ -44,11 +44,11 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
                                   const client_profile_s *responder_profile,
                                   const uint8_t *question, const size_t q_len,
                                   const uint8_t *secret, const size_t secretlen,
-                                  uint8_t *ssid, smp_protocol_p smp,
+                                  uint8_t *ssid, smp_protocol_s *smp,
                                   otrng_s *conversation);
 
 tstatic tlv_s *otrng_smp_provide_secret(otrng_smp_event_t *event,
-                                        smp_protocol_p smp,
+                                        smp_protocol_s *smp,
                                         const client_profile_s *our_profile,
                                         const client_profile_s *their_profile,
                                         uint8_t *ssid, const uint8_t *secret,

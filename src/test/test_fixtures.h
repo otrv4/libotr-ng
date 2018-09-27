@@ -68,6 +68,6 @@ otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
 void do_dake_fixture(otrng_s *alice, otrng_s *bob);
 void free_message_and_response(otrng_response_s *response, string_p *message);
 
-extern otrng_client_callbacks_p test_callbacks;
+extern otrng_client_callbacks_s test_callbacks[];
 
 #endif // __TEST_FIXTURES_H__

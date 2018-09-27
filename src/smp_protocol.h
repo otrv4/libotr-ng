@@ -49,7 +49,7 @@ typedef struct smp_msg_1_s {
   ec_point_p g3a;
   ec_scalar_p c3;
   ec_scalar_p d3;
-} smp_msg_1_s, smp_msg_1_p[1];
+} smp_msg_1_s;
 
 typedef struct smp_msg_2_s {
   ec_point_p g2b;
@@ -63,19 +63,19 @@ typedef struct smp_msg_2_s {
   ec_scalar_p cp;
   ec_scalar_p d5;
   ec_scalar_p d6;
-} smp_msg_2_s, smp_msg_2_p[1];
+} smp_msg_2_s;
 
 typedef struct smp_msg_3_s {
   ec_point_p pa, qa;
   ec_scalar_p cp, d5, d6;
   ec_point_p ra;
   ec_scalar_p cr, d7;
-} smp_msg_3_s, smp_msg_3_p[1];
+} smp_msg_3_s;
 
 typedef struct smp_msg_4_s {
   ec_point_p rb;
   ec_scalar_p cr, d7;
-} smp_msg_4_s, smp_msg_4_p[1];
+} smp_msg_4_s;
 
 typedef struct smp_protocol_s {
   char state_expect;
@@ -88,11 +88,11 @@ typedef struct smp_protocol_s {
 
   uint8_t progress;
   smp_msg_1_s *msg1;
-} smp_protocol_s, smp_protocol_p[1];
+} smp_protocol_s;
 
-INTERNAL void otrng_smp_protocol_init(smp_protocol_p smp);
+INTERNAL void otrng_smp_protocol_init(smp_protocol_s *smp);
 
-INTERNAL void otrng_smp_destroy(smp_protocol_p smp);
+INTERNAL void otrng_smp_destroy(smp_protocol_s *smp);
 
 INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
                                                 otrng_fingerprint_p our_fp,
@@ -102,7 +102,7 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
                                                 size_t answer_len);
 
 INTERNAL otrng_result otrng_generate_smp_msg_1(smp_msg_1_s *dst,
-                                               smp_protocol_p smp);
+                                               smp_protocol_s *smp);
 
 INTERNAL otrng_result otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
                                                const smp_msg_1_s *msg);
@@ -110,21 +110,21 @@ INTERNAL otrng_result otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
 INTERNAL void otrng_smp_msg_1_destroy(smp_msg_1_s *msg);
 
 INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
-                                                      smp_protocol_p smp);
+                                                      smp_protocol_s *smp);
 
 INTERNAL otrng_smp_event_t otrng_process_smp_msg1(const tlv_s *tlv,
-                                                  smp_protocol_p smp);
+                                                  smp_protocol_s *smp);
 
 INTERNAL otrng_smp_event_t otrng_process_smp_msg2(tlv_s **smp_reply,
                                                   const tlv_s *tlv,
-                                                  smp_protocol_p smp);
+                                                  smp_protocol_s *smp);
 
 INTERNAL otrng_smp_event_t otrng_process_smp_msg3(tlv_s **smp_reply,
                                                   const tlv_s *tlv,
-                                                  smp_protocol_p smp);
+                                                  smp_protocol_s *smp);
 
 INTERNAL otrng_smp_event_t otrng_process_smp_msg4(const tlv_s *tlv,
-                                                  smp_protocol_p smp);
+                                                  smp_protocol_s *smp);
 
 #ifdef OTRNG_SMP_PROTOCOL_PRIVATE
 
@@ -132,7 +132,7 @@ tstatic otrng_result smp_msg_1_deserialize(smp_msg_1_s *msg, const tlv_s *tlv);
 
 tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
                                         const smp_msg_1_s *msg_1,
-                                        smp_protocol_p smp);
+                                        smp_protocol_s *smp);
 
 tstatic otrng_result smp_msg_2_deserialize(smp_msg_2_s *msg, const tlv_s *tlv);
 
@@ -140,11 +140,11 @@ tstatic void smp_msg_2_destroy(smp_msg_2_s *msg);
 
 tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
                                         const smp_msg_2_s *msg_2,
-                                        smp_protocol_p smp);
+                                        smp_protocol_s *smp);
 
 tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
                                         const smp_msg_3_s *msg_3,
-                                        smp_protocol_p smp);
+                                        smp_protocol_s *smp);
 
 #endif
 

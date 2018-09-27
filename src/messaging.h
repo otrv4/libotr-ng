@@ -50,7 +50,7 @@ typedef struct otrng_global_state_s {
 
   const otrng_client_callbacks_s *callbacks;
   OtrlUserState user_state_v3;
-} otrng_global_state_s, otrng_global_state_p[1];
+} otrng_global_state_s;
 
 API otrng_result otrng_global_state_private_key_v3_generate_FILEp(
     otrng_global_state_s *gs, const otrng_client_id_s client_id, FILE *privf);
