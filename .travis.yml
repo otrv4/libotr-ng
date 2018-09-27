@@ -54,7 +54,6 @@ matrix:
       env: T=normal
     - os: osx
       compiler: clang
-      osx_image: xcode8.3
       env: T=normal
     - os: linux
       compiler: gcc
