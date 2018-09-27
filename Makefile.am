@@ -33,7 +33,7 @@ CODE_COVERAGE_LCOV_SHOPTS = -b src/test
 ci: test mem-check
 
 test: check
-	$(top_builddir)/src/test/test
+	$(top_builddir)/src/test/functional
 
 
 # I am not sure if we need "-- -std=c99" to be strict with c99
@@ -51,17 +51,17 @@ VALGRIND_ARGS = --track-origins=yes --quiet --error-exitcode=2 --leak-check=full
 	--suppressions=$(VALGRIND_SUPPRESSIONS)
 
 mem-check: check
-	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/test
+	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/functional
 
 cache-check: check
-	valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file=cachegrindout.out $(top_builddir)/src/test/test
+	valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file=cachegrindout.out $(top_builddir)/src/test/functional
 	cg_annotate cachegrindout.out
 
 coverage-check: test
 	@make check-code-coverage
 
 profile: test
-	gprof src/test/test
+	gprof src/test/functional
 
 code-style-doctor: code-style
 	git diff --exit-code .
@@ -75,13 +75,13 @@ test-loop:
 
 # For the make check-valgrind
 check-valgrind-memcheck: check
-	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/test
+	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/functional
 
 check-valgrind-helgrind: check
-	valgrind --tool=helgrind $(top_builddir)/src/test/test
+	valgrind --tool=helgrind $(top_builddir)/src/test/functional
 
 check-valgrind-drd: check
-	valgrind --tool=drd $(top_builddir)/src/test/test
+	valgrind --tool=drd $(top_builddir)/src/test/functional
 
 # We don't check test files for now
 splint:
@@ -89,7 +89,7 @@ splint:
 
 # Finds todo items
 TODO_TYPES ?= HACK TODO @todo FIXME BUG XXX PERF FUTURE REMOVE MAGIC UNIFY
-TODO_LOCATIONS ?= src/*.c src/test/*.c Makefile.am src/*.h src/test/*.h src/test/Makefile.am
+TODO_LOCATIONS ?= src/*.c src/test/*.c Makefile.am src/*.h src/test/*.h src/test/Makefile.am src/test/functionals/*.c
 todo:
 	@(find $(TODO_LOCATIONS) -name '*.h' -or -name '*.c') | xargs egrep --color=auto -w \
 		`echo $(TODO_TYPES) | tr ' ' '|'`

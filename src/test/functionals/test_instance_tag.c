@@ -18,11 +18,14 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <glib.h>
 #include <string.h>
 
-#include "../instance_tag.h"
+#include "instance_tag.h"
+#include "test_fixtures.h"
+#include "test_helpers.h"
 
-void test_instance_tag_generates_tag_when_file_empty() {
+static void test_instance_tag_generates_tag_when_file_empty() {
   const char *alice_coy_account = "alice@coy.im";
   const char *xmpp_protocol = "XMPP";
 
@@ -49,7 +52,7 @@ static void test_create_instag_cb(const otrng_client_id_s client_opdata) {
   INSTAG_CB_CALLED = 1;
 }
 
-void test_invokes_create_instag_callbacks(void) {
+static void test_invokes_create_instag_callbacks(void) {
   otrng_client_callbacks_p callbacks = {
       {.create_instag = &test_create_instag_cb}};
 
@@ -57,7 +60,7 @@ void test_invokes_create_instag_callbacks(void) {
   otrng_assert(INSTAG_CB_CALLED);
 }
 
-void test_instance_tag_generates_tag_when_file_is_full() {
+static void test_instance_tag_generates_tag_when_file_is_full() {
   const char *icq_alice_account = "alice_icq";
   const char *icq_protocol = "ICQ";
   const char *xmpp_alice_account = "alice_xmpp";
@@ -109,4 +112,13 @@ void test_instance_tag_generates_tag_when_file_is_full() {
   otrng_instag_free(first_instag);
   otrng_instag_free(second_instag);
   otrng_instag_free(third_instag);
+}
+
+void functionals_instance_tag_add_tests(void) {
+  g_test_add_func("/otrng/instance_tag/generates_when_file_empty",
+                  test_instance_tag_generates_tag_when_file_empty);
+  g_test_add_func("/otrng/instance_tag/generates_when_file_is_full",
+                  test_instance_tag_generates_tag_when_file_is_full);
+  g_test_add_func("/otrng/instance_tag/otrng_invokes_create_instag",
+                  test_invokes_create_instag_callbacks);
 }

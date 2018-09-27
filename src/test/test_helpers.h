@@ -18,15 +18,36 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef __TEST_HELPERS_H__
+#define __TEST_HELPERS_H__
+
+#define OTRNG_AUTH_PRIVATE
+#define OTRNG_DAKE_PRIVATE
+#define OTRNG_DH_PRIVATE
+#define OTRNG_ED448_PRIVATE
+#define OTRNG_FRAGMENT_PRIVATE
+#define OTRNG_KEY_MANAGEMENT_PRIVATE
+#define OTRNG_LIST_PRIVATE
+#define OTRNG_OTRNG_PRIVATE
+#define OTRNG_PERSISTENCE_PRIVATE
+#define OTRNG_PREKEY_CLIENT_PRIVATE
+#define OTRNG_PROTOCOL_PRIVATE
+#define OTRNG_SMP_PRIVATE
+#define OTRNG_SMP_PROTOCOL_PRIVATE
+#define OTRNG_TLV_PRIVATE
+#define OTRNG_USER_PROFILE_PRIVATE
+#define OTRNG_MESSAGING_PRIVATE
+
+#include <glib.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../client.h"
-#include "../str.h"
-
-#include "../debug.h"
+#include "client.h"
+#include "str.h"
+#include "client_profile.h"
+#include "debug.h"
 
 #define ALICE_ACCOUNT "alice@otr.example"
 #define BOB_ACCOUNT "bob@otr.example"
@@ -192,3 +213,5 @@ static inline void otrng_assert_point_equals(const ec_point_p expected,
                                              const ec_point_p actual) {
   g_assert_cmpint(otrng_ec_point_eq(expected, actual), !=, otrng_false);
 }
+
+#endif // __TEST_HELPERS_H__

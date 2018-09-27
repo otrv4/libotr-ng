@@ -4,3 +4,5 @@ Makefile
 Makefile.in
 
 test
+functional
+unit
