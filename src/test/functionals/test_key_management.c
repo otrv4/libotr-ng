@@ -18,9 +18,13 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../key_management.h"
+#include <glib.h>
 
-void test_derive_ratchet_keys() {
+#include "test_helpers.h"
+#include "key_management.h"
+#include "shake.h"
+
+static void test_derive_ratchet_keys() {
   key_manager_s *manager = otrng_xmalloc(sizeof(key_manager_s));
   otrng_key_manager_init(manager);
 
@@ -58,7 +62,7 @@ void test_derive_ratchet_keys() {
   free(manager);
 }
 
-void test_calculate_ssid() {
+static void test_calculate_ssid() {
   key_manager_p manager;
   otrng_key_manager_init(manager);
 
@@ -75,7 +79,7 @@ void test_calculate_ssid() {
   otrng_key_manager_destroy(manager);
 }
 
-void test_calculate_extra_symm_key() {
+static void test_calculate_extra_symm_key() {
   key_manager_p manager;
   otrng_key_manager_init(manager);
 
@@ -95,7 +99,7 @@ void test_calculate_extra_symm_key() {
   otrng_key_manager_destroy(manager);
 }
 
-void test_calculate_brace_key() {
+static void test_calculate_brace_key() {
   key_manager_s *manager = otrng_xmalloc(sizeof(key_manager_s));
   otrng_key_manager_init(manager);
 
@@ -144,4 +148,13 @@ void test_calculate_brace_key() {
 
   otrng_key_manager_destroy(manager);
   free(manager);
+}
+
+void functionals_key_management_add_tests(void) {
+  g_test_add_func("/key_management/derive_ratchet_keys",
+                  test_derive_ratchet_keys);
+  g_test_add_func("/key_management/ssid", test_calculate_ssid);
+  g_test_add_func("/key_management/extra_symm_key",
+                  test_calculate_extra_symm_key);
+  g_test_add_func("/key_management/brace_key", test_calculate_brace_key);
 }

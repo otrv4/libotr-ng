@@ -19,13 +19,21 @@
  */
 
 #include "test_fixtures.h"
+#include "persistence.h"
 
 int dh_mpi_cmp(const dh_mpi_p m1, const dh_mpi_p m2) {
   return gcry_mpi_cmp(m1, m2);
 }
 
-otrng_client_id_s create_client_id(const char *protocol,
-                                          const char *account) {
+otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
+                int byte) {
+  set_up_client(client, account_name, byte);
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
+
+  return otrng_new(client, policy);
+}
+
+otrng_client_id_s create_client_id(const char *protocol, const char *account) {
   const otrng_client_id_s cid = {
       .protocol = protocol,
       .account = account,
@@ -33,8 +41,7 @@ otrng_client_id_s create_client_id(const char *protocol,
   return cid;
 }
 
-otrng_shared_session_state_s
-get_shared_session_state_cb(const otrng_s *conv) {
+otrng_shared_session_state_s get_shared_session_state_cb(const otrng_s *conv) {
   (void)conv;
   otrng_shared_session_state_s ret = {
       .identifier1 = otrng_xstrdup("alice"),
@@ -57,7 +64,7 @@ get_account_and_protocol_cb(char **account_name, char **protocol_name,
 }
 
 void create_client_profile_cb(struct otrng_client_s *client,
-                                     const otrng_client_id_s client_opdata) {
+                              const otrng_client_id_s client_opdata) {
   const char *allowed_versions = "34";
 
   // TODO: The callback probably wants to invoke
@@ -84,7 +91,7 @@ void create_client_profile_cb(struct otrng_client_s *client,
 }
 
 void create_prekey_profile_cb(struct otrng_client_s *client,
-                                     const otrng_client_id_s client_opdata) {
+                              const otrng_client_id_s client_opdata) {
   otrng_prekey_profile_s *profile =
       otrng_client_build_default_prekey_profile(client);
 
@@ -324,8 +331,7 @@ otrng_bool test_should_not_heartbeat(int last_sent) {
   return otrng_false;
 }
 
-void set_up_client(otrng_client_s *client, const char *account_name,
-                          int byte) {
+void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
   client->global_state = otrng_global_state_new(test_callbacks);
 
   // TODO: REMOVE after updating every otrng_client_state_new(NULL)
@@ -343,4 +349,10 @@ void set_up_client(otrng_client_s *client, const char *account_name,
   otrng_client_add_instance_tag(client, 0x100 + byte);
 
   client->should_heartbeat = test_should_not_heartbeat;
+}
+
+void free_message_and_response(otrng_response_s *response, string_p *message) {
+  otrng_response_free(response);
+  free(*message);
+  *message = NULL;
 }

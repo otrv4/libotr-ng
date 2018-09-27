@@ -45,9 +45,9 @@
 #include <string.h>
 
 #include "client.h"
-#include "str.h"
 #include "client_profile.h"
 #include "debug.h"
+#include "str.h"
 
 #define ALICE_ACCOUNT "alice@otr.example"
 #define BOB_ACCOUNT "bob@otr.example"
@@ -208,6 +208,44 @@
   fn_apply(otrng_client_state_free, __VA_ARGS__);
 
 #define otrng_client_free_all(...) fn_apply(otrng_client_free, __VA_ARGS__);
+
+#define assert_msg_sent(result, to_send)                                       \
+  do {                                                                         \
+    const otrng_result _result = (result);                                     \
+    const char *_to_send = (to_send);                                          \
+    otrng_assert_is_success(_result);                                          \
+    otrng_assert(_to_send);                                                    \
+    otrng_assert_cmpmem("?OTR:AAQD", _to_send, 9);                             \
+  } while (0)
+
+#define assert_msg_rec(result, message, response)                              \
+  do {                                                                         \
+    const otrng_result _result = (result);                                     \
+    const char *_message = (message);                                          \
+    const otrng_response_s *_response = (response);                            \
+    otrng_assert_is_success(_result);                                          \
+    otrng_assert_cmpmem(_message, _response->to_display,                       \
+                        strlen(_message) + 1);                                 \
+    otrng_assert(_response->to_send == NULL);                                  \
+  } while (0)
+
+#define assert_rec_msg_in_state(result, respond_to, sender, otr_state,         \
+                                send_response)                                 \
+  do {                                                                         \
+    const otrng_result _result = (result);                                     \
+    const otrng_response_s *_respond_to = (respond_to);                        \
+    const otrng_s *_sender = (sender);                                         \
+    const otrng_state_e _otr_state = (otr_state);                              \
+    const otrng_bool _send_response = (send_response);                         \
+    otrng_assert_is_success(_result);                                          \
+    otrng_assert(!_respond_to->to_display);                                    \
+    otrng_assert(_sender->state == _otr_state);                                \
+    if (_send_response) {                                                      \
+      otrng_assert(_respond_to->to_send);                                      \
+    } else {                                                                   \
+      otrng_assert(!_respond_to->to_send);                                     \
+    }                                                                          \
+  } while (0)
 
 static inline void otrng_assert_point_equals(const ec_point_p expected,
                                              const ec_point_p actual) {

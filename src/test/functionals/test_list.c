@@ -18,9 +18,12 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../list.h"
+#include <glib.h>
 
-void test_otrng_list_add() {
+#include "test_helpers.h"
+#include "list.h"
+
+static void test_otrng_list_add() {
   int one = 1, two = 2;
   list_element_s *list = NULL;
   list = otrng_list_add(&one, list);
@@ -37,7 +40,7 @@ void test_otrng_list_add() {
   otrng_list_free_nodes(list);
 }
 
-void test_otrng_list_copy() {
+static void test_otrng_list_copy() {
   int one = 1, two = 2, three = 3;
   list_element_s *list = NULL;
   list = otrng_list_add(&one, list);
@@ -68,7 +71,7 @@ void test_otrng_list_copy() {
   otrng_list_free_nodes(cpy_list);
 }
 
-void test_otrng_list_insert_at_n() {
+static void test_otrng_list_insert_at_n() {
   int one = 1, two = 2;
   list_element_s *list = NULL;
   list = otrng_list_add(&one, list);
@@ -105,7 +108,7 @@ void test_otrng_list_insert_at_n() {
   otrng_list_free_nodes(list_2);
 }
 
-void test_otrng_list_get_last() {
+static void test_otrng_list_get_last() {
   int one = 1, two = 2;
   list_element_s *list = NULL;
   list = otrng_list_add(&one, list);
@@ -137,7 +140,7 @@ void test_otrng_list_get_last() {
   otrng_list_free_nodes(list);
 }
 
-void test_otrng_list_get_by_value() {
+static void test_otrng_list_get_by_value() {
   int one = 1, two = 2;
   list_element_s *list = NULL;
   list = otrng_list_add(&one, list);
@@ -158,7 +161,7 @@ void test_otrng_list_get_by_value() {
   otrng_list_free_nodes(list);
 }
 
-void test_otrng_list_len() {
+static void test_otrng_list_len() {
   int one = 1, two = 2;
   list_element_s *list = NULL;
   list = otrng_list_add(&one, list);
@@ -180,8 +183,18 @@ void test_otrng_list_len() {
   otrng_list_free_nodes(list);
 }
 
-void test_list_empty_size() {
+static void test_list_empty_size() {
   list_element_s *empty = list_new();
   g_assert_cmpint(otrng_list_len(empty), ==, 0);
   otrng_list_free_nodes(empty);
+}
+
+void functionals_list_add_tests(void) {
+  g_test_add_func("/list/add", test_otrng_list_add);
+  g_test_add_func("/list/copy", test_otrng_list_copy);
+  g_test_add_func("/list/insert_at_n", test_otrng_list_insert_at_n);
+  g_test_add_func("/list/get", test_otrng_list_get_last);
+  g_test_add_func("/list/get_by_value", test_otrng_list_get_by_value);
+  g_test_add_func("/list/length", test_otrng_list_len);
+  g_test_add_func("/list/empty_size", test_list_empty_size);
 }

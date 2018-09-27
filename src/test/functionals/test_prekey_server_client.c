@@ -18,7 +18,12 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void test_prekey_dake1_message_serialize(void) {
+#include <glib.h>
+
+#include "test_helpers.h"
+#include "deserialize.h"
+
+static void test_prekey_dake1_message_serialize(void) {
   const uint8_t ser_client_profile[] = {
       0x00, 0x00, 0x00, 0x05, 0x00, 0x01, 0x00, 0x00, 0x00, 0x04, 0x00, 0x02,
       0x00, 0x10, 0x05, 0x72, 0xC1, 0x4C, 0xB1, 0x30, 0x77, 0x44, 0xB9, 0x2F,
@@ -82,7 +87,7 @@ void test_prekey_dake1_message_serialize(void) {
   free(dst);
 }
 
-void test_prekey_dake2_message_deserialize(void) {
+static void test_prekey_dake2_message_deserialize(void) {
   uint8_t serialized[] = {
       0x00, 0x04,             // protocol version
       0x36,                   // message type
@@ -149,7 +154,7 @@ void test_prekey_dake2_message_deserialize(void) {
   otrng_prekey_dake2_message_destroy(dst);
 }
 
-void test_prekey_dake3_message_serialize(void) {
+static void test_prekey_dake3_message_serialize(void) {
   uint8_t sigma_ser[] = {
       0xec, 0x3c, 0xf6, 0x13, 0xdc, 0xe5, 0xfa, 0xfe, 0x9b, 0xa3, 0x25, 0x33,
       0x93, 0x3d, 0x8a, 0xb0, 0x64, 0x03, 0x2f, 0xc5, 0x8c, 0x04, 0xdc, 0xd8,
@@ -218,7 +223,7 @@ void test_prekey_dake3_message_serialize(void) {
   free(dst);
 }
 
-void test_prekey_dake3_message_append_storage_info_req(void) {
+static void test_prekey_dake3_message_append_storage_info_req(void) {
   otrng_prekey_dake3_message_s msg[1];
 
   uint8_t prekey_mac[64] = {
@@ -255,7 +260,7 @@ void test_prekey_dake3_message_append_storage_info_req(void) {
   otrng_prekey_dake3_message_destroy(msg);
 }
 
-void test_prekey_storage_status_message_deserialize(void) {
+static void test_prekey_storage_status_message_deserialize(void) {
   uint8_t serialized[] = {
       // protocol version
       0x00, 0x04,
@@ -288,7 +293,7 @@ void test_prekey_storage_status_message_deserialize(void) {
   otrng_prekey_storage_status_message_destroy(msg);
 }
 
-void test_prekey_ensemble_retrieval_message_deserialize(void) {
+static void test_prekey_ensemble_retrieval_message_deserialize(void) {
   uint8_t serialized[] = {
       // protocol version
       0x00, 0x04,
@@ -468,4 +473,19 @@ void test_prekey_ensemble_retrieval_message_deserialize(void) {
   otrng_assert(msg->ensembles[1]->message);
 
   otrng_prekey_ensemble_retrieval_message_destroy(msg);
+}
+
+void functionals_prekey_server_client_add_tests(void) {
+  g_test_add_func("/prekey_server/dake/dake-1/serialize",
+                  test_prekey_dake1_message_serialize);
+  g_test_add_func("/prekey_server/dake/dake-2/deserialize",
+                  test_prekey_dake2_message_deserialize);
+  g_test_add_func("/prekey_server/dake/dake-3/storage_info_request",
+                  test_prekey_dake3_message_append_storage_info_req);
+  g_test_add_func("/prekey_server/dake/dake-3/serialize",
+                  test_prekey_dake3_message_serialize);
+  g_test_add_func("/prekey_server/dake/storage-status/deserialize",
+                  test_prekey_storage_status_message_deserialize);
+  g_test_add_func("/prekey_server/dake/ensemble-retrieval/deserialize",
+                  test_prekey_ensemble_retrieval_message_deserialize);
 }

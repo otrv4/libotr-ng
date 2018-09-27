@@ -18,7 +18,13 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../data_message.h"
+#include <glib.h>
+
+#include "test_helpers.h"
+#include "test_fixtures.h"
+
+#include "data_message.h"
+#include "serialize.h"
 
 static data_message_s *set_up_data_msg() {
   ecdh_keypair_p ecdh;
@@ -83,7 +89,7 @@ static data_message_s *set_up_data_msg() {
   return data_msg;
 }
 
-void test_data_message_serializes() {
+static void test_data_message_serializes() {
 
   data_message_s *data_msg = set_up_data_msg();
 
@@ -139,7 +145,7 @@ void test_data_message_serializes() {
   free(serialized);
 }
 
-void test_data_message_serializes_absent_dh() {
+static void test_data_message_serializes_absent_dh() {
   data_message_s *data_msg = set_up_data_msg();
 
   // Serialize with an empty DH
@@ -168,7 +174,7 @@ void test_data_message_serializes_absent_dh() {
   free(serialized);
 }
 
-void test_otrng_data_message_deserializes() {
+static void test_otrng_data_message_deserializes() {
   data_message_s *data_msg = set_up_data_msg();
 
   uint8_t *serialized = NULL;
@@ -213,7 +219,7 @@ void test_otrng_data_message_deserializes() {
   free(serialized);
 }
 
-void test_data_message_valid() {
+static void test_data_message_valid() {
   data_message_s *data_msg = set_up_data_msg();
 
   // Should fail because data_msg has a zeroed mac tag.
@@ -253,4 +259,13 @@ void test_data_message_valid() {
   otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
 
   otrng_data_message_free(data_msg);
+}
+
+void functionals_data_message_add_tests(void) {
+  g_test_add_func("/data_message/valid", test_data_message_valid);
+  g_test_add_func("/data_message/serialize", test_data_message_serializes);
+  g_test_add_func("/data_message/serialize_absent_dh",
+                  test_data_message_serializes_absent_dh);
+  g_test_add_func("/data_message/deserialize",
+                  test_otrng_data_message_deserializes);
 }

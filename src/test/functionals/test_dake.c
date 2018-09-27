@@ -23,11 +23,13 @@
 
 #define OTRNG_DAKE_PRIVATE
 
-#include "../auth.h"
-#include "../dake.h"
-#include "../serialize.h"
+#include "test_helpers.h"
+#include "test_fixtures.h"
+#include "auth.h"
+#include "dake.h"
+#include "serialize.h"
 
-void test_build_interactive_rsign_tag() {
+static void test_build_interactive_rsign_tag() {
   // Wow. 1KB
   uint8_t expected_t1[1083] = {
       0x01, 0x4d, 0x93, 0x62, 0xfa, 0xc6, 0x5a, 0x4f, 0xac, 0x48, 0x44, 0xd8,
@@ -417,4 +419,9 @@ void test_build_interactive_rsign_tag() {
   otrng_dh_mpi_release(responder_dh);
   otrng_client_profile_destroy(initiator_profile);
   otrng_client_profile_destroy(responder_profile);
+}
+
+void functionals_dake_add_tests(void) {
+  g_test_add_func("/dake/build_interactive_rsign_tag",
+                  test_build_interactive_rsign_tag);
 }

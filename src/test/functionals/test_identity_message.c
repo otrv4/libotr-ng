@@ -18,11 +18,17 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../constants.h"
-#include "../dake.h"
-#include "../keys.h"
+#include <glib.h>
 
-void test_dake_identity_message_serializes(dake_fixture_s *f,
+#include "test_helpers.h"
+#include "test_fixtures.h"
+
+#include "constants.h"
+#include "dake.h"
+#include "keys.h"
+#include "serialize.h"
+
+static void test_dake_identity_message_serializes(dake_fixture_s *f,
                                            gconstpointer data) {
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
@@ -88,7 +94,7 @@ void test_dake_identity_message_serializes(dake_fixture_s *f,
   free(serialized);
 }
 
-void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
+static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
                                                    gconstpointer data) {
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
@@ -132,7 +138,7 @@ void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
   free(serialized);
 }
 
-void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
+static void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 
@@ -189,4 +195,13 @@ void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
   otrng_dh_keypair_destroy(invalid_dh);
   otrng_shared_prekey_pair_free(shared_prekey);
   otrng_dake_identity_message_free(invalid_identity_message);
+}
+
+void functionals_identity_message_add_tests(void) {
+  WITH_DAKE_FIXTURE("/dake/identity_message/serializes",
+                    test_dake_identity_message_serializes);
+  WITH_DAKE_FIXTURE("/dake/identity_message/deserializes",
+                    test_otrng_dake_identity_message_deserializes);
+  WITH_DAKE_FIXTURE("/dake/identity_message/valid",
+                    test_dake_identity_message_valid);
 }

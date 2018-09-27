@@ -18,9 +18,14 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../prekey_ensemble.h"
+#include <glib.h>
 
-void test_prekey_ensemble_validate(void) {
+#include "test_helpers.h"
+#include "test_fixtures.h"
+
+#include "prekey_ensemble.h"
+
+static void test_prekey_ensemble_validate(void) {
   uint8_t sym[ED448_PRIVATE_BYTES] = {0xA0};
   otrng_keypair_s *keypair = otrng_keypair_new();
   otrng_keypair_generate(keypair, sym);
@@ -106,4 +111,9 @@ void test_prekey_ensemble_validate(void) {
   otrng_keypair_free(keypair);
   otrng_keypair_free(keypair2);
   otrng_prekey_ensemble_free(ensemble);
+}
+
+void functionals_prekey_ensemble_add_tests(void) {
+  g_test_add_func("/prekey_ensemble/validate",
+  test_prekey_ensemble_validate);
 }

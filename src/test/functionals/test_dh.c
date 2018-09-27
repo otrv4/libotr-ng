@@ -18,9 +18,12 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../dh.h"
+#include <glib.h>
 
-void dh_test_api() {
+#include "test_helpers.h"
+#include "dh.h"
+
+static void test_dh_api() {
   dh_keypair_p alice, bob;
   otrng_dh_keypair_generate(alice);
   otrng_dh_keypair_generate(bob);
@@ -40,7 +43,7 @@ void dh_test_api() {
   otrng_dh_keypair_destroy(bob);
 }
 
-void dh_test_shared_secret() {
+static void test_dh_shared_secret() {
   uint8_t expected_secret[DH3072_MOD_LEN_BYTES - 1] = {
       0x1e, 0xe9, 0xef, 0x72, 0xaf, 0x08, 0x96, 0xd9, 0x2d, 0x1c, 0x9e, 0x7d,
       0x4b, 0x7d, 0xdf, 0x01, 0x4a, 0x8e, 0x45, 0x7f, 0x64, 0x4c, 0xa2, 0xd1,
@@ -137,7 +140,7 @@ void dh_test_shared_secret() {
   otrng_dh_mpi_release(pub_dh);
 }
 
-void dh_test_serialize() {
+static void test_dh_serialize() {
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   dh_mpi_p mpi = gcry_mpi_new(DH3072_MOD_LEN_BITS);
 
@@ -163,7 +166,7 @@ void dh_test_serialize() {
   g_assert_cmpint(mpi_len, ==, 0);
 }
 
-void dh_test_keypair_destroy() {
+static void test_dh_keypair_destroy() {
   dh_keypair_p alice;
 
   otrng_dh_keypair_generate(alice);
@@ -175,4 +178,11 @@ void dh_test_keypair_destroy() {
 
   otrng_assert(!alice->priv);
   otrng_assert(!alice->pub);
+}
+
+void functionals_dh_add_tests(void) {
+  g_test_add_func("/dh/api", test_dh_api);
+  g_test_add_func("/dh/serialize", test_dh_serialize);
+  g_test_add_func("/dh/shared-secret", test_dh_shared_secret);
+  g_test_add_func("/dh/destroy", test_dh_keypair_destroy);
 }

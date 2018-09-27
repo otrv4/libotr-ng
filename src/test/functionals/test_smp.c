@@ -18,10 +18,15 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../smp_protocol.h"
-#include "../tlv.h"
+#include <glib.h>
 
-void test_smp_state_machine(void) {
+#include "test_helpers.h"
+#include "test_fixtures.h"
+#include "otrng.h"
+#include "smp_protocol.h"
+#include "tlv.h"
+
+static void test_smp_state_machine(void) {
   OTRNG_INIT;
 
   otrng_client_s *alice_state = otrng_client_new(ALICE_IDENTITY);
@@ -133,7 +138,7 @@ void test_smp_state_machine(void) {
   otrng_free_all(alice, bob);
 }
 
-void test_smp_state_machine_abort(void) {
+static void test_smp_state_machine_abort(void) {
   OTRNG_INIT;
 
   otrng_client_s *alice_state = otrng_client_new(ALICE_IDENTITY);
@@ -227,7 +232,7 @@ void test_smp_state_machine_abort(void) {
   otrng_free_all(alice, bob);
 }
 
-void test_otrng_generate_smp_secret(void) {
+static void test_otrng_generate_smp_secret(void) {
   smp_protocol_p smp;
   smp->msg1 = NULL;
   otrng_fingerprint_p our = {
@@ -278,7 +283,7 @@ void test_otrng_generate_smp_secret(void) {
   otrng_smp_destroy(smp);
 }
 
-void test_otrng_smp_msg_1_asprintf_null_question(void) {
+static void test_otrng_smp_msg_1_asprintf_null_question(void) {
   smp_msg_1_p msg;
   smp_protocol_p smp;
   smp->msg1 = NULL;
@@ -303,4 +308,12 @@ void test_otrng_smp_msg_1_asprintf_null_question(void) {
   g_assert_cmpint(writen, ==, expected_len);
 
   free(buff);
+}
+
+void functionals_smp_add_tests(void) {
+  g_test_add_func("/smp/state_machine", test_smp_state_machine);
+  g_test_add_func("/smp/state_machine_abort", test_smp_state_machine_abort);
+  g_test_add_func("/smp/generate_secret", test_otrng_generate_smp_secret);
+  g_test_add_func("/smp/msg_1_asprintf_null_question",
+                  test_otrng_smp_msg_1_asprintf_null_question);
 }

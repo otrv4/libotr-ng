@@ -23,16 +23,19 @@
 #include <string.h>
 #include <time.h>
 
-#include "../client_profile.h"
-#include "../serialize.h"
+#include "test_helpers.h"
+#include "test_fixtures.h"
+#include "client_profile.h"
+#include "serialize.h"
+#include "instance_tag.h"
 
-void test_client_profile_create() {
+static void test_client_profile_create() {
   client_profile_s *profile = client_profile_new("4");
   otrng_assert(profile != NULL);
   otrng_client_profile_free(profile);
 }
 
-void test_client_profile_serializes_body() {
+static void test_client_profile_serializes_body() {
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
@@ -88,7 +91,7 @@ void test_client_profile_serializes_body() {
   otrng_client_profile_free(profile);
 }
 
-void test_client_profile_serializes() {
+static void test_client_profile_serializes() {
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
@@ -130,7 +133,7 @@ void test_client_profile_serializes() {
   otrng_client_profile_free(profile);
 }
 
-void test_otrng_client_profile_deserializes() {
+static void test_otrng_client_profile_deserializes() {
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
@@ -162,7 +165,7 @@ void test_otrng_client_profile_deserializes() {
   otrng_client_profile_destroy(deserialized);
 }
 
-void test_client_profile_signs_and_verify() {
+static void test_client_profile_signs_and_verify() {
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
@@ -186,7 +189,7 @@ void test_client_profile_signs_and_verify() {
   otrng_client_profile_free(profile);
 }
 
-void test_otrng_client_profile_build() {
+static void test_otrng_client_profile_build() {
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(keypair, sym);
@@ -211,7 +214,7 @@ void test_otrng_client_profile_build() {
   otrng_client_profile_free(profile);
 }
 
-void test_otrng_client_profile_transitional_signature(void) {
+static void test_otrng_client_profile_transitional_signature(void) {
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
   client->global_state = otrng_global_state_new(test_callbacks);
 
@@ -243,4 +246,19 @@ void test_otrng_client_profile_transitional_signature(void) {
   otrng_client_profile_free(profile);
   otrng_global_state_free(client->global_state);
   otrng_client_free(client);
+}
+
+void functionals_client_profile_add_tests(void) {
+  g_test_add_func("/client_profile/build_client_profile",
+                  test_otrng_client_profile_build);
+  g_test_add_func("/client_profile/create", test_client_profile_create);
+  g_test_add_func("/client_profile/serialize_body",
+                  test_client_profile_serializes_body);
+  g_test_add_func("/client_profile/serialize", test_client_profile_serializes);
+  g_test_add_func("/client_profile/deserializes",
+                  test_otrng_client_profile_deserializes);
+  g_test_add_func("/client_profile/sign_and_verifies",
+                  test_client_profile_signs_and_verify);
+  g_test_add_func("/client_profile/transitional_signature",
+                  test_otrng_client_profile_transitional_signature);
 }

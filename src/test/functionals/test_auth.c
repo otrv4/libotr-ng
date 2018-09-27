@@ -20,7 +20,12 @@
 
 #include <glib.h>
 
-void test_rsig_calculate_c() {
+#include "test_helpers.h"
+#include "random.h"
+#include "auth.h"
+#include "deserialize.h"
+
+static void test_rsig_calculate_c() {
   const char *msg = "hey";
   uint8_t expected_c[ED448_SCALAR_BYTES] = {
       0xe3, 0xec, 0x15, 0x07, 0xb3, 0x3b, 0x63, 0x6c, 0xd1, 0x5a, 0x77, 0x0a,
@@ -53,7 +58,7 @@ void test_rsig_calculate_c() {
   otrng_assert_cmpmem(expected_c, serialized_c, ED448_SCALAR_BYTES);
 }
 
-void test_rsig_auth() {
+static void test_rsig_auth() {
   const char *msg = "hi";
 
   otrng_keypair_p p1, p2, p3;
@@ -92,7 +97,7 @@ void test_rsig_auth() {
                                  (unsigned char *)msg, strlen(msg)));
 }
 
-void test_rsig_compatible_with_prekey_server() {
+static void test_rsig_compatible_with_prekey_server() {
   otrng_keypair_p p1, p2, p3;
 
   // Copied from
@@ -205,4 +210,11 @@ void test_rsig_compatible_with_prekey_server() {
   otrng_assert(otrng_rsig_verify_with_usage_and_domain(
       0x11, "OTR-Prekey-Server", proof, p1->pub, p2->pub, p3->pub,
       (const uint8_t *)msg, 2));
+}
+
+void functionals_auth_add_tests(void) {
+  g_test_add_func("/ring-signature/rsig_auth", test_rsig_auth);
+  g_test_add_func("/ring-signature/calculate_c", test_rsig_calculate_c);
+  g_test_add_func("/ring-signature/compatible_with_prekey_server",
+                  test_rsig_compatible_with_prekey_server);
 }

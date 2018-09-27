@@ -18,11 +18,16 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../constants.h"
-#include "../dake.h"
-#include "../keys.h"
+#include <glib.h>
 
-void test_dake_prekey_message_serializes() {
+#include "test_helpers.h"
+#include "test_fixtures.h"
+#include "constants.h"
+#include "dake.h"
+#include "keys.h"
+#include "serialize.h"
+
+static void test_dake_prekey_message_serializes() {
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 
@@ -81,7 +86,7 @@ void test_dake_prekey_message_serializes() {
   otrng_dake_prekey_message_free(prekey_message);
 }
 
-void test_otrng_dake_prekey_message_deserializes() {
+static void test_otrng_dake_prekey_message_deserializes() {
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 
@@ -116,7 +121,7 @@ void test_otrng_dake_prekey_message_deserializes() {
   otrng_dake_prekey_message_free(deserialized);
 }
 
-void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
+static void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
 
@@ -180,7 +185,7 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_p msg,
   otrng_ecdh_keypair_destroy(ecdh);
 }
 
-void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
+static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
                                                        gconstpointer data) {
   dake_non_interactive_auth_message_p msg;
   setup_non_interactive_auth_message(msg, f);
@@ -249,7 +254,7 @@ void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   otrng_dake_non_interactive_auth_message_destroy(msg);
 }
 
-void test_otrng_dake_non_interactive_auth_message_deserializes(
+static void test_otrng_dake_non_interactive_auth_message_deserializes(
     dake_fixture_s *f, gconstpointer data) {
   (void)data;
   dake_non_interactive_auth_message_p expected;
@@ -291,4 +296,17 @@ void test_otrng_dake_non_interactive_auth_message_deserializes(
 
   otrng_dake_non_interactive_auth_message_destroy(expected);
   otrng_dake_non_interactive_auth_message_destroy(deserialized);
+}
+
+void functionals_non_interactive_messages_add_tests(void) {
+  WITH_DAKE_FIXTURE("/dake/non_interactive_auth_message/serialize",
+                    test_dake_non_interactive_auth_message_serializes);
+  WITH_DAKE_FIXTURE("/dake/non_interactive_auth_message/deserialize",
+                    test_otrng_dake_non_interactive_auth_message_deserializes);
+  WITH_DAKE_FIXTURE("/dake/prekey_message/valid",
+                    test_dake_prekey_message_valid);
+  g_test_add_func("/dake/prekey_message/deserializes",
+                  test_otrng_dake_prekey_message_deserializes);
+  g_test_add_func("/dake/prekey_message/serializes",
+                  test_dake_prekey_message_serializes);
 }

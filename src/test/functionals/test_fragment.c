@@ -22,9 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../fragment.h"
+#include "test_helpers.h"
+#include "test_fixtures.h"
+#include "fragment.h"
 
-void test_create_fragments(void) {
+static void test_create_fragments(void) {
   int max_size = 48;
   const char *message = "one two tree";
 
@@ -48,7 +50,7 @@ void test_create_fragments(void) {
   otrng_message_free(frag_message);
 }
 
-void test_create_fragments_smaller_than_max_size(void) {
+static void test_create_fragments_smaller_than_max_size(void) {
   int max_size = 50;
   const char *message = "one two";
 
@@ -67,7 +69,7 @@ void test_create_fragments_smaller_than_max_size(void) {
   otrng_message_free(frag_message);
 }
 
-void test_defragment_valid_message(void) {
+static void test_defragment_valid_message(void) {
   const string_p fragments[2];
   fragments[0] = "?OTR|00000000|00000001|00000002,00001,00002,one ,";
   fragments[1] = "?OTR|00000000|00000001|00000002,00002,00002,more,";
@@ -94,7 +96,7 @@ void test_defragment_valid_message(void) {
   otrng_list_free_nodes(list);
 }
 
-void test_defragment_single_fragment(void) {
+static void test_defragment_single_fragment(void) {
   const string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
 
   list_element_s *list = NULL;
@@ -109,7 +111,7 @@ void test_defragment_single_fragment(void) {
   otrng_list_free_nodes(list);
 }
 
-void test_defragment_without_comma_fails(void) {
+static void test_defragment_without_comma_fails(void) {
   const string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,blergh";
 
   list_element_s *list = NULL;
@@ -124,7 +126,7 @@ void test_defragment_without_comma_fails(void) {
   otrng_list_free_nodes(list);
 }
 
-void test_defragment_with_different_total_fails(void) {
+static void test_defragment_with_different_total_fails(void) {
   const string_p fragments[2];
   fragments[0] = "?OTR|00000000|00000001|00000002,00001,00003,mess with,";
   fragments[1] = "?OTR|00000000|00000001|00000002,00002,00002,total,";
@@ -153,7 +155,7 @@ void test_defragment_with_different_total_fails(void) {
   otrng_list_free_nodes(list);
 }
 
-void test_defragment_fragment_twice_fails(void) {
+static void test_defragment_fragment_twice_fails(void) {
   const string_p fragments[2];
   fragments[0] = "?OTR|00000000|00000001|00000002,00001,00002,same twice,";
   fragments[1] = "?OTR|00000000|00000001|00000002,00001,00002,same twice,";
@@ -181,7 +183,7 @@ void test_defragment_fragment_twice_fails(void) {
   otrng_list_free_nodes(list);
 }
 
-void test_defragment_out_of_order_message(void) {
+static void test_defragment_out_of_order_message(void) {
   const string_p fragments[3];
   fragments[0] = "?OTR|00000000|00000001|00000002,00003,00003,send,";
   fragments[1] = "?OTR|00000000|00000001|00000002,00002,00003,fragment ,";
@@ -215,7 +217,7 @@ void test_defragment_out_of_order_message(void) {
   otrng_list_free_nodes(list);
 }
 
-void test_defragment_fails_for_another_instance(void) {
+static void test_defragment_fails_for_another_instance(void) {
   const string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
 
   list_element_s *list = NULL;
@@ -229,7 +231,7 @@ void test_defragment_fails_for_another_instance(void) {
   otrng_list_free_nodes(list);
 }
 
-void test_defragment_regular_otr_message(void) {
+static void test_defragment_regular_otr_message(void) {
   const string_p msg = "?OTR:not a fragmented message.";
 
   list_element_s *list = NULL;
@@ -244,7 +246,7 @@ void test_defragment_regular_otr_message(void) {
   otrng_list_free_nodes(list);
 }
 
-void test_defragment_two_messages(void) {
+static void test_defragment_two_messages(void) {
   const string_p msg1_fragments[2];
   const string_p msg2_fragments[2];
   msg1_fragments[0] = "?OTR|00000001|00000001|00000002,00001,00002,first ,";
@@ -283,7 +285,7 @@ void test_defragment_two_messages(void) {
   otrng_list_free_nodes(list);
 }
 
-void test_expiration_of_fragments(void) {
+static void test_expiration_of_fragments(void) {
   time_t HOUR_IN_SEC = 3600;
   list_element_s *list = NULL;
   fragment_context_s *ctx1 = otrng_fragment_context_new();
@@ -302,4 +304,31 @@ void test_expiration_of_fragments(void) {
   now = HOUR_IN_SEC + 3;
   otrng_assert_is_success(otrng_expire_fragments(now, 5, &list));
   otrng_assert(otrng_list_len(list) == 0);
+}
+
+void functionals_fragment_add_tests(void) {
+  g_test_add_func("/fragment/create_fragments_smaller_than_max_size",
+                  test_create_fragments_smaller_than_max_size);
+  g_test_add_func("/fragment/create_fragments", test_create_fragments);
+  g_test_add_func("/fragment/defragment_message",
+                  test_defragment_valid_message);
+  g_test_add_func("/fragment/defragment_single_fragment",
+                  test_defragment_single_fragment);
+  g_test_add_func("/fragment/defragment_out_of_order_message",
+                  test_defragment_out_of_order_message);
+  g_test_add_func("/fragment/defragment_fails_without_comma",
+                  test_defragment_without_comma_fails);
+  g_test_add_func("/fragment/defragment_with_different_total_fails",
+                  test_defragment_with_different_total_fails);
+  g_test_add_func("/fragment/defragment_fragment_twice_fails",
+                  test_defragment_fragment_twice_fails);
+  g_test_add_func("/fragment/fails_for_another_instance",
+                  test_defragment_fails_for_another_instance);
+  g_test_add_func("/fragment/defragment_regular_otr_message",
+                  test_defragment_regular_otr_message);
+  g_test_add_func("/fragment/defragment_two_messages",
+                  test_defragment_two_messages);
+  g_test_add_func("/fragment/expiration_of_fragments",
+                  test_expiration_of_fragments);
+
 }

@@ -19,15 +19,18 @@
  */
 
 #include <stdio.h>
+#include <glib.h>
 
-#include "../client.h"
-#include "../fragment.h"
-#include "../instance_tag.h"
-#include "../messaging.h"
-#include "../serialize.h"
-#include "../shake.h"
+#include "test_helpers.h"
+#include "test_fixtures.h"
+#include "client.h"
+#include "fragment.h"
+#include "instance_tag.h"
+#include "messaging.h"
+#include "serialize.h"
+#include "shake.h"
 
-void test_client_conversation_api() {
+static void test_client_conversation_api() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
   set_up_client(alice, ALICE_ACCOUNT, 1);
@@ -64,7 +67,7 @@ void test_client_conversation_api() {
   otrng_client_free(alice);
 }
 
-void test_client_api() {
+static void test_client_api() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
   otrng_client_s *charlie = otrng_client_new(CHARLIE_IDENTITY);
@@ -220,7 +223,7 @@ void test_client_api() {
   otrng_client_free_all(alice, bob, charlie);
 }
 
-void test_client_get_our_fingerprint() {
+static void test_client_get_our_fingerprint() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   set_up_client(alice, ALICE_ACCOUNT, 1);
 
@@ -235,7 +238,7 @@ void test_client_get_our_fingerprint() {
   otrng_client_free(alice);
 }
 
-void test_fingerprint_hash_to_human() {
+static void test_fingerprint_hash_to_human() {
   const char *expected_fp = "00010203 04050607 08090A0B 0C0D0E0F "
                             "10111213 14151617 18191A1B 1C1D1E1F "
                             "20212223 24252627 28292A2B 2C2D2E2F "
@@ -263,7 +266,7 @@ void test_fingerprint_hash_to_human() {
                   strncmp(expected_fp, fp_human, OTRNG_FPRINT_HUMAN_LEN));
 }
 
-void test_conversation_with_multiple_locations() {
+static void test_conversation_with_multiple_locations() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
@@ -360,7 +363,7 @@ void test_conversation_with_multiple_locations() {
   otrng_client_free_all(alice, bob);
 }
 
-void test_valid_identity_msg_in_waiting_auth_i() {
+static void test_valid_identity_msg_in_waiting_auth_i() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
@@ -510,7 +513,7 @@ void test_valid_identity_msg_in_waiting_auth_i() {
   otrng_client_free_all(alice, bob);
 }
 
-void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
+static void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
@@ -629,7 +632,7 @@ void test_invalid_auth_r_msg_in_not_waiting_auth_r() {
   otrng_client_free_all(alice, bob);
 }
 
-void test_valid_identity_msg_in_waiting_auth_r() {
+static void test_valid_identity_msg_in_waiting_auth_r() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
@@ -862,7 +865,7 @@ void test_valid_identity_msg_in_waiting_auth_r() {
   otrng_client_free_all(alice, bob);
 }
 
-void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
+static void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
@@ -993,7 +996,7 @@ void test_invalid_auth_i_msg_in_not_waiting_auth_i() {
   otrng_client_free_all(alice, bob);
 }
 
-void test_client_receives_fragmented_message(void) {
+static void test_client_receives_fragmented_message(void) {
   const char *msg = "Receiving fragmented plaintext";
 
   otrng_message_to_send_s *fmsg =
@@ -1022,7 +1025,7 @@ void test_client_receives_fragmented_message(void) {
   otrng_client_free(alice);
 }
 
-void test_client_expires_old_fragments(void) {
+static void test_client_expires_old_fragments(void) {
   const char *msg = "Pending fragmented message";
 
   otrng_message_to_send_s *fmsg =
@@ -1055,7 +1058,7 @@ void test_client_expires_old_fragments(void) {
   otrng_client_free(alice);
 }
 
-void test_client_sends_fragmented_message(void) {
+static void test_client_sends_fragmented_message(void) {
   otrng_bool ignore = otrng_false;
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
@@ -1130,4 +1133,29 @@ void test_client_sends_fragmented_message(void) {
   otrng_global_state_free(alice->global_state);
   otrng_global_state_free(bob->global_state);
   otrng_client_free_all(alice, bob);
+}
+
+void functionals_client_add_tests(void) {
+  g_test_add_func("/client/conversation_api", test_client_conversation_api);
+  g_test_add_func("/client/sends_fragments",
+                  test_client_sends_fragmented_message);
+  g_test_add_func("/client/expires_old_fragments",
+                  test_client_expires_old_fragments);
+  g_test_add_func("/client/receives_fragments",
+                  test_client_receives_fragmented_message);
+  g_test_add_func("/client/invalid_auth_r_msg_in_not_waiting_auth_r",
+                  test_invalid_auth_r_msg_in_not_waiting_auth_r);
+  g_test_add_func("/client/invalid_auth_i_msg_in_not_waiting_auth_i",
+                  test_invalid_auth_i_msg_in_not_waiting_auth_i);
+  g_test_add_func("/client/identity_message_in_waiting_auth_i",
+                  test_valid_identity_msg_in_waiting_auth_i);
+  g_test_add_func("/client/identity_message_in_waiting_auth_r",
+                  test_valid_identity_msg_in_waiting_auth_r);
+  g_test_add_func("/client/conversation_data_message_multiple_locations",
+                  test_conversation_with_multiple_locations);
+  g_test_add_func("/client/fingerprint_to_human",
+                  test_fingerprint_hash_to_human);
+  g_test_add_func("/client/get_our_fingerprint",
+                  test_client_get_our_fingerprint);
+  g_test_add_func("/client/api", test_client_api);
 }

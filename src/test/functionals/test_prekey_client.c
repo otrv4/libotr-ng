@@ -18,7 +18,14 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void test_send_dake_1_message(void) {
+#include <glib.h>
+
+#include "test_helpers.h"
+#include "test_fixtures.h"
+#include "random.h"
+#include "deserialize.h"
+
+static void test_send_dake_1_message(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
   set_up_client(alice, ALICE_ACCOUNT, 1);
@@ -43,7 +50,7 @@ void test_send_dake_1_message(void) {
   otrng_client_free(alice);
 }
 
-void test_send_dake_3_message_with_storage_info_request(void) {
+static void test_send_dake_3_message_with_storage_info_request(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
   set_up_client(alice, ALICE_ACCOUNT, 1);
@@ -115,7 +122,7 @@ void test_send_dake_3_message_with_storage_info_request(void) {
   otrng_client_free(alice);
 }
 
-void test_receive_prekey_server_messages(void) {
+static void test_receive_prekey_server_messages(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
   set_up_client(alice, ALICE_ACCOUNT, 1);
@@ -168,4 +175,14 @@ void test_receive_prekey_server_messages(void) {
 
   otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
+}
+
+void functionals_prekey_client_add_tests(void) {
+  g_test_add_func("/prekey_server_client/send_dake_1_message",
+                  test_send_dake_1_message);
+  g_test_add_func(
+      "/prekey_server_client/send_dake_3_message_with_storage_info_request",
+      test_send_dake_3_message_with_storage_info_request);
+  g_test_add_func("/prekey_server_client/receive_prekey_server_messages",
+                  test_receive_prekey_server_messages);
 }

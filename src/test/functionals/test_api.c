@@ -24,70 +24,21 @@
 #endif
 
 #include <string.h>
+#include <glib.h>
 
-#include "../list.h"
-#include "../otrng.h"
-#include "../str.h"
+#include "test_helpers.h"
+#include "test_fixtures.h"
+#include "list.h"
+#include "otrng.h"
+#include "str.h"
 
-#define assert_msg_sent(result, to_send)                                       \
-  do {                                                                         \
-    const otrng_result _result = (result);                                     \
-    const char *_to_send = (to_send);                                          \
-    otrng_assert_is_success(_result);                                          \
-    otrng_assert(_to_send);                                                    \
-    otrng_assert_cmpmem("?OTR:AAQD", _to_send, 9);                             \
-  } while (0)
-
-#define assert_msg_rec(result, message, response)                              \
-  do {                                                                         \
-    const otrng_result _result = (result);                                     \
-    const char *_message = (message);                                          \
-    const otrng_response_s *_response = (response);                            \
-    otrng_assert_is_success(_result);                                          \
-    otrng_assert_cmpmem(_message, _response->to_display,                       \
-                        strlen(_message) + 1);                                 \
-    otrng_assert(_response->to_send == NULL);                                  \
-  } while (0)
-
-#define assert_rec_msg_in_state(result, respond_to, sender, otr_state,         \
-                                send_response)                                 \
-  do {                                                                         \
-    const otrng_result _result = (result);                                     \
-    const otrng_response_s *_respond_to = (respond_to);                        \
-    const otrng_s *_sender = (sender);                                         \
-    const otrng_state_e _otr_state = (otr_state);                              \
-    const otrng_bool _send_response = (send_response);                         \
-    otrng_assert_is_success(_result);                                          \
-    otrng_assert(!_respond_to->to_display);                                    \
-    otrng_assert(_sender->state == _otr_state);                                \
-    if (_send_response) {                                                      \
-      otrng_assert(_respond_to->to_send);                                      \
-    } else {                                                                   \
-      otrng_assert(!_respond_to->to_send);                                     \
-    }                                                                          \
-  } while (0)
-
-static void free_message_and_response(otrng_response_s *response,
-                                      string_p *message) {
-  otrng_response_free(response);
-  free(*message);
-  *message = NULL;
-}
 
 static otrng_bool test_should_heartbeat(int last_sent) {
   (void)last_sent;
   return otrng_true;
 }
 
-static otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
-                       int byte) {
-  set_up_client(client, account_name, byte);
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
-
-  return otrng_new(client, policy);
-}
-
-void test_api_interactive_conversation(void) {
+static void test_api_interactive_conversation(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -226,7 +177,7 @@ void test_api_interactive_conversation(void) {
 }
 
 /* Specifies the behavior of the API for offline messages */
-void test_otrng_send_offline_message() {
+static void test_otrng_send_offline_message() {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -385,7 +336,7 @@ void test_otrng_send_offline_message() {
   otrng_free_all(alice, bob);
 }
 
-void test_otrng_incorrect_offline_dake() {
+static void test_otrng_incorrect_offline_dake() {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -476,7 +427,7 @@ void test_otrng_incorrect_offline_dake() {
   otrng_free_all(alice, bob);
 }
 
-void test_api_conversation_errors_1(void) {
+static void test_api_conversation_errors_1(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -566,7 +517,7 @@ void test_api_conversation_errors_1(void) {
   otrng_free_all(alice, bob);
 }
 
-void test_api_conversation_errors_2(void) {
+static void test_api_conversation_errors_2(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -698,7 +649,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
   otrng_response_free_all(response_to_alice, response_to_bob);
 }
 
-void test_api_conversation_v3(void) {
+static void test_api_conversation_v3(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -780,7 +731,7 @@ void test_api_conversation_v3(void) {
   otrng_client_free_all(alice_client, bob_client);
 }
 
-void test_api_multiple_clients(void) {
+static void test_api_multiple_clients(void) {
   otrng_bool send_response = otrng_true;
   otrng_result result;
 
@@ -920,7 +871,7 @@ void test_api_multiple_clients(void) {
   otrng_free_all(alice, bob_pc, bob_phone);
 }
 
-void test_api_smp(void) {
+static void test_api_smp(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -1002,7 +953,7 @@ void test_api_smp(void) {
   otrng_free_all(alice, bob);
 }
 
-void test_api_smp_abort(void) {
+static void test_api_smp_abort(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -1066,7 +1017,7 @@ void test_api_smp_abort(void) {
   otrng_free_all(alice, bob);
 }
 
-void test_api_extra_sym_key(void) {
+static void test_api_extra_sym_key(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -1139,7 +1090,7 @@ void test_api_extra_sym_key(void) {
   otrng_free_all(alice, bob);
 }
 
-void test_heartbeat_messages(void) {
+static void test_heartbeat_messages(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -1204,4 +1155,34 @@ void test_heartbeat_messages(void) {
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
+}
+
+void functionals_api_add_tests(void) {
+  /* // API are supposed to test the public API. */
+  /* // They go to the end because they are integration tests, and we only
+   * should */
+  /* // care about them after all the unit tests are working. */
+  /* // TODO: @refactoring There is TOO MUCH /api tests. They are TOO BIG and
+   * hard */
+  /* // to understand (by nature, I think). Let's reconsider what should be
+   * here. */
+
+  g_test_add_func("/api/interactive_conversation/v4",
+                  test_api_interactive_conversation);
+  g_test_add_func("/api/send_offline_message",
+  test_otrng_send_offline_message);
+  g_test_add_func("/api/incorrect_offline_dake",
+                  test_otrng_incorrect_offline_dake);
+
+  g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
+  g_test_add_func("/api/conversation_errors_1",
+  test_api_conversation_errors_1);
+  g_test_add_func("/api/conversation_errors_2",
+  test_api_conversation_errors_2);
+  g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
+  g_test_add_func("/api/smp", test_api_smp);
+  g_test_add_func("/api/smp_abort", test_api_smp_abort);
+  /* g_test_add_func("/api/messaging", test_api_messaging); */
+  g_test_add_func("/api/extra_symm_key", test_api_extra_sym_key);
+  g_test_add_func("/api/heartbeat_messages", test_heartbeat_messages);
 }

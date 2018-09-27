@@ -21,9 +21,11 @@
 #include <glib.h>
 #include <string.h>
 
-#include "../otrng.h"
+#include "test_helpers.h"
+#include "test_fixtures.h"
+#include "otrng.h"
 
-void test_otrng_builds_query_message(otrng_fixture_s *otrng_fixture,
+static void test_otrng_builds_query_message(otrng_fixture_s *otrng_fixture,
                                      gconstpointer data) {
   const char *message = "And some random invitation text.";
 
@@ -38,7 +40,7 @@ void test_otrng_builds_query_message(otrng_fixture_s *otrng_fixture,
   free(query_message);
 }
 
-void test_otrng_builds_query_message_v34(otrng_fixture_s *otrng_fixture,
+static void test_otrng_builds_query_message_v34(otrng_fixture_s *otrng_fixture,
                                          gconstpointer data) {
   const char *message = "And some random invitation text.";
 
@@ -53,7 +55,7 @@ void test_otrng_builds_query_message_v34(otrng_fixture_s *otrng_fixture,
   free(query_message);
 }
 
-void test_otrng_builds_whitespace_tag(otrng_fixture_s *otrng_fixture,
+static void test_otrng_builds_whitespace_tag(otrng_fixture_s *otrng_fixture,
                                       gconstpointer data) {
   const char *expected_tag =
       " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
@@ -67,7 +69,7 @@ void test_otrng_builds_whitespace_tag(otrng_fixture_s *otrng_fixture,
   free(whitespace_tag);
 }
 
-void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
+static void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
                                           gconstpointer data) {
   const char *expected_tag =
       " \t  \t\t\t\t \t \t \t    \t\t \t    \t\t  \t\tAnd "
@@ -82,7 +84,7 @@ void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
   free(whitespace_tag);
 }
 
-void test_otrng_receives_plaintext_without_ws_tag_on_start(
+static void test_otrng_receives_plaintext_without_ws_tag_on_start(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
   (void)data;
   otrng_response_s *response = otrng_response_new();
@@ -95,7 +97,7 @@ void test_otrng_receives_plaintext_without_ws_tag_on_start(
   otrng_response_free(response);
 }
 
-void test_otrng_receives_plaintext_without_ws_tag_not_on_start(
+static void test_otrng_receives_plaintext_without_ws_tag_not_on_start(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
   (void)data;
   otrng_fixture->otr->state = OTRNG_STATE_WAITING_AUTH_I;
@@ -111,7 +113,7 @@ void test_otrng_receives_plaintext_without_ws_tag_not_on_start(
   otrng_response_free(response);
 }
 
-void test_otrng_receives_plaintext_with_ws_tag(otrng_fixture_s *otrng_fixture,
+static void test_otrng_receives_plaintext_with_ws_tag(otrng_fixture_s *otrng_fixture,
                                                gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   const string_p message =
@@ -130,7 +132,7 @@ void test_otrng_receives_plaintext_with_ws_tag(otrng_fixture_s *otrng_fixture,
   otrng_response_free(response);
 }
 
-void test_otrng_receives_plaintext_with_ws_tag_after_text(
+static void test_otrng_receives_plaintext_with_ws_tag_after_text(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   const string_p message =
@@ -148,7 +150,7 @@ void test_otrng_receives_plaintext_with_ws_tag_after_text(
   otrng_response_free(response);
 }
 
-void test_otrng_receives_plaintext_with_ws_tag_v3(
+static void test_otrng_receives_plaintext_with_ws_tag_v3(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   const string_p message =
@@ -167,7 +169,7 @@ void test_otrng_receives_plaintext_with_ws_tag_v3(
   otrng_response_free(response);
 }
 
-void test_otrng_receives_query_message(otrng_fixture_s *otrng_fixture,
+static void test_otrng_receives_query_message(otrng_fixture_s *otrng_fixture,
                                        gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   otrng_warning warn = OTRNG_WARN_NONE;
@@ -183,7 +185,7 @@ void test_otrng_receives_query_message(otrng_fixture_s *otrng_fixture,
   otrng_response_free(response);
 }
 
-void test_otrng_receives_query_message_v3(otrng_fixture_s *otrng_fixture,
+static void test_otrng_receives_query_message_v3(otrng_fixture_s *otrng_fixture,
                                           gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   otrng_warning warn = OTRNG_WARN_NONE;
@@ -197,7 +199,7 @@ void test_otrng_receives_query_message_v3(otrng_fixture_s *otrng_fixture,
   otrng_response_free(response);
 }
 
-void test_otrng_receives_identity_message_invalid_on_start(
+static void test_otrng_receives_identity_message_invalid_on_start(
     otrng_fixture_s *otrng_fixture, gconstpointer data) {
   const char *identity_message = "?OTR:";
   otrng_warning warn = OTRNG_WARN_NONE;
@@ -214,7 +216,7 @@ void test_otrng_receives_identity_message_invalid_on_start(
   otrng_response_free(response);
 }
 
-void test_otrng_destroy() {
+static void test_otrng_destroy() {
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
@@ -230,7 +232,7 @@ void test_otrng_destroy() {
   otrng_client_free(client);
 }
 
-void test_otrng_build_prekey_ensemble() {
+static void test_otrng_build_prekey_ensemble() {
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {0xA};
   uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {0XF};
   uint8_t forging_priv[ED448_PRIVATE_BYTES] = {
@@ -284,7 +286,7 @@ void test_otrng_build_prekey_ensemble() {
   otrng_client_free(client);
 }
 
-void test_otrng_invokes_shared_session_state_callbacks(void) {
+static void test_otrng_invokes_shared_session_state_callbacks(void) {
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
   otrng_s *protocol = set_up(client, ALICE_ACCOUNT, 1);
 
@@ -304,7 +306,7 @@ void test_otrng_invokes_shared_session_state_callbacks(void) {
   otrng_client_free(client);
 }
 
-void test_otrng_generates_shared_session_state_string(void) {
+static void test_otrng_generates_shared_session_state_string(void) {
   otrng_shared_session_state_s state1[1];
   state1->identifier1 = otrng_xstrdup("alice");
   state1->identifier2 = otrng_xstrdup("bob");
@@ -363,4 +365,55 @@ void test_otrng_generates_shared_session_state_string(void) {
 
   otrng_assert(otrng_generate_session_state_string(state5) == NULL);
   free(state5->identifier2);
+}
+
+void functionals_otrng_add_tests(void) {
+  (void)test_otrng_receives_identity_message_invalid_on_start; // this function is unused
+
+  g_test_add("/otrng/builds_query_message", otrng_fixture_s, NULL,
+             otrng_fixture_set_up, test_otrng_builds_query_message,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/builds_query_message_v34", otrng_fixture_s, NULL,
+             otrng_fixture_set_up, test_otrng_builds_query_message_v34,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/builds_whitespace_tag", otrng_fixture_s, NULL,
+             otrng_fixture_set_up, test_otrng_builds_whitespace_tag,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/builds_whitespace_tag_v34", otrng_fixture_s, NULL,
+             otrng_fixture_set_up, test_otrng_builds_whitespace_tag_v34,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_plaintext_without_ws_tag_on_start",
+             otrng_fixture_s, NULL, otrng_fixture_set_up,
+             test_otrng_receives_plaintext_without_ws_tag_on_start,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_plaintext_without_ws_tag_not_on_start",
+             otrng_fixture_s, NULL, otrng_fixture_set_up,
+             test_otrng_receives_plaintext_without_ws_tag_not_on_start,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_plaintext_with_ws_tag", otrng_fixture_s, NULL,
+             otrng_fixture_set_up, test_otrng_receives_plaintext_with_ws_tag,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_plaintext_with_ws_tag_after_text",
+             otrng_fixture_s, NULL, otrng_fixture_set_up,
+             test_otrng_receives_plaintext_with_ws_tag_after_text,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_plaintext_with_ws_tag_v3", otrng_fixture_s,
+  NULL,
+             otrng_fixture_set_up,
+  test_otrng_receives_plaintext_with_ws_tag_v3,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_query_message", otrng_fixture_s, NULL,
+             otrng_fixture_set_up, test_otrng_receives_query_message,
+             otrng_fixture_teardown);
+  g_test_add("/otrng/receives_query_message_v3", otrng_fixture_s, NULL,
+             otrng_fixture_set_up, test_otrng_receives_query_message_v3,
+             otrng_fixture_teardown);
+  g_test_add_func("/otrng/destroy", test_otrng_destroy);
+
+  g_test_add_func("/otrng/shared_session_state/serializes",
+                  test_otrng_generates_shared_session_state_string);
+  g_test_add_func("/otrng/callbacks/shared_session_state",
+                  test_otrng_invokes_shared_session_state_callbacks);
+  g_test_add_func("/otrng/build_prekey_ensemble",
+                  test_otrng_build_prekey_ensemble);
 }

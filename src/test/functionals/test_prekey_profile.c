@@ -18,7 +18,13 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void test_prekey_profile_validates() {
+#include <glib.h>
+
+#include "test_helpers.h"
+#include "instance_tag.h"
+#include "serialize.h"
+
+static void test_prekey_profile_validates() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {0xFA};
   otrng_keypair_s *long_term = otrng_keypair_new();
   otrng_keypair_generate(long_term, sym);
@@ -54,7 +60,7 @@ void test_prekey_profile_validates() {
   otrng_prekey_profile_free(profile);
 }
 
-void test_prekey_profile_serialize() {
+static void test_prekey_profile_serialize() {
   uint32_t instance_tag = OTRNG_MIN_VALID_INSTAG + 0x01;
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
@@ -101,7 +107,7 @@ void test_prekey_profile_serialize() {
   otrng_shared_prekey_pair_free(shared_prekey);
 }
 
-void test_prekey_profile_deserialize() {
+static void test_prekey_profile_deserialize() {
   uint32_t instance_tag = OTRNG_MIN_VALID_INSTAG + 0x01;
   otrng_keypair_p keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
@@ -130,4 +136,13 @@ void test_prekey_profile_deserialize() {
   otrng_prekey_profile_free(profile);
   otrng_prekey_profile_free(deserialized);
   otrng_shared_prekey_pair_free(shared_prekey);
+}
+
+void functionals_prekey_profile_add_tests(void) {
+  g_test_add_func("/prekey_profile/validates",
+  test_prekey_profile_validates);
+  g_test_add_func("/prekey_profile/serialize",
+  test_prekey_profile_serialize);
+  g_test_add_func("/prekey_profile/deserialize",
+                  test_prekey_profile_deserialize);
 }

@@ -18,8 +18,13 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <glib.h>
+
+#include "test_helpers.h"
+#include "test_fixtures.h"
+
 /* Test the an in-order sending and receiving double ratchet */
-void test_double_ratchet_new_sending_ratchet_in_order(void) {
+static void test_double_ratchet_new_sending_ratchet_in_order(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -163,7 +168,7 @@ void test_double_ratchet_new_sending_ratchet_in_order(void) {
 }
 
 /* Test the out-of-order on the same DH ratchet */
-void test_double_ratchet_same_ratchet_out_of_order(void) {
+static void test_double_ratchet_same_ratchet_out_of_order(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -283,7 +288,7 @@ void test_double_ratchet_same_ratchet_out_of_order(void) {
 }
 
 /* Test the out-of-order when a new DH ratchet has happened */
-void test_double_ratchet_new_ratchet_out_of_order(void) {
+static void test_double_ratchet_new_ratchet_out_of_order(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -430,7 +435,7 @@ void test_double_ratchet_new_ratchet_out_of_order(void) {
 }
 
 /* Test the double ratchet when a corrupted message arrives */
-void test_double_ratchet_corrupted_ratchet(void) {
+static void test_double_ratchet_corrupted_ratchet(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
@@ -509,4 +514,15 @@ void test_double_ratchet_corrupted_ratchet(void) {
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
   otrng_free_all(alice, bob);
+}
+
+void functionals_double_ratchet_add_tests(void) {
+  g_test_add_func("/double_ratchet/in_order/new_sending_ratchet/v4",
+                  test_double_ratchet_new_sending_ratchet_in_order);
+  g_test_add_func("/double_ratchet/out_of_order/same_ratchet/v4",
+                  test_double_ratchet_same_ratchet_out_of_order);
+  g_test_add_func("/double_ratchet/out_of_order/new_ratchet/v4",
+                  test_double_ratchet_new_ratchet_out_of_order);
+  g_test_add_func("/double_ratchet/corrupted_ratchet/v4",
+                  test_double_ratchet_corrupted_ratchet);
 }

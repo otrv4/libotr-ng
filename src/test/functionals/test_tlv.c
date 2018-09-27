@@ -18,9 +18,12 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../tlv.h"
+#include <glib.h>
 
-void assert_tlv_structure(tlv_list_s *tlvs, otrng_tlv_type_t type, uint16_t len,
+#include "test_helpers.h"
+#include "tlv.h"
+
+static void assert_tlv_structure(tlv_list_s *tlvs, otrng_tlv_type_t type, uint16_t len,
                           uint8_t *data, otrng_bool next) {
   otrng_assert(tlvs);
   otrng_assert(tlvs->data);
@@ -36,7 +39,7 @@ void assert_tlv_structure(tlv_list_s *tlvs, otrng_tlv_type_t type, uint16_t len,
   }
 }
 
-void test_tlv_parse() {
+static void test_tlv_parse() {
   uint8_t msg[22] = {0x00, 0x06, 0x00, 0x03, 0x08, 0x05, 0x09, 0x00,
                      0x02, 0x00, 0x04, 0xac, 0x04, 0x05, 0x06, 0x00,
                      0x05, 0x00, 0x03, 0x08, 0x05, 0x09};
@@ -55,7 +58,7 @@ void test_tlv_parse() {
   otrng_tlv_list_free(tlvs);
 }
 
-void test_otrng_append_tlv() {
+static void test_otrng_append_tlv() {
   uint8_t smp2_data[2] = {0x03, 0x04};
   uint8_t smp3_data[3] = {0x05, 0x04, 0x03};
 
@@ -84,7 +87,7 @@ void test_otrng_append_tlv() {
 }
 
 // TODO: Add this test to receive message
-void test_otrng_append_padding_tlv() {
+static void test_otrng_append_padding_tlv() {
   return;
   // uint8_t smp2_data[2] = {0x03, 0x04};
 
@@ -104,4 +107,10 @@ void test_otrng_append_padding_tlv() {
   // tlvs = otrng_append_padding_tlv(NULL, 500);
   // otrng_assert(tlvs);
   // otrng_tlv_list_free(tlvs);
+}
+
+void functionals_tlv_add_tests(void) {
+  g_test_add_func("/tlv/parse", test_tlv_parse);
+  g_test_add_func("/tlv/append", test_otrng_append_tlv);
+  g_test_add_func("/tlv/append_padding", test_otrng_append_padding_tlv);
 }
