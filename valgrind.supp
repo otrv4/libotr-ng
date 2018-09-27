@@ -5,6 +5,7 @@
    ...
    fun:g_test_create_case
    fun:g_test_add_vtable
+   ...
    fun:main
 }
 {
@@ -15,6 +16,7 @@
    fun:g_slice_alloc
    ...
    fun:g_test_add_vtable
+   ...
    fun:main
 }
 {
@@ -25,6 +27,7 @@
    fun:g_slice_alloc
    ...
    fun:g_test_run_suite
+   ...
    fun:main
 }
 {
@@ -33,6 +36,7 @@
    fun:memalign
    ...
    fun:g_test_init
+   ...
    fun:main
 }
 {
@@ -48,6 +52,7 @@
    fun:malloc
    ...
    fun:g_test_init
+   ...
    fun:main
 }
 {
@@ -56,6 +61,7 @@
    fun:malloc
    ...
    fun:g_test_add_vtable
+   ...
    fun:main
 }
 {
@@ -64,6 +70,7 @@
    fun:malloc
    ...
    fun:g_test_run
+   ...
    fun:main
 }
 {
