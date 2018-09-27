@@ -18,9 +18,14 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../base64.h"
-#include "../messaging.h"
-#include "../persistence.h"
+#include <glib.h>
+
+#include "test_helpers.h"
+#include "test_fixtures.h"
+
+#include "base64.h"
+#include "messaging.h"
+#include "persistence.h"
 
 static const char *alice_account = "alice@xmpp";
 static const char *bob_account = "bob@xmpp";
@@ -50,7 +55,7 @@ static otrng_client_id_s read_client_id_for_privf(FILE *privf) {
   return result;
 }
 
-void test_global_state_key_management(void) {
+static void test_global_state_key_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
@@ -96,7 +101,7 @@ void test_global_state_key_management(void) {
   otrng_global_state_free(state);
 }
 
-void test_global_state_shared_prekey_management(void) {
+static void test_global_state_shared_prekey_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
@@ -144,7 +149,7 @@ void test_global_state_shared_prekey_management(void) {
   otrng_global_state_free(state);
 }
 
-void test_global_state_client_profile_management(void) {
+static void test_global_state_client_profile_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
   const uint8_t alice_fsym[ED448_PRIVATE_BYTES] = {3};
@@ -221,7 +226,7 @@ void test_global_state_client_profile_management(void) {
   otrng_global_state_free(state);
 }
 
-void test_global_state_prekey_profile_management(void) {
+static void test_global_state_prekey_profile_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
   const uint8_t alice_fsym[ED448_PRIVATE_BYTES] = {3};
@@ -288,7 +293,7 @@ void test_global_state_prekey_profile_management(void) {
   otrng_global_state_free(state);
 }
 
-void test_global_state_prekey_message_management(void) {
+static void test_global_state_prekey_message_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
@@ -361,7 +366,7 @@ void test_global_state_prekey_message_management(void) {
   otrng_global_state_free(state);
 }
 
-void test_instance_tag_api(void) {
+static void test_instance_tag_api(void) {
   const char *alice_protocol = "otr";
   unsigned int instance_tag = 0x9abcdef0;
 
@@ -387,4 +392,19 @@ void test_instance_tag_api(void) {
 
   otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
+}
+
+void functionals_messaging_add_tests() {
+  g_test_add_func("/global_state/key_management",
+                  test_global_state_key_management);
+  g_test_add_func("/global_state/shared_prekey_management",
+                  test_global_state_shared_prekey_management);
+  g_test_add_func("/global_state/client_profile",
+                  test_global_state_client_profile_management);
+  g_test_add_func("/global_state/prekey_profile",
+                  test_global_state_prekey_profile_management);
+  g_test_add_func("/global_state/prekey_message_management",
+                  test_global_state_prekey_message_management);
+
+  g_test_add_func("/api/instance_tag", test_instance_tag_api);
 }

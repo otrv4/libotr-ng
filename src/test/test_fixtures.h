@@ -66,4 +66,6 @@ otrng_bool test_should_not_heartbeat(int last_sent);
 void set_up_client(otrng_client_s *client, const char *account_name,
                           int byte);
 
+extern otrng_client_callbacks_p test_callbacks;
+
 #endif // __TEST_FIXTURES_H__

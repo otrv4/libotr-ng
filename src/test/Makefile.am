@@ -56,14 +56,11 @@ otrng_sources = ../alloc.c \
                     ../str.c \
                     ../tlv.c
 
-# I wish we didn't have to do it, but listing
-# all source files in libotr-ng/src is the only
-# way to get access to the tstatic files
-functional_SOURCES = functional.c \
-			test_fixtures.c \
+functional_sources = \
 		    functionals/test_standard.c \
-			functionals/test_instance_tag.c \
-	        $(otrng_sources)
+			functionals/test_messaging.c \
+			functionals/test_ed448.c \
+			functionals/test_instance_tag.c
 
 # functional/test_api.c \
 # functional/test_auth.c \
@@ -73,12 +70,10 @@ functional_SOURCES = functional.c \
 # functional/test_data_message.c \
 # functional/test_dh.c \
 # functional/test_double_ratchet.c \
-# functional/test_ed448.c \
 # functional/test_fragment.c \
 # functional/test_identity_message.c \
 # functional/test_key_management.c \
 # functional/test_list.c \
-# functional/test_messaging.c \
 # functional/test_non_interactive_messages.c \
 # functional/test_otrng.c \
 # functional/test_prekey_client.c \
@@ -90,6 +85,14 @@ functional_SOURCES = functional.c \
 # functional/test_serialize.c \
 # functional/test_smp.c \
 # functional/test_tlv.c
+
+# I wish we didn't have to do it, but listing
+# all source files in libotr-ng/src is the only
+# way to get access to the tstatic files
+functional_SOURCES = functional.c \
+			test_fixtures.c \
+	        $(functional_sources) \
+	        $(otrng_sources)
 
 functional_CFLAGS = -I$(top_builddir)/src $(AM_CFLAGS) $(GLIB_CFLAGS) $(CODE_COVERAGE_CFLAGS) $(GPROF_CFLAGS) $(SANITIZER_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \
                                                                                                       @LIBGCRYPT_CFLAGS@ \

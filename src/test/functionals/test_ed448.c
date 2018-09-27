@@ -18,13 +18,14 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <goldilocks.h>
-#include <goldilocks/ed448.h>
+#include "test_helpers.h"
 
-#include "../ed448.h"
-#include "../random.h"
+#include "goldilocks.h"
+#include "goldilocks/ed448.h"
+#include "ed448.h"
+#include "random.h"
 
-void ed448_test_eddsa_serialization() {
+static void test_ed448_eddsa_serialization() {
   ec_scalar_p s;
   uint8_t random_buff[ED448_SCALAR_BYTES];
   random_bytes(random_buff, ED448_SCALAR_BYTES);
@@ -45,7 +46,7 @@ void ed448_test_eddsa_serialization() {
   otrng_assert(otrng_ec_point_eq(p, dec) == otrng_true);
 }
 
-void ed448_test_eddsa_keygen() {
+static void test_ed448_eddsa_keygen() {
   uint8_t pub[ED448_POINT_BYTES];
   uint8_t sym[ED448_PRIVATE_BYTES];
   random_bytes(sym, ED448_PRIVATE_BYTES);
@@ -65,7 +66,7 @@ void ed448_test_eddsa_keygen() {
   otrng_assert(otrng_ec_point_eq(expected, p) == otrng_true);
 }
 
-void ed448_test_scalar_serialization() {
+static void test_ed448_scalar_serialization() {
   ec_scalar_p s;
 
   uint8_t buff[ED448_SCALAR_BYTES];
@@ -75,7 +76,7 @@ void ed448_test_scalar_serialization() {
   otrng_assert(otrng_ec_scalar_eq(s, goldilocks_448_scalar_one) == otrng_true);
 }
 
-void ed448_test_signature() {
+static void test_ed448_signature() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {0x3f};
   uint8_t pub[ED448_PUBKEY_BYTES] = {0};
   otrng_keypair_s *pair = otrng_keypair_new();
@@ -89,4 +90,13 @@ void ed448_test_signature() {
   otrng_assert(otrng_ec_verify(sig, pub, msg, sizeof(msg)) == otrng_true);
 
   otrng_keypair_free(pair);
+}
+
+void functionals_ed448_add_tests(void) {
+  g_test_add_func("/edwards448/eddsa_serialization",
+                  test_ed448_eddsa_serialization);
+  g_test_add_func("/edwards448/eddsa_keygen", test_ed448_eddsa_keygen);
+  g_test_add_func("/edwards448/scalar_serialization",
+                  test_ed448_scalar_serialization);
+  g_test_add_func("/edwards448/signature", test_ed448_signature);
 }

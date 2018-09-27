@@ -33,7 +33,7 @@ CODE_COVERAGE_LCOV_SHOPTS = -b src/test
 ci: test mem-check
 
 test: check
-	$(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
+	$(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %) $(FUNCTIONAL_ARGS)
 
 # I am not sure if we need "-- -std=c99" to be strict with c99
 # TODO remove the "-*" after fixing the issues
@@ -51,17 +51,17 @@ VALGRIND_ARGS = --track-origins=yes --quiet --error-exitcode=2 --leak-check=full
 	--suppressions=$(VALGRIND_SUPPRESSIONS)
 
 mem-check: check
-	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
+	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %) $(FUNCTIONAL_ARGS)
 
 cache-check: check
-	valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file=cachegrindout.out $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
+	valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file=cachegrindout.out $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %) $(FUNCTIONAL_ARGS)
 	cg_annotate cachegrindout.out
 
 coverage-check: test
 	@make check-code-coverage
 
 profile: test
-	gprof src/test/functional $(FUNCTIONAL_TEST:%=-p %)
+	gprof src/test/functional $(FUNCTIONAL_TEST:%=-p %) $(FUNCTIONAL_ARGS)
 
 code-style-doctor: code-style
 	git diff --exit-code .
@@ -75,13 +75,13 @@ test-loop:
 
 # For the make check-valgrind
 check-valgrind-memcheck: check
-	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
+	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %) $(FUNCTIONAL_ARGS)
 
 check-valgrind-helgrind: check
-	valgrind --tool=helgrind $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
+	valgrind --tool=helgrind $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %) $(FUNCTIONAL_ARGS)
 
 check-valgrind-drd: check
-	valgrind --tool=drd $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
+	valgrind --tool=drd $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %) $(FUNCTIONAL_ARGS)
 
 # We don't check test files for now
 splint:

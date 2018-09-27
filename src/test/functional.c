@@ -22,8 +22,7 @@
 #include <gcrypt.h>
 #include "otrng.h"
 
-void functionals_standard_add_tests(void);
-void functionals_instance_tag_add_tests(void);
+#include "functionals/all.h"
 
 int main(int argc, char **argv) {
   if (!gcry_check_version(GCRYPT_VERSION))
@@ -38,26 +37,7 @@ int main(int argc, char **argv) {
 
   g_test_init(&argc, &argv, NULL);
 
-  functionals_standard_add_tests();
-  functionals_instance_tag_add_tests();
-
-  /* g_test_add_func("/global_state/key_management", */
-  /*                 test_global_state_key_management); */
-  /* g_test_add_func("/global_state/shared_prekey_management", */
-  /*                 test_global_state_shared_prekey_management); */
-  /* g_test_add_func("/global_state/client_profile", */
-  /*                 test_global_state_client_profile_management); */
-  /* g_test_add_func("/global_state/prekey_profile", */
-  /*                 test_global_state_prekey_profile_management); */
-  /* g_test_add_func("/global_state/prekey_message_management", */
-  /*                 test_global_state_prekey_message_management); */
-
-  /* g_test_add_func("/edwards448/eddsa_serialization", */
-  /*                 ed448_test_eddsa_serialization); */
-  /* g_test_add_func("/edwards448/eddsa_keygen", ed448_test_eddsa_keygen); */
-  /* g_test_add_func("/edwards448/scalar_serialization", */
-  /*                 ed448_test_scalar_serialization); */
-  /* g_test_add_func("/edwards448/signature", ed448_test_signature); */
+  REGISTER_FUNCTIONALS;
 
   /* g_test_add_func("/list/add", test_otrng_list_add); */
   /* g_test_add_func("/list/copy", test_otrng_list_copy); */
@@ -316,7 +296,6 @@ int main(int argc, char **argv) {
   /* g_test_add_func("/api/smp", test_api_smp); */
   /* g_test_add_func("/api/smp_abort", test_api_smp_abort); */
   /* /\* g_test_add_func("/api/messaging", test_api_messaging); *\/ */
-  /* g_test_add_func("/api/instance_tag", test_instance_tag_api); */
   /* g_test_add_func("/api/extra_symm_key", test_api_extra_sym_key); */
   /* g_test_add_func("/api/heartbeat_messages", test_heartbeat_messages); */
 
