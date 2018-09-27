@@ -204,7 +204,7 @@ static void test_serializes_fingerprint() {
 
 // TODO: ADD test for otrng_serialize_ring_sig
 
-void functionals_serialize_add_tests(void) {
+void units_serialize_add_tests(void) {
   g_test_add_func("/serialize_and_deserialize/uint", test_ser_deser_uint);
   g_test_add_func("/serialize_and_deserialize/data",
                   test_serialize_otrng_deserialize_data);

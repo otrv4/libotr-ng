@@ -394,7 +394,7 @@ static void test_instance_tag_api(void) {
   otrng_client_free(alice);
 }
 
-void functionals_messaging_add_tests() {
+void units_messaging_add_tests() {
   g_test_add_func("/global_state/key_management",
                   test_global_state_key_management);
   g_test_add_func("/global_state/shared_prekey_management",

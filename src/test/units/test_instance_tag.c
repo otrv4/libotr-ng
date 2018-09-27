@@ -114,7 +114,7 @@ static void test_instance_tag_generates_tag_when_file_is_full() {
   otrng_instag_free(third_instag);
 }
 
-void functionals_instance_tag_add_tests(void) {
+void units_instance_tag_add_tests(void) {
   g_test_add_func("/otrng/instance_tag/generates_when_file_empty",
                   test_instance_tag_generates_tag_when_file_empty);
   g_test_add_func("/otrng/instance_tag/generates_when_file_is_full",

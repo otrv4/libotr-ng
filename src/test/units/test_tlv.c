@@ -109,7 +109,7 @@ static void test_otrng_append_padding_tlv() {
   // otrng_tlv_list_free(tlvs);
 }
 
-void functionals_tlv_add_tests(void) {
+void units_tlv_add_tests(void) {
   g_test_add_func("/tlv/parse", test_tlv_parse);
   g_test_add_func("/tlv/append", test_otrng_append_tlv);
   g_test_add_func("/tlv/append_padding", test_otrng_append_padding_tlv);

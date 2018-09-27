@@ -197,7 +197,7 @@ static void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer da
   otrng_dake_identity_message_free(invalid_identity_message);
 }
 
-void functionals_identity_message_add_tests(void) {
+void units_identity_message_add_tests(void) {
   WITH_DAKE_FIXTURE("/dake/identity_message/serializes",
                     test_dake_identity_message_serializes);
   WITH_DAKE_FIXTURE("/dake/identity_message/deserializes",

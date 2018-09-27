@@ -298,7 +298,7 @@ static void test_otrng_dake_non_interactive_auth_message_deserializes(
   otrng_dake_non_interactive_auth_message_destroy(deserialized);
 }
 
-void functionals_non_interactive_messages_add_tests(void) {
+void units_non_interactive_messages_add_tests(void) {
   WITH_DAKE_FIXTURE("/dake/non_interactive_auth_message/serialize",
                     test_dake_non_interactive_auth_message_serializes);
   WITH_DAKE_FIXTURE("/dake/non_interactive_auth_message/deserialize",

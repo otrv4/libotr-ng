@@ -113,7 +113,7 @@ static void test_prekey_ensemble_validate(void) {
   otrng_prekey_ensemble_free(ensemble);
 }
 
-void functionals_prekey_ensemble_add_tests(void) {
+void units_prekey_ensemble_add_tests(void) {
   g_test_add_func("/prekey_ensemble/validate",
   test_prekey_ensemble_validate);
 }

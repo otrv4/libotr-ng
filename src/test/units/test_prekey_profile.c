@@ -138,7 +138,7 @@ static void test_prekey_profile_deserialize() {
   otrng_shared_prekey_pair_free(shared_prekey);
 }
 
-void functionals_prekey_profile_add_tests(void) {
+void units_prekey_profile_add_tests(void) {
   g_test_add_func("/prekey_profile/validates",
   test_prekey_profile_validates);
   g_test_add_func("/prekey_profile/serialize",

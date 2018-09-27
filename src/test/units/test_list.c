@@ -189,7 +189,7 @@ static void test_list_empty_size() {
   otrng_list_free_nodes(empty);
 }
 
-void functionals_list_add_tests(void) {
+void units_list_add_tests(void) {
   g_test_add_func("/list/add", test_otrng_list_add);
   g_test_add_func("/list/copy", test_otrng_list_copy);
   g_test_add_func("/list/insert_at_n", test_otrng_list_insert_at_n);

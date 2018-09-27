@@ -248,7 +248,7 @@ static void test_otrng_client_profile_transitional_signature(void) {
   otrng_client_free(client);
 }
 
-void functionals_client_profile_add_tests(void) {
+void units_client_profile_add_tests(void) {
   g_test_add_func("/client_profile/build_client_profile",
                   test_otrng_client_profile_build);
   g_test_add_func("/client_profile/create", test_client_profile_create);

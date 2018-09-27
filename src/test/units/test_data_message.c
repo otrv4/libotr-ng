@@ -261,7 +261,7 @@ static void test_data_message_valid() {
   otrng_data_message_free(data_msg);
 }
 
-void functionals_data_message_add_tests(void) {
+void units_data_message_add_tests(void) {
   g_test_add_func("/data_message/valid", test_data_message_valid);
   g_test_add_func("/data_message/serialize", test_data_message_serializes);
   g_test_add_func("/data_message/serialize_absent_dh",

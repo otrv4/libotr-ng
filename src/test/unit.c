@@ -18,22 +18,28 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TEST_FUNCTIONALS_ALL_H__
-#define __TEST_FUNCTIONALS_ALL_H__
+#include "otrng.h"
+#include <gcrypt.h>
+#include <glib.h>
 
-void functionals_api_add_tests(void);
-void functionals_client_add_tests(void);
-void functionals_double_ratchet_add_tests(void);
-void functionals_prekey_client_add_tests(void);
-void functionals_smp_add_tests(void);
+#include "units/all.h"
 
-#define REGISTER_FUNCTIONALS do { \
-    functionals_api_add_tests(); \
-    functionals_client_add_tests(); \
-    functionals_double_ratchet_add_tests(); \
-    functionals_prekey_client_add_tests(); \
-    functionals_smp_add_tests(); \
-  } while(0);
+int main(int argc, char **argv) {
+  if (!gcry_check_version(GCRYPT_VERSION))
+    return 2;
 
+  gcry_control(GCRYCTL_INIT_SECMEM, 0); // disable secure memory for tests
+  gcry_control(GCRYCTL_RESUME_SECMEM_WARN);
+  gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
+  gcry_control(GCRYCTL_INITIALIZATION_FINISHED);
 
-#endif // __TEST_FUNCTIONALS_ALL_H__
+  OTRNG_INIT;
+
+  g_test_init(&argc, &argv, NULL);
+
+  REGISTER_UNITS;
+
+  int ret = g_test_run();
+  OTRNG_FREE;
+  return ret;
+}

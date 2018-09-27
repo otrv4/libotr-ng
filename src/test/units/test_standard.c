@@ -80,7 +80,7 @@ static void test_otrng_strnlen(void) {
   otrng_assert(3 == otrng_strnlen(src, 5));
 }
 
-void functionals_standard_add_tests(void) {
+void units_standard_add_tests(void) {
   g_test_add_func("/standard/stpcpy", test_otrng_stpcpy);
   g_test_add_func("/standard/stpncpy", test_otrng_stpncpy);
   g_test_add_func("/standard/strnlen", test_otrng_strnlen);

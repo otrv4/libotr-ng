@@ -421,7 +421,7 @@ static void test_build_interactive_rsign_tag() {
   otrng_client_profile_destroy(responder_profile);
 }
 
-void functionals_dake_add_tests(void) {
+void units_dake_add_tests(void) {
   g_test_add_func("/dake/build_interactive_rsign_tag",
                   test_build_interactive_rsign_tag);
 }

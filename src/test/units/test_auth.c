@@ -212,7 +212,7 @@ static void test_rsig_compatible_with_prekey_server() {
       (const uint8_t *)msg, 2));
 }
 
-void functionals_auth_add_tests(void) {
+void units_auth_add_tests(void) {
   g_test_add_func("/ring-signature/rsig_auth", test_rsig_auth);
   g_test_add_func("/ring-signature/calculate_c", test_rsig_calculate_c);
   g_test_add_func("/ring-signature/compatible_with_prekey_server",

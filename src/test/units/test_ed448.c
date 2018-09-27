@@ -92,7 +92,7 @@ static void test_ed448_signature() {
   otrng_keypair_free(pair);
 }
 
-void functionals_ed448_add_tests(void) {
+void units_ed448_add_tests(void) {
   g_test_add_func("/edwards448/eddsa_serialization",
                   test_ed448_eddsa_serialization);
   g_test_add_func("/edwards448/eddsa_keygen", test_ed448_eddsa_keygen);

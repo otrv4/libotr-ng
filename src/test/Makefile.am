@@ -18,7 +18,7 @@
 #  along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-check_PROGRAMS = functional #unit
+check_PROGRAMS = functional unit all
 
 otrng_sources = ../alloc.c \
                     ../auth.c \
@@ -58,39 +58,52 @@ otrng_sources = ../alloc.c \
 
 functional_sources = \
 			functionals/test_api.c \
-			functionals/test_auth.c \
 			functionals/test_client.c \
-			functionals/test_client_profile.c \
-			functionals/test_dake.c \
-			functionals/test_data_message.c \
-			functionals/test_dh.c \
 			functionals/test_double_ratchet.c \
-			functionals/test_ed448.c \
-			functionals/test_fragment.c \
-			functionals/test_identity_message.c \
-			functionals/test_instance_tag.c \
-			functionals/test_key_management.c \
-			functionals/test_list.c \
-			functionals/test_messaging.c \
-			functionals/test_non_interactive_messages.c \
-			functionals/test_otrng.c \
 			functionals/test_prekey_client.c \
-			functionals/test_prekey_ensemble.c \
-			functionals/test_prekey_messages.c \
-			functionals/test_prekey_profile.c \
-			functionals/test_prekey_proofs.c \
-			functionals/test_prekey_server_client.c \
-			functionals/test_serialize.c \
-			functionals/test_smp.c \
-			functionals/test_tlv.c \
-		    functionals/test_standard.c
+			functionals/test_smp.c
 
+unit_sources = \
+			units/test_auth.c \
+			units/test_client.c \
+			units/test_client_profile.c \
+			units/test_dake.c \
+			units/test_data_message.c \
+			units/test_dh.c \
+			units/test_ed448.c \
+			units/test_fragment.c \
+			units/test_identity_message.c \
+			units/test_instance_tag.c \
+			units/test_key_management.c \
+			units/test_list.c \
+			units/test_messaging.c \
+			units/test_non_interactive_messages.c \
+			units/test_otrng.c \
+			units/test_prekey_ensemble.c \
+			units/test_prekey_messages.c \
+			units/test_prekey_profile.c \
+			units/test_prekey_proofs.c \
+			units/test_prekey_server_client.c \
+			units/test_serialize.c \
+		    units/test_standard.c \
+			units/test_tlv.c
 
 # I wish we didn't have to do it, but listing
 # all source files in libotr-ng/src is the only
 # way to get access to the tstatic files
 functional_SOURCES = functional.c \
 			test_fixtures.c \
+	        $(functional_sources) \
+	        $(otrng_sources)
+
+unit_SOURCES = unit.c \
+			test_fixtures.c \
+	        $(unit_sources) \
+	        $(otrng_sources)
+
+all_SOURCES = all.c \
+			test_fixtures.c \
+	        $(unit_sources) \
 	        $(functional_sources) \
 	        $(otrng_sources)
 
@@ -102,3 +115,9 @@ analysis_ldflags = $(CODE_COVERAGE_LIBS) $(GPROF_LDFLAGS) $(SANITIZER_LDFLAGS)
 
 functional_CFLAGS = -I$(top_builddir)/src $(AM_CFLAGS) $(analysis_cflags) $(deps_cflags) -DOTRNG_TESTS
 functional_LDFLAGS = $(AM_LDFLAGS) $(analysis_ldflags) $(deps_ldflags)
+
+unit_CFLAGS = -I$(top_builddir)/src $(AM_CFLAGS) $(analysis_cflags) $(deps_cflags) -DOTRNG_TESTS
+unit_LDFLAGS = $(AM_LDFLAGS) $(analysis_ldflags) $(deps_ldflags)
+
+all_CFLAGS = -I$(top_builddir)/src $(AM_CFLAGS) $(analysis_cflags) $(deps_cflags) -DOTRNG_TESTS
+all_LDFLAGS = $(AM_LDFLAGS) $(analysis_ldflags) $(deps_ldflags)

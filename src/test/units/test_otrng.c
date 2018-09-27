@@ -367,7 +367,7 @@ static void test_otrng_generates_shared_session_state_string(void) {
   free(state5->identifier2);
 }
 
-void functionals_otrng_add_tests(void) {
+void units_otrng_add_tests(void) {
   (void)test_otrng_receives_identity_message_invalid_on_start; // this function is unused
 
   g_test_add("/otrng/builds_query_message", otrng_fixture_s, NULL,

@@ -475,7 +475,7 @@ static void test_prekey_ensemble_retrieval_message_deserialize(void) {
   otrng_prekey_ensemble_retrieval_message_destroy(msg);
 }
 
-void functionals_prekey_server_client_add_tests(void) {
+void units_prekey_server_client_add_tests(void) {
   g_test_add_func("/prekey_server/dake/dake-1/serialize",
                   test_prekey_dake1_message_serialize);
   g_test_add_func("/prekey_server/dake/dake-2/deserialize",

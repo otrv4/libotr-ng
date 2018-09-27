@@ -57,7 +57,7 @@ static void test_deserialize_prekey_success_message(void) {
   free(decoded);
 }
 
-void functionals_prekey_messages_add_tests(void) {
+void units_prekey_messages_add_tests(void) {
   g_test_add_func("/prekey_messages/deserialize_prekey_success_message",
                   test_deserialize_prekey_success_message);
 }

@@ -180,7 +180,7 @@ static void test_dh_keypair_destroy() {
   otrng_assert(!alice->pub);
 }
 
-void functionals_dh_add_tests(void) {
+void units_dh_add_tests(void) {
   g_test_add_func("/dh/api", test_dh_api);
   g_test_add_func("/dh/serialize", test_dh_serialize);
   g_test_add_func("/dh/shared-secret", test_dh_shared_secret);

@@ -305,7 +305,7 @@ static void test_dh_proof_deserialization(void) {
   otrng_dh_mpi_release(expected_v);
 }
 
-void functionals_prekey_proofs_add_tests(void) {
+void units_prekey_proofs_add_tests(void) {
   g_test_add_func("/prekey_server/proofs/dh_gen_validation",
                   test_dh_proof_generation_and_validation);
   g_test_add_func("/prekey_server/proofs/ecdh_gen_validation",

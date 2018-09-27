@@ -306,7 +306,7 @@ static void test_expiration_of_fragments(void) {
   otrng_assert(otrng_list_len(list) == 0);
 }
 
-void functionals_fragment_add_tests(void) {
+void units_fragment_add_tests(void) {
   g_test_add_func("/fragment/create_fragments_smaller_than_max_size",
                   test_create_fragments_smaller_than_max_size);
   g_test_add_func("/fragment/create_fragments", test_create_fragments);
