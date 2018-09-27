@@ -57,3 +57,5 @@ coverage.info
 */.dirstamp
 
 gmon.out
+
+.dir-locals.el
