@@ -453,6 +453,27 @@
    fun:g_test_run_suite_internal
 }
 {
+   opt_random_1
+   Memcheck:Cond
+   fun:generate_block
+   ...
+   fun:arc4_init
+   fun:arc4random
+   ...
+   fun:g_test_run_suite_internal
+}
+{
+   opt_random_1
+   Memcheck:Cond
+   fun:drbg_update
+   fun:generate
+   fun:arc4random
+   ...
+   fun:g_test_run_suite_internal
+   fun:g_test_run_suite
+   fun:g_test_run
+}
+{
    initializer_timing_1
    Memcheck:Leak
    fun:malloc
