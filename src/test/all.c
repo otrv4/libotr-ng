@@ -22,8 +22,8 @@
 #include <gcrypt.h>
 #include <glib.h>
 
-#include "units/all.h"
 #include "functionals/all.h"
+#include "units/all.h"
 
 int main(int argc, char **argv) {
   if (!gcry_check_version(GCRYPT_VERSION))
