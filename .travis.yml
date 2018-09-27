@@ -93,10 +93,6 @@ matrix:
       dist: precise
       env: T=ctgrind
     - os: linux
-      dist: trusty
-      compiler: clang
-      env: T=sanitizer
-    - os: linux
       compiler: gcc
       dist: precise
       env: T=splint
