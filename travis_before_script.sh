@@ -47,9 +47,9 @@ if [[ "$T" = "ctgrind" ]]; then
 fi
 
 if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
-        curl https://sourceware.org/ftp/valgrind/valgrind-3.13.0.tar.bz2 | tar xjf - -C .deps
-        (cd $VALGRIND_DIR && ./configure && make && make install)
-    fi
+    curl https://sourceware.org/ftp/valgrind/valgrind-3.13.0.tar.bz2 | tar xjf - -C .deps
+    (cd $VALGRIND_DIR && ./configure && make && make install)
+fi
 
 # if [[ -f $LIBOTR_DIR/src/.libs/libotr.so ]]; then
 #     (cd $LIBOTR_DIR && sudo make install)
