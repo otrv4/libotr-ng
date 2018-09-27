@@ -33,8 +33,7 @@ CODE_COVERAGE_LCOV_SHOPTS = -b src/test
 ci: test mem-check
 
 test: check
-	$(top_builddir)/src/test/functional
-
+	$(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
 
 # I am not sure if we need "-- -std=c99" to be strict with c99
 # TODO remove the "-*" after fixing the issues
@@ -42,6 +41,7 @@ CLANG_TIDY_ARGS = -p $(top_builddir) \
 	-warnings-as-errors="readability-*,hicpp-*,clang-analyzer-*,clang-diagnostic-*,cert-*,-*"
 
 code-check: check
+	echo $(functional_test_args)
 	clang-tidy $(CLANG_TIDY_ARGS) $(top_builddir)/src/*.c
 
 VALGRIND_SUPPRESSIONS = \
@@ -51,17 +51,17 @@ VALGRIND_ARGS = --track-origins=yes --quiet --error-exitcode=2 --leak-check=full
 	--suppressions=$(VALGRIND_SUPPRESSIONS)
 
 mem-check: check
-	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/functional
+	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
 
 cache-check: check
-	valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file=cachegrindout.out $(top_builddir)/src/test/functional
+	valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file=cachegrindout.out $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
 	cg_annotate cachegrindout.out
 
 coverage-check: test
 	@make check-code-coverage
 
 profile: test
-	gprof src/test/functional
+	gprof src/test/functional $(FUNCTIONAL_TEST:%=-p %)
 
 code-style-doctor: code-style
 	git diff --exit-code .
@@ -75,13 +75,13 @@ test-loop:
 
 # For the make check-valgrind
 check-valgrind-memcheck: check
-	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/functional
+	valgrind $(VALGRIND_ARGS) $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
 
 check-valgrind-helgrind: check
-	valgrind --tool=helgrind $(top_builddir)/src/test/functional
+	valgrind --tool=helgrind $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
 
 check-valgrind-drd: check
-	valgrind --tool=drd $(top_builddir)/src/test/functional
+	valgrind --tool=drd $(top_builddir)/src/test/functional $(FUNCTIONAL_TEST:%=-p %)
 
 # We don't check test files for now
 splint:
