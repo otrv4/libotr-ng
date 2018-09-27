@@ -8,7 +8,7 @@ GPG_ERROR_DIR=.deps/libgpg-error-1.26
 LIBGCRYPT_DIR=.deps/libgcrypt-1.8.1
 LIBSODIUM_DIR=.deps/libsodium-stable
 CTGRIND_DIR=.deps/ctgrind
-VALGRIND_DIR=.deps/valgrind-3.13
+VALGRIND_DIR=.deps/valgrind-3.13.0
 LIBOTR_DIR=.deps/libotr
 LIBGOLDILOCKS_DIR=.deps/libgoldilocks
 

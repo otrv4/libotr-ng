@@ -69,7 +69,7 @@ code-style-doctor: code-style
 code-style:
 	clang-format -style=file -i config.h src/*.h src/*.c src/**/*.h src/**/*.c
 
-LOOPS = 10
+LOOPS = 100
 test-loop:
 	for ((i=1; i <= ${LOOPS}; ++i)) do make test && echo $$i || break; done
 
