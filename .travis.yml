@@ -54,6 +54,7 @@ matrix:
       env: T=normal
     - os: osx
       compiler: clang
+      osx_image: xcode8.3
       env: T=normal
     - os: linux
       compiler: gcc
@@ -120,8 +121,7 @@ before_install:
 
 # Dependencies
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew cleanup; fi
-- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install --HEAD valgrind && brew install curl && brew install glib; fi
-# - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install splint && brew install valgrind && brew install curl && brew install glib; fi
+- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install curl && brew install glib; fi
 - if [[ "$T" == "splint" ]]; then sudo apt-get install splint --quiet --assume-yes; fi
 - if [[ "$T" = "style" ]]; then sudo apt-get install clang-format-3.5 clang-tidy-3.9 --quiet --assume-yes; fi
 
