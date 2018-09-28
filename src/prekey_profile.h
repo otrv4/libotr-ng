@@ -51,7 +51,7 @@ INTERNAL otrng_bool otrng_prekey_profile_invalid(time_t expires,
 
 INTERNAL otrng_bool otrng_prekey_profile_valid(
     const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
-    const otrng_public_key_p pub);
+    const otrng_public_key pub);
 
 INTERNAL otrng_result prekey_profile_sign(otrng_prekey_profile_s *profile,
                                           const otrng_keypair_s *longterm_pair);

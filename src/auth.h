@@ -68,10 +68,9 @@ typedef struct ring_sig_s {
  */
 
 INTERNAL otrng_result otrng_rsig_authenticate(
-    ring_sig_s *dst, const otrng_private_key_p priv,
-    const otrng_public_key_p pub, const otrng_public_key_p A1,
-    const otrng_public_key_p A2, const otrng_public_key_p A3,
-    const uint8_t *msg, size_t msglen);
+    ring_sig_s *dst, const otrng_private_key priv, const otrng_public_key pub,
+    const otrng_public_key A1, const otrng_public_key A2,
+    const otrng_public_key A3, const uint8_t *msg, size_t msglen);
 
 /**
  * @brief The Verification function of the Ring Sig.
@@ -86,9 +85,9 @@ INTERNAL otrng_result otrng_rsig_authenticate(
  * @param [msg_len] The length of the message.
  */
 INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
-                                      const otrng_public_key_p A1,
-                                      const otrng_public_key_p A2,
-                                      const otrng_public_key_p A3,
+                                      const otrng_public_key A1,
+                                      const otrng_public_key A2,
+                                      const otrng_public_key A3,
                                       const uint8_t *message, size_t msglen);
 
 /**
@@ -101,14 +100,14 @@ INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src);
 
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, ring_sig_s *dst,
-    const otrng_private_key_p secret, const otrng_public_key_p pub,
-    const otrng_public_key_p A1, const otrng_public_key_p A2,
-    const otrng_public_key_p A3, const uint8_t *message, size_t message_len);
+    const otrng_private_key secret, const otrng_public_key pub,
+    const otrng_public_key A1, const otrng_public_key A2,
+    const otrng_public_key A3, const uint8_t *message, size_t message_len);
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, const ring_sig_s *src,
-    const otrng_public_key_p A1, const otrng_public_key_p A2,
-    const otrng_public_key_p A3, const uint8_t *message, size_t message_len);
+    const otrng_public_key A1, const otrng_public_key A2,
+    const otrng_public_key A3, const uint8_t *message, size_t message_len);
 
 #ifdef OTRNG_AUTH_PRIVATE
 

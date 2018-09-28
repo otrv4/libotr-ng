@@ -54,7 +54,7 @@ void create_client_profile_cb(struct otrng_client_s *client,
                               const otrng_client_id_s client_opdata);
 void create_prekey_profile_cb(struct otrng_client_s *client,
                               const otrng_client_id_s client_opdata);
-otrng_public_key_p *
+otrng_public_key *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]);
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data);
 void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture, gconstpointer data);

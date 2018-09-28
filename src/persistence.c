@@ -234,7 +234,7 @@ otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
-  otrng_public_key_p key;
+  otrng_public_key key;
   otrng_result ret;
 
   if (!f || feof(f)) {

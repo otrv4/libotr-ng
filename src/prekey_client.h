@@ -59,7 +59,7 @@ typedef struct {
 
   uint8_t *server_identity;
   size_t server_identity_len;
-  otrng_public_key_p server_pub_key;
+  otrng_public_key server_pub_key;
   ec_point_p S;
   ring_sig_s *sigma;
 } otrng_prekey_dake2_message_s;
@@ -149,7 +149,7 @@ typedef struct {
   otrng_prekey_publication_policy_s *publication_policy;
 
   char *server_identity;
-  otrng_public_key_p pub;
+  otrng_public_key pub;
 
   uint8_t mac_key[MAC_KEY_BYTES];
   otrng_prekey_next_message_t after_dake;

@@ -47,7 +47,6 @@ typedef goldilocks_448_point_p ec_point_p;
 /** Number of bytes in an non-secret scalar: 56 */
 #define ED448_SCALAR_BYTES GOLDILOCKS_448_SCALAR_BYTES
 
-typedef uint8_t goldilocks_448_public_key_p[ED448_POINT_BYTES];
 typedef uint8_t eddsa_signature_p[ED448_SIGNATURE_BYTES];
 
 /**

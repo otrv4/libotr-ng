@@ -77,13 +77,13 @@ INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
 INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst, const ring_sig_s *proof);
 
 INTERNAL size_t otrng_serialize_public_key(uint8_t *dst,
-                                           const otrng_public_key_p);
+                                           const otrng_public_key);
 
 INTERNAL size_t otrng_serialize_forging_key(uint8_t *dst,
-                                            const otrng_public_key_p);
+                                            const otrng_public_key);
 
 INTERNAL size_t otrng_serialize_shared_prekey(
-    uint8_t *dst, const otrng_shared_prekey_pub_p shared_prekey);
+    uint8_t *dst, const otrng_shared_prekey_pub shared_prekey);
 
 /**
  * @brief Serialize the old mac keys to reveal.

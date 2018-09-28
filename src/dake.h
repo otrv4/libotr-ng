@@ -174,14 +174,14 @@ INTERNAL otrng_result
 build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
                                 const otrng_dake_participant_data_s *initiator,
                                 const otrng_dake_participant_data_s *responder,
-                                const otrng_shared_prekey_pub_p r_shared_prekey,
+                                const otrng_shared_prekey_pub r_shared_prekey,
                                 const uint8_t *phi, size_t phi_len);
 
 INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
     uint8_t **msg, size_t *msg_len,
     const otrng_dake_participant_data_s *initiator,
     const otrng_dake_participant_data_s *responder,
-    const otrng_shared_prekey_pub_p r_shared_prekey, const uint8_t *phi,
+    const otrng_shared_prekey_pub r_shared_prekey, const uint8_t *phi,
     size_t phi_len);
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(

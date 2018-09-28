@@ -115,7 +115,7 @@ tstatic otrng_result otrng_global_state_add_private_key_v4(
 
 tstatic otrng_result otrng_global_state_add_forging_key(
     otrng_global_state_s *gs, const otrng_client_id_s clientop,
-    otrng_public_key_p *fk) {
+    otrng_public_key *fk) {
   return otrng_client_add_forging_key(get_client(gs, clientop), *fk);
 }
 
