@@ -39,7 +39,7 @@ typedef struct otrng_conversation_s {
 
   char *recipient;
   otrng_s *conn;
-} otrng_conversation_s, otrng_conversation_p[1];
+} otrng_conversation_s;
 
 typedef struct otrng_client_id_s {
   const char *protocol;
@@ -89,7 +89,7 @@ typedef struct {
   uint32_t sender_instance_tag;
   ecdh_keypair_p our_ecdh;
   dh_keypair_p our_dh;
-} otrng_stored_prekeys_s, otrng_stored_prekeys_p[1];
+} otrng_stored_prekeys_s;
 
 API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id);
 
