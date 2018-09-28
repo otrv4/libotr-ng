@@ -476,7 +476,7 @@ static void test_double_ratchet_corrupted_ratchet(void) {
   otrng_ec_point_copy(corrupted_data_msg->ecdh, bob->keys->our_ecdh->pub);
   corrupted_data_msg->dh = otrng_dh_mpi_copy(bob->keys->our_dh->pub);
   memset(corrupted_data_msg->nonce, 0, DATA_MSG_NONCE_BYTES);
-  msg_mac_key_p mac_key;
+  msg_mac_key mac_key;
   memset(mac_key, 0, sizeof mac_key);
   serialize_and_encode_data_msg(&to_send_2, mac_key, NULL, 0,
                                 corrupted_data_msg);

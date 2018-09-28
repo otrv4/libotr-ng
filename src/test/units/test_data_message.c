@@ -223,7 +223,7 @@ static void test_data_message_valid() {
   data_message_s *data_msg = set_up_data_msg();
 
   // Should fail because data_msg has a zeroed mac tag.
-  msg_mac_key_p mac_key = {0};
+  msg_mac_key mac_key = {0};
   otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_false);
 
   // Overwrite the zeroed mac tag

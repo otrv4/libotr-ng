@@ -58,10 +58,10 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
                                                      size_t *nread);
 
 INTERNAL otrng_result otrng_data_message_authenticator(
-    uint8_t *dst, size_t dstlen, const msg_mac_key_p mac_key,
-    const uint8_t *body, size_t bodylen);
+    uint8_t *dst, size_t dstlen, const msg_mac_key mac_key, const uint8_t *body,
+    size_t bodylen);
 
-INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key_p mac_key,
+INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key mac_key,
                                              const data_message_s *data_msg);
 
 #ifdef OTRNG_DATA_MESSAGE_PRIVATE
