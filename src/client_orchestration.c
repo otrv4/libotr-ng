@@ -44,6 +44,26 @@ tstatic void create_long_term_keys(otrng_client_s *client) {
                                            client->client_id);
 }
 
+tstatic void load_client_profile_from_storage(otrng_client_s *client) {
+  otrng_client_callbacks_load_client_profile(client->global_state->callbacks,
+                                             client->client_id);
+}
+
+tstatic void create_client_profile(otrng_client_s *client) {
+  otrng_client_callbacks_create_client_profile(client->global_state->callbacks,
+                                               client, client->client_id);
+}
+
+tstatic void load_prekey_profile_from_storage(otrng_client_s *client) {
+  otrng_client_callbacks_load_prekey_profile(client->global_state->callbacks,
+                                             client->client_id);
+}
+
+tstatic void create_prekey_profile(otrng_client_s *client) {
+  otrng_client_callbacks_create_prekey_profile(client->global_state->callbacks,
+                                               client, client->client_id);
+}
+
 tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
   if (client->keypair == NULL) {
     load_long_term_keys_from_storage(client);
@@ -60,18 +80,6 @@ tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
   if (client->keypair == NULL) {
     signal_error_in_state_management(client, "long term key pair");
   }
-}
-
-tstatic void load_client_profile_from_storage(otrng_client_s *client) {
-  /* fprintf(stderr, "orchestration.load_client_profile_from_storage\n"); */
-  otrng_client_callbacks_load_client_profile(client->global_state->callbacks,
-                                             client->client_id);
-}
-
-tstatic void create_client_profile(otrng_client_s *client) {
-  /* fprintf(stderr, "orchestration.create_client_profile\n"); */
-  otrng_client_callbacks_create_client_profile(client->global_state->callbacks,
-                                               client, client->client_id);
 }
 
 tstatic void ensure_valid_client_profile(otrng_client_s *client) {
@@ -93,6 +101,19 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
 }
 
 static otrng_bool orchestration_reentry;
+tstatic void ensure_prekey_profile(otrng_client_s *client) {
+  if (client->prekey_profile == NULL) {
+    load_prekey_profile_from_storage(client);
+  }
+
+  if (client->prekey_profile == NULL) {
+    create_prekey_profile(client);
+  }
+
+  if (client->prekey_profile == NULL) {
+    signal_error_in_state_management(client, "prekey profile");
+  }
+}
 
 API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   fprintf(stderr, "otrng_client_ensure_correct_state(client=%s)\n",
@@ -105,6 +126,7 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
 
   ensure_valid_long_term_key(client);
   ensure_valid_client_profile(client);
+  ensure_prekey_profile(client);
 
   orchestration_reentry = otrng_false;
 

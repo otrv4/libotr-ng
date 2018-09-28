@@ -147,6 +147,17 @@ INTERNAL void otrng_client_callbacks_load_client_profile(
   cb->load_client_profile(client_opdata);
 }
 
+INTERNAL void otrng_client_callbacks_load_prekey_profile(
+    const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
+  if (!cb) {
+    return;
+  }
+
+  // TODO: is this true for the prekey profile?
+  // This callback is required and is expected to segfault if not provided.
+  cb->load_prekey_profile(client_opdata);
+}
+
 INTERNAL void
 otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
                                      const otrng_s *conv) {
