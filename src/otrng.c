@@ -691,7 +691,7 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   k_ecdh_p k_ecdh;
   dh_shared_secret_p k_dh;
   size_t k_dh_len = 0;
-  brace_key_p brace_key;
+  brace_key bk;
 
   // TODO: @refactoring this will be calculated again later
   if (!otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh),
@@ -706,7 +706,7 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  hash_hash(brace_key, sizeof(brace_key_p), k_dh, k_dh_len);
+  hash_hash(bk, sizeof(brace_key), k_dh, k_dh_len);
 
   otrng_secure_wipe(k_dh, sizeof(k_dh));
 
@@ -716,7 +716,7 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   debug_print("K_ecdh = ");
   otrng_memdump(k_ecdh, sizeof(k_ecdh_p));
   debug_print("brace_key = ");
-  otrng_memdump(brace_key, sizeof(brace_key_p));
+  otrng_memdump(bk, sizeof(brace_key));
 #endif
 
   if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, sizeof(tmp_ecdh_k1),
@@ -731,10 +731,10 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otrng_key_manager_calculate_tmp_key(dst, k_ecdh, brace_key, tmp_ecdh_k1,
+  otrng_key_manager_calculate_tmp_key(dst, k_ecdh, bk, tmp_ecdh_k1,
                                       tmp_ecdh_k2);
 
-  otrng_secure_wipe(brace_key, sizeof(brace_key_p));
+  otrng_secure_wipe(bk, sizeof(brace_key));
 
 #ifdef DEBUG
   debug_print("\n");
@@ -1091,7 +1091,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   k_ecdh_p tmp_ecdh_k2;
   dh_shared_secret_p k_dh;
   size_t k_dh_len = 0;
-  brace_key_p brace_key;
+  brace_key bk;
 
   // TODO: @refactoring this workaround is not the nicest there is
   if (!otrng_ecdh_shared_secret(k_ecdh, sizeof(k_ecdh),
@@ -1105,7 +1105,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  hash_hash(brace_key, sizeof(brace_key_p), k_dh, k_dh_len);
+  hash_hash(bk, sizeof(brace_key), k_dh, k_dh_len);
 
   otrng_secure_wipe(k_dh, sizeof(k_dh));
 
@@ -1115,7 +1115,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   debug_print("K_ecdh = ");
   otrng_memdump(k_ecdh, sizeof(k_ecdh_p));
   debug_print("brace_key = ");
-  otrng_memdump(brace_key, sizeof(brace_key_p));
+  otrng_memdump(bk, sizeof(brace_key));
 #endif
 
   if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, sizeof(tmp_ecdh_k1),
@@ -1129,10 +1129,10 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otrng_key_manager_calculate_tmp_key(dst, k_ecdh, brace_key, tmp_ecdh_k1,
+  otrng_key_manager_calculate_tmp_key(dst, k_ecdh, bk, tmp_ecdh_k1,
                                       tmp_ecdh_k2);
 
-  otrng_secure_wipe(brace_key, sizeof(brace_key_p));
+  otrng_secure_wipe(bk, sizeof(brace_key));
 
 #ifdef DEBUG
   debug_print("\n");
@@ -1842,7 +1842,7 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
   }
 
   otrng_secure_wipe(otr->keys->extra_symmetric_key,
-                    sizeof(extra_symmetric_key_p));
+                    sizeof(extra_symmetric_key));
 
   return otrng_process_smp_tlv(tlv, otr);
 }
@@ -2379,7 +2379,7 @@ tstatic otrng_result otrng_send_symkey_message_v4(
   }
 
   memmove(extra_key, otr->keys->extra_symmetric_key,
-          sizeof(extra_symmetric_key_p));
+          sizeof(extra_symmetric_key));
 
   tlvs = otrng_tlv_list_one(
       otrng_tlv_new(OTRNG_TLV_SYM_KEY, usedatalen + 4, tlv_data));

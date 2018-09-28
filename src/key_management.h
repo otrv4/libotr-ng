@@ -30,29 +30,29 @@
 #include "warn.h"
 
 /* the different kind of keys for the key management */
-typedef uint8_t brace_key_p[BRACE_KEY_BYTES];
+typedef uint8_t brace_key[BRACE_KEY_BYTES];
 typedef uint8_t k_ecdh_p[ED448_POINT_BYTES];
-typedef uint8_t shared_secret_p[SHARED_SECRET_BYTES];
+typedef uint8_t shared_secret[SHARED_SECRET_BYTES];
 
-typedef uint8_t root_key_p[ROOT_KEY_BYTES];
-typedef uint8_t sending_chain_key_p[CHAIN_KEY_BYTES];
-typedef uint8_t receiving_chain_key_p[CHAIN_KEY_BYTES];
+typedef uint8_t root_key[ROOT_KEY_BYTES];
+typedef uint8_t sending_chain_key[CHAIN_KEY_BYTES];
+typedef uint8_t receiving_chain_key[CHAIN_KEY_BYTES];
 typedef uint8_t msg_enc_key_p[ENC_KEY_BYTES];
 typedef uint8_t msg_mac_key_p[MAC_KEY_BYTES];
-typedef uint8_t extra_symmetric_key_p[EXTRA_SYMMETRIC_KEY_BYTES];
+typedef uint8_t extra_symmetric_key[EXTRA_SYMMETRIC_KEY_BYTES];
 
 /* the different kind of keys needed for a chain ratchet */
 typedef struct ratchet_s {
-  root_key_p root_key;
-  sending_chain_key_p chain_s;
-  receiving_chain_key_p chain_r;
+  root_key root_key;
+  sending_chain_key chain_s;
+  receiving_chain_key chain_r;
 } ratchet_s;
 
 /* the list of stored message and extra symmetric keys */
 typedef struct skipped_keys_s {
   unsigned int i; /* Counter of the ratchet */
   unsigned int j; /* Counter of the sending messages */
-  extra_symmetric_key_p extra_symmetric_key;
+  extra_symmetric_key extra_symmetric_key;
   msg_enc_key_p enc_key;
 } skipped_keys_s;
 
@@ -64,17 +64,17 @@ typedef struct receiving_ratchet_s {
   ec_point_p their_ecdh;
   dh_public_key_p their_dh;
 
-  brace_key_p brace_key;
-  shared_secret_p shared_secret;
+  brace_key brace_key;
+  shared_secret shared_secret;
 
   unsigned int i;  /* Counter of the ratchet */
   unsigned int k;  /* Counter of the receiving ratchet */
   unsigned int j;  /* Counter of the sending ratchet */
   unsigned int pn; /* the number of messages in the previous DH ratchet. */
-  root_key_p root_key;
-  receiving_chain_key_p chain_r;
+  root_key root_key;
+  receiving_chain_key chain_r;
 
-  extra_symmetric_key_p extra_symmetric_key;
+  extra_symmetric_key extra_symmetric_key;
 
   list_element_s *skipped_keys;
 } receiving_ratchet_s;
@@ -102,12 +102,12 @@ typedef struct key_manager_s {
 
   ratchet_s *current;
 
-  brace_key_p brace_key;
-  shared_secret_p shared_secret;
+  brace_key brace_key;
+  shared_secret shared_secret;
 
   uint8_t ssid[SSID_BYTES];
   otrng_bool ssid_half_first;
-  extra_symmetric_key_p extra_symmetric_key;
+  extra_symmetric_key extra_symmetric_key;
   uint8_t tmp_key[HASH_BYTES];
 
   list_element_s *skipped_keys;
@@ -228,7 +228,7 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
  */
 INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
                                                   k_ecdh_p k_ecdh,
-                                                  brace_key_p brace_key,
+                                                  brace_key brace_key,
                                                   k_ecdh_p tmp_ecdh_k1,
                                                   k_ecdh_p tmp_ecdh_k2);
 
