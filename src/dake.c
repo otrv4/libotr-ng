@@ -750,7 +750,7 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
 
 INTERNAL otrng_bool otrng_valid_received_values(
     const uint32_t sender_instance_tag, const ec_point_p their_ecdh,
-    const dh_mpi_p their_dh, const client_profile_s *profile) {
+    const dh_mpi their_dh, const client_profile_s *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */
   if (!otrng_ec_point_valid(their_ecdh)) {
     return otrng_false;
@@ -776,8 +776,8 @@ INTERNAL otrng_bool otrng_valid_received_values(
 tstatic otrng_result build_rsign_tag(
     uint8_t *dst, size_t dstlen, size_t *written, uint8_t first_usage,
     const client_profile_s *i_profile, const client_profile_s *r_profile,
-    const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi_p i_dh,
-    const dh_mpi_p r_dh, const uint8_t *ser_r_shared_prekey,
+    const ec_point_p i_ecdh, const ec_point_p r_ecdh, const dh_mpi i_dh,
+    const dh_mpi r_dh, const uint8_t *ser_r_shared_prekey,
     size_t ser_r_shared_prekey_len, const uint8_t *phi, size_t phi_len) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len, ser_r_profile_len = 0;

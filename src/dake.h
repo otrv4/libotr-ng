@@ -74,7 +74,7 @@ typedef struct dake_non_interactive_auth_message_s {
 
 INTERNAL otrng_bool otrng_valid_received_values(
     const uint32_t sender_instance_tag, const ec_point_p their_ecdh,
-    const dh_mpi_p their_dh, const client_profile_s *profile);
+    const dh_mpi their_dh, const client_profile_s *profile);
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_s *dst, const uint8_t *buffer,
@@ -157,7 +157,7 @@ typedef struct {
   otrng_prekey_profile_s *prekey_profile;
   otrng_prekey_profile_s *exp_prekey_profile;
   goldilocks_448_point_s ecdh;
-  dh_mpi_p dh;
+  dh_mpi dh;
 } otrng_dake_participant_data_s;
 
 /*

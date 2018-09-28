@@ -104,7 +104,7 @@ static void test_calculate_brace_key() {
   otrng_key_manager_init(manager);
 
   // Setup a fixed their_dh
-  dh_mpi_p their_dh_secret = NULL;
+  dh_mpi their_dh_secret = NULL;
   const uint8_t their_public[5] = {0x1};
   uint8_t secret[DH3072_MOD_LEN_BYTES] = {0};
   size_t secret_len = 0;

@@ -199,7 +199,7 @@ tstatic void *gen_random_data(size_t n, random_generator gen) {
 }
 
 INTERNAL otrng_result otrng_dh_proof_generate(
-    dh_proof_s *dst, const dh_mpi_p *values_priv, const dh_mpi_p *values_pub,
+    dh_proof_s *dst, const dh_mpi *values_priv, const dh_mpi *values_pub,
     const size_t values_len, const uint8_t *m, const uint8_t usage,
     random_generator gen) {
   uint8_t *p;
@@ -282,7 +282,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
 }
 
 INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
-                                          const dh_mpi_p *values_pub,
+                                          const dh_mpi *values_pub,
                                           const size_t values_len,
                                           const uint8_t *m,
                                           const uint8_t usage) {

@@ -470,8 +470,8 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
 
   ec_scalar_p *values_priv_ecdh;
   ec_point_p *values_pub_ecdh;
-  dh_mpi_p *values_priv_dh;
-  dh_mpi_p *values_pub_dh;
+  dh_mpi *values_priv_dh;
+  dh_mpi *values_pub_dh;
   size_t proof_index = 0;
 
   ecdh_proof_s prekey_message_proof_ecdh;
@@ -537,9 +537,9 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
         otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(ec_point_p));
 
     values_priv_dh =
-        otrng_secure_alloc(pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
+        otrng_secure_alloc(pub_msg->num_prekey_messages * sizeof(dh_mpi));
     values_pub_dh =
-        otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
+        otrng_xmalloc(pub_msg->num_prekey_messages * sizeof(dh_mpi));
 
     for (i = 0; i < pub_msg->num_prekey_messages; i++) {
       *values_pub_ecdh[i] = *pub_msg->prekey_messages[i]->Y;
@@ -559,7 +559,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
       free(values_priv_ecdh);
       free(values_pub_ecdh);
       otrng_secure_wipe(values_priv_dh,
-                        pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
+                        pub_msg->num_prekey_messages * sizeof(dh_mpi));
       free(values_priv_dh);
       free(values_pub_dh);
       return OTRNG_ERROR;
@@ -575,7 +575,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
       free(values_priv_ecdh);
       free(values_pub_ecdh);
       otrng_secure_wipe(values_priv_dh,
-                        pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
+                        pub_msg->num_prekey_messages * sizeof(dh_mpi));
       free(values_priv_dh);
       free(values_pub_dh);
       return OTRNG_ERROR;
@@ -586,7 +586,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
     free(values_priv_ecdh);
     free(values_pub_ecdh);
     otrng_secure_wipe(values_priv_dh,
-                      pub_msg->num_prekey_messages * sizeof(dh_mpi_p));
+                      pub_msg->num_prekey_messages * sizeof(dh_mpi));
     free(values_priv_dh);
     free(values_pub_dh);
   }

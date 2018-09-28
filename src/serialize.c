@@ -96,7 +96,7 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
 // Serializes a DH MPI as an OTR MPI data type
 INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
                                                  size_t *written,
-                                                 const dh_mpi_p mpi) {
+                                                 const dh_mpi mpi) {
   uint8_t buf[DH3072_MOD_LEN_BYTES];
   size_t w = 0;
   otrng_mpi_s otr_mpi;

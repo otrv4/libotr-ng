@@ -152,7 +152,7 @@ INTERNAL void otrng_dh_free(void) {
   dh_initialized = 0;
 }
 
-INTERNAL dh_mpi_p otrng_dh_mpi_generator(void) { return DH3072_GENERATOR; }
+INTERNAL dh_mpi otrng_dh_mpi_generator(void) { return DH3072_GENERATOR; }
 
 INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
                                             const dh_private_key_p priv) {
@@ -261,7 +261,7 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_p buffer,
 
 INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                              size_t *written,
-                                             const dh_mpi_p src) {
+                                             const dh_mpi src) {
   gcry_error_t err;
   if (!src) {
     if (written) {
@@ -279,7 +279,7 @@ INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_p *dst,
+INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *dst,
                                                const uint8_t *buffer,
                                                size_t buflen, size_t *nread) {
   gcry_error_t err;
@@ -297,7 +297,7 @@ INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_p *dst,
   return OTRNG_SUCCESS;
 }
 
-API otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi) {
+API otrng_bool otrng_dh_mpi_valid(dh_mpi mpi) {
   /* Check that pub is in range */
   if (mpi == NULL) {
     return otrng_false;
@@ -321,15 +321,15 @@ API otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi) {
 }
 
 // TODO: check the return
-INTERNAL dh_mpi_p otrng_dh_mpi_copy(const dh_mpi_p src) {
+INTERNAL dh_mpi otrng_dh_mpi_copy(const dh_mpi src) {
   return gcry_mpi_copy(src);
 }
 
-INTERNAL void otrng_dh_mpi_release(dh_mpi_p mpi) { gcry_mpi_release(mpi); }
+INTERNAL void otrng_dh_mpi_release(dh_mpi mpi) { gcry_mpi_release(mpi); }
 
-INTERNAL dh_mpi_p otrng_dh_modulus_p() { return DH3072_MODULUS; }
+INTERNAL dh_mpi otrng_dh_modulus_p() { return DH3072_MODULUS; }
 
-INTERNAL dh_mpi_p otrng_dh_modulus_q() { return DH3072_MODULUS_Q; }
+INTERNAL dh_mpi otrng_dh_modulus_q() { return DH3072_MODULUS_Q; }
 
 #ifdef DEBUG_API
 

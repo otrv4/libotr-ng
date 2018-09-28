@@ -45,7 +45,7 @@ typedef struct dake_fixture_s {
   client_profile_s *profile;
 } dake_fixture_s, dake_fixture_p[1];
 
-int dh_mpi_cmp(const dh_mpi_p m1, const dh_mpi_p m2);
+int dh_mpi_cmp(const dh_mpi m1, const dh_mpi m2);
 otrng_client_id_s create_client_id(const char *protocol, const char *account);
 
 otrng_shared_session_state_s get_shared_session_state_cb(const otrng_s *conv);

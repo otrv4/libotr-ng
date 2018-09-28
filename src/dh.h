@@ -36,8 +36,8 @@
 #define DH3072_MOD_LEN_BITS (DH3072_MOD_LEN_BYTES * 8)
 #define DH_MPI_MAX_BYTES (4 + DH3072_MOD_LEN_BYTES)
 
-typedef gcry_mpi_t dh_mpi_p;
-typedef dh_mpi_p dh_private_key_p, dh_public_key_p;
+typedef gcry_mpi_t dh_mpi;
+typedef dh_mpi dh_private_key_p, dh_public_key_p;
 typedef uint8_t dh_shared_secret_p[DH3072_MOD_LEN_BYTES];
 
 typedef struct dh_keypair_s {
@@ -71,21 +71,20 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_p buffer,
                                              const dh_public_key_p their_pub);
 
 INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
-                                             size_t *written,
-                                             const dh_mpi_p src);
+                                             size_t *written, const dh_mpi src);
 
-INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_p *dst,
+INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *dst,
                                                const uint8_t *buffer,
                                                size_t buflen, size_t *nread);
 
-INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi_p mpi);
+INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi mpi);
 
-INTERNAL dh_mpi_p otrng_dh_mpi_copy(const dh_mpi_p src);
+INTERNAL dh_mpi otrng_dh_mpi_copy(const dh_mpi src);
 
-INTERNAL void otrng_dh_mpi_release(dh_mpi_p mpi);
+INTERNAL void otrng_dh_mpi_release(dh_mpi mpi);
 
-INTERNAL dh_mpi_p otrng_dh_modulus_q(void);
-INTERNAL dh_mpi_p otrng_dh_modulus_p(void);
+INTERNAL dh_mpi otrng_dh_modulus_q(void);
+INTERNAL dh_mpi otrng_dh_modulus_p(void);
 
 #ifdef DEBUG_API
 API void otrng_dh_keypair_debug_print(FILE *, int, dh_keypair_s *);
@@ -95,7 +94,7 @@ API void otrng_dh_private_key_debug_print(FILE *, dh_private_key_p);
 
 #ifdef OTRNG_DH_PRIVATE
 
-INTERNAL dh_mpi_p otrng_dh_mpi_generator(void);
+INTERNAL dh_mpi otrng_dh_mpi_generator(void);
 
 #endif
 

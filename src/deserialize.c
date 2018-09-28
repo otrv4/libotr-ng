@@ -151,7 +151,7 @@ INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_p *dst,
+INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi *dst,
                                                    const uint8_t *buffer,
                                                    size_t buflen,
                                                    size_t *read) {

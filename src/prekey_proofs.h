@@ -36,7 +36,7 @@ typedef struct ecdh_proof_s {
 
 typedef struct dh_proof_s {
   uint8_t c[PROOF_C_SIZE];
-  dh_mpi_p v;
+  dh_mpi v;
 } dh_proof_s;
 
 INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_s *dst,
@@ -53,12 +53,12 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
                                             const uint8_t usage);
 
 INTERNAL otrng_result otrng_dh_proof_generate(
-    dh_proof_s *dst, const dh_mpi_p *values_priv, const dh_mpi_p *values_pub,
+    dh_proof_s *dst, const dh_mpi *values_priv, const dh_mpi *values_pub,
     const size_t values_len, const uint8_t *m, const uint8_t usage,
     random_generator gen);
 
 INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
-                                          const dh_mpi_p *values_pub,
+                                          const dh_mpi *values_pub,
                                           const size_t values_len,
                                           const uint8_t *m,
                                           const uint8_t usage);
