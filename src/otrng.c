@@ -1777,7 +1777,7 @@ tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *src, size_t len) {
 }
 
 tstatic otrng_result decrypt_data_msg(otrng_response_s *response,
-                                      const msg_enc_key_p enc_key,
+                                      const msg_enc_key enc_key,
                                       const data_message_s *msg) {
   string_p *dst = &response->to_display;
   uint8_t *plain;
@@ -1787,7 +1787,7 @@ tstatic otrng_result decrypt_data_msg(otrng_response_s *response,
   debug_print("\n");
   debug_print("DECRYPTING\n");
   debug_print("enc_key = ");
-  otrng_memdump(enc_key, sizeof(msg_enc_key_p));
+  otrng_memdump(enc_key, sizeof(msg_enc_key));
   debug_print("nonce = ");
   otrng_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
 #endif
@@ -1892,12 +1892,12 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     otrng_response_s *response, otrng_warning *warn, const uint8_t *buff,
     size_t buflen, otrng_s *otr) {
   data_message_s *msg = otrng_data_message_new();
-  msg_enc_key_p enc_key;
+  msg_enc_key enc_key;
   msg_mac_key_p mac_key;
   size_t read = 0;
   receiving_ratchet_s *tmp_receiving_ratchet;
 
-  memset(enc_key, 0, sizeof(msg_enc_key_p));
+  memset(enc_key, 0, sizeof(msg_enc_key));
   memset(mac_key, 0, sizeof(msg_mac_key_p));
 
   response->to_display = NULL;

@@ -37,7 +37,7 @@ typedef uint8_t shared_secret[SHARED_SECRET_BYTES];
 typedef uint8_t root_key[ROOT_KEY_BYTES];
 typedef uint8_t sending_chain_key[CHAIN_KEY_BYTES];
 typedef uint8_t receiving_chain_key[CHAIN_KEY_BYTES];
-typedef uint8_t msg_enc_key_p[ENC_KEY_BYTES];
+typedef uint8_t msg_enc_key[ENC_KEY_BYTES];
 typedef uint8_t msg_mac_key_p[MAC_KEY_BYTES];
 typedef uint8_t extra_symmetric_key[EXTRA_SYMMETRIC_KEY_BYTES];
 
@@ -53,7 +53,7 @@ typedef struct skipped_keys_s {
   unsigned int i; /* Counter of the ratchet */
   unsigned int j; /* Counter of the sending messages */
   extra_symmetric_key extra_symmetric_key;
-  msg_enc_key_p enc_key;
+  msg_enc_key enc_key;
 } skipped_keys_s;
 
 /* a temporary structure used to hold the values of the receiving ratchet */
@@ -287,7 +287,7 @@ INTERNAL otrng_result otrng_key_manager_ratcheting_init(key_manager_s *manager,
  * @param [manager]     The key manager.
  */
 INTERNAL otrng_result otrng_key_get_skipped_keys(
-    msg_enc_key_p enc_key, msg_mac_key_p mac_key, unsigned int ratchet_id,
+    msg_enc_key enc_key, msg_mac_key_p mac_key, unsigned int ratchet_id,
     unsigned int message_id, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet);
 
@@ -302,7 +302,7 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
  * @param [action]      's' for sending chain, 'r' for receiving
  */
 INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
-    msg_enc_key_p enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
+    msg_enc_key enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int message_id,
     const char action, otrng_warning *warn);
 

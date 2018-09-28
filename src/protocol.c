@@ -126,7 +126,7 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
 tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
                                           const uint8_t *message,
                                           size_t message_len,
-                                          const msg_enc_key_p enc_key) {
+                                          const msg_enc_key enc_key) {
   uint8_t *c = NULL;
   int err;
 
@@ -217,7 +217,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
                                        otrng_warning *warn) {
   data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
-  msg_enc_key_p enc_key;
+  msg_enc_key enc_key;
   msg_mac_key_p mac_key;
 
   /* if j == 0 */
@@ -227,7 +227,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
     return OTRNG_ERROR;
   }
 
-  memset(enc_key, 0, sizeof(msg_enc_key_p));
+  memset(enc_key, 0, sizeof(msg_enc_key));
   memset(mac_key, 0, sizeof(msg_mac_key_p));
 
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, NULL,
@@ -236,7 +236,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {
-    otrng_secure_wipe(enc_key, sizeof(msg_enc_key_p));
+    otrng_secure_wipe(enc_key, sizeof(msg_enc_key));
     otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
     return OTRNG_ERROR;
   }
@@ -248,13 +248,13 @@ tstatic otrng_result send_data_message(string_p *to_send,
   if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {
     otrng_error_message(to_send, OTRNG_ERR_MSG_ENCRYPTION_ERROR);
 
-    otrng_secure_wipe(enc_key, sizeof(msg_enc_key_p));
+    otrng_secure_wipe(enc_key, sizeof(msg_enc_key));
     otrng_secure_wipe(mac_key, sizeof(msg_mac_key_p));
     otrng_data_message_free(data_msg);
     return OTRNG_ERROR;
   }
 
-  otrng_secure_wipe(enc_key, sizeof(msg_enc_key_p));
+  otrng_secure_wipe(enc_key, sizeof(msg_enc_key));
 
   /* Authenticator = KDF_1(0x1A || MKmac || KDF_1(usage_authenticator ||
    * data_message_sections, 64), 64) */

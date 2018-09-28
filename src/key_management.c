@@ -694,7 +694,7 @@ tstatic void derive_next_chain_key(key_manager_s *manager,
 }
 
 tstatic void derive_encryption_and_mac_keys(
-    msg_enc_key_p enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
+    msg_enc_key enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, const char action) {
   /* MKenc, MKmac = derive_enc_mac_keys(chain_key_s[i-1][j])
      MKenc = KDF_1(usage_message_key || chain_key, 32)
@@ -703,14 +703,14 @@ tstatic void derive_encryption_and_mac_keys(
 
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    shake_256_kdf1(enc_key, sizeof(msg_enc_key_p), usage_message_key,
+    shake_256_kdf1(enc_key, sizeof(msg_enc_key), usage_message_key,
                    manager->current->chain_s, sizeof(sending_chain_key));
   } else if (action == 'r') {
-    shake_256_kdf1(enc_key, sizeof(msg_enc_key_p), usage_message_key,
+    shake_256_kdf1(enc_key, sizeof(msg_enc_key), usage_message_key,
                    tmp_receiving_ratchet->chain_r, sizeof(receiving_chain_key));
   }
   shake_256_kdf1(mac_key, sizeof(msg_mac_key_p), usage_mac_key, enc_key,
-                 sizeof(msg_enc_key_p));
+                 sizeof(msg_enc_key));
 }
 
 tstatic void calculate_extra_key(key_manager_s *manager,
@@ -761,7 +761,7 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 //  manager->skipped_keys = NULL;
 //}
 
-tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
+tstatic otrng_result store_enc_keys(msg_enc_key enc_key,
                                     receiving_ratchet_s *tmp_receiving_ratchet,
                                     const unsigned int until,
                                     const int max_skip, const char ratchet_type,
@@ -786,7 +786,7 @@ tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
   if (!(memcmp(tmp_receiving_ratchet->chain_r, zero_buff,
                sizeof(receiving_chain_key)) == 0)) {
     while (tmp_receiving_ratchet->k < until) {
-      shake_256_kdf1(enc_key, sizeof(msg_enc_key_p), usage_message_key,
+      shake_256_kdf1(enc_key, sizeof(msg_enc_key), usage_message_key,
                      tmp_receiving_ratchet->chain_r,
                      sizeof(receiving_chain_key));
 
@@ -817,7 +817,7 @@ tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
 
       memcpy(skipped_msg_enc_key->extra_symmetric_key, extra_key,
              sizeof(extra_symmetric_key));
-      memcpy(skipped_msg_enc_key->enc_key, enc_key, sizeof(msg_enc_key_p));
+      memcpy(skipped_msg_enc_key->enc_key, enc_key, sizeof(msg_enc_key));
 
       /*
          @secret: should be deleted when:
@@ -826,7 +826,7 @@ tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
       */
       tmp_receiving_ratchet->skipped_keys = otrng_list_add(
           skipped_msg_enc_key, tmp_receiving_ratchet->skipped_keys);
-      otrng_secure_wipe(enc_key, sizeof(msg_enc_key_p));
+      otrng_secure_wipe(enc_key, sizeof(msg_enc_key));
       tmp_receiving_ratchet->k++;
     }
   }
@@ -841,7 +841,7 @@ tstatic otrng_result store_enc_keys(msg_enc_key_p enc_key,
    MKmac = KDF_1(usage_mac_key || MKenc, 64).
 */
 INTERNAL otrng_result otrng_key_get_skipped_keys(
-    msg_enc_key_p enc_key, msg_mac_key_p mac_key, unsigned int ratchet_id,
+    msg_enc_key enc_key, msg_mac_key_p mac_key, unsigned int ratchet_id,
     unsigned int message_id, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet) {
   list_element_s *current = tmp_receiving_ratchet->skipped_keys;
@@ -851,7 +851,7 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
     skipped_keys_s *skipped_keys = current->data;
 
     if (skipped_keys->i == ratchet_id && skipped_keys->j == message_id) {
-      memcpy(enc_key, skipped_keys->enc_key, sizeof(msg_enc_key_p));
+      memcpy(enc_key, skipped_keys->enc_key, sizeof(msg_enc_key));
       shake_256_kdf1(mac_key, MAC_KEY_BYTES, usage_mac_key, enc_key,
                      ENC_KEY_BYTES);
       memcpy(tmp_receiving_ratchet->extra_symmetric_key,
@@ -873,7 +873,7 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
 }
 
 INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
-    msg_enc_key_p enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
+    msg_enc_key enc_key, msg_mac_key_p mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int message_id,
     const char action, otrng_warning *warn) {
 
@@ -897,7 +897,7 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
   debug_print("\n");
   debug_print("GOT SENDING KEYS:\n");
   debug_print("enc_key = ");
-  otrng_memdump(enc_key, sizeof(msg_enc_key_p));
+  otrng_memdump(enc_key, sizeof(msg_enc_key));
   debug_print("mac_key = ");
   otrng_memdump(mac_key, sizeof(msg_mac_key_p));
 #endif
@@ -910,7 +910,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
     receiving_ratchet_s *tmp_receiving_ratchet, int message_id, int previous_n,
     const char action, otrng_warning *warn) {
   /* Derive new ECDH and DH keys */
-  msg_enc_key_p enc_key;
+  msg_enc_key enc_key;
 
   if (message_id == 0) {
     assert(action == 's' || action == 'r');
@@ -942,21 +942,21 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   size_t serlen = num_stored_keys * MAC_KEY_BYTES;
   uint8_t *ser_mac_keys;
   msg_mac_key_p mac_key;
-  msg_enc_key_p enc_key;
+  msg_enc_key enc_key;
   size_t i;
 
   if (serlen != 0) {
     ser_mac_keys = otrng_secure_alloc(serlen);
 
-    memset(enc_key, 0, sizeof(msg_enc_key_p));
+    memset(enc_key, 0, sizeof(msg_enc_key));
     memset(mac_key, 0, sizeof(msg_mac_key_p));
 
     for (i = 0; i < num_stored_keys; i++) {
       list_element_s *last = otrng_list_get_last(manager->skipped_keys);
       skipped_keys_s *skipped_keys = last->data;
-      memcpy(enc_key, skipped_keys->enc_key, sizeof(msg_enc_key_p));
+      memcpy(enc_key, skipped_keys->enc_key, sizeof(msg_enc_key));
       shake_256_kdf1(mac_key, sizeof(msg_mac_key_p), usage_mac_key, enc_key,
-                     sizeof(msg_enc_key_p));
+                     sizeof(msg_enc_key));
       memcpy(ser_mac_keys + i * MAC_KEY_BYTES, mac_key, MAC_KEY_BYTES);
       manager->skipped_keys =
           otrng_list_remove_element(last, manager->skipped_keys);
