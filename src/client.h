@@ -82,7 +82,7 @@ typedef struct otrng_client_s {
   // OtrlPrivKey *privkeyv3; // ???
   // otrng_instag_s *instag; // TODO: @client Store the instance tag here rather
   // than use v3 User State as a store for instance tags
-} otrng_client_s, otrng_client_p[1];
+} otrng_client_s;
 
 typedef struct {
   uint32_t id;
