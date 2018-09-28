@@ -325,6 +325,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   otrng_dh_mpi_release(curr);
 
   cbuf = otrng_xmalloc(cbuf_len * sizeof(uint8_t));
+  memset(cbuf, 0, cbuf_len * sizeof(uint8_t));
   cbuf_curr = cbuf;
   if (otrng_failed(
           otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w, a))) {
