@@ -1592,6 +1592,7 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buff,
 
   if (!otrng_dake_auth_r_deserialize(&auth, buff, buff_len)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
+    otrng_dake_auth_r_destroy(&auth);
     return OTRNG_ERROR;
   }
 
@@ -1678,11 +1679,13 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buff,
 
   otrng_dake_auth_i_init(&auth);
   if (otr->state != OTRNG_STATE_WAITING_AUTH_I) {
+    otrng_dake_auth_i_destroy(&auth);
     return OTRNG_SUCCESS; /* Ignore the message */
   }
 
   if (!otrng_dake_auth_i_deserialize(&auth, buff, buff_len)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
+    otrng_dake_auth_i_destroy(&auth);
     return OTRNG_ERROR;
   }
 
