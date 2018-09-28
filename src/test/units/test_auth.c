@@ -35,22 +35,22 @@ static void test_rsig_calculate_c() {
       0x01, 0xe8, 0x70, 0xd4, 0x8a, 0x4c, 0x8f, 0x0b,
   };
 
-  otrng_keypair_p a1, a2, a3, t1, t2, t3;
+  otrng_keypair_s a1, a2, a3, t1, t2, t3;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {1}, sym2[ED448_PRIVATE_BYTES] = {2},
           sym3[ED448_PRIVATE_BYTES] = {3}, sym4[ED448_PRIVATE_BYTES] = {4},
           sym5[ED448_PRIVATE_BYTES] = {5}, sym6[ED448_PRIVATE_BYTES] = {6};
 
-  otrng_keypair_generate(a1, sym1);
-  otrng_keypair_generate(a2, sym2);
-  otrng_keypair_generate(a3, sym3);
-  otrng_keypair_generate(t1, sym4);
-  otrng_keypair_generate(t2, sym5);
-  otrng_keypair_generate(t3, sym6);
+  otrng_keypair_generate(&a1, sym1);
+  otrng_keypair_generate(&a2, sym2);
+  otrng_keypair_generate(&a3, sym3);
+  otrng_keypair_generate(&t1, sym4);
+  otrng_keypair_generate(&t2, sym5);
+  otrng_keypair_generate(&t3, sym6);
 
   goldilocks_448_scalar_p c;
   otrng_rsig_calculate_c_with_usage_and_domain(
-      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, c, a1->pub,
-      a2->pub, a3->pub, t1->pub, t2->pub, t3->pub, (const uint8_t *)msg,
+      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, c, a1.pub,
+      a2.pub, a3.pub, t1.pub, t2.pub, t3.pub, (const uint8_t *)msg,
       strlen(msg));
 
   uint8_t serialized_c[ED448_SCALAR_BYTES] = {0};
@@ -61,7 +61,7 @@ static void test_rsig_calculate_c() {
 static void test_rsig_auth() {
   const char *msg = "hi";
 
-  otrng_keypair_p p1, p2, p3;
+  otrng_keypair_s p1, p2, p3;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {0}, sym2[ED448_PRIVATE_BYTES] = {0},
           sym3[ED448_PRIVATE_BYTES] = {0};
 
@@ -69,36 +69,36 @@ static void test_rsig_auth() {
   random_bytes(sym2, ED448_PRIVATE_BYTES);
   random_bytes(sym3, ED448_PRIVATE_BYTES);
 
-  otrng_keypair_generate(p1, sym1);
-  otrng_keypair_generate(p2, sym2);
-  otrng_keypair_generate(p3, sym3);
+  otrng_keypair_generate(&p1, sym1);
+  otrng_keypair_generate(&p2, sym2);
+  otrng_keypair_generate(&p3, sym3);
 
   ring_sig_s dst;
   otrng_assert_is_error(
-      otrng_rsig_authenticate(&dst, p1->priv, p1->pub, p2->pub, p3->pub, p2->pub,
+      otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p2.pub, p3.pub, p2.pub,
                               (unsigned char *)msg, strlen(msg)));
 
   otrng_assert_is_error(
-      otrng_rsig_authenticate(&dst, p1->priv, p1->pub, p1->pub, p3->pub, p1->pub,
+      otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p1.pub, p3.pub, p1.pub,
                               (unsigned char *)msg, strlen(msg)));
 
   otrng_assert_is_success(
-      otrng_rsig_authenticate(&dst, p1->priv, p1->pub, p1->pub, p2->pub, p3->pub,
+      otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p1.pub, p2.pub, p3.pub,
                               (unsigned char *)msg, strlen(msg)));
 
-  otrng_assert(otrng_rsig_verify(&dst, p1->pub, p2->pub, p3->pub,
+  otrng_assert(otrng_rsig_verify(&dst, p1.pub, p2.pub, p3.pub,
                                  (unsigned char *)msg, strlen(msg)));
 
   otrng_assert_is_success(
-      otrng_rsig_authenticate(&dst, p1->priv, p1->pub, p3->pub, p1->pub, p2->pub,
+      otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p3.pub, p1.pub, p2.pub,
                               (unsigned char *)msg, strlen(msg)));
 
-  otrng_assert(otrng_rsig_verify(&dst, p3->pub, p1->pub, p2->pub,
+  otrng_assert(otrng_rsig_verify(&dst, p3.pub, p1.pub, p2.pub,
                                  (unsigned char *)msg, strlen(msg)));
 }
 
 static void test_rsig_compatible_with_prekey_server() {
-  otrng_keypair_p p1, p2, p3;
+  otrng_keypair_s p1, p2, p3;
 
   // Copied from
   uint8_t p1_priv[ED448_SCALAR_BYTES] = {
@@ -115,8 +115,8 @@ static void test_rsig_compatible_with_prekey_server() {
       0x7e, 0x3a, 0x39, 0xcb, 0x22, 0xe6, 0x19, 0xbd, 0xca, 0x71, 0x7d, 0x15,
       0x2,  0x4f, 0x6,  0xfd, 0xf7, 0x8f, 0xb1, 0x6,  0x80};
 
-  otrng_ec_scalar_decode(p1->priv, p1_priv);
-  otrng_ec_point_decode(p1->pub, p1_pub);
+  otrng_ec_scalar_decode(p1.priv, p1_priv);
+  otrng_ec_point_decode(p1.pub, p1_pub);
 
   uint8_t p2_priv[ED448_SCALAR_BYTES] = {
       0x39, 0xbf, 0x76, 0xb3, 0xc5, 0x3e, 0x36, 0xc9, 0x30, 0x51, 0xcc, 0x4c,
@@ -132,8 +132,8 @@ static void test_rsig_compatible_with_prekey_server() {
       0x99, 0x69, 0x61, 0x25, 0xac, 0x67, 0x79, 0x34, 0x86, 0xa7, 0x3f, 0x3a,
       0x33, 0x70, 0xfb, 0xcd, 0xa,  0x52, 0x87, 0x64, 0x0};
 
-  otrng_ec_scalar_decode(p2->priv, p2_priv);
-  otrng_ec_point_decode(p2->pub, p2_pub);
+  otrng_ec_scalar_decode(p2.priv, p2_priv);
+  otrng_ec_point_decode(p2.pub, p2_pub);
 
   uint8_t p3_priv[ED448_SCALAR_BYTES] = {
       0xdd, 0x86, 0x6d, 0x0,  0x25, 0xde, 0xf2, 0xe5, 0x3c, 0xb0, 0x2c, 0x62,
@@ -149,15 +149,15 @@ static void test_rsig_compatible_with_prekey_server() {
       0xdc, 0x8e, 0x8b, 0x74, 0x31, 0xe,  0x80, 0x55, 0x73, 0x9d, 0x63, 0x43,
       0x30, 0xdb, 0xb9, 0x72, 0x6d, 0x48, 0x4e, 0x27, 0x80};
 
-  otrng_ec_scalar_decode(p3->priv, p3_priv);
-  otrng_ec_point_decode(p3->pub, p3_pub);
+  otrng_ec_scalar_decode(p3.priv, p3_priv);
+  otrng_ec_point_decode(p3.pub, p3_pub);
 
   // Test if the keys are OK
   const char *msg = "hi";
   ring_sig_s dst;
-  otrng_assert(otrng_rsig_authenticate(&dst, p1->priv, p1->pub, p1->pub, p2->pub,
-                                       p3->pub, (unsigned char *)msg, 2));
-  otrng_assert(otrng_rsig_verify(&dst, p1->pub, p2->pub, p3->pub,
+  otrng_assert(otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p1.pub, p2.pub,
+                                       p3.pub, (unsigned char *)msg, 2));
+  otrng_assert(otrng_rsig_verify(&dst, p1.pub, p2.pub, p3.pub,
                                  (const uint8_t *)msg, 2));
 
   uint8_t rsig[6 * ED448_SCALAR_BYTES] = {
@@ -208,7 +208,7 @@ static void test_rsig_compatible_with_prekey_server() {
       otrng_deserialize_ring_sig(&proof, rsig, sizeof(rsig), NULL));
 
   otrng_assert(otrng_rsig_verify_with_usage_and_domain(
-      0x11, "OTR-Prekey-Server", &proof, p1->pub, p2->pub, p3->pub,
+      0x11, "OTR-Prekey-Server", &proof, p1.pub, p2.pub, p3.pub,
       (const uint8_t *)msg, 2));
 }
 

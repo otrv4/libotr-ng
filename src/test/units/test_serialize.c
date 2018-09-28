@@ -79,20 +79,20 @@ static void test_serialize_otrng_deserialize_data() {
 }
 
 static void test_ser_des_otrng_public_key() {
-  otrng_keypair_p keypair;
+  otrng_keypair_s keypair;
   otrng_public_key_p deserialized;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_generate(keypair, sym);
+  otrng_keypair_generate(&keypair, sym);
 
   uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(otrng_serialize_public_key(serialized, keypair->pub), ==,
+  g_assert_cmpint(otrng_serialize_public_key(serialized, keypair.pub), ==,
                   ED448_PUBKEY_BYTES);
   otrng_assert_is_success(otrng_deserialize_public_key(
       deserialized, serialized, ED448_PUBKEY_BYTES, NULL));
 
   otrng_assert(otrng_ec_point_valid(deserialized));
 
-  otrng_assert(otrng_ec_point_eq(deserialized, keypair->pub));
+  otrng_assert(otrng_ec_point_eq(deserialized, keypair.pub));
 }
 
 static void test_ser_des_otrng_shared_prekey() {
@@ -115,9 +115,9 @@ static void test_ser_des_otrng_shared_prekey() {
 }
 
 static void test_serialize_otrng_symmetric_key() {
-  otrng_keypair_p keypair;
+  otrng_keypair_s keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_generate(keypair, sym);
+  otrng_keypair_generate(&keypair, sym);
 
   const char *expected =
       "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -193,11 +193,11 @@ static void test_serializes_fingerprint() {
   };
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_p keypair;
-  otrng_keypair_generate(keypair, sym);
+  otrng_keypair_s keypair;
+  otrng_keypair_generate(&keypair, sym);
 
   otrng_fingerprint_p dst = {0};
-  otrng_assert(otrng_serialize_fingerprint(dst, keypair->pub));
+  otrng_assert(otrng_serialize_fingerprint(dst, keypair.pub));
 
   otrng_assert_cmpmem(expected_fp, dst, sizeof(otrng_fingerprint_p));
 }

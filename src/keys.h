@@ -46,7 +46,7 @@ typedef struct otrng_keypair_s {
 
   otrng_public_key_p pub;
   otrng_private_key_p priv;
-} otrng_keypair_s, otrng_keypair_p[1];
+} otrng_keypair_s;
 
 // TODO: @refactoring @spec implement correctly when the spec comes
 typedef struct otrng_shared_prekey_pair_s {
@@ -54,7 +54,7 @@ typedef struct otrng_shared_prekey_pair_s {
 
   otrng_shared_prekey_pub_p pub;
   otrng_shared_prekey_priv_p priv;
-} otrng_shared_prekey_pair_s, otrng_shared_prekey_pair_p[1];
+} otrng_shared_prekey_pair_s;
 
 INTERNAL otrng_keypair_s *otrng_keypair_new(void);
 

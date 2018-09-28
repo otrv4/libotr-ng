@@ -25,7 +25,7 @@
 #include "prekey_proofs.h"
 
 static void test_ecdh_proof_generation_and_validation(void) {
-  otrng_keypair_p v1, v2, v3, v4;
+  otrng_keypair_s v1, v2, v3, v4;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {1}, sym2[ED448_PRIVATE_BYTES] = {2},
           sym3[ED448_PRIVATE_BYTES] = {3}, sym4[ED448_PRIVATE_BYTES] = {4};
   ec_scalar_p privs[3];
@@ -34,17 +34,17 @@ static void test_ecdh_proof_generation_and_validation(void) {
   uint8_t m2[64] = {0x03, 0x02, 0x01};
   ecdh_proof_s res;
 
-  otrng_keypair_generate(v1, sym1);
-  otrng_keypair_generate(v2, sym2);
-  otrng_keypair_generate(v3, sym3);
-  otrng_keypair_generate(v4, sym4);
+  otrng_keypair_generate(&v1, sym1);
+  otrng_keypair_generate(&v2, sym2);
+  otrng_keypair_generate(&v3, sym3);
+  otrng_keypair_generate(&v4, sym4);
 
-  goldilocks_448_scalar_copy(privs[0], v1->priv);
-  goldilocks_448_scalar_copy(privs[1], v2->priv);
-  goldilocks_448_scalar_copy(privs[2], v3->priv);
-  goldilocks_448_point_copy(pubs[0], v1->pub);
-  goldilocks_448_point_copy(pubs[1], v2->pub);
-  goldilocks_448_point_copy(pubs[2], v3->pub);
+  goldilocks_448_scalar_copy(privs[0], v1.priv);
+  goldilocks_448_scalar_copy(privs[1], v2.priv);
+  goldilocks_448_scalar_copy(privs[2], v3.priv);
+  goldilocks_448_point_copy(pubs[0], v1.pub);
+  goldilocks_448_point_copy(pubs[1], v2.pub);
+  goldilocks_448_point_copy(pubs[2], v3.pub);
 
   otrng_assert_is_success(otrng_ecdh_proof_generate(
       &res, (const ec_scalar_p *)privs, (const ec_point_p *)pubs, 3, m, 0x13));
@@ -55,7 +55,7 @@ static void test_ecdh_proof_generation_and_validation(void) {
   otrng_assert(
       !otrng_ecdh_proof_verify(&res, (const ec_point_p *)pubs, 3, m2, 0x13));
 
-  goldilocks_448_point_copy(pubs[1], v4->pub);
+  goldilocks_448_point_copy(pubs[1], v4.pub);
 
   otrng_assert(
       !otrng_ecdh_proof_verify(&res, (const ec_point_p *)pubs, 3, m, 0x13));
@@ -165,7 +165,7 @@ static void test_dh_proof_generation_and_validation_specific_values(void) {
 }
 
 static void test_ecdh_proof_serialization(void) {
-  otrng_keypair_p v1;
+  otrng_keypair_s v1;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {1};
   ecdh_proof_s px;
   uint8_t out[64 + ED448_SCALAR_BYTES] = {0};
@@ -185,8 +185,8 @@ static void test_ecdh_proof_serialization(void) {
 
   memset(px.c, 0, 64);
 
-  otrng_keypair_generate(v1, sym1);
-  goldilocks_448_scalar_copy(px.v, v1->priv);
+  otrng_keypair_generate(&v1, sym1);
+  goldilocks_448_scalar_copy(px.v, v1.priv);
   px.c[0] = 0x42;
   px.c[63] = 0x53;
 
@@ -230,7 +230,7 @@ static void test_dh_proof_serialization(void) {
 }
 
 static void test_ecdh_proof_deserialization(void) {
-  otrng_keypair_p v1;
+  otrng_keypair_s v1;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {1};
   uint8_t data[64 + ED448_SCALAR_BYTES + 2] = {
       0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -256,13 +256,13 @@ static void test_ecdh_proof_deserialization(void) {
   ecdh_proof_s px;
   size_t read;
 
-  otrng_keypair_generate(v1, sym1);
+  otrng_keypair_generate(&v1, sym1);
 
   otrng_assert_is_success(otrng_ecdh_proof_deserialize(
       &px, data, 64 + ED448_SCALAR_BYTES + 2, &read));
   g_assert_cmpuint(120, ==, read);
   otrng_assert_cmpmem(expected_c, px.c, 64);
-  otrng_assert(otrng_ec_scalar_eq(px.v, v1->priv));
+  otrng_assert(otrng_ec_scalar_eq(px.v, v1.priv));
 }
 
 static void test_dh_proof_deserialization(void) {
