@@ -133,8 +133,7 @@ INTERNAL otrng_result otrng_generate_smp_msg_1(smp_msg_1_s *dst,
   otrng_zq_keypair_generate(pair_r2.pub, pair_r2.priv);
   otrng_zq_keypair_generate(pair_r3.pub, pair_r3.priv);
 
-  if (otrng_serialize_ec_point(ser_point_1, pair_r2.pub) !=
-      ED448_POINT_BYTES) {
+  if (otrng_serialize_ec_point(ser_point_1, pair_r2.pub) != ED448_POINT_BYTES) {
     return otrng_false;
   }
 
@@ -147,8 +146,7 @@ INTERNAL otrng_result otrng_generate_smp_msg_1(smp_msg_1_s *dst,
   goldilocks_448_scalar_mul(a2c2, smp->a2, dst->c2);
   goldilocks_448_scalar_sub(dst->d2, pair_r2.priv, a2c2);
 
-  if (otrng_serialize_ec_point(ser_point_2, pair_r3.pub) !=
-      ED448_POINT_BYTES) {
+  if (otrng_serialize_ec_point(ser_point_2, pair_r3.pub) != ED448_POINT_BYTES) {
     return otrng_false;
   }
 
@@ -364,8 +362,7 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
 
   ed448_random_scalar(r6);
 
-  if (otrng_serialize_ec_point(ser_point_1, pair_r2.pub) !=
-      ED448_POINT_BYTES) {
+  if (otrng_serialize_ec_point(ser_point_1, pair_r2.pub) != ED448_POINT_BYTES) {
     return otrng_false;
   }
 
@@ -378,8 +375,7 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
   goldilocks_448_scalar_mul(temp_scalar, b2, dst->c2);
   goldilocks_448_scalar_sub(dst->d2, pair_r2.priv, temp_scalar);
 
-  if (otrng_serialize_ec_point(ser_point_2, pair_r3.pub) !=
-      ED448_POINT_BYTES) {
+  if (otrng_serialize_ec_point(ser_point_2, pair_r3.pub) != ED448_POINT_BYTES) {
     return otrng_false;
   }
 
@@ -754,8 +750,7 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
   goldilocks_448_point_scalarmul(dst->ra, smp->qa_qb, smp->a3);
 
   /* cr = HashToScalar(7 || G * r7 || (Qa - Qb) * r7) */
-  if (otrng_serialize_ec_point(ser_point_3, pair_r7.pub) !=
-      ED448_POINT_BYTES) {
+  if (otrng_serialize_ec_point(ser_point_3, pair_r7.pub) != ED448_POINT_BYTES) {
     return otrng_false;
   }
 
@@ -997,8 +992,7 @@ tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
   goldilocks_448_point_scalarmul(dst->rb, qa_qb, smp->b3);
 
   /* cr = HashToScalar(8 || G * r7 || (Qa - Qb) * r7) */
-  if (otrng_serialize_ec_point(ser_point_1, pair_r7.pub) !=
-      ED448_POINT_BYTES) {
+  if (otrng_serialize_ec_point(ser_point_1, pair_r7.pub) != ED448_POINT_BYTES) {
     return otrng_false;
   }
 
