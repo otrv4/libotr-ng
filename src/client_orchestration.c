@@ -101,16 +101,16 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
 }
 
 static otrng_bool orchestration_reentry;
-tstatic void ensure_prekey_profile(otrng_client_s *client) {
-  if (client->prekey_profile == NULL) {
+tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
+  if (!client->prekey_profile) {
     load_prekey_profile_from_storage(client);
   }
 
-  if (client->prekey_profile == NULL) {
+  if (!client->prekey_profile) {
     create_prekey_profile(client);
   }
 
-  if (client->prekey_profile == NULL) {
+  if (!client->prekey_profile) {
     signal_error_in_state_management(client, "prekey profile");
   }
 }
@@ -126,7 +126,7 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
 
   ensure_valid_long_term_key(client);
   ensure_valid_client_profile(client);
-  ensure_prekey_profile(client);
+  ensure_valid_prekey_profile(client);
 
   orchestration_reentry = otrng_false;
 
