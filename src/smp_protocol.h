@@ -43,48 +43,48 @@
 typedef struct smp_msg_1_s {
   uint8_t *question;
   size_t q_len;
-  ec_point_p g2a;
-  ec_scalar_p c2;
-  ec_scalar_p d2;
-  ec_point_p g3a;
-  ec_scalar_p c3;
-  ec_scalar_p d3;
+  ec_point g2a;
+  ec_scalar c2;
+  ec_scalar d2;
+  ec_point g3a;
+  ec_scalar c3;
+  ec_scalar d3;
 } smp_msg_1_s;
 
 typedef struct smp_msg_2_s {
-  ec_point_p g2b;
-  ec_scalar_p c2;
-  ec_scalar_p d2;
-  ec_point_p g3b;
-  ec_scalar_p c3;
-  ec_scalar_p d3;
-  ec_point_p pb;
-  ec_point_p qb;
-  ec_scalar_p cp;
-  ec_scalar_p d5;
-  ec_scalar_p d6;
+  ec_point g2b;
+  ec_scalar c2;
+  ec_scalar d2;
+  ec_point g3b;
+  ec_scalar c3;
+  ec_scalar d3;
+  ec_point pb;
+  ec_point qb;
+  ec_scalar cp;
+  ec_scalar d5;
+  ec_scalar d6;
 } smp_msg_2_s;
 
 typedef struct smp_msg_3_s {
-  ec_point_p pa, qa;
-  ec_scalar_p cp, d5, d6;
-  ec_point_p ra;
-  ec_scalar_p cr, d7;
+  ec_point pa, qa;
+  ec_scalar cp, d5, d6;
+  ec_point ra;
+  ec_scalar cr, d7;
 } smp_msg_3_s;
 
 typedef struct smp_msg_4_s {
-  ec_point_p rb;
-  ec_scalar_p cr, d7;
+  ec_point rb;
+  ec_scalar cr, d7;
 } smp_msg_4_s;
 
 typedef struct smp_protocol_s {
   char state_expect;
   uint8_t *secret; /* already hashed: 64 bytes long */
-  ec_scalar_p a2, a3, b3;
-  ec_point_p g2, g3;
-  ec_point_p g3a, g3b;
-  ec_point_p pb, qb;
-  ec_point_p pa_pb, qa_qb;
+  ec_scalar a2, a3, b3;
+  ec_point g2, g3;
+  ec_point g3a, g3b;
+  ec_point pb, qb;
+  ec_point pa_pb, qa_qb;
 
   uint8_t progress;
   smp_msg_1_s *msg1;

@@ -171,7 +171,7 @@
 
 #define otrng_assert_ec_public_key_eq(pk1, pk2)                                \
   do {                                                                         \
-    otrng_assert_cmpmem((pk1), (pk2), sizeof(ec_point_p));                     \
+    otrng_assert_cmpmem((pk1), (pk2), sizeof(ec_point));                       \
   } while (0)
 
 #define otrng_assert_dh_public_key_eq(pk1, pk2)                                \
@@ -247,8 +247,8 @@
     }                                                                          \
   } while (0)
 
-static inline void otrng_assert_point_equals(const ec_point_p expected,
-                                             const ec_point_p actual) {
+static inline void otrng_assert_point_equals(const ec_point expected,
+                                             const ec_point actual) {
   g_assert_cmpint(otrng_ec_point_eq(expected, actual), !=, otrng_false);
 }
 

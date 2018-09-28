@@ -172,7 +172,7 @@ INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi *dst,
   return ret;
 }
 
-INTERNAL otrng_result otrng_deserialize_ec_point(ec_point_p point,
+INTERNAL otrng_result otrng_deserialize_ec_point(ec_point point,
                                                  const uint8_t *serialized,
                                                  size_t buflen) {
   if (buflen < ED448_POINT_BYTES) {
@@ -275,7 +275,7 @@ INTERNAL otrng_result otrng_deserialize_shared_prekey(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar_p scalar,
+INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar scalar,
                                                   const uint8_t *serialized,
                                                   size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES) {

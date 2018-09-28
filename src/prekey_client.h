@@ -48,7 +48,7 @@
 typedef struct {
   uint32_t client_instance_tag;
   client_profile_s *client_profile;
-  ec_point_p I;
+  ec_point I;
 } otrng_prekey_dake1_message_s;
 
 typedef struct {
@@ -60,7 +60,7 @@ typedef struct {
   uint8_t *server_identity;
   size_t server_identity_len;
   otrng_public_key server_pub_key;
-  ec_point_p S;
+  ec_point S;
   ring_sig_s *sigma;
 } otrng_prekey_dake2_message_s;
 
@@ -77,9 +77,9 @@ typedef struct {
   client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
 
-  ec_scalar_p *ecdh_keys;
+  ec_scalar *ecdh_keys;
   dh_mpi *dh_keys;
-  ec_scalar_p prekey_profile_key;
+  ec_scalar prekey_profile_key;
 } otrng_prekey_publication_message_s;
 
 typedef struct {

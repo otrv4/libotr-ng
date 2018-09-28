@@ -39,12 +39,12 @@
  *  [c1..r3] the scalars for the signature
  */
 typedef struct ring_sig_s {
-  ec_scalar_p c1;
-  ec_scalar_p r1;
-  ec_scalar_p c2;
-  ec_scalar_p r2;
-  ec_scalar_p c3;
-  ec_scalar_p r3;
+  ec_scalar c1;
+  ec_scalar r1;
+  ec_scalar c2;
+  ec_scalar r2;
+  ec_scalar c3;
+  ec_scalar r3;
 } ring_sig_s;
 
 /**

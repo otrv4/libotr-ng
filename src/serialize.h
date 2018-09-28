@@ -49,10 +49,9 @@ INTERNAL size_t otrng_serialize_data(uint8_t *target, const uint8_t *data,
 
 INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_s *mpi);
 
-INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_p point);
+INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point point);
 
-INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
-                                          const ec_scalar_p scalar);
+INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst, const ec_scalar scalar);
 
 INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
                                                  size_t *written,

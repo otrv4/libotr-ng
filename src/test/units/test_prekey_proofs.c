@@ -28,8 +28,8 @@ static void test_ecdh_proof_generation_and_validation(void) {
   otrng_keypair_s v1, v2, v3, v4;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {1}, sym2[ED448_PRIVATE_BYTES] = {2},
           sym3[ED448_PRIVATE_BYTES] = {3}, sym4[ED448_PRIVATE_BYTES] = {4};
-  ec_scalar_p privs[3];
-  ec_point_p pubs[3];
+  ec_scalar privs[3];
+  ec_point pubs[3];
   uint8_t m[64] = {0x01, 0x02, 0x03};
   uint8_t m2[64] = {0x03, 0x02, 0x01};
   ecdh_proof_s res;
@@ -47,18 +47,18 @@ static void test_ecdh_proof_generation_and_validation(void) {
   goldilocks_448_point_copy(pubs[2], v3.pub);
 
   otrng_assert_is_success(otrng_ecdh_proof_generate(
-      &res, (const ec_scalar_p *)privs, (const ec_point_p *)pubs, 3, m, 0x13));
+      &res, (const ec_scalar *)privs, (const ec_point *)pubs, 3, m, 0x13));
   otrng_assert(
-      otrng_ecdh_proof_verify(&res, (const ec_point_p *)pubs, 3, m, 0x13));
+      otrng_ecdh_proof_verify(&res, (const ec_point *)pubs, 3, m, 0x13));
   otrng_assert(
-      !otrng_ecdh_proof_verify(&res, (const ec_point_p *)pubs, 3, m, 0x14));
+      !otrng_ecdh_proof_verify(&res, (const ec_point *)pubs, 3, m, 0x14));
   otrng_assert(
-      !otrng_ecdh_proof_verify(&res, (const ec_point_p *)pubs, 3, m2, 0x13));
+      !otrng_ecdh_proof_verify(&res, (const ec_point *)pubs, 3, m2, 0x13));
 
   goldilocks_448_point_copy(pubs[1], v4.pub);
 
   otrng_assert(
-      !otrng_ecdh_proof_verify(&res, (const ec_point_p *)pubs, 3, m, 0x13));
+      !otrng_ecdh_proof_verify(&res, (const ec_point *)pubs, 3, m, 0x13));
 }
 
 static void *fixed_random_number_generator(size_t n) {

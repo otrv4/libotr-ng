@@ -29,11 +29,11 @@
 #include "error.h"
 #include "shared.h"
 
-/* ec_scalar_p represents a scalar. */
-typedef goldilocks_448_scalar_p ec_scalar_p;
-/* ec_point_p represents a ed488 point. It is in the twisted ed448-goldilocks,
+/* ec_scalar represents a scalar. */
+typedef goldilocks_448_scalar_p ec_scalar;
+/* ec_point represents a ed488 point. It is in the twisted ed448-goldilocks,
    curve representation following the decaf technique. */
-typedef goldilocks_448_point_p ec_point_p;
+typedef goldilocks_448_point_p ec_point;
 
 /** Number of bytes in an EdDSA private key: 57 */
 #define ED448_PRIVATE_BYTES GOLDILOCKS_EDDSA_448_PRIVATE_BYTES
@@ -56,8 +56,8 @@ typedef uint8_t eddsa_signature[ED448_SIGNATURE_BYTES];
  *  [pub]  the public key
  */
 typedef struct ecdh_keypair_s {
-  ec_scalar_p priv;
-  ec_point_p pub;
+  ec_scalar priv;
+  ec_point pub;
 } ecdh_keypair_s;
 
 /**
@@ -67,7 +67,7 @@ typedef struct ecdh_keypair_s {
  * @param [a]   A scalar.
  * @param [out] Will become a copy of a.
  */
-INTERNAL void otrng_ec_scalar_copy(ec_scalar_p dst, const ec_scalar_p a);
+INTERNAL void otrng_ec_scalar_copy(ec_scalar dst, const ec_scalar a);
 
 /**
  * @brief Compare two scalars.
@@ -78,15 +78,14 @@ INTERNAL void otrng_ec_scalar_copy(ec_scalar_p dst, const ec_scalar_p a);
  * @retval otrng_true The scalars are equal.
  * @retval otrng_false The scalars are not equal.
  */
-INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar_p a,
-                                       const ec_scalar_p b);
+INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar a, const ec_scalar b);
 /**
  * @brief Encode a scalar to wire format.
  *
  * @param [enc] Encoded form of a scalar.
  * @param [s] Deserialized scalar.
  */
-INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar_p s);
+INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar s);
 
 /**
  * @brief Read a scalar from wire format or from bytes.  Reduces mod
@@ -95,11 +94,11 @@ INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar_p s);
  * @param [enc] Encoded form of a scalar.
  * @param [s] Deserialized form.
  */
-INTERNAL void otrng_ec_scalar_decode(ec_scalar_p s,
+INTERNAL void otrng_ec_scalar_decode(ec_scalar s,
                                      const uint8_t enc[ED448_SCALAR_BYTES]);
 
 /** Securely erase a scalar. */
-INTERNAL void otrng_ec_scalar_destroy(ec_scalar_p s);
+INTERNAL void otrng_ec_scalar_destroy(ec_scalar s);
 
 /**
  * @brief Copy a point.  The input and output may alias,
@@ -108,7 +107,7 @@ INTERNAL void otrng_ec_scalar_destroy(ec_scalar_p s);
  * @param [dst] A copy of the point.
  * @param [p] Any point.
  */
-INTERNAL void otrng_ec_point_copy(ec_point_p dst, const ec_point_p p);
+INTERNAL void otrng_ec_point_copy(ec_point dst, const ec_point p);
 
 /**
  * @brief Check whether two points are equal.  If yes, return
@@ -120,7 +119,7 @@ INTERNAL void otrng_ec_point_copy(ec_point_p dst, const ec_point_p p);
  * @retval otrng_true The points are equal.
  * @retval otrng_false The points are not equal.
  */
-INTERNAL otrng_bool otrng_ec_point_eq(const ec_point_p p, const ec_point_p q);
+INTERNAL otrng_bool otrng_ec_point_eq(const ec_point p, const ec_point q);
 
 /**
  * @brief Check that a point is valid.
@@ -130,7 +129,7 @@ INTERNAL otrng_bool otrng_ec_point_eq(const ec_point_p p, const ec_point_p q);
  * @retval otrng_true The point is valid.
  * @retval otrng_false The point is invalid.
  */
-INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p);
+INTERNAL otrng_bool otrng_ec_point_valid(const ec_point p);
 
 /**
  * @brief EdDSA point encoding.
@@ -147,7 +146,7 @@ INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_p p);
  * @param [p]   The point.
  */
 INTERNAL otrng_result otrng_ec_point_encode(uint8_t *enc, size_t len,
-                                            const ec_point_p p);
+                                            const ec_point p);
 
 /**
  * @brief EdDSA point decoding.
@@ -156,12 +155,12 @@ INTERNAL otrng_result otrng_ec_point_encode(uint8_t *enc, size_t len,
  * @param [p]   The point.
  */
 INTERNAL otrng_result
-otrng_ec_point_decode(ec_point_p p, const uint8_t enc[ED448_POINT_BYTES]);
+otrng_ec_point_decode(ec_point p, const uint8_t enc[ED448_POINT_BYTES]);
 
 /** Securely erase a point by overwriting it with zeros.
  * @warning This causes the point object to become invalid.
  */
-INTERNAL void otrng_ec_point_destroy(ec_point_p p);
+INTERNAL void otrng_ec_point_destroy(ec_point p);
 
 /**
  * @brief EdDSA key secret key generation.
@@ -170,7 +169,7 @@ INTERNAL void otrng_ec_point_destroy(ec_point_p p);
  * @param [sym]  The symmetric key.
  */
 INTERNAL void
-otrng_ec_scalar_derive_from_secret(ec_scalar_p priv,
+otrng_ec_scalar_derive_from_secret(ec_scalar priv,
                                    const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 /**
@@ -183,8 +182,7 @@ INTERNAL void
 otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
                            const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-INTERNAL void otrng_ec_calculate_public_key(ec_point_p pub,
-                                            const ec_scalar_p priv);
+INTERNAL void otrng_ec_calculate_public_key(ec_point pub, const ec_scalar priv);
 
 /**
  * @brief Keypair generation.
@@ -217,8 +215,8 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair);
  */
 INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                                size_t shared_secret_len,
-                                               const ec_scalar_p our_priv,
-                                               const ec_point_p their_pub);
+                                               const ec_scalar our_priv,
+                                               const ec_point their_pub);
 
 /**
  * @brief EdDSA signing.
@@ -249,7 +247,7 @@ INTERNAL otrng_bool otrng_ec_verify(
     const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg, size_t msg_len);
 
 INTERNAL void
-otrng_ecdh_keypair_generate_their(ec_point_p keypair,
+otrng_ecdh_keypair_generate_their(ec_point keypair,
                                   const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 #ifdef DEBUG_API

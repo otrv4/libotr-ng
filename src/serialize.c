@@ -79,7 +79,7 @@ INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_s *mpi) {
   return otrng_serialize_data(dst, mpi->data, mpi->len);
 }
 
-INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_p point) {
+INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point point) {
   if (!otrng_ec_point_encode(dst, ED448_POINT_BYTES, point)) {
     return 0;
   };
@@ -88,7 +88,7 @@ INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_p point) {
 }
 
 INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
-                                          const ec_scalar_p scalar) {
+                                          const ec_scalar scalar) {
   otrng_ec_scalar_encode(dst, scalar);
   return ED448_SCALAR_BYTES;
 }
