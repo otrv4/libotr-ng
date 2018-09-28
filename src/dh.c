@@ -159,7 +159,7 @@ INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
   gcry_mpi_powm(pub, DH3072_GENERATOR, priv, DH3072_MODULUS);
 }
 
-INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_p keypair) {
+INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_s *keypair) {
   uint8_t *hash = otrng_secure_alloc(DH_KEY_SIZE);
   gcry_mpi_t privkey = NULL;
   uint8_t *secbuf = NULL;
@@ -186,7 +186,7 @@ INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_p keypair) {
 }
 
 INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
-    uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair,
+    uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_s *keypair,
     const char participant) {
   gcry_mpi_t privkey = NULL;
   uint8_t *random_buff = otrng_secure_alloc(DH_KEY_SIZE);
@@ -221,17 +221,17 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
   return OTRNG_SUCCESS;
 }
 
-tstatic void dh_pub_key_destroy(dh_keypair_p keypair) {
+tstatic void dh_pub_key_destroy(dh_keypair_s *keypair) {
   gcry_mpi_release(keypair->pub);
   keypair->pub = NULL;
 }
 
-INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_p keypair) {
+INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_s *keypair) {
   gcry_mpi_release(keypair->priv);
   keypair->priv = NULL;
 }
 
-INTERNAL void otrng_dh_keypair_destroy(dh_keypair_p keypair) {
+INTERNAL void otrng_dh_keypair_destroy(dh_keypair_s *keypair) {
   otrng_dh_priv_key_destroy(keypair);
   dh_pub_key_destroy(keypair);
 }

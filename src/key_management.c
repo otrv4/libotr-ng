@@ -56,6 +56,7 @@ INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
   memset(manager, 0, sizeof(key_manager_s));
   manager->current = ratchet_new();
   manager->ssid_half_first = otrng_false;
+  manager->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
 }
 
 INTERNAL key_manager_s *otrng_key_manager_new(void) {
@@ -325,7 +326,7 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
     }
 
   } else if (participant == 't') {
-    dh_keypair_p tmp_their_dh;
+    dh_keypair_s tmp_their_dh;
 
     shake_256_kdf1(random_buff, sizeof random_buff, usage_ECDH_first_ephemeral,
                    manager->shared_secret, sizeof(shared_secret_p));
@@ -343,11 +344,11 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
     /* @secret this will be deleted once received a new data message in a new
      * ratchet */
     if (!otrng_dh_keypair_generate_from_shared_secret(
-            manager->shared_secret, tmp_their_dh, participant)) {
+            manager->shared_secret, &tmp_their_dh, participant)) {
       return OTRNG_ERROR;
     }
 
-    manager->their_dh = tmp_their_dh->pub;
+    manager->their_dh = tmp_their_dh.pub;
   }
   return OTRNG_SUCCESS;
 }

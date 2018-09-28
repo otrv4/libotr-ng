@@ -94,6 +94,7 @@ tstatic void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
 
   otrng_ecdh_keypair_destroy(s->our_ecdh);
   otrng_dh_keypair_destroy(s->our_dh);
+  free(s->our_dh);
 
   free(s);
 }
@@ -540,14 +541,14 @@ otrng_client_get_prekey_client(const char *server_identity,
 
 INTERNAL void otrng_client_store_my_prekey_message(
     uint32_t id, uint32_t instance_tag, const ecdh_keypair_p ecdh_pair,
-    const dh_keypair_p dh_pair, otrng_client_s *client) {
+    const dh_keypair_s *dh_pair, otrng_client_s *client) {
   otrng_stored_prekeys_s *stored_prekey_msg;
   if (!client) {
     return;
   }
 
   stored_prekey_msg = otrng_xmalloc(sizeof(otrng_stored_prekeys_s));
-
+  stored_prekey_msg->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
   stored_prekey_msg->id = id;
   stored_prekey_msg->sender_instance_tag = instance_tag;
 
@@ -584,11 +585,11 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
 
   for (i = 0; i < num_messages; i++) {
     ecdh_keypair_p ecdh;
-    dh_keypair_p dh;
-    otrng_generate_ephemeral_keys(ecdh, dh);
+    dh_keypair_s dh;
+    otrng_generate_ephemeral_keys(ecdh, &dh);
 
     messages[i] =
-        otrng_dake_prekey_message_build(instance_tag, ecdh->pub, dh->pub);
+        otrng_dake_prekey_message_build(instance_tag, ecdh->pub, dh.pub);
     if (!messages[i]) {
       for (j = 0; j < i; j++) {
         otrng_dake_prekey_message_free(messages[j]);
@@ -597,10 +598,10 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
       return NULL;
     }
     goldilocks_448_scalar_copy(ke[i], ecdh->priv);
-    kd[i] = otrng_dh_mpi_copy(dh->priv);
+    kd[i] = otrng_dh_mpi_copy(dh.priv);
 
     otrng_client_store_my_prekey_message(
-        messages[i]->id, messages[i]->sender_instance_tag, ecdh, dh, client);
+        messages[i]->id, messages[i]->sender_instance_tag, ecdh, &dh, client);
 
     // TODO: ecdh_keypair_destroy()
     // dh_keypair_detroy()

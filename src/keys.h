@@ -76,7 +76,7 @@ INTERNAL void
 otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair);
 
 INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,
-                                                    dh_keypair_p dh);
+                                                    dh_keypair_s *dh);
 
 /**
  * @brief Derive keys from the extra symmetric key.

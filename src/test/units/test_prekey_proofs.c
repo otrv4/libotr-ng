@@ -74,24 +74,24 @@ static void *fixed_random_number_generator(size_t n) {
 }
 
 static void test_dh_proof_generation_and_validation(void) {
-  dh_keypair_p v1, v2, v3, v4;
+  dh_keypair_s v1, v2, v3, v4;
   gcry_mpi_t privs[3];
   gcry_mpi_t pubs[3];
   uint8_t m[64] = {0x01, 0x02, 0x03};
   uint8_t m2[64] = {0x03, 0x02, 0x01};
   dh_proof_s res;
 
-  otrng_dh_keypair_generate(v1);
-  otrng_dh_keypair_generate(v2);
-  otrng_dh_keypair_generate(v3);
-  otrng_dh_keypair_generate(v4);
+  otrng_dh_keypair_generate(&v1);
+  otrng_dh_keypair_generate(&v2);
+  otrng_dh_keypair_generate(&v3);
+  otrng_dh_keypair_generate(&v4);
 
-  privs[0] = otrng_dh_mpi_copy(v1->priv);
-  privs[1] = otrng_dh_mpi_copy(v2->priv);
-  privs[2] = otrng_dh_mpi_copy(v3->priv);
-  pubs[0] = otrng_dh_mpi_copy(v1->pub);
-  pubs[1] = otrng_dh_mpi_copy(v2->pub);
-  pubs[2] = otrng_dh_mpi_copy(v3->pub);
+  privs[0] = otrng_dh_mpi_copy(v1.priv);
+  privs[1] = otrng_dh_mpi_copy(v2.priv);
+  privs[2] = otrng_dh_mpi_copy(v3.priv);
+  pubs[0] = otrng_dh_mpi_copy(v1.pub);
+  pubs[1] = otrng_dh_mpi_copy(v2.pub);
+  pubs[2] = otrng_dh_mpi_copy(v3.pub);
 
   otrng_assert_is_success(
       otrng_dh_proof_generate(&res, (const gcry_mpi_t *)privs,
@@ -105,15 +105,15 @@ static void test_dh_proof_generation_and_validation(void) {
       !otrng_dh_proof_verify(&res, (const gcry_mpi_t *)pubs, 3, m2, 0x13));
 
   otrng_dh_mpi_release(pubs[1]);
-  pubs[1] = otrng_dh_mpi_copy(v4->pub);
+  pubs[1] = otrng_dh_mpi_copy(v4.pub);
 
   otrng_assert(
       !otrng_dh_proof_verify(&res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
 
-  otrng_dh_keypair_destroy(v1);
-  otrng_dh_keypair_destroy(v2);
-  otrng_dh_keypair_destroy(v3);
-  otrng_dh_keypair_destroy(v4);
+  otrng_dh_keypair_destroy(&v1);
+  otrng_dh_keypair_destroy(&v2);
+  otrng_dh_keypair_destroy(&v3);
+  otrng_dh_keypair_destroy(&v4);
 
   otrng_dh_mpi_release(privs[0]);
   otrng_dh_mpi_release(privs[1]);

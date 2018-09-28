@@ -83,7 +83,7 @@ typedef struct receiving_ratchet_s {
 typedef struct key_manager_s {
   /* AKE context */
   ecdh_keypair_p our_ecdh;
-  dh_keypair_p our_dh;
+  dh_keypair_s *our_dh;
 
   ec_point_p their_ecdh;
   dh_public_key_p their_dh;

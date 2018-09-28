@@ -24,23 +24,23 @@
 #include "dh.h"
 
 static void test_dh_api() {
-  dh_keypair_p alice, bob;
-  otrng_dh_keypair_generate(alice);
-  otrng_dh_keypair_generate(bob);
+  dh_keypair_s alice, bob;
+  otrng_dh_keypair_generate(&alice);
+  otrng_dh_keypair_generate(&bob);
 
   dh_shared_secret_p shared1, shared2;
   size_t len1 = 0, len2 = 0;
 
   otrng_assert_is_success(
-      otrng_dh_shared_secret(shared1, &len1, alice->priv, bob->pub));
+      otrng_dh_shared_secret(shared1, &len1, alice.priv, bob.pub));
   otrng_assert_is_success(
-      otrng_dh_shared_secret(shared2, &len2, bob->priv, alice->pub));
+      otrng_dh_shared_secret(shared2, &len2, bob.priv, alice.pub));
 
   otrng_assert(len1 == len2);
   otrng_assert_cmpmem(shared1, shared2, len1);
 
-  otrng_dh_keypair_destroy(alice);
-  otrng_dh_keypair_destroy(bob);
+  otrng_dh_keypair_destroy(&alice);
+  otrng_dh_keypair_destroy(&bob);
 }
 
 static void test_dh_shared_secret() {
@@ -167,17 +167,17 @@ static void test_dh_serialize() {
 }
 
 static void test_dh_keypair_destroy() {
-  dh_keypair_p alice;
+  dh_keypair_s alice;
 
-  otrng_dh_keypair_generate(alice);
+  otrng_dh_keypair_generate(&alice);
 
-  otrng_assert(alice->priv);
-  otrng_assert(alice->pub);
+  otrng_assert(alice.priv);
+  otrng_assert(alice.pub);
 
-  otrng_dh_keypair_destroy(alice);
+  otrng_dh_keypair_destroy(&alice);
 
-  otrng_assert(!alice->priv);
-  otrng_assert(!alice->pub);
+  otrng_assert(!alice.priv);
+  otrng_assert(!alice.pub);
 }
 
 void units_dh_add_tests(void) {

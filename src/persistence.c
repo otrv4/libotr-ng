@@ -666,6 +666,8 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   otrng_stored_prekeys_s *prekey_msg =
       otrng_xmalloc(sizeof(otrng_stored_prekeys_s));
 
+  prekey_msg->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
+
   line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
     free(prekey_msg);

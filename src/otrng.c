@@ -895,7 +895,7 @@ tstatic otrng_result reply_with_non_interactive_auth_msg(string_p *dst,
 // publish to the server
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   ecdh_keypair_p ecdh;
-  dh_keypair_p dh;
+  dh_keypair_s dh;
   otrng_client_s *client;
 
   prekey_ensemble_s *ensemble = otrng_prekey_ensemble_new();
@@ -906,23 +906,23 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   otrng_prekey_profile_copy(ensemble->prekey_profile,
                             get_my_prekey_profile(otr));
 
-  if (!otrng_generate_ephemeral_keys(ecdh, dh)) {
+  if (!otrng_generate_ephemeral_keys(ecdh, &dh)) {
     otrng_prekey_ensemble_free(ensemble);
     return NULL;
   }
 
-  ensemble->message = otrng_dake_prekey_message_build(our_instance_tag(otr),
-                                                      ecdh->pub, dh->pub);
+  ensemble->message =
+      otrng_dake_prekey_message_build(our_instance_tag(otr), ecdh->pub, dh.pub);
   if (!ensemble->message) {
     otrng_prekey_ensemble_free(ensemble);
     return NULL;
   }
 
   client = otr->client;
-  otrng_client_store_my_prekey_message(ensemble->message->id,
-                                       our_instance_tag(otr), ecdh, dh, client);
+  otrng_client_store_my_prekey_message(
+      ensemble->message->id, our_instance_tag(otr), ecdh, &dh, client);
   otrng_ecdh_keypair_destroy(ecdh);
-  otrng_dh_keypair_destroy(dh);
+  otrng_dh_keypair_destroy(&dh);
 
   return ensemble;
 }

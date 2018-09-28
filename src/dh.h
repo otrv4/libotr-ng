@@ -43,7 +43,7 @@ typedef uint8_t dh_shared_secret_p[DH3072_MOD_LEN_BYTES];
 typedef struct dh_keypair_s {
   dh_public_key_p pub;
   dh_private_key_p priv;
-} dh_keypair_s, dh_keypair_p[1];
+} dh_keypair_s;
 
 INTERNAL otrng_result otrng_dh_init(otrng_bool die);
 INTERNAL void otrng_dh_free(void);
@@ -51,19 +51,19 @@ INTERNAL void otrng_dh_free(void);
 INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
                                             const dh_private_key_p priv);
 
-INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_p keypair);
+INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_s *keypair);
 
 /**
  * @param [participant]   If this corresponds to our or their key manager. 'u'
  * for us, 't' for them
  */
 INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
-    uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_p keypair,
+    uint8_t shared_secret[SHARED_SECRET_BYTES], dh_keypair_s *keypair,
     const char participant);
 
-INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_p keypair);
+INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_s *keypair);
 
-INTERNAL void otrng_dh_keypair_destroy(dh_keypair_p keypair);
+INTERNAL void otrng_dh_keypair_destroy(dh_keypair_s *keypair);
 
 INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_p buffer,
                                              size_t *written,

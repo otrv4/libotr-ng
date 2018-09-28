@@ -88,7 +88,7 @@ typedef struct {
   uint32_t id;
   uint32_t sender_instance_tag;
   ecdh_keypair_p our_ecdh;
-  dh_keypair_p our_dh;
+  dh_keypair_s *our_dh;
 } otrng_stored_prekeys_s;
 
 API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id);
@@ -168,7 +168,7 @@ otrng_client_get_prekey_client(const char *server_identity,
 
 INTERNAL void otrng_client_store_my_prekey_message(
     uint32_t id, uint32_t instance_tag, const ecdh_keypair_p ecdh_pair,
-    const dh_keypair_p dh_pair, otrng_client_s *client);
+    const dh_keypair_s *dh_pair, otrng_client_s *client);
 
 API dake_prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
