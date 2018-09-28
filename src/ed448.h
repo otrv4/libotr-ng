@@ -59,7 +59,7 @@ typedef uint8_t eddsa_signature_p[ED448_SIGNATURE_BYTES];
 typedef struct ecdh_keypair_s {
   ec_scalar_p priv;
   ec_point_p pub;
-} ecdh_keypair_s, ecdh_keypair_p[1];
+} ecdh_keypair_s;
 
 /**
  * @brief Copy a scalar.  The scalars may use the same memory, in which

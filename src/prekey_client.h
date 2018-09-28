@@ -144,7 +144,7 @@ typedef struct {
   const otrng_keypair_s *keypair;
   const client_profile_s *client_profile;
   const otrng_prekey_profile_s *prekey_profile;
-  ecdh_keypair_p ephemeral_ecdh;
+  ecdh_keypair_s *ephemeral_ecdh;
 
   otrng_prekey_publication_policy_s *publication_policy;
 

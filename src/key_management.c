@@ -56,6 +56,7 @@ INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
   memset(manager, 0, sizeof(key_manager_s));
   manager->current = ratchet_new();
   manager->ssid_half_first = otrng_false;
+  manager->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
   manager->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
 }
 
@@ -67,6 +68,9 @@ INTERNAL key_manager_s *otrng_key_manager_new(void) {
 
 INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   otrng_ecdh_keypair_destroy(manager->our_ecdh);
+  otrng_secure_wipe(manager->our_ecdh, sizeof(ecdh_keypair_s));
+  free(manager->our_ecdh);
+
   otrng_dh_keypair_destroy(manager->our_dh);
   otrng_secure_wipe(manager->our_dh, sizeof(dh_keypair_s));
   free(manager->our_dh);

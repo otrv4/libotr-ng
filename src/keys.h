@@ -75,7 +75,7 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
 INTERNAL void
 otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair);
 
-INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,
+INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_s *ecdh,
                                                     dh_keypair_s *dh);
 
 /**

@@ -27,10 +27,10 @@
 #include "serialize.h"
 
 static data_message_s *set_up_data_msg() {
-  ecdh_keypair_p ecdh;
+  ecdh_keypair_s ecdh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_ecdh_keypair_generate(ecdh, sym);
+  otrng_ecdh_keypair_generate(&ecdh, sym);
 
   data_message_s *data_msg = otrng_data_message_new();
   otrng_assert(data_msg);
@@ -40,7 +40,7 @@ static data_message_s *set_up_data_msg() {
   data_msg->previous_chain_n = 98;
   data_msg->ratchet_id = 1;
   data_msg->message_id = 99;
-  otrng_ec_point_copy(data_msg->ecdh, ecdh->pub);
+  otrng_ec_point_copy(data_msg->ecdh, ecdh.pub);
 
   uint8_t dh_data[383] = {
       0x4c, 0x4e, 0x7b, 0xbd, 0x33, 0xd0, 0x9e, 0x63, 0xfd, 0xe4, 0x67, 0xee,
@@ -85,7 +85,7 @@ static data_message_s *set_up_data_msg() {
   memset(data_msg->enc_msg, 0xE, 3);
   data_msg->enc_msg_len = 3;
 
-  otrng_ecdh_keypair_destroy(ecdh);
+  otrng_ecdh_keypair_destroy(&ecdh);
   return data_msg;
 }
 

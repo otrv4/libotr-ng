@@ -95,7 +95,7 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
   otrng_secure_wipe(pub, ED448_POINT_BYTES);
 }
 
-INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_p ecdh,
+INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_s *ecdh,
                                                     dh_keypair_s *dh) {
   uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   random_bytes(sym, ED448_PRIVATE_BYTES);

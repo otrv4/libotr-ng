@@ -94,6 +94,8 @@ API otrng_prekey_client_s *otrng_prekey_client_new() {
   memset(client->publication_policy, 0,
          sizeof(otrng_prekey_publication_policy_s));
 
+  client->ephemeral_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
+
   return client;
 }
 
@@ -135,6 +137,8 @@ API void otrng_prekey_client_init(otrng_prekey_client_s *client,
   client->keypair = keypair;
 
   otrng_ecdh_keypair_destroy(client->ephemeral_ecdh);
+  free(client->ephemeral_ecdh);
+  client->ephemeral_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
   client->publication_policy->max_published_prekey_msg =
       max_published_prekey_msg;
   client->publication_policy->minimum_stored_prekey_msg =
@@ -147,6 +151,7 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
   }
 
   otrng_ecdh_keypair_destroy(client->ephemeral_ecdh);
+  free(client->ephemeral_ecdh);
   free(client->server_identity);
   free(client->our_identity);
   free(client->publication_policy);
