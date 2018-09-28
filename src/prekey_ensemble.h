@@ -32,7 +32,7 @@ typedef struct {
   client_profile_p client_profile;
   otrng_prekey_profile_s *prekey_profile;
   dake_prekey_message_s *message;
-} prekey_ensemble_s, prekey_ensemble_p[1];
+} prekey_ensemble_s;
 
 INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new();
 

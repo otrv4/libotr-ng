@@ -91,7 +91,7 @@ typedef struct {
 typedef struct {
   uint32_t client_instance_tag;
   uint8_t success_mac[DATA_MSG_MAC_BYTES];
-} otrng_prekey_success_message_s, otrng_prekey_success_message_p[1];
+} otrng_prekey_success_message_s;
 
 typedef struct {
   uint32_t client_instance_tag;
