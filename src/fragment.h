@@ -33,7 +33,7 @@
 typedef struct otrng_message_to_send_s {
   string_p *pieces;
   int total;
-} otrng_message_to_send_s, otrng_message_to_send_p[1];
+} otrng_message_to_send_s;
 
 typedef struct fragment_context_s {
   uint32_t identifier;
@@ -41,7 +41,7 @@ typedef struct fragment_context_s {
   size_t total_message_len;
   time_t last_fragment_received_at;
   string_p *fragments;
-} fragment_context_s, fragment_context_p[1];
+} fragment_context_s;
 
 INTERNAL void otrng_fragment_context_free(fragment_context_s *context);
 
