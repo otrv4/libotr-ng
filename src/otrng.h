@@ -53,12 +53,12 @@ typedef struct otrng_response_s {
   string_p to_send;
   tlv_list_s *tlvs;
   otrng_warning warning;
-} otrng_response_s, otrng_response_p[1];
+} otrng_response_s;
 
 typedef struct otrng_header_s {
   uint16_t version;
   uint8_t type;
-} otrng_header_s, otrng_header_p[1];
+} otrng_header_s;
 
 INTERNAL otrng_s *otrng_new(struct otrng_client_s *client,
                             otrng_policy_s policy);

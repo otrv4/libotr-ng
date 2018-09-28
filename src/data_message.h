@@ -43,7 +43,7 @@ typedef struct data_message_s {
   uint8_t *enc_msg;
   size_t enc_msg_len;
   uint8_t mac[DATA_MSG_MAC_BYTES];
-} data_message_s, data_message_p[1];
+} data_message_s;
 
 INTERNAL data_message_s *otrng_data_message_new(void);
 
