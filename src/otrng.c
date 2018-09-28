@@ -1449,6 +1449,7 @@ tstatic otrng_result receive_identity_message(string_p *dst,
 
   if (!otrng_dake_identity_message_deserialize(&m, buff, buflen)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
+    free(m.profile);
     return result;
   }
 
