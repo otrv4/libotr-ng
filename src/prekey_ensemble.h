@@ -34,7 +34,7 @@ typedef struct {
   dake_prekey_message_s *message;
 } prekey_ensemble_s;
 
-INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new();
+INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new(void);
 
 INTERNAL otrng_result
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst);
