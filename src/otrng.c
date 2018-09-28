@@ -186,6 +186,8 @@ INTERNAL void otrng_destroy(/*@only@ */ otrng_s *otr) {
   otr->their_prekey_profile = NULL;
 
   otrng_smp_destroy(otr->smp);
+  free(otr->smp);
+  otr->smp = NULL;
 
   otrng_list_free(otr->pending_fragments, free_fragment_context);
   otr->pending_fragments = NULL;
@@ -1587,6 +1589,7 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buff,
   otrng_dake_auth_r_init(&auth);
 
   if (otr->state != OTRNG_STATE_WAITING_AUTH_R) {
+    otrng_dake_auth_r_destroy(&auth);
     return OTRNG_SUCCESS; /* ignore the message */
   }
 
