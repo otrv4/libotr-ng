@@ -59,10 +59,10 @@ typedef struct skipped_keys_s {
 /* a temporary structure used to hold the values of the receiving ratchet */
 typedef struct receiving_ratchet_s {
   ec_scalar_p our_ecdh_priv;
-  dh_private_key_p our_dh_priv;
+  dh_private_key our_dh_priv;
 
   ec_point_p their_ecdh;
-  dh_public_key_p their_dh;
+  dh_public_key their_dh;
 
   brace_key brace_key;
   shared_secret shared_secret;
@@ -86,7 +86,7 @@ typedef struct key_manager_s {
   dh_keypair_s *our_dh;
 
   ec_point_p their_ecdh;
-  dh_public_key_p their_dh;
+  dh_public_key their_dh;
 
   // TODO: @refactoring REMOVE THIS
   // or turn it into a pair and store both this and the long term keypair on
@@ -188,7 +188,7 @@ INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet);
  * @param [tmp_receiving_ratchet]    The receiving ratchet.
  */
 INTERNAL void otrng_key_manager_set_their_tmp_keys(
-    ec_point_p their_ecdh, dh_public_key_p their_dh,
+    ec_point_p their_ecdh, dh_public_key their_dh,
     receiving_ratchet_s *tmp_receiving_ratchet);
 
 /**
@@ -206,7 +206,7 @@ INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point_p their_ecdh,
  * @param [their_ecdh]  The new their_dh key.
  * @param [manager]     The key manager.
  */
-INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key_p their_dh,
+INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key their_dh,
                                              key_manager_s *manager);
 
 /**

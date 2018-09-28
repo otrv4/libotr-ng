@@ -72,7 +72,7 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
  */
 INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
                                                     size_t *written,
-                                                    const dh_public_key_p pub);
+                                                    const dh_public_key pub);
 
 INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst, const ring_sig_s *proof);
 

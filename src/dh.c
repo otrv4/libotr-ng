@@ -154,8 +154,8 @@ INTERNAL void otrng_dh_free(void) {
 
 INTERNAL dh_mpi otrng_dh_mpi_generator(void) { return DH3072_GENERATOR; }
 
-INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
-                                            const dh_private_key_p priv) {
+INTERNAL void otrng_dh_calculate_public_key(dh_public_key pub,
+                                            const dh_private_key priv) {
   gcry_mpi_powm(pub, DH3072_GENERATOR, priv, DH3072_MODULUS);
 }
 
@@ -236,10 +236,10 @@ INTERNAL void otrng_dh_keypair_destroy(dh_keypair_s *keypair) {
   dh_pub_key_destroy(keypair);
 }
 
-INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_p buffer,
+INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret buffer,
                                              size_t *written,
-                                             const dh_private_key_p our_priv,
-                                             const dh_public_key_p their_pub) {
+                                             const dh_private_key our_priv,
+                                             const dh_public_key their_pub) {
   gcry_error_t err;
   gcry_mpi_t secret = gcry_mpi_snew(DH3072_MOD_LEN_BITS);
   if (!secret) {
@@ -367,7 +367,7 @@ API void otrng_dh_keypair_debug_print(FILE *f, int indent, dh_keypair_s *k) {
   debug_api_print(f, "} // dh_keypair\n");
 }
 
-API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key_p k) {
+API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key k) {
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   size_t w = 0;
 
@@ -379,7 +379,7 @@ API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key_p k) {
   otrng_debug_print_data(f, buf, w);
 }
 
-API void otrng_dh_private_key_debug_print(FILE *f, dh_private_key_p k) {
+API void otrng_dh_private_key_debug_print(FILE *f, dh_private_key k) {
   uint8_t buf[DH_KEY_SIZE] = {0};
   size_t w = 0;
 

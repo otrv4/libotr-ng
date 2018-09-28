@@ -362,7 +362,7 @@ static void test_valid_identity_msg_in_waiting_auth_i() {
   ec_point_p stored_their_ecdh;
   otrng_ec_point_copy(stored_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
 
-  dh_public_key_p stored_their_dh;
+  dh_public_key stored_their_dh;
   stored_their_dh = otrng_dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
 
   free(from_alice_to_bob);
@@ -388,7 +388,7 @@ static void test_valid_identity_msg_in_waiting_auth_i() {
   ec_point_p new_their_ecdh;
   otrng_ec_point_copy(new_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
 
-  dh_public_key_p new_their_dh;
+  dh_public_key new_their_dh;
   new_their_dh = otrng_dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
 
   otrng_assert(otrng_ec_point_eq(stored_their_ecdh, new_their_ecdh) ==

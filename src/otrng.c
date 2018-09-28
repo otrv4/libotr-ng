@@ -52,7 +52,7 @@ static inline struct goldilocks_448_point_s *their_ecdh(const otrng_s *otr) {
   return &otr->keys->their_ecdh[0];
 }
 
-static inline dh_public_key_p their_dh(const otrng_s *otr) {
+static inline dh_public_key their_dh(const otrng_s *otr) {
   return otr->keys->their_dh;
 }
 
@@ -689,7 +689,7 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   k_ecdh tmp_ecdh_k1;
   k_ecdh tmp_ecdh_k2;
   k_ecdh ke;
-  dh_shared_secret_p k_dh;
+  dh_shared_secret k_dh;
   size_t k_dh_len = 0;
   brace_key bk;
 
@@ -1087,7 +1087,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   k_ecdh ke;
   k_ecdh tmp_ecdh_k1;
   k_ecdh tmp_ecdh_k2;
-  dh_shared_secret_p k_dh;
+  dh_shared_secret k_dh;
   size_t k_dh_len = 0;
   brace_key bk;
 

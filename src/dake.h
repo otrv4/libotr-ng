@@ -36,7 +36,7 @@ typedef struct dake_identity_message_s {
   uint32_t receiver_instance_tag;
   client_profile_s *profile;
   ec_point_p Y;
-  dh_public_key_p B;
+  dh_public_key B;
 } dake_identity_message_s;
 
 typedef struct dake_auth_r_s {
@@ -44,7 +44,7 @@ typedef struct dake_auth_r_s {
   uint32_t receiver_instance_tag;
   client_profile_s *profile;
   ec_point_p X;
-  dh_public_key_p A;
+  dh_public_key A;
   ring_sig_s *sigma;
 } dake_auth_r_s;
 
@@ -58,7 +58,7 @@ typedef struct dake_prekey_message_s {
   uint32_t id;
   uint32_t sender_instance_tag;
   ec_point_p Y;
-  dh_public_key_p B;
+  dh_public_key B;
 } dake_prekey_message_s;
 
 typedef struct dake_non_interactive_auth_message_s {
@@ -66,7 +66,7 @@ typedef struct dake_non_interactive_auth_message_s {
   uint32_t receiver_instance_tag;
   client_profile_s *profile;
   ec_point_p X;
-  dh_public_key_p A;
+  dh_public_key A;
   ring_sig_s *sigma;
   uint32_t prekey_message_id;
   uint8_t auth_mac[DATA_MSG_MAC_BYTES];
@@ -132,7 +132,7 @@ INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void);
 
 INTERNAL dake_prekey_message_s *
 otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point_p ecdh,
-                                const dh_public_key_p dh);
+                                const dh_public_key dh);
 
 INTERNAL void
 otrng_dake_prekey_message_free(dake_prekey_message_s *prekey_message);

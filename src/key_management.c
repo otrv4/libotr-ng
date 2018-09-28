@@ -146,7 +146,7 @@ otrng_receiving_ratchet_new(key_manager_s *manager) {
 }
 
 tstatic void otrng_key_manager_set_their_keys(ec_point_p their_ecdh,
-                                              dh_public_key_p their_dh,
+                                              dh_public_key their_dh,
                                               key_manager_s *manager) {
   otrng_ec_point_destroy(manager->their_ecdh);
   otrng_ec_point_copy(manager->their_ecdh, their_ecdh);
@@ -202,7 +202,7 @@ INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {
 }
 
 INTERNAL void otrng_key_manager_set_their_tmp_keys(
-    ec_point_p their_ecdh, dh_public_key_p their_dh,
+    ec_point_p their_ecdh, dh_public_key their_dh,
     receiving_ratchet_s *tmp_receiving_ratchet) {
   otrng_ec_point_destroy(tmp_receiving_ratchet->their_ecdh);
   otrng_ec_point_copy(tmp_receiving_ratchet->their_ecdh, their_ecdh);
@@ -215,7 +215,7 @@ INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point_p their_ecdh,
   otrng_ec_point_copy(manager->their_ecdh, their_ecdh);
 }
 
-INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key_p their_dh,
+INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key their_dh,
                                              key_manager_s *manager) {
   otrng_dh_mpi_release(manager->their_dh);
   manager->their_dh = otrng_dh_mpi_copy(their_dh);
@@ -363,7 +363,7 @@ tstatic otrng_result calculate_brace_key(
   uint8_t usage_third_brace_key = 0x01;
   uint8_t usage_brace_key = 0x02;
 
-  dh_shared_secret_p k_dh;
+  dh_shared_secret k_dh;
   size_t k_dh_len = 0;
 
   assert(action == 's' || action == 'r');

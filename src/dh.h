@@ -37,19 +37,19 @@
 #define DH_MPI_MAX_BYTES (4 + DH3072_MOD_LEN_BYTES)
 
 typedef gcry_mpi_t dh_mpi;
-typedef dh_mpi dh_private_key_p, dh_public_key_p;
-typedef uint8_t dh_shared_secret_p[DH3072_MOD_LEN_BYTES];
+typedef dh_mpi dh_private_key, dh_public_key;
+typedef uint8_t dh_shared_secret[DH3072_MOD_LEN_BYTES];
 
 typedef struct dh_keypair_s {
-  dh_public_key_p pub;
-  dh_private_key_p priv;
+  dh_public_key pub;
+  dh_private_key priv;
 } dh_keypair_s;
 
 INTERNAL otrng_result otrng_dh_init(otrng_bool die);
 INTERNAL void otrng_dh_free(void);
 
-INTERNAL void otrng_dh_calculate_public_key(dh_public_key_p pub,
-                                            const dh_private_key_p priv);
+INTERNAL void otrng_dh_calculate_public_key(dh_public_key pub,
+                                            const dh_private_key priv);
 
 INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_s *keypair);
 
@@ -65,10 +65,10 @@ INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_s *keypair);
 
 INTERNAL void otrng_dh_keypair_destroy(dh_keypair_s *keypair);
 
-INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_p buffer,
+INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret buffer,
                                              size_t *written,
-                                             const dh_private_key_p our_priv,
-                                             const dh_public_key_p their_pub);
+                                             const dh_private_key our_priv,
+                                             const dh_public_key their_pub);
 
 INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                              size_t *written, const dh_mpi src);
@@ -88,8 +88,8 @@ INTERNAL dh_mpi otrng_dh_modulus_p(void);
 
 #ifdef DEBUG_API
 API void otrng_dh_keypair_debug_print(FILE *, int, dh_keypair_s *);
-API void otrng_dh_public_key_debug_print(FILE *, dh_public_key_p);
-API void otrng_dh_private_key_debug_print(FILE *, dh_private_key_p);
+API void otrng_dh_public_key_debug_print(FILE *, dh_public_key);
+API void otrng_dh_private_key_debug_print(FILE *, dh_private_key);
 #endif
 
 #ifdef OTRNG_DH_PRIVATE

@@ -436,7 +436,7 @@ INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
 
 INTERNAL dake_prekey_message_s *
 otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point_p ecdh,
-                                const dh_public_key_p dh) {
+                                const dh_public_key dh) {
   dake_prekey_message_s *m = otrng_dake_prekey_message_new();
   uint32_t *identifier;
   if (!m) {

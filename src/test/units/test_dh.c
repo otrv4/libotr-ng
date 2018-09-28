@@ -28,7 +28,7 @@ static void test_dh_api() {
   otrng_dh_keypair_generate(&alice);
   otrng_dh_keypair_generate(&bob);
 
-  dh_shared_secret_p shared1, shared2;
+  dh_shared_secret shared1, shared2;
   size_t len1 = 0, len2 = 0;
 
   otrng_assert_is_success(
@@ -128,7 +128,7 @@ static void test_dh_shared_secret() {
   otrng_dh_mpi_deserialize(&priv_dh, priv, DH_KEY_SIZE, NULL);
   otrng_dh_mpi_deserialize(&pub_dh, pub, DH3072_MOD_LEN_BYTES, NULL);
 
-  dh_shared_secret_p secret;
+  dh_shared_secret secret;
   size_t len = 0;
 
   otrng_assert_is_success(

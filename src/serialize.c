@@ -128,7 +128,7 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
 // TODO: REMOVE THIS
 INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *dst, size_t dstlen,
                                                     size_t *written,
-                                                    const dh_public_key_p pub) {
+                                                    const dh_public_key pub) {
   return otrng_serialize_dh_mpi_otr(dst, dstlen, written, pub);
 }
 
