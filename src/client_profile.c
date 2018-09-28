@@ -312,12 +312,12 @@ static otrng_result deserialize_dsa_key_field(client_profile_s *target,
   // We just care about finding the end of this key
 
   for (i = 0; i < 4; i++) {
-    otrng_mpi_p mpi;
-    if (!otrng_mpi_deserialize_no_copy(mpi, buffer + w, buflen - w, &read)) {
+    otrng_mpi_s mpi;
+    if (!otrng_mpi_deserialize_no_copy(&mpi, buffer + w, buflen - w, &read)) {
       return OTRNG_ERROR;
     }
 
-    w += read + mpi->len;
+    w += read + mpi.len;
   }
 
   target->dsa_key = otrng_xmalloc(w);

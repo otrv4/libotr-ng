@@ -110,10 +110,10 @@
 
 #define otrng_assert_mpi_eq(m1, m2)                                            \
   do {                                                                         \
-    const otrng_mpi_p _m1 = {(m1)[0]};                                         \
-    const otrng_mpi_p _m2 = {(m2)[0]};                                         \
-    g_assert_cmpuint(_m1->len, ==, _m2->len);                                  \
-    otrng_assert_cmpmem(_m1->data, _m2->data, _m1->len);                       \
+    const otrng_mpi_s _m1 = *(m1);                                         \
+    const otrng_mpi_s _m2 = *(m2);                                    \
+    g_assert_cmpuint(_m1.len, ==, _m2.len);                                  \
+    otrng_assert_cmpmem(_m1.data, _m2.data, _m1.len);                       \
   } while (0)
 
 #define otrng_assert_prekey_profile_eq(p1, p2)                                 \

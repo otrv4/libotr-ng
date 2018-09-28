@@ -47,7 +47,7 @@ INTERNAL size_t otrng_serialize_bytes_array(uint8_t *target,
 INTERNAL size_t otrng_serialize_data(uint8_t *target, const uint8_t *data,
                                      size_t len);
 
-INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_p mpi);
+INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_s *mpi);
 
 INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_p point);
 

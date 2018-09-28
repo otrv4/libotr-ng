@@ -155,15 +155,15 @@ INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_p *dst,
                                                    const uint8_t *buffer,
                                                    size_t buflen,
                                                    size_t *read) {
-  otrng_mpi_p mpi; // no need to free, because nothing is copied now
+  otrng_mpi_s mpi; // no need to free, because nothing is copied now
   size_t w = 0;
   otrng_result ret;
 
-  if (!otrng_mpi_deserialize_no_copy(mpi, buffer, buflen, NULL)) {
+  if (!otrng_mpi_deserialize_no_copy(&mpi, buffer, buflen, NULL)) {
     return OTRNG_ERROR;
   }
 
-  ret = otrng_dh_mpi_deserialize(dst, mpi->data, mpi->len, &w);
+  ret = otrng_dh_mpi_deserialize(dst, mpi.data, mpi.len, &w);
 
   if (read) {
     *read = w + 4;

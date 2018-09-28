@@ -75,7 +75,7 @@ INTERNAL size_t otrng_serialize_data(uint8_t *dst, const uint8_t *data,
   return cursor - dst;
 }
 
-INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_p mpi) {
+INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_s *mpi) {
   return otrng_serialize_data(dst, mpi->data, mpi->len);
 }
 
@@ -99,7 +99,7 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
                                                  const dh_mpi_p mpi) {
   uint8_t buf[DH3072_MOD_LEN_BYTES];
   size_t w = 0;
-  otrng_mpi_p otr_mpi;
+  otrng_mpi_s otr_mpi;
 
   memset(buf, 0, DH3072_MOD_LEN_BYTES);
 
@@ -114,9 +114,9 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
   }
 
   // To OTR MPI
-  otrng_mpi_set(otr_mpi, buf, w);
-  w = otrng_serialize_mpi(dst, otr_mpi);
-  otrng_mpi_destroy(otr_mpi);
+  otrng_mpi_set(&otr_mpi, buf, w);
+  w = otrng_serialize_mpi(dst, &otr_mpi);
+  otrng_mpi_destroy(&otr_mpi);
 
   if (written) {
     *written = w;
