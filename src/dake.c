@@ -574,6 +574,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_init(
     dake_non_interactive_auth_message_s *a) {
   memset(a, 0, sizeof(dake_non_interactive_auth_message_s));
   a->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+  memset(a->sigma, 0, sizeof(ring_sig_s));
 }
 
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
