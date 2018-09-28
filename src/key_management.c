@@ -68,6 +68,8 @@ INTERNAL key_manager_s *otrng_key_manager_new(void) {
 INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   otrng_ecdh_keypair_destroy(manager->our_ecdh);
   otrng_dh_keypair_destroy(manager->our_dh);
+  otrng_secure_wipe(manager->our_dh, sizeof(dh_keypair_s));
+  free(manager->our_dh);
 
   otrng_ec_point_destroy(manager->their_ecdh);
 
