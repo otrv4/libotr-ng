@@ -182,7 +182,7 @@ static void test_client_profile_signs_and_verify() {
 
   otrng_assert(client_profile_verify_signature(profile));
 
-  memset(profile->signature, 0, sizeof(eddsa_signature_p));
+  memset(profile->signature, 0, sizeof(eddsa_signature));
 
   otrng_assert(!client_profile_verify_signature(profile));
 

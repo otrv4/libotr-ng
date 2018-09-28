@@ -71,7 +71,7 @@ typedef struct client_profile_s {
   size_t dsa_key_len;
   uint8_t *transitional_signature;
 
-  eddsa_signature_p signature;
+  eddsa_signature signature;
 } client_profile_s;
 
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,

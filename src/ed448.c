@@ -217,14 +217,14 @@ INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
   return OTRNG_SUCCESS;
 }
 
-tstatic void otrng_ec_sign(eddsa_signature_p sig,
+tstatic void otrng_ec_sign(eddsa_signature sig,
                            const uint8_t sym[ED448_PRIVATE_BYTES],
                            const uint8_t pub[ED448_POINT_BYTES],
                            const uint8_t *msg, size_t msg_len) {
   goldilocks_ed448_sign(sig, sym, pub, msg, msg_len, 0, NULL, 0);
 }
 
-INTERNAL void otrng_ec_sign_simple(eddsa_signature_p sig,
+INTERNAL void otrng_ec_sign_simple(eddsa_signature sig,
                                    const uint8_t sym[ED448_PRIVATE_BYTES],
                                    const uint8_t *msg, size_t msg_len) {
   uint8_t pub[ED448_POINT_BYTES];

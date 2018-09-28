@@ -29,7 +29,7 @@ typedef struct prekey_profile_s {
   uint32_t instance_tag;
   uint64_t expires;
   ec_point_p shared_prekey; /* Key "D" */
-  eddsa_signature_p signature;
+  eddsa_signature signature;
 } otrng_prekey_profile_s;
 
 INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst);

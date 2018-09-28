@@ -85,7 +85,7 @@ static void test_ed448_signature() {
   uint8_t msg[3] = {0x0A, 0x0C, 0x0B};
   otrng_assert(otrng_ec_point_encode(pub, ED448_POINT_BYTES, pair->pub));
 
-  eddsa_signature_p sig;
+  eddsa_signature sig;
   otrng_ec_sign(sig, sym, pub, msg, sizeof(msg));
   otrng_assert(otrng_ec_verify(sig, pub, msg, sizeof(msg)) == otrng_true);
 
