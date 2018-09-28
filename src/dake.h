@@ -45,13 +45,13 @@ typedef struct dake_auth_r_s {
   client_profile_p profile;
   ec_point_p X;
   dh_public_key_p A;
-  ring_sig_p sigma;
+  ring_sig_s *sigma;
 } dake_auth_r_s;
 
 typedef struct dake_auth_i_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  ring_sig_p sigma;
+  ring_sig_s *sigma;
 } dake_auth_i_s;
 
 typedef struct dake_prekey_message_s {
@@ -67,7 +67,7 @@ typedef struct dake_non_interactive_auth_message_s {
   client_profile_p profile;
   ec_point_p X;
   dh_public_key_p A;
-  ring_sig_p sigma;
+  ring_sig_s *sigma;
   uint32_t prekey_message_id;
   uint8_t auth_mac[DATA_MSG_MAC_BYTES];
 } dake_non_interactive_auth_message_s;
@@ -84,6 +84,9 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_s *non_interactive_auth);
 
+INTERNAL dake_non_interactive_auth_message_s *otrng_dake_non_interactive_auth_message_new(void);
+INTERNAL void otrng_dake_non_interactive_auth_message_init(
+    dake_non_interactive_auth_message_s *non_interactive_auth);
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_s *non_interactive_auth);
 
@@ -103,6 +106,9 @@ INTERNAL otrng_result otrng_dake_identity_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_identity_message_s *identity_message);
 
+INTERNAL dake_auth_r_s *otrng_dake_auth_r_new(void);
+INTERNAL void otrng_dake_auth_r_init(dake_auth_r_s *auth_r);
+
 INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r);
 
 INTERNAL otrng_result otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
@@ -111,6 +117,8 @@ INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
                                                     const uint8_t *buffer,
                                                     size_t buflen);
 
+INTERNAL dake_auth_i_s *otrng_dake_auth_i_new(void);
+INTERNAL void otrng_dake_auth_i_init(dake_auth_i_s *auth_i);
 INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_s *auth_i);
 
 INTERNAL otrng_result otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,

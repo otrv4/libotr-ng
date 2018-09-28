@@ -178,7 +178,8 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_s *msg,
   msg->A = otrng_dh_mpi_copy(dh->pub);
   memcpy(msg->auth_mac, mac_tag, HASH_BYTES);
 
-  memset(msg->sigma, 0, sizeof(ring_sig_p));
+  msg->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+  memset(msg->sigma, 0, sizeof(ring_sig_s));
   msg->prekey_message_id = 0x0A00000D;
 
   otrng_dh_keypair_destroy(dh);
@@ -188,6 +189,7 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_s *msg,
 static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
                                                        gconstpointer data) {
   dake_non_interactive_auth_message_s msg;
+  otrng_dake_non_interactive_auth_message_init(&msg);
   setup_non_interactive_auth_message(&msg, f);
 
   uint8_t *serialized = NULL;
@@ -258,6 +260,7 @@ static void test_otrng_dake_non_interactive_auth_message_deserializes(
     dake_fixture_s *f, gconstpointer data) {
   (void)data;
   dake_non_interactive_auth_message_s expected;
+  otrng_dake_non_interactive_auth_message_init(&expected);
   setup_non_interactive_auth_message(&expected, f);
 
   uint8_t *serialized = NULL;
@@ -266,6 +269,8 @@ static void test_otrng_dake_non_interactive_auth_message_deserializes(
       &serialized, &len, &expected));
 
   dake_non_interactive_auth_message_s deserialized;
+  otrng_dake_non_interactive_auth_message_init(&deserialized);
+  memset(&deserialized, 0, sizeof(dake_non_interactive_auth_message_s));
   otrng_assert_is_success(otrng_dake_non_interactive_auth_message_deserialize(
       &deserialized, serialized, len));
   free(serialized);

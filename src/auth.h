@@ -45,7 +45,7 @@ typedef struct ring_sig_s {
   ec_scalar_p r2;
   ec_scalar_p c3;
   ec_scalar_p r3;
-} ring_sig_s, ring_sig_p[1];
+} ring_sig_s;
 
 /**
  * @brief The Authentication function of the Ring Sig.
@@ -68,7 +68,7 @@ typedef struct ring_sig_s {
  */
 
 INTERNAL otrng_result otrng_rsig_authenticate(
-    ring_sig_p dst, const otrng_private_key_p priv,
+    ring_sig_s *dst, const otrng_private_key_p priv,
     const otrng_public_key_p pub, const otrng_public_key_p A1,
     const otrng_public_key_p A2, const otrng_public_key_p A3,
     const uint8_t *msg, size_t msglen);
@@ -85,7 +85,7 @@ INTERNAL otrng_result otrng_rsig_authenticate(
  * @param [msg] The message to "verify".
  * @param [msg_len] The length of the message.
  */
-INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
+INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
                                       const otrng_public_key_p A1,
                                       const otrng_public_key_p A2,
                                       const otrng_public_key_p A3,
@@ -97,16 +97,16 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_p src,
  *
  * @param [src] The signature of knowledge
  */
-INTERNAL void otrng_ring_sig_destroy(ring_sig_p src);
+INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src);
 
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
-    uint8_t usage, const char *domain_sep, ring_sig_p dst,
+    uint8_t usage, const char *domain_sep, ring_sig_s *dst,
     const otrng_private_key_p secret, const otrng_public_key_p pub,
     const otrng_public_key_p A1, const otrng_public_key_p A2,
     const otrng_public_key_p A3, const uint8_t *message, size_t message_len);
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
-    uint8_t usage, const char *domain_sep, const ring_sig_p src,
+    uint8_t usage, const char *domain_sep, const ring_sig_s *src,
     const otrng_public_key_p A1, const otrng_public_key_p A2,
     const otrng_public_key_p A3, const uint8_t *message, size_t message_len);
 

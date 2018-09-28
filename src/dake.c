@@ -184,12 +184,25 @@ INTERNAL otrng_result otrng_dake_identity_message_deserialize(
   return otrng_deserialize_dh_mpi_otr(&dst->B, cursor, len, &read);
 }
 
+INTERNAL dake_auth_r_s *otrng_dake_auth_r_new() {
+  dake_auth_r_s *r = otrng_xmalloc(sizeof(dake_auth_r_s));
+  otrng_dake_auth_r_init(r);
+  return r;
+}
+
+INTERNAL void otrng_dake_auth_r_init(dake_auth_r_s *auth_r) {
+  memset(auth_r, 0, sizeof(dake_auth_r_s));
+  auth_r->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+}
+
 INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
   otrng_dh_mpi_release(auth_r->A);
   auth_r->A = NULL;
   otrng_ec_point_destroy(auth_r->X);
   otrng_client_profile_destroy(auth_r->profile);
   otrng_ring_sig_destroy(auth_r->sigma);
+  free(auth_r->sigma);
+  auth_r->sigma = NULL;
 }
 
 INTERNAL otrng_result otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
@@ -312,8 +325,21 @@ INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
   return otrng_deserialize_ring_sig(dst->sigma, cursor, len, &read);
 }
 
+INTERNAL dake_auth_i_s *otrng_dake_auth_i_new() {
+  dake_auth_i_s *r = otrng_xmalloc(sizeof(dake_auth_i_s));
+  otrng_dake_auth_i_init(r);
+  return r;
+}
+
+INTERNAL void otrng_dake_auth_i_init(dake_auth_i_s *auth_i) {
+  memset(auth_i, 0, sizeof(dake_auth_i_s));
+  auth_i->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+}
+
 INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_s *auth_i) {
   otrng_ring_sig_destroy(auth_i->sigma);
+  free(auth_i->sigma);
+  auth_i->sigma = NULL;
 }
 
 INTERNAL otrng_result otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
@@ -536,6 +562,18 @@ INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
   return ret;
 }
 
+
+INTERNAL dake_non_interactive_auth_message_s *otrng_dake_non_interactive_auth_message_new() {
+  dake_non_interactive_auth_message_s *r = otrng_xmalloc(sizeof(dake_non_interactive_auth_message_s));
+  otrng_dake_non_interactive_auth_message_init(r);
+  return r;
+}
+
+INTERNAL void otrng_dake_non_interactive_auth_message_init(dake_non_interactive_auth_message_s *a) {
+  memset(a, 0, sizeof(dake_non_interactive_auth_message_s));
+  a->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+}
+
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_s *non_interactive_auth) {
   otrng_dh_mpi_release(non_interactive_auth->A);
@@ -543,6 +581,8 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   otrng_ec_point_destroy(non_interactive_auth->X);
   otrng_client_profile_destroy(non_interactive_auth->profile);
   otrng_ring_sig_destroy(non_interactive_auth->sigma);
+  free(non_interactive_auth->sigma);
+  non_interactive_auth->sigma = NULL;
   otrng_secure_wipe(non_interactive_auth->auth_mac, HASH_BYTES);
 }
 
@@ -670,6 +710,10 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
 
   cursor += read;
   len -= read;
+
+  if (dst->sigma == NULL) {
+    dst->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+  }
 
   if (!otrng_deserialize_ring_sig(dst->sigma, cursor, len, &read)) {
     return OTRNG_ERROR;

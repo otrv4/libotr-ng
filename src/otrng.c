@@ -649,6 +649,8 @@ tstatic otrng_result reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
   size_t t_len = 0;
   otrng_result result;
 
+  otrng_dake_auth_r_init(&msg);
+
   msg.sender_instance_tag = our_instance_tag(otr);
   msg.receiver_instance_tag = otr->their_instance_tag;
 
@@ -866,6 +868,7 @@ tstatic otrng_result reply_with_non_interactive_auth_msg(string_p *dst,
   dake_non_interactive_auth_message_s auth;
   otrng_result ret;
 
+  otrng_dake_non_interactive_auth_message_init(&auth);
   maybe_create_keys(otr->client);
 
   ret = build_non_interactive_auth_message(&auth, otr);
@@ -1356,6 +1359,7 @@ tstatic otrng_result receive_non_interactive_auth_message(
   dake_non_interactive_auth_message_s auth;
   otrng_result ret;
 
+  otrng_dake_non_interactive_auth_message_init(&auth);
   if (otr->state == OTRNG_STATE_FINISHED) {
     return OTRNG_SUCCESS; /* ignore the message */
   }
@@ -1512,6 +1516,7 @@ tstatic otrng_result reply_with_auth_i_msg(
   size_t t_len = 0;
   otrng_result result;
 
+  otrng_dake_auth_i_init(&msg);
   msg.sender_instance_tag = our_instance_tag(otr);
   msg.receiver_instance_tag = otr->their_instance_tag;
 
@@ -1578,6 +1583,8 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buff,
   dake_auth_r_s auth;
   otrng_fingerprint_p fp;
   otrng_result ret;
+
+  otrng_dake_auth_r_init(&auth);
 
   if (otr->state != OTRNG_STATE_WAITING_AUTH_R) {
     return OTRNG_SUCCESS; /* ignore the message */
@@ -1669,6 +1676,7 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buff,
   dake_auth_i_s auth;
   otrng_fingerprint_p fp;
 
+  otrng_dake_auth_i_init(&auth);
   if (otr->state != OTRNG_STATE_WAITING_AUTH_I) {
     return OTRNG_SUCCESS; /* Ignore the message */
   }

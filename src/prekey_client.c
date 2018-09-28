@@ -702,7 +702,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
 
 tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
                          otrng_prekey_client_s *client) {
-  otrng_prekey_dake3_message_s msg[1];
+  otrng_prekey_dake3_message_s msg;
   size_t composite_phi_len = 0;
   uint8_t *composite_phi;
   uint8_t *our_profile = NULL;
@@ -724,7 +724,8 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   char *ret;
   uint8_t m[64];
 
-  msg->client_instance_tag = client->instance_tag;
+  otrng_prekey_dake3_message_init(&msg);
+  msg.client_instance_tag = client->instance_tag;
 
   composite_phi = otrng_prekey_client_get_expected_composite_phi(
       &composite_phi_len, client);
@@ -769,7 +770,7 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
 
   /* H_a, sk_ha, {H_a, H_s, S}, t */
   otrng_rsig_authenticate_with_usage_and_domain(
-      usage_auth, prekey_hash_domain, msg->sigma, client->keypair->priv,
+      usage_auth, prekey_hash_domain, msg.sigma, client->keypair->priv,
       client->keypair->pub, client->keypair->pub, msg2->server_pub_key, msg2->S,
       t, tlen);
   free(t);
@@ -795,7 +796,7 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   /* Attach MESSAGE in the message */
   if (client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
     if (!otrng_prekey_dake3_message_append_storage_information_request(
-            msg, client->mac_key)) {
+            &msg, client->mac_key)) {
       otrng_secure_wipe(shared_secret, HASH_BYTES);
       free(shared_secret);
       otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
@@ -818,7 +819,7 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
                                 HASH_BYTES);
 
     success = otrng_prekey_dake3_message_append_prekey_publication_message(
-        pub_msg, msg, client->mac_key, m);
+        pub_msg, &msg, client->mac_key, m);
     otrng_prekey_publication_message_destroy(pub_msg);
 
     if (!success) {
@@ -839,8 +840,8 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   client->after_dake = 0;
 
   success =
-      otrng_prekey_dake3_message_asprint(&serialized, &serialized_len, msg);
-  otrng_prekey_dake3_message_destroy(msg);
+      otrng_prekey_dake3_message_asprint(&serialized, &serialized_len, &msg);
+  otrng_prekey_dake3_message_destroy(&msg);
 
   if (!success) {
     otrng_secure_wipe(shared_secret, HASH_BYTES);
@@ -877,16 +878,17 @@ static char *process_received_dake2(const otrng_prekey_dake2_message_s *msg,
 
 static char *receive_dake2(const uint8_t *decoded, size_t decoded_len,
                            otrng_prekey_client_s *client) {
-  otrng_prekey_dake2_message_s msg[1];
+  otrng_prekey_dake2_message_s msg;
   char *ret;
 
-  if (!otrng_prekey_dake2_message_deserialize(msg, decoded, decoded_len)) {
+  otrng_prekey_dake2_message_init(&msg);
+  if (!otrng_prekey_dake2_message_deserialize(&msg, decoded, decoded_len)) {
     notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
-  ret = process_received_dake2(msg, client);
-  otrng_prekey_dake2_message_destroy(msg);
+  ret = process_received_dake2(&msg, client);
+  otrng_prekey_dake2_message_destroy(&msg);
 
   return ret;
 }
@@ -1297,6 +1299,17 @@ INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
   return OTRNG_SUCCESS;
 }
 
+INTERNAL otrng_prekey_dake2_message_s *otrng_prekey_dake2_message_new() {
+  otrng_prekey_dake2_message_s *r = otrng_xmalloc(sizeof(otrng_prekey_dake2_message_s));
+  otrng_prekey_dake2_message_init(r);
+  return r;
+}
+
+INTERNAL void otrng_prekey_dake2_message_init(otrng_prekey_dake2_message_s *a) {
+  memset(a, 0, sizeof(otrng_prekey_dake2_message_s));
+  a->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+}
+
 INTERNAL
 void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg) {
   if (!msg) {
@@ -1315,6 +1328,8 @@ void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg) {
 
   otrng_ec_point_destroy(msg->S);
   otrng_ring_sig_destroy(msg->sigma);
+  free(msg->sigma);
+  msg->sigma = NULL;
 }
 
 INTERNAL otrng_result
@@ -1339,6 +1354,17 @@ otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,
   return OTRNG_SUCCESS;
 }
 
+INTERNAL otrng_prekey_dake3_message_s *otrng_prekey_dake3_message_new() {
+  otrng_prekey_dake3_message_s *r = otrng_xmalloc(sizeof(otrng_prekey_dake3_message_s));
+  otrng_prekey_dake3_message_init(r);
+  return r;
+}
+
+INTERNAL void otrng_prekey_dake3_message_init(otrng_prekey_dake3_message_s *a) {
+  memset(a, 0, sizeof(otrng_prekey_dake3_message_s));
+  a->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+}
+
 INTERNAL
 void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *msg) {
   if (!msg) {
@@ -1349,6 +1375,8 @@ void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *msg) {
   msg->message = NULL;
 
   otrng_ring_sig_destroy(msg->sigma);
+  free(msg->sigma);
+  msg->sigma = NULL;
 }
 
 INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(

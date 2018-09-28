@@ -73,27 +73,27 @@ static void test_rsig_auth() {
   otrng_keypair_generate(p2, sym2);
   otrng_keypair_generate(p3, sym3);
 
-  ring_sig_p dst;
+  ring_sig_s dst;
   otrng_assert_is_error(
-      otrng_rsig_authenticate(dst, p1->priv, p1->pub, p2->pub, p3->pub, p2->pub,
+      otrng_rsig_authenticate(&dst, p1->priv, p1->pub, p2->pub, p3->pub, p2->pub,
                               (unsigned char *)msg, strlen(msg)));
 
   otrng_assert_is_error(
-      otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p3->pub, p1->pub,
+      otrng_rsig_authenticate(&dst, p1->priv, p1->pub, p1->pub, p3->pub, p1->pub,
                               (unsigned char *)msg, strlen(msg)));
 
   otrng_assert_is_success(
-      otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p2->pub, p3->pub,
+      otrng_rsig_authenticate(&dst, p1->priv, p1->pub, p1->pub, p2->pub, p3->pub,
                               (unsigned char *)msg, strlen(msg)));
 
-  otrng_assert(otrng_rsig_verify(dst, p1->pub, p2->pub, p3->pub,
+  otrng_assert(otrng_rsig_verify(&dst, p1->pub, p2->pub, p3->pub,
                                  (unsigned char *)msg, strlen(msg)));
 
   otrng_assert_is_success(
-      otrng_rsig_authenticate(dst, p1->priv, p1->pub, p3->pub, p1->pub, p2->pub,
+      otrng_rsig_authenticate(&dst, p1->priv, p1->pub, p3->pub, p1->pub, p2->pub,
                               (unsigned char *)msg, strlen(msg)));
 
-  otrng_assert(otrng_rsig_verify(dst, p3->pub, p1->pub, p2->pub,
+  otrng_assert(otrng_rsig_verify(&dst, p3->pub, p1->pub, p2->pub,
                                  (unsigned char *)msg, strlen(msg)));
 }
 
@@ -154,10 +154,10 @@ static void test_rsig_compatible_with_prekey_server() {
 
   // Test if the keys are OK
   const char *msg = "hi";
-  ring_sig_p dst;
-  otrng_assert(otrng_rsig_authenticate(dst, p1->priv, p1->pub, p1->pub, p2->pub,
+  ring_sig_s dst;
+  otrng_assert(otrng_rsig_authenticate(&dst, p1->priv, p1->pub, p1->pub, p2->pub,
                                        p3->pub, (unsigned char *)msg, 2));
-  otrng_assert(otrng_rsig_verify(dst, p1->pub, p2->pub, p3->pub,
+  otrng_assert(otrng_rsig_verify(&dst, p1->pub, p2->pub, p3->pub,
                                  (const uint8_t *)msg, 2));
 
   uint8_t rsig[6 * ED448_SCALAR_BYTES] = {
@@ -203,12 +203,12 @@ static void test_rsig_compatible_with_prekey_server() {
       0x88, 0x6a, 0x40, 0x94, 0x29, 0x9e, 0xbb, 0xaa, 0x8e, 0x2d, 0xca, 0x5a,
       0xe7, 0x46, 0xf1, 0x73, 0x62, 0xcf, 0x8b, 0x38};
 
-  ring_sig_p proof;
+  ring_sig_s proof;
   otrng_assert_is_success(
-      otrng_deserialize_ring_sig(proof, rsig, sizeof(rsig), NULL));
+      otrng_deserialize_ring_sig(&proof, rsig, sizeof(rsig), NULL));
 
   otrng_assert(otrng_rsig_verify_with_usage_and_domain(
-      0x11, "OTR-Prekey-Server", proof, p1->pub, p2->pub, p3->pub,
+      0x11, "OTR-Prekey-Server", &proof, p1->pub, p2->pub, p3->pub,
       (const uint8_t *)msg, 2));
 }
 

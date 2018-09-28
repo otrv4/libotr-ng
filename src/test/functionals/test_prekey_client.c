@@ -71,7 +71,8 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   random_bytes(sym, ED448_PRIVATE_BYTES);
   otrng_ecdh_keypair_generate(alice->prekey_client->ephemeral_ecdh, sym);
 
-  otrng_prekey_dake2_message_s msg[1];
+  otrng_prekey_dake2_message_s msg;
+  otrng_prekey_dake2_message_init(&msg);
 
   size_t read = 0;
   uint8_t ser_server_public_key[ED448_PUBKEY_BYTES] = {
@@ -91,9 +92,9 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   };
 
   otrng_assert_is_success(otrng_deserialize_public_key(
-      msg->server_pub_key, ser_server_public_key, ED448_PUBKEY_BYTES, &read));
+      msg.server_pub_key, ser_server_public_key, ED448_PUBKEY_BYTES, &read));
   otrng_assert_is_success(
-      otrng_deserialize_ec_point(msg->S, ser_S, ED448_POINT_BYTES));
+      otrng_deserialize_ec_point(msg.S, ser_S, ED448_POINT_BYTES));
 
   uint8_t composite_identity[86] = {
       0x0,  0x0,  0x0,  0x17, 0x70, 0x72, 0x65, 0x6b, 0x65, 0x79, 0x73,
@@ -105,21 +106,21 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
       0x35, 0xa5, 0x1c, 0x77, 0x2b, 0x77, 0xa0, 0x90, 0x76, 0x2d, 0xaf,
       0xf3, 0x90, 0x46, 0x21, 0xfb, 0x2c, 0xb8, 0x94, 0x0,
   };
-  msg->composite_identity_len = 86;
-  msg->composite_identity = otrng_xmalloc(msg->composite_identity_len);
-  memcpy(msg->composite_identity, composite_identity,
-         msg->composite_identity_len);
+  msg.composite_identity_len = 86;
+  msg.composite_identity = otrng_xmalloc(msg.composite_identity_len);
+  memcpy(msg.composite_identity, composite_identity,
+         msg.composite_identity_len);
 
-  char *dake_3 = send_dake3(msg, alice->prekey_client);
+  char *dake_3 = send_dake3(&msg, alice->prekey_client);
 
   otrng_assert(dake_3);
   otrng_assert(alice->prekey_client->after_dake == 0);
 
-  free(msg->composite_identity);
   free(dake_3);
 
   otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
+  otrng_prekey_dake2_message_destroy(&msg);
 }
 
 static void test_receive_prekey_server_messages(void) {

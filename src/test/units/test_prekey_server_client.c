@@ -143,15 +143,16 @@ static void test_prekey_dake2_message_deserialize(void) {
       0x89, 0xe5, 0x77, 0xb8, 0x1a, 0xa3, 0xab, 0x94, 0xe1, 0x2e, 0x78, 0xf7,
       0x3d, 0x87, 0x43, 0x34, 0x94, 0xd9, 0xef, 0xb9, 0xf8, 0x94, 0x25, 0x32};
 
-  otrng_prekey_dake2_message_s dst[1];
+  otrng_prekey_dake2_message_s dst;
+  otrng_prekey_dake2_message_init(&dst);
   otrng_assert_is_success(otrng_prekey_dake2_message_deserialize(
-      dst, serialized, sizeof(serialized)));
+      &dst, serialized, sizeof(serialized)));
 
-  g_assert_cmpint(dst->client_instance_tag, ==, 0x7e5a9a61);
+  g_assert_cmpint(dst.client_instance_tag, ==, 0x7e5a9a61);
   // TODO: check the identity from PREKEY-SERVER-COMP-ID
   // TODO: check the fingerprint of the long-term pub key
 
-  otrng_prekey_dake2_message_destroy(dst);
+  otrng_prekey_dake2_message_destroy(&dst);
 }
 
 static void test_prekey_dake3_message_serialize(void) {
@@ -185,13 +186,14 @@ static void test_prekey_dake3_message_serialize(void) {
       0x89, 0xe5, 0x77, 0xb8, 0x1a, 0xa3, 0xab, 0x94, 0xe1, 0x2e, 0x78, 0xf7,
       0x3d, 0x87, 0x43, 0x34, 0x94, 0xd9, 0xef, 0xb9, 0xf8, 0x94, 0x25, 0x32};
 
-  otrng_prekey_dake3_message_s msg[1];
-  msg->client_instance_tag = 0x56781234;
-  otrng_assert_is_success(otrng_deserialize_ring_sig(msg->sigma, sigma_ser,
+  otrng_prekey_dake3_message_s msg;
+  otrng_prekey_dake3_message_init(&msg);
+  msg.client_instance_tag = 0x56781234;
+  otrng_assert_is_success(otrng_deserialize_ring_sig(msg.sigma, sigma_ser,
                                                      sizeof(sigma_ser), NULL));
 
-  msg->message = (uint8_t *)otrng_xstrdup("hi");
-  msg->message_len = 3;
+  msg.message = (uint8_t *)otrng_xstrdup("hi");
+  msg.message_len = 3;
 
   uint8_t header[] = {
       0x00, 0x04,             // protocol version
@@ -202,8 +204,8 @@ static void test_prekey_dake3_message_serialize(void) {
   uint8_t *dst = NULL;
   size_t dstlen = 0;
   otrng_assert_is_success(
-      otrng_prekey_dake3_message_asprint(&dst, &dstlen, msg));
-  otrng_prekey_dake3_message_destroy(msg);
+      otrng_prekey_dake3_message_asprint(&dst, &dstlen, &msg));
+  otrng_prekey_dake3_message_destroy(&msg);
 
   size_t w = 0;
   otrng_assert_cmpmem(dst, header, sizeof(header));
@@ -224,7 +226,8 @@ static void test_prekey_dake3_message_serialize(void) {
 }
 
 static void test_prekey_dake3_message_append_storage_info_req(void) {
-  otrng_prekey_dake3_message_s msg[1];
+  otrng_prekey_dake3_message_s msg;
+  otrng_prekey_dake3_message_init(&msg);
 
   uint8_t prekey_mac[64] = {
       0x26, 0xcf, 0xec, 0x88, 0x85, 0x11, 0x4a, 0x5f, 0x79, 0xf4, 0x2c,
@@ -252,12 +255,12 @@ static void test_prekey_dake3_message_append_storage_info_req(void) {
 
   otrng_assert_is_success(
       otrng_prekey_dake3_message_append_storage_information_request(
-          msg, prekey_mac));
+          &msg, prekey_mac));
 
-  g_assert_cmpint(msg->message_len, ==, sizeof(expected));
-  otrng_assert_cmpmem(msg->message, expected, sizeof(expected));
+  g_assert_cmpint(msg.message_len, ==, sizeof(expected));
+  otrng_assert_cmpmem(msg.message, expected, sizeof(expected));
 
-  otrng_prekey_dake3_message_destroy(msg);
+  otrng_prekey_dake3_message_destroy(&msg);
 }
 
 static void test_prekey_storage_status_message_deserialize(void) {

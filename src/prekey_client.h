@@ -61,12 +61,12 @@ typedef struct {
   size_t server_identity_len;
   otrng_public_key_p server_pub_key;
   ec_point_p S;
-  ring_sig_p sigma;
+  ring_sig_s *sigma;
 } otrng_prekey_dake2_message_s;
 
 typedef struct {
   uint32_t client_instance_tag;
-  ring_sig_p sigma;
+  ring_sig_s *sigma;
   uint8_t *message;
   size_t message_len;
 } otrng_prekey_dake3_message_s;
@@ -200,6 +200,10 @@ INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
     size_t serialized_len);
 
 INTERNAL
+otrng_prekey_dake2_message_s *otrng_prekey_dake2_message_new(void);
+INTERNAL
+void otrng_prekey_dake2_message_init(otrng_prekey_dake2_message_s *msg);
+INTERNAL
 void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg);
 
 INTERNAL void kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
@@ -213,6 +217,10 @@ INTERNAL otrng_result
 otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,
                                    const otrng_prekey_dake3_message_s *msg);
 
+INTERNAL
+otrng_prekey_dake3_message_s *otrng_prekey_dake3_message_new(void);
+INTERNAL
+void otrng_prekey_dake3_message_init(otrng_prekey_dake3_message_s *msg);
 INTERNAL
 void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *msg);
 
