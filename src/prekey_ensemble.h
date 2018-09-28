@@ -30,9 +30,11 @@
 
 typedef struct {
   client_profile_p client_profile;
-  otrng_prekey_profile_p prekey_profile;
+  otrng_prekey_profile_s *prekey_profile;
   dake_prekey_message_s *message;
 } prekey_ensemble_s, prekey_ensemble_p[1];
+
+INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new();
 
 INTERNAL otrng_result
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst);

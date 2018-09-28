@@ -21,6 +21,23 @@
 #include "prekey_ensemble.h"
 #include "alloc.h"
 
+tstatic prekey_ensemble_s *prekey_ensemble_init(prekey_ensemble_s *pe) {
+  memset(pe, 0, sizeof(prekey_ensemble_s));
+
+  pe->prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
+
+  return pe;
+}
+
+INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new() {
+  prekey_ensemble_s *pe;
+
+  pe = otrng_xmalloc(sizeof(prekey_ensemble_s));
+
+  return prekey_ensemble_init(pe);
+}
+
+
 INTERNAL otrng_result
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
   /* Check that all the instance tags on the Prekey Ensemble's values are the
@@ -111,7 +128,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
 
 INTERNAL void otrng_prekey_ensemble_destroy(prekey_ensemble_s *dst) {
   otrng_client_profile_destroy(dst->client_profile);
-  otrng_prekey_profile_destroy(dst->prekey_profile);
+  otrng_prekey_profile_free(dst->prekey_profile);
   otrng_dake_prekey_message_free(dst->message);
   dst->message = NULL;
 }

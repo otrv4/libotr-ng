@@ -36,7 +36,7 @@ static void test_prekey_ensemble_validate(void) {
 
   uint8_t sym3[ED448_PRIVATE_BYTES] = {0xA2};
 
-  prekey_ensemble_s *ensemble = otrng_xmalloc(sizeof(prekey_ensemble_s));
+  prekey_ensemble_s *ensemble = otrng_prekey_ensemble_new();
   otrng_assert(ensemble);
 
   ensemble->client_profile->versions = otrng_xstrdup("4");
@@ -51,6 +51,7 @@ static void test_prekey_ensemble_validate(void) {
   otrng_assert_is_success(
       client_profile_sign(ensemble->client_profile, keypair));
 
+  ensemble->prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
   ensemble->prekey_profile->instance_tag = 1;
   ensemble->prekey_profile->expires = time(NULL) + 60 * 60 * 24; // one day
   otrng_ec_point_copy(ensemble->prekey_profile->shared_prekey, keypair->pub);

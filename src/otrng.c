@@ -893,10 +893,12 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   dh_keypair_p dh;
   otrng_client_s *client;
 
-  prekey_ensemble_s *ensemble = otrng_xmalloc(sizeof(prekey_ensemble_s));
+  prekey_ensemble_s *ensemble = otrng_prekey_ensemble_new();
 
   otrng_client_profile_copy(ensemble->client_profile,
                             get_my_client_profile(otr));
+
+  ensemble->prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
   otrng_prekey_profile_copy(ensemble->prekey_profile,
                             get_my_prekey_profile(otr));
 

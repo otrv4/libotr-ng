@@ -1480,7 +1480,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
   dst->num_ensembles = l;
 
   for (i = 0; i < l; i++) {
-    dst->ensembles[i] = otrng_xmalloc(sizeof(prekey_ensemble_s));
+    dst->ensembles[i] = otrng_prekey_ensemble_new();
 
     if (!otrng_prekey_ensemble_deserialize(dst->ensembles[i], serialized + w,
                                            serialized_len - w, &read)) {
