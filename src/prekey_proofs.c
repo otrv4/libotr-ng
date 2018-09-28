@@ -31,7 +31,7 @@
 
 static const uint8_t usage_proof_c_lambda = 0x17;
 
-INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_p dst,
+INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_s *dst,
                                                 const ec_scalar_p *values_priv,
                                                 const ec_point_p *values_pub,
                                                 const size_t values_len,
@@ -95,7 +95,7 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_p dst,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_p px,
+INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
                                             const ec_point_p *values_pub,
                                             const size_t values_len,
                                             const uint8_t *m,
@@ -199,7 +199,7 @@ tstatic void *gen_random_data(size_t n, random_generator gen) {
 }
 
 INTERNAL otrng_result otrng_dh_proof_generate(
-    dh_proof_p dst, const dh_mpi_p *values_priv, const dh_mpi_p *values_pub,
+    dh_proof_s *dst, const dh_mpi_p *values_priv, const dh_mpi_p *values_pub,
     const size_t values_len, const uint8_t *m, const uint8_t usage,
     random_generator gen) {
   uint8_t *p;
@@ -281,7 +281,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_p px,
+INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
                                           const dh_mpi_p *values_pub,
                                           const size_t values_len,
                                           const uint8_t *m,
@@ -361,7 +361,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_p px,
 }
 
 INTERNAL size_t otrng_ecdh_proof_serialize(uint8_t *dst,
-                                           const ecdh_proof_p px) {
+                                           const ecdh_proof_s *px) {
   uint8_t *cursor = dst;
 
   cursor += otrng_serialize_bytes_array(cursor, px->c, PROOF_C_SIZE);
@@ -370,7 +370,7 @@ INTERNAL size_t otrng_ecdh_proof_serialize(uint8_t *dst,
   return cursor - dst;
 }
 
-INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_p px) {
+INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_s *px) {
   uint8_t *cursor = dst;
   size_t len;
 
@@ -381,7 +381,7 @@ INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_p px) {
   return cursor - dst;
 }
 
-INTERNAL otrng_result otrng_ecdh_proof_deserialize(ecdh_proof_p px,
+INTERNAL otrng_result otrng_ecdh_proof_deserialize(ecdh_proof_s *px,
                                                    const uint8_t *serialized,
                                                    size_t ser_len,
                                                    size_t *read) {
@@ -407,7 +407,7 @@ INTERNAL otrng_result otrng_ecdh_proof_deserialize(ecdh_proof_p px,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_dh_proof_deserialize(dh_proof_p px,
+INTERNAL otrng_result otrng_dh_proof_deserialize(dh_proof_s *px,
                                                  const uint8_t *serialized,
                                                  size_t ser_len, size_t *read) {
   const uint8_t *cursor = serialized;

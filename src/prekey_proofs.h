@@ -32,44 +32,44 @@
 typedef struct ecdh_proof_s {
   uint8_t c[PROOF_C_SIZE];
   ec_scalar_p v;
-} ecdh_proof_s, ecdh_proof_p[1];
+} ecdh_proof_s;
 
 typedef struct dh_proof_s {
   uint8_t c[PROOF_C_SIZE];
   dh_mpi_p v;
-} dh_proof_s, dh_proof_p[1];
+} dh_proof_s;
 
-INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_p dst,
+INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_s *dst,
                                                 const ec_scalar_p *values_priv,
                                                 const ec_point_p *values_pub,
                                                 const size_t values_len,
                                                 const uint8_t *m,
                                                 const uint8_t usage);
 
-INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_p px,
+INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
                                             const ec_point_p *values_pub,
                                             const size_t values_len,
                                             const uint8_t *m,
                                             const uint8_t usage);
 
 INTERNAL otrng_result otrng_dh_proof_generate(
-    dh_proof_p dst, const dh_mpi_p *values_priv, const dh_mpi_p *values_pub,
+    dh_proof_s *dst, const dh_mpi_p *values_priv, const dh_mpi_p *values_pub,
     const size_t values_len, const uint8_t *m, const uint8_t usage,
     random_generator gen);
 
-INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_p px,
+INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
                                           const dh_mpi_p *values_pub,
                                           const size_t values_len,
                                           const uint8_t *m,
                                           const uint8_t usage);
 
-INTERNAL size_t otrng_ecdh_proof_serialize(uint8_t *dst, const ecdh_proof_p px);
-INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_p px);
-INTERNAL otrng_result otrng_ecdh_proof_deserialize(ecdh_proof_p px,
+INTERNAL size_t otrng_ecdh_proof_serialize(uint8_t *dst, const ecdh_proof_s *px);
+INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_s *px);
+INTERNAL otrng_result otrng_ecdh_proof_deserialize(ecdh_proof_s *px,
                                                    const uint8_t *serialized,
                                                    size_t ser_len,
                                                    size_t *read);
-INTERNAL otrng_result otrng_dh_proof_deserialize(dh_proof_p px,
+INTERNAL otrng_result otrng_dh_proof_deserialize(dh_proof_s *px,
                                                  const uint8_t *serialized,
                                                  size_t ser_len, size_t *read);
 

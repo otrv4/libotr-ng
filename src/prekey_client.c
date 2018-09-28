@@ -467,9 +467,9 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   dh_mpi_p *values_pub_dh;
   size_t proof_index = 0;
 
-  ecdh_proof_p prekey_message_proof_ecdh;
-  dh_proof_p prekey_message_proof_dh;
-  ecdh_proof_p prekey_profile_proof;
+  ecdh_proof_s prekey_message_proof_ecdh;
+  dh_proof_s prekey_message_proof_dh;
+  ecdh_proof_s prekey_profile_proof;
 
   goldilocks_shake256_ctx_p hd;
 
@@ -542,7 +542,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
     }
 
     if (!otrng_ecdh_proof_generate(
-            prekey_message_proof_ecdh, (const ec_scalar_p *)values_priv_ecdh,
+            &prekey_message_proof_ecdh, (const ec_scalar_p *)values_priv_ecdh,
             (const ec_point_p *)values_pub_ecdh, pub_msg->num_prekey_messages,
             m, usage_proof_message_ecdh)) {
       free(client_profile);
@@ -558,7 +558,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
       return OTRNG_ERROR;
     }
 
-    if (!otrng_dh_proof_generate(prekey_message_proof_dh, values_priv_dh,
+    if (!otrng_dh_proof_generate(&prekey_message_proof_dh, values_priv_dh,
                                  values_pub_dh, pub_msg->num_prekey_messages, m,
                                  usage_proof_message_dh, NULL)) {
       free(client_profile);
@@ -592,7 +592,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
     *values_pub_ecdh[0] = *pub_msg->prekey_profile->shared_prekey;
     *values_priv_ecdh[0] = *pub_msg->prekey_profile_key;
 
-    if (!otrng_ecdh_proof_generate(prekey_profile_proof,
+    if (!otrng_ecdh_proof_generate(&prekey_profile_proof,
                                    (const ec_scalar_p *)values_priv_ecdh,
                                    (const ec_point_p *)values_pub_ecdh, 1, m,
                                    usage_proof_shared_ecdh)) {
@@ -613,14 +613,14 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
 
   if (pub_msg->num_prekey_messages > 0) {
     proof_index += otrng_ecdh_proof_serialize(proofs + proof_index,
-                                              prekey_message_proof_ecdh);
+                                              &prekey_message_proof_ecdh);
     proof_index +=
-        otrng_dh_proof_serialize(proofs + proof_index, prekey_message_proof_dh);
+        otrng_dh_proof_serialize(proofs + proof_index, &prekey_message_proof_dh);
   }
 
   if (pub_msg->prekey_profile != NULL) {
     proof_index +=
-        otrng_ecdh_proof_serialize(proofs + proof_index, prekey_profile_proof);
+        otrng_ecdh_proof_serialize(proofs + proof_index, &prekey_profile_proof);
   }
 
   shake_256_prekey_server_kdf(prekey_proofs_kdf, HASH_BYTES, usage_mac_proofs,

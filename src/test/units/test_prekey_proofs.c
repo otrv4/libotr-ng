@@ -32,7 +32,7 @@ static void test_ecdh_proof_generation_and_validation(void) {
   ec_point_p pubs[3];
   uint8_t m[64] = {0x01, 0x02, 0x03};
   uint8_t m2[64] = {0x03, 0x02, 0x01};
-  ecdh_proof_p res;
+  ecdh_proof_s res;
 
   otrng_keypair_generate(v1, sym1);
   otrng_keypair_generate(v2, sym2);
@@ -47,18 +47,18 @@ static void test_ecdh_proof_generation_and_validation(void) {
   goldilocks_448_point_copy(pubs[2], v3->pub);
 
   otrng_assert_is_success(otrng_ecdh_proof_generate(
-      res, (const ec_scalar_p *)privs, (const ec_point_p *)pubs, 3, m, 0x13));
+      &res, (const ec_scalar_p *)privs, (const ec_point_p *)pubs, 3, m, 0x13));
   otrng_assert(
-      otrng_ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m, 0x13));
+      otrng_ecdh_proof_verify(&res, (const ec_point_p *)pubs, 3, m, 0x13));
   otrng_assert(
-      !otrng_ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m, 0x14));
+      !otrng_ecdh_proof_verify(&res, (const ec_point_p *)pubs, 3, m, 0x14));
   otrng_assert(
-      !otrng_ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m2, 0x13));
+      !otrng_ecdh_proof_verify(&res, (const ec_point_p *)pubs, 3, m2, 0x13));
 
   goldilocks_448_point_copy(pubs[1], v4->pub);
 
   otrng_assert(
-      !otrng_ecdh_proof_verify(res, (const ec_point_p *)pubs, 3, m, 0x13));
+      !otrng_ecdh_proof_verify(&res, (const ec_point_p *)pubs, 3, m, 0x13));
 }
 
 static void *fixed_random_number_generator(size_t n) {
@@ -79,7 +79,7 @@ static void test_dh_proof_generation_and_validation(void) {
   gcry_mpi_t pubs[3];
   uint8_t m[64] = {0x01, 0x02, 0x03};
   uint8_t m2[64] = {0x03, 0x02, 0x01};
-  dh_proof_p res;
+  dh_proof_s res;
 
   otrng_dh_keypair_generate(v1);
   otrng_dh_keypair_generate(v2);
@@ -94,21 +94,21 @@ static void test_dh_proof_generation_and_validation(void) {
   pubs[2] = otrng_dh_mpi_copy(v3->pub);
 
   otrng_assert_is_success(
-      otrng_dh_proof_generate(res, (const gcry_mpi_t *)privs,
+      otrng_dh_proof_generate(&res, (const gcry_mpi_t *)privs,
                               (const gcry_mpi_t *)pubs, 3, m, 0x13, NULL));
 
   otrng_assert(
-      otrng_dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
+      otrng_dh_proof_verify(&res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
   otrng_assert(
-      !otrng_dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x14));
+      !otrng_dh_proof_verify(&res, (const gcry_mpi_t *)pubs, 3, m, 0x14));
   otrng_assert(
-      !otrng_dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m2, 0x13));
+      !otrng_dh_proof_verify(&res, (const gcry_mpi_t *)pubs, 3, m2, 0x13));
 
   otrng_dh_mpi_release(pubs[1]);
   pubs[1] = otrng_dh_mpi_copy(v4->pub);
 
   otrng_assert(
-      !otrng_dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
+      !otrng_dh_proof_verify(&res, (const gcry_mpi_t *)pubs, 3, m, 0x13));
 
   otrng_dh_keypair_destroy(v1);
   otrng_dh_keypair_destroy(v2);
@@ -121,7 +121,7 @@ static void test_dh_proof_generation_and_validation(void) {
   otrng_dh_mpi_release(pubs[0]);
   otrng_dh_mpi_release(pubs[1]);
   otrng_dh_mpi_release(pubs[2]);
-  otrng_dh_mpi_release(res->v);
+  otrng_dh_mpi_release(res.v);
 }
 
 static void test_dh_proof_generation_and_validation_specific_values(void) {
@@ -132,7 +132,7 @@ static void test_dh_proof_generation_and_validation_specific_values(void) {
   gcry_mpi_t privs[3];
   gcry_mpi_t pubs[3];
   uint8_t m[64] = {0x01, 0x02, 0x03};
-  dh_proof_p res;
+  dh_proof_s res;
 
   gcry_mpi_scan(&v1, GCRYMPI_FMT_USG, v1data, DH_KEY_SIZE, NULL);
   gcry_mpi_scan(&v2, GCRYMPI_FMT_USG, v2data, DH_KEY_SIZE, NULL);
@@ -149,11 +149,11 @@ static void test_dh_proof_generation_and_validation_specific_values(void) {
   otrng_dh_calculate_public_key(pubs[2], privs[2]);
 
   otrng_assert_is_success(otrng_dh_proof_generate(
-      res, (const gcry_mpi_t *)privs, (const gcry_mpi_t *)pubs, 3, m, 0x14,
+      &res, (const gcry_mpi_t *)privs, (const gcry_mpi_t *)pubs, 3, m, 0x14,
       fixed_random_number_generator));
 
   otrng_assert(
-      otrng_dh_proof_verify(res, (const gcry_mpi_t *)pubs, 3, m, 0x14));
+      otrng_dh_proof_verify(&res, (const gcry_mpi_t *)pubs, 3, m, 0x14));
 
   otrng_dh_mpi_release(privs[0]);
   otrng_dh_mpi_release(privs[1]);
@@ -161,13 +161,13 @@ static void test_dh_proof_generation_and_validation_specific_values(void) {
   otrng_dh_mpi_release(pubs[0]);
   otrng_dh_mpi_release(pubs[1]);
   otrng_dh_mpi_release(pubs[2]);
-  otrng_dh_mpi_release(res->v);
+  otrng_dh_mpi_release(res.v);
 }
 
 static void test_ecdh_proof_serialization(void) {
   otrng_keypair_p v1;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {1};
-  ecdh_proof_p px;
+  ecdh_proof_s px;
   uint8_t out[64 + ED448_SCALAR_BYTES] = {0};
   size_t written;
   uint8_t expected[64 + ED448_SCALAR_BYTES] = {
@@ -183,20 +183,20 @@ static void test_ecdh_proof_serialization(void) {
       0x4c, 0xd0, 0xa0, 0xe6, 0xf6, 0xe1, 0xf4, 0xe1, 0x2a, 0x29, 0xc6, 0x20,
   };
 
-  memset(px->c, 0, 64);
+  memset(px.c, 0, 64);
 
   otrng_keypair_generate(v1, sym1);
-  goldilocks_448_scalar_copy(px->v, v1->priv);
-  px->c[0] = 0x42;
-  px->c[63] = 0x53;
+  goldilocks_448_scalar_copy(px.v, v1->priv);
+  px.c[0] = 0x42;
+  px.c[63] = 0x53;
 
-  written = otrng_ecdh_proof_serialize(out, px);
+  written = otrng_ecdh_proof_serialize(out, &px);
   g_assert_cmpuint(120, ==, written);
   otrng_assert_cmpmem(expected, out, sizeof(expected));
 }
 
 static void test_dh_proof_serialization(void) {
-  dh_proof_p px;
+  dh_proof_s px;
   uint8_t v1data[DH_KEY_SIZE] = {0x00, 0x01, 0x42};
   uint8_t out[64 + DH_MPI_MAX_BYTES] = {0};
   size_t written;
@@ -216,17 +216,17 @@ static void test_dh_proof_serialization(void) {
       0x00, 0x00, 0x00,
   };
 
-  memset(px->c, 0, 64);
-  px->c[0] = 0x42;
-  px->c[63] = 0x53;
+  memset(px.c, 0, 64);
+  px.c[0] = 0x42;
+  px.c[63] = 0x53;
 
-  gcry_mpi_scan(&px->v, GCRYMPI_FMT_USG, v1data, DH_KEY_SIZE, NULL);
+  gcry_mpi_scan(&px.v, GCRYMPI_FMT_USG, v1data, DH_KEY_SIZE, NULL);
 
-  written = otrng_dh_proof_serialize(out, px);
+  written = otrng_dh_proof_serialize(out, &px);
   g_assert_cmpuint(147, ==, written);
   otrng_assert_cmpmem(expected, out, 147);
 
-  otrng_dh_mpi_release(px->v);
+  otrng_dh_mpi_release(px.v);
 }
 
 static void test_ecdh_proof_deserialization(void) {
@@ -253,16 +253,16 @@ static void test_ecdh_proof_deserialization(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x53,
   };
-  ecdh_proof_p px;
+  ecdh_proof_s px;
   size_t read;
 
   otrng_keypair_generate(v1, sym1);
 
   otrng_assert_is_success(otrng_ecdh_proof_deserialize(
-      px, data, 64 + ED448_SCALAR_BYTES + 2, &read));
+      &px, data, 64 + ED448_SCALAR_BYTES + 2, &read));
   g_assert_cmpuint(120, ==, read);
-  otrng_assert_cmpmem(expected_c, px->c, 64);
-  otrng_assert(otrng_ec_scalar_eq(px->v, v1->priv));
+  otrng_assert_cmpmem(expected_c, px.c, 64);
+  otrng_assert(otrng_ec_scalar_eq(px.v, v1->priv));
 }
 
 static void test_dh_proof_deserialization(void) {
@@ -289,19 +289,19 @@ static void test_dh_proof_deserialization(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x53,
   };
-  dh_proof_p px;
+  dh_proof_s px;
   size_t read;
   dh_mpi_p expected_v;
 
   uint8_t v1data[DH_KEY_SIZE] = {0x00, 0x01, 0x42};
   gcry_mpi_scan(&expected_v, GCRYMPI_FMT_USG, v1data, DH_KEY_SIZE, NULL);
 
-  otrng_assert_is_success(otrng_dh_proof_deserialize(px, data, 149, &read));
+  otrng_assert_is_success(otrng_dh_proof_deserialize(&px, data, 149, &read));
   g_assert_cmpuint(147, ==, read);
-  otrng_assert_cmpmem(expected_c, px->c, 64);
-  otrng_assert_dh_public_key_eq(px->v, expected_v);
+  otrng_assert_cmpmem(expected_c, px.c, 64);
+  otrng_assert_dh_public_key_eq(px.v, expected_v);
 
-  otrng_dh_mpi_release(px->v);
+  otrng_dh_mpi_release(px.v);
   otrng_dh_mpi_release(expected_v);
 }
 
