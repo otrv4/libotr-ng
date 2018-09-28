@@ -914,7 +914,7 @@ INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
 }
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
-    uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_p auth,
+    uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_s *auth,
     const uint8_t *t, size_t t_len, uint8_t tmp_key[HASH_BYTES]) {
 
   // OTRv4 section "Non-Interactive-Auth Message"

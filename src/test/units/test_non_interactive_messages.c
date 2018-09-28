@@ -162,7 +162,7 @@ static void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
 static uint8_t mac_tag[HASH_BYTES] = {0xFD};
 
 static void
-setup_non_interactive_auth_message(dake_non_interactive_auth_message_p msg,
+setup_non_interactive_auth_message(dake_non_interactive_auth_message_s *msg,
                                    const dake_fixture_s *f) {
   ecdh_keypair_p ecdh;
   dh_keypair_p dh;
@@ -187,14 +187,14 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_p msg,
 
 static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
                                                        gconstpointer data) {
-  dake_non_interactive_auth_message_p msg;
-  setup_non_interactive_auth_message(msg, f);
+  dake_non_interactive_auth_message_s msg;
+  setup_non_interactive_auth_message(&msg, f);
 
   uint8_t *serialized = NULL;
   size_t len = 0;
   (void)data;
   otrng_assert_is_success(
-      otrng_dake_non_interactive_auth_message_asprintf(&serialized, &len, msg));
+      otrng_dake_non_interactive_auth_message_asprintf(&serialized, &len, &msg));
 
   uint8_t expected_header[] = {
       0x00,
@@ -217,19 +217,19 @@ static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   size_t client_profile_len = 0;
   uint8_t *client_profile_serialized = NULL;
   otrng_assert_is_success(otrng_client_profile_asprintf(
-      &client_profile_serialized, &client_profile_len, msg->profile));
+      &client_profile_serialized, &client_profile_len, msg.profile));
   otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
   free(client_profile_serialized);
   cursor += client_profile_len;
 
   uint8_t serialized_x[PUB_KEY_SER_BYTES];
-  size_t ser_len = otrng_serialize_ec_point(serialized_x, msg->X);
+  size_t ser_len = otrng_serialize_ec_point(serialized_x, msg.X);
   otrng_assert_cmpmem(cursor, serialized_x, ser_len);
   cursor += ser_len;
 
   uint8_t serialized_a[DH3072_MOD_LEN_BYTES];
   otrng_assert_is_success(otrng_dh_mpi_serialize(
-      serialized_a, DH3072_MOD_LEN_BYTES, &ser_len, msg->A));
+      serialized_a, DH3072_MOD_LEN_BYTES, &ser_len, msg.A));
 
   /* Skip first 4 because they are the size */
   cursor += 4;
@@ -237,7 +237,7 @@ static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   cursor += ser_len;
 
   uint8_t serialized_ring_sig[RING_SIG_BYTES];
-  otrng_serialize_ring_sig(serialized_ring_sig, msg->sigma);
+  otrng_serialize_ring_sig(serialized_ring_sig, msg.sigma);
 
   otrng_assert_cmpmem(cursor, serialized_ring_sig, RING_SIG_BYTES);
   cursor += RING_SIG_BYTES;
@@ -251,51 +251,51 @@ static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   otrng_assert_cmpmem(cursor, mac_tag, HASH_BYTES);
 
   free(serialized);
-  otrng_dake_non_interactive_auth_message_destroy(msg);
+  otrng_dake_non_interactive_auth_message_destroy(&msg);
 }
 
 static void test_otrng_dake_non_interactive_auth_message_deserializes(
     dake_fixture_s *f, gconstpointer data) {
   (void)data;
-  dake_non_interactive_auth_message_p expected;
-  setup_non_interactive_auth_message(expected, f);
+  dake_non_interactive_auth_message_s expected;
+  setup_non_interactive_auth_message(&expected, f);
 
   uint8_t *serialized = NULL;
   size_t len = 0;
   otrng_assert_is_success(otrng_dake_non_interactive_auth_message_asprintf(
-      &serialized, &len, expected));
+      &serialized, &len, &expected));
 
-  dake_non_interactive_auth_message_p deserialized;
+  dake_non_interactive_auth_message_s deserialized;
   otrng_assert_is_success(otrng_dake_non_interactive_auth_message_deserialize(
-      deserialized, serialized, len));
+      &deserialized, serialized, len));
   free(serialized);
 
-  g_assert_cmpuint(deserialized->sender_instance_tag, ==,
-                   expected->sender_instance_tag);
-  g_assert_cmpuint(deserialized->receiver_instance_tag, ==,
-                   expected->receiver_instance_tag);
-  otrng_assert_client_profile_eq(deserialized->profile, expected->profile);
-  otrng_assert_ec_public_key_eq(deserialized->X, expected->X);
-  otrng_assert_dh_public_key_eq(deserialized->A, expected->A);
-  otrng_assert_cmpmem(deserialized->auth_mac, expected->auth_mac, HASH_BYTES);
+  g_assert_cmpuint(deserialized.sender_instance_tag, ==,
+                   expected.sender_instance_tag);
+  g_assert_cmpuint(deserialized.receiver_instance_tag, ==,
+                   expected.receiver_instance_tag);
+  otrng_assert_client_profile_eq(deserialized.profile, expected.profile);
+  otrng_assert_ec_public_key_eq(deserialized.X, expected.X);
+  otrng_assert_dh_public_key_eq(deserialized.A, expected.A);
+  otrng_assert_cmpmem(deserialized.auth_mac, expected.auth_mac, HASH_BYTES);
 
   otrng_assert(
-      otrng_ec_scalar_eq(deserialized->sigma->c1, expected->sigma->c1));
+      otrng_ec_scalar_eq(deserialized.sigma->c1, expected.sigma->c1));
   otrng_assert(
-      otrng_ec_scalar_eq(deserialized->sigma->r1, expected->sigma->r1));
+      otrng_ec_scalar_eq(deserialized.sigma->r1, expected.sigma->r1));
   otrng_assert(
-      otrng_ec_scalar_eq(deserialized->sigma->c2, expected->sigma->c2));
+      otrng_ec_scalar_eq(deserialized.sigma->c2, expected.sigma->c2));
   otrng_assert(
-      otrng_ec_scalar_eq(deserialized->sigma->r2, expected->sigma->r2));
+               otrng_ec_scalar_eq(deserialized.sigma->r2, expected.sigma->r2));
   otrng_assert(
-      otrng_ec_scalar_eq(deserialized->sigma->c3, expected->sigma->c3));
+      otrng_ec_scalar_eq(deserialized.sigma->c3, expected.sigma->c3));
   otrng_assert(
-      otrng_ec_scalar_eq(deserialized->sigma->r3, expected->sigma->r3));
+      otrng_ec_scalar_eq(deserialized.sigma->r3, expected.sigma->r3));
 
-  otrng_assert(deserialized->prekey_message_id == expected->prekey_message_id);
+  otrng_assert(deserialized.prekey_message_id == expected.prekey_message_id);
 
-  otrng_dake_non_interactive_auth_message_destroy(expected);
-  otrng_dake_non_interactive_auth_message_destroy(deserialized);
+  otrng_dake_non_interactive_auth_message_destroy(&expected);
+  otrng_dake_non_interactive_auth_message_destroy(&deserialized);
 }
 
 void units_non_interactive_messages_add_tests(void) {
