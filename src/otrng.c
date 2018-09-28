@@ -903,7 +903,6 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   otrng_client_profile_copy(ensemble->client_profile,
                             get_my_client_profile(otr));
 
-  ensemble->prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
   otrng_prekey_profile_copy(ensemble->prekey_profile,
                             get_my_prekey_profile(otr));
 

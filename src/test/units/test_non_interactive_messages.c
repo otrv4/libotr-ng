@@ -268,7 +268,6 @@ static void test_otrng_dake_non_interactive_auth_message_deserializes(
 
   dake_non_interactive_auth_message_s deserialized;
   otrng_dake_non_interactive_auth_message_init(&deserialized);
-  memset(&deserialized, 0, sizeof(dake_non_interactive_auth_message_s));
   otrng_assert_is_success(otrng_dake_non_interactive_auth_message_deserialize(
       &deserialized, serialized, len));
   free(serialized);
