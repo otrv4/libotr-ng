@@ -30,13 +30,13 @@
 #define FPRINT_LEN_BYTES 56
 #define OTRNG_FPRINT_HUMAN_LEN 126 // 56 / 4 * 9
 
-typedef uint8_t otrng_fingerprint_p[FPRINT_LEN_BYTES];
-typedef uint8_t otrng_fingerprint_v3_p[20];
+typedef uint8_t otrng_fingerprint[FPRINT_LEN_BYTES];
+typedef uint8_t otrng_fingerprint_v3[20];
 
 API otrng_result otrng_fingerprint_hash_to_human(char *human,
                                                  const unsigned char *hash);
 
-INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint_p fp,
+INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
                                                   const otrng_public_key_p pub);
 
 #ifdef OTRNG_FINGERPRINT_PRIVATE

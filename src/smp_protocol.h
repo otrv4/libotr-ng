@@ -95,8 +95,8 @@ INTERNAL void otrng_smp_protocol_init(smp_protocol_s *smp);
 INTERNAL void otrng_smp_destroy(smp_protocol_s *smp);
 
 INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
-                                                otrng_fingerprint_p our_fp,
-                                                otrng_fingerprint_p their_fp,
+                                                otrng_fingerprint our_fp,
+                                                otrng_fingerprint their_fp,
                                                 uint8_t *ssid,
                                                 const uint8_t *answer,
                                                 size_t answer_len);

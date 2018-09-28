@@ -94,10 +94,10 @@ typedef struct otrng_client_callbacks_s {
   void (*gone_insecure)(const struct otrng_s *);
 
   /* A fingerprint was seen in this connection. */
-  void (*fingerprint_seen)(const otrng_fingerprint_p, const struct otrng_s *);
+  void (*fingerprint_seen)(const otrng_fingerprint, const struct otrng_s *);
 
   /* A v3 fingerprint was seen in this connection. */
-  void (*fingerprint_seen_v3)(const otrng_fingerprint_v3_p,
+  void (*fingerprint_seen_v3)(const otrng_fingerprint_v3,
                               const struct otrng_s *);
 
   /* Update the authentication UI and prompt the user to enter a shared secret.
@@ -206,12 +206,12 @@ otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
 
 INTERNAL void
 otrng_client_callbacks_fingerprint_seen(const otrng_client_callbacks_s *cb,
-                                        const otrng_fingerprint_p fp,
+                                        const otrng_fingerprint fp,
                                         const struct otrng_s *conv);
 
 INTERNAL void
 otrng_client_callbacks_fingerprint_seen_v3(const otrng_client_callbacks_s *cb,
-                                           const otrng_fingerprint_v3_p fp,
+                                           const otrng_fingerprint_v3 fp,
                                            const struct otrng_s *conv);
 
 INTERNAL void

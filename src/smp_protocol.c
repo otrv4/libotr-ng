@@ -62,8 +62,8 @@ INTERNAL void otrng_smp_destroy(smp_protocol_s *smp) {
 }
 
 INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
-                                                otrng_fingerprint_p our_fp,
-                                                otrng_fingerprint_p their_fp,
+                                                otrng_fingerprint our_fp,
+                                                otrng_fingerprint their_fp,
                                                 uint8_t *ssid,
                                                 const uint8_t *answer,
                                                 size_t answer_len) {
@@ -74,8 +74,8 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
 
   hash_init_with_usage(hd, usage_smp_secret);
   hash_update(hd, version, 1);
-  hash_update(hd, our_fp, sizeof(otrng_fingerprint_p));
-  hash_update(hd, their_fp, sizeof(otrng_fingerprint_p));
+  hash_update(hd, our_fp, sizeof(otrng_fingerprint));
+  hash_update(hd, their_fp, sizeof(otrng_fingerprint));
   hash_update(hd, ssid, sizeof(ssid));
   hash_update(hd, answer, answer_len);
 

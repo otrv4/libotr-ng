@@ -159,7 +159,7 @@ otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
 
 INTERNAL void
 otrng_client_callbacks_fingerprint_seen(const otrng_client_callbacks_s *cb,
-                                        const otrng_fingerprint_p fp,
+                                        const otrng_fingerprint fp,
                                         const otrng_s *conv) {
   if (!cb || !cb->fingerprint_seen) {
     return;
@@ -170,7 +170,7 @@ otrng_client_callbacks_fingerprint_seen(const otrng_client_callbacks_s *cb,
 
 INTERNAL void
 otrng_client_callbacks_fingerprint_seen_v3(const otrng_client_callbacks_s *cb,
-                                           const otrng_fingerprint_v3_p fp,
+                                           const otrng_fingerprint_v3 fp,
                                            const otrng_s *conv) {
   if (!cb || !cb->fingerprint_seen_v3) {
     return;

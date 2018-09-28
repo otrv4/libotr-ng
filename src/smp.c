@@ -164,7 +164,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
   uint8_t *to_send = NULL;
   size_t len = 0;
 
-  otrng_fingerprint_p our_fp, their_fp;
+  otrng_fingerprint our_fp, their_fp;
   if (!otrng_serialize_fingerprint(our_fp,
                                    initiator_profile->long_term_pub_key)) {
     return NULL;
@@ -269,7 +269,7 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_s *smp,
   // TODO: @smp If state is not CONTINUE_SMP then error.
   tlv_s *smp_reply = NULL;
 
-  otrng_fingerprint_p our_fp, their_fp;
+  otrng_fingerprint our_fp, their_fp;
   if (!otrng_serialize_fingerprint(our_fp, our_profile->long_term_pub_key)) {
     return NULL;
   }

@@ -88,7 +88,7 @@ tstatic void gone_insecure_cb_v4(const otrng_s *conv) {
   conv->client->global_state->callbacks->gone_insecure(conv);
 }
 
-tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint_p fp,
+tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint fp,
                                     const otrng_s *conv) {
   if (!conv || !conv->client || !conv->client->global_state->callbacks ||
       !conv->client->global_state->callbacks->fingerprint_seen) {
@@ -1066,7 +1066,7 @@ API otrng_result otrng_send_offline_message(char **dst,
 
 API otrng_result otrng_send_non_interactive_auth(
     char **dst, const prekey_ensemble_s *ensemble, otrng_s *otr) {
-  otrng_fingerprint_p fp;
+  otrng_fingerprint fp;
   *dst = NULL;
 
   if (!receive_prekey_ensemble(dst, ensemble, otr)) {
@@ -1247,7 +1247,7 @@ tstatic otrng_result non_interactive_auth_message_received(
     otrng_s *otr) {
   otrng_client_s *client = otr->client;
   const otrng_stored_prekeys_s *stored_prekey = NULL;
-  otrng_fingerprint_p fp;
+  otrng_fingerprint fp;
 
   if (!client) {
     return OTRNG_ERROR;
@@ -1581,7 +1581,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
 tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buff,
                                     size_t buff_len, otrng_s *otr) {
   dake_auth_r_s auth;
-  otrng_fingerprint_p fp;
+  otrng_fingerprint fp;
   otrng_result ret;
 
   otrng_dake_auth_r_init(&auth);
@@ -1676,7 +1676,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
 tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buff,
                                     size_t buff_len, otrng_s *otr) {
   dake_auth_i_s auth;
-  otrng_fingerprint_p fp;
+  otrng_fingerprint fp;
 
   otrng_dake_auth_i_init(&auth);
   if (otr->state != OTRNG_STATE_WAITING_AUTH_I) {

@@ -34,12 +34,12 @@ static void test_client_get_our_fingerprint() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   set_up_client(alice, ALICE_ACCOUNT, 1);
 
-  otrng_fingerprint_p expected_fp = {0};
+  otrng_fingerprint expected_fp = {0};
   otrng_assert(otrng_serialize_fingerprint(expected_fp, alice->keypair->pub));
 
-  otrng_fingerprint_p our_fp = {0};
+  otrng_fingerprint our_fp = {0};
   otrng_assert_is_success(otrng_client_get_our_fingerprint(our_fp, alice));
-  otrng_assert_cmpmem(expected_fp, our_fp, sizeof(otrng_fingerprint_p));
+  otrng_assert_cmpmem(expected_fp, our_fp, sizeof(otrng_fingerprint));
 
   otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);

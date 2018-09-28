@@ -158,7 +158,7 @@ API otrng_result otrng_expire_encrypted_session(char **newmsg,
 API otrng_result otrng_client_expire_fragments(int expiration_time,
                                                otrng_client_s *client);
 
-API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint_p fp,
+API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint fp,
                                                   const otrng_client_s *client);
 
 API otrng_prekey_client_s *
