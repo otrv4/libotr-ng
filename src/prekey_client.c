@@ -195,20 +195,22 @@ static char *start_dake_and_then_send(otrng_prekey_client_s *client,
   size_t serialized_len = 0;
   otrng_result success;
   char *ret;
-  otrng_prekey_dake1_message_s msg[1];
+  otrng_prekey_dake1_message_s msg;
 
-  msg->client_instance_tag = client->instance_tag;
-  otrng_client_profile_copy(msg->client_profile, client->client_profile);
+  msg.client_instance_tag = client->instance_tag;
+  msg.client_profile = otrng_xmalloc(sizeof(client_profile_s));
+  memset(msg.client_profile, 0, sizeof(client_profile_s));
+  otrng_client_profile_copy(msg.client_profile, client->client_profile);
 
   random_bytes(sym, ED448_PRIVATE_BYTES);
   otrng_ecdh_keypair_generate(client->ephemeral_ecdh, sym);
   otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
   free(sym);
-  otrng_ec_point_copy(msg->I, client->ephemeral_ecdh->pub);
+  otrng_ec_point_copy(msg.I, client->ephemeral_ecdh->pub);
 
   success =
-      otrng_prekey_dake1_message_asprint(&serialized, &serialized_len, msg);
-  otrng_prekey_dake1_message_destroy(msg);
+      otrng_prekey_dake1_message_asprint(&serialized, &serialized_len, &msg);
+  otrng_prekey_dake1_message_destroy(&msg);
 
   if (!success) {
     return NULL;
@@ -1242,6 +1244,8 @@ void otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *msg) {
   }
 
   otrng_client_profile_destroy(msg->client_profile);
+  free(msg->client_profile);
+  msg->client_profile = NULL;
   otrng_ec_point_destroy(msg->I);
 }
 

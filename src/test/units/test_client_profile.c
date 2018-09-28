@@ -154,15 +154,15 @@ static void test_otrng_client_profile_deserializes() {
   uint8_t *serialized = NULL;
   otrng_client_profile_asprintf(&serialized, &written, profile);
 
-  client_profile_p deserialized;
+  client_profile_s deserialized;
 
   otrng_assert_is_success(otrng_client_profile_deserialize(
-      deserialized, serialized, written, NULL));
-  otrng_assert_client_profile_eq(deserialized, profile);
+      &deserialized, serialized, written, NULL));
+  otrng_assert_client_profile_eq(&deserialized, profile);
 
   free(serialized);
   otrng_client_profile_free(profile);
-  otrng_client_profile_destroy(deserialized);
+  otrng_client_profile_destroy(&deserialized);
 }
 
 static void test_client_profile_signs_and_verify() {

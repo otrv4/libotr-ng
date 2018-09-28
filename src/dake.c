@@ -44,6 +44,8 @@ otrng_dake_identity_message_new(const client_profile_s *profile) {
 
   identity_message->sender_instance_tag = 0;
   identity_message->receiver_instance_tag = 0;
+  identity_message->profile = otrng_xmalloc(sizeof(client_profile_s));
+  memset(identity_message->profile, 0, sizeof(client_profile_s));
   identity_message->profile->versions = NULL;
   otrng_client_profile_copy(identity_message->profile, profile);
   otrng_secure_wipe(identity_message->Y, ED448_POINT_BYTES);
@@ -57,6 +59,8 @@ otrng_dake_identity_message_destroy(dake_identity_message_s *identity_message) {
   identity_message->sender_instance_tag = 0;
   identity_message->receiver_instance_tag = 0;
   otrng_client_profile_destroy(identity_message->profile);
+  free(identity_message->profile);
+  identity_message->profile = NULL;
   otrng_ec_point_destroy(identity_message->Y);
   otrng_dh_mpi_release(identity_message->B);
   identity_message->B = NULL;
@@ -193,6 +197,9 @@ INTERNAL dake_auth_r_s *otrng_dake_auth_r_new() {
 INTERNAL void otrng_dake_auth_r_init(dake_auth_r_s *auth_r) {
   memset(auth_r, 0, sizeof(dake_auth_r_s));
   auth_r->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+  memset(auth_r->sigma, 0, sizeof(ring_sig_s));
+  auth_r->profile = otrng_xmalloc(sizeof(client_profile_s));
+  memset(auth_r->profile, 0, sizeof(client_profile_s));
 }
 
 INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
@@ -200,6 +207,8 @@ INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
   auth_r->A = NULL;
   otrng_ec_point_destroy(auth_r->X);
   otrng_client_profile_destroy(auth_r->profile);
+  free(auth_r->profile);
+  auth_r->profile = NULL;
   otrng_ring_sig_destroy(auth_r->sigma);
   free(auth_r->sigma);
   auth_r->sigma = NULL;
@@ -575,6 +584,8 @@ INTERNAL void otrng_dake_non_interactive_auth_message_init(
   memset(a, 0, sizeof(dake_non_interactive_auth_message_s));
   a->sigma = otrng_xmalloc(sizeof(ring_sig_s));
   memset(a->sigma, 0, sizeof(ring_sig_s));
+  a->profile = otrng_xmalloc(sizeof(client_profile_s));
+  memset(a->profile, 0, sizeof(client_profile_s));
 }
 
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
@@ -583,6 +594,8 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   non_interactive_auth->A = NULL;
   otrng_ec_point_destroy(non_interactive_auth->X);
   otrng_client_profile_destroy(non_interactive_auth->profile);
+  free(non_interactive_auth->profile);
+  non_interactive_auth->profile = NULL;
   otrng_ring_sig_destroy(non_interactive_auth->sigma);
   free(non_interactive_auth->sigma);
   non_interactive_auth->sigma = NULL;

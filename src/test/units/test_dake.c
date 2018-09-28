@@ -309,7 +309,7 @@ static void test_build_interactive_rsign_tag() {
       0x1c, 0x6b, 0x13, 0x28, 0xb5, 0x3c, 0xfa, 0xbf, 0x80,
   };
 
-  client_profile_p initiator_profile;
+  client_profile_s initiator_profile;
   uint8_t initiator_profile_s[310] = {
       0x00, 0x00, 0x00, 0x05, 0x00, 0x01, 0x00, 0x00, 0x00, 0x04, 0x00, 0x02,
       0x00, 0x10, 0x05, 0x72, 0xC1, 0x4C, 0xB1, 0x30, 0x77, 0x44, 0xB9, 0x2F,
@@ -335,7 +335,7 @@ static void test_build_interactive_rsign_tag() {
       0xA4, 0x6D, 0xCD, 0xB7, 0x10, 0x5A, 0x00, 0x8A, 0x1D, 0x4A, 0x07, 0x00,
   };
 
-  client_profile_p responder_profile;
+  client_profile_s responder_profile;
   uint8_t responder_profile_s[310] = {
       0x00, 0x00, 0x00, 0x05, 0x00, 0x01, 0x00, 0x00, 0x00, 0x07, 0x00, 0x02,
       0x00, 0x10, 0x61, 0xFA, 0x1F, 0x15, 0x35, 0x82, 0xF5, 0xF6, 0x42, 0xF2,
@@ -374,11 +374,11 @@ static void test_build_interactive_rsign_tag() {
       otrng_ec_point_decode(responder_ecdh, responder_ecdh_s));
 
   otrng_assert_is_success(
-      otrng_client_profile_deserialize(initiator_profile, initiator_profile_s,
+      otrng_client_profile_deserialize(&initiator_profile, initiator_profile_s,
                                        sizeof(initiator_profile_s), NULL));
 
   otrng_assert_is_success(
-      otrng_client_profile_deserialize(responder_profile, responder_profile_s,
+      otrng_client_profile_deserialize(&responder_profile, responder_profile_s,
                                        sizeof(responder_profile_s), NULL));
 
   uint8_t *dst = NULL;
@@ -386,14 +386,14 @@ static void test_build_interactive_rsign_tag() {
   uint8_t phi[3] = {0, 1, 2};
 
   const otrng_dake_participant_data_s initiator = {
-      .client_profile = initiator_profile,
+      .client_profile = &initiator_profile,
       .exp_client_profile = NULL,
       .ecdh = *(initiator_ecdh),
       .dh = initiator_dh,
   };
 
   const otrng_dake_participant_data_s responder = {
-      .client_profile = responder_profile,
+      .client_profile = &responder_profile,
       .exp_client_profile = NULL,
       .ecdh = *(responder_ecdh),
       .dh = responder_dh,
@@ -417,8 +417,8 @@ static void test_build_interactive_rsign_tag() {
 
   otrng_dh_mpi_release(initiator_dh);
   otrng_dh_mpi_release(responder_dh);
-  otrng_client_profile_destroy(initiator_profile);
-  otrng_client_profile_destroy(responder_profile);
+  otrng_client_profile_destroy(&initiator_profile);
+  otrng_client_profile_destroy(&responder_profile);
 }
 
 void units_dake_add_tests(void) {

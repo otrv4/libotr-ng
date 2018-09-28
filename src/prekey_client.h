@@ -47,7 +47,7 @@
 
 typedef struct {
   uint32_t client_instance_tag;
-  client_profile_p client_profile;
+  client_profile_s *client_profile;
   ec_point_p I;
 } otrng_prekey_dake1_message_s;
 

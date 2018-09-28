@@ -1444,6 +1444,8 @@ tstatic otrng_result receive_identity_message(string_p *dst,
                                               size_t buflen, otrng_s *otr) {
   otrng_result result = OTRNG_ERROR;
   dake_identity_message_s m;
+  m.profile = otrng_xmalloc(sizeof(client_profile_s));
+  memset(m.profile, 0, sizeof(client_profile_s));
 
   if (!otrng_dake_identity_message_deserialize(&m, buff, buflen)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);

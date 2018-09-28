@@ -29,7 +29,7 @@
 #include "prekey_profile.h"
 
 typedef struct {
-  client_profile_p client_profile;
+  client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
   dake_prekey_message_s *message;
 } prekey_ensemble_s;

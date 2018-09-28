@@ -25,6 +25,10 @@ tstatic prekey_ensemble_s *prekey_ensemble_init(prekey_ensemble_s *pe) {
   memset(pe, 0, sizeof(prekey_ensemble_s));
 
   pe->prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
+  memset(pe->prekey_profile, 0, sizeof(otrng_prekey_profile_s));
+
+  pe->client_profile = otrng_xmalloc(sizeof(client_profile_s));
+  memset(pe->client_profile, 0, sizeof(client_profile_s));
 
   return pe;
 }
@@ -127,7 +131,11 @@ INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
 
 INTERNAL void otrng_prekey_ensemble_destroy(prekey_ensemble_s *dst) {
   otrng_client_profile_destroy(dst->client_profile);
+  free(dst->client_profile);
+  dst->client_profile = NULL;
+
   otrng_prekey_profile_free(dst->prekey_profile);
+
   otrng_dake_prekey_message_free(dst->message);
   dst->message = NULL;
 }

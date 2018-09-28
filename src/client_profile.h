@@ -72,7 +72,7 @@ typedef struct client_profile_s {
   uint8_t *transitional_signature;
 
   eddsa_signature_p signature;
-} client_profile_s, client_profile_p[1];
+} client_profile_s;
 
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
                                         const client_profile_s *src);

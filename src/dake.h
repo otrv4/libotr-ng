@@ -34,7 +34,7 @@
 typedef struct dake_identity_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  client_profile_p profile;
+  client_profile_s *profile;
   ec_point_p Y;
   dh_public_key_p B;
 } dake_identity_message_s;
@@ -42,7 +42,7 @@ typedef struct dake_identity_message_s {
 typedef struct dake_auth_r_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  client_profile_p profile;
+  client_profile_s *profile;
   ec_point_p X;
   dh_public_key_p A;
   ring_sig_s *sigma;
@@ -64,7 +64,7 @@ typedef struct dake_prekey_message_s {
 typedef struct dake_non_interactive_auth_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  client_profile_p profile;
+  client_profile_s *profile;
   ec_point_p X;
   dh_public_key_p A;
   ring_sig_s *sigma;
