@@ -562,14 +562,16 @@ INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
   return ret;
 }
 
-
-INTERNAL dake_non_interactive_auth_message_s *otrng_dake_non_interactive_auth_message_new() {
-  dake_non_interactive_auth_message_s *r = otrng_xmalloc(sizeof(dake_non_interactive_auth_message_s));
+INTERNAL dake_non_interactive_auth_message_s *
+otrng_dake_non_interactive_auth_message_new() {
+  dake_non_interactive_auth_message_s *r =
+      otrng_xmalloc(sizeof(dake_non_interactive_auth_message_s));
   otrng_dake_non_interactive_auth_message_init(r);
   return r;
 }
 
-INTERNAL void otrng_dake_non_interactive_auth_message_init(dake_non_interactive_auth_message_s *a) {
+INTERNAL void otrng_dake_non_interactive_auth_message_init(
+    dake_non_interactive_auth_message_s *a) {
   memset(a, 0, sizeof(dake_non_interactive_auth_message_s));
   a->sigma = otrng_xmalloc(sizeof(ring_sig_s));
 }

@@ -665,7 +665,7 @@ tstatic otrng_result reply_with_auth_r_msg(string_p *dst, otrng_s *otr) {
 
   /* sigma = RSig(H_a, sk_ha, {F_b, H_a, Y}, t) */
   if (!otrng_rsig_authenticate(
-          msg.sigma, otr->client->keypair->priv,     /* sk_ha */
+          msg.sigma, otr->client->keypair->priv,      /* sk_ha */
           otr->client->keypair->pub,                  /* H_a */
           otr->their_client_profile->forging_pub_key, /* F_b */
           otr->client->keypair->pub,                  /* H_a */

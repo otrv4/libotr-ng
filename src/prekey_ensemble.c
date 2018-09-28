@@ -37,7 +37,6 @@ INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new() {
   return prekey_ensemble_init(pe);
 }
 
-
 INTERNAL otrng_result
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
   /* Check that all the instance tags on the Prekey Ensemble's values are the

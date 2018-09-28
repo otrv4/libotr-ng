@@ -614,8 +614,8 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   if (pub_msg->num_prekey_messages > 0) {
     proof_index += otrng_ecdh_proof_serialize(proofs + proof_index,
                                               &prekey_message_proof_ecdh);
-    proof_index +=
-        otrng_dh_proof_serialize(proofs + proof_index, &prekey_message_proof_dh);
+    proof_index += otrng_dh_proof_serialize(proofs + proof_index,
+                                            &prekey_message_proof_dh);
   }
 
   if (pub_msg->prekey_profile != NULL) {
@@ -1300,7 +1300,8 @@ INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
 }
 
 INTERNAL otrng_prekey_dake2_message_s *otrng_prekey_dake2_message_new() {
-  otrng_prekey_dake2_message_s *r = otrng_xmalloc(sizeof(otrng_prekey_dake2_message_s));
+  otrng_prekey_dake2_message_s *r =
+      otrng_xmalloc(sizeof(otrng_prekey_dake2_message_s));
   otrng_prekey_dake2_message_init(r);
   return r;
 }
@@ -1355,7 +1356,8 @@ otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,
 }
 
 INTERNAL otrng_prekey_dake3_message_s *otrng_prekey_dake3_message_new() {
-  otrng_prekey_dake3_message_s *r = otrng_xmalloc(sizeof(otrng_prekey_dake3_message_s));
+  otrng_prekey_dake3_message_s *r =
+      otrng_xmalloc(sizeof(otrng_prekey_dake3_message_s));
   otrng_prekey_dake3_message_init(r);
   return r;
 }

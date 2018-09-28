@@ -84,7 +84,8 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_asprintf(
     uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_s *non_interactive_auth);
 
-INTERNAL dake_non_interactive_auth_message_s *otrng_dake_non_interactive_auth_message_new(void);
+INTERNAL dake_non_interactive_auth_message_s *
+otrng_dake_non_interactive_auth_message_new(void);
 INTERNAL void otrng_dake_non_interactive_auth_message_init(
     dake_non_interactive_auth_message_s *non_interactive_auth);
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
