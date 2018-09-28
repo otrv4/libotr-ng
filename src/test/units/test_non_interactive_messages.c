@@ -178,8 +178,6 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_s *msg,
   msg->A = otrng_dh_mpi_copy(dh->pub);
   memcpy(msg->auth_mac, mac_tag, HASH_BYTES);
 
-  msg->sigma = otrng_xmalloc(sizeof(ring_sig_s));
-  memset(msg->sigma, 0, sizeof(ring_sig_s));
   msg->prekey_message_id = 0x0A00000D;
 
   otrng_dh_keypair_destroy(dh);
