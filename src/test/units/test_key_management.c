@@ -63,25 +63,25 @@ static void test_derive_ratchet_keys() {
 }
 
 static void test_calculate_ssid() {
-  key_manager_p manager;
-  otrng_key_manager_init(manager);
+  key_manager_s manager;
+  otrng_key_manager_init(&manager);
 
   shared_secret_p s = {0};
   uint8_t expected_ssid[8] = {
       0x11, 0xee, 0xe5, 0xe1, 0xeb, 0x7e, 0x32, 0x0a,
   };
 
-  memcpy(s, manager->shared_secret, sizeof(shared_secret_p));
+  memcpy(s, manager.shared_secret, sizeof(shared_secret_p));
 
-  calculate_ssid(manager);
-  otrng_assert_cmpmem(expected_ssid, manager->ssid, 8);
+  calculate_ssid(&manager);
+  otrng_assert_cmpmem(expected_ssid, manager.ssid, 8);
 
-  otrng_key_manager_destroy(manager);
+  otrng_key_manager_destroy(&manager);
 }
 
 static void test_calculate_extra_symm_key() {
-  key_manager_p manager;
-  otrng_key_manager_init(manager);
+  key_manager_s manager;
+  otrng_key_manager_init(&manager);
 
   shared_secret_p s = {0};
   uint8_t expected_extra_key[EXTRA_SYMMETRIC_KEY_BYTES] = {
@@ -90,13 +90,13 @@ static void test_calculate_extra_symm_key() {
       0x1e, 0xcb, 0x1e, 0x31, 0x74, 0xad, 0x9e, 0xa0, 0x23, 0xf9,
   };
 
-  memcpy(s, manager->current->chain_s, sizeof(sending_chain_key_p));
+  memcpy(s, manager.current->chain_s, sizeof(sending_chain_key_p));
 
-  calculate_extra_key(manager, NULL, 's');
-  otrng_assert_cmpmem(expected_extra_key, manager->extra_symmetric_key,
+  calculate_extra_key(&manager, NULL, 's');
+  otrng_assert_cmpmem(expected_extra_key, manager.extra_symmetric_key,
                       EXTRA_SYMMETRIC_KEY_BYTES);
 
-  otrng_key_manager_destroy(manager);
+  otrng_key_manager_destroy(&manager);
 }
 
 static void test_calculate_brace_key() {

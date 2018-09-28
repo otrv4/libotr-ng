@@ -46,7 +46,7 @@ typedef struct ratchet_s {
   root_key_p root_key;
   sending_chain_key_p chain_s;
   receiving_chain_key_p chain_r;
-} ratchet_s, ratchet_p[1];
+} ratchet_s;
 
 /* the list of stored message and extra symmetric keys */
 typedef struct skipped_keys_s {
@@ -54,7 +54,7 @@ typedef struct skipped_keys_s {
   unsigned int j; /* Counter of the sending messages */
   extra_symmetric_key_p extra_symmetric_key;
   msg_enc_key_p enc_key;
-} skipped_keys_s, skipped_keys_p[1];
+} skipped_keys_s;
 
 /* a temporary structure used to hold the values of the receiving ratchet */
 typedef struct receiving_ratchet_s {
@@ -77,7 +77,7 @@ typedef struct receiving_ratchet_s {
   extra_symmetric_key_p extra_symmetric_key;
 
   list_element_s *skipped_keys;
-} receiving_ratchet_s, receiving_ratchet_p[1];
+} receiving_ratchet_s;
 
 /* represents the different values needed for key management */
 typedef struct key_manager_s {
@@ -114,7 +114,7 @@ typedef struct key_manager_s {
   list_element_s *old_mac_keys;
 
   time_t last_generated;
-} key_manager_s, key_manager_p[1];
+} key_manager_s;
 
 /*
  * @brief Creates a new key manager.
