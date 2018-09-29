@@ -443,6 +443,7 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *profilef) {
   }
 
   otrng_client_profile_free(client->client_profile);
+  client->client_profile = NULL;
 
   len = get_limited_line(&line, profilef);
   if (len < 0) {
