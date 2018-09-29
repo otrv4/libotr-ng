@@ -62,27 +62,31 @@ tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
 }
 
 tstatic void load_client_profile_from_storage(otrng_client_s *client) {
+  fprintf(stderr, "orchestration.load_client_profile_from_storage\n");
   otrng_client_callbacks_load_client_profile(client->global_state->callbacks,
                                              client->client_id);
 }
 
 tstatic void create_client_profile(otrng_client_s *client) {
-  fprintf(stderr, "orchestration.create_long_term_keys\n");
+  fprintf(stderr, "orchestration.create_client_profile\n");
   otrng_client_callbacks_create_client_profile(client->global_state->callbacks,
                                                client, client->client_id);
 }
 
-tstatic void ensure_client_profile(otrng_client_s *client) {
-  if (client->client_profile == NULL) {
+tstatic void ensure_valid_client_profile(otrng_client_s *client) {
+  if (!client->client_profile) {
     load_client_profile_from_storage(client);
+  } else {
+    fprintf(stderr, "orchestration.ensure_valid_client_profile - we already "
+                    "have a client profile! Hurrah\n");
   }
 
-  if (client->client_profile == NULL) {
+  if (!client->client_profile) {
     create_client_profile(client);
   }
 
-  if (client->client_profile == NULL) {
-    signal_error_in_state_management(client, "client profile");
+  if (!client->client_profile) {
+    signal_error_in_state_management(client, "No Client Profile");
   }
 }
 
@@ -90,7 +94,7 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   fprintf(stderr, "otrng_client_ensure_correct_state()\n");
 
   ensure_valid_long_term_key(client);
-  ensure_client_profile(client);
+  ensure_valid_client_profile(client);
   //
   // if ANY dependent values changed
   //    - save away a list of the changes somewhere, so that next time
