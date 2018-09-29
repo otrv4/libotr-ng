@@ -19,21 +19,21 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
         (cd $GPG_ERROR_DIR && sudo make install)
     else
         curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
-        (cd $GPG_ERROR_DIR && ./configure && make && sudo make install)
+        (cd $GPG_ERROR_DIR && ./configure && make -j && sudo make install)
     fi
 
     # if [[ -f $LIBGCRYPT_DIR/src/.libs/libgcrypt.so ]]; then
     #     (cd $LIBGCRYPT_DIR && sudo make install)
     # else
     curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps
-    (cd $LIBGCRYPT_DIR && ./configure && make && sudo make install)
+    (cd $LIBGCRYPT_DIR && ./configure && make -j && sudo make install)
     # fi
 
     if [[ -f $LIBSODIUM_DIR/src/libsodium/.libs/libsodium.so ]]; then
         (cd $LIBSODIUM_DIR && sudo make install)
     else
         curl https://download.libsodium.org/libsodium/releases/LATEST.tar.gz | tar xzf - -C .deps
-        (cd $LIBSODIUM_DIR && ./autogen.sh && ./configure && make && sudo make install)
+        (cd $LIBSODIUM_DIR && ./autogen.sh && ./configure && make -j && sudo make install)
     fi
 fi
 if [[ "$T" = "ctgrind" ]]; then
@@ -42,13 +42,13 @@ if [[ "$T" = "ctgrind" ]]; then
     else
         rm -rf $CTGRIND_DIR
         git clone --depth=1 https://github.com/claucece/ctgrind $CTGRIND_DIR
-        (cd $CTGRIND_DIR && ./autogen.sh && ./configure && make && sudo make install)
+        (cd $CTGRIND_DIR && ./autogen.sh && ./configure && make -j && sudo make install)
     fi
 fi
 
 if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
     curl https://sourceware.org/ftp/valgrind/valgrind-3.13.0.tar.bz2 | tar xjf - -C .deps
-    (cd $VALGRIND_DIR && ./configure && make && make install)
+    (cd $VALGRIND_DIR && ./configure && make -j && make install)
 fi
 
 # if [[ -f $LIBOTR_DIR/src/.libs/libotr.so ]]; then
@@ -57,7 +57,7 @@ fi
 if [[ ! -e $LIBOTR_DIR ]]; then
     git clone --depth=1 https://bugs.otr.im/lib/libotr.git $LIBOTR_DIR
 fi
-(cd $LIBOTR_DIR && ./bootstrap && ./configure && make && sudo make install)
+(cd $LIBOTR_DIR && ./bootstrap && ./configure && make -j && sudo make install)
 # fi
 
 if [[ -f $LIBGOLDILOCKS_DIR/src/.libs/libgoldilocks.so ]]; then
@@ -65,5 +65,5 @@ if [[ -f $LIBGOLDILOCKS_DIR/src/.libs/libgoldilocks.so ]]; then
 else
     rm -rf $LIBGOLDILOCKS_DIR
     git clone --depth=1 https://github.com/otrv4/libgoldilocks $LIBGOLDILOCKS_DIR
-    (cd $LIBGOLDILOCKS_DIR && ./autogen.sh && ./configure && make && sudo make install)
+    (cd $LIBGOLDILOCKS_DIR && ./autogen.sh && ./configure && make -j && sudo make install)
 fi

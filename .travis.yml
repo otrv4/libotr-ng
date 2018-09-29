@@ -135,24 +135,32 @@ script:
       if [ "$T" = "coverage" ]; then
            ./autogen.sh
            ./configure --disable-shared --enable-code-coverage
+           make -j
+           make -j check
            make coverage-check
       fi
   - |
       if [ "$T" = "profile" ]; then
            ./autogen.sh
            ./configure --disable-shared --enable-gprof
+           make -j
+           make -j check
            make profile
       fi
   - |
       if [ "$T" = "full-valgrind-checks" ]; then
            ./autogen.sh
            ./configure --enable-valgrind
+           make -j
+           make -j check
            make check-valgrind
       fi
   - |
       if [ "$T" = "normal" ]; then
            ./autogen.sh
            ./configure --disable-shared
+           make -j
+           make -j check
            make ci
       fi
   - |
@@ -165,6 +173,8 @@ script:
       if [ "$T" = "ctgrind" ]; then
            ./autogen.sh
            ./configure --with-ctgrind
+           make -j
+           make -j check
            make ci
       fi
   - |
@@ -172,6 +182,8 @@ script:
            ./autogen.sh
            ./configure --with-sanitizers=address,undefined
            export LSAN_OPTIONS=suppressions=lsan.supp
+           make -j
+           make -j check
            make test
       fi
   - |
