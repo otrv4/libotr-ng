@@ -464,6 +464,7 @@ tstatic otrng_result client_profile_sign(client_profile_s *client_profile,
   size_t bodylen = 0;
 
   otrng_ec_point_copy(client_profile->long_term_pub_key, keypair->pub);
+
   if (!client_profile_body_asprintf(&body, &bodylen, client_profile)) {
     return OTRNG_ERROR;
   }

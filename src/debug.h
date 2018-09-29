@@ -77,7 +77,7 @@ static inline void otrng_debug_print_pointer(FILE *f, const void *p) {
 
 static inline void otrng_debug_print_data(FILE *f, const uint8_t *p,
                                           size_t len) {
-  int i;
+  size_t i;
   if (p == NULL) {
     debug_api_print(f, "NULL");
   } else {
