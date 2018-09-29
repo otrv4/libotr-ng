@@ -26,7 +26,10 @@
 #include "shake.h"
 
 #ifndef S_SPLINT_S
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
 #include <libotr/mem.h>
+#pragma clang diagnostic pop
 #endif
 
 INTERNAL data_message_s *otrng_data_message_new() {

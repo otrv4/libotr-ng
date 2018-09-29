@@ -19,7 +19,10 @@
  */
 
 #ifndef S_SPLINT_S
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
 #include <libotr/privkey.h>
+#pragma clang diagnostic pop
 #endif
 
 #define OTRNG_MESSAGING_PRIVATE

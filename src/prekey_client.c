@@ -31,7 +31,10 @@
 #include "shake.h"
 
 #ifndef S_SPLINT_S
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
 #include <libotr/mem.h>
+#pragma clang diagnostic pop
 #endif
 
 #define OTRNG_PREKEY_CLIENT_MALFORMED_MSG 1

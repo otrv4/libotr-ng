@@ -23,8 +23,11 @@
 
 #ifndef S_SPLINT_S
 // clang-format off
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
 #include <libotr/proto.h>
 #include <libotr/message.h>
+#pragma clang diagnostic pop
 // clang-format on
 #endif
 

@@ -6,7 +6,10 @@
 #define OTRNG_BASE64_DECODE_LEN(x) (((x + 3) / 4) * 3)
 
 #ifndef S_SPLINT_S
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
 #include <libotr/b64.h>
+#pragma clang diagnostic pop
 #endif
 
 #include <stdint.h>

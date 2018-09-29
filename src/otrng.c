@@ -22,8 +22,11 @@
 
 #ifndef S_SPLINT_S
 #include <gcrypt.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
 #include <libotr/b64.h>
 #include <libotr/mem.h>
+#pragma clang diagnostic pop
 #endif
 
 #include <stdio.h>

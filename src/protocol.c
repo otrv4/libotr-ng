@@ -28,7 +28,10 @@
 #include "serialize.h"
 
 #ifndef S_SPLINT_S
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
 #include <libotr/b64.h>
+#pragma clang diagnostic pop
 #endif
 
 INTERNAL void maybe_create_keys(otrng_client_s *client) {

@@ -21,7 +21,10 @@
 #include <assert.h>
 
 #ifndef S_SPLINT_S
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
 #include <libotr/b64.h>
+#pragma clang diagnostic pop
 #endif
 
 #include <stdlib.h>
