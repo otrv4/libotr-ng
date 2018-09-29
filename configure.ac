@@ -132,6 +132,9 @@ AX_CFLAGS_GCC_OPTION([-fno-delete-null-pointer-checks])
 AX_CFLAGS_GCC_OPTION([-fno-strict-overflow])
 AX_CFLAGS_GCC_OPTION([-fno-strict-aliasing])
 
+AX_CFLAGS_GCC_OPTION([-Wno-unknown-pragmas])
+
+
 dnl Code coverage
 AX_CODE_COVERAGE
 
