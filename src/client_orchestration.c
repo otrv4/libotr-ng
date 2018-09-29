@@ -91,10 +91,9 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
 }
 
 API void otrng_client_ensure_correct_state(otrng_client_s *client) {
-  fprintf(stderr, "otrng_client_ensure_correct_state()\n");
-
   ensure_valid_long_term_key(client);
   ensure_valid_client_profile(client);
+
   //
   // if ANY dependent values changed
   //    - save away a list of the changes somewhere, so that next time
