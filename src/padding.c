@@ -48,7 +48,7 @@ INTERNAL otrng_result generate_padding(uint8_t **dst, size_t *dstlen,
   }
 
   *dstlen = padding_tlv->len + 4;
-  *dst = otrng_xmalloc(*dstlen);
+  *dst = otrng_xmalloc_z(*dstlen);
 
   ret = otrng_tlv_serialize(*dst, padding_tlv);
   otrng_tlv_free(padding_tlv);

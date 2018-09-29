@@ -126,7 +126,7 @@ static void test_prekey_profile_deserialize() {
   otrng_prekey_profile_asprint(&serialized, &written, profile);
 
   otrng_prekey_profile_s *deserialized =
-      otrng_xmalloc(sizeof(otrng_prekey_profile_s));
+      otrng_xmalloc_z(sizeof(otrng_prekey_profile_s));
 
   otrng_assert_is_success(otrng_prekey_profile_deserialize(
       deserialized, serialized, written, NULL));

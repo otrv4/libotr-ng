@@ -40,10 +40,7 @@
 
 otrng_message_to_send_s *otrng_message_new(void) {
   otrng_message_to_send_s *message =
-      otrng_xmalloc(sizeof(otrng_message_to_send_s));
-
-  message->pieces = NULL;
-  message->total = 0;
+      otrng_xmalloc_z(sizeof(otrng_message_to_send_s));
 
   return message;
 }
@@ -91,7 +88,7 @@ tstatic void reset_fragment_context(fragment_context_s *context) {
 }
 
 /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
-  fragment_context_s *context = otrng_xmalloc(sizeof(fragment_context_s));
+  fragment_context_s *context = otrng_xmalloc_z(sizeof(fragment_context_s));
   initialize_fragment_context(context);
   return context;
 }
@@ -114,7 +111,7 @@ static otrng_result create_fragment_message(char **dst, const char *piece,
     return OTRNG_ERROR;
   }
 
-  *dst = otrng_xmalloc(FRAGMENT_HEADER_LEN + piece_len + 1);
+  *dst = otrng_xmalloc_z(FRAGMENT_HEADER_LEN + piece_len + 1);
 
   res = snprintf(*dst, FRAGMENT_HEADER_LEN + piece_len + 1, FRAGMENT_FORMAT,
                  identifier, our_instance, their_instance, current, total,
@@ -131,7 +128,6 @@ static otrng_result create_fragment_message(char **dst, const char *piece,
 static otrng_result
 init_message_to_send_with_total(otrng_message_to_send_s *fragments, int total) {
   size_t pieces_len;
-  int i;
 
   if (total < 1 || total > 65535) {
     return OTRNG_ERROR;
@@ -140,11 +136,7 @@ init_message_to_send_with_total(otrng_message_to_send_s *fragments, int total) {
   fragments->total = total;
 
   pieces_len = fragments->total * sizeof(string_p);
-  fragments->pieces = otrng_xmalloc(pieces_len);
-
-  for (i = 0; i < fragments->total; i++) {
-    fragments->pieces[i] = NULL;
-  }
+  fragments->pieces = otrng_xmalloc_z(pieces_len);
 
   return OTRNG_SUCCESS;
 }
@@ -195,13 +187,7 @@ tstatic otrng_bool is_fragment(const string_p message) {
 }
 
 tstatic otrng_result initialize_fragments(fragment_context_s *context) {
-  unsigned int i;
-
-  context->fragments = otrng_xmalloc(sizeof(string_p) * context->total);
-
-  for (i = 0; i < context->total; i++) {
-    context->fragments[i] = NULL;
-  }
+  context->fragments = otrng_xmalloc_z(sizeof(string_p) * context->total);
 
   return OTRNG_SUCCESS;
 }
@@ -211,7 +197,7 @@ tstatic otrng_result join_fragments(char **unfrag_message,
   char *end_message;
   unsigned int i;
 
-  *unfrag_message = otrng_xmalloc(context->total_message_len + 1);
+  *unfrag_message = otrng_xmalloc_z(context->total_message_len + 1);
 
   end_message = *unfrag_message;
   for (i = 0; i < context->total; i++) {

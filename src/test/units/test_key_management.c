@@ -25,7 +25,7 @@
 #include "shake.h"
 
 static void test_derive_ratchet_keys() {
-  key_manager_s *manager = otrng_xmalloc(sizeof(key_manager_s));
+  key_manager_s *manager = otrng_xmalloc_z(sizeof(key_manager_s));
   otrng_key_manager_init(manager);
 
   memset(manager->shared_secret, 0, sizeof(shared_secret));
@@ -100,7 +100,7 @@ static void test_calculate_extra_symm_key() {
 }
 
 static void test_calculate_brace_key() {
-  key_manager_s *manager = otrng_xmalloc(sizeof(key_manager_s));
+  key_manager_s *manager = otrng_xmalloc_z(sizeof(key_manager_s));
   otrng_key_manager_init(manager);
 
   // Setup a fixed their_dh

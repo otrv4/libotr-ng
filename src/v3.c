@@ -621,14 +621,10 @@ static OtrlMessageAppOps v3_callbacks = {
 
 INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(otrng_client_s *client,
                                             const char *peer) {
-  otrng_v3_conn_s *ret = otrng_xmalloc(sizeof(otrng_v3_conn_s));
+  otrng_v3_conn_s *ret = otrng_xmalloc_z(sizeof(otrng_v3_conn_s));
 
   ret->client = client;
   ret->ops = &v3_callbacks;
-  ret->ctx = NULL;
-  ret->opdata = NULL;
-  ret->injected_message = NULL;
-
   ret->peer = otrng_xstrdup(peer);
 
   return ret;

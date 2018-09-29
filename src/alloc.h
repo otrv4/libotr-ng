@@ -28,6 +28,8 @@
 API void otrng_register_out_of_memory_handler(/*@null@*/ void (*handler)(void));
 
 INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc(size_t size);
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc_z(size_t size);
+
 INTERNAL /*@only@*/ /*@notnull@*/ void *
 otrng_xrealloc(/*@only@*/ /*@null@*/ void *ptr, size_t size);
 

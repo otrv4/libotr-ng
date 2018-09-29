@@ -36,10 +36,7 @@
 
 static client_profile_s *client_profile_init(client_profile_s *client_profile,
                                              const char *versions) {
-  memset(client_profile, 0, sizeof(client_profile_s));
-
   client_profile->versions = versions ? otrng_xstrdup(versions) : NULL;
-
   return client_profile;
 }
 
@@ -49,7 +46,7 @@ tstatic client_profile_s *client_profile_new(const char *versions) {
     return NULL;
   }
 
-  client_profile = otrng_xmalloc(sizeof(client_profile_s));
+  client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
 
   return client_profile_init(client_profile, versions);
 }
@@ -60,7 +57,7 @@ static void copy_transitional_signature(client_profile_s *dst,
     return;
   }
 
-  dst->transitional_signature = otrng_xmalloc(OTRv3_DSA_SIG_BYTES);
+  dst->transitional_signature = otrng_xmalloc_z(OTRv3_DSA_SIG_BYTES);
 
   memcpy(dst->transitional_signature, src->transitional_signature,
          OTRv3_DSA_SIG_BYTES);
@@ -74,7 +71,7 @@ otrng_client_profile_set_dsa_key_mpis(client_profile_s *client_profile,
   // mpis* points to a PUBKEY structure AFTER the "Pubkey type" field
   // We need to allocate 2 extra bytes for the "Pubkey type" field
   client_profile->dsa_key_len = mpis_len + 2;
-  client_profile->dsa_key = otrng_xmalloc(client_profile->dsa_key_len);
+  client_profile->dsa_key = otrng_xmalloc_z(client_profile->dsa_key_len);
 
   w = otrng_serialize_uint16(client_profile->dsa_key, OTRL_PUBKEY_TYPE_DSA);
   memcpy(client_profile->dsa_key + w, mpis, mpis_len);
@@ -243,7 +240,7 @@ tstatic otrng_result client_profile_body_asprintf(
   size_t s = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
   size_t written = 0;
 
-  uint8_t *buff = otrng_xmalloc(s);
+  uint8_t *buff = otrng_xmalloc_z(s);
 
   if (!client_profile_body_serialize(buff, s, &written, client_profile)) {
     free(buff);
@@ -266,7 +263,7 @@ INTERNAL otrng_result otrng_client_profile_asprintf(
   size_t s = OTRNG_CLIENT_PROFILE_MAX_BYTES(versions_len);
 
   size_t written = 0;
-  uint8_t *buff = otrng_xmalloc(s);
+  uint8_t *buff = otrng_xmalloc_z(s);
 
   if (!client_profile_body_serialize(buff, s, &written, client_profile)) {
     free(buff);
@@ -320,7 +317,7 @@ static otrng_result deserialize_dsa_key_field(client_profile_s *target,
     w += read + mpi.len;
   }
 
-  target->dsa_key = otrng_xmalloc(w);
+  target->dsa_key = otrng_xmalloc_z(w);
 
   target->dsa_key_len = w;
   memcpy(target->dsa_key, buffer, w);
@@ -391,7 +388,7 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
     break;
   case OTRNG_CLIENT_PROFILE_FIELD_TRANSITIONAL_SIGNATURE: /* Transitional
                                                              Signature */
-    target->transitional_signature = otrng_xmalloc(OTRv3_DSA_SIG_BYTES);
+    target->transitional_signature = otrng_xmalloc_z(OTRv3_DSA_SIG_BYTES);
 
     if (!otrng_deserialize_bytes_array(target->transitional_signature,
                                        OTRv3_DSA_SIG_BYTES, buffer + w,
@@ -631,7 +628,7 @@ tstatic otrng_result client_profile_verify_transitional_signature(
       client_profile->versions ? strlen(client_profile->versions) + 1 : 1;
   size = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
 
-  data = otrng_xmalloc(size);
+  data = otrng_xmalloc_z(size);
 
   if (client_profile_body_serialize_pre_transitional_signature(
           data, size, &datalen, client_profile) < 5) {
@@ -732,7 +729,7 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
       client_profile->versions ? strlen(client_profile->versions) + 1 : 1;
   size = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
 
-  data = otrng_xmalloc(size);
+  data = otrng_xmalloc_z(size);
 
   datalen = 0;
   client_profile_body_serialize_pre_transitional_signature(data, size, &datalen,

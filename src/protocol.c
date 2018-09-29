@@ -135,7 +135,7 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
 
   random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
 
-  c = otrng_xmalloc(message_len);
+  c = otrng_xmalloc_z(message_len);
 
   err = crypto_stream_xor(c, message, message_len, data_msg->nonce, enc_key);
   if (err) {
@@ -191,7 +191,7 @@ tstatic otrng_result serialize_and_encode_data_msg(
 
   serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
 
-  ser = otrng_xmalloc(serlen);
+  ser = otrng_xmalloc_z(serlen);
 
   memcpy(ser, body, bodylen);
   free(body);
@@ -308,7 +308,7 @@ tstatic otrng_result serialize_tlvs(uint8_t **dst, size_t *dstlen,
     *dstlen += current->data->len + 4;
   }
 
-  *dst = otrng_xmalloc(*dstlen);
+  *dst = otrng_xmalloc_z(*dstlen);
 
   cursor = *dst;
   for (current = tlvs; current; current = current->next) {
@@ -340,7 +340,7 @@ tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
   }
 
   *dst_len = message_len + padding_len;
-  *dst = otrng_xmalloc(*dst_len);
+  *dst = otrng_xmalloc_z(*dst_len);
 
   res = otrng_stpcpy((char *)*dst, message);
   if (ser) {

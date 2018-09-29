@@ -40,16 +40,10 @@ otrng_dake_identity_message_new(const client_profile_s *profile) {
     return NULL;
   }
 
-  identity_message = otrng_xmalloc(sizeof(dake_identity_message_s));
-
-  identity_message->sender_instance_tag = 0;
-  identity_message->receiver_instance_tag = 0;
-  identity_message->profile = otrng_xmalloc(sizeof(client_profile_s));
-  memset(identity_message->profile, 0, sizeof(client_profile_s));
-  identity_message->profile->versions = NULL;
+  identity_message = otrng_xmalloc_z(sizeof(dake_identity_message_s));
+  identity_message->profile = otrng_xmalloc_z(sizeof(client_profile_s));
   otrng_client_profile_copy(identity_message->profile, profile);
   otrng_secure_wipe(identity_message->Y, ED448_POINT_BYTES);
-  identity_message->B = NULL;
 
   return identity_message;
 }
@@ -90,7 +84,7 @@ INTERNAL otrng_result otrng_dake_identity_message_asprintf(
   }
 
   size = IDENTITY_MAX_BYTES + profile_len;
-  buff = otrng_xmalloc(size);
+  buff = otrng_xmalloc_z(size);
 
   cursor = buff;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
@@ -189,17 +183,14 @@ INTERNAL otrng_result otrng_dake_identity_message_deserialize(
 }
 
 INTERNAL dake_auth_r_s *otrng_dake_auth_r_new() {
-  dake_auth_r_s *r = otrng_xmalloc(sizeof(dake_auth_r_s));
+  dake_auth_r_s *r = otrng_xmalloc_z(sizeof(dake_auth_r_s));
   otrng_dake_auth_r_init(r);
   return r;
 }
 
 INTERNAL void otrng_dake_auth_r_init(dake_auth_r_s *auth_r) {
-  memset(auth_r, 0, sizeof(dake_auth_r_s));
-  auth_r->sigma = otrng_xmalloc(sizeof(ring_sig_s));
-  memset(auth_r->sigma, 0, sizeof(ring_sig_s));
-  auth_r->profile = otrng_xmalloc(sizeof(client_profile_s));
-  memset(auth_r->profile, 0, sizeof(client_profile_s));
+  auth_r->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
+  auth_r->profile = otrng_xmalloc_z(sizeof(client_profile_s));
 }
 
 INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
@@ -228,7 +219,7 @@ INTERNAL otrng_result otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
 
   size = AUTH_R_MAX_BYTES + our_profile_len;
 
-  buff = otrng_xmalloc(size);
+  buff = otrng_xmalloc_z(size);
 
   cursor = buff;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
@@ -335,14 +326,13 @@ INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
 }
 
 INTERNAL dake_auth_i_s *otrng_dake_auth_i_new() {
-  dake_auth_i_s *r = otrng_xmalloc(sizeof(dake_auth_i_s));
+  dake_auth_i_s *r = otrng_xmalloc_z(sizeof(dake_auth_i_s));
   otrng_dake_auth_i_init(r);
   return r;
 }
 
 INTERNAL void otrng_dake_auth_i_init(dake_auth_i_s *auth_i) {
-  memset(auth_i, 0, sizeof(dake_auth_i_s));
-  auth_i->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+  auth_i->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
 }
 
 INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_s *auth_i) {
@@ -356,7 +346,7 @@ INTERNAL otrng_result otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
   size_t size = DAKE_HEADER_BYTES + RING_SIG_BYTES;
   uint8_t *cursor;
 
-  *dst = otrng_xmalloc(size);
+  *dst = otrng_xmalloc_z(size);
 
   if (nbytes) {
     *nbytes = size;
@@ -424,12 +414,7 @@ INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
 
 INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
   dake_prekey_message_s *prekey_message =
-      otrng_xmalloc(sizeof(dake_prekey_message_s));
-
-  prekey_message->id = 0;
-  prekey_message->sender_instance_tag = 0;
-  otrng_secure_wipe(prekey_message->Y, ED448_POINT_BYTES);
-  prekey_message->B = NULL;
+      otrng_xmalloc_z(sizeof(dake_prekey_message_s));
 
   return prekey_message;
 }
@@ -479,7 +464,7 @@ INTERNAL otrng_result otrng_dake_prekey_message_asprintf(
     const dake_prekey_message_s *prekey_message) {
 
   size_t size = PRE_KEY_MAX_BYTES;
-  *dst = otrng_xmalloc(size);
+  *dst = otrng_xmalloc_z(size);
 
   return otrng_dake_prekey_message_serialize(*dst, size, nbytes,
                                              prekey_message);
@@ -574,18 +559,15 @@ INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
 INTERNAL dake_non_interactive_auth_message_s *
 otrng_dake_non_interactive_auth_message_new() {
   dake_non_interactive_auth_message_s *r =
-      otrng_xmalloc(sizeof(dake_non_interactive_auth_message_s));
+      otrng_xmalloc_z(sizeof(dake_non_interactive_auth_message_s));
   otrng_dake_non_interactive_auth_message_init(r);
   return r;
 }
 
 INTERNAL void otrng_dake_non_interactive_auth_message_init(
     dake_non_interactive_auth_message_s *a) {
-  memset(a, 0, sizeof(dake_non_interactive_auth_message_s));
-  a->sigma = otrng_xmalloc(sizeof(ring_sig_s));
-  memset(a->sigma, 0, sizeof(ring_sig_s));
-  a->profile = otrng_xmalloc(sizeof(client_profile_s));
-  memset(a->profile, 0, sizeof(client_profile_s));
+  a->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
+  a->profile = otrng_xmalloc_z(sizeof(client_profile_s));
 }
 
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
@@ -620,7 +602,7 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_asprintf(
   }
 
   size = NON_INT_AUTH_MAX_BYTES + our_profile_len;
-  buff = otrng_xmalloc(size);
+  buff = otrng_xmalloc_z(size);
 
   cursor = buff;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
@@ -728,7 +710,7 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
   len -= read;
 
   if (dst->sigma == NULL) {
-    dst->sigma = otrng_xmalloc(sizeof(ring_sig_s));
+    dst->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
   }
 
   if (!otrng_deserialize_ring_sig(dst->sigma, cursor, len, &read)) {
@@ -885,7 +867,7 @@ INTERNAL otrng_result build_interactive_rsign_tag(
 
   size_t written = 0;
   otrng_result result = OTRNG_ERROR;
-  uint8_t *buff = otrng_xmalloc(1 + MAX_T_LENGTH);
+  uint8_t *buff = otrng_xmalloc_z(1 + MAX_T_LENGTH);
 
   assert(auth_tag_type == 'i' || auth_tag_type == 'r');
   if (auth_tag_type == 'r') {
@@ -930,7 +912,7 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_result result;
 
-  *msg = otrng_xmalloc(MAX_T_LENGTH);
+  *msg = otrng_xmalloc_z(MAX_T_LENGTH);
 
   otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
 
@@ -957,7 +939,7 @@ INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_result result;
 
-  *msg = otrng_xmalloc(MAX_T_LENGTH);
+  *msg = otrng_xmalloc_z(MAX_T_LENGTH);
 
   otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
 

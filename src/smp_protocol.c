@@ -184,7 +184,7 @@ INTERNAL otrng_result otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
   uint8_t *cursor;
   size = 4 + msg->q_len + (2 * ED448_POINT_BYTES) + (4 * ED448_SCALAR_BYTES);
 
-  *dst = otrng_xmalloc(size);
+  *dst = otrng_xmalloc_z(size);
 
   cursor = *dst;
 
@@ -454,7 +454,7 @@ tstatic otrng_result smp_msg_2_asprintf(uint8_t **dst, size_t *len,
   uint8_t *cursor;
   size += (4 * ED448_POINT_BYTES) + (7 * ED448_SCALAR_BYTES);
 
-  *dst = otrng_xmalloc(size);
+  *dst = otrng_xmalloc_z(size);
 
   cursor = *dst;
 
@@ -787,7 +787,7 @@ tstatic otrng_result smp_msg_3_asprintf(uint8_t **dst, size_t *len,
   uint8_t *cursor;
   size += (3 * ED448_POINT_BYTES) + (5 * ED448_SCALAR_BYTES);
 
-  *dst = otrng_xmalloc(size);
+  *dst = otrng_xmalloc_z(size);
 
   cursor = *dst;
 
@@ -1028,7 +1028,7 @@ tstatic otrng_result smp_msg_4_asprintf(uint8_t **dst, size_t *len,
   uint8_t *cursor;
   size = ED448_POINT_BYTES + (2 * ED448_SCALAR_BYTES);
 
-  *dst = otrng_xmalloc(size);
+  *dst = otrng_xmalloc_z(size);
 
   cursor = *dst;
 
@@ -1172,7 +1172,7 @@ tstatic otrng_smp_event_t receive_smp_msg_1(const tlv_s *tlv,
       continue;
     }
 
-    smp->msg1 = otrng_xmalloc(sizeof(smp_msg_1_s));
+    smp->msg1 = otrng_xmalloc_z(sizeof(smp_msg_1_s));
 
     smp_msg_1_copy(smp->msg1, &msg_1);
     otrng_smp_msg_1_destroy(&msg_1);

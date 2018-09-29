@@ -43,7 +43,7 @@ INTERNAL void otrng_mpi_set(otrng_mpi_s *dst, const uint8_t *src, size_t len) {
   }
 
   dst->len = len;
-  dst->data = otrng_xmalloc(dst->len);
+  dst->data = otrng_xmalloc_z(dst->len);
 
   memcpy(dst->data, src, dst->len);
 }
@@ -82,7 +82,7 @@ INTERNAL otrng_result otrng_mpi_deserialize(otrng_mpi_s *dst,
     return OTRNG_SUCCESS;
   }
 
-  dst->data = otrng_xmalloc(dst->len);
+  dst->data = otrng_xmalloc_z(dst->len);
 
   memcpy(dst->data, src + *read, dst->len);
 

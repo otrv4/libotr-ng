@@ -45,7 +45,7 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(
 
   otrng_zq_keypair_generate(a, r);
 
-  cbuf = otrng_xmalloc(cbuf_len * sizeof(uint8_t));
+  cbuf = otrng_xmalloc_z(cbuf_len * sizeof(uint8_t));
   curr = cbuf;
 
   if (!otrng_ec_point_encode(curr, ED448_POINT_BYTES, a)) {
@@ -72,7 +72,7 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(
   shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf, cbuf_len);
   free(cbuf);
 
-  p = otrng_xmalloc(p_len * sizeof(uint8_t));
+  p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
   shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
                               PROOF_C_SIZE);
 
@@ -107,7 +107,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
   size_t cbuf_len = ((values_len + 1) * ED448_POINT_BYTES) + 64;
   uint8_t c2[PROOF_C_SIZE];
 
-  p = otrng_xmalloc(p_len * sizeof(uint8_t));
+  p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
   shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, px->c,
                               PROOF_C_SIZE);
   goldilocks_448_precomputed_scalarmul(a, goldilocks_448_precomputed_base,
@@ -151,7 +151,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
   goldilocks_448_point_sub(a, a, curr);
   goldilocks_448_point_destroy(curr);
 
-  cbuf = otrng_xmalloc(cbuf_len * sizeof(uint8_t));
+  cbuf = otrng_xmalloc_z(cbuf_len * sizeof(uint8_t));
   cbuf_curr = cbuf;
 
   if (!otrng_ec_point_encode(cbuf_curr, ED448_POINT_BYTES, a)) {
@@ -226,8 +226,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   a = gcry_mpi_new(DH3072_MOD_LEN_BITS);
   otrng_dh_calculate_public_key(a, r);
 
-  cbuf = otrng_xmalloc(cbuf_len * sizeof(uint8_t));
-  memset(cbuf, 0, cbuf_len);
+  cbuf = otrng_xmalloc_z(cbuf_len * sizeof(uint8_t));
   cbuf_curr = cbuf;
   if (otrng_failed(
           otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w, a))) {
@@ -254,8 +253,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf, cbuf_len);
   free(cbuf);
 
-  p = otrng_xmalloc(p_len * sizeof(uint8_t));
-  memset(p, 0, p_len);
+  p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
   shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
                               PROOF_C_SIZE);
 
@@ -294,7 +292,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
   uint8_t c2[PROOF_C_SIZE];
 
-  p = otrng_xmalloc(p_len * sizeof(uint8_t));
+  p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
   shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, px->c,
                               PROOF_C_SIZE);
 
@@ -324,8 +322,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   gcry_mpi_mulm(a, a, curr, mod);
   otrng_dh_mpi_release(curr);
 
-  cbuf = otrng_xmalloc(cbuf_len * sizeof(uint8_t));
-  memset(cbuf, 0, cbuf_len * sizeof(uint8_t));
+  cbuf = otrng_xmalloc_z(cbuf_len * sizeof(uint8_t));
   cbuf_curr = cbuf;
   if (otrng_failed(
           otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w, a))) {

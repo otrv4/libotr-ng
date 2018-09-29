@@ -72,7 +72,7 @@ static void test_ser_deser_uint() {
 
 static void test_serialize_otrng_deserialize_data() {
   uint8_t src[5] = {1, 2, 3, 4, 5};
-  uint8_t *dst = otrng_xmalloc(9);
+  uint8_t *dst = otrng_xmalloc_z(9);
   otrng_assert(dst);
   g_assert_cmpint(9, ==, otrng_serialize_data(dst, src, 5));
   free(dst);

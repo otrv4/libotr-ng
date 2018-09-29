@@ -107,8 +107,7 @@ static void test_client_profile_serializes() {
   free(fk);
 
   client_profile_sign(profile, &keypair);
-  profile->transitional_signature = otrng_xmalloc(OTRv3_DSA_SIG_BYTES);
-  memset(profile->transitional_signature, 0, OTRv3_DSA_SIG_BYTES);
+  profile->transitional_signature = otrng_xmalloc_z(OTRv3_DSA_SIG_BYTES);
 
   size_t written = 0;
   uint8_t *serialized = NULL;

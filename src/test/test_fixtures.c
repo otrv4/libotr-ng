@@ -112,7 +112,7 @@ otrng_public_key *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
   otrng_keypair_s *kf = otrng_keypair_new();
   otrng_keypair_generate(kf, sym);
-  otrng_public_key *res = otrng_xmalloc(sizeof(otrng_public_key));
+  otrng_public_key *res = otrng_xmalloc_z(sizeof(otrng_public_key));
   otrng_ec_point_copy(*res, kf->pub);
   otrng_keypair_free(kf);
   return res;

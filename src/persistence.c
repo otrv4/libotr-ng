@@ -170,7 +170,7 @@ static int get_limited_line(char **buf, FILE *f) {
     return -1;
   }
 
-  *buf = otrng_xmalloc(MAX_LINE_LENGTH * sizeof(char));
+  *buf = otrng_xmalloc_z(MAX_LINE_LENGTH * sizeof(char));
 
   res = fgets(*buf, MAX_LINE_LENGTH, f);
   if (res == NULL) {
@@ -250,7 +250,7 @@ otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
     return OTRNG_ERROR;
   }
 
-  dec = otrng_xmalloc(OTRNG_BASE64_DECODE_LEN(len));
+  dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
 
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);
@@ -450,7 +450,7 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *profilef) {
     return OTRNG_ERROR;
   }
 
-  dec = otrng_xmalloc(OTRNG_BASE64_DECODE_LEN(len));
+  dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
 
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);
@@ -501,7 +501,7 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_FILEp(
     return OTRNG_ERROR;
   }
 
-  dec = otrng_xmalloc(OTRNG_BASE64_DECODE_LEN(len));
+  dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
 
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);
@@ -665,7 +665,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   otrng_result success;
 
   otrng_stored_prekeys_s *prekey_msg =
-      otrng_xmalloc(sizeof(otrng_stored_prekeys_s));
+      otrng_xmalloc_z(sizeof(otrng_stored_prekeys_s));
 
   prekey_msg->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
   prekey_msg->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
@@ -698,7 +698,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
 
   // TODO: check this
   dec_len = OTRNG_BASE64_DECODE_LEN(line_len);
-  dec = otrng_xmalloc(dec_len);
+  dec = otrng_xmalloc_z(dec_len);
 
   scalar_len = otrl_base64_decode(dec, line, line_len);
   free(line);
@@ -719,7 +719,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
 
   // TODO: check this
   dec_len = OTRNG_BASE64_DECODE_LEN(line_len);
-  dec = otrng_xmalloc(dec_len);
+  dec = otrng_xmalloc_z(dec_len);
 
   priv_len = otrl_base64_decode(dec, line, line_len - 1);
   free(line);
@@ -826,7 +826,7 @@ otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  dec = otrng_xmalloc(OTRNG_BASE64_DECODE_LEN(len));
+  dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
 
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);
@@ -874,7 +874,7 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_read_FILEp(
     return OTRNG_ERROR;
   }
 
-  dec = otrng_xmalloc(OTRNG_BASE64_DECODE_LEN(len));
+  dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
 
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);

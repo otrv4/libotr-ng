@@ -127,7 +127,7 @@ INTERNAL otrng_result otrng_deserialize_data(uint8_t **dst, size_t *dstlen,
     return OTRNG_ERROR;
   }
 
-  t = otrng_xmalloc(s);
+  t = otrng_xmalloc_z(s);
 
   memcpy(t, buffer + r, s);
 

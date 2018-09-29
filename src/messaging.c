@@ -35,9 +35,8 @@
 
 API otrng_global_state_s *
 otrng_global_state_new(const otrng_client_callbacks_s *cb) {
-  otrng_global_state_s *gs = otrng_xmalloc(sizeof(otrng_global_state_s));
+  otrng_global_state_s *gs = otrng_xmalloc_z(sizeof(otrng_global_state_s));
 
-  gs->clients = NULL;
   gs->callbacks = cb;
   gs->user_state_v3 = otrl_userstate_create();
 

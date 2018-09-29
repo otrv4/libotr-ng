@@ -62,8 +62,7 @@ static void test_ecdh_proof_generation_and_validation(void) {
 }
 
 static void *fixed_random_number_generator(size_t n) {
-  uint8_t *buf = otrng_xmalloc(n);
-  memset(buf, 0, n);
+  uint8_t *buf = otrng_xmalloc_z(n);
   buf[0] = 0x01;
   buf[1] = 0x02;
   buf[2] = 0x01;

@@ -57,8 +57,7 @@ static void test_prekey_dake1_message_serialize(void) {
       0xeb, 0x57, 0xd3, 0x8d, 0x6,  0xf4, 0xfb, 0x27, 0x0};
 
   otrng_prekey_dake1_message_s msg;
-  msg.client_profile = otrng_xmalloc(sizeof(client_profile_s));
-  memset(msg.client_profile, 0, sizeof(client_profile_s));
+  msg.client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
 
   msg.client_instance_tag = 0x56781234;
   otrng_assert_is_success(

@@ -234,7 +234,7 @@ API void otrng_public_key_debug_print(FILE *f, otrng_public_key k) {
     return;
   }
 
-  uint8_t *r = otrng_xmalloc(ED448_POINT_BYTES);
+  uint8_t *r = otrng_xmalloc_z(ED448_POINT_BYTES);
   if (!otrng_ec_point_encode(r, ED448_POINT_BYTES, k)) {
     free(r);
     debug_api_print(f, "ERROR!!");
@@ -250,7 +250,7 @@ API void otrng_private_key_debug_print(FILE *f, otrng_private_key k) {
     return;
   }
 
-  uint8_t *r = otrng_xmalloc(ED448_SCALAR_BYTES);
+  uint8_t *r = otrng_xmalloc_z(ED448_SCALAR_BYTES);
 
   otrng_ec_scalar_encode(r, k);
 
@@ -264,7 +264,7 @@ API void otrng_shared_prekey_pub_debug_print(FILE *f,
     return;
   }
 
-  uint8_t *r = otrng_xmalloc(ED448_POINT_BYTES);
+  uint8_t *r = otrng_xmalloc_z(ED448_POINT_BYTES);
   if (!otrng_ec_point_encode(r, ED448_POINT_BYTES, k)) {
     free(r);
     debug_api_print(f, "ERROR!!");
@@ -281,7 +281,7 @@ API void otrng_shared_prekey_priv_debug_print(FILE *f,
     return;
   }
 
-  uint8_t *r = otrng_xmalloc(ED448_SCALAR_BYTES);
+  uint8_t *r = otrng_xmalloc_z(ED448_SCALAR_BYTES);
   otrng_ec_scalar_encode(r, k);
 
   otrng_debug_print_data(f, r, ED448_SCALAR_BYTES);

@@ -22,13 +22,8 @@
 #include "alloc.h"
 
 tstatic prekey_ensemble_s *prekey_ensemble_init(prekey_ensemble_s *pe) {
-  memset(pe, 0, sizeof(prekey_ensemble_s));
-
-  pe->prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
-  memset(pe->prekey_profile, 0, sizeof(otrng_prekey_profile_s));
-
-  pe->client_profile = otrng_xmalloc(sizeof(client_profile_s));
-  memset(pe->client_profile, 0, sizeof(client_profile_s));
+  pe->prekey_profile = otrng_xmalloc_z(sizeof(otrng_prekey_profile_s));
+  pe->client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
 
   return pe;
 }
@@ -36,7 +31,7 @@ tstatic prekey_ensemble_s *prekey_ensemble_init(prekey_ensemble_s *pe) {
 INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new() {
   prekey_ensemble_s *pe;
 
-  pe = otrng_xmalloc(sizeof(prekey_ensemble_s));
+  pe = otrng_xmalloc_z(sizeof(prekey_ensemble_s));
 
   return prekey_ensemble_init(pe);
 }
@@ -113,7 +108,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
 
   w += read;
 
-  dst->message = otrng_xmalloc(sizeof(dake_prekey_message_s));
+  dst->message = otrng_xmalloc_z(sizeof(dake_prekey_message_s));
 
   if (!otrng_dake_prekey_message_deserialize(dst->message, src + w, src_len - w,
                                              &read)) {

@@ -44,7 +44,7 @@
 
 tstatic otrng_conversation_s *new_conversation_with(const char *recipient,
                                                     otrng_s *conn) {
-  otrng_conversation_s *conv = otrng_xmalloc(sizeof(otrng_conversation_s));
+  otrng_conversation_s *conv = otrng_xmalloc_z(sizeof(otrng_conversation_s));
 
   conv->recipient = otrng_xstrdup(recipient);
 
@@ -72,8 +72,7 @@ tstatic otrng_bool should_heartbeat(int last_sent) {
 }
 
 API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
-  otrng_client_s *client = otrng_xmalloc(sizeof(otrng_client_s));
-  memset(client, 0, sizeof(otrng_client_s));
+  otrng_client_s *client = otrng_xmalloc_z(sizeof(otrng_client_s));
 
   client->client_id = client_id;
   client->max_stored_msg_keys = 1000;
@@ -551,7 +550,7 @@ INTERNAL void otrng_client_store_my_prekey_message(
     return;
   }
 
-  stored_prekey_msg = otrng_xmalloc(sizeof(otrng_stored_prekeys_s));
+  stored_prekey_msg = otrng_xmalloc_z(sizeof(otrng_stored_prekeys_s));
   stored_prekey_msg->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
   stored_prekey_msg->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
   stored_prekey_msg->id = id;
@@ -583,9 +582,9 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
 
   instance_tag = otrng_client_get_instance_tag(client);
 
-  messages = otrng_xmalloc(num_messages * sizeof(dake_prekey_message_s *));
+  messages = otrng_xmalloc_z(num_messages * sizeof(dake_prekey_message_s *));
   ke = otrng_secure_alloc(num_messages * sizeof(ec_scalar));
-  kd = otrng_xmalloc(num_messages * sizeof(dh_mpi));
+  kd = otrng_xmalloc_z(num_messages * sizeof(dh_mpi));
 
   for (i = 0; i < num_messages; i++) {
     ecdh_keypair_s ecdh;
@@ -808,7 +807,7 @@ INTERNAL otrng_result otrng_client_add_forging_key(otrng_client_s *client,
     return OTRNG_ERROR;
   }
 
-  client->forging_key = otrng_xmalloc(sizeof(otrng_public_key));
+  client->forging_key = otrng_xmalloc_z(sizeof(otrng_public_key));
 
   otrng_ec_point_copy(*client->forging_key, key);
 
@@ -856,7 +855,7 @@ API otrng_result otrng_client_add_client_profile(
     return OTRNG_ERROR;
   }
 
-  client->client_profile = otrng_xmalloc(sizeof(client_profile_s));
+  client->client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
 
   otrng_client_profile_copy(client->client_profile, profile);
 
@@ -886,7 +885,7 @@ API otrng_result otrng_client_add_exp_client_profile(
     return OTRNG_ERROR;
   }
 
-  client->exp_client_profile = otrng_xmalloc(sizeof(client_profile_s));
+  client->exp_client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
 
   otrng_client_profile_copy(client->exp_client_profile, exp_profile);
 
@@ -969,7 +968,7 @@ API otrng_result otrng_client_add_prekey_profile(
     return OTRNG_ERROR;
   }
 
-  client->prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
+  client->prekey_profile = otrng_xmalloc_z(sizeof(otrng_prekey_profile_s));
 
   otrng_prekey_profile_copy(client->prekey_profile, profile);
 
@@ -999,7 +998,7 @@ API otrng_result otrng_client_add_exp_prekey_profile(
     return OTRNG_ERROR;
   }
 
-  client->exp_prekey_profile = otrng_xmalloc(sizeof(otrng_prekey_profile_s));
+  client->exp_prekey_profile = otrng_xmalloc_z(sizeof(otrng_prekey_profile_s));
 
   otrng_prekey_profile_copy(client->exp_prekey_profile, exp_profile);
 
@@ -1014,7 +1013,7 @@ tstatic OtrlInsTag *otrng_instance_tag_new(const char *protocol,
     return NULL;
   }
 
-  p = otrng_xmalloc(sizeof(OtrlInsTag));
+  p = otrng_xmalloc_z(sizeof(OtrlInsTag));
 
   p->accountname = otrng_xstrdup(account);
   p->protocol = otrng_xstrdup(protocol);

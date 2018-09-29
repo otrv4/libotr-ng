@@ -33,9 +33,7 @@
 #endif
 
 INTERNAL data_message_s *otrng_data_message_new() {
-  data_message_s *ret = otrng_xmalloc(sizeof(data_message_s));
-
-  memset(ret, 0, sizeof(data_message_s));
+  data_message_s *ret = otrng_xmalloc_z(sizeof(data_message_s));
 
   return ret;
 }
@@ -68,7 +66,7 @@ INTERNAL otrng_result otrng_data_message_body_asprintf(
   size_t size = DATA_MESSAGE_MAX_BYTES + data_msg->enc_msg_len;
   uint8_t *cursor;
   size_t len = 0;
-  uint8_t *dst = otrng_xmalloc(size);
+  uint8_t *dst = otrng_xmalloc_z(size);
 
   cursor = dst;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);

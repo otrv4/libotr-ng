@@ -46,6 +46,12 @@ INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc(size_t size) {
   return result;
 }
 
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc_z(size_t size) {
+  void *result = otrng_xmalloc(size);
+  memset(result, 0, size);
+  return result;
+}
+
 INTERNAL /*@only@*/ /*@notnull@*/ void *
 otrng_xrealloc(/*@only@*/ /*@null@*/ void *ptr, size_t size) {
   void *result = realloc(ptr, size);
