@@ -189,6 +189,7 @@ INTERNAL dake_auth_r_s *otrng_dake_auth_r_new() {
 }
 
 INTERNAL void otrng_dake_auth_r_init(dake_auth_r_s *auth_r) {
+  memset(auth_r, 0, sizeof(dake_auth_r_s));
   auth_r->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
   auth_r->profile = otrng_xmalloc_z(sizeof(client_profile_s));
 }
@@ -332,6 +333,7 @@ INTERNAL dake_auth_i_s *otrng_dake_auth_i_new() {
 }
 
 INTERNAL void otrng_dake_auth_i_init(dake_auth_i_s *auth_i) {
+  memset(auth_i, 0, sizeof(dake_auth_i_s));
   auth_i->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
 }
 
@@ -566,6 +568,7 @@ otrng_dake_non_interactive_auth_message_new() {
 
 INTERNAL void otrng_dake_non_interactive_auth_message_init(
     dake_non_interactive_auth_message_s *a) {
+  memset(a, 0, sizeof(dake_non_interactive_auth_message_s));
   a->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
   a->profile = otrng_xmalloc_z(sizeof(client_profile_s));
 }
