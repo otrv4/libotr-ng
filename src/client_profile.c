@@ -232,7 +232,7 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
 }
 
 /* Serializes client profile without the signature */
-tstatic otrng_result client_profile_body_asprintf(
+tstatic otrng_result client_profile_body_serialize_into(
     uint8_t **dst, size_t *nbytes, const client_profile_s *client_profile) {
 
   size_t versions_len =
@@ -255,7 +255,7 @@ tstatic otrng_result client_profile_body_asprintf(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_client_profile_asprintf(
+INTERNAL otrng_result otrng_client_profile_serialize(
     uint8_t **dst, size_t *nbytes, const client_profile_s *client_profile) {
 
   size_t versions_len =
@@ -462,7 +462,7 @@ tstatic otrng_result client_profile_sign(client_profile_s *client_profile,
 
   otrng_ec_point_copy(client_profile->long_term_pub_key, keypair->pub);
 
-  if (!client_profile_body_asprintf(&body, &bodylen, client_profile)) {
+  if (!client_profile_body_serialize_into(&body, &bodylen, client_profile)) {
     return OTRNG_ERROR;
   }
 
@@ -488,7 +488,7 @@ client_profile_verify_signature(const client_profile_s *client_profile) {
     return otrng_false;
   }
 
-  if (!client_profile_body_asprintf(&body, &bodylen, client_profile)) {
+  if (!client_profile_body_serialize_into(&body, &bodylen, client_profile)) {
     return otrng_false;
   }
 

@@ -61,7 +61,7 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
   free(data_msg);
 }
 
-INTERNAL otrng_result otrng_data_message_body_asprintf(
+INTERNAL otrng_result otrng_data_message_body_serialize(
     uint8_t **body, size_t *bodylen, const data_message_s *data_msg) {
   size_t size = DATA_MESSAGE_MAX_BYTES + data_msg->enc_msg_len;
   uint8_t *cursor;
@@ -262,7 +262,7 @@ INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key mac_key,
   // We don't need this tag to be in secure memory
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
 
-  if (!otrng_data_message_body_asprintf(&body, &bodylen, data_msg)) {
+  if (!otrng_data_message_body_serialize(&body, &bodylen, data_msg)) {
     return otrng_false;
   }
 

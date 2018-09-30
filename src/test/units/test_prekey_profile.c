@@ -84,7 +84,7 @@ static void test_prekey_profile_serialize() {
   size_t written = 0;
   uint8_t *serialized = NULL;
   otrng_assert_is_success(
-      otrng_prekey_profile_asprint(&serialized, &written, profile));
+      otrng_prekey_profile_serialize(&serialized, &written, profile));
   g_assert_cmpint(written, ==, 185);
 
   char expected[] = {
@@ -123,7 +123,7 @@ static void test_prekey_profile_deserialize() {
 
   size_t written = 0;
   uint8_t *serialized = NULL;
-  otrng_prekey_profile_asprint(&serialized, &written, profile);
+  otrng_prekey_profile_serialize(&serialized, &written, profile);
 
   otrng_prekey_profile_s *deserialized =
       otrng_xmalloc_z(sizeof(otrng_prekey_profile_s));

@@ -45,7 +45,7 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
   identity_message->B = otrng_dh_mpi_copy(dh.pub);
 
   uint8_t *serialized = NULL;
-  otrng_assert_is_success(otrng_dake_identity_message_asprintf(
+  otrng_assert_is_success(otrng_dake_identity_message_serialize(
       &serialized, NULL, identity_message));
 
   char expected[] = {
@@ -68,7 +68,7 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
 
   size_t client_profile_len = 0;
   uint8_t *client_profile_serialized = NULL;
-  otrng_assert_is_success(otrng_client_profile_asprintf(
+  otrng_assert_is_success(otrng_client_profile_serialize(
       &client_profile_serialized, &client_profile_len,
       identity_message->profile));
   otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
@@ -112,7 +112,7 @@ static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
 
   size_t serialized_len = 0;
   uint8_t *serialized = NULL;
-  otrng_assert_is_success(otrng_dake_identity_message_asprintf(
+  otrng_assert_is_success(otrng_dake_identity_message_serialize(
       &serialized, &serialized_len, identity_message));
 
   dake_identity_message_s *deserialized =

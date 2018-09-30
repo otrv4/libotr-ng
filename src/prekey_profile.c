@@ -137,7 +137,7 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
 
 #define PREKEY_PROFILE_BODY_BYTES 4 + 8 + ED448_PUBKEY_BYTES
 
-tstatic otrng_result otrng_prekey_profile_body_asprint(
+tstatic otrng_result otrng_prekey_profile_body_serialize_into(
     uint8_t **dst, size_t *nbytes, const otrng_prekey_profile_s *profile) {
   size_t size = PREKEY_PROFILE_BODY_BYTES;
   uint8_t *buff;
@@ -164,7 +164,7 @@ tstatic otrng_result otrng_prekey_profile_body_asprint(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_prekey_profile_asprint(
+INTERNAL otrng_result otrng_prekey_profile_serialize(
     uint8_t **dst, size_t *nbytes, otrng_prekey_profile_s *profile) {
   size_t size = PREKEY_PROFILE_BODY_BYTES + sizeof(eddsa_signature);
   uint8_t *buff = otrng_xmalloc_z(size);
@@ -199,7 +199,7 @@ INTERNAL otrng_result prekey_profile_sign(
     otrng_prekey_profile_s *profile, const otrng_keypair_s *longterm_pair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
-  if (!otrng_prekey_profile_body_asprint(&body, &bodylen, profile)) {
+  if (!otrng_prekey_profile_body_serialize_into(&body, &bodylen, profile)) {
     return OTRNG_ERROR;
   }
 
@@ -253,7 +253,7 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
     return otrng_false;
   }
 
-  if (!otrng_prekey_profile_body_asprint(&body, &bodylen, profile)) {
+  if (!otrng_prekey_profile_body_serialize_into(&body, &bodylen, profile)) {
     return otrng_false;
   }
 

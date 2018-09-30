@@ -89,7 +89,7 @@ INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
                                                        size_t buflen,
                                                        size_t *nread);
 
-INTERNAL otrng_result otrng_client_profile_asprintf(
+INTERNAL otrng_result otrng_client_profile_serialize(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile);
 
 INTERNAL client_profile_s *otrng_client_profile_build(
@@ -120,7 +120,7 @@ tstatic client_profile_s *client_profile_new(const char *versions);
 tstatic otrng_result client_profile_sign(client_profile_s *profile,
                                          const otrng_keypair_s *keypair);
 
-tstatic otrng_result client_profile_body_asprintf(
+tstatic otrng_result client_profile_body_serialize_into(
     uint8_t **dst, size_t *nbytes, const client_profile_s *profile);
 
 tstatic otrng_bool

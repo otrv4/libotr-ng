@@ -178,8 +178,8 @@ tstatic void smp_msg_1_copy(smp_msg_1_s *dst, const smp_msg_1_s *src) {
   otrng_ec_scalar_copy(dst->d3, src->d3);
 }
 
-INTERNAL otrng_result otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
-                                               const smp_msg_1_s *msg) {
+INTERNAL otrng_result otrng_smp_msg_1_serialize(uint8_t **dst, size_t *len,
+                                                const smp_msg_1_s *msg) {
   size_t size = 0;
   uint8_t *cursor;
   size = 4 + msg->q_len + (2 * ED448_POINT_BYTES) + (4 * ED448_SCALAR_BYTES);
@@ -448,8 +448,8 @@ tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result smp_msg_2_asprintf(uint8_t **dst, size_t *len,
-                                        const smp_msg_2_s *msg) {
+tstatic otrng_result smp_msg_2_serialize(uint8_t **dst, size_t *len,
+                                         const smp_msg_2_s *msg) {
   size_t size = 0;
   uint8_t *cursor;
   size += (4 * ED448_POINT_BYTES) + (7 * ED448_SCALAR_BYTES);
@@ -781,8 +781,8 @@ tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result smp_msg_3_asprintf(uint8_t **dst, size_t *len,
-                                        const smp_msg_3_s *msg) {
+tstatic otrng_result smp_msg_3_serialize(uint8_t **dst, size_t *len,
+                                         const smp_msg_3_s *msg) {
   size_t size = 0;
   uint8_t *cursor;
   size += (3 * ED448_POINT_BYTES) + (5 * ED448_SCALAR_BYTES);
@@ -1022,8 +1022,8 @@ tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result smp_msg_4_asprintf(uint8_t **dst, size_t *len,
-                                        smp_msg_4_s *msg) {
+tstatic otrng_result smp_msg_4_serialize(uint8_t **dst, size_t *len,
+                                         smp_msg_4_s *msg) {
   size_t size = 0;
   uint8_t *cursor;
   size = ED448_POINT_BYTES + (2 * ED448_SCALAR_BYTES);
@@ -1192,7 +1192,7 @@ INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
   *to_send = NULL;
 
   generate_smp_msg_2(&msg_2, smp->msg1, smp);
-  if (!smp_msg_2_asprintf(&buff, &bufflen, &msg_2)) {
+  if (!smp_msg_2_serialize(&buff, &bufflen, &msg_2)) {
     return OTRNG_SMP_EVENT_ERROR;
   }
 
@@ -1248,7 +1248,7 @@ tstatic otrng_smp_event_t reply_with_smp_msg_3(tlv_s **to_send,
     return OTRNG_SMP_EVENT_ERROR;
   }
 
-  if (!smp_msg_3_asprintf(&buff, &bufflen, &msg_3)) {
+  if (!smp_msg_3_serialize(&buff, &bufflen, &msg_3)) {
     return OTRNG_SMP_EVENT_ERROR;
   }
 
@@ -1303,7 +1303,7 @@ tstatic otrng_smp_event_t reply_with_smp_msg_4(tlv_s **to_send,
     return OTRNG_SMP_EVENT_ERROR;
   }
 
-  if (!smp_msg_4_asprintf(&buff, &bufflen, &msg_4)) {
+  if (!smp_msg_4_serialize(&buff, &bufflen, &msg_4)) {
     return OTRNG_SMP_EVENT_ERROR;
   }
 

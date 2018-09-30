@@ -104,8 +104,8 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
 INTERNAL otrng_result otrng_generate_smp_msg_1(smp_msg_1_s *dst,
                                                smp_protocol_s *smp);
 
-INTERNAL otrng_result otrng_smp_msg_1_asprintf(uint8_t **dst, size_t *len,
-                                               const smp_msg_1_s *msg);
+INTERNAL otrng_result otrng_smp_msg_1_serialize(uint8_t **dst, size_t *len,
+                                                const smp_msg_1_s *msg);
 
 INTERNAL void otrng_smp_msg_1_destroy(smp_msg_1_s *msg);
 

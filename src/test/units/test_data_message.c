@@ -96,7 +96,7 @@ static void test_data_message_serializes() {
   uint8_t *serialized = NULL;
   size_t serlen = 0;
   otrng_assert_is_success(
-      otrng_data_message_body_asprintf(&serialized, &serlen, data_msg));
+      otrng_data_message_body_serialize(&serialized, &serlen, data_msg));
 
   const int OUR_DH_LEN = 4 + 383;
   const int MSG_AS_DATA = 4 + 3;
@@ -155,7 +155,7 @@ static void test_data_message_serializes_absent_dh() {
   uint8_t *serialized = NULL;
   size_t serlen = 0;
   otrng_assert_is_success(
-      otrng_data_message_body_asprintf(&serialized, &serlen, data_msg));
+      otrng_data_message_body_serialize(&serialized, &serlen, data_msg));
 
   const int OUR_DH_LEN = 4 + 0; // Should be zero per spec.
   const int MSG_AS_DATA = 4 + 3;
@@ -180,7 +180,7 @@ static void test_otrng_data_message_deserializes() {
   uint8_t *serialized = NULL;
   size_t serlen = 0;
   otrng_assert_is_success(
-      otrng_data_message_body_asprintf(&serialized, &serlen, data_msg));
+      otrng_data_message_body_serialize(&serialized, &serlen, data_msg));
 
   const uint8_t mac_data[DATA_MSG_MAC_BYTES] = {
       0x14, 0x9a, 0xf0, 0x93, 0xcc, 0x3f, 0x44, 0xf5, 0x1b, 0x41, 0x11,
@@ -231,7 +231,7 @@ static void test_data_message_valid() {
   size_t bodylen = 0;
 
   otrng_assert_is_success(
-      otrng_data_message_body_asprintf(&body, &bodylen, data_msg));
+      otrng_data_message_body_serialize(&body, &bodylen, data_msg));
 
   otrng_assert_is_success(otrng_data_message_authenticator(
       data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
@@ -249,7 +249,7 @@ static void test_data_message_valid() {
   data_msg->dh = NULL;
 
   otrng_assert_is_success(
-      otrng_data_message_body_asprintf(&body, &bodylen, data_msg));
+      otrng_data_message_body_serialize(&body, &bodylen, data_msg));
 
   otrng_assert_is_success(otrng_data_message_authenticator(
       data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));

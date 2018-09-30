@@ -58,7 +58,7 @@ static void test_client_profile_serializes_body() {
   size_t written = 0;
   uint8_t *serialized = NULL;
   otrng_assert_is_success(
-      client_profile_body_asprintf(&serialized, &written, profile));
+      client_profile_body_serialize_into(&serialized, &written, profile));
   g_assert_cmpint(written, ==, 150);
 
   char expected_header[] = {
@@ -112,7 +112,7 @@ static void test_client_profile_serializes() {
   size_t written = 0;
   uint8_t *serialized = NULL;
   otrng_assert_is_success(
-      client_profile_body_asprintf(&serialized, &written, profile));
+      client_profile_body_serialize_into(&serialized, &written, profile));
   g_assert_cmpint(written, ==, 192);
 
   char expected_transitional_signature[] = {
@@ -151,7 +151,7 @@ static void test_otrng_client_profile_deserializes() {
 
   size_t written = 0;
   uint8_t *serialized = NULL;
-  otrng_client_profile_asprintf(&serialized, &written, profile);
+  otrng_client_profile_serialize(&serialized, &written, profile);
 
   client_profile_s deserialized;
 

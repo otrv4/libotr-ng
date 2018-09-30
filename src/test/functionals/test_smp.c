@@ -283,7 +283,7 @@ static void test_otrng_generate_smp_secret(void) {
   otrng_smp_destroy(&smp);
 }
 
-static void test_otrng_smp_msg_1_asprintf_null_question(void) {
+static void test_otrng_smp_msg_1_serialize_null_question(void) {
   smp_msg_1_s msg;
   smp_protocol_s smp;
   smp.msg1 = NULL;
@@ -297,14 +297,14 @@ static void test_otrng_smp_msg_1_asprintf_null_question(void) {
   msg.q_len = 0;
   msg.question = NULL;
 
-  otrng_assert_is_success(otrng_smp_msg_1_asprintf(&buff, &writen, &msg));
+  otrng_assert_is_success(otrng_smp_msg_1_serialize(&buff, &writen, &msg));
   g_assert_cmpint(writen, ==, expected_size);
   free(buff);
 
   msg.question = (uint8_t *)"something";
   msg.q_len = 9;
   size_t expected_len = expected_size + msg.q_len;
-  otrng_assert_is_success(otrng_smp_msg_1_asprintf(&buff, &writen, &msg));
+  otrng_assert_is_success(otrng_smp_msg_1_serialize(&buff, &writen, &msg));
   g_assert_cmpint(writen, ==, expected_len);
 
   free(buff);
@@ -314,6 +314,6 @@ void functionals_smp_add_tests(void) {
   g_test_add_func("/smp/state_machine", test_smp_state_machine);
   g_test_add_func("/smp/state_machine_abort", test_smp_state_machine_abort);
   g_test_add_func("/smp/generate_secret", test_otrng_generate_smp_secret);
-  g_test_add_func("/smp/msg_1_asprintf_null_question",
-                  test_otrng_smp_msg_1_asprintf_null_question);
+  g_test_add_func("/smp/msg_1_serialize_null_question",
+                  test_otrng_smp_msg_1_serialize_null_question);
 }

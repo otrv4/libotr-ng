@@ -43,7 +43,7 @@ static void test_dake_prekey_message_serializes() {
 
   uint8_t *serialized = NULL;
   otrng_assert_is_success(
-      otrng_dake_prekey_message_asprintf(&serialized, NULL, prekey_message));
+      otrng_dake_prekey_message_serialize_into(&serialized, NULL, prekey_message));
 
   uint8_t expected[] = {
       0x0,
@@ -101,7 +101,7 @@ static void test_otrng_dake_prekey_message_deserializes() {
 
   size_t serialized_len = 0;
   uint8_t *serialized = NULL;
-  otrng_assert_is_success(otrng_dake_prekey_message_asprintf(
+  otrng_assert_is_success(otrng_dake_prekey_message_serialize_into(
       &serialized, &serialized_len, prekey_message));
 
   dake_prekey_message_s *deserialized =
@@ -194,7 +194,7 @@ static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   size_t len = 0;
   (void)data;
   otrng_assert_is_success(
-      otrng_dake_non_interactive_auth_message_asprintf(&serialized, &len, &msg));
+      otrng_dake_non_interactive_auth_message_serialize(&serialized, &len, &msg));
 
   uint8_t expected_header[] = {
       0x00,
@@ -216,7 +216,7 @@ static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
 
   size_t client_profile_len = 0;
   uint8_t *client_profile_serialized = NULL;
-  otrng_assert_is_success(otrng_client_profile_asprintf(
+  otrng_assert_is_success(otrng_client_profile_serialize(
       &client_profile_serialized, &client_profile_len, msg.profile));
   otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
   free(client_profile_serialized);
@@ -263,7 +263,7 @@ static void test_otrng_dake_non_interactive_auth_message_deserializes(
 
   uint8_t *serialized = NULL;
   size_t len = 0;
-  otrng_assert_is_success(otrng_dake_non_interactive_auth_message_asprintf(
+  otrng_assert_is_success(otrng_dake_non_interactive_auth_message_serialize(
       &serialized, &len, &expected));
 
   dake_non_interactive_auth_message_s deserialized;

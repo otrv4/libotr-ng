@@ -540,7 +540,7 @@ INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_client_profile_asprintf(&buff, &s, client->client_profile)) {
+  if (!otrng_client_profile_serialize(&buff, &s, client->client_profile)) {
     return OTRNG_ERROR;
   }
 
@@ -774,7 +774,7 @@ otrng_client_prekey_profile_write_FILEp(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_prekey_profile_asprint(&buff, &s, client->prekey_profile)) {
+  if (!otrng_prekey_profile_serialize(&buff, &s, client->prekey_profile)) {
     return OTRNG_ERROR;
   }
 

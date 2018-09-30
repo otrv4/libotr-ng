@@ -185,7 +185,7 @@ tstatic otrng_result serialize_and_encode_data_msg(
   size_t serlen;
   uint8_t *ser;
 
-  if (!otrng_data_message_body_asprintf(&body, &bodylen, data_msg)) {
+  if (!otrng_data_message_body_serialize(&body, &bodylen, data_msg)) {
     return OTRNG_ERROR;
   }
 

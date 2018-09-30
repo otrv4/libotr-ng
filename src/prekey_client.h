@@ -188,9 +188,9 @@ API void otrng_prekey_client_set_prekey_profile_publication(
 API void otrng_prekey_client_set_client_profile_publication(
     otrng_prekey_client_s *client);
 
-INTERNAL otrng_result
-otrng_prekey_dake1_message_asprint(uint8_t **serialized, size_t *serialized_len,
-                                   const otrng_prekey_dake1_message_s *msg);
+INTERNAL otrng_result otrng_prekey_dake1_message_serialize(
+    uint8_t **serialized, size_t *serialized_len,
+    const otrng_prekey_dake1_message_s *msg);
 
 INTERNAL
 void otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *msg);
@@ -213,9 +213,9 @@ INTERNAL otrng_result
 otrng_prekey_dake3_message_append_storage_information_request(
     otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]);
 
-INTERNAL otrng_result
-otrng_prekey_dake3_message_asprint(uint8_t **serialized, size_t *serialized_len,
-                                   const otrng_prekey_dake3_message_s *msg);
+INTERNAL otrng_result otrng_prekey_dake3_message_serialize(
+    uint8_t **serialized, size_t *serialized_len,
+    const otrng_prekey_dake3_message_s *msg);
 
 INTERNAL
 otrng_prekey_dake3_message_s *otrng_prekey_dake3_message_new(void);
@@ -243,7 +243,7 @@ API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
                                                const char *versions,
                                                otrng_prekey_client_s *client);
 
-INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_asprint(
+INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_serialize(
     uint8_t **dst, size_t *len,
     const otrng_prekey_ensemble_query_retrieval_message_s *msg);
 

@@ -80,7 +80,7 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_s *dst, const uint8_t *buffer,
     size_t buflen);
 
-INTERNAL otrng_result otrng_dake_non_interactive_auth_message_asprintf(
+INTERNAL otrng_result otrng_dake_non_interactive_auth_message_serialize(
     uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_s *non_interactive_auth);
 
@@ -103,7 +103,7 @@ otrng_dake_identity_message_destroy(dake_identity_message_s *identity_message);
 INTERNAL otrng_result otrng_dake_identity_message_deserialize(
     dake_identity_message_s *dst, const uint8_t *src, size_t src_len);
 
-INTERNAL otrng_result otrng_dake_identity_message_asprintf(
+INTERNAL otrng_result otrng_dake_identity_message_serialize(
     uint8_t **dst, size_t *nbytes,
     const dake_identity_message_s *identity_message);
 
@@ -112,8 +112,8 @@ INTERNAL void otrng_dake_auth_r_init(dake_auth_r_s *auth_r);
 
 INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r);
 
-INTERNAL otrng_result otrng_dake_auth_r_asprintf(uint8_t **dst, size_t *nbytes,
-                                                 const dake_auth_r_s *auth_r);
+INTERNAL otrng_result otrng_dake_auth_r_serialize(uint8_t **dst, size_t *nbytes,
+                                                  const dake_auth_r_s *auth_r);
 INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
                                                     const uint8_t *buffer,
                                                     size_t buflen);
@@ -122,8 +122,8 @@ INTERNAL dake_auth_i_s *otrng_dake_auth_i_new(void);
 INTERNAL void otrng_dake_auth_i_init(dake_auth_i_s *auth_i);
 INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_s *auth_i);
 
-INTERNAL otrng_result otrng_dake_auth_i_asprintf(uint8_t **dst, size_t *nbytes,
-                                                 const dake_auth_i_s *auth_i);
+INTERNAL otrng_result otrng_dake_auth_i_serialize(uint8_t **dst, size_t *nbytes,
+                                                  const dake_auth_i_s *auth_i);
 INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
                                                     const uint8_t *buffer,
                                                     size_t buflen);
@@ -144,7 +144,7 @@ INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
     dake_prekey_message_s *dst, const uint8_t *src, size_t src_len,
     size_t *nread);
 
-INTERNAL otrng_result otrng_dake_prekey_message_asprintf(
+INTERNAL otrng_result otrng_dake_prekey_message_serialize_into(
     uint8_t **dst, size_t *nbytes, const dake_prekey_message_s *prekey_message);
 
 INTERNAL otrng_result otrng_dake_prekey_message_serialize(

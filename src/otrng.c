@@ -422,7 +422,7 @@ tstatic otrng_result serialize_and_encode_identity_message(
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (!otrng_dake_identity_message_asprintf(&buff, &len, m)) {
+  if (!otrng_dake_identity_message_serialize(&buff, &len, m)) {
     return OTRNG_ERROR;
   }
 
@@ -518,7 +518,7 @@ tstatic otrng_result serialize_and_encode_auth_r(string_p *dst,
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (!otrng_dake_auth_r_asprintf(&buff, &len, m)) {
+  if (!otrng_dake_auth_r_serialize(&buff, &len, m)) {
     return OTRNG_ERROR;
   }
 
@@ -753,7 +753,7 @@ tstatic otrng_result serialize_and_encode_non_interactive_auth(
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (!otrng_dake_non_interactive_auth_message_asprintf(&buff, &len, m)) {
+  if (!otrng_dake_non_interactive_auth_message_serialize(&buff, &len, m)) {
     return OTRNG_ERROR;
   }
 
@@ -1489,7 +1489,7 @@ tstatic otrng_result serialize_and_encode_auth_i(string_p *dst,
   uint8_t *buff = NULL;
   size_t len = 0;
 
-  if (!otrng_dake_auth_i_asprintf(&buff, &len, m)) {
+  if (!otrng_dake_auth_i_serialize(&buff, &len, m)) {
     return OTRNG_ERROR;
   }
 

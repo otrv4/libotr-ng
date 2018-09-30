@@ -75,7 +75,7 @@ static void test_prekey_dake1_message_serialize(void) {
   uint8_t *dst = NULL;
   size_t dstlen = 0;
   otrng_assert_is_success(
-      otrng_prekey_dake1_message_asprint(&dst, &dstlen, &msg));
+      otrng_prekey_dake1_message_serialize(&dst, &dstlen, &msg));
   otrng_prekey_dake1_message_destroy(&msg);
 
   size_t w = 0;
@@ -206,7 +206,7 @@ static void test_prekey_dake3_message_serialize(void) {
   uint8_t *dst = NULL;
   size_t dstlen = 0;
   otrng_assert_is_success(
-      otrng_prekey_dake3_message_asprint(&dst, &dstlen, &msg));
+      otrng_prekey_dake3_message_serialize(&dst, &dstlen, &msg));
   otrng_prekey_dake3_message_destroy(&msg);
 
   size_t w = 0;
