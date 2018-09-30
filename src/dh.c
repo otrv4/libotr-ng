@@ -166,7 +166,7 @@ INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_s *keypair) {
   gcry_error_t err;
 
   secbuf = gcry_random_bytes_secure(DH_KEY_SIZE, GCRY_STRONG_RANDOM);
-  shake_256_hash(hash, sizeof(hash), secbuf, DH_KEY_SIZE);
+  shake_256_hash(hash, DH_KEY_SIZE, secbuf, DH_KEY_SIZE);
 
   err = gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);
   otrng_secure_wipe(hash, DH_KEY_SIZE);
@@ -193,8 +193,8 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
   uint8_t usage_DH_first_ephemeral = 0x12;
   gcry_error_t err;
 
-  shake_256_kdf1(random_buff, sizeof random_buff, usage_DH_first_ephemeral, ss,
-                 sizeof(shared_secret));
+  shake_256_kdf1(random_buff, DH_KEY_SIZE, usage_DH_first_ephemeral, ss,
+                 SHARED_SECRET_BYTES);
 
   err =
       gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random_buff, DH_KEY_SIZE, NULL);

@@ -88,12 +88,11 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   ratchet_free(manager->current);
   manager->current = NULL;
 
-  otrng_secure_wipe(manager->brace_key, sizeof(manager->brace_key));
-  otrng_secure_wipe(manager->shared_secret, sizeof(manager->shared_secret));
-  otrng_secure_wipe(manager->ssid, sizeof(manager->ssid));
+  otrng_secure_wipe(manager->brace_key, BRACE_KEY_BYTES);
+  otrng_secure_wipe(manager->shared_secret, SHARED_SECRET_BYTES);
+  otrng_secure_wipe(manager->ssid, SSID_BYTES);
   manager->ssid_half_first = otrng_false;
-  otrng_secure_wipe(manager->extra_symmetric_key,
-                    sizeof(manager->extra_symmetric_key));
+  otrng_secure_wipe(manager->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
   otrng_list_free_full(manager->skipped_keys);
   manager->skipped_keys = NULL;
@@ -126,19 +125,18 @@ otrng_receiving_ratchet_new(key_manager_s *manager) {
   otrng_secure_wipe(ratchet->their_ecdh, ED448_POINT_BYTES);
   ratchet->their_dh = NULL;
 
-  memset(ratchet->brace_key, 0, sizeof(brace_key));
+  memset(ratchet->brace_key, 0, BRACE_KEY_BYTES);
 
   ratchet->i = manager->i;
   ratchet->j = manager->j;
   ratchet->k = manager->k;
   ratchet->pn = manager->pn;
 
-  memcpy(ratchet->root_key, manager->current->root_key, sizeof(root_key));
-  memcpy(ratchet->chain_r, manager->current->chain_r,
-         sizeof(receiving_chain_key));
+  memcpy(ratchet->root_key, manager->current->root_key, ROOT_KEY_BYTES);
+  memcpy(ratchet->chain_r, manager->current->chain_r, CHAIN_KEY_BYTES);
 
   memcpy(ratchet->extra_symmetric_key, manager->extra_symmetric_key,
-         sizeof(extra_symmetric_key));
+         EXTRA_SYMMETRIC_KEY_BYTES);
 
   ratchet->skipped_keys = manager->skipped_keys;
 
@@ -163,8 +161,8 @@ INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
 
   otrng_key_manager_set_their_keys(src->their_ecdh, src->their_dh, dst);
 
-  memcpy(dst->brace_key, src->brace_key, sizeof(brace_key));
-  memcpy(dst->shared_secret, src->shared_secret, sizeof(shared_secret));
+  memcpy(dst->brace_key, src->brace_key, BRACE_KEY_BYTES);
+  memcpy(dst->shared_secret, src->shared_secret, SHARED_SECRET_BYTES);
 
   dst->i = src->i;
   dst->j = src->j;
@@ -175,7 +173,7 @@ INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
   memcpy(dst->current->chain_r, src->chain_r, CHAIN_KEY_BYTES);
 
   memcpy(dst->extra_symmetric_key, src->extra_symmetric_key,
-         sizeof(extra_symmetric_key));
+         EXTRA_SYMMETRIC_KEY_BYTES);
 
   dst->skipped_keys = src->skipped_keys;
 }
@@ -191,11 +189,11 @@ INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {
 
   gcry_mpi_release(ratchet->their_dh);
 
-  memset(ratchet->brace_key, 0, sizeof(brace_key));
+  memset(ratchet->brace_key, 0, BRACE_KEY_BYTES);
 
-  otrng_secure_wipe(ratchet->root_key, sizeof(root_key));
-  otrng_secure_wipe(ratchet->chain_r, sizeof(receiving_chain_key));
-  otrng_secure_wipe(ratchet->extra_symmetric_key, sizeof(extra_symmetric_key));
+  otrng_secure_wipe(ratchet->root_key, ROOT_KEY_BYTES);
+  otrng_secure_wipe(ratchet->chain_r, CHAIN_KEY_BYTES);
+  otrng_secure_wipe(ratchet->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
   otrng_secure_wipe(ratchet, sizeof(receiving_ratchet_s));
   free(ratchet);
@@ -266,7 +264,7 @@ INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key, k_ecdh ke,
   hash_update(hd, ke, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
-  hash_update(hd, bk, sizeof(brace_key));
+  hash_update(hd, bk, BRACE_KEY_BYTES);
 
   hash_final(hd, tmp_key, HASH_BYTES);
   hash_destroy(hd);
@@ -281,7 +279,7 @@ INTERNAL void otrng_key_manager_calculate_auth_mac(uint8_t *auth_mac,
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage_auth_mac);
-  hash_update(hd, auth_mac_key, sizeof(auth_mac_key));
+  hash_update(hd, auth_mac_key, HASH_BYTES);
   hash_update(hd, t, t_len);
 
   hash_final(hd, auth_mac, HASH_BYTES);
@@ -295,7 +293,7 @@ INTERNAL void otrng_key_manager_calculate_authenticator(
 
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, usage_authenticator);
-  hash_update(hd, mac_key, sizeof(msg_mac_key));
+  hash_update(hd, mac_key, MAC_KEY_BYTES);
   hash_update(hd, sections, HASH_BYTES);
 
   hash_final(hd, authenticator, DATA_MSG_MAC_BYTES);
@@ -311,8 +309,8 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
   assert(participant == 'u' || participant == 't');
 
   if (participant == 'u') {
-    shake_256_kdf1(random_buff, sizeof random_buff, usage_ECDH_first_ephemeral,
-                   manager->shared_secret, sizeof(shared_secret));
+    shake_256_kdf1(random_buff, ED448_PRIVATE_BYTES, usage_ECDH_first_ephemeral,
+                   manager->shared_secret, SHARED_SECRET_BYTES);
 
     otrng_ec_point_destroy(manager->our_ecdh->pub);
     /* @secret this will be deleted once sent a new data message in a new
@@ -332,8 +330,8 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
   } else if (participant == 't') {
     dh_keypair_s tmp_their_dh;
 
-    shake_256_kdf1(random_buff, sizeof random_buff, usage_ECDH_first_ephemeral,
-                   manager->shared_secret, sizeof(shared_secret));
+    shake_256_kdf1(random_buff, ED448_PRIVATE_BYTES, usage_ECDH_first_ephemeral,
+                   manager->shared_secret, SHARED_SECRET_BYTES);
 
     otrng_ec_point_destroy(manager->their_ecdh);
     /* @secret this will be deleted once received a new data message in a new
@@ -377,7 +375,7 @@ tstatic otrng_result calculate_brace_key(
                      k_dh, k_dh_len);
     } else {
       shake_256_kdf1(manager->brace_key, BRACE_KEY_BYTES, usage_brace_key,
-                     manager->brace_key, sizeof(brace_key));
+                     manager->brace_key, BRACE_KEY_BYTES);
     }
   } else if (action == 'r') {
     if (manager->i % 3 == 0) {
@@ -390,10 +388,10 @@ tstatic otrng_result calculate_brace_key(
                      usage_third_brace_key, k_dh, k_dh_len);
     } else {
       shake_256_kdf1(tmp_receiving_ratchet->brace_key, BRACE_KEY_BYTES,
-                     usage_brace_key, manager->brace_key, sizeof(brace_key));
+                     usage_brace_key, manager->brace_key, BRACE_KEY_BYTES);
     }
   }
-  otrng_secure_wipe(k_dh, sizeof(k_dh));
+  otrng_secure_wipe(k_dh, DH3072_MOD_LEN_BYTES);
 
   return OTRNG_SUCCESS;
 }
@@ -406,24 +404,24 @@ tstatic void calculate_shared_secret(key_manager_s *manager,
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage_shared_secret);
-  hash_update(hd, ke, sizeof(k_ecdh));
+  hash_update(hd, ke, ED448_POINT_BYTES);
 
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    hash_update(hd, manager->brace_key, sizeof(brace_key));
-    hash_final(hd, manager->shared_secret, sizeof(shared_secret));
+    hash_update(hd, manager->brace_key, BRACE_KEY_BYTES);
+    hash_final(hd, manager->shared_secret, SHARED_SECRET_BYTES);
     hash_destroy(hd);
 
-    otrng_secure_wipe(manager->brace_key, sizeof(brace_key));
+    otrng_secure_wipe(manager->brace_key, BRACE_KEY_BYTES);
   } else if (action == 'r') {
-    hash_update(hd, tmp_receiving_ratchet->brace_key, sizeof(brace_key));
-    hash_final(hd, tmp_receiving_ratchet->shared_secret, sizeof(shared_secret));
+    hash_update(hd, tmp_receiving_ratchet->brace_key, BRACE_KEY_BYTES);
+    hash_final(hd, tmp_receiving_ratchet->shared_secret, SHARED_SECRET_BYTES);
     hash_destroy(hd);
 
-    otrng_secure_wipe(tmp_receiving_ratchet->brace_key, sizeof(brace_key));
+    otrng_secure_wipe(tmp_receiving_ratchet->brace_key, BRACE_KEY_BYTES);
   }
 
-  otrng_secure_wipe(ke, sizeof(k_ecdh));
+  otrng_secure_wipe(ke, ED448_POINT_BYTES);
 }
 
 INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
@@ -432,7 +430,8 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
   if (interactive) {
     k_ecdh ke;
 
-    if (!otrng_ecdh_shared_secret(ke, sizeof(k_ecdh), manager->our_ecdh->priv,
+    if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,
+                                  manager->our_ecdh->priv,
                                   manager->their_ecdh)) {
       return OTRNG_ERROR;
     }
@@ -448,12 +447,11 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
     calculate_shared_secret(manager, NULL, ke, 's');
 
   } else if (!interactive) {
-    shake_256_kdf1(manager->shared_secret, sizeof(shared_secret),
-                   usage_shared_secret, manager->tmp_key,
-                   sizeof(manager->tmp_key));
+    shake_256_kdf1(manager->shared_secret, SHARED_SECRET_BYTES,
+                   usage_shared_secret, manager->tmp_key, HASH_BYTES);
 
-    otrng_secure_wipe(manager->tmp_key, sizeof(brace_key));
-    otrng_secure_wipe(manager->brace_key, sizeof(brace_key));
+    otrng_secure_wipe(manager->tmp_key, BRACE_KEY_BYTES);
+    otrng_secure_wipe(manager->brace_key, BRACE_KEY_BYTES);
   }
 
   calculate_ssid(manager);
@@ -461,9 +459,9 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
 #ifdef DEBUG
   debug_print("\n");
   debug_print("THE SHARED SECRET\n");
-  otrng_memdump(manager->shared_secret, sizeof(manager->shared_secret));
+  otrng_memdump(manager->shared_secret, SHARED_SECRET_BYTES);
   debug_print("THE SSID\n");
-  otrng_memdump(manager->ssid, sizeof(manager->ssid));
+  otrng_memdump(manager->ssid, SSID_BYTES);
 #endif
 
   if (gcry_mpi_cmp(manager->our_dh->pub, manager->their_dh) > 0) {
@@ -498,8 +496,8 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
 
 tstatic void calculate_ssid(key_manager_s *manager) {
   uint8_t usage_SSID = 0x04;
-  shake_256_kdf1(manager->ssid, sizeof(manager->ssid), usage_SSID,
-                 manager->shared_secret, sizeof(shared_secret));
+  shake_256_kdf1(manager->ssid, SSID_BYTES, usage_SSID, manager->shared_secret,
+                 SHARED_SECRET_BYTES);
 }
 
 INTERNAL otrng_result otrng_key_manager_ratcheting_init(
@@ -513,8 +511,8 @@ INTERNAL otrng_result otrng_key_manager_ratcheting_init(
   manager->k = 0;
   manager->pn = 0;
 
-  memcpy(manager->current->root_key, manager->shared_secret, sizeof(root_key));
-  otrng_secure_wipe(manager->shared_secret, sizeof(shared_secret));
+  memcpy(manager->current->root_key, manager->shared_secret, ROOT_KEY_BYTES);
+  otrng_secure_wipe(manager->shared_secret, SHARED_SECRET_BYTES);
 
   return OTRNG_SUCCESS;
 }
@@ -527,12 +525,14 @@ tstatic otrng_result enter_new_ratchet(
   /* K_ecdh = ECDH(our_ecdh.secret, their_ecdh) */
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    if (!otrng_ecdh_shared_secret(ke, sizeof(k_ecdh), manager->our_ecdh->priv,
+    if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,
+                                  manager->our_ecdh->priv,
                                   manager->their_ecdh)) {
       return OTRNG_ERROR;
     }
   } else if (action == 'r') {
-    if (!otrng_ecdh_shared_secret(ke, sizeof(k_ecdh), manager->our_ecdh->priv,
+    if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,
+                                  manager->our_ecdh->priv,
                                   tmp_receiving_ratchet->their_ecdh)) {
       return OTRNG_ERROR;
     }
@@ -551,11 +551,11 @@ tstatic otrng_result enter_new_ratchet(
   debug_print("\n");
   debug_print("ENTERING NEW RATCHET\n");
   debug_print("K_ecdh = ");
-  otrng_memdump(ke, sizeof(k_ecdh));
+  otrng_memdump(ke, ED448_POINT_BYTES);
   debug_print("brace_key = ");
-  otrng_memdump(manager->brace_key, sizeof(brace_key));
+  otrng_memdump(manager->brace_key, BRACE_KEY_BYTES);
   debug_print("THE SHARED SECRET\n");
-  otrng_memdump(manager->shared_secret, sizeof(manager->shared_secret));
+  otrng_memdump(manager->shared_secret, SHARED_SECRET_BYTES);
 #endif
 
   key_manager_derive_ratchet_keys(manager, tmp_receiving_ratchet, action);
@@ -624,35 +624,33 @@ key_manager_derive_ratchet_keys(key_manager_s *manager,
   */
   if (action == 's') {
     hash_init_with_usage(hd, usage_root_key);
-    hash_update(hd, manager->current->root_key, sizeof(root_key));
-    hash_update(hd, manager->shared_secret, sizeof(shared_secret));
-    hash_final(hd, manager->current->root_key, sizeof(root_key));
+    hash_update(hd, manager->current->root_key, ROOT_KEY_BYTES);
+    hash_update(hd, manager->shared_secret, SHARED_SECRET_BYTES);
+    hash_final(hd, manager->current->root_key, ROOT_KEY_BYTES);
     hash_destroy(hd);
 
     hash_init_with_usage(hd, usage_chain_key);
-    hash_update(hd, manager->current->root_key, sizeof(root_key));
-    hash_update(hd, manager->shared_secret, sizeof(shared_secret));
+    hash_update(hd, manager->current->root_key, ROOT_KEY_BYTES);
+    hash_update(hd, manager->shared_secret, SHARED_SECRET_BYTES);
 
-    hash_final(hd, manager->current->chain_s, sizeof(sending_chain_key));
+    hash_final(hd, manager->current->chain_s, CHAIN_KEY_BYTES);
 
-    otrng_secure_wipe(manager->shared_secret, sizeof(shared_secret));
+    otrng_secure_wipe(manager->shared_secret, SHARED_SECRET_BYTES);
   } else if (action == 'r') {
     hash_init_with_usage(hd, usage_root_key);
-    hash_update(hd, tmp_receiving_ratchet->root_key, sizeof(root_key));
-    hash_update(hd, tmp_receiving_ratchet->shared_secret,
-                sizeof(shared_secret));
-    hash_final(hd, tmp_receiving_ratchet->root_key, sizeof(root_key));
+    hash_update(hd, tmp_receiving_ratchet->root_key, ROOT_KEY_BYTES);
+    hash_update(hd, tmp_receiving_ratchet->shared_secret, SHARED_SECRET_BYTES);
+    hash_final(hd, tmp_receiving_ratchet->root_key, ROOT_KEY_BYTES);
     hash_destroy(hd);
 
     hash_init_with_usage(hd, usage_chain_key);
-    hash_update(hd, tmp_receiving_ratchet->root_key, sizeof(root_key));
-    hash_update(hd, tmp_receiving_ratchet->shared_secret,
-                sizeof(shared_secret));
+    hash_update(hd, tmp_receiving_ratchet->root_key, ROOT_KEY_BYTES);
+    hash_update(hd, tmp_receiving_ratchet->shared_secret, SHARED_SECRET_BYTES);
 
-    hash_final(hd, tmp_receiving_ratchet->chain_r, sizeof(receiving_chain_key));
+    hash_final(hd, tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES);
 
     otrng_secure_wipe(tmp_receiving_ratchet->shared_secret,
-                      sizeof(shared_secret));
+                      SHARED_SECRET_BYTES);
   }
 
   hash_destroy(hd);
@@ -660,7 +658,7 @@ key_manager_derive_ratchet_keys(key_manager_s *manager,
 #ifdef DEBUG
   debug_print("\n");
   debug_print("ROOT KEY = ");
-  otrng_memdump(manager->current->root_key, sizeof(root_key));
+  otrng_memdump(manager->current->root_key, ROOT_KEY_BYTES);
   /* debug_print("CHAIN_S = "); */
   /* otrng_memdump(ratchet->chain_s, sizeof(sending_chain_key)); */
   /* debug_print("CHAIN_R = "); */
@@ -680,13 +678,13 @@ tstatic void derive_next_chain_key(key_manager_s *manager,
    * 64) */
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    shake_256_kdf1(manager->current->chain_s, sizeof(sending_chain_key),
+    shake_256_kdf1(manager->current->chain_s, CHAIN_KEY_BYTES,
                    usage_next_chain_key, manager->current->chain_s,
-                   sizeof(sending_chain_key));
+                   CHAIN_KEY_BYTES);
   } else if (action == 'r') {
-    shake_256_kdf1(tmp_receiving_ratchet->chain_r, sizeof(receiving_chain_key),
+    shake_256_kdf1(tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES,
                    usage_next_chain_key, tmp_receiving_ratchet->chain_r,
-                   sizeof(receiving_chain_key));
+                   CHAIN_KEY_BYTES);
   }
 }
 
@@ -700,14 +698,13 @@ tstatic void derive_encryption_and_mac_keys(
 
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    shake_256_kdf1(enc_key, sizeof(msg_enc_key), usage_message_key,
-                   manager->current->chain_s, sizeof(sending_chain_key));
+    shake_256_kdf1(enc_key, ENC_KEY_BYTES, usage_message_key,
+                   manager->current->chain_s, CHAIN_KEY_BYTES);
   } else if (action == 'r') {
-    shake_256_kdf1(enc_key, sizeof(msg_enc_key), usage_message_key,
-                   tmp_receiving_ratchet->chain_r, sizeof(receiving_chain_key));
+    shake_256_kdf1(enc_key, ENC_KEY_BYTES, usage_message_key,
+                   tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES);
   }
-  shake_256_kdf1(mac_key, sizeof(msg_mac_key), usage_mac_key, enc_key,
-                 sizeof(msg_enc_key));
+  shake_256_kdf1(mac_key, MAC_KEY_BYTES, usage_mac_key, enc_key, ENC_KEY_BYTES);
 }
 
 tstatic void calculate_extra_key(key_manager_s *manager,
@@ -724,22 +721,21 @@ tstatic void calculate_extra_key(key_manager_s *manager,
    * 32) */
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    hash_update(hd, manager->current->chain_s, sizeof(sending_chain_key));
+    hash_update(hd, manager->current->chain_s, CHAIN_KEY_BYTES);
 
     hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
     hash_destroy(hd);
 
     memcpy(manager->extra_symmetric_key, extra_key_buff,
-           sizeof(extra_symmetric_key));
+           EXTRA_SYMMETRIC_KEY_BYTES);
   } else if (action == 'r') {
-    hash_update(hd, tmp_receiving_ratchet->chain_r,
-                sizeof(receiving_chain_key));
+    hash_update(hd, tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES);
 
     hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
     hash_destroy(hd);
 
     memcpy(tmp_receiving_ratchet->extra_symmetric_key, extra_key_buff,
-           sizeof(extra_symmetric_key));
+           EXTRA_SYMMETRIC_KEY_BYTES);
   }
   otrng_secure_wipe(extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
   free(extra_key_buff);
@@ -748,8 +744,7 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 #ifdef DEBUG
   debug_print("\n");
   debug_print("EXTRA KEY = ");
-  otrng_memdump(manager->extra_symmetric_key,
-                sizeof(manager->extra_symmetric_key));
+  otrng_memdump(manager->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 #endif
 }
 
@@ -780,25 +775,22 @@ tstatic otrng_result store_enc_keys(msg_enc_key enc_key,
     return OTRNG_SUCCESS;
   }
 
-  if (!(memcmp(tmp_receiving_ratchet->chain_r, zero_buff,
-               sizeof(receiving_chain_key)) == 0)) {
+  if (!(memcmp(tmp_receiving_ratchet->chain_r, zero_buff, CHAIN_KEY_BYTES) ==
+        0)) {
     while (tmp_receiving_ratchet->k < until) {
-      shake_256_kdf1(enc_key, sizeof(msg_enc_key), usage_message_key,
-                     tmp_receiving_ratchet->chain_r,
-                     sizeof(receiving_chain_key));
+      shake_256_kdf1(enc_key, ENC_KEY_BYTES, usage_message_key,
+                     tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES);
 
       hash_init_with_usage(hd, usage_extra_symm_key);
       hash_update(hd, magic, 1);
 
-      hash_update(hd, tmp_receiving_ratchet->chain_r,
-                  sizeof(receiving_chain_key));
-      hash_final(hd, extra_key, sizeof(extra_symmetric_key));
+      hash_update(hd, tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES);
+      hash_final(hd, extra_key, EXTRA_SYMMETRIC_KEY_BYTES);
       hash_destroy(hd);
 
-      shake_256_kdf1(tmp_receiving_ratchet->chain_r,
-                     sizeof(receiving_chain_key), usage_next_chain_key,
-                     tmp_receiving_ratchet->chain_r,
-                     sizeof(receiving_chain_key));
+      shake_256_kdf1(tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES,
+                     usage_next_chain_key, tmp_receiving_ratchet->chain_r,
+                     CHAIN_KEY_BYTES);
 
       skipped_msg_enc_key = otrng_secure_alloc(sizeof(skipped_keys_s));
 
@@ -813,8 +805,8 @@ tstatic otrng_result store_enc_keys(msg_enc_key enc_key,
       skipped_msg_enc_key->j = tmp_receiving_ratchet->k;
 
       memcpy(skipped_msg_enc_key->extra_symmetric_key, extra_key,
-             sizeof(extra_symmetric_key));
-      memcpy(skipped_msg_enc_key->enc_key, enc_key, sizeof(msg_enc_key));
+             EXTRA_SYMMETRIC_KEY_BYTES);
+      memcpy(skipped_msg_enc_key->enc_key, enc_key, ENC_KEY_BYTES);
 
       /*
          @secret: should be deleted when:
@@ -823,7 +815,7 @@ tstatic otrng_result store_enc_keys(msg_enc_key enc_key,
       */
       tmp_receiving_ratchet->skipped_keys = otrng_list_add(
           skipped_msg_enc_key, tmp_receiving_ratchet->skipped_keys);
-      otrng_secure_wipe(enc_key, sizeof(msg_enc_key));
+      otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
       tmp_receiving_ratchet->k++;
     }
   }
@@ -848,11 +840,11 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
     skipped_keys_s *skipped_keys = current->data;
 
     if (skipped_keys->i == ratchet_id && skipped_keys->j == message_id) {
-      memcpy(enc_key, skipped_keys->enc_key, sizeof(msg_enc_key));
+      memcpy(enc_key, skipped_keys->enc_key, ENC_KEY_BYTES);
       shake_256_kdf1(mac_key, MAC_KEY_BYTES, usage_mac_key, enc_key,
                      ENC_KEY_BYTES);
       memcpy(tmp_receiving_ratchet->extra_symmetric_key,
-             skipped_keys->extra_symmetric_key, sizeof(extra_symmetric_key));
+             skipped_keys->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
       tmp_receiving_ratchet->skipped_keys = otrng_list_remove_element(
           current, tmp_receiving_ratchet->skipped_keys);
@@ -894,9 +886,9 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
   debug_print("\n");
   debug_print("GOT SENDING KEYS:\n");
   debug_print("enc_key = ");
-  otrng_memdump(enc_key, sizeof(msg_enc_key));
+  otrng_memdump(enc_key, ENC_KEY_BYTES);
   debug_print("mac_key = ");
-  otrng_memdump(mac_key, sizeof(msg_mac_key));
+  otrng_memdump(mac_key, MAC_KEY_BYTES);
 #endif
 
   return OTRNG_SUCCESS;
@@ -928,7 +920,7 @@ INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
                                                msg_mac_key mac_key) {
   uint8_t *to_store_mac = otrng_secure_alloc(MAC_KEY_BYTES);
 
-  memcpy(to_store_mac, mac_key, sizeof(msg_mac_key));
+  memcpy(to_store_mac, mac_key, ENC_KEY_BYTES);
   manager->old_mac_keys = otrng_list_add(to_store_mac, manager->old_mac_keys);
 
   return OTRNG_SUCCESS;
@@ -945,15 +937,15 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   if (serlen != 0) {
     ser_mac_keys = otrng_secure_alloc(serlen);
 
-    memset(enc_key, 0, sizeof(msg_enc_key));
-    memset(mac_key, 0, sizeof(msg_mac_key));
+    memset(enc_key, 0, ENC_KEY_BYTES);
+    memset(mac_key, 0, MAC_KEY_BYTES);
 
     for (i = 0; i < num_stored_keys; i++) {
       list_element_s *last = otrng_list_get_last(manager->skipped_keys);
       skipped_keys_s *skipped_keys = last->data;
-      memcpy(enc_key, skipped_keys->enc_key, sizeof(msg_enc_key));
-      shake_256_kdf1(mac_key, sizeof(msg_mac_key), usage_mac_key, enc_key,
-                     sizeof(msg_enc_key));
+      memcpy(enc_key, skipped_keys->enc_key, ENC_KEY_BYTES);
+      shake_256_kdf1(mac_key, MAC_KEY_BYTES, usage_mac_key, enc_key,
+                     ENC_KEY_BYTES);
       memcpy(ser_mac_keys + i * MAC_KEY_BYTES, mac_key, MAC_KEY_BYTES);
       manager->skipped_keys =
           otrng_list_remove_element(last, manager->skipped_keys);
