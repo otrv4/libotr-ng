@@ -133,7 +133,7 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
   uint8_t *c = NULL;
   int err;
 
-  random_bytes(data_msg->nonce, sizeof(data_msg->nonce));
+  random_bytes(data_msg->nonce, DATA_MSG_NONCE_BYTES);
 
   c = otrng_xmalloc_z(message_len);
 
@@ -230,8 +230,8 @@ tstatic otrng_result send_data_message(string_p *to_send,
     return OTRNG_ERROR;
   }
 
-  memset(enc_key, 0, sizeof(msg_enc_key));
-  memset(mac_key, 0, sizeof(msg_mac_key));
+  memset(enc_key, 0, ENC_KEY_BYTES);
+  memset(mac_key, 0, MAC_KEY_BYTES);
 
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, NULL,
                                       otr->client->max_stored_msg_keys, 0, 's',
@@ -239,8 +239,8 @@ tstatic otrng_result send_data_message(string_p *to_send,
 
   data_msg = generate_data_msg(otr, ratchet_id);
   if (!data_msg) {
-    otrng_secure_wipe(enc_key, sizeof(msg_enc_key));
-    otrng_secure_wipe(mac_key, sizeof(msg_mac_key));
+    otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
+    otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
     return OTRNG_ERROR;
   }
 
@@ -251,13 +251,13 @@ tstatic otrng_result send_data_message(string_p *to_send,
   if (!encrypt_data_message(data_msg, message, message_len, enc_key)) {
     otrng_error_message(to_send, OTRNG_ERR_MSG_ENCRYPTION_ERROR);
 
-    otrng_secure_wipe(enc_key, sizeof(msg_enc_key));
-    otrng_secure_wipe(mac_key, sizeof(msg_mac_key));
+    otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
+    otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
     otrng_data_message_free(data_msg);
     return OTRNG_ERROR;
   }
 
-  otrng_secure_wipe(enc_key, sizeof(msg_enc_key));
+  otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
 
   /* Authenticator = KDF_1(0x1A || MKmac || KDF_1(usage_authenticator ||
    * data_message_sections, 64), 64) */
@@ -270,7 +270,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
 
     if (!serialize_and_encode_data_msg(to_send, mac_key, ser_mac_keys,
                                        ser_mac_keys_len, data_msg)) {
-      otrng_secure_wipe(mac_key, sizeof(msg_mac_key));
+      otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
       free(ser_mac_keys);
       otrng_data_message_free(data_msg);
       return OTRNG_ERROR;
@@ -278,7 +278,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
     free(ser_mac_keys);
   } else {
     if (!serialize_and_encode_data_msg(to_send, mac_key, NULL, 0, data_msg)) {
-      otrng_secure_wipe(mac_key, sizeof(msg_mac_key));
+      otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
       otrng_data_message_free(data_msg);
       return OTRNG_ERROR;
     }
@@ -286,7 +286,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
 
   otr->keys->j++;
 
-  otrng_secure_wipe(mac_key, sizeof(msg_mac_key));
+  otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
   otrng_data_message_free(data_msg);
 
   return OTRNG_SUCCESS;

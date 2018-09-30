@@ -21,6 +21,7 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
 
 /* Test the an in-order sending and receiving double ratchet */

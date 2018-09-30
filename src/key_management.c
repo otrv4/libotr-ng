@@ -45,9 +45,9 @@ tstatic void ratchet_free(ratchet_s *ratchet) {
     return;
   }
 
-  otrng_secure_wipe(ratchet->root_key, sizeof(root_key));
-  otrng_secure_wipe(ratchet->chain_s, sizeof(sending_chain_key));
-  otrng_secure_wipe(ratchet->chain_r, sizeof(receiving_chain_key));
+  otrng_secure_wipe(ratchet->root_key, ROOT_KEY_BYTES);
+  otrng_secure_wipe(ratchet->chain_s, CHAIN_KEY_BYTES);
+  otrng_secure_wipe(ratchet->chain_r, CHAIN_KEY_BYTES);
 
   free(ratchet);
 }
@@ -660,9 +660,9 @@ key_manager_derive_ratchet_keys(key_manager_s *manager,
   debug_print("ROOT KEY = ");
   otrng_memdump(manager->current->root_key, ROOT_KEY_BYTES);
   /* debug_print("CHAIN_S = "); */
-  /* otrng_memdump(ratchet->chain_s, sizeof(sending_chain_key)); */
+  /* otrng_memdump(ratchet->chain_s, CHAIN_KEY_BYTES); */
   /* debug_print("CHAIN_R = "); */
-  /* otrng_memdump(ratchet->chain_r, sizeof(receiving_chain_key)); */
+  /* otrng_memdump(ratchet->chain_r, CHAIN_KEY_BYTES); */
 #endif
 }
 

@@ -21,7 +21,9 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
+
 #include "prekey_proofs.h"
 
 static void test_ecdh_proof_generation_and_validation(void) {

@@ -18,12 +18,14 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include <glib.h>
 
 #include "test_helpers.h"
-#include "prekey_messages.h"
+
+#include "test_fixtures.h"
+
 #include "base64.h"
+#include "prekey_messages.h"
 
 static void test_deserialize_prekey_success_message(void) {
   const char *prekey_success_msg =

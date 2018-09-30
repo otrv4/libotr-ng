@@ -21,6 +21,7 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "deserialize.h"
 #include "serialize.h"
 

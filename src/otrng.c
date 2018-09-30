@@ -695,7 +695,8 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   brace_key bk;
 
   // TODO: @refactoring this will be calculated again later
-  if (!otrng_ecdh_shared_secret(ke, sizeof(k_ecdh), otr->keys->our_ecdh->priv,
+  if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,
+                                otr->keys->our_ecdh->priv,
                                 otr->keys->their_ecdh)) {
     return OTRNG_ERROR;
   }
@@ -706,26 +707,26 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  hash_hash(bk, sizeof(brace_key), k_dh, k_dh_len);
+  hash_hash(bk, BRACE_KEY_BYTES, k_dh, k_dh_len);
 
-  otrng_secure_wipe(k_dh, sizeof(k_dh));
+  otrng_secure_wipe(k_dh, DH3072_MOD_LEN_BYTES);
 
 #ifdef DEBUG
   debug_print("\n");
   debug_print("GENERATING TEMP KEY R\n");
   debug_print("K_ecdh = ");
-  otrng_memdump(ke, sizeof(k_ecdh));
+  otrng_memdump(ke, ED448_POINT_BYTES);
   debug_print("brace_key = ");
-  otrng_memdump(bk, sizeof(brace_key));
+  otrng_memdump(bk, BRACE_KEY_BYTES);
 #endif
 
-  if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, sizeof(tmp_ecdh_k1),
+  if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, ED448_POINT_BYTES,
                                 otr->keys->our_ecdh->priv,
                                 otr->keys->their_shared_prekey)) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, sizeof(tmp_ecdh_k2),
+  if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, ED448_POINT_BYTES,
                                 otr->keys->our_ecdh->priv,
                                 otr->their_client_profile->long_term_pub_key)) {
     return OTRNG_ERROR;
@@ -733,7 +734,7 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
 
   otrng_key_manager_calculate_tmp_key(dst, ke, bk, tmp_ecdh_k1, tmp_ecdh_k2);
 
-  otrng_secure_wipe(bk, sizeof(brace_key));
+  otrng_secure_wipe(bk, BRACE_KEY_BYTES);
 
 #ifdef DEBUG
   debug_print("\n");
@@ -1093,7 +1094,8 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   brace_key bk;
 
   // TODO: @refactoring this workaround is not the nicest there is
-  if (!otrng_ecdh_shared_secret(ke, sizeof(k_ecdh), otr->keys->our_ecdh->priv,
+  if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,
+                                otr->keys->our_ecdh->priv,
                                 otr->keys->their_ecdh)) {
     return OTRNG_ERROR;
   }
@@ -1103,33 +1105,33 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  hash_hash(bk, sizeof(brace_key), k_dh, k_dh_len);
+  hash_hash(bk, BRACE_KEY_BYTES, k_dh, k_dh_len);
 
-  otrng_secure_wipe(k_dh, sizeof(k_dh));
+  otrng_secure_wipe(k_dh, DH3072_MOD_LEN_BYTES);
 
 #ifdef DEBUG
   debug_print("\n");
   debug_print("GENERATING TEMP KEY I\n");
   debug_print("K_ecdh = ");
-  otrng_memdump(ke, sizeof(k_ecdh));
+  otrng_memdump(ke, ED448_POINT_BYTES);
   debug_print("brace_key = ");
-  otrng_memdump(bk, sizeof(brace_key));
+  otrng_memdump(bk, BRACE_KEY_BYTES);
 #endif
 
-  if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, sizeof(tmp_ecdh_k1),
+  if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, ED448_POINT_BYTES,
                                 our_shared_prekey(otr)->priv,
                                 their_ecdh(otr))) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, sizeof(tmp_ecdh_k1),
+  if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, ED448_POINT_BYTES,
                                 otr->client->keypair->priv, their_ecdh(otr))) {
     return OTRNG_ERROR;
   }
 
   otrng_key_manager_calculate_tmp_key(dst, ke, bk, tmp_ecdh_k1, tmp_ecdh_k2);
 
-  otrng_secure_wipe(bk, sizeof(brace_key));
+  otrng_secure_wipe(bk, BRACE_KEY_BYTES);
 
 #ifdef DEBUG
   debug_print("\n");
@@ -1783,7 +1785,7 @@ tstatic otrng_result decrypt_data_msg(otrng_response_s *response,
   debug_print("\n");
   debug_print("DECRYPTING\n");
   debug_print("enc_key = ");
-  otrng_memdump(enc_key, sizeof(msg_enc_key));
+  otrng_memdump(enc_key, ENC_KEY_BYTES);
   debug_print("nonce = ");
   otrng_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
 #endif
@@ -1833,12 +1835,11 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
     received_extra_sym_key(otr, use, tlv->data + 4, tlv->len - 4,
                            otr->keys->extra_symmetric_key);
     otrng_secure_wipe(otr->keys->extra_symmetric_key,
-                      sizeof(otr->keys->extra_symmetric_key));
+                      EXTRA_SYMMETRIC_KEY_BYTES);
     return NULL;
   }
 
-  otrng_secure_wipe(otr->keys->extra_symmetric_key,
-                    sizeof(extra_symmetric_key));
+  otrng_secure_wipe(otr->keys->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
   return otrng_process_smp_tlv(tlv, otr);
 }
@@ -1893,8 +1894,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
   size_t read = 0;
   receiving_ratchet_s *tmp_receiving_ratchet;
 
-  memset(enc_key, 0, sizeof(msg_enc_key));
-  memset(mac_key, 0, sizeof(msg_mac_key));
+  memset(enc_key, 0, ENC_KEY_BYTES);
+  memset(mac_key, 0, MAC_KEY_BYTES);
 
   response->to_display = NULL;
 
@@ -1954,8 +1955,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       tmp_receiving_ratchet->k = tmp_receiving_ratchet->k + 1;
     }
     if (!otrng_valid_data_message(mac_key, msg)) {
-      otrng_secure_wipe(enc_key, sizeof(enc_key));
-      otrng_secure_wipe(mac_key, sizeof(mac_key));
+      otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
+      otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
       otrng_data_message_free(msg);
 
       if (tmp_receiving_ratchet->skipped_keys) {
@@ -1975,8 +1976,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
       if (msg->flags != MSGFLAGS_IGNORE_UNREADABLE) {
         otrng_error_message(&response->to_send, OTRNG_ERR_MSG_UNREADABLE);
-        otrng_secure_wipe(enc_key, sizeof(enc_key));
-        otrng_secure_wipe(mac_key, sizeof(mac_key));
+        otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
+        otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
 
         if (tmp_receiving_ratchet->skipped_keys) {
           otrng_list_free_full(tmp_receiving_ratchet->skipped_keys);
@@ -1988,8 +1989,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
         return OTRNG_ERROR;
       }
       if (msg->flags == MSGFLAGS_IGNORE_UNREADABLE) {
-        otrng_secure_wipe(enc_key, sizeof(enc_key));
-        otrng_secure_wipe(mac_key, sizeof(mac_key));
+        otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
+        otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
         if (tmp_receiving_ratchet->skipped_keys) {
           otrng_list_free_full(tmp_receiving_ratchet->skipped_keys);
         }
@@ -2000,7 +2001,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       }
     }
 
-    otrng_secure_wipe(enc_key, sizeof(enc_key));
+    otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
 
     otrng_receiving_ratchet_copy(otr->keys, tmp_receiving_ratchet);
     otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
@@ -2015,7 +2016,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
     // TODO: @client this displays an event on otrv3..
     if (!response->to_display) {
-      otrng_secure_wipe(mac_key, sizeof(msg_mac_key));
+      otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
       otrng_data_message_free(msg);
       return OTRNG_SUCCESS;
     }
@@ -2023,20 +2024,20 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     if (otr->client->should_heartbeat(otr->last_sent)) {
       if (!otrng_send_message(&response->to_send, "", warn, NULL,
                               MSGFLAGS_IGNORE_UNREADABLE, otr)) {
-        otrng_secure_wipe(mac_key, sizeof(msg_mac_key));
+        otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
         otrng_data_message_free(msg);
         return OTRNG_ERROR;
       }
       otr->last_sent = time(NULL);
     }
 
-    otrng_secure_wipe(mac_key, sizeof(msg_mac_key));
+    otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
     otrng_data_message_free(msg);
 
     return OTRNG_SUCCESS;
   } while (0);
 
-  otrng_secure_wipe(mac_key, sizeof(msg_mac_key));
+  otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
   otrng_data_message_free(msg);
 
   return OTRNG_ERROR;
@@ -2374,8 +2375,7 @@ tstatic otrng_result otrng_send_symkey_message_v4(
     memmove(tlv_data + 4, usedata, usedatalen);
   }
 
-  memmove(extra_key, otr->keys->extra_symmetric_key,
-          sizeof(extra_symmetric_key));
+  memmove(extra_key, otr->keys->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
   tlvs = otrng_tlv_list_one(
       otrng_tlv_new(OTRNG_TLV_SYM_KEY, usedatalen + 4, tlv_data));

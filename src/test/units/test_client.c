@@ -18,11 +18,13 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
 #include <glib.h>
+#include <stdio.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
+
 #include "client.h"
 #include "fragment.h"
 #include "instance_tag.h"
@@ -72,7 +74,6 @@ static void test_fingerprint_hash_to_human() {
   g_assert_cmpint(0, ==,
                   strncmp(expected_fp, fp_human, OTRNG_FPRINT_HUMAN_LEN));
 }
-
 
 void units_client_add_tests(void) {
   g_test_add_func("/client/fingerprint_to_human",

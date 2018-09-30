@@ -21,6 +21,7 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "list.h"
 
 static void test_otrng_list_add() {

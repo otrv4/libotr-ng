@@ -45,11 +45,11 @@ tstatic void data_message_destroy(data_message_s *data_msg) {
   otrng_dh_mpi_release(data_msg->dh);
   data_msg->dh = NULL;
 
-  otrng_secure_wipe(data_msg->nonce, sizeof data_msg->nonce);
+  otrng_secure_wipe(data_msg->nonce, DATA_MSG_NONCE_BYTES);
   data_msg->enc_msg_len = 0;
   free(data_msg->enc_msg);
   data_msg->enc_msg = NULL;
-  otrng_secure_wipe(data_msg->mac, sizeof data_msg->mac);
+  otrng_secure_wipe(data_msg->mac, DATA_MSG_MAC_BYTES);
 }
 
 INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
@@ -266,16 +266,16 @@ INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key mac_key,
     return otrng_false;
   }
 
-  if (!otrng_data_message_authenticator(mac_tag, sizeof mac_tag, mac_key, body,
-                                        bodylen)) {
+  if (!otrng_data_message_authenticator(mac_tag, DATA_MSG_MAC_BYTES, mac_key,
+                                        body, bodylen)) {
     free(body);
     return otrng_false;
   }
 
   free(body);
 
-  if (otrl_mem_differ(mac_tag, data_msg->mac, sizeof mac_tag) != 0) {
-    otrng_secure_wipe(mac_tag, sizeof mac_tag);
+  if (otrl_mem_differ(mac_tag, data_msg->mac, DATA_MSG_MAC_BYTES) != 0) {
+    otrng_secure_wipe(mac_tag, DATA_MSG_MAC_BYTES);
     return otrng_false;
   }
 

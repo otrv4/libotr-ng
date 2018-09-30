@@ -21,6 +21,7 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "deserialize.h"
 
 static void test_prekey_dake1_message_serialize(void) {

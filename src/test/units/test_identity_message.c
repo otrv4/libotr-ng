@@ -21,6 +21,7 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
 
 #include "constants.h"
@@ -29,7 +30,7 @@
 #include "serialize.h"
 
 static void test_dake_identity_message_serializes(dake_fixture_s *f,
-                                           gconstpointer data) {
+                                                  gconstpointer data) {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
 
@@ -95,7 +96,7 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
 }
 
 static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
-                                                   gconstpointer data) {
+                                                          gconstpointer data) {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
 
@@ -139,7 +140,8 @@ static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
   free(serialized);
 }
 
-static void test_dake_identity_message_valid(dake_fixture_s *f, gconstpointer data) {
+static void test_dake_identity_message_valid(dake_fixture_s *f,
+                                             gconstpointer data) {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
 

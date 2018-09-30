@@ -21,9 +21,11 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
-#include "random.h"
+
 #include "deserialize.h"
+#include "random.h"
 
 static void test_send_dake_1_message(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);

@@ -72,7 +72,7 @@ code-style-doctor: code-style
 	git diff --exit-code .
 
 code-style:
-	clang-format -style=file -i config.h src/*.h src/*.c src/**/*.h src/**/*.c
+	clang-format -style=file -i config.h src/*.{h,c} src/test/*.{h,c} src/test/functionals/*.{h,c} src/test/units/*.{h,c}
 
 LOOPS = 100
 test-loop:

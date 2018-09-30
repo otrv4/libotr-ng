@@ -20,9 +20,9 @@
 
 #include "test_helpers.h"
 
+#include "ed448.h"
 #include "goldilocks.h"
 #include "goldilocks/ed448.h"
-#include "ed448.h"
 #include "random.h"
 
 static void test_ed448_eddsa_serialization() {

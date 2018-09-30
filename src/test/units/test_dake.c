@@ -24,7 +24,9 @@
 #define OTRNG_DAKE_PRIVATE
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
+
 #include "auth.h"
 #include "dake.h"
 #include "serialize.h"

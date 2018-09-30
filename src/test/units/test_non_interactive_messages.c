@@ -21,7 +21,9 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
+
 #include "constants.h"
 #include "dake.h"
 #include "keys.h"
@@ -42,8 +44,8 @@ static void test_dake_prekey_message_serializes() {
   prekey_message->B = otrng_dh_mpi_copy(dh.pub);
 
   uint8_t *serialized = NULL;
-  otrng_assert_is_success(
-      otrng_dake_prekey_message_serialize_into(&serialized, NULL, prekey_message));
+  otrng_assert_is_success(otrng_dake_prekey_message_serialize_into(
+      &serialized, NULL, prekey_message));
 
   uint8_t expected[] = {
       0x0,
@@ -184,8 +186,9 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_s *msg,
   otrng_ecdh_keypair_destroy(&ecdh);
 }
 
-static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
-                                                       gconstpointer data) {
+static void
+test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
+                                                  gconstpointer data) {
   dake_non_interactive_auth_message_s msg;
   otrng_dake_non_interactive_auth_message_init(&msg);
   setup_non_interactive_auth_message(&msg, f);
@@ -193,8 +196,8 @@ static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   uint8_t *serialized = NULL;
   size_t len = 0;
   (void)data;
-  otrng_assert_is_success(
-      otrng_dake_non_interactive_auth_message_serialize(&serialized, &len, &msg));
+  otrng_assert_is_success(otrng_dake_non_interactive_auth_message_serialize(
+      &serialized, &len, &msg));
 
   uint8_t expected_header[] = {
       0x00,
@@ -254,8 +257,9 @@ static void test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   otrng_dake_non_interactive_auth_message_destroy(&msg);
 }
 
-static void test_otrng_dake_non_interactive_auth_message_deserializes(
-    dake_fixture_s *f, gconstpointer data) {
+static void
+test_otrng_dake_non_interactive_auth_message_deserializes(dake_fixture_s *f,
+                                                          gconstpointer data) {
   (void)data;
   dake_non_interactive_auth_message_s expected;
   otrng_dake_non_interactive_auth_message_init(&expected);
@@ -281,18 +285,12 @@ static void test_otrng_dake_non_interactive_auth_message_deserializes(
   otrng_assert_dh_public_key_eq(deserialized.A, expected.A);
   otrng_assert_cmpmem(deserialized.auth_mac, expected.auth_mac, HASH_BYTES);
 
-  otrng_assert(
-      otrng_ec_scalar_eq(deserialized.sigma->c1, expected.sigma->c1));
-  otrng_assert(
-      otrng_ec_scalar_eq(deserialized.sigma->r1, expected.sigma->r1));
-  otrng_assert(
-      otrng_ec_scalar_eq(deserialized.sigma->c2, expected.sigma->c2));
-  otrng_assert(
-               otrng_ec_scalar_eq(deserialized.sigma->r2, expected.sigma->r2));
-  otrng_assert(
-      otrng_ec_scalar_eq(deserialized.sigma->c3, expected.sigma->c3));
-  otrng_assert(
-      otrng_ec_scalar_eq(deserialized.sigma->r3, expected.sigma->r3));
+  otrng_assert(otrng_ec_scalar_eq(deserialized.sigma->c1, expected.sigma->c1));
+  otrng_assert(otrng_ec_scalar_eq(deserialized.sigma->r1, expected.sigma->r1));
+  otrng_assert(otrng_ec_scalar_eq(deserialized.sigma->c2, expected.sigma->c2));
+  otrng_assert(otrng_ec_scalar_eq(deserialized.sigma->r2, expected.sigma->r2));
+  otrng_assert(otrng_ec_scalar_eq(deserialized.sigma->c3, expected.sigma->c3));
+  otrng_assert(otrng_ec_scalar_eq(deserialized.sigma->r3, expected.sigma->r3));
 
   otrng_assert(deserialized.prekey_message_id == expected.prekey_message_id);
 

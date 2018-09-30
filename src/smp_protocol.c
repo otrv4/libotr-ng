@@ -74,12 +74,12 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
 
   hash_init_with_usage(hd, usage_smp_secret);
   hash_update(hd, version, 1);
-  hash_update(hd, our_fp, sizeof(otrng_fingerprint));
-  hash_update(hd, their_fp, sizeof(otrng_fingerprint));
-  hash_update(hd, ssid, sizeof(ssid));
+  hash_update(hd, our_fp, FPRINT_LEN_BYTES);
+  hash_update(hd, their_fp, FPRINT_LEN_BYTES);
+  hash_update(hd, ssid, SSID_BYTES);
   hash_update(hd, answer, answer_len);
 
-  hash_final(hd, hash, sizeof(hash));
+  hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
   *secret = otrng_secure_alloc(HASH_BYTES);

@@ -20,8 +20,9 @@
 
 #include <glib.h>
 
-#include "str.h"
 #include "test_helpers.h"
+
+#include "str.h"
 
 static void test_otrng_stpcpy(void) {
   char *dst = otrng_xstrdup("abcd");

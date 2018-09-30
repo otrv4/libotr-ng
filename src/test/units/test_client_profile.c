@@ -24,10 +24,12 @@
 #include <time.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
+
 #include "client_profile.h"
-#include "serialize.h"
 #include "instance_tag.h"
+#include "serialize.h"
 
 static void test_client_profile_create() {
   client_profile_s *profile = client_profile_new("4");
@@ -203,8 +205,8 @@ static void test_otrng_client_profile_build() {
                                            NULL, NULL, expiration));
   otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, NULL,
                                            &keypair, keypair2.pub, expiration));
-  otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG, "3", &keypair,
-                                           keypair2.pub, expiration));
+  otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG, "3",
+                                           &keypair, keypair2.pub, expiration));
 
   client_profile_s *profile = otrng_client_profile_build(
       OTRNG_MIN_VALID_INSTAG + 1, "3", &keypair, keypair2.pub, expiration);

@@ -27,13 +27,13 @@ void functionals_double_ratchet_add_tests(void);
 void functionals_prekey_client_add_tests(void);
 void functionals_smp_add_tests(void);
 
-#define REGISTER_FUNCTIONALS do { \
-    functionals_api_add_tests(); \
-    functionals_client_add_tests(); \
-    functionals_double_ratchet_add_tests(); \
-    functionals_prekey_client_add_tests(); \
-    functionals_smp_add_tests(); \
-  } while(0);
-
+#define REGISTER_FUNCTIONALS                                                   \
+  do {                                                                         \
+    functionals_api_add_tests();                                               \
+    functionals_client_add_tests();                                            \
+    functionals_double_ratchet_add_tests();                                    \
+    functionals_prekey_client_add_tests();                                     \
+    functionals_smp_add_tests();                                               \
+  } while (0);
 
 #endif // __TEST_FUNCTIONALS_ALL_H__

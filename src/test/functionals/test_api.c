@@ -26,15 +26,16 @@
 #pragma clang diagnostic pop
 #endif
 
-#include <string.h>
 #include <glib.h>
+#include <string.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
+
 #include "list.h"
 #include "otrng.h"
 #include "str.h"
-
 
 static otrng_bool test_should_heartbeat(int last_sent) {
   (void)last_sent;
@@ -1172,16 +1173,13 @@ void functionals_api_add_tests(void) {
 
   g_test_add_func("/api/interactive_conversation/v4",
                   test_api_interactive_conversation);
-  g_test_add_func("/api/send_offline_message",
-  test_otrng_send_offline_message);
+  g_test_add_func("/api/send_offline_message", test_otrng_send_offline_message);
   g_test_add_func("/api/incorrect_offline_dake",
                   test_otrng_incorrect_offline_dake);
 
   g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
-  g_test_add_func("/api/conversation_errors_1",
-  test_api_conversation_errors_1);
-  g_test_add_func("/api/conversation_errors_2",
-  test_api_conversation_errors_2);
+  g_test_add_func("/api/conversation_errors_1", test_api_conversation_errors_1);
+  g_test_add_func("/api/conversation_errors_2", test_api_conversation_errors_2);
   g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
   g_test_add_func("/api/smp", test_api_smp);
   g_test_add_func("/api/smp_abort", test_api_smp_abort);

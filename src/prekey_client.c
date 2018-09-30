@@ -927,8 +927,8 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
 
   free(buf);
 
-  if (otrl_mem_differ(mac_tag, msg->mac, sizeof(mac_tag)) != 0) {
-    otrng_secure_wipe(mac_tag, sizeof(mac_tag));
+  if (otrl_mem_differ(mac_tag, msg->mac, HASH_BYTES) != 0) {
+    otrng_secure_wipe(mac_tag, HASH_BYTES);
     return otrng_false;
   }
 
@@ -1010,7 +1010,7 @@ static char *receive_success(const uint8_t *decoded, size_t decoded_len,
     success_received_callback(client);
   }
 
-  otrng_secure_wipe(mac_tag, sizeof(mac_tag));
+  otrng_secure_wipe(mac_tag, HASH_BYTES);
   return NULL;
 }
 
@@ -1052,7 +1052,7 @@ static char *receive_failure(const uint8_t *decoded, size_t decoded_len,
     failure_received_callback(client);
   }
 
-  otrng_secure_wipe(mac_tag, sizeof(mac_tag));
+  otrng_secure_wipe(mac_tag, HASH_BYTES);
   return NULL;
 }
 
@@ -1422,12 +1422,12 @@ INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(
 
   w += read;
 
-  if (!otrng_deserialize_bytes_array(dst->mac, sizeof(dst->mac), serialized + w,
-                                     serialized_len - w)) {
+  if (!otrng_deserialize_bytes_array(dst->mac, DATA_MSG_MAC_BYTES,
+                                     serialized + w, serialized_len - w)) {
     return OTRNG_ERROR;
   }
 
-  w += sizeof(dst->mac);
+  w += DATA_MSG_MAC_BYTES;
 
   return OTRNG_SUCCESS;
 }
@@ -1441,7 +1441,7 @@ void otrng_prekey_storage_status_message_destroy(
 
   msg->client_instance_tag = 0;
   msg->stored_prekeys = 0;
-  otrng_secure_wipe(msg->mac, sizeof(msg->mac));
+  otrng_secure_wipe(msg->mac, DATA_MSG_MAC_BYTES);
 }
 
 INTERNAL otrng_prekey_publication_message_s *

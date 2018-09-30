@@ -21,6 +21,7 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "instance_tag.h"
 #include "serialize.h"
 
@@ -139,10 +140,8 @@ static void test_prekey_profile_deserialize() {
 }
 
 void units_prekey_profile_add_tests(void) {
-  g_test_add_func("/prekey_profile/validates",
-  test_prekey_profile_validates);
-  g_test_add_func("/prekey_profile/serialize",
-  test_prekey_profile_serialize);
+  g_test_add_func("/prekey_profile/validates", test_prekey_profile_validates);
+  g_test_add_func("/prekey_profile/serialize", test_prekey_profile_serialize);
   g_test_add_func("/prekey_profile/deserialize",
                   test_prekey_profile_deserialize);
 }

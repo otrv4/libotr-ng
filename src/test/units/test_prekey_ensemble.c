@@ -21,6 +21,7 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
 
 #include "prekey_ensemble.h"
@@ -114,6 +115,5 @@ static void test_prekey_ensemble_validate(void) {
 }
 
 void units_prekey_ensemble_add_tests(void) {
-  g_test_add_func("/prekey_ensemble/validate",
-  test_prekey_ensemble_validate);
+  g_test_add_func("/prekey_ensemble/validate", test_prekey_ensemble_validate);
 }

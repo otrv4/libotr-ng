@@ -21,9 +21,10 @@
 #include <glib.h>
 
 #include "test_helpers.h"
-#include "random.h"
+
 #include "auth.h"
 #include "deserialize.h"
+#include "random.h"
 
 static void test_rsig_calculate_c() {
   const char *msg = "hey";
@@ -157,8 +158,8 @@ static void test_rsig_compatible_with_prekey_server() {
   ring_sig_s dst;
   otrng_assert(otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p1.pub, p2.pub,
                                        p3.pub, (unsigned char *)msg, 2));
-  otrng_assert(otrng_rsig_verify(&dst, p1.pub, p2.pub, p3.pub,
-                                 (const uint8_t *)msg, 2));
+  otrng_assert(
+      otrng_rsig_verify(&dst, p1.pub, p2.pub, p3.pub, (const uint8_t *)msg, 2));
 
   uint8_t rsig[6 * ED448_SCALAR_BYTES] = {
       // c1

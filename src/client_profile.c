@@ -121,7 +121,7 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   copy_dsa_key(dst, src);
   copy_transitional_signature(dst, src);
 
-  memcpy(dst->signature, src->signature, sizeof(eddsa_signature));
+  memcpy(dst->signature, src->signature, ED448_SIGNATURE_BYTES);
 }
 
 INTERNAL void otrng_client_profile_destroy(client_profile_s *client_profile) {
@@ -270,13 +270,13 @@ INTERNAL otrng_result otrng_client_profile_serialize(
     return OTRNG_ERROR;
   }
 
-  if (s - written < sizeof(eddsa_signature)) {
+  if (s - written < ED448_SIGNATURE_BYTES) {
     free(buff);
     return OTRNG_ERROR;
   }
 
   written += otrng_serialize_bytes_array(
-      buff + written, client_profile->signature, sizeof(eddsa_signature));
+      buff + written, client_profile->signature, ED448_SIGNATURE_BYTES);
 
   *dst = buff;
   if (nbytes) {
@@ -440,13 +440,13 @@ INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
   }
 
   // TODO: Extract function deserialize_transitional_signature
-  if (buflen - w < sizeof(eddsa_signature)) {
+  if (buflen - w < ED448_SIGNATURE_BYTES) {
     return OTRNG_ERROR;
   }
 
-  memcpy(target->signature, buffer + w, sizeof(eddsa_signature));
+  memcpy(target->signature, buffer + w, ED448_SIGNATURE_BYTES);
 
-  w += sizeof(eddsa_signature);
+  w += ED448_SIGNATURE_BYTES;
 
   if (nread) {
     *nread = w;

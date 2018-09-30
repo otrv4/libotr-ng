@@ -23,7 +23,9 @@
 #include <string.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
+
 #include "fragment.h"
 
 static void test_create_fragments(void) {
@@ -330,5 +332,4 @@ void units_fragment_add_tests(void) {
                   test_defragment_two_messages);
   g_test_add_func("/fragment/expiration_of_fragments",
                   test_expiration_of_fragments);
-
 }

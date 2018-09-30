@@ -22,11 +22,13 @@
 #include <string.h>
 
 #include "test_helpers.h"
+
 #include "test_fixtures.h"
+
 #include "otrng.h"
 
 static void test_otrng_builds_query_message(otrng_fixture_s *otrng_fixture,
-                                     gconstpointer data) {
+                                            gconstpointer data) {
   const char *message = "And some random invitation text.";
 
   char *query_message = NULL;
@@ -41,7 +43,7 @@ static void test_otrng_builds_query_message(otrng_fixture_s *otrng_fixture,
 }
 
 static void test_otrng_builds_query_message_v34(otrng_fixture_s *otrng_fixture,
-                                         gconstpointer data) {
+                                                gconstpointer data) {
   const char *message = "And some random invitation text.";
 
   char *query_message = NULL;
@@ -56,7 +58,7 @@ static void test_otrng_builds_query_message_v34(otrng_fixture_s *otrng_fixture,
 }
 
 static void test_otrng_builds_whitespace_tag(otrng_fixture_s *otrng_fixture,
-                                      gconstpointer data) {
+                                             gconstpointer data) {
   const char *expected_tag =
       " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
   const char *message = "And some random invitation text.";
@@ -70,7 +72,7 @@ static void test_otrng_builds_whitespace_tag(otrng_fixture_s *otrng_fixture,
 }
 
 static void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
-                                          gconstpointer data) {
+                                                 gconstpointer data) {
   const char *expected_tag =
       " \t  \t\t\t\t \t \t \t    \t\t \t    \t\t  \t\tAnd "
       "some random invitation text";
@@ -113,8 +115,9 @@ static void test_otrng_receives_plaintext_without_ws_tag_not_on_start(
   otrng_response_free(response);
 }
 
-static void test_otrng_receives_plaintext_with_ws_tag(otrng_fixture_s *otrng_fixture,
-                                               gconstpointer data) {
+static void
+test_otrng_receives_plaintext_with_ws_tag(otrng_fixture_s *otrng_fixture,
+                                          gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   const string_p message =
       " \t  \t\t\t\t \t \t \t    \t\t \t  And some random invitation text.";
@@ -150,8 +153,9 @@ static void test_otrng_receives_plaintext_with_ws_tag_after_text(
   otrng_response_free(response);
 }
 
-static void test_otrng_receives_plaintext_with_ws_tag_v3(
-    otrng_fixture_s *otrng_fixture, gconstpointer data) {
+static void
+test_otrng_receives_plaintext_with_ws_tag_v3(otrng_fixture_s *otrng_fixture,
+                                             gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   const string_p message =
       " \t  \t\t\t\t \t \t \t    \t\t  \t\tAnd some random invitation text.";
@@ -170,7 +174,7 @@ static void test_otrng_receives_plaintext_with_ws_tag_v3(
 }
 
 static void test_otrng_receives_query_message(otrng_fixture_s *otrng_fixture,
-                                       gconstpointer data) {
+                                              gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   otrng_warning warn = OTRNG_WARN_NONE;
   (void)data;
@@ -186,7 +190,7 @@ static void test_otrng_receives_query_message(otrng_fixture_s *otrng_fixture,
 }
 
 static void test_otrng_receives_query_message_v3(otrng_fixture_s *otrng_fixture,
-                                          gconstpointer data) {
+                                                 gconstpointer data) {
   otrng_response_s *response = otrng_response_new();
   otrng_warning warn = OTRNG_WARN_NONE;
   (void)data;
@@ -368,7 +372,8 @@ static void test_otrng_generates_shared_session_state_string(void) {
 }
 
 void units_otrng_add_tests(void) {
-  (void)test_otrng_receives_identity_message_invalid_on_start; // this function is unused
+  (void)test_otrng_receives_identity_message_invalid_on_start; // this function
+                                                               // is unused
 
   g_test_add("/otrng/builds_query_message", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_builds_query_message,
@@ -397,10 +402,8 @@ void units_otrng_add_tests(void) {
              otrng_fixture_s, NULL, otrng_fixture_set_up,
              test_otrng_receives_plaintext_with_ws_tag_after_text,
              otrng_fixture_teardown);
-  g_test_add("/otrng/receives_plaintext_with_ws_tag_v3", otrng_fixture_s,
-  NULL,
-             otrng_fixture_set_up,
-  test_otrng_receives_plaintext_with_ws_tag_v3,
+  g_test_add("/otrng/receives_plaintext_with_ws_tag_v3", otrng_fixture_s, NULL,
+             otrng_fixture_set_up, test_otrng_receives_plaintext_with_ws_tag_v3,
              otrng_fixture_teardown);
   g_test_add("/otrng/receives_query_message", otrng_fixture_s, NULL,
              otrng_fixture_set_up, test_otrng_receives_query_message,

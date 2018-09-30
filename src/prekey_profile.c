@@ -38,7 +38,7 @@ prekey_profile_init(otrng_prekey_profile_s *profile, const char *versions) {
 
 INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst) {
   otrng_ec_point_destroy(dst->shared_prekey);
-  memset(dst->signature, 0, sizeof(eddsa_signature));
+  memset(dst->signature, 0, ED448_SIGNATURE_BYTES);
 }
 
 INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *dst) {
@@ -62,7 +62,7 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
   dst->expires = src->expires;
 
   otrng_ec_point_copy(dst->shared_prekey, src->shared_prekey);
-  memcpy(dst->signature, src->signature, sizeof(eddsa_signature));
+  memcpy(dst->signature, src->signature, ED448_SIGNATURE_BYTES);
 }
 
 tstatic size_t otrng_prekey_profile_body_serialize(
@@ -121,12 +121,12 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
 
   w += read;
 
-  if (!otrng_deserialize_bytes_array(target->signature, sizeof(eddsa_signature),
+  if (!otrng_deserialize_bytes_array(target->signature, ED448_SIGNATURE_BYTES,
                                      buffer + w, buflen - w)) {
     return OTRNG_ERROR;
   }
 
-  w += sizeof(eddsa_signature);
+  w += ED448_SIGNATURE_BYTES;
 
   if (nread) {
     *nread = w;
@@ -166,7 +166,7 @@ tstatic otrng_result otrng_prekey_profile_body_serialize_into(
 
 INTERNAL otrng_result otrng_prekey_profile_serialize(
     uint8_t **dst, size_t *nbytes, otrng_prekey_profile_s *profile) {
-  size_t size = PREKEY_PROFILE_BODY_BYTES + sizeof(eddsa_signature);
+  size_t size = PREKEY_PROFILE_BODY_BYTES + ED448_SIGNATURE_BYTES;
   uint8_t *buff = otrng_xmalloc_z(size);
   size_t written;
 
@@ -177,13 +177,13 @@ INTERNAL otrng_result otrng_prekey_profile_serialize(
     return OTRNG_ERROR;
   }
 
-  if (size - written < sizeof(eddsa_signature)) {
+  if (size - written < ED448_SIGNATURE_BYTES) {
     free(buff);
     return OTRNG_ERROR;
   }
 
   written += otrng_serialize_bytes_array(buff + written, profile->signature,
-                                         sizeof(eddsa_signature));
+                                         ED448_SIGNATURE_BYTES);
 
   *dst = buff;
   if (nbytes) {

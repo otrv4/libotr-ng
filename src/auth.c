@@ -121,12 +121,12 @@ tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
 
   hash_update(hd, message, message_len);
 
-  hash_final(hd, hash, sizeof(hash));
+  hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
-  goldilocks_448_scalar_decode_long(dst, hash, sizeof(hash));
-  otrng_secure_wipe(hash, sizeof(hash));
-  otrng_secure_wipe(point_buff, sizeof(point_buff));
+  goldilocks_448_scalar_decode_long(dst, hash, HASH_BYTES);
+  otrng_secure_wipe(hash, HASH_BYTES);
+  otrng_secure_wipe(point_buff, ED448_POINT_BYTES);
 }
 
 static void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(

@@ -21,10 +21,11 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
 #include "tlv.h"
 
-static void assert_tlv_structure(tlv_list_s *tlvs, otrng_tlv_type_t type, uint16_t len,
-                          uint8_t *data, otrng_bool next) {
+static void assert_tlv_structure(tlv_list_s *tlvs, otrng_tlv_type_t type,
+                                 uint16_t len, uint8_t *data, otrng_bool next) {
   otrng_assert(tlvs);
   otrng_assert(tlvs->data);
   otrng_assert(tlvs->data->type == type);

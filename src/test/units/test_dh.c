@@ -21,6 +21,9 @@
 #include <glib.h>
 
 #include "test_helpers.h"
+
+#include "test_fixtures.h"
+
 #include "dh.h"
 
 static void test_dh_api() {
