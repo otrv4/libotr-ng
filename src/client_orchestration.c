@@ -78,7 +78,7 @@ tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
   }
 
   if (client->keypair == NULL) {
-    signal_error_in_state_management(client, "long term key pair");
+    signal_error_in_state_management(client, "No long term key pair");
   }
 }
 
@@ -111,7 +111,7 @@ tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
   }
 
   if (!client->prekey_profile) {
-    signal_error_in_state_management(client, "prekey profile");
+    signal_error_in_state_management(client, "No Prekey Profile");
   }
 }
 

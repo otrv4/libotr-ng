@@ -820,6 +820,7 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *privf) {
   }
 
   otrng_prekey_profile_free(client->prekey_profile);
+  client->prekey_profile = NULL;
 
   len = get_limited_line(&line, privf);
   if (len < 0) {
