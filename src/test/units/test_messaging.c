@@ -82,7 +82,7 @@ static void test_global_state_key_management(void) {
         keys);
   rewind(keys);
 
-  otrng_result result = otrng_global_state_private_key_v4_read_FILEp(
+  otrng_result result = otrng_global_state_private_key_v4_read_from(
       state, keys, read_client_id_for_privf);
   otrng_assert_is_success(result);
   fclose(keys);
@@ -128,7 +128,7 @@ static void test_global_state_shared_prekey_management(void) {
         keys);
   rewind(keys);
 
-  otrng_result result = otrng_global_state_shared_prekey_read_FILEp(
+  otrng_result result = otrng_global_state_shared_prekey_read_from(
       state, keys, read_client_id_for_privf);
   otrng_assert_is_success(result);
   fclose(keys);
@@ -194,7 +194,7 @@ static void test_global_state_client_profile_management(void) {
         client_profile);
   rewind(client_profile);
 
-  otrng_result result = otrng_global_state_client_profile_read_FILEp(
+  otrng_result result = otrng_global_state_client_profile_read_from(
       state, client_profile, read_client_id_for_privf);
   otrng_assert_is_success(result);
   fclose(client_profile);
@@ -266,7 +266,7 @@ static void test_global_state_prekey_profile_management(void) {
         prekey_profile);
   rewind(prekey_profile);
 
-  otrng_result result = otrng_global_state_prekey_profile_read_FILEp(
+  otrng_result result = otrng_global_state_prekey_profile_read_from(
       state, prekey_profile, read_client_id_for_privf);
   otrng_assert_is_success(result);
   fclose(prekey_profile);
@@ -324,7 +324,7 @@ static void test_global_state_prekey_message_management(void) {
         prekey);
   rewind(prekey);
 
-  otrng_result result = otrng_global_state_prekeys_read_FILEp(
+  otrng_result result = otrng_global_state_prekeys_read_from(
       state, prekey, read_client_id_for_privf);
   otrng_assert_is_success(result);
 
@@ -380,7 +380,7 @@ static void test_instance_tag_api(void) {
   fprintf(instagFILEp, "%s\t%s\t%08x\n", alice_account, alice_protocol,
           instance_tag);
   rewind(instagFILEp);
-  otrng_client_instance_tag_read_FILEp(alice, instagFILEp);
+  otrng_client_instance_tag_read_from(alice, instagFILEp);
   fclose(instagFILEp);
 
   unsigned int alice_instag = otrng_client_get_instance_tag(alice);

@@ -94,13 +94,12 @@ otrng_client_s *otrng_client_get(otrng_global_state_s *gs,
   return get_client(gs, client_id);
 }
 
-API otrng_result otrng_global_state_private_key_v3_generate_FILEp(
+API otrng_result otrng_global_state_private_key_v3_generate_into(
     otrng_global_state_s *gs, const otrng_client_id_s client_id, FILE *privf) {
-  return otrng_client_private_key_v3_write_FILEp(get_client(gs, client_id),
-                                                 privf);
+  return otrng_client_private_key_v3_write_to(get_client(gs, client_id), privf);
 }
 
-API otrng_result otrng_global_state_private_key_v3_read_FILEp(
+API otrng_result otrng_global_state_private_key_v3_read_from(
     otrng_global_state_s *gs, FILE *keys) {
   gcry_error_t res = otrl_privkey_read_FILEp(gs->user_state_v3, keys);
   if (res) {
@@ -218,109 +217,109 @@ otrng_global_state_get_private_key_v4(otrng_global_state_s *gs,
   return otrng_client_get_keypair_v4(get_client(gs, client_id));
 }
 
-tstatic void add_private_key_v4_to_FILEp(list_element_s *node, void *context) {
+tstatic void add_private_key_v4_to(list_element_s *node, void *context) {
   otrng_client_s *client = node->data;
   // TODO: check the return value
-  if (!otrng_client_private_key_v4_write_FILEp(client, context)) {
+  if (!otrng_client_private_key_v4_write_to(client, context)) {
     return;
   }
 }
 
-API otrng_result otrng_global_state_private_key_v4_write_FILEp(
+API otrng_result otrng_global_state_private_key_v4_write_to(
     const otrng_global_state_s *gs, FILE *privf) {
   if (!privf) {
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->clients, add_private_key_v4_to_FILEp, privf);
+  otrng_list_foreach(gs->clients, add_private_key_v4_to, privf);
 
   return OTRNG_SUCCESS;
 }
 
-tstatic void add_forging_key_to_FILEp(list_element_s *node, void *context) {
+tstatic void add_forging_key_to(list_element_s *node, void *context) {
   otrng_client_s *client = node->data;
   // TODO: check the return value
-  if (!otrng_client_forging_key_write_FILEp(client, context)) {
+  if (!otrng_client_forging_key_write_to(client, context)) {
     return;
   }
 }
 
-API otrng_result otrng_global_state_forging_key_write_FILEp(
+API otrng_result otrng_global_state_forging_key_write_to(
     const otrng_global_state_s *gs, FILE *f) {
   if (!f) {
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->clients, add_forging_key_to_FILEp, f);
+  otrng_list_foreach(gs->clients, add_forging_key_to, f);
 
   return OTRNG_SUCCESS;
 }
 
-tstatic void add_shared_prekey_to_FILEp(list_element_s *node, void *context) {
+tstatic void add_shared_prekey_to(list_element_s *node, void *context) {
   otrng_client_s *client = node->data;
   // TODO: check the return value
-  if (!otrng_client_shared_prekey_write_FILEp(client, context)) {
+  if (!otrng_client_shared_prekey_write_to(client, context)) {
     return;
   }
 }
 
-API otrng_result otrng_global_state_shared_prekey_write_FILEp(
+API otrng_result otrng_global_state_shared_prekey_write_to(
     const otrng_global_state_s *gs, FILE *shared_prekey_f) {
   if (!shared_prekey_f) {
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->clients, add_shared_prekey_to_FILEp, shared_prekey_f);
+  otrng_list_foreach(gs->clients, add_shared_prekey_to, shared_prekey_f);
 
   return OTRNG_SUCCESS;
 }
 
-tstatic void add_client_profile_to_FILEp(list_element_s *node, void *context) {
-  otrng_client_client_profile_write_FILEp(node->data, context);
+tstatic void add_client_profile_to(list_element_s *node, void *context) {
+  otrng_client_client_profile_write_to(node->data, context);
 }
 
-API otrng_result otrng_global_state_client_profile_write_FILEp(
+API otrng_result otrng_global_state_client_profile_write_to(
     const otrng_global_state_s *gs, FILE *privf) {
   if (!privf) {
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->clients, add_client_profile_to_FILEp, privf);
+  otrng_list_foreach(gs->clients, add_client_profile_to, privf);
   return OTRNG_SUCCESS;
 }
 
-tstatic void add_prekey_profile_to_FILEp(list_element_s *node, void *context) {
+tstatic void add_prekey_profile_to(list_element_s *node, void *context) {
   // TODO: check error here
-  otrng_client_prekey_profile_write_FILEp(node->data, context);
+  otrng_client_prekey_profile_write_to(node->data, context);
 }
 
-API otrng_result otrng_global_state_prekey_profile_write_FILEp(
+API otrng_result otrng_global_state_prekey_profile_write_to(
     const otrng_global_state_s *gs, FILE *privf) {
   if (!privf) {
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->clients, add_prekey_profile_to_FILEp, privf);
+  otrng_list_foreach(gs->clients, add_prekey_profile_to, privf);
   return OTRNG_SUCCESS;
 }
 
-tstatic void add_prekey_messages_to_FILEp(list_element_s *node, void *context) {
-  if (!otrng_client_prekeys_write_FILEp(node->data, context)) {
+tstatic void add_prekey_messages_to(list_element_s *node, void *context) {
+  if (!otrng_client_prekeys_write_to(node->data, context)) {
     return;
   }
 }
 
-API otrng_result otrng_global_state_prekey_messages_write_FILEp(
+API otrng_result otrng_global_state_prekey_messages_write_to(
     const otrng_global_state_s *gs, FILE *privf) {
   if (!privf) {
     return OTRNG_ERROR;
   }
 
-  otrng_list_foreach(gs->clients, add_prekey_messages_to_FILEp, privf);
+  otrng_list_foreach(gs->clients, add_prekey_messages_to, privf);
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_global_state_private_key_v4_read_FILEp(
+API otrng_result otrng_global_state_private_key_v4_read_from(
     otrng_global_state_s *gs, FILE *privf,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   if (!privf) {
@@ -336,8 +335,7 @@ API otrng_result otrng_global_state_private_key_v4_read_FILEp(
     }
 
     client = get_client(gs, client_id);
-    if (otrng_client_private_key_v4_read_FILEp(client, privf) !=
-        OTRNG_SUCCESS) {
+    if (otrng_client_private_key_v4_read_from(client, privf) != OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
     }
@@ -346,7 +344,7 @@ API otrng_result otrng_global_state_private_key_v4_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_global_state_forging_key_read_FILEp(
+API otrng_result otrng_global_state_forging_key_read_from(
     otrng_global_state_s *gs, FILE *f,
     otrng_client_id_s (*read_client_id_for_key)(FILE *f)) {
   if (!f) {
@@ -362,7 +360,7 @@ API otrng_result otrng_global_state_forging_key_read_FILEp(
     }
 
     client = get_client(gs, client_id);
-    if (otrng_failed(otrng_client_forging_key_read_FILEp(client, f))) {
+    if (otrng_failed(otrng_client_forging_key_read_from(client, f))) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
     }
@@ -371,7 +369,7 @@ API otrng_result otrng_global_state_forging_key_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_global_state_client_profile_read_FILEp(
+API otrng_result otrng_global_state_client_profile_read_from(
     otrng_global_state_s *gs, FILE *profile_filep,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   if (!profile_filep) {
@@ -386,7 +384,7 @@ API otrng_result otrng_global_state_client_profile_read_FILEp(
     }
 
     client = get_client(gs, client_id);
-    if (otrng_client_client_profile_read_FILEp(client, profile_filep) !=
+    if (otrng_client_client_profile_read_from(client, profile_filep) !=
         OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
@@ -396,7 +394,7 @@ API otrng_result otrng_global_state_client_profile_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_global_state_expired_client_profile_read_FILEp(
+API otrng_result otrng_global_state_expired_client_profile_read_from(
     otrng_global_state_s *gs, FILE *exp_profile_filep,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   if (!exp_profile_filep) {
@@ -413,7 +411,7 @@ API otrng_result otrng_global_state_expired_client_profile_read_FILEp(
     }
 
     client = get_client(gs, client_id);
-    if (otrng_client_expired_client_profile_read_FILEp(
+    if (otrng_client_expired_client_profile_read_from(
             client, exp_profile_filep) != OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
@@ -423,7 +421,7 @@ API otrng_result otrng_global_state_expired_client_profile_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_global_state_shared_prekey_read_FILEp(
+API otrng_result otrng_global_state_shared_prekey_read_from(
     otrng_global_state_s *gs, FILE *shared_prekeyf,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   if (!shared_prekeyf) {
@@ -439,7 +437,7 @@ API otrng_result otrng_global_state_shared_prekey_read_FILEp(
     }
 
     client = get_client(gs, client_id);
-    if (otrng_client_shared_prekey_read_FILEp(client, shared_prekeyf) !=
+    if (otrng_client_shared_prekey_read_from(client, shared_prekeyf) !=
         OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
@@ -449,7 +447,7 @@ API otrng_result otrng_global_state_shared_prekey_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_global_state_prekey_profile_read_FILEp(
+API otrng_result otrng_global_state_prekey_profile_read_from(
     otrng_global_state_s *gs, FILE *profile_filep,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   if (!profile_filep) {
@@ -463,7 +461,7 @@ API otrng_result otrng_global_state_prekey_profile_read_FILEp(
       continue;
     }
     client = get_client(gs, client_id);
-    if (otrng_client_prekey_profile_read_FILEp(client, profile_filep) !=
+    if (otrng_client_prekey_profile_read_from(client, profile_filep) !=
         OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
@@ -473,7 +471,7 @@ API otrng_result otrng_global_state_prekey_profile_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_global_state_expired_prekey_profile_read_FILEp(
+API otrng_result otrng_global_state_expired_prekey_profile_read_from(
     otrng_global_state_s *gs, FILE *exp_profile_filep,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   if (!exp_profile_filep) {
@@ -490,7 +488,7 @@ API otrng_result otrng_global_state_expired_prekey_profile_read_FILEp(
     }
 
     client = get_client(gs, client_id);
-    if (otrng_client_expired_prekey_profile_read_FILEp(
+    if (otrng_client_expired_prekey_profile_read_from(
             client, exp_profile_filep) != OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
@@ -500,7 +498,7 @@ API otrng_result otrng_global_state_expired_prekey_profile_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_global_state_prekeys_read_FILEp(
+API otrng_result otrng_global_state_prekeys_read_from(
     otrng_global_state_s *gs, FILE *prekey_filep,
     otrng_client_id_s (*read_client_id_for_prekey)(FILE *filep)) {
   if (!prekey_filep) {
@@ -516,7 +514,7 @@ API otrng_result otrng_global_state_prekeys_read_FILEp(
 
     client = get_client(gs, client_id);
 
-    if (otrng_client_prekey_messages_read_FILEp(client, prekey_filep) !=
+    if (otrng_client_prekey_messages_read_from(client, prekey_filep) !=
         OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
@@ -532,13 +530,12 @@ API otrng_result otrng_global_state_add_instance_tag(
   return otrng_client_add_instance_tag(get_client(gs, client_id), instag);
 }
 
-API otrng_result otrng_global_state_instag_generate_generate_FILEp(
+API otrng_result otrng_global_state_instag_generate_generate_into(
     otrng_global_state_s *gs, const otrng_client_id_s client_id, FILE *instag) {
-  return otrng_client_instance_tag_write_FILEp(get_client(gs, client_id),
-                                               instag);
+  return otrng_client_instance_tag_write_to(get_client(gs, client_id), instag);
 }
 
-API otrng_result otrng_global_state_instance_tags_read_FILEp(
+API otrng_result otrng_global_state_instance_tags_read_from(
     otrng_global_state_s *gs, FILE *instag) {
   // We use v3 global_state also for v4 instance tags, for now. */
   gcry_error_t res = otrl_instag_read_FILEp(gs->user_state_v3, instag);

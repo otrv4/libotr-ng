@@ -61,7 +61,7 @@ char *otrng_client_get_storage_id(const otrng_client_s *client) {
   return key;
 }
 
-INTERNAL otrng_result otrng_client_private_key_v4_write_FILEp(
+INTERNAL otrng_result otrng_client_private_key_v4_write_to(
     const otrng_client_s *client, FILE *privf) {
   char *key;
   int err;
@@ -111,7 +111,7 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_FILEp(
 }
 
 INTERNAL otrng_result
-otrng_client_forging_key_write_FILEp(const otrng_client_s *client, FILE *f) {
+otrng_client_forging_key_write_to(const otrng_client_s *client, FILE *f) {
   uint8_t *buff;
   size_t size;
   char *encoded;
@@ -188,7 +188,7 @@ static int get_limited_line(char **buf, FILE *f) {
 }
 
 INTERNAL otrng_result
-otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf) {
+otrng_client_private_key_v4_read_from(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
   int len = 0;
   otrng_keypair_s *keypair;
@@ -228,8 +228,8 @@ otrng_client_private_key_v4_read_FILEp(otrng_client_s *client, FILE *privf) {
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
+INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
+                                                         FILE *f) {
   char *line = NULL;
   int len = 0;
   uint8_t *dec;
@@ -265,7 +265,7 @@ otrng_client_forging_key_read_FILEp(otrng_client_s *client, FILE *f) {
   return otrng_client_add_forging_key(client, key);
 }
 
-INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
+INTERNAL otrng_result otrng_client_shared_prekey_write_to(
     const otrng_client_s *client, FILE *shared_prekey_f) {
   char *storage_id;
   int err;
@@ -315,7 +315,7 @@ INTERNAL otrng_result otrng_client_shared_prekey_write_FILEp(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_client_shared_prekey_read_FILEp(
+INTERNAL otrng_result otrng_client_shared_prekey_read_from(
     otrng_client_s *client, FILE *shared_prekeyf) {
   char *line = NULL;
   int len = 0;
@@ -358,8 +358,8 @@ INTERNAL otrng_result otrng_client_shared_prekey_read_FILEp(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_instance_tag_write_FILEp(otrng_client_s *client, FILE *instagf) {
+INTERNAL otrng_result otrng_client_instance_tag_write_to(otrng_client_s *client,
+                                                         FILE *instagf) {
   // TODO: We could use a "get storage key" callback and use it as
   // account_name plus an arbitrary "libotrng-storage" protocol.
   char *account_name = NULL;
@@ -384,7 +384,7 @@ otrng_client_instance_tag_write_FILEp(otrng_client_s *client, FILE *instagf) {
 }
 
 INTERNAL otrng_result
-otrng_client_instance_tag_read_FILEp(otrng_client_s *client, FILE *instag) {
+otrng_client_instance_tag_read_from(otrng_client_s *client, FILE *instag) {
   gcry_error_t ret;
 
   if (!client->global_state->user_state_v3) {
@@ -399,7 +399,7 @@ otrng_client_instance_tag_read_FILEp(otrng_client_s *client, FILE *instag) {
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_client_private_key_v3_write_FILEp(
+INTERNAL otrng_result otrng_client_private_key_v3_write_to(
     const otrng_client_s *client, FILE *privf) {
 
   // TODO: We could use a "get storage key" callback and use it as
@@ -426,7 +426,7 @@ INTERNAL otrng_result otrng_client_private_key_v3_write_FILEp(
 }
 
 INTERNAL otrng_result
-otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *profilef) {
+otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
   char *line = NULL;
   int len = 0;
   uint8_t *dec;
@@ -477,7 +477,7 @@ otrng_client_client_profile_read_FILEp(otrng_client_s *client, FILE *profilef) {
   return result;
 }
 
-INTERNAL otrng_result otrng_client_expired_client_profile_read_FILEp(
+INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
     otrng_client_s *client, FILE *exp_profilef) {
   char *line = NULL;
   int len = 0;
@@ -525,7 +525,7 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_FILEp(
   return result;
 }
 
-INTERNAL otrng_result otrng_client_client_profile_write_FILEp(
+INTERNAL otrng_result otrng_client_client_profile_write_to(
     const otrng_client_s *client, FILE *privf) {
   uint8_t *buff = NULL;
   size_t s = 0;
@@ -623,7 +623,7 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
 }
 
 INTERNAL otrng_result
-otrng_client_prekeys_write_FILEp(const otrng_client_s *client, FILE *privf) {
+otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *privf) {
   char *storage_id;
   list_element_s *current;
 
@@ -747,7 +747,7 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
 }
 
 INTERNAL otrng_result
-otrng_client_prekey_messages_read_FILEp(otrng_client_s *client, FILE *privf) {
+otrng_client_prekey_messages_read_from(otrng_client_s *client, FILE *privf) {
   if (!privf) {
     return OTRNG_ERROR;
   }
@@ -760,7 +760,7 @@ otrng_client_prekey_messages_read_FILEp(otrng_client_s *client, FILE *privf) {
 }
 
 INTERNAL otrng_result
-otrng_client_prekey_profile_write_FILEp(otrng_client_s *client, FILE *privf) {
+otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *privf) {
   uint8_t *buff = NULL;
   size_t s = 0;
   char *encoded;
@@ -803,7 +803,7 @@ otrng_client_prekey_profile_write_FILEp(otrng_client_s *client, FILE *privf) {
 }
 
 INTERNAL otrng_result
-otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
+otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
   int len = 0;
   uint8_t *dec;
@@ -850,7 +850,7 @@ otrng_client_prekey_profile_read_FILEp(otrng_client_s *client, FILE *privf) {
   return otrng_client_add_prekey_profile(client, profile);
 }
 
-INTERNAL otrng_result otrng_client_expired_prekey_profile_read_FILEp(
+INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
     otrng_client_s *client, FILE *exp_profilef) {
   char *line = NULL;
   int len = 0;

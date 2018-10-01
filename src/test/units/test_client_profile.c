@@ -223,7 +223,7 @@ static void test_otrng_client_profile_transitional_signature(void) {
   FILE *tmpFILEp = tmpfile();
 
   otrng_assert_is_success(
-      otrng_client_private_key_v3_write_FILEp(client, tmpFILEp));
+      otrng_client_private_key_v3_write_to(client, tmpFILEp));
   fclose(tmpFILEp);
 
   OtrlPrivKey *dsa_key = otrng_client_get_private_key_v3(client);

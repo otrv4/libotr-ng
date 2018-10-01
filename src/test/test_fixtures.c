@@ -151,7 +151,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   FILE *tmpFILEp = tmpfile();
 
   otrng_assert_is_success(
-      otrng_client_private_key_v3_write_FILEp(otrng_fixture->client, tmpFILEp));
+      otrng_client_private_key_v3_write_to(otrng_fixture->client, tmpFILEp));
   fclose(tmpFILEp);
 
   // Generate instance tag
