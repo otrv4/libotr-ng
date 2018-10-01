@@ -21,19 +21,14 @@
 #include "prekey_ensemble.h"
 #include "alloc.h"
 
-tstatic prekey_ensemble_s *prekey_ensemble_init(prekey_ensemble_s *pe) {
-  pe->prekey_profile = otrng_xmalloc_z(sizeof(otrng_prekey_profile_s));
-  pe->client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
-
-  return pe;
-}
-
 INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new() {
   prekey_ensemble_s *pe;
 
   pe = otrng_xmalloc_z(sizeof(prekey_ensemble_s));
+  pe->prekey_profile = otrng_xmalloc_z(sizeof(otrng_prekey_profile_s));
+  pe->client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
 
-  return prekey_ensemble_init(pe);
+  return pe;
 }
 
 INTERNAL otrng_result

@@ -25,11 +25,6 @@
 #include "deserialize.h"
 #include "serialize.h" // just for memcpy
 
-INTERNAL void otrng_mpi_init(otrng_mpi_s *mpi) {
-  mpi->len = 0;
-  mpi->data = NULL;
-}
-
 INTERNAL void otrng_mpi_set(otrng_mpi_s *dst, const uint8_t *src, size_t len) {
   if (src == NULL || len == 0) {
     dst->len = 0;

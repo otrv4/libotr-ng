@@ -34,12 +34,6 @@
 #include "instance_tag.h"
 #include "serialize.h"
 
-static client_profile_s *client_profile_init(client_profile_s *client_profile,
-                                             const char *versions) {
-  client_profile->versions = versions ? otrng_xstrdup(versions) : NULL;
-  return client_profile;
-}
-
 tstatic client_profile_s *client_profile_new(const char *versions) {
   client_profile_s *client_profile;
   if (!versions) {
@@ -47,8 +41,9 @@ tstatic client_profile_s *client_profile_new(const char *versions) {
   }
 
   client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  client_profile->versions = versions ? otrng_xstrdup(versions) : NULL;
 
-  return client_profile_init(client_profile, versions);
+  return client_profile;
 }
 
 static void copy_transitional_signature(client_profile_s *dst,

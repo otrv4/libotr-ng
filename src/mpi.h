@@ -32,8 +32,6 @@ typedef struct otrng_mpi_s {
   uint8_t *data;
 } otrng_mpi_s;
 
-INTERNAL void otrng_mpi_init(otrng_mpi_s *mpi);
-
 INTERNAL void otrng_mpi_set(otrng_mpi_s *mpi, const uint8_t *src, size_t len);
 
 INTERNAL void otrng_mpi_copy(otrng_mpi_s *dst, const otrng_mpi_s *src);
