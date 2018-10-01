@@ -55,18 +55,14 @@ INTERNAL void otrng_keypair_generate(otrng_keypair_s *keypair,
   otrng_secure_wipe(pub, ED448_POINT_BYTES);
 }
 
-tstatic void keypair_destroy(otrng_keypair_s *keypair) {
-  otrng_secure_wipe(keypair->sym, ED448_PRIVATE_BYTES);
-  otrng_ec_scalar_destroy(keypair->priv);
-  otrng_ec_point_destroy(keypair->pub);
-}
-
 INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
   if (!keypair) {
     return;
   }
 
-  keypair_destroy(keypair);
+  otrng_secure_wipe(keypair->sym, ED448_PRIVATE_BYTES);
+  otrng_ec_scalar_destroy(keypair->priv);
+  otrng_ec_point_destroy(keypair->pub);
   free(keypair);
 }
 

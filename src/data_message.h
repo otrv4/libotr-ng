@@ -65,7 +65,7 @@ INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key mac_key,
                                              const data_message_s *data_msg);
 
 #ifdef OTRNG_DATA_MESSAGE_PRIVATE
-tstatic void data_message_destroy(data_message_s *data_msg);
+
 #endif
 
 #endif

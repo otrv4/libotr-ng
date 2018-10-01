@@ -116,7 +116,7 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dstlen,
   // To OTR MPI
   otrng_mpi_set(&otr_mpi, buf, w);
   w = otrng_serialize_mpi(dst, &otr_mpi);
-  otrng_mpi_destroy(&otr_mpi);
+  free(otr_mpi.data);
 
   if (written) {
     *written = w;

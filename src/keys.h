@@ -102,8 +102,6 @@ API void otrng_shared_prekey_priv_debug_print(FILE *, otrng_shared_prekey_priv);
 
 #ifdef OTRNG_KEYS_PRIVATE
 
-tstatic void keypair_destroy(otrng_keypair_s *keypair);
-
 tstatic void
 shared_prekey_pair_destroy(otrng_shared_prekey_pair_s *prekey_pair);
 

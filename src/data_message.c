@@ -38,26 +38,17 @@ INTERNAL data_message_s *otrng_data_message_new() {
   return ret;
 }
 
-tstatic void data_message_destroy(data_message_s *data_msg) {
-  data_msg->flags = 0;
-
-  otrng_ec_point_destroy(data_msg->ecdh);
-  otrng_dh_mpi_release(data_msg->dh);
-  data_msg->dh = NULL;
-
-  otrng_secure_wipe(data_msg->nonce, DATA_MSG_NONCE_BYTES);
-  data_msg->enc_msg_len = 0;
-  free(data_msg->enc_msg);
-  data_msg->enc_msg = NULL;
-  otrng_secure_wipe(data_msg->mac, DATA_MSG_MAC_BYTES);
-}
-
 INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
   if (!data_msg) {
     return;
   }
 
-  data_message_destroy(data_msg);
+  otrng_ec_point_destroy(data_msg->ecdh);
+  otrng_dh_mpi_release(data_msg->dh);
+  otrng_secure_wipe(data_msg->nonce, DATA_MSG_NONCE_BYTES);
+  free(data_msg->enc_msg);
+  otrng_secure_wipe(data_msg->mac, DATA_MSG_MAC_BYTES);
+
   free(data_msg);
 }
 
