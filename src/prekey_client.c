@@ -94,9 +94,6 @@ API otrng_prekey_client_s *otrng_prekey_client_new() {
   client->publication_policy =
       otrng_xmalloc_z(sizeof(otrng_prekey_publication_policy_s));
 
-  memset(client->publication_policy, 0,
-         sizeof(otrng_prekey_publication_policy_s));
-
   client->ephemeral_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
 
   return client;
