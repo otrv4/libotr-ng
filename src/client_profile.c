@@ -153,7 +153,7 @@ INTERNAL void otrng_client_profile_free(client_profile_s *client_profile) {
 tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
     uint8_t *dst, size_t dst_len, size_t *nbytes,
     const client_profile_s *client_profile) {
-  size_t w = 0, versions_len;
+  size_t w = 0;
   uint32_t num_fields = 0;
   (void)dst_len;
 
@@ -175,11 +175,9 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
   num_fields++;
 
   /* Versions */
-  versions_len =
-      client_profile->versions ? strlen(client_profile->versions) + 1 : 1;
   w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_VERSIONS);
   w += otrng_serialize_data(dst + w, (uint8_t *)client_profile->versions,
-                            versions_len);
+                            strlen(client_profile->versions));
   num_fields++;
 
   /* Expiration */
@@ -235,9 +233,8 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
 tstatic otrng_result client_profile_body_serialize_into(
     uint8_t **dst, size_t *nbytes, const client_profile_s *client_profile) {
 
-  size_t versions_len =
-      client_profile->versions ? strlen(client_profile->versions) + 1 : 1;
-  size_t s = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
+  size_t s =
+      OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(strlen(client_profile->versions));
   size_t written = 0;
 
   uint8_t *buff = otrng_xmalloc_z(s);
@@ -258,9 +255,7 @@ tstatic otrng_result client_profile_body_serialize_into(
 INTERNAL otrng_result otrng_client_profile_serialize(
     uint8_t **dst, size_t *nbytes, const client_profile_s *client_profile) {
 
-  size_t versions_len =
-      client_profile->versions ? strlen(client_profile->versions) + 1 : 1;
-  size_t s = OTRNG_CLIENT_PROFILE_MAX_BYTES(versions_len);
+  size_t s = OTRNG_CLIENT_PROFILE_MAX_BYTES(strlen(client_profile->versions));
 
   size_t written = 0;
   uint8_t *buff = otrng_xmalloc_z(s);
@@ -371,8 +366,8 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
                                 buflen - w, &read)) {
       return OTRNG_ERROR;
     }
-
-    target->versions = otrng_xstrndup((char *)versions, versions_len);
+    target->versions = otrng_xmalloc_z(versions_len + 1);
+    memcpy(target->versions, versions, versions_len);
     free(versions);
   } break;
   case OTRNG_CLIENT_PROFILE_FIELD_EXPIRATION: /* Expiration */
@@ -610,7 +605,7 @@ generate_dsa_key_sexp(gcry_sexp_t *pubs, const uint8_t *buffer, size_t buflen) {
 tstatic otrng_result client_profile_verify_transitional_signature(
     const client_profile_s *client_profile) {
   gcry_sexp_t pubs = NULL;
-  size_t versions_len, size, datalen;
+  size_t size, datalen;
   uint8_t *data;
   gcry_error_t err;
 
@@ -624,9 +619,8 @@ tstatic otrng_result client_profile_verify_transitional_signature(
     return OTRNG_ERROR;
   }
 
-  versions_len =
-      client_profile->versions ? strlen(client_profile->versions) + 1 : 1;
-  size = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
+  size =
+      OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(strlen(client_profile->versions));
 
   data = otrng_xmalloc_z(size);
 
@@ -704,7 +698,6 @@ otrng_client_profile_valid(const client_profile_s *client_profile,
 INTERNAL otrng_result otrng_client_profile_transitional_sign(
     client_profile_s *client_profile, OtrlPrivKey *privkey) {
 
-  size_t versions_len;
   size_t size;
   uint8_t *data;
   size_t datalen;
@@ -725,9 +718,8 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
     return OTRNG_ERROR;
   }
 
-  versions_len =
-      client_profile->versions ? strlen(client_profile->versions) + 1 : 1;
-  size = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(versions_len);
+  size =
+      OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(strlen(client_profile->versions));
 
   data = otrng_xmalloc_z(size);
 

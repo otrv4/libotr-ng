@@ -212,13 +212,13 @@ static void test_global_state_client_profile_management(void) {
       "AAAABQABAAAABAACABAFcsFMsTB3RLkvO"
       "Df5ljmruyD/xHHYnZ1UU0nccA4BJ0kfBhMU+viahccHYL0BiKVmnRpDk/CDS4AAAwASmJc"
       "x7rsKG6WmkEPIwSUWsWi+oSN0ZUsE6LPThZO6NwsHGky+PyCO4eIOl31h5R/8yn"
-      "+HFQwYpfwAAAQAAAACNAAABQAAAA"
-      "AAAAAADUwrQkA131HHDGqpPpkVYz"
-      "K6wxkiey41VEP627vvMiat5eTSRT"
-      "qy/mGfdgACg1PqeNp5RNxqlR+AvE"
-      "c7I9d71XiJykzb/w40+F8R1PD+qZ"
-      "PeXjol7p0sWSVfr+d1xw9sk6aL0r"
-      "dspG3NtxBaAIodSgcA";
+      "+HFQwYpfwAAAQAAAABNAAFAAAAAA"
+      "AAAAANTCtCQDXfUccMaqk+mRVjMr"
+      "rDGSJ7LjVUQ/rbu+8yJq3l5NJFOr"
+      "L+YZ92AAKDU+p42nlE3GqVH4C8Rz"
+      "sj13vVeInKTNv/DjT4XxHU8P6pk9"
+      "5eOiXunSxZJV+v53XHD2yTpovSt2"
+      "ykbc23EFoAih1KBwA=";
 
   otrng_assert_cmpmem(expected, encoded, s);
 

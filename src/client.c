@@ -537,8 +537,10 @@ otrng_client_get_prekey_client(const char *server_identity,
 
   free(account);
 
-  client->prekey_client->callbacks = otrng_xmalloc_z(sizeof(otrng_prekey_client_callbacks_s));
-  memcpy(client->prekey_client->callbacks, callbacks, sizeof(otrng_prekey_client_callbacks_s));
+  client->prekey_client->callbacks =
+      otrng_xmalloc_z(sizeof(otrng_prekey_client_callbacks_s));
+  memcpy(client->prekey_client->callbacks, callbacks,
+         sizeof(otrng_prekey_client_callbacks_s));
 
   return client->prekey_client;
 }

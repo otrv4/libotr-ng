@@ -61,7 +61,7 @@ static void test_client_profile_serializes_body() {
   uint8_t *serialized = NULL;
   otrng_assert_is_success(
       client_profile_body_serialize_into(&serialized, &written, profile));
-  g_assert_cmpint(written, ==, 150);
+  g_assert_cmpint(written, ==, 149);
 
   char expected_header[] = {
       0x00, 0x00, 0x00, 0x05, // Num fields
@@ -81,8 +81,8 @@ static void test_client_profile_serializes_body() {
 
   char expected[] = {
       0x0,  0x4,                                // Versions field type
-      0x0,  0x0, 0x0, 0x2,                      // versions len
-      0x34, 0x0,                                // versions data
+      0x0,  0x0, 0x0, 0x1,                      // versions len
+      0x34,                                     // versions data
       0x0,  0x5,                                // Expire field type
       0x0,  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0F, // expires
   };
@@ -115,7 +115,7 @@ static void test_client_profile_serializes() {
   uint8_t *serialized = NULL;
   otrng_assert_is_success(
       client_profile_body_serialize_into(&serialized, &written, profile));
-  g_assert_cmpint(written, ==, 192);
+  g_assert_cmpint(written, ==, 191);
 
   char expected_transitional_signature[] = {
       0x0, 0x7, // Transitional signature field type

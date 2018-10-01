@@ -47,9 +47,10 @@ tstatic void create_long_term_keys(otrng_client_s *client) {
 tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
   if (client->keypair == NULL) {
     load_long_term_keys_from_storage(client);
-  /* } else { */
-  /*   fprintf(stderr, "orchestration.ensure_valid_long_term_key - we already " */
-  /*                   "have a keypair! Hurrah\n"); */
+    /* } else { */
+    /*   fprintf(stderr, "orchestration.ensure_valid_long_term_key - we already
+     * " */
+    /*                   "have a keypair! Hurrah\n"); */
   }
 
   if (client->keypair == NULL) {
@@ -76,9 +77,10 @@ tstatic void create_client_profile(otrng_client_s *client) {
 tstatic void ensure_valid_client_profile(otrng_client_s *client) {
   if (!client->client_profile) {
     load_client_profile_from_storage(client);
-  /* } else { */
-  /*   fprintf(stderr, "orchestration.ensure_valid_client_profile - we already " */
-  /*                   "have a client profile! Hurrah\n"); */
+    /* } else { */
+    /*   fprintf(stderr, "orchestration.ensure_valid_client_profile - we already
+     * " */
+    /*                   "have a client profile! Hurrah\n"); */
   }
 
   if (!client->client_profile) {
@@ -93,7 +95,8 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
 static otrng_bool orchestration_reentry;
 
 API void otrng_client_ensure_correct_state(otrng_client_s *client) {
-  fprintf(stderr, "otrng_client_ensure_correct_state(client=%s)\n", client->client_id.account);
+  fprintf(stderr, "otrng_client_ensure_correct_state(client=%s)\n",
+          client->client_id.account);
   if (orchestration_reentry) {
     fprintf(stderr, "ORCHESTRATION REENTRY\n");
   }
