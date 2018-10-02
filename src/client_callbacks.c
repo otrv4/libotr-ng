@@ -22,13 +22,26 @@
 #include "client_callbacks.h"
 #include "client.h"
 
+INTERNAL otrng_bool
+otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
+  return otrng_bool_is_true(
+      cb->get_account_and_protocol != NULL && cb->create_privkey_v3 != NULL &&
+      cb->create_privkey_v4 != NULL && cb->create_forging_key != NULL &&
+      cb->create_client_profile != NULL &&
+      cb->write_expired_client_profile != NULL &&
+      cb->create_prekey_profile != NULL &&
+      cb->write_expired_prekey_profile != NULL &&
+      cb->create_shared_prekey != NULL &&
+      cb->get_shared_session_state != NULL && cb->load_privkey_v4 != NULL &&
+      cb->load_client_profile != NULL);
+}
+
 INTERNAL void otrng_client_callbacks_create_privkey_v4(
     const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
   if (!cb) {
     return;
   }
 
-  // This callback is required and is expected to segfault if not provided.
   cb->create_privkey_v4(client_opdata);
 }
 
@@ -38,7 +51,6 @@ INTERNAL void otrng_client_callbacks_create_forging_key(
     return;
   }
 
-  // This callback is required and is expected to segfault if not provided.
   cb->create_forging_key(client_opdata);
 }
 
@@ -48,7 +60,6 @@ INTERNAL void otrng_client_callbacks_create_privkey_v3(
     return;
   }
 
-  // This callback is required and is expected to segfault if not provided.
   cb->create_privkey_v3(client_opdata);
 }
 
@@ -59,7 +70,6 @@ INTERNAL void otrng_client_callbacks_create_client_profile(
     return;
   }
 
-  // This callback is required and is expected to segfault if not provided.
   cb->create_client_profile(client, client_opdata);
 }
 
@@ -70,7 +80,6 @@ INTERNAL void otrng_client_callbacks_write_expired_client_profile(
     return;
   }
 
-  // This callback is required and is expected to segfault if not provided.
   cb->write_expired_client_profile(client, client_opdata);
 }
 
@@ -81,7 +90,6 @@ INTERNAL void otrng_client_callbacks_write_expired_prekey_profile(
     return;
   }
 
-  // This callback is required and is expected to segfault if not provided.
   cb->write_expired_prekey_profile(client, client_opdata);
 }
 
@@ -102,7 +110,6 @@ INTERNAL void otrng_client_callbacks_create_shared_prekey(
     return;
   }
 
-  // This callback is required and is expected to segfault if not provided.
   cb->create_shared_prekey(client, client_opdata);
 }
 
@@ -133,7 +140,6 @@ otrng_client_callbacks_load_privkey_v4(const otrng_client_callbacks_s *cb,
     return;
   }
 
-  // This callback is required and is expected to segfault if not provided.
   cb->load_privkey_v4(client_opdata);
 }
 
@@ -143,7 +149,6 @@ INTERNAL void otrng_client_callbacks_load_client_profile(
     return;
   }
 
-  // This callback is required and is expected to segfault if not provided.
   cb->load_client_profile(client_opdata);
 }
 

@@ -102,11 +102,20 @@ void create_prekey_profile_cb(struct otrng_client_s *client,
   otrng_prekey_profile_free(profile);
 }
 
-otrng_client_callbacks_s test_callbacks[1] = {
-    {.get_account_and_protocol = &get_account_and_protocol_cb,
-     .create_client_profile = &create_client_profile_cb,
-     .create_prekey_profile = &create_prekey_profile_cb,
-     .get_shared_session_state = &get_shared_session_state_cb}};
+otrng_client_callbacks_s test_callbacks[1] = {{
+    .get_account_and_protocol = &get_account_and_protocol_cb,
+    .create_client_profile = &create_client_profile_cb,
+    .create_prekey_profile = &create_prekey_profile_cb,
+    .get_shared_session_state = &get_shared_session_state_cb,
+    .create_privkey_v3 = &create_privkey_v3_cb_empty,
+    .create_privkey_v4 = &create_privkey_v4_cb_empty,
+    .create_forging_key = &create_forging_key_cb_empty,
+    .write_expired_client_profile = &write_expired_client_profile_cb_empty,
+    .write_expired_prekey_profile = &write_expired_prekey_profile_cb_empty,
+    .create_shared_prekey = &create_shared_prekey_cb_empty,
+    .load_privkey_v4 = &load_privkey_v4_cb_empty,
+    .load_client_profile = &load_client_profile_cb_empty,
+}};
 
 otrng_public_key *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
@@ -120,7 +129,7 @@ create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
 
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   (void)data;
-  otrng_fixture->gs = otrng_global_state_new(test_callbacks);
+  otrng_fixture->gs = otrng_global_state_new(test_callbacks, otrng_false);
   otrng_fixture->client =
       otrng_client_new(create_client_id("proto-test", "account"));
   otrng_fixture->client->global_state = otrng_fixture->gs;
@@ -332,7 +341,7 @@ otrng_bool test_should_not_heartbeat(int last_sent) {
 }
 
 void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
-  client->global_state = otrng_global_state_new(test_callbacks);
+  client->global_state = otrng_global_state_new(test_callbacks, otrng_false);
 
   // TODO: REMOVE after updating every otrng_client_state_new(NULL)
   client->client_id = create_client_id("proto-test", account_name);
@@ -355,4 +364,79 @@ void free_message_and_response(otrng_response_s *response, string_p *message) {
   otrng_response_free(response);
   free(*message);
   *message = NULL;
+}
+
+otrng_result
+get_account_and_protocol_cb_empty(char **account, char **protocol,
+                                  const struct otrng_client_id_s client_id) {
+  (void)account;
+  (void)protocol;
+  (void)client_id;
+  return OTRNG_SUCCESS;
+}
+
+void create_privkey_v3_cb_empty(const struct otrng_client_id_s client_opdata) {
+  (void)client_opdata;
+}
+
+void create_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata) {
+  (void)client_opdata;
+}
+
+void create_forging_key_cb_empty(const struct otrng_client_id_s client_opdata) {
+  (void)client_opdata;
+}
+
+void create_client_profile_cb_empty(
+    struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata) {
+  (void)client;
+  (void)client_opdata;
+}
+
+void write_expired_client_profile_cb_empty(
+    struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata) {
+  (void)client;
+  (void)client_opdata;
+}
+
+void create_prekey_profile_cb_empty(
+    struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata) {
+  (void)client;
+  (void)client_opdata;
+}
+
+void write_expired_prekey_profile_cb_empty(
+    struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata) {
+  (void)client;
+  (void)client_opdata;
+}
+
+void create_shared_prekey_cb_empty(
+    struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata) {
+  (void)client;
+  (void)client_opdata;
+}
+
+otrng_shared_session_state_s
+get_shared_session_state_cb_empty(const struct otrng_s *conv) {
+  otrng_shared_session_state_s result;
+  result.identifier1 = otrng_xstrdup("one");
+  result.identifier2 = otrng_xstrdup("two");
+  result.password = otrng_xstrdup("three");
+  (void)conv;
+  return result;
+}
+
+void load_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata) {
+  (void)client_opdata;
+}
+
+void load_client_profile_cb_empty(
+    const struct otrng_client_id_s client_opdata) {
+  (void)client_opdata;
 }

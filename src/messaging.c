@@ -34,8 +34,16 @@
 #include "persistence.h"
 
 API otrng_global_state_s *
-otrng_global_state_new(const otrng_client_callbacks_s *cb) {
+otrng_global_state_new(const otrng_client_callbacks_s *cb, otrng_bool die) {
   otrng_global_state_s *gs = otrng_xmalloc_z(sizeof(otrng_global_state_s));
+
+  if (!otrng_client_callbacks_ensure_needed_exist(cb)) {
+    fprintf(stderr, "otrng global state initialization failed - expected "
+                    "callbacks missing\n");
+    if (die) {
+      exit(EXIT_FAILURE);
+    }
+  }
 
   gs->callbacks = cb;
   gs->user_state_v3 = otrl_userstate_create();

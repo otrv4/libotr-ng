@@ -143,7 +143,7 @@ otrng_global_state_get_private_key_v4(otrng_global_state_s *gs,
                                       const otrng_client_id_s client_id);
 
 API otrng_global_state_s *
-otrng_global_state_new(const otrng_client_callbacks_s *cb);
+otrng_global_state_new(const otrng_client_callbacks_s *cb, otrng_bool die);
 
 API void otrng_global_state_free(otrng_global_state_s *gs);
 

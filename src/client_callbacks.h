@@ -48,55 +48,55 @@ struct otrng_s;
 struct otrng_client_id_s;
 
 typedef struct otrng_client_callbacks_s {
-  /* Get account and protocol from a given client_id */
+  /* REQUIRED */
   otrng_result (*get_account_and_protocol)(
       char **account, char **protocol,
       const struct otrng_client_id_s client_id);
 
-  /* Create an instance tag */
+  /* OPTIONAL */
   void (*create_instag)(const struct otrng_client_id_s client_opdata);
 
-  /* Create a OTRv3 private key */
+  /* REQUIRED */
   void (*create_privkey_v3)(const struct otrng_client_id_s client_opdata);
 
-  /* Create a OTRv4 private key */
+  /* REQUIRED */
   void (*create_privkey_v4)(const struct otrng_client_id_s client_opdata);
 
-  /* Create a OTRv4 forging key */
+  /* REQUIRED */
   void (*create_forging_key)(const struct otrng_client_id_s client_opdata);
 
-  /* Create a client profile */
+  /* REQUIRED */
   void (*create_client_profile)(struct otrng_client_s *client,
                                 const struct otrng_client_id_s client_opdata);
 
-  /* Write the expired client profile with extra validity */
+  /* REQUIRED */
   void (*write_expired_client_profile)(
       struct otrng_client_s *client,
       const struct otrng_client_id_s client_opdata);
 
-  /* Create a prekey profile */
+  /* REQUIRED */
   void (*create_prekey_profile)(struct otrng_client_s *client,
                                 const struct otrng_client_id_s client_opdata);
 
-  /* Write the expired prekey profile with extra validity */
+  /* REQUIRED */
   void (*write_expired_prekey_profile)(
       struct otrng_client_s *client,
       const struct otrng_client_id_s client_opdata);
 
-  /* Create a shared prekey */
+  /* REQUIRED */
   void (*create_shared_prekey)(struct otrng_client_s *client,
                                const struct otrng_client_id_s client_opdata);
 
-  /* A connection has entered a secure state. */
+  /* OPTIONAL */
   void (*gone_secure)(const struct otrng_s *);
 
-  /* A connection has left a secure state. */
+  /* OPTIONAL */
   void (*gone_insecure)(const struct otrng_s *);
 
-  /* A fingerprint was seen in this connection. */
+  /* OPTIONAL */
   void (*fingerprint_seen)(const otrng_fingerprint, const struct otrng_s *);
 
-  /* A v3 fingerprint was seen in this connection. */
+  /* OPTIONAL */
   void (*fingerprint_seen_v3)(const otrng_fingerprint_v3,
                               const struct otrng_s *);
 
@@ -105,10 +105,12 @@ typedef struct otrng_client_callbacks_s {
    *      passing NULL as the question.
    *      When the receiver application resumes the SM protocol by calling
    *      otrl_message_respond_smp with the secret answer. */
+  /* OPTIONAL */
   void (*smp_ask_for_secret)(const struct otrng_s *);
 
   /* Same as smp_ask_for_secret but sender calls otrl_message_initiate_smp_q
    * instead) */
+  /* OPTIONAL */
   void (*smp_ask_for_answer)(const uint8_t *question, const size_t q_len,
                              const struct otrng_s *);
 
@@ -126,6 +128,7 @@ typedef struct otrng_client_callbacks_s {
    * - OTRL_SMPEVENT_ERROR
    *      (same as OTRL_SMPEVENT_CHEATED)
    * */
+  /* OPTIONAL */
   void (*smp_update)(const otrng_smp_event_t event,
                      const uint8_t progress_percent, const struct otrng_s *);
 
@@ -134,6 +137,7 @@ typedef struct otrng_client_callbacks_s {
    * EXTRA_SYMMETRIC_KEY_BYTES.  The requested use, as well as use-specific
    * data will be passed so that the applications can communicate other
    * information (some id for the data transfer, for example). */
+  /* OPTIONAL */
   void (*received_extra_symm_key)(const struct otrng_s *, unsigned int use,
                                   const unsigned char *use_data,
                                   size_t use_data_len,
@@ -143,16 +147,22 @@ typedef struct otrng_client_callbacks_s {
    * This is used to authenticate the DAKE. Optionally, a password can be added
    * to this shared session state.
    * The protocol will take care of freeing the members of this struct. */
+  /* REQUIRED */
   otrng_shared_session_state_s (*get_shared_session_state)(
       const struct otrng_s *conv);
 
+  /* REQUIRED */
   void (*load_privkey_v4)(const struct otrng_client_id_s client_opdata);
 
+  /* REQUIRED */
   void (*load_client_profile)(const struct otrng_client_id_s client_opdata);
 
   void (*load_prekey_profile)(const struct otrng_client_id_s client_opdata);
 
 } otrng_client_callbacks_s;
+
+INTERNAL otrng_bool
+otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb);
 
 INTERNAL void otrng_client_callbacks_create_privkey_v4(
     const otrng_client_callbacks_s *cb,

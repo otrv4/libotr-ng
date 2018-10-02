@@ -56,11 +56,27 @@ static otrng_client_id_s read_client_id_for_privf(FILE *privf) {
   return result;
 }
 
+static otrng_client_callbacks_s empty_callbacks[1] = {{
+    .get_account_and_protocol = &get_account_and_protocol_cb_empty,
+    .create_client_profile = &create_client_profile_cb_empty,
+    .create_prekey_profile = &create_prekey_profile_cb_empty,
+    .get_shared_session_state = &get_shared_session_state_cb_empty,
+    .create_privkey_v3 = &create_privkey_v3_cb_empty,
+    .create_privkey_v4 = &create_privkey_v4_cb_empty,
+    .create_forging_key = &create_forging_key_cb_empty,
+    .write_expired_client_profile = &write_expired_client_profile_cb_empty,
+    .write_expired_prekey_profile = &write_expired_prekey_profile_cb_empty,
+    .create_shared_prekey = &create_shared_prekey_cb_empty,
+    .load_privkey_v4 = &load_privkey_v4_cb_empty,
+    .load_client_profile = &load_client_profile_cb_empty,
+}};
+
 static void test_global_state_key_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
-  otrng_global_state_s *state = otrng_global_state_new(NULL);
+  otrng_global_state_s *state =
+      otrng_global_state_new(empty_callbacks, otrng_false);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", alice_account), alice_sym);
   otrng_global_state_add_private_key_v4(
@@ -106,7 +122,8 @@ static void test_global_state_shared_prekey_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
-  otrng_global_state_s *state = otrng_global_state_new(NULL);
+  otrng_global_state_s *state =
+      otrng_global_state_new(empty_callbacks, otrng_false);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", alice_account), alice_sym);
   otrng_global_state_add_private_key_v4(
@@ -156,7 +173,8 @@ static void test_global_state_client_profile_management(void) {
   const uint8_t alice_fsym[ED448_PRIVATE_BYTES] = {3};
   const uint8_t bob_fsym[ED448_PRIVATE_BYTES] = {5};
 
-  otrng_global_state_s *state = otrng_global_state_new(NULL);
+  otrng_global_state_s *state =
+      otrng_global_state_new(empty_callbacks, otrng_false);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", alice_account), alice_sym);
   otrng_public_key *fk = create_forging_key_from(alice_fsym);
@@ -233,7 +251,8 @@ static void test_global_state_prekey_profile_management(void) {
   const uint8_t alice_fsym[ED448_PRIVATE_BYTES] = {3};
   const uint8_t bob_fsym[ED448_PRIVATE_BYTES] = {5};
 
-  otrng_global_state_s *state = otrng_global_state_new(NULL);
+  otrng_global_state_s *state =
+      otrng_global_state_new(empty_callbacks, otrng_false);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", alice_account), alice_sym);
   otrng_public_key *fk = create_forging_key_from(alice_fsym);
@@ -298,7 +317,8 @@ static void test_global_state_prekey_message_management(void) {
   const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
   const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
 
-  otrng_global_state_s *state = otrng_global_state_new(NULL);
+  otrng_global_state_s *state =
+      otrng_global_state_new(empty_callbacks, otrng_false);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", alice_account), alice_sym);
   otrng_global_state_add_private_key_v4(
@@ -373,7 +393,7 @@ static void test_instance_tag_api(void) {
 
   otrng_client_s *alice =
       otrng_client_new(create_client_id("otr", alice_account));
-  alice->global_state = otrng_global_state_new(test_callbacks);
+  alice->global_state = otrng_global_state_new(test_callbacks, otrng_false);
 
   FILE *instagFILEp = tmpfile();
 

@@ -56,6 +56,20 @@ static inline otrng_bool otrng_result_to_bool(otrng_result v) {
   return otrng_false;
 }
 
+static inline int otrng_bool_is_true(otrng_bool v) {
+  if (v == OTRNG_SUCCESS) {
+    return 1;
+  }
+  return 0;
+}
+
+static inline otrng_bool c_bool_to_otrng_bool(int v) {
+  if (v) {
+    return otrng_true;
+  }
+  return otrng_false;
+}
+
 // TODO[OB]: do we really need this too?
 typedef enum {
   OTRNG_ERR_MSG_NONE,

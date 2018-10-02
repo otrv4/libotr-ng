@@ -71,6 +71,32 @@ otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
 void do_dake_fixture(otrng_s *alice, otrng_s *bob);
 void free_message_and_response(otrng_response_s *response, string_p *message);
 
+otrng_result
+get_account_and_protocol_cb_empty(char **account, char **protocol,
+                                  const struct otrng_client_id_s client_id);
+void create_privkey_v3_cb_empty(const struct otrng_client_id_s client_opdata);
+void create_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata);
+void create_forging_key_cb_empty(const struct otrng_client_id_s client_opdata);
+void create_client_profile_cb_empty(
+    struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata);
+void write_expired_client_profile_cb_empty(
+    struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata);
+void create_prekey_profile_cb_empty(
+    struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata);
+void write_expired_prekey_profile_cb_empty(
+    struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata);
+void create_shared_prekey_cb_empty(
+    struct otrng_client_s *client,
+    const struct otrng_client_id_s client_opdata);
+otrng_shared_session_state_s
+get_shared_session_state_cb_empty(const struct otrng_s *conv);
+void load_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata);
+void load_client_profile_cb_empty(const struct otrng_client_id_s client_opdata);
+
 extern otrng_client_callbacks_s test_callbacks[];
 
 #endif // __TEST_FIXTURES_H__

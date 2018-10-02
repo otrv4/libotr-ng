@@ -245,7 +245,7 @@ static void test_otrng_build_prekey_ensemble() {
   otrng_keypair_generate(kforging, forging_priv);
 
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
-  client->global_state = otrng_global_state_new(test_callbacks);
+  client->global_state = otrng_global_state_new(test_callbacks, otrng_false);
 
   otrng_assert_is_success(
       otrng_client_add_private_key_v4(client, long_term_priv));
