@@ -92,9 +92,9 @@ tstatic otrng_client_s *get_client(otrng_global_state_s *gs,
   return client;
 }
 
-otrng_client_s *otrng_client_get(otrng_global_state_s *gs,
+API otrng_client_s *otrng_client_get(otrng_global_state_s *gs,
 
-                                 const otrng_client_id_s client_id) {
+                                     const otrng_client_id_s client_id) {
   list_element_s *el =
       otrng_list_get(&client_id, gs->clients, find_client_by_client_id);
   if (el) {
@@ -103,18 +103,22 @@ otrng_client_s *otrng_client_get(otrng_global_state_s *gs,
   return get_client(gs, client_id);
 }
 
+// TODO: unused function.
+otrng_result
+otrng_global_state_add_instance_tag(otrng_global_state_s *gs,
+                                    const otrng_client_id_s client_id,
+                                    unsigned int instag) {
+  return otrng_client_add_instance_tag(get_client(gs, client_id), instag);
+}
+
+API otrng_result otrng_global_state_instag_generate_into(
+    otrng_global_state_s *gs, const otrng_client_id_s client_id, FILE *instag) {
+  return otrng_client_instance_tag_write_to(get_client(gs, client_id), instag);
+}
+
 API otrng_result otrng_global_state_private_key_v3_generate_into(
     otrng_global_state_s *gs, const otrng_client_id_s client_id, FILE *privf) {
   return otrng_client_private_key_v3_write_to(get_client(gs, client_id), privf);
-}
-
-API otrng_result otrng_global_state_private_key_v3_read_from(
-    otrng_global_state_s *gs, FILE *keys) {
-  gcry_error_t res = otrl_privkey_read_FILEp(gs->user_state_v3, keys);
-  if (res) {
-    return OTRNG_ERROR;
-  }
-  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_result otrng_global_state_add_private_key_v4(
@@ -123,21 +127,30 @@ tstatic otrng_result otrng_global_state_add_private_key_v4(
   return otrng_client_add_private_key_v4(get_client(gs, clientop), sym);
 }
 
-tstatic otrng_result otrng_global_state_add_forging_key(
-    otrng_global_state_s *gs, const otrng_client_id_s clientop,
-    otrng_public_key *fk) {
-  return otrng_client_add_forging_key(get_client(gs, clientop), *fk);
+otrng_keypair_s *
+otrng_global_state_get_private_key_v4(otrng_global_state_s *gs,
+                                      const otrng_client_id_s client_id) {
+  return otrng_client_get_keypair_v4(get_client(gs, client_id));
 }
 
 API otrng_result otrng_global_state_generate_private_key(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
   otrng_result res;
   uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
+
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
   res = otrng_global_state_add_private_key_v4(gs, client_id, sym);
+
   otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
   free(sym);
+
   return res;
+}
+
+tstatic otrng_result otrng_global_state_add_forging_key(
+    otrng_global_state_s *gs, const otrng_client_id_s clientop,
+    otrng_public_key *fk) {
+  return otrng_client_add_forging_key(get_client(gs, clientop), *fk);
 }
 
 API otrng_result otrng_global_state_generate_forging_key(
@@ -153,9 +166,31 @@ API otrng_result otrng_global_state_generate_forging_key(
   k = otrng_keypair_new();
   otrng_keypair_generate(k, sym);
   r = otrng_global_state_add_forging_key(gs, client_id, &k->pub);
+
   // At this point you can add printing of the secret key material
   // if you ever need to use the forging key.
   otrng_keypair_free(k);
+  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+  free(sym);
+
+  return r;
+}
+
+API otrng_result otrng_global_state_generate_shared_prekey(
+    otrng_global_state_s *gs, const otrng_client_id_s client_id) {
+  otrng_result r;
+  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
+  otrng_client_s *client;
+
+  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
+
+  client = get_client(gs, client_id);
+  if (!client) {
+    return OTRNG_ERROR;
+  }
+
+  r = otrng_client_add_shared_prekey_v4(client, sym);
+
   otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
   free(sym);
   return r;
@@ -201,30 +236,6 @@ API otrng_result otrng_global_state_generate_prekey_profile(
   otrng_prekey_profile_free(profile);
 
   return err;
-}
-
-API otrng_result otrng_global_state_generate_shared_prekey(
-    otrng_global_state_s *gs, const otrng_client_id_s client_id) {
-  otrng_result r;
-  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
-  otrng_client_s *client;
-  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
-
-  client = get_client(gs, client_id);
-  if (!client) {
-    return OTRNG_ERROR;
-  }
-
-  r = otrng_client_add_shared_prekey_v4(client, sym);
-  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-  free(sym);
-  return r;
-}
-
-API otrng_keypair_s *
-otrng_global_state_get_private_key_v4(otrng_global_state_s *gs,
-                                      const otrng_client_id_s client_id) {
-  return otrng_client_get_keypair_v4(get_client(gs, client_id));
 }
 
 tstatic void add_private_key_v4_to(list_element_s *node, void *context) {
@@ -329,6 +340,25 @@ API otrng_result otrng_global_state_prekey_messages_write_to(
   return OTRNG_SUCCESS;
 }
 
+API otrng_result otrng_global_state_instance_tags_read_from(
+    otrng_global_state_s *gs, FILE *instag) {
+  // We use v3 global_state also for v4 instance tags, for now. */
+  gcry_error_t res = otrl_instag_read_FILEp(gs->user_state_v3, instag);
+  if (res) {
+    return OTRNG_ERROR;
+  }
+  return OTRNG_SUCCESS;
+}
+
+API otrng_result otrng_global_state_private_key_v3_read_from(
+    otrng_global_state_s *gs, FILE *keys) {
+  gcry_error_t res = otrl_privkey_read_FILEp(gs->user_state_v3, keys);
+  if (res) {
+    return OTRNG_ERROR;
+  }
+  return OTRNG_SUCCESS;
+}
+
 API otrng_result otrng_global_state_private_key_v4_read_from(
     otrng_global_state_s *gs, FILE *privf,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
@@ -371,6 +401,32 @@ API otrng_result otrng_global_state_forging_key_read_from(
 
     client = get_client(gs, client_id);
     if (otrng_failed(otrng_client_forging_key_read_from(client, f))) {
+      return OTRNG_ERROR; /* We decide to abort, since this means the file is
+                             malformed */
+    }
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+API otrng_result otrng_global_state_shared_prekey_read_from(
+    otrng_global_state_s *gs, FILE *shared_prekeyf,
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
+  if (!shared_prekeyf) {
+    return OTRNG_ERROR;
+  }
+
+  // Scan the whole file for a private key for this client
+  while (!feof(shared_prekeyf)) {
+    otrng_client_s *client;
+    const otrng_client_id_s client_id = read_client_id_for_key(shared_prekeyf);
+    if (!client_id.protocol || !client_id.account) {
+      continue;
+    }
+
+    client = get_client(gs, client_id);
+    if (otrng_client_shared_prekey_read_from(client, shared_prekeyf) !=
+        OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
     }
@@ -423,32 +479,6 @@ API otrng_result otrng_global_state_expired_client_profile_read_from(
     client = get_client(gs, client_id);
     if (otrng_client_expired_client_profile_read_from(
             client, exp_profile_filep) != OTRNG_SUCCESS) {
-      return OTRNG_ERROR; /* We decide to abort, since this means the file is
-                             malformed */
-    }
-  }
-
-  return OTRNG_SUCCESS;
-}
-
-API otrng_result otrng_global_state_shared_prekey_read_from(
-    otrng_global_state_s *gs, FILE *shared_prekeyf,
-    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
-  if (!shared_prekeyf) {
-    return OTRNG_ERROR;
-  }
-
-  // Scan the whole file for a private key for this client
-  while (!feof(shared_prekeyf)) {
-    otrng_client_s *client;
-    const otrng_client_id_s client_id = read_client_id_for_key(shared_prekeyf);
-    if (!client_id.protocol || !client_id.account) {
-      continue;
-    }
-
-    client = get_client(gs, client_id);
-    if (otrng_client_shared_prekey_read_from(client, shared_prekeyf) !=
-        OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
     }
@@ -531,27 +561,6 @@ API otrng_result otrng_global_state_prekeys_read_from(
     }
   }
 
-  return OTRNG_SUCCESS;
-}
-
-API otrng_result otrng_global_state_add_instance_tag(
-    otrng_global_state_s *gs, const otrng_client_id_s client_id,
-    unsigned int instag) {
-  return otrng_client_add_instance_tag(get_client(gs, client_id), instag);
-}
-
-API otrng_result otrng_global_state_instag_generate_generate_into(
-    otrng_global_state_s *gs, const otrng_client_id_s client_id, FILE *instag) {
-  return otrng_client_instance_tag_write_to(get_client(gs, client_id), instag);
-}
-
-API otrng_result otrng_global_state_instance_tags_read_from(
-    otrng_global_state_s *gs, FILE *instag) {
-  // We use v3 global_state also for v4 instance tags, for now. */
-  gcry_error_t res = otrl_instag_read_FILEp(gs->user_state_v3, instag);
-  if (res) {
-    return OTRNG_ERROR;
-  }
   return OTRNG_SUCCESS;
 }
 
