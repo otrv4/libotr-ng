@@ -74,31 +74,19 @@ static const string_p otr_error_header = "?OTR Error:";
 static const string_p otr_header = "?OTR:";
 
 tstatic void gone_secure_cb_v4(const otrng_s *conv) {
-  if (!conv || !conv->client) {
-    return;
-  }
-
   otrng_client_callbacks_gone_secure(conv->client->global_state->callbacks,
                                      conv);
 }
 
 tstatic void gone_insecure_cb_v4(const otrng_s *conv) {
-  if (!conv || !conv->client || !conv->client->global_state->callbacks ||
-      !conv->client->global_state->callbacks->gone_insecure) {
-    return;
-  }
-
-  conv->client->global_state->callbacks->gone_insecure(conv);
+  otrng_client_callbacks_gone_insecure(conv->client->global_state->callbacks,
+                                       conv);
 }
 
 tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint fp,
                                     const otrng_s *conv) {
-  if (!conv || !conv->client || !conv->client->global_state->callbacks ||
-      !conv->client->global_state->callbacks->fingerprint_seen) {
-    return;
-  }
-
-  conv->client->global_state->callbacks->fingerprint_seen(fp, conv);
+  otrng_client_callbacks_fingerprint_seen(conv->client->global_state->callbacks,
+                                          fp, conv);
 }
 
 tstatic void received_extra_sym_key(const otrng_s *conv, unsigned int use,
@@ -106,8 +94,7 @@ tstatic void received_extra_sym_key(const otrng_s *conv, unsigned int use,
                                     size_t use_data_len,
                                     const unsigned char *extra_sym_key) {
 
-  if (!conv || !conv->client || !conv->client->global_state->callbacks ||
-      !conv->client->global_state->callbacks->received_extra_symm_key) {
+  if (!conv->client->global_state->callbacks->received_extra_symm_key) {
     return;
   }
 
@@ -132,7 +119,6 @@ tstatic void received_extra_sym_key(const otrng_s *conv, unsigned int use,
 
 tstatic otrng_shared_session_state_s
 otrng_get_shared_session_state(otrng_s *otr) {
-  // TODO: this callback is required, so it will segfault if not provided
   return otr->client->global_state->callbacks->get_shared_session_state(otr);
 }
 

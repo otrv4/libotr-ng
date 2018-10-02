@@ -25,6 +25,7 @@
 #pragma clang diagnostic pop
 #endif
 
+#include <assert.h>
 #include <time.h>
 
 #define OTRNG_CLIENT_PRIVATE
@@ -702,11 +703,6 @@ API void otrng_conversation_debug_print(FILE *f, int indent,
 tstatic otrng_result get_account_and_protocol_cb(char **account,
                                                  char **protocol,
                                                  const otrng_client_s *client) {
-  if (!client->global_state->callbacks ||
-      !client->global_state->callbacks->get_account_and_protocol) {
-    return OTRNG_ERROR;
-  }
-
   return client->global_state->callbacks->get_account_and_protocol(
       account, protocol, client->client_id);
 }
@@ -737,9 +733,7 @@ otrng_client_get_private_key_v3(const otrng_client_s *client) {
 }
 
 INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client) {
-  if (!client) {
-    return NULL;
-  }
+  assert(client);
 
   if (client->keypair) {
     return client->keypair;
@@ -757,9 +751,7 @@ INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client) {
 
 INTERNAL otrng_result otrng_client_add_private_key_v4(
     otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   if (client->keypair) {
     return OTRNG_ERROR;
@@ -778,9 +770,7 @@ INTERNAL otrng_result otrng_client_add_private_key_v4(
 
 INTERNAL otrng_public_key *
 otrng_client_get_forging_key(otrng_client_s *client) {
-  if (!client) {
-    return NULL;
-  }
+  assert(client);
 
   if (!client->forging_key) {
     client->global_state->callbacks->create_forging_key(client->client_id);
@@ -790,7 +780,9 @@ otrng_client_get_forging_key(otrng_client_s *client) {
 }
 
 INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client) {
-  if (!client || client->forging_key) {
+  assert(client);
+
+  if (client->forging_key) {
     return;
   }
 
@@ -799,9 +791,7 @@ INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client) {
 
 INTERNAL otrng_result otrng_client_add_forging_key(otrng_client_s *client,
                                                    const otrng_public_key key) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   if (client->forging_key) {
     return OTRNG_ERROR;
@@ -816,9 +806,7 @@ INTERNAL otrng_result otrng_client_add_forging_key(otrng_client_s *client,
 
 API const client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client) {
-  if (!client) {
-    return NULL;
-  }
+  assert(client);
 
   if (client->client_profile) {
     return client->client_profile;
@@ -834,9 +822,8 @@ API client_profile_s *
 otrng_client_build_default_client_profile(otrng_client_s *client) {
   // TODO: Get allowed versions from the policy
   const char *allowed_versions = "34";
-  if (!client) {
-    return NULL;
-  }
+
+  assert(client);
 
   otrng_client_ensure_forging_key(client);
   return otrng_client_profile_build(
@@ -847,9 +834,7 @@ otrng_client_build_default_client_profile(otrng_client_s *client) {
 
 API otrng_result otrng_client_add_client_profile(
     otrng_client_s *client, const client_profile_s *profile) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   if (client->client_profile) {
     return OTRNG_ERROR;
@@ -864,9 +849,7 @@ API otrng_result otrng_client_add_client_profile(
 
 API const client_profile_s *
 otrng_client_get_exp_client_profile(otrng_client_s *client) {
-  if (!client) {
-    return NULL;
-  }
+  assert(client);
 
   if (client->exp_client_profile) {
     return client->exp_client_profile;
@@ -877,9 +860,7 @@ otrng_client_get_exp_client_profile(otrng_client_s *client) {
 
 API otrng_result otrng_client_add_exp_client_profile(
     otrng_client_s *client, const client_profile_s *exp_profile) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   if (client->exp_client_profile) {
     return OTRNG_ERROR;
@@ -894,9 +875,7 @@ API otrng_result otrng_client_add_exp_client_profile(
 
 INTERNAL otrng_result otrng_client_add_shared_prekey_v4(
     otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   if (client->shared_prekey_pair) {
     return OTRNG_ERROR;
@@ -915,9 +894,7 @@ INTERNAL otrng_result otrng_client_add_shared_prekey_v4(
 
 static const otrng_shared_prekey_pair_s *
 get_shared_prekey_pair(otrng_client_s *client) {
-  if (!client) {
-    return NULL;
-  }
+  assert(client);
 
   if (client->shared_prekey_pair) {
     return client->shared_prekey_pair;
@@ -931,9 +908,7 @@ get_shared_prekey_pair(otrng_client_s *client) {
 
 API const otrng_prekey_profile_s *
 otrng_client_get_prekey_profile(otrng_client_s *client) {
-  if (!client) {
-    return NULL;
-  }
+  assert(client);
 
   if (client->prekey_profile) {
     return client->prekey_profile;
@@ -947,9 +922,7 @@ otrng_client_get_prekey_profile(otrng_client_s *client) {
 
 API otrng_prekey_profile_s *
 otrng_client_build_default_prekey_profile(otrng_client_s *client) {
-  if (!client) {
-    return NULL;
-  }
+  assert(client);
 
   /* @secret: the shared prekey should be deleted once the prekey profile
    * expires */
@@ -960,9 +933,7 @@ otrng_client_build_default_prekey_profile(otrng_client_s *client) {
 
 API otrng_result otrng_client_add_prekey_profile(
     otrng_client_s *client, const otrng_prekey_profile_s *profile) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   if (client->prekey_profile) {
     return OTRNG_ERROR;
@@ -977,9 +948,7 @@ API otrng_result otrng_client_add_prekey_profile(
 
 API const otrng_prekey_profile_s *
 otrng_client_get_exp_prekey_profile(otrng_client_s *client) {
-  if (!client) {
-    return NULL;
-  }
+  assert(client);
 
   if (client->exp_prekey_profile) {
     return client->prekey_profile;
@@ -990,9 +959,7 @@ otrng_client_get_exp_prekey_profile(otrng_client_s *client) {
 
 API otrng_result otrng_client_add_exp_prekey_profile(
     otrng_client_s *client, const otrng_prekey_profile_s *exp_profile) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   if (client->exp_prekey_profile) {
     return OTRNG_ERROR;
@@ -1149,18 +1116,19 @@ otrng_client_delete_my_prekey_message_by_id(uint32_t id,
 
 API void otrng_client_set_padding(size_t granularity, otrng_client_s *client) {
   client->padding = granularity;
+  assert(client);
 }
 
 API void otrng_client_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
                                               otrng_client_s *client) {
+  assert(client);
+
   client->max_stored_msg_keys = max_stored_msg_keys;
 }
 
 API otrng_result
 otrng_client_get_max_published_prekey_msg(otrng_client_s *client) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   return client->max_published_prekey_msg;
 }
@@ -1168,34 +1136,36 @@ otrng_client_get_max_published_prekey_msg(otrng_client_s *client) {
 API void
 otrng_client_set_max_published_prekey_msg(unsigned int max_published_prekey_msg,
                                           otrng_client_s *client) {
+  assert(client);
+
   client->max_published_prekey_msg = max_published_prekey_msg;
 }
 
 API otrng_result
 otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   return client->minimum_stored_prekey_msg;
 }
 
 API void otrng_client_state_set_minimum_stored_prekey_msg(
     unsigned int minimum_stored_prekey_msg, otrng_client_s *client) {
+  assert(client);
+
   client->minimum_stored_prekey_msg = minimum_stored_prekey_msg;
 }
 
 API void
 otrng_client_set_profiles_extra_valid_time(uint64_t profiles_extra_valid_time,
                                            otrng_client_s *client) {
+  assert(client);
+
   client->profiles_extra_valid_time = profiles_extra_valid_time;
 }
 
 API otrng_result
 otrng_client_get_client_profile_exp_time(otrng_client_s *client) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   return client->client_profile_exp_time;
 }
@@ -1203,14 +1173,14 @@ otrng_client_get_client_profile_exp_time(otrng_client_s *client) {
 API void
 otrng_client_set_client_profile_exp_time(uint64_t client_profile_exp_time,
                                          otrng_client_s *client) {
+  assert(client);
+
   client->client_profile_exp_time = client_profile_exp_time;
 }
 
 API otrng_result
 otrng_client_get_prekey_profile_exp_time(otrng_client_s *client) {
-  if (!client) {
-    return OTRNG_ERROR;
-  }
+  assert(client);
 
   return client->prekey_profile_exp_time;
 }
@@ -1218,6 +1188,8 @@ otrng_client_get_prekey_profile_exp_time(otrng_client_s *client) {
 API void
 otrng_client_set_prekey_profile_exp_time(uint64_t prekey_profile_exp_time,
                                          otrng_client_s *client) {
+  assert(client);
+
   client->prekey_profile_exp_time = prekey_profile_exp_time;
 }
 

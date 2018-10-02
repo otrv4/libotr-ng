@@ -25,10 +25,6 @@ tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
                                     const uint8_t progress_percent,
                                     const uint8_t *question, const size_t q_len,
                                     const otrng_s *conv) {
-  if (!conv || !conv->client || !conv->client->global_state->callbacks) {
-    return;
-  }
-
   if (!conv->client->global_state->callbacks->smp_ask_for_secret) {
     return;
   }
