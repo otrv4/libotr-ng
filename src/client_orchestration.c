@@ -105,7 +105,6 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
   }
 }
 
-static otrng_bool orchestration_reentry;
 tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
   if (!client->prekey_profile) {
     load_prekey_profile_from_storage(client);
@@ -121,22 +120,17 @@ tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
 }
 
 API void otrng_client_ensure_correct_state(otrng_client_s *client) {
-  otrng_debug_fprintf(stderr, "otrng_client_ensure_correct_state(client=%s)\n",
-                      client->client_id.account);
-  if (orchestration_reentry) {
-    otrng_debug_fprintf(stderr, "ORCHESTRATION REENTRY\n");
-  }
-
-  orchestration_reentry = otrng_true;
+  otrng_debug_enter("otrng_client_ensure_correct_state");
+  otrng_debug_fprintf(stderr, "client=%s\n", client->client_id.account);
 
   ensure_valid_long_term_key(client);
   ensure_valid_client_profile(client);
   ensure_valid_prekey_profile(client);
 
-  orchestration_reentry = otrng_false;
-
   //
   // if ANY dependent values changed
   //    - save away a list of the changes somewhere, so that next time
   //    publication is triggered, this process knows what to do
+
+  otrng_debug_exit("otrng_client_ensure_correct_state");
 }
