@@ -75,6 +75,8 @@ typedef struct client_profile_s {
   uint8_t *transitional_signature;
 
   eddsa_signature signature;
+
+  otrng_bool should_publish;
 } client_profile_s;
 
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,

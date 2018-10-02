@@ -117,6 +117,8 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   copy_transitional_signature(dst, src);
 
   memcpy(dst->signature, src->signature, ED448_SIGNATURE_BYTES);
+
+  dst->should_publish = src->should_publish;
 }
 
 INTERNAL void otrng_client_profile_destroy(client_profile_s *client_profile) {

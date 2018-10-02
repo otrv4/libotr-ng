@@ -117,8 +117,7 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
   create_client_profile(client);
 
   if (verify_valid_client_profile(client)) {
-    // TODO: we need to make sure that the client profile is published if we
-    // create it
+    client->client_profile->should_publish = otrng_true;
     return;
   }
 
@@ -156,11 +155,6 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   // in that case move it to the expired part and create a new one
 
   ensure_valid_prekey_profile(client);
-
-  //
-  // if ANY dependent values changed
-  //    - save away a list of the changes somewhere, so that next time
-  //    publication is triggered, this process knows what to do
 
   otrng_debug_exit("otrng_client_ensure_correct_state");
 }
