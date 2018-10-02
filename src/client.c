@@ -808,13 +808,7 @@ INTERNAL otrng_result otrng_client_add_forging_key(otrng_client_s *client,
 API const client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client) {
   assert(client);
-
-  if (client->client_profile) {
-    return client->client_profile;
-  }
-
-  client->global_state->callbacks->create_client_profile(client,
-                                                         client->client_id);
+  assert(client->client_profile);
 
   return client->client_profile;
 }

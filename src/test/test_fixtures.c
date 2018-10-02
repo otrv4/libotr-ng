@@ -166,6 +166,8 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
 
   // Generate instance tag
   otrng_client_add_instance_tag(otrng_fixture->client, 0x100 + 1);
+  otrng_fixture->client->client_profile =
+      otrng_client_build_default_client_profile(otrng_fixture->client);
 }
 
 void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture,
@@ -357,6 +359,8 @@ void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
   free(fk);
   otrng_client_add_shared_prekey_v4(client, shared_prekey_priv);
   otrng_client_add_instance_tag(client, 0x100 + byte);
+
+  client->client_profile = otrng_client_build_default_client_profile(client);
 
   client->should_heartbeat = test_should_not_heartbeat;
 }

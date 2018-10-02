@@ -35,47 +35,46 @@ tstatic void signal_error_in_state_management(otrng_client_s *client,
 }
 
 tstatic void load_long_term_keys_from_storage(otrng_client_s *client) {
-  otrng_debug_fprintf(stderr,
-                      "orchestration.load_long_term_keys_from_storage\n");
+  otrng_debug_enter("orchestration.load_long_term_keys_from_storage");
   client->global_state->callbacks->load_privkey_v4(client->client_id);
+  otrng_debug_exit("orchestration.load_long_term_keys_from_storage");
 }
 
 tstatic void create_long_term_keys(otrng_client_s *client) {
-  otrng_debug_fprintf(stderr, "orchestration.create_long_term_keys\n");
+  otrng_debug_enter("orchestration.create_long_term_keys");
   client->global_state->callbacks->create_privkey_v4(client->client_id);
+  otrng_debug_exit("orchestration.create_long_term_keys");
 }
 
 tstatic void load_client_profile_from_storage(otrng_client_s *client) {
-  otrng_debug_fprintf(stderr,
-                      "orchestration.load_client_profile_from_storage\n");
+  otrng_debug_enter("orchestration.load_client_profile_from_storage");
   client->global_state->callbacks->load_client_profile(client->client_id);
+  otrng_debug_exit("orchestration.load_client_profile_from_storage");
 }
 
 tstatic void create_client_profile(otrng_client_s *client) {
-  otrng_debug_fprintf(stderr, "orchestration.create_client_profile\n");
+  otrng_debug_enter("orchestration.create_client_profile");
   client->global_state->callbacks->create_client_profile(client,
                                                          client->client_id);
+  otrng_debug_exit("orchestration.create_client_profile");
 }
 
 tstatic void load_prekey_profile_from_storage(otrng_client_s *client) {
-  otrng_debug_fprintf(stderr,
-                      "orchestration.load_prekey_profile_from_storage\n");
+  otrng_debug_enter("orchestration.load_prekey_profile_from_storage");
   client->global_state->callbacks->load_prekey_profile(client->client_id);
+  otrng_debug_exit("orchestration.load_prekey_profile_from_storage");
 }
 
 tstatic void create_prekey_profile(otrng_client_s *client) {
-  otrng_debug_fprintf(stderr, "orchestration.create_prekey_profile\n");
+  otrng_debug_enter("orchestration.create_prekey_profile");
   client->global_state->callbacks->create_prekey_profile(client,
                                                          client->client_id);
+  otrng_debug_exit("orchestration.create_prekey_profile");
 }
 
 tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
   if (client->keypair == NULL) {
     load_long_term_keys_from_storage(client);
-    /* } else { */
-    /*   fprintf(stderr, "orchestration.ensure_valid_long_term_key - we already
-     * " */
-    /*                   "have a keypair! Hurrah\n"); */
   }
 
   if (client->keypair == NULL) {
@@ -87,22 +86,43 @@ tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
   }
 }
 
+/* This function doesn't take into account the expired but otherwise valid
+   client profile, since we will need to publish a new one
+   at the same the previous one expires anyway. The expired
+   client profiles should only be used when RECEIVING a DAKE with it,
+   we should never send it, and client->client_profile MUST NOT be invalid,
+   when doing any operation. */
+tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
+  uint32_t itag;
+
+  if (client->client_profile == NULL) {
+    return otrng_false;
+  }
+
+  itag = otrng_client_get_instance_tag(client);
+  return otrng_client_profile_valid(client->client_profile, itag);
+}
+
 tstatic void ensure_valid_client_profile(otrng_client_s *client) {
-  if (!client->client_profile) {
-    load_client_profile_from_storage(client);
-    /* } else { */
-    /*   fprintf(stderr, "orchestration.ensure_valid_client_profile - we already
-     * " */
-    /*                   "have a client profile! Hurrah\n"); */
+  if (verify_valid_client_profile(client)) {
+    return;
   }
 
-  if (!client->client_profile) {
-    create_client_profile(client);
+  load_client_profile_from_storage(client);
+
+  if (verify_valid_client_profile(client)) {
+    return;
   }
 
-  if (!client->client_profile) {
-    signal_error_in_state_management(client, "No Client Profile");
+  create_client_profile(client);
+
+  if (verify_valid_client_profile(client)) {
+    // TODO: we need to make sure that the client profile is published if we
+    // create it
+    return;
   }
+
+  signal_error_in_state_management(client, "No Client Profile");
 }
 
 tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
@@ -119,12 +139,22 @@ tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
   }
 }
 
+/* Note, the ensure_ family of functions will check whether the
+   values are there and correct, and try to fix them if not.
+   The verify_ family of functions will just check that the values
+   are correct and return otrng_false if not. */
+/* TODO: this function should be called from the plugin every X amount of time,
+   by default every 67'th minute. This way we don't have to set specific
+   timers to check for expiry of prekey profiles and client profiles */
 API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   otrng_debug_enter("otrng_client_ensure_correct_state");
   otrng_debug_fprintf(stderr, "client=%s\n", client->client_id.account);
 
   ensure_valid_long_term_key(client);
   ensure_valid_client_profile(client);
+  // TODO: here we should check if the client profile is close to expiring, and
+  // in that case move it to the expired part and create a new one
+
   ensure_valid_prekey_profile(client);
 
   //
@@ -133,4 +163,12 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   //    publication is triggered, this process knows what to do
 
   otrng_debug_exit("otrng_client_ensure_correct_state");
+}
+
+API otrng_bool otrng_client_verify_correct_state(otrng_client_s *client) {
+  if (!verify_valid_client_profile(client)) {
+    return otrng_false;
+  }
+
+  return otrng_true;
 }
