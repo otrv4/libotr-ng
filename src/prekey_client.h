@@ -173,7 +173,7 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client);
 API char *
 otrng_prekey_client_request_storage_information(otrng_prekey_client_s *client);
 
-API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client);
+API char *otrng_prekey_client_publish(otrng_prekey_client_s *client);
 
 API otrng_result otrng_prekey_client_receive(char **tosend, const char *server,
                                              const char *message,

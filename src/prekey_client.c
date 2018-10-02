@@ -229,7 +229,7 @@ otrng_prekey_client_request_storage_information(otrng_prekey_client_s *client) {
                                   OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST);
 }
 
-API char *otrng_prekey_client_publish_prekeys(otrng_prekey_client_s *client) {
+API char *otrng_prekey_client_publish(otrng_prekey_client_s *client) {
   return start_dake_and_then_send(client, OTRNG_PREKEY_PREKEY_PUBLICATION);
 }
 

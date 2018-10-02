@@ -43,7 +43,7 @@ static void test_send_dake_1_message(void) {
       otrng_client_get_minimum_stored_prekey_msg(alice));
 
   char *dake_1 = NULL;
-  dake_1 = otrng_prekey_client_publish_prekeys(alice->prekey_client);
+  dake_1 = otrng_prekey_client_publish(alice->prekey_client);
 
   otrng_assert(dake_1);
   free(dake_1);
