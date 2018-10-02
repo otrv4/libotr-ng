@@ -803,26 +803,26 @@ otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *privf) {
 }
 
 INTERNAL otrng_result
-otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *privf) {
+otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
   char *line = NULL;
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
   otrng_prekey_profile_s profile[1];
-  otrng_result ret;
+  otrng_result result;
 
-  if (!privf) {
+  if (!profilef) {
     return OTRNG_ERROR;
   }
 
-  if (feof(privf)) {
+  if (feof(profilef)) {
     return OTRNG_ERROR;
   }
 
   otrng_prekey_profile_free(client->prekey_profile);
   client->prekey_profile = NULL;
 
-  len = get_limited_line(&line, privf);
+  len = get_limited_line(&line, profilef);
   if (len < 0) {
     return OTRNG_ERROR;
   }
@@ -832,11 +832,11 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *privf) {
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);
 
-  ret = otrng_prekey_profile_deserialize(profile, dec, dec_len, NULL);
+  result = otrng_prekey_profile_deserialize(profile, dec, dec_len, NULL);
   free(dec);
 
-  if (ret == OTRNG_ERROR) {
-    return ret;
+  if (result == OTRNG_ERROR) {
+    return result;
   }
 
   if (otrng_prekey_profile_expired(profile->expires)) {
@@ -848,7 +848,10 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *privf) {
     // return OTRNG_SUCCESS;
   }
 
-  return otrng_client_add_prekey_profile(client, profile);
+  result = otrng_client_add_prekey_profile(client, profile);
+  otrng_prekey_profile_destroy(profile);
+
+  return result;
 }
 
 INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
