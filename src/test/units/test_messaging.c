@@ -69,6 +69,7 @@ static otrng_client_callbacks_s empty_callbacks[1] = {{
     .create_shared_prekey = &create_shared_prekey_cb_empty,
     .load_privkey_v4 = &load_privkey_v4_cb_empty,
     .load_client_profile = &load_client_profile_cb_empty,
+    .load_prekey_profile = &load_prekey_profile_cb_empty,
 }};
 
 static void test_global_state_key_management(void) {

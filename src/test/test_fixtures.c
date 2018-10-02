@@ -115,6 +115,7 @@ otrng_client_callbacks_s test_callbacks[1] = {{
     .create_shared_prekey = &create_shared_prekey_cb_empty,
     .load_privkey_v4 = &load_privkey_v4_cb_empty,
     .load_client_profile = &load_client_profile_cb_empty,
+    .load_prekey_profile = &load_prekey_profile_cb_empty,
 }};
 
 otrng_public_key *
@@ -437,6 +438,11 @@ void load_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata) {
 }
 
 void load_client_profile_cb_empty(
+    const struct otrng_client_id_s client_opdata) {
+  (void)client_opdata;
+}
+
+void load_prekey_profile_cb_empty(
     const struct otrng_client_id_s client_opdata) {
   (void)client_opdata;
 }

@@ -157,8 +157,8 @@ typedef struct otrng_client_callbacks_s {
   /* REQUIRED */
   void (*load_client_profile)(const struct otrng_client_id_s client_opdata);
 
+  /* REQUIRED */
   void (*load_prekey_profile)(const struct otrng_client_id_s client_opdata);
-
 } otrng_client_callbacks_s;
 
 INTERNAL otrng_bool

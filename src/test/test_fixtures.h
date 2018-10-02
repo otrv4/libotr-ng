@@ -96,6 +96,7 @@ otrng_shared_session_state_s
 get_shared_session_state_cb_empty(const struct otrng_s *conv);
 void load_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata);
 void load_client_profile_cb_empty(const struct otrng_client_id_s client_opdata);
+void load_prekey_profile_cb_empty(const struct otrng_client_id_s client_opdata);
 
 extern otrng_client_callbacks_s test_callbacks[];
 

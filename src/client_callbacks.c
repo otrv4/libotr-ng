@@ -33,7 +33,8 @@ otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
       cb->write_expired_prekey_profile != NULL &&
       cb->create_shared_prekey != NULL &&
       cb->get_shared_session_state != NULL && cb->load_privkey_v4 != NULL &&
-      cb->load_client_profile != NULL);
+      cb->load_client_profile != NULL &&
+                            cb->load_prekey_profile != NULL);
 }
 
 INTERNAL void otrng_client_callbacks_create_privkey_v4(
@@ -158,8 +159,6 @@ INTERNAL void otrng_client_callbacks_load_prekey_profile(
     return;
   }
 
-  // TODO: is this true for the prekey profile?
-  // This callback is required and is expected to segfault if not provided.
   cb->load_prekey_profile(client_opdata);
 }
 
