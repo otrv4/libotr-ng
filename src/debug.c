@@ -93,7 +93,10 @@ API void otrng_debug_fprintf(FILE *f, const char *fmt, ...) {
     }
 
     va_start(args, fmt);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
     vfprintf(f, fmt, args);
+#pragma clang diagnostic pop
     va_end(args);
   }
 }
