@@ -82,6 +82,10 @@ typedef struct otrng_client_s {
   otrng_bool (*should_heartbeat)(int last_sent);
   size_t padding;
 
+  /* This flag will be set when there is anything that should be published
+     to prekey servers */
+  otrng_bool should_publish;
+
   // OtrlPrivKey *privkeyv3; // ???
   // otrng_instag_s *instag; // TODO: @client Store the instance tag here rather
   // than use v3 User State as a store for instance tags
@@ -275,6 +279,10 @@ otrng_client_get_prekey_profile_exp_time(otrng_client_s *client);
 API void
 otrng_client_set_prekey_profile_exp_time(uint64_t prekey_profile_exp_time,
                                          otrng_client_s *client);
+
+API otrng_bool otrng_client_should_publish(otrng_client_s *client);
+
+API void otrng_client_published(otrng_client_s *client);
 
 /* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf); */
 

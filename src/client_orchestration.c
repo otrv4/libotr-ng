@@ -118,6 +118,7 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
 
   if (verify_valid_client_profile(client)) {
     client->client_profile->should_publish = otrng_true;
+    client->should_publish = otrng_true;
     return;
   }
 

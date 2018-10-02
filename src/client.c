@@ -1188,6 +1188,16 @@ otrng_client_set_prekey_profile_exp_time(uint64_t prekey_profile_exp_time,
   client->prekey_profile_exp_time = prekey_profile_exp_time;
 }
 
+API otrng_bool otrng_client_should_publish(otrng_client_s *client) {
+  return client->should_publish;
+}
+
+API void otrng_client_published(otrng_client_s *client) {
+  client->should_publish = otrng_false;
+
+  // TODO: here everything should be marked as published
+}
+
 #ifdef DEBUG_API
 
 API void otrng_stored_prekeys_debug_print(FILE *f, int indent,
