@@ -20,42 +20,51 @@
 
 #define OTRNG_CLIENT_ORCHESTRATION_PRIVATE
 
-#include "client_orchestration.h"
-#include "messaging.h"
 #include <stdio.h>
+
+#include "client_orchestration.h"
+#include "debug.h"
+#include "messaging.h"
 
 tstatic void signal_error_in_state_management(otrng_client_s *client,
                                               const char *area) {
   (void)client;
   // TODO: this should probably have a better implementation later
-  fprintf(stderr, "encountered error when trying to ensure OTR state: %s\n",
-          area);
+  otrng_debug_fprintf(
+      stderr, "encountered error when trying to ensure OTR state: %s\n", area);
 }
 
 tstatic void load_long_term_keys_from_storage(otrng_client_s *client) {
-  /* fprintf(stderr, "orchestration.load_long_term_keys_from_storage\n"); */
+  otrng_debug_fprintf(stderr,
+                      "orchestration.load_long_term_keys_from_storage\n");
   client->global_state->callbacks->load_privkey_v4(client->client_id);
 }
 
 tstatic void create_long_term_keys(otrng_client_s *client) {
-  /* fprintf(stderr, "orchestration.create_long_term_keys\n"); */
+  otrng_debug_fprintf(stderr, "orchestration.create_long_term_keys\n");
   client->global_state->callbacks->create_privkey_v4(client->client_id);
 }
 
 tstatic void load_client_profile_from_storage(otrng_client_s *client) {
+  otrng_debug_fprintf(stderr,
+                      "orchestration.load_client_profile_from_storage\n");
   client->global_state->callbacks->load_client_profile(client->client_id);
 }
 
 tstatic void create_client_profile(otrng_client_s *client) {
+  otrng_debug_fprintf(stderr, "orchestration.create_client_profile\n");
   client->global_state->callbacks->create_client_profile(client,
                                                          client->client_id);
 }
 
 tstatic void load_prekey_profile_from_storage(otrng_client_s *client) {
+  otrng_debug_fprintf(stderr,
+                      "orchestration.load_prekey_profile_from_storage\n");
   client->global_state->callbacks->load_prekey_profile(client->client_id);
 }
 
 tstatic void create_prekey_profile(otrng_client_s *client) {
+  otrng_debug_fprintf(stderr, "orchestration.create_prekey_profile\n");
   client->global_state->callbacks->create_prekey_profile(client,
                                                          client->client_id);
 }
@@ -112,10 +121,10 @@ tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
 }
 
 API void otrng_client_ensure_correct_state(otrng_client_s *client) {
-  fprintf(stderr, "otrng_client_ensure_correct_state(client=%s)\n",
-          client->client_id.account);
+  otrng_debug_fprintf(stderr, "otrng_client_ensure_correct_state(client=%s)\n",
+                      client->client_id.account);
   if (orchestration_reentry) {
-    fprintf(stderr, "ORCHESTRATION REENTRY\n");
+    otrng_debug_fprintf(stderr, "ORCHESTRATION REENTRY\n");
   }
 
   orchestration_reentry = otrng_true;

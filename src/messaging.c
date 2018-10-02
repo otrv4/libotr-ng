@@ -29,8 +29,8 @@
 #define OTRNG_PERSISTENCE_PRIVATE
 
 #include "alloc.h"
+#include "debug.h"
 #include "messaging.h"
-
 #include "persistence.h"
 
 API otrng_global_state_s *
@@ -38,8 +38,9 @@ otrng_global_state_new(const otrng_client_callbacks_s *cb, otrng_bool die) {
   otrng_global_state_s *gs = otrng_xmalloc_z(sizeof(otrng_global_state_s));
 
   if (!otrng_client_callbacks_ensure_needed_exist(cb)) {
-    fprintf(stderr, "otrng global state initialization failed - expected "
-                    "callbacks missing\n");
+    otrng_debug_fprintf(stderr,
+                        "otrng global state initialization failed - expected "
+                        "callbacks missing\n");
     if (die) {
       exit(EXIT_FAILURE);
     }

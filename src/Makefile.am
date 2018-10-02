@@ -29,6 +29,7 @@ libotr_ng_la_SOURCES = alloc.c \
 		     client_profile.c \
 		     dake.c \
 		     data_message.c \
+	         debug.c \
 		     deserialize.c \
 		     dh.c \
 		     ed448.c \

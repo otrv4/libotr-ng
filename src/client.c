@@ -33,6 +33,7 @@
 #include "alloc.h"
 #include "client.h"
 #include "client_callbacks.h"
+#include "debug.h"
 #include "deserialize.h"
 #include "instance_tag.h"
 #include "messaging.h"
@@ -742,8 +743,8 @@ INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client) {
   /* @secret_information: the long-term key pair lives for as long the client
      decides */
   // TODO @orchestration remove this when orchestration is done
-  fprintf(stderr,
-          "client.c otrng_client_get_keypair_v4 -> creating private key\n");
+  otrng_debug_fprintf(
+      stderr, "client.c otrng_client_get_keypair_v4 -> creating private key\n");
   client->global_state->callbacks->create_privkey_v4(client->client_id);
 
   return client->keypair;

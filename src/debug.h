@@ -29,28 +29,14 @@
 #include "shared.h"
 #include "str.h"
 
-static /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
-  size_t s = len * 6 + len / 8 + 2;
-  char *buff, *cursor;
-  unsigned int i;
+INTERNAL /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len);
 
-  if (src == NULL) {
-    return otrng_xstrndup("(NULL)", 6);
-  }
-  /* each char is represented by "0x00, " */
-  buff = otrng_xmalloc(s);
-
-  cursor = buff;
-
-  for (i = 0; i < len; i++) {
-    if (i % 8 == 0) {
-      cursor += snprintf(cursor, s, "\n");
-    }
-    cursor += snprintf(cursor, s, "0x%02x, ", src[i]);
-  }
-
-  return buff;
-}
+API void otrng_debug_init(void);
+API void otrng_debug_enable(void);
+API void otrng_debug_disable(void);
+API void otrng_debug_enter(const char *name);
+API void otrng_debug_exit(const char *name);
+API void otrng_debug_fprintf(FILE *f, const char *fmt, ...);
 
 #ifdef DEBUG_API
 #define debug_api_print fprintf

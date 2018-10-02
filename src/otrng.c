@@ -2440,6 +2440,9 @@ API otrng_result otrng_init(otrng_bool die) {
   if (otrng_failed(r)) {
     return r;
   }
+
+  otrng_debug_init();
+
   return otrng_dh_init(die);
 }
 
