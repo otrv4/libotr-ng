@@ -750,8 +750,7 @@ INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client) {
   // TODO @orchestration remove this when orchestration is done
   fprintf(stderr,
           "client.c otrng_client_get_keypair_v4 -> creating private key\n");
-  otrng_client_callbacks_create_privkey_v4(client->global_state->callbacks,
-                                           client->client_id);
+  client->global_state->callbacks->create_privkey_v4(client->client_id);
 
   return client->keypair;
 }
@@ -784,8 +783,7 @@ otrng_client_get_forging_key(otrng_client_s *client) {
   }
 
   if (!client->forging_key) {
-    otrng_client_callbacks_create_forging_key(client->global_state->callbacks,
-                                              client->client_id);
+    client->global_state->callbacks->create_forging_key(client->client_id);
   }
 
   return client->forging_key;
@@ -796,8 +794,7 @@ INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client) {
     return;
   }
 
-  otrng_client_callbacks_create_forging_key(client->global_state->callbacks,
-                                            client->client_id);
+  client->global_state->callbacks->create_forging_key(client->client_id);
 }
 
 INTERNAL otrng_result otrng_client_add_forging_key(otrng_client_s *client,
@@ -827,8 +824,8 @@ otrng_client_get_client_profile(otrng_client_s *client) {
     return client->client_profile;
   }
 
-  otrng_client_callbacks_create_client_profile(client->global_state->callbacks,
-                                               client, client->client_id);
+  client->global_state->callbacks->create_client_profile(client,
+                                                         client->client_id);
 
   return client->client_profile;
 }
@@ -926,8 +923,8 @@ get_shared_prekey_pair(otrng_client_s *client) {
     return client->shared_prekey_pair;
   }
 
-  otrng_client_callbacks_create_shared_prekey(client->global_state->callbacks,
-                                              client, client->client_id);
+  client->global_state->callbacks->create_shared_prekey(client,
+                                                        client->client_id);
 
   return client->shared_prekey_pair;
 }
@@ -942,8 +939,8 @@ otrng_client_get_prekey_profile(otrng_client_s *client) {
     return client->prekey_profile;
   }
 
-  otrng_client_callbacks_create_prekey_profile(client->global_state->callbacks,
-                                               client, client->client_id);
+  client->global_state->callbacks->create_prekey_profile(client,
+                                                         client->client_id);
 
   return client->prekey_profile;
 }

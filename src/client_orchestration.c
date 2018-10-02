@@ -34,34 +34,30 @@ tstatic void signal_error_in_state_management(otrng_client_s *client,
 
 tstatic void load_long_term_keys_from_storage(otrng_client_s *client) {
   /* fprintf(stderr, "orchestration.load_long_term_keys_from_storage\n"); */
-  otrng_client_callbacks_load_privkey_v4(client->global_state->callbacks,
-                                         client->client_id);
+  client->global_state->callbacks->load_privkey_v4(client->client_id);
 }
 
 tstatic void create_long_term_keys(otrng_client_s *client) {
   /* fprintf(stderr, "orchestration.create_long_term_keys\n"); */
-  otrng_client_callbacks_create_privkey_v4(client->global_state->callbacks,
-                                           client->client_id);
+  client->global_state->callbacks->create_privkey_v4(client->client_id);
 }
 
 tstatic void load_client_profile_from_storage(otrng_client_s *client) {
-  otrng_client_callbacks_load_client_profile(client->global_state->callbacks,
-                                             client->client_id);
+  client->global_state->callbacks->load_client_profile(client->client_id);
 }
 
 tstatic void create_client_profile(otrng_client_s *client) {
-  otrng_client_callbacks_create_client_profile(client->global_state->callbacks,
-                                               client, client->client_id);
+  client->global_state->callbacks->create_client_profile(client,
+                                                         client->client_id);
 }
 
 tstatic void load_prekey_profile_from_storage(otrng_client_s *client) {
-  otrng_client_callbacks_load_prekey_profile(client->global_state->callbacks,
-                                             client->client_id);
+  client->global_state->callbacks->load_prekey_profile(client->client_id);
 }
 
 tstatic void create_prekey_profile(otrng_client_s *client) {
-  otrng_client_callbacks_create_prekey_profile(client->global_state->callbacks,
-                                               client, client->client_id);
+  client->global_state->callbacks->create_prekey_profile(client,
+                                                         client->client_id);
 }
 
 tstatic void ensure_valid_long_term_key(otrng_client_s *client) {

@@ -36,87 +36,10 @@ otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
       cb->load_client_profile != NULL && cb->load_prekey_profile != NULL);
 }
 
-INTERNAL void otrng_client_callbacks_create_privkey_v4(
-    const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->create_privkey_v4(client_opdata);
-}
-
-INTERNAL void otrng_client_callbacks_create_forging_key(
-    const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->create_forging_key(client_opdata);
-}
-
-INTERNAL void otrng_client_callbacks_create_privkey_v3(
-    const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->create_privkey_v3(client_opdata);
-}
-
-INTERNAL void otrng_client_callbacks_create_client_profile(
-    const otrng_client_callbacks_s *cb, otrng_client_s *client,
-    const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->create_client_profile(client, client_opdata);
-}
-
-INTERNAL void otrng_client_callbacks_write_expired_client_profile(
-    const otrng_client_callbacks_s *cb, otrng_client_s *client,
-    const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->write_expired_client_profile(client, client_opdata);
-}
-
-INTERNAL void otrng_client_callbacks_write_expired_prekey_profile(
-    const otrng_client_callbacks_s *cb, otrng_client_s *client,
-    const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->write_expired_prekey_profile(client, client_opdata);
-}
-
-INTERNAL void otrng_client_callbacks_create_prekey_profile(
-    const otrng_client_callbacks_s *cb, otrng_client_s *client,
-    const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->create_prekey_profile(client, client_opdata);
-}
-
-INTERNAL void otrng_client_callbacks_create_shared_prekey(
-    const otrng_client_callbacks_s *cb, otrng_client_s *client,
-    const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->create_shared_prekey(client, client_opdata);
-}
-
 INTERNAL void
 otrng_client_callbacks_create_instag(const otrng_client_callbacks_s *cb,
                                      const otrng_client_id_s client_opdata) {
-  if (!cb || !cb->create_instag) {
+  if (!cb->create_instag) {
     return;
   }
 
@@ -126,7 +49,7 @@ otrng_client_callbacks_create_instag(const otrng_client_callbacks_s *cb,
 INTERNAL void
 otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,
                                    const otrng_s *conv) {
-  if (!cb || !cb->gone_secure) {
+  if (!cb->gone_secure) {
     return;
   }
 
@@ -134,37 +57,9 @@ otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,
 }
 
 INTERNAL void
-otrng_client_callbacks_load_privkey_v4(const otrng_client_callbacks_s *cb,
-                                       const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->load_privkey_v4(client_opdata);
-}
-
-INTERNAL void otrng_client_callbacks_load_client_profile(
-    const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->load_client_profile(client_opdata);
-}
-
-INTERNAL void otrng_client_callbacks_load_prekey_profile(
-    const otrng_client_callbacks_s *cb, const otrng_client_id_s client_opdata) {
-  if (!cb) {
-    return;
-  }
-
-  cb->load_prekey_profile(client_opdata);
-}
-
-INTERNAL void
 otrng_client_callbacks_gone_insecure(const otrng_client_callbacks_s *cb,
                                      const otrng_s *conv) {
-  if (!cb || !cb->gone_insecure) {
+  if (!cb->gone_insecure) {
     return;
   }
 
@@ -175,7 +70,7 @@ INTERNAL void
 otrng_client_callbacks_fingerprint_seen(const otrng_client_callbacks_s *cb,
                                         const otrng_fingerprint fp,
                                         const otrng_s *conv) {
-  if (!cb || !cb->fingerprint_seen) {
+  if (!cb->fingerprint_seen) {
     return;
   }
 
@@ -186,7 +81,7 @@ INTERNAL void
 otrng_client_callbacks_fingerprint_seen_v3(const otrng_client_callbacks_s *cb,
                                            const otrng_fingerprint_v3 fp,
                                            const otrng_s *conv) {
-  if (!cb || !cb->fingerprint_seen_v3) {
+  if (!cb->fingerprint_seen_v3) {
     return;
   }
 
@@ -196,7 +91,7 @@ otrng_client_callbacks_fingerprint_seen_v3(const otrng_client_callbacks_s *cb,
 INTERNAL void
 otrng_client_callbacks_smp_ask_for_secret(const otrng_client_callbacks_s *cb,
                                           const otrng_s *conv) {
-  if (!cb || !cb->smp_ask_for_secret) {
+  if (!cb->smp_ask_for_secret) {
     return;
   }
 
@@ -207,7 +102,7 @@ INTERNAL void
 otrng_client_callbacks_smp_ask_for_answer(const otrng_client_callbacks_s *cb,
                                           const char *question,
                                           const otrng_s *conv) {
-  if (!cb || !cb->smp_ask_for_answer) {
+  if (!cb->smp_ask_for_answer) {
     return;
   }
 
@@ -218,7 +113,7 @@ otrng_client_callbacks_smp_ask_for_answer(const otrng_client_callbacks_s *cb,
 INTERNAL void otrng_client_callbacks_smp_update(
     const otrng_client_callbacks_s *cb, const otrng_smp_event_t event,
     const uint8_t progress_percent, const otrng_s *conv) {
-  if (!cb || !cb->smp_update) {
+  if (!cb->smp_update) {
     return;
   }
 

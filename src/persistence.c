@@ -463,8 +463,8 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
   }
 
   if (otrng_client_profile_expired(profile->expires)) {
-    otrng_client_callbacks_write_expired_client_profile(
-        client->global_state->callbacks, client, client->client_id);
+    client->global_state->callbacks->write_expired_client_profile(
+        client, client->client_id);
 
     // TODO: I'm suspecting this will make a lot of tests fail, so
     // no return for the moment
@@ -840,8 +840,8 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
   }
 
   if (otrng_prekey_profile_expired(profile->expires)) {
-    otrng_client_callbacks_write_expired_prekey_profile(
-        client->global_state->callbacks, client, client->client_id);
+    client->global_state->callbacks->write_expired_prekey_profile(
+        client, client->client_id);
 
     // TODO: I'm suspecting this will make a lot of tests fail, so
     // no return for the moment

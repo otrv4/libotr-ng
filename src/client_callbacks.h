@@ -164,51 +164,7 @@ typedef struct otrng_client_callbacks_s {
 INTERNAL otrng_bool
 otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb);
 
-INTERNAL void otrng_client_callbacks_create_privkey_v4(
-    const otrng_client_callbacks_s *cb,
-    const struct otrng_client_id_s client_opdata);
-
-INTERNAL void otrng_client_callbacks_create_forging_key(
-    const otrng_client_callbacks_s *cb,
-    const struct otrng_client_id_s client_opdata);
-
-INTERNAL void otrng_client_callbacks_create_privkey_v3(
-    const otrng_client_callbacks_s *cb,
-    const struct otrng_client_id_s client_opdata);
-
-INTERNAL void otrng_client_callbacks_create_client_profile(
-    const otrng_client_callbacks_s *cb, struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata);
-
-INTERNAL void otrng_client_callbacks_write_expired_client_profile(
-    const otrng_client_callbacks_s *cb, struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata);
-
-INTERNAL void otrng_client_callbacks_write_expired_prekey_profile(
-    const otrng_client_callbacks_s *cb, struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata);
-
-INTERNAL void otrng_client_callbacks_create_prekey_profile(
-    const otrng_client_callbacks_s *cb, struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata);
-
-INTERNAL void otrng_client_callbacks_create_shared_prekey(
-    const otrng_client_callbacks_s *cb, struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata);
-
 INTERNAL void otrng_client_callbacks_create_instag(
-    const otrng_client_callbacks_s *cb,
-    const struct otrng_client_id_s client_opdata);
-
-INTERNAL void otrng_client_callbacks_load_privkey_v4(
-    const otrng_client_callbacks_s *cb,
-    const struct otrng_client_id_s client_opdata);
-
-INTERNAL void otrng_client_callbacks_load_client_profile(
-    const otrng_client_callbacks_s *cb,
-    const struct otrng_client_id_s client_opdata);
-
-INTERNAL void otrng_client_callbacks_load_prekey_profile(
     const otrng_client_callbacks_s *cb,
     const struct otrng_client_id_s client_opdata);
 

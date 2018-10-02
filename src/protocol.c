@@ -42,15 +42,15 @@ INTERNAL void maybe_create_keys(otrng_client_s *client) {
   if (!client->keypair) {
     // TODO @orchestration Remove this when orchestration is done
     fprintf(stderr, "protocol.c maybe_create_keys -> creating private key\n");
-    otrng_client_callbacks_create_privkey_v4(cb, client_id);
+    cb->create_privkey_v4(client_id);
   }
 
   if (!client->forging_key) {
-    otrng_client_callbacks_create_forging_key(cb, client_id);
+    cb->create_forging_key(client_id);
   }
 
   if (!client->shared_prekey_pair) {
-    otrng_client_callbacks_create_shared_prekey(cb, client, client_id);
+    cb->create_shared_prekey(client, client_id);
   }
 
   instance_tag = otrng_client_get_instance_tag(client);
