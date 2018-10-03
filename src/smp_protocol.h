@@ -78,8 +78,8 @@ typedef struct smp_msg_4_s {
 } smp_msg_4_s;
 
 typedef struct smp_protocol_s {
-  char state_expect;
-  uint8_t *secret; /* already hashed: 64 bytes long */
+  char state_expect; // TODO: why is this a char? Let's extract this
+  uint8_t *secret;   /* already hashed: 64 bytes long */
   ec_scalar a2, a3, b3;
   ec_point g2, g3;
   ec_point g3a, g3b;

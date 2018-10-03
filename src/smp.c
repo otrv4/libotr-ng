@@ -159,6 +159,12 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
   smp_msg_1_s msg;
   uint8_t *to_send = NULL;
   size_t len = 0;
+  tlv_s *tlv;
+
+  if (smp->state_expect != '1') {
+    tlv = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
+    return tlv;
+  }
 
   otrng_fingerprint our_fp, their_fp;
   if (!otrng_serialize_fingerprint(our_fp,
@@ -177,7 +183,6 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
   }
 
   do {
-    tlv_s *tlv;
     if (!otrng_generate_smp_msg_1(&msg, smp)) {
       continue;
     }
