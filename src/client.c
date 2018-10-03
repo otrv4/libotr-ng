@@ -576,11 +576,12 @@ INTERNAL void otrng_client_store_my_prekey_message(
 
 API dake_prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
-                                   ec_scalar **ecdh_keys, dh_mpi_t **dh_keys) {
+                                   ec_scalar_t **ecdh_keys,
+                                   dh_mpi_t **dh_keys) {
   uint32_t instance_tag;
   dake_prekey_message_s **messages;
   int i, j;
-  ec_scalar *ke;
+  ec_scalar_t *ke;
   dh_mpi_t *kd;
 
   if (num_messages > MAX_NUMBER_PUBLISHED_PREKEY_MESSAGES) {
@@ -591,7 +592,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
   instance_tag = otrng_client_get_instance_tag(client);
 
   messages = otrng_xmalloc_z(num_messages * sizeof(dake_prekey_message_s *));
-  ke = otrng_secure_alloc(num_messages * sizeof(ec_scalar));
+  ke = otrng_secure_alloc(num_messages * sizeof(ec_scalar_t));
   kd = otrng_xmalloc_z(num_messages * sizeof(dh_mpi_t));
 
   for (i = 0; i < num_messages; i++) {

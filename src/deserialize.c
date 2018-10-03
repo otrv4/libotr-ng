@@ -280,7 +280,7 @@ INTERNAL otrng_result otrng_deserialize_shared_prekey(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar scalar,
+INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar_t scalar,
                                                   const uint8_t *serialized,
                                                   size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES) {

@@ -31,7 +31,7 @@
 
 typedef struct ecdh_proof_s {
   uint8_t c[PROOF_C_SIZE];
-  ec_scalar v;
+  ec_scalar_t v;
 } ecdh_proof_s;
 
 typedef struct dh_proof_s {
@@ -40,7 +40,7 @@ typedef struct dh_proof_s {
 } dh_proof_s;
 
 INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_s *destination,
-                                                const ec_scalar *values_priv,
+                                                const ec_scalar_t *values_priv,
                                                 const ec_point *values_pub,
                                                 const size_t values_len,
                                                 const uint8_t *m,

@@ -35,9 +35,9 @@
 #define ED448_FORGINGKEY_TYPE 0x0012
 
 typedef ec_point otrng_public_key;
-typedef ec_scalar otrng_private_key;
+typedef ec_scalar_t otrng_private_key;
 typedef ec_point otrng_shared_prekey_pub;
-typedef ec_scalar otrng_shared_prekey_priv;
+typedef ec_scalar_t otrng_shared_prekey_priv;
 
 /* @secret_information: the long-term key pair lives for as long the client
    decides */

@@ -79,9 +79,9 @@ typedef struct {
   otrng_client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
 
-  ec_scalar *ecdh_keys;
+  ec_scalar_t *ecdh_keys;
   dh_mpi_t *dh_keys;
-  ec_scalar prekey_profile_key;
+  ec_scalar_t prekey_profile_key;
 } otrng_prekey_publication_message_s;
 
 typedef struct {

@@ -73,7 +73,7 @@ INTERNAL otrng_result otrng_deserialize_shared_prekey(
     otrng_shared_prekey_pub shared_prekey, const uint8_t *serialized,
     size_t ser_len, size_t *read);
 
-INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar scalar,
+INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar_t scalar,
                                                   const uint8_t *serialized,
                                                   size_t ser_len);
 

@@ -74,7 +74,7 @@ typedef struct otrng_client_profile_s {
   size_t dsa_key_len;
   uint8_t *transitional_signature;
 
-  eddsa_signature signature;
+  eddsa_signature_t signature;
 
   otrng_bool should_publish;
   otrng_bool is_publishing;

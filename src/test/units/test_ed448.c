@@ -26,7 +26,7 @@
 #include "random.h"
 
 static void test_ed448_eddsa_serialization() {
-  ec_scalar s;
+  ec_scalar_t s;
   uint8_t random_buff[ED448_SCALAR_BYTES];
   random_bytes(random_buff, ED448_SCALAR_BYTES);
   goldilocks_448_scalar_decode_long(s, random_buff, ED448_SCALAR_BYTES);
@@ -51,7 +51,7 @@ static void test_ed448_eddsa_keygen() {
   uint8_t sym[ED448_PRIVATE_BYTES];
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
-  ec_scalar secret_scalar;
+  ec_scalar_t secret_scalar;
   ec_point p;
   otrng_ec_scalar_derive_from_secret(secret_scalar, sym);
   otrng_ec_derive_public_key(pub, sym);
@@ -67,7 +67,7 @@ static void test_ed448_eddsa_keygen() {
 }
 
 static void test_ed448_scalar_serialization() {
-  ec_scalar s;
+  ec_scalar_t s;
 
   uint8_t buff[ED448_SCALAR_BYTES];
   otrng_ec_scalar_encode(buff, goldilocks_448_scalar_one);
@@ -85,7 +85,7 @@ static void test_ed448_signature() {
   uint8_t message[3] = {0x0A, 0x0C, 0x0B};
   otrng_assert(otrng_ec_point_encode(pub, ED448_POINT_BYTES, pair->pub));
 
-  eddsa_signature sig;
+  eddsa_signature_t sig;
   otrng_ec_sign(sig, sym, pub, message, sizeof(message));
   otrng_assert(otrng_ec_verify(sig, pub, message, sizeof(message)) ==
                otrng_true);

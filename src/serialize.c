@@ -94,7 +94,7 @@ INTERNAL int otrng_serialize_ec_point(uint8_t *destination,
 }
 
 INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *destination,
-                                          const ec_scalar scalar) {
+                                          const ec_scalar_t scalar) {
   otrng_ec_scalar_encode(destination, scalar);
   return ED448_SCALAR_BYTES;
 }

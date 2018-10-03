@@ -182,7 +182,7 @@ INTERNAL void otrng_client_store_my_prekey_message(
 
 API dake_prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
-                                   ec_scalar **ecdh_keys, dh_mpi_t **dh_keys);
+                                   ec_scalar_t **ecdh_keys, dh_mpi_t **dh_keys);
 
 INTERNAL otrng_result otrng_client_get_account_and_protocol(
     char **account, char **protocol, const otrng_client_s *client);

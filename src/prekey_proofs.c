@@ -32,7 +32,7 @@
 static const uint8_t usage_proof_c_lambda = 0x17;
 
 INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_s *destination,
-                                                const ec_scalar *values_priv,
+                                                const ec_scalar_t *values_priv,
                                                 const ec_point *values_pub,
                                                 const size_t values_len,
                                                 const uint8_t *m,

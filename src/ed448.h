@@ -30,7 +30,7 @@
 #include "shared.h"
 
 /* ec_scalar represents a scalar. */
-typedef goldilocks_448_scalar_p ec_scalar;
+typedef goldilocks_448_scalar_p ec_scalar_t;
 /* ec_point represents a ed488 point. It is in the twisted ed448-goldilocks,
    curve representation following the decaf technique. */
 typedef goldilocks_448_point_p ec_point;
@@ -47,7 +47,7 @@ typedef goldilocks_448_point_p ec_point;
 /** Number of bytes in an non-secret scalar: 56 */
 #define ED448_SCALAR_BYTES GOLDILOCKS_448_SCALAR_BYTES
 
-typedef uint8_t eddsa_signature[ED448_SIGNATURE_BYTES];
+typedef uint8_t eddsa_signature_t[ED448_SIGNATURE_BYTES];
 
 /**
  * @brief The ecdh_keypair_s structure represents an ECDH keypair.
@@ -56,7 +56,7 @@ typedef uint8_t eddsa_signature[ED448_SIGNATURE_BYTES];
  *  [pub]  the public key
  */
 typedef struct ecdh_keypair_s {
-  ec_scalar priv;
+  ec_scalar_t priv;
   ec_point pub;
 } ecdh_keypair_s;
 
@@ -67,7 +67,8 @@ typedef struct ecdh_keypair_s {
  * @param [a]   A scalar.
  * @param [out] Will become a copy of a.
  */
-INTERNAL void otrng_ec_scalar_copy(ec_scalar destination, const ec_scalar a);
+INTERNAL void otrng_ec_scalar_copy(ec_scalar_t destination,
+                                   const ec_scalar_t a);
 
 /**
  * @brief Compare two scalars.
@@ -78,14 +79,15 @@ INTERNAL void otrng_ec_scalar_copy(ec_scalar destination, const ec_scalar a);
  * @retval otrng_true The scalars are equal.
  * @retval otrng_false The scalars are not equal.
  */
-INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar a, const ec_scalar b);
+INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar_t a,
+                                       const ec_scalar_t b);
 /**
  * @brief Encode a scalar to wire format.
  *
  * @param [enc] Encoded form of a scalar.
  * @param [s] Deserialized scalar.
  */
-INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar s);
+INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar_t s);
 
 /**
  * @brief Read a scalar from wire format or from bytes.  Reduces mod
@@ -94,11 +96,11 @@ INTERNAL void otrng_ec_scalar_encode(uint8_t *enc, const ec_scalar s);
  * @param [enc] Encoded form of a scalar.
  * @param [s] Deserialized form.
  */
-INTERNAL void otrng_ec_scalar_decode(ec_scalar s,
+INTERNAL void otrng_ec_scalar_decode(ec_scalar_t s,
                                      const uint8_t enc[ED448_SCALAR_BYTES]);
 
 /** Securely erase a scalar. */
-INTERNAL void otrng_ec_scalar_destroy(ec_scalar s);
+INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t s);
 
 /**
  * @brief Copy a point.  The input and output may alias,
@@ -169,7 +171,7 @@ INTERNAL void otrng_ec_point_destroy(ec_point p);
  * @param [sym]  The symmetric key.
  */
 INTERNAL void
-otrng_ec_scalar_derive_from_secret(ec_scalar priv,
+otrng_ec_scalar_derive_from_secret(ec_scalar_t priv,
                                    const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 /**
@@ -182,7 +184,8 @@ INTERNAL void
 otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
                            const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-INTERNAL void otrng_ec_calculate_public_key(ec_point pub, const ec_scalar priv);
+INTERNAL void otrng_ec_calculate_public_key(ec_point pub,
+                                            const ec_scalar_t priv);
 
 /**
  * @brief Keypair generation.
@@ -215,7 +218,7 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair);
  */
 INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                                size_t shared_secret_len,
-                                               const ec_scalar our_priv,
+                                               const ec_scalar_t our_priv,
                                                const ec_point their_pub);
 
 /**
@@ -228,7 +231,7 @@ INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
  *
  * @warning It is not prehashed. The context is always an empty string
  */
-INTERNAL void otrng_ec_sign_simple(eddsa_signature sig,
+INTERNAL void otrng_ec_sign_simple(eddsa_signature_t sig,
                                    const uint8_t sym[ED448_PRIVATE_BYTES],
                                    const uint8_t *message, size_t message_len);
 
@@ -268,7 +271,7 @@ API void otrng_ecdh_keypair_debug_print(FILE *, int, ecdh_keypair_s *);
  *
  * @warning It is not prehashed. The context is always an empty string
  */
-tstatic void otrng_ec_sign(eddsa_signature sig,
+tstatic void otrng_ec_sign(eddsa_signature_t sig,
                            const uint8_t sym[ED448_PRIVATE_BYTES],
                            const uint8_t pub[ED448_POINT_BYTES],
                            const uint8_t *message, size_t message_len);

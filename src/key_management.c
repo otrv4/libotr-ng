@@ -438,7 +438,7 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
       return OTRNG_ERROR;
     }
 
-    otrng_secure_wipe(manager->our_ecdh->priv, sizeof(ec_scalar));
+    otrng_secure_wipe(manager->our_ecdh->priv, sizeof(ec_scalar_t));
 
     if (!calculate_brace_key(manager, NULL, 's')) {
       return OTRNG_ERROR;

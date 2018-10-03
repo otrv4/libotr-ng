@@ -124,7 +124,7 @@
     g_assert_cmpuint(_p1->instance_tag, ==, _p2->instance_tag);                \
     otrng_assert_point_equals(_p1->shared_prekey, _p2->shared_prekey);         \
     otrng_assert_cmpmem(_p1->signature, _p2->signature,                        \
-                        sizeof(eddsa_signature));                              \
+                        sizeof(eddsa_signature_t));                            \
   } while (0)
 
 #define otrng_assert_client_profile_eq(p1, p2)                                 \
