@@ -150,8 +150,7 @@ static void test_api_interactive_conversation(void) {
 
   // Check TLVs
   otrng_assert(response_to_bob->tlvs);
-  g_assert_cmpint(response_to_bob->tlvs->data->type, ==,
-                  OTRNG_TLV_SMP_MESSAGE_1);
+  g_assert_cmpint(response_to_bob->tlvs->data->type, ==, OTRNG_TLV_SMP_MSG_1);
   g_assert_cmpint(response_to_bob->tlvs->data->len, ==, 342);
 
   // Check Padding
@@ -330,8 +329,7 @@ static void test_otrng_send_offline_message() {
 
   // Check TLVS
   otrng_assert(response_to_bob->tlvs);
-  g_assert_cmpint(response_to_bob->tlvs->data->type, ==,
-                  OTRNG_TLV_SMP_MESSAGE_1);
+  g_assert_cmpint(response_to_bob->tlvs->data->type, ==, OTRNG_TLV_SMP_MSG_1);
   g_assert_cmpint(response_to_bob->tlvs->data->len, ==, 342);
 
   free_message_and_response(response_to_bob, &to_send);

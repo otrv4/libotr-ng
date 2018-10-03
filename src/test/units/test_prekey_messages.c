@@ -39,7 +39,7 @@ static void test_deserialize_prekey_success_message(void) {
   decoded = otrng_xmalloc_z(((len - 1 + 3) / 4) * 3);
   decoded_len = otrl_base64_decode(decoded, prekey_success_message, len - 1);
 
-  otrng_assert(decoded_len == OTRNG_PREKEY_SUCCESS_MESSAGE_LEN);
+  otrng_assert(decoded_len == OTRNG_PREKEY_SUCCESS_MSG_LEN);
 
   otrng_prekey_success_message_s destination;
   otrng_assert_is_success(otrng_prekey_success_message_deserialize(

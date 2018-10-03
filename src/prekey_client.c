@@ -40,7 +40,7 @@
 #pragma clang diagnostic pop
 #endif
 
-#define OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE 1
+#define OTRNG_PREKEY_CLIENT_MALFORMED_MSG 1
 #define OTRNG_PREKEY_CLIENT_INVALID_DAKE2 2
 #define OTRNG_PREKEY_CLIENT_INVALID_STORAGE_STATUS 3
 #define OTRNG_PREKEY_CLIENT_INVALID_SUCCESS 4
@@ -305,7 +305,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_serialize(
 
   w += otrng_serialize_uint16(*destination, OTRNG_PROTOCOL_VERSION_4);
   w += otrng_serialize_uint8(*destination + w,
-                             OTRNG_PREKEY_ENSEMBLE_QUERY_RETRIEVAL_MESSAGE);
+                             OTRNG_PREKEY_ENSEMBLE_QUERY_RETRIEVAL_MSG);
   w += otrng_serialize_uint32(*destination + w, message->instance_tag);
   w += otrng_serialize_data(*destination + w, (uint8_t *)message->identity,
                             strlen(message->identity));
@@ -434,7 +434,7 @@ otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *message,
 INTERNAL otrng_result
 otrng_prekey_dake3_message_append_storage_information_request(
     otrng_prekey_dake3_message_s *message, uint8_t mac_key[MAC_KEY_BYTES]) {
-  uint8_t message_type = OTRNG_PREKEY_STORAGE_INFO_REQ_MESSAGE;
+  uint8_t message_type = OTRNG_PREKEY_STORAGE_INFO_REQ_MSG;
   size_t w = 0;
   uint8_t usage_receiver_client_profile = 0x0A;
   goldilocks_shake256_ctx_p hmac;
@@ -470,7 +470,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   size_t proof_buf_len = 0;
   size_t prekey_profile_len = 0;
   size_t size;
-  uint8_t message_type = OTRNG_PREKEY_PUBLICATION_MESSAGE;
+  uint8_t message_type = OTRNG_PREKEY_PUBLICATION_MSG;
   size_t w = 0;
   const uint8_t *prekey_messages_beginning;
   uint8_t usage_prekey_message = 0x0E;
@@ -914,7 +914,7 @@ static char *receive_dake2(const uint8_t *decoded, size_t decoded_len,
 
   otrng_prekey_dake2_message_init(&message);
   if (!otrng_prekey_dake2_message_deserialize(&message, decoded, decoded_len)) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE);
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
@@ -934,7 +934,7 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
   uint8_t usage_status_MAC = 0x0B;
   goldilocks_shake256_ctx_p hmac;
 
-  *buf = OTRNG_PREKEY_STORAGE_STATUS_MESSAGE; /* message type */
+  *buf = OTRNG_PREKEY_STORAGE_STATUS_MSG; /* message type */
   otrng_serialize_uint32(buf + 1, message->client_instance_tag);
   otrng_serialize_uint32(buf + 5, message->stored_prekeys);
 
@@ -982,7 +982,7 @@ static char *receive_storage_status(const uint8_t *decoded, size_t decoded_len,
 
   if (!otrng_prekey_storage_status_message_deserialize(message, decoded,
                                                        decoded_len)) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE);
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
@@ -1011,14 +1011,14 @@ static char *receive_success(const uint8_t *decoded, size_t decoded_len,
 
   memset(mac_tag, 0, HASH_BYTES);
 
-  if (decoded_len < OTRNG_PREKEY_SUCCESS_MESSAGE_LEN) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE);
+  if (decoded_len < OTRNG_PREKEY_SUCCESS_MSG_LEN) {
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
   if (!otrng_deserialize_uint32(&instance_tag, decoded + 3, decoded_len - 3,
                                 &read)) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE);
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
@@ -1054,13 +1054,13 @@ static char *receive_failure(const uint8_t *decoded, size_t decoded_len,
   memset(mac_tag, 0, HASH_BYTES);
 
   if (decoded_len < 71) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE);
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
   if (!otrng_deserialize_uint32(&instance_tag, decoded + 3, decoded_len - 3,
                                 &read)) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE);
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
@@ -1092,7 +1092,7 @@ static char *receive_no_prekey_in_storage(const uint8_t *decoded,
 
   if (!otrng_deserialize_uint32(&instance_tag, decoded + 3, decoded_len - 3,
                                 &read)) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE);
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
@@ -1131,7 +1131,7 @@ static char *receive_prekey_ensemble_retrieval(const uint8_t *decoded,
 
   if (!otrng_prekey_ensemble_retrieval_message_deserialize(message, decoded,
                                                            decoded_len)) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE);
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     otrng_prekey_ensemble_retrieval_message_destroy(message);
     return NULL;
   }
@@ -1177,24 +1177,24 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
   char *ret = NULL;
 
   if (!otrng_parse_header(&message_type, decoded, decoded_len, NULL)) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE);
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
-  if (message_type == OTRNG_PREKEY_DAKE2_MESSAGE) {
+  if (message_type == OTRNG_PREKEY_DAKE2_MSG) {
     ret = receive_dake2(decoded, decoded_len, client);
-  } else if (message_type == OTRNG_PREKEY_SUCCESS_MESSAGE) {
+  } else if (message_type == OTRNG_PREKEY_SUCCESS_MSG) {
     ret = receive_success(decoded, decoded_len, client);
-  } else if (message_type == OTRNG_PREKEY_FAILURE_MESSAGE) {
+  } else if (message_type == OTRNG_PREKEY_FAILURE_MSG) {
     ret = receive_failure(decoded, decoded_len, client);
-  } else if (message_type == OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MESSAGE) {
+  } else if (message_type == OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG) {
     ret = receive_no_prekey_in_storage(decoded, decoded_len, client);
-  } else if (message_type == OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MESSAGE) {
+  } else if (message_type == OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG) {
     ret = receive_prekey_ensemble_retrieval(decoded, decoded_len, client);
-  } else if (message_type == OTRNG_PREKEY_STORAGE_STATUS_MESSAGE) {
+  } else if (message_type == OTRNG_PREKEY_STORAGE_STATUS_MSG) {
     ret = receive_storage_status(decoded, decoded_len, client);
   } else {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MESSAGE);
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
   }
 
   return ret;
@@ -1255,7 +1255,7 @@ otrng_result otrng_prekey_dake1_message_serialize(
   ret = otrng_xmalloc_z(ret_len);
 
   w += otrng_serialize_uint16(ret + w, OTRNG_PROTOCOL_VERSION_4);
-  w += otrng_serialize_uint8(ret + w, OTRNG_PREKEY_DAKE1_MESSAGE);
+  w += otrng_serialize_uint8(ret + w, OTRNG_PREKEY_DAKE1_MSG);
   w += otrng_serialize_uint32(ret + w, message->client_instance_tag);
   w += otrng_serialize_bytes_array(ret + w, client_profile_buff,
                                    client_profile_buff_len);
@@ -1295,7 +1295,7 @@ INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (message_type != OTRNG_PREKEY_DAKE2_MESSAGE) {
+  if (message_type != OTRNG_PREKEY_DAKE2_MSG) {
     return OTRNG_ERROR;
   }
 
@@ -1388,7 +1388,7 @@ INTERNAL otrng_result otrng_prekey_dake3_message_serialize(
   size_t w = 0;
 
   w += otrng_serialize_uint16(ret + w, OTRNG_PROTOCOL_VERSION_4);
-  w += otrng_serialize_uint8(ret + w, OTRNG_PREKEY_DAKE3_MESSAGE);
+  w += otrng_serialize_uint8(ret + w, OTRNG_PREKEY_DAKE3_MSG);
   w += otrng_serialize_uint32(ret + w, message->client_instance_tag);
   w += otrng_serialize_ring_sig(ret + w, message->sigma);
   w += otrng_serialize_data(ret + w, message->message, message->message_len);
@@ -1439,7 +1439,7 @@ INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (message_type != OTRNG_PREKEY_STORAGE_STATUS_MESSAGE) {
+  if (message_type != OTRNG_PREKEY_STORAGE_STATUS_MSG) {
     return OTRNG_ERROR;
   }
 
@@ -1457,12 +1457,12 @@ INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(
 
   w += read;
 
-  if (!otrng_deserialize_bytes_array(destination->mac, DATA_MESSAGE_MAC_BYTES,
+  if (!otrng_deserialize_bytes_array(destination->mac, DATA_MSG_MAC_BYTES,
                                      serialized + w, serialized_len - w)) {
     return OTRNG_ERROR;
   }
 
-  w += DATA_MESSAGE_MAC_BYTES;
+  w += DATA_MSG_MAC_BYTES;
 
   return OTRNG_SUCCESS;
 }
@@ -1476,7 +1476,7 @@ void otrng_prekey_storage_status_message_destroy(
 
   message->client_instance_tag = 0;
   message->stored_prekeys = 0;
-  otrng_secure_wipe(message->mac, DATA_MESSAGE_MAC_BYTES);
+  otrng_secure_wipe(message->mac, DATA_MSG_MAC_BYTES);
 }
 
 INTERNAL otrng_prekey_publication_message_s *
@@ -1534,7 +1534,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (message_type != OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MESSAGE) {
+  if (message_type != OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG) {
     return OTRNG_ERROR;
   }
 

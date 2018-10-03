@@ -100,9 +100,8 @@ static void test_data_message_serializes() {
       otrng_data_message_body_serialize(&serialized, &serlen, data_message));
 
   const int OUR_DH_LEN = 4 + 383;
-  const int MESSAGE_AS_DATA = 4 + 3;
-  g_assert_cmpint(DATA_MESSAGE_MIN_BYTES + OUR_DH_LEN + MESSAGE_AS_DATA, ==,
-                  serlen);
+  const int MSG_AS_DATA = 4 + 3;
+  g_assert_cmpint(DATA_MSG_MIN_BYTES + OUR_DH_LEN + MSG_AS_DATA, ==, serlen);
 
   char expected[] = {
       0x0,  0x04,           // version
@@ -134,8 +133,8 @@ static void test_data_message_serializes() {
 
   cursor += 4 + mpi_len;
 
-  otrng_assert_cmpmem(cursor, data_message->nonce, DATA_MESSAGE_NONCE_BYTES);
-  cursor += DATA_MESSAGE_NONCE_BYTES;
+  otrng_assert_cmpmem(cursor, data_message->nonce, DATA_MSG_NONCE_BYTES);
+  cursor += DATA_MSG_NONCE_BYTES;
 
   uint8_t expected_enc[7] = {
       0x0, 0x0, 0x0, 0x3, 0xE, 0xE, 0xE,
@@ -159,9 +158,8 @@ static void test_data_message_serializes_absent_dh() {
       otrng_data_message_body_serialize(&serialized, &serlen, data_message));
 
   const int OUR_DH_LEN = 4 + 0; // Should be zero per spec.
-  const int MESSAGE_AS_DATA = 4 + 3;
-  g_assert_cmpint(DATA_MESSAGE_MIN_BYTES + OUR_DH_LEN + MESSAGE_AS_DATA, ==,
-                  serlen);
+  const int MSG_AS_DATA = 4 + 3;
+  g_assert_cmpint(DATA_MSG_MIN_BYTES + OUR_DH_LEN + MSG_AS_DATA, ==, serlen);
 
   uint8_t *cursor = serialized;
   cursor += 24;                // Skip header
@@ -169,7 +167,7 @@ static void test_data_message_serializes_absent_dh() {
   cursor += 4;                 // Skip the DH's MPI header;
 
   // Make sure next field is deserialized as expected
-  otrng_assert_cmpmem(cursor, data_message->nonce, DATA_MESSAGE_NONCE_BYTES);
+  otrng_assert_cmpmem(cursor, data_message->nonce, DATA_MSG_NONCE_BYTES);
 
   otrng_data_message_free(data_message);
   free(serialized);
@@ -183,20 +181,20 @@ static void test_otrng_data_message_deserializes() {
   otrng_assert_is_success(
       otrng_data_message_body_serialize(&serialized, &serlen, data_message));
 
-  const uint8_t mac_data[DATA_MESSAGE_MAC_BYTES] = {
+  const uint8_t mac_data[DATA_MSG_MAC_BYTES] = {
       0x14, 0x9a, 0xf0, 0x93, 0xcc, 0x3f, 0x44, 0xf5, 0x1b, 0x41, 0x11,
       0xc3, 0x84, 0x10, 0x88, 0xed, 0xd3, 0xff, 0x66, 0x7e, 0xfd, 0x3c,
       0x6e, 0x34, 0xf2, 0xbf, 0x92, 0x8a, 0x5e, 0xf6, 0x4b, 0x40, 0x39,
       0xfe, 0xc1, 0xe7, 0xde, 0x4c, 0x17, 0x84, 0x2b, 0xfa, 0x2a, 0x55,
       0x8c, 0xd6, 0x1a, 0x08, 0x26, 0x4f, 0x61, 0x32, 0xdb, 0xd2, 0x58,
       0x90, 0x7d, 0x1e, 0x97, 0x35, 0xd2, 0x38, 0x60, 0xa1};
-  memcpy(data_message->mac, mac_data, DATA_MESSAGE_MAC_BYTES);
-  serialized = otrng_xrealloc(serialized, serlen + DATA_MESSAGE_MAC_BYTES);
-  memcpy(serialized + serlen, mac_data, DATA_MESSAGE_MAC_BYTES);
+  memcpy(data_message->mac, mac_data, DATA_MSG_MAC_BYTES);
+  serialized = otrng_xrealloc(serialized, serlen + DATA_MSG_MAC_BYTES);
+  memcpy(serialized + serlen, mac_data, DATA_MSG_MAC_BYTES);
 
   data_message_s *deserialized = otrng_data_message_new();
   otrng_assert_is_success(otrng_data_message_deserialize(
-      deserialized, serialized, serlen + DATA_MESSAGE_MAC_BYTES, NULL));
+      deserialized, serialized, serlen + DATA_MSG_MAC_BYTES, NULL));
 
   otrng_assert(data_message->sender_instance_tag ==
                deserialized->sender_instance_tag);
@@ -211,12 +209,11 @@ static void test_otrng_data_message_deserializes() {
                       ED448_POINT_BYTES);
   otrng_assert(dh_mpi_cmp(data_message->dh, deserialized->dh) == 0);
   otrng_assert_cmpmem(data_message->nonce, deserialized->nonce,
-                      DATA_MESSAGE_NONCE_BYTES);
+                      DATA_MSG_NONCE_BYTES);
   otrng_assert_cmpmem(data_message->enc_message, deserialized->enc_message,
                       data_message->enc_message_len);
   otrng_assert(data_message->enc_message_len == deserialized->enc_message_len);
-  otrng_assert_cmpmem(data_message->mac, deserialized->mac,
-                      DATA_MESSAGE_MAC_BYTES);
+  otrng_assert_cmpmem(data_message->mac, deserialized->mac, DATA_MSG_MAC_BYTES);
 
   otrng_data_message_free(data_message);
   otrng_data_message_free(deserialized);
@@ -238,7 +235,7 @@ static void test_data_message_valid() {
       otrng_data_message_body_serialize(&body, &bodylen, data_message));
 
   otrng_assert_is_success(otrng_data_message_authenticator(
-      data_message->mac, DATA_MESSAGE_MAC_BYTES, mac_key, body, bodylen));
+      data_message->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
 
   free(body);
 
@@ -256,7 +253,7 @@ static void test_data_message_valid() {
       otrng_data_message_body_serialize(&body, &bodylen, data_message));
 
   otrng_assert_is_success(otrng_data_message_authenticator(
-      data_message->mac, DATA_MESSAGE_MAC_BYTES, mac_key, body, bodylen));
+      data_message->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
 
   free(body);
 

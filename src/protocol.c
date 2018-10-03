@@ -109,19 +109,19 @@ static char *build_error_message(const char *error_code,
 
 INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   switch (err_code) {
-  case OTRNG_ERR_MESSAGE_NONE:
+  case OTRNG_ERR_MSG_NONE:
     break;
-  case OTRNG_ERR_MESSAGE_UNREADABLE:
+  case OTRNG_ERR_MSG_UNREADABLE:
     *to_send = build_error_message(ERROR_CODE_1, "OTRNG_ERR_MSG_UNREADABLE");
     break;
-  case OTRNG_ERR_MESSAGE_NOT_PRIVATE:
+  case OTRNG_ERR_MSG_NOT_PRIVATE:
     *to_send =
         build_error_message(ERROR_CODE_2, "OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
     break;
-  case OTRNG_ERR_MESSAGE_ENCRYPTION_ERROR:
+  case OTRNG_ERR_MSG_ENCRYPTION_ERROR:
     *to_send = build_error_message(ERROR_CODE_3, "OTRNG_ERR_ENCRYPTION_ERROR");
     break;
-  case OTRNG_ERR_MESSAGE_MALFORMED:
+  case OTRNG_ERR_MSG_MALFORMED:
     *to_send = build_error_message(ERROR_CODE_4, "OTRNG_ERR_MALFORMED");
     break;
   }
@@ -133,7 +133,7 @@ tstatic otrng_result encrypt_data_message(
   uint8_t *c = NULL;
   int err;
 
-  random_bytes(data_message->nonce, DATA_MESSAGE_NONCE_BYTES);
+  random_bytes(data_message->nonce, DATA_MSG_NONCE_BYTES);
 
   c = otrng_xmalloc_z(message_len);
 
@@ -150,7 +150,7 @@ tstatic otrng_result encrypt_data_message(
 #ifdef DEBUG
   debug_print("\n");
   debug_print("nonce = ");
-  otrng_memdump(data_message->nonce, DATA_MESSAGE_NONCE_BYTES);
+  otrng_memdump(data_message->nonce, DATA_MSG_NONCE_BYTES);
   debug_print("message = ");
   otrng_memdump(message, message_len);
   debug_print("cipher = ");
@@ -205,7 +205,7 @@ tstatic otrng_result serialize_and_encode_data_message(
   }
 
   if (to_reveal_mac_keys) {
-    otrng_serialize_bytes_array(ser + bodylen + DATA_MESSAGE_MAC_BYTES,
+    otrng_serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES,
                                 to_reveal_mac_keys, to_reveal_mac_keys_len);
   }
 
@@ -251,7 +251,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
   data_message->receiver_instance_tag = otr->their_instance_tag;
 
   if (!encrypt_data_message(data_message, message, message_len, enc_key)) {
-    otrng_error_message(to_send, OTRNG_ERR_MESSAGE_ENCRYPTION_ERROR);
+    otrng_error_message(to_send, OTRNG_ERR_MSG_ENCRYPTION_ERROR);
 
     otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
     otrng_secure_wipe(mac_key, MAC_KEY_BYTES);

@@ -51,9 +51,9 @@ static void test_tlv_parse() {
   tlv_list_s *tlvs = otrng_parse_tlvs(message, sizeof(message));
   assert_tlv_structure(tlvs, OTRNG_TLV_SMP_ABORT, sizeof(data), data,
                        otrng_true);
-  assert_tlv_structure(tlvs->next, OTRNG_TLV_SMP_MESSAGE_1, sizeof(data2),
-                       data2, otrng_true);
-  assert_tlv_structure(tlvs->next->next, OTRNG_TLV_SMP_MESSAGE_4, sizeof(data),
+  assert_tlv_structure(tlvs->next, OTRNG_TLV_SMP_MSG_1, sizeof(data2), data2,
+                       otrng_true);
+  assert_tlv_structure(tlvs->next->next, OTRNG_TLV_SMP_MSG_4, sizeof(data),
                        data, otrng_false);
 
   otrng_tlv_list_free(tlvs);
@@ -65,24 +65,24 @@ static void test_otrng_append_tlv() {
 
   tlv_list_s *tlvs = NULL;
   tlv_s *smp_message2_tlv =
-      otrng_tlv_new(OTRNG_TLV_SMP_MESSAGE_2, sizeof(smp2_data), smp2_data);
+      otrng_tlv_new(OTRNG_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data);
   tlv_s *smp_message3_tlv =
-      otrng_tlv_new(OTRNG_TLV_SMP_MESSAGE_3, sizeof(smp3_data), smp3_data);
+      otrng_tlv_new(OTRNG_TLV_SMP_MSG_3, sizeof(smp3_data), smp3_data);
 
   tlvs = otrng_append_tlv(tlvs, smp_message2_tlv);
 
-  assert_tlv_structure(tlvs, OTRNG_TLV_SMP_MESSAGE_2, sizeof(smp2_data),
-                       smp2_data, otrng_false);
+  assert_tlv_structure(tlvs, OTRNG_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data,
+                       otrng_false);
 
   tlvs = otrng_append_tlv(tlvs, smp_message3_tlv);
 
-  assert_tlv_structure(tlvs, OTRNG_TLV_SMP_MESSAGE_2, sizeof(smp2_data),
-                       smp2_data, otrng_true);
-  assert_tlv_structure(tlvs->next, OTRNG_TLV_SMP_MESSAGE_3, sizeof(smp3_data),
+  assert_tlv_structure(tlvs, OTRNG_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data,
+                       otrng_true);
+  assert_tlv_structure(tlvs->next, OTRNG_TLV_SMP_MSG_3, sizeof(smp3_data),
                        smp3_data, otrng_false);
 
-  assert_tlv_structure(tlvs, OTRNG_TLV_SMP_MESSAGE_2, sizeof(smp2_data),
-                       smp2_data, otrng_true);
+  assert_tlv_structure(tlvs, OTRNG_TLV_SMP_MSG_2, sizeof(smp2_data), smp2_data,
+                       otrng_true);
 
   otrng_tlv_list_free(tlvs);
 }

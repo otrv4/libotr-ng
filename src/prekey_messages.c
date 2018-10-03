@@ -50,7 +50,7 @@ INTERNAL otrng_result otrng_prekey_success_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (message_type != OTRNG_PREKEY_SUCCESS_MESSAGE) {
+  if (message_type != OTRNG_PREKEY_SUCCESS_MSG) {
     return OTRNG_ERROR;
   }
 

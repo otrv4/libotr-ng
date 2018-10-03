@@ -298,7 +298,7 @@ INTERNAL void otrng_key_manager_calculate_authenticator(
   hash_update(hd, mac_key, MAC_KEY_BYTES);
   hash_update(hd, sections, HASH_BYTES);
 
-  hash_final(hd, authenticator, DATA_MESSAGE_MAC_BYTES);
+  hash_final(hd, authenticator, DATA_MSG_MAC_BYTES);
   hash_destroy(hd);
 }
 
