@@ -47,51 +47,57 @@
 #define OTRNG_PREKEY_CLIENT_INVALID_FAILURE 5
 
 static void notify_error_callback(otrng_client_s *client, int error) {
-  const otrng_prekey_client_s *pc = client->prekey_client;
-  pc->callbacks->notify_error(client, error, pc->callbacks->ctx);
+  const otrng_prekey_client_s *prekey_client = client->prekey_client;
+  prekey_client->callbacks->notify_error(client, error,
+                                         prekey_client->callbacks->ctx);
 }
 
 static void prekey_storage_status_received_callback(
     otrng_client_s *client, const otrng_prekey_storage_status_message_s *msg) {
-  const otrng_prekey_client_s *pc = client->prekey_client;
-  pc->callbacks->storage_status_received(client, msg, pc->callbacks->ctx);
+  const otrng_prekey_client_s *prekey_client = client->prekey_client;
+  prekey_client->callbacks->storage_status_received(
+      client, msg, prekey_client->callbacks->ctx);
 }
 
 static void success_received_callback(otrng_client_s *client) {
-  const otrng_prekey_client_s *pc = client->prekey_client;
-  pc->callbacks->success_received(client, pc->callbacks->ctx);
+  const otrng_prekey_client_s *prekey_client = client->prekey_client;
+  prekey_client->callbacks->success_received(client,
+                                             prekey_client->callbacks->ctx);
 }
 
 static void failure_received_callback(otrng_client_s *client) {
-  const otrng_prekey_client_s *pc = client->prekey_client;
-  pc->callbacks->failure_received(client, pc->callbacks->ctx);
+  const otrng_prekey_client_s *prekey_client = client->prekey_client;
+  prekey_client->callbacks->failure_received(client,
+                                             prekey_client->callbacks->ctx);
 }
 
 static void no_prekey_in_storage_received_callback(otrng_client_s *client) {
-  const otrng_prekey_client_s *pc = client->prekey_client;
-  pc->callbacks->no_prekey_in_storage_received(client, pc->callbacks->ctx);
+  const otrng_prekey_client_s *prekey_client = client->prekey_client;
+  prekey_client->callbacks->no_prekey_in_storage_received(
+      client, prekey_client->callbacks->ctx);
 }
 
 static void low_prekey_messages_in_storage_callback(otrng_client_s *client) {
-  const otrng_prekey_client_s *pc = client->prekey_client;
-  pc->callbacks->low_prekey_messages_in_storage(client, pc->server_identity,
-                                                pc->callbacks->ctx);
+  const otrng_prekey_client_s *prekey_client = client->prekey_client;
+  prekey_client->callbacks->low_prekey_messages_in_storage(
+      client, prekey_client->server_identity, prekey_client->callbacks->ctx);
 }
 
 static void
 prekey_ensembles_received_callback(otrng_client_s *client,
                                    prekey_ensemble_s *const *const ensembles,
                                    uint8_t num_ensembles) {
-  const otrng_prekey_client_s *pc = client->prekey_client;
-  pc->callbacks->prekey_ensembles_received(client, ensembles, num_ensembles,
-                                           pc->callbacks->ctx);
+  const otrng_prekey_client_s *prekey_client = client->prekey_client;
+  prekey_client->callbacks->prekey_ensembles_received(
+      client, ensembles, num_ensembles, prekey_client->callbacks->ctx);
 }
 
 static int build_prekey_publication_message_callback(
     otrng_prekey_publication_message_s *pub_msg, otrng_client_s *client) {
-  const otrng_prekey_client_s *pc = client->prekey_client;
-  return pc->callbacks->build_prekey_publication_message(
-      client, pub_msg, pc->publication_policy, pc->callbacks->ctx);
+  const otrng_prekey_client_s *prekey_client = client->prekey_client;
+  return prekey_client->callbacks->build_prekey_publication_message(
+      client, pub_msg, prekey_client->publication_policy,
+      prekey_client->callbacks->ctx);
 }
 
 API otrng_prekey_client_s *otrng_prekey_client_new() {
@@ -726,7 +732,7 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   uint8_t usage_receiver_client_profile = 0x05;
   uint8_t usage_receiver_prekey_composite_identity = 0x06;
   uint8_t usage_receiver_prekey_composite_phi = 0x07;
-  uint8_t *ss = otrng_secure_alloc(HASH_BYTES);
+  uint8_t *shared_secret_value = otrng_secure_alloc(HASH_BYTES);
   uint8_t *ecdh_shared = otrng_secure_alloc(ED448_POINT_BYTES);
   uint8_t usage_SK = 0x01;
   uint8_t usage_preMAC_key = 0x08;
@@ -736,22 +742,22 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
   size_t serialized_len = 0;
   char *ret;
   uint8_t m[64];
-  otrng_prekey_client_s *pc = client->prekey_client;
+  otrng_prekey_client_s *prekey_client = client->prekey_client;
 
   otrng_prekey_dake3_message_init(&msg);
-  msg.client_instance_tag = pc->instance_tag;
+  msg.client_instance_tag = prekey_client->instance_tag;
 
-  composite_phi =
-      otrng_prekey_client_get_expected_composite_phi(&composite_phi_len, pc);
+  composite_phi = otrng_prekey_client_get_expected_composite_phi(
+      &composite_phi_len, prekey_client);
   if (!composite_phi) {
-    free(ss);
+    free(shared_secret_value);
     free(ecdh_shared);
     return NULL;
   }
 
   if (!otrng_client_profile_serialize(&our_profile, &our_profile_len,
-                                      pc->client_profile)) {
-    free(ss);
+                                      prekey_client->client_profile)) {
+    free(shared_secret_value);
     free(ecdh_shared);
     return NULL;
   }
@@ -774,7 +780,7 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
 
   w += HASH_BYTES;
 
-  w += otrng_serialize_ec_point(t + w, pc->ephemeral_ecdh->pub);
+  w += otrng_serialize_ec_point(t + w, prekey_client->ephemeral_ecdh->pub);
   w += otrng_serialize_ec_point(t + w, msg2->S);
 
   shake_256_prekey_server_kdf(t + w, HASH_BYTES,
@@ -784,80 +790,83 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
 
   /* H_a, sk_ha, {H_a, H_s, S}, t */
   otrng_rsig_authenticate_with_usage_and_domain(
-      usage_auth, prekey_hash_domain, msg.sigma, pc->keypair->priv,
-      pc->keypair->pub, pc->keypair->pub, msg2->server_pub_key, msg2->S, t,
-      tlen);
+      usage_auth, prekey_hash_domain, msg.sigma, prekey_client->keypair->priv,
+      prekey_client->keypair->pub, prekey_client->keypair->pub,
+      msg2->server_pub_key, msg2->S, t, tlen);
   free(t);
 
   /* ECDH(i, S) */
   // TODO: check is the ephemeral is erased
-  if (otrng_failed(otrng_ecdh_shared_secret(
-          ecdh_shared, ED448_POINT_BYTES, pc->ephemeral_ecdh->priv, msg2->S))) {
-    free(ss);
+  if (otrng_failed(otrng_ecdh_shared_secret(ecdh_shared, ED448_POINT_BYTES,
+                                            prekey_client->ephemeral_ecdh->priv,
+                                            msg2->S))) {
+    free(shared_secret_value);
     free(ecdh_shared);
     return NULL;
   }
 
   /* SK = KDF(0x01, ECDH(i, S), 64) */
-  shake_256_prekey_server_kdf(ss, HASH_BYTES, usage_SK, ecdh_shared,
-                              ED448_POINT_BYTES);
+  shake_256_prekey_server_kdf(shared_secret_value, HASH_BYTES, usage_SK,
+                              ecdh_shared, ED448_POINT_BYTES);
 
   /* prekey_mac_k = KDF(0x08, SK, 64) */
-  shake_256_prekey_server_kdf(pc->mac_key, MAC_KEY_BYTES, usage_preMAC_key, ss,
+  shake_256_prekey_server_kdf(prekey_client->mac_key, MAC_KEY_BYTES,
+                              usage_preMAC_key, shared_secret_value,
                               HASH_BYTES);
 
   /* Attach MESSAGE in the message */
-  if (pc->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
+  if (prekey_client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
     if (!otrng_prekey_dake3_message_append_storage_information_request(
-            &msg, pc->mac_key)) {
-      otrng_secure_wipe(ss, HASH_BYTES);
-      free(ss);
+            &msg, prekey_client->mac_key)) {
+      otrng_secure_wipe(shared_secret_value, HASH_BYTES);
+      free(shared_secret_value);
       otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
       free(ecdh_shared);
       return NULL;
     }
-  } else if (pc->after_dake == OTRNG_PREKEY_PREKEY_PUBLICATION) {
+  } else if (prekey_client->after_dake == OTRNG_PREKEY_PREKEY_PUBLICATION) {
     otrng_prekey_publication_message_s *pub_msg =
         otrng_prekey_publication_message_new();
     if (!build_prekey_publication_message_callback(pub_msg, client)) {
-      otrng_secure_wipe(ss, HASH_BYTES);
-      free(ss);
+      otrng_secure_wipe(shared_secret_value, HASH_BYTES);
+      free(shared_secret_value);
       otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
       free(ecdh_shared);
       return NULL;
     }
 
     /* m for proofs = KDF(0x12, SK, 64) */
-    shake_256_prekey_server_kdf(m, 64, usage_proof_context, ss, HASH_BYTES);
+    shake_256_prekey_server_kdf(m, 64, usage_proof_context, shared_secret_value,
+                                HASH_BYTES);
 
     success = otrng_prekey_dake3_message_append_prekey_publication_message(
-        pub_msg, &msg, pc->mac_key, m);
+        pub_msg, &msg, prekey_client->mac_key, m);
     otrng_prekey_publication_message_destroy(pub_msg);
 
     if (!success) {
-      otrng_secure_wipe(ss, HASH_BYTES);
-      free(ss);
+      otrng_secure_wipe(shared_secret_value, HASH_BYTES);
+      free(shared_secret_value);
       otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
       free(ecdh_shared);
       return NULL;
     }
   } else {
-    otrng_secure_wipe(ss, HASH_BYTES);
-    free(ss);
+    otrng_secure_wipe(shared_secret_value, HASH_BYTES);
+    free(shared_secret_value);
     otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
     free(ecdh_shared);
     return NULL;
   }
 
-  pc->after_dake = 0;
+  prekey_client->after_dake = 0;
 
   success =
       otrng_prekey_dake3_message_serialize(&serialized, &serialized_len, &msg);
   otrng_prekey_dake3_message_destroy(&msg);
 
   if (!success) {
-    otrng_secure_wipe(ss, HASH_BYTES);
-    free(ss);
+    otrng_secure_wipe(shared_secret_value, HASH_BYTES);
+    free(shared_secret_value);
     otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
     free(ecdh_shared);
     return NULL;
@@ -865,8 +874,8 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
 
   ret = prekey_encode(serialized, serialized_len);
   free(serialized);
-  otrng_secure_wipe(ss, HASH_BYTES);
-  free(ss);
+  otrng_secure_wipe(shared_secret_value, HASH_BYTES);
+  free(shared_secret_value);
   otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
   free(ecdh_shared);
 
