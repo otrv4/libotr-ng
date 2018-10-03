@@ -36,7 +36,7 @@ static void test_derive_ratchet_keys() {
   key_manager_derive_ratchet_keys(manager, NULL, 's');
 
   root_key_t expected_root_key;
-  sending_chain_key expected_chain_key_s;
+  sending_chain_key_t expected_chain_key_s;
 
   uint8_t buff[1] = {0x14};
   uint8_t buff2[1] = {0x15};
@@ -56,7 +56,7 @@ static void test_derive_ratchet_keys() {
   hash_update(hd2, rk, sizeof(root_key_t));
   hash_update(hd2, manager->shared_secret, sizeof(shared_secret_t));
 
-  hash_final(hd2, expected_chain_key_s, sizeof(sending_chain_key));
+  hash_final(hd2, expected_chain_key_s, sizeof(sending_chain_key_t));
   hash_destroy(hd2);
 
   otrng_key_manager_destroy(manager);
@@ -91,7 +91,7 @@ static void test_calculate_extra_symm_key() {
       0x1e, 0xcb, 0x1e, 0x31, 0x74, 0xad, 0x9e, 0xa0, 0x23, 0xf9,
   };
 
-  memcpy(s, manager.current->chain_s, sizeof(sending_chain_key));
+  memcpy(s, manager.current->chain_s, sizeof(sending_chain_key_t));
 
   calculate_extra_key(&manager, NULL, 's');
   otrng_assert_cmpmem(expected_extra_key, manager.extra_symmetric_key,

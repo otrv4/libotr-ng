@@ -1774,7 +1774,7 @@ tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *source,
 }
 
 tstatic otrng_result decrypt_data_message(otrng_response_s *response,
-                                          const message_enc_key enc_key,
+                                          const message_encryption_key_t enc_key,
                                           const data_message_s *message) {
   string_p *destination = &response->to_display;
   uint8_t *plain;
@@ -1784,7 +1784,7 @@ tstatic otrng_result decrypt_data_message(otrng_response_s *response,
   debug_print("\n");
   debug_print("DECRYPTING\n");
   debug_print("enc_key = ");
-  otrng_memdump(enc_key, ENC_KEY_BYTES);
+  otrng_memdump(enc_key, ENCRYPTION_KEY_BYTES);
   debug_print("nonce = ");
   otrng_memdump(message->nonce, DATA_MESSAGE_NONCE_BYTES);
 #endif
@@ -1888,12 +1888,12 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     otrng_response_s *response, otrng_warning *warn, const uint8_t *buff,
     size_t buflen, otrng_s *otr) {
   data_message_s *message = otrng_data_message_new();
-  message_enc_key enc_key;
+  message_encryption_key_t enc_key;
   message_mac_key mac_key;
   size_t read = 0;
   receiving_ratchet_s *tmp_receiving_ratchet;
 
-  memset(enc_key, 0, ENC_KEY_BYTES);
+  memset(enc_key, 0, ENCRYPTION_KEY_BYTES);
   memset(mac_key, 0, MAC_KEY_BYTES);
 
   response->to_display = NULL;
@@ -1956,7 +1956,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       tmp_receiving_ratchet->k = tmp_receiving_ratchet->k + 1;
     }
     if (!otrng_valid_data_message(mac_key, message)) {
-      otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
+      otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
       otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
       otrng_data_message_free(message);
 
@@ -1977,7 +1977,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
       if (message->flags != MESSAGE_FLAGS_IGNORE_UNREADABLE) {
         otrng_error_message(&response->to_send, OTRNG_ERR_MESSAGE_UNREADABLE);
-        otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
+        otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
         otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
 
         if (tmp_receiving_ratchet->skipped_keys) {
@@ -1990,7 +1990,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
         return OTRNG_ERROR;
       }
       if (message->flags == MESSAGE_FLAGS_IGNORE_UNREADABLE) {
-        otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
+        otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
         otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
         if (tmp_receiving_ratchet->skipped_keys) {
           otrng_list_free_full(tmp_receiving_ratchet->skipped_keys);
@@ -2002,7 +2002,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       }
     }
 
-    otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
+    otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
 
     otrng_receiving_ratchet_copy(otr->keys, tmp_receiving_ratchet);
     otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
