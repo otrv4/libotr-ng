@@ -219,24 +219,25 @@ INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
 tstatic void otrng_ec_sign(eddsa_signature sig,
                            const uint8_t sym[ED448_PRIVATE_BYTES],
                            const uint8_t pub[ED448_POINT_BYTES],
-                           const uint8_t *msg, size_t msg_len) {
-  goldilocks_ed448_sign(sig, sym, pub, msg, msg_len, 0, NULL, 0);
+                           const uint8_t *message, size_t message_len) {
+  goldilocks_ed448_sign(sig, sym, pub, message, message_len, 0, NULL, 0);
 }
 
 INTERNAL void otrng_ec_sign_simple(eddsa_signature sig,
                                    const uint8_t sym[ED448_PRIVATE_BYTES],
-                                   const uint8_t *msg, size_t msg_len) {
+                                   const uint8_t *message, size_t message_len) {
   uint8_t pub[ED448_POINT_BYTES];
 
   memset(pub, 0, ED448_POINT_BYTES);
   otrng_ec_derive_public_key(pub, sym);
-  otrng_ec_sign(sig, sym, pub, msg, msg_len);
+  otrng_ec_sign(sig, sym, pub, message, message_len);
 }
 
 INTERNAL otrng_bool otrng_ec_verify(const uint8_t sig[ED448_SIGNATURE_BYTES],
                                     const uint8_t pub[ED448_POINT_BYTES],
-                                    const uint8_t *msg, size_t msg_len) {
-  if (goldilocks_ed448_verify(sig, pub, msg, msg_len, 0, NULL, 0)) {
+                                    const uint8_t *message,
+                                    size_t message_len) {
+  if (goldilocks_ed448_verify(sig, pub, message, message_len, 0, NULL, 0)) {
     return otrng_true;
   }
 

@@ -99,12 +99,13 @@ static void test_defragment_valid_message(void) {
 }
 
 static void test_defragment_single_fragment(void) {
-  const string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
+  const string_p message =
+      "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
 
   list_element_s *list = NULL;
   char *unfrag = NULL;
 
-  otrng_assert_is_success(otrng_unfragment_message(&unfrag, &list, msg, 2));
+  otrng_assert_is_success(otrng_unfragment_message(&unfrag, &list, message, 2));
 
   otrng_assert(otrng_list_len(list) == 0);
   g_assert_cmpstr(unfrag, ==, "small lol");
@@ -114,12 +115,12 @@ static void test_defragment_single_fragment(void) {
 }
 
 static void test_defragment_without_comma_fails(void) {
-  const string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,blergh";
+  const string_p message = "?OTR|00000000|00000001|00000002,00001,00001,blergh";
 
   list_element_s *list = NULL;
 
   char *unfrag = NULL;
-  otrng_assert_is_error(otrng_unfragment_message(&unfrag, &list, msg, 2));
+  otrng_assert_is_error(otrng_unfragment_message(&unfrag, &list, message, 2));
 
   otrng_assert(list == NULL);
   g_assert_cmpstr(unfrag, ==, NULL);
@@ -220,12 +221,13 @@ static void test_defragment_out_of_order_message(void) {
 }
 
 static void test_defragment_fails_for_another_instance(void) {
-  const string_p msg = "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
+  const string_p message =
+      "?OTR|00000000|00000001|00000002,00001,00001,small lol,";
 
   list_element_s *list = NULL;
   char *unfrag = NULL;
 
-  otrng_assert_is_success(otrng_unfragment_message(&unfrag, &list, msg, 1));
+  otrng_assert_is_success(otrng_unfragment_message(&unfrag, &list, message, 1));
 
   otrng_assert(list == NULL);
   g_assert_cmpstr(unfrag, ==, NULL);
@@ -234,44 +236,47 @@ static void test_defragment_fails_for_another_instance(void) {
 }
 
 static void test_defragment_regular_otr_message(void) {
-  const string_p msg = "?OTR:not a fragmented message.";
+  const string_p message = "?OTR:not a fragmented message.";
 
   list_element_s *list = NULL;
   char *unfrag = NULL;
 
-  otrng_assert_is_success(otrng_unfragment_message(&unfrag, &list, msg, 1));
+  otrng_assert_is_success(otrng_unfragment_message(&unfrag, &list, message, 1));
 
   otrng_assert(list == NULL);
-  g_assert_cmpstr(unfrag, ==, msg);
+  g_assert_cmpstr(unfrag, ==, message);
 
   free(unfrag);
   otrng_list_free_nodes(list);
 }
 
 static void test_defragment_two_messages(void) {
-  const string_p msg1_fragments[2];
-  const string_p msg2_fragments[2];
-  msg1_fragments[0] = "?OTR|00000001|00000001|00000002,00001,00002,first ,";
-  msg1_fragments[1] = "?OTR|00000001|00000001|00000002,00002,00002,message,";
-  msg2_fragments[0] = "?OTR|00000002|00000001|00000002,00001,00002,second ,";
-  msg2_fragments[1] = "?OTR|00000002|00000001|00000002,00002,00002,message,";
+  const string_p message1_fragments[2];
+  const string_p message2_fragments[2];
+  message1_fragments[0] = "?OTR|00000001|00000001|00000002,00001,00002,first ,";
+  message1_fragments[1] =
+      "?OTR|00000001|00000001|00000002,00002,00002,message,";
+  message2_fragments[0] =
+      "?OTR|00000002|00000001|00000002,00001,00002,second ,";
+  message2_fragments[1] =
+      "?OTR|00000002|00000001|00000002,00002,00002,message,";
 
   list_element_s *list = NULL;
 
   char *unfrag = NULL;
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, &list, msg1_fragments[0], 2));
+      otrng_unfragment_message(&unfrag, &list, message1_fragments[0], 2));
 
   otrng_assert(!unfrag);
   otrng_assert(otrng_list_len(list) == 1);
 
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, &list, msg2_fragments[0], 2));
+      otrng_unfragment_message(&unfrag, &list, message2_fragments[0], 2));
   otrng_assert(!unfrag);
   otrng_assert(otrng_list_len(list) == 2);
 
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, &list, msg2_fragments[1], 2));
+      otrng_unfragment_message(&unfrag, &list, message2_fragments[1], 2));
   g_assert_cmpstr(unfrag, ==, "second message");
   otrng_assert(otrng_list_len(list) == 1);
 
@@ -279,7 +284,7 @@ static void test_defragment_two_messages(void) {
   unfrag = NULL;
 
   otrng_assert_is_success(
-      otrng_unfragment_message(&unfrag, &list, msg1_fragments[1], 2));
+      otrng_unfragment_message(&unfrag, &list, message1_fragments[1], 2));
   g_assert_cmpstr(unfrag, ==, "first message");
   otrng_assert(otrng_list_len(list) == 0);
 

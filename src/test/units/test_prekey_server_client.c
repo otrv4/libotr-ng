@@ -57,15 +57,15 @@ static void test_prekey_dake1_message_serialize(void) {
       0xd1, 0x4c, 0xc0, 0x9a, 0x5e, 0x70, 0x9a, 0x5c, 0x77, 0x18, 0xe1, 0x8f,
       0xeb, 0x57, 0xd3, 0x8d, 0x6,  0xf4, 0xfb, 0x27, 0x0};
 
-  otrng_prekey_dake1_message_s msg;
-  msg.client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  otrng_prekey_dake1_message_s message;
+  message.client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
 
-  msg.client_instance_tag = 0x56781234;
+  message.client_instance_tag = 0x56781234;
+  otrng_assert_is_success(otrng_client_profile_deserialize(
+      message.client_profile, ser_client_profile, sizeof(ser_client_profile),
+      NULL));
   otrng_assert_is_success(
-      otrng_client_profile_deserialize(msg.client_profile, ser_client_profile,
-                                       sizeof(ser_client_profile), NULL));
-  otrng_assert_is_success(
-      otrng_deserialize_ec_point(msg.I, ser_i, sizeof(ser_i)));
+      otrng_deserialize_ec_point(message.I, ser_i, sizeof(ser_i)));
 
   uint8_t header[] = {
       0x00, 0x04,             // protocol version
@@ -76,8 +76,8 @@ static void test_prekey_dake1_message_serialize(void) {
   uint8_t *dst = NULL;
   size_t dstlen = 0;
   otrng_assert_is_success(
-      otrng_prekey_dake1_message_serialize(&dst, &dstlen, &msg));
-  otrng_prekey_dake1_message_destroy(&msg);
+      otrng_prekey_dake1_message_serialize(&dst, &dstlen, &message));
+  otrng_prekey_dake1_message_destroy(&message);
 
   size_t w = 0;
   otrng_assert_cmpmem(dst, header, sizeof(header));
@@ -189,14 +189,14 @@ static void test_prekey_dake3_message_serialize(void) {
       0x89, 0xe5, 0x77, 0xb8, 0x1a, 0xa3, 0xab, 0x94, 0xe1, 0x2e, 0x78, 0xf7,
       0x3d, 0x87, 0x43, 0x34, 0x94, 0xd9, 0xef, 0xb9, 0xf8, 0x94, 0x25, 0x32};
 
-  otrng_prekey_dake3_message_s msg;
-  otrng_prekey_dake3_message_init(&msg);
-  msg.client_instance_tag = 0x56781234;
-  otrng_assert_is_success(otrng_deserialize_ring_sig(msg.sigma, sigma_ser,
+  otrng_prekey_dake3_message_s message;
+  otrng_prekey_dake3_message_init(&message);
+  message.client_instance_tag = 0x56781234;
+  otrng_assert_is_success(otrng_deserialize_ring_sig(message.sigma, sigma_ser,
                                                      sizeof(sigma_ser), NULL));
 
-  msg.message = (uint8_t *)otrng_xstrdup("hi");
-  msg.message_len = 3;
+  message.message = (uint8_t *)otrng_xstrdup("hi");
+  message.message_len = 3;
 
   uint8_t header[] = {
       0x00, 0x04,             // protocol version
@@ -207,8 +207,8 @@ static void test_prekey_dake3_message_serialize(void) {
   uint8_t *dst = NULL;
   size_t dstlen = 0;
   otrng_assert_is_success(
-      otrng_prekey_dake3_message_serialize(&dst, &dstlen, &msg));
-  otrng_prekey_dake3_message_destroy(&msg);
+      otrng_prekey_dake3_message_serialize(&dst, &dstlen, &message));
+  otrng_prekey_dake3_message_destroy(&message);
 
   size_t w = 0;
   otrng_assert_cmpmem(dst, header, sizeof(header));
@@ -229,8 +229,8 @@ static void test_prekey_dake3_message_serialize(void) {
 }
 
 static void test_prekey_dake3_message_append_storage_info_req(void) {
-  otrng_prekey_dake3_message_s msg;
-  otrng_prekey_dake3_message_init(&msg);
+  otrng_prekey_dake3_message_s message;
+  otrng_prekey_dake3_message_init(&message);
 
   uint8_t prekey_mac[64] = {
       0x26, 0xcf, 0xec, 0x88, 0x85, 0x11, 0x4a, 0x5f, 0x79, 0xf4, 0x2c,
@@ -258,12 +258,12 @@ static void test_prekey_dake3_message_append_storage_info_req(void) {
 
   otrng_assert_is_success(
       otrng_prekey_dake3_message_append_storage_information_request(
-          &msg, prekey_mac));
+          &message, prekey_mac));
 
-  g_assert_cmpint(msg.message_len, ==, sizeof(expected));
-  otrng_assert_cmpmem(msg.message, expected, sizeof(expected));
+  g_assert_cmpint(message.message_len, ==, sizeof(expected));
+  otrng_assert_cmpmem(message.message, expected, sizeof(expected));
 
-  otrng_prekey_dake3_message_destroy(&msg);
+  otrng_prekey_dake3_message_destroy(&message);
 }
 
 static void test_prekey_storage_status_message_deserialize(void) {
@@ -288,15 +288,15 @@ static void test_prekey_storage_status_message_deserialize(void) {
       0x39, 0x51, 0x15, 0x6e, 0xf6, 0xea, 0x99, 0x97, 0xdb, 0xf3, 0x8d, 0xe9,
       0xb8, 0xae, 0x46, 0x9e};
 
-  otrng_prekey_storage_status_message_s msg;
+  otrng_prekey_storage_status_message_s message;
   otrng_assert_is_success(otrng_prekey_storage_status_message_deserialize(
-      &msg, serialized, sizeof(serialized)));
+      &message, serialized, sizeof(serialized)));
 
-  g_assert_cmpint(msg.client_instance_tag, ==, 0x7e5a9a61);
-  g_assert_cmpint(msg.stored_prekeys, ==, 0x0);
-  otrng_assert_cmpmem(msg.mac, serialized + 11, sizeof(msg.mac));
+  g_assert_cmpint(message.client_instance_tag, ==, 0x7e5a9a61);
+  g_assert_cmpint(message.stored_prekeys, ==, 0x0);
+  otrng_assert_cmpmem(message.mac, serialized + 11, sizeof(message.mac));
 
-  otrng_prekey_storage_status_message_destroy(&msg);
+  otrng_prekey_storage_status_message_destroy(&message);
 }
 
 static void test_prekey_ensemble_retrieval_message_deserialize(void) {
@@ -462,23 +462,23 @@ static void test_prekey_ensemble_retrieval_message_deserialize(void) {
       0x25, 0x6f, 0x72, 0xcf, 0xb5, 0x81, 0xc9, 0x02, 0x6b, 0x9d, 0xd2, 0x7b,
       0x78, 0xab, 0x2f, 0x39, 0xcd, 0x83, 0x82, 0x1b, 0xf7, 0x78, 0x92, 0x80};
 
-  otrng_prekey_ensemble_retrieval_message_s msg[1];
+  otrng_prekey_ensemble_retrieval_message_s message[1];
   otrng_assert_is_success(otrng_prekey_ensemble_retrieval_message_deserialize(
-      msg, serialized, sizeof(serialized)));
+      message, serialized, sizeof(serialized)));
 
-  g_assert_cmpint(msg->num_ensembles, ==, 2);
-  otrng_assert(msg->ensembles[0]);
-  otrng_assert(msg->ensembles[1]);
-  g_assert_cmpint(msg->instance_tag, ==, 0x0eee86a6);
+  g_assert_cmpint(message->num_ensembles, ==, 2);
+  otrng_assert(message->ensembles[0]);
+  otrng_assert(message->ensembles[1]);
+  g_assert_cmpint(message->instance_tag, ==, 0x0eee86a6);
 
-  otrng_assert(msg->ensembles[0]->client_profile);
-  otrng_assert(msg->ensembles[0]->prekey_profile);
-  otrng_assert(msg->ensembles[0]->message);
-  otrng_assert(msg->ensembles[1]->client_profile);
-  otrng_assert(msg->ensembles[1]->prekey_profile);
-  otrng_assert(msg->ensembles[1]->message);
+  otrng_assert(message->ensembles[0]->client_profile);
+  otrng_assert(message->ensembles[0]->prekey_profile);
+  otrng_assert(message->ensembles[0]->message);
+  otrng_assert(message->ensembles[1]->client_profile);
+  otrng_assert(message->ensembles[1]->prekey_profile);
+  otrng_assert(message->ensembles[1]->message);
 
-  otrng_prekey_ensemble_retrieval_message_destroy(msg);
+  otrng_prekey_ensemble_retrieval_message_destroy(message);
 }
 
 void units_prekey_server_client_add_tests(void) {

@@ -327,23 +327,24 @@ tstatic const char *op_otr_error_message(void *opdata, ConnContext *context,
 }
 
 /* Deallocate a string returned by otr_error_message */
-tstatic void op_otr_error_message_free(void *opdata, const char *err_msg) {
+tstatic void op_otr_error_message_free(void *opdata, const char *err_message) {
   (void)opdata;
-  (void)err_msg;
+  (void)err_message;
 }
 
 /* Return a string that will be prefixed to any resent message. If this
  * function is not provided by the application then the default prefix,
  * "[resent]", will be used.
  * */
-tstatic const char *op_resent_msg_prefix(void *opdata, ConnContext *context) {
+tstatic const char *op_resent_message_prefix(void *opdata,
+                                             ConnContext *context) {
   (void)opdata;
   (void)context;
   return NULL;
 }
 
 /* Deallocate a string returned by resent_msg_prefix */
-tstatic void op_resent_msg_prefix_free(void *opdata, const char *prefix) {
+tstatic void op_resent_message_prefix_free(void *opdata, const char *prefix) {
   (void)opdata;
   (void)prefix;
 }
@@ -452,14 +453,15 @@ tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
  *      Cannot recognize the type of OTR message received.
  * - OTRL_MSGEVENT_RCVDMSG_FOR_OTHER_INSTANCE
  *      Received and discarded a message intended for another instance. */
-tstatic void op_handle_msg_event(void *opdata, OtrlMessageEvent msg_event,
-                                 ConnContext *context, const char *message,
-                                 gcry_error_t err) {
+tstatic void op_handle_message_event(void *opdata,
+                                     OtrlMessageEvent message_event,
+                                     ConnContext *context, const char *message,
+                                     gcry_error_t err) {
   (void)opdata;
   (void)context;
   (void)message;
   (void)err;
-  switch (msg_event) {
+  switch (message_event) {
   case OTRL_MSGEVENT_ENCRYPTION_REQUIRED:
     debug_print("OTRL_MSGEVENT_ENCRYPTION_REQUIRED");
     break;
@@ -532,9 +534,9 @@ tstatic void op_create_instag(void *opdata, const char *accountname,
  * message is decrypted. The OtrlConvertType parameter has the value
  * OTRL_CONVERT_SENDING or OTRL_CONVERT_RECEIVING to differentiate these
  * cases. */
-tstatic void op_convert_msg(void *opdata, ConnContext *context,
-                            OtrlConvertType convert_type, char **dest,
-                            const char *src) {
+tstatic void op_convert_message(void *opdata, ConnContext *context,
+                                OtrlConvertType convert_type, char **dest,
+                                const char *src) {
   (void)opdata;
   (void)context;
   (void)convert_type;
@@ -542,7 +544,7 @@ tstatic void op_convert_msg(void *opdata, ConnContext *context,
   (void)src;
 }
 
-/* Deallocate a string returned by convert_msg. */
+/* Deallocate a string returned by convert_message. */
 tstatic void op_convert_free(void *opdata, ConnContext *context, char *dest) {
   (void)opdata;
   (void)context;
@@ -609,12 +611,12 @@ static OtrlMessageAppOps v3_callbacks = {
     op_received_symkey,
     op_otr_error_message,
     op_otr_error_message_free,
-    op_resent_msg_prefix,
-    op_resent_msg_prefix_free,
+    op_resent_message_prefix,
+    op_resent_message_prefix_free,
     op_handle_smp_event,
-    op_handle_msg_event,
+    op_handle_message_event,
     op_create_instag,
-    op_convert_msg,
+    op_convert_message,
     op_convert_free,
     op_timer_control,
 };

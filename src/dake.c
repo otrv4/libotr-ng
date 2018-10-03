@@ -863,7 +863,7 @@ tstatic otrng_result build_rsign_tag(
 }
 
 INTERNAL otrng_result build_interactive_rsign_tag(
-    uint8_t **msg, size_t *msg_len, const char auth_tag_type,
+    uint8_t **message, size_t *message_len, const char auth_tag_type,
     const otrng_dake_participant_data_s *initiator,
     const otrng_dake_participant_data_s *responder, const uint8_t *phi,
     size_t phi_len) {
@@ -896,16 +896,16 @@ INTERNAL otrng_result build_interactive_rsign_tag(
     return OTRNG_ERROR;
   }
 
-  *msg = buff;
-  if (msg_len) {
-    *msg_len = written + 1;
+  *message = buff;
+  if (message_len) {
+    *message_len = written + 1;
   }
 
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result
-build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
+build_non_interactive_rsign_tag(uint8_t **message, size_t *message_len,
                                 const otrng_dake_participant_data_s *initiator,
                                 const otrng_dake_participant_data_s *responder,
                                 const otrng_shared_prekey_pub r_shared_prekey,
@@ -915,11 +915,11 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_result result;
 
-  *msg = otrng_xmalloc_z(MAX_T_LENGTH);
+  *message = otrng_xmalloc_z(MAX_T_LENGTH);
 
   otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
 
-  result = build_rsign_tag(*msg, MAX_T_LENGTH, msg_len, first_usage,
+  result = build_rsign_tag(*message, MAX_T_LENGTH, message_len, first_usage,
                            initiator->client_profile, responder->client_profile,
                            &initiator->ecdh, &responder->ecdh, initiator->dh,
                            responder->dh, ser_r_shared_prekey,
@@ -932,7 +932,7 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
 }
 
 INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
-    uint8_t **msg, size_t *msg_len,
+    uint8_t **message, size_t *message_len,
     const otrng_dake_participant_data_s *initiator,
     const otrng_dake_participant_data_s *responder,
     const otrng_shared_prekey_pub r_shared_prekey, const uint8_t *phi,
@@ -942,15 +942,15 @@ INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_result result;
 
-  *msg = otrng_xmalloc_z(MAX_T_LENGTH);
+  *message = otrng_xmalloc_z(MAX_T_LENGTH);
 
   otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
 
   result = build_rsign_tag(
-      *msg, MAX_T_LENGTH, msg_len, first_usage, initiator->exp_client_profile,
-      responder->client_profile, &initiator->ecdh, &responder->ecdh,
-      initiator->dh, responder->dh, ser_r_shared_prekey,
-      ED448_SHARED_PREKEY_BYTES, phi, phi_len);
+      *message, MAX_T_LENGTH, message_len, first_usage,
+      initiator->exp_client_profile, responder->client_profile,
+      &initiator->ecdh, &responder->ecdh, initiator->dh, responder->dh,
+      ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES, phi, phi_len);
 
   // Probably not necessary
   otrng_secure_wipe(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);

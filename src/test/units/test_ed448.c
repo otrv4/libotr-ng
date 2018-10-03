@@ -82,12 +82,13 @@ static void test_ed448_signature() {
   otrng_keypair_s *pair = otrng_keypair_new();
   otrng_keypair_generate(pair, sym);
 
-  uint8_t msg[3] = {0x0A, 0x0C, 0x0B};
+  uint8_t message[3] = {0x0A, 0x0C, 0x0B};
   otrng_assert(otrng_ec_point_encode(pub, ED448_POINT_BYTES, pair->pub));
 
   eddsa_signature sig;
-  otrng_ec_sign(sig, sym, pub, msg, sizeof(msg));
-  otrng_assert(otrng_ec_verify(sig, pub, msg, sizeof(msg)) == otrng_true);
+  otrng_ec_sign(sig, sym, pub, message, sizeof(message));
+  otrng_assert(otrng_ec_verify(sig, pub, message, sizeof(message)) ==
+               otrng_true);
 
   otrng_keypair_free(pair);
 }

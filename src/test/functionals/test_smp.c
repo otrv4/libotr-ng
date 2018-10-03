@@ -37,8 +37,8 @@ static void test_smp_state_machine(void) {
   otrng_s *alice = set_up(alice_state, ALICE_ACCOUNT, 1);
   otrng_s *bob = set_up(bob_state, BOB_ACCOUNT, 2);
 
-  smp_msg_1_s smp_msg_1;
-  smp_msg_2_s smp_msg_2;
+  smp_message_1_s smp_message_1;
+  smp_message_2_s smp_message_2;
 
   g_assert_cmpint(alice->smp->state_expect, ==, '1');
   g_assert_cmpint(bob->smp->state_expect, ==, '1');
@@ -56,7 +56,7 @@ static void test_smp_state_machine(void) {
       alice->smp, alice);
   otrng_assert(tlv_smp_1);
 
-  otrng_assert_is_success(smp_msg_1_deserialize(&smp_msg_1, tlv_smp_1));
+  otrng_assert_is_success(smp_message_1_deserialize(&smp_message_1, tlv_smp_1));
 
   g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_ZERO_PROGRESS);
@@ -79,22 +79,22 @@ static void test_smp_state_machine(void) {
       bob->keys->ssid, (const uint8_t *)"answer", strlen("answer"));
   otrng_assert(tlv_smp_2);
   g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MESSAGE_2);
-  otrng_assert_is_success(smp_msg_2_deserialize(&smp_msg_2, tlv_smp_2));
+  otrng_assert_is_success(smp_message_2_deserialize(&smp_message_2, tlv_smp_2));
   g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
 
   // Bob should have the correct context after he generates tlv_smp_2
   g_assert_cmpint(bob->smp->state_expect, ==, '3');
   otrng_assert(bob->smp->secret);
-  otrng_assert_point_equals(bob->smp->g3a, smp_msg_1.g3a);
-  otrng_assert_point_equals(bob->smp->pb, smp_msg_2.pb);
-  otrng_assert_point_equals(bob->smp->qb, smp_msg_2.qb);
+  otrng_assert_point_equals(bob->smp->g3a, smp_message_1.g3a);
+  otrng_assert_point_equals(bob->smp->pb, smp_message_2.pb);
+  otrng_assert_point_equals(bob->smp->qb, smp_message_2.qb);
   otrng_assert_not_zero(bob->smp->b3, ED448_SCALAR_BYTES);
   otrng_assert_not_zero(bob->smp->g2, ED448_POINT_BYTES);
   otrng_assert_not_zero(bob->smp->g3, ED448_POINT_BYTES);
 
-  otrng_smp_msg_1_destroy(&smp_msg_1);
-  smp_msg_2_destroy(&smp_msg_2);
+  otrng_smp_message_1_destroy(&smp_message_1);
+  smp_message_2_destroy(&smp_message_2);
 
   // Alice receives smp 2
   tlv_s *tlv_smp_3 = process_tlv(tlv_smp_2, alice);
@@ -149,8 +149,8 @@ static void test_smp_state_machine_abort(void) {
   otrng_s *alice = set_up(alice_state, ALICE_ACCOUNT, 1);
   otrng_s *bob = set_up(bob_state, BOB_ACCOUNT, 2);
 
-  smp_msg_1_s smp_msg_1;
-  smp_msg_2_s smp_msg_2;
+  smp_message_1_s smp_message_1;
+  smp_message_2_s smp_message_2;
 
   g_assert_cmpint(alice->smp->state_expect, ==, '1');
   g_assert_cmpint(bob->smp->state_expect, ==, '1');
@@ -168,7 +168,7 @@ static void test_smp_state_machine_abort(void) {
       alice->smp, alice);
   otrng_assert(tlv_smp_1);
 
-  otrng_assert_is_success(smp_msg_1_deserialize(&smp_msg_1, tlv_smp_1));
+  otrng_assert_is_success(smp_message_1_deserialize(&smp_message_1, tlv_smp_1));
 
   g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_ZERO_PROGRESS);
@@ -191,22 +191,22 @@ static void test_smp_state_machine_abort(void) {
       bob->keys->ssid, (const uint8_t *)"answer", strlen("answer"));
   otrng_assert(tlv_smp_2);
   g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MESSAGE_2);
-  otrng_assert_is_success(smp_msg_2_deserialize(&smp_msg_2, tlv_smp_2));
+  otrng_assert_is_success(smp_message_2_deserialize(&smp_message_2, tlv_smp_2));
   g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
 
   // Bob should have the correct context after he generates tlv_smp_2
   g_assert_cmpint(bob->smp->state_expect, ==, '3');
   otrng_assert(bob->smp->secret);
-  otrng_assert_point_equals(bob->smp->g3a, smp_msg_1.g3a);
-  otrng_assert_point_equals(bob->smp->pb, smp_msg_2.pb);
-  otrng_assert_point_equals(bob->smp->qb, smp_msg_2.qb);
+  otrng_assert_point_equals(bob->smp->g3a, smp_message_1.g3a);
+  otrng_assert_point_equals(bob->smp->pb, smp_message_2.pb);
+  otrng_assert_point_equals(bob->smp->qb, smp_message_2.qb);
   otrng_assert_not_zero(bob->smp->b3, ED448_SCALAR_BYTES);
   otrng_assert_not_zero(bob->smp->g2, ED448_POINT_BYTES);
   otrng_assert_not_zero(bob->smp->g3, ED448_POINT_BYTES);
 
-  otrng_smp_msg_1_destroy(&smp_msg_1);
-  smp_msg_2_destroy(&smp_msg_2);
+  otrng_smp_message_1_destroy(&smp_message_1);
+  smp_message_2_destroy(&smp_message_2);
 
   // To trigger the abort
   alice->smp->state_expect = '1';
@@ -236,7 +236,7 @@ static void test_smp_state_machine_abort(void) {
 
 static void test_otrng_generate_smp_secret(void) {
   smp_protocol_s smp;
-  smp.msg1 = NULL;
+  smp.message1 = NULL;
   otrng_fingerprint our = {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
       0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -285,28 +285,30 @@ static void test_otrng_generate_smp_secret(void) {
   otrng_smp_destroy(&smp);
 }
 
-static void test_otrng_smp_msg_1_serialize_null_question(void) {
-  smp_msg_1_s msg;
+static void test_otrng_smp_message_1_serialize_null_question(void) {
+  smp_message_1_s message;
   smp_protocol_s smp;
-  smp.msg1 = NULL;
+  smp.message1 = NULL;
   uint8_t *buff;
   size_t writen = 0;
 
-  otrng_assert_is_success(otrng_generate_smp_msg_1(&msg, &smp));
+  otrng_assert_is_success(otrng_generate_smp_message_1(&message, &smp));
 
   // data_header + question + 2 points + 4 scalars = 4 + 0 + (2*57) + (4*(56))
   size_t expected_size = 342;
-  msg.q_len = 0;
-  msg.question = NULL;
+  message.q_len = 0;
+  message.question = NULL;
 
-  otrng_assert_is_success(otrng_smp_msg_1_serialize(&buff, &writen, &msg));
+  otrng_assert_is_success(
+      otrng_smp_message_1_serialize(&buff, &writen, &message));
   g_assert_cmpint(writen, ==, expected_size);
   free(buff);
 
-  msg.question = (uint8_t *)"something";
-  msg.q_len = 9;
-  size_t expected_len = expected_size + msg.q_len;
-  otrng_assert_is_success(otrng_smp_msg_1_serialize(&buff, &writen, &msg));
+  message.question = (uint8_t *)"something";
+  message.q_len = 9;
+  size_t expected_len = expected_size + message.q_len;
+  otrng_assert_is_success(
+      otrng_smp_message_1_serialize(&buff, &writen, &message));
   g_assert_cmpint(writen, ==, expected_len);
 
   free(buff);
@@ -316,6 +318,6 @@ void functionals_smp_add_tests(void) {
   g_test_add_func("/smp/state_machine", test_smp_state_machine);
   g_test_add_func("/smp/state_machine_abort", test_smp_state_machine_abort);
   g_test_add_func("/smp/generate_secret", test_otrng_generate_smp_secret);
-  g_test_add_func("/smp/msg_1_serialize_null_question",
-                  test_otrng_smp_msg_1_serialize_null_question);
+  g_test_add_func("/smp/message_1_serialize_null_question",
+                  test_otrng_smp_message_1_serialize_null_question);
 }

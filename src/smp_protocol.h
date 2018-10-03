@@ -40,7 +40,7 @@
  * @warning the [question] field is NOT zero terminated, and can't be relied on
  *    to be. the length of this field is contained in the [q_len] field.
  **/
-typedef struct smp_msg_1_s {
+typedef struct smp_message_1_s {
   uint8_t *question;
   size_t q_len;
   ec_point g2a;
@@ -49,9 +49,9 @@ typedef struct smp_msg_1_s {
   ec_point g3a;
   ec_scalar c3;
   ec_scalar d3;
-} smp_msg_1_s;
+} smp_message_1_s;
 
-typedef struct smp_msg_2_s {
+typedef struct smp_message_2_s {
   ec_point g2b;
   ec_scalar c2;
   ec_scalar d2;
@@ -63,19 +63,19 @@ typedef struct smp_msg_2_s {
   ec_scalar cp;
   ec_scalar d5;
   ec_scalar d6;
-} smp_msg_2_s;
+} smp_message_2_s;
 
-typedef struct smp_msg_3_s {
+typedef struct smp_message_3_s {
   ec_point pa, qa;
   ec_scalar cp, d5, d6;
   ec_point ra;
   ec_scalar cr, d7;
-} smp_msg_3_s;
+} smp_message_3_s;
 
-typedef struct smp_msg_4_s {
+typedef struct smp_message_4_s {
   ec_point rb;
   ec_scalar cr, d7;
-} smp_msg_4_s;
+} smp_message_4_s;
 
 typedef struct smp_protocol_s {
   char state_expect; // TODO: why is this a char? Let's extract this
@@ -87,7 +87,7 @@ typedef struct smp_protocol_s {
   ec_point pa_pb, qa_qb;
 
   uint8_t progress;
-  smp_msg_1_s *msg1;
+  smp_message_1_s *message1;
 } smp_protocol_s;
 
 INTERNAL void otrng_smp_protocol_init(smp_protocol_s *smp);
@@ -101,50 +101,52 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
                                                 const uint8_t *answer,
                                                 size_t answer_len);
 
-INTERNAL otrng_result otrng_generate_smp_msg_1(smp_msg_1_s *dst,
-                                               smp_protocol_s *smp);
+INTERNAL otrng_result otrng_generate_smp_message_1(smp_message_1_s *dst,
+                                                   smp_protocol_s *smp);
 
-INTERNAL otrng_result otrng_smp_msg_1_serialize(uint8_t **dst, size_t *len,
-                                                const smp_msg_1_s *msg);
+INTERNAL otrng_result otrng_smp_message_1_serialize(
+    uint8_t **dst, size_t *len, const smp_message_1_s *message);
 
-INTERNAL void otrng_smp_msg_1_destroy(smp_msg_1_s *msg);
+INTERNAL void otrng_smp_message_1_destroy(smp_message_1_s *message);
 
-INTERNAL otrng_smp_event_t otrng_reply_with_smp_msg_2(tlv_s **to_send,
+INTERNAL otrng_smp_event_t otrng_reply_with_smp_message_2(tlv_s **to_send,
+                                                          smp_protocol_s *smp);
+
+INTERNAL otrng_smp_event_t otrng_process_smp_message1(const tlv_s *tlv,
                                                       smp_protocol_s *smp);
 
-INTERNAL otrng_smp_event_t otrng_process_smp_msg1(const tlv_s *tlv,
-                                                  smp_protocol_s *smp);
+INTERNAL otrng_smp_event_t otrng_process_smp_message2(tlv_s **smp_reply,
+                                                      const tlv_s *tlv,
+                                                      smp_protocol_s *smp);
 
-INTERNAL otrng_smp_event_t otrng_process_smp_msg2(tlv_s **smp_reply,
-                                                  const tlv_s *tlv,
-                                                  smp_protocol_s *smp);
+INTERNAL otrng_smp_event_t otrng_process_smp_message3(tlv_s **smp_reply,
+                                                      const tlv_s *tlv,
+                                                      smp_protocol_s *smp);
 
-INTERNAL otrng_smp_event_t otrng_process_smp_msg3(tlv_s **smp_reply,
-                                                  const tlv_s *tlv,
-                                                  smp_protocol_s *smp);
-
-INTERNAL otrng_smp_event_t otrng_process_smp_msg4(const tlv_s *tlv,
-                                                  smp_protocol_s *smp);
+INTERNAL otrng_smp_event_t otrng_process_smp_message4(const tlv_s *tlv,
+                                                      smp_protocol_s *smp);
 
 #ifdef OTRNG_SMP_PROTOCOL_PRIVATE
 
-tstatic otrng_result smp_msg_1_deserialize(smp_msg_1_s *msg, const tlv_s *tlv);
+tstatic otrng_result smp_message_1_deserialize(smp_message_1_s *message,
+                                               const tlv_s *tlv);
 
-tstatic otrng_result generate_smp_msg_2(smp_msg_2_s *dst,
-                                        const smp_msg_1_s *msg_1,
-                                        smp_protocol_s *smp);
+tstatic otrng_result generate_smp_message_2(smp_message_2_s *dst,
+                                            const smp_message_1_s *message_1,
+                                            smp_protocol_s *smp);
 
-tstatic otrng_result smp_msg_2_deserialize(smp_msg_2_s *msg, const tlv_s *tlv);
+tstatic otrng_result smp_message_2_deserialize(smp_message_2_s *message,
+                                               const tlv_s *tlv);
 
-tstatic void smp_msg_2_destroy(smp_msg_2_s *msg);
+tstatic void smp_message_2_destroy(smp_message_2_s *message);
 
-tstatic otrng_result generate_smp_msg_3(smp_msg_3_s *dst,
-                                        const smp_msg_2_s *msg_2,
-                                        smp_protocol_s *smp);
+tstatic otrng_result generate_smp_message_3(smp_message_3_s *dst,
+                                            const smp_message_2_s *message_2,
+                                            smp_protocol_s *smp);
 
-tstatic otrng_result generate_smp_msg_4(smp_msg_4_s *dst,
-                                        const smp_msg_3_s *msg_3,
-                                        smp_protocol_s *smp);
+tstatic otrng_result generate_smp_message_4(smp_message_4_s *dst,
+                                            const smp_message_3_s *message_3,
+                                            smp_protocol_s *smp);
 
 #endif
 

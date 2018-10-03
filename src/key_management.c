@@ -689,7 +689,7 @@ tstatic void derive_next_chain_key(key_manager_s *manager,
 }
 
 tstatic void derive_encryption_and_mac_keys(
-    msg_enc_key enc_key, msg_mac_key mac_key, key_manager_s *manager,
+    message_enc_key enc_key, message_mac_key mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, const char action) {
   /* MKenc, MKmac = derive_enc_mac_keys(chain_key_s[i-1][j])
      MKenc = KDF_1(usage_message_key || chain_key, 32)
@@ -753,7 +753,7 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 //  manager->skipped_keys = NULL;
 //}
 
-tstatic otrng_result store_enc_keys(msg_enc_key enc_key,
+tstatic otrng_result store_enc_keys(message_enc_key enc_key,
                                     receiving_ratchet_s *tmp_receiving_ratchet,
                                     const unsigned int until,
                                     const int max_skip, const char ratchet_type,
@@ -762,7 +762,7 @@ tstatic otrng_result store_enc_keys(msg_enc_key enc_key,
   goldilocks_shake256_ctx_p hd;
   uint8_t *extra_key = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
   uint8_t magic[1] = {0xFF};
-  skipped_keys_s *skipped_msg_enc_key;
+  skipped_keys_s *skipped_message_enc_key;
 
   memset(zero_buff, 0, CHAIN_KEY_BYTES);
 
@@ -792,21 +792,21 @@ tstatic otrng_result store_enc_keys(msg_enc_key enc_key,
                      usage_next_chain_key, tmp_receiving_ratchet->chain_r,
                      CHAIN_KEY_BYTES);
 
-      skipped_msg_enc_key = otrng_secure_alloc(sizeof(skipped_keys_s));
+      skipped_message_enc_key = otrng_secure_alloc(sizeof(skipped_keys_s));
 
       assert(ratchet_type == 'd' || ratchet_type == 'c');
       if (ratchet_type == 'd') {
-        skipped_msg_enc_key->i = tmp_receiving_ratchet->i -
-                                 1; /* ratchet_id - 1 for the dh ratchet */
+        skipped_message_enc_key->i = tmp_receiving_ratchet->i -
+                                     1; /* ratchet_id - 1 for the dh ratchet */
       } else if (ratchet_type == 'c') {
-        skipped_msg_enc_key->i = tmp_receiving_ratchet->i;
+        skipped_message_enc_key->i = tmp_receiving_ratchet->i;
       }
 
-      skipped_msg_enc_key->j = tmp_receiving_ratchet->k;
+      skipped_message_enc_key->j = tmp_receiving_ratchet->k;
 
-      memcpy(skipped_msg_enc_key->extra_symmetric_key, extra_key,
+      memcpy(skipped_message_enc_key->extra_symmetric_key, extra_key,
              EXTRA_SYMMETRIC_KEY_BYTES);
-      memcpy(skipped_msg_enc_key->enc_key, enc_key, ENC_KEY_BYTES);
+      memcpy(skipped_message_enc_key->enc_key, enc_key, ENC_KEY_BYTES);
 
       /*
          @secret: should be deleted when:
@@ -814,7 +814,7 @@ tstatic otrng_result store_enc_keys(msg_enc_key enc_key,
          2. the key is retrieved
       */
       tmp_receiving_ratchet->skipped_keys = otrng_list_add(
-          skipped_msg_enc_key, tmp_receiving_ratchet->skipped_keys);
+          skipped_message_enc_key, tmp_receiving_ratchet->skipped_keys);
       otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
       tmp_receiving_ratchet->k++;
     }
@@ -830,7 +830,7 @@ tstatic otrng_result store_enc_keys(msg_enc_key enc_key,
    MKmac = KDF_1(usage_mac_key || MKenc, 64).
 */
 INTERNAL otrng_result otrng_key_get_skipped_keys(
-    msg_enc_key enc_key, msg_mac_key mac_key, unsigned int ratchet_id,
+    message_enc_key enc_key, message_mac_key mac_key, unsigned int ratchet_id,
     unsigned int message_id, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet) {
   list_element_s *current = tmp_receiving_ratchet->skipped_keys;
@@ -862,7 +862,7 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
 }
 
 INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
-    msg_enc_key enc_key, msg_mac_key mac_key, key_manager_s *manager,
+    message_enc_key enc_key, message_mac_key mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int message_id,
     const char action, otrng_warning *warn) {
 
@@ -899,7 +899,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
     receiving_ratchet_s *tmp_receiving_ratchet, int message_id, int previous_n,
     const char action, otrng_warning *warn) {
   /* Derive new ECDH and DH keys */
-  msg_enc_key enc_key;
+  message_enc_key enc_key;
 
   if (message_id == 0) {
     assert(action == 's' || action == 'r');
@@ -917,7 +917,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
 }
 
 INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
-                                               msg_mac_key mac_key) {
+                                               message_mac_key mac_key) {
   uint8_t *to_store_mac = otrng_secure_alloc(MAC_KEY_BYTES);
 
   memcpy(to_store_mac, mac_key, ENC_KEY_BYTES);
@@ -930,8 +930,8 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   size_t num_stored_keys = otrng_list_len(manager->skipped_keys);
   size_t serlen = num_stored_keys * MAC_KEY_BYTES;
   uint8_t *ser_mac_keys;
-  msg_mac_key mac_key;
-  msg_enc_key enc_key;
+  message_mac_key mac_key;
+  message_enc_key enc_key;
   size_t i;
 
   if (serlen != 0) {

@@ -66,7 +66,7 @@ static void test_api_interactive_conversation(void) {
   for (message_id = 1; message_id < 4; message_id++) {
     // Alice sends a data message
     result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
-    assert_msg_sent(result, to_send);
+    assert_message_sent(result, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
     g_assert_cmpint(alice->keys->i, ==, 1);
@@ -81,7 +81,7 @@ static void test_api_interactive_conversation(void) {
     // Bob receives a data message
     response_to_alice = otrng_response_new();
     result = otrng_receive_message(response_to_alice, &warn, to_send, bob);
-    assert_msg_rec(result, "hi", response_to_alice);
+    assert_message_rec(result, "hi", response_to_alice);
     otrng_assert(bob->keys->old_mac_keys);
 
     free_message_and_response(response_to_alice, &to_send);
@@ -102,7 +102,7 @@ static void test_api_interactive_conversation(void) {
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
     result = otrng_send_message(&to_send, "hello", &warn, NULL, 0, bob);
-    assert_msg_sent(result, to_send);
+    assert_message_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
 
@@ -118,7 +118,7 @@ static void test_api_interactive_conversation(void) {
     // Alice receives a data message
     response_to_bob = otrng_response_new();
     result = otrng_receive_message(response_to_bob, &warn, to_send, alice);
-    assert_msg_rec(result, "hello", response_to_bob);
+    assert_message_rec(result, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
     free_message_and_response(response_to_bob, &to_send);
@@ -138,7 +138,7 @@ static void test_api_interactive_conversation(void) {
 
   // Bob sends a message with TLV
   result = otrng_smp_start(&to_send, NULL, 0, secret_data, secret_len, bob);
-  assert_msg_sent(result, to_send);
+  assert_message_sent(result, to_send);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
 
@@ -264,7 +264,7 @@ static void test_otrng_send_offline_message() {
 
   for (message_id = 1; message_id < 4; message_id++) {
     result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
-    assert_msg_sent(result, to_send);
+    assert_message_sent(result, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
     g_assert_cmpint(alice->keys->i, ==, 1);
@@ -275,7 +275,7 @@ static void test_otrng_send_offline_message() {
     // Alice receives a data message
     response_to_alice = otrng_response_new();
     result = otrng_receive_message(response_to_alice, &warn, to_send, bob);
-    assert_msg_rec(result, "hi", response_to_alice);
+    assert_message_rec(result, "hi", response_to_alice);
     otrng_assert(bob->keys->old_mac_keys);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, message_id);
@@ -291,7 +291,7 @@ static void test_otrng_send_offline_message() {
   for (message_id = 1; message_id < 4; message_id++) {
     // Alice sends a data message
     result = otrng_send_message(&to_send, "hello", &warn, NULL, 0, bob);
-    assert_msg_sent(result, to_send);
+    assert_message_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
     g_assert_cmpint(bob->keys->i, ==, 2);
@@ -302,7 +302,7 @@ static void test_otrng_send_offline_message() {
     // Bob receives a data message
     response_to_bob = otrng_response_new();
     result = otrng_receive_message(response_to_bob, &warn, to_send, alice);
-    assert_msg_rec(result, "hello", response_to_bob);
+    assert_message_rec(result, "hello", response_to_bob);
     g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, message_id);
 
     g_assert_cmpint(alice->keys->i, ==, 2);
@@ -318,7 +318,7 @@ static void test_otrng_send_offline_message() {
 
   // Bob sends a message with TLV
   result = otrng_smp_start(&to_send, NULL, 0, secret_data, secret_len, bob);
-  assert_msg_sent(result, to_send);
+  assert_message_sent(result, to_send);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
 
@@ -416,7 +416,7 @@ static void test_otrng_incorrect_offline_dake() {
   string_p to_send = NULL;
   otrng_result result;
 
-  // Alice is unable to send a data msg
+  // Alice is unable to send a data message
   result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, bob);
   otrng_assert_is_error(result);
   otrng_assert(!to_send);
@@ -453,7 +453,7 @@ static void test_api_conversation_errors_1(void) {
   // Alice sends a data message
   result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
 
-  assert_msg_sent(result, to_send);
+  assert_message_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
   g_assert_cmpint(alice->keys->i, ==, 1);
@@ -492,7 +492,7 @@ static void test_api_conversation_errors_1(void) {
 
   // Alice sends another data message
   result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
-  assert_msg_sent(result, to_send);
+  assert_message_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
   // Restore Bob's state
@@ -512,7 +512,7 @@ static void test_api_conversation_errors_1(void) {
   response_to_alice = otrng_response_new();
   result = otrng_receive_message(response_to_alice, &warn, to_send, bob);
 
-  // otrng_assert(result == MSG_NOT_VALID);
+  // otrng_assert(result == MESSAGE_NOT_VALID);
   otrng_assert(response_to_alice->to_send == NULL);
   otrng_assert(response_to_alice->warning == OTRNG_WARN_RECEIVED_NOT_VALID);
 
@@ -772,41 +772,42 @@ static void test_api_multiple_clients(void) {
   otrng_assert(alice->state == OTRNG_STATE_START);
   otrng_assert_cmpmem("?OTRv4", query_message, 6);
 
-  // PC receives query msg and sends identity msg
+  // PC receives query message and sends identity message
   result = otrng_receive_message(pc_to_alice, &warn, query_message, bob_pc);
-  assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
-                          OTRNG_STATE_WAITING_AUTH_R, send_response);
+  assert_rec_message_in_state(result, pc_to_alice, bob_pc,
+                              OTRNG_STATE_WAITING_AUTH_R, send_response);
 
-  // PHONE receives query msg and sends identity msg
+  // PHONE receives query message and sends identity message
   result =
       otrng_receive_message(phone_to_alice, &warn, query_message, bob_phone);
-  assert_rec_msg_in_state(result, phone_to_alice, bob_phone,
-                          OTRNG_STATE_WAITING_AUTH_R, send_response);
+  assert_rec_message_in_state(result, phone_to_alice, bob_phone,
+                              OTRNG_STATE_WAITING_AUTH_R, send_response);
 
   free(query_message);
 
-  // ALICE receives Identity msg from PC and sends AUTH-R
+  // ALICE receives Identity message from PC and sends AUTH-R
   result =
       otrng_receive_message(alice_to_pc, &warn, pc_to_alice->to_send, alice);
-  assert_rec_msg_in_state(result, alice_to_pc, alice,
-                          OTRNG_STATE_WAITING_AUTH_I, send_response);
+  assert_rec_message_in_state(result, alice_to_pc, alice,
+                              OTRNG_STATE_WAITING_AUTH_I, send_response);
   otrng_response_free(pc_to_alice);
 
-  // ALICE receives Identity msg from PHONE (on state
+  // ALICE receives Identity message from PHONE (on state
   // OTRNG_STATE_WAITING_AUTH_I) and sends AUTH-R. ALICE will replace keys and
   // profile info from PC with info from PHONE.
   result = otrng_receive_message(alice_to_phone, &warn, phone_to_alice->to_send,
                                  alice);
-  assert_rec_msg_in_state(result, alice_to_phone, alice,
-                          OTRNG_STATE_WAITING_AUTH_I, send_response);
+  assert_rec_message_in_state(result, alice_to_phone, alice,
+                              OTRNG_STATE_WAITING_AUTH_I, send_response);
   otrng_response_free(phone_to_alice);
 
   // PC receives Auth-R succesfully and sends an Auth-I
   pc_to_alice = otrng_response_new();
   result =
       otrng_receive_message(pc_to_alice, &warn, alice_to_pc->to_send, bob_pc);
-  assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
-                          OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE, send_response);
+  assert_rec_message_in_state(result, pc_to_alice, bob_pc,
+                              OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE,
+                              send_response);
 
   // PC generates the first keys after Auth-R has been received
   otrng_assert(bob_pc->keys->our_dh->pub);
@@ -818,8 +819,8 @@ static void test_api_multiple_clients(void) {
   phone_to_alice = otrng_response_new();
   result = otrng_receive_message(phone_to_alice, &warn, alice_to_pc->to_send,
                                  bob_phone);
-  assert_rec_msg_in_state(result, phone_to_alice, bob_phone,
-                          OTRNG_STATE_WAITING_AUTH_R, !send_response);
+  assert_rec_message_in_state(result, phone_to_alice, bob_phone,
+                              OTRNG_STATE_WAITING_AUTH_R, !send_response);
   otrng_response_free_all(phone_to_alice, alice_to_pc);
 
   otrng_assert(bob_phone->keys->our_dh->pub);
@@ -832,8 +833,8 @@ static void test_api_multiple_clients(void) {
   result =
       otrng_receive_message(alice_to_pc, &warn, pc_to_alice->to_send, alice);
 
-  assert_rec_msg_in_state(result, alice_to_pc, alice,
-                          OTRNG_STATE_WAITING_AUTH_I, !send_response);
+  assert_rec_message_in_state(result, alice_to_pc, alice,
+                              OTRNG_STATE_WAITING_AUTH_I, !send_response);
 
   otrng_response_free_all(pc_to_alice, alice_to_pc);
 
@@ -841,16 +842,16 @@ static void test_api_multiple_clients(void) {
   pc_to_alice = otrng_response_new();
   result = otrng_receive_message(pc_to_alice, &warn, alice_to_phone->to_send,
                                  bob_pc);
-  assert_rec_msg_in_state(result, pc_to_alice, bob_pc,
-                          OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
+  assert_rec_message_in_state(result, pc_to_alice, bob_pc,
+                              OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
   otrng_response_free(pc_to_alice);
 
   // PHONE receives correct Auth-R message and sends Auth-I
   phone_to_alice = otrng_response_new();
   result = otrng_receive_message(phone_to_alice, &warn, alice_to_phone->to_send,
                                  bob_phone);
-  assert_rec_msg_in_state(result, phone_to_alice, bob_phone,
-                          OTRNG_STATE_ENCRYPTED_MESSAGES, send_response);
+  assert_rec_message_in_state(result, phone_to_alice, bob_phone,
+                              OTRNG_STATE_ENCRYPTED_MESSAGES, send_response);
   otrng_response_free(alice_to_phone);
 
   // PHONE generates the first keys after Auth-R has been received
@@ -863,8 +864,8 @@ static void test_api_multiple_clients(void) {
   alice_to_phone = otrng_response_new();
   result = otrng_receive_message(alice_to_phone, &warn, phone_to_alice->to_send,
                                  alice);
-  assert_rec_msg_in_state(result, alice_to_phone, alice,
-                          OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
+  assert_rec_message_in_state(result, alice_to_phone, alice,
+                              OTRNG_STATE_ENCRYPTED_MESSAGES, !send_response);
 
   // ALICE and PHONE have the same shared secret
   otrng_assert_root_key_eq(alice->keys->current->root_key,
@@ -1042,7 +1043,7 @@ static void test_api_extra_sym_key(void) {
   otrng_result result;
 
   result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
-  assert_msg_sent(result, to_send);
+  assert_message_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
   // This is a follow up message.
@@ -1052,7 +1053,7 @@ static void test_api_extra_sym_key(void) {
   // Bob receives a data message
   response_to_alice = otrng_response_new();
   result = otrng_receive_message(response_to_alice, &warn, to_send, bob);
-  assert_msg_rec(result, "hi", response_to_alice);
+  assert_message_rec(result, "hi", response_to_alice);
   otrng_assert(bob->keys->old_mac_keys);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
@@ -1070,7 +1071,7 @@ static void test_api_extra_sym_key(void) {
   uint16_t usedatalen = 2;
   result = otrng_send_symkey_message(&to_send, use, usedata, usedatalen,
                                      bob->keys->extra_symmetric_key, bob);
-  assert_msg_sent(result, to_send);
+  assert_message_sent(result, to_send);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
 
@@ -1118,7 +1119,7 @@ static void test_heartbeat_messages(void) {
   otrng_result result;
 
   result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
-  assert_msg_sent(result, to_send);
+  assert_message_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
   // bob->last_sent = time(NULL) - 60;

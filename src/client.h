@@ -71,9 +71,9 @@ typedef struct otrng_client_s {
   /* @secret: this should be deleted once the prekey profile expires */
   otrng_shared_prekey_pair_s *shared_prekey_pair;
 
-  unsigned int max_stored_msg_keys;
-  unsigned int max_published_prekey_msg;
-  unsigned int minimum_stored_prekey_msg;
+  unsigned int max_stored_message_keys;
+  unsigned int max_published_prekey_message;
+  unsigned int minimum_stored_prekey_message;
 
   uint64_t profiles_extra_valid_time;
   uint64_t client_profile_exp_time;
@@ -145,10 +145,11 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
                                       otrng_client_s *client,
                                       otrng_bool *should_ignore);
 
-API otrng_result otrng_client_disconnect(char **newmsg, const char *recipient,
+API otrng_result otrng_client_disconnect(char **newmessage,
+                                         const char *recipient,
                                          otrng_client_s *client);
 
-API otrng_result otrng_expire_encrypted_session(char **newmsg,
+API otrng_result otrng_expire_encrypted_session(char **newmessage,
                                                 const char *recipient,
                                                 int expiration_time,
                                                 otrng_client_s *client);
@@ -249,20 +250,21 @@ otrng_client_delete_my_prekey_message_by_id(uint32_t id,
 
 API void otrng_client_set_padding(size_t granularity, otrng_client_s *client);
 
-API void otrng_client_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
-                                              otrng_client_s *client);
+API void
+otrng_client_set_max_stored_message_keys(unsigned int max_stored_message_keys,
+                                         otrng_client_s *client);
 
 API otrng_result
-otrng_client_get_max_published_prekey_msg(otrng_client_s *client);
+otrng_client_get_max_published_prekey_message(otrng_client_s *client);
 
-API void otrng_client_state_set_max_published_prekey_msg(
-    unsigned int max_published_prekey_msg, otrng_client_s *client);
+API void otrng_client_state_set_max_published_prekey_message(
+    unsigned int max_published_prekey_message, otrng_client_s *client);
 
-API void otrng_client_state_set_minimum_stored_prekey_msg(
-    unsigned int minimum_stored_prekey_msg, otrng_client_s *client);
+API void otrng_client_state_set_minimum_stored_prekey_message(
+    unsigned int minimum_stored_prekey_message, otrng_client_s *client);
 
 API otrng_result
-otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
+otrng_client_get_minimum_stored_prekey_message(otrng_client_s *client);
 
 API void
 otrng_client_set_profiles_extra_valid_time(uint64_t profiles_extra_valid_time,

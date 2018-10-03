@@ -75,7 +75,7 @@
     const size_t _len_evaled = (len);                                          \
     char *__s1 = _otrng_memdump(_s1_evaled, _len_evaled);                      \
     char *__s2 = _otrng_memdump(_s2_evaled, _len_evaled);                      \
-    char *__msg = g_strdup_printf(                                             \
+    char *__message = g_strdup_printf(                                         \
         "assertion failed: (%s)\n\n%s (%p): %s\n\n%s (%p): %s\n",              \
         #s1 " ==  " #s2, #s1, (void *)_s1_evaled, __s1, #s2,                   \
         (void *)_s2_evaled, __s2);                                             \
@@ -83,10 +83,11 @@
         memcmp(_s1_evaled, _s2_evaled, _len_evaled) == 0)                      \
       ;                                                                        \
     else                                                                       \
-      g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, __msg); \
+      g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC,         \
+                          __message);                                          \
     free(__s1);                                                                \
     free(__s2);                                                                \
-    g_free(__msg);                                                             \
+    g_free(__message);                                                         \
   } while (0)
 
 #define otrng_assert(expr)                                                     \
@@ -149,14 +150,16 @@
     char *__s = _otrng_memdump(_s, _len);                                      \
     char zero_value[_len];                                                     \
     memset(zero_value, 0, sizeof zero_value);                                  \
-    char *__msg = g_strdup_printf("assertion failed: (%s)\nRESULT (%p): %s\n", \
-                                  #s " is zero", (void *)_s, __s);             \
+    char *__message =                                                          \
+        g_strdup_printf("assertion failed: (%s)\nRESULT (%p): %s\n",           \
+                        #s " is zero", (void *)_s, __s);                       \
     if (goldilocks_memeq(_s, zero_value, _len) == 0)                           \
       ;                                                                        \
     else                                                                       \
-      g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, __msg); \
+      g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC,         \
+                          __message);                                          \
     free(__s);                                                                 \
-    g_free(__msg);                                                             \
+    g_free(__message);                                                         \
   } while (0)
 
 // TODO: this is using variable-length array
@@ -209,7 +212,7 @@
 
 #define otrng_client_free_all(...) fn_apply(otrng_client_free, __VA_ARGS__);
 
-#define assert_msg_sent(result, to_send)                                       \
+#define assert_message_sent(result, to_send)                                   \
   do {                                                                         \
     const otrng_result _result = (result);                                     \
     const char *_to_send = (to_send);                                          \
@@ -218,7 +221,7 @@
     otrng_assert_cmpmem("?OTR:AAQD", _to_send, 9);                             \
   } while (0)
 
-#define assert_msg_rec(result, message, response)                              \
+#define assert_message_rec(result, message, response)                          \
   do {                                                                         \
     const otrng_result _result = (result);                                     \
     const char *_message = (message);                                          \
@@ -229,8 +232,8 @@
     otrng_assert(_response->to_send == NULL);                                  \
   } while (0)
 
-#define assert_rec_msg_in_state(result, respond_to, sender, otr_state,         \
-                                send_response)                                 \
+#define assert_rec_message_in_state(result, respond_to, sender, otr_state,     \
+                                    send_response)                             \
   do {                                                                         \
     const otrng_result _result = (result);                                     \
     const otrng_response_s *_respond_to = (respond_to);                        \

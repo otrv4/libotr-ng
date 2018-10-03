@@ -664,35 +664,35 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   size_t priv_len;
   otrng_result success;
 
-  otrng_stored_prekeys_s *prekey_msg =
+  otrng_stored_prekeys_s *prekey_message =
       otrng_xmalloc_z(sizeof(otrng_stored_prekeys_s));
 
-  prekey_msg->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
-  prekey_msg->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
+  prekey_message->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
+  prekey_message->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
 
   line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
-    free(prekey_msg);
+    free(prekey_message);
     return OTRNG_ERROR;
   }
-  prekey_msg->id = strtol(line, NULL, 16);
+  prekey_message->id = strtol(line, NULL, 16);
 
   free(line);
   line = NULL;
 
   line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
-    free(prekey_msg);
+    free(prekey_message);
     return OTRNG_ERROR;
   }
 
-  prekey_msg->sender_instance_tag = strtol(line, NULL, 16);
+  prekey_message->sender_instance_tag = strtol(line, NULL, 16);
   free(line);
   line = NULL;
 
   line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
-    free(prekey_msg);
+    free(prekey_message);
     return OTRNG_ERROR;
   }
 
@@ -704,16 +704,16 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   free(line);
   line = NULL;
 
-  otrng_deserialize_ec_scalar(prekey_msg->our_ecdh->priv, dec, scalar_len);
+  otrng_deserialize_ec_scalar(prekey_message->our_ecdh->priv, dec, scalar_len);
   free(dec);
   dec = NULL;
 
-  otrng_ec_calculate_public_key(prekey_msg->our_ecdh->pub,
-                                prekey_msg->our_ecdh->priv);
+  otrng_ec_calculate_public_key(prekey_message->our_ecdh->pub,
+                                prekey_message->our_ecdh->priv);
 
   line_len = get_limited_line(&line, privf);
   if (line_len < 0) {
-    free(prekey_msg);
+    free(prekey_message);
     return OTRNG_ERROR;
   }
 
@@ -724,24 +724,24 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   priv_len = otrl_base64_decode(dec, line, line_len - 1);
   free(line);
 
-  prekey_msg->our_dh->priv = NULL;
-  prekey_msg->our_dh->pub = NULL;
+  prekey_message->our_dh->priv = NULL;
+  prekey_message->our_dh->pub = NULL;
 
-  success =
-      otrng_dh_mpi_deserialize(&prekey_msg->our_dh->priv, dec, priv_len, NULL);
+  success = otrng_dh_mpi_deserialize(&prekey_message->our_dh->priv, dec,
+                                     priv_len, NULL);
 
   free(dec);
 
   if (!success) {
-    free(prekey_msg);
+    free(prekey_message);
     return OTRNG_ERROR;
   }
 
-  prekey_msg->our_dh->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
-  otrng_dh_calculate_public_key(prekey_msg->our_dh->pub,
-                                prekey_msg->our_dh->priv);
+  prekey_message->our_dh->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  otrng_dh_calculate_public_key(prekey_message->our_dh->pub,
+                                prekey_message->our_dh->priv);
 
-  client->our_prekeys = otrng_list_add(prekey_msg, client->our_prekeys);
+  client->our_prekeys = otrng_list_add(prekey_message, client->our_prekeys);
 
   return OTRNG_SUCCESS;
 }

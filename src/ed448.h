@@ -223,28 +223,29 @@ INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
  *
  * @param [sig]     The signature.
  * @param [sym]     The symmetric key.
- * @param [msg]     The message to sign.
- * @param [msg_len] The length of the message.
+ * @param [message]     The message to sign.
+ * @param [message_len] The length of the message.
  *
  * @warning It is not prehashed. The context is always an empty string
  */
 INTERNAL void otrng_ec_sign_simple(eddsa_signature sig,
                                    const uint8_t sym[ED448_PRIVATE_BYTES],
-                                   const uint8_t *msg, size_t msg_len);
+                                   const uint8_t *message, size_t message_len);
 
 /**
  * @brief EdDSA signature verification.
  *
  * @param [sig]     The signature.
  * @param [pub]     The public key.
- * @param [msg]     The message to verify.
- * @param [msg_len] The length of the message.
+ * @param [message]     The message to verify.
+ * @param [message_len] The length of the message.
  *
  * @warning It is not prehashed. The context is always an empty string
  */
-INTERNAL otrng_bool otrng_ec_verify(
-    const uint8_t sig[GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES],
-    const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg, size_t msg_len);
+INTERNAL otrng_bool
+otrng_ec_verify(const uint8_t sig[GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES],
+                const uint8_t pub[ED448_POINT_BYTES], const uint8_t *message,
+                size_t message_len);
 
 INTERNAL void
 otrng_ecdh_keypair_generate_their(ec_point keypair,
@@ -262,15 +263,15 @@ API void otrng_ecdh_keypair_debug_print(FILE *, int, ecdh_keypair_s *);
  * @param [sig]     The signature.
  * @param [sym]     The symmetric key.
  * @param [pub]     The public key.
- * @param [msg]     The message to sign.
- * @param [msg_len] The length of the message.
+ * @param [message]     The message to sign.
+ * @param [message_len] The length of the message.
  *
  * @warning It is not prehashed. The context is always an empty string
  */
 tstatic void otrng_ec_sign(eddsa_signature sig,
                            const uint8_t sym[ED448_PRIVATE_BYTES],
                            const uint8_t pub[ED448_POINT_BYTES],
-                           const uint8_t *msg, size_t msg_len);
+                           const uint8_t *message, size_t message_len);
 
 #endif
 

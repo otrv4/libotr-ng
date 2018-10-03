@@ -39,8 +39,8 @@ static void test_send_dake_1_message(void) {
       otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
       otrng_client_get_client_profile(alice),
       otrng_client_get_prekey_profile(alice),
-      otrng_client_get_max_published_prekey_msg(alice),
-      otrng_client_get_minimum_stored_prekey_msg(alice));
+      otrng_client_get_max_published_prekey_message(alice),
+      otrng_client_get_minimum_stored_prekey_message(alice));
 
   char *dake_1 = NULL;
   dake_1 = otrng_prekey_client_publish(alice->prekey_client);
@@ -64,8 +64,8 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
       otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
       otrng_client_get_client_profile(alice),
       otrng_client_get_prekey_profile(alice),
-      otrng_client_get_max_published_prekey_msg(alice),
-      otrng_client_get_minimum_stored_prekey_msg(alice));
+      otrng_client_get_max_published_prekey_message(alice),
+      otrng_client_get_minimum_stored_prekey_message(alice));
 
   alice->prekey_client->after_dake = OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST;
 
@@ -73,8 +73,8 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   random_bytes(sym, ED448_PRIVATE_BYTES);
   otrng_ecdh_keypair_generate(alice->prekey_client->ephemeral_ecdh, sym);
 
-  otrng_prekey_dake2_message_s msg;
-  otrng_prekey_dake2_message_init(&msg);
+  otrng_prekey_dake2_message_s message;
+  otrng_prekey_dake2_message_init(&message);
 
   size_t read = 0;
   uint8_t ser_server_public_key[ED448_PUBKEY_BYTES] = {
@@ -94,9 +94,10 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   };
 
   otrng_assert_is_success(otrng_deserialize_public_key(
-      msg.server_pub_key, ser_server_public_key, ED448_PUBKEY_BYTES, &read));
+      message.server_pub_key, ser_server_public_key, ED448_PUBKEY_BYTES,
+      &read));
   otrng_assert_is_success(
-      otrng_deserialize_ec_point(msg.S, ser_S, ED448_POINT_BYTES));
+      otrng_deserialize_ec_point(message.S, ser_S, ED448_POINT_BYTES));
 
   uint8_t composite_identity[86] = {
       0x0,  0x0,  0x0,  0x17, 0x70, 0x72, 0x65, 0x6b, 0x65, 0x79, 0x73,
@@ -108,12 +109,12 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
       0x35, 0xa5, 0x1c, 0x77, 0x2b, 0x77, 0xa0, 0x90, 0x76, 0x2d, 0xaf,
       0xf3, 0x90, 0x46, 0x21, 0xfb, 0x2c, 0xb8, 0x94, 0x0,
   };
-  msg.composite_identity_len = 86;
-  msg.composite_identity = otrng_xmalloc_z(msg.composite_identity_len);
-  memcpy(msg.composite_identity, composite_identity,
-         msg.composite_identity_len);
+  message.composite_identity_len = 86;
+  message.composite_identity = otrng_xmalloc_z(message.composite_identity_len);
+  memcpy(message.composite_identity, composite_identity,
+         message.composite_identity_len);
 
-  char *dake_3 = send_dake3(&msg, alice);
+  char *dake_3 = send_dake3(&message, alice);
 
   otrng_assert(dake_3);
   otrng_assert(alice->prekey_client->after_dake == 0);
@@ -122,7 +123,7 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
 
   otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
-  otrng_prekey_dake2_message_destroy(&msg);
+  otrng_prekey_dake2_message_destroy(&message);
 }
 
 static void test_receive_prekey_server_messages(void) {
@@ -137,8 +138,8 @@ static void test_receive_prekey_server_messages(void) {
       otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
       otrng_client_get_client_profile(alice),
       otrng_client_get_prekey_profile(alice),
-      otrng_client_get_max_published_prekey_msg(alice),
-      otrng_client_get_minimum_stored_prekey_msg(alice));
+      otrng_client_get_max_published_prekey_message(alice),
+      otrng_client_get_minimum_stored_prekey_message(alice));
 
   char *dake_2 = otrng_xstrndup(
       "AAQ2bQJzmAAAABFwcmVrZXlzLmxvY2FsaG9zdAAQrC8mmPzxUoSAeFBbBBeR40JJ+"

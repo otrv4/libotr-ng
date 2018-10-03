@@ -118,8 +118,8 @@ typedef enum {
 } otrng_prekey_next_message_t;
 
 typedef struct {
-  unsigned int max_published_prekey_msg;
-  unsigned int minimum_stored_prekey_msg;
+  unsigned int max_published_prekey_message;
+  unsigned int minimum_stored_prekey_message;
   otrng_bool publish_client_profile;
   otrng_bool publish_prekey_profile;
 } otrng_prekey_publication_policy_s;
@@ -129,7 +129,7 @@ typedef struct {
   void (*notify_error)(struct otrng_client_s *client, int error, void *ctx);
   void (*storage_status_received)(
       struct otrng_client_s *client,
-      const otrng_prekey_storage_status_message_s *msg, void *ctx);
+      const otrng_prekey_storage_status_message_s *message, void *ctx);
   void (*success_received)(struct otrng_client_s *client, void *ctx);
   void (*failure_received)(struct otrng_client_s *client, void *ctx);
   void (*no_prekey_in_storage_received)(struct otrng_client_s *client,
@@ -141,7 +141,7 @@ typedef struct {
                                     uint8_t num_ensembles, void *ctx);
   int (*build_prekey_publication_message)(
       struct otrng_client_s *client,
-      otrng_prekey_publication_message_s *pub_msg,
+      otrng_prekey_publication_message_s *pub_message,
       otrng_prekey_publication_policy_s *publication_policy, void *ctx);
 } otrng_prekey_client_callbacks_s;
 
@@ -170,8 +170,8 @@ API void otrng_prekey_client_init(otrng_prekey_client_s *prekey_client,
                                   const otrng_keypair_s *keypair,
                                   const client_profile_s *client_profile,
                                   const otrng_prekey_profile_s *prekey_profile,
-                                  unsigned int max_published_prekey_msg,
-                                  unsigned int minimum_stored_prekey_msg);
+                                  unsigned int max_published_prekey_message,
+                                  unsigned int minimum_stored_prekey_message);
 
 API otrng_prekey_client_s *otrng_prekey_client_new(void);
 
@@ -197,10 +197,10 @@ API void otrng_prekey_client_set_client_profile_publication(
 
 INTERNAL otrng_result otrng_prekey_dake1_message_serialize(
     uint8_t **serialized, size_t *serialized_len,
-    const otrng_prekey_dake1_message_s *msg);
+    const otrng_prekey_dake1_message_s *message);
 
 INTERNAL
-void otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *msg);
+void otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *message);
 
 INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
     otrng_prekey_dake2_message_s *dst, const uint8_t *serialized,
@@ -209,27 +209,27 @@ INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
 INTERNAL
 otrng_prekey_dake2_message_s *otrng_prekey_dake2_message_new(void);
 INTERNAL
-void otrng_prekey_dake2_message_init(otrng_prekey_dake2_message_s *msg);
+void otrng_prekey_dake2_message_init(otrng_prekey_dake2_message_s *message);
 INTERNAL
-void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg);
+void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *message);
 
 INTERNAL void kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
                                   uint8_t usage);
 
 INTERNAL otrng_result
 otrng_prekey_dake3_message_append_storage_information_request(
-    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]);
+    otrng_prekey_dake3_message_s *message, uint8_t mac_key[MAC_KEY_BYTES]);
 
 INTERNAL otrng_result otrng_prekey_dake3_message_serialize(
     uint8_t **serialized, size_t *serialized_len,
-    const otrng_prekey_dake3_message_s *msg);
+    const otrng_prekey_dake3_message_s *message);
 
 INTERNAL
 otrng_prekey_dake3_message_s *otrng_prekey_dake3_message_new(void);
 INTERNAL
-void otrng_prekey_dake3_message_init(otrng_prekey_dake3_message_s *msg);
+void otrng_prekey_dake3_message_init(otrng_prekey_dake3_message_s *message);
 INTERNAL
-void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *msg);
+void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *message);
 
 INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(
     otrng_prekey_storage_status_message_s *dst, const uint8_t *serialized,
@@ -237,14 +237,14 @@ INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(
 
 INTERNAL
 void otrng_prekey_storage_status_message_destroy(
-    otrng_prekey_storage_status_message_s *msg);
+    otrng_prekey_storage_status_message_s *message);
 
 INTERNAL otrng_prekey_publication_message_s *
 otrng_prekey_publication_message_new(void);
 
 INTERNAL
 void otrng_prekey_publication_message_destroy(
-    otrng_prekey_publication_message_s *msg);
+    otrng_prekey_publication_message_s *message);
 
 API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
                                                const char *versions,
@@ -252,10 +252,10 @@ API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
 
 INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_serialize(
     uint8_t **dst, size_t *len,
-    const otrng_prekey_ensemble_query_retrieval_message_s *msg);
+    const otrng_prekey_ensemble_query_retrieval_message_s *message);
 
 INTERNAL void otrng_prekey_ensemble_query_retrieval_message_destroy(
-    otrng_prekey_ensemble_query_retrieval_message_s *msg);
+    otrng_prekey_ensemble_query_retrieval_message_s *message);
 
 INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
     otrng_prekey_ensemble_retrieval_message_s *dst, const uint8_t *serialized,
@@ -263,11 +263,11 @@ INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
 
 INTERNAL
 void otrng_prekey_ensemble_retrieval_message_destroy(
-    otrng_prekey_ensemble_retrieval_message_s *msg);
+    otrng_prekey_ensemble_retrieval_message_s *message);
 
 #ifdef OTRNG_PREKEY_CLIENT_PRIVATE
 
-tstatic char *send_dake3(const otrng_prekey_dake2_message_s *msg2,
+tstatic char *send_dake3(const otrng_prekey_dake2_message_s *message2,
                          struct otrng_client_s *client);
 
 #endif

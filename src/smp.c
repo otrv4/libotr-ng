@@ -67,7 +67,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
 
   switch (tlv->type) {
   case OTRNG_TLV_SMP_MESSAGE_1:
-    event = otrng_process_smp_msg1(tlv, smp);
+    event = otrng_process_smp_message1(tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = '1';
     } else if (event == OTRNG_SMP_EVENT_ERROR ||
@@ -77,7 +77,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
     break;
 
   case OTRNG_TLV_SMP_MESSAGE_2:
-    event = otrng_process_smp_msg2(&to_send, tlv, smp);
+    event = otrng_process_smp_message2(&to_send, tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = '1';
       to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
@@ -91,7 +91,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
     break;
 
   case OTRNG_TLV_SMP_MESSAGE_3:
-    event = otrng_process_smp_msg3(&to_send, tlv, smp);
+    event = otrng_process_smp_message3(&to_send, tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = '1';
       to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
@@ -105,7 +105,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
     break;
 
   case OTRNG_TLV_SMP_MESSAGE_4:
-    event = otrng_process_smp_msg4(tlv, smp);
+    event = otrng_process_smp_message4(tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = '1';
       to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
@@ -142,9 +142,10 @@ INTERNAL tlv_s *otrng_process_smp_tlv(const tlv_s *tlv, otrng_s *otr) {
   // TODO: @smp: what happens with the error and failure?
   otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
   tlv_s *out = otrng_process_smp(&event, otr->smp, tlv);
-  handle_smp_event_cb_v4(event, otr->smp->progress,
-                         otr->smp->msg1 ? otr->smp->msg1->question : NULL,
-                         otr->smp->msg1 ? otr->smp->msg1->q_len : 0, otr);
+  handle_smp_event_cb_v4(
+      event, otr->smp->progress,
+      otr->smp->message1 ? otr->smp->message1->question : NULL,
+      otr->smp->message1 ? otr->smp->message1->q_len : 0, otr);
 
   return out;
 }
@@ -156,7 +157,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
                                   const size_t answer_len, uint8_t *ssid,
                                   smp_protocol_s *smp, otrng_s *conversation) {
 
-  smp_msg_1_s msg;
+  smp_message_1_s message;
   uint8_t *to_send = NULL;
   size_t len = 0;
   tlv_s *tlv;
@@ -183,14 +184,14 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
   }
 
   do {
-    if (!otrng_generate_smp_msg_1(&msg, smp)) {
+    if (!otrng_generate_smp_message_1(&message, smp)) {
       continue;
     }
 
-    msg.q_len = q_len;
-    msg.question = otrng_xmemdup(question, q_len);
+    message.q_len = q_len;
+    message.question = otrng_xmemdup(question, q_len);
 
-    if (!otrng_smp_msg_1_serialize(&to_send, &len, &msg)) {
+    if (!otrng_smp_message_1_serialize(&to_send, &len, &message)) {
       continue;
     }
 
@@ -200,14 +201,15 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
                            q_len, conversation);
 
     tlv = otrng_tlv_new(OTRNG_TLV_SMP_MESSAGE_1, len, to_send);
-    otrng_smp_msg_1_destroy(&msg);
+    otrng_smp_message_1_destroy(&message);
     free(to_send);
     return tlv;
   } while (0);
 
-  otrng_smp_msg_1_destroy(&msg);
+  otrng_smp_message_1_destroy(&message);
   handle_smp_event_cb_v4(OTRNG_SMP_EVENT_ERROR, smp->progress,
-                         smp->msg1->question, smp->msg1->q_len, conversation);
+                         smp->message1->question, smp->message1->q_len,
+                         conversation);
 
   return NULL;
 }
@@ -285,7 +287,7 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_s *smp,
     return NULL;
   }
 
-  *event = otrng_reply_with_smp_msg_2(&smp_reply, smp);
+  *event = otrng_reply_with_smp_message_2(&smp_reply, smp);
 
   return smp_reply;
 }
@@ -314,8 +316,9 @@ tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
     event = OTRNG_SMP_EVENT_IN_PROGRESS;
   }
 
-  handle_smp_event_cb_v4(event, otr->smp->progress, otr->smp->msg1->question,
-                         otr->smp->msg1->q_len, otr);
+  handle_smp_event_cb_v4(event, otr->smp->progress,
+                         otr->smp->message1->question,
+                         otr->smp->message1->q_len, otr);
 
   warn = OTRNG_WARN_NONE;
   // TODO: warn

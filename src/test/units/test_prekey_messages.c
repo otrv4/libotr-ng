@@ -28,16 +28,16 @@
 #include "prekey_messages.h"
 
 static void test_deserialize_prekey_success_message(void) {
-  const char *prekey_success_msg =
+  const char *prekey_success_message =
       "AAQGbQJzmFMujbgWDP1BjPZbsEO61+"
       "AmGPalm6QFnGugNXodeVM3MXxnMaWaLSxRkTfTPF3b+IDnuaOgnKIt8ckRvrjseEA=.";
 
-  size_t len = strlen(prekey_success_msg);
+  size_t len = strlen(prekey_success_message);
   uint8_t *decoded = NULL;
   size_t decoded_len = 0;
 
   decoded = otrng_xmalloc_z(((len - 1 + 3) / 4) * 3);
-  decoded_len = otrl_base64_decode(decoded, prekey_success_msg, len - 1);
+  decoded_len = otrl_base64_decode(decoded, prekey_success_message, len - 1);
 
   otrng_assert(decoded_len == OTRNG_PREKEY_SUCCESS_MESSAGE_LEN);
 

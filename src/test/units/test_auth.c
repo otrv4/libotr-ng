@@ -27,7 +27,7 @@
 #include "random.h"
 
 static void test_rsig_calculate_c() {
-  const char *msg = "hey";
+  const char *message = "hey";
   uint8_t expected_c[ED448_SCALAR_BYTES] = {
       0xe3, 0xec, 0x15, 0x07, 0xb3, 0x3b, 0x63, 0x6c, 0xd1, 0x5a, 0x77, 0x0a,
       0x7e, 0xd7, 0xfd, 0xd8, 0xf2, 0x03, 0xea, 0x76, 0x66, 0xe1, 0x85, 0x3a,
@@ -51,8 +51,8 @@ static void test_rsig_calculate_c() {
   goldilocks_448_scalar_p c;
   otrng_rsig_calculate_c_with_usage_and_domain(
       OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, c, a1.pub,
-      a2.pub, a3.pub, t1.pub, t2.pub, t3.pub, (const uint8_t *)msg,
-      strlen(msg));
+      a2.pub, a3.pub, t1.pub, t2.pub, t3.pub, (const uint8_t *)message,
+      strlen(message));
 
   uint8_t serialized_c[ED448_SCALAR_BYTES] = {0};
   goldilocks_448_scalar_encode(serialized_c, c);
@@ -60,7 +60,7 @@ static void test_rsig_calculate_c() {
 }
 
 static void test_rsig_auth() {
-  const char *msg = "hi";
+  const char *message = "hi";
 
   otrng_keypair_s p1, p2, p3;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {0}, sym2[ED448_PRIVATE_BYTES] = {0},
@@ -77,25 +77,25 @@ static void test_rsig_auth() {
   ring_sig_s dst;
   otrng_assert_is_error(
       otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p2.pub, p3.pub, p2.pub,
-                              (unsigned char *)msg, strlen(msg)));
+                              (unsigned char *)message, strlen(message)));
 
   otrng_assert_is_error(
       otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p1.pub, p3.pub, p1.pub,
-                              (unsigned char *)msg, strlen(msg)));
+                              (unsigned char *)message, strlen(message)));
 
   otrng_assert_is_success(
       otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p1.pub, p2.pub, p3.pub,
-                              (unsigned char *)msg, strlen(msg)));
+                              (unsigned char *)message, strlen(message)));
 
   otrng_assert(otrng_rsig_verify(&dst, p1.pub, p2.pub, p3.pub,
-                                 (unsigned char *)msg, strlen(msg)));
+                                 (unsigned char *)message, strlen(message)));
 
   otrng_assert_is_success(
       otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p3.pub, p1.pub, p2.pub,
-                              (unsigned char *)msg, strlen(msg)));
+                              (unsigned char *)message, strlen(message)));
 
   otrng_assert(otrng_rsig_verify(&dst, p3.pub, p1.pub, p2.pub,
-                                 (unsigned char *)msg, strlen(msg)));
+                                 (unsigned char *)message, strlen(message)));
 }
 
 static void test_rsig_compatible_with_prekey_server() {
@@ -154,12 +154,12 @@ static void test_rsig_compatible_with_prekey_server() {
   otrng_ec_point_decode(p3.pub, p3_pub);
 
   // Test if the keys are OK
-  const char *msg = "hi";
+  const char *message = "hi";
   ring_sig_s dst;
   otrng_assert(otrng_rsig_authenticate(&dst, p1.priv, p1.pub, p1.pub, p2.pub,
-                                       p3.pub, (unsigned char *)msg, 2));
-  otrng_assert(
-      otrng_rsig_verify(&dst, p1.pub, p2.pub, p3.pub, (const uint8_t *)msg, 2));
+                                       p3.pub, (unsigned char *)message, 2));
+  otrng_assert(otrng_rsig_verify(&dst, p1.pub, p2.pub, p3.pub,
+                                 (const uint8_t *)message, 2));
 
   uint8_t rsig[6 * ED448_SCALAR_BYTES] = {
       // c1
@@ -210,7 +210,7 @@ static void test_rsig_compatible_with_prekey_server() {
 
   otrng_assert(otrng_rsig_verify_with_usage_and_domain(
       0x11, "OTR-Prekey-Server", &proof, p1.pub, p2.pub, p3.pub,
-      (const uint8_t *)msg, 2));
+      (const uint8_t *)message, 2));
 }
 
 void units_auth_add_tests(void) {

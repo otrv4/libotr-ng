@@ -164,7 +164,7 @@ static void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
 static uint8_t mac_tag[HASH_BYTES] = {0xFD};
 
 static void
-setup_non_interactive_auth_message(dake_non_interactive_auth_message_s *msg,
+setup_non_interactive_auth_message(dake_non_interactive_auth_message_s *message,
                                    const dake_fixture_s *f) {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
@@ -173,14 +173,14 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_s *msg,
   otrng_ecdh_keypair_generate(&ecdh, sym);
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
-  msg->sender_instance_tag = 1;
-  msg->receiver_instance_tag = 1;
-  otrng_client_profile_copy(msg->profile, f->profile);
-  otrng_ec_point_copy(msg->X, ecdh.pub);
-  msg->A = otrng_dh_mpi_copy(dh.pub);
-  memcpy(msg->auth_mac, mac_tag, HASH_BYTES);
+  message->sender_instance_tag = 1;
+  message->receiver_instance_tag = 1;
+  otrng_client_profile_copy(message->profile, f->profile);
+  otrng_ec_point_copy(message->X, ecdh.pub);
+  message->A = otrng_dh_mpi_copy(dh.pub);
+  memcpy(message->auth_mac, mac_tag, HASH_BYTES);
 
-  msg->prekey_message_id = 0x0A00000D;
+  message->prekey_message_id = 0x0A00000D;
 
   otrng_dh_keypair_destroy(&dh);
   otrng_ecdh_keypair_destroy(&ecdh);
@@ -189,15 +189,15 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_s *msg,
 static void
 test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
                                                   gconstpointer data) {
-  dake_non_interactive_auth_message_s msg;
-  otrng_dake_non_interactive_auth_message_init(&msg);
-  setup_non_interactive_auth_message(&msg, f);
+  dake_non_interactive_auth_message_s message;
+  otrng_dake_non_interactive_auth_message_init(&message);
+  setup_non_interactive_auth_message(&message, f);
 
   uint8_t *serialized = NULL;
   size_t len = 0;
   (void)data;
   otrng_assert_is_success(otrng_dake_non_interactive_auth_message_serialize(
-      &serialized, &len, &msg));
+      &serialized, &len, &message));
 
   uint8_t expected_header[] = {
       0x00,
@@ -220,19 +220,19 @@ test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   size_t client_profile_len = 0;
   uint8_t *client_profile_serialized = NULL;
   otrng_assert_is_success(otrng_client_profile_serialize(
-      &client_profile_serialized, &client_profile_len, msg.profile));
+      &client_profile_serialized, &client_profile_len, message.profile));
   otrng_assert_cmpmem(cursor, client_profile_serialized, client_profile_len);
   free(client_profile_serialized);
   cursor += client_profile_len;
 
   uint8_t serialized_x[PUB_KEY_SER_BYTES];
-  size_t ser_len = otrng_serialize_ec_point(serialized_x, msg.X);
+  size_t ser_len = otrng_serialize_ec_point(serialized_x, message.X);
   otrng_assert_cmpmem(cursor, serialized_x, ser_len);
   cursor += ser_len;
 
   uint8_t serialized_a[DH3072_MOD_LEN_BYTES];
   otrng_assert_is_success(otrng_dh_mpi_serialize(
-      serialized_a, DH3072_MOD_LEN_BYTES, &ser_len, msg.A));
+      serialized_a, DH3072_MOD_LEN_BYTES, &ser_len, message.A));
 
   /* Skip first 4 because they are the size */
   cursor += 4;
@@ -240,7 +240,7 @@ test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   cursor += ser_len;
 
   uint8_t serialized_ring_sig[RING_SIG_BYTES];
-  otrng_serialize_ring_sig(serialized_ring_sig, msg.sigma);
+  otrng_serialize_ring_sig(serialized_ring_sig, message.sigma);
 
   otrng_assert_cmpmem(cursor, serialized_ring_sig, RING_SIG_BYTES);
   cursor += RING_SIG_BYTES;
@@ -254,7 +254,7 @@ test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   otrng_assert_cmpmem(cursor, mac_tag, HASH_BYTES);
 
   free(serialized);
-  otrng_dake_non_interactive_auth_message_destroy(&msg);
+  otrng_dake_non_interactive_auth_message_destroy(&message);
 }
 
 static void

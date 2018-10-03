@@ -165,20 +165,20 @@ typedef struct {
  * message. any other value will result in an assertion failure
  */
 INTERNAL otrng_result build_interactive_rsign_tag(
-    uint8_t **msg, size_t *msg_len, const char auth_tag_type,
+    uint8_t **message, size_t *message_len, const char auth_tag_type,
     const otrng_dake_participant_data_s *initiator,
     const otrng_dake_participant_data_s *responder, const uint8_t *phi,
     size_t phi_len);
 
 INTERNAL otrng_result
-build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
+build_non_interactive_rsign_tag(uint8_t **message, size_t *message_len,
                                 const otrng_dake_participant_data_s *initiator,
                                 const otrng_dake_participant_data_s *responder,
                                 const otrng_shared_prekey_pub r_shared_prekey,
                                 const uint8_t *phi, size_t phi_len);
 
 INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
-    uint8_t **msg, size_t *msg_len,
+    uint8_t **message, size_t *message_len,
     const otrng_dake_participant_data_s *initiator,
     const otrng_dake_participant_data_s *responder,
     const otrng_shared_prekey_pub r_shared_prekey, const uint8_t *phi,
