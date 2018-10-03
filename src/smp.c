@@ -150,12 +150,12 @@ INTERNAL tlv_s *otrng_process_smp_tlv(const tlv_s *tlv, otrng_s *otr) {
   return out;
 }
 
-tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
-                                  const client_profile_s *responder_profile,
-                                  const uint8_t *question, const size_t q_len,
-                                  const uint8_t *answer,
-                                  const size_t answer_len, uint8_t *ssid,
-                                  smp_protocol_s *smp, otrng_s *conversation) {
+tstatic tlv_s *
+otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
+                   const otrng_client_profile_s *responder_profile,
+                   const uint8_t *question, const size_t q_len,
+                   const uint8_t *answer, const size_t answer_len,
+                   uint8_t *ssid, smp_protocol_s *smp, otrng_s *conversation) {
 
   smp_message_1_s message;
   uint8_t *to_send = NULL;
@@ -265,8 +265,8 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
 
 tstatic tlv_s *
 otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_s *smp,
-                         const client_profile_s *our_profile,
-                         const client_profile_s *their_client_profile,
+                         const otrng_client_profile_s *our_profile,
+                         const otrng_client_profile_s *their_client_profile,
                          uint8_t *ssid, const uint8_t *secret,
                          const size_t secretlen) {
   // TODO: @smp If state is not CONTINUE_SMP then error.

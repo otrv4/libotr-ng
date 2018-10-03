@@ -64,7 +64,7 @@
 #define OTRNG_CLIENT_PROFILE_FIELD_DSA_KEY 0x06
 #define OTRNG_CLIENT_PROFILE_FIELD_TRANSITIONAL_SIGNATURE 0x07
 
-typedef struct client_profile_s {
+typedef struct otrng_client_profile_s {
   uint32_t sender_instance_tag;
   otrng_public_key long_term_pub_key;
   otrng_public_key forging_pub_key;
@@ -78,24 +78,24 @@ typedef struct client_profile_s {
 
   otrng_bool should_publish;
   otrng_bool is_publishing;
-} client_profile_s;
+} otrng_client_profile_s;
 
-INTERNAL void otrng_client_profile_copy(client_profile_s *destination,
-                                        const client_profile_s *source);
+INTERNAL void otrng_client_profile_copy(otrng_client_profile_s *destination,
+                                        const otrng_client_profile_s *source);
 
-INTERNAL void otrng_client_profile_destroy(client_profile_s *profile);
+INTERNAL void otrng_client_profile_destroy(otrng_client_profile_s *profile);
 
-INTERNAL void otrng_client_profile_free(client_profile_s *profile);
+INTERNAL void otrng_client_profile_free(otrng_client_profile_s *profile);
 
-INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
-                                                       const uint8_t *buffer,
-                                                       size_t buflen,
-                                                       size_t *nread);
+INTERNAL otrng_result otrng_client_profile_deserialize(
+    otrng_client_profile_s *target, const uint8_t *buffer, size_t buflen,
+    size_t *nread);
 
-INTERNAL otrng_result otrng_client_profile_serialize(
-    uint8_t **destination, size_t *nbytes, const client_profile_s *profile);
+INTERNAL otrng_result
+otrng_client_profile_serialize(uint8_t **destination, size_t *nbytes,
+                               const otrng_client_profile_s *profile);
 
-INTERNAL client_profile_s *otrng_client_profile_build(
+INTERNAL otrng_client_profile_s *otrng_client_profile_build(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
     const otrng_public_key forging_key, unsigned int expiration_time);
 
@@ -105,36 +105,38 @@ INTERNAL otrng_bool otrng_client_profile_invalid(time_t expires,
                                                  uint64_t extra_valid_time);
 
 INTERNAL otrng_bool otrng_client_profile_valid(
-    const client_profile_s *profile, const uint32_t sender_instance_tag);
+    const otrng_client_profile_s *profile, const uint32_t sender_instance_tag);
 
 INTERNAL otrng_result otrng_client_profile_transitional_sign(
-    client_profile_s *profile, OtrlPrivKey *privkey);
+    otrng_client_profile_s *profile, OtrlPrivKey *privkey);
 
-API void otrng_client_profile_start_publishing(client_profile_s *profile);
+API void otrng_client_profile_start_publishing(otrng_client_profile_s *profile);
 API otrng_bool
-otrng_client_profile_should_publish(const client_profile_s *profile);
+otrng_client_profile_should_publish(const otrng_client_profile_s *profile);
 
 #ifdef DEBUG_API
 
-API void otrng_client_profile_debug_print(FILE *, int, client_profile_s *);
+API void otrng_client_profile_debug_print(FILE *, int,
+                                          otrng_client_profile_s *);
 
 #endif
 
 #ifdef OTRNG_USER_PROFILE_PRIVATE
 
-tstatic client_profile_s *client_profile_new(const char *versions);
+tstatic otrng_client_profile_s *client_profile_new(const char *versions);
 
-tstatic otrng_result client_profile_sign(client_profile_s *profile,
+tstatic otrng_result client_profile_sign(otrng_client_profile_s *profile,
                                          const otrng_keypair_s *keypair);
 
-tstatic otrng_result client_profile_body_serialize_into(
-    uint8_t **destination, size_t *nbytes, const client_profile_s *profile);
+tstatic otrng_result
+client_profile_body_serialize_into(uint8_t **destination, size_t *nbytes,
+                                   const otrng_client_profile_s *profile);
 
 tstatic otrng_bool
-client_profile_verify_signature(const client_profile_s *profile);
+client_profile_verify_signature(const otrng_client_profile_s *profile);
 
-tstatic otrng_result
-client_profile_verify_transitional_signature(const client_profile_s *profile);
+tstatic otrng_result client_profile_verify_transitional_signature(
+    const otrng_client_profile_s *profile);
 
 #endif
 

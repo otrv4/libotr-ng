@@ -74,7 +74,7 @@ void create_client_profile_cb(struct otrng_client_s *client,
   uint32_t instance_tag = otrng_client_get_instance_tag(client);
   otrng_keypair_s *keypair = otrng_client_get_keypair_v4(client);
 
-  client_profile_s *profile = otrng_client_profile_build(
+  otrng_client_profile_s *profile = otrng_client_profile_build(
       instance_tag, allowed_versions, keypair,
       *otrng_client_get_forging_key(client),
       otrng_client_get_client_profile_exp_time(client));

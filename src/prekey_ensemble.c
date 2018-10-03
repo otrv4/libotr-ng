@@ -26,7 +26,7 @@ INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new() {
 
   pe = otrng_xmalloc_z(sizeof(prekey_ensemble_s));
   pe->prekey_profile = otrng_xmalloc_z(sizeof(otrng_prekey_profile_s));
-  pe->client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  pe->client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   return pe;
 }

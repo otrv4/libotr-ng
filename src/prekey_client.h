@@ -49,7 +49,7 @@ struct otrng_client_s;
 
 typedef struct {
   uint32_t client_instance_tag;
-  client_profile_s *client_profile;
+  otrng_client_profile_s *client_profile;
   ec_point I;
 } otrng_prekey_dake1_message_s;
 
@@ -76,7 +76,7 @@ typedef struct {
 typedef struct {
   uint8_t num_prekey_messages;
   dake_prekey_message_s **prekey_messages;
-  client_profile_s *client_profile;
+  otrng_client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
 
   ec_scalar *ecdh_keys;
@@ -149,7 +149,7 @@ typedef struct {
   char *our_identity;
   uint32_t instance_tag;
   const otrng_keypair_s *keypair;
-  const client_profile_s *client_profile;
+  const otrng_client_profile_s *client_profile;
   const otrng_prekey_profile_s *prekey_profile;
   ecdh_keypair_s *ephemeral_ecdh;
 
@@ -168,7 +168,7 @@ API void otrng_prekey_client_init(otrng_prekey_client_s *prekey_client,
                                   const char *server, const char *our_identity,
                                   uint32_t instance_tag,
                                   const otrng_keypair_s *keypair,
-                                  const client_profile_s *client_profile,
+                                  const otrng_client_profile_s *client_profile,
                                   const otrng_prekey_profile_s *prekey_profile,
                                   unsigned int max_published_prekey_message,
                                   unsigned int minimum_stored_prekey_message);

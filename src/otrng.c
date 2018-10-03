@@ -588,7 +588,7 @@ static otrng_result generate_sending_rsig_tag(uint8_t **destination,
   };
 
   const otrng_dake_participant_data_s responder = {
-      .client_profile = (client_profile_s *)get_my_client_profile(otr),
+      .client_profile = (otrng_client_profile_s *)get_my_client_profile(otr),
       .exp_client_profile = NULL,
       .prekey_profile = NULL,
       .exp_prekey_profile = NULL,
@@ -614,7 +614,7 @@ static otrng_result generate_receiving_rsig_tag(
     uint8_t **destination, size_t *destination_len, const char auth_tag_type,
     const otrng_dake_participant_data_s *responder, otrng_s *otr) {
   const otrng_dake_participant_data_s initiator = {
-      .client_profile = (client_profile_s *)get_my_client_profile(otr),
+      .client_profile = (otrng_client_profile_s *)get_my_client_profile(otr),
       .exp_client_profile = NULL,
       .prekey_profile = NULL,
       .exp_prekey_profile = NULL,
@@ -788,7 +788,7 @@ tstatic otrng_result build_non_interactive_auth_message(
   };
 
   const otrng_dake_participant_data_s responder = {
-      .client_profile = (client_profile_s *)get_my_client_profile(otr),
+      .client_profile = (otrng_client_profile_s *)get_my_client_profile(otr),
       .exp_client_profile = NULL,
       .prekey_profile = NULL,
       .exp_prekey_profile = NULL,
@@ -919,8 +919,8 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   return ensemble;
 }
 
-tstatic otrng_result set_their_client_profile(const client_profile_s *profile,
-                                              otrng_s *otr) {
+tstatic otrng_result
+set_their_client_profile(const otrng_client_profile_s *profile, otrng_s *otr) {
   // The protocol is already committed to a specific profile, and receives an
   // ensemble with another profile.
   // How should the protocol behave? I am failling for now.
@@ -928,7 +928,7 @@ tstatic otrng_result set_their_client_profile(const client_profile_s *profile,
     return OTRNG_ERROR;
   }
 
-  otr->their_client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  otr->their_client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   otrng_client_profile_copy(otr->their_client_profile, profile);
 
@@ -1149,8 +1149,9 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   uint8_t mac_tag[DATA_MESSAGE_MAC_BYTES];
 
   const otrng_dake_participant_data_s initiator = {
-      .client_profile = (client_profile_s *)get_my_client_profile(otr),
-      .exp_client_profile = (client_profile_s *)get_my_exp_client_profile(otr),
+      .client_profile = (otrng_client_profile_s *)get_my_client_profile(otr),
+      .exp_client_profile =
+          (otrng_client_profile_s *)get_my_exp_client_profile(otr),
       .prekey_profile = (otrng_prekey_profile_s *)get_my_prekey_profile(otr),
       .exp_prekey_profile =
           (otrng_prekey_profile_s *)get_my_exp_prekey_profile(otr),
@@ -1159,7 +1160,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   };
 
   const otrng_dake_participant_data_s responder = {
-      .client_profile = (client_profile_s *)auth->profile,
+      .client_profile = (otrng_client_profile_s *)auth->profile,
       .exp_client_profile = NULL,
       .prekey_profile = NULL,
       .exp_prekey_profile = NULL,
@@ -1315,7 +1316,7 @@ tstatic otrng_result non_interactive_auth_message_received(
   otrng_key_manager_set_their_dh(auth->A, otr->keys);
 
   // TODO: @client_profile Extract function to set_their_client_profile
-  otr->their_client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  otr->their_client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   otrng_client_profile_copy(otr->their_client_profile, auth->profile);
 
@@ -1377,7 +1378,7 @@ tstatic otrng_result receive_non_interactive_auth_message(
 tstatic otrng_result receive_identity_message_on_state_start(
     string_p *destination, dake_identity_message_s *identity_message,
     otrng_s *otr) {
-  otr->their_client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  otr->their_client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   otrng_key_manager_set_their_ecdh(identity_message->Y, otr->keys);
   otrng_key_manager_set_their_dh(identity_message->B, otr->keys);
@@ -1439,7 +1440,7 @@ tstatic otrng_result receive_identity_message(string_p *destination,
                                               size_t buflen, otrng_s *otr) {
   otrng_result result = OTRNG_ERROR;
   dake_identity_message_s m;
-  m.profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  m.profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   if (!otrng_dake_identity_message_deserialize(&m, buff, buflen)) {
     otrng_error_message(destination, OTRNG_ERR_MESSAGE_MALFORMED);
@@ -1498,12 +1499,12 @@ tstatic otrng_result serialize_and_encode_auth_i(string_p *destination,
 }
 
 tstatic otrng_result reply_with_auth_i_message(
-    string_p *destination, const client_profile_s *their_client_profile,
+    string_p *destination, const otrng_client_profile_s *their_client_profile,
     otrng_s *otr) {
   dake_auth_i_s message;
 
   const otrng_dake_participant_data_s responder = {
-      .client_profile = (client_profile_s *)their_client_profile,
+      .client_profile = (otrng_client_profile_s *)their_client_profile,
       .exp_client_profile = NULL,
       .prekey_profile = NULL,
       .exp_prekey_profile = NULL,
@@ -1550,7 +1551,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   otrng_bool err;
 
   const otrng_dake_participant_data_s responder = {
-      .client_profile = (client_profile_s *)auth->profile,
+      .client_profile = (otrng_client_profile_s *)auth->profile,
       .exp_client_profile = NULL,
       .prekey_profile = NULL,
       .exp_prekey_profile = NULL,
@@ -1619,7 +1620,7 @@ tstatic otrng_result receive_auth_r(string_p *destination, const uint8_t *buff,
     return OTRNG_ERROR;
   }
 
-  otr->their_client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  otr->their_client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   otrng_key_manager_set_their_ecdh(auth.X, otr->keys);
   otrng_key_manager_set_their_dh(auth.A, otr->keys);

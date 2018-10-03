@@ -33,7 +33,7 @@
 #include "shake.h"
 
 INTERNAL dake_identity_message_s *
-otrng_dake_identity_message_new(const client_profile_s *profile) {
+otrng_dake_identity_message_new(const otrng_client_profile_s *profile) {
   dake_identity_message_s *identity_message;
 
   if (!profile) {
@@ -41,7 +41,7 @@ otrng_dake_identity_message_new(const client_profile_s *profile) {
   }
 
   identity_message = otrng_xmalloc_z(sizeof(dake_identity_message_s));
-  identity_message->profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  identity_message->profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
   otrng_client_profile_copy(identity_message->profile, profile);
   otrng_secure_wipe(identity_message->Y, ED448_POINT_BYTES);
 
@@ -193,7 +193,7 @@ INTERNAL dake_auth_r_s *otrng_dake_auth_r_new() {
 INTERNAL void otrng_dake_auth_r_init(dake_auth_r_s *auth_r) {
   memset(auth_r, 0, sizeof(dake_auth_r_s));
   auth_r->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
-  auth_r->profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  auth_r->profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 }
 
 INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
@@ -576,7 +576,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_init(
     dake_non_interactive_auth_message_s *a) {
   memset(a, 0, sizeof(dake_non_interactive_auth_message_s));
   a->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
-  a->profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  a->profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 }
 
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
@@ -744,7 +744,7 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
 
 INTERNAL otrng_bool otrng_valid_received_values(
     const uint32_t sender_instance_tag, const ec_point their_ecdh,
-    const dh_mpi their_dh, const client_profile_s *profile) {
+    const dh_mpi their_dh, const otrng_client_profile_s *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */
   if (!otrng_ec_point_valid(their_ecdh)) {
     return otrng_false;
@@ -769,8 +769,8 @@ INTERNAL otrng_bool otrng_valid_received_values(
 
 tstatic otrng_result build_rsign_tag(
     uint8_t *destination, size_t destinationlen, size_t *written,
-    uint8_t first_usage, const client_profile_s *i_profile,
-    const client_profile_s *r_profile, const ec_point i_ecdh,
+    uint8_t first_usage, const otrng_client_profile_s *i_profile,
+    const otrng_client_profile_s *r_profile, const ec_point i_ecdh,
     const ec_point r_ecdh, const dh_mpi i_dh, const dh_mpi r_dh,
     const uint8_t *ser_r_shared_prekey, size_t ser_r_shared_prekey_len,
     const uint8_t *phi, size_t phi_len) {

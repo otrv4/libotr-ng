@@ -198,7 +198,7 @@ API otrng_result otrng_global_state_generate_shared_prekey(
 
 API otrng_result otrng_global_state_generate_client_profile(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
-  client_profile_s *profile;
+  otrng_client_profile_s *profile;
   otrng_result err;
 
   otrng_client_s *client = get_client(gs, client_id);

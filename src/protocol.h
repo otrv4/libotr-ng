@@ -59,7 +59,7 @@ typedef struct otrng_s {
 
   uint32_t their_instance_tag;
 
-  client_profile_s *their_client_profile;
+  otrng_client_profile_s *their_client_profile;
   otrng_prekey_profile_s *their_prekey_profile;
 
   uint8_t running_version;
@@ -79,9 +79,9 @@ typedef struct otrng_s {
 
 INTERNAL void maybe_create_keys(struct otrng_client_s *client);
 
-INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr);
+INTERNAL const otrng_client_profile_s *get_my_client_profile(otrng_s *otr);
 
-INTERNAL const client_profile_s *get_my_exp_client_profile(otrng_s *otr);
+INTERNAL const otrng_client_profile_s *get_my_exp_client_profile(otrng_s *otr);
 
 INTERNAL const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr);
 

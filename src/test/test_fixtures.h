@@ -45,7 +45,7 @@ typedef struct otrng_fixture_s {
 typedef struct dake_fixture_s {
   otrng_keypair_s *keypair;
   otrng_shared_prekey_pair_s *shared_prekey;
-  client_profile_s *profile;
+  otrng_client_profile_s *profile;
 } dake_fixture_s, dake_fixture_p[1];
 
 int dh_mpi_cmp(const dh_mpi m1, const dh_mpi m2);

@@ -34,7 +34,7 @@
 typedef struct dake_identity_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  client_profile_s *profile;
+  otrng_client_profile_s *profile;
   ec_point Y;
   dh_public_key B;
 } dake_identity_message_s;
@@ -42,7 +42,7 @@ typedef struct dake_identity_message_s {
 typedef struct dake_auth_r_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  client_profile_s *profile;
+  otrng_client_profile_s *profile;
   ec_point X;
   dh_public_key A;
   ring_sig_s *sigma;
@@ -64,7 +64,7 @@ typedef struct dake_prekey_message_s {
 typedef struct dake_non_interactive_auth_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
-  client_profile_s *profile;
+  otrng_client_profile_s *profile;
   ec_point X;
   dh_public_key A;
   ring_sig_s *sigma;
@@ -74,7 +74,7 @@ typedef struct dake_non_interactive_auth_message_s {
 
 INTERNAL otrng_bool otrng_valid_received_values(
     const uint32_t sender_instance_tag, const ec_point their_ecdh,
-    const dh_mpi their_dh, const client_profile_s *profile);
+    const dh_mpi their_dh, const otrng_client_profile_s *profile);
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_s *destination, const uint8_t *buffer,
@@ -92,7 +92,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_s *non_interactive_auth);
 
 INTERNAL dake_identity_message_s *
-otrng_dake_identity_message_new(const client_profile_s *profile);
+otrng_dake_identity_message_new(const otrng_client_profile_s *profile);
 
 INTERNAL void
 otrng_dake_identity_message_free(dake_identity_message_s *identity_message);
@@ -156,8 +156,8 @@ INTERNAL otrng_result otrng_dake_prekey_message_serialize(
     const dake_prekey_message_s *source);
 
 typedef struct {
-  client_profile_s *client_profile;
-  client_profile_s *exp_client_profile;
+  otrng_client_profile_s *client_profile;
+  otrng_client_profile_s *exp_client_profile;
   otrng_prekey_profile_s *prekey_profile;
   otrng_prekey_profile_s *exp_prekey_profile;
   goldilocks_448_point_s ecdh;

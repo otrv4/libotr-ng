@@ -34,20 +34,20 @@
 #include "instance_tag.h"
 #include "serialize.h"
 
-tstatic client_profile_s *client_profile_new(const char *versions) {
-  client_profile_s *client_profile;
+tstatic otrng_client_profile_s *client_profile_new(const char *versions) {
+  otrng_client_profile_s *client_profile;
   if (!versions) {
     return NULL;
   }
 
-  client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
   client_profile->versions = versions ? otrng_xstrdup(versions) : NULL;
 
   return client_profile;
 }
 
-static void copy_transitional_signature(client_profile_s *destination,
-                                        const client_profile_s *source) {
+static void copy_transitional_signature(otrng_client_profile_s *destination,
+                                        const otrng_client_profile_s *source) {
   if (!source->transitional_signature) {
     return;
   }
@@ -59,7 +59,7 @@ static void copy_transitional_signature(client_profile_s *destination,
 }
 
 otrng_result
-otrng_client_profile_set_dsa_key_mpis(client_profile_s *client_profile,
+otrng_client_profile_set_dsa_key_mpis(otrng_client_profile_s *client_profile,
                                       const uint8_t *mpis, size_t mpis_len) {
   size_t w;
 
@@ -74,8 +74,8 @@ otrng_client_profile_set_dsa_key_mpis(client_profile_s *client_profile,
   return OTRNG_SUCCESS;
 }
 
-static void copy_dsa_key(client_profile_s *destination,
-                         const client_profile_s *source) {
+static void copy_dsa_key(otrng_client_profile_s *destination,
+                         const otrng_client_profile_s *source) {
   size_t read = 0;
   uint16_t key_type = 0xFF;
 
@@ -99,10 +99,10 @@ static void copy_dsa_key(client_profile_s *destination,
   }
 }
 
-INTERNAL void otrng_client_profile_copy(client_profile_s *destination,
-                                        const client_profile_s *source) {
+INTERNAL void otrng_client_profile_copy(otrng_client_profile_s *destination,
+                                        const otrng_client_profile_s *source) {
   /* If there are no fields present, do not point to invalid memory */
-  memset(destination, 0, sizeof(client_profile_s));
+  memset(destination, 0, sizeof(otrng_client_profile_s));
 
   if (!source) {
     return;
@@ -124,7 +124,8 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *destination,
   destination->should_publish = source->should_publish;
 }
 
-INTERNAL void otrng_client_profile_destroy(client_profile_s *client_profile) {
+INTERNAL void
+otrng_client_profile_destroy(otrng_client_profile_s *client_profile) {
   if (!client_profile) {
     return;
   }
@@ -145,14 +146,15 @@ INTERNAL void otrng_client_profile_destroy(client_profile_s *client_profile) {
   client_profile->transitional_signature = NULL;
 }
 
-INTERNAL void otrng_client_profile_free(client_profile_s *client_profile) {
+INTERNAL void
+otrng_client_profile_free(otrng_client_profile_s *client_profile) {
   otrng_client_profile_destroy(client_profile);
   free(client_profile);
 }
 
 tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
     uint8_t *destination, size_t destination_len, size_t *nbytes,
-    const client_profile_s *client_profile) {
+    const otrng_client_profile_s *client_profile) {
   size_t w = 0;
   uint32_t num_fields = 0;
   (void)destination_len;
@@ -212,7 +214,7 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
 
 tstatic otrng_result client_profile_body_serialize(
     uint8_t *destination, size_t destination_len, size_t *nbytes,
-    const client_profile_s *client_profile) {
+    const otrng_client_profile_s *client_profile) {
   size_t w = 0;
   uint32_t num_fields = 0;
 
@@ -241,9 +243,9 @@ tstatic otrng_result client_profile_body_serialize(
 }
 
 /* Serializes client profile without the signature */
-tstatic otrng_result
-client_profile_body_serialize_into(uint8_t **destination, size_t *nbytes,
-                                   const client_profile_s *client_profile) {
+tstatic otrng_result client_profile_body_serialize_into(
+    uint8_t **destination, size_t *nbytes,
+    const otrng_client_profile_s *client_profile) {
 
   size_t s = OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(
       otrng_strlen_ns(client_profile->versions));
@@ -266,7 +268,7 @@ client_profile_body_serialize_into(uint8_t **destination, size_t *nbytes,
 
 INTERNAL otrng_result
 otrng_client_profile_serialize(uint8_t **destination, size_t *nbytes,
-                               const client_profile_s *client_profile) {
+                               const otrng_client_profile_s *client_profile) {
 
   size_t s =
       OTRNG_CLIENT_PROFILE_MAX_BYTES(otrng_strlen_ns(client_profile->versions));
@@ -295,7 +297,7 @@ otrng_client_profile_serialize(uint8_t **destination, size_t *nbytes,
   return OTRNG_SUCCESS;
 }
 
-static otrng_result deserialize_dsa_key_field(client_profile_s *target,
+static otrng_result deserialize_dsa_key_field(otrng_client_profile_s *target,
                                               const uint8_t *buffer,
                                               size_t buflen, size_t *nread) {
   size_t read = 0;
@@ -338,7 +340,7 @@ static otrng_result deserialize_dsa_key_field(client_profile_s *target,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result deserialize_field(client_profile_s *target,
+tstatic otrng_result deserialize_field(otrng_client_profile_s *target,
                                        const uint8_t *buffer, size_t buflen,
                                        size_t *nread) {
   size_t read = 0;
@@ -419,10 +421,9 @@ tstatic otrng_result deserialize_field(client_profile_s *target,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
-                                                       const uint8_t *buffer,
-                                                       size_t buflen,
-                                                       size_t *nread) {
+INTERNAL otrng_result otrng_client_profile_deserialize(
+    otrng_client_profile_s *target, const uint8_t *buffer, size_t buflen,
+    size_t *nread) {
   size_t read = 0;
   int w = 0;
   uint32_t num_fields = 0;
@@ -432,7 +433,7 @@ INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
   }
 
   /* So if there are fields not present they do not point to invalid memory */
-  memset(target, 0, sizeof(client_profile_s));
+  memset(target, 0, sizeof(otrng_client_profile_s));
 
   if (!otrng_deserialize_uint32(&num_fields, buffer + w, buflen - w, &read)) {
     return OTRNG_ERROR;
@@ -464,7 +465,7 @@ INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result client_profile_sign(client_profile_s *client_profile,
+tstatic otrng_result client_profile_sign(otrng_client_profile_s *client_profile,
                                          const otrng_keypair_s *keypair) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
@@ -482,7 +483,7 @@ tstatic otrng_result client_profile_sign(client_profile_s *client_profile,
 }
 
 tstatic otrng_bool
-client_profile_verify_signature(const client_profile_s *client_profile) {
+client_profile_verify_signature(const otrng_client_profile_s *client_profile) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
   uint8_t pubkey[ED448_POINT_BYTES];
@@ -512,10 +513,10 @@ client_profile_verify_signature(const client_profile_s *client_profile) {
   return valid;
 }
 
-INTERNAL client_profile_s *otrng_client_profile_build(
+INTERNAL otrng_client_profile_s *otrng_client_profile_build(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
     const otrng_public_key forging_key, unsigned int expiration_time) {
-  client_profile_s *client_profile;
+  otrng_client_profile_s *client_profile;
   time_t expires;
   if (!otrng_instance_tag_valid(instance_tag) || !versions || !keypair) {
     return NULL;
@@ -617,7 +618,7 @@ generate_dsa_key_sexp(gcry_sexp_t *pubs, const uint8_t *buffer, size_t buflen) {
 }
 
 tstatic otrng_result client_profile_verify_transitional_signature(
-    const client_profile_s *client_profile) {
+    const otrng_client_profile_s *client_profile) {
   gcry_sexp_t pubs = NULL;
   size_t size, datalen;
   uint8_t *data;
@@ -659,7 +660,7 @@ tstatic otrng_result client_profile_verify_transitional_signature(
 }
 
 static otrng_bool
-verify_transitional_signature(const client_profile_s *client_profile) {
+verify_transitional_signature(const otrng_client_profile_s *client_profile) {
   if (!client_profile->dsa_key || !client_profile->dsa_key_len) {
     return otrng_true;
   }
@@ -676,7 +677,7 @@ verify_transitional_signature(const client_profile_s *client_profile) {
 }
 
 INTERNAL otrng_bool
-otrng_client_profile_valid(const client_profile_s *client_profile,
+otrng_client_profile_valid(const otrng_client_profile_s *client_profile,
                            const uint32_t sender_instance_tag) {
   if (!client_profile_verify_signature(client_profile)) {
     return otrng_false;
@@ -710,7 +711,7 @@ otrng_client_profile_valid(const client_profile_s *client_profile,
 }
 
 INTERNAL otrng_result otrng_client_profile_transitional_sign(
-    client_profile_s *client_profile, OtrlPrivKey *privkey) {
+    otrng_client_profile_s *client_profile, OtrlPrivKey *privkey) {
 
   size_t size;
   uint8_t *data;
@@ -759,12 +760,13 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
   return OTRNG_SUCCESS;
 }
 
-API void otrng_client_profile_start_publishing(client_profile_s *profile) {
+API void
+otrng_client_profile_start_publishing(otrng_client_profile_s *profile) {
   profile->is_publishing = otrng_true;
 }
 
 API otrng_bool
-otrng_client_profile_should_publish(const client_profile_s *profile) {
+otrng_client_profile_should_publish(const otrng_client_profile_s *profile) {
   return profile->should_publish && !profile->is_publishing;
 }
 
@@ -773,7 +775,7 @@ otrng_client_profile_should_publish(const client_profile_s *profile) {
 #include "debug.h"
 
 API void otrng_client_profile_debug_print(FILE *f, int indent,
-                                          client_profile_s *cp) {
+                                          otrng_client_profile_s *cp) {
   if (otrng_debug_print_should_ignore("client_profile")) {
     return;
   }

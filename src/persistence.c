@@ -431,7 +431,7 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
-  client_profile_s profile[1];
+  otrng_client_profile_s profile[1];
   otrng_result result;
 
   if (!profilef) {
@@ -483,7 +483,7 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
-  client_profile_s exp_profile[1];
+  otrng_client_profile_s exp_profile[1];
   otrng_result result;
 
   if (!exp_profilef) {

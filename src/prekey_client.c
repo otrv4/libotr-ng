@@ -117,7 +117,7 @@ API void otrng_prekey_client_init(otrng_prekey_client_s *client,
                                   const char *server, const char *our_identity,
                                   uint32_t instance_tag,
                                   const otrng_keypair_s *keypair,
-                                  const client_profile_s *client_profile,
+                                  const otrng_client_profile_s *client_profile,
                                   const otrng_prekey_profile_s *prekey_profile,
                                   unsigned int max_published_prekey_message,
                                   unsigned int minimum_stored_prekey_message) {
@@ -212,7 +212,7 @@ static char *start_dake_and_then_send(otrng_prekey_client_s *client,
   otrng_prekey_dake1_message_s message;
 
   message.client_instance_tag = client->instance_tag;
-  message.client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  message.client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
   otrng_client_profile_copy(message.client_profile, client->client_profile);
 
   random_bytes(sym, ED448_PRIVATE_BYTES);

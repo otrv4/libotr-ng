@@ -808,7 +808,7 @@ INTERNAL otrng_result otrng_client_add_forging_key(otrng_client_s *client,
   return OTRNG_SUCCESS;
 }
 
-API const client_profile_s *
+API const otrng_client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client) {
   assert(client);
   assert(client->client_profile);
@@ -816,7 +816,7 @@ otrng_client_get_client_profile(otrng_client_s *client) {
   return client->client_profile;
 }
 
-API client_profile_s *
+API otrng_client_profile_s *
 otrng_client_build_default_client_profile(otrng_client_s *client) {
   // TODO: Get allowed versions from the policy
   const char *allowed_versions = "34";
@@ -831,21 +831,21 @@ otrng_client_build_default_client_profile(otrng_client_s *client) {
 }
 
 API otrng_result otrng_client_add_client_profile(
-    otrng_client_s *client, const client_profile_s *profile) {
+    otrng_client_s *client, const otrng_client_profile_s *profile) {
   assert(client);
 
   if (client->client_profile) {
     return OTRNG_ERROR;
   }
 
-  client->client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  client->client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   otrng_client_profile_copy(client->client_profile, profile);
 
   return OTRNG_SUCCESS;
 }
 
-API const client_profile_s *
+API const otrng_client_profile_s *
 otrng_client_get_exp_client_profile(otrng_client_s *client) {
   assert(client);
 
@@ -857,14 +857,14 @@ otrng_client_get_exp_client_profile(otrng_client_s *client) {
 }
 
 API otrng_result otrng_client_add_exp_client_profile(
-    otrng_client_s *client, const client_profile_s *exp_profile) {
+    otrng_client_s *client, const otrng_client_profile_s *exp_profile) {
   assert(client);
 
   if (client->exp_client_profile) {
     return OTRNG_ERROR;
   }
 
-  client->exp_client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  client->exp_client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   otrng_client_profile_copy(client->exp_client_profile, exp_profile);
 

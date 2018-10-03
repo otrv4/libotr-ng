@@ -62,8 +62,8 @@ typedef struct otrng_client_s {
   otrng_public_key *forging_key;
 
   // TODO: @client One or many?
-  client_profile_s *client_profile;
-  client_profile_s *exp_client_profile;
+  otrng_client_profile_s *client_profile;
+  otrng_client_profile_s *exp_client_profile;
   otrng_prekey_profile_s *prekey_profile;
   otrng_prekey_profile_s *exp_prekey_profile;
   list_element_s *our_prekeys; /* otrng_stored_prekeys_s */
@@ -202,20 +202,20 @@ INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client);
 INTERNAL otrng_result otrng_client_add_forging_key(otrng_client_s *client,
                                                    const otrng_public_key key);
 
-API const client_profile_s *
+API const otrng_client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client);
 
-API client_profile_s *
+API otrng_client_profile_s *
 otrng_client_build_default_client_profile(otrng_client_s *client);
 
 API otrng_result otrng_client_add_client_profile(
-    otrng_client_s *client, const client_profile_s *profile);
+    otrng_client_s *client, const otrng_client_profile_s *profile);
 
-API const client_profile_s *
+API const otrng_client_profile_s *
 otrng_client_get_exp_client_profile(otrng_client_s *client);
 
 API otrng_result otrng_client_add_exp_client_profile(
-    otrng_client_s *client, const client_profile_s *exp_profile);
+    otrng_client_s *client, const otrng_client_profile_s *exp_profile);
 
 INTERNAL otrng_result otrng_client_add_shared_prekey_v4(
     otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]);

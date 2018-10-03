@@ -118,7 +118,7 @@ static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
 
   dake_identity_message_s *deserialized =
       otrng_xmalloc_z(sizeof(dake_identity_message_s));
-  deserialized->profile = otrng_xmalloc_z(sizeof(client_profile_s));
+  deserialized->profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   otrng_assert_is_success(otrng_dake_identity_message_deserialize(
       deserialized, serialized, serialized_len));
@@ -173,7 +173,7 @@ static void test_dake_identity_message_valid(dake_fixture_s *f,
   otrng_assert_is_success(otrng_dh_keypair_generate(&invalid_dh));
 
   uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
-  client_profile_s *invalid_profile = client_profile_new("2");
+  otrng_client_profile_s *invalid_profile = client_profile_new("2");
   memcpy(invalid_profile->signature, zero_buff, ED448_SIGNATURE_BYTES);
 
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();

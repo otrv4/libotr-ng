@@ -68,13 +68,13 @@ INTERNAL dh_public_key our_dh(const otrng_s *otr) {
   return otr->keys->our_dh->pub;
 }
 
-INTERNAL const client_profile_s *get_my_client_profile(otrng_s *otr) {
+INTERNAL const otrng_client_profile_s *get_my_client_profile(otrng_s *otr) {
   otrng_client_s *client = otr->client;
   maybe_create_keys(client);
   return otrng_client_get_client_profile(client);
 }
 
-INTERNAL const client_profile_s *get_my_exp_client_profile(otrng_s *otr) {
+INTERNAL const otrng_client_profile_s *get_my_exp_client_profile(otrng_s *otr) {
   otrng_client_s *client = otr->client;
   return otrng_client_get_exp_client_profile(client);
 }
