@@ -52,12 +52,13 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg);
 INTERNAL otrng_result otrng_data_message_body_serialize(
     uint8_t **body, size_t *bodylen, const data_message_s *data_msg);
 
-INTERNAL otrng_result
-otrng_data_message_deserialize(data_message_s *destination, const uint8_t *buff,
-                               size_t bufflen, size_t *nread);
+INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
+                                                     const uint8_t *buff,
+                                                     size_t bufflen,
+                                                     size_t *nread);
 
 INTERNAL otrng_result otrng_data_message_authenticator(
-    uint8_t *destination, size_t destinationlen, const msg_mac_key_t mac_key,
+    uint8_t *dst, size_t dst_len, const msg_mac_key_t mac_key,
     const uint8_t *body, size_t bodylen);
 
 INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key_t mac_key,

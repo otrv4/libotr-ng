@@ -25,6 +25,7 @@
 #include "shared.h"
 
 API void otrng_client_ensure_correct_state(otrng_client_s *client);
+
 API otrng_bool otrng_client_verify_correct_state(otrng_client_s *client);
 
 #endif // OTRNG_CLIENT_ORCHESTRATION_H

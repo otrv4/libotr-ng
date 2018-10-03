@@ -109,14 +109,14 @@ tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
 }
 
 tstatic otrng_bool verify_valid_prekey_profile(otrng_client_s *client) {
-  uint32_t itag;
+  uint32_t instag;
 
   if (client->prekey_profile == NULL) {
     return otrng_false;
   }
 
-  itag = otrng_client_get_instance_tag(client);
-  return otrng_prekey_profile_valid(client->prekey_profile, itag,
+  instag = otrng_client_get_instance_tag(client);
+  return otrng_prekey_profile_valid(client->prekey_profile, instag,
                                     client->keypair->pub);
 }
 

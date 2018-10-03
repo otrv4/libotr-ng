@@ -71,12 +71,12 @@ otrng_dake_identity_message_free(dake_identity_message_s *identity_msg) {
 }
 
 INTERNAL otrng_result otrng_dake_identity_message_serialize(
-    uint8_t **destination, size_t *nbytes,
+    uint8_t **dst, size_t *nbytes,
     const dake_identity_message_s *identity_msg) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
   size_t size, len;
-  uint8_t *buff;
+  uint8_t *buffer;
   uint8_t *cursor;
   if (!otrng_client_profile_serialize(&profile, &profile_len,
                                       identity_msg->profile)) {
@@ -84,9 +84,9 @@ INTERNAL otrng_result otrng_dake_identity_message_serialize(
   }
 
   size = IDENTITY_MAX_BYTES + profile_len;
-  buff = otrng_xmalloc_z(size);
+  buffer = otrng_xmalloc_z(size);
 
-  cursor = buff;
+  cursor = buffer;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
   cursor += otrng_serialize_uint8(cursor, IDENTITY_MSG_TYPE);
   cursor += otrng_serialize_uint32(cursor, identity_msg->sender_instance_tag);
@@ -96,31 +96,30 @@ INTERNAL otrng_result otrng_dake_identity_message_serialize(
 
   free(profile);
 
-  if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buff)), &len,
+  if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buffer)), &len,
                                      identity_msg->B)) {
-    free(buff);
+    free(buffer);
     return OTRNG_ERROR;
   }
   cursor += len;
 
-  if (destination) {
-    *destination = buff;
+  if (dst) {
+    *dst = buffer;
   } else {
     return OTRNG_ERROR;
   }
 
   if (nbytes) {
-    *nbytes = cursor - buff;
+    *nbytes = cursor - buffer;
   }
 
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_dake_identity_message_deserialize(
-    dake_identity_message_s *destination, const uint8_t *source,
-    size_t source_len) {
-  const uint8_t *cursor = source;
-  int64_t len = source_len;
+    dake_identity_message_s *dst, const uint8_t *src, size_t src_len) {
+  const uint8_t *cursor = src;
+  int64_t len = src_len;
   size_t read = 0;
 
   uint16_t protocol_version = 0;
@@ -148,7 +147,7 @@ INTERNAL otrng_result otrng_dake_identity_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint32(&destination->sender_instance_tag, cursor, len,
+  if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len,
                                 &read)) {
     return OTRNG_ERROR;
   }
@@ -156,36 +155,36 @@ INTERNAL otrng_result otrng_dake_identity_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_uint32(&destination->receiver_instance_tag, cursor,
-                                len, &read)) {
+  if (!otrng_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
+                                &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_client_profile_deserialize(destination->profile, cursor, len,
-                                        &read)) {
+  if (!otrng_client_profile_deserialize(dst->profile, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(destination->Y, cursor, len)) {
+  if (!otrng_deserialize_ec_point(dst->Y, cursor, len)) {
     return OTRNG_ERROR;
   }
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  return otrng_deserialize_dh_mpi_otr(&destination->B, cursor, len, &read);
+  return otrng_deserialize_dh_mpi_otr(&dst->B, cursor, len, &read);
 }
 
 INTERNAL dake_auth_r_s *otrng_dake_auth_r_new() {
-  dake_auth_r_s *r = otrng_xmalloc_z(sizeof(dake_auth_r_s));
-  otrng_dake_auth_r_init(r);
-  return r;
+  dake_auth_r_s *auth_r = otrng_xmalloc_z(sizeof(dake_auth_r_s));
+  otrng_dake_auth_r_init(auth_r);
+
+  return auth_r;
 }
 
 INTERNAL void otrng_dake_auth_r_init(dake_auth_r_s *auth_r) {
@@ -206,13 +205,12 @@ INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
   auth_r->sigma = NULL;
 }
 
-INTERNAL otrng_result otrng_dake_auth_r_serialize(uint8_t **destination,
-                                                  size_t *nbytes,
+INTERNAL otrng_result otrng_dake_auth_r_serialize(uint8_t **dst, size_t *nbytes,
                                                   const dake_auth_r_s *auth_r) {
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
   size_t size, len;
-  uint8_t *buff, *cursor;
+  uint8_t *buffer, *cursor;
 
   if (!otrng_client_profile_serialize(&our_profile, &our_profile_len,
                                       auth_r->profile)) {
@@ -221,9 +219,9 @@ INTERNAL otrng_result otrng_dake_auth_r_serialize(uint8_t **destination,
 
   size = AUTH_R_MAX_BYTES + our_profile_len;
 
-  buff = otrng_xmalloc_z(size);
+  buffer = otrng_xmalloc_z(size);
 
-  cursor = buff;
+  cursor = buffer;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
   cursor += otrng_serialize_uint8(cursor, AUTH_R_MSG_TYPE);
   cursor += otrng_serialize_uint32(cursor, auth_r->sender_instance_tag);
@@ -234,33 +232,33 @@ INTERNAL otrng_result otrng_dake_auth_r_serialize(uint8_t **destination,
   free(our_profile);
 
   len = 0;
-  if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buff)), &len,
+  if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buffer)), &len,
                                      auth_r->A)) {
-    free(buff);
+    free(buffer);
     return OTRNG_ERROR;
   }
 
   cursor += len;
   cursor += otrng_serialize_ring_sig(cursor, auth_r->sigma);
 
-  if (destination) {
-    *destination = buff;
+  if (dst) {
+    *dst = buffer;
   } else {
     return OTRNG_ERROR;
   }
 
   if (nbytes) {
-    *nbytes = cursor - buff;
+    *nbytes = cursor - buffer;
   }
 
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *destination,
+INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
                                                     const uint8_t *buffer,
-                                                    size_t buflen) {
+                                                    size_t buff_len) {
   const uint8_t *cursor = buffer;
-  int64_t len = buflen;
+  int64_t len = buff_len;
   size_t read = 0;
   uint16_t protocol_version = 0;
   uint8_t msg_type = 0;
@@ -287,7 +285,7 @@ INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *destination,
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint32(&destination->sender_instance_tag, cursor, len,
+  if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len,
                                 &read)) {
     return OTRNG_ERROR;
   }
@@ -295,43 +293,43 @@ INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *destination,
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_uint32(&destination->receiver_instance_tag, cursor,
-                                len, &read)) {
+  if (!otrng_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
+                                &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_client_profile_deserialize(destination->profile, cursor, len,
-                                        &read)) {
+  if (!otrng_client_profile_deserialize(dst->profile, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(destination->X, cursor, len)) {
+  if (!otrng_deserialize_ec_point(dst->X, cursor, len)) {
     return OTRNG_ERROR;
   }
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  if (!otrng_deserialize_dh_mpi_otr(&destination->A, cursor, len, &read)) {
+  if (!otrng_deserialize_dh_mpi_otr(&dst->A, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  return otrng_deserialize_ring_sig(destination->sigma, cursor, len, &read);
+  return otrng_deserialize_ring_sig(dst->sigma, cursor, len, &read);
 }
 
 INTERNAL dake_auth_i_s *otrng_dake_auth_i_new() {
-  dake_auth_i_s *r = otrng_xmalloc_z(sizeof(dake_auth_i_s));
-  otrng_dake_auth_i_init(r);
-  return r;
+  dake_auth_i_s *auth_i = otrng_xmalloc_z(sizeof(dake_auth_i_s));
+  otrng_dake_auth_i_init(auth_i);
+
+  return auth_i;
 }
 
 INTERNAL void otrng_dake_auth_i_init(dake_auth_i_s *auth_i) {
@@ -345,19 +343,18 @@ INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_s *auth_i) {
   auth_i->sigma = NULL;
 }
 
-INTERNAL otrng_result otrng_dake_auth_i_serialize(uint8_t **destination,
-                                                  size_t *nbytes,
+INTERNAL otrng_result otrng_dake_auth_i_serialize(uint8_t **dst, size_t *nbytes,
                                                   const dake_auth_i_s *auth_i) {
   size_t size = DAKE_HEADER_BYTES + RING_SIG_BYTES;
   uint8_t *cursor;
 
-  *destination = otrng_xmalloc_z(size);
+  *dst = otrng_xmalloc_z(size);
 
   if (nbytes) {
     *nbytes = size;
   }
 
-  cursor = *destination;
+  cursor = *dst;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
   cursor += otrng_serialize_uint8(cursor, AUTH_I_MSG_TYPE);
   cursor += otrng_serialize_uint32(cursor, auth_i->sender_instance_tag);
@@ -367,11 +364,11 @@ INTERNAL otrng_result otrng_dake_auth_i_serialize(uint8_t **destination,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *destination,
+INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
                                                     const uint8_t *buffer,
-                                                    size_t buflen) {
+                                                    size_t buff_len) {
   const uint8_t *cursor = buffer;
-  int64_t len = buflen;
+  int64_t len = buff_len;
   size_t read = 0;
   uint16_t protocol_version = 0;
   uint8_t msg_type = 0;
@@ -398,7 +395,7 @@ INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *destination,
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint32(&destination->sender_instance_tag, cursor, len,
+  if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len,
                                 &read)) {
     return OTRNG_ERROR;
   }
@@ -406,15 +403,15 @@ INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *destination,
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_uint32(&destination->receiver_instance_tag, cursor,
-                                len, &read)) {
+  if (!otrng_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
+                                &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  return otrng_deserialize_ring_sig(destination->sigma, cursor, len, &read);
+  return otrng_deserialize_ring_sig(dst->sigma, cursor, len, &read);
 }
 
 INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
@@ -427,23 +424,23 @@ INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
 INTERNAL dake_prekey_message_s *
 otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point_t ecdh,
                                 const dh_public_key_t dh) {
-  dake_prekey_message_s *m = otrng_dake_prekey_message_new();
+  dake_prekey_message_s *msg = otrng_dake_prekey_message_new();
   uint32_t *identifier;
-  if (!m) {
+  if (!msg) {
     return NULL;
   }
 
-  m->sender_instance_tag = instance_tag;
+  msg->sender_instance_tag = instance_tag;
 
-  otrng_ec_point_copy(m->Y, ecdh);
-  m->B = otrng_dh_mpi_copy(dh);
+  otrng_ec_point_copy(msg->Y, ecdh);
+  msg->B = otrng_dh_mpi_copy(dh);
 
   identifier = gcry_random_bytes(4, GCRY_STRONG_RANDOM);
-  m->id = *identifier;
+  msg->id = *identifier;
 
   gcry_free(identifier);
 
-  return m;
+  return msg;
 }
 
 INTERNAL void
@@ -465,28 +462,25 @@ otrng_dake_prekey_message_free(dake_prekey_message_s *prekey_msg) {
 }
 
 INTERNAL otrng_result otrng_dake_prekey_message_serialize_into(
-    uint8_t **destination, size_t *nbytes,
-    const dake_prekey_message_s *prekey_msg) {
+    uint8_t **dst, size_t *nbytes, const dake_prekey_message_s *prekey_msg) {
 
   size_t size = PRE_KEY_MAX_BYTES;
-  *destination = otrng_xmalloc_z(size);
+  *dst = otrng_xmalloc_z(size);
 
-  return otrng_dake_prekey_message_serialize(*destination, size, nbytes,
-                                             prekey_msg);
+  return otrng_dake_prekey_message_serialize(*dst, size, nbytes, prekey_msg);
 }
 
 INTERNAL otrng_result otrng_dake_prekey_message_serialize(
-    uint8_t *destination, size_t destinationlen, size_t *written,
-    const dake_prekey_message_s *source) {
+    uint8_t *dst, size_t dst_len, size_t *written,
+    const dake_prekey_message_s *src) {
   size_t w = 0, len;
-  w += otrng_serialize_uint16(destination + w, OTRNG_PROTOCOL_VERSION_4);
-  w += otrng_serialize_uint8(destination + w, PRE_KEY_MSG_TYPE);
-  w += otrng_serialize_uint32(destination + w, source->id);
-  w += otrng_serialize_uint32(destination + w, source->sender_instance_tag);
-  w += otrng_serialize_ec_point(destination + w, source->Y);
+  w += otrng_serialize_uint16(dst + w, OTRNG_PROTOCOL_VERSION_4);
+  w += otrng_serialize_uint8(dst + w, PRE_KEY_MSG_TYPE);
+  w += otrng_serialize_uint32(dst + w, src->id);
+  w += otrng_serialize_uint32(dst + w, src->sender_instance_tag);
+  w += otrng_serialize_ec_point(dst + w, src->Y);
 
-  if (!otrng_serialize_dh_public_key(destination + w, destinationlen - w, &len,
-                                     source->B)) {
+  if (!otrng_serialize_dh_public_key(dst + w, dst_len - w, &len, src->B)) {
     return OTRNG_ERROR;
   }
 
@@ -500,10 +494,10 @@ INTERNAL otrng_result otrng_dake_prekey_message_serialize(
 }
 
 INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
-    dake_prekey_message_s *destination, const uint8_t *source,
-    size_t source_len, size_t *nread) {
-  const uint8_t *cursor = source;
-  int64_t len = source_len;
+    dake_prekey_message_s *dst, const uint8_t *src, size_t src_len,
+    size_t *nread) {
+  const uint8_t *cursor = src;
+  int64_t len = src_len;
   size_t read = 0;
   uint16_t protocol_version = 0;
   uint8_t msg_type = 0;
@@ -531,14 +525,14 @@ INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint32(&destination->id, cursor, len, &read)) {
+  if (!otrng_deserialize_uint32(&dst->id, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_uint32(&destination->sender_instance_tag, cursor, len,
+  if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len,
                                 &read)) {
     return OTRNG_ERROR;
   }
@@ -546,17 +540,17 @@ INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(destination->Y, cursor, len)) {
+  if (!otrng_deserialize_ec_point(dst->Y, cursor, len)) {
     return OTRNG_ERROR;
   }
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  ret = otrng_deserialize_dh_mpi_otr(&destination->B, cursor, len, &read);
+  ret = otrng_deserialize_dh_mpi_otr(&dst->B, cursor, len, &read);
 
   if (nread) {
-    *nread = cursor - source + read;
+    *nread = cursor - src + read;
   }
 
   return ret;
@@ -564,17 +558,19 @@ INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
 
 INTERNAL dake_non_interactive_auth_message_s *
 otrng_dake_non_interactive_auth_message_new() {
-  dake_non_interactive_auth_message_s *r =
+  dake_non_interactive_auth_message_s *non_interactive_auth =
       otrng_xmalloc_z(sizeof(dake_non_interactive_auth_message_s));
-  otrng_dake_non_interactive_auth_message_init(r);
-  return r;
+  otrng_dake_non_interactive_auth_message_init(non_interactive_auth);
+
+  return non_interactive_auth;
 }
 
 INTERNAL void otrng_dake_non_interactive_auth_message_init(
-    dake_non_interactive_auth_message_s *a) {
-  memset(a, 0, sizeof(dake_non_interactive_auth_message_s));
-  a->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
-  a->profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
+    dake_non_interactive_auth_message_s *non_interactive_auth) {
+  memset(non_interactive_auth, 0, sizeof(dake_non_interactive_auth_message_s));
+  non_interactive_auth->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
+  non_interactive_auth->profile =
+      otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 }
 
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
@@ -592,14 +588,14 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
 }
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_serialize(
-    uint8_t **destination, size_t *nbytes,
+    uint8_t **dst, size_t *nbytes,
     const dake_non_interactive_auth_message_s *non_interactive_auth) {
   size_t our_profile_len = 0;
   uint8_t *our_profile = NULL;
   size_t size, len;
-  uint8_t *buff, *cursor;
+  uint8_t *buffer, *cursor;
 
-  if (!destination) {
+  if (!dst) {
     return OTRNG_ERROR;
   }
 
@@ -609,9 +605,9 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_serialize(
   }
 
   size = NON_INT_AUTH_MAX_BYTES + our_profile_len;
-  buff = otrng_xmalloc_z(size);
+  buffer = otrng_xmalloc_z(size);
 
-  cursor = buff;
+  cursor = buffer;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
   cursor += otrng_serialize_uint8(cursor, NON_INT_AUTH_MSG_TYPE);
   cursor +=
@@ -624,9 +620,9 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_serialize(
   free(our_profile);
 
   len = 0;
-  if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buff)), &len,
+  if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buffer)), &len,
                                      non_interactive_auth->A)) {
-    free(buff);
+    free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -639,20 +635,20 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_serialize(
   cursor += otrng_serialize_bytes_array(cursor, non_interactive_auth->auth_mac,
                                         sizeof(non_interactive_auth->auth_mac));
 
-  *destination = buff;
+  *dst = buffer;
 
   if (nbytes) {
-    *nbytes = cursor - buff;
+    *nbytes = cursor - buffer;
   }
 
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
-    dake_non_interactive_auth_message_s *destination, const uint8_t *buffer,
-    size_t buflen) {
+    dake_non_interactive_auth_message_s *dst, const uint8_t *buffer,
+    size_t buff_len) {
   const uint8_t *cursor = buffer;
-  int64_t len = buflen;
+  int64_t len = buff_len;
   size_t read = 0;
   uint16_t protocol_version = 0;
   uint8_t msg_type = 0;
@@ -679,7 +675,7 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint32(&destination->sender_instance_tag, cursor, len,
+  if (!otrng_deserialize_uint32(&dst->sender_instance_tag, cursor, len,
                                 &read)) {
     return OTRNG_ERROR;
   }
@@ -687,57 +683,54 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_uint32(&destination->receiver_instance_tag, cursor,
-                                len, &read)) {
+  if (!otrng_deserialize_uint32(&dst->receiver_instance_tag, cursor, len,
+                                &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_client_profile_deserialize(destination->profile, cursor, len,
-                                        &read)) {
+  if (!otrng_client_profile_deserialize(dst->profile, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_ec_point(destination->X, cursor, len)) {
+  if (!otrng_deserialize_ec_point(dst->X, cursor, len)) {
     return OTRNG_ERROR;
   }
 
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  if (!otrng_deserialize_dh_mpi_otr(&destination->A, cursor, len, &read)) {
+  if (!otrng_deserialize_dh_mpi_otr(&dst->A, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (destination->sigma == NULL) {
-    destination->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
+  if (dst->sigma == NULL) {
+    dst->sigma = otrng_xmalloc_z(sizeof(ring_sig_s));
   }
 
-  if (!otrng_deserialize_ring_sig(destination->sigma, cursor, len, &read)) {
+  if (!otrng_deserialize_ring_sig(dst->sigma, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_uint32(&destination->prekey_message_id, cursor, len,
-                                &read)) {
+  if (!otrng_deserialize_uint32(&dst->prekey_message_id, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  return otrng_deserialize_bytes_array(destination->auth_mac, HASH_BYTES,
-                                       cursor, len);
+  return otrng_deserialize_bytes_array(dst->auth_mac, HASH_BYTES, cursor, len);
 }
 
 INTERNAL otrng_bool otrng_valid_received_values(
@@ -766,8 +759,8 @@ INTERNAL otrng_bool otrng_valid_received_values(
    ED448_SHARED_PREKEY_BYTES)
 
 tstatic otrng_result build_rsign_tag(
-    uint8_t *destination, size_t destinationlen, size_t *written,
-    uint8_t first_usage, const otrng_client_profile_s *i_profile,
+    uint8_t *dst, size_t dst_len, size_t *written, uint8_t first_usage,
+    const otrng_client_profile_s *i_profile,
     const otrng_client_profile_s *r_profile, const ec_point_t i_ecdh,
     const ec_point_t r_ecdh, const dh_mpi_t i_dh, const dh_mpi_t r_dh,
     const uint8_t *ser_r_shared_prekey, size_t ser_r_shared_prekey_len,
@@ -782,7 +775,7 @@ tstatic otrng_result build_rsign_tag(
   uint8_t hash_ser_r_profile[HASH_BYTES];
   uint8_t hash_phi[HASH_BYTES];
 
-  if (destinationlen < MAX_T_LENGTH) {
+  if (dst_len < MAX_T_LENGTH) {
     return OTRNG_ERROR;
   }
 
@@ -826,7 +819,7 @@ tstatic otrng_result build_rsign_tag(
                    ser_r_profile, ser_r_profile_len);
     shake_256_kdf1(hash_phi, HASH_BYTES, usage_phi, phi, phi_len);
 
-    cursor = destination;
+    cursor = dst;
     memcpy(cursor, hash_ser_i_profile, HASH_BYTES);
     cursor += HASH_BYTES;
 
@@ -854,7 +847,7 @@ tstatic otrng_result build_rsign_tag(
     cursor += HASH_BYTES;
 
     if (written) {
-      *written = cursor - destination;
+      *written = cursor - dst;
     }
   } while (0);
 
@@ -878,33 +871,33 @@ INTERNAL otrng_result build_interactive_rsign_tag(
 
   size_t written = 0;
   otrng_result result = OTRNG_ERROR;
-  uint8_t *buff = otrng_xmalloc_z(1 + MAX_T_LENGTH);
+  uint8_t *buffer = otrng_xmalloc_z(1 + MAX_T_LENGTH);
 
   assert(auth_tag_type == 'i' || auth_tag_type == 'r');
   if (auth_tag_type == 'r') {
     // t = 0x0 || KDF_1(0x05 || Bobs_Client_Profile, 64) || KDF_1(0x06 ||
     // Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x07 || phi, 64)
-    *buff = 0x0;
+    *buffer = 0x0;
     result = build_rsign_tag(
-        buff + 1, MAX_T_LENGTH, &written, 0x05, initiator->client_profile,
+        buffer + 1, MAX_T_LENGTH, &written, 0x05, initiator->client_profile,
         responder->client_profile, &initiator->ecdh, &responder->ecdh,
         initiator->dh, responder->dh, NULL, 0, phi, phi_len);
   } else if (auth_tag_type == 'i') {
     // t = 0x1 || KDF_1(0x08 || Bobs_Client_Profile, 64) || KDF_1(0x09 ||
     // Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x0A || phi, 64)
-    *buff = 0x01;
+    *buffer = 0x01;
     result = build_rsign_tag(
-        buff + 1, MAX_T_LENGTH, &written, 0x08, initiator->client_profile,
+        buffer + 1, MAX_T_LENGTH, &written, 0x08, initiator->client_profile,
         responder->client_profile, &initiator->ecdh, &responder->ecdh,
         initiator->dh, responder->dh, NULL, 0, phi, phi_len);
   }
 
   if (result == OTRNG_ERROR) {
-    free(buff);
+    free(buffer);
     return OTRNG_ERROR;
   }
 
-  *msg = buff;
+  *msg = buffer;
   if (msg_len) {
     *msg_len = written + 1;
   }
@@ -967,9 +960,8 @@ INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
 }
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
-    uint8_t destination[HASH_BYTES],
-    const dake_non_interactive_auth_message_s *auth, const uint8_t *t,
-    size_t t_len, uint8_t tmp_key[HASH_BYTES]) {
+    uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_s *auth,
+    const uint8_t *t, size_t t_len, uint8_t tmp_key[HASH_BYTES]) {
 
   // OTRv4 section "Non-Interactive-Auth Message"
   /* auth_mac_k = KDF_1(0x0C || tmp_k, 64) */
@@ -983,7 +975,7 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
 
   // OTRv4 section, "Non-Interactive DAKE Overview"
   /* Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t, 64) */
-  otrng_key_manager_calculate_auth_mac(destination, auth_mac_k, t, t_len);
+  otrng_key_manager_calculate_auth_mac(dst, auth_mac_k, t, t_len);
 
   otrng_secure_wipe(auth_mac_k, HASH_BYTES);
   free(auth_mac_k);

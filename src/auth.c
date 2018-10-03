@@ -55,7 +55,7 @@ static void choose_T(goldilocks_448_point_p chosen,
   goldilocks_448_point_cond_sel(chosen, chosen, Ti, is_secret);
 }
 
-static void calculate_ci(goldilocks_448_scalar_p destination,
+static void calculate_ci(goldilocks_448_scalar_p dst,
                          const goldilocks_448_scalar_p c,
                          const goldilocks_448_scalar_p ci,
                          goldilocks_bool_t is_secret,
@@ -66,12 +66,12 @@ static void calculate_ci(goldilocks_448_scalar_p destination,
 
   goldilocks_448_scalar_sub(if_secret, c, cj);
   goldilocks_448_scalar_sub(if_secret, if_secret, ck);
-  goldilocks_448_scalar_cond_sel(destination, ci, if_secret, is_secret);
+  goldilocks_448_scalar_cond_sel(dst, ci, if_secret, is_secret);
 
   goldilocks_448_scalar_destroy(if_secret);
 }
 
-static void calculate_ri(goldilocks_448_scalar_p destination,
+static void calculate_ri(goldilocks_448_scalar_p dst,
                          const goldilocks_448_scalar_p secret,
                          const goldilocks_448_scalar_p ri,
                          goldilocks_bool_t is_secret,
@@ -82,17 +82,17 @@ static void calculate_ri(goldilocks_448_scalar_p destination,
   goldilocks_448_scalar_mul(if_secret, ci, secret);
   goldilocks_448_scalar_sub(if_secret, ti, if_secret);
 
-  goldilocks_448_scalar_cond_sel(destination, ri, if_secret, is_secret);
+  goldilocks_448_scalar_cond_sel(dst, ri, if_secret, is_secret);
 
   goldilocks_448_scalar_destroy(if_secret);
 }
 
 tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
-    uint8_t usage_auth, const char *domain_sep,
-    goldilocks_448_scalar_p destination, const goldilocks_448_point_p A1,
-    const goldilocks_448_point_p A2, const goldilocks_448_point_p A3,
-    const goldilocks_448_point_p T1, const goldilocks_448_point_p T2,
-    const goldilocks_448_point_p T3, const uint8_t *msg, size_t msg_len) {
+    uint8_t usage_auth, const char *domain_sep, goldilocks_448_scalar_p dst,
+    const goldilocks_448_point_p A1, const goldilocks_448_point_p A2,
+    const goldilocks_448_point_p A3, const goldilocks_448_point_p T1,
+    const goldilocks_448_point_p T2, const goldilocks_448_point_p T3,
+    const uint8_t *msg, size_t msg_len) {
   goldilocks_shake256_ctx_p hd;
   uint8_t hash[HASH_BYTES];
   uint8_t point_buff[ED448_POINT_BYTES];
@@ -124,25 +124,25 @@ tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
-  goldilocks_448_scalar_decode_long(destination, hash, HASH_BYTES);
+  goldilocks_448_scalar_decode_long(dst, hash, HASH_BYTES);
   otrng_secure_wipe(hash, HASH_BYTES);
   otrng_secure_wipe(point_buff, ED448_POINT_BYTES);
 }
 
 static void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, goldilocks_448_scalar_p c,
-    const ring_sig_s *source, const otrng_public_key_t A1,
+    const ring_sig_s *src, const otrng_public_key_t A1,
     const otrng_public_key_t A2, const otrng_public_key_t A3,
     const uint8_t *msg, size_t msg_len) {
   otrng_public_key_t gr1, gr2, gr3, A1c1, A2c2, A3c3;
 
-  goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, source->r1);
-  goldilocks_448_point_scalarmul(gr2, goldilocks_448_point_base, source->r2);
-  goldilocks_448_point_scalarmul(gr3, goldilocks_448_point_base, source->r3);
+  goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, src->r1);
+  goldilocks_448_point_scalarmul(gr2, goldilocks_448_point_base, src->r2);
+  goldilocks_448_point_scalarmul(gr3, goldilocks_448_point_base, src->r3);
 
-  goldilocks_448_point_scalarmul(A1c1, A1, source->c1);
-  goldilocks_448_point_scalarmul(A2c2, A2, source->c2);
-  goldilocks_448_point_scalarmul(A3c3, A3, source->c3);
+  goldilocks_448_point_scalarmul(A1c1, A1, src->c1);
+  goldilocks_448_point_scalarmul(A2c2, A2, src->c2);
+  goldilocks_448_point_scalarmul(A3c3, A3, src->c3);
 
   goldilocks_448_point_add(A1c1, A1c1, gr1);
   goldilocks_448_point_add(A2c2, A2c2, gr2);
@@ -155,17 +155,17 @@ static void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
 }
 
 INTERNAL otrng_result otrng_rsig_authenticate(
-    ring_sig_s *destination, const otrng_private_key_t secret,
+    ring_sig_s *dst, const otrng_private_key_t secret,
     const otrng_public_key_t pub, const otrng_public_key_t A1,
     const otrng_public_key_t A2, const otrng_public_key_t A3,
     const uint8_t *msg, size_t msg_len) {
   return otrng_rsig_authenticate_with_usage_and_domain(
-      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, destination,
-      secret, pub, A1, A2, A3, msg, msg_len);
+      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, dst, secret,
+      pub, A1, A2, A3, msg, msg_len);
 }
 
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
-    uint8_t usage, const char *domain_sep, ring_sig_s *destination,
+    uint8_t usage, const char *domain_sep, ring_sig_s *dst,
     const otrng_private_key_t secret, const otrng_public_key_t pub,
     const otrng_public_key_t A1, const otrng_public_key_t A2,
     const otrng_public_key_t A3, const uint8_t *msg, size_t msg_len) {
@@ -234,9 +234,9 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   calculate_ci(tmp_c2, c, c2, is_A2, c1, c3);
   calculate_ci(tmp_c3, c, c3, is_A3, c1, c2);
 
-  goldilocks_448_scalar_copy(destination->c1, tmp_c1);
-  goldilocks_448_scalar_copy(destination->c2, tmp_c2);
-  goldilocks_448_scalar_copy(destination->c3, tmp_c3);
+  goldilocks_448_scalar_copy(dst->c1, tmp_c1);
+  goldilocks_448_scalar_copy(dst->c2, tmp_c2);
+  goldilocks_448_scalar_copy(dst->c3, tmp_c3);
 
   goldilocks_448_scalar_destroy(c);
   goldilocks_448_scalar_destroy(c1);
@@ -250,13 +250,13 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   /* t2 = secretIs2 ? t2 - c2 * secret : t2 */
   /* t3 = secretIs3 ? t3 - c3 * secret : t3 */
 
-  calculate_ri(tmp_r1, secret, r1, is_A1, destination->c1, t1);
-  calculate_ri(tmp_r2, secret, r2, is_A2, destination->c2, t2);
-  calculate_ri(tmp_r3, secret, r3, is_A3, destination->c3, t3);
+  calculate_ri(tmp_r1, secret, r1, is_A1, dst->c1, t1);
+  calculate_ri(tmp_r2, secret, r2, is_A2, dst->c2, t2);
+  calculate_ri(tmp_r3, secret, r3, is_A3, dst->c3, t3);
 
-  goldilocks_448_scalar_copy(destination->r1, tmp_r1);
-  goldilocks_448_scalar_copy(destination->r2, tmp_r2);
-  goldilocks_448_scalar_copy(destination->r3, tmp_r3);
+  goldilocks_448_scalar_copy(dst->r1, tmp_r1);
+  goldilocks_448_scalar_copy(dst->r2, tmp_r2);
+  goldilocks_448_scalar_copy(dst->r3, tmp_r3);
 
   goldilocks_448_scalar_destroy(t1);
   goldilocks_448_scalar_destroy(t2);
@@ -271,28 +271,28 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *source,
+INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
                                       const otrng_public_key_t A1,
                                       const otrng_public_key_t A2,
                                       const otrng_public_key_t A3,
                                       const uint8_t *msg, size_t msg_len) {
   return otrng_rsig_verify_with_usage_and_domain(
-      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, source, A1,
-      A2, A3, msg, msg_len);
+      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, src, A1, A2,
+      A3, msg, msg_len);
 }
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
-    uint8_t usage, const char *domain_sep, const ring_sig_s *source,
+    uint8_t usage, const char *domain_sep, const ring_sig_s *src,
     const otrng_public_key_t A1, const otrng_public_key_t A2,
     const otrng_public_key_t A3, const uint8_t *msg, size_t msg_len) {
   goldilocks_448_scalar_p c;
   otrng_private_key_t c1c2c3;
 
   otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
-      usage, domain_sep, c, source, A1, A2, A3, msg, msg_len);
+      usage, domain_sep, c, src, A1, A2, A3, msg, msg_len);
 
-  goldilocks_448_scalar_add(c1c2c3, source->c1, source->c2);
-  goldilocks_448_scalar_add(c1c2c3, c1c2c3, source->c3);
+  goldilocks_448_scalar_add(c1c2c3, src->c1, src->c2);
+  goldilocks_448_scalar_add(c1c2c3, c1c2c3, src->c3);
 
   if (goldilocks_succeed_if(goldilocks_448_scalar_eq(c, c1c2c3))) {
     return otrng_true;
@@ -301,11 +301,11 @@ INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
   return otrng_false;
 }
 
-INTERNAL void otrng_ring_sig_destroy(ring_sig_s *source) {
-  otrng_ec_scalar_destroy(source->c1);
-  otrng_ec_scalar_destroy(source->r1);
-  otrng_ec_scalar_destroy(source->c2);
-  otrng_ec_scalar_destroy(source->r2);
-  otrng_ec_scalar_destroy(source->c3);
-  otrng_ec_scalar_destroy(source->r3);
+INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src) {
+  otrng_ec_scalar_destroy(src->c1);
+  otrng_ec_scalar_destroy(src->r1);
+  otrng_ec_scalar_destroy(src->c2);
+  otrng_ec_scalar_destroy(src->r2);
+  otrng_ec_scalar_destroy(src->c3);
+  otrng_ec_scalar_destroy(src->r3);
 }

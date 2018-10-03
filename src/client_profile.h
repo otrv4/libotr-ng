@@ -87,28 +87,26 @@ typedef struct otrng_client_profile_s {
   otrng_bool is_publishing;
 } otrng_client_profile_s;
 
-INTERNAL void otrng_client_profile_copy(otrng_client_profile_s *destination,
-                                        const otrng_client_profile_s *source);
+INTERNAL void otrng_client_profile_copy(otrng_client_profile_s *dst,
+                                        const otrng_client_profile_s *src);
 
 INTERNAL void otrng_client_profile_destroy(otrng_client_profile_s *profile);
 
 INTERNAL void otrng_client_profile_free(otrng_client_profile_s *profile);
 
 INTERNAL otrng_result otrng_client_profile_deserialize(
-    otrng_client_profile_s *target, const uint8_t *buffer, size_t buflen,
+    otrng_client_profile_s *target, const uint8_t *buffer, size_t buff_len,
     size_t *nread);
 
 INTERNAL otrng_result otrng_client_profile_deserialize_with_metadata(
-    otrng_client_profile_s *target, const uint8_t *buffer, size_t buflen,
+    otrng_client_profile_s *target, const uint8_t *buffer, size_t buff_len,
     size_t *nread);
 
-INTERNAL otrng_result
-otrng_client_profile_serialize(uint8_t **destination, size_t *nbytes,
-                               const otrng_client_profile_s *profile);
+INTERNAL otrng_result otrng_client_profile_serialize(
+    uint8_t **dst, size_t *nbytes, const otrng_client_profile_s *profile);
 
 INTERNAL otrng_result otrng_client_profile_serialize_with_metadata(
-    uint8_t **destination, size_t *nbytes,
-    const otrng_client_profile_s *profile);
+    uint8_t **dst, size_t *nbytes, const otrng_client_profile_s *profile);
 
 INTERNAL otrng_client_profile_s *otrng_client_profile_build(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
@@ -143,9 +141,8 @@ tstatic otrng_client_profile_s *client_profile_new(const char *versions);
 tstatic otrng_result client_profile_sign(otrng_client_profile_s *profile,
                                          const otrng_keypair_s *keypair);
 
-tstatic otrng_result
-client_profile_body_serialize_into(uint8_t **destination, size_t *nbytes,
-                                   const otrng_client_profile_s *profile);
+tstatic otrng_result client_profile_body_serialize_into(
+    uint8_t **dst, size_t *nbytes, const otrng_client_profile_s *profile);
 
 tstatic otrng_bool
 client_profile_verify_signature(const otrng_client_profile_s *profile);
