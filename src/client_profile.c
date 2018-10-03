@@ -743,6 +743,15 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
   return OTRNG_SUCCESS;
 }
 
+API void otrng_client_profile_start_publishing(client_profile_s *profile) {
+  profile->is_publishing = otrng_true;
+}
+
+API otrng_bool
+otrng_client_profile_should_publish(const client_profile_s *profile) {
+  return profile->should_publish && !profile->is_publishing;
+}
+
 #ifdef DEBUG_API
 
 #include "debug.h"

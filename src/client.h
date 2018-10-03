@@ -85,6 +85,7 @@ typedef struct otrng_client_s {
   /* This flag will be set when there is anything that should be published
      to prekey servers */
   otrng_bool should_publish;
+  otrng_bool is_publishing;
   uint32_t prekey_messages_num_to_publish;
 
   // OtrlPrivKey *privkeyv3; // ???
@@ -281,8 +282,9 @@ API void
 otrng_client_set_prekey_profile_exp_time(uint64_t prekey_profile_exp_time,
                                          otrng_client_s *client);
 
+API void otrng_client_start_publishing(otrng_client_s *client);
 API otrng_bool otrng_client_should_publish(otrng_client_s *client);
-
+API void otrng_client_failed_published(otrng_client_s *client);
 API void otrng_client_published(otrng_client_s *client);
 
 /* tstatic int v3_privkey_generate(otrng_client_s *client, FILE *privf); */

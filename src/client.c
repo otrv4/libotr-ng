@@ -1188,14 +1188,25 @@ otrng_client_set_prekey_profile_exp_time(uint64_t prekey_profile_exp_time,
   client->prekey_profile_exp_time = prekey_profile_exp_time;
 }
 
+API void otrng_client_start_publishing(otrng_client_s *client) {
+  client->is_publishing = otrng_true;
+}
+
 API otrng_bool otrng_client_should_publish(otrng_client_s *client) {
-  return client->should_publish;
+  return client->should_publish && !client->is_publishing;
+}
+
+API void otrng_client_failed_published(otrng_client_s *client) {
+  client->client_profile->is_publishing = otrng_false;
+  client->is_publishing = otrng_false;
 }
 
 API void otrng_client_published(otrng_client_s *client) {
   client->client_profile->should_publish = otrng_false;
+  client->client_profile->is_publishing = otrng_false;
 
   client->should_publish = otrng_false;
+  client->is_publishing = otrng_false;
 
   // TODO: @ola here everything else should be marked as well, once they have
   // their flags

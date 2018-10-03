@@ -77,6 +77,7 @@ typedef struct client_profile_s {
   eddsa_signature signature;
 
   otrng_bool should_publish;
+  otrng_bool is_publishing;
 } client_profile_s;
 
 INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
@@ -108,6 +109,10 @@ INTERNAL otrng_bool otrng_client_profile_valid(
 
 INTERNAL otrng_result otrng_client_profile_transitional_sign(
     client_profile_s *profile, OtrlPrivKey *privkey);
+
+API void otrng_client_profile_start_publishing(client_profile_s *profile);
+API otrng_bool
+otrng_client_profile_should_publish(const client_profile_s *profile);
 
 #ifdef DEBUG_API
 
