@@ -56,12 +56,14 @@ static void prekey_storage_status_received_callback(
   client->callbacks->storage_status_received(msg, client->callbacks->ctx);
 }
 
-static void success_received_callback(otrng_prekey_client_s *client) {
-  client->callbacks->success_received(client->callbacks->ctx);
+static void success_received_callback(otrng_client_s *client) {
+  const otrng_prekey_client_s *pc = client->prekey_client;
+  pc->callbacks->success_received(client, pc->callbacks->ctx);
 }
 
-static void failure_received_callback(otrng_prekey_client_s *client) {
-  client->callbacks->failure_received(client->callbacks->ctx);
+static void failure_received_callback(otrng_client_s *client) {
+  const otrng_prekey_client_s *pc = client->prekey_client;
+  pc->callbacks->failure_received(client, pc->callbacks->ctx);
 }
 
 static void
@@ -974,7 +976,7 @@ static char *receive_storage_status(const uint8_t *decoded, size_t decoded_len,
 }
 
 static char *receive_success(const uint8_t *decoded, size_t decoded_len,
-                             otrng_prekey_client_s *client) {
+                             otrng_client_s *client) {
   uint32_t instance_tag = 0;
   size_t read = 0;
   uint8_t mac_tag[HASH_BYTES];
@@ -984,28 +986,28 @@ static char *receive_success(const uint8_t *decoded, size_t decoded_len,
   memset(mac_tag, 0, HASH_BYTES);
 
   if (decoded_len < OTRNG_PREKEY_SUCCESS_MSG_LEN) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    notify_error_callback(client->prekey_client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
   if (!otrng_deserialize_uint32(&instance_tag, decoded + 3, decoded_len - 3,
                                 &read)) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    notify_error_callback(client->prekey_client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
-  if (instance_tag != client->instance_tag) {
+  if (instance_tag != client->prekey_client->instance_tag) {
     return NULL;
   }
 
   kdf_init_with_usage(hash, usage_success_MAC);
-  hash_update(hash, client->mac_key, MAC_KEY_BYTES);
+  hash_update(hash, client->prekey_client->mac_key, MAC_KEY_BYTES);
   hash_update(hash, decoded + 2, 5);
   hash_final(hash, mac_tag, HASH_BYTES);
   hash_destroy(hash);
 
   if (otrl_mem_differ(mac_tag, decoded + 7, HASH_BYTES) != 0) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_INVALID_SUCCESS);
+    notify_error_callback(client->prekey_client, OTRNG_PREKEY_CLIENT_INVALID_SUCCESS);
   } else {
     success_received_callback(client);
   }
@@ -1015,7 +1017,7 @@ static char *receive_success(const uint8_t *decoded, size_t decoded_len,
 }
 
 static char *receive_failure(const uint8_t *decoded, size_t decoded_len,
-                             otrng_prekey_client_s *client) {
+                             otrng_client_s *client) {
   uint32_t instance_tag = 0;
   size_t read = 0;
   uint8_t mac_tag[HASH_BYTES];
@@ -1026,28 +1028,28 @@ static char *receive_failure(const uint8_t *decoded, size_t decoded_len,
   memset(mac_tag, 0, HASH_BYTES);
 
   if (decoded_len < 71) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    notify_error_callback(client->prekey_client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
   if (!otrng_deserialize_uint32(&instance_tag, decoded + 3, decoded_len - 3,
                                 &read)) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    notify_error_callback(client->prekey_client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
-  if (instance_tag != client->instance_tag) {
+  if (instance_tag != client->prekey_client->instance_tag) {
     return NULL;
   }
 
   kdf_init_with_usage(hash, usage_failure_MAC);
-  hash_update(hash, client->mac_key, MAC_KEY_BYTES);
+  hash_update(hash, client->prekey_client->mac_key, MAC_KEY_BYTES);
   hash_update(hash, decoded + 2, 5);
   hash_final(hash, mac_tag, HASH_BYTES);
   hash_destroy(hash);
 
   if (otrl_mem_differ(mac_tag, decoded + 7, HASH_BYTES) != 0) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_INVALID_SUCCESS);
+    notify_error_callback(client->prekey_client, OTRNG_PREKEY_CLIENT_INVALID_SUCCESS);
   } else {
     failure_received_callback(client);
   }
@@ -1144,35 +1146,35 @@ API otrng_result otrng_parse_header(uint8_t *message_type, const uint8_t *buf,
 }
 
 static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
-                             otrng_prekey_client_s *client) {
+                             otrng_client_s *client) {
   uint8_t message_type = 0;
   char *ret = NULL;
 
   if (!otrng_parse_header(&message_type, decoded, decoded_len, NULL)) {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    notify_error_callback(client->prekey_client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }
 
   if (message_type == OTRNG_PREKEY_DAKE2_MSG) {
-    ret = receive_dake2(decoded, decoded_len, client);
+    ret = receive_dake2(decoded, decoded_len, client->prekey_client);
   } else if (message_type == OTRNG_PREKEY_SUCCESS_MSG) {
     ret = receive_success(decoded, decoded_len, client);
   } else if (message_type == OTRNG_PREKEY_FAILURE_MSG) {
     ret = receive_failure(decoded, decoded_len, client);
   } else if (message_type == OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG) {
-    ret = receive_no_prekey_in_storage(decoded, decoded_len, client);
+    ret = receive_no_prekey_in_storage(decoded, decoded_len, client->prekey_client);
   } else if (message_type == OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG) {
-    ret = receive_prekey_ensemble_retrieval(decoded, decoded_len, client);
+    ret = receive_prekey_ensemble_retrieval(decoded, decoded_len, client->prekey_client);
   } else if (message_type == OTRNG_PREKEY_STORAGE_STATUS_MSG) {
-    ret = receive_storage_status(decoded, decoded_len, client);
+    ret = receive_storage_status(decoded, decoded_len, client->prekey_client);
   } else {
-    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    notify_error_callback(client->prekey_client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
   }
 
   return ret;
 }
 
-/* TODO: @ola these functions really need the otrng_client_s instance instead */
+/* TODO: this function should probably return otrng_bool instead */
 API otrng_result otrng_prekey_client_receive(char **tosend, const char *server,
                                              const char *message,
                                              otrng_client_s *client) {
@@ -1200,7 +1202,7 @@ API otrng_result otrng_prekey_client_receive(char **tosend, const char *server,
      Even if there was an error processing it. We should consider informing the
      error while processing using callbacks.
   */
-  *tosend = receive_decoded(serialized, serialized_len, client->prekey_client);
+  *tosend = receive_decoded(serialized, serialized_len, client);
   free(serialized);
 
   return OTRNG_SUCCESS;

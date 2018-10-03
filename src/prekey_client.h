@@ -129,8 +129,8 @@ typedef struct {
   void (*notify_error)(int error, void *ctx);
   void (*storage_status_received)(
       const otrng_prekey_storage_status_message_s *msg, void *ctx);
-  void (*success_received)(void *ctx);
-  void (*failure_received)(void *ctx);
+  void (*success_received)(struct otrng_client_s *client, void *ctx);
+  void (*failure_received)(struct otrng_client_s *client, void *ctx);
   void (*no_prekey_in_storage_received)(void *ctx);
   void (*low_prekey_messages_in_storage)(char *server_identity, void *ctx);
   void (*prekey_ensembles_received)(prekey_ensemble_s *const *const ensembles,
