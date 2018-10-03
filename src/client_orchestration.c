@@ -155,8 +155,8 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   ensure_valid_long_term_key(client);
   ensure_valid_client_profile(client);
 
-  // TODO: @ola here we should check if the client profile is close to expiring, and
-  // in that case move it to the expired part and create a new one
+  // TODO: @ola here we should check if the client profile is close to expiring,
+  // and in that case move it to the expired part and create a new one
 
   ensure_valid_prekey_profile(client);
 

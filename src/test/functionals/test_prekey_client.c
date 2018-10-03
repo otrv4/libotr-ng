@@ -113,7 +113,7 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   memcpy(msg.composite_identity, composite_identity,
          msg.composite_identity_len);
 
-  char *dake_3 = send_dake3(&msg, alice->prekey_client);
+  char *dake_3 = send_dake3(&msg, alice);
 
   otrng_assert(dake_3);
   otrng_assert(alice->prekey_client->after_dake == 0);
@@ -156,8 +156,8 @@ static void test_receive_prekey_server_messages(void) {
       642);
 
   char *to_send = NULL;
-  otrng_assert_is_success(otrng_prekey_client_receive(
-      &to_send, "prekey@localhost", dake_2, alice));
+  otrng_assert_is_success(
+      otrng_prekey_client_receive(&to_send, "prekey@localhost", dake_2, alice));
 
   otrng_assert(!to_send); /* wrong instance tag */
 
