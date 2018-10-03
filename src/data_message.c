@@ -227,8 +227,8 @@ otrng_data_message_sections_hash(uint8_t *destination, size_t destinationlen,
 }
 
 INTERNAL otrng_result otrng_data_message_authenticator(
-    uint8_t *destination, size_t destinationlen, const message_mac_key mac_key,
-    const uint8_t *body, size_t bodylen) {
+    uint8_t *destination, size_t destinationlen,
+    const message_mac_key_t mac_key, const uint8_t *body, size_t bodylen) {
   uint8_t *sections = otrng_secure_alloc(HASH_BYTES);
 
   if (destinationlen < DATA_MESSAGE_MAC_BYTES) {
@@ -249,7 +249,7 @@ INTERNAL otrng_result otrng_data_message_authenticator(
 }
 
 INTERNAL otrng_bool otrng_valid_data_message(
-    message_mac_key mac_key, const data_message_s *data_message) {
+    message_mac_key_t mac_key, const data_message_s *data_message) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
   // We don't need this tag to be in secure memory

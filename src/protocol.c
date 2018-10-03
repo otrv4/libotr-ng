@@ -127,10 +127,9 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   }
 }
 
-tstatic otrng_result encrypt_data_message(data_message_s *data_message,
-                                          const uint8_t *message,
-                                          size_t message_len,
-                                          const message_encryption_key_t enc_key) {
+tstatic otrng_result encrypt_data_message(
+    data_message_s *data_message, const uint8_t *message, size_t message_len,
+    const message_encryption_key_t enc_key) {
   uint8_t *c = NULL;
   int err;
 
@@ -180,7 +179,7 @@ tstatic data_message_s *generate_data_message(const otrng_s *otr,
 }
 
 tstatic otrng_result serialize_and_encode_data_message(
-    string_p *destination, const message_mac_key mac_key,
+    string_p *destination, const message_mac_key_t mac_key,
     uint8_t *to_reveal_mac_keys, size_t to_reveal_mac_keys_len,
     const data_message_s *data_message) {
   uint8_t *body = NULL;
@@ -224,7 +223,7 @@ tstatic otrng_result send_data_message(string_p *to_send,
   data_message_s *data_message = NULL;
   uint32_t ratchet_id = otr->keys->i;
   message_encryption_key_t enc_key;
-  message_mac_key mac_key;
+  message_mac_key_t mac_key;
 
   /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(

@@ -1773,9 +1773,9 @@ tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *source,
   return otrng_parse_tlvs(tlvs_start + 1, tlvs_len);
 }
 
-tstatic otrng_result decrypt_data_message(otrng_response_s *response,
-                                          const message_encryption_key_t enc_key,
-                                          const data_message_s *message) {
+tstatic otrng_result decrypt_data_message(
+    otrng_response_s *response, const message_encryption_key_t enc_key,
+    const data_message_s *message) {
   string_p *destination = &response->to_display;
   uint8_t *plain;
   int err;
@@ -1889,7 +1889,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     size_t buflen, otrng_s *otr) {
   data_message_s *message = otrng_data_message_new();
   message_encryption_key_t enc_key;
-  message_mac_key mac_key;
+  message_mac_key_t mac_key;
   size_t read = 0;
   receiving_ratchet_s *tmp_receiving_ratchet;
 
