@@ -362,7 +362,7 @@ static void test_valid_identity_message_in_waiting_auth_i() {
   otrng_assert(!ignore);
   otrng_assert(!to_display);
 
-  ec_point stored_their_ecdh;
+  ec_point_t stored_their_ecdh;
   otrng_ec_point_copy(stored_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
 
   dh_public_key_t stored_their_dh;
@@ -388,7 +388,7 @@ static void test_valid_identity_message_in_waiting_auth_i() {
   free(bobs_id);
   bobs_id = NULL;
 
-  ec_point new_their_ecdh;
+  ec_point_t new_their_ecdh;
   otrng_ec_point_copy(new_their_ecdh, alice_to_bob->conn->keys->their_ecdh);
 
   dh_public_key_t new_their_dh;

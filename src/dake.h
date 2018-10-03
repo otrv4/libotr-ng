@@ -35,7 +35,7 @@ typedef struct dake_identity_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
   otrng_client_profile_s *profile;
-  ec_point Y;
+  ec_point_t Y;
   dh_public_key_t B;
 } dake_identity_message_s;
 
@@ -43,7 +43,7 @@ typedef struct dake_auth_r_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
   otrng_client_profile_s *profile;
-  ec_point X;
+  ec_point_t X;
   dh_public_key_t A;
   ring_sig_s *sigma;
 } dake_auth_r_s;
@@ -57,7 +57,7 @@ typedef struct dake_auth_i_s {
 typedef struct dake_prekey_message_s {
   uint32_t id;
   uint32_t sender_instance_tag;
-  ec_point Y;
+  ec_point_t Y;
   dh_public_key_t B;
 } dake_prekey_message_s;
 
@@ -65,7 +65,7 @@ typedef struct dake_non_interactive_auth_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
   otrng_client_profile_s *profile;
-  ec_point X;
+  ec_point_t X;
   dh_public_key_t A;
   ring_sig_s *sigma;
   uint32_t prekey_message_id;
@@ -73,7 +73,7 @@ typedef struct dake_non_interactive_auth_message_s {
 } dake_non_interactive_auth_message_s;
 
 INTERNAL otrng_bool otrng_valid_received_values(
-    const uint32_t sender_instance_tag, const ec_point their_ecdh,
+    const uint32_t sender_instance_tag, const ec_point_t their_ecdh,
     const dh_mpi_t their_dh, const otrng_client_profile_s *profile);
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
@@ -134,7 +134,7 @@ INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *destination,
 INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void);
 
 INTERNAL dake_prekey_message_s *
-otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point ecdh,
+otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point_t ecdh,
                                 const dh_public_key_t dh);
 
 INTERNAL void

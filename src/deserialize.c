@@ -177,7 +177,7 @@ INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_t *destination,
   return ret;
 }
 
-INTERNAL otrng_result otrng_deserialize_ec_point(ec_point point,
+INTERNAL otrng_result otrng_deserialize_ec_point(ec_point_t point,
                                                  const uint8_t *serialized,
                                                  size_t buflen) {
   if (buflen < ED448_POINT_BYTES) {

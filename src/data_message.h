@@ -37,7 +37,7 @@ typedef struct data_message_s {
 
   uint32_t ratchet_id;
   uint32_t message_id;
-  ec_point ecdh;
+  ec_point_t ecdh;
   dh_public_key_t dh;
   uint8_t nonce[DATA_MESSAGE_NONCE_BYTES];
   uint8_t *enc_message;

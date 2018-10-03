@@ -29,11 +29,11 @@
 #include "error.h"
 #include "shared.h"
 
-/* ec_scalar represents a scalar. */
+/* ec_scalar_t represents a scalar. */
 typedef goldilocks_448_scalar_p ec_scalar_t;
-/* ec_point represents a ed488 point. It is in the twisted ed448-goldilocks,
+/* ec_point_t represents a ed488 point. It is in the twisted ed448-goldilocks,
    curve representation following the decaf technique. */
-typedef goldilocks_448_point_p ec_point;
+typedef goldilocks_448_point_p ec_point_t;
 
 /** Number of bytes in an EdDSA private key: 57 */
 #define ED448_PRIVATE_BYTES GOLDILOCKS_EDDSA_448_PRIVATE_BYTES
@@ -57,7 +57,7 @@ typedef uint8_t eddsa_signature_t[ED448_SIGNATURE_BYTES];
  */
 typedef struct ecdh_keypair_s {
   ec_scalar_t priv;
-  ec_point pub;
+  ec_point_t pub;
 } ecdh_keypair_s;
 
 /**
@@ -109,7 +109,7 @@ INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t s);
  * @param [destination] A copy of the point.
  * @param [p] Any point.
  */
-INTERNAL void otrng_ec_point_copy(ec_point destination, const ec_point p);
+INTERNAL void otrng_ec_point_copy(ec_point_t destination, const ec_point_t p);
 
 /**
  * @brief Check whether two points are equal.  If yes, return
@@ -121,7 +121,7 @@ INTERNAL void otrng_ec_point_copy(ec_point destination, const ec_point p);
  * @retval otrng_true The points are equal.
  * @retval otrng_false The points are not equal.
  */
-INTERNAL otrng_bool otrng_ec_point_eq(const ec_point p, const ec_point q);
+INTERNAL otrng_bool otrng_ec_point_eq(const ec_point_t p, const ec_point_t q);
 
 /**
  * @brief Check that a point is valid.
@@ -131,7 +131,7 @@ INTERNAL otrng_bool otrng_ec_point_eq(const ec_point p, const ec_point q);
  * @retval otrng_true The point is valid.
  * @retval otrng_false The point is invalid.
  */
-INTERNAL otrng_bool otrng_ec_point_valid(const ec_point p);
+INTERNAL otrng_bool otrng_ec_point_valid(const ec_point_t p);
 
 /**
  * @brief EdDSA point encoding.
@@ -148,7 +148,7 @@ INTERNAL otrng_bool otrng_ec_point_valid(const ec_point p);
  * @param [p]   The point.
  */
 INTERNAL otrng_result otrng_ec_point_encode(uint8_t *enc, size_t len,
-                                            const ec_point p);
+                                            const ec_point_t p);
 
 /**
  * @brief EdDSA point decoding.
@@ -157,12 +157,12 @@ INTERNAL otrng_result otrng_ec_point_encode(uint8_t *enc, size_t len,
  * @param [p]   The point.
  */
 INTERNAL otrng_result
-otrng_ec_point_decode(ec_point p, const uint8_t enc[ED448_POINT_BYTES]);
+otrng_ec_point_decode(ec_point_t p, const uint8_t enc[ED448_POINT_BYTES]);
 
 /** Securely erase a point by overwriting it with zeros.
  * @warning This causes the point object to become invalid.
  */
-INTERNAL void otrng_ec_point_destroy(ec_point p);
+INTERNAL void otrng_ec_point_destroy(ec_point_t p);
 
 /**
  * @brief EdDSA key secret key generation.
@@ -184,7 +184,7 @@ INTERNAL void
 otrng_ec_derive_public_key(uint8_t pub[ED448_POINT_BYTES],
                            const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-INTERNAL void otrng_ec_calculate_public_key(ec_point pub,
+INTERNAL void otrng_ec_calculate_public_key(ec_point_t pub,
                                             const ec_scalar_t priv);
 
 /**
@@ -219,7 +219,7 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair);
 INTERNAL otrng_result otrng_ecdh_shared_secret(uint8_t *shared_secret,
                                                size_t shared_secret_len,
                                                const ec_scalar_t our_priv,
-                                               const ec_point their_pub);
+                                               const ec_point_t their_pub);
 
 /**
  * @brief EdDSA signing.
@@ -251,7 +251,7 @@ otrng_ec_verify(const uint8_t sig[GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES],
                 size_t message_len);
 
 INTERNAL void
-otrng_ecdh_keypair_generate_their(ec_point keypair,
+otrng_ecdh_keypair_generate_their(ec_point_t keypair,
                                   const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 #ifdef DEBUG_API

@@ -485,7 +485,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   uint8_t one = 1, zero = 0;
 
   ec_scalar_t *values_priv_ecdh;
-  ec_point *values_pub_ecdh;
+  ec_point_t *values_pub_ecdh;
   dh_mpi_t *values_priv_dh;
   dh_mpi_t *values_pub_dh;
   size_t proof_index = 0;
@@ -553,7 +553,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
     values_priv_ecdh = otrng_secure_alloc(pub_message->num_prekey_messages *
                                           sizeof(ec_scalar_t));
     values_pub_ecdh =
-        otrng_xmalloc_z(pub_message->num_prekey_messages * sizeof(ec_point));
+        otrng_xmalloc_z(pub_message->num_prekey_messages * sizeof(ec_point_t));
 
     values_priv_dh =
         otrng_secure_alloc(pub_message->num_prekey_messages * sizeof(dh_mpi_t));
@@ -569,8 +569,8 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
 
     if (!otrng_ecdh_proof_generate(
             &prekey_message_proof_ecdh, (const ec_scalar_t *)values_priv_ecdh,
-            (const ec_point *)values_pub_ecdh, pub_message->num_prekey_messages,
-            m, usage_proof_message_ecdh)) {
+            (const ec_point_t *)values_pub_ecdh,
+            pub_message->num_prekey_messages, m, usage_proof_message_ecdh)) {
       free(client_profile);
       free(prekey_profile);
       otrng_secure_wipe(values_priv_ecdh,
@@ -614,14 +614,15 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   if (pub_message->prekey_profile != NULL) {
     proof_buf_len += PROOF_C_SIZE + ED448_SCALAR_BYTES;
     values_priv_ecdh = otrng_secure_alloc(1 * sizeof(ec_scalar_t));
-    values_pub_ecdh = otrng_xmalloc_z(1 * sizeof(ec_point));
+    values_pub_ecdh = otrng_xmalloc_z(1 * sizeof(ec_point_t));
 
     *values_pub_ecdh[0] = *pub_message->prekey_profile->shared_prekey;
     *values_priv_ecdh[0] = *pub_message->prekey_profile_key;
 
-    if (!otrng_ecdh_proof_generate(
-            &prekey_profile_proof, (const ec_scalar_t *)values_priv_ecdh,
-            (const ec_point *)values_pub_ecdh, 1, m, usage_proof_shared_ecdh)) {
+    if (!otrng_ecdh_proof_generate(&prekey_profile_proof,
+                                   (const ec_scalar_t *)values_priv_ecdh,
+                                   (const ec_point_t *)values_pub_ecdh, 1, m,
+                                   usage_proof_shared_ecdh)) {
       free(client_profile);
       free(prekey_profile);
       otrng_secure_wipe(values_priv_ecdh, 1 * sizeof(ec_scalar_t));

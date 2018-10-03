@@ -85,7 +85,7 @@ INTERNAL size_t otrng_serialize_mpi(uint8_t *destination,
 }
 
 INTERNAL int otrng_serialize_ec_point(uint8_t *destination,
-                                      const ec_point point) {
+                                      const ec_point_t point) {
   if (!otrng_ec_point_encode(destination, ED448_POINT_BYTES, point)) {
     return 0;
   };

@@ -43,37 +43,37 @@
 typedef struct smp_message_1_s {
   uint8_t *question;
   size_t q_len;
-  ec_point g2a;
+  ec_point_t g2a;
   ec_scalar_t c2;
   ec_scalar_t d2;
-  ec_point g3a;
+  ec_point_t g3a;
   ec_scalar_t c3;
   ec_scalar_t d3;
 } smp_message_1_s;
 
 typedef struct smp_message_2_s {
-  ec_point g2b;
+  ec_point_t g2b;
   ec_scalar_t c2;
   ec_scalar_t d2;
-  ec_point g3b;
+  ec_point_t g3b;
   ec_scalar_t c3;
   ec_scalar_t d3;
-  ec_point pb;
-  ec_point qb;
+  ec_point_t pb;
+  ec_point_t qb;
   ec_scalar_t cp;
   ec_scalar_t d5;
   ec_scalar_t d6;
 } smp_message_2_s;
 
 typedef struct smp_message_3_s {
-  ec_point pa, qa;
+  ec_point_t pa, qa;
   ec_scalar_t cp, d5, d6;
-  ec_point ra;
+  ec_point_t ra;
   ec_scalar_t cr, d7;
 } smp_message_3_s;
 
 typedef struct smp_message_4_s {
-  ec_point rb;
+  ec_point_t rb;
   ec_scalar_t cr, d7;
 } smp_message_4_s;
 
@@ -81,10 +81,10 @@ typedef struct smp_protocol_s {
   char state_expect; // TODO: why is this a char? Let's extract this
   uint8_t *secret;   /* already hashed: 64 bytes long */
   ec_scalar_t a2, a3, b3;
-  ec_point g2, g3;
-  ec_point g3a, g3b;
-  ec_point pb, qb;
-  ec_point pa_pb, qa_qb;
+  ec_point_t g2, g3;
+  ec_point_t g3a, g3b;
+  ec_point_t pb, qb;
+  ec_point_t pa_pb, qa_qb;
 
   uint8_t progress;
   smp_message_1_s *message1;

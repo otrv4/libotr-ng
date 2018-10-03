@@ -32,7 +32,7 @@ static void test_ed448_eddsa_serialization() {
   goldilocks_448_scalar_decode_long(s, random_buff, ED448_SCALAR_BYTES);
 
   // 1. Create a point p
-  ec_point p;
+  ec_point_t p;
   goldilocks_448_point_scalarmul(p, goldilocks_448_point_base, s);
 
   // 2. Encode like EdDSA
@@ -40,7 +40,7 @@ static void test_ed448_eddsa_serialization() {
   otrng_assert(otrng_ec_point_encode(enc, ED448_POINT_BYTES, p));
 
   // 3. Decode like EdDSA
-  ec_point dec;
+  ec_point_t dec;
   otrng_assert_is_success(otrng_ec_point_decode(dec, enc));
 
   otrng_assert(otrng_ec_point_eq(p, dec) == otrng_true);
@@ -52,14 +52,14 @@ static void test_ed448_eddsa_keygen() {
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
   ec_scalar_t secret_scalar;
-  ec_point p;
+  ec_point_t p;
   otrng_ec_scalar_derive_from_secret(secret_scalar, sym);
   otrng_ec_derive_public_key(pub, sym);
 
   otrng_assert_is_success(otrng_ec_point_decode(p, pub));
 
   // Is G * scalar == p?
-  ec_point expected;
+  ec_point_t expected;
   goldilocks_448_point_scalarmul(expected, goldilocks_448_point_base,
                                  secret_scalar);
 

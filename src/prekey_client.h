@@ -50,7 +50,7 @@ struct otrng_client_s;
 typedef struct {
   uint32_t client_instance_tag;
   otrng_client_profile_s *client_profile;
-  ec_point I;
+  ec_point_t I;
 } otrng_prekey_dake1_message_s;
 
 typedef struct {
@@ -62,7 +62,7 @@ typedef struct {
   uint8_t *server_identity;
   size_t server_identity_len;
   otrng_public_key server_pub_key;
-  ec_point S;
+  ec_point_t S;
   ring_sig_s *sigma;
 } otrng_prekey_dake2_message_s;
 

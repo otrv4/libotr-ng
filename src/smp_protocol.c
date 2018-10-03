@@ -271,7 +271,7 @@ tstatic otrng_bool smp_message_1_valid_points(smp_message_1_s *message) {
 
 tstatic otrng_bool smp_message_1_valid_zkp(smp_message_1_s *message) {
   ec_scalar_t temp_scalar;
-  ec_point ga_c, g_d;
+  ec_point_t ga_c, g_d;
   uint8_t ser_point_3[ED448_POINT_BYTES];
   uint8_t usage_zkp_smp_1 = 0x01;
   uint8_t usage_zkp_smp_2 = 0x02;
@@ -345,7 +345,7 @@ tstatic otrng_result generate_smp_message_2(smp_message_2_s *destination,
   ec_scalar_t b2, r6;
   ec_scalar_t temp_scalar;
   ecdh_keypair_s pair_r2, pair_r3, pair_r4, pair_r5;
-  ec_point temp_point;
+  ec_point_t temp_point;
   uint8_t ser_point_1[ED448_POINT_BYTES];
   uint8_t usage_smp_3 = 0x03;
   uint8_t ser_point_2[ED448_POINT_BYTES];
@@ -576,7 +576,7 @@ tstatic otrng_bool smp_message_2_valid_points(smp_message_2_s *message) {
 tstatic otrng_bool smp_message_2_valid_zkp(smp_message_2_s *message,
                                            const smp_protocol_s *smp) {
   ec_scalar_t temp_scalar;
-  ec_point gb_c, g_d, point_cp;
+  ec_point_t gb_c, g_d, point_cp;
   uint8_t ser_point_1[ED448_POINT_BYTES];
   uint8_t usage_zkp_smp_3 = 0x03;
   uint8_t ser_point_2[ED448_POINT_BYTES];
@@ -687,7 +687,7 @@ tstatic otrng_result generate_smp_message_3(smp_message_3_s *destination,
                                             smp_protocol_s *smp) {
   ecdh_keypair_s pair_r4, pair_r5, pair_r7;
   ec_scalar_t r6;
-  ec_point temp_point;
+  ec_point_t temp_point;
   ec_scalar_t secret_as_scalar;
   uint8_t ser_point_1[ED448_POINT_BYTES];
   uint8_t ser_point_2[ED448_POINT_BYTES];
@@ -886,7 +886,7 @@ tstatic otrng_bool smp_message_3_validate_points(smp_message_3_s *message) {
 
 tstatic otrng_bool smp_message_3_validate_zkp(smp_message_3_s *message,
                                               const smp_protocol_s *smp) {
-  ec_point temp_point, temp_point_2;
+  ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
   uint8_t ser_point_1[ED448_POINT_BYTES];
   uint8_t ser_point_2[ED448_POINT_BYTES];
@@ -989,7 +989,7 @@ tstatic void smp_message_3_destroy(smp_message_3_s *message) {
 tstatic otrng_result generate_smp_message_4(smp_message_4_s *destination,
                                             const smp_message_3_s *message_3,
                                             smp_protocol_s *smp) {
-  ec_point qa_qb;
+  ec_point_t qa_qb;
   ecdh_keypair_s pair_r7;
   uint8_t ser_point_1[ED448_POINT_BYTES];
   uint8_t ser_point_2[ED448_POINT_BYTES];
@@ -1083,7 +1083,7 @@ tstatic otrng_result smp_message_4_deserialize(smp_message_4_s *destination,
 
 tstatic otrng_bool smp_message_4_validate_zkp(smp_message_4_s *message,
                                               const smp_protocol_s *smp) {
-  ec_point temp_point, temp_point_2;
+  ec_point_t temp_point, temp_point_2;
   ec_scalar_t temp_scalar;
   uint8_t ser_point_1[ED448_POINT_BYTES];
   uint8_t ser_point_2[ED448_POINT_BYTES];
@@ -1137,7 +1137,7 @@ tstatic void smp_message_4_destroy(smp_message_4_s *message) {
 
 tstatic otrng_bool smp_is_valid_for_message_3(const smp_message_3_s *message,
                                               smp_protocol_s *smp) {
-  ec_point rab, pa_pb;
+  ec_point_t rab, pa_pb;
   /* Compute Rab = (Ra * b3) */
   goldilocks_448_point_scalarmul(rab, message->ra, smp->b3);
   /* Pa - Pb == Rab */
@@ -1152,7 +1152,7 @@ tstatic otrng_bool smp_is_valid_for_message_3(const smp_message_3_s *message,
 
 tstatic otrng_bool smp_is_valid_for_message_4(smp_message_4_s *message,
                                               smp_protocol_s *smp) {
-  ec_point rab;
+  ec_point_t rab;
   /* Compute Rab = Rb * a3. */
   goldilocks_448_point_scalarmul(rab, message->rb, smp->a3);
   /* Pa - Pb == Rab */

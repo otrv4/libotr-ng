@@ -143,7 +143,7 @@ otrng_receiving_ratchet_new(key_manager_s *manager) {
   return ratchet;
 }
 
-tstatic void otrng_key_manager_set_their_keys(ec_point their_ecdh,
+tstatic void otrng_key_manager_set_their_keys(ec_point_t their_ecdh,
                                               dh_public_key_t their_dh,
                                               key_manager_s *manager) {
   otrng_ec_point_destroy(manager->their_ecdh);
@@ -202,7 +202,7 @@ INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {
 }
 
 INTERNAL void otrng_key_manager_set_their_tmp_keys(
-    ec_point their_ecdh, dh_public_key_t their_dh,
+    ec_point_t their_ecdh, dh_public_key_t their_dh,
     receiving_ratchet_s *tmp_receiving_ratchet) {
   otrng_ec_point_destroy(tmp_receiving_ratchet->their_ecdh);
   otrng_ec_point_copy(tmp_receiving_ratchet->their_ecdh, their_ecdh);
@@ -210,7 +210,7 @@ INTERNAL void otrng_key_manager_set_their_tmp_keys(
   tmp_receiving_ratchet->their_dh = otrng_dh_mpi_copy(their_dh);
 }
 
-INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point their_ecdh,
+INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point_t their_ecdh,
                                                key_manager_s *manager) {
   otrng_ec_point_copy(manager->their_ecdh, their_ecdh);
 }
