@@ -65,7 +65,7 @@ INTERNAL otrng_s *otrng_new(struct otrng_client_s *client,
 
 INTERNAL void otrng_free(/*@only@ */ otrng_s *otr);
 
-INTERNAL otrng_result otrng_build_query_message(string_p *dst,
+INTERNAL otrng_result otrng_build_query_message(string_p *destination,
                                                 const string_p message,
                                                 otrng_s *otr);
 
@@ -101,13 +101,13 @@ API otrng_result otrng_send_symkey_message(string_p *to_send, unsigned int use,
                                            size_t usedatalen,
                                            uint8_t *extra_key, otrng_s *otr);
 
-API otrng_result otrng_send_offline_message(char **dst,
+API otrng_result otrng_send_offline_message(char **destination,
                                             const prekey_ensemble_s *ensemble,
                                             const char *plaintext,
                                             otrng_s *otr);
 
 API otrng_result otrng_send_non_interactive_auth(
-    char **dst, const prekey_ensemble_s *ensemble, otrng_s *otr);
+    char **destination, const prekey_ensemble_s *ensemble, otrng_s *otr);
 
 API otrng_result otrng_init(otrng_bool die);
 API otrng_result otrng_v3_init(otrng_bool die);
@@ -119,7 +119,7 @@ INTERNAL void otrng_destroy(otrng_s *otr);
 char *
 otrng_generate_session_state_string(const otrng_shared_session_state_s *state);
 
-API otrng_result otrng_extract_header(otrng_header_s *dst,
+API otrng_result otrng_extract_header(otrng_header_s *destination,
                                       const uint8_t *buffer,
                                       const size_t bufflen);
 

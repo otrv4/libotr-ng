@@ -203,7 +203,7 @@ INTERNAL
 void otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *message);
 
 INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
-    otrng_prekey_dake2_message_s *dst, const uint8_t *serialized,
+    otrng_prekey_dake2_message_s *destination, const uint8_t *serialized,
     size_t serialized_len);
 
 INTERNAL
@@ -232,8 +232,8 @@ INTERNAL
 void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *message);
 
 INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(
-    otrng_prekey_storage_status_message_s *dst, const uint8_t *serialized,
-    size_t serialized_len);
+    otrng_prekey_storage_status_message_s *destination,
+    const uint8_t *serialized, size_t serialized_len);
 
 INTERNAL
 void otrng_prekey_storage_status_message_destroy(
@@ -251,15 +251,15 @@ API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
                                                otrng_prekey_client_s *client);
 
 INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_serialize(
-    uint8_t **dst, size_t *len,
+    uint8_t **destination, size_t *len,
     const otrng_prekey_ensemble_query_retrieval_message_s *message);
 
 INTERNAL void otrng_prekey_ensemble_query_retrieval_message_destroy(
     otrng_prekey_ensemble_query_retrieval_message_s *message);
 
 INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
-    otrng_prekey_ensemble_retrieval_message_s *dst, const uint8_t *serialized,
-    size_t serialized_len);
+    otrng_prekey_ensemble_retrieval_message_s *destination,
+    const uint8_t *serialized, size_t serialized_len);
 
 INTERNAL
 void otrng_prekey_ensemble_retrieval_message_destroy(

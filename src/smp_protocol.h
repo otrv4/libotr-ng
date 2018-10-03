@@ -101,11 +101,11 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
                                                 const uint8_t *answer,
                                                 size_t answer_len);
 
-INTERNAL otrng_result otrng_generate_smp_message_1(smp_message_1_s *dst,
+INTERNAL otrng_result otrng_generate_smp_message_1(smp_message_1_s *destination,
                                                    smp_protocol_s *smp);
 
 INTERNAL otrng_result otrng_smp_message_1_serialize(
-    uint8_t **dst, size_t *len, const smp_message_1_s *message);
+    uint8_t **destination, size_t *len, const smp_message_1_s *message);
 
 INTERNAL void otrng_smp_message_1_destroy(smp_message_1_s *message);
 
@@ -131,7 +131,7 @@ INTERNAL otrng_smp_event_t otrng_process_smp_message4(const tlv_s *tlv,
 tstatic otrng_result smp_message_1_deserialize(smp_message_1_s *message,
                                                const tlv_s *tlv);
 
-tstatic otrng_result generate_smp_message_2(smp_message_2_s *dst,
+tstatic otrng_result generate_smp_message_2(smp_message_2_s *destination,
                                             const smp_message_1_s *message_1,
                                             smp_protocol_s *smp);
 
@@ -140,11 +140,11 @@ tstatic otrng_result smp_message_2_deserialize(smp_message_2_s *message,
 
 tstatic void smp_message_2_destroy(smp_message_2_s *message);
 
-tstatic otrng_result generate_smp_message_3(smp_message_3_s *dst,
+tstatic otrng_result generate_smp_message_3(smp_message_3_s *destination,
                                             const smp_message_2_s *message_2,
                                             smp_protocol_s *smp);
 
-tstatic otrng_result generate_smp_message_4(smp_message_4_s *dst,
+tstatic otrng_result generate_smp_message_4(smp_message_4_s *destination,
                                             const smp_message_3_s *message_3,
                                             smp_protocol_s *smp);
 

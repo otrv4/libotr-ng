@@ -32,45 +32,46 @@ INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new() {
 }
 
 INTERNAL otrng_result
-otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
+otrng_prekey_ensemble_validate(const prekey_ensemble_s *destination) {
   /* Check that all the instance tags on the Prekey Ensemble's values are the
    * same. */
   char *versions;
   otrng_bool found;
-  uint32_t instance = dst->client_profile->sender_instance_tag;
-  if (instance != dst->prekey_profile->instance_tag) {
+  uint32_t instance = destination->client_profile->sender_instance_tag;
+  if (instance != destination->prekey_profile->instance_tag) {
     return OTRNG_ERROR;
   }
 
-  if (instance != dst->message->sender_instance_tag) {
+  if (instance != destination->message->sender_instance_tag) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_client_profile_valid(dst->client_profile,
-                                  dst->message->sender_instance_tag)) {
+  if (!otrng_client_profile_valid(destination->client_profile,
+                                  destination->message->sender_instance_tag)) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_prekey_profile_valid(dst->prekey_profile,
-                                  dst->message->sender_instance_tag,
-                                  dst->client_profile->long_term_pub_key)) {
+  if (!otrng_prekey_profile_valid(
+          destination->prekey_profile,
+          destination->message->sender_instance_tag,
+          destination->client_profile->long_term_pub_key)) {
     return OTRNG_ERROR;
   }
 
   /* Verify the prekey message values */
   /* Verify that the point their_ecdh received is on curve 448. */
-  if (!otrng_ec_point_valid(dst->message->Y)) {
+  if (!otrng_ec_point_valid(destination->message->Y)) {
     return OTRNG_ERROR;
   }
 
   /* Verify that the DH public key their_dh is from the correct group. */
-  if (!otrng_dh_mpi_valid(dst->message->B)) {
+  if (!otrng_dh_mpi_valid(destination->message->B)) {
     return OTRNG_ERROR;
   }
 
   /* Check that the OTR version of the prekey message matches one of the
   versions signed in the Client Profile contained in the Prekey Ensemble. */
-  versions = dst->client_profile->versions;
+  versions = destination->client_profile->versions;
   found = otrng_false;
   while (*versions && !found) {
     found = (*versions == '4');
@@ -84,29 +85,28 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
-                                                        const uint8_t *src,
-                                                        size_t src_len,
-                                                        size_t *nread) {
+INTERNAL otrng_result otrng_prekey_ensemble_deserialize(
+    prekey_ensemble_s *destination, const uint8_t *src, size_t src_len,
+    size_t *nread) {
   size_t w = 0;
   size_t read = 0;
 
-  if (!otrng_client_profile_deserialize(dst->client_profile, src, src_len,
-                                        &w)) {
+  if (!otrng_client_profile_deserialize(destination->client_profile, src,
+                                        src_len, &w)) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_prekey_profile_deserialize(dst->prekey_profile, src + w,
+  if (!otrng_prekey_profile_deserialize(destination->prekey_profile, src + w,
                                         src_len - w, &read)) {
     return OTRNG_ERROR;
   }
 
   w += read;
 
-  dst->message = otrng_xmalloc_z(sizeof(dake_prekey_message_s));
+  destination->message = otrng_xmalloc_z(sizeof(dake_prekey_message_s));
 
-  if (!otrng_dake_prekey_message_deserialize(dst->message, src + w, src_len - w,
-                                             &read)) {
+  if (!otrng_dake_prekey_message_deserialize(destination->message, src + w,
+                                             src_len - w, &read)) {
     return OTRNG_ERROR;
   }
 
@@ -119,22 +119,22 @@ INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL void otrng_prekey_ensemble_destroy(prekey_ensemble_s *dst) {
-  otrng_client_profile_destroy(dst->client_profile);
-  free(dst->client_profile);
-  dst->client_profile = NULL;
+INTERNAL void otrng_prekey_ensemble_destroy(prekey_ensemble_s *destination) {
+  otrng_client_profile_destroy(destination->client_profile);
+  free(destination->client_profile);
+  destination->client_profile = NULL;
 
-  otrng_prekey_profile_free(dst->prekey_profile);
+  otrng_prekey_profile_free(destination->prekey_profile);
 
-  otrng_dake_prekey_message_free(dst->message);
-  dst->message = NULL;
+  otrng_dake_prekey_message_free(destination->message);
+  destination->message = NULL;
 }
 
-INTERNAL void otrng_prekey_ensemble_free(prekey_ensemble_s *dst) {
-  if (!dst) {
+INTERNAL void otrng_prekey_ensemble_free(prekey_ensemble_s *destination) {
+  if (!destination) {
     return;
   }
 
-  otrng_prekey_ensemble_destroy(dst);
-  free(dst);
+  otrng_prekey_ensemble_destroy(destination);
+  free(destination);
 }

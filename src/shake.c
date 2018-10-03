@@ -49,45 +49,46 @@ void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage) {
   hash_update(hash, &usage, 1);
 }
 
-void shake_kkdf(uint8_t *dst, size_t dstlen, const uint8_t *key, size_t keylen,
-                const uint8_t *secret, size_t secretlen) {
+void shake_kkdf(uint8_t *destination, size_t destinationlen, const uint8_t *key,
+                size_t keylen, const uint8_t *secret, size_t secretlen) {
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, key, keylen);
   hash_update(hd, secret, secretlen);
 
-  hash_final(hd, dst, dstlen);
+  hash_final(hd, destination, destinationlen);
   hash_destroy(hd);
 }
 
-void shake_256_kdf1(uint8_t *dst, size_t dstlen, uint8_t usage,
+void shake_256_kdf1(uint8_t *destination, size_t destinationlen, uint8_t usage,
                     const uint8_t *values, size_t valueslen) {
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, usage);
 
   hash_update(hd, values, valueslen);
-  hash_final(hd, dst, dstlen);
+  hash_final(hd, destination, destinationlen);
   hash_destroy(hd);
 }
 
-void shake_256_prekey_server_kdf(uint8_t *dst, size_t dstlen, uint8_t usage,
-                                 const uint8_t *values, size_t valueslen) {
+void shake_256_prekey_server_kdf(uint8_t *destination, size_t destinationlen,
+                                 uint8_t usage, const uint8_t *values,
+                                 size_t valueslen) {
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage_prekey_server(hd, usage);
 
   hash_update(hd, values, valueslen);
-  hash_final(hd, dst, dstlen);
+  hash_final(hd, destination, destinationlen);
   hash_destroy(hd);
 }
 
-void shake_256_hash(uint8_t *dst, size_t dstlen, const uint8_t *secret,
-                    size_t secretlen) {
+void shake_256_hash(uint8_t *destination, size_t destinationlen,
+                    const uint8_t *secret, size_t secretlen) {
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, secret, secretlen);
 
-  hash_final(hd, dst, dstlen);
+  hash_final(hd, destination, destinationlen);
   hash_destroy(hd);
 }

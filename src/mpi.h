@@ -34,18 +34,18 @@ typedef struct otrng_mpi_s {
 
 INTERNAL void otrng_mpi_set(otrng_mpi_s *mpi, const uint8_t *src, size_t len);
 
-INTERNAL void otrng_mpi_copy(otrng_mpi_s *dst, const otrng_mpi_s *src);
+INTERNAL void otrng_mpi_copy(otrng_mpi_s *destination, const otrng_mpi_s *src);
 
-INTERNAL otrng_result otrng_mpi_deserialize(otrng_mpi_s *dst,
+INTERNAL otrng_result otrng_mpi_deserialize(otrng_mpi_s *destination,
                                             const uint8_t *src, size_t src_len,
                                             size_t *read);
 
-INTERNAL otrng_result otrng_mpi_deserialize_no_copy(otrng_mpi_s *dst,
+INTERNAL otrng_result otrng_mpi_deserialize_no_copy(otrng_mpi_s *destination,
                                                     const uint8_t *src,
                                                     size_t src_len,
                                                     size_t *read);
 
-INTERNAL size_t otrng_mpi_memcpy(uint8_t *dst, const otrng_mpi_s *mpi);
+INTERNAL size_t otrng_mpi_memcpy(uint8_t *destination, const otrng_mpi_s *mpi);
 
 #ifdef OTRNG_MPI_PRIVATE
 #endif

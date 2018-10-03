@@ -25,49 +25,49 @@
 #include "str.h"
 
 static void test_otrng_stpcpy(void) {
-  char *dst = otrng_xstrdup("abcd");
+  char *destination = otrng_xstrdup("abcd");
   char *src = otrng_xstrdup("12");
-  char *ret = otrng_stpcpy(dst, src);
+  char *ret = otrng_stpcpy(destination, src);
 
-  otrng_assert(ret == dst + 2);
-  otrng_assert(dst[0] == '1');
-  otrng_assert(dst[1] == '2');
-  otrng_assert(dst[2] == 0);
-  otrng_assert(dst[3] == 'd');
-  otrng_assert(dst[4] == 0);
+  otrng_assert(ret == destination + 2);
+  otrng_assert(destination[0] == '1');
+  otrng_assert(destination[1] == '2');
+  otrng_assert(destination[2] == 0);
+  otrng_assert(destination[3] == 'd');
+  otrng_assert(destination[4] == 0);
 
-  free(dst);
+  free(destination);
   free(src);
 }
 
 static void test_otrng_stpncpy(void) {
-  char *dst = otrng_xstrdup("abcd");
+  char *destination = otrng_xstrdup("abcd");
   char *src = otrng_xstrdup("123");
-  char *ret = otrng_stpncpy(dst, src, 2);
+  char *ret = otrng_stpncpy(destination, src, 2);
 
-  otrng_assert(ret == dst + 2);
-  otrng_assert(dst[0] == '1');
-  otrng_assert(dst[1] == '2');
-  otrng_assert(dst[2] == 'c');
-  otrng_assert(dst[3] == 'd');
-  otrng_assert(dst[4] == 0);
+  otrng_assert(ret == destination + 2);
+  otrng_assert(destination[0] == '1');
+  otrng_assert(destination[1] == '2');
+  otrng_assert(destination[2] == 'c');
+  otrng_assert(destination[3] == 'd');
+  otrng_assert(destination[4] == 0);
 
-  free(dst);
+  free(destination);
   free(src);
 
-  dst = otrng_xstrdup("abcde");
+  destination = otrng_xstrdup("abcde");
   src = otrng_xstrdup("12");
-  ret = otrng_stpncpy(dst, src, 4);
+  ret = otrng_stpncpy(destination, src, 4);
 
-  otrng_assert(ret == dst + 2);
-  otrng_assert(dst[0] == '1');
-  otrng_assert(dst[1] == '2');
-  otrng_assert(dst[2] == 0);
-  otrng_assert(dst[3] == 0);
-  otrng_assert(dst[4] == 'e');
-  otrng_assert(dst[5] == 0);
+  otrng_assert(ret == destination + 2);
+  otrng_assert(destination[0] == '1');
+  otrng_assert(destination[1] == '2');
+  otrng_assert(destination[2] == 0);
+  otrng_assert(destination[3] == 0);
+  otrng_assert(destination[4] == 'e');
+  otrng_assert(destination[5] == 0);
 
-  free(dst);
+  free(destination);
   free(src);
 }
 

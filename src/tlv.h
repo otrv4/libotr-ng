@@ -144,6 +144,6 @@ INTERNAL tlv_s *otrng_tlv_padding_new(size_t len);
 
 INTERNAL void otrng_tlv_free(tlv_s *tlv);
 
-INTERNAL size_t otrng_tlv_serialize(uint8_t *dst, const tlv_s *tlv);
+INTERNAL size_t otrng_tlv_serialize(uint8_t *destination, const tlv_s *tlv);
 
 #endif

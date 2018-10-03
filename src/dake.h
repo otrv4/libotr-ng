@@ -77,11 +77,11 @@ INTERNAL otrng_bool otrng_valid_received_values(
     const dh_mpi their_dh, const client_profile_s *profile);
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
-    dake_non_interactive_auth_message_s *dst, const uint8_t *buffer,
+    dake_non_interactive_auth_message_s *destination, const uint8_t *buffer,
     size_t buflen);
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_serialize(
-    uint8_t **dst, size_t *nbytes,
+    uint8_t **destination, size_t *nbytes,
     const dake_non_interactive_auth_message_s *non_interactive_auth);
 
 INTERNAL dake_non_interactive_auth_message_s *
@@ -101,10 +101,10 @@ INTERNAL void
 otrng_dake_identity_message_destroy(dake_identity_message_s *identity_message);
 
 INTERNAL otrng_result otrng_dake_identity_message_deserialize(
-    dake_identity_message_s *dst, const uint8_t *src, size_t src_len);
+    dake_identity_message_s *destination, const uint8_t *src, size_t src_len);
 
 INTERNAL otrng_result otrng_dake_identity_message_serialize(
-    uint8_t **dst, size_t *nbytes,
+    uint8_t **destination, size_t *nbytes,
     const dake_identity_message_s *identity_message);
 
 INTERNAL dake_auth_r_s *otrng_dake_auth_r_new(void);
@@ -112,9 +112,10 @@ INTERNAL void otrng_dake_auth_r_init(dake_auth_r_s *auth_r);
 
 INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r);
 
-INTERNAL otrng_result otrng_dake_auth_r_serialize(uint8_t **dst, size_t *nbytes,
+INTERNAL otrng_result otrng_dake_auth_r_serialize(uint8_t **destination,
+                                                  size_t *nbytes,
                                                   const dake_auth_r_s *auth_r);
-INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
+INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *destination,
                                                     const uint8_t *buffer,
                                                     size_t buflen);
 
@@ -122,9 +123,10 @@ INTERNAL dake_auth_i_s *otrng_dake_auth_i_new(void);
 INTERNAL void otrng_dake_auth_i_init(dake_auth_i_s *auth_i);
 INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_s *auth_i);
 
-INTERNAL otrng_result otrng_dake_auth_i_serialize(uint8_t **dst, size_t *nbytes,
+INTERNAL otrng_result otrng_dake_auth_i_serialize(uint8_t **destination,
+                                                  size_t *nbytes,
                                                   const dake_auth_i_s *auth_i);
-INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
+INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *destination,
                                                     const uint8_t *buffer,
                                                     size_t buflen);
 
@@ -141,14 +143,15 @@ INTERNAL void
 otrng_dake_prekey_message_destroy(dake_prekey_message_s *prekey_message);
 
 INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
-    dake_prekey_message_s *dst, const uint8_t *src, size_t src_len,
+    dake_prekey_message_s *destination, const uint8_t *src, size_t src_len,
     size_t *nread);
 
 INTERNAL otrng_result otrng_dake_prekey_message_serialize_into(
-    uint8_t **dst, size_t *nbytes, const dake_prekey_message_s *prekey_message);
+    uint8_t **destination, size_t *nbytes,
+    const dake_prekey_message_s *prekey_message);
 
 INTERNAL otrng_result otrng_dake_prekey_message_serialize(
-    uint8_t *dst, size_t dstlen, size_t *written,
+    uint8_t *destination, size_t destinationlen, size_t *written,
     const dake_prekey_message_s *src);
 
 typedef struct {
@@ -185,8 +188,9 @@ INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
     size_t phi_len);
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
-    uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_s *auth,
-    const uint8_t *t, size_t t_len, uint8_t tmp_key[HASH_BYTES]);
+    uint8_t destination[HASH_BYTES],
+    const dake_non_interactive_auth_message_s *auth, const uint8_t *t,
+    size_t t_len, uint8_t tmp_key[HASH_BYTES]);
 
 #ifdef OTRNG_DAKE_PRIVATE
 

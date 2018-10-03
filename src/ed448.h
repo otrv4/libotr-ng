@@ -67,7 +67,7 @@ typedef struct ecdh_keypair_s {
  * @param [a]   A scalar.
  * @param [out] Will become a copy of a.
  */
-INTERNAL void otrng_ec_scalar_copy(ec_scalar dst, const ec_scalar a);
+INTERNAL void otrng_ec_scalar_copy(ec_scalar destination, const ec_scalar a);
 
 /**
  * @brief Compare two scalars.
@@ -104,10 +104,10 @@ INTERNAL void otrng_ec_scalar_destroy(ec_scalar s);
  * @brief Copy a point.  The input and output may alias,
  *    in which case this function does nothing.
  *
- * @param [dst] A copy of the point.
+ * @param [destination] A copy of the point.
  * @param [p] Any point.
  */
-INTERNAL void otrng_ec_point_copy(ec_point dst, const ec_point p);
+INTERNAL void otrng_ec_point_copy(ec_point destination, const ec_point p);
 
 /**
  * @brief Check whether two points are equal.  If yes, return

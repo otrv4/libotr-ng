@@ -32,11 +32,11 @@ typedef struct prekey_profile_s {
   eddsa_signature signature;
 } otrng_prekey_profile_s;
 
-INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst);
+INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *destination);
 
-INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *dst);
+INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *destination);
 
-INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
+INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *destination,
                                         const otrng_prekey_profile_s *src);
 
 INTERNAL otrng_prekey_profile_s *
@@ -56,8 +56,8 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
 INTERNAL otrng_result prekey_profile_sign(otrng_prekey_profile_s *profile,
                                           const otrng_keypair_s *longterm_pair);
 
-INTERNAL otrng_result otrng_prekey_profile_serialize(uint8_t **dst,
-                                                     size_t *dstlen,
+INTERNAL otrng_result otrng_prekey_profile_serialize(uint8_t **destination,
+                                                     size_t *destinationlen,
                                                      otrng_prekey_profile_s *p);
 
 INTERNAL otrng_result otrng_prekey_profile_deserialize(
@@ -72,9 +72,10 @@ API void otrng_prekey_profile_debug_print(FILE *, int,
 #ifdef OTRNG_PREKEY_PROFILE_PRIVATE
 
 tstatic otrng_result otrng_prekey_profile_body_serialize_into(
-    uint8_t **dst, size_t *dstlen, otrng_prekey_profile_s *p);
+    uint8_t **destination, size_t *destinationlen, otrng_prekey_profile_s *p);
 
-tstatic size_t otrng_prekey_profile_body_serialize(uint8_t *dst, size_t dstlen,
+tstatic size_t otrng_prekey_profile_body_serialize(uint8_t *destination,
+                                                   size_t destinationlen,
                                                    otrng_prekey_profile_s *p);
 
 #endif

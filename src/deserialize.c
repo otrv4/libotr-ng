@@ -98,7 +98,8 @@ INTERNAL otrng_result otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_deserialize_data(uint8_t **dst, size_t *dstlen,
+INTERNAL otrng_result otrng_deserialize_data(uint8_t **destination,
+                                             size_t *destinationlen,
                                              const uint8_t *buffer,
                                              size_t buflen, size_t *read) {
   size_t r = 0;
@@ -131,30 +132,31 @@ INTERNAL otrng_result otrng_deserialize_data(uint8_t **dst, size_t *dstlen,
 
   memcpy(t, buffer + r, s);
 
-  *dst = t;
+  *destination = t;
   if (read) {
     *read += s;
   }
 
-  if (dstlen) {
-    *dstlen = s;
+  if (destinationlen) {
+    *destinationlen = s;
   }
 
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *dst, size_t dstlen,
+INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *destination,
+                                                    size_t destinationlen,
                                                     const uint8_t *buffer,
                                                     size_t buflen) {
-  if (buflen < dstlen) {
+  if (buflen < destinationlen) {
     return OTRNG_ERROR;
   }
 
-  memcpy(dst, buffer, dstlen);
+  memcpy(destination, buffer, destinationlen);
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi *dst,
+INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi *destination,
                                                    const uint8_t *buffer,
                                                    size_t buflen,
                                                    size_t *read) {
@@ -166,7 +168,7 @@ INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi *dst,
     return OTRNG_ERROR;
   }
 
-  ret = otrng_dh_mpi_deserialize(dst, mpi.data, mpi.len, &w);
+  ret = otrng_dh_mpi_deserialize(destination, mpi.data, mpi.len, &w);
 
   if (read) {
     *read = w + 4;

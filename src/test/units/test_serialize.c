@@ -73,10 +73,10 @@ static void test_ser_deser_uint() {
 
 static void test_serialize_otrng_deserialize_data() {
   uint8_t src[5] = {1, 2, 3, 4, 5};
-  uint8_t *dst = otrng_xmalloc_z(9);
-  otrng_assert(dst);
-  g_assert_cmpint(9, ==, otrng_serialize_data(dst, src, 5));
-  free(dst);
+  uint8_t *destination = otrng_xmalloc_z(9);
+  otrng_assert(destination);
+  g_assert_cmpint(9, ==, otrng_serialize_data(destination, src, 5));
+  free(destination);
 }
 
 static void test_ser_des_otrng_public_key() {
@@ -174,10 +174,10 @@ static void test_otrng_serialize_dh_public_key() {
       gcry_mpi_scan(&TEST_DH, GCRYMPI_FMT_USG, dh_data, 383, NULL);
   otrng_assert(!err);
 
-  uint8_t dst[DH_MPI_MAX_BYTES] = {0};
+  uint8_t destination[DH_MPI_MAX_BYTES] = {0};
   size_t written = 0;
-  otrng_assert_is_success(
-      otrng_serialize_dh_public_key(dst, DH_MPI_MAX_BYTES, &written, TEST_DH));
+  otrng_assert_is_success(otrng_serialize_dh_public_key(
+      destination, DH_MPI_MAX_BYTES, &written, TEST_DH));
   otrng_dh_mpi_release(TEST_DH);
   TEST_DH = NULL;
 
@@ -197,10 +197,10 @@ static void test_serializes_fingerprint() {
   otrng_keypair_s keypair;
   otrng_keypair_generate(&keypair, sym);
 
-  otrng_fingerprint dst = {0};
-  otrng_assert(otrng_serialize_fingerprint(dst, keypair.pub));
+  otrng_fingerprint destination = {0};
+  otrng_assert(otrng_serialize_fingerprint(destination, keypair.pub));
 
-  otrng_assert_cmpmem(expected_fp, dst, sizeof(otrng_fingerprint));
+  otrng_assert_cmpmem(expected_fp, destination, sizeof(otrng_fingerprint));
 }
 
 // TODO: ADD test for otrng_serialize_ring_sig

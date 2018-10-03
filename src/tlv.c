@@ -199,10 +199,10 @@ INTERNAL tlv_list_s *otrng_tlv_list_one(tlv_s *tlv) {
   return tlvs;
 }
 
-INTERNAL size_t otrng_tlv_serialize(uint8_t *dst, const tlv_s *tlv) {
+INTERNAL size_t otrng_tlv_serialize(uint8_t *destination, const tlv_s *tlv) {
   size_t w = 0;
-  w += otrng_serialize_uint16(dst + w, tlv->type);
-  w += otrng_serialize_uint16(dst + w, tlv->len);
-  w += otrng_serialize_bytes_array(dst + w, tlv->data, tlv->len);
+  w += otrng_serialize_uint16(destination + w, tlv->type);
+  w += otrng_serialize_uint16(destination + w, tlv->len);
+  w += otrng_serialize_bytes_array(destination + w, tlv->data, tlv->len);
   return w;
 }

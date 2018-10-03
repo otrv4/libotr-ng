@@ -166,10 +166,10 @@ otrng_receiving_ratchet_new(key_manager_s *manager);
 /**
  * @brief Copy a temporary receiving ratchet into the key manager.
  *
- * @param [dst]   The key manager.
+ * @param [destination]   The key manager.
  * @param [src]   The receiving ratchet.
  */
-INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
+INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *destination,
                                            receiving_ratchet_s *src);
 
 /**

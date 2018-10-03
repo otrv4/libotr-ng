@@ -80,7 +80,7 @@ typedef struct client_profile_s {
   otrng_bool is_publishing;
 } client_profile_s;
 
-INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
+INTERNAL void otrng_client_profile_copy(client_profile_s *destination,
                                         const client_profile_s *src);
 
 INTERNAL void otrng_client_profile_destroy(client_profile_s *profile);
@@ -93,7 +93,7 @@ INTERNAL otrng_result otrng_client_profile_deserialize(client_profile_s *target,
                                                        size_t *nread);
 
 INTERNAL otrng_result otrng_client_profile_serialize(
-    uint8_t **dst, size_t *nbytes, const client_profile_s *profile);
+    uint8_t **destination, size_t *nbytes, const client_profile_s *profile);
 
 INTERNAL client_profile_s *otrng_client_profile_build(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
@@ -128,7 +128,7 @@ tstatic otrng_result client_profile_sign(client_profile_s *profile,
                                          const otrng_keypair_s *keypair);
 
 tstatic otrng_result client_profile_body_serialize_into(
-    uint8_t **dst, size_t *nbytes, const client_profile_s *profile);
+    uint8_t **destination, size_t *nbytes, const client_profile_s *profile);
 
 tstatic otrng_bool
 client_profile_verify_signature(const client_profile_s *profile);

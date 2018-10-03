@@ -152,30 +152,30 @@ tstatic void otrng_key_manager_set_their_keys(ec_point their_ecdh,
   manager->their_dh = otrng_dh_mpi_copy(their_dh);
 }
 
-INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
+INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *destination,
                                            receiving_ratchet_s *src) {
-  if (!dst || !src) {
+  if (!destination || !src) {
     return;
   }
-  otrng_ec_scalar_copy(dst->our_ecdh->priv, src->our_ecdh_priv);
+  otrng_ec_scalar_copy(destination->our_ecdh->priv, src->our_ecdh_priv);
 
-  otrng_key_manager_set_their_keys(src->their_ecdh, src->their_dh, dst);
+  otrng_key_manager_set_their_keys(src->their_ecdh, src->their_dh, destination);
 
-  memcpy(dst->brace_key, src->brace_key, BRACE_KEY_BYTES);
-  memcpy(dst->shared_secret, src->shared_secret, SHARED_SECRET_BYTES);
+  memcpy(destination->brace_key, src->brace_key, BRACE_KEY_BYTES);
+  memcpy(destination->shared_secret, src->shared_secret, SHARED_SECRET_BYTES);
 
-  dst->i = src->i;
-  dst->j = src->j;
-  dst->k = src->k;
-  dst->pn = src->pn;
+  destination->i = src->i;
+  destination->j = src->j;
+  destination->k = src->k;
+  destination->pn = src->pn;
 
-  memcpy(dst->current->root_key, src->root_key, ROOT_KEY_BYTES);
-  memcpy(dst->current->chain_r, src->chain_r, CHAIN_KEY_BYTES);
+  memcpy(destination->current->root_key, src->root_key, ROOT_KEY_BYTES);
+  memcpy(destination->current->chain_r, src->chain_r, CHAIN_KEY_BYTES);
 
-  memcpy(dst->extra_symmetric_key, src->extra_symmetric_key,
+  memcpy(destination->extra_symmetric_key, src->extra_symmetric_key,
          EXTRA_SYMMETRIC_KEY_BYTES);
 
-  dst->skipped_keys = src->skipped_keys;
+  destination->skipped_keys = src->skipped_keys;
 }
 
 INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {

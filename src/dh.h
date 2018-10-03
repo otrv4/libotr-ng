@@ -70,10 +70,11 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret buffer,
                                              const dh_private_key our_priv,
                                              const dh_public_key their_pub);
 
-INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
+INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *destination,
+                                             size_t destination_len,
                                              size_t *written, const dh_mpi src);
 
-INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *dst,
+INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *destination,
                                                const uint8_t *buffer,
                                                size_t buflen, size_t *nread);
 

@@ -180,8 +180,9 @@ tstatic data_message_s *generate_data_message(const otrng_s *otr,
 }
 
 tstatic otrng_result serialize_and_encode_data_message(
-    string_p *dst, const message_mac_key mac_key, uint8_t *to_reveal_mac_keys,
-    size_t to_reveal_mac_keys_len, const data_message_s *data_message) {
+    string_p *destination, const message_mac_key mac_key,
+    uint8_t *to_reveal_mac_keys, size_t to_reveal_mac_keys_len,
+    const data_message_s *data_message) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
   size_t serlen;
@@ -209,7 +210,7 @@ tstatic otrng_result serialize_and_encode_data_message(
                                 to_reveal_mac_keys, to_reveal_mac_keys_len);
   }
 
-  *dst = otrl_base64_otr_encode(ser, serlen);
+  *destination = otrl_base64_otr_encode(ser, serlen);
 
   free(ser);
   return OTRNG_SUCCESS;
@@ -295,25 +296,26 @@ tstatic otrng_result send_data_message(string_p *to_send,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result serialize_tlvs(uint8_t **dst, size_t *dstlen,
+tstatic otrng_result serialize_tlvs(uint8_t **destination,
+                                    size_t *destinationlen,
                                     const tlv_list_s *tlvs) {
   const tlv_list_s *current = tlvs;
   uint8_t *cursor = NULL;
 
-  *dst = NULL;
-  *dstlen = 0;
+  *destination = NULL;
+  *destinationlen = 0;
 
   if (!tlvs) {
     return OTRNG_SUCCESS;
   }
 
-  for (*dstlen = 0; current; current = current->next) {
-    *dstlen += current->data->len + 4;
+  for (*destinationlen = 0; current; current = current->next) {
+    *destinationlen += current->data->len + 4;
   }
 
-  *dst = otrng_xmalloc_z(*dstlen);
+  *destination = otrng_xmalloc_z(*destinationlen);
 
-  cursor = *dst;
+  cursor = *destination;
   for (current = tlvs; current; current = current->next) {
     cursor += otrng_tlv_serialize(cursor, current->data);
   }
@@ -321,7 +323,7 @@ tstatic otrng_result serialize_tlvs(uint8_t **dst, size_t *dstlen,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
+tstatic otrng_result append_tlvs(uint8_t **destination, size_t *destination_len,
                                  const string_p message, const tlv_list_s *tlvs,
                                  const otrng_s *otr) {
   uint8_t *ser = NULL;
@@ -342,16 +344,16 @@ tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
     return OTRNG_ERROR;
   }
 
-  *dst_len = message_len + padding_len;
-  *dst = otrng_xmalloc_z(*dst_len);
+  *destination_len = message_len + padding_len;
+  *destination = otrng_xmalloc_z(*destination_len);
 
-  res = otrng_stpcpy((char *)*dst, message);
+  res = otrng_stpcpy((char *)*destination, message);
   if (ser) {
     memcpy(res + 1, ser, len);
   }
 
   if (padding) {
-    memcpy(*dst + message_len, padding, padding_len);
+    memcpy(*destination + message_len, padding, padding_len);
   }
 
   free(ser);

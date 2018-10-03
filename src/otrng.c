@@ -126,17 +126,17 @@ tstatic int allow_version(const otrng_s *otr, uint8_t version) {
   return (otr->supported_versions & version);
 }
 
-/* dst must be at least 3 bytes long. */
-tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
+/* destination must be at least 3 bytes long. */
+tstatic void allowed_versions(string_p destination, const otrng_s *otr) {
   if (allow_version(otr, OTRNG_ALLOW_V4)) {
-    *dst++ = '4';
+    *destination++ = '4';
   }
 
   if (allow_version(otr, OTRNG_ALLOW_V3)) {
-    *dst++ = '3';
+    *destination++ = '3';
   }
 
-  *dst = 0;
+  *destination = 0;
 }
 
 tstatic const otrng_shared_prekey_pair_s *
@@ -204,7 +204,7 @@ INTERNAL void otrng_free(/*@only@ */ otrng_s *otr) {
   free(otr);
 }
 
-INTERNAL otrng_result otrng_build_query_message(string_p *dst,
+INTERNAL otrng_result otrng_build_query_message(string_p *destination,
                                                 const string_p message,
                                                 otrng_s *otr) {
   /* size = qm tag + versions + message length + versions
@@ -214,7 +214,7 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
   char allowed[3];
   char *cursor;
   int rem;
-  *dst = NULL;
+  *destination = NULL;
 
   memset(allowed, 0, 3);
 
@@ -244,7 +244,7 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
 
   otr->sending_init_message = otrng_xstrdup(buff);
 
-  *dst = buff;
+  *destination = buff;
 
   return OTRNG_SUCCESS;
 }
@@ -404,7 +404,7 @@ tstatic void receive_plaintext(otrng_response_s *response,
 }
 
 tstatic otrng_result serialize_and_encode_identity_message(
-    string_p *dst, const dake_identity_message_s *m) {
+    string_p *destination, const dake_identity_message_s *m) {
   uint8_t *buff = NULL;
   size_t len = 0;
 
@@ -412,7 +412,7 @@ tstatic otrng_result serialize_and_encode_identity_message(
     return OTRNG_ERROR;
   }
 
-  *dst = otrl_base64_otr_encode(buff, len);
+  *destination = otrl_base64_otr_encode(buff, len);
 
   free(buff);
   return OTRNG_SUCCESS;
@@ -499,7 +499,7 @@ tstatic otrng_result receive_query_message(otrng_response_s *response,
   }
 }
 
-tstatic otrng_result serialize_and_encode_auth_r(string_p *dst,
+tstatic otrng_result serialize_and_encode_auth_r(string_p *destination,
                                                  const dake_auth_r_s *m) {
   uint8_t *buff = NULL;
   size_t len = 0;
@@ -508,7 +508,7 @@ tstatic otrng_result serialize_and_encode_auth_r(string_p *dst,
     return OTRNG_ERROR;
   }
 
-  *dst = otrl_base64_otr_encode(buff, len);
+  *destination = otrl_base64_otr_encode(buff, len);
 
   free(buff);
   return OTRNG_SUCCESS;
@@ -531,11 +531,10 @@ static const char *get_shared_session_state(otrng_s *otr) {
   return otr->shared_session_state;
 }
 
-static otrng_result generate_phi_serialized(uint8_t **dst, size_t *dst_len,
-                                            const char *phi_prime,
-                                            const char *init_message,
-                                            uint16_t instance_tag1,
-                                            uint16_t instance_tag2) {
+static otrng_result
+generate_phi_serialized(uint8_t **destination, size_t *destination_len,
+                        const char *phi_prime, const char *init_message,
+                        uint16_t instance_tag1, uint16_t instance_tag2) {
   size_t init_message_len, phi_prime_len, size;
 
   if (!phi_prime) {
@@ -549,29 +548,34 @@ static otrng_result generate_phi_serialized(uint8_t **dst, size_t *dst_len,
   init_message_len = init_message ? strlen(init_message) + 1 : 0;
   phi_prime_len = strlen(phi_prime) + 1;
   size = 4 + 4 + (4 + init_message_len) + (4 + phi_prime_len);
-  *dst = otrng_xmalloc_z(size);
+  *destination = otrng_xmalloc_z(size);
 
-  *dst_len = otrng_serialize_phi(*dst, phi_prime, init_message, instance_tag1,
-                                 instance_tag2);
+  *destination_len = otrng_serialize_phi(*destination, phi_prime, init_message,
+                                         instance_tag1, instance_tag2);
 
   return OTRNG_SUCCESS;
 }
 
-static otrng_result generate_phi_receiving(uint8_t **dst, size_t *dst_len,
+static otrng_result generate_phi_receiving(uint8_t **destination,
+                                           size_t *destination_len,
                                            otrng_s *otr) {
   return generate_phi_serialized(
-      dst, dst_len, get_shared_session_state(otr), otr->receiving_init_message,
-      our_instance_tag(otr), otr->their_instance_tag);
+      destination, destination_len, get_shared_session_state(otr),
+      otr->receiving_init_message, our_instance_tag(otr),
+      otr->their_instance_tag);
 }
 
-static otrng_result generate_phi_sending(uint8_t **dst, size_t *dst_len,
+static otrng_result generate_phi_sending(uint8_t **destination,
+                                         size_t *destination_len,
                                          otrng_s *otr) {
   return generate_phi_serialized(
-      dst, dst_len, get_shared_session_state(otr), otr->sending_init_message,
-      our_instance_tag(otr), otr->their_instance_tag);
+      destination, destination_len, get_shared_session_state(otr),
+      otr->sending_init_message, our_instance_tag(otr),
+      otr->their_instance_tag);
 }
 
-static otrng_result generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
+static otrng_result generate_sending_rsig_tag(uint8_t **destination,
+                                              size_t *destination_len,
                                               const char auth_tag_type,
                                               otrng_s *otr) {
   const otrng_dake_participant_data_s initiator = {
@@ -599,15 +603,15 @@ static otrng_result generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
     return OTRNG_ERROR;
   }
 
-  ret = build_interactive_rsign_tag(dst, dst_len, auth_tag_type, &initiator,
-                                    &responder, phi, phi_len);
+  ret = build_interactive_rsign_tag(destination, destination_len, auth_tag_type,
+                                    &initiator, &responder, phi, phi_len);
 
   free(phi);
   return ret;
 }
 
 static otrng_result generate_receiving_rsig_tag(
-    uint8_t **dst, size_t *dst_len, const char auth_tag_type,
+    uint8_t **destination, size_t *destination_len, const char auth_tag_type,
     const otrng_dake_participant_data_s *responder, otrng_s *otr) {
   const otrng_dake_participant_data_s initiator = {
       .client_profile = (client_profile_s *)get_my_client_profile(otr),
@@ -625,14 +629,15 @@ static otrng_result generate_receiving_rsig_tag(
     return OTRNG_ERROR;
   }
 
-  ret = build_interactive_rsign_tag(dst, dst_len, auth_tag_type, &initiator,
-                                    responder, phi, phi_len);
+  ret = build_interactive_rsign_tag(destination, destination_len, auth_tag_type,
+                                    &initiator, responder, phi, phi_len);
 
   free(phi);
   return ret;
 }
 
-tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
+tstatic otrng_result reply_with_auth_r_message(string_p *destination,
+                                               otrng_s *otr) {
   dake_auth_r_s message;
   unsigned char *t = NULL;
   size_t t_len = 0;
@@ -666,13 +671,13 @@ tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
 
   free(t);
 
-  result = serialize_and_encode_auth_r(dst, &message);
+  result = serialize_and_encode_auth_r(destination, &message);
   otrng_dake_auth_r_destroy(&message);
 
   return result;
 }
 
-tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
+tstatic otrng_result generate_tmp_key_r(uint8_t *destination, otrng_s *otr) {
   k_ecdh tmp_ecdh_k1;
   k_ecdh tmp_ecdh_k2;
   k_ecdh ke;
@@ -718,7 +723,8 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otrng_key_manager_calculate_tmp_key(dst, ke, bk, tmp_ecdh_k1, tmp_ecdh_k2);
+  otrng_key_manager_calculate_tmp_key(destination, ke, bk, tmp_ecdh_k1,
+                                      tmp_ecdh_k2);
 
   otrng_secure_wipe(bk, BRACE_KEY_BYTES);
 
@@ -726,7 +732,7 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   debug_print("\n");
   debug_print("GENERATING TEMP KEY R\n");
   debug_print("tmp_key_r = ");
-  otrng_memdump(dst, HASH_BYTES);
+  otrng_memdump(destination, HASH_BYTES);
 #endif
 
   otrng_secure_wipe(tmp_ecdh_k1, ED448_POINT_BYTES);
@@ -736,7 +742,7 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
 }
 
 tstatic otrng_result serialize_and_encode_non_interactive_auth(
-    string_p *dst, const dake_non_interactive_auth_message_s *m) {
+    string_p *destination, const dake_non_interactive_auth_message_s *m) {
   uint8_t *buff = NULL;
   size_t len = 0;
 
@@ -744,7 +750,7 @@ tstatic otrng_result serialize_and_encode_non_interactive_auth(
     return OTRNG_ERROR;
   }
 
-  *dst = otrl_base64_otr_encode(buff, len);
+  *destination = otrl_base64_otr_encode(buff, len);
 
   free(buff);
   return OTRNG_SUCCESS;
@@ -851,8 +857,8 @@ tstatic otrng_result double_ratcheting_init(otrng_s *otr,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result reply_with_non_interactive_auth_message(string_p *dst,
-                                                             otrng_s *otr) {
+tstatic otrng_result
+reply_with_non_interactive_auth_message(string_p *destination, otrng_s *otr) {
   dake_non_interactive_auth_message_s auth;
   otrng_result ret;
 
@@ -862,7 +868,7 @@ tstatic otrng_result reply_with_non_interactive_auth_message(string_p *dst,
   ret = build_non_interactive_auth_message(&auth, otr);
 
   if (ret == OTRNG_SUCCESS) {
-    ret = serialize_and_encode_non_interactive_auth(dst, &auth);
+    ret = serialize_and_encode_non_interactive_auth(destination, &auth);
   }
 
   if (!otrng_key_manager_generate_shared_secret(otr->keys, otrng_false)) {
@@ -998,7 +1004,7 @@ tstatic otrng_result prekey_message_received(const dake_prekey_message_s *m,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result receive_prekey_ensemble(string_p *dst,
+tstatic otrng_result receive_prekey_ensemble(string_p *destination,
                                              const prekey_ensemble_s *ensemble,
                                              otrng_s *otr) {
   otrng_warning warn;
@@ -1030,7 +1036,7 @@ tstatic otrng_result receive_prekey_ensemble(string_p *dst,
   /* Set their ephemeral keys, instance tag, and their_prekeys_id */
   if (!prekey_message_received(ensemble->message, &warn, otr)) {
     if (warn == OTRNG_WARN_MALFORMED) {
-      otrng_error_message(dst, OTRNG_ERR_MESSAGE_MALFORMED);
+      otrng_error_message(destination, OTRNG_ERR_MESSAGE_MALFORMED);
     }
     return OTRNG_ERROR;
   }
@@ -1039,11 +1045,11 @@ tstatic otrng_result receive_prekey_ensemble(string_p *dst,
 }
 
 // TODO: Will this exist?
-API otrng_result otrng_send_offline_message(char **dst,
+API otrng_result otrng_send_offline_message(char **destination,
                                             const prekey_ensemble_s *ensemble,
                                             const char *plaintext,
                                             otrng_s *otr) {
-  (void)dst;
+  (void)destination;
   (void)ensemble;
   (void)plaintext;
   (void)otr;
@@ -1053,11 +1059,11 @@ API otrng_result otrng_send_offline_message(char **dst,
 }
 
 API otrng_result otrng_send_non_interactive_auth(
-    char **dst, const prekey_ensemble_s *ensemble, otrng_s *otr) {
+    char **destination, const prekey_ensemble_s *ensemble, otrng_s *otr) {
   otrng_fingerprint fp;
-  *dst = NULL;
+  *destination = NULL;
 
-  if (!receive_prekey_ensemble(dst, ensemble, otr)) {
+  if (!receive_prekey_ensemble(destination, ensemble, otr)) {
     return OTRNG_ERROR; // TODO: should unset the stored things from ensemble
   }
 
@@ -1068,10 +1074,10 @@ API otrng_result otrng_send_non_interactive_auth(
     fingerprint_seen_cb_v4(fp, otr);
   }
 
-  return reply_with_non_interactive_auth_message(dst, otr);
+  return reply_with_non_interactive_auth_message(destination, otr);
 }
 
-tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
+tstatic otrng_result generate_tmp_key_i(uint8_t *destination, otrng_s *otr) {
   k_ecdh ke;
   k_ecdh tmp_ecdh_k1;
   k_ecdh tmp_ecdh_k2;
@@ -1115,7 +1121,8 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otrng_key_manager_calculate_tmp_key(dst, ke, bk, tmp_ecdh_k1, tmp_ecdh_k2);
+  otrng_key_manager_calculate_tmp_key(destination, ke, bk, tmp_ecdh_k1,
+                                      tmp_ecdh_k2);
 
   otrng_secure_wipe(bk, BRACE_KEY_BYTES);
 
@@ -1123,7 +1130,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
   debug_print("\n");
   debug_print("GENERATING TEMP KEY I\n");
   debug_print("tmp_key_i = ");
-  otrng_memdump(dst, HASH_BYTES);
+  otrng_memdump(destination, HASH_BYTES);
 #endif
 
   otrng_secure_wipe(tmp_ecdh_k1, ED448_POINT_BYTES);
@@ -1366,7 +1373,8 @@ tstatic otrng_result receive_non_interactive_auth_message(
 }
 
 tstatic otrng_result receive_identity_message_on_state_start(
-    string_p *dst, dake_identity_message_s *identity_message, otrng_s *otr) {
+    string_p *destination, dake_identity_message_s *identity_message,
+    otrng_s *otr) {
   otr->their_client_profile = otrng_xmalloc_z(sizeof(client_profile_s));
 
   otrng_key_manager_set_their_ecdh(identity_message->Y, otr->keys);
@@ -1380,7 +1388,7 @@ tstatic otrng_result receive_identity_message_on_state_start(
     return OTRNG_ERROR;
   }
 
-  if (!reply_with_auth_r_message(dst, otr)) {
+  if (!reply_with_auth_r_message(destination, otr)) {
     return OTRNG_ERROR;
   }
 
@@ -1400,7 +1408,7 @@ tstatic void forget_our_keys(otrng_s *otr) {
 }
 
 tstatic otrng_result receive_identity_message_on_waiting_auth_r(
-    string_p *dst, dake_identity_message_s *message, otrng_s *otr) {
+    string_p *destination, dake_identity_message_s *message, otrng_s *otr) {
   int cmp = gcry_mpi_cmp(our_dh(otr), message->B);
 
   /* If our is higher, ignore. */
@@ -1412,19 +1420,19 @@ tstatic otrng_result receive_identity_message_on_waiting_auth_r(
   // Every time we call 'otrng_key_manager_generate_ephemeral_keys'
   // keys get deleted and replaced
   // forget_our_keys(otr);
-  return receive_identity_message_on_state_start(dst, message, otr);
+  return receive_identity_message_on_state_start(destination, message, otr);
 }
 
 tstatic otrng_result receive_identity_message_on_waiting_auth_i(
-    string_p *dst, dake_identity_message_s *message, otrng_s *otr) {
+    string_p *destination, dake_identity_message_s *message, otrng_s *otr) {
   // Every time we call 'otrng_key_manager_generate_ephemeral_keys'
   // keys get deleted and replaced
   // forget_our_keys(otr);
   otrng_client_profile_free(otr->their_client_profile);
-  return receive_identity_message_on_state_start(dst, message, otr);
+  return receive_identity_message_on_state_start(destination, message, otr);
 }
 
-tstatic otrng_result receive_identity_message(string_p *dst,
+tstatic otrng_result receive_identity_message(string_p *destination,
                                               const uint8_t *buff,
                                               size_t buflen, otrng_s *otr) {
   otrng_result result = OTRNG_ERROR;
@@ -1432,14 +1440,14 @@ tstatic otrng_result receive_identity_message(string_p *dst,
   m.profile = otrng_xmalloc_z(sizeof(client_profile_s));
 
   if (!otrng_dake_identity_message_deserialize(&m, buff, buflen)) {
-    otrng_error_message(dst, OTRNG_ERR_MESSAGE_MALFORMED);
+    otrng_error_message(destination, OTRNG_ERR_MESSAGE_MALFORMED);
     free(m.profile);
     return result;
   }
 
   if (received_sender_instance_tag(m.sender_instance_tag, otr) !=
       OTRNG_SUCCESS) {
-    otrng_error_message(dst, OTRNG_ERR_MESSAGE_MALFORMED);
+    otrng_error_message(destination, OTRNG_ERR_MESSAGE_MALFORMED);
     otrng_dake_identity_message_destroy(&m);
     return result;
   }
@@ -1452,19 +1460,19 @@ tstatic otrng_result receive_identity_message(string_p *dst,
 
   switch (otr->state) {
   case OTRNG_STATE_START:
-    result = receive_identity_message_on_state_start(dst, &m, otr);
+    result = receive_identity_message_on_state_start(destination, &m, otr);
     break;
   case OTRNG_STATE_WAITING_AUTH_R:
-    result = receive_identity_message_on_waiting_auth_r(dst, &m, otr);
+    result = receive_identity_message_on_waiting_auth_r(destination, &m, otr);
     break;
   case OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE:
   case OTRNG_STATE_WAITING_AUTH_I:
-    result = receive_identity_message_on_waiting_auth_i(dst, &m, otr);
+    result = receive_identity_message_on_waiting_auth_i(destination, &m, otr);
     break;
   case OTRNG_STATE_NONE:
   case OTRNG_STATE_ENCRYPTED_MESSAGES:
   case OTRNG_STATE_FINISHED:
-    result = receive_identity_message_on_state_start(dst, &m, otr);
+    result = receive_identity_message_on_state_start(destination, &m, otr);
     break;
   }
 
@@ -1472,7 +1480,7 @@ tstatic otrng_result receive_identity_message(string_p *dst,
   return result;
 }
 
-tstatic otrng_result serialize_and_encode_auth_i(string_p *dst,
+tstatic otrng_result serialize_and_encode_auth_i(string_p *destination,
                                                  const dake_auth_i_s *m) {
   uint8_t *buff = NULL;
   size_t len = 0;
@@ -1481,14 +1489,15 @@ tstatic otrng_result serialize_and_encode_auth_i(string_p *dst,
     return OTRNG_ERROR;
   }
 
-  *dst = otrl_base64_otr_encode(buff, len);
+  *destination = otrl_base64_otr_encode(buff, len);
 
   free(buff);
   return OTRNG_SUCCESS;
 }
 
 tstatic otrng_result reply_with_auth_i_message(
-    string_p *dst, const client_profile_s *their_client_profile, otrng_s *otr) {
+    string_p *destination, const client_profile_s *their_client_profile,
+    otrng_s *otr) {
   dake_auth_i_s message;
 
   const otrng_dake_participant_data_s responder = {
@@ -1526,7 +1535,7 @@ tstatic otrng_result reply_with_auth_i_message(
 
   free(t);
 
-  result = serialize_and_encode_auth_i(dst, &message);
+  result = serialize_and_encode_auth_i(destination, &message);
   otrng_dake_auth_i_destroy(&message);
 
   return result;
@@ -1566,7 +1575,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   return err;
 }
 
-tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buff,
+tstatic otrng_result receive_auth_r(string_p *destination, const uint8_t *buff,
                                     size_t buff_len, otrng_s *otr) {
   dake_auth_r_s auth;
   otrng_fingerprint fp;
@@ -1580,7 +1589,7 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buff,
   }
 
   if (!otrng_dake_auth_r_deserialize(&auth, buff, buff_len)) {
-    otrng_error_message(dst, OTRNG_ERR_MESSAGE_MALFORMED);
+    otrng_error_message(destination, OTRNG_ERR_MESSAGE_MALFORMED);
     otrng_dake_auth_r_destroy(&auth);
     return OTRNG_ERROR;
   }
@@ -1592,13 +1601,13 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buff,
 
   if (received_sender_instance_tag(auth.sender_instance_tag, otr) !=
       OTRNG_SUCCESS) {
-    otrng_error_message(dst, OTRNG_ERR_MESSAGE_MALFORMED);
+    otrng_error_message(destination, OTRNG_ERR_MESSAGE_MALFORMED);
     otrng_dake_auth_r_destroy(&auth);
     return OTRNG_ERROR;
   }
 
   if (!valid_receiver_instance_tag(auth.receiver_instance_tag)) {
-    otrng_error_message(dst, OTRNG_ERR_MESSAGE_MALFORMED);
+    otrng_error_message(destination, OTRNG_ERR_MESSAGE_MALFORMED);
     otrng_dake_auth_r_destroy(&auth);
     return OTRNG_ERROR;
   }
@@ -1614,7 +1623,7 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buff,
   otrng_key_manager_set_their_dh(auth.A, otr->keys);
   otrng_client_profile_copy(otr->their_client_profile, auth.profile);
 
-  if (!reply_with_auth_i_message(dst, otr->their_client_profile, otr)) {
+  if (!reply_with_auth_i_message(destination, otr->their_client_profile, otr)) {
     otrng_dake_auth_r_destroy(&auth);
     return OTRNG_ERROR;
   }
@@ -1661,7 +1670,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
   return err;
 }
 
-tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buff,
+tstatic otrng_result receive_auth_i(char **destination, const uint8_t *buff,
                                     size_t buff_len, otrng_s *otr) {
   dake_auth_i_s auth;
   otrng_fingerprint fp;
@@ -1673,7 +1682,7 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buff,
   }
 
   if (!otrng_dake_auth_i_deserialize(&auth, buff, buff_len)) {
-    otrng_error_message(dst, OTRNG_ERR_MESSAGE_MALFORMED);
+    otrng_error_message(destination, OTRNG_ERR_MESSAGE_MALFORMED);
     otrng_dake_auth_i_destroy(&auth);
     return OTRNG_ERROR;
   }
@@ -1713,7 +1722,7 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buff,
   // Reply with initial data message
   // TODO: this ignores the warning received. that might
   // be valid, but should be investigated.
-  return otrng_send_message(dst, "", NULL, NULL,
+  return otrng_send_message(destination, "", NULL, NULL,
                             MESSAGE_FLAGS_IGNORE_UNREADABLE, otr);
 }
 
@@ -1763,7 +1772,7 @@ tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *src, size_t len) {
 tstatic otrng_result decrypt_data_message(otrng_response_s *response,
                                           const message_enc_key enc_key,
                                           const data_message_s *message) {
-  string_p *dst = &response->to_display;
+  string_p *destination = &response->to_display;
   uint8_t *plain;
   int err;
 
@@ -1789,7 +1798,7 @@ tstatic otrng_result decrypt_data_message(otrng_response_s *response,
 
   /* If plain != "" and message->enc_message_len != 0 */
   if (otrng_strnlen((string_p)plain, message->enc_message_len)) {
-    *dst = otrng_xstrndup((char *)plain, message->enc_message_len);
+    *destination = otrng_xstrndup((char *)plain, message->enc_message_len);
   }
 
   response->tlvs = deserialize_received_tlvs(plain, message->enc_message_len);
@@ -2054,7 +2063,7 @@ tstatic otrng_result otrng_receive_data_message(otrng_response_s *response,
                                                otr);
 }
 
-API otrng_result otrng_extract_header(otrng_header_s *dst,
+API otrng_result otrng_extract_header(otrng_header_s *destination,
                                       const uint8_t *buffer,
                                       const size_t bufflen) {
   size_t read = 0;
@@ -2063,17 +2072,19 @@ API otrng_result otrng_extract_header(otrng_header_s *dst,
     return OTRNG_ERROR;
   }
 
-  if (!dst) {
+  if (!destination) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint16(&dst->version, buffer, bufflen, &read)) {
+  if (!otrng_deserialize_uint16(&destination->version, buffer, bufflen,
+                                &read)) {
     return OTRNG_ERROR;
   }
 
   buffer += read;
 
-  if (!otrng_deserialize_uint8(&dst->type, buffer, bufflen - read, &read)) {
+  if (!otrng_deserialize_uint8(&destination->type, buffer, bufflen - read,
+                               &read)) {
     return OTRNG_ERROR;
   }
 

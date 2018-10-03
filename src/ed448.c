@@ -28,8 +28,8 @@
 #include "ed448.h"
 #include "shake.h"
 
-INTERNAL void otrng_ec_scalar_copy(ec_scalar dst, const ec_scalar a) {
-  goldilocks_448_scalar_copy(dst, a);
+INTERNAL void otrng_ec_scalar_copy(ec_scalar destination, const ec_scalar a) {
+  goldilocks_448_scalar_copy(destination, a);
 }
 
 INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar a, const ec_scalar b) {
@@ -53,8 +53,8 @@ INTERNAL void otrng_ec_scalar_destroy(ec_scalar s) {
   goldilocks_448_scalar_destroy(s);
 }
 
-INTERNAL void otrng_ec_point_copy(ec_point dst, const ec_point p) {
-  goldilocks_448_point_copy(dst, p);
+INTERNAL void otrng_ec_point_copy(ec_point destination, const ec_point p) {
+  goldilocks_448_point_copy(destination, p);
 }
 
 INTERNAL otrng_bool otrng_ec_point_eq(const ec_point p, const ec_point q) {

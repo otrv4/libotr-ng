@@ -102,8 +102,9 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code);
 #ifdef OTRNG_PROTOCOL_PRIVATE
 
 tstatic otrng_result serialize_and_encode_data_message(
-    string_p *dst, const message_mac_key mac_key, uint8_t *to_reveal_mac_keys,
-    size_t to_reveal_mac_keys_len, const data_message_s *data_message);
+    string_p *destination, const message_mac_key mac_key,
+    uint8_t *to_reveal_mac_keys, size_t to_reveal_mac_keys_len,
+    const data_message_s *data_message);
 #endif
 
 #endif

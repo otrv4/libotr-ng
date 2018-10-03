@@ -99,8 +99,8 @@ INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   free(context);
 }
 
-static otrng_result create_fragment_message(char **dst, const char *piece,
-                                            size_t piece_len,
+static otrng_result create_fragment_message(char **destination,
+                                            const char *piece, size_t piece_len,
                                             uint32_t identifier,
                                             uint32_t our_instance,
                                             uint32_t their_instance,
@@ -111,16 +111,16 @@ static otrng_result create_fragment_message(char **dst, const char *piece,
     return OTRNG_ERROR;
   }
 
-  *dst = otrng_xmalloc_z(FRAGMENT_HEADER_LEN + piece_len + 1);
+  *destination = otrng_xmalloc_z(FRAGMENT_HEADER_LEN + piece_len + 1);
 
-  res = snprintf(*dst, FRAGMENT_HEADER_LEN + piece_len + 1, FRAGMENT_FORMAT,
-                 identifier, our_instance, their_instance, current, total,
-                 (int)piece_len, piece);
+  res = snprintf(*destination, FRAGMENT_HEADER_LEN + piece_len + 1,
+                 FRAGMENT_FORMAT, identifier, our_instance, their_instance,
+                 current, total, (int)piece_len, piece);
   if (res < 0) {
     return OTRNG_ERROR;
   }
 
-  (*dst)[FRAGMENT_HEADER_LEN + piece_len] = 0;
+  (*destination)[FRAGMENT_HEADER_LEN + piece_len] = 0;
 
   return OTRNG_SUCCESS;
 }
@@ -160,11 +160,11 @@ INTERNAL otrng_result otrng_fragment_message(int max_size,
 
   for (i = 0; i < fragments->total; i++) {
     int piece_len = message_len < limit ? message_len : limit;
-    char **dst = fragments->pieces + i;
+    char **destination = fragments->pieces + i;
 
     if (otrng_failed(create_fragment_message(
-            dst, message, piece_len, *identifier, our_instance, their_instance,
-            i + 1, fragments->total))) {
+            destination, message, piece_len, *identifier, our_instance,
+            their_instance, i + 1, fragments->total))) {
       otrng_message_free(fragments);
       return OTRNG_ERROR;
     }

@@ -255,7 +255,8 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret buffer,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
+INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *destination,
+                                             size_t destination_len,
                                              size_t *written,
                                              const dh_mpi src) {
   gcry_error_t err;
@@ -267,7 +268,8 @@ INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
     return OTRNG_SUCCESS;
   }
 
-  err = gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
+  err = gcry_mpi_print(GCRYMPI_FMT_USG, destination, destination_len, written,
+                       src);
   if (err) {
     return OTRNG_ERROR;
   }
@@ -275,17 +277,17 @@ INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *dst,
+INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *destination,
                                                const uint8_t *buffer,
                                                size_t buflen, size_t *nread) {
   gcry_error_t err;
 
   if (!buflen) {
-    gcry_mpi_set_ui(*dst, 0); // TODO: can this fail?
+    gcry_mpi_set_ui(*destination, 0); // TODO: can this fail?
     return OTRNG_SUCCESS;
   }
 
-  err = gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buflen, nread);
+  err = gcry_mpi_scan(destination, GCRYMPI_FMT_USG, buffer, buflen, nread);
   if (err) {
     return OTRNG_ERROR;
   }

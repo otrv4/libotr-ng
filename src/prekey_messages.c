@@ -24,7 +24,8 @@
 #include "deserialize.h"
 
 INTERNAL otrng_result otrng_prekey_success_message_deserialize(
-    otrng_prekey_success_message_s *dst, const uint8_t *src, size_t src_len) {
+    otrng_prekey_success_message_s *destination, const uint8_t *src,
+    size_t src_len) {
   const uint8_t *cursor = src;
   int64_t len = src_len;
   size_t read = 0;
@@ -53,7 +54,7 @@ INTERNAL otrng_result otrng_prekey_success_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint32(&dst->client_instance_tag, cursor, len,
+  if (!otrng_deserialize_uint32(&destination->client_instance_tag, cursor, len,
                                 &read)) {
     return OTRNG_ERROR;
   }
@@ -61,6 +62,6 @@ INTERNAL otrng_result otrng_prekey_success_message_deserialize(
   cursor += read;
   len -= read;
 
-  return otrng_deserialize_bytes_array(dst->success_mac, HASH_BYTES, cursor,
-                                       len);
+  return otrng_deserialize_bytes_array(destination->success_mac, HASH_BYTES,
+                                       cursor, len);
 }

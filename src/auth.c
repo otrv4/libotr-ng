@@ -55,7 +55,7 @@ static void choose_T(goldilocks_448_point_p chosen,
   goldilocks_448_point_cond_sel(chosen, chosen, Ti, is_secret);
 }
 
-static void calculate_ci(goldilocks_448_scalar_p dst,
+static void calculate_ci(goldilocks_448_scalar_p destination,
                          const goldilocks_448_scalar_p c,
                          const goldilocks_448_scalar_p ci,
                          goldilocks_bool_t is_secret,
@@ -66,12 +66,12 @@ static void calculate_ci(goldilocks_448_scalar_p dst,
 
   goldilocks_448_scalar_sub(if_secret, c, cj);
   goldilocks_448_scalar_sub(if_secret, if_secret, ck);
-  goldilocks_448_scalar_cond_sel(dst, ci, if_secret, is_secret);
+  goldilocks_448_scalar_cond_sel(destination, ci, if_secret, is_secret);
 
   goldilocks_448_scalar_destroy(if_secret);
 }
 
-static void calculate_ri(goldilocks_448_scalar_p dst,
+static void calculate_ri(goldilocks_448_scalar_p destination,
                          const goldilocks_448_scalar_p secret,
                          const goldilocks_448_scalar_p ri,
                          goldilocks_bool_t is_secret,
@@ -82,17 +82,18 @@ static void calculate_ri(goldilocks_448_scalar_p dst,
   goldilocks_448_scalar_mul(if_secret, ci, secret);
   goldilocks_448_scalar_sub(if_secret, ti, if_secret);
 
-  goldilocks_448_scalar_cond_sel(dst, ri, if_secret, is_secret);
+  goldilocks_448_scalar_cond_sel(destination, ri, if_secret, is_secret);
 
   goldilocks_448_scalar_destroy(if_secret);
 }
 
 tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
-    uint8_t usage_auth, const char *domain_sep, goldilocks_448_scalar_p dst,
-    const goldilocks_448_point_p A1, const goldilocks_448_point_p A2,
-    const goldilocks_448_point_p A3, const goldilocks_448_point_p T1,
-    const goldilocks_448_point_p T2, const goldilocks_448_point_p T3,
-    const uint8_t *message, size_t message_len) {
+    uint8_t usage_auth, const char *domain_sep,
+    goldilocks_448_scalar_p destination, const goldilocks_448_point_p A1,
+    const goldilocks_448_point_p A2, const goldilocks_448_point_p A3,
+    const goldilocks_448_point_p T1, const goldilocks_448_point_p T2,
+    const goldilocks_448_point_p T3, const uint8_t *message,
+    size_t message_len) {
   goldilocks_shake256_ctx_p hd;
   uint8_t hash[HASH_BYTES];
   uint8_t point_buff[ED448_POINT_BYTES];
@@ -124,7 +125,7 @@ tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
-  goldilocks_448_scalar_decode_long(dst, hash, HASH_BYTES);
+  goldilocks_448_scalar_decode_long(destination, hash, HASH_BYTES);
   otrng_secure_wipe(hash, HASH_BYTES);
   otrng_secure_wipe(point_buff, ED448_POINT_BYTES);
 }
@@ -153,17 +154,18 @@ static void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
   // TODO: do we need to wipe the public keys used here?
 }
 
-INTERNAL otrng_result otrng_rsig_authenticate(
-    ring_sig_s *dst, const otrng_private_key secret, const otrng_public_key pub,
-    const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *message, size_t message_len) {
+INTERNAL otrng_result
+otrng_rsig_authenticate(ring_sig_s *destination, const otrng_private_key secret,
+                        const otrng_public_key pub, const otrng_public_key A1,
+                        const otrng_public_key A2, const otrng_public_key A3,
+                        const uint8_t *message, size_t message_len) {
   return otrng_rsig_authenticate_with_usage_and_domain(
-      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, dst, secret,
-      pub, A1, A2, A3, message, message_len);
+      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, destination,
+      secret, pub, A1, A2, A3, message, message_len);
 }
 
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
-    uint8_t usage, const char *domain_sep, ring_sig_s *dst,
+    uint8_t usage, const char *domain_sep, ring_sig_s *destination,
     const otrng_private_key secret, const otrng_public_key pub,
     const otrng_public_key A1, const otrng_public_key A2,
     const otrng_public_key A3, const uint8_t *message, size_t message_len) {
@@ -232,9 +234,9 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   calculate_ci(tmp_c2, c, c2, is_A2, c1, c3);
   calculate_ci(tmp_c3, c, c3, is_A3, c1, c2);
 
-  goldilocks_448_scalar_copy(dst->c1, tmp_c1);
-  goldilocks_448_scalar_copy(dst->c2, tmp_c2);
-  goldilocks_448_scalar_copy(dst->c3, tmp_c3);
+  goldilocks_448_scalar_copy(destination->c1, tmp_c1);
+  goldilocks_448_scalar_copy(destination->c2, tmp_c2);
+  goldilocks_448_scalar_copy(destination->c3, tmp_c3);
 
   goldilocks_448_scalar_destroy(c);
   goldilocks_448_scalar_destroy(c1);
@@ -248,13 +250,13 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   // t2 = secretIs2 ? t2 - c2 * secret : t2
   // t3 = secretIs3 ? t3 - c3 * secret : t3
 
-  calculate_ri(tmp_r1, secret, r1, is_A1, dst->c1, t1);
-  calculate_ri(tmp_r2, secret, r2, is_A2, dst->c2, t2);
-  calculate_ri(tmp_r3, secret, r3, is_A3, dst->c3, t3);
+  calculate_ri(tmp_r1, secret, r1, is_A1, destination->c1, t1);
+  calculate_ri(tmp_r2, secret, r2, is_A2, destination->c2, t2);
+  calculate_ri(tmp_r3, secret, r3, is_A3, destination->c3, t3);
 
-  goldilocks_448_scalar_copy(dst->r1, tmp_r1);
-  goldilocks_448_scalar_copy(dst->r2, tmp_r2);
-  goldilocks_448_scalar_copy(dst->r3, tmp_r3);
+  goldilocks_448_scalar_copy(destination->r1, tmp_r1);
+  goldilocks_448_scalar_copy(destination->r2, tmp_r2);
+  goldilocks_448_scalar_copy(destination->r3, tmp_r3);
 
   goldilocks_448_scalar_destroy(t1);
   goldilocks_448_scalar_destroy(t2);
