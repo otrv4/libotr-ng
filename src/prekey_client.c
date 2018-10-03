@@ -256,7 +256,7 @@ API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
   otrng_prekey_ensemble_query_retrieval_message_s msg[1];
 
   msg->identity = otrng_xstrdup(identity);
-  msg->versions = otrng_xstrdup(versions);
+  msg->versions = versions ? otrng_xstrdup(versions) : NULL;
   msg->instance_tag = client->instance_tag;
 
   success = otrng_prekey_ensemble_query_retrieval_message_serialize(

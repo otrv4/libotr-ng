@@ -110,7 +110,7 @@ INTERNAL void otrng_client_profile_copy(client_profile_s *dst,
   dst->sender_instance_tag = src->sender_instance_tag;
   otrng_ec_point_copy(dst->long_term_pub_key, src->long_term_pub_key);
   otrng_ec_point_copy(dst->forging_pub_key, src->forging_pub_key);
-  dst->versions = otrng_xstrdup(src->versions);
+  dst->versions = src->versions ? otrng_xstrdup(src->versions) : NULL;
 
   dst->expires = src->expires;
   copy_dsa_key(dst, src);
