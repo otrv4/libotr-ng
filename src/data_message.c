@@ -45,9 +45,9 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
 
   otrng_ec_point_destroy(data_msg->ecdh);
   otrng_dh_mpi_release(data_msg->dh);
-  otrng_secure_wipe(data_msg->nonce, DATA_MSG_NONCE_BYTES);
+  otrng_secure_wipe(data_msg->nonce, DATA_MESSAGE_NONCE_BYTES);
   free(data_msg->enc_msg);
-  otrng_secure_wipe(data_msg->mac, DATA_MSG_MAC_BYTES);
+  otrng_secure_wipe(data_msg->mac, DATA_MESSAGE_MAC_BYTES);
 
   free(data_msg);
 }
@@ -61,7 +61,7 @@ INTERNAL otrng_result otrng_data_message_body_serialize(
 
   cursor = dst;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
-  cursor += otrng_serialize_uint8(cursor, DATA_MSG_TYPE);
+  cursor += otrng_serialize_uint8(cursor, DATA_MESSAGE_TYPE);
   cursor += otrng_serialize_uint32(cursor, data_msg->sender_instance_tag);
   cursor += otrng_serialize_uint32(cursor, data_msg->receiver_instance_tag);
   cursor += otrng_serialize_uint8(cursor, data_msg->flags);
@@ -78,7 +78,7 @@ INTERNAL otrng_result otrng_data_message_body_serialize(
   }
   cursor += len;
   cursor += otrng_serialize_bytes_array(cursor, data_msg->nonce,
-                                        DATA_MSG_NONCE_BYTES);
+                                        DATA_MESSAGE_NONCE_BYTES);
   cursor +=
       otrng_serialize_data(cursor, data_msg->enc_msg, data_msg->enc_msg_len);
 
@@ -123,7 +123,7 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
   cursor += read;
   len -= read;
 
-  if (message_type != DATA_MSG_TYPE) {
+  if (message_type != DATA_MESSAGE_TYPE) {
     return OTRNG_ERROR;
   }
 
@@ -189,13 +189,13 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
   cursor += read;
   len -= read;
 
-  if (!otrng_deserialize_bytes_array(dst->nonce, DATA_MSG_NONCE_BYTES, cursor,
-                                     len)) {
+  if (!otrng_deserialize_bytes_array(dst->nonce, DATA_MESSAGE_NONCE_BYTES,
+                                     cursor, len)) {
     return OTRNG_ERROR;
   }
 
-  cursor += DATA_MSG_NONCE_BYTES;
-  len -= DATA_MSG_NONCE_BYTES;
+  cursor += DATA_MESSAGE_NONCE_BYTES;
+  len -= DATA_MESSAGE_NONCE_BYTES;
 
   if (!otrng_deserialize_data(&dst->enc_msg, &dst->enc_msg_len, cursor, len,
                               &read)) {
@@ -205,8 +205,8 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
   cursor += read;
   len -= read;
 
-  return otrng_deserialize_bytes_array((uint8_t *)&dst->mac, DATA_MSG_MAC_BYTES,
-                                       cursor, len);
+  return otrng_deserialize_bytes_array((uint8_t *)&dst->mac,
+                                       DATA_MESSAGE_MAC_BYTES, cursor, len);
 }
 
 INTERNAL static otrng_result
@@ -229,7 +229,7 @@ INTERNAL otrng_result otrng_data_message_authenticator(
     size_t bodylen) {
   uint8_t *sections = otrng_secure_alloc(HASH_BYTES);
 
-  if (dstlen < DATA_MSG_MAC_BYTES) {
+  if (dstlen < DATA_MESSAGE_MAC_BYTES) {
     return OTRNG_ERROR;
   }
 
@@ -251,22 +251,22 @@ INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key mac_key,
   uint8_t *body = NULL;
   size_t bodylen = 0;
   // We don't need this tag to be in secure memory
-  uint8_t mac_tag[DATA_MSG_MAC_BYTES];
+  uint8_t mac_tag[DATA_MESSAGE_MAC_BYTES];
 
   if (!otrng_data_message_body_serialize(&body, &bodylen, data_msg)) {
     return otrng_false;
   }
 
-  if (!otrng_data_message_authenticator(mac_tag, DATA_MSG_MAC_BYTES, mac_key,
-                                        body, bodylen)) {
+  if (!otrng_data_message_authenticator(mac_tag, DATA_MESSAGE_MAC_BYTES,
+                                        mac_key, body, bodylen)) {
     free(body);
     return otrng_false;
   }
 
   free(body);
 
-  if (otrl_mem_differ(mac_tag, data_msg->mac, DATA_MSG_MAC_BYTES) != 0) {
-    otrng_secure_wipe(mac_tag, DATA_MSG_MAC_BYTES);
+  if (otrl_mem_differ(mac_tag, data_msg->mac, DATA_MESSAGE_MAC_BYTES) != 0) {
+    otrng_secure_wipe(mac_tag, DATA_MESSAGE_MAC_BYTES);
     return otrng_false;
   }
 

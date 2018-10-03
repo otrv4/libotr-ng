@@ -66,7 +66,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
   tlv_s *to_send = NULL;
 
   switch (tlv->type) {
-  case OTRNG_TLV_SMP_MSG_1:
+  case OTRNG_TLV_SMP_MESSAGE_1:
     event = otrng_process_smp_msg1(tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = '1';
@@ -76,7 +76,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
     }
     break;
 
-  case OTRNG_TLV_SMP_MSG_2:
+  case OTRNG_TLV_SMP_MESSAGE_2:
     event = otrng_process_smp_msg2(&to_send, tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = '1';
@@ -90,7 +90,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
     }
     break;
 
-  case OTRNG_TLV_SMP_MSG_3:
+  case OTRNG_TLV_SMP_MESSAGE_3:
     event = otrng_process_smp_msg3(&to_send, tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = '1';
@@ -104,7 +104,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
     }
     break;
 
-  case OTRNG_TLV_SMP_MSG_4:
+  case OTRNG_TLV_SMP_MESSAGE_4:
     event = otrng_process_smp_msg4(tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = '1';
@@ -199,7 +199,7 @@ tstatic tlv_s *otrng_smp_initiate(const client_profile_s *initiator_profile,
     handle_smp_event_cb_v4(OTRNG_SMP_EVENT_IN_PROGRESS, smp->progress, question,
                            q_len, conversation);
 
-    tlv = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, len, to_send);
+    tlv = otrng_tlv_new(OTRNG_TLV_SMP_MESSAGE_1, len, to_send);
     otrng_smp_msg_1_destroy(&msg);
     free(to_send);
     return tlv;
@@ -251,7 +251,7 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
     warn = OTRNG_WARN_NONE;
     // TODO: do something about warn
     ret = otrng_prepare_to_send_data_message(to_send, &warn, "", tlvs, otr,
-                                             MSGFLAGS_IGNORE_UNREADABLE);
+                                             MESSAGE_FLAGS_IGNORE_UNREADABLE);
     otrng_tlv_list_free(tlvs);
     return ret;
   case 0:
@@ -320,7 +320,7 @@ tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
   warn = OTRNG_WARN_NONE;
   // TODO: warn
   ret = otrng_prepare_to_send_data_message(to_send, &warn, "", tlvs, otr,
-                                           MSGFLAGS_IGNORE_UNREADABLE);
+                                           MESSAGE_FLAGS_IGNORE_UNREADABLE);
   otrng_tlv_list_free(tlvs);
 
   return ret;
@@ -356,7 +356,7 @@ tstatic otrng_result otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
   warn = OTRNG_WARN_NONE;
   // TODO: warn
   ret = otrng_prepare_to_send_data_message(to_send, &warn, "", tlvs, otr,
-                                           MSGFLAGS_IGNORE_UNREADABLE);
+                                           MESSAGE_FLAGS_IGNORE_UNREADABLE);
   otrng_tlv_list_free(tlvs);
   return ret;
 }

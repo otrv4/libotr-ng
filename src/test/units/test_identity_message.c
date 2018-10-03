@@ -51,8 +51,8 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
 
   char expected[] = {
       0x0,
-      0x04,              // version
-      IDENTITY_MSG_TYPE, // message type
+      0x04,                  // version
+      IDENTITY_MESSAGE_TYPE, // message type
       0x0,
       0x0,
       0x0,

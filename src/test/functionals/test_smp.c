@@ -78,7 +78,7 @@ static void test_smp_state_machine(void) {
       &event, bob->smp, get_my_client_profile(bob), bob->their_client_profile,
       bob->keys->ssid, (const uint8_t *)"answer", strlen("answer"));
   otrng_assert(tlv_smp_2);
-  g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MSG_2);
+  g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MESSAGE_2);
   otrng_assert_is_success(smp_msg_2_deserialize(&smp_msg_2, tlv_smp_2));
   g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
@@ -101,7 +101,7 @@ static void test_smp_state_machine(void) {
   otrng_tlv_free(tlv_smp_2);
   otrng_assert(tlv_smp_3);
 
-  g_assert_cmpint(tlv_smp_3->type, ==, OTRNG_TLV_SMP_MSG_3);
+  g_assert_cmpint(tlv_smp_3->type, ==, OTRNG_TLV_SMP_MESSAGE_3);
   g_assert_cmpint(alice->smp->progress, ==, SMP_HALF_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
 
@@ -115,7 +115,7 @@ static void test_smp_state_machine(void) {
   tlv_s *tlv_smp_4 = process_tlv(tlv_smp_3, bob);
   otrng_tlv_free(tlv_smp_3);
   otrng_assert(tlv_smp_4);
-  g_assert_cmpint(tlv_smp_4->type, ==, OTRNG_TLV_SMP_MSG_4);
+  g_assert_cmpint(tlv_smp_4->type, ==, OTRNG_TLV_SMP_MESSAGE_4);
 
   g_assert_cmpint(alice->smp->progress, ==, SMP_HALF_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_TOTAL_PROGRESS);
@@ -190,7 +190,7 @@ static void test_smp_state_machine_abort(void) {
       &event, bob->smp, get_my_client_profile(bob), bob->their_client_profile,
       bob->keys->ssid, (const uint8_t *)"answer", strlen("answer"));
   otrng_assert(tlv_smp_2);
-  g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MSG_2);
+  g_assert_cmpint(tlv_smp_2->type, ==, OTRNG_TLV_SMP_MESSAGE_2);
   otrng_assert_is_success(smp_msg_2_deserialize(&smp_msg_2, tlv_smp_2));
   g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);

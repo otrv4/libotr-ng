@@ -39,10 +39,10 @@ typedef struct data_message_s {
   uint32_t message_id;
   ec_point ecdh;
   dh_public_key dh;
-  uint8_t nonce[DATA_MSG_NONCE_BYTES];
+  uint8_t nonce[DATA_MESSAGE_NONCE_BYTES];
   uint8_t *enc_msg;
   size_t enc_msg_len;
-  uint8_t mac[DATA_MSG_MAC_BYTES];
+  uint8_t mac[DATA_MESSAGE_MAC_BYTES];
 } data_message_s;
 
 INTERNAL data_message_s *otrng_data_message_new(void);

@@ -23,12 +23,12 @@
 
 #define OTRNG_PROTOCOL_VERSION_4 4
 #define OTRNG_PROTOCOL_VERSION_3 3
-#define IDENTITY_MSG_TYPE 0x35
-#define AUTH_R_MSG_TYPE 0x36
-#define AUTH_I_MSG_TYPE 0x37
-#define PRE_KEY_MSG_TYPE 0x0F
-#define NON_INT_AUTH_MSG_TYPE 0x0D
-#define DATA_MSG_TYPE 0x03
+#define IDENTITY_MESSAGE_TYPE 0x35
+#define AUTH_R_MESSAGE_TYPE 0x36
+#define AUTH_I_MESSAGE_TYPE 0x37
+#define PRE_KEY_MESSAGE_TYPE 0x0F
+#define NON_INT_AUTH_MESSAGE_TYPE 0x0D
+#define DATA_MESSAGE_TYPE 0x03
 
 /* protocol version + message type + sender's instance tag + receiver's instance
  * tag */
@@ -49,8 +49,8 @@
    3 * 4 + HASH_BYTES)
 
 #define BRACE_KEY_BYTES 32
-#define DATA_MSG_NONCE_BYTES crypto_secretbox_NONCEBYTES
-#define DATA_MSG_MAC_BYTES 64
+#define DATA_MESSAGE_NONCE_BYTES crypto_secretbox_NONCEBYTES
+#define DATA_MESSAGE_MAC_BYTES 64
 #define MAC_KEY_BYTES 64
 #define ENC_KEY_BYTES 32
 #define SHARED_SECRET_BYTES 64
@@ -63,14 +63,15 @@
 /* header + flags + previous chain number + ratchet id + message id + public
  * ecdh key + nonce */
 #define DATA_MESSAGE_MIN_BYTES                                                 \
-  (DAKE_HEADER_BYTES + 1 + 4 + 4 + 4 + ED448_POINT_BYTES + DATA_MSG_NONCE_BYTES)
+  (DAKE_HEADER_BYTES + 1 + 4 + 4 + 4 + ED448_POINT_BYTES +                     \
+   DATA_MESSAGE_NONCE_BYTES)
 
 /* header + flags + previous chain number + ratchet id + message id + public
  * ecdh key + DH MPI + size + nonce */
 #define DATA_MESSAGE_MAX_BYTES                                                 \
   (DAKE_HEADER_BYTES + 1 + 4 + 4 + 4 + ED448_POINT_BYTES + DH_MPI_MAX_BYTES +  \
-   4 + DATA_MSG_NONCE_BYTES)
+   4 + DATA_MESSAGE_NONCE_BYTES)
 
-#define MSGFLAGS_IGNORE_UNREADABLE 0x01
+#define MESSAGE_FLAGS_IGNORE_UNREADABLE 0x01
 
 #endif

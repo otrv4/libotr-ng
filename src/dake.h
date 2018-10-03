@@ -69,7 +69,7 @@ typedef struct dake_non_interactive_auth_message_s {
   dh_public_key A;
   ring_sig_s *sigma;
   uint32_t prekey_message_id;
-  uint8_t auth_mac[DATA_MSG_MAC_BYTES];
+  uint8_t auth_mac[DATA_MESSAGE_MAC_BYTES];
 } dake_non_interactive_auth_message_s;
 
 INTERNAL otrng_bool otrng_valid_received_values(

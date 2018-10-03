@@ -33,19 +33,19 @@
 
 struct otrng_client_s;
 
-#define OTRNG_PREKEY_DAKE1_MSG 0x35
-#define OTRNG_PREKEY_DAKE2_MSG 0x36
-#define OTRNG_PREKEY_DAKE3_MSG 0x37
-#define OTRNG_PREKEY_STORAGE_INFO_REQ_MSG 0x09
-#define OTRNG_PREKEY_ENSEMBLE_QUERY_RETRIEVAL_MSG 0x10
-#define OTRNG_PREKEY_STORAGE_STATUS_MSG 0x0B
-#define OTRNG_PREKEY_SUCCESS_MSG 0x06
-#define OTRNG_PREKEY_FAILURE_MSG 0x05
-#define OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG 0x13
-#define OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG 0x0E
-#define OTRNG_PREKEY_PUBLICATION_MSG 0x08
+#define OTRNG_PREKEY_DAKE1_MESSAGE 0x35
+#define OTRNG_PREKEY_DAKE2_MESSAGE 0x36
+#define OTRNG_PREKEY_DAKE3_MESSAGE 0x37
+#define OTRNG_PREKEY_STORAGE_INFO_REQ_MESSAGE 0x09
+#define OTRNG_PREKEY_ENSEMBLE_QUERY_RETRIEVAL_MESSAGE 0x10
+#define OTRNG_PREKEY_STORAGE_STATUS_MESSAGE 0x0B
+#define OTRNG_PREKEY_SUCCESS_MESSAGE 0x06
+#define OTRNG_PREKEY_FAILURE_MESSAGE 0x05
+#define OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MESSAGE 0x13
+#define OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MESSAGE 0x0E
+#define OTRNG_PREKEY_PUBLICATION_MESSAGE 0x08
 
-#define OTRNG_PREKEY_SUCCESS_MSG_LEN 71
+#define OTRNG_PREKEY_SUCCESS_MESSAGE_LEN 71
 
 typedef struct {
   uint32_t client_instance_tag;
@@ -87,17 +87,17 @@ typedef struct {
 typedef struct {
   uint32_t client_instance_tag;
   uint32_t stored_prekeys;
-  uint8_t mac[DATA_MSG_MAC_BYTES];
+  uint8_t mac[DATA_MESSAGE_MAC_BYTES];
 } otrng_prekey_storage_status_message_s;
 
 typedef struct {
   uint32_t client_instance_tag;
-  uint8_t success_mac[DATA_MSG_MAC_BYTES];
+  uint8_t success_mac[DATA_MESSAGE_MAC_BYTES];
 } otrng_prekey_success_message_s;
 
 typedef struct {
   uint32_t client_instance_tag;
-  uint8_t mac[DATA_MSG_MAC_BYTES];
+  uint8_t mac[DATA_MESSAGE_MAC_BYTES];
 } otrng_prekey_failure_message_s;
 
 typedef struct {

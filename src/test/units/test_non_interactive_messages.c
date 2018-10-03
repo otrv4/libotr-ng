@@ -51,7 +51,7 @@ static void test_dake_prekey_message_serializes() {
       0x0,
       0x04, // version
 
-      PRE_KEY_MSG_TYPE, // message type
+      PRE_KEY_MESSAGE_TYPE, // message type
 
       0x0,
       0x0,
@@ -201,8 +201,8 @@ test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
 
   uint8_t expected_header[] = {
       0x00,
-      0x04,                  // version
-      NON_INT_AUTH_MSG_TYPE, // message type
+      0x04,                      // version
+      NON_INT_AUTH_MESSAGE_TYPE, // message type
       0x00,
       0x00,
       0x00,
