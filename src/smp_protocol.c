@@ -62,8 +62,8 @@ INTERNAL void otrng_smp_destroy(smp_protocol_s *smp) {
 }
 
 INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
-                                                otrng_fingerprint our_fp,
-                                                otrng_fingerprint their_fp,
+                                                otrng_fingerprint_t our_fp,
+                                                otrng_fingerprint_t their_fp,
                                                 uint8_t *ssid,
                                                 const uint8_t *answer,
                                                 size_t answer_len) {

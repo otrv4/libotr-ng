@@ -504,7 +504,7 @@ API otrng_result otrng_client_expire_fragments(int expiration_time,
 }
 
 API otrng_result otrng_client_get_our_fingerprint(
-    otrng_fingerprint fp, const otrng_client_s *client) {
+    otrng_fingerprint_t fp, const otrng_client_s *client) {
   if (!client->keypair) {
     return OTRNG_ERROR;
   }

@@ -185,7 +185,7 @@ static void test_otrng_serialize_dh_public_key() {
 }
 
 static void test_serializes_fingerprint() {
-  otrng_fingerprint expected_fp = {
+  otrng_fingerprint_t expected_fp = {
       0x7b, 0xdc, 0xb0, 0x56, 0x44, 0xeb, 0x07, 0xd1, 0xa8, 0xcd, 0x4d, 0xcb,
       0x82, 0xa6, 0x0b, 0xff, 0x3f, 0x29, 0x3c, 0x83, 0x3a, 0xd6, 0xbc, 0xc9,
       0xc9, 0x97, 0xcc, 0x92, 0x82, 0xd5, 0x0e, 0x49, 0xc6, 0x89, 0xd1, 0xdb,
@@ -197,10 +197,10 @@ static void test_serializes_fingerprint() {
   otrng_keypair_s keypair;
   otrng_keypair_generate(&keypair, sym);
 
-  otrng_fingerprint destination = {0};
+  otrng_fingerprint_t destination = {0};
   otrng_assert(otrng_serialize_fingerprint(destination, keypair.pub));
 
-  otrng_assert_cmpmem(expected_fp, destination, sizeof(otrng_fingerprint));
+  otrng_assert_cmpmem(expected_fp, destination, sizeof(otrng_fingerprint_t));
 }
 
 // TODO: ADD test for otrng_serialize_ring_sig

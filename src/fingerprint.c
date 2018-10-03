@@ -47,7 +47,7 @@ API otrng_result otrng_fingerprint_hash_to_human(char *human,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
+INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint_t fp,
                                                   const otrng_public_key pub) {
   uint8_t serialized[ED448_POINT_BYTES];
   uint8_t usage_fingerprint = 0x00;
