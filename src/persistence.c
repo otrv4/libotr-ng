@@ -425,6 +425,8 @@ INTERNAL otrng_result otrng_client_private_key_v3_write_to(
   return OTRNG_SUCCESS;
 }
 
+#include "debug.h"
+
 INTERNAL otrng_result
 otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
   char *line = NULL;
@@ -434,6 +436,7 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
   otrng_client_profile_s profile[1];
   otrng_result result;
 
+
   if (!profilef) {
     return OTRNG_ERROR;
   }
@@ -442,8 +445,6 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
     return OTRNG_ERROR;
   }
 
-  otrng_client_profile_free(client->client_profile);
-  client->client_profile = NULL;
 
   len = get_limited_line(&line, profilef);
   if (len < 0) {
@@ -455,7 +456,7 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);
 
-  result = otrng_client_profile_deserialize(profile, dec, dec_len, NULL);
+  result = otrng_client_profile_deserialize_with_metadata(profile, dec, dec_len, NULL);
   free(dec);
 
   if (result == OTRNG_ERROR) {
@@ -470,6 +471,9 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
     // no return for the moment
     // return OTRNG_SUCCESS;
   }
+
+  otrng_client_profile_free(client->client_profile);
+  client->client_profile = NULL;
 
   result = otrng_client_add_client_profile(client, profile);
   otrng_client_profile_destroy(profile);
@@ -540,7 +544,7 @@ INTERNAL otrng_result otrng_client_client_profile_write_to(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_client_profile_serialize(&buff, &s, client->client_profile)) {
+  if (!otrng_client_profile_serialize_with_metadata(&buff, &s, client->client_profile)) {
     return OTRNG_ERROR;
   }
 
@@ -819,9 +823,6 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
     return OTRNG_ERROR;
   }
 
-  otrng_prekey_profile_free(client->prekey_profile);
-  client->prekey_profile = NULL;
-
   len = get_limited_line(&line, profilef);
   if (len < 0) {
     return OTRNG_ERROR;
@@ -847,6 +848,9 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
     // no return for the moment
     // return OTRNG_SUCCESS;
   }
+
+  otrng_prekey_profile_free(client->prekey_profile);
+  client->prekey_profile = NULL;
 
   result = otrng_client_add_prekey_profile(client, profile);
   otrng_prekey_profile_destroy(profile);

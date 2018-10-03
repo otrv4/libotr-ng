@@ -56,6 +56,13 @@
    + ED448_SIGNATURE_BYTES                  /* Client Profile Signature */     \
   )
 
+#define OTRNG_CLIENT_PROFILE_MAX_WITH_METADATA_BYTES(v)                               \
+  (4 +                                      /* num fields */                   \
+   OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(v) /* Fields */                       \
+   + ED448_SIGNATURE_BYTES                  /* Client Profile Signature */     \
+  + 1 /* metadata */ \
+  )
+
 #define OTRNG_CLIENT_PROFILE_FIELD_INSTANCE_TAG 0x01
 #define OTRNG_CLIENT_PROFILE_FIELD_PUBLIC_KEY 0x02
 #define OTRNG_CLIENT_PROFILE_FIELD_FORGING_KEY 0x03
@@ -91,8 +98,16 @@ INTERNAL otrng_result otrng_client_profile_deserialize(
     otrng_client_profile_s *target, const uint8_t *buffer, size_t buflen,
     size_t *nread);
 
+INTERNAL otrng_result otrng_client_profile_deserialize_with_metadata(
+    otrng_client_profile_s *target, const uint8_t *buffer, size_t buflen,
+    size_t *nread);
+
 INTERNAL otrng_result
 otrng_client_profile_serialize(uint8_t **destination, size_t *nbytes,
+                               const otrng_client_profile_s *profile);
+
+INTERNAL otrng_result
+otrng_client_profile_serialize_with_metadata(uint8_t **destination, size_t *nbytes,
                                const otrng_client_profile_s *profile);
 
 INTERNAL otrng_client_profile_s *otrng_client_profile_build(

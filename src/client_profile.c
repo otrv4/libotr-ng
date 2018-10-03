@@ -122,6 +122,7 @@ INTERNAL void otrng_client_profile_copy(otrng_client_profile_s *destination,
   memcpy(destination->signature, source->signature, ED448_SIGNATURE_BYTES);
 
   destination->should_publish = source->should_publish;
+  destination->is_publishing = source->is_publishing;
 }
 
 INTERNAL void
@@ -257,6 +258,35 @@ tstatic otrng_result client_profile_body_serialize_into(
     free(buff);
     return OTRNG_ERROR;
   }
+
+  *destination = buff;
+  if (nbytes) {
+    *nbytes = written;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result
+otrng_client_profile_serialize_with_metadata(uint8_t **destination, size_t *nbytes,
+                                             const otrng_client_profile_s *client_profile) {
+
+
+  size_t s =
+      OTRNG_CLIENT_PROFILE_MAX_WITH_METADATA_BYTES(otrng_strlen_ns(client_profile->versions));
+
+  size_t written = 0;
+  uint8_t *buff = otrng_xmalloc_z(s);
+
+  if (!client_profile_body_serialize(buff, s, &written, client_profile)) {
+    free(buff);
+    return OTRNG_ERROR;
+  }
+
+  written += otrng_serialize_bytes_array(
+      buff + written, client_profile->signature, ED448_SIGNATURE_BYTES);
+
+  written += otrng_serialize_uint8(buff + written, client_profile->should_publish);
 
   *destination = buff;
   if (nbytes) {
@@ -460,6 +490,24 @@ INTERNAL otrng_result otrng_client_profile_deserialize(
 
   if (nread) {
     *nread = w;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result otrng_client_profile_deserialize_with_metadata(
+    otrng_client_profile_s *target, const uint8_t *buffer, size_t buflen,
+    size_t *nread) {
+  size_t nread1, nread2;
+  otrng_result result = otrng_client_profile_deserialize(target, buffer, buflen, &nread1);
+  if (otrng_failed(result)) {
+    return result;
+  }
+
+  result = otrng_deserialize_uint8(&target->should_publish, buffer, buflen-nread1, &nread2);
+
+  if (nread) {
+    *nread = nread1 + nread2;
   }
 
   return OTRNG_SUCCESS;
@@ -765,8 +813,11 @@ otrng_client_profile_start_publishing(otrng_client_profile_s *profile) {
   profile->is_publishing = otrng_true;
 }
 
+#include "debug.h"
+
 API otrng_bool
 otrng_client_profile_should_publish(const otrng_client_profile_s *profile) {
+  otrng_debug_fprintf(stderr, "client_profile_should_publish(should_publish=%d, is_publishing=%d)\n", profile->should_publish, profile->is_publishing);
   return profile->should_publish && !profile->is_publishing;
 }
 

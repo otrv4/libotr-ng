@@ -198,7 +198,6 @@ static void test_global_state_client_profile_management(void) {
 
   /* Generate file */
   FILE *client_profile = tmpfile();
-
   fputs("charlie@xmpp\n"
         "AAAABQABAAAABAACABAFcsFMsTB3RLkvO"
         "Df5ljmruyD/xHHYnZ1UU0nccA4BJ0kfBhMU+viahccHYL0BiKVmnRpDk/CDS4AAAwASmJc"
@@ -209,7 +208,7 @@ static void test_global_state_client_profile_management(void) {
         "qy/mGfdgACg1PqeNp5RNxqlR+AvE"
         "c7I9d71XiJykzb/w40+F8R1PD+qZ"
         "PeXjol7p0sWSVfr+d1xw9sk6aL0r"
-        "dspG3NtxBaAIodSgcA\n",
+        "dspG3NtxBaAIodSgcAXDA=\n",
         client_profile);
   rewind(client_profile);
 

@@ -203,7 +203,7 @@ INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client);
 INTERNAL otrng_result otrng_client_add_forging_key(
     otrng_client_s *client, const otrng_public_key_t key);
 
-API const otrng_client_profile_s *
+API otrng_client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client);
 
 API otrng_client_profile_s *
@@ -221,7 +221,7 @@ API otrng_result otrng_client_add_exp_client_profile(
 INTERNAL otrng_result otrng_client_add_shared_prekey_v4(
     otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-API const otrng_prekey_profile_s *
+API otrng_prekey_profile_s *
 otrng_client_get_prekey_profile(otrng_client_s *client);
 
 API otrng_prekey_profile_s *

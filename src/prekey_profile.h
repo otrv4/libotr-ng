@@ -30,6 +30,9 @@ typedef struct prekey_profile_s {
   uint64_t expires;
   ec_point_t shared_prekey; /* Key "D" */
   eddsa_signature_t signature;
+
+  otrng_bool should_publish;
+  otrng_bool is_publishing;
 } otrng_prekey_profile_s;
 
 INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *destination);
@@ -63,6 +66,10 @@ INTERNAL otrng_result otrng_prekey_profile_serialize(uint8_t **destination,
 INTERNAL otrng_result otrng_prekey_profile_deserialize(
     otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
     size_t *nread);
+
+API void otrng_prekey_profile_start_publishing(otrng_prekey_profile_s *profile);
+API otrng_bool
+otrng_prekey_profile_should_publish(const otrng_prekey_profile_s *profile);
 
 #ifdef DEBUG_API
 API void otrng_prekey_profile_debug_print(FILE *, int,

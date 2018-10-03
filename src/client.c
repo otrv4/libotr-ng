@@ -809,7 +809,7 @@ INTERNAL otrng_result otrng_client_add_forging_key(
   return OTRNG_SUCCESS;
 }
 
-API const otrng_client_profile_s *
+API otrng_client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client) {
   assert(client);
   assert(client->client_profile);
@@ -905,7 +905,7 @@ get_shared_prekey_pair(otrng_client_s *client) {
   return client->shared_prekey_pair;
 }
 
-API const otrng_prekey_profile_s *
+API otrng_prekey_profile_s *
 otrng_client_get_prekey_profile(otrng_client_s *client) {
   assert(client);
 
@@ -1201,16 +1201,29 @@ API otrng_bool otrng_client_should_publish(otrng_client_s *client) {
 }
 
 API void otrng_client_failed_published(otrng_client_s *client) {
+  otrng_debug_fprintf(stderr, "otrng_client_failed_published(cp=%p)\n", (void*)client->client_profile);
   client->client_profile->is_publishing = otrng_false;
+  client->prekey_profile->is_publishing = otrng_false;
   client->is_publishing = otrng_false;
 }
 
 API void otrng_client_published(otrng_client_s *client) {
-  client->client_profile->should_publish = otrng_false;
-  client->client_profile->is_publishing = otrng_false;
+  if (client->client_profile->is_publishing) {
+    otrng_debug_fprintf(stderr, "otrng_client_published(cp=%p)\n", (void*)client->client_profile);
+    client->client_profile->should_publish = otrng_false;
+    client->client_profile->is_publishing = otrng_false;
+    client->global_state->callbacks->store_client_profile(client, client->client_id);
+  }
 
-  client->should_publish = otrng_false;
-  client->is_publishing = otrng_false;
+  if (client->prekey_profile->is_publishing) {
+    client->prekey_profile->should_publish = otrng_false;
+    client->prekey_profile->is_publishing = otrng_false;
+  }
+
+  if (client->is_publishing) {
+    client->should_publish = otrng_false;
+    client->is_publishing = otrng_false;
+  }
 
   // TODO: @ola here everything else should be marked as well, once they have
   // their flags

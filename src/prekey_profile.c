@@ -56,6 +56,9 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *destination,
 
   otrng_ec_point_copy(destination->shared_prekey, source->shared_prekey);
   memcpy(destination->signature, source->signature, ED448_SIGNATURE_BYTES);
+
+  destination->should_publish = source->should_publish;
+  destination->is_publishing = source->is_publishing;
 }
 
 tstatic size_t otrng_prekey_profile_body_serialize(
@@ -298,6 +301,16 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
   }
 
   return otrng_true;
+}
+
+API void
+otrng_prekey_profile_start_publishing(otrng_prekey_profile_s *profile) {
+  profile->is_publishing = otrng_true;
+}
+
+API otrng_bool
+otrng_prekey_profile_should_publish(const otrng_prekey_profile_s *profile) {
+  return profile->should_publish && !profile->is_publishing;
 }
 
 #ifdef DEBUG_API

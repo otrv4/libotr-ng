@@ -35,15 +35,15 @@ tstatic void signal_error_in_state_management(otrng_client_s *client,
 }
 
 tstatic void load_long_term_keys_from_storage(otrng_client_s *client) {
-  otrng_debug_enter("orchestration.load_long_term_keys_from_storage");
+  /* otrng_debug_enter("orchestration.load_long_term_keys_from_storage"); */
   client->global_state->callbacks->load_privkey_v4(client->client_id);
-  otrng_debug_exit("orchestration.load_long_term_keys_from_storage");
+  /* otrng_debug_exit("orchestration.load_long_term_keys_from_storage"); */
 }
 
 tstatic void create_long_term_keys(otrng_client_s *client) {
-  otrng_debug_enter("orchestration.create_long_term_keys");
+  /* otrng_debug_enter("orchestration.create_long_term_keys"); */
   client->global_state->callbacks->create_privkey_v4(client->client_id);
-  otrng_debug_exit("orchestration.create_long_term_keys");
+  /* otrng_debug_exit("orchestration.create_long_term_keys"); */
 }
 
 tstatic void load_client_profile_from_storage(otrng_client_s *client) {
@@ -60,16 +60,16 @@ tstatic void create_client_profile(otrng_client_s *client) {
 }
 
 tstatic void load_prekey_profile_from_storage(otrng_client_s *client) {
-  otrng_debug_enter("orchestration.load_prekey_profile_from_storage");
+  /* otrng_debug_enter("orchestration.load_prekey_profile_from_storage"); */
   client->global_state->callbacks->load_prekey_profile(client->client_id);
-  otrng_debug_exit("orchestration.load_prekey_profile_from_storage");
+  /* otrng_debug_exit("orchestration.load_prekey_profile_from_storage"); */
 }
 
 tstatic void create_prekey_profile(otrng_client_s *client) {
-  otrng_debug_enter("orchestration.create_prekey_profile");
+  /* otrng_debug_enter("orchestration.create_prekey_profile"); */
   client->global_state->callbacks->create_prekey_profile(client,
                                                          client->client_id);
-  otrng_debug_exit("orchestration.create_prekey_profile");
+  /* otrng_debug_exit("orchestration.create_prekey_profile"); */
 }
 
 tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
@@ -101,8 +101,23 @@ tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
     return otrng_false;
   }
 
+  // TODO: we should also make sure that the forging key is correct here -
+  // otherwise it's not valid
+
   itag = otrng_client_get_instance_tag(client);
   return otrng_client_profile_valid(client->client_profile, itag);
+}
+
+tstatic otrng_bool verify_valid_prekey_profile(otrng_client_s *client) {
+  uint32_t itag;
+
+  if (client->prekey_profile == NULL) {
+    return otrng_false;
+  }
+
+  itag = otrng_client_get_instance_tag(client);
+  return otrng_prekey_profile_valid(client->prekey_profile, itag,
+                                    client->keypair->pub);
 }
 
 tstatic void ensure_valid_client_profile(otrng_client_s *client) {
@@ -119,8 +134,12 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
   create_client_profile(client);
 
   if (verify_valid_client_profile(client)) {
+    otrng_debug_fprintf(stderr, "marking client profile to be published (%p)\n",
+                        (void *)client->client_profile);
     client->client_profile->should_publish = otrng_true;
     client->should_publish = otrng_true;
+
+    client->global_state->callbacks->store_client_profile(client, client->client_id);
     return;
   }
 
@@ -128,17 +147,27 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
 }
 
 tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
-  if (!client->prekey_profile) {
-    load_prekey_profile_from_storage(client);
+  if (verify_valid_prekey_profile(client)) {
+    return;
   }
 
-  if (!client->prekey_profile) {
-    create_prekey_profile(client);
+  load_prekey_profile_from_storage(client);
+
+  if (verify_valid_prekey_profile(client)) {
+    return;
   }
 
-  if (!client->prekey_profile) {
-    signal_error_in_state_management(client, "No Prekey Profile");
+  create_prekey_profile(client);
+
+  if (verify_valid_prekey_profile(client)) {
+    /* otrng_debug_fprintf(stderr, "marking prekey profile to be published (%p)\n", */
+    /*                     (void *)client->prekey_profile); */
+    client->prekey_profile->should_publish = otrng_true;
+    client->should_publish = otrng_true;
+    return;
   }
+
+  signal_error_in_state_management(client, "No Prekey Profile");
 }
 
 /* Note, the ensure_ family of functions will check whether the
@@ -160,11 +189,18 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
 
   ensure_valid_prekey_profile(client);
 
+  // TODO: @ola here we should check if the prekeyprofile is close to expiring,
+  // and in that case move it to the expired part and create a new one
+
   otrng_debug_exit("otrng_client_ensure_correct_state");
 }
 
 API otrng_bool otrng_client_verify_correct_state(otrng_client_s *client) {
   if (!verify_valid_client_profile(client)) {
+    return otrng_false;
+  }
+
+  if (!verify_valid_prekey_profile(client)) {
     return otrng_false;
   }
 
