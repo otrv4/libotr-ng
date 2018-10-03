@@ -681,7 +681,7 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *destination, otrng_s *otr) {
   k_ecdh_t tmp_ecdh_k1;
   k_ecdh_t tmp_ecdh_k2;
   k_ecdh_t ke;
-  dh_shared_secret k_dh;
+  dh_shared_secret_t k_dh;
   size_t k_dh_len = 0;
   brace_key_t bk;
 
@@ -1081,7 +1081,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *destination, otrng_s *otr) {
   k_ecdh_t ke;
   k_ecdh_t tmp_ecdh_k1;
   k_ecdh_t tmp_ecdh_k2;
-  dh_shared_secret k_dh;
+  dh_shared_secret_t k_dh;
   size_t k_dh_len = 0;
   brace_key_t bk;
 

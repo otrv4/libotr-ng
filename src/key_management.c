@@ -363,7 +363,7 @@ tstatic otrng_result calculate_brace_key(
   uint8_t usage_third_brace_key = 0x01;
   uint8_t usage_brace_key = 0x02;
 
-  dh_shared_secret k_dh;
+  dh_shared_secret_t k_dh;
   size_t k_dh_len = 0;
 
   assert(action == 's' || action == 'r');

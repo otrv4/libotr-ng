@@ -741,7 +741,7 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *message2,
   uint8_t usage_receiver_client_profile = 0x05;
   uint8_t usage_receiver_prekey_composite_identity = 0x06;
   uint8_t usage_receiver_prekey_composite_phi = 0x07;
-  uint8_t *shared_secret_value = otrng_secure_alloc(HASH_BYTES);
+  uint8_t *shared_secret = otrng_secure_alloc(HASH_BYTES);
   uint8_t *ecdh_shared = otrng_secure_alloc(ED448_POINT_BYTES);
   uint8_t usage_SK = 0x01;
   uint8_t usage_preMAC_key = 0x08;
@@ -759,14 +759,14 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *message2,
   composite_phi = otrng_prekey_client_get_expected_composite_phi(
       &composite_phi_len, prekey_client);
   if (!composite_phi) {
-    free(shared_secret_value);
+    free(shared_secret);
     free(ecdh_shared);
     return NULL;
   }
 
   if (!otrng_client_profile_serialize(&our_profile, &our_profile_len,
                                       prekey_client->client_profile)) {
-    free(shared_secret_value);
+    free(shared_secret);
     free(ecdh_shared);
     return NULL;
   }
@@ -810,26 +810,26 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *message2,
   if (otrng_failed(otrng_ecdh_shared_secret(ecdh_shared, ED448_POINT_BYTES,
                                             prekey_client->ephemeral_ecdh->priv,
                                             message2->S))) {
-    free(shared_secret_value);
+    free(shared_secret);
     free(ecdh_shared);
     return NULL;
   }
 
   /* SK = KDF(0x01, ECDH(i, S), 64) */
-  shake_256_prekey_server_kdf(shared_secret_value, HASH_BYTES, usage_SK,
+  shake_256_prekey_server_kdf(shared_secret, HASH_BYTES, usage_SK,
                               ecdh_shared, ED448_POINT_BYTES);
 
   /* prekey_mac_k = KDF(0x08, SK, 64) */
   shake_256_prekey_server_kdf(prekey_client->mac_key, MAC_KEY_BYTES,
-                              usage_preMAC_key, shared_secret_value,
+                              usage_preMAC_key, shared_secret,
                               HASH_BYTES);
 
   /* Attach MESSAGE in the message */
   if (prekey_client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {
     if (!otrng_prekey_dake3_message_append_storage_information_request(
             &message, prekey_client->mac_key)) {
-      otrng_secure_wipe(shared_secret_value, HASH_BYTES);
-      free(shared_secret_value);
+      otrng_secure_wipe(shared_secret, HASH_BYTES);
+      free(shared_secret);
       otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
       free(ecdh_shared);
       return NULL;
@@ -838,15 +838,15 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *message2,
     otrng_prekey_publication_message_s *pub_message =
         otrng_prekey_publication_message_new();
     if (!build_prekey_publication_message_callback(pub_message, client)) {
-      otrng_secure_wipe(shared_secret_value, HASH_BYTES);
-      free(shared_secret_value);
+      otrng_secure_wipe(shared_secret, HASH_BYTES);
+      free(shared_secret);
       otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
       free(ecdh_shared);
       return NULL;
     }
 
     /* m for proofs = KDF(0x12, SK, 64) */
-    shake_256_prekey_server_kdf(m, 64, usage_proof_context, shared_secret_value,
+    shake_256_prekey_server_kdf(m, 64, usage_proof_context, shared_secret,
                                 HASH_BYTES);
 
     success = otrng_prekey_dake3_message_append_prekey_publication_message(
@@ -854,15 +854,15 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *message2,
     otrng_prekey_publication_message_destroy(pub_message);
 
     if (!success) {
-      otrng_secure_wipe(shared_secret_value, HASH_BYTES);
-      free(shared_secret_value);
+      otrng_secure_wipe(shared_secret, HASH_BYTES);
+      free(shared_secret);
       otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
       free(ecdh_shared);
       return NULL;
     }
   } else {
-    otrng_secure_wipe(shared_secret_value, HASH_BYTES);
-    free(shared_secret_value);
+    otrng_secure_wipe(shared_secret, HASH_BYTES);
+    free(shared_secret);
     otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
     free(ecdh_shared);
     return NULL;
@@ -875,8 +875,8 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *message2,
   otrng_prekey_dake3_message_destroy(&message);
 
   if (!success) {
-    otrng_secure_wipe(shared_secret_value, HASH_BYTES);
-    free(shared_secret_value);
+    otrng_secure_wipe(shared_secret, HASH_BYTES);
+    free(shared_secret);
     otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
     free(ecdh_shared);
     return NULL;
@@ -884,8 +884,8 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *message2,
 
   ret = prekey_encode(serialized, serialized_len);
   free(serialized);
-  otrng_secure_wipe(shared_secret_value, HASH_BYTES);
-  free(shared_secret_value);
+  otrng_secure_wipe(shared_secret, HASH_BYTES);
+  free(shared_secret);
   otrng_secure_wipe(ecdh_shared, ED448_POINT_BYTES);
   free(ecdh_shared);
 
