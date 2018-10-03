@@ -990,7 +990,7 @@ static char *receive_storage_status(const uint8_t *decoded, size_t decoded_len,
 
   if (message->stored_prekeys < client->prekey_client->publication_policy
                                     ->minimum_stored_prekey_message) {
-    client->prekey_messages_num_to_publish =
+    client->prekey_msgs_num_to_publish =
         client->prekey_client->publication_policy
             ->max_published_prekey_message -
         message->stored_prekeys;

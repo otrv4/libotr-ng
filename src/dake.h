@@ -95,10 +95,10 @@ INTERNAL dake_identity_message_s *
 otrng_dake_identity_message_new(const otrng_client_profile_s *profile);
 
 INTERNAL void
-otrng_dake_identity_message_free(dake_identity_message_s *identity_message);
+otrng_dake_identity_message_free(dake_identity_message_s *identity_msg);
 
 INTERNAL void
-otrng_dake_identity_message_destroy(dake_identity_message_s *identity_message);
+otrng_dake_identity_message_destroy(dake_identity_message_s *identity_msg);
 
 INTERNAL otrng_result otrng_dake_identity_message_deserialize(
     dake_identity_message_s *destination, const uint8_t *source,
@@ -106,7 +106,7 @@ INTERNAL otrng_result otrng_dake_identity_message_deserialize(
 
 INTERNAL otrng_result otrng_dake_identity_message_serialize(
     uint8_t **destination, size_t *nbytes,
-    const dake_identity_message_s *identity_message);
+    const dake_identity_message_s *identity_msg);
 
 INTERNAL dake_auth_r_s *otrng_dake_auth_r_new(void);
 INTERNAL void otrng_dake_auth_r_init(dake_auth_r_s *auth_r);
@@ -137,11 +137,10 @@ INTERNAL dake_prekey_message_s *
 otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point_t ecdh,
                                 const dh_public_key_t dh);
 
-INTERNAL void
-otrng_dake_prekey_message_free(dake_prekey_message_s *prekey_message);
+INTERNAL void otrng_dake_prekey_message_free(dake_prekey_message_s *prekey_msg);
 
 INTERNAL void
-otrng_dake_prekey_message_destroy(dake_prekey_message_s *prekey_message);
+otrng_dake_prekey_message_destroy(dake_prekey_message_s *prekey_msg);
 
 INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
     dake_prekey_message_s *destination, const uint8_t *source,
@@ -149,7 +148,7 @@ INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
 
 INTERNAL otrng_result otrng_dake_prekey_message_serialize_into(
     uint8_t **destination, size_t *nbytes,
-    const dake_prekey_message_s *prekey_message);
+    const dake_prekey_message_s *prekey_msg);
 
 INTERNAL otrng_result otrng_dake_prekey_message_serialize(
     uint8_t *destination, size_t destinationlen, size_t *written,
@@ -169,20 +168,20 @@ typedef struct {
  * message. any other value will result in an assertion failure
  */
 INTERNAL otrng_result build_interactive_rsign_tag(
-    uint8_t **message, size_t *message_len, const char auth_tag_type,
+    uint8_t **msg, size_t *msg_len, const char auth_tag_type,
     const otrng_dake_participant_data_s *initiator,
     const otrng_dake_participant_data_s *responder, const uint8_t *phi,
     size_t phi_len);
 
 INTERNAL otrng_result
-build_non_interactive_rsign_tag(uint8_t **message, size_t *message_len,
+build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
                                 const otrng_dake_participant_data_s *initiator,
                                 const otrng_dake_participant_data_s *responder,
                                 const otrng_shared_prekey_pub_t r_shared_prekey,
                                 const uint8_t *phi, size_t phi_len);
 
 INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
-    uint8_t **message, size_t *message_len,
+    uint8_t **msg, size_t *msg_len,
     const otrng_dake_participant_data_s *initiator,
     const otrng_dake_participant_data_s *responder,
     const otrng_shared_prekey_pub_t r_shared_prekey, const uint8_t *phi,

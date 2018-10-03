@@ -40,28 +40,28 @@ typedef struct data_message_s {
   ec_point_t ecdh;
   dh_public_key_t dh;
   uint8_t nonce[DATA_MSG_NONCE_BYTES];
-  uint8_t *enc_message;
-  size_t enc_message_len;
+  uint8_t *enc_msg;
+  size_t enc_msg_len;
   uint8_t mac[DATA_MSG_MAC_BYTES];
 } data_message_s;
 
 INTERNAL data_message_s *otrng_data_message_new(void);
 
-INTERNAL void otrng_data_message_free(data_message_s *data_message);
+INTERNAL void otrng_data_message_free(data_message_s *data_msg);
 
 INTERNAL otrng_result otrng_data_message_body_serialize(
-    uint8_t **body, size_t *bodylen, const data_message_s *data_message);
+    uint8_t **body, size_t *bodylen, const data_message_s *data_msg);
 
 INTERNAL otrng_result
 otrng_data_message_deserialize(data_message_s *destination, const uint8_t *buff,
                                size_t bufflen, size_t *nread);
 
 INTERNAL otrng_result otrng_data_message_authenticator(
-    uint8_t *destination, size_t destinationlen,
-    const message_mac_key_t mac_key, const uint8_t *body, size_t bodylen);
+    uint8_t *destination, size_t destinationlen, const msg_mac_key_t mac_key,
+    const uint8_t *body, size_t bodylen);
 
-INTERNAL otrng_bool otrng_valid_data_message(
-    message_mac_key_t mac_key, const data_message_s *data_message);
+INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key_t mac_key,
+                                             const data_message_s *data_msg);
 
 #ifdef OTRNG_DATA_MESSAGE_PRIVATE
 

@@ -82,9 +82,9 @@ static data_message_s *set_up_data_message() {
   otrng_assert(!err);
 
   memset(data_message->nonce, 0xF, sizeof(data_message->nonce));
-  data_message->enc_message = otrng_xmalloc_z(3);
-  memset(data_message->enc_message, 0xE, 3);
-  data_message->enc_message_len = 3;
+  data_message->enc_msg = otrng_xmalloc_z(3);
+  memset(data_message->enc_msg, 0xE, 3);
+  data_message->enc_msg_len = 3;
 
   otrng_ecdh_keypair_destroy(&ecdh);
   return data_message;
@@ -210,9 +210,9 @@ static void test_otrng_data_message_deserializes() {
   otrng_assert(dh_mpi_cmp(data_message->dh, deserialized->dh) == 0);
   otrng_assert_cmpmem(data_message->nonce, deserialized->nonce,
                       DATA_MSG_NONCE_BYTES);
-  otrng_assert_cmpmem(data_message->enc_message, deserialized->enc_message,
-                      data_message->enc_message_len);
-  otrng_assert(data_message->enc_message_len == deserialized->enc_message_len);
+  otrng_assert_cmpmem(data_message->enc_msg, deserialized->enc_msg,
+                      data_message->enc_msg_len);
+  otrng_assert(data_message->enc_msg_len == deserialized->enc_msg_len);
   otrng_assert_cmpmem(data_message->mac, deserialized->mac, DATA_MSG_MAC_BYTES);
 
   otrng_data_message_free(data_message);
@@ -224,7 +224,7 @@ static void test_data_message_valid() {
   data_message_s *data_message = set_up_data_message();
 
   // Should fail because data_message has a zeroed mac tag.
-  message_mac_key_t mac_key = {0};
+  msg_mac_key_t mac_key = {0};
   otrng_assert(otrng_valid_data_message(mac_key, data_message) == otrng_false);
 
   // Overwrite the zeroed mac tag

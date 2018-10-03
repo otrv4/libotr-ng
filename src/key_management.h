@@ -37,8 +37,8 @@ typedef uint8_t shared_secret_t[SHARED_SECRET_BYTES];
 typedef uint8_t root_key_t[ROOT_KEY_BYTES];
 typedef uint8_t sending_chain_key_t[CHAIN_KEY_BYTES];
 typedef uint8_t receiving_chain_key_t[CHAIN_KEY_BYTES];
-typedef uint8_t message_encryption_key_t[ENCRYPTION_KEY_BYTES];
-typedef uint8_t message_mac_key_t[MAC_KEY_BYTES];
+typedef uint8_t msg_encryption_key_t[ENCRYPTION_KEY_BYTES];
+typedef uint8_t msg_mac_key_t[MAC_KEY_BYTES];
 typedef uint8_t extra_symmetric_key_t[EXTRA_SYMMETRIC_KEY_BYTES];
 
 /* the different kind of keys needed for a chain ratchet */
@@ -53,7 +53,7 @@ typedef struct skipped_keys_s {
   unsigned int i; /* Counter of the ratchet */
   unsigned int j; /* Counter of the sending messages */
   extra_symmetric_key_t extra_symmetric_key;
-  message_encryption_key_t enc_key;
+  msg_encryption_key_t enc_key;
 } skipped_keys_s;
 
 /* a temporary structure used to hold the values of the receiving ratchet */
@@ -283,12 +283,12 @@ INTERNAL otrng_result otrng_key_manager_ratcheting_init(key_manager_s *manager,
  * @param [enc_key]     The encryption key.
  * @param [mac_key]     The mac key.
  * @param [ratchet_id]  The receiving ratchet id (i).
- * @param [message_id]  The receiving message id (j).
+ * @param [msg_id]  The receiving message id (j).
  * @param [manager]     The key manager.
  */
 INTERNAL otrng_result otrng_key_get_skipped_keys(
-    message_encryption_key_t enc_key, message_mac_key_t mac_key,
-    unsigned int ratchet_id, unsigned int message_id, key_manager_s *manager,
+    msg_encryption_key_t enc_key, msg_mac_key_t mac_key,
+    unsigned int ratchet_id, unsigned int msg_id, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet);
 
 /**
@@ -297,26 +297,26 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
  * @param [enc_key]     The encryption key.
  * @param [mac_key]     The mac key.
  * @param [max_skip]    The maximum number of enc_keys to be stored.
- * @param [message_id]  The receiving message id (j).
+ * @param [msg_id]  The receiving message id (j).
  * @param [manager]     The key manager.
  * @param [action]      's' for sending chain, 'r' for receiving
  */
 INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
-    message_encryption_key_t enc_key, message_mac_key_t mac_key,
-    key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
-    int max_skip, int message_id, const char action, otrng_warning *warn);
+    msg_encryption_key_t enc_key, msg_mac_key_t mac_key, key_manager_s *manager,
+    receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int msg_id,
+    const char action, otrng_warning *warn);
 
 /**
  * @brief Derive the dh ratchet keys.
  *
  * @param [manager]     The key manager.
  * @param [max_skip]    The maximum number of enc_keys to be stored.
- * @param [message_id]  The receiving message id (j).
+ * @param [msg_id]  The receiving message id (j).
  * @param [action]      's' for sending chain, 'r' for receiving
  */
 INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, int max_skip,
-    receiving_ratchet_s *tmp_receiving_ratchet, int message_id, int previous_n,
+    receiving_ratchet_s *tmp_receiving_ratchet, int msg_id, int previous_n,
     const char action, otrng_warning *warn);
 
 /**
@@ -326,7 +326,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
  * @param [mac_key]   The mac key to store.
  */
 INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
-                                               message_mac_key_t mac_key);
+                                               msg_mac_key_t mac_key);
 
 INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
 

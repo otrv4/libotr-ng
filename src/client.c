@@ -41,7 +41,7 @@
 #include "smp.h"
 #include "str.h"
 
-#define MAX_NUMBER_PUBLISHED_PREKEY_MESSAGES 255
+#define MAX_NUMBER_PUBLISHED_PREKEY_MSGS 255
 #define HEARTBEAT_INTERVAL 60
 
 tstatic otrng_conversation_s *new_conversation_with(const char *recipient,
@@ -77,9 +77,9 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
   otrng_client_s *client = otrng_xmalloc_z(sizeof(otrng_client_s));
 
   client->client_id = client_id;
-  client->max_stored_message_keys = 1000;
-  client->max_published_prekey_message = 100;
-  client->minimum_stored_prekey_message = 20;
+  client->max_stored_msg_keys = 1000;
+  client->max_published_prekey_msg = 100;
+  client->minimum_stored_prekey_msg = 20;
   client->should_heartbeat = should_heartbeat;
 
 #define EXTRA_CLIENT_PROFILE_EXPIRATION_SECONDS 2 * 24 * 60 * 60; /* 2 days */
@@ -104,8 +104,8 @@ tstatic void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
   free(s);
 }
 
-tstatic void stored_prekeys_free_from_list(void *p) {
-  otrng_stored_prekeys_free((otrng_stored_prekeys_s *)p);
+tstatic void stored_prekeys_free_from_list(void *prekeys) {
+  otrng_stored_prekeys_free((otrng_stored_prekeys_s *)prekeys);
 }
 
 API void otrng_client_free(otrng_client_s *client) {
@@ -251,7 +251,7 @@ otrng_client_get_conversation(int force_create, const char *recipient,
 }
 
 // TODO: @client this should allow TLVs to be added to the message
-tstatic otrng_result send_message(char **newmessage, const char *message,
+tstatic otrng_result send_message(char **new_msg, const char *msg,
                                   const char *recipient,
                                   otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
@@ -263,7 +263,7 @@ tstatic otrng_result send_message(char **newmessage, const char *message,
     return OTRNG_ERROR;
   }
 
-  result = otrng_send_message(newmessage, message, &warn, NULL, 0, conv->conn);
+  result = otrng_send_message(new_msg, msg, &warn, NULL, 0, conv->conn);
 
   if (warn == OTRNG_WARN_SEND_NOT_ENCRYPTED) {
     // TODO: we need to signal this a different way than by return values
@@ -274,7 +274,7 @@ tstatic otrng_result send_message(char **newmessage, const char *message,
   return result;
 }
 
-API char *otrng_client_query_message(const char *recipient, const char *message,
+API char *otrng_client_query_message(const char *recipient, const char *msg,
                                      otrng_client_s *client) {
   char *ret = NULL;
   otrng_conversation_s *conv = NULL;
@@ -283,7 +283,7 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
     return NULL;
   }
 
-  if (otrng_failed(otrng_build_query_message(&ret, message, conv->conn))) {
+  if (otrng_failed(otrng_build_query_message(&ret, msg, conv->conn))) {
     // TODO: @client This should come from the client (a callback maybe?)
     // because it knows in which language this should be sent, for example.
     char *error = otrng_xstrdup(
@@ -294,16 +294,16 @@ API char *otrng_client_query_message(const char *recipient, const char *message,
   return ret;
 }
 
-API otrng_result otrng_client_send(char **newmessage, const char *message,
+API otrng_result otrng_client_send(char **new_msg, const char *msg,
                                    const char *recipient,
                                    otrng_client_s *client) {
   /* v4 client will know how to transition to v3 if a v3 conversation is
    started */
-  return send_message(newmessage, message, recipient, client);
+  return send_message(new_msg, msg, recipient, client);
 }
 
 API otrng_result otrng_client_send_non_interactive_auth(
-    char **newmessage, const prekey_ensemble_s *ensemble, const char *recipient,
+    char **new_msg, const prekey_ensemble_s *ensemble, const char *recipient,
     otrng_client_s *client) {
   otrng_conversation_s *conv =
       get_or_create_conversation_with(recipient, client);
@@ -311,12 +311,13 @@ API otrng_result otrng_client_send_non_interactive_auth(
     return OTRNG_ERROR;
   }
 
-  return otrng_send_non_interactive_auth(newmessage, ensemble, conv->conn);
+  return otrng_send_non_interactive_auth(new_msg, ensemble, conv->conn);
 }
 
-API otrng_result otrng_client_send_fragment(
-    otrng_message_to_send_s **newmessage, const char *message, int mms,
-    const char *recipient, otrng_client_s *client) {
+API otrng_result otrng_client_send_fragment(otrng_message_to_send_s **new_msg,
+                                            const char *msg, int mms,
+                                            const char *recipient,
+                                            otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
   string_p to_send = NULL;
   uint32_t our_tag, their_tag;
@@ -327,7 +328,7 @@ API otrng_result otrng_client_send_fragment(
     return OTRNG_ERROR;
   }
 
-  if (otrng_failed(send_message(&to_send, message, recipient, client))) {
+  if (otrng_failed(send_message(&to_send, msg, recipient, client))) {
     free(to_send);
     return OTRNG_ERROR;
   }
@@ -335,7 +336,7 @@ API otrng_result otrng_client_send_fragment(
   our_tag = otrng_client_get_instance_tag(client);
   their_tag = conv->conn->their_instance_tag;
 
-  ret = otrng_fragment_message(mms, *newmessage, our_tag, their_tag, to_send);
+  ret = otrng_fragment_message(mms, *new_msg, our_tag, their_tag, to_send);
   free(to_send);
 
   return ret;
@@ -345,7 +346,7 @@ API otrng_result otrng_client_smp_start(char **tosend, const char *recipient,
                                         const unsigned char *question,
                                         const size_t q_len,
                                         const unsigned char *secret,
-                                        size_t secretlen,
+                                        size_t secret_len,
                                         otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
 
@@ -354,13 +355,13 @@ API otrng_result otrng_client_smp_start(char **tosend, const char *recipient,
     return OTRNG_ERROR;
   }
 
-  return otrng_smp_start(tosend, question, q_len, secret, secretlen,
+  return otrng_smp_start(tosend, question, q_len, secret, secret_len,
                          conv->conn);
 }
 
-API otrng_result otrng_client_smp_respond(char **tosend, const char *recipient,
+API otrng_result otrng_client_smp_respond(char **to_send, const char *recipient,
                                           const unsigned char *secret,
-                                          size_t secretlen,
+                                          size_t secret_len,
                                           otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
 
@@ -369,12 +370,11 @@ API otrng_result otrng_client_smp_respond(char **tosend, const char *recipient,
     return OTRNG_ERROR;
   }
 
-  return otrng_smp_continue(tosend, secret, secretlen, conv->conn);
+  return otrng_smp_continue(to_send, secret, secret_len, conv->conn);
 }
 
-API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
-                                      const char *message,
-                                      const char *recipient,
+API otrng_result otrng_client_receive(char **new_msg, char **to_display,
+                                      const char *msg, const char *recipient,
                                       otrng_client_s *client,
                                       otrng_bool *should_ignore) {
   otrng_result result = OTRNG_ERROR;
@@ -388,11 +388,11 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
     return OTRNG_ERROR;
   }
 
-  if (!newmessage) {
+  if (!new_msg) {
     return result;
   }
 
-  *newmessage = NULL;
+  *new_msg = NULL;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
@@ -403,7 +403,7 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
   response = otrng_response_new();
   warn = OTRNG_WARN_NONE;
 
-  result = otrng_receive_message(response, &warn, message, conv->conn);
+  result = otrng_receive_message(response, &warn, msg, conv->conn);
 
   if (warn == OTRNG_WARN_RECEIVED_NOT_VALID) {
     //    return OTRNG_CLIENT_RESULT_ERROR_NOT_VALID;
@@ -413,13 +413,13 @@ API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
   }
 
   if (response->to_send) {
-    *newmessage = otrng_xstrdup(response->to_send);
+    *new_msg = otrng_xstrdup(response->to_send);
   }
 
-  *todisplay = NULL;
+  *to_display = NULL;
   if (response->to_display) {
     char *plain = otrng_xstrdup(response->to_display);
-    *todisplay = plain;
+    *to_display = plain;
     otrng_response_free(response);
     return OTRNG_SUCCESS;
   }
@@ -437,8 +437,7 @@ tstatic void destroy_client_conversation(const otrng_conversation_s *conv,
   otrng_list_free_nodes(elem);
 }
 
-API otrng_result otrng_client_disconnect(char **newmessage,
-                                         const char *recipient,
+API otrng_result otrng_client_disconnect(char **new_msg, const char *recipient,
                                          otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
 
@@ -447,7 +446,7 @@ API otrng_result otrng_client_disconnect(char **newmessage,
     return OTRNG_ERROR;
   }
 
-  if (otrng_failed(otrng_close(newmessage, conv->conn))) {
+  if (otrng_failed(otrng_close(new_msg, conv->conn))) {
     return OTRNG_ERROR;
   }
 
@@ -460,7 +459,7 @@ API otrng_result otrng_client_disconnect(char **newmessage,
 // TODO: @client this depends on how is going to be handled: as a different
 // event or inside process_conv_updated?
 /* expiration time should be set on seconds */
-API otrng_result otrng_expire_encrypted_session(char **newmessage,
+API otrng_result otrng_expire_encrypted_session(char **new_msg,
                                                 const char *recipient,
                                                 int expiration_time,
                                                 otrng_client_s *client) {
@@ -474,7 +473,7 @@ API otrng_result otrng_expire_encrypted_session(char **newmessage,
 
   now = time(NULL);
   if (conv->conn->keys->last_generated < now - expiration_time) {
-    if (otrng_failed(otrng_expire_session(newmessage, conv->conn))) {
+    if (otrng_failed(otrng_expire_session(new_msg, conv->conn))) {
       return OTRNG_ERROR;
     }
   }
@@ -530,14 +529,13 @@ otrng_client_get_prekey_client(const char *server_identity,
 
   // TODO: this should be a hashmap, since it its one client PER server
   client->prekey_client = otrng_prekey_client_new();
-  otrng_prekey_client_init(
-      client->prekey_client, server_identity, account,
-      otrng_client_get_instance_tag(client),
-      otrng_client_get_keypair_v4(client),
-      otrng_client_get_client_profile(client),
-      otrng_client_get_prekey_profile(client),
-      otrng_client_get_max_published_prekey_message(client),
-      otrng_client_get_minimum_stored_prekey_message(client));
+  otrng_prekey_client_init(client->prekey_client, server_identity, account,
+                           otrng_client_get_instance_tag(client),
+                           otrng_client_get_keypair_v4(client),
+                           otrng_client_get_client_profile(client),
+                           otrng_client_get_prekey_profile(client),
+                           otrng_client_get_max_published_prekey_msg(client),
+                           otrng_client_get_minimum_stored_prekey_msg(client));
 
   free(account);
 
@@ -552,26 +550,25 @@ otrng_client_get_prekey_client(const char *server_identity,
 INTERNAL void otrng_client_store_my_prekey_message(
     uint32_t id, uint32_t instance_tag, const ecdh_keypair_s *ecdh_pair,
     const dh_keypair_s *dh_pair, otrng_client_s *client) {
-  otrng_stored_prekeys_s *stored_prekey_message;
+  otrng_stored_prekeys_s *stored_prekey_msg;
   if (!client) {
     return;
   }
 
-  stored_prekey_message = otrng_xmalloc_z(sizeof(otrng_stored_prekeys_s));
-  stored_prekey_message->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
-  stored_prekey_message->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
-  stored_prekey_message->id = id;
-  stored_prekey_message->sender_instance_tag = instance_tag;
+  stored_prekey_msg = otrng_xmalloc_z(sizeof(otrng_stored_prekeys_s));
+  stored_prekey_msg->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
+  stored_prekey_msg->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
+  stored_prekey_msg->id = id;
+  stored_prekey_msg->sender_instance_tag = instance_tag;
 
   /* @secret the keypairs should be deleted once the double ratchet gets
    * initialized */
-  otrng_ec_scalar_copy(stored_prekey_message->our_ecdh->priv, ecdh_pair->priv);
-  otrng_ec_point_copy(stored_prekey_message->our_ecdh->pub, ecdh_pair->pub);
-  stored_prekey_message->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
-  stored_prekey_message->our_dh->pub = otrng_dh_mpi_copy(dh_pair->pub);
+  otrng_ec_scalar_copy(stored_prekey_msg->our_ecdh->priv, ecdh_pair->priv);
+  otrng_ec_point_copy(stored_prekey_msg->our_ecdh->pub, ecdh_pair->pub);
+  stored_prekey_msg->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
+  stored_prekey_msg->our_dh->pub = otrng_dh_mpi_copy(dh_pair->pub);
 
-  client->our_prekeys =
-      otrng_list_add(stored_prekey_message, client->our_prekeys);
+  client->our_prekeys = otrng_list_add(stored_prekey_msg, client->our_prekeys);
 }
 
 API dake_prekey_message_s **
@@ -581,10 +578,10 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
   uint32_t instance_tag;
   dake_prekey_message_s **messages;
   int i, j;
-  ec_scalar_t *ke;
-  dh_mpi_t *kd;
+  ec_scalar_t *ecdh_priv_key;
+  dh_mpi_t *dh_priv_key;
 
-  if (num_messages > MAX_NUMBER_PUBLISHED_PREKEY_MESSAGES) {
+  if (num_messages > MAX_NUMBER_PUBLISHED_PREKEY_MSGS) {
     // TODO: notify error
     return NULL;
   }
@@ -592,8 +589,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
   instance_tag = otrng_client_get_instance_tag(client);
 
   messages = otrng_xmalloc_z(num_messages * sizeof(dake_prekey_message_s *));
-  ke = otrng_secure_alloc(num_messages * sizeof(ec_scalar_t));
-  kd = otrng_xmalloc_z(num_messages * sizeof(dh_mpi_t));
+  ecdh_priv_key = otrng_secure_alloc(num_messages * sizeof(ec_scalar_t));
+  dh_priv_key = otrng_xmalloc_z(num_messages * sizeof(dh_mpi_t));
 
   for (i = 0; i < num_messages; i++) {
     ecdh_keypair_s ecdh;
@@ -609,8 +606,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
       free(messages);
       return NULL;
     }
-    goldilocks_448_scalar_copy(ke[i], ecdh.priv);
-    kd[i] = otrng_dh_mpi_copy(dh.priv);
+    goldilocks_448_scalar_copy(ecdh_priv_key[i], ecdh.priv);
+    dh_priv_key[i] = otrng_dh_mpi_copy(dh.priv);
 
     otrng_client_store_my_prekey_message(
         messages[i]->id, messages[i]->sender_instance_tag, &ecdh, &dh, client);
@@ -619,8 +616,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
     // dh_keypair_detroy()
   }
 
-  *ecdh_keys = ke;
-  *dh_keys = kd;
+  *ecdh_keys = ecdh_priv_key;
+  *dh_keys = dh_priv_key;
 
   return messages;
 }
@@ -795,7 +792,7 @@ INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client) {
 }
 
 INTERNAL otrng_result otrng_client_add_forging_key(
-    otrng_client_s *client, const otrng_public_key_t key) {
+    otrng_client_s *client, const otrng_public_key_t forging_key) {
   assert(client);
 
   if (client->forging_key) {
@@ -804,7 +801,7 @@ INTERNAL otrng_result otrng_client_add_forging_key(
 
   client->forging_key = otrng_xmalloc_z(sizeof(otrng_public_key_t));
 
-  otrng_ec_point_copy(*client->forging_key, key);
+  otrng_ec_point_copy(*client->forging_key, forging_key);
 
   return OTRNG_SUCCESS;
 }
@@ -988,15 +985,16 @@ tstatic OtrlInsTag *otrng_instance_tag_new(const char *protocol,
   return p;
 }
 
-tstatic void otrl_userstate_instance_tag_add(OtrlUserState us, OtrlInsTag *p) {
+tstatic void otrl_userstate_instance_tag_add(OtrlUserState us,
+                                             OtrlInsTag *instag) {
   // This comes from libotr
-  p->next = us->instag_root;
-  if (p->next) {
-    p->next->tous = &(p->next);
+  instag->next = us->instag_root;
+  if (instag->next) {
+    instag->next->tous = &(instag->next);
   }
 
-  p->tous = &(us->instag_root);
-  us->instag_root = p;
+  instag->tous = &(us->instag_root);
+  us->instag_root = instag;
 }
 
 INTERNAL unsigned int
@@ -1118,40 +1116,40 @@ API void otrng_client_set_padding(size_t granularity, otrng_client_s *client) {
   assert(client);
 }
 
+API void otrng_client_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
+                                              otrng_client_s *client) {
+  assert(client);
+
+  client->max_stored_msg_keys = max_stored_msg_keys;
+}
+
+API otrng_result
+otrng_client_get_max_published_prekey_msg(otrng_client_s *client) {
+  assert(client);
+
+  return client->max_published_prekey_msg;
+}
+
 API void
-otrng_client_set_max_stored_message_keys(unsigned int max_stored_message_keys,
-                                         otrng_client_s *client) {
+otrng_client_set_max_published_prekey_msg(unsigned int max_published_prekey_msg,
+                                          otrng_client_s *client) {
   assert(client);
 
-  client->max_stored_message_keys = max_stored_message_keys;
+  client->max_published_prekey_msg = max_published_prekey_msg;
 }
 
 API otrng_result
-otrng_client_get_max_published_prekey_message(otrng_client_s *client) {
+otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client) {
   assert(client);
 
-  return client->max_published_prekey_message;
+  return client->minimum_stored_prekey_msg;
 }
 
-API void otrng_client_set_max_published_prekey_message(
-    unsigned int max_published_prekey_message, otrng_client_s *client) {
+API void otrng_client_state_set_minimum_stored_prekey_msg(
+    unsigned int minimum_stored_prekey_msg, otrng_client_s *client) {
   assert(client);
 
-  client->max_published_prekey_message = max_published_prekey_message;
-}
-
-API otrng_result
-otrng_client_get_minimum_stored_prekey_message(otrng_client_s *client) {
-  assert(client);
-
-  return client->minimum_stored_prekey_message;
-}
-
-API void otrng_client_state_set_minimum_stored_prekey_message(
-    unsigned int minimum_stored_prekey_message, otrng_client_s *client) {
-  assert(client);
-
-  client->minimum_stored_prekey_message = minimum_stored_prekey_message;
+  client->minimum_stored_prekey_msg = minimum_stored_prekey_msg;
 }
 
 API void

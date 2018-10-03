@@ -71,9 +71,9 @@ typedef struct otrng_client_s {
   /* @secret: this should be deleted once the prekey profile expires */
   otrng_shared_prekey_pair_s *shared_prekey_pair;
 
-  unsigned int max_stored_message_keys;
-  unsigned int max_published_prekey_message;
-  unsigned int minimum_stored_prekey_message;
+  unsigned int max_stored_msg_keys;
+  unsigned int max_published_prekey_msg;
+  unsigned int minimum_stored_prekey_msg;
 
   uint64_t profiles_extra_valid_time;
   uint64_t client_profile_exp_time;
@@ -86,7 +86,7 @@ typedef struct otrng_client_s {
      to prekey servers */
   otrng_bool should_publish;
   otrng_bool is_publishing;
-  uint32_t prekey_messages_num_to_publish;
+  uint32_t prekey_msgs_num_to_publish;
 
   // OtrlPrivKey *privkeyv3; // ???
   // otrng_instag_s *instag; // TODO: @client Store the instance tag here rather
@@ -112,44 +112,43 @@ API otrng_bool otrng_conversation_is_encrypted(otrng_conversation_s *conv);
 
 API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv);
 
-API char *otrng_client_query_message(const char *recipient, const char *message,
+API char *otrng_client_query_message(const char *recipient, const char *msg,
                                      otrng_client_s *client);
 
-API otrng_result otrng_client_send(char **newmessage, const char *message,
+API otrng_result otrng_client_send(char **new_msg, const char *msg,
                                    const char *recipient,
                                    otrng_client_s *client);
 
-API otrng_result otrng_client_send_fragment(
-    otrng_message_to_send_s **newmessage, const char *message, int mms,
-    const char *recipient, otrng_client_s *client);
-
 API otrng_result otrng_client_send_non_interactive_auth(
-    char **newmessage, const prekey_ensemble_s *ensemble, const char *recipient,
+    char **new_msg, const prekey_ensemble_s *ensemble, const char *recipient,
     otrng_client_s *client);
+
+API otrng_result otrng_client_send_fragment(otrng_message_to_send_s **new_msg,
+                                            const char *msg, int mms,
+                                            const char *recipient,
+                                            otrng_client_s *client);
 
 API otrng_result otrng_client_smp_start(char **tosend, const char *recipient,
                                         const unsigned char *question,
                                         const size_t q_len,
                                         const unsigned char *secret,
-                                        size_t secretlen,
+                                        size_t secret_len,
                                         otrng_client_s *client);
 
-API otrng_result otrng_client_smp_respond(char **tosend, const char *recipient,
+API otrng_result otrng_client_smp_respond(char **to_send, const char *recipient,
                                           const unsigned char *secret,
-                                          size_t secretlen,
+                                          size_t secret_len,
                                           otrng_client_s *client);
 
-API otrng_result otrng_client_receive(char **newmessage, char **todisplay,
-                                      const char *message,
-                                      const char *recipient,
+API otrng_result otrng_client_receive(char **new_msg, char **to_display,
+                                      const char *msg, const char *recipient,
                                       otrng_client_s *client,
                                       otrng_bool *should_ignore);
 
-API otrng_result otrng_client_disconnect(char **newmessage,
-                                         const char *recipient,
+API otrng_result otrng_client_disconnect(char **new_msg, const char *recipient,
                                          otrng_client_s *client);
 
-API otrng_result otrng_expire_encrypted_session(char **newmessage,
+API otrng_result otrng_expire_encrypted_session(char **new_msg,
                                                 const char *recipient,
                                                 int expiration_time,
                                                 otrng_client_s *client);
@@ -201,7 +200,7 @@ otrng_client_get_forging_key(otrng_client_s *client);
 INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client);
 
 INTERNAL otrng_result otrng_client_add_forging_key(
-    otrng_client_s *client, const otrng_public_key_t key);
+    otrng_client_s *client, const otrng_public_key_t forging_key);
 
 API otrng_client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client);
@@ -251,21 +250,20 @@ otrng_client_delete_my_prekey_message_by_id(uint32_t id,
 
 API void otrng_client_set_padding(size_t granularity, otrng_client_s *client);
 
-API void
-otrng_client_set_max_stored_message_keys(unsigned int max_stored_message_keys,
-                                         otrng_client_s *client);
+API void otrng_client_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
+                                              otrng_client_s *client);
 
 API otrng_result
-otrng_client_get_max_published_prekey_message(otrng_client_s *client);
+otrng_client_get_max_published_prekey_msg(otrng_client_s *client);
 
-API void otrng_client_state_set_max_published_prekey_message(
-    unsigned int max_published_prekey_message, otrng_client_s *client);
+API void otrng_client_state_set_max_published_prekey_msg(
+    unsigned int max_published_prekey_msg, otrng_client_s *client);
 
-API void otrng_client_state_set_minimum_stored_prekey_message(
-    unsigned int minimum_stored_prekey_message, otrng_client_s *client);
+API void otrng_client_state_set_minimum_stored_prekey_msg(
+    unsigned int minimum_stored_prekey_msg, otrng_client_s *client);
 
 API otrng_result
-otrng_client_get_minimum_stored_prekey_message(otrng_client_s *client);
+otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
 
 API void
 otrng_client_set_profiles_extra_valid_time(uint64_t profiles_extra_valid_time,

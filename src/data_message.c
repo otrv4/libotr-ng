@@ -38,23 +38,23 @@ INTERNAL data_message_s *otrng_data_message_new() {
   return ret;
 }
 
-INTERNAL void otrng_data_message_free(data_message_s *data_message) {
-  if (!data_message) {
+INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
+  if (!data_msg) {
     return;
   }
 
-  otrng_ec_point_destroy(data_message->ecdh);
-  otrng_dh_mpi_release(data_message->dh);
-  otrng_secure_wipe(data_message->nonce, DATA_MSG_NONCE_BYTES);
-  free(data_message->enc_message);
-  otrng_secure_wipe(data_message->mac, DATA_MSG_MAC_BYTES);
+  otrng_ec_point_destroy(data_msg->ecdh);
+  otrng_dh_mpi_release(data_msg->dh);
+  otrng_secure_wipe(data_msg->nonce, DATA_MSG_NONCE_BYTES);
+  free(data_msg->enc_msg);
+  otrng_secure_wipe(data_msg->mac, DATA_MSG_MAC_BYTES);
 
-  free(data_message);
+  free(data_msg);
 }
 
 INTERNAL otrng_result otrng_data_message_body_serialize(
-    uint8_t **body, size_t *bodylen, const data_message_s *data_message) {
-  size_t size = DATA_MSG_MAX_BYTES + data_message->enc_message_len;
+    uint8_t **body, size_t *bodylen, const data_message_s *data_msg) {
+  size_t size = DATA_MSG_MAX_BYTES + data_msg->enc_msg_len;
   uint8_t *cursor;
   size_t len = 0;
   uint8_t *destination = otrng_xmalloc_z(size);
@@ -62,25 +62,25 @@ INTERNAL otrng_result otrng_data_message_body_serialize(
   cursor = destination;
   cursor += otrng_serialize_uint16(cursor, OTRNG_PROTOCOL_VERSION_4);
   cursor += otrng_serialize_uint8(cursor, DATA_MSG_TYPE);
-  cursor += otrng_serialize_uint32(cursor, data_message->sender_instance_tag);
-  cursor += otrng_serialize_uint32(cursor, data_message->receiver_instance_tag);
-  cursor += otrng_serialize_uint8(cursor, data_message->flags);
-  cursor += otrng_serialize_uint32(cursor, data_message->previous_chain_n);
-  cursor += otrng_serialize_uint32(cursor, data_message->ratchet_id);
-  cursor += otrng_serialize_uint32(cursor, data_message->message_id);
-  cursor += otrng_serialize_ec_point(cursor, data_message->ecdh);
+  cursor += otrng_serialize_uint32(cursor, data_msg->sender_instance_tag);
+  cursor += otrng_serialize_uint32(cursor, data_msg->receiver_instance_tag);
+  cursor += otrng_serialize_uint8(cursor, data_msg->flags);
+  cursor += otrng_serialize_uint32(cursor, data_msg->previous_chain_n);
+  cursor += otrng_serialize_uint32(cursor, data_msg->ratchet_id);
+  cursor += otrng_serialize_uint32(cursor, data_msg->message_id);
+  cursor += otrng_serialize_ec_point(cursor, data_msg->ecdh);
 
   // TODO: @freeing @sanitizer This could be NULL. We need to test.
   if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - destination)),
-                                     &len, data_message->dh)) {
+                                     &len, data_msg->dh)) {
     free(destination);
     return OTRNG_ERROR;
   }
   cursor += len;
-  cursor += otrng_serialize_bytes_array(cursor, data_message->nonce,
+  cursor += otrng_serialize_bytes_array(cursor, data_msg->nonce,
                                         DATA_MSG_NONCE_BYTES);
-  cursor += otrng_serialize_data(cursor, data_message->enc_message,
-                                 data_message->enc_message_len);
+  cursor +=
+      otrng_serialize_data(cursor, data_msg->enc_msg, data_msg->enc_msg_len);
 
   if (body) {
     *body = destination;
@@ -100,7 +100,7 @@ otrng_data_message_deserialize(data_message_s *destination, const uint8_t *buff,
   int64_t len = bufflen;
   size_t read = 0;
   uint16_t protocol_version = 0;
-  uint8_t message_type = 0;
+  uint8_t msg_type = 0;
 
   (void)nread;
 
@@ -115,14 +115,14 @@ otrng_data_message_deserialize(data_message_s *destination, const uint8_t *buff,
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint8(&message_type, cursor, len, &read)) {
+  if (!otrng_deserialize_uint8(&msg_type, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (message_type != DATA_MSG_TYPE) {
+  if (msg_type != DATA_MSG_TYPE) {
     return OTRNG_ERROR;
   }
 
@@ -197,9 +197,8 @@ otrng_data_message_deserialize(data_message_s *destination, const uint8_t *buff,
   cursor += DATA_MSG_NONCE_BYTES;
   len -= DATA_MSG_NONCE_BYTES;
 
-  if (!otrng_deserialize_data(&destination->enc_message,
-                              &destination->enc_message_len, cursor, len,
-                              &read)) {
+  if (!otrng_deserialize_data(&destination->enc_msg, &destination->enc_msg_len,
+                              cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
@@ -227,8 +226,8 @@ otrng_data_message_sections_hash(uint8_t *destination, size_t destinationlen,
 }
 
 INTERNAL otrng_result otrng_data_message_authenticator(
-    uint8_t *destination, size_t destinationlen,
-    const message_mac_key_t mac_key, const uint8_t *body, size_t bodylen) {
+    uint8_t *destination, size_t destinationlen, const msg_mac_key_t mac_key,
+    const uint8_t *body, size_t bodylen) {
   uint8_t *sections = otrng_secure_alloc(HASH_BYTES);
 
   if (destinationlen < DATA_MSG_MAC_BYTES) {
@@ -248,14 +247,14 @@ INTERNAL otrng_result otrng_data_message_authenticator(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_bool otrng_valid_data_message(
-    message_mac_key_t mac_key, const data_message_s *data_message) {
+INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key_t mac_key,
+                                             const data_message_s *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
   // We don't need this tag to be in secure memory
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
 
-  if (!otrng_data_message_body_serialize(&body, &bodylen, data_message)) {
+  if (!otrng_data_message_body_serialize(&body, &bodylen, data_msg)) {
     return otrng_false;
   }
 
@@ -267,18 +266,18 @@ INTERNAL otrng_bool otrng_valid_data_message(
 
   free(body);
 
-  if (otrl_mem_differ(mac_tag, data_message->mac, DATA_MSG_MAC_BYTES) != 0) {
+  if (otrl_mem_differ(mac_tag, data_msg->mac, DATA_MSG_MAC_BYTES) != 0) {
     otrng_secure_wipe(mac_tag, DATA_MSG_MAC_BYTES);
     return otrng_false;
   }
 
-  if (!otrng_ec_point_valid(data_message->ecdh)) {
+  if (!otrng_ec_point_valid(data_msg->ecdh)) {
     return otrng_false;
   }
 
-  if (!data_message->dh) {
+  if (!data_msg->dh) {
     return otrng_true;
   }
 
-  return otrng_dh_mpi_valid(data_message->dh);
+  return otrng_dh_mpi_valid(data_msg->dh);
 }

@@ -51,7 +51,7 @@ typedef struct ring_sig_s {
  * @brief The Authentication function of the Ring Sig.
  *
  * It produces a signature of knowledge, named sigma, bound to the
- * message message, that demonstrates knowledge of a private key
+ * message msg, that demonstrates knowledge of a private key
  * corresponding to one of three public keys.
  *
  * @param [destination] The signature of knowledge
@@ -60,8 +60,8 @@ typedef struct ring_sig_s {
  * @param [A1] The first public key.
  * @param [A2] The second public key.
  * @param [A3] The thrid public key.
- * @param [message] The message to "sign".
- * @param [message_len] The length of the message.
+ * @param [msg] The message to "sign".
+ * @param [msg_len] The length of the message.
  *
  * @return OTRNG_SUCCESS if pub is one of (A1, A2, A3) and a signature of
  * knowledge could be created. Returns OTRNG_ERROR otherwise.
@@ -71,7 +71,7 @@ INTERNAL otrng_result otrng_rsig_authenticate(
     ring_sig_s *destination, const otrng_private_key_t priv,
     const otrng_public_key_t pub, const otrng_public_key_t A1,
     const otrng_public_key_t A2, const otrng_public_key_t A3,
-    const uint8_t *message, size_t messagelen);
+    const uint8_t *msg, size_t msg_len);
 
 /**
  * @brief The Verification function of the Ring Sig.
@@ -82,15 +82,14 @@ INTERNAL otrng_result otrng_rsig_authenticate(
  * @param [A1] The first public key.
  * @param [A2] The second public key.
  * @param [A3] The third public key.
- * @param [message] The message to "verify".
- * @param [message_len] The length of the message.
+ * @param [msg] The message to "verify".
+ * @param [msg_len] The length of the message.
  */
 INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *source,
                                       const otrng_public_key_t A1,
                                       const otrng_public_key_t A2,
                                       const otrng_public_key_t A3,
-                                      const uint8_t *message,
-                                      size_t messagelen);
+                                      const uint8_t *msg, size_t msg_len);
 
 /**
  * @brief Zero the values of the Ring Sig.
@@ -104,12 +103,12 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, ring_sig_s *destination,
     const otrng_private_key_t secret, const otrng_public_key_t pub,
     const otrng_public_key_t A1, const otrng_public_key_t A2,
-    const otrng_public_key_t A3, const uint8_t *message, size_t message_len);
+    const otrng_public_key_t A3, const uint8_t *msg, size_t msg_len);
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, const ring_sig_s *source,
     const otrng_public_key_t A1, const otrng_public_key_t A2,
-    const otrng_public_key_t A3, const uint8_t *message, size_t message_len);
+    const otrng_public_key_t A3, const uint8_t *msg, size_t msg_len);
 
 #ifdef OTRNG_AUTH_PRIVATE
 
@@ -123,16 +122,15 @@ INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
  * @param [T1] The first T value.
  * @param [T2] The second T value.
  * @param [T3] The third T value.
- * @param [message] The message to "verify".
- * @param [message_len] The length of the message.
+ * @param [msg] The message to "verify".
+ * @param [msg_len] The length of the message.
  */
 tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
     uint8_t usage_auth, const char *domain_sep,
     goldilocks_448_scalar_p destination, const goldilocks_448_point_p A1,
     const goldilocks_448_point_p A2, const goldilocks_448_point_p A3,
     const goldilocks_448_point_p T1, const goldilocks_448_point_p T2,
-    const goldilocks_448_point_p T3, const uint8_t *message,
-    size_t message_len);
+    const goldilocks_448_point_p T3, const uint8_t *msg, size_t msg_len);
 
 #endif
 

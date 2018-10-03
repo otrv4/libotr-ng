@@ -127,9 +127,10 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   }
 }
 
-tstatic otrng_result encrypt_data_message(
-    data_message_s *data_message, const uint8_t *message, size_t message_len,
-    const message_encryption_key_t enc_key) {
+tstatic otrng_result encrypt_data_message(data_message_s *data_message,
+                                          const uint8_t *message,
+                                          size_t message_len,
+                                          const msg_encryption_key_t enc_key) {
   uint8_t *c = NULL;
   int err;
 
@@ -144,8 +145,8 @@ tstatic otrng_result encrypt_data_message(
     return OTRNG_ERROR;
   }
 
-  data_message->enc_message_len = message_len;
-  data_message->enc_message = c;
+  data_message->enc_msg_len = message_len;
+  data_message->enc_msg = c;
 
 #ifdef DEBUG
   debug_print("\n");
@@ -179,7 +180,7 @@ tstatic data_message_s *generate_data_message(const otrng_s *otr,
 }
 
 tstatic otrng_result serialize_and_encode_data_message(
-    string_p *destination, const message_mac_key_t mac_key,
+    string_p *destination, const msg_mac_key_t mac_key,
     uint8_t *to_reveal_mac_keys, size_t to_reveal_mac_keys_len,
     const data_message_s *data_message) {
   uint8_t *body = NULL;
@@ -222,13 +223,13 @@ tstatic otrng_result send_data_message(string_p *to_send,
                                        otrng_warning *warn) {
   data_message_s *data_message = NULL;
   uint32_t ratchet_id = otr->keys->i;
-  message_encryption_key_t enc_key;
-  message_mac_key_t mac_key;
+  msg_encryption_key_t enc_key;
+  msg_mac_key_t mac_key;
 
   /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(
-          otr->keys, otr->client->max_stored_message_keys, NULL, otr->keys->j,
-          0, 's', warn)) {
+          otr->keys, otr->client->max_stored_msg_keys, NULL, otr->keys->j, 0,
+          's', warn)) {
     return OTRNG_ERROR;
   }
 
@@ -236,8 +237,8 @@ tstatic otrng_result send_data_message(string_p *to_send,
   memset(mac_key, 0, MAC_KEY_BYTES);
 
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, NULL,
-                                      otr->client->max_stored_message_keys, 0,
-                                      's', warn);
+                                      otr->client->max_stored_msg_keys, 0, 's',
+                                      warn);
 
   data_message = generate_data_message(otr, ratchet_id);
   if (!data_message) {

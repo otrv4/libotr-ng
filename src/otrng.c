@@ -1773,9 +1773,9 @@ tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *source,
   return otrng_parse_tlvs(tlvs_start + 1, tlvs_len);
 }
 
-tstatic otrng_result decrypt_data_message(
-    otrng_response_s *response, const message_encryption_key_t enc_key,
-    const data_message_s *message) {
+tstatic otrng_result decrypt_data_message(otrng_response_s *response,
+                                          const msg_encryption_key_t enc_key,
+                                          const data_message_s *message) {
   string_p *destination = &response->to_display;
   uint8_t *plain;
   int err;
@@ -1790,9 +1790,9 @@ tstatic otrng_result decrypt_data_message(
 #endif
 
   // TODO: @initialization What if message->enc_message_len == 0?
-  plain = otrng_secure_alloc(message->enc_message_len);
+  plain = otrng_secure_alloc(message->enc_msg_len);
 
-  err = crypto_stream_xor(plain, message->enc_message, message->enc_message_len,
+  err = crypto_stream_xor(plain, message->enc_msg, message->enc_msg_len,
                           message->nonce, enc_key);
 
   if (err) {
@@ -1801,12 +1801,12 @@ tstatic otrng_result decrypt_data_message(
   }
 
   /* If plain != "" and message->enc_message_len != 0 */
-  if (otrng_strnlen((string_p)plain, message->enc_message_len)) {
-    *destination = otrng_xstrndup((char *)plain, message->enc_message_len);
+  if (otrng_strnlen((string_p)plain, message->enc_msg_len)) {
+    *destination = otrng_xstrndup((char *)plain, message->enc_msg_len);
   }
 
-  response->tlvs = deserialize_received_tlvs(plain, message->enc_message_len);
-  otrng_secure_wipe(plain, message->enc_message_len);
+  response->tlvs = deserialize_received_tlvs(plain, message->enc_msg_len);
+  otrng_secure_wipe(plain, message->enc_msg_len);
   free(plain);
   return OTRNG_SUCCESS;
 }
@@ -1888,8 +1888,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     otrng_response_s *response, otrng_warning *warn, const uint8_t *buff,
     size_t buflen, otrng_s *otr) {
   data_message_s *message = otrng_data_message_new();
-  message_encryption_key_t enc_key;
-  message_mac_key_t mac_key;
+  msg_encryption_key_t enc_key;
+  msg_mac_key_t mac_key;
   size_t read = 0;
   receiving_ratchet_s *tmp_receiving_ratchet;
 
@@ -1938,7 +1938,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
             otr->keys, tmp_receiving_ratchet))) {
       /* if a new ratchet */
       if (otrng_failed(otrng_key_manager_derive_dh_ratchet_keys(
-              otr->keys, otr->client->max_stored_message_keys,
+              otr->keys, otr->client->max_stored_msg_keys,
               tmp_receiving_ratchet, message->message_id,
               message->previous_chain_n, 'r', warn))) {
         otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
@@ -1948,7 +1948,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
       if (otrng_failed(otrng_key_manager_derive_chain_keys(
               enc_key, mac_key, otr->keys, tmp_receiving_ratchet,
-              otr->client->max_stored_message_keys, message->message_id, 'r',
+              otr->client->max_stored_msg_keys, message->message_id, 'r',
               warn))) {
         return OTRNG_ERROR;
       }
