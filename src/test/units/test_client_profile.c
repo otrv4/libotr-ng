@@ -50,7 +50,7 @@ static void test_client_profile_serializes_body() {
 
   otrng_ec_point_copy(profile->long_term_pub_key, keypair.pub);
   const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
-  otrng_public_key *fk = create_forging_key_from(fsym);
+  otrng_public_key_t *fk = create_forging_key_from(fsym);
   otrng_ec_point_copy(profile->forging_pub_key, *fk);
   free(fk);
 
@@ -104,7 +104,7 @@ static void test_client_profile_serializes() {
   profile->expires = 15;
 
   const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
-  otrng_public_key *fk = create_forging_key_from(fsym);
+  otrng_public_key_t *fk = create_forging_key_from(fsym);
   otrng_ec_point_copy(profile->forging_pub_key, *fk);
   free(fk);
 
@@ -144,7 +144,7 @@ static void test_otrng_client_profile_deserializes() {
   otrng_assert(profile != NULL);
 
   const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
-  otrng_public_key *fk = create_forging_key_from(fsym);
+  otrng_public_key_t *fk = create_forging_key_from(fsym);
   otrng_ec_point_copy(profile->forging_pub_key, *fk);
   free(fk);
 
@@ -174,7 +174,7 @@ static void test_client_profile_signs_and_verify() {
   otrng_client_profile_s *profile = client_profile_new("4");
 
   const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
-  otrng_public_key *fk = create_forging_key_from(fsym);
+  otrng_public_key_t *fk = create_forging_key_from(fsym);
   otrng_ec_point_copy(profile->forging_pub_key, *fk);
   free(fk);
 

@@ -81,7 +81,7 @@ static void test_serialize_otrng_deserialize_data() {
 
 static void test_ser_des_otrng_public_key() {
   otrng_keypair_s keypair;
-  otrng_public_key deserialized;
+  otrng_public_key_t deserialized;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(&keypair, sym);
 
@@ -98,7 +98,7 @@ static void test_ser_des_otrng_public_key() {
 
 static void test_ser_des_otrng_shared_prekey() {
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pub deserialized;
+  otrng_shared_prekey_pub_t deserialized;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
 

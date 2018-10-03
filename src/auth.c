@@ -132,10 +132,10 @@ tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
 
 static void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, goldilocks_448_scalar_p c,
-    const ring_sig_s *source, const otrng_public_key A1,
-    const otrng_public_key A2, const otrng_public_key A3,
+    const ring_sig_s *source, const otrng_public_key_t A1,
+    const otrng_public_key_t A2, const otrng_public_key_t A3,
     const uint8_t *message, size_t message_len) {
-  otrng_public_key gr1, gr2, gr3, A1c1, A2c2, A3c3;
+  otrng_public_key_t gr1, gr2, gr3, A1c1, A2c2, A3c3;
 
   goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, source->r1);
   goldilocks_448_point_scalarmul(gr2, goldilocks_448_point_base, source->r2);
@@ -155,11 +155,11 @@ static void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
   // TODO: do we need to wipe the public keys used here?
 }
 
-INTERNAL otrng_result
-otrng_rsig_authenticate(ring_sig_s *destination, const otrng_private_key secret,
-                        const otrng_public_key pub, const otrng_public_key A1,
-                        const otrng_public_key A2, const otrng_public_key A3,
-                        const uint8_t *message, size_t message_len) {
+INTERNAL otrng_result otrng_rsig_authenticate(
+    ring_sig_s *destination, const otrng_private_key_t secret,
+    const otrng_public_key_t pub, const otrng_public_key_t A1,
+    const otrng_public_key_t A2, const otrng_public_key_t A3,
+    const uint8_t *message, size_t message_len) {
   return otrng_rsig_authenticate_with_usage_and_domain(
       OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, destination,
       secret, pub, A1, A2, A3, message, message_len);
@@ -167,9 +167,9 @@ otrng_rsig_authenticate(ring_sig_s *destination, const otrng_private_key secret,
 
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, ring_sig_s *destination,
-    const otrng_private_key secret, const otrng_public_key pub,
-    const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *message, size_t message_len) {
+    const otrng_private_key_t secret, const otrng_public_key_t pub,
+    const otrng_public_key_t A1, const otrng_public_key_t A2,
+    const otrng_public_key_t A3, const uint8_t *message, size_t message_len) {
   goldilocks_bool_t is_A1 = goldilocks_448_point_eq(pub, A1);
   goldilocks_bool_t is_A2 = goldilocks_448_point_eq(pub, A2);
   goldilocks_bool_t is_A3 = goldilocks_448_point_eq(pub, A3);
@@ -273,9 +273,9 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
 }
 
 INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *source,
-                                      const otrng_public_key A1,
-                                      const otrng_public_key A2,
-                                      const otrng_public_key A3,
+                                      const otrng_public_key_t A1,
+                                      const otrng_public_key_t A2,
+                                      const otrng_public_key_t A3,
                                       const uint8_t *message,
                                       size_t message_len) {
   return otrng_rsig_verify_with_usage_and_domain(
@@ -285,10 +285,10 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *source,
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, const ring_sig_s *source,
-    const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *message, size_t message_len) {
+    const otrng_public_key_t A1, const otrng_public_key_t A2,
+    const otrng_public_key_t A3, const uint8_t *message, size_t message_len) {
   goldilocks_448_scalar_p c;
-  otrng_private_key c1c2c3;
+  otrng_private_key_t c1c2c3;
 
   otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
       usage, domain_sep, c, source, A1, A2, A3, message, message_len);

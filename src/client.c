@@ -773,7 +773,7 @@ INTERNAL otrng_result otrng_client_add_private_key_v4(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_public_key *
+INTERNAL otrng_public_key_t *
 otrng_client_get_forging_key(otrng_client_s *client) {
   assert(client);
 
@@ -794,15 +794,15 @@ INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client) {
   client->global_state->callbacks->create_forging_key(client->client_id);
 }
 
-INTERNAL otrng_result otrng_client_add_forging_key(otrng_client_s *client,
-                                                   const otrng_public_key key) {
+INTERNAL otrng_result otrng_client_add_forging_key(
+    otrng_client_s *client, const otrng_public_key_t key) {
   assert(client);
 
   if (client->forging_key) {
     return OTRNG_ERROR;
   }
 
-  client->forging_key = otrng_xmalloc_z(sizeof(otrng_public_key));
+  client->forging_key = otrng_xmalloc_z(sizeof(otrng_public_key_t));
 
   otrng_ec_point_copy(*client->forging_key, key);
 

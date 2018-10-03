@@ -67,11 +67,11 @@ typedef struct ring_sig_s {
  * knowledge could be created. Returns OTRNG_ERROR otherwise.
  */
 
-INTERNAL otrng_result
-otrng_rsig_authenticate(ring_sig_s *destination, const otrng_private_key priv,
-                        const otrng_public_key pub, const otrng_public_key A1,
-                        const otrng_public_key A2, const otrng_public_key A3,
-                        const uint8_t *message, size_t messagelen);
+INTERNAL otrng_result otrng_rsig_authenticate(
+    ring_sig_s *destination, const otrng_private_key_t priv,
+    const otrng_public_key_t pub, const otrng_public_key_t A1,
+    const otrng_public_key_t A2, const otrng_public_key_t A3,
+    const uint8_t *message, size_t messagelen);
 
 /**
  * @brief The Verification function of the Ring Sig.
@@ -86,9 +86,9 @@ otrng_rsig_authenticate(ring_sig_s *destination, const otrng_private_key priv,
  * @param [message_len] The length of the message.
  */
 INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *source,
-                                      const otrng_public_key A1,
-                                      const otrng_public_key A2,
-                                      const otrng_public_key A3,
+                                      const otrng_public_key_t A1,
+                                      const otrng_public_key_t A2,
+                                      const otrng_public_key_t A3,
                                       const uint8_t *message,
                                       size_t messagelen);
 
@@ -102,14 +102,14 @@ INTERNAL void otrng_ring_sig_destroy(ring_sig_s *source);
 
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, ring_sig_s *destination,
-    const otrng_private_key secret, const otrng_public_key pub,
-    const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *message, size_t message_len);
+    const otrng_private_key_t secret, const otrng_public_key_t pub,
+    const otrng_public_key_t A1, const otrng_public_key_t A2,
+    const otrng_public_key_t A3, const uint8_t *message, size_t message_len);
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, const ring_sig_s *source,
-    const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *message, size_t message_len);
+    const otrng_public_key_t A1, const otrng_public_key_t A2,
+    const otrng_public_key_t A3, const uint8_t *message, size_t message_len);
 
 #ifdef OTRNG_AUTH_PRIVATE
 

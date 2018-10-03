@@ -110,9 +110,9 @@ INTERNAL void otrng_key_manager_free(key_manager_s *manager) {
 
 INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager) {
   otrng_secure_wipe(manager->their_shared_prekey,
-                    sizeof(otrng_shared_prekey_pub));
+                    sizeof(otrng_shared_prekey_pub_t));
   otrng_secure_wipe(manager->our_shared_prekey,
-                    sizeof(otrng_shared_prekey_pub));
+                    sizeof(otrng_shared_prekey_pub_t));
 }
 
 INTERNAL receiving_ratchet_s *

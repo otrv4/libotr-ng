@@ -92,8 +92,8 @@ typedef struct key_manager_s {
   // TODO: @refactoring REMOVE THIS
   // or turn it into a pair and store both this and the long term keypair on
   // this key manager.
-  otrng_shared_prekey_pub our_shared_prekey;
-  otrng_shared_prekey_pub their_shared_prekey;
+  otrng_shared_prekey_pub_t our_shared_prekey;
+  otrng_shared_prekey_pub_t their_shared_prekey;
 
   /* Data message context */
   unsigned int i;  /* the ratchet id. */

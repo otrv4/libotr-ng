@@ -59,7 +59,7 @@ typedef struct otrng_client_s {
 
   struct otrng_global_state_s *global_state;
   otrng_keypair_s *keypair;
-  otrng_public_key *forging_key;
+  otrng_public_key_t *forging_key;
 
   // TODO: @client One or many?
   otrng_client_profile_s *client_profile;
@@ -195,12 +195,13 @@ INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client);
 INTERNAL otrng_result otrng_client_add_private_key_v4(
     otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-INTERNAL otrng_public_key *otrng_client_get_forging_key(otrng_client_s *client);
+INTERNAL otrng_public_key_t *
+otrng_client_get_forging_key(otrng_client_s *client);
 
 INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client);
 
-INTERNAL otrng_result otrng_client_add_forging_key(otrng_client_s *client,
-                                                   const otrng_public_key key);
+INTERNAL otrng_result otrng_client_add_forging_key(
+    otrng_client_s *client, const otrng_public_key_t key);
 
 API const otrng_client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client);

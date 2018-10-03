@@ -149,7 +149,7 @@ API otrng_result otrng_global_state_generate_private_key(
 
 tstatic otrng_result otrng_global_state_add_forging_key(
     otrng_global_state_s *gs, const otrng_client_id_s clientop,
-    otrng_public_key *fk) {
+    otrng_public_key_t *fk) {
   return otrng_client_add_forging_key(get_client(gs, clientop), *fk);
 }
 

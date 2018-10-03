@@ -515,7 +515,7 @@ client_profile_verify_signature(const otrng_client_profile_s *client_profile) {
 
 INTERNAL otrng_client_profile_s *otrng_client_profile_build(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
-    const otrng_public_key forging_key, unsigned int expiration_time) {
+    const otrng_public_key_t forging_key, unsigned int expiration_time) {
   otrng_client_profile_s *client_profile;
   time_t expires;
   if (!otrng_instance_tag_valid(instance_tag) || !versions || !keypair) {

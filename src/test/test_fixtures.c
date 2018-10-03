@@ -118,11 +118,11 @@ otrng_client_callbacks_s test_callbacks[1] = {{
     .load_prekey_profile = &load_prekey_profile_cb_empty,
 }};
 
-otrng_public_key *
+otrng_public_key_t *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
   otrng_keypair_s *kf = otrng_keypair_new();
   otrng_keypair_generate(kf, sym);
-  otrng_public_key *res = otrng_xmalloc_z(sizeof(otrng_public_key));
+  otrng_public_key_t *res = otrng_xmalloc_z(sizeof(otrng_public_key_t));
   otrng_ec_point_copy(*res, kf->pub);
   otrng_keypair_free(kf);
   return res;
@@ -139,7 +139,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_client_add_private_key_v4(otrng_fixture->client, sym);
   const uint8_t sym2[ED448_PRIVATE_BYTES] = {
       2}; // non-random forging key on purpose
-  otrng_public_key *fk = create_forging_key_from(sym2);
+  otrng_public_key_t *fk = create_forging_key_from(sym2);
   otrng_client_add_forging_key(otrng_fixture->client, *fk);
   free(fk);
   otrng_client_add_shared_prekey_v4(otrng_fixture->client, sym);
@@ -204,7 +204,7 @@ void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data) {
   otrng_assert(otrng_ec_point_valid(f->shared_prekey->pub));
 
   const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
-  otrng_public_key *fk = create_forging_key_from(fsym);
+  otrng_public_key_t *fk = create_forging_key_from(fsym);
   otrng_ec_point_copy(f->profile->forging_pub_key, *fk);
   free(fk);
 
@@ -354,7 +354,7 @@ void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
   uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {byte + 0xF};
 
   otrng_client_add_private_key_v4(client, long_term_priv);
-  otrng_public_key *fk = create_forging_key_from(forging_sym);
+  otrng_public_key_t *fk = create_forging_key_from(forging_sym);
   otrng_client_add_forging_key(client, *fk);
   free(fk);
   otrng_client_add_shared_prekey_v4(client, shared_prekey_priv);

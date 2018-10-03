@@ -59,18 +59,18 @@ INTERNAL otrng_result otrng_deserialize_ec_point(ec_point_t point,
                                                  const uint8_t *serialized,
                                                  size_t buflen);
 
-INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key pub,
+INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key_t pub,
                                                    const uint8_t *serialized,
                                                    size_t ser_len,
                                                    size_t *read);
 
-INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key pub,
+INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key_t pub,
                                                     const uint8_t *serialized,
                                                     size_t ser_len,
                                                     size_t *read);
 
 INTERNAL otrng_result otrng_deserialize_shared_prekey(
-    otrng_shared_prekey_pub shared_prekey, const uint8_t *serialized,
+    otrng_shared_prekey_pub_t shared_prekey, const uint8_t *serialized,
     size_t ser_len, size_t *read);
 
 INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar_t scalar,

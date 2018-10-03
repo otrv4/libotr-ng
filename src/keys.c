@@ -225,7 +225,7 @@ API void otrng_shared_prekey_pair_debug_print(FILE *f, int indent,
   debug_api_print(f, "} // shared_prekey_pair\n");
 }
 
-API void otrng_public_key_debug_print(FILE *f, otrng_public_key k) {
+API void otrng_public_key_debug_print(FILE *f, otrng_public_key_t k) {
   if (otrng_debug_print_should_ignore("public_key")) {
     return;
   }
@@ -241,7 +241,7 @@ API void otrng_public_key_debug_print(FILE *f, otrng_public_key k) {
   free(r);
 }
 
-API void otrng_private_key_debug_print(FILE *f, otrng_private_key k) {
+API void otrng_private_key_debug_print(FILE *f, otrng_private_key_t k) {
   if (otrng_debug_print_should_ignore("private_key")) {
     return;
   }
@@ -255,7 +255,7 @@ API void otrng_private_key_debug_print(FILE *f, otrng_private_key k) {
 }
 
 API void otrng_shared_prekey_pub_debug_print(FILE *f,
-                                             otrng_shared_prekey_pub k) {
+                                             otrng_shared_prekey_pub_t k) {
   if (otrng_debug_print_should_ignore("shared_prekey_pub")) {
     return;
   }
@@ -272,7 +272,7 @@ API void otrng_shared_prekey_pub_debug_print(FILE *f,
 }
 
 API void otrng_shared_prekey_priv_debug_print(FILE *f,
-                                              otrng_shared_prekey_priv k) {
+                                              otrng_shared_prekey_priv_t k) {
   if (otrng_debug_print_should_ignore("shared_prekey_priv")) {
     return;
   }
