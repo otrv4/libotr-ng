@@ -31,6 +31,8 @@
 #include "prekey_profile.h"
 #include "shared.h"
 
+struct otrng_client_s;
+
 #define OTRNG_PREKEY_DAKE1_MSG 0x35
 #define OTRNG_PREKEY_DAKE2_MSG 0x36
 #define OTRNG_PREKEY_DAKE3_MSG 0x37
@@ -177,7 +179,7 @@ API char *otrng_prekey_client_publish(otrng_prekey_client_s *client);
 
 API otrng_result otrng_prekey_client_receive(char **tosend, const char *server,
                                              const char *message,
-                                             otrng_prekey_client_s *client);
+                                             struct otrng_client_s *client);
 
 API otrng_result otrng_parse_header(uint8_t *message_type, const uint8_t *buf,
                                     size_t buflen, size_t *read);

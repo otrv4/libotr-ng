@@ -92,6 +92,8 @@ tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
    client profiles should only be used when RECEIVING a DAKE with it,
    we should never send it, and client->client_profile MUST NOT be invalid,
    when doing any operation. */
+/* TODO: @ola let's implement a fast verify that only checks expiry, and
+   assumes that the rest of the data is correct since last time */
 tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
   uint32_t itag;
 
@@ -152,7 +154,8 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
 
   ensure_valid_long_term_key(client);
   ensure_valid_client_profile(client);
-  // TODO: here we should check if the client profile is close to expiring, and
+
+  // TODO: @ola here we should check if the client profile is close to expiring, and
   // in that case move it to the expired part and create a new one
 
   ensure_valid_prekey_profile(client);

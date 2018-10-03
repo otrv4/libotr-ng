@@ -157,7 +157,7 @@ static void test_receive_prekey_server_messages(void) {
 
   char *to_send = NULL;
   otrng_assert_is_success(otrng_prekey_client_receive(
-      &to_send, "prekey@localhost", dake_2, alice->prekey_client));
+      &to_send, "prekey@localhost", dake_2, alice));
 
   otrng_assert(!to_send); /* wrong instance tag */
 
@@ -170,7 +170,7 @@ static void test_receive_prekey_server_messages(void) {
                      98);
 
   otrng_assert_is_success(otrng_prekey_client_receive(
-      &to_send, "prekey@localhost", success, alice->prekey_client));
+      &to_send, "prekey@localhost", success, alice));
 
   otrng_assert(!to_send); /* wrong instance tag */
 
