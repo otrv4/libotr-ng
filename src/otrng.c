@@ -678,12 +678,12 @@ tstatic otrng_result reply_with_auth_r_message(string_p *destination,
 }
 
 tstatic otrng_result generate_tmp_key_r(uint8_t *destination, otrng_s *otr) {
-  k_ecdh tmp_ecdh_k1;
-  k_ecdh tmp_ecdh_k2;
-  k_ecdh ke;
+  k_ecdh_t tmp_ecdh_k1;
+  k_ecdh_t tmp_ecdh_k2;
+  k_ecdh_t ke;
   dh_shared_secret k_dh;
   size_t k_dh_len = 0;
-  brace_key bk;
+  brace_key_t bk;
 
   // TODO: @refactoring this will be calculated again later
   if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,
@@ -1078,12 +1078,12 @@ API otrng_result otrng_send_non_interactive_auth(
 }
 
 tstatic otrng_result generate_tmp_key_i(uint8_t *destination, otrng_s *otr) {
-  k_ecdh ke;
-  k_ecdh tmp_ecdh_k1;
-  k_ecdh tmp_ecdh_k2;
+  k_ecdh_t ke;
+  k_ecdh_t tmp_ecdh_k1;
+  k_ecdh_t tmp_ecdh_k2;
   dh_shared_secret k_dh;
   size_t k_dh_len = 0;
-  brace_key bk;
+  brace_key_t bk;
 
   // TODO: @refactoring this workaround is not the nicest there is
   if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,

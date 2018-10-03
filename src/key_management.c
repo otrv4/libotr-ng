@@ -255,10 +255,10 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   return OTRNG_SUCCESS;
 }
 
-INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key, k_ecdh ke,
-                                                  brace_key bk,
-                                                  k_ecdh tmp_ecdh_k1,
-                                                  k_ecdh tmp_ecdh_k2) {
+INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key, k_ecdh_t ke,
+                                                  brace_key_t bk,
+                                                  k_ecdh_t tmp_ecdh_k1,
+                                                  k_ecdh_t tmp_ecdh_k2) {
   uint8_t usage_tmp_key = 0x0B;
   goldilocks_shake256_ctx_p hd;
 
@@ -402,7 +402,7 @@ static uint8_t usage_shared_secret = 0x03;
 
 tstatic void calculate_shared_secret(key_manager_s *manager,
                                      receiving_ratchet_s *tmp_receiving_ratchet,
-                                     k_ecdh ke, const char action) {
+                                     k_ecdh_t ke, const char action) {
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage_shared_secret);
@@ -430,7 +430,7 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
     key_manager_s *manager, const otrng_bool interactive) {
 
   if (interactive) {
-    k_ecdh ke;
+    k_ecdh_t ke;
 
     if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,
                                   manager->our_ecdh->priv,
@@ -522,7 +522,7 @@ INTERNAL otrng_result otrng_key_manager_ratcheting_init(
 tstatic otrng_result enter_new_ratchet(
     key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
     const char action) {
-  k_ecdh ke;
+  k_ecdh_t ke;
 
   /* K_ecdh = ECDH(our_ecdh.secret, their_ecdh) */
   assert(action == 's' || action == 'r');

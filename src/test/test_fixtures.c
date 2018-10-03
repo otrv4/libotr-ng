@@ -261,7 +261,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
                                 bob->keys->our_ecdh->pub);
   otrng_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
   otrng_assert_not_zero(alice->keys->ssid, sizeof(alice->keys->ssid));
-  otrng_assert_not_zero(alice->keys->shared_secret, sizeof(shared_secret));
+  otrng_assert_not_zero(alice->keys->shared_secret, sizeof(shared_secret_t));
 
   // Alice replies with an auth-r message
   otrng_assert(alice->state == OTRNG_STATE_WAITING_AUTH_I);
@@ -280,8 +280,8 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
                                 alice->keys->our_ecdh->pub);
   otrng_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh->pub);
   otrng_assert_not_zero(bob->keys->ssid, sizeof(alice->keys->ssid));
-  otrng_assert_zero(bob->keys->shared_secret, sizeof(shared_secret));
-  otrng_assert_not_zero(bob->keys->current->root_key, sizeof(root_key));
+  otrng_assert_zero(bob->keys->shared_secret, sizeof(shared_secret_t));
+  otrng_assert_not_zero(bob->keys->current->root_key, sizeof(root_key_t));
 
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);

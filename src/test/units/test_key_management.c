@@ -29,13 +29,13 @@ static void test_derive_ratchet_keys() {
   key_manager_s *manager = otrng_xmalloc_z(sizeof(key_manager_s));
   otrng_key_manager_init(manager);
 
-  memset(manager->shared_secret, 0, sizeof(shared_secret));
-  root_key rk;
-  memset(rk, 0, sizeof(root_key));
+  memset(manager->shared_secret, 0, sizeof(shared_secret_t));
+  root_key_t rk;
+  memset(rk, 0, sizeof(root_key_t));
 
   key_manager_derive_ratchet_keys(manager, NULL, 's');
 
-  root_key expected_root_key;
+  root_key_t expected_root_key;
   sending_chain_key expected_chain_key_s;
 
   uint8_t buff[1] = {0x14};
@@ -44,17 +44,17 @@ static void test_derive_ratchet_keys() {
   goldilocks_shake256_ctx_p hd;
   hash_init_with_dom(hd);
   hash_update(hd, buff, 1);
-  hash_update(hd, rk, sizeof(root_key));
-  hash_update(hd, manager->shared_secret, sizeof(shared_secret));
+  hash_update(hd, rk, sizeof(root_key_t));
+  hash_update(hd, manager->shared_secret, sizeof(shared_secret_t));
 
-  hash_final(hd, expected_root_key, sizeof(root_key));
+  hash_final(hd, expected_root_key, sizeof(root_key_t));
   hash_destroy(hd);
 
   goldilocks_shake256_ctx_p hd2;
   hash_init_with_dom(hd2);
   hash_update(hd2, buff2, 1);
-  hash_update(hd2, rk, sizeof(root_key));
-  hash_update(hd2, manager->shared_secret, sizeof(shared_secret));
+  hash_update(hd2, rk, sizeof(root_key_t));
+  hash_update(hd2, manager->shared_secret, sizeof(shared_secret_t));
 
   hash_final(hd2, expected_chain_key_s, sizeof(sending_chain_key));
   hash_destroy(hd2);
@@ -67,12 +67,12 @@ static void test_calculate_ssid() {
   key_manager_s manager;
   otrng_key_manager_init(&manager);
 
-  shared_secret s = {0};
+  shared_secret_t s = {0};
   uint8_t expected_ssid[8] = {
       0x11, 0xee, 0xe5, 0xe1, 0xeb, 0x7e, 0x32, 0x0a,
   };
 
-  memcpy(s, manager.shared_secret, sizeof(shared_secret));
+  memcpy(s, manager.shared_secret, sizeof(shared_secret_t));
 
   calculate_ssid(&manager);
   otrng_assert_cmpmem(expected_ssid, manager.ssid, 8);
@@ -84,7 +84,7 @@ static void test_calculate_extra_symm_key() {
   key_manager_s manager;
   otrng_key_manager_init(&manager);
 
-  shared_secret s = {0};
+  shared_secret_t s = {0};
   uint8_t expected_extra_key[EXTRA_SYMMETRIC_KEY_BYTES] = {
       0xb7, 0x98, 0x10, 0x75, 0x84, 0x00, 0x3f, 0x6b, 0x85, 0x6f, 0xd3,
       0x5d, 0x8f, 0x0b, 0xf3, 0x61, 0x0d, 0x7b, 0xea, 0x97, 0x44, 0x4a,

@@ -30,11 +30,11 @@
 #include "warn.h"
 
 /* the different kind of keys for the key management */
-typedef uint8_t brace_key[BRACE_KEY_BYTES];
-typedef uint8_t k_ecdh[ED448_POINT_BYTES];
-typedef uint8_t shared_secret[SHARED_SECRET_BYTES];
+typedef uint8_t brace_key_t[BRACE_KEY_BYTES];
+typedef uint8_t k_ecdh_t[ED448_POINT_BYTES];
+typedef uint8_t shared_secret_t[SHARED_SECRET_BYTES];
 
-typedef uint8_t root_key[ROOT_KEY_BYTES];
+typedef uint8_t root_key_t[ROOT_KEY_BYTES];
 typedef uint8_t sending_chain_key[CHAIN_KEY_BYTES];
 typedef uint8_t receiving_chain_key[CHAIN_KEY_BYTES];
 typedef uint8_t message_enc_key[ENC_KEY_BYTES];
@@ -43,7 +43,7 @@ typedef uint8_t extra_symmetric_key[EXTRA_SYMMETRIC_KEY_BYTES];
 
 /* the different kind of keys needed for a chain ratchet */
 typedef struct ratchet_s {
-  root_key root_key;
+  root_key_t root_key;
   sending_chain_key chain_s;
   receiving_chain_key chain_r;
 } ratchet_s;
@@ -64,14 +64,15 @@ typedef struct receiving_ratchet_s {
   ec_point their_ecdh;
   dh_public_key their_dh;
 
-  brace_key brace_key;
-  shared_secret shared_secret;
+  brace_key_t brace_key;
+  shared_secret_t shared_secret;
 
+  /* TODO: these should have fixed size */
   unsigned int i;  /* Counter of the ratchet */
   unsigned int k;  /* Counter of the receiving ratchet */
   unsigned int j;  /* Counter of the sending ratchet */
   unsigned int pn; /* the number of messages in the previous DH ratchet. */
-  root_key root_key;
+  root_key_t root_key;
   receiving_chain_key chain_r;
 
   extra_symmetric_key extra_symmetric_key;
@@ -102,8 +103,8 @@ typedef struct key_manager_s {
 
   ratchet_s *current;
 
-  brace_key brace_key;
-  shared_secret shared_secret;
+  brace_key_t brace_key;
+  shared_secret_t shared_secret;
 
   uint8_t ssid[SSID_BYTES];
   otrng_bool ssid_half_first;
@@ -226,10 +227,10 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
  * @param [tmp_ecdh_k1]  A temporary ecdh key.
  * @param [tmp_ecdh_k2]  A temporary ecdh key.
  */
-INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key, k_ecdh ke,
-                                                  brace_key brace_key,
-                                                  k_ecdh tmp_ecdh_k1,
-                                                  k_ecdh tmp_ecdh_k2);
+INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key, k_ecdh_t ke,
+                                                  brace_key_t brace_key,
+                                                  k_ecdh_t tmp_ecdh_k1,
+                                                  k_ecdh_t tmp_ecdh_k2);
 
 /**
  * @brief Generate the auth_mac to be used by the non-interactive DAKE.

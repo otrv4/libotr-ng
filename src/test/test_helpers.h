@@ -184,12 +184,7 @@
 
 #define otrng_assert_root_key_eq(rk1, rk2)                                     \
   do {                                                                         \
-    otrng_assert_cmpmem((rk1), (rk2), sizeof(root_key));                       \
-  } while (0)
-
-#define otrng_assert_chain_key_eq(ck1, ck2)                                    \
-  do {                                                                         \
-    otrng_assert_cmpmem((ck1), (ck2), sizeof(chain_key_p));                    \
+    otrng_assert_cmpmem((rk1), (rk2), sizeof(root_key_t));                       \
   } while (0)
 
 #define fn_apply(fn, ...)                                                      \
