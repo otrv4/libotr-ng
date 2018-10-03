@@ -1193,9 +1193,12 @@ API otrng_bool otrng_client_should_publish(otrng_client_s *client) {
 }
 
 API void otrng_client_published(otrng_client_s *client) {
+  client->client_profile->should_publish = otrng_false;
+
   client->should_publish = otrng_false;
 
-  // TODO: here everything should be marked as published
+  // TODO: @ola here everything else should be marked as well, once they have
+  // their flags
 }
 
 #ifdef DEBUG_API

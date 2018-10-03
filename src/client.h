@@ -85,6 +85,7 @@ typedef struct otrng_client_s {
   /* This flag will be set when there is anything that should be published
      to prekey servers */
   otrng_bool should_publish;
+  uint32_t prekey_messages_num_to_publish;
 
   // OtrlPrivKey *privkeyv3; // ???
   // otrng_instag_s *instag; // TODO: @client Store the instance tag here rather
