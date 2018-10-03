@@ -18,9 +18,8 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// This file doesn't have the standard header file guard - the reason for that
-// has to do with weird interactions with static inline and so on.
-// It's a bit horrible, but let's keep it this way for now.
+#ifndef __OTRNG_DEBUG_H
+#define __OTRNG_DEBUG_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -87,4 +86,6 @@ static inline void otrng_memdump(const uint8_t *source, size_t len) {
   (void)len;
   (void)_otrng_memdump;
 }
+#endif
+
 #endif

@@ -281,7 +281,7 @@ static void test_global_state_prekey_profile_management(void) {
         "s1vlz8xF+vPV82xSwmEA65IyR3ZaR6NzZNNAznBrXXb7YjvMuYtTtKnp+"
         "LZfUSYFcjoZACAqnA8V5fDvuuCFFMINr6rKZihf4wTVOKO+hO+"
         "rMWi7dsYeLu3eee7fZ9LsHUuriHxadL6mW0J6QAPeo2n75TnDUt1aVpjCK0Mrut0hTstbD"
-        "oyyEVaVNh2Rx87o30YStXn92fDNCBsGHU+F2xv/ZQ2OQA=\n",
+        "oyyEVaVNh2Rx87o30YStXn92fDNCBsGHU+F2xv/ZQ2OQAA\n",
         prekey_profile);
   rewind(prekey_profile);
 
@@ -304,7 +304,7 @@ static void test_global_state_prekey_profile_management(void) {
       "s1vlz8xF+vPV82xSwmEA65IyR3ZaR6NzZNNAznBrXXb7YjvMuYtTtKnp+"
       "LZfUSYFcjoZACAqnA8V5fDvuuCFFMINr6rKZihf4wTVOKO+hO+"
       "rMWi7dsYeLu3eee7fZ9LsHUuriHxadL6mW0J6QAPeo2n75TnDUt1aVpjCK0Mrut0hTstbDoy"
-      "yEVaVNh2Rx87o30YStXn92fDNCBsGHU+F2xv/ZQ2OQA=";
+      "yEVaVNh2Rx87o30YStXn92fDNCBsGHU+F2xv/ZQ2OQAA";
 
   otrng_assert_cmpmem(expected, encoded, s);
 

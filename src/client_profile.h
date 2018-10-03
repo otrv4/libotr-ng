@@ -56,11 +56,11 @@
    + ED448_SIGNATURE_BYTES                  /* Client Profile Signature */     \
   )
 
-#define OTRNG_CLIENT_PROFILE_MAX_WITH_METADATA_BYTES(v)                               \
+#define OTRNG_CLIENT_PROFILE_MAX_WITH_METADATA_BYTES(v)                        \
   (4 +                                      /* num fields */                   \
    OTRNG_CLIENT_PROFILE_FIELDS_MAX_BYTES(v) /* Fields */                       \
    + ED448_SIGNATURE_BYTES                  /* Client Profile Signature */     \
-  + 1 /* metadata */ \
+   + 1                                      /* metadata */                     \
   )
 
 #define OTRNG_CLIENT_PROFILE_FIELD_INSTANCE_TAG 0x01
@@ -106,9 +106,9 @@ INTERNAL otrng_result
 otrng_client_profile_serialize(uint8_t **destination, size_t *nbytes,
                                const otrng_client_profile_s *profile);
 
-INTERNAL otrng_result
-otrng_client_profile_serialize_with_metadata(uint8_t **destination, size_t *nbytes,
-                               const otrng_client_profile_s *profile);
+INTERNAL otrng_result otrng_client_profile_serialize_with_metadata(
+    uint8_t **destination, size_t *nbytes,
+    const otrng_client_profile_s *profile);
 
 INTERNAL otrng_client_profile_s *otrng_client_profile_build(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,

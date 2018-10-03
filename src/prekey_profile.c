@@ -24,6 +24,7 @@
 #include <time.h>
 
 #include "alloc.h"
+#include "debug.h"
 #include "deserialize.h"
 #include "instance_tag.h"
 #include "serialize.h"
@@ -132,6 +133,30 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
   return OTRNG_SUCCESS;
 }
 
+INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
+    otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
+    size_t *nread) {
+  size_t nread1, nread2;
+  otrng_result result =
+      otrng_prekey_profile_deserialize(target, buffer, buflen, &nread1);
+  if (otrng_failed(result)) {
+    return result;
+  }
+
+  result = otrng_deserialize_uint8(&target->should_publish, buffer + nread1,
+                                   buflen - nread1, &nread2);
+
+  if (otrng_failed(result)) {
+    return result;
+  }
+
+  if (nread) {
+    *nread = nread1 + nread2;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
 #define PREKEY_PROFILE_BODY_BYTES 4 + 8 + ED448_PUBKEY_BYTES
 
 tstatic otrng_result otrng_prekey_profile_body_serialize_into(
@@ -182,6 +207,39 @@ INTERNAL otrng_result otrng_prekey_profile_serialize(
 
   written += otrng_serialize_bytes_array(buff + written, profile->signature,
                                          ED448_SIGNATURE_BYTES);
+
+  *destination = buff;
+  if (nbytes) {
+    *nbytes = written;
+  } else {
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result otrng_prekey_profile_serialize_with_metadata(
+    uint8_t **destination, size_t *nbytes, otrng_prekey_profile_s *profile) {
+  size_t size = PREKEY_PROFILE_BODY_BYTES + ED448_SIGNATURE_BYTES + 1;
+  uint8_t *buff = otrng_xmalloc_z(size);
+  size_t written;
+
+  written = otrng_prekey_profile_body_serialize(buff, PREKEY_PROFILE_BODY_BYTES,
+                                                profile);
+  if (written == 0) {
+    free(buff);
+    return OTRNG_ERROR;
+  }
+
+  if (size - written < ED448_SIGNATURE_BYTES) {
+    free(buff);
+    return OTRNG_ERROR;
+  }
+
+  written += otrng_serialize_bytes_array(buff + written, profile->signature,
+                                         ED448_SIGNATURE_BYTES);
+
+  written += otrng_serialize_uint8(buff + written, profile->should_publish);
 
   *destination = buff;
   if (nbytes) {

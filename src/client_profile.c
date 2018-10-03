@@ -30,6 +30,7 @@
 #define OTRNG_DESERIALIZE_PRIVATE
 
 #include "alloc.h"
+#include "debug.h"
 #include "deserialize.h"
 #include "instance_tag.h"
 #include "serialize.h"
@@ -267,13 +268,12 @@ tstatic otrng_result client_profile_body_serialize_into(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_profile_serialize_with_metadata(uint8_t **destination, size_t *nbytes,
-                                             const otrng_client_profile_s *client_profile) {
+INTERNAL otrng_result otrng_client_profile_serialize_with_metadata(
+    uint8_t **destination, size_t *nbytes,
+    const otrng_client_profile_s *client_profile) {
 
-
-  size_t s =
-      OTRNG_CLIENT_PROFILE_MAX_WITH_METADATA_BYTES(otrng_strlen_ns(client_profile->versions));
+  size_t s = OTRNG_CLIENT_PROFILE_MAX_WITH_METADATA_BYTES(
+      otrng_strlen_ns(client_profile->versions));
 
   size_t written = 0;
   uint8_t *buff = otrng_xmalloc_z(s);
@@ -286,7 +286,8 @@ otrng_client_profile_serialize_with_metadata(uint8_t **destination, size_t *nbyt
   written += otrng_serialize_bytes_array(
       buff + written, client_profile->signature, ED448_SIGNATURE_BYTES);
 
-  written += otrng_serialize_uint8(buff + written, client_profile->should_publish);
+  written +=
+      otrng_serialize_uint8(buff + written, client_profile->should_publish);
 
   *destination = buff;
   if (nbytes) {
@@ -499,12 +500,18 @@ INTERNAL otrng_result otrng_client_profile_deserialize_with_metadata(
     otrng_client_profile_s *target, const uint8_t *buffer, size_t buflen,
     size_t *nread) {
   size_t nread1, nread2;
-  otrng_result result = otrng_client_profile_deserialize(target, buffer, buflen, &nread1);
+  otrng_result result =
+      otrng_client_profile_deserialize(target, buffer, buflen, &nread1);
   if (otrng_failed(result)) {
     return result;
   }
 
-  result = otrng_deserialize_uint8(&target->should_publish, buffer, buflen-nread1, &nread2);
+  result = otrng_deserialize_uint8(&target->should_publish, buffer + nread1,
+                                   buflen - nread1, &nread2);
+
+  if (otrng_failed(result)) {
+    return result;
+  }
 
   if (nread) {
     *nread = nread1 + nread2;
@@ -817,7 +824,6 @@ otrng_client_profile_start_publishing(otrng_client_profile_s *profile) {
 
 API otrng_bool
 otrng_client_profile_should_publish(const otrng_client_profile_s *profile) {
-  otrng_debug_fprintf(stderr, "client_profile_should_publish(should_publish=%d, is_publishing=%d)\n", profile->should_publish, profile->is_publishing);
   return profile->should_publish && !profile->is_publishing;
 }
 

@@ -67,6 +67,13 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
     otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
     size_t *nread);
 
+INTERNAL otrng_result otrng_prekey_profile_serialize_with_metadata(
+    uint8_t **destination, size_t *destinationlen, otrng_prekey_profile_s *p);
+
+INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
+    otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
+    size_t *nread);
+
 API void otrng_prekey_profile_start_publishing(otrng_prekey_profile_s *profile);
 API otrng_bool
 otrng_prekey_profile_should_publish(const otrng_prekey_profile_s *profile);

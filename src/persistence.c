@@ -433,9 +433,8 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
-  otrng_client_profile_s profile[1];
+  otrng_client_profile_s profile;
   otrng_result result;
-
 
   if (!profilef) {
     return OTRNG_ERROR;
@@ -444,7 +443,6 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
   if (feof(profilef)) {
     return OTRNG_ERROR;
   }
-
 
   len = get_limited_line(&line, profilef);
   if (len < 0) {
@@ -456,14 +454,16 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);
 
-  result = otrng_client_profile_deserialize_with_metadata(profile, dec, dec_len, NULL);
+  memset(&profile, 0, sizeof(otrng_client_profile_s));
+  result = otrng_client_profile_deserialize_with_metadata(&profile, dec,
+                                                          dec_len, NULL);
   free(dec);
 
   if (result == OTRNG_ERROR) {
     return result;
   }
 
-  if (otrng_client_profile_expired(profile->expires)) {
+  if (otrng_client_profile_expired(profile.expires)) {
     client->global_state->callbacks->write_expired_client_profile(
         client, client->client_id);
 
@@ -475,8 +475,8 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
   otrng_client_profile_free(client->client_profile);
   client->client_profile = NULL;
 
-  result = otrng_client_add_client_profile(client, profile);
-  otrng_client_profile_destroy(profile);
+  result = otrng_client_add_client_profile(client, &profile);
+  otrng_client_profile_destroy(&profile);
 
   return result;
 }
@@ -487,7 +487,7 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
-  otrng_client_profile_s exp_profile[1];
+  otrng_client_profile_s exp_profile;
   otrng_result result;
 
   if (!exp_profilef) {
@@ -510,21 +510,22 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);
 
-  result = otrng_client_profile_deserialize(exp_profile, dec, dec_len, NULL);
+  memset(&exp_profile, 0, sizeof(otrng_client_profile_s));
+  result = otrng_client_profile_deserialize(&exp_profile, dec, dec_len, NULL);
   free(dec);
 
   if (result == OTRNG_ERROR) {
     return result;
   }
 
-  if (otrng_client_profile_invalid(exp_profile->expires,
+  if (otrng_client_profile_invalid(exp_profile.expires,
                                    client->profiles_extra_valid_time)) {
     return OTRNG_ERROR;
   }
 
-  result = otrng_client_add_exp_client_profile(client, exp_profile);
+  result = otrng_client_add_exp_client_profile(client, &exp_profile);
 
-  otrng_client_profile_destroy(exp_profile);
+  otrng_client_profile_destroy(&exp_profile);
 
   return result;
 }
@@ -544,7 +545,8 @@ INTERNAL otrng_result otrng_client_client_profile_write_to(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_client_profile_serialize_with_metadata(&buff, &s, client->client_profile)) {
+  if (!otrng_client_profile_serialize_with_metadata(&buff, &s,
+                                                    client->client_profile)) {
     return OTRNG_ERROR;
   }
 
@@ -778,7 +780,8 @@ otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_prekey_profile_serialize(&buff, &s, client->prekey_profile)) {
+  if (!otrng_prekey_profile_serialize_with_metadata(&buff, &s,
+                                                    client->prekey_profile)) {
     return OTRNG_ERROR;
   }
 
@@ -812,7 +815,7 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
-  otrng_prekey_profile_s profile[1];
+  otrng_prekey_profile_s profile;
   otrng_result result;
 
   if (!profilef) {
@@ -833,14 +836,16 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);
 
-  result = otrng_prekey_profile_deserialize(profile, dec, dec_len, NULL);
+  memset(&profile, 0, sizeof(otrng_prekey_profile_s));
+  result = otrng_prekey_profile_deserialize_with_metadata(&profile, dec,
+                                                          dec_len, NULL);
   free(dec);
 
   if (result == OTRNG_ERROR) {
     return result;
   }
 
-  if (otrng_prekey_profile_expired(profile->expires)) {
+  if (otrng_prekey_profile_expired(profile.expires)) {
     client->global_state->callbacks->write_expired_prekey_profile(
         client, client->client_id);
 
@@ -852,8 +857,8 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
   otrng_prekey_profile_free(client->prekey_profile);
   client->prekey_profile = NULL;
 
-  result = otrng_client_add_prekey_profile(client, profile);
-  otrng_prekey_profile_destroy(profile);
+  result = otrng_client_add_prekey_profile(client, &profile);
+  otrng_prekey_profile_destroy(&profile);
 
   return result;
 }
@@ -864,7 +869,7 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
-  otrng_prekey_profile_s exp_profile[1];
+  otrng_prekey_profile_s exp_profile;
   otrng_result result;
 
   if (!exp_profilef) {
@@ -887,21 +892,22 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
   dec_len = otrl_base64_decode(dec, line, len);
   free(line);
 
-  result = otrng_prekey_profile_deserialize(exp_profile, dec, dec_len, NULL);
+  memset(&exp_profile, 0, sizeof(otrng_prekey_profile_s));
+  result = otrng_prekey_profile_deserialize(&exp_profile, dec, dec_len, NULL);
   free(dec);
 
   if (result == OTRNG_ERROR) {
     return result;
   }
 
-  if (otrng_prekey_profile_invalid(exp_profile->expires,
+  if (otrng_prekey_profile_invalid(exp_profile.expires,
                                    client->profiles_extra_valid_time)) {
     return OTRNG_ERROR;
   }
 
-  result = otrng_client_add_exp_prekey_profile(client, exp_profile);
+  result = otrng_client_add_exp_prekey_profile(client, &exp_profile);
 
-  otrng_prekey_profile_destroy(exp_profile);
+  otrng_prekey_profile_destroy(&exp_profile);
 
   return result;
 }

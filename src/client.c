@@ -1201,7 +1201,6 @@ API otrng_bool otrng_client_should_publish(otrng_client_s *client) {
 }
 
 API void otrng_client_failed_published(otrng_client_s *client) {
-  otrng_debug_fprintf(stderr, "otrng_client_failed_published(cp=%p)\n", (void*)client->client_profile);
   client->client_profile->is_publishing = otrng_false;
   client->prekey_profile->is_publishing = otrng_false;
   client->is_publishing = otrng_false;
@@ -1209,15 +1208,17 @@ API void otrng_client_failed_published(otrng_client_s *client) {
 
 API void otrng_client_published(otrng_client_s *client) {
   if (client->client_profile->is_publishing) {
-    otrng_debug_fprintf(stderr, "otrng_client_published(cp=%p)\n", (void*)client->client_profile);
     client->client_profile->should_publish = otrng_false;
     client->client_profile->is_publishing = otrng_false;
-    client->global_state->callbacks->store_client_profile(client, client->client_id);
+    client->global_state->callbacks->store_client_profile(client,
+                                                          client->client_id);
   }
 
   if (client->prekey_profile->is_publishing) {
     client->prekey_profile->should_publish = otrng_false;
     client->prekey_profile->is_publishing = otrng_false;
+    client->global_state->callbacks->store_prekey_profile(client,
+                                                          client->client_id);
   }
 
   if (client->is_publishing) {
