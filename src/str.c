@@ -87,3 +87,10 @@ INTERNAL size_t otrng_strnlen(/*@notnull@*/ const char *s,
 
   return l;
 }
+
+INTERNAL size_t otrng_strlen_ns(/*@null@*/ const char *s) {
+  if (s == NULL) {
+    return 0;
+  }
+  return strlen(s);
+}

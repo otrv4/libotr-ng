@@ -292,7 +292,8 @@ INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_serialize(
     return OTRNG_ERROR;
   }
 
-  *len = 2 + 1 + 4 + (4 + strlen(msg->identity)) + (4 + strlen(msg->versions));
+  *len = 2 + 1 + 4 + (4 + strlen(msg->identity)) +
+         (4 + otrng_strlen_ns(msg->versions));
   *dst = otrng_xmalloc(*len);
 
   w += otrng_serialize_uint16(*dst, OTRNG_PROTOCOL_VERSION_4);
@@ -302,7 +303,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_serialize(
   w += otrng_serialize_data(*dst + w, (uint8_t *)msg->identity,
                             strlen(msg->identity));
   otrng_serialize_data(*dst + w, (uint8_t *)msg->versions,
-                       strlen(msg->versions));
+                       otrng_strlen_ns(msg->versions));
 
   return OTRNG_SUCCESS;
 }
@@ -890,7 +891,7 @@ static char *process_received_dake2(const otrng_prekey_dake2_message_s *msg,
 static char *receive_dake2(const uint8_t *decoded, size_t decoded_len,
                            otrng_client_s *client) {
   otrng_prekey_dake2_message_s msg;
-  char *ret;
+  char *ret = NULL;
 
   otrng_prekey_dake2_message_init(&msg);
   if (!otrng_prekey_dake2_message_deserialize(&msg, decoded, decoded_len)) {
