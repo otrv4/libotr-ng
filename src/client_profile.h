@@ -81,7 +81,7 @@ typedef struct client_profile_s {
 } client_profile_s;
 
 INTERNAL void otrng_client_profile_copy(client_profile_s *destination,
-                                        const client_profile_s *src);
+                                        const client_profile_s *source);
 
 INTERNAL void otrng_client_profile_destroy(client_profile_s *profile);
 

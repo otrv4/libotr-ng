@@ -24,6 +24,7 @@
 #include "prekey_client.h"
 
 INTERNAL otrng_result otrng_prekey_success_message_deserialize(
-    otrng_prekey_success_message_s *dst, const uint8_t *src, size_t src_len);
+    otrng_prekey_success_message_s *dst, const uint8_t *source,
+    size_t source_len);
 
 #endif

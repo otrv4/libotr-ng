@@ -165,20 +165,20 @@ INTERNAL otrng_result otrng_generate_smp_message_1(smp_message_1_s *destination,
 }
 
 tstatic void smp_message_1_copy(smp_message_1_s *destination,
-                                const smp_message_1_s *src) {
-  destination->q_len = src->q_len;
-  if (src->question != NULL) {
-    destination->question = otrng_xmemdup(src->question, src->q_len);
+                                const smp_message_1_s *source) {
+  destination->q_len = source->q_len;
+  if (source->question != NULL) {
+    destination->question = otrng_xmemdup(source->question, source->q_len);
   } else {
     destination->question = NULL;
   }
 
-  otrng_ec_point_copy(destination->g2a, src->g2a);
-  otrng_ec_scalar_copy(destination->c2, src->c2);
-  otrng_ec_scalar_copy(destination->d2, src->d2);
-  otrng_ec_point_copy(destination->g3a, src->g3a);
-  otrng_ec_scalar_copy(destination->c3, src->c3);
-  otrng_ec_scalar_copy(destination->d3, src->d3);
+  otrng_ec_point_copy(destination->g2a, source->g2a);
+  otrng_ec_scalar_copy(destination->c2, source->c2);
+  otrng_ec_scalar_copy(destination->d2, source->d2);
+  otrng_ec_point_copy(destination->g3a, source->g3a);
+  otrng_ec_scalar_copy(destination->c3, source->c3);
+  otrng_ec_scalar_copy(destination->d3, source->d3);
 }
 
 INTERNAL otrng_result otrng_smp_message_1_serialize(

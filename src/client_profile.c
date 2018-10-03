@@ -47,14 +47,14 @@ tstatic client_profile_s *client_profile_new(const char *versions) {
 }
 
 static void copy_transitional_signature(client_profile_s *destination,
-                                        const client_profile_s *src) {
-  if (!src->transitional_signature) {
+                                        const client_profile_s *source) {
+  if (!source->transitional_signature) {
     return;
   }
 
   destination->transitional_signature = otrng_xmalloc_z(OTRv3_DSA_SIG_BYTES);
 
-  memcpy(destination->transitional_signature, src->transitional_signature,
+  memcpy(destination->transitional_signature, source->transitional_signature,
          OTRv3_DSA_SIG_BYTES);
 }
 
@@ -75,15 +75,15 @@ otrng_client_profile_set_dsa_key_mpis(client_profile_s *client_profile,
 }
 
 static void copy_dsa_key(client_profile_s *destination,
-                         const client_profile_s *src) {
+                         const client_profile_s *source) {
   size_t read = 0;
   uint16_t key_type = 0xFF;
 
-  if (!src->dsa_key || !src->dsa_key_len) {
+  if (!source->dsa_key || !source->dsa_key_len) {
     return;
   }
 
-  if (!otrng_deserialize_uint16(&key_type, src->dsa_key, src->dsa_key_len,
+  if (!otrng_deserialize_uint16(&key_type, source->dsa_key, source->dsa_key_len,
                                 &read)) {
     return; // TODO: ERROR
   }
@@ -93,33 +93,35 @@ static void copy_dsa_key(client_profile_s *destination,
     return; // TODO: ERROR
   }
 
-  if (!otrng_client_profile_set_dsa_key_mpis(destination, src->dsa_key + read,
-                                             src->dsa_key_len - read)) {
+  if (!otrng_client_profile_set_dsa_key_mpis(
+          destination, source->dsa_key + read, source->dsa_key_len - read)) {
     return; // TODO: ERROR
   }
 }
 
 INTERNAL void otrng_client_profile_copy(client_profile_s *destination,
-                                        const client_profile_s *src) {
+                                        const client_profile_s *source) {
   /* If there are no fields present, do not point to invalid memory */
   memset(destination, 0, sizeof(client_profile_s));
 
-  if (!src) {
+  if (!source) {
     return;
   }
 
-  destination->sender_instance_tag = src->sender_instance_tag;
-  otrng_ec_point_copy(destination->long_term_pub_key, src->long_term_pub_key);
-  otrng_ec_point_copy(destination->forging_pub_key, src->forging_pub_key);
-  destination->versions = src->versions ? otrng_xstrdup(src->versions) : NULL;
+  destination->sender_instance_tag = source->sender_instance_tag;
+  otrng_ec_point_copy(destination->long_term_pub_key,
+                      source->long_term_pub_key);
+  otrng_ec_point_copy(destination->forging_pub_key, source->forging_pub_key);
+  destination->versions =
+      source->versions ? otrng_xstrdup(source->versions) : NULL;
 
-  destination->expires = src->expires;
-  copy_dsa_key(destination, src);
-  copy_transitional_signature(destination, src);
+  destination->expires = source->expires;
+  copy_dsa_key(destination, source);
+  copy_transitional_signature(destination, source);
 
-  memcpy(destination->signature, src->signature, ED448_SIGNATURE_BYTES);
+  memcpy(destination->signature, source->signature, ED448_SIGNATURE_BYTES);
 
-  destination->should_publish = src->should_publish;
+  destination->should_publish = source->should_publish;
 }
 
 INTERNAL void otrng_client_profile_destroy(client_profile_s *client_profile) {

@@ -37,7 +37,7 @@ INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *destination);
 INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *destination);
 
 INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *destination,
-                                        const otrng_prekey_profile_s *src);
+                                        const otrng_prekey_profile_s *source);
 
 INTERNAL otrng_prekey_profile_s *
 otrng_prekey_profile_build(uint32_t instance_tag,

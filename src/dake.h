@@ -101,7 +101,8 @@ INTERNAL void
 otrng_dake_identity_message_destroy(dake_identity_message_s *identity_message);
 
 INTERNAL otrng_result otrng_dake_identity_message_deserialize(
-    dake_identity_message_s *destination, const uint8_t *src, size_t src_len);
+    dake_identity_message_s *destination, const uint8_t *source,
+    size_t source_len);
 
 INTERNAL otrng_result otrng_dake_identity_message_serialize(
     uint8_t **destination, size_t *nbytes,
@@ -143,8 +144,8 @@ INTERNAL void
 otrng_dake_prekey_message_destroy(dake_prekey_message_s *prekey_message);
 
 INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
-    dake_prekey_message_s *destination, const uint8_t *src, size_t src_len,
-    size_t *nread);
+    dake_prekey_message_s *destination, const uint8_t *source,
+    size_t source_len, size_t *nread);
 
 INTERNAL otrng_result otrng_dake_prekey_message_serialize_into(
     uint8_t **destination, size_t *nbytes,
@@ -152,7 +153,7 @@ INTERNAL otrng_result otrng_dake_prekey_message_serialize_into(
 
 INTERNAL otrng_result otrng_dake_prekey_message_serialize(
     uint8_t *destination, size_t destinationlen, size_t *written,
-    const dake_prekey_message_s *src);
+    const dake_prekey_message_s *source);
 
 typedef struct {
   client_profile_s *client_profile;

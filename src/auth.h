@@ -78,24 +78,27 @@ otrng_rsig_authenticate(ring_sig_s *destination, const otrng_private_key priv,
  *
  * The verification function for the SoK sigma, created by rsig_authenticate.
  *
- * @param [src] The signature of knowledge
+ * @param [source] The signature of knowledge
  * @param [A1] The first public key.
  * @param [A2] The second public key.
  * @param [A3] The third public key.
  * @param [message] The message to "verify".
  * @param [message_len] The length of the message.
  */
-INTERNAL otrng_bool otrng_rsig_verify(
-    const ring_sig_s *src, const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *message, size_t messagelen);
+INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *source,
+                                      const otrng_public_key A1,
+                                      const otrng_public_key A2,
+                                      const otrng_public_key A3,
+                                      const uint8_t *message,
+                                      size_t messagelen);
 
 /**
  * @brief Zero the values of the Ring Sig.
  *
  *
- * @param [src] The signature of knowledge
+ * @param [source] The signature of knowledge
  */
-INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src);
+INTERNAL void otrng_ring_sig_destroy(ring_sig_s *source);
 
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, ring_sig_s *destination,
@@ -104,7 +107,7 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     const otrng_public_key A3, const uint8_t *message, size_t message_len);
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
-    uint8_t usage, const char *domain_sep, const ring_sig_s *src,
+    uint8_t usage, const char *domain_sep, const ring_sig_s *source,
     const otrng_public_key A1, const otrng_public_key A2,
     const otrng_public_key A3, const uint8_t *message, size_t message_len);
 

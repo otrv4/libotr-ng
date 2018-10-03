@@ -86,18 +86,18 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *destination) {
 }
 
 INTERNAL otrng_result otrng_prekey_ensemble_deserialize(
-    prekey_ensemble_s *destination, const uint8_t *src, size_t src_len,
+    prekey_ensemble_s *destination, const uint8_t *source, size_t source_len,
     size_t *nread) {
   size_t w = 0;
   size_t read = 0;
 
-  if (!otrng_client_profile_deserialize(destination->client_profile, src,
-                                        src_len, &w)) {
+  if (!otrng_client_profile_deserialize(destination->client_profile, source,
+                                        source_len, &w)) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_prekey_profile_deserialize(destination->prekey_profile, src + w,
-                                        src_len - w, &read)) {
+  if (!otrng_prekey_profile_deserialize(destination->prekey_profile, source + w,
+                                        source_len - w, &read)) {
     return OTRNG_ERROR;
   }
 
@@ -105,8 +105,8 @@ INTERNAL otrng_result otrng_prekey_ensemble_deserialize(
 
   destination->message = otrng_xmalloc_z(sizeof(dake_prekey_message_s));
 
-  if (!otrng_dake_prekey_message_deserialize(destination->message, src + w,
-                                             src_len - w, &read)) {
+  if (!otrng_dake_prekey_message_deserialize(destination->message, source + w,
+                                             source_len - w, &read)) {
     return OTRNG_ERROR;
   }
 

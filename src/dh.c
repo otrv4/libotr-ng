@@ -258,9 +258,9 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret buffer,
 INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *destination,
                                              size_t destination_len,
                                              size_t *written,
-                                             const dh_mpi src) {
+                                             const dh_mpi source) {
   gcry_error_t err;
-  if (!src) {
+  if (!source) {
     if (written) {
       *written = 0;
     }
@@ -269,7 +269,7 @@ INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *destination,
   }
 
   err = gcry_mpi_print(GCRYMPI_FMT_USG, destination, destination_len, written,
-                       src);
+                       source);
   if (err) {
     return OTRNG_ERROR;
   }
@@ -319,8 +319,8 @@ API otrng_bool otrng_dh_mpi_valid(dh_mpi mpi) {
 }
 
 // TODO: check the return
-INTERNAL dh_mpi otrng_dh_mpi_copy(const dh_mpi src) {
-  return gcry_mpi_copy(src);
+INTERNAL dh_mpi otrng_dh_mpi_copy(const dh_mpi source) {
+  return gcry_mpi_copy(source);
 }
 
 INTERNAL void otrng_dh_mpi_release(dh_mpi mpi) { gcry_mpi_release(mpi); }

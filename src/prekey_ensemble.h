@@ -40,7 +40,7 @@ INTERNAL otrng_result
 otrng_prekey_ensemble_validate(const prekey_ensemble_s *destination);
 
 INTERNAL otrng_result otrng_prekey_ensemble_deserialize(
-    prekey_ensemble_s *destination, const uint8_t *src, size_t src_len,
+    prekey_ensemble_s *destination, const uint8_t *source, size_t source_len,
     size_t *nread);
 
 INTERNAL void otrng_prekey_ensemble_free(prekey_ensemble_s *destination);

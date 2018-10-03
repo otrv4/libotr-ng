@@ -44,18 +44,18 @@ INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *destination) {
 }
 
 INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *destination,
-                                        const otrng_prekey_profile_s *src) {
+                                        const otrng_prekey_profile_s *source) {
   memset(destination, 0, sizeof(otrng_prekey_profile_s));
 
-  if (!src) {
+  if (!source) {
     return;
   }
 
-  destination->instance_tag = src->instance_tag;
-  destination->expires = src->expires;
+  destination->instance_tag = source->instance_tag;
+  destination->expires = source->expires;
 
-  otrng_ec_point_copy(destination->shared_prekey, src->shared_prekey);
-  memcpy(destination->signature, src->signature, ED448_SIGNATURE_BYTES);
+  otrng_ec_point_copy(destination->shared_prekey, source->shared_prekey);
+  memcpy(destination->signature, source->signature, ED448_SIGNATURE_BYTES);
 }
 
 tstatic size_t otrng_prekey_profile_body_serialize(

@@ -536,12 +536,12 @@ tstatic void op_create_instag(void *opdata, const char *accountname,
  * cases. */
 tstatic void op_convert_message(void *opdata, ConnContext *context,
                                 OtrlConvertType convert_type, char **dest,
-                                const char *src) {
+                                const char *source) {
   (void)opdata;
   (void)context;
   (void)convert_type;
   (void)dest;
-  (void)src;
+  (void)source;
 }
 
 /* Deallocate a string returned by convert_message. */

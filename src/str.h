@@ -39,10 +39,10 @@ otrng_xstrdup(/*@notnull@*/ const char *s);
 
 INTERNAL /*@notnull@*/ /*@only@*/ char *
 otrng_stpcpy(/*@notnull@*/ char *dest,
-             /*@notnull@*/ const char *src) /*@modifies dest@*/;
+             /*@notnull@*/ const char *source) /*@modifies dest@*/;
 
 INTERNAL /*@notnull@*/ /*@only@*/ char *
-otrng_stpncpy(/*@notnull@*/ char *dest, /*@notnull@*/ const char *src,
+otrng_stpncpy(/*@notnull@*/ char *dest, /*@notnull@*/ const char *source,
               const size_t n) /*@modifies dest@*/;
 
 INTERNAL size_t otrng_strnlen(/*@notnull@*/ const char *s, const size_t maxlen);

@@ -119,9 +119,10 @@ INTERNAL otrng_result otrng_dake_identity_message_serialize(
 }
 
 INTERNAL otrng_result otrng_dake_identity_message_deserialize(
-    dake_identity_message_s *destination, const uint8_t *src, size_t src_len) {
-  const uint8_t *cursor = src;
-  int64_t len = src_len;
+    dake_identity_message_s *destination, const uint8_t *source,
+    size_t source_len) {
+  const uint8_t *cursor = source;
+  int64_t len = source_len;
   size_t read = 0;
 
   uint16_t protocol_version = 0;
@@ -478,16 +479,16 @@ INTERNAL otrng_result otrng_dake_prekey_message_serialize_into(
 
 INTERNAL otrng_result otrng_dake_prekey_message_serialize(
     uint8_t *destination, size_t destinationlen, size_t *written,
-    const dake_prekey_message_s *src) {
+    const dake_prekey_message_s *source) {
   size_t w = 0, len;
   w += otrng_serialize_uint16(destination + w, OTRNG_PROTOCOL_VERSION_4);
   w += otrng_serialize_uint8(destination + w, PRE_KEY_MESSAGE_TYPE);
-  w += otrng_serialize_uint32(destination + w, src->id);
-  w += otrng_serialize_uint32(destination + w, src->sender_instance_tag);
-  w += otrng_serialize_ec_point(destination + w, src->Y);
+  w += otrng_serialize_uint32(destination + w, source->id);
+  w += otrng_serialize_uint32(destination + w, source->sender_instance_tag);
+  w += otrng_serialize_ec_point(destination + w, source->Y);
 
   if (!otrng_serialize_dh_public_key(destination + w, destinationlen - w, &len,
-                                     src->B)) {
+                                     source->B)) {
     return OTRNG_ERROR;
   }
 
@@ -501,10 +502,10 @@ INTERNAL otrng_result otrng_dake_prekey_message_serialize(
 }
 
 INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
-    dake_prekey_message_s *destination, const uint8_t *src, size_t src_len,
-    size_t *nread) {
-  const uint8_t *cursor = src;
-  int64_t len = src_len;
+    dake_prekey_message_s *destination, const uint8_t *source,
+    size_t source_len, size_t *nread) {
+  const uint8_t *cursor = source;
+  int64_t len = source_len;
   size_t read = 0;
   uint16_t protocol_version = 0;
   uint8_t message_type = 0;
@@ -557,7 +558,7 @@ INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
   ret = otrng_deserialize_dh_mpi_otr(&destination->B, cursor, len, &read);
 
   if (nread) {
-    *nread = cursor - src + read;
+    *nread = cursor - source + read;
   }
 
   return ret;

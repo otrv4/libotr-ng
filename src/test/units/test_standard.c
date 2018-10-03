@@ -26,8 +26,8 @@
 
 static void test_otrng_stpcpy(void) {
   char *destination = otrng_xstrdup("abcd");
-  char *src = otrng_xstrdup("12");
-  char *ret = otrng_stpcpy(destination, src);
+  char *source = otrng_xstrdup("12");
+  char *ret = otrng_stpcpy(destination, source);
 
   otrng_assert(ret == destination + 2);
   otrng_assert(destination[0] == '1');
@@ -37,13 +37,13 @@ static void test_otrng_stpcpy(void) {
   otrng_assert(destination[4] == 0);
 
   free(destination);
-  free(src);
+  free(source);
 }
 
 static void test_otrng_stpncpy(void) {
   char *destination = otrng_xstrdup("abcd");
-  char *src = otrng_xstrdup("123");
-  char *ret = otrng_stpncpy(destination, src, 2);
+  char *source = otrng_xstrdup("123");
+  char *ret = otrng_stpncpy(destination, source, 2);
 
   otrng_assert(ret == destination + 2);
   otrng_assert(destination[0] == '1');
@@ -53,11 +53,11 @@ static void test_otrng_stpncpy(void) {
   otrng_assert(destination[4] == 0);
 
   free(destination);
-  free(src);
+  free(source);
 
   destination = otrng_xstrdup("abcde");
-  src = otrng_xstrdup("12");
-  ret = otrng_stpncpy(destination, src, 4);
+  source = otrng_xstrdup("12");
+  ret = otrng_stpncpy(destination, source, 4);
 
   otrng_assert(ret == destination + 2);
   otrng_assert(destination[0] == '1');
@@ -68,17 +68,17 @@ static void test_otrng_stpncpy(void) {
   otrng_assert(destination[5] == 0);
 
   free(destination);
-  free(src);
+  free(source);
 }
 
 static void test_otrng_strnlen(void) {
-  const char *src = "abc";
-  otrng_assert(0 == otrng_strnlen(src, 0));
-  otrng_assert(1 == otrng_strnlen(src, 1));
-  otrng_assert(2 == otrng_strnlen(src, 2));
-  otrng_assert(3 == otrng_strnlen(src, 3));
-  otrng_assert(3 == otrng_strnlen(src, 4));
-  otrng_assert(3 == otrng_strnlen(src, 5));
+  const char *source = "abc";
+  otrng_assert(0 == otrng_strnlen(source, 0));
+  otrng_assert(1 == otrng_strnlen(source, 1));
+  otrng_assert(2 == otrng_strnlen(source, 2));
+  otrng_assert(3 == otrng_strnlen(source, 3));
+  otrng_assert(3 == otrng_strnlen(source, 4));
+  otrng_assert(3 == otrng_strnlen(source, 5));
 }
 
 void units_standard_add_tests(void) {

@@ -132,17 +132,18 @@ tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
 
 static void otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, goldilocks_448_scalar_p c,
-    const ring_sig_s *src, const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *message, size_t message_len) {
+    const ring_sig_s *source, const otrng_public_key A1,
+    const otrng_public_key A2, const otrng_public_key A3,
+    const uint8_t *message, size_t message_len) {
   otrng_public_key gr1, gr2, gr3, A1c1, A2c2, A3c3;
 
-  goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, src->r1);
-  goldilocks_448_point_scalarmul(gr2, goldilocks_448_point_base, src->r2);
-  goldilocks_448_point_scalarmul(gr3, goldilocks_448_point_base, src->r3);
+  goldilocks_448_point_scalarmul(gr1, goldilocks_448_point_base, source->r1);
+  goldilocks_448_point_scalarmul(gr2, goldilocks_448_point_base, source->r2);
+  goldilocks_448_point_scalarmul(gr3, goldilocks_448_point_base, source->r3);
 
-  goldilocks_448_point_scalarmul(A1c1, A1, src->c1);
-  goldilocks_448_point_scalarmul(A2c2, A2, src->c2);
-  goldilocks_448_point_scalarmul(A3c3, A3, src->c3);
+  goldilocks_448_point_scalarmul(A1c1, A1, source->c1);
+  goldilocks_448_point_scalarmul(A2c2, A2, source->c2);
+  goldilocks_448_point_scalarmul(A3c3, A3, source->c3);
 
   goldilocks_448_point_add(A1c1, A1c1, gr1);
   goldilocks_448_point_add(A2c2, A2c2, gr2);
@@ -271,26 +272,29 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_bool otrng_rsig_verify(
-    const ring_sig_s *src, const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *message, size_t message_len) {
+INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *source,
+                                      const otrng_public_key A1,
+                                      const otrng_public_key A2,
+                                      const otrng_public_key A3,
+                                      const uint8_t *message,
+                                      size_t message_len) {
   return otrng_rsig_verify_with_usage_and_domain(
-      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, src, A1, A2,
-      A3, message, message_len);
+      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, source, A1,
+      A2, A3, message, message_len);
 }
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
-    uint8_t usage, const char *domain_sep, const ring_sig_s *src,
+    uint8_t usage, const char *domain_sep, const ring_sig_s *source,
     const otrng_public_key A1, const otrng_public_key A2,
     const otrng_public_key A3, const uint8_t *message, size_t message_len) {
   goldilocks_448_scalar_p c;
   otrng_private_key c1c2c3;
 
   otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
-      usage, domain_sep, c, src, A1, A2, A3, message, message_len);
+      usage, domain_sep, c, source, A1, A2, A3, message, message_len);
 
-  goldilocks_448_scalar_add(c1c2c3, src->c1, src->c2);
-  goldilocks_448_scalar_add(c1c2c3, c1c2c3, src->c3);
+  goldilocks_448_scalar_add(c1c2c3, source->c1, source->c2);
+  goldilocks_448_scalar_add(c1c2c3, c1c2c3, source->c3);
 
   if (goldilocks_succeed_if(goldilocks_448_scalar_eq(c, c1c2c3))) {
     return otrng_true;
@@ -299,11 +303,11 @@ INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
   return otrng_false;
 }
 
-INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src) {
-  otrng_ec_scalar_destroy(src->c1);
-  otrng_ec_scalar_destroy(src->r1);
-  otrng_ec_scalar_destroy(src->c2);
-  otrng_ec_scalar_destroy(src->r2);
-  otrng_ec_scalar_destroy(src->c3);
-  otrng_ec_scalar_destroy(src->r3);
+INTERNAL void otrng_ring_sig_destroy(ring_sig_s *source) {
+  otrng_ec_scalar_destroy(source->c1);
+  otrng_ec_scalar_destroy(source->r1);
+  otrng_ec_scalar_destroy(source->c2);
+  otrng_ec_scalar_destroy(source->r2);
+  otrng_ec_scalar_destroy(source->c3);
+  otrng_ec_scalar_destroy(source->r3);
 }

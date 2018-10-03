@@ -24,10 +24,10 @@
 #include "deserialize.h"
 
 INTERNAL otrng_result otrng_prekey_success_message_deserialize(
-    otrng_prekey_success_message_s *destination, const uint8_t *src,
-    size_t src_len) {
-  const uint8_t *cursor = src;
-  int64_t len = src_len;
+    otrng_prekey_success_message_s *destination, const uint8_t *source,
+    size_t source_len) {
+  const uint8_t *cursor = source;
+  int64_t len = source_len;
   size_t read = 0;
   uint8_t message_type = 0;
 

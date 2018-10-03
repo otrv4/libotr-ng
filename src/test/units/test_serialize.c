@@ -72,10 +72,10 @@ static void test_ser_deser_uint() {
 }
 
 static void test_serialize_otrng_deserialize_data() {
-  uint8_t src[5] = {1, 2, 3, 4, 5};
+  uint8_t source[5] = {1, 2, 3, 4, 5};
   uint8_t *destination = otrng_xmalloc_z(9);
   otrng_assert(destination);
-  g_assert_cmpint(9, ==, otrng_serialize_data(destination, src, 5));
+  g_assert_cmpint(9, ==, otrng_serialize_data(destination, source, 5));
   free(destination);
 }
 

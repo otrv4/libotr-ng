@@ -72,7 +72,8 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret buffer,
 
 INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *destination,
                                              size_t destination_len,
-                                             size_t *written, const dh_mpi src);
+                                             size_t *written,
+                                             const dh_mpi source);
 
 INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *destination,
                                                const uint8_t *buffer,
@@ -80,7 +81,7 @@ INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *destination,
 
 INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi mpi);
 
-INTERNAL dh_mpi otrng_dh_mpi_copy(const dh_mpi src);
+INTERNAL dh_mpi otrng_dh_mpi_copy(const dh_mpi source);
 
 INTERNAL void otrng_dh_mpi_release(dh_mpi mpi);
 

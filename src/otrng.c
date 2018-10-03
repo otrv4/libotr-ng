@@ -1348,7 +1348,8 @@ tstatic otrng_result non_interactive_auth_message_received(
 }
 
 tstatic otrng_result receive_non_interactive_auth_message(
-    otrng_response_s *response, const uint8_t *src, size_t len, otrng_s *otr) {
+    otrng_response_s *response, const uint8_t *source, size_t len,
+    otrng_s *otr) {
   dake_non_interactive_auth_message_s auth;
   otrng_result ret;
 
@@ -1357,7 +1358,8 @@ tstatic otrng_result receive_non_interactive_auth_message(
     return OTRNG_SUCCESS; /* ignore the message */
   }
 
-  if (!otrng_dake_non_interactive_auth_message_deserialize(&auth, src, len)) {
+  if (!otrng_dake_non_interactive_auth_message_deserialize(&auth, source,
+                                                           len)) {
     otrng_error_message(&response->to_send, OTRNG_ERR_MESSAGE_MALFORMED);
     return OTRNG_ERROR;
   }
@@ -1756,16 +1758,17 @@ INTERNAL otrng_result otrng_expire_session(string_p *to_send, otrng_s *otr) {
   return result;
 }
 
-tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *src, size_t len) {
+tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *source,
+                                              size_t len) {
   uint8_t *tlvs_start = NULL;
   size_t tlvs_len;
 
-  tlvs_start = memchr(src, 0, len);
+  tlvs_start = memchr(source, 0, len);
   if (!tlvs_start) {
     return NULL;
   }
 
-  tlvs_len = len - (tlvs_start + 1 - src);
+  tlvs_len = len - (tlvs_start + 1 - source);
   return otrng_parse_tlvs(tlvs_start + 1, tlvs_len);
 }
 
