@@ -51,7 +51,7 @@ INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *destination,
                                                     const uint8_t *buffer,
                                                     size_t buflen);
 
-INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi *destination,
+INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_t *destination,
                                                    const uint8_t *buffer,
                                                    size_t buflen, size_t *read);
 

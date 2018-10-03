@@ -64,7 +64,7 @@ INTERNAL struct goldilocks_448_point_s *our_ecdh(const otrng_s *otr) {
   return &otr->keys->our_ecdh->pub[0];
 }
 
-INTERNAL dh_public_key our_dh(const otrng_s *otr) {
+INTERNAL dh_public_key_t our_dh(const otrng_s *otr) {
   return otr->keys->our_dh->pub;
 }
 

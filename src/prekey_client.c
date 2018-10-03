@@ -486,8 +486,8 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
 
   ec_scalar *values_priv_ecdh;
   ec_point *values_pub_ecdh;
-  dh_mpi *values_priv_dh;
-  dh_mpi *values_pub_dh;
+  dh_mpi_t *values_priv_dh;
+  dh_mpi_t *values_pub_dh;
   size_t proof_index = 0;
 
   ecdh_proof_s prekey_message_proof_ecdh;
@@ -556,9 +556,9 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
         otrng_xmalloc_z(pub_message->num_prekey_messages * sizeof(ec_point));
 
     values_priv_dh =
-        otrng_secure_alloc(pub_message->num_prekey_messages * sizeof(dh_mpi));
+        otrng_secure_alloc(pub_message->num_prekey_messages * sizeof(dh_mpi_t));
     values_pub_dh =
-        otrng_xmalloc_z(pub_message->num_prekey_messages * sizeof(dh_mpi));
+        otrng_xmalloc_z(pub_message->num_prekey_messages * sizeof(dh_mpi_t));
 
     for (i = 0; i < pub_message->num_prekey_messages; i++) {
       *values_pub_ecdh[i] = *pub_message->prekey_messages[i]->Y;
@@ -578,7 +578,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
       free(values_priv_ecdh);
       free(values_pub_ecdh);
       otrng_secure_wipe(values_priv_dh,
-                        pub_message->num_prekey_messages * sizeof(dh_mpi));
+                        pub_message->num_prekey_messages * sizeof(dh_mpi_t));
       free(values_priv_dh);
       free(values_pub_dh);
       return OTRNG_ERROR;
@@ -595,7 +595,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
       free(values_priv_ecdh);
       free(values_pub_ecdh);
       otrng_secure_wipe(values_priv_dh,
-                        pub_message->num_prekey_messages * sizeof(dh_mpi));
+                        pub_message->num_prekey_messages * sizeof(dh_mpi_t));
       free(values_priv_dh);
       free(values_pub_dh);
       return OTRNG_ERROR;
@@ -606,7 +606,7 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
     free(values_priv_ecdh);
     free(values_pub_ecdh);
     otrng_secure_wipe(values_priv_dh,
-                      pub_message->num_prekey_messages * sizeof(dh_mpi));
+                      pub_message->num_prekey_messages * sizeof(dh_mpi_t));
     free(values_priv_dh);
     free(values_pub_dh);
   }
@@ -816,13 +816,12 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *message2,
   }
 
   /* SK = KDF(0x01, ECDH(i, S), 64) */
-  shake_256_prekey_server_kdf(shared_secret, HASH_BYTES, usage_SK,
-                              ecdh_shared, ED448_POINT_BYTES);
+  shake_256_prekey_server_kdf(shared_secret, HASH_BYTES, usage_SK, ecdh_shared,
+                              ED448_POINT_BYTES);
 
   /* prekey_mac_k = KDF(0x08, SK, 64) */
   shake_256_prekey_server_kdf(prekey_client->mac_key, MAC_KEY_BYTES,
-                              usage_preMAC_key, shared_secret,
-                              HASH_BYTES);
+                              usage_preMAC_key, shared_secret, HASH_BYTES);
 
   /* Attach MESSAGE in the message */
   if (prekey_client->after_dake == OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST) {

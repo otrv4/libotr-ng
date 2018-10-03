@@ -127,7 +127,7 @@ static void test_dh_shared_secret() {
       0xf6, 0x6f, 0xf6, 0x4e, 0x15, 0x6b, 0xc3, 0x01, 0x58, 0x7d, 0xbf, 0x9d,
   };
 
-  dh_mpi priv_dh = NULL, pub_dh = NULL;
+  dh_mpi_t priv_dh = NULL, pub_dh = NULL;
   otrng_dh_mpi_deserialize(&priv_dh, priv, DH_KEY_SIZE, NULL);
   otrng_dh_mpi_deserialize(&pub_dh, pub, DH3072_MOD_LEN_BYTES, NULL);
 
@@ -145,7 +145,7 @@ static void test_dh_shared_secret() {
 
 static void test_dh_serialize() {
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
-  dh_mpi mpi = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  dh_mpi_t mpi = gcry_mpi_new(DH3072_MOD_LEN_BITS);
 
   size_t mpi_len = 0;
   otrng_assert_is_success(

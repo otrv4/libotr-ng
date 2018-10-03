@@ -55,7 +55,7 @@ static inline struct goldilocks_448_point_s *their_ecdh(const otrng_s *otr) {
   return &otr->keys->their_ecdh[0];
 }
 
-static inline dh_public_key their_dh(const otrng_s *otr) {
+static inline dh_public_key_t their_dh(const otrng_s *otr) {
   return otr->keys->their_dh;
 }
 

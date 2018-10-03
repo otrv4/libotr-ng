@@ -80,7 +80,7 @@ typedef struct {
   otrng_prekey_profile_s *prekey_profile;
 
   ec_scalar *ecdh_keys;
-  dh_mpi *dh_keys;
+  dh_mpi_t *dh_keys;
   ec_scalar prekey_profile_key;
 } otrng_prekey_publication_message_s;
 

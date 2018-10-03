@@ -564,8 +564,8 @@ tstatic otrng_bool rollback_detected(const char *versions) {
 
 static otrng_result
 generate_dsa_key_sexp(gcry_sexp_t *pubs, const uint8_t *buffer, size_t buflen) {
-  dh_mpi p = NULL, q = NULL, g = NULL, y = NULL;
-  dh_mpi *mpis[4] = {&p, &q, &g, &y};
+  dh_mpi_t p = NULL, q = NULL, g = NULL, y = NULL;
+  dh_mpi_t *mpis[4] = {&p, &q, &g, &y};
 
   size_t read = 0;
   size_t w = 0;

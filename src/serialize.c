@@ -103,7 +103,7 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *destination,
 INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *destination,
                                                  size_t destinationlen,
                                                  size_t *written,
-                                                 const dh_mpi mpi) {
+                                                 const dh_mpi_t mpi) {
   uint8_t buf[DH3072_MOD_LEN_BYTES];
   size_t w = 0;
   otrng_mpi_s otr_mpi;
@@ -136,7 +136,7 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *destination,
 INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *destination,
                                                     size_t destinationlen,
                                                     size_t *written,
-                                                    const dh_public_key pub) {
+                                                    const dh_public_key_t pub) {
   return otrng_serialize_dh_mpi_otr(destination, destinationlen, written, pub);
 }
 

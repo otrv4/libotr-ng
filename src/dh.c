@@ -365,7 +365,7 @@ API void otrng_dh_keypair_debug_print(FILE *f, int indent, dh_keypair_s *k) {
   debug_api_print(f, "} // dh_keypair\n");
 }
 
-API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key k) {
+API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key_t k) {
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   size_t w = 0;
 

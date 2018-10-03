@@ -292,7 +292,7 @@ static void test_dh_proof_deserialization(void) {
   };
   dh_proof_s px;
   size_t read;
-  dh_mpi expected_v;
+  dh_mpi_t expected_v;
 
   uint8_t v1data[DH_KEY_SIZE] = {0x00, 0x01, 0x42};
   gcry_mpi_scan(&expected_v, GCRYMPI_FMT_USG, v1data, DH_KEY_SIZE, NULL);

@@ -89,7 +89,7 @@ INTERNAL const otrng_prekey_profile_s *get_my_exp_prekey_profile(otrng_s *otr);
 
 INTERNAL struct goldilocks_448_point_s *our_ecdh(const otrng_s *otr);
 
-INTERNAL dh_public_key our_dh(const otrng_s *otr);
+INTERNAL dh_public_key_t our_dh(const otrng_s *otr);
 
 INTERNAL uint32_t our_instance_tag(const otrng_s *otr);
 
