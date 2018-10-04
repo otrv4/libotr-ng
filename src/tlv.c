@@ -39,7 +39,7 @@ const size_t TLV_TYPES_LENGTH = OTRNG_TLV_SYM_KEY + 1;
 tstatic void set_tlv_type(tlv_s *tlv, uint16_t tlv_type) {
   tlv->type = OTRNG_TLV_NONE;
 
-  if (tlv_type >= 0 && tlv_type < TLV_TYPES_LENGTH) {
+  if (tlv_type < TLV_TYPES_LENGTH) {
     tlv->type = tlv_types[tlv_type];
   }
 }

@@ -81,7 +81,7 @@ INTERNAL otrng_result otrng_prekey_message_serialize_into(
 INTERNAL otrng_result
 otrng_prekey_message_serialize(uint8_t *dst, size_t dst_len, size_t *written,
                                const prekey_message_s *src) {
-  size_t w = 0, len;
+  size_t w = 0, len = 0;
   w += otrng_serialize_uint16(dst + w, OTRNG_PROTOCOL_VERSION_4);
   w += otrng_serialize_uint8(dst + w, PRE_KEY_MSG_TYPE);
   w += otrng_serialize_uint32(dst + w, src->id);

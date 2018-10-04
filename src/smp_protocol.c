@@ -1191,21 +1191,21 @@ tstatic otrng_smp_event_t receive_smp_message_1(const tlv_s *tlv,
 INTERNAL otrng_smp_event_t otrng_reply_with_smp_message_2(tlv_s **to_send,
                                                           smp_protocol_s *smp) {
   smp_message_2_s msg_2;
-  size_t bufflen;
-  uint8_t *buff;
+  size_t buff_len = 0;
+  uint8_t *buffer = NULL;
 
   *to_send = NULL;
 
   generate_smp_message_2(&msg_2, smp->message1, smp);
-  if (!smp_message_2_serialize(&buff, &bufflen, &msg_2)) {
+  if (!smp_message_2_serialize(&buffer, &buff_len, &msg_2)) {
     return OTRNG_SMP_EVENT_ERROR;
   }
 
   smp_message_2_destroy(&msg_2);
 
-  *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_2, bufflen, buff);
+  *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_2, buff_len, buffer);
 
-  free(buff);
+  free(buffer);
 
   if (!to_send) {
     return OTRNG_SMP_EVENT_ERROR;
@@ -1246,22 +1246,22 @@ tstatic otrng_smp_event_t reply_with_smp_message_3(tlv_s **to_send,
                                                    const smp_message_2_s *msg_2,
                                                    smp_protocol_s *smp) {
   smp_message_3_s msg_3;
-  size_t bufflen = 0;
-  uint8_t *buff = NULL;
+  size_t buff_len = 0;
+  uint8_t *buffer = NULL;
 
   if (!generate_smp_message_3(&msg_3, msg_2, smp)) {
     return OTRNG_SMP_EVENT_ERROR;
   }
 
-  if (!smp_message_3_serialize(&buff, &bufflen, &msg_3)) {
+  if (!smp_message_3_serialize(&buffer, &buff_len, &msg_3)) {
     return OTRNG_SMP_EVENT_ERROR;
   }
 
   smp_message_3_destroy(&msg_3);
 
-  *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_3, bufflen, buff);
+  *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_3, buff_len, buffer);
 
-  free(buff);
+  free(buffer);
 
   if (!*to_send) {
     return OTRNG_SMP_EVENT_ERROR;
@@ -1301,20 +1301,20 @@ tstatic otrng_smp_event_t reply_with_smp_message_4(tlv_s **to_send,
                                                    const smp_message_3_s *msg_3,
                                                    smp_protocol_s *smp) {
   smp_message_4_s msg_4;
-  size_t bufflen = 0;
-  uint8_t *buff = NULL;
+  size_t buff_len = 0;
+  uint8_t *buffer = NULL;
 
   if (!generate_smp_message_4(&msg_4, msg_3, smp)) {
     return OTRNG_SMP_EVENT_ERROR;
   }
 
-  if (!smp_message_4_serialize(&buff, &bufflen, &msg_4)) {
+  if (!smp_message_4_serialize(&buffer, &buff_len, &msg_4)) {
     return OTRNG_SMP_EVENT_ERROR;
   }
 
-  *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_4, bufflen, buff);
+  *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_4, buff_len, buffer);
 
-  free(buff);
+  free(buffer);
 
   if (!*to_send) {
     return OTRNG_SMP_EVENT_ERROR;

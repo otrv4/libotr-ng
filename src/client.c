@@ -963,7 +963,7 @@ otrng_client_get_instance_tag(const otrng_client_s *client) {
   char *protocol_name = NULL;
   OtrlInsTag *instag;
 
-  if (!client->global_state->user_state_v3) {
+  if (client->global_state->user_state_v3 == NULL) {
     return (unsigned int)0;
   }
 
@@ -1001,7 +1001,7 @@ INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
     return OTRNG_ERROR;
   }
 
-  if (!client->global_state->user_state_v3) {
+  if (client->global_state->user_state_v3 == NULL) {
     return OTRNG_ERROR;
   }
 

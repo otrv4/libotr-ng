@@ -202,12 +202,12 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   uint8_t *p;
   uint8_t *rbuf;
   gcry_error_t err;
-  dh_mpi q, a, r;
+  dh_mpi q, a, r = NULL;
   size_t i;
   uint8_t *cbuf;
   uint8_t *cbuf_curr;
   uint8_t *p_curr;
-  size_t w;
+  size_t w = 0;
   size_t cbuf_len = ((values_len + 1) * DH_MPI_MAX_BYTES) + 64;
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
 
@@ -290,7 +290,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   uint8_t *cbuf;
   uint8_t *cbuf_curr;
   uint8_t *p_curr;
-  size_t w;
+  size_t w = 0;
   size_t cbuf_len = ((values_len + 1) * DH_MPI_MAX_BYTES) + 64;
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
   uint8_t c2[PROOF_C_SIZE];
@@ -372,7 +372,7 @@ INTERNAL size_t otrng_ecdh_proof_serialize(uint8_t *dst,
 
 INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_s *px) {
   uint8_t *cursor = dst;
-  size_t len;
+  size_t len = 0;
 
   cursor += otrng_serialize_bytes_array(cursor, px->c, PROOF_C_SIZE);
   otrng_serialize_dh_mpi_otr(cursor, DH_MPI_MAX_BYTES, &len, px->v);
@@ -411,7 +411,7 @@ INTERNAL otrng_result otrng_dh_proof_deserialize(dh_proof_s *px,
                                                  const uint8_t *ser,
                                                  size_t ser_len, size_t *read) {
   const uint8_t *cursor = ser;
-  size_t n;
+  size_t n = 0;
 
   if (ser_len < PROOF_C_SIZE) {
     return OTRNG_ERROR;

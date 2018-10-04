@@ -1500,7 +1500,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
     size_t ser_len) {
   size_t w = 0;
   size_t read = 0;
-  uint8_t l;
+  uint8_t l = 0;
 
   uint8_t msg_type = 0;
 

@@ -75,7 +75,7 @@ INTERNAL otrng_result otrng_dake_identity_message_serialize(
     const dake_identity_message_s *identity_msg) {
   size_t profile_len = 0;
   uint8_t *profile = NULL;
-  size_t size, len;
+  size_t size, len = 0;
   uint8_t *buffer;
   uint8_t *cursor;
   if (!otrng_client_profile_serialize(&profile, &profile_len,
@@ -624,7 +624,7 @@ tstatic otrng_result build_rsign_tag(
     const uint8_t *ser_r_shared_prekey, size_t ser_r_shared_prekey_len,
     const uint8_t *phi, size_t phi_len) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
-  size_t ser_i_profile_len, ser_r_profile_len = 0;
+  size_t ser_i_profile_len = 0, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];
   uint8_t ser_i_dh[DH_MPI_MAX_BYTES], ser_r_dh[DH_MPI_MAX_BYTES];
   size_t ser_i_dh_len = 0, ser_r_dh_len = 0;

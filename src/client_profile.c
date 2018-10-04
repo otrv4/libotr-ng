@@ -486,7 +486,7 @@ INTERNAL otrng_result otrng_client_profile_deserialize(
 INTERNAL otrng_result otrng_client_profile_deserialize_with_metadata(
     otrng_client_profile_s *target, const uint8_t *buffer, size_t buff_len,
     size_t *nread) {
-  size_t nread1, nread2;
+  size_t nread1 = 0, nread2 = 0;
   otrng_result result =
       otrng_client_profile_deserialize(target, buffer, buff_len, &nread1);
   if (otrng_failed(result)) {
@@ -664,7 +664,7 @@ static otrng_result generate_dsa_key_sexp(gcry_sexp_t *pubs,
 tstatic otrng_result client_profile_verify_transitional_signature(
     const otrng_client_profile_s *client_profile) {
   gcry_sexp_t pubs = NULL;
-  size_t size, data_len;
+  size_t size, data_len = 0;
   uint8_t *data;
   gcry_error_t err;
 

@@ -38,8 +38,6 @@ typedef uint8_t
 static const otrng_bool otrng_true = 1;
 static const otrng_bool otrng_false = 0;
 
-static inline int otrng_is_true(otrng_bool b) { return b == otrng_true; }
-
 typedef enum {
   OTRNG_SUCCESS = 1,
   OTRNG_ERROR = 0,
