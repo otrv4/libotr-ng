@@ -874,8 +874,6 @@ tstatic otrng_result reply_with_non_interactive_auth_message(string_p *dst,
   return ret;
 }
 
-// TODO: @non_interactive Should maybe return a serialized ensemble, ready to
-// publish to the server
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
@@ -895,15 +893,14 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   }
 
   ensemble->message =
-      otrng_prekey_message_build(our_instance_tag(otr), ecdh.pub, dh.pub);
+      otrng_prekey_message_build(our_instance_tag(otr), &ecdh, &dh);
   if (!ensemble->message) {
     otrng_prekey_ensemble_free(ensemble);
     return NULL;
   }
 
   client = otr->client;
-  otrng_client_store_my_prekey_message(
-      ensemble->message->id, our_instance_tag(otr), &ecdh, &dh, client);
+  otrng_client_store_my_prekey_message(ensemble->message, client);
   otrng_ecdh_keypair_destroy(&ecdh);
   otrng_dh_keypair_destroy(&dh);
 
@@ -1234,7 +1231,7 @@ tstatic otrng_result non_interactive_auth_message_received(
     otrng_response_s *response, const dake_non_interactive_auth_message_s *auth,
     otrng_s *otr) {
   otrng_client_s *client = otr->client;
-  const otrng_stored_prekeys_s *stored_prekey = NULL;
+  const prekey_message_s *stored_prekey = NULL;
   otrng_fingerprint fp;
 
   if (!client) {
@@ -1258,7 +1255,7 @@ tstatic otrng_result non_interactive_auth_message_received(
   }
 
   stored_prekey =
-      otrng_client_get_my_prekeys_by_id(auth->prekey_message_id, otr->client);
+      otrng_client_get_prekey_by_id(auth->prekey_message_id, otr->client);
   if (!stored_prekey) {
     // TODO: this should send an error to the plugin
     return OTRNG_ERROR;
@@ -1287,13 +1284,12 @@ tstatic otrng_result non_interactive_auth_message_received(
 
   /* Set our current ephemeral keys, based on the received message */
   otrng_ecdh_keypair_destroy(otr->keys->our_ecdh);
-  otrng_ec_scalar_copy(otr->keys->our_ecdh->priv,
-                       stored_prekey->our_ecdh->priv);
-  otrng_ec_point_copy(otr->keys->our_ecdh->pub, stored_prekey->our_ecdh->pub);
+  otrng_ec_scalar_copy(otr->keys->our_ecdh->priv, stored_prekey->y->priv);
+  otrng_ec_point_copy(otr->keys->our_ecdh->pub, stored_prekey->y->pub);
 
   otrng_dh_keypair_destroy(otr->keys->our_dh);
-  otr->keys->our_dh->priv = otrng_dh_mpi_copy(stored_prekey->our_dh->priv);
-  otr->keys->our_dh->pub = otrng_dh_mpi_copy(stored_prekey->our_dh->pub);
+  otr->keys->our_dh->priv = otrng_dh_mpi_copy(stored_prekey->b->priv);
+  otr->keys->our_dh->pub = otrng_dh_mpi_copy(stored_prekey->b->pub);
 
   // TODO: this has to happen long before, for this to work
   if (auth->receiver_instance_tag != stored_prekey->sender_instance_tag) {

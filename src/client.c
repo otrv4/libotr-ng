@@ -91,21 +91,8 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
   return client;
 }
 
-tstatic void otrng_stored_prekeys_free(otrng_stored_prekeys_s *s) {
-  if (!s) {
-    return;
-  }
-
-  otrng_ecdh_keypair_destroy(s->our_ecdh);
-  free(s->our_ecdh);
-  otrng_dh_keypair_destroy(s->our_dh);
-  free(s->our_dh);
-
-  free(s);
-}
-
-tstatic void stored_prekeys_free_from_list(void *prekeys) {
-  otrng_stored_prekeys_free((otrng_stored_prekeys_s *)prekeys);
+tstatic void prekey_message_free_from_list(void *prekeys) {
+  otrng_prekey_message_free(prekeys);
 }
 
 API void otrng_client_free(otrng_client_s *client) {
@@ -118,7 +105,7 @@ API void otrng_client_free(otrng_client_s *client) {
     otrng_ec_point_destroy(*client->forging_key);
   }
   free(client->forging_key);
-  otrng_list_free(client->our_prekeys, stored_prekeys_free_from_list);
+  otrng_list_free(client->our_prekeys, prekey_message_free_from_list);
   otrng_client_profile_free(client->client_profile);
   otrng_client_profile_free(client->exp_client_profile);
   otrng_prekey_profile_free(client->prekey_profile);
@@ -546,28 +533,14 @@ otrng_client_get_prekey_client(const char *server_identity,
   return client->prekey_client;
 }
 
-INTERNAL void otrng_client_store_my_prekey_message(
-    uint32_t id, uint32_t instance_tag, const ecdh_keypair_s *ecdh_pair,
-    const dh_keypair_s *dh_pair, otrng_client_s *client) {
-  otrng_stored_prekeys_s *stored_prekey_msg;
+INTERNAL void otrng_client_store_my_prekey_message(const prekey_message_s *msg,
+                                                   otrng_client_s *client) {
   if (!client) {
     return;
   }
 
-  stored_prekey_msg = otrng_xmalloc_z(sizeof(otrng_stored_prekeys_s));
-  stored_prekey_msg->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
-  stored_prekey_msg->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
-  stored_prekey_msg->id = id;
-  stored_prekey_msg->sender_instance_tag = instance_tag;
-
-  /* @secret the keypairs should be deleted once the double ratchet gets
-   * initialized */
-  otrng_ec_scalar_copy(stored_prekey_msg->our_ecdh->priv, ecdh_pair->priv);
-  otrng_ec_point_copy(stored_prekey_msg->our_ecdh->pub, ecdh_pair->pub);
-  stored_prekey_msg->our_dh->priv = otrng_dh_mpi_copy(dh_pair->priv);
-  stored_prekey_msg->our_dh->pub = otrng_dh_mpi_copy(dh_pair->pub);
-
-  client->our_prekeys = otrng_list_add(stored_prekey_msg, client->our_prekeys);
+  client->our_prekeys = otrng_list_add(otrng_prekey_message_create_copy(msg),
+                                       client->our_prekeys);
 }
 
 API prekey_message_s **
@@ -595,7 +568,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
     dh_keypair_s dh;
     otrng_generate_ephemeral_keys(&ecdh, &dh);
 
-    messages[i] = otrng_prekey_message_build(instance_tag, ecdh.pub, dh.pub);
+    messages[i] = otrng_prekey_message_build(instance_tag, &ecdh, &dh);
     if (!messages[i]) {
       for (j = 0; j < i; j++) {
         otrng_prekey_message_free(messages[j]);
@@ -606,8 +579,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
     goldilocks_448_scalar_copy(ecdh_priv_key[i], ecdh.priv);
     dh_priv_key[i] = otrng_dh_mpi_copy(dh.priv);
 
-    otrng_client_store_my_prekey_message(
-        messages[i]->id, messages[i]->sender_instance_tag, &ecdh, &dh, client);
+    otrng_client_store_my_prekey_message(messages[i], client);
 
     // TODO: ecdh_keypair_destroy()
     // dh_keypair_detroy()
@@ -1034,7 +1006,7 @@ INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
 tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
                                                      list_element_s *l) {
   while (l) {
-    const otrng_stored_prekeys_s *s = l->data;
+    const prekey_message_s *s = l->data;
     if (!s) {
       continue;
     }
@@ -1049,8 +1021,8 @@ tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
   return NULL;
 }
 
-INTERNAL const otrng_stored_prekeys_s *
-otrng_client_get_my_prekeys_by_id(uint32_t id, const otrng_client_s *client) {
+INTERNAL const prekey_message_s *
+otrng_client_get_prekey_by_id(uint32_t id, const otrng_client_s *client) {
   list_element_s *node = get_stored_prekey_node_by_id(id, client->our_prekeys);
   if (!node) {
     return NULL;
@@ -1068,7 +1040,7 @@ otrng_client_delete_my_prekey_message_by_id(uint32_t id,
   }
 
   client->our_prekeys = otrng_list_remove_element(node, client->our_prekeys);
-  otrng_list_free(node, stored_prekeys_free_from_list);
+  otrng_list_free(node, prekey_message_free_from_list);
 }
 
 API void otrng_client_set_padding(size_t granularity, otrng_client_s *client) {
@@ -1187,56 +1159,3 @@ API void otrng_client_published(otrng_client_s *client) {
   // TODO: @ola here everything else should be marked as well, once they have
   // their flags
 }
-
-#ifdef DEBUG_API
-
-API void otrng_stored_prekeys_debug_print(FILE *f, int indent,
-                                          otrng_stored_prekeys_s *s) {
-  if (otrng_debug_print_should_ignore("stored_prekeys")) {
-    return;
-  }
-
-  otrng_print_indent(f, indent);
-  debug_api_print(f, "stored_prekeys(");
-  otrng_debug_print_pointer(f, s);
-  debug_api_print(f, ") {\n");
-
-  otrng_print_indent(f, indent + 2);
-  if (otrng_debug_print_should_ignore("stored_prekeys->id")) {
-    debug_api_print(f, "id = IGNORED\n");
-  } else {
-    debug_api_print(f, "id = %x\n", s->id);
-  }
-
-  otrng_print_indent(f, indent + 2);
-  if (otrng_debug_print_should_ignore("stored_prekeys->sender_instance_tag")) {
-    debug_api_print(f, "sender_instance_tag = IGNORED\n");
-  } else {
-    debug_api_print(f, "sender_instance_tag = %x\n", s->sender_instance_tag);
-  }
-
-  otrng_print_indent(f, indent + 2);
-  if (otrng_debug_print_should_ignore("stored_prekeys->our_ecdh")) {
-    debug_api_print(f, "our_ecdh = IGNORED\n");
-  } else {
-    debug_api_print(f, "our_ecdh = {\n");
-    otrng_ecdh_keypair_debug_print(f, indent + 4, s->our_ecdh);
-    otrng_print_indent(f, indent + 2);
-    debug_api_print(f, "} // our_ecdh\n");
-  }
-
-  otrng_print_indent(f, indent + 2);
-  if (otrng_debug_print_should_ignore("stored_prekeys->our_dh")) {
-    debug_api_print(f, "our_dh = IGNORED\n");
-  } else {
-    debug_api_print(f, "our_dh = {\n");
-    otrng_dh_keypair_debug_print(f, indent + 4, s->our_dh);
-    otrng_print_indent(f, indent + 2);
-    debug_api_print(f, "} // our_dh\n");
-  }
-
-  otrng_print_indent(f, indent);
-  debug_api_print(f, "} // stored_prekeys\n");
-}
-
-#endif /* DEBUG */

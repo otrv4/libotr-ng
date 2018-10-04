@@ -288,19 +288,29 @@ static void test_global_state_prekey_message_management(void) {
   FILE *prekey = tmpfile();
 
   fputs("charlie@xmpp\n"
-        "f139c0c4\n"
-        "dba14ff1\n"
-        "/j+dnA2sffO2yDwB3rOVPEzeCDsFfTss8NCwHsQaN4Hjsn/"
-        "NpstdI0vbcFPUApJsK70NzpaTZjU=\n"
-        "ZwK68U7e8nicaW1EqcZUfZnoLPzkyQqJcvtv1c6AS5M6uqFdH3PIjwup81/"
-        "dpOTgSesSPWaW/J79884Dnn3FDudlXVq9kH4K+xABjgekNGk=\n",
+        "AAQPMZClCAAQCg8RzPlh43FIy2YW+g3KqIb5SXpx74ECFHpaxUHoQdWNFbRRw1NPsk/"
+        "XMWaOF73EjiQn68qGu4NgjYAAAAGA1LDfpCMT4A2bkDLdJRW0kTvTPfQl6kfEgpQPzmSW9"
+        "1ckbby7atStSbBtDKlI8jkIm/UChVzY4ZKM7MAgbiDB1m5I78Ivd1cNE/"
+        "F0kiX6yx5y8xgHPeb5P/"
+        "38ilijUn7Zpy+"
+        "egdeOOcu9iEIG8VRNQe6DDf7GmKLQs1l12Y6tPWkvk8e6s8YcS3PM5dv3TFakcNflgaA3G"
+        "6dJIG3OVvLJmQq5TivJqY6GY/"
+        "9Or6CknzQYNUoJKRb2Nq7i79BAFL+8ShnERztTjdx9e4tBuKLJ7DSV/"
+        "K085L8U6yEzFrFAQ2YzUbbb+"
+        "YqWcsvdEgDe7kgYYXzBzt0n8Qx9BSMOPaPgTK1oJiYIj9gLOrCvUBh+"
+        "USF9xLg50IkkfHTvQvtj6Sn9R55+Qd6mILJtsUdDqx0BnKlxrmaECA4iN+ZRWOx/"
+        "VVXJoc7RgJo3t7v4ZNwvW5rMmYs1HqhYw+8m6CxqoNBevLaH34NddDE4XIyEjl/"
+        "oczP20BLkS3LRfBRQ/"
+        "Ph6tZ6cAK7U+bAOYMLOSj56rTmmJ0OMP+mzZRHoRQGqJ4L25g1Ts9VycLZe4JB+/"
+        "EAOEYUuIcwUokQ57rAtAAAAUD0w1jRPz5OrBWG3W2BgE+Y7N+"
+        "ilor5uLIMoohICSNFfXaTRS1bb7X9LN+cZ8heh49rGUv1GUO8OZQPB2NFbjo/"
+        "QBrbvY6UwIExSumhKAvBn\n",
         prekey);
   rewind(prekey);
 
   otrng_result result = otrng_global_state_prekeys_read_from(
       state, prekey, read_client_id_for_privf);
   otrng_assert_is_success(result);
-
   fclose(prekey);
 
   otrng_client_s *client =
@@ -308,17 +318,18 @@ static void test_global_state_prekey_message_management(void) {
 
   otrng_assert(client->our_prekeys);
 
-  uint32_t message_id = 4047093956;
-  const otrng_stored_prekeys_s *stored_prekey = NULL;
-  stored_prekey = otrng_client_get_my_prekeys_by_id(message_id, client);
+  uint32_t message_id = 831563016;
+  const prekey_message_s *stored_prekey = NULL;
+  stored_prekey = otrng_client_get_prekey_by_id(message_id, client);
 
   uint8_t ecdh_secret_k[ED448_SCALAR_BYTES] = {0};
-  otrng_ec_scalar_encode(ecdh_secret_k, stored_prekey->our_ecdh->priv);
+  otrng_ec_scalar_encode(ecdh_secret_k, stored_prekey->y->priv);
 
   char *ecdh_symkey = otrng_base64_encode(ecdh_secret_k, ED448_SCALAR_BYTES);
 
-  const char *expected_ecdh = "/j+dnA2sffO2yDwB3rOVPEzeCDsFfTss8NCwHsQaN4Hjsn/"
-                              "NpstdI0vbcFPUApJsK70NzpaTZjU=";
+  const char *expected_ecdh =
+      "rtT5sA5gws5KPnqtOaYnQ4w/"
+      "6bNlEehFAaongvbmDVOz1XJwtl7gkH78QA4RhS4hzBSiRDnusC0=";
   otrng_assert_cmpmem(expected_ecdh, ecdh_symkey, 76);
 
   free(ecdh_symkey);
@@ -326,13 +337,13 @@ static void test_global_state_prekey_message_management(void) {
   uint8_t dh_secret_k[DH_KEY_SIZE] = {0};
   size_t dh_secret_k_len = 0;
   otrng_dh_mpi_serialize(dh_secret_k, DH_KEY_SIZE, &dh_secret_k_len,
-                         stored_prekey->our_dh->priv);
+                         stored_prekey->b->priv);
 
   char *dh_symkey = otrng_base64_encode(dh_secret_k, dh_secret_k_len);
 
   const char *expected_dh =
-      "ZwK68U7e8nicaW1EqcZUfZnoLPzkyQqJcvtv1c6AS5M6uqFdH3PIjwup81/"
-      "dpOTgSesSPWaW/J79884Dnn3FDudlXVq9kH4K+xABjgekNGk=";
+      "PTDWNE/Pk6sFYbdbYGAT5js36KWivm4sgyiiEgJI0V9dpNFLVtvtf0s35xnyF6Hj2sZS/"
+      "UZQ7w5lA8HY0VuOj9AGtu9jpTAgTFK6aEoC8Gc=";
   otrng_assert_cmpmem(expected_dh, dh_symkey, 108);
 
   free(dh_symkey);

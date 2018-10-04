@@ -32,8 +32,8 @@ typedef struct prekey_message_s {
   ec_point Y;
   dh_public_key B;
 
-  ecdh_keypair_s *our_ecdh; /* Y and y */
-  dh_keypair_s *our_dh;     /* B and b */
+  ecdh_keypair_s *y; /* Y and y */
+  dh_keypair_s *b;   /* B and b */
 
   otrng_bool should_publish;
   otrng_bool is_publishing;
@@ -41,9 +41,12 @@ typedef struct prekey_message_s {
 
 INTERNAL prekey_message_s *otrng_prekey_message_new(void);
 
+INTERNAL prekey_message_s *
+otrng_prekey_message_create_copy(const prekey_message_s *src);
+
 INTERNAL prekey_message_s *otrng_prekey_message_build(uint32_t instance_tag,
-                                                      const ec_point ecdh,
-                                                      const dh_public_key dh);
+                                                      const ecdh_keypair_s *y,
+                                                      const dh_keypair_s *b);
 
 INTERNAL void otrng_prekey_message_free(prekey_message_s *prekey_msg);
 

@@ -66,7 +66,7 @@ typedef struct otrng_client_s {
   otrng_client_profile_s *exp_client_profile;
   otrng_prekey_profile_s *prekey_profile;
   otrng_prekey_profile_s *exp_prekey_profile;
-  list_element_s *our_prekeys; /* otrng_stored_prekeys_s */
+  list_element_s *our_prekeys; /* prekey_message_s */
 
   unsigned int max_stored_msg_keys;
   unsigned int max_published_prekey_msg;
@@ -89,13 +89,6 @@ typedef struct otrng_client_s {
   // otrng_instag_s *instag; // TODO: @client Store the instance tag here rather
   // than use v3 User State as a store for instance tags
 } otrng_client_s;
-
-typedef struct {
-  uint32_t id;
-  uint32_t sender_instance_tag;
-  ecdh_keypair_s *our_ecdh;
-  dh_keypair_s *our_dh;
-} otrng_stored_prekeys_s;
 
 API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id);
 
@@ -172,9 +165,8 @@ otrng_client_get_prekey_client(const char *server_identity,
                                otrng_prekey_client_callbacks_s *callbacks,
                                otrng_client_s *client);
 
-INTERNAL void otrng_client_store_my_prekey_message(
-    uint32_t id, uint32_t instance_tag, const ecdh_keypair_s *ecdh_pair,
-    const dh_keypair_s *dh_pair, otrng_client_s *client);
+INTERNAL void otrng_client_store_my_prekey_message(const prekey_message_s *msg,
+                                                   otrng_client_s *client);
 
 API prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
@@ -234,8 +226,8 @@ otrng_client_get_instance_tag(const otrng_client_s *client);
 INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
                                                     unsigned int instag);
 
-INTERNAL const otrng_stored_prekeys_s *
-otrng_client_get_my_prekeys_by_id(uint32_t id, const otrng_client_s *client);
+INTERNAL const prekey_message_s *
+otrng_client_get_prekey_by_id(uint32_t id, const otrng_client_s *client);
 
 INTERNAL void
 otrng_client_delete_my_prekey_message_by_id(uint32_t id,
@@ -292,8 +284,6 @@ API void otrng_client_debug_print(FILE *, int, otrng_client_s *);
 API void otrng_conversation_debug_print(FILE *, int, otrng_conversation_s *);
 
 /* API void otrng_client_debug_print(FILE *, int, otrng_client_s *); */
-API void otrng_stored_prekeys_debug_print(FILE *, int,
-                                          otrng_stored_prekeys_s *);
 
 #endif
 

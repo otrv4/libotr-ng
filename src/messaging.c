@@ -480,6 +480,8 @@ API otrng_result otrng_global_state_prekeys_read_from(
     return OTRNG_ERROR;
   }
 
+  // TODO: @ola - optimize away the get_client on every line
+
   while (!feof(prekey_filep)) {
     otrng_client_s *client;
     const otrng_client_id_s client_id = read_client_id_for_prekey(prekey_filep);

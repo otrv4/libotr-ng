@@ -40,6 +40,9 @@
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES)
 #define PRE_KEY_MAX_BYTES                                                      \
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES)
+#define PRE_KEY_WITH_METADATA_MAX_BYTES                                        \
+  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES + 1 +              \
+   ED448_SCALAR_BYTES + DH_MPI_MAX_BYTES)
 
 #define AUTH_R_MAX_BYTES                                                       \
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES + RING_SIG_BYTES)
