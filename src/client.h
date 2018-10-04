@@ -165,12 +165,12 @@ otrng_client_get_prekey_client(const char *server_identity,
                                otrng_prekey_client_callbacks_s *callbacks,
                                otrng_client_s *client);
 
-INTERNAL void otrng_client_store_my_prekey_message(const prekey_message_s *msg,
+INTERNAL void otrng_client_store_my_prekey_message(prekey_message_s *msg,
                                                    otrng_client_s *client);
 
 API prekey_message_s **
-otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
-                                   ec_scalar **ecdh_keys, dh_mpi **dh_keys);
+otrng_client_build_prekey_messages(uint8_t num_messages,
+                                   otrng_client_s *client);
 
 INTERNAL otrng_result otrng_client_get_account_and_protocol(
     char **account, char **protocol, const otrng_client_s *client);

@@ -33,7 +33,8 @@ otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
       cb->write_expired_prekey_profile != NULL &&
       cb->get_shared_session_state != NULL && cb->load_privkey_v4 != NULL &&
       cb->load_client_profile != NULL && cb->load_prekey_profile != NULL &&
-      cb->store_client_profile != NULL && cb->store_prekey_profile != NULL);
+      cb->store_client_profile != NULL && cb->store_prekey_profile != NULL &&
+      cb->load_prekey_messages != NULL && cb->store_prekey_messages != NULL);
 }
 
 INTERNAL void

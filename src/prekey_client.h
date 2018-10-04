@@ -79,10 +79,6 @@ typedef struct {
   prekey_message_s **prekey_messages;
   otrng_client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
-
-  ec_scalar *ecdh_keys;
-  dh_mpi *dh_keys;
-  ec_scalar prekey_profile_key;
 } otrng_prekey_publication_message_s;
 
 typedef struct {
@@ -266,6 +262,9 @@ void otrng_prekey_ensemble_retrieval_message_destroy(
 INTERNAL otrng_result otrng_prekey_success_message_deserialize(
     otrng_prekey_success_message_s *dst, const uint8_t *source,
     size_t source_len);
+
+API void otrng_prekey_client_add_prekey_messages_for_publication(
+    struct otrng_client_s *client, otrng_prekey_publication_message_s *msg);
 
 #ifdef OTRNG_PREKEY_CLIENT_PRIVATE
 

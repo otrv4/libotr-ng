@@ -533,24 +533,21 @@ otrng_client_get_prekey_client(const char *server_identity,
   return client->prekey_client;
 }
 
-INTERNAL void otrng_client_store_my_prekey_message(const prekey_message_s *msg,
+INTERNAL void otrng_client_store_my_prekey_message(prekey_message_s *msg,
                                                    otrng_client_s *client) {
   if (!client) {
     return;
   }
 
-  client->our_prekeys = otrng_list_add(otrng_prekey_message_create_copy(msg),
-                                       client->our_prekeys);
+  client->our_prekeys = otrng_list_add(msg, client->our_prekeys);
 }
 
 API prekey_message_s **
-otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
-                                   ec_scalar **ecdh_keys, dh_mpi **dh_keys) {
+otrng_client_build_prekey_messages(uint8_t num_messages,
+                                   otrng_client_s *client) {
   uint32_t instance_tag;
   prekey_message_s **messages;
   int i, j;
-  ec_scalar *ecdh_priv_key;
-  dh_mpi *dh_priv_key;
 
   if (num_messages > MAX_NUMBER_PUBLISHED_PREKEY_MSGS) {
     // TODO: notify error
@@ -560,8 +557,6 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
   instance_tag = otrng_client_get_instance_tag(client);
 
   messages = otrng_xmalloc_z(num_messages * sizeof(prekey_message_s *));
-  ecdh_priv_key = otrng_secure_alloc(num_messages * sizeof(ec_scalar));
-  dh_priv_key = otrng_xmalloc_z(num_messages * sizeof(dh_mpi));
 
   for (i = 0; i < num_messages; i++) {
     ecdh_keypair_s ecdh;
@@ -576,17 +571,12 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
       free(messages);
       return NULL;
     }
-    goldilocks_448_scalar_copy(ecdh_priv_key[i], ecdh.priv);
-    dh_priv_key[i] = otrng_dh_mpi_copy(dh.priv);
 
     otrng_client_store_my_prekey_message(messages[i], client);
 
     // TODO: ecdh_keypair_destroy()
     // dh_keypair_detroy()
   }
-
-  *ecdh_keys = ecdh_priv_key;
-  *dh_keys = dh_priv_key;
 
   return messages;
 }
@@ -1131,12 +1121,23 @@ API otrng_bool otrng_client_should_publish(otrng_client_s *client) {
 }
 
 API void otrng_client_failed_published(otrng_client_s *client) {
+  list_element_s *current;
+
   client->client_profile->is_publishing = otrng_false;
   client->prekey_profile->is_publishing = otrng_false;
+  for (current = client->our_prekeys; current != NULL;
+       current = current->next) {
+    prekey_message_s *pm = current->data;
+    pm->is_publishing = otrng_false;
+  }
+
   client->is_publishing = otrng_false;
 }
 
 API void otrng_client_published(otrng_client_s *client) {
+  list_element_s *current;
+  otrng_bool has_any_pms = otrng_false;
+
   if (client->client_profile->is_publishing) {
     client->client_profile->should_publish = otrng_false;
     client->client_profile->is_publishing = otrng_false;
@@ -1149,6 +1150,19 @@ API void otrng_client_published(otrng_client_s *client) {
     client->prekey_profile->is_publishing = otrng_false;
     client->global_state->callbacks->store_prekey_profile(client,
                                                           client->client_id);
+  }
+
+  for (current = client->our_prekeys; current != NULL;
+       current = current->next) {
+    prekey_message_s *pm = current->data;
+    if (pm->is_publishing) {
+      has_any_pms = otrng_true;
+      pm->should_publish = otrng_false;
+      pm->is_publishing = otrng_false;
+    }
+  }
+  if (has_any_pms) {
+    client->global_state->callbacks->store_prekey_messages(client);
   }
 
   if (client->is_publishing) {

@@ -579,6 +579,8 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client,
 
   result = otrng_prekey_message_deserialize_with_metadata(prekey_msg, dec,
                                                           full_len, NULL);
+  otrng_secure_wipe(dec, full_len);
+  free(dec);
   if (otrng_failed(result)) {
     free(prekey_msg);
     return result;

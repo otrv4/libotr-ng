@@ -170,6 +170,72 @@ tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
   signal_error_in_state_management(client, "No Prekey Profile");
 }
 
+tstatic void create_new_prekey_messages(otrng_client_s *client) {
+  prekey_message_s **messages;
+  int ix, num;
+  size_t to_publish =
+      client->max_published_prekey_msg - otrng_list_len(client->our_prekeys);
+
+  if (client->prekey_msgs_num_to_publish > to_publish) {
+    to_publish = client->prekey_msgs_num_to_publish;
+  }
+
+  if (to_publish > 0) {
+    otrng_debug_enter("create_new_prekey_messages > 0");
+    num = to_publish;
+    client->prekey_msgs_num_to_publish = 0;
+
+    messages = otrng_client_build_prekey_messages(num, client);
+    for (ix = 0; ix < num; ix++) {
+      messages[ix]->should_publish = otrng_true;
+    }
+
+    client->should_publish = otrng_true;
+
+    client->global_state->callbacks->store_prekey_messages(client);
+    otrng_debug_exit("create_new_prekey_messages > 0");
+  }
+}
+
+tstatic void load_prekey_messages_from_storage(otrng_client_s *client) {
+  otrng_debug_enter("orchestration.load_prekey_messages_from_storage");
+  client->global_state->callbacks->load_prekey_messages(client);
+  otrng_debug_exit("orchestration.load_prekey_messages_from_storage");
+}
+
+tstatic otrng_bool verify_enough_prekey_messages(otrng_client_s *client) {
+  if (client->minimum_stored_prekey_msg < otrng_list_len(client->our_prekeys)) {
+    return otrng_true;
+  }
+  return otrng_false;
+}
+
+tstatic void ensure_enough_prekey_messages(otrng_client_s *client) {
+  otrng_debug_enter("ensure_enough_prekey_messages");
+
+  if (verify_enough_prekey_messages(client)) {
+    otrng_debug_exit("ensure_enough_prekey_messages.1");
+    return;
+  }
+
+  load_prekey_messages_from_storage(client);
+
+  if (verify_enough_prekey_messages(client)) {
+    otrng_debug_exit("ensure_enough_prekey_messages.2");
+    return;
+  }
+
+  create_new_prekey_messages(client);
+
+  if (verify_enough_prekey_messages(client)) {
+    otrng_debug_exit("ensure_enough_prekey_messages.3");
+    return;
+  }
+
+  signal_error_in_state_management(client, "No Prekey Messages");
+  otrng_debug_exit("ensure_enough_prekey_messages.x");
+}
+
 /* Note, the ensure_ family of functions will check whether the
    values are there and correct, and try to fix them if not.
    The verify_ family of functions will just check that the values
@@ -191,6 +257,8 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
 
   // TODO: @ola here we should check if the prekeyprofile is close to expiring,
   // and in that case move it to the expired part and create a new one
+
+  ensure_enough_prekey_messages(client);
 
   otrng_debug_exit("otrng_client_ensure_correct_state");
 }

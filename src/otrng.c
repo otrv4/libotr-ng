@@ -874,6 +874,7 @@ tstatic otrng_result reply_with_non_interactive_auth_message(string_p *dst,
   return ret;
 }
 
+// This is only used for tests
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
@@ -900,7 +901,8 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   }
 
   client = otr->client;
-  otrng_client_store_my_prekey_message(ensemble->message, client);
+  otrng_client_store_my_prekey_message(
+      otrng_prekey_message_create_copy(ensemble->message), client);
   otrng_ecdh_keypair_destroy(&ecdh);
   otrng_dh_keypair_destroy(&dh);
 

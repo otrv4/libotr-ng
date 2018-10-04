@@ -549,10 +549,10 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
         otrng_xmalloc_z(pub_msg->num_prekey_messages * sizeof(dh_mpi));
 
     for (i = 0; i < pub_msg->num_prekey_messages; i++) {
-      *values_pub_ecdh[i] = *pub_msg->prekey_messages[i]->Y;
-      *values_priv_ecdh[i] = *pub_msg->ecdh_keys[i];
-      values_pub_dh[i] = pub_msg->prekey_messages[i]->B;
-      values_priv_dh[i] = pub_msg->dh_keys[i];
+      *values_pub_ecdh[i] = *pub_msg->prekey_messages[i]->y->pub;
+      *values_priv_ecdh[i] = *pub_msg->prekey_messages[i]->y->priv;
+      values_pub_dh[i] = pub_msg->prekey_messages[i]->b->pub;
+      values_priv_dh[i] = pub_msg->prekey_messages[i]->b->priv;
     }
 
     if (!otrng_ecdh_proof_generate(
@@ -603,8 +603,8 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
     values_priv_ecdh = otrng_secure_alloc(1 * sizeof(ec_scalar));
     values_pub_ecdh = otrng_xmalloc_z(1 * sizeof(ec_point));
 
-    *values_pub_ecdh[0] = *pub_msg->prekey_profile->shared_prekey;
-    *values_priv_ecdh[0] = *pub_msg->prekey_profile_key;
+    *values_pub_ecdh[0] = *pub_msg->prekey_profile->keys->pub;
+    *values_priv_ecdh[0] = *pub_msg->prekey_profile->keys->priv;
 
     if (!otrng_ecdh_proof_generate(&prekey_profile_proof,
                                    (const ec_scalar *)values_priv_ecdh,
@@ -953,6 +953,15 @@ static char *process_received_storage_status(
     return NULL;
   }
 
+  if (msg->stored_prekeys < client->prekey_client->publication_policy
+                                ->minimum_stored_prekey_message) {
+    client->prekey_msgs_num_to_publish =
+        client->prekey_client->publication_policy
+            ->max_published_prekey_message -
+        msg->stored_prekeys;
+    low_prekey_messages_in_storage_callback(client);
+  }
+
   prekey_storage_status_received_callback(client, msg);
   return NULL;
 }
@@ -969,15 +978,6 @@ static char *receive_storage_status(const uint8_t *decoded, size_t decoded_len,
   }
 
   ret = process_received_storage_status(msg, client);
-
-  if (msg->stored_prekeys < client->prekey_client->publication_policy
-                                ->minimum_stored_prekey_message) {
-    client->prekey_msgs_num_to_publish =
-        client->prekey_client->publication_policy
-            ->max_published_prekey_message -
-        msg->stored_prekeys;
-    low_prekey_messages_in_storage_callback(client);
-  }
 
   otrng_prekey_storage_status_message_destroy(msg);
   return ret;
@@ -1605,4 +1605,26 @@ INTERNAL otrng_result otrng_prekey_success_message_deserialize(
 
   return otrng_deserialize_bytes_array(destination->success_mac, HASH_BYTES,
                                        cursor, len);
+}
+
+API void otrng_prekey_client_add_prekey_messages_for_publication(
+    otrng_client_s *client, otrng_prekey_publication_message_s *msg) {
+  size_t max = otrng_list_len(client->our_prekeys);
+  size_t real = 0;
+  prekey_message_s **msg_list = otrng_xmalloc(max * sizeof(prekey_message_s *));
+  list_element_s *current = client->our_prekeys;
+
+  for (; current; current = current->next) {
+    prekey_message_s *pm = current->data;
+    if (pm->should_publish && !pm->is_publishing) {
+      msg_list[real] = otrng_prekey_message_create_copy(pm);
+      pm->is_publishing = otrng_true;
+      real++;
+    }
+  }
+
+  // Since we are shrinking the array, there is no way this can fail, so no need
+  // to check the result
+  msg->prekey_messages = realloc(msg_list, real * sizeof(prekey_message_s *));
+  msg->num_prekey_messages = real;
 }
