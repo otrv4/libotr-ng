@@ -161,13 +161,13 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
   uint8_t *to_send = NULL;
   size_t len = 0;
   tlv_s *tlv;
+  otrng_fingerprint our_fp, their_fp;
 
   if (smp->state_expect != '1') {
     tlv = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
     return tlv;
   }
 
-  otrng_fingerprint our_fp, their_fp;
   if (!otrng_serialize_fingerprint(our_fp,
                                    initiator_profile->long_term_pub_key)) {
     return NULL;
