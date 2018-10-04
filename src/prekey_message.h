@@ -29,11 +29,11 @@
 typedef struct prekey_message_s {
   uint32_t id;
   uint32_t sender_instance_tag;
-  ec_point_t Y;
-  dh_public_key_t B;
+  ec_point Y;
+  dh_public_key B;
 
-  ecdh_keypair_s *our_ecdh;  /* Y and y */
-  dh_keypair_s *our_dh; /* B and b */
+  ecdh_keypair_s *our_ecdh; /* Y and y */
+  dh_keypair_s *our_dh;     /* B and b */
 
   otrng_bool should_publish;
   otrng_bool is_publishing;
@@ -42,8 +42,8 @@ typedef struct prekey_message_s {
 INTERNAL prekey_message_s *otrng_prekey_message_new(void);
 
 INTERNAL prekey_message_s *otrng_prekey_message_build(uint32_t instance_tag,
-                                                      const ec_point_t ecdh,
-                                                      const dh_public_key_t dh);
+                                                      const ec_point ecdh,
+                                                      const dh_public_key dh);
 
 INTERNAL void otrng_prekey_message_free(prekey_message_s *prekey_msg);
 
@@ -54,10 +54,8 @@ INTERNAL otrng_result otrng_prekey_message_deserialize(prekey_message_s *dst,
                                                        size_t src_len,
                                                        size_t *nread);
 
-INTERNAL otrng_result otrng_prekey_message_deserialize_with_metadata(prekey_message_s *dst,
-                                                       const uint8_t *src,
-                                                       size_t src_len,
-                                                       size_t *nread);
+INTERNAL otrng_result otrng_prekey_message_deserialize_with_metadata(
+    prekey_message_s *dst, const uint8_t *src, size_t src_len, size_t *nread);
 
 INTERNAL otrng_result otrng_prekey_message_serialize_into(
     uint8_t **dst, size_t *nbytes, const prekey_message_s *prekey_msg);

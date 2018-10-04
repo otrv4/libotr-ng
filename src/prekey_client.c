@@ -529,8 +529,8 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   prekey_messages_beginning = dake_3->msg + w;
   for (i = 0; i < pub_msg->num_prekey_messages; i++) {
     size_t w2 = 0;
-    if (!otrng_dake_prekey_message_serialize(dake_3->msg + w, size - w, &w2,
-                                             pub_msg->prekey_messages[i])) {
+    if (!otrng_prekey_message_serialize(dake_3->msg + w, size - w, &w2,
+                                        pub_msg->prekey_messages[i])) {
       free(client_profile);
       free(prekey_profile);
       return OTRNG_ERROR;
@@ -1487,7 +1487,7 @@ void otrng_prekey_publication_message_destroy(
 
   if (msg->prekey_messages) {
     for (i = 0; i < msg->num_prekey_messages; i++) {
-      otrng_dake_prekey_message_free(msg->prekey_messages[i]);
+      otrng_prekey_message_free(msg->prekey_messages[i]);
     }
 
     free(msg->prekey_messages);

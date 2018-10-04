@@ -22,8 +22,8 @@
 
 #include "alloc.h"
 
-#include "serialize.h"
 #include "deserialize.h"
+#include "serialize.h"
 
 INTERNAL prekey_message_s *otrng_prekey_message_new(void) {
   prekey_message_s *prekey_msg = otrng_xmalloc_z(sizeof(prekey_message_s));
@@ -31,9 +31,9 @@ INTERNAL prekey_message_s *otrng_prekey_message_new(void) {
   return prekey_msg;
 }
 
-INTERNAL prekey_message_s *
-otrng_prekey_message_build(uint32_t instance_tag, const ec_point_t ecdh,
-                           const dh_public_key_t dh) {
+INTERNAL prekey_message_s *otrng_prekey_message_build(uint32_t instance_tag,
+                                                      const ec_point ecdh,
+                                                      const dh_public_key dh) {
   prekey_message_s *msg = otrng_prekey_message_new();
   uint32_t *identifier;
   if (!msg) {

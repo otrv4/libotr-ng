@@ -105,8 +105,8 @@ INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
 
   dst->message = otrng_xmalloc_z(sizeof(prekey_message_s));
 
-  if (!otrng_prekey_message_deserialize(dst->message, src + w,
-                                        src_len - w, &read)) {
+  if (!otrng_prekey_message_deserialize(dst->message, src + w, src_len - w,
+                                        &read)) {
     return OTRNG_ERROR;
   }
 
@@ -126,7 +126,7 @@ INTERNAL void otrng_prekey_ensemble_destroy(prekey_ensemble_s *dst) {
 
   otrng_prekey_profile_free(dst->prekey_profile);
 
-  otrng_dake_prekey_message_free(dst->message);
+  otrng_prekey_message_free(dst->message);
   dst->message = NULL;
 }
 
