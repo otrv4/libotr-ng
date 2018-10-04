@@ -59,9 +59,14 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *destination,
   otrng_ec_point_copy(destination->shared_prekey, source->shared_prekey);
   if (destination->keys != NULL) {
     otrng_shared_prekey_pair_free(destination->keys);
+    destination->keys = NULL;
   }
-  destination->keys = otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
-  memcpy(destination->keys, source->keys, sizeof(otrng_shared_prekey_pair_s));
+
+  if (source->keys != NULL) {
+    destination->keys = otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
+    memcpy(destination->keys, source->keys, sizeof(otrng_shared_prekey_pair_s));
+  }
+
   memcpy(destination->signature, source->signature, ED448_SIGNATURE_BYTES);
 
   destination->should_publish = source->should_publish;
