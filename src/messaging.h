@@ -72,9 +72,6 @@ API otrng_result otrng_global_state_generate_private_key(
 API otrng_result otrng_global_state_generate_forging_key(
     otrng_global_state_s *gs, const otrng_client_id_s client_id);
 
-API otrng_result otrng_global_state_generate_shared_prekey(
-    otrng_global_state_s *gs, const otrng_client_id_s client_id);
-
 API otrng_result otrng_global_state_generate_client_profile(
     otrng_global_state_s *gs, const otrng_client_id_s client_id);
 
@@ -86,9 +83,6 @@ API otrng_result otrng_global_state_private_key_v4_write_to(
 
 API otrng_result otrng_global_state_forging_key_write_to(
     const otrng_global_state_s *gs, FILE *f);
-
-API otrng_result otrng_global_state_shared_prekey_write_to(
-    const otrng_global_state_s *gs, FILE *shared_prekey_f);
 
 API otrng_result otrng_global_state_client_profile_write_to(
     const otrng_global_state_s *gs, FILE *privf);
@@ -112,10 +106,6 @@ API otrng_result otrng_global_state_private_key_v4_read_from(
 API otrng_result otrng_global_state_forging_key_read_from(
     otrng_global_state_s *gs, FILE *f,
     otrng_client_id_s (*read_client_id_for_key)(FILE *f));
-
-API otrng_result otrng_global_state_shared_prekey_read_from(
-    otrng_global_state_s *gs, FILE *shared_prekeyf,
-    otrng_client_id_s (*read_client_id_for_key)(FILE *filep));
 
 API otrng_result otrng_global_state_client_profile_read_from(
     otrng_global_state_s *gs, FILE *profile_filep,

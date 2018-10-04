@@ -68,9 +68,6 @@ typedef struct otrng_client_s {
   otrng_prekey_profile_s *exp_prekey_profile;
   list_element_s *our_prekeys; /* otrng_stored_prekeys_s */
 
-  /* @secret: this should be deleted once the prekey profile expires */
-  otrng_shared_prekey_pair_s *shared_prekey_pair;
-
   unsigned int max_stored_msg_keys;
   unsigned int max_published_prekey_msg;
   unsigned int minimum_stored_prekey_msg;
@@ -216,9 +213,6 @@ otrng_client_get_exp_client_profile(otrng_client_s *client);
 
 API otrng_result otrng_client_add_exp_client_profile(
     otrng_client_s *client, const otrng_client_profile_s *exp_profile);
-
-INTERNAL otrng_result otrng_client_add_shared_prekey_v4(
-    otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 API otrng_prekey_profile_s *
 otrng_client_get_prekey_profile(otrng_client_s *client);

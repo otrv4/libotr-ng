@@ -34,8 +34,8 @@ static void test_prekey_profile_validates() {
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pair_generate(shared_prekey, sym_shared);
 
-  otrng_prekey_profile_s *profile = otrng_prekey_profile_build(
-      OTRNG_MIN_VALID_INSTAG + 0x01, long_term, shared_prekey);
+  otrng_prekey_profile_s *profile =
+      otrng_prekey_profile_build(OTRNG_MIN_VALID_INSTAG + 0x01, long_term);
 
   otrng_assert(otrng_prekey_profile_valid(profile, profile->instance_tag,
                                           long_term->pub));
@@ -71,7 +71,7 @@ static void test_prekey_profile_serialize() {
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
 
   otrng_prekey_profile_s *profile =
-      otrng_prekey_profile_build(instance_tag, &keypair, shared_prekey);
+      otrng_prekey_profile_build(instance_tag, &keypair);
 
   otrng_assert(profile != NULL);
 
@@ -118,7 +118,7 @@ static void test_prekey_profile_deserialize() {
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
 
   otrng_prekey_profile_s *profile =
-      otrng_prekey_profile_build(instance_tag, &keypair, shared_prekey);
+      otrng_prekey_profile_build(instance_tag, &keypair);
 
   otrng_assert(profile != NULL);
 

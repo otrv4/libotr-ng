@@ -31,6 +31,7 @@
 
 INTERNAL void
 otrng_prekey_profile_destroy(otrng_prekey_profile_s *destination) {
+  otrng_shared_prekey_pair_free(destination->keys);
   otrng_ec_point_destroy(destination->shared_prekey);
   memset(destination->signature, 0, ED448_SIGNATURE_BYTES);
 }
@@ -56,6 +57,11 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *destination,
   destination->expires = source->expires;
 
   otrng_ec_point_copy(destination->shared_prekey, source->shared_prekey);
+  if (destination->keys != NULL) {
+    otrng_shared_prekey_pair_free(destination->keys);
+  }
+  destination->keys = otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
+  memcpy(destination->keys, source->keys, sizeof(otrng_shared_prekey_pair_s));
   memcpy(destination->signature, source->signature, ED448_SIGNATURE_BYTES);
 
   destination->should_publish = source->should_publish;
@@ -136,22 +142,43 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
 INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
     otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
     size_t *nread) {
-  size_t nread1, nread2;
+  size_t read = 0;
+  size_t w = 0;
   otrng_result result =
-      otrng_prekey_profile_deserialize(target, buffer, buflen, &nread1);
+      otrng_prekey_profile_deserialize(target, buffer, buflen, &read);
   if (otrng_failed(result)) {
     return result;
   }
 
-  result = otrng_deserialize_uint8(&target->should_publish, buffer + nread1,
-                                   buflen - nread1, &nread2);
+  w += read;
+
+  result = otrng_deserialize_uint8(&target->should_publish, buffer + w,
+                                   buflen - w, &read);
+
+  if (otrng_failed(result)) {
+    return result;
+  }
+
+  w += read;
+
+  target->keys = otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
+  result = otrng_deserialize_bytes_array(target->keys->sym, ED448_PRIVATE_BYTES,
+                                         buffer + w, buflen - w);
+  if (otrng_failed(result)) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_shared_prekey_pair_generate(target->keys, target->keys->sym);
+  otrng_ec_point_copy(target->shared_prekey, target->keys->pub);
+
+  w += ED448_PRIVATE_BYTES;
 
   if (otrng_failed(result)) {
     return result;
   }
 
   if (nread) {
-    *nread = nread1 + nread2;
+    *nread = w;
   }
 
   return OTRNG_SUCCESS;
@@ -220,7 +247,8 @@ INTERNAL otrng_result otrng_prekey_profile_serialize(
 
 INTERNAL otrng_result otrng_prekey_profile_serialize_with_metadata(
     uint8_t **destination, size_t *nbytes, otrng_prekey_profile_s *profile) {
-  size_t size = PREKEY_PROFILE_BODY_BYTES + ED448_SIGNATURE_BYTES + 1;
+  size_t size = PREKEY_PROFILE_BODY_BYTES + ED448_SIGNATURE_BYTES + 1 +
+                ED448_PRIVATE_BYTES;
   uint8_t *buff = otrng_xmalloc_z(size);
   size_t written;
 
@@ -240,6 +268,9 @@ INTERNAL otrng_result otrng_prekey_profile_serialize_with_metadata(
                                          ED448_SIGNATURE_BYTES);
 
   written += otrng_serialize_uint8(buff + written, profile->should_publish);
+
+  written += otrng_serialize_bytes_array(buff + written, profile->keys->sym,
+                                         ED448_PRIVATE_BYTES);
 
   *destination = buff;
   if (nbytes) {
@@ -267,24 +298,27 @@ INTERNAL otrng_result prekey_profile_sign(
 
 INTERNAL otrng_prekey_profile_s *
 otrng_prekey_profile_build(uint32_t instance_tag,
-                           const otrng_keypair_s *longterm_pair,
-                           const otrng_shared_prekey_pair_s *prekey_pair) {
+                           const otrng_keypair_s *longterm_pair) {
   otrng_prekey_profile_s *prekey_profile;
   time_t expires = time(NULL);
 
-  if (!prekey_pair || !longterm_pair ||
-      !otrng_instance_tag_valid(instance_tag)) {
+  if (!longterm_pair || !otrng_instance_tag_valid(instance_tag)) {
     return NULL;
   }
 
   prekey_profile = otrng_xmalloc_z(sizeof(otrng_prekey_profile_s));
 
+  prekey_profile->keys = otrng_shared_prekey_pair_new();
+  gcry_randomize(prekey_profile->keys->sym, ED448_PRIVATE_BYTES,
+                 GCRY_VERY_STRONG_RANDOM);
+  otrng_shared_prekey_pair_generate(prekey_profile->keys,
+                                    prekey_profile->keys->sym);
+  otrng_ec_point_copy(prekey_profile->shared_prekey, prekey_profile->keys->pub);
+
   prekey_profile->instance_tag = instance_tag;
 
 #define PREKEY_PROFILE_EXPIRATION_SECONDS 1 * 30 * 24 * 60 * 60; /* 1 month */
   prekey_profile->expires = expires + PREKEY_PROFILE_EXPIRATION_SECONDS;
-  otrng_ec_point_copy(prekey_profile->shared_prekey,
-                      prekey_pair->pub); /* Key "D" */
 
   if (!prekey_profile_sign(prekey_profile, longterm_pair)) {
     otrng_prekey_profile_free(prekey_profile);

@@ -50,10 +50,6 @@ INTERNAL void maybe_create_keys(otrng_client_s *client) {
     cb->create_forging_key(client_id);
   }
 
-  if (!client->shared_prekey_pair) {
-    cb->create_shared_prekey(client, client_id);
-  }
-
   instance_tag = otrng_client_get_instance_tag(client);
   if (!instance_tag) {
     otrng_client_callbacks_create_instag(cb, client_id);
@@ -81,6 +77,7 @@ INTERNAL const otrng_client_profile_s *get_my_exp_client_profile(otrng_s *otr) {
 
 INTERNAL const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   otrng_client_s *client = otr->client;
+
   maybe_create_keys(client);
   return otrng_client_get_prekey_profile(client);
 }

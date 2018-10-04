@@ -112,7 +112,6 @@ otrng_client_callbacks_s test_callbacks[1] = {{
     .create_forging_key = &create_forging_key_cb_empty,
     .write_expired_client_profile = &write_expired_client_profile_cb_empty,
     .write_expired_prekey_profile = &write_expired_prekey_profile_cb_empty,
-    .create_shared_prekey = &create_shared_prekey_cb_empty,
     .load_privkey_v4 = &load_privkey_v4_cb_empty,
     .load_client_profile = &load_client_profile_cb_empty,
     .load_prekey_profile = &load_prekey_profile_cb_empty,
@@ -142,7 +141,6 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_public_key_t *fk = create_forging_key_from(sym2);
   otrng_client_add_forging_key(otrng_fixture->client, *fk);
   free(fk);
-  otrng_client_add_shared_prekey_v4(otrng_fixture->client, sym);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
   otrng_fixture->otr = otrng_new(otrng_fixture->client, policy);
@@ -351,13 +349,11 @@ void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
 
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
   uint8_t forging_sym[ED448_PRIVATE_BYTES] = {byte + 0xD};
-  uint8_t shared_prekey_priv[ED448_PRIVATE_BYTES] = {byte + 0xF};
 
   otrng_client_add_private_key_v4(client, long_term_priv);
   otrng_public_key_t *fk = create_forging_key_from(forging_sym);
   otrng_client_add_forging_key(client, *fk);
   free(fk);
-  otrng_client_add_shared_prekey_v4(client, shared_prekey_priv);
   otrng_client_add_instance_tag(client, 0x100 + byte);
 
   client->client_profile = otrng_client_build_default_client_profile(client);
@@ -414,13 +410,6 @@ void create_prekey_profile_cb_empty(
 }
 
 void write_expired_prekey_profile_cb_empty(
-    struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata) {
-  (void)client;
-  (void)client_opdata;
-}
-
-void create_shared_prekey_cb_empty(
     struct otrng_client_s *client,
     const struct otrng_client_id_s client_opdata) {
   (void)client;

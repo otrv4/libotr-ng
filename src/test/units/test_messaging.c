@@ -66,7 +66,6 @@ static otrng_client_callbacks_s empty_callbacks[1] = {{
     .create_forging_key = &create_forging_key_cb_empty,
     .write_expired_client_profile = &write_expired_client_profile_cb_empty,
     .write_expired_prekey_profile = &write_expired_prekey_profile_cb_empty,
-    .create_shared_prekey = &create_shared_prekey_cb_empty,
     .load_privkey_v4 = &load_privkey_v4_cb_empty,
     .load_client_profile = &load_client_profile_cb_empty,
     .load_prekey_profile = &load_prekey_profile_cb_empty,
@@ -113,55 +112,6 @@ static void test_global_state_key_management(void) {
 
   const char *expected = "RQ8MfhJljp+d1KUybu73Hj+Bve8lYTxE1wL5WDLyy+"
                          "pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA";
-  otrng_assert_cmpmem(expected, buffer, s);
-
-  free(buffer);
-  otrng_global_state_free(state);
-}
-
-static void test_global_state_shared_prekey_management(void) {
-  const uint8_t alice_sym[ED448_PRIVATE_BYTES] = {1};
-  const uint8_t bob_sym[ED448_PRIVATE_BYTES] = {2};
-
-  otrng_global_state_s *state =
-      otrng_global_state_new(empty_callbacks, otrng_false);
-  otrng_global_state_add_private_key_v4(
-      state, create_client_id("otr", alice_account), alice_sym);
-  otrng_global_state_add_private_key_v4(
-      state, create_client_id("otr", bob_account), bob_sym);
-
-  otrng_assert(otrng_global_state_get_private_key_v4(
-      state, create_client_id("otr", alice_account)));
-  otrng_assert(otrng_global_state_get_private_key_v4(
-      state, create_client_id("otr", bob_account)));
-  otrng_assert(!otrng_global_state_get_private_key_v4(
-      state, create_client_id("otr", charlie_account)));
-
-  /* Generate file */
-  FILE *keys = tmpfile();
-
-  fputs("charlie@xmpp\n"
-        "mgRi+jOWSHludTU/v0QE/"
-        "6W88WmxUmKMh1QpRbrEw4LESkL0mnOgZBbqpInVFJGy3v2aKbBFj4c0\n",
-        keys);
-  rewind(keys);
-
-  otrng_result result = otrng_global_state_shared_prekey_read_from(
-      state, keys, read_client_id_for_privf);
-  otrng_assert_is_success(result);
-  fclose(keys);
-
-  otrng_client_s *client =
-      get_client(state, create_client_id("otr", charlie_account));
-
-  char *buffer = NULL;
-  size_t s = 0;
-  otrng_symmetric_key_serialize(&buffer, &s, client->shared_prekey_pair->sym);
-
-  const char *expected =
-      "mgRi+jOWSHludTU/v0QE/"
-      "6W88WmxUmKMh1QpRbrEw4LESkL0mnOgZBbqpInVFJGy3v2aKbBFj4c0";
-
   otrng_assert_cmpmem(expected, buffer, s);
 
   free(buffer);
@@ -281,7 +231,9 @@ static void test_global_state_prekey_profile_management(void) {
         "s1vlz8xF+vPV82xSwmEA65IyR3ZaR6NzZNNAznBrXXb7YjvMuYtTtKnp+"
         "LZfUSYFcjoZACAqnA8V5fDvuuCFFMINr6rKZihf4wTVOKO+hO+"
         "rMWi7dsYeLu3eee7fZ9LsHUuriHxadL6mW0J6QAPeo2n75TnDUt1aVpjCK0Mrut0hTstbD"
-        "oyyEVaVNh2Rx87o30YStXn92fDNCBsGHU+F2xv/ZQ2OQAA\n",
+        "oyyEVaVNh2Rx87o30YStXn92fDNCBsGHU+F2xv/ZQ2OQAA"
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
         prekey_profile);
   rewind(prekey_profile);
 
@@ -299,12 +251,13 @@ static void test_global_state_prekey_profile_management(void) {
   size_t s = 0;
   otrng_prekey_profile_serialize(&buffer, &s, client->prekey_profile);
   char *encoded = otrng_base64_encode(buffer, s);
+
   const char *expected =
-      "26FP8QAAAABbxy5lABFQAQ3a/"
-      "s1vlz8xF+vPV82xSwmEA65IyR3ZaR6NzZNNAznBrXXb7YjvMuYtTtKnp+"
-      "LZfUSYFcjoZACAqnA8V5fDvuuCFFMINr6rKZihf4wTVOKO+hO+"
-      "rMWi7dsYeLu3eee7fZ9LsHUuriHxadL6mW0J6QAPeo2n75TnDUt1aVpjCK0Mrut0hTstbDoy"
-      "yEVaVNh2Rx87o30YStXn92fDNCBsGHU+F2xv/ZQ2OQAA";
+      "26FP8QAAAABbxy5lABFbOv4Dh"
+      "4pJsoIy1PGkQq694Qn4B6zvff2af2W5Yv5S1lRzEsrOz/BDN1CPnSUpqP"
+      "FmkWmyHDLEgACAqnA8V5fDvuuCFFMINr6rKZihf4wTVOKO+hO+"
+      "rMWi7dsYeLu3eee7fZ9LsHUuriHxadL6mW0J6QAPeo2n75TnDUt1aVpjCK0Mrut0hTstbD"
+      "oyyEVaVNh2Rx87o30YStXn92fDNCBsGHU+F2xv/ZQ2OQA=";
 
   otrng_assert_cmpmem(expected, encoded, s);
 
@@ -418,8 +371,6 @@ static void test_instance_tag_api(void) {
 void units_messaging_add_tests() {
   g_test_add_func("/global_state/key_management",
                   test_global_state_key_management);
-  g_test_add_func("/global_state/shared_prekey_management",
-                  test_global_state_shared_prekey_management);
   g_test_add_func("/global_state/client_profile",
                   test_global_state_client_profile_management);
   g_test_add_func("/global_state/prekey_profile",

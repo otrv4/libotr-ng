@@ -176,26 +176,6 @@ API otrng_result otrng_global_state_generate_forging_key(
   return r;
 }
 
-API otrng_result otrng_global_state_generate_shared_prekey(
-    otrng_global_state_s *gs, const otrng_client_id_s client_id) {
-  otrng_result r;
-  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
-  otrng_client_s *client;
-
-  gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
-
-  client = get_client(gs, client_id);
-  if (!client) {
-    return OTRNG_ERROR;
-  }
-
-  r = otrng_client_add_shared_prekey_v4(client, sym);
-
-  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-  free(sym);
-  return r;
-}
-
 API otrng_result otrng_global_state_generate_client_profile(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
   otrng_client_profile_s *profile;
@@ -272,25 +252,6 @@ API otrng_result otrng_global_state_forging_key_write_to(
   }
 
   otrng_list_foreach(gs->clients, add_forging_key_to, f);
-
-  return OTRNG_SUCCESS;
-}
-
-tstatic void add_shared_prekey_to(list_element_s *node, void *context) {
-  otrng_client_s *client = node->data;
-  // TODO: check the return value
-  if (!otrng_client_shared_prekey_write_to(client, context)) {
-    return;
-  }
-}
-
-API otrng_result otrng_global_state_shared_prekey_write_to(
-    const otrng_global_state_s *gs, FILE *shared_prekey_f) {
-  if (!shared_prekey_f) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_list_foreach(gs->clients, add_shared_prekey_to, shared_prekey_f);
 
   return OTRNG_SUCCESS;
 }
@@ -401,32 +362,6 @@ API otrng_result otrng_global_state_forging_key_read_from(
 
     client = get_client(gs, client_id);
     if (otrng_failed(otrng_client_forging_key_read_from(client, f))) {
-      return OTRNG_ERROR; /* We decide to abort, since this means the file is
-                             malformed */
-    }
-  }
-
-  return OTRNG_SUCCESS;
-}
-
-API otrng_result otrng_global_state_shared_prekey_read_from(
-    otrng_global_state_s *gs, FILE *shared_prekeyf,
-    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
-  if (!shared_prekeyf) {
-    return OTRNG_ERROR;
-  }
-
-  // Scan the whole file for a private key for this client
-  while (!feof(shared_prekeyf)) {
-    otrng_client_s *client;
-    const otrng_client_id_s client_id = read_client_id_for_key(shared_prekeyf);
-    if (!client_id.protocol || !client_id.account) {
-      continue;
-    }
-
-    client = get_client(gs, client_id);
-    if (otrng_client_shared_prekey_read_from(client, shared_prekeyf) !=
-        OTRNG_SUCCESS) {
       return OTRNG_ERROR; /* We decide to abort, since this means the file is
                              malformed */
     }

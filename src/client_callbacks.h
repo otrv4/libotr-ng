@@ -83,10 +83,6 @@ typedef struct otrng_client_callbacks_s {
       struct otrng_client_s *client,
       const struct otrng_client_id_s client_opdata);
 
-  /* REQUIRED */
-  void (*create_shared_prekey)(struct otrng_client_s *client,
-                               const struct otrng_client_id_s client_opdata);
-
   /* OPTIONAL */
   void (*gone_secure)(const struct otrng_s *);
 

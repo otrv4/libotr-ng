@@ -141,7 +141,7 @@ tstatic void allowed_versions(string_p destination, const otrng_s *otr) {
 
 tstatic const otrng_shared_prekey_pair_s *
 our_shared_prekey(const otrng_s *otr) {
-  return otr->client->shared_prekey_pair;
+  return otr->client->prekey_profile->keys;
 }
 
 INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {

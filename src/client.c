@@ -123,7 +123,6 @@ API void otrng_client_free(otrng_client_s *client) {
   otrng_client_profile_free(client->exp_client_profile);
   otrng_prekey_profile_free(client->prekey_profile);
   otrng_prekey_profile_free(client->exp_prekey_profile);
-  otrng_shared_prekey_pair_free(client->shared_prekey_pair);
   otrng_list_free(client->conversations, conversation_free);
   otrng_prekey_client_free(client->prekey_client);
 
@@ -869,39 +868,6 @@ API otrng_result otrng_client_add_exp_client_profile(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_client_add_shared_prekey_v4(
-    otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  assert(client);
-
-  if (client->shared_prekey_pair) {
-    return OTRNG_ERROR;
-  }
-
-  /* @secret_information: the shared keypair lives for as long the client
-     decides */
-  client->shared_prekey_pair = otrng_shared_prekey_pair_new();
-  if (!client->shared_prekey_pair) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_shared_prekey_pair_generate(client->shared_prekey_pair, sym);
-  return OTRNG_SUCCESS;
-}
-
-static const otrng_shared_prekey_pair_s *
-get_shared_prekey_pair(otrng_client_s *client) {
-  assert(client);
-
-  if (client->shared_prekey_pair) {
-    return client->shared_prekey_pair;
-  }
-
-  client->global_state->callbacks->create_shared_prekey(client,
-                                                        client->client_id);
-
-  return client->shared_prekey_pair;
-}
-
 API otrng_prekey_profile_s *
 otrng_client_get_prekey_profile(otrng_client_s *client) {
   assert(client);
@@ -920,17 +886,13 @@ API otrng_prekey_profile_s *
 otrng_client_build_default_prekey_profile(otrng_client_s *client) {
   assert(client);
 
-  /* @secret: the shared prekey should be deleted once the prekey profile
-   * expires */
   return otrng_prekey_profile_build(otrng_client_get_instance_tag(client),
-                                    otrng_client_get_keypair_v4(client),
-                                    get_shared_prekey_pair(client));
+                                    otrng_client_get_keypair_v4(client));
 }
 
 API otrng_result otrng_client_add_prekey_profile(
     otrng_client_s *client, const otrng_prekey_profile_s *profile) {
   assert(client);
-
   if (client->prekey_profile) {
     return OTRNG_ERROR;
   }
