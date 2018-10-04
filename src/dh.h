@@ -70,18 +70,17 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_t buffer,
                                              const dh_private_key_t our_priv,
                                              const dh_public_key_t their_pub);
 
-INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *destination,
-                                             size_t destination_len,
+INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                              size_t *written,
-                                             const dh_mpi_t source);
+                                             const dh_mpi_t src);
 
-INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_t *destination,
+INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_t *dst,
                                                const uint8_t *buffer,
                                                size_t buflen, size_t *nread);
 
 INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi_t mpi);
 
-INTERNAL dh_mpi_t otrng_dh_mpi_copy(const dh_mpi_t source);
+INTERNAL dh_mpi_t otrng_dh_mpi_copy(const dh_mpi_t src);
 
 INTERNAL void otrng_dh_mpi_release(dh_mpi_t mpi);
 

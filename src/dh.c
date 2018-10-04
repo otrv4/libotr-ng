@@ -162,17 +162,17 @@ INTERNAL void otrng_dh_calculate_public_key(dh_public_key_t pub,
 INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_s *keypair) {
   uint8_t *hash = otrng_secure_alloc(DH_KEY_SIZE);
   gcry_mpi_t privkey = NULL;
-  uint8_t *secbuf = NULL;
+  uint8_t *sec_buffer = NULL;
   gcry_error_t err;
 
-  secbuf = gcry_random_bytes_secure(DH_KEY_SIZE, GCRY_STRONG_RANDOM);
-  shake_256_hash(hash, DH_KEY_SIZE, secbuf, DH_KEY_SIZE);
+  sec_buffer = gcry_random_bytes_secure(DH_KEY_SIZE, GCRY_STRONG_RANDOM);
+  shake_256_hash(hash, DH_KEY_SIZE, sec_buffer, DH_KEY_SIZE);
 
   err = gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);
   otrng_secure_wipe(hash, DH_KEY_SIZE);
   free(hash);
-  otrng_secure_wipe(secbuf, DH_KEY_SIZE);
-  gcry_free(secbuf);
+  otrng_secure_wipe(sec_buffer, DH_KEY_SIZE);
+  gcry_free(sec_buffer);
 
   if (err) {
     return OTRNG_ERROR;
@@ -189,18 +189,18 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
     uint8_t ss[SHARED_SECRET_BYTES], dh_keypair_s *keypair,
     const char participant) {
   gcry_mpi_t privkey = NULL;
-  uint8_t *random_buff = otrng_secure_alloc(DH_KEY_SIZE);
+  uint8_t *random_buffer = otrng_secure_alloc(DH_KEY_SIZE);
   uint8_t usage_DH_first_ephemeral = 0x12;
   gcry_error_t err;
 
-  shake_256_kdf1(random_buff, DH_KEY_SIZE, usage_DH_first_ephemeral, ss,
+  shake_256_kdf1(random_buffer, DH_KEY_SIZE, usage_DH_first_ephemeral, ss,
                  SHARED_SECRET_BYTES);
 
-  err =
-      gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random_buff, DH_KEY_SIZE, NULL);
+  err = gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random_buffer, DH_KEY_SIZE,
+                      NULL);
 
-  otrng_secure_wipe(random_buff, DH_KEY_SIZE);
-  free(random_buff);
+  otrng_secure_wipe(random_buffer, DH_KEY_SIZE);
+  free(random_buffer);
 
   if (err) {
     return OTRNG_ERROR;
@@ -255,12 +255,11 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_t buffer,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *destination,
-                                             size_t destination_len,
+INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                              size_t *written,
-                                             const dh_mpi_t source) {
+                                             const dh_mpi_t src) {
   gcry_error_t err;
-  if (!source) {
+  if (!src) {
     if (written) {
       *written = 0;
     }
@@ -268,8 +267,7 @@ INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *destination,
     return OTRNG_SUCCESS;
   }
 
-  err = gcry_mpi_print(GCRYMPI_FMT_USG, destination, destination_len, written,
-                       source);
+  err = gcry_mpi_print(GCRYMPI_FMT_USG, dst, dst_len, written, src);
   if (err) {
     return OTRNG_ERROR;
   }
@@ -277,17 +275,17 @@ INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *destination,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_t *destination,
+INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_t *dst,
                                                const uint8_t *buffer,
-                                               size_t buflen, size_t *nread) {
+                                               size_t buff_len, size_t *nread) {
   gcry_error_t err;
 
-  if (!buflen) {
-    gcry_mpi_set_ui(*destination, 0); // TODO: can this fail?
+  if (!buff_len) {
+    gcry_mpi_set_ui(*dst, 0); // TODO: can this fail?
     return OTRNG_SUCCESS;
   }
 
-  err = gcry_mpi_scan(destination, GCRYMPI_FMT_USG, buffer, buflen, nread);
+  err = gcry_mpi_scan(dst, GCRYMPI_FMT_USG, buffer, buff_len, nread);
   if (err) {
     return OTRNG_ERROR;
   }
@@ -319,8 +317,8 @@ API otrng_bool otrng_dh_mpi_valid(dh_mpi_t mpi) {
 }
 
 // TODO: check the return
-INTERNAL dh_mpi_t otrng_dh_mpi_copy(const dh_mpi_t source) {
-  return gcry_mpi_copy(source);
+INTERNAL dh_mpi_t otrng_dh_mpi_copy(const dh_mpi_t src) {
+  return gcry_mpi_copy(src);
 }
 
 INTERNAL void otrng_dh_mpi_release(dh_mpi_t mpi) { gcry_mpi_release(mpi); }

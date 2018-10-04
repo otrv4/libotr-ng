@@ -383,8 +383,8 @@ static void test_build_interactive_rsign_tag() {
       otrng_client_profile_deserialize(&responder_profile, responder_profile_s,
                                        sizeof(responder_profile_s), NULL));
 
-  uint8_t *destination = NULL;
-  size_t destinationlen = 0;
+  uint8_t *dst = NULL;
+  size_t dst_len = 0;
   uint8_t phi[3] = {0, 1, 2};
 
   const otrng_dake_participant_data_s initiator = {
@@ -401,23 +401,21 @@ static void test_build_interactive_rsign_tag() {
       .dh = responder_dh,
   };
 
-  otrng_assert_is_success(
-      build_interactive_rsign_tag(&destination, &destinationlen, 'i',
-                                  &initiator, &responder, phi, sizeof(phi)));
+  otrng_assert_is_success(build_interactive_rsign_tag(
+      &dst, &dst_len, 'i', &initiator, &responder, phi, sizeof(phi)));
 
-  otrng_assert(destinationlen == 1083);
-  otrng_assert_cmpmem(destination, expected_t1, destinationlen);
+  otrng_assert(dst_len == 1083);
+  otrng_assert_cmpmem(dst, expected_t1, dst_len);
 
-  free(destination);
+  free(dst);
 
-  otrng_assert_is_success(
-      build_interactive_rsign_tag(&destination, &destinationlen, 'r',
-                                  &initiator, &responder, phi, sizeof(phi)));
+  otrng_assert_is_success(build_interactive_rsign_tag(
+      &dst, &dst_len, 'r', &initiator, &responder, phi, sizeof(phi)));
 
-  otrng_assert(destinationlen == 1083);
-  otrng_assert_cmpmem(destination, expected_t2, destinationlen);
+  otrng_assert(dst_len == 1083);
+  otrng_assert_cmpmem(dst, expected_t2, dst_len);
 
-  free(destination);
+  free(dst);
 
   otrng_dh_mpi_release(initiator_dh);
   otrng_dh_mpi_release(responder_dh);

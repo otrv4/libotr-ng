@@ -49,11 +49,11 @@ INTERNAL otrng_result otrng_fragment_message(int max_size,
                                              otrng_message_to_send_s *fragments,
                                              int our_instance,
                                              int their_instance,
-                                             const string_p message);
+                                             const string_p msg);
 
-INTERNAL otrng_result otrng_unfragment_message(char **unfrag_message,
+INTERNAL otrng_result otrng_unfragment_message(char **unfrag_msg,
                                                list_element_s **contexts,
-                                               const string_p message,
+                                               const string_p msg,
                                                const uint32_t our_instance_tag);
 
 INTERNAL otrng_result otrng_expire_fragments(time_t now,
@@ -64,7 +64,7 @@ INTERNAL otrng_result otrng_expire_fragments(time_t now,
 
 otrng_message_to_send_s *otrng_message_new(void);
 
-tstatic void otrng_message_free(otrng_message_to_send_s *message);
+tstatic void otrng_message_free(otrng_message_to_send_s *msg);
 
 /*@null@*/ fragment_context_s *otrng_fragment_context_new(void);
 
