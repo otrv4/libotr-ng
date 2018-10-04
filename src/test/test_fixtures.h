@@ -48,7 +48,7 @@ typedef struct dake_fixture_s {
   otrng_client_profile_s *profile;
 } dake_fixture_s, dake_fixture_p[1];
 
-int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2);
+int dh_mpi_cmp(const dh_mpi m1, const dh_mpi m2);
 otrng_client_id_s create_client_id(const char *protocol, const char *account);
 
 otrng_shared_session_state_s get_shared_session_state_cb(const otrng_s *conv);
@@ -57,7 +57,7 @@ void create_client_profile_cb(struct otrng_client_s *client,
                               const otrng_client_id_s client_opdata);
 void create_prekey_profile_cb(struct otrng_client_s *client,
                               const otrng_client_id_s client_opdata);
-otrng_public_key_t *
+otrng_public_key *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]);
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data);
 void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture, gconstpointer data);

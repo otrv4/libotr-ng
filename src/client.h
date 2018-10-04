@@ -59,7 +59,7 @@ typedef struct otrng_client_s {
 
   struct otrng_global_state_s *global_state;
   otrng_keypair_s *keypair;
-  otrng_public_key_t *forging_key;
+  otrng_public_key *forging_key;
 
   // TODO: @client One or many?
   otrng_client_profile_s *client_profile;
@@ -164,7 +164,7 @@ API otrng_result otrng_expire_encrypted_session(char **new_msg,
 API otrng_result otrng_client_expire_fragments(int expiration_time,
                                                otrng_client_s *client);
 
-API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint_t fp,
+API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint fp,
                                                   const otrng_client_s *client);
 
 API otrng_prekey_client_s *
@@ -178,7 +178,7 @@ INTERNAL void otrng_client_store_my_prekey_message(
 
 API dake_prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
-                                   ec_scalar_t **ecdh_keys, dh_mpi_t **dh_keys);
+                                   ec_scalar **ecdh_keys, dh_mpi **dh_keys);
 
 INTERNAL otrng_result otrng_client_get_account_and_protocol(
     char **account, char **protocol, const otrng_client_s *client);
@@ -191,13 +191,12 @@ INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client);
 INTERNAL otrng_result otrng_client_add_private_key_v4(
     otrng_client_s *client, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-INTERNAL otrng_public_key_t *
-otrng_client_get_forging_key(otrng_client_s *client);
+INTERNAL otrng_public_key *otrng_client_get_forging_key(otrng_client_s *client);
 
 INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client);
 
 INTERNAL otrng_result otrng_client_add_forging_key(
-    otrng_client_s *client, const otrng_public_key_t forging_key);
+    otrng_client_s *client, const otrng_public_key forging_key);
 
 API otrng_client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client);

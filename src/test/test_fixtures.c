@@ -21,7 +21,7 @@
 #include "test_fixtures.h"
 #include "persistence.h"
 
-int dh_mpi_cmp(const dh_mpi_t m1, const dh_mpi_t m2) {
+int dh_mpi_cmp(const dh_mpi m1, const dh_mpi m2) {
   return gcry_mpi_cmp(m1, m2);
 }
 
@@ -117,11 +117,11 @@ otrng_client_callbacks_s test_callbacks[1] = {{
     .load_prekey_profile = &load_prekey_profile_cb_empty,
 }};
 
-otrng_public_key_t *
+otrng_public_key *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
   otrng_keypair_s *kf = otrng_keypair_new();
   otrng_keypair_generate(kf, sym);
-  otrng_public_key_t *res = otrng_xmalloc_z(sizeof(otrng_public_key_t));
+  otrng_public_key *res = otrng_xmalloc_z(sizeof(otrng_public_key));
   otrng_ec_point_copy(*res, kf->pub);
   otrng_keypair_free(kf);
   return res;
@@ -138,7 +138,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_client_add_private_key_v4(otrng_fixture->client, sym);
   const uint8_t sym2[ED448_PRIVATE_BYTES] = {
       2}; // non-random forging key on purpose
-  otrng_public_key_t *fk = create_forging_key_from(sym2);
+  otrng_public_key *fk = create_forging_key_from(sym2);
   otrng_client_add_forging_key(otrng_fixture->client, *fk);
   free(fk);
 
@@ -202,7 +202,7 @@ void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data) {
   otrng_assert(otrng_ec_point_valid(f->shared_prekey->pub));
 
   const uint8_t fsym[ED448_PRIVATE_BYTES] = {3};
-  otrng_public_key_t *fk = create_forging_key_from(fsym);
+  otrng_public_key *fk = create_forging_key_from(fsym);
   otrng_ec_point_copy(f->profile->forging_pub_key, *fk);
   free(fk);
 
@@ -259,7 +259,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
                                 bob->keys->our_ecdh->pub);
   otrng_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
   otrng_assert_not_zero(alice->keys->ssid, sizeof(alice->keys->ssid));
-  otrng_assert_not_zero(alice->keys->shared_secret, sizeof(shared_secret_t));
+  otrng_assert_not_zero(alice->keys->shared_secret, sizeof(k_shared_secret));
 
   // Alice replies with an auth-r message
   otrng_assert(alice->state == OTRNG_STATE_WAITING_AUTH_I);
@@ -278,8 +278,8 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
                                 alice->keys->our_ecdh->pub);
   otrng_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh->pub);
   otrng_assert_not_zero(bob->keys->ssid, sizeof(alice->keys->ssid));
-  otrng_assert_zero(bob->keys->shared_secret, sizeof(shared_secret_t));
-  otrng_assert_not_zero(bob->keys->current->root_key, sizeof(root_key_t));
+  otrng_assert_zero(bob->keys->shared_secret, sizeof(k_shared_secret));
+  otrng_assert_not_zero(bob->keys->current->root_key, sizeof(k_root));
 
   g_assert_cmpint(bob->keys->i, ==, 0);
   g_assert_cmpint(bob->keys->j, ==, 0);
@@ -351,7 +351,7 @@ void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
   uint8_t forging_sym[ED448_PRIVATE_BYTES] = {byte + 0xD};
 
   otrng_client_add_private_key_v4(client, long_term_priv);
-  otrng_public_key_t *fk = create_forging_key_from(forging_sym);
+  otrng_public_key *fk = create_forging_key_from(forging_sym);
   otrng_client_add_forging_key(client, *fk);
   free(fk);
   otrng_client_add_instance_tag(client, 0x100 + byte);

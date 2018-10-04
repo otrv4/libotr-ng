@@ -55,7 +55,7 @@ static inline struct goldilocks_448_point_s *their_ecdh(const otrng_s *otr) {
   return &otr->keys->their_ecdh[0];
 }
 
-static inline dh_public_key_t their_dh(const otrng_s *otr) {
+static inline dh_public_key their_dh(const otrng_s *otr) {
   return otr->keys->their_dh;
 }
 
@@ -83,7 +83,7 @@ tstatic void gone_insecure_cb_v4(const otrng_s *conv) {
                                        conv);
 }
 
-tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint_t fp,
+tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint fp,
                                     const otrng_s *conv) {
   otrng_client_callbacks_fingerprint_seen(conv->client->global_state->callbacks,
                                           fp, conv);
@@ -669,35 +669,35 @@ tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
 }
 
 tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
-  k_ecdh_t tmp_ecdh_k1;
-  k_ecdh_t tmp_ecdh_k2;
-  k_ecdh_t k_ecdh;
-  dh_shared_secret_t k_dh;
+  k_ecdh tmp_ecdh_k1;
+  k_ecdh tmp_ecdh_k2;
+  k_ecdh ecdh_key;
+  dh_shared_secret dh_key;
   size_t k_dh_len = 0;
-  brace_key_t brace_key;
+  k_brace brace_key;
 
   // TODO: @refactoring this will be calculated again later
-  if (!otrng_ecdh_shared_secret(k_ecdh, ED448_POINT_BYTES,
+  if (!otrng_ecdh_shared_secret(ecdh_key, ED448_POINT_BYTES,
                                 otr->keys->our_ecdh->priv,
                                 otr->keys->their_ecdh)) {
     return OTRNG_ERROR;
   }
 
   // TODO: @refactoring this will be calculated again later
-  if (!otrng_dh_shared_secret(k_dh, &k_dh_len, otr->keys->our_dh->priv,
+  if (!otrng_dh_shared_secret(dh_key, &k_dh_len, otr->keys->our_dh->priv,
                               otr->keys->their_dh)) {
     return OTRNG_ERROR;
   }
 
-  hash_hash(brace_key, BRACE_KEY_BYTES, k_dh, k_dh_len);
+  hash_hash(brace_key, BRACE_KEY_BYTES, dh_key, k_dh_len);
 
-  otrng_secure_wipe(k_dh, DH3072_MOD_LEN_BYTES);
+  otrng_secure_wipe(dh_key, DH3072_MOD_LEN_BYTES);
 
 #ifdef DEBUG
   debug_print("\n");
   debug_print("GENERATING TEMP KEY R\n");
-  debug_print("K_ecdh = ");
-  otrng_memdump(k_ecdh, ED448_POINT_BYTES);
+  debug_print("ECDH key = ");
+  otrng_memdump(ecdh_key, ED448_POINT_BYTES);
   debug_print("brace_key = ");
   otrng_memdump(brace_key, BRACE_KEY_BYTES);
 #endif
@@ -714,7 +714,7 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otrng_key_manager_calculate_tmp_key(dst, k_ecdh, brace_key, tmp_ecdh_k1,
+  otrng_key_manager_calculate_tmp_key(dst, ecdh_key, brace_key, tmp_ecdh_k1,
                                       tmp_ecdh_k2);
 
   otrng_secure_wipe(brace_key, BRACE_KEY_BYTES);
@@ -1051,7 +1051,7 @@ API otrng_result otrng_send_offline_message(char **dst,
 
 API otrng_result otrng_send_non_interactive_auth(
     char **dst, const prekey_ensemble_s *ensemble, otrng_s *otr) {
-  otrng_fingerprint_t fp;
+  otrng_fingerprint fp;
   *dst = NULL;
 
   if (!receive_prekey_ensemble(dst, ensemble, otr)) {
@@ -1069,12 +1069,12 @@ API otrng_result otrng_send_non_interactive_auth(
 }
 
 tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
-  k_ecdh_t ecdh_key;
-  k_ecdh_t tmp_ecdh_k1;
-  k_ecdh_t tmp_ecdh_k2;
-  dh_shared_secret_t dh_key;
+  k_ecdh ecdh_key;
+  k_ecdh tmp_ecdh_k1;
+  k_ecdh tmp_ecdh_k2;
+  dh_shared_secret dh_key;
   size_t dh_key_len = 0;
-  brace_key_t brace_key;
+  k_brace brace_key;
 
   // TODO: @refactoring this workaround is not the nicest there is
   if (!otrng_ecdh_shared_secret(ecdh_key, ED448_POINT_BYTES,
@@ -1235,7 +1235,7 @@ tstatic otrng_result non_interactive_auth_message_received(
     otrng_s *otr) {
   otrng_client_s *client = otr->client;
   const otrng_stored_prekeys_s *stored_prekey = NULL;
-  otrng_fingerprint_t fp;
+  otrng_fingerprint fp;
 
   if (!client) {
     return OTRNG_ERROR;
@@ -1568,7 +1568,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
 tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buffer,
                                     size_t buff_len, otrng_s *otr) {
   dake_auth_r_s auth;
-  otrng_fingerprint_t fp;
+  otrng_fingerprint fp;
   otrng_result ret;
 
   otrng_dake_auth_r_init(&auth);
@@ -1663,7 +1663,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
 tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
                                     size_t buff_len, otrng_s *otr) {
   dake_auth_i_s auth;
-  otrng_fingerprint_t fp;
+  otrng_fingerprint fp;
 
   otrng_dake_auth_i_init(&auth);
   if (otr->state != OTRNG_STATE_WAITING_AUTH_I) {
@@ -1760,7 +1760,7 @@ tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *src, size_t len) {
 }
 
 tstatic otrng_result decrypt_data_message(otrng_response_s *response,
-                                          const msg_encryption_key_t enc_key,
+                                          const k_msg_enc enc_key,
                                           const data_message_s *msg) {
   string_p *dst = &response->to_display;
   uint8_t *plain;
@@ -1770,7 +1770,7 @@ tstatic otrng_result decrypt_data_message(otrng_response_s *response,
   debug_print("\n");
   debug_print("DECRYPTING\n");
   debug_print("enc_key = ");
-  otrng_memdump(enc_key, ENCRYPTION_KEY_BYTES);
+  otrng_memdump(enc_key, ENC_KEY_BYTES);
   debug_print("nonce = ");
   otrng_memdump(msg->nonce, DATA_MSG_NONCE_BYTES);
 #endif
@@ -1874,12 +1874,12 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     otrng_response_s *response, otrng_warning *warn, const uint8_t *buffer,
     size_t buff_len, otrng_s *otr) {
   data_message_s *msg = otrng_data_message_new();
-  msg_encryption_key_t enc_key;
-  msg_mac_key_t mac_key;
+  k_msg_enc enc_key;
+  k_msg_mac mac_key;
   size_t read = 0;
   receiving_ratchet_s *tmp_receiving_ratchet;
 
-  memset(enc_key, 0, ENCRYPTION_KEY_BYTES);
+  memset(enc_key, 0, ENC_KEY_BYTES);
   memset(mac_key, 0, MAC_KEY_BYTES);
 
   response->to_display = NULL;
@@ -1941,7 +1941,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       tmp_receiving_ratchet->k = tmp_receiving_ratchet->k + 1;
     }
     if (!otrng_valid_data_message(mac_key, msg)) {
-      otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
+      otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
       otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
       otrng_data_message_free(msg);
 
@@ -1962,7 +1962,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
       if (msg->flags != MSG_FLAGS_IGNORE_UNREADABLE) {
         otrng_error_message(&response->to_send, OTRNG_ERR_MSG_UNREADABLE);
-        otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
+        otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
         otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
 
         if (tmp_receiving_ratchet->skipped_keys) {
@@ -1975,7 +1975,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
         return OTRNG_ERROR;
       }
       if (msg->flags == MSG_FLAGS_IGNORE_UNREADABLE) {
-        otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
+        otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
         otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
         if (tmp_receiving_ratchet->skipped_keys) {
           otrng_list_free_full(tmp_receiving_ratchet->skipped_keys);
@@ -1987,7 +1987,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       }
     }
 
-    otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
+    otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
 
     otrng_receiving_ratchet_copy(otr->keys, tmp_receiving_ratchet);
     otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);

@@ -128,7 +128,7 @@ static void test_global_state_client_profile_management(void) {
       otrng_global_state_new(empty_callbacks, otrng_false);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", alice_account), alice_sym);
-  otrng_public_key_t *fk = create_forging_key_from(alice_fsym);
+  otrng_public_key *fk = create_forging_key_from(alice_fsym);
   otrng_global_state_add_forging_key(
       state, create_client_id("otr", alice_account), fk);
   free(fk);
@@ -205,7 +205,7 @@ static void test_global_state_prekey_profile_management(void) {
       otrng_global_state_new(empty_callbacks, otrng_false);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", alice_account), alice_sym);
-  otrng_public_key_t *fk = create_forging_key_from(alice_fsym);
+  otrng_public_key *fk = create_forging_key_from(alice_fsym);
   otrng_global_state_add_forging_key(
       state, create_client_id("otr", alice_account), fk);
   free(fk);

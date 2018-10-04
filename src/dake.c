@@ -422,8 +422,8 @@ INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void) {
 }
 
 INTERNAL dake_prekey_message_s *
-otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point_t ecdh,
-                                const dh_public_key_t dh) {
+otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point ecdh,
+                                const dh_public_key pub_dh) {
   dake_prekey_message_s *msg = otrng_dake_prekey_message_new();
   uint32_t *identifier;
   if (!msg) {
@@ -433,7 +433,7 @@ otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point_t ecdh,
   msg->sender_instance_tag = instance_tag;
 
   otrng_ec_point_copy(msg->Y, ecdh);
-  msg->B = otrng_dh_mpi_copy(dh);
+  msg->B = otrng_dh_mpi_copy(pub_dh);
 
   identifier = gcry_random_bytes(4, GCRY_STRONG_RANDOM);
   msg->id = *identifier;
@@ -734,8 +734,8 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
 }
 
 INTERNAL otrng_bool otrng_valid_received_values(
-    const uint32_t sender_instance_tag, const ec_point_t their_ecdh,
-    const dh_mpi_t their_dh, const otrng_client_profile_s *profile) {
+    const uint32_t sender_instance_tag, const ec_point their_ecdh,
+    const dh_mpi their_dh, const otrng_client_profile_s *profile) {
   /* Verify that the point their_ecdh received is on curve 448. */
   if (!otrng_ec_point_valid(their_ecdh)) {
     return otrng_false;
@@ -761,8 +761,8 @@ INTERNAL otrng_bool otrng_valid_received_values(
 tstatic otrng_result build_rsign_tag(
     uint8_t *dst, size_t dst_len, size_t *written, uint8_t first_usage,
     const otrng_client_profile_s *i_profile,
-    const otrng_client_profile_s *r_profile, const ec_point_t i_ecdh,
-    const ec_point_t r_ecdh, const dh_mpi_t i_dh, const dh_mpi_t r_dh,
+    const otrng_client_profile_s *r_profile, const ec_point i_ecdh,
+    const ec_point r_ecdh, const dh_mpi i_dh, const dh_mpi r_dh,
     const uint8_t *ser_r_shared_prekey, size_t ser_r_shared_prekey_len,
     const uint8_t *phi, size_t phi_len) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
@@ -909,7 +909,7 @@ INTERNAL otrng_result
 build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
                                 const otrng_dake_participant_data_s *initiator,
                                 const otrng_dake_participant_data_s *responder,
-                                const otrng_shared_prekey_pub_t r_shared_prekey,
+                                const otrng_shared_prekey_pub r_shared_prekey,
                                 const uint8_t *phi, size_t phi_len) {
 
   uint8_t first_usage = 0x0D;
@@ -936,7 +936,7 @@ INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
     uint8_t **msg, size_t *msg_len,
     const otrng_dake_participant_data_s *initiator,
     const otrng_dake_participant_data_s *responder,
-    const otrng_shared_prekey_pub_t r_shared_prekey, const uint8_t *phi,
+    const otrng_shared_prekey_pub r_shared_prekey, const uint8_t *phi,
     size_t phi_len) {
 
   uint8_t first_usage = 0x0D;

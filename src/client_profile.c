@@ -557,7 +557,7 @@ client_profile_verify_signature(const otrng_client_profile_s *client_profile) {
 
 INTERNAL otrng_client_profile_s *otrng_client_profile_build(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
-    const otrng_public_key_t forging_key, unsigned int expiration_time) {
+    const otrng_public_key forging_key, unsigned int expiration_time) {
   otrng_client_profile_s *client_profile;
   time_t expires;
   if (!otrng_instance_tag_valid(instance_tag) || !versions || !keypair) {
@@ -607,8 +607,8 @@ tstatic otrng_bool rollback_detected(const char *versions) {
 static otrng_result generate_dsa_key_sexp(gcry_sexp_t *pubs,
                                           const uint8_t *buffer,
                                           size_t buff_len) {
-  dh_mpi_t p = NULL, q = NULL, g = NULL, y = NULL;
-  dh_mpi_t *mpis[4] = {&p, &q, &g, &y};
+  dh_mpi p = NULL, q = NULL, g = NULL, y = NULL;
+  dh_mpi *mpis[4] = {&p, &q, &g, &y};
 
   size_t read = 0;
   size_t w = 0;

@@ -26,13 +26,13 @@
 #include "random.h"
 
 static void test_ed448_eddsa_serialization() {
-  ec_scalar_t s;
+  ec_scalar s;
   uint8_t random_buff[ED448_SCALAR_BYTES];
   random_bytes(random_buff, ED448_SCALAR_BYTES);
   goldilocks_448_scalar_decode_long(s, random_buff, ED448_SCALAR_BYTES);
 
   // 1. Create a point p
-  ec_point_t p;
+  ec_point p;
   goldilocks_448_point_scalarmul(p, goldilocks_448_point_base, s);
 
   // 2. Encode like EdDSA
@@ -40,7 +40,7 @@ static void test_ed448_eddsa_serialization() {
   otrng_assert(otrng_ec_point_encode(enc, ED448_POINT_BYTES, p));
 
   // 3. Decode like EdDSA
-  ec_point_t dec;
+  ec_point dec;
   otrng_assert_is_success(otrng_ec_point_decode(dec, enc));
 
   otrng_assert(otrng_ec_point_eq(p, dec) == otrng_true);
@@ -51,15 +51,15 @@ static void test_ed448_eddsa_keygen() {
   uint8_t sym[ED448_PRIVATE_BYTES];
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
-  ec_scalar_t secret_scalar;
-  ec_point_t p;
+  ec_scalar secret_scalar;
+  ec_point p;
   otrng_ec_scalar_derive_from_secret(secret_scalar, sym);
   otrng_ec_derive_public_key(pub, sym);
 
   otrng_assert_is_success(otrng_ec_point_decode(p, pub));
 
   // Is G * scalar == p?
-  ec_point_t expected;
+  ec_point expected;
   goldilocks_448_point_scalarmul(expected, goldilocks_448_point_base,
                                  secret_scalar);
 
@@ -67,7 +67,7 @@ static void test_ed448_eddsa_keygen() {
 }
 
 static void test_ed448_scalar_serialization() {
-  ec_scalar_t s;
+  ec_scalar s;
 
   uint8_t buff[ED448_SCALAR_BYTES];
   otrng_ec_scalar_encode(buff, goldilocks_448_scalar_one);
@@ -85,7 +85,7 @@ static void test_ed448_signature() {
   uint8_t message[3] = {0x0A, 0x0C, 0x0B};
   otrng_assert(otrng_ec_point_encode(pub, ED448_POINT_BYTES, pair->pub));
 
-  eddsa_signature_t sig;
+  eddsa_signature sig;
   otrng_ec_sign(sig, sym, pub, message, sizeof(message));
   otrng_assert(otrng_ec_verify(sig, pub, message, sizeof(message)) ==
                otrng_true);

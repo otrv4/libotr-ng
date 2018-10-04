@@ -60,7 +60,7 @@ INTERNAL struct goldilocks_448_point_s *our_ecdh(const otrng_s *otr) {
   return &otr->keys->our_ecdh->pub[0];
 }
 
-INTERNAL dh_public_key_t our_dh(const otrng_s *otr) {
+INTERNAL dh_public_key our_dh(const otrng_s *otr) {
   return otr->keys->our_dh->pub;
 }
 
@@ -130,7 +130,7 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
 
 tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
                                           const uint8_t *msg, size_t msg_len,
-                                          const msg_encryption_key_t enc_key) {
+                                          const k_msg_enc enc_key) {
   uint8_t *c = NULL;
   int err;
 
@@ -179,7 +179,7 @@ tstatic data_message_s *generate_data_message(const otrng_s *otr,
 }
 
 tstatic otrng_result serialize_and_encode_data_message(
-    string_p *dst, const msg_mac_key_t mac_key, uint8_t *to_reveal_mac_keys,
+    string_p *dst, const k_msg_mac mac_key, uint8_t *to_reveal_mac_keys,
     size_t to_reveal_mac_keys_len, const data_message_s *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
@@ -220,8 +220,8 @@ tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
                                        otrng_warning *warn) {
   data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
-  msg_encryption_key_t enc_key;
-  msg_mac_key_t mac_key;
+  k_msg_enc enc_key;
+  k_msg_mac mac_key;
 
   /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(
@@ -230,7 +230,7 @@ tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
     return OTRNG_ERROR;
   }
 
-  memset(enc_key, 0, ENCRYPTION_KEY_BYTES);
+  memset(enc_key, 0, ENC_KEY_BYTES);
   memset(mac_key, 0, MAC_KEY_BYTES);
 
   otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, NULL,
@@ -239,7 +239,7 @@ tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
 
   data_msg = generate_data_message(otr, ratchet_id);
   if (!data_msg) {
-    otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
+    otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
     otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
     return OTRNG_ERROR;
   }
@@ -251,13 +251,13 @@ tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
   if (!encrypt_data_message(data_msg, msg, msg_len, enc_key)) {
     otrng_error_message(to_send, OTRNG_ERR_MSG_ENCRYPTION_ERROR);
 
-    otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
+    otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
     otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
     otrng_data_message_free(data_msg);
     return OTRNG_ERROR;
   }
 
-  otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
+  otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
 
   /* Authenticator = KDF_1(0x1A || MKmac || KDF_1(usage_authenticator ||
    * data_message_sections, 64), 64) */

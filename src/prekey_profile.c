@@ -332,7 +332,7 @@ otrng_prekey_profile_build(uint32_t instance_tag,
 
 static otrng_bool
 otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
-                                      const otrng_public_key_t pub) {
+                                      const otrng_public_key pub) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
   uint8_t zero_buffer[ED448_SIGNATURE_BYTES];
@@ -370,7 +370,7 @@ INTERNAL otrng_bool otrng_prekey_profile_invalid(time_t expires,
 
 INTERNAL otrng_bool otrng_prekey_profile_valid(
     const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
-    const otrng_public_key_t pub) {
+    const otrng_public_key pub) {
   /* 1. Verify that the Prekey Profile signature is valid. */
   if (!otrng_prekey_profile_verify_signature(profile, pub)) {
     return otrng_false;

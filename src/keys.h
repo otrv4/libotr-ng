@@ -34,26 +34,26 @@
 #define ED448_SHARED_PREKEY_BYTES 2 + ED448_POINT_BYTES
 #define ED448_FORGINGKEY_TYPE 0x0012
 
-typedef ec_point_t otrng_public_key_t;
-typedef ec_scalar_t otrng_private_key_t;
-typedef ec_point_t otrng_shared_prekey_pub_t;
-typedef ec_scalar_t otrng_shared_prekey_priv_t;
+typedef ec_point otrng_public_key;
+typedef ec_scalar otrng_private_key;
+typedef ec_point otrng_shared_prekey_pub;
+typedef ec_scalar otrng_shared_prekey_priv;
 
 /* @secret_information: the long-term key pair lives for as long the client
    decides */
 typedef struct otrng_keypair_s {
   uint8_t sym[ED448_PRIVATE_BYTES];
 
-  otrng_public_key_t pub;
-  otrng_private_key_t priv;
+  otrng_public_key pub;
+  otrng_private_key priv;
 } otrng_keypair_s;
 
 // TODO: @refactoring @spec implement correctly when the spec comes
 typedef struct otrng_shared_prekey_pair_s {
   uint8_t sym[ED448_PRIVATE_BYTES];
 
-  otrng_shared_prekey_pub_t pub;
-  otrng_shared_prekey_priv_t priv;
+  otrng_shared_prekey_pub pub;
+  otrng_shared_prekey_priv priv;
 } otrng_shared_prekey_pair_s;
 
 INTERNAL otrng_keypair_s *otrng_keypair_new(void);
@@ -95,10 +95,9 @@ API void otrng_keypair_debug_print(FILE *, int, otrng_keypair_s *);
 API void otrng_shared_prekey_pair_debug_print(FILE *, int,
                                               otrng_shared_prekey_pair_s *);
 API void otrng_public_key_debug_print(FILE *, otrng_public_key);
-API void otrng_private_key_debug_print(FILE *, otrng_private_key_t);
-API void otrng_shared_prekey_pub_debug_print(FILE *, otrng_shared_prekey_pub_t);
-API void otrng_shared_prekey_priv_debug_print(FILE *,
-                                              otrng_shared_prekey_priv_t);
+API void otrng_private_key_debug_print(FILE *, otrng_private_key);
+API void otrng_shared_prekey_pub_debug_print(FILE *, otrng_shared_prekey_pub);
+API void otrng_shared_prekey_priv_debug_print(FILE *, otrng_shared_prekey_priv);
 #endif
 
 #ifdef OTRNG_KEYS_PRIVATE

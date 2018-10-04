@@ -502,7 +502,7 @@ API otrng_result otrng_client_expire_fragments(int expiration_time,
 }
 
 API otrng_result otrng_client_get_our_fingerprint(
-    otrng_fingerprint_t fp, const otrng_client_s *client) {
+    otrng_fingerprint fp, const otrng_client_s *client) {
   if (!client->keypair) {
     return OTRNG_ERROR;
   }
@@ -572,13 +572,12 @@ INTERNAL void otrng_client_store_my_prekey_message(
 
 API dake_prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
-                                   ec_scalar_t **ecdh_keys,
-                                   dh_mpi_t **dh_keys) {
+                                   ec_scalar **ecdh_keys, dh_mpi **dh_keys) {
   uint32_t instance_tag;
   dake_prekey_message_s **messages;
   int i, j;
-  ec_scalar_t *ecdh_priv_key;
-  dh_mpi_t *dh_priv_key;
+  ec_scalar *ecdh_priv_key;
+  dh_mpi *dh_priv_key;
 
   if (num_messages > MAX_NUMBER_PUBLISHED_PREKEY_MSGS) {
     // TODO: notify error
@@ -588,8 +587,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
   instance_tag = otrng_client_get_instance_tag(client);
 
   messages = otrng_xmalloc_z(num_messages * sizeof(dake_prekey_message_s *));
-  ecdh_priv_key = otrng_secure_alloc(num_messages * sizeof(ec_scalar_t));
-  dh_priv_key = otrng_xmalloc_z(num_messages * sizeof(dh_mpi_t));
+  ecdh_priv_key = otrng_secure_alloc(num_messages * sizeof(ec_scalar));
+  dh_priv_key = otrng_xmalloc_z(num_messages * sizeof(dh_mpi));
 
   for (i = 0; i < num_messages; i++) {
     ecdh_keypair_s ecdh;
@@ -769,7 +768,7 @@ INTERNAL otrng_result otrng_client_add_private_key_v4(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_public_key_t *
+INTERNAL otrng_public_key *
 otrng_client_get_forging_key(otrng_client_s *client) {
   assert(client);
 
@@ -791,14 +790,14 @@ INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client) {
 }
 
 INTERNAL otrng_result otrng_client_add_forging_key(
-    otrng_client_s *client, const otrng_public_key_t forging_key) {
+    otrng_client_s *client, const otrng_public_key forging_key) {
   assert(client);
 
   if (client->forging_key) {
     return OTRNG_ERROR;
   }
 
-  client->forging_key = otrng_xmalloc_z(sizeof(otrng_public_key_t));
+  client->forging_key = otrng_xmalloc_z(sizeof(otrng_public_key));
 
   otrng_ec_point_copy(*client->forging_key, forging_key);
 

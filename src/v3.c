@@ -62,7 +62,7 @@ tstatic void gone_insecure_cb_v3(const otrng_s *conv) {
                                        conv);
 }
 
-tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3_t fp,
+tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3 fp,
                                     const otrng_s *conv) {
   if (!conv || !conv->client) {
     return;

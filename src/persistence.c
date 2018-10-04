@@ -234,7 +234,7 @@ INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
   int len = 0;
   uint8_t *dec;
   size_t dec_len;
-  otrng_public_key_t key;
+  otrng_public_key key;
   otrng_result ret;
 
   if (!forgingf || feof(forgingf)) {

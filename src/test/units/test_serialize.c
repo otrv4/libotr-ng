@@ -81,7 +81,7 @@ static void test_serialize_otrng_deserialize_data() {
 
 static void test_ser_des_otrng_public_key() {
   otrng_keypair_s keypair;
-  otrng_public_key_t deserialized;
+  otrng_public_key deserialized;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(&keypair, sym);
 
@@ -98,7 +98,7 @@ static void test_ser_des_otrng_public_key() {
 
 static void test_ser_des_otrng_shared_prekey() {
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pub_t deserialized;
+  otrng_shared_prekey_pub deserialized;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
 
@@ -136,7 +136,7 @@ static void test_serialize_otrng_symmetric_key() {
 }
 
 static void test_otrng_serialize_dh_public_key() {
-  dh_mpi_t TEST_DH;
+  dh_mpi TEST_DH;
   uint8_t dh_data[383] = {
       0x4c, 0x4e, 0x7b, 0xbd, 0x33, 0xd0, 0x9e, 0x63, 0xfd, 0xe4, 0x67, 0xee,
       0x6c, 0x65, 0x47, 0xc4, 0xe2, 0x1f, 0xaa, 0xb1, 0x90, 0x56, 0x8a, 0x7d,
@@ -185,7 +185,7 @@ static void test_otrng_serialize_dh_public_key() {
 }
 
 static void test_serializes_fingerprint() {
-  otrng_fingerprint_t expected_fp = {
+  otrng_fingerprint expected_fp = {
       0x7b, 0xdc, 0xb0, 0x56, 0x44, 0xeb, 0x07, 0xd1, 0xa8, 0xcd, 0x4d, 0xcb,
       0x82, 0xa6, 0x0b, 0xff, 0x3f, 0x29, 0x3c, 0x83, 0x3a, 0xd6, 0xbc, 0xc9,
       0xc9, 0x97, 0xcc, 0x92, 0x82, 0xd5, 0x0e, 0x49, 0xc6, 0x89, 0xd1, 0xdb,
@@ -197,10 +197,10 @@ static void test_serializes_fingerprint() {
   otrng_keypair_s keypair;
   otrng_keypair_generate(&keypair, sym);
 
-  otrng_fingerprint_t dst = {0};
+  otrng_fingerprint dst = {0};
   otrng_assert(otrng_serialize_fingerprint(dst, keypair.pub));
 
-  otrng_assert_cmpmem(expected_fp, dst, sizeof(otrng_fingerprint_t));
+  otrng_assert_cmpmem(expected_fp, dst, sizeof(otrng_fingerprint));
 }
 
 // TODO: ADD test for otrng_serialize_ring_sig

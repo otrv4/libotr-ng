@@ -31,12 +31,9 @@
 
 static const uint8_t usage_proof_c_lambda = 0x17;
 
-INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_s *dst,
-                                                const ec_scalar_t *values_priv,
-                                                const ec_point_t *values_pub,
-                                                const size_t values_len,
-                                                const uint8_t *m,
-                                                const uint8_t usage) {
+INTERNAL otrng_result otrng_ecdh_proof_generate(
+    ecdh_proof_s *dst, const ec_scalar *values_priv, const ec_point *values_pub,
+    const size_t values_len, const uint8_t *m, const uint8_t usage) {
   size_t i;
   goldilocks_448_scalar_p r;
   goldilocks_448_point_p a;
@@ -96,7 +93,7 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_s *dst,
 }
 
 INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
-                                            const ec_point_t *values_pub,
+                                            const ec_point *values_pub,
                                             const size_t values_len,
                                             const uint8_t *m,
                                             const uint8_t usage) {
@@ -199,7 +196,7 @@ tstatic void *gen_random_data(size_t n, random_generator gen) {
 }
 
 INTERNAL otrng_result otrng_dh_proof_generate(
-    dh_proof_s *dst, const dh_mpi_t *values_priv, const dh_mpi_t *values_pub,
+    dh_proof_s *dst, const dh_mpi *values_priv, const dh_mpi *values_pub,
     const size_t values_len, const uint8_t *m, const uint8_t usage,
     random_generator gen) {
   uint8_t *p;
@@ -283,7 +280,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
 }
 
 INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
-                                          const dh_mpi_t *values_pub,
+                                          const dh_mpi *values_pub,
                                           const size_t values_len,
                                           const uint8_t *m,
                                           const uint8_t usage) {

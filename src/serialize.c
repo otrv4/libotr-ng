@@ -79,7 +79,7 @@ INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_s *mpi) {
   return otrng_serialize_data(dst, mpi->data, mpi->len);
 }
 
-INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_t point) {
+INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point point) {
   if (!otrng_ec_point_encode(dst, ED448_POINT_BYTES, point)) {
     return 0;
   };
@@ -88,7 +88,7 @@ INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_t point) {
 }
 
 INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
-                                          const ec_scalar_t scalar) {
+                                          const ec_scalar scalar) {
   otrng_ec_scalar_encode(dst, scalar);
   return ED448_SCALAR_BYTES;
 }
@@ -96,7 +96,7 @@ INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
 // Serializes a DH MPI as an OTR MPI data type
 INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dst_len,
                                                  size_t *written,
-                                                 const dh_mpi_t mpi) {
+                                                 const dh_mpi mpi) {
   uint8_t buffer[DH3072_MOD_LEN_BYTES];
   size_t w = 0;
   otrng_mpi_s otr_mpi;
@@ -129,12 +129,12 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dst_len,
 INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *dst,
                                                     size_t dst_len,
                                                     size_t *written,
-                                                    const dh_public_key_t pub) {
+                                                    const dh_public_key pub) {
   return otrng_serialize_dh_mpi_otr(dst, dst_len, written, pub);
 }
 
 INTERNAL size_t otrng_serialize_public_key(uint8_t *dst,
-                                           const otrng_public_key_t pub) {
+                                           const otrng_public_key pub) {
   uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, ED448_PUBKEY_TYPE);
   cursor += otrng_serialize_ec_point(cursor, pub);
@@ -143,7 +143,7 @@ INTERNAL size_t otrng_serialize_public_key(uint8_t *dst,
 }
 
 INTERNAL size_t otrng_serialize_forging_key(uint8_t *dst,
-                                            const otrng_public_key_t pub) {
+                                            const otrng_public_key pub) {
   uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, ED448_FORGINGKEY_TYPE);
   cursor += otrng_serialize_ec_point(cursor, pub);
@@ -152,7 +152,7 @@ INTERNAL size_t otrng_serialize_forging_key(uint8_t *dst,
 }
 
 INTERNAL size_t otrng_serialize_shared_prekey(
-    uint8_t *dst, const otrng_shared_prekey_pub_t shared_prekey) {
+    uint8_t *dst, const otrng_shared_prekey_pub shared_prekey) {
   uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, ED448_SHARED_PREKEY_TYPE);
   cursor += otrng_serialize_ec_point(cursor, shared_prekey);

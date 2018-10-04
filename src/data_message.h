@@ -37,8 +37,8 @@ typedef struct data_message_s {
 
   uint32_t ratchet_id;
   uint32_t message_id;
-  ec_point_t ecdh;
-  dh_public_key_t dh;
+  ec_point ecdh;
+  dh_public_key dh;
   uint8_t nonce[DATA_MSG_NONCE_BYTES];
   uint8_t *enc_msg;
   size_t enc_msg_len;
@@ -57,11 +57,13 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
                                                      size_t bufflen,
                                                      size_t *nread);
 
-INTERNAL otrng_result otrng_data_message_authenticator(
-    uint8_t *dst, size_t dst_len, const msg_mac_key_t mac_key,
-    const uint8_t *body, size_t bodylen);
+INTERNAL otrng_result otrng_data_message_authenticator(uint8_t *dst,
+                                                       size_t dst_len,
+                                                       const k_msg_mac mac_key,
+                                                       const uint8_t *body,
+                                                       size_t bodylen);
 
-INTERNAL otrng_bool otrng_valid_data_message(msg_mac_key_t mac_key,
+INTERNAL otrng_bool otrng_valid_data_message(k_msg_mac mac_key,
                                              const data_message_s *data_msg);
 
 #ifdef OTRNG_DATA_MESSAGE_PRIVATE

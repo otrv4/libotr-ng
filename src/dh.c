@@ -152,10 +152,10 @@ INTERNAL void otrng_dh_free(void) {
   dh_initialized = 0;
 }
 
-INTERNAL dh_mpi_t otrng_dh_mpi_generator(void) { return DH3072_GENERATOR; }
+INTERNAL dh_mpi otrng_dh_mpi_generator(void) { return DH3072_GENERATOR; }
 
-INTERNAL void otrng_dh_calculate_public_key(dh_public_key_t pub,
-                                            const dh_private_key_t priv) {
+INTERNAL void otrng_dh_calculate_public_key(dh_public_key pub,
+                                            const dh_private_key priv) {
   gcry_mpi_powm(pub, DH3072_GENERATOR, priv, DH3072_MODULUS);
 }
 
@@ -232,10 +232,10 @@ INTERNAL void otrng_dh_keypair_destroy(dh_keypair_s *keypair) {
   keypair->pub = NULL;
 }
 
-INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_t buffer,
+INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret buffer,
                                              size_t *written,
-                                             const dh_private_key_t our_priv,
-                                             const dh_public_key_t their_pub) {
+                                             const dh_private_key our_priv,
+                                             const dh_public_key their_pub) {
   gcry_error_t err;
   gcry_mpi_t secret = gcry_mpi_snew(DH3072_MOD_LEN_BITS);
   if (!secret) {
@@ -257,7 +257,7 @@ INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret_t buffer,
 
 INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
                                              size_t *written,
-                                             const dh_mpi_t src) {
+                                             const dh_mpi src) {
   gcry_error_t err;
   if (!src) {
     if (written) {
@@ -275,7 +275,7 @@ INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_t *dst,
+INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *dst,
                                                const uint8_t *buffer,
                                                size_t buff_len, size_t *nread) {
   gcry_error_t err;
@@ -293,7 +293,7 @@ INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi_t *dst,
   return OTRNG_SUCCESS;
 }
 
-API otrng_bool otrng_dh_mpi_valid(dh_mpi_t mpi) {
+API otrng_bool otrng_dh_mpi_valid(dh_mpi mpi) {
   /* Check that pub is in range */
   if (mpi == NULL) {
     return otrng_false;
@@ -317,15 +317,15 @@ API otrng_bool otrng_dh_mpi_valid(dh_mpi_t mpi) {
 }
 
 // TODO: check the return
-INTERNAL dh_mpi_t otrng_dh_mpi_copy(const dh_mpi_t src) {
+INTERNAL dh_mpi otrng_dh_mpi_copy(const dh_mpi src) {
   return gcry_mpi_copy(src);
 }
 
-INTERNAL void otrng_dh_mpi_release(dh_mpi_t mpi) { gcry_mpi_release(mpi); }
+INTERNAL void otrng_dh_mpi_release(dh_mpi mpi) { gcry_mpi_release(mpi); }
 
-INTERNAL dh_mpi_t otrng_dh_modulus_p() { return DH3072_MODULUS; }
+INTERNAL dh_mpi otrng_dh_modulus_p() { return DH3072_MODULUS; }
 
-INTERNAL dh_mpi_t otrng_dh_modulus_q() { return DH3072_MODULUS_Q; }
+INTERNAL dh_mpi otrng_dh_modulus_q() { return DH3072_MODULUS_Q; }
 
 #ifdef DEBUG_API
 
@@ -363,7 +363,7 @@ API void otrng_dh_keypair_debug_print(FILE *f, int indent, dh_keypair_s *k) {
   debug_api_print(f, "} // dh_keypair\n");
 }
 
-API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key_t k) {
+API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key pub) {
   uint8_t buf[DH3072_MOD_LEN_BYTES] = {0};
   size_t w = 0;
 
@@ -371,11 +371,11 @@ API void otrng_dh_public_key_debug_print(FILE *f, dh_public_key_t k) {
     return;
   }
 
-  otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, k);
+  otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, pub);
   otrng_debug_print_data(f, buf, w);
 }
 
-API void otrng_dh_private_key_debug_print(FILE *f, dh_private_key_t k) {
+API void otrng_dh_private_key_debug_print(FILE *f, dh_private_key priv) {
   uint8_t buf[DH_KEY_SIZE] = {0};
   size_t w = 0;
 
@@ -383,7 +383,7 @@ API void otrng_dh_private_key_debug_print(FILE *f, dh_private_key_t k) {
     return;
   }
 
-  otrng_dh_mpi_serialize(buf, DH_KEY_SIZE, &w, k);
+  otrng_dh_mpi_serialize(buf, DH_KEY_SIZE, &w, priv);
   otrng_debug_print_data(f, buf, w);
 }
 

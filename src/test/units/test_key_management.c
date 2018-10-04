@@ -29,14 +29,14 @@ static void test_derive_ratchet_keys() {
   key_manager_s *manager = otrng_xmalloc_z(sizeof(key_manager_s));
   otrng_key_manager_init(manager);
 
-  memset(manager->shared_secret, 0, sizeof(shared_secret_t));
-  root_key_t root_key;
-  memset(root_key, 0, sizeof(root_key_t));
+  memset(manager->shared_secret, 0, sizeof(k_shared_secret));
+  k_root root_key;
+  memset(root_key, 0, sizeof(k_root));
 
   key_manager_derive_ratchet_keys(manager, NULL, 's');
 
-  root_key_t expected_root_key;
-  sending_chain_key_t expected_chain_key_s;
+  k_root expected_root_key;
+  k_sending_chain expected_chain_key_s;
 
   uint8_t buff[1] = {0x14};
   uint8_t buff2[1] = {0x15};
@@ -44,19 +44,19 @@ static void test_derive_ratchet_keys() {
   goldilocks_shake256_ctx_p hd;
   hash_init_with_dom(hd);
   hash_update(hd, buff, 1);
-  hash_update(hd, root_key, sizeof(root_key_t));
-  hash_update(hd, manager->shared_secret, sizeof(shared_secret_t));
+  hash_update(hd, root_key, sizeof(k_root));
+  hash_update(hd, manager->shared_secret, sizeof(k_shared_secret));
 
-  hash_final(hd, expected_root_key, sizeof(root_key_t));
+  hash_final(hd, expected_root_key, sizeof(k_root));
   hash_destroy(hd);
 
   goldilocks_shake256_ctx_p hd2;
   hash_init_with_dom(hd2);
   hash_update(hd2, buff2, 1);
-  hash_update(hd2, root_key, sizeof(root_key_t));
-  hash_update(hd2, manager->shared_secret, sizeof(shared_secret_t));
+  hash_update(hd2, root_key, sizeof(k_root));
+  hash_update(hd2, manager->shared_secret, sizeof(k_shared_secret));
 
-  hash_final(hd2, expected_chain_key_s, sizeof(sending_chain_key_t));
+  hash_final(hd2, expected_chain_key_s, sizeof(k_sending_chain));
   hash_destroy(hd2);
 
   otrng_key_manager_destroy(manager);
@@ -67,12 +67,12 @@ static void test_calculate_ssid() {
   key_manager_s manager;
   otrng_key_manager_init(&manager);
 
-  shared_secret_t s = {0};
+  k_shared_secret s = {0};
   uint8_t expected_ssid[8] = {
       0x11, 0xee, 0xe5, 0xe1, 0xeb, 0x7e, 0x32, 0x0a,
   };
 
-  memcpy(s, manager.shared_secret, sizeof(shared_secret_t));
+  memcpy(s, manager.shared_secret, sizeof(k_shared_secret));
 
   calculate_ssid(&manager);
   otrng_assert_cmpmem(expected_ssid, manager.ssid, 8);
@@ -84,14 +84,14 @@ static void test_calculate_extra_symm_key() {
   key_manager_s manager;
   otrng_key_manager_init(&manager);
 
-  shared_secret_t s = {0};
+  k_shared_secret s = {0};
   uint8_t expected_extra_key[EXTRA_SYMMETRIC_KEY_BYTES] = {
       0xb7, 0x98, 0x10, 0x75, 0x84, 0x00, 0x3f, 0x6b, 0x85, 0x6f, 0xd3,
       0x5d, 0x8f, 0x0b, 0xf3, 0x61, 0x0d, 0x7b, 0xea, 0x97, 0x44, 0x4a,
       0x1e, 0xcb, 0x1e, 0x31, 0x74, 0xad, 0x9e, 0xa0, 0x23, 0xf9,
   };
 
-  memcpy(s, manager.current->chain_s, sizeof(sending_chain_key_t));
+  memcpy(s, manager.current->chain_s, sizeof(k_sending_chain));
 
   calculate_extra_key(&manager, NULL, 's');
   otrng_assert_cmpmem(expected_extra_key, manager.extra_symmetric_key,
@@ -105,7 +105,7 @@ static void test_calculate_brace_key() {
   otrng_key_manager_init(manager);
 
   // Setup a fixed their_dh
-  dh_mpi_t their_dh_secret = NULL;
+  dh_mpi their_dh_secret = NULL;
   const uint8_t their_public[5] = {0x1};
   uint8_t secret[DH3072_MOD_LEN_BYTES] = {0};
   size_t secret_len = 0;

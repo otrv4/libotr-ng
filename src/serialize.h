@@ -49,14 +49,13 @@ INTERNAL size_t otrng_serialize_data(uint8_t *target, const uint8_t *data,
 
 INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_s *mpi);
 
-INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_t point);
+INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point point);
 
-INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
-                                          const ec_scalar_t scalar);
+INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst, const ec_scalar scalar);
 
 INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dst_len,
                                                  size_t *written,
-                                                 const dh_mpi_t mpi);
+                                                 const dh_mpi mpi);
 
 /**
  * @brief Serializes a DH public key as an MPI.
@@ -73,18 +72,18 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dst_len,
 INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *dst,
                                                     size_t dst_len,
                                                     size_t *written,
-                                                    const dh_public_key_t pub);
+                                                    const dh_public_key pub);
 
 INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst, const ring_sig_s *proof);
 
 INTERNAL size_t otrng_serialize_public_key(uint8_t *dst,
-                                           const otrng_public_key_t);
+                                           const otrng_public_key);
 
 INTERNAL size_t otrng_serialize_forging_key(uint8_t *dst,
-                                            const otrng_public_key_t);
+                                            const otrng_public_key);
 
 INTERNAL size_t otrng_serialize_shared_prekey(
-    uint8_t *dst, const otrng_shared_prekey_pub_t shared_prekey);
+    uint8_t *dst, const otrng_shared_prekey_pub shared_prekey);
 
 /**
  * @brief Serialize the old mac keys to reveal.

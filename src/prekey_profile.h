@@ -28,8 +28,8 @@
 typedef struct prekey_profile_s {
   uint32_t instance_tag;
   uint64_t expires;
-  ec_point_t shared_prekey; /* Key "D" */
-  eddsa_signature_t signature;
+  ec_point shared_prekey; /* Key "D" */
+  eddsa_signature signature;
 
   otrng_shared_prekey_pair_s *keys;
 
@@ -55,7 +55,7 @@ INTERNAL otrng_bool otrng_prekey_profile_invalid(time_t expires,
 
 INTERNAL otrng_bool otrng_prekey_profile_valid(
     const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
-    const otrng_public_key_t pub);
+    const otrng_public_key pub);
 
 INTERNAL otrng_result prekey_profile_sign(otrng_prekey_profile_s *profile,
                                           const otrng_keypair_s *longterm_pair);

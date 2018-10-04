@@ -35,16 +35,16 @@ typedef struct dake_identity_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
   otrng_client_profile_s *profile;
-  ec_point_t Y;
-  dh_public_key_t B;
+  ec_point Y;
+  dh_public_key B;
 } dake_identity_message_s;
 
 typedef struct dake_auth_r_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
   otrng_client_profile_s *profile;
-  ec_point_t X;
-  dh_public_key_t A;
+  ec_point X;
+  dh_public_key A;
   ring_sig_s *sigma;
 } dake_auth_r_s;
 
@@ -57,16 +57,16 @@ typedef struct dake_auth_i_s {
 typedef struct dake_prekey_message_s {
   uint32_t id;
   uint32_t sender_instance_tag;
-  ec_point_t Y;
-  dh_public_key_t B;
+  ec_point Y;
+  dh_public_key B;
 } dake_prekey_message_s;
 
 typedef struct dake_non_interactive_auth_message_s {
   uint32_t sender_instance_tag;
   uint32_t receiver_instance_tag;
   otrng_client_profile_s *profile;
-  ec_point_t X;
-  dh_public_key_t A;
+  ec_point X;
+  dh_public_key A;
   ring_sig_s *sigma;
   uint32_t prekey_message_id;
   uint8_t auth_mac[DATA_MSG_MAC_BYTES];
@@ -78,12 +78,12 @@ typedef struct {
   otrng_prekey_profile_s *prekey_profile;
   otrng_prekey_profile_s *exp_prekey_profile;
   goldilocks_448_point_s ecdh;
-  dh_mpi_t dh;
+  dh_mpi dh;
 } otrng_dake_participant_data_s;
 
 INTERNAL otrng_bool otrng_valid_received_values(
-    const uint32_t sender_instance_tag, const ec_point_t their_ecdh,
-    const dh_mpi_t their_dh, const otrng_client_profile_s *profile);
+    const uint32_t sender_instance_tag, const ec_point their_ecdh,
+    const dh_mpi their_dh, const otrng_client_profile_s *profile);
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_deserialize(
     dake_non_interactive_auth_message_s *dst, const uint8_t *buffer,
@@ -139,8 +139,8 @@ INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
 INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void);
 
 INTERNAL dake_prekey_message_s *
-otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point_t ecdh,
-                                const dh_public_key_t dh);
+otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point ecdh,
+                                const dh_public_key dh);
 
 INTERNAL void otrng_dake_prekey_message_free(dake_prekey_message_s *prekey_msg);
 
@@ -172,14 +172,14 @@ INTERNAL otrng_result
 build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
                                 const otrng_dake_participant_data_s *initiator,
                                 const otrng_dake_participant_data_s *responder,
-                                const otrng_shared_prekey_pub_t r_shared_prekey,
+                                const otrng_shared_prekey_pub r_shared_prekey,
                                 const uint8_t *phi, size_t phi_len);
 
 INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
     uint8_t **msg, size_t *msg_len,
     const otrng_dake_participant_data_s *initiator,
     const otrng_dake_participant_data_s *responder,
-    const otrng_shared_prekey_pub_t r_shared_prekey, const uint8_t *phi,
+    const otrng_shared_prekey_pub r_shared_prekey, const uint8_t *phi,
     size_t phi_len);
 
 INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(

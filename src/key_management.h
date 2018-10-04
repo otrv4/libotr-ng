@@ -30,52 +30,52 @@
 #include "warn.h"
 
 /* the different kind of keys for the key management */
-typedef uint8_t brace_key_t[BRACE_KEY_BYTES];
-typedef uint8_t k_ecdh_t[ED448_POINT_BYTES];
-typedef uint8_t shared_secret_t[SHARED_SECRET_BYTES];
+typedef uint8_t k_brace[BRACE_KEY_BYTES];
+typedef uint8_t k_ecdh[ED448_POINT_BYTES];
+typedef uint8_t k_shared_secret[SHARED_SECRET_BYTES];
 
-typedef uint8_t root_key_t[ROOT_KEY_BYTES];
-typedef uint8_t sending_chain_key_t[CHAIN_KEY_BYTES];
-typedef uint8_t receiving_chain_key_t[CHAIN_KEY_BYTES];
-typedef uint8_t msg_encryption_key_t[ENCRYPTION_KEY_BYTES];
-typedef uint8_t msg_mac_key_t[MAC_KEY_BYTES];
-typedef uint8_t extra_symmetric_key_t[EXTRA_SYMMETRIC_KEY_BYTES];
+typedef uint8_t k_root[ROOT_KEY_BYTES];
+typedef uint8_t k_sending_chain[CHAIN_KEY_BYTES];
+typedef uint8_t k_receiving_chain[CHAIN_KEY_BYTES];
+typedef uint8_t k_msg_enc[ENC_KEY_BYTES];
+typedef uint8_t k_msg_mac[MAC_KEY_BYTES];
+typedef uint8_t k_extra_symmetric[EXTRA_SYMMETRIC_KEY_BYTES];
 
 /* the different kind of keys needed for a chain ratchet */
 typedef struct ratchet_s {
-  root_key_t root_key;
-  sending_chain_key_t chain_s;
-  receiving_chain_key_t chain_r;
+  k_root root_key;
+  k_sending_chain chain_s;
+  k_receiving_chain chain_r;
 } ratchet_s;
 
 /* the list of stored message and extra symmetric keys */
 typedef struct skipped_keys_s {
   unsigned int i; /* Counter of the ratchet */
   unsigned int j; /* Counter of the sending messages */
-  extra_symmetric_key_t extra_symmetric_key;
-  msg_encryption_key_t enc_key;
+  k_extra_symmetric extra_symmetric_key;
+  k_msg_enc enc_key;
 } skipped_keys_s;
 
 /* a temporary structure used to hold the values of the receiving ratchet */
 typedef struct receiving_ratchet_s {
-  ec_scalar_t our_ecdh_priv;
-  dh_private_key_t our_dh_priv;
+  ec_scalar our_ecdh_priv;
+  dh_private_key our_dh_priv;
 
-  ec_point_t their_ecdh;
-  dh_public_key_t their_dh;
+  ec_point their_ecdh;
+  dh_public_key their_dh;
 
-  brace_key_t brace_key;
-  shared_secret_t shared_secret;
+  k_brace brace_key;
+  k_shared_secret shared_secret;
 
   /* TODO: these should have fixed size */
   unsigned int i;  /* Counter of the ratchet */
   unsigned int k;  /* Counter of the receiving ratchet */
   unsigned int j;  /* Counter of the sending ratchet */
   unsigned int pn; /* the number of messages in the previous DH ratchet. */
-  root_key_t root_key;
-  receiving_chain_key_t chain_r;
+  k_root root_key;
+  k_receiving_chain chain_r;
 
-  extra_symmetric_key_t extra_symmetric_key;
+  k_extra_symmetric extra_symmetric_key;
 
   list_element_s *skipped_keys;
 } receiving_ratchet_s;
@@ -86,14 +86,14 @@ typedef struct key_manager_s {
   ecdh_keypair_s *our_ecdh;
   dh_keypair_s *our_dh;
 
-  ec_point_t their_ecdh;
-  dh_public_key_t their_dh;
+  ec_point their_ecdh;
+  dh_public_key their_dh;
 
   // TODO: @refactoring REMOVE THIS
   // or turn it into a pair and store both this and the long term keypair on
   // this key manager.
-  otrng_shared_prekey_pub_t our_shared_prekey;
-  otrng_shared_prekey_pub_t their_shared_prekey;
+  otrng_shared_prekey_pub our_shared_prekey;
+  otrng_shared_prekey_pub their_shared_prekey;
 
   /* Data message context */
   unsigned int i;  /* the ratchet id. */
@@ -103,12 +103,12 @@ typedef struct key_manager_s {
 
   ratchet_s *current;
 
-  brace_key_t brace_key;
-  shared_secret_t shared_secret;
+  k_brace brace_key;
+  k_shared_secret shared_secret;
 
   uint8_t ssid[SSID_BYTES];
   otrng_bool ssid_half_first;
-  extra_symmetric_key_t extra_symmetric_key;
+  k_extra_symmetric extra_symmetric_key;
   uint8_t tmp_key[HASH_BYTES];
 
   list_element_s *skipped_keys;
@@ -189,7 +189,7 @@ INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet);
  * @param [tmp_receiving_ratchet]    The receiving ratchet.
  */
 INTERNAL void otrng_key_manager_set_their_tmp_keys(
-    ec_point_t their_ecdh, dh_public_key_t their_dh,
+    ec_point their_ecdh, dh_public_key their_dh,
     receiving_ratchet_s *tmp_receiving_ratchet);
 
 /**
@@ -198,7 +198,7 @@ INTERNAL void otrng_key_manager_set_their_tmp_keys(
  * @param [their_ecdh]  The new their_ecdh key.
  * @param [manager]     The key manager.
  */
-INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point_t their_ecdh,
+INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point their_ecdh,
                                                key_manager_s *manager);
 
 /**
@@ -207,7 +207,7 @@ INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point_t their_ecdh,
  * @param [their_ecdh]  The new their_dh key.
  * @param [manager]     The key manager.
  */
-INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key_t their_dh,
+INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key their_dh,
                                              key_manager_s *manager);
 
 /**
@@ -222,15 +222,16 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
  * @brief Generate the temporary key to be used by the non-interactive DAKE.
  *
  * @param [tmp_key]      The tmp manager.
- * @param [k_ecdh]       The K_ecdh manager.
- * @param [brace_key]    The brackey manager.
+ * @param [ecdh_key]     The ecdh key.
+ * @param [brace_k]      The brace key.
  * @param [tmp_ecdh_k1]  A temporary ecdh key.
  * @param [tmp_ecdh_k2]  A temporary ecdh key.
  */
-INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key, k_ecdh_t ke,
-                                                  brace_key_t brace_key,
-                                                  k_ecdh_t tmp_ecdh_k1,
-                                                  k_ecdh_t tmp_ecdh_k2);
+INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
+                                                  k_ecdh ecdh_key,
+                                                  k_brace brace_key,
+                                                  k_ecdh tmp_ecdh_k1,
+                                                  k_ecdh tmp_ecdh_k2);
 
 /**
  * @brief Generate the auth_mac to be used by the non-interactive DAKE.
@@ -287,8 +288,8 @@ INTERNAL otrng_result otrng_key_manager_ratcheting_init(key_manager_s *manager,
  * @param [manager]     The key manager.
  */
 INTERNAL otrng_result otrng_key_get_skipped_keys(
-    msg_encryption_key_t enc_key, msg_mac_key_t mac_key,
-    unsigned int ratchet_id, unsigned int msg_id, key_manager_s *manager,
+    k_msg_enc enc_key, k_msg_mac mac_key, unsigned int ratchet_id,
+    unsigned int msg_id, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet);
 
 /**
@@ -302,7 +303,7 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
  * @param [action]      's' for sending chain, 'r' for receiving
  */
 INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
-    msg_encryption_key_t enc_key, msg_mac_key_t mac_key, key_manager_s *manager,
+    k_msg_enc enc_key, k_msg_mac mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int msg_id,
     const char action, otrng_warning *warn);
 
@@ -326,7 +327,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
  * @param [mac_key]   The mac key to store.
  */
 INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
-                                               msg_mac_key_t mac_key);
+                                               k_msg_mac mac_key);
 
 INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
 

@@ -155,7 +155,7 @@ INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *dst,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_t *dst,
+INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi *dst,
                                                    const uint8_t *buffer,
                                                    size_t buff_len,
                                                    size_t *read) {
@@ -176,7 +176,7 @@ INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_t *dst,
   return ret;
 }
 
-INTERNAL otrng_result otrng_deserialize_ec_point(ec_point_t point,
+INTERNAL otrng_result otrng_deserialize_ec_point(ec_point point,
                                                  const uint8_t *serialized,
                                                  size_t ser_len) {
   if (ser_len < ED448_POINT_BYTES) {
@@ -186,7 +186,7 @@ INTERNAL otrng_result otrng_deserialize_ec_point(ec_point_t point,
   return otrng_ec_point_decode(point, serialized);
 }
 
-INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key_t pub,
+INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key pub,
                                                    const uint8_t *serialized,
                                                    size_t ser_len,
                                                    size_t *read) {
@@ -217,7 +217,7 @@ INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key_t pub,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key_t pub,
+INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key pub,
                                                     const uint8_t *serialized,
                                                     size_t ser_len,
                                                     size_t *read) {
@@ -249,7 +249,7 @@ INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key_t pub,
 }
 
 INTERNAL otrng_result otrng_deserialize_shared_prekey(
-    otrng_shared_prekey_pub_t shared_prekey, const uint8_t *serialized,
+    otrng_shared_prekey_pub shared_prekey, const uint8_t *serialized,
     size_t ser_len, size_t *read) {
   const uint8_t *cursor = serialized;
   size_t r = 0;
@@ -278,7 +278,7 @@ INTERNAL otrng_result otrng_deserialize_shared_prekey(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar_t scalar,
+INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar scalar,
                                                   const uint8_t *serialized,
                                                   size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES) {
