@@ -18,7 +18,7 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "prekey_messages.h"
+#include "prekey_message.h"
 #include "prekey_client.h"
 
 #include "deserialize.h"

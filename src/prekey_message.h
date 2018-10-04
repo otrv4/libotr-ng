@@ -18,8 +18,8 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OTRNG_PREKEY_MESSAGES_H
-#define OTRNG_PREKEY_MESSAGES_H
+#ifndef OTRNG_PREKEY_MESSAGE_H
+#define OTRNG_PREKEY_MESSAGE_H
 
 #include "prekey_client.h"
 

@@ -25,7 +25,7 @@
 #include "test_fixtures.h"
 
 #include "base64.h"
-#include "prekey_messages.h"
+#include "prekey_message.h"
 
 static void test_deserialize_prekey_success_message(void) {
   const char *prekey_success_message =
