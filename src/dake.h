@@ -28,6 +28,7 @@
 #include "constants.h"
 #include "dh.h"
 #include "ed448.h"
+#include "prekey_message.h"
 #include "prekey_profile.h"
 #include "shared.h"
 
@@ -53,13 +54,6 @@ typedef struct dake_auth_i_s {
   uint32_t receiver_instance_tag;
   ring_sig_s *sigma;
 } dake_auth_i_s;
-
-typedef struct dake_prekey_message_s {
-  uint32_t id;
-  uint32_t sender_instance_tag;
-  ec_point Y;
-  dh_public_key B;
-} dake_prekey_message_s;
 
 typedef struct dake_non_interactive_auth_message_s {
   uint32_t sender_instance_tag;
@@ -135,28 +129,6 @@ INTERNAL otrng_result otrng_dake_auth_i_serialize(uint8_t **dst, size_t *nbytes,
 INTERNAL otrng_result otrng_dake_auth_i_deserialize(dake_auth_i_s *dst,
                                                     const uint8_t *buffer,
                                                     size_t buflen);
-
-INTERNAL dake_prekey_message_s *otrng_dake_prekey_message_new(void);
-
-INTERNAL dake_prekey_message_s *
-otrng_dake_prekey_message_build(uint32_t instance_tag, const ec_point ecdh,
-                                const dh_public_key dh);
-
-INTERNAL void otrng_dake_prekey_message_free(dake_prekey_message_s *prekey_msg);
-
-INTERNAL void
-otrng_dake_prekey_message_destroy(dake_prekey_message_s *prekey_msg);
-
-INTERNAL otrng_result otrng_dake_prekey_message_deserialize(
-    dake_prekey_message_s *dst, const uint8_t *src, size_t src_len,
-    size_t *nread);
-
-INTERNAL otrng_result otrng_dake_prekey_message_serialize_into(
-    uint8_t **dst, size_t *nbytes, const dake_prekey_message_s *prekey_msg);
-
-INTERNAL otrng_result otrng_dake_prekey_message_serialize(
-    uint8_t *dst, size_t dst_len, size_t *written,
-    const dake_prekey_message_s *src);
 
 /*
  * @param auth_tag_type if 'i' is for the auth_i message, if 'r' for the auth_r

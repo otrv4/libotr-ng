@@ -58,7 +58,7 @@ static void test_prekey_ensemble_validate(void) {
   otrng_assert_is_success(
       prekey_profile_sign(ensemble->prekey_profile, keypair));
 
-  ensemble->message = otrng_dake_prekey_message_new();
+  ensemble->message = otrng_prekey_message_new();
   ensemble->message->sender_instance_tag = 1;
   otrng_ec_point_copy(ensemble->message->Y, keypair2->pub);
   ensemble->message->B = gcry_mpi_set_ui(NULL, 3);

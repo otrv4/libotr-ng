@@ -570,11 +570,11 @@ INTERNAL void otrng_client_store_my_prekey_message(
   client->our_prekeys = otrng_list_add(stored_prekey_msg, client->our_prekeys);
 }
 
-API dake_prekey_message_s **
+API prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
                                    ec_scalar **ecdh_keys, dh_mpi **dh_keys) {
   uint32_t instance_tag;
-  dake_prekey_message_s **messages;
+  prekey_message_s **messages;
   int i, j;
   ec_scalar *ecdh_priv_key;
   dh_mpi *dh_priv_key;
@@ -586,7 +586,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
 
   instance_tag = otrng_client_get_instance_tag(client);
 
-  messages = otrng_xmalloc_z(num_messages * sizeof(dake_prekey_message_s *));
+  messages = otrng_xmalloc_z(num_messages * sizeof(prekey_message_s *));
   ecdh_priv_key = otrng_secure_alloc(num_messages * sizeof(ec_scalar));
   dh_priv_key = otrng_xmalloc_z(num_messages * sizeof(dh_mpi));
 
@@ -595,11 +595,10 @@ otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
     dh_keypair_s dh;
     otrng_generate_ephemeral_keys(&ecdh, &dh);
 
-    messages[i] =
-        otrng_dake_prekey_message_build(instance_tag, ecdh.pub, dh.pub);
+    messages[i] = otrng_prekey_message_build(instance_tag, ecdh.pub, dh.pub);
     if (!messages[i]) {
       for (j = 0; j < i; j++) {
-        otrng_dake_prekey_message_free(messages[j]);
+        otrng_prekey_message_free(messages[j]);
       }
       free(messages);
       return NULL;

@@ -31,7 +31,7 @@
 typedef struct {
   otrng_client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
-  dake_prekey_message_s *message;
+  prekey_message_s *message;
 } prekey_ensemble_s;
 
 INTERNAL prekey_ensemble_s *otrng_prekey_ensemble_new(void);

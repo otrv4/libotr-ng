@@ -103,10 +103,10 @@ INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
 
   w += read;
 
-  dst->message = otrng_xmalloc_z(sizeof(dake_prekey_message_s));
+  dst->message = otrng_xmalloc_z(sizeof(prekey_message_s));
 
-  if (!otrng_dake_prekey_message_deserialize(dst->message, src + w, src_len - w,
-                                             &read)) {
+  if (!otrng_prekey_message_deserialize(dst->message, src + w,
+                                        src_len - w, &read)) {
     return OTRNG_ERROR;
   }
 

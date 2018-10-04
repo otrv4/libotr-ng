@@ -28,6 +28,7 @@
 #include "constants.h"
 #include "dake.h"
 #include "prekey_ensemble.h"
+#include "prekey_message.h"
 #include "prekey_profile.h"
 #include "shared.h"
 
@@ -75,7 +76,7 @@ typedef struct {
 
 typedef struct {
   uint8_t num_prekey_messages;
-  dake_prekey_message_s **prekey_messages;
+  prekey_message_s **prekey_messages;
   otrng_client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
 
@@ -264,6 +265,10 @@ INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
 INTERNAL
 void otrng_prekey_ensemble_retrieval_message_destroy(
     otrng_prekey_ensemble_retrieval_message_s *msg);
+
+INTERNAL otrng_result otrng_prekey_success_message_deserialize(
+    otrng_prekey_success_message_s *dst, const uint8_t *source,
+    size_t source_len);
 
 #ifdef OTRNG_PREKEY_CLIENT_PRIVATE
 

@@ -176,7 +176,7 @@ INTERNAL void otrng_client_store_my_prekey_message(
     uint32_t id, uint32_t instance_tag, const ecdh_keypair_s *ecdh_pair,
     const dh_keypair_s *dh_pair, otrng_client_s *client);
 
-API dake_prekey_message_s **
+API prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages, otrng_client_s *client,
                                    ec_scalar **ecdh_keys, dh_mpi **dh_keys);
 

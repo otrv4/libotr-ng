@@ -1569,3 +1569,46 @@ void otrng_prekey_ensemble_retrieval_message_destroy(
 
   msg->ensembles = NULL;
 }
+
+INTERNAL otrng_result otrng_prekey_success_message_deserialize(
+    otrng_prekey_success_message_s *destination, const uint8_t *source,
+    size_t source_len) {
+  const uint8_t *cursor = source;
+  int64_t len = source_len;
+  size_t read = 0;
+  uint8_t message_type = 0;
+
+  uint16_t protocol_version = 0;
+  if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read)) {
+    return OTRNG_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (protocol_version != OTRNG_PROTOCOL_VERSION_4) {
+    return OTRNG_ERROR;
+  }
+
+  if (!otrng_deserialize_uint8(&message_type, cursor, len, &read)) {
+    return OTRNG_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (message_type != OTRNG_PREKEY_SUCCESS_MSG) {
+    return OTRNG_ERROR;
+  }
+
+  if (!otrng_deserialize_uint32(&destination->client_instance_tag, cursor, len,
+                                &read)) {
+    return OTRNG_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  return otrng_deserialize_bytes_array(destination->success_mac, HASH_BYTES,
+                                       cursor, len);
+}

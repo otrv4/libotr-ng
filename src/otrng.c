@@ -895,7 +895,7 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   }
 
   ensemble->message =
-      otrng_dake_prekey_message_build(our_instance_tag(otr), ecdh.pub, dh.pub);
+      otrng_prekey_message_build(our_instance_tag(otr), ecdh.pub, dh.pub);
   if (!ensemble->message) {
     otrng_prekey_ensemble_free(ensemble);
     return NULL;
@@ -960,7 +960,7 @@ static otrng_bool valid_receiver_instance_tag(uint32_t instance_tag) {
   return (instance_tag == 0 || otrng_instance_tag_valid(instance_tag));
 }
 
-tstatic otrng_result prekey_message_received(const dake_prekey_message_s *msg,
+tstatic otrng_result prekey_message_received(const prekey_message_s *msg,
                                              otrng_warning *warn,
                                              otrng_s *otr) {
   if (!otr->their_client_profile) {

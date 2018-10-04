@@ -29,7 +29,7 @@
 #include "keys.h"
 #include "serialize.h"
 
-static void test_dake_prekey_message_serializes() {
+static void test_prekey_message_serializes() {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
 
@@ -37,15 +37,15 @@ static void test_dake_prekey_message_serializes() {
   otrng_ecdh_keypair_generate(&ecdh, sym);
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
-  dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
+  prekey_message_s *prekey_message = otrng_prekey_message_new();
   prekey_message->id = 2;
   prekey_message->sender_instance_tag = 1;
   otrng_ec_point_copy(prekey_message->Y, ecdh.pub);
   prekey_message->B = otrng_dh_mpi_copy(dh.pub);
 
   uint8_t *serialized = NULL;
-  otrng_assert_is_success(otrng_dake_prekey_message_serialize_into(
-      &serialized, NULL, prekey_message));
+  otrng_assert_is_success(
+      otrng_prekey_message_serialize_into(&serialized, NULL, prekey_message));
 
   uint8_t expected[] = {
       0x0,
@@ -85,10 +85,10 @@ static void test_dake_prekey_message_serializes() {
   free(serialized);
   otrng_dh_keypair_destroy(&dh);
   otrng_ecdh_keypair_destroy(&ecdh);
-  otrng_dake_prekey_message_free(prekey_message);
+  otrng_prekey_message_free(prekey_message);
 }
 
-static void test_otrng_dake_prekey_message_deserializes() {
+static void test_otrng_prekey_message_deserializes() {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
 
@@ -96,19 +96,18 @@ static void test_otrng_dake_prekey_message_deserializes() {
   otrng_ecdh_keypair_generate(&ecdh, sym);
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
-  dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
+  prekey_message_s *prekey_message = otrng_prekey_message_new();
   otrng_ec_point_copy(prekey_message->Y, ecdh.pub);
   prekey_message->B = otrng_dh_mpi_copy(dh.pub);
   prekey_message->id = 2;
 
   size_t serialized_len = 0;
   uint8_t *serialized = NULL;
-  otrng_assert_is_success(otrng_dake_prekey_message_serialize_into(
+  otrng_assert_is_success(otrng_prekey_message_serialize_into(
       &serialized, &serialized_len, prekey_message));
 
-  dake_prekey_message_s *deserialized =
-      otrng_xmalloc_z(sizeof(dake_prekey_message_s));
-  otrng_assert_is_success(otrng_dake_prekey_message_deserialize(
+  prekey_message_s *deserialized = otrng_xmalloc_z(sizeof(prekey_message_s));
+  otrng_assert_is_success(otrng_prekey_message_deserialize(
       deserialized, serialized, serialized_len, NULL));
 
   g_assert_cmpuint(deserialized->sender_instance_tag, ==,
@@ -119,11 +118,11 @@ static void test_otrng_dake_prekey_message_deserializes() {
   free(serialized);
   otrng_dh_keypair_destroy(&dh);
   otrng_ecdh_keypair_destroy(&ecdh);
-  otrng_dake_prekey_message_free(prekey_message);
-  otrng_dake_prekey_message_free(deserialized);
+  otrng_prekey_message_free(prekey_message);
+  otrng_prekey_message_free(deserialized);
 }
 
-static void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
+static void test_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
 
@@ -132,7 +131,7 @@ static void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
   otrng_ecdh_keypair_generate(&ecdh, sym);
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
-  dake_prekey_message_s *prekey_message = otrng_dake_prekey_message_new();
+  prekey_message_s *prekey_message = otrng_prekey_message_new();
   otrng_assert(prekey_message != NULL);
 
   otrng_ec_point_copy(prekey_message->Y, ecdh.pub);
@@ -142,10 +141,9 @@ static void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
                                            prekey_message->Y, prekey_message->B,
                                            f->profile) == otrng_true);
 
-  otrng_dake_prekey_message_free(prekey_message);
+  otrng_prekey_message_free(prekey_message);
 
-  dake_prekey_message_s *invalid_prekey_message =
-      otrng_dake_prekey_message_new();
+  prekey_message_s *invalid_prekey_message = otrng_prekey_message_new();
 
   // Invalid point
   otrng_ec_point_destroy(invalid_prekey_message->Y);
@@ -158,7 +156,7 @@ static void test_dake_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
 
   otrng_ecdh_keypair_destroy(&ecdh);
   otrng_dh_keypair_destroy(&dh);
-  otrng_dake_prekey_message_free(invalid_prekey_message);
+  otrng_prekey_message_free(invalid_prekey_message);
 }
 
 static uint8_t mac_tag[HASH_BYTES] = {0xFD};
@@ -303,10 +301,9 @@ void units_non_interactive_messages_add_tests(void) {
                     test_dake_non_interactive_auth_message_serializes);
   WITH_DAKE_FIXTURE("/dake/non_interactive_auth_message/deserialize",
                     test_otrng_dake_non_interactive_auth_message_deserializes);
-  WITH_DAKE_FIXTURE("/dake/prekey_message/valid",
-                    test_dake_prekey_message_valid);
+  WITH_DAKE_FIXTURE("/dake/prekey_message/valid", test_prekey_message_valid);
   g_test_add_func("/dake/prekey_message/deserializes",
-                  test_otrng_dake_prekey_message_deserializes);
+                  test_otrng_prekey_message_deserializes);
   g_test_add_func("/dake/prekey_message/serializes",
-                  test_dake_prekey_message_serializes);
+                  test_prekey_message_serializes);
 }
