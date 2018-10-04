@@ -253,18 +253,19 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   return OTRNG_SUCCESS;
 }
 
-INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key, k_ecdh_t ke,
-                                                  brace_key_t bk,
+INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
+                                                  k_ecdh_t k_ecdh,
+                                                  brace_key_t brace_key,
                                                   k_ecdh_t tmp_ecdh_k1,
                                                   k_ecdh_t tmp_ecdh_k2) {
   uint8_t usage_tmp_key = 0x0B;
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage_tmp_key);
-  hash_update(hd, ke, ED448_POINT_BYTES);
+  hash_update(hd, k_ecdh, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
   hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
-  hash_update(hd, bk, BRACE_KEY_BYTES);
+  hash_update(hd, brace_key, BRACE_KEY_BYTES);
 
   hash_final(hd, tmp_key, HASH_BYTES);
   hash_destroy(hd);
@@ -402,11 +403,11 @@ static uint8_t usage_shared_secret = 0x03;
 
 tstatic void calculate_shared_secret(key_manager_s *manager,
                                      receiving_ratchet_s *tmp_receiving_ratchet,
-                                     k_ecdh_t ke, const char action) {
+                                     k_ecdh_t k_ecdh, const char action) {
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage_shared_secret);
-  hash_update(hd, ke, ED448_POINT_BYTES);
+  hash_update(hd, k_ecdh, ED448_POINT_BYTES);
 
   assert(action == 's' || action == 'r');
   if (action == 's') {
@@ -423,16 +424,16 @@ tstatic void calculate_shared_secret(key_manager_s *manager,
     otrng_secure_wipe(tmp_receiving_ratchet->brace_key, BRACE_KEY_BYTES);
   }
 
-  otrng_secure_wipe(ke, ED448_POINT_BYTES);
+  otrng_secure_wipe(k_ecdh, ED448_POINT_BYTES);
 }
 
 INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
     key_manager_s *manager, const otrng_bool interactive) {
 
   if (interactive) {
-    k_ecdh_t ke;
+    k_ecdh_t k_ecdh;
 
-    if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,
+    if (!otrng_ecdh_shared_secret(k_ecdh, ED448_POINT_BYTES,
                                   manager->our_ecdh->priv,
                                   manager->their_ecdh)) {
       return OTRNG_ERROR;
@@ -446,7 +447,7 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
 
     otrng_dh_priv_key_destroy(manager->our_dh);
 
-    calculate_shared_secret(manager, NULL, ke, 's');
+    calculate_shared_secret(manager, NULL, k_ecdh, 's');
 
   } else if (!interactive) {
     shake_256_kdf1(manager->shared_secret, SHARED_SECRET_BYTES,
@@ -522,18 +523,18 @@ INTERNAL otrng_result otrng_key_manager_ratcheting_init(
 tstatic otrng_result enter_new_ratchet(
     key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
     const char action) {
-  k_ecdh_t ke;
+  k_ecdh_t k_ecdh;
 
   /* K_ecdh = ECDH(our_ecdh.secret, their_ecdh) */
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,
+    if (!otrng_ecdh_shared_secret(k_ecdh, ED448_POINT_BYTES,
                                   manager->our_ecdh->priv,
                                   manager->their_ecdh)) {
       return OTRNG_ERROR;
     }
   } else if (action == 'r') {
-    if (!otrng_ecdh_shared_secret(ke, ED448_POINT_BYTES,
+    if (!otrng_ecdh_shared_secret(k_ecdh, ED448_POINT_BYTES,
                                   manager->our_ecdh->priv,
                                   tmp_receiving_ratchet->their_ecdh)) {
       return OTRNG_ERROR;
@@ -547,13 +548,13 @@ tstatic otrng_result enter_new_ratchet(
   }
 
   /* K = KDF_1(usage_shared_secret || K_ecdh || brace_key, 64) */
-  calculate_shared_secret(manager, tmp_receiving_ratchet, ke, action);
+  calculate_shared_secret(manager, tmp_receiving_ratchet, k_ecdh, action);
 
 #ifdef DEBUG
   debug_print("\n");
   debug_print("ENTERING NEW RATCHET\n");
   debug_print("K_ecdh = ");
-  otrng_memdump(ke, ED448_POINT_BYTES);
+  otrng_memdump(k_ecdh, ED448_POINT_BYTES);
   debug_print("brace_key = ");
   otrng_memdump(manager->brace_key, BRACE_KEY_BYTES);
   debug_print("THE SHARED SECRET\n");

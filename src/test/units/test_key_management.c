@@ -30,8 +30,8 @@ static void test_derive_ratchet_keys() {
   otrng_key_manager_init(manager);
 
   memset(manager->shared_secret, 0, sizeof(shared_secret_t));
-  root_key_t rk;
-  memset(rk, 0, sizeof(root_key_t));
+  root_key_t root_key;
+  memset(root_key, 0, sizeof(root_key_t));
 
   key_manager_derive_ratchet_keys(manager, NULL, 's');
 
@@ -44,7 +44,7 @@ static void test_derive_ratchet_keys() {
   goldilocks_shake256_ctx_p hd;
   hash_init_with_dom(hd);
   hash_update(hd, buff, 1);
-  hash_update(hd, rk, sizeof(root_key_t));
+  hash_update(hd, root_key, sizeof(root_key_t));
   hash_update(hd, manager->shared_secret, sizeof(shared_secret_t));
 
   hash_final(hd, expected_root_key, sizeof(root_key_t));
@@ -53,7 +53,7 @@ static void test_derive_ratchet_keys() {
   goldilocks_shake256_ctx_p hd2;
   hash_init_with_dom(hd2);
   hash_update(hd2, buff2, 1);
-  hash_update(hd2, rk, sizeof(root_key_t));
+  hash_update(hd2, root_key, sizeof(root_key_t));
   hash_update(hd2, manager->shared_secret, sizeof(shared_secret_t));
 
   hash_final(hd2, expected_chain_key_s, sizeof(sending_chain_key_t));
