@@ -85,7 +85,11 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
                                   const uint8_t sym[ED448_PRIVATE_BYTES]) {
   uint8_t pub[ED448_POINT_BYTES];
 
-  memcpy(prekey_pair->sym, sym, ED448_PRIVATE_BYTES);
+  if (sym !=
+      prekey_pair->sym) { /* Make it possible to use the same sym instance */
+    memcpy(prekey_pair->sym, sym, ED448_PRIVATE_BYTES);
+  }
+
   otrng_ec_scalar_derive_from_secret(prekey_pair->priv, prekey_pair->sym);
 
   otrng_ec_derive_public_key(pub, sym);
