@@ -202,7 +202,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   uint8_t *p;
   uint8_t *rbuf;
   gcry_error_t err;
-  gcry_mpi_t r, a, q;
+  dh_mpi q, a, r;
   size_t i;
   uint8_t *cbuf;
   uint8_t *cbuf_curr;
@@ -285,7 +285,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
                                           const uint8_t *m,
                                           const uint8_t usage) {
   uint8_t *p;
-  gcry_mpi_t a, mod, curr;
+  dh_mpi mod, a, curr;
   size_t i;
   uint8_t *cbuf;
   uint8_t *cbuf_curr;

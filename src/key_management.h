@@ -50,8 +50,8 @@ typedef struct ratchet_s {
 
 /* the list of stored message and extra symmetric keys */
 typedef struct skipped_keys_s {
-  unsigned int i; /* Counter of the ratchet */
-  unsigned int j; /* Counter of the sending messages */
+  uint32_t i; /* Counter of the ratchet */
+  uint32_t j; /* Counter of the sending messages */
   k_extra_symmetric extra_symmetric_key;
   k_msg_enc enc_key;
 } skipped_keys_s;
@@ -67,11 +67,10 @@ typedef struct receiving_ratchet_s {
   k_brace brace_key;
   k_shared_secret shared_secret;
 
-  /* TODO: these should have fixed size */
-  unsigned int i;  /* Counter of the ratchet */
-  unsigned int k;  /* Counter of the receiving ratchet */
-  unsigned int j;  /* Counter of the sending ratchet */
-  unsigned int pn; /* the number of messages in the previous DH ratchet. */
+  uint32_t i;  /* Counter of the ratchet */
+  uint32_t k;  /* Counter of the receiving ratchet */
+  uint32_t j;  /* Counter of the sending ratchet */
+  uint32_t pn; /* the number of messages in the previous DH ratchet. */
   k_root root_key;
   k_receiving_chain chain_r;
 
@@ -304,8 +303,8 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
  */
 INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
     k_msg_enc enc_key, k_msg_mac mac_key, key_manager_s *manager,
-    receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int msg_id,
-    const char action, otrng_warning *warn);
+    receiving_ratchet_s *tmp_receiving_ratchet, unsigned int max_skip,
+    uint32_t msg_id, const char action, otrng_warning *warn);
 
 /**
  * @brief Derive the dh ratchet keys.
@@ -316,9 +315,9 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
  * @param [action]      's' for sending chain, 'r' for receiving
  */
 INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
-    key_manager_s *manager, int max_skip,
-    receiving_ratchet_s *tmp_receiving_ratchet, int msg_id, int previous_n,
-    const char action, otrng_warning *warn);
+    key_manager_s *manager, unsigned int max_skip,
+    receiving_ratchet_s *tmp_receiving_ratchet, uint32_t msg_id,
+    uint32_t previous_n, const char action, otrng_warning *warn);
 
 /**
  * @brief Store old mac keys to reveal later.

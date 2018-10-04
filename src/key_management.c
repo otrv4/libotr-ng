@@ -758,8 +758,9 @@ tstatic void calculate_extra_key(key_manager_s *manager,
 
 tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
                                     receiving_ratchet_s *tmp_receiving_ratchet,
-                                    const unsigned int until,
-                                    const int max_skip, const char ratchet_type,
+                                    const uint32_t until,
+                                    const unsigned int max_skip,
+                                    const char ratchet_type,
                                     otrng_warning *warn) {
   uint8_t zero_buffer[CHAIN_KEY_BYTES];
   goldilocks_shake256_ctx_p hd;
@@ -866,8 +867,8 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
 
 INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
     k_msg_enc enc_key, k_msg_mac mac_key, key_manager_s *manager,
-    receiving_ratchet_s *tmp_receiving_ratchet, int max_skip, int msg_id,
-    const char action, otrng_warning *warn) {
+    receiving_ratchet_s *tmp_receiving_ratchet, unsigned int max_skip,
+    uint32_t msg_id, const char action, otrng_warning *warn) {
 
   assert(action == 's' || action == 'r');
   if (action == 'r') {
@@ -898,9 +899,9 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
 }
 
 INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
-    key_manager_s *manager, int max_skip,
-    receiving_ratchet_s *tmp_receiving_ratchet, int msg_id, int previous_n,
-    const char action, otrng_warning *warn) {
+    key_manager_s *manager, unsigned int max_skip,
+    receiving_ratchet_s *tmp_receiving_ratchet, uint32_t msg_id,
+    uint32_t previous_n, const char action, otrng_warning *warn) {
   /* Derive new ECDH and DH keys */
   k_msg_enc enc_key;
 
