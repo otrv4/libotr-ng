@@ -103,12 +103,12 @@ static void test_otrng_prekey_message_deserializes() {
 
   size_t ser_len = 0;
   uint8_t *ser = NULL;
-  otrng_assert_is_success(otrng_prekey_message_serialize_into(
-      &ser, &ser_len, prekey_msg));
+  otrng_assert_is_success(
+      otrng_prekey_message_serialize_into(&ser, &ser_len, prekey_msg));
 
   prekey_message_s *deser = otrng_xmalloc_z(sizeof(prekey_message_s));
-  otrng_assert_is_success(otrng_prekey_message_deserialize(
-      deser, ser, ser_len, NULL));
+  otrng_assert_is_success(
+      otrng_prekey_message_deserialize(deser, ser, ser_len, NULL));
 
   g_assert_cmpuint(deser->sender_instance_tag, ==,
                    prekey_msg->sender_instance_tag);
