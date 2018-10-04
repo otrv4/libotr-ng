@@ -382,10 +382,10 @@ INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_s *px) {
 }
 
 INTERNAL otrng_result otrng_ecdh_proof_deserialize(ecdh_proof_s *px,
-                                                   const uint8_t *serialized,
+                                                   const uint8_t *ser,
                                                    size_t ser_len,
                                                    size_t *read) {
-  const uint8_t *cursor = serialized;
+  const uint8_t *cursor = ser;
   if (ser_len < PROOF_C_SIZE + ED448_SCALAR_BYTES) {
     return OTRNG_ERROR;
   }
@@ -408,9 +408,9 @@ INTERNAL otrng_result otrng_ecdh_proof_deserialize(ecdh_proof_s *px,
 }
 
 INTERNAL otrng_result otrng_dh_proof_deserialize(dh_proof_s *px,
-                                                 const uint8_t *serialized,
+                                                 const uint8_t *ser,
                                                  size_t ser_len, size_t *read) {
-  const uint8_t *cursor = serialized;
+  const uint8_t *cursor = ser;
   size_t n;
 
   if (ser_len < PROOF_C_SIZE) {

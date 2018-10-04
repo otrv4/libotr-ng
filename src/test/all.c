@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
   if (!gcry_check_version(GCRYPT_VERSION))
     return 2;
 
-  gcry_control(GCRYCTL_INIT_SECMEM, 0); // disable secure memory for tests
+  gcry_control(GCRYCTL_INIT_SECMEM, 0); /* Disable secure memory for tests */
   gcry_control(GCRYCTL_RESUME_SECMEM_WARN);
   gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
   gcry_control(GCRYCTL_INITIALIZATION_FINISHED);

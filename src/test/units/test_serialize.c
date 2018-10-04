@@ -81,37 +81,36 @@ static void test_serialize_otrng_deserialize_data() {
 
 static void test_ser_des_otrng_public_key() {
   otrng_keypair_s keypair;
-  otrng_public_key deserialized;
+  otrng_public_key deser;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_keypair_generate(&keypair, sym);
 
-  uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(otrng_serialize_public_key(serialized, keypair.pub), ==,
+  uint8_t ser[ED448_PUBKEY_BYTES] = {0};
+  g_assert_cmpint(otrng_serialize_public_key(ser, keypair.pub), ==,
                   ED448_PUBKEY_BYTES);
-  otrng_assert_is_success(otrng_deserialize_public_key(
-      deserialized, serialized, ED448_PUBKEY_BYTES, NULL));
+  otrng_assert_is_success(
+      otrng_deserialize_public_key(deser, ser, ED448_PUBKEY_BYTES, NULL));
 
-  otrng_assert(otrng_ec_point_valid(deserialized));
+  otrng_assert(otrng_ec_point_valid(deser));
 
-  otrng_assert(otrng_ec_point_eq(deserialized, keypair.pub));
+  otrng_assert(otrng_ec_point_eq(deser, keypair.pub));
 }
 
 static void test_ser_des_otrng_shared_prekey() {
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pub deserialized;
+  otrng_shared_prekey_pub deser;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_shared_prekey_pair_generate(shared_prekey, sym);
 
-  uint8_t serialized[ED448_PUBKEY_BYTES] = {0};
-  g_assert_cmpint(otrng_serialize_shared_prekey(serialized, shared_prekey->pub),
-                  ==, ED448_PUBKEY_BYTES);
-  otrng_assert_is_success(otrng_deserialize_shared_prekey(
-      deserialized, serialized, ED448_PUBKEY_BYTES, NULL));
+  uint8_t ser[ED448_PUBKEY_BYTES] = {0};
+  g_assert_cmpint(otrng_serialize_shared_prekey(ser, shared_prekey->pub), ==,
+                  ED448_PUBKEY_BYTES);
+  otrng_assert_is_success(
+      otrng_deserialize_shared_prekey(deser, ser, ED448_PUBKEY_BYTES, NULL));
 
-  otrng_assert(otrng_ec_point_valid(deserialized));
+  otrng_assert(otrng_ec_point_valid(deser));
 
-  otrng_assert(otrng_ec_point_eq(deserialized, shared_prekey->pub) ==
-               otrng_true);
+  otrng_assert(otrng_ec_point_eq(deser, shared_prekey->pub) == otrng_true);
   otrng_shared_prekey_pair_free(shared_prekey);
 }
 
@@ -129,7 +128,7 @@ static void test_serialize_otrng_symmetric_key() {
   otrng_assert_is_success(
       otrng_symmetric_key_serialize(&buffer, &buffer_size, sym));
 
-  g_assert_cmpint(strlen(expected), ==, buffer_size); // 76
+  g_assert_cmpint(strlen(expected), ==, buffer_size); /* 76 of length*/
   otrng_assert_cmpmem(expected, buffer, buffer_size);
 
   free(buffer);

@@ -68,9 +68,9 @@ static void test_prekey_dake1_message_serialize(void) {
       otrng_deserialize_ec_point(message.I, ser_i, sizeof(ser_i)));
 
   uint8_t header[] = {
-      0x00, 0x04,             // protocol version
-      0x35,                   // message type
-      0x56, 0x78, 0x12, 0x34, // instance tag
+      0x00, 0x04,             /* protocol version */
+      0x35,                   /* message type */
+      0x56, 0x78, 0x12, 0x34, /* instance tag */
   };
 
   uint8_t *dst = NULL;
@@ -91,7 +91,7 @@ static void test_prekey_dake1_message_serialize(void) {
 }
 
 static void test_prekey_dake2_message_deserialize(void) {
-  uint8_t serialized[] = {
+  uint8_t ser[] = {
       0x00, 0x04,             // protocol version
       0x36,                   // message type
       0x7e, 0x5a, 0x9a, 0x61, // instance tag
@@ -148,8 +148,8 @@ static void test_prekey_dake2_message_deserialize(void) {
 
   otrng_prekey_dake2_message_s dst;
   otrng_prekey_dake2_message_init(&dst);
-  otrng_assert_is_success(otrng_prekey_dake2_message_deserialize(
-      &dst, serialized, sizeof(serialized)));
+  otrng_assert_is_success(
+      otrng_prekey_dake2_message_deserialize(&dst, ser, sizeof(ser)));
 
   g_assert_cmpint(dst.client_instance_tag, ==, 0x7e5a9a61);
   // TODO: check the identity from PREKEY-SERVER-COMP-ID
@@ -267,40 +267,40 @@ static void test_prekey_dake3_message_append_storage_info_req(void) {
 }
 
 static void test_prekey_storage_status_message_deserialize(void) {
-  uint8_t serialized[] = {
-      // protocol version
-      0x00, 0x04,
+  uint8_t ser[] = {// protocol version
+                   0x00, 0x04,
 
-      // message type
-      0x0b,
+                   // message type
+                   0x0b,
 
-      // instance tag
-      0x7e, 0x5a, 0x9a, 0x61,
+                   // instance tag
+                   0x7e, 0x5a, 0x9a, 0x61,
 
-      // number of messages
-      0x00, 0x00, 0x00, 0x00,
+                   // number of messages
+                   0x00, 0x00, 0x00, 0x00,
 
-      // MAC
-      0x59, 0xce, 0x0a, 0x6b, 0x9e, 0x8b, 0x0d, 0xe6, 0x90, 0x84, 0x65, 0xe2,
-      0xc1, 0x8d, 0xb6, 0x52, 0x92, 0xb7, 0x18, 0xf8, 0xca, 0xa1, 0x3b, 0x2f,
-      0x7d, 0xb0, 0xf7, 0x1b, 0x26, 0x64, 0x0b, 0x89, 0x7c, 0xa5, 0xc5, 0xb7,
-      0xb4, 0x2a, 0xd6, 0xb3, 0x7f, 0xae, 0x5e, 0xab, 0x3a, 0x23, 0x7c, 0x04,
-      0x39, 0x51, 0x15, 0x6e, 0xf6, 0xea, 0x99, 0x97, 0xdb, 0xf3, 0x8d, 0xe9,
-      0xb8, 0xae, 0x46, 0x9e};
+                   // MAC
+                   0x59, 0xce, 0x0a, 0x6b, 0x9e, 0x8b, 0x0d, 0xe6, 0x90, 0x84,
+                   0x65, 0xe2, 0xc1, 0x8d, 0xb6, 0x52, 0x92, 0xb7, 0x18, 0xf8,
+                   0xca, 0xa1, 0x3b, 0x2f, 0x7d, 0xb0, 0xf7, 0x1b, 0x26, 0x64,
+                   0x0b, 0x89, 0x7c, 0xa5, 0xc5, 0xb7, 0xb4, 0x2a, 0xd6, 0xb3,
+                   0x7f, 0xae, 0x5e, 0xab, 0x3a, 0x23, 0x7c, 0x04, 0x39, 0x51,
+                   0x15, 0x6e, 0xf6, 0xea, 0x99, 0x97, 0xdb, 0xf3, 0x8d, 0xe9,
+                   0xb8, 0xae, 0x46, 0x9e};
 
   otrng_prekey_storage_status_message_s message;
   otrng_assert_is_success(otrng_prekey_storage_status_message_deserialize(
-      &message, serialized, sizeof(serialized)));
+      &message, ser, sizeof(ser)));
 
   g_assert_cmpint(message.client_instance_tag, ==, 0x7e5a9a61);
   g_assert_cmpint(message.stored_prekeys, ==, 0x0);
-  otrng_assert_cmpmem(message.mac, serialized + 11, sizeof(message.mac));
+  otrng_assert_cmpmem(message.mac, ser + 11, sizeof(message.mac));
 
   otrng_prekey_storage_status_message_destroy(&message);
 }
 
 static void test_prekey_ensemble_retrieval_message_deserialize(void) {
-  uint8_t serialized[] = {
+  uint8_t ser[] = {
       // protocol version
       0x00, 0x04,
       // message type
@@ -464,7 +464,7 @@ static void test_prekey_ensemble_retrieval_message_deserialize(void) {
 
   otrng_prekey_ensemble_retrieval_message_s message[1];
   otrng_assert_is_success(otrng_prekey_ensemble_retrieval_message_deserialize(
-      message, serialized, sizeof(serialized)));
+      message, ser, sizeof(ser)));
 
   g_assert_cmpint(message->num_ensembles, ==, 2);
   otrng_assert(message->ensembles[0]);

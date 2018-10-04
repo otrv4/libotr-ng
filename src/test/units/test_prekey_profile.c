@@ -83,9 +83,9 @@ static void test_prekey_profile_serialize() {
   otrng_serialize_shared_prekey(expected_shared_prekey, shared_prekey->pub);
 
   size_t written = 0;
-  uint8_t *serialized = NULL;
+  uint8_t *ser = NULL;
   otrng_assert_is_success(
-      otrng_prekey_profile_serialize(&serialized, &written, profile));
+      otrng_prekey_profile_serialize(&ser, &written, profile));
   g_assert_cmpint(written, ==, 185);
 
   char expected[] = {
@@ -93,9 +93,9 @@ static void test_prekey_profile_serialize() {
       0x0, 0x0, 0x0,  0x0,  0x0, 0x0, 0x0, 0x0F, /* Expiration */
   };
 
-  otrng_assert_cmpmem(expected, serialized, sizeof(expected));
+  otrng_assert_cmpmem(expected, ser, sizeof(expected));
 
-  uint8_t *cursor = serialized + sizeof(expected);
+  uint8_t *cursor = ser + sizeof(expected);
   otrng_assert_cmpmem(expected_shared_prekey, cursor,
                       ED448_SHARED_PREKEY_BYTES);
   cursor += ED448_SHARED_PREKEY_BYTES;
@@ -103,7 +103,7 @@ static void test_prekey_profile_serialize() {
   char expected_signature[ED448_SIGNATURE_BYTES] = {0};
   otrng_assert_cmpmem(expected_signature, cursor, ED448_SIGNATURE_BYTES);
 
-  free(serialized);
+  free(ser);
   otrng_prekey_profile_free(profile);
   otrng_shared_prekey_pair_free(shared_prekey);
 }
@@ -123,19 +123,19 @@ static void test_prekey_profile_deserialize() {
   otrng_assert(profile != NULL);
 
   size_t written = 0;
-  uint8_t *serialized = NULL;
-  otrng_prekey_profile_serialize(&serialized, &written, profile);
+  uint8_t *ser = NULL;
+  otrng_prekey_profile_serialize(&ser, &written, profile);
 
-  otrng_prekey_profile_s *deserialized =
+  otrng_prekey_profile_s *deser =
       otrng_xmalloc_z(sizeof(otrng_prekey_profile_s));
 
-  otrng_assert_is_success(otrng_prekey_profile_deserialize(
-      deserialized, serialized, written, NULL));
-  otrng_assert_prekey_profile_eq(deserialized, profile);
+  otrng_assert_is_success(
+      otrng_prekey_profile_deserialize(deser, ser, written, NULL));
+  otrng_assert_prekey_profile_eq(deser, profile);
 
-  free(serialized);
+  free(ser);
   otrng_prekey_profile_free(profile);
-  otrng_prekey_profile_free(deserialized);
+  otrng_prekey_profile_free(deser);
   otrng_shared_prekey_pair_free(shared_prekey);
 }
 

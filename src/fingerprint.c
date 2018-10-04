@@ -49,23 +49,23 @@ API otrng_result otrng_fingerprint_hash_to_human(char *human,
 
 INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
                                                   const otrng_public_key pub) {
-  uint8_t serialized[ED448_POINT_BYTES];
+  uint8_t ser[ED448_POINT_BYTES];
   uint8_t usage_fingerprint = 0x00;
   goldilocks_shake256_ctx_p hd;
 
-  memset(serialized, 0, ED448_POINT_BYTES);
+  memset(ser, 0, ED448_POINT_BYTES);
 
   if (!fp) {
     return OTRNG_ERROR;
   }
 
-  if (otrng_serialize_ec_point(serialized, pub) != ED448_POINT_BYTES) {
+  if (otrng_serialize_ec_point(ser, pub) != ED448_POINT_BYTES) {
     return OTRNG_ERROR;
   }
 
   /* KDF_1(usage_fingerprint || byte(H), 56) */
   hash_init_with_usage(hd, usage_fingerprint);
-  hash_update(hd, serialized, ED448_POINT_BYTES);
+  hash_update(hd, ser, ED448_POINT_BYTES);
 
   hash_final(hd, fp, FPRINT_LEN_BYTES);
   hash_destroy(hd);

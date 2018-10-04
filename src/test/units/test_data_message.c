@@ -33,15 +33,15 @@ static data_message_s *set_up_data_message() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   otrng_ecdh_keypair_generate(&ecdh, sym);
 
-  data_message_s *data_message = otrng_data_message_new();
-  otrng_assert(data_message);
-  data_message->sender_instance_tag = 1;
-  data_message->receiver_instance_tag = 2;
-  data_message->flags = 0xA;
-  data_message->previous_chain_n = 98;
-  data_message->ratchet_id = 1;
-  data_message->message_id = 99;
-  otrng_ec_point_copy(data_message->ecdh, ecdh.pub);
+  data_message_s *data_msg = otrng_data_message_new();
+  otrng_assert(data_msg);
+  data_msg->sender_instance_tag = 1;
+  data_msg->receiver_instance_tag = 2;
+  data_msg->flags = 0xA;
+  data_msg->previous_chain_n = 98;
+  data_msg->ratchet_id = 1;
+  data_msg->message_id = 99;
+  otrng_ec_point_copy(data_msg->ecdh, ecdh.pub);
 
   uint8_t dh_data[383] = {
       0x4c, 0x4e, 0x7b, 0xbd, 0x33, 0xd0, 0x9e, 0x63, 0xfd, 0xe4, 0x67, 0xee,
@@ -78,62 +78,61 @@ static data_message_s *set_up_data_message() {
       0x8a, 0xac, 0xb1, 0xe0, 0x1,  0x8d, 0xc7, 0x3f, 0xac, 0x3,  0x73};
 
   gcry_error_t err =
-      gcry_mpi_scan(&data_message->dh, GCRYMPI_FMT_USG, dh_data, 383, NULL);
+      gcry_mpi_scan(&data_msg->dh, GCRYMPI_FMT_USG, dh_data, 383, NULL);
   otrng_assert(!err);
 
-  memset(data_message->nonce, 0xF, sizeof(data_message->nonce));
-  data_message->enc_msg = otrng_xmalloc_z(3);
-  memset(data_message->enc_msg, 0xE, 3);
-  data_message->enc_msg_len = 3;
+  memset(data_msg->nonce, 0xF, sizeof(data_msg->nonce));
+  data_msg->enc_msg = otrng_xmalloc_z(3);
+  memset(data_msg->enc_msg, 0xE, 3);
+  data_msg->enc_msg_len = 3;
 
   otrng_ecdh_keypair_destroy(&ecdh);
-  return data_message;
+  return data_msg;
 }
 
 static void test_data_message_serializes() {
+  data_message_s *data_msg = set_up_data_message();
 
-  data_message_s *data_message = set_up_data_message();
-
-  uint8_t *serialized = NULL;
+  uint8_t *ser = NULL;
   size_t serlen = 0;
   otrng_assert_is_success(
-      otrng_data_message_body_serialize(&serialized, &serlen, data_message));
+      otrng_data_message_body_serialize(&ser, &serlen, data_msg));
 
   const int OUR_DH_LEN = 4 + 383;
   const int MSG_AS_DATA = 4 + 3;
   g_assert_cmpint(DATA_MSG_MIN_BYTES + OUR_DH_LEN + MSG_AS_DATA, ==, serlen);
 
   char expected[] = {
-      0x0,  0x04,           // version
-      0x03,                 // message type
-      0x0,  0x0,  0x0, 0x1, // sender instance tag
-      0x0,  0x0,  0x0, 0x2, // receiver instance tag
-      0xA,                  // flags
-      0x0,  0x0,  0x0, 98,  // previous chain number
-      0x0,  0x0,  0x0, 1,   // ratchet id
-      0x0,  0x0,  0x0, 99,  // message id
+      0x0,  0x04,           /* version */
+      0x03,                 /* message type */
+      0x0,  0x0,  0x0, 0x1, /* sender instance tag */
+      0x0,  0x0,  0x0, 0x2, /* receiver instance tag */
+      0xA,                  /* flags */
+      0x0,  0x0,  0x0, 98,  /* previous chain number */
+      0x0,  0x0,  0x0, 1,   /* ratchet id */
+      0x0,  0x0,  0x0, 99,  /* message id */
   };
 
-  uint8_t *cursor = serialized;
+  uint8_t *cursor = ser;
   otrng_assert_cmpmem(cursor, expected, 24);
   cursor += 24;
 
-  uint8_t serialized_y[PUB_KEY_SER_BYTES] = {0};
-  int ser_len = otrng_serialize_ec_point(serialized_y, data_message->ecdh);
-  otrng_assert_cmpmem(cursor, serialized_y, ED448_POINT_BYTES);
+  uint8_t ser_y[PUB_KEY_SER_BYTES] = {0};
+  int ser_len = otrng_serialize_ec_point(ser_y, data_msg->ecdh);
+  otrng_assert_cmpmem(cursor, ser_y, ED448_POINT_BYTES);
 
   cursor += ser_len;
 
-  uint8_t serialized_b[DH3072_MOD_LEN_BYTES] = {0};
+  uint8_t ser_b[DH3072_MOD_LEN_BYTES] = {0};
   size_t mpi_len = 0;
-  otrng_assert_is_success(otrng_dh_mpi_serialize(
-      serialized_b, DH3072_MOD_LEN_BYTES, &mpi_len, data_message->dh));
+  otrng_assert_is_success(otrng_dh_mpi_serialize(ser_b, DH3072_MOD_LEN_BYTES,
+                                                 &mpi_len, data_msg->dh));
   // Skip first 4 because they are the size (mpi_len)
-  otrng_assert_cmpmem(cursor + 4, serialized_b, mpi_len);
+  otrng_assert_cmpmem(cursor + 4, ser_b, mpi_len);
 
   cursor += 4 + mpi_len;
 
-  otrng_assert_cmpmem(cursor, data_message->nonce, DATA_MSG_NONCE_BYTES);
+  otrng_assert_cmpmem(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
   cursor += DATA_MSG_NONCE_BYTES;
 
   uint8_t expected_enc[7] = {
@@ -141,45 +140,45 @@ static void test_data_message_serializes() {
   };
   otrng_assert_cmpmem(cursor, expected_enc, 7);
 
-  otrng_data_message_free(data_message);
-  free(serialized);
+  otrng_data_message_free(data_msg);
+  free(ser);
 }
 
 static void test_data_message_serializes_absent_dh() {
-  data_message_s *data_message = set_up_data_message();
+  data_message_s *data_msg = set_up_data_message();
 
   // Serialize with an empty DH
-  otrng_dh_mpi_release(data_message->dh);
-  data_message->dh = NULL;
+  otrng_dh_mpi_release(data_msg->dh);
+  data_msg->dh = NULL;
 
-  uint8_t *serialized = NULL;
+  uint8_t *ser = NULL;
   size_t serlen = 0;
   otrng_assert_is_success(
-      otrng_data_message_body_serialize(&serialized, &serlen, data_message));
+      otrng_data_message_body_serialize(&ser, &serlen, data_msg));
 
   const int OUR_DH_LEN = 4 + 0; // Should be zero per spec.
   const int MSG_AS_DATA = 4 + 3;
   g_assert_cmpint(DATA_MSG_MIN_BYTES + OUR_DH_LEN + MSG_AS_DATA, ==, serlen);
 
-  uint8_t *cursor = serialized;
+  uint8_t *cursor = ser;
   cursor += 24;                // Skip header
   cursor += ED448_POINT_BYTES; // Skip ECDH key
   cursor += 4;                 // Skip the DH's MPI header;
 
   // Make sure next field is deserialized as expected
-  otrng_assert_cmpmem(cursor, data_message->nonce, DATA_MSG_NONCE_BYTES);
+  otrng_assert_cmpmem(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
 
-  otrng_data_message_free(data_message);
-  free(serialized);
+  otrng_data_message_free(data_msg);
+  free(ser);
 }
 
 static void test_otrng_data_message_deserializes() {
-  data_message_s *data_message = set_up_data_message();
+  data_message_s *data_msg = set_up_data_message();
 
-  uint8_t *serialized = NULL;
+  uint8_t *ser = NULL;
   size_t serlen = 0;
   otrng_assert_is_success(
-      otrng_data_message_body_serialize(&serialized, &serlen, data_message));
+      otrng_data_message_body_serialize(&ser, &serlen, data_msg));
 
   const uint8_t mac_data[DATA_MSG_MAC_BYTES] = {
       0x14, 0x9a, 0xf0, 0x93, 0xcc, 0x3f, 0x44, 0xf5, 0x1b, 0x41, 0x11,
@@ -188,78 +187,72 @@ static void test_otrng_data_message_deserializes() {
       0xfe, 0xc1, 0xe7, 0xde, 0x4c, 0x17, 0x84, 0x2b, 0xfa, 0x2a, 0x55,
       0x8c, 0xd6, 0x1a, 0x08, 0x26, 0x4f, 0x61, 0x32, 0xdb, 0xd2, 0x58,
       0x90, 0x7d, 0x1e, 0x97, 0x35, 0xd2, 0x38, 0x60, 0xa1};
-  memcpy(data_message->mac, mac_data, DATA_MSG_MAC_BYTES);
-  serialized = otrng_xrealloc(serialized, serlen + DATA_MSG_MAC_BYTES);
-  memcpy(serialized + serlen, mac_data, DATA_MSG_MAC_BYTES);
+  memcpy(data_msg->mac, mac_data, DATA_MSG_MAC_BYTES);
+  ser = otrng_xrealloc(ser, serlen + DATA_MSG_MAC_BYTES);
+  memcpy(ser + serlen, mac_data, DATA_MSG_MAC_BYTES);
 
-  data_message_s *deserialized = otrng_data_message_new();
+  data_message_s *deser = otrng_data_message_new();
   otrng_assert_is_success(otrng_data_message_deserialize(
-      deserialized, serialized, serlen + DATA_MSG_MAC_BYTES, NULL));
+      deser, ser, serlen + DATA_MSG_MAC_BYTES, NULL));
 
-  otrng_assert(data_message->sender_instance_tag ==
-               deserialized->sender_instance_tag);
-  otrng_assert(data_message->receiver_instance_tag ==
-               deserialized->receiver_instance_tag);
-  otrng_assert(data_message->flags == deserialized->flags);
-  otrng_assert(data_message->previous_chain_n ==
-               deserialized->previous_chain_n);
-  otrng_assert(data_message->ratchet_id == deserialized->ratchet_id);
-  otrng_assert(data_message->message_id == deserialized->message_id);
-  otrng_assert_cmpmem(data_message->ecdh, deserialized->ecdh,
-                      ED448_POINT_BYTES);
-  otrng_assert(dh_mpi_cmp(data_message->dh, deserialized->dh) == 0);
-  otrng_assert_cmpmem(data_message->nonce, deserialized->nonce,
-                      DATA_MSG_NONCE_BYTES);
-  otrng_assert_cmpmem(data_message->enc_msg, deserialized->enc_msg,
-                      data_message->enc_msg_len);
-  otrng_assert(data_message->enc_msg_len == deserialized->enc_msg_len);
-  otrng_assert_cmpmem(data_message->mac, deserialized->mac, DATA_MSG_MAC_BYTES);
+  otrng_assert(data_msg->sender_instance_tag == deser->sender_instance_tag);
+  otrng_assert(data_msg->receiver_instance_tag == deser->receiver_instance_tag);
+  otrng_assert(data_msg->flags == deser->flags);
+  otrng_assert(data_msg->previous_chain_n == deser->previous_chain_n);
+  otrng_assert(data_msg->ratchet_id == deser->ratchet_id);
+  otrng_assert(data_msg->message_id == deser->message_id);
+  otrng_assert_cmpmem(data_msg->ecdh, deser->ecdh, ED448_POINT_BYTES);
+  otrng_assert(dh_mpi_cmp(data_msg->dh, deser->dh) == 0);
+  otrng_assert_cmpmem(data_msg->nonce, deser->nonce, DATA_MSG_NONCE_BYTES);
+  otrng_assert_cmpmem(data_msg->enc_msg, deser->enc_msg, data_msg->enc_msg_len);
+  otrng_assert(data_msg->enc_msg_len == deser->enc_msg_len);
+  otrng_assert_cmpmem(data_msg->mac, deser->mac, DATA_MSG_MAC_BYTES);
 
-  otrng_data_message_free(data_message);
-  otrng_data_message_free(deserialized);
-  free(serialized);
+  otrng_data_message_free(data_msg);
+  otrng_data_message_free(deser);
+  free(ser);
 }
 
 static void test_data_message_valid() {
-  data_message_s *data_message = set_up_data_message();
+  data_message_s *data_msg = set_up_data_message();
 
   // Should fail because data_message has a zeroed mac tag.
   k_msg_mac mac_key = {0};
-  otrng_assert(otrng_valid_data_message(mac_key, data_message) == otrng_false);
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_false);
 
   // Overwrite the zeroed mac tag
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
   otrng_assert_is_success(
-      otrng_data_message_body_serialize(&body, &bodylen, data_message));
+      otrng_data_message_body_serialize(&body, &bodylen, data_msg));
 
   otrng_assert_is_success(otrng_data_message_authenticator(
-      data_message->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
+      data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
 
   free(body);
 
-  otrng_assert(otrng_valid_data_message(mac_key, data_message) == otrng_true);
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
 
   // Overwrite DH with an invalid value
-  gcry_mpi_set_ui(data_message->dh, 1);
-  otrng_assert(otrng_valid_data_message(mac_key, data_message) == otrng_false);
+  gcry_mpi_set_ui(data_msg->dh, 1);
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_false);
 
   // A data message without a DH key is also valid.
-  otrng_dh_mpi_release(data_message->dh);
-  data_message->dh = NULL;
+  otrng_dh_mpi_release(data_msg->dh);
+  data_msg->dh = NULL;
 
   otrng_assert_is_success(
-      otrng_data_message_body_serialize(&body, &bodylen, data_message));
+      otrng_data_message_body_serialize(&body, &bodylen, data_msg));
 
   otrng_assert_is_success(otrng_data_message_authenticator(
-      data_message->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
+      data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
 
   free(body);
 
-  otrng_assert(otrng_valid_data_message(mac_key, data_message) == otrng_true);
+  otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
 
-  otrng_data_message_free(data_message);
+  otrng_data_message_free(data_msg);
 }
 
 void units_data_message_add_tests(void) {

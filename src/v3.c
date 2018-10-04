@@ -534,20 +534,20 @@ tstatic void op_create_instag(void *opdata, const char *accountname,
  * OTRL_CONVERT_SENDING or OTRL_CONVERT_RECEIVING to differentiate these
  * cases. */
 tstatic void op_convert_message(void *opdata, ConnContext *context,
-                                OtrlConvertType convert_type, char **dest,
+                                OtrlConvertType convert_type, char **dst,
                                 const char *src) {
   (void)opdata;
   (void)context;
   (void)convert_type;
-  (void)dest;
+  (void)dst;
   (void)src;
 }
 
 /* Deallocate a string returned by convert_message. */
-tstatic void op_convert_free(void *opdata, ConnContext *context, char *dest) {
+tstatic void op_convert_free(void *opdata, ConnContext *context, char *dst) {
   (void)opdata;
   (void)context;
-  (void)dest;
+  (void)dst;
 }
 
 /* When timer_control is called, turn off any existing periodic

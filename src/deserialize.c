@@ -177,20 +177,20 @@ INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi *dst,
 }
 
 INTERNAL otrng_result otrng_deserialize_ec_point(ec_point point,
-                                                 const uint8_t *serialized,
+                                                 const uint8_t *ser,
                                                  size_t ser_len) {
   if (ser_len < ED448_POINT_BYTES) {
     return OTRNG_ERROR;
   }
 
-  return otrng_ec_point_decode(point, serialized);
+  return otrng_ec_point_decode(point, ser);
 }
 
 INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key pub,
-                                                   const uint8_t *serialized,
+                                                   const uint8_t *ser,
                                                    size_t ser_len,
                                                    size_t *read) {
-  const uint8_t *cursor = serialized;
+  const uint8_t *cursor = ser;
   size_t r = 0;
   uint16_t pubkey_type = 0;
 
@@ -218,10 +218,10 @@ INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key pub,
 }
 
 INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key pub,
-                                                    const uint8_t *serialized,
+                                                    const uint8_t *ser,
                                                     size_t ser_len,
                                                     size_t *read) {
-  const uint8_t *cursor = serialized;
+  const uint8_t *cursor = ser;
   size_t r = 0;
   uint16_t pubkey_type = 0;
 
@@ -249,9 +249,9 @@ INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key pub,
 }
 
 INTERNAL otrng_result otrng_deserialize_shared_prekey(
-    otrng_shared_prekey_pub shared_prekey, const uint8_t *serialized,
-    size_t ser_len, size_t *read) {
-  const uint8_t *cursor = serialized;
+    otrng_shared_prekey_pub shared_prekey, const uint8_t *ser, size_t ser_len,
+    size_t *read) {
+  const uint8_t *cursor = ser;
   size_t r = 0;
   uint16_t shared_prekey_type = 0;
 
@@ -279,21 +279,21 @@ INTERNAL otrng_result otrng_deserialize_shared_prekey(
 }
 
 INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar scalar,
-                                                  const uint8_t *serialized,
+                                                  const uint8_t *ser,
                                                   size_t ser_len) {
   if (ser_len < ED448_SCALAR_BYTES) {
     return OTRNG_ERROR;
   }
 
-  otrng_ec_scalar_decode(scalar, serialized);
+  otrng_ec_scalar_decode(scalar, ser);
 
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_deserialize_ring_sig(ring_sig_s *proof,
-                                                 const uint8_t *serialized,
+                                                 const uint8_t *ser,
                                                  size_t ser_len, size_t *read) {
-  const uint8_t *cursor = serialized;
+  const uint8_t *cursor = ser;
 
   if (ser_len < RING_SIG_BYTES) {
     return OTRNG_ERROR;

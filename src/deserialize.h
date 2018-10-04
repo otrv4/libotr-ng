@@ -56,29 +56,29 @@ INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi *dst,
                                                    size_t *read);
 
 INTERNAL otrng_result otrng_deserialize_ec_point(ec_point point,
-                                                 const uint8_t *serialized,
+                                                 const uint8_t *ser,
                                                  size_t ser_len);
 
 INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key pub,
-                                                   const uint8_t *serialized,
+                                                   const uint8_t *ser,
                                                    size_t ser_len,
                                                    size_t *read);
 
 INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key pub,
-                                                    const uint8_t *serialized,
+                                                    const uint8_t *ser,
                                                     size_t ser_len,
                                                     size_t *read);
 
 INTERNAL otrng_result otrng_deserialize_shared_prekey(
-    otrng_shared_prekey_pub shared_prekey, const uint8_t *serialized,
-    size_t ser_len, size_t *read);
+    otrng_shared_prekey_pub shared_prekey, const uint8_t *ser, size_t ser_len,
+    size_t *read);
 
 INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar scalar,
-                                                  const uint8_t *serialized,
+                                                  const uint8_t *ser,
                                                   size_t ser_len);
 
 INTERNAL otrng_result otrng_deserialize_ring_sig(ring_sig_s *proof,
-                                                 const uint8_t *serialized,
+                                                 const uint8_t *ser,
                                                  size_t ser_len, size_t *read);
 
 INTERNAL otrng_result otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
