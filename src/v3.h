@@ -72,17 +72,17 @@ INTERNAL void otrng_v3_close(char **to_send, otrng_v3_conn_s *conn);
 
 INTERNAL otrng_result otrng_v3_send_symkey_message(
     char **to_send, otrng_v3_conn_s *conn, unsigned int use,
-    const unsigned char *usedata, size_t usedatalen, unsigned char *symkey);
+    const unsigned char *use_data, size_t use_data_len, unsigned char *symkey);
 
 INTERNAL otrng_result otrng_v3_smp_start(char **to_send,
                                          const uint8_t *question, size_t q_len,
                                          const uint8_t *secret,
-                                         size_t secretlen,
+                                         size_t secret_len,
                                          otrng_v3_conn_s *conn);
 
 INTERNAL otrng_result otrng_v3_smp_continue(char **to_send,
                                             const uint8_t *secret,
-                                            const size_t secretlen,
+                                            const size_t secret_len,
                                             otrng_v3_conn_s *conn);
 
 INTERNAL otrng_result otrng_v3_smp_abort(otrng_v3_conn_s *conn);

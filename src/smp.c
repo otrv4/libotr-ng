@@ -268,7 +268,7 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_s *smp,
                          const otrng_client_profile_s *our_profile,
                          const otrng_client_profile_s *their_client_profile,
                          uint8_t *ssid, const uint8_t *secret,
-                         const size_t secretlen) {
+                         const size_t secret_len) {
   // TODO: @smp If state is not CONTINUE_SMP then error.
   tlv_s *smp_reply = NULL;
 
@@ -283,7 +283,7 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_s *smp,
   }
 
   if (!otrng_generate_smp_secret(&smp->secret, their_fp, our_fp, ssid, secret,
-                                 secretlen)) {
+                                 secret_len)) {
     return NULL;
   }
 
@@ -293,7 +293,7 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_s *smp,
 }
 
 tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
-                                     const size_t secretlen, otrng_s *otr) {
+                                     const size_t secret_len, otrng_s *otr) {
   otrng_smp_event_t event;
   tlv_list_s *tlvs;
   otrng_warning warn;
@@ -306,7 +306,7 @@ tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
   event = OTRNG_SMP_EVENT_NONE;
   tlvs = otrng_tlv_list_one(otrng_smp_provide_secret(
       &event, otr->smp, get_my_client_profile(otr), otr->their_client_profile,
-      otr->keys->ssid, secret, secretlen));
+      otr->keys->ssid, secret, secret_len));
 
   if (!tlvs) {
     return OTRNG_ERROR;
@@ -331,13 +331,14 @@ tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
 
 INTERNAL otrng_result otrng_smp_continue(string_p *to_send,
                                          const uint8_t *secret,
-                                         const size_t secretlen, otrng_s *otr) {
+                                         const size_t secret_len,
+                                         otrng_s *otr) {
   switch (otr->running_version) {
   case 3:
     // FIXME: @smp missing fragmentation
-    return otrng_v3_smp_continue(to_send, secret, secretlen, otr->v3_conn);
+    return otrng_v3_smp_continue(to_send, secret, secret_len, otr->v3_conn);
   case 4:
-    return smp_continue_v4(to_send, secret, secretlen, otr);
+    return smp_continue_v4(to_send, secret, secret_len, otr);
   case 0:
     return OTRNG_ERROR;
   }

@@ -50,43 +50,43 @@ void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage) {
 }
 
 void shake_kkdf(uint8_t *dst, size_t dst_len, const uint8_t *key,
-                size_t key_len, const uint8_t *secret, size_t secretlen) {
+                size_t key_len, const uint8_t *secret, size_t secret_len) {
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_dom(hd);
   hash_update(hd, key, key_len);
-  hash_update(hd, secret, secretlen);
+  hash_update(hd, secret, secret_len);
 
   hash_final(hd, dst, dst_len);
   hash_destroy(hd);
 }
 
 void shake_256_kdf1(uint8_t *dst, size_t dst_len, uint8_t usage,
-                    const uint8_t *values, size_t valueslen) {
+                    const uint8_t *values, size_t values_len) {
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, usage);
 
-  hash_update(hd, values, valueslen);
+  hash_update(hd, values, values_len);
   hash_final(hd, dst, dst_len);
   hash_destroy(hd);
 }
 
 void shake_256_prekey_server_kdf(uint8_t *dst, size_t dst_len, uint8_t usage,
-                                 const uint8_t *values, size_t valueslen) {
+                                 const uint8_t *values, size_t values_len) {
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage_prekey_server(hd, usage);
 
-  hash_update(hd, values, valueslen);
+  hash_update(hd, values, values_len);
   hash_final(hd, dst, dst_len);
   hash_destroy(hd);
 }
 
 void shake_256_hash(uint8_t *dst, size_t dst_len, const uint8_t *secret,
-                    size_t secretlen) {
+                    size_t secret_len) {
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_dom(hd);
-  hash_update(hd, secret, secretlen);
+  hash_update(hd, secret, secret_len);
 
   hash_final(hd, dst, dst_len);
   hash_destroy(hd);

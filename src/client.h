@@ -125,7 +125,7 @@ API otrng_result otrng_client_send_fragment(otrng_message_to_send_s **new_msg,
                                             const char *recipient,
                                             otrng_client_s *client);
 
-API otrng_result otrng_client_smp_start(char **tosend, const char *recipient,
+API otrng_result otrng_client_smp_start(char **to_send, const char *recipient,
                                         const unsigned char *question,
                                         const size_t q_len,
                                         const unsigned char *secret,

@@ -182,33 +182,33 @@ tstatic otrng_result serialize_and_encode_data_message(
     string_p *dst, const k_msg_mac mac_key, uint8_t *to_reveal_mac_keys,
     size_t to_reveal_mac_keys_len, const data_message_s *data_msg) {
   uint8_t *body = NULL;
-  size_t bodylen = 0;
-  size_t serlen;
+  size_t body_len = 0;
+  size_t ser_len;
   uint8_t *ser;
 
-  if (!otrng_data_message_body_serialize(&body, &bodylen, data_msg)) {
+  if (!otrng_data_message_body_serialize(&body, &body_len, data_msg)) {
     return OTRNG_ERROR;
   }
 
-  serlen = bodylen + MAC_KEY_BYTES + to_reveal_mac_keys_len;
+  ser_len = body_len + MAC_KEY_BYTES + to_reveal_mac_keys_len;
 
-  ser = otrng_xmalloc_z(serlen);
+  ser = otrng_xmalloc_z(ser_len);
 
-  memcpy(ser, body, bodylen);
+  memcpy(ser, body, body_len);
   free(body);
 
   if (otrng_failed(otrng_data_message_authenticator(
-          ser + bodylen, MAC_KEY_BYTES, mac_key, ser, bodylen))) {
+          ser + body_len, MAC_KEY_BYTES, mac_key, ser, body_len))) {
     free(ser);
     return OTRNG_ERROR;
   }
 
   if (to_reveal_mac_keys) {
-    otrng_serialize_bytes_array(ser + bodylen + DATA_MSG_MAC_BYTES,
+    otrng_serialize_bytes_array(ser + body_len + DATA_MSG_MAC_BYTES,
                                 to_reveal_mac_keys, to_reveal_mac_keys_len);
   }
 
-  *dst = otrl_base64_otr_encode(ser, serlen);
+  *dst = otrl_base64_otr_encode(ser, ser_len);
 
   free(ser);
   return OTRNG_SUCCESS;

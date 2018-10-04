@@ -53,7 +53,7 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
 }
 
 INTERNAL otrng_result otrng_data_message_body_serialize(
-    uint8_t **body, size_t *bodylen, const data_message_s *data_msg) {
+    uint8_t **body, size_t *body_len, const data_message_s *data_msg) {
   size_t size = DATA_MSG_MAX_BYTES + data_msg->enc_msg_len;
   uint8_t *cursor;
   size_t len = 0;
@@ -86,8 +86,8 @@ INTERNAL otrng_result otrng_data_message_body_serialize(
     *body = dst;
   }
 
-  if (bodylen) {
-    *bodylen = cursor - dst;
+  if (body_len) {
+    *body_len = cursor - dst;
   }
 
   return OTRNG_SUCCESS;
@@ -211,7 +211,7 @@ INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
 
 INTERNAL static otrng_result
 otrng_data_message_sections_hash(uint8_t *dst, size_t dst_len,
-                                 const uint8_t *body, size_t bodylen) {
+                                 const uint8_t *body, size_t body_len) {
   static uint8_t usage_data_message_sections = 0x19;
 
   if (dst_len < HASH_BYTES) {
@@ -219,7 +219,7 @@ otrng_data_message_sections_hash(uint8_t *dst, size_t dst_len,
   }
 
   // KDF_1(usage_data_message_sections || data_message_sections, 64)
-  shake_256_kdf1(dst, HASH_BYTES, usage_data_message_sections, body, bodylen);
+  shake_256_kdf1(dst, HASH_BYTES, usage_data_message_sections, body, body_len);
 
   return OTRNG_SUCCESS;
 }
@@ -228,7 +228,7 @@ INTERNAL otrng_result otrng_data_message_authenticator(uint8_t *dst,
                                                        size_t dst_len,
                                                        const k_msg_mac mac_key,
                                                        const uint8_t *body,
-                                                       size_t bodylen) {
+                                                       size_t body_len) {
   uint8_t *sections = otrng_secure_alloc(HASH_BYTES);
 
   if (dst_len < DATA_MSG_MAC_BYTES) {
@@ -237,7 +237,7 @@ INTERNAL otrng_result otrng_data_message_authenticator(uint8_t *dst,
 
   /* Authenticator = KDF_1(usage_authenticator || MKmac ||
    * KDF_1(usage_data_message_sections || data_message_sections, 64), 64) */
-  if (!otrng_data_message_sections_hash(sections, HASH_BYTES, body, bodylen)) {
+  if (!otrng_data_message_sections_hash(sections, HASH_BYTES, body, body_len)) {
     return OTRNG_ERROR;
   }
 
@@ -251,16 +251,16 @@ INTERNAL otrng_result otrng_data_message_authenticator(uint8_t *dst,
 INTERNAL otrng_bool otrng_valid_data_message(k_msg_mac mac_key,
                                              const data_message_s *data_msg) {
   uint8_t *body = NULL;
-  size_t bodylen = 0;
+  size_t body_len = 0;
   // We don't need this tag to be in secure memory
   uint8_t mac_tag[DATA_MSG_MAC_BYTES];
 
-  if (!otrng_data_message_body_serialize(&body, &bodylen, data_msg)) {
+  if (!otrng_data_message_body_serialize(&body, &body_len, data_msg)) {
     return otrng_false;
   }
 
   if (!otrng_data_message_authenticator(mac_tag, DATA_MSG_MAC_BYTES, mac_key,
-                                        body, bodylen)) {
+                                        body, body_len)) {
     free(body);
     return otrng_false;
   }

@@ -969,13 +969,13 @@ static void test_client_receives_fragmented_message(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   set_up_client(alice, ALICE_ACCOUNT, 1);
 
-  char *tosend = NULL, *to_display = NULL;
+  char *to_send = NULL, *to_display = NULL;
   otrng_bool ignore = otrng_false;
 
   for (int i = 0; i < fmessage->total; i++) {
-    otrng_client_receive(&tosend, &to_display, fmessage->pieces[i], BOB_ACCOUNT,
-                         alice, &ignore);
-    otrng_assert(!tosend);
+    otrng_client_receive(&to_send, &to_display, fmessage->pieces[i],
+                         BOB_ACCOUNT, alice, &ignore);
+    otrng_assert(!to_send);
   }
 
   g_assert_cmpstr(to_display, ==, "Receiving fragmented plaintext");
@@ -998,13 +998,13 @@ static void test_client_expires_old_fragments(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   set_up_client(alice, ALICE_ACCOUNT, 1);
 
-  char *tosend = NULL, *to_display = NULL;
+  char *to_send = NULL, *to_display = NULL;
   time_t expiration_time;
   otrng_bool ignore = otrng_false;
 
   expiration_time = time(NULL) - 3600;
 
-  otrng_client_receive(&tosend, &to_display, fmessage->pieces[0], BOB_ACCOUNT,
+  otrng_client_receive(&to_send, &to_display, fmessage->pieces[0], BOB_ACCOUNT,
                        alice, &ignore);
 
   otrng_conversation_s *conv =

@@ -54,7 +54,7 @@ INTERNAL otrng_result otrng_data_message_body_serialize(
 
 INTERNAL otrng_result otrng_data_message_deserialize(data_message_s *dst,
                                                      const uint8_t *buff,
-                                                     size_t bufflen,
+                                                     size_t buff_len,
                                                      size_t *nread);
 
 INTERNAL otrng_result otrng_data_message_authenticator(uint8_t *dst,

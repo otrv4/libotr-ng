@@ -287,12 +287,12 @@ INTERNAL otrng_result otrng_prekey_profile_serialize_with_metadata(
 INTERNAL otrng_result prekey_profile_sign(
     otrng_prekey_profile_s *profile, const otrng_keypair_s *longterm_pair) {
   uint8_t *body = NULL;
-  size_t bodylen = 0;
-  if (!otrng_prekey_profile_body_serialize_into(&body, &bodylen, profile)) {
+  size_t body_len = 0;
+  if (!otrng_prekey_profile_body_serialize_into(&body, &body_len, profile)) {
     return OTRNG_ERROR;
   }
 
-  otrng_ec_sign_simple(profile->signature, longterm_pair->sym, body, bodylen);
+  otrng_ec_sign_simple(profile->signature, longterm_pair->sym, body, body_len);
   free(body);
 
   return OTRNG_SUCCESS;
@@ -334,7 +334,7 @@ static otrng_bool
 otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
                                       const otrng_public_key pub) {
   uint8_t *body = NULL;
-  size_t bodylen = 0;
+  size_t body_len = 0;
   uint8_t zero_buffer[ED448_SIGNATURE_BYTES];
   uint8_t pubkey[ED448_POINT_BYTES];
   otrng_bool valid;
@@ -345,7 +345,7 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
     return otrng_false;
   }
 
-  if (!otrng_prekey_profile_body_serialize_into(&body, &bodylen, profile)) {
+  if (!otrng_prekey_profile_body_serialize_into(&body, &body_len, profile)) {
     return otrng_false;
   }
 
@@ -353,7 +353,7 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
     return otrng_false;
   }
 
-  valid = otrng_ec_verify(profile->signature, pubkey, body, bodylen);
+  valid = otrng_ec_verify(profile->signature, pubkey, body, body_len);
 
   free(body);
   return valid;

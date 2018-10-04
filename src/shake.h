@@ -39,17 +39,17 @@ void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
 void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage);
 
 void shake_kkdf(uint8_t *dst, size_t dst_len, const uint8_t *key,
-                size_t key_len, const uint8_t *secret, size_t secretlen);
+                size_t key_len, const uint8_t *secret, size_t secret_len);
 
 /* KDF_1("OTRv4" || usageID || values, len) */
 void shake_256_kdf1(uint8_t *dst, size_t dst_len, uint8_t usage,
-                    const uint8_t *values, size_t valueslen);
+                    const uint8_t *values, size_t values_len);
 
 /* KDF_1("OTR-Prekey-Server" || usageID || values, len) */
 void shake_256_prekey_server_kdf(uint8_t *dst, size_t dst_len, uint8_t usage,
-                                 const uint8_t *values, size_t valueslen);
+                                 const uint8_t *values, size_t values_len);
 
 void shake_256_hash(uint8_t *dst, size_t dst_len, const uint8_t *secret,
-                    size_t secretlen);
+                    size_t secret_len);
 
 #endif

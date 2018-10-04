@@ -75,7 +75,7 @@ INTERNAL otrng_result otrng_dh_mpi_serialize(uint8_t *dst, size_t dst_len,
 
 INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *dst,
                                                const uint8_t *buffer,
-                                               size_t buflen, size_t *nread);
+                                               size_t buf_len, size_t *nread);
 
 INTERNAL otrng_bool otrng_dh_mpi_valid(dh_mpi mpi);
 

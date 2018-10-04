@@ -664,7 +664,7 @@ static otrng_result generate_dsa_key_sexp(gcry_sexp_t *pubs,
 tstatic otrng_result client_profile_verify_transitional_signature(
     const otrng_client_profile_s *client_profile) {
   gcry_sexp_t pubs = NULL;
-  size_t size, datalen;
+  size_t size, data_len;
   uint8_t *data;
   gcry_error_t err;
 
@@ -684,7 +684,7 @@ tstatic otrng_result client_profile_verify_transitional_signature(
   data = otrng_xmalloc_z(size);
 
   if (client_profile_body_serialize_pre_transitional_signature(
-          data, size, &datalen, client_profile) < 5) {
+          data, size, &data_len, client_profile) < 5) {
     free(data);
     gcry_sexp_release(pubs);
     return OTRNG_ERROR;
@@ -692,7 +692,7 @@ tstatic otrng_result client_profile_verify_transitional_signature(
 
   err = otrl_privkey_verify(client_profile->transitional_signature,
                             OTRv3_DSA_SIG_BYTES, OTRL_PUBKEY_TYPE_DSA, pubs,
-                            data, datalen);
+                            data, data_len);
 
   free(data);
   gcry_sexp_release(pubs);
@@ -759,7 +759,7 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
 
   size_t size;
   uint8_t *data;
-  size_t datalen;
+  size_t data_len;
   size_t written;
   gcry_error_t err;
 
@@ -782,13 +782,13 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
 
   data = otrng_xmalloc_z(size);
 
-  datalen = 0;
-  client_profile_body_serialize_pre_transitional_signature(data, size, &datalen,
-                                                           client_profile);
+  data_len = 0;
+  client_profile_body_serialize_pre_transitional_signature(
+      data, size, &data_len, client_profile);
 
   written = 0;
   err = otrl_privkey_sign(&client_profile->transitional_signature, &written,
-                          privkey, data, datalen);
+                          privkey, data, data_len);
   free(data);
 
   if (err) {

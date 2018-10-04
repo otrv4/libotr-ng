@@ -341,7 +341,7 @@ API otrng_result otrng_client_send_fragment(otrng_message_to_send_s **new_msg,
   return ret;
 }
 
-API otrng_result otrng_client_smp_start(char **tosend, const char *recipient,
+API otrng_result otrng_client_smp_start(char **to_send, const char *recipient,
                                         const unsigned char *question,
                                         const size_t q_len,
                                         const unsigned char *secret,
@@ -354,7 +354,7 @@ API otrng_result otrng_client_smp_start(char **tosend, const char *recipient,
     return OTRNG_ERROR;
   }
 
-  return otrng_smp_start(tosend, question, q_len, secret, secret_len,
+  return otrng_smp_start(to_send, question, q_len, secret, secret_len,
                          conv->conn);
 }
 
