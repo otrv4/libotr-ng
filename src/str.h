@@ -38,12 +38,12 @@ INTERNAL /*@notnull@*/ /*@only@*/ char *
 otrng_xstrdup(/*@notnull@*/ const char *s);
 
 INTERNAL /*@notnull@*/ /*@only@*/ char *
-otrng_stpcpy(/*@notnull@*/ char *dest,
-             /*@notnull@*/ const char *source) /*@modifies dest@*/;
+otrng_stpcpy(/*@notnull@*/ char *dst,
+             /*@notnull@*/ const char *src) /*@modifies dst@*/;
 
 INTERNAL /*@notnull@*/ /*@only@*/ char *
-otrng_stpncpy(/*@notnull@*/ char *dest, /*@notnull@*/ const char *source,
-              const size_t n) /*@modifies dest@*/;
+otrng_stpncpy(/*@notnull@*/ char *dst, /*@notnull@*/ const char *src,
+              const size_t n) /*@modifies dst@*/;
 
 INTERNAL size_t otrng_strnlen(/*@notnull@*/ const char *s, const size_t maxlen);
 

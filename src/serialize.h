@@ -33,16 +33,13 @@
 
 #define CRAMER_SHOUP_PUBKEY_BYTES 170
 
-INTERNAL size_t otrng_serialize_uint64(uint8_t *destination,
-                                       const uint64_t data);
+INTERNAL size_t otrng_serialize_uint64(uint8_t *dst, const uint64_t data);
 
-INTERNAL size_t otrng_serialize_uint32(uint8_t *destination,
-                                       const uint32_t data);
+INTERNAL size_t otrng_serialize_uint32(uint8_t *dst, const uint32_t data);
 
-INTERNAL size_t otrng_serialize_uint16(uint8_t *destination,
-                                       const uint16_t data);
+INTERNAL size_t otrng_serialize_uint16(uint8_t *dst, const uint16_t data);
 
-INTERNAL size_t otrng_serialize_uint8(uint8_t *destination, const uint8_t data);
+INTERNAL size_t otrng_serialize_uint8(uint8_t *dst, const uint8_t data);
 
 INTERNAL size_t otrng_serialize_bytes_array(uint8_t *target,
                                             const uint8_t data[], size_t len);
@@ -50,17 +47,14 @@ INTERNAL size_t otrng_serialize_bytes_array(uint8_t *target,
 INTERNAL size_t otrng_serialize_data(uint8_t *target, const uint8_t *data,
                                      size_t len);
 
-INTERNAL size_t otrng_serialize_mpi(uint8_t *destination,
-                                    const otrng_mpi_s *mpi);
+INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_s *mpi);
 
-INTERNAL int otrng_serialize_ec_point(uint8_t *destination,
-                                      const ec_point_t point);
+INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_t point);
 
-INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *destination,
+INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
                                           const ec_scalar_t scalar);
 
-INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *destination,
-                                                 size_t destinationlen,
+INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dst_len,
                                                  size_t *written,
                                                  const dh_mpi_t mpi);
 
@@ -69,29 +63,28 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *destination,
  *
  * @warning MPIs use the minimum-length encoding; i. e. no leading zeroes.
  *
- * @param [destination] The destination.
- * @param [destinationlen] The length of destination.
+ * @param [dst] The destination.
+ * @param [dst_len] The length of destination.
  * @param [written] How many bytes were written to destination.
  * @param [pub] The DH public key.
  *
  * @out OTRNG_SUCCESS or OTRNG_ERROR.
  */
-INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *destination,
-                                                    size_t destinationlen,
+INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *dst,
+                                                    size_t dst_len,
                                                     size_t *written,
                                                     const dh_public_key_t pub);
 
-INTERNAL size_t otrng_serialize_ring_sig(uint8_t *destination,
-                                         const ring_sig_s *proof);
+INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst, const ring_sig_s *proof);
 
-INTERNAL size_t otrng_serialize_public_key(uint8_t *destination,
+INTERNAL size_t otrng_serialize_public_key(uint8_t *dst,
                                            const otrng_public_key_t);
 
-INTERNAL size_t otrng_serialize_forging_key(uint8_t *destination,
+INTERNAL size_t otrng_serialize_forging_key(uint8_t *dst,
                                             const otrng_public_key_t);
 
 INTERNAL size_t otrng_serialize_shared_prekey(
-    uint8_t *destination, const otrng_shared_prekey_pub_t shared_prekey);
+    uint8_t *dst, const otrng_shared_prekey_pub_t shared_prekey);
 
 /**
  * @brief Serialize the old mac keys to reveal.
@@ -100,9 +93,9 @@ INTERNAL size_t otrng_serialize_shared_prekey(
  */
 INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys);
 
-INTERNAL size_t otrng_serialize_phi(uint8_t *destination,
+INTERNAL size_t otrng_serialize_phi(uint8_t *dst,
                                     const char *shared_session_state,
-                                    const char *init_message,
+                                    const char *init_msg,
                                     uint16_t sender_instance_tag,
                                     uint16_t receiver_instance_tag);
 

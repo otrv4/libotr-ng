@@ -28,9 +28,8 @@
 #include "ed448.h"
 #include "shake.h"
 
-INTERNAL void otrng_ec_scalar_copy(ec_scalar_t destination,
-                                   const ec_scalar_t a) {
-  goldilocks_448_scalar_copy(destination, a);
+INTERNAL void otrng_ec_scalar_copy(ec_scalar_t dst, const ec_scalar_t a) {
+  goldilocks_448_scalar_copy(dst, a);
 }
 
 INTERNAL otrng_bool otrng_ec_scalar_eq(const ec_scalar_t a,
@@ -55,8 +54,8 @@ INTERNAL void otrng_ec_scalar_destroy(ec_scalar_t s) {
   goldilocks_448_scalar_destroy(s);
 }
 
-INTERNAL void otrng_ec_point_copy(ec_point_t destination, const ec_point_t p) {
-  goldilocks_448_point_copy(destination, p);
+INTERNAL void otrng_ec_point_copy(ec_point_t dst, const ec_point_t p) {
+  goldilocks_448_point_copy(dst, p);
 }
 
 INTERNAL otrng_bool otrng_ec_point_eq(const ec_point_t p, const ec_point_t q) {
@@ -180,16 +179,16 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {
 
 static otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
                                           size_t shared_secret_len) {
-  uint8_t zero_buff[ED448_POINT_BYTES];
+  uint8_t zero_buffer[ED448_POINT_BYTES];
 
-  memset(zero_buff, 0, ED448_POINT_BYTES);
+  memset(zero_buffer, 0, ED448_POINT_BYTES);
 
   if (shared_secret_len < ED448_POINT_BYTES) {
     return otrng_false;
   }
 
   // TODO: I think this is a horrible way to check for zero values
-  if (memcmp(shared_secret, zero_buff, ED448_POINT_BYTES) == 0) {
+  if (memcmp(shared_secret, zero_buffer, ED448_POINT_BYTES) == 0) {
     return otrng_false;
   }
 

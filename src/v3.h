@@ -58,15 +58,14 @@ INTERNAL otrng_v3_conn_s *otrng_v3_conn_new(struct otrng_client_s *client,
 
 INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn);
 
-INTERNAL otrng_result otrng_v3_send_message(char **newmessage,
-                                            const char *message,
+INTERNAL otrng_result otrng_v3_send_message(char **newmsg, const char *msg,
                                             const tlv_list_s *tlvs,
                                             otrng_v3_conn_s *conn);
 
 INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
                                                char **to_display,
                                                tlv_list_s **tlvs,
-                                               const char *message,
+                                               const char *msg,
                                                otrng_v3_conn_s *conn);
 
 INTERNAL void otrng_v3_close(char **to_send, otrng_v3_conn_s *conn);
@@ -90,7 +89,7 @@ INTERNAL otrng_result otrng_v3_smp_abort(otrng_v3_conn_s *conn);
 
 #ifdef OTRNG_V3_PRIVATE
 
-tstatic void otrng_v3_store_injected_message(const char *message,
+tstatic void otrng_v3_store_injected_message(const char *msg,
                                              otrng_v3_conn_s *conn);
 
 tstatic char *otrng_v3_retrieve_injected_message(otrng_v3_conn_s *conn);

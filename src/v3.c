@@ -144,7 +144,7 @@ tstatic OtrlPolicy op_policy(void *opdata, ConnContext *context) {
 
 tstatic void op_inject(void *opdata, const char *accountname,
                        const char *protocol, const char *recipient,
-                       const char *message) {
+                       const char *msg) {
   otrng_s *otr = opdata;
 
   (void)accountname;
@@ -155,7 +155,7 @@ tstatic void op_inject(void *opdata, const char *accountname,
     return;
   }
 
-  otrng_v3_store_injected_message(message, otr->v3_conn);
+  otrng_v3_store_injected_message(msg, otr->v3_conn);
 }
 
 /* Create a private key for the given accountname/protocol if
@@ -327,9 +327,9 @@ tstatic const char *op_otr_error_message(void *opdata, ConnContext *context,
 }
 
 /* Deallocate a string returned by otr_error_message */
-tstatic void op_otr_error_message_free(void *opdata, const char *err_message) {
+tstatic void op_otr_error_message_free(void *opdata, const char *err_msg) {
   (void)opdata;
-  (void)err_message;
+  (void)err_msg;
 }
 
 /* Return a string that will be prefixed to any resent message. If this
@@ -453,15 +453,14 @@ tstatic void op_handle_smp_event(void *opdata, OtrlSMPEvent smp_event,
  *      Cannot recognize the type of OTR message received.
  * - OTRL_MSGEVENT_RCVDMSG_FOR_OTHER_INSTANCE
  *      Received and discarded a message intended for another instance. */
-tstatic void op_handle_message_event(void *opdata,
-                                     OtrlMessageEvent message_event,
-                                     ConnContext *context, const char *message,
+tstatic void op_handle_message_event(void *opdata, OtrlMessageEvent msg_event,
+                                     ConnContext *context, const char *msg,
                                      gcry_error_t err) {
   (void)opdata;
   (void)context;
-  (void)message;
+  (void)msg;
   (void)err;
-  switch (message_event) {
+  switch (msg_event) {
   case OTRL_MSGEVENT_ENCRYPTION_REQUIRED:
     debug_print("OTRL_MSGEVENT_ENCRYPTION_REQUIRED");
     break;
@@ -536,12 +535,12 @@ tstatic void op_create_instag(void *opdata, const char *accountname,
  * cases. */
 tstatic void op_convert_message(void *opdata, ConnContext *context,
                                 OtrlConvertType convert_type, char **dest,
-                                const char *source) {
+                                const char *src) {
   (void)opdata;
   (void)context;
   (void)convert_type;
   (void)dest;
-  (void)source;
+  (void)src;
 }
 
 /* Deallocate a string returned by convert_message. */
@@ -642,8 +641,7 @@ INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn) {
   free(conn);
 }
 
-INTERNAL otrng_result otrng_v3_send_message(char **newmessage,
-                                            const char *message,
+INTERNAL otrng_result otrng_v3_send_message(char **new_msg, const char *msg,
                                             const tlv_list_s *tlvs,
                                             otrng_v3_conn_s *conn) {
   // TODO: @client convert TLVs
@@ -665,8 +663,8 @@ INTERNAL otrng_result otrng_v3_send_message(char **newmessage,
 
   err = otrl_message_sending(
       conn->client->global_state->user_state_v3, conn->ops, conn->opdata,
-      account_name, protocol_name, conn->peer, OTRL_INSTAG_RECENT, message,
-      tlvsv3, newmessage, OTRL_FRAGMENT_SEND_SKIP, &conn->ctx, NULL, NULL);
+      account_name, protocol_name, conn->peer, OTRL_INSTAG_RECENT, msg, tlvsv3,
+      new_msg, OTRL_FRAGMENT_SEND_SKIP, &conn->ctx, NULL, NULL);
 
   free(account_name);
   free(protocol_name);
@@ -681,13 +679,13 @@ INTERNAL otrng_result otrng_v3_send_message(char **newmessage,
 INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
                                                char **to_display,
                                                tlv_list_s **tlvs,
-                                               const char *message,
+                                               const char *msg,
                                                otrng_v3_conn_s *conn) {
-  int ignore_message;
+  int ignore_msg;
   OtrlTLV *tlvs_v3 = NULL;
   char *account_name = NULL;
   char *protocol_name = NULL;
-  char *newmessage = NULL;
+  char *new_msg = NULL;
 
   (void)tlvs;
 
@@ -702,20 +700,20 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
     return OTRNG_ERROR;
   }
 
-  ignore_message = otrl_message_receiving(
-      conn->client->global_state->user_state_v3, conn->ops, conn->opdata,
-      account_name, protocol_name, conn->peer, message, &newmessage, &tlvs_v3,
-      &conn->ctx, NULL, NULL);
+  ignore_msg = otrl_message_receiving(conn->client->global_state->user_state_v3,
+                                      conn->ops, conn->opdata, account_name,
+                                      protocol_name, conn->peer, msg, &new_msg,
+                                      &tlvs_v3, &conn->ctx, NULL, NULL);
 
   free(account_name);
   free(protocol_name);
 
-  (void)ignore_message;
+  (void)ignore_msg;
 
   *to_send = otrng_v3_retrieve_injected_message(conn);
 
-  if (to_display && newmessage) {
-    *to_display = otrng_xstrdup(newmessage);
+  if (to_display && new_msg) {
+    *to_display = otrng_xstrdup(new_msg);
   }
 
   if (otrl_tlv_find(tlvs_v3, OTRL_TLV_DISCONNECTED)) {
@@ -734,7 +732,7 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
   // TODO: Copy from tlvs_v3 to tlvs.
 
   otrl_tlv_free(tlvs_v3);
-  otrl_message_free(newmessage);
+  otrl_message_free(new_msg);
 
   // TODO: @client Here we can use contextp to get information we might need
   // about the state, for example (context->msgstate)
@@ -816,19 +814,19 @@ INTERNAL otrng_result otrng_v3_smp_abort(otrng_v3_conn_s *conn) {
   return OTRNG_SUCCESS;
 }
 
-tstatic void otrng_v3_store_injected_message(const char *message,
+tstatic void otrng_v3_store_injected_message(const char *msg,
                                              otrng_v3_conn_s *conn) {
-  if (!message) {
+  if (!msg) {
     return;
   }
 
   // TODO: @client This is where we should ADD a new element to the list.
   // We are just ignoring for now.
-  if (conn->injected_message && message) {
+  if (conn->injected_message && msg) {
     free(conn->injected_message);
   }
 
-  conn->injected_message = otrng_xstrdup(message);
+  conn->injected_message = otrng_xstrdup(msg);
 }
 
 tstatic char *otrng_v3_retrieve_injected_message(otrng_v3_conn_s *conn) {

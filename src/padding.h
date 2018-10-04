@@ -28,8 +28,7 @@
 #include "otrng.h"
 #include "shared.h"
 
-INTERNAL otrng_result generate_padding(uint8_t **destination,
-                                       size_t *destinationlen,
-                                       size_t message_len, const otrng_s *otr);
+INTERNAL otrng_result generate_padding(uint8_t **dst, size_t *dst_len,
+                                       size_t msg_len, const otrng_s *otr);
 
 #endif

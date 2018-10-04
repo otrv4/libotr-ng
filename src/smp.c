@@ -157,7 +157,7 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
                    const uint8_t *answer, const size_t answer_len,
                    uint8_t *ssid, smp_protocol_s *smp, otrng_s *conversation) {
 
-  smp_message_1_s message;
+  smp_message_1_s msg;
   uint8_t *to_send = NULL;
   size_t len = 0;
   tlv_s *tlv;
@@ -184,14 +184,14 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
   }
 
   do {
-    if (!otrng_generate_smp_message_1(&message, smp)) {
+    if (!otrng_generate_smp_message_1(&msg, smp)) {
       continue;
     }
 
-    message.q_len = q_len;
-    message.question = otrng_xmemdup(question, q_len);
+    msg.q_len = q_len;
+    msg.question = otrng_xmemdup(question, q_len);
 
-    if (!otrng_smp_message_1_serialize(&to_send, &len, &message)) {
+    if (!otrng_smp_message_1_serialize(&to_send, &len, &msg)) {
       continue;
     }
 
@@ -201,12 +201,12 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
                            q_len, conversation);
 
     tlv = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, len, to_send);
-    otrng_smp_message_1_destroy(&message);
+    otrng_smp_message_1_destroy(&msg);
     free(to_send);
     return tlv;
   } while (0);
 
-  otrng_smp_message_1_destroy(&message);
+  otrng_smp_message_1_destroy(&msg);
   handle_smp_event_cb_v4(OTRNG_SMP_EVENT_ERROR, smp->progress,
                          smp->message1->question, smp->message1->q_len,
                          conversation);

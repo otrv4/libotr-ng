@@ -94,7 +94,7 @@ INTERNAL dh_public_key_t our_dh(const otrng_s *otr);
 INTERNAL uint32_t our_instance_tag(const otrng_s *otr);
 
 INTERNAL otrng_result otrng_prepare_to_send_data_message(
-    string_p *to_send, otrng_warning *warn, const string_p message,
+    string_p *to_send, otrng_warning *warn, const string_p msg,
     const tlv_list_s *tlvs, otrng_s *otr, unsigned char flags);
 
 INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code);
@@ -102,9 +102,8 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code);
 #ifdef OTRNG_PROTOCOL_PRIVATE
 
 tstatic otrng_result serialize_and_encode_data_message(
-    string_p *destination, const msg_mac_key_t mac_key,
-    uint8_t *to_reveal_mac_keys, size_t to_reveal_mac_keys_len,
-    const data_message_s *data_message);
+    string_p *dst, const msg_mac_key_t mac_key, uint8_t *to_reveal_mac_keys,
+    size_t to_reveal_mac_keys_len, const data_message_s *data_msg);
 #endif
 
 #endif

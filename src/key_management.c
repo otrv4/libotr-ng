@@ -152,32 +152,30 @@ tstatic void otrng_key_manager_set_their_keys(ec_point_t their_ecdh,
   manager->their_dh = otrng_dh_mpi_copy(their_dh);
 }
 
-INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *destination,
-                                           receiving_ratchet_s *source) {
-  if (!destination || !source) {
+INTERNAL void otrng_receiving_ratchet_copy(key_manager_s *dst,
+                                           receiving_ratchet_s *src) {
+  if (!dst || !src) {
     return;
   }
-  otrng_ec_scalar_copy(destination->our_ecdh->priv, source->our_ecdh_priv);
+  otrng_ec_scalar_copy(dst->our_ecdh->priv, src->our_ecdh_priv);
 
-  otrng_key_manager_set_their_keys(source->their_ecdh, source->their_dh,
-                                   destination);
+  otrng_key_manager_set_their_keys(src->their_ecdh, src->their_dh, dst);
 
-  memcpy(destination->brace_key, source->brace_key, BRACE_KEY_BYTES);
-  memcpy(destination->shared_secret, source->shared_secret,
-         SHARED_SECRET_BYTES);
+  memcpy(dst->brace_key, src->brace_key, BRACE_KEY_BYTES);
+  memcpy(dst->shared_secret, src->shared_secret, SHARED_SECRET_BYTES);
 
-  destination->i = source->i;
-  destination->j = source->j;
-  destination->k = source->k;
-  destination->pn = source->pn;
+  dst->i = src->i;
+  dst->j = src->j;
+  dst->k = src->k;
+  dst->pn = src->pn;
 
-  memcpy(destination->current->root_key, source->root_key, ROOT_KEY_BYTES);
-  memcpy(destination->current->chain_r, source->chain_r, CHAIN_KEY_BYTES);
+  memcpy(dst->current->root_key, src->root_key, ROOT_KEY_BYTES);
+  memcpy(dst->current->chain_r, src->chain_r, CHAIN_KEY_BYTES);
 
-  memcpy(destination->extra_symmetric_key, source->extra_symmetric_key,
+  memcpy(dst->extra_symmetric_key, src->extra_symmetric_key,
          EXTRA_SYMMETRIC_KEY_BYTES);
 
-  destination->skipped_keys = source->skipped_keys;
+  dst->skipped_keys = src->skipped_keys;
 }
 
 INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {
@@ -305,21 +303,22 @@ INTERNAL void otrng_key_manager_calculate_authenticator(
 /* Generate the ephemeral keys just as the DAKE is finished */
 tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
                                                    const char participant) {
-  uint8_t *random_buff = otrng_secure_alloc(ED448_PRIVATE_BYTES);
+  uint8_t *random_buffer = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   uint8_t usage_ECDH_first_ephemeral = 0x11;
 
   assert(participant == 'u' || participant == 't');
 
   if (participant == 'u') {
-    shake_256_kdf1(random_buff, ED448_PRIVATE_BYTES, usage_ECDH_first_ephemeral,
-                   manager->shared_secret, SHARED_SECRET_BYTES);
+    shake_256_kdf1(random_buffer, ED448_PRIVATE_BYTES,
+                   usage_ECDH_first_ephemeral, manager->shared_secret,
+                   SHARED_SECRET_BYTES);
 
     otrng_ec_point_destroy(manager->our_ecdh->pub);
     /* @secret this will be deleted once sent a new data message in a new
      * ratchet */
-    otrng_ecdh_keypair_generate(manager->our_ecdh, random_buff);
-    otrng_secure_wipe(random_buff, ED448_PRIVATE_BYTES);
-    free(random_buff);
+    otrng_ecdh_keypair_generate(manager->our_ecdh, random_buffer);
+    otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
+    free(random_buffer);
 
     otrng_dh_keypair_destroy(manager->our_dh);
     /* @secret this will be deleted once sent a new data message in a new
@@ -332,15 +331,16 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
   } else if (participant == 't') {
     dh_keypair_s tmp_their_dh;
 
-    shake_256_kdf1(random_buff, ED448_PRIVATE_BYTES, usage_ECDH_first_ephemeral,
-                   manager->shared_secret, SHARED_SECRET_BYTES);
+    shake_256_kdf1(random_buffer, ED448_PRIVATE_BYTES,
+                   usage_ECDH_first_ephemeral, manager->shared_secret,
+                   SHARED_SECRET_BYTES);
 
     otrng_ec_point_destroy(manager->their_ecdh);
     /* @secret this will be deleted once received a new data message in a new
      * ratchet */
-    otrng_ecdh_keypair_generate_their(manager->their_ecdh, random_buff);
-    otrng_secure_wipe(random_buff, ED448_PRIVATE_BYTES);
-    free(random_buff);
+    otrng_ecdh_keypair_generate_their(manager->their_ecdh, random_buffer);
+    otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
+    free(random_buffer);
 
     gcry_mpi_release(manager->their_dh);
     manager->their_dh = NULL;
@@ -714,7 +714,7 @@ tstatic void calculate_extra_key(key_manager_s *manager,
                                  receiving_ratchet_s *tmp_receiving_ratchet,
                                  const char action) {
   goldilocks_shake256_ctx_p hd;
-  uint8_t *extra_key_buff = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
+  uint8_t *extra_key_buffer = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
   uint8_t magic[1] = {0xFF};
 
   hash_init_with_usage(hd, usage_extra_symm_key);
@@ -726,22 +726,22 @@ tstatic void calculate_extra_key(key_manager_s *manager,
   if (action == 's') {
     hash_update(hd, manager->current->chain_s, CHAIN_KEY_BYTES);
 
-    hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
+    hash_final(hd, extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
     hash_destroy(hd);
 
-    memcpy(manager->extra_symmetric_key, extra_key_buff,
+    memcpy(manager->extra_symmetric_key, extra_key_buffer,
            EXTRA_SYMMETRIC_KEY_BYTES);
   } else if (action == 'r') {
     hash_update(hd, tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES);
 
-    hash_final(hd, extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
+    hash_final(hd, extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
     hash_destroy(hd);
 
-    memcpy(tmp_receiving_ratchet->extra_symmetric_key, extra_key_buff,
+    memcpy(tmp_receiving_ratchet->extra_symmetric_key, extra_key_buffer,
            EXTRA_SYMMETRIC_KEY_BYTES);
   }
-  otrng_secure_wipe(extra_key_buff, EXTRA_SYMMETRIC_KEY_BYTES);
-  free(extra_key_buff);
+  otrng_secure_wipe(extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
+  free(extra_key_buffer);
 
 // TODO: add to tmp
 #ifdef DEBUG
@@ -761,13 +761,13 @@ tstatic otrng_result store_enc_keys(msg_encryption_key_t enc_key,
                                     const unsigned int until,
                                     const int max_skip, const char ratchet_type,
                                     otrng_warning *warn) {
-  uint8_t zero_buff[CHAIN_KEY_BYTES];
+  uint8_t zero_buffer[CHAIN_KEY_BYTES];
   goldilocks_shake256_ctx_p hd;
   uint8_t *extra_key = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
   uint8_t magic[1] = {0xFF};
   skipped_keys_s *skipped_msg_enc_key;
 
-  memset(zero_buff, 0, CHAIN_KEY_BYTES);
+  memset(zero_buffer, 0, CHAIN_KEY_BYTES);
 
   if ((tmp_receiving_ratchet->k + max_skip) < until) {
     if (warn) {
@@ -778,7 +778,7 @@ tstatic otrng_result store_enc_keys(msg_encryption_key_t enc_key,
     return OTRNG_SUCCESS;
   }
 
-  if (!(memcmp(tmp_receiving_ratchet->chain_r, zero_buff, CHAIN_KEY_BYTES) ==
+  if (!(memcmp(tmp_receiving_ratchet->chain_r, zero_buffer, CHAIN_KEY_BYTES) ==
         0)) {
     while (tmp_receiving_ratchet->k < until) {
       shake_256_kdf1(enc_key, ENCRYPTION_KEY_BYTES, usage_message_key,

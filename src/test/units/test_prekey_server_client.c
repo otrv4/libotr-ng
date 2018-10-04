@@ -196,8 +196,8 @@ static void test_prekey_dake3_message_serialize(void) {
   otrng_assert_is_success(otrng_deserialize_ring_sig(message.sigma, sigma_ser,
                                                      sizeof(sigma_ser), NULL));
 
-  message.message = (uint8_t *)otrng_xstrdup("hi");
-  message.message_len = 3;
+  message.msg = (uint8_t *)otrng_xstrdup("hi");
+  message.msg_len = 3;
 
   uint8_t header[] = {
       0x00, 0x04,             // protocol version
@@ -261,8 +261,8 @@ static void test_prekey_dake3_message_append_storage_info_req(void) {
       otrng_prekey_dake3_message_append_storage_information_request(
           &message, prekey_mac));
 
-  g_assert_cmpint(message.message_len, ==, sizeof(expected));
-  otrng_assert_cmpmem(message.message, expected, sizeof(expected));
+  g_assert_cmpint(message.msg_len, ==, sizeof(expected));
+  otrng_assert_cmpmem(message.msg, expected, sizeof(expected));
 
   otrng_prekey_dake3_message_destroy(&message);
 }

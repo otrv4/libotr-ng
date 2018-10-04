@@ -31,8 +31,8 @@
 
 typedef void *(*random_generator)(size_t);
 
-static inline void random_bytes(void *buf, const size_t size) {
-  gcry_randomize(buf, size, GCRY_STRONG_RANDOM);
+static inline void random_bytes(void *buffer, const size_t size) {
+  gcry_randomize(buffer, size, GCRY_STRONG_RANDOM);
 }
 
 static inline void ed448_random_scalar(goldilocks_448_scalar_p priv) {

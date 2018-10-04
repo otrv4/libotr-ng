@@ -25,30 +25,27 @@
 #include "deserialize.h"
 #include "serialize.h" // just for memcpy
 
-INTERNAL void otrng_mpi_set(otrng_mpi_s *destination, const uint8_t *source,
-                            size_t len) {
-  if (source == NULL || len == 0) {
-    destination->len = 0;
-    destination->data = NULL;
+INTERNAL void otrng_mpi_set(otrng_mpi_s *dst, const uint8_t *src, size_t len) {
+  if (src == NULL || len == 0) {
+    dst->len = 0;
+    dst->data = NULL;
     return;
   }
 
-  destination->len = len;
-  destination->data = otrng_xmalloc_z(destination->len);
+  dst->len = len;
+  dst->data = otrng_xmalloc_z(dst->len);
 
-  memcpy(destination->data, source, destination->len);
+  memcpy(dst->data, src, dst->len);
 }
 
-INTERNAL void otrng_mpi_copy(otrng_mpi_s *destination,
-                             const otrng_mpi_s *source) {
-  otrng_mpi_set(destination, source->data, source->len);
+INTERNAL void otrng_mpi_copy(otrng_mpi_s *dst, const otrng_mpi_s *src) {
+  otrng_mpi_set(dst, src->data, src->len);
 }
 
-tstatic otrng_bool otr_mpi_read_len(otrng_mpi_s *destination,
-                                    const uint8_t *source, size_t source_len,
-                                    size_t *read) {
+tstatic otrng_bool otr_mpi_read_len(otrng_mpi_s *dst, const uint8_t *src,
+                                    size_t src_len, size_t *read) {
   size_t r = 0;
-  if (!otrng_deserialize_uint32(&destination->len, source, source_len, &r)) {
+  if (!otrng_deserialize_uint32(&dst->len, src, src_len, &r)) {
     return otrng_false;
   }
 
@@ -56,42 +53,42 @@ tstatic otrng_bool otr_mpi_read_len(otrng_mpi_s *destination,
     *read = r;
   }
 
-  if (destination->len > source_len - r) {
+  if (dst->len > src_len - r) {
     return otrng_false;
   }
 
   return otrng_true;
 }
 
-INTERNAL otrng_result otrng_mpi_deserialize(otrng_mpi_s *destination,
-                                            const uint8_t *source,
-                                            size_t source_len, size_t *read) {
-  if (!otr_mpi_read_len(destination, source, source_len, read)) {
+INTERNAL otrng_result otrng_mpi_deserialize(otrng_mpi_s *dst,
+                                            const uint8_t *src, size_t src_len,
+                                            size_t *read) {
+  if (!otr_mpi_read_len(dst, src, src_len, read)) {
     return OTRNG_ERROR;
   }
 
-  if (destination->len == 0) {
-    destination->data = NULL;
+  if (dst->len == 0) {
+    dst->data = NULL;
     return OTRNG_SUCCESS;
   }
 
-  destination->data = otrng_xmalloc_z(destination->len);
+  dst->data = otrng_xmalloc_z(dst->len);
 
-  memcpy(destination->data, source + *read, destination->len);
+  memcpy(dst->data, src + *read, dst->len);
 
   if (read != NULL) {
-    *read += destination->len;
+    *read += dst->len;
   }
 
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_mpi_deserialize_no_copy(otrng_mpi_s *destination,
-                                                    const uint8_t *source,
-                                                    size_t source_len,
+INTERNAL otrng_result otrng_mpi_deserialize_no_copy(otrng_mpi_s *dst,
+                                                    const uint8_t *src,
+                                                    size_t src_len,
                                                     size_t *read) {
   size_t r = 0;
-  if (!otr_mpi_read_len(destination, source, source_len, &r)) {
+  if (!otr_mpi_read_len(dst, src, src_len, &r)) {
     return OTRNG_ERROR;
   }
 
@@ -99,18 +96,18 @@ INTERNAL otrng_result otrng_mpi_deserialize_no_copy(otrng_mpi_s *destination,
     *read = r;
   }
 
-  if (destination->len == 0) {
-    destination->data = NULL;
+  if (dst->len == 0) {
+    dst->data = NULL;
     return OTRNG_SUCCESS;
   }
 
   /* points to original buffer without copying */
-  destination->data = (uint8_t *)source + r;
+  dst->data = (uint8_t *)src + r;
 
   return OTRNG_SUCCESS;
 }
 
-INTERNAL size_t otrng_mpi_memcpy(uint8_t *destination, const otrng_mpi_s *mpi) {
-  memcpy(destination, mpi->data, mpi->len);
+INTERNAL size_t otrng_mpi_memcpy(uint8_t *dst, const otrng_mpi_s *mpi) {
+  memcpy(dst, mpi->data, mpi->len);
   return mpi->len;
 }

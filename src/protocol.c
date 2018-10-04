@@ -67,11 +67,13 @@ INTERNAL dh_public_key_t our_dh(const otrng_s *otr) {
 INTERNAL const otrng_client_profile_s *get_my_client_profile(otrng_s *otr) {
   otrng_client_s *client = otr->client;
   maybe_create_keys(client);
+
   return otrng_client_get_client_profile(client);
 }
 
 INTERNAL const otrng_client_profile_s *get_my_exp_client_profile(otrng_s *otr) {
   otrng_client_s *client = otr->client;
+
   return otrng_client_get_exp_client_profile(client);
 }
 
@@ -79,11 +81,13 @@ INTERNAL const otrng_prekey_profile_s *get_my_prekey_profile(otrng_s *otr) {
   otrng_client_s *client = otr->client;
 
   maybe_create_keys(client);
+
   return otrng_client_get_prekey_profile(client);
 }
 
 INTERNAL const otrng_prekey_profile_s *get_my_exp_prekey_profile(otrng_s *otr) {
   otrng_client_s *client = otr->client;
+
   return otrng_client_get_exp_prekey_profile(client);
 }
 
@@ -95,13 +99,13 @@ static char *build_error_message(const char *error_code,
                                  const char *error_name) {
   size_t prefix_len = strlen(ERROR_PREFIX);
   size_t size = prefix_len + strlen(error_code) + strlen(error_name) + 1;
-  char *err_message = otrng_xmalloc(size);
+  char *err_msg = otrng_xmalloc(size);
 
-  strncpy(err_message, ERROR_PREFIX, size);
-  strncpy(err_message + prefix_len, error_code, size - prefix_len);
-  strncat(err_message, error_name, size - prefix_len);
+  strncpy(err_msg, ERROR_PREFIX, size);
+  strncpy(err_msg + prefix_len, error_code, size - prefix_len);
+  strncat(err_msg, error_name, size - prefix_len);
 
-  return err_message;
+  return err_msg;
 }
 
 INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
@@ -124,35 +128,33 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   }
 }
 
-tstatic otrng_result encrypt_data_message(data_message_s *data_message,
-                                          const uint8_t *message,
-                                          size_t message_len,
+tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
+                                          const uint8_t *msg, size_t msg_len,
                                           const msg_encryption_key_t enc_key) {
   uint8_t *c = NULL;
   int err;
 
-  random_bytes(data_message->nonce, DATA_MSG_NONCE_BYTES);
+  random_bytes(data_msg->nonce, DATA_MSG_NONCE_BYTES);
 
-  c = otrng_xmalloc_z(message_len);
+  c = otrng_xmalloc_z(msg_len);
 
-  err =
-      crypto_stream_xor(c, message, message_len, data_message->nonce, enc_key);
+  err = crypto_stream_xor(c, msg, msg_len, data_msg->nonce, enc_key);
   if (err) {
     free(c);
     return OTRNG_ERROR;
   }
 
-  data_message->enc_msg_len = message_len;
-  data_message->enc_msg = c;
+  data_msg->enc_msg_len = msg_len;
+  data_msg->enc_msg = c;
 
 #ifdef DEBUG
   debug_print("\n");
   debug_print("nonce = ");
-  otrng_memdump(data_message->nonce, DATA_MSG_NONCE_BYTES);
+  otrng_memdump(data_msg->nonce, DATA_MSG_NONCE_BYTES);
   debug_print("message = ");
-  otrng_memdump(message, message_len);
+  otrng_memdump(msg, msg_len);
   debug_print("cipher = ");
-  otrng_memdump(c, message_len);
+  otrng_memdump(c, msg_len);
 #endif
 
   return OTRNG_SUCCESS;
@@ -160,32 +162,31 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_message,
 
 tstatic data_message_s *generate_data_message(const otrng_s *otr,
                                               const uint32_t ratchet_id) {
-  data_message_s *data_message = otrng_data_message_new();
-  if (!data_message) {
+  data_message_s *data_msg = otrng_data_message_new();
+  if (!data_msg) {
     return NULL;
   }
 
-  data_message->sender_instance_tag = our_instance_tag(otr);
-  data_message->receiver_instance_tag = otr->their_instance_tag;
-  data_message->previous_chain_n = otr->keys->pn;
-  data_message->ratchet_id = ratchet_id;
-  data_message->message_id = otr->keys->j;
-  otrng_ec_point_copy(data_message->ecdh, our_ecdh(otr));
-  data_message->dh = otrng_dh_mpi_copy(our_dh(otr));
+  data_msg->sender_instance_tag = our_instance_tag(otr);
+  data_msg->receiver_instance_tag = otr->their_instance_tag;
+  data_msg->previous_chain_n = otr->keys->pn;
+  data_msg->ratchet_id = ratchet_id;
+  data_msg->message_id = otr->keys->j;
+  otrng_ec_point_copy(data_msg->ecdh, our_ecdh(otr));
+  data_msg->dh = otrng_dh_mpi_copy(our_dh(otr));
 
-  return data_message;
+  return data_msg;
 }
 
 tstatic otrng_result serialize_and_encode_data_message(
-    string_p *destination, const msg_mac_key_t mac_key,
-    uint8_t *to_reveal_mac_keys, size_t to_reveal_mac_keys_len,
-    const data_message_s *data_message) {
+    string_p *dst, const msg_mac_key_t mac_key, uint8_t *to_reveal_mac_keys,
+    size_t to_reveal_mac_keys_len, const data_message_s *data_msg) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
   size_t serlen;
   uint8_t *ser;
 
-  if (!otrng_data_message_body_serialize(&body, &bodylen, data_message)) {
+  if (!otrng_data_message_body_serialize(&body, &bodylen, data_msg)) {
     return OTRNG_ERROR;
   }
 
@@ -207,18 +208,17 @@ tstatic otrng_result serialize_and_encode_data_message(
                                 to_reveal_mac_keys, to_reveal_mac_keys_len);
   }
 
-  *destination = otrl_base64_otr_encode(ser, serlen);
+  *dst = otrl_base64_otr_encode(ser, serlen);
 
   free(ser);
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result send_data_message(string_p *to_send,
-                                       const uint8_t *message,
-                                       size_t message_len, otrng_s *otr,
+tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
+                                       size_t msg_len, otrng_s *otr,
                                        unsigned char flags,
                                        otrng_warning *warn) {
-  data_message_s *data_message = NULL;
+  data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
   msg_encryption_key_t enc_key;
   msg_mac_key_t mac_key;
@@ -237,23 +237,23 @@ tstatic otrng_result send_data_message(string_p *to_send,
                                       otr->client->max_stored_msg_keys, 0, 's',
                                       warn);
 
-  data_message = generate_data_message(otr, ratchet_id);
-  if (!data_message) {
+  data_msg = generate_data_message(otr, ratchet_id);
+  if (!data_msg) {
     otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
     otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
     return OTRNG_ERROR;
   }
 
-  data_message->flags = flags;
-  data_message->sender_instance_tag = our_instance_tag(otr);
-  data_message->receiver_instance_tag = otr->their_instance_tag;
+  data_msg->flags = flags;
+  data_msg->sender_instance_tag = our_instance_tag(otr);
+  data_msg->receiver_instance_tag = otr->their_instance_tag;
 
-  if (!encrypt_data_message(data_message, message, message_len, enc_key)) {
+  if (!encrypt_data_message(data_msg, msg, msg_len, enc_key)) {
     otrng_error_message(to_send, OTRNG_ERR_MSG_ENCRYPTION_ERROR);
 
     otrng_secure_wipe(enc_key, ENCRYPTION_KEY_BYTES);
     otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
-    otrng_data_message_free(data_message);
+    otrng_data_message_free(data_msg);
     return OTRNG_ERROR;
   }
 
@@ -269,18 +269,19 @@ tstatic otrng_result send_data_message(string_p *to_send,
     otr->keys->old_mac_keys = NULL;
 
     if (!serialize_and_encode_data_message(to_send, mac_key, ser_mac_keys,
-                                           ser_mac_keys_len, data_message)) {
+                                           ser_mac_keys_len, data_msg)) {
       otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
       free(ser_mac_keys);
-      otrng_data_message_free(data_message);
+      otrng_data_message_free(data_msg);
+
       return OTRNG_ERROR;
     }
     free(ser_mac_keys);
   } else {
     if (!serialize_and_encode_data_message(to_send, mac_key, NULL, 0,
-                                           data_message)) {
+                                           data_msg)) {
       otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
-      otrng_data_message_free(data_message);
+      otrng_data_message_free(data_msg);
       return OTRNG_ERROR;
     }
   }
@@ -288,31 +289,30 @@ tstatic otrng_result send_data_message(string_p *to_send,
   otr->keys->j++;
 
   otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
-  otrng_data_message_free(data_message);
+  otrng_data_message_free(data_msg);
 
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result serialize_tlvs(uint8_t **destination,
-                                    size_t *destinationlen,
+tstatic otrng_result serialize_tlvs(uint8_t **dst, size_t *dst_len,
                                     const tlv_list_s *tlvs) {
   const tlv_list_s *current = tlvs;
   uint8_t *cursor = NULL;
 
-  *destination = NULL;
-  *destinationlen = 0;
+  *dst = NULL;
+  *dst_len = 0;
 
   if (!tlvs) {
     return OTRNG_SUCCESS;
   }
 
-  for (*destinationlen = 0; current; current = current->next) {
-    *destinationlen += current->data->len + 4;
+  for (*dst_len = 0; current; current = current->next) {
+    *dst_len += current->data->len + 4;
   }
 
-  *destination = otrng_xmalloc_z(*destinationlen);
+  *dst = otrng_xmalloc_z(*dst_len);
 
-  cursor = *destination;
+  cursor = *dst;
   for (current = tlvs; current; current = current->next) {
     cursor += otrng_tlv_serialize(cursor, current->data);
   }
@@ -320,12 +320,12 @@ tstatic otrng_result serialize_tlvs(uint8_t **destination,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result append_tlvs(uint8_t **destination, size_t *destination_len,
-                                 const string_p message, const tlv_list_s *tlvs,
+tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
+                                 const string_p msg, const tlv_list_s *tlvs,
                                  const otrng_s *otr) {
   uint8_t *ser = NULL;
   size_t len = 0;
-  size_t message_len;
+  size_t msg_len;
   uint8_t *padding = NULL;
   size_t padding_len = 0;
   char *res;
@@ -335,34 +335,35 @@ tstatic otrng_result append_tlvs(uint8_t **destination, size_t *destination_len,
   }
 
   // Append padding
-  message_len = strlen(message) + 1 + len;
-  if (!generate_padding(&padding, &padding_len, message_len, otr)) {
+  msg_len = strlen(msg) + 1 + len;
+  if (!generate_padding(&padding, &padding_len, msg_len, otr)) {
     free(ser);
     return OTRNG_ERROR;
   }
 
-  *destination_len = message_len + padding_len;
-  *destination = otrng_xmalloc_z(*destination_len);
+  *dst_len = msg_len + padding_len;
+  *dst = otrng_xmalloc_z(*dst_len);
 
-  res = otrng_stpcpy((char *)*destination, message);
+  res = otrng_stpcpy((char *)*dst, msg);
   if (ser) {
     memcpy(res + 1, ser, len);
   }
 
   if (padding) {
-    memcpy(*destination + message_len, padding, padding_len);
+    memcpy(*dst + msg_len, padding, padding_len);
   }
 
   free(ser);
   free(padding);
+
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_prepare_to_send_data_message(
-    string_p *to_send, otrng_warning *warn, const string_p message,
+    string_p *to_send, otrng_warning *warn, const string_p msg,
     const tlv_list_s *tlvs, otrng_s *otr, unsigned char flags) {
-  uint8_t *message2 = NULL;
-  size_t message_len = 0;
+  uint8_t *msg2 = NULL;
+  size_t msg_len = 0;
   otrng_result result;
 
   if (otr->state == OTRNG_STATE_FINISHED) {
@@ -376,15 +377,15 @@ INTERNAL otrng_result otrng_prepare_to_send_data_message(
     return OTRNG_ERROR;
   }
 
-  if (!append_tlvs(&message2, &message_len, message, tlvs, otr)) {
+  if (!append_tlvs(&msg2, &msg_len, msg, tlvs, otr)) {
     return OTRNG_ERROR;
   }
 
-  result = send_data_message(to_send, message2, message_len, otr, flags, warn);
+  result = send_data_message(to_send, msg2, msg_len, otr, flags, warn);
 
   otr->last_sent = time(NULL);
 
-  free(message2);
+  free(msg2);
 
   return result;
 }

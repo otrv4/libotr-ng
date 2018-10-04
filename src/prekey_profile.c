@@ -29,78 +29,76 @@
 #include "instance_tag.h"
 #include "serialize.h"
 
-INTERNAL void
-otrng_prekey_profile_destroy(otrng_prekey_profile_s *destination) {
-  otrng_shared_prekey_pair_free(destination->keys);
-  otrng_ec_point_destroy(destination->shared_prekey);
-  memset(destination->signature, 0, ED448_SIGNATURE_BYTES);
+INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst) {
+  otrng_shared_prekey_pair_free(dst->keys);
+  otrng_ec_point_destroy(dst->shared_prekey);
+  memset(dst->signature, 0, ED448_SIGNATURE_BYTES);
 }
 
-INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *destination) {
-  if (!destination) {
+INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *dst) {
+  if (!dst) {
     return;
   }
 
-  otrng_prekey_profile_destroy(destination);
-  free(destination);
+  otrng_prekey_profile_destroy(dst);
+  free(dst);
 }
 
-INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *destination,
-                                        const otrng_prekey_profile_s *source) {
-  memset(destination, 0, sizeof(otrng_prekey_profile_s));
+INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
+                                        const otrng_prekey_profile_s *src) {
+  memset(dst, 0, sizeof(otrng_prekey_profile_s));
 
-  if (!source) {
+  if (!src) {
     return;
   }
 
-  destination->instance_tag = source->instance_tag;
-  destination->expires = source->expires;
+  dst->instance_tag = src->instance_tag;
+  dst->expires = src->expires;
 
-  otrng_ec_point_copy(destination->shared_prekey, source->shared_prekey);
-  if (destination->keys != NULL) {
-    otrng_shared_prekey_pair_free(destination->keys);
-    destination->keys = NULL;
+  otrng_ec_point_copy(dst->shared_prekey, src->shared_prekey);
+  if (dst->keys != NULL) {
+    otrng_shared_prekey_pair_free(dst->keys);
+    dst->keys = NULL;
   }
 
-  if (source->keys != NULL) {
-    destination->keys = otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
-    memcpy(destination->keys, source->keys, sizeof(otrng_shared_prekey_pair_s));
+  if (src->keys != NULL) {
+    dst->keys = otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
+    memcpy(dst->keys, src->keys, sizeof(otrng_shared_prekey_pair_s));
   }
 
-  memcpy(destination->signature, source->signature, ED448_SIGNATURE_BYTES);
+  memcpy(dst->signature, src->signature, ED448_SIGNATURE_BYTES);
 
-  destination->should_publish = source->should_publish;
-  destination->is_publishing = source->is_publishing;
+  dst->should_publish = src->should_publish;
+  dst->is_publishing = src->is_publishing;
 }
 
 tstatic size_t otrng_prekey_profile_body_serialize(
-    uint8_t *destination, size_t destination_len,
-    const otrng_prekey_profile_s *profile) {
+    uint8_t *dst, size_t dst_len, const otrng_prekey_profile_s *profile) {
   size_t w = 0;
 
-  if (4 > destination_len - w) {
+  if (4 > dst_len - w) {
     return 0;
   }
 
-  w += otrng_serialize_uint32(destination + w, profile->instance_tag);
+  w += otrng_serialize_uint32(dst + w, profile->instance_tag);
 
-  if (8 > destination_len - w) {
+  if (8 > dst_len - w) {
     return 0;
   }
 
-  w += otrng_serialize_uint64(destination + w, profile->expires);
+  w += otrng_serialize_uint64(dst + w, profile->expires);
 
-  if (ED448_SHARED_PREKEY_BYTES > destination_len - w) {
+  if (ED448_SHARED_PREKEY_BYTES > dst_len - w) {
     return 0;
   }
 
-  w += otrng_serialize_shared_prekey(destination + w, profile->shared_prekey);
+  w += otrng_serialize_shared_prekey(dst + w, profile->shared_prekey);
 
   return w;
 }
 
 INTERNAL otrng_result otrng_prekey_profile_deserialize(
-    otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
+    otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buff_len,
     size_t *nread) {
   size_t read = 0;
   size_t w = 0;
@@ -109,14 +107,14 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint32(&target->instance_tag, buffer + w, buflen - w,
+  if (!otrng_deserialize_uint32(&target->instance_tag, buffer + w, buff_len - w,
                                 &read)) {
     return OTRNG_ERROR;
   }
 
   w += read;
 
-  if (!otrng_deserialize_uint64(&target->expires, buffer + w, buflen - w,
+  if (!otrng_deserialize_uint64(&target->expires, buffer + w, buff_len - w,
                                 &read)) {
     return OTRNG_ERROR;
   }
@@ -124,14 +122,14 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
   w += read;
 
   if (!otrng_deserialize_shared_prekey(target->shared_prekey, buffer + w,
-                                       buflen - w, &read)) {
+                                       buff_len - w, &read)) {
     return OTRNG_ERROR;
   }
 
   w += read;
 
   if (!otrng_deserialize_bytes_array(target->signature, ED448_SIGNATURE_BYTES,
-                                     buffer + w, buflen - w)) {
+                                     buffer + w, buff_len - w)) {
     return OTRNG_ERROR;
   }
 
@@ -145,12 +143,12 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
 }
 
 INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
-    otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
+    otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buff_len,
     size_t *nread) {
   size_t read = 0;
   size_t w = 0;
   otrng_result result =
-      otrng_prekey_profile_deserialize(target, buffer, buflen, &read);
+      otrng_prekey_profile_deserialize(target, buffer, buff_len, &read);
   if (otrng_failed(result)) {
     return result;
   }
@@ -158,7 +156,7 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
   w += read;
 
   result = otrng_deserialize_uint8(&target->should_publish, buffer + w,
-                                   buflen - w, &read);
+                                   buff_len - w, &read);
 
   if (otrng_failed(result)) {
     return result;
@@ -168,7 +166,7 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
 
   target->keys = otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
   result = otrng_deserialize_bytes_array(target->keys->sym, ED448_PRIVATE_BYTES,
-                                         buffer + w, buflen - w);
+                                         buffer + w, buff_len - w);
   if (otrng_failed(result)) {
     return OTRNG_ERROR;
   }
@@ -192,57 +190,56 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
 #define PREKEY_PROFILE_BODY_BYTES 4 + 8 + ED448_PUBKEY_BYTES
 
 tstatic otrng_result otrng_prekey_profile_body_serialize_into(
-    uint8_t **destination, size_t *nbytes,
-    const otrng_prekey_profile_s *profile) {
+    uint8_t **dst, size_t *dst_len, const otrng_prekey_profile_s *profile) {
   size_t size = PREKEY_PROFILE_BODY_BYTES;
-  uint8_t *buff;
+  uint8_t *buffer;
   size_t written;
 
-  if (!destination) {
+  if (!dst) {
     return OTRNG_ERROR;
   }
 
-  buff = otrng_xmalloc_z(size);
+  buffer = otrng_xmalloc_z(size);
 
-  written = otrng_prekey_profile_body_serialize(buff, size, profile);
+  written = otrng_prekey_profile_body_serialize(buffer, size, profile);
   if (written == 0) {
-    free(buff);
+    free(buffer);
     return OTRNG_ERROR;
   }
 
-  *destination = buff;
+  *dst = buffer;
 
-  if (nbytes) {
-    *nbytes = written;
+  if (dst_len) {
+    *dst_len = written;
   }
 
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_prekey_profile_serialize(
-    uint8_t **destination, size_t *nbytes, otrng_prekey_profile_s *profile) {
+    uint8_t **dst, size_t *dst_len, otrng_prekey_profile_s *profile) {
   size_t size = PREKEY_PROFILE_BODY_BYTES + ED448_SIGNATURE_BYTES;
-  uint8_t *buff = otrng_xmalloc_z(size);
+  uint8_t *buffer = otrng_xmalloc_z(size);
   size_t written;
 
-  written = otrng_prekey_profile_body_serialize(buff, PREKEY_PROFILE_BODY_BYTES,
-                                                profile);
+  written = otrng_prekey_profile_body_serialize(
+      buffer, PREKEY_PROFILE_BODY_BYTES, profile);
   if (written == 0) {
-    free(buff);
+    free(buffer);
     return OTRNG_ERROR;
   }
 
   if (size - written < ED448_SIGNATURE_BYTES) {
-    free(buff);
+    free(buffer);
     return OTRNG_ERROR;
   }
 
-  written += otrng_serialize_bytes_array(buff + written, profile->signature,
+  written += otrng_serialize_bytes_array(buffer + written, profile->signature,
                                          ED448_SIGNATURE_BYTES);
 
-  *destination = buff;
-  if (nbytes) {
-    *nbytes = written;
+  *dst = buffer;
+  if (dst_len) {
+    *dst_len = written;
   } else {
     return OTRNG_ERROR;
   }
@@ -251,35 +248,35 @@ INTERNAL otrng_result otrng_prekey_profile_serialize(
 }
 
 INTERNAL otrng_result otrng_prekey_profile_serialize_with_metadata(
-    uint8_t **destination, size_t *nbytes, otrng_prekey_profile_s *profile) {
+    uint8_t **dst, size_t *dst_len, otrng_prekey_profile_s *profile) {
   size_t size = PREKEY_PROFILE_BODY_BYTES + ED448_SIGNATURE_BYTES + 1 +
                 ED448_PRIVATE_BYTES;
-  uint8_t *buff = otrng_xmalloc_z(size);
+  uint8_t *buffer = otrng_xmalloc_z(size);
   size_t written;
 
-  written = otrng_prekey_profile_body_serialize(buff, PREKEY_PROFILE_BODY_BYTES,
-                                                profile);
+  written = otrng_prekey_profile_body_serialize(
+      buffer, PREKEY_PROFILE_BODY_BYTES, profile);
   if (written == 0) {
-    free(buff);
+    free(buffer);
     return OTRNG_ERROR;
   }
 
   if (size - written < ED448_SIGNATURE_BYTES) {
-    free(buff);
+    free(buffer);
     return OTRNG_ERROR;
   }
 
-  written += otrng_serialize_bytes_array(buff + written, profile->signature,
+  written += otrng_serialize_bytes_array(buffer + written, profile->signature,
                                          ED448_SIGNATURE_BYTES);
 
-  written += otrng_serialize_uint8(buff + written, profile->should_publish);
+  written += otrng_serialize_uint8(buffer + written, profile->should_publish);
 
-  written += otrng_serialize_bytes_array(buff + written, profile->keys->sym,
+  written += otrng_serialize_bytes_array(buffer + written, profile->keys->sym,
                                          ED448_PRIVATE_BYTES);
 
-  *destination = buff;
-  if (nbytes) {
-    *nbytes = written;
+  *dst = buffer;
+  if (dst_len) {
+    *dst_len = written;
   } else {
     return OTRNG_ERROR;
   }
@@ -338,13 +335,13 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
                                       const otrng_public_key_t pub) {
   uint8_t *body = NULL;
   size_t bodylen = 0;
-  uint8_t zero_buff[ED448_SIGNATURE_BYTES];
+  uint8_t zero_buffer[ED448_SIGNATURE_BYTES];
   uint8_t pubkey[ED448_POINT_BYTES];
   otrng_bool valid;
 
-  memset(zero_buff, 0, ED448_SIGNATURE_BYTES);
+  memset(zero_buffer, 0, ED448_SIGNATURE_BYTES);
 
-  if (memcmp(profile->signature, zero_buff, ED448_SIGNATURE_BYTES) == 0) {
+  if (memcmp(profile->signature, zero_buffer, ED448_SIGNATURE_BYTES) == 0) {
     return otrng_false;
   }
 

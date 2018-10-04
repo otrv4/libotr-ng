@@ -65,7 +65,7 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_to(
     const otrng_client_s *client, FILE *privf) {
   char *key;
   int err;
-  char *buff = NULL;
+  char *buffer = NULL;
   size_t s = 0;
 
   if (!privf) {
@@ -92,12 +92,12 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_to(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_symmetric_key_serialize(&buff, &s, client->keypair->sym)) {
+  if (!otrng_symmetric_key_serialize(&buffer, &s, client->keypair->sym)) {
     return OTRNG_ERROR;
   }
 
-  err = fwrite(buff, s, 1, privf);
-  free(buff);
+  err = fwrite(buffer, s, 1, privf);
+  free(buffer);
 
   if (err != 1) {
     return OTRNG_ERROR;
@@ -110,14 +110,14 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_to(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_client_forging_key_write_to(const otrng_client_s *client, FILE *f) {
-  uint8_t *buff;
+INTERNAL otrng_result otrng_client_forging_key_write_to(
+    const otrng_client_s *client, FILE *forgingf) {
+  uint8_t *buffer;
   size_t size;
   char *encoded;
   char *storage_id;
 
-  if (!f) {
+  if (!forgingf) {
     return OTRNG_ERROR;
   }
 
@@ -125,16 +125,16 @@ otrng_client_forging_key_write_to(const otrng_client_s *client, FILE *f) {
     return OTRNG_ERROR;
   }
 
-  buff = otrng_secure_alloc((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
+  buffer = otrng_secure_alloc((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
 
-  size = otrng_serialize_forging_key(buff, *client->forging_key);
+  size = otrng_serialize_forging_key(buffer, *client->forging_key);
   if (size == 0) {
     return OTRNG_ERROR;
   }
 
-  encoded = otrng_base64_encode(buff, size);
-  otrng_secure_wipe(buff, (2 + ED448_POINT_BYTES) * sizeof(uint8_t));
-  free(buff);
+  encoded = otrng_base64_encode(buffer, size);
+  otrng_secure_wipe(buffer, (2 + ED448_POINT_BYTES) * sizeof(uint8_t));
+  free(buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }
@@ -146,7 +146,7 @@ otrng_client_forging_key_write_to(const otrng_client_s *client, FILE *f) {
     return OTRNG_ERROR;
   }
 
-  if (fprintf(f, "%s\n%s\n", storage_id, encoded) < 0) {
+  if (fprintf(forgingf, "%s\n%s\n", storage_id, encoded) < 0) {
     free(storage_id);
     otrng_secure_wipe(encoded, strlen(encoded));
     free(encoded);
@@ -229,7 +229,7 @@ otrng_client_private_key_v4_read_from(otrng_client_s *client, FILE *privf) {
 }
 
 INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
-                                                         FILE *f) {
+                                                         FILE *forgingf) {
   char *line = NULL;
   int len = 0;
   uint8_t *dec;
@@ -237,7 +237,7 @@ INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
   otrng_public_key_t key;
   otrng_result ret;
 
-  if (!f || feof(f)) {
+  if (!forgingf || feof(forgingf)) {
     return OTRNG_ERROR;
   }
 
@@ -245,7 +245,7 @@ INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
     otrng_ec_point_destroy(*client->forging_key);
   }
 
-  len = get_limited_line(&line, f);
+  len = get_limited_line(&line, forgingf);
   if (len < 0) {
     return OTRNG_ERROR;
   }
@@ -291,14 +291,14 @@ INTERNAL otrng_result otrng_client_instance_tag_write_to(otrng_client_s *client,
 }
 
 INTERNAL otrng_result
-otrng_client_instance_tag_read_from(otrng_client_s *client, FILE *instag) {
+otrng_client_instance_tag_read_from(otrng_client_s *client, FILE *instagf) {
   gcry_error_t ret;
 
   if (!client->global_state->user_state_v3) {
     return OTRNG_ERROR;
   }
 
-  ret = otrl_instag_read_FILEp(client->global_state->user_state_v3, instag);
+  ret = otrl_instag_read_FILEp(client->global_state->user_state_v3, instagf);
 
   if (ret) {
     return OTRNG_ERROR;
@@ -438,13 +438,13 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
 }
 
 INTERNAL otrng_result otrng_client_client_profile_write_to(
-    const otrng_client_s *client, FILE *privf) {
-  uint8_t *buff = NULL;
+    const otrng_client_s *client, FILE *profilef) {
+  uint8_t *buffer = NULL;
   size_t s = 0;
   char *encoded;
   char *storage_id;
 
-  if (!privf) {
+  if (!profilef) {
     return OTRNG_ERROR;
   }
 
@@ -452,13 +452,13 @@ INTERNAL otrng_result otrng_client_client_profile_write_to(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_client_profile_serialize_with_metadata(&buff, &s,
+  if (!otrng_client_profile_serialize_with_metadata(&buffer, &s,
                                                     client->client_profile)) {
     return OTRNG_ERROR;
   }
 
-  encoded = otrng_base64_encode(buff, s);
-  free(buff);
+  encoded = otrng_base64_encode(buffer, s);
+  free(buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }
@@ -469,7 +469,7 @@ INTERNAL otrng_result otrng_client_client_profile_write_to(
     return OTRNG_ERROR;
   }
 
-  if (fprintf(privf, "%s\n%s\n", storage_id, encoded) < 0) {
+  if (fprintf(profilef, "%s\n%s\n", storage_id, encoded) < 0) {
     free(storage_id);
     free(encoded);
     return OTRNG_ERROR;
@@ -483,7 +483,7 @@ INTERNAL otrng_result otrng_client_client_profile_write_to(
 
 static otrng_result
 serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
-                           const char *storage_id, FILE *privf) {
+                           const char *storage_id, FILE *prekeyf) {
   uint8_t *ecdh_secret_k = otrng_secure_alloc(ED448_SCALAR_BYTES);
   char *ecdh_symkey;
   uint8_t *dh_secret_k = otrng_secure_alloc(DH_KEY_SIZE);
@@ -491,7 +491,7 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
   char *dh_symkey;
   int ret;
 
-  if (fprintf(privf, "%s\n", storage_id) < 0) {
+  if (fprintf(prekeyf, "%s\n", storage_id) < 0) {
     return OTRNG_ERROR;
   }
 
@@ -521,7 +521,7 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
   otrng_secure_wipe(dh_secret_k, DH_KEY_SIZE);
   free(dh_secret_k);
 
-  ret = fprintf(privf, "%x\n%x\n%s\n%s\n", prekey->id,
+  ret = fprintf(prekeyf, "%x\n%x\n%s\n%s\n", prekey->id,
                 prekey->sender_instance_tag, ecdh_symkey, dh_symkey);
   otrng_secure_wipe(ecdh_symkey, strlen(ecdh_symkey));
   free(ecdh_symkey);
@@ -536,11 +536,11 @@ serialize_and_store_prekey(const otrng_stored_prekeys_s *prekey,
 }
 
 INTERNAL otrng_result
-otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *privf) {
+otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *prekeyf) {
   char *storage_id;
   list_element_s *current;
 
-  if (!privf) {
+  if (!prekeyf) {
     return OTRNG_ERROR;
   }
 
@@ -556,7 +556,7 @@ otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *privf) {
 
   current = client->our_prekeys;
   while (current) {
-    if (!serialize_and_store_prekey(current->data, storage_id, privf)) {
+    if (!serialize_and_store_prekey(current->data, storage_id, prekeyf)) {
       free(storage_id);
       return OTRNG_ERROR;
     }
@@ -568,7 +568,8 @@ otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *privf) {
   return OTRNG_SUCCESS;
 }
 
-otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
+otrng_result read_and_deserialize_prekey(otrng_client_s *client,
+                                         FILE *prekeyf) {
   char *line = NULL;
   int line_len = 0;
   int dec_len;
@@ -577,35 +578,35 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   size_t priv_len;
   otrng_result success;
 
-  otrng_stored_prekeys_s *prekey_message =
+  otrng_stored_prekeys_s *prekey_msg =
       otrng_xmalloc_z(sizeof(otrng_stored_prekeys_s));
 
-  prekey_message->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
-  prekey_message->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
+  prekey_msg->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
+  prekey_msg->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
 
-  line_len = get_limited_line(&line, privf);
+  line_len = get_limited_line(&line, prekeyf);
   if (line_len < 0) {
-    free(prekey_message);
+    free(prekey_msg);
     return OTRNG_ERROR;
   }
-  prekey_message->id = strtol(line, NULL, 16);
+  prekey_msg->id = strtol(line, NULL, 16);
 
   free(line);
   line = NULL;
 
-  line_len = get_limited_line(&line, privf);
+  line_len = get_limited_line(&line, prekeyf);
   if (line_len < 0) {
-    free(prekey_message);
+    free(prekey_msg);
     return OTRNG_ERROR;
   }
 
-  prekey_message->sender_instance_tag = strtol(line, NULL, 16);
+  prekey_msg->sender_instance_tag = strtol(line, NULL, 16);
   free(line);
   line = NULL;
 
-  line_len = get_limited_line(&line, privf);
+  line_len = get_limited_line(&line, prekeyf);
   if (line_len < 0) {
-    free(prekey_message);
+    free(prekey_msg);
     return OTRNG_ERROR;
   }
 
@@ -617,16 +618,16 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   free(line);
   line = NULL;
 
-  otrng_deserialize_ec_scalar(prekey_message->our_ecdh->priv, dec, scalar_len);
+  otrng_deserialize_ec_scalar(prekey_msg->our_ecdh->priv, dec, scalar_len);
   free(dec);
   dec = NULL;
 
-  otrng_ec_calculate_public_key(prekey_message->our_ecdh->pub,
-                                prekey_message->our_ecdh->priv);
+  otrng_ec_calculate_public_key(prekey_msg->our_ecdh->pub,
+                                prekey_msg->our_ecdh->priv);
 
-  line_len = get_limited_line(&line, privf);
+  line_len = get_limited_line(&line, prekeyf);
   if (line_len < 0) {
-    free(prekey_message);
+    free(prekey_msg);
     return OTRNG_ERROR;
   }
 
@@ -637,35 +638,35 @@ otrng_result read_and_deserialize_prekey(otrng_client_s *client, FILE *privf) {
   priv_len = otrl_base64_decode(dec, line, line_len - 1);
   free(line);
 
-  prekey_message->our_dh->priv = NULL;
-  prekey_message->our_dh->pub = NULL;
+  prekey_msg->our_dh->priv = NULL;
+  prekey_msg->our_dh->pub = NULL;
 
-  success = otrng_dh_mpi_deserialize(&prekey_message->our_dh->priv, dec,
-                                     priv_len, NULL);
+  success =
+      otrng_dh_mpi_deserialize(&prekey_msg->our_dh->priv, dec, priv_len, NULL);
 
   free(dec);
 
   if (!success) {
-    free(prekey_message);
+    free(prekey_msg);
     return OTRNG_ERROR;
   }
 
-  prekey_message->our_dh->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
-  otrng_dh_calculate_public_key(prekey_message->our_dh->pub,
-                                prekey_message->our_dh->priv);
+  prekey_msg->our_dh->pub = gcry_mpi_new(DH3072_MOD_LEN_BITS);
+  otrng_dh_calculate_public_key(prekey_msg->our_dh->pub,
+                                prekey_msg->our_dh->priv);
 
-  client->our_prekeys = otrng_list_add(prekey_message, client->our_prekeys);
+  client->our_prekeys = otrng_list_add(prekey_msg, client->our_prekeys);
 
   return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result
-otrng_client_prekey_messages_read_from(otrng_client_s *client, FILE *privf) {
-  if (!privf) {
+otrng_client_prekey_messages_read_from(otrng_client_s *client, FILE *prekeyf) {
+  if (!prekeyf) {
     return OTRNG_ERROR;
   }
 
-  if (!read_and_deserialize_prekey(client, privf)) {
+  if (!read_and_deserialize_prekey(client, prekeyf)) {
     return OTRNG_ERROR;
   }
 
@@ -673,13 +674,13 @@ otrng_client_prekey_messages_read_from(otrng_client_s *client, FILE *privf) {
 }
 
 INTERNAL otrng_result
-otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *privf) {
-  uint8_t *buff = NULL;
+otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *profilef) {
+  uint8_t *buffer = NULL;
   size_t s = 0;
   char *encoded;
   char *storage_id;
 
-  if (!privf) {
+  if (!profilef) {
     return OTRNG_ERROR;
   }
 
@@ -687,13 +688,13 @@ otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_prekey_profile_serialize_with_metadata(&buff, &s,
+  if (!otrng_prekey_profile_serialize_with_metadata(&buffer, &s,
                                                     client->prekey_profile)) {
     return OTRNG_ERROR;
   }
 
-  encoded = otrng_base64_encode(buff, s);
-  free(buff);
+  encoded = otrng_base64_encode(buffer, s);
+  free(buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }
@@ -704,7 +705,7 @@ otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *privf) {
     return OTRNG_ERROR;
   }
 
-  if (fprintf(privf, "%s\n%s\n", storage_id, encoded) < 0) {
+  if (fprintf(profilef, "%s\n%s\n", storage_id, encoded) < 0) {
     free(encoded);
     free(storage_id);
     return OTRNG_ERROR;

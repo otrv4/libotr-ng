@@ -27,16 +27,16 @@ INTERNAL otrng_result
 otrng_client_private_key_v4_read_from(otrng_client_s *client, FILE *privf);
 
 INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
-                                                         FILE *f);
+                                                         FILE *forgingf);
 
 INTERNAL otrng_result
 otrng_client_private_key_v4_write_to(const otrng_client_s *client, FILE *privf);
 
 INTERNAL otrng_result
-otrng_client_forging_key_write_to(const otrng_client_s *client, FILE *f);
+otrng_client_forging_key_write_to(const otrng_client_s *client, FILE *forgingf);
 
 INTERNAL otrng_result
-otrng_client_instance_tag_read_from(otrng_client_s *client, FILE *instag);
+otrng_client_instance_tag_read_from(otrng_client_s *client, FILE *instagf);
 
 INTERNAL otrng_result otrng_client_instance_tag_write_to(otrng_client_s *client,
                                                          FILE *instagf);
@@ -50,23 +50,23 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef);
 INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
     otrng_client_s *client, FILE *exp_profilef);
 
-INTERNAL otrng_result
-otrng_client_client_profile_write_to(const otrng_client_s *client, FILE *privf);
+INTERNAL otrng_result otrng_client_client_profile_write_to(
+    const otrng_client_s *client, FILE *profilef);
 
 INTERNAL otrng_result
-otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *privf);
+otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *prekeyf);
 
 INTERNAL otrng_result
-otrng_client_prekey_messages_read_from(otrng_client_s *client, FILE *privf);
+otrng_client_prekey_messages_read_from(otrng_client_s *client, FILE *prekeyf);
 
 INTERNAL otrng_result
-otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *privf);
+otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef);
 
 INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
-    otrng_client_s *client, FILE *privf);
+    otrng_client_s *client, FILE *expired_profilef);
 
 INTERNAL otrng_result
-otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *privf);
+otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *profilef);
 #endif
 
 #endif

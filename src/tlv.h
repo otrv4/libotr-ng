@@ -100,16 +100,16 @@ INTERNAL tlv_s *otrng_tlv_disconnected_new(void);
 
 /**
  * @brief Tries to extract as many TLVs as possible in the memory region from
- *    [source] to [source]+[len].
+ *    [src] to [src]+[len].
  *
- * @param [source] the pointer to where to start parsing. can't be NULL
+ * @param [src] the pointer to where to start parsing. can't be NULL
  * @param [len] the amount of data to parse. can be 0.
  *
  * @return the TLV list, if successful. it is the callers
  *    responsibility to free it after use.
  *    returns NULL if no TLVs can be found.
  **/
-INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *source, size_t len);
+INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len);
 
 /**
  * @brief creates a new TLV from the given data.
@@ -144,6 +144,6 @@ INTERNAL tlv_s *otrng_tlv_padding_new(size_t len);
 
 INTERNAL void otrng_tlv_free(tlv_s *tlv);
 
-INTERNAL size_t otrng_tlv_serialize(uint8_t *destination, const tlv_s *tlv);
+INTERNAL size_t otrng_tlv_serialize(uint8_t *dst, const tlv_s *tlv);
 
 #endif

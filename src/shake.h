@@ -38,19 +38,18 @@ void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
 
 void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage);
 
-void shake_kkdf(uint8_t *destination, size_t destinationlen, const uint8_t *key,
-                size_t keylen, const uint8_t *secret, size_t secretlen);
+void shake_kkdf(uint8_t *dst, size_t dst_len, const uint8_t *key,
+                size_t key_len, const uint8_t *secret, size_t secretlen);
 
 /* KDF_1("OTRv4" || usageID || values, len) */
-void shake_256_kdf1(uint8_t *destination, size_t destinationlen, uint8_t usage,
+void shake_256_kdf1(uint8_t *dst, size_t dst_len, uint8_t usage,
                     const uint8_t *values, size_t valueslen);
 
 /* KDF_1("OTR-Prekey-Server" || usageID || values, len) */
-void shake_256_prekey_server_kdf(uint8_t *destination, size_t destinationlen,
-                                 uint8_t usage, const uint8_t *values,
-                                 size_t valueslen);
+void shake_256_prekey_server_kdf(uint8_t *dst, size_t dst_len, uint8_t usage,
+                                 const uint8_t *values, size_t valueslen);
 
-void shake_256_hash(uint8_t *destination, size_t destinationlen,
-                    const uint8_t *secret, size_t secretlen);
+void shake_256_hash(uint8_t *dst, size_t dst_len, const uint8_t *secret,
+                    size_t secretlen);
 
 #endif

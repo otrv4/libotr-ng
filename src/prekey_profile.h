@@ -37,12 +37,12 @@ typedef struct prekey_profile_s {
   otrng_bool is_publishing;
 } otrng_prekey_profile_s;
 
-INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *destination);
+INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst);
 
-INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *destination);
+INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *dst);
 
-INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *destination,
-                                        const otrng_prekey_profile_s *source);
+INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
+                                        const otrng_prekey_profile_s *src);
 
 INTERNAL otrng_prekey_profile_s *
 otrng_prekey_profile_build(uint32_t instance_tag,
@@ -60,8 +60,8 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
 INTERNAL otrng_result prekey_profile_sign(otrng_prekey_profile_s *profile,
                                           const otrng_keypair_s *longterm_pair);
 
-INTERNAL otrng_result otrng_prekey_profile_serialize(uint8_t **destination,
-                                                     size_t *destinationlen,
+INTERNAL otrng_result otrng_prekey_profile_serialize(uint8_t **dst,
+                                                     size_t *dst_len,
                                                      otrng_prekey_profile_s *p);
 
 INTERNAL otrng_result otrng_prekey_profile_deserialize(
@@ -69,7 +69,7 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize(
     size_t *nread);
 
 INTERNAL otrng_result otrng_prekey_profile_serialize_with_metadata(
-    uint8_t **destination, size_t *destinationlen, otrng_prekey_profile_s *p);
+    uint8_t **dst, size_t *dst_len, otrng_prekey_profile_s *p);
 
 INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
     otrng_prekey_profile_s *target, const uint8_t *buffer, size_t buflen,
@@ -87,11 +87,10 @@ API void otrng_prekey_profile_debug_print(FILE *, int,
 #ifdef OTRNG_PREKEY_PROFILE_PRIVATE
 
 tstatic otrng_result otrng_prekey_profile_body_serialize_into(
-    uint8_t **destination, size_t *destinationlen, otrng_prekey_profile_s *p);
+    uint8_t **dst, size_t *dst_len, otrng_prekey_profile_s *profile);
 
-tstatic size_t otrng_prekey_profile_body_serialize(uint8_t *destination,
-                                                   size_t destinationlen,
-                                                   otrng_prekey_profile_s *p);
+tstatic size_t otrng_prekey_profile_body_serialize(
+    uint8_t *dst, size_t dst_len, otrng_prekey_profile_s *profile);
 
 #endif
 

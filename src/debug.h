@@ -28,7 +28,7 @@
 #include "shared.h"
 #include "str.h"
 
-INTERNAL /*@null@*/ char *_otrng_memdump(const uint8_t *source, size_t len);
+INTERNAL /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len);
 
 API void otrng_debug_init(void);
 API void otrng_debug_enable(void);
@@ -76,13 +76,13 @@ static inline void otrng_debug_print_data(FILE *f, const uint8_t *p,
 
 #define debug_print printf
 #ifdef DEBUG
-static inline void otrng_memdump(const uint8_t *source, size_t len) {
-  debug_print("%s\n", _otrng_memdump(source, len));
+static inline void otrng_memdump(const uint8_t *src, size_t len) {
+  debug_print("%s\n", _otrng_memdump(src, len));
 }
 
 #else
-static inline void otrng_memdump(const uint8_t *source, size_t len) {
-  (void)source;
+static inline void otrng_memdump(const uint8_t *src, size_t len) {
+  (void)src;
   (void)len;
   (void)_otrng_memdump;
 }

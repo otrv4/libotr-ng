@@ -63,7 +63,7 @@ INTERNAL otrng_result otrng_serialize_fingerprint(
     return OTRNG_ERROR;
   }
 
-  // KDF_1(usage_fingerprint || byte(H), 56)
+  /* KDF_1(usage_fingerprint || byte(H), 56) */
   hash_init_with_usage(hd, usage_fingerprint);
   hash_update(hd, serialized, ED448_POINT_BYTES);
 

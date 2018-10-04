@@ -56,26 +56,26 @@ otrng_xmemdup(/*@notnull@*/ const void *s, const size_t len) {
 }
 
 INTERNAL /*@notnull@*/ /*@only@*/ char *
-otrng_stpcpy(/*@notnull@*/ char *dest,
-             /*@notnull@*/ const char *source) /*@modifies dest@*/ {
-  return otrng_stpncpy(dest, source, strlen(source) + 1);
+otrng_stpcpy(/*@notnull@*/ char *dst,
+             /*@notnull@*/ const char *src) /*@modifies dst@*/ {
+  return otrng_stpncpy(dst, src, strlen(src) + 1);
 }
 
 INTERNAL /*@notnull@*/ /*@only@*/ char *
-otrng_stpncpy(/*@notnull@*/ char *dest, /*@notnull@*/ const char *source,
-              const size_t n) /*@modifies dest@*/ {
+otrng_stpncpy(/*@notnull@*/ char *dst, /*@notnull@*/ const char *src,
+              const size_t n) /*@modifies dst@*/ {
   size_t l, w;
   char *t;
 
-  l = strlen(source);
+  l = strlen(src);
   w = l < n ? l : n;
-  memmove(dest, source, w);
+  memmove(dst, src, w);
 
-  for (t = dest + w; t < dest + n; t++) {
+  for (t = dst + w; t < dst + n; t++) {
     *t = 0;
   }
 
-  return dest + w;
+  return dst + w;
 }
 
 INTERNAL size_t otrng_strnlen(/*@notnull@*/ const char *s,

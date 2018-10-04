@@ -23,22 +23,21 @@
 #include "client.h"
 #include "tlv.h"
 
-static size_t calculate_padding_len(size_t message_len, size_t max) {
+static size_t calculate_padding_len(size_t msg_len, size_t max) {
   size_t tlv_header_len = 4;
 
   if (max == 0) {
     return 0;
   }
 
-  return max - ((message_len + tlv_header_len + 1) % max);
+  return max - ((msg_len + tlv_header_len + 1) % max);
 }
 
-INTERNAL otrng_result generate_padding(uint8_t **destination,
-                                       size_t *destinationlen,
-                                       size_t message_len, const otrng_s *otr) {
+INTERNAL otrng_result generate_padding(uint8_t **dst, size_t *dst_len,
+                                       size_t msg_len, const otrng_s *otr) {
   tlv_s *padding_tlv;
   size_t ret;
-  size_t padding_len = calculate_padding_len(message_len, otr->client->padding);
+  size_t padding_len = calculate_padding_len(msg_len, otr->client->padding);
   if (!padding_len) {
     return OTRNG_SUCCESS;
   }
@@ -48,10 +47,10 @@ INTERNAL otrng_result generate_padding(uint8_t **destination,
     return OTRNG_ERROR;
   }
 
-  *destinationlen = padding_tlv->len + 4;
-  *destination = otrng_xmalloc_z(*destinationlen);
+  *dst_len = padding_tlv->len + 4;
+  *dst = otrng_xmalloc_z(*dst_len);
 
-  ret = otrng_tlv_serialize(*destination, padding_tlv);
+  ret = otrng_tlv_serialize(*dst, padding_tlv);
   otrng_tlv_free(padding_tlv);
 
   if (ret == 0) {

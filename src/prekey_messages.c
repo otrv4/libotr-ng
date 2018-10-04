@@ -24,12 +24,11 @@
 #include "deserialize.h"
 
 INTERNAL otrng_result otrng_prekey_success_message_deserialize(
-    otrng_prekey_success_message_s *destination, const uint8_t *source,
-    size_t source_len) {
-  const uint8_t *cursor = source;
-  int64_t len = source_len;
+    otrng_prekey_success_message_s *dst, const uint8_t *src, size_t src_len) {
+  const uint8_t *cursor = src;
+  int64_t len = src_len;
   size_t read = 0;
-  uint8_t message_type = 0;
+  uint8_t msg_type = 0;
 
   uint16_t protocol_version = 0;
   if (!otrng_deserialize_uint16(&protocol_version, cursor, len, &read)) {
@@ -43,18 +42,18 @@ INTERNAL otrng_result otrng_prekey_success_message_deserialize(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint8(&message_type, cursor, len, &read)) {
+  if (!otrng_deserialize_uint8(&msg_type, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
   cursor += read;
   len -= read;
 
-  if (message_type != OTRNG_PREKEY_SUCCESS_MSG) {
+  if (msg_type != OTRNG_PREKEY_SUCCESS_MSG) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_deserialize_uint32(&destination->client_instance_tag, cursor, len,
+  if (!otrng_deserialize_uint32(&dst->client_instance_tag, cursor, len,
                                 &read)) {
     return OTRNG_ERROR;
   }
@@ -62,6 +61,6 @@ INTERNAL otrng_result otrng_prekey_success_message_deserialize(
   cursor += read;
   len -= read;
 
-  return otrng_deserialize_bytes_array(destination->success_mac, HASH_BYTES,
-                                       cursor, len);
+  return otrng_deserialize_bytes_array(dst->success_mac, HASH_BYTES, cursor,
+                                       len);
 }

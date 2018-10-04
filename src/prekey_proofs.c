@@ -31,7 +31,7 @@
 
 static const uint8_t usage_proof_c_lambda = 0x17;
 
-INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_s *destination,
+INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_s *dst,
                                                 const ec_scalar_t *values_priv,
                                                 const ec_point_t *values_pub,
                                                 const size_t values_len,
@@ -72,22 +72,21 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(ecdh_proof_s *destination,
 
   memcpy(curr, m, 64);
 
-  shake_256_prekey_server_kdf(destination->c, PROOF_C_SIZE, usage, cbuf,
-                              cbuf_len);
+  shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf, cbuf_len);
   free(cbuf);
 
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
-  shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, destination->c,
+  shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
                               PROOF_C_SIZE);
 
-  goldilocks_448_scalar_copy(destination->v, r);
+  goldilocks_448_scalar_copy(dst->v, r);
   goldilocks_448_scalar_destroy(r);
   for (i = 0; i < values_len; i++) {
     goldilocks_448_scalar_p t;
     goldilocks_448_scalar_decode_long(t, p + i * PREKEY_PROOF_LAMBDA,
                                       PREKEY_PROOF_LAMBDA);
     goldilocks_448_scalar_mul(t, t, values_priv[i]);
-    goldilocks_448_scalar_add(destination->v, destination->v, t);
+    goldilocks_448_scalar_add(dst->v, dst->v, t);
     goldilocks_448_scalar_destroy(t);
   }
 
@@ -200,9 +199,9 @@ tstatic void *gen_random_data(size_t n, random_generator gen) {
 }
 
 INTERNAL otrng_result otrng_dh_proof_generate(
-    dh_proof_s *destination, const dh_mpi_t *values_priv,
-    const dh_mpi_t *values_pub, const size_t values_len, const uint8_t *m,
-    const uint8_t usage, random_generator gen) {
+    dh_proof_s *dst, const dh_mpi_t *values_priv, const dh_mpi_t *values_pub,
+    const size_t values_len, const uint8_t *m, const uint8_t usage,
+    random_generator gen) {
   uint8_t *p;
   uint8_t *rbuf;
   gcry_error_t err;
@@ -255,15 +254,15 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   memcpy(cbuf_curr, m, 64);
   cbuf_curr += 64;
 
-  shake_256_prekey_server_kdf(destination->c, PROOF_C_SIZE, usage, cbuf,
+  shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf,
                               cbuf_curr - cbuf);
   free(cbuf);
 
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
-  shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, destination->c,
+  shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
                               PROOF_C_SIZE);
 
-  destination->v = otrng_dh_mpi_copy(r);
+  dst->v = otrng_dh_mpi_copy(r);
   otrng_dh_mpi_release(r);
 
   p_curr = p;
@@ -275,7 +274,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
     }
     p_curr += w;
     gcry_mpi_mulm(t, t, values_priv[i], q);
-    gcry_mpi_addm(destination->v, destination->v, t, q);
+    gcry_mpi_addm(dst->v, dst->v, t, q);
     otrng_dh_mpi_release(t);
   }
   free(p);
@@ -364,26 +363,25 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   return otrng_false;
 }
 
-INTERNAL size_t otrng_ecdh_proof_serialize(uint8_t *destination,
+INTERNAL size_t otrng_ecdh_proof_serialize(uint8_t *dst,
                                            const ecdh_proof_s *px) {
-  uint8_t *cursor = destination;
+  uint8_t *cursor = dst;
 
   cursor += otrng_serialize_bytes_array(cursor, px->c, PROOF_C_SIZE);
   cursor += otrng_serialize_ec_scalar(cursor, px->v);
 
-  return cursor - destination;
+  return cursor - dst;
 }
 
-INTERNAL size_t otrng_dh_proof_serialize(uint8_t *destination,
-                                         const dh_proof_s *px) {
-  uint8_t *cursor = destination;
+INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_s *px) {
+  uint8_t *cursor = dst;
   size_t len;
 
   cursor += otrng_serialize_bytes_array(cursor, px->c, PROOF_C_SIZE);
   otrng_serialize_dh_mpi_otr(cursor, DH_MPI_MAX_BYTES, &len, px->v);
   cursor += len;
 
-  return cursor - destination;
+  return cursor - dst;
 }
 
 INTERNAL otrng_result otrng_ecdh_proof_deserialize(ecdh_proof_s *px,

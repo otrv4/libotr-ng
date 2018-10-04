@@ -38,24 +38,20 @@ INTERNAL size_t serialize_uint(uint8_t *target, const uint64_t data,
   return offset;
 }
 
-INTERNAL size_t otrng_serialize_uint64(uint8_t *destination,
-                                       const uint64_t data) {
-  return serialize_uint(destination, data, sizeof(uint64_t));
+INTERNAL size_t otrng_serialize_uint64(uint8_t *dst, const uint64_t data) {
+  return serialize_uint(dst, data, sizeof(uint64_t));
 }
 
-INTERNAL size_t otrng_serialize_uint32(uint8_t *destination,
-                                       const uint32_t data) {
-  return serialize_uint(destination, data, sizeof(uint32_t));
+INTERNAL size_t otrng_serialize_uint32(uint8_t *dst, const uint32_t data) {
+  return serialize_uint(dst, data, sizeof(uint32_t));
 }
 
-INTERNAL size_t otrng_serialize_uint8(uint8_t *destination,
-                                      const uint8_t data) {
-  return serialize_uint(destination, data, sizeof(uint8_t));
+INTERNAL size_t otrng_serialize_uint8(uint8_t *dst, const uint8_t data) {
+  return serialize_uint(dst, data, sizeof(uint8_t));
 }
 
-INTERNAL size_t otrng_serialize_uint16(uint8_t *destination,
-                                       const uint16_t data) {
-  return serialize_uint(destination, data, sizeof(uint16_t));
+INTERNAL size_t otrng_serialize_uint16(uint8_t *dst, const uint16_t data) {
+  return serialize_uint(dst, data, sizeof(uint16_t));
 }
 
 INTERNAL size_t otrng_serialize_bytes_array(uint8_t *target,
@@ -69,60 +65,57 @@ INTERNAL size_t otrng_serialize_bytes_array(uint8_t *target,
   return len;
 }
 
-INTERNAL size_t otrng_serialize_data(uint8_t *destination, const uint8_t *data,
+INTERNAL size_t otrng_serialize_data(uint8_t *dst, const uint8_t *data,
                                      size_t len) {
-  uint8_t *cursor = destination;
+  uint8_t *cursor = dst;
 
   cursor += otrng_serialize_uint32(cursor, len);
   cursor += otrng_serialize_bytes_array(cursor, data, len);
 
-  return cursor - destination;
+  return cursor - dst;
 }
 
-INTERNAL size_t otrng_serialize_mpi(uint8_t *destination,
-                                    const otrng_mpi_s *mpi) {
-  return otrng_serialize_data(destination, mpi->data, mpi->len);
+INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_s *mpi) {
+  return otrng_serialize_data(dst, mpi->data, mpi->len);
 }
 
-INTERNAL int otrng_serialize_ec_point(uint8_t *destination,
-                                      const ec_point_t point) {
-  if (!otrng_ec_point_encode(destination, ED448_POINT_BYTES, point)) {
+INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point_t point) {
+  if (!otrng_ec_point_encode(dst, ED448_POINT_BYTES, point)) {
     return 0;
   };
 
   return ED448_POINT_BYTES;
 }
 
-INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *destination,
+INTERNAL size_t otrng_serialize_ec_scalar(uint8_t *dst,
                                           const ec_scalar_t scalar) {
-  otrng_ec_scalar_encode(destination, scalar);
+  otrng_ec_scalar_encode(dst, scalar);
   return ED448_SCALAR_BYTES;
 }
 
 // Serializes a DH MPI as an OTR MPI data type
-INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *destination,
-                                                 size_t destinationlen,
+INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dst_len,
                                                  size_t *written,
                                                  const dh_mpi_t mpi) {
-  uint8_t buf[DH3072_MOD_LEN_BYTES];
+  uint8_t buffer[DH3072_MOD_LEN_BYTES];
   size_t w = 0;
   otrng_mpi_s otr_mpi;
 
-  memset(buf, 0, DH3072_MOD_LEN_BYTES);
+  memset(buffer, 0, DH3072_MOD_LEN_BYTES);
 
-  if (destinationlen < DH_MPI_MAX_BYTES) {
+  if (dst_len < DH_MPI_MAX_BYTES) {
     return OTRNG_ERROR;
   }
 
   /* From gcrypt MPI */
 
-  if (!otrng_dh_mpi_serialize(buf, DH3072_MOD_LEN_BYTES, &w, mpi)) {
+  if (!otrng_dh_mpi_serialize(buffer, DH3072_MOD_LEN_BYTES, &w, mpi)) {
     return OTRNG_ERROR;
   }
 
   // To OTR MPI
-  otrng_mpi_set(&otr_mpi, buf, w);
-  w = otrng_serialize_mpi(destination, &otr_mpi);
+  otrng_mpi_set(&otr_mpi, buffer, w);
+  w = otrng_serialize_mpi(dst, &otr_mpi);
   free(otr_mpi.data);
 
   if (written) {
@@ -133,43 +126,43 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *destination,
 }
 
 // TODO: REMOVE THIS
-INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *destination,
-                                                    size_t destinationlen,
+INTERNAL otrng_result otrng_serialize_dh_public_key(uint8_t *dst,
+                                                    size_t dst_len,
                                                     size_t *written,
                                                     const dh_public_key_t pub) {
-  return otrng_serialize_dh_mpi_otr(destination, destinationlen, written, pub);
+  return otrng_serialize_dh_mpi_otr(dst, dst_len, written, pub);
 }
 
-INTERNAL size_t otrng_serialize_public_key(uint8_t *destination,
+INTERNAL size_t otrng_serialize_public_key(uint8_t *dst,
                                            const otrng_public_key_t pub) {
-  uint8_t *cursor = destination;
+  uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, ED448_PUBKEY_TYPE);
   cursor += otrng_serialize_ec_point(cursor, pub);
 
-  return cursor - destination;
+  return cursor - dst;
 }
 
-INTERNAL size_t otrng_serialize_forging_key(uint8_t *destination,
+INTERNAL size_t otrng_serialize_forging_key(uint8_t *dst,
                                             const otrng_public_key_t pub) {
-  uint8_t *cursor = destination;
+  uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, ED448_FORGINGKEY_TYPE);
   cursor += otrng_serialize_ec_point(cursor, pub);
 
-  return cursor - destination;
+  return cursor - dst;
 }
 
 INTERNAL size_t otrng_serialize_shared_prekey(
-    uint8_t *destination, const otrng_shared_prekey_pub_t shared_prekey) {
-  uint8_t *cursor = destination;
+    uint8_t *dst, const otrng_shared_prekey_pub_t shared_prekey) {
+  uint8_t *cursor = dst;
   cursor += otrng_serialize_uint16(cursor, ED448_SHARED_PREKEY_TYPE);
   cursor += otrng_serialize_ec_point(cursor, shared_prekey);
 
-  return cursor - destination;
+  return cursor - dst;
 }
 
-INTERNAL size_t otrng_serialize_ring_sig(uint8_t *destination,
+INTERNAL size_t otrng_serialize_ring_sig(uint8_t *dst,
                                          const ring_sig_s *proof) {
-  uint8_t *cursor = destination;
+  uint8_t *cursor = dst;
 
   cursor += otrng_serialize_ec_scalar(cursor, proof->c1);
   cursor += otrng_serialize_ec_scalar(cursor, proof->r1);
@@ -178,7 +171,7 @@ INTERNAL size_t otrng_serialize_ring_sig(uint8_t *destination,
   cursor += otrng_serialize_ec_scalar(cursor, proof->c3);
   cursor += otrng_serialize_ec_scalar(cursor, proof->r3);
 
-  return cursor - destination;
+  return cursor - dst;
 }
 
 INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys) {
@@ -205,12 +198,12 @@ INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys) {
   return ser_mac_keys;
 }
 
-INTERNAL size_t otrng_serialize_phi(uint8_t *destination,
+INTERNAL size_t otrng_serialize_phi(uint8_t *dst,
                                     const char *shared_session_state,
-                                    const char *init_message,
+                                    const char *init_msg,
                                     uint16_t sender_instance_tag,
                                     uint16_t receiver_instance_tag) {
-  uint8_t *cursor = destination;
+  uint8_t *cursor = dst;
 
   if (sender_instance_tag < receiver_instance_tag) {
     cursor += otrng_serialize_uint16(cursor, sender_instance_tag);
@@ -222,8 +215,8 @@ INTERNAL size_t otrng_serialize_phi(uint8_t *destination,
 
   cursor += otrng_serialize_data(cursor, (const uint8_t *)shared_session_state,
                                  strlen(shared_session_state));
-  cursor += otrng_serialize_data(cursor, (const uint8_t *)init_message,
-                                 init_message ? strlen(init_message) : 0);
+  cursor += otrng_serialize_data(cursor, (const uint8_t *)init_msg,
+                                 init_msg ? strlen(init_msg) : 0);
 
-  return cursor - destination;
+  return cursor - dst;
 }

@@ -28,27 +28,27 @@
 
 #include "debug.h"
 
-INTERNAL /*@null@*/ char *_otrng_memdump(const uint8_t *source, size_t len) {
+INTERNAL /*@null@*/ char *_otrng_memdump(const uint8_t *src, size_t len) {
   size_t s = len * 6 + len / 8 + 2;
-  char *buff, *cursor;
+  char *buffer, *cursor;
   unsigned int i;
 
-  if (source == NULL) {
+  if (src == NULL) {
     return otrng_xstrndup("(NULL)", 6);
   }
   /* each char is represented by "0x00, " */
-  buff = otrng_xmalloc(s);
+  buffer = otrng_xmalloc(s);
 
-  cursor = buff;
+  cursor = buffer;
 
   for (i = 0; i < len; i++) {
     if (i % 8 == 0) {
       cursor += snprintf(cursor, s, "\n");
     }
-    cursor += snprintf(cursor, s, "0x%02x, ", source[i]);
+    cursor += snprintf(cursor, s, "0x%02x, ", src[i]);
   }
 
-  return buff;
+  return buffer;
 }
 
 static int debug_printing_enabled = 0;

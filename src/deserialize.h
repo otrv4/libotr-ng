@@ -28,36 +28,36 @@
 
 INTERNAL otrng_result otrng_deserialize_uint64(uint64_t *n,
                                                const uint8_t *buffer,
-                                               size_t buflen, size_t *nread);
+                                               size_t buff_len, size_t *nread);
 
 INTERNAL otrng_result otrng_deserialize_uint32(uint32_t *n,
                                                const uint8_t *buffer,
-                                               size_t buflen, size_t *nread);
+                                               size_t buff_len, size_t *nread);
 
 INTERNAL otrng_result otrng_deserialize_uint16(uint16_t *n,
                                                const uint8_t *buffer,
-                                               size_t buflen, size_t *nread);
+                                               size_t buff_len, size_t *nread);
 
 INTERNAL otrng_result otrng_deserialize_uint8(uint8_t *n, const uint8_t *buffer,
-                                              size_t buflen, size_t *nread);
+                                              size_t buff_len, size_t *nread);
 
-INTERNAL otrng_result otrng_deserialize_data(uint8_t **destination,
-                                             size_t *destination_len,
+INTERNAL otrng_result otrng_deserialize_data(uint8_t **dst, size_t *dst_len,
                                              const uint8_t *buffer,
-                                             size_t buflen, size_t *read);
+                                             size_t buff_len, size_t *read);
 
-INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *destination,
-                                                    size_t destinationlen,
+INTERNAL otrng_result otrng_deserialize_bytes_array(uint8_t *dst,
+                                                    size_t dst_len,
                                                     const uint8_t *buffer,
-                                                    size_t buflen);
+                                                    size_t buff_len);
 
-INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_t *destination,
+INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi_t *dst,
                                                    const uint8_t *buffer,
-                                                   size_t buflen, size_t *read);
+                                                   size_t buff_len,
+                                                   size_t *read);
 
 INTERNAL otrng_result otrng_deserialize_ec_point(ec_point_t point,
                                                  const uint8_t *serialized,
-                                                 size_t buflen);
+                                                 size_t ser_len);
 
 INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key_t pub,
                                                    const uint8_t *serialized,
