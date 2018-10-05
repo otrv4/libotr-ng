@@ -64,6 +64,12 @@ tstatic void load_client_profile_from_storage(otrng_client_s *client) {
   otrng_debug_exit("orchestration.load_client_profile_from_storage");
 }
 
+tstatic void load_expired_client_profile_from_storage(otrng_client_s *client) {
+  otrng_debug_enter("orchestration.load_expired_client_profile_from_storage");
+  client->global_state->callbacks->load_expired_client_profile(client);
+  otrng_debug_exit("orchestration.load_expired_client_profile_from_storage");
+}
+
 tstatic void create_client_profile(otrng_client_s *client) {
   otrng_debug_enter("orchestration.create_client_profile");
   client->global_state->callbacks->create_client_profile(client,
@@ -103,6 +109,13 @@ tstatic void clean_client_profile(otrng_client_s *client) {
   if (client->client_profile != NULL) {
     otrng_client_profile_free(client->client_profile);
     client->client_profile = NULL;
+  }
+}
+
+tstatic void clean_expired_client_profile(otrng_client_s *client) {
+  if (client->exp_client_profile != NULL) {
+    otrng_client_profile_free(client->exp_client_profile);
+    client->exp_client_profile = NULL;
   }
 }
 
@@ -207,6 +220,28 @@ tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
   return otrng_client_profile_valid(client->client_profile, itag);
 }
 
+tstatic otrng_bool verify_valid_expired_client_profile(otrng_client_s *client) {
+  uint32_t itag;
+
+  if (client->exp_client_profile == NULL) {
+    return otrng_false;
+  }
+
+  if (!otrng_ec_point_eq(client->keypair->pub,
+                         client->exp_client_profile->long_term_pub_key)) {
+    return otrng_false;
+  }
+
+  if (!otrng_ec_point_eq(*client->forging_key,
+                         client->exp_client_profile->forging_pub_key)) {
+    return otrng_false;
+  }
+
+  itag = otrng_client_get_instance_tag(client);
+  return otrng_client_profile_is_expired_but_valid(
+      client->exp_client_profile, itag, client->profiles_extra_valid_time);
+}
+
 tstatic otrng_bool verify_valid_prekey_profile(otrng_client_s *client) {
   uint32_t instag;
 
@@ -219,6 +254,32 @@ tstatic otrng_bool verify_valid_prekey_profile(otrng_client_s *client) {
                                     client->keypair->pub);
 }
 
+tstatic void move_client_profile_to_expired(otrng_client_s *client) {
+  otrng_debug_enter("move_client_profile_to_expired");
+
+  if (client->exp_client_profile) {
+    otrng_client_profile_free(client->exp_client_profile);
+    client->exp_client_profile = NULL;
+  }
+  client->exp_client_profile = client->client_profile;
+  client->client_profile = NULL;
+
+  client->global_state->callbacks->store_expired_client_profile(client);
+
+  otrng_debug_exit("move_client_profile_to_expired");
+}
+
+tstatic void check_if_expired_client_profile(otrng_client_s *client) {
+  uint32_t itag;
+  if (client->client_profile) {
+    itag = otrng_client_get_instance_tag(client);
+    if (otrng_client_profile_is_expired_but_valid(
+            client->client_profile, itag, client->profiles_extra_valid_time)) {
+      move_client_profile_to_expired(client);
+    }
+  }
+}
+
 tstatic void ensure_valid_client_profile(otrng_client_s *client) {
   if (verify_valid_client_profile(client)) {
     return;
@@ -226,6 +287,7 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
 
   clean_client_profile(client);
   load_client_profile_from_storage(client);
+  check_if_expired_client_profile(client);
 
   if (verify_valid_client_profile(client)) {
     return;
@@ -245,6 +307,26 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
 
   clean_client_profile(client);
   signal_error_in_state_management(client, "No Client Profile");
+}
+
+tstatic void ensure_valid_expired_client_profile(otrng_client_s *client) {
+  otrng_debug_enter("verify_valid_expired_client_profile");
+  if (verify_valid_expired_client_profile(client)) {
+    otrng_debug_exit("verify_valid_expired_client_profile.exit.1");
+    return;
+  }
+
+  clean_expired_client_profile(client);
+  load_expired_client_profile_from_storage(client);
+
+  if (verify_valid_expired_client_profile(client)) {
+    otrng_debug_exit("verify_valid_expired_client_profile.exit.2");
+    return;
+  }
+
+  clean_expired_client_profile(client);
+  client->global_state->callbacks->store_expired_client_profile(client);
+  otrng_debug_exit("verify_valid_expired_client_profile.exit.3");
 }
 
 tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
@@ -349,10 +431,7 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   ensure_valid_long_term_key(client);
   ensure_valid_forging_key(client);
   ensure_valid_client_profile(client);
-
-  // TODO: @ola here we should check if the client profile is close to expiring,
-  // and in that case move it to the expired part and create a new one
-
+  ensure_valid_expired_client_profile(client);
   ensure_valid_prekey_profile(client);
 
   // TODO: @ola here we should check if the prekeyprofile is close to expiring,

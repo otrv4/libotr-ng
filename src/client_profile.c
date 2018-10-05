@@ -583,6 +583,14 @@ INTERNAL otrng_client_profile_s *otrng_client_profile_build(
   return client_profile;
 }
 
+INTERNAL otrng_bool otrng_client_profile_is_expired_but_valid(
+    const otrng_client_profile_s *profile, uint32_t itag,
+    uint64_t extra_valid_time) {
+  return otrng_client_profile_valid_without_expiry(profile, itag) &&
+         otrng_client_profile_expired(profile->expires) &&
+         !otrng_client_profile_invalid(profile->expires, extra_valid_time);
+}
+
 INTERNAL otrng_bool otrng_client_profile_expired(time_t expires) {
   return difftime(expires, time(NULL)) <= 0;
 }
@@ -720,18 +728,14 @@ verify_transitional_signature(const otrng_client_profile_s *client_profile) {
   return otrng_true;
 }
 
-INTERNAL otrng_bool
-otrng_client_profile_valid(const otrng_client_profile_s *client_profile,
-                           const uint32_t sender_instance_tag) {
+INTERNAL otrng_bool otrng_client_profile_valid_without_expiry(
+    const otrng_client_profile_s *client_profile,
+    const uint32_t sender_instance_tag) {
   if (!client_profile_verify_signature(client_profile)) {
     return otrng_false;
   }
 
   if (sender_instance_tag != client_profile->sender_instance_tag) {
-    return otrng_false;
-  }
-
-  if (otrng_client_profile_expired(client_profile->expires)) {
     return otrng_false;
   }
 
@@ -752,6 +756,17 @@ otrng_client_profile_valid(const otrng_client_profile_s *client_profile,
   }
 
   return otrng_true;
+}
+
+INTERNAL otrng_bool
+otrng_client_profile_valid(const otrng_client_profile_s *client_profile,
+                           const uint32_t sender_instance_tag) {
+  if (!otrng_client_profile_valid_without_expiry(client_profile,
+                                                 sender_instance_tag)) {
+    return otrng_false;
+  }
+
+  return !otrng_client_profile_expired(client_profile->expires);
 }
 
 INTERNAL otrng_result otrng_client_profile_transitional_sign(

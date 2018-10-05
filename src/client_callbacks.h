@@ -79,9 +79,10 @@ typedef struct otrng_client_callbacks_s {
                                 const struct otrng_client_id_s client_opdata);
 
   /* REQUIRED */
-  void (*write_expired_client_profile)(
-      struct otrng_client_s *client,
-      const struct otrng_client_id_s client_opdata);
+  void (*store_expired_client_profile)(struct otrng_client_s *client);
+
+  /* REQUIRED */
+  void (*load_expired_client_profile)(struct otrng_client_s *client);
 
   /* REQUIRED */
   void (*create_prekey_profile)(struct otrng_client_s *client,

@@ -53,6 +53,9 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
 INTERNAL otrng_result otrng_client_client_profile_write_to(
     const otrng_client_s *client, FILE *profilef);
 
+INTERNAL otrng_result otrng_client_expired_client_profile_write_to(
+    const otrng_client_s *client, FILE *profilef);
+
 INTERNAL otrng_result
 otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *prekeyf);
 

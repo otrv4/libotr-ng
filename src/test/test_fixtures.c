@@ -139,7 +139,7 @@ otrng_client_callbacks_s test_callbacks[1] = {{
     .create_privkey_v4 = &create_privkey_v4_cb_empty,
     .create_forging_key = &create_forging_key_cb_empty,
     .create_client_profile = &create_client_profile_cb,
-    .write_expired_client_profile = &write_expired_client_profile_cb_empty,
+    .store_expired_client_profile = &write_expired_client_profile_cb_empty,
     .create_prekey_profile = &create_prekey_profile_cb,
     .write_expired_prekey_profile = &write_expired_prekey_profile_cb_empty,
     .get_shared_session_state = &get_shared_session_state_cb,
@@ -431,11 +431,8 @@ void create_client_profile_cb_empty(
   (void)client_opdata;
 }
 
-void write_expired_client_profile_cb_empty(
-    struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata) {
+void write_expired_client_profile_cb_empty(struct otrng_client_s *client) {
   (void)client;
-  (void)client_opdata;
 }
 
 void create_prekey_profile_cb_empty(

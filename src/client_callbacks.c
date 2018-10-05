@@ -28,7 +28,7 @@ otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
       cb->get_account_and_protocol != NULL && cb->create_privkey_v3 != NULL &&
       cb->create_privkey_v4 != NULL && cb->create_forging_key != NULL &&
       cb->create_client_profile != NULL &&
-      cb->write_expired_client_profile != NULL &&
+      cb->store_expired_client_profile != NULL &&
       cb->create_prekey_profile != NULL &&
       cb->write_expired_prekey_profile != NULL &&
       cb->get_shared_session_state != NULL &&
@@ -37,7 +37,7 @@ otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
       cb->store_client_profile != NULL && cb->store_prekey_profile != NULL &&
       cb->load_prekey_messages != NULL && cb->store_prekey_messages != NULL &&
       cb->store_privkey_v4 != NULL && cb->load_forging_key != NULL &&
-      cb->load_forging_key != NULL);
+      cb->load_forging_key != NULL && cb->load_expired_client_profile != NULL);
 }
 
 INTERNAL void

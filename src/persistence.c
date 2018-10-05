@@ -372,15 +372,6 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
     return result;
   }
 
-  if (otrng_client_profile_expired(profile.expires)) {
-    client->global_state->callbacks->write_expired_client_profile(
-        client, client->client_id);
-
-    // TODO: I'm suspecting this will make a lot of tests fail, so
-    // no return for the moment
-    // return OTRNG_SUCCESS;
-  }
-
   otrng_client_profile_free(client->client_profile);
   client->client_profile = NULL;
 
@@ -408,6 +399,7 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
   }
 
   otrng_client_profile_free(client->exp_client_profile);
+  client->exp_client_profile = NULL;
 
   len = get_limited_line(&line, exp_profilef);
   if (len < 0) {
@@ -456,6 +448,50 @@ INTERNAL otrng_result otrng_client_client_profile_write_to(
 
   if (!otrng_client_profile_serialize_with_metadata(&buffer, &s,
                                                     client->client_profile)) {
+    return OTRNG_ERROR;
+  }
+
+  encoded = otrng_base64_encode(buffer, s);
+  free(buffer);
+  if (!encoded) {
+    return OTRNG_ERROR;
+  }
+
+  storage_id = otrng_client_get_storage_id(client);
+  if (!storage_id) {
+    free(encoded);
+    return OTRNG_ERROR;
+  }
+
+  if (fprintf(profilef, "%s\n%s\n", storage_id, encoded) < 0) {
+    free(storage_id);
+    free(encoded);
+    return OTRNG_ERROR;
+  }
+
+  free(storage_id);
+  free(encoded);
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result otrng_client_expired_client_profile_write_to(
+    const otrng_client_s *client, FILE *profilef) {
+  uint8_t *buffer = NULL;
+  size_t s = 0;
+  char *encoded;
+  char *storage_id;
+
+  if (!profilef) {
+    return OTRNG_ERROR;
+  }
+
+  if (!client->exp_client_profile) {
+    return OTRNG_ERROR;
+  }
+
+  if (!otrng_client_profile_serialize_with_metadata(
+          &buffer, &s, client->exp_client_profile)) {
     return OTRNG_ERROR;
   }
 

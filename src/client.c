@@ -792,11 +792,7 @@ API const otrng_client_profile_s *
 otrng_client_get_exp_client_profile(otrng_client_s *client) {
   assert(client);
 
-  if (client->exp_client_profile) {
-    return client->exp_client_profile;
-  }
-
-  return NULL;
+  return client->exp_client_profile;
 }
 
 API otrng_result otrng_client_add_exp_client_profile(

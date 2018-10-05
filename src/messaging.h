@@ -87,6 +87,9 @@ API otrng_result otrng_global_state_forging_key_write_to(
 API otrng_result otrng_global_state_client_profile_write_to(
     const otrng_global_state_s *gs, FILE *privf);
 
+API otrng_result otrng_global_state_expired_client_profile_write_to(
+    const otrng_global_state_s *gs, FILE *privf);
+
 API otrng_result otrng_global_state_prekey_profile_write_to(
     const otrng_global_state_s *gs, FILE *privf);
 
