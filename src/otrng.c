@@ -2145,13 +2145,6 @@ tstatic otrng_result receive_encoded_message(otrng_response_s *response,
 
 tstatic otrng_result receive_error_message(otrng_response_s *response,
                                            const string_p msg, otrng_s *otr) {
-  // TODO: We should not assume English as the language. This should be
-  // generated via callback: the plugin knows in which language this should be
-  // displayed to the user.
-  // const char *unreadable_msg_error = "Unreadable message";
-  // const char *not_in_private_error = "Not in private state message";
-  // const char *encryption_error = "Encryption error";
-  // const char *malformed_error = "Malformed message";
   otrng_error_event error_event = OTRNG_ERROR_NONE;
 
   if (strncmp(msg, "ERROR_1:", 8) == 0) {

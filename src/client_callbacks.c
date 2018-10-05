@@ -294,6 +294,17 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   }
 
   if (otrng_debug_print_should_ignore(
+          "client_callbacks->display_error_message")) {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "display_error_message = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "display_error_message = ");
+    otrng_debug_print_pointer(f, c->display_error_message);
+    debug_api_print(f, "\n");
+  }
+
+  if (otrng_debug_print_should_ignore(
           "client_callbacks->received_extra_symm_key")) {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "received_extra_symm_key = IGNORED\n");

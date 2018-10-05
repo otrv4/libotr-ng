@@ -138,8 +138,8 @@ typedef struct otrng_client_callbacks_s {
                      const uint8_t progress_percent, const struct otrng_s *);
 
   /* OPTIONAL */
-  // TODO: put definition
-  // TODO: add to debugging things
+  /* Display the error message with respect to the received event
+   */
   void (*display_error_message)(const otrng_error_event event,
                                 string_p *to_display, const struct otrng_s *);
 
