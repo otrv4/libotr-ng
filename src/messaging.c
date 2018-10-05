@@ -478,8 +478,8 @@ tstatic void prekey_global_state_message_free_from_list(void *prekeys) {
 }
 
 tstatic void free_prekeys_from(list_element_s *node, void *ignored) {
-  (void)ignored;
   otrng_client_s *client = node->data;
+  (void)ignored;
   otrng_list_free(client->our_prekeys,
                   prekey_global_state_message_free_from_list);
   client->our_prekeys = NULL;
