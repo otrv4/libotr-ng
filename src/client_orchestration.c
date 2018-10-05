@@ -72,18 +72,32 @@ tstatic void create_prekey_profile(otrng_client_s *client) {
   otrng_debug_exit("orchestration.create_prekey_profile");
 }
 
+tstatic otrng_bool verify_valid_long_term_key(otrng_client_s *client) {
+  if (client->keypair == NULL) {
+    return otrng_false;
+  }
+  return otrng_true;
+}
+
 tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
-  if (client->keypair == NULL) {
-    load_long_term_keys_from_storage(client);
+  if (verify_valid_long_term_key(client)) {
+    return;
   }
 
-  if (client->keypair == NULL) {
-    create_long_term_keys(client);
+  load_long_term_keys_from_storage(client);
+
+  if (verify_valid_long_term_key(client)) {
+    return;
   }
 
-  if (client->keypair == NULL) {
-    signal_error_in_state_management(client, "No long term key pair");
+  create_long_term_keys(client);
+
+  if (verify_valid_long_term_key(client)) {
+    client->global_state->callbacks->store_privkey_v4(client);
+    return;
   }
+
+  signal_error_in_state_management(client, "No long term key pair");
 }
 
 /* This function doesn't take into account the expired but otherwise valid
@@ -264,6 +278,10 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
 }
 
 API otrng_bool otrng_client_verify_correct_state(otrng_client_s *client) {
+  if (!verify_valid_long_term_key(client)) {
+    return otrng_false;
+  }
+
   if (!verify_valid_client_profile(client)) {
     return otrng_false;
   }
