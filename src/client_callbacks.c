@@ -114,7 +114,7 @@ otrng_client_callbacks_smp_ask_for_answer(const otrng_client_callbacks_s *cb,
 }
 
 INTERNAL void otrng_client_callbacks_smp_update(
-    const otrng_client_callbacks_s *cb, const otrng_smp_event_t event,
+    const otrng_client_callbacks_s *cb, const otrng_smp_event event,
     const uint8_t progress_percent, const otrng_s *conv) {
   if (!cb->smp_update) {
     return;

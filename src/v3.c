@@ -72,7 +72,7 @@ tstatic void fingerprint_seen_cb_v3(const otrng_fingerprint_v3 fp,
       conv->client->global_state->callbacks, fp, conv);
 }
 
-tstatic void handle_smp_event_cb_v3(const otrng_smp_event_t event,
+tstatic void handle_smp_event_cb_v3(const otrng_smp_event event,
                                     const uint8_t progress_percent,
                                     const char *question, const otrng_s *conv) {
   if (!conv || !conv->client) {
@@ -349,7 +349,7 @@ tstatic void op_resent_message_prefix_free(void *opdata, const char *prefix) {
   (void)prefix;
 }
 
-static otrng_smp_event_t convert_smp_event(OtrlSMPEvent smp_event) {
+static otrng_smp_event convert_smp_event(OtrlSMPEvent smp_event) {
   switch (smp_event) {
   case OTRL_SMPEVENT_ASK_FOR_SECRET:
     return OTRNG_SMP_EVENT_ASK_FOR_SECRET;

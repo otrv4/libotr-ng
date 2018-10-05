@@ -48,7 +48,7 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
                    smp_protocol_s *smp, otrng_s *conversation);
 
 tstatic tlv_s *
-otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_s *smp,
+otrng_smp_provide_secret(otrng_smp_event *event, smp_protocol_s *smp,
                          const otrng_client_profile_s *our_profile,
                          const otrng_client_profile_s *their_profile,
                          uint8_t *ssid, const uint8_t *secret,

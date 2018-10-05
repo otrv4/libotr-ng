@@ -73,7 +73,7 @@ static void test_smp_state_machine(void) {
   g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_QUARTER_PROGRESS);
 
-  otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
+  otrng_smp_event event = OTRNG_SMP_EVENT_NONE;
   tlv_smp_2 = otrng_smp_provide_secret(
       &event, bob->smp, get_my_client_profile(bob), bob->their_client_profile,
       bob->keys->ssid, (const uint8_t *)"answer", strlen("answer"));
@@ -185,7 +185,7 @@ static void test_smp_state_machine_abort(void) {
   g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_QUARTER_PROGRESS);
 
-  otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
+  otrng_smp_event event = OTRNG_SMP_EVENT_NONE;
   tlv_smp_2 = otrng_smp_provide_secret(
       &event, bob->smp, get_my_client_profile(bob), bob->their_client_profile,
       bob->keys->ssid, (const uint8_t *)"answer", strlen("answer"));

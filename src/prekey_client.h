@@ -112,7 +112,7 @@ typedef struct {
 typedef enum {
   OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST = 1,
   OTRNG_PREKEY_PREKEY_PUBLICATION = 2,
-} otrng_prekey_next_message_t;
+} otrng_prekey_next_message;
 
 typedef struct {
   unsigned int max_published_prekey_message;
@@ -156,7 +156,7 @@ typedef struct {
   otrng_public_key pub;
 
   uint8_t mac_key[MAC_KEY_BYTES];
-  otrng_prekey_next_message_t after_dake;
+  otrng_prekey_next_message after_dake;
 
   otrng_prekey_client_callbacks_s *callbacks;
 } otrng_prekey_client_s;

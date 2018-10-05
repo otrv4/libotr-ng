@@ -2160,7 +2160,6 @@ tstatic otrng_result receive_error_message(otrng_response_s *response,
     return OTRNG_SUCCESS;
   } else if (strncmp(msg, "ERROR_2:", 8) == 0) {
     error_event = OTRNG_ERROR_NOT_IN_PRIVATE_EVENT;
-    printf("\n HERE 1? \n");
     display_error_message_cb(error_event, &response->to_display, otr);
     return OTRNG_SUCCESS;
   } else if (strncmp(msg, "ERROR_3:", 8) == 0) {

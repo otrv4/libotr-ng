@@ -24,7 +24,7 @@
 
 #include "tlv.h"
 
-static void assert_tlv_structure(tlv_list_s *tlvs, otrng_tlv_type_t type,
+static void assert_tlv_structure(tlv_list_s *tlvs, otrng_tlv_type type,
                                  uint16_t len, uint8_t *data, otrng_bool next) {
   otrng_assert(tlvs);
   otrng_assert(tlvs->data);

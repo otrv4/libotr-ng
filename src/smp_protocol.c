@@ -1155,8 +1155,8 @@ tstatic otrng_bool smp_is_valid_for_message_4(smp_message_4_s *msg,
   return otrng_true;
 }
 
-tstatic otrng_smp_event_t receive_smp_message_1(const tlv_s *tlv,
-                                                smp_protocol_s *smp) {
+tstatic otrng_smp_event receive_smp_message_1(const tlv_s *tlv,
+                                              smp_protocol_s *smp) {
   smp_message_1_s msg_1;
 
   if (smp->state_expect != '1') {
@@ -1188,8 +1188,8 @@ tstatic otrng_smp_event_t receive_smp_message_1(const tlv_s *tlv,
   return OTRNG_SMP_EVENT_ERROR;
 }
 
-INTERNAL otrng_smp_event_t otrng_reply_with_smp_message_2(tlv_s **to_send,
-                                                          smp_protocol_s *smp) {
+INTERNAL otrng_smp_event otrng_reply_with_smp_message_2(tlv_s **to_send,
+                                                        smp_protocol_s *smp) {
   smp_message_2_s msg_2;
   size_t buff_len = 0;
   uint8_t *buffer = NULL;
@@ -1216,9 +1216,9 @@ INTERNAL otrng_smp_event_t otrng_reply_with_smp_message_2(tlv_s **to_send,
   return OTRNG_SMP_EVENT_NONE;
 }
 
-tstatic otrng_smp_event_t receive_smp_message_2(smp_message_2_s *msg_2,
-                                                const tlv_s *tlv,
-                                                smp_protocol_s *smp) {
+tstatic otrng_smp_event receive_smp_message_2(smp_message_2_s *msg_2,
+                                              const tlv_s *tlv,
+                                              smp_protocol_s *smp) {
   if (smp->state_expect != '2') {
     smp->progress = SMP_ZERO_PROGRESS;
     return OTRNG_SMP_EVENT_ABORT;
@@ -1242,9 +1242,9 @@ tstatic otrng_smp_event_t receive_smp_message_2(smp_message_2_s *msg_2,
   return OTRNG_SMP_EVENT_NONE;
 }
 
-tstatic otrng_smp_event_t reply_with_smp_message_3(tlv_s **to_send,
-                                                   const smp_message_2_s *msg_2,
-                                                   smp_protocol_s *smp) {
+tstatic otrng_smp_event reply_with_smp_message_3(tlv_s **to_send,
+                                                 const smp_message_2_s *msg_2,
+                                                 smp_protocol_s *smp) {
   smp_message_3_s msg_3;
   size_t buff_len = 0;
   uint8_t *buffer = NULL;
@@ -1273,9 +1273,9 @@ tstatic otrng_smp_event_t reply_with_smp_message_3(tlv_s **to_send,
   return OTRNG_SMP_EVENT_NONE;
 }
 
-tstatic otrng_smp_event_t receive_smp_message_3(smp_message_3_s *msg_3,
-                                                const tlv_s *tlv,
-                                                smp_protocol_s *smp) {
+tstatic otrng_smp_event receive_smp_message_3(smp_message_3_s *msg_3,
+                                              const tlv_s *tlv,
+                                              smp_protocol_s *smp) {
   if (smp->state_expect != '3') {
     smp->progress = SMP_ZERO_PROGRESS;
     return OTRNG_SMP_EVENT_ABORT;
@@ -1297,9 +1297,9 @@ tstatic otrng_smp_event_t receive_smp_message_3(smp_message_3_s *msg_3,
   return OTRNG_SMP_EVENT_NONE;
 }
 
-tstatic otrng_smp_event_t reply_with_smp_message_4(tlv_s **to_send,
-                                                   const smp_message_3_s *msg_3,
-                                                   smp_protocol_s *smp) {
+tstatic otrng_smp_event reply_with_smp_message_4(tlv_s **to_send,
+                                                 const smp_message_3_s *msg_3,
+                                                 smp_protocol_s *smp) {
   smp_message_4_s msg_4;
   size_t buff_len = 0;
   uint8_t *buffer = NULL;
@@ -1330,9 +1330,9 @@ tstatic otrng_smp_event_t reply_with_smp_message_4(tlv_s **to_send,
   return OTRNG_SMP_EVENT_SUCCESS;
 }
 
-tstatic otrng_smp_event_t receive_smp_message_4(smp_message_4_s *msg_4,
-                                                const tlv_s *tlv,
-                                                smp_protocol_s *smp) {
+tstatic otrng_smp_event receive_smp_message_4(smp_message_4_s *msg_4,
+                                              const tlv_s *tlv,
+                                              smp_protocol_s *smp) {
   if (smp->state_expect != '4') {
     smp->progress = SMP_ZERO_PROGRESS;
     return OTRNG_SMP_EVENT_ABORT;
@@ -1359,9 +1359,9 @@ tstatic otrng_smp_event_t receive_smp_message_4(smp_message_4_s *msg_4,
   return OTRNG_SMP_EVENT_SUCCESS;
 }
 
-INTERNAL otrng_smp_event_t otrng_process_smp_message1(const tlv_s *tlv,
-                                                      smp_protocol_s *smp) {
-  otrng_smp_event_t event = receive_smp_message_1(tlv, smp);
+INTERNAL otrng_smp_event otrng_process_smp_message1(const tlv_s *tlv,
+                                                    smp_protocol_s *smp) {
+  otrng_smp_event event = receive_smp_message_1(tlv, smp);
 
   if (!event) {
     smp->progress = SMP_QUARTER_PROGRESS;
@@ -1371,11 +1371,11 @@ INTERNAL otrng_smp_event_t otrng_process_smp_message1(const tlv_s *tlv,
   return event;
 }
 
-INTERNAL otrng_smp_event_t otrng_process_smp_message2(tlv_s **smp_reply,
-                                                      const tlv_s *tlv,
-                                                      smp_protocol_s *smp) {
+INTERNAL otrng_smp_event otrng_process_smp_message2(tlv_s **smp_reply,
+                                                    const tlv_s *tlv,
+                                                    smp_protocol_s *smp) {
   smp_message_2_s msg_2;
-  otrng_smp_event_t event = receive_smp_message_2(&msg_2, tlv, smp);
+  otrng_smp_event event = receive_smp_message_2(&msg_2, tlv, smp);
 
   if (!event) {
     event = reply_with_smp_message_3(smp_reply, &msg_2, smp);
@@ -1385,11 +1385,11 @@ INTERNAL otrng_smp_event_t otrng_process_smp_message2(tlv_s **smp_reply,
   return event;
 }
 
-INTERNAL otrng_smp_event_t otrng_process_smp_message3(tlv_s **smp_reply,
-                                                      const tlv_s *tlv,
-                                                      smp_protocol_s *smp) {
+INTERNAL otrng_smp_event otrng_process_smp_message3(tlv_s **smp_reply,
+                                                    const tlv_s *tlv,
+                                                    smp_protocol_s *smp) {
   smp_message_3_s msg_3;
-  otrng_smp_event_t event = receive_smp_message_3(&msg_3, tlv, smp);
+  otrng_smp_event event = receive_smp_message_3(&msg_3, tlv, smp);
 
   if (!event) {
     event = reply_with_smp_message_4(smp_reply, &msg_3, smp);
@@ -1399,11 +1399,11 @@ INTERNAL otrng_smp_event_t otrng_process_smp_message3(tlv_s **smp_reply,
   return event;
 }
 
-INTERNAL otrng_smp_event_t otrng_process_smp_message4(const tlv_s *tlv,
-                                                      smp_protocol_s *smp) {
+INTERNAL otrng_smp_event otrng_process_smp_message4(const tlv_s *tlv,
+                                                    smp_protocol_s *smp) {
   smp_message_4_s msg_4;
 
-  otrng_smp_event_t event = receive_smp_message_4(&msg_4, tlv, smp);
+  otrng_smp_event event = receive_smp_message_4(&msg_4, tlv, smp);
 
   smp_message_4_destroy(&msg_4);
 

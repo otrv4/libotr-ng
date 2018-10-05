@@ -21,7 +21,7 @@
 #include "smp.h"
 #include "messaging.h"
 
-tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
+tstatic void handle_smp_event_cb_v4(const otrng_smp_event event,
                                     const uint8_t progress_percent,
                                     const uint8_t *question, const size_t q_len,
                                     const otrng_s *conv) {
@@ -60,9 +60,9 @@ tstatic void handle_smp_event_cb_v4(const otrng_smp_event_t event,
   }
 }
 
-tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
+tstatic tlv_s *otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp,
                                  const tlv_s *tlv) {
-  otrng_smp_event_t event = *ret;
+  otrng_smp_event event = *ret;
   tlv_s *to_send = NULL;
 
   switch (tlv->type) {
@@ -140,7 +140,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event_t *ret, smp_protocol_s *smp,
 
 INTERNAL tlv_s *otrng_process_smp_tlv(const tlv_s *tlv, otrng_s *otr) {
   // TODO: @smp: what happens with the error and failure?
-  otrng_smp_event_t event = OTRNG_SMP_EVENT_NONE;
+  otrng_smp_event event = OTRNG_SMP_EVENT_NONE;
   tlv_s *out = otrng_process_smp(&event, otr->smp, tlv);
   handle_smp_event_cb_v4(
       event, otr->smp->progress,
@@ -264,7 +264,7 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
 }
 
 tstatic tlv_s *
-otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_s *smp,
+otrng_smp_provide_secret(otrng_smp_event *event, smp_protocol_s *smp,
                          const otrng_client_profile_s *our_profile,
                          const otrng_client_profile_s *their_client_profile,
                          uint8_t *ssid, const uint8_t *secret,
@@ -294,7 +294,7 @@ otrng_smp_provide_secret(otrng_smp_event_t *event, smp_protocol_s *smp,
 
 tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
                                      const size_t secret_len, otrng_s *otr) {
-  otrng_smp_event_t event;
+  otrng_smp_event event;
   tlv_list_s *tlvs;
   otrng_warning warn;
   otrng_result ret;

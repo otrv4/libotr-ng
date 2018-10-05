@@ -35,7 +35,7 @@ typedef enum {
   OTRNG_SMP_EVENT_FAILURE = 6,
   OTRNG_SMP_EVENT_ABORT = 7,
   OTRNG_SMP_EVENT_ERROR = 8,
-} otrng_smp_event_t;
+} otrng_smp_event;
 
 typedef enum {
   OTRNG_ERROR_NONE = 0,
@@ -134,7 +134,7 @@ typedef struct otrng_client_callbacks_s {
    *      (same as OTRL_SMPEVENT_CHEATED)
    * */
   /* OPTIONAL */
-  void (*smp_update)(const otrng_smp_event_t event,
+  void (*smp_update)(const otrng_smp_event event,
                      const uint8_t progress_percent, const struct otrng_s *);
 
   /* OPTIONAL */
@@ -230,7 +230,7 @@ otrng_client_callbacks_smp_ask_for_secret(const otrng_client_callbacks_s *cb,
                                           const struct otrng_s *conv);
 
 INTERNAL void otrng_client_callbacks_smp_update(
-    const otrng_client_callbacks_s *cb, const otrng_smp_event_t event,
+    const otrng_client_callbacks_s *cb, const otrng_smp_event event,
     const uint8_t progress_percent, const struct otrng_s *conv);
 
 INTERNAL void otrng_client_callbacks_display_error_message(

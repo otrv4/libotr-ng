@@ -36,18 +36,18 @@ typedef enum {
   OTRNG_TLV_SMP_MSG_4 = 5,
   OTRNG_TLV_SMP_ABORT = 6,
   OTRNG_TLV_SYM_KEY = 7
-} otrng_tlv_type_t;
+} otrng_tlv_type;
 
 /**
  * @brief The tlv_s structure represents one TLV from a data message.
  *
- *  [type] this will always be one of the valid types from otrng_tlv_type_t
+ *  [type] this will always be one of the valid types from otrng_tlv_type
  *  [len]  the length of the associated data
  *  [data] if there is associated data, this buffer will be [len] bytes long
  *         if [len] is zero, the buffer can be NULL or a zero length pointer
  **/
 typedef struct tlv_s {
-  otrng_tlv_type_t type;
+  otrng_tlv_type type;
   uint16_t len;
   uint8_t *data;
 } tlv_s;
@@ -80,8 +80,8 @@ INTERNAL void otrng_tlv_list_free(tlv_list_s *tlvs);
 /**
  * @brief Returns a new list with one entry, the given [tlv] argument
  *
- * @param [tlv] the TLV to put as the only entry. if given NULL, the function
- *    returns NULL.
+ * @param [tlv] the TLV to put as the only entry. If given NULL, the function
+ *              returns NULL.
  *
  * @return the newly created list, if successful. it is the callers
  *    responsibility to free it after use.
@@ -115,14 +115,15 @@ INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len);
  * @brief creates a new TLV from the given data.
  *
  * @param [type] the type of the TLV to create. should be one of
- *otrng_tlv_type_t
+ *               otrng_tlv_type
  * @param [len]  the amount of data to associate with this TLV. can be 0
  * @param [data] the data to put in the TLV. [len] bytes from this buffer will
- *    be copied into the TLV. can be NULL, but only if [len] is 0.
+ *                be copied into the TLV. can be NULL, but only if [len] is 0.
  *
- * @return the newly created TLV, if successful. it is the callers
- *    responsibility to free it after use.
- *    returns NULL if something goes wrong, if [data] is NULL when [len] is > 0.
+ * @return the newly created TLV, if successful. It is the callers
+ *         responsibility to free it after use.
+ *         returns NULL if something goes wrong, if [data] is NULL when [len]
+           is > 0.
  **/
 INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
                               const uint8_t *data);
@@ -130,13 +131,13 @@ INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
 /**
  * @brief appends the given TLV to the list of TLVs
  *
- * @param [tlvs] the list of TLVs to add the TLV to. can be NULL. if given
- *    the last nodes next-pointer will be modified.
+ * @param [tlvs] the list of TLVs to add the TLV to. Can be NULL. If given
+ *               the last nodes next-pointer will be modified.
  * @param [tlv]  the TLV to add.
  *
  * @return if given [tlvs], returns it - otherwise a newly created TLV list.
- *    it is the callers responsibility to free it after use.
- *    returns NULL if something goes wrong, or if [tlv] is NULL
+ *         It is the callers responsibility to free it after use.
+ *         Returns NULL if something goes wrong, or if [tlv] is NULL
  **/
 INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *tlvs, tlv_s *tlv);
 

@@ -202,7 +202,7 @@ static char *prekey_encode(const uint8_t *buffer, size_t buff_len) {
 }
 
 static char *start_dake_and_then_send(otrng_prekey_client_s *client,
-                                      otrng_prekey_next_message_t next) {
+                                      otrng_prekey_next_message next) {
   uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   uint8_t *ser = NULL;
   size_t ser_len = 0;

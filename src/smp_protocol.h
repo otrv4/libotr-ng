@@ -109,22 +109,22 @@ INTERNAL otrng_result otrng_smp_message_1_serialize(uint8_t **dst, size_t *len,
 
 INTERNAL void otrng_smp_message_1_destroy(smp_message_1_s *msg);
 
-INTERNAL otrng_smp_event_t otrng_reply_with_smp_message_2(tlv_s **to_send,
-                                                          smp_protocol_s *smp);
+INTERNAL otrng_smp_event otrng_reply_with_smp_message_2(tlv_s **to_send,
+                                                        smp_protocol_s *smp);
 
-INTERNAL otrng_smp_event_t otrng_process_smp_message1(const tlv_s *tlv,
-                                                      smp_protocol_s *smp);
+INTERNAL otrng_smp_event otrng_process_smp_message1(const tlv_s *tlv,
+                                                    smp_protocol_s *smp);
 
-INTERNAL otrng_smp_event_t otrng_process_smp_message2(tlv_s **smp_reply,
-                                                      const tlv_s *tlv,
-                                                      smp_protocol_s *smp);
+INTERNAL otrng_smp_event otrng_process_smp_message2(tlv_s **smp_reply,
+                                                    const tlv_s *tlv,
+                                                    smp_protocol_s *smp);
 
-INTERNAL otrng_smp_event_t otrng_process_smp_message3(tlv_s **smp_reply,
-                                                      const tlv_s *tlv,
-                                                      smp_protocol_s *smp);
+INTERNAL otrng_smp_event otrng_process_smp_message3(tlv_s **smp_reply,
+                                                    const tlv_s *tlv,
+                                                    smp_protocol_s *smp);
 
-INTERNAL otrng_smp_event_t otrng_process_smp_message4(const tlv_s *tlv,
-                                                      smp_protocol_s *smp);
+INTERNAL otrng_smp_event otrng_process_smp_message4(const tlv_s *tlv,
+                                                    smp_protocol_s *smp);
 
 #ifdef OTRNG_SMP_PROTOCOL_PRIVATE
 
