@@ -137,7 +137,7 @@ typedef struct otrng_client_callbacks_s {
   void (*smp_update)(const otrng_smp_event event,
                      const uint8_t progress_percent, const struct otrng_s *);
 
-  /* OPTIONAL */
+  /* REQUIRED */
   /* Display the error message with respect to the received event
    */
   void (*display_error_message)(const otrng_error_event event,

@@ -111,6 +111,9 @@ void create_shared_prekey_cb_empty(
     struct otrng_client_s *client,
     const struct otrng_client_id_s client_opdata);
 
+void display_error_message_cb_empty(const otrng_error_event event,
+                                    string_p *to_display,
+                                    const struct otrng_s *otr);
 otrng_shared_session_state_s
 get_shared_session_state_cb_empty(const struct otrng_s *conv);
 

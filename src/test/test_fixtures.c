@@ -129,7 +129,6 @@ static void display_error_message_cb(const otrng_error_event event,
   case OTRNG_ERROR_NONE:
     break;
   default:
-    // should be an error
     break;
   }
 }
@@ -409,6 +408,7 @@ get_account_and_protocol_cb_empty(char **account, char **protocol,
   (void)account;
   (void)protocol;
   (void)client_id;
+
   return OTRNG_SUCCESS;
 }
 
@@ -461,6 +461,14 @@ get_shared_session_state_cb_empty(const struct otrng_s *conv) {
   (void)conv;
 
   return result;
+}
+
+void display_error_message_cb_empty(const otrng_error_event event,
+                                    string_p *to_display,
+                                    const struct otrng_s *otr) {
+  (void)event;
+  (void)to_display;
+  (void)otr;
 }
 
 void load_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata) {
