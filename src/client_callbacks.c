@@ -123,6 +123,16 @@ INTERNAL void otrng_client_callbacks_smp_update(
   cb->smp_update(event, progress_percent, conv);
 }
 
+INTERNAL void otrng_client_callbacks_display_error_message(
+    const otrng_client_callbacks_s *cb, const otrng_error_event event,
+    string_p *to_display, const otrng_s *conv) {
+  if (!cb->display_error_message) {
+    return;
+  }
+
+  cb->display_error_message(event, to_display, conv);
+}
+
 #ifdef DEBUG_API
 
 #include "debug.h"

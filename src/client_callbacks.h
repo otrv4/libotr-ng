@@ -23,6 +23,7 @@
 
 #include "fingerprint.h"
 #include "shared.h"
+#include "str.h"
 
 typedef enum {
   OTRNG_SMP_EVENT_NONE = 0,
@@ -35,6 +36,14 @@ typedef enum {
   OTRNG_SMP_EVENT_ABORT = 7,
   OTRNG_SMP_EVENT_ERROR = 8,
 } otrng_smp_event_t;
+
+typedef enum {
+  OTRNG_ERROR_NONE = 0,
+  OTRNG_ERROR_UNREADABLE_EVENT = 1,
+  OTRNG_ERROR_NOT_IN_PRIVATE_EVENT = 2,
+  OTRNG_ERROR_ENCRYPTION_ERROR_EVENT = 3,
+  OTRNG_ERROR_MALFORMED_EVENT = 4,
+} otrng_error_event;
 
 typedef struct otrng_shared_session_state_s {
   char *identifier1;
@@ -53,7 +62,7 @@ typedef struct otrng_client_callbacks_s {
       char **account, char **protocol,
       const struct otrng_client_id_s client_id);
 
-  /* OPTIONAL */
+  /* OPTIONAL */ // TODO: why is this optional?
   void (*create_instag)(const struct otrng_client_id_s client_opdata);
 
   /* REQUIRED */
@@ -128,12 +137,18 @@ typedef struct otrng_client_callbacks_s {
   void (*smp_update)(const otrng_smp_event_t event,
                      const uint8_t progress_percent, const struct otrng_s *);
 
+  /* OPTIONAL */
+  // TODO: put definition
+  // TODO: add to debugging things
+  void (*display_error_message)(const otrng_error_event event,
+                                string_p *to_display, const struct otrng_s *);
+
+  /* OPTIONAL */
   /* We received a request from the buddy to use the current "extra"
    * symmetric key.  The key will be passed in symkey, of length
    * EXTRA_SYMMETRIC_KEY_BYTES.  The requested use, as well as use-specific
    * data will be passed so that the applications can communicate other
    * information (some id for the data transfer, for example). */
-  /* OPTIONAL */
   void (*received_extra_symm_key)(const struct otrng_s *, unsigned int use,
                                   const unsigned char *use_data,
                                   size_t use_data_len,
@@ -217,6 +232,10 @@ otrng_client_callbacks_smp_ask_for_secret(const otrng_client_callbacks_s *cb,
 INTERNAL void otrng_client_callbacks_smp_update(
     const otrng_client_callbacks_s *cb, const otrng_smp_event_t event,
     const uint8_t progress_percent, const struct otrng_s *conv);
+
+INTERNAL void otrng_client_callbacks_display_error_message(
+    const otrng_client_callbacks_s *cb, const otrng_error_event event,
+    string_p *to_display, const struct otrng_s *conv);
 
 #ifdef DEBUG_API
 API void otrng_client_callbacks_debug_print(FILE *, int,

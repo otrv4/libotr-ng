@@ -89,6 +89,13 @@ tstatic void fingerprint_seen_cb_v4(const otrng_fingerprint fp,
                                           fp, conv);
 }
 
+tstatic void display_error_message_cb(const otrng_error_event event,
+                                      string_p *to_display,
+                                      const otrng_s *conv) {
+  otrng_client_callbacks_display_error_message(
+      conv->client->global_state->callbacks, event, to_display, conv);
+}
+
 tstatic void received_extra_sym_key(const otrng_s *conv, unsigned int use,
                                     const unsigned char *use_data,
                                     size_t use_data_len,
@@ -2137,30 +2144,32 @@ tstatic otrng_result receive_encoded_message(otrng_response_s *response,
 }
 
 tstatic otrng_result receive_error_message(otrng_response_s *response,
-                                           const string_p msg) {
+                                           const string_p msg, otrng_s *otr) {
   // TODO: We should not assume English as the language. This should be
   // generated via callback: the plugin knows in which language this should be
   // displayed to the user.
-  const char *unreadable_msg_error = "Unreadable message";
-  const char *not_in_private_error = "Not in private state message";
-  const char *encryption_error = "Encryption error";
-  const char *malformed_error = "Malformed message";
+  // const char *unreadable_msg_error = "Unreadable message";
+  // const char *not_in_private_error = "Not in private state message";
+  // const char *encryption_error = "Encryption error";
+  // const char *malformed_error = "Malformed message";
+  otrng_error_event error_event = OTRNG_ERROR_NONE;
 
   if (strncmp(msg, "ERROR_1:", 8) == 0) {
-    response->to_display =
-        otrng_xstrndup(unreadable_msg_error, strlen(unreadable_msg_error));
+    error_event = OTRNG_ERROR_UNREADABLE_EVENT;
+    display_error_message_cb(error_event, &response->to_display, otr);
     return OTRNG_SUCCESS;
   } else if (strncmp(msg, "ERROR_2:", 8) == 0) {
-    response->to_display =
-        otrng_xstrndup(not_in_private_error, strlen(not_in_private_error));
+    error_event = OTRNG_ERROR_NOT_IN_PRIVATE_EVENT;
+    printf("\n HERE 1? \n");
+    display_error_message_cb(error_event, &response->to_display, otr);
     return OTRNG_SUCCESS;
   } else if (strncmp(msg, "ERROR_3:", 8) == 0) {
-    response->to_display =
-        otrng_xstrndup(encryption_error, strlen(encryption_error));
+    error_event = OTRNG_ERROR_ENCRYPTION_ERROR_EVENT;
+    display_error_message_cb(error_event, &response->to_display, otr);
     return OTRNG_SUCCESS;
   } else if (strncmp(msg, "ERROR_4:", 8) == 0) {
-    response->to_display =
-        otrng_xstrndup(malformed_error, strlen(malformed_error));
+    error_event = OTRNG_ERROR_MALFORMED_EVENT;
+    display_error_message_cb(error_event, &response->to_display, otr);
     return OTRNG_SUCCESS;
   }
 
@@ -2200,7 +2209,7 @@ tstatic otrng_result receive_message_v4_only(otrng_response_s *response,
     return receive_encoded_message(response, warn, msg, otr);
 
   case MSG_OTR_ERROR:
-    return receive_error_message(response, msg + strlen(ERROR_PREFIX));
+    return receive_error_message(response, msg + strlen(ERROR_PREFIX), otr);
   }
 
   return OTRNG_SUCCESS;

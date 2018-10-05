@@ -102,16 +102,49 @@ void create_prekey_profile_cb(struct otrng_client_s *client,
   otrng_prekey_profile_free(profile);
 }
 
+static void display_error_message_cb(const otrng_error_event event,
+                                     string_p *to_display,
+                                     const struct otrng_s *otr) {
+  (void)otr;
+  const char *unreadable_msg_error = "Unreadable message";
+  const char *not_in_private_error = "Not in private state message";
+  const char *encryption_error = "Encryption error";
+  const char *malformed_error = "Malformed message";
+
+  switch (event) {
+  case OTRNG_ERROR_UNREADABLE_EVENT:
+    *to_display =
+        otrng_xstrndup(unreadable_msg_error, strlen(unreadable_msg_error));
+    break;
+  case OTRNG_ERROR_NOT_IN_PRIVATE_EVENT:
+    *to_display =
+        otrng_xstrndup(not_in_private_error, strlen(not_in_private_error));
+    break;
+  case OTRNG_ERROR_ENCRYPTION_ERROR_EVENT:
+    *to_display = otrng_xstrndup(encryption_error, strlen(encryption_error));
+    break;
+  case OTRNG_ERROR_MALFORMED_EVENT:
+    *to_display = otrng_xstrndup(malformed_error, strlen(malformed_error));
+    break;
+  case OTRNG_ERROR_NONE:
+    break;
+  default:
+    // should be an error
+    break;
+  }
+}
+
 otrng_client_callbacks_s test_callbacks[1] = {{
     .get_account_and_protocol = &get_account_and_protocol_cb,
-    .create_client_profile = &create_client_profile_cb,
-    .create_prekey_profile = &create_prekey_profile_cb,
-    .get_shared_session_state = &get_shared_session_state_cb,
     .create_privkey_v3 = &create_privkey_v3_cb_empty,
     .create_privkey_v4 = &create_privkey_v4_cb_empty,
     .create_forging_key = &create_forging_key_cb_empty,
+    .create_client_profile = &create_client_profile_cb,
     .write_expired_client_profile = &write_expired_client_profile_cb_empty,
+    .create_prekey_profile = &create_prekey_profile_cb,
     .write_expired_prekey_profile = &write_expired_prekey_profile_cb_empty,
+    .get_shared_session_state = &get_shared_session_state_cb,
+    .display_error_message = &display_error_message_cb,
     .load_privkey_v4 = &load_privkey_v4_cb_empty,
     .load_client_profile = &load_client_profile_cb_empty,
     .load_prekey_profile = &load_prekey_profile_cb_empty,
