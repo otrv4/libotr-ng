@@ -1169,7 +1169,4 @@ API void otrng_client_published(otrng_client_s *client) {
     client->should_publish = otrng_false;
     client->is_publishing = otrng_false;
   }
-
-  // TODO: @ola here everything else should be marked as well, once they have
-  // their flags
 }

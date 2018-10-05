@@ -473,14 +473,30 @@ API otrng_result otrng_global_state_expired_prekey_profile_read_from(
   return OTRNG_SUCCESS;
 }
 
+tstatic void prekey_global_state_message_free_from_list(void *prekeys) {
+  otrng_prekey_message_free(prekeys);
+}
+
+tstatic void free_prekeys_from(list_element_s *node, void *ignored) {
+  (void)ignored;
+  otrng_client_s *client = node->data;
+  otrng_list_free(client->our_prekeys,
+                  prekey_global_state_message_free_from_list);
+  client->our_prekeys = NULL;
+}
+
 API otrng_result otrng_global_state_prekeys_read_from(
     otrng_global_state_s *gs, FILE *prekey_filep,
     otrng_client_id_s (*read_client_id_for_prekey)(FILE *filep)) {
+  otrng_client_s *last_client = NULL;
+  const char *last_protocol = NULL;
+  const char *last_account = NULL;
+
   if (!prekey_filep) {
     return OTRNG_ERROR;
   }
 
-  // TODO: @ola - optimize away the get_client on every line
+  otrng_list_foreach(gs->clients, free_prekeys_from, NULL);
 
   while (!feof(prekey_filep)) {
     otrng_client_s *client;
@@ -489,7 +505,15 @@ API otrng_result otrng_global_state_prekeys_read_from(
       continue;
     }
 
-    client = get_client(gs, client_id);
+    if (last_protocol == client_id.protocol &&
+        last_account == client_id.account) {
+      client = last_client;
+    } else {
+      client = get_client(gs, client_id);
+      last_protocol = client_id.protocol;
+      last_account = client_id.account;
+      last_client = client;
+    }
 
     if (otrng_client_prekey_messages_read_from(client, prekey_filep) !=
         OTRNG_SUCCESS) {
