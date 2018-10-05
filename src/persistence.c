@@ -495,7 +495,7 @@ static otrng_result serialize_and_store_prekey(const prekey_message_s *prekey,
   }
 
   tmp_buffer = otrng_secure_alloc(PRE_KEY_WITH_METADATA_MAX_BYTES);
-  result = otrng_prekey_message_serialize(
+  result = otrng_prekey_message_serialize_with_metadata(
       tmp_buffer, PRE_KEY_WITH_METADATA_MAX_BYTES, &w, prekey);
   if (otrng_failed(result)) {
     otrng_secure_wipe(tmp_buffer, PRE_KEY_WITH_METADATA_MAX_BYTES);

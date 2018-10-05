@@ -72,6 +72,27 @@ tstatic void create_prekey_profile(otrng_client_s *client) {
   otrng_debug_exit("orchestration.create_prekey_profile");
 }
 
+tstatic void clean_long_term_keys(otrng_client_s *client) {
+  if (client->keypair != NULL) {
+    otrng_keypair_free(client->keypair);
+    client->keypair = NULL;
+  }
+}
+
+tstatic void clean_client_profile(otrng_client_s *client) {
+  if (client->client_profile != NULL) {
+    otrng_client_profile_free(client->client_profile);
+    client->client_profile = NULL;
+  }
+}
+
+tstatic void clean_prekey_profile(otrng_client_s *client) {
+  if (client->prekey_profile != NULL) {
+    otrng_prekey_profile_free(client->prekey_profile);
+    client->prekey_profile = NULL;
+  }
+}
+
 tstatic otrng_bool verify_valid_long_term_key(otrng_client_s *client) {
   if (client->keypair == NULL) {
     return otrng_false;
@@ -84,19 +105,24 @@ tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
     return;
   }
 
+  clean_long_term_keys(client);
   load_long_term_keys_from_storage(client);
 
   if (verify_valid_long_term_key(client)) {
     return;
   }
 
+  clean_long_term_keys(client);
   create_long_term_keys(client);
 
   if (verify_valid_long_term_key(client)) {
+    clean_client_profile(client);
+    clean_prekey_profile(client);
     client->global_state->callbacks->store_privkey_v4(client);
     return;
   }
 
+  clean_long_term_keys(client);
   signal_error_in_state_management(client, "No long term key pair");
 }
 
@@ -117,6 +143,11 @@ tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
 
   // TODO: we should also make sure that the forging key is correct here -
   // otherwise it's not valid
+
+  if (!otrng_ec_point_eq(client->keypair->pub,
+                         client->client_profile->long_term_pub_key)) {
+    return otrng_false;
+  }
 
   itag = otrng_client_get_instance_tag(client);
   return otrng_client_profile_valid(client->client_profile, itag);
@@ -139,12 +170,14 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
     return;
   }
 
+  clean_client_profile(client);
   load_client_profile_from_storage(client);
 
   if (verify_valid_client_profile(client)) {
     return;
   }
 
+  clean_client_profile(client);
   create_client_profile(client);
 
   if (verify_valid_client_profile(client)) {
@@ -156,6 +189,7 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
     return;
   }
 
+  clean_client_profile(client);
   signal_error_in_state_management(client, "No Client Profile");
 }
 
@@ -164,12 +198,14 @@ tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
     return;
   }
 
+  clean_prekey_profile(client);
   load_prekey_profile_from_storage(client);
 
   if (verify_valid_prekey_profile(client)) {
     return;
   }
 
+  clean_prekey_profile(client);
   create_prekey_profile(client);
 
   if (verify_valid_prekey_profile(client)) {
@@ -181,6 +217,7 @@ tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
     return;
   }
 
+  clean_prekey_profile(client);
   signal_error_in_state_management(client, "No Prekey Profile");
 }
 
@@ -225,29 +262,23 @@ tstatic otrng_bool verify_enough_prekey_messages(otrng_client_s *client) {
 }
 
 tstatic void ensure_enough_prekey_messages(otrng_client_s *client) {
-  otrng_debug_enter("ensure_enough_prekey_messages");
-
   if (verify_enough_prekey_messages(client)) {
-    otrng_debug_exit("ensure_enough_prekey_messages.1");
     return;
   }
 
   load_prekey_messages_from_storage(client);
 
   if (verify_enough_prekey_messages(client)) {
-    otrng_debug_exit("ensure_enough_prekey_messages.2");
     return;
   }
 
   create_new_prekey_messages(client);
 
   if (verify_enough_prekey_messages(client)) {
-    otrng_debug_exit("ensure_enough_prekey_messages.3");
     return;
   }
 
   signal_error_in_state_management(client, "No Prekey Messages");
-  otrng_debug_exit("ensure_enough_prekey_messages.x");
 }
 
 /* Note, the ensure_ family of functions will check whether the

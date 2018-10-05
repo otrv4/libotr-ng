@@ -36,7 +36,6 @@
 API otrng_global_state_s *
 otrng_global_state_new(const otrng_client_callbacks_s *cb, otrng_bool die) {
   otrng_global_state_s *gs = otrng_xmalloc_z(sizeof(otrng_global_state_s));
-
   if (!otrng_client_callbacks_ensure_needed_exist(cb)) {
     otrng_debug_fprintf(stderr,
                         "otrng global state initialization failed - expected "
@@ -201,7 +200,6 @@ API otrng_result otrng_global_state_generate_prekey_profile(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
   otrng_prekey_profile_s *profile;
   otrng_result err;
-
   otrng_client_s *client = get_client(gs, client_id);
   if (!client) {
     return OTRNG_ERROR;
@@ -286,9 +284,7 @@ API otrng_result otrng_global_state_prekey_profile_write_to(
 }
 
 tstatic void add_prekey_messages_to(list_element_s *node, void *context) {
-  if (!otrng_client_prekeys_write_to(node->data, context)) {
-    return;
-  }
+  otrng_client_prekeys_write_to(node->data, context);
 }
 
 API otrng_result otrng_global_state_prekey_messages_write_to(
