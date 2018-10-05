@@ -35,7 +35,8 @@ otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
       cb->load_client_profile != NULL && cb->load_prekey_profile != NULL &&
       cb->store_client_profile != NULL && cb->store_prekey_profile != NULL &&
       cb->load_prekey_messages != NULL && cb->store_prekey_messages != NULL &&
-      cb->store_privkey_v4 != NULL);
+      cb->store_privkey_v4 != NULL && cb->load_forging_key != NULL &&
+      cb->load_forging_key != NULL);
 }
 
 INTERNAL void

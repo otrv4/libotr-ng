@@ -236,11 +236,7 @@ API otrng_result otrng_global_state_private_key_v4_write_to(
 }
 
 tstatic void add_forging_key_to(list_element_s *node, void *context) {
-  otrng_client_s *client = node->data;
-  // TODO: check the return value
-  if (!otrng_client_forging_key_write_to(client, context)) {
-    return;
-  }
+  otrng_client_forging_key_write_to(node->data, context);
 }
 
 API otrng_result otrng_global_state_forging_key_write_to(

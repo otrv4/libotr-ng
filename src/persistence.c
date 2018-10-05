@@ -243,6 +243,8 @@ INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
 
   if (client->forging_key) {
     otrng_ec_point_destroy(*client->forging_key);
+    free(client->forging_key);
+    client->forging_key = NULL;
   }
 
   len = get_limited_line(&line, forgingf);

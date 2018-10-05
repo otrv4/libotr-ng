@@ -732,22 +732,9 @@ INTERNAL otrng_result otrng_client_add_private_key_v4(
 INTERNAL otrng_public_key *
 otrng_client_get_forging_key(otrng_client_s *client) {
   assert(client);
-
-  if (!client->forging_key) {
-    client->global_state->callbacks->create_forging_key(client->client_id);
-  }
+  assert(client->forging_key);
 
   return client->forging_key;
-}
-
-INTERNAL void otrng_client_ensure_forging_key(otrng_client_s *client) {
-  assert(client);
-
-  if (client->forging_key) {
-    return;
-  }
-
-  client->global_state->callbacks->create_forging_key(client->client_id);
 }
 
 INTERNAL otrng_result otrng_client_add_forging_key(
@@ -780,7 +767,6 @@ otrng_client_build_default_client_profile(otrng_client_s *client) {
 
   assert(client);
 
-  otrng_client_ensure_forging_key(client);
   return otrng_client_profile_build(
       otrng_client_get_instance_tag(client), allowed_versions,
       otrng_client_get_keypair_v4(client), *client->forging_key,

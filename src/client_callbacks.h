@@ -172,6 +172,12 @@ typedef struct otrng_client_callbacks_s {
 
   /* REQUIRED */
   void (*store_privkey_v4)(struct otrng_client_s *client);
+
+  /* REQUIRED */
+  void (*load_forging_key)(struct otrng_client_s *client);
+
+  /* REQUIRED */
+  void (*store_forging_key)(struct otrng_client_s *client);
 } otrng_client_callbacks_s;
 
 INTERNAL otrng_bool

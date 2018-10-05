@@ -40,10 +40,22 @@ tstatic void load_long_term_keys_from_storage(otrng_client_s *client) {
   otrng_debug_exit("orchestration.load_long_term_keys_from_storage");
 }
 
+tstatic void load_forging_key_from_storage(otrng_client_s *client) {
+  otrng_debug_enter("orchestration.load_forging_key_from_storage");
+  client->global_state->callbacks->load_forging_key(client);
+  otrng_debug_exit("orchestration.load_forging_key_from_storage");
+}
+
 tstatic void create_long_term_keys(otrng_client_s *client) {
   otrng_debug_enter("orchestration.create_long_term_keys");
   client->global_state->callbacks->create_privkey_v4(client->client_id);
   otrng_debug_exit("orchestration.create_long_term_keys");
+}
+
+tstatic void create_forging_key(otrng_client_s *client) {
+  otrng_debug_enter("orchestration.create_forging_key");
+  client->global_state->callbacks->create_forging_key(client->client_id);
+  otrng_debug_exit("orchestration.create_forging_key");
 }
 
 tstatic void load_client_profile_from_storage(otrng_client_s *client) {
@@ -79,6 +91,14 @@ tstatic void clean_long_term_keys(otrng_client_s *client) {
   }
 }
 
+tstatic void clean_forging_key(otrng_client_s *client) {
+  if (client->forging_key != NULL) {
+    otrng_ec_point_destroy(*client->forging_key);
+    free(client->forging_key);
+    client->forging_key = NULL;
+  }
+}
+
 tstatic void clean_client_profile(otrng_client_s *client) {
   if (client->client_profile != NULL) {
     otrng_client_profile_free(client->client_profile);
@@ -95,6 +115,13 @@ tstatic void clean_prekey_profile(otrng_client_s *client) {
 
 tstatic otrng_bool verify_valid_long_term_key(otrng_client_s *client) {
   if (client->keypair == NULL) {
+    return otrng_false;
+  }
+  return otrng_true;
+}
+
+tstatic otrng_bool verify_valid_forging_key(otrng_client_s *client) {
+  if (client->forging_key == NULL) {
     return otrng_false;
   }
   return otrng_true;
@@ -126,6 +153,31 @@ tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
   signal_error_in_state_management(client, "No long term key pair");
 }
 
+tstatic void ensure_valid_forging_key(otrng_client_s *client) {
+  if (verify_valid_forging_key(client)) {
+    return;
+  }
+
+  clean_forging_key(client);
+  load_forging_key_from_storage(client);
+
+  if (verify_valid_forging_key(client)) {
+    return;
+  }
+
+  clean_forging_key(client);
+  create_forging_key(client);
+
+  if (verify_valid_forging_key(client)) {
+    clean_client_profile(client);
+    client->global_state->callbacks->store_forging_key(client);
+    return;
+  }
+
+  clean_forging_key(client);
+  signal_error_in_state_management(client, "No forging key");
+}
+
 /* This function doesn't take into account the expired but otherwise valid
    client profile, since we will need to publish a new one
    at the same the previous one expires anyway. The expired
@@ -141,11 +193,13 @@ tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
     return otrng_false;
   }
 
-  // TODO: we should also make sure that the forging key is correct here -
-  // otherwise it's not valid
-
   if (!otrng_ec_point_eq(client->keypair->pub,
                          client->client_profile->long_term_pub_key)) {
+    return otrng_false;
+  }
+
+  if (!otrng_ec_point_eq(*client->forging_key,
+                         client->client_profile->forging_pub_key)) {
     return otrng_false;
   }
 
@@ -293,6 +347,7 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   otrng_debug_fprintf(stderr, "client=%s\n", client->client_id.account);
 
   ensure_valid_long_term_key(client);
+  ensure_valid_forging_key(client);
   ensure_valid_client_profile(client);
 
   // TODO: @ola here we should check if the client profile is close to expiring,
@@ -310,6 +365,10 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
 
 API otrng_bool otrng_client_verify_correct_state(otrng_client_s *client) {
   if (!verify_valid_long_term_key(client)) {
+    return otrng_false;
+  }
+
+  if (!verify_valid_forging_key(client)) {
     return otrng_false;
   }
 
