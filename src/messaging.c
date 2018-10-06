@@ -279,6 +279,21 @@ API otrng_result otrng_global_state_expired_client_profile_write_to(
   return OTRNG_SUCCESS;
 }
 
+tstatic void add_expired_prekey_profile_to(list_element_s *node,
+                                           void *context) {
+  otrng_client_expired_prekey_profile_write_to(node->data, context);
+}
+
+API otrng_result otrng_global_state_expired_prekey_profile_write_to(
+    const otrng_global_state_s *gs, FILE *privf) {
+  if (!privf) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_list_foreach(gs->clients, add_expired_prekey_profile_to, privf);
+  return OTRNG_SUCCESS;
+}
+
 tstatic void add_prekey_profile_to(list_element_s *node, void *context) {
   // TODO: check error here
   otrng_client_prekey_profile_write_to(node->data, context);

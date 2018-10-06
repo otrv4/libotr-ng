@@ -70,6 +70,10 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
 
 INTERNAL otrng_result
 otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *profilef);
+
+INTERNAL otrng_result otrng_client_expired_prekey_profile_write_to(
+    otrng_client_s *client, FILE *profilef);
+
 #endif
 
 #endif

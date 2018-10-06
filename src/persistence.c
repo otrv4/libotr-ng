@@ -687,6 +687,50 @@ otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *profilef) {
   return OTRNG_SUCCESS;
 }
 
+INTERNAL otrng_result otrng_client_expired_prekey_profile_write_to(
+    otrng_client_s *client, FILE *profilef) {
+  uint8_t *buffer = NULL;
+  size_t s = 0;
+  char *encoded;
+  char *storage_id;
+
+  if (!profilef) {
+    return OTRNG_ERROR;
+  }
+
+  if (!client->exp_prekey_profile) {
+    return OTRNG_ERROR;
+  }
+
+  if (!otrng_prekey_profile_serialize_with_metadata(
+          &buffer, &s, client->exp_prekey_profile)) {
+    return OTRNG_ERROR;
+  }
+
+  encoded = otrng_base64_encode(buffer, s);
+  free(buffer);
+  if (!encoded) {
+    return OTRNG_ERROR;
+  }
+
+  storage_id = otrng_client_get_storage_id(client);
+  if (!storage_id) {
+    free(encoded);
+    return OTRNG_ERROR;
+  }
+
+  if (fprintf(profilef, "%s\n%s\n", storage_id, encoded) < 0) {
+    free(encoded);
+    free(storage_id);
+    return OTRNG_ERROR;
+  }
+
+  free(encoded);
+  free(storage_id);
+
+  return OTRNG_SUCCESS;
+}
+
 INTERNAL otrng_result
 otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
   char *line = NULL;
@@ -749,8 +793,6 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
     return OTRNG_ERROR;
   }
 
-  otrng_prekey_profile_free(client->exp_prekey_profile);
-
   len = get_limited_line(&line, exp_profilef);
   if (len < 0) {
     return OTRNG_ERROR;
@@ -769,10 +811,8 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
     return result;
   }
 
-  if (otrng_prekey_profile_invalid(exp_profile.expires,
-                                   client->profiles_extra_valid_time)) {
-    return OTRNG_ERROR;
-  }
+  otrng_prekey_profile_free(client->exp_prekey_profile);
+  client->exp_prekey_profile = NULL;
 
   result = otrng_client_add_exp_prekey_profile(client, &exp_profile);
 
