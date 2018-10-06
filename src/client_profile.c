@@ -188,7 +188,7 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
   num_fields++;
 
   /* DSA key */
-  if (client_profile->dsa_key && client_profile->dsa_key_len) {
+  if ((client_profile->dsa_key != NULL) && (client_profile->dsa_key_len != 0)) {
     w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_DSA_KEY);
     w += otrng_serialize_bytes_array(dst + w, client_profile->dsa_key,
                                      client_profile->dsa_key_len);

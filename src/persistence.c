@@ -40,7 +40,7 @@ static char *otrng_client_get_storage_id(const otrng_client_s *client) {
     return NULL;
   }
 
-  if (account_name && protocol_name) {
+  if ((account_name != NULL) && (protocol_name != NULL)) {
     size_t n = strlen(protocol_name) + strlen(account_name) + 2;
     key = otrng_xmalloc(n);
 
@@ -296,7 +296,8 @@ INTERNAL otrng_result
 otrng_client_instance_tag_read_from(otrng_client_s *client, FILE *instagf) {
   gcry_error_t ret;
 
-  if (!client->global_state->user_state_v3) {
+  if (client->global_state->user_state_v3 ==
+      NULL) { // TODO: unsure about this check. It is not a pointer
     return OTRNG_ERROR;
   }
 

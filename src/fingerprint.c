@@ -55,7 +55,7 @@ INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
 
   memset(ser, 0, ED448_POINT_BYTES);
 
-  if (!fp) {
+  if (fp == NULL) { // TODO: unsure about this check. This is an array
     return OTRNG_ERROR;
   }
 

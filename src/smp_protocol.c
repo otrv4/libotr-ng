@@ -1196,7 +1196,10 @@ INTERNAL otrng_smp_event otrng_reply_with_smp_message_2(tlv_s **to_send,
 
   *to_send = NULL;
 
-  generate_smp_message_2(&msg_2, smp->message1, smp);
+  if (!generate_smp_message_2(&msg_2, smp->message1, smp)) {
+    return OTRNG_SMP_EVENT_ERROR;
+  }
+
   if (!smp_message_2_serialize(&buffer, &buff_len, &msg_2)) {
     return OTRNG_SMP_EVENT_ERROR;
   }

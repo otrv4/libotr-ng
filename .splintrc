@@ -38,7 +38,6 @@
 +charint
 +matchanyintegral
 +voidabstract
--boolops
 -branchstate
 -compdef
 -compdestroy
@@ -46,7 +45,6 @@
 -exportlocal
 -fcnuse
 -fixedformalarray
--formatcode
 -globstate
 -immediatetrans
 -incondefs
@@ -61,7 +59,6 @@
 -nullret
 -nullstate
 -observertrans
--predboolothers
 -retvalother
 -shiftnegative
 -statictrans

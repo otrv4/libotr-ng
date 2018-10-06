@@ -181,7 +181,7 @@ otrng_list_get(const void *wanted, list_element_s *head,
   list_element_s *cursor = head;
 
   while (cursor) {
-    if (fn && fn(cursor->data, wanted)) {
+    if ((fn != NULL) && fn(cursor->data, wanted)) {
       return cursor;
     }
 

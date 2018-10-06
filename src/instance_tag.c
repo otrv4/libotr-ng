@@ -38,7 +38,7 @@ API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
   OtrlInsTag *tmp_instag;
   OtrlUserState us = otrl_userstate_create();
 
-  if (!us) {
+  if (us == NULL) { // TODO: unsure about this check
     return otrng_false;
   }
 

@@ -327,8 +327,8 @@ INTERNAL otrng_result otrng_expire_fragments(time_t now,
     fragment_context_s *ctx = current->data;
 
     list_element_s *to_free = NULL;
-    if (ctx &&
-        difftime(now, ctx->last_fragment_received_at) < expiration_time) {
+    if ((ctx != NULL) &&
+        (difftime(now, ctx->last_fragment_received_at) < expiration_time)) {
       *contexts = otrng_list_remove_element(current, *contexts);
       otrng_fragment_context_free(ctx);
       to_free = current;

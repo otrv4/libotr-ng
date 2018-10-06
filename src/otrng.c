@@ -335,12 +335,14 @@ tstatic otrng_result message_to_display_without_tag(otrng_response_s *response,
 }
 
 tstatic void set_running_version_from_tag(otrng_s *otr, const string_p msg) {
-  if (allow_version(otr, OTRNG_ALLOW_V4) && strstr(msg, tag_version_v4)) {
+  if (allow_version(otr, OTRNG_ALLOW_V4) &&
+      (strstr(msg, tag_version_v4) != NULL)) {
     otr->running_version = OTRNG_PROTOCOL_VERSION_4;
     return;
   }
 
-  if (allow_version(otr, OTRNG_ALLOW_V3) && strstr(msg, tag_version_v3)) {
+  if (allow_version(otr, OTRNG_ALLOW_V3) &&
+      (strstr(msg, tag_version_v3) != NULL)) {
     otr->running_version = OTRNG_PROTOCOL_VERSION_3;
     return;
   }
@@ -355,9 +357,9 @@ tstatic otrng_bool message_is_query(const string_p msg) {
 
 tstatic void set_running_version_from_query_message(otrng_s *otr,
                                                     const string_p msg) {
-  if (allow_version(otr, OTRNG_ALLOW_V4) && strstr(msg, "4")) {
+  if (allow_version(otr, OTRNG_ALLOW_V4) && (strstr(msg, "4") != NULL)) {
     otr->running_version = OTRNG_PROTOCOL_VERSION_4;
-  } else if (allow_version(otr, OTRNG_ALLOW_V3) && strstr(msg, "3")) {
+  } else if (allow_version(otr, OTRNG_ALLOW_V3) && (strstr(msg, "3") != NULL)) {
     otr->running_version = OTRNG_PROTOCOL_VERSION_3;
   }
 }
@@ -1225,7 +1227,8 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     free(t);
     t = NULL;
 
-    if (initiator.exp_client_profile && initiator.exp_prekey_profile) {
+    if ((initiator.exp_client_profile != NULL) &&
+        (initiator.exp_prekey_profile != NULL)) {
       /* the fallback */
       if (!build_fallback_non_interactive_rsign_tag(
               &t, &t_len, &initiator, &responder,
@@ -2251,7 +2254,8 @@ static otrng_result receive_defragmented_message(otrng_response_s *response,
   response->to_display = NULL;
 
   /* A DH-Commit sets our running version to 3 */
-  if (allow_version(otr, OTRNG_ALLOW_V3) && strstr(msg, "?OTR:AAMC")) {
+  if (allow_version(otr, OTRNG_ALLOW_V3) &&
+      (strstr(msg, "?OTR:AAMC") != NULL)) {
     otr->running_version = OTRNG_PROTOCOL_VERSION_3;
   }
 

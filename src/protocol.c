@@ -222,9 +222,11 @@ tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
   memset(enc_key, 0, ENC_KEY_BYTES);
   memset(mac_key, 0, MAC_KEY_BYTES);
 
-  otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, NULL,
-                                      otr->client->max_stored_msg_keys, 0, 's',
-                                      warn);
+  if (!otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, NULL,
+                                           otr->client->max_stored_msg_keys, 0,
+                                           's', warn)) {
+    return OTRNG_ERROR;
+  }
 
   data_msg = generate_data_message(otr, ratchet_id);
   if (!data_msg) {

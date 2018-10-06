@@ -585,7 +585,9 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
   for (i = 0; i < num_messages; i++) {
     ecdh_keypair_s ecdh;
     dh_keypair_s dh;
-    otrng_generate_ephemeral_keys(&ecdh, &dh);
+    if (!otrng_generate_ephemeral_keys(&ecdh, &dh)) {
+      return NULL;
+    }
 
     messages[i] = otrng_prekey_message_build(instance_tag, &ecdh, &dh);
     if (!messages[i]) {

@@ -712,7 +712,7 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
 
   *to_send = otrng_v3_retrieve_injected_message(conn);
 
-  if (to_display && new_msg) {
+  if ((to_display != NULL) && (new_msg != NULL)) {
     *to_display = otrng_xstrdup(new_msg);
   }
 
@@ -777,7 +777,7 @@ INTERNAL otrng_result otrng_v3_smp_start(char **to_send,
                                          size_t secretlen,
                                          otrng_v3_conn_s *conn) {
   char *q = NULL;
-  if (question && q_len > 0) {
+  if ((question != NULL) && q_len > 0) {
     q = otrng_xmalloc(q_len + 1);
     q = memcpy(q, question, q_len);
     q[q_len] = 0;
@@ -822,7 +822,7 @@ tstatic void otrng_v3_store_injected_message(const char *msg,
 
   // TODO: @client This is where we should ADD a new element to the list.
   // We are just ignoring for now.
-  if (conn->injected_message && msg) {
+  if ((conn->injected_message != NULL) && (msg != NULL)) {
     free(conn->injected_message);
   }
 
