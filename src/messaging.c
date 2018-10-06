@@ -313,39 +313,18 @@ API otrng_result otrng_global_state_private_key_v3_read_from(
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_global_state_private_key_v4_read_from(
-    otrng_global_state_s *gs, FILE *privf,
-    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
-  if (!privf) {
-    return OTRNG_ERROR;
-  }
+tstatic otrng_result
+global_state_read_from(otrng_global_state_s *gs, FILE *f,
+                       otrng_client_id_s (*read_client_id_for_key)(FILE *),
+                       otrng_result (*on_each_line)(otrng_client_s *, FILE *)) {
+  otrng_client_s *last_client = NULL;
+  const char *last_protocol = NULL;
+  const char *last_account = NULL;
 
-  /* Scan the whole file for a private key for this client */
-  while (!feof(privf)) {
-    otrng_client_s *client;
-    const otrng_client_id_s client_id = read_client_id_for_key(privf);
-    if (!client_id.protocol || !client_id.account) {
-      continue;
-    }
-
-    client = get_client(gs, client_id);
-    if (otrng_client_private_key_v4_read_from(client, privf) != OTRNG_SUCCESS) {
-      return OTRNG_ERROR; /* We decide to abort, since this means the file is
-                             malformed */
-    }
-  }
-
-  return OTRNG_SUCCESS;
-}
-
-API otrng_result otrng_global_state_forging_key_read_from(
-    otrng_global_state_s *gs, FILE *f,
-    otrng_client_id_s (*read_client_id_for_key)(FILE *f)) {
   if (!f) {
     return OTRNG_ERROR;
   }
 
-  // Scan the whole file for a private key for this client
   while (!feof(f)) {
     otrng_client_s *client;
     const otrng_client_id_s client_id = read_client_id_for_key(f);
@@ -353,117 +332,64 @@ API otrng_result otrng_global_state_forging_key_read_from(
       continue;
     }
 
-    client = get_client(gs, client_id);
-    if (otrng_failed(otrng_client_forging_key_read_from(client, f))) {
-      return OTRNG_ERROR; /* We decide to abort, since this means the file is
-                             malformed */
+    if (last_protocol == client_id.protocol &&
+        last_account == client_id.account) {
+      client = last_client;
+    } else {
+      client = get_client(gs, client_id);
+      last_protocol = client_id.protocol;
+      last_account = client_id.account;
+      last_client = client;
+    }
+
+    if (otrng_failed(on_each_line(client, f))) {
+      return OTRNG_ERROR;
     }
   }
 
   return OTRNG_SUCCESS;
+}
+
+API otrng_result otrng_global_state_private_key_v4_read_from(
+    otrng_global_state_s *gs, FILE *f,
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
+  return global_state_read_from(gs, f, read_client_id_for_key,
+                                otrng_client_private_key_v4_read_from);
+}
+
+API otrng_result otrng_global_state_forging_key_read_from(
+    otrng_global_state_s *gs, FILE *f,
+    otrng_client_id_s (*read_client_id_for_key)(FILE *f)) {
+  return global_state_read_from(gs, f, read_client_id_for_key,
+                                otrng_client_forging_key_read_from);
 }
 
 API otrng_result otrng_global_state_client_profile_read_from(
-    otrng_global_state_s *gs, FILE *profile_filep,
+    otrng_global_state_s *gs, FILE *f,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
-  if (!profile_filep) {
-    return OTRNG_ERROR;
-  }
-
-  while (!feof(profile_filep)) {
-    otrng_client_s *client;
-    const otrng_client_id_s client_id = read_client_id_for_key(profile_filep);
-    if (!client_id.protocol || !client_id.account) {
-      continue;
-    }
-
-    client = get_client(gs, client_id);
-    if (otrng_client_client_profile_read_from(client, profile_filep) !=
-        OTRNG_SUCCESS) {
-      return OTRNG_ERROR; /* We decide to abort, since this means the file is
-                             malformed */
-    }
-  }
-
-  return OTRNG_SUCCESS;
+  return global_state_read_from(gs, f, read_client_id_for_key,
+                                otrng_client_client_profile_read_from);
 }
 
 API otrng_result otrng_global_state_expired_client_profile_read_from(
-    otrng_global_state_s *gs, FILE *exp_profile_filep,
+    otrng_global_state_s *gs, FILE *f,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
-  if (!exp_profile_filep) {
-    return OTRNG_ERROR; // TODO: @refactoring maybe this should be success on
-                        // every case
-  }
-
-  while (!feof(exp_profile_filep)) {
-    otrng_client_s *client;
-    const otrng_client_id_s client_id =
-        read_client_id_for_key(exp_profile_filep);
-    if (!client_id.protocol || !client_id.account) {
-      continue;
-    }
-
-    client = get_client(gs, client_id);
-    if (otrng_client_expired_client_profile_read_from(
-            client, exp_profile_filep) != OTRNG_SUCCESS) {
-      return OTRNG_ERROR; /* We decide to abort, since this means the file is
-                             malformed */
-    }
-  }
-
-  return OTRNG_SUCCESS;
+  return global_state_read_from(gs, f, read_client_id_for_key,
+                                otrng_client_expired_client_profile_read_from);
 }
 
 API otrng_result otrng_global_state_prekey_profile_read_from(
-    otrng_global_state_s *gs, FILE *profile_filep,
+    otrng_global_state_s *gs, FILE *f,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
-  if (!profile_filep) {
-    return OTRNG_ERROR;
-  }
-
-  while (!feof(profile_filep)) {
-    otrng_client_s *client;
-    const otrng_client_id_s client_id = read_client_id_for_key(profile_filep);
-    if (!client_id.protocol || !client_id.account) {
-      continue;
-    }
-    client = get_client(gs, client_id);
-    if (otrng_client_prekey_profile_read_from(client, profile_filep) !=
-        OTRNG_SUCCESS) {
-      return OTRNG_ERROR; /* We decide to abort, since this means the file is
-                             malformed */
-    }
-  }
-
-  return OTRNG_SUCCESS;
+  return global_state_read_from(gs, f, read_client_id_for_key,
+                                otrng_client_prekey_profile_read_from);
 }
 
 API otrng_result otrng_global_state_expired_prekey_profile_read_from(
-    otrng_global_state_s *gs, FILE *exp_profile_filep,
+    otrng_global_state_s *gs, FILE *f,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
-  if (!exp_profile_filep) {
-    return OTRNG_ERROR; // TODO: @refactoring maybe this should be success on
-                        // every case
-  }
-
-  while (!feof(exp_profile_filep)) {
-    otrng_client_s *client;
-    const otrng_client_id_s client_id =
-        read_client_id_for_key(exp_profile_filep);
-    if (!client_id.protocol || !client_id.account) {
-      continue;
-    }
-
-    client = get_client(gs, client_id);
-    if (otrng_client_expired_prekey_profile_read_from(
-            client, exp_profile_filep) != OTRNG_SUCCESS) {
-      return OTRNG_ERROR; /* We decide to abort, since this means the file is
-                             malformed */
-    }
-  }
-
-  return OTRNG_SUCCESS;
+  return global_state_read_from(gs, f, read_client_id_for_key,
+                                otrng_client_expired_prekey_profile_read_from);
 }
 
 tstatic void prekey_global_state_message_free_from_list(void *prekeys) {
@@ -479,43 +405,11 @@ tstatic void free_prekeys_from(list_element_s *node, void *ignored) {
 }
 
 API otrng_result otrng_global_state_prekeys_read_from(
-    otrng_global_state_s *gs, FILE *prekey_filep,
-    otrng_client_id_s (*read_client_id_for_prekey)(FILE *filep)) {
-  otrng_client_s *last_client = NULL;
-  const char *last_protocol = NULL;
-  const char *last_account = NULL;
-
-  if (!prekey_filep) {
-    return OTRNG_ERROR;
-  }
-
+    otrng_global_state_s *gs, FILE *f,
+    otrng_client_id_s (*read_client_id_for_line)(FILE *)) {
   otrng_list_foreach(gs->clients, free_prekeys_from, NULL);
-
-  while (!feof(prekey_filep)) {
-    otrng_client_s *client;
-    const otrng_client_id_s client_id = read_client_id_for_prekey(prekey_filep);
-    if (!client_id.protocol || !client_id.account) {
-      continue;
-    }
-
-    if (last_protocol == client_id.protocol &&
-        last_account == client_id.account) {
-      client = last_client;
-    } else {
-      client = get_client(gs, client_id);
-      last_protocol = client_id.protocol;
-      last_account = client_id.account;
-      last_client = client;
-    }
-
-    if (otrng_client_prekey_messages_read_from(client, prekey_filep) !=
-        OTRNG_SUCCESS) {
-      return OTRNG_ERROR; /* We decide to abort, since this means the file is
-                             malformed */
-    }
-  }
-
-  return OTRNG_SUCCESS;
+  return global_state_read_from(gs, f, read_client_id_for_line,
+                                otrng_client_prekey_messages_read_from);
 }
 
 #ifdef DEBUG_API
