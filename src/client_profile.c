@@ -761,6 +761,13 @@ otrng_client_profile_valid(const otrng_client_profile_s *client_profile,
   return !client_profile_expired(client_profile->expires);
 }
 
+/* This function should be called on a profile that is valid - it
+   assumes this, and doesn't verify it. */
+INTERNAL otrng_bool otrng_client_profile_is_close_to_expiry(
+    const otrng_client_profile_s *profile, uint64_t buffer_time) {
+  return client_profile_expired(profile->expires + buffer_time);
+}
+
 INTERNAL otrng_bool otrng_client_profile_is_expired_but_valid(
     const otrng_client_profile_s *profile, uint32_t itag,
     uint64_t extra_valid_time) {

@@ -191,12 +191,6 @@ tstatic void ensure_valid_forging_key(otrng_client_s *client) {
   signal_error_in_state_management(client, "No forging key");
 }
 
-/* This function doesn't take into account the expired but otherwise valid
-   client profile, since we will need to publish a new one
-   at the same the previous one expires anyway. The expired
-   client profiles should only be used when RECEIVING a DAKE with it,
-   we should never send it, and client->client_profile MUST NOT be invalid,
-   when doing any operation. */
 /* TODO: @ola let's implement a fast verify that only checks expiry, and
    assumes that the rest of the data is correct since last time */
 tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
@@ -280,6 +274,16 @@ tstatic void check_if_expired_client_profile(otrng_client_s *client) {
   }
 }
 
+tstatic otrng_bool
+check_if_close_to_expired_client_profile(otrng_client_s *client) {
+  if (otrng_client_profile_is_close_to_expiry(client->client_profile,
+                                              client->profiles_buffer_time)) {
+    move_client_profile_to_expired(client);
+    return otrng_false;
+  }
+  return otrng_true;
+}
+
 tstatic void ensure_valid_client_profile(otrng_client_s *client) {
   if (verify_valid_client_profile(client)) {
     return;
@@ -290,7 +294,9 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
   check_if_expired_client_profile(client);
 
   if (verify_valid_client_profile(client)) {
-    return;
+    if (!check_if_close_to_expired_client_profile(client)) {
+      return;
+    }
   }
 
   clean_client_profile(client);

@@ -115,6 +115,9 @@ INTERNAL otrng_client_profile_s *otrng_client_profile_build(
 INTERNAL otrng_bool otrng_client_profile_invalid(time_t expires,
                                                  uint64_t extra_valid_time);
 
+INTERNAL otrng_bool otrng_client_profile_is_close_to_expiry(
+    const otrng_client_profile_s *profile, uint64_t buffer_time);
+
 INTERNAL otrng_bool otrng_client_profile_is_expired_but_valid(
     const otrng_client_profile_s *profile, uint32_t itag,
     uint64_t extra_valid_time);

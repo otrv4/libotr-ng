@@ -75,6 +75,7 @@ typedef struct otrng_client_s {
   uint64_t profiles_extra_valid_time;
   uint64_t client_profile_exp_time;
   uint64_t prekey_profile_exp_time;
+  uint64_t profiles_buffer_time;
 
   otrng_bool (*should_heartbeat)(int last_sent);
   size_t padding;
