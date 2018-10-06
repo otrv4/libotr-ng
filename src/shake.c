@@ -22,7 +22,7 @@
 
 #include "shake.h"
 
-void hash_init_with_dom(goldilocks_shake256_ctx_p hash) {
+tstatic void hash_init_with_dom(goldilocks_shake256_ctx_p hash) {
   const char *domain = "OTRv4";
 
   hash_init(hash);
@@ -38,8 +38,8 @@ void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
   hash_update(hash, &usage, 1);
 }
 
-void hash_init_with_usage_prekey_server(goldilocks_shake256_ctx_p hash,
-                                        uint8_t usage) {
+static void hash_init_with_usage_prekey_server(goldilocks_shake256_ctx_p hash,
+                                               uint8_t usage) {
   const char *domain = "OTR-Prekey-Server";
   hash_init_with_usage_and_domain_separation(hash, usage, domain);
 }

@@ -30,8 +30,6 @@
 #define hash_destroy goldilocks_shake256_destroy
 #define hash_hash goldilocks_shake256_hash
 
-void hash_init_with_dom(goldilocks_shake256_ctx_p hash);
-
 void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
                                                 uint8_t usage,
                                                 const char *domain);
@@ -51,5 +49,11 @@ void shake_256_prekey_server_kdf(uint8_t *dst, size_t dst_len, uint8_t usage,
 
 void shake_256_hash(uint8_t *dst, size_t dst_len, const uint8_t *secret,
                     size_t secret_len);
+
+#ifdef OTRNG_SHAKE_PRIVATE
+
+tstatic void hash_init_with_dom(goldilocks_shake256_ctx_p hash);
+
+#endif
 
 #endif

@@ -66,7 +66,7 @@ otrng_message_to_send_s *otrng_message_new(void);
 
 tstatic void otrng_message_free(otrng_message_to_send_s *msg);
 
-/*@null@*/ fragment_context_s *otrng_fragment_context_new(void);
+tstatic /*@null@*/ fragment_context_s *otrng_fragment_context_new(void);
 
 #endif
 

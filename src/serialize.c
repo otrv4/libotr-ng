@@ -25,8 +25,8 @@
 #include "alloc.h"
 #include "serialize.h"
 
-INTERNAL size_t serialize_uint(uint8_t *target, const uint64_t data,
-                               const size_t offset) {
+static size_t serialize_uint(uint8_t *target, const uint64_t data,
+                             const size_t offset) {
   size_t i;
   size_t shift = offset;
 
@@ -75,7 +75,7 @@ INTERNAL size_t otrng_serialize_data(uint8_t *dst, const uint8_t *data,
   return cursor - dst;
 }
 
-INTERNAL size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_s *mpi) {
+static size_t otrng_serialize_mpi(uint8_t *dst, const otrng_mpi_s *mpi) {
   return otrng_serialize_data(dst, mpi->data, mpi->len);
 }
 

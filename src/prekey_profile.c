@@ -72,8 +72,9 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
   dst->is_publishing = src->is_publishing;
 }
 
-tstatic size_t otrng_prekey_profile_body_serialize(
-    uint8_t *dst, size_t dst_len, const otrng_prekey_profile_s *profile) {
+static size_t
+prekey_profile_body_serialize(uint8_t *dst, size_t dst_len,
+                              const otrng_prekey_profile_s *profile) {
   size_t w = 0;
 
   if (4 > dst_len - w) {
@@ -189,8 +190,9 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
 
 #define PREKEY_PROFILE_BODY_BYTES 4 + 8 + ED448_PUBKEY_BYTES
 
-tstatic otrng_result otrng_prekey_profile_body_serialize_into(
-    uint8_t **dst, size_t *dst_len, const otrng_prekey_profile_s *profile) {
+static otrng_result
+prekey_profile_body_serialize_into(uint8_t **dst, size_t *dst_len,
+                                   const otrng_prekey_profile_s *profile) {
   size_t size = PREKEY_PROFILE_BODY_BYTES;
   uint8_t *buffer;
   size_t written;
@@ -201,7 +203,7 @@ tstatic otrng_result otrng_prekey_profile_body_serialize_into(
 
   buffer = otrng_xmalloc_z(size);
 
-  written = otrng_prekey_profile_body_serialize(buffer, size, profile);
+  written = prekey_profile_body_serialize(buffer, size, profile);
   if (written == 0) {
     free(buffer);
     return OTRNG_ERROR;
@@ -222,8 +224,8 @@ INTERNAL otrng_result otrng_prekey_profile_serialize(
   uint8_t *buffer = otrng_xmalloc_z(size);
   size_t written;
 
-  written = otrng_prekey_profile_body_serialize(
-      buffer, PREKEY_PROFILE_BODY_BYTES, profile);
+  written =
+      prekey_profile_body_serialize(buffer, PREKEY_PROFILE_BODY_BYTES, profile);
   if (written == 0) {
     free(buffer);
     return OTRNG_ERROR;
@@ -254,8 +256,8 @@ INTERNAL otrng_result otrng_prekey_profile_serialize_with_metadata(
   uint8_t *buffer = otrng_xmalloc_z(size);
   size_t written;
 
-  written = otrng_prekey_profile_body_serialize(
-      buffer, PREKEY_PROFILE_BODY_BYTES, profile);
+  written =
+      prekey_profile_body_serialize(buffer, PREKEY_PROFILE_BODY_BYTES, profile);
   if (written == 0) {
     free(buffer);
     return OTRNG_ERROR;
@@ -284,11 +286,11 @@ INTERNAL otrng_result otrng_prekey_profile_serialize_with_metadata(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result prekey_profile_sign(
+tstatic otrng_result otrng_prekey_profile_sign(
     otrng_prekey_profile_s *profile, const otrng_keypair_s *longterm_pair) {
   uint8_t *body = NULL;
   size_t body_len = 0;
-  if (!otrng_prekey_profile_body_serialize_into(&body, &body_len, profile)) {
+  if (!prekey_profile_body_serialize_into(&body, &body_len, profile)) {
     return OTRNG_ERROR;
   }
 
@@ -322,7 +324,7 @@ otrng_prekey_profile_build(uint32_t instance_tag,
 #define PREKEY_PROFILE_EXPIRATION_SECONDS 1 * 30 * 24 * 60 * 60; /* 1 month */
   prekey_profile->expires = expires + PREKEY_PROFILE_EXPIRATION_SECONDS;
 
-  if (!prekey_profile_sign(prekey_profile, longterm_pair)) {
+  if (!otrng_prekey_profile_sign(prekey_profile, longterm_pair)) {
     otrng_prekey_profile_free(prekey_profile);
     return NULL;
   }
@@ -345,7 +347,7 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
     return otrng_false;
   }
 
-  if (!otrng_prekey_profile_body_serialize_into(&body, &body_len, profile)) {
+  if (!prekey_profile_body_serialize_into(&body, &body_len, profile)) {
     return otrng_false;
   }
 

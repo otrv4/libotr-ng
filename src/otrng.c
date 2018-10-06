@@ -168,7 +168,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
 
 static void free_fragment_context(void *p) { otrng_fragment_context_free(p); }
 
-INTERNAL void otrng_destroy(/*@only@ */ otrng_s *otr) {
+tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   free(otr->peer);
 
   otrng_key_manager_free(otr->keys);
@@ -515,6 +515,39 @@ tstatic otrng_result serialize_and_encode_auth_r(string_p *dst,
 
   free(buffer);
   return OTRNG_SUCCESS;
+}
+
+tstatic char *
+otrng_generate_session_state_string(const otrng_shared_session_state_s *state) {
+  char *sss;
+  size_t sss_len;
+
+  if (!state || !state->identifier1 || !state->identifier2) {
+    return NULL;
+  }
+
+  sss_len = strlen(state->identifier1) + strlen(state->identifier2) + 1;
+  if (state->password) {
+    sss_len += strlen(state->password);
+  }
+
+  sss = otrng_xmalloc_z(sss_len);
+
+  /* The below calls to strncpy and strncat will always be safe with sss_len as
+     the argument, since it's calculated based on the strlen of both things */
+  if (strcmp(state->identifier1, state->identifier2) < 0) {
+    strncpy(sss, state->identifier1, sss_len);
+    strncat(sss, state->identifier2, sss_len);
+  } else {
+    strncpy(sss, state->identifier2, sss_len);
+    strncat(sss, state->identifier1, sss_len);
+  }
+
+  if (state->password) {
+    strncat(sss, state->password, sss_len);
+  }
+
+  return sss;
 }
 
 static const char *get_shared_session_state(otrng_s *otr) {
@@ -2057,9 +2090,8 @@ tstatic otrng_result otrng_receive_data_message(otrng_response_s *response,
                                                otr);
 }
 
-API otrng_result otrng_extract_header(otrng_header_s *dst,
-                                      const uint8_t *buffer,
-                                      const size_t buff_len) {
+static otrng_result extract_header(otrng_header_s *dst, const uint8_t *buffer,
+                                   const size_t buff_len) {
   size_t read = 0;
 
   if (buff_len < 3) {
@@ -2090,7 +2122,7 @@ tstatic otrng_result receive_decoded_message(otrng_response_s *response,
   otrng_header_s header;
   int v3_allowed, v4_allowed;
 
-  if (otrng_failed(otrng_extract_header(&header, decoded, dec_len))) {
+  if (otrng_failed(extract_header(&header, decoded, dec_len))) {
     return OTRNG_ERROR;
   }
 
@@ -2168,7 +2200,7 @@ tstatic otrng_result receive_error_message(otrng_response_s *response,
   return OTRNG_ERROR;
 }
 
-API int otrng_get_message_type(const string_p msg) {
+static int get_message_type(const string_p msg) {
   if (message_contains_tag(msg)) {
     return MSG_TAGGED_PLAINTEXT;
   }
@@ -2186,7 +2218,7 @@ API int otrng_get_message_type(const string_p msg) {
 tstatic otrng_result receive_message_v4_only(otrng_response_s *response,
                                              otrng_warning *warn,
                                              const string_p msg, otrng_s *otr) {
-  switch (otrng_get_message_type(msg)) {
+  switch (get_message_type(msg)) {
   case MSG_PLAINTEXT:
     receive_plaintext(response, msg, otr);
     return OTRNG_SUCCESS;
@@ -2207,29 +2239,10 @@ tstatic otrng_result receive_message_v4_only(otrng_response_s *response,
   return OTRNG_SUCCESS;
 }
 
-/* Receive a possibly OTR message. */
-INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
-                                            otrng_warning *warn,
-                                            const string_p msg, otrng_s *otr) {
-  char *defrag = NULL;
-  otrng_result ret;
-
-  response->warning = OTRNG_WARN_NONE;
-  response->to_display = NULL;
-
-  if (otrng_failed(otrng_unfragment_message(&defrag, &otr->pending_fragments,
-                                            msg, our_instance_tag(otr)))) {
-    return OTRNG_ERROR;
-  }
-
-  ret = otrng_receive_defragmented_message(response, warn, defrag, otr);
-  free(defrag);
-  return ret;
-}
-
-INTERNAL otrng_result otrng_receive_defragmented_message(
-    otrng_response_s *response, otrng_warning *warn, const string_p msg,
-    otrng_s *otr) {
+static otrng_result receive_defragmented_message(otrng_response_s *response,
+                                                 otrng_warning *warn,
+                                                 const string_p msg,
+                                                 otrng_s *otr) {
 
   if (!msg || !response) {
     return OTRNG_ERROR;
@@ -2251,6 +2264,26 @@ INTERNAL otrng_result otrng_receive_defragmented_message(
     // V4 handles every message BUT v3 messages
     return receive_message_v4_only(response, warn, msg, otr);
   }
+}
+
+/* Receive a possibly OTR message. */
+INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
+                                            otrng_warning *warn,
+                                            const string_p msg, otrng_s *otr) {
+  char *defrag = NULL;
+  otrng_result ret;
+
+  response->warning = OTRNG_WARN_NONE;
+  response->to_display = NULL;
+
+  if (otrng_failed(otrng_unfragment_message(&defrag, &otr->pending_fragments,
+                                            msg, our_instance_tag(otr)))) {
+    return OTRNG_ERROR;
+  }
+
+  ret = receive_defragmented_message(response, warn, defrag, otr);
+  free(defrag);
+  return ret;
 }
 
 INTERNAL otrng_result otrng_send_message(string_p *to_send, const string_p msg,
@@ -2408,6 +2441,26 @@ API otrng_result otrng_send_symkey_message(string_p *to_send, unsigned int use,
 #define GCRYPT_WANTED_VERSION_17 "1.7.6"
 #define GCRYPT_WANTED_VERSION_18 "1.8.0"
 
+static int otrl_initialized = 0;
+
+static otrng_result otrng_v3_init(otrng_bool die) {
+  if (otrl_initialized) {
+    return OTRNG_SUCCESS;
+  }
+
+  if (otrl_init(OTRL_VERSION_MAJOR, OTRL_VERSION_MINOR, OTRL_VERSION_SUB)) {
+    fprintf(stderr, "otrv3 initialization failed\n");
+    if (die) {
+      exit(EXIT_FAILURE);
+    }
+    return OTRNG_ERROR;
+  }
+
+  otrl_initialized = 1;
+
+  return OTRNG_SUCCESS;
+}
+
 API otrng_result otrng_init(otrng_bool die) {
   const char *real;
   otrng_result r;
@@ -2439,56 +2492,4 @@ API otrng_result otrng_init(otrng_bool die) {
   otrng_debug_init();
 
   return otrng_dh_init(die);
-}
-
-static int otrl_initialized = 0;
-API otrng_result otrng_v3_init(otrng_bool die) {
-  if (otrl_initialized) {
-    return OTRNG_SUCCESS;
-  }
-
-  if (otrl_init(OTRL_VERSION_MAJOR, OTRL_VERSION_MINOR, OTRL_VERSION_SUB)) {
-    fprintf(stderr, "otrv3 initialization failed\n");
-    if (die) {
-      exit(EXIT_FAILURE);
-    }
-    return OTRNG_ERROR;
-  }
-
-  otrl_initialized = 1;
-
-  return OTRNG_SUCCESS;
-}
-
-char *
-otrng_generate_session_state_string(const otrng_shared_session_state_s *state) {
-  char *sss;
-  size_t sss_len;
-
-  if (!state || !state->identifier1 || !state->identifier2) {
-    return NULL;
-  }
-
-  sss_len = strlen(state->identifier1) + strlen(state->identifier2) + 1;
-  if (state->password) {
-    sss_len += strlen(state->password);
-  }
-
-  sss = otrng_xmalloc_z(sss_len);
-
-  /* The below calls to strncpy and strncat will always be safe with sss_len as
-     the argument, since it's calculated based on the strlen of both things */
-  if (strcmp(state->identifier1, state->identifier2) < 0) {
-    strncpy(sss, state->identifier1, sss_len);
-    strncat(sss, state->identifier2, sss_len);
-  } else {
-    strncpy(sss, state->identifier2, sss_len);
-    strncat(sss, state->identifier1, sss_len);
-  }
-
-  if (state->password) {
-    strncat(sss, state->password, sss_len);
-  }
-
-  return sss;
 }

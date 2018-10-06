@@ -56,7 +56,7 @@ static void test_prekey_ensemble_validate(void) {
   ensemble->prekey_profile->expires = time(NULL) + 60 * 60 * 24; // one day
   otrng_ec_point_copy(ensemble->prekey_profile->shared_prekey, keypair->pub);
   otrng_assert_is_success(
-      prekey_profile_sign(ensemble->prekey_profile, keypair));
+      otrng_prekey_profile_sign(ensemble->prekey_profile, keypair));
 
   ensemble->message = otrng_prekey_message_new();
   ensemble->message->sender_instance_tag = 1;
@@ -90,10 +90,10 @@ static void test_prekey_ensemble_validate(void) {
 
   // Should fail if profiles are signed with a different key
   otrng_assert_is_success(
-      prekey_profile_sign(ensemble->prekey_profile, keypair2));
+      otrng_prekey_profile_sign(ensemble->prekey_profile, keypair2));
   otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
   otrng_assert_is_success(
-      prekey_profile_sign(ensemble->prekey_profile, keypair));
+      otrng_prekey_profile_sign(ensemble->prekey_profile, keypair));
 
   // Should fail if prekey message is not valid
   otrng_dh_mpi_release(ensemble->message->B);

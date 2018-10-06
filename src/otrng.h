@@ -73,10 +73,6 @@ INTERNAL otrng_response_s *otrng_response_new(void);
 
 INTERNAL void otrng_response_free(otrng_response_s *response);
 
-INTERNAL otrng_result otrng_receive_defragmented_message(
-    otrng_response_s *response, otrng_warning *warn, const string_p msg,
-    otrng_s *otr);
-
 INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
                                             otrng_warning *warn,
                                             const string_p msg, otrng_s *otr);
@@ -107,24 +103,22 @@ API otrng_result otrng_send_non_interactive_auth(
     char **dst, const prekey_ensemble_s *ensemble, otrng_s *otr);
 
 API otrng_result otrng_init(otrng_bool die);
-API otrng_result otrng_v3_init(otrng_bool die);
 
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);
 
-INTERNAL void otrng_destroy(otrng_s *otr);
-
-char *
-otrng_generate_session_state_string(const otrng_shared_session_state_s *state);
-
-API otrng_result otrng_extract_header(otrng_header_s *dst,
-                                      const uint8_t *buffer,
-                                      const size_t bufflen);
-
 API int otrng_get_msg_type(const string_p msg);
+
 #ifdef OTRNG_OTRNG_PRIVATE
 
+tstatic void otrng_destroy(otrng_s *otr);
+
 tstatic otrng_shared_session_state_s
-otrng_get_shared_session_state(otrng_s *otr);
+
+    tstatic
+    otrng_get_shared_session_state(otrng_s *otr);
+
+tstatic char *
+otrng_generate_session_state_string(const otrng_shared_session_state_s *state);
 
 tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr);
 

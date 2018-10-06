@@ -183,81 +183,21 @@ API otrng_result otrng_prekey_client_receive(char **to_send, const char *server,
                                              const char *msg,
                                              struct otrng_client_s *client);
 
-API otrng_result otrng_parse_header(uint8_t *msg_type, const uint8_t *buf,
-                                    size_t buflen, size_t *read);
-
 API void otrng_prekey_client_set_prekey_profile_publication(
     otrng_prekey_client_s *client);
 
 API void otrng_prekey_client_set_client_profile_publication(
     otrng_prekey_client_s *client);
 
-INTERNAL otrng_result otrng_prekey_dake1_message_serialize(
-    uint8_t **ser, size_t *ser_len, const otrng_prekey_dake1_message_s *msg);
-
-INTERNAL
-void otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *msg);
-
-INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
-    otrng_prekey_dake2_message_s *dst, const uint8_t *ser, size_t ser_len);
-
 INTERNAL
 otrng_prekey_dake2_message_s *otrng_prekey_dake2_message_new(void);
-INTERNAL
-void otrng_prekey_dake2_message_init(otrng_prekey_dake2_message_s *msg);
-INTERNAL
-void otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg);
-
-INTERNAL void kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
-                                  uint8_t usage);
-
-INTERNAL otrng_result
-otrng_prekey_dake3_message_append_storage_information_request(
-    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]);
-
-INTERNAL otrng_result otrng_prekey_dake3_message_serialize(
-    uint8_t **ser, size_t *ser_len, const otrng_prekey_dake3_message_s *msg);
 
 INTERNAL
 otrng_prekey_dake3_message_s *otrng_prekey_dake3_message_new(void);
-INTERNAL
-void otrng_prekey_dake3_message_init(otrng_prekey_dake3_message_s *msg);
-INTERNAL
-void otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *msg);
-
-INTERNAL otrng_result otrng_prekey_storage_status_message_deserialize(
-    otrng_prekey_storage_status_message_s *dst, const uint8_t *ser,
-    size_t ser_len);
-
-INTERNAL
-void otrng_prekey_storage_status_message_destroy(
-    otrng_prekey_storage_status_message_s *msg);
-
-INTERNAL otrng_prekey_publication_message_s *
-otrng_prekey_publication_message_new(void);
-
-INTERNAL
-void otrng_prekey_publication_message_destroy(
-    otrng_prekey_publication_message_s *msg);
 
 API char *otrng_prekey_client_retrieve_prekeys(const char *identity,
                                                const char *versions,
                                                otrng_prekey_client_s *client);
-
-INTERNAL otrng_result otrng_prekey_ensemble_query_retrieval_message_serialize(
-    uint8_t **dst, size_t *len,
-    const otrng_prekey_ensemble_query_retrieval_message_s *msg);
-
-INTERNAL void otrng_prekey_ensemble_query_retrieval_message_destroy(
-    otrng_prekey_ensemble_query_retrieval_message_s *msg);
-
-INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
-    otrng_prekey_ensemble_retrieval_message_s *dst, const uint8_t *ser,
-    size_t ser_len);
-
-INTERNAL
-void otrng_prekey_ensemble_retrieval_message_destroy(
-    otrng_prekey_ensemble_retrieval_message_s *msg);
 
 INTERNAL otrng_result otrng_prekey_success_message_deserialize(
     otrng_prekey_success_message_s *dst, const uint8_t *source,
@@ -270,6 +210,46 @@ API void otrng_prekey_client_add_prekey_messages_for_publication(
 
 tstatic char *send_dake3(const otrng_prekey_dake2_message_s *dake_2,
                          struct otrng_client_s *client);
+
+tstatic otrng_result otrng_prekey_dake1_message_serialize(
+    uint8_t **ser, size_t *ser_len, const otrng_prekey_dake1_message_s *msg);
+
+tstatic void
+otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *msg);
+
+tstatic void otrng_prekey_dake2_message_init(otrng_prekey_dake2_message_s *msg);
+
+tstatic otrng_result otrng_prekey_dake2_message_deserialize(
+    otrng_prekey_dake2_message_s *dst, const uint8_t *ser, size_t ser_len);
+
+tstatic void
+otrng_prekey_dake2_message_destroy(otrng_prekey_dake2_message_s *msg);
+
+tstatic otrng_result
+otrng_prekey_dake3_message_append_storage_information_request(
+    otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]);
+
+tstatic otrng_result otrng_prekey_dake3_message_serialize(
+    uint8_t **ser, size_t *ser_len, const otrng_prekey_dake3_message_s *msg);
+
+tstatic void otrng_prekey_dake3_message_init(otrng_prekey_dake3_message_s *msg);
+
+tstatic void
+otrng_prekey_dake3_message_destroy(otrng_prekey_dake3_message_s *msg);
+
+tstatic otrng_result otrng_prekey_storage_status_message_deserialize(
+    otrng_prekey_storage_status_message_s *dst, const uint8_t *ser,
+    size_t ser_len);
+
+tstatic void otrng_prekey_storage_status_message_destroy(
+    otrng_prekey_storage_status_message_s *msg);
+
+tstatic otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
+    otrng_prekey_ensemble_retrieval_message_s *dst, const uint8_t *ser,
+    size_t ser_len);
+
+tstatic void otrng_prekey_ensemble_retrieval_message_destroy(
+    otrng_prekey_ensemble_retrieval_message_s *msg);
 
 #endif
 

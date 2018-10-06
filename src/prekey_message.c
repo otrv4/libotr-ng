@@ -22,10 +22,11 @@
 
 #include "alloc.h"
 
+#include "base64.h"
 #include "deserialize.h"
 #include "serialize.h"
 
-INTERNAL prekey_message_s *otrng_prekey_message_new(void) {
+tstatic prekey_message_s *otrng_prekey_message_new(void) {
   prekey_message_s *prekey_msg = otrng_xmalloc_z(sizeof(prekey_message_s));
 
   return prekey_msg;
@@ -65,8 +66,6 @@ otrng_prekey_message_create_copy(const prekey_message_s *src) {
   return dst;
 }
 
-#include "base64.h"
-
 INTERNAL prekey_message_s *otrng_prekey_message_build(uint32_t instance_tag,
                                                       const ecdh_keypair_s *y,
                                                       const dh_keypair_s *b) {
@@ -97,7 +96,7 @@ INTERNAL prekey_message_s *otrng_prekey_message_build(uint32_t instance_tag,
   return msg;
 }
 
-INTERNAL void otrng_prekey_message_destroy(prekey_message_s *prekey_msg) {
+static void otrng_prekey_message_destroy(prekey_message_s *prekey_msg) {
   prekey_msg->id = 0;
   otrng_ec_point_destroy(prekey_msg->Y);
   otrng_dh_mpi_release(prekey_msg->B);

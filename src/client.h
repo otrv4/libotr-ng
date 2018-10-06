@@ -238,24 +238,15 @@ API void otrng_client_set_padding(size_t granularity, otrng_client_s *client);
 API void otrng_client_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
                                               otrng_client_s *client);
 
-API otrng_result
-otrng_client_get_max_published_prekey_msg(otrng_client_s *client);
-
 API void otrng_client_state_set_max_published_prekey_msg(
     unsigned int max_published_prekey_msg, otrng_client_s *client);
 
 API void otrng_client_state_set_minimum_stored_prekey_msg(
     unsigned int minimum_stored_prekey_msg, otrng_client_s *client);
 
-API otrng_result
-otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
-
 API void
 otrng_client_set_profiles_extra_valid_time(uint64_t profiles_extra_valid_time,
                                            otrng_client_s *client);
-
-API otrng_result
-otrng_client_get_client_profile_exp_time(otrng_client_s *client);
 
 API void
 otrng_client_set_client_profile_exp_time(uint64_t client_profile_exp_time,
@@ -288,6 +279,16 @@ API void otrng_conversation_debug_print(FILE *, int, otrng_conversation_s *);
 #endif
 
 #ifdef OTRNG_CLIENT_PRIVATE
+
+tstatic otrng_result
+otrng_client_get_max_published_prekey_msg(otrng_client_s *client);
+
+tstatic otrng_result
+otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
+
+tstatic otrng_result
+otrng_client_get_client_profile_exp_time(otrng_client_s *client);
+
 #endif
 
 #endif

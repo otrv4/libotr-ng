@@ -29,12 +29,12 @@
 #include "serialize.h"
 #include "tlv.h"
 
-const otrng_tlv_type tlv_types[] = {OTRNG_TLV_PADDING,   OTRNG_TLV_DISCONNECTED,
-                                    OTRNG_TLV_SMP_MSG_1, OTRNG_TLV_SMP_MSG_2,
-                                    OTRNG_TLV_SMP_MSG_3, OTRNG_TLV_SMP_MSG_4,
-                                    OTRNG_TLV_SMP_ABORT, OTRNG_TLV_SYM_KEY};
+static const otrng_tlv_type tlv_types[] = {
+    OTRNG_TLV_PADDING,   OTRNG_TLV_DISCONNECTED, OTRNG_TLV_SMP_MSG_1,
+    OTRNG_TLV_SMP_MSG_2, OTRNG_TLV_SMP_MSG_3,    OTRNG_TLV_SMP_MSG_4,
+    OTRNG_TLV_SMP_ABORT, OTRNG_TLV_SYM_KEY};
 
-const size_t TLV_TYPES_LENGTH = OTRNG_TLV_SYM_KEY + 1;
+static const size_t TLV_TYPES_LENGTH = OTRNG_TLV_SYM_KEY + 1;
 
 tstatic void set_tlv_type(tlv_s *tlv, uint16_t tlv_type) {
   tlv->type = OTRNG_TLV_NONE;

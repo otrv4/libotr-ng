@@ -497,6 +497,27 @@ API otrng_result otrng_client_get_our_fingerprint(
   return otrng_serialize_fingerprint(fp, client->keypair->pub);
 }
 
+tstatic otrng_result
+otrng_client_get_max_published_prekey_msg(otrng_client_s *client) {
+  assert(client);
+
+  return client->max_published_prekey_msg;
+}
+
+tstatic otrng_result
+otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client) {
+  assert(client);
+
+  return client->minimum_stored_prekey_msg;
+}
+
+tstatic otrng_result
+otrng_client_get_client_profile_exp_time(otrng_client_s *client) {
+  assert(client);
+
+  return client->client_profile_exp_time;
+}
+
 API otrng_prekey_client_s *
 otrng_client_get_prekey_client(const char *server_identity,
                                otrng_prekey_client_callbacks_s *callbacks,
@@ -1027,26 +1048,12 @@ API void otrng_client_set_max_stored_msg_keys(unsigned int max_stored_msg_keys,
   client->max_stored_msg_keys = max_stored_msg_keys;
 }
 
-API otrng_result
-otrng_client_get_max_published_prekey_msg(otrng_client_s *client) {
-  assert(client);
-
-  return client->max_published_prekey_msg;
-}
-
 API void
 otrng_client_set_max_published_prekey_msg(unsigned int max_published_prekey_msg,
                                           otrng_client_s *client) {
   assert(client);
 
   client->max_published_prekey_msg = max_published_prekey_msg;
-}
-
-API otrng_result
-otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client) {
-  assert(client);
-
-  return client->minimum_stored_prekey_msg;
 }
 
 API void otrng_client_state_set_minimum_stored_prekey_msg(
@@ -1062,13 +1069,6 @@ otrng_client_set_profiles_extra_valid_time(uint64_t profiles_extra_valid_time,
   assert(client);
 
   client->profiles_extra_valid_time = profiles_extra_valid_time;
-}
-
-API otrng_result
-otrng_client_get_client_profile_exp_time(otrng_client_s *client) {
-  assert(client);
-
-  return client->client_profile_exp_time;
 }
 
 API void

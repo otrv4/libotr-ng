@@ -29,7 +29,7 @@
   Provides sample FILE-based persistence mechanism.
 */
 
-char *otrng_client_get_storage_id(const otrng_client_s *client) {
+static char *otrng_client_get_storage_id(const otrng_client_s *client) {
   char *account_name = NULL;
   char *protocol_name = NULL;
   char *key = NULL;
@@ -591,8 +591,8 @@ otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *prekeyf) {
   return OTRNG_SUCCESS;
 }
 
-otrng_result read_and_deserialize_prekey(otrng_client_s *client,
-                                         FILE *prekeyf) {
+static otrng_result read_and_deserialize_prekey(otrng_client_s *client,
+                                                FILE *prekeyf) {
   char *line = NULL;
   int line_len = 0;
   int dec_len = 0;
