@@ -723,15 +723,6 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
     return result;
   }
 
-  if (otrng_prekey_profile_expired(profile.expires)) {
-    client->global_state->callbacks->write_expired_prekey_profile(
-        client, client->client_id);
-
-    // TODO: I'm suspecting this will make a lot of tests fail, so
-    // no return for the moment
-    // return OTRNG_SUCCESS;
-  }
-
   otrng_prekey_profile_free(client->prekey_profile);
   client->prekey_profile = NULL;
 

@@ -101,9 +101,7 @@ void create_prekey_profile_cb_empty(
     struct otrng_client_s *client,
     const struct otrng_client_id_s client_opdata);
 
-void write_expired_prekey_profile_cb_empty(
-    struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata);
+void write_expired_prekey_profile_cb_empty(struct otrng_client_s *client);
 
 void create_shared_prekey_cb_empty(
     struct otrng_client_s *client,

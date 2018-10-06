@@ -30,7 +30,8 @@ otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
       cb->create_client_profile != NULL &&
       cb->store_expired_client_profile != NULL &&
       cb->create_prekey_profile != NULL &&
-      cb->write_expired_prekey_profile != NULL &&
+      cb->store_expired_prekey_profile != NULL &&
+      cb->load_expired_prekey_profile != NULL &&
       cb->get_shared_session_state != NULL &&
       cb->display_error_message != NULL && cb->load_privkey_v4 != NULL &&
       cb->load_client_profile != NULL && cb->load_prekey_profile != NULL &&

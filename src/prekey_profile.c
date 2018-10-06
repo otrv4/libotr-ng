@@ -370,7 +370,7 @@ INTERNAL otrng_bool otrng_prekey_profile_invalid(time_t expires,
   return difftime(expires + extra_valid_time, time(NULL)) <= 0;
 }
 
-INTERNAL otrng_bool otrng_prekey_profile_valid(
+tstatic otrng_bool otrng_prekey_profile_valid_without_expiry(
     const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
     const otrng_public_key pub) {
   /* 1. Verify that the Prekey Profile signature is valid. */
@@ -385,18 +385,40 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
     return otrng_false;
   }
 
-  /* 3. Verify that the Prekey Profile has not expired. */
-  if (otrng_prekey_profile_expired(profile->expires)) {
-    return otrng_false;
-  }
-
-  /* 4. Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks.
+  /* 3. Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks.
    */
   if (!otrng_ec_point_valid(profile->shared_prekey)) {
     return otrng_false;
   }
 
   return otrng_true;
+}
+
+INTERNAL otrng_bool otrng_prekey_profile_valid(
+    const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
+    const otrng_public_key pub) {
+  if (!otrng_prekey_profile_valid_without_expiry(profile, sender_instance_tag,
+                                                 pub)) {
+    return otrng_false;
+  }
+
+  return !otrng_prekey_profile_expired(profile->expires);
+}
+
+/* This function should be called on a profile that is valid - it
+   assumes this, and doesn't verify it. */
+INTERNAL otrng_bool otrng_prekey_profile_is_close_to_expiry(
+    const otrng_prekey_profile_s *profile, uint64_t buffer_time) {
+  return otrng_prekey_profile_expired(profile->expires + buffer_time);
+}
+
+INTERNAL otrng_bool otrng_prekey_profile_is_expired_but_valid(
+    const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
+    uint64_t extra_valid_time, const otrng_public_key pub) {
+  return otrng_prekey_profile_valid_without_expiry(profile, sender_instance_tag,
+                                                   pub) &&
+         otrng_prekey_profile_expired(profile->expires) &&
+         !otrng_prekey_profile_invalid(profile->expires, extra_valid_time);
 }
 
 API void
