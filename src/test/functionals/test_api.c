@@ -884,8 +884,8 @@ static void test_api_smp(void) {
   otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   // Starts an smp state machine
-  g_assert_cmpint(alice->smp->state_expect, ==, '1');
-  g_assert_cmpint(bob->smp->state_expect, ==, '1');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_1);
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_1);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -901,7 +901,7 @@ static void test_api_smp(void) {
                                           strlen(secret), alice));
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
-  g_assert_cmpint(alice->smp->state_expect, ==, '2');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_2);
 
   // Bob receives SMP1
   response_to_alice = otrng_response_new();
@@ -917,7 +917,7 @@ static void test_api_smp(void) {
       otrng_smp_continue(&to_send, (uint8_t *)secret, strlen(secret), bob));
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP2
-  g_assert_cmpint(bob->smp->state_expect, ==, '3');
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_3);
 
   // Alice receives SMP2
   response_to_bob = otrng_response_new();
@@ -938,7 +938,7 @@ static void test_api_smp(void) {
 
   otrng_assert(response_to_alice->to_send);
   otrng_assert_cmpmem("?OTR:AAQD", response_to_alice->to_send, 9); // SMP4
-  g_assert_cmpint(alice->smp->state_expect, ==, '4');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_4);
 
   // Alice receives SMP4
   response_to_bob = otrng_response_new();
@@ -946,8 +946,8 @@ static void test_api_smp(void) {
       response_to_bob, &warn, response_to_alice->to_send, alice));
   otrng_response_free(response_to_alice);
 
-  g_assert_cmpint(bob->smp->state_expect, ==, '1');
-  g_assert_cmpint(alice->smp->state_expect, ==, '1');
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_1);
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_1);
 
   otrng_assert(!response_to_bob->to_send);
 
@@ -966,8 +966,8 @@ static void test_api_smp_abort(void) {
   otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
 
   // Starts an smp state machine
-  g_assert_cmpint(alice->smp->state_expect, ==, '1');
-  g_assert_cmpint(bob->smp->state_expect, ==, '1');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_1);
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_1);
 
   // DAKE HAS FINISHED.
   do_dake_fixture(alice, bob);
@@ -983,7 +983,7 @@ static void test_api_smp_abort(void) {
                                           strlen(secret), alice));
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
-  g_assert_cmpint(alice->smp->state_expect, ==, '2');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_2);
 
   // Bob receives SMP1
   response_to_alice = otrng_response_new();
@@ -995,7 +995,7 @@ static void test_api_smp_abort(void) {
 
   // Bob sends SMP Abort
   otrng_assert_is_success(otrng_smp_abort(&to_send, bob));
-  g_assert_cmpint(bob->smp->state_expect, ==, '1');
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_1);
 
   // Alice receives SMP ABORT
   response_to_bob = otrng_response_new();
@@ -1003,7 +1003,7 @@ static void test_api_smp_abort(void) {
       otrng_receive_message(response_to_bob, &warn, to_send, alice));
 
   otrng_assert(!response_to_bob->to_send);
-  g_assert_cmpint(alice->smp->state_expect, ==, '1');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_1);
 
   free_message_and_response(response_to_bob, &to_send);
 
@@ -1012,7 +1012,7 @@ static void test_api_smp_abort(void) {
                                           strlen(secret), bob));
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
-  g_assert_cmpint(bob->smp->state_expect, ==, '2');
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_2);
 
   free(to_send);
 

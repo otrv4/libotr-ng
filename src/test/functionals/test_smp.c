@@ -40,8 +40,8 @@ static void test_smp_state_machine(void) {
   smp_message_1_s smp_message_1;
   smp_message_2_s smp_message_2;
 
-  g_assert_cmpint(alice->smp->state_expect, ==, '1');
-  g_assert_cmpint(bob->smp->state_expect, ==, '1');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_1);
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_1);
 
   do_dake_fixture(alice, bob);
 
@@ -60,7 +60,7 @@ static void test_smp_state_machine(void) {
 
   g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_ZERO_PROGRESS);
-  g_assert_cmpint(alice->smp->state_expect, ==, '2');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_2);
   otrng_assert(alice->smp->secret);
   otrng_assert(alice->smp->a2);
   otrng_assert(alice->smp->a3);
@@ -84,7 +84,7 @@ static void test_smp_state_machine(void) {
   g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
 
   // Bob should have the correct context after he generates tlv_smp_2
-  g_assert_cmpint(bob->smp->state_expect, ==, '3');
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_3);
   otrng_assert(bob->smp->secret);
   otrng_assert_point_equals(bob->smp->g3a, smp_message_1.g3a);
   otrng_assert_point_equals(bob->smp->pb, smp_message_2.pb);
@@ -106,7 +106,7 @@ static void test_smp_state_machine(void) {
   g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
 
   // Alice should have correct context after generates tlv_smp_3
-  g_assert_cmpint(alice->smp->state_expect, ==, '4');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_4);
   otrng_assert(alice->smp->g3b);
   otrng_assert(alice->smp->pa_pb);
   otrng_assert(alice->smp->qa_qb);
@@ -121,7 +121,7 @@ static void test_smp_state_machine(void) {
   g_assert_cmpint(bob->smp->progress, ==, SMP_TOTAL_PROGRESS);
 
   // SMP is finished for Bob
-  g_assert_cmpint(bob->smp->state_expect, ==, '1');
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_1);
 
   // Alice receives smp 4
   process_tlv(tlv_smp_4, alice);
@@ -131,7 +131,7 @@ static void test_smp_state_machine(void) {
   g_assert_cmpint(bob->smp->progress, ==, SMP_TOTAL_PROGRESS);
 
   // SMP is finished for Alice
-  g_assert_cmpint(alice->smp->state_expect, ==, '1');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_1);
   otrng_assert_cmpmem(alice->smp->secret, bob->smp->secret, HASH_BYTES);
 
   otrng_global_state_free(alice_state->global_state);
@@ -152,8 +152,8 @@ static void test_smp_state_machine_abort(void) {
   smp_message_1_s smp_message_1;
   smp_message_2_s smp_message_2;
 
-  g_assert_cmpint(alice->smp->state_expect, ==, '1');
-  g_assert_cmpint(bob->smp->state_expect, ==, '1');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_1);
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_1);
 
   do_dake_fixture(alice, bob);
 
@@ -172,7 +172,7 @@ static void test_smp_state_machine_abort(void) {
 
   g_assert_cmpint(alice->smp->progress, ==, SMP_QUARTER_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_ZERO_PROGRESS);
-  g_assert_cmpint(alice->smp->state_expect, ==, '2');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_2);
   otrng_assert(alice->smp->secret);
   otrng_assert(alice->smp->a2);
   otrng_assert(alice->smp->a3);
@@ -196,7 +196,7 @@ static void test_smp_state_machine_abort(void) {
   g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
 
   // Bob should have the correct context after he generates tlv_smp_2
-  g_assert_cmpint(bob->smp->state_expect, ==, '3');
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_3);
   otrng_assert(bob->smp->secret);
   otrng_assert_point_equals(bob->smp->g3a, smp_message_1.g3a);
   otrng_assert_point_equals(bob->smp->pb, smp_message_2.pb);
@@ -209,7 +209,7 @@ static void test_smp_state_machine_abort(void) {
   smp_message_2_destroy(&smp_message_2);
 
   // To trigger the abort
-  alice->smp->state_expect = '1';
+  alice->smp->state_expect = SMP_STATE_EXPECT_1;
 
   // Alice receives smp 2
   tlv_s *tlv_abort = process_tlv(tlv_smp_2, alice);
@@ -221,7 +221,7 @@ static void test_smp_state_machine_abort(void) {
   g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
 
   // Alice should have correct context after generates tlv_smp_3
-  g_assert_cmpint(alice->smp->state_expect, ==, '1');
+  g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_1);
   otrng_assert(alice->smp->g3b);
   otrng_assert(alice->smp->pa_pb);
   otrng_assert(alice->smp->qa_qb);

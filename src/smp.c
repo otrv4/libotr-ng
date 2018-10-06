@@ -69,57 +69,57 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp,
   case OTRNG_TLV_SMP_MSG_1:
     event = otrng_process_smp_message1(tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
-      smp->state_expect = '1';
+      smp->state_expect = SMP_STATE_EXPECT_1;
     } else if (event == OTRNG_SMP_EVENT_ERROR ||
                event == OTRNG_SMP_EVENT_FAILURE) {
-      smp->state_expect = '1';
+      smp->state_expect = SMP_STATE_EXPECT_1;
     }
     break;
 
   case OTRNG_TLV_SMP_MSG_2:
     event = otrng_process_smp_message2(&to_send, tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
-      smp->state_expect = '1';
+      smp->state_expect = SMP_STATE_EXPECT_1;
       to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
       if (!to_send) {
         return NULL;
       }
     } else if (event == OTRNG_SMP_EVENT_ERROR ||
                event == OTRNG_SMP_EVENT_FAILURE) {
-      smp->state_expect = '1';
+      smp->state_expect = SMP_STATE_EXPECT_1;
     }
     break;
 
   case OTRNG_TLV_SMP_MSG_3:
     event = otrng_process_smp_message3(&to_send, tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
-      smp->state_expect = '1';
+      smp->state_expect = SMP_STATE_EXPECT_1;
       to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
       if (!to_send) {
         return NULL;
       }
     } else if (event == OTRNG_SMP_EVENT_ERROR ||
                event == OTRNG_SMP_EVENT_FAILURE) {
-      smp->state_expect = '1';
+      smp->state_expect = SMP_STATE_EXPECT_1;
     }
     break;
 
   case OTRNG_TLV_SMP_MSG_4:
     event = otrng_process_smp_message4(tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
-      smp->state_expect = '1';
+      smp->state_expect = SMP_STATE_EXPECT_1;
       to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
       if (!to_send) {
         return NULL;
       }
     } else if (event == OTRNG_SMP_EVENT_ERROR ||
                event == OTRNG_SMP_EVENT_FAILURE) {
-      smp->state_expect = '1';
+      smp->state_expect = SMP_STATE_EXPECT_1;
     }
     break;
 
   case OTRNG_TLV_SMP_ABORT:
-    smp->state_expect = '1';
+    smp->state_expect = SMP_STATE_EXPECT_1;
     event = OTRNG_SMP_EVENT_ABORT;
     break;
   case OTRNG_TLV_NONE:
@@ -163,7 +163,7 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
   tlv_s *tlv;
   otrng_fingerprint our_fp, their_fp;
 
-  if (smp->state_expect != '1') {
+  if (smp->state_expect != SMP_STATE_EXPECT_1) {
     tlv = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
     return tlv;
   }
@@ -195,7 +195,7 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
       continue;
     }
 
-    smp->state_expect = '2';
+    smp->state_expect = SMP_STATE_EXPECT_2;
     smp->progress = 25;
     handle_smp_event_cb_v4(OTRNG_SMP_EVENT_IN_PROGRESS, smp->progress, question,
                            q_len, conversation);
@@ -356,7 +356,7 @@ tstatic otrng_result otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otr->smp->state_expect = '1';
+  otr->smp->state_expect = SMP_STATE_EXPECT_1;
   warn = OTRNG_WARN_NONE;
   // TODO: warn
   ret = otrng_prepare_to_send_data_message(to_send, &warn, "", tlvs, otr,

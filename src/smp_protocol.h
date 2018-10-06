@@ -36,6 +36,14 @@
 #define SMP_HALF_QUARTER_PROGRESS 75
 #define SMP_TOTAL_PROGRESS 100
 
+typedef enum {
+  SMP_STATE_EXPECT_NONE = 0,
+  SMP_STATE_EXPECT_1 = 1,
+  SMP_STATE_EXPECT_2 = 2,
+  SMP_STATE_EXPECT_3 = 3,
+  SMP_STATE_EXPECT_4 = 4,
+} otrng_smp_state;
+
 /**
  * @warning the [question] field is NOT zero terminated, and can't be relied on
  *    to be. the length of this field is contained in the [q_len] field.
@@ -78,8 +86,8 @@ typedef struct smp_message_4_s {
 } smp_message_4_s;
 
 typedef struct smp_protocol_s {
-  char state_expect; // TODO: why is this a char? Let's extract this
-  uint8_t *secret;   /* already hashed: 64 bytes long */
+  otrng_smp_state state_expect;
+  uint8_t *secret; /* already hashed: 64 bytes long */
   ec_scalar a2, a3, b3;
   ec_point g2, g3;
   ec_point g3a, g3b;
