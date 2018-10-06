@@ -88,6 +88,9 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
 #define CLIENT_PROFILE_EXPIRATION_SECONDS 2 * 7 * 24 * 60 * 60; /* 2 weeks */
   client->client_profile_exp_time = CLIENT_PROFILE_EXPIRATION_SECONDS;
 
+#define PROFILES_CLOSE_TO_EXPIRATION_TIME_SECONDS 57 * 60 /* 57 minutes*/
+  client->profiles_buffer_time = PROFILES_CLOSE_TO_EXPIRATION_TIME_SECONDS;
+
   return client;
 }
 
