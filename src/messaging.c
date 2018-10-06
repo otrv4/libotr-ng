@@ -217,22 +217,25 @@ API otrng_result otrng_global_state_generate_prekey_profile(
 }
 
 tstatic void add_private_key_v4_to(list_element_s *node, void *context) {
-  otrng_client_s *client = node->data;
-  // TODO: check the return value
-  if (!otrng_client_private_key_v4_write_to(client, context)) {
-    return;
+  otrng_client_private_key_v4_write_to(node->data, context);
+}
+
+tstatic otrng_result global_state_write_to(const otrng_global_state_s *gs,
+                                           FILE *f,
+                                           void (*fn)(list_element_s *,
+                                                      void *)) {
+  if (!f) {
+    return OTRNG_ERROR;
   }
+
+  otrng_list_foreach(gs->clients, fn, f);
+
+  return OTRNG_SUCCESS;
 }
 
 API otrng_result otrng_global_state_private_key_v4_write_to(
     const otrng_global_state_s *gs, FILE *privf) {
-  if (!privf) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_list_foreach(gs->clients, add_private_key_v4_to, privf);
-
-  return OTRNG_SUCCESS;
+  return global_state_write_to(gs, privf, add_private_key_v4_to);
 }
 
 tstatic void add_forging_key_to(list_element_s *node, void *context) {
@@ -241,13 +244,7 @@ tstatic void add_forging_key_to(list_element_s *node, void *context) {
 
 API otrng_result otrng_global_state_forging_key_write_to(
     const otrng_global_state_s *gs, FILE *f) {
-  if (!f) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_list_foreach(gs->clients, add_forging_key_to, f);
-
-  return OTRNG_SUCCESS;
+  return global_state_write_to(gs, f, add_forging_key_to);
 }
 
 tstatic void add_client_profile_to(list_element_s *node, void *context) {
@@ -255,13 +252,8 @@ tstatic void add_client_profile_to(list_element_s *node, void *context) {
 }
 
 API otrng_result otrng_global_state_client_profile_write_to(
-    const otrng_global_state_s *gs, FILE *privf) {
-  if (!privf) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_list_foreach(gs->clients, add_client_profile_to, privf);
-  return OTRNG_SUCCESS;
+    const otrng_global_state_s *gs, FILE *f) {
+  return global_state_write_to(gs, f, add_client_profile_to);
 }
 
 tstatic void add_expired_client_profile_to(list_element_s *node,
@@ -270,13 +262,8 @@ tstatic void add_expired_client_profile_to(list_element_s *node,
 }
 
 API otrng_result otrng_global_state_expired_client_profile_write_to(
-    const otrng_global_state_s *gs, FILE *privf) {
-  if (!privf) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_list_foreach(gs->clients, add_expired_client_profile_to, privf);
-  return OTRNG_SUCCESS;
+    const otrng_global_state_s *gs, FILE *f) {
+  return global_state_write_to(gs, f, add_expired_client_profile_to);
 }
 
 tstatic void add_expired_prekey_profile_to(list_element_s *node,
@@ -285,28 +272,17 @@ tstatic void add_expired_prekey_profile_to(list_element_s *node,
 }
 
 API otrng_result otrng_global_state_expired_prekey_profile_write_to(
-    const otrng_global_state_s *gs, FILE *privf) {
-  if (!privf) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_list_foreach(gs->clients, add_expired_prekey_profile_to, privf);
-  return OTRNG_SUCCESS;
+    const otrng_global_state_s *gs, FILE *f) {
+  return global_state_write_to(gs, f, add_expired_prekey_profile_to);
 }
 
 tstatic void add_prekey_profile_to(list_element_s *node, void *context) {
-  // TODO: check error here
   otrng_client_prekey_profile_write_to(node->data, context);
 }
 
 API otrng_result otrng_global_state_prekey_profile_write_to(
-    const otrng_global_state_s *gs, FILE *privf) {
-  if (!privf) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_list_foreach(gs->clients, add_prekey_profile_to, privf);
-  return OTRNG_SUCCESS;
+    const otrng_global_state_s *gs, FILE *f) {
+  return global_state_write_to(gs, f, add_prekey_profile_to);
 }
 
 tstatic void add_prekey_messages_to(list_element_s *node, void *context) {
@@ -314,13 +290,8 @@ tstatic void add_prekey_messages_to(list_element_s *node, void *context) {
 }
 
 API otrng_result otrng_global_state_prekey_messages_write_to(
-    const otrng_global_state_s *gs, FILE *privf) {
-  if (!privf) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_list_foreach(gs->clients, add_prekey_messages_to, privf);
-  return OTRNG_SUCCESS;
+    const otrng_global_state_s *gs, FILE *f) {
+  return global_state_write_to(gs, f, add_prekey_messages_to);
 }
 
 API otrng_result otrng_global_state_instance_tags_read_from(
