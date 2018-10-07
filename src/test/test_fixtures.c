@@ -164,7 +164,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   (void)data;
   otrng_fixture->gs = otrng_global_state_new(test_callbacks, otrng_false);
   otrng_fixture->client =
-      otrng_client_new(create_client_id("proto-test", "account"));
+      otrng_client_new(create_client_id("otr", "account"));
   otrng_fixture->client->global_state = otrng_fixture->gs;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {
@@ -380,7 +380,7 @@ void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
   client->global_state = otrng_global_state_new(test_callbacks, otrng_false);
 
   // TODO: REMOVE after updating every otrng_client_state_new(NULL)
-  client->client_id = create_client_id("proto-test", account_name);
+  client->client_id = create_client_id("otr", account_name);
 
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
   uint8_t forging_sym[ED448_PRIVATE_BYTES] = {byte + 0xD};

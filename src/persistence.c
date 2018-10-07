@@ -18,11 +18,13 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "persistence.h"
+#include <assert.h>
+
 #include "alloc.h"
 #include "base64.h"
 #include "deserialize.h"
 #include "messaging.h"
+#include "persistence.h"
 #include "serialize.h"
 
 static size_t otrng_client_get_storage_id_len(const otrng_client_s *client) {
@@ -54,19 +56,8 @@ static char *otrng_client_get_storage_id(const otrng_client_s *client) {
  */
 INTERNAL size_t
 otrng_client_private_key_v4_get_max_length(const otrng_client_s *client) {
-  size_t total = 0;
-  char *key = otrng_client_get_storage_id(client);
-
-  total += strlen(key);
-  free(key);
-
-  total += 1; /* newline */
-
-  total += BASE64_ENCODED_SYMMETRIC_SECRET_LENGTH;
-
-  total += 1; /* newline */
-
-  return total;
+  return otrng_client_get_storage_id_len(client) + 1 +
+         BASE64_ENCODED_SYMMETRIC_SECRET_LENGTH + 1;
 }
 
 API otrng_result otrng_client_private_key_v4_write_to_buffer(
@@ -113,14 +104,14 @@ API otrng_result otrng_client_private_key_v4_write_to_buffer(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_client_private_key_v4_write_to(
-    const otrng_client_s *client, FILE *privf) {
+INTERNAL otrng_result
+otrng_client_private_key_v4_write_to(const otrng_client_s *client, FILE *fp) {
   size_t w = 0;
   size_t buflen = otrng_client_private_key_v4_get_max_length(client);
   uint8_t *buffer = otrng_xmalloc_z(buflen * sizeof(uint8_t));
   int err;
 
-  if (!privf) {
+  if (!fp) {
     free(buffer);
     return OTRNG_ERROR;
   }
@@ -131,7 +122,7 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_to(
     return OTRNG_ERROR;
   }
 
-  err = fwrite(buffer, 1, w, privf);
+  err = fwrite(buffer, 1, w, fp);
   free(buffer);
 
   if (err != 1) {
@@ -195,27 +186,40 @@ INTERNAL otrng_result otrng_client_forging_key_write_to(
 
 static int get_limited_line(char **buf, FILE *f) {
   char *res = NULL;
-  int len = 0;
 
-  if (buf == NULL) {
-    return -1;
-  }
+  assert(buf);
 
   *buf = otrng_xmalloc_z(MAX_LINE_LENGTH * sizeof(char));
 
   res = fgets(*buf, MAX_LINE_LENGTH, f);
   if (res == NULL) {
     free(*buf);
+    *buf = NULL;
     return -1;
   }
 
-  len = strlen(*buf);
-  if (len == MAX_LINE_LENGTH) {
-    free(*buf);
-    return -1;
+  return strlen(*buf);
+}
+
+tstatic otrng_result otrng_client_read_from_prefix(FILE *fp, uint8_t **dec,
+                                                   size_t *dec_len) {
+
+  char *line;
+  int len;
+
+  assert(fp);
+
+  len = get_limited_line(&line, fp);
+
+  if (len < 0) {
+    return OTRNG_ERROR;
   }
 
-  return len;
+  *dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
+  *dec_len = otrl_base64_decode(*dec, line, len);
+  free(line);
+
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result
@@ -260,39 +264,27 @@ otrng_client_private_key_v4_read_from(otrng_client_s *client, FILE *privf) {
 }
 
 INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
-                                                         FILE *forgingf) {
-  char *line = NULL;
-  int len = 0;
+                                                         FILE *fp) {
   uint8_t *dec;
   size_t dec_len;
   otrng_public_key key;
-  otrng_result ret;
+  otrng_result result = otrng_client_read_from_prefix(fp, &dec, &dec_len);
 
-  if (!forgingf || feof(forgingf)) {
-    return OTRNG_ERROR;
+  if (otrng_failed(result)) {
+    return result;
+  }
+
+  result = otrng_deserialize_forging_key(key, dec, dec_len, NULL);
+  free(dec);
+
+  if (otrng_failed(result)) {
+    return result;
   }
 
   if (client->forging_key) {
     otrng_ec_point_destroy(*client->forging_key);
     free(client->forging_key);
     client->forging_key = NULL;
-  }
-
-  len = get_limited_line(&line, forgingf);
-  if (len < 0) {
-    return OTRNG_ERROR;
-  }
-
-  dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
-
-  dec_len = otrl_base64_decode(dec, line, len);
-  free(line);
-
-  ret = otrng_deserialize_forging_key(key, dec, dec_len, NULL);
-  free(dec);
-
-  if (ret == OTRNG_ERROR) {
-    return ret;
   }
 
   return otrng_client_add_forging_key(client, key);
@@ -342,23 +334,11 @@ otrng_client_instance_tag_read_from(otrng_client_s *client, FILE *instagf) {
 
 INTERNAL otrng_result otrng_client_private_key_v3_write_to(
     const otrng_client_s *client, FILE *privf) {
-
-  // TODO: We could use a "get storage key" callback and use it as
-  // account_name plus an arbitrary "libotrng-storage" protocol.
-  char *account_name = NULL;
-  char *protocol_name = NULL;
   gcry_error_t ret;
 
-  if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
-                                             client)) {
-    return OTRNG_ERROR;
-  }
-
   ret = otrl_privkey_generate_FILEp(client->global_state->user_state_v3, privf,
-                                    account_name, protocol_name);
-
-  free(account_name);
-  free(protocol_name);
+                                    client->client_id.account,
+                                    client->client_id.protocol);
 
   if (ret) {
     return OTRNG_ERROR;
@@ -366,34 +346,16 @@ INTERNAL otrng_result otrng_client_private_key_v3_write_to(
   return OTRNG_SUCCESS;
 }
 
-#include "debug.h"
-
 INTERNAL otrng_result
-otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
-  char *line = NULL;
-  int len = 0;
+otrng_client_client_profile_read_from(otrng_client_s *client, FILE *fp) {
   uint8_t *dec;
   size_t dec_len;
   otrng_client_profile_s profile;
-  otrng_result result;
+  otrng_result result = otrng_client_read_from_prefix(fp, &dec, &dec_len);
 
-  if (!profilef) {
-    return OTRNG_ERROR;
+  if (otrng_failed(result)) {
+    return result;
   }
-
-  if (feof(profilef)) {
-    return OTRNG_ERROR;
-  }
-
-  len = get_limited_line(&line, profilef);
-  if (len < 0) {
-    return OTRNG_ERROR;
-  }
-
-  dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
-
-  dec_len = otrl_base64_decode(dec, line, len);
-  free(line);
 
   memset(&profile, 0, sizeof(otrng_client_profile_s));
   result = otrng_client_profile_deserialize_with_metadata(&profile, dec,
@@ -414,34 +376,15 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef) {
 }
 
 INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
-    otrng_client_s *client, FILE *exp_profilef) {
-  char *line = NULL;
-  int len = 0;
+    otrng_client_s *client, FILE *fp) {
   uint8_t *dec;
   size_t dec_len;
   otrng_client_profile_s exp_profile;
-  otrng_result result;
+  otrng_result result = otrng_client_read_from_prefix(fp, &dec, &dec_len);
 
-  if (!exp_profilef) {
-    return OTRNG_ERROR;
+  if (otrng_failed(result)) {
+    return result;
   }
-
-  if (feof(exp_profilef)) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_client_profile_free(client->exp_client_profile);
-  client->exp_client_profile = NULL;
-
-  len = get_limited_line(&line, exp_profilef);
-  if (len < 0) {
-    return OTRNG_ERROR;
-  }
-
-  dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
-
-  dec_len = otrl_base64_decode(dec, line, len);
-  free(line);
 
   memset(&exp_profile, 0, sizeof(otrng_client_profile_s));
   result = otrng_client_profile_deserialize(&exp_profile, dec, dec_len, NULL);
@@ -451,10 +394,8 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
     return result;
   }
 
-  if (otrng_client_profile_invalid(exp_profile.expires,
-                                   client->profiles_extra_valid_time)) {
-    return OTRNG_ERROR;
-  }
+  otrng_client_profile_free(client->exp_client_profile);
+  client->exp_client_profile = NULL;
 
   result = otrng_client_add_exp_client_profile(client, &exp_profile);
 
@@ -599,7 +540,6 @@ otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *prekeyf) {
     return OTRNG_ERROR;
   }
 
-  // list_element_s *our_prekeys;
   if (!client->our_prekeys) {
     return OTRNG_ERROR;
   }
@@ -624,32 +564,21 @@ otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *prekeyf) {
 }
 
 static otrng_result read_and_deserialize_prekey(otrng_client_s *client,
-                                                FILE *prekeyf) {
-  char *line = NULL;
-  int line_len = 0;
-  int dec_len = 0;
+                                                FILE *fp) {
   uint8_t *dec = NULL;
-  int full_len = 0;
-  otrng_result result;
-
+  size_t dec_len = 0;
   prekey_message_s *prekey_msg = NULL;
+  otrng_result result = otrng_client_read_from_prefix(fp, &dec, &dec_len);
 
-  line_len = get_limited_line(&line, prekeyf);
-  if (line_len < 0) {
-    return OTRNG_ERROR;
+  if (otrng_failed(result)) {
+    return result;
   }
-
-  dec_len = OTRNG_BASE64_DECODE_LEN(line_len);
-  dec = otrng_xmalloc_z(dec_len);
-
-  full_len = otrl_base64_decode(dec, line, line_len);
-  free(line);
 
   prekey_msg = otrng_xmalloc_z(sizeof(prekey_message_s));
 
   result = otrng_prekey_message_deserialize_with_metadata(prekey_msg, dec,
-                                                          full_len, NULL);
-  otrng_secure_wipe(dec, full_len);
+                                                          dec_len, NULL);
+  otrng_secure_wipe(dec, dec_len);
   free(dec);
   if (otrng_failed(result)) {
     free(prekey_msg);
@@ -763,31 +692,15 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_write_to(
 }
 
 INTERNAL otrng_result
-otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
-  char *line = NULL;
-  int len = 0;
-  uint8_t *dec;
-  size_t dec_len;
+otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *fp) {
+  uint8_t *dec = NULL;
+  size_t dec_len = 0;
   otrng_prekey_profile_s profile;
-  otrng_result result;
+  otrng_result result = otrng_client_read_from_prefix(fp, &dec, &dec_len);
 
-  if (!profilef) {
-    return OTRNG_ERROR;
+  if (otrng_failed(result)) {
+    return result;
   }
-
-  if (feof(profilef)) {
-    return OTRNG_ERROR;
-  }
-
-  len = get_limited_line(&line, profilef);
-  if (len < 0) {
-    return OTRNG_ERROR;
-  }
-
-  dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
-
-  dec_len = otrl_base64_decode(dec, line, len);
-  free(line);
 
   memset(&profile, 0, sizeof(otrng_prekey_profile_s));
   result = otrng_prekey_profile_deserialize_with_metadata(&profile, dec,
@@ -808,37 +721,21 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *profilef) {
 }
 
 INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
-    otrng_client_s *client, FILE *exp_profilef) {
-  char *line = NULL;
-  int len = 0;
-  uint8_t *dec;
-  size_t dec_len;
+    otrng_client_s *client, FILE *fp) {
+  uint8_t *dec = NULL;
+  size_t dec_len = 0;
   otrng_prekey_profile_s exp_profile;
-  otrng_result result;
+  otrng_result result = otrng_client_read_from_prefix(fp, &dec, &dec_len);
 
-  if (!exp_profilef) {
-    return OTRNG_ERROR;
+  if (otrng_failed(result)) {
+    return result;
   }
-
-  if (feof(exp_profilef)) {
-    return OTRNG_ERROR;
-  }
-
-  len = get_limited_line(&line, exp_profilef);
-  if (len < 0) {
-    return OTRNG_ERROR;
-  }
-
-  dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
-
-  dec_len = otrl_base64_decode(dec, line, len);
-  free(line);
 
   memset(&exp_profile, 0, sizeof(otrng_prekey_profile_s));
   result = otrng_prekey_profile_deserialize(&exp_profile, dec, dec_len, NULL);
   free(dec);
 
-  if (result == OTRNG_ERROR) {
+  if (otrng_failed(result)) {
     return result;
   }
 
