@@ -60,7 +60,6 @@
 -nullstate
 -observertrans
 -retvalother
--shiftnegative
 -statictrans
 -temptrans
 -type

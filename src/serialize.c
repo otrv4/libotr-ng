@@ -32,7 +32,7 @@ static size_t serialize_uint(uint8_t *target, const uint64_t data,
 
   for (i = 0; i < offset; i++) {
     shift--;
-    target[i] = (data >> shift * 8) & 0xFF;
+    target[i] = (data >> shift * (uint8_t)8) & 0xFF;
   }
 
   return offset;

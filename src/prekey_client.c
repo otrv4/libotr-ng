@@ -1517,8 +1517,8 @@ API otrng_result otrng_prekey_client_receive(char **to_send, const char *server,
   uint8_t *ser = NULL;
   size_t ser_len = 0;
 
-  assert(client);
-  assert(client->prekey_client);
+  assert(client != NULL);
+  assert(client->prekey_client != NULL);
 
   /* It should only process prekey server messages from the expected server.
      This avoids processing any plaintext message from a party as a
