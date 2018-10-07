@@ -25,10 +25,6 @@
 #include "messaging.h"
 #include "serialize.h"
 
-/*
-  Provides sample FILE-based persistence mechanism.
-*/
-
 static char *otrng_client_get_storage_id(const otrng_client_s *client) {
   char *account_name = NULL;
   char *protocol_name = NULL;
@@ -61,16 +57,38 @@ static char *otrng_client_get_storage_id(const otrng_client_s *client) {
   return key;
 }
 
-INTERNAL otrng_result otrng_client_private_key_v4_write_to(
-    const otrng_client_s *client, FILE *privf) {
-  char *key;
-  int err;
-  char *buffer = NULL;
-  size_t s = 0;
+#define BASE64_ENCODED_SYMMETRIC_SECRET_LENGTH                                 \
+  ((ED448_PRIVATE_BYTES + 2) / 3 * 4)
 
-  if (!privf) {
-    return OTRNG_ERROR;
-  }
+/* Returns the maximum length a serialization of a v4 private key can take,
+   for given client. It is usually going to be dependent on the identifiers,
+   so the calculation can't be used for another client. It assumes
+   everything is correct about the client id - the result is undefined if not.
+ */
+INTERNAL size_t
+otrng_client_private_key_v4_get_max_length(const otrng_client_s *client) {
+  size_t total = 0;
+  char *key = otrng_client_get_storage_id(client);
+
+  total += strlen(key);
+  free(key);
+
+  total += 1; /* newline */
+
+  total += BASE64_ENCODED_SYMMETRIC_SECRET_LENGTH;
+
+  total += 1; /* newline */
+
+  return total;
+}
+
+API otrng_result otrng_client_private_key_v4_write_to_buffer(
+    const otrng_client_s *client, uint8_t *buf, size_t buflen,
+    size_t *written) {
+  char *key;
+  size_t s = 0;
+  size_t keylen = 0;
+  size_t w = 0;
 
   if (!client->keypair) {
     return OTRNG_ERROR;
@@ -80,30 +98,56 @@ INTERNAL otrng_result otrng_client_private_key_v4_write_to(
   if (!key) {
     return OTRNG_ERROR;
   }
+  keylen = strlen(key);
 
-  err = fputs(key, privf);
+  if (s + keylen + 1 < buflen) {
+    return OTRNG_ERROR;
+  }
+  memcpy(buf + s, key, keylen);
   free(key);
+  s += keylen;
 
-  if (EOF == err) {
+  *(buf + s) = '\n';
+  s++;
+
+  if (s + BASE64_ENCODED_SYMMETRIC_SECRET_LENGTH + 1 < buflen) {
+    return OTRNG_ERROR;
+  }
+  w = otrl_base64_encode((char *)buf + s, client->keypair->sym,
+                         ED448_PRIVATE_BYTES);
+  s += w;
+
+  *(buf + s) = '\n';
+  s++;
+
+  if (written) {
+    *written = s;
+  }
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result otrng_client_private_key_v4_write_to(
+    const otrng_client_s *client, FILE *privf) {
+  size_t w = 0;
+  size_t buflen = otrng_client_private_key_v4_get_max_length(client);
+  uint8_t *buffer = otrng_xmalloc_z(buflen * sizeof(uint8_t));
+  int err;
+
+  if (!privf) {
+    free(buffer);
     return OTRNG_ERROR;
   }
 
-  if (EOF == fputs("\n", privf)) {
+  if (otrng_failed(otrng_client_private_key_v4_write_to_buffer(client, buffer,
+                                                               buflen, &w))) {
+    free(buffer);
     return OTRNG_ERROR;
   }
 
-  if (!otrng_symmetric_key_serialize(&buffer, &s, client->keypair->sym)) {
-    return OTRNG_ERROR;
-  }
-
-  err = fwrite(buffer, s, 1, privf);
+  err = fwrite(buffer, 1, w, privf);
   free(buffer);
 
   if (err != 1) {
-    return OTRNG_ERROR;
-  }
-
-  if (EOF == fputs("\n", privf)) {
     return OTRNG_ERROR;
   }
 
