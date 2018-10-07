@@ -85,6 +85,9 @@ typedef struct otrng_client_profile_s {
 
   otrng_bool should_publish;
   otrng_bool is_publishing;
+
+  otrng_bool has_validated;
+  otrng_bool validation_result;
 } otrng_client_profile_s;
 
 INTERNAL void otrng_client_profile_copy(otrng_client_profile_s *dst,
@@ -124,6 +127,9 @@ INTERNAL otrng_bool otrng_client_profile_is_expired_but_valid(
 
 INTERNAL otrng_bool otrng_client_profile_valid(
     const otrng_client_profile_s *profile, const uint32_t sender_instance_tag);
+
+INTERNAL otrng_bool otrng_client_profile_fast_valid(
+    otrng_client_profile_s *profile, const uint32_t sender_instance_tag);
 
 INTERNAL otrng_result otrng_client_profile_transitional_sign(
     otrng_client_profile_s *profile, OtrlPrivKey *privkey);

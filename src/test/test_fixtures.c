@@ -163,8 +163,7 @@ create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   (void)data;
   otrng_fixture->gs = otrng_global_state_new(test_callbacks, otrng_false);
-  otrng_fixture->client =
-      otrng_client_new(create_client_id("otr", "account"));
+  otrng_fixture->client = otrng_client_new(create_client_id("otr", "account"));
   otrng_fixture->client->global_state = otrng_fixture->gs;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {

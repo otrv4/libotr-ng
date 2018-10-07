@@ -761,6 +761,21 @@ otrng_client_profile_valid(const otrng_client_profile_s *client_profile,
   return !client_profile_expired(client_profile->expires);
 }
 
+INTERNAL otrng_bool
+otrng_client_profile_fast_valid(otrng_client_profile_s *client_profile,
+                                const uint32_t sender_instance_tag) {
+  if (client_profile->has_validated) {
+    return client_profile->validation_result &&
+           !client_profile_expired(client_profile->expires);
+  }
+
+  client_profile->validation_result =
+      otrng_client_profile_valid(client_profile, sender_instance_tag);
+  client_profile->has_validated = otrng_true;
+
+  return client_profile->validation_result;
+}
+
 /* This function should be called on a profile that is valid - it
    assumes this, and doesn't verify it. */
 INTERNAL otrng_bool otrng_client_profile_is_close_to_expiry(

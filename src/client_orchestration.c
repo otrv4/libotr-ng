@@ -204,8 +204,6 @@ tstatic void ensure_valid_forging_key(otrng_client_s *client) {
   signal_error_in_state_management(client, "No forging key");
 }
 
-/* TODO: @ola let's implement a fast verify that only checks expiry, and
-   assumes that the rest of the data is correct since last time */
 tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
   uint32_t itag;
 
@@ -224,7 +222,7 @@ tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
   }
 
   itag = otrng_client_get_instance_tag(client);
-  return otrng_client_profile_valid(client->client_profile, itag);
+  return otrng_client_profile_fast_valid(client->client_profile, itag);
 }
 
 tstatic otrng_bool verify_valid_expired_client_profile(otrng_client_s *client) {
@@ -270,8 +268,8 @@ tstatic otrng_bool verify_valid_prekey_profile(otrng_client_s *client) {
   }
 
   instag = otrng_client_get_instance_tag(client);
-  return otrng_prekey_profile_valid(client->prekey_profile, instag,
-                                    client->keypair->pub);
+  return otrng_prekey_profile_fast_valid(client->prekey_profile, instag,
+                                         client->keypair->pub);
 }
 
 tstatic void move_client_profile_to_expired(otrng_client_s *client) {

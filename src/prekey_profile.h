@@ -36,6 +36,9 @@ typedef struct prekey_profile_s {
 
   otrng_bool should_publish;
   otrng_bool is_publishing;
+
+  otrng_bool has_validated;
+  otrng_bool validation_result;
 } otrng_prekey_profile_s;
 
 INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst);
@@ -63,6 +66,10 @@ INTERNAL otrng_bool otrng_prekey_profile_is_expired_but_valid(
 
 INTERNAL otrng_bool otrng_prekey_profile_valid(
     const otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
+    const otrng_public_key pub);
+
+INTERNAL otrng_bool otrng_prekey_profile_fast_valid(
+    otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
     const otrng_public_key pub);
 
 INTERNAL otrng_result otrng_prekey_profile_serialize(uint8_t **dst,

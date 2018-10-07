@@ -405,6 +405,21 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
   return !otrng_prekey_profile_expired(profile->expires);
 }
 
+INTERNAL otrng_bool otrng_prekey_profile_fast_valid(
+    otrng_prekey_profile_s *profile, const uint32_t sender_instance_tag,
+    const otrng_public_key pub) {
+  if (profile->has_validated) {
+    return profile->validation_result &&
+           !otrng_prekey_profile_expired(profile->expires);
+  }
+
+  profile->validation_result =
+      otrng_prekey_profile_valid(profile, sender_instance_tag, pub);
+  profile->has_validated = otrng_true;
+
+  return profile->validation_result;
+}
+
 /* This function should be called on a profile that is valid - it
    assumes this, and doesn't verify it. */
 INTERNAL otrng_bool otrng_prekey_profile_is_close_to_expiry(
