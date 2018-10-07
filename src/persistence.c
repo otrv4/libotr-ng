@@ -25,33 +25,20 @@
 #include "messaging.h"
 #include "serialize.h"
 
+static size_t otrng_client_get_storage_id_len(const otrng_client_s *client) {
+  return strlen(client->client_id.protocol) +
+         strlen(client->client_id.account) + 1;
+}
+
 static char *otrng_client_get_storage_id(const otrng_client_s *client) {
-  char *account_name = NULL;
-  char *protocol_name = NULL;
-  char *key = NULL;
-  int res;
+  size_t n = otrng_client_get_storage_id_len(client) + 1;
+  char *key = otrng_xmalloc(n);
+  int res = snprintf(key, n, "%s:%s", client->client_id.protocol,
+                     client->client_id.account);
 
-  if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
-                                             client)) {
+  if (res < 0) {
+    free(key);
     return NULL;
-  }
-
-  if ((account_name != NULL) && (protocol_name != NULL)) {
-    size_t n = strlen(protocol_name) + strlen(account_name) + 2;
-    key = otrng_xmalloc(n);
-
-    res = snprintf(key, n, "%s:%s", protocol_name, account_name);
-    if (res < 0) {
-      return NULL;
-    }
-  }
-
-  if (account_name) {
-    free(account_name);
-  }
-
-  if (protocol_name) {
-    free(protocol_name);
   }
 
   return key;
