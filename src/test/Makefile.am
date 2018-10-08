@@ -25,6 +25,7 @@ otrng_sources = ../alloc.c \
                     ../base64.c \
                     ../client.c \
                     ../client_callbacks.c \
+                    ../client_orchestration.c \
                     ../client_profile.c \
                     ../dake.c \
                     ../data_message.c \
@@ -79,6 +80,7 @@ unit_sources = \
 			units/test_list.c \
 			units/test_messaging.c \
 			units/test_non_interactive_messages.c \
+			units/test_orchestration.c \
 			units/test_otrng.c \
 			units/test_prekey_ensemble.c \
 			units/test_prekey_messages.c \

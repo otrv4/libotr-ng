@@ -96,13 +96,6 @@ tstatic void create_prekey_profile(otrng_client_s *client) {
   otrng_debug_exit("orchestration.create_prekey_profile");
 }
 
-tstatic void clean_long_term_keys(otrng_client_s *client) {
-  if (client->keypair != NULL) {
-    otrng_keypair_free(client->keypair);
-    client->keypair = NULL;
-  }
-}
-
 tstatic void clean_forging_key(otrng_client_s *client) {
   if (client->forging_key != NULL) {
     otrng_ec_point_destroy(*client->forging_key);
@@ -153,42 +146,40 @@ tstatic otrng_bool verify_valid_forging_key(otrng_client_s *client) {
   return otrng_true;
 }
 
-tstatic void ensure_valid_long_term_key(otrng_client_s *client) {
+tstatic otrng_bool ensure_valid_long_term_key(otrng_client_s *client) {
   if (verify_valid_long_term_key(client)) {
-    return;
+    return otrng_true;
   }
 
-  clean_long_term_keys(client);
   load_long_term_keys_from_storage(client);
 
   if (verify_valid_long_term_key(client)) {
-    return;
+    return otrng_true;
   }
 
-  clean_long_term_keys(client);
   create_long_term_keys(client);
 
   if (verify_valid_long_term_key(client)) {
     clean_client_profile(client);
     clean_prekey_profile(client);
     client->global_state->callbacks->store_privkey_v4(client);
-    return;
+    return otrng_true;
   }
 
-  clean_long_term_keys(client);
   signal_error_in_state_management(client, "No long term key pair");
+  return otrng_false;
 }
 
-tstatic void ensure_valid_forging_key(otrng_client_s *client) {
+tstatic otrng_bool ensure_valid_forging_key(otrng_client_s *client) {
   if (verify_valid_forging_key(client)) {
-    return;
+    return otrng_true;
   }
 
   clean_forging_key(client);
   load_forging_key_from_storage(client);
 
   if (verify_valid_forging_key(client)) {
-    return;
+    return otrng_true;
   }
 
   clean_forging_key(client);
@@ -197,11 +188,12 @@ tstatic void ensure_valid_forging_key(otrng_client_s *client) {
   if (verify_valid_forging_key(client)) {
     clean_client_profile(client);
     client->global_state->callbacks->store_forging_key(client);
-    return;
+    return otrng_true;
   }
 
   clean_forging_key(client);
   signal_error_in_state_management(client, "No forging key");
+  return otrng_false;
 }
 
 tstatic otrng_bool verify_valid_client_profile(otrng_client_s *client) {
@@ -345,9 +337,9 @@ check_if_close_to_expired_prekey_profile(otrng_client_s *client) {
   return otrng_true;
 }
 
-tstatic void ensure_valid_client_profile(otrng_client_s *client) {
+tstatic otrng_bool ensure_valid_client_profile(otrng_client_s *client) {
   if (verify_valid_client_profile(client)) {
-    return;
+    return otrng_true;
   }
 
   clean_client_profile(client);
@@ -356,7 +348,7 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
 
   if (verify_valid_client_profile(client)) {
     if (!check_if_close_to_expired_client_profile(client)) {
-      return;
+      return otrng_true;
     }
   }
 
@@ -369,48 +361,51 @@ tstatic void ensure_valid_client_profile(otrng_client_s *client) {
 
     client->global_state->callbacks->store_client_profile(client,
                                                           client->client_id);
-    return;
+    return otrng_true;
   }
 
   clean_client_profile(client);
   signal_error_in_state_management(client, "No Client Profile");
+  return otrng_false;
 }
 
-tstatic void ensure_valid_expired_client_profile(otrng_client_s *client) {
+tstatic otrng_bool ensure_valid_expired_client_profile(otrng_client_s *client) {
   if (verify_valid_expired_client_profile(client)) {
-    return;
+    return otrng_true;
   }
 
   clean_expired_client_profile(client);
   load_expired_client_profile_from_storage(client);
 
   if (verify_valid_expired_client_profile(client)) {
-    return;
+    return otrng_true;
   }
 
   clean_expired_client_profile(client);
   client->global_state->callbacks->store_expired_client_profile(client);
+  return otrng_true;
 }
 
-tstatic void ensure_valid_expired_prekey_profile(otrng_client_s *client) {
+tstatic otrng_bool ensure_valid_expired_prekey_profile(otrng_client_s *client) {
   if (verify_valid_expired_prekey_profile(client)) {
-    return;
+    return otrng_true;
   }
 
   clean_expired_prekey_profile(client);
   load_expired_prekey_profile_from_storage(client);
 
   if (verify_valid_expired_prekey_profile(client)) {
-    return;
+    return otrng_true;
   }
 
   clean_expired_prekey_profile(client);
   client->global_state->callbacks->store_expired_prekey_profile(client);
+  return otrng_true;
 }
 
-tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
+tstatic otrng_bool ensure_valid_prekey_profile(otrng_client_s *client) {
   if (verify_valid_prekey_profile(client)) {
-    return;
+    return otrng_true;
   }
 
   clean_prekey_profile(client);
@@ -419,7 +414,7 @@ tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
 
   if (verify_valid_prekey_profile(client)) {
     if (!check_if_close_to_expired_prekey_profile(client)) {
-      return;
+      return otrng_true;
     }
   }
 
@@ -432,11 +427,12 @@ tstatic void ensure_valid_prekey_profile(otrng_client_s *client) {
 
     client->global_state->callbacks->store_prekey_profile(client,
                                                           client->client_id);
-    return;
+    return otrng_true;
   }
 
   clean_prekey_profile(client);
   signal_error_in_state_management(client, "No Prekey Profile");
+  return otrng_false;
 }
 
 tstatic void create_new_prekey_messages(otrng_client_s *client) {
@@ -479,24 +475,25 @@ tstatic otrng_bool verify_enough_prekey_messages(otrng_client_s *client) {
   return otrng_false;
 }
 
-tstatic void ensure_enough_prekey_messages(otrng_client_s *client) {
+tstatic otrng_bool ensure_enough_prekey_messages(otrng_client_s *client) {
   if (verify_enough_prekey_messages(client)) {
-    return;
+    return otrng_true;
   }
 
   load_prekey_messages_from_storage(client);
 
   if (verify_enough_prekey_messages(client)) {
-    return;
+    return otrng_true;
   }
 
   create_new_prekey_messages(client);
 
   if (verify_enough_prekey_messages(client)) {
-    return;
+    return otrng_true;
   }
 
   signal_error_in_state_management(client, "No Prekey Messages");
+  return otrng_false;
 }
 
 /* Note, the ensure_ family of functions will check whether the
@@ -510,14 +507,40 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   otrng_debug_enter("otrng_client_ensure_correct_state");
   otrng_debug_fprintf(stderr, "client=%s\n", client->client_id.account);
 
-  ensure_valid_long_term_key(client);
-  ensure_valid_forging_key(client);
-  ensure_valid_client_profile(client);
-  ensure_valid_expired_client_profile(client);
-  ensure_valid_prekey_profile(client);
-  ensure_valid_expired_prekey_profile(client);
+  if (!ensure_valid_long_term_key(client)) {
+    otrng_debug_exit("otrng_client_ensure_correct_state");
+    return;
+  }
 
-  ensure_enough_prekey_messages(client);
+  if (!ensure_valid_forging_key(client)) {
+    otrng_debug_exit("otrng_client_ensure_correct_state");
+    return;
+  }
+
+  if (!ensure_valid_client_profile(client)) {
+    otrng_debug_exit("otrng_client_ensure_correct_state");
+    return;
+  }
+
+  if (!ensure_valid_expired_client_profile(client)) {
+    otrng_debug_exit("otrng_client_ensure_correct_state");
+    return;
+  }
+
+  if (!ensure_valid_prekey_profile(client)) {
+    otrng_debug_exit("otrng_client_ensure_correct_state");
+    return;
+  }
+
+  if (!ensure_valid_expired_prekey_profile(client)) {
+    otrng_debug_exit("otrng_client_ensure_correct_state");
+    return;
+  }
+
+  if (!ensure_enough_prekey_messages(client)) {
+    otrng_debug_exit("otrng_client_ensure_correct_state");
+    return;
+  }
 
   otrng_debug_exit("otrng_client_ensure_correct_state");
 }

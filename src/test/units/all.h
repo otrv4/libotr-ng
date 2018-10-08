@@ -35,6 +35,7 @@ void units_key_management_add_tests(void);
 void units_list_add_tests(void);
 void units_messaging_add_tests(void);
 void units_non_interactive_messages_add_tests(void);
+void units_orchestration_add_tests(void);
 void units_otrng_add_tests(void);
 void units_prekey_ensemble_add_tests(void);
 void units_prekey_messages_add_tests(void);
@@ -61,6 +62,7 @@ void units_tlv_add_tests(void);
     units_list_add_tests();                                                    \
     units_messaging_add_tests();                                               \
     units_non_interactive_messages_add_tests();                                \
+    units_orchestration_add_tests();                                           \
     units_otrng_add_tests();                                                   \
     units_prekey_ensemble_add_tests();                                         \
     units_prekey_messages_add_tests();                                         \
