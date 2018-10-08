@@ -564,7 +564,7 @@ otrng_prekey_dake3_message_append_storage_information_request(
 
   dake_3->msg = otrng_xmalloc_z(2 + 1 + MAC_KEY_BYTES);
 
-  dake_3->msg_len = 67; // TODO: extract this
+  dake_3->msg_len = OTRNG_DAKE3_MSG_LEN;
 
   w += otrng_serialize_uint16(dake_3->msg, OTRNG_PROTOCOL_VERSION_4);
   w += otrng_serialize_uint8(dake_3->msg + w, msg_type);
@@ -1326,7 +1326,7 @@ static char *receive_failure(const uint8_t *decoded, size_t decoded_len,
 
   memset(mac_tag, 0, HASH_BYTES);
 
-  if (decoded_len < 71) {
+  if (decoded_len < OTRNG_PREKEY_FAILURE_MSG_LEN) {
     notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
     return NULL;
   }

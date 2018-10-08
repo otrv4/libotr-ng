@@ -32,8 +32,8 @@ static void test_ecdh_proof_generation_and_validation(void) {
           sym3[ED448_PRIVATE_BYTES] = {3}, sym4[ED448_PRIVATE_BYTES] = {4};
   ec_scalar privs[3];
   ec_point pubs[3];
-  uint8_t m[64] = {0x01, 0x02, 0x03};
-  uint8_t m2[64] = {0x03, 0x02, 0x01};
+  uint8_t m[HASH_BYTES] = {0x01, 0x02, 0x03};
+  uint8_t m2[HASH_BYTES] = {0x03, 0x02, 0x01};
   ecdh_proof_s res;
 
   otrng_keypair_generate(&v1, sym1);
@@ -78,8 +78,8 @@ static void test_dh_proof_generation_and_validation(void) {
   dh_keypair_s v1, v2, v3, v4;
   gcry_mpi_t privs[3];
   gcry_mpi_t pubs[3];
-  uint8_t m[64] = {0x01, 0x02, 0x03};
-  uint8_t m2[64] = {0x03, 0x02, 0x01};
+  uint8_t m[HASH_BYTES] = {0x01, 0x02, 0x03};
+  uint8_t m2[HASH_BYTES] = {0x03, 0x02, 0x01};
   dh_proof_s res;
 
   otrng_dh_keypair_generate(&v1);
@@ -132,7 +132,7 @@ static void test_dh_proof_generation_and_validation_specific_values(void) {
   uint8_t v3data[DH_KEY_SIZE] = {0x66, 0x01, 0x42};
   gcry_mpi_t privs[3];
   gcry_mpi_t pubs[3];
-  uint8_t m[64] = {0x01, 0x02, 0x03};
+  uint8_t m[HASH_BYTES] = {0x01, 0x02, 0x03};
   dh_proof_s res;
 
   gcry_mpi_scan(&v1, GCRYMPI_FMT_USG, v1data, DH_KEY_SIZE, NULL);
@@ -169,9 +169,9 @@ static void test_ecdh_proof_serialization(void) {
   otrng_keypair_s v1;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {1};
   ecdh_proof_s px;
-  uint8_t out[64 + ED448_SCALAR_BYTES] = {0};
+  uint8_t out[HASH_BYTES + ED448_SCALAR_BYTES] = {0};
   size_t written;
-  uint8_t expected[64 + ED448_SCALAR_BYTES] = {
+  uint8_t expected[HASH_BYTES + ED448_SCALAR_BYTES] = {
       0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -184,7 +184,7 @@ static void test_ecdh_proof_serialization(void) {
       0x4c, 0xd0, 0xa0, 0xe6, 0xf6, 0xe1, 0xf4, 0xe1, 0x2a, 0x29, 0xc6, 0x20,
   };
 
-  memset(px.c, 0, 64);
+  memset(px.c, 0, HASH_BYTES);
 
   otrng_keypair_generate(&v1, sym1);
   goldilocks_448_scalar_copy(px.v, v1.priv);
@@ -199,7 +199,7 @@ static void test_ecdh_proof_serialization(void) {
 static void test_dh_proof_serialization(void) {
   dh_proof_s px;
   uint8_t v1data[DH_KEY_SIZE] = {0x00, 0x01, 0x42};
-  uint8_t out[64 + DH_MPI_MAX_BYTES] = {0};
+  uint8_t out[HASH_BYTES + DH_MPI_MAX_BYTES] = {0};
   size_t written;
   uint8_t expected[147] = {
       0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -217,7 +217,7 @@ static void test_dh_proof_serialization(void) {
       0x00, 0x00, 0x00,
   };
 
-  memset(px.c, 0, 64);
+  memset(px.c, 0, HASH_BYTES);
   px.c[0] = 0x42;
   px.c[63] = 0x53;
 
@@ -233,7 +233,7 @@ static void test_dh_proof_serialization(void) {
 static void test_ecdh_proof_deserialization(void) {
   otrng_keypair_s v1;
   uint8_t sym1[ED448_PRIVATE_BYTES] = {1};
-  uint8_t data[64 + ED448_SCALAR_BYTES + 2] = {
+  uint8_t data[HASH_BYTES + ED448_SCALAR_BYTES + 2] = {
       0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -246,7 +246,7 @@ static void test_ecdh_proof_deserialization(void) {
       0x4c, 0xd0, 0xa0, 0xe6, 0xf6, 0xe1, 0xf4, 0xe1, 0x2a, 0x29, 0xc6, 0x20,
       0x00, 0x01,
   };
-  uint8_t expected_c[64] = {
+  uint8_t expected_c[HASH_BYTES] = {
       0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -260,9 +260,9 @@ static void test_ecdh_proof_deserialization(void) {
   otrng_keypair_generate(&v1, sym1);
 
   otrng_assert_is_success(otrng_ecdh_proof_deserialize(
-      &px, data, 64 + ED448_SCALAR_BYTES + 2, &read));
+      &px, data, HASH_BYTES + ED448_SCALAR_BYTES + 2, &read));
   g_assert_cmpuint(120, ==, read);
-  otrng_assert_cmpmem(expected_c, px.c, 64);
+  otrng_assert_cmpmem(expected_c, px.c, HASH_BYTES);
   otrng_assert(otrng_ec_scalar_eq(px.v, v1.priv));
 }
 
@@ -282,7 +282,7 @@ static void test_dh_proof_deserialization(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x42,
   };
-  uint8_t expected_c[64] = {
+  uint8_t expected_c[HASH_BYTES] = {
       0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -299,7 +299,7 @@ static void test_dh_proof_deserialization(void) {
 
   otrng_assert_is_success(otrng_dh_proof_deserialize(&px, data, 149, &read));
   g_assert_cmpuint(147, ==, read);
-  otrng_assert_cmpmem(expected_c, px.c, 64);
+  otrng_assert_cmpmem(expected_c, px.c, HASH_BYTES);
   otrng_assert_dh_public_key_eq(px.v, expected_v);
 
   otrng_dh_mpi_release(px.v);

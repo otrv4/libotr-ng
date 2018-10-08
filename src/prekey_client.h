@@ -46,7 +46,14 @@ struct otrng_client_s;
 #define OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG 0x0E
 #define OTRNG_PREKEY_PUBLICATION_MSG 0x08
 
+#define OTRNG_DAKE3_MSG_LEN 67
 #define OTRNG_PREKEY_SUCCESS_MSG_LEN 71
+#define OTRNG_PREKEY_FAILURE_MSG_LEN 71
+
+typedef enum {
+  OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST = 1,
+  OTRNG_PREKEY_PREKEY_PUBLICATION = 2,
+} otrng_prekey_next_message;
 
 typedef struct {
   uint32_t client_instance_tag;
@@ -108,11 +115,6 @@ typedef struct {
   prekey_ensemble_s **ensembles;
   uint8_t num_ensembles;
 } otrng_prekey_ensemble_retrieval_message_s;
-
-typedef enum {
-  OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST = 1,
-  OTRNG_PREKEY_PREKEY_PUBLICATION = 2,
-} otrng_prekey_next_message;
 
 typedef struct {
   unsigned int max_published_prekey_message;

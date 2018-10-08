@@ -40,7 +40,7 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(
   uint8_t *cbuf;
   uint8_t *curr;
   uint8_t *p;
-  size_t cbuf_len = ((values_len + 1) * ED448_POINT_BYTES) + 64;
+  size_t cbuf_len = ((values_len + 1) * ED448_POINT_BYTES) + HASH_BYTES;
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
 
   otrng_zq_keypair_generate(a, r);
@@ -67,7 +67,7 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(
     curr += ED448_POINT_BYTES;
   }
 
-  memcpy(curr, m, 64);
+  memcpy(curr, m, HASH_BYTES);
 
   shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf, cbuf_len);
   free(cbuf);
@@ -104,7 +104,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
   uint8_t *cbuf;
   uint8_t *cbuf_curr;
-  size_t cbuf_len = ((values_len + 1) * ED448_POINT_BYTES) + 64;
+  size_t cbuf_len = ((values_len + 1) * ED448_POINT_BYTES) + HASH_BYTES;
   uint8_t c2[PROOF_C_SIZE];
 
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
@@ -171,7 +171,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
     cbuf_curr += ED448_POINT_BYTES;
   }
 
-  memcpy(cbuf_curr, m, 64);
+  memcpy(cbuf_curr, m, HASH_BYTES);
   shake_256_prekey_server_kdf(c2, PROOF_C_SIZE, usage, cbuf, cbuf_len);
   free(cbuf);
 
@@ -208,7 +208,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   uint8_t *cbuf_curr;
   uint8_t *p_curr;
   size_t w = 0;
-  size_t cbuf_len = ((values_len + 1) * DH_MPI_MAX_BYTES) + 64;
+  size_t cbuf_len = ((values_len + 1) * DH_MPI_MAX_BYTES) + HASH_BYTES;
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
 
   q = otrng_dh_modulus_q();
@@ -248,8 +248,8 @@ INTERNAL otrng_result otrng_dh_proof_generate(
     cbuf_curr += w;
   }
 
-  memcpy(cbuf_curr, m, 64);
-  cbuf_curr += 64;
+  memcpy(cbuf_curr, m, HASH_BYTES);
+  cbuf_curr += HASH_BYTES;
 
   shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf,
                               cbuf_curr - cbuf);
@@ -291,7 +291,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   uint8_t *cbuf_curr;
   uint8_t *p_curr;
   size_t w = 0;
-  size_t cbuf_len = ((values_len + 1) * DH_MPI_MAX_BYTES) + 64;
+  size_t cbuf_len = ((values_len + 1) * DH_MPI_MAX_BYTES) + HASH_BYTES;
   size_t p_len = PREKEY_PROOF_LAMBDA * values_len;
   uint8_t c2[PROOF_C_SIZE];
 
@@ -347,8 +347,8 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
     cbuf_curr += w;
   }
 
-  memcpy(cbuf_curr, m, 64);
-  cbuf_curr += 64;
+  memcpy(cbuf_curr, m, HASH_BYTES);
+  cbuf_curr += HASH_BYTES;
 
   shake_256_prekey_server_kdf(c2, PROOF_C_SIZE, usage, cbuf, cbuf_curr - cbuf);
   free(cbuf);
