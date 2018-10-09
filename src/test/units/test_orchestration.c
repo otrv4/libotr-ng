@@ -779,6 +779,7 @@ static void
 test__otrng_client_ensure_correct_state__client_profile__creates_and_moves_when_close_to_expiring(
     orchestration_fixture_s *f, gconstpointer data) {
   otrng_client_profile_s *client_profile2;
+  otrng_client_profile_s *client_profile3;
   (void)data;
 
   client_profile2 = otrng_client_profile_build(1234, "4", f->long_term_key,
@@ -786,10 +787,13 @@ test__otrng_client_ensure_correct_state__client_profile__creates_and_moves_when_
   client_profile2->expires = time(NULL) + 100;
   client_profile_sign(client_profile2, f->long_term_key);
 
+  client_profile3 = otrng_client_profile_build(1234, "4", f->long_term_key,
+                                               f->forging_key->pub, 1);
+
   f->client->keypair = f->long_term_key;
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = NULL;
-  f->client->exp_client_profile = NULL;
+  f->client->exp_client_profile = client_profile3;
   load_client_profile__assign = client_profile2;
   create_client_profile__assign = f->client_profile;
 

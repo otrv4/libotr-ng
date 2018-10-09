@@ -257,10 +257,7 @@ tstatic otrng_bool verify_valid_prekey_profile(otrng_client_s *client) {
 
 tstatic void move_client_profile_to_expired(otrng_client_s *client) {
   otrng_debug_enter("move_client_profile_to_expired");
-  if (client->exp_client_profile) {
-    otrng_client_profile_free(client->exp_client_profile);
-    client->exp_client_profile = NULL;
-  }
+  clean_expired_client_profile(client);
   client->exp_client_profile = client->client_profile;
   client->client_profile = NULL;
 
