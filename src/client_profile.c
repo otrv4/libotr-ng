@@ -780,7 +780,7 @@ otrng_client_profile_fast_valid(otrng_client_profile_s *client_profile,
    assumes this, and doesn't verify it. */
 INTERNAL otrng_bool otrng_client_profile_is_close_to_expiry(
     const otrng_client_profile_s *profile, uint64_t buffer_time) {
-  return client_profile_expired(profile->expires + buffer_time);
+  return client_profile_expired(profile->expires - buffer_time);
 }
 
 INTERNAL otrng_bool otrng_client_profile_is_expired_but_valid(
