@@ -174,6 +174,7 @@ test__otrng_client_ensure_correct_state__creates_new_long_term_key(void) {
   create_privkey_v4__assign = NULL;
   otrng_client_free(client);
   temp_client = NULL;
+  otrng_list_free_nodes(gs.clients);
 }
 
 static void
@@ -252,6 +253,7 @@ test__otrng_client_ensure_correct_state__fails_creating_long_term_key(void) {
   store_privkey_v4__called_with = NULL;
   create_privkey_v4__assign = NULL;
   otrng_client_free(client);
+  otrng_list_free_nodes(gs.clients);
 }
 
 static void test__otrng_client_ensure_correct_state__loads_long_term_key(void) {
@@ -311,6 +313,7 @@ static void test__otrng_client_ensure_correct_state__loads_long_term_key(void) {
   store_privkey_v4__called_with = NULL;
   load_privkey_v4__assign = NULL;
   otrng_client_free(client);
+  otrng_list_free_nodes(gs.clients);
 }
 
 static void
@@ -365,6 +368,7 @@ test__otrng_client_ensure_correct_state__doesnt_load_long_term_key_if_already_ex
   g_assert_cmpint(store_privkey_v4__called, ==, 0);
 
   otrng_client_free(client);
+  otrng_list_free_nodes(gs.clients);
 }
 
 void units_orchestration_add_tests(void) {
