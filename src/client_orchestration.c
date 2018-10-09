@@ -307,7 +307,7 @@ tstatic void check_if_expired_prekey_profile(otrng_client_s *client) {
 }
 
 tstatic otrng_bool
-check_if_close_to_expired_client_profile(otrng_client_s *client) {
+check_if_not_close_to_expired_client_profile(otrng_client_s *client) {
   if (otrng_client_profile_is_close_to_expiry(client->client_profile,
                                               client->profiles_buffer_time)) {
     move_client_profile_to_expired(client);
@@ -336,7 +336,7 @@ tstatic otrng_bool ensure_valid_client_profile(otrng_client_s *client) {
   check_if_expired_client_profile(client);
 
   if (verify_valid_client_profile(client)) {
-    if (!check_if_close_to_expired_client_profile(client)) {
+    if (check_if_not_close_to_expired_client_profile(client)) {
       return otrng_true;
     }
   }

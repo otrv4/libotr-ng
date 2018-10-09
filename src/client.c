@@ -943,16 +943,20 @@ otrng_client_get_instance_tag(const otrng_client_s *client) {
     return (unsigned int)1;
   }
 
+  //  fprintf(stderr,"first: %s\n",
+  //  client->global_state->user_state_v3->instag_root->accountname);
   instag = otrl_instag_find(client->global_state->user_state_v3, account_name,
                             protocol_name);
-
-  free(account_name);
-  free(protocol_name);
 
   if (!instag) {
     otrng_client_callbacks_create_instag(client->global_state->callbacks,
                                          client->client_id);
   }
+
+  instag = otrl_instag_find(client->global_state->user_state_v3, account_name,
+                            protocol_name);
+  free(account_name);
+  free(protocol_name);
 
   if (!instag) {
     return (unsigned int)0;

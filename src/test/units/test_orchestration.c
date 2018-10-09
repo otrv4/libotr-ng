@@ -25,6 +25,8 @@
 #include "client_orchestration.h"
 #include "messaging.h"
 
+#include <libotr/privkey.h>
+
 static otrng_client_s *temp_client;
 
 static int load_privkey_v4__called = 0;
@@ -54,16 +56,38 @@ static void store_privkey_v4(otrng_client_s *client) {
   store_privkey_v4__called_with = client;
 }
 
-static void load_client_profile(const otrng_client_id_s cid) { (void)cid; }
+static int load_client_profile__called = 0;
+static otrng_client_id_s load_client_profile__called_with;
+static otrng_client_profile_s *load_client_profile__assign = NULL;
+static void load_client_profile(const otrng_client_id_s cid) {
+  load_client_profile__called++;
+  load_client_profile__called_with = cid;
 
-static void load_prekey_profile(const otrng_client_id_s cid) { (void)cid; }
-
-static void store_client_profile(otrng_client_s *client,
-                                 const otrng_client_id_s cid) {
-  (void)client;
-  (void)cid;
+  temp_client->client_profile = load_client_profile__assign;
 }
 
+static int store_client_profile__called = 0;
+static otrng_client_s *store_client_profile__called_with;
+static void store_client_profile(otrng_client_s *client,
+                                 const otrng_client_id_s cid) {
+  (void)cid;
+  store_client_profile__called++;
+  store_client_profile__called_with = client;
+}
+
+static int create_client_profile__called = 0;
+static otrng_client_s *create_client_profile__called_with;
+static otrng_client_profile_s *create_client_profile__assign = NULL;
+static void create_client_profile(otrng_client_s *client,
+                                  const otrng_client_id_s cid) {
+  (void)cid;
+  create_client_profile__called_with = client;
+  create_client_profile__called++;
+
+  temp_client->client_profile = create_client_profile__assign;
+}
+
+static void load_prekey_profile(const otrng_client_id_s cid) { (void)cid; }
 static void store_prekey_profile(otrng_client_s *client,
                                  const otrng_client_id_s cid) {
   (void)client;
@@ -99,11 +123,6 @@ static void create_forging_key(const otrng_client_id_s cid) {
   temp_client->forging_key = create_forging_key__assign;
 }
 
-static void create_client_profile(otrng_client_s *client,
-                                  const otrng_client_id_s cid) {
-  (void)client;
-  (void)cid;
-}
 static void store_expired_client_profile(otrng_client_s *client) {
   (void)client;
 }
@@ -120,6 +139,19 @@ static void create_prekey_profile(otrng_client_s *client,
                                   const otrng_client_id_s cid) {
   (void)client;
   (void)cid;
+}
+
+static otrng_result
+get_account_and_protocol(char **account_name, char **protocol_name,
+                         const otrng_client_id_s client_id) {
+  *account_name = otrng_xstrdup(client_id.account);
+  *protocol_name = otrng_xstrdup(client_id.protocol);
+  return OTRNG_SUCCESS;
+}
+
+static void create_instag(const otrng_client_id_s client_opdata) {
+  (void)client_opdata;
+  otrng_client_add_instance_tag(temp_client, 1234);
 }
 
 typedef struct orchestration_fixture_s {
@@ -143,6 +175,7 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   f->callbacks = otrng_xmalloc_z(sizeof(otrng_client_callbacks_s));
   f->gs = otrng_xmalloc_z(sizeof(otrng_global_state_s));
   f->gs->callbacks = f->callbacks;
+  f->gs->user_state_v3 = otrl_userstate_create();
   f->client_id.protocol = "test-otr";
   f->client_id.account = "sita@otr.im";
 
@@ -168,6 +201,8 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   f->callbacks->store_expired_prekey_profile = store_expired_prekey_profile;
   f->callbacks->load_expired_prekey_profile = load_expired_prekey_profile;
   f->callbacks->create_prekey_profile = create_prekey_profile;
+  f->callbacks->get_account_and_protocol = get_account_and_protocol;
+  f->callbacks->create_instag = create_instag;
 
   f->long_term_key = otrng_keypair_new();
   otrng_keypair_generate(f->long_term_key, sym1);
@@ -175,8 +210,8 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   f->forging_key = otrng_keypair_new();
   otrng_keypair_generate(f->forging_key, sym2);
 
-  f->client_profile = otrng_client_profile_build(
-      1234, "4", f->long_term_key, f->forging_key->pub, time(NULL) + 420);
+  f->client_profile = otrng_client_profile_build(1234, "4", f->long_term_key,
+                                                 f->forging_key->pub, 20020);
   f->prekey_profile = otrng_prekey_profile_build(1234, f->long_term_key);
 
   temp_client = f->client;
@@ -205,6 +240,18 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   create_forging_key__assign = NULL;
   create_forging_key__called_with.protocol = NULL;
   create_forging_key__called_with.account = NULL;
+
+  load_client_profile__called = 0;
+  load_client_profile__assign = NULL;
+  load_client_profile__called_with.protocol = NULL;
+  load_client_profile__called_with.account = NULL;
+
+  create_client_profile__called = 0;
+  create_client_profile__assign = NULL;
+  create_client_profile__called_with = NULL;
+
+  store_client_profile__called = 0;
+  store_client_profile__called_with = NULL;
 }
 
 static void orchestration_fixture_teardown(orchestration_fixture_s *f,
@@ -214,6 +261,7 @@ static void orchestration_fixture_teardown(orchestration_fixture_s *f,
   free(f->callbacks);
   otrng_client_free(f->client);
   otrng_list_free_nodes(f->gs->clients);
+  otrl_userstate_free(f->gs->user_state_v3);
   free(f->gs);
   free(f->long_term_key);
   free(f->forging_key);
@@ -420,6 +468,93 @@ static void test__otrng_client_ensure_correct_state__forging_key__fails(
   f->client->keypair = NULL;
 }
 
+static void test__otrng_client_ensure_correct_state__client_profile__ensures(
+    orchestration_fixture_s *f, gconstpointer data) {
+  (void)data;
+  f->client->keypair = f->long_term_key;
+  f->client->forging_key = &f->forging_key->pub;
+  f->client->client_profile = f->client_profile;
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_client_profile__called, ==, 0);
+  g_assert_cmpint(create_client_profile__called, ==, 0);
+  g_assert_cmpint(store_client_profile__called, ==, 0);
+
+  f->client->keypair = NULL;
+  f->client->forging_key = NULL;
+  f->client->client_profile = NULL;
+}
+
+static void test__otrng_client_ensure_correct_state__client_profile__loads(
+    orchestration_fixture_s *f, gconstpointer data) {
+  (void)data;
+  f->client->keypair = f->long_term_key;
+  f->client->forging_key = &f->forging_key->pub;
+  load_client_profile__assign = f->client_profile;
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_client_profile__called, ==, 1);
+  g_assert_cmpstr(load_client_profile__called_with.protocol, ==, "test-otr");
+  g_assert_cmpstr(load_client_profile__called_with.account, ==, "sita@otr.im");
+  g_assert_cmpint(create_client_profile__called, ==, 0);
+  g_assert_cmpint(store_client_profile__called, ==, 0);
+  g_assert(f->client->client_profile == f->client_profile);
+
+  f->client->keypair = NULL;
+  f->client->forging_key = NULL;
+  f->client->client_profile = NULL;
+}
+
+static void test__otrng_client_ensure_correct_state__client_profile__creates(
+    orchestration_fixture_s *f, gconstpointer data) {
+  (void)data;
+  f->client->keypair = f->long_term_key;
+  f->client->forging_key = &f->forging_key->pub;
+  create_client_profile__assign = f->client_profile;
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_client_profile__called, ==, 1);
+  g_assert_cmpint(create_client_profile__called, ==, 1);
+  g_assert_cmpint(store_client_profile__called, ==, 1);
+
+  g_assert(f->client->client_profile == f->client_profile);
+  g_assert(f->client->client_profile->should_publish == otrng_true);
+  g_assert(f->client->should_publish == otrng_true);
+
+  f->client->keypair = NULL;
+  f->client->forging_key = NULL;
+  f->client->client_profile = NULL;
+}
+
+static void test__otrng_client_ensure_correct_state__client_profile__fails(
+    orchestration_fixture_s *f, gconstpointer data) {
+  (void)data;
+  f->client->keypair = f->long_term_key;
+  f->client->forging_key = &f->forging_key->pub;
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_client_profile__called, ==, 1);
+  g_assert_cmpint(create_client_profile__called, ==, 1);
+  g_assert_cmpint(store_client_profile__called, ==, 0);
+
+  g_assert(f->client->client_profile == NULL);
+
+  f->client->keypair = NULL;
+  f->client->forging_key = NULL;
+  f->client->client_profile = NULL;
+}
+
+// client profile:
+//  - wrong pub key
+//  - wrong forging key
+//  - wrong instance tag
+//  - expired
+//  - close to expiring
+
 #define WITH_O_FIXTURE(_p, _c)                                                 \
   WITH_FIXTURE(_p, _c, orchestration_fixture_s, orchestration_fixture)
 
@@ -444,4 +579,17 @@ void units_orchestration_add_tests(void) {
                  test__otrng_client_ensure_correct_state__forging_key__creates);
   WITH_O_FIXTURE("/orchestration/ensure_correct_state/forging_key/fails",
                  test__otrng_client_ensure_correct_state__forging_key__fails);
+
+  WITH_O_FIXTURE(
+      "/orchestration/ensure_correct_state/client_profile/ensures",
+      test__otrng_client_ensure_correct_state__client_profile__ensures);
+  WITH_O_FIXTURE(
+      "/orchestration/ensure_correct_state/client_profile/loads",
+      test__otrng_client_ensure_correct_state__client_profile__loads);
+  WITH_O_FIXTURE(
+      "/orchestration/ensure_correct_state/client_profile/creates",
+      test__otrng_client_ensure_correct_state__client_profile__creates);
+  WITH_O_FIXTURE(
+      "/orchestration/ensure_correct_state/client_profile/fails",
+      test__otrng_client_ensure_correct_state__client_profile__fails);
 }
