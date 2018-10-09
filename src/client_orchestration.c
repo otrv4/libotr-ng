@@ -96,14 +96,6 @@ tstatic void create_prekey_profile(otrng_client_s *client) {
   otrng_debug_exit("orchestration.create_prekey_profile");
 }
 
-tstatic void clean_forging_key(otrng_client_s *client) {
-  if (client->forging_key != NULL) {
-    otrng_ec_point_destroy(*client->forging_key);
-    free(client->forging_key);
-    client->forging_key = NULL;
-  }
-}
-
 tstatic void clean_client_profile(otrng_client_s *client) {
   if (client->client_profile != NULL) {
     otrng_client_profile_free(client->client_profile);
@@ -175,14 +167,12 @@ tstatic otrng_bool ensure_valid_forging_key(otrng_client_s *client) {
     return otrng_true;
   }
 
-  clean_forging_key(client);
   load_forging_key_from_storage(client);
 
   if (verify_valid_forging_key(client)) {
     return otrng_true;
   }
 
-  clean_forging_key(client);
   create_forging_key(client);
 
   if (verify_valid_forging_key(client)) {
@@ -191,7 +181,6 @@ tstatic otrng_bool ensure_valid_forging_key(otrng_client_s *client) {
     return otrng_true;
   }
 
-  clean_forging_key(client);
   signal_error_in_state_management(client, "No forging key");
   return otrng_false;
 }
