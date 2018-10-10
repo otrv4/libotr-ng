@@ -238,9 +238,11 @@ tstatic otrng_bool verify_valid_expired_prekey_profile(otrng_client_s *client) {
   }
 
   instag = otrng_client_get_instance_tag(client);
-  return otrng_prekey_profile_is_expired_but_valid(
-      client->exp_prekey_profile, instag, client->profiles_extra_valid_time,
-      client->keypair->pub);
+  return otrng_prekey_profile_fast_valid(client->exp_prekey_profile, instag,
+                                         client->keypair->pub) ||
+         otrng_prekey_profile_is_expired_but_valid(
+             client->exp_prekey_profile, instag,
+             client->profiles_extra_valid_time, client->keypair->pub);
 }
 
 tstatic otrng_bool verify_valid_prekey_profile(otrng_client_s *client) {
@@ -316,7 +318,7 @@ check_if_not_close_to_expired_client_profile(otrng_client_s *client) {
 }
 
 tstatic otrng_bool
-check_if_close_to_expired_prekey_profile(otrng_client_s *client) {
+check_if_not_close_to_expired_prekey_profile(otrng_client_s *client) {
   if (otrng_prekey_profile_is_close_to_expiry(client->prekey_profile,
                                               client->profiles_buffer_time)) {
     move_prekey_profile_to_expired(client);
@@ -392,12 +394,17 @@ tstatic otrng_bool ensure_valid_expired_prekey_profile(otrng_client_s *client) {
 
   clean_expired_prekey_profile(client);
   client->global_state->callbacks->store_expired_prekey_profile(client);
+
   return otrng_true;
 }
 
 tstatic otrng_bool ensure_valid_prekey_profile(otrng_client_s *client) {
+  check_if_expired_prekey_profile(client);
+
   if (verify_valid_prekey_profile(client)) {
-    return otrng_true;
+    if (check_if_not_close_to_expired_prekey_profile(client)) {
+      return otrng_true;
+    }
   }
 
   clean_prekey_profile(client);
@@ -405,7 +412,7 @@ tstatic otrng_bool ensure_valid_prekey_profile(otrng_client_s *client) {
   check_if_expired_prekey_profile(client);
 
   if (verify_valid_prekey_profile(client)) {
-    if (!check_if_close_to_expired_prekey_profile(client)) {
+    if (check_if_not_close_to_expired_prekey_profile(client)) {
       return otrng_true;
     }
   }

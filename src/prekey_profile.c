@@ -431,7 +431,7 @@ INTERNAL otrng_bool otrng_prekey_profile_fast_valid(
    assumes this, and doesn't verify it. */
 INTERNAL otrng_bool otrng_prekey_profile_is_close_to_expiry(
     const otrng_prekey_profile_s *profile, uint64_t buffer_time) {
-  return otrng_prekey_profile_expired(profile->expires + buffer_time);
+  return otrng_prekey_profile_expired(profile->expires - buffer_time);
 }
 
 INTERNAL otrng_bool otrng_prekey_profile_is_expired_but_valid(
