@@ -78,7 +78,7 @@ API otrng_result otrng_client_private_key_v4_write_to_buffer(
   }
   keylen = strlen(key);
 
-  if (s + keylen + 1 < buflen) {
+  if (s + keylen + 1 > buflen) {
     return OTRNG_ERROR;
   }
   memcpy(buf + s, key, keylen);
@@ -88,7 +88,7 @@ API otrng_result otrng_client_private_key_v4_write_to_buffer(
   *(buf + s) = '\n';
   s++;
 
-  if (s + BASE64_ENCODED_SYMMETRIC_SECRET_LENGTH + 1 < buflen) {
+  if (s + BASE64_ENCODED_SYMMETRIC_SECRET_LENGTH + 1 > buflen) {
     return OTRNG_ERROR;
   }
   w = otrl_base64_encode((char *)buf + s, client->keypair->sym,
@@ -101,6 +101,7 @@ API otrng_result otrng_client_private_key_v4_write_to_buffer(
   if (written) {
     *written = s;
   }
+
   return OTRNG_SUCCESS;
 }
 
