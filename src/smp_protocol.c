@@ -72,7 +72,9 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
   uint8_t usage_smp_secret = 0x1B;
   goldilocks_shake256_ctx_p hd;
 
-  hash_init_with_usage(hd, usage_smp_secret);
+  if (!hash_init_with_usage(hd, usage_smp_secret)) {
+    return OTRNG_ERROR;
+  }
 
   if (hash_update(hd, version, 1) == GOLDILOCKS_FAILURE) {
     hash_destroy(hd);
@@ -116,7 +118,9 @@ tstatic otrng_result hash_to_scalar(ec_scalar dst, uint8_t *ser_p,
   goldilocks_shake256_ctx_p hd;
   uint8_t *hash = otrng_secure_alloc(HASH_BYTES);
 
-  hash_init_with_usage(hd, usage_smp);
+  if (!hash_init_with_usage(hd, usage_smp)) {
+    return OTRNG_ERROR;
+  }
 
   if (hash_update(hd, ser_p, ser_p_len) == GOLDILOCKS_FAILURE) {
     hash_destroy(hd);

@@ -355,7 +355,7 @@ tstatic otrng_result key_manager_derive_ratchet_keys(
  *
  * @param [manager]   The key manager.
  */
-tstatic void calculate_ssid(key_manager_s *manager);
+tstatic otrng_result calculate_ssid(key_manager_s *manager);
 
 /**
  * @brief Calculate the extra symmetric key.

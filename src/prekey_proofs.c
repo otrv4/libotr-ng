@@ -60,8 +60,8 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(
 
   for (i = 0; i < values_len; i++) {
     if (!otrng_ec_point_encode(curr, ED448_POINT_BYTES, values_pub[i])) {
-      free(cbuf);
       goldilocks_448_scalar_destroy(r);
+      free(cbuf);
       return OTRNG_ERROR;
     }
     curr += ED448_POINT_BYTES;
@@ -69,12 +69,23 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(
 
   memcpy(curr, m, HASH_BYTES);
 
-  shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf, cbuf_len);
+  if (!shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf,
+                                   cbuf_len)) {
+    goldilocks_448_scalar_destroy(r);
+    free(cbuf);
+    return OTRNG_ERROR;
+  }
+
   free(cbuf);
 
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
-  shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
-                              PROOF_C_SIZE);
+
+  if (!shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
+                                   PROOF_C_SIZE)) {
+    goldilocks_448_scalar_destroy(r);
+    free(p);
+    return OTRNG_ERROR;
+  }
 
   goldilocks_448_scalar_copy(dst->v, r);
   goldilocks_448_scalar_destroy(r);
@@ -108,8 +119,13 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
   uint8_t c2[PROOF_C_SIZE];
 
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
-  shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, px->c,
-                              PROOF_C_SIZE);
+
+  if (!shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, px->c,
+                                   PROOF_C_SIZE)) {
+    free(p);
+    return otrng_false;
+  }
+
   goldilocks_448_precomputed_scalarmul(a, goldilocks_448_precomputed_base,
                                        px->v);
 
@@ -172,7 +188,12 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
   }
 
   memcpy(cbuf_curr, m, HASH_BYTES);
-  shake_256_prekey_server_kdf(c2, PROOF_C_SIZE, usage, cbuf, cbuf_len);
+
+  if (!shake_256_prekey_server_kdf(c2, PROOF_C_SIZE, usage, cbuf, cbuf_len)) {
+    free(cbuf);
+    return otrng_false;
+  }
+
   free(cbuf);
 
   if (goldilocks_memeq(px->c, c2, PROOF_C_SIZE)) {
@@ -187,11 +208,19 @@ tstatic void *gen_random_data(size_t n, random_generator gen) {
     void *rhash, *rbuf;
     rbuf = gcry_random_bytes_secure(n, GCRY_STRONG_RANDOM);
     rhash = otrng_secure_alloc(n * sizeof(uint8_t));
-    shake_256_hash(rhash, n * sizeof(uint8_t), rbuf, n);
+
+    if (!shake_256_hash(rhash, n * sizeof(uint8_t), rbuf, n)) {
+      otrng_secure_wipe(rbuf, n);
+      gcry_free(rbuf);
+      return NULL;
+    }
+
     otrng_secure_wipe(rbuf, n);
     gcry_free(rbuf);
+
     return rhash;
   }
+
   return gen(n);
 }
 
@@ -251,13 +280,23 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   memcpy(cbuf_curr, m, HASH_BYTES);
   cbuf_curr += HASH_BYTES;
 
-  shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf,
-                              cbuf_curr - cbuf);
+  if (!shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf,
+                                   cbuf_curr - cbuf)) {
+    free(cbuf);
+    otrng_dh_mpi_release(r);
+    return OTRNG_ERROR;
+  }
+
   free(cbuf);
 
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
-  shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
-                              PROOF_C_SIZE);
+  if (!shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
+                                   PROOF_C_SIZE)) {
+    free(cbuf);
+    otrng_dh_mpi_release(r);
+    free(p);
+    return OTRNG_ERROR;
+  }
 
   dst->v = otrng_dh_mpi_copy(r);
   otrng_dh_mpi_release(r);
@@ -296,8 +335,11 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   uint8_t c2[PROOF_C_SIZE];
 
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
-  shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, px->c,
-                              PROOF_C_SIZE);
+  if (!shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, px->c,
+                                   PROOF_C_SIZE)) {
+    free(p);
+    return otrng_false;
+  }
 
   a = gcry_mpi_new(DH3072_MOD_LEN_BITS);
   otrng_dh_calculate_public_key(a, px->v);
@@ -312,6 +354,8 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
     gcry_mpi_t t;
     if (!otrng_dh_mpi_deserialize(&t, p_curr, PREKEY_PROOF_LAMBDA, &w)) {
       free(p);
+      gcry_mpi_release(a);
+      otrng_dh_mpi_release(curr);
       return otrng_false;
     }
     p_curr += w;
@@ -320,6 +364,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
     gcry_mpi_mulm(curr, curr, t, mod);
     otrng_dh_mpi_release(t);
   }
+
   free(p);
   gcry_mpi_invm(curr, curr, mod);
   gcry_mpi_mulm(a, a, curr, mod);
@@ -350,7 +395,12 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   memcpy(cbuf_curr, m, HASH_BYTES);
   cbuf_curr += HASH_BYTES;
 
-  shake_256_prekey_server_kdf(c2, PROOF_C_SIZE, usage, cbuf, cbuf_curr - cbuf);
+  if (!shake_256_prekey_server_kdf(c2, PROOF_C_SIZE, usage, cbuf,
+                                   cbuf_curr - cbuf)) {
+    free(cbuf);
+    return otrng_false;
+  }
+
   free(cbuf);
 
   if (goldilocks_memeq(px->c, c2, PROOF_C_SIZE)) {
@@ -375,7 +425,10 @@ INTERNAL size_t otrng_dh_proof_serialize(uint8_t *dst, const dh_proof_s *px) {
   size_t len = 0;
 
   cursor += otrng_serialize_bytes_array(cursor, px->c, PROOF_C_SIZE);
-  otrng_serialize_dh_mpi_otr(cursor, DH_MPI_MAX_BYTES, &len, px->v);
+  if (otrng_serialize_dh_mpi_otr(cursor, DH_MPI_MAX_BYTES, &len, px->v) == 0) {
+    return len;
+  }
+
   cursor += len;
 
   return cursor - dst;

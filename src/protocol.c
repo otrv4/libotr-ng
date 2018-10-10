@@ -193,8 +193,12 @@ tstatic otrng_result serialize_and_encode_data_message(
   }
 
   if (to_reveal_mac_keys) {
-    otrng_serialize_bytes_array(ser + body_len + DATA_MSG_MAC_BYTES,
-                                to_reveal_mac_keys, to_reveal_mac_keys_len);
+    if (otrng_serialize_bytes_array(ser + body_len + DATA_MSG_MAC_BYTES,
+                                    to_reveal_mac_keys,
+                                    to_reveal_mac_keys_len) == 0) {
+      free(ser);
+      return OTRNG_ERROR;
+    }
   }
 
   *dst = otrl_base64_otr_encode(ser, ser_len);

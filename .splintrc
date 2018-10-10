@@ -59,7 +59,6 @@
 -nullret
 -nullstate
 -observertrans
--retvalother
 -statictrans
 -temptrans
 -type

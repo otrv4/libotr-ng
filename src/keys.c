@@ -148,7 +148,11 @@ INTERNAL uint8_t *otrng_derive_key_from_extra_symm_key(
   goldilocks_shake256_ctx_p hd;
   uint8_t *derived_key = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
 
-  hash_init_with_usage(hd, usage);
+  if (!hash_init_with_usage(hd, usage)) {
+    otrng_secure_wipe(derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
+    free(derived_key);
+    return NULL;
+  }
 
   if (hash_update(hd, use_data, use_data_len) == GOLDILOCKS_FAILURE) {
     hash_destroy(hd);

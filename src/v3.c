@@ -740,16 +740,17 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL void otrng_v3_close(char **to_send, otrng_v3_conn_s *conn) {
+INTERNAL otrng_result otrng_v3_close(char **to_send, otrng_v3_conn_s *conn) {
   // TODO: @client there is also: otrl_message_disconnect, which only
   // disconnects one instance
 
   char *account_name = NULL;
   char *protocol_name = NULL;
 
-  // TODO: Error?
-  otrng_client_get_account_and_protocol(&account_name, &protocol_name,
-                                        conn->client);
+  if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
+                                             conn->client)) {
+    return OTRNG_ERROR;
+  }
 
   otrl_message_disconnect_all_instances(
       conn->client->global_state->user_state_v3, conn->ops, conn->opdata,
@@ -758,6 +759,8 @@ INTERNAL void otrng_v3_close(char **to_send, otrng_v3_conn_s *conn) {
   free(protocol_name);
 
   *to_send = otrng_v3_retrieve_injected_message(conn);
+
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_v3_send_symkey_message(

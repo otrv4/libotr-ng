@@ -68,7 +68,7 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
                                                const char *msg,
                                                otrng_v3_conn_s *conn);
 
-INTERNAL void otrng_v3_close(char **to_send, otrng_v3_conn_s *conn);
+INTERNAL otrng_result otrng_v3_close(char **to_send, otrng_v3_conn_s *conn);
 
 INTERNAL otrng_result otrng_v3_send_symkey_message(
     char **to_send, otrng_v3_conn_s *conn, unsigned int use,
