@@ -218,8 +218,11 @@ otrng_data_message_sections_hash(uint8_t *dst, size_t dst_len,
     return OTRNG_ERROR;
   }
 
-  // KDF_1(usage_data_message_sections || data_message_sections, 64)
-  shake_256_kdf1(dst, HASH_BYTES, usage_data_message_sections, body, body_len);
+  /* KDF_1(usage_data_message_sections || data_message_sections, 64) */
+  if (!shake_256_kdf1(dst, HASH_BYTES, usage_data_message_sections, body,
+                      body_len)) {
+    return OTRNG_ERROR;
+  }
 
   return OTRNG_SUCCESS;
 }

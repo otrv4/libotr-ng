@@ -100,7 +100,9 @@ tstatic otrng_result otrng_rsig_calculate_c_with_usage_and_domain(
   uint8_t hash[HASH_BYTES];
   uint8_t point_buff[ED448_POINT_BYTES];
 
-  hash_init_with_usage_and_domain_separation(hd, usage_auth, domain_sep);
+  if (!hash_init_with_usage_and_domain_separation(hd, usage_auth, domain_sep)) {
+    return OTRNG_ERROR;
+  }
 
   if (hash_update(hd, base_point_bytes_dup, ED448_POINT_BYTES) ==
       GOLDILOCKS_FAILURE) {

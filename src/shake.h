@@ -21,6 +21,7 @@
 #ifndef OTRNG_SHAKE_H
 #define OTRNG_SHAKE_H
 
+#include "error.h"
 #include "goldilocks/shake.h"
 #include "shared.h"
 
@@ -30,29 +31,32 @@
 #define hash_destroy goldilocks_shake256_destroy
 #define hash_hash goldilocks_shake256_hash
 
-void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
-                                                uint8_t usage,
-                                                const char *domain);
+otrng_result
+hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
+                                           uint8_t usage, const char *domain);
 
-void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage);
+otrng_result hash_init_with_usage(goldilocks_shake256_ctx_p hash,
+                                  uint8_t usage);
 
-void shake_kkdf(uint8_t *dst, size_t dst_len, const uint8_t *key,
-                size_t key_len, const uint8_t *secret, size_t secret_len);
+otrng_result shake_kkdf(uint8_t *dst, size_t dst_len, const uint8_t *key,
+                        size_t key_len, const uint8_t *secret,
+                        size_t secret_len);
 
 /* KDF_1("OTRv4" || usageID || values, len) */
-void shake_256_kdf1(uint8_t *dst, size_t dst_len, uint8_t usage,
-                    const uint8_t *values, size_t values_len);
+otrng_result shake_256_kdf1(uint8_t *dst, size_t dst_len, uint8_t usage,
+                            const uint8_t *values, size_t values_len);
 
 /* KDF_1("OTR-Prekey-Server" || usageID || values, len) */
-void shake_256_prekey_server_kdf(uint8_t *dst, size_t dst_len, uint8_t usage,
-                                 const uint8_t *values, size_t values_len);
+otrng_result shake_256_prekey_server_kdf(uint8_t *dst, size_t dst_len,
+                                         uint8_t usage, const uint8_t *values,
+                                         size_t values_len);
 
-void shake_256_hash(uint8_t *dst, size_t dst_len, const uint8_t *secret,
-                    size_t secret_len);
+otrng_result shake_256_hash(uint8_t *dst, size_t dst_len, const uint8_t *secret,
+                            size_t secret_len);
 
 #ifdef OTRNG_SHAKE_PRIVATE
 
-tstatic void hash_init_with_dom(goldilocks_shake256_ctx_p hash);
+tstatic otrng_result hash_init_with_dom(goldilocks_shake256_ctx_p hash);
 
 #endif
 

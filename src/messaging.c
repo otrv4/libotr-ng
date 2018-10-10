@@ -48,7 +48,9 @@ otrng_global_state_new(const otrng_client_callbacks_s *cb, otrng_bool die) {
   gs->callbacks = cb;
   gs->user_state_v3 = otrl_userstate_create();
   if (gs->user_state_v3 == NULL) {
-    return NULL;
+    if (die) {
+      exit(EXIT_FAILURE);
+    }
   }
 
   return gs;

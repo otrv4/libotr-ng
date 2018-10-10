@@ -22,72 +22,140 @@
 
 #include "shake.h"
 
-tstatic void hash_init_with_dom(goldilocks_shake256_ctx_p hash) {
+tstatic otrng_result hash_init_with_dom(goldilocks_shake256_ctx_p hd) {
   const char *domain = "OTRv4";
 
-  hash_init(hash);
-  hash_update(hash, (const unsigned char *)domain, strlen(domain));
+  hash_init(hd);
+  if (hash_update(hd, (const unsigned char *)domain, strlen(domain)) ==
+      GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
 }
 
-void hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hash,
-                                                uint8_t usage,
-                                                const char *domain) {
-  hash_init(hash);
+otrng_result
+hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hd,
+                                           uint8_t usage, const char *domain) {
+  hash_init(hd);
   // TODO: why we cast here?
-  hash_update(hash, (const unsigned char *)domain, strlen(domain));
-  hash_update(hash, &usage, 1);
+  if (hash_update(hd, (const unsigned char *)domain, strlen(domain)) ==
+      GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, &usage, 1) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
 }
 
-static void hash_init_with_usage_prekey_server(goldilocks_shake256_ctx_p hash,
-                                               uint8_t usage) {
+static otrng_result
+hash_init_with_usage_prekey_server(goldilocks_shake256_ctx_p hash,
+                                   uint8_t usage) {
   const char *domain = "OTR-Prekey-Server";
-  hash_init_with_usage_and_domain_separation(hash, usage, domain);
+  if (!hash_init_with_usage_and_domain_separation(hash, usage, domain)) {
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
 }
 
-void hash_init_with_usage(goldilocks_shake256_ctx_p hash, uint8_t usage) {
-  hash_init_with_dom(hash);
-  hash_update(hash, &usage, 1);
+otrng_result hash_init_with_usage(goldilocks_shake256_ctx_p hd, uint8_t usage) {
+  if (!hash_init_with_dom(hd)) {
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, &usage, 1) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
 }
 
-void shake_kkdf(uint8_t *dst, size_t dst_len, const uint8_t *key,
-                size_t key_len, const uint8_t *secret, size_t secret_len) {
+otrng_result shake_kkdf(uint8_t *dst, size_t dst_len, const uint8_t *key,
+                        size_t key_len, const uint8_t *secret,
+                        size_t secret_len) {
   goldilocks_shake256_ctx_p hd;
 
-  hash_init_with_dom(hd);
-  hash_update(hd, key, key_len);
-  hash_update(hd, secret, secret_len);
+  if (!hash_init_with_dom(hd)) {
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, key, key_len) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, secret, secret_len) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
 
   hash_final(hd, dst, dst_len);
   hash_destroy(hd);
+
+  return OTRNG_SUCCESS;
 }
 
-void shake_256_kdf1(uint8_t *dst, size_t dst_len, uint8_t usage,
-                    const uint8_t *values, size_t values_len) {
-  goldilocks_shake256_ctx_p hd;
-  hash_init_with_usage(hd, usage);
-
-  hash_update(hd, values, values_len);
-  hash_final(hd, dst, dst_len);
-  hash_destroy(hd);
-}
-
-void shake_256_prekey_server_kdf(uint8_t *dst, size_t dst_len, uint8_t usage,
-                                 const uint8_t *values, size_t values_len) {
-  goldilocks_shake256_ctx_p hd;
-  hash_init_with_usage_prekey_server(hd, usage);
-
-  hash_update(hd, values, values_len);
-  hash_final(hd, dst, dst_len);
-  hash_destroy(hd);
-}
-
-void shake_256_hash(uint8_t *dst, size_t dst_len, const uint8_t *secret,
-                    size_t secret_len) {
+otrng_result shake_256_kdf1(uint8_t *dst, size_t dst_len, uint8_t usage,
+                            const uint8_t *values, size_t values_len) {
   goldilocks_shake256_ctx_p hd;
 
-  hash_init_with_dom(hd);
-  hash_update(hd, secret, secret_len);
+  if (!hash_init_with_usage(hd, usage)) {
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, values, values_len) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
 
   hash_final(hd, dst, dst_len);
   hash_destroy(hd);
+
+  return OTRNG_SUCCESS;
+}
+
+otrng_result shake_256_prekey_server_kdf(uint8_t *dst, size_t dst_len,
+                                         uint8_t usage, const uint8_t *values,
+                                         size_t values_len) {
+  goldilocks_shake256_ctx_p hd;
+  if (!hash_init_with_usage_prekey_server(hd, usage)) {
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, values, values_len) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  hash_final(hd, dst, dst_len);
+  hash_destroy(hd);
+
+  return OTRNG_SUCCESS;
+}
+
+otrng_result shake_256_hash(uint8_t *dst, size_t dst_len, const uint8_t *secret,
+                            size_t secret_len) {
+  goldilocks_shake256_ctx_p hd;
+
+  if (!hash_init_with_dom(hd)) {
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, secret, secret_len) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  hash_final(hd, dst, dst_len);
+  hash_destroy(hd);
+
+  return OTRNG_SUCCESS;
 }

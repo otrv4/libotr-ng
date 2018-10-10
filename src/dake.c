@@ -677,11 +677,21 @@ tstatic otrng_result build_rsign_tag(
       continue;
     }
 
-    shake_256_kdf1(hash_ser_i_profile, HASH_BYTES, usage_bob_client_profile,
-                   ser_i_profile, ser_i_profile_len);
-    shake_256_kdf1(hash_ser_r_profile, HASH_BYTES, usage_alice_client_profile,
-                   ser_r_profile, ser_r_profile_len);
-    shake_256_kdf1(hash_phi, HASH_BYTES, usage_phi, phi, phi_len);
+    if (!shake_256_kdf1(hash_ser_i_profile, HASH_BYTES,
+                        usage_bob_client_profile, ser_i_profile,
+                        ser_i_profile_len)) {
+      continue;
+    }
+
+    if (!shake_256_kdf1(hash_ser_r_profile, HASH_BYTES,
+                        usage_alice_client_profile, ser_r_profile,
+                        ser_r_profile_len)) {
+      continue;
+    }
+
+    if (!shake_256_kdf1(hash_phi, HASH_BYTES, usage_phi, phi, phi_len)) {
+      continue;
+    }
 
     cursor = dst;
     memcpy(cursor, hash_ser_i_profile, HASH_BYTES);
@@ -842,8 +852,12 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
 
   (void)auth;
 
-  shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, tmp_key,
-                 HASH_BYTES);
+  if (!shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, tmp_key,
+                      HASH_BYTES)) {
+    otrng_secure_wipe(auth_mac_k, HASH_BYTES);
+    free(auth_mac_k);
+    return OTRNG_ERROR;
+  }
 
   /* Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t, 64) */
   if (!otrng_key_manager_calculate_auth_mac(dst, auth_mac_k, t, t_len)) {

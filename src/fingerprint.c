@@ -64,7 +64,9 @@ INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
   }
 
   /* KDF_1(usage_fingerprint || byte(H), 56) */
-  hash_init_with_usage(hd, usage_fingerprint);
+  if (!hash_init_with_usage(hd, usage_fingerprint)) {
+    return OTRNG_ERROR;
+  }
 
   if (hash_update(hd, ser, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
     hash_destroy(hd);
