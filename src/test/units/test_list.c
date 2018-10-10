@@ -44,6 +44,9 @@ static void test_otrng_list_add() {
 static void test_otrng_list_copy() {
   int one = 1, two = 2, three = 3;
   list_element_s *list = NULL;
+
+  otrng_assert(!otrng_list_copy(list));
+
   list = otrng_list_add(&one, list);
 
   otrng_assert(list);
@@ -75,6 +78,13 @@ static void test_otrng_list_copy() {
 static void test_otrng_list_insert_at_n() {
   int one = 1, two = 2;
   list_element_s *list = NULL;
+
+  list_element_s *result = otrng_list_insert_at_position_n(&two, 0, list);
+
+  otrng_assert(result);
+  otrng_assert(!result->next);
+  g_assert_cmpint(two, ==, *((int *)result->data));
+
   list = otrng_list_add(&one, list);
 
   otrng_assert(list);

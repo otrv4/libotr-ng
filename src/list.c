@@ -25,7 +25,7 @@
 #include "alloc.h"
 #include "list.h"
 
-tstatic list_element_s *list_new() {
+tstatic /*@only@*/ /*@notnull@*/ list_element_s *list_new() {
   list_element_s *n = otrng_xmalloc_z(sizeof(list_element_s));
 
   return n;
@@ -80,9 +80,6 @@ INTERNAL list_element_s *otrng_list_copy(list_element_s *head) {
 
   cursor = head;
   copy = list_new();
-  if (!copy) {
-    return NULL;
-  }
   copy->data = cursor->data;
   copy->next = NULL;
 
@@ -91,10 +88,6 @@ INTERNAL list_element_s *otrng_list_copy(list_element_s *head) {
   cursor = cursor->next;
   while (cursor) {
     copy->next = list_new();
-    if (!copy->next) {
-      otrng_list_free_full(ret);
-      return NULL;
-    }
 
     copy = copy->next;
     copy->data = cursor->data;
@@ -109,9 +102,6 @@ INTERNAL list_element_s *otrng_list_copy(list_element_s *head) {
 INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head) {
   list_element_s *last;
   list_element_s *n = list_new();
-  if (!n) {
-    return NULL;
-  }
 
   n->data = data;
 
@@ -129,10 +119,6 @@ INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data, size_t pos,
   list_element_s *tmp;
   list_element_s *n = list_new();
   size_t i;
-
-  if (!n) {
-    return NULL;
-  }
 
   n->data = data;
   n->next = NULL;
