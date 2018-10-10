@@ -344,13 +344,24 @@ static char *start_dake_and_then_send(otrng_prekey_client_s *client,
   otrng_prekey_dake1_message_s msg;
 
   msg.client_instance_tag = client->instance_tag;
+
   msg.client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
-  otrng_client_profile_copy(msg.client_profile, client->client_profile);
+  if (!otrng_client_profile_copy(msg.client_profile, client->client_profile)) {
+    return NULL;
+  }
 
   random_bytes(sym, ED448_PRIVATE_BYTES);
-  otrng_ecdh_keypair_generate(client->ephemeral_ecdh, sym);
+
+  if (!otrng_ecdh_keypair_generate(client->ephemeral_ecdh, sym)) {
+    otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+    free(sym);
+    otrng_prekey_dake1_message_destroy(&msg);
+    return NULL;
+  }
+
   otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
   free(sym);
+
   otrng_ec_point_copy(msg.I, client->ephemeral_ecdh->pub);
 
   success = otrng_prekey_dake1_message_serialize(&ser, &ser_len, &msg);

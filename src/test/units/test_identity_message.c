@@ -36,7 +36,7 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   (void)data;
-  otrng_ecdh_keypair_generate(&ecdh, sym);
+  otrng_assert_is_success(otrng_ecdh_keypair_generate(&ecdh, sym));
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
   dake_identity_message_s *identity_msg =
@@ -101,7 +101,7 @@ static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   (void)data;
-  otrng_ecdh_keypair_generate(&ecdh, sym);
+  otrng_assert_is_success(otrng_ecdh_keypair_generate(&ecdh, sym));
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
   dake_identity_message_s *identity_msg =
@@ -145,7 +145,7 @@ static void test_dake_identity_message_valid(dake_fixture_s *f,
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   (void)data;
-  otrng_ecdh_keypair_generate(&ecdh, sym);
+  otrng_assert_is_success(otrng_ecdh_keypair_generate(&ecdh, sym));
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
   dake_identity_message_s *identity_msg =
@@ -167,7 +167,8 @@ static void test_dake_identity_message_valid(dake_fixture_s *f,
   dh_keypair_s invalid_dh;
 
   uint8_t invalid_sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_ecdh_keypair_generate(&invalid_ecdh, invalid_sym);
+  otrng_assert_is_success(
+      otrng_ecdh_keypair_generate(&invalid_ecdh, invalid_sym));
   otrng_assert_is_success(otrng_dh_keypair_generate(&invalid_dh));
 
   uint8_t zero_buff[ED448_SIGNATURE_BYTES] = {0};
@@ -175,7 +176,8 @@ static void test_dake_identity_message_valid(dake_fixture_s *f,
   memcpy(invalid_profile->signature, zero_buff, ED448_SIGNATURE_BYTES);
 
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pair_generate(shared_prekey, invalid_sym);
+  otrng_assert_is_success(
+      otrng_shared_prekey_pair_generate(shared_prekey, invalid_sym));
   otrng_assert(otrng_ec_point_valid(shared_prekey->pub));
 
   otrng_ec_point_copy(invalid_profile->long_term_pub_key, invalid_ecdh.pub);

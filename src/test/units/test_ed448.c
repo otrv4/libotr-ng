@@ -80,7 +80,7 @@ static void test_ed448_signature() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {0x3f};
   uint8_t pub[ED448_PUBKEY_BYTES] = {0};
   otrng_keypair_s *pair = otrng_keypair_new();
-  otrng_keypair_generate(pair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(pair, sym));
 
   uint8_t message[3] = {0x0A, 0x0C, 0x0B};
   otrng_assert(otrng_ec_point_encode(pub, ED448_POINT_BYTES, pair->pub));

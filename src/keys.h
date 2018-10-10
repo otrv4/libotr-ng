@@ -58,8 +58,8 @@ typedef struct otrng_shared_prekey_pair_s {
 
 INTERNAL otrng_keypair_s *otrng_keypair_new(void);
 
-INTERNAL void otrng_keypair_generate(otrng_keypair_s *keypair,
-                                     const uint8_t sym[ED448_PRIVATE_BYTES]);
+INTERNAL otrng_result otrng_keypair_generate(
+    otrng_keypair_s *keypair, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair);
 
@@ -68,7 +68,7 @@ INTERNAL otrng_result otrng_symmetric_key_serialize(
 
 INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void);
 
-INTERNAL void
+INTERNAL otrng_result
 otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
                                   const uint8_t sym[ED448_PRIVATE_BYTES]);
 

@@ -71,7 +71,8 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   random_bytes(sym, ED448_PRIVATE_BYTES);
-  otrng_ecdh_keypair_generate(alice->prekey_client->ephemeral_ecdh, sym);
+  otrng_assert_is_success(
+      otrng_ecdh_keypair_generate(alice->prekey_client->ephemeral_ecdh, sym));
 
   otrng_prekey_dake2_message_s message;
   otrng_prekey_dake2_message_init(&message);

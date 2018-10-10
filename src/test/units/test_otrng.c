@@ -241,7 +241,7 @@ static void test_otrng_build_prekey_ensemble() {
   uint8_t forging_priv[ED448_PRIVATE_BYTES] = {
       2}; // non-random forging key on purpose
   otrng_keypair_s *kforging = otrng_keypair_new();
-  otrng_keypair_generate(kforging, forging_priv);
+  otrng_assert_is_success(otrng_keypair_generate(kforging, forging_priv));
 
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
   client->global_state = otrng_global_state_new(test_callbacks, otrng_false);

@@ -152,7 +152,7 @@ otrng_client_callbacks_s test_callbacks[1] = {{
 otrng_public_key *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
   otrng_keypair_s *key_pair = otrng_keypair_new();
-  otrng_keypair_generate(key_pair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(key_pair, sym));
   otrng_public_key *pub = otrng_xmalloc_z(sizeof(otrng_public_key));
   otrng_ec_point_copy(*pub, key_pair->pub);
   otrng_keypair_free(key_pair);
@@ -232,7 +232,8 @@ void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data) {
   f->profile = client_profile_new("4");
 
   f->shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pair_generate(f->shared_prekey, sym);
+  otrng_assert_is_success(
+      otrng_shared_prekey_pair_generate(f->shared_prekey, sym));
   otrng_assert(otrng_ec_point_valid(f->shared_prekey->pub));
 
   const uint8_t forging_sym[ED448_PRIVATE_BYTES] = {3};

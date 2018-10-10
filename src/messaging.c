@@ -47,6 +47,9 @@ otrng_global_state_new(const otrng_client_callbacks_s *cb, otrng_bool die) {
 
   gs->callbacks = cb;
   gs->user_state_v3 = otrl_userstate_create();
+  if (gs->user_state_v3 == NULL) {
+    return NULL;
+  }
 
   return gs;
 }
@@ -158,21 +161,28 @@ API otrng_result otrng_global_state_generate_forging_key(
      generating a full keypair and then deleting the secret material
      A better way would be to just generate the public material directly */
   uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
-  otrng_keypair_s *k;
-  otrng_result r;
+  otrng_keypair_s *key_pair;
+  otrng_result res;
 
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
-  k = otrng_keypair_new();
-  otrng_keypair_generate(k, sym);
-  r = otrng_global_state_add_forging_key(gs, client_id, &k->pub);
+  key_pair = otrng_keypair_new();
+
+  if (!otrng_keypair_generate(key_pair, sym)) {
+    otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+    free(sym);
+    otrng_keypair_free(key_pair);
+    return OTRNG_ERROR;
+  }
+
+  res = otrng_global_state_add_forging_key(gs, client_id, &key_pair->pub);
 
   // At this point you can add printing of the secret key material
   // if you ever need to use the forging key.
-  otrng_keypair_free(k);
   otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
   free(sym);
+  otrng_keypair_free(key_pair);
 
-  return r;
+  return res;
 }
 
 API otrng_result otrng_global_state_generate_client_profile(
@@ -216,8 +226,10 @@ API otrng_result otrng_global_state_generate_prekey_profile(
   return err;
 }
 
-tstatic void add_private_key_v4_to(list_element_s *node, void *context) {
-  otrng_client_private_key_v4_write_to(node->data, context);
+static void add_private_key_v4_to(list_element_s *node, void *context) {
+  if (!otrng_client_private_key_v4_write_to(node->data, context)) {
+    return;
+  }
 }
 
 tstatic otrng_result global_state_write_to(const otrng_global_state_s *gs,
@@ -239,7 +251,9 @@ API otrng_result otrng_global_state_private_key_v4_write_to(
 }
 
 tstatic void add_forging_key_to(list_element_s *node, void *context) {
-  otrng_client_forging_key_write_to(node->data, context);
+  if (!otrng_client_forging_key_write_to(node->data, context)) {
+    return;
+  }
 }
 
 API otrng_result otrng_global_state_forging_key_write_to(
@@ -248,7 +262,9 @@ API otrng_result otrng_global_state_forging_key_write_to(
 }
 
 tstatic void add_client_profile_to(list_element_s *node, void *context) {
-  otrng_client_client_profile_write_to(node->data, context);
+  if (!otrng_client_client_profile_write_to(node->data, context)) {
+    return;
+  }
 }
 
 API otrng_result otrng_global_state_client_profile_write_to(
@@ -258,7 +274,9 @@ API otrng_result otrng_global_state_client_profile_write_to(
 
 tstatic void add_expired_client_profile_to(list_element_s *node,
                                            void *context) {
-  otrng_client_expired_client_profile_write_to(node->data, context);
+  if (!otrng_client_expired_client_profile_write_to(node->data, context)) {
+    return;
+  }
 }
 
 API otrng_result otrng_global_state_expired_client_profile_write_to(
@@ -268,7 +286,9 @@ API otrng_result otrng_global_state_expired_client_profile_write_to(
 
 tstatic void add_expired_prekey_profile_to(list_element_s *node,
                                            void *context) {
-  otrng_client_expired_prekey_profile_write_to(node->data, context);
+  if (!otrng_client_expired_prekey_profile_write_to(node->data, context)) {
+    return;
+  }
 }
 
 API otrng_result otrng_global_state_expired_prekey_profile_write_to(
@@ -277,7 +297,9 @@ API otrng_result otrng_global_state_expired_prekey_profile_write_to(
 }
 
 tstatic void add_prekey_profile_to(list_element_s *node, void *context) {
-  otrng_client_prekey_profile_write_to(node->data, context);
+  if (!otrng_client_prekey_profile_write_to(node->data, context)) {
+    return;
+  }
 }
 
 API otrng_result otrng_global_state_prekey_profile_write_to(
@@ -286,7 +308,9 @@ API otrng_result otrng_global_state_prekey_profile_write_to(
 }
 
 tstatic void add_prekey_messages_to(list_element_s *node, void *context) {
-  otrng_client_prekeys_write_to(node->data, context);
+  if (!otrng_client_prekeys_write_to(node->data, context)) {
+    return;
+  }
 }
 
 API otrng_result otrng_global_state_prekey_messages_write_to(
@@ -296,7 +320,7 @@ API otrng_result otrng_global_state_prekey_messages_write_to(
 
 API otrng_result otrng_global_state_instance_tags_read_from(
     otrng_global_state_s *gs, FILE *instag) {
-  // We use v3 global_state also for v4 instance tags, for now. */
+  /* We use v3 global_state also for v4 instance tags, for now. */
   gcry_error_t res = otrl_instag_read_FILEp(gs->user_state_v3, instag);
   if (res) {
     return OTRNG_ERROR;

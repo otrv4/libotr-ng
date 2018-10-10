@@ -34,7 +34,7 @@ static void test_prekey_message_serializes() {
   dh_keypair_s dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
-  otrng_ecdh_keypair_generate(&ecdh, sym);
+  otrng_assert_is_success(otrng_ecdh_keypair_generate(&ecdh, sym));
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
   prekey_message_s *prekey_msg = otrng_prekey_message_new();
@@ -93,7 +93,7 @@ static void test_otrng_prekey_message_deserializes() {
   dh_keypair_s dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_ecdh_keypair_generate(&ecdh, sym);
+  otrng_assert_is_success(otrng_ecdh_keypair_generate(&ecdh, sym));
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
   prekey_message_s *prekey_msg = otrng_prekey_message_new();
@@ -128,7 +128,7 @@ static void test_prekey_message_valid(dake_fixture_s *f, gconstpointer d) {
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
   (void)d;
-  otrng_ecdh_keypair_generate(&ecdh, sym);
+  otrng_assert_is_success(otrng_ecdh_keypair_generate(&ecdh, sym));
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
   prekey_message_s *prekey_msg = otrng_prekey_message_new();
@@ -168,12 +168,14 @@ setup_non_interactive_auth_message(dake_non_interactive_auth_message_s *msg,
   dh_keypair_s dh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
-  otrng_ecdh_keypair_generate(&ecdh, sym);
+  otrng_assert_is_success(otrng_ecdh_keypair_generate(&ecdh, sym));
   otrng_assert_is_success(otrng_dh_keypair_generate(&dh));
 
   msg->sender_instance_tag = 1;
   msg->receiver_instance_tag = 1;
-  otrng_client_profile_copy(msg->profile, f->profile);
+
+  otrng_assert_is_success(otrng_client_profile_copy(msg->profile, f->profile));
+
   otrng_ec_point_copy(msg->X, ecdh.pub);
   msg->A = otrng_dh_mpi_copy(dh.pub);
   memcpy(msg->auth_mac, mac_tag, HASH_BYTES);

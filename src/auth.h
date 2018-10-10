@@ -124,7 +124,7 @@ INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
  * @param [msg] The message to "verify".
  * @param [msg_len] The length of the message.
  */
-tstatic void otrng_rsig_calculate_c_with_usage_and_domain(
+tstatic otrng_result otrng_rsig_calculate_c_with_usage_and_domain(
     uint8_t usage_auth, const char *domain_sep, goldilocks_448_scalar_p dst,
     const goldilocks_448_point_p A1, const goldilocks_448_point_p A2,
     const goldilocks_448_point_p A3, const goldilocks_448_point_p T1,

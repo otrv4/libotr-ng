@@ -28,11 +28,12 @@
 static void test_prekey_profile_validates() {
   uint8_t sym[ED448_PRIVATE_BYTES] = {0xFA};
   otrng_keypair_s *long_term = otrng_keypair_new();
-  otrng_keypair_generate(long_term, sym);
+  otrng_assert_is_success(otrng_keypair_generate(long_term, sym));
 
   uint8_t sym_shared[ED448_PRIVATE_BYTES] = {0xFB};
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pair_generate(shared_prekey, sym_shared);
+  otrng_assert_is_success(
+      otrng_shared_prekey_pair_generate(shared_prekey, sym_shared));
 
   otrng_prekey_profile_s *profile =
       otrng_prekey_profile_build(OTRNG_MIN_VALID_INSTAG + 0x01, long_term);
@@ -65,10 +66,11 @@ static void test_prekey_profile_serialize() {
   uint32_t instance_tag = OTRNG_MIN_VALID_INSTAG + 0x01;
   otrng_keypair_s keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_generate(&keypair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(&keypair, sym));
 
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pair_generate(shared_prekey, sym);
+  otrng_assert_is_success(
+      otrng_shared_prekey_pair_generate(shared_prekey, sym));
 
   otrng_prekey_profile_s *profile =
       otrng_prekey_profile_build(instance_tag, &keypair);
@@ -112,10 +114,11 @@ static void test_prekey_profile_deserialize() {
   uint32_t instance_tag = OTRNG_MIN_VALID_INSTAG + 0x01;
   otrng_keypair_s keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_generate(&keypair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(&keypair, sym));
 
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
-  otrng_shared_prekey_pair_generate(shared_prekey, sym);
+  otrng_assert_is_success(
+      otrng_shared_prekey_pair_generate(shared_prekey, sym));
 
   otrng_prekey_profile_s *profile =
       otrng_prekey_profile_build(instance_tag, &keypair);

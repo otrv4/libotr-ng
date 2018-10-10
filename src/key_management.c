@@ -232,7 +232,12 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
      1. for the first generation: until the ratchet is initialized
      2. when receiving a new dh ratchet
   */
-  otrng_ecdh_keypair_generate(manager->our_ecdh, sym);
+  if (!otrng_ecdh_keypair_generate(manager->our_ecdh, sym)) {
+    otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+    free(sym);
+    return OTRNG_ERROR;
+  }
+
   otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
   free(sym);
 
@@ -253,52 +258,89 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   return OTRNG_SUCCESS;
 }
 
-INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
-                                                  k_ecdh ecdh_key,
-                                                  k_brace brace_key,
-                                                  k_ecdh tmp_ecdh_k1,
-                                                  k_ecdh tmp_ecdh_k2) {
+INTERNAL otrng_result otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
+                                                          k_ecdh ecdh_key,
+                                                          k_brace brace_key,
+                                                          k_ecdh tmp_ecdh_k1,
+                                                          k_ecdh tmp_ecdh_k2) {
   uint8_t usage_tmp_key = 0x0B;
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage_tmp_key);
-  hash_update(hd, ecdh_key, ED448_POINT_BYTES);
-  hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES);
-  hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES);
-  hash_update(hd, brace_key, BRACE_KEY_BYTES);
+
+  if (hash_update(hd, ecdh_key, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, tmp_ecdh_k1, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, tmp_ecdh_k2, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, brace_key, BRACE_KEY_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
 
   hash_final(hd, tmp_key, HASH_BYTES);
   hash_destroy(hd);
+
+  return OTRNG_SUCCESS;
 }
 
-INTERNAL void otrng_key_manager_calculate_auth_mac(uint8_t *auth_mac,
-                                                   const uint8_t *auth_mac_key,
-                                                   const uint8_t *t,
-                                                   size_t t_len) {
+INTERNAL otrng_result otrng_key_manager_calculate_auth_mac(
+    uint8_t *auth_mac, const uint8_t *auth_mac_key, const uint8_t *t,
+    size_t t_len) {
   uint8_t usage_auth_mac = 0x10;
 
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage_auth_mac);
-  hash_update(hd, auth_mac_key, HASH_BYTES);
-  hash_update(hd, t, t_len);
+
+  if (hash_update(hd, auth_mac_key, HASH_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, t, t_len) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
 
   hash_final(hd, auth_mac, HASH_BYTES);
   hash_destroy(hd);
+
+  return OTRNG_SUCCESS;
 }
 
-INTERNAL void otrng_key_manager_calculate_authenticator(
+INTERNAL otrng_result otrng_key_manager_calculate_authenticator(
     uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections) {
 
   uint8_t usage_authenticator = 0x1A;
 
   goldilocks_shake256_ctx_p hd;
   hash_init_with_usage(hd, usage_authenticator);
-  hash_update(hd, mac_key, MAC_KEY_BYTES);
-  hash_update(hd, sections, HASH_BYTES);
+
+  if (hash_update(hd, mac_key, MAC_KEY_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, sections, HASH_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
 
   hash_final(hd, authenticator, DATA_MSG_MAC_BYTES);
   hash_destroy(hd);
+
+  return OTRNG_SUCCESS;
 }
 
 /* Generate the ephemeral keys just as the DAKE is finished */
@@ -317,7 +359,12 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
     otrng_ec_point_destroy(manager->our_ecdh->pub);
     /* @secret this will be deleted once sent a new data message in a new
      * ratchet */
-    otrng_ecdh_keypair_generate(manager->our_ecdh, random_buffer);
+    if (!otrng_ecdh_keypair_generate(manager->our_ecdh, random_buffer)) {
+      otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
+      free(random_buffer);
+      return OTRNG_ERROR;
+    }
+
     otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
     free(random_buffer);
 
@@ -339,7 +386,13 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
     otrng_ec_point_destroy(manager->their_ecdh);
     /* @secret this will be deleted once received a new data message in a new
      * ratchet */
-    otrng_ecdh_keypair_generate_their(manager->their_ecdh, random_buffer);
+    if (!otrng_ecdh_keypair_generate_their(manager->their_ecdh,
+                                           random_buffer)) {
+      otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
+      free(random_buffer);
+      return OTRNG_ERROR;
+    }
+
     otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
     free(random_buffer);
 
@@ -401,23 +454,37 @@ tstatic otrng_result calculate_brace_key(
 
 static uint8_t usage_shared_secret = 0x03;
 
-tstatic void calculate_shared_secret(key_manager_s *manager,
-                                     receiving_ratchet_s *tmp_receiving_ratchet,
-                                     k_ecdh ecdh_key, const char action) {
+tstatic otrng_result calculate_shared_secret(
+    key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
+    k_ecdh ecdh_key, const char action) {
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage_shared_secret);
-  hash_update(hd, ecdh_key, ED448_POINT_BYTES);
+
+  if (hash_update(hd, ecdh_key, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
 
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    hash_update(hd, manager->brace_key, BRACE_KEY_BYTES);
+    if (hash_update(hd, manager->brace_key, BRACE_KEY_BYTES) ==
+        GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      return OTRNG_ERROR;
+    }
+
     hash_final(hd, manager->shared_secret, SHARED_SECRET_BYTES);
     hash_destroy(hd);
 
     otrng_secure_wipe(manager->brace_key, BRACE_KEY_BYTES);
   } else if (action == 'r') {
-    hash_update(hd, tmp_receiving_ratchet->brace_key, BRACE_KEY_BYTES);
+    if (hash_update(hd, tmp_receiving_ratchet->brace_key, BRACE_KEY_BYTES) ==
+        GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      return OTRNG_ERROR;
+    }
+
     hash_final(hd, tmp_receiving_ratchet->shared_secret, SHARED_SECRET_BYTES);
     hash_destroy(hd);
 
@@ -425,6 +492,7 @@ tstatic void calculate_shared_secret(key_manager_s *manager,
   }
 
   otrng_secure_wipe(ecdh_key, ED448_POINT_BYTES);
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
@@ -447,7 +515,9 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
 
     otrng_dh_priv_key_destroy(manager->our_dh);
 
-    calculate_shared_secret(manager, NULL, ecdh_key, 's');
+    if (!calculate_shared_secret(manager, NULL, ecdh_key, 's')) {
+      return OTRNG_ERROR;
+    }
 
   } else if (!interactive) {
     shake_256_kdf1(manager->shared_secret, SHARED_SECRET_BYTES,
@@ -548,7 +618,10 @@ tstatic otrng_result enter_new_ratchet(
   }
 
   /* K = KDF_1(usage_shared_secret || K_ecdh || brace_key, 64) */
-  calculate_shared_secret(manager, tmp_receiving_ratchet, ecdh_key, action);
+  if (!calculate_shared_secret(manager, tmp_receiving_ratchet, ecdh_key,
+                               action)) {
+    return OTRNG_ERROR;
+  }
 
 #ifdef DEBUG
   debug_print("\n");
@@ -561,7 +634,10 @@ tstatic otrng_result enter_new_ratchet(
   otrng_memdump(manager->shared_secret, SHARED_SECRET_BYTES);
 #endif
 
-  key_manager_derive_ratchet_keys(manager, tmp_receiving_ratchet, action);
+  if (!key_manager_derive_ratchet_keys(manager, tmp_receiving_ratchet,
+                                       action)) {
+    return OTRNG_ERROR;
+  }
 
   return OTRNG_SUCCESS;
 }
@@ -606,10 +682,9 @@ tstatic otrng_result rotate_keys(key_manager_s *manager,
   return OTRNG_SUCCESS;
 }
 
-tstatic void
-key_manager_derive_ratchet_keys(key_manager_s *manager,
-                                receiving_ratchet_s *tmp_receiving_ratchet,
-                                const char action) {
+tstatic otrng_result key_manager_derive_ratchet_keys(
+    key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
+    const char action) {
   /* root_key[i], chain_key_s[i][j] = derive_ratchet_keys(sending,
      root_key[i-1], K) root_key[i] = KDF_1(usage_root_key || root_key[i-1] || K,
      64)
@@ -627,28 +702,66 @@ key_manager_derive_ratchet_keys(key_manager_s *manager,
   */
   if (action == 's') {
     hash_init_with_usage(hd, usage_root_key);
-    hash_update(hd, manager->current->root_key, ROOT_KEY_BYTES);
-    hash_update(hd, manager->shared_secret, SHARED_SECRET_BYTES);
+    if (hash_update(hd, manager->current->root_key, ROOT_KEY_BYTES) ==
+        GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      return OTRNG_ERROR;
+    }
+
+    if (hash_update(hd, manager->shared_secret, SHARED_SECRET_BYTES) ==
+        GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      return OTRNG_ERROR;
+    }
+
     hash_final(hd, manager->current->root_key, ROOT_KEY_BYTES);
     hash_destroy(hd);
 
     hash_init_with_usage(hd, usage_chain_key);
-    hash_update(hd, manager->current->root_key, ROOT_KEY_BYTES);
-    hash_update(hd, manager->shared_secret, SHARED_SECRET_BYTES);
+    if (hash_update(hd, manager->current->root_key, ROOT_KEY_BYTES) ==
+        GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      return OTRNG_ERROR;
+    }
+
+    if (hash_update(hd, manager->shared_secret, SHARED_SECRET_BYTES) ==
+        GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      return OTRNG_ERROR;
+    }
 
     hash_final(hd, manager->current->chain_s, CHAIN_KEY_BYTES);
 
     otrng_secure_wipe(manager->shared_secret, SHARED_SECRET_BYTES);
   } else if (action == 'r') {
     hash_init_with_usage(hd, usage_root_key);
-    hash_update(hd, tmp_receiving_ratchet->root_key, ROOT_KEY_BYTES);
-    hash_update(hd, tmp_receiving_ratchet->shared_secret, SHARED_SECRET_BYTES);
+    if (hash_update(hd, tmp_receiving_ratchet->root_key, ROOT_KEY_BYTES) ==
+        GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      return OTRNG_ERROR;
+    }
+
+    if (hash_update(hd, tmp_receiving_ratchet->shared_secret,
+                    SHARED_SECRET_BYTES) == GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      return OTRNG_ERROR;
+    }
+
     hash_final(hd, tmp_receiving_ratchet->root_key, ROOT_KEY_BYTES);
     hash_destroy(hd);
 
     hash_init_with_usage(hd, usage_chain_key);
-    hash_update(hd, tmp_receiving_ratchet->root_key, ROOT_KEY_BYTES);
-    hash_update(hd, tmp_receiving_ratchet->shared_secret, SHARED_SECRET_BYTES);
+    if (hash_update(hd, tmp_receiving_ratchet->root_key, ROOT_KEY_BYTES) ==
+        GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      return OTRNG_ERROR;
+    }
+
+    if (hash_update(hd, tmp_receiving_ratchet->shared_secret,
+                    SHARED_SECRET_BYTES) == GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      return OTRNG_ERROR;
+    }
 
     hash_final(hd, tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES);
 
@@ -667,6 +780,8 @@ key_manager_derive_ratchet_keys(key_manager_s *manager,
   /* debug_print("CHAIN_R = "); */
   /* otrng_memdump(ratchet->chain_r, CHAIN_KEY_BYTES); */
 #endif
+
+  return OTRNG_SUCCESS;
 }
 
 static uint8_t usage_next_chain_key = 0x15;
@@ -710,21 +825,32 @@ tstatic void derive_encryption_and_mac_keys(
   shake_256_kdf1(mac_key, MAC_KEY_BYTES, usage_mac_key, enc_key, ENC_KEY_BYTES);
 }
 
-tstatic void calculate_extra_key(key_manager_s *manager,
-                                 receiving_ratchet_s *tmp_receiving_ratchet,
-                                 const char action) {
+tstatic otrng_result calculate_extra_key(
+    key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
+    const char action) {
   goldilocks_shake256_ctx_p hd;
   uint8_t *extra_key_buffer = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
   uint8_t magic[1] = {0xFF};
 
   hash_init_with_usage(hd, usage_extra_symm_key);
-  hash_update(hd, magic, 1);
+  if (hash_update(hd, magic, 1) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    otrng_secure_wipe(extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
+    free(extra_key_buffer);
+    return OTRNG_ERROR;
+  }
 
   /* extra_symm_key = KDF_1(usage_extra_symm_key || 0xFF || chain_key_s[i-1][j],
    * 32) */
   assert(action == 's' || action == 'r');
   if (action == 's') {
-    hash_update(hd, manager->current->chain_s, CHAIN_KEY_BYTES);
+    if (hash_update(hd, manager->current->chain_s, CHAIN_KEY_BYTES) ==
+        GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      otrng_secure_wipe(extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
+      free(extra_key_buffer);
+      return OTRNG_ERROR;
+    }
 
     hash_final(hd, extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
     hash_destroy(hd);
@@ -732,7 +858,13 @@ tstatic void calculate_extra_key(key_manager_s *manager,
     memcpy(manager->extra_symmetric_key, extra_key_buffer,
            EXTRA_SYMMETRIC_KEY_BYTES);
   } else if (action == 'r') {
-    hash_update(hd, tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES);
+    if (hash_update(hd, tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES) ==
+        GOLDILOCKS_FAILURE) {
+      hash_destroy(hd);
+      otrng_secure_wipe(extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
+      free(extra_key_buffer);
+      return OTRNG_ERROR;
+    }
 
     hash_final(hd, extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
     hash_destroy(hd);
@@ -749,6 +881,8 @@ tstatic void calculate_extra_key(key_manager_s *manager,
   debug_print("EXTRA KEY = ");
   otrng_memdump(manager->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 #endif
+
+  return OTRNG_SUCCESS;
 }
 
 // tstatic void delete_stored_enc_keys(key_manager_s *manager) {
@@ -786,9 +920,18 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
                      tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES);
 
       hash_init_with_usage(hd, usage_extra_symm_key);
-      hash_update(hd, magic, 1);
 
-      hash_update(hd, tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES);
+      if (hash_update(hd, magic, 1) == GOLDILOCKS_FAILURE) {
+        hash_destroy(hd);
+        return OTRNG_ERROR;
+      }
+
+      if (hash_update(hd, tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES) ==
+          GOLDILOCKS_FAILURE) {
+        hash_destroy(hd);
+        return OTRNG_ERROR;
+      }
+
       hash_final(hd, extra_key, EXTRA_SYMMETRIC_KEY_BYTES);
       hash_destroy(hd);
 
@@ -882,7 +1025,10 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
    */
   derive_encryption_and_mac_keys(enc_key, mac_key, manager,
                                  tmp_receiving_ratchet, action);
-  calculate_extra_key(manager, tmp_receiving_ratchet, action);
+  if (!calculate_extra_key(manager, tmp_receiving_ratchet, action)) {
+    return OTRNG_ERROR;
+  }
+
   /* @secret should be deleted when the new chain key is derived */
   derive_next_chain_key(manager, tmp_receiving_ratchet, action);
 

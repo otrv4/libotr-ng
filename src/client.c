@@ -751,7 +751,10 @@ INTERNAL otrng_result otrng_client_add_private_key_v4(
     return OTRNG_ERROR;
   }
 
-  otrng_keypair_generate(client->keypair, sym);
+  if (!otrng_keypair_generate(client->keypair, sym)) {
+    return OTRNG_ERROR;
+  }
+
   return OTRNG_SUCCESS;
 }
 
@@ -809,7 +812,9 @@ API otrng_result otrng_client_add_client_profile(
 
   client->client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
-  otrng_client_profile_copy(client->client_profile, profile);
+  if (!otrng_client_profile_copy(client->client_profile, profile)) {
+    return OTRNG_ERROR;
+  }
 
   return OTRNG_SUCCESS;
 }
@@ -831,7 +836,9 @@ API otrng_result otrng_client_add_exp_client_profile(
 
   client->exp_client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
-  otrng_client_profile_copy(client->exp_client_profile, exp_profile);
+  if (otrng_client_profile_copy(client->exp_client_profile, exp_profile)) {
+    return OTRNG_ERROR;
+  }
 
   return OTRNG_SUCCESS;
 }

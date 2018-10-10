@@ -73,11 +73,31 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
   goldilocks_shake256_ctx_p hd;
 
   hash_init_with_usage(hd, usage_smp_secret);
-  hash_update(hd, version, 1);
-  hash_update(hd, our_fp, FPRINT_LEN_BYTES);
-  hash_update(hd, their_fp, FPRINT_LEN_BYTES);
-  hash_update(hd, ssid, SSID_BYTES);
-  hash_update(hd, answer, answer_len);
+
+  if (hash_update(hd, version, 1) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, our_fp, FPRINT_LEN_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, their_fp, FPRINT_LEN_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, ssid, SSID_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, answer, answer_len) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
 
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
@@ -97,7 +117,12 @@ tstatic otrng_result hash_to_scalar(ec_scalar dst, uint8_t *ser_p,
   uint8_t *hash = otrng_secure_alloc(HASH_BYTES);
 
   hash_init_with_usage(hd, usage_smp);
-  hash_update(hd, ser_p, ser_p_len);
+
+  if (hash_update(hd, ser_p, ser_p_len) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
@@ -425,8 +450,17 @@ tstatic otrng_result generate_smp_message_2(smp_message_2_s *dst,
   }
 
   hash_init(hd_2);
-  hash_update(hd_2, ser_point_3, ED448_POINT_BYTES);
-  hash_update(hd_2, ser_point_4, ED448_POINT_BYTES);
+
+  if (hash_update(hd_2, ser_point_3, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd_2);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd_2, ser_point_4, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd_2);
+    return OTRNG_ERROR;
+  }
+
   hash_final(hd_2, hash, HASH_BYTES);
   hash_destroy(hd_2);
 
@@ -641,8 +675,17 @@ tstatic otrng_bool smp_message_2_valid_zkp(smp_message_2_s *msg,
   }
 
   hash_init(hd);
-  hash_update(hd, ser_point_3, ED448_POINT_BYTES);
-  hash_update(hd, ser_point_4, ED448_POINT_BYTES);
+
+  if (hash_update(hd, ser_point_3, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return otrng_false;
+  }
+
+  if (hash_update(hd, ser_point_4, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return otrng_false;
+  }
+
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
@@ -705,7 +748,6 @@ tstatic otrng_result generate_smp_message_3(smp_message_3_s *dst,
   goldilocks_448_point_sub(smp->pa_pb, dst->pa, msg_2->pb);
 
   /* Qa = G * r4 + G2 * (x mod q)) */
-
   if (!otrng_deserialize_ec_scalar(secret_as_scalar, smp->secret, HASH_BYTES)) {
     return OTRNG_ERROR;
   }
@@ -728,8 +770,17 @@ tstatic otrng_result generate_smp_message_3(smp_message_3_s *dst,
   }
 
   hash_init(hd_2);
-  hash_update(hd_2, ser_point_1, ED448_POINT_BYTES);
-  hash_update(hd_2, ser_point_2, ED448_POINT_BYTES);
+
+  if (hash_update(hd_2, ser_point_1, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd_2);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd_2, ser_point_2, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd_2);
+    return OTRNG_ERROR;
+  }
+
   hash_final(hd_2, hash_1, HASH_BYTES);
   hash_destroy(hd_2);
 
@@ -763,8 +814,17 @@ tstatic otrng_result generate_smp_message_3(smp_message_3_s *dst,
   }
 
   hash_init(hd_3);
-  hash_update(hd_3, ser_point_3, ED448_POINT_BYTES);
-  hash_update(hd_3, ser_point_4, ED448_POINT_BYTES);
+
+  if (hash_update(hd_3, ser_point_3, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd_3);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd_3, ser_point_4, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd_3);
+    return OTRNG_ERROR;
+  }
+
   hash_final(hd_3, hash_2, HASH_BYTES);
   hash_destroy(hd_3);
 
@@ -912,8 +972,17 @@ tstatic otrng_bool smp_message_3_validate_zkp(smp_message_3_s *msg,
   }
 
   hash_init(hd_1);
-  hash_update(hd_1, ser_point_1, ED448_POINT_BYTES);
-  hash_update(hd_1, ser_point_2, ED448_POINT_BYTES);
+
+  if (hash_update(hd_1, ser_point_1, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd_1);
+    return otrng_false;
+  }
+
+  if (hash_update(hd_1, ser_point_2, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd_1);
+    return otrng_false;
+  }
+
   hash_final(hd_1, hash_1, HASH_BYTES);
   hash_destroy(hd_1);
 
@@ -948,8 +1017,17 @@ tstatic otrng_bool smp_message_3_validate_zkp(smp_message_3_s *msg,
   }
 
   hash_init(hd_2);
-  hash_update(hd_2, ser_point_3, ED448_POINT_BYTES);
-  hash_update(hd_2, ser_point_4, ED448_POINT_BYTES);
+
+  if (hash_update(hd_2, ser_point_3, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd_2);
+    return otrng_false;
+  }
+
+  if (hash_update(hd_2, ser_point_4, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd_2);
+    return otrng_false;
+  }
+
   hash_final(hd_2, hash_2, HASH_BYTES);
   hash_destroy(hd_2);
 
@@ -1007,8 +1085,17 @@ tstatic otrng_result generate_smp_message_4(smp_message_4_s *dst,
   }
 
   hash_init(hd);
-  hash_update(hd, ser_point_1, ED448_POINT_BYTES);
-  hash_update(hd, ser_point_2, ED448_POINT_BYTES);
+
+  if (hash_update(hd, ser_point_1, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, ser_point_2, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
@@ -1101,8 +1188,17 @@ tstatic otrng_bool smp_message_4_validate_zkp(smp_message_4_s *msg,
   }
 
   hash_init(hd);
-  hash_update(hd, ser_point_1, ED448_POINT_BYTES);
-  hash_update(hd, ser_point_2, ED448_POINT_BYTES);
+
+  if (hash_update(hd, ser_point_1, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return otrng_false;
+  }
+
+  if (hash_update(hd, ser_point_2, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return otrng_false;
+  }
+
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 

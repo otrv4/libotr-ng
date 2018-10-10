@@ -258,6 +258,7 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
 
 API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
                                             const string_p msg, otrng_s *otr) {
+  char *res;
   int allows_v4 = allow_version(otr, OTRNG_ALLOW_V4);
   int allows_v3 = allow_version(otr, OTRNG_ALLOW_V3);
   string_p cursor = NULL;
@@ -276,7 +277,13 @@ API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
     cursor = otrng_stpcpy(cursor, tag_version_v3);
   }
 
-  otrng_stpcpy(cursor, msg);
+  res = otrng_stpcpy(cursor, msg);
+  if (!res) {
+    if (otr->sending_init_message) {
+      free(otr->sending_init_message);
+    }
+    return OTRNG_ERROR;
+  }
 
   if (otr->sending_init_message) {
     free(otr->sending_init_message);
@@ -681,12 +688,16 @@ tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
   msg.sender_instance_tag = our_instance_tag(otr);
   msg.receiver_instance_tag = otr->their_instance_tag;
 
-  otrng_client_profile_copy(msg.profile, get_my_client_profile(otr));
+  if (!otrng_client_profile_copy(msg.profile, get_my_client_profile(otr))) {
+    otrng_dake_auth_r_destroy(&msg);
+    return OTRNG_ERROR;
+  }
 
   otrng_ec_point_copy(msg.X, our_ecdh(otr));
   msg.A = otrng_dh_mpi_copy(our_dh(otr));
 
   if (!generate_sending_rsig_tag(&t, &t_len, 'r', otr)) {
+    otrng_dake_auth_r_destroy(&msg);
     return OTRNG_ERROR;
   }
 
@@ -756,8 +767,10 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otrng_key_manager_calculate_tmp_key(dst, ecdh_key, brace_key, tmp_ecdh_k1,
-                                      tmp_ecdh_k2);
+  if (!otrng_key_manager_calculate_tmp_key(dst, ecdh_key, brace_key,
+                                           tmp_ecdh_k1, tmp_ecdh_k2)) {
+    return OTRNG_ERROR;
+  }
 
   otrng_secure_wipe(brace_key, BRACE_KEY_BYTES);
 
@@ -789,18 +802,21 @@ tstatic otrng_result serialize_and_encode_non_interactive_auth(
   return OTRNG_SUCCESS;
 }
 
-tstatic void
-non_interactive_auth_message_init(dake_non_interactive_auth_message_s *auth,
-                                  otrng_s *otr) {
+tstatic otrng_bool non_interactive_auth_message_init(
+    dake_non_interactive_auth_message_s *auth, otrng_s *otr) {
   auth->sender_instance_tag = our_instance_tag(otr);
   auth->receiver_instance_tag = otr->their_instance_tag;
-  otrng_client_profile_copy(auth->profile, get_my_client_profile(otr));
+  if (!otrng_client_profile_copy(auth->profile, get_my_client_profile(otr))) {
+    return otrng_false;
+  }
 
   // TODO: is this set?
   otrng_ec_point_copy(auth->X, our_ecdh(otr));
   auth->A = otrng_dh_mpi_copy(our_dh(otr));
 
   auth->prekey_message_id = 0;
+
+  return otrng_true;
 }
 
 tstatic otrng_result build_non_interactive_auth_message(
@@ -829,7 +845,10 @@ tstatic otrng_result build_non_interactive_auth_message(
       .dh = our_dh(otr),
   };
 
-  non_interactive_auth_message_init(auth, otr);
+  if (!non_interactive_auth_message_init(auth, otr)) {
+    return OTRNG_ERROR;
+  }
+
   auth->prekey_message_id = otr->their_prekeys_id;
   otr->their_prekeys_id = 0;
 
@@ -924,8 +943,11 @@ INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
 
   prekey_ensemble_s *ensemble = otrng_prekey_ensemble_new();
 
-  otrng_client_profile_copy(ensemble->client_profile,
-                            get_my_client_profile(otr));
+  if (!otrng_client_profile_copy(ensemble->client_profile,
+                                 get_my_client_profile(otr))) {
+    otrng_prekey_ensemble_free(ensemble);
+    return NULL;
+  }
 
   otrng_prekey_profile_copy(ensemble->prekey_profile,
                             get_my_prekey_profile(otr));
@@ -962,7 +984,9 @@ set_their_client_profile(const otrng_client_profile_s *profile, otrng_s *otr) {
 
   otr->their_client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
-  otrng_client_profile_copy(otr->their_client_profile, profile);
+  if (!otrng_client_profile_copy(otr->their_client_profile, profile)) {
+    return OTRNG_ERROR;
+  }
 
   return OTRNG_SUCCESS;
 }
@@ -1153,8 +1177,10 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  otrng_key_manager_calculate_tmp_key(dst, ecdh_key, brace_key, tmp_ecdh_k1,
-                                      tmp_ecdh_k2);
+  if (!otrng_key_manager_calculate_tmp_key(dst, ecdh_key, brace_key,
+                                           tmp_ecdh_k1, tmp_ecdh_k2)) {
+    return OTRNG_ERROR;
+  }
 
   otrng_secure_wipe(brace_key, BRACE_KEY_BYTES);
 
@@ -1350,7 +1376,9 @@ tstatic otrng_result non_interactive_auth_message_received(
   // TODO: @client_profile Extract function to set_their_client_profile
   otr->their_client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
-  otrng_client_profile_copy(otr->their_client_profile, auth->profile);
+  if (!otrng_client_profile_copy(otr->their_client_profile, auth->profile)) {
+    return OTRNG_ERROR;
+  }
 
   /* tmp_k = KDF_1(usage_tmp_key || K_ecdh ||
    * ECDH(x, our_shared_prekey.secret, their_ecdh) ||
@@ -1411,7 +1439,11 @@ tstatic otrng_result receive_identity_message_on_state_start(
 
   otrng_key_manager_set_their_ecdh(identity_msg->Y, otr->keys);
   otrng_key_manager_set_their_dh(identity_msg->B, otr->keys);
-  otrng_client_profile_copy(otr->their_client_profile, identity_msg->profile);
+
+  if (!otrng_client_profile_copy(otr->their_client_profile,
+                                 identity_msg->profile)) {
+    return OTRNG_ERROR;
+  }
 
   /* @secret the priv parts will be deleted once the mixed shared secret is
    * derived */
@@ -1430,6 +1462,7 @@ tstatic otrng_result receive_identity_message_on_state_start(
   }
 
   otr->state = OTRNG_STATE_WAITING_AUTH_I;
+
   return OTRNG_SUCCESS;
 }
 
@@ -1652,7 +1685,11 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buffer,
 
   otrng_key_manager_set_their_ecdh(auth.X, otr->keys);
   otrng_key_manager_set_their_dh(auth.A, otr->keys);
-  otrng_client_profile_copy(otr->their_client_profile, auth.profile);
+
+  if (!otrng_client_profile_copy(otr->their_client_profile, auth.profile)) {
+    otrng_dake_auth_r_destroy(&auth);
+    return OTRNG_ERROR;
+  }
 
   if (!reply_with_auth_i_message(dst, otr->their_client_profile, otr)) {
     otrng_dake_auth_r_destroy(&auth);
@@ -2427,12 +2464,8 @@ API otrng_result otrng_send_symkey_message(string_p *to_send, unsigned int use,
 
   switch (otr->running_version) {
   case OTRNG_PROTOCOL_VERSION_3:
-    otrng_v3_send_symkey_message(to_send, otr->v3_conn, use, use_data,
-                                 use_data_len,
-                                 extra_key); // TODO: @client This should return
-                                             // an error but errors are reported
-                                             // on a callback
-    return OTRNG_SUCCESS;
+    return otrng_v3_send_symkey_message(to_send, otr->v3_conn, use, use_data,
+                                        use_data_len, extra_key);
   case OTRNG_PROTOCOL_VERSION_4:
     return otrng_send_symkey_message_v4(to_send, use, use_data, use_data_len,
                                         otr, extra_key);

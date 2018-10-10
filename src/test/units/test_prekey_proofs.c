@@ -36,10 +36,10 @@ static void test_ecdh_proof_generation_and_validation(void) {
   uint8_t m2[HASH_BYTES] = {0x03, 0x02, 0x01};
   ecdh_proof_s res;
 
-  otrng_keypair_generate(&v1, sym1);
-  otrng_keypair_generate(&v2, sym2);
-  otrng_keypair_generate(&v3, sym3);
-  otrng_keypair_generate(&v4, sym4);
+  otrng_assert_is_success(otrng_keypair_generate(&v1, sym1));
+  otrng_assert_is_success(otrng_keypair_generate(&v2, sym2));
+  otrng_assert_is_success(otrng_keypair_generate(&v3, sym3));
+  otrng_assert_is_success(otrng_keypair_generate(&v4, sym4));
 
   goldilocks_448_scalar_copy(privs[0], v1.priv);
   goldilocks_448_scalar_copy(privs[1], v2.priv);
@@ -186,7 +186,7 @@ static void test_ecdh_proof_serialization(void) {
 
   memset(px.c, 0, HASH_BYTES);
 
-  otrng_keypair_generate(&v1, sym1);
+  otrng_assert_is_success(otrng_keypair_generate(&v1, sym1));
   goldilocks_448_scalar_copy(px.v, v1.priv);
   px.c[0] = 0x42;
   px.c[63] = 0x53;
@@ -257,7 +257,7 @@ static void test_ecdh_proof_deserialization(void) {
   ecdh_proof_s px;
   size_t read;
 
-  otrng_keypair_generate(&v1, sym1);
+  otrng_assert_is_success(otrng_keypair_generate(&v1, sym1));
 
   otrng_assert_is_success(otrng_ecdh_proof_deserialize(
       &px, data, HASH_BYTES + ED448_SCALAR_BYTES + 2, &read));

@@ -40,7 +40,7 @@ static void test_client_profile_create() {
 static void test_client_profile_serializes_body() {
   otrng_keypair_s keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_generate(&keypair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(&keypair, sym));
 
   otrng_client_profile_s *profile = client_profile_new("4");
   profile->sender_instance_tag = 4;
@@ -96,7 +96,7 @@ static void test_client_profile_serializes_body() {
 static void test_client_profile_serializes() {
   otrng_keypair_s keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_generate(&keypair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(&keypair, sym));
 
   otrng_client_profile_s *profile = client_profile_new("4");
 
@@ -135,7 +135,7 @@ static void test_client_profile_serializes() {
 static void test_otrng_client_profile_deserializes() {
   otrng_keypair_s keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_generate(&keypair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(&keypair, sym));
 
   otrng_client_profile_s *profile = client_profile_new("4");
   otrng_assert(profile != NULL);
@@ -166,7 +166,7 @@ static void test_otrng_client_profile_deserializes() {
 static void test_client_profile_signs_and_verify() {
   otrng_keypair_s keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_generate(&keypair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(&keypair, sym));
 
   otrng_client_profile_s *profile = client_profile_new("4");
 
@@ -190,11 +190,11 @@ static void test_client_profile_signs_and_verify() {
 static void test_otrng_client_profile_build() {
   otrng_keypair_s keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_generate(&keypair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(&keypair, sym));
 
   otrng_keypair_s keypair2;
   uint8_t sym2[ED448_PRIVATE_BYTES] = {2};
-  otrng_keypair_generate(&keypair2, sym2);
+  otrng_assert_is_success(otrng_keypair_generate(&keypair2, sym2));
 
   uint64_t expiration = 1000;
 
@@ -227,11 +227,11 @@ static void test_otrng_client_profile_transitional_signature(void) {
 
   otrng_keypair_s keypair;
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_keypair_generate(&keypair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(&keypair, sym));
 
   otrng_keypair_s keypair2;
   uint8_t sym2[ED448_PRIVATE_BYTES] = {2};
-  otrng_keypair_generate(&keypair2, sym2);
+  otrng_assert_is_success(otrng_keypair_generate(&keypair2, sym2));
 
   otrng_client_profile_s *profile = otrng_client_profile_build(
       OTRNG_MIN_VALID_INSTAG + 1234, "43", &keypair, keypair2.pub,

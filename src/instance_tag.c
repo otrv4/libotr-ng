@@ -37,12 +37,14 @@ API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
                                 FILE *filename) {
   OtrlInsTag *tmp_instag;
   OtrlUserState us = otrl_userstate_create();
+  gcry_error_t err;
 
   if (us == NULL) { // TODO: unsure about this check
     return otrng_false;
   }
 
-  if (otrl_instag_read_FILEp(us, filename)) {
+  err = otrl_instag_read_FILEp(us, filename);
+  if (err) {
     otrl_userstate_free(us);
     return otrng_false;
   }

@@ -198,7 +198,10 @@ INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key pub,
     return OTRNG_ERROR;
   }
 
-  otrng_deserialize_uint16(&pubkey_type, cursor, ser_len, &r);
+  if (otrng_deserialize_uint16(&pubkey_type, cursor, ser_len, &r) == 0) {
+    return OTRNG_ERROR;
+  }
+
   cursor += r;
   ser_len -= r;
 
@@ -229,7 +232,10 @@ INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key pub,
     return OTRNG_ERROR;
   }
 
-  otrng_deserialize_uint16(&pubkey_type, cursor, ser_len, &r);
+  if (otrng_deserialize_uint16(&pubkey_type, cursor, ser_len, &r) == 0) {
+    return OTRNG_ERROR;
+  }
+
   cursor += r;
   ser_len -= r;
 
@@ -259,7 +265,10 @@ INTERNAL otrng_result otrng_deserialize_shared_prekey(
     return OTRNG_ERROR;
   }
 
-  otrng_deserialize_uint16(&shared_prekey_type, cursor, ser_len, &r);
+  if (otrng_deserialize_uint16(&shared_prekey_type, cursor, ser_len, &r) == 0) {
+    return OTRNG_ERROR;
+  }
+
   cursor += r;
   ser_len -= r;
 
@@ -355,7 +364,12 @@ INTERNAL otrng_result otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
   written = otrl_base64_decode(dec, buffer, buff_len);
 
   if (written == ED448_PRIVATE_BYTES) {
-    otrng_keypair_generate(pair, dec);
+    if (!otrng_keypair_generate(pair, dec)) {
+      otrng_secure_wipe(dec, ((buff_len + 3) / 4) * 3);
+      free(dec);
+      return OTRNG_ERROR;
+    }
+
     otrng_secure_wipe(dec, ((buff_len + 3) / 4) * 3);
     free(dec);
     return OTRNG_SUCCESS;
@@ -375,7 +389,12 @@ INTERNAL otrng_result otrng_symmetric_shared_prekey_deserialize(
   written = otrl_base64_decode(dec, buffer, buff_len);
 
   if (written == ED448_PRIVATE_BYTES) {
-    otrng_shared_prekey_pair_generate(pair, dec);
+    if (!otrng_shared_prekey_pair_generate(pair, dec)) {
+      otrng_secure_wipe(dec, ((buff_len + 3) / 4) * 3);
+      free(dec);
+      return OTRNG_ERROR;
+    }
+
     otrng_secure_wipe(dec, ((buff_len + 3) / 4) * 3);
     free(dec);
     return OTRNG_SUCCESS;

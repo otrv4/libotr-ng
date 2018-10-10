@@ -33,7 +33,7 @@ static void test_derive_ratchet_keys() {
   k_root root_key;
   memset(root_key, 0, sizeof(k_root));
 
-  key_manager_derive_ratchet_keys(manager, NULL, 's');
+  otrng_assert_is_success(key_manager_derive_ratchet_keys(manager, NULL, 's'));
 
   k_root expected_root_key;
   k_sending_chain expected_chain_key_s;

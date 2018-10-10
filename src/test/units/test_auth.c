@@ -41,18 +41,18 @@ static void test_rsig_calculate_c() {
           sym3[ED448_PRIVATE_BYTES] = {3}, sym4[ED448_PRIVATE_BYTES] = {4},
           sym5[ED448_PRIVATE_BYTES] = {5}, sym6[ED448_PRIVATE_BYTES] = {6};
 
-  otrng_keypair_generate(&a1, sym1);
-  otrng_keypair_generate(&a2, sym2);
-  otrng_keypair_generate(&a3, sym3);
-  otrng_keypair_generate(&t1, sym4);
-  otrng_keypair_generate(&t2, sym5);
-  otrng_keypair_generate(&t3, sym6);
+  otrng_assert_is_success(otrng_keypair_generate(&a1, sym1));
+  otrng_assert_is_success(otrng_keypair_generate(&a2, sym2));
+  otrng_assert_is_success(otrng_keypair_generate(&a3, sym3));
+  otrng_assert_is_success(otrng_keypair_generate(&t1, sym4));
+  otrng_assert_is_success(otrng_keypair_generate(&t2, sym5));
+  otrng_assert_is_success(otrng_keypair_generate(&t3, sym6));
 
   goldilocks_448_scalar_p c;
-  otrng_rsig_calculate_c_with_usage_and_domain(
+  otrng_assert_is_success(otrng_rsig_calculate_c_with_usage_and_domain(
       OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, c, a1.pub,
       a2.pub, a3.pub, t1.pub, t2.pub, t3.pub, (const uint8_t *)msg,
-      strlen(msg));
+      strlen(msg)));
 
   uint8_t ser_c[ED448_SCALAR_BYTES] = {0};
   goldilocks_448_scalar_encode(ser_c, c);
@@ -70,9 +70,9 @@ static void test_rsig_auth() {
   random_bytes(sym2, ED448_PRIVATE_BYTES);
   random_bytes(sym3, ED448_PRIVATE_BYTES);
 
-  otrng_keypair_generate(&p1, sym1);
-  otrng_keypair_generate(&p2, sym2);
-  otrng_keypair_generate(&p3, sym3);
+  otrng_assert_is_success(otrng_keypair_generate(&p1, sym1));
+  otrng_assert_is_success(otrng_keypair_generate(&p2, sym2));
+  otrng_assert_is_success(otrng_keypair_generate(&p3, sym3));
 
   ring_sig_s dst;
   otrng_assert_is_error(

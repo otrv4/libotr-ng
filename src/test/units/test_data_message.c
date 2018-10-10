@@ -31,7 +31,7 @@ static data_message_s *set_up_data_message() {
   ecdh_keypair_s ecdh;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {1};
-  otrng_ecdh_keypair_generate(&ecdh, sym);
+  otrng_assert_is_success(otrng_ecdh_keypair_generate(&ecdh, sym));
 
   data_message_s *data_msg = otrng_data_message_new();
   otrng_assert(data_msg);

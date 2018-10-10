@@ -42,17 +42,21 @@ INTERNAL otrng_keypair_s *otrng_keypair_new(void) {
   return ret;
 }
 
-INTERNAL void otrng_keypair_generate(otrng_keypair_s *keypair,
-                                     const uint8_t sym[ED448_PRIVATE_BYTES]) {
+INTERNAL otrng_result otrng_keypair_generate(
+    otrng_keypair_s *keypair, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   uint8_t pub[ED448_POINT_BYTES];
 
   memcpy(keypair->sym, sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_derive_from_secret(keypair->priv, keypair->sym);
 
   otrng_ec_derive_public_key(pub, keypair->sym);
-  otrng_ec_point_decode(keypair->pub, pub);
+  if (!otrng_ec_point_decode(keypair->pub, pub)) {
+    return OTRNG_ERROR;
+  }
 
   otrng_secure_wipe(pub, ED448_POINT_BYTES);
+
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
@@ -81,7 +85,7 @@ INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void) {
   return ret;
 }
 
-INTERNAL void
+INTERNAL otrng_result
 otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
                                   const uint8_t sym[ED448_PRIVATE_BYTES]) {
   uint8_t pub[ED448_POINT_BYTES];
@@ -94,9 +98,14 @@ otrng_shared_prekey_pair_generate(otrng_shared_prekey_pair_s *prekey_pair,
   otrng_ec_scalar_derive_from_secret(prekey_pair->priv, prekey_pair->sym);
 
   otrng_ec_derive_public_key(pub, sym);
-  otrng_ec_point_decode(prekey_pair->pub, pub);
+  if (!otrng_ec_point_decode(prekey_pair->pub, pub)) {
+    otrng_secure_wipe(pub, ED448_POINT_BYTES);
+    return OTRNG_ERROR;
+  }
 
   otrng_secure_wipe(pub, ED448_POINT_BYTES);
+
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_s *ecdh,
@@ -104,7 +113,12 @@ INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_s *ecdh,
   uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
-  otrng_ecdh_keypair_generate(ecdh, sym);
+  if (!otrng_ecdh_keypair_generate(ecdh, sym)) {
+    otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+    free(sym);
+    return OTRNG_ERROR;
+  }
+
   otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
   free(sym);
 
@@ -135,8 +149,21 @@ INTERNAL uint8_t *otrng_derive_key_from_extra_symm_key(
   uint8_t *derived_key = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
 
   hash_init_with_usage(hd, usage);
-  hash_update(hd, use_data, use_data_len);
-  hash_update(hd, extra_symm_key, EXTRA_SYMMETRIC_KEY_BYTES);
+
+  if (hash_update(hd, use_data, use_data_len) == GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    otrng_secure_wipe(derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
+    free(derived_key);
+    return NULL;
+  }
+
+  if (hash_update(hd, extra_symm_key, EXTRA_SYMMETRIC_KEY_BYTES) ==
+      GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    otrng_secure_wipe(derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
+    free(derived_key);
+    return NULL;
+  }
 
   hash_final(hd, derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
   hash_destroy(hd);

@@ -172,7 +172,10 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
     return OTRNG_ERROR;
   }
 
-  otrng_shared_prekey_pair_generate(target->keys, target->keys->sym);
+  if (!otrng_shared_prekey_pair_generate(target->keys, target->keys->sym)) {
+    return OTRNG_ERROR;
+  }
+
   otrng_ec_point_copy(target->shared_prekey, target->keys->pub);
 
   w += ED448_PRIVATE_BYTES;
@@ -315,8 +318,12 @@ otrng_prekey_profile_build(uint32_t instance_tag,
   prekey_profile->keys = otrng_shared_prekey_pair_new();
   gcry_randomize(prekey_profile->keys->sym, ED448_PRIVATE_BYTES,
                  GCRY_VERY_STRONG_RANDOM);
-  otrng_shared_prekey_pair_generate(prekey_profile->keys,
-                                    prekey_profile->keys->sym);
+  if (!otrng_shared_prekey_pair_generate(prekey_profile->keys,
+                                         prekey_profile->keys->sym)) {
+    otrng_prekey_profile_free(prekey_profile);
+    return NULL;
+  }
+
   otrng_ec_point_copy(prekey_profile->shared_prekey, prekey_profile->keys->pub);
 
   prekey_profile->instance_tag = instance_tag;

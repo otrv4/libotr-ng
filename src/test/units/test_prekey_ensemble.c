@@ -29,11 +29,11 @@
 static void test_prekey_ensemble_validate(void) {
   uint8_t sym[ED448_PRIVATE_BYTES] = {0xA0};
   otrng_keypair_s *keypair = otrng_keypair_new();
-  otrng_keypair_generate(keypair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(keypair, sym));
 
   uint8_t sym2[ED448_PRIVATE_BYTES] = {0xA1};
   otrng_keypair_s *keypair2 = otrng_keypair_new();
-  otrng_keypair_generate(keypair2, sym2);
+  otrng_assert_is_success(otrng_keypair_generate(keypair2, sym2));
 
   uint8_t sym3[ED448_PRIVATE_BYTES] = {0xA2};
 

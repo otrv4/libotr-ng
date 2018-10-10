@@ -129,9 +129,8 @@ INTERNAL void otrng_ec_calculate_public_key(ec_point pub,
                                        priv);
 }
 
-INTERNAL void
-otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
-                            const uint8_t sym[ED448_PRIVATE_BYTES]) {
+INTERNAL otrng_result otrng_ecdh_keypair_generate(
+    ecdh_keypair_s *keypair, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   /*
    * The spec requires:
 
@@ -146,14 +145,18 @@ otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
   otrng_ec_scalar_derive_from_secret(keypair->priv, sym);
 
   otrng_ec_derive_public_key(pub, sym);
-  otrng_ec_point_decode(keypair->pub, pub);
+  if (!otrng_ec_point_decode(keypair->pub, pub)) {
+    otrng_secure_wipe(pub, ED448_POINT_BYTES);
+    return OTRNG_ERROR;
+  }
 
   otrng_secure_wipe(pub, ED448_POINT_BYTES);
+
+  return OTRNG_SUCCESS;
 }
 
-INTERNAL void
-otrng_ecdh_keypair_generate_their(ec_point keypair,
-                                  const uint8_t sym[ED448_PRIVATE_BYTES]) {
+INTERNAL otrng_result otrng_ecdh_keypair_generate_their(
+    ec_point keypair, const uint8_t sym[ED448_PRIVATE_BYTES]) {
   /*
    * The spec requires, in `generateECDH()`:
 
@@ -166,9 +169,14 @@ otrng_ecdh_keypair_generate_their(ec_point keypair,
 
   uint8_t pub[ED448_POINT_BYTES];
   otrng_ec_derive_public_key(pub, sym);
-  otrng_ec_point_decode(keypair, pub);
+  if (!otrng_ec_point_decode(keypair, pub)) {
+    otrng_secure_wipe(pub, ED448_POINT_BYTES);
+    return OTRNG_ERROR;
+  }
 
   otrng_secure_wipe(pub, ED448_POINT_BYTES);
+
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {

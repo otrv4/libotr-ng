@@ -42,7 +42,11 @@ otrng_dake_identity_message_new(const otrng_client_profile_s *profile) {
 
   identity_msg = otrng_xmalloc_z(sizeof(dake_identity_message_s));
   identity_msg->profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
-  otrng_client_profile_copy(identity_msg->profile, profile);
+
+  if (!otrng_client_profile_copy(identity_msg->profile, profile)) {
+    return NULL;
+  }
+
   otrng_secure_wipe(identity_msg->Y, ED448_POINT_BYTES);
 
   return identity_msg;
@@ -359,7 +363,9 @@ INTERNAL otrng_result otrng_dake_auth_i_serialize(uint8_t **dst, size_t *nbytes,
   cursor += otrng_serialize_uint8(cursor, AUTH_I_MSG_TYPE);
   cursor += otrng_serialize_uint32(cursor, auth_i->sender_instance_tag);
   cursor += otrng_serialize_uint32(cursor, auth_i->receiver_instance_tag);
-  otrng_serialize_ring_sig(cursor, auth_i->sigma);
+  if (otrng_serialize_ring_sig(cursor, auth_i->sigma) == 0) {
+    return OTRNG_ERROR;
+  }
 
   return OTRNG_SUCCESS;
 }
@@ -712,7 +718,8 @@ tstatic otrng_result build_rsign_tag(
   free(ser_i_profile);
   free(ser_r_profile);
 
-  // I don't _think_ these are necessary, since the points are public values
+  // TODO: I don't _think_ these are necessary, since the points are public
+  // values
   otrng_secure_wipe(ser_i_ecdh, ED448_POINT_BYTES);
   otrng_secure_wipe(ser_r_ecdh, ED448_POINT_BYTES);
   otrng_secure_wipe(ser_i_dh, DH3072_MOD_LEN_BYTES);
@@ -733,16 +740,18 @@ INTERNAL otrng_result build_interactive_rsign_tag(
 
   assert(auth_tag_type == 'i' || auth_tag_type == 'r');
   if (auth_tag_type == 'r') {
-    // t = 0x0 || KDF_1(0x05 || Bobs_Client_Profile, 64) || KDF_1(0x06 ||
-    // Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x07 || phi, 64)
+    /* t = 0x0 || KDF_1(0x05 || Bobs_Client_Profile, 64) || KDF_1(0x06 ||
+     * Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x07 || phi, 64)
+     */
     *buffer = 0x0;
     result = build_rsign_tag(
         buffer + 1, MAX_T_LENGTH, &written, 0x05, initiator->client_profile,
         responder->client_profile, &initiator->ecdh, &responder->ecdh,
         initiator->dh, responder->dh, NULL, 0, phi, phi_len);
   } else if (auth_tag_type == 'i') {
-    // t = 0x1 || KDF_1(0x08 || Bobs_Client_Profile, 64) || KDF_1(0x09 ||
-    // Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x0A || phi, 64)
+    /* t = 0x1 || KDF_1(0x08 || Bobs_Client_Profile, 64) || KDF_1(0x09 ||
+     * Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x0A || phi, 64)
+     */
     *buffer = 0x01;
     result = build_rsign_tag(
         buffer + 1, MAX_T_LENGTH, &written, 0x08, initiator->client_profile,
@@ -769,14 +778,16 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
                                 const otrng_dake_participant_data_s *responder,
                                 const otrng_shared_prekey_pub r_shared_prekey,
                                 const uint8_t *phi, size_t phi_len) {
-
   uint8_t first_usage = 0x0D;
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_result result;
 
   *msg = otrng_xmalloc_z(MAX_T_LENGTH);
 
-  otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
+  if (otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey) ==
+      0) {
+    return OTRNG_ERROR;
+  }
 
   result = build_rsign_tag(*msg, MAX_T_LENGTH, msg_len, first_usage,
                            initiator->client_profile, responder->client_profile,
@@ -784,7 +795,8 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
                            responder->dh, ser_r_shared_prekey,
                            ED448_SHARED_PREKEY_BYTES, phi, phi_len);
 
-  // This is probably not necessary, since the shared prekey is a public value
+  // TODO: This is probably not necessary, since the shared prekey is a public
+  // value
   otrng_secure_wipe(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
   return result;
@@ -803,7 +815,10 @@ INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
 
   *msg = otrng_xmalloc_z(MAX_T_LENGTH);
 
-  otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey);
+  if (otrng_serialize_shared_prekey(ser_r_shared_prekey, r_shared_prekey) ==
+      0) {
+    return OTRNG_ERROR;
+  }
 
   result = build_rsign_tag(
       *msg, MAX_T_LENGTH, msg_len, first_usage, initiator->exp_client_profile,
@@ -811,7 +826,7 @@ INTERNAL otrng_result build_fallback_non_interactive_rsign_tag(
       initiator->dh, responder->dh, ser_r_shared_prekey,
       ED448_SHARED_PREKEY_BYTES, phi, phi_len);
 
-  // Probably not necessary
+  // TODO: Probably not necessary
   otrng_secure_wipe(ser_r_shared_prekey, ED448_SHARED_PREKEY_BYTES);
 
   return result;
@@ -821,7 +836,6 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
     uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_s *auth,
     const uint8_t *t, size_t t_len, uint8_t tmp_key[HASH_BYTES]) {
 
-  // OTRv4 section "Non-Interactive-Auth Message"
   /* auth_mac_k = KDF_1(0x0C || tmp_k, 64) */
   uint8_t usage_auth_mac_key = 0x0C;
   uint8_t *auth_mac_k = otrng_secure_alloc(HASH_BYTES);
@@ -831,9 +845,12 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
   shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, tmp_key,
                  HASH_BYTES);
 
-  // OTRv4 section, "Non-Interactive DAKE Overview"
   /* Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t, 64) */
-  otrng_key_manager_calculate_auth_mac(dst, auth_mac_k, t, t_len);
+  if (!otrng_key_manager_calculate_auth_mac(dst, auth_mac_k, t, t_len)) {
+    otrng_secure_wipe(auth_mac_k, HASH_BYTES);
+    free(auth_mac_k);
+    return OTRNG_ERROR;
+  }
 
   otrng_secure_wipe(auth_mac_k, HASH_BYTES);
   free(auth_mac_k);

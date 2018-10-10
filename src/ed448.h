@@ -192,9 +192,8 @@ INTERNAL void otrng_ec_calculate_public_key(ec_point pub, const ec_scalar priv);
  *
  * @warning The symmetric key is stored as the priv part
  */
-INTERNAL void
-otrng_ecdh_keypair_generate(ecdh_keypair_s *keypair,
-                            const uint8_t sym[ED448_PRIVATE_BYTES]);
+INTERNAL otrng_result otrng_ecdh_keypair_generate(
+    ecdh_keypair_s *keypair, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 /**
  * @brief Securely destroy the keypair.
@@ -246,9 +245,8 @@ INTERNAL otrng_bool otrng_ec_verify(
     const uint8_t sig[GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES],
     const uint8_t pub[ED448_POINT_BYTES], const uint8_t *msg, size_t msg_len);
 
-INTERNAL void
-otrng_ecdh_keypair_generate_their(ec_point keypair,
-                                  const uint8_t sym[ED448_PRIVATE_BYTES]);
+INTERNAL otrng_result otrng_ecdh_keypair_generate_their(
+    ec_point keypair, const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 #ifdef DEBUG_API
 API void otrng_ecdh_keypair_debug_print(FILE *, int, ecdh_keypair_s *);

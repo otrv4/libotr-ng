@@ -157,6 +157,9 @@ INTERNAL otrng_result otrng_fragment_message(int max_size,
   }
 
   identifier = gcry_random_bytes(4, GCRY_STRONG_RANDOM);
+  if (!identifier) {
+    return OTRNG_ERROR;
+  }
 
   for (i = 0; i < fragments->total; i++) {
     int piece_len = msg_len < limit ? msg_len : limit;

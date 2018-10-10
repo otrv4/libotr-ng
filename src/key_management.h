@@ -226,11 +226,11 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
  * @param [tmp_ecdh_k1]  A temporary ecdh key.
  * @param [tmp_ecdh_k2]  A temporary ecdh key.
  */
-INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
-                                                  k_ecdh ecdh_key,
-                                                  k_brace brace_key,
-                                                  k_ecdh tmp_ecdh_k1,
-                                                  k_ecdh tmp_ecdh_k2);
+INTERNAL otrng_result otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
+                                                          k_ecdh ecdh_key,
+                                                          k_brace brace_key,
+                                                          k_ecdh tmp_ecdh_k1,
+                                                          k_ecdh tmp_ecdh_k2);
 
 /**
  * @brief Generate the auth_mac to be used by the non-interactive DAKE.
@@ -240,10 +240,9 @@ INTERNAL void otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
  * @param [t]             The message to mac.
  * @param [t_len]         The length of the message to mac.
  */
-INTERNAL void otrng_key_manager_calculate_auth_mac(uint8_t *auth_mac,
-                                                   const uint8_t *auth_mac_key,
-                                                   const uint8_t *t,
-                                                   size_t t_len);
+INTERNAL otrng_result otrng_key_manager_calculate_auth_mac(
+    uint8_t *auth_mac, const uint8_t *auth_mac_key, const uint8_t *t,
+    size_t t_len);
 
 /**
  * @brief Generate the data message authenticator.
@@ -252,7 +251,7 @@ INTERNAL void otrng_key_manager_calculate_auth_mac(uint8_t *auth_mac,
  * @param [mac_key]        The mac key.
  * @param [sections]       The data message sections to mac.
  */
-INTERNAL void otrng_key_manager_calculate_authenticator(
+INTERNAL otrng_result otrng_key_manager_calculate_authenticator(
     uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections);
 
 /**
@@ -347,10 +346,9 @@ tstatic otrng_result calculate_brace_key(
  * @param [manager]   The key manager.
  * @param [action]    's' for sending chain, 'r' for receiving
  */
-tstatic void
-key_manager_derive_ratchet_keys(key_manager_s *manager,
-                                receiving_ratchet_s *tmp_receiving_ratchet,
-                                const char action);
+tstatic otrng_result key_manager_derive_ratchet_keys(
+    key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
+    const char action);
 
 /**
  * @brief Calculate the secure session id.
@@ -365,9 +363,9 @@ tstatic void calculate_ssid(key_manager_s *manager);
  * @param [manager]   The key manager.
  * @param [action]    's' for sending chain, 'r' for receiving
  */
-tstatic void calculate_extra_key(key_manager_s *manager,
-                                 receiving_ratchet_s *tmp_receiving_ratchet,
-                                 const char action);
+tstatic otrng_result calculate_extra_key(
+    key_manager_s *manager, receiving_ratchet_s *tmp_receiving_ratchet,
+    const char action);
 
 #endif
 

@@ -90,8 +90,8 @@ typedef struct otrng_client_profile_s {
   otrng_bool validation_result;
 } otrng_client_profile_s;
 
-INTERNAL void otrng_client_profile_copy(otrng_client_profile_s *dst,
-                                        const otrng_client_profile_s *src);
+INTERNAL otrng_bool otrng_client_profile_copy(
+    otrng_client_profile_s *dst, const otrng_client_profile_s *src);
 
 INTERNAL void otrng_client_profile_destroy(otrng_client_profile_s *profile);
 

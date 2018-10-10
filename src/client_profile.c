@@ -75,38 +75,40 @@ otrng_client_profile_set_dsa_key_mpis(otrng_client_profile_s *client_profile,
   return OTRNG_SUCCESS;
 }
 
-static void copy_dsa_key(otrng_client_profile_s *dst,
-                         const otrng_client_profile_s *src) {
+static otrng_bool copy_dsa_key(otrng_client_profile_s *dst,
+                               const otrng_client_profile_s *src) {
   size_t read = 0;
   uint16_t key_type = 0xFF;
 
   if (!src->dsa_key || !src->dsa_key_len) {
-    return;
+    return otrng_true;
   }
 
   if (!otrng_deserialize_uint16(&key_type, src->dsa_key, src->dsa_key_len,
                                 &read)) {
-    return; // TODO: ERROR
+    return otrng_false;
   }
 
   if (key_type != OTRL_PUBKEY_TYPE_DSA) {
-    // Not a DSA public key, so we dont know what to do from here
-    return; // TODO: ERROR
+    /* Not a DSA public key */
+    return otrng_false;
   }
 
   if (!otrng_client_profile_set_dsa_key_mpis(dst, src->dsa_key + read,
                                              src->dsa_key_len - read)) {
-    return; // TODO: ERROR
+    return otrng_false;
   }
+
+  return otrng_true;
 }
 
-INTERNAL void otrng_client_profile_copy(otrng_client_profile_s *dst,
-                                        const otrng_client_profile_s *src) {
+INTERNAL otrng_bool otrng_client_profile_copy(
+    otrng_client_profile_s *dst, const otrng_client_profile_s *src) {
   /* If there are no fields present, do not point to invalid memory */
   memset(dst, 0, sizeof(otrng_client_profile_s));
 
   if (!src) {
-    return;
+    return otrng_true;
   }
 
   dst->sender_instance_tag = src->sender_instance_tag;
@@ -115,13 +117,18 @@ INTERNAL void otrng_client_profile_copy(otrng_client_profile_s *dst,
   dst->versions = src->versions ? otrng_xstrdup(src->versions) : NULL;
 
   dst->expires = src->expires;
-  copy_dsa_key(dst, src);
+  if (!copy_dsa_key(dst, src)) {
+    return otrng_false;
+  }
+
   copy_transitional_signature(dst, src);
 
   memcpy(dst->signature, src->signature, ED448_SIGNATURE_BYTES);
 
   dst->should_publish = src->should_publish;
   dst->is_publishing = src->is_publishing;
+
+  return otrng_true;
 }
 
 INTERNAL void
@@ -212,7 +219,7 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
       dst + 4, dst_len - 4, &w, client_profile);
   w += 4;
 
-  // Transitional Signature
+  /* Transitional Signature */
   if (client_profile->transitional_signature) {
     w += otrng_serialize_uint16(
         dst + w, OTRNG_CLIENT_PROFILE_FIELD_TRANSITIONAL_SIGNATURE);
@@ -221,8 +228,10 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
     num_fields++;
   }
 
-  // Writes the number of fields at the beginning
-  otrng_serialize_uint32(dst, num_fields);
+  /* Write the number of fields at the beginning */
+  if (otrng_serialize_uint32(dst, num_fields) == 0) {
+    return OTRNG_ERROR;
+  }
 
   if (nbytes) {
     *nbytes = w;
@@ -330,12 +339,9 @@ static otrng_result deserialize_dsa_key_field(otrng_client_profile_s *target,
   w += read;
 
   if (key_type != OTRL_PUBKEY_TYPE_DSA) {
-    // Not a DSA public key, so we dont know what to do from here
+    /* Not a DSA public key */
     return OTRNG_ERROR;
   }
-
-  // We dont care about the individual p, q, g, y
-  // We just care about finding the end of this key
 
   for (i = 0; i < 4; i++) {
     otrng_mpi_s mpi;
@@ -696,6 +702,7 @@ tstatic otrng_result client_profile_verify_transitional_signature(
 
   free(data);
   gcry_sexp_release(pubs);
+
   if (err) {
     return OTRNG_ERROR;
   }
@@ -805,7 +812,7 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
   }
 
   if (privkey->pubkey_type != OTRL_PUBKEY_TYPE_DSA) {
-    // Not a DSA public key, so we dont know what to do from here
+    /* Not a DSA public key */
     return OTRNG_ERROR;
   }
 
@@ -818,10 +825,12 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
       otrng_strlen_ns(client_profile->versions));
 
   data = otrng_xmalloc_z(size);
-
   data_len = 0;
-  client_profile_body_serialize_pre_transitional_signature(
-      data, size, &data_len, client_profile);
+
+  if (client_profile_body_serialize_pre_transitional_signature(
+          data, size, &data_len, client_profile) < 5) {
+    return OTRNG_ERROR;
+  }
 
   written = 0;
   err = otrl_privkey_sign(&client_profile->transitional_signature, &written,
@@ -832,7 +841,7 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
     return OTRNG_ERROR;
   }
 
-  if (written != 40) {
+  if (written != 40) { // TODO: extract
     free(client_profile->transitional_signature);
     client_profile->transitional_signature = NULL;
     return OTRNG_ERROR;
