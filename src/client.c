@@ -590,6 +590,8 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
     }
 
     messages[i] = otrng_prekey_message_build(instance_tag, &ecdh, &dh);
+    otrng_dh_keypair_destroy(&dh);
+
     if (!messages[i]) {
       for (j = 0; j < i; j++) {
         otrng_prekey_message_free(messages[j]);
@@ -599,9 +601,6 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
     }
 
     otrng_client_store_my_prekey_message(messages[i], client);
-
-    // TODO: ecdh_keypair_destroy()
-    // dh_keypair_detroy()
   }
 
   return messages;
