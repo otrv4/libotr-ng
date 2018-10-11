@@ -450,6 +450,7 @@ tstatic void create_new_prekey_messages(otrng_client_s *client) {
     for (ix = 0; ix < num; ix++) {
       messages[ix]->should_publish = otrng_true;
     }
+    free(messages);
 
     client->should_publish = otrng_true;
 
