@@ -433,7 +433,7 @@ tstatic otrng_bool ensure_valid_prekey_profile(otrng_client_s *client) {
 
 tstatic void create_new_prekey_messages(otrng_client_s *client) {
   prekey_message_s **messages;
-  int ix, num;
+  size_t ix;
   size_t to_publish =
       client->max_published_prekey_msg - otrng_list_len(client->our_prekeys);
 
@@ -443,18 +443,14 @@ tstatic void create_new_prekey_messages(otrng_client_s *client) {
 
   if (to_publish > 0) {
     otrng_debug_enter("create_new_prekey_messages > 0");
-    num = to_publish;
     client->prekey_msgs_num_to_publish = 0;
 
-    messages = otrng_client_build_prekey_messages(num, client);
-    for (ix = 0; ix < num; ix++) {
+    messages = otrng_client_build_prekey_messages(to_publish, client);
+    for (ix = 0; ix < to_publish; ix++) {
       messages[ix]->should_publish = otrng_true;
     }
     free(messages);
 
-    client->should_publish = otrng_true;
-
-    client->global_state->callbacks->store_prekey_messages(client);
     otrng_debug_exit("create_new_prekey_messages > 0");
   }
 }
@@ -466,7 +462,8 @@ tstatic void load_prekey_messages_from_storage(otrng_client_s *client) {
 }
 
 tstatic otrng_bool verify_enough_prekey_messages(otrng_client_s *client) {
-  if (client->minimum_stored_prekey_msg < otrng_list_len(client->our_prekeys)) {
+  if (otrng_list_len(client->our_prekeys) >=
+      client->minimum_stored_prekey_msg) {
     return otrng_true;
   }
   return otrng_false;
@@ -486,6 +483,8 @@ tstatic otrng_bool ensure_enough_prekey_messages(otrng_client_s *client) {
   create_new_prekey_messages(client);
 
   if (verify_enough_prekey_messages(client)) {
+    client->should_publish = otrng_true;
+    client->global_state->callbacks->store_prekey_messages(client);
     return otrng_true;
   }
 
