@@ -27,9 +27,7 @@
 #include "client.h"
 #include "dake.h"
 #include "deserialize.h"
-#include "fingerprint.h"
 #include "prekey_proofs.h"
-#include "random.h"
 #include "serialize.h"
 #include "shake.h"
 

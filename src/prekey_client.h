@@ -21,12 +21,7 @@
 #ifndef OTRNG_PREKEY_CLIENT_H
 #define OTRNG_PREKEY_CLIENT_H
 
-#include <stdint.h>
-
-#include "auth.h"
-#include "client_profile.h"
 #include "constants.h"
-#include "dake.h"
 #include "prekey_ensemble.h"
 #include "prekey_message.h"
 #include "prekey_profile.h"
