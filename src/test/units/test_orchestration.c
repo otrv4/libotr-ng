@@ -124,7 +124,7 @@ static void prekey_free_from_list(void *prekey) {
 
 static int load_prekey_messages__called = 0;
 static otrng_client_s *load_prekey_messages__called_with;
-static otrng_bool load_prekey_messages__should_assign = otrng_false;
+static otrng_bool load_prekey_messages__should_assign;
 static list_element_s *load_prekey_messages__assign = NULL;
 static void load_prekey_messages(otrng_client_s *client) {
   load_prekey_messages__called++;
