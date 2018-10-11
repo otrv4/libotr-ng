@@ -84,6 +84,7 @@ static void test_otrng_list_insert_at_n() {
   otrng_assert(result);
   otrng_assert(!result->next);
   g_assert_cmpint(two, ==, *((int *)result->data));
+  free(result);
 
   list = otrng_list_add(&one, list);
 
